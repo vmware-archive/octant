@@ -1,2 +1,2 @@
-# cluster-dash
-Cluster Dashboard for high bandwidth cluster analysis operations.
+# developer-dash
+Developer dashboard for high bandwidth cluster analysis operations.
