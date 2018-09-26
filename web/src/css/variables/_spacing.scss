@@ -1,0 +1,14 @@
+$nav-height: 48px;
+$nav-margin: 44px;
+$body-padding-top: 40px;
+$left-nav-width: 200px;
+$dropdown-width: $left-nav-width - 20px;
+$left-nav-link: $dropdown-width - 20px;
+
+@mixin nav-margin {
+  margin-top: $nav-margin;
+}
+
+@mixin body-padding {
+  padding-top: 40px;
+}

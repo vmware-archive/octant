@@ -14,5 +14,5 @@ web-deps:
 	@cd web; npm i
 
 web-build: web-deps
-	@cd web; yarn build
+	@cd web; npm build
 	@go generate ./web

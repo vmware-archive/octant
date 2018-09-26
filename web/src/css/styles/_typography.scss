@@ -1,0 +1,20 @@
+h1 {
+  @include bold;
+}
+
+h2 {
+  @include bold;
+  @include font-size('20');
+}
+
+h1, h2, h3, h3, h4, h5, h6 {
+  @include line-height('heading');
+
+  &.orange {
+    color: $orange;
+  }
+}
+
+a, li, p {
+  @include line-height('normal');
+}
