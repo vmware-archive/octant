@@ -8,23 +8,38 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/web"
 	"github.com/skratchdot/open-golang/open"
+)
+
+const (
+	apiPathPrefix = "/api/v1"
 )
 
 // Run runs the dashboard.
 func Run(ctx context.Context, namespace, uiURL string) error {
 	log.Printf("Initial namespace for dashboard is %s", namespace)
 
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	listenerAddr := "127.0.0.1:0"
+	if customListenerAddr := os.Getenv("DASH_LISTENER_ADDR"); customListenerAddr != "" {
+		listenerAddr = customListenerAddr
+	}
+
+	listener, err := net.Listen("tcp", listenerAddr)
 	if err != nil {
 		return err
 	}
 
 	d := newDash(listener, namespace, uiURL)
+
+	if os.Getenv("DASH_DISABLE_OPEN_BROWSER") != "" {
+		d.willOpenBrowser = false
+	}
 
 	return d.Run(ctx)
 }
@@ -34,6 +49,7 @@ type dash struct {
 	uiURL           string
 	namespace       string
 	defaultHandler  func() (http.Handler, error)
+	apiHandler      http.Handler
 	willOpenBrowser bool
 }
 
@@ -44,20 +60,17 @@ func newDash(listener net.Listener, namespace, uiURL string) *dash {
 		uiURL:           uiURL,
 		defaultHandler:  web.Handler,
 		willOpenBrowser: true,
+		apiHandler:      api.New(apiPathPrefix),
 	}
 }
 
 func (d *dash) Run(ctx context.Context) error {
-	handler, err := d.uiHandler()
+	handler, err := d.handler()
 	if err != nil {
 		return err
 	}
 
-	router := mux.NewRouter()
-
-	router.PathPrefix("/").Handler(handler)
-
-	server := http.Server{Handler: router}
+	server := http.Server{Handler: handler}
 
 	go func() {
 		if err = server.Serve(d.listener); err != nil && err != http.ErrServerClosed {
@@ -77,7 +90,19 @@ func (d *dash) Run(ctx context.Context) error {
 	<-ctx.Done()
 
 	return server.Shutdown(ctx)
+}
 
+func (d *dash) handler() (http.Handler, error) {
+	handler, err := d.uiHandler()
+	if err != nil {
+		return nil, err
+	}
+
+	router := mux.NewRouter()
+	router.PathPrefix(apiPathPrefix).Handler(d.apiHandler)
+	router.PathPrefix("/").Handler(handler)
+
+	return router, nil
 }
 
 func (d *dash) uiHandler() (http.Handler, error) {
