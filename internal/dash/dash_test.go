@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -80,6 +81,72 @@ func Test_dash_Run(t *testing.T) {
 			<-ch
 			assert.NoError(t, runErr)
 
+		})
+	}
+}
+
+func Test_dash_routes(t *testing.T) {
+	cases := []struct {
+		path         string
+		expectedCode int
+		expectedBody string
+	}{
+		{
+			path:         "/",
+			expectedCode: http.StatusOK,
+			expectedBody: "body",
+		},
+		{
+			path:         "/nested",
+			expectedCode: http.StatusOK,
+			expectedBody: "body",
+		},
+		{
+			path:         "/api/v1/namespaces",
+			expectedCode: http.StatusOK,
+			expectedBody: "{}",
+		},
+	}
+
+	for _, tc := range cases {
+		name := fmt.Sprintf("GET: %s", tc.path)
+		t.Run(name, func(t *testing.T) {
+			namespace := "default"
+			uiURL := ""
+			listener, err := net.Listen("tcp", "127.0.0.1:0")
+			require.NoError(t, err)
+
+			d := newDash(listener, namespace, uiURL)
+			d.apiHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				fmt.Fprint(w, "{}")
+			})
+
+			d.defaultHandler = func() (http.Handler, error) {
+				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					fmt.Fprint(w, "body")
+				}), nil
+			}
+
+			handler, err := d.handler()
+			require.NoError(t, err)
+
+			ts := httptest.NewServer(handler)
+			defer ts.Close()
+
+			u, err := url.Parse(ts.URL)
+			require.NoError(t, err)
+
+			u.Path = tc.path
+
+			res, err := http.Get(u.String())
+			require.NoError(t, err)
+			defer res.Body.Close()
+
+			assert.Equal(t, tc.expectedCode, res.StatusCode)
+			data, err := ioutil.ReadAll(res.Body)
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.expectedBody, string(data))
 		})
 	}
 }
