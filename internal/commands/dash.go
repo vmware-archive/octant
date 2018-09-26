@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 
 	"github.com/heptio/developer-dash/internal/dash"
 	"github.com/spf13/cobra"
@@ -13,6 +14,7 @@ import (
 func newDashCmd() *cobra.Command {
 	var namespace string
 	var uiURL string
+	var kubeconfig string
 
 	dashCmd := &cobra.Command{
 		Use:   "dash",
@@ -28,7 +30,7 @@ func newDashCmd() *cobra.Command {
 			runCh := make(chan bool, 1)
 
 			go func() {
-				if err := dash.Run(ctx, namespace, uiURL); err != nil {
+				if err := dash.Run(ctx, namespace, uiURL, kubeconfig); err != nil {
 					log.Print(err)
 					os.Exit(1)
 				}
@@ -48,5 +50,19 @@ func newDashCmd() *cobra.Command {
 	dashCmd.Flags().StringVarP(&namespace, "namespace", "n", "default", "Kubernetes namespace")
 	dashCmd.Flags().StringVar(&uiURL, "ui-url", "", "UI URL")
 
+	if home := homeDir(); home != "" {
+		kubeconfig = filepath.Join(home, ".kube", "config")
+	}
+
+	dashCmd.Flags().StringVar(&kubeconfig, "kubeconfig", kubeconfig, "absolute path to kubeconfig file")
+
 	return dashCmd
+}
+
+func homeDir() string {
+	if h := os.Getenv("HOME"); h != "" {
+		return h
+	}
+
+	return os.Getenv("USERPROFILE")
 }
