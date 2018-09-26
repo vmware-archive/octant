@@ -1,0 +1,182 @@
+.link {
+  @include bold;
+  @include lato;
+  @include font-size('14');
+  color: $orange;
+  cursor: pointer;
+  text-align: center;
+  transition: all $base-time $base-timing;
+
+  &:hover {
+    color: darken($orange, 20%);
+    transition: all $base-time $base-timing;
+  }
+}
+
+.link--inverted {
+  color: $white;
+
+  &:hover {
+    color: $white;
+    opacity: 0.8;
+    transition: all $base-time $base-timing;
+  }
+}
+
+.link--gray {
+  color: $gray-darker;
+
+  &:hover {
+    color: $gray-darker;
+    opacity: 0.8;
+    transition: all $base-time $base-timing;
+  }
+}
+
+.link--primary {
+  @include box-shadow;
+  background: $orange;
+  border-radius: 3px;
+  color: $white;
+  padding: 14px 30px;
+  text-decoration: none;
+
+  &:hover {
+    @include box-shadow-darken;
+    background: darken($orange, 20%);
+    color: $white;
+  }
+}
+
+.link--primary-small {
+  @include box-shadow;
+  background: $orange;
+  border-radius: 3px;
+  color: $white;
+  padding: 10px 18px;
+  text-decoration: none;
+
+  &:hover {
+    @include box-shadow-darken;
+    background: darken($orange, 20%);
+    color: $white;
+  }
+}
+
+.link--primary-inverted {
+  @include box-shadow;
+  background: $white;
+  border-radius: 3px;
+  display: inline-block;
+  padding: 14px 30px;
+  text-decoration: none;
+
+  &:hover {
+   @include box-shadow-darken;
+  }
+}
+
+.link--primary-small-inverted {
+  @include box-shadow;
+  background: $white;
+  border-radius: 3px;
+  padding: 10px 18px;
+  text-decoration: none;
+
+  &:hover {
+   @include box-shadow-darken;
+  }
+}
+
+.link--primary-large {
+  @include box-shadow;
+  background: $orange;
+  border-radius: 3px;
+  color: $white;
+  display: inline-block;
+  min-width: 140px;
+  padding: 16px 38px;
+  text-decoration: none;
+
+  &:hover {
+    @include box-shadow-darken;
+    background: darken($orange, 20%);
+    color: $white;
+  }
+}
+
+.link--primary-large-inverted {
+  @include box-shadow;
+  background: $white;
+  border-radius: 3px;
+  display: inline-block;
+  padding: 16px 38px;
+  text-decoration: none;
+
+  &:hover {
+    opacity: 0.9;
+    @include box-shadow-darken;
+  }
+}
+
+.link--secondary {
+  @include box-shadow;
+  background: $white;
+  border: 1px solid $orange;
+  border-radius: 3px;
+  padding: 12px 28px;
+  text-decoration: none;
+
+  &:hover {
+    background: darken($orange, 20%);
+    border: 1px solid darken($orange, 20%);
+    color: $white;
+    @include box-shadow-darken;
+  }
+}
+
+.link--secondary-small {
+  @include box-shadow;
+  background: $white;
+  border: 1px solid $orange;
+  border-radius: 3px;
+  padding: 9px 18px;
+  text-decoration: none;
+
+  &:hover {
+    background: darken($orange, 20%);
+    border: 1px solid darken($orange, 20%);
+    color: $white;
+    @include box-shadow-darken;
+  }
+}
+
+.link--secondary-large {
+  background: rgba(0,0,0,0);
+  border: 2px solid $white;
+  border-radius: 3px;
+  color: $white;
+  display: inline-block;
+  min-width: 100px;
+  padding: 14px 38px;
+  text-decoration: none;
+
+  &:hover {
+    background: rgba(255,255,255,0.9);
+    color: $orange;
+  }
+}
+
+.link--italic {
+  font-style: italic;
+  text-decoration: none;
+}
+
+.link--danger {
+  color: $red;
+  text-decoration: none;
+
+  &:hover {
+    color: $red-darken;
+  }
+}

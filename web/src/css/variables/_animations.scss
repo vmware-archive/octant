@@ -1,0 +1,46 @@
+$base-time: 120ms;
+$base-timing: ease-in;
+
+@mixin slideup {
+  animation-delay: 120ms;
+  animation-duration: 800ms;
+  animation-fill-mode: forwards;
+  animation-name: slideup;
+  animation-timing-function: ease;
+  opacity: 0;
+}
+
+@keyframes slideup {
+  0%   { opacity: 0; transform: translateY(0px); }
+  100% { opacity: 1; transform: translateY(-4px); }
+}
+
+@mixin heptate {
+  animation-duration: 90s;
+  animation-fill-mode: forwards;
+  animation-iteration-count: infinite;
+  animation-name: heptate;
+  animation-timing-function: linear;
+  opacity: 0;
+}
+
+@keyframes heptate {
+  0%   { opacity: 0; transform: rotate(0deg); }
+  2%   { opacity: 1; }
+  100% { opacity: 1; transform: rotate(360deg); }
+}
+
+@mixin heptatereverse {
+  animation-duration: 90s;
+  animation-fill-mode: forwards;
+  animation-iteration-count: infinite;
+  animation-name: heptatereverse;
+  animation-timing-function: linear;
+  opacity: 0;
+}
+
+@keyframes heptatereverse {
+  0%   { opacity: 0; transform: rotate(0deg); }
+  2%   { opacity: 1; }
+  100% { opacity: 1; transform: rotate(-360deg); }
+}

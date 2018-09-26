@@ -1,0 +1,30 @@
+@import '../../css/variables/variables.scss';
+
+.header {
+  @include box-shadow;
+  background: $white;
+  border-bottom: 1px solid $orange;
+  display: flex;
+  flex-direction: row;
+
+  height: $nav-height;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.header--heptio-logo {
+  height: 44px;
+  padding-top: 4px;
+  width: 100px;
+
+  .logo--fill {
+    fill: $orange;
+  }
+
+  &:hover {
+    .logo--fill {
+      fill: darken($orange, 20%);
+      transition: all $base-timing;
+    }
+  }
+}
