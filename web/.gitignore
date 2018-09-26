@@ -21,3 +21,4 @@ yarn-debug.log*
 yarn-error.log*
 
 .idea
+rice-box.go
