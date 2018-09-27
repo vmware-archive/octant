@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/heptio/developer-dash/internal/overview"
@@ -34,5 +35,7 @@ func (n *namespaces) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Namespaces: names,
 	}
 
-	json.NewEncoder(w).Encode(nr)
+	if err := json.NewEncoder(w).Encode(nr); err != nil {
+		log.Printf("encoding namespaces error: %v", err)
+	}
 }

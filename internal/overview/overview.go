@@ -34,8 +34,8 @@ func (co *ClusterOverview) Namespaces() ([]string, error) {
 }
 
 // Navigation returns navigation entries for overview.
-func (co *ClusterOverview) Navigation() error {
-	return &notImplemented{name: "Navigation"}
+func (co *ClusterOverview) Navigation() (*Navigation, error) {
+	return navigationEntries()
 }
 
 // Content returns content for a path.

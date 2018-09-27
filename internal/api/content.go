@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -125,5 +126,7 @@ func (c *content) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	json.NewEncoder(w).Encode(cr)
+	if err := json.NewEncoder(w).Encode(cr); err != nil {
+		log.Printf("encoding content error: %v", err)
+	}
 }
