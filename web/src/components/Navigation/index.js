@@ -1,17 +1,15 @@
 import React from 'react'
 import Section from './components/Section'
-import NavigationData from './_mock_data'
 
 import './styles.scss'
 
-const navData = NavigationData.sections
-
-function Navigation () {
+export default function Navigation (props) {
+  const { navigation } = props
   return (
     <nav className='navigation--left'>
-      {navData.map(section => (
+      {navigation.map(section => (
         <Section
-          name={section.name}
+          title={section.title}
           link={section.link}
           items={section.children}
           key={section.link}
@@ -20,5 +18,3 @@ function Navigation () {
     </nav>
   )
 }
-
-export default Navigation
