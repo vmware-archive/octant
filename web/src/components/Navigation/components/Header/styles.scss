@@ -1,0 +1,9 @@
+@import './../../../../css/variables/variables.scss';
+
+.navigation--left-header {
+  a {
+    @include bold;
+    color: $orange;
+    text-decoration: none;
+  }
+}

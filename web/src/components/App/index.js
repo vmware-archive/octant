@@ -1,6 +1,7 @@
 import React from 'react'
 import { Switch, Route } from 'react-router-dom'
 import Header from '../Header'
+import Navigation from '../Navigation'
 import Home from '../../pages/Home'
 import './styles.scss'
 
@@ -12,6 +13,7 @@ function App () {
         <Switch>
           <Route exact path='/' component={Home} />
         </Switch>
+        <Navigation />
       </div>
     </div>
   )
