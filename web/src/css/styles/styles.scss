@@ -12,8 +12,5 @@
 body {
   @include lato;
   @include font-smoothing;
-  display: flex;
-  flex-direction: column;
   font-size: $base-font-size;
-  overflow-x: hidden;
 }
