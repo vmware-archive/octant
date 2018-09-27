@@ -10,10 +10,14 @@ function App () {
     <div className='app'>
       <Header />
       <div className='app-page'>
-        <Switch>
-          <Route exact path='/' component={Home} />
-        </Switch>
-        <Navigation />
+        <div className='app-nav'>
+          <Navigation />
+        </div>
+        <div className='app-main'>
+          <Switch>
+            <Route exact path='/' component={Home} />
+          </Switch>
+        </div>
       </div>
     </div>
   )

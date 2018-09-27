@@ -3,6 +3,6 @@
 .navigation--left {
   @include box-shadow;
   border-right: 1px solid $orange;
-  flex: 0 0 200px; // 200px is the column width
+  height: 100%;
   order: -1;
 }
