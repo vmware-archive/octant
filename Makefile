@@ -1,9 +1,15 @@
+SHELL=/bin/bash
+BUILD_TIME=$(shell date --utc --rfc-3339 ns | sed -e 's/ /T/')
+GIT_COMMIT=$(shell git rev-parse --short HEAD)
+
+LD_FLAGS= '-X "main.buildTime=$(BUILD_TIME)" -X main.gitCommit=$(GIT_COMMIT)'
+GO_FLAGS= -ldflags=$(LD_FLAGS)
 GOCMD=go
 GOBUILD=$(GOCMD) build
 
 hcli-dev:
 	@mkdir -p ./build
-	@$(GOBUILD) -o build/hcli ./cmd/hcli
+	@$(GOBUILD) -o build/hcli $(GO_FLAGS) ./cmd/hcli
 
 setup-web: web-deps run-web
 

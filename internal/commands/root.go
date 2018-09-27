@@ -29,6 +29,7 @@ func newRoot() *cobra.Command {
 	}
 
 	rootCmd.AddCommand(newDashCmd())
+	rootCmd.AddCommand(newVersionCmd())
 
 	return rootCmd
 }
