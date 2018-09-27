@@ -1,5 +1,9 @@
 @import '~css/variables/variables.scss';
 
+.table-component-title {
+  margin-bottom: 10px;
+}
+
 .table--component > .ReactTable {
   display: flex;
   flex-direction: column;
