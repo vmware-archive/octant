@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -41,7 +42,9 @@ func TestAPI_routes(t *testing.T) {
 	for _, tc := range cases {
 		name := fmt.Sprintf("GET: %s", tc.path)
 		t.Run(name, func(t *testing.T) {
-			srv := New("/")
+			o := fake.NewSimpleClusterOverview()
+
+			srv := New("/", o)
 
 			ts := httptest.NewServer(srv)
 			defer ts.Close()
@@ -56,8 +59,6 @@ func TestAPI_routes(t *testing.T) {
 			defer res.Body.Close()
 
 			assert.Equal(t, tc.expectedCode, res.StatusCode)
-
 		})
 	}
-
 }

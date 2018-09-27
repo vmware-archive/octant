@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -54,7 +55,9 @@ func Test_dash_Run(t *testing.T) {
 				}), nil
 			}
 
-			d := newDash(listener, namespace, uiURL)
+			o := fake.NewSimpleClusterOverview()
+
+			d := newDash(listener, namespace, uiURL, o)
 			d.willOpenBrowser = false
 			d.defaultHandler = defaultHandler
 
@@ -116,7 +119,9 @@ func Test_dash_routes(t *testing.T) {
 			listener, err := net.Listen("tcp", "127.0.0.1:0")
 			require.NoError(t, err)
 
-			d := newDash(listener, namespace, uiURL)
+			o := fake.NewSimpleClusterOverview()
+
+			d := newDash(listener, namespace, uiURL, o)
 			d.apiHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprint(w, "{}")
 			})

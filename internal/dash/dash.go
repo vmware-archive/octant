@@ -13,6 +13,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/api"
+	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/internal/overview"
 	"github.com/heptio/developer-dash/web"
 	"github.com/skratchdot/open-golang/open"
 )
@@ -22,8 +24,14 @@ const (
 )
 
 // Run runs the dashboard.
-func Run(ctx context.Context, namespace, uiURL string) error {
+func Run(ctx context.Context, namespace, uiURL, kubeconfig string) error {
 	log.Printf("Initial namespace for dashboard is %s", namespace)
+
+	clusterClient, err := cluster.FromKubeconfig(kubeconfig)
+	if err != nil {
+		return err
+	}
+	o := overview.NewClusterOverview(clusterClient)
 
 	listenerAddr := "127.0.0.1:0"
 	if customListenerAddr := os.Getenv("DASH_LISTENER_ADDR"); customListenerAddr != "" {
@@ -35,7 +43,7 @@ func Run(ctx context.Context, namespace, uiURL string) error {
 		return err
 	}
 
-	d := newDash(listener, namespace, uiURL)
+	d := newDash(listener, namespace, uiURL, o)
 
 	if os.Getenv("DASH_DISABLE_OPEN_BROWSER") != "" {
 		d.willOpenBrowser = false
@@ -53,14 +61,15 @@ type dash struct {
 	willOpenBrowser bool
 }
 
-func newDash(listener net.Listener, namespace, uiURL string) *dash {
+func newDash(listener net.Listener, namespace, uiURL string, o overview.Interface) *dash {
+
 	return &dash{
 		listener:        listener,
 		namespace:       namespace,
 		uiURL:           uiURL,
 		defaultHandler:  web.Handler,
 		willOpenBrowser: true,
-		apiHandler:      api.New(apiPathPrefix),
+		apiHandler:      api.New(apiPathPrefix, o),
 	}
 }
 
