@@ -6,7 +6,7 @@ type Interface interface {
 	Namespaces() ([]string, error)
 
 	// Navigation returns navigation items for overview.
-	Navigation() error
+	Navigation() (*Navigation, error)
 
 	// Content returns content for a path.
 	Content(path string) error

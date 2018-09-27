@@ -19,8 +19,8 @@ func (sco *SimpleClusterOverview) Namespaces() ([]string, error) {
 }
 
 // Navigation is a no-op.
-func (sco *SimpleClusterOverview) Navigation() error {
-	return nil
+func (sco *SimpleClusterOverview) Navigation() (*overview.Navigation, error) {
+	return nil, nil
 }
 
 // Content is a no-op.

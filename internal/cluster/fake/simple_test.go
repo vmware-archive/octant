@@ -18,7 +18,7 @@ func TestSimpleClusterOverview_Namespaces(t *testing.T) {
 
 func TestSimpleClusterOverview_Navigation(t *testing.T) {
 	sco := NewSimpleClusterOverview()
-	err := sco.Navigation()
+	_, err := sco.Navigation()
 	require.NoError(t, err)
 }
 
