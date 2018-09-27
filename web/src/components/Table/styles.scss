@@ -1,0 +1,215 @@
+@import '~css/variables/variables.scss';
+
+.table--component > .ReactTable {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+
+  .rt-table {
+    align-items: stretch;
+    border-collapse: collapse;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .rt-thead {
+    @include font-size('14');
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    text-overflow: ellipsis;
+    user-select: none;
+
+    &.-header {
+      box-shadow: none;
+    }
+
+    &.-filters {
+      border-bottom: 1px solid $orange;
+
+      .rt-th {
+        border-right: 1px solid $orange;
+
+      }
+    }
+
+    .rt-th,
+    .rt-td {
+      @include bold;
+
+      border: none;
+      cursor: pointer;
+      line-height: normal;
+      outline: none;
+      padding: 5px;
+      position: relative;
+
+      .rt-resizable-header-content {
+        align-items: center;
+        display: flex;
+        &::after {
+          color: transparent;
+          content: '\0025BE';
+          font-size: 16px;
+          margin-left: 6px;
+          padding-bottom: 2px;
+        }
+      }
+
+      .rt-resizable-header-content:hover {
+        &::after {
+          color: $gray-dark;
+        }
+      }
+
+      &.-sort-desc, &.-sort-asc {
+        box-shadow: none;
+      }
+
+      &.-sort-desc .rt-resizable-header-content,
+      &.-sort-asc .rt-resizable-header-content
+      {
+        &::after {
+          color: $orange;
+          transition: all 120ms;
+        }
+      }
+      &.-sort-asc .rt-resizable-header-content::after {
+        transform: rotate(0.5turn);
+        transition: all 120ms;
+      }
+    }
+  }
+
+  .rt-tbody {
+    .rt-tr-group {
+      border-bottom: solid 1px $gray-dark;
+      cursor: pointer;
+
+      &:last-child {
+        border-bottom: 0;
+      }
+    }
+    .rt-expandable {
+      cursor: pointer;
+    }
+  }
+
+  .rt-tr-group {
+    align-items: stretch;
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    transition: all 60ms;
+  }
+
+  .rt-tr-group:hover {
+    box-shadow: none;
+    cursor: text;
+  }
+
+  .rt-tr {
+    display: inline-flex;
+    flex: 1 0 auto
+  }
+
+  .rt-td {
+    @include font-size('13');
+    align-items: center;
+    display: flex;
+    flex: 1 0 0;
+    flex-direction: row;
+    overflow: hidden;
+    padding: 10px 5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .rt-th.-hidden,
+  .rt-td.-hidden {
+    border: 0 !important;
+    min-width: 0 !important;
+    opacity: 0 !important;
+    padding: 0 !important;
+    width: 0 !important
+  }
+
+  .rt-expander {
+    background: url("data:image/svg+xml;utf8,<svg viewBox='0 0 11 8' xmlns='http://www.w3.org/2000/svg'><path class='caret--fill' d='M1.3.8L5.5 5 9.7.8 11 2 5.5 7.6 0 2z' fillRule='nonzero' fill='%23f2582d' /></svg>") no-repeat;
+    color: transparent;
+    height: 8px;
+    margin: 2px 0 0 10px;
+    position: relative;
+    transform: rotate(-0.25turn);
+    transition: all 60ms;
+    width: 10px;
+  }
+
+  .-open {
+    transform: rotate(0);
+    transition: all 60ms;
+  }
+
+  .rt-resizer {
+    bottom: 0;
+    cursor: col-resize;
+    display: inline-block;
+    position: absolute;
+    right: -18px;
+    top: 0;
+    width: 36px;
+    z-index: 10
+  }
+
+  .rt-tfoot {
+    box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+
+    .rt-td {
+      border-right: 1px solid rgba(0, 0, 0, 0.05);
+
+      &:last-child {
+        border-right: 0
+      }
+    }
+  }
+
+  .rt-noData {
+    background: rgba(255, 255, 255, 0.8);
+    color: rgba(0, 0, 0, 0.5);
+    display: block;
+    left: 50%;
+    padding: 20px;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: all .3s ease;
+    z-index: 1
+  }
+
+  .rt-resizing .rt-th,
+  .rt-resizing .rt-td {
+    cursor: col-resize;
+    transition: none !important;
+    user-select: none
+  }
+
+  .audit--table-expand {
+    @include monospace;
+    padding: 20px;
+  }
+
+  .row--expanded {
+    border-top: none;
+    color: $orange;
+
+    .rt-tr {
+      box-shadow: 0 1px 4px 0 rgba(0,0,0,0.50);
+    }
+  }
+}
+
