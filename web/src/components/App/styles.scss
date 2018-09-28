@@ -11,11 +11,11 @@
     height: 100%;
 
     .app-nav {
-      width: 200px;
+      min-width: 200px;
     }
 
     .app-main {
-      flex: 1 0 auto;
+      flex: 1 1 auto;
     }
   }
 }

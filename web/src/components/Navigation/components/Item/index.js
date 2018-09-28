@@ -4,11 +4,11 @@ import { Link } from 'react-router-dom'
 import './styles.scss'
 
 export default function Item (props) {
-  const { name, link = '/' } = props
+  const { title, link = '/' } = props
   return (
     <li className='navigation--left-item'>
       <Link className='link--gray' to={link}>
-        {name}
+        {title}
       </Link>
     </li>
   )
