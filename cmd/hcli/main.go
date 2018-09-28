@@ -4,13 +4,10 @@ import "github.com/heptio/developer-dash/internal/commands"
 
 // Default variables overridden by ldflags
 var (
-	gitCommit = "(unknown-commit)"
-	buildTime = "(unknown-buildtime)"
+	gitCommit = "(dev-commit)"
+	buildTime = "(dev-buildtime)"
 )
 
 func main() {
-	commands.GitCommit = gitCommit
-	commands.BuildTime = buildTime
-
-	commands.Execute()
+	commands.Execute(gitCommit, buildTime)
 }

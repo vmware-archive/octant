@@ -1,5 +1,5 @@
 SHELL=/bin/bash
-BUILD_TIME=$(shell date --utc --rfc-3339 ns | sed -e 's/ /T/')
+BUILD_TIME=$(shell date -u +%Y-%m-%dT%T%z)
 GIT_COMMIT=$(shell git rev-parse --short HEAD)
 
 LD_FLAGS= '-X "main.buildTime=$(BUILD_TIME)" -X main.gitCommit=$(GIT_COMMIT)'

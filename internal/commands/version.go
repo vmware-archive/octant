@@ -2,18 +2,11 @@ package commands
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/spf13/cobra"
 )
 
-// Default variables overridden by main
-var (
-	GitCommit = "(unknown-commit)"
-	BuildTime = "(unknown-buildtime)"
-)
-
-func newVersionCmd() *cobra.Command {
+func newVersionCmd(GitCommit string, BuildTime string) *cobra.Command {
 
 	versionCmd := &cobra.Command{
 		Use:   "version",
@@ -24,16 +17,8 @@ func newVersionCmd() *cobra.Command {
 
 			fmt.Fprintln(out, "Version: ", "pre-alpha")
 			fmt.Fprintln(out, "Git commit: ", GitCommit)
-			fmt.Fprintln(out, "Built: ", reformatDate(BuildTime))
+			fmt.Fprintln(out, "Built: ", BuildTime)
 		},
 	}
 	return versionCmd
-}
-
-func reformatDate(dateTime string) string {
-	t, errTime := time.Parse(time.RFC3339Nano, dateTime)
-	if errTime == nil {
-		return t.Format(time.ANSIC)
-	}
-	return dateTime
 }

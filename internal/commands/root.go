@@ -14,22 +14,22 @@ func init() {
 }
 
 // Execute executes hcli.
-func Execute() {
-	rootCmd := newRoot()
+func Execute(gitCommit string, buildTime string) {
+	rootCmd := newRoot(gitCommit, buildTime)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 }
 
-func newRoot() *cobra.Command {
+func newRoot(gitCommit string, buildTime string) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "hcli",
 		Short: "hcli is the Heptio CLI",
 	}
 
 	rootCmd.AddCommand(newDashCmd())
-	rootCmd.AddCommand(newVersionCmd())
+	rootCmd.AddCommand(newVersionCmd(gitCommit, buildTime))
 
 	return rootCmd
 }
