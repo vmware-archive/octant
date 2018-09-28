@@ -14,5 +14,9 @@
 
   & .navigation--left-items {
     margin-left: 10px;
+
+    & .navigation--left-item {
+      margin-top: 8px;
+    }
   }
 }

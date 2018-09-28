@@ -1,6 +1,8 @@
 @import '~css/variables/variables.scss';
 
 .navigation--left-header {
+  padding-right: 20px;
+
   a {
     @include bold;
     color: $orange;
