@@ -14,5 +14,5 @@ web-deps:
 	@cd web; npm i
 
 web-build: web-deps
-	@cd web; npm build
+	@cd web; npm run-script build
 	@go generate ./web
