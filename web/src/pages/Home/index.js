@@ -1,5 +1,7 @@
 import React from 'react'
-import Table from 'components/Table'
+import Table from '../../components/Table'
+import Summary from '../../components/Summary'
+
 import './styles.scss'
 
 const mockData = {
@@ -55,8 +57,10 @@ const mockData = {
 function Home () {
   return (
     <div className='home'>
+      <p>Welcome to the heptio ui-starter!</p>
       <div className='main'>
         <Table data={mockData} />
+        <Summary />
       </div>
     </div>
   )
