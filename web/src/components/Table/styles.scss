@@ -90,6 +90,9 @@
     .rt-tr-group {
       border-bottom: solid 1px $gray-dark;
       cursor: pointer;
+      padding-top: 5px;
+      padding-bottom: 5px;
+
 
       &:last-child {
         border-bottom: 0;

@@ -11,7 +11,9 @@ export default function Section (props) {
       <Header title={title} link={link} key={link} />
       <ul className='navigation--left-items'>
         {items.map(item => (
-          <Item title={item.title} link={item.link} key={item.key} />
+          <div className='navigation--left-item'>
+            <Item title={item.title} link={item.link} key={item.key} />
+          </div>
         ))}
       </ul>
     </div>
