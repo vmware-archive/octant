@@ -1,7 +1,6 @@
 import React from 'react'
 import Section from './components/Section'
 import NavigationData from './_mock_data'
-
 import './styles.scss'
 
 const navData = NavigationData.sections

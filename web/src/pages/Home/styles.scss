@@ -1,3 +1,7 @@
+@import '~css/variables/variables.scss';
+
 .home {
-  text-align: center;
+  .main {
+    padding: 50px;
+  }
 }

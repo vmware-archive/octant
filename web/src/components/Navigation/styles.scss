@@ -1,8 +1,7 @@
-@import '../../css/variables/variables.scss';
+@import '~css/variables/variables.scss';
 
 .navigation--left {
   @include box-shadow;
   border-right: 1px solid $orange;
-  flex: 0 0 200px; // 200px is the column width
-  order: -1;
+  height: 100%;
 }

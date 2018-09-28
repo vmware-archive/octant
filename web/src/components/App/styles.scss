@@ -1,11 +1,21 @@
-@import '../../css/variables/variables.scss';
+@import '~css/variables/variables.scss';
 
 .app {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 
   .app-page {
     display: flex;
-    flex: 1;
-    height: calc(100vh - 50px);
+    flex-direction: row;
+    height: 100%;
+
+    .app-nav {
+      width: 200px;
+    }
+
+    .app-main {
+      flex: 1 0 auto;
+    }
   }
 }
