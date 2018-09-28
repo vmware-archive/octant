@@ -1,5 +1,7 @@
 import React from 'react'
-import Table from 'components/Table'
+import Table from '../../components/Table'
+import Summary from '../../components/Summary'
+
 import './styles.scss'
 
 function Home (props) {
@@ -8,6 +10,7 @@ function Home (props) {
     <div className='home'>
       <div className='main'>
         <Table data={table} />
+        <Summary />
       </div>
     </div>
   )

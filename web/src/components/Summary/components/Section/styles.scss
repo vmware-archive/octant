@@ -1,0 +1,19 @@
+@import '~css/variables/variables.scss';
+
+
+.summary--component-title {
+  color: $orange;
+  text-align: left;
+}
+
+.summary--data {
+  align-items: center;
+  display: flex;
+
+  .summary--data-key {
+    margin-right: 50px;
+    min-width: 100px;
+    text-align: left;
+    @include bold;
+  }
+}
