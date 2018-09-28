@@ -1,11 +1,11 @@
 import React from 'react'
 import Section from './components/Section'
-import Summary from './_mock_data'
+import SummaryData from './_mock_data'
 
 import './styles.scss'
 
-export default function Summmary () {
-  const { title, sections } = Summary
+export default function Summary () {
+  const { title, sections } = SummaryData
   return (
     <div className='summary--component'>
       <h2 className='summary-component-title'>{title}</h2>
