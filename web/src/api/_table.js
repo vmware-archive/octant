@@ -1,33 +1,49 @@
-const Table = {
+export default {
   type: 'table',
-  title: 'Conditions',
+  title: 'Pods',
   columns: [
     {
-      name: 'Type',
-      accessor: 'type',
-      type: 'string'
+      name: 'Name',
+      accessor: 'name'
+    },
+    {
+      name: 'Node',
+      accessor: 'node'
     },
     {
       name: 'Status',
-      accessor: 'status',
-      type: 'string'
+      accessor: 'status'
     },
     {
-      name: 'Last heart beat',
-      accessor: 'last_heartbeat_time',
-      type: 'time'
+      name: 'Restarts',
+      accessor: 'restarts'
+    },
+    {
+      name: 'Age',
+      accessor: 'age'
     }
   ],
   rows: [
     {
-      type: 'Initialized',
-      status: 'True',
-      last_heartbeat_time: '',
-      last_transition_time: '2 minutes',
-      reason: '',
-      message: ''
+      name: 'raven-56dfc56d88-qn296',
+      node: 'node0',
+      status: 'running',
+      restarts: '0',
+      age: 'an hour'
+    },
+    {
+      name: 'raven-56dfc56d88-b4fm4',
+      node: 'node1',
+      status: 'running',
+      restarts: '0',
+      age: 'an hour'
+    },
+    {
+      name: 'raven-56dfc56d88-9hdc5',
+      node: 'node2',
+      status: 'running',
+      restarts: '0',
+      age: 'an hour'
     }
   ]
 }
-
-export default Table

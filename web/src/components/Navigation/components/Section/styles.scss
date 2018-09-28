@@ -1,5 +1,18 @@
-@import './../../../../css/variables/variables.scss';
+@import '~css/variables/variables.scss';
+
 
 .navigation--left-section {
-  margin: 10px 0 0 10px;
+  margin-left: 10px;
+
+  &:first-child {
+    padding-top: 10px;
+  }
+
+  &:not(:first-child) {
+    margin-top: 10px;
+  }
+
+  & .navigation--left-items {
+    margin-left: 10px;
+  }
 }

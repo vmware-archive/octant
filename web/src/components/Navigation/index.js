@@ -1,6 +1,5 @@
 import React from 'react'
 import Section from './components/Section'
-
 import './styles.scss'
 
 export default function Navigation (props) {

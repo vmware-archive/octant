@@ -19,9 +19,8 @@
     "history": "^4.7.2",
     "html-webpack-plugin": "2.29.0",
     "jest": "20.0.4",
+    "lodash": "^4.17.11",
     "object-assign": "4.1.1",
-    "postcss-flexbugs-fixes": "3.2.0",
-    "postcss-loader": "2.0.8",
     "promise": "8.0.1",
     "raf": "3.4.0",
     "react": "^16.5.2",
@@ -29,6 +28,7 @@
     "react-dom": "^16.5.2",
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
+    "react-table": "^6.8.6",
     "resolve": "1.6.0",
     "style-loader": "0.19.0",
     "sw-precache-webpack-plugin": "0.11.4",
@@ -43,7 +43,7 @@
     "dev": "npm run start",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js --env=jsdom",
-    "lint": "eslint ./src/**/*.js",
+    "lint": "NODE_ENV=development eslint ./src/**/*.js",
     "lint:fix": "npm run lint -- --fix",
     "csslint": "stylelint \"./src/**/*.scss\" --syntax scss --config .stylelintrc",
     "csslint:fix": "npm run csslint -- --fix",
@@ -115,6 +115,11 @@
     "settings": {
       "react": {
         "version": "16.0"
+      },
+      "import/resolver": {
+        "webpack": {
+          "config": "config/webpack.config.dev.js"
+        }
       }
     },
     "rules": {
@@ -137,21 +142,25 @@
     }
   },
   "devDependencies": {
-    "@csstools/postcss-sass": "^2.0.0",
     "babel-eslint": "^10.0.0",
     "babel-jest": "^23.6.0",
     "eslint": "^5.6.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-config-standard-jsx": "^6.0.2",
+    "eslint-import-resolver-webpack": "^0.10.1",
     "eslint-loader": "^2.1.1",
     "eslint-plugin-flowtype": "^2.50.1",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jsx-a11y": "^6.1.1",
     "eslint-plugin-react": "^7.11.1",
+    "node-sass": "^4.9.3",
+    "postcss-loader": "^2.1.6",
+    "postcss-flexbugs-fixes": "3.2.0",
     "prettier": "^1.14.3",
     "prettier-eslint": "^8.8.2",
     "prettier-eslint-cli": "^4.7.1",
+    "sass-loader": "^7.1.0",
     "standard": "^12.0.1",
     "stylelint": "^9.5.0",
     "stylelint-order": "^1.0.0"

@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
 import { Switch, Route } from 'react-router-dom'
+import Home from 'pages/Home'
+import { getNavigation, getSummary, getTable } from 'api'
 import Header from '../Header'
 import Navigation from '../Navigation'
-import Home from '../../pages/Home'
-import { getNavigation, getSummary, getTable } from '../../api'
 
 import './styles.scss'
 
@@ -31,10 +31,14 @@ class App extends Component {
       <div className='app'>
         <Header />
         <div className='app-page'>
-          <Switch>
-            <Route exact path='/' render={() => <Home summary={summary} table={table} />} />
-          </Switch>
-          <Navigation navigation={navigation} />
+          <div className='app-nav'>
+            <Navigation navigation={navigation} />
+          </div>
+          <div className='app-main'>
+            <Switch>
+              <Route exact path='/' render={() => <Home summary={summary} table={table} />} />
+            </Switch>
+          </div>
         </div>
       </div>
     )
