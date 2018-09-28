@@ -1,0 +1,11 @@
+@import '~css/variables/variables.scss';
+
+hr {
+  border: 0;
+  border-bottom: 2px solid $gray-light;
+}
+
+.summary--component-sections {
+  display: flex;
+  justify-content: space-between
+}

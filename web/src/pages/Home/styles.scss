@@ -1,7 +1,16 @@
 @import '~css/variables/variables.scss';
 
 .home {
+
   .main {
+    height: 100%;
     padding: 50px;
+
+    .component--primary {
+      @include box-shadow;
+      background-color: $white;
+      margin-bottom: 50px;
+      padding: 20px;
+    }
   }
 }

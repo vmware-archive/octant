@@ -3,16 +3,19 @@
 
 .summary--component-title {
   color: $orange;
+  margin-top: 10px;
   text-align: left;
 }
 
 .summary--data {
   align-items: center;
   display: flex;
+  padding: 5px 0;
 
   .summary--data-key {
-    margin-right: 50px;
+    box-sizing: content-box;
     min-width: 100px;
+    padding-right: 50px;
     text-align: left;
     @include bold;
   }

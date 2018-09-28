@@ -33,8 +33,15 @@ const Summary = {
         },
         {
           key: 'health',
-          type: 'donut-graph',
-          data: {}
+          type: 'json',
+          data: {
+            status: 'OK',
+            lastChecked: 'Fri Sep 28 2018 10:37:34 GMT-0700',
+            details: {
+              cluster: 'Is not broken',
+              demo: 'Is going great'
+            }
+          }
         }
       ]
     }

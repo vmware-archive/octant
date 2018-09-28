@@ -8,7 +8,7 @@ export default function Item (props) {
   return (
     <div className='summary--data summary--data-json'>
       <div className='summary--data-key'>{key}</div>
-      <div className='summary--data-json'>{JSON.stringify(data)}</div>
+      <div className='summary--data-json-value'>{JSON.stringify(data, null, 2, 50)}</div>
     </div>
   )
 }

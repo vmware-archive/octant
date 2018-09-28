@@ -1,0 +1,14 @@
+@import '~css/variables/variables.scss';
+
+
+.summary--data.summary--data-json {
+  align-items: baseline;
+
+  .summary--data-json-value {
+    @include monospace;
+    border: 1px solid $gray-lightest;
+    border-radius: 3px;
+    padding: 10px;
+    white-space: pre;
+  }
+}

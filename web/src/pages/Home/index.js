@@ -5,12 +5,16 @@ import Summary from '../../components/Summary'
 import './styles.scss'
 
 function Home (props) {
-  const { table } = props
+  const { table, summary } = props
   return (
     <div className='home'>
       <div className='main'>
-        <Table data={table} />
-        <Summary />
+        <div className='component--primary'>
+          <Table data={table} />
+        </div>
+        <div className='component--primary'>
+          <Summary data={summary} />
+        </div>
       </div>
     </div>
   )
