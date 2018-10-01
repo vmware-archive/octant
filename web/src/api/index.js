@@ -1,42 +1,47 @@
-import Navigation from './_navigation'
-import Summary from './_summary'
-import Table from './_table'
+import resolveMock from './mock'
 
 const { fetch } = window
 
+function getAPIBase () {
+  return window.API_BASE || process.env.API_BASE
+}
+
 async function buildRequest (params) {
+  const apiBase = getAPIBase()
+
   const { endpoint } = params
   const headers = {
     Accept: 'application/json',
     'Content-Type': 'application/json'
   }
-  const response = await fetch(endpoint, {
-    headers
-  })
-  const json = await response.json()
-  return json
+
+  if (apiBase) {
+    const response = await fetch(`${apiBase}/${endpoint}`, {
+      headers
+    })
+    return response.json()
+  }
+
+  return resolveMock(endpoint)
 }
 
 export function getNavigation () {
   const params = {
-    endpoint: 'http://127.0.0.1:52181/api/v1/navigation'
+    endpoint: 'api/v1/navigation'
   }
-  buildRequest(params)
-  return Navigation
+  return buildRequest(params)
 }
 
 export function getSummary () {
   const params = {
-    endpoint: 'http://127.0.0.1:52181/api/v1/content'
+    endpoint: 'api/v1/summary'
   }
-  buildRequest(params)
-  return Summary
+  return buildRequest(params)
 }
 
 export function getTable () {
   const params = {
-    endpoint: 'http://127.0.0.1:52181/api/v1/content'
+    endpoint: 'api/v1/table'
   }
-  buildRequest(params)
-  return Table
+  return buildRequest(params)
 }
