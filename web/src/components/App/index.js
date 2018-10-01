@@ -18,9 +18,9 @@ class App extends Component {
   }
 
   async componentDidMount () {
-    const navigation = getNavigation()
-    const summary = getSummary()
-    const table = getTable()
+    const navigation = await getNavigation()
+    const summary = await getSummary()
+    const table = await getTable()
 
     this.setState({ navigation, summary, table })
   }
