@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/handlers"
 	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/overview"
@@ -111,7 +112,11 @@ func (d *dash) handler() (http.Handler, error) {
 	router.PathPrefix(apiPathPrefix).Handler(d.apiHandler)
 	router.PathPrefix("/").Handler(handler)
 
-	return router, nil
+	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
+	allowedHeaders := handlers.AllowedHeaders([]string{"Accept", "Accept-Language", "Content-Language", "Origin", "Content-Type"})
+	allowedMethods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
+
+	return handlers.CORS(allowedOrigins, allowedHeaders, allowedMethods)(router), nil
 }
 
 func (d *dash) uiHandler() (http.Handler, error) {
