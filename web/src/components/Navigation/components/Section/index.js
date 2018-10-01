@@ -1,7 +1,6 @@
 import React from 'react'
 import Item from '../Item'
 import Header from '../Header'
-
 import './styles.scss'
 
 export default function Section (props) {
@@ -11,8 +10,8 @@ export default function Section (props) {
       <Header title={title} link={link} key={link} />
       <ul className='navigation--left-items'>
         {items.map(item => (
-          <div className='navigation--left-item'>
-            <Item title={item.title} link={item.link} key={item.key} />
+          <div key={item.title} className='navigation--left-item'>
+            <Item title={item.title} link={item.link} />
           </div>
         ))}
       </ul>
