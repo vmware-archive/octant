@@ -5,36 +5,28 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/heptio/developer-dash/internal/overview"
+	"github.com/heptio/developer-dash/internal/hcli"
 )
 
 type navigationResponse struct {
-	Sections []*overview.Navigation `json:"sections,omitempty"`
+	Sections []*hcli.Navigation `json:"sections,omitempty"`
 }
 
 type navigation struct {
-	overview overview.Interface
+	sections []*hcli.Navigation
 }
 
 var _ http.Handler = (*navigation)(nil)
 
-func newNavigation(o overview.Interface) *navigation {
+func newNavigation(sections []*hcli.Navigation) *navigation {
 	return &navigation{
-		overview: o,
+		sections: sections,
 	}
 }
 
 func (n *navigation) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	overviewNav, err := n.overview.Navigation()
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	nr := &navigationResponse{
-		Sections: []*overview.Navigation{
-			overviewNav,
-		},
+	nr := navigationResponse{
+		Sections: n.sections,
 	}
 
 	if err := json.NewEncoder(w).Encode(nr); err != nil {

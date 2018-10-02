@@ -11,17 +11,18 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gorilla/mux"
 	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/overview"
+	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/web"
 	"github.com/skratchdot/open-golang/open"
 )
 
 const (
-	apiPathPrefix = "/api/v1"
+	apiPathPrefix       = "/api/v1"
+	defaultListenerAddr = "127.0.0.1:0"
 )
 
 // Run runs the dashboard.
@@ -32,25 +33,51 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string) error {
 	if err != nil {
 		return err
 	}
-	o := overview.NewClusterOverview(clusterClient)
 
-	listenerAddr := "127.0.0.1:0"
-	if customListenerAddr := os.Getenv("DASH_LISTENER_ADDR"); customListenerAddr != "" {
-		listenerAddr = customListenerAddr
-	}
-
-	listener, err := net.Listen("tcp", listenerAddr)
+	moduleManager := module.NewManager(clusterClient)
+	modules, err := moduleManager.Load()
 	if err != nil {
 		return err
 	}
 
-	d := newDash(listener, namespace, uiURL, o)
+	nsClient, err := clusterClient.NamespaceClient()
+	if err != nil {
+		return err
+	}
+
+	listener, err := buildListener()
+	if err != nil {
+		return err
+	}
+
+	d, err := newDash(listener, namespace, uiURL, nsClient, modules...)
+	if err != nil {
+		return err
+	}
 
 	if os.Getenv("DASH_DISABLE_OPEN_BROWSER") != "" {
 		d.willOpenBrowser = false
 	}
 
-	return d.Run(ctx)
+	go func() {
+		if err := d.Run(ctx); err != nil {
+			log.Printf("Running dashboard service: %v", err)
+		}
+	}()
+
+	<-ctx.Done()
+	moduleManager.Unload()
+
+	return nil
+}
+
+func buildListener() (net.Listener, error) {
+	listenerAddr := defaultListenerAddr
+	if customListenerAddr := os.Getenv("DASH_LISTENER_ADDR"); customListenerAddr != "" {
+		listenerAddr = customListenerAddr
+	}
+
+	return net.Listen("tcp", listenerAddr)
 }
 
 type dash struct {
@@ -58,11 +85,18 @@ type dash struct {
 	uiURL           string
 	namespace       string
 	defaultHandler  func() (http.Handler, error)
-	apiHandler      http.Handler
+	apiHandler      api.Service
 	willOpenBrowser bool
 }
 
-func newDash(listener net.Listener, namespace, uiURL string, o overview.Interface) *dash {
+func newDash(listener net.Listener, namespace, uiURL string, nsClient cluster.NamespaceInterface, modules ...module.Module) (*dash, error) {
+	ah := api.New(apiPathPrefix, nsClient)
+
+	for _, m := range modules {
+		if err := ah.RegisterModule(m); err != nil {
+			return nil, err
+		}
+	}
 
 	return &dash{
 		listener:        listener,
@@ -70,8 +104,8 @@ func newDash(listener net.Listener, namespace, uiURL string, o overview.Interfac
 		uiURL:           uiURL,
 		defaultHandler:  web.Handler,
 		willOpenBrowser: true,
-		apiHandler:      api.New(apiPathPrefix, o),
-	}
+		apiHandler:      ah,
+	}, nil
 }
 
 func (d *dash) Run(ctx context.Context) error {
@@ -109,7 +143,7 @@ func (d *dash) handler() (http.Handler, error) {
 	}
 
 	router := mux.NewRouter()
-	router.PathPrefix(apiPathPrefix).Handler(d.apiHandler)
+	router.PathPrefix(apiPathPrefix).Handler(d.apiHandler.Handler())
 	router.PathPrefix("/").Handler(handler)
 
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"})

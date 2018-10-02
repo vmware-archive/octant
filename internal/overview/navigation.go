@@ -1,108 +1,107 @@
 package overview
 
-// Navigation is a set of navigation entries.
-type Navigation struct {
-	Title    string        `json:"title,omitempty"`
-	Path     string        `json:"path,omitempty"`
-	Children []*Navigation `json:"children,omitempty"`
-}
+import (
+	"path"
 
-func navigationEntries() (*Navigation, error) {
-	n := &Navigation{
+	"github.com/heptio/developer-dash/internal/hcli"
+)
+
+func navigationEntries(root string) (*hcli.Navigation, error) {
+	n := &hcli.Navigation{
 		Title: "Overview",
-		Path:  "/overview",
-		Children: []*Navigation{
+		Path:  path.Join(root, "/"),
+		Children: []*hcli.Navigation{
 			{
 				Title: "Workloads",
-				Path:  "/overview/workloads",
-				Children: []*Navigation{
+				Path:  path.Join(root, "workloads"),
+				Children: []*hcli.Navigation{
 					{
 						Title: "Cron Jobs",
-						Path:  "/overview/workloads/cron-jobs",
+						Path:  path.Join(root, "workloads/cron-jobs"),
 					},
 					{
 						Title: "Daemon Sets",
-						Path:  "/overview/workloads/daemon-sets",
+						Path:  path.Join(root, "workloads/daemon-sets"),
 					},
 					{
 						Title: "Deployments",
-						Path:  "/overview/workloads/deployments",
+						Path:  path.Join(root, "workloads/deployments"),
 					},
 					{
 						Title: "Jobs",
-						Path:  "/overview/workloads/jobs",
+						Path:  path.Join(root, "workloads/jobs"),
 					},
 					{
 						Title: "Pods",
-						Path:  "/overview/workloads/pods",
+						Path:  path.Join(root, "workloads/pods"),
 					},
 					{
 						Title: "Replica Sets",
-						Path:  "/overview/workloads/replica-sets",
+						Path:  path.Join(root, "workloads/replica-sets"),
 					},
 					{
 						Title: "Replication Controllers",
-						Path:  "/overview/workloads/replication-controllers",
+						Path:  path.Join(root, "workloads/replication-controllers"),
 					},
 					{
 						Title: "Stateful Sets",
-						Path:  "/overview/workloads/stateful-sets",
+						Path:  path.Join(root, "workloads/stateful-sets"),
 					},
 				},
 			},
 			{
 				Title: "Discovery and Load Balancing",
-				Path:  "/overview/discovery-and-load-balancing",
-				Children: []*Navigation{
+				Path:  path.Join(root, "discovery-and-load-balancing"),
+				Children: []*hcli.Navigation{
 					{
 						Title: "Ingresses",
-						Path:  "/overview/discovery-and-load-balancing/ingresses",
+						Path:  path.Join(root, "discovery-and-load-balancing/ingresses"),
 					},
 					{
 						Title: "Services",
-						Path:  "/overview/discovery-and-load-balancing/services",
+						Path:  path.Join(root, "discovery-and-load-balancing/services"),
 					},
 				},
 			},
 			{
 				Title: "Config and Storage",
-				Path:  "/overview/config-and-storage",
-				Children: []*Navigation{
+				Path:  path.Join(root, "config-and-storage"),
+				Children: []*hcli.Navigation{
 					{
 						Title: "Config Maps",
-						Path:  "/overview/config-and-storage/config-maps",
+						Path:  path.Join(root, "config-and-storage/config-maps"),
 					},
 					{
 						Title: "Persistent Volume Claims",
-						Path:  "/overview/config-and-storage/persistent-volume-claims",
+						Path:  path.Join(root, "config-and-storage/persistent-volume-claims"),
 					},
 					{
 						Title: "Secrets",
-						Path:  "/overview/config-and-storage/secrets",
+						Path:  path.Join(root, "config-and-storage/secrets"),
 					},
 				},
 			},
 			{
 				Title: "Custom Resources",
-				Path:  "/overview/custom-resources",
+				Path:  path.Join(root, "custom-resources"),
 			},
 			{
 				Title: "RBAC",
-				Path:  "/overview/rbac",
-				Children: []*Navigation{
+				Path:  path.Join(root, "rbac"),
+				Children: []*hcli.Navigation{
 					{
 						Title: "Roles",
-						Path:  "/overview/rbac/roles",
+						Path:  path.Join(root, "rbac/roles"),
 					},
 					{
 						Title: "Role Bindings",
-						Path:  "/overview/rbac/role-bindings",
+						Path:  path.Join(root, "rbac/role-bindings"),
 					},
 				},
 			},
 			{
 				Title: "Events",
-				Path:  "/overview/events",
+				Path:  path.Join(root, "events"),
 			},
 		},
 	}

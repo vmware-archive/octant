@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -55,9 +56,13 @@ func Test_dash_Run(t *testing.T) {
 				}), nil
 			}
 
+			nsClient := fake.NewNamespaceClient()
+
 			o := fake.NewSimpleClusterOverview()
 
-			d := newDash(listener, namespace, uiURL, o)
+			d, err := newDash(listener, namespace, uiURL, nsClient, o)
+			require.NoError(t, err)
+
 			d.willOpenBrowser = false
 			d.defaultHandler = defaultHandler
 
@@ -107,7 +112,7 @@ func Test_dash_routes(t *testing.T) {
 		{
 			path:         "/api/v1/namespaces",
 			expectedCode: http.StatusOK,
-			expectedBody: "{}",
+			expectedBody: "{\"namespaces\":[\"default\"]}\n",
 		},
 	}
 
@@ -119,12 +124,15 @@ func Test_dash_routes(t *testing.T) {
 			listener, err := net.Listen("tcp", "127.0.0.1:0")
 			require.NoError(t, err)
 
+			nsClient := fake.NewNamespaceClient()
+
 			o := fake.NewSimpleClusterOverview()
 
-			d := newDash(listener, namespace, uiURL, o)
-			d.apiHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				fmt.Fprint(w, "{}")
-			})
+			d, err := newDash(listener, namespace, uiURL, nsClient, o)
+			require.NoError(t, err)
+
+			service := api.New(apiPathPrefix, nsClient)
+			d.apiHandler = service
 
 			d.defaultHandler = func() (http.Handler, error) {
 				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
