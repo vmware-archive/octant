@@ -1,0 +1,23 @@
+@import '~css/variables/variables.scss';
+
+.navigation--left-section {
+  .navigation--left-item {
+    .navigation-subheader {
+      color: $orange;
+      margin-bottom: 8px;
+    }
+
+    .navigation-subheader-link {
+      margin-bottom: 8px;
+      a {
+        color: $gray-darker;
+        margin-left: 10px;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}
