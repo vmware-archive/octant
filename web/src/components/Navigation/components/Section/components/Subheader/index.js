@@ -8,8 +8,10 @@ export default function Subheader (props) {
   } = props
   return (
     <li className='navigation--left-item'>
-      <div className='navigation-subheader'>{subheader}</div>
-      {children.map(({ title }) => (
+      <div className='navigation-subheader'>
+        <Link to={path}>{subheader}</Link>
+      </div>
+      {_.map(children, ({ title }) => (
         <div key={title} className='navigation-subheader-link'>
           <Link to={path}>{title}</Link>
         </div>
