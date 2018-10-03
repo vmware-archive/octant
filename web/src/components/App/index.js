@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Switch, Route } from 'react-router-dom'
-import { getNavigation, getSummary, getTable } from 'api'
+import { getNavigation } from 'api'
 import Home from 'pages/Home'
 import Header from '../Header'
 import Navigation from '../Navigation'
@@ -11,22 +11,17 @@ class App extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      navigation: [],
-      summary: [],
-      table: []
+      navigation: []
     }
   }
 
   async componentDidMount () {
     const navigation = await getNavigation()
-    const summary = await getSummary()
-    const table = await getTable()
-
-    this.setState({ navigation, summary, table })
+    this.setState({ navigation })
   }
 
   render () {
-    const { navigation, summary, table } = this.state
+    const { navigation } = this.state
     return (
       <div className='app'>
         <Header />
@@ -36,7 +31,7 @@ class App extends Component {
           </div>
           <div className='app-main'>
             <Switch>
-              <Route exact path='/' render={() => <Home summary={summary} table={table} />} />
+              <Route path='/' component={Home} />
             </Switch>
           </div>
         </div>

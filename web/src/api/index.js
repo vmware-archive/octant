@@ -32,16 +32,10 @@ export function getNavigation () {
   return buildRequest(params)
 }
 
-export function getSummary () {
+export function getContents (path) {
+  if (!path || path === '/') return null
   const params = {
-    endpoint: 'api/v1/summary'
-  }
-  return buildRequest(params)
-}
-
-export function getTable () {
-  const params = {
-    endpoint: 'api/v1/table'
+    endpoint: `api/v1${path}`
   }
   return buildRequest(params)
 }

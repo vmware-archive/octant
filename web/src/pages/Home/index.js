@@ -1,23 +1,57 @@
-import React from 'react'
-import Table from '../../components/Table'
-import Summary from '../../components/Summary'
-
+import React, { Component } from 'react'
+import { getContents } from 'api'
+import ContentSwitcher from './components/ContentSwitcher'
 import './styles.scss'
 
-function Home (props) {
-  const { table, summary } = props
-  return (
-    <div className='home'>
-      <div className='main'>
-        <div className='component--primary'>
-          <Table data={table} />
-        </div>
-        <div className='component--primary'>
-          <Summary data={summary} />
+class Home extends Component {
+  state = {
+    contents: []
+  }
+
+  async componentDidMount () {
+    await this.fetchContents()
+  }
+
+  async componentDidUpdate ({ location: { pathname: lastPath } }) {
+    const {
+      location: { pathname: thisPath }
+    } = this.props
+
+    if (thisPath && lastPath !== thisPath) {
+      await this.fetchContents()
+    }
+  }
+
+  static getDerivedStateFromProps ({ location: { pathname } }) {
+    if (!pathname || pathname === '/') {
+      return { contents: [] }
+    }
+    return null
+  }
+
+  fetchContents = async () => {
+    const {
+      location: { pathname }
+    } = this.props
+    const payload = await getContents(pathname)
+    if (payload) {
+      this.setState({ contents: payload.contents || [] })
+    }
+  }
+
+  render () {
+    const { contents = [] } = this.state
+    return (
+      <div className='home'>
+        <div className='main'>
+          {contents.map((content, i) => (
+            <div key={i} className='component--primary'>
+              <ContentSwitcher content={content} />
+            </div>
+          ))}
         </div>
       </div>
-    </div>
-  )
+    )
+  }
 }
-
 export default Home
