@@ -32,6 +32,13 @@ export function getNavigation () {
   return buildRequest(params)
 }
 
+export function getNamespaces () {
+  const params = {
+    endpoint: 'api/v1/namespaces'
+  }
+  return buildRequest(params)
+}
+
 export function getContents (path) {
   if (!path || path === '/') return null
   const params = {

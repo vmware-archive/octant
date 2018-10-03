@@ -1,0 +1,45 @@
+@import '~css/variables/variables.scss';
+
+.dd-selector-container {
+  .dd-selector__control {
+    border: none;
+    border-bottom: 1px solid $gray-dark;
+    border-radius: 0;
+    box-shadow: none;
+
+    &:hover {
+      border-color: $gray-dark;
+    }
+  }
+
+  .dd-selector__indicator-separator {
+    visibility: hidden;
+  }
+
+  .dd-selector__indicator {
+    color: $orange;
+    border: none;
+
+    &:hover {
+      color: $orange-medium;
+    }
+  }
+
+  .dd-selector__single-value {
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+
+  .dd-selector__menu {
+    margin: 0;
+  }
+
+  .dd-selector__menu-list {
+    padding: 0;
+  }
+
+  .dd-selector__option--is-focused, .dd-selector__option--is-selected, .dd-selector__option:active {
+    background-color: lighten($orange, 3%);
+    color: white;
+  }
+}

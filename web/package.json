@@ -28,6 +28,7 @@
     "react-dom": "^16.5.2",
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
+    "react-select": "^2.1.0",
     "react-table": "^6.8.6",
     "resolve": "1.6.0",
     "style-loader": "0.19.0",
@@ -124,7 +125,6 @@
     },
     "rules": {
       "max-len": 0,
-
       "react/jsx-filename-extension": [
         1,
         {
@@ -138,7 +138,6 @@
       "react/require-default-props": 0,
       "react/jsx-one-expression-per-line": 0,
       "react/no-array-index-key": 0,
-
       "jsx-a11y/no-static-element-interactions": 0,
       "jsx-a11y/anchor-is-valid": 0,
       "jsx-a11y/click-events-have-key-events": 0,
