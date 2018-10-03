@@ -8,13 +8,8 @@ export default function Navigation (props) {
   const { sections = [] } = navigation
   return (
     <nav className='navigation--left'>
-      {sections.map(section => (
-        <Section
-          key={section.title}
-          title={section.title}
-          link={section.link}
-          items={section.children}
-        />
+      {sections.map(({ title, path, children }) => (
+        <Section key={title} title={title} path={path} items={children} />
       ))}
     </nav>
   )

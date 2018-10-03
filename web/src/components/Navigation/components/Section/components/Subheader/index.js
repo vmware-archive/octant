@@ -4,16 +4,16 @@ import './styles.scss'
 
 export default function Subheader (props) {
   const {
-    item: { title: subheader, path = '/', children = [] }
+    item: { title, path, children = [] }
   } = props
   return (
     <li className='navigation--left-item'>
       <div className='navigation-subheader'>
-        <Link to={path}>{subheader}</Link>
+        <Link to={path}>{title}</Link>
       </div>
-      {_.map(children, ({ title }) => (
-        <div key={title} className='navigation-subheader-link'>
-          <Link to={path}>{title}</Link>
+      {children.map(({ title: childTitle, path: childPath }) => (
+        <div key={childPath} className='navigation-subheader-link'>
+          <Link to={childPath}>{childTitle}</Link>
         </div>
       ))}
     </li>

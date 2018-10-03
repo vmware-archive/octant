@@ -11,16 +11,18 @@ export default function Summary (props) {
       <h2 className='summary-component-title'>{title}</h2>
       <hr />
       <div className='summary--component-sections'>
-        {
-          sections
-            ? (
-              sections.map((section) => {
-                const sectionTitle = section.type[0] === '_' ? '' : section.type
-                return <Section title={sectionTitle} data={section.data} />
-              })
+        {sections
+          ? sections.map((section) => {
+            const sectionTitle = section.type[0] === '_' ? '' : section.type
+            return (
+              <Section
+                key={sectionTitle}
+                title={sectionTitle}
+                data={section.data}
+              />
             )
-            : ''
-        }
+          })
+          : ''}
       </div>
     </div>
   )
