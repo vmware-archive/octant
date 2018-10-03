@@ -35,12 +35,12 @@ class Home extends Component {
     } = this.props
     const payload = await getContents(pathname)
     if (payload) {
-      this.setState({ contents: payload.contents })
+      this.setState({ contents: payload.contents || [] })
     }
   }
 
   render () {
-    const { contents } = this.state
+    const { contents = [] } = this.state
     return (
       <div className='home'>
         <div className='main'>
