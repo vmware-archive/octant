@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
 import { Switch, Route } from 'react-router-dom'
-import { getNavigation } from 'api'
+import Promise from 'promise'
+import { getNavigation, getNamespaces } from 'api'
 import Home from 'pages/Home'
 import Header from '../Header'
 import Navigation from '../Navigation'
-
 import './styles.scss'
 
 class App extends Component {
@@ -12,18 +12,33 @@ class App extends Component {
     super(props)
     this.state = {
       navigation: [],
-      namespaces: [],
+      namespaceOptions: [],
       namespaceValue: null
     }
   }
 
   async componentDidMount () {
-    const navigation = await getNavigation()
-    this.setState({ navigation })
+    const [navigation, namespacesPayload] = await Promise.all([
+      getNavigation(),
+      getNamespaces()
+    ])
+    let namespaceOptions = []
+    if (
+      namespacesPayload &&
+      namespacesPayload.namespaces &&
+      namespacesPayload.namespaces.length
+    ) {
+      namespaceOptions = namespacesPayload.namespaces.map(ns => ({
+        label: ns,
+        value: ns
+      }))
+    }
+
+    this.setState({ navigation, namespaceOptions })
   }
 
   render () {
-    const { navigation, namespaces, namespaceValue } = this.state
+    const { navigation, namespaceOptions, namespaceValue } = this.state
     return (
       <div className='app'>
         <Header />
@@ -31,7 +46,7 @@ class App extends Component {
           <div className='app-nav'>
             <Navigation
               navigation={navigation}
-              namespaceOptions={namespaces}
+              namespaceOptions={namespaceOptions}
               namespaceValue={namespaceValue}
               onNamespaceChange={value => this.setState({ namespaceValue: value })
               }
