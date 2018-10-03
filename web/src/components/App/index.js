@@ -11,7 +11,9 @@ class App extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      navigation: []
+      navigation: [],
+      namespaces: [],
+      namespaceValue: null
     }
   }
 
@@ -21,13 +23,19 @@ class App extends Component {
   }
 
   render () {
-    const { navigation } = this.state
+    const { navigation, namespaces, namespaceValue } = this.state
     return (
       <div className='app'>
         <Header />
         <div className='app-page'>
           <div className='app-nav'>
-            <Navigation navigation={navigation} />
+            <Navigation
+              navigation={navigation}
+              namespaceOptions={namespaces}
+              namespaceValue={namespaceValue}
+              onNamespaceChange={value => this.setState({ namespaceValue: value })
+              }
+            />
           </div>
           <div className='app-main'>
             <Switch>
