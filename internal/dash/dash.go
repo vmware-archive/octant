@@ -34,7 +34,7 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string) error {
 		return err
 	}
 
-	moduleManager := module.NewManager(clusterClient)
+	moduleManager := module.NewManager(clusterClient, namespace)
 	modules, err := moduleManager.Load()
 	if err != nil {
 		return err

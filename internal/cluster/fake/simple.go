@@ -3,7 +3,6 @@ package fake
 import (
 	"net/http"
 
-	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/hcli"
 )
 
@@ -15,10 +14,17 @@ func NewSimpleClusterOverview() *SimpleClusterOverview {
 	return &SimpleClusterOverview{}
 }
 
+// Name is the module name.
+func (sco *SimpleClusterOverview) Name() string {
+	return "overview"
+}
+
+// Handler returns a nil HTTP handler.
 func (sco *SimpleClusterOverview) Handler(prefix string) http.Handler {
 	return nil
 }
 
+// ContentPath returns the content path for mounting this module.
 func (sco *SimpleClusterOverview) ContentPath() string {
 	return "/overview"
 }
@@ -28,24 +34,16 @@ func (sco *SimpleClusterOverview) Navigation(root string) (*hcli.Navigation, err
 	return nil, nil
 }
 
+// SetNamespace sets the namespace for this module. It is a no-op.
+func (sco *SimpleClusterOverview) SetNamespace(namespace string) error {
+	return nil
+}
+
+// Starts starts the module. It is a no-op.
 func (sco *SimpleClusterOverview) Start() error {
 	return nil
 }
 
+// Stop stops the module. It is a no-op.
 func (sco *SimpleClusterOverview) Stop() {
-}
-
-// NamespaceClient is a fake that implements cluster.NamespaceInterface.
-type NamespaceClient struct{}
-
-var _ cluster.NamespaceInterface = (*NamespaceClient)(nil)
-
-// NewNamespaceClient creates an instance of NamespaceClient.
-func NewNamespaceClient() *NamespaceClient {
-	return &NamespaceClient{}
-}
-
-func (nc *NamespaceClient) Names() ([]string, error) {
-	names := []string{"default"}
-	return names, nil
 }

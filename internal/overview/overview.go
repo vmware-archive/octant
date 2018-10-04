@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -10,21 +11,33 @@ import (
 
 // ClusterOverview is an API for generating a cluster overview.
 type ClusterOverview struct {
-	client *cluster.Cluster
+	client cluster.ClientInterface
 
+	namespace string
+
+	watchFactory func(namespace string, clusterClient cluster.ClientInterface, cache Cache) Watch2
+
+	cache  Cache
 	stopFn func()
 }
 
 // NewClusterOverview creates an instance of ClusterOverview.
-func NewClusterOverview(client *cluster.Cluster) *ClusterOverview {
+func NewClusterOverview(client cluster.ClientInterface, namespace string) *ClusterOverview {
 	return &ClusterOverview{
-		client: client,
+		namespace:    namespace,
+		client:       client,
+		watchFactory: watchFactory,
 	}
+}
+
+// Name returns the name for this module.
+func (co *ClusterOverview) Name() string {
+	return "overview"
 }
 
 // ContentPath returns the content path for overview.
 func (co *ClusterOverview) ContentPath() string {
-	return "/overview"
+	return fmt.Sprintf("/%s", co.Name())
 }
 
 // Handler returns a handler for serving overview HTTP content.
@@ -47,14 +60,32 @@ func (co *ClusterOverview) Navigation(root string) (*hcli.Navigation, error) {
 	return navigationEntries(root)
 }
 
-// Content returns content for a path.
-func (co *ClusterOverview) Content() error {
-	return nil
+// SetNamespace sets the current namespace.
+func (co *ClusterOverview) SetNamespace(namespace string) error {
+	log.Printf("Setting namespace for overview to %q", namespace)
+	if co.stopFn != nil {
+		co.stopFn()
+	}
+
+	co.namespace = namespace
+	return co.Start()
 }
 
 // Start starts overview.
 func (co *ClusterOverview) Start() error {
+	if co.namespace == "" {
+		return nil
+	}
+
 	log.Printf("Starting cluster overview")
+
+	stopFn, err := co.watch(co.namespace)
+	if err != nil {
+		return err
+	}
+
+	co.stopFn = stopFn
+
 	return nil
 }
 
@@ -65,4 +96,18 @@ func (co *ClusterOverview) Stop() {
 
 		co.stopFn()
 	}
+}
+
+func (co *ClusterOverview) watch(namespace string) (StopFunc, error) {
+	log.Printf("Watching namespace %s", namespace)
+
+	cache := NewMemoryCache()
+	co.cache = cache
+
+	watch := co.watchFactory(namespace, co.client, co.cache)
+	return watch.Start()
+}
+
+func watchFactory(namespace string, clusterClient cluster.ClientInterface, cache Cache) Watch2 {
+	return NewWatch(namespace, clusterClient, cache)
 }

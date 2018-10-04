@@ -67,31 +67,6 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.mux.ServeHTTP(w, r)
 }
 
-func respondWithError(w http.ResponseWriter, code int, message string) {
-	r := &notFoundResponse{
-		Error: errorResponse{
-			Code:    code,
-			Message: message,
-		},
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(code)
-
-	if err := json.NewEncoder(w).Encode(r); err != nil {
-		log.Printf("encoding response error: %v", err)
-	}
-}
-
-type notFoundResponse struct {
-	Error errorResponse `json:"error,omitempty"`
-}
-
-type errorResponse struct {
-	Code    int    `json:"code,omitempty"`
-	Message string `json:"message,omitempty"`
-}
-
 func stubHandler(name string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		t := newTable(name)
