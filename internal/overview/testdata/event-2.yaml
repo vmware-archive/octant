@@ -1,0 +1,27 @@
+apiVersion: v1
+count: 24973
+eventTime: null
+firstTimestamp: 2018-09-18T12:40:18Z
+involvedObject:
+  apiVersion: batch
+  kind: CronJob
+  name: hello
+  namespace: overview
+  resourceVersion: "2460336"
+  uid: 94fc581d-bb3e-11e8-9208-025000000001
+kind: Event
+lastTimestamp: 2018-10-06T23:25:55Z
+message: "(combined from similar events): Saw completed job: hello-1538868300"
+metadata:
+  creationTimestamp: 2018-10-06T23:25:55Z
+  name: hello.15557ef063c6b001
+  namespace: overview
+  resourceVersion: "2460414"
+  selfLink: /api/v1/namespaces/overview/events/hello.15557ef063c6b001
+  uid: 2c951ae4-c9bf-11e8-9217-025000000001
+reason: SawCompletedJob
+reportingComponent: ""
+reportingInstance: ""
+source:
+  component: cronjob-controller
+type: Normal

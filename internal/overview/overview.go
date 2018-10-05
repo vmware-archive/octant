@@ -19,14 +19,21 @@ type ClusterOverview struct {
 
 	cache  Cache
 	stopFn func()
+
+	generator *realGenerator
 }
 
 // NewClusterOverview creates an instance of ClusterOverview.
 func NewClusterOverview(client cluster.ClientInterface, namespace string) *ClusterOverview {
+	cache := NewMemoryCache()
+	g := newGenerator(cache, defaultPathFilters)
+
 	return &ClusterOverview{
 		namespace:    namespace,
 		client:       client,
+		cache:        cache,
 		watchFactory: watchFactory,
+		generator:    g,
 	}
 }
 
@@ -42,7 +49,7 @@ func (co *ClusterOverview) ContentPath() string {
 
 // Handler returns a handler for serving overview HTTP content.
 func (co *ClusterOverview) Handler(prefix string) http.Handler {
-	return newHandler(prefix)
+	return newHandler(prefix, co.generator)
 }
 
 // Namespaces returns a list of namespace names for a cluster.
@@ -100,9 +107,6 @@ func (co *ClusterOverview) Stop() {
 
 func (co *ClusterOverview) watch(namespace string) (StopFunc, error) {
 	log.Printf("Watching namespace %s", namespace)
-
-	cache := NewMemoryCache()
-	co.cache = cache
 
 	watch := co.watchFactory(namespace, co.client, co.cache)
 	return watch.Start()

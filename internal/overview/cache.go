@@ -1,10 +1,11 @@
 package overview
 
 import (
-	"log"
 	"sync"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // Cache stores Kubernetes objects.
@@ -12,6 +13,8 @@ type Cache interface {
 	Store(obj *unstructured.Unstructured) error
 	Retrieve(key CacheKey) ([]*unstructured.Unstructured, error)
 	Delete(obj *unstructured.Unstructured) error
+
+	Events(obj *unstructured.Unstructured) ([]*unstructured.Unstructured, error)
 }
 
 // CacheKey is a key for the cache.
@@ -94,8 +97,6 @@ func (mc *MemoryCache) Store(obj *unstructured.Unstructured) error {
 		Name:       obj.GetName(),
 	}
 
-	log.Printf("cache: store %+v", key)
-
 	mc.store[key] = obj
 	mc.notify(CacheStore, key)
 
@@ -160,10 +161,38 @@ func (mc *MemoryCache) Delete(obj *unstructured.Unstructured) error {
 
 	delete(mc.store, key)
 
-	log.Printf("cache: delete %+v", key)
 	mc.notify(CacheDelete, key)
 
 	return nil
+}
+
+// func (mc *MemoryCache) Events(namespace, apiVersion, kind, name string) ([]*unstructured.Unstructured, error) {
+func (mc *MemoryCache) Events(u *unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
+	var events []*unstructured.Unstructured
+
+	for _, obj := range mc.store {
+
+		if obj.GetAPIVersion() != "v1" && obj.GetKind() != "Event" {
+			continue
+		}
+
+		event := &corev1.Event{}
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.Object, event)
+		if err != nil {
+			return nil, err
+		}
+
+		involvedObject := event.InvolvedObject
+
+		if involvedObject.Namespace == u.GetNamespace() &&
+			involvedObject.APIVersion == u.GetAPIVersion() &&
+			involvedObject.Kind == u.GetKind() &&
+			involvedObject.Name == u.GetName() {
+			events = append(events, obj)
+		}
+	}
+
+	return events, nil
 }
 
 func (mc *MemoryCache) notify(action CacheAction, key CacheKey) {
