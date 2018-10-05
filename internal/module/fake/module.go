@@ -21,6 +21,11 @@ func NewModule(name string) *Module {
 	}
 }
 
+// Name is the name of the module.
+func (m *Module) Name() string {
+	return m.name
+}
+
 // ContentPath is the path to the module's content.
 func (m *Module) ContentPath() string {
 	return fmt.Sprintf("/%s", m.name)
@@ -55,6 +60,11 @@ func (m *Module) Navigation(prefix string) (*hcli.Navigation, error) {
 	}
 
 	return nav, nil
+}
+
+// SetNamespace sets the current namespace.
+func (m *Module) SetNamespace(namespace string) error {
+	return nil
 }
 
 // Start doesn't do anything.
