@@ -5,6 +5,8 @@
 *.so
 *.dylib
 
+rice-box.go
+
 # Test binary, build with `go test -c`
 *.test
 
@@ -12,3 +14,4 @@
 *.out
 
 /build
+/dist

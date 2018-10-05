@@ -1,0 +1,51 @@
+release:
+  draft: true
+  prerelease: true
+before:
+  hooks:
+  - make embed-go
+project_name: hcli
+builds:
+- main: ./cmd/hcli/main.go
+  binary: hcli
+  env:
+    - CGO_ENABLED=0
+  goos:
+    - windows
+    - darwin
+    - linux
+  goarch:
+    - amd64
+  ldflags: -X "main.buildTime={{.Date}}" -X "main.gitCommit={{.Commit}}" -X "main.version={{.Version}}"
+nfpm:
+  formats:
+    - deb
+    - rpm
+  vendor: "heptio.com"
+  homepage: ""
+  description: ""
+  license: "tbd"
+  name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}-{{.Arch}}"
+  replacements:
+    darwin: macOS
+    linux: Linux
+    windows: Windows
+    amd64: 64bit
+archive:
+  wrap_in_directory: true
+  format: tar.gz
+  format_overrides:
+    - goos: windows
+      format: zip
+  name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}-{{.Arch}}"
+  replacements:
+    darwin: macOS
+    linux: Linux
+    windows: Windows
+    amd64: 64bit
+  files:
+    - README.md
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: SNAPSHOT-{{.Commit}}
