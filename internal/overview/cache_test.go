@@ -1,6 +1,8 @@
 package overview
 
 import (
+	"fmt"
+	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -86,7 +88,7 @@ func TestMemoryCache_Retrieve(t *testing.T) {
 	}
 }
 
-func TestMemeoryCache_Delete(t *testing.T) {
+func TestMemoryCache_Delete(t *testing.T) {
 	c := NewMemoryCache()
 
 	for _, obj := range genObjectsSeed() {
@@ -106,6 +108,47 @@ func TestMemeoryCache_Delete(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, l-1, len(c.store))
+}
+
+func TestMemoryCache_Events(t *testing.T) {
+	cases := []struct {
+		name         string
+		eventFactory func(*unstructured.Unstructured) []*unstructured.Unstructured
+		expected     int
+	}{
+		{
+			name: "with matches",
+			eventFactory: func(obj *unstructured.Unstructured) []*unstructured.Unstructured {
+				return []*unstructured.Unstructured{
+					genEvent(obj),
+				}
+			},
+			expected: 1,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := NewMemoryCache()
+
+			o := genObject("test")
+			err := c.Store(o)
+			require.NoError(t, err)
+
+			if tc.eventFactory != nil {
+				for _, event := range tc.eventFactory(o) {
+					err = c.Store(event)
+					require.NoError(t, err)
+				}
+			}
+
+			events, err := c.Events(o)
+			require.NoError(t, err)
+
+			assert.Len(t, events, tc.expected)
+		})
+	}
+
 }
 
 func genObjectsSeed() []*unstructured.Unstructured {
@@ -134,4 +177,31 @@ func genObjectsSeed() []*unstructured.Unstructured {
 	}
 
 	return objects
+}
+
+func genEvent(u *unstructured.Unstructured) *unstructured.Unstructured {
+	o := &unstructured.Unstructured{}
+	o.SetNamespace("default")
+	o.SetAPIVersion("v1")
+	o.SetKind("Event")
+	o.SetName(fmt.Sprintf("event.%d", rand.Intn(100)))
+
+	o.Object["involvedObject"] = map[string]interface{}{
+		"apiVersion": u.GetAPIVersion(),
+		"kind":       u.GetKind(),
+		"name":       u.GetName(),
+		"namespace":  "default",
+	}
+
+	return o
+}
+
+func genObject(name string) *unstructured.Unstructured {
+	o := &unstructured.Unstructured{}
+	o.SetNamespace("default")
+	o.SetAPIVersion("foo/v1")
+	o.SetKind("Kind")
+	o.SetName(name)
+
+	return o
 }

@@ -55,7 +55,8 @@ func TestAPI_routes(t *testing.T) {
 			srv := New("/", nsClient)
 
 			m := modulefake.NewModule("module")
-			srv.RegisterModule(m)
+			err := srv.RegisterModule(m)
+			require.NoError(t, err)
 
 			ts := httptest.NewServer(srv.Handler())
 			defer ts.Close()

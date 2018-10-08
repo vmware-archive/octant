@@ -18,22 +18,24 @@ type Service interface {
 	Handler() *mux.Router
 }
 
-type errorResponse struct {
+type errorMessage struct {
 	Code    int    `json:"code,omitempty"`
 	Message string `json:"message,omitempty"`
 }
 
-type notFoundResponse struct {
-	Error errorResponse `json:"error,omitempty"`
+type errorResponse struct {
+	Error errorMessage `json:"error,omitempty"`
 }
 
 func respondWithError(w http.ResponseWriter, code int, message string) {
-	r := &notFoundResponse{
-		Error: errorResponse{
+	r := &errorResponse{
+		Error: errorMessage{
 			Code:    code,
 			Message: message,
 		},
 	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	w.WriteHeader(code)
 
