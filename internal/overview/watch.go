@@ -1,7 +1,6 @@
 package overview
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"log"
 	"sync"
@@ -56,7 +55,7 @@ func (w *Watch) Start() (StopFunc, error) {
 
 		watcher, err := nri.Watch(metav1.ListOptions{})
 		if err != nil {
-			return nil, errors.Wrap(err, fmt.Sprintf("did not create watcher for %s/%s/%s on %s namespace", resource.Group, resource.Version, resource.Resource, w.namespace))
+			return nil, errors.Wrapf(err,"did not create watcher for %s/%s/%s on %s namespace", resource.Group, resource.Version, resource.Resource, w.namespace)
 		}
 
 		watchers = append(watchers, watcher)

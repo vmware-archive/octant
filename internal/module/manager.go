@@ -1,7 +1,6 @@
 package module
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"log"
 
@@ -40,7 +39,7 @@ func (m *Manager) Load() ([]Module, error) {
 
 	for _, module := range modules {
 		if err := module.Start(); err != nil {
-			return nil, errors.Wrap(err, fmt.Sprintf("%s module failed to start", module.Name()))
+			return nil, errors.Wrapf(err, "%s module failed to start", module.Name())
 		}
 	}
 
