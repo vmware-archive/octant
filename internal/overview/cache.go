@@ -166,7 +166,7 @@ func (mc *MemoryCache) Delete(obj *unstructured.Unstructured) error {
 	return nil
 }
 
-// func (mc *MemoryCache) Events(namespace, apiVersion, kind, name string) ([]*unstructured.Unstructured, error) {
+// Events returns events for an object.
 func (mc *MemoryCache) Events(u *unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
 	var events []*unstructured.Unstructured
 

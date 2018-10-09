@@ -78,17 +78,17 @@ func newStubbedGenerator() *stubbedGenerator {
 	return &stubbedGenerator{}
 }
 
-func (g *stubbedGenerator) Generate(path, prefix, namespace string) ([]content, error) {
+func (g *stubbedGenerator) Generate(path, prefix, namespace string) ([]Content, error) {
 	switch {
 	case strings.HasPrefix(path, "/stubbed"):
-		return []content{
+		return []Content{
 			map[string]string{
 				"type": "stubbed",
 			},
 		}, nil
 
 	case strings.HasPrefix(path, "/real"):
-		return []content{
+		return []Content{
 			map[string]string{
 				"type":      "real",
 				"namespace": namespace,

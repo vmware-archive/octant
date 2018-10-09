@@ -31,7 +31,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 		name      string
 		path      string
 		initCache func(*spyCache)
-		expected  []content
+		expected  []Content
 		isErr     bool
 	}{
 		{
@@ -146,8 +146,8 @@ func newStubDescriber() *stubDescriber {
 	return &stubDescriber{}
 }
 
-func (d *stubDescriber) Describe(string, string, Cache, map[string]string) ([]content, error) {
+func (d *stubDescriber) Describe(string, string, Cache, map[string]string) ([]Content, error) {
 	return stubbedContent, nil
 }
 
-var stubbedContent = []content{"content"}
+var stubbedContent = []Content{"content"}

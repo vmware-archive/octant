@@ -45,6 +45,7 @@ func (pf *pathFilter) Fields(path string) map[string]string {
 var (
 	workloadsDescriber = NewSectionDescriber(
 		NewCronJobDescriber(),
+		NewDeploymentsDescriber(),
 	)
 
 	discoveryAndLoadBalancingDescriber = NewSectionDescriber()
@@ -85,6 +86,14 @@ var defaultPathFilters = []pathFilter{
 		NewCronJobDescriber(),
 	),
 	*newPathFilter(
+		"/workloads/deployments",
+		NewDeploymentsDescriber(),
+	),
+	*newPathFilter(
+		"/workloads/deployments/(?P<name>.*?)",
+		NewDeploymentDescriber(),
+	),
+	*newPathFilter(
 		"/discovery-and-load-balancing",
 		discoveryAndLoadBalancingDescriber,
 	),
@@ -108,7 +117,6 @@ var defaultPathFilters = []pathFilter{
 
 var navPaths = []string{
 	"/workloads/daemon-sets",
-	"/workloads/deployments",
 	"/workloads/jobs",
 	"/workloads/pods",
 	"/workloads/replica-sets",
@@ -130,7 +138,7 @@ var navPaths = []string{
 var contentNotFound = errors.Errorf("content not found")
 
 type generator interface {
-	Generate(path, prefix, namespace string) ([]content, error)
+	Generate(path, prefix, namespace string) ([]Content, error)
 }
 
 type realGenerator struct {
@@ -147,7 +155,7 @@ func newGenerator(cache Cache, pathFilters []pathFilter) *realGenerator {
 	}
 }
 
-func (g *realGenerator) Generate(path, prefix, namespace string) ([]content, error) {
+func (g *realGenerator) Generate(path, prefix, namespace string) ([]Content, error) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 
@@ -178,7 +186,7 @@ func stringInSlice(s string, sl []string) bool {
 	return false
 }
 
-func stubContent(name string) []content {
+func stubContent(name string) []Content {
 	t := newTable(name)
 	t.Columns = []tableColumn{
 		{Name: "foo", Accessor: "foo"},
@@ -204,5 +212,5 @@ func stubContent(name string) []content {
 		},
 	}
 
-	return []content{t}
+	return []Content{t}
 }
