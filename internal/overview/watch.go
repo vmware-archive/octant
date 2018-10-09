@@ -147,15 +147,13 @@ func (w *Watch) resources() ([]schema.GroupVersionResource, error) {
 }
 
 func hasList(res metav1.APIResource) bool {
-	hasList := false
-	hasWatch := false
+	m := make(map[string]bool)
 
-	for _, verb := range res.Verbs {
-		hasList = verb == "list"
-		hasWatch = verb == "watch"
+	for _, v := range res.Verbs {
+		m[v] = true
 	}
 
-	return hasList && hasWatch
+	return m["list"] && m["watch"]
 }
 
 func consumeEvents(done <-chan struct{}, watchers []watch.Interface) (chan watch.Event, chan struct{}) {
