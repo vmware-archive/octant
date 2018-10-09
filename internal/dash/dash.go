@@ -3,6 +3,7 @@ package dash
 import (
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 	"log"
 	"net"
 	"net/http"
@@ -31,28 +32,28 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string) error {
 
 	clusterClient, err := cluster.FromKubeconfig(kubeconfig)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to init cluster client")
 	}
 
 	moduleManager := module.NewManager(clusterClient, namespace)
 	modules, err := moduleManager.Load()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to load modules")
 	}
 
 	nsClient, err := clusterClient.NamespaceClient()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to create namespace client")
 	}
 
 	listener, err := buildListener()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to create net listener")
 	}
 
 	d, err := newDash(listener, namespace, uiURL, nsClient, modules...)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to create dash instance")
 	}
 
 	if os.Getenv("DASH_DISABLE_OPEN_BROWSER") != "" {

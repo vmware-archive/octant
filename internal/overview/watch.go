@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"github.com/pkg/errors"
 	"log"
 	"sync"
 
@@ -54,7 +55,7 @@ func (w *Watch) Start() (StopFunc, error) {
 
 		watcher, err := nri.Watch(metav1.ListOptions{})
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err,"did not create watcher for %s/%s/%s on %s namespace", resource.Group, resource.Version, resource.Resource, w.namespace)
 		}
 
 		watchers = append(watchers, watcher)
@@ -145,13 +146,13 @@ func (w *Watch) resources() ([]schema.GroupVersionResource, error) {
 }
 
 func hasList(res metav1.APIResource) bool {
-	for _, verb := range res.Verbs {
-		if verb == "list" {
-			return true
-		}
+	m := make(map[string]bool)
+
+	for _, v := range res.Verbs {
+		m[v] = true
 	}
 
-	return false
+	return m["list"] && m["watch"]
 }
 
 func consumeEvents(done <-chan struct{}, watchers []watch.Interface) (chan watch.Event, chan struct{}) {

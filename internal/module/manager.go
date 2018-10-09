@@ -1,6 +1,7 @@
 package module
 
 import (
+	"github.com/pkg/errors"
 	"log"
 
 	"github.com/heptio/developer-dash/internal/cluster"
@@ -38,7 +39,7 @@ func (m *Manager) Load() ([]Module, error) {
 
 	for _, module := range modules {
 		if err := module.Start(); err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "%s module failed to start", module.Name())
 		}
 	}
 
