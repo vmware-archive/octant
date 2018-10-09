@@ -17,6 +17,16 @@ builds:
   goarch:
     - amd64
   ldflags: -X "main.buildTime={{.Date}}" -X "main.gitCommit={{.Commit}}" -X "main.version={{.Version}}"
+brew:
+  github:
+    owner: heptio
+    name: homebrew-tap
+  folder: Formula
+  homepage: "https://github.com/heptio/developer-dash"
+  description: ""
+  skip_upload: true
+  test: |
+    system "#{bin}/hcli version"
 nfpm:
   formats:
     - deb
