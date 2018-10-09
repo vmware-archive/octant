@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/hcli"
 )
@@ -15,7 +17,7 @@ type ClusterOverview struct {
 
 	namespace string
 
-	watchFactory func(namespace string, clusterClient cluster.ClientInterface, cache Cache) Watch2
+	watchFactory func(namespace string, clusterClient cluster.ClientInterface, cache Cache) Watch
 
 	cache  Cache
 	stopFn func()
@@ -25,7 +27,21 @@ type ClusterOverview struct {
 
 // NewClusterOverview creates an instance of ClusterOverview.
 func NewClusterOverview(client cluster.ClientInterface, namespace string) *ClusterOverview {
-	cache := NewMemoryCache()
+	var opts []MemoryCacheOpt
+
+	if os.Getenv("DASH_VERBOSE_CACHE") != "" {
+		ch := make(chan CacheNotification)
+
+		go func() {
+			for notif := range ch {
+				spew.Dump(notif)
+			}
+		}()
+
+		opts = append(opts, CacheNotificationOpt(ch))
+	}
+
+	cache := NewMemoryCache(opts...)
 	g := newGenerator(cache, defaultPathFilters)
 
 	return &ClusterOverview{
@@ -112,6 +128,6 @@ func (co *ClusterOverview) watch(namespace string) (StopFunc, error) {
 	return watch.Start()
 }
 
-func watchFactory(namespace string, clusterClient cluster.ClientInterface, cache Cache) Watch2 {
+func watchFactory(namespace string, clusterClient cluster.ClientInterface, cache Cache) Watch {
 	return NewWatch(namespace, clusterClient, cache)
 }

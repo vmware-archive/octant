@@ -16,20 +16,21 @@ import (
 // StopFunc tells a watch to stop watching a namespace.
 type StopFunc func()
 
-type Watch2 interface {
+// Watch watches a objects in a namespace.
+type Watch interface {
 	Start() (StopFunc, error)
 }
 
-// Watch watches a namespace's objects.
-type Watch struct {
+// ClusterWatch watches a namespace's objects.
+type ClusterWatch struct {
 	clusterClient cluster.ClientInterface
 	cache         Cache
 	namespace     string
 }
 
 // NewWatch creates an instance of Watch.
-func NewWatch(namespace string, clusterClient cluster.ClientInterface, c Cache) *Watch {
-	return &Watch{
+func NewWatch(namespace string, clusterClient cluster.ClientInterface, c Cache) *ClusterWatch {
+	return &ClusterWatch{
 		namespace:     namespace,
 		clusterClient: clusterClient,
 		cache:         c,
@@ -37,7 +38,7 @@ func NewWatch(namespace string, clusterClient cluster.ClientInterface, c Cache) 
 }
 
 // Start starts the watch. It returns a stop function and an error.
-func (w *Watch) Start() (StopFunc, error) {
+func (w *ClusterWatch) Start() (StopFunc, error) {
 	resources, err := w.resources()
 	if err != nil {
 		return nil, err
@@ -79,7 +80,7 @@ func (w *Watch) Start() (StopFunc, error) {
 	return stopFn, nil
 }
 
-func (w *Watch) eventHandler(event watch.Event) {
+func (w *ClusterWatch) eventHandler(event watch.Event) {
 	u, ok := event.Object.(*unstructured.Unstructured)
 	if !ok {
 		return
@@ -105,7 +106,7 @@ func (w *Watch) eventHandler(event watch.Event) {
 	}
 }
 
-func (w *Watch) resources() ([]schema.GroupVersionResource, error) {
+func (w *ClusterWatch) resources() ([]schema.GroupVersionResource, error) {
 	discoveryClient, err := w.clusterClient.DiscoveryClient()
 	if err != nil {
 		return nil, err
