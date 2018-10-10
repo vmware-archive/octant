@@ -15,8 +15,6 @@ async function buildRequest (params) {
     'Content-Type': 'application/json'
   }
 
-  if (mocks[endpoint]) return Promise.resolve(mocks[endpoint])
-
   if (apiBase) {
     const response = await fetch(`${apiBase}/${endpoint}`, {
       headers
