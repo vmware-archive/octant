@@ -1,9 +1,10 @@
 package overview
 
 import (
-	"github.com/pkg/errors"
 	"log"
 	"sync"
+
+	"github.com/pkg/errors"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/heptio/developer-dash/internal/cluster"
@@ -56,7 +57,7 @@ func (w *ClusterWatch) Start() (StopFunc, error) {
 
 		watcher, err := nri.Watch(metav1.ListOptions{})
 		if err != nil {
-			return nil, errors.Wrapf(err,"did not create watcher for %s/%s/%s on %s namespace", resource.Group, resource.Version, resource.Resource, w.namespace)
+			return nil, errors.Wrapf(err, "did not create watcher for %s/%s/%s on %s namespace", resource.Group, resource.Version, resource.Resource, w.namespace)
 		}
 
 		watchers = append(watchers, watcher)
@@ -174,6 +175,8 @@ func consumeEvents(done <-chan struct{}, watchers []watch.Interface) (chan watch
 	}
 
 	go func() {
+		// wait for caller to signal done and
+		// start shutting the watcher down
 		<-done
 		for _, watch := range watchers {
 			watch.Stop()

@@ -65,7 +65,7 @@ func (co *ClusterOverview) ContentPath() string {
 
 // Handler returns a handler for serving overview HTTP content.
 func (co *ClusterOverview) Handler(prefix string) http.Handler {
-	return newHandler(prefix, co.generator)
+	return newHandler(prefix, co.generator, stream)
 }
 
 // Namespaces returns a list of namespace names for a cluster.

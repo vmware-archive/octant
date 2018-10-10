@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -47,7 +48,7 @@ func Test_handler_routes(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			h := newHandler("/api", tc.generator)
+			h := newHandler("/api", tc.generator, stubStream)
 
 			ts := httptest.NewServer(h)
 			defer ts.Close()
@@ -71,6 +72,10 @@ func Test_handler_routes(t *testing.T) {
 		})
 	}
 }
+
+var (
+	stubStream = func(ctx context.Context, w http.ResponseWriter, ch chan []byte) {}
+)
 
 type stubbedGenerator struct{}
 
