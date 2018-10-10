@@ -9,10 +9,17 @@ export default function Table ({ data: { title, columns, rows } }) {
     Header: name,
     accessor
   }))
-  const textRows = _.map(rows, row => _.mapValues(row, (value) => {
+
+  // Note(marlon):this lives here while the API keeps changing
+  // Ideally a lot of this lives in a component or several
+  const tableRows = _.map(rows, row => _.mapValues(row, (value) => {
     if (_.isObject(value)) {
-      if (_.includes(['array', 'list', 'labels'], value.type)) {
-        const arr = _.find([value.array, value.list, value.labels])
+      if (value.type === 'labels' && value.labels) {
+        const pairs = _.map(value.labels, (v, k) => `${k}:${v}`)
+        if (pairs.length) return pairs.join(', ')
+      }
+      if (_.includes(['array', 'list'], value.type)) {
+        const arr = _.find([value.array, value.list])
         if (arr) return arr.join(', ')
         return '-'
       }
@@ -27,7 +34,7 @@ export default function Table ({ data: { title, columns, rows } }) {
       <h2 className='table-component-title'>{title}</h2>
       <ReactTable
         columns={tableColumns}
-        data={textRows}
+        data={tableRows}
         showPagination={false}
         pageSize={pageSize}
       />
