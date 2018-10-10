@@ -31,9 +31,10 @@ class Home extends Component {
 
   fetchContents = async () => {
     const {
+      namespace,
       location: { pathname }
     } = this.props
-    const payload = await getContents(pathname)
+    const payload = await getContents(pathname, namespace)
     if (payload) {
       this.setState({ contents: payload.contents || [] })
     }
