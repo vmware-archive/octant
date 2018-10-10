@@ -228,8 +228,8 @@ func Test_printEvent(t *testing.T) {
 				"source":     newStringText("cronjob-controller"),
 				"sub_object": newStringText(""),
 				"count":      newStringText("24973"),
-				"first_seen": newStringText("2018-09-18T08:40:18-04:00"),
-				"last_seen":  newStringText("2018-10-06T19:25:55-04:00"),
+				"first_seen": newStringText("2018-09-18T12:40:18Z"),
+				"last_seen":  newStringText("2018-10-06T23:25:55Z"),
 			},
 		},
 	}

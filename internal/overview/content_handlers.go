@@ -444,8 +444,8 @@ func newEventTable(name string) table {
 }
 
 func printEvent(event *corev1.Event, prefix, namespace string, c clock.Clock) tableRow {
-	firstSeen := event.FirstTimestamp.Format(time.RFC3339)
-	lastSeen := event.LastTimestamp.Format(time.RFC3339)
+	firstSeen := event.FirstTimestamp.UTC().Format(time.RFC3339)
+	lastSeen := event.LastTimestamp.UTC().Format(time.RFC3339)
 
 	return tableRow{
 		"message":    newStringText(event.Message),
