@@ -168,6 +168,9 @@ func (mc *MemoryCache) Delete(obj *unstructured.Unstructured) error {
 
 // Events returns events for an object.
 func (mc *MemoryCache) Events(u *unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
+	mc.mu.Lock()
+	defer mc.mu.Unlock()
+
 	var events []*unstructured.Unstructured
 
 	for _, obj := range mc.store {

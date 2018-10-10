@@ -2,6 +2,7 @@ package overview
 
 import (
 	"testing"
+	"time"
 
 	"github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/stretchr/testify/require"
@@ -32,7 +33,7 @@ func TestWatch(t *testing.T) {
 					Version:      "v1",
 					Kind:         "Deployment",
 					Namespaced:   true,
-					Verbs:        metav1.Verbs{"list"},
+					Verbs:        metav1.Verbs{"list", "watch"},
 					Categories:   []string{"all"},
 				},
 			},
@@ -72,7 +73,11 @@ func TestWatch(t *testing.T) {
 	require.NoError(t, err)
 
 	// wait for cache to store an item before proceeding.
-	<-notifyCh
+	select {
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out wating for create object to notify")
+	case <-notifyCh:
+	}
 
 	found, err := cache.Retrieve(CacheKey{Namespace: "default"})
 	require.NoError(t, err)
@@ -87,7 +92,11 @@ func TestWatch(t *testing.T) {
 	require.NoError(t, err)
 
 	// wait for cache to store an item before proceeding.
-	<-notifyCh
+	select {
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out wating for update object to notify")
+	case <-notifyCh:
+	}
 
 	found, err = cache.Retrieve(CacheKey{Namespace: "default"})
 	require.NoError(t, err)
