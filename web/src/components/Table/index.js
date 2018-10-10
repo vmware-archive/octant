@@ -11,10 +11,13 @@ export default function Table ({ data: { title, columns, rows } }) {
   }))
   const textRows = _.map(rows, row => _.mapValues(row, (value) => {
     if (_.isObject(value)) {
-      if (value.type === 'array') {
-        return value.data.join(', ')
+      if (_.includes(['array', 'list', 'labels'], value.type)) {
+        const arr = _.find([value.array, value.list, value.labels])
+        if (arr) return arr.join(', ')
+        return '-'
       }
-      return value.text
+      if (value.text) return value.text
+      return '-'
     }
     return value
   }))

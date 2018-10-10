@@ -1,8 +1,6 @@
 import React, { Component } from 'react'
 import { Switch, Route, withRouter } from 'react-router-dom'
-import _ from 'lodash'
 import Promise from 'promise'
-import queryString from 'query-string'
 import { getNavigation, getNamespaces } from 'api'
 import Home from 'pages/Home'
 import Header from '../Header'
