@@ -1,4 +1,4 @@
-import resolveMock from './mock'
+import mocks from './mock'
 
 const { fetch } = window
 
@@ -22,7 +22,7 @@ async function buildRequest (params) {
     return response.json()
   }
 
-  return resolveMock(endpoint)
+  return Promise.resolve(mocks[endpoint])
 }
 
 export function getNavigation () {

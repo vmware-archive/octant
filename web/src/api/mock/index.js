@@ -1,16 +1,17 @@
-import Promise from 'promise'
-import _ from 'lodash'
-import navigation from './_navigation'
-import summary from './_summary'
-import table from './_table'
+import deployments from './_deployments'
+import pods from './_pods'
+import replicaSets from './_replicasets'
+import workloads from './_workloads'
+import ingresses from './_ingresses'
+import services from './_services'
+import discovery from './_discovery'
 
-const mocks = {
-  'api/v1/navigation': navigation,
-  'api/v1/summary': summary,
-  'api/v1/table': table
-}
-
-export default function resolveMock (path) {
-  if (_.startsWith(path, 'api/v1/content')) return Promise.resolve([summary, table])
-  return Promise.resolve(mocks[path])
+export default {
+  'api/v1/content/overview/workloads/deployments': deployments,
+  'api/v1/content/overview/workloads/pods': pods,
+  'api/v1/content/overview/workloads/replica-sets': replicaSets,
+  'api/v1/content/overview/workloads': workloads,
+  'api/v1/content/overview/discovery-and-load-balancing/ingresses': ingresses,
+  'api/v1/content/overview/discovery-and-load-balancing/services': services,
+  'api/v1/content/overview/discovery-and-load-balancing': discovery
 }
