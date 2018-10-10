@@ -45,11 +45,15 @@ class Home extends Component {
     return (
       <div className='home'>
         <div className='main'>
-          {contents.map((content, i) => (
-            <div key={i} className='component--primary'>
-              <ContentSwitcher content={content} />
-            </div>
-          ))}
+          {contents.length ? (
+            contents.map((content, i) => (
+              <div key={i} className='component--primary'>
+                <ContentSwitcher content={content} />
+              </div>
+            ))
+          ) : (
+            <div>No resources</div>
+          )}
         </div>
       </div>
     )
