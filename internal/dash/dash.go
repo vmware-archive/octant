@@ -3,7 +3,6 @@ package dash
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
 	"log"
 	"net"
 	"net/http"
@@ -11,6 +10,8 @@ import (
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -35,10 +36,9 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string) error {
 		return errors.Wrap(err, "failed to init cluster client")
 	}
 
-	moduleManager := module.NewManager(clusterClient, namespace)
-	modules, err := moduleManager.Load()
+	moduleManager, err := module.NewManager(clusterClient, namespace)
 	if err != nil {
-		return errors.Wrap(err, "failed to load modules")
+		return errors.Wrap(err, "create module manager")
 	}
 
 	nsClient, err := clusterClient.NamespaceClient()
@@ -51,7 +51,7 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string) error {
 		return errors.Wrap(err, "failed to create net listener")
 	}
 
-	d, err := newDash(listener, namespace, uiURL, nsClient, modules...)
+	d, err := newDash(listener, namespace, uiURL, nsClient, moduleManager)
 	if err != nil {
 		return errors.Wrap(err, "failed to create dash instance")
 	}
@@ -90,10 +90,10 @@ type dash struct {
 	willOpenBrowser bool
 }
 
-func newDash(listener net.Listener, namespace, uiURL string, nsClient cluster.NamespaceInterface, modules ...module.Module) (*dash, error) {
-	ah := api.New(apiPathPrefix, nsClient)
+func newDash(listener net.Listener, namespace, uiURL string, nsClient cluster.NamespaceInterface, moduleManager module.ManagerInterface) (*dash, error) {
+	ah := api.New(apiPathPrefix, nsClient, moduleManager)
 
-	for _, m := range modules {
+	for _, m := range moduleManager.Modules() {
 		if err := ah.RegisterModule(m); err != nil {
 			return nil, err
 		}

@@ -18,9 +18,10 @@ func TestManager(t *testing.T) {
 	clusterClient, err := fake.NewClient(scheme, objects)
 	require.NoError(t, err)
 
-	manager := NewManager(clusterClient, "default")
+	manager, err := NewManager(clusterClient, "default")
+	require.NoError(t, err)
 
-	modules, err := manager.Load()
+	modules := manager.Modules()
 	require.NoError(t, err)
 	require.Len(t, modules, 1)
 

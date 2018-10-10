@@ -12,6 +12,8 @@ import (
 
 	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/internal/cluster/fake"
+	"github.com/heptio/developer-dash/internal/module"
+	modulefake "github.com/heptio/developer-dash/internal/module/fake"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -59,8 +61,9 @@ func Test_dash_Run(t *testing.T) {
 			nsClient := fake.NewNamespaceClient()
 
 			o := fake.NewSimpleClusterOverview()
+			manager := modulefake.NewStubManager("default", []module.Module{o})
 
-			d, err := newDash(listener, namespace, uiURL, nsClient, o)
+			d, err := newDash(listener, namespace, uiURL, nsClient, manager)
 			require.NoError(t, err)
 
 			d.willOpenBrowser = false
@@ -127,11 +130,12 @@ func Test_dash_routes(t *testing.T) {
 			nsClient := fake.NewNamespaceClient()
 
 			o := fake.NewSimpleClusterOverview()
+			manager := modulefake.NewStubManager("default", []module.Module{o})
 
-			d, err := newDash(listener, namespace, uiURL, nsClient, o)
+			d, err := newDash(listener, namespace, uiURL, nsClient, manager)
 			require.NoError(t, err)
 
-			service := api.New(apiPathPrefix, nsClient)
+			service := api.New(apiPathPrefix, nsClient, manager)
 			d.apiHandler = service
 
 			d.defaultHandler = func() (http.Handler, error) {

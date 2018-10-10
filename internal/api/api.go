@@ -46,19 +46,21 @@ func respondWithError(w http.ResponseWriter, code int, message string) {
 
 // API is the API for the dashboard client
 type API struct {
-	nsClient cluster.NamespaceInterface
-	sections []*hcli.Navigation
-	prefix   string
+	nsClient      cluster.NamespaceInterface
+	moduleManager module.ManagerInterface
+	sections      []*hcli.Navigation
+	prefix        string
 
 	modules map[string]http.Handler
 }
 
 // New creates an instance of API.
-func New(prefix string, nsClient cluster.NamespaceInterface) *API {
+func New(prefix string, nsClient cluster.NamespaceInterface, moduleManager module.ManagerInterface) *API {
 	return &API{
-		prefix:   prefix,
-		nsClient: nsClient,
-		modules:  make(map[string]http.Handler),
+		prefix:        prefix,
+		nsClient:      nsClient,
+		moduleManager: moduleManager,
+		modules:       make(map[string]http.Handler),
 	}
 }
 
@@ -68,10 +70,14 @@ func (a *API) Handler() *mux.Router {
 	s := router.PathPrefix(a.prefix).Subrouter()
 
 	namespacesService := newNamespaces(a.nsClient)
-	s.Handle("/namespaces", namespacesService)
+	s.Handle("/namespaces", namespacesService).Methods(http.MethodGet)
 
 	navigationService := newNavigation(a.sections)
-	s.Handle("/navigation", navigationService)
+	s.Handle("/navigation", navigationService).Methods(http.MethodGet)
+
+	namespaceUpdateService := newNamespace(a.moduleManager)
+	s.HandleFunc("/namespace", namespaceUpdateService.update).Methods(http.MethodPost)
+	s.HandleFunc("/namespace", namespaceUpdateService.read).Methods(http.MethodGet)
 
 	for p, h := range a.modules {
 		s.PathPrefix(p).Handler(h)
