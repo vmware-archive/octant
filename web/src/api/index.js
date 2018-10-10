@@ -1,4 +1,4 @@
-import resolveMock from './mock'
+import mocks from './mock'
 
 const { fetch } = window
 
@@ -15,6 +15,8 @@ async function buildRequest (params) {
     'Content-Type': 'application/json'
   }
 
+  if (mocks[endpoint]) return Promise.resolve(mocks[endpoint])
+
   if (apiBase) {
     const response = await fetch(`${apiBase}/${endpoint}`, {
       headers
@@ -22,7 +24,7 @@ async function buildRequest (params) {
     return response.json()
   }
 
-  return resolveMock(endpoint)
+  return Promise.resolve(mocks[endpoint])
 }
 
 export function getNavigation () {

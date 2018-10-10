@@ -10,7 +10,12 @@ export default function Table ({ data: { title, columns, rows } }) {
     accessor
   }))
   const textRows = _.map(rows, row => _.mapValues(row, (value) => {
-    if (_.isObject(value)) return value.text
+    if (_.isObject(value)) {
+      if (value.type === 'array') {
+        return value.data.join(', ')
+      }
+      return value.text
+    }
     return value
   }))
   const pageSize = rows && rows.length ? rows.length : null
