@@ -123,10 +123,7 @@
 
   .rt-td {
     @include font-size('13');
-    align-items: center;
-    display: flex;
     flex: 1 0 0;
-    flex-direction: row;
     overflow: hidden;
     padding: 10px 5px;
     text-overflow: ellipsis;

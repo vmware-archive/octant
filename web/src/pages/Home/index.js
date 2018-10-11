@@ -31,9 +31,10 @@ class Home extends Component {
 
   fetchContents = async () => {
     const {
+      namespace,
       location: { pathname }
     } = this.props
-    const payload = await getContents(pathname)
+    const payload = await getContents(pathname, namespace)
     if (payload) {
       this.setState({ contents: payload.contents || [] })
     }
@@ -44,11 +45,15 @@ class Home extends Component {
     return (
       <div className='home'>
         <div className='main'>
-          {contents.map((content, i) => (
-            <div key={i} className='component--primary'>
-              <ContentSwitcher content={content} />
-            </div>
-          ))}
+          {contents.length ? (
+            contents.map((content, i) => (
+              <div key={i} className='component--primary'>
+                <ContentSwitcher content={content} />
+              </div>
+            ))
+          ) : (
+            <div>No resources</div>
+          )}
         </div>
       </div>
     )

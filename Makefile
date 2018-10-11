@@ -27,7 +27,7 @@ embed-go: web-build
 	@cd web; rice embed-go
 
 ui-server:
-	DASH_DISABLE_OPEN_BROWSER=false DASH_LISTENER_ADDR=localhost:3001 $(GOCMD) run ./cmd/hcli/main.go dash
+	DASH_DISABLE_OPEN_BROWSER=false DASH_LISTENER_ADDR=localhost:3001 $(GOCMD) run ./cmd/hcli/main.go dash $(DASH_FLAGS)
 
 ui-client:
 	cd web; API_BASE=http://localhost:3001 npm run start

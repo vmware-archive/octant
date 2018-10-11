@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Switch, Route } from 'react-router-dom'
+import { Switch, Route, withRouter } from 'react-router-dom'
 import Promise from 'promise'
 import { getNavigation, getNamespaces } from 'api'
 import Home from 'pages/Home'
@@ -13,7 +13,7 @@ class App extends Component {
     this.state = {
       navigation: [],
       namespaceOptions: [],
-      namespaceValue: null
+      namespaceOption: { label: 'default', value: 'default' }
     }
   }
 
@@ -22,6 +22,7 @@ class App extends Component {
       getNavigation(),
       getNamespaces()
     ])
+
     let namespaceOptions = []
     if (
       namespacesPayload &&
@@ -37,8 +38,12 @@ class App extends Component {
     this.setState({ navigation, namespaceOptions })
   }
 
+  onNamespaceChange = (namespaceOption) => {
+    this.setState({ namespaceOption })
+  }
+
   render () {
-    const { navigation, namespaceOptions, namespaceValue } = this.state
+    const { navigation, namespaceOptions, namespaceOption } = this.state
     return (
       <div className='app'>
         <Header />
@@ -47,14 +52,18 @@ class App extends Component {
             <Navigation
               navigation={navigation}
               namespaceOptions={namespaceOptions}
-              namespaceValue={namespaceValue}
-              onNamespaceChange={value => this.setState({ namespaceValue: value })
-              }
+              namespaceValue={namespaceOption}
+              onNamespaceChange={this.onNamespaceChange}
             />
           </div>
           <div className='app-main'>
             <Switch>
-              <Route path='/' component={Home} />
+              <Route
+                path='/'
+                component={props => (
+                  <Home {...props} namespace={namespaceOption.value} />
+                )}
+              />
             </Switch>
           </div>
         </div>
@@ -63,4 +72,4 @@ class App extends Component {
   }
 }
 
-export default App
+export default withRouter(App)

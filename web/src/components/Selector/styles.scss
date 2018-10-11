@@ -17,8 +17,8 @@
   }
 
   .dd-selector__indicator {
-    color: $orange;
     border: none;
+    color: $orange;
 
     &:hover {
       color: $orange-medium;
@@ -26,8 +26,8 @@
   }
 
   .dd-selector__single-value {
-    padding-top: 2px;
     padding-bottom: 2px;
+    padding-top: 2px;
   }
 
   .dd-selector__menu {
