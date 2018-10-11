@@ -10,17 +10,27 @@ function getAPIBase () {
 async function buildRequest (params) {
   const apiBase = getAPIBase()
 
-  const { endpoint } = params
+  const { endpoint, method, data } = params
+  if (!endpoint) throw new Error('endpoint not specified in buildRequest')
   const headers = {
     Accept: 'application/json',
     'Content-Type': 'application/json'
   }
 
   if (apiBase) {
-    const response = await fetch(`${apiBase}/${endpoint}`, {
-      headers
-    })
-    return response.json()
+    const fetchOptions = {
+      headers,
+      method: method || 'GET'
+    }
+    if (data) fetchOptions.body = JSON.stringify(data)
+    try {
+      const response = await fetch(`${apiBase}/${endpoint}`, fetchOptions)
+      return await response.json()
+    } catch (e) {
+      console.error('Failed fetch response: ', e) // eslint-disable-line no-console
+      // Note(marlon): should consider throwing again here so that
+      // specific messaging can be handled in the UI
+    }
   }
 
   return Promise.resolve(mocks[endpoint])
@@ -48,4 +58,16 @@ export function getContents (path, namespace) {
     endpoint: `api/v1${path}${query}`
   }
   return buildRequest(params)
+}
+
+export function setNamespace (namespace) {
+  return buildRequest({
+    endpoint: 'api/v1/namespace',
+    method: 'POST',
+    data: { namespace }
+  })
+}
+
+export function getNamespace () {
+  return buildRequest({ endpoint: 'api/v1/namespace' })
 }
