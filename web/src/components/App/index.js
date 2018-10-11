@@ -76,7 +76,10 @@ class App extends Component {
   }
 
   fetchContents = async (namespace) => {
-    if (!namespace) namespace = this.state.namespaceOption.value
+    if (!namespace) {
+      const { namespaceOption } = this.state
+      namespace = namespaceOption.value
+    }
     const {
       location: { pathname }
     } = this.props
