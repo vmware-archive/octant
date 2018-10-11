@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import './styles.scss'
 
 export default function Subheader (props) {
@@ -9,11 +9,13 @@ export default function Subheader (props) {
   return (
     <li className='navigation--left-item'>
       <div className='navigation-subheader'>
-        <Link to={path}>{title}</Link>
+        <NavLink exact to={path}>
+          {title}
+        </NavLink>
       </div>
       {children.map(({ title: childTitle, path: childPath }) => (
         <div key={childPath} className='navigation-subheader-link'>
-          <Link to={childPath}>{childTitle}</Link>
+          <NavLink to={childPath}>{childTitle}</NavLink>
         </div>
       ))}
     </li>
