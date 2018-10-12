@@ -12,19 +12,15 @@ import (
 func Test_realGenerator_Generate(t *testing.T) {
 	key := CacheKey{Namespace: "default"}
 
-	pfs := []pathFilter{
-		*newPathFilter(
-			"/other",
-			newStubDescriber(),
-		),
-		*newPathFilter(
-			"/foo",
-			newStubDescriber(),
-		),
-		*newPathFilter(
-			"/sub/(?P<name>.*?)",
-			newStubDescriber(),
-		),
+	describers := []Describer{
+		newStubDescriber("/other"),
+		newStubDescriber("/foo"),
+		newStubDescriber("/sub/(?P<name>.*?)"),
+	}
+
+	var pathFilters []pathFilter
+	for _, d := range describers {
+		pathFilters = append(pathFilters, d.PathFilters()...)
 	}
 
 	cases := []struct {
@@ -70,7 +66,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 				tc.initCache(cache)
 			}
 
-			g := newGenerator(cache, pfs)
+			g := newGenerator(cache, pathFilters)
 
 			contents, err := g.Generate(tc.path, "/prefix", "default")
 			if tc.isErr {
@@ -140,14 +136,24 @@ func (c *spyCache) Events(obj *unstructured.Unstructured) ([]*unstructured.Unstr
 	return nil, errors.New("Events not implemented")
 }
 
-type stubDescriber struct{}
+type stubDescriber struct {
+	path string
+}
 
-func newStubDescriber() *stubDescriber {
-	return &stubDescriber{}
+func newStubDescriber(p string) *stubDescriber {
+	return &stubDescriber{
+		path: p,
+	}
 }
 
 func (d *stubDescriber) Describe(string, string, Cache, map[string]string) ([]Content, error) {
 	return stubbedContent, nil
+}
+
+func (d *stubDescriber) PathFilters() []pathFilter {
+	return []pathFilter{
+		*newPathFilter(d.path, d),
+	}
 }
 
 var stubbedContent = []Content{"content"}

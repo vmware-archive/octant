@@ -42,7 +42,12 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string) *Clust
 	}
 
 	cache := NewMemoryCache(opts...)
-	g := newGenerator(cache, defaultPathFilters)
+
+	var pathFilters []pathFilter
+	pathFilters = append(pathFilters, rootDescriber.PathFilters()...)
+	pathFilters = append(pathFilters, eventsDescriber.PathFilters()...)
+
+	g := newGenerator(cache, pathFilters)
 
 	return &ClusterOverview{
 		namespace:    namespace,

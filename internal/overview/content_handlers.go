@@ -10,6 +10,8 @@ import (
 	"k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/util/duration"
 )
 
+type lookupFunc func(namespace, prefix string, cell interface{}) text
+
 func loadObjects(cache Cache, namespace string, fields map[string]string, cacheKeys []CacheKey) ([]*unstructured.Unstructured, error) {
 	var objects []*unstructured.Unstructured
 

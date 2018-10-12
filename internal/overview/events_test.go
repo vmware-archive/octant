@@ -17,7 +17,7 @@ func TestEventsDescriber(t *testing.T) {
 	loadUnstructured(t, cache, namespace, "event-1.yaml")
 	loadUnstructured(t, cache, namespace, "event-2.yaml")
 
-	d := NewEventsDescriber()
+	d := NewEventsDescriber("/events")
 	got, err := d.Describe("/prefix", namespace, cache, nil)
 	require.NoError(t, err)
 

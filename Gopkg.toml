@@ -43,16 +43,27 @@
 
 [[constraint]]
   name = "k8s.io/client-go"
-  version = "v8.0.0"
+  version = "8.0.0"
 
 [[constraint]]
   name = "k8s.io/apimachinery"
   version = "kubernetes-1.11.3"
 
-[[constraint]]
+[[override]]
   name = "k8s.io/api"
   version = "kubernetes-1.11.3"
 
+[[constraint]]
+  name = "k8s.io/kubernetes"
+  version = "1.11.3"
+
+[[override]]
+  name = "github.com/docker/distribution"
+  branch = "master"
+
+[[override]]
+  name = "github.com/russross/blackfriday"
+  version = "1.5.2"
 
 [prune]
   go-tests = true
