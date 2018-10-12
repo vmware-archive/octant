@@ -4,7 +4,8 @@
   a {
     color: $gray-darker;
     text-decoration: none;
-    &:hover {
+
+    &.active, &:hover {
       text-decoration: underline;
     }
   }
