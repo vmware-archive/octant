@@ -92,7 +92,16 @@ class App extends Component {
     this.setState({ namespaceOption, loading: true, contents: [] })
     const { value } = namespaceOption
     await setNamespace(value)
-    this.setState({ loading: false, contents: await this.fetchContents(value) })
+    // Note(marlon): this is needed because user might switch namespaces
+    // before the previous namespace request and we want to make sure
+    // we render the correct contents
+    const { namespaceOption: _namespaceOption } = this.state
+    if (value === _namespaceOption.value) {
+      this.setState({
+        loading: false,
+        contents: await this.fetchContents(value)
+      })
+    }
   }
 
   render () {
