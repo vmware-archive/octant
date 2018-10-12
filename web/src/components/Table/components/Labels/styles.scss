@@ -1,0 +1,22 @@
+@import '~css/variables/variables.scss';
+
+.table-labels {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  .table-label {
+    background-color: $orange;
+    border-radius: 4px;
+    color: white;
+    margin-bottom: 2px;
+    margin-right: 4px;
+    padding: 5px 10px;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+
+}
