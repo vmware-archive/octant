@@ -14,13 +14,15 @@ import (
 type EventsDescriber struct {
 	*baseDescriber
 
+	path      string
 	cacheKeys []CacheKey
 }
 
 // NewEventsDescriber creates an instance of EventsDescriber.
-func NewEventsDescriber() *EventsDescriber {
+func NewEventsDescriber(p string) *EventsDescriber {
 	return &EventsDescriber{
 		baseDescriber: newBaseDescriber(),
+		path:          p,
 		cacheKeys: []CacheKey{
 			{
 				APIVersion: "v1",
@@ -61,6 +63,12 @@ func (d *EventsDescriber) Describe(prefix, namespace string, cache Cache, fields
 	contents = append(contents, t)
 
 	return contents, nil
+}
+
+func (d *EventsDescriber) PathFilters() []pathFilter {
+	return []pathFilter{
+		*newPathFilter(d.path, d),
+	}
 }
 
 func newEventTable(name string) table {

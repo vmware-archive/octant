@@ -6,6 +6,10 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
+	"k8s.io/kubernetes/pkg/apis/apps"
+	"k8s.io/kubernetes/pkg/apis/batch"
+	"k8s.io/kubernetes/pkg/apis/core"
+	"k8s.io/kubernetes/pkg/apis/extensions"
 )
 
 type pathFilter struct {
@@ -43,94 +47,168 @@ func (pf *pathFilter) Fields(path string) map[string]string {
 }
 
 var (
+	workloadsCronJobs = NewResource(ResourceOptions{
+		Path:       "/workloads/cron-jobs",
+		CacheKey:   CacheKey{APIVersion: "batch/v1beta1", Kind: "CronJob"},
+		ListType:   &batch.CronJobList{},
+		ObjectType: &batch.CronJob{},
+		Titles:     ResourceTitle{List: "Cron Jobs", Object: "Cron Job"},
+		Transforms: cronJobTransforms,
+	})
+
+	workloadsDaemonSets = NewResource(ResourceOptions{
+		Path:       "/workloads/daemon-sets",
+		CacheKey:   CacheKey{APIVersion: "apps/v1", Kind: "DaemonSet"},
+		ListType:   &extensions.DaemonSetList{},
+		ObjectType: &extensions.DaemonSet{},
+		Titles:     ResourceTitle{List: "Daemon Sets", Object: "Daemon Set"},
+		Transforms: daemonSetTransforms,
+	})
+
+	workloadsDeployments = NewResource(ResourceOptions{
+		Path:       "/workloads/deployments",
+		CacheKey:   CacheKey{APIVersion: "apps/v1", Kind: "Deployment"},
+		ListType:   &extensions.DeploymentList{},
+		ObjectType: &extensions.Deployment{},
+		Titles:     ResourceTitle{List: "Deployments", Object: "Deployment"},
+		Transforms: deploymentTransforms,
+	})
+
+	workloadsJobs = NewResource(ResourceOptions{
+		Path:       "/workloads/jobs",
+		CacheKey:   CacheKey{APIVersion: "batch/v1", Kind: "Job"},
+		ListType:   &batch.JobList{},
+		ObjectType: &batch.Job{},
+		Titles:     ResourceTitle{List: "Jobs", Object: "Job"},
+		Transforms: jobTransforms,
+	})
+
+	workloadsPods = NewResource(ResourceOptions{
+		Path:       "/workloads/pods",
+		CacheKey:   CacheKey{APIVersion: "v1", Kind: "Pod"},
+		ListType:   &core.PodList{},
+		ObjectType: &core.Pod{},
+		Titles:     ResourceTitle{List: "Pods", Object: "Pod"},
+		Transforms: podTransforms,
+	})
+
+	workloadsReplicaSets = NewResource(ResourceOptions{
+		Path:       "/workloads/replica-sets",
+		CacheKey:   CacheKey{APIVersion: "apps/v1", Kind: "ReplicaSet"},
+		ListType:   &extensions.ReplicaSetList{},
+		ObjectType: &extensions.ReplicaSet{},
+		Titles:     ResourceTitle{List: "Replica Sets", Object: "Replica Set"},
+		Transforms: replicaSetTransforms,
+	})
+
+	workloadsReplicationControllers = NewResource(ResourceOptions{
+		Path:       "/workloads/replication-controllers",
+		CacheKey:   CacheKey{APIVersion: "v1", Kind: "ReplicationController"},
+		ListType:   &core.ReplicationControllerList{},
+		ObjectType: &core.ReplicationController{},
+		Titles:     ResourceTitle{List: "Replication Controllers", Object: "Replication Controller"},
+		Transforms: replicationControllerTransforms,
+	})
+	workloadsStatefulSets = NewResource(ResourceOptions{
+		Path:       "/workloads/stateful-sets",
+		CacheKey:   CacheKey{APIVersion: "apps/v1", Kind: "StatefulSet"},
+		ListType:   &apps.StatefulSetList{},
+		ObjectType: &apps.StatefulSet{},
+		Titles:     ResourceTitle{List: "Stateful Sets", Object: "Stateful Set"},
+		Transforms: statefulSetTransforms,
+	})
+
 	workloadsDescriber = NewSectionDescriber(
-		NewCronJobDescriber(),
-		NewDeploymentsDescriber(),
+		"/workloads",
+		workloadsCronJobs.List(),
+		workloadsDaemonSets.List(),
+		workloadsDeployments.List(),
+		workloadsJobs.List(),
+		workloadsPods.List(),
+		workloadsReplicaSets.List(),
+		workloadsReplicationControllers.List(),
+		workloadsStatefulSets.List(),
 	)
 
-	discoveryAndLoadBalancingDescriber = NewSectionDescriber()
+	dlbIngresses = NewResource(ResourceOptions{
+		Path:       "/discovery-and-load-balancing/ingresses",
+		CacheKey:   CacheKey{APIVersion: "extensions/v1beta1", Kind: "Ingress"},
+		ListType:   &extensions.IngressList{},
+		ObjectType: &extensions.Ingress{},
+		Titles:     ResourceTitle{List: "Ingresses", Object: "Ingress"},
+		Transforms: ingressTransforms,
+	})
 
-	configAndStorageDescriber = NewSectionDescriber()
+	dlbServices = NewResource(ResourceOptions{
+		Path:       "/discovery-and-load-balancing/services",
+		CacheKey:   CacheKey{APIVersion: "v1", Kind: "Service"},
+		ListType:   &core.ServiceList{},
+		ObjectType: &core.Service{},
+		Titles:     ResourceTitle{List: "Services", Object: "Service"},
+		Transforms: serviceTransforms,
+	})
 
-	customResourcesDescriber = NewSectionDescriber()
+	discoveryAndLoadBalancingDescriber = NewSectionDescriber(
+		"/discovery-and-load-balancing",
+		dlbIngresses.List(),
+		dlbServices.List(),
+	)
 
-	rbacDescriber = NewSectionDescriber()
+	csConfigMaps = NewResource(ResourceOptions{
+		Path:       "/config-and-storage/config-maps",
+		CacheKey:   CacheKey{APIVersion: "v1", Kind: "ConfigMap"},
+		ListType:   &core.ConfigMapList{},
+		ObjectType: &core.ConfigMap{},
+		Titles:     ResourceTitle{List: "Config Maps", Object: "Config Map"},
+		Transforms: configMapTransforms,
+	})
+
+	csPVCs = NewResource(ResourceOptions{
+		Path:       "/config-and-storage/persistent-volume-claims",
+		CacheKey:   CacheKey{APIVersion: "v1", Kind: "PersistentVolumeClaim"},
+		ListType:   &core.PersistentVolumeClaimList{},
+		ObjectType: &core.PersistentVolumeClaim{},
+		Titles:     ResourceTitle{List: "Persistent Volume Claims", Object: "Persistent Volume Claim"},
+		Transforms: pvcTransforms,
+	})
+
+	csSecrets = NewResource(ResourceOptions{
+		Path:       "/config-and-storage/secrets",
+		CacheKey:   CacheKey{APIVersion: "v1", Kind: "Secret"},
+		ListType:   &core.SecretList{},
+		ObjectType: &core.Secret{},
+		Titles:     ResourceTitle{List: "Secrets", Object: "Secret"},
+		Transforms: secretTransforms,
+	})
+
+	configAndStorageDescriber = NewSectionDescriber(
+		"/config-and-storage",
+		csConfigMaps.List(),
+		csPVCs.List(),
+		csSecrets.List(),
+	)
+
+	customResourcesDescriber = NewSectionDescriber(
+		"/custom-resources",
+	)
+
+	rbacDescriber = NewSectionDescriber(
+		"/rbac",
+	)
 
 	rootDescriber = NewSectionDescriber(
+		"/",
 		workloadsDescriber,
 		discoveryAndLoadBalancingDescriber,
 		configAndStorageDescriber,
 		customResourcesDescriber,
 		rbacDescriber,
 	)
+
+	eventsDescriber = NewEventsDescriber("/events")
 )
 
-// defaultPathFilters are a default set of path filters. These are
-// currently hand crafted, but they could be generated from the API
-// types as well.
-var defaultPathFilters = []pathFilter{
-	*newPathFilter(
-		"/",
-		rootDescriber,
-	),
-	*newPathFilter(
-		"/workloads",
-		workloadsDescriber,
-	),
-	*newPathFilter(
-		"/workloads/cron-jobs",
-		NewCronJobsDescriber(),
-	),
-	*newPathFilter(
-		"/workloads/cron-jobs/(?P<name>.*?)",
-		NewCronJobDescriber(),
-	),
-	*newPathFilter(
-		"/workloads/deployments",
-		NewDeploymentsDescriber(),
-	),
-	*newPathFilter(
-		"/workloads/deployments/(?P<name>.*?)",
-		NewDeploymentDescriber(),
-	),
-	*newPathFilter(
-		"/discovery-and-load-balancing",
-		discoveryAndLoadBalancingDescriber,
-	),
-	*newPathFilter(
-		"/config-and-storage",
-		configAndStorageDescriber,
-	),
-	*newPathFilter(
-		"/custom-resources",
-		customResourcesDescriber,
-	),
-	*newPathFilter(
-		"/rbac",
-		rbacDescriber,
-	),
-	*newPathFilter(
-		"/events",
-		NewEventsDescriber(),
-	),
-}
-
 var navPaths = []string{
-	"/workloads/daemon-sets",
-	"/workloads/jobs",
-	"/workloads/pods",
-	"/workloads/replica-sets",
-	"/workloads/replication-controllers",
-	"/workloads/stateful-sets",
-
-	"/discovery-and-load-balancing/ingresses",
-	"/discovery-and-load-balancing/services",
-
-	"/config-and-storage/config-maps",
-	"/config-and-storage/persistent-volume-claims",
-	"/config-and-storage/secrets",
-	"/config-and-storage",
-
 	"/rbac/roles",
 	"/rbac/role-bindings",
 }
