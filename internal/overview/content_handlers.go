@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"github.com/heptio/developer-dash/internal/content"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	corev1 "k8s.io/api/core/v1"
@@ -10,7 +11,7 @@ import (
 	"k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/util/duration"
 )
 
-type lookupFunc func(namespace, prefix string, cell interface{}) text
+type lookupFunc func(namespace, prefix string, cell interface{}) content.Text
 
 func loadObjects(cache Cache, namespace string, fields map[string]string, cacheKeys []CacheKey) ([]*unstructured.Unstructured, error) {
 	var objects []*unstructured.Unstructured
@@ -43,7 +44,7 @@ func translateTimestamp(timestamp metav1.Time, c clock.Clock) string {
 	return duration.ShortHumanDuration(c.Since(timestamp.Time))
 }
 
-func eventsForObject(object *unstructured.Unstructured, cache Cache, prefix, namespace string, cl clock.Clock) (*table, error) {
+func eventsForObject(object *unstructured.Unstructured, cache Cache, prefix, namespace string, cl clock.Clock) (*content.Table, error) {
 	eventObjects, err := cache.Events(object)
 	if err != nil {
 		return nil, err

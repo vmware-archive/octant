@@ -5,6 +5,9 @@ import (
 	"regexp"
 	"sync"
 
+	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/internal/content"
+	"github.com/heptio/developer-dash/internal/view"
 	"github.com/pkg/errors"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/batch"
@@ -80,6 +83,7 @@ var (
 		CacheKey:   CacheKey{APIVersion: "batch/v1", Kind: "Job"},
 		ListType:   &batch.JobList{},
 		ObjectType: &batch.Job{},
+
 		Titles:     ResourceTitle{List: "Jobs", Object: "Job"},
 		Transforms: jobTransforms,
 	})
@@ -91,6 +95,9 @@ var (
 		ObjectType: &core.Pod{},
 		Titles:     ResourceTitle{List: "Pods", Object: "Pod"},
 		Transforms: podTransforms,
+		Views: []view.View{
+			view.NewPodCondition(),
+		},
 	})
 
 	workloadsReplicaSets = NewResource(ResourceOptions{
@@ -239,24 +246,26 @@ var (
 var contentNotFound = errors.Errorf("content not found")
 
 type generator interface {
-	Generate(path, prefix, namespace string) ([]Content, error)
+	Generate(path, prefix, namespace string) ([]content.Content, error)
 }
 
 type realGenerator struct {
-	cache       Cache
-	pathFilters []pathFilter
+	cache         Cache
+	pathFilters   []pathFilter
+	clusterClient cluster.ClientInterface
 
 	mu sync.Mutex
 }
 
-func newGenerator(cache Cache, pathFilters []pathFilter) *realGenerator {
+func newGenerator(cache Cache, pathFilters []pathFilter, clusterClient cluster.ClientInterface) *realGenerator {
 	return &realGenerator{
-		cache:       cache,
-		pathFilters: pathFilters,
+		cache:         cache,
+		pathFilters:   pathFilters,
+		clusterClient: clusterClient,
 	}
 }
 
-func (g *realGenerator) Generate(path, prefix, namespace string) ([]Content, error) {
+func (g *realGenerator) Generate(path, prefix, namespace string) ([]content.Content, error) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 
@@ -266,38 +275,42 @@ func (g *realGenerator) Generate(path, prefix, namespace string) ([]Content, err
 		}
 
 		fields := pf.Fields(path)
+		options := DescriberOptions{
+			Cache:  g.cache,
+			Fields: fields,
+		}
 
-		return pf.describer.Describe(prefix, namespace, g.cache, fields)
+		return pf.describer.Describe(prefix, namespace, g.clusterClient, options)
 	}
 
 	return nil, contentNotFound
 }
 
-func stubContent(name string) []Content {
-	t := newTable(name)
-	t.Columns = []tableColumn{
+func stubContent(name string) []content.Content {
+	t := content.NewTable(name)
+	t.Columns = []content.TableColumn{
 		{Name: "foo", Accessor: "foo"},
 		{Name: "bar", Accessor: "bar"},
 		{Name: "baz", Accessor: "baz"},
 	}
 
-	t.Rows = []tableRow{
+	t.Rows = []content.TableRow{
 		{
-			"foo": newStringText("r1c1"),
-			"bar": newStringText("r1c2"),
-			"baz": newStringText("r1c3"),
+			"foo": content.NewStringText("r1c1"),
+			"bar": content.NewStringText("r1c2"),
+			"baz": content.NewStringText("r1c3"),
 		},
 		{
-			"foo": newStringText("r2c1"),
-			"bar": newStringText("r2c2"),
-			"baz": newStringText("r2c3"),
+			"foo": content.NewStringText("r2c1"),
+			"bar": content.NewStringText("r2c2"),
+			"baz": content.NewStringText("r2c3"),
 		},
 		{
-			"foo": newStringText("r3c1"),
-			"bar": newStringText("r3c2"),
-			"baz": newStringText("r3c3"),
+			"foo": content.NewStringText("r3c1"),
+			"bar": content.NewStringText("r3c2"),
+			"baz": content.NewStringText("r3c3"),
 		},
 	}
 
-	return []Content{&t}
+	return []content.Content{&t}
 }

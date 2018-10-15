@@ -6,11 +6,14 @@ import (
 	"path"
 	"reflect"
 
+	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/internal/content"
+	"github.com/heptio/developer-dash/internal/view"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
 )
 
 func resourceLink(sectionType, resourceType string) lookupFunc {
-	return func(namespace, prefix string, cell interface{}) text {
+	return func(namespace, prefix string, cell interface{}) content.Text {
 		name := fmt.Sprintf("%v", cell)
 
 		values := url.Values{}
@@ -20,7 +23,7 @@ func resourceLink(sectionType, resourceType string) lookupFunc {
 
 		link := fmt.Sprintf("%s?%s", resourcePath, values.Encode())
 
-		return newLinkText(name, link)
+		return content.NewLinkText(name, link)
 	}
 }
 
@@ -36,6 +39,7 @@ type ResourceOptions struct {
 	ObjectType interface{}
 	Titles     ResourceTitle
 	Transforms map[string]lookupFunc
+	Views      []view.View
 }
 
 type Resource struct {
@@ -48,8 +52,8 @@ func NewResource(options ResourceOptions) *Resource {
 	}
 }
 
-func (r *Resource) Describe(prefix, namespace string, cache Cache, fields map[string]string) ([]Content, error) {
-	return r.List().Describe(prefix, namespace, cache, fields)
+func (r *Resource) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, error) {
+	return r.List().Describe(prefix, namespace, clusterClient, options)
 }
 
 func (r *Resource) List() *ListDescriber {
@@ -74,6 +78,7 @@ func (r *Resource) Object() *ObjectDescriber {
 			return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
 		},
 		summaryFunc(r.Titles.Object, r.Transforms),
+		r.Views,
 	)
 }
 
@@ -87,9 +92,9 @@ func (r *Resource) PathFilters() []pathFilter {
 }
 
 var defaultTransforms = map[string]lookupFunc{
-	"Labels": func(namespace, prefix string, cell interface{}) text {
+	"Labels": func(namespace, prefix string, cell interface{}) content.Text {
 		text := fmt.Sprintf("%v", cell)
-		return newStringText(text)
+		return content.NewStringText(text)
 	},
 }
 
@@ -105,8 +110,9 @@ func buildTransforms(transforms map[string]lookupFunc) map[string]lookupFunc {
 	return m
 }
 
+// summaryFunc creates an ObjectTransformFunc given a title and a lookup.
 func summaryFunc(title string, m map[string]lookupFunc) ObjecTransformFunc {
-	return func(namespace, prefix string, contents *[]Content) func(*metav1beta1.Table) error {
+	return func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error {
 		return func(tbl *metav1beta1.Table) error {
 			contentTable, err := printContentTable(title, namespace, prefix, tbl, m)
 			if err != nil {

@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/content"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -28,14 +30,22 @@ func Test_handler_routes(t *testing.T) {
 			name:         "GET dynamic content",
 			path:         "/api/real",
 			values:       url.Values{"namespace": []string{"default"}},
-			generator:    newStubbedGenerator([]Content{dynamicContent}),
+			generator:    newStubbedGenerator([]content.Content{dynamicContent}, nil),
 			expectedCode: http.StatusOK,
 			expectedBody: `{"contents":[{"type":"stubbed"}]}`,
 		},
 		{
+			name:         "error generating dynamic content",
+			path:         "/api/real",
+			values:       url.Values{"namespace": []string{"default"}},
+			generator:    newStubbedGenerator(nil, errors.Errorf("broken")),
+			expectedCode: http.StatusInternalServerError,
+			expectedBody: `{"error":{"code":500,"message":"broken"}}`,
+		},
+		{
 			name:         "GET invalid path",
 			path:         "/api/missing",
-			generator:    newStubbedGenerator([]Content{dynamicContent}),
+			generator:    newStubbedGenerator([]content.Content{dynamicContent}, nil),
 			expectedCode: http.StatusNotFound,
 			expectedBody: `{"error":{"code":404,"message":"content not found"}}`,
 		},
@@ -73,19 +83,21 @@ var (
 )
 
 type stubbedGenerator struct {
-	Contents []Content
+	Contents []content.Content
+	genErr   error
 }
 
-func newStubbedGenerator(contents []Content) *stubbedGenerator {
+func newStubbedGenerator(contents []content.Content, genErr error) *stubbedGenerator {
 	return &stubbedGenerator{
 		Contents: contents,
+		genErr:   genErr,
 	}
 }
 
-func (g *stubbedGenerator) Generate(path, prefix, namespace string) ([]Content, error) {
+func (g *stubbedGenerator) Generate(path, prefix, namespace string) ([]content.Content, error) {
 	switch {
 	case strings.HasPrefix(path, "/real"):
-		return g.Contents, nil
+		return g.Contents, g.genErr
 
 	default:
 		return nil, contentNotFound
