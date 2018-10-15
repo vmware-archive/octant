@@ -51,3 +51,11 @@ var pvcTransforms = map[string]lookupFunc{
 var secretTransforms = map[string]lookupFunc{
 	"Name": resourceLink("config-and-storage", "secrets"),
 }
+
+var roleTransforms = map[string]lookupFunc{
+	"Name": resourceLink("rbac", "roles"),
+}
+
+var roleBindingTransforms = map[string]lookupFunc{
+	"Name": resourceLink("rbac", "role-bindings"),
+}

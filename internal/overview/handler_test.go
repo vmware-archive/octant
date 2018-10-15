@@ -14,6 +14,8 @@ import (
 )
 
 func Test_handler_routes(t *testing.T) {
+	dynamicContent := newFakeContent(false)
+
 	cases := []struct {
 		name         string
 		path         string
@@ -26,21 +28,14 @@ func Test_handler_routes(t *testing.T) {
 			name:         "GET dynamic content",
 			path:         "/api/real",
 			values:       url.Values{"namespace": []string{"default"}},
-			generator:    newStubbedGenerator(),
-			expectedCode: http.StatusOK,
-			expectedBody: `{"contents":[{"namespace":"default","type":"real"}]}`,
-		},
-		{
-			name:         "GET stubbed content",
-			path:         "/api/stubbed",
-			generator:    newStubbedGenerator(),
+			generator:    newStubbedGenerator([]Content{dynamicContent}),
 			expectedCode: http.StatusOK,
 			expectedBody: `{"contents":[{"type":"stubbed"}]}`,
 		},
 		{
 			name:         "GET invalid path",
 			path:         "/api/missing",
-			generator:    newStubbedGenerator(),
+			generator:    newStubbedGenerator([]Content{dynamicContent}),
 			expectedCode: http.StatusNotFound,
 			expectedBody: `{"error":{"code":404,"message":"content not found"}}`,
 		},
@@ -77,28 +72,20 @@ var (
 	stubStream = func(ctx context.Context, w http.ResponseWriter, ch chan []byte) {}
 )
 
-type stubbedGenerator struct{}
+type stubbedGenerator struct {
+	Contents []Content
+}
 
-func newStubbedGenerator() *stubbedGenerator {
-	return &stubbedGenerator{}
+func newStubbedGenerator(contents []Content) *stubbedGenerator {
+	return &stubbedGenerator{
+		Contents: contents,
+	}
 }
 
 func (g *stubbedGenerator) Generate(path, prefix, namespace string) ([]Content, error) {
 	switch {
-	case strings.HasPrefix(path, "/stubbed"):
-		return []Content{
-			map[string]string{
-				"type": "stubbed",
-			},
-		}, nil
-
 	case strings.HasPrefix(path, "/real"):
-		return []Content{
-			map[string]string{
-				"type":      "real",
-				"namespace": namespace,
-			},
-		}, nil
+		return g.Contents, nil
 
 	default:
 		return nil, contentNotFound

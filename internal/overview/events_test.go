@@ -22,7 +22,7 @@ func TestEventsDescriber(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, got, 1)
-	tbl, ok := got[0].(table)
+	tbl, ok := got[0].(*table)
 	require.True(t, ok)
 
 	assert.Equal(t, tbl.Title, "Events")

@@ -10,6 +10,7 @@ import (
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/apis/extensions"
+	"k8s.io/kubernetes/pkg/apis/rbac"
 )
 
 type pathFilter struct {
@@ -120,14 +121,14 @@ var (
 
 	workloadsDescriber = NewSectionDescriber(
 		"/workloads",
-		workloadsCronJobs.List(),
-		workloadsDaemonSets.List(),
-		workloadsDeployments.List(),
-		workloadsJobs.List(),
-		workloadsPods.List(),
-		workloadsReplicaSets.List(),
-		workloadsReplicationControllers.List(),
-		workloadsStatefulSets.List(),
+		workloadsCronJobs,
+		workloadsDaemonSets,
+		workloadsDeployments,
+		workloadsJobs,
+		workloadsPods,
+		workloadsReplicaSets,
+		workloadsReplicationControllers,
+		workloadsStatefulSets,
 	)
 
 	dlbIngresses = NewResource(ResourceOptions{
@@ -192,8 +193,28 @@ var (
 		"/custom-resources",
 	)
 
+	rbacRoles = NewResource(ResourceOptions{
+		Path:       "/rbac/roles",
+		CacheKey:   CacheKey{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "Role"},
+		ListType:   &rbac.RoleList{},
+		ObjectType: &rbac.Role{},
+		Titles:     ResourceTitle{List: "Roles", Object: "Role"},
+		Transforms: roleTransforms,
+	})
+
+	rbacRoleBindings = NewResource(ResourceOptions{
+		Path:       "/rbac/role-bindings",
+		CacheKey:   CacheKey{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "RoleBinding"},
+		ListType:   &rbac.RoleBindingList{},
+		ObjectType: &rbac.RoleBinding{},
+		Titles:     ResourceTitle{List: "Role Bindings", Object: "Role Binding"},
+		Transforms: roleBindingTransforms,
+	})
+
 	rbacDescriber = NewSectionDescriber(
 		"/rbac",
+		rbacRoles.List(),
+		rbacRoleBindings.List(),
 	)
 
 	rootDescriber = NewSectionDescriber(
@@ -205,13 +226,15 @@ var (
 		rbacDescriber,
 	)
 
-	eventsDescriber = NewEventsDescriber("/events")
+	eventsDescriber = NewResource(ResourceOptions{
+		Path:       "/events",
+		CacheKey:   CacheKey{APIVersion: "v1", Kind: "Event"},
+		ListType:   &core.EventList{},
+		ObjectType: &core.Event{},
+		Titles:     ResourceTitle{List: "Events", Object: "Event"},
+		Transforms: roleBindingTransforms,
+	})
 )
-
-var navPaths = []string{
-	"/rbac/roles",
-	"/rbac/role-bindings",
-}
 
 var contentNotFound = errors.Errorf("content not found")
 
@@ -237,10 +260,6 @@ func (g *realGenerator) Generate(path, prefix, namespace string) ([]Content, err
 	g.mu.Lock()
 	defer g.mu.Unlock()
 
-	if stringInSlice(path, navPaths) {
-		return stubContent(path), nil
-	}
-
 	for _, pf := range g.pathFilters {
 		if !pf.Match(path) {
 			continue
@@ -252,16 +271,6 @@ func (g *realGenerator) Generate(path, prefix, namespace string) ([]Content, err
 	}
 
 	return nil, contentNotFound
-}
-
-func stringInSlice(s string, sl []string) bool {
-	for i := range sl {
-		if sl[i] == s {
-			return true
-		}
-	}
-
-	return false
 }
 
 func stubContent(name string) []Content {
@@ -290,5 +299,5 @@ func stubContent(name string) []Content {
 		},
 	}
 
-	return []Content{t}
+	return []Content{&t}
 }

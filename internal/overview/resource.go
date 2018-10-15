@@ -48,6 +48,10 @@ func NewResource(options ResourceOptions) *Resource {
 	}
 }
 
+func (r *Resource) Describe(prefix, namespace string, cache Cache, fields map[string]string) ([]Content, error) {
+	return r.List().Describe(prefix, namespace, cache, fields)
+}
+
 func (r *Resource) List() *ListDescriber {
 	return NewListDescriber(
 		r.Path,

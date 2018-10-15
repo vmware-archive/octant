@@ -43,10 +43,10 @@ func translateTimestamp(timestamp metav1.Time, c clock.Clock) string {
 	return duration.ShortHumanDuration(c.Since(timestamp.Time))
 }
 
-func eventsForObject(object *unstructured.Unstructured, cache Cache, prefix, namespace string, cl clock.Clock) (table, error) {
+func eventsForObject(object *unstructured.Unstructured, cache Cache, prefix, namespace string, cl clock.Clock) (*table, error) {
 	eventObjects, err := cache.Events(object)
 	if err != nil {
-		return table{}, err
+		return nil, err
 	}
 
 	eventsTable := newEventTable("Events")
@@ -54,11 +54,11 @@ func eventsForObject(object *unstructured.Unstructured, cache Cache, prefix, nam
 		event := &corev1.Event{}
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.Object, event)
 		if err != nil {
-			return table{}, err
+			return nil, err
 		}
 
 		eventsTable.AddRow(printEvent(event, prefix, namespace, cl))
 	}
 
-	return eventsTable, nil
+	return &eventsTable, nil
 }

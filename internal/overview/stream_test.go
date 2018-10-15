@@ -15,7 +15,7 @@ import (
 func Test_contentStreamer(t *testing.T) {
 	w := httptest.NewRecorder()
 	ctx, cancel := context.WithCancel(context.Background())
-	g := newStubbedGenerator()
+	g := newStubbedGenerator([]Content{newFakeContent(false)})
 
 	rcv := make(chan bool, 1)
 
@@ -29,8 +29,8 @@ func Test_contentStreamer(t *testing.T) {
 	cs := contentStreamer{
 		generator: g,
 		w:         w,
-		path:      "/stubbed/foo",
-		prefix:    "/stubbed",
+		path:      "/real/foo",
+		prefix:    "/real",
 		namespace: "default",
 		streamFn:  fn,
 	}
