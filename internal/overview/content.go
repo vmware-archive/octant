@@ -10,6 +10,7 @@ type contentResponse struct {
 
 // Content is content served by the overview API.
 type Content interface {
+	IsEmpty() bool
 }
 
 type table struct {
@@ -24,6 +25,10 @@ func newTable(title string) table {
 		Type:  "table",
 		Title: title,
 	}
+}
+
+func (t *table) IsEmpty() bool {
+	return len(t.Rows) == 0
 }
 
 func (t *table) AddRow(row tableRow) {

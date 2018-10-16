@@ -60,7 +60,7 @@ func (d *EventsDescriber) Describe(prefix, namespace string, cache Cache, fields
 		t.Rows = append(t.Rows, printEvent(event, prefix, namespace, d.clock()))
 	}
 
-	contents = append(contents, t)
+	contents = append(contents, &t)
 
 	return contents, nil
 }
