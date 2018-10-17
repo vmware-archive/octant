@@ -5,11 +5,13 @@ import (
 	"log"
 	"net/http"
 	"path"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/module"
+	"github.com/heptio/go-telemetry/pkg/telemetry"
 )
 
 // Service is an API service.
@@ -46,27 +48,39 @@ func respondWithError(w http.ResponseWriter, code int, message string) {
 
 // API is the API for the dashboard client
 type API struct {
-	nsClient      cluster.NamespaceInterface
-	moduleManager module.ManagerInterface
-	sections      []*hcli.Navigation
-	prefix        string
+	nsClient        cluster.NamespaceInterface
+	moduleManager   module.ManagerInterface
+	sections        []*hcli.Navigation
+	prefix          string
+	telemetryClient telemetry.Interface
 
 	modules map[string]http.Handler
 }
 
+func (a *API) telemetryMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		startTime := time.Now()
+		next.ServeHTTP(w, r)
+		msDuration := int64(time.Since(startTime) / time.Millisecond)
+		go a.telemetryClient.With(telemetry.Labels{"endpoint": r.URL.Path, "client.useragent": r.Header.Get("User-Agent")}).SendEvent("dash.api", telemetry.Measurements{"count": 1, "duration": msDuration})
+	})
+}
+
 // New creates an instance of API.
-func New(prefix string, nsClient cluster.NamespaceInterface, moduleManager module.ManagerInterface) *API {
+func New(prefix string, nsClient cluster.NamespaceInterface, moduleManager module.ManagerInterface, telemetryClient telemetry.Interface) *API {
 	return &API{
-		prefix:        prefix,
-		nsClient:      nsClient,
-		moduleManager: moduleManager,
-		modules:       make(map[string]http.Handler),
+		prefix:          prefix,
+		nsClient:        nsClient,
+		moduleManager:   moduleManager,
+		modules:         make(map[string]http.Handler),
+		telemetryClient: telemetryClient,
 	}
 }
 
 // Handler returns a HTTP handler for the service.
 func (a *API) Handler() *mux.Router {
 	router := mux.NewRouter()
+	router.Use(a.telemetryMiddleware)
 	s := router.PathPrefix(a.prefix).Subrouter()
 
 	namespacesService := newNamespaces(a.nsClient)
