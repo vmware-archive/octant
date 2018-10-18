@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -15,7 +16,7 @@ import (
 func Test_contentStreamer(t *testing.T) {
 	w := httptest.NewRecorder()
 	ctx, cancel := context.WithCancel(context.Background())
-	g := newStubbedGenerator([]Content{newFakeContent(false)})
+	g := newStubbedGenerator([]content.Content{newFakeContent(false)}, nil)
 
 	rcv := make(chan bool, 1)
 

@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/internal/content"
 	"github.com/heptio/developer-dash/internal/printers"
+	"github.com/heptio/developer-dash/internal/view"
 	"github.com/pkg/errors"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -14,11 +17,16 @@ import (
 	printersinternal "k8s.io/kubernetes/pkg/printers/internalversion"
 )
 
-type ObjecTransformFunc func(namespace, prefix string, contents *[]Content) func(*metav1beta1.Table) error
+type ObjecTransformFunc func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error
+
+type DescriberOptions struct {
+	Cache  Cache
+	Fields map[string]string
+}
 
 // Describer creates content.
 type Describer interface {
-	Describe(prefix, namespace string, cache Cache, fields map[string]string) ([]Content, error)
+	Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, error)
 	PathFilters() []pathFilter
 }
 
@@ -54,10 +62,10 @@ func NewListDescriber(p string, cacheKey CacheKey, listType, objectType func() i
 }
 
 // Describe creates content.
-func (d *ListDescriber) Describe(prefix, namespace string, cache Cache, fields map[string]string) ([]Content, error) {
-	var contents []Content
+func (d *ListDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, error) {
+	var contents []content.Content
 
-	objects, err := loadObjects(cache, namespace, fields, []CacheKey{d.cacheKey})
+	objects, err := loadObjects(options.Cache, namespace, options.Fields, []CacheKey{d.cacheKey})
 	if err != nil {
 		return nil, err
 	}
@@ -107,25 +115,27 @@ type ObjectDescriber struct {
 	objectType          func() interface{}
 	cacheKey            CacheKey
 	objectTransformFunc ObjecTransformFunc
+	views               []view.View
 }
 
-func NewObjectDescriber(p string, cacheKey CacheKey, objectType func() interface{}, otf ObjecTransformFunc) *ObjectDescriber {
+func NewObjectDescriber(p string, cacheKey CacheKey, objectType func() interface{}, otf ObjecTransformFunc, views []view.View) *ObjectDescriber {
 	return &ObjectDescriber{
 		path:                p,
 		baseDescriber:       newBaseDescriber(),
 		cacheKey:            cacheKey,
 		objectType:          objectType,
 		objectTransformFunc: otf,
+		views:               views,
 	}
 }
 
-func (d *ObjectDescriber) Describe(prefix, namespace string, cache Cache, fields map[string]string) ([]Content, error) {
-	objects, err := loadObjects(cache, namespace, fields, []CacheKey{d.cacheKey})
+func (d *ObjectDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, error) {
+	objects, err := loadObjects(options.Cache, namespace, options.Fields, []CacheKey{d.cacheKey})
 	if err != nil {
 		return nil, err
 	}
 
-	var contents []Content
+	var contents []content.Content
 
 	if len(objects) != 1 {
 		return nil, errors.Errorf("expected exactly one object")
@@ -152,7 +162,19 @@ func (d *ObjectDescriber) Describe(prefix, namespace string, cache Cache, fields
 		return nil, err
 	}
 
-	eventsTable, err := eventsForObject(object, cache, prefix, namespace, d.clock())
+	// TODO should show parents here
+	// TODO will need to register a map of object transformers?
+
+	for _, v := range d.views {
+		viewContent, err := v.Content(nil, newObject, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		contents = append(contents, viewContent...)
+	}
+
+	eventsTable, err := eventsForObject(object, options.Cache, prefix, namespace, d.clock())
 	if err != nil {
 		return nil, err
 	}
@@ -199,8 +221,8 @@ func printObject(object runtime.Object, transformFunc func(*metav1beta1.Table) e
 	return nil
 }
 
-func printContentTable(title, namespace, prefix string, tbl *metav1beta1.Table, m map[string]lookupFunc) (*table, error) {
-	contentTable := newTable(title)
+func printContentTable(title, namespace, prefix string, tbl *metav1beta1.Table, m map[string]lookupFunc) (*content.Table, error) {
+	contentTable := content.NewTable(title)
 
 	headers := make(map[int]string)
 
@@ -208,7 +230,7 @@ func printContentTable(title, namespace, prefix string, tbl *metav1beta1.Table, 
 
 		headers[i] = column.Name
 
-		contentTable.Columns = append(contentTable.Columns, tableColumn{
+		contentTable.Columns = append(contentTable.Columns, content.TableColumn{
 			Name:     column.Name,
 			Accessor: column.Name,
 		})
@@ -217,14 +239,14 @@ func printContentTable(title, namespace, prefix string, tbl *metav1beta1.Table, 
 	transforms := buildTransforms(m)
 
 	for _, row := range tbl.Rows {
-		contentRow := tableRow{}
+		contentRow := content.TableRow{}
 
 		for pos, header := range headers {
 			cell := row.Cells[pos]
 
 			c, ok := transforms[header]
 			if !ok {
-				contentRow[header] = newStringText(fmt.Sprintf("%v", cell))
+				contentRow[header] = content.NewStringText(fmt.Sprintf("%v", cell))
 			} else {
 				contentRow[header] = c(namespace, prefix, cell)
 			}
@@ -251,11 +273,11 @@ func NewSectionDescriber(p string, describers ...Describer) *SectionDescriber {
 }
 
 // Describe generates content.
-func (d *SectionDescriber) Describe(prefix, namespace string, cache Cache, fields map[string]string) ([]Content, error) {
-	var contents []Content
+func (d *SectionDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, error) {
+	var contents []content.Content
 
 	for _, child := range d.describers {
-		childContents, err := child.Describe(prefix, namespace, cache, fields)
+		childContents, err := child.Describe(prefix, namespace, clusterClient, options)
 		if err != nil {
 			return nil, err
 		}

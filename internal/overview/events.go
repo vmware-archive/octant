@@ -5,6 +5,8 @@ import (
 	"sort"
 	"time"
 
+	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/internal/content"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
@@ -33,13 +35,13 @@ func NewEventsDescriber(p string) *EventsDescriber {
 }
 
 // Describe creates content.
-func (d *EventsDescriber) Describe(prefix, namespace string, cache Cache, fields map[string]string) ([]Content, error) {
-	objects, err := loadObjects(cache, namespace, fields, d.cacheKeys)
+func (d *EventsDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, error) {
+	objects, err := loadObjects(options.Cache, namespace, options.Fields, d.cacheKeys)
 	if err != nil {
 		return nil, err
 	}
 
-	var contents []Content
+	var contents []content.Content
 
 	t := newEventTable("Events")
 
@@ -71,10 +73,10 @@ func (d *EventsDescriber) PathFilters() []pathFilter {
 	}
 }
 
-func newEventTable(name string) table {
-	t := newTable(name)
+func newEventTable(name string) content.Table {
+	t := content.NewTable(name)
 
-	t.Columns = []tableColumn{
+	t.Columns = []content.TableColumn{
 		{Name: "Message", Accessor: "message"},
 		{Name: "Source", Accessor: "source"},
 		{Name: "Sub-Object", Accessor: "sub_object"},
@@ -86,16 +88,16 @@ func newEventTable(name string) table {
 	return t
 }
 
-func printEvent(event *corev1.Event, prefix, namespace string, c clock.Clock) tableRow {
+func printEvent(event *corev1.Event, prefix, namespace string, c clock.Clock) content.TableRow {
 	firstSeen := event.FirstTimestamp.UTC().Format(time.RFC3339)
 	lastSeen := event.LastTimestamp.UTC().Format(time.RFC3339)
 
-	return tableRow{
-		"message":    newStringText(event.Message),
-		"source":     newStringText(event.Source.Component),
-		"sub_object": newStringText(""), // TODO: where does this come from?
-		"count":      newStringText(fmt.Sprint(event.Count)),
-		"first_seen": newStringText(firstSeen),
-		"last_seen":  newStringText(lastSeen),
+	return content.TableRow{
+		"message":    content.NewStringText(event.Message),
+		"source":     content.NewStringText(event.Source.Component),
+		"sub_object": content.NewStringText(""), // TODO: where does this come from?
+		"count":      content.NewStringText(fmt.Sprint(event.Count)),
+		"first_seen": content.NewStringText(firstSeen),
+		"last_seen":  content.NewStringText(lastSeen),
 	}
 }

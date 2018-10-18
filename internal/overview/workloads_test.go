@@ -3,6 +3,7 @@ package overview
 import (
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
@@ -103,8 +104,8 @@ func Test_printCronJobTable(t *testing.T) {
 	contentTable, err := printContentTable("Title", "default", "/prefix", tbl, cronJobTransforms)
 	require.NoError(t, err)
 
-	expected := newTable("Title")
-	expected.Columns = []tableColumn{
+	expected := content.NewTable("Title")
+	expected.Columns = []content.TableColumn{
 		newCol("Name"),
 		newCol("Schedule"),
 		newCol("Suspend"),
@@ -117,17 +118,17 @@ func Test_printCronJobTable(t *testing.T) {
 		newCol("Labels"),
 	}
 
-	expected.AddRow(tableRow{
-		"Name":          newLinkText("hello", "/prefix/workloads/cron-jobs/hello?namespace=default"),
-		"Schedule":      newStringText("*/1 * * * *"),
-		"Suspend":       newStringText("False"),
-		"Active":        newStringText("0"),
-		"Last Schedule": newStringText("30s"),
-		"Age":           newStringText("<unknown>"),
-		"Containers":    newStringText("hello"),
-		"Images":        newStringText("busybox"),
-		"Selector":      newStringText("<none>"),
-		"Labels":        newStringText("<none>"),
+	expected.AddRow(content.TableRow{
+		"Name":          content.NewLinkText("hello", "/prefix/workloads/cron-jobs/hello?namespace=default"),
+		"Schedule":      content.NewStringText("*/1 * * * *"),
+		"Suspend":       content.NewStringText("False"),
+		"Active":        content.NewStringText("0"),
+		"Last Schedule": content.NewStringText("30s"),
+		"Age":           content.NewStringText("<unknown>"),
+		"Containers":    content.NewStringText("hello"),
+		"Images":        content.NewStringText("busybox"),
+		"Selector":      content.NewStringText("<none>"),
+		"Labels":        content.NewStringText("<none>"),
 	})
 
 	assert.Equal(t, expected, *contentTable)
@@ -242,8 +243,8 @@ func Test_printDeploymentTable(t *testing.T) {
 	contentTable, err := printContentTable("Title", "default", "/prefix", tbl, deploymentTransforms)
 	require.NoError(t, err)
 
-	expected := newTable("Title")
-	expected.Columns = []tableColumn{
+	expected := content.NewTable("Title")
+	expected.Columns = []content.TableColumn{
 		newCol("Name"),
 		newCol("Desired"),
 		newCol("Current"),
@@ -256,37 +257,37 @@ func Test_printDeploymentTable(t *testing.T) {
 		newCol("Labels"),
 	}
 
-	expected.AddRow(tableRow{
-		"Name":       newLinkText("nginx-deployment", "/prefix/workloads/deployments/nginx-deployment?namespace=default"),
-		"Desired":    newStringText("3"),
-		"Current":    newStringText("3"),
-		"Up-to-date": newStringText("3"),
-		"Available":  newStringText("3"),
-		"Age":        newStringText("<unknown>"),
-		"Containers": newStringText("nginx"),
-		"Images":     newStringText("nginx:1.7.9"),
-		"Selector":   newStringText("app=nginx"),
-		"Labels":     newStringText("<none>"),
+	expected.AddRow(content.TableRow{
+		"Name":       content.NewLinkText("nginx-deployment", "/prefix/workloads/deployments/nginx-deployment?namespace=default"),
+		"Desired":    content.NewStringText("3"),
+		"Current":    content.NewStringText("3"),
+		"Up-to-date": content.NewStringText("3"),
+		"Available":  content.NewStringText("3"),
+		"Age":        content.NewStringText("<unknown>"),
+		"Containers": content.NewStringText("nginx"),
+		"Images":     content.NewStringText("nginx:1.7.9"),
+		"Selector":   content.NewStringText("app=nginx"),
+		"Labels":     content.NewStringText("<none>"),
 	})
 
-	expected.AddRow(tableRow{
-		"Name":       newLinkText("krex-debug-pod", "/prefix/workloads/deployments/krex-debug-pod?namespace=default"),
-		"Desired":    newStringText("1"),
-		"Current":    newStringText("1"),
-		"Up-to-date": newStringText("1"),
-		"Available":  newStringText("1"),
-		"Age":        newStringText("<unknown>"),
-		"Containers": newStringText("krex-debug-pod"),
-		"Images":     newStringText("ubuntu:latest"),
-		"Selector":   newStringText("run=krex-debug-pod"),
-		"Labels":     newStringText("<none>"),
+	expected.AddRow(content.TableRow{
+		"Name":       content.NewLinkText("krex-debug-pod", "/prefix/workloads/deployments/krex-debug-pod?namespace=default"),
+		"Desired":    content.NewStringText("1"),
+		"Current":    content.NewStringText("1"),
+		"Up-to-date": content.NewStringText("1"),
+		"Available":  content.NewStringText("1"),
+		"Age":        content.NewStringText("<unknown>"),
+		"Containers": content.NewStringText("krex-debug-pod"),
+		"Images":     content.NewStringText("ubuntu:latest"),
+		"Selector":   content.NewStringText("run=krex-debug-pod"),
+		"Labels":     content.NewStringText("<none>"),
 	})
 
 	assert.Equal(t, expected, *contentTable)
 }
 
-func newCol(name string) tableColumn {
-	return tableColumn{
+func newCol(name string) content.TableColumn {
+	return content.TableColumn{
 		Name:     name,
 		Accessor: name,
 	}

@@ -79,7 +79,12 @@ func newHandler(prefix string, g generator, sfn streamFn) *handler {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		contents, err := g.Generate(path, prefix, namespace)
 		if err != nil {
-			respondWithError(w, http.StatusNotFound, err.Error())
+			switch {
+			case err == contentNotFound:
+				respondWithError(w, http.StatusNotFound, err.Error())
+			default:
+				respondWithError(w, http.StatusInternalServerError, err.Error())
+			}
 			return
 		}
 

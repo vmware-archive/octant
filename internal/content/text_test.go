@@ -1,4 +1,4 @@
-package overview
+package content
 
 import (
 	"encoding/json"
@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_stringText(t *testing.T) {
-	st := newStringText("foo")
+func TestStringText(t *testing.T) {
+	st := NewStringText("foo")
 
 	data, err := json.Marshal(st)
 	require.NoError(t, err)
@@ -19,8 +19,8 @@ func Test_stringText(t *testing.T) {
 	assert.Equal(t, expected, string(data))
 }
 
-func Test_linkText(t *testing.T) {
-	lt := newLinkText("foo", "/bar")
+func TestLinkText(t *testing.T) {
+	lt := NewLinkText("foo", "/bar")
 
 	data, err := json.Marshal(lt)
 	require.NoError(t, err)
@@ -30,11 +30,11 @@ func Test_linkText(t *testing.T) {
 	assert.Equal(t, expected, string(data))
 }
 
-func Test_labelsText(t *testing.T) {
+func TestLabelsText(t *testing.T) {
 	m := map[string]string{
 		"foo": "bar",
 	}
-	lt := newLabelsText(m)
+	lt := NewLabelsText(m)
 
 	data, err := json.Marshal(lt)
 	require.NoError(t, err)
@@ -42,4 +42,18 @@ func Test_labelsText(t *testing.T) {
 	expected := `{"labels":{"foo":"bar"},"type":"labels"}`
 
 	assert.Equal(t, expected, string(data))
+}
+
+func TestListText(t *testing.T) {
+	list := []string{"foo", "bar"}
+
+	lt := NewListText(list)
+
+	data, err := json.Marshal(lt)
+	require.NoError(t, err)
+
+	expected := `{"list":["foo","bar"],"type":"list"}`
+
+	assert.Equal(t, expected, string(data))
+
 }
