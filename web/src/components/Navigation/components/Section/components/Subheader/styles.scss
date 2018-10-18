@@ -6,8 +6,8 @@
     text-decoration: none;
 
     &.active, &:hover {
-      text-decoration: underline;
       font-weight: 600;
+      text-decoration: underline;
     }
   }
 

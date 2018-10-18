@@ -1,5 +1,6 @@
 import React from 'react'
 import Loading from 'components/Icons/Loading'
+import Title from 'components/Title'
 import ContentSwitcher from './components/ContentSwitcher'
 import './styles.scss'
 
@@ -18,10 +19,13 @@ export default function Home ({ loading, contents }) {
       </div>
     ))
   }
-
+  const title = (contents && contents.title) || ''
   return (
     <div className='home'>
-      <div className='main'>{mainContent}</div>
+      <Title title={title} />
+      <div className='main'>
+        {mainContent}
+      </div>
     </div>
   )
 }
