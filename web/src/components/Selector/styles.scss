@@ -3,9 +3,10 @@
 .dd-selector-container {
   .dd-selector__control {
     border: none;
-    border-bottom: 1px solid $gray-dark;
+    border-bottom: 1px solid $orange;
     border-radius: 0;
     box-shadow: none;
+    height: 50px;
 
     &:hover {
       border-color: $gray-dark;

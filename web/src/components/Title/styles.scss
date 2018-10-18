@@ -1,0 +1,15 @@
+@import '~css/variables/variables.scss';
+
+.component--title {
+  @include box-shadow;
+  align-items: center;
+  background-color: $white;
+  display: flex;
+  height: 50px;
+  padding-left: 50px;
+  width: 100%;
+
+  h2 {
+    @include normal;
+  }
+}

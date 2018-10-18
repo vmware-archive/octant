@@ -1,10 +1,9 @@
 @import '~css/variables/variables.scss';
 
 .home {
-  padding: 50px;
-
   .main {
     height: 100%;
+    padding: 50px;
 
     .component--primary {
       @include box-shadow;
