@@ -7,6 +7,24 @@ GO_FLAGS= -ldflags=$(LD_FLAGS)
 GOCMD=go
 GOBUILD=$(GOCMD) build
 
+VERSION ?= v0.0.1-pre
+
+.PHONY: version
+version:
+	@echo $(VERSION)
+
+# Run all tests
+.PHONY: test
+test:
+	@echo "-> $@"
+	@go test -v ./...
+
+# Run govet
+.PHONY: vet
+vet:
+	@echo "-> $@"
+	@go vet ./...
+
 hcli-dev:
 	@mkdir -p ./build
 	@$(GOBUILD) -o build/hcli $(GO_FLAGS) ./cmd/hcli
@@ -31,3 +49,6 @@ ui-server:
 
 ui-client:
 	cd web; API_BASE=http://localhost:3001 npm run start
+
+.PHONY: ci
+ci: test vet hcli-dev
