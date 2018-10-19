@@ -157,7 +157,7 @@ func (d *ObjectDescriber) Describe(prefix, namespace string, clusterClient clust
 			item)
 	}
 
-	otf := d.objectTransformFunc(prefix, namespace, &contents)
+	otf := d.objectTransformFunc(namespace, prefix, &contents)
 	if err := printObject(newObject, otf); err != nil {
 		return nil, err
 	}
