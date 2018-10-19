@@ -1,0 +1,30 @@
+language: go
+go:
+  - "1.11"
+os:
+  - linux
+  - osx
+
+addons:
+  apt:
+    packages:
+    - rpm
+# TODO: Update goreleaser.yml and add when open sourced
+#    - snapd
+#
+#env:
+#- PATH=/snap/bin:$PATH
+#
+#install:
+#- sudo snap install snapcraft --classic
+
+script: make ci
+
+deploy:
+- provider: script
+  skip_cleanup: true
+  script: ./ci/travis-deploy.sh
+  on:
+    tags: true
+    condition: $TRAVIS_OS_NAME = linux        
+

@@ -1,4 +1,14 @@
-## Steps to release hcli
+## Steps to release hcli via TravisCI
+
+`GITHUB_TOKEN` needs to be set from the TravisCI UI with a Github token of the proper scope (currently private repo but eventually should be public only).
+
+1. The version is tracked in the Makefile. Update and merge the new version prior to release.
+
+2. Pull the change then run `make release`
+
+3. A new build will be triggered then a draft of the artifacts will be available for review in Github Releases.
+
+## Steps to release hcli manually
 
 What you'll need:
 
