@@ -189,7 +189,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:8839b945c380221fc3ccbd4f5332f3f4df6d739c593a2eb1f2e7e373d009e172"
+  digest = "1:d7df9f7ac0a5d1ed68d9b6ec876c1d40d124ceb55c4a00ec6b7e0f23d0d0da27"
   name = "github.com/heptio/go-telemetry"
   packages = [
     "pkg/logging",
@@ -197,7 +197,7 @@
     "pkg/telemetry",
   ]
   pruneopts = "UT"
-  revision = "b5800a7c0ef27f46df7ded58c659090aecb5ffe8"
+  revision = "86e68b015ae21068de1b1b26bb1e2a359e2369fb"
 
 [[projects]]
   digest = "1:8eb1de8112c9924d59bf1d3e5c26f5eaa2bfc2a5fcbb92dc1c2e4546d695f277"
