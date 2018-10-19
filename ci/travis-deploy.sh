@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euxo pipefail
+
 if [ -z "$TRAVIS" ]; then
     echo "this script is intended to be run only on travis" >&2;
     exit 1
