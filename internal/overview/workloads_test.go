@@ -119,7 +119,7 @@ func Test_printCronJobTable(t *testing.T) {
 	}
 
 	expected.AddRow(content.TableRow{
-		"Name":          content.NewLinkText("hello", "/prefix/workloads/cron-jobs/hello?namespace=default"),
+		"Name":          content.NewLinkText("hello", "/content/overview/workloads/cron-jobs/hello"),
 		"Schedule":      content.NewStringText("*/1 * * * *"),
 		"Suspend":       content.NewStringText("False"),
 		"Active":        content.NewStringText("0"),
@@ -258,7 +258,7 @@ func Test_printDeploymentTable(t *testing.T) {
 	}
 
 	expected.AddRow(content.TableRow{
-		"Name":       content.NewLinkText("nginx-deployment", "/prefix/workloads/deployments/nginx-deployment?namespace=default"),
+		"Name":       content.NewLinkText("nginx-deployment", "/content/overview/workloads/deployments/nginx-deployment"),
 		"Desired":    content.NewStringText("3"),
 		"Current":    content.NewStringText("3"),
 		"Up-to-date": content.NewStringText("3"),
@@ -271,7 +271,7 @@ func Test_printDeploymentTable(t *testing.T) {
 	})
 
 	expected.AddRow(content.TableRow{
-		"Name":       content.NewLinkText("krex-debug-pod", "/prefix/workloads/deployments/krex-debug-pod?namespace=default"),
+		"Name":       content.NewLinkText("krex-debug-pod", "/content/overview/workloads/deployments/krex-debug-pod"),
 		"Desired":    content.NewStringText("1"),
 		"Current":    content.NewStringText("1"),
 		"Up-to-date": content.NewStringText("1"),
