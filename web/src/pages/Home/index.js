@@ -4,7 +4,7 @@ import Title from 'components/Title'
 import ContentSwitcher from './components/ContentSwitcher'
 import './styles.scss'
 
-export default function Home ({ loading, contents }) {
+export default function Home ({ loading, contents, title }) {
   let mainContent = <div>No resources</div>
   if (loading) {
     mainContent = (
@@ -19,7 +19,7 @@ export default function Home ({ loading, contents }) {
       </div>
     ))
   }
-  const title = (contents && contents.title) || ''
+
   return (
     <div className='home'>
       <Title title={title} />
