@@ -37,12 +37,13 @@ func (cs contentStreamer) content(ctx context.Context) {
 			case <-ctx.Done():
 				isRunning = false
 			case <-timer.C:
-				contents, err := cs.generator.Generate(cs.path, cs.prefix, cs.namespace)
+				title, contents, err := cs.generator.Generate(cs.path, cs.prefix, cs.namespace)
 				if err != nil {
 					log.Printf("generate error: %v", err)
 				}
 
 				cr := &contentResponse{
+					Title:    title,
 					Contents: contents,
 				}
 

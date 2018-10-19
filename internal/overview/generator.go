@@ -128,6 +128,7 @@ var (
 
 	workloadsDescriber = NewSectionDescriber(
 		"/workloads",
+		"Workloads",
 		workloadsCronJobs,
 		workloadsDaemonSets,
 		workloadsDeployments,
@@ -158,6 +159,7 @@ var (
 
 	discoveryAndLoadBalancingDescriber = NewSectionDescriber(
 		"/discovery-and-load-balancing",
+		"Discovery and Load Balancing",
 		dlbIngresses.List(),
 		dlbServices.List(),
 	)
@@ -191,6 +193,7 @@ var (
 
 	configAndStorageDescriber = NewSectionDescriber(
 		"/config-and-storage",
+		"Config and Storage",
 		csConfigMaps.List(),
 		csPVCs.List(),
 		csSecrets.List(),
@@ -198,6 +201,7 @@ var (
 
 	customResourcesDescriber = NewSectionDescriber(
 		"/custom-resources",
+		"Custom Resources",
 	)
 
 	rbacRoles = NewResource(ResourceOptions{
@@ -220,12 +224,14 @@ var (
 
 	rbacDescriber = NewSectionDescriber(
 		"/rbac",
+		"RBAC",
 		rbacRoles.List(),
 		rbacRoleBindings.List(),
 	)
 
 	rootDescriber = NewSectionDescriber(
 		"/",
+		"Overview",
 		workloadsDescriber,
 		discoveryAndLoadBalancingDescriber,
 		configAndStorageDescriber,
@@ -246,7 +252,7 @@ var (
 var contentNotFound = errors.Errorf("content not found")
 
 type generator interface {
-	Generate(path, prefix, namespace string) ([]content.Content, error)
+	Generate(path, prefix, namespace string) (string, []content.Content, error)
 }
 
 type realGenerator struct {
@@ -265,7 +271,7 @@ func newGenerator(cache Cache, pathFilters []pathFilter, clusterClient cluster.C
 	}
 }
 
-func (g *realGenerator) Generate(path, prefix, namespace string) ([]content.Content, error) {
+func (g *realGenerator) Generate(path, prefix, namespace string) (string, []content.Content, error) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 
@@ -280,10 +286,15 @@ func (g *realGenerator) Generate(path, prefix, namespace string) ([]content.Cont
 			Fields: fields,
 		}
 
-		return pf.describer.Describe(prefix, namespace, g.clusterClient, options)
+		contents, err := pf.describer.Describe(prefix, namespace, g.clusterClient, options)
+		if err != nil {
+			return "", nil, err
+		}
+
+		return pf.describer.Title(), contents, nil
 	}
 
-	return nil, contentNotFound
+	return "", nil, contentNotFound
 }
 
 func stubContent(name string) []content.Content {

@@ -32,7 +32,7 @@ func Test_handler_routes(t *testing.T) {
 			values:       url.Values{"namespace": []string{"default"}},
 			generator:    newStubbedGenerator([]content.Content{dynamicContent}, nil),
 			expectedCode: http.StatusOK,
-			expectedBody: `{"contents":[{"type":"stubbed"}]}`,
+			expectedBody: `{"contents":[{"type":"stubbed"}],"title":"title"}`,
 		},
 		{
 			name:         "error generating dynamic content",
@@ -94,12 +94,12 @@ func newStubbedGenerator(contents []content.Content, genErr error) *stubbedGener
 	}
 }
 
-func (g *stubbedGenerator) Generate(path, prefix, namespace string) ([]content.Content, error) {
+func (g *stubbedGenerator) Generate(path, prefix, namespace string) (string, []content.Content, error) {
 	switch {
 	case strings.HasPrefix(path, "/real"):
-		return g.Contents, g.genErr
+		return "title", g.Contents, g.genErr
 
 	default:
-		return nil, contentNotFound
+		return "", nil, contentNotFound
 	}
 }

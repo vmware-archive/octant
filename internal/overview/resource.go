@@ -48,9 +48,14 @@ func (r *Resource) Describe(prefix, namespace string, clusterClient cluster.Clie
 	return r.List().Describe(prefix, namespace, clusterClient, options)
 }
 
+func (r *Resource) Title() string {
+	return r.Titles.List
+}
+
 func (r *Resource) List() *ListDescriber {
 	return NewListDescriber(
 		r.Path,
+		r.Titles.List,
 		r.CacheKey,
 		func() interface{} {
 			return reflect.New(reflect.ValueOf(r.ListType).Elem().Type()).Interface()
@@ -65,6 +70,7 @@ func (r *Resource) List() *ListDescriber {
 func (r *Resource) Object() *ObjectDescriber {
 	return NewObjectDescriber(
 		path.Join(r.Path, "(?P<name>.*?)"),
+		r.Titles.Object,
 		r.CacheKey,
 		func() interface{} {
 			return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
