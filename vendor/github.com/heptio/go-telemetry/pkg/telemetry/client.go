@@ -1,12 +1,14 @@
 package telemetry
 
 import (
+	"crypto/tls"
 	"time"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/heptio/go-telemetry/pkg/logging"
 	pb "github.com/heptio/go-telemetry/pkg/proto/telemetry"
@@ -14,7 +16,7 @@ import (
 
 const (
 	// DefaultAddress is the default address of the telemetry service
-	DefaultAddress = "telemetry.heptio.com:80"
+	DefaultAddress = "telemetry.heptio.com:443"
 )
 
 // Interface defines telemetry
@@ -65,7 +67,9 @@ func NewClient(address string, timeout time.Duration, logger interface{}) (*Clie
 	}
 	adaptedLogger.Debugf("Creating new telemetry client")
 
-	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	dialWithTLS := grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{}))
+
+	conn, err := grpc.Dial(address, dialWithTLS)
 	if err != nil {
 		return nil, errors.Wrap(err, "connecting to telemetry server")
 	}
