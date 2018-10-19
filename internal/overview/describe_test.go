@@ -50,7 +50,7 @@ func TestListDescriber(t *testing.T) {
 		}
 	}
 
-	d := NewListDescriber(thePath, key, listType, objectType, otf)
+	d := NewListDescriber(thePath, "list", key, listType, objectType, otf)
 
 	scheme := runtime.NewScheme()
 	objects := []runtime.Object{}
@@ -104,7 +104,7 @@ func TestObjectDescriber(t *testing.T) {
 		}
 	}
 
-	d := NewObjectDescriber(thePath, key, objectType, otf, []view.View{})
+	d := NewObjectDescriber(thePath, "object", key, objectType, otf, []view.View{})
 
 	scheme := runtime.NewScheme()
 	objects := []runtime.Object{}
@@ -131,6 +131,7 @@ func TestSectionDescriber(t *testing.T) {
 
 	d := NewSectionDescriber(
 		"/section",
+		"section",
 		newStubDescriber("/foo"),
 	)
 

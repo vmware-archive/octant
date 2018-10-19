@@ -73,6 +73,10 @@ func (d *EventsDescriber) PathFilters() []pathFilter {
 	}
 }
 
+func (d *EventsDescriber) Title() string {
+	return "Events"
+}
+
 func newEventTable(name string) content.Table {
 	t := content.NewTable(name)
 

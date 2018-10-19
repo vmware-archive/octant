@@ -77,7 +77,7 @@ func newHandler(prefix string, g generator, sfn streamFn) *handler {
 		}
 
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		contents, err := g.Generate(path, prefix, namespace)
+		title, contents, err := g.Generate(path, prefix, namespace)
 		if err != nil {
 			switch {
 			case err == contentNotFound:
@@ -90,6 +90,7 @@ func newHandler(prefix string, g generator, sfn streamFn) *handler {
 
 		cr := &contentResponse{
 			Contents: contents,
+			Title:    title,
 		}
 
 		if err := json.NewEncoder(w).Encode(cr); err != nil {
