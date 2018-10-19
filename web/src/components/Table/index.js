@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import ReactTable from 'react-table'
 import _ from 'lodash'
 import EmptyContent from '../EmptyContent'
@@ -27,6 +28,13 @@ export default function Table ({ data: { title, columns, rows } }) {
     if (_.isObject(value)) {
       if (value.type === 'labels' && value.labels) {
         return value
+      }
+      if (value.type === 'link' && value.ref) {
+        return (
+          <Link className='table--link' to={value.ref}>
+            {value.text}
+          </Link>
+        )
       }
       if (_.includes(['array', 'list'], value.type)) {
         const arr = _.find([value.array, value.list])
