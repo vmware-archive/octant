@@ -17,6 +17,14 @@
       margin-right: 0;
     }
   }
+}
 
+.table--link {
+  @include bold;
+  color: $orange;
+  text-decoration: none;
 
+  &:hover {
+    text-decoration: underline;
+  }
 }
