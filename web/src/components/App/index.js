@@ -85,7 +85,7 @@ class App extends Component {
     } = this.props
     const payload = await getContents(pathname, namespace)
     if (payload) {
-      return this.setState({
+      this.setState({
         contents: payload.contents,
         title: payload.title,
         loading: false
