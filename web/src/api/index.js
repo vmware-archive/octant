@@ -25,7 +25,9 @@ async function buildRequest (params) {
     if (data) fetchOptions.body = JSON.stringify(data)
     try {
       const response = await fetch(`${apiBase}/${endpoint}`, fetchOptions)
-      return await response.json()
+      if (response.status !== 204) {
+        return await response.json()
+      }
     } catch (e) {
       console.error('Failed fetch response: ', e) // eslint-disable-line no-console
       // Note(marlon): should consider throwing again here so that
