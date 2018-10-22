@@ -129,6 +129,7 @@ type ObjectDescriber struct {
 func NewObjectDescriber(p, title string, cacheKey CacheKey, objectType func() interface{}, otf ObjecTransformFunc, views []view.View) *ObjectDescriber {
 	return &ObjectDescriber{
 		path:                p,
+		title:               title,
 		baseDescriber:       newBaseDescriber(),
 		cacheKey:            cacheKey,
 		objectType:          objectType,

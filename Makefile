@@ -17,7 +17,7 @@ version:
 .PHONY: test
 test:
 	@echo "-> $@"
-	@go test -v ./...
+	@go test -v ./{cmd,internal}/...
 
 # Run govet
 .PHONY: vet

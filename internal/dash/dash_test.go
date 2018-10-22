@@ -16,7 +16,10 @@ import (
 	modulefake "github.com/heptio/developer-dash/internal/module/fake"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/heptio/go-telemetry/pkg/telemetry"
 )
+
+var telemetryClient = &telemetry.NilClient{}
 
 func Test_dash_Run(t *testing.T) {
 	cases := []struct {
@@ -63,7 +66,7 @@ func Test_dash_Run(t *testing.T) {
 			o := fake.NewSimpleClusterOverview()
 			manager := modulefake.NewStubManager("default", []module.Module{o})
 
-			d, err := newDash(listener, namespace, uiURL, nsClient, manager)
+			d, err := newDash(listener, namespace, uiURL, nsClient, manager, telemetryClient)
 			require.NoError(t, err)
 
 			d.willOpenBrowser = false
@@ -132,10 +135,10 @@ func Test_dash_routes(t *testing.T) {
 			o := fake.NewSimpleClusterOverview()
 			manager := modulefake.NewStubManager("default", []module.Module{o})
 
-			d, err := newDash(listener, namespace, uiURL, nsClient, manager)
+			d, err := newDash(listener, namespace, uiURL, nsClient, manager, telemetryClient)
 			require.NoError(t, err)
 
-			service := api.New(apiPathPrefix, nsClient, manager)
+			service := api.New(apiPathPrefix, nsClient, manager, telemetryClient)
 			d.apiHandler = service
 
 			d.defaultHandler = func() (http.Handler, error) {
