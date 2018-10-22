@@ -30,6 +30,6 @@ Kubernetes dashboard for developers
 
 ### Building binary with embedded web assets
 
-1) Run `make web-build` to rebuild web assets
+1) Run `$ make web-build` to rebuild web assets
 
 2) Create `./build/hcli`: `$ make hcli-dev`
