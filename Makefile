@@ -51,4 +51,4 @@ ui-client:
 	cd web; API_BASE=http://localhost:3001 npm run start
 
 .PHONY: ci
-ci: test vet hcli-dev
+ci: test vet web-build hcli-dev
