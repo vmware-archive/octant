@@ -6,7 +6,7 @@ import (
 	"github.com/GeertJohan/go.rice"
 )
 
-// go:generate rice embed-go
+//go:generate rice embed-go
 
 // Handler create a http handler for the web content.
 func Handler() (http.Handler, error) {

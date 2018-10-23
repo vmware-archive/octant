@@ -41,9 +41,6 @@ web-build: web-deps
 	@cd web; npm run-script build
 	@go generate ./web
 
-embed-go: web-build
-	@cd web; rice embed-go
-
 ui-server:
 	DASH_TELEMETRY_ADDRESS=telemetry.corp.heptio.net:443 DASH_DISABLE_OPEN_BROWSER=false DASH_LISTENER_ADDR=localhost:3001 $(GOCMD) run ./cmd/hcli/main.go dash $(DASH_FLAGS)
 

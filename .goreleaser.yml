@@ -3,7 +3,7 @@ release:
   prerelease: true
 before:
   hooks:
-  - make embed-go
+  - make web-build
 project_name: hcli
 builds:
 - main: ./cmd/hcli/main.go
