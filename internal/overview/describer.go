@@ -156,7 +156,13 @@ func (d *ObjectDescriber) Describe(prefix, namespace string, clusterClient clust
 	objectName := object.GetName()
 	setItemName(item, objectName)
 
-	title := fmt.Sprintf("%s: %s", d.baseTitle, objectName)
+	var title string
+
+	if objectName == "" {
+		title = d.baseTitle
+	} else {
+		title = fmt.Sprintf("%s: %s", d.baseTitle, objectName)
+	}
 
 	newObject, ok := item.(runtime.Object)
 	if !ok {
