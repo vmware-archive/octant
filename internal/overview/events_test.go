@@ -30,11 +30,11 @@ func TestEventsDescriber(t *testing.T) {
 	}
 
 	d := NewEventsDescriber("/events")
-	got, err := d.Describe("/prefix", namespace, clusterClient, options)
+	cResponse, err := d.Describe("/prefix", namespace, clusterClient, options)
 	require.NoError(t, err)
 
-	require.Len(t, got, 1)
-	tbl, ok := got[0].(*content.Table)
+	require.Len(t, cResponse.Contents, 1)
+	tbl, ok := cResponse.Contents[0].(*content.Table)
 	require.True(t, ok)
 
 	assert.Equal(t, tbl.Title, "Events")

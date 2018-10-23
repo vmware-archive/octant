@@ -44,12 +44,8 @@ func NewResource(options ResourceOptions) *Resource {
 	}
 }
 
-func (r *Resource) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, error) {
+func (r *Resource) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
 	return r.List().Describe(prefix, namespace, clusterClient, options)
-}
-
-func (r *Resource) Title() string {
-	return r.Titles.List
 }
 
 func (r *Resource) List() *ListDescriber {
@@ -109,7 +105,7 @@ func buildTransforms(transforms map[string]lookupFunc) map[string]lookupFunc {
 }
 
 // summaryFunc creates an ObjectTransformFunc given a title and a lookup.
-func summaryFunc(title string, m map[string]lookupFunc) ObjecTransformFunc {
+func summaryFunc(title string, m map[string]lookupFunc) ObjectTransformFunc {
 	return func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error {
 		return func(tbl *metav1beta1.Table) error {
 			contentTable, err := printContentTable(title, namespace, prefix, tbl, m)

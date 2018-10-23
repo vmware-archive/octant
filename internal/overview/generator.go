@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/content"
 	"github.com/heptio/developer-dash/internal/view"
 	"github.com/pkg/errors"
 	"k8s.io/kubernetes/pkg/apis/apps"
@@ -252,7 +251,7 @@ var (
 var contentNotFound = errors.Errorf("content not found")
 
 type generator interface {
-	Generate(path, prefix, namespace string) (string, []content.Content, error)
+	Generate(path, prefix, namespace string) (ContentResponse, error)
 }
 
 type realGenerator struct {
@@ -271,7 +270,7 @@ func newGenerator(cache Cache, pathFilters []pathFilter, clusterClient cluster.C
 	}
 }
 
-func (g *realGenerator) Generate(path, prefix, namespace string) (string, []content.Content, error) {
+func (g *realGenerator) Generate(path, prefix, namespace string) (ContentResponse, error) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 
@@ -286,42 +285,13 @@ func (g *realGenerator) Generate(path, prefix, namespace string) (string, []cont
 			Fields: fields,
 		}
 
-		contents, err := pf.describer.Describe(prefix, namespace, g.clusterClient, options)
+		cResponse, err := pf.describer.Describe(prefix, namespace, g.clusterClient, options)
 		if err != nil {
-			return "", nil, err
+			return emptyContentResponse, err
 		}
 
-		return pf.describer.Title(), contents, nil
+		return cResponse, nil
 	}
 
-	return "", nil, contentNotFound
-}
-
-func stubContent(name string) []content.Content {
-	t := content.NewTable(name)
-	t.Columns = []content.TableColumn{
-		{Name: "foo", Accessor: "foo"},
-		{Name: "bar", Accessor: "bar"},
-		{Name: "baz", Accessor: "baz"},
-	}
-
-	t.Rows = []content.TableRow{
-		{
-			"foo": content.NewStringText("r1c1"),
-			"bar": content.NewStringText("r1c2"),
-			"baz": content.NewStringText("r1c3"),
-		},
-		{
-			"foo": content.NewStringText("r2c1"),
-			"bar": content.NewStringText("r2c2"),
-			"baz": content.NewStringText("r2c3"),
-		},
-		{
-			"foo": content.NewStringText("r3c1"),
-			"bar": content.NewStringText("r3c2"),
-			"baz": content.NewStringText("r3c3"),
-		},
-	}
-
-	return []content.Content{&t}
+	return emptyContentResponse, contentNotFound
 }

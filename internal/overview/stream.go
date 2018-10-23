@@ -39,15 +39,12 @@ func (cs contentStreamer) content(ctx context.Context) {
 			case <-ctx.Done():
 				isRunning = false
 			case <-timer.C:
-				title, contents, err := cs.generator.Generate(cs.path, cs.prefix, cs.namespace)
+				cResponse, err := cs.generator.Generate(cs.path, cs.prefix, cs.namespace)
 				if err != nil {
 					cs.logger.Errorf("generate error: %v", err)
 				}
 
-				cr := &contentResponse{
-					Title:    title,
-					Contents: contents,
-				}
+				cr := &cResponse
 
 				data, err := json.Marshal(cr)
 				if err != nil {

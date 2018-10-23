@@ -62,12 +62,12 @@ func TestListDescriber(t *testing.T) {
 		Fields: fields,
 	}
 
-	contents, err := d.Describe("/path", namespace, clusterClient, options)
+	cResponse, err := d.Describe("/path", namespace, clusterClient, options)
 	require.NoError(t, err)
 
 	expected := []content.Content{theContent}
 
-	assert.Equal(t, expected, contents)
+	assert.Equal(t, expected, cResponse.Contents)
 
 	assert.True(t, cache.isSatisfied())
 }
@@ -116,13 +116,13 @@ func TestObjectDescriber(t *testing.T) {
 		Fields: fields,
 	}
 
-	contents, err := d.Describe("/path", namespace, clusterClient, options)
+	cResponse, err := d.Describe("/path", namespace, clusterClient, options)
 	require.NoError(t, err)
-
-	require.Len(t, contents, 2)
+	require.Len(t, cResponse.Contents, 2)
+	assert.Equal(t, cResponse.Title, "object: name")
 
 	expected := theContent
-	assert.Equal(t, expected, contents[0])
+	assert.Equal(t, expected, cResponse.Contents[0])
 	assert.True(t, cache.isSatisfied())
 }
 
@@ -146,8 +146,9 @@ func TestSectionDescriber(t *testing.T) {
 		Cache: cache,
 	}
 
-	got, err := d.Describe("/prefix", namespace, clusterClient, options)
+	cResponse, err := d.Describe("/prefix", namespace, clusterClient, options)
 	require.NoError(t, err)
 
-	assert.Equal(t, stubbedContent, got)
+	assert.Equal(t, stubbedContent, cResponse.Contents)
+	assert.Equal(t, cResponse.Title, "section")
 }

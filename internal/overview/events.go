@@ -17,6 +17,7 @@ type EventsDescriber struct {
 	*baseDescriber
 
 	path      string
+	title     string
 	cacheKeys []CacheKey
 }
 
@@ -25,6 +26,7 @@ func NewEventsDescriber(p string) *EventsDescriber {
 	return &EventsDescriber{
 		baseDescriber: newBaseDescriber(),
 		path:          p,
+		title:         "Events",
 		cacheKeys: []CacheKey{
 			{
 				APIVersion: "v1",
@@ -35,15 +37,15 @@ func NewEventsDescriber(p string) *EventsDescriber {
 }
 
 // Describe creates content.
-func (d *EventsDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, error) {
+func (d *EventsDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
 	objects, err := loadObjects(options.Cache, namespace, options.Fields, d.cacheKeys)
 	if err != nil {
-		return nil, err
+		return emptyContentResponse, err
 	}
 
 	var contents []content.Content
 
-	t := newEventTable("Events")
+	t := newEventTable(d.title)
 
 	sort.Slice(objects, func(i, j int) bool {
 		tsI := objects[i].GetCreationTimestamp()
@@ -56,7 +58,7 @@ func (d *EventsDescriber) Describe(prefix, namespace string, clusterClient clust
 		event := &corev1.Event{}
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, event)
 		if err != nil {
-			return nil, err
+			return emptyContentResponse, err
 		}
 
 		t.Rows = append(t.Rows, printEvent(event, prefix, namespace, d.clock()))
@@ -64,17 +66,16 @@ func (d *EventsDescriber) Describe(prefix, namespace string, clusterClient clust
 
 	contents = append(contents, &t)
 
-	return contents, nil
+	return ContentResponse{
+		Contents: contents,
+		Title:    d.title,
+	}, nil
 }
 
 func (d *EventsDescriber) PathFilters() []pathFilter {
 	return []pathFilter{
 		*newPathFilter(d.path, d),
 	}
-}
-
-func (d *EventsDescriber) Title() string {
-	return "Events"
 }
 
 func newEventTable(name string) content.Table {

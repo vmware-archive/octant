@@ -95,12 +95,15 @@ func newStubbedGenerator(contents []content.Content, genErr error) *stubbedGener
 	}
 }
 
-func (g *stubbedGenerator) Generate(path, prefix, namespace string) (string, []content.Content, error) {
+func (g *stubbedGenerator) Generate(path, prefix, namespace string) (ContentResponse, error) {
 	switch {
 	case strings.HasPrefix(path, "/real"):
-		return "title", g.Contents, g.genErr
+		return ContentResponse{
+			Contents: g.Contents,
+			Title:    "title",
+		}, g.genErr
 
 	default:
-		return "", nil, contentNotFound
+		return emptyContentResponse, contentNotFound
 	}
 }
