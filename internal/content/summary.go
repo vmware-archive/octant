@@ -1,9 +1,15 @@
 package content
 
+var _ Content = (*Summary)(nil)
+
 type Summary struct {
 	Type     string    `json:"type"`
 	Title    string    `json:"title"`
 	Sections []Section `json:"sections"`
+}
+
+func (s *Summary) IsEmpty() bool {
+	return len(s.Sections) == 0
 }
 
 type Section struct {
