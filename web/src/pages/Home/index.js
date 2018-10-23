@@ -1,7 +1,7 @@
 import React from 'react'
 import Loading from 'components/Icons/Loading'
 import Title from 'components/Title'
-import ContentSwitcher from './components/ContentSwitcher'
+import Content from './components/Content'
 import './styles.scss'
 
 export default function Home ({ loading, contents, title }) {
@@ -15,7 +15,7 @@ export default function Home ({ loading, contents, title }) {
   } else if (contents && contents.length) {
     mainContent = contents.map((content, i) => (
       <div key={i} className='component--primary'>
-        <ContentSwitcher content={content} />
+        <Content content={content} />
       </div>
     ))
   }
@@ -23,9 +23,7 @@ export default function Home ({ loading, contents, title }) {
   return (
     <div className='home'>
       <Title title={title} />
-      <div className='main'>
-        {mainContent}
-      </div>
+      <div className='main'>{mainContent}</div>
     </div>
   )
 }
