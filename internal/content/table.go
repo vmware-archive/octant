@@ -1,5 +1,7 @@
 package content
 
+var _ Content = (*Table)(nil)
+
 type Table struct {
 	Type    string        `json:"type,omitempty"`
 	Title   string        `json:"title,omitempty"`
