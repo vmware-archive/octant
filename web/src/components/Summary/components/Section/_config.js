@@ -5,7 +5,7 @@ import Link from '../data_types/Link'
 
 const CONFIG = {
   dataMap: {
-    string: <Basic />,
+    text: <Basic />,
     json: <JSON />,
     link: <Link />
   }
