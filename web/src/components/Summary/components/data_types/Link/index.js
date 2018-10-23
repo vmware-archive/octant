@@ -5,13 +5,16 @@ import './styles.scss'
 
 export default function Item (props) {
   const { params } = props
-  const { key, link, value } = params
+  const {
+    label,
+    data: { value, ref }
+  } = params
   return (
     <div className='summary--data summary--data-link'>
-      <div className='summary--data-key'>{key}</div>
+      <div className='summary--data-key'>{label}</div>
       <div className='summary--data-link'>
-        <Link className='link--gray' to={link}>
-          {value}
+        <Link className='link--gray' to={ref}>
+          {value || ref}
         </Link>
       </div>
     </div>

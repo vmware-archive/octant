@@ -13,12 +13,12 @@ export default function Summary (props) {
       <div className='summary--component-sections'>
         {sections
           ? sections.map((section) => {
-            const sectionTitle = section.type[0] === '_' ? '' : section.type
+            const sectionTitle = section.title[0] === '_' ? '' : section.title
             return (
               <Section
                 key={sectionTitle}
                 title={sectionTitle}
-                data={section.data}
+                items={section.items}
               />
             )
           })
