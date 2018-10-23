@@ -40,7 +40,7 @@ func NewEventsDescriber(p string) *EventsDescriber {
 func (d *EventsDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, string, error) {
 	objects, err := loadObjects(options.Cache, namespace, options.Fields, d.cacheKeys)
 	if err != nil {
-		return nil, d.title, err
+		return nil, "", err
 	}
 
 	var contents []content.Content
@@ -58,7 +58,7 @@ func (d *EventsDescriber) Describe(prefix, namespace string, clusterClient clust
 		event := &corev1.Event{}
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, event)
 		if err != nil {
-			return nil, d.title, err
+			return nil, "", err
 		}
 
 		t.Rows = append(t.Rows, printEvent(event, prefix, namespace, d.clock()))

@@ -69,7 +69,7 @@ func (d *ListDescriber) Describe(prefix, namespace string, clusterClient cluster
 
 	objects, err := loadObjects(options.Cache, namespace, options.Fields, []CacheKey{d.cacheKey})
 	if err != nil {
-		return nil, d.title, err
+		return nil, "", err
 	}
 
 	list := d.listType()
@@ -81,7 +81,7 @@ func (d *ListDescriber) Describe(prefix, namespace string, clusterClient cluster
 		item := d.objectType()
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, item)
 		if err != nil {
-			return nil, d.title, err
+			return nil, "", err
 		}
 
 		setItemName(item, object.GetName())
@@ -92,13 +92,13 @@ func (d *ListDescriber) Describe(prefix, namespace string, clusterClient cluster
 
 	listObject, ok := list.(runtime.Object)
 	if !ok {
-		return nil, d.title, errors.Errorf("expected list to be a runtime object. It was a %T",
+		return nil, "", errors.Errorf("expected list to be a runtime object. It was a %T",
 			list)
 	}
 
 	otf := d.objectTransformFunc(namespace, prefix, &contents)
 	if err := printObject(listObject, otf); err != nil {
-		return nil, d.title, err
+		return nil, "", err
 	}
 
 	return contents, d.title, nil
@@ -136,13 +136,13 @@ func NewObjectDescriber(p, baseTitle string, cacheKey CacheKey, objectType func(
 func (d *ObjectDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, string, error) {
 	objects, err := loadObjects(options.Cache, namespace, options.Fields, []CacheKey{d.cacheKey})
 	if err != nil {
-		return nil, d.baseTitle, err
+		return nil, "", err
 	}
 
 	var contents []content.Content
 
 	if len(objects) != 1 {
-		return nil, d.baseTitle, errors.Errorf("expected exactly one object")
+		return nil, "", errors.Errorf("expected exactly one object")
 	}
 
 	object := objects[0]
@@ -150,7 +150,7 @@ func (d *ObjectDescriber) Describe(prefix, namespace string, clusterClient clust
 	item := d.objectType()
 	err = runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, item)
 	if err != nil {
-		return nil, d.baseTitle, err
+		return nil, "", err
 	}
 
 	objectName := object.GetName()
@@ -160,13 +160,13 @@ func (d *ObjectDescriber) Describe(prefix, namespace string, clusterClient clust
 
 	newObject, ok := item.(runtime.Object)
 	if !ok {
-		return nil, title, errors.Errorf("expected item to be a runtime object. It was a %T",
+		return nil, "", errors.Errorf("expected item to be a runtime object. It was a %T",
 			item)
 	}
 
 	otf := d.objectTransformFunc(namespace, prefix, &contents)
 	if err := printObject(newObject, otf); err != nil {
-		return nil, title, err
+		return nil, "", err
 	}
 
 	// TODO should show parents here
@@ -175,7 +175,7 @@ func (d *ObjectDescriber) Describe(prefix, namespace string, clusterClient clust
 	for _, v := range d.views {
 		viewContent, err := v.Content(nil, newObject, nil)
 		if err != nil {
-			return nil, title, err
+			return nil, "", err
 		}
 
 		contents = append(contents, viewContent...)
@@ -183,7 +183,7 @@ func (d *ObjectDescriber) Describe(prefix, namespace string, clusterClient clust
 
 	eventsTable, err := eventsForObject(object, options.Cache, prefix, namespace, d.clock())
 	if err != nil {
-		return nil, title, err
+		return nil, "", err
 	}
 
 	contents = append(contents, eventsTable)
@@ -288,7 +288,7 @@ func (d *SectionDescriber) Describe(prefix, namespace string, clusterClient clus
 	for _, child := range d.describers {
 		childContents, _, err := child.Describe(prefix, namespace, clusterClient, options)
 		if err != nil {
-			return nil, d.title, err
+			return nil, "", err
 		}
 
 		for _, childContent := range childContents {
