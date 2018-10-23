@@ -27,18 +27,19 @@ func TextItem(label, text string) Item {
 	return Item{
 		Type:  "text",
 		Label: label,
-		Data: map[string]string{
+		Data: map[string]interface{}{
 			"value": text,
 		},
 	}
 }
 
-func LinkItem(label, link string) Item {
+func LinkItem(label, value, link string) Item {
 	return Item{
 		Type:  "link",
 		Label: label,
-		Data: map[string]string{
-			"ref": link,
+		Data: map[string]interface{}{
+			"value": value,
+			"ref":   link,
 		},
 	}
 }

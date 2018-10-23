@@ -2,10 +2,10 @@ package content
 
 import (
 	"encoding/json"
+	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 func TestSummary(t *testing.T) {
@@ -20,12 +20,12 @@ func TestSummary(t *testing.T) {
 		{
 			Title: "Network",
 			Items: []Item{
-				LinkItem("docker-for-desktop", "/api/node/blah"),
+				LinkItem("docker-for-desktop", "click-here", "/api/node/blah"),
 				TextItem("IP", "10.1.68.108"),
 				JSONItem("health", map[string]interface{}{
 					"status":      "OK",
 					"lastChecked": "Yesterday",
-					"details": map[string]string{
+					"details": map[string]interface{}{
 						"cluster": "Not broken",
 						"demo":    "Welp",
 					},
@@ -36,18 +36,17 @@ func TestSummary(t *testing.T) {
 
 	summary := NewSummary("details", sections)
 
-	expectedB, err := ioutil.ReadFile("./summary_mock.json")
+	mockB, err := ioutil.ReadFile("./summary_mock.json")
 	if err != nil {
 		panic(err)
 	}
 
-	outputB, err := json.Marshal(summary)
-	if err != nil {
-		t.Error(err)
+	var expected Summary
+	if err := json.Unmarshal(mockB, &expected); err != nil {
+		panic(err)
 	}
 
-	expected := string(expectedB)
-	output := string(outputB)
-
-	require.Equal(t, expected, output)
+	if diff := cmp.Diff(summary, expected); diff != "" {
+		require.Fail(t, diff)
+	}
 }
