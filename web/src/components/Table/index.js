@@ -10,9 +10,10 @@ import 'react-table/react-table.css'
 export default function Table ({ data: { title, columns, rows } }) {
   // Note(marlon):this lives here while the API keeps changing
   // Ideally a lot of this lives in a component or several
-  const tableColumns = _.map(columns, ({ name, accessor }) => ({
+  const tableColumns = _.map(columns, ({ name, accessor }, index) => ({
     Header: name,
     accessor,
+    id: `column_${index}`,
     Cell: (row) => {
       if (row && row.value) {
         const data = row.value
@@ -60,6 +61,11 @@ export default function Table ({ data: { title, columns, rows } }) {
               data={tableRows}
               showPagination={false}
               pageSize={pageSize}
+              defaultSorted={[
+                {
+                  id: 'column_0'
+                }
+              ]}
             />
           )
       }
