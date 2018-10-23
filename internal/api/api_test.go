@@ -12,9 +12,9 @@ import (
 	"github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/module"
 	modulefake "github.com/heptio/developer-dash/internal/module/fake"
+	"github.com/heptio/go-telemetry/pkg/telemetry"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/heptio/go-telemetry/pkg/telemetry"
 )
 
 var telemetryClient = &telemetry.NilClient{}

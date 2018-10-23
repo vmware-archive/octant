@@ -130,7 +130,7 @@ func (w *ClusterWatch) resources() ([]schema.GroupVersionResource, error) {
 			if !res.Namespaced {
 				continue
 			}
-			if hasList(res) {
+			if isWatchable(res) {
 
 				gvr := schema.GroupVersionResource{
 					Group:    gv.Group,
@@ -147,7 +147,7 @@ func (w *ClusterWatch) resources() ([]schema.GroupVersionResource, error) {
 	return gvrs, nil
 }
 
-func hasList(res metav1.APIResource) bool {
+func isWatchable(res metav1.APIResource) bool {
 	m := make(map[string]bool)
 
 	for _, v := range res.Verbs {
