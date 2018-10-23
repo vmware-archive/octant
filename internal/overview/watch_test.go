@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/heptio/developer-dash/internal/cluster/fake"
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -46,7 +47,7 @@ func TestWatch(t *testing.T) {
 
 	cache := NewMemoryCache(CacheNotificationOpt(notifyCh))
 
-	watch := NewWatch("default", clusterClient, cache)
+	watch := NewWatch("default", clusterClient, cache, log.NopLogger())
 
 	stopFn, err := watch.Start()
 	require.NoError(t, err)

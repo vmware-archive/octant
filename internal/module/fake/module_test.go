@@ -9,18 +9,19 @@ import (
 	"testing"
 
 	"github.com/heptio/developer-dash/internal/hcli"
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestModule_ContentPath(t *testing.T) {
-	m := NewModule("module")
+	m := NewModule("module", log.NopLogger())
 	assert.Equal(t, "/module", m.ContentPath())
 }
 
 func TestModule_Handler(t *testing.T) {
-	m := NewModule("module")
+	m := NewModule("module", log.NopLogger())
 
 	ts := httptest.NewServer(m.Handler("/module"))
 	defer ts.Close()
@@ -71,7 +72,7 @@ func TestModule_Handler(t *testing.T) {
 }
 
 func TestModule_Navigation(t *testing.T) {
-	m := NewModule("module")
+	m := NewModule("module", log.NopLogger())
 
 	expected := &hcli.Navigation{
 		Path:  "/module",

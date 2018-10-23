@@ -1,13 +1,13 @@
 package overview
 
 import (
-	"log"
 	"sync"
 
 	"github.com/pkg/errors"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/internal/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -27,14 +27,16 @@ type ClusterWatch struct {
 	clusterClient cluster.ClientInterface
 	cache         Cache
 	namespace     string
+	logger        log.Logger
 }
 
 // NewWatch creates an instance of Watch.
-func NewWatch(namespace string, clusterClient cluster.ClientInterface, c Cache) *ClusterWatch {
+func NewWatch(namespace string, clusterClient cluster.ClientInterface, c Cache, logger log.Logger) *ClusterWatch {
 	return &ClusterWatch{
 		namespace:     namespace,
 		clusterClient: clusterClient,
 		cache:         c,
+		logger:        logger,
 	}
 }
 
@@ -90,20 +92,20 @@ func (w *ClusterWatch) eventHandler(event watch.Event) {
 	switch t := event.Type; t {
 	case watch.Added:
 		if err := w.cache.Store(u); err != nil {
-			log.Printf("store object: %v", err)
+			w.logger.Errorf("store object: %v", err)
 		}
 	case watch.Modified:
 		if err := w.cache.Store(u); err != nil {
-			log.Printf("store object: %v", err)
+			w.logger.Errorf("store object: %v", err)
 		}
 	case watch.Deleted:
 		if err := w.cache.Delete(u); err != nil {
-			log.Printf("store object: %v", err)
+			w.logger.Errorf("store object: %v", err)
 		}
 	case watch.Error:
-		log.Printf("unknown log err: %s", spew.Sdump(event))
+		w.logger.Errorf("unknown log err: %s", spew.Sdump(event))
 	default:
-		log.Printf("unknown event %q", t)
+		w.logger.Errorf("unknown event %q", t)
 	}
 }
 

@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/heptio/developer-dash/internal/content"
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -53,7 +54,7 @@ func Test_handler_routes(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			h := newHandler("/api", tc.generator, stubStream)
+			h := newHandler("/api", tc.generator, stubStream, log.NopLogger())
 
 			ts := httptest.NewServer(h)
 			defer ts.Close()

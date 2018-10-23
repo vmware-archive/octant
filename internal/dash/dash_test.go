@@ -12,11 +12,12 @@ import (
 
 	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/internal/cluster/fake"
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	modulefake "github.com/heptio/developer-dash/internal/module/fake"
+	"github.com/heptio/go-telemetry/pkg/telemetry"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/heptio/go-telemetry/pkg/telemetry"
 )
 
 var telemetryClient = &telemetry.NilClient{}
@@ -66,7 +67,7 @@ func Test_dash_Run(t *testing.T) {
 			o := fake.NewSimpleClusterOverview()
 			manager := modulefake.NewStubManager("default", []module.Module{o})
 
-			d, err := newDash(listener, namespace, uiURL, nsClient, manager, telemetryClient)
+			d, err := newDash(listener, namespace, uiURL, nsClient, manager, log.NopLogger(), telemetryClient)
 			require.NoError(t, err)
 
 			d.willOpenBrowser = false
@@ -135,10 +136,10 @@ func Test_dash_routes(t *testing.T) {
 			o := fake.NewSimpleClusterOverview()
 			manager := modulefake.NewStubManager("default", []module.Module{o})
 
-			d, err := newDash(listener, namespace, uiURL, nsClient, manager, telemetryClient)
+			d, err := newDash(listener, namespace, uiURL, nsClient, manager, log.NopLogger(), telemetryClient)
 			require.NoError(t, err)
 
-			service := api.New(apiPathPrefix, nsClient, manager, telemetryClient)
+			service := api.New(apiPathPrefix, nsClient, manager, log.NopLogger(), telemetryClient)
 			d.apiHandler = service
 
 			d.defaultHandler = func() (http.Handler, error) {

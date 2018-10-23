@@ -2,10 +2,10 @@ package api
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/heptio/developer-dash/internal/hcli"
+	"github.com/heptio/developer-dash/internal/log"
 )
 
 type navigationResponse struct {
@@ -14,13 +14,15 @@ type navigationResponse struct {
 
 type navigation struct {
 	sections []*hcli.Navigation
+	logger   log.Logger
 }
 
 var _ http.Handler = (*navigation)(nil)
 
-func newNavigation(sections []*hcli.Navigation) *navigation {
+func newNavigation(sections []*hcli.Navigation, logger log.Logger) *navigation {
 	return &navigation{
 		sections: sections,
+		logger:   logger,
 	}
 }
 
@@ -30,6 +32,6 @@ func (n *navigation) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewEncoder(w).Encode(nr); err != nil {
-		log.Printf("encoding navigation error: %v", err)
+		n.logger.Errorf("encoding navigation error: %v", err)
 	}
 }

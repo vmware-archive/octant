@@ -72,3 +72,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/heptio/go-telemetry"
+
+[[constraint]]
+  name = "go.uber.org/zap"
+  version = "1.9.1"

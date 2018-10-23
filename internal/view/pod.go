@@ -58,7 +58,7 @@ func (pc *PodCondition) Content(ctx context.Context, object runtime.Object, clus
 func retrievePod(object runtime.Object) (*core.Pod, error) {
 	pod, ok := object.(*core.Pod)
 	if !ok {
-		return nil, errors.Errorf("expectect object to be a Pod, it was %T", object)
+		return nil, errors.Errorf("expected object to be a Pod, it was %T", object)
 	}
 
 	return pod, nil

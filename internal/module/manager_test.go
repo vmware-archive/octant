@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/heptio/developer-dash/internal/cluster/fake"
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -18,7 +19,7 @@ func TestManager(t *testing.T) {
 	clusterClient, err := fake.NewClient(scheme, objects)
 	require.NoError(t, err)
 
-	manager, err := NewManager(clusterClient, "default")
+	manager, err := NewManager(clusterClient, "default", log.NopLogger())
 	require.NoError(t, err)
 
 	modules := manager.Modules()
