@@ -37,10 +37,10 @@ func NewEventsDescriber(p string) *EventsDescriber {
 }
 
 // Describe creates content.
-func (d *EventsDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, string, error) {
+func (d *EventsDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
 	objects, err := loadObjects(options.Cache, namespace, options.Fields, d.cacheKeys)
 	if err != nil {
-		return nil, "", err
+		return emptyContentResponse, err
 	}
 
 	var contents []content.Content
@@ -58,7 +58,7 @@ func (d *EventsDescriber) Describe(prefix, namespace string, clusterClient clust
 		event := &corev1.Event{}
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, event)
 		if err != nil {
-			return nil, "", err
+			return emptyContentResponse, err
 		}
 
 		t.Rows = append(t.Rows, printEvent(event, prefix, namespace, d.clock()))
@@ -66,7 +66,10 @@ func (d *EventsDescriber) Describe(prefix, namespace string, clusterClient clust
 
 	contents = append(contents, &t)
 
-	return contents, d.title, nil
+	return ContentResponse{
+		Contents: contents,
+		Title:    d.title,
+	}, nil
 }
 
 func (d *EventsDescriber) PathFilters() []pathFilter {
