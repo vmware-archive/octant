@@ -44,12 +44,8 @@ func NewResource(options ResourceOptions) *Resource {
 	}
 }
 
-func (r *Resource) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, error) {
+func (r *Resource) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, string, error) {
 	return r.List().Describe(prefix, namespace, clusterClient, options)
-}
-
-func (r *Resource) Title() string {
-	return r.Titles.List
 }
 
 func (r *Resource) List() *ListDescriber {

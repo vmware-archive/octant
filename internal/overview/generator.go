@@ -286,12 +286,12 @@ func (g *realGenerator) Generate(path, prefix, namespace string) (string, []cont
 			Fields: fields,
 		}
 
-		contents, err := pf.describer.Describe(prefix, namespace, g.clusterClient, options)
+		contents, title, err := pf.describer.Describe(prefix, namespace, g.clusterClient, options)
 		if err != nil {
-			return "", nil, err
+			return title, nil, err
 		}
 
-		return pf.describer.Title(), contents, nil
+		return title, contents, nil
 	}
 
 	return "", nil, contentNotFound

@@ -30,7 +30,7 @@ func TestEventsDescriber(t *testing.T) {
 	}
 
 	d := NewEventsDescriber("/events")
-	got, err := d.Describe("/prefix", namespace, clusterClient, options)
+	got, _, err := d.Describe("/prefix", namespace, clusterClient, options)
 	require.NoError(t, err)
 
 	require.Len(t, got, 1)

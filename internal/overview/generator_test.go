@@ -153,18 +153,14 @@ func newStubDescriber(p string) *stubDescriber {
 	}
 }
 
-func (d *stubDescriber) Describe(string, string, cluster.ClientInterface, DescriberOptions) ([]content.Content, error) {
-	return stubbedContent, nil
+func (d *stubDescriber) Describe(string, string, cluster.ClientInterface, DescriberOptions) ([]content.Content, string, error) {
+	return stubbedContent, "A title", nil
 }
 
 func (d *stubDescriber) PathFilters() []pathFilter {
 	return []pathFilter{
 		*newPathFilter(d.path, d),
 	}
-}
-
-func (d *stubDescriber) Title() string {
-	return "A title"
 }
 
 var stubbedContent = []content.Content{newFakeContent(false)}

@@ -62,7 +62,7 @@ func TestListDescriber(t *testing.T) {
 		Fields: fields,
 	}
 
-	contents, err := d.Describe("/path", namespace, clusterClient, options)
+	contents, _, err := d.Describe("/path", namespace, clusterClient, options)
 	require.NoError(t, err)
 
 	expected := []content.Content{theContent}
@@ -116,10 +116,10 @@ func TestObjectDescriber(t *testing.T) {
 		Fields: fields,
 	}
 
-	contents, err := d.Describe("/path", namespace, clusterClient, options)
+	contents, title, err := d.Describe("/path", namespace, clusterClient, options)
 	require.NoError(t, err)
-
 	require.Len(t, contents, 2)
+	assert.Equal(t, title, "object: name")
 
 	expected := theContent
 	assert.Equal(t, expected, contents[0])
@@ -146,8 +146,9 @@ func TestSectionDescriber(t *testing.T) {
 		Cache: cache,
 	}
 
-	got, err := d.Describe("/prefix", namespace, clusterClient, options)
+	got, title, err := d.Describe("/prefix", namespace, clusterClient, options)
 	require.NoError(t, err)
 
 	assert.Equal(t, stubbedContent, got)
+	assert.Equal(t, title, "section")
 }

@@ -26,9 +26,8 @@ type DescriberOptions struct {
 
 // Describer creates content.
 type Describer interface {
-	Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, error)
+	Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, string, error)
 	PathFilters() []pathFilter
-	Title() string
 }
 
 type baseDescriber struct{}
@@ -64,17 +63,13 @@ func NewListDescriber(p, title string, cacheKey CacheKey, listType, objectType f
 	}
 }
 
-func (d *ListDescriber) Title() string {
-	return d.title
-}
-
 // Describe creates content.
-func (d *ListDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, error) {
+func (d *ListDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, string, error) {
 	var contents []content.Content
 
 	objects, err := loadObjects(options.Cache, namespace, options.Fields, []CacheKey{d.cacheKey})
 	if err != nil {
-		return nil, err
+		return nil, d.title, err
 	}
 
 	list := d.listType()
@@ -86,7 +81,7 @@ func (d *ListDescriber) Describe(prefix, namespace string, clusterClient cluster
 		item := d.objectType()
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, item)
 		if err != nil {
-			return nil, err
+			return nil, d.title, err
 		}
 
 		setItemName(item, object.GetName())
@@ -97,16 +92,16 @@ func (d *ListDescriber) Describe(prefix, namespace string, clusterClient cluster
 
 	listObject, ok := list.(runtime.Object)
 	if !ok {
-		return nil, errors.Errorf("expected list to be a runtime object. It was a %T",
+		return nil, d.title, errors.Errorf("expected list to be a runtime object. It was a %T",
 			list)
 	}
 
 	otf := d.objectTransformFunc(namespace, prefix, &contents)
 	if err := printObject(listObject, otf); err != nil {
-		return nil, err
+		return nil, d.title, err
 	}
 
-	return contents, nil
+	return contents, d.title, nil
 }
 
 func (d *ListDescriber) PathFilters() []pathFilter {
@@ -119,17 +114,17 @@ type ObjectDescriber struct {
 	*baseDescriber
 
 	path                string
-	title               string
+	baseTitle           string
 	objectType          func() interface{}
 	cacheKey            CacheKey
 	objectTransformFunc ObjecTransformFunc
 	views               []view.View
 }
 
-func NewObjectDescriber(p, title string, cacheKey CacheKey, objectType func() interface{}, otf ObjecTransformFunc, views []view.View) *ObjectDescriber {
+func NewObjectDescriber(p, baseTitle string, cacheKey CacheKey, objectType func() interface{}, otf ObjecTransformFunc, views []view.View) *ObjectDescriber {
 	return &ObjectDescriber{
 		path:                p,
-		title:               title,
+		baseTitle:           baseTitle,
 		baseDescriber:       newBaseDescriber(),
 		cacheKey:            cacheKey,
 		objectType:          objectType,
@@ -138,20 +133,16 @@ func NewObjectDescriber(p, title string, cacheKey CacheKey, objectType func() in
 	}
 }
 
-func (d *ObjectDescriber) Title() string {
-	return d.title
-}
-
-func (d *ObjectDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, error) {
+func (d *ObjectDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, string, error) {
 	objects, err := loadObjects(options.Cache, namespace, options.Fields, []CacheKey{d.cacheKey})
 	if err != nil {
-		return nil, err
+		return nil, d.baseTitle, err
 	}
 
 	var contents []content.Content
 
 	if len(objects) != 1 {
-		return nil, errors.Errorf("expected exactly one object")
+		return nil, d.baseTitle, errors.Errorf("expected exactly one object")
 	}
 
 	object := objects[0]
@@ -159,20 +150,23 @@ func (d *ObjectDescriber) Describe(prefix, namespace string, clusterClient clust
 	item := d.objectType()
 	err = runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, item)
 	if err != nil {
-		return nil, err
+		return nil, d.baseTitle, err
 	}
 
-	setItemName(item, object.GetName())
+	objectName := object.GetName()
+	setItemName(item, objectName)
+
+	title := fmt.Sprintf("%s: %s", d.baseTitle, objectName)
 
 	newObject, ok := item.(runtime.Object)
 	if !ok {
-		return nil, errors.Errorf("expected item to be a runtime object. It was a %T",
+		return nil, title, errors.Errorf("expected item to be a runtime object. It was a %T",
 			item)
 	}
 
 	otf := d.objectTransformFunc(namespace, prefix, &contents)
 	if err := printObject(newObject, otf); err != nil {
-		return nil, err
+		return nil, title, err
 	}
 
 	// TODO should show parents here
@@ -181,7 +175,7 @@ func (d *ObjectDescriber) Describe(prefix, namespace string, clusterClient clust
 	for _, v := range d.views {
 		viewContent, err := v.Content(nil, newObject, nil)
 		if err != nil {
-			return nil, err
+			return nil, title, err
 		}
 
 		contents = append(contents, viewContent...)
@@ -189,12 +183,12 @@ func (d *ObjectDescriber) Describe(prefix, namespace string, clusterClient clust
 
 	eventsTable, err := eventsForObject(object, options.Cache, prefix, namespace, d.clock())
 	if err != nil {
-		return nil, err
+		return nil, title, err
 	}
 
 	contents = append(contents, eventsTable)
 
-	return contents, nil
+	return contents, title, nil
 }
 
 func (d *ObjectDescriber) PathFilters() []pathFilter {
@@ -288,13 +282,13 @@ func NewSectionDescriber(p, title string, describers ...Describer) *SectionDescr
 }
 
 // Describe generates content.
-func (d *SectionDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, error) {
+func (d *SectionDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, string, error) {
 	var contents []content.Content
 
 	for _, child := range d.describers {
-		childContents, err := child.Describe(prefix, namespace, clusterClient, options)
+		childContents, _, err := child.Describe(prefix, namespace, clusterClient, options)
 		if err != nil {
-			return nil, err
+			return nil, d.title, err
 		}
 
 		for _, childContent := range childContents {
@@ -304,7 +298,7 @@ func (d *SectionDescriber) Describe(prefix, namespace string, clusterClient clus
 		}
 	}
 
-	return contents, nil
+	return contents, d.title, nil
 }
 
 func (d *SectionDescriber) PathFilters() []pathFilter {
@@ -317,8 +311,4 @@ func (d *SectionDescriber) PathFilters() []pathFilter {
 	}
 
 	return pathFilters
-}
-
-func (d *SectionDescriber) Title() string {
-	return d.title
 }
