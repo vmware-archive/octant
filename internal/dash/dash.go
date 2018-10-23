@@ -3,7 +3,6 @@ package dash
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -18,6 +17,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/web"
 	"github.com/heptio/go-telemetry/pkg/telemetry"
@@ -30,15 +30,15 @@ const (
 )
 
 // Run runs the dashboard.
-func Run(ctx context.Context, namespace, uiURL, kubeconfig string, telemetryClient telemetry.Interface) error {
-	log.Printf("Initial namespace for dashboard is %s", namespace)
+func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Logger, telemetryClient telemetry.Interface) error {
+	logger.Debugf("initial namespace for dashboard is %s", namespace)
 
 	clusterClient, err := cluster.FromKubeconfig(kubeconfig)
 	if err != nil {
 		return errors.Wrap(err, "failed to init cluster client")
 	}
 
-	moduleManager, err := module.NewManager(clusterClient, namespace)
+	moduleManager, err := module.NewManager(clusterClient, namespace, logger)
 	if err != nil {
 		return errors.Wrap(err, "create module manager")
 	}
@@ -55,7 +55,8 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, telemetryClie
 
 	version, err := clusterClient.Version()
 	if err != nil {
-		log.Print("failed to get kubernetes version from cluster")
+		// Fail-open
+		logger.Errorf("failed to get kubernetes version from cluster")
 	}
 
 	telemetryClient = telemetryClient.With(telemetry.Labels{
@@ -63,7 +64,7 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, telemetryClie
 		"kubernetes.version": version,
 	})
 
-	d, err := newDash(listener, namespace, uiURL, nsClient, moduleManager, telemetryClient)
+	d, err := newDash(listener, namespace, uiURL, nsClient, moduleManager, logger, telemetryClient)
 	if err != nil {
 		return errors.Wrap(err, "failed to create dash instance")
 	}
@@ -74,7 +75,7 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, telemetryClie
 
 	go func() {
 		if err := d.Run(ctx); err != nil {
-			log.Printf("Running dashboard service: %v", err)
+			logger.Debugf("running dashboard service: %v", err)
 		}
 	}()
 
@@ -100,11 +101,12 @@ type dash struct {
 	defaultHandler  func() (http.Handler, error)
 	apiHandler      api.Service
 	willOpenBrowser bool
+	logger          log.Logger
 	telemetryClient telemetry.Interface
 }
 
-func newDash(listener net.Listener, namespace, uiURL string, nsClient cluster.NamespaceInterface, moduleManager module.ManagerInterface, telemetryClient telemetry.Interface) (*dash, error) {
-	ah := api.New(apiPathPrefix, nsClient, moduleManager, telemetryClient)
+func newDash(listener net.Listener, namespace, uiURL string, nsClient cluster.NamespaceInterface, moduleManager module.ManagerInterface, logger log.Logger, telemetryClient telemetry.Interface) (*dash, error) {
+	ah := api.New(apiPathPrefix, nsClient, moduleManager, logger, telemetryClient)
 
 	for _, m := range moduleManager.Modules() {
 		if err := ah.RegisterModule(m); err != nil {
@@ -119,6 +121,7 @@ func newDash(listener net.Listener, namespace, uiURL string, nsClient cluster.Na
 		defaultHandler:  web.Handler,
 		willOpenBrowser: true,
 		apiHandler:      ah,
+		logger:          logger,
 		telemetryClient: telemetryClient,
 	}, nil
 }
@@ -135,18 +138,19 @@ func (d *dash) Run(ctx context.Context) error {
 
 	go func() {
 		if err = server.Serve(d.listener); err != nil && err != http.ErrServerClosed {
-			log.Fatal(err)
+			d.logger.Errorf("http server: %v", err)
+			os.Exit(1) // TODO graceful shutdown for other goroutines
 		}
 	}()
 
 	dashboardURL := fmt.Sprintf("http://%s", d.listener.Addr())
-	log.Printf("Dashboard is available at %s", dashboardURL)
+	d.logger.Infof("Dashboard is available at %s\n", dashboardURL)
 
 	if d.willOpenBrowser {
 		d.telemetryClient.SendEvent("dash.browser.open", telemetry.Measurements{"count": 1})
 		if err = open.Run(dashboardURL); err != nil {
 			d.telemetryClient.SendEvent("dash.browser.failure", telemetry.Measurements{"count": 1})
-			log.Printf("Warning: unable to open browser: %v", err)
+			d.logger.Warnf("unable to open browser: %v", err)
 		}
 	}
 
@@ -195,7 +199,7 @@ func (d *dash) uiProxy() (*httputil.ReverseProxy, error) {
 		u.Scheme = "http"
 	}
 
-	log.Printf("Proxying dashboard UI to %s", u.String())
+	d.logger.Infof("Proxying dashboard UI to %s", u.String())
 
 	proxy := httputil.NewSingleHostReverseProxy(u)
 	return proxy, nil

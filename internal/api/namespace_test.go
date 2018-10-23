@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	modulefake "github.com/heptio/developer-dash/internal/module/fake"
 	"github.com/stretchr/testify/assert"
@@ -36,10 +37,10 @@ func Test_namespace_update(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			m := modulefake.NewModule("module")
+			m := modulefake.NewModule("module", log.NopLogger())
 			manager := modulefake.NewStubManager("default", []module.Module{m})
 
-			handler := newNamespace(manager)
+			handler := newNamespace(manager, log.NopLogger())
 
 			ts := httptest.NewServer(http.HandlerFunc(handler.update))
 			defer ts.Close()
@@ -61,10 +62,10 @@ func Test_namespace_update(t *testing.T) {
 }
 
 func Test_namespace_read(t *testing.T) {
-	m := modulefake.NewModule("module")
+	m := modulefake.NewModule("module", log.NopLogger())
 	manager := modulefake.NewStubManager("default", []module.Module{m})
 
-	handler := newNamespace(manager)
+	handler := newNamespace(manager, log.NopLogger())
 
 	ts := httptest.NewServer(http.HandlerFunc(handler.read))
 	defer ts.Close()

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/heptio/developer-dash/internal/cluster/fake"
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -18,7 +19,7 @@ func TestClusterOverview(t *testing.T) {
 	clusterClient, err := fake.NewClient(scheme, objects)
 	require.NoError(t, err)
 
-	o := NewClusterOverview(clusterClient, "default")
+	o := NewClusterOverview(clusterClient, "default", log.NopLogger())
 
 	namespaces, err := o.Namespaces()
 	require.NoError(t, err)
@@ -37,7 +38,7 @@ func TestClusterOverview_SetNamespace(t *testing.T) {
 	clusterClient, err := fake.NewClient(scheme, objects)
 	require.NoError(t, err)
 
-	o := NewClusterOverview(clusterClient, "default")
+	o := NewClusterOverview(clusterClient, "default", log.NopLogger())
 	defer o.Stop()
 
 	err = o.SetNamespace("ns2")

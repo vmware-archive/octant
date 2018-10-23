@@ -2,13 +2,13 @@ package overview
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/hcli"
+	"github.com/heptio/developer-dash/internal/log"
 )
 
 // ClusterOverview is an API for generating a cluster overview.
@@ -16,6 +16,8 @@ type ClusterOverview struct {
 	client cluster.ClientInterface
 
 	namespace string
+
+	logger log.Logger
 
 	watchFactory func(namespace string, clusterClient cluster.ClientInterface, cache Cache) Watch
 
@@ -26,7 +28,7 @@ type ClusterOverview struct {
 }
 
 // NewClusterOverview creates an instance of ClusterOverview.
-func NewClusterOverview(client cluster.ClientInterface, namespace string) *ClusterOverview {
+func NewClusterOverview(client cluster.ClientInterface, namespace string, logger log.Logger) *ClusterOverview {
 	var opts []MemoryCacheOpt
 
 	if os.Getenv("DASH_VERBOSE_CACHE") != "" {
@@ -49,13 +51,15 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string) *Clust
 
 	g := newGenerator(cache, pathFilters, client)
 
-	return &ClusterOverview{
-		namespace:    namespace,
-		client:       client,
-		cache:        cache,
-		watchFactory: watchFactory,
-		generator:    g,
+	co := &ClusterOverview{
+		namespace: namespace,
+		client:    client,
+		logger:    logger,
+		cache:     cache,
+		generator: g,
 	}
+	co.watchFactory = co.defaultWatchFactory
+	return co
 }
 
 // Name returns the name for this module.
@@ -70,7 +74,7 @@ func (co *ClusterOverview) ContentPath() string {
 
 // Handler returns a handler for serving overview HTTP content.
 func (co *ClusterOverview) Handler(prefix string) http.Handler {
-	return newHandler(prefix, co.generator, stream)
+	return newHandler(prefix, co.generator, stream, co.logger)
 }
 
 // Namespaces returns a list of namespace names for a cluster.
@@ -90,7 +94,7 @@ func (co *ClusterOverview) Navigation(root string) (*hcli.Navigation, error) {
 
 // SetNamespace sets the current namespace.
 func (co *ClusterOverview) SetNamespace(namespace string) error {
-	log.Printf("Setting namespace for overview to %q", namespace)
+	co.logger.Debugf("setting namespace for overview to %q", namespace)
 	if co.stopFn != nil {
 		co.stopFn()
 	}
@@ -105,7 +109,7 @@ func (co *ClusterOverview) Start() error {
 		return nil
 	}
 
-	log.Printf("Starting cluster overview")
+	co.logger.Debugf("starting cluster overview")
 
 	stopFn, err := co.watch(co.namespace)
 	if err != nil {
@@ -120,19 +124,19 @@ func (co *ClusterOverview) Start() error {
 // Stop stops overview.
 func (co *ClusterOverview) Stop() {
 	if co.stopFn != nil {
-		log.Printf("Stopping cluster overview")
+		co.logger.Debugf("stopping cluster overview")
 
 		co.stopFn()
 	}
 }
 
 func (co *ClusterOverview) watch(namespace string) (StopFunc, error) {
-	log.Printf("Watching namespace %s", namespace)
+	co.logger.Debugf("watching namespace %s", namespace)
 
 	watch := co.watchFactory(namespace, co.client, co.cache)
 	return watch.Start()
 }
 
-func watchFactory(namespace string, clusterClient cluster.ClientInterface, cache Cache) Watch {
-	return NewWatch(namespace, clusterClient, cache)
+func (co *ClusterOverview) defaultWatchFactory(namespace string, clusterClient cluster.ClientInterface, cache Cache) Watch {
+	return NewWatch(namespace, clusterClient, cache, co.logger)
 }

@@ -2,15 +2,17 @@ package commands
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"time"
 
 	"github.com/heptio/developer-dash/internal/dash"
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/go-telemetry/pkg/telemetry"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 func newDashCmd() *cobra.Command {
@@ -26,16 +28,24 @@ func newDashCmd() *cobra.Command {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
+			z, err := zap.NewDevelopment()
+			if err != nil {
+				fmt.Printf("failed to initialize logger: %v\n", err)
+				os.Exit(1)
+			}
+			defer z.Sync()
+			logger := log.Wrap(z.Sugar())
+
 			sigCh := make(chan os.Signal, 1)
 			signal.Notify(sigCh, os.Interrupt)
 
 			runCh := make(chan bool, 1)
 
-			telemetryClient := newTelemetry()
+			telemetryClient := newTelemetry(logger)
 			startTime := time.Now()
 			go func() {
-				if err := dash.Run(ctx, namespace, uiURL, kubeconfig, telemetryClient); err != nil {
-					log.Print(err)
+				if err := dash.Run(ctx, namespace, uiURL, kubeconfig, logger, telemetryClient); err != nil {
+					logger.Errorf("running dashboard: %v", err)
 					os.Exit(1)
 				}
 
@@ -49,7 +59,7 @@ func newDashCmd() *cobra.Command {
 					"duration": msDuration,
 					"count":    1,
 				})
-				log.Print("Shutting dashboard down due to interrupt")
+				logger.Debugf("Shutting dashboard down due to interrupt")
 				telemetryClient.Close()
 			case <-runCh:
 				msDuration := int64(time.Since(startTime) / time.Millisecond)
@@ -57,7 +67,7 @@ func newDashCmd() *cobra.Command {
 					"duration": msDuration,
 					"count":    1,
 				})
-				log.Print("Dashboard has exited")
+				logger.Debugf("Dashboard has exited")
 				telemetryClient.Close()
 			}
 		},
@@ -75,7 +85,7 @@ func newDashCmd() *cobra.Command {
 	return dashCmd
 }
 
-func newTelemetry() telemetry.Interface {
+func newTelemetry(logger log.Logger) telemetry.Interface {
 	if _, ok := os.LookupEnv("DASH_DISABLE_TELEMETRY"); ok {
 		return &telemetry.NilClient{}
 	}
@@ -85,9 +95,9 @@ func newTelemetry() telemetry.Interface {
 		telemetryAddress = telemetry.DefaultAddress
 	}
 
-	telemetryClient, err := telemetry.NewClient(telemetryAddress, 10*time.Second, log.New(os.Stderr, "TELEMETRY: ", log.LstdFlags))
+	telemetryClient, err := telemetry.NewClient(telemetryAddress, 10*time.Second, logger.Named("telemetry"))
 	if err != nil {
-		log.Print("failed creating telemetry client", err)
+		logger.Errorf("failed creating telemetry client", err)
 		return &telemetry.NilClient{}
 	}
 

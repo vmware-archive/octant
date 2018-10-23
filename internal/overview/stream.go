@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/heptio/developer-dash/internal/log"
 )
 
 const (
@@ -23,6 +24,7 @@ type contentStreamer struct {
 	namespace    string
 	streamFn     streamFn
 	eventTimeout time.Duration
+	logger       log.Logger
 }
 
 func (cs contentStreamer) content(ctx context.Context) {
@@ -39,7 +41,7 @@ func (cs contentStreamer) content(ctx context.Context) {
 			case <-timer.C:
 				title, contents, err := cs.generator.Generate(cs.path, cs.prefix, cs.namespace)
 				if err != nil {
-					log.Printf("generate error: %v", err)
+					cs.logger.Errorf("generate error: %v", err)
 				}
 
 				cr := &contentResponse{
@@ -49,7 +51,7 @@ func (cs contentStreamer) content(ctx context.Context) {
 
 				data, err := json.Marshal(cr)
 				if err != nil {
-					log.Printf("marshal err: %v", err)
+					cs.logger.Errorf("marshal err: %v", err)
 				}
 
 				ch <- data

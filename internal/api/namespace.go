@@ -2,19 +2,21 @@ package api
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 )
 
 type namespace struct {
 	moduleManager module.ManagerInterface
+	logger        log.Logger
 }
 
-func newNamespace(moduleManager module.ManagerInterface) *namespace {
+func newNamespace(moduleManager module.ManagerInterface, logger log.Logger) *namespace {
 	return &namespace{
 		moduleManager: moduleManager,
+		logger:        logger,
 	}
 }
 
@@ -52,6 +54,6 @@ func (n *namespace) read(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewEncoder(w).Encode(nr); err != nil {
-		log.Printf("encoding namespace error: %v", err)
+		n.logger.Errorf("encoding namespace error: %v", err)
 	}
 }
