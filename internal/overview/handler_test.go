@@ -95,7 +95,7 @@ func newStubbedGenerator(contents []content.Content, genErr error) *stubbedGener
 	}
 }
 
-func (g *stubbedGenerator) Generate(path, prefix, namespace string) (ContentResponse, error) {
+func (g *stubbedGenerator) Generate(ctx context.Context, path, prefix, namespace string) (ContentResponse, error) {
 	switch {
 	case strings.HasPrefix(path, "/real"):
 		return ContentResponse{
@@ -106,4 +106,28 @@ func (g *stubbedGenerator) Generate(path, prefix, namespace string) (ContentResp
 	default:
 		return emptyContentResponse, contentNotFound
 	}
+}
+
+// generatorFunc allows a bare Generate function to implement Generator
+type generatorFunc func(ctx context.Context, path, prefix, namespace string) (ContentResponse, error)
+
+func (g generatorFunc) Generate(ctx context.Context, path, prefix, namespace string) (ContentResponse, error) {
+	return g(ctx, path, prefix, namespace)
+}
+
+// Test that context is passed on from handler and includes logger
+func TestHandlerContext(t *testing.T) {
+	logger := log.NopLogger()
+	g := generatorFunc(func(ctx context.Context, path, prefix, namespace string) (ContentResponse, error) {
+		l := log.From(ctx)
+		assert.True(t, logger == l, "unexpected logger from context")
+		return emptyContentResponse, nil
+	})
+
+	h := newHandler("/api", g, stubStream, logger)
+	w := httptest.NewRecorder()
+	r, err := http.NewRequest("GET", "/api", nil)
+	require.NoError(t, err)
+
+	h.ServeHTTP(w, r)
 }

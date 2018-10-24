@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 
@@ -26,7 +27,7 @@ type DescriberOptions struct {
 
 // Describer creates content.
 type Describer interface {
-	Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error)
+	Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error)
 	PathFilters() []pathFilter
 }
 
@@ -64,10 +65,10 @@ func NewListDescriber(p, title string, cacheKey CacheKey, listType, objectType f
 }
 
 // Describe creates content.
-func (d *ListDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
+func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
 	var contents []content.Content
 
-	objects, err := loadObjects(options.Cache, namespace, options.Fields, []CacheKey{d.cacheKey})
+	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, []CacheKey{d.cacheKey})
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -136,8 +137,8 @@ func NewObjectDescriber(p, baseTitle string, cacheKey CacheKey, objectType func(
 	}
 }
 
-func (d *ObjectDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
-	objects, err := loadObjects(options.Cache, namespace, options.Fields, []CacheKey{d.cacheKey})
+func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
+	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, []CacheKey{d.cacheKey})
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -182,7 +183,7 @@ func (d *ObjectDescriber) Describe(prefix, namespace string, clusterClient clust
 	// TODO will need to register a map of object transformers?
 
 	for _, v := range d.views {
-		viewContent, err := v.Content(nil, newObject, nil)
+		viewContent, err := v.Content(ctx, newObject, nil)
 		if err != nil {
 			return emptyContentResponse, err
 		}
@@ -294,11 +295,11 @@ func NewSectionDescriber(p, title string, describers ...Describer) *SectionDescr
 }
 
 // Describe generates content.
-func (d *SectionDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
+func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
 	var contents []content.Content
 
 	for _, child := range d.describers {
-		cResponse, err := child.Describe(prefix, namespace, clusterClient, options)
+		cResponse, err := child.Describe(ctx, prefix, namespace, clusterClient, options)
 		if err != nil {
 			return emptyContentResponse, err
 		}

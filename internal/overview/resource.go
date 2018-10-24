@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"reflect"
@@ -44,8 +45,8 @@ func NewResource(options ResourceOptions) *Resource {
 	}
 }
 
-func (r *Resource) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
-	return r.List().Describe(prefix, namespace, clusterClient, options)
+func (r *Resource) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
+	return r.List().Describe(ctx, prefix, namespace, clusterClient, options)
 }
 
 func (r *Resource) List() *ListDescriber {

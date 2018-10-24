@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"context"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -73,7 +74,8 @@ func Test_loadObjects(t *testing.T) {
 
 			namespace := "default"
 
-			_, err := loadObjects(cache, namespace, tc.fields, tc.keys)
+			ctx := context.Background()
+			_, err := loadObjects(ctx, cache, namespace, tc.fields, tc.keys)
 			if tc.isErr {
 				require.Error(t, err)
 				return
