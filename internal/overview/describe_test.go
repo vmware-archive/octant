@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"context"
 	"testing"
 
 	"github.com/heptio/developer-dash/internal/cluster/fake"
@@ -62,7 +63,8 @@ func TestListDescriber(t *testing.T) {
 		Fields: fields,
 	}
 
-	cResponse, err := d.Describe("/path", namespace, clusterClient, options)
+	ctx := context.Background()
+	cResponse, err := d.Describe(ctx, "/path", namespace, clusterClient, options)
 	require.NoError(t, err)
 
 	expected := []content.Content{theContent}
@@ -116,7 +118,8 @@ func TestObjectDescriber(t *testing.T) {
 		Fields: fields,
 	}
 
-	cResponse, err := d.Describe("/path", namespace, clusterClient, options)
+	ctx := context.Background()
+	cResponse, err := d.Describe(ctx, "/path", namespace, clusterClient, options)
 	require.NoError(t, err)
 	require.Len(t, cResponse.Contents, 2)
 	assert.Equal(t, cResponse.Title, "object: name")
@@ -146,7 +149,8 @@ func TestSectionDescriber(t *testing.T) {
 		Cache: cache,
 	}
 
-	cResponse, err := d.Describe("/prefix", namespace, clusterClient, options)
+	ctx := context.Background()
+	cResponse, err := d.Describe(ctx, "/prefix", namespace, clusterClient, options)
 	require.NoError(t, err)
 
 	assert.Equal(t, stubbedContent, cResponse.Contents)

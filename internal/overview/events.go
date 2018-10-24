@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"time"
@@ -37,8 +38,8 @@ func NewEventsDescriber(p string) *EventsDescriber {
 }
 
 // Describe creates content.
-func (d *EventsDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
-	objects, err := loadObjects(options.Cache, namespace, options.Fields, d.cacheKeys)
+func (d *EventsDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
+	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, d.cacheKeys)
 	if err != nil {
 		return emptyContentResponse, err
 	}

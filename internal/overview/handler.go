@@ -50,6 +50,7 @@ func newHandler(prefix string, g generator, sfn streamFn, logger log.Logger) *ha
 
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
+		ctx := log.WithLoggerContext(r.Context(), logger)
 		path := strings.TrimPrefix(r.URL.Path, prefix)
 		namespace := r.URL.Query().Get("namespace")
 		poll := r.URL.Query().Get("poll")
@@ -74,11 +75,11 @@ func newHandler(prefix string, g generator, sfn streamFn, logger log.Logger) *ha
 				logger:       logger,
 			}
 
-			cs.content(r.Context())
+			cs.content(ctx)
 		}
 
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		cResponse, err := g.Generate(path, prefix, namespace)
+		cResponse, err := g.Generate(ctx, path, prefix, namespace)
 		if err != nil {
 			switch {
 			case err == contentNotFound:

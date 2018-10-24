@@ -1,6 +1,8 @@
 package overview
 
 import (
+	"context"
+
 	"github.com/heptio/developer-dash/internal/content"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -13,7 +15,7 @@ import (
 
 type lookupFunc func(namespace, prefix string, cell interface{}) content.Text
 
-func loadObjects(cache Cache, namespace string, fields map[string]string, cacheKeys []CacheKey) ([]*unstructured.Unstructured, error) {
+func loadObjects(ctx context.Context, cache Cache, namespace string, fields map[string]string, cacheKeys []CacheKey) ([]*unstructured.Unstructured, error) {
 	var objects []*unstructured.Unstructured
 
 	for _, cacheKey := range cacheKeys {
