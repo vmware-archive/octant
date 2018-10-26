@@ -171,6 +171,9 @@ var (
 		ObjectType: &core.ConfigMap{},
 		Titles:     ResourceTitle{List: "Config Maps", Object: "Config Map"},
 		Transforms: configMapTransforms,
+		Views: []view.View{
+			view.NewConfigMapDetails(),
+		},
 	})
 
 	csPVCs = NewResource(ResourceOptions{
@@ -194,7 +197,7 @@ var (
 	configAndStorageDescriber = NewSectionDescriber(
 		"/config-and-storage",
 		"Config and Storage",
-		csConfigMaps.List(),
+		csConfigMaps,
 		csPVCs.List(),
 		csSecrets.List(),
 	)
