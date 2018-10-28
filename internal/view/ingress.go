@@ -50,25 +50,21 @@ func ingressRulesTable(ingress *v1beta1.Ingress) *content.Table {
 
 	table.Columns = []content.TableColumn{
 		tableCol("Host"),
-		tableCol("Paths"),
+		tableCol("Path"),
+		tableCol("Backend"),
 	}
 
 	for _, rule := range ingress.Spec.Rules {
-		var paths []string
-
 		if rule.HTTP != nil {
 			for _, path := range rule.HTTP.Paths {
-				pathRoute := path.Path
 				backend := fmt.Sprintf("%s:%s", path.Backend.ServiceName, path.Backend.ServicePort.String())
-				paths = append(paths, fmt.Sprintf("%s (%s)", pathRoute, backend))
+				table.AddRow(content.TableRow{
+					"Host":    content.NewStringText(rule.Host),
+					"Path":    content.NewStringText(path.Path),
+					"Backend": content.NewStringText(backend),
+				})
 			}
-
-			table.AddRow(content.TableRow{
-				"Host":  content.NewStringText(rule.Host),
-				"Paths": content.NewStringText(strings.Join(paths, ", ")),
-			})
 		}
-
 	}
 
 	return &table
