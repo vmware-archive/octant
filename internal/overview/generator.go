@@ -3,6 +3,7 @@ package overview
 import (
 	"context"
 	"fmt"
+	"k8s.io/api/extensions/v1beta1"
 	"regexp"
 	"sync"
 
@@ -142,10 +143,13 @@ var (
 	dlbIngresses = NewResource(ResourceOptions{
 		Path:       "/discovery-and-load-balancing/ingresses",
 		CacheKey:   CacheKey{APIVersion: "extensions/v1beta1", Kind: "Ingress"},
-		ListType:   &extensions.IngressList{},
-		ObjectType: &extensions.Ingress{},
+		ListType:   &v1beta1.IngressList{},
+		ObjectType: &v1beta1.Ingress{},
 		Titles:     ResourceTitle{List: "Ingresses", Object: "Ingress"},
 		Transforms: ingressTransforms,
+		Views: []view.View{
+			&view.IngressDetails{},
+		},
 	})
 
 	dlbServices = NewResource(ResourceOptions{
@@ -160,8 +164,8 @@ var (
 	discoveryAndLoadBalancingDescriber = NewSectionDescriber(
 		"/discovery-and-load-balancing",
 		"Discovery and Load Balancing",
-		dlbIngresses.List(),
-		dlbServices.List(),
+		dlbIngresses,
+		dlbServices,
 	)
 
 	csConfigMaps = NewResource(ResourceOptions{
