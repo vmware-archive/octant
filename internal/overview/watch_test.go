@@ -107,6 +107,73 @@ func TestWatch(t *testing.T) {
 	require.Equal(t, annotations, found[0].GetAnnotations())
 }
 
+func TestWatch_Stop(t *testing.T) {
+	scheme := runtime.NewScheme()
+	objects := []runtime.Object{
+		newUnstructured("apps/v1", "Deployment", "default", "deploy3"),
+	}
+
+	clusterClient, err := fake.NewClient(scheme, objects)
+	require.NoError(t, err)
+
+	discoveryClient := clusterClient.FakeDiscovery
+	discoveryClient.Resources = []*metav1.APIResourceList{
+		{
+			GroupVersion: "apps/v1",
+			APIResources: []metav1.APIResource{
+				{
+					Name:         "deployments",
+					SingularName: "deployment",
+					Group:        "apps",
+					Version:      "v1",
+					Kind:         "Deployment",
+					Namespaced:   true,
+					Verbs:        metav1.Verbs{"list", "watch"},
+					Categories:   []string{"all"},
+				},
+			},
+		},
+		{
+			GroupVersion: "v1",
+			APIResources: []metav1.APIResource{
+				{
+					Name:         "services",
+					SingularName: "service",
+					Group:        "",
+					Version:      "v1",
+					Kind:         "Service",
+					Namespaced:   true,
+					Verbs:        metav1.Verbs{"list", "watch"},
+					Categories:   []string{"all"},
+				},
+			},
+		},
+	}
+
+	notifyCh := make(chan CacheNotification)
+
+	cache := NewMemoryCache(CacheNotificationOpt(notifyCh))
+
+	watch := NewWatch("default", clusterClient, cache, log.NopLogger())
+
+	stopFn, err := watch.Start()
+	require.NoError(t, err)
+
+	// Stop the watchers (blocking) and make sure it completes
+	stopDone := make(chan interface{})
+	go func() {
+		stopFn()
+		close(stopDone)
+	}()
+
+	select {
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out wating for watchers to stop")
+	case <-stopDone:
+		// Success
+	}
+}
+
 func newUnstructured(apiVersion, kind, namespace, name string) *unstructured.Unstructured {
 	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
