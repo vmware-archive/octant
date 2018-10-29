@@ -70,24 +70,25 @@ func (w *ClusterWatch) Start() (StopFunc, error) {
 	events, shutdownCh := consumeEvents(done, watchers)
 
 	allDone := make(chan interface{})
-	wg := sync.WaitGroup{}
-	wg.Add(2)
-	go func() {
-		// Forward events to handler.
-		// Exits after all watchers are stopped in consumeEvents.
-		for event := range events {
-			w.eventHandler(event)
-		}
-		wg.Done()
-	}()
 
 	go func() {
-		// Block until all watch consumers have finished (in consumeEvents)
-		<-shutdownCh
-		wg.Done()
-	}()
+		wg := sync.WaitGroup{}
+		wg.Add(2)
+		go func() {
+			// Forward events to handler.
+			// Exits after all watchers are stopped in consumeEvents.
+			for event := range events {
+				w.eventHandler(event)
+			}
+			wg.Done()
+		}()
 
-	go func() {
+		go func() {
+			// Block until all watch consumers have finished (in consumeEvents)
+			<-shutdownCh
+			wg.Done()
+		}()
+
 		// Block until fan-in consumer as well as individual watch consumers have completed
 		// (above two goroutines)
 		wg.Wait()
