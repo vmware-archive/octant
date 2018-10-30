@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import ReactTable from 'react-table'
 import _ from 'lodash'
-import EmptyContent from '../EmptyContent'
+import EmptyContent from '../../EmptyContent'
 import Labels from './components/Labels'
 import './styles.scss'
 import 'react-table/react-table.css'
@@ -52,23 +52,21 @@ export default function Table ({ data: { title, columns, rows } }) {
   return (
     <div className='table--component'>
       <h2 className='table-component-title'>{title}</h2>
-      {
-        !rows || !rows.length // if no rows return empty component
-          ? <EmptyContent title={title} />
-          : (
-            <ReactTable
-              columns={tableColumns}
-              data={tableRows}
-              showPagination={false}
-              pageSize={pageSize}
-              defaultSorted={[
-                {
-                  id: 'column_0'
-                }
-              ]}
-            />
-          )
-      }
+      {!rows || !rows.length ? ( // if no rows return empty component
+        <EmptyContent title={title} />
+      ) : (
+        <ReactTable
+          columns={tableColumns}
+          data={tableRows}
+          showPagination={false}
+          pageSize={pageSize}
+          defaultSorted={[
+            {
+              id: 'column_0'
+            }
+          ]}
+        />
+      )}
     </div>
   )
 }

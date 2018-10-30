@@ -1,6 +1,6 @@
 import React from 'react'
-import Table from 'components/Table'
-import Summary from 'components/Summary'
+import Table from 'components/ContentTypes/Table'
+import Summary from 'components/ContentTypes/Summary'
 
 export default function ({ content }) {
   const { type } = content
