@@ -1,7 +1,7 @@
 import React from 'react'
-import Basic from '../data_types/Basic'
-import JSON from '../data_types/JSON'
-import Link from '../data_types/Link'
+import Basic from '../data_types/Basic/index'
+import JSON from '../data_types/JSON/index'
+import Link from '../data_types/Link/index'
 
 const CONFIG = {
   dataMap: {
