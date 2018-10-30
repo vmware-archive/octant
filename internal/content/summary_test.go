@@ -2,10 +2,12 @@ package content
 
 import (
 	"encoding/json"
-	"github.com/google/go-cmp/cmp"
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
+	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSummary(t *testing.T) {
@@ -36,17 +38,57 @@ func TestSummary(t *testing.T) {
 
 	summary := NewSummary("details", sections)
 
-	mockB, err := ioutil.ReadFile("./summary_mock.json")
-	if err != nil {
-		panic(err)
-	}
+	mockB, err := ioutil.ReadFile(filepath.Join("testdata", "summary_mock.json"))
+	require.NoError(t, err)
 
 	var expected Summary
-	if err := json.Unmarshal(mockB, &expected); err != nil {
-		panic(err)
+	err = json.Unmarshal(mockB, &expected)
+	require.NoError(t, err)
+
+	assert.Equal(t, expected, summary)
+}
+
+func TestSummary_IsEmpty(t *testing.T) {
+	summary := NewSummary("summary", nil)
+	assert.True(t, summary.IsEmpty())
+}
+
+func TestLabelsItem(t *testing.T) {
+	cases := []struct {
+		name     string
+		labels   map[string]string
+		expected Item
+	}{
+		{
+			name: "empty",
+			expected: Item{
+				Type:  "text",
+				Label: "name",
+				Data: map[string]interface{}{
+					"value": "<none>",
+				},
+			},
+		},
+		{
+			name: "with content",
+			labels: map[string]string{
+				"z": "content",
+				"b": "content",
+			},
+			expected: Item{
+				Type:  "text",
+				Label: "name",
+				Data: map[string]interface{}{
+					"value": "b=content, z=content",
+				},
+			},
+		},
 	}
 
-	if diff := cmp.Diff(summary, expected); diff != "" {
-		require.Fail(t, diff)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			item := LabelsItem("name", tc.labels)
+			assert.Equal(t, tc.expected, item)
+		})
 	}
 }

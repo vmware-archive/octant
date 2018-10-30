@@ -1,5 +1,11 @@
 package content
 
+import (
+	"fmt"
+	"sort"
+	"strings"
+)
+
 var _ Content = (*Summary)(nil)
 
 type Summary struct {
@@ -29,6 +35,31 @@ func TextItem(label, text string) Item {
 		Label: label,
 		Data: map[string]interface{}{
 			"value": text,
+		},
+	}
+}
+
+func LabelsItem(label string, labels map[string]string) Item {
+	if len(labels) == 0 {
+		return TextItem(label, "<none>")
+	}
+
+	keys := make([]string, 0, len(labels))
+	for key := range labels {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	var out []string
+	for _, key := range keys {
+		out = append(out, fmt.Sprintf("%s=%s", key, labels[key]))
+	}
+
+	return Item{
+		Type:  "text",
+		Label: label,
+		Data: map[string]interface{}{
+			"value": strings.Join(out, ", "),
 		},
 	}
 }

@@ -1,9 +1,8 @@
-package view
+package overview
 
 import (
 	"context"
 
-	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -19,7 +18,7 @@ func NewConfigMapDetails() *ConfigMapDetails {
 }
 
 // Content describes human readable object details
-func (cm *ConfigMapDetails) Content(ctx context.Context, object runtime.Object, clusterClient cluster.ClientInterface) ([]content.Content, error) {
+func (cm *ConfigMapDetails) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
 	configMap, ok := object.(*core.ConfigMap)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a ConfigMap, it was %T", object)

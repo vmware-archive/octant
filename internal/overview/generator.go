@@ -3,12 +3,12 @@ package overview
 import (
 	"context"
 	"fmt"
-	"k8s.io/api/extensions/v1beta1"
 	"regexp"
 	"sync"
 
+	"k8s.io/api/extensions/v1beta1"
+
 	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/view"
 	"github.com/pkg/errors"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/batch"
@@ -77,6 +77,10 @@ var (
 		ObjectType: &extensions.Deployment{},
 		Titles:     ResourceTitle{List: "Deployments", Object: "Deployment"},
 		Transforms: deploymentTransforms,
+		Views: []View{
+			NewDeploymentSummary(),
+			NewDeploymentReplicaSets(),
+		},
 	})
 
 	workloadsJobs = NewResource(ResourceOptions{
@@ -96,8 +100,8 @@ var (
 		ObjectType: &core.Pod{},
 		Titles:     ResourceTitle{List: "Pods", Object: "Pod"},
 		Transforms: podTransforms,
-		Views: []view.View{
-			view.NewPodCondition(),
+		Views: []View{
+			NewPodCondition(),
 		},
 	})
 
@@ -147,8 +151,8 @@ var (
 		ObjectType: &v1beta1.Ingress{},
 		Titles:     ResourceTitle{List: "Ingresses", Object: "Ingress"},
 		Transforms: ingressTransforms,
-		Views: []view.View{
-			&view.IngressDetails{},
+		Views: []View{
+			NewIngressDetails(),
 		},
 	})
 
@@ -175,8 +179,8 @@ var (
 		ObjectType: &core.ConfigMap{},
 		Titles:     ResourceTitle{List: "Config Maps", Object: "Config Map"},
 		Transforms: configMapTransforms,
-		Views: []view.View{
-			view.NewConfigMapDetails(),
+		Views: []View{
+			NewConfigMapDetails(),
 		},
 	})
 

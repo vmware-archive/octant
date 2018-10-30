@@ -1,0 +1,49 @@
+apiVersion: extensions/v1beta1
+kind: ReplicaSet
+metadata:
+  annotations:
+    deployment.kubernetes.io/desired-replicas: "3"
+    deployment.kubernetes.io/max-replicas: "4"
+    deployment.kubernetes.io/revision: "3"
+  creationTimestamp: 2018-10-29T15:34:01Z
+  generation: 3
+  labels:
+    app: myapp
+    pod-template-hash: "2350241137"
+  name: rs1
+  namespace: default
+  ownerReferences:
+  - apiVersion: extensions/v1beta1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Deployment
+    name: deployment
+    uid: ac833d23-c17e-11e8-9212-025000000001
+  resourceVersion: "5616889"
+  selfLink: /apis/extensions/v1beta1/namespaces/default/replicasets/rs1
+  uid: ac833d23-c17e-11e8-9212-025000000001
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+      pod-template-hash: "2350241137"
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: myapp
+        pod-template-hash: "2350241137"
+    spec:
+      containers:
+      - image: nginx:1.13.6
+        name: nginx
+        ports:
+        - containerPort: 80
+          protocol: TCP
+status:
+  availableReplicas: 3
+  fullyLabeledReplicas: 3
+  observedGeneration: 3
+  readyReplicas: 3
+  replicas: 3
