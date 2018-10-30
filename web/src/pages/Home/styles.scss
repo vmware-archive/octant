@@ -10,6 +10,11 @@
       background-color: $white;
       margin-bottom: 50px;
       padding: 20px;
+
+      .empty-content-text {
+        color: $gray-accent;
+        text-align: center;
+      }
     }
 
     .loading-parent {
