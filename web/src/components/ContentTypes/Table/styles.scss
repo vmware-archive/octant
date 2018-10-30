@@ -1,7 +1,9 @@
 @import '~css/variables/variables.scss';
 
-.table-component-title {
-  margin-bottom: 10px;
+.table--component {
+  .table-component-title {
+    margin-bottom: 10px;
+  }
 }
 
 .table--component > .ReactTable {
@@ -35,7 +37,6 @@
 
       .rt-th {
         border-right: 1px solid $orange;
-
       }
     }
 
