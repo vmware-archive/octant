@@ -1,7 +1,14 @@
 import React from 'react'
-import CONFIG from './_config'
-
+import Basic from './components/DataTypes/Basic'
+import JSON from './components/DataTypes/JSON'
+import Link from './components/DataTypes/Link'
 import './styles.scss'
+
+const dataTypeMap = {
+  text: <Basic />,
+  json: <JSON />,
+  link: <Link />
+}
 
 export default function Section (props) {
   const { title, items } = props
@@ -10,7 +17,7 @@ export default function Section (props) {
       <div className='summary--component-title'>
         <h2>{title}</h2>
       </div>
-      {items.map((item, index) => React.cloneElement(CONFIG.dataMap[item.type], {
+      {items.map((item, index) => React.cloneElement(dataTypeMap[item.type], {
         key: index,
         params: item
       }))}
