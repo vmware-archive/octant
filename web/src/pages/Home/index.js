@@ -5,7 +5,7 @@ import Content from './components/Content'
 import './styles.scss'
 
 export default function Home ({ loading, contents, title }) {
-  let mainContent = <div>No resources</div>
+  let mainContent
   if (loading) {
     mainContent = (
       <div className='loading-parent'>
@@ -18,6 +18,12 @@ export default function Home ({ loading, contents, title }) {
         <Content content={content} />
       </div>
     ))
+  } else {
+    mainContent = (
+      <div className='component--primary'>
+        <h3 className='empty-content-text'>There is nothing to display here</h3>
+      </div>
+    )
   }
 
   return (
