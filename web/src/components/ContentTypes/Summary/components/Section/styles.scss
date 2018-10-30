@@ -1,9 +1,14 @@
 @import '~css/variables/variables.scss';
 
-.summary--component-title {
-  color: $orange;
-  margin-top: 10px;
-  text-align: left;
+.summary-component-section {
+  flex: 1 1 auto;
+  max-width: 50%;
+
+  .summary-component-title {
+    color: $orange;
+    margin-top: 10px;
+    text-align: left;
+  }
 }
 
 .summary--data {
@@ -12,10 +17,15 @@
   padding: 5px 0;
 
   .summary--data-key {
+    @include bold;
+    align-self: flex-start;
     box-sizing: content-box;
-    min-width: 100px;
+    flex: 0 0 auto;
+    overflow: hidden;
     padding-right: 50px;
     text-align: left;
-    @include bold;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 200px;
   }
 }

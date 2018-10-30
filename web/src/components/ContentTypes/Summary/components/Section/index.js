@@ -13,8 +13,8 @@ const dataTypeMap = {
 export default function Section (props) {
   const { title, items } = props
   return (
-    <div className='summary--component-section'>
-      <div className='summary--component-title'>
+    <div className='summary-component-section'>
+      <div className='summary-component-title'>
         <h2>{title}</h2>
       </div>
       {items.map((item, index) => React.cloneElement(dataTypeMap[item.type], {
