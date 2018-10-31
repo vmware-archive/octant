@@ -4,6 +4,17 @@
   .table-component-title {
     margin-bottom: 10px;
   }
+
+  .table--link {
+    @include bold;
+    color: $orange;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
 }
 
 .table--component > .ReactTable {

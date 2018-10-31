@@ -1,46 +1,61 @@
 const Summary = {
   type: 'summary',
-  title: 'Details',
+  title: 'details',
   sections: [
     {
-      type: '_primary',
-      data: [
+      title: 'Primary',
+      items: [
         {
-          key: 'Name',
-          value: 'nginx',
-          type: 'string'
+          type: 'text',
+          label: 'Name',
+          data: {
+            value: 'nginx'
+          }
         },
         {
-          key: 'Namespace',
-          value: 'overview',
-          type: 'string'
+          type: 'text',
+          label: 'Namespace',
+          data: {
+            value: 'default'
+          }
         }
       ]
     },
     {
-      type: 'Network',
-      data: [
+      title: 'Network',
+      items: [
         {
-          key: 'Node',
-          value: 'docker-for-desktop',
           type: 'link',
-          link: '/api/node/blah'
-        },
-        {
-          key: 'IP',
-          value: '10.1.68.108',
-          type: 'string'
-        },
-        {
-          key: 'health',
-          type: 'json',
+          label: 'docker-for-desktop',
           data: {
-            status: 'OK',
-            lastChecked: 'Fri Sep 28 2018 10:37:34 GMT-0700',
+            ref: '/api/node/blah',
+            value: 'click-here'
+          }
+        },
+        {
+          type: 'text',
+          label: 'IP',
+          data: {
+            value: '10.1.68.108'
+          }
+        },
+        {
+          type: 'json',
+          label: 'health',
+          data: {
             details: {
-              cluster: 'Is not broken',
-              demo: 'Is going great'
-            }
+              cluster: 'Not broken',
+              demo: 'Welp'
+            },
+            lastChecked: 'Yesterday',
+            status: 'OK'
+          }
+        },
+        {
+          type: 'list',
+          label: 'Labels',
+          data: {
+            list: []
           }
         }
       ]

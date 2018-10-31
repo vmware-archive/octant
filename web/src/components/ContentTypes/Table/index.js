@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import ReactTable from 'react-table'
 import _ from 'lodash'
 import EmptyContent from '../shared/EmptyContent'
-import Labels from './components/Labels'
+import Labels from '../shared/Labels'
 import './styles.scss'
 import 'react-table/react-table.css'
 
