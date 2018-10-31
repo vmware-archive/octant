@@ -218,17 +218,17 @@ func (ec *eventConsumer) Stop() {
 	defer ec.mu.Unlock()
 
 	ec.once.Do(func() {
-		// Notify clients to stop adding watches (loops calling Consume())
+		// Notify clients (loops calling Consume()) to stop adding watches
 		close(ec.done)
-	})
 
-	for _, watch := range ec.watchers {
-		watch.Stop()
-	}
-	ec.logger.Debugf("stopped %d watchers", len(ec.watchers))
-	ec.watchers = ec.watchers[:0]
-	ec.wg.Wait()
-	close(ec.events)
+		for _, watch := range ec.watchers {
+			watch.Stop()
+		}
+		ec.logger.Debugf("stopped %d watchers", len(ec.watchers))
+		ec.watchers = nil
+		ec.wg.Wait()
+		close(ec.events)
+	})
 }
 
 // Events returns a channel that can be used to consume events from all watchers
