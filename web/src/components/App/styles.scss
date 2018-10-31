@@ -4,16 +4,17 @@
   background-color: $gray-lightest;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
 
   .app-page {
     display: flex;
     flex-direction: row;
-    height: 100%;
+    flex: 1 1 auto;
 
     .app-nav {
       background-color: $white;
-      min-width: 200px;
+      width: 250px;
+      flex: 0 0 auto;
     }
 
     .app-main {
