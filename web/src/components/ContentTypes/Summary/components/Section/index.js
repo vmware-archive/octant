@@ -2,12 +2,14 @@ import React from 'react'
 import Basic from './components/DataTypes/Basic'
 import JSON from './components/DataTypes/JSON'
 import Link from './components/DataTypes/Link'
+import Labels from '../../../shared/Labels'
 import './styles.scss'
 
 const dataTypeMap = {
-  text: <Basic />,
-  json: <JSON />,
-  link: <Link />
+  text: Basic,
+  json: JSON,
+  link: Link,
+  labels: Labels
 }
 
 export default function Section (props) {
@@ -20,7 +22,7 @@ export default function Section (props) {
       {items.map((item, index) => {
         const elem = dataTypeMap[item.type]
         if (!elem) return null
-        return React.cloneElement(dataTypeMap[item.type], {
+        return React.createElement(dataTypeMap[item.type], {
           key: index,
           params: item
         })
