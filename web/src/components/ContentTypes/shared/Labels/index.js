@@ -4,9 +4,9 @@ import './styles.scss'
 
 export default function ({ labels }) {
   return (
-    <div className='table-labels'>
+    <div className='content-labels'>
       {_.map(labels, (value, key) => (
-        <div key={key} className='table-label'>
+        <div key={key} className='content-label'>
           {key}: {value}
         </div>
       ))}

@@ -1,11 +1,11 @@
-@import '~css/variables/variables.scss';
+@import '~css/variables/variables';
 
-.table-labels {
+.content-labels {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
 
-  .table-label {
+  .content-label {
     background-color: $orange;
     border-radius: 4px;
     color: white;
@@ -16,15 +16,5 @@
     &:last-child {
       margin-right: 0;
     }
-  }
-}
-
-.table--link {
-  @include bold;
-  color: $orange;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
   }
 }
