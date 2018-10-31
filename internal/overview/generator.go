@@ -68,6 +68,9 @@ var (
 		ObjectType: &extensions.DaemonSet{},
 		Titles:     ResourceTitle{List: "Daemon Sets", Object: "Daemon Set"},
 		Transforms: daemonSetTransforms,
+		Views: []View{
+			NewPodList(),
+		},
 	})
 
 	workloadsDeployments = NewResource(ResourceOptions{
@@ -91,6 +94,9 @@ var (
 
 		Titles:     ResourceTitle{List: "Jobs", Object: "Job"},
 		Transforms: jobTransforms,
+		Views: []View{
+			NewPodList(),
+		},
 	})
 
 	workloadsPods = NewResource(ResourceOptions{
@@ -112,6 +118,10 @@ var (
 		ObjectType: &extensions.ReplicaSet{},
 		Titles:     ResourceTitle{List: "Replica Sets", Object: "Replica Set"},
 		Transforms: replicaSetTransforms,
+		Views: []View{
+			NewReplicaSetSummary(),
+			NewPodList(),
+		},
 	})
 
 	workloadsReplicationControllers = NewResource(ResourceOptions{
@@ -121,6 +131,9 @@ var (
 		ObjectType: &core.ReplicationController{},
 		Titles:     ResourceTitle{List: "Replication Controllers", Object: "Replication Controller"},
 		Transforms: replicationControllerTransforms,
+		Views: []View{
+			NewPodList(),
+		},
 	})
 	workloadsStatefulSets = NewResource(ResourceOptions{
 		Path:       "/workloads/stateful-sets",
@@ -129,6 +142,9 @@ var (
 		ObjectType: &apps.StatefulSet{},
 		Titles:     ResourceTitle{List: "Stateful Sets", Object: "Stateful Set"},
 		Transforms: statefulSetTransforms,
+		Views: []View{
+			NewPodList(),
+		},
 	})
 
 	workloadsDescriber = NewSectionDescriber(

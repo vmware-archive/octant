@@ -7,16 +7,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/heptio/developer-dash/internal/content"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
-
-	"github.com/heptio/developer-dash/internal/content"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 )
@@ -202,7 +202,7 @@ func TestDeploymentReplicaSets(t *testing.T) {
 			"Desired":    content.NewStringText("3"),
 			"Current":    content.NewStringText("3"),
 			"Ready":      content.NewStringText("3"),
-			"Age":        content.NewStringText("1d"),
+			"Age":        content.NewStringText("2d"),
 			"Containers": content.NewStringText("nginx"),
 			"Images":     content.NewStringText("nginx:1.13.6"),
 			"Selector":   content.NewStringText("app=myapp,pod-template-hash=2350241137"),
@@ -222,12 +222,7 @@ func TestDeploymentReplicaSets(t *testing.T) {
 }
 
 func storeFromFile(t *testing.T, name string, cache Cache) {
-	decode := scheme.Codecs.UniversalDeserializer().Decode
-	rs1, err := ioutil.ReadFile(filepath.Join("testdata", name))
-	require.NoError(t, err)
-
-	decoded, _, err := decode(rs1, nil, nil)
-	require.NoError(t, err)
+	decoded := loadFromFile(t, name)
 
 	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(decoded)
 	require.NoError(t, err)
@@ -236,75 +231,27 @@ func storeFromFile(t *testing.T, name string, cache Cache) {
 	require.NoError(t, err)
 }
 
-var rs1234 = &unstructured.Unstructured{
-	Object: map[string]interface{}{
-		"kind":       "ReplicaSet",
-		"apiVersion": "extensions/v1beta1",
-		"metadata": map[string]interface{}{
-			"ownerReferences": []interface{}{
-				map[string]interface{}{
-					"controller":         true,
-					"blockOwnerDeletion": true,
-					"apiVersion":         "extensions/v1beta1",
-					"kind":               "Deployment",
-					"name":               "deployment",
-					"uid":                "ac833d23-c17e-11e8-9212-025000000001",
-				},
-			},
-			"name":     "rs1",
-			"selfLink": "/apis/extensions/v1beta1/namespaces/default/replicasets/rs1",
-			"uid":      "ac833d23-c17e-11e8-9212-025000000001",
-			"annotations": map[string]interface{}{
-				"deployment.kubernetes.io/desired-replicas": "3",
-				"deployment.kubernetes.io/max-replicas":     "4",
-				"deployment.kubernetes.io/revision":         "3",
-			},
-			"labels": map[string]interface{}{
-				"app":               "myapp",
-				"pod-template-hash": "2350241137",
-			},
-			"namespace":         "default",
-			"resourceVersion":   "5616889",
-			"generation":        3,
-			"creationTimestamp": "2018-10-29T15:34:01Z",
-		},
-		"spec": map[string]interface{}{
-			"replicas": 3,
-			"selector": map[string]interface{}{
-				"matchLabels": map[string]interface{}{
-					"app":               "myapp",
-					"pod-template-hash": "2350241137",
-				},
-			},
-			"template": map[string]interface{}{
-				"metadata": map[string]interface{}{
-					"labels": map[string]string{
-						"app":               "myapp",
-						"pod-template-hash": "2350241137",
-					},
-				},
-				"spec": map[string]interface{}{
-					"containers": []interface{}{
-						map[string]interface{}{
-							"name":  "nginx",
-							"image": "nginx:1.13.6",
-							"ports": []interface{}{
-								map[string]interface{}{
-									"protocol":      "TCP",
-									"containerPort": 80,
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		"status": map[string]interface{}{
-			"replicas":             3,
-			"fullyLabeledReplicas": 3,
-			"readyReplicas":        3,
-			"availableReplicas":    3,
-			"observedGeneration":   3,
-		},
-	},
+func loadFromFile(t *testing.T, name string) runtime.Object {
+	decode := scheme.Codecs.UniversalDeserializer().Decode
+	rs1, err := ioutil.ReadFile(filepath.Join("testdata", name))
+	require.NoError(t, err)
+
+	decoded, _, err := decode(rs1, nil, nil)
+	require.NoError(t, err)
+
+	return decoded
+}
+
+func convertToInternal(t *testing.T, in runtime.Object) runtime.Object {
+	var out runtime.Object
+
+	switch in.(type) {
+	case *extensionsv1beta1.ReplicaSet:
+		out = &extensions.ReplicaSet{}
+	}
+
+	err := scheme.Scheme.Convert(in, out, runtime.InternalGroupVersioner)
+	require.NoError(t, err)
+
+	return out
 }
