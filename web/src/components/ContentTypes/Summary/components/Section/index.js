@@ -17,10 +17,14 @@ export default function Section (props) {
       <div className='summary-component-title'>
         <h2>{title}</h2>
       </div>
-      {items.map((item, index) => React.cloneElement(dataTypeMap[item.type], {
-        key: index,
-        params: item
-      }))}
+      {items.map((item, index) => {
+        const elem = dataTypeMap[item.type]
+        if (!elem) return null
+        return React.cloneElement(dataTypeMap[item.type], {
+          key: index,
+          params: item
+        })
+      })}
     </div>
   )
 }
