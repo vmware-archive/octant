@@ -26,5 +26,7 @@ deploy:
   script: ./ci/travis-deploy.sh
   on:
     tags: true
-    condition: $TRAVIS_OS_NAME = linux        
-
+    condition: $TRAVIS_OS_NAME = linux
+env:
+  global:
+    secure: v8YTSShRorXHasSYxgMGqZ1WfmeRmnu87Ls7GGf7eFheV9AM2LBchWZ2U1S3/0gVtcRgUAadlvc0BUQkFczscnA8sUW1nX8A+Mosl4VLFh7QmXAvjjE31ubCS/MJz6w40EdYWYMzUfQ1S1K7jH55nAM2Z7IaKbzHagtpClu2hr+mCIRquZUYjE4/3mwxgpEMUa0QbHq8AE3KSevMQsksxJVzxv59i2EpwAjrSLlPMe28k8FX9mj0Q/k7qpy6AHveduXarcnTecNp+jbZx8D5cJQ94dFVnVOhjue4FTfmjmdTmvBWVWz+qjd5tLMZ1/KEhjji7349aSgnbL53FNTMmtKjJNF5YDCIXqfCN+jr+62VhA1pSjrgdYt+YDD1OXg6Tat/eF9Z6u6A8X7qWXqEnDFXFj02jdCvpd2isvW+l5zZXdQnf8vSfQ8ndRmeQwxx4Ntr89TBlPNJq44oMAMThRxfz1J6cPYgjS5gY5i8mqOUoYCEwSnFc+IO5/7Uxpb2DaPY4SLLAW4/wnbeEH3dN/m1Nknn8qF74LxBK4UwDX/Ucd5rY0rE9aRv17ph4vKBCOg4wCfw81n3ZgnlUTsinB4CR28/Z+90unxleQ45K9921rJMpyHTB7ywiENbGCQppJHJ84gOK5d6dtLK6F96vcaHiv6+q5pudwbu8X1YPvA=
