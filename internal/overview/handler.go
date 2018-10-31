@@ -85,6 +85,7 @@ func newHandler(prefix string, g generator, sfn streamFn, logger log.Logger) *ha
 			case err == contentNotFound:
 				respondWithError(w, http.StatusNotFound, err.Error(), logger)
 			default:
+				logger.Errorf("unable to generate: %v", err)
 				respondWithError(w, http.StatusInternalServerError, err.Error(), logger)
 			}
 			return

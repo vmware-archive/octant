@@ -8,7 +8,6 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/content"
-	"github.com/heptio/developer-dash/internal/view"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
 )
 
@@ -32,7 +31,7 @@ type ResourceOptions struct {
 	ObjectType interface{}
 	Titles     ResourceTitle
 	Transforms map[string]lookupFunc
-	Views      []view.View
+	Views      []View
 }
 
 type Resource struct {
@@ -68,7 +67,7 @@ func (r *Resource) Object() *ObjectDescriber {
 	return NewObjectDescriber(
 		path.Join(r.Path, "(?P<name>.*?)"),
 		r.Titles.Object,
-		r.CacheKey,
+		DefaultLoader(r.CacheKey),
 		func() interface{} {
 			return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
 		},

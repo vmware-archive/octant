@@ -8,7 +8,6 @@ import (
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/heptio/developer-dash/internal/printers"
-	"github.com/heptio/developer-dash/internal/view"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,10 +15,19 @@ import (
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
 	kprinters "k8s.io/kubernetes/pkg/printers"
 	printersinternal "k8s.io/kubernetes/pkg/printers/internalversion"
 )
+
+type LoaderFunc func(ctx context.Context, c Cache, namespace string, fields map[string]string) ([]*unstructured.Unstructured, error)
+
+var DefaultLoader = func(cacheKey CacheKey) LoaderFunc {
+	return func(ctx context.Context, c Cache, namespace string, fields map[string]string) ([]*unstructured.Unstructured, error) {
+		cacheKeys := []CacheKey{cacheKey}
+		return loadObjects(ctx, c, namespace, fields, cacheKeys)
+	}
+}
 
 type ObjectTransformFunc func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error
 
@@ -88,7 +96,9 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 			return emptyContentResponse, err
 		}
 
-		copyObjectMeta(item, object)
+		if err := copyObjectMeta(item, object); err != nil {
+			return emptyContentResponse, err
+		}
 
 		newSlice := reflect.Append(f, reflect.ValueOf(item).Elem())
 		f.Set(newSlice)
@@ -123,17 +133,17 @@ type ObjectDescriber struct {
 	path                string
 	baseTitle           string
 	objectType          func() interface{}
-	cacheKey            CacheKey
+	loaderFunc          LoaderFunc
 	objectTransformFunc ObjectTransformFunc
-	views               []view.View
+	views               []View
 }
 
-func NewObjectDescriber(p, baseTitle string, cacheKey CacheKey, objectType func() interface{}, otf ObjectTransformFunc, views []view.View) *ObjectDescriber {
+func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType func() interface{}, otf ObjectTransformFunc, views []View) *ObjectDescriber {
 	return &ObjectDescriber{
 		path:                p,
 		baseTitle:           baseTitle,
 		baseDescriber:       newBaseDescriber(),
-		cacheKey:            cacheKey,
+		loaderFunc:          loaderFunc,
 		objectType:          objectType,
 		objectTransformFunc: otf,
 		views:               views,
@@ -141,7 +151,7 @@ func NewObjectDescriber(p, baseTitle string, cacheKey CacheKey, objectType func(
 }
 
 func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
-	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, []CacheKey{d.cacheKey})
+	objects, err := d.loaderFunc(ctx, options.Cache, namespace, options.Fields)
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -155,10 +165,15 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 	object := objects[0]
 
 	item := d.objectType()
-	err = runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, item)
-	if err != nil {
+
+	if err := scheme.Scheme.Convert(object, item, nil); err != nil {
 		return emptyContentResponse, err
 	}
+
+	// err = runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, item)
+	// if err != nil {
+	// 	return emptyContentResponse, err
+	// }
 
 	if err := copyObjectMeta(item, object); err != nil {
 		return emptyContentResponse, errors.Wrapf(err, "copying object metadata")
@@ -189,7 +204,7 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 	// TODO will need to register a map of object transformers?
 
 	for _, v := range d.views {
-		viewContent, err := v.Content(ctx, newObject, nil)
+		viewContent, err := v.Content(ctx, newObject, options.Cache)
 		if err != nil {
 			return emptyContentResponse, err
 		}
@@ -214,13 +229,6 @@ func (d *ObjectDescriber) PathFilters() []pathFilter {
 	return []pathFilter{
 		*newPathFilter(d.path, d),
 	}
-}
-
-func setItemName(item interface{}, name string) {
-	setNameVal := reflect.ValueOf(item).MethodByName("SetName")
-	setNameIface := setNameVal.Interface()
-	setName := setNameIface.(func(string))
-	setName(name)
 }
 
 func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
