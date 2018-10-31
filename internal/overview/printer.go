@@ -53,6 +53,8 @@ func printDeploymentSummary(deployment *extensions.Deployment) (content.Section,
 		},
 	}
 
+	section.Items = append(section.Items, []content.Item{}...)
+
 	return section, nil
 }
 

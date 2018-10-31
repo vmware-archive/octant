@@ -187,6 +187,8 @@ func loadPods(key CacheKey, c Cache, selector *metav1.LabelSelector) ([]*core.Po
 			MatchLabels: pod.GetLabels(),
 		}
 
+		if selector == nil {
+			list = append(list, pod)
 		if selector == nil || isEqualSelector(selector, podSelector) {
 			list = append(list, pod)
 		}
