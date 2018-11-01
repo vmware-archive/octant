@@ -19,6 +19,7 @@ class App extends Component {
     super(props)
     this.state = {
       loading: false,
+      error: false,
       navigation: [],
       namespaceOptions: [],
       contents: [],
@@ -31,9 +32,18 @@ class App extends Component {
     // Note(marlon): this logic for this should not live in <App />. it
     // might be better handled in a <Namespace /> container component or
     // in an HOC
-    const [navigation, namespacesPayload, namespacePayload] = await Promise.all(
-      [getNavigation(), getNamespaces(), getNamespace()]
-    )
+    let navigation,
+      namespacesPayload,
+      namespacePayload
+    try {
+      [navigation, namespacesPayload, namespacePayload] = await Promise.all([
+        getNavigation(),
+        getNamespaces(),
+        getNamespace()
+      ])
+    } catch (e) {
+      this.setState({ loading: false, error: true })
+    }
 
     let namespaceOptions = []
     if (
@@ -76,6 +86,12 @@ class App extends Component {
   }
 
   fetchContents = async (namespace) => {
+    this.setState({
+      contents: [],
+      title: '',
+      loading: true,
+      error: false
+    })
     if (!namespace) {
       const { namespaceOption } = this.state
       namespace = namespaceOption.value
@@ -83,18 +99,28 @@ class App extends Component {
     const {
       location: { pathname }
     } = this.props
-    const payload = await getContents(pathname, namespace)
-    if (payload) {
-      this.setState({
-        contents: payload.contents,
-        title: payload.title,
-        loading: false
-      })
+    try {
+      const payload = await getContents(pathname, namespace)
+      if (payload) {
+        this.setState({
+          contents: payload.contents,
+          title: payload.title,
+          loading: false,
+          error: false
+        })
+      }
+    } catch (e) {
+      this.setState({ loading: false, error: true })
     }
   }
 
   onNamespaceChange = async (namespaceOption) => {
-    this.setState({ namespaceOption, loading: true, contents: [] })
+    this.setState({
+      namespaceOption,
+      loading: true,
+      contents: [],
+      error: false
+    })
     const { value } = namespaceOption
     await setNamespace(value)
     // Note(marlon): this is needed because user might switch namespaces
@@ -113,7 +139,8 @@ class App extends Component {
       navigation,
       namespaceOptions,
       namespaceOption,
-      title
+      title,
+      error
     } = this.state
     return (
       <div className='app'>
@@ -137,6 +164,7 @@ class App extends Component {
                     contents={contents}
                     loading={loading}
                     title={title}
+                    error={error}
                   />
                 )}
               />

@@ -1,10 +1,13 @@
 import React from 'react'
+import cx from 'classnames'
 import Loading from 'components/Icons/Loading'
 import Title from 'components/Title'
 import Content from './components/Content'
 import './styles.scss'
 
-export default function Home ({ loading, contents, title }) {
+export default function Home ({
+  loading, contents, title, error
+}) {
   let mainContent
   if (loading) {
     mainContent = (
@@ -19,9 +22,18 @@ export default function Home ({ loading, contents, title }) {
       </div>
     ))
   } else {
+    const cnames = cx({
+      'content-text': true,
+      'empty-content-text': error === false,
+      'error-content-text': error === true
+    })
     mainContent = (
       <div className='component--primary'>
-        <h3 className='empty-content-text'>There is nothing to display here</h3>
+        <h3 className={cnames}>
+          {error === true
+            ? 'Something wrong happened!'
+            : 'There is nothing to display here'}
+        </h3>
       </div>
     )
   }
