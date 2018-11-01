@@ -47,5 +47,10 @@ ui-server:
 ui-client:
 	cd web; API_BASE=http://localhost:3001 npm run start
 
+.PHONY: release
+release:
+	git tag -a $(VERSION) -m "Release $(VERSION)"
+	git push --follow-tags
+
 .PHONY: ci
 ci: test vet web-build hcli-dev
