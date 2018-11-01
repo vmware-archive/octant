@@ -1,12 +1,12 @@
 import React from 'react'
-import Basic from './components/DataTypes/Basic'
+import Text from './components/DataTypes/Text'
 import JSON from './components/DataTypes/JSON'
 import Link from './components/DataTypes/Link'
-import Labels from '../../../shared/Labels'
+import Labels from './components/DataTypes/Labels'
 import './styles.scss'
 
 const dataTypeMap = {
-  text: Basic,
+  text: Text,
   json: JSON,
   link: Link,
   labels: Labels
