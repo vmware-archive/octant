@@ -9,7 +9,7 @@ export default function Item (props) {
   } = params
   return (
     <div className='summary--data summary--data-basic'>
-      <div className='summary--data-key'>{label}</div>
+      {label && <div className='summary--data-key'>{label}</div>}
       <div className='summary--data-basic'>{value}</div>
     </div>
   )
