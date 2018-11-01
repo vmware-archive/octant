@@ -34,7 +34,7 @@ nfpm:
   vendor: "heptio.com"
   homepage: ""
   description: ""
-  license: "tbd"
+  license: "Heptio Proprietary"
   name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}-{{.Arch}}"
   replacements:
     darwin: macOS
