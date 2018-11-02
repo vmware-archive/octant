@@ -59,6 +59,10 @@ var (
 		ObjectType: &batch.CronJob{},
 		Titles:     ResourceTitle{List: "Cron Jobs", Object: "Cron Job"},
 		Transforms: cronJobTransforms,
+		Views: []View{
+			NewCronJobSummary(),
+			NewCronJobJobs(),
+		},
 	})
 
 	workloadsDaemonSets = NewResource(ResourceOptions{
