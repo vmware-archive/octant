@@ -31,7 +31,7 @@ export default function Home ({
       <div className='component--primary'>
         <h3 className={cnames}>
           {error === true
-            ? 'Something wrong happened!'
+            ? "Oops, something's not right, try again."
             : 'There is nothing to display here'}
         </h3>
       </div>
