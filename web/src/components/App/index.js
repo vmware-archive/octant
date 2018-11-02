@@ -9,7 +9,7 @@ import {
   setNamespace,
   getContents
 } from 'api'
-import Home from 'pages/Home'
+import Overview from 'pages/Overview'
 import Header from '../Header'
 import Navigation from '../Navigation'
 import './styles.scss'
@@ -159,7 +159,7 @@ class App extends Component {
               <Route
                 path='/content/overview'
                 render={props => (
-                  <Home
+                  <Overview
                     {...props}
                     contents={contents}
                     loading={loading}
