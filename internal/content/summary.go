@@ -3,7 +3,6 @@ package content
 import (
 	"fmt"
 	"sort"
-	"strings"
 )
 
 var _ Content = (*Summary)(nil)
@@ -50,16 +49,43 @@ func LabelsItem(label string, labels map[string]string) Item {
 	}
 	sort.Strings(keys)
 
-	var out []string
+	var out []Item
 	for _, key := range keys {
-		out = append(out, fmt.Sprintf("%s=%s", key, labels[key]))
+		labelSelector := fmt.Sprintf("%s=%s", key, labels[key])
+		out = append(out, TextItem(label, labelSelector))
 	}
 
 	return Item{
-		Type:  "text",
+		Type:  "labels",
 		Label: label,
 		Data: map[string]interface{}{
-			"value": strings.Join(out, ", "),
+			"items": out,
+		},
+	}
+}
+
+func ListItem(label string, kv map[string]string) Item {
+	if len(kv) == 0 {
+		return TextItem(label, "<none>")
+	}
+
+	keys := make([]string, 0, len(kv))
+	for key := range kv {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	var out []Item
+	for _, key := range keys {
+		labelSelector := fmt.Sprintf("%s=%s", key, kv[key])
+		out = append(out, TextItem("", labelSelector))
+	}
+
+	return Item{
+		Type:  "list",
+		Label: label,
+		Data: map[string]interface{}{
+			"items": out,
 		},
 	}
 }

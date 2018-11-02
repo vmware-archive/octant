@@ -13,17 +13,21 @@ export default function Navigation ({
   const { sections = [] } = navigation
   return (
     <nav className='navigation--left'>
-      <div className='navigation-namespace-selector'>
-        <Selector
-          placeholder='Select namespace...'
-          options={namespaceOptions}
-          value={namespaceValue}
-          onChange={onNamespaceChange}
-        />
-      </div>
-      {sections.map(({ title, path, children }) => (
-        <Section key={title} title={title} path={path} items={children} />
-      ))}
+      {navigation && (
+        <React.Fragment>
+          <div className='navigation-namespace-selector'>
+            <Selector
+              placeholder='Select namespace...'
+              options={namespaceOptions}
+              value={namespaceValue}
+              onChange={onNamespaceChange}
+            />
+          </div>
+          {sections.map(({ title, path, children }) => (
+            <Section key={title} title={title} path={path} items={children} />
+          ))}
+        </React.Fragment>
+      )}
     </nav>
   )
 }

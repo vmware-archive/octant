@@ -5,9 +5,9 @@ import './styles.scss'
 export default function ({ labels }) {
   return (
     <div className='content-labels'>
-      {_.map(labels, (value, key) => (
-        <div key={key} className='content-label'>
-          {key}: {value}
+      {_.map(labels, ({ data }) => (
+        <div key={data.value} className='content-label'>
+          {data.value}
         </div>
       ))}
     </div>
