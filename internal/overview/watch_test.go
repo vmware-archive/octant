@@ -13,8 +13,15 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func TestWatch(t *testing.T) {
+func newScheme() *runtime.Scheme {
 	scheme := runtime.NewScheme()
+	scheme.AddKnownTypeWithName(schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "DeploymentList"}, &unstructured.UnstructuredList{})
+	return scheme
+}
+
+func TestWatch(t *testing.T) {
+	scheme := newScheme()
+
 	objects := []runtime.Object{
 		newUnstructured("apps/v1", "Deployment", "default", "deploy3"),
 	}
@@ -92,7 +99,7 @@ func TestWatch(t *testing.T) {
 
 	// wait for cache to store an item before proceeding.
 	select {
-	case <-time.After(2 * time.Second):
+	case <-time.After(10 * time.Second):
 		t.Fatal("timed out wating for create object to notify")
 	case <-notifyCh:
 	}
@@ -122,11 +129,20 @@ func TestWatch(t *testing.T) {
 
 	require.Len(t, found, 2)
 
-	require.Equal(t, annotations, found[1].GetAnnotations())
+	// Find the object we updated
+	var match bool
+	for _, u := range found {
+		if u.GetName() == obj.GetName() && u.GroupVersionKind() == obj.GroupVersionKind() {
+			match = true
+			require.Equal(t, annotations, u.GetAnnotations())
+		}
+	}
+	require.True(t, match, "unable to find object from fetched results")
 }
 
 func TestWatch_Stop(t *testing.T) {
-	scheme := runtime.NewScheme()
+	scheme := newScheme()
+
 	objects := []runtime.Object{
 		newUnstructured("apps/v1", "Deployment", "default", "deploy3"),
 	}

@@ -29,7 +29,6 @@ type ClusterWatch struct {
 	clusterClient cluster.ClientInterface
 	cache         Cache
 	namespace     string
-	watchers      []watch.Interface
 	logger        log.Logger
 }
 
@@ -44,6 +43,7 @@ func NewWatch(namespace string, clusterClient cluster.ClientInterface, c Cache, 
 }
 
 // Start starts the watch. It returns a stop function and an error.
+// Start should only be called once.
 func (w *ClusterWatch) Start() (StopFunc, error) {
 	resources, err := w.resources()
 	if err != nil {
