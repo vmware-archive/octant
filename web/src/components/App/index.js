@@ -155,13 +155,22 @@ class App extends Component {
       error: false
     })
     const { value } = namespaceOption
-    await setNamespace(value)
-    // Note(marlon): this is needed because user might switch namespaces
-    // before the previous namespace request and we want to make sure
-    // we render the correct contents
-    const { namespaceOption: _namespaceOption } = this.state
-    if (value === _namespaceOption.value) {
-      await this.fetchContents(value)
+    try {
+      await setNamespace(value)
+      // Note(marlon): this is needed because user might switch namespaces
+      // before the previous namespace request and we want to make sure
+      // we render the correct contents
+      const {
+        namespaceOption: _namespaceOption,
+        currentNavLinkPath
+      } = this.state
+      if (value === _namespaceOption.value) {
+        const currentLink = _.last(currentNavLinkPath)
+        this.props.history.push(currentLink.path)
+        await this.fetchContents(value)
+      }
+    } catch (e) {
+      this.setState({ loading: false, error: true })
     }
   }
 
