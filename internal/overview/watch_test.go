@@ -44,15 +44,32 @@ func TestWatch(t *testing.T) {
 	dynamicClient := clusterClient.FakeDynamic
 
 	notifyCh := make(chan CacheNotification)
+	notifyDone := make(chan struct{})
 
-	cache := NewMemoryCache(CacheNotificationOpt(notifyCh))
+	cache := NewMemoryCache(CacheNotificationOpt(notifyCh, notifyDone))
 
 	watch := NewWatch("default", clusterClient, cache, log.NopLogger())
 
 	stopFn, err := watch.Start()
 	require.NoError(t, err)
 
-	defer stopFn()
+	defer func() {
+		close(notifyDone) // Unblock any pending cache notifications so that stopFn can complete
+		stopFn()
+	}()
+
+	// wait for cache to store initial items
+	select {
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out wating for initial object to notify")
+	case <-notifyCh:
+	}
+
+	// verify predefined objects made it to the cache via watch->notify
+	found, err := cache.Retrieve(CacheKey{Namespace: "default"})
+	require.NoError(t, err)
+
+	require.Len(t, found, 1)
 
 	// define new object
 	obj := &unstructured.Unstructured{}
@@ -80,10 +97,11 @@ func TestWatch(t *testing.T) {
 	case <-notifyCh:
 	}
 
-	found, err := cache.Retrieve(CacheKey{Namespace: "default"})
+	found, err = cache.Retrieve(CacheKey{Namespace: "default"})
 	require.NoError(t, err)
 
-	require.Len(t, found, 1)
+	// 2 == initial + the new object
+	require.Len(t, found, 2)
 
 	annotations := map[string]string{"update": "update"}
 	obj.SetAnnotations(annotations)
@@ -102,9 +120,9 @@ func TestWatch(t *testing.T) {
 	found, err = cache.Retrieve(CacheKey{Namespace: "default"})
 	require.NoError(t, err)
 
-	require.Len(t, found, 1)
+	require.Len(t, found, 2)
 
-	require.Equal(t, annotations, found[0].GetAnnotations())
+	require.Equal(t, annotations, found[1].GetAnnotations())
 }
 
 func TestWatch_Stop(t *testing.T) {
@@ -151,8 +169,9 @@ func TestWatch_Stop(t *testing.T) {
 	}
 
 	notifyCh := make(chan CacheNotification)
+	notifyDone := make(chan struct{})
 
-	cache := NewMemoryCache(CacheNotificationOpt(notifyCh))
+	cache := NewMemoryCache(CacheNotificationOpt(notifyCh, notifyDone))
 
 	watch := NewWatch("default", clusterClient, cache, log.NopLogger())
 
@@ -162,6 +181,7 @@ func TestWatch_Stop(t *testing.T) {
 	// Stop the watchers (blocking) and make sure it completes
 	stopDone := make(chan interface{})
 	go func() {
+		close(notifyDone) // Unblock any pending cache notifications so that stopFn can complete
 		stopFn()
 		close(stopDone)
 	}()

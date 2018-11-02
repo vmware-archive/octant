@@ -269,7 +269,10 @@ func (ec *eventConsumer) Consume(watchers []watch.Interface) error {
 		// which will have the effect of closing its ResultChan and exiting the range loop.
 		go func(watcher watch.Interface) {
 			for event := range watcher.ResultChan() {
-				ec.events <- event
+				select {
+				case ec.events <- event:
+				case <-ec.done:
+				}
 			}
 			ec.wg.Done()
 		}(watcher)

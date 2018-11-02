@@ -46,9 +46,11 @@ type CacheNotification struct {
 
 // CacheNotificationOpt sets a channel that will receive a notification
 // every time cache performs an add/delete.
-func CacheNotificationOpt(ch chan<- CacheNotification) MemoryCacheOpt {
+// The done channel can be used to cancel notifications that are blocked.
+func CacheNotificationOpt(ch chan<- CacheNotification, done <-chan struct{}) MemoryCacheOpt {
 	return func(c *MemoryCache) {
 		c.notifyCh = ch
+		c.notifyDone = done
 	}
 }
 
@@ -56,8 +58,9 @@ func CacheNotificationOpt(ch chan<- CacheNotification) MemoryCacheOpt {
 type MemoryCache struct {
 	store map[CacheKey]*unstructured.Unstructured
 
-	mu       sync.Mutex
-	notifyCh chan<- CacheNotification
+	mu         sync.Mutex
+	notifyCh   chan<- CacheNotification
+	notifyDone <-chan struct{}
 }
 
 var _ Cache = (*MemoryCache)(nil)
@@ -87,9 +90,6 @@ func (mc *MemoryCache) Reset() {
 
 // Store stores an object to the object.
 func (mc *MemoryCache) Store(obj *unstructured.Unstructured) error {
-	mc.mu.Lock()
-	defer mc.mu.Unlock()
-
 	key := CacheKey{
 		Namespace:  obj.GetNamespace(),
 		APIVersion: obj.GetAPIVersion(),
@@ -97,7 +97,10 @@ func (mc *MemoryCache) Store(obj *unstructured.Unstructured) error {
 		Name:       obj.GetName(),
 	}
 
+	mc.mu.Lock()
 	mc.store[key] = obj
+	mc.mu.Unlock()
+
 	mc.notify(CacheStore, key)
 
 	return nil
@@ -144,9 +147,6 @@ func (mc *MemoryCache) Retrieve(key CacheKey) ([]*unstructured.Unstructured, err
 
 // Delete deletes an object from the cache.
 func (mc *MemoryCache) Delete(obj *unstructured.Unstructured) error {
-	mc.mu.Lock()
-	defer mc.mu.Unlock()
-
 	namespace := obj.GetNamespace()
 	apiVersion := obj.GetAPIVersion()
 	kind := obj.GetKind()
@@ -159,7 +159,9 @@ func (mc *MemoryCache) Delete(obj *unstructured.Unstructured) error {
 		Name:       name,
 	}
 
+	mc.mu.Lock()
 	delete(mc.store, key)
+	mc.mu.Unlock()
 
 	mc.notify(CacheDelete, key)
 
@@ -203,5 +205,8 @@ func (mc *MemoryCache) notify(action CacheAction, key CacheKey) {
 		return
 	}
 
-	mc.notifyCh <- CacheNotification{Action: action, CacheKey: key}
+	select {
+	case mc.notifyCh <- CacheNotification{Action: action, CacheKey: key}:
+	case <-mc.notifyDone:
+	}
 }
