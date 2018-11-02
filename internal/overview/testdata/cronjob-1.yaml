@@ -1,0 +1,43 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  creationTimestamp: 2018-09-18T12:30:09Z
+  labels:
+    overview: default
+  name: hello
+  namespace: default
+  resourceVersion: "6107599"
+  selfLink: /apis/batch/v1beta1/namespaces/default/cronjobs/hello
+  uid: 94fc581d-bb3e-11e8-9208-025000000001
+spec:
+  concurrencyPolicy: Allow
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+    spec:
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+          containers:
+          - args:
+            - /bin/sh
+            - -c
+            - date; echo Hello from the Kubernetes cluster
+            image: busybox
+            imagePullPolicy: Always
+            name: hello
+            resources: {}
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+          dnsPolicy: ClusterFirst
+          restartPolicy: OnFailure
+          schedulerName: default-scheduler
+          securityContext: {}
+          terminationGracePeriodSeconds: 30
+  schedule: '*/1 * * * *'
+  successfulJobsHistoryLimit: 3
+  suspend: false
+status:
+  lastScheduleTime: 2018-11-02T09:45:00Z

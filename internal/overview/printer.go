@@ -6,10 +6,48 @@ import (
 	"time"
 
 	"github.com/heptio/developer-dash/internal/content"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 )
+
+func printCronJobSummary(cronJob *batch.CronJob, jobs []*batch.Job) (content.Section, error) {
+	var suspend string
+	if cronJob.Spec.Suspend == nil {
+		suspend = "false"
+	} else {
+		suspend = fmt.Sprintf("%t", *cronJob.Spec.Suspend)
+	}
+
+	var startingDeadLine string
+	if cronJob.Spec.StartingDeadlineSeconds != nil {
+		startingDeadLine = fmt.Sprintf("%ds", *cronJob.Spec.StartingDeadlineSeconds)
+	} else {
+		startingDeadLine = "<unset>"
+	}
+
+	active := fmt.Sprintf("%d", len(cronJob.Status.Active))
+
+	section := content.Section{
+		Items: []content.Item{
+			content.TextItem("Name", cronJob.GetName()),
+			content.TextItem("Namespace", cronJob.GetNamespace()),
+			content.LabelsItem("Labels", cronJob.GetLabels()),
+			content.LabelsItem("Annotations", cronJob.GetAnnotations()),
+			content.TextItem("Create Time", formatTime(&cronJob.CreationTimestamp)),
+			content.TextItem("Active", active),
+			content.TextItem("Schedule", cronJob.Spec.Schedule),
+			content.TextItem("Suspend", suspend),
+			content.TextItem("Last Schedule", formatTime(cronJob.Status.LastScheduleTime)),
+			content.TextItem("Concurrency Policy", string(cronJob.Spec.ConcurrencyPolicy)),
+			content.TextItem("Starting Deadline Seconds", startingDeadLine),
+		},
+	}
+
+	return section, nil
+}
 
 func printDeploymentSummary(deployment *extensions.Deployment) (content.Section, error) {
 	minReadySeconds := fmt.Sprintf("%d", deployment.Spec.MinReadySeconds)
@@ -52,6 +90,8 @@ func printDeploymentSummary(deployment *extensions.Deployment) (content.Section,
 			content.TextItem("Status", status),
 		},
 	}
+
+	section.Items = append(section.Items, []content.Item{}...)
 
 	return section, nil
 }
