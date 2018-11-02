@@ -4,7 +4,7 @@ import Subheader from './components/Subheader'
 import Header from './components/Header'
 import './styles.scss'
 
-export default function Section (props) {
+export default function NavigationSection (props) {
   const { title, path, items } = props
   return (
     <div className='navigation--left-section'>
