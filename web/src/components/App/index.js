@@ -23,6 +23,7 @@ class App extends Component {
       loading: false,
       error: false,
       navigation: [],
+      currentNavLinkPath: [],
       namespaceOptions: [],
       contents: [],
       title: '',
@@ -87,6 +88,8 @@ class App extends Component {
     }
   }
 
+  // Note(marlon): this is an overview concept, not a dev dash concept.
+  // This logic should move to the overview component child.
   fetchContents = async (namespace) => {
     this.setState({
       contents: [],
@@ -139,6 +142,7 @@ class App extends Component {
       loading,
       contents,
       navigation,
+      currentNavLinkPath,
       namespaceOptions,
       namespaceOption,
       title,
@@ -150,7 +154,10 @@ class App extends Component {
         <div className='app-page'>
           <div className='app-nav'>
             <Navigation
-              navigation={navigation}
+              navSections={navigation.sections}
+              currentNavLinkPath={currentNavLinkPath}
+              onNavChange={linkPath => this.setState({ currentNavLinkPath: linkPath })
+              }
               namespaceOptions={namespaceOptions}
               namespaceValue={namespaceOption}
               onNamespaceChange={this.onNamespaceChange}

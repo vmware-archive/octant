@@ -1,18 +1,32 @@
 import React from 'react'
 import _ from 'lodash'
-import Subheader from './components/Subheader'
-import Header from './components/Header'
+import NavigationSubheader from './components/NavigationSubheader'
+import NavigationHeader from './components/NavigationHeader'
 import './styles.scss'
 
 export default function NavigationSection (props) {
-  const { title, path, items } = props
+  const {
+    currentLinkPath,
+    linkPath: parentLinkPath,
+    childLinks,
+    onNavChange
+  } = props
   return (
     <div className='navigation--left-section'>
-      <Header title={title} link={path} />
+      <NavigationHeader
+        currentLinkPath={currentLinkPath}
+        linkPath={parentLinkPath}
+        onNavChange={onNavChange}
+      />
       <ul className='navigation--left-items'>
-        {_.map(items, item => (
-          <div key={item.title} className='navigation--left-item'>
-            <Subheader item={item} />
+        {_.map(childLinks, link => (
+          <div key={link.title} className='navigation--left-item'>
+            <NavigationSubheader
+              currentLinkPath={currentLinkPath}
+              linkPath={[...parentLinkPath, link]}
+              childLinks={link.children}
+              onNavChange={onNavChange}
+            />
           </div>
         ))}
       </ul>
