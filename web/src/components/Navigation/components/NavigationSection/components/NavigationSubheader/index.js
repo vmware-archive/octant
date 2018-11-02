@@ -4,12 +4,8 @@ import { NavLink } from 'react-router-dom'
 import './styles.scss'
 
 export default function NavigationSubheader (props) {
-  const {
-    currentLinkPath,
-    linkPath: parentLinkPath,
-    childLinks,
-    onNavChange
-  } = props
+  const { linkPath: parentLinkPath, childLinks, onNavChange } = props
+
   const { title, path } = _.last(parentLinkPath)
   return (
     <li className='navigation--left-item'>

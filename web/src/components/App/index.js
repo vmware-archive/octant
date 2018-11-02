@@ -32,6 +32,8 @@ class App extends Component {
   }
 
   async componentDidMount () {
+    const initialState = {}
+
     // Note(marlon): this logic for this should not live in <App />. it
     // might be better handled in a <Namespace /> container component or
     // in an HOC
@@ -45,37 +47,63 @@ class App extends Component {
         getNamespace()
       ])
     } catch (e) {
-      this.setState({ loading: false, error: true })
+      _.assign(initialState, { loading: false, error: true })
     }
 
-    let namespaceOptions = []
+    if (navigation) {
+      initialState.navigation = navigation
+
+      const {
+        location: { pathname: thisPath }
+      } = this.props
+      let currentNavLinkPath
+      _.forEach(navigation.sections, (section) => {
+        const linkPath = [section]
+        if (section.path === thisPath) {
+          currentNavLinkPath = linkPath
+          return false
+        }
+        _.forEach(section.children, (child) => {
+          const childLinkPath = [...linkPath, child]
+          if (child.path === thisPath) {
+            currentNavLinkPath = childLinkPath
+            return false
+          }
+          _.forEach(child.children, (grandChild) => {
+            const grandChildLinkPath = [...childLinkPath, grandChild]
+            if (_.includes(thisPath, grandChild.path)) {
+              currentNavLinkPath = grandChildLinkPath
+              return false
+            }
+          })
+        })
+      })
+
+      if (currentNavLinkPath) initialState.currentNavLinkPath = currentNavLinkPath
+    }
+
     if (
       namespacesPayload &&
       namespacesPayload.namespaces &&
       namespacesPayload.namespaces.length
     ) {
-      namespaceOptions = namespacesPayload.namespaces.map(ns => ({
+      initialState.namespaceOptions = namespacesPayload.namespaces.map(ns => ({
         label: ns,
         value: ns
       }))
     }
 
-    let { namespaceOption } = this.state
-    if (namespacePayload && namespaceOptions.length) {
-      const option = _.find(namespaceOptions, {
+    if (namespacePayload && initialState.namespaceOptions.length) {
+      const option = _.find(initialState.namespaceOptions, {
         value: namespacePayload.namespace
       })
       if (option) {
-        namespaceOption = option
-        await this.fetchContents(namespaceOption.value)
+        initialState.namespaceOption = option
+        await this.fetchContents(option.value)
       }
     }
 
-    this.setState({
-      navigation,
-      namespaceOption,
-      namespaceOptions
-    })
+    this.setState(initialState)
   }
 
   async componentDidUpdate ({ location: { pathname: lastPath } }) {
