@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
-import { Switch, Route, withRouter } from 'react-router-dom'
+import {
+  Switch, Route, withRouter, Redirect
+} from 'react-router-dom'
 import Promise from 'promise'
 import _ from 'lodash'
 import {
@@ -168,6 +170,7 @@ class App extends Component {
                   />
                 )}
               />
+              <Redirect exact from='/' to='/content/overview' />
             </Switch>
           </div>
         </div>
