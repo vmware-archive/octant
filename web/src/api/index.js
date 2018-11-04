@@ -30,8 +30,8 @@ async function buildRequest (params) {
       }
     } catch (e) {
       console.error('Failed fetch response: ', e) // eslint-disable-line no-console
-      // Note(marlon): should consider throwing again here so that
-      // specific messaging can be handled in the UI
+      // Note(marlon): add logging for network errors here
+      throw e
     }
   }
 

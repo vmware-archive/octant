@@ -1,4 +1,5 @@
 import React from 'react'
+import _ from 'lodash'
 import Selector from 'components/Selector'
 import Section from './components/Section'
 import './styles.scss'
@@ -9,8 +10,6 @@ export default function Navigation ({
   namespaceValue,
   onNamespaceChange
 }) {
-  if (!navigation) return null
-  const { sections = [] } = navigation
   return (
     <nav className='navigation--left'>
       {navigation && (
@@ -23,7 +22,7 @@ export default function Navigation ({
               onChange={onNamespaceChange}
             />
           </div>
-          {sections.map(({ title, path, children }) => (
+          {_.map(navigation.sections, ({ title, path, children }) => (
             <Section key={title} title={title} path={path} items={children} />
           ))}
         </React.Fragment>

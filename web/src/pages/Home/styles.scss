@@ -11,9 +11,16 @@
       margin-bottom: 50px;
       padding: 20px;
 
+      .content-text {
+        text-align: center;
+      }
+
       .empty-content-text {
         color: $gray-accent;
-        text-align: center;
+      }
+
+      .error-content-text {
+        color: $red
       }
     }
 
