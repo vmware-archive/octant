@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { getNamespace, getNamespaces, getNavigation } from 'api'
 import fetchContents from './fetchContents'
 
-function getNavLinkPath (navigation, pathname) {
+export function getNavLinkPath (navigation, pathname) {
   let currentNavLinkPath
 
   if (navigation) {

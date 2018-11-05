@@ -42,8 +42,6 @@ class App extends Component {
     }
   }
 
-  // Note(marlon): this is an overview concept, not a dev dash concept.
-  // This logic should move to the overview component child.
   setContents = async (namespace) => {
     this.setState({
       contents: [],
