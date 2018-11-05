@@ -1,102 +1,91 @@
-const NavigationData = {
+export default {
   sections: [
     {
       title: 'Overview',
-      path: '/overview',
+      path: '/content/overview',
       children: [
         {
           title: 'Workloads',
-          path: '/workloads',
+          path: '/content/overview/workloads',
           children: [
             {
               title: 'Cron Jobs',
-              path: '/cron-jobs'
+              path: '/content/overview/workloads/cron-jobs'
             },
             {
               title: 'Daemon Sets',
-              path: '/cron-jobs'
+              path: '/content/overview/workloads/daemon-sets'
             },
             {
               title: 'Deployments',
-              path: '/cron-jobs'
+              path: '/content/overview/workloads/deployments'
             },
-            {
-              title: 'Jobs',
-              path: '/cron-jobs'
-            },
-            {
-              title: 'Pods',
-              path: '/cron-jobs'
-            },
+            { title: 'Jobs', path: '/content/overview/workloads/jobs' },
+            { title: 'Pods', path: '/content/overview/workloads/pods' },
             {
               title: 'Replica Sets',
-              path: '/cron-jobs'
+              path: '/content/overview/workloads/replica-sets'
             },
             {
               title: 'Replication Controllers',
-              path: '/cron-jobs'
+              path: '/content/overview/workloads/replication-controllers'
             },
             {
               title: 'Stateful Sets',
-              path: '/cron-jobs'
+              path: '/content/overview/workloads/stateful-sets'
             }
           ]
         },
         {
-          title: 'Discovery & Load Balancing',
-          path: '/workloads',
+          title: 'Discovery and Load Balancing',
+          path: '/content/overview/discovery-and-load-balancing',
           children: [
             {
               title: 'Ingresses',
-              path: '/cron-jobs'
+              path: '/content/overview/discovery-and-load-balancing/ingresses'
             },
             {
               title: 'Services',
-              path: '/cron-jobs'
+              path: '/content/overview/discovery-and-load-balancing/services'
             }
           ]
         },
         {
-          title: 'Config & Storage',
-          path: '/workloads',
+          title: 'Config and Storage',
+          path: '/content/overview/config-and-storage',
           children: [
             {
               title: 'Config Maps',
-              path: '/cron-jobs'
+              path: '/content/overview/config-and-storage/config-maps'
             },
             {
               title: 'Persistent Volume Claims',
-              path: '/cron-jobs'
+              path:
+                '/content/overview/config-and-storage/persistent-volume-claims'
+            },
+            {
+              title: 'Secrets',
+              path: '/content/overview/config-and-storage/secrets'
             }
           ]
         },
         {
           title: 'Custom Resources',
-          path: '/workloads',
-          children: [
-            {
-              title: 'Certificate',
-              path: '/cron-jobs'
-            }
-          ]
+          path: '/content/overview/custom-resources'
         },
         {
           title: 'RBAC',
-          path: '/workloads',
+          path: '/content/overview/rbac',
           children: [
-            {
-              title: 'Roles',
-              path: '/cron-jobs'
-            },
+            { title: 'Roles', path: '/content/overview/rbac/roles' },
             {
               title: 'Role Bindings',
-              path: '/cron-jobs'
+              path: '/content/overview/rbac/role-bindings'
             }
           ]
-        }
+        },
+        { title: 'Events', path: '/content/overview/events' }
       ]
     }
   ]
 }
-
-export default NavigationData
