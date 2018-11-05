@@ -68,6 +68,7 @@ class App extends Component {
       error: false
     })
     const { value } = namespaceOption
+    const { history } = this.props
     try {
       await setNamespace(value)
       // Note(marlon): this is needed because user might switch namespaces
@@ -79,7 +80,7 @@ class App extends Component {
       } = this.state
       if (value === _namespaceOption.value) {
         const { path } = _.last(currentNavLinkPath)
-        this.props.history.push(path)
+        history.push(path)
         await this.setContents(value)
       }
     } catch (e) {
