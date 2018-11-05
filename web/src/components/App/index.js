@@ -78,8 +78,8 @@ class App extends Component {
         currentNavLinkPath
       } = this.state
       if (value === _namespaceOption.value) {
-        const currentLink = _.last(currentNavLinkPath)
-        this.props.history.push(currentLink.path)
+        const { path } = _.last(currentNavLinkPath)
+        this.props.history.push(path)
         await this.setContents(value)
       }
     } catch (e) {

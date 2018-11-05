@@ -3,6 +3,36 @@ import _ from 'lodash'
 import { getNamespace, getNamespaces, getNavigation } from 'api'
 import fetchContents from './fetchContents'
 
+function getNavLinkPath (navigation, pathname) {
+  let currentNavLinkPath
+
+  if (navigation) {
+    _.forEach(navigation.sections, (section) => {
+      const linkPath = [section]
+      if (section.path === pathname) {
+        currentNavLinkPath = linkPath
+        return false
+      }
+      _.forEach(section.children, (child) => {
+        const childLinkPath = [...linkPath, child]
+        if (child.path === pathname) {
+          currentNavLinkPath = childLinkPath
+          return false
+        }
+        _.forEach(child.children, (grandChild) => {
+          const grandChildLinkPath = [...childLinkPath, grandChild]
+          if (_.includes(pathname, grandChild.path)) {
+            currentNavLinkPath = grandChildLinkPath
+            return false
+          }
+        })
+      })
+    })
+  }
+
+  return currentNavLinkPath
+}
+
 export default async function (currentPathname) {
   let navigation,
     namespaces,
@@ -17,37 +47,9 @@ export default async function (currentPathname) {
     return { loading: false, error: true }
   }
 
-  const initialState = {}
-
-  if (navigation) {
-    initialState.navigation = navigation
-
-    let currentNavLinkPath
-    _.forEach(navigation.sections, (section) => {
-      const linkPath = [section]
-      if (section.path === currentPathname) {
-        currentNavLinkPath = linkPath
-        return false
-      }
-      _.forEach(section.children, (child) => {
-        const childLinkPath = [...linkPath, child]
-        if (child.path === currentPathname) {
-          currentNavLinkPath = childLinkPath
-          return false
-        }
-        _.forEach(child.children, (grandChild) => {
-          const grandChildLinkPath = [...childLinkPath, grandChild]
-          if (_.includes(currentPathname, grandChild.path)) {
-            currentNavLinkPath = grandChildLinkPath
-            return false
-          }
-        })
-      })
-    })
-
-    if (currentNavLinkPath) {
-      initialState.currentNavLinkPath = currentNavLinkPath
-    }
+  const initialState = {
+    navigation,
+    currentNavLinkPath: getNavLinkPath(navigation, currentPathname)
   }
 
   if (namespaces && namespaces.namespaces && namespaces.namespaces.length) {
