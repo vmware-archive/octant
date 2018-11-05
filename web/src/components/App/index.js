@@ -2,18 +2,13 @@ import React, { Component } from 'react'
 import {
   Switch, Route, withRouter, Redirect
 } from 'react-router-dom'
-import Promise from 'promise'
 import _ from 'lodash'
-import {
-  getNavigation,
-  getNamespaces,
-  getNamespace,
-  setNamespace,
-  getContents
-} from 'api'
+import { setNamespace } from 'api'
 import Overview from 'pages/Overview'
 import Header from '../Header'
 import Navigation from '../Navigation'
+import fetchContents from './state/fetchContents'
+import getInitialState from './state/getInitialState'
 import './styles.scss'
 
 class App extends Component {
@@ -32,77 +27,8 @@ class App extends Component {
   }
 
   async componentDidMount () {
-    const initialState = {}
-
-    // Note(marlon): this logic for this should not live in <App />. it
-    // might be better handled in a <Namespace /> container component or
-    // in an HOC
-    let navigation,
-      namespacesPayload,
-      namespacePayload
-    try {
-      [navigation, namespacesPayload, namespacePayload] = await Promise.all([
-        getNavigation(),
-        getNamespaces(),
-        getNamespace()
-      ])
-    } catch (e) {
-      _.assign(initialState, { loading: false, error: true })
-    }
-
-    if (navigation) {
-      initialState.navigation = navigation
-
-      const {
-        location: { pathname: thisPath }
-      } = this.props
-      let currentNavLinkPath
-      _.forEach(navigation.sections, (section) => {
-        const linkPath = [section]
-        if (section.path === thisPath) {
-          currentNavLinkPath = linkPath
-          return false
-        }
-        _.forEach(section.children, (child) => {
-          const childLinkPath = [...linkPath, child]
-          if (child.path === thisPath) {
-            currentNavLinkPath = childLinkPath
-            return false
-          }
-          _.forEach(child.children, (grandChild) => {
-            const grandChildLinkPath = [...childLinkPath, grandChild]
-            if (_.includes(thisPath, grandChild.path)) {
-              currentNavLinkPath = grandChildLinkPath
-              return false
-            }
-          })
-        })
-      })
-
-      if (currentNavLinkPath) initialState.currentNavLinkPath = currentNavLinkPath
-    }
-
-    if (
-      namespacesPayload &&
-      namespacesPayload.namespaces &&
-      namespacesPayload.namespaces.length
-    ) {
-      initialState.namespaceOptions = namespacesPayload.namespaces.map(ns => ({
-        label: ns,
-        value: ns
-      }))
-    }
-
-    if (namespacePayload && initialState.namespaceOptions.length) {
-      const option = _.find(initialState.namespaceOptions, {
-        value: namespacePayload.namespace
-      })
-      if (option) {
-        initialState.namespaceOption = option
-        await this.fetchContents(option.value)
-      }
-    }
-
+    const { location } = this.props
+    const initialState = await getInitialState(location.pathname)
     this.setState(initialState)
   }
 
@@ -112,13 +38,13 @@ class App extends Component {
     } = this.props
 
     if (thisPath && lastPath !== thisPath) {
-      await this.fetchContents()
+      await this.setContents()
     }
   }
 
   // Note(marlon): this is an overview concept, not a dev dash concept.
   // This logic should move to the overview component child.
-  fetchContents = async (namespace) => {
+  setContents = async (namespace) => {
     this.setState({
       contents: [],
       title: '',
@@ -129,22 +55,9 @@ class App extends Component {
       const { namespaceOption } = this.state
       namespace = namespaceOption.value
     }
-    const {
-      location: { pathname }
-    } = this.props
-    try {
-      const payload = await getContents(pathname, namespace)
-      if (payload) {
-        this.setState({
-          contents: payload.contents,
-          title: payload.title,
-          loading: false,
-          error: false
-        })
-      }
-    } catch (e) {
-      this.setState({ loading: false, error: true })
-    }
+    const { location } = this.props
+    const state = await fetchContents(location.pathname, namespace)
+    this.setState(state)
   }
 
   onNamespaceChange = async (namespaceOption) => {
@@ -167,7 +80,7 @@ class App extends Component {
       if (value === _namespaceOption.value) {
         const currentLink = _.last(currentNavLinkPath)
         this.props.history.push(currentLink.path)
-        await this.fetchContents(value)
+        await this.setContents(value)
       }
     } catch (e) {
       this.setState({ loading: false, error: true })
