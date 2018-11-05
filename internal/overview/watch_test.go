@@ -13,8 +13,15 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func TestWatch(t *testing.T) {
+func newScheme() *runtime.Scheme {
 	scheme := runtime.NewScheme()
+	scheme.AddKnownTypeWithName(schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "DeploymentList"}, &unstructured.UnstructuredList{})
+	return scheme
+}
+
+func TestWatch(t *testing.T) {
+	scheme := newScheme()
+
 	objects := []runtime.Object{
 		newUnstructured("apps/v1", "Deployment", "default", "deploy3"),
 	}
@@ -44,15 +51,32 @@ func TestWatch(t *testing.T) {
 	dynamicClient := clusterClient.FakeDynamic
 
 	notifyCh := make(chan CacheNotification)
+	notifyDone := make(chan struct{})
 
-	cache := NewMemoryCache(CacheNotificationOpt(notifyCh))
+	cache := NewMemoryCache(CacheNotificationOpt(notifyCh, notifyDone))
 
-	watch := NewWatch("default", clusterClient, cache, log.NopLogger())
+	watch := NewWatch("default", clusterClient, cache, log.TestLogger(t))
 
 	stopFn, err := watch.Start()
 	require.NoError(t, err)
 
-	defer stopFn()
+	defer func() {
+		close(notifyDone) // Unblock any pending cache notifications so that stopFn can complete
+		stopFn()
+	}()
+
+	// wait for cache to store initial items
+	select {
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for initial object to notify")
+	case <-notifyCh:
+	}
+
+	// verify predefined objects made it to the cache via watch->notify
+	found, err := cache.Retrieve(CacheKey{Namespace: "default"})
+	require.NoError(t, err)
+
+	require.Len(t, found, 1)
 
 	// define new object
 	obj := &unstructured.Unstructured{}
@@ -75,15 +99,16 @@ func TestWatch(t *testing.T) {
 
 	// wait for cache to store an item before proceeding.
 	select {
-	case <-time.After(2 * time.Second):
+	case <-time.After(10 * time.Second):
 		t.Fatal("timed out wating for create object to notify")
 	case <-notifyCh:
 	}
 
-	found, err := cache.Retrieve(CacheKey{Namespace: "default"})
+	found, err = cache.Retrieve(CacheKey{Namespace: "default"})
 	require.NoError(t, err)
 
-	require.Len(t, found, 1)
+	// 2 == initial + the new object
+	require.Len(t, found, 2)
 
 	annotations := map[string]string{"update": "update"}
 	obj.SetAnnotations(annotations)
@@ -102,13 +127,22 @@ func TestWatch(t *testing.T) {
 	found, err = cache.Retrieve(CacheKey{Namespace: "default"})
 	require.NoError(t, err)
 
-	require.Len(t, found, 1)
+	require.Len(t, found, 2)
 
-	require.Equal(t, annotations, found[0].GetAnnotations())
+	// Find the object we updated
+	var match bool
+	for _, u := range found {
+		if u.GetName() == obj.GetName() && u.GroupVersionKind() == obj.GroupVersionKind() {
+			match = true
+			require.Equal(t, annotations, u.GetAnnotations())
+		}
+	}
+	require.True(t, match, "unable to find object from fetched results")
 }
 
 func TestWatch_Stop(t *testing.T) {
-	scheme := runtime.NewScheme()
+	scheme := newScheme()
+
 	objects := []runtime.Object{
 		newUnstructured("apps/v1", "Deployment", "default", "deploy3"),
 	}
@@ -151,10 +185,11 @@ func TestWatch_Stop(t *testing.T) {
 	}
 
 	notifyCh := make(chan CacheNotification)
+	notifyDone := make(chan struct{})
 
-	cache := NewMemoryCache(CacheNotificationOpt(notifyCh))
+	cache := NewMemoryCache(CacheNotificationOpt(notifyCh, notifyDone))
 
-	watch := NewWatch("default", clusterClient, cache, log.NopLogger())
+	watch := NewWatch("default", clusterClient, cache, log.TestLogger(t))
 
 	stopFn, err := watch.Start()
 	require.NoError(t, err)
@@ -162,6 +197,7 @@ func TestWatch_Stop(t *testing.T) {
 	// Stop the watchers (blocking) and make sure it completes
 	stopDone := make(chan interface{})
 	go func() {
+		close(notifyDone) // Unblock any pending cache notifications so that stopFn can complete
 		stopFn()
 		close(stopDone)
 	}()

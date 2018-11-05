@@ -1,7 +1,9 @@
 package overview
 
 import (
+	"fmt"
 	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -41,64 +43,66 @@ func NewWatch(namespace string, clusterClient cluster.ClientInterface, c Cache, 
 }
 
 // Start starts the watch. It returns a stop function and an error.
+// Start should only be called once.
 func (w *ClusterWatch) Start() (StopFunc, error) {
 	resources, err := w.resources()
 	if err != nil {
 		return nil, err
 	}
 
-	var watchers []watch.Interface
-
-	for _, resource := range resources {
-		dc, err := w.clusterClient.DynamicClient()
-		if err != nil {
-			return nil, err
-		}
-
-		nri := dc.Resource(resource).Namespace(w.namespace)
-
-		watcher, err := nri.Watch(metav1.ListOptions{})
-		if err != nil {
-			return nil, errors.Wrapf(err, "did not create watcher for %s/%s/%s on %s namespace", resource.Group, resource.Version, resource.Resource, w.namespace)
-		}
-
-		watchers = append(watchers, watcher)
-	}
-
-	done := make(chan struct{})
-
-	events, shutdownCh := consumeEvents(done, watchers)
-
-	allDone := make(chan interface{})
+	ec := newEventConsumer(w.logger)
 
 	go func() {
-		wg := sync.WaitGroup{}
-		wg.Add(2)
-		go func() {
-			// Forward events to handler.
-			// Exits after all watchers are stopped in consumeEvents.
-			for event := range events {
-				w.eventHandler(event)
+		start := time.Now()
+	outer:
+		for _, resource := range resources {
+			select {
+			case <-ec.Done():
+				w.logger.Debugf("aborting watch construction loop due to Done event: %p", ec)
+				break outer
+			default:
 			}
-			wg.Done()
-		}()
 
-		go func() {
-			// Block until all watch consumers have finished (in consumeEvents)
-			<-shutdownCh
-			wg.Done()
-		}()
+			dc, err := w.clusterClient.DynamicClient()
+			if err != nil {
+				w.logger.With("resource", resource).Errorf("creating dynamicClient: %v", err)
+				return
+			}
 
-		// Block until fan-in consumer as well as individual watch consumers have completed
-		// (above two goroutines)
-		wg.Wait()
-		close(allDone)
+			nri := dc.Resource(resource).Namespace(w.namespace)
+
+			// watchStart := time.Now()
+			watcher, err := nri.Watch(metav1.ListOptions{})
+			if err != nil {
+				w.logger.Errorf("%v", errors.Wrapf(err, "did not create watcher for %s/%s/%s on %s namespace", resource.Group, resource.Version, resource.Resource, w.namespace))
+				return
+			}
+			// w.logger.With("duration", int(time.Since(watchStart)/time.Millisecond), "resource", resource.Resource).Debugf("individual watch")
+
+			if err := ec.Consume([]watch.Interface{watcher}); err != nil {
+				// Ownership of the watcher was not taken, we must stop it ourselves.
+				watcher.Stop()
+			}
+		}
+		w.logger.With("duration", int(time.Since(start)/time.Millisecond), "watchers", len(resources)).Debugf("top-level watch")
+	}()
+
+	forwarderDone := make(chan struct{})
+	go func() {
+		// Forward events to handler.
+		// Exits after all watchers are stopped in consumeEvents.
+		w.logger.With("context", "event forwarder").Debugf("started")
+		for event := range ec.Events() {
+			w.eventHandler(event)
+		}
+		close(forwarderDone)
+		w.logger.With("context", "event forwarder").Debugf("stopped")
 	}()
 
 	stopFn := func() {
 		// Signal consumer routines to shutdown. Block until all have finished.
-		done <- struct{}{}
-		<-allDone
+		ec.Stop()
+		<-forwarderDone
 	}
 
 	return stopFn, nil
@@ -131,6 +135,8 @@ func (w *ClusterWatch) eventHandler(event watch.Event) {
 }
 
 func (w *ClusterWatch) resources() ([]schema.GroupVersionResource, error) {
+	start := time.Now()
+
 	discoveryClient, err := w.clusterClient.DiscoveryClient()
 	if err != nil {
 		return nil, err
@@ -168,6 +174,8 @@ func (w *ClusterWatch) resources() ([]schema.GroupVersionResource, error) {
 		}
 	}
 
+	w.logger.With("duration", int(time.Since(start)/time.Millisecond), "resources", len(gvrs)).Debugf("resources from dynamic client")
+
 	return gvrs, nil
 }
 
@@ -181,44 +189,94 @@ func isWatchable(res metav1.APIResource) bool {
 	return m["list"] && m["watch"]
 }
 
-// consumeEvents performs fan-in of events from multiple watchers into a single event channel.
-// This continues until a message is sent on the provided done channel.
-func consumeEvents(done <-chan struct{}, watchers []watch.Interface) (chan watch.Event, chan struct{}) {
-	var wg sync.WaitGroup
+// eventConsumer perform fan-in from many watchers into a single event channel
+type eventConsumer struct {
+	wg       sync.WaitGroup
+	mu       sync.Mutex
+	logger   log.Logger
+	watchers []watch.Interface
+	events   chan watch.Event
+	once     sync.Once
+	done     chan struct{}
+}
 
-	wg.Add(len(watchers))
+// newEventConsumer creates a new event consumer. Event consumers perform fan-in from many watchers
+// into a single event channel.
+func newEventConsumer(logger log.Logger) *eventConsumer {
+	return &eventConsumer{
+		logger:   logger,
+		watchers: make([]watch.Interface, 0),
+		events:   make(chan watch.Event),
+		done:     make(chan struct{}),
+	}
+}
 
-	events := make(chan watch.Event)
+// Stop stops all watchers managed by the eventConsumer.
+// The events channel (ec.Events()) and done channel (ec.Done()) will be closed to notify consumers of the state change.
+func (ec *eventConsumer) Stop() {
+	ec.mu.Lock()
+	defer ec.mu.Unlock()
 
-	shutdownComplete := make(chan struct{})
+	ec.once.Do(func() {
+		// Notify clients (loops calling Consume()) to stop adding watches
+		close(ec.done)
+
+		for _, watch := range ec.watchers {
+			watch.Stop()
+		}
+		ec.logger.Debugf("stopped %d watchers", len(ec.watchers))
+		ec.watchers = nil
+		ec.wg.Wait()
+		close(ec.events)
+	})
+}
+
+// Events returns a channel that can be used to consume events from all watchers
+func (ec *eventConsumer) Events() <-chan watch.Event {
+	return ec.events
+}
+
+// Done returns a channel that when closed indicates the eventConsumer is either
+// in the process of shutting down, or has already been shut down.
+func (ec *eventConsumer) Done() <-chan struct{} {
+	return ec.done
+}
+
+var errInterrupted = fmt.Errorf("interrupted")
+
+// Consume will begin consuming events from the provided watchers.
+// It is safe to call this method multiple with additional watchers,
+// which will be added to the watch consumer list.
+// If a non-nil error is returned, ownership of watchers has not been transferred,
+// and in that case the caller will be responsible for stopping them themselves.
+func (ec *eventConsumer) Consume(watchers []watch.Interface) error {
+	ec.mu.Lock()
+	defer ec.mu.Unlock()
+
+	select {
+	case <-ec.done:
+		// Stop() has been called. Do not accept ownership of watchers.
+		return errInterrupted
+	default:
+	}
 
 	for _, watcher := range watchers {
+		ec.watchers = append(ec.watchers, watcher)
+		ec.wg.Add(1)
+
 		// Forward events from each watcher to events channel.
 		// Each drainer goroutine ends when its watcher's Stop() method is called,
 		// which will have the effect of closing its ResultChan and exiting the range loop.
 		go func(watcher watch.Interface) {
 			for event := range watcher.ResultChan() {
-				events <- event
+				select {
+				case ec.events <- event:
+				case <-ec.done:
+				}
 			}
-			wg.Done()
+			ec.wg.Done()
 		}(watcher)
 	}
 
-	go func() {
-		// wait for caller to signal done and
-		// start shutting the watcher down
-		<-done
-		for _, watch := range watchers {
-			watch.Stop()
-		}
-	}()
-
-	go func() {
-		// wait for all watchers to exit.
-		wg.Wait()
-		close(events)
-		shutdownComplete <- struct{}{}
-	}()
-
-	return events, shutdownComplete
+	return nil
 }

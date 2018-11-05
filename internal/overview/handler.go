@@ -55,6 +55,8 @@ func newHandler(prefix string, g generator, sfn streamFn, logger log.Logger) *ha
 		namespace := r.URL.Query().Get("namespace")
 		poll := r.URL.Query().Get("poll")
 
+		logger.With("path", path, "namespace", namespace, "poll", poll).Debugf("called")
+
 		if poll != "" {
 			var eventTimeout time.Duration
 			timeout, err := strconv.Atoi(poll)

@@ -1,9 +1,11 @@
 package overview
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/heptio/developer-dash/internal/cluster"
@@ -14,6 +16,8 @@ import (
 // ClusterOverview is an API for generating a cluster overview.
 type ClusterOverview struct {
 	client cluster.ClientInterface
+
+	mu sync.Mutex
 
 	namespace string
 
@@ -40,7 +44,7 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string, logger
 			}
 		}()
 
-		opts = append(opts, CacheNotificationOpt(ch))
+		opts = append(opts, CacheNotificationOpt(ch, nil))
 	}
 
 	cache := NewMemoryCache(opts...)
@@ -94,22 +98,26 @@ func (co *ClusterOverview) Navigation(root string) (*hcli.Navigation, error) {
 
 // SetNamespace sets the current namespace.
 func (co *ClusterOverview) SetNamespace(namespace string) error {
-	co.logger.Debugf("setting namespace for overview to %q", namespace)
-	if co.stopFn != nil {
-		co.stopFn()
-	}
+	co.logger.With("namespace", namespace, "module", "overview").Debugf("stopping")
+	co.Stop()
 
+	co.logger.With("namespace", namespace, "module", "overview").Debugf("setting namespace")
 	co.namespace = namespace
 	return co.Start()
 }
 
 // Start starts overview.
 func (co *ClusterOverview) Start() error {
+	co.mu.Lock()
+	defer co.mu.Unlock()
+
 	if co.namespace == "" {
 		return nil
 	}
 
-	co.logger.Debugf("starting cluster overview")
+	if co.stopFn != nil {
+		return errors.New("synchronization error - residual state detected")
+	}
 
 	stopFn, err := co.watch(co.namespace)
 	if err != nil {
@@ -123,15 +131,20 @@ func (co *ClusterOverview) Start() error {
 
 // Stop stops overview.
 func (co *ClusterOverview) Stop() {
-	if co.stopFn != nil {
-		co.logger.Debugf("stopping cluster overview")
+	co.mu.Lock()
+	stopFn := co.stopFn
+	co.stopFn = nil
+	co.mu.Unlock()
 
-		co.stopFn()
+	if stopFn != nil {
+		go func() {
+			stopFn()
+		}()
 	}
 }
 
 func (co *ClusterOverview) watch(namespace string) (StopFunc, error) {
-	co.logger.Debugf("watching namespace %s", namespace)
+	co.logger.With("namespace", namespace, "module", "overview").Debugf("watching namespace")
 
 	watch := co.watchFactory(namespace, co.client, co.cache)
 	return watch.Start()
