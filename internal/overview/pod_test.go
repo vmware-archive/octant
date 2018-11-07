@@ -56,7 +56,7 @@ func TestPodList(t *testing.T) {
 			"Ready":          content.NewStringText("1/1"),
 			"Status":         content.NewStringText("Running"),
 			"Restarts":       content.NewStringText("0"),
-			"Age":            content.NewStringText("3d"),
+			"Age":            content.NewStringText("1d"),
 			"IP":             content.NewStringText("10.1.114.100"),
 			"Node":           content.NewStringText("node1"),
 			"Nominated Node": content.NewStringText("<none>"),

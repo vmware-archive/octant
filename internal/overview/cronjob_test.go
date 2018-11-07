@@ -76,7 +76,7 @@ func TestCronJobJobs(t *testing.T) {
 	inactiveTable := content.NewTable("Inactive Jobs")
 	inactiveTable.Columns = jobColumns
 	inactiveTable.AddRow(content.TableRow{
-		"Age":        content.NewStringText("1h"),
+		"Age":        content.NewStringText("1d"),
 		"Containers": content.NewStringText("hello"),
 		"Desired":    content.NewStringText("1"),
 		"Images":     content.NewStringText("busybox"),

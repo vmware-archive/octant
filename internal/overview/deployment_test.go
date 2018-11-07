@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -204,7 +205,7 @@ func TestDeploymentReplicaSets(t *testing.T) {
 			"Desired":    content.NewStringText("3"),
 			"Current":    content.NewStringText("3"),
 			"Ready":      content.NewStringText("3"),
-			"Age":        content.NewStringText("3d"),
+			"Age":        content.NewStringText("1d"),
 			"Containers": content.NewStringText("nginx"),
 			"Images":     content.NewStringText("nginx:1.13.6"),
 			"Selector":   content.NewStringText("app=myapp,pod-template-hash=2350241137"),
@@ -225,8 +226,14 @@ func TestDeploymentReplicaSets(t *testing.T) {
 
 func storeFromFile(t *testing.T, name string, cache Cache) {
 	decoded := loadFromFile(t, name)
+	obj, err := meta.Accessor(decoded)
+	if err != nil {
+		t.Fatalf("could not create meta.Accessor")
+	}
+	// Override objects to be "1d" old, makes comparing in tests easier
+	obj.SetCreationTimestamp(metav1.NewTime(time.Now().AddDate(0, 0, -1)))
 
-	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(decoded)
+	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
 	require.NoError(t, err)
 
 	err = cache.Store(&unstructured.Unstructured{Object: m})
