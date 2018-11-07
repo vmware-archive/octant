@@ -1,9 +1,13 @@
 language: go
 go:
   - "1.11"
+
 os:
   - linux
   - osx
+
+before_install:
+  - npm i -g npm@6.4.1
 
 addons:
   apt:
@@ -17,6 +21,10 @@ addons:
 #
 #install:
 #- sudo snap install snapcraft --classic
+
+#before_script:
+#  - go get github.com/GeertJohan/go.rice
+#  - go get github.com/GeertJohan/go.rice/rice
 
 script: make ci
 
