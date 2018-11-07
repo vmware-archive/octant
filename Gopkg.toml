@@ -1,6 +1,17 @@
+# Dependencies for rice tool
+required = [
+  "github.com/GeertJohan/go.incremental",
+  "github.com/akavel/rsrc",
+  "github.com/jessevdk/go-flags"
+]
+
 [prune]
   go-tests = true
   unused-packages = true
+
+  [[prune.project]]
+    name = "github.com/GeertJohan/go.rice"
+    unused-packages = false
 
 [[constraint]]
   branch = "master"
