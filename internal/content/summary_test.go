@@ -76,10 +76,25 @@ func TestLabelsItem(t *testing.T) {
 				"b": "content",
 			},
 			expected: Item{
-				Type:  "text",
+				Type:  "labels",
 				Label: "name",
 				Data: map[string]interface{}{
-					"value": "b=content, z=content",
+					"items": []Item{
+						Item{
+							Type:  "text",
+							Label: "name",
+							Data: map[string]interface{}{
+								"value": "b=content",
+							},
+						},
+						Item{
+							Type:  "text",
+							Label: "name",
+							Data: map[string]interface{}{
+								"value": "z=content",
+							},
+						},
+					},
 				},
 			},
 		},
