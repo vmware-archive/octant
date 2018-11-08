@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
-import { Switch, Route, withRouter } from 'react-router-dom'
+import {
+  Switch, Route, withRouter, Redirect
+} from 'react-router-dom'
 import Promise from 'promise'
 import _ from 'lodash'
 import {
@@ -9,7 +11,7 @@ import {
   setNamespace,
   getContents
 } from 'api'
-import Home from 'pages/Home'
+import Overview from 'pages/Overview'
 import Header from '../Header'
 import Navigation from '../Navigation'
 import './styles.scss'
@@ -159,7 +161,7 @@ class App extends Component {
               <Route
                 path='/content/overview'
                 render={props => (
-                  <Home
+                  <Overview
                     {...props}
                     contents={contents}
                     loading={loading}
@@ -168,6 +170,7 @@ class App extends Component {
                   />
                 )}
               />
+              <Redirect exact from='/' to='/content/overview' />
             </Switch>
           </div>
         </div>

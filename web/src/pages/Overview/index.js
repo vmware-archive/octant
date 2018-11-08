@@ -5,7 +5,7 @@ import Title from 'components/Title'
 import Content from './components/Content'
 import './styles.scss'
 
-export default function Home ({
+export default function Overview ({
   loading, contents, title, error
 }) {
   let mainContent
@@ -39,7 +39,7 @@ export default function Home ({
   }
 
   return (
-    <div className='home'>
+    <div className='overview'>
       <Title title={title} />
       <div className='main'>{mainContent}</div>
     </div>
