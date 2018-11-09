@@ -52,6 +52,10 @@ var secretTransforms = map[string]lookupFunc{
 	"Name": resourceLink("config-and-storage", "secrets"),
 }
 
+var serviceAccountTransforms = map[string]lookupFunc{
+	"Name": resourceLink("config-and-storage", "service-accounts"),
+}
+
 var roleTransforms = map[string]lookupFunc{
 	"Name": resourceLink("rbac", "roles"),
 }

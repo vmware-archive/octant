@@ -71,7 +71,6 @@ func (r *Resource) Object() *ObjectDescriber {
 		func() interface{} {
 			return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
 		},
-		summaryFunc(r.Titles.Object, r.Transforms),
 		r.Views,
 	)
 }

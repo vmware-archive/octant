@@ -11,6 +11,31 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+type IngressSummary struct{}
+
+var _ View = (*IngressSummary)(nil)
+
+func NewIngressSummary() *IngressSummary {
+	return &IngressSummary{}
+}
+
+func (js *IngressSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+	ingress, err := retrieveIngress(object)
+	if err != nil {
+		return nil, err
+	}
+
+	detail, err := printIngressSummary(ingress)
+	if err != nil {
+		return nil, err
+	}
+
+	summary := content.NewSummary("Details", []content.Section{detail})
+	return []content.Content{
+		&summary,
+	}, nil
+}
+
 type IngressDetails struct{}
 
 var _ View = (*IngressDetails)(nil)
@@ -72,4 +97,13 @@ func ingressRulesTable(ingress *v1beta1.Ingress) *content.Table {
 	}
 
 	return &table
+}
+
+func retrieveIngress(object runtime.Object) (*v1beta1.Ingress, error) {
+	ingress, ok := object.(*v1beta1.Ingress)
+	if !ok {
+		return nil, errors.Errorf("expected object to be an Ingress, it was %T", object)
+	}
+
+	return ingress, nil
 }
