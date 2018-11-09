@@ -23,7 +23,7 @@ func TestEventsDescriber(t *testing.T) {
 
 	scheme := runtime.NewScheme()
 	objects := []runtime.Object{}
-	clusterClient, err := fake.NewClient(scheme, objects)
+	clusterClient, err := fake.NewClient(scheme, resources, objects)
 	require.NoError(t, err)
 
 	options := DescriberOptions{

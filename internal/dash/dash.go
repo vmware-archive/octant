@@ -156,6 +156,7 @@ func (d *dash) Run(ctx context.Context) error {
 
 	<-ctx.Done()
 
+	// TODO context is already done - pass a different one too allow time for graceful shutdown
 	return server.Shutdown(ctx)
 }
 

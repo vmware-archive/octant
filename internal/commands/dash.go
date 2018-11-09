@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -27,6 +28,10 @@ func newDashCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
+
+			// Set to 9 for verbose.
+			// TODO control via cobra verbose flag along with zap.
+			flag.CommandLine.Parse([]string{"-logtostderr", "-v", "0"}) // Set glog to verbose
 
 			z, err := zap.NewDevelopment()
 			if err != nil {
