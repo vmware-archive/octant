@@ -99,6 +99,7 @@ var (
 		Titles:     ResourceTitle{List: "Jobs", Object: "Job"},
 		Transforms: jobTransforms,
 		Views: []View{
+			NewJobSummary(),
 			NewPodList(),
 		},
 	})
@@ -111,7 +112,10 @@ var (
 		Titles:     ResourceTitle{List: "Pods", Object: "Pod"},
 		Transforms: podTransforms,
 		Views: []View{
+			NewPodSummary(),
+			NewPodContainer(),
 			NewPodCondition(),
+			NewPodVolume(),
 		},
 	})
 
@@ -136,6 +140,7 @@ var (
 		Titles:     ResourceTitle{List: "Replication Controllers", Object: "Replication Controller"},
 		Transforms: replicationControllerTransforms,
 		Views: []View{
+			NewReplicationControllerSummary(),
 			NewPodList(),
 		},
 	})
@@ -147,6 +152,7 @@ var (
 		Titles:     ResourceTitle{List: "Stateful Sets", Object: "Stateful Set"},
 		Transforms: statefulSetTransforms,
 		Views: []View{
+			NewStatefulSetSummary(),
 			NewPodList(),
 		},
 	})
@@ -172,6 +178,7 @@ var (
 		Titles:     ResourceTitle{List: "Ingresses", Object: "Ingress"},
 		Transforms: ingressTransforms,
 		Views: []View{
+			NewIngressSummary(),
 			NewIngressDetails(),
 		},
 	})
@@ -183,6 +190,11 @@ var (
 		ObjectType: &core.Service{},
 		Titles:     ResourceTitle{List: "Services", Object: "Service"},
 		Transforms: serviceTransforms,
+		Views: []View{
+			NewServiceSummary(),
+			NewServicePort(),
+			NewServiceEndpoints(),
+		},
 	})
 
 	discoveryAndLoadBalancingDescriber = NewSectionDescriber(
@@ -211,6 +223,9 @@ var (
 		ObjectType: &core.PersistentVolumeClaim{},
 		Titles:     ResourceTitle{List: "Persistent Volume Claims", Object: "Persistent Volume Claim"},
 		Transforms: pvcTransforms,
+		Views: []View{
+			NewPersistentVolumeClaimSummary(),
+		},
 	})
 
 	csSecrets = NewResource(ResourceOptions{
@@ -220,14 +235,31 @@ var (
 		ObjectType: &core.Secret{},
 		Titles:     ResourceTitle{List: "Secrets", Object: "Secret"},
 		Transforms: secretTransforms,
+		Views: []View{
+			NewSecretSummary(),
+			NewSecretData(),
+		},
+	})
+
+	csServiceAccounts = NewResource(ResourceOptions{
+		Path:       "/config-and-storage/service-accounts",
+		CacheKey:   CacheKey{APIVersion: "v1", Kind: "ServiceAccount"},
+		ListType:   &core.ServiceAccountList{},
+		ObjectType: &core.ServiceAccount{},
+		Titles:     ResourceTitle{List: "Service Accounts", Object: "Service Account"},
+		Transforms: serviceAccountTransforms,
+		Views: []View{
+			NewServiceAccountSummary(),
+		},
 	})
 
 	configAndStorageDescriber = NewSectionDescriber(
 		"/config-and-storage",
 		"Config and Storage",
 		csConfigMaps,
-		csPVCs.List(),
-		csSecrets.List(),
+		csPVCs,
+		csSecrets,
+		csServiceAccounts,
 	)
 
 	customResourcesDescriber = NewSectionDescriber(
@@ -242,6 +274,10 @@ var (
 		ObjectType: &rbac.Role{},
 		Titles:     ResourceTitle{List: "Roles", Object: "Role"},
 		Transforms: roleTransforms,
+		Views: []View{
+			NewRoleSummary(),
+			NewRoleRule(),
+		},
 	})
 
 	rbacRoleBindings = NewResource(ResourceOptions{
@@ -251,13 +287,17 @@ var (
 		ObjectType: &rbac.RoleBinding{},
 		Titles:     ResourceTitle{List: "Role Bindings", Object: "Role Binding"},
 		Transforms: roleBindingTransforms,
+		Views: []View{
+			NewRoleBindingSummary(),
+			NewRoleBindingSubjects(),
+		},
 	})
 
 	rbacDescriber = NewSectionDescriber(
 		"/rbac",
 		"RBAC",
-		rbacRoles.List(),
-		rbacRoleBindings.List(),
+		rbacRoles,
+		rbacRoleBindings,
 	)
 
 	rootDescriber = NewSectionDescriber(

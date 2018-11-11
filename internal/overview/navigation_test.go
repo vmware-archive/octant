@@ -12,5 +12,5 @@ func Test_navigationEntries(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, got.Title, "Overview")
-	assert.Equal(t, got.Path, "/content/overview")
+	assert.Equal(t, got.Path, "/content/overview/")
 }

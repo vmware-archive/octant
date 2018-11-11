@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/heptio/developer-dash/internal/content"
@@ -10,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/core"
@@ -61,6 +63,34 @@ func (pc *PodList) Content(ctx context.Context, object runtime.Object, c Cache) 
 	return contents, nil
 }
 
+type PodSummary struct{}
+
+var _ View = (*PodSummary)(nil)
+
+func NewPodSummary() *PodSummary {
+	return &PodSummary{}
+}
+
+func (ps *PodSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+	// TODO this clock should come from somewhere else
+	clk := &clock.RealClock{}
+
+	pod, err := retrievePod(object)
+	if err != nil {
+		return nil, err
+	}
+
+	detail, err := printPodSummary(pod, clk)
+	if err != nil {
+		return nil, err
+	}
+
+	summary := content.NewSummary("Details", []content.Section{detail})
+	return []content.Content{
+		&summary,
+	}, nil
+}
+
 type PodCondition struct{}
 
 func NewPodCondition() *PodCondition {
@@ -103,6 +133,91 @@ func (pc *PodCondition) Content(ctx context.Context, object runtime.Object, c Ca
 	}
 
 	return []content.Content{&table}, nil
+}
+
+type PodContainer struct{}
+
+func NewPodContainer() *PodContainer {
+	return &PodContainer{}
+}
+
+func (pc *PodContainer) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+	pod, err := retrievePod(object)
+	if err != nil {
+		return nil, err
+	}
+
+	sections := []content.Section{}
+
+	for _, status := range pod.Status.ContainerStatuses {
+		section := content.NewSection()
+		section.Title = status.Name
+
+		section.AddText("Container ID", status.ContainerID)
+		section.AddText("Image", status.Image)
+		section.AddText("Image ID", status.ImageID)
+
+		// TODO: add port
+		// TODO: add host port
+
+		if waiting := status.State.Waiting; waiting != nil {
+			section.AddText("State", "Waiting")
+			if waiting.Reason != "" {
+				section.AddText("Waiting Reason", waiting.Reason)
+			}
+			if waiting.Message != "" {
+				section.AddText("Waiting Message", waiting.Message)
+			}
+
+		} else if status.State.Running != nil {
+			section.AddText("State", "Running")
+			section.AddText("Started", formatTime(&status.State.Running.StartedAt))
+
+		} else if terminated := status.State.Terminated; terminated != nil {
+			section.AddText("State", "Terminated")
+			section.AddText("Exit Code", fmt.Sprintf("%d", terminated.ExitCode))
+			section.AddText("Signal", fmt.Sprintf("%d", terminated.Signal))
+
+			if terminated.Reason != "" {
+				section.AddText("Reason", terminated.Reason)
+			}
+			if terminated.Message != "" {
+				section.AddText("Message", terminated.Message)
+			}
+			section.AddText("Started At", formatTime(&terminated.StartedAt))
+			section.AddText("Finished At", formatTime(&terminated.FinishedAt))
+			section.AddText("Container ID", terminated.ContainerID)
+		}
+
+		sections = append(sections, section)
+	}
+
+	containers := content.NewSummary("Containers", sections)
+
+	return []content.Content{&containers}, nil
+}
+
+type PodVolume struct{}
+
+func NewPodVolume() *PodVolume {
+	return &PodVolume{}
+}
+
+func (pc *PodVolume) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+	pod, err := retrievePod(object)
+	if err != nil {
+		return nil, err
+	}
+
+	sections := []content.Section{}
+
+	for _, volume := range pod.Spec.Volumes {
+		sections = append(sections, summarizeVolume(volume))
+	}
+
+	volumes := content.NewSummary("Volumes", sections)
+
+	return []content.Content{&volumes}, nil
 }
 
 func retrievePod(object runtime.Object) (*core.Pod, error) {

@@ -22,6 +22,30 @@ type Section struct {
 	Items []Item `json:"items"`
 }
 
+func NewSection() Section {
+	return Section{}
+}
+
+func (s *Section) AddText(label, text string) {
+	s.Items = append(s.Items, TextItem(label, text))
+}
+
+func (s *Section) AddLabels(label string, labels map[string]string) {
+	s.Items = append(s.Items, LabelsItem(label, labels))
+}
+
+func (s *Section) AddList(label string, kv map[string]string) {
+	s.Items = append(s.Items, ListItem(label, kv))
+}
+
+func (s *Section) AddLink(label, value, link string) {
+	s.Items = append(s.Items, LinkItem(label, value, link))
+}
+
+func (s *Section) AddJSON(label string, blob interface{}) {
+	s.Items = append(s.Items, JSONItem(label, blob))
+}
+
 type Item struct {
 	Type  string      `json:"type"`
 	Label string      `json:"label"`
