@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-// View is a view that can be embbeded in the resource overview.
+// View is a view that can be embedded in the resource overview.
 type View interface {
 	Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error)
 }

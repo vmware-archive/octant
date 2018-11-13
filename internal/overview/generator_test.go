@@ -187,3 +187,15 @@ func (c *fakeContent) IsEmpty() bool {
 func (c fakeContent) MarshalJSON() ([]byte, error) {
 	return []byte(`{"type":"stubbed"}`), nil
 }
+
+type fakeView struct{}
+
+var _ View = (*fakeView)(nil)
+
+func newFakeView() *fakeView {
+	return &fakeView{}
+}
+
+func (v *fakeView) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+	return stubbedContent, nil
+}
