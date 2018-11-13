@@ -98,15 +98,8 @@ func TestObjectDescriber(t *testing.T) {
 
 	theContent := newFakeContent(false)
 
-	otf := func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error {
-		*contents = append(*contents, theContent)
-		return func(*metav1beta1.Table) error {
-			return nil
-		}
-	}
-
 	fn := DefaultLoader(key)
-	d := NewObjectDescriber(thePath, "object", fn, objectType, otf, []View{})
+	d := NewObjectDescriber(thePath, "object", fn, objectType, []View{newFakeView()})
 
 	scheme := runtime.NewScheme()
 	objects := []runtime.Object{}
