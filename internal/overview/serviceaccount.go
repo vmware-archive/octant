@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/heptio/developer-dash/internal/content"
-	"golang.org/x/build/kubernetes/api"
 
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/apis/core"
@@ -42,8 +42,8 @@ func (js *ServiceAccountSummary) Content(ctx context.Context, object runtime.Obj
 
 	for _, s := range secrets {
 		if s.Type == core.SecretTypeServiceAccountToken {
-			name, _ := s.Annotations[api.ServiceAccountNameKey]
-			uid, _ := s.Annotations[api.ServiceAccountUIDKey]
+			name, _ := s.Annotations[corev1.ServiceAccountNameKey]
+			uid, _ := s.Annotations[corev1.ServiceAccountUIDKey]
 			if name == serviceAccount.Name && uid == string(serviceAccount.UID) {
 				tokens = append(tokens, s)
 			}
