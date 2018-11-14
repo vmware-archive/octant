@@ -43,6 +43,7 @@ export default function Table ({ data: { title, columns, rows } }) {
         return '-'
       }
       if (value.text) return value.text
+      if (value.time) return value.time
       return '-'
     }
     return value

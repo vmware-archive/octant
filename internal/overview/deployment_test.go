@@ -88,7 +88,7 @@ func TestDeploymentSummary(t *testing.T) {
 				content.TextItem("Namespace", "default"),
 				content.LabelsItem("Labels", map[string]string{"app": "myapp"}),
 				content.LabelsItem("Annotations", map[string]string{}),
-				content.TextItem("Creation Time", "Mon, 15 Oct 2018 11:38:41 +0000"),
+				content.TimeItem("Creation Time", "2018-10-15T11:38:41Z"),
 				content.TextItem("Selector", "app=myapp"),
 				content.TextItem("Strategy", "RollingUpdate"),
 				content.TextItem("Min Ready Seconds", "5"),

@@ -4,13 +4,15 @@ import JSON from '../DataTypes/JSON'
 import Link from '../DataTypes/Link'
 import List from '../DataTypes/List'
 import Labels from '../DataTypes/Labels'
+import Time from '../DataTypes/Time'
 
 const dataTypeMap = {
   text: Text,
   json: JSON,
   link: Link,
   labels: Labels,
-  list: List
+  list: List,
+  time: Time
 }
 
 export default function ({ items }) {

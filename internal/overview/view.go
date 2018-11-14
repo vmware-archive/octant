@@ -36,7 +36,7 @@ func formatTime(t *metav1.Time) string {
 		return "-"
 	}
 
-	return t.UTC().Format(time.RFC1123Z)
+	return t.UTC().Format(time.RFC3339)
 }
 
 // LookupFunc is a function for looking up the contents of a cell.
