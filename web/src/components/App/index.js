@@ -7,7 +7,6 @@ import { setNamespace } from 'api'
 import Overview from 'pages/Overview'
 import Header from '../Header'
 import Navigation from '../Navigation'
-import fetchContents from './state/fetchContents'
 import getInitialState from './state/getInitialState'
 import './styles.scss'
 
@@ -20,7 +19,6 @@ class App extends Component {
       navigation: [],
       currentNavLinkPath: [],
       namespaceOptions: [],
-      contents: [],
       title: '',
       namespaceOption: { label: 'default', value: 'default' }
     }
@@ -32,64 +30,33 @@ class App extends Component {
     this.setState(initialState)
   }
 
-  async componentDidUpdate ({ location: { pathname: lastPath } }) {
-    const {
-      location: { pathname: thisPath }
-    } = this.props
-
-    if (thisPath && lastPath !== thisPath) {
-      await this.setContents()
-    }
-  }
-
-  setContents = async (namespace) => {
-    this.setState({
-      contents: [],
-      title: '',
-      loading: true,
-      error: false
-    })
-    if (!namespace) {
-      const { namespaceOption } = this.state
-      namespace = namespaceOption.value
-    }
-    const { location } = this.props
-    const state = await fetchContents(location.pathname, namespace)
-    this.setState(state)
-  }
-
   onNamespaceChange = async (namespaceOption) => {
     this.setState({
-      namespaceOption,
       loading: true,
-      contents: [],
       error: false
     })
     const { value } = namespaceOption
     const { history } = this.props
+
     try {
+      this.lastFetchedNamespace = value
+
       await setNamespace(value)
-      // Note(marlon): this is needed because user might switch namespaces
-      // before the previous namespace request and we want to make sure
-      // we render the correct contents
-      const {
-        namespaceOption: _namespaceOption,
-        currentNavLinkPath
-      } = this.state
-      if (value === _namespaceOption.value) {
+
+      if (this.lastFetchedNamespace === value) {
+        const { currentNavLinkPath } = this.state
         const { path } = _.last(currentNavLinkPath)
         history.push(path)
-        await this.setContents(value)
+        this.setState({ namespaceOption, loading: false, error: false })
       }
     } catch (e) {
-      this.setState({ loading: false, error: true })
+      this.setState({ namespaceOption, loading: false, error: true })
     }
   }
 
   render () {
     const {
       loading,
-      contents,
       navigation,
       currentNavLinkPath,
       namespaceOptions,
@@ -97,6 +64,16 @@ class App extends Component {
       title,
       error
     } = this.state
+    const { location } = this.props
+
+    const currentPath = location.pathname
+    const currentNamespace = namespaceOption.value
+
+    let rootNavigationPath = '/content/overview/'
+    if (navigation && navigation.sections) {
+      rootNavigationPath = navigation.sections[0].path
+    }
+
     return (
       <div className='app'>
         <Header />
@@ -115,18 +92,19 @@ class App extends Component {
           <div className='app-main'>
             <Switch>
               <Route
-                path='/content/overview'
+                path={rootNavigationPath}
                 render={props => (
                   <Overview
                     {...props}
-                    contents={contents}
+                    path={currentPath}
+                    namespace={currentNamespace}
                     loading={loading}
                     title={title}
                     error={error}
                   />
                 )}
               />
-              <Redirect exact from='/' to='/content/overview' />
+              <Redirect exact from='/' to={rootNavigationPath} />
             </Switch>
           </div>
         </div>

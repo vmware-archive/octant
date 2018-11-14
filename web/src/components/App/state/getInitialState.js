@@ -2,7 +2,6 @@ import Promise from 'promise'
 import _ from 'lodash'
 import { getNamespace, getNamespaces, getNavigation } from 'api'
 import getNavLinkPath from './getNavLinkPath'
-import fetchContents from './fetchContents'
 
 export default async function (currentPathname) {
   let navigation,
@@ -36,8 +35,6 @@ export default async function (currentPathname) {
     })
     if (option) {
       initialState.namespaceOption = option
-      const contents = await fetchContents(currentPathname, option.value)
-      _.assign(initialState, contents)
     }
   }
 
