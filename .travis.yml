@@ -1,9 +1,13 @@
 language: go
 go:
   - "1.11"
+
 os:
   - linux
   - osx
+
+before_install:
+  - npm i -g npm@6.4.1
 
 addons:
   apt:
@@ -17,6 +21,11 @@ addons:
 #
 #install:
 #- sudo snap install snapcraft --classic
+
+# Install rice tool
+before_script:
+  - go install $TRAVIS_BUILD_DIR/vendor/github.com/GeertJohan/go.rice
+  - go install $TRAVIS_BUILD_DIR/vendor/github.com/GeertJohan/go.rice/rice
 
 script: make ci
 
