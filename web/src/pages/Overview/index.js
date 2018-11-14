@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import cx from 'classnames'
 import Loading from 'components/Icons/Loading'
 import Title from 'components/Title'
-import { getContents } from 'api'
+import { getAPIBase, getContentsUrl, POLL_WAIT } from 'api'
 import Content from './components/Content'
 import './styles.scss'
 
@@ -18,9 +18,23 @@ export default class Overview extends Component {
   }) {
     const { path, namespace } = this.props
     if (path !== previousPath || namespace !== previousNamespace) {
+      // clear state and this.source on change
       this.setState({ contents: null })
-      const data = await getContents(path, namespace)
-      this.setState({ contents: data.contents })
+      if (this.source) {
+        this.source.close()
+        this.source = null
+      }
+      const url = getContentsUrl(path, namespace, POLL_WAIT)
+      this.source = new window.EventSource(`${getAPIBase()}/${url}`)
+      this.source.addEventListener('message', (e) => {
+        const data = JSON.parse(e.data)
+        return this.setState({ contents: data.contents })
+      })
+      // if EventSource error clear close
+      this.source.addEventListener('error', () => {
+        this.source.close()
+        this.source = null
+      })
     }
   }
 

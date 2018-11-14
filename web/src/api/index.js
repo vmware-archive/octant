@@ -3,9 +3,11 @@ import mocks from './mock'
 
 const { fetch } = window
 
-function getAPIBase () {
+export function getAPIBase () {
   return window.API_BASE || process.env.API_BASE
 }
+
+export const POLL_WAIT = 5
 
 async function buildRequest (params) {
   const apiBase = getAPIBase()
@@ -52,14 +54,19 @@ export function getNamespaces () {
   return buildRequest(params)
 }
 
-export function getContents (path, namespace) {
+export function getContentsUrl (path, namespace, poll) {
   if (!path || path === '/') return null
   let query = ''
   if (namespace) query = `?${queryString.stringify({ namespace })}`
-  const params = {
-    endpoint: `api/v1${path}${query}`
-  }
-  return buildRequest(params)
+  // if poll is set poll the API
+  if (poll) query += `&poll=${poll}`
+
+  return `api/v1${path}${query}`
+}
+
+export function getContents (path, namespace) {
+  const endpoint = getContentsUrl(path, namespace)
+  return buildRequest({ endpoint })
 }
 
 export function setNamespace (namespace) {
