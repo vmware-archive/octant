@@ -74,6 +74,7 @@
     "transformIgnorePatterns": [
       "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs)$"
     ],
+    "moduleDirectories": ["node_modules", "src"],
     "moduleNameMapper": {
       "^react-native$": "react-native-web"
     },
@@ -127,6 +128,8 @@
     "rules": {
       "max-len": 0,
       "no-param-reassign": 0,
+      "consistent-return": 0,
+
       "react/jsx-filename-extension": [
         1,
         {
@@ -141,6 +144,7 @@
       "react/require-default-props": 0,
       "react/jsx-one-expression-per-line": 0,
       "react/no-array-index-key": 0,
+
       "jsx-a11y/no-static-element-interactions": 0,
       "jsx-a11y/anchor-is-valid": 0,
       "jsx-a11y/click-events-have-key-events": 0,

@@ -8,13 +8,13 @@
 
   .app-page {
     display: flex;
-    flex-direction: row;
     flex: 1 1 auto;
+    flex-direction: row;
 
     .app-nav {
       background-color: $white;
-      width: 250px;
       flex: 0 0 auto;
+      width: 250px;
     }
 
     .app-main {
