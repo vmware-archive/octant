@@ -70,10 +70,6 @@ export default {
           ]
         },
         {
-          title: 'Custom Resources',
-          path: '/content/overview/custom-resources'
-        },
-        {
           title: 'RBAC',
           path: '/content/overview/rbac',
           children: [

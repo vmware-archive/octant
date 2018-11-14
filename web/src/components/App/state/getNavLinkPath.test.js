@@ -1,5 +1,5 @@
 import mockNavigation from 'api/mock/_navigation'
-import { getNavLinkPath } from './getInitialState'
+import getNavLinkPath from './getNavLinkPath'
 
 describe('getNavLinkPath', () => {
   test('generates nav link path from a valid path', () => {

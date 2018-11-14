@@ -1,37 +1,8 @@
 import Promise from 'promise'
 import _ from 'lodash'
 import { getNamespace, getNamespaces, getNavigation } from 'api'
+import getNavLinkPath from './getNavLinkPath'
 import fetchContents from './fetchContents'
-
-export function getNavLinkPath (navigation, pathname) {
-  let currentNavLinkPath
-
-  if (navigation) {
-    _.forEach(navigation.sections, (section) => {
-      const linkPath = [section]
-      if (section.path === pathname) {
-        currentNavLinkPath = linkPath
-        return false
-      }
-      _.forEach(section.children, (child) => {
-        const childLinkPath = [...linkPath, child]
-        if (child.path === pathname) {
-          currentNavLinkPath = childLinkPath
-          return false
-        }
-        _.forEach(child.children, (grandChild) => {
-          const grandChildLinkPath = [...childLinkPath, grandChild]
-          if (_.includes(pathname, grandChild.path)) {
-            currentNavLinkPath = grandChildLinkPath
-            return false
-          }
-        })
-      })
-    })
-  }
-
-  return currentNavLinkPath
-}
 
 export default async function (currentPathname) {
   let navigation,
