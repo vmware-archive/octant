@@ -118,8 +118,8 @@ func TestPodCondition(t *testing.T) {
 	expectedRow := content.TableRow{
 		"Type":                 content.NewStringText("PodScheduled"),
 		"Status":               content.NewStringText("True"),
-		"Last probe time":      content.NewStringText("2018-10-15T11:38:41Z"),
-		"Last transition time": content.NewStringText("2018-10-15T11:38:41Z"),
+		"Last probe time":      content.NewTimeText("2018-10-15T11:38:41Z"),
+		"Last transition time": content.NewTimeText("2018-10-15T11:38:41Z"),
 		"Reason":               content.NewStringText("reason"),
 		"Message":              content.NewStringText("message"),
 	}

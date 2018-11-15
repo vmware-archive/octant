@@ -32,7 +32,7 @@ func printCronJobSummary(cronJob *batch.CronJob, jobs []*batch.Job) (content.Sec
 	section.AddText("Namespace", cronJob.GetNamespace())
 	section.AddLabels("Labels", cronJob.GetLabels())
 	section.AddLabels("Annotations", cronJob.GetAnnotations())
-	section.AddText("Create Time", formatTime(&cronJob.CreationTimestamp))
+	section.AddTimestamp("Create Time", formatTime(&cronJob.CreationTimestamp))
 
 	active := fmt.Sprintf("%d", len(cronJob.Status.Active))
 	section.AddText("Active", active)
@@ -47,7 +47,7 @@ func printCronJobSummary(cronJob *batch.CronJob, jobs []*batch.Job) (content.Sec
 	}
 	section.AddText("Suspend", suspend)
 
-	section.AddText("Last Schedule", formatTime(cronJob.Status.LastScheduleTime))
+	section.AddTimestamp("Last Schedule", formatTime(cronJob.Status.LastScheduleTime))
 
 	section.AddText("Concurrency Policy", string(cronJob.Spec.ConcurrencyPolicy))
 
@@ -69,7 +69,7 @@ func printDeploymentSummary(deployment *extensions.Deployment) (content.Section,
 	section.AddText("Namespace", deployment.GetNamespace())
 	section.AddLabels("Labels", deployment.GetLabels())
 	section.AddLabels("Annotations", deployment.GetAnnotations())
-	section.AddText("Creation Time", deployment.CreationTimestamp.Time.UTC().Format(time.RFC1123Z))
+	section.AddTimestamp("Creation Time", deployment.CreationTimestamp.Time.UTC().Format(time.RFC3339))
 
 	selector, err := metav1.LabelSelectorAsSelector(deployment.Spec.Selector)
 	if err != nil {
@@ -136,7 +136,7 @@ func printJobSummary(job *batch.Job, pods []*core.Pod) (content.Section, error) 
 	}
 
 	if st := job.Status.StartTime; st != nil {
-		section.AddText("Start Time", formatTime(st))
+		section.AddTimestamp("Start Time", formatTime(st))
 	}
 
 	if ads := job.Spec.ActiveDeadlineSeconds; ads != nil {
@@ -161,7 +161,7 @@ func printPodSummary(pod *core.Pod, c clock.Clock) (content.Section, error) {
 	}
 
 	section.AddText("Node", stringOrNone(pod.Spec.NodeName))
-	section.AddText("Start Time", formatTime(pod.Status.StartTime))
+	section.AddTimestamp("Start Time", formatTime(pod.Status.StartTime))
 	section.AddLabels("Labels", pod.GetLabels())
 	section.AddLabels("Annotations", pod.GetAnnotations())
 

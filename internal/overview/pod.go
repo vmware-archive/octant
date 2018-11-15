@@ -123,8 +123,8 @@ func (pc *PodCondition) Content(ctx context.Context, object runtime.Object, c Ca
 		row := content.TableRow{
 			"Type":                 content.NewStringText(string(condition.Type)),
 			"Status":               content.NewStringText(string(condition.Status)),
-			"Last probe time":      content.NewStringText(lastProbeTime),
-			"Last transition time": content.NewStringText(lastTransitionTime),
+			"Last probe time":      content.NewTimeText(lastProbeTime),
+			"Last transition time": content.NewTimeText(lastTransitionTime),
 			"Reason":               content.NewStringText(condition.Reason),
 			"Message":              content.NewStringText(condition.Message),
 		}
@@ -171,7 +171,7 @@ func (pc *PodContainer) Content(ctx context.Context, object runtime.Object, c Ca
 
 		} else if status.State.Running != nil {
 			section.AddText("State", "Running")
-			section.AddText("Started", formatTime(&status.State.Running.StartedAt))
+			section.AddTimestamp("Started", formatTime(&status.State.Running.StartedAt))
 
 		} else if terminated := status.State.Terminated; terminated != nil {
 			section.AddText("State", "Terminated")
@@ -184,8 +184,8 @@ func (pc *PodContainer) Content(ctx context.Context, object runtime.Object, c Ca
 			if terminated.Message != "" {
 				section.AddText("Message", terminated.Message)
 			}
-			section.AddText("Started At", formatTime(&terminated.StartedAt))
-			section.AddText("Finished At", formatTime(&terminated.FinishedAt))
+			section.AddTimestamp("Started At", formatTime(&terminated.StartedAt))
+			section.AddTimestamp("Finished At", formatTime(&terminated.FinishedAt))
 			section.AddText("Container ID", terminated.ContainerID)
 		}
 

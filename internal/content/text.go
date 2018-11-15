@@ -25,6 +25,23 @@ func (s StringText) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&m)
 }
 
+type TimeText string
+
+// NewTimeText creates an instance of TimeText
+func NewTimeText(s string) *TimeText {
+	tt := TimeText(s)
+	return &tt
+}
+
+func (t TimeText) MarshalJSON() ([]byte, error) {
+	m := map[string]interface{}{
+		"type": "time",
+		"time": string(t),
+	}
+
+	return json.Marshal(&m)
+}
+
 // LinkText is text that contains a link.
 type LinkText struct {
 	Text string

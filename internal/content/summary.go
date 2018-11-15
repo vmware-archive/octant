@@ -30,6 +30,10 @@ func (s *Section) AddText(label, text string) {
 	s.Items = append(s.Items, TextItem(label, text))
 }
 
+func (s *Section) AddTimestamp(label, text string) {
+	s.Items = append(s.Items, TimeItem(label, text))
+}
+
 func (s *Section) AddLabels(label string, labels map[string]string) {
 	s.Items = append(s.Items, LabelsItem(label, labels))
 }
@@ -55,6 +59,16 @@ type Item struct {
 func TextItem(label, text string) Item {
 	return Item{
 		Type:  "text",
+		Label: label,
+		Data: map[string]interface{}{
+			"value": text,
+		},
+	}
+}
+
+func TimeItem(label, text string) Item {
+	return Item{
+		Type:  "time",
 		Label: label,
 		Data: map[string]interface{}{
 			"value": text,

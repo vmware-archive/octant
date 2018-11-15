@@ -19,6 +19,17 @@ func TestStringText(t *testing.T) {
 	assert.Equal(t, expected, string(data))
 }
 
+func TestTimeText(t *testing.T) {
+	tt := NewTimeText("2018-11-08T17:55:45Z")
+
+	data, err := json.Marshal(tt)
+	require.NoError(t, err)
+
+	expected := `{"time":"2018-11-08T17:55:45Z","type":"time"}`
+
+	assert.Equal(t, expected, string(data))
+}
+
 func TestLinkText(t *testing.T) {
 	lt := NewLinkText("foo", "/bar")
 

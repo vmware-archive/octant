@@ -24,6 +24,7 @@ func TestSummary(t *testing.T) {
 			Items: []Item{
 				LinkItem("docker-for-desktop", "click-here", "/api/node/blah"),
 				TextItem("IP", "10.1.68.108"),
+				TimeItem("Creation Time", "2018-11-08T17:55:45Z"),
 				JSONItem("health", map[string]interface{}{
 					"status":      "OK",
 					"lastChecked": "Yesterday",
