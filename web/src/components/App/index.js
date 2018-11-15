@@ -26,19 +26,9 @@ class App extends Component {
 
   async componentDidMount () {
     const { location } = this.props
-    this.toggleIsLoading(true)
+    this.setState({ isLoading: true })
     const initialState = await getInitialState(location.pathname)
     this.setState(initialState)
-  }
-
-  toggleIsLoading = (isLoading) => {
-    isLoading = _.isBoolean(isLoading) ? isLoading : !this.state.isLoading
-    this.setState({ isLoading })
-  }
-
-  toggleHasError = (hasError) => {
-    hasError = _.isBoolean(hasError) ? hasError : !this.state.hasError
-    this.setState({ hasError })
   }
 
   onNamespaceChange = async (namespaceOption) => {
@@ -113,8 +103,9 @@ class App extends Component {
                     namespace={currentNamespace}
                     isLoading={isLoading}
                     hasError={hasError}
-                    toggleIsLoading={this.toggleIsLoading}
-                    toggleHasError={this.toggleHasError}
+                    setIsLoading={loading => this.setState({ isLoading: loading })
+                    }
+                    setHasError={error => this.setState({ hasError: error })}
                   />
                 )}
               />

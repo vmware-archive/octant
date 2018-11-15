@@ -24,7 +24,7 @@ export default class Overview extends Component {
         this.source = null
       }
 
-      this.props.toggleIsLoading(true)
+      this.props.setIsLoading(true)
       this.setState({ contents: null })
 
       const url = getContentsUrl(path, namespace, POLL_WAIT)
@@ -34,14 +34,14 @@ export default class Overview extends Component {
       this.source.addEventListener('message', (e) => {
         const data = JSON.parse(e.data)
         this.setState({ contents: data.contents })
-        this.props.toggleIsLoading(false)
+        this.props.setIsLoading(false)
       })
 
       // if EventSource error clear close
       this.source.addEventListener('error', () => {
         this.setState({ contents: null })
-        this.props.toggleIsLoading(false)
-        this.props.toggleHasError(true)
+        this.props.setIsLoading(false)
+        this.props.setHasError(true)
 
         this.source.close()
         this.source = null
