@@ -23,18 +23,26 @@ export default class Overview extends Component {
         this.source.close()
         this.source = null
       }
+
       this.props.toggleIsLoading(true)
       this.setState({ contents: null })
 
       const url = getContentsUrl(path, namespace, POLL_WAIT)
+
       this.source = new window.EventSource(`${getAPIBase()}/${url}`)
+
       this.source.addEventListener('message', (e) => {
         const data = JSON.parse(e.data)
         this.setState({ contents: data.contents })
         this.props.toggleIsLoading(false)
       })
+
       // if EventSource error clear close
       this.source.addEventListener('error', () => {
+        this.setState({ contents: null })
+        this.props.toggleIsLoading(false)
+        this.props.toggleHasError(true)
+
         this.source.close()
         this.source = null
       })

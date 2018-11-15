@@ -26,6 +26,7 @@ class App extends Component {
 
   async componentDidMount () {
     const { location } = this.props
+    this.toggleIsLoading(true)
     const initialState = await getInitialState(location.pathname)
     this.setState(initialState)
   }
