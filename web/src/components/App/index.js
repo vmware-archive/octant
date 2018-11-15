@@ -14,7 +14,7 @@ class App extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      isLoading: false,
+      isLoading: true, // to do the initial data fetch
       hasError: false,
       navigation: [],
       currentNavLinkPath: [],
@@ -26,7 +26,6 @@ class App extends Component {
 
   async componentDidMount () {
     const { location } = this.props
-    this.setState({ isLoading: true })
     const initialState = await getInitialState(location.pathname)
     this.setState(initialState)
   }
