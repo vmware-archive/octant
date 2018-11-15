@@ -10,7 +10,7 @@ export default function Item (props) {
   return (
     <div className='summary--data summary--data-basic'>
       {label && <div className='summary--data-key'>{label}</div>}
-      <div className='summary--data-basic'>{value}</div>
+      <div className='summary--data-value'>{value}</div>
     </div>
   )
 }

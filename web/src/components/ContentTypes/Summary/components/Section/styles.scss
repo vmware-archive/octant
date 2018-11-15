@@ -2,7 +2,7 @@
 
 .summary-component-section {
   flex: 1 1 auto;
-  max-width: 50%;
+  min-width: 0;
 
   .summary-component-title {
     color: $orange;
@@ -14,6 +14,7 @@
 .summary--data {
   align-items: center;
   display: flex;
+  flex-direction: row;
   padding: 5px 0;
 
   .summary--data-key {
