@@ -36,9 +36,11 @@ const (
 	CacheStore CacheAction = "store"
 	// CacheDelete is a delete action.
 	CacheDelete CacheAction = "delete"
+	// CacheUpdate is an update action.
+	CacheUpdate CacheAction = "update"
 )
 
-// CacheNotification is a notifcation for a cache.
+// CacheNotification is a notification for a cache.
 type CacheNotification struct {
 	CacheKey CacheKey
 	Action   CacheAction

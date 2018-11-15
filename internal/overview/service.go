@@ -115,7 +115,7 @@ func (js *ServiceEndpoints) Content(ctx context.Context, object runtime.Object, 
 	podKey := CacheKey{
 		Namespace:  ss.GetNamespace(),
 		APIVersion: "v1",
-		Kind:       "Pods",
+		Kind:       "Pod",
 	}
 
 	pods, err := loadPods(podKey, c, nil)

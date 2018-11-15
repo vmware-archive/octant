@@ -1,7 +1,6 @@
 package overview
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -11,6 +10,7 @@ import (
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
+	"k8s.io/client-go/restmapper"
 )
 
 // ClusterOverview is an API for generating a cluster overview.
@@ -23,17 +23,17 @@ type ClusterOverview struct {
 
 	logger log.Logger
 
-	watchFactory func(namespace string, clusterClient cluster.ClientInterface, cache Cache) Watch
-
 	cache  Cache
-	stopFn func()
+	stopCh chan struct{}
 
 	generator *realGenerator
 }
 
 // NewClusterOverview creates an instance of ClusterOverview.
 func NewClusterOverview(client cluster.ClientInterface, namespace string, logger log.Logger) *ClusterOverview {
-	var opts []MemoryCacheOpt
+	stopCh := make(chan struct{})
+
+	var opts []InformerCacheOpt
 
 	if os.Getenv("DASH_VERBOSE_CACHE") != "" {
 		ch := make(chan CacheNotification)
@@ -44,10 +44,30 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string, logger
 			}
 		}()
 
-		opts = append(opts, CacheNotificationOpt(ch, nil))
+		opts = append(opts, InformerCacheNotificationOpt(ch, stopCh))
 	}
 
-	cache := NewMemoryCache(opts...)
+	dynamicClient, err := client.DynamicClient()
+	if err != nil {
+		// TODO error handling
+		return nil
+	}
+	di, err := client.DiscoveryClient()
+	if err != nil {
+		// TODO error handling
+		return nil
+	}
+
+	groupResources, err := restmapper.GetAPIGroupResources(di)
+	if err != nil {
+		logger.Errorf("discovering APIGroupResources: %v", err)
+		// TODO error handling
+		return nil
+	}
+	rm := restmapper.NewDiscoveryRESTMapper(groupResources)
+
+	opts = append(opts, InformerCacheLoggerOpt(logger))
+	cache := NewInformerCache(stopCh, dynamicClient, rm, opts...)
 
 	var pathFilters []pathFilter
 	pathFilters = append(pathFilters, rootDescriber.PathFilters()...)
@@ -61,8 +81,8 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string, logger
 		logger:    logger,
 		cache:     cache,
 		generator: g,
+		stopCh:    stopCh,
 	}
-	co.watchFactory = co.defaultWatchFactory
 	return co
 }
 
@@ -98,58 +118,20 @@ func (co *ClusterOverview) Navigation(root string) (*hcli.Navigation, error) {
 
 // SetNamespace sets the current namespace.
 func (co *ClusterOverview) SetNamespace(namespace string) error {
-	co.logger.With("namespace", namespace, "module", "overview").Debugf("stopping")
-	co.Stop()
-
 	co.logger.With("namespace", namespace, "module", "overview").Debugf("setting namespace")
 	co.namespace = namespace
-	return co.Start()
+	return nil
 }
 
 // Start starts overview.
 func (co *ClusterOverview) Start() error {
-	co.mu.Lock()
-	defer co.mu.Unlock()
-
-	if co.namespace == "" {
-		return nil
-	}
-
-	if co.stopFn != nil {
-		return errors.New("synchronization error - residual state detected")
-	}
-
-	stopFn, err := co.watch(co.namespace)
-	if err != nil {
-		return err
-	}
-
-	co.stopFn = stopFn
-
 	return nil
 }
 
 // Stop stops overview.
 func (co *ClusterOverview) Stop() {
 	co.mu.Lock()
-	stopFn := co.stopFn
-	co.stopFn = nil
-	co.mu.Unlock()
-
-	if stopFn != nil {
-		go func() {
-			stopFn()
-		}()
-	}
-}
-
-func (co *ClusterOverview) watch(namespace string) (StopFunc, error) {
-	co.logger.With("namespace", namespace, "module", "overview").Debugf("watching namespace")
-
-	watch := co.watchFactory(namespace, co.client, co.cache)
-	return watch.Start()
-}
-
-func (co *ClusterOverview) defaultWatchFactory(namespace string, clusterClient cluster.ClientInterface, cache Cache) Watch {
-	return NewWatch(namespace, clusterClient, cache, co.logger)
+	defer co.mu.Unlock()
+	close(co.stopCh)
+	co.stopCh = nil
 }

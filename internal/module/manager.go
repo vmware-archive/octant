@@ -73,7 +73,6 @@ func (m *Manager) Unload() {
 // SetNamespace sets the current namespace.
 func (m *Manager) SetNamespace(namespace string) {
 	m.namespace = namespace
-	m.logger.Debugf("setting namespace to %s", namespace)
 	for _, module := range m.loadedModules {
 		if err := module.SetNamespace(namespace); err != nil {
 			m.logger.Errorf("setting namespace for module %q: %v",

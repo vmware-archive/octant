@@ -7,6 +7,8 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/third_party/dynamicfake"
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -16,6 +18,7 @@ import (
 	fakediscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/dynamic"
 	fakeclientset "k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/testing"
 )
 
@@ -32,14 +35,19 @@ type Client struct {
 }
 
 // NewClient creates an instance of Client.
-func NewClient(scheme *runtime.Scheme, objects []runtime.Object) (*Client, error) {
+func NewClient(scheme *runtime.Scheme, resources []*metav1.APIResourceList, objects []runtime.Object) (*Client, error) {
 	client := fakeclientset.NewSimpleClientset()
 	fakeDiscovery, ok := client.Discovery().(*fakediscovery.FakeDiscovery)
 	if !ok {
 		return nil, errors.New("couldn't convert Discovery() to *FakeDiscovery")
 	}
+	fakeDiscovery.Resources = resources
 
-	dynamicClient := NewSimpleDynamicClient(scheme, fakeDiscovery, objects...)
+	restMapper, err := restMapper(fakeDiscovery)
+	if err != nil {
+		return nil, errors.Wrap(err, "constructing RESTMapper - check resources")
+	}
+	dynamicClient := NewSimpleDynamicClient(scheme, restMapper, objects...)
 
 	return &Client{
 		FakeDynamic:   dynamicClient,
@@ -62,28 +70,46 @@ func (c *Client) NamespaceClient() (cluster.NamespaceInterface, error) {
 	return &NamespaceClient{}, nil
 }
 
-func kindFor(discoveryClient discovery.DiscoveryInterface, gvr schema.GroupVersionResource) (schema.GroupVersionKind, error) {
-	l, err := discoveryClient.ServerResourcesForGroupVersion(gvr.GroupVersion().String())
+// RESTMapper returns a RESTMapper using the client's discovery interface.
+// The mappings depend on the resources supplied in NewClient.
+func (c *Client) RESTMapper() (meta.RESTMapper, error) {
+	return restMapper(c.FakeDiscovery)
+}
+
+func restMapper(discoveryClient discovery.DiscoveryInterface) (meta.RESTMapper, error) {
+	resources, err := restmapper.GetAPIGroupResources(discoveryClient)
 	if err != nil {
-		return schema.GroupVersionKind{}, err
+		return nil, err
 	}
 
-	for _, r := range l.APIResources {
-		if r.Name != gvr.Resource {
-			continue
-		}
-		return schema.GroupVersionKind{
-			Group:   r.Group,
-			Version: r.Version,
-			Kind:    r.Kind,
-		}, nil
+	return restmapper.NewDiscoveryRESTMapper(resources), nil
+}
+
+// registerListKind registers a List kind in the provided scheme as
+// a list container for the provided non-list kind.
+// This container list must be present in the scheme for a list operation to succeed.
+func registerListKind(scheme *runtime.Scheme, gvk schema.GroupVersionKind) {
+	// Heuristic for list kind: original kind + List suffix. Might
+	// not always be true but this tracker has a pretty limited
+	// understanding of the actual API model.
+	listGVK := gvk
+	listGVK.Kind = listGVK.Kind + "List"
+	// GVK does have the concept of "internal version". The scheme recognizes
+	// the runtime.APIVersionInternal, but not the empty string.
+	if listGVK.Version == "" {
+		listGVK.Version = runtime.APIVersionInternal
 	}
-	return schema.GroupVersionKind{}, errors.New("not found")
+
+	if scheme.Recognizes(listGVK) {
+		return
+	}
+
+	scheme.AddKnownTypeWithName(listGVK, &unstructured.UnstructuredList{})
 }
 
 // NewSimpleDynamicClient creates a FakeDynamicClient which fixes behavior from dynamicfake.NewSimpleDynamicClient - we properly forward
 // ADDED events for preexisting objects when adding watches.
-func NewSimpleDynamicClient(scheme *runtime.Scheme, discoveryClient discovery.DiscoveryInterface, objects ...runtime.Object) *dynamicfake.FakeDynamicClient {
+func NewSimpleDynamicClient(scheme *runtime.Scheme, restMapper meta.RESTMapper, objects ...runtime.Object) *dynamicfake.FakeDynamicClient {
 	// In order to use List with this client, you have to have the v1.List registered in your scheme. Neat thing though
 	// it does NOT have to be the *same* list
 	scheme.AddKnownTypeWithName(schema.GroupVersionKind{Group: "fake-dynamic-client-group", Version: "v1", Kind: "List"}, &unstructured.UnstructuredList{})
@@ -106,10 +132,14 @@ func NewSimpleDynamicClient(scheme *runtime.Scheme, discoveryClient discovery.Di
 			return false, nil, err
 		}
 
-		gvk, err := kindFor(discoveryClient, gvr)
+		gvk, err := restMapper.KindFor(gvr)
 		if err != nil {
+			fmt.Printf("OH NO THE SKY IS FALLING %#v -> %#v\n", gvr, err)
 			return false, nil, fmt.Errorf("no registered kind for resource: %v", gvr.String())
 		}
+
+		// JIT register *List kinds in the scheme to support List operations
+		registerListKind(scheme, gvk)
 
 		l, err := o.List(gvr, gvk, ns)
 		if err != nil {

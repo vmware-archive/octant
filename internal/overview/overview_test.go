@@ -16,7 +16,7 @@ func TestClusterOverview(t *testing.T) {
 		newUnstructured("apps/v1", "Deployment", "default", "deploy"),
 	}
 
-	clusterClient, err := fake.NewClient(scheme, objects)
+	clusterClient, err := fake.NewClient(scheme, resources, objects)
 	require.NoError(t, err)
 
 	o := NewClusterOverview(clusterClient, "default", log.NopLogger())
@@ -35,7 +35,7 @@ func TestClusterOverview_SetNamespace(t *testing.T) {
 		newUnstructured("apps/v1", "Deployment", "default", "deploy"),
 	}
 
-	clusterClient, err := fake.NewClient(scheme, objects)
+	clusterClient, err := fake.NewClient(scheme, resources, objects)
 	require.NoError(t, err)
 
 	o := NewClusterOverview(clusterClient, "default", log.NopLogger())

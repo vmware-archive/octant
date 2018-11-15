@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"time"
 
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
@@ -39,9 +38,7 @@ func (n *namespace) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	start := time.Now()
 	n.moduleManager.SetNamespace(nr.Namespace)
-	n.logger.Debugf("moduleManager.SetNamespace took %vms", int(time.Since(start)/time.Millisecond))
 
 	w.WriteHeader(http.StatusNoContent)
 }
