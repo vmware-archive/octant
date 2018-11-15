@@ -14,8 +14,8 @@ class App extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      loading: false,
-      error: false,
+      isLoading: true, // to do the initial data fetch
+      hasError: false,
       navigation: [],
       currentNavLinkPath: [],
       namespaceOptions: [],
@@ -32,9 +32,10 @@ class App extends Component {
 
   onNamespaceChange = async (namespaceOption) => {
     this.setState({
-      loading: true,
-      error: false
+      isLoading: true,
+      hasError: false
     })
+
     const { value } = namespaceOption
     const { history } = this.props
 
@@ -47,22 +48,22 @@ class App extends Component {
         const { currentNavLinkPath } = this.state
         const { path } = _.last(currentNavLinkPath)
         history.push(path)
-        this.setState({ namespaceOption, loading: false, error: false })
+        this.setState({ namespaceOption, isLoading: false, hasError: false })
       }
     } catch (e) {
-      this.setState({ namespaceOption, loading: false, error: true })
+      this.setState({ namespaceOption, isLoading: false, hasError: true })
     }
   }
 
   render () {
     const {
-      loading,
+      isLoading,
+      hasError,
       navigation,
       currentNavLinkPath,
       namespaceOptions,
       namespaceOption,
-      title,
-      error
+      title
     } = this.state
     const { location } = this.props
 
@@ -96,11 +97,14 @@ class App extends Component {
                 render={props => (
                   <Overview
                     {...props}
+                    title={title}
                     path={currentPath}
                     namespace={currentNamespace}
-                    loading={loading}
-                    title={title}
-                    error={error}
+                    isLoading={isLoading}
+                    hasError={hasError}
+                    setIsLoading={loading => this.setState({ isLoading: loading })
+                    }
+                    setHasError={error => this.setState({ hasError: error })}
                   />
                 )}
               />

@@ -14,7 +14,7 @@ export default async function (currentPathname) {
       getNamespace()
     ])
   } catch (e) {
-    return { loading: false, error: true }
+    return { isLoading: false, hasError: true }
   }
 
   const initialState = {

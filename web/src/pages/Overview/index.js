@@ -19,19 +19,30 @@ export default class Overview extends Component {
     const { path, namespace } = this.props
     if (path !== previousPath || namespace !== previousNamespace) {
       // clear state and this.source on change
-      this.setState({ contents: null })
       if (this.source) {
         this.source.close()
         this.source = null
       }
+
+      this.props.setIsLoading(true)
+      this.setState({ contents: null })
+
       const url = getContentsUrl(path, namespace, POLL_WAIT)
+
       this.source = new window.EventSource(`${getAPIBase()}/${url}`)
+
       this.source.addEventListener('message', (e) => {
         const data = JSON.parse(e.data)
-        return this.setState({ contents: data.contents })
+        this.setState({ contents: data.contents })
+        this.props.setIsLoading(false)
       })
+
       // if EventSource error clear close
       this.source.addEventListener('error', () => {
+        this.setState({ contents: null })
+        this.props.setIsLoading(false)
+        this.props.setHasError(true)
+
         this.source.close()
         this.source = null
       })
@@ -39,10 +50,10 @@ export default class Overview extends Component {
   }
 
   render () {
-    const { loading, title, error } = this.props
+    const { title, isLoading, hasError } = this.props
     const { contents } = this.state
     let mainContent
-    if (loading) {
+    if (isLoading) {
       mainContent = (
         <div className='loading-parent'>
           <Loading />
@@ -57,13 +68,13 @@ export default class Overview extends Component {
     } else {
       const cnames = cx({
         'content-text': true,
-        'empty-content-text': error === false,
-        'error-content-text': error === true
+        'empty-content-text': hasError === false,
+        'error-content-text': hasError === true
       })
       mainContent = (
         <div className='component--primary'>
           <h3 className={cnames}>
-            {error === true
+            {hasError === true
               ? "Oops, something's not right, try again."
               : 'There is nothing to display here'}
           </h3>
