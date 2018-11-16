@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -82,21 +83,23 @@ var resources = []*metav1.APIResourceList{
 	},
 }
 
-func newCache(t *testing.T, objects []runtime.Object) (*InformerCache, error) {
-	// func NewInformerCache(stopCh <-chan struct{}, client dynamic.Interface, restMapper meta.RESTMapper, opts ...InformerCacheOpt) *InformerCache {
+type cancelFunc func()
+
+func cancelNop() {}
+
+func newCache(t *testing.T, objects []runtime.Object) (*InformerCache, cancelFunc, error) {
 	scheme := newScheme()
 
 	client, err := fake.NewClient(scheme, resources, objects)
 	require.NoError(t, err)
 	if err != nil {
-		return nil, err
+		return nil, cancelNop, err
 	}
-	// notifyCh := make(chan CacheNotification)
 	stopCh := make(chan struct{})
 
 	restMapper, err := client.RESTMapper()
 	require.NoError(t, err, "fetching RESTMapper")
-	return NewInformerCache(stopCh, client.FakeDynamic, restMapper), nil
+	return NewInformerCache(stopCh, client.FakeDynamic, restMapper), func() { close(stopCh) }, nil
 }
 
 func TestInformerCache_Retrieve(t *testing.T) {
@@ -138,36 +141,18 @@ func TestInformerCache_Retrieve(t *testing.T) {
 			},
 			expectErr: true,
 		},
-		/*
-		   {
-		       name: "ns, apiVersion",
-		       key: CacheKey{
-		           Namespace:  "default",
-		           APIVersion: "foo/v1",
-		       },
-		       expectedLen: 3,
-		   },
-		   {
-		       name: "ns",
-		       key: CacheKey{
-		           Namespace: "default",
-		       }, expectedLen: 4,
-		   },
-		*/
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			c, err := newCache(t, objects)
+			c, cancel, err := newCache(t, objects)
 			require.NoError(t, err)
 
 			objs, err := c.Retrieve(tc.key)
-			if err != nil {
-
-			}
 			hadErr := (err != nil)
 			assert.Equalf(t, tc.expectErr, hadErr, "error mismatch: %v", err)
 			assert.Len(t, objs, tc.expectedLen)
+			cancel()
 		})
 	}
 }
@@ -344,4 +329,39 @@ func TestInformerCache_Watch_Stop(t *testing.T) {
 
 	// The second object is not seen because we shutdown the informer
 	require.Len(t, found, 0)
+}
+
+func TestChannelContext(t *testing.T) {
+	parentCh := make(chan struct{})
+	done1 := make(chan struct{})
+	done2 := make(chan struct{})
+	var count int32 = 2
+	ctx1, cancel1 := channelContext(parentCh)
+	defer cancel1()
+	ctx2, cancel2 := channelContext(parentCh)
+	defer cancel2()
+
+	go func() {
+		<-ctx1.Done()
+		atomic.AddInt32(&count, -1)
+		close(done1)
+	}()
+	go func() {
+		<-ctx2.Done()
+		atomic.AddInt32(&count, -1)
+		close(done2)
+	}()
+
+	// Initial state
+	assert.Equal(t, int32(2), atomic.LoadInt32(&count))
+
+	// Canceling ctx1 (a child) should only cancel that context, not its siblings
+	cancel1()
+	<-done1
+	assert.Equal(t, int32(1), atomic.LoadInt32(&count))
+
+	// Canceling parentCh should cancel all remaining child contexts
+	close(parentCh)
+	<-done2
+	assert.Equal(t, int32(0), atomic.LoadInt32(&count))
 }
