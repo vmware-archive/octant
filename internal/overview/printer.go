@@ -599,7 +599,7 @@ func gvkPath(apiVersion, kind, name string) string {
 		p = "/content/overview/workloads/deployments"
 	case apiVersion == "batch/v1beta1" && kind == "CronJob":
 		p = "/content/overview/workloads/cron-jobs"
-	case apiVersion == "batch/v1beta1" && kind == "Job":
+	case (apiVersion == "batch/v1beta1" || apiVersion == "batch/v1") && kind == "Job":
 		p = "/content/overview/workloads/jobs"
 	case apiVersion == "v1" && kind == "ReplicationController":
 		p = "/content/overview/workloads/replication-controllers"
