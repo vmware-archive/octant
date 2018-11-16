@@ -48,6 +48,9 @@ func newDashCmd() *cobra.Command {
 
 			telemetryClient := newTelemetry(logger)
 			startTime := time.Now()
+
+			kubeconfig = initKubeconfig(logger, kubeconfig)
+
 			go func() {
 				if err := dash.Run(ctx, namespace, uiURL, kubeconfig, logger, telemetryClient); err != nil {
 					logger.Errorf("running dashboard: %v", err)
@@ -107,6 +110,16 @@ func newTelemetry(logger log.Logger) telemetry.Interface {
 	}
 
 	return telemetryClient
+}
+
+func initKubeconfig(logger log.Logger, kubeconfig string) string {
+	envKubeConfig := os.Getenv("KUBECONFIG")
+	if envKubeConfig != "" {
+		logger.Infof("setting KUBECONFIG to %q from environment", envKubeConfig)
+		kubeconfig = envKubeConfig
+	}
+
+	return kubeconfig
 }
 
 func homeDir() string {

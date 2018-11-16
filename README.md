@@ -16,6 +16,8 @@ Kubernetes dashboard for developers
 
 ### Environment variables
 
+* `KUBECONFIG` - set to non-empty location if you want to set KUBECONFIG with an environment variable.
+
 * `DASH_DISABLE_OPEN_BROWSER` - set to a non-empty value if you don't the browser launched when the dashboard start up.
 * `DASH_LISTENER_ADDR` - set to address you want dashboard service to start on. (e.g. `localhost:8080`)
 
@@ -33,3 +35,7 @@ Kubernetes dashboard for developers
 1) Run `$ make web-build` to rebuild web assets
 
 2) Create `./build/hcli`: `$ make hcli-dev`
+
+### Caveats
+
+* If using [fish shell](https://fishshell.com), tilde expansion may not occur when using `env` to set environment variables.
