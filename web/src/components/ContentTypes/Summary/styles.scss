@@ -8,4 +8,8 @@ hr {
 .summary--component-sections {
   display: flex;
   justify-content: space-between;
+
+  .summary-component-section:not(:last-child) {
+    margin-right: 30px;
+  }
 }

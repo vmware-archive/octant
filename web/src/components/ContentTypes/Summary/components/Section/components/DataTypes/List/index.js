@@ -10,7 +10,7 @@ export default function Item (props) {
   return (
     <div className='summary--data'>
       <div className='summary--data-key'>{label}</div>
-      <div className='summary--data-basic'>
+      <div className='summary--data-list'>
         <ItemList items={items} />
       </div>
     </div>

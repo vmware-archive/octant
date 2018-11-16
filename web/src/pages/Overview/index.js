@@ -12,41 +12,47 @@ export default class Overview extends Component {
     this.state = { contents: null }
   }
 
-  async componentDidUpdate ({
-    path: previousPath,
-    namespace: previousNamespace
-  }) {
+  componentDidMount () {
+    const { path, namespace } = this.props
+    this.setEventSourceStream(path, namespace)
+  }
+
+  componentDidUpdate ({ path: previousPath, namespace: previousNamespace }) {
     const { path, namespace } = this.props
     if (path !== previousPath || namespace !== previousNamespace) {
-      // clear state and this.source on change
-      if (this.source) {
-        this.source.close()
-        this.source = null
-      }
-
-      this.props.setIsLoading(true)
-      this.setState({ contents: null })
-
-      const url = getContentsUrl(path, namespace, POLL_WAIT)
-
-      this.source = new window.EventSource(`${getAPIBase()}/${url}`)
-
-      this.source.addEventListener('message', (e) => {
-        const data = JSON.parse(e.data)
-        this.setState({ contents: data.contents })
-        this.props.setIsLoading(false)
-      })
-
-      // if EventSource error clear close
-      this.source.addEventListener('error', () => {
-        this.setState({ contents: null })
-        this.props.setIsLoading(false)
-        this.props.setHasError(true)
-
-        this.source.close()
-        this.source = null
-      })
+      this.setEventSourceStream(path, namespace)
     }
+  }
+
+  setEventSourceStream (path, namespace) {
+    // clear state and this.source on change
+    if (this.source) {
+      this.source.close()
+      this.source = null
+    }
+
+    this.props.setIsLoading(true)
+    this.setState({ contents: null })
+
+    const url = getContentsUrl(path, namespace, POLL_WAIT)
+
+    this.source = new window.EventSource(`${getAPIBase()}/${url}`)
+
+    this.source.addEventListener('message', (e) => {
+      const data = JSON.parse(e.data)
+      this.setState({ contents: data.contents })
+      this.props.setIsLoading(false)
+    })
+
+    // if EventSource error clear close
+    this.source.addEventListener('error', () => {
+      this.setState({ contents: null })
+      this.props.setIsLoading(false)
+      this.props.setHasError(true)
+
+      this.source.close()
+      this.source = null
+    })
   }
 
   render () {
