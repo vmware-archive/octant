@@ -73,6 +73,7 @@ var (
 		Titles:     ResourceTitle{List: "Daemon Sets", Object: "Daemon Set"},
 		Transforms: daemonSetTransforms,
 		Views: []View{
+			NewDaemonSetSummary(),
 			NewPodList(),
 		},
 	})

@@ -35,9 +35,17 @@ func (js *StatefulSetSummary) Content(ctx context.Context, object runtime.Object
 	}
 
 	summary := content.NewSummary("Details", []content.Section{detail})
-	return []content.Content{
+	contents := []content.Content{
 		&summary,
-	}, nil
+	}
+
+	podTemplate, err := printPodTemplate(&ss.Spec.Template, nil)
+	if err != nil {
+		return nil, err
+	}
+	contents = append(contents, podTemplate...)
+
+	return contents, nil
 }
 
 func retrieveStatefulSet(object runtime.Object) (*apps.StatefulSet, error) {

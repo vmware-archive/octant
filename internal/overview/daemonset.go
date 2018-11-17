@@ -9,16 +9,16 @@ import (
 	"k8s.io/kubernetes/pkg/apis/extensions"
 )
 
-type ReplicaSetSummary struct{}
+type DaemonSetSummary struct{}
 
-var _ View = (*ReplicaSetSummary)(nil)
+var _ View = (*DaemonSetSummary)(nil)
 
-func NewReplicaSetSummary() *ReplicaSetSummary {
-	return &ReplicaSetSummary{}
+func NewDaemonSetSummary() *DaemonSetSummary {
+	return &DaemonSetSummary{}
 }
 
-func (rss *ReplicaSetSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
-	replicaSet, err := retrieveReplicaSet(object)
+func (rss *DaemonSetSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+	replicaSet, err := retrieveDaemonSet(object)
 	if err != nil {
 		return nil, err
 	}
@@ -26,13 +26,13 @@ func (rss *ReplicaSetSummary) Content(ctx context.Context, object runtime.Object
 	return rss.summary(replicaSet, c)
 }
 
-func (rss *ReplicaSetSummary) summary(replicaSet *extensions.ReplicaSet, c Cache) ([]content.Content, error) {
+func (rss *DaemonSetSummary) summary(replicaSet *extensions.DaemonSet, c Cache) ([]content.Content, error) {
 	pods, err := listPods(replicaSet.GetNamespace(), replicaSet.Spec.Selector, replicaSet.GetUID(), c)
 	if err != nil {
 		return nil, err
 	}
 
-	section, err := printReplicaSetSummary(replicaSet, pods)
+	section, err := printDaemonSetSummary(replicaSet, pods)
 	if err != nil {
 		return nil, err
 	}
@@ -51,10 +51,10 @@ func (rss *ReplicaSetSummary) summary(replicaSet *extensions.ReplicaSet, c Cache
 	return contents, nil
 }
 
-func retrieveReplicaSet(object runtime.Object) (*extensions.ReplicaSet, error) {
-	replicaSet, ok := object.(*extensions.ReplicaSet)
+func retrieveDaemonSet(object runtime.Object) (*extensions.DaemonSet, error) {
+	replicaSet, ok := object.(*extensions.DaemonSet)
 	if !ok {
-		return nil, errors.Errorf("expected object to be a ReplicaSet, it was %T", object)
+		return nil, errors.Errorf("expected object to be a DaemonSet, it was %T", object)
 	}
 
 	return replicaSet, nil
