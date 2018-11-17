@@ -642,10 +642,21 @@ func describeContainersEnvFrom(containers []core.Container) content.Table {
 	table.Columns = tableCols("Name", "From", "Prefix", "Optional")
 
 	for _, container := range containers {
+		if envFrom := container.EnvFrom; len(envFrom) > 0 {
 		for _, e := range container.EnvFrom {
 			from := ""
 			name := ""
 			optional := false
+
+				if e.ConfigMapRef != nil {
+					from = "ConfigMap"
+					name = e.ConfigMapRef.Name
+					optional = e.ConfigMapRef.Optional != nil && *e.ConfigMapRef.Optional
+				} else if e.SecretRef != nil {
+					from = "Secret"
+					name = e.SecretRef.Name
+					optional = e.SecretRef.Optional != nil && *e.SecretRef.Optional
+				}
 
 			if e.ConfigMapRef != nil {
 				from = "ConfigMap"
