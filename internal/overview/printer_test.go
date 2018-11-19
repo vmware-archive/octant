@@ -88,6 +88,12 @@ func Test_gvkPath(t *testing.T) {
 		},
 		{
 			apiVersion: "v1",
+			kind:       "Service",
+			name:       "name",
+			expected:   "/content/overview/discovery-and-load-balancing/services/name",
+		},
+		{
+			apiVersion: "v1",
 			kind:       "Secret",
 			name:       "name",
 			expected:   "/content/overview/config-and-storage/secrets/name",

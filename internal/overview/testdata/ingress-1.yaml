@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"extensions/v1beta1","kind":"Ingress","metadata":{"annotations":{"nginx.ingress.kubernetes.io/rewrite-target":"/"},"name":"test-ingress","namespace":"overview"},"spec":{"rules":[{"http":{"paths":[{"backend":{"serviceName":"test","servicePort":80},"path":"/testpath"}]}}]}}
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  creationTimestamp: 2018-10-13T20:38:06Z
+  generation: 1
+  name: test-ingress
+  namespace: overview
+  resourceVersion: "3390901"
+  selfLink: /apis/extensions/v1beta1/namespaces/overview/ingresses/test-ingress
+  uid: e38297f1-cf27-11e8-921f-025000000001
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: test
+          servicePort: 80
+        path: /testpath
+status:
+  loadBalancer: {}

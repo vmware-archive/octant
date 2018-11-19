@@ -294,6 +294,8 @@ func convertToInternal(t *testing.T, in runtime.Object) runtime.Object {
 	switch in.(type) {
 	case *batchv1beta1.CronJob:
 		out = &batch.CronJob{}
+	case *extensionsv1beta1.Ingress:
+		out = &extensionsv1beta1.Ingress{}
 	case *extensionsv1beta1.ReplicaSet:
 		out = &extensions.ReplicaSet{}
 	default:

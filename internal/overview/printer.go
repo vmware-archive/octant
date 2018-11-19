@@ -13,7 +13,7 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 
 	corev1 "k8s.io/api/core/v1"
-	extv1beta1 "k8s.io/api/extensions/v1beta1"
+	"k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -431,7 +431,7 @@ func printServiceAccountSummary(serviceAccount *core.ServiceAccount, tokens []*c
 	return section, nil
 }
 
-func printIngressSummary(ingress *extv1beta1.Ingress) (content.Section, error) {
+func printIngressSummary(ingress *v1beta1.Ingress) (content.Section, error) {
 	section := content.NewSection()
 	section.AddText("Name", ingress.GetName())
 	section.AddText("Namespace", ingress.GetNamespace())
@@ -442,7 +442,7 @@ func printIngressSummary(ingress *extv1beta1.Ingress) (content.Section, error) {
 	def := ingress.Spec.Backend
 	// ns := ingress.Namespace
 	if def == nil {
-		def = &extv1beta1.IngressBackend{
+		def = &v1beta1.IngressBackend{
 			ServiceName: "default-http-backend",
 			ServicePort: intstr.IntOrString{Type: intstr.Int, IntVal: 80},
 		}
@@ -877,6 +877,8 @@ func gvkPath(apiVersion, kind, name string) string {
 		p = "/content/overview/config-and-storage/secrets"
 	case apiVersion == "v1" && kind == "ServiceAccount":
 		p = "/content/overview/config-and-storage/service-accounts"
+	case apiVersion == "v1" && kind == "Service":
+		p = "/content/overview/discovery-and-load-balancing/services"
 	case apiVersion == "rbac.authorization.k8s.io/v1" && kind == "Role":
 		p = "/content/overview/rbac/roles"
 	default:
@@ -931,7 +933,7 @@ func loadBalancerStatusStringer(s corev1.LoadBalancerStatus, wide bool) string {
 }
 
 // backendStringer behaves just like a string interface and converts the given backend to a string.
-func backendStringer(backend *extv1beta1.IngressBackend) string {
+func backendStringer(backend *v1beta1.IngressBackend) string {
 	if backend == nil {
 		return ""
 	}
