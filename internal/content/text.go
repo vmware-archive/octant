@@ -1,6 +1,11 @@
 package content
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+
+	"github.com/pkg/errors"
+)
 
 // Text is something than can be presented as text.
 type Text interface {
@@ -33,10 +38,28 @@ func NewTimeText(s string) *TimeText {
 	return &tt
 }
 
+// ParseTimeText returns empty string if not in RFC3339 format
+func ParseTimeText(t TimeText) (*string, error) {
+	ts := string(t)
+	parsedTime, err := time.Parse(time.RFC3339, ts)
+	if err != nil {
+		return nil, errors.Errorf("Timestamp is not RFC3339: %v", ts)
+	}
+
+	if parsedTime.IsZero() {
+		ts = ""
+	}
+	return &ts, nil
+}
+
 func (t TimeText) MarshalJSON() ([]byte, error) {
+	ts, err := ParseTimeText(t)
+	if err != nil {
+		return nil, err
+	}
 	m := map[string]interface{}{
 		"type": "time",
-		"time": string(t),
+		"time": ts,
 	}
 
 	return json.Marshal(&m)

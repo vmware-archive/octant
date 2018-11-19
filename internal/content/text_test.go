@@ -20,14 +20,41 @@ func TestStringText(t *testing.T) {
 }
 
 func TestTimeText(t *testing.T) {
-	tt := NewTimeText("2018-11-08T17:55:45Z")
+	cases := []struct {
+		name     string
+		timeText *TimeText
+		expected string
+		isErr    bool
+	}{
+		{
+			name:     "RFC3339 string",
+			timeText: NewTimeText("2018-11-08T17:55:45Z"),
+			expected: `{"time":"2018-11-08T17:55:45Z","type":"time"}`,
+		},
+		{
+			name:     "Zero time",
+			timeText: NewTimeText("0001-01-01T00:00:00Z"),
+			expected: `{"time":"","type":"time"}`,
+		},
+		{
+			name:     "Invalid timestamp",
+			timeText: NewTimeText("Tue Nov 10 23:00:00 2009"),
+			isErr:    true,
+		},
+	}
 
-	data, err := json.Marshal(tt)
-	require.NoError(t, err)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			data, err := json.Marshal(tc.timeText)
+			if tc.isErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
 
-	expected := `{"time":"2018-11-08T17:55:45Z","type":"time"}`
-
-	assert.Equal(t, expected, string(data))
+			assert.Equal(t, tc.expected, string(data))
+		})
+	}
 }
 
 func TestLinkText(t *testing.T) {
