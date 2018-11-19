@@ -1,0 +1,12 @@
+apiVersion: v1
+data:
+  bar: foo
+  foo: bar
+kind: ConfigMap
+metadata:
+  creationTimestamp: 2018-11-10T14:27:56Z
+  name: appdata
+  namespace: default
+  resourceVersion: "7114362"
+  selfLink: /api/v1/namespaces/overview/configmaps/appdata
+  uid: d0ca11d2-e4f4-11e8-86a1-025000000001

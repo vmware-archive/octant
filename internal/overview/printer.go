@@ -457,6 +457,17 @@ func printIngressSummary(ingress *extv1beta1.Ingress) (content.Section, error) {
 	return section, nil
 }
 
+func printConfigMapSummary(configMap *core.ConfigMap) (content.Section, error) {
+	section := content.NewSection()
+	section.AddText("Name", configMap.GetName())
+	section.AddText("Namespace", configMap.GetNamespace())
+
+	section.AddLabels("Labels", configMap.GetLabels())
+	section.AddLabels("Annotations", configMap.GetAnnotations())
+
+	return section, nil
+}
+
 func printSecretSummary(secret *core.Secret) (content.Section, error) {
 	section := content.NewSection()
 	section.AddText("Name", secret.GetName())
