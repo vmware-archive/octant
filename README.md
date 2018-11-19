@@ -13,6 +13,8 @@ Kubernetes dashboard for developers
 * Go 1.11
 * npm
 * yarn
+* [rice CLI](https://github.com/GeertJohan/go.rice)
+  * Install with `go get github.com/GeertJohan/go.rice/rice`
 
 ### Environment variables
 
