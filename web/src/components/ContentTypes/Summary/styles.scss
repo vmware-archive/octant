@@ -8,8 +8,9 @@ hr {
 .summary--component-sections {
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
 
-  .summary-component-section:not(:last-child) {
+  .summary-component-section {
     margin-right: 30px;
   }
 }
