@@ -20,7 +20,7 @@ class App extends Component {
       currentNavLinkPath: [],
       namespaceOptions: [],
       title: '',
-      namespaceOption: { label: 'default', value: 'default' }
+      namespaceOption: null
     }
   }
 
@@ -68,7 +68,11 @@ class App extends Component {
     const { location } = this.props
 
     const currentPath = location.pathname
-    const currentNamespace = namespaceOption.value
+
+    let currentNamespace = null
+    if (namespaceOption) {
+      currentNamespace = namespaceOption.value
+    }
 
     let rootNavigationPath = '/content/overview/'
     if (navigation && navigation.sections) {
