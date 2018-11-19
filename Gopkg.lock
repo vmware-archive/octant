@@ -210,7 +210,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d7df9f7ac0a5d1ed68d9b6ec876c1d40d124ceb55c4a00ec6b7e0f23d0d0da27"
+  digest = "1:f642a27025ecf3324e0ac4682ac74937670bf9f269c5b852fb194c9f3c0b5644"
   name = "github.com/heptio/go-telemetry"
   packages = [
     "pkg/logging",
@@ -218,7 +218,7 @@
     "pkg/telemetry",
   ]
   pruneopts = "UT"
-  revision = "86e68b015ae21068de1b1b26bb1e2a359e2369fb"
+  revision = "e1b6fe1409694f58d4ec2314ae454dd6eba0404e"
 
 [[projects]]
   digest = "1:8eb1de8112c9924d59bf1d3e5c26f5eaa2bfc2a5fcbb92dc1c2e4546d695f277"
@@ -1050,6 +1050,7 @@
     "k8s.io/client-go/testing",
     "k8s.io/client-go/tools/cache",
     "k8s.io/client-go/tools/clientcmd",
+    "k8s.io/kubernetes/pkg/api/resource",
     "k8s.io/kubernetes/pkg/apis/apps",
     "k8s.io/kubernetes/pkg/apis/batch",
     "k8s.io/kubernetes/pkg/apis/core",
