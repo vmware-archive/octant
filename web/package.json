@@ -20,6 +20,7 @@
     "history": "^4.7.2",
     "html-webpack-plugin": "2.29.0",
     "lodash": "^4.17.11",
+    "moment": "^2.22.2",
     "object-assign": "4.1.1",
     "promise": "8.0.1",
     "query-string": "^5.1.1",
@@ -74,7 +75,10 @@
     "transformIgnorePatterns": [
       "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs)$"
     ],
-    "moduleDirectories": ["node_modules", "src"],
+    "moduleDirectories": [
+      "node_modules",
+      "src"
+    ],
     "moduleNameMapper": {
       "^react-native$": "react-native-web"
     },
@@ -129,7 +133,6 @@
       "max-len": 0,
       "no-param-reassign": 0,
       "consistent-return": 0,
-
       "react/jsx-filename-extension": [
         1,
         {

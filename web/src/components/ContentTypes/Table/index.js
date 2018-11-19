@@ -2,51 +2,61 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import ReactTable from 'react-table'
 import _ from 'lodash'
+import moment from 'moment'
 import EmptyContent from '../shared/EmptyContent'
 import Labels from '../shared/Labels'
 import './styles.scss'
 import 'react-table/react-table.css'
 
 export default function Table ({ data: { title, columns, rows } }) {
-  // Note(marlon):this lives here while the API keeps changing
-  // Ideally a lot of this lives in a component or several
   const tableColumns = _.map(columns, ({ name, accessor }, index) => ({
     Header: name,
-    accessor,
+    accessor: (entry) => {
+      if (!entry) return null
+      const value = entry[accessor]
+      if (!_.isObject(value)) return value
+      switch (value.type) {
+        case 'labels':
+          return value.labels[0]
+        case 'list':
+          return value.list[0]
+        case 'time':
+          // currently a string, but should consider parsing into
+          // a js date for sorting
+          return value.time
+        case 'link':
+        case 'text':
+        case 'string':
+          return value.text
+        default:
+          return '-'
+      }
+    },
     id: `column_${index}`,
     Cell: (row) => {
-      if (row && row.value) {
-        const data = row.value
-        if (data.type === 'labels') {
-          return <Labels labels={data.labels} />
+      const entry = row.original
+      const value = entry[accessor]
+      if (!_.isObject(value)) return value
+      switch (value.type) {
+        case 'labels':
+          return <Labels labels={value.labels} />
+        case 'list':
+          return value.list.join(', ')
+        case 'link':
+          return (
+            <Link className='table--link' to={value.ref}>
+              {value.text}
+            </Link>
+          )
+        case 'time': {
+          const t = moment(value.time)
+          if (!t.isValid()) return value.time
+          return t.toISOString()
         }
+        default:
+          return row.value
       }
-      return row.value
     }
-  }))
-
-  const tableRows = _.map(rows, row => _.mapValues(row, (value) => {
-    if (_.isObject(value)) {
-      if (value.type === 'labels' && value.labels) {
-        return value
-      }
-      if (value.type === 'link' && value.ref) {
-        return (
-          <Link className='table--link' to={value.ref}>
-            {value.text}
-          </Link>
-        )
-      }
-      if (_.includes(['array', 'list'], value.type)) {
-        const arr = _.find([value.array, value.list])
-        if (arr) return arr.join(', ')
-        return '-'
-      }
-      if (value.text) return value.text
-      if (value.time) return value.time
-      return '-'
-    }
-    return value
   }))
 
   const pageSize = rows && rows.length ? rows.length : null
@@ -58,7 +68,7 @@ export default function Table ({ data: { title, columns, rows } }) {
       ) : (
         <ReactTable
           columns={tableColumns}
-          data={tableRows}
+          data={rows}
           showPagination={false}
           pageSize={pageSize}
           defaultSorted={[
