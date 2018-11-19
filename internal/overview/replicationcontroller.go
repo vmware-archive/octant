@@ -40,9 +40,17 @@ func (js *ReplicationControllerSummary) Content(ctx context.Context, object runt
 	}
 
 	summary := content.NewSummary("Details", []content.Section{detail})
-	return []content.Content{
+	contents := []content.Content{
 		&summary,
-	}, nil
+	}
+
+	podTemplate, err := printPodTemplate(rc.Spec.Template, nil)
+	if err != nil {
+		return nil, err
+	}
+	contents = append(contents, podTemplate...)
+
+	return contents, nil
 }
 
 func retrieveReplicationController(object runtime.Object) (*core.ReplicationController, error) {

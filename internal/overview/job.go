@@ -37,9 +37,17 @@ func (js *JobSummary) Content(ctx context.Context, object runtime.Object, c Cach
 	}
 
 	summary := content.NewSummary("Details", []content.Section{detail})
-	return []content.Content{
+	contents := []content.Content{
 		&summary,
-	}, nil
+	}
+
+	podTemplate, err := printPodTemplate(&job.Spec.Template, nil)
+	if err != nil {
+		return nil, err
+	}
+	contents = append(contents, podTemplate...)
+
+	return contents, nil
 }
 
 func retrieveJob(object runtime.Object) (*batch.Job, error) {

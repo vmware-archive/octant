@@ -41,9 +41,17 @@ func (rss *CronJobSummary) summary(cronJob *batch.CronJob, c Cache) ([]content.C
 	}
 
 	summary := content.NewSummary("Details", []content.Section{section})
-	return []content.Content{
+	contents := []content.Content{
 		&summary,
-	}, nil
+	}
+
+	podTemplate, err := printPodTemplate(&cronJob.Spec.JobTemplate.Spec.Template, nil)
+	if err != nil {
+		return nil, err
+	}
+	contents = append(contents, podTemplate...)
+
+	return contents, nil
 }
 
 type CronJobJobs struct{}

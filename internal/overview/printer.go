@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"path"
+	"sort"
 	"strings"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/sets"
+	resourcehelper "k8s.io/kubernetes/pkg/api/resource"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/core"
@@ -23,6 +25,7 @@ import (
 	"k8s.io/kubernetes/pkg/apis/core/helper/qos"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/apis/rbac"
+	"k8s.io/kubernetes/pkg/printers/internalversion"
 )
 
 func printCronJobSummary(cronJob *batch.CronJob, jobs []*batch.Job) (content.Section, error) {
@@ -188,7 +191,7 @@ func printPodSummary(pod *core.Pod, c clock.Clock) (content.Section, error) {
 	}
 
 	if pod.Status.NominatedNodeName != "" {
-		section.AddText("NominantedNodeName", pod.Status.NominatedNodeName)
+		section.AddText("NominatedNodeName", pod.Status.NominatedNodeName)
 	}
 
 	if pod.Status.QOSClass != "" {
@@ -202,6 +205,30 @@ func printPodSummary(pod *core.Pod, c clock.Clock) (content.Section, error) {
 		gvkPath("v1", "ServiceAccount", pod.Spec.ServiceAccountName))
 
 	// TODO add tolerations printer
+
+	return section, nil
+}
+
+func printDaemonSetSummary(replicaSet *extensions.DaemonSet, pods []*core.Pod) (content.Section, error) {
+	section := content.NewSection()
+
+	section.AddText("Name", replicaSet.GetName())
+	section.AddText("Namespace", replicaSet.GetNamespace())
+
+	selector, err := metav1.LabelSelectorAsSelector(replicaSet.Spec.Selector)
+	if err != nil {
+		return content.Section{}, err
+	}
+	section.AddText("Selector", selector.String())
+
+	section.AddLabels("Labels", replicaSet.GetLabels())
+	section.AddLabels("Annotations", replicaSet.GetAnnotations())
+
+	ps := createPodStatus(pods)
+
+	podStatus := fmt.Sprintf("%d Running / %d Waiting / %d Succeeded / %d Failed",
+		ps.Running, ps.Waiting, ps.Succeeded, ps.Failed)
+	section.AddText("Pod Status", podStatus)
 
 	return section, nil
 }
@@ -572,6 +599,249 @@ func printRoleBindingSubjects(roleBinding *rbac.RoleBinding) (content.Table, err
 	}
 
 	return table, nil
+}
+
+func printPodTemplate(template *core.PodTemplateSpec, containerStatuses []core.ContainerStatus) ([]content.Content, error) {
+
+	templateSection := content.NewSection()
+	templateSection.AddLabels("Labels", template.Labels)
+	if len(template.Annotations) > 0 {
+		templateSection.AddList("Annotations", template.Annotations)
+	}
+	if template.Spec.ServiceAccountName != "" {
+		templateSection.AddLink("Service Account", template.Spec.ServiceAccountName,
+			gvkPath("v1", "ServiceAccount", template.Spec.ServiceAccountName))
+	}
+
+	podTemplateSections := []content.Section{templateSection}
+	summary := content.NewSummary("Pod Template", podTemplateSections)
+
+	contents := []content.Content{
+		&summary,
+	}
+
+	if len(template.Spec.InitContainers) > 0 {
+		initContainerSections := describeContainers(template.Spec.InitContainers, nil, nil)
+		initContainerSummary := content.NewSummary("Init Container Template", initContainerSections)
+		contents = append(contents, &initContainerSummary)
+	}
+
+	containerSections := describeContainers(template.Spec.Containers, containerStatuses, nil)
+	containerSummary := content.NewSummary("Container Template", containerSections)
+	contents = append(contents, &containerSummary)
+
+	containersFromEnv := describeContainersEnvFrom(template.Spec.Containers)
+	contents = append(contents, &containersFromEnv)
+
+	return contents, nil
+}
+
+func describeContainersEnvFrom(containers []core.Container) content.Table {
+	table := content.NewTable("Environment From")
+
+	table.Columns = tableCols("Name", "From", "Prefix", "Optional")
+
+	for _, container := range containers {
+		for _, e := range container.EnvFrom {
+			from := ""
+			name := ""
+			optional := false
+
+			if e.ConfigMapRef != nil {
+				from = "ConfigMap"
+				name = e.ConfigMapRef.Name
+				optional = e.ConfigMapRef.Optional != nil && *e.ConfigMapRef.Optional
+			} else if e.SecretRef != nil {
+				from = "Secret"
+				name = e.SecretRef.Name
+				optional = e.SecretRef.Optional != nil && *e.SecretRef.Optional
+			}
+
+			table.AddRow(content.TableRow{
+				"Name":     content.NewStringText(name),
+				"From":     content.NewStringText(from),
+				"Prefix":   content.NewStringText(e.Prefix),
+				"Optional": content.NewStringText(fmt.Sprintf("%t", optional)),
+			})
+		}
+	}
+
+	return table
+}
+
+func describeContainers(containers []core.Container, containerStatuses []core.ContainerStatus,
+	resolverFn internalversion.EnvVarResolverFunc) []content.Section {
+	statuses := make(map[string]core.ContainerStatus)
+	for _, status := range containerStatuses {
+		statuses[status.Name] = status
+	}
+
+	var sections []content.Section
+	for _, container := range containers {
+		status, ok := statuses[container.Name]
+		section := describeContainer(container, status, ok, resolverFn)
+		sections = append(sections, section)
+	}
+
+	return sections
+}
+
+func describeContainer(container core.Container, status core.ContainerStatus, ok bool,
+	resolverFn internalversion.EnvVarResolverFunc) content.Section {
+	section := content.NewSection()
+	section.Title = container.Name
+
+	if ok {
+		section.AddText("Container ID", status.ContainerID)
+	}
+	section.AddText("Image", container.Image)
+	if ok {
+		section.AddText("Image ID", status.ImageID)
+	}
+
+	portString := describeContainerPorts(container.Ports)
+	if strings.Contains(portString, ",") {
+		section.AddText("Ports", portString)
+	} else {
+		section.AddText("Port", stringOrNone(portString))
+	}
+
+	hostPortString := describeContainerHostPorts(container.Ports)
+	if strings.Contains(hostPortString, ",") {
+		section.AddText("Host Ports", hostPortString)
+	} else {
+		section.AddText("Host Port", stringOrNone(hostPortString))
+	}
+
+	if len(container.Command) > 0 {
+		section.AddText("Command", fmt.Sprintf("[%s]", strings.Join(container.Command, ", ")))
+	}
+
+	if len(container.Args) > 0 {
+		section.AddText("Args", fmt.Sprintf("[%s]", strings.Join(container.Args, ", ")))
+	}
+
+	resources := container.Resources
+
+	if len(resources.Limits) > 0 {
+		limits := make(map[string]string)
+		for _, name := range internalversion.SortedResourceNames(resources.Limits) {
+			quantity := resources.Limits[name]
+			limits[string(name)] = quantity.String()
+		}
+
+		section.AddList("Limits", limits)
+	}
+
+	if len(resources.Requests) > 0 {
+		requests := make(map[string]string)
+		for _, name := range internalversion.SortedResourceNames(resources.Requests) {
+			quantity := resources.Limits[name]
+			requests[string(name)] = quantity.String()
+		}
+
+		section.AddList("Requests", requests)
+	}
+
+	if container.LivenessProbe != nil {
+		probe := internalversion.DescribeProbe(container.LivenessProbe)
+		section.AddText("Liveness", probe)
+	}
+
+	if container.ReadinessProbe != nil {
+		probe := internalversion.DescribeProbe(container.ReadinessProbe)
+		section.AddText("Readiness", probe)
+	}
+
+	if len(container.Env) == 0 {
+		section.AddText("Environment", "<none>")
+	} else {
+		containerEnv := make(map[string]string)
+
+		for _, e := range container.Env {
+			if e.ValueFrom == nil {
+				containerEnv[e.Name] = e.Value
+				continue
+			}
+
+			switch {
+			case e.ValueFrom.FieldRef != nil:
+				var valueFrom string
+				if resolverFn != nil {
+					valueFrom = resolverFn(e)
+				}
+				containerEnv[e.Name] = fmt.Sprintf("%s (%s:%s)",
+					valueFrom, e.ValueFrom.FieldRef.APIVersion, e.ValueFrom.FieldRef.FieldPath)
+			case e.ValueFrom.ResourceFieldRef != nil:
+				valueFrom, err := resourcehelper.ExtractContainerResourceValue(e.ValueFrom.ResourceFieldRef, &container)
+				if err != nil {
+					valueFrom = ""
+				}
+				resource := e.ValueFrom.ResourceFieldRef.Resource
+				if valueFrom == "0" && (resource == "limits.cpu" || resource == "limits.memory") {
+					valueFrom = "node allocatable"
+				}
+				containerEnv[e.Name] = fmt.Sprintf("%s (%s)", valueFrom, resource)
+			case e.ValueFrom.SecretKeyRef != nil:
+				optional := e.ValueFrom.SecretKeyRef.Optional != nil && *e.ValueFrom.SecretKeyRef.Optional
+				containerEnv[e.Name] = fmt.Sprintf("<set to the key '%s' in secret '%s'> Optional: %t",
+					e.ValueFrom.SecretKeyRef.Key, e.ValueFrom.SecretKeyRef.Name, optional)
+			case e.ValueFrom.ConfigMapKeyRef != nil:
+				optional := e.ValueFrom.ConfigMapKeyRef.Optional != nil && *e.ValueFrom.ConfigMapKeyRef.Optional
+				containerEnv[e.Name] = fmt.Sprintf("<set to the key '%s' in config map '%s'> Optional: %t",
+					e.ValueFrom.ConfigMapKeyRef.Key, e.ValueFrom.ConfigMapKeyRef.Name, optional)
+			}
+		}
+
+		section.AddList("Environment", containerEnv)
+	}
+
+	if len(container.VolumeMounts) == 0 {
+		section.AddText("Mounts", "<none>")
+	} else {
+		mounts := make(map[string]string)
+		sort.Sort(internalversion.SortableVolumeMounts(container.VolumeMounts))
+		for _, mount := range container.VolumeMounts {
+			flags := []string{}
+			switch {
+			case mount.ReadOnly:
+				flags = append(flags, "ro")
+			case !mount.ReadOnly:
+				flags = append(flags, "rw")
+			case mount.SubPath != "":
+				flags = append(flags, fmt.Sprintf("path=%q", mount.SubPath))
+			}
+			mounts[mount.MountPath] = fmt.Sprintf("%s (%s)", mount.Name, strings.Join(flags, ","))
+		}
+		section.AddList("Mounts", mounts)
+	}
+
+	if len(container.VolumeDevices) > 0 {
+		sort.Sort(internalversion.SortableVolumeDevices(container.VolumeDevices))
+		devices := make(map[string]string)
+		for _, device := range container.VolumeDevices {
+			devices[device.DevicePath] = device.Name
+		}
+		section.AddList("Devices", devices)
+	}
+
+	return section
+}
+
+func describeContainerPorts(cPorts []core.ContainerPort) string {
+	ports := make([]string, 0, len(cPorts))
+	for _, cPort := range cPorts {
+		ports = append(ports, fmt.Sprintf("%d/%s", cPort.ContainerPort, cPort.Protocol))
+	}
+	return strings.Join(ports, ", ")
+}
+
+func describeContainerHostPorts(cPorts []core.ContainerPort) string {
+	ports := make([]string, 0, len(cPorts))
+	for _, cPort := range cPorts {
+		ports = append(ports, fmt.Sprintf("%d/%s", cPort.HostPort, cPort.Protocol))
+	}
+	return strings.Join(ports, ", ")
 }
 
 func stringOrNone(s string) string {
