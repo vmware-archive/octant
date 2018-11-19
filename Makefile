@@ -7,7 +7,7 @@ GO_FLAGS= -ldflags=$(LD_FLAGS)
 GOCMD=go
 GOBUILD=$(GOCMD) build
 
-VERSION ?= v0.0.1-pre
+VERSION ?= v0.1.0
 
 .PHONY: version
 version:
