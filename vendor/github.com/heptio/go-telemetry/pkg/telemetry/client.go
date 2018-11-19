@@ -16,7 +16,7 @@ import (
 
 const (
 	// DefaultAddress is the default address of the telemetry service
-	DefaultAddress = "telemetry.heptio.com:443"
+	DefaultAddress = "telemetry.corp.heptio.net:443"
 )
 
 // Interface defines telemetry
