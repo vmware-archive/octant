@@ -31,6 +31,8 @@ export default class Overview extends Component {
       this.source = null
     }
 
+    if (!path || !namespace) return
+
     this.props.setIsLoading(true)
     this.setState({ contents: null })
 
