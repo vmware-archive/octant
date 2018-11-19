@@ -17,12 +17,32 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
+func createObject(name string) *unstructured.Unstructured {
+	return &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"metadata": map[string]interface{}{
+				"name": name,
+			},
+		},
+	}
+}
+
 func Test_loadObjects(t *testing.T) {
+	sampleObjects := []*unstructured.Unstructured{
+		createObject("omega"),
+		createObject("alpha"),
+	}
+	sortedSampleObjects := []*unstructured.Unstructured{
+		createObject("alpha"),
+		createObject("omega"),
+	}
+
 	cases := []struct {
 		name      string
 		initCache func(*spyCache)
 		fields    map[string]string
 		keys      []CacheKey
+		expected  []*unstructured.Unstructured
 		isErr     bool
 	}{
 		{
@@ -32,10 +52,11 @@ func Test_loadObjects(t *testing.T) {
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind"},
-					[]*unstructured.Unstructured{}, nil)
+					sampleObjects, nil)
 			},
-			fields: map[string]string{},
-			keys:   []CacheKey{{APIVersion: "v1", Kind: "kind"}},
+			fields:   map[string]string{},
+			keys:     []CacheKey{{APIVersion: "v1", Kind: "kind"}},
+			expected: sortedSampleObjects,
 		},
 		{
 			name: "name",
@@ -75,7 +96,7 @@ func Test_loadObjects(t *testing.T) {
 			namespace := "default"
 
 			ctx := context.Background()
-			_, err := loadObjects(ctx, cache, namespace, tc.fields, tc.keys)
+			got, err := loadObjects(ctx, cache, namespace, tc.fields, tc.keys)
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -84,6 +105,7 @@ func Test_loadObjects(t *testing.T) {
 			require.NoError(t, err)
 
 			assert.True(t, cache.isSatisfied())
+			assert.Equal(t, tc.expected, got)
 		})
 	}
 
