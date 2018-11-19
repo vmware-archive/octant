@@ -141,6 +141,16 @@ func TestInformerCache_Retrieve(t *testing.T) {
 			},
 			expectErr: true,
 		},
+		{
+			name: "not found",
+			key: CacheKey{
+				Namespace:  "default",
+				APIVersion: "foo/v1",
+				Kind:       "Kind",
+				Name:       "does-not-exist",
+			},
+			expectedLen: 0,
+		},
 	}
 
 	for _, tc := range cases {

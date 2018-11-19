@@ -89,6 +89,7 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 	v := reflect.ValueOf(list)
 	f := reflect.Indirect(v).FieldByName("Items")
 
+	// Convert unstructured objects to typed runtime objects
 	for _, object := range objects {
 		item := d.objectType()
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, item)
