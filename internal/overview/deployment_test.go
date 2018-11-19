@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -292,6 +293,8 @@ func convertToInternal(t *testing.T, in runtime.Object) runtime.Object {
 	var out runtime.Object
 
 	switch in.(type) {
+	case *corev1.ConfigMap:
+		out = &core.ConfigMap{}
 	case *batchv1beta1.CronJob:
 		out = &batch.CronJob{}
 	case *extensionsv1beta1.Ingress:
