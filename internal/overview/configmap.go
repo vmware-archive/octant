@@ -17,7 +17,7 @@ func NewConfigMapSummary() *ConfigMapSummary {
 	return &ConfigMapSummary{}
 }
 
-func (js *ConfigMapSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (cms *ConfigMapSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
 	configMap, err := retrieveConfigMap(object)
 	if err != nil {
 		return nil, err
