@@ -878,7 +878,7 @@ func gvkPath(apiVersion, kind, name string) string {
 	case apiVersion == "rbac.authorization.k8s.io/v1" && kind == "Role":
 		p = "/content/overview/rbac/roles"
 	default:
-		panic(fmt.Sprintf("can't convert %s %s to path", apiVersion, kind))
+		return "/content/overview"
 	}
 
 	return path.Join(p, name)

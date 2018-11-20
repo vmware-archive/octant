@@ -62,7 +62,6 @@ func Test_gvkPath(t *testing.T) {
 		kind       string
 		name       string
 		expected   string
-		isPanic    bool
 	}{
 		{
 			apiVersion: "apps/v1",
@@ -134,24 +133,15 @@ func Test_gvkPath(t *testing.T) {
 			apiVersion: "unknown",
 			kind:       "unknown",
 			name:       "name",
-			isPanic:    true,
+			expected:   "/content/overview",
 		},
 	}
 
 	for _, tc := range cases {
 		name := fmt.Sprintf("apiVersion:%q kind:%q", tc.apiVersion, tc.kind)
 		t.Run(name, func(t *testing.T) {
-			if tc.isPanic {
-				assert.Panics(t, func() {
-					gvkPath(tc.apiVersion, tc.kind, tc.name)
-				})
-				return
-			}
-
-			assert.NotPanics(t, func() {
-				got := gvkPath(tc.apiVersion, tc.kind, tc.name)
-				assert.Equal(t, tc.expected, got)
-			})
+			got := gvkPath(tc.apiVersion, tc.kind, tc.name)
+			assert.Equal(t, tc.expected, got)
 		})
 	}
 }
