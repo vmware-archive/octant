@@ -2,7 +2,6 @@ package overview
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/heptio/developer-dash/internal/content"
@@ -147,54 +146,10 @@ func (pc *PodContainer) Content(ctx context.Context, object runtime.Object, c Ca
 		return nil, err
 	}
 
-	sections := []content.Section{}
+	containers := pod.Spec.Containers
+	statuses := pod.Status.ContainerStatuses
 
-	for _, status := range pod.Status.ContainerStatuses {
-		section := content.NewSection()
-		section.Title = status.Name
-
-		section.AddText("Container ID", status.ContainerID)
-		section.AddText("Image", status.Image)
-		section.AddText("Image ID", status.ImageID)
-
-		// TODO: add port
-		// TODO: add host port
-
-		if waiting := status.State.Waiting; waiting != nil {
-			section.AddText("State", "Waiting")
-			if waiting.Reason != "" {
-				section.AddText("Waiting Reason", waiting.Reason)
-			}
-			if waiting.Message != "" {
-				section.AddText("Waiting Message", waiting.Message)
-			}
-
-		} else if status.State.Running != nil {
-			section.AddText("State", "Running")
-			section.AddTimestamp("Started", formatTime(&status.State.Running.StartedAt))
-
-		} else if terminated := status.State.Terminated; terminated != nil {
-			section.AddText("State", "Terminated")
-			section.AddText("Exit Code", fmt.Sprintf("%d", terminated.ExitCode))
-			section.AddText("Signal", fmt.Sprintf("%d", terminated.Signal))
-
-			if terminated.Reason != "" {
-				section.AddText("Reason", terminated.Reason)
-			}
-			if terminated.Message != "" {
-				section.AddText("Message", terminated.Message)
-			}
-			section.AddTimestamp("Started At", formatTime(&terminated.StartedAt))
-			section.AddTimestamp("Finished At", formatTime(&terminated.FinishedAt))
-			section.AddText("Container ID", terminated.ContainerID)
-		}
-
-		sections = append(sections, section)
-	}
-
-	containers := content.NewSummary("Containers", sections)
-
-	return []content.Content{&containers}, nil
+	return describePodContainers(containers, statuses)
 }
 
 type PodVolume struct{}

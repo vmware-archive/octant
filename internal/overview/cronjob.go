@@ -45,12 +45,6 @@ func (rss *CronJobSummary) summary(cronJob *batch.CronJob, c Cache) ([]content.C
 		&summary,
 	}
 
-	podTemplate, err := printPodTemplate(&cronJob.Spec.JobTemplate.Spec.Template, nil)
-	if err != nil {
-		return nil, err
-	}
-	contents = append(contents, podTemplate...)
-
 	return contents, nil
 }
 

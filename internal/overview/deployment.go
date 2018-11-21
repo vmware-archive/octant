@@ -43,12 +43,6 @@ func (ds *DeploymentSummary) summary(deployment *extensions.Deployment) ([]conte
 		&summary,
 	}
 
-	podTemplate, err := printPodTemplate(&deployment.Spec.Template, nil)
-	if err != nil {
-		return nil, err
-	}
-	contents = append(contents, podTemplate...)
-
 	return contents, nil
 }
 

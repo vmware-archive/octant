@@ -74,6 +74,7 @@ var (
 		Transforms: daemonSetTransforms,
 		Views: []View{
 			NewDaemonSetSummary(),
+			NewContainerSummary(),
 			NewPodList(),
 		},
 	})
@@ -87,6 +88,7 @@ var (
 		Transforms: deploymentTransforms,
 		Views: []View{
 			NewDeploymentSummary(),
+			NewContainerSummary(),
 			NewDeploymentReplicaSets(),
 		},
 	})
@@ -101,6 +103,7 @@ var (
 		Transforms: jobTransforms,
 		Views: []View{
 			NewJobSummary(),
+			NewContainerSummary(),
 			NewPodList(),
 		},
 	})
@@ -129,6 +132,7 @@ var (
 		Transforms: replicaSetTransforms,
 		Views: []View{
 			NewReplicaSetSummary(),
+			NewContainerSummary(),
 			NewPodList(),
 		},
 	})
@@ -142,6 +146,7 @@ var (
 		Transforms: replicationControllerTransforms,
 		Views: []View{
 			NewReplicationControllerSummary(),
+			NewContainerSummary(),
 			NewPodList(),
 		},
 	})
@@ -154,6 +159,7 @@ var (
 		Transforms: statefulSetTransforms,
 		Views: []View{
 			NewStatefulSetSummary(),
+			NewContainerSummary(),
 			NewPodList(),
 		},
 	})
