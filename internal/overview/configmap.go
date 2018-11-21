@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"sort"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
@@ -55,7 +56,14 @@ func (cm *ConfigMapDetails) Content(ctx context.Context, object runtime.Object, 
 		tableCol("Value"),
 	}
 
-	for k, v := range configMap.Data {
+	var keys []string
+	for k := range configMap.Data {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		v := configMap.Data[k]
 		row := content.TableRow{
 			"Key":   content.NewStringText(k),
 			"Value": content.NewStringText(v),
