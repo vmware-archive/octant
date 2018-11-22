@@ -3,6 +3,8 @@ package overview
 import (
 	"context"
 	"fmt"
+	"sort"
+	"strings"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -52,12 +54,18 @@ func (js *SecretData) Content(ctx context.Context, object runtime.Object, c Cach
 	}
 
 	dataSection := content.NewSection()
-	dataSection.Title = "Data"
 
-	for key, data := range secret.Data {
+	var keys []string
+	for k := range secret.Data {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		data := secret.Data[key]
 		switch {
 		case key == core.ServiceAccountTokenKey && secret.Type == core.SecretTypeServiceAccountToken:
-			dataSection.AddText(key, string(data))
+			dataSection.AddText(key, strings.TrimSpace(string(data)))
 		default:
 			dataSection.AddText(key, fmt.Sprintf("%d bytes", len(data)))
 		}

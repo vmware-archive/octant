@@ -301,6 +301,8 @@ func convertToInternal(t *testing.T, in runtime.Object) runtime.Object {
 		out = &extensionsv1beta1.Ingress{}
 	case *extensionsv1beta1.ReplicaSet:
 		out = &extensions.ReplicaSet{}
+	case *corev1.Secret:
+		out = &core.Secret{}
 	default:
 		t.Fatalf("don't know how to convert %T to internal", in)
 	}
