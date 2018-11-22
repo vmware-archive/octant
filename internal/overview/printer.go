@@ -622,47 +622,26 @@ func printPodTemplate(template *core.PodTemplateSpec, containerStatuses []core.C
 		contents = append(contents, &initContainerSummary)
 	}
 
-	containerSections := describeContainers(template.Spec.Containers, containerStatuses, nil)
-	containerSummary := content.NewSummary("Container Template", containerSections)
-	contents = append(contents, &containerSummary)
+	containerContents, err := describePodContainers(template.Spec.Containers, containerStatuses)
+	if err != nil {
+		return nil, err
+	}
 
-	containersFromEnv := describeContainersEnvFrom(template.Spec.Containers)
-	contents = append(contents, &containersFromEnv)
+	contents = append(contents, containerContents...)
 
 	return contents, nil
 }
 
-func describeContainersEnvFrom(containers []core.Container) content.Table {
-	table := content.NewTable("Environment From")
+func describePodContainers(containers []core.Container, containerStatuses []core.ContainerStatus) ([]content.Content, error) {
+	containerSections := describeContainers(containers, containerStatuses, nil)
+	containerSummary := content.NewSummary("Container Template", containerSections)
 
-	table.Columns = tableCols("Name", "From", "Prefix", "Optional")
+	containersFromEnv := describeContainersEnvFrom(containers)
 
-	for _, container := range containers {
-		for _, e := range container.EnvFrom {
-			from := ""
-			name := ""
-			optional := false
-
-			if e.ConfigMapRef != nil {
-				from = "ConfigMap"
-				name = e.ConfigMapRef.Name
-				optional = e.ConfigMapRef.Optional != nil && *e.ConfigMapRef.Optional
-			} else if e.SecretRef != nil {
-				from = "Secret"
-				name = e.SecretRef.Name
-				optional = e.SecretRef.Optional != nil && *e.SecretRef.Optional
-			}
-
-			table.AddRow(content.TableRow{
-				"Name":     content.NewStringText(name),
-				"From":     content.NewStringText(from),
-				"Prefix":   content.NewStringText(e.Prefix),
-				"Optional": content.NewStringText(fmt.Sprintf("%t", optional)),
-			})
-		}
-	}
-
-	return table
+	return []content.Content{
+		&containerSummary,
+		&containersFromEnv,
+	}, nil
 }
 
 func describeContainers(containers []core.Container, containerStatuses []core.ContainerStatus,
@@ -715,6 +694,35 @@ func describeContainer(container core.Container, status core.ContainerStatus, ok
 
 	if len(container.Args) > 0 {
 		section.AddText("Args", fmt.Sprintf("[%s]", strings.Join(container.Args, ", ")))
+	}
+
+	if waiting := status.State.Waiting; waiting != nil {
+		section.AddText("State", "Waiting")
+		if waiting.Reason != "" {
+			section.AddText("Waiting Reason", waiting.Reason)
+		}
+		if waiting.Message != "" {
+			section.AddText("Waiting Message", waiting.Message)
+		}
+
+	} else if status.State.Running != nil {
+		section.AddText("State", "Running")
+		section.AddTimestamp("Started", formatTime(&status.State.Running.StartedAt))
+
+	} else if terminated := status.State.Terminated; terminated != nil {
+		section.AddText("State", "Terminated")
+		section.AddText("Exit Code", fmt.Sprintf("%d", terminated.ExitCode))
+		section.AddText("Signal", fmt.Sprintf("%d", terminated.Signal))
+
+		if terminated.Reason != "" {
+			section.AddText("Reason", terminated.Reason)
+		}
+		if terminated.Message != "" {
+			section.AddText("Message", terminated.Message)
+		}
+		section.AddTimestamp("Started At", formatTime(&terminated.StartedAt))
+		section.AddTimestamp("Finished At", formatTime(&terminated.FinishedAt))
+		section.AddText("Container ID", terminated.ContainerID)
 	}
 
 	resources := container.Resources
@@ -840,6 +848,39 @@ func describeContainerHostPorts(cPorts []core.ContainerPort) string {
 	return strings.Join(ports, ", ")
 }
 
+func describeContainersEnvFrom(containers []core.Container) content.Table {
+	table := content.NewTable("Environment From")
+
+	table.Columns = tableCols("Name", "From", "Prefix", "Optional")
+
+	for _, container := range containers {
+		for _, e := range container.EnvFrom {
+			from := ""
+			name := ""
+			optional := false
+
+			if e.ConfigMapRef != nil {
+				from = "ConfigMap"
+				name = e.ConfigMapRef.Name
+				optional = e.ConfigMapRef.Optional != nil && *e.ConfigMapRef.Optional
+			} else if e.SecretRef != nil {
+				from = "Secret"
+				name = e.SecretRef.Name
+				optional = e.SecretRef.Optional != nil && *e.SecretRef.Optional
+			}
+
+			table.AddRow(content.TableRow{
+				"Name":     content.NewStringText(name),
+				"From":     content.NewStringText(from),
+				"Prefix":   content.NewStringText(e.Prefix),
+				"Optional": content.NewStringText(fmt.Sprintf("%t", optional)),
+			})
+		}
+	}
+
+	return table
+}
+
 func stringOrNone(s string) string {
 	return stringOrDefaultValue(s, "<none>")
 }
@@ -871,6 +912,8 @@ func gvkPath(apiVersion, kind, name string) string {
 		p = "/content/overview/workloads/replication-controllers"
 	case apiVersion == "v1" && kind == "Secret":
 		p = "/content/overview/config-and-storage/secrets"
+	case apiVersion == "v1" && kind == "PersistentVolumeClaim":
+		p = "/content/overview/config-and-storage/persistent-volume-claims"
 	case apiVersion == "v1" && kind == "ServiceAccount":
 		p = "/content/overview/config-and-storage/service-accounts"
 	case apiVersion == "v1" && kind == "Service":

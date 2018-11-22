@@ -44,12 +44,6 @@ func (js *ReplicationControllerSummary) Content(ctx context.Context, object runt
 		&summary,
 	}
 
-	podTemplate, err := printPodTemplate(rc.Spec.Template, nil)
-	if err != nil {
-		return nil, err
-	}
-	contents = append(contents, podTemplate...)
-
 	return contents, nil
 }
 

@@ -41,12 +41,6 @@ func (js *JobSummary) Content(ctx context.Context, object runtime.Object, c Cach
 		&summary,
 	}
 
-	podTemplate, err := printPodTemplate(&job.Spec.Template, nil)
-	if err != nil {
-		return nil, err
-	}
-	contents = append(contents, podTemplate...)
-
 	return contents, nil
 }
 

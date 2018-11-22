@@ -46,36 +46,8 @@ func TestCronJobSummary(t *testing.T) {
 	}
 	details := content.NewSummary("Details", sections)
 
-	podTemplate := content.NewSummary("Pod Template", []content.Section{
-		{
-			Items: []content.Item{
-				content.TextItem("Labels", "<none>"),
-			},
-		},
-	})
-
-	containerTemplate := content.NewSummary("Container Template", []content.Section{
-		{
-			Title: "hello",
-			Items: []content.Item{
-				content.TextItem("Image", "busybox"),
-				content.TextItem("Port", "<none>"),
-				content.TextItem("Host Port", "<none>"),
-				content.TextItem("Args", "[/bin/sh, -c, date; echo Hello from the Kubernetes cluster]"),
-				content.TextItem("Environment", "<none>"),
-				content.ListItem("Mounts", map[string]string{}),
-			},
-		},
-	})
-
-	containerEnvTable := content.NewTable("Environment From")
-	containerEnvTable.Columns = tableCols("Name", "From", "Prefix", "Optional")
-
 	expected := []content.Content{
 		&details,
-		&podTemplate,
-		&containerTemplate,
-		&containerEnvTable,
 	}
 
 	assert.Equal(t, expected, contents)

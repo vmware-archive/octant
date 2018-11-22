@@ -39,12 +39,6 @@ func (js *StatefulSetSummary) Content(ctx context.Context, object runtime.Object
 		&summary,
 	}
 
-	podTemplate, err := printPodTemplate(&ss.Spec.Template, nil)
-	if err != nil {
-		return nil, err
-	}
-	contents = append(contents, podTemplate...)
-
 	return contents, nil
 }
 

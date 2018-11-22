@@ -37,17 +37,11 @@ func (rss *ReplicaSetSummary) summary(replicaSet *extensions.ReplicaSet, c Cache
 		return nil, err
 	}
 
-	podTemplate, err := printPodTemplate(&replicaSet.Spec.Template, nil)
-	if err != nil {
-		return nil, err
-	}
-
 	summary := content.NewSummary("Details", []content.Section{section})
 	contents := []content.Content{
 		&summary,
 	}
 
-	contents = append(contents, podTemplate...)
 	return contents, nil
 }
 

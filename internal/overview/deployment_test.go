@@ -110,35 +110,8 @@ func TestDeploymentSummary(t *testing.T) {
 		},
 	})
 
-	podTemplate := content.NewSummary("Pod Template", []content.Section{
-		{
-			Items: []content.Item{
-				content.TextItem("Labels", "<none>"),
-			},
-		},
-	})
-
-	containerTemplate := content.NewSummary("Container Template", []content.Section{
-		{
-			Title: "containerName",
-			Items: []content.Item{
-				content.TextItem("Image", "image"),
-				content.TextItem("Port", "<none>"),
-				content.TextItem("Host Port", "<none>"),
-				content.TextItem("Environment", "<none>"),
-				content.ListItem("Mounts", map[string]string{}),
-			},
-		},
-	})
-
-	containerEnvTable := content.NewTable("Environment From")
-	containerEnvTable.Columns = tableCols("Name", "From", "Prefix", "Optional")
-
 	expected := []content.Content{
 		&details,
-		&podTemplate,
-		&containerTemplate,
-		&containerEnvTable,
 	}
 
 	assert.Equal(t, expected, contents)
