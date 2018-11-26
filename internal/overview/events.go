@@ -46,7 +46,7 @@ func (d *EventsDescriber) Describe(ctx context.Context, prefix, namespace string
 
 	var contents []content.Content
 
-	t := newEventTable(d.title)
+	t := newEventTable(d.title, nil)
 
 	sort.Slice(objects, func(i, j int) bool {
 		tsI := objects[i].GetCreationTimestamp()
@@ -73,14 +73,15 @@ func (d *EventsDescriber) Describe(ctx context.Context, prefix, namespace string
 	}, nil
 }
 
-func (d *EventsDescriber) PathFilters() []pathFilter {
+func (d *EventsDescriber) PathFilters(namespace string) []pathFilter {
 	return []pathFilter{
 		*newPathFilter(d.path, d),
 	}
 }
 
-func newEventTable(name string) content.Table {
-	t := content.NewTable(name)
+func newEventTable(namespace string, object runtime.Object) content.Table {
+	emptyMessage := emptyEventsMessageForObject(namespace, object)
+	t := content.NewTable("Events", emptyMessage)
 
 	t.Columns = []content.TableColumn{
 		{Name: "Message", Accessor: "message"},
@@ -106,4 +107,15 @@ func printEvent(event *corev1.Event, prefix, namespace string, c clock.Clock) co
 		"first_seen": content.NewStringText(firstSeen),
 		"last_seen":  content.NewStringText(lastSeen),
 	}
+}
+
+func emptyEventsMessageForObject(namespace string, object runtime.Object) string {
+	if object == nil {
+		return fmt.Sprintf("Namespace %s does not contain any events", namespace)
+	}
+	objectKind := object.GetObjectKind()
+	gvk := objectKind.GroupVersionKind()
+
+	return fmt.Sprintf("Namespace %s does not contain any events for this %s",
+		namespace, gvk.Kind)
 }

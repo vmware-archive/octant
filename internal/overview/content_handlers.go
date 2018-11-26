@@ -59,7 +59,7 @@ func eventsForObject(object *unstructured.Unstructured, cache Cache, prefix, nam
 		return nil, err
 	}
 
-	eventsTable := newEventTable("Events")
+	eventsTable := newEventTable(namespace, object)
 	for _, obj := range eventObjects {
 		event := &corev1.Event{}
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.Object, event)

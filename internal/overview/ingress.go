@@ -56,7 +56,7 @@ func (ing *IngressDetails) Content(ctx context.Context, object runtime.Object, c
 }
 
 func ingressTLSTable(ingress *v1beta1.Ingress) *content.Table {
-	table := content.NewTable("TLS")
+	table := content.NewTable("TLS", "TLS is not configured for this Ingress")
 
 	table.Columns = []content.TableColumn{
 		tableCol("Secret"),
@@ -74,7 +74,7 @@ func ingressTLSTable(ingress *v1beta1.Ingress) *content.Table {
 }
 
 func ingressRulesTable(ingress *v1beta1.Ingress) *content.Table {
-	table := content.NewTable("Rules")
+	table := content.NewTable("Rules", "Rules are not configured for this Ingress")
 
 	table.Columns = tableCols("Host", "Path", "Backend")
 

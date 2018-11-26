@@ -50,7 +50,8 @@ func (cm *ConfigMapDetails) Content(ctx context.Context, object runtime.Object, 
 		return nil, errors.Errorf("expected object to be a ConfigMap, it was %T", object)
 	}
 
-	table := content.NewTable("ConfigMap Data")
+	emptyMessage := "ConfigMap does not contain any data"
+	table := content.NewTable("ConfigMap Data", emptyMessage)
 	table.Columns = []content.TableColumn{
 		tableCol("Key"),
 		tableCol("Value"),

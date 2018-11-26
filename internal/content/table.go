@@ -3,16 +3,18 @@ package content
 var _ Content = (*Table)(nil)
 
 type Table struct {
-	Type    string        `json:"type,omitempty"`
-	Title   string        `json:"title,omitempty"`
-	Columns []TableColumn `json:"columns,omitempty"`
-	Rows    []TableRow    `json:"rows,omitempty"`
+	Type         string        `json:"type,omitempty"`
+	Title        string        `json:"title,omitempty"`
+	Columns      []TableColumn `json:"columns,omitempty"`
+	Rows         []TableRow    `json:"rows,omitempty"`
+	EmptyContent string        `json:"empty_content,omitempty"`
 }
 
-func NewTable(title string) Table {
+func NewTable(title, emptyContent string) Table {
 	return Table{
-		Type:  "table",
-		Title: title,
+		Type:         "table",
+		Title:        title,
+		EmptyContent: emptyContent,
 	}
 }
 

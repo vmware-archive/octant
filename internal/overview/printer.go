@@ -517,7 +517,7 @@ func printRoleSummary(role *rbac.Role) (content.Section, error) {
 }
 
 func printRoleRule(role *rbac.Role) (content.Table, error) {
-	table := content.NewTable("Rules")
+	table := content.NewTable("Rules", "No rules are configured for this Role")
 
 	columnNames := []string{
 		"Resources",
@@ -570,7 +570,7 @@ func printRoleBindingSummary(roleBinding *rbac.RoleBinding, role *rbac.Role) (co
 }
 
 func printRoleBindingSubjects(roleBinding *rbac.RoleBinding) (content.Table, error) {
-	table := content.NewTable("Rules")
+	table := content.NewTable("Subjects", "No subjects are configured for this RoleBinding")
 
 	columnNames := []string{
 		"Kind",
@@ -636,12 +636,16 @@ func describePodContainers(containers []core.Container, containerStatuses []core
 	containerSections := describeContainers(containers, containerStatuses, nil)
 	containerSummary := content.NewSummary("Container Template", containerSections)
 
-	containersFromEnv := describeContainersEnvFrom(containers)
-
-	return []content.Content{
+	contents := []content.Content{
 		&containerSummary,
-		&containersFromEnv,
-	}, nil
+	}
+
+	containersFromEnv := describeContainersEnvFrom(containers)
+	if !containersFromEnv.IsEmpty() {
+		contents = append(contents, &containersFromEnv)
+	}
+
+	return contents, nil
 }
 
 func describeContainers(containers []core.Container, containerStatuses []core.ContainerStatus,
@@ -849,7 +853,8 @@ func describeContainerHostPorts(cPorts []core.ContainerPort) string {
 }
 
 func describeContainersEnvFrom(containers []core.Container) content.Table {
-	table := content.NewTable("Environment From")
+	table := content.NewTable("Environment From",
+		"This container's environment is build from Secrets or a ConfigMap")
 
 	table.Columns = tableCols("Name", "From", "Prefix", "Optional")
 

@@ -30,10 +30,10 @@ func TestIngressDetails(t *testing.T) {
 	got, err := v.Content(ctx, ingress, cache)
 	require.NoError(t, err)
 
-	tlsTable := content.NewTable("TLS")
+	tlsTable := content.NewTable("TLS", "TLS is not configured for this Ingress")
 	tlsTable.Columns = tableCols("Secret", "Hosts")
 
-	rulesTable := content.NewTable("Rules")
+	rulesTable := content.NewTable("Rules", "Rules are not configured for this Ingress")
 	rulesTable.Columns = tableCols("Host", "Path", "Backend")
 	rulesTable.AddRow(content.TableRow{
 		"Backend": content.NewLinkText("test:80", "/content/overview/discovery-and-load-balancing/services/test"),

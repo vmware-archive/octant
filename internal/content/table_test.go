@@ -8,9 +8,10 @@ import (
 )
 
 func TestTable(t *testing.T) {
-	table := NewTable("title")
+	table := NewTable("title", "this table is empty")
 
 	require.True(t, table.IsEmpty())
+	require.Equal(t, "this table is empty", table.EmptyContent)
 
 	table.Columns = []TableColumn{
 		{Name: "col1", Accessor: "col1"},

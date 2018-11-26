@@ -39,7 +39,7 @@ type DescriberOptions struct {
 // Describer creates content.
 type Describer interface {
 	Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error)
-	PathFilters() []pathFilter
+	PathFilters(namespace string) []pathFilter
 }
 
 type baseDescriber struct{}
@@ -121,7 +121,7 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 	}, nil
 }
 
-func (d *ListDescriber) PathFilters() []pathFilter {
+func (d *ListDescriber) PathFilters(namespace string) []pathFilter {
 	return []pathFilter{
 		*newPathFilter(d.path, d),
 	}
@@ -211,7 +211,7 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 	}, nil
 }
 
-func (d *ObjectDescriber) PathFilters() []pathFilter {
+func (d *ObjectDescriber) PathFilters(namespace string) []pathFilter {
 	return []pathFilter{
 		*newPathFilter(d.path, d),
 	}
@@ -274,8 +274,8 @@ func printObject(object runtime.Object, transformFunc func(*metav1beta1.Table) e
 	return nil
 }
 
-func printContentTable(title, namespace, prefix string, tbl *metav1beta1.Table, m map[string]lookupFunc) (*content.Table, error) {
-	contentTable := content.NewTable(title)
+func printContentTable(title, namespace, prefix, emptyMessage string, tbl *metav1beta1.Table, m map[string]lookupFunc) (*content.Table, error) {
+	contentTable := content.NewTable(title, emptyMessage)
 
 	headers := make(map[int]string)
 
@@ -350,13 +350,13 @@ func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace strin
 	}, nil
 }
 
-func (d *SectionDescriber) PathFilters() []pathFilter {
+func (d *SectionDescriber) PathFilters(namespace string) []pathFilter {
 	pathFilters := []pathFilter{
 		*newPathFilter(d.path, d),
 	}
 
 	for _, child := range d.describers {
-		pathFilters = append(pathFilters, child.PathFilters()...)
+		pathFilters = append(pathFilters, child.PathFilters(namespace)...)
 	}
 
 	return pathFilters

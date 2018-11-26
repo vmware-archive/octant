@@ -53,13 +53,9 @@ func TestContainerSummary(t *testing.T) {
 		},
 	})
 
-	containerEnvTable := content.NewTable("Environment From")
-	containerEnvTable.Columns = tableCols("Name", "From", "Prefix", "Optional")
-
 	expected := []content.Content{
 		&podTemplate,
 		&containerTemplate,
-		&containerEnvTable,
 	}
 
 	assert.Equal(t, expected, got)
