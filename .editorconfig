@@ -1,0 +1,20 @@
+; http://editorconfig.org/
+
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+trim_trailing_whitespace = true
+
+[*.js]
+indent_style = space
+indent_size = 2
+
+[Makefile]
+indent_style = tab
+
+[{package.json,.travis.yml,.goreleaser.yml}]
+indent_style = space
+indent_size = 2
