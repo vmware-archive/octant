@@ -193,7 +193,7 @@ func summarizeGlusterfsVolumeSource(section *content.Section, glusterfs *core.Gl
 
 func summarizePersistentVolumeClaimVolumeSource(section *content.Section, claim *core.PersistentVolumeClaimVolumeSource) {
 	section.AddText("Type", "PersistentVolumeClaim")
-	section.AddLink("ClaimName", claim.ClaimName, gvkPath("v1", "PersistentVolumeClaim", claim.ClaimName))
+	section.AddLink("Claim Name", claim.ClaimName, gvkPath("v1", "PersistentVolumeClaim", claim.ClaimName))
 	section.AddText("ReadOnly", fmt.Sprintf("%t", claim.ReadOnly))
 }
 

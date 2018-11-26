@@ -19,7 +19,7 @@ func Test_summarizePersistentVolumeClaimVolumeSource(t *testing.T) {
 
 	expected := &content.Section{}
 	expected.AddText("Type", "PersistentVolumeClaim")
-	expected.AddLink("ClaimName", "my-claim", "/content/overview/config-and-storage/persistent-volume-claims/my-claim")
+	expected.AddLink("Claim Name", "my-claim", "/content/overview/config-and-storage/persistent-volume-claims/my-claim")
 	expected.AddText("ReadOnly", "false")
 
 	assert.Equal(t, expected, section)
