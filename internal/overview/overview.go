@@ -70,8 +70,8 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string, logger
 	cache := NewInformerCache(stopCh, dynamicClient, rm, opts...)
 
 	var pathFilters []pathFilter
-	pathFilters = append(pathFilters, rootDescriber.PathFilters()...)
-	pathFilters = append(pathFilters, eventsDescriber.PathFilters()...)
+	pathFilters = append(pathFilters, rootDescriber.PathFilters(namespace)...)
+	pathFilters = append(pathFilters, eventsDescriber.PathFilters(namespace)...)
 
 	g := newGenerator(cache, pathFilters, client)
 

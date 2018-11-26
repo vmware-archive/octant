@@ -45,10 +45,12 @@ func NewResource(options ResourceOptions) *Resource {
 }
 
 func (r *Resource) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
-	return r.List().Describe(ctx, prefix, namespace, clusterClient, options)
+	return r.List(namespace).Describe(ctx, prefix, namespace, clusterClient, options)
 }
 
-func (r *Resource) List() *ListDescriber {
+func (r *Resource) List(namespace string) *ListDescriber {
+	emptyMessage := fmt.Sprintf("Namespace %s does not have any %s",
+		namespace, r.Titles.List)
 	return NewListDescriber(
 		r.Path,
 		r.Titles.List,
@@ -59,7 +61,7 @@ func (r *Resource) List() *ListDescriber {
 		func() interface{} {
 			return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
 		},
-		summaryFunc(r.Titles.List, r.Transforms),
+		summaryFunc(r.Titles.List, emptyMessage, r.Transforms),
 	)
 }
 
@@ -75,9 +77,9 @@ func (r *Resource) Object() *ObjectDescriber {
 	)
 }
 
-func (r *Resource) PathFilters() []pathFilter {
+func (r *Resource) PathFilters(namespace string) []pathFilter {
 	filters := []pathFilter{
-		*newPathFilter(r.Path, r.List()),
+		*newPathFilter(r.Path, r.List(namespace)),
 		*newPathFilter(path.Join(r.Path, "(?P<name>.*?)"), r.Object()),
 	}
 
@@ -104,10 +106,10 @@ func buildTransforms(transforms map[string]lookupFunc) map[string]lookupFunc {
 }
 
 // summaryFunc creates an ObjectTransformFunc given a title and a lookup.
-func summaryFunc(title string, m map[string]lookupFunc) ObjectTransformFunc {
+func summaryFunc(title, emptyMessage string, m map[string]lookupFunc) ObjectTransformFunc {
 	return func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error {
 		return func(tbl *metav1beta1.Table) error {
-			contentTable, err := printContentTable(title, namespace, prefix, tbl, m)
+			contentTable, err := printContentTable(title, namespace, prefix, emptyMessage, tbl, m)
 			if err != nil {
 				return err
 			}

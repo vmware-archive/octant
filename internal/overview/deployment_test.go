@@ -207,7 +207,7 @@ func TestDeploymentReplicaSets(t *testing.T) {
 		tableCol("Labels"),
 	}
 
-	newReplicaSetTable := content.NewTable("New Replica Set")
+	newReplicaSetTable := content.NewTable("New Replica Set", "This Deployment does not have a current Replica")
 	newReplicaSetTable.Columns = replicaSetColumns
 
 	newReplicaSetTable.AddRow(
@@ -224,7 +224,7 @@ func TestDeploymentReplicaSets(t *testing.T) {
 		},
 	)
 
-	oldReplicaSetsTable := content.NewTable("Old Replica Sets")
+	oldReplicaSetsTable := content.NewTable("Old Replica Sets", "This Deployment does not have any old Replicas")
 	oldReplicaSetsTable.Columns = replicaSetColumns
 
 	expected := []content.Content{

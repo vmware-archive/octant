@@ -51,6 +51,7 @@ func (pc *PodList) Content(ctx context.Context, object runtime.Object, c Cache) 
 		"Pods",
 		"ns",
 		"prefix",
+		"No pods were found",
 		podTransforms,
 		list,
 		&contents,
@@ -104,7 +105,7 @@ func (pc *PodCondition) Content(ctx context.Context, object runtime.Object, c Ca
 
 	conditions := pod.Status.Conditions
 
-	table := content.NewTable("Conditions")
+	table := content.NewTable("Conditions", "No conditions")
 	table.Columns = []content.TableColumn{
 		tableCol("Type"),
 		tableCol("Status"),

@@ -107,7 +107,7 @@ func (js *ServiceEndpoints) Content(ctx context.Context, object runtime.Object, 
 		return nil, err
 	}
 
-	table := content.NewTable("Endpoints")
+	table := content.NewTable("Endpoints", "This service does not have any endpoints")
 	for _, name := range serviceEndpointsColumns {
 		table.Columns = append(table.Columns, tableCol(name))
 	}

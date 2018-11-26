@@ -70,10 +70,10 @@ func TestCronJobJobs(t *testing.T) {
 	jobColumns := tableCols("Name", "Desired", "Successful", "Age", "Containers",
 		"Images", "Selector", "Labels")
 
-	activeTable := content.NewTable("Active Jobs")
+	activeTable := content.NewTable("Active Jobs", "No active jobs")
 	activeTable.Columns = jobColumns
 
-	inactiveTable := content.NewTable("Inactive Jobs")
+	inactiveTable := content.NewTable("Inactive Jobs", "No inactive jobs")
 	inactiveTable.Columns = jobColumns
 	inactiveTable.AddRow(content.TableRow{
 		"Age":        content.NewStringText("1d"),
