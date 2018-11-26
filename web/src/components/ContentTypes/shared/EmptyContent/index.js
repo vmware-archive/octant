@@ -1,10 +1,11 @@
-import React from 'react'
-import './styles.scss'
+import './styles.scss';
 
-export default function ({ title }) {
+import React from 'react';
+
+export default function ({ emptyContent }) {
   return (
     <div className='content-empty'>
-      This namespace does not have any {title}.
+      {emptyContent}
     </div>
   )
 }
