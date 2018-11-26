@@ -31,21 +31,27 @@ const (
 
 // Run runs the dashboard.
 func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Logger, telemetryClient telemetry.Interface) error {
-	logger.Debugf("initial namespace for dashboard is %s", namespace)
-
+	logger.Debugf("Loading configuration: %v", kubeconfig)
 	clusterClient, err := cluster.FromKubeconfig(kubeconfig)
 	if err != nil {
 		return errors.Wrap(err, "failed to init cluster client")
 	}
 
-	moduleManager, err := module.NewManager(clusterClient, namespace, logger)
-	if err != nil {
-		return errors.Wrap(err, "create module manager")
-	}
-
 	nsClient, err := clusterClient.NamespaceClient()
 	if err != nil {
 		return errors.Wrap(err, "failed to create namespace client")
+	}
+
+	// If not overridden, use initial namespace from current context in KUBECONFIG
+	if namespace == "" {
+		namespace = nsClient.InitialNamespace()
+	}
+
+	logger.Debugf("initial namespace for dashboard is %s", namespace)
+
+	moduleManager, err := module.NewManager(clusterClient, namespace, logger)
+	if err != nil {
+		return errors.Wrap(err, "create module manager")
 	}
 
 	listener, err := buildListener()

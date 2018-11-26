@@ -101,16 +101,6 @@ func (co *ClusterOverview) Handler(prefix string) http.Handler {
 	return newHandler(prefix, co.generator, stream, co.logger)
 }
 
-// Namespaces returns a list of namespace names for a cluster.
-func (co *ClusterOverview) Namespaces() ([]string, error) {
-	nsClient, err := co.client.NamespaceClient()
-	if err != nil {
-		return nil, err
-	}
-
-	return nsClient.Names()
-}
-
 // Navigation returns navigation entries for overview.
 func (co *ClusterOverview) Navigation(root string) (*hcli.Navigation, error) {
 	return navigationEntries(root)
