@@ -68,3 +68,7 @@ required = [
 [[constraint]]
   name = "go.uber.org/zap"
   version = "1.9.1"
+
+[[override]]
+  name = "github.com/Azure/go-autorest"
+  version = "10.15.5"
