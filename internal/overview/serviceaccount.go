@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/apis/core"
 )
@@ -16,7 +17,7 @@ type ServiceAccountSummary struct{}
 
 var _ View = (*ServiceAccountSummary)(nil)
 
-func NewServiceAccountSummary() *ServiceAccountSummary {
+func NewServiceAccountSummary(prefix, namespace string, c clock.Clock) View {
 	return &ServiceAccountSummary{}
 }
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/rbac"
 )
 
@@ -14,7 +15,7 @@ type RoleBindingSummary struct{}
 
 var _ View = (*RoleBindingSummary)(nil)
 
-func NewRoleBindingSummary() *RoleBindingSummary {
+func NewRoleBindingSummary(prefix, namespace string, c clock.Clock) View {
 	return &RoleBindingSummary{}
 }
 
@@ -44,7 +45,7 @@ type RoleBindingSubjects struct{}
 
 var _ View = (*RoleBindingSubjects)(nil)
 
-func NewRoleBindingSubjects() *RoleBindingSubjects {
+func NewRoleBindingSubjects(prefix, namespace string, c clock.Clock) View {
 	return &RoleBindingSubjects{}
 }
 

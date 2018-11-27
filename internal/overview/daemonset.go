@@ -6,6 +6,7 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 )
 
@@ -13,7 +14,7 @@ type DaemonSetSummary struct{}
 
 var _ View = (*DaemonSetSummary)(nil)
 
-func NewDaemonSetSummary() *DaemonSetSummary {
+func NewDaemonSetSummary(prefix, namespace string, c clock.Clock) View {
 	return &DaemonSetSummary{}
 }
 

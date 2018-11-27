@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/core"
@@ -18,11 +19,11 @@ import (
 )
 
 func TestPodList_InvalidObject(t *testing.T) {
-	assertViewInvalidObject(t, NewPodList())
+	assertViewInvalidObject(t, NewPodList("prefix", "ns", clock.NewFakeClock(time.Now())))
 }
 
 func TestPodList(t *testing.T) {
-	pl := NewPodList()
+	pl := NewPodList("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	cache := NewMemoryCache()
 
@@ -72,11 +73,11 @@ func TestPodList(t *testing.T) {
 }
 
 func TestPodCondition_InvalidObject(t *testing.T) {
-	assertViewInvalidObject(t, NewPodCondition())
+	assertViewInvalidObject(t, NewPodCondition("prefix", "ns", clock.NewFakeClock(time.Now())))
 }
 
 func TestPodCondition(t *testing.T) {
-	pc := NewPodCondition()
+	pc := NewPodCondition("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	lastProbeTime := metav1.Time{
 		Time: time.Unix(1539603521, 0),

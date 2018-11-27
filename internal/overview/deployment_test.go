@@ -18,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/kubernetes/pkg/apis/batch"
@@ -26,17 +27,11 @@ import (
 )
 
 func TestDeploymentSummary_InvalidObject(t *testing.T) {
-	ds := NewDeploymentSummary()
-	ctx := context.Background()
-
-	object := &unstructured.Unstructured{}
-
-	_, err := ds.Content(ctx, object, nil)
-	require.Error(t, err)
+	assertViewInvalidObject(t, NewDeploymentSummary("prefix", "ns", clock.NewFakeClock(time.Now())))
 }
 
 func TestDeploymentSummary(t *testing.T) {
-	ds := NewDeploymentSummary()
+	ds := NewDeploymentSummary("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	ctx := context.Background()
 
@@ -118,7 +113,7 @@ func TestDeploymentSummary(t *testing.T) {
 }
 
 func TestDeploymentReplicaSets(t *testing.T) {
-	drs := NewDeploymentReplicaSets()
+	drs := NewDeploymentReplicaSets("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	ctx := context.Background()
 

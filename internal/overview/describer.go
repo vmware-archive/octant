@@ -116,8 +116,13 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 	}
 
 	return ContentResponse{
-		Contents: contents,
-		Title:    d.title,
+		Views: map[string]Content{
+			"list": Content{
+				Contents: contents,
+				Title:    "",
+			},
+		},
+		DefaultView: "list",
 	}, nil
 }
 
@@ -130,22 +135,21 @@ func (d *ListDescriber) PathFilters(namespace string) []pathFilter {
 type ObjectDescriber struct {
 	*baseDescriber
 
-	path                string
-	baseTitle           string
-	objectType          func() interface{}
-	loaderFunc          LoaderFunc
-	objectTransformFunc ObjectTransformFunc
-	views               []View
+	path       string
+	baseTitle  string
+	objectType func() interface{}
+	loaderFunc LoaderFunc
+	sections   map[string]ContentSection
 }
 
-func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType func() interface{}, views []View) *ObjectDescriber {
+func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType func() interface{}, sections map[string]ContentSection) *ObjectDescriber {
 	return &ObjectDescriber{
 		path:          p,
 		baseTitle:     baseTitle,
 		baseDescriber: newBaseDescriber(),
 		loaderFunc:    loaderFunc,
 		objectType:    objectType,
-		views:         views,
+		sections:      sections,
 	}
 }
 
@@ -154,8 +158,6 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 	if err != nil {
 		return emptyContentResponse, err
 	}
-
-	var contents []content.Content
 
 	if len(objects) != 1 {
 		return emptyContentResponse, errors.Errorf("expected exactly one object")
@@ -189,26 +191,37 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 			item)
 	}
 
-	for _, v := range d.views {
-		viewContent, err := v.Content(ctx, newObject, options.Cache)
-		if err != nil {
-			return emptyContentResponse, err
+	cr := ContentResponse{
+		Views: make(map[string]Content),
+	}
+
+	cl := &clock.RealClock{}
+
+	for name, section := range d.sections {
+		var contents []content.Content
+		for _, viewFactory := range section.Views {
+			view := viewFactory(prefix, namespace, cl)
+			viewContent, err := view.Content(ctx, newObject, options.Cache)
+			if err != nil {
+				return emptyContentResponse, err
+			}
+
+			contents = append(contents, viewContent...)
 		}
 
-		contents = append(contents, viewContent...)
+		cr.Views[name] = Content{
+			Contents: contents,
+			Title:    title,
+		}
+
+		// TODO: allow setting of default view. This will work until there are
+		// multiple content sections defined.
+		if cr.DefaultView == "" {
+			cr.DefaultView = name
+		}
 	}
 
-	eventsTable, err := eventsForObject(object, options.Cache, prefix, namespace, d.clock())
-	if err != nil {
-		return emptyContentResponse, err
-	}
-
-	contents = append(contents, eventsTable)
-
-	return ContentResponse{
-		Contents: contents,
-		Title:    title,
-	}, nil
+	return cr, nil
 }
 
 func (d *ObjectDescriber) PathFilters(namespace string) []pathFilter {
@@ -331,23 +344,29 @@ func NewSectionDescriber(p, title string, describers ...Describer) *SectionDescr
 func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
 	var contents []content.Content
 
+	cr := ContentResponse{
+		Views:       make(map[string]Content),
+		DefaultView: "section",
+	}
+
 	for _, child := range d.describers {
 		cResponse, err := child.Describe(ctx, prefix, namespace, clusterClient, options)
 		if err != nil {
 			return emptyContentResponse, err
 		}
 
-		for _, childContent := range cResponse.Contents {
-			if !childContent.IsEmpty() {
-				contents = append(contents, childContent)
+		for _, views := range cResponse.Views {
+			for _, childContent := range views.Contents {
+				if !childContent.IsEmpty() {
+					contents = append(contents, childContent)
+				}
 			}
 		}
 	}
 
-	return ContentResponse{
-		Contents: contents,
-		Title:    d.title,
-	}, nil
+	cr.Views["section"] = Content{Contents: contents, Title: d.title}
+
+	return cr, nil
 }
 
 func (d *SectionDescriber) PathFilters(namespace string) []pathFilter {

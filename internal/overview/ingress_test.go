@@ -3,22 +3,24 @@ package overview
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/util/clock"
 )
 
 func TestIngressSummary_InvalidObject(t *testing.T) {
-	assertViewInvalidObject(t, NewIngressSummary())
+	assertViewInvalidObject(t, NewIngressSummary("prefix", "ns", clock.NewFakeClock(time.Now())))
 }
 
 func TestIngressDetails_InvalidObject(t *testing.T) {
-	assertViewInvalidObject(t, NewIngressDetails())
+	assertViewInvalidObject(t, NewIngressDetails("prefix", "ns", clock.NewFakeClock(time.Now())))
 }
 
 func TestIngressDetails(t *testing.T) {
-	v := NewIngressDetails()
+	v := NewIngressDetails("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	cache := NewMemoryCache()
 

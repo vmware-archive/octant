@@ -8,7 +8,11 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 )
+
+// ViewFactory is a function which creates a view.
+type ViewFactory func(prefix, namespace string, c clock.Clock) View
 
 // View is a view that can be embedded in the resource overview.
 type View interface {

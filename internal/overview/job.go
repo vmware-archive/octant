@@ -6,6 +6,7 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/batch"
 )
 
@@ -13,7 +14,7 @@ type JobSummary struct{}
 
 var _ View = (*JobSummary)(nil)
 
-func NewJobSummary() *JobSummary {
+func NewJobSummary(prefix, namespace string, c clock.Clock) View {
 	return &JobSummary{}
 }
 

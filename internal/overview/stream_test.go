@@ -23,7 +23,9 @@ func Test_contentStreamer(t *testing.T) {
 	fn := func(ctx context.Context, w http.ResponseWriter, ch chan []byte) {
 		msg := <-ch
 
-		assert.Equal(t, `{"contents":[{"type":"stubbed"}],"title":"title"}`, string(msg))
+		assert.Equal(t,
+			`{"views":{"main":{"contents":[{"type":"stubbed"}],"title":"main title"}}}`,
+			string(msg))
 		rcv <- true
 	}
 

@@ -3,18 +3,20 @@ package overview
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/util/clock"
 )
 
 func TestSecretData_InvalidObject(t *testing.T) {
-	assertViewInvalidObject(t, NewSecretData())
+	assertViewInvalidObject(t, NewSecretData("prefix", "ns", clock.NewFakeClock(time.Now())))
 }
 
 func TestSecretData(t *testing.T) {
-	v := NewSecretData()
+	v := NewSecretData("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	ctx := context.Background()
 	cache := NewMemoryCache()

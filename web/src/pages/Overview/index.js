@@ -1,15 +1,17 @@
-import React, { Component } from 'react'
-import cx from 'classnames'
-import Loading from 'components/Icons/Loading'
-import Title from 'components/Title'
-import { getAPIBase, getContentsUrl, POLL_WAIT } from 'api'
-import Content from './components/Content'
-import './styles.scss'
+import './styles.scss';
+
+import { getAPIBase, getContentsUrl, POLL_WAIT } from 'api';
+import cx from 'classnames';
+import Loading from 'components/Icons/Loading';
+import Title from 'components/Title';
+import React, { Component } from 'react';
+
+import Content from './components/Content';
 
 export default class Overview extends Component {
   constructor (props) {
     super(props)
-    this.state = { contents: null }
+    this.state = { data: null }
   }
 
   componentDidMount () {
@@ -34,7 +36,7 @@ export default class Overview extends Component {
     if (!path || !namespace) return
 
     this.props.setIsLoading(true)
-    this.setState({ contents: null })
+    this.setState({ data: null })
 
     const url = getContentsUrl(path, namespace, POLL_WAIT)
 
@@ -42,13 +44,13 @@ export default class Overview extends Component {
 
     this.source.addEventListener('message', (e) => {
       const data = JSON.parse(e.data)
-      this.setState({ contents: data.contents })
+      this.setState({ data })
       this.props.setIsLoading(false)
     })
 
     // if EventSource error clear close
     this.source.addEventListener('error', () => {
-      this.setState({ contents: null })
+      this.setState({ data: null })
       this.props.setIsLoading(false)
       this.props.setHasError(true)
 
@@ -58,8 +60,9 @@ export default class Overview extends Component {
   }
 
   render () {
-    const { title, isLoading, hasError } = this.props
-    const { contents } = this.state
+    const { isLoading, hasError } = this.props
+    const { data } = this.state
+    let title
     let mainContent
     if (isLoading) {
       mainContent = (
@@ -67,7 +70,9 @@ export default class Overview extends Component {
           <Loading />
         </div>
       )
-    } else if (contents && contents.length) {
+    } else if (data) {
+      const contents = data.views[data.default_view].contents
+      title = data.views[data.default_view].title
       mainContent = contents.map((content, i) => (
         <div key={i} className='component--primary'>
           <Content content={content} />

@@ -6,12 +6,57 @@ import (
 	"sort"
 	"time"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/kubernetes/pkg/apis/core"
+
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/content"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
 )
+
+type EventList struct {
+	prefix    string
+	namespace string
+	clock     clock.Clock
+}
+
+func NewEventList(prefix, namespace string, cl clock.Clock) View {
+	return &EventList{
+		prefix:    prefix,
+		namespace: namespace,
+		clock:     cl,
+	}
+}
+
+func (el *EventList) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(object)
+	if err != nil {
+		return nil, err
+	}
+	eventObjects, err := c.Events(&unstructured.Unstructured{Object: m})
+	if err != nil {
+		return nil, err
+	}
+
+	var events []*core.Event
+	for _, obj := range eventObjects {
+		event := &core.Event{}
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.Object, event)
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, event)
+	}
+
+	table, err := printEvents(el.prefix, el.namespace, object, events, el.clock)
+	if err != nil {
+		return nil, err
+	}
+
+	return []content.Content{&table}, nil
+}
 
 // EventsDescriber creates content for a list of events.
 type EventsDescriber struct {
@@ -68,8 +113,10 @@ func (d *EventsDescriber) Describe(ctx context.Context, prefix, namespace string
 	contents = append(contents, &t)
 
 	return ContentResponse{
-		Contents: contents,
-		Title:    d.title,
+		Views: map[string]Content{
+			"events": Content{Contents: contents, Title: "Events"},
+		},
+		DefaultView: "events",
 	}, nil
 }
 
