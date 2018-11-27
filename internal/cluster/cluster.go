@@ -3,6 +3,7 @@ package cluster
 import (
 	"fmt"
 
+	"github.com/pkg/errors"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
@@ -23,17 +24,11 @@ type ClientInterface interface {
 
 // Cluster is a client for cluster operations
 type Cluster struct {
-	restClient *rest.Config
+	clientConfig clientcmd.ClientConfig
+	restClient   *rest.Config
 }
 
 var _ ClientInterface = (*Cluster)(nil)
-
-// New creates an instance of Cluster.
-func New(restClient *rest.Config) *Cluster {
-	return &Cluster{
-		restClient: restClient,
-	}
-}
 
 // NamespaceClient returns a namespace client.
 func (c *Cluster) NamespaceClient() (NamespaceInterface, error) {
@@ -42,7 +37,11 @@ func (c *Cluster) NamespaceClient() (NamespaceInterface, error) {
 		return nil, err
 	}
 
-	return newNamespaceClient(dc), nil
+	ns, _, err := c.clientConfig.Namespace()
+	if err != nil {
+		return nil, errors.Wrap(err, "resolving initial namespace")
+	}
+	return newNamespaceClient(dc, ns), nil
 }
 
 // DynamicClient returns a dynamic client.
@@ -68,19 +67,20 @@ func (c *Cluster) Version() (string, error) {
 	return fmt.Sprint(serverVersion), nil
 }
 
-// NamespaceInterface is an interface for querying namespace details.
-type NamespaceInterface interface {
-	Names() ([]string, error)
-}
-
 // FromKubeconfig creates a Cluster from a kubeconfig.
 func FromKubeconfig(kubeconfig string) (*Cluster, error) {
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	rules := clientcmd.NewDefaultClientConfigLoadingRules()
+	if kubeconfig != "" {
+		rules.ExplicitPath = kubeconfig
+	}
+	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, &clientcmd.ConfigOverrides{})
+	config, err := cc.ClientConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	clusterClient := New(config)
-
-	return clusterClient, nil
+	return &Cluster{
+		clientConfig: cc,
+		restClient:   config,
+	}, nil
 }

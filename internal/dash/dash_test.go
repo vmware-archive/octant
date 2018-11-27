@@ -62,7 +62,7 @@ func Test_dash_Run(t *testing.T) {
 				}), nil
 			}
 
-			nsClient := fake.NewNamespaceClient()
+			nsClient := fake.NewNamespaceClient([]string{"default"}, nil, "default")
 
 			o := fake.NewSimpleClusterOverview()
 			manager := modulefake.NewStubManager("default", []module.Module{o})
@@ -131,7 +131,7 @@ func Test_dash_routes(t *testing.T) {
 			listener, err := net.Listen("tcp", "127.0.0.1:0")
 			require.NoError(t, err)
 
-			nsClient := fake.NewNamespaceClient()
+			nsClient := fake.NewNamespaceClient([]string{"default"}, nil, "default")
 
 			o := fake.NewSimpleClusterOverview()
 			manager := modulefake.NewStubManager("default", []module.Module{o})

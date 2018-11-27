@@ -26,11 +26,14 @@ func newNamespaces(nsClient cluster.NamespaceInterface, logger log.Logger) *name
 	}
 }
 
+// ServeHTTP implements http.Handler and returns a list of namespace names for a cluster.
 func (n *namespaces) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	names, err := n.nsClient.Names()
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
+		// Fallback to initial namespace
+		initialNamespace := n.nsClient.InitialNamespace()
+		n.logger.Debugf("could not list namespaces, falling back to context namespace: %v (%v)", initialNamespace, err)
+		names = []string{initialNamespace}
 	}
 
 	nr := &namespacesResponse{

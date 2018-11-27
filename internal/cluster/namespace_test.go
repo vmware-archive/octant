@@ -20,13 +20,19 @@ func Test_namespaceClient_Names(t *testing.T) {
 		newUnstructured("v1", "Namespace", "", "app-1"),
 	)
 
-	nc := newNamespaceClient(dc)
+	nc := newNamespaceClient(dc, "default")
 
 	got, err := nc.Names()
 	require.NoError(t, err)
 
 	expected := []string{"default", "app-1"}
 	assert.Equal(t, expected, got)
+}
+
+func Test_namespaceClient_InitialNamespace(t *testing.T) {
+	expected := "inital-namespace"
+	nc := newNamespaceClient(nil, expected)
+	assert.Equal(t, expected, nc.InitialNamespace())
 }
 
 func newUnstructured(apiVersion, kind, namespace, name string) *unstructured.Unstructured {

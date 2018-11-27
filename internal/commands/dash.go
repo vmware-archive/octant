@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"time"
 
 	"github.com/heptio/developer-dash/internal/dash"
@@ -14,6 +13,7 @@ import (
 	"github.com/heptio/go-telemetry/pkg/telemetry"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 func newDashCmd() *cobra.Command {
@@ -49,8 +49,6 @@ func newDashCmd() *cobra.Command {
 			telemetryClient := newTelemetry(logger)
 			startTime := time.Now()
 
-			kubeconfig = initKubeconfig(logger, kubeconfig)
-
 			go func() {
 				if err := dash.Run(ctx, namespace, uiURL, kubeconfig, logger, telemetryClient); err != nil {
 					logger.Errorf("running dashboard: %v", err)
@@ -81,12 +79,10 @@ func newDashCmd() *cobra.Command {
 		},
 	}
 
-	dashCmd.Flags().StringVarP(&namespace, "namespace", "n", "default", "Kubernetes namespace")
+	dashCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "Initial namespace")
 	dashCmd.Flags().StringVar(&uiURL, "ui-url", "", "UI URL")
 
-	if home := homeDir(); home != "" {
-		kubeconfig = filepath.Join(home, ".kube", "config")
-	}
+	kubeconfig = clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
 
 	dashCmd.Flags().StringVar(&kubeconfig, "kubeconfig", kubeconfig, "absolute path to kubeconfig file")
 
@@ -110,22 +106,4 @@ func newTelemetry(logger log.Logger) telemetry.Interface {
 	}
 
 	return telemetryClient
-}
-
-func initKubeconfig(logger log.Logger, kubeconfig string) string {
-	envKubeConfig := os.Getenv("KUBECONFIG")
-	if envKubeConfig != "" {
-		logger.Infof("setting KUBECONFIG to %q from environment", envKubeConfig)
-		kubeconfig = envKubeConfig
-	}
-
-	return kubeconfig
-}
-
-func homeDir() string {
-	if h := os.Getenv("HOME"); h != "" {
-		return h
-	}
-
-	return os.Getenv("USERPROFILE")
 }

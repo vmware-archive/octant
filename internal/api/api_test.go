@@ -69,7 +69,7 @@ func TestAPI_routes(t *testing.T) {
 
 			manager := modulefake.NewStubManager("default", []module.Module{m})
 
-			nsClient := fake.NewNamespaceClient()
+			nsClient := fake.NewNamespaceClient([]string{"default"}, nil, "default")
 			srv := New("/", nsClient, manager, log.NopLogger(), telemetryClient)
 
 			err := srv.RegisterModule(m)

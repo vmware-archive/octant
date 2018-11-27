@@ -21,12 +21,8 @@ func TestClusterOverview(t *testing.T) {
 
 	o := NewClusterOverview(clusterClient, "default", log.NopLogger())
 
-	namespaces, err := o.Namespaces()
-	require.NoError(t, err)
-
 	assert.Equal(t, "overview", o.Name())
 	assert.Equal(t, "/overview", o.ContentPath())
-	assert.Equal(t, []string{"default"}, namespaces)
 }
 
 func TestClusterOverview_SetNamespace(t *testing.T) {

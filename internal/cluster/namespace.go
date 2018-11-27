@@ -9,20 +9,28 @@ import (
 	"k8s.io/client-go/dynamic"
 )
 
+// NamespaceInterface is an interface for querying namespace details.
+type NamespaceInterface interface {
+	Names() ([]string, error)
+	InitialNamespace() string
+}
+
 type namespaceClient struct {
-	dynamicClient dynamic.Interface
+	dynamicClient    dynamic.Interface
+	initialNamespace string
 }
 
 var _ NamespaceInterface = (*namespaceClient)(nil)
 
-func newNamespaceClient(dynamicClient dynamic.Interface) *namespaceClient {
+func newNamespaceClient(dynamicClient dynamic.Interface, initialNamespace string) *namespaceClient {
 	return &namespaceClient{
-		dynamicClient: dynamicClient,
+		dynamicClient:    dynamicClient,
+		initialNamespace: initialNamespace,
 	}
 }
 
 func (n *namespaceClient) Names() ([]string, error) {
-	namespaces, err := Namespaces(n.dynamicClient)
+	namespaces, err := namespaces(n.dynamicClient)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +44,7 @@ func (n *namespaceClient) Names() ([]string, error) {
 }
 
 // Namespaces returns available namespaces.
-func Namespaces(dc dynamic.Interface) ([]corev1.Namespace, error) {
+func namespaces(dc dynamic.Interface) ([]corev1.Namespace, error) {
 	res := schema.GroupVersionResource{
 		Version:  "v1",
 		Resource: "namespaces",
@@ -56,4 +64,8 @@ func Namespaces(dc dynamic.Interface) ([]corev1.Namespace, error) {
 	}
 
 	return nsList.Items, nil
+}
+
+func (n *namespaceClient) InitialNamespace() string {
+	return n.initialNamespace
 }
