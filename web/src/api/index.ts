@@ -7,26 +7,26 @@ declare global {
 
 const { fetch } = window
 
-export function getAPIBase () {
+export function getAPIBase() {
   return window.API_BASE || process.env.API_BASE
 }
 
 export const POLL_WAIT = 5
 
-interface buildRequestParams {
+interface BuildRequestParams {
   endpoint: string;
   method?: string;
-  data?: Object;
+  data?: object;
 }
 
-async function buildRequest (params: buildRequestParams) {
+async function buildRequest(params: BuildRequestParams) {
   const apiBase = getAPIBase()
 
   const { endpoint, method, data } = params
   if (!endpoint) throw new Error('endpoint not specified in buildRequest')
   const headers = {
     Accept: 'application/json',
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   }
 
   if (apiBase) {
@@ -36,7 +36,7 @@ async function buildRequest (params: buildRequestParams) {
       body?: string;
     } = {
       headers,
-      method: method || 'GET'
+      method: method || 'GET',
     }
     if (data) fetchOptions.body = JSON.stringify(data)
     try {
@@ -54,21 +54,21 @@ async function buildRequest (params: buildRequestParams) {
   return Promise.resolve(mocks[endpoint])
 }
 
-export function getNavigation () {
+export function getNavigation() {
   const params = {
-    endpoint: 'api/v1/navigation'
+    endpoint: 'api/v1/navigation',
   }
   return buildRequest(params)
 }
 
-export function getNamespaces () {
+export function getNamespaces() {
   const params = {
-    endpoint: 'api/v1/namespaces'
+    endpoint: 'api/v1/namespaces',
   }
   return buildRequest(params)
 }
 
-export function getContentsUrl (path: string, namespace: string, poll?: string) {
+export function getContentsUrl(path: string, namespace: string, poll?: string) {
   if (!path || path === '/') return null
   let query = ''
   if (namespace) query = `?${queryString.stringify({ namespace })}`
@@ -78,19 +78,19 @@ export function getContentsUrl (path: string, namespace: string, poll?: string) 
   return `api/v1${path}${query}`
 }
 
-export function getContents (path: string, namespace: string) {
+export function getContents(path: string, namespace: string) {
   const endpoint = getContentsUrl(path, namespace)
   return buildRequest({ endpoint })
 }
 
-export function setNamespace (namespace: string) {
+export function setNamespace(namespace: string) {
   return buildRequest({
     endpoint: 'api/v1/namespace',
     method: 'POST',
-    data: { namespace }
+    data: { namespace },
   })
 }
 
-export function getNamespace () {
+export function getNamespace() {
   return buildRequest({ endpoint: 'api/v1/namespace' })
 }

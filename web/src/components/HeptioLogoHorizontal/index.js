@@ -2,7 +2,11 @@ import React from 'react'
 
 export default function HeptioLogoHorizontal ({ className }) {
   return (
-    <svg className={className} viewBox='0 0 680 170' xmlns='http://www.w3.org/2000/svg'>
+    <svg
+      className={className}
+      viewBox='0 0 680 170'
+      xmlns='http://www.w3.org/2000/svg'
+    >
       <defs>
         <path id='a' d='M340 .3H0v133.2h680V.3z' />
       </defs>

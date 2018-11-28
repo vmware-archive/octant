@@ -1,8 +1,8 @@
 interface NavLink {
-    path: string;
+  path: string;
 }
 
 interface NamespaceOption {
-    label: string;
-    value: string;
+  label: string;
+  value: string;
 }

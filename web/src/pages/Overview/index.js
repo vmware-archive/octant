@@ -1,12 +1,10 @@
-import './styles.scss';
-
-import { getAPIBase, getContentsUrl, POLL_WAIT } from 'api';
-import cx from 'classnames';
-import Loading from 'components/Icons/Loading';
-import Title from 'components/Title';
-import React, { Component } from 'react';
-
-import Content from './components/Content';
+import './styles.scss'
+import { getAPIBase, getContentsUrl, POLL_WAIT } from 'api'
+import cx from 'classnames'
+import Loading from 'components/Icons/Loading'
+import Title from 'components/Title'
+import React, { Component } from 'react'
+import Content from './components/Content'
 
 export default class Overview extends Component {
   constructor (props) {
@@ -71,8 +69,10 @@ export default class Overview extends Component {
         </div>
       )
     } else if (data) {
-      const contents = data.views[data.default_view].contents
-      title = data.views[data.default_view].title
+      const { views, default_view: defaultView } = data
+      const view = views[defaultView]
+      const { contents } = view
+      title = view.title // eslint-disable-line prefer-destructuring
       mainContent = contents.map((content, i) => (
         <div key={i} className='component--primary'>
           <Content content={content} />

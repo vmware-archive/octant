@@ -12,15 +12,13 @@ interface InitialState {
   namespaceOptions?: NamespaceOption[];
 }
 
-export default async function (currentPathname): Promise<InitialState> {
-  let navigation,
-    namespaces,
-    namespace
+export default async function(currentPathname): Promise<InitialState> {
+  let navigation, namespaces, namespace
   try {
     [navigation, namespaces, namespace] = await PromisePolyfill.all([
       getNavigation(),
       getNamespaces(),
-      getNamespace()
+      getNamespace(),
     ])
   } catch (e) {
     return { isLoading: false, hasError: true }
@@ -28,19 +26,19 @@ export default async function (currentPathname): Promise<InitialState> {
 
   const initialState: InitialState = {
     navigation,
-    currentNavLinkPath: getNavLinkPath(navigation, currentPathname)
+    currentNavLinkPath: getNavLinkPath(navigation, currentPathname),
   }
 
   if (namespaces && namespaces.namespaces && namespaces.namespaces.length) {
-    initialState.namespaceOptions = namespaces.namespaces.map(ns => ({
+    initialState.namespaceOptions = namespaces.namespaces.map((ns) => ({
       label: ns,
-      value: ns
+      value: ns,
     }))
   }
 
   if (namespace && initialState.namespaceOptions.length) {
     const option: NamespaceOption = _.find(initialState.namespaceOptions, {
-      value: namespace.namespace as string
+      value: namespace.namespace as string,
     })
     if (option) {
       initialState.namespaceOption = option
