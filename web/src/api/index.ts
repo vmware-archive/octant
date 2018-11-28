@@ -1,6 +1,10 @@
 import queryString from 'query-string'
 import mocks from './mock'
 
+declare global {
+  interface Window { API_BASE: string }
+}
+
 const { fetch } = window
 
 export function getAPIBase () {
@@ -9,7 +13,13 @@ export function getAPIBase () {
 
 export const POLL_WAIT = 5
 
-async function buildRequest (params) {
+interface buildRequestParams {
+  endpoint: string;
+  method?: string;
+  data?: Object;
+}
+
+async function buildRequest (params: buildRequestParams) {
   const apiBase = getAPIBase()
 
   const { endpoint, method, data } = params
@@ -20,7 +30,11 @@ async function buildRequest (params) {
   }
 
   if (apiBase) {
-    const fetchOptions = {
+    const fetchOptions: {
+      headers: HeadersInit;
+      method: string;
+      body?: string;
+    } = {
       headers,
       method: method || 'GET'
     }
@@ -54,7 +68,7 @@ export function getNamespaces () {
   return buildRequest(params)
 }
 
-export function getContentsUrl (path, namespace, poll) {
+export function getContentsUrl (path: string, namespace: string, poll?: string) {
   if (!path || path === '/') return null
   let query = ''
   if (namespace) query = `?${queryString.stringify({ namespace })}`
@@ -64,12 +78,12 @@ export function getContentsUrl (path, namespace, poll) {
   return `api/v1${path}${query}`
 }
 
-export function getContents (path, namespace) {
+export function getContents (path: string, namespace: string) {
   const endpoint = getContentsUrl(path, namespace)
   return buildRequest({ endpoint })
 }
 
-export function setNamespace (namespace) {
+export function setNamespace (namespace: string) {
   return buildRequest({
     endpoint: 'api/v1/namespace',
     method: 'POST',

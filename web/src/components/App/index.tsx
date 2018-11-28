@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import {
-  Switch, Route, withRouter, Redirect
+  Switch, Route, withRouter, Redirect, RouteComponentProps
 } from 'react-router-dom'
 import _ from 'lodash'
 import { setNamespace } from 'api'
@@ -10,24 +10,37 @@ import Navigation from '../Navigation'
 import getInitialState from './state/getInitialState'
 import './styles.scss'
 
-class App extends Component {
+
+interface AppState {
+  isLoading: boolean;
+  hasError: boolean;
+  navigation: { sections: NavLink[] };
+  currentNavLinkPath: NavLink[];
+  namespaceOption: NamespaceOption;
+  namespaceOptions: NamespaceOption[];
+  title: string;
+}
+
+class App extends Component<RouteComponentProps, AppState> {
   constructor (props) {
     super(props)
     this.state = {
+      title: '',
       isLoading: true, // to do the initial data fetch
       hasError: false,
-      navigation: [],
+      navigation: null,
       currentNavLinkPath: [],
-      namespaceOptions: [],
-      title: '',
-      namespaceOption: null
+      namespaceOption: null,
+      namespaceOptions: []
     }
   }
+
+  lastFetchedNamespace: string;
 
   async componentDidMount () {
     const { location } = this.props
     const initialState = await getInitialState(location.pathname)
-    this.setState(initialState)
+    this.setState(initialState as AppState)
   }
 
   onNamespaceChange = async (namespaceOption) => {
@@ -74,8 +87,10 @@ class App extends Component {
       currentNamespace = namespaceOption.value
     }
 
+    let navSections = null;
     let rootNavigationPath = '/content/overview/'
     if (navigation && navigation.sections) {
+      navSections = navigation.sections
       rootNavigationPath = navigation.sections[0].path
     }
 
@@ -85,7 +100,7 @@ class App extends Component {
         <div className='app-page'>
           <div className='app-nav'>
             <Navigation
-              navSections={navigation.sections}
+              navSections={navSections}
               currentNavLinkPath={currentNavLinkPath}
               onNavChange={linkPath => this.setState({ currentNavLinkPath: linkPath })
               }

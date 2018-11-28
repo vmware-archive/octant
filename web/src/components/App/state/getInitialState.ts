@@ -1,14 +1,23 @@
-import Promise from 'promise'
+import PromisePolyfill from 'promise'
 import _ from 'lodash'
 import { getNamespace, getNamespaces, getNavigation } from 'api'
 import getNavLinkPath from './getNavLinkPath'
 
-export default async function (currentPathname) {
+interface InitialState {
+  isLoading?: boolean;
+  hasError?: boolean;
+  navigation?: { sections: NavLink[] };
+  currentNavLinkPath?: NavLink[];
+  namespaceOption?: NamespaceOption;
+  namespaceOptions?: NamespaceOption[];
+}
+
+export default async function (currentPathname): Promise<InitialState> {
   let navigation,
     namespaces,
     namespace
   try {
-    [navigation, namespaces, namespace] = await Promise.all([
+    [navigation, namespaces, namespace] = await PromisePolyfill.all([
       getNavigation(),
       getNamespaces(),
       getNamespace()
@@ -17,7 +26,7 @@ export default async function (currentPathname) {
     return { isLoading: false, hasError: true }
   }
 
-  const initialState = {
+  const initialState: InitialState = {
     navigation,
     currentNavLinkPath: getNavLinkPath(navigation, currentPathname)
   }
@@ -30,8 +39,8 @@ export default async function (currentPathname) {
   }
 
   if (namespace && initialState.namespaceOptions.length) {
-    const option = _.find(initialState.namespaceOptions, {
-      value: namespace.namespace
+    const option: NamespaceOption = _.find(initialState.namespaceOptions, {
+      value: namespace.namespace as string
     })
     if (option) {
       initialState.namespaceOption = option

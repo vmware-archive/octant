@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "outDir": "",
+    "sourceMap": true,
+    "noImplicitAny": false,
+    "module": "esnext",
+    "target": "es5",
+    "jsx": "react",
+    "lib": ["esnext", "dom"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "moduleResolution": "node",
+    "baseUrl": "./src",
+    "typeRoots": [
+      "node_modules/@types",
+      "./src/types"
+    ]
+  },
+  "include": [
+    "./src/**/*"
+  ]
+}
