@@ -29,6 +29,11 @@ func TestAPI_routes(t *testing.T) {
 		expectedContent string
 	}{
 		{
+			path:         "/cluster-info",
+			method:       http.MethodGet,
+			expectedCode: http.StatusOK,
+		},
+		{
 			path:         "/namespaces",
 			method:       http.MethodGet,
 			expectedCode: http.StatusOK,
@@ -70,7 +75,8 @@ func TestAPI_routes(t *testing.T) {
 			manager := modulefake.NewStubManager("default", []module.Module{m})
 
 			nsClient := fake.NewNamespaceClient([]string{"default"}, nil, "default")
-			srv := New("/", nsClient, manager, log.NopLogger(), telemetryClient)
+			infoClient := fake.ClusterInfo{}
+			srv := New("/", nsClient, infoClient, manager, log.NopLogger(), telemetryClient)
 
 			err := srv.RegisterModule(m)
 			require.NoError(t, err)

@@ -51,6 +51,7 @@ func respondWithError(w http.ResponseWriter, code int, message string) error {
 // API is the API for the dashboard client
 type API struct {
 	nsClient        cluster.NamespaceInterface
+	infoClient      cluster.InfoInterface
 	moduleManager   module.ManagerInterface
 	sections        []*hcli.Navigation
 	prefix          string
@@ -72,10 +73,11 @@ func (a *API) telemetryMiddleware(next http.Handler) http.Handler {
 }
 
 // New creates an instance of API.
-func New(prefix string, nsClient cluster.NamespaceInterface, moduleManager module.ManagerInterface, logger log.Logger, telemetryClient telemetry.Interface) *API {
+func New(prefix string, nsClient cluster.NamespaceInterface, infoClient cluster.InfoInterface, moduleManager module.ManagerInterface, logger log.Logger, telemetryClient telemetry.Interface) *API {
 	return &API{
 		prefix:          prefix,
 		nsClient:        nsClient,
+		infoClient:      infoClient,
 		moduleManager:   moduleManager,
 		modules:         make(map[string]http.Handler),
 		logger:          logger,
@@ -98,6 +100,9 @@ func (a *API) Handler() *mux.Router {
 	namespaceUpdateService := newNamespace(a.moduleManager, a.logger)
 	s.HandleFunc("/namespace", namespaceUpdateService.update).Methods(http.MethodPost)
 	s.HandleFunc("/namespace", namespaceUpdateService.read).Methods(http.MethodGet)
+
+	infoService := newClusterInfo(a.infoClient, a.logger)
+	s.Handle("/cluster-info", infoService)
 
 	for p, h := range a.modules {
 		s.PathPrefix(p).Handler(h)
