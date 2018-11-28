@@ -11,6 +11,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/overview/printer"
+	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster"
@@ -56,21 +57,23 @@ func (pf *pathFilter) Fields(path string) map[string]string {
 var contentNotFound = errors.Errorf("content not found")
 
 type realGenerator struct {
-	cache         cache.Cache
-	queryer       queryer.Queryer // Queryer is used by the ResourceViewer and should not be filtered
-	pathFilters   []pathFilter
-	clusterClient cluster.ClientInterface
-	printer       printer.Printer
+	cache          cache.Cache
+	queryer        queryer.Queryer // Queryer is used by the ResourceViewer and should not be filtered
+	pathFilters    []pathFilter
+	clusterClient  cluster.ClientInterface
+	printer        printer.Printer
+	portForwardSvc portforward.PortForwardInterface
 
 	mu sync.Mutex
 }
 
 // GeneratorOptions are additional options to pass a generator
 type GeneratorOptions struct {
-	Selector labels.Selector
+	Selector       labels.Selector
+	PortForwardSvc portforward.PortForwardInterface
 }
 
-func newGenerator(cache cache.Cache, q queryer.Queryer, pathFilters []pathFilter, clusterClient cluster.ClientInterface) (*realGenerator, error) {
+func newGenerator(cache cache.Cache, q queryer.Queryer, pathFilters []pathFilter, clusterClient cluster.ClientInterface, portForwardSvc portforward.PortForwardInterface) (*realGenerator, error) {
 	p := printer.NewResource(cache)
 
 	if err := AddPrintHandlers(p); err != nil {
@@ -78,11 +81,12 @@ func newGenerator(cache cache.Cache, q queryer.Queryer, pathFilters []pathFilter
 	}
 
 	return &realGenerator{
-		cache:         cache,
-		queryer:       q,
-		pathFilters:   pathFilters,
-		clusterClient: clusterClient,
-		printer:       p,
+		cache:          cache,
+		queryer:        q,
+		pathFilters:    pathFilters,
+		clusterClient:  clusterClient,
+		portForwardSvc: portForwardSvc,
+		printer:        p,
 	}, nil
 }
 
@@ -97,11 +101,12 @@ func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace st
 
 		fields := pf.Fields(path)
 		options := DescriberOptions{
-			Cache:    g.cache,
-			Queryer:  g.queryer,
-			Fields:   fields,
-			Printer:  g.printer,
-			Selector: opts.Selector,
+			Cache:          g.cache,
+			Queryer:        g.queryer,
+			Fields:         fields,
+			Printer:        g.printer,
+			Selector:       opts.Selector,
+			PortForwardSvc: opts.PortForwardSvc,
 		}
 
 		cResponse, err := pf.describer.Describe(ctx, prefix, namespace, g.clusterClient, options)

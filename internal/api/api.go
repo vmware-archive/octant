@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"path"
@@ -54,6 +55,7 @@ func respondWithError(w http.ResponseWriter, code int, message string, logger lo
 
 // API is the API for the dashboard client
 type API struct {
+	ctx           context.Context
 	nsClient      cluster.NamespaceInterface
 	infoClient    cluster.InfoInterface
 	moduleManager module.ManagerInterface
@@ -71,8 +73,9 @@ func (a *API) telemetryMiddleware(next http.Handler) http.Handler {
 }
 
 // New creates an instance of API.
-func New(prefix string, nsClient cluster.NamespaceInterface, infoClient cluster.InfoInterface, moduleManager module.ManagerInterface, logger log.Logger) *API {
+func New(ctx context.Context, prefix string, nsClient cluster.NamespaceInterface, infoClient cluster.InfoInterface, moduleManager module.ManagerInterface, logger log.Logger) *API {
 	return &API{
+		ctx:           ctx,
 		prefix:        prefix,
 		nsClient:      nsClient,
 		infoClient:    infoClient,

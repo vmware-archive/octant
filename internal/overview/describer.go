@@ -7,6 +7,7 @@ import (
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/overview/logviewer"
 	"github.com/heptio/developer-dash/internal/overview/yamlviewer"
+	"github.com/heptio/developer-dash/internal/portforward"
 
 	"github.com/heptio/developer-dash/internal/queryer"
 
@@ -37,11 +38,12 @@ var DefaultLoader = func(cacheKey cache.Key) LoaderFunc {
 
 // DescriberOptions provides options to describers
 type DescriberOptions struct {
-	Queryer  queryer.Queryer
-	Cache    cache.Cache
-	Fields   map[string]string
-	Printer  printer.Printer
-	Selector labels.Selector
+	Queryer        queryer.Queryer
+	Cache          cache.Cache
+	Fields         map[string]string
+	Printer        printer.Printer
+	Selector       labels.Selector
+	PortForwardSvc portforward.PortForwardInterface
 }
 
 // Describer creates content.

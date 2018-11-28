@@ -57,6 +57,8 @@ func newDashCmd() *cobra.Command {
 			select {
 			case <-sigCh:
 				logger.Debugf("Shutting dashboard down due to interrupt")
+				cancel()
+				// TODO implement graceful shutdown semantics
 
 			case <-runCh:
 				logger.Debugf("Dashboard has exited")

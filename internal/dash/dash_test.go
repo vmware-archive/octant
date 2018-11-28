@@ -65,7 +65,11 @@ func Test_dash_Run(t *testing.T) {
 			manager := modulefake.NewStubManager("default", []module.Module{o})
 
 			infoClient := fake.ClusterInfo{}
-			d, err := newDash(listener, namespace, uiURL, nsClient, infoClient, manager, log.NopLogger())
+
+			service := api.New(ctx, apiPathPrefix, nsClient, infoClient, manager, log.NopLogger())
+
+			d, err := newDash(listener, namespace, uiURL, service, log.NopLogger())
+
 			require.NoError(t, err)
 
 			d.willOpenBrowser = false
@@ -135,12 +139,12 @@ func Test_dash_routes(t *testing.T) {
 			manager := modulefake.NewStubManager("default", []module.Module{o})
 
 			infoClient := fake.ClusterInfo{}
-			d, err := newDash(listener, namespace, uiURL, nsClient, infoClient, manager, log.NopLogger())
+
+			ctx := context.Background()
+			service := api.New(ctx, apiPathPrefix, nsClient, infoClient, manager, log.NopLogger())
+
+			d, err := newDash(listener, namespace, uiURL, service, log.NopLogger())
 			require.NoError(t, err)
-
-			service := api.New(apiPathPrefix, nsClient, infoClient, manager, log.NopLogger())
-			d.apiHandler = service
-
 			d.defaultHandler = func() (http.Handler, error) {
 				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					fmt.Fprint(w, "body")

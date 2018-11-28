@@ -19,6 +19,7 @@ import (
 	dynamicfake "k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/kubernetes"
 	fakeclientset "k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/testing"
 )
@@ -93,6 +94,16 @@ func restMapper(discoveryClient discovery.DiscoveryInterface) (meta.RESTMapper, 
 	}
 
 	return restmapper.NewDiscoveryRESTMapper(resources), nil
+}
+
+// RESTClient returns a RESTClient that is used to communicate with API server
+// by this client implementation.
+func (c *Client) RESTClient() (rest.Interface, error) {
+	return nil, nil
+}
+
+func (c *Client) RESTConfig() *rest.Config {
+	return nil
 }
 
 // registerListKind registers a List kind in the provided scheme as

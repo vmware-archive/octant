@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"context"
 	"testing"
 
 	"github.com/heptio/developer-dash/internal/cluster/fake"
@@ -19,7 +20,9 @@ func TestClusterOverview(t *testing.T) {
 	clusterClient, err := fake.NewClient(scheme, resources, objects)
 	require.NoError(t, err)
 
-	o, err := NewClusterOverview(clusterClient, "default", log.NopLogger())
+	c := newSpyCache()
+	ctx := context.Background()
+	o, err := NewClusterOverview(ctx, clusterClient, c, "default", log.NopLogger())
 	require.NoError(t, err)
 	if o == nil {
 		return
@@ -38,7 +41,9 @@ func TestClusterOverview_SetNamespace(t *testing.T) {
 	clusterClient, err := fake.NewClient(scheme, resources, objects)
 	require.NoError(t, err)
 
-	o, err := NewClusterOverview(clusterClient, "default", log.NopLogger())
+	c := newSpyCache()
+	ctx := context.Background()
+	o, err := NewClusterOverview(ctx, clusterClient, c, "default", log.NopLogger())
 	require.NoError(t, err)
 	if o == nil {
 		return
