@@ -20,6 +20,7 @@ type ClientInterface interface {
 	DynamicClient() (dynamic.Interface, error)
 	DiscoveryClient() (discovery.DiscoveryInterface, error)
 	NamespaceClient() (NamespaceInterface, error)
+	InfoClient() (InfoInterface, error)
 }
 
 // Cluster is a client for cluster operations
@@ -52,6 +53,11 @@ func (c *Cluster) DynamicClient() (dynamic.Interface, error) {
 // DiscoveryClient returns a DiscoveryClient for the cluster.
 func (c *Cluster) DiscoveryClient() (discovery.DiscoveryInterface, error) {
 	return discovery.NewDiscoveryClientForConfig(c.restClient)
+}
+
+// InfoClient returns an InfoClient for the cluster.
+func (c *Cluster) InfoClient() (InfoInterface, error) {
+	return newClusterInfo(c.clientConfig), nil
 }
 
 // Version returns a ServerVersion for the cluster

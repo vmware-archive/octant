@@ -70,6 +70,11 @@ func (c *Client) NamespaceClient() (cluster.NamespaceInterface, error) {
 	return &NamespaceClient{}, nil
 }
 
+// NamespaceClient returns an info client or an error.
+func (c *Client) InfoClient() (cluster.InfoInterface, error) {
+	return &ClusterInfo{}, nil
+}
+
 // RESTMapper returns a RESTMapper using the client's discovery interface.
 // The mappings depend on the resources supplied in NewClient.
 func (c *Client) RESTMapper() (meta.RESTMapper, error) {

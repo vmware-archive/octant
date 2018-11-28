@@ -49,6 +49,11 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Lo
 
 	logger.Debugf("initial namespace for dashboard is %s", namespace)
 
+	infoClient, err := clusterClient.InfoClient()
+	if err != nil {
+		return errors.Wrap(err, "failed to create info client")
+	}
+
 	moduleManager, err := module.NewManager(clusterClient, namespace, logger)
 	if err != nil {
 		return errors.Wrap(err, "create module manager")
@@ -70,7 +75,7 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Lo
 		"kubernetes.version": version,
 	})
 
-	d, err := newDash(listener, namespace, uiURL, nsClient, moduleManager, logger, telemetryClient)
+	d, err := newDash(listener, namespace, uiURL, nsClient, infoClient, moduleManager, logger, telemetryClient)
 	if err != nil {
 		return errors.Wrap(err, "failed to create dash instance")
 	}
@@ -111,8 +116,8 @@ type dash struct {
 	telemetryClient telemetry.Interface
 }
 
-func newDash(listener net.Listener, namespace, uiURL string, nsClient cluster.NamespaceInterface, moduleManager module.ManagerInterface, logger log.Logger, telemetryClient telemetry.Interface) (*dash, error) {
-	ah := api.New(apiPathPrefix, nsClient, moduleManager, logger, telemetryClient)
+func newDash(listener net.Listener, namespace, uiURL string, nsClient cluster.NamespaceInterface, infoClient cluster.InfoInterface, moduleManager module.ManagerInterface, logger log.Logger, telemetryClient telemetry.Interface) (*dash, error) {
+	ah := api.New(apiPathPrefix, nsClient, infoClient, moduleManager, logger, telemetryClient)
 
 	for _, m := range moduleManager.Modules() {
 		if err := ah.RegisterModule(m); err != nil {
