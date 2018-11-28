@@ -7,6 +7,7 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/core"
 )
 
@@ -14,7 +15,7 @@ type ConfigMapSummary struct{}
 
 var _ View = (*ConfigMapSummary)(nil)
 
-func NewConfigMapSummary() *ConfigMapSummary {
+func NewConfigMapSummary(prefix, namespace string, c clock.Clock) View {
 	return &ConfigMapSummary{}
 }
 
@@ -39,7 +40,7 @@ func (cms *ConfigMapSummary) Content(ctx context.Context, object runtime.Object,
 type ConfigMapDetails struct{}
 
 // NewConfigMapDetails constructs a new ConfigMapDetails object
-func NewConfigMapDetails() *ConfigMapDetails {
+func NewConfigMapDetails(prefix, namespace string, c clock.Clock) View {
 	return &ConfigMapDetails{}
 }
 

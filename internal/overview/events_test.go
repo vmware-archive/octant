@@ -35,12 +35,42 @@ func TestEventsDescriber(t *testing.T) {
 	cResponse, err := d.Describe(ctx, "/prefix", namespace, clusterClient, options)
 	require.NoError(t, err)
 
-	require.Len(t, cResponse.Contents, 1)
-	tbl, ok := cResponse.Contents[0].(*content.Table)
-	require.True(t, ok)
+	table := content.NewTable("Events", "Namespace Events does not contain any events")
+	table.Columns = []content.TableColumn{
+		{Name: "Message", Accessor: "message"},
+		{Name: "Source", Accessor: "source"},
+		{Name: "Sub-Object", Accessor: "sub_object"},
+		{Name: "Count", Accessor: "count"},
+		{Name: "First Seen", Accessor: "first_seen"},
+		{Name: "Last Seen", Accessor: "last_seen"},
+	}
+	table.AddRow(content.TableRow{
+		"count":      content.NewStringText("24973"),
+		"first_seen": content.NewStringText("2018-09-18T12:40:18Z"),
+		"last_seen":  content.NewStringText("2018-10-06T23:25:55Z"),
+		"message":    content.NewStringText("(combined from similar events): Saw completed job: hello-1538868300"),
+		"source":     content.NewStringText("cronjob-controller"),
+		"sub_object": content.NewStringText(""),
+	})
+	table.AddRow(content.TableRow{
+		"count":      content.NewStringText("24973"),
+		"first_seen": content.NewStringText("2018-09-18T12:40:18Z"),
+		"last_seen":  content.NewStringText("2018-10-06T23:25:55Z"),
+		"message":    content.NewStringText("(combined from similar events): Saw completed job: hello-1538868300"),
+		"source":     content.NewStringText("cronjob-controller"),
+		"sub_object": content.NewStringText(""),
+	})
 
-	assert.Equal(t, tbl.Title, "Events")
-	assert.Len(t, tbl.Rows, 2)
+	expected := ContentResponse{
+		Views: map[string]Content{
+			"events": Content{
+				Title:    "Events",
+				Contents: []content.Content{&table},
+			},
+		},
+		DefaultView: "events",
+	}
+	assert.Equal(t, expected, cResponse)
 }
 
 func Test_printEvent(t *testing.T) {

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/heptio/developer-dash/internal/content"
@@ -27,6 +28,25 @@ import (
 	"k8s.io/kubernetes/pkg/apis/rbac"
 	"k8s.io/kubernetes/pkg/printers/internalversion"
 )
+
+func printEvents(prefix, namespace string, object runtime.Object, events []*core.Event, cl clock.Clock) (content.Table, error) {
+	eventsTable := newEventTable(namespace, object)
+	for _, event := range events {
+		firstSeen := event.FirstTimestamp.UTC().Format(time.RFC3339)
+		lastSeen := event.LastTimestamp.UTC().Format(time.RFC3339)
+
+		eventsTable.AddRow(content.TableRow{
+			"message":    content.NewStringText(event.Message),
+			"source":     content.NewStringText(event.Source.Component),
+			"sub_object": content.NewStringText(""), // TODO: where does this come from?
+			"count":      content.NewStringText(fmt.Sprint(event.Count)),
+			"first_seen": content.NewStringText(firstSeen),
+			"last_seen":  content.NewStringText(lastSeen),
+		})
+	}
+
+	return eventsTable, nil
+}
 
 func printCronJobSummary(cronJob *batch.CronJob, jobs []*batch.Job) (content.Section, error) {
 	section := content.NewSection()

@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/core"
 )
 
@@ -15,7 +16,7 @@ type ReplicationControllerSummary struct{}
 
 var _ View = (*ReplicationControllerSummary)(nil)
 
-func NewReplicationControllerSummary() *ReplicationControllerSummary {
+func NewReplicationControllerSummary(prefix, namespace string, c clock.Clock) View {
 	return &ReplicationControllerSummary{}
 }
 

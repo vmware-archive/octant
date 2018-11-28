@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/core"
 )
 
@@ -66,9 +67,17 @@ func TestListDescriber(t *testing.T) {
 	cResponse, err := d.Describe(ctx, "/path", namespace, clusterClient, options)
 	require.NoError(t, err)
 
-	expected := []content.Content{theContent}
+	expected := ContentResponse{
+		DefaultView: "list",
+		Views: map[string]Content{
+			"list": Content{
+				Title:    "",
+				Contents: stubbedContent,
+			},
+		},
+	}
 
-	assert.Equal(t, expected, cResponse.Contents)
+	assert.Equal(t, expected, cResponse)
 
 	assert.True(t, cache.isSatisfied())
 }
@@ -96,10 +105,16 @@ func TestObjectDescriber(t *testing.T) {
 		return &core.Pod{}
 	}
 
-	theContent := newFakeContent(false)
-
+	viewFac := func(string, string, clock.Clock) View {
+		return newFakeView()
+	}
 	fn := DefaultLoader(key)
-	d := NewObjectDescriber(thePath, "object", fn, objectType, []View{newFakeView()})
+	sections := map[string]ContentSection{
+		"main": ContentSection{
+			Views: []ViewFactory{viewFac},
+		},
+	}
+	d := NewObjectDescriber(thePath, "object", fn, objectType, sections)
 
 	scheme := runtime.NewScheme()
 	objects := []runtime.Object{}
@@ -114,11 +129,17 @@ func TestObjectDescriber(t *testing.T) {
 	ctx := context.Background()
 	cResponse, err := d.Describe(ctx, "/path", namespace, clusterClient, options)
 	require.NoError(t, err)
-	require.Len(t, cResponse.Contents, 2)
-	assert.Equal(t, cResponse.Title, "object: name")
 
-	expected := theContent
-	assert.Equal(t, expected, cResponse.Contents[0])
+	expected := ContentResponse{
+		DefaultView: "main",
+		Views: map[string]Content{
+			"main": Content{
+				Title:    "object: name",
+				Contents: stubbedContent,
+			},
+		},
+	}
+	assert.Equal(t, expected, cResponse)
 	assert.True(t, cache.isSatisfied())
 }
 
@@ -146,6 +167,14 @@ func TestSectionDescriber(t *testing.T) {
 	cResponse, err := d.Describe(ctx, "/prefix", namespace, clusterClient, options)
 	require.NoError(t, err)
 
-	assert.Equal(t, stubbedContent, cResponse.Contents)
-	assert.Equal(t, cResponse.Title, "section")
+	expected := ContentResponse{
+		DefaultView: "section",
+		Views: map[string]Content{
+			"section": Content{
+				Title:    "section",
+				Contents: stubbedContent,
+			},
+		},
+	}
+	assert.Equal(t, expected, cResponse)
 }

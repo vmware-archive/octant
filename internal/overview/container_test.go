@@ -3,11 +3,13 @@ package overview
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/core"
@@ -15,7 +17,7 @@ import (
 )
 
 func TestContainerSummary_invalid_object(t *testing.T) {
-	assertViewInvalidObject(t, NewContainerSummary())
+	assertViewInvalidObject(t, NewContainerSummary("prefix", "ns", clock.NewFakeClock(time.Now())))
 }
 
 func TestContainerSummary(t *testing.T) {
@@ -26,7 +28,7 @@ func TestContainerSummary(t *testing.T) {
 	require.True(t, ok)
 	cache := NewMemoryCache()
 
-	v := NewContainerSummary()
+	v := NewContainerSummary("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	got, err := v.Content(ctx, cronJob, cache)
 	require.NoError(t, err)

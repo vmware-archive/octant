@@ -8,6 +8,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
 )
@@ -16,7 +17,7 @@ type CronJobSummary struct{}
 
 var _ View = (*CronJobSummary)(nil)
 
-func NewCronJobSummary() *CronJobSummary {
+func NewCronJobSummary(prefix, namespace string, c clock.Clock) View {
 	return &CronJobSummary{}
 }
 
@@ -52,7 +53,7 @@ type CronJobJobs struct{}
 
 var _ View = (*CronJobJobs)(nil)
 
-func NewCronJobJobs() *CronJobJobs {
+func NewCronJobJobs(prefix, namespace string, c clock.Clock) View {
 	return &CronJobJobs{}
 }
 
