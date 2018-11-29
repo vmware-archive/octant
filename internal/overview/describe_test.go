@@ -68,10 +68,8 @@ func TestListDescriber(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := ContentResponse{
-		DefaultView: "list",
-		Views: map[string]Content{
-			"list": Content{
-				Title:    "",
+		Views: []Content{
+			{
 				Contents: stubbedContent,
 			},
 		},
@@ -131,9 +129,8 @@ func TestObjectDescriber(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := ContentResponse{
-		DefaultView: "main",
-		Views: map[string]Content{
-			"main": Content{
+		Views: []Content{
+			{
 				Title:    "object: name",
 				Contents: stubbedContent,
 			},
@@ -164,17 +161,16 @@ func TestSectionDescriber(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	cResponse, err := d.Describe(ctx, "/prefix", namespace, clusterClient, options)
+	got, err := d.Describe(ctx, "/prefix", namespace, clusterClient, options)
 	require.NoError(t, err)
 
 	expected := ContentResponse{
-		DefaultView: "section",
-		Views: map[string]Content{
-			"section": Content{
-				Title:    "section",
+		Views: []Content{
+			{
 				Contents: stubbedContent,
+				Title:    "section",
 			},
 		},
 	}
-	assert.Equal(t, expected, cResponse)
+	assert.Equal(t, expected, got)
 }

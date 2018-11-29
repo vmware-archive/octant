@@ -113,10 +113,9 @@ func (d *EventsDescriber) Describe(ctx context.Context, prefix, namespace string
 	contents = append(contents, &t)
 
 	return ContentResponse{
-		Views: map[string]Content{
-			"events": Content{Contents: contents, Title: "Events"},
+		Views: []Content{
+			Content{Contents: contents, Title: "Events"},
 		},
-		DefaultView: "events",
 	}, nil
 }
 

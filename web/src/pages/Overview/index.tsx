@@ -1,30 +1,58 @@
-import './styles.scss'
-import { getAPIBase, getContentsUrl, POLL_WAIT } from 'api'
-import cx from 'classnames'
-import Loading from 'components/Icons/Loading'
-import Title from 'components/Title'
-import React, { Component } from 'react'
-import Content from './components/Content'
+import './styles.scss';
 
-export default class Overview extends Component {
-  constructor (props) {
+import { getAPIBase, getContentsUrl, POLL_WAIT } from 'api';
+import cx from 'classnames';
+import Loading from 'components/Icons/Loading';
+import Title from 'components/Title';
+import React, { Component } from 'react';
+
+import Content from './components/Content';
+
+interface ContentSection {
+  contents: any;
+  title: string;
+}
+
+interface ContentResponse {
+  views: ContentSection[];
+}
+
+export interface OverviewProps {
+  title: string;
+  path: string;
+  namespace: string;
+  isLoading: boolean;
+  hasError: boolean;
+
+  setIsLoading(isLoading: boolean);
+  setHasError(hasError: boolean);
+}
+
+interface OverviewState {
+  data: any;
+}
+
+export default class Overview extends Component<OverviewProps, OverviewState> {
+  private source: any
+
+  constructor(props: OverviewProps) {
     super(props)
     this.state = { data: null }
   }
 
-  componentDidMount () {
+  componentDidMount() {
     const { path, namespace } = this.props
     this.setEventSourceStream(path, namespace)
   }
 
-  componentDidUpdate ({ path: previousPath, namespace: previousNamespace }) {
+  componentDidUpdate({ path: previousPath, namespace: previousNamespace }) {
     const { path, namespace } = this.props
     if (path !== previousPath || namespace !== previousNamespace) {
       this.setEventSourceStream(path, namespace)
     }
   }
 
-  setEventSourceStream (path, namespace) {
+  setEventSourceStream(path: string, namespace: string) {
     // clear state and this.source on change
     if (this.source) {
       this.source.close()
@@ -57,7 +85,7 @@ export default class Overview extends Component {
     })
   }
 
-  render () {
+  render() {
     const { isLoading, hasError } = this.props
     const { data } = this.state
     let title
@@ -70,9 +98,9 @@ export default class Overview extends Component {
       )
     } else if (data) {
       const { views, default_view: defaultView } = data
-      const view = views[defaultView]
+      const view = views[0]
       const { contents } = view
-      title = view.title // eslint-disable-line prefer-destructuring
+      title = view.title
       mainContent = contents.map((content, i) => (
         <div key={i} className='component--primary'>
           <Content content={content} />
@@ -82,13 +110,13 @@ export default class Overview extends Component {
       const cnames = cx({
         'content-text': true,
         'empty-content-text': hasError === false,
-        'error-content-text': hasError === true
+        'error-content-text': hasError === true,
       })
       mainContent = (
         <div className='component--primary'>
           <h3 className={cnames}>
             {hasError === true
-              ? "Oops, something's not right, try again."
+              ? 'Oops, something is not right, try again.'
               : 'There is nothing to display here'}
           </h3>
         </div>
