@@ -1,28 +1,42 @@
 import queryString from 'query-string'
 import mocks from './mock'
 
+declare global {
+  interface Window { API_BASE: string }
+}
+
 const { fetch } = window
 
-export function getAPIBase () {
+export function getAPIBase() {
   return window.API_BASE || process.env.API_BASE
 }
 
 export const POLL_WAIT = 5
 
-async function buildRequest (params) {
+interface BuildRequestParams {
+  endpoint: string;
+  method?: string;
+  data?: object;
+}
+
+async function buildRequest(params: BuildRequestParams) {
   const apiBase = getAPIBase()
 
   const { endpoint, method, data } = params
   if (!endpoint) throw new Error('endpoint not specified in buildRequest')
   const headers = {
     Accept: 'application/json',
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   }
 
   if (apiBase) {
-    const fetchOptions = {
+    const fetchOptions: {
+      headers: HeadersInit;
+      method: string;
+      body?: string;
+    } = {
       headers,
-      method: method || 'GET'
+      method: method || 'GET',
     }
     if (data) fetchOptions.body = JSON.stringify(data)
     try {
@@ -40,21 +54,21 @@ async function buildRequest (params) {
   return Promise.resolve(mocks[endpoint])
 }
 
-export function getNavigation () {
+export function getNavigation() {
   const params = {
-    endpoint: 'api/v1/navigation'
+    endpoint: 'api/v1/navigation',
   }
   return buildRequest(params)
 }
 
-export function getNamespaces () {
+export function getNamespaces() {
   const params = {
-    endpoint: 'api/v1/namespaces'
+    endpoint: 'api/v1/namespaces',
   }
   return buildRequest(params)
 }
 
-export function getContentsUrl (path, namespace, poll) {
+export function getContentsUrl(path: string, namespace: string, poll?: string) {
   if (!path || path === '/') return null
   let query = ''
   if (namespace) query = `?${queryString.stringify({ namespace })}`
@@ -64,19 +78,19 @@ export function getContentsUrl (path, namespace, poll) {
   return `api/v1${path}${query}`
 }
 
-export function getContents (path, namespace) {
+export function getContents(path: string, namespace: string) {
   const endpoint = getContentsUrl(path, namespace)
   return buildRequest({ endpoint })
 }
 
-export function setNamespace (namespace) {
+export function setNamespace(namespace: string) {
   return buildRequest({
     endpoint: 'api/v1/namespace',
     method: 'POST',
-    data: { namespace }
+    data: { namespace },
   })
 }
 
-export function getNamespace () {
+export function getNamespace() {
   return buildRequest({ endpoint: 'api/v1/namespace' })
 }

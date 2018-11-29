@@ -1,0 +1,29 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended",
+    "tslint-react"
+  ],
+  "linterOptions": {
+    "exclude": [
+      "./src/**/*.js"
+    ]
+  },
+  "jsRules": {},
+  "rules": {
+    "semicolon": [true, "never", "ignore-interfaces"],
+    "quotemark": [true, "single", "jsx-single"],
+    "interface-name" : [true, "never-prefix"],
+    "object-literal-key-quotes": [true, "as-needed"],
+    "object-literal-sort-keys": false,
+    "one-variable-per-declaration": false,
+    "curly": [true, "ignore-same-line"],
+    "no-console": [true, "log"],
+    "ordered-imports": false,
+    "member-access": [false, "check-parameter-property"],
+    "jsx-boolean-value": ["never"],
+    "jsx-no-multiline-js": ["none"],
+    "jsx-no-lambda": ["none"]
+  },
+  "rulesDirectory": []
+}
