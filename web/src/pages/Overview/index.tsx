@@ -1,10 +1,13 @@
 import './styles.scss';
+import 'react-tabs/style/react-tabs.css';
 
 import { getAPIBase, getContentsUrl, POLL_WAIT } from 'api';
 import cx from 'classnames';
 import Loading from 'components/Icons/Loading';
 import Title from 'components/Title';
+import _ from 'lodash';
 import React, { Component } from 'react';
+import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
 import Content from './components/Content';
 
@@ -85,6 +88,55 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
     })
   }
 
+  renderViewsWithTabs = (views: any) => {
+    const tabs = []
+    const panels = []
+
+    _.forEach(views, (view, index) => {
+      const tabContents = view.contents.map((content, i) => (
+        <div key={i} className='component--primary'>
+          <Content content={content} />
+        </div>
+      ))
+
+      tabs.push(<Tab key={index}>{view.title}</Tab>)
+      panels.push(<TabPanel key={index}>{tabContents}</TabPanel>)
+    })
+
+    return (
+      <Tabs>
+        <TabList key={0}>{tabs}</TabList>
+        {panels}
+      </Tabs>
+    )
+  }
+
+  renderViewsWithoutTabs = (contents: object[]) => {
+    return contents.map((content, i) => (
+      <div key={i} className='component--primary'>
+        <Content content={content} />
+      </div>
+    ))
+  }
+
+  renderUnknownContent = (hasError: boolean) => {
+    const classNames = cx({
+      'content-text': true,
+      'empty-content-text': hasError === false,
+      'error-content-text': hasError === true,
+    })
+
+    return (
+      <div className='component--primary'>
+        <h3 className={classNames}>
+          {hasError === true
+            ? 'Oops, something is not right, try again.'
+            : 'There is nothing to display here'}
+        </h3>
+      </div>
+    )
+  }
+
   render() {
     const { isLoading, hasError } = this.props
     const { data } = this.state
@@ -97,30 +149,21 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
         </div>
       )
     } else if (data) {
-      const { views, default_view: defaultView } = data
-      const view = views[0]
-      const { contents } = view
-      title = view.title
-      mainContent = contents.map((content, i) => (
-        <div key={i} className='component--primary'>
-          <Content content={content} />
-        </div>
-      ))
+      const { views } = data
+      title = data.title
+
+      if (views.length > 1) {
+        // there are multiple views
+        mainContent = this.renderViewsWithTabs(views)
+      } else if (views.length === 1) {
+        // only a single view
+        mainContent = this.renderViewsWithoutTabs(views[0].contents)
+      } else {
+        mainContent = this.renderUnknownContent(true)
+      }
     } else {
-      const cnames = cx({
-        'content-text': true,
-        'empty-content-text': hasError === false,
-        'error-content-text': hasError === true,
-      })
-      mainContent = (
-        <div className='component--primary'>
-          <h3 className={cnames}>
-            {hasError === true
-              ? 'Oops, something is not right, try again.'
-              : 'There is nothing to display here'}
-          </h3>
-        </div>
-      )
+      // no views or an error
+      mainContent = this.renderUnknownContent(hasError)
     }
 
     return (

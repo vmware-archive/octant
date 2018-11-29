@@ -26,7 +26,7 @@ type ResourceTitle struct {
 
 type ContentSection struct {
 	Views []ViewFactory
-	Name  string
+	Title string
 }
 
 type ResourceOptions struct {
@@ -36,7 +36,7 @@ type ResourceOptions struct {
 	ObjectType interface{}
 	Titles     ResourceTitle
 	Transforms map[string]lookupFunc
-	Sections   map[string]ContentSection
+	Sections   []ContentSection
 }
 
 type Resource struct {

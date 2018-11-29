@@ -3,6 +3,7 @@ package overview
 import "github.com/heptio/developer-dash/internal/content"
 
 type ContentResponse struct {
+	Title string    `json:"title,omitempty"`
 	Views []Content `json:"views,omitempty"`
 }
 

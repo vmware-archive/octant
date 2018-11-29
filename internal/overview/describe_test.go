@@ -107,8 +107,9 @@ func TestObjectDescriber(t *testing.T) {
 		return newFakeView()
 	}
 	fn := DefaultLoader(key)
-	sections := map[string]ContentSection{
-		"main": ContentSection{
+	sections := []ContentSection{
+		{
+			Title: "section 1",
 			Views: []ViewFactory{viewFac},
 		},
 	}
@@ -129,10 +130,11 @@ func TestObjectDescriber(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := ContentResponse{
+		Title: "object: name",
 		Views: []Content{
 			{
-				Title:    "object: name",
 				Contents: stubbedContent,
+				Title:    "section 1",
 			},
 		},
 	}

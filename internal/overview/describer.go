@@ -138,10 +138,10 @@ type ObjectDescriber struct {
 	baseTitle  string
 	objectType func() interface{}
 	loaderFunc LoaderFunc
-	sections   map[string]ContentSection
+	sections   []ContentSection
 }
 
-func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType func() interface{}, sections map[string]ContentSection) *ObjectDescriber {
+func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType func() interface{}, sections []ContentSection) *ObjectDescriber {
 	return &ObjectDescriber{
 		path:          p,
 		baseTitle:     baseTitle,
@@ -190,7 +190,9 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 			item)
 	}
 
-	cr := ContentResponse{}
+	cr := ContentResponse{
+		Title: title,
+	}
 
 	cl := &clock.RealClock{}
 
@@ -208,7 +210,7 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 
 		cr.Views = append(cr.Views, Content{
 			Contents: contents,
-			Title:    title,
+			Title:    section.Title,
 		})
 	}
 
