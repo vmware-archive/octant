@@ -41,8 +41,8 @@ func Test_realGenerator_Generate(t *testing.T) {
 				c.spyRetrieve(key, []*unstructured.Unstructured{}, nil)
 			},
 			expected: ContentResponse{
-				Views: map[string]Content{
-					"main": Content{
+				Views: []Content{
+					{
 						Contents: stubbedContent,
 						Title:    "section content",
 					},
@@ -62,8 +62,8 @@ func Test_realGenerator_Generate(t *testing.T) {
 				c.spyRetrieve(subKey, []*unstructured.Unstructured{}, nil)
 			},
 			expected: ContentResponse{
-				Views: map[string]Content{
-					"main": Content{
+				Views: []Content{
+					{
 						Contents: stubbedContent,
 						Title:    "section content",
 					},
@@ -167,8 +167,8 @@ func newStubDescriber(p string) *stubDescriber {
 
 func (d *stubDescriber) Describe(context.Context, string, string, cluster.ClientInterface, DescriberOptions) (ContentResponse, error) {
 	return ContentResponse{
-		Views: map[string]Content{
-			"main": Content{
+		Views: []Content{
+			{
 				Contents: stubbedContent,
 				Title:    "section content",
 			},

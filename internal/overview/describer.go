@@ -116,13 +116,12 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 	}
 
 	return ContentResponse{
-		Views: map[string]Content{
-			"list": Content{
+		Views: []Content{
+			{
 				Contents: contents,
 				Title:    "",
 			},
 		},
-		DefaultView: "list",
 	}, nil
 }
 
@@ -139,10 +138,10 @@ type ObjectDescriber struct {
 	baseTitle  string
 	objectType func() interface{}
 	loaderFunc LoaderFunc
-	sections   map[string]ContentSection
+	sections   []ContentSection
 }
 
-func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType func() interface{}, sections map[string]ContentSection) *ObjectDescriber {
+func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType func() interface{}, sections []ContentSection) *ObjectDescriber {
 	return &ObjectDescriber{
 		path:          p,
 		baseTitle:     baseTitle,
@@ -192,12 +191,12 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 	}
 
 	cr := ContentResponse{
-		Views: make(map[string]Content),
+		Title: title,
 	}
 
 	cl := &clock.RealClock{}
 
-	for name, section := range d.sections {
+	for _, section := range d.sections {
 		var contents []content.Content
 		for _, viewFactory := range section.Views {
 			view := viewFactory(prefix, namespace, cl)
@@ -209,16 +208,10 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 			contents = append(contents, viewContent...)
 		}
 
-		cr.Views[name] = Content{
+		cr.Views = append(cr.Views, Content{
 			Contents: contents,
-			Title:    title,
-		}
-
-		// TODO: allow setting of default view. This will work until there are
-		// multiple content sections defined.
-		if cr.DefaultView == "" {
-			cr.DefaultView = name
-		}
+			Title:    section.Title,
+		})
 	}
 
 	return cr, nil
@@ -344,11 +337,6 @@ func NewSectionDescriber(p, title string, describers ...Describer) *SectionDescr
 func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
 	var contents []content.Content
 
-	cr := ContentResponse{
-		Views:       make(map[string]Content),
-		DefaultView: "section",
-	}
-
 	for _, child := range d.describers {
 		cResponse, err := child.Describe(ctx, prefix, namespace, clusterClient, options)
 		if err != nil {
@@ -364,7 +352,11 @@ func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace strin
 		}
 	}
 
-	cr.Views["section"] = Content{Contents: contents, Title: d.title}
+	cr := ContentResponse{
+		Views: []Content{
+			{Contents: contents, Title: d.title},
+		},
+	}
 
 	return cr, nil
 }

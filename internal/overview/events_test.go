@@ -62,13 +62,12 @@ func TestEventsDescriber(t *testing.T) {
 	})
 
 	expected := ContentResponse{
-		Views: map[string]Content{
-			"events": Content{
+		Views: []Content{
+			{
 				Title:    "Events",
 				Contents: []content.Content{&table},
 			},
 		},
-		DefaultView: "events",
 	}
 	assert.Equal(t, expected, cResponse)
 }
