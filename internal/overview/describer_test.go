@@ -145,12 +145,6 @@ func TestObjectDescriber(t *testing.T) {
 func TestSectionDescriber(t *testing.T) {
 	namespace := "default"
 
-	d := NewSectionDescriber(
-		"/section",
-		"section",
-		newStubDescriber("/foo"),
-	)
-
 	cache := NewMemoryCache()
 
 	scheme := runtime.NewScheme()
@@ -163,16 +157,61 @@ func TestSectionDescriber(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	got, err := d.Describe(ctx, "/prefix", namespace, clusterClient, options)
-	require.NoError(t, err)
 
-	expected := ContentResponse{
-		Views: []Content{
-			{
-				Contents: stubbedContent,
-				Title:    "section",
+	tests := []struct {
+		name     string
+		d        *SectionDescriber
+		expected ContentResponse
+	}{
+		{
+			name: "general",
+			d: NewSectionDescriber(
+				"/section",
+				"section",
+				newStubDescriber("/foo"),
+			),
+			expected: ContentResponse{
+				Views: []Content{
+					{
+						Contents: stubbedContent,
+						Title:    "section",
+					},
+				},
+			},
+		},
+		{
+			name: "empty",
+			d: NewSectionDescriber(
+				"/section",
+				"section",
+				newEmptyDescriber("/foo"),
+				newEmptyDescriber("/bar"),
+			),
+			expected: ContentResponse{
+				Views: []Content{
+					{
+						Title: "section",
+						Contents: []content.Content{
+							&content.Table{
+								Type:         "table",
+								Title:        "section",
+								EmptyContent: "Namespace default does not have any resources of this type",
+							},
+						},
+					},
+				},
 			},
 		},
 	}
-	assert.Equal(t, expected, got)
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+
+			got, err := tc.d.Describe(ctx, "/prefix", namespace, clusterClient, options)
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.expected, got)
+		})
+	}
+
 }
