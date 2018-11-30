@@ -148,9 +148,10 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
           <Loading />
         </div>
       )
-    } else if (data) {
-      const { views } = data
+    } else if (data && data.views) {
+      const views = data.views.filter(v => v.contents)  // Keep only views with contents
       title = data.title
+
 
       if (views.length > 1) {
         // there are multiple views

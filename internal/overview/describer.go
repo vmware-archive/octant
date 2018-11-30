@@ -352,6 +352,11 @@ func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace strin
 		}
 	}
 
+	if len(contents) == 0 {
+		tbl := content.NewTable(d.title, fmt.Sprintf("Namespace %s does not have any resources of this type", namespace))
+		contents = append(contents, &tbl)
+	}
+
 	cr := ContentResponse{
 		Views: []Content{
 			{Contents: contents, Title: d.title},

@@ -156,12 +156,21 @@ func (c *spyCache) Events(obj *unstructured.Unstructured) ([]*unstructured.Unstr
 }
 
 type stubDescriber struct {
-	path string
+	path     string
+	contents []content.Content
 }
 
 func newStubDescriber(p string) *stubDescriber {
 	return &stubDescriber{
-		path: p,
+		path:     p,
+		contents: []content.Content{newFakeContent(false)},
+	}
+}
+
+func newEmptyDescriber(p string) *stubDescriber {
+	return &stubDescriber{
+		path:     p,
+		contents: []content.Content{newFakeContent(true)},
 	}
 }
 
@@ -169,7 +178,7 @@ func (d *stubDescriber) Describe(context.Context, string, string, cluster.Client
 	return ContentResponse{
 		Views: []Content{
 			{
-				Contents: stubbedContent,
+				Contents: d.contents,
 				Title:    "section content",
 			},
 		},
