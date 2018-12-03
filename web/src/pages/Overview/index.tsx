@@ -44,6 +44,13 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
     }
   }
 
+  componentWillUnmount(): void {
+    if (this.source) {
+      this.source.close()
+      this.source = null
+    }
+  }
+
   setEventSourceStream(path: string, namespace: string) {
     // clear state and this.source on change
     if (this.source) {
