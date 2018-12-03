@@ -1,6 +1,6 @@
-import queryString from 'query-string';
+import queryString from 'query-string'
 
-import mocks from './mock';
+import mocks from './mock'
 
 declare global {
   interface Window {

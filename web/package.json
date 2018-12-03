@@ -38,7 +38,8 @@
     "csslint:fix": "npm run csslint -- --fix",
     "format": "prettier-eslint --write ./src/**/*.js",
     "fix": "npm run csslint:fix && npm run format",
-    "tslint": "tslint \"./src/**/*.{ts,tsx}\" --project ."
+    "tslint": "tslint \"./src/**/*.{ts,tsx}\" --project .",
+    "tslint-fix": "npm run tslint -- --fix"
   },
   "jest": {
     "collectCoverageFrom": [

@@ -1,24 +1,13 @@
-import './styles.scss';
-import 'react-tabs/style/react-tabs.css';
-
-import { getAPIBase, getContentsUrl, POLL_WAIT } from 'api';
-import cx from 'classnames';
-import Loading from 'components/Icons/Loading';
-import Title from 'components/Title';
-import _ from 'lodash';
-import React, { Component } from 'react';
-import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
-
-import Content from './components/Content';
-
-interface ContentSection {
-  contents: any;
-  title: string;
-}
-
-interface ContentResponse {
-  views: ContentSection[];
-}
+import './styles.scss'
+import 'react-tabs/style/react-tabs.css'
+import { getAPIBase, getContentsUrl, POLL_WAIT } from 'api'
+import cx from 'classnames'
+import Loading from 'components/Icons/Loading'
+import Title from 'components/Title'
+import _ from 'lodash'
+import React, { Component } from 'react'
+import { Tab, TabList, TabPanel, Tabs } from 'react-tabs'
+import Content from './components/Content'
 
 export interface OverviewProps {
   title: string;
@@ -149,9 +138,8 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
         </div>
       )
     } else if (data && data.views) {
-      const views = data.views.filter(v => v.contents)  // Keep only views with contents
+      const views = data.views.filter((v) => v.contents)  // Keep only views with contents
       title = data.title
-
 
       if (views.length > 1) {
         // there are multiple views
