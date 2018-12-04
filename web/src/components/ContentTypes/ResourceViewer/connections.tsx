@@ -8,7 +8,7 @@ import { Edge } from './schema'
 const linePadding = 4
 const markerHeight = 10
 
-export interface Props {
+interface Props {
   offsets: { [key: string]: Rect };
   adjacencyList: { [key: string]: Edge[] };
 }

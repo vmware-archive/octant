@@ -17,7 +17,7 @@ export interface Rect {
   width: number;
 }
 
-export interface Props {
+interface Props {
   name: string;
   object: ResourceObject;
   selected: boolean;

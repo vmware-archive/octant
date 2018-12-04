@@ -4,7 +4,7 @@ import * as React from 'react'
 
 import { ResourceObject } from './schema'
 
-export interface Props {
+interface Props {
   name: string;
   object: ResourceObject;
 }

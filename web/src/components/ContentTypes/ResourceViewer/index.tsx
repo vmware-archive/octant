@@ -7,11 +7,11 @@ import Grid from './grid'
 import QuickView from './quickview'
 import { Schema } from './schema'
 
-export interface Props {
+interface Props {
   schema: Schema;
 }
 
-export interface State {
+interface State {
   currentResource: string;
 }
 

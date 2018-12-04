@@ -6,7 +6,7 @@ import Connections from './connections'
 import Resource, { Rect } from './resource'
 import { Schema } from './schema'
 
-export interface Props {
+interface Props {
   rows: Array<Set<string>>;
   schema: Schema;
   setCurrentResource(name: string): void;
