@@ -1,9 +1,9 @@
-import { DAG, Edge, ResourceObjects } from './schema'
+import { AdjacencyList, Edge, ResourceObjects } from './schema'
 
 type Rows = Array<Set<string>>
 
 export default class Grid {
-  constructor(private dag: DAG, private objects: ResourceObjects) {}
+  constructor(private adjacencyList: AdjacencyList, private objects: ResourceObjects) {}
 
   create(): Rows {
     const sorted = this.sort()
@@ -20,7 +20,7 @@ export default class Grid {
       }
 
       const node = this.objects[name]
-      this.dag[name].forEach((edge: Edge) => {
+      this.adjacencyList[name].forEach((edge: Edge) => {
         const id = this.rowForNode(rows, edge.node)
         if (node.isNetwork) {
           if (id === 0) {
@@ -57,8 +57,8 @@ export default class Grid {
       ancestors.push(id)
       visited[id] = true
 
-      if (this.dag[id]) {
-        this.dag[id].forEach((edge: Edge) => {
+      if (this.adjacencyList[id]) {
+        this.adjacencyList[id].forEach((edge: Edge) => {
           if (ancestors.indexOf(edge.node) >= 0) {
             throw new Error(`detected loop with ${edge.node}`)
           }
@@ -78,9 +78,9 @@ export default class Grid {
   }
 
   isSink(name: string): boolean {
-    const dagKeys = new Set(Object.keys(this.dag))
+    const edgeKeys = new Set(Object.keys(this.adjacencyList))
     const objectKeys = new Set(Object.keys(this.objects))
-    const sinks = new Set([...objectKeys].filter((key) => !dagKeys.has(key)))
+    const sinks = new Set([...objectKeys].filter((key) => !edgeKeys.has(key)))
     return [...sinks].indexOf(name) >= 0
   }
 

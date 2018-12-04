@@ -1,17 +1,18 @@
 export interface Schema {
-  dag: DAG;
+  adjacencyList: AdjacencyList;
   objects: ResourceObjects;
   selected: string;
 }
 
-export type DAG = { [key: string]: Edge[] };
-
+export interface AdjacencyList { [key: string]: Edge[] }
 export interface Edge {
   node: string;
   edge: string;
 }
 
-export type ResourceObjects = { [key: string]: ResourceObject };
+export interface ResourceObjects {
+  [key: string]: ResourceObject;
+}
 
 export interface ResourceObject {
   name: string;

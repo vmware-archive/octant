@@ -10,18 +10,18 @@ const markerHeight = 10
 
 export interface Props {
   offsets: { [key: string]: Rect };
-  dag: { [key: string]: Edge[] };
+  adjacencyList: { [key: string]: Edge[] };
 }
 
 class Connections extends React.Component<Props, any> {
   render() {
     const connections: JSX.Element[] = []
 
-    for (const key in this.props.dag) {
+    for (const key in this.props.adjacencyList) {
       if (this.props.offsets[key]) {
         const parentRect = this.props.offsets[key]
         if (parentRect) {
-          const list = this.props.dag[key]
+          const list = this.props.adjacencyList[key]
 
           connections.push(
             ...list.map((edge: Edge, id: number) => {

@@ -78,7 +78,7 @@ class Graph extends React.Component<Props, State> {
 
     return (
       <div className='graph'>
-        <Connections offsets={this.state.offsets} dag={this.state.schema.dag} />
+        <Connections offsets={this.state.offsets} adjacencyList={this.state.schema.adjacencyList} />
         {rows}
       </div>
     )

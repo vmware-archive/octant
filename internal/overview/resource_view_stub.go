@@ -18,7 +18,7 @@ func (rv *resourceViewer) MarshalJSON() ([]byte, error) {
 	b := []byte(`{
 		"type": "resourceviewer",
 		"selected": "pod",
-		"dag": {
+		"adjacencyList": {
 		  "ingress-uid": [
 			{
 			  "node": "service-uid",

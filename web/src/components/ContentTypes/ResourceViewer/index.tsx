@@ -31,10 +31,10 @@ class ResourceViewer extends React.Component<Props, State> {
   }
 
   render() {
-    const dag = this.props.schema.dag
+    const adjacencyList = this.props.schema.adjacencyList
     const objects = this.props.schema.objects
 
-    const grid = new Grid(dag, objects)
+    const grid = new Grid(adjacencyList, objects)
     const rows = grid.create()
 
     const currentObject = objects[this.state.currentResource]
