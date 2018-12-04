@@ -3,7 +3,10 @@ import { AdjacencyList, Edge, ResourceObjects } from './schema'
 type Rows = Array<Set<string>>
 
 export default class Grid {
-  constructor(private adjacencyList: AdjacencyList, private objects: ResourceObjects) {}
+  constructor(
+    private adjacencyList: AdjacencyList,
+    private objects: ResourceObjects,
+  ) {}
 
   create(): Rows {
     const sorted = this.sort()
@@ -49,29 +52,28 @@ export default class Grid {
     const visited: { [key: string]: boolean } = {}
     const sorted: string[] = []
 
-    const visit = (id: string, ancestors: string[]) => {
+    const visit = (id: string, ancestors: { [key: string]: boolean }) => {
       if (visited[id]) {
         return
       }
 
-      ancestors.push(id)
+      ancestors[id] = true
       visited[id] = true
 
       if (this.adjacencyList[id]) {
         this.adjacencyList[id].forEach((edge: Edge) => {
-          if (ancestors.indexOf(edge.node) >= 0) {
+          if (ancestors[edge.node]) {
             throw new Error(`detected loop with ${edge.node}`)
           }
 
-          visit(edge.node, ancestors.map((value) => value))
+          visit(edge.node, ancestors)
         })
       }
 
       sorted.unshift(id)
     }
-
     Object.keys(this.objects).forEach((id: string) => {
-      visit(id, [])
+      visit(id, {})
     })
 
     return sorted.reverse()
@@ -85,12 +87,10 @@ export default class Grid {
   }
 
   rowForNode = (rows: Rows, name: string): number => {
-    const nodeRows = rows.map(
-      (row: Set<string>, index: number) => ({
-        row,
-        index,
-      }),
-    )
+    const nodeRows = rows.map((row: Set<string>, index: number) => ({
+      row,
+      index,
+    }))
     for (const { row, index } of nodeRows) {
       if ([...row].indexOf(name) >= 0) {
         return index
