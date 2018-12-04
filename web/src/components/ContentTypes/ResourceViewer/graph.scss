@@ -1,0 +1,13 @@
+.graph {
+    display: flex;
+    margin: 0;
+    flex-direction: column;
+    width: 50%;
+  }
+
+  .row {
+    margin-bottom: 90px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+  }
