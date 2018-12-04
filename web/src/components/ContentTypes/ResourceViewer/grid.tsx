@@ -1,12 +1,30 @@
+import React from 'react'
+
 import { AdjacencyList, Edge, ResourceObjects } from './schema'
 
 type Rows = Array<Set<string>>
 
 export default class Grid {
+
+  private cachedSinks: {[key: string]: boolean} = {}
+
   constructor(
     private adjacencyList: AdjacencyList,
     private objects: ResourceObjects,
   ) {}
+
+  isSink = (name: string): boolean => {
+    if (this.cachedSinks.hasOwnProperty(name)) {
+      return this.cachedSinks[name]
+    }
+
+    const edgeKeys = new Set(Object.keys(this.adjacencyList))
+    const objectKeys = new Set(Object.keys(this.objects))
+    const sinks = new Set([...objectKeys].filter((key) => !edgeKeys.has(key)))
+    this.cachedSinks[name] = [...sinks].indexOf(name) >= 0
+
+    return this.cachedSinks[name]
+  }
 
   create(): Rows {
     const sorted = this.sort()
@@ -77,13 +95,6 @@ export default class Grid {
     })
 
     return sorted.reverse()
-  }
-
-  isSink(name: string): boolean {
-    const edgeKeys = new Set(Object.keys(this.adjacencyList))
-    const objectKeys = new Set(Object.keys(this.objects))
-    const sinks = new Set([...objectKeys].filter((key) => !edgeKeys.has(key)))
-    return [...sinks].indexOf(name) >= 0
   }
 
   rowForNode = (rows: Rows, name: string): number => {
