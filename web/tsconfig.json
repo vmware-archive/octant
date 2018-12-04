@@ -4,7 +4,7 @@
     "sourceMap": true,
     "noImplicitAny": false,
     "module": "esnext",
-    "target": "es5",
+    "target": "es6",
     "jsx": "react",
     "lib": ["esnext", "dom"],
     "esModuleInterop": true,
@@ -12,12 +12,7 @@
     "allowJs": true,
     "moduleResolution": "node",
     "baseUrl": "./src",
-    "typeRoots": [
-      "node_modules/@types",
-      "./src/types"
-    ]
+    "typeRoots": ["node_modules/@types", "./src/types"]
   },
-  "include": [
-    "./src/**/*"
-  ]
+  "include": ["./src/**/*"]
 }

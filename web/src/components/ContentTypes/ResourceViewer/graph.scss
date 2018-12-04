@@ -1,0 +1,16 @@
+.resourceViewer {
+  .graph {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    width: 50%;
+  }
+
+  .row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    margin-bottom: 90px;
+  }
+}
