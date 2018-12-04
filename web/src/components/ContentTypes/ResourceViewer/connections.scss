@@ -1,13 +1,15 @@
-.svgContainer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 9;
-}
+.resourceViewer {
+    .svgContainer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9;
+    }
 
-.connection {
-    stroke-width: 2px;
-    stroke: rgb(242,88,45);
+    .connection {
+        stroke-width: 2px;
+        stroke: rgb(242,88,45);
+    }
 }

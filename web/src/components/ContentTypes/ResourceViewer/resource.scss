@@ -1,42 +1,44 @@
-.resource {
-  border: 1px solid black;
-  background-color: #fff;
-  padding: 10px;
-  position: relative;
-  z-index: 10;
-}
+.resourceViewer {
+  .resource {
+    background-color: #fff;
+    border: 1px solid black;
+    padding: 10px;
+    position: relative;
+    z-index: 10;
+  }
 
-.resource.selected {
-  border: 2px solid black;
-}
+  .resource.selected {
+    border: 2px solid black;
+  }
 
-.resource-name {
-  font-weight: 700;
-  font-size: 14px;
-  margin-bottom: 5px;
-}
+  .resource-name {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
 
-.resource-type {
-  font-weight: 200;
-  font-size: 12px;
-}
+  .resource-type {
+    font-size: 12px;
+    font-weight: 200;
+  }
 
-.resource-status {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 15px;
-  width: 100%;
-}
+  .resource-status {
+    bottom: 0;
+    height: 15px;
+    left: 0;
+    position: absolute;
+    width: 100%;
+  }
 
-.status-ok {
-  background-color: green;
-}
+  .status-ok {
+    background-color: green;
+  }
 
-.status-warning {
-  background-color: orange;
-}
+  .status-warning {
+    background-color: orange;
+  }
 
-.status-error {
-  background-color: red;
+  .status-error {
+    background-color: red;
+  }
 }

@@ -2,7 +2,7 @@ import './graph.scss'
 
 import * as React from 'react'
 
-import Connections from './connections'
+import { Connections } from './connections'
 import Resource, { Rect } from './resource'
 import { Schema } from './schema'
 
@@ -12,7 +12,7 @@ interface Props {
   setCurrentResource(name: string): void;
 }
 
-export interface State {
+interface State {
   offsets: {
     [key: string]: Rect;
   };

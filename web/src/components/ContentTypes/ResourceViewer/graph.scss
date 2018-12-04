@@ -1,13 +1,15 @@
-.graph {
+.resourceViewer {
+  .graph {
     display: flex;
-    margin: 0;
     flex-direction: column;
+    margin: 0;
     width: 50%;
   }
 
   .row {
-    margin-bottom: 90px;
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
+    margin-bottom: 90px;
   }
+}
