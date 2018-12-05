@@ -281,6 +281,13 @@ func getSelector(object runtime.Object) (*metav1.LabelSelector, error) {
 		return selector, nil
 	case *extensions.ReplicaSet:
 		return t.Spec.Selector, nil
+	case *extensions.Deployment:
+		return t.Spec.Selector, nil
+	case *core.Service:
+		selector := &metav1.LabelSelector{
+			MatchLabels: t.Spec.Selector,
+		}
+		return selector, nil
 	default:
 		return nil, errors.Errorf("unable to retrieve selector for type %T", object)
 	}

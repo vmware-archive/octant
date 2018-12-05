@@ -214,9 +214,39 @@ func Test_getSelector(t *testing.T) {
 			},
 		},
 		{
-			name:   "deployment",
-			object: &extensions.Deployment{},
-			isErr:  true,
+			name:     "empty replica set",
+			object:   &extensions.ReplicaSet{},
+			expected: nil,
+		},
+		{
+			name: "deployment",
+			object: &extensions.Deployment{
+				Spec: extensions.DeploymentSpec{
+					Selector: &metav1.LabelSelector{
+						MatchLabels: labels,
+					},
+				},
+			},
+			expected: &metav1.LabelSelector{
+				MatchLabels: labels,
+			},
+		},
+		{
+			name:     "empty deployment",
+			object:   &extensions.Deployment{},
+			isErr:    false,
+			expected: nil,
+		},
+		{
+			name: "service",
+			object: &core.Service{
+				Spec: core.ServiceSpec{
+					Selector: labels,
+				},
+			},
+			expected: &metav1.LabelSelector{
+				MatchLabels: labels,
+			},
 		},
 	}
 
