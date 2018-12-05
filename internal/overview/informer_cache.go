@@ -9,6 +9,7 @@ import (
 	"github.com/heptio/developer-dash/third_party/dynamic/dynamicinformer"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -285,6 +286,9 @@ func (c *InformerCache) Retrieve(key CacheKey) ([]*unstructured.Unstructured, er
 	lister := gi.Lister().ByNamespace(key.Namespace)
 	obj, err := lister.Get(key.Name)
 	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil, nil
+		}
 		return nil, errors.Wrapf(err, "fetching %v", key)
 	}
 	u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
