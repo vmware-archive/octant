@@ -1,18 +1,16 @@
+import React from 'react'
+import QuickViewTitle from './components/QuickView/components/Title'
+import { ResourceObject } from './schema'
 import './quickview.scss'
 
-import * as React from 'react'
-
-import { ResourceObject } from './schema'
-
 interface Props {
-  name: string;
   object: ResourceObject;
 }
 
-class QuickView extends React.Component<Props, any> {
-  render() {
-    return <div className='quickView'>quick view for {this.props.name}</div>
-  }
+export default function({ object }: Props) {
+  return (
+    <div className='quickView'>
+      <QuickViewTitle name={object.name} kind={object.kind} />
+    </div>
+  )
 }
-
-export default QuickView

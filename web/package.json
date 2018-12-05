@@ -39,7 +39,7 @@
     "format": "prettier-eslint --write ./src/**/*.js",
     "fix": "npm run csslint:fix && npm run format",
     "tslint": "tslint \"./src/**/*.{ts,tsx}\" --project .",
-    "tslint-fix": "npm run tslint -- --fix"
+    "tslint:fix": "npm run tslint -- --fix"
   },
   "jest": {
     "collectCoverageFrom": [
@@ -56,7 +56,7 @@
     "testURL": "http://localhost",
     "transform": {
       "^.+\\.(js|jsx|mjs)$": "<rootDir>/node_modules/babel-jest",
-      "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js",
+      "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest",
       "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
       "^.+\\.scss$": "<rootDir>/config/jest/cssTransform.js",
       "^(?!.*\\.(js|jsx|mjs|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
@@ -79,8 +79,8 @@
       "jsx",
       "node",
       "mjs",
-      ".ts",
-      ".tsx"
+      "ts",
+      "tsx"
     ]
   },
   "standard": {

@@ -13,8 +13,8 @@ import './styles.scss'
 interface AppState {
   isLoading: boolean;
   hasError: boolean;
-  navigation: { sections: NavLink[] };
-  currentNavLinkPath: NavLink[];
+  navigation: { sections: NavigationSectionType[] };
+  currentNavLinkPath: NavigationSectionType[];
   namespaceOption: NamespaceOption;
   namespaceOptions: NamespaceOption[];
   title: string;

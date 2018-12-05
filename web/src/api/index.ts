@@ -1,7 +1,5 @@
 import queryString from 'query-string'
 
-import mocks from './mock'
-
 declare global {
   interface Window {
     API_BASE: string;
@@ -23,7 +21,7 @@ interface BuildRequestParams {
   data?: object;
 }
 
-async function buildRequest(params: BuildRequestParams) {
+async function buildRequest(params: BuildRequestParams): Promise<any> {
   const apiBase = getAPIBase()
 
   const { endpoint, method, data } = params
@@ -55,7 +53,7 @@ async function buildRequest(params: BuildRequestParams) {
     }
   }
 
-  return Promise.resolve(mocks[endpoint])
+  return Promise.resolve(null)
 }
 
 export function getNavigation() {

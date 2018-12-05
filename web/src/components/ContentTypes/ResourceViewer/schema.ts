@@ -1,4 +1,5 @@
 export interface Schema {
+  type: string;
   adjacencyList: AdjacencyList;
   objects: ResourceObjects;
   selected: string;
