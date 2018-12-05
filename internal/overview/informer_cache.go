@@ -16,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -39,15 +40,19 @@ func InformerCacheLoggerOpt(logger log.Logger) InformerCacheOpt {
 	}
 }
 
+type informerKey struct {
+	namespace string
+	gvk       schema.GroupVersionKind
+}
+
 // InformerCache caches
 type InformerCache struct {
-	client           dynamic.Interface
-	restMapper       meta.RESTMapper
-	factories        map[string]dynamicinformer.DynamicSharedInformerFactory
-	handlerInstalled map[cache.SharedInformer]bool // Whether events handlers have been installed for a particular informer
-	logger           log.Logger
+	client     dynamic.Interface
+	restMapper meta.RESTMapper
+	informers  map[informerKey]informers.GenericInformer
+	logger     log.Logger
 
-	mu             sync.Mutex
+	mu             sync.RWMutex
 	internalNotify chan CacheNotification
 	notifyCh       chan<- CacheNotification
 	stopCh         <-chan struct{}
@@ -58,11 +63,10 @@ var _ Cache = (*InformerCache)(nil)
 // NewInformerCache creates a new InformerCache.
 func NewInformerCache(stopCh <-chan struct{}, client dynamic.Interface, restMapper meta.RESTMapper, opts ...InformerCacheOpt) *InformerCache {
 	c := &InformerCache{
-		client:           client,
-		restMapper:       restMapper,
-		stopCh:           stopCh,
-		factories:        make(map[string]dynamicinformer.DynamicSharedInformerFactory),
-		handlerInstalled: make(map[cache.SharedInformer]bool),
+		client:     client,
+		restMapper: restMapper,
+		stopCh:     stopCh,
+		informers:  make(map[informerKey]informers.GenericInformer),
 	}
 
 	for _, opt := range opts {
@@ -111,22 +115,64 @@ func (c *InformerCache) runNotifyHandler() {
 	}
 }
 
-func (c *InformerCache) factoryForNamespace(namespace string) dynamicinformer.DynamicSharedInformerFactory {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
+func (c *InformerCache) informerForKey(ck CacheKey) (informers.GenericInformer, error) {
+	var namespace = ck.Namespace
 	if namespace == "" {
 		namespace = "default"
 	}
 
-	f, ok := c.factories[namespace]
-	if ok {
-		return f
+	gvk := schema.FromAPIVersionAndKind(ck.APIVersion, ck.Kind)
+	key := informerKey{
+		namespace: namespace,
+		gvk:       gvk,
 	}
 
-	f = dynamicinformer.NewFilteredDynamicSharedInformerFactory(c.client, 180*time.Second, namespace, nil)
-	c.factories[namespace] = f
-	return f
+	{
+		// Fastpath
+		c.mu.RLock()
+		informer, ok := c.informers[key]
+		c.mu.RUnlock()
+		if ok {
+			return informer, nil
+		}
+	}
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if informer, ok := c.informers[key]; ok {
+		return informer, nil
+	}
+
+	// Create a new informer here
+	restMapping, err := c.restMapper.RESTMapping(gvk.GroupKind())
+	if err != nil {
+		return nil, errors.Wrapf(err, "mapping %v", gvk.String())
+	}
+	gvr := restMapping.Resource
+	gi := dynamicinformer.NewFilteredDynamicInformer(c.client, gvr, namespace, 180*time.Second, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, nil)
+
+	// Install handlers, start fetching resources
+	informer := gi.Informer()
+	c.installHandler(informer)
+	go informer.Run(c.stopCh) // (as in dynamicSharedInformerFactory.Start())
+
+	// Until upstream issue in the wait package is resolved, we *must* ensure that the
+	// stopCh passed to WaitForCacheSync is closed to avoid leaking goroutines spawned within.
+	// We create a new channel for this purpose, as we do not want to cancel our factories and watches.
+	// See https://github.com/kubernetes/kubernetes/pull/71326
+	ctx, cancel := channelContext(c.stopCh)
+	defer cancel()
+
+	// Block until cache is synced or context is closed via c.stopCh.
+	// Note the context must be closed even after uninterrupted return
+	// to ensure cleanup of resources.
+	if !cache.WaitForCacheSync(ctx.Done(), informer.HasSynced) {
+		return nil, errors.New("shutdown requested")
+	}
+	c.informers[key] = gi
+
+	return gi, nil
 }
 
 // keyForObject returns a CacheKey representing a runtime.Object
@@ -171,16 +217,9 @@ func (c *InformerCache) sendNotification(obj interface{}, action CacheAction) er
 	return nil
 }
 
-// installHandler installs an event handler on the supplied informer, unless
-// a previous handler was already installed.
+// installHandler installs an event handler on the supplied informer
 // The handler will forward cache notifications.
 func (c *InformerCache) installHandler(informer cache.SharedInformer) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if c.handlerInstalled[informer] {
-		return
-	}
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			if err := c.sendNotification(obj, CacheStore); err != nil {
@@ -201,7 +240,6 @@ func (c *InformerCache) installHandler(informer cache.SharedInformer) {
 			}
 		},
 	})
-	c.handlerInstalled[informer] = true
 }
 
 // channelContext returns a cancellation context that acts as the child of
@@ -232,35 +270,9 @@ func (c *InformerCache) Retrieve(key CacheKey) ([]*unstructured.Unstructured, er
 		return nil, errors.New("kind is required")
 	}
 
-	factory := c.factoryForNamespace(key.Namespace)
-
-	gvk := schema.FromAPIVersionAndKind(key.APIVersion, key.Kind)
-	restMapping, err := c.restMapper.RESTMapping(gvk.GroupKind())
-	if err != nil {
-		return nil, errors.Wrapf(err, "mapping %v", gvk.String())
-	}
-
-	// c.logger.With("key", key, "gvk", gvk, "resource", restMapping.Resource).Debugf("fetching")
-	gi := factory.ForResource(restMapping.Resource)
-	informer := gi.Informer()
-	c.installHandler(informer)
-	factory.Start(c.stopCh) // Start fetching resources now (if first time using this informer)
-
-	// <WORKAROUND>
-	// Until upstream issue in the wait package is resolved, we *must* ensure that the
-	// stopCh passed to WaitForCacheSync is closed to avoid leaking goroutines spawned within.
-	// We create a new channel for this purpose, as we do not want to cancel our factories and watches.
-	ctx, cancel := channelContext(c.stopCh)
-	defer cancel()
-	// </WORKAROUND>
-
-	// Block until cache is synced or context is closed via c.stopCh.
-	// Note the context must be closed even after uninterrupted return
-	// to ensure cleanup of resources.
-	if !cache.WaitForCacheSync(ctx.Done(), informer.HasSynced) {
-		return nil, errors.New("shutdown requested")
-	}
-	// c.logger.With("key", key, "gvk", gvk, "resource", restMapping.Resource).Debugf("cache sync complete")
+	// NOTE: This blocks when setting up new informers
+	// TODO: Pass context for timeout
+	gi, err := c.informerForKey(key)
 
 	// Handle list operation
 	if key.Name == "" {
