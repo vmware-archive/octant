@@ -107,7 +107,7 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
     )
   }
 
-  renderViewsWithoutTabs = (contents: object[]) => {
+  renderViewsWithoutTabs = (contents: Content[]) => {
     return contents.map((content, i) => (
       <div key={i} className='component--primary'>
         <Content content={content} />

@@ -6,8 +6,8 @@ import getNavLinkPath from './getNavLinkPath'
 interface InitialState {
   isLoading?: boolean;
   hasError?: boolean;
-  navigation?: { sections: NavLink[] };
-  currentNavLinkPath?: NavLink[];
+  navigation?: { sections: NavigationSectionType[] };
+  currentNavLinkPath?: NavigationSectionType[];
   namespaceOption?: NamespaceOption;
   namespaceOptions?: NamespaceOption[];
 }
