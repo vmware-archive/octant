@@ -22,6 +22,7 @@ matrix:
         before_install:
           - npm i -g npm@6.4.1
       - os: windows
+        if: branch = master
         cache:
           directories:
             - $HOME/AppData/Local/go-build
