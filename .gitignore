@@ -4,6 +4,8 @@
 *.dll
 *.so
 *.dylib
+*.nupkg
+*.bak
 
 rice-box.go
 
