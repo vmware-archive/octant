@@ -13,6 +13,7 @@ import './styles.scss'
 interface AppState {
   isLoading: boolean;
   hasError: boolean;
+  errorMessage: string;
   navigation: { sections: NavigationSectionType[] };
   currentNavLinkPath: NavigationSectionType[];
   namespaceOption: NamespaceOption;
@@ -29,6 +30,7 @@ class App extends Component<RouteComponentProps, AppState> {
       title: '',
       isLoading: true, // to do the initial data fetch
       hasError: false,
+      errorMessage: '',
       navigation: null,
       currentNavLinkPath: [],
       namespaceOption: null,
@@ -67,10 +69,16 @@ class App extends Component<RouteComponentProps, AppState> {
     }
   }
 
+  setError = (hasError: boolean, errorMessage?: string): void => {
+    errorMessage = errorMessage || 'Oops, something is not right, try again.'
+    this.setState({ hasError, errorMessage })
+  }
+
   render() {
     const {
       isLoading,
       hasError,
+      errorMessage,
       navigation,
       currentNavLinkPath,
       namespaceOptions,
@@ -119,8 +127,9 @@ class App extends Component<RouteComponentProps, AppState> {
                     namespace={currentNamespace}
                     isLoading={isLoading}
                     hasError={hasError}
+                    errorMessage={errorMessage}
                     setIsLoading={(loading) => this.setState({ isLoading: loading })}
-                    setHasError={(error) => this.setState({ hasError: error })}
+                    setError={this.setError}
                   />
                 )}
               />
