@@ -74,11 +74,9 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
       this.props.setIsLoading(false)
     })
 
-    // if EventSource error clear close
     this.source.addEventListener('error', () => {
-      this.setState({ data: null })
       this.props.setIsLoading(false)
-      this.props.setError(true)
+      this.props.setError(true, 'Looks like the backend source has gone away. Retrying...')
     })
   }
 
