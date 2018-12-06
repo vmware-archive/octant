@@ -204,6 +204,15 @@ func TestInformerCache_Watch(t *testing.T) {
 
 	require.Len(t, found, 1)
 
+	// drain initial object notifications (we expect an ADD followed by an UPDATE)
+	for i := 0; i < 2; i++ {
+		select {
+		case <-time.After(500 * time.Millisecond):
+			t.Fatal("timed out wating for create object to notify")
+		case <-notifyCh:
+		}
+	}
+
 	// define new object
 	obj := &unstructured.Unstructured{}
 	obj.SetAPIVersion("apps/v1")
