@@ -46,7 +46,7 @@ class ResourceViewer extends React.Component<Props, State> {
           schema={this.props.schema}
           setCurrentResource={this.setCurrentResource}
         />
-        {currentObject ? <QuickView object={currentObject} /> : null }
+        {currentObject ? <QuickView object={currentObject} /> : null}
       </div>
     )
   }

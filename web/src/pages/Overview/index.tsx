@@ -15,9 +15,10 @@ export interface OverviewProps {
   namespace: string;
   isLoading: boolean;
   hasError: boolean;
+  errorMessage: string;
 
   setIsLoading(isLoading: boolean);
-  setHasError(hasError: boolean);
+  setError(hasError: boolean, errorMessage?: string): void;
 }
 
 interface OverviewState {
@@ -73,14 +74,9 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
       this.props.setIsLoading(false)
     })
 
-    // if EventSource error clear close
     this.source.addEventListener('error', () => {
-      this.setState({ data: null })
       this.props.setIsLoading(false)
-      this.props.setHasError(true)
-
-      this.source.close()
-      this.source = null
+      this.props.setError(true, 'Looks like the backend source has gone away. Retrying...')
     })
   }
 
@@ -122,11 +118,13 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
       'error-content-text': hasError === true,
     })
 
+    const { errorMessage } = this.props
+
     return (
       <div className='component--primary'>
         <h3 className={classNames}>
           {hasError === true
-            ? 'Oops, something is not right, try again.'
+            ? errorMessage
             : 'There is nothing to display here'}
         </h3>
       </div>
