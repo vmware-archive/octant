@@ -79,9 +79,6 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
       this.setState({ data: null })
       this.props.setIsLoading(false)
       this.props.setError(true)
-
-      this.source.close()
-      this.source = null
     })
   }
 
