@@ -273,6 +273,9 @@ func (c *InformerCache) Retrieve(key CacheKey) ([]*unstructured.Unstructured, er
 	// NOTE: This blocks when setting up new informers
 	// TODO: Pass context for timeout
 	gi, err := c.informerForKey(key)
+	if err != nil {
+		return nil, err
+	}
 
 	// Handle list operation
 	if key.Name == "" {

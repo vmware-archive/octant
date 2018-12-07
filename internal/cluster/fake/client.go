@@ -139,7 +139,6 @@ func NewSimpleDynamicClient(scheme *runtime.Scheme, restMapper meta.RESTMapper, 
 
 		gvk, err := restMapper.KindFor(gvr)
 		if err != nil {
-			fmt.Printf("OH NO THE SKY IS FALLING %#v -> %#v\n", gvr, err)
 			return false, nil, fmt.Errorf("no registered kind for resource: %v", gvr.String())
 		}
 

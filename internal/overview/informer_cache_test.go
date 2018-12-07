@@ -32,6 +32,46 @@ var resources = []*metav1.APIResourceList{
 		},
 	},
 	{
+		GroupVersion: "extensions/v1beta1",
+		APIResources: []metav1.APIResource{
+			metav1.APIResource{
+				Name:         "ingresses",
+				SingularName: "ingress",
+				Group:        "extensions",
+				Version:      "v1beta1",
+				Kind:         "Ingress",
+				Namespaced:   true,
+				Verbs:        metav1.Verbs{"list", "watch"},
+				Categories:   []string{"all"},
+			},
+		},
+	},
+	{
+		GroupVersion: "v1",
+		APIResources: []metav1.APIResource{
+			metav1.APIResource{
+				Name:         "services",
+				SingularName: "service",
+				Group:        "",
+				Version:      "v1",
+				Kind:         "Service",
+				Namespaced:   true,
+				Verbs:        metav1.Verbs{"list", "watch"},
+				Categories:   []string{"all"},
+			},
+			metav1.APIResource{
+				Name:         "secrets",
+				SingularName: "secret",
+				Group:        "",
+				Version:      "v1",
+				Kind:         "Secret",
+				Namespaced:   true,
+				Verbs:        metav1.Verbs{"list", "watch"},
+				Categories:   []string{"all"},
+			},
+		},
+	},
+	{
 		GroupVersion: "bar/v1",
 		APIResources: []metav1.APIResource{
 			metav1.APIResource{
