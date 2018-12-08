@@ -3,6 +3,7 @@ package module
 import (
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/stretchr/testify/require"
@@ -28,6 +29,12 @@ func TestManager(t *testing.T) {
 
 	manager.SetNamespace("other")
 	manager.Unload()
+}
+
+func TestManager_badClient(t *testing.T) {
+	var badClient cluster.ClientInterface
+	_, err := NewManager(badClient, "default", log.NopLogger())
+	require.Error(t, err)
 }
 
 func newUnstructured(apiVersion, kind, namespace, name string) *unstructured.Unstructured {

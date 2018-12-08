@@ -43,9 +43,12 @@ func NewManager(clusterClient cluster.ClientInterface, namespace string, logger 
 
 // Load loads modules.
 func (m *Manager) Load() error {
-	modules := []Module{
-		overview.NewClusterOverview(m.clusterClient, m.namespace, m.logger),
+	overviewModule, err := overview.NewClusterOverview(m.clusterClient, m.namespace, m.logger)
+	if err != nil {
+		return errors.Wrap(err, "loading overview module")
 	}
+
+	modules := []Module{overviewModule}
 
 	for _, module := range modules {
 		if err := module.Start(); err != nil {

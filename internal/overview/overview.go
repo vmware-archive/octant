@@ -10,6 +10,7 @@ import (
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/pkg/errors"
 	"k8s.io/client-go/restmapper"
 )
 
@@ -30,7 +31,7 @@ type ClusterOverview struct {
 }
 
 // NewClusterOverview creates an instance of ClusterOverview.
-func NewClusterOverview(client cluster.ClientInterface, namespace string, logger log.Logger) *ClusterOverview {
+func NewClusterOverview(client cluster.ClientInterface, namespace string, logger log.Logger) (*ClusterOverview, error) {
 	stopCh := make(chan struct{})
 
 	var opts []InformerCacheOpt
@@ -47,22 +48,23 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string, logger
 		opts = append(opts, InformerCacheNotificationOpt(ch, stopCh))
 	}
 
+	if client == nil {
+		return nil, errors.New("nil cluster client")
+	}
+
 	dynamicClient, err := client.DynamicClient()
 	if err != nil {
-		// TODO error handling
-		return nil
+		return nil, errors.Wrapf(err, "creating DynamicClient")
 	}
 	di, err := client.DiscoveryClient()
 	if err != nil {
-		// TODO error handling
-		return nil
+		return nil, errors.Wrapf(err, "creating DiscoveryClient")
 	}
 
 	groupResources, err := restmapper.GetAPIGroupResources(di)
 	if err != nil {
 		logger.Errorf("discovering APIGroupResources: %v", err)
-		// TODO error handling
-		return nil
+		return nil, errors.Wrapf(err, "mapping APIGroupResources")
 	}
 	rm := restmapper.NewDiscoveryRESTMapper(groupResources)
 
@@ -83,7 +85,7 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string, logger
 		generator: g,
 		stopCh:    stopCh,
 	}
-	return co
+	return co, nil
 }
 
 // Name returns the name for this module.
