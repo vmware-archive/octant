@@ -19,7 +19,11 @@ func TestClusterOverview(t *testing.T) {
 	clusterClient, err := fake.NewClient(scheme, resources, objects)
 	require.NoError(t, err)
 
-	o := NewClusterOverview(clusterClient, "default", log.NopLogger())
+	o, err := NewClusterOverview(clusterClient, "default", log.NopLogger())
+	require.NoError(t, err)
+	if o == nil {
+		return
+	}
 
 	assert.Equal(t, "overview", o.Name())
 	assert.Equal(t, "/overview", o.ContentPath())
@@ -34,7 +38,11 @@ func TestClusterOverview_SetNamespace(t *testing.T) {
 	clusterClient, err := fake.NewClient(scheme, resources, objects)
 	require.NoError(t, err)
 
-	o := NewClusterOverview(clusterClient, "default", log.NopLogger())
+	o, err := NewClusterOverview(clusterClient, "default", log.NopLogger())
+	require.NoError(t, err)
+	if o == nil {
+		return
+	}
 	defer o.Stop()
 
 	err = o.SetNamespace("ns2")
