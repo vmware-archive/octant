@@ -1,86 +1,83 @@
 import './graph.scss'
 
-import * as React from 'react'
-
-import { Connections } from './connections'
-import Resource, { Rect } from './resource'
-import { Schema } from './schema'
+import React from 'react'
+import isEqual from 'react-fast-compare'
+import dagreD3 from 'dagre-d3'
+import * as d3 from 'd3'
 
 interface Props {
-  rows: Array<Set<string>>;
-  schema: Schema;
-  setCurrentResource(name: string): void;
+  nodes: any;
+  edges: any[];
+  height?: string;
+  width?: string;
+  shapeRenders?: any;
+  onNodeClick(name: string): void;
 }
 
-interface State {
-  offsets: {
-    [key: string]: Rect;
-  };
-  schema: Schema;
-  selected: string;
-}
+class Graph extends React.Component<Props> {
+  private nodeTree = React.createRef<SVGSVGElement>()
+  private nodeTreeGroup = React.createRef<SVGGElement>()
 
-class Graph extends React.Component<Props, State> {
-  static getDerivedStateFromProps(props: Props, state: State) {
-    if (JSON.stringify(props.schema) !== JSON.stringify(state.schema)) {
-      return {
-        offsets: {},
-        schema: props.schema,
-      }
-    }
-    return null
+  shouldComponentUpdate(nextProps: Props, _): boolean {
+    return (
+      !isEqual(this.props.nodes, nextProps.nodes) ||
+      !isEqual(this.props.edges, nextProps.edges)
+    )
   }
 
-  constructor(props: Props) {
-    super(props)
-    this.setOffset = this.setOffset.bind(this)
-    this.state = {
-      offsets: {},
-      schema: props.schema,
-      selected: props.schema.selected,
+  componentDidMount() {
+    this.renderDag()
+  }
+
+  componentDidUpdate() {
+    this.renderDag()
+  }
+
+  renderDag() {
+    const g = new dagreD3.graphlib.Graph().setGraph({})
+
+    for (const [id, node] of Object.entries(this.props.nodes)) {
+      g.setNode(id, node)
     }
 
-    this.updateSelected = this.updateSelected.bind(this)
-  }
+    for (const edge of this.props.edges) {
+      g.setEdge(edge[0], edge[1], edge[2])
+    }
 
-  setOffset(name: string, rect: Rect) {
-    const offsets = this.state.offsets
-    offsets[name] = rect
-    this.setState({ offsets })
-  }
+    const svg = d3.select(this.nodeTree.current)
+    const inner = d3.select(this.nodeTreeGroup.current)
 
-  updateSelected(name: string) {
-    this.props.setCurrentResource(name)
-    this.setState({ selected: name })
+    const render = new dagreD3.render()
+
+    // @ts-ignore
+    render(inner, g)
+
+    const { height: gHeight, width: gWidth } = g.graph()
+    const { height, width } = this.nodeTree.current.getBBox()
+    const transX = width - gWidth + 40
+    const transY = height - gHeight + 40
+    svg.attr('height', height + 80)
+    svg.attr('width', width + 80)
+    // @ts-ignore
+    inner.attr('transform', d3.zoomIdentity.translate(transX, transY))
+
+    if (this.props.onNodeClick) {
+      svg.selectAll('g.node').on('click', (id) => {
+        this.props.onNodeClick(id as string)
+      })
+    }
   }
 
   render() {
-    const rows = this.props.rows.map((row, rowID) => {
-      const columns = [...row].map((name, columnID) => {
-        const object = this.props.schema.objects[name]
-        return (
-          <Resource
-            key={columnID}
-            name={name}
-            object={object}
-            selected={this.state.selected === name}
-            updateSelected={this.updateSelected}
-            setOffset={this.setOffset}
-          />
-        )
-      })
-      return (
-        <div key={rowID} className='row'>
-          {columns}
-        </div>
-      )
-    })
-
     return (
-      <div className='graph'>
-        <Connections offsets={this.state.offsets} adjacencyList={this.state.schema.adjacencyList} />
-        {rows}
-      </div>
+      <svg
+        className='dagre-d3'
+        ref={this.nodeTree}
+        width={this.props.height}
+        height={this.props.width}
+      >
+        <g ref={this.nodeTreeGroup} />
+      </svg>
     )
   }
 }
