@@ -93,43 +93,6 @@ func visitKeyForObject(obj runtime.Object) visitKey {
 	return visitKey{uid}
 }
 
-// TODO
-func statusForPod(pod *core.Pod) content.NodeStatus {
-	return content.NodeStatusOK
-}
-
-func statusForPodGroup(grp *podGroup) content.NodeStatus {
-	return content.NodeStatusOK
-}
-
-func statusForService(svc *core.Service) content.NodeStatus {
-	return content.NodeStatusOK
-}
-
-func statusForIngress(ingress *v1beta1.Ingress) content.NodeStatus {
-	return content.NodeStatusOK
-}
-
-func statusForReplicaSet(replicaSet *extensions.ReplicaSet) content.NodeStatus {
-	return content.NodeStatusOK
-}
-
-func statusForDeployment(deployment *extensions.Deployment) content.NodeStatus {
-	return content.NodeStatusOK
-}
-
-func statusForStatefulSet(s *apps.StatefulSet) content.NodeStatus {
-	return content.NodeStatusOK
-}
-
-func statusForReplicationController(rc *core.ReplicationController) content.NodeStatus {
-	return content.NodeStatusOK
-}
-
-func statusForDaemonSet(ds *extensions.DaemonSet) content.NodeStatus {
-	return content.NodeStatusOK
-}
-
 func (wid *workloadInspectorView) visitPod(ctx context.Context, pod *core.Pod, c Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
 	if pod == nil {
 		return errors.New("nil pod")
@@ -395,11 +358,16 @@ func (wid *workloadInspectorView) visitIngress(ctx context.Context, ingress *v1b
 	}
 	visited[key] = true
 
+	statusList, err := statusForIngress(ingress, c)
+	if err != nil {
+		return errors.Wrapf(err, "determining status for ingress %v", ingress.Name)
+	}
+
 	node := &content.Node{
 		Name:       ingress.Name,
 		APIVersion: ingress.APIVersion,
 		Kind:       ingress.Kind,
-		Status:     statusForIngress(ingress),
+		Status:     statusList.Collapse(),
 		IsNetwork:  true,
 		Views:      []content.Content{},
 	}
@@ -407,11 +375,11 @@ func (wid *workloadInspectorView) visitIngress(ctx context.Context, ingress *v1b
 	nodes[uid] = node
 
 	// Handle edges
-	backends, err := listServiceBackends(ingress, c)
+	backends, err := listIngressBackends(ingress, c)
 	if err != nil {
 		return errors.Wrapf(err, "listing backends for ingress %v", ingress.Name)
 	}
-	services, err := loadServices(backends, ingress.Namespace, c)
+	services, err := loadServices(serviceNames(backends), ingress.Namespace, c)
 	if err != nil {
 		return errors.Wrapf(err, "loading backends for ingress %v", ingress.Name)
 	}
@@ -540,7 +508,7 @@ func (wid *workloadInspectorView) visitDaemonSet(ctx context.Context, ds *extens
 	return nil
 }
 
-func listServiceBackends(ingress *v1beta1.Ingress, c Cache) ([]string, error) {
+func listIngressPaths(ingress *v1beta1.Ingress, c Cache) ([]v1beta1.HTTPIngressPath, error) {
 	if ingress == nil {
 		return nil, errors.New("nil ingress")
 	}
@@ -548,10 +516,31 @@ func listServiceBackends(ingress *v1beta1.Ingress, c Cache) ([]string, error) {
 		return nil, errors.New("nil cache")
 	}
 
-	var backends []string
+	var paths []v1beta1.HTTPIngressPath
 
-	if ingress.Spec.Backend != nil {
-		backends = append(backends, ingress.Spec.Backend.ServiceName)
+	for _, rule := range ingress.Spec.Rules {
+		if rule.IngressRuleValue.HTTP == nil {
+			continue
+		}
+		for _, p := range rule.IngressRuleValue.HTTP.Paths {
+			paths = append(paths, p)
+		}
+	}
+
+	return paths, nil
+}
+func listIngressBackends(ingress *v1beta1.Ingress, c Cache) ([]v1beta1.IngressBackend, error) {
+	if ingress == nil {
+		return nil, errors.New("nil ingress")
+	}
+	if c == nil {
+		return nil, errors.New("nil cache")
+	}
+
+	var backends []v1beta1.IngressBackend
+
+	if ingress.Spec.Backend != nil && ingress.Spec.Backend.ServiceName != "" {
+		backends = append(backends, *ingress.Spec.Backend)
 	}
 
 	for _, rule := range ingress.Spec.Rules {
@@ -559,7 +548,10 @@ func listServiceBackends(ingress *v1beta1.Ingress, c Cache) ([]string, error) {
 			continue
 		}
 		for _, p := range rule.IngressRuleValue.HTTP.Paths {
-			backends = append(backends, p.Backend.ServiceName)
+			if p.Backend.ServiceName == "" {
+				continue
+			}
+			backends = append(backends, p.Backend)
 		}
 	}
 
@@ -594,6 +586,17 @@ func loadServices(serviceNames []string, namespace string, c Cache) ([]*core.Ser
 	return services, nil
 }
 
+func loadService(name string, namespace string, c Cache) (*core.Service, error) {
+	services, err := loadServices([]string{name}, namespace, c)
+	if err != nil {
+		return nil, err
+	}
+	if len(services) < 1 {
+		return nil, nil
+	}
+	return services[0], nil
+}
+
 // Reverse-lookup ingresses that point to a service
 func findIngressesForService(svc *core.Service, c Cache) ([]*v1beta1.Ingress, error) {
 	var results []*v1beta1.Ingress
@@ -622,11 +625,11 @@ func findIngressesForService(svc *core.Service, c Cache) ([]*v1beta1.Ingress, er
 		if err := copyObjectMeta(ingress, u); err != nil {
 			return nil, errors.Wrap(err, "copying object metadata")
 		}
-		backends, err := listServiceBackends(ingress, c)
+		backends, err := listIngressBackends(ingress, c)
 		if err != nil {
 			return nil, errors.Wrapf(err, "listing backends for ingress: %v", ingress.Name)
 		}
-		if !listContains(backends, svc.Name) {
+		if !containsBackend(backends, svc.Name) {
 			continue
 		}
 
@@ -980,6 +983,15 @@ func listContains(lst []string, s string) bool {
 	return false
 }
 
+func containsBackend(lst []v1beta1.IngressBackend, s string) bool {
+	for _, item := range lst {
+		if item.ServiceName == s {
+			return true
+		}
+	}
+	return false
+}
+
 type podGroup struct {
 	UID    string
 	Name   string
@@ -1050,4 +1062,15 @@ func groupPods(pods []*core.Pod) []*podGroup {
 		}
 	}
 	return results
+}
+
+func serviceNames(backends []v1beta1.IngressBackend) []string {
+	names := make([]string, 0, len(backends))
+	for _, b := range backends {
+		if b.ServiceName == "" {
+			continue
+		}
+		names = append(names, b.ServiceName)
+	}
+	return names
 }
