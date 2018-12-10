@@ -1,16 +1,46 @@
 .resourceViewer {
-  .graph {
-    display: flex;
-    flex-direction: column;
-    margin: 0;
-    position: relative;
-    width: 50%;
+  .node {
+    fill: white;
+
+    rect {
+      stroke: black;
+      stroke-width: 1px;
+    }
+
+    &.selected {
+      rect {
+        stroke-width: 3px;
+      }
+    }
+
+    .label {
+      fill: black;
+    }
+
+    &.node-ok {
+      rect {
+        fill: #a3f94d;
+      }
+    }
+
+    &.node-warning {
+      rect {
+        fill: #ffb630;
+      }
+    }
+
+    &.node-error {
+      rect {
+        fill: #ff3730;
+      }
+    }
   }
 
-  .row {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    margin-bottom: 90px;
+  .edgePath {
+    path.path {
+      stroke: black;
+      fill: black;
+      stroke-width: 1.5px;
+    }
   }
 }

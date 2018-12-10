@@ -1,12 +1,12 @@
 import './index.scss'
+import './resource'
 
 import * as React from 'react'
 
-import Graph from './graph'
-import Grid from './grid'
 import QuickView from './quickview'
 import { Schema } from './schema'
-
+import Graph from './graph'
+import ResourceNode from './node'
 interface Props {
   schema: Schema;
 }
@@ -34,17 +34,29 @@ class ResourceViewer extends React.Component<Props, State> {
     const adjacencyList = this.props.schema.adjacencyList
     const objects = this.props.schema.objects
 
-    const grid = new Grid(adjacencyList, objects)
-    const rows = grid.create()
-
     const currentObject = objects[this.state.currentResource]
+
+    const nodes = {}
+    for (const [id, object] of Object.entries(this.props.schema.objects)) {
+      nodes[id] = new ResourceNode(
+        object,
+        this.state.currentResource === id,
+      ).toDescriptor()
+    }
+
+    const edges = []
+    for (const [node, nodeEdges] of Object.entries(adjacencyList)) {
+      edges.push(...nodeEdges.map((e) => [node, e.node, { arrowhead: 'vee' }]))
+    }
 
     return (
       <div className='resourceViewer'>
         <Graph
-          rows={rows}
-          schema={this.props.schema}
-          setCurrentResource={this.setCurrentResource}
+          width='100%'
+          height='100%'
+          nodes={nodes}
+          edges={edges}
+          onNodeClick={this.setCurrentResource}
         />
         {currentObject ? <QuickView object={currentObject} /> : null}
       </div>
