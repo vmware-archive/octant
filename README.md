@@ -78,7 +78,7 @@ The development server allows running the dashboard while monitoring changes in 
 
 Start the dashboard running on a development server:
 
-`$ make -u ui-client ui-server`
+`$ make -j ui-client ui-server`
 
 Navigate to `localhost:7777` on a browser to view cluster data.
 
