@@ -243,7 +243,18 @@ func (wid *workloadInspectorView) visitDeployment(ctx context.Context, deploymen
 	if err != nil {
 		return errors.Wrapf(err, "fetching replicasets for deployment %v", deployment.Name)
 	}
-	for _, rs := range rsList {
+
+	var currentReplicaSets []*extensions.ReplicaSet
+
+	if rs := findNewReplicaSet(deployment, rsList); rs != nil {
+		currentReplicaSets = append(currentReplicaSets, rs)
+	}
+
+	for _, rs := range findOldReplicaSets(deployment, rsList) {
+		currentReplicaSets = append(currentReplicaSets, rs)
+	}
+
+	for _, rs := range currentReplicaSets {
 		err := wid.visitReplicaSet(ctx, rs, c, nodes, edges, visited)
 		if err != nil {
 			return err
@@ -1053,7 +1064,7 @@ func groupPods(pods []*core.Pod) []*podGroup {
 		if _, ok := m[k]; !ok {
 			uid := fmt.Sprintf("pods-%s", string(k.ownerRef))
 			grp := &podGroup{
-				Name:   uid,
+				Name:   strings.TrimSuffix(k.selector, ","),
 				UID:    uid,
 				Labels: pod.Labels,
 			}
