@@ -3,6 +3,8 @@ package overview
 import (
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/content"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/api/extensions/v1beta1"
@@ -11,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kubernetes/pkg/apis/core"
+	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
 )
 
@@ -371,7 +374,7 @@ spec:
 				ns, err := acc.Namespace(obj)
 				require.NoError(t, err)
 				if ns == "" {
-					err := acc.SetNamespace(obj, "default")
+					err = acc.SetNamespace(obj, "default")
 					require.NoError(t, err)
 				}
 
@@ -403,5 +406,155 @@ spec:
 			}
 		})
 	}
+}
 
+func Test_nodeStatus_check(t *testing.T) {
+	errorList := ResourceStatusList{
+		{
+			Status: content.NodeStatusError,
+			Reason: "failed",
+		},
+	}
+	okList := ResourceStatusList{
+		{
+			Status: content.NodeStatusOK,
+			Reason: "ok",
+		},
+	}
+
+	cases := []struct {
+		name     string
+		checks   []nodeStatusCheck
+		object   runtime.Object
+		isErr    bool
+		expected ResourceStatusList
+	}{
+		{
+			name:   "nil object",
+			object: nil,
+			isErr:  true,
+		},
+		{
+			name: "check failed",
+			checks: []nodeStatusCheck{
+				func(runtime.Object) (ResourceStatusList, error) {
+					return nil, errors.New("failed")
+				},
+			},
+			object: &extensions.Deployment{},
+			isErr:  true,
+		},
+		{
+			name: "check has non ok status",
+			checks: []nodeStatusCheck{
+				func(runtime.Object) (ResourceStatusList, error) {
+					return errorList, nil
+				},
+			},
+			object:   &extensions.Deployment{},
+			expected: errorList,
+		},
+		{
+			name: "all checks are ok",
+			checks: []nodeStatusCheck{
+				func(runtime.Object) (ResourceStatusList, error) {
+					return okList, nil
+				},
+			},
+			object:   &extensions.Deployment{},
+			expected: okList,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			ns := newNodeStatus(tc.checks...)
+			status, err := ns.check(tc.object)
+			if tc.isErr {
+				assert.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			assert.Equal(t, tc.expected, status)
+		})
+	}
+}
+
+func Test_deploymentCheckUnavailable(t *testing.T) {
+
+	cases := []struct {
+		name     string
+		obj      runtime.Object
+		isErr    bool
+		expected ResourceStatusList
+	}{
+		{
+			name:     "in general",
+			obj:      &extensions.Deployment{},
+			expected: nil,
+		},
+		{
+			name:  "not a deployment",
+			obj:   nil,
+			isErr: true,
+		},
+		{
+			name:     "has unavailable replicas",
+			obj:      &extensions.Deployment{Status: extensions.DeploymentStatus{UnavailableReplicas: 1}},
+			expected: ResourceStatusList{deploymentReplicasUnavailable},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			status, err := deploymentCheckUnavailable(tc.obj)
+			if tc.isErr {
+				assert.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			assert.Equal(t, tc.expected, status)
+		})
+	}
+}
+
+func Test_replicaSetCheckAvailable(t *testing.T) {
+	cases := []struct {
+		name     string
+		obj      runtime.Object
+		isErr    bool
+		expected ResourceStatusList
+	}{
+		{
+			name:     "in general",
+			obj:      &extensions.ReplicaSet{},
+			expected: nil,
+		},
+		{
+			name:  "not a replica set",
+			obj:   nil,
+			isErr: true,
+		},
+		{
+			name: "has available replicas",
+			obj: &extensions.ReplicaSet{Status: extensions.ReplicaSetStatus{
+				Replicas: 1, AvailableReplicas: 0}},
+			expected: ResourceStatusList{replicaSetAvailableReplicas},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			status, err := replicasSetCheckAvailableReplicas(tc.obj)
+			if tc.isErr {
+				assert.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			assert.Equal(t, tc.expected, status)
+		})
+	}
 }

@@ -6,10 +6,9 @@ import (
 	"regexp"
 	"sync"
 
-	"k8s.io/api/extensions/v1beta1"
-
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/pkg/errors"
+	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/core"
@@ -97,7 +96,7 @@ var (
 			{
 				Title: "Resource Viewer",
 				Views: []ViewFactory{
-					newWorkloadInspectorView,
+					workloadViewFactory,
 				},
 			},
 		},
@@ -123,7 +122,7 @@ var (
 			{
 				Title: "Resource Viewer",
 				Views: []ViewFactory{
-					newWorkloadInspectorView,
+					workloadViewFactory,
 				},
 			},
 		},
@@ -170,7 +169,7 @@ var (
 			{
 				Title: "Resource Viewer",
 				Views: []ViewFactory{
-					newWorkloadInspectorView,
+					workloadViewFactory,
 				},
 			},
 		},
@@ -196,7 +195,7 @@ var (
 			{
 				Title: "Resource Viewer",
 				Views: []ViewFactory{
-					newWorkloadInspectorView,
+					workloadViewFactory,
 				},
 			},
 		},
@@ -222,7 +221,7 @@ var (
 			{
 				Title: "Resource Viewer",
 				Views: []ViewFactory{
-					newWorkloadInspectorView,
+					workloadViewFactory,
 				},
 			},
 		},
@@ -247,7 +246,7 @@ var (
 			{
 				Title: "Resource Viewer",
 				Views: []ViewFactory{
-					newWorkloadInspectorView,
+					workloadViewFactory,
 				},
 			},
 		},
@@ -285,7 +284,7 @@ var (
 			{
 				Title: "Resource Viewer",
 				Views: []ViewFactory{
-					newWorkloadInspectorView,
+					workloadViewFactory,
 				},
 			},
 		},
@@ -311,7 +310,7 @@ var (
 			{
 				Title: "Resource Viewer",
 				Views: []ViewFactory{
-					newWorkloadInspectorView,
+					workloadViewFactory,
 				},
 			},
 		},

@@ -4,7 +4,9 @@ import (
 	"strconv"
 
 	"github.com/heptio/developer-dash/internal/content"
+	"github.com/pkg/errors"
 	"k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kubernetes/pkg/apis/apps"
@@ -40,6 +42,10 @@ func (l ResourceStatusList) Collapse() content.NodeStatus {
 }
 
 var (
+	deploymentReplicasUnavailable = ResourceStatus{
+		Status: content.NodeStatusWarning,
+		Reason: "One or replicas is unavailable.",
+	}
 	ingressStatusNoBackendsDefined = ResourceStatus{
 		Status: content.NodeStatusWarning,
 		Reason: "No backends defined. All traffic will be sent to the default backend configured for the ingress controller.",
@@ -63,6 +69,10 @@ var (
 	ingressStatusNoMatchingTLSSecret = ResourceStatus{
 		Status: content.NodeStatusError,
 		Reason: "No matching TLS secret could be found.",
+	}
+	replicaSetAvailableReplicas = ResourceStatus{
+		Status: content.NodeStatusWarning,
+		Reason: "Replicas count does not match expected.",
 	}
 )
 
@@ -186,14 +196,6 @@ func matchPort(b v1beta1.IngressBackend, ports []core.ServicePort) bool {
 	return false
 }
 
-func statusForReplicaSet(replicaSet *extensions.ReplicaSet) content.NodeStatus {
-	return content.NodeStatusOK
-}
-
-func statusForDeployment(deployment *extensions.Deployment) content.NodeStatus {
-	return content.NodeStatusOK
-}
-
 func statusForStatefulSet(s *apps.StatefulSet) content.NodeStatus {
 	return content.NodeStatusOK
 }
@@ -219,4 +221,77 @@ func tlsHostMap(ingress *v1beta1.Ingress) map[string]bool {
 		}
 	}
 	return result
+}
+
+// nodeStatusCheck is a function that checks a runtime object and returns
+// a list of statuses.
+type nodeStatusCheck func(runtime.Object) (ResourceStatusList, error)
+
+// nodeStatus runs zero or more status checks for a runtime object.
+type nodeStatus struct {
+	checks []nodeStatusCheck
+}
+
+// newNodeStatus creates an instance of node status given a list of checks.
+func newNodeStatus(checks ...nodeStatusCheck) *nodeStatus {
+	return &nodeStatus{
+		checks: checks,
+	}
+}
+
+// check determines the status for an object using the predefined checks.
+func (ns *nodeStatus) check(obj runtime.Object) (ResourceStatusList, error) {
+	if obj == nil {
+		return nil, errors.New("node is nil")
+	}
+
+	var list ResourceStatusList
+
+	for _, checkFn := range ns.checks {
+		statuses, err := checkFn(obj)
+		if err != nil {
+			return nil, err
+		}
+
+		list = append(list, statuses...)
+
+	}
+
+	return list, nil
+}
+
+// deploymentCheckUnavailable returns a warning if the deployment unavailable replicas
+// count is greater than 1.
+func deploymentCheckUnavailable(obj runtime.Object) (ResourceStatusList, error) {
+	deployment, ok := obj.(*extensions.Deployment)
+	if !ok {
+		return nil, errors.Errorf("expected Deployment; received %T", obj)
+	}
+
+	var list ResourceStatusList
+
+	if deployment.Status.UnavailableReplicas != 0 {
+		list = append(list, deploymentReplicasUnavailable)
+	}
+
+	return list, nil
+}
+
+// replicasSetCheckAvailableReplicas returns a warning if the available replicas
+// does not match the number of total replicas.
+func replicasSetCheckAvailableReplicas(obj runtime.Object) (ResourceStatusList, error) {
+	replicaSet, ok := obj.(*extensions.ReplicaSet)
+	if !ok {
+		return nil, errors.Errorf("expected ReplicaSet; received %T", obj)
+	}
+
+	status := replicaSet.Status
+
+	var list ResourceStatusList
+
+	if status.AvailableReplicas != status.Replicas {
+		list = append(list, replicaSetAvailableReplicas)
+	}
+
+	return list, nil
 }
