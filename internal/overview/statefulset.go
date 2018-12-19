@@ -6,9 +6,9 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 
 	"github.com/pkg/errors"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/kubernetes/pkg/apis/apps"
 )
 
 type StatefulSetSummary struct{}
@@ -43,8 +43,8 @@ func (js *StatefulSetSummary) Content(ctx context.Context, object runtime.Object
 	return contents, nil
 }
 
-func retrieveStatefulSet(object runtime.Object) (*apps.StatefulSet, error) {
-	rc, ok := object.(*apps.StatefulSet)
+func retrieveStatefulSet(object runtime.Object) (*appsv1.StatefulSet, error) {
+	rc, ok := object.(*appsv1.StatefulSet)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a StatefulSet, it was %T", object)
 	}

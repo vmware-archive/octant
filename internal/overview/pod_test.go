@@ -9,13 +9,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	appsv1 "k8s.io/api/apps/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/kubernetes/pkg/apis/apps"
-	"k8s.io/kubernetes/pkg/apis/batch"
-	"k8s.io/kubernetes/pkg/apis/core"
-	"k8s.io/kubernetes/pkg/apis/extensions"
 )
 
 func TestPodList_InvalidObject(t *testing.T) {
@@ -28,7 +27,6 @@ func TestPodList(t *testing.T) {
 	cache := NewMemoryCache()
 
 	rs := loadFromFile(t, "replicaset-1.yaml")
-	rs = convertToInternal(t, rs)
 
 	storeFromFile(t, "rs-pod-1.yaml", cache)
 
@@ -46,6 +44,7 @@ func TestPodList(t *testing.T) {
 		tableCol("IP"),
 		tableCol("Node"),
 		tableCol("Nominated Node"),
+		tableCol("Readiness Gates"),
 		tableCol("Labels"),
 	}
 
@@ -53,15 +52,16 @@ func TestPodList(t *testing.T) {
 	listTable.Columns = podColumns
 	listTable.AddRow(
 		content.TableRow{
-			"Name":           content.NewLinkText("rs1-s8mj8", "/content/overview/workloads/pods/rs1-s8mj8"),
-			"Ready":          content.NewStringText("1/1"),
-			"Status":         content.NewStringText("Running"),
-			"Restarts":       content.NewStringText("0"),
-			"Age":            content.NewStringText("1d"),
-			"IP":             content.NewStringText("10.1.114.100"),
-			"Node":           content.NewStringText("node1"),
-			"Nominated Node": content.NewStringText("<none>"),
-			"Labels":         content.NewStringText("app=myapp,pod-template-hash=2350241137"),
+			"Name":            content.NewLinkText("rs1-s8mj8", "/content/overview/workloads/pods/rs1-s8mj8"),
+			"Ready":           content.NewStringText("1/1"),
+			"Status":          content.NewStringText("Running"),
+			"Restarts":        content.NewStringText("0"),
+			"Age":             content.NewStringText("24h"),
+			"IP":              content.NewStringText("10.1.114.100"),
+			"Node":            content.NewStringText("node1"),
+			"Nominated Node":  content.NewStringText("<none>"),
+			"Readiness Gates": content.NewStringText("<none>"),
+			"Labels":          content.NewStringText("app=myapp,pod-template-hash=2350241137"),
 		},
 	)
 
@@ -88,12 +88,12 @@ func TestPodCondition(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	object := &core.Pod{
-		Status: core.PodStatus{
-			Conditions: []core.PodCondition{
+	object := &corev1.Pod{
+		Status: corev1.PodStatus{
+			Conditions: []corev1.PodCondition{
 				{
-					Type:               core.PodScheduled,
-					Status:             core.ConditionTrue,
+					Type:               corev1.PodScheduled,
+					Status:             corev1.ConditionTrue,
 					LastProbeTime:      lastProbeTime,
 					LastTransitionTime: lastTransitionTime,
 					Reason:             "reason",
@@ -128,11 +128,11 @@ func TestPodCondition(t *testing.T) {
 }
 
 func Test_createPodStatus(t *testing.T) {
-	pods := []*core.Pod{
-		{Status: core.PodStatus{Phase: core.PodRunning}},
-		{Status: core.PodStatus{Phase: core.PodPending}},
-		{Status: core.PodStatus{Phase: core.PodSucceeded}},
-		{Status: core.PodStatus{Phase: core.PodFailed}},
+	pods := []*corev1.Pod{
+		{Status: corev1.PodStatus{Phase: corev1.PodRunning}},
+		{Status: corev1.PodStatus{Phase: corev1.PodPending}},
+		{Status: corev1.PodStatus{Phase: corev1.PodSucceeded}},
+		{Status: corev1.PodStatus{Phase: corev1.PodFailed}},
 	}
 
 	ps := createPodStatus(pods)
@@ -160,8 +160,8 @@ func Test_getSelector(t *testing.T) {
 	}{
 		{
 			name: "daemon set",
-			object: &extensions.DaemonSet{
-				Spec: extensions.DaemonSetSpec{
+			object: &appsv1.DaemonSet{
+				Spec: appsv1.DaemonSetSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: labels,
 					},
@@ -173,8 +173,8 @@ func Test_getSelector(t *testing.T) {
 		},
 		{
 			name: "stateful set",
-			object: &apps.StatefulSet{
-				Spec: apps.StatefulSetSpec{
+			object: &appsv1.StatefulSet{
+				Spec: appsv1.StatefulSetSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: labels,
 					},
@@ -186,13 +186,13 @@ func Test_getSelector(t *testing.T) {
 		},
 		{
 			name:     "job",
-			object:   &batch.Job{},
+			object:   &batchv1beta1.CronJob{},
 			expected: nil,
 		},
 		{
 			name: "replication controller",
-			object: &core.ReplicationController{
-				Spec: core.ReplicationControllerSpec{
+			object: &corev1.ReplicationController{
+				Spec: corev1.ReplicationControllerSpec{
 					Selector: labels,
 				},
 			},
@@ -202,8 +202,8 @@ func Test_getSelector(t *testing.T) {
 		},
 		{
 			name: "replica set",
-			object: &extensions.ReplicaSet{
-				Spec: extensions.ReplicaSetSpec{
+			object: &appsv1.ReplicaSet{
+				Spec: appsv1.ReplicaSetSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: labels,
 					},
@@ -215,13 +215,13 @@ func Test_getSelector(t *testing.T) {
 		},
 		{
 			name:     "empty replica set",
-			object:   &extensions.ReplicaSet{},
+			object:   &appsv1.ReplicaSet{},
 			expected: nil,
 		},
 		{
 			name: "deployment",
-			object: &extensions.Deployment{
-				Spec: extensions.DeploymentSpec{
+			object: &appsv1.Deployment{
+				Spec: appsv1.DeploymentSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: labels,
 					},
@@ -233,14 +233,14 @@ func Test_getSelector(t *testing.T) {
 		},
 		{
 			name:     "empty deployment",
-			object:   &extensions.Deployment{},
+			object:   &appsv1.Deployment{},
 			isErr:    false,
 			expected: nil,
 		},
 		{
 			name: "service",
-			object: &core.Service{
-				Spec: core.ServiceSpec{
+			object: &corev1.Service{
+				Spec: corev1.ServiceSpec{
 					Selector: labels,
 				},
 			},

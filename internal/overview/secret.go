@@ -9,9 +9,9 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
 )
 
@@ -65,7 +65,7 @@ func (js *SecretData) Content(ctx context.Context, object runtime.Object, c Cach
 	for _, key := range keys {
 		data := secret.Data[key]
 		switch {
-		case key == core.ServiceAccountTokenKey && secret.Type == core.SecretTypeServiceAccountToken:
+		case key == corev1.ServiceAccountTokenKey && secret.Type == corev1.SecretTypeServiceAccountToken:
 			dataSection.AddText(key, strings.TrimSpace(string(data)))
 		default:
 			dataSection.AddText(key, fmt.Sprintf("%d bytes", len(data)))
@@ -79,8 +79,8 @@ func (js *SecretData) Content(ctx context.Context, object runtime.Object, c Cach
 	}, nil
 }
 
-func retrieveSecret(object runtime.Object) (*core.Secret, error) {
-	rc, ok := object.(*core.Secret)
+func retrieveSecret(object runtime.Object) (*corev1.Secret, error) {
+	rc, ok := object.(*corev1.Secret)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a Secret, it was %T", object)
 	}
@@ -88,7 +88,7 @@ func retrieveSecret(object runtime.Object) (*core.Secret, error) {
 	return rc, nil
 }
 
-func listSecrets(namespace string, c Cache) ([]*core.Secret, error) {
+func listSecrets(namespace string, c Cache) ([]*corev1.Secret, error) {
 	key := CacheKey{
 		Namespace:  namespace,
 		APIVersion: "v1",
@@ -98,16 +98,16 @@ func listSecrets(namespace string, c Cache) ([]*core.Secret, error) {
 	return loadSecrets(key, c)
 }
 
-func loadSecrets(key CacheKey, c Cache) ([]*core.Secret, error) {
+func loadSecrets(key CacheKey, c Cache) ([]*corev1.Secret, error) {
 	objects, err := c.Retrieve(key)
 	if err != nil {
 		return nil, err
 	}
 
-	var list []*core.Secret
+	var list []*corev1.Secret
 
 	for _, object := range objects {
-		e := &core.Secret{}
+		e := &corev1.Secret{}
 		if err := scheme.Scheme.Convert(object, e, runtime.InternalGroupVersioner); err != nil {
 			return nil, err
 		}

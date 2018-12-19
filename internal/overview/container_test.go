@@ -8,12 +8,12 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/kubernetes/pkg/apis/apps"
-	"k8s.io/kubernetes/pkg/apis/batch"
-	"k8s.io/kubernetes/pkg/apis/core"
-	"k8s.io/kubernetes/pkg/apis/extensions"
 )
 
 func TestContainerSummary_invalid_object(t *testing.T) {
@@ -23,8 +23,7 @@ func TestContainerSummary_invalid_object(t *testing.T) {
 func TestContainerSummary(t *testing.T) {
 	ctx := context.Background()
 	object := loadFromFile(t, "cronjob-1.yaml")
-	var cronJob *batch.CronJob
-	cronJob, ok := convertToInternal(t, object).(*batch.CronJob)
+	cronJob, ok := object.(*batchv1beta1.CronJob)
 	require.True(t, ok)
 	cache := NewMemoryCache()
 
@@ -64,67 +63,71 @@ func TestContainerSummary(t *testing.T) {
 }
 
 func Test_podTemplateSpec(t *testing.T) {
-	pts := core.PodTemplateSpec{}
+	pts := corev1.PodTemplateSpec{}
 
 	cases := []struct {
 		name     string
 		object   runtime.Object
-		expected *core.PodTemplateSpec
+		expected *corev1.PodTemplateSpec
 		isErr    bool
 	}{
 		{
 			name: "cronjob",
-			object: &batch.CronJob{
-				Spec: batch.CronJobSpec{
-					JobTemplate: batch.JobTemplateSpec{
-						Spec: batch.JobSpec{
-							Template: pts}}}},
+			object: &batchv1beta1.CronJob{
+				Spec: batchv1beta1.CronJobSpec{
+					JobTemplate: batchv1beta1.JobTemplateSpec{
+						Spec: batchv1.JobSpec{
+							Template: pts,
+						},
+					},
+				},
+			},
 			expected: &pts,
 		},
 		{
 			name: "daemonset",
-			object: &extensions.DaemonSet{
-				Spec: extensions.DaemonSetSpec{
+			object: &appsv1.DaemonSet{
+				Spec: appsv1.DaemonSetSpec{
 					Template: pts},
 			},
 			expected: &pts,
 		},
 		{
 			name: "deployment",
-			object: &extensions.Deployment{
-				Spec: extensions.DeploymentSpec{
+			object: &appsv1.Deployment{
+				Spec: appsv1.DeploymentSpec{
 					Template: pts},
 			},
 			expected: &pts,
 		},
 		{
 			name: "job",
-			object: &batch.Job{
-				Spec: batch.JobSpec{
+			object: &batchv1.Job{
+				Spec: batchv1.JobSpec{
 					Template: pts},
 			},
 			expected: &pts,
 		},
 		{
 			name: "replicaset",
-			object: &extensions.ReplicaSet{
-				Spec: extensions.ReplicaSetSpec{
+			object: &appsv1.ReplicaSet{
+				Spec: appsv1.ReplicaSetSpec{
 					Template: pts},
 			},
 			expected: &pts,
 		},
 		{
 			name: "replication controller",
-			object: &core.ReplicationController{
-				Spec: core.ReplicationControllerSpec{
+			object: &corev1.ReplicationController{
+				Spec: corev1.ReplicationControllerSpec{
 					Template: &pts},
 			},
 			expected: &pts,
 		},
 		{
 			name: "stateful set",
-			object: &apps.StatefulSet{
-				Spec: apps.StatefulSetSpec{
+			object: &appsv1.StatefulSet{
+				Spec: appsv1.StatefulSetSpec{
 					Template: pts},
 			},
 			expected: &pts,

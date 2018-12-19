@@ -6,9 +6,9 @@ import (
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/kubernetes/pkg/apis/core"
 )
 
 type ConfigMapSummary struct{}
@@ -36,7 +36,7 @@ func (cms *ConfigMapSummary) Content(ctx context.Context, object runtime.Object,
 	}, nil
 }
 
-// ConfigMapDetails describe the details of a kubernetes core.ConfigMap
+// ConfigMapDetails describe the details of a kubernetes corev1.ConfigMap
 type ConfigMapDetails struct{}
 
 // NewConfigMapDetails constructs a new ConfigMapDetails object
@@ -46,7 +46,7 @@ func NewConfigMapDetails(prefix, namespace string, c clock.Clock) View {
 
 // Content describes human readable object details
 func (cm *ConfigMapDetails) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
-	configMap, ok := object.(*core.ConfigMap)
+	configMap, ok := object.(*corev1.ConfigMap)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a ConfigMap, it was %T", object)
 	}
@@ -76,8 +76,8 @@ func (cm *ConfigMapDetails) Content(ctx context.Context, object runtime.Object, 
 	return []content.Content{&table}, nil
 }
 
-func retrieveConfigMap(object runtime.Object) (*core.ConfigMap, error) {
-	rc, ok := object.(*core.ConfigMap)
+func retrieveConfigMap(object runtime.Object) (*corev1.ConfigMap, error) {
+	rc, ok := object.(*corev1.ConfigMap)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a ConfigMap, it was %T", object)
 	}

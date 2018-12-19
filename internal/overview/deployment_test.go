@@ -10,9 +10,8 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -21,9 +20,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/kubernetes/pkg/apis/batch"
-	"k8s.io/kubernetes/pkg/apis/core"
-	"k8s.io/kubernetes/pkg/apis/extensions"
 )
 
 func TestDeploymentSummary_InvalidObject(t *testing.T) {
@@ -37,7 +33,8 @@ func TestDeploymentSummary(t *testing.T) {
 
 	rhl := int32(0)
 
-	object := &extensions.Deployment{
+	twentyFivePercent := intstr.FromString("25%")
+	object := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "deployment",
 			Namespace: "default",
@@ -48,7 +45,7 @@ func TestDeploymentSummary(t *testing.T) {
 				Time: time.Unix(1539603521, 0),
 			},
 		},
-		Spec: extensions.DeploymentSpec{
+		Spec: appsv1.DeploymentSpec{
 			MinReadySeconds:      5,
 			RevisionHistoryLimit: &rhl,
 			Selector: &metav1.LabelSelector{
@@ -56,16 +53,16 @@ func TestDeploymentSummary(t *testing.T) {
 					"app": "myapp",
 				},
 			},
-			Strategy: extensions.DeploymentStrategy{
-				RollingUpdate: &extensions.RollingUpdateDeployment{
-					MaxSurge:       intstr.FromString("25%"),
-					MaxUnavailable: intstr.FromString("25%"),
+			Strategy: appsv1.DeploymentStrategy{
+				RollingUpdate: &appsv1.RollingUpdateDeployment{
+					MaxSurge:       &twentyFivePercent,
+					MaxUnavailable: &twentyFivePercent,
 				},
-				Type: extensions.RollingUpdateDeploymentStrategyType,
+				Type: appsv1.RollingUpdateDeploymentStrategyType,
 			},
-			Template: core.PodTemplateSpec{
-				Spec: core.PodSpec{
-					Containers: []core.Container{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
 						{
 							Name:  "containerName",
 							Image: "image",
@@ -74,7 +71,7 @@ func TestDeploymentSummary(t *testing.T) {
 				},
 			},
 		},
-		Status: extensions.DeploymentStatus{
+		Status: appsv1.DeploymentStatus{
 			UpdatedReplicas:     1,
 			Replicas:            2,
 			AvailableReplicas:   3,
@@ -119,7 +116,8 @@ func TestDeploymentReplicaSets(t *testing.T) {
 
 	rhl := int32(0)
 
-	object := &extensions.Deployment{
+	twentyFivePercent := intstr.FromString("25%")
+	object := &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Deployment",
 			APIVersion: "extensions/v1beta1",
@@ -135,7 +133,7 @@ func TestDeploymentReplicaSets(t *testing.T) {
 			},
 			UID: types.UID("ac833d23-c17e-11e8-9212-025000000001"),
 		},
-		Spec: extensions.DeploymentSpec{
+		Spec: appsv1.DeploymentSpec{
 			MinReadySeconds:      5,
 			RevisionHistoryLimit: &rhl,
 			Selector: &metav1.LabelSelector{
@@ -143,28 +141,28 @@ func TestDeploymentReplicaSets(t *testing.T) {
 					"app": "myapp",
 				},
 			},
-			Strategy: extensions.DeploymentStrategy{
-				RollingUpdate: &extensions.RollingUpdateDeployment{
-					MaxSurge:       intstr.FromString("25%"),
-					MaxUnavailable: intstr.FromString("25%"),
+			Strategy: appsv1.DeploymentStrategy{
+				RollingUpdate: &appsv1.RollingUpdateDeployment{
+					MaxSurge:       &twentyFivePercent,
+					MaxUnavailable: &twentyFivePercent,
 				},
-				Type: extensions.RollingUpdateDeploymentStrategyType,
+				Type: appsv1.RollingUpdateDeploymentStrategyType,
 			},
-			Template: core.PodTemplateSpec{
+			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						"app": "myapp",
 					},
 				},
 
-				Spec: core.PodSpec{
+				Spec: corev1.PodSpec{
 
-					SecurityContext: &core.PodSecurityContext{},
-					Containers: []core.Container{
+					SecurityContext: &corev1.PodSecurityContext{},
+					Containers: []corev1.Container{
 						{
 							Name:  "nginx",
 							Image: "nginx:1.13.6",
-							Ports: []core.ContainerPort{
+							Ports: []corev1.ContainerPort{
 								{
 									Protocol:      "TCP",
 									ContainerPort: 80,
@@ -175,7 +173,7 @@ func TestDeploymentReplicaSets(t *testing.T) {
 				},
 			},
 		},
-		Status: extensions.DeploymentStatus{
+		Status: appsv1.DeploymentStatus{
 			UpdatedReplicas:     1,
 			Replicas:            2,
 			AvailableReplicas:   3,
@@ -211,7 +209,7 @@ func TestDeploymentReplicaSets(t *testing.T) {
 			"Desired":    content.NewStringText("3"),
 			"Current":    content.NewStringText("3"),
 			"Ready":      content.NewStringText("3"),
-			"Age":        content.NewStringText("1d"),
+			"Age":        content.NewStringText("24h"),
 			"Containers": content.NewStringText("nginx"),
 			"Images":     content.NewStringText("nginx:1.13.6"),
 			"Selector":   content.NewStringText("app=myapp,pod-template-hash=2350241137"),
@@ -257,6 +255,7 @@ func loadFromFile(t *testing.T, name string) runtime.Object {
 	return decoded
 }
 
+/*
 func convertToInternal(t *testing.T, in runtime.Object) runtime.Object {
 	var out runtime.Object
 
@@ -268,9 +267,17 @@ func convertToInternal(t *testing.T, in runtime.Object) runtime.Object {
 	case *extensionsv1beta1.Ingress:
 		out = &extensionsv1beta1.Ingress{}
 	case *extensionsv1beta1.ReplicaSet:
-		out = &extensions.ReplicaSet{}
+		out = &apps.ReplicaSet{}
 	case *corev1.Secret:
 		out = &core.Secret{}
+	case *corev1.Pod:
+		out = &core.Pod{}
+	case *corev1.PodList:
+		out = &core.PodList{}
+	case *corev1.Service:
+		out = &core.Service{}
+	case *appsv1.Deployment:
+		out = &apps.Deployment{}
 	default:
 		t.Fatalf("don't know how to convert %T to internal", in)
 	}
@@ -280,3 +287,4 @@ func convertToInternal(t *testing.T, in runtime.Object) runtime.Object {
 
 	return out
 }
+*/

@@ -35,6 +35,7 @@ spec:
         app: myapp
         pod-template-hash: "2350241137"
     spec:
+      securityContext: {}
       containers:
       - image: nginx:1.13.6
         name: nginx

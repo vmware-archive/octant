@@ -6,9 +6,9 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/kubernetes/pkg/apis/core"
 )
 
 type PersistentVolumeClaimSummary struct{}
@@ -36,8 +36,8 @@ func (js *PersistentVolumeClaimSummary) Content(ctx context.Context, object runt
 	}, nil
 }
 
-func retrievePersistentVolumeClaim(object runtime.Object) (*core.PersistentVolumeClaim, error) {
-	rc, ok := object.(*core.PersistentVolumeClaim)
+func retrievePersistentVolumeClaim(object runtime.Object) (*corev1.PersistentVolumeClaim, error) {
+	rc, ok := object.(*corev1.PersistentVolumeClaim)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a Persistent Volume Claim, it was %T", object)
 	}

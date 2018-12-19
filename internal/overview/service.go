@@ -7,6 +7,7 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -124,7 +125,7 @@ func (js *ServiceEndpoints) Content(ctx context.Context, object runtime.Object, 
 		return nil, err
 	}
 
-	podMap := make(map[string]*core.Pod)
+	podMap := make(map[string]*corev1.Pod)
 
 	for _, pod := range pods {
 		podMap[pod.Spec.Hostname] = pod
@@ -170,8 +171,8 @@ func endpointAddressRow(address core.EndpointAddress, port string, ready bool) c
 
 }
 
-func retrieveService(object runtime.Object) (*core.Service, error) {
-	rc, ok := object.(*core.Service)
+func retrieveService(object runtime.Object) (*corev1.Service, error) {
+	rc, ok := object.(*corev1.Service)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a Service, it was %T", object)
 	}

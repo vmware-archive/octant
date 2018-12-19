@@ -5,13 +5,12 @@ import (
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/kubernetes/pkg/apis/apps"
-	"k8s.io/kubernetes/pkg/apis/core"
-	"k8s.io/kubernetes/pkg/apis/extensions"
 )
 
 // ResourceStatus represents the status of a resource.
@@ -77,7 +76,7 @@ var (
 )
 
 // TODO
-func statusForPod(pod *core.Pod) content.NodeStatus {
+func statusForPod(pod *corev1.Pod) content.NodeStatus {
 	return content.NodeStatusOK
 }
 
@@ -85,7 +84,7 @@ func statusForPodGroup(grp *podGroup) content.NodeStatus {
 	return content.NodeStatusOK
 }
 
-func statusForService(svc *core.Service) content.NodeStatus {
+func statusForService(svc *corev1.Service) content.NodeStatus {
 	return content.NodeStatusOK
 }
 
@@ -172,7 +171,7 @@ func statusForIngress(ingress *v1beta1.Ingress, c Cache) (ResourceStatusList, er
 
 // matchPort returns true if a matching port is founded for the provided backend
 // in the slice of service ports.
-func matchPort(b v1beta1.IngressBackend, ports []core.ServicePort) bool {
+func matchPort(b v1beta1.IngressBackend, ports []corev1.ServicePort) bool {
 	for _, p := range ports {
 		switch b.ServicePort.Type {
 		case intstr.String:
@@ -196,15 +195,15 @@ func matchPort(b v1beta1.IngressBackend, ports []core.ServicePort) bool {
 	return false
 }
 
-func statusForStatefulSet(s *apps.StatefulSet) content.NodeStatus {
+func statusForStatefulSet(s *appsv1.StatefulSet) content.NodeStatus {
 	return content.NodeStatusOK
 }
 
-func statusForReplicationController(rc *core.ReplicationController) content.NodeStatus {
+func statusForReplicationController(rc *corev1.ReplicationController) content.NodeStatus {
 	return content.NodeStatusOK
 }
 
-func statusForDaemonSet(ds *extensions.DaemonSet) content.NodeStatus {
+func statusForDaemonSet(ds *appsv1.DaemonSet) content.NodeStatus {
 	return content.NodeStatusOK
 }
 
@@ -263,7 +262,7 @@ func (ns *nodeStatus) check(obj runtime.Object) (ResourceStatusList, error) {
 // deploymentCheckUnavailable returns a warning if the deployment unavailable replicas
 // count is greater than 1.
 func deploymentCheckUnavailable(obj runtime.Object) (ResourceStatusList, error) {
-	deployment, ok := obj.(*extensions.Deployment)
+	deployment, ok := obj.(*appsv1.Deployment)
 	if !ok {
 		return nil, errors.Errorf("expected Deployment; received %T", obj)
 	}
@@ -280,7 +279,7 @@ func deploymentCheckUnavailable(obj runtime.Object) (ResourceStatusList, error) 
 // replicasSetCheckAvailableReplicas returns a warning if the available replicas
 // does not match the number of total replicas.
 func replicasSetCheckAvailableReplicas(obj runtime.Object) (ResourceStatusList, error) {
-	replicaSet, ok := obj.(*extensions.ReplicaSet)
+	replicaSet, ok := obj.(*appsv1.ReplicaSet)
 	if !ok {
 		return nil, errors.Errorf("expected ReplicaSet; received %T", obj)
 	}

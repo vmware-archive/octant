@@ -6,9 +6,9 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 
 	"github.com/pkg/errors"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/kubernetes/pkg/apis/rbac"
 )
 
 type RoleBindingSummary struct{}
@@ -65,8 +65,8 @@ func (js *RoleBindingSubjects) Content(ctx context.Context, object runtime.Objec
 	}, nil
 }
 
-func retrieveRoleBinding(object runtime.Object) (*rbac.RoleBinding, error) {
-	rc, ok := object.(*rbac.RoleBinding)
+func retrieveRoleBinding(object runtime.Object) (*rbacv1.RoleBinding, error) {
+	rc, ok := object.(*rbacv1.RoleBinding)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a RoleBinding, it was %T", object)
 	}

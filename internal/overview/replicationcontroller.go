@@ -6,10 +6,10 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/kubernetes/pkg/apis/core"
 )
 
 type ReplicationControllerSummary struct{}
@@ -48,8 +48,8 @@ func (js *ReplicationControllerSummary) Content(ctx context.Context, object runt
 	return contents, nil
 }
 
-func retrieveReplicationController(object runtime.Object) (*core.ReplicationController, error) {
-	rc, ok := object.(*core.ReplicationController)
+func retrieveReplicationController(object runtime.Object) (*corev1.ReplicationController, error) {
+	rc, ok := object.(*corev1.ReplicationController)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a ReplicationController, it was %T", object)
 	}

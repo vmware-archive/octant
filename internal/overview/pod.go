@@ -7,6 +7,10 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 
 	"github.com/pkg/errors"
+	appsv1 "k8s.io/api/apps/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -14,7 +18,6 @@ import (
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/core"
-	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
 )
 
@@ -40,7 +43,7 @@ func (pc *PodList) Content(ctx context.Context, object runtime.Object, c Cache) 
 		return nil, err
 	}
 
-	list := &core.PodList{}
+	list := &corev1.PodList{}
 	for _, pod := range pods {
 		list.Items = append(list.Items, *pod)
 	}
@@ -176,8 +179,8 @@ func (pc *PodVolume) Content(ctx context.Context, object runtime.Object, c Cache
 	return []content.Content{&volumes}, nil
 }
 
-func retrievePod(object runtime.Object) (*core.Pod, error) {
-	pod, ok := object.(*core.Pod)
+func retrievePod(object runtime.Object) (*corev1.Pod, error) {
+	pod, ok := object.(*corev1.Pod)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a Pod, it was %T", object)
 	}
@@ -192,18 +195,18 @@ type podStatus struct {
 	Failed    int
 }
 
-func createPodStatus(pods []*core.Pod) podStatus {
+func createPodStatus(pods []*corev1.Pod) podStatus {
 	var ps podStatus
 
 	for _, pod := range pods {
 		switch pod.Status.Phase {
-		case core.PodRunning:
+		case corev1.PodRunning:
 			ps.Running++
-		case core.PodPending:
+		case corev1.PodPending:
 			ps.Waiting++
-		case core.PodSucceeded:
+		case corev1.PodSucceeded:
 			ps.Succeeded++
-		case core.PodFailed:
+		case corev1.PodFailed:
 			ps.Failed++
 		}
 	}
@@ -211,7 +214,7 @@ func createPodStatus(pods []*core.Pod) podStatus {
 	return ps
 }
 
-func listPods(namespace string, selector *metav1.LabelSelector, uid types.UID, c Cache) ([]*core.Pod, error) {
+func listPods(namespace string, selector *metav1.LabelSelector, uid types.UID, c Cache) ([]*corev1.Pod, error) {
 	key := CacheKey{
 		Namespace:  namespace,
 		APIVersion: "v1",
@@ -223,7 +226,7 @@ func listPods(namespace string, selector *metav1.LabelSelector, uid types.UID, c
 		return nil, err
 	}
 
-	var owned []*core.Pod
+	var owned []*corev1.Pod
 	for _, pod := range pods {
 		controllerRef := metav1.GetControllerOf(pod)
 		if controllerRef == nil || controllerRef.UID != uid {
@@ -236,16 +239,16 @@ func listPods(namespace string, selector *metav1.LabelSelector, uid types.UID, c
 	return owned, nil
 }
 
-func loadPods(key CacheKey, c Cache, selector *metav1.LabelSelector) ([]*core.Pod, error) {
+func loadPods(key CacheKey, c Cache, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
 	objects, err := c.Retrieve(key)
 	if err != nil {
 		return nil, err
 	}
 
-	var list []*core.Pod
+	var list []*corev1.Pod
 
 	for _, object := range objects {
-		pod := &core.Pod{}
+		pod := &corev1.Pod{}
 		if err := scheme.Scheme.Convert(object, pod, runtime.InternalGroupVersioner); err != nil {
 			return nil, err
 		}
@@ -268,20 +271,43 @@ func loadPods(key CacheKey, c Cache, selector *metav1.LabelSelector) ([]*core.Po
 
 func getSelector(object runtime.Object) (*metav1.LabelSelector, error) {
 	switch t := object.(type) {
-	case *extensions.DaemonSet:
+	case *appsv1.DaemonSet:
+		return t.Spec.Selector, nil
+	case *appsv1.StatefulSet:
+		return t.Spec.Selector, nil
+	case *batchv1beta1.CronJob:
+		return nil, nil
+	case *corev1.ReplicationController:
+		selector := &metav1.LabelSelector{
+			MatchLabels: t.Spec.Selector,
+		}
+		return selector, nil
+	case *v1beta1.ReplicaSet:
+		return t.Spec.Selector, nil
+	case *appsv1.ReplicaSet:
+		return t.Spec.Selector, nil
+	case *appsv1.Deployment:
+		return t.Spec.Selector, nil
+	case *corev1.Service:
+		selector := &metav1.LabelSelector{
+			MatchLabels: t.Spec.Selector,
+		}
+		return selector, nil
+
+	case *apps.DaemonSet:
 		return t.Spec.Selector, nil
 	case *apps.StatefulSet:
 		return t.Spec.Selector, nil
-	case *batch.Job:
+	case *batch.CronJob:
 		return nil, nil
 	case *core.ReplicationController:
 		selector := &metav1.LabelSelector{
 			MatchLabels: t.Spec.Selector,
 		}
 		return selector, nil
-	case *extensions.ReplicaSet:
+	case *apps.ReplicaSet:
 		return t.Spec.Selector, nil
-	case *extensions.Deployment:
+	case *apps.Deployment:
 		return t.Spec.Selector, nil
 	case *core.Service:
 		selector := &metav1.LabelSelector{

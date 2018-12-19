@@ -7,14 +7,14 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/kubernetes/pkg/apis/batch"
-	"k8s.io/kubernetes/pkg/apis/core"
 )
 
 func Test_printCronJobSummary(t *testing.T) {
 	object := loadFromFile(t, "cronjob-1.yaml")
-	var cronJob *batch.CronJob
-	cronJob, ok := convertToInternal(t, object).(*batch.CronJob)
+	cronJob, ok := object.(*batchv1beta1.CronJob)
 	require.True(t, ok)
 	jobs := []*batch.Job{}
 
@@ -39,8 +39,7 @@ func Test_printCronJobSummary(t *testing.T) {
 
 func Test_printConfigMapSummary(t *testing.T) {
 	object := loadFromFile(t, "configmap-1.yaml")
-	var configMap *core.ConfigMap
-	configMap, ok := convertToInternal(t, object).(*core.ConfigMap)
+	configMap, ok := object.(*corev1.ConfigMap)
 	require.True(t, ok)
 
 	got, err := printConfigMapSummary(configMap)

@@ -7,13 +7,13 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/kubernetes/pkg/apis/core"
-	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
 )
 
@@ -21,7 +21,7 @@ func Test_matchPort(t *testing.T) {
 	tests := []struct {
 		name     string
 		backend  v1beta1.IngressBackend
-		ports    []core.ServicePort
+		ports    []corev1.ServicePort
 		expected bool
 	}{
 		{
@@ -32,11 +32,11 @@ func Test_matchPort(t *testing.T) {
 					StrVal: "grpc",
 				},
 			},
-			ports: []core.ServicePort{
-				core.ServicePort{
+			ports: []corev1.ServicePort{
+				corev1.ServicePort{
 					Name: "nope",
 				},
-				core.ServicePort{
+				corev1.ServicePort{
 					Name: "grpc",
 				},
 			},
@@ -50,11 +50,11 @@ func Test_matchPort(t *testing.T) {
 					IntVal: 80,
 				},
 			},
-			ports: []core.ServicePort{
-				core.ServicePort{
+			ports: []corev1.ServicePort{
+				corev1.ServicePort{
 					Name: "nope",
 				},
-				core.ServicePort{
+				corev1.ServicePort{
 					Name: "http",
 					Port: 80,
 				},
@@ -69,11 +69,11 @@ func Test_matchPort(t *testing.T) {
 					StrVal: "80",
 				},
 			},
-			ports: []core.ServicePort{
-				core.ServicePort{
+			ports: []corev1.ServicePort{
+				corev1.ServicePort{
 					Name: "nope",
 				},
-				core.ServicePort{
+				corev1.ServicePort{
 					Name: "http",
 					Port: 80,
 				},
@@ -88,11 +88,11 @@ func Test_matchPort(t *testing.T) {
 					IntVal: 80,
 				},
 			},
-			ports: []core.ServicePort{
-				core.ServicePort{
+			ports: []corev1.ServicePort{
+				corev1.ServicePort{
 					Name: "nope",
 				},
-				core.ServicePort{
+				corev1.ServicePort{
 					Name: "https",
 					Port: 443,
 				},
@@ -441,7 +441,7 @@ func Test_nodeStatus_check(t *testing.T) {
 					return nil, errors.New("failed")
 				},
 			},
-			object: &extensions.Deployment{},
+			object: &appsv1.Deployment{},
 			isErr:  true,
 		},
 		{
@@ -451,7 +451,7 @@ func Test_nodeStatus_check(t *testing.T) {
 					return errorList, nil
 				},
 			},
-			object:   &extensions.Deployment{},
+			object:   &appsv1.Deployment{},
 			expected: errorList,
 		},
 		{
@@ -461,7 +461,7 @@ func Test_nodeStatus_check(t *testing.T) {
 					return okList, nil
 				},
 			},
-			object:   &extensions.Deployment{},
+			object:   &appsv1.Deployment{},
 			expected: okList,
 		},
 	}
@@ -491,7 +491,7 @@ func Test_deploymentCheckUnavailable(t *testing.T) {
 	}{
 		{
 			name:     "in general",
-			obj:      &extensions.Deployment{},
+			obj:      &appsv1.Deployment{},
 			expected: nil,
 		},
 		{
@@ -501,7 +501,7 @@ func Test_deploymentCheckUnavailable(t *testing.T) {
 		},
 		{
 			name:     "has unavailable replicas",
-			obj:      &extensions.Deployment{Status: extensions.DeploymentStatus{UnavailableReplicas: 1}},
+			obj:      &appsv1.Deployment{Status: appsv1.DeploymentStatus{UnavailableReplicas: 1}},
 			expected: ResourceStatusList{deploymentReplicasUnavailable},
 		},
 	}
@@ -529,7 +529,7 @@ func Test_replicaSetCheckAvailable(t *testing.T) {
 	}{
 		{
 			name:     "in general",
-			obj:      &extensions.ReplicaSet{},
+			obj:      &appsv1.ReplicaSet{},
 			expected: nil,
 		},
 		{
@@ -539,7 +539,7 @@ func Test_replicaSetCheckAvailable(t *testing.T) {
 		},
 		{
 			name: "has available replicas",
-			obj: &extensions.ReplicaSet{Status: extensions.ReplicaSetStatus{
+			obj: &appsv1.ReplicaSet{Status: appsv1.ReplicaSetStatus{
 				Replicas: 1, AvailableReplicas: 0}},
 			expected: ResourceStatusList{replicaSetAvailableReplicas},
 		},

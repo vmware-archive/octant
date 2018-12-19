@@ -8,38 +8,38 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/kubernetes/pkg/apis/core"
 )
 
 func TestListDescriber(t *testing.T) {
 	thePath := "/"
-	key := CacheKey{APIVersion: "v1", Kind: "kind"}
+	key := CacheKey{APIVersion: "v1", Kind: "Pod"}
 	namespace := "default"
 	fields := map[string]string{}
 
 	cache := newSpyCache()
 
 	object := map[string]interface{}{
-		"kind":       "kind",
+		"kind":       "Pod",
 		"apiVersion": "v1",
 		"metadata": map[string]interface{}{
 			"name": "name",
 		},
 	}
 
-	retrieveKey := CacheKey{Namespace: namespace, APIVersion: "v1", Kind: "kind"}
+	retrieveKey := CacheKey{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
 	cache.spyRetrieve(retrieveKey, []*unstructured.Unstructured{{Object: object}}, nil)
 
 	listType := func() interface{} {
-		return &core.EventList{}
+		return &corev1.PodList{}
 	}
 
 	objectType := func() interface{} {
-		return &core.Event{}
+		return &corev1.Pod{}
 	}
 
 	theContent := newFakeContent(false)
@@ -77,7 +77,7 @@ func TestListDescriber(t *testing.T) {
 
 	assert.Equal(t, expected, cResponse)
 
-	assert.True(t, cache.isSatisfied())
+	assert.True(t, cache.isSatisfied(), "cache was not satisfied")
 }
 
 func TestObjectDescriber(t *testing.T) {
@@ -100,7 +100,7 @@ func TestObjectDescriber(t *testing.T) {
 	cache.spyRetrieve(retrieveKey, []*unstructured.Unstructured{{Object: object}}, nil)
 
 	objectType := func() interface{} {
-		return &core.Pod{}
+		return &corev1.Pod{}
 	}
 
 	viewFac := func(string, string, clock.Clock) View {

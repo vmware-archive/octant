@@ -6,9 +6,9 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 
 	"github.com/pkg/errors"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/kubernetes/pkg/apis/rbac"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
 )
 
@@ -61,8 +61,8 @@ func (js *RoleRule) Content(ctx context.Context, object runtime.Object, c Cache)
 	}, nil
 }
 
-func retrieveRole(object runtime.Object) (*rbac.Role, error) {
-	rc, ok := object.(*rbac.Role)
+func retrieveRole(object runtime.Object) (*rbacv1.Role, error) {
+	rc, ok := object.(*rbacv1.Role)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a Role, it was %T", object)
 	}
@@ -70,7 +70,7 @@ func retrieveRole(object runtime.Object) (*rbac.Role, error) {
 	return rc, nil
 }
 
-func getRole(namespace, name string, c Cache) (*rbac.Role, error) {
+func getRole(namespace, name string, c Cache) (*rbacv1.Role, error) {
 	key := CacheKey{
 		Namespace:  namespace,
 		APIVersion: "rbac.authorization.k8s.io/v1",
@@ -90,16 +90,16 @@ func getRole(namespace, name string, c Cache) (*rbac.Role, error) {
 	return roles[0], nil
 }
 
-func loadRoles(key CacheKey, c Cache) ([]*rbac.Role, error) {
+func loadRoles(key CacheKey, c Cache) ([]*rbacv1.Role, error) {
 	objects, err := c.Retrieve(key)
 	if err != nil {
 		return nil, err
 	}
 
-	var list []*rbac.Role
+	var list []*rbacv1.Role
 
 	for _, object := range objects {
-		e := &rbac.Role{}
+		e := &rbacv1.Role{}
 		if err := scheme.Scheme.Convert(object, e, runtime.InternalGroupVersioner); err != nil {
 			return nil, err
 		}

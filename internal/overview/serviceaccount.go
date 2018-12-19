@@ -10,7 +10,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/kubernetes/pkg/apis/core"
 )
 
 type ServiceAccountSummary struct{}
@@ -27,7 +26,7 @@ func (js *ServiceAccountSummary) Content(ctx context.Context, object runtime.Obj
 		return nil, err
 	}
 
-	tokens := []*core.Secret{}
+	tokens := []*corev1.Secret{}
 
 	// missingSecrets is the set of all secrets present in the
 	// serviceAccount but not present in the set of existing secrets.
@@ -42,7 +41,7 @@ func (js *ServiceAccountSummary) Content(ctx context.Context, object runtime.Obj
 	existingSecrets := sets.NewString()
 
 	for _, s := range secrets {
-		if s.Type == core.SecretTypeServiceAccountToken {
+		if s.Type == corev1.SecretTypeServiceAccountToken {
 			name, _ := s.Annotations[corev1.ServiceAccountNameKey]
 			uid, _ := s.Annotations[corev1.ServiceAccountUIDKey]
 			if name == serviceAccount.Name && uid == string(serviceAccount.UID) {
@@ -74,8 +73,8 @@ func (js *ServiceAccountSummary) Content(ctx context.Context, object runtime.Obj
 	}, nil
 }
 
-func retrieveServiceAccount(object runtime.Object) (*core.ServiceAccount, error) {
-	rc, ok := object.(*core.ServiceAccount)
+func retrieveServiceAccount(object runtime.Object) (*corev1.ServiceAccount, error) {
+	rc, ok := object.(*corev1.ServiceAccount)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a ServiceAccount, it was %T", object)
 	}
