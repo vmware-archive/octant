@@ -2,7 +2,7 @@
 
 .navigation--left-section {
   a {
-    color: $gray-darker;
+    color: $white;
     text-decoration: none;
 
     &.active, &:hover {
@@ -13,8 +13,9 @@
   .navigation--left-item {
     .navigation-subheader {
       margin-bottom: 8px;
+
       a {
-        color: $orange;
+        color: $white;
       }
     }
 

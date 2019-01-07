@@ -5,7 +5,6 @@ import {
 import _ from 'lodash'
 import { setNamespace } from 'api'
 import Overview from 'pages/Overview'
-import Header from '../Header'
 import Navigation from '../Navigation'
 import getInitialState from './state/getInitialState'
 import './styles.scss'
@@ -52,7 +51,6 @@ class App extends Component<RouteComponentProps, AppState> {
 
     const { value } = namespaceOption
     const { history } = this.props
-
     try {
       this.lastFetchedNamespace = value
 
@@ -103,7 +101,6 @@ class App extends Component<RouteComponentProps, AppState> {
 
     return (
       <div className='app'>
-        <Header />
         <div className='app-page'>
           <div className='app-nav'>
             <Navigation

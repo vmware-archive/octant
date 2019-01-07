@@ -17,7 +17,6 @@ export default function Navigation({
   navSections,
   currentNavLinkPath,
   onNavChange,
-
   namespaceOptions,
   namespaceValue,
   onNamespaceChange,

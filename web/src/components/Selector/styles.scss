@@ -1,15 +1,20 @@
 @import '~css/variables/variables.scss';
 
 .dd-selector-container {
+
   .dd-selector__control {
+    background-color: $blue-dark;
+    color: $white;
+
     border: none;
-    border-bottom: 1px solid $orange;
+    border-bottom: 1px solid $white;
     border-radius: 0;
     box-shadow: none;
     height: 50px;
 
     &:hover {
-      border-color: $gray-dark;
+      //color: $gray-dark;
+      //border-color: $gray-dark;
     }
   }
 
@@ -19,16 +24,17 @@
 
   .dd-selector__indicator {
     border: none;
-    color: $orange;
+    color: $white;
 
     &:hover {
-      color: $orange-medium;
+      //color: $gray-dark;
     }
   }
 
   .dd-selector__single-value {
     padding-bottom: 2px;
     padding-top: 2px;
+    color: $white;
   }
 
   .dd-selector__menu {
@@ -36,11 +42,12 @@
   }
 
   .dd-selector__menu-list {
+    background-color: $blue-dark;
     padding: 0;
   }
 
   .dd-selector__option--is-focused, .dd-selector__option--is-selected, .dd-selector__option:active {
-    background-color: lighten($orange, 3%);
-    color: white;
+    background-color: $white;
+    color: $blue-dark;
   }
 }

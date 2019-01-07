@@ -24,6 +24,7 @@
     "react-dev-utils": "^5.0.2",
     "react-dom": "^16.5.2",
     "react-fast-compare": "^2.0.4",
+    "react-grid-layout": "^0.16.6",
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
     "react-select": "^2.1.0",

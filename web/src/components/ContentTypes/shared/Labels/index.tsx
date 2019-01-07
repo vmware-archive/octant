@@ -9,9 +9,9 @@ interface Props {
 export default function({ labels }: Props) {
   return (
     <div className='content-labels'>
-      {_.map(labels, ({ data }) => (
-        <div key={data.value} className='content-label'>
-          {data.value}
+      {_.map(labels, (value, key) => (
+        <div key={key} className='content-label'>
+          {value}
         </div>
       ))}
     </div>

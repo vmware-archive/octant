@@ -1,43 +1,38 @@
+import React, { Component } from 'react'
+import QuickView from './quickview'
+import { IResourceViewer } from './schema'
+import Graph from './graph'
+import ResourceNode from './node'
 import './index.scss'
 import './resource'
 
-import * as React from 'react'
-
-import QuickView from './quickview'
-import { Schema } from './schema'
-import Graph from './graph'
-import ResourceNode from './node'
 interface Props {
-  schema: Schema;
+  data: IResourceViewer;
 }
 
 interface State {
   currentResource: string;
 }
 
-class ResourceViewer extends React.Component<Props, State> {
+class ResourceViewer extends Component<Props, State> {
   constructor(props: Props) {
     super(props)
-
     this.state = {
-      currentResource: props.schema.selected,
+      currentResource: props.data.config.selected,
     }
-
-    this.setCurrentResource = this.setCurrentResource.bind(this)
   }
 
-  setCurrentResource(name: string) {
+  setCurrentResource = (name: string) => {
     this.setState({ currentResource: name })
   }
 
   render() {
-    const adjacencyList = this.props.schema.adjacencyList
-    const objects = this.props.schema.objects
-
+    const { data: { config } } = this.props
+    const adjacencyList = config.adjacencyList
+    const objects = config.objects
     const currentObject = objects[this.state.currentResource]
-
     const nodes = {}
-    for (const [id, object] of Object.entries(this.props.schema.objects)) {
+    for (const [id, object] of Object.entries(config.objects)) {
       nodes[id] = new ResourceNode(
         object,
         this.state.currentResource === id,

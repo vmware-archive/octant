@@ -1,16 +1,37 @@
 @import '~css/variables/variables.scss';
 
-hr {
-  border: 0;
-  border-bottom: 2px solid $gray-light;
-}
+.summary-component {
+  border: 1px solid #d8d8d8;
 
-.summary--component-sections {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  .summary-component-title {
+    padding: 12px;
+    border-bottom: 1px solid #d8d8d8;
+  }
 
   .summary-component-section {
     margin-right: 30px;
+    flex: 1;
+    padding: 12px;
+
+    .summary--data {
+      align-items: center;
+      display: flex;
+      flex-direction: row;
+      padding: 5px 0;
+      font-size: 14px;
+
+      .summary--data-key {
+        @include bold;
+        align-self: flex-start;
+        box-sizing: content-box;
+        flex: 0 0 auto;
+        overflow: hidden;
+        padding-right: 50px;
+        text-align: left;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 200px;
+      }
+    }
   }
 }

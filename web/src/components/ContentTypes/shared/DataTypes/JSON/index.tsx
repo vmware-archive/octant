@@ -6,13 +6,12 @@ interface Props {
 }
 
 export default function Item(props: Props) {
-  const { params } = props
-  const { label, data } = params
+  const { metadata: { title }, config } = props.params
   return (
     <div className='summary--data summary--data-json'>
-      <div className='summary--data-key'>{label}</div>
+      <div className='summary--data-key'>{title}</div>
       <div className='summary--data-json-value'>
-        {JSON.stringify(data, null, 2)}
+        {JSON.stringify(config, null, 2)}
       </div>
     </div>
   )

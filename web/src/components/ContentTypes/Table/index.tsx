@@ -8,30 +8,50 @@ import ReactTable from 'react-table'
 import EmptyContent from '../shared/EmptyContent'
 import Labels from '../shared/Labels'
 
-export default function Table({ data }) {
-  const {
-    title, columns, rows, empty_content: emptyContent,
-  } = data
+export interface ITable {
+  metadata: {
+    type: 'table';
+    title: string;
+  },
+  config: {
+    empty_content: string;
+    columns: Array<{
+      name: string;
+      accessor: string;
+    }>;
+    rows: Array<{
+      [x: string]: ContentType;
+    }>;
+  };
+}
+
+interface Props {
+  data: ITable;
+}
+
+export default function Table({ data }: Props) {
+  const { metadata: { title }, config: { rows, columns, empty_content: emptyContent } } = data
 
   const tableColumns = _.map(columns, ({ name, accessor }: { name: string, accessor: string }, index: number) => ({
     Header: name,
     accessor: (entry) => {
       if (!entry) return null
-      const value = entry[accessor]
-      if (!_.isObject(value)) return value
-      switch (value.type) {
+      const content = entry[accessor] as ContentType
+      if (!_.isObject(content)) return content
+      const { metadata: { type }, config } = content
+      switch (type) {
         case 'labels':
-          return value.labels[0]
+          return _.entries(config.labels)[0]
         case 'list':
-          return value.list[0]
+          return config.list[0]
         case 'time':
           // currently a string, but should consider parsing into
           // a js date for sorting
-          return value.time
+          return config.timestamp
         case 'link':
         case 'text':
         case 'string':
-          return value.text
+          return config.value
         default:
           return '-'
       }
@@ -39,22 +59,21 @@ export default function Table({ data }) {
     id: `column_${index}`,
     Cell: (row) => {
       const entry = row.original
-      const value = entry[accessor]
-      if (!_.isObject(value)) return value
-      switch (value.type) {
+      const content = entry[accessor] as ContentType
+      if (!_.isObject(content)) return content
+      const { metadata: { type }, config } = content
+      switch (type) {
         case 'labels':
-          return <Labels labels={value.labels} />
-        case 'list':
-          return value.list.join(', ')
+          return <Labels labels={config.labels} />
         case 'link':
           return (
-            <Link className='table--link' to={value.ref}>
-              {value.text}
+            <Link className='table--link' to={config.ref}>
+              {config.value}
             </Link>
           )
-        case 'time': {
-          const t = moment(value.time)
-          if (!t.isValid()) return value.time
+        case 'timestamp': {
+          const t = moment(config.timestamp)
+          if (!t.isValid()) return config.timestamp
           return t.toISOString()
         }
         default:

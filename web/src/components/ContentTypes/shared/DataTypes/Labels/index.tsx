@@ -2,20 +2,24 @@ import React from 'react'
 import Labels from 'components/ContentTypes/shared/Labels'
 
 interface Props {
-  params: ListContentType;
+  params: LabelsContentType;
 }
 
 export default function Item(props: Props) {
   const { params } = props
   const {
-    label,
-    data: { items },
+    metadata: { title },
+    config: { labels },
   } = params
   return (
     <div className='summary--data'>
-      <div className='summary--data-key'>{label}</div>
+      {
+        title && (
+          <div className='summary--data-key'>{title}</div>
+        )
+      }
       <div className='summary--data-labels'>
-        <Labels labels={items} />
+        <Labels labels={labels} />
       </div>
     </div>
   )
