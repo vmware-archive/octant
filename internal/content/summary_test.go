@@ -68,6 +68,13 @@ func TestLabelsItem(t *testing.T) {
 				Data: map[string]interface{}{
 					"value": "<none>",
 				},
+				Metadata: map[string]interface{}{
+					"type": "text",
+				},
+				Config: map[string]interface{}{
+					"value": "<none>",
+					"label": "name",
+				},
 			},
 		},
 		{
@@ -81,20 +88,43 @@ func TestLabelsItem(t *testing.T) {
 				Label: "name",
 				Data: map[string]interface{}{
 					"items": []Item{
-						Item{
+						{
 							Type:  "text",
 							Label: "name",
 							Data: map[string]interface{}{
 								"value": "b=content",
 							},
+							Metadata: map[string]interface{}{
+								"type": "text",
+							},
+							Config: map[string]interface{}{
+								"value": "b=content",
+								"label": "name",
+							},
 						},
-						Item{
+						{
 							Type:  "text",
 							Label: "name",
 							Data: map[string]interface{}{
 								"value": "z=content",
 							},
+							Metadata: map[string]interface{}{
+								"type": "text",
+							},
+							Config: map[string]interface{}{
+								"value": "z=content",
+								"label": "name",
+							},
 						},
+					},
+				},
+				Metadata: map[string]interface{}{
+					"type": "labels",
+				},
+				Config: map[string]interface{}{
+					"labels": map[string]string{
+						"b": "content",
+						"z": "content",
 					},
 				},
 			},
