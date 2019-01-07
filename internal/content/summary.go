@@ -17,6 +17,10 @@ func (s *Summary) IsEmpty() bool {
 	return len(s.Sections) == 0
 }
 
+func (s *Summary) ViewComponent() ViewComponent {
+	return ViewComponent{}
+}
+
 type Section struct {
 	Title string `json:"title"`
 	Items []Item `json:"items"`
@@ -51,13 +55,26 @@ func (s *Section) AddJSON(label string, blob interface{}) {
 }
 
 type Item struct {
-	Type  string      `json:"type"`
-	Label string      `json:"label"`
-	Data  interface{} `json:"data"`
+	Type  string      `json:"type,omitempty"`
+	Label string      `json:"label,omitempty"`
+	Data  interface{} `json:"data,omitempty"`
+
+	Config   interface{} `json:"config,omitempty"`
+	Metadata interface{} `json:"metadata,omitempty"`
 }
 
 func TextItem(label, text string) Item {
 	return Item{
+		Metadata: map[string]interface{}{
+			"type": "text",
+		},
+
+		Config: map[string]interface{}{
+			"value": text,
+			"label": label,
+		},
+
+		// TODO: delete me
 		Type:  "text",
 		Label: label,
 		Data: map[string]interface{}{
@@ -68,6 +85,14 @@ func TextItem(label, text string) Item {
 
 func TimeItem(label, text string) Item {
 	return Item{
+		Metadata: map[string]interface{}{
+			"type": "text",
+		},
+
+		Config: map[string]interface{}{
+			"value": text,
+		},
+
 		Type:  "time",
 		Label: label,
 		Data: map[string]interface{}{
@@ -94,6 +119,15 @@ func LabelsItem(label string, labels map[string]string) Item {
 	}
 
 	return Item{
+		Metadata: map[string]interface{}{
+			"type": "labels",
+		},
+
+		Config: map[string]interface{}{
+			"labels": labels,
+		},
+
+		// TODO: delete me
 		Type:  "labels",
 		Label: label,
 		Data: map[string]interface{}{

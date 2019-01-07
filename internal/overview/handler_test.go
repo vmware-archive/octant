@@ -33,7 +33,7 @@ func Test_handler_routes(t *testing.T) {
 			values:       url.Values{"namespace": []string{"default"}},
 			generator:    newStubbedGenerator([]content.Content{dynamicContent}, nil),
 			expectedCode: http.StatusOK,
-			expectedBody: `{"views":[{"contents":[{"type":"stubbed"}],"title":"main title"}]}`,
+			expectedBody: `{"views":[{"contents":[{"type":"stubbed"}],"title":"main title"}],"viewComponents":null}`,
 		},
 		{
 			name:         "error generating dynamic content",

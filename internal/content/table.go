@@ -6,7 +6,7 @@ type Table struct {
 	Type         string        `json:"type,omitempty"`
 	Title        string        `json:"title,omitempty"`
 	Columns      []TableColumn `json:"columns,omitempty"`
-	Rows         []TableRow    `json:"rows,omitempty"`
+	Rows         []TableRow    `json:"rows"`
 	EmptyContent string        `json:"empty_content,omitempty"`
 }
 
@@ -33,6 +33,28 @@ func (t *Table) ColumnNames() []string {
 
 func (t *Table) AddRow(row TableRow) {
 	t.Rows = append(t.Rows, row)
+}
+
+func (t *Table) ViewComponent() ViewComponent {
+	tc := TableConfig{
+		Columns:      t.Columns,
+		Rows:         t.Rows,
+		EmptyContent: t.EmptyContent,
+	}
+
+	return ViewComponent{
+		Metadata: Metadata{
+			Type:  "table",
+			Title: t.Title,
+		},
+		Config: tc,
+	}
+}
+
+type TableConfig struct {
+	Columns      []TableColumn `json:"columns,omitempty"`
+	Rows         []TableRow    `json:"rows,omitempty"`
+	EmptyContent string        `json:"emptyContent,omitempty"`
 }
 
 type TableColumn struct {

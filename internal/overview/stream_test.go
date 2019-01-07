@@ -24,7 +24,7 @@ func Test_contentStreamer(t *testing.T) {
 		msg := <-ch
 
 		assert.Equal(t,
-			`{"views":[{"contents":[{"type":"stubbed"}],"title":"main title"}]}`,
+			"{\"views\":[{\"contents\":[{\"type\":\"stubbed\"}],\"title\":\"main title\"}],\"viewComponents\":null}",
 			string(msg))
 		rcv <- true
 	}

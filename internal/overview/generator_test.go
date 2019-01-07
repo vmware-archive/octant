@@ -207,6 +207,10 @@ func (c *fakeContent) IsEmpty() bool {
 	return c.isEmpty
 }
 
+func (c *fakeContent) ViewComponent() content.ViewComponent {
+	return content.ViewComponent{}
+}
+
 func (c fakeContent) MarshalJSON() ([]byte, error) {
 	return []byte(`{"type":"stubbed"}`), nil
 }

@@ -84,6 +84,8 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 		return emptyContentResponse, err
 	}
 
+	viewComponent := NewList(d.title)
+
 	list := d.listType()
 
 	v := reflect.ValueOf(list)
@@ -116,12 +118,19 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 		return emptyContentResponse, err
 	}
 
+	for _, c := range contents {
+		viewComponent.Add(c)
+	}
+
 	return ContentResponse{
 		Views: []Content{
 			{
 				Contents: contents,
 				Title:    "",
 			},
+		},
+		ViewComponents: []content.ViewComponent{
+			viewComponent.ViewComponent(),
 		},
 	}, nil
 }
@@ -338,6 +347,8 @@ func NewSectionDescriber(p, title string, describers ...Describer) *SectionDescr
 func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
 	var contents []content.Content
 
+	list := NewList(d.title)
+
 	for _, child := range d.describers {
 		cResponse, err := child.Describe(ctx, prefix, namespace, clusterClient, options)
 		if err != nil {
@@ -348,6 +359,7 @@ func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace strin
 			for _, childContent := range views.Contents {
 				if !childContent.IsEmpty() {
 					contents = append(contents, childContent)
+					list.Add(childContent)
 				}
 			}
 		}
@@ -361,6 +373,9 @@ func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace strin
 	cr := ContentResponse{
 		Views: []Content{
 			{Contents: contents, Title: d.title},
+		},
+		ViewComponents: []content.ViewComponent{
+			list.ViewComponent(),
 		},
 	}
 
