@@ -14,10 +14,11 @@ type TextConfig struct {
 }
 
 // NewText creates a text component
-func NewText(s string) *Text {
+func NewText(title, s string) *Text {
 	return &Text{
 		Metadata: Metadata{
-			Type: "text",
+			Type:  "text",
+			Title: title,
 		},
 		Config: TextConfig{
 			Text: s,

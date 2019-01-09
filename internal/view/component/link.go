@@ -14,11 +14,12 @@ type LinkConfig struct {
 	Ref  string `json:"ref"`
 }
 
-// NewLink create an instance of linkText.
-func NewLink(s string, ref string) *Link {
+// NewLink creates a link component
+func NewLink(title, s, ref string) *Link {
 	return &Link{
 		Metadata: Metadata{
-			Type: "link",
+			Type:  "link",
+			Title: title,
 		},
 		Config: LinkConfig{
 			Text: s,

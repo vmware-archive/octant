@@ -35,7 +35,7 @@ func (t *Timestamp) GetMetadata() Metadata {
 
 // IsEmpty specifes whether the component is considered empty. Implements ViewComponent.
 func (t *Timestamp) IsEmpty() bool {
-	return t.Config.Timestamp == time.Time{}.Unix()
+	return t.Config.Timestamp == time.Time{}.Unix() || t.Config.Timestamp == 0
 }
 
 type timestampMarshal Timestamp
