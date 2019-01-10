@@ -3,11 +3,11 @@ package cluster
 import (
 	"testing"
 
-	"github.com/heptio/developer-dash/third_party/dynamicfake"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	dynamicfake "k8s.io/client-go/dynamic/fake"
 )
 
 func Test_namespaceClient_Names(t *testing.T) {

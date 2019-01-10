@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/clock"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/kubernetes/pkg/apis/core"
 )
 
 func TestConfigMapDetails_InvalidObject(t *testing.T) {
@@ -28,7 +28,7 @@ func TestConfigMapDetails(t *testing.T) {
 	cm := NewConfigMapDetails("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	ctx := context.Background()
-	object := &core.ConfigMap{
+	object := &corev1.ConfigMap{
 		Data: map[string]string{
 			"test": "data",
 		},

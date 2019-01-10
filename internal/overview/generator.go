@@ -8,12 +8,12 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/pkg/errors"
+	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
-	"k8s.io/kubernetes/pkg/apis/apps"
-	"k8s.io/kubernetes/pkg/apis/batch"
-	"k8s.io/kubernetes/pkg/apis/core"
-	"k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/apis/rbac"
+	rbacv1 "k8s.io/api/rbac/v1"
 )
 
 type pathFilter struct {
@@ -54,8 +54,8 @@ var (
 	workloadsCronJobs = NewResource(ResourceOptions{
 		Path:       "/workloads/cron-jobs",
 		CacheKey:   CacheKey{APIVersion: "batch/v1beta1", Kind: "CronJob"},
-		ListType:   &batch.CronJobList{},
-		ObjectType: &batch.CronJob{},
+		ListType:   &batchv1beta1.CronJobList{},
+		ObjectType: &batchv1beta1.CronJob{},
 		Titles:     ResourceTitle{List: "Cron Jobs", Object: "Cron Job"},
 		Transforms: cronJobTransforms,
 		Sections: []ContentSection{
@@ -79,8 +79,8 @@ var (
 	workloadsDaemonSets = NewResource(ResourceOptions{
 		Path:       "/workloads/daemon-sets",
 		CacheKey:   CacheKey{APIVersion: "apps/v1", Kind: "DaemonSet"},
-		ListType:   &extensions.DaemonSetList{},
-		ObjectType: &extensions.DaemonSet{},
+		ListType:   &appsv1.DaemonSetList{},
+		ObjectType: &appsv1.DaemonSet{},
 		Titles:     ResourceTitle{List: "Daemon Sets", Object: "Daemon Set"},
 		Transforms: daemonSetTransforms,
 		Sections: []ContentSection{
@@ -105,8 +105,8 @@ var (
 	workloadsDeployments = NewResource(ResourceOptions{
 		Path:       "/workloads/deployments",
 		CacheKey:   CacheKey{APIVersion: "apps/v1", Kind: "Deployment"},
-		ListType:   &extensions.DeploymentList{},
-		ObjectType: &extensions.Deployment{},
+		ListType:   &appsv1.DeploymentList{},
+		ObjectType: &appsv1.Deployment{},
 		Titles:     ResourceTitle{List: "Deployments", Object: "Deployment"},
 		Transforms: deploymentTransforms,
 		Sections: []ContentSection{
@@ -131,8 +131,8 @@ var (
 	workloadsJobs = NewResource(ResourceOptions{
 		Path:       "/workloads/jobs",
 		CacheKey:   CacheKey{APIVersion: "batch/v1", Kind: "Job"},
-		ListType:   &batch.JobList{},
-		ObjectType: &batch.Job{},
+		ListType:   &batchv1.JobList{},
+		ObjectType: &batchv1.Job{},
 
 		Titles:     ResourceTitle{List: "Jobs", Object: "Job"},
 		Transforms: jobTransforms,
@@ -151,8 +151,8 @@ var (
 	workloadsPods = NewResource(ResourceOptions{
 		Path:       "/workloads/pods",
 		CacheKey:   CacheKey{APIVersion: "v1", Kind: "Pod"},
-		ListType:   &core.PodList{},
-		ObjectType: &core.Pod{},
+		ListType:   &corev1.PodList{},
+		ObjectType: &corev1.Pod{},
 		Titles:     ResourceTitle{List: "Pods", Object: "Pod"},
 		Transforms: podTransforms,
 		Sections: []ContentSection{
@@ -178,8 +178,8 @@ var (
 	workloadsReplicaSets = NewResource(ResourceOptions{
 		Path:       "/workloads/replica-sets",
 		CacheKey:   CacheKey{APIVersion: "apps/v1", Kind: "ReplicaSet"},
-		ListType:   &extensions.ReplicaSetList{},
-		ObjectType: &extensions.ReplicaSet{},
+		ListType:   &appsv1.ReplicaSetList{},
+		ObjectType: &appsv1.ReplicaSet{},
 		Titles:     ResourceTitle{List: "Replica Sets", Object: "Replica Set"},
 		Transforms: replicaSetTransforms,
 		Sections: []ContentSection{
@@ -204,8 +204,8 @@ var (
 	workloadsReplicationControllers = NewResource(ResourceOptions{
 		Path:       "/workloads/replication-controllers",
 		CacheKey:   CacheKey{APIVersion: "v1", Kind: "ReplicationController"},
-		ListType:   &core.ReplicationControllerList{},
-		ObjectType: &core.ReplicationController{},
+		ListType:   &corev1.ReplicationControllerList{},
+		ObjectType: &corev1.ReplicationController{},
 		Titles:     ResourceTitle{List: "Replication Controllers", Object: "Replication Controller"},
 		Transforms: replicationControllerTransforms,
 		Sections: []ContentSection{
@@ -229,8 +229,8 @@ var (
 	workloadsStatefulSets = NewResource(ResourceOptions{
 		Path:       "/workloads/stateful-sets",
 		CacheKey:   CacheKey{APIVersion: "apps/v1", Kind: "StatefulSet"},
-		ListType:   &apps.StatefulSetList{},
-		ObjectType: &apps.StatefulSet{},
+		ListType:   &appsv1.StatefulSetList{},
+		ObjectType: &appsv1.StatefulSet{},
 		Titles:     ResourceTitle{List: "Stateful Sets", Object: "Stateful Set"},
 		Transforms: statefulSetTransforms,
 		Sections: []ContentSection{
@@ -293,8 +293,8 @@ var (
 	dlbServices = NewResource(ResourceOptions{
 		Path:       "/discovery-and-load-balancing/services",
 		CacheKey:   CacheKey{APIVersion: "v1", Kind: "Service"},
-		ListType:   &core.ServiceList{},
-		ObjectType: &core.Service{},
+		ListType:   &corev1.ServiceList{},
+		ObjectType: &corev1.Service{},
 		Titles:     ResourceTitle{List: "Services", Object: "Service"},
 		Transforms: serviceTransforms,
 		Sections: []ContentSection{
@@ -326,8 +326,8 @@ var (
 	csConfigMaps = NewResource(ResourceOptions{
 		Path:       "/config-and-storage/config-maps",
 		CacheKey:   CacheKey{APIVersion: "v1", Kind: "ConfigMap"},
-		ListType:   &core.ConfigMapList{},
-		ObjectType: &core.ConfigMap{},
+		ListType:   &corev1.ConfigMapList{},
+		ObjectType: &corev1.ConfigMap{},
 		Titles:     ResourceTitle{List: "Config Maps", Object: "Config Map"},
 		Transforms: configMapTransforms,
 		Sections: []ContentSection{
@@ -344,8 +344,8 @@ var (
 	csPVCs = NewResource(ResourceOptions{
 		Path:       "/config-and-storage/persistent-volume-claims",
 		CacheKey:   CacheKey{APIVersion: "v1", Kind: "PersistentVolumeClaim"},
-		ListType:   &core.PersistentVolumeClaimList{},
-		ObjectType: &core.PersistentVolumeClaim{},
+		ListType:   &corev1.PersistentVolumeClaimList{},
+		ObjectType: &corev1.PersistentVolumeClaim{},
 		Titles:     ResourceTitle{List: "Persistent Volume Claims", Object: "Persistent Volume Claim"},
 		Transforms: pvcTransforms,
 		Sections: []ContentSection{
@@ -361,8 +361,8 @@ var (
 	csSecrets = NewResource(ResourceOptions{
 		Path:       "/config-and-storage/secrets",
 		CacheKey:   CacheKey{APIVersion: "v1", Kind: "Secret"},
-		ListType:   &core.SecretList{},
-		ObjectType: &core.Secret{},
+		ListType:   &corev1.SecretList{},
+		ObjectType: &corev1.Secret{},
 		Titles:     ResourceTitle{List: "Secrets", Object: "Secret"},
 		Transforms: secretTransforms,
 		Sections: []ContentSection{
@@ -379,8 +379,8 @@ var (
 	csServiceAccounts = NewResource(ResourceOptions{
 		Path:       "/config-and-storage/service-accounts",
 		CacheKey:   CacheKey{APIVersion: "v1", Kind: "ServiceAccount"},
-		ListType:   &core.ServiceAccountList{},
-		ObjectType: &core.ServiceAccount{},
+		ListType:   &corev1.ServiceAccountList{},
+		ObjectType: &corev1.ServiceAccount{},
 		Titles:     ResourceTitle{List: "Service Accounts", Object: "Service Account"},
 		Transforms: serviceAccountTransforms,
 		Sections: []ContentSection{
@@ -410,8 +410,8 @@ var (
 	rbacRoles = NewResource(ResourceOptions{
 		Path:       "/rbac/roles",
 		CacheKey:   CacheKey{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "Role"},
-		ListType:   &rbac.RoleList{},
-		ObjectType: &rbac.Role{},
+		ListType:   &rbacv1.RoleList{},
+		ObjectType: &rbacv1.Role{},
 		Titles:     ResourceTitle{List: "Roles", Object: "Role"},
 		Transforms: roleTransforms,
 		Sections: []ContentSection{
@@ -428,8 +428,8 @@ var (
 	rbacRoleBindings = NewResource(ResourceOptions{
 		Path:       "/rbac/role-bindings",
 		CacheKey:   CacheKey{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "RoleBinding"},
-		ListType:   &rbac.RoleBindingList{},
-		ObjectType: &rbac.RoleBinding{},
+		ListType:   &rbacv1.RoleBindingList{},
+		ObjectType: &rbacv1.RoleBinding{},
 		Titles:     ResourceTitle{List: "Role Bindings", Object: "Role Binding"},
 		Transforms: roleBindingTransforms,
 		Sections: []ContentSection{
@@ -463,8 +463,8 @@ var (
 	eventsDescriber = NewResource(ResourceOptions{
 		Path:       "/events",
 		CacheKey:   CacheKey{APIVersion: "v1", Kind: "Event"},
-		ListType:   &core.EventList{},
-		ObjectType: &core.Event{},
+		ListType:   &corev1.EventList{},
+		ObjectType: &corev1.Event{},
 		Titles:     ResourceTitle{List: "Events", Object: "Event"},
 		Transforms: roleBindingTransforms,
 	})

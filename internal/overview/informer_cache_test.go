@@ -269,7 +269,7 @@ func TestInformerCache_Watch(t *testing.T) {
 	resClient := dynamicClient.Resource(res).Namespace("default")
 
 	// create object
-	_, err = resClient.Create(obj)
+	_, err = resClient.Create(obj, metav1.CreateOptions{})
 	require.NoError(t, err)
 
 	// wait for cache to store an item before proceeding.
@@ -289,7 +289,7 @@ func TestInformerCache_Watch(t *testing.T) {
 	obj.SetAnnotations(annotations)
 
 	// update object
-	_, err = resClient.Update(obj)
+	_, err = resClient.Update(obj, metav1.UpdateOptions{})
 	require.NoError(t, err)
 
 	// wait for cache to store an item before proceeding.
@@ -380,7 +380,7 @@ func TestInformerCache_Watch_Stop(t *testing.T) {
 	}
 
 	// create object
-	_, err = resClient.Create(obj)
+	_, err = resClient.Create(obj, metav1.CreateOptions{})
 	require.NoError(t, err)
 
 	found, err = cache.Retrieve(cacheKey)

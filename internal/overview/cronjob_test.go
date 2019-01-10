@@ -22,7 +22,6 @@ func TestCronJobSummary(t *testing.T) {
 	cache := NewMemoryCache()
 
 	cronJob := loadFromFile(t, "cronjob-1.yaml")
-	cronJob = convertToInternal(t, cronJob)
 
 	storeFromFile(t, "job-1.yaml", cache)
 
@@ -62,14 +61,13 @@ func TestCronJobJobs(t *testing.T) {
 	cache := NewMemoryCache()
 
 	cronJob := loadFromFile(t, "cronjob-1.yaml")
-	cronJob = convertToInternal(t, cronJob)
 
 	storeFromFile(t, "job-1.yaml", cache)
 
 	contents, err := cjj.Content(ctx, cronJob, cache)
 	require.NoError(t, err)
 
-	jobColumns := tableCols("Name", "Desired", "Successful", "Age", "Containers",
+	jobColumns := tableCols("Name", "Completions", "Duration", "Age", "Containers",
 		"Images", "Selector", "Labels")
 
 	activeTable := content.NewTable("Active Jobs", "No active jobs")
@@ -78,14 +76,14 @@ func TestCronJobJobs(t *testing.T) {
 	inactiveTable := content.NewTable("Inactive Jobs", "No inactive jobs")
 	inactiveTable.Columns = jobColumns
 	inactiveTable.AddRow(content.TableRow{
-		"Age":        content.NewStringText("1d"),
-		"Containers": content.NewStringText("hello"),
-		"Desired":    content.NewStringText("1"),
-		"Images":     content.NewStringText("busybox"),
-		"Labels":     content.NewStringText("controller-uid=f20be17b-de8b-11e8-889a-025000000001,job-name=hello-1541155320"),
-		"Name":       content.NewLinkText("hello-1541155320", "/content/overview/workloads/jobs/hello-1541155320"),
-		"Selector":   content.NewStringText("controller-uid=f20be17b-de8b-11e8-889a-025000000001"),
-		"Successful": content.NewStringText("1"),
+		"Age":         content.NewStringText("24h"),
+		"Completions": content.NewStringText("1/1"),
+		"Containers":  content.NewStringText("hello"),
+		"Duration":    content.NewStringText("2s"),
+		"Images":      content.NewStringText("busybox"),
+		"Labels":      content.NewStringText("controller-uid=f20be17b-de8b-11e8-889a-025000000001,job-name=hello-1541155320"),
+		"Name":        content.NewLinkText("hello-1541155320", "/content/overview/workloads/jobs/hello-1541155320"),
+		"Selector":    content.NewStringText("controller-uid=f20be17b-de8b-11e8-889a-025000000001"),
 	})
 
 	expected := []content.Content{

@@ -7,12 +7,12 @@ import (
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/kubernetes/pkg/apis/core"
-	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
 )
 
@@ -33,7 +33,7 @@ func (ds *DeploymentSummary) Content(ctx context.Context, object runtime.Object,
 	return ds.summary(deployment)
 }
 
-func (ds *DeploymentSummary) summary(deployment *extensions.Deployment) ([]content.Content, error) {
+func (ds *DeploymentSummary) summary(deployment *appsv1.Deployment) ([]content.Content, error) {
 	section, err := printDeploymentSummary(deployment)
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (drs *DeploymentReplicaSets) Content(ctx context.Context, object runtime.Ob
 	return contents, nil
 }
 
-func (drs *DeploymentReplicaSets) replicaSets(deployment *extensions.Deployment, c Cache) ([]content.Content, error) {
+func (drs *DeploymentReplicaSets) replicaSets(deployment *appsv1.Deployment, c Cache) ([]content.Content, error) {
 	contents := []content.Content{}
 
 	replicaSets, err := listReplicaSets(deployment, c)
@@ -97,7 +97,7 @@ func (drs *DeploymentReplicaSets) replicaSets(deployment *extensions.Deployment,
 		}
 	}
 
-	oldList := &extensions.ReplicaSetList{}
+	oldList := &appsv1.ReplicaSetList{}
 	for _, rs := range findOldReplicaSets(deployment, replicaSets) {
 		oldList.Items = append(oldList.Items, *rs)
 	}
@@ -128,8 +128,8 @@ func printContentObject(title, namespace, prefix, emptyMessage string, transform
 	return printObject(object, transformed)
 }
 
-func retrieveDeployment(object runtime.Object) (*extensions.Deployment, error) {
-	deployment, ok := object.(*extensions.Deployment)
+func retrieveDeployment(object runtime.Object) (*appsv1.Deployment, error) {
+	deployment, ok := object.(*appsv1.Deployment)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a Deployment, it was %T", object)
 	}
@@ -137,7 +137,7 @@ func retrieveDeployment(object runtime.Object) (*extensions.Deployment, error) {
 	return deployment, nil
 }
 
-func listReplicaSets(deployment *extensions.Deployment, c Cache) ([]*extensions.ReplicaSet, error) {
+func listReplicaSets(deployment *appsv1.Deployment, c Cache) ([]*appsv1.ReplicaSet, error) {
 	key := CacheKey{
 		Namespace:  deployment.GetNamespace(),
 		APIVersion: deployment.APIVersion,
@@ -149,7 +149,7 @@ func listReplicaSets(deployment *extensions.Deployment, c Cache) ([]*extensions.
 		return nil, err
 	}
 
-	var owned []*extensions.ReplicaSet
+	var owned []*appsv1.ReplicaSet
 	for _, rs := range replicaSets {
 		if metav1.IsControlledBy(rs, deployment) {
 			owned = append(owned, rs)
@@ -159,16 +159,16 @@ func listReplicaSets(deployment *extensions.Deployment, c Cache) ([]*extensions.
 	return owned, nil
 }
 
-func loadReplicaSets(key CacheKey, c Cache, selector *metav1.LabelSelector) ([]*extensions.ReplicaSet, error) {
+func loadReplicaSets(key CacheKey, c Cache, selector *metav1.LabelSelector) ([]*appsv1.ReplicaSet, error) {
 	objects, err := c.Retrieve(key)
 	if err != nil {
 		return nil, err
 	}
 
-	var list []*extensions.ReplicaSet
+	var list []*appsv1.ReplicaSet
 
 	for _, object := range objects {
-		rs := &extensions.ReplicaSet{}
+		rs := &appsv1.ReplicaSet{}
 		if err := scheme.Scheme.Convert(object, rs, 0); err != nil {
 			return nil, err
 		}
@@ -191,7 +191,7 @@ func loadReplicaSets(key CacheKey, c Cache, selector *metav1.LabelSelector) ([]*
 // by tools or by Kubernetes itself.
 var extraKeys = []string{
 	"statefulset.kubernetes.io/pod-name",
-	extensions.DefaultDeploymentUniqueLabelKey,
+	appsv1.DefaultDeploymentUniqueLabelKey,
 	"controller-revision-hash",
 	"pod-template-generation",
 }
@@ -208,19 +208,25 @@ func isEqualSelector(s1, s2 *metav1.LabelSelector) bool {
 	return apiequality.Semantic.DeepEqual(s1Copy, s2Copy)
 }
 
-func equalIgnoreHash(template1, template2 *core.PodTemplateSpec) bool {
+// EqualIgnoreHash returns true if two given podTemplateSpec are equal, ignoring the diff in value of Labels[pod-template-hash]
+// We ignore pod-template-hash because:
+// 1. The hash result would be different upon podTemplateSpec API changes
+//    (e.g. the addition of a new field will cause the hash code to change)
+// 2. The deployment template won't have hash labels
+func equalIgnoreHash(template1, template2 *corev1.PodTemplateSpec) bool {
 	t1Copy := template1.DeepCopy()
 	t2Copy := template2.DeepCopy()
 
+	// Remove hash labels from template.Labels before comparing
 	for _, key := range extraKeys {
 		delete(t1Copy.Labels, key)
 		delete(t2Copy.Labels, key)
 	}
 
-	return apiequality.Semantic.DeepEqual(*t1Copy, *t2Copy)
+	return apiequality.Semantic.DeepEqual(t1Copy, t2Copy)
 }
 
-func findNewReplicaSet(deployment *extensions.Deployment, rsList []*extensions.ReplicaSet) *extensions.ReplicaSet {
+func findNewReplicaSet(deployment *appsv1.Deployment, rsList []*appsv1.ReplicaSet) *appsv1.ReplicaSet {
 	sort.Sort(replicaSetsByCreationTimestamp(rsList))
 	for i := range rsList {
 		if equalIgnoreHash(&rsList[i].Spec.Template, &deployment.Spec.Template) {
@@ -238,15 +244,15 @@ func findNewReplicaSet(deployment *extensions.Deployment, rsList []*extensions.R
 
 // findOldReplicaSets returns the old replica sets targeted by the given Deployment, with the given slice of RSes.
 // Note that the first set of old replica sets doesn't include the ones with no pods, and the second set of old replica sets include all old replica sets.
-func findOldReplicaSets(deployment *extensions.Deployment, rsList []*extensions.ReplicaSet) []*extensions.ReplicaSet {
-	var requiredRSs []*extensions.ReplicaSet
+func findOldReplicaSets(deployment *appsv1.Deployment, rsList []*appsv1.ReplicaSet) []*appsv1.ReplicaSet {
+	var requiredRSs []*appsv1.ReplicaSet
 	newRS := findNewReplicaSet(deployment, rsList)
 	for _, rs := range rsList {
 		// Filter out new replica set
 		if newRS != nil && rs.UID == newRS.UID {
 			continue
 		}
-		if rs.Spec.Replicas != 0 {
+		if rs.Spec.Replicas != nil && *rs.Spec.Replicas != 0 {
 			requiredRSs = append(requiredRSs, rs)
 		}
 	}
@@ -254,7 +260,7 @@ func findOldReplicaSets(deployment *extensions.Deployment, rsList []*extensions.
 }
 
 // replicaSetsByCreationTimestamp sorts a list of ReplicaSet by creation timestamp, using their names as a tie breaker.
-type replicaSetsByCreationTimestamp []*extensions.ReplicaSet
+type replicaSetsByCreationTimestamp []*appsv1.ReplicaSet
 
 func (o replicaSetsByCreationTimestamp) Len() int      { return len(o) }
 func (o replicaSetsByCreationTimestamp) Swap(i, j int) { o[i], o[j] = o[j], o[i] }

@@ -94,8 +94,7 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 	// Convert unstructured objects to typed runtime objects
 	for _, object := range objects {
 		item := d.objectType()
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, item)
-		if err != nil {
+		if err := scheme.Scheme.Convert(object, item, nil); err != nil {
 			return emptyContentResponse, err
 		}
 
@@ -266,6 +265,10 @@ func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
 	return nil
 }
 
+func convertToInternal(in runtime.Object) (runtime.Object, error) {
+	return scheme.Scheme.ConvertToVersion(in, runtime.InternalGroupVersioner)
+}
+
 func printObject(object runtime.Object, transformFunc func(*metav1beta1.Table) error) error {
 	options := kprinters.PrintOptions{
 		Wide:       true,
@@ -278,7 +281,12 @@ func printObject(object runtime.Object, transformFunc func(*metav1beta1.Table) e
 
 	printersinternal.AddHandlers(p)
 
-	tbl, err := p.PrintTable(object, options)
+	internal, err := convertToInternal(object)
+	if err != nil {
+		return errors.Wrapf(err, "converting to internal: %T", object)
+	}
+
+	tbl, err := p.PrintTable(internal, options)
 	if err != nil {
 		return err
 	}

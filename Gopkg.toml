@@ -31,27 +31,27 @@ required = [
 
 [[override]]
   name = "k8s.io/client-go"
-  version = "8.0.0"
+  version = "10.0.0"
 
 [[override]]
   name = "k8s.io/apimachinery"
-  version = "kubernetes-1.11.4"
+  version = "kubernetes-1.13.1"
 
 [[override]]
   name = "k8s.io/api"
-  version = "kubernetes-1.11.4"
+  version = "kubernetes-1.13.1"
 
 [[override]]
   name = "k8s.io/apiserver"
-  version = "kubernetes-1.11.4"
+  version = "kubernetes-1.13.1"
 
 [[override]]
   name = "k8s.io/apiextensions-apiserver"
-  version = "kubernetes-1.11.4"
+  version = "kubernetes-1.13.1"
 
 [[override]]
   name = "k8s.io/kubernetes"
-  version = "1.11.4"
+  version = "1.13.1"
 
 [[override]]
   name = "github.com/docker/distribution"
@@ -71,4 +71,5 @@ required = [
 
 [[override]]
   name = "github.com/Azure/go-autorest"
-  version = "10.15.5"
+  version = "11.1.0"
+

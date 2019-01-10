@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/kubernetes/pkg/apis/core"
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/content"
@@ -40,9 +39,9 @@ func (el *EventList) Content(ctx context.Context, object runtime.Object, c Cache
 		return nil, err
 	}
 
-	var events []*core.Event
+	var events []*corev1.Event
 	for _, obj := range eventObjects {
-		event := &core.Event{}
+		event := &corev1.Event{}
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.Object, event)
 		if err != nil {
 			return nil, err

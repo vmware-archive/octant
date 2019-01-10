@@ -6,7 +6,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/third_party/dynamicfake"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -17,6 +16,7 @@ import (
 	"k8s.io/client-go/discovery"
 	fakediscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/dynamic"
+	dynamicfake "k8s.io/client-go/dynamic/fake"
 	fakeclientset "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/testing"

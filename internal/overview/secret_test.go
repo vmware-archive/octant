@@ -22,7 +22,6 @@ func TestSecretData(t *testing.T) {
 	cache := NewMemoryCache()
 
 	secret := loadFromFile(t, "secret-1.yaml")
-	secret = convertToInternal(t, secret)
 
 	got, err := v.Content(ctx, secret, cache)
 	require.NoError(t, err)

@@ -5,11 +5,11 @@ import (
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/kubernetes/pkg/apis/core"
+	corev1 "k8s.io/api/core/v1"
 )
 
 func Test_summarizePersistentVolumeClaimVolumeSource(t *testing.T) {
-	claim := &core.PersistentVolumeClaimVolumeSource{
+	claim := &corev1.PersistentVolumeClaimVolumeSource{
 		ClaimName: "my-claim",
 	}
 

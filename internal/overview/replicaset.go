@@ -5,9 +5,9 @@ import (
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/kubernetes/pkg/apis/extensions"
 )
 
 type ReplicaSetSummary struct{}
@@ -27,7 +27,7 @@ func (rss *ReplicaSetSummary) Content(ctx context.Context, object runtime.Object
 	return rss.summary(replicaSet, c)
 }
 
-func (rss *ReplicaSetSummary) summary(replicaSet *extensions.ReplicaSet, c Cache) ([]content.Content, error) {
+func (rss *ReplicaSetSummary) summary(replicaSet *appsv1.ReplicaSet, c Cache) ([]content.Content, error) {
 	pods, err := listPods(replicaSet.GetNamespace(), replicaSet.Spec.Selector, replicaSet.GetUID(), c)
 	if err != nil {
 		return nil, err
@@ -46,8 +46,8 @@ func (rss *ReplicaSetSummary) summary(replicaSet *extensions.ReplicaSet, c Cache
 	return contents, nil
 }
 
-func retrieveReplicaSet(object runtime.Object) (*extensions.ReplicaSet, error) {
-	replicaSet, ok := object.(*extensions.ReplicaSet)
+func retrieveReplicaSet(object runtime.Object) (*appsv1.ReplicaSet, error) {
+	replicaSet, ok := object.(*appsv1.ReplicaSet)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a ReplicaSet, it was %T", object)
 	}

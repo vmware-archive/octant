@@ -2,11 +2,9 @@ package commands
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"os"
 	"os/signal"
-	"strconv"
 	"time"
 
 	"github.com/heptio/developer-dash/internal/dash"
@@ -33,7 +31,8 @@ func newDashCmd() *cobra.Command {
 			defer cancel()
 
 			// Configure glog verbosity (in client-go)
-			flag.CommandLine.Parse([]string{"-logtostderr", "-v", strconv.Itoa(verboseLevel)}) // Set glog to verbose
+			// flag.CommandLine.Parse([]string{"-logtostderr", "-v", strconv.Itoa(verboseLevel)}) // Set glog to verbose
+			// TODO how does this work in klog??
 
 			z, err := newZapLogger(verboseLevel)
 			if err != nil {

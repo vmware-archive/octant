@@ -5,9 +5,9 @@ import (
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/kubernetes/pkg/apis/extensions"
 )
 
 type DaemonSetSummary struct{}
@@ -27,7 +27,7 @@ func (rss *DaemonSetSummary) Content(ctx context.Context, object runtime.Object,
 	return rss.summary(replicaSet, c)
 }
 
-func (rss *DaemonSetSummary) summary(replicaSet *extensions.DaemonSet, c Cache) ([]content.Content, error) {
+func (rss *DaemonSetSummary) summary(replicaSet *appsv1.DaemonSet, c Cache) ([]content.Content, error) {
 	pods, err := listPods(replicaSet.GetNamespace(), replicaSet.Spec.Selector, replicaSet.GetUID(), c)
 	if err != nil {
 		return nil, err
@@ -46,8 +46,8 @@ func (rss *DaemonSetSummary) summary(replicaSet *extensions.DaemonSet, c Cache) 
 	return contents, nil
 }
 
-func retrieveDaemonSet(object runtime.Object) (*extensions.DaemonSet, error) {
-	replicaSet, ok := object.(*extensions.DaemonSet)
+func retrieveDaemonSet(object runtime.Object) (*appsv1.DaemonSet, error) {
+	replicaSet, ok := object.(*appsv1.DaemonSet)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a DaemonSet, it was %T", object)
 	}

@@ -25,7 +25,6 @@ func TestIngressDetails(t *testing.T) {
 	cache := NewMemoryCache()
 
 	ingress := loadFromFile(t, "ingress-1.yaml")
-	ingress = convertToInternal(t, ingress)
 
 	ctx := context.Background()
 

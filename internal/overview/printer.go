@@ -13,23 +13,24 @@ import (
 
 	"github.com/heptio/developer-dash/internal/content"
 
+	appsv1 "k8s.io/api/apps/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/sets"
-	resourcehelper "k8s.io/kubernetes/pkg/api/resource"
-	"k8s.io/kubernetes/pkg/apis/apps"
+
+	// resourcehelper "k8s.io/kubernetes/pkg/api/v1/resource"
 	"k8s.io/kubernetes/pkg/apis/batch"
-	"k8s.io/kubernetes/pkg/apis/core"
-	"k8s.io/kubernetes/pkg/apis/core/helper"
-	"k8s.io/kubernetes/pkg/apis/core/helper/qos"
-	"k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/apis/rbac"
-	"k8s.io/kubernetes/pkg/printers/internalversion"
+	v1helper "k8s.io/kubernetes/pkg/apis/core/v1/helper"
+	describe "k8s.io/kubernetes/pkg/kubectl/describe/versioned"
+	"k8s.io/kubernetes/pkg/kubectl/util/qos"
+	resourcehelper "k8s.io/kubernetes/pkg/kubectl/util/resource"
 )
 
-func printEvents(prefix, namespace string, object runtime.Object, events []*core.Event, cl clock.Clock) (content.Table, error) {
+func printEvents(prefix, namespace string, object runtime.Object, events []*corev1.Event, cl clock.Clock) (content.Table, error) {
 	eventsTable := newEventTable(namespace, object)
 	for _, event := range events {
 		firstSeen := event.FirstTimestamp.UTC().Format(time.RFC3339)
@@ -48,7 +49,7 @@ func printEvents(prefix, namespace string, object runtime.Object, events []*core
 	return eventsTable, nil
 }
 
-func printCronJobSummary(cronJob *batch.CronJob, jobs []*batch.Job) (content.Section, error) {
+func printCronJobSummary(cronJob *batchv1beta1.CronJob, jobs []*batch.Job) (content.Section, error) {
 	section := content.NewSection()
 
 	section.AddText("Name", cronJob.GetName())
@@ -85,7 +86,7 @@ func printCronJobSummary(cronJob *batch.CronJob, jobs []*batch.Job) (content.Sec
 	return section, nil
 }
 
-func printDeploymentSummary(deployment *extensions.Deployment) (content.Section, error) {
+func printDeploymentSummary(deployment *appsv1.Deployment) (content.Section, error) {
 	section := content.NewSection()
 
 	section.AddText("Name", deployment.GetName())
@@ -129,7 +130,7 @@ func printDeploymentSummary(deployment *extensions.Deployment) (content.Section,
 	return section, nil
 }
 
-func printJobSummary(job *batch.Job, pods []*core.Pod) (content.Section, error) {
+func printJobSummary(job *batch.Job, pods []*corev1.Pod) (content.Section, error) {
 	section := content.NewSection()
 	section.AddText("Name", job.GetName())
 	section.AddText("Namespace", job.GetNamespace())
@@ -173,7 +174,7 @@ func printJobSummary(job *batch.Job, pods []*core.Pod) (content.Section, error) 
 	return section, nil
 }
 
-func printPodSummary(pod *core.Pod, c clock.Clock) (content.Section, error) {
+func printPodSummary(pod *corev1.Pod, c clock.Clock) (content.Section, error) {
 	section := content.NewSection()
 	section.AddText("Name", pod.GetName())
 	section.AddText("Namespace", pod.GetNamespace())
@@ -229,7 +230,7 @@ func printPodSummary(pod *core.Pod, c clock.Clock) (content.Section, error) {
 	return section, nil
 }
 
-func printDaemonSetSummary(replicaSet *extensions.DaemonSet, pods []*core.Pod) (content.Section, error) {
+func printDaemonSetSummary(replicaSet *appsv1.DaemonSet, pods []*corev1.Pod) (content.Section, error) {
 	section := content.NewSection()
 
 	section.AddText("Name", replicaSet.GetName())
@@ -249,7 +250,7 @@ func printDaemonSetSummary(replicaSet *extensions.DaemonSet, pods []*core.Pod) (
 	return section, nil
 }
 
-func printReplicaSetSummary(replicaSet *extensions.ReplicaSet, pods []*core.Pod) (content.Section, error) {
+func printReplicaSetSummary(replicaSet *appsv1.ReplicaSet, pods []*corev1.Pod) (content.Section, error) {
 	section := content.NewSection()
 
 	section.AddText("Name", replicaSet.GetName())
@@ -282,7 +283,7 @@ func printReplicaSetSummary(replicaSet *extensions.ReplicaSet, pods []*core.Pod)
 	return section, nil
 }
 
-func printReplicationControllerSummary(rc *core.ReplicationController, pods []*core.Pod) (content.Section, error) {
+func printReplicationControllerSummary(rc *corev1.ReplicationController, pods []*corev1.Pod) (content.Section, error) {
 	section := content.NewSection()
 	section.AddText("Name", rc.GetName())
 	section.AddText("Namespace", rc.GetNamespace())
@@ -305,7 +306,7 @@ func printReplicationControllerSummary(rc *core.ReplicationController, pods []*c
 	return section, nil
 }
 
-func printStatefulSetSummary(ss *apps.StatefulSet, pods []*core.Pod) (content.Section, error) {
+func printStatefulSetSummary(ss *appsv1.StatefulSet, pods []*corev1.Pod) (content.Section, error) {
 	section := content.NewSection()
 	section.AddText("Name", ss.GetName())
 	section.AddText("Namespace", ss.GetNamespace())
@@ -323,8 +324,8 @@ func printStatefulSetSummary(ss *apps.StatefulSet, pods []*core.Pod) (content.Se
 
 	if ss.Spec.UpdateStrategy.RollingUpdate != nil {
 		ru := ss.Spec.UpdateStrategy.RollingUpdate
-		if ru.Partition != 0 {
-			section.AddText("Partition", fmt.Sprintf("%d", ru.Partition))
+		if ru.Partition != nil && *ru.Partition != 0 {
+			section.AddText("Partition", fmt.Sprintf("%d", *ru.Partition))
 		}
 	}
 
@@ -338,7 +339,7 @@ func printStatefulSetSummary(ss *apps.StatefulSet, pods []*core.Pod) (content.Se
 	return section, nil
 }
 
-func printServiceSummary(s *core.Service) (content.Section, error) {
+func printServiceSummary(s *corev1.Service) (content.Section, error) {
 	section := content.NewSection()
 	section.AddText("Name", s.GetName())
 	section.AddText("Namespace", s.GetNamespace())
@@ -382,7 +383,7 @@ func printServiceSummary(s *core.Service) (content.Section, error) {
 	return section, nil
 }
 
-func printServiceAccountSummary(serviceAccount *core.ServiceAccount, tokens []*core.Secret, missingSecrets sets.String) (content.Section, error) {
+func printServiceAccountSummary(serviceAccount *corev1.ServiceAccount, tokens []*corev1.Secret, missingSecrets sets.String) (content.Section, error) {
 	section := content.NewSection()
 	section.AddText("Name", serviceAccount.GetName())
 	section.AddText("Namespace", serviceAccount.GetNamespace())
@@ -462,7 +463,7 @@ func printIngressSummary(ingress *v1beta1.Ingress) (content.Section, error) {
 	return section, nil
 }
 
-func printConfigMapSummary(configMap *core.ConfigMap) (content.Section, error) {
+func printConfigMapSummary(configMap *corev1.ConfigMap) (content.Section, error) {
 	section := content.NewSection()
 	section.AddText("Name", configMap.GetName())
 	section.AddText("Namespace", configMap.GetNamespace())
@@ -473,7 +474,7 @@ func printConfigMapSummary(configMap *core.ConfigMap) (content.Section, error) {
 	return section, nil
 }
 
-func printSecretSummary(secret *core.Secret) (content.Section, error) {
+func printSecretSummary(secret *corev1.Secret) (content.Section, error) {
 	section := content.NewSection()
 	section.AddText("Name", secret.GetName())
 	section.AddText("Namespace", secret.GetNamespace())
@@ -485,7 +486,7 @@ func printSecretSummary(secret *core.Secret) (content.Section, error) {
 	return section, nil
 }
 
-func printPersistentVolumeClaimSummary(pvc *core.PersistentVolumeClaim) (content.Section, error) {
+func printPersistentVolumeClaimSummary(pvc *corev1.PersistentVolumeClaim) (content.Section, error) {
 	section := content.NewSection()
 	section.AddText("Name", pvc.GetName())
 	section.AddText("Namespace", pvc.GetNamespace())
@@ -506,12 +507,12 @@ func printPersistentVolumeClaimSummary(pvc *core.PersistentVolumeClaim) (content
 
 	section.AddText("Finalizers", strings.Join(pvc.ObjectMeta.Finalizers, ", "))
 
-	storage := pvc.Spec.Resources.Requests[core.ResourceStorage]
+	storage := pvc.Spec.Resources.Requests[corev1.ResourceStorage]
 	capacity := ""
 	accessModes := ""
 	if pvc.Spec.VolumeName != "" {
-		accessModes = helper.GetAccessModesAsString(pvc.Status.AccessModes)
-		storage = pvc.Status.Capacity[core.ResourceStorage]
+		accessModes = v1helper.GetAccessModesAsString(pvc.Status.AccessModes)
+		storage = pvc.Status.Capacity[corev1.ResourceStorage]
 		capacity = storage.String()
 	}
 
@@ -525,7 +526,7 @@ func printPersistentVolumeClaimSummary(pvc *core.PersistentVolumeClaim) (content
 	return section, nil
 }
 
-func printRoleSummary(role *rbac.Role) (content.Section, error) {
+func printRoleSummary(role *rbacv1.Role) (content.Section, error) {
 	section := content.NewSection()
 	section.AddText("Name", role.GetName())
 	section.AddText("Namespace", role.GetNamespace())
@@ -536,7 +537,7 @@ func printRoleSummary(role *rbac.Role) (content.Section, error) {
 	return section, nil
 }
 
-func printRoleRule(role *rbac.Role) (content.Table, error) {
+func printRoleRule(role *rbacv1.Role) (content.Table, error) {
 	table := content.NewTable("Rules", "No rules are configured for this Role")
 
 	columnNames := []string{
@@ -576,7 +577,7 @@ func printRoleRule(role *rbac.Role) (content.Table, error) {
 	return table, nil
 }
 
-func printRoleBindingSummary(roleBinding *rbac.RoleBinding, role *rbac.Role) (content.Section, error) {
+func printRoleBindingSummary(roleBinding *rbacv1.RoleBinding, role *rbacv1.Role) (content.Section, error) {
 	section := content.NewSection()
 	section.AddText("Name", roleBinding.GetName())
 	section.AddText("Namespace", roleBinding.GetNamespace())
@@ -589,7 +590,7 @@ func printRoleBindingSummary(roleBinding *rbac.RoleBinding, role *rbac.Role) (co
 	return section, nil
 }
 
-func printRoleBindingSubjects(roleBinding *rbac.RoleBinding) (content.Table, error) {
+func printRoleBindingSubjects(roleBinding *rbacv1.RoleBinding) (content.Table, error) {
 	table := content.NewTable("Subjects", "No subjects are configured for this RoleBinding")
 
 	columnNames := []string{
@@ -617,7 +618,7 @@ func printRoleBindingSubjects(roleBinding *rbac.RoleBinding) (content.Table, err
 	return table, nil
 }
 
-func printPodTemplate(template *core.PodTemplateSpec, containerStatuses []core.ContainerStatus) ([]content.Content, error) {
+func printPodTemplate(template *corev1.PodTemplateSpec, containerStatuses []corev1.ContainerStatus) ([]content.Content, error) {
 
 	templateSection := content.NewSection()
 	templateSection.AddLabels("Labels", template.Labels)
@@ -652,7 +653,7 @@ func printPodTemplate(template *core.PodTemplateSpec, containerStatuses []core.C
 	return contents, nil
 }
 
-func describePodContainers(containers []core.Container, containerStatuses []core.ContainerStatus) ([]content.Content, error) {
+func describePodContainers(containers []corev1.Container, containerStatuses []corev1.ContainerStatus) ([]content.Content, error) {
 	containerSections := describeContainers(containers, containerStatuses, nil)
 	containerSummary := content.NewSummary("Container Template", containerSections)
 
@@ -668,9 +669,9 @@ func describePodContainers(containers []core.Container, containerStatuses []core
 	return contents, nil
 }
 
-func describeContainers(containers []core.Container, containerStatuses []core.ContainerStatus,
-	resolverFn internalversion.EnvVarResolverFunc) []content.Section {
-	statuses := make(map[string]core.ContainerStatus)
+func describeContainers(containers []corev1.Container, containerStatuses []corev1.ContainerStatus,
+	resolverFn describe.EnvVarResolverFunc) []content.Section {
+	statuses := make(map[string]corev1.ContainerStatus)
 	for _, status := range containerStatuses {
 		statuses[status.Name] = status
 	}
@@ -685,8 +686,8 @@ func describeContainers(containers []core.Container, containerStatuses []core.Co
 	return sections
 }
 
-func describeContainer(container core.Container, status core.ContainerStatus, ok bool,
-	resolverFn internalversion.EnvVarResolverFunc) content.Section {
+func describeContainer(container corev1.Container, status corev1.ContainerStatus, ok bool,
+	resolverFn describe.EnvVarResolverFunc) content.Section {
 	section := content.NewSection()
 	section.Title = container.Name
 
@@ -753,7 +754,7 @@ func describeContainer(container core.Container, status core.ContainerStatus, ok
 
 	if len(resources.Limits) > 0 {
 		limits := make(map[string]string)
-		for _, name := range internalversion.SortedResourceNames(resources.Limits) {
+		for _, name := range describe.SortedResourceNames(resources.Limits) {
 			quantity := resources.Limits[name]
 			limits[string(name)] = quantity.String()
 		}
@@ -763,7 +764,7 @@ func describeContainer(container core.Container, status core.ContainerStatus, ok
 
 	if len(resources.Requests) > 0 {
 		requests := make(map[string]string)
-		for _, name := range internalversion.SortedResourceNames(resources.Requests) {
+		for _, name := range describe.SortedResourceNames(resources.Requests) {
 			quantity := resources.Limits[name]
 			requests[string(name)] = quantity.String()
 		}
@@ -772,12 +773,12 @@ func describeContainer(container core.Container, status core.ContainerStatus, ok
 	}
 
 	if container.LivenessProbe != nil {
-		probe := internalversion.DescribeProbe(container.LivenessProbe)
+		probe := describe.DescribeProbe(container.LivenessProbe)
 		section.AddText("Liveness", probe)
 	}
 
 	if container.ReadinessProbe != nil {
-		probe := internalversion.DescribeProbe(container.ReadinessProbe)
+		probe := describe.DescribeProbe(container.ReadinessProbe)
 		section.AddText("Readiness", probe)
 	}
 
@@ -828,7 +829,7 @@ func describeContainer(container core.Container, status core.ContainerStatus, ok
 		section.AddText("Mounts", "<none>")
 	} else {
 		mounts := make(map[string]string)
-		sort.Sort(internalversion.SortableVolumeMounts(container.VolumeMounts))
+		sort.Sort(describe.SortableVolumeMounts(container.VolumeMounts))
 		for _, mount := range container.VolumeMounts {
 			flags := []string{}
 			switch {
@@ -845,7 +846,7 @@ func describeContainer(container core.Container, status core.ContainerStatus, ok
 	}
 
 	if len(container.VolumeDevices) > 0 {
-		sort.Sort(internalversion.SortableVolumeDevices(container.VolumeDevices))
+		sort.Sort(describe.SortableVolumeDevices(container.VolumeDevices))
 		devices := make(map[string]string)
 		for _, device := range container.VolumeDevices {
 			devices[device.DevicePath] = device.Name
@@ -856,7 +857,7 @@ func describeContainer(container core.Container, status core.ContainerStatus, ok
 	return section
 }
 
-func describeContainerPorts(cPorts []core.ContainerPort) string {
+func describeContainerPorts(cPorts []corev1.ContainerPort) string {
 	ports := make([]string, 0, len(cPorts))
 	for _, cPort := range cPorts {
 		ports = append(ports, fmt.Sprintf("%d/%s", cPort.ContainerPort, cPort.Protocol))
@@ -864,7 +865,7 @@ func describeContainerPorts(cPorts []core.ContainerPort) string {
 	return strings.Join(ports, ", ")
 }
 
-func describeContainerHostPorts(cPorts []core.ContainerPort) string {
+func describeContainerHostPorts(cPorts []corev1.ContainerPort) string {
 	ports := make([]string, 0, len(cPorts))
 	for _, cPort := range cPorts {
 		ports = append(ports, fmt.Sprintf("%d/%s", cPort.HostPort, cPort.Protocol))
@@ -872,7 +873,7 @@ func describeContainerHostPorts(cPorts []core.ContainerPort) string {
 	return strings.Join(ports, ", ")
 }
 
-func describeContainersEnvFrom(containers []core.Container) content.Table {
+func describeContainersEnvFrom(containers []corev1.Container) content.Table {
 	table := content.NewTable("Environment From",
 		"This container's environment is build from Secrets or a ConfigMap")
 
@@ -957,7 +958,7 @@ func controlledByPath(controllerRef *metav1.OwnerReference) string {
 	return gvkPath(controllerRef.APIVersion, controllerRef.Kind, controllerRef.Name)
 }
 
-func buildIngressString(ingress []core.LoadBalancerIngress) string {
+func buildIngressString(ingress []corev1.LoadBalancerIngress) string {
 	var buffer bytes.Buffer
 
 	for i := range ingress {
@@ -1004,9 +1005,9 @@ func backendStringer(backend *v1beta1.IngressBackend) string {
 	return fmt.Sprintf("%v:%v", backend.ServiceName, backend.ServicePort.String())
 }
 
-func getPersistentVolumeClaimClass(claim *core.PersistentVolumeClaim) string {
+func getPersistentVolumeClaimClass(claim *corev1.PersistentVolumeClaim) string {
 	// Use beta annotation first
-	if class, found := claim.Annotations[core.BetaStorageClassAnnotation]; found {
+	if class, found := claim.Annotations[corev1.BetaStorageClassAnnotation]; found {
 		return class
 	}
 
@@ -1017,23 +1018,23 @@ func getPersistentVolumeClaimClass(claim *core.PersistentVolumeClaim) string {
 	return ""
 }
 
-func getAccessModesAsString(modes []core.PersistentVolumeAccessMode) string {
+func getAccessModesAsString(modes []corev1.PersistentVolumeAccessMode) string {
 	modes = removeDuplicateAccessModes(modes)
 	modesStr := []string{}
-	if containsAccessMode(modes, core.ReadWriteOnce) {
+	if containsAccessMode(modes, corev1.ReadWriteOnce) {
 		modesStr = append(modesStr, "RWO")
 	}
-	if containsAccessMode(modes, core.ReadOnlyMany) {
+	if containsAccessMode(modes, corev1.ReadOnlyMany) {
 		modesStr = append(modesStr, "ROX")
 	}
-	if containsAccessMode(modes, core.ReadWriteMany) {
+	if containsAccessMode(modes, corev1.ReadWriteMany) {
 		modesStr = append(modesStr, "RWX")
 	}
 	return strings.Join(modesStr, ",")
 }
 
-func removeDuplicateAccessModes(modes []core.PersistentVolumeAccessMode) []core.PersistentVolumeAccessMode {
-	accessModes := []core.PersistentVolumeAccessMode{}
+func removeDuplicateAccessModes(modes []corev1.PersistentVolumeAccessMode) []corev1.PersistentVolumeAccessMode {
+	accessModes := []corev1.PersistentVolumeAccessMode{}
 	for _, m := range modes {
 		if !containsAccessMode(accessModes, m) {
 			accessModes = append(accessModes, m)
@@ -1042,7 +1043,7 @@ func removeDuplicateAccessModes(modes []core.PersistentVolumeAccessMode) []core.
 	return accessModes
 }
 
-func containsAccessMode(modes []core.PersistentVolumeAccessMode, mode core.PersistentVolumeAccessMode) bool {
+func containsAccessMode(modes []corev1.PersistentVolumeAccessMode, mode corev1.PersistentVolumeAccessMode) bool {
 	for _, m := range modes {
 		if m == mode {
 			return true

@@ -9,6 +9,8 @@ import (
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,9 +19,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	k8stypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/kubernetes/pkg/apis/apps"
-	"k8s.io/kubernetes/pkg/apis/core"
-	"k8s.io/kubernetes/pkg/apis/extensions"
 )
 
 type visitFunc func(context.Context, runtime.Object, Cache, content.Nodes, content.AdjList, visitSet) error
@@ -58,14 +57,14 @@ func (rv *resourceVisitor) visit(ctx context.Context, object runtime.Object, c C
 var (
 	defaultResourceVisitor = &resourceVisitor{
 		visitors: map[runtime.Object]visitFunc{
-			&core.Pod{}:                   visitPodRoot,
-			&core.Service{}:               visitService,
-			&extensions.Deployment{}:      visitDeployment,
-			&extensions.ReplicaSet{}:      visitReplicaSet,
-			&v1beta1.Ingress{}:            visitIngress,
-			&apps.StatefulSet{}:           visitStatefulSet,
-			&core.ReplicationController{}: visitReplicationController,
-			&extensions.DaemonSet{}:       visitDaemonSet,
+			&corev1.Pod{}:                   visitPodRoot,
+			&corev1.Service{}:               visitService,
+			&appsv1.Deployment{}:            visitDeployment,
+			&appsv1.ReplicaSet{}:            visitReplicaSet,
+			&v1beta1.Ingress{}:              visitIngress,
+			&appsv1.StatefulSet{}:           visitStatefulSet,
+			&corev1.ReplicationController{}: visitReplicationController,
+			&appsv1.DaemonSet{}:             visitDaemonSet,
 		},
 	}
 )
@@ -74,8 +73,8 @@ type workloadChecks = map[runtime.Object]*nodeStatus
 
 var (
 	defaultChecks = workloadChecks{
-		&extensions.Deployment{}: newNodeStatus(deploymentCheckUnavailable),
-		&extensions.ReplicaSet{}: newNodeStatus(replicasSetCheckAvailableReplicas),
+		&appsv1.Deployment{}: newNodeStatus(deploymentCheckUnavailable),
+		&appsv1.ReplicaSet{}: newNodeStatus(replicasSetCheckAvailableReplicas),
 	}
 )
 
@@ -193,8 +192,8 @@ func listIngressBackends(ingress *v1beta1.Ingress, c Cache) ([]v1beta1.IngressBa
 	return backends, nil
 }
 
-func loadServices(serviceNames []string, namespace string, c Cache) ([]*core.Service, error) {
-	var services []*core.Service
+func loadServices(serviceNames []string, namespace string, c Cache) ([]*corev1.Service, error) {
+	var services []*corev1.Service
 	for _, backend := range serviceNames {
 		key := CacheKey{
 			Namespace:  namespace,
@@ -207,7 +206,7 @@ func loadServices(serviceNames []string, namespace string, c Cache) ([]*core.Ser
 			return nil, errors.Wrapf(err, "retrieving service backend: %v", backend)
 		}
 		for _, u := range ul {
-			svc := &core.Service{}
+			svc := &corev1.Service{}
 			err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, svc)
 			if err != nil {
 				return nil, errors.Wrap(err, "converting unstructured service")
@@ -221,7 +220,7 @@ func loadServices(serviceNames []string, namespace string, c Cache) ([]*core.Ser
 	return services, nil
 }
 
-func loadService(name string, namespace string, c Cache) (*core.Service, error) {
+func loadService(name string, namespace string, c Cache) (*corev1.Service, error) {
 	services, err := loadServices([]string{name}, namespace, c)
 	if err != nil {
 		return nil, err
@@ -233,7 +232,7 @@ func loadService(name string, namespace string, c Cache) (*core.Service, error) 
 }
 
 // Reverse-lookup ingresses that point to a service
-func findIngressesForService(svc *core.Service, c Cache) ([]*v1beta1.Ingress, error) {
+func findIngressesForService(svc *corev1.Service, c Cache) ([]*v1beta1.Ingress, error) {
 	var results []*v1beta1.Ingress
 	if svc == nil {
 		return nil, errors.New("nil service")
@@ -273,7 +272,7 @@ func findIngressesForService(svc *core.Service, c Cache) ([]*v1beta1.Ingress, er
 	return results, nil
 }
 
-func findPodsForService(svc *core.Service, c Cache) ([]*core.Pod, error) {
+func findPodsForService(svc *corev1.Service, c Cache) ([]*corev1.Pod, error) {
 	if svc == nil {
 		return nil, errors.New("nil service")
 	}
@@ -299,8 +298,8 @@ func findPodsForService(svc *core.Service, c Cache) ([]*core.Pod, error) {
 }
 
 // Reverse-lookup services that point to a pod
-func findServicesForPod(pod *core.Pod, c Cache) ([]*core.Service, error) {
-	var results []*core.Service
+func findServicesForPod(pod *corev1.Pod, c Cache) ([]*corev1.Service, error) {
+	var results []*corev1.Service
 	if pod == nil {
 		return nil, errors.New("nil pod")
 	}
@@ -318,7 +317,7 @@ func findServicesForPod(pod *core.Pod, c Cache) ([]*core.Service, error) {
 		return nil, errors.Wrap(err, "retrieving services")
 	}
 	for _, u := range ul {
-		svc := &core.Service{}
+		svc := &corev1.Service{}
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, svc)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured service")
@@ -344,8 +343,8 @@ func findServicesForPod(pod *core.Pod, c Cache) ([]*core.Service, error) {
 }
 
 // Reverse-lookup replicasets that point to a pod
-func findReplicaSetsForPod(pod *core.Pod, c Cache) ([]*extensions.ReplicaSet, error) {
-	var results []*extensions.ReplicaSet
+func findReplicaSetsForPod(pod *corev1.Pod, c Cache) ([]*appsv1.ReplicaSet, error) {
+	var results []*appsv1.ReplicaSet
 	if pod == nil {
 		return nil, errors.New("nil pod")
 	}
@@ -363,7 +362,7 @@ func findReplicaSetsForPod(pod *core.Pod, c Cache) ([]*extensions.ReplicaSet, er
 		return nil, errors.Wrap(err, "retrieving replicaSets")
 	}
 	for _, u := range ul {
-		rs := &extensions.ReplicaSet{}
+		rs := &appsv1.ReplicaSet{}
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, rs)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured replicaSet")
@@ -389,8 +388,8 @@ func findReplicaSetsForPod(pod *core.Pod, c Cache) ([]*extensions.ReplicaSet, er
 }
 
 // Reverse-lookup deployments that point to a pod
-func findDeploymentsForPod(pod *core.Pod, c Cache) ([]*extensions.Deployment, error) {
-	var results []*extensions.Deployment
+func findDeploymentsForPod(pod *corev1.Pod, c Cache) ([]*appsv1.Deployment, error) {
+	var results []*appsv1.Deployment
 	if pod == nil {
 		return nil, errors.New("nil pod")
 	}
@@ -408,7 +407,7 @@ func findDeploymentsForPod(pod *core.Pod, c Cache) ([]*extensions.Deployment, er
 		return nil, errors.Wrap(err, "retrieving deployments")
 	}
 	for _, u := range ul {
-		d := &extensions.Deployment{}
+		d := &appsv1.Deployment{}
 		err = runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, d)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured deployment")
@@ -433,7 +432,7 @@ func findDeploymentsForPod(pod *core.Pod, c Cache) ([]*extensions.Deployment, er
 	return results, nil
 }
 
-func findDeploymentForReplicaSet(rs *extensions.ReplicaSet, c Cache) (*extensions.Deployment, error) {
+func findDeploymentForReplicaSet(rs *appsv1.ReplicaSet, c Cache) (*appsv1.Deployment, error) {
 	if rs == nil {
 		return nil, errors.New("nil replicaset")
 	}
@@ -464,7 +463,7 @@ func findDeploymentForReplicaSet(rs *extensions.ReplicaSet, c Cache) (*extension
 		return nil, errors.Wrapf(err, "retrieving deployment: %v", key)
 	}
 	for _, u := range ul {
-		d := &extensions.Deployment{}
+		d := &appsv1.Deployment{}
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, d)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured deployment")
@@ -477,7 +476,7 @@ func findDeploymentForReplicaSet(rs *extensions.ReplicaSet, c Cache) (*extension
 	return nil, nil
 }
 
-func findStatefulSetForPod(pod *core.Pod, c Cache) (*apps.StatefulSet, error) {
+func findStatefulSetForPod(pod *corev1.Pod, c Cache) (*appsv1.StatefulSet, error) {
 	if pod == nil {
 		return nil, errors.New("nil pod")
 	}
@@ -508,7 +507,7 @@ func findStatefulSetForPod(pod *core.Pod, c Cache) (*apps.StatefulSet, error) {
 		return nil, errors.Wrapf(err, "retrieving statefulset: %v", key)
 	}
 	for _, u := range ul {
-		s := &apps.StatefulSet{}
+		s := &appsv1.StatefulSet{}
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, s)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured statefulset")
@@ -521,7 +520,7 @@ func findStatefulSetForPod(pod *core.Pod, c Cache) (*apps.StatefulSet, error) {
 	return nil, nil
 }
 
-func findReplicationControllerForPod(pod *core.Pod, c Cache) (*core.ReplicationController, error) {
+func findReplicationControllerForPod(pod *corev1.Pod, c Cache) (*corev1.ReplicationController, error) {
 	if pod == nil {
 		return nil, errors.New("nil pod")
 	}
@@ -552,7 +551,7 @@ func findReplicationControllerForPod(pod *core.Pod, c Cache) (*core.ReplicationC
 		return nil, errors.Wrapf(err, "retrieving replicationcontroller: %v", key)
 	}
 	for _, u := range ul {
-		rc := &core.ReplicationController{}
+		rc := &corev1.ReplicationController{}
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, rc)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured replicationcontroller")
@@ -565,7 +564,7 @@ func findReplicationControllerForPod(pod *core.Pod, c Cache) (*core.ReplicationC
 	return nil, nil
 }
 
-func findDaemonSetForPod(pod *core.Pod, c Cache) (*extensions.DaemonSet, error) {
+func findDaemonSetForPod(pod *corev1.Pod, c Cache) (*appsv1.DaemonSet, error) {
 	if pod == nil {
 		return nil, errors.New("nil pod")
 	}
@@ -596,7 +595,7 @@ func findDaemonSetForPod(pod *core.Pod, c Cache) (*extensions.DaemonSet, error) 
 		return nil, errors.Wrapf(err, "retrieving daemonset: %v", key)
 	}
 	for _, u := range ul {
-		ds := &extensions.DaemonSet{}
+		ds := &appsv1.DaemonSet{}
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, ds)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured daemonset")
@@ -659,7 +658,7 @@ func sortedLabels(labels map[string]string) string {
 	return sb.String()
 }
 
-func podGroupKeyForPod(pod *core.Pod) podGroupKey {
+func podGroupKeyForPod(pod *corev1.Pod) podGroupKey {
 	if pod == nil {
 		return podGroupKey{}
 	}
@@ -677,7 +676,7 @@ func podGroupKeyForPod(pod *core.Pod) podGroupKey {
 	}
 }
 
-func groupPods(pods []*core.Pod) []*podGroup {
+func groupPods(pods []*corev1.Pod) []*podGroup {
 	m := make(map[podGroupKey]bool)
 	results := make([]*podGroup, 0, 1)
 	for _, pod := range pods {
@@ -707,7 +706,7 @@ func serviceNames(backends []v1beta1.IngressBackend) []string {
 	return names
 }
 
-func visitPod(ctx context.Context, pod *core.Pod, c Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
+func visitPod(ctx context.Context, pod *corev1.Pod, c Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
 	if pod == nil {
 		return errors.New("nil pod")
 	}
@@ -788,12 +787,12 @@ func visitPodRoot(ctx context.Context, object runtime.Object, c Cache, nodes con
 		return errors.New("nil pod")
 	}
 
-	pod, ok := object.(*core.Pod)
+	pod, ok := object.(*corev1.Pod)
 	if !ok {
 		return errors.Errorf("expected pod; received %T", object)
 	}
 
-	podList := &core.PodList{Items: []core.Pod{*pod}}
+	podList := &corev1.PodList{Items: []corev1.Pod{*pod}}
 	return visitPodGroups(ctx, podList, nil, c, nodes, edges, visited)
 }
 
@@ -802,12 +801,12 @@ func visitPodGroups(ctx context.Context, object runtime.Object, edgeFn edgeFunc,
 		return errors.New("nil pod list")
 	}
 
-	podList, ok := object.(*core.PodList)
+	podList, ok := object.(*corev1.PodList)
 	if !ok {
 		return errors.Errorf("expected pod list; received %T", object)
 	}
 
-	var pods []*core.Pod
+	var pods []*corev1.Pod
 	for _, pod := range podList.Items {
 		pods = append(pods, &pod)
 	}
@@ -861,7 +860,7 @@ func visitService(ctx context.Context, object runtime.Object, c Cache, nodes con
 		return errors.New("nil service")
 	}
 
-	svc, ok := object.(*core.Service)
+	svc, ok := object.(*corev1.Service)
 	if !ok {
 		return errors.Errorf("expected service; received %T", object)
 	}
@@ -889,7 +888,7 @@ func visitService(ctx context.Context, object runtime.Object, c Cache, nodes con
 		return errors.Wrapf(err, "fetching pods for service %v", svc.Name)
 	}
 
-	podList := &core.PodList{}
+	podList := &corev1.PodList{}
 	for _, pod := range pods {
 		podList.Items = append(podList.Items, *pod)
 	}
@@ -919,7 +918,7 @@ func visitReplicaSet(ctx context.Context, object runtime.Object, c Cache, nodes 
 		return errors.New("nil replica set")
 	}
 
-	rs, ok := object.(*extensions.ReplicaSet)
+	rs, ok := object.(*appsv1.ReplicaSet)
 	if !ok {
 		return errors.Errorf("expected replica set; received %T", object)
 	}
@@ -956,7 +955,7 @@ func visitReplicaSet(ctx context.Context, object runtime.Object, c Cache, nodes 
 		edges.Add(uid, content.Edge{Type: content.EdgeTypeExplicit, Node: dst})
 	}
 
-	podList := &core.PodList{}
+	podList := &corev1.PodList{}
 	for _, pod := range pods {
 		podList.Items = append(podList.Items, *pod)
 	}
@@ -1033,7 +1032,7 @@ func visitDeployment(ctx context.Context, object runtime.Object, c Cache, nodes 
 		return errors.New("nil deployment")
 	}
 
-	deployment, ok := object.(*extensions.Deployment)
+	deployment, ok := object.(*appsv1.Deployment)
 	if !ok {
 		return errors.Errorf("expected deployment; received %T", object)
 	}
@@ -1067,7 +1066,7 @@ func visitDeployment(ctx context.Context, object runtime.Object, c Cache, nodes 
 		return errors.Wrapf(err, "fetching replicasets for deployment %v", deployment.Name)
 	}
 
-	var currentReplicaSets []*extensions.ReplicaSet
+	var currentReplicaSets []*appsv1.ReplicaSet
 
 	if rs := findNewReplicaSet(deployment, rsList); rs != nil {
 		currentReplicaSets = append(currentReplicaSets, rs)
@@ -1093,7 +1092,7 @@ func visitStatefulSet(ctx context.Context, object runtime.Object, c Cache, nodes
 		return errors.New("nil stateful set")
 	}
 
-	s, ok := object.(*apps.StatefulSet)
+	s, ok := object.(*appsv1.StatefulSet)
 	if !ok {
 		return errors.Errorf("expected stateful set; received %T", object)
 	}
@@ -1121,7 +1120,7 @@ func visitStatefulSet(ctx context.Context, object runtime.Object, c Cache, nodes
 		return errors.Wrapf(err, "fetching pods for statefulset %v", s.Name)
 	}
 
-	podList := &core.PodList{}
+	podList := &corev1.PodList{}
 	for _, pod := range pods {
 		podList.Items = append(podList.Items, *pod)
 	}
@@ -1141,7 +1140,7 @@ func visitReplicationController(ctx context.Context, object runtime.Object, c Ca
 		return errors.New("nil replicationcontroller")
 	}
 
-	rc, ok := object.(*core.ReplicationController)
+	rc, ok := object.(*corev1.ReplicationController)
 	if !ok {
 		return errors.Errorf("expected replicationcontroller; received %T", object)
 	}
@@ -1173,7 +1172,7 @@ func visitReplicationController(ctx context.Context, object runtime.Object, c Ca
 		return errors.Wrapf(err, "fetching pods for replicationcontroller %v", rc.Name)
 	}
 
-	podList := &core.PodList{}
+	podList := &corev1.PodList{}
 	for _, pod := range pods {
 		podList.Items = append(podList.Items, *pod)
 	}
@@ -1193,7 +1192,7 @@ func visitDaemonSet(ctx context.Context, object runtime.Object, c Cache, nodes c
 		return errors.New("nil daemonset")
 	}
 
-	ds, ok := object.(*extensions.DaemonSet)
+	ds, ok := object.(*appsv1.DaemonSet)
 	if !ok {
 		return errors.Errorf("expected daemonset; received %T", object)
 	}
@@ -1221,7 +1220,7 @@ func visitDaemonSet(ctx context.Context, object runtime.Object, c Cache, nodes c
 		return errors.Wrapf(err, "fetching pods for daemonset %v", ds.Name)
 	}
 
-	podList := &core.PodList{}
+	podList := &corev1.PodList{}
 	for _, pod := range pods {
 		podList.Items = append(podList.Items, *pod)
 	}

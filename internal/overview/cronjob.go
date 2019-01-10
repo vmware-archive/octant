@@ -5,6 +5,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -30,7 +31,7 @@ func (rss *CronJobSummary) Content(ctx context.Context, object runtime.Object, c
 	return rss.summary(cronJob, c)
 }
 
-func (rss *CronJobSummary) summary(cronJob *batch.CronJob, c Cache) ([]content.Content, error) {
+func (rss *CronJobSummary) summary(cronJob *batchv1beta1.CronJob, c Cache) ([]content.Content, error) {
 	jobs, err := listJobs(cronJob.GetNamespace(), cronJob.GetUID(), c)
 	if err != nil {
 		return nil, err
@@ -66,7 +67,7 @@ func (j *CronJobJobs) Content(ctx context.Context, object runtime.Object, c Cach
 	return j.jobs(cronJob, c)
 }
 
-func (j *CronJobJobs) jobs(cronJob *batch.CronJob, c Cache) ([]content.Content, error) {
+func (j *CronJobJobs) jobs(cronJob *batchv1beta1.CronJob, c Cache) ([]content.Content, error) {
 	jobs, err := listJobs(cronJob.GetNamespace(), cronJob.GetUID(), c)
 	if err != nil {
 		return nil, err
@@ -112,13 +113,13 @@ func (j *CronJobJobs) jobs(cronJob *batch.CronJob, c Cache) ([]content.Content, 
 	return contents, nil
 }
 
-func retrieveCronJob(object runtime.Object) (*batch.CronJob, error) {
-	replicaSet, ok := object.(*batch.CronJob)
+func retrieveCronJob(object runtime.Object) (*batchv1beta1.CronJob, error) {
+	cj, ok := object.(*batchv1beta1.CronJob)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a CronJob, it was %T", object)
 	}
 
-	return replicaSet, nil
+	return cj, nil
 }
 
 func listJobs(namespace string, uid types.UID, c Cache) ([]*batch.Job, error) {

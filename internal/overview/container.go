@@ -5,12 +5,12 @@ import (
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
+	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/kubernetes/pkg/apis/apps"
-	"k8s.io/kubernetes/pkg/apis/batch"
-	"k8s.io/kubernetes/pkg/apis/core"
-	"k8s.io/kubernetes/pkg/apis/extensions"
 )
 
 type ContainerSummary struct{}
@@ -35,21 +35,21 @@ func (js *ContainerSummary) Content(ctx context.Context, object runtime.Object, 
 	return contents, nil
 }
 
-func podTemplateSpec(object runtime.Object) (*core.PodTemplateSpec, error) {
+func podTemplateSpec(object runtime.Object) (*corev1.PodTemplateSpec, error) {
 	switch o := object.(type) {
-	case *batch.CronJob:
+	case *batchv1beta1.CronJob:
 		return &o.Spec.JobTemplate.Spec.Template, nil
-	case *extensions.DaemonSet:
+	case *appsv1.DaemonSet:
 		return &o.Spec.Template, nil
-	case *extensions.Deployment:
+	case *appsv1.Deployment:
 		return &o.Spec.Template, nil
-	case *batch.Job:
+	case *batchv1.Job:
 		return &o.Spec.Template, nil
-	case *extensions.ReplicaSet:
+	case *appsv1.ReplicaSet:
 		return &o.Spec.Template, nil
-	case *core.ReplicationController:
+	case *corev1.ReplicationController:
 		return o.Spec.Template, nil
-	case *apps.StatefulSet:
+	case *appsv1.StatefulSet:
 		return &o.Spec.Template, nil
 	default:
 		return nil, errors.Errorf("can't extract pod template spec from %T", object)
