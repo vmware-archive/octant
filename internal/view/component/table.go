@@ -36,6 +36,22 @@ func NewTable(title string, cols []TableCol) *Table {
 	}
 }
 
+// NewTableCols returns a slice of table columns, each with name/accessor
+// set according to the provided keys arguments.
+func NewTableCols(keys ...string) []TableCol {
+	if len(keys) == 0 {
+		return nil
+	}
+
+	cols := make([]TableCol, len(keys))
+
+	for i, k := range keys {
+		cols[i].Name = k
+		cols[i].Accessor = k
+	}
+	return cols
+}
+
 // GetMetadata accesses the components metadata. Implements ViewComponent.
 func (t *Table) GetMetadata() Metadata {
 	return t.Metadata
