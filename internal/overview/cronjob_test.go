@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/heptio/developer-dash/internal/cache"
+
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,13 +21,13 @@ func TestCronJobSummary(t *testing.T) {
 	s := NewCronJobSummary("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	ctx := context.Background()
-	cache := NewMemoryCache()
+	c := cache.NewMemoryCache()
 
 	cronJob := loadFromFile(t, "cronjob-1.yaml")
 
-	storeFromFile(t, "job-1.yaml", cache)
+	storeFromFile(t, "job-1.yaml", c)
 
-	contents, err := s.Content(ctx, cronJob, cache)
+	contents, err := s.Content(ctx, cronJob, c)
 	require.NoError(t, err)
 
 	sections := []content.Section{
@@ -58,13 +60,13 @@ func TestCronJobJobs(t *testing.T) {
 	cjj := NewCronJobJobs("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	ctx := context.Background()
-	cache := NewMemoryCache()
+	c := cache.NewMemoryCache()
 
 	cronJob := loadFromFile(t, "cronjob-1.yaml")
 
-	storeFromFile(t, "job-1.yaml", cache)
+	storeFromFile(t, "job-1.yaml", c)
 
-	contents, err := cjj.Content(ctx, cronJob, cache)
+	contents, err := cjj.Content(ctx, cronJob, c)
 	require.NoError(t, err)
 
 	jobColumns := tableCols("Name", "Completions", "Duration", "Age", "Containers",

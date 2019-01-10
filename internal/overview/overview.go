@@ -2,6 +2,7 @@ package overview
 
 import (
 	"fmt"
+	"github.com/heptio/developer-dash/internal/cache"
 	"net/http"
 	"os"
 	"sync"
@@ -24,7 +25,7 @@ type ClusterOverview struct {
 
 	logger log.Logger
 
-	cache  Cache
+	cache  cache.Cache
 	stopCh chan struct{}
 
 	generator *realGenerator
@@ -34,10 +35,10 @@ type ClusterOverview struct {
 func NewClusterOverview(client cluster.ClientInterface, namespace string, logger log.Logger) (*ClusterOverview, error) {
 	stopCh := make(chan struct{})
 
-	var opts []InformerCacheOpt
+	var opts []cache.InformerCacheOpt
 
 	if os.Getenv("DASH_VERBOSE_CACHE") != "" {
-		ch := make(chan CacheNotification)
+		ch := make(chan cache.CacheNotification)
 
 		go func() {
 			for notif := range ch {
@@ -45,7 +46,7 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string, logger
 			}
 		}()
 
-		opts = append(opts, InformerCacheNotificationOpt(ch, stopCh))
+		opts = append(opts, cache.InformerCacheNotificationOpt(ch, stopCh))
 	}
 
 	if client == nil {
@@ -68,8 +69,8 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string, logger
 	}
 	rm := restmapper.NewDiscoveryRESTMapper(groupResources)
 
-	opts = append(opts, InformerCacheLoggerOpt(logger))
-	cache := NewInformerCache(stopCh, dynamicClient, rm, opts...)
+	opts = append(opts, cache.InformerCacheLoggerOpt(logger))
+	cache := cache.NewInformerCache(stopCh, dynamicClient, rm, opts...)
 
 	var pathFilters []pathFilter
 	pathFilters = append(pathFilters, rootDescriber.PathFilters(namespace)...)

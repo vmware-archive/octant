@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/heptio/developer-dash/internal/cache"
+
 	"github.com/heptio/developer-dash/internal/content"
 
 	"github.com/stretchr/testify/assert"
@@ -24,15 +26,15 @@ func TestPodList_InvalidObject(t *testing.T) {
 func TestPodList(t *testing.T) {
 	pl := NewPodList("prefix", "ns", clock.NewFakeClock(time.Now()))
 
-	cache := NewMemoryCache()
+	c := cache.NewMemoryCache()
 
 	rs := loadFromFile(t, "replicaset-1.yaml")
 
-	storeFromFile(t, "rs-pod-1.yaml", cache)
+	storeFromFile(t, "rs-pod-1.yaml", c)
 
 	ctx := context.Background()
 
-	contents, err := pl.Content(ctx, rs, cache)
+	contents, err := pl.Content(ctx, rs, c)
 	require.NoError(t, err)
 
 	podColumns := []content.TableColumn{

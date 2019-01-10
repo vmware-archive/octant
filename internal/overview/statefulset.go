@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -19,7 +20,7 @@ func NewStatefulSetSummary(prefix, namespace string, c clock.Clock) View {
 	return &StatefulSetSummary{}
 }
 
-func (js *StatefulSetSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (js *StatefulSetSummary) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	ss, err := retrieveStatefulSet(object)
 	if err != nil {
 		return nil, err

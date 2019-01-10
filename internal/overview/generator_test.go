@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/cache"
+
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/content"
@@ -14,7 +16,7 @@ import (
 )
 
 func Test_realGenerator_Generate(t *testing.T) {
-	key := CacheKey{Namespace: "default"}
+	key := cache.CacheKey{Namespace: "default"}
 
 	describers := []Describer{
 		newStubDescriber("/other"),
@@ -58,7 +60,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 			name: "sub path",
 			path: "/sub/foo",
 			initCache: func(c *spyCache) {
-				subKey := CacheKey{Namespace: key.Namespace, Name: "foo"}
+				subKey := cache.CacheKey{Namespace: key.Namespace, Name: "foo"}
 				c.spyRetrieve(subKey, []*unstructured.Unstructured{}, nil)
 			},
 			expected: ContentResponse{
@@ -74,9 +76,9 @@ func Test_realGenerator_Generate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			cache := newSpyCache()
+			c := newSpyCache()
 			if tc.initCache != nil {
-				tc.initCache(cache)
+				tc.initCache(c)
 			}
 
 			scheme := runtime.NewScheme()
@@ -84,7 +86,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 			clusterClient, err := fake.NewClient(scheme, resources, objects)
 			require.NoError(t, err)
 
-			g := newGenerator(cache, pathFilters, clusterClient)
+			g := newGenerator(c, pathFilters, clusterClient)
 
 			ctx := context.Background()
 			cResponse, err := g.Generate(ctx, tc.path, "/prefix", "default")
@@ -101,16 +103,16 @@ func Test_realGenerator_Generate(t *testing.T) {
 }
 
 type spyCache struct {
-	store map[CacheKey][]*unstructured.Unstructured
-	errs  map[CacheKey]error
-	used  map[CacheKey]bool
+	store map[cache.CacheKey][]*unstructured.Unstructured
+	errs  map[cache.CacheKey]error
+	used  map[cache.CacheKey]bool
 }
 
 func newSpyCache() *spyCache {
 	return &spyCache{
-		store: make(map[CacheKey][]*unstructured.Unstructured),
-		errs:  make(map[CacheKey]error),
-		used:  make(map[CacheKey]bool),
+		store: make(map[cache.CacheKey][]*unstructured.Unstructured),
+		errs:  make(map[cache.CacheKey]error),
+		used:  make(map[cache.CacheKey]bool),
 	}
 }
 
@@ -118,7 +120,7 @@ func (c *spyCache) Store(obj *unstructured.Unstructured) error {
 	return nil
 }
 
-func (c *spyCache) spyRetrieve(key CacheKey, objects []*unstructured.Unstructured, err error) {
+func (c *spyCache) spyRetrieve(key cache.CacheKey, objects []*unstructured.Unstructured, err error) {
 	c.store[key] = objects
 	c.errs[key] = err
 }
@@ -138,7 +140,7 @@ func (c *spyCache) isSatisfied() bool {
 	return true
 }
 
-func (c *spyCache) Retrieve(key CacheKey) ([]*unstructured.Unstructured, error) {
+func (c *spyCache) Retrieve(key cache.CacheKey) ([]*unstructured.Unstructured, error) {
 	c.used[key] = true
 
 	objs := c.store[key]
@@ -223,6 +225,6 @@ func newFakeView() *fakeView {
 	return &fakeView{}
 }
 
-func (v *fakeView) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (v *fakeView) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	return stubbedContent, nil
 }

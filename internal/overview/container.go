@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
@@ -21,7 +22,7 @@ func NewContainerSummary(prefix, namespace string, c clock.Clock) View {
 	return &ContainerSummary{}
 }
 
-func (js *ContainerSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (js *ContainerSummary) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	podTemplate, err := podTemplateSpec(object)
 	if err != nil {
 		return nil, err

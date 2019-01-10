@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -20,7 +21,7 @@ func NewReplicationControllerSummary(prefix, namespace string, c clock.Clock) Vi
 	return &ReplicationControllerSummary{}
 }
 
-func (js *ReplicationControllerSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (js *ReplicationControllerSummary) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	rc, err := retrieveReplicationController(object)
 	if err != nil {
 		return nil, err

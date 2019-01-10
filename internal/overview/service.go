@@ -3,6 +3,7 @@ package overview
 import (
 	"context"
 	"fmt"
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -23,7 +24,7 @@ func NewServiceSummary(prefix, namespace string, c clock.Clock) View {
 	return &ServiceSummary{}
 }
 
-func (js *ServiceSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (js *ServiceSummary) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	ss, err := retrieveService(object)
 	if err != nil {
 		return nil, err
@@ -48,7 +49,7 @@ func NewServicePort(prefix, namespace string, c clock.Clock) View {
 	return &ServicePort{}
 }
 
-func (js *ServicePort) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (js *ServicePort) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	ss, err := retrieveService(object)
 	if err != nil {
 		return nil, err
@@ -98,7 +99,7 @@ func NewServiceEndpoints(prefix, namespace string, c clock.Clock) View {
 	return &ServiceEndpoints{}
 }
 
-func (js *ServiceEndpoints) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (js *ServiceEndpoints) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	ss, err := retrieveService(object)
 	if err != nil {
 		return nil, err
@@ -114,7 +115,7 @@ func (js *ServiceEndpoints) Content(ctx context.Context, object runtime.Object, 
 		table.Columns = append(table.Columns, tableCol(name))
 	}
 
-	podKey := CacheKey{
+	podKey := cache.CacheKey{
 		Namespace:  ss.GetNamespace(),
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -180,8 +181,8 @@ func retrieveService(object runtime.Object) (*corev1.Service, error) {
 	return rc, nil
 }
 
-func listEndpoints(namespace string, name string, c Cache) ([]*core.Endpoints, error) {
-	key := CacheKey{
+func listEndpoints(namespace string, name string, c cache.Cache) ([]*core.Endpoints, error) {
+	key := cache.CacheKey{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Endpoints",
@@ -191,7 +192,7 @@ func listEndpoints(namespace string, name string, c Cache) ([]*core.Endpoints, e
 	return loadEndpoints(key, c)
 }
 
-func loadEndpoints(key CacheKey, c Cache) ([]*core.Endpoints, error) {
+func loadEndpoints(key cache.CacheKey, c cache.Cache) ([]*core.Endpoints, error) {
 	objects, err := c.Retrieve(key)
 	if err != nil {
 		return nil, err

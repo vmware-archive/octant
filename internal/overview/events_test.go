@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
@@ -17,9 +18,9 @@ import (
 func TestEventsDescriber(t *testing.T) {
 	namespace := "default"
 
-	cache := NewMemoryCache()
-	loadUnstructured(t, cache, namespace, "event-1.yaml")
-	loadUnstructured(t, cache, namespace, "event-2.yaml")
+	c := cache.NewMemoryCache()
+	loadUnstructured(t, c, namespace, "event-1.yaml")
+	loadUnstructured(t, c, namespace, "event-2.yaml")
 
 	scheme := runtime.NewScheme()
 	objects := []runtime.Object{}
@@ -27,7 +28,7 @@ func TestEventsDescriber(t *testing.T) {
 	require.NoError(t, err)
 
 	options := DescriberOptions{
-		Cache: cache,
+		Cache: c,
 	}
 
 	ctx := context.Background()

@@ -3,6 +3,7 @@ package overview
 import (
 	"context"
 	"fmt"
+	"github.com/heptio/developer-dash/internal/cache"
 	"reflect"
 	"sort"
 	"strings"
@@ -21,14 +22,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/clock"
 )
 
-type visitFunc func(context.Context, runtime.Object, Cache, content.Nodes, content.AdjList, visitSet) error
+type visitFunc func(context.Context, runtime.Object, cache.Cache, content.Nodes, content.AdjList, visitSet) error
 
 // resourceVisitor visits resources by type and function.
 type resourceVisitor struct {
 	visitors map[runtime.Object]visitFunc
 }
 
-func (rv *resourceVisitor) visit(ctx context.Context, object runtime.Object, c Cache, visited visitSet) ([]content.Content, error) {
+func (rv *resourceVisitor) visit(ctx context.Context, object runtime.Object, c cache.Cache, visited visitSet) ([]content.Content, error) {
 	dag := content.NewDAG()
 	acc := meta.NewAccessor()
 
@@ -125,7 +126,7 @@ func (wiv *workloadInspectorView) checkResource(r runtime.Object) (ResourceStatu
 }
 
 // Implements View.Content
-func (wiv *workloadInspectorView) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (wiv *workloadInspectorView) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	visited := visitSet{}
 
 	// TODO: pass the resource visitor in instead of assuming the default will always be used.
@@ -142,7 +143,7 @@ func visitKeyForObject(obj runtime.Object) visitKey {
 // An edgeFunc will create an edge to the provided destination node
 type edgeFunc func(dst string)
 
-func listIngressPaths(ingress *v1beta1.Ingress, c Cache) ([]v1beta1.HTTPIngressPath, error) {
+func listIngressPaths(ingress *v1beta1.Ingress, c cache.Cache) ([]v1beta1.HTTPIngressPath, error) {
 	if ingress == nil {
 		return nil, errors.New("nil ingress")
 	}
@@ -163,7 +164,7 @@ func listIngressPaths(ingress *v1beta1.Ingress, c Cache) ([]v1beta1.HTTPIngressP
 
 	return paths, nil
 }
-func listIngressBackends(ingress *v1beta1.Ingress, c Cache) ([]v1beta1.IngressBackend, error) {
+func listIngressBackends(ingress *v1beta1.Ingress, c cache.Cache) ([]v1beta1.IngressBackend, error) {
 	if ingress == nil {
 		return nil, errors.New("nil ingress")
 	}
@@ -192,10 +193,10 @@ func listIngressBackends(ingress *v1beta1.Ingress, c Cache) ([]v1beta1.IngressBa
 	return backends, nil
 }
 
-func loadServices(serviceNames []string, namespace string, c Cache) ([]*corev1.Service, error) {
+func loadServices(serviceNames []string, namespace string, c cache.Cache) ([]*corev1.Service, error) {
 	var services []*corev1.Service
 	for _, backend := range serviceNames {
-		key := CacheKey{
+		key := cache.CacheKey{
 			Namespace:  namespace,
 			APIVersion: "v1",
 			Kind:       "Service",
@@ -220,7 +221,7 @@ func loadServices(serviceNames []string, namespace string, c Cache) ([]*corev1.S
 	return services, nil
 }
 
-func loadService(name string, namespace string, c Cache) (*corev1.Service, error) {
+func loadService(name string, namespace string, c cache.Cache) (*corev1.Service, error) {
 	services, err := loadServices([]string{name}, namespace, c)
 	if err != nil {
 		return nil, err
@@ -232,7 +233,7 @@ func loadService(name string, namespace string, c Cache) (*corev1.Service, error
 }
 
 // Reverse-lookup ingresses that point to a service
-func findIngressesForService(svc *corev1.Service, c Cache) ([]*v1beta1.Ingress, error) {
+func findIngressesForService(svc *corev1.Service, c cache.Cache) ([]*v1beta1.Ingress, error) {
 	var results []*v1beta1.Ingress
 	if svc == nil {
 		return nil, errors.New("nil service")
@@ -241,7 +242,7 @@ func findIngressesForService(svc *corev1.Service, c Cache) ([]*v1beta1.Ingress, 
 		return nil, errors.New("nil cache")
 	}
 
-	key := CacheKey{
+	key := cache.CacheKey{
 		Namespace:  svc.Namespace,
 		APIVersion: "extensions/v1beta1",
 		Kind:       "Ingress",
@@ -272,14 +273,14 @@ func findIngressesForService(svc *corev1.Service, c Cache) ([]*v1beta1.Ingress, 
 	return results, nil
 }
 
-func findPodsForService(svc *corev1.Service, c Cache) ([]*corev1.Pod, error) {
+func findPodsForService(svc *corev1.Service, c cache.Cache) ([]*corev1.Pod, error) {
 	if svc == nil {
 		return nil, errors.New("nil service")
 	}
 	if c == nil {
 		return nil, errors.New("nil cache")
 	}
-	key := CacheKey{
+	key := cache.CacheKey{
 		Namespace:  svc.Namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -298,7 +299,7 @@ func findPodsForService(svc *corev1.Service, c Cache) ([]*corev1.Pod, error) {
 }
 
 // Reverse-lookup services that point to a pod
-func findServicesForPod(pod *corev1.Pod, c Cache) ([]*corev1.Service, error) {
+func findServicesForPod(pod *corev1.Pod, c cache.Cache) ([]*corev1.Service, error) {
 	var results []*corev1.Service
 	if pod == nil {
 		return nil, errors.New("nil pod")
@@ -307,7 +308,7 @@ func findServicesForPod(pod *corev1.Pod, c Cache) ([]*corev1.Service, error) {
 		return nil, errors.New("nil cache")
 	}
 
-	key := CacheKey{
+	key := cache.CacheKey{
 		Namespace:  pod.Namespace,
 		APIVersion: "v1",
 		Kind:       "Service",
@@ -343,7 +344,7 @@ func findServicesForPod(pod *corev1.Pod, c Cache) ([]*corev1.Service, error) {
 }
 
 // Reverse-lookup replicasets that point to a pod
-func findReplicaSetsForPod(pod *corev1.Pod, c Cache) ([]*appsv1.ReplicaSet, error) {
+func findReplicaSetsForPod(pod *corev1.Pod, c cache.Cache) ([]*appsv1.ReplicaSet, error) {
 	var results []*appsv1.ReplicaSet
 	if pod == nil {
 		return nil, errors.New("nil pod")
@@ -352,7 +353,7 @@ func findReplicaSetsForPod(pod *corev1.Pod, c Cache) ([]*appsv1.ReplicaSet, erro
 		return nil, errors.New("nil cache")
 	}
 
-	key := CacheKey{
+	key := cache.CacheKey{
 		Namespace:  pod.Namespace,
 		APIVersion: "apps/v1",
 		Kind:       "ReplicaSet",
@@ -388,7 +389,7 @@ func findReplicaSetsForPod(pod *corev1.Pod, c Cache) ([]*appsv1.ReplicaSet, erro
 }
 
 // Reverse-lookup deployments that point to a pod
-func findDeploymentsForPod(pod *corev1.Pod, c Cache) ([]*appsv1.Deployment, error) {
+func findDeploymentsForPod(pod *corev1.Pod, c cache.Cache) ([]*appsv1.Deployment, error) {
 	var results []*appsv1.Deployment
 	if pod == nil {
 		return nil, errors.New("nil pod")
@@ -397,7 +398,7 @@ func findDeploymentsForPod(pod *corev1.Pod, c Cache) ([]*appsv1.Deployment, erro
 		return nil, errors.New("nil cache")
 	}
 
-	key := CacheKey{
+	key := cache.CacheKey{
 		Namespace:  pod.Namespace,
 		APIVersion: "apps/v1",
 		Kind:       "Deployment",
@@ -432,7 +433,7 @@ func findDeploymentsForPod(pod *corev1.Pod, c Cache) ([]*appsv1.Deployment, erro
 	return results, nil
 }
 
-func findDeploymentForReplicaSet(rs *appsv1.ReplicaSet, c Cache) (*appsv1.Deployment, error) {
+func findDeploymentForReplicaSet(rs *appsv1.ReplicaSet, c cache.Cache) (*appsv1.Deployment, error) {
 	if rs == nil {
 		return nil, errors.New("nil replicaset")
 	}
@@ -440,21 +441,21 @@ func findDeploymentForReplicaSet(rs *appsv1.ReplicaSet, c Cache) (*appsv1.Deploy
 		return nil, errors.New("nil cache")
 	}
 
-	var key CacheKey
+	var key cache.CacheKey
 	for _, owner := range rs.OwnerReferences {
 		// Don't compare APIVersion - there may be several aliases
 		if owner.Kind != "Deployment" {
 			continue
 		}
 
-		key = CacheKey{
+		key = cache.CacheKey{
 			Namespace:  rs.Namespace,
 			APIVersion: "apps/v1",
 			Kind:       "Deployment",
 			Name:       owner.Name,
 		}
 	}
-	if (key == CacheKey{}) {
+	if (key == cache.CacheKey{}) {
 		return nil, nil
 	}
 
@@ -476,7 +477,7 @@ func findDeploymentForReplicaSet(rs *appsv1.ReplicaSet, c Cache) (*appsv1.Deploy
 	return nil, nil
 }
 
-func findStatefulSetForPod(pod *corev1.Pod, c Cache) (*appsv1.StatefulSet, error) {
+func findStatefulSetForPod(pod *corev1.Pod, c cache.Cache) (*appsv1.StatefulSet, error) {
 	if pod == nil {
 		return nil, errors.New("nil pod")
 	}
@@ -484,21 +485,21 @@ func findStatefulSetForPod(pod *corev1.Pod, c Cache) (*appsv1.StatefulSet, error
 		return nil, errors.New("nil cache")
 	}
 
-	var key CacheKey
+	var key cache.CacheKey
 	for _, owner := range pod.OwnerReferences {
 		// Don't compare APIVersion - there may be several aliases
 		if owner.Kind != "StatefulSet" {
 			continue
 		}
 
-		key = CacheKey{
+		key = cache.CacheKey{
 			Namespace:  pod.Namespace,
 			APIVersion: "apps/v1",
 			Kind:       "StatefulSet",
 			Name:       owner.Name,
 		}
 	}
-	if (key == CacheKey{}) {
+	if (key == cache.CacheKey{}) {
 		return nil, nil
 	}
 
@@ -520,7 +521,7 @@ func findStatefulSetForPod(pod *corev1.Pod, c Cache) (*appsv1.StatefulSet, error
 	return nil, nil
 }
 
-func findReplicationControllerForPod(pod *corev1.Pod, c Cache) (*corev1.ReplicationController, error) {
+func findReplicationControllerForPod(pod *corev1.Pod, c cache.Cache) (*corev1.ReplicationController, error) {
 	if pod == nil {
 		return nil, errors.New("nil pod")
 	}
@@ -528,21 +529,21 @@ func findReplicationControllerForPod(pod *corev1.Pod, c Cache) (*corev1.Replicat
 		return nil, errors.New("nil cache")
 	}
 
-	var key CacheKey
+	var key cache.CacheKey
 	for _, owner := range pod.OwnerReferences {
 		// Don't compare APIVersion - there may be several aliases
 		if owner.Kind != "ReplicationController" {
 			continue
 		}
 
-		key = CacheKey{
+		key = cache.CacheKey{
 			Namespace:  pod.Namespace,
 			APIVersion: "v1",
 			Kind:       "ReplicationController",
 			Name:       owner.Name,
 		}
 	}
-	if (key == CacheKey{}) {
+	if (key == cache.CacheKey{}) {
 		return nil, nil
 	}
 
@@ -564,7 +565,7 @@ func findReplicationControllerForPod(pod *corev1.Pod, c Cache) (*corev1.Replicat
 	return nil, nil
 }
 
-func findDaemonSetForPod(pod *corev1.Pod, c Cache) (*appsv1.DaemonSet, error) {
+func findDaemonSetForPod(pod *corev1.Pod, c cache.Cache) (*appsv1.DaemonSet, error) {
 	if pod == nil {
 		return nil, errors.New("nil pod")
 	}
@@ -572,21 +573,21 @@ func findDaemonSetForPod(pod *corev1.Pod, c Cache) (*appsv1.DaemonSet, error) {
 		return nil, errors.New("nil cache")
 	}
 
-	var key CacheKey
+	var key cache.CacheKey
 	for _, owner := range pod.OwnerReferences {
 		// Don't compare APIVersion - there may be several aliases
 		if owner.Kind != "DaemonSet" {
 			continue
 		}
 
-		key = CacheKey{
+		key = cache.CacheKey{
 			Namespace:  pod.Namespace,
 			APIVersion: "apps/v1",
 			Kind:       "DaemonSet",
 			Name:       owner.Name,
 		}
 	}
-	if (key == CacheKey{}) {
+	if (key == cache.CacheKey{}) {
 		return nil, nil
 	}
 
@@ -706,7 +707,7 @@ func serviceNames(backends []v1beta1.IngressBackend) []string {
 	return names
 }
 
-func visitPod(ctx context.Context, pod *corev1.Pod, c Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
+func visitPod(ctx context.Context, pod *corev1.Pod, c cache.Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
 	if pod == nil {
 		return errors.New("nil pod")
 	}
@@ -782,7 +783,7 @@ func visitPod(ctx context.Context, pod *corev1.Pod, c Cache, nodes content.Nodes
 	return nil
 }
 
-func visitPodRoot(ctx context.Context, object runtime.Object, c Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
+func visitPodRoot(ctx context.Context, object runtime.Object, c cache.Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
 	if object == nil {
 		return errors.New("nil pod")
 	}
@@ -796,7 +797,7 @@ func visitPodRoot(ctx context.Context, object runtime.Object, c Cache, nodes con
 	return visitPodGroups(ctx, podList, nil, c, nodes, edges, visited)
 }
 
-func visitPodGroups(ctx context.Context, object runtime.Object, edgeFn edgeFunc, c Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
+func visitPodGroups(ctx context.Context, object runtime.Object, edgeFn edgeFunc, c cache.Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
 	if object == nil {
 		return errors.New("nil pod list")
 	}
@@ -830,7 +831,7 @@ func visitPodGroups(ctx context.Context, object runtime.Object, edgeFn edgeFunc,
 	return nil
 }
 
-func visitPodGroup(ctx context.Context, grp *podGroup, c Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
+func visitPodGroup(ctx context.Context, grp *podGroup, c cache.Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
 	if grp == nil {
 		return errors.New("nil podGroup")
 	}
@@ -855,7 +856,7 @@ func visitPodGroup(ctx context.Context, grp *podGroup, c Cache, nodes content.No
 	return nil
 }
 
-func visitService(ctx context.Context, object runtime.Object, c Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
+func visitService(ctx context.Context, object runtime.Object, c cache.Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
 	if object == nil {
 		return errors.New("nil service")
 	}
@@ -913,7 +914,7 @@ func visitService(ctx context.Context, object runtime.Object, c Cache, nodes con
 	return nil
 }
 
-func visitReplicaSet(ctx context.Context, object runtime.Object, c Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
+func visitReplicaSet(ctx context.Context, object runtime.Object, c cache.Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
 	if object == nil {
 		return errors.New("nil replica set")
 	}
@@ -976,7 +977,7 @@ func visitReplicaSet(ctx context.Context, object runtime.Object, c Cache, nodes 
 	return nil
 }
 
-func visitIngress(ctx context.Context, object runtime.Object, c Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
+func visitIngress(ctx context.Context, object runtime.Object, c cache.Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
 	if object == nil {
 		return errors.New("nil ingress")
 	}
@@ -1027,7 +1028,7 @@ func visitIngress(ctx context.Context, object runtime.Object, c Cache, nodes con
 	return nil
 }
 
-func visitDeployment(ctx context.Context, object runtime.Object, c Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
+func visitDeployment(ctx context.Context, object runtime.Object, c cache.Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
 	if object == nil {
 		return errors.New("nil deployment")
 	}
@@ -1087,7 +1088,7 @@ func visitDeployment(ctx context.Context, object runtime.Object, c Cache, nodes 
 	return nil
 }
 
-func visitStatefulSet(ctx context.Context, object runtime.Object, c Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
+func visitStatefulSet(ctx context.Context, object runtime.Object, c cache.Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
 	if object == nil {
 		return errors.New("nil stateful set")
 	}
@@ -1135,7 +1136,7 @@ func visitStatefulSet(ctx context.Context, object runtime.Object, c Cache, nodes
 	return nil
 }
 
-func visitReplicationController(ctx context.Context, object runtime.Object, c Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
+func visitReplicationController(ctx context.Context, object runtime.Object, c cache.Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
 	if object == nil {
 		return errors.New("nil replicationcontroller")
 	}
@@ -1187,7 +1188,7 @@ func visitReplicationController(ctx context.Context, object runtime.Object, c Ca
 	return nil
 }
 
-func visitDaemonSet(ctx context.Context, object runtime.Object, c Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
+func visitDaemonSet(ctx context.Context, object runtime.Object, c cache.Cache, nodes content.Nodes, edges content.AdjList, visited visitSet) error {
 	if object == nil {
 		return errors.New("nil daemonset")
 	}

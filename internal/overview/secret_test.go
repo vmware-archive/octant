@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/heptio/developer-dash/internal/cache"
+
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,11 +21,11 @@ func TestSecretData(t *testing.T) {
 	v := NewSecretData("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	ctx := context.Background()
-	cache := NewMemoryCache()
+	c := cache.NewMemoryCache()
 
 	secret := loadFromFile(t, "secret-1.yaml")
 
-	got, err := v.Content(ctx, secret, cache)
+	got, err := v.Content(ctx, secret, c)
 	require.NoError(t, err)
 
 	dataSection := content.NewSection()

@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/heptio/developer-dash/internal/cache"
+
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -22,13 +24,13 @@ func TestIngressDetails_InvalidObject(t *testing.T) {
 func TestIngressDetails(t *testing.T) {
 	v := NewIngressDetails("prefix", "ns", clock.NewFakeClock(time.Now()))
 
-	cache := NewMemoryCache()
+	c := cache.NewMemoryCache()
 
 	ingress := loadFromFile(t, "ingress-1.yaml")
 
 	ctx := context.Background()
 
-	got, err := v.Content(ctx, ingress, cache)
+	got, err := v.Content(ctx, ingress, c)
 	require.NoError(t, err)
 
 	tlsTable := content.NewTable("TLS", "TLS is not configured for this Ingress")

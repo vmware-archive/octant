@@ -1,13 +1,12 @@
-package overview
+package cache
 
 import (
 	"fmt"
-	"math/rand"
-	"testing"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"math/rand"
+	"testing"
 )
 
 func TestMemoryCache_Store(t *testing.T) {

@@ -3,6 +3,7 @@ package overview
 import (
 	"context"
 	"fmt"
+	"github.com/heptio/developer-dash/internal/cache"
 	"sort"
 	"strings"
 
@@ -23,7 +24,7 @@ func NewSecretSummary(prefix, namespace string, c clock.Clock) View {
 	return &SecretSummary{}
 }
 
-func (js *SecretSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (js *SecretSummary) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	secret, err := retrieveSecret(object)
 	if err != nil {
 		return nil, err
@@ -48,7 +49,7 @@ func NewSecretData(prefix, namespace string, c clock.Clock) View {
 	return &SecretData{}
 }
 
-func (js *SecretData) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (js *SecretData) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	secret, err := retrieveSecret(object)
 	if err != nil {
 		return nil, err
@@ -88,8 +89,8 @@ func retrieveSecret(object runtime.Object) (*corev1.Secret, error) {
 	return rc, nil
 }
 
-func listSecrets(namespace string, c Cache) ([]*corev1.Secret, error) {
-	key := CacheKey{
+func listSecrets(namespace string, c cache.Cache) ([]*corev1.Secret, error) {
+	key := cache.CacheKey{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Secret",
@@ -98,7 +99,7 @@ func listSecrets(namespace string, c Cache) ([]*corev1.Secret, error) {
 	return loadSecrets(key, c)
 }
 
-func loadSecrets(key CacheKey, c Cache) ([]*corev1.Secret, error) {
+func loadSecrets(key cache.CacheKey, c cache.Cache) ([]*corev1.Secret, error) {
 	objects, err := c.Retrieve(key)
 	if err != nil {
 		return nil, err

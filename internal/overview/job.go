@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ func NewJobSummary(prefix, namespace string, c clock.Clock) View {
 	return &JobSummary{}
 }
 
-func (js *JobSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (js *JobSummary) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	job, err := retrieveJob(object)
 	if err != nil {
 		return nil, err

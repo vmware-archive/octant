@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"github.com/heptio/developer-dash/internal/cache"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -181,7 +182,7 @@ func TestDeploymentReplicaSets(t *testing.T) {
 		},
 	}
 
-	cache := NewMemoryCache()
+	cache := cache.NewMemoryCache()
 
 	storeFromFile(t, "replicaset-1.yaml", cache)
 
@@ -228,7 +229,7 @@ func TestDeploymentReplicaSets(t *testing.T) {
 	assert.Equal(t, expected, contents)
 }
 
-func storeFromFile(t *testing.T, name string, cache Cache) {
+func storeFromFile(t *testing.T, name string, cache cache.Cache) {
 	decoded := loadFromFile(t, name)
 	obj, err := meta.Accessor(decoded)
 	if err != nil {

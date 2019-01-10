@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ func NewReplicaSetSummary(prefix, namespace string, c clock.Clock) View {
 	return &ReplicaSetSummary{}
 }
 
-func (rss *ReplicaSetSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (rss *ReplicaSetSummary) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	replicaSet, err := retrieveReplicaSet(object)
 	if err != nil {
 		return nil, err
@@ -27,7 +28,7 @@ func (rss *ReplicaSetSummary) Content(ctx context.Context, object runtime.Object
 	return rss.summary(replicaSet, c)
 }
 
-func (rss *ReplicaSetSummary) summary(replicaSet *appsv1.ReplicaSet, c Cache) ([]content.Content, error) {
+func (rss *ReplicaSetSummary) summary(replicaSet *appsv1.ReplicaSet, c cache.Cache) ([]content.Content, error) {
 	pods, err := listPods(replicaSet.GetNamespace(), replicaSet.Spec.Selector, replicaSet.GetUID(), c)
 	if err != nil {
 		return nil, err

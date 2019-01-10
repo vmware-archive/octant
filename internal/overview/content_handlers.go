@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"github.com/heptio/developer-dash/internal/cache"
 	"sort"
 
 	"github.com/heptio/developer-dash/internal/content"
@@ -17,7 +18,7 @@ import (
 type lookupFunc func(namespace, prefix string, cell interface{}) content.Text
 
 // loadObjects loads objects from the cache sorted by their name.
-func loadObjects(ctx context.Context, cache Cache, namespace string, fields map[string]string, cacheKeys []CacheKey) ([]*unstructured.Unstructured, error) {
+func loadObjects(ctx context.Context, cache cache.Cache, namespace string, fields map[string]string, cacheKeys []cache.CacheKey) ([]*unstructured.Unstructured, error) {
 	var objects []*unstructured.Unstructured
 
 	for _, cacheKey := range cacheKeys {
@@ -53,7 +54,7 @@ func translateTimestamp(timestamp metav1.Time, c clock.Clock) string {
 	return duration.ShortHumanDuration(c.Since(timestamp.Time))
 }
 
-func eventsForObject(object *unstructured.Unstructured, cache Cache, prefix, namespace string, cl clock.Clock) (*content.Table, error) {
+func eventsForObject(object *unstructured.Unstructured, cache cache.Cache, prefix, namespace string, cl clock.Clock) (*content.Table, error) {
 	eventObjects, err := cache.Events(object)
 	if err != nil {
 		return nil, err

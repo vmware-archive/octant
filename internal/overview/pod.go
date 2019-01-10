@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"github.com/heptio/developer-dash/internal/cache"
 	"time"
 
 	"github.com/heptio/developer-dash/internal/content"
@@ -27,7 +28,7 @@ func NewPodList(prefix, namespace string, c clock.Clock) View {
 	return &PodList{}
 }
 
-func (pc *PodList) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (pc *PodList) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	mobject, ok := object.(metav1.Object)
 	if !ok {
 		return nil, errors.Errorf("%T is not an object", object)
@@ -74,7 +75,7 @@ func NewPodSummary(prefix, namespace string, c clock.Clock) View {
 	return &PodSummary{}
 }
 
-func (ps *PodSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (ps *PodSummary) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	// TODO this clock should come from somewhere else
 	clk := &clock.RealClock{}
 
@@ -100,7 +101,7 @@ func NewPodCondition(prefix, namespace string, c clock.Clock) View {
 	return &PodCondition{}
 }
 
-func (pc *PodCondition) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (pc *PodCondition) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	pod, err := retrievePod(object)
 	if err != nil {
 		return nil, err
@@ -144,7 +145,7 @@ func NewPodContainer(prefix, namespace string, c clock.Clock) View {
 	return &PodContainer{}
 }
 
-func (pc *PodContainer) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (pc *PodContainer) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	pod, err := retrievePod(object)
 	if err != nil {
 		return nil, err
@@ -162,7 +163,7 @@ func NewPodVolume(prefix, namespace string, c clock.Clock) View {
 	return &PodVolume{}
 }
 
-func (pc *PodVolume) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (pc *PodVolume) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	pod, err := retrievePod(object)
 	if err != nil {
 		return nil, err
@@ -214,8 +215,8 @@ func createPodStatus(pods []*corev1.Pod) podStatus {
 	return ps
 }
 
-func listPods(namespace string, selector *metav1.LabelSelector, uid types.UID, c Cache) ([]*corev1.Pod, error) {
-	key := CacheKey{
+func listPods(namespace string, selector *metav1.LabelSelector, uid types.UID, c cache.Cache) ([]*corev1.Pod, error) {
+	key := cache.CacheKey{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -239,7 +240,7 @@ func listPods(namespace string, selector *metav1.LabelSelector, uid types.UID, c
 	return owned, nil
 }
 
-func loadPods(key CacheKey, c Cache, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
+func loadPods(key cache.CacheKey, c cache.Cache, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
 	objects, err := c.Retrieve(key)
 	if err != nil {
 		return nil, err

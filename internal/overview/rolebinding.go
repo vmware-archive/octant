@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -19,7 +20,7 @@ func NewRoleBindingSummary(prefix, namespace string, c clock.Clock) View {
 	return &RoleBindingSummary{}
 }
 
-func (js *RoleBindingSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (js *RoleBindingSummary) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	roleBinding, err := retrieveRoleBinding(object)
 	if err != nil {
 		return nil, err
@@ -49,7 +50,7 @@ func NewRoleBindingSubjects(prefix, namespace string, c clock.Clock) View {
 	return &RoleBindingSubjects{}
 }
 
-func (js *RoleBindingSubjects) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (js *RoleBindingSubjects) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	roleBinding, err := retrieveRoleBinding(object)
 	if err != nil {
 		return nil, err
