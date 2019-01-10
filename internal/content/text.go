@@ -23,6 +23,14 @@ func NewStringText(s string) *StringText {
 
 func (s StringText) MarshalJSON() ([]byte, error) {
 	m := map[string]interface{}{
+		"metadata": map[string]interface{}{
+			"type": "text",
+		},
+		"config": map[string]interface{}{
+			"value": string(s),
+		},
+
+		// TODO: delete me
 		"type": "string",
 		"text": string(s),
 	}
@@ -58,6 +66,14 @@ func (t TimeText) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	m := map[string]interface{}{
+		"metadata": map[string]interface{}{
+			"type": "timestamp",
+		},
+		"config": map[string]interface{}{
+			"timestamp": t,
+		},
+
+		// TODO: delete me
 		"type": "time",
 		"time": ts,
 	}
@@ -81,6 +97,16 @@ func NewLinkText(s string, ref string) *LinkText {
 
 func (t *LinkText) MarshalJSON() ([]byte, error) {
 	m := map[string]interface{}{
+		"metadata": map[string]interface{}{
+			"type": "link",
+		},
+
+		"config": map[string]interface{}{
+			"ref":   t.Ref,
+			"value": t.Text,
+		},
+
+		// TODO: delete me
 		"type": "link",
 		"text": t.Text,
 		"ref":  t.Ref,
@@ -103,6 +129,15 @@ func NewLabelsText(labels map[string]string) *LabelsText {
 
 func (t *LabelsText) MarshalJSON() ([]byte, error) {
 	m := map[string]interface{}{
+		"metadata": map[string]interface{}{
+			"type": "labels",
+		},
+
+		"config": map[string]interface{}{
+			"labels": t.Labels,
+		},
+
+		// TODO: delete me
 		"type":   "labels",
 		"labels": t.Labels,
 	}

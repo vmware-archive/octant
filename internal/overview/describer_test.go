@@ -73,6 +73,19 @@ func TestListDescriber(t *testing.T) {
 				Contents: stubbedContent,
 			},
 		},
+		ViewComponents: []content.ViewComponent{
+			{
+				Metadata: content.Metadata{
+					Type:  "list",
+					Title: "list",
+				},
+				Config: ListConfig{
+					Items: []content.ViewComponent{
+						{},
+					},
+				},
+			},
+		},
 	}
 
 	assert.Equal(t, expected, cResponse)
@@ -177,6 +190,19 @@ func TestSectionDescriber(t *testing.T) {
 						Title:    "section",
 					},
 				},
+				ViewComponents: []content.ViewComponent{
+					{
+						Metadata: content.Metadata{
+							Type:  "list",
+							Title: "section",
+						},
+						Config: ListConfig{
+							Items: []content.ViewComponent{
+								{},
+							},
+						},
+					},
+				},
 			},
 		},
 		{
@@ -197,6 +223,17 @@ func TestSectionDescriber(t *testing.T) {
 								Title:        "section",
 								EmptyContent: "Namespace default does not have any resources of this type",
 							},
+						},
+					},
+				},
+				ViewComponents: []content.ViewComponent{
+					{
+						Metadata: content.Metadata{
+							Type:  "list",
+							Title: "section",
+						},
+						Config: ListConfig{
+							Items: []content.ViewComponent{},
 						},
 					},
 				},

@@ -14,47 +14,9 @@ func TestStringText(t *testing.T) {
 	data, err := json.Marshal(st)
 	require.NoError(t, err)
 
-	expected := `{"text":"foo","type":"string"}`
+	expected := `{"config":{"value":"foo"},"metadata":{"type":"text"},"text":"foo","type":"string"}`
 
 	assert.Equal(t, expected, string(data))
-}
-
-func TestTimeText(t *testing.T) {
-	cases := []struct {
-		name     string
-		timeText *TimeText
-		expected string
-		isErr    bool
-	}{
-		{
-			name:     "RFC3339 string",
-			timeText: NewTimeText("2018-11-08T17:55:45Z"),
-			expected: `{"time":"2018-11-08T17:55:45Z","type":"time"}`,
-		},
-		{
-			name:     "Zero time",
-			timeText: NewTimeText("0001-01-01T00:00:00Z"),
-			expected: `{"time":"","type":"time"}`,
-		},
-		{
-			name:     "Invalid timestamp",
-			timeText: NewTimeText("Tue Nov 10 23:00:00 2009"),
-			isErr:    true,
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			data, err := json.Marshal(tc.timeText)
-			if tc.isErr {
-				require.Error(t, err)
-				return
-			}
-			require.NoError(t, err)
-
-			assert.Equal(t, tc.expected, string(data))
-		})
-	}
 }
 
 func TestLinkText(t *testing.T) {
@@ -63,7 +25,7 @@ func TestLinkText(t *testing.T) {
 	data, err := json.Marshal(lt)
 	require.NoError(t, err)
 
-	expected := `{"ref":"/bar","text":"foo","type":"link"}`
+	expected := `{"config":{"ref":"/bar","value":"foo"},"metadata":{"type":"link"},"ref":"/bar","text":"foo","type":"link"}`
 
 	assert.Equal(t, expected, string(data))
 }
@@ -77,7 +39,7 @@ func TestLabelsText(t *testing.T) {
 	data, err := json.Marshal(lt)
 	require.NoError(t, err)
 
-	expected := `{"labels":{"foo":"bar"},"type":"labels"}`
+	expected := `{"config":{"labels":{"foo":"bar"}},"labels":{"foo":"bar"},"metadata":{"type":"labels"},"type":"labels"}`
 
 	assert.Equal(t, expected, string(data))
 }

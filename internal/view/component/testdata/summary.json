@@ -1,0 +1,52 @@
+{
+  "metadata": {
+    "type": "summary",
+    "title": "mysummary"
+  },
+  "config": {
+    "sections": [
+      {
+        "header": "Containers",
+        "content": {
+          "metadata": {
+            "type": "list",
+            "title": "nginx"
+          },
+          "config": {
+            "items": [
+              {
+                "metadata": {
+                  "type": "text",
+                  "title": "Image"
+                },
+                "config": {
+                  "value": "nginx:latest"
+                }
+              },
+              {
+                "metadata": {
+                  "type": "text",
+                  "title": "Port"
+                },
+                "config": {
+                  "value": "80/TCP"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "header": "Empty Section",
+        "content": {
+          "metadata": {
+            "type": "text"
+          },
+          "config": {
+            "value": "Nothing to see here"
+          }
+        }
+      }
+    ]
+  }
+}

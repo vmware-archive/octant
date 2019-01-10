@@ -18,6 +18,10 @@ func (rv *resourceViewer) MarshalJSON() ([]byte, error) {
 	return rv1, nil
 }
 
+func (rv *resourceViewer) ViewComponent() content.ViewComponent {
+	return content.ViewComponent{}
+}
+
 type ResourceViewerStub struct{}
 
 func NewResourceViewerStub(prefix, namespace string, c clock.Clock) View {
@@ -26,6 +30,10 @@ func NewResourceViewerStub(prefix, namespace string, c clock.Clock) View {
 
 func (rss *ResourceViewerStub) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
 	return []content.Content{&resourceViewer{}}, nil
+}
+
+func (rss *ResourceViewerStub) ViewComponent() content.ViewComponent {
+	return content.ViewComponent{}
 }
 
 var (
