@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"sort"
 
+	"github.com/heptio/developer-dash/internal/cache"
+
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
@@ -24,7 +26,7 @@ func NewDeploymentSummary(prefix, namespace string, c clock.Clock) View {
 	return &DeploymentSummary{}
 }
 
-func (ds *DeploymentSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (ds *DeploymentSummary) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	deployment, err := retrieveDeployment(object)
 	if err != nil {
 		return nil, err
@@ -55,7 +57,7 @@ func NewDeploymentReplicaSets(prefix, namespace string, c clock.Clock) View {
 	return &DeploymentReplicaSets{}
 }
 
-func (drs *DeploymentReplicaSets) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (drs *DeploymentReplicaSets) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	var contents []content.Content
 
 	deployment, err := retrieveDeployment(object)
@@ -72,7 +74,7 @@ func (drs *DeploymentReplicaSets) Content(ctx context.Context, object runtime.Ob
 	return contents, nil
 }
 
-func (drs *DeploymentReplicaSets) replicaSets(deployment *appsv1.Deployment, c Cache) ([]content.Content, error) {
+func (drs *DeploymentReplicaSets) replicaSets(deployment *appsv1.Deployment, c cache.Cache) ([]content.Content, error) {
 	contents := []content.Content{}
 
 	replicaSets, err := listReplicaSets(deployment, c)
@@ -137,8 +139,8 @@ func retrieveDeployment(object runtime.Object) (*appsv1.Deployment, error) {
 	return deployment, nil
 }
 
-func listReplicaSets(deployment *appsv1.Deployment, c Cache) ([]*appsv1.ReplicaSet, error) {
-	key := CacheKey{
+func listReplicaSets(deployment *appsv1.Deployment, c cache.Cache) ([]*appsv1.ReplicaSet, error) {
+	key := cache.Key{
 		Namespace:  deployment.GetNamespace(),
 		APIVersion: deployment.APIVersion,
 		Kind:       "ReplicaSet",
@@ -159,7 +161,7 @@ func listReplicaSets(deployment *appsv1.Deployment, c Cache) ([]*appsv1.ReplicaS
 	return owned, nil
 }
 
-func loadReplicaSets(key CacheKey, c Cache, selector *metav1.LabelSelector) ([]*appsv1.ReplicaSet, error) {
+func loadReplicaSets(key cache.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*appsv1.ReplicaSet, error) {
 	objects, err := c.Retrieve(key)
 	if err != nil {
 		return nil, err

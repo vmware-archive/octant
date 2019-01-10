@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/heptio/developer-dash/internal/cache"
+
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,11 +27,11 @@ func TestContainerSummary(t *testing.T) {
 	object := loadFromFile(t, "cronjob-1.yaml")
 	cronJob, ok := object.(*batchv1beta1.CronJob)
 	require.True(t, ok)
-	cache := NewMemoryCache()
+	c := cache.NewMemoryCache()
 
 	v := NewContainerSummary("prefix", "ns", clock.NewFakeClock(time.Now()))
 
-	got, err := v.Content(ctx, cronJob, cache)
+	got, err := v.Content(ctx, cronJob, c)
 	require.NoError(t, err)
 
 	podTemplate := content.NewSummary("Pod Template", []content.Section{

@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,7 +29,7 @@ func NewResourceViewerStub(prefix, namespace string, c clock.Clock) View {
 	return &ResourceViewerStub{}
 }
 
-func (rss *ResourceViewerStub) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (rss *ResourceViewerStub) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	return []content.Content{&resourceViewer{}}, nil
 }
 

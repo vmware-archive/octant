@@ -1,4 +1,4 @@
-package overview
+package cache
 
 import (
 	"context"
@@ -26,7 +26,7 @@ type InformerCacheOpt func(*InformerCache)
 // InformerCacheNotificationOpt sets a channel that will receive a notification
 // every time cache performs an add/delete.
 // The done channel can be used to cancel notifications that are blocked.
-func InformerCacheNotificationOpt(ch chan<- CacheNotification, done <-chan struct{}) InformerCacheOpt {
+func InformerCacheNotificationOpt(ch chan<- Notification, done <-chan struct{}) InformerCacheOpt {
 	return func(c *InformerCache) {
 		c.notifyCh = ch
 		c.stopCh = done
@@ -53,8 +53,8 @@ type InformerCache struct {
 	logger     log.Logger
 
 	mu             sync.RWMutex
-	internalNotify chan CacheNotification
-	notifyCh       chan<- CacheNotification
+	internalNotify chan Notification
+	notifyCh       chan<- Notification
 	stopCh         <-chan struct{}
 }
 
@@ -77,7 +77,7 @@ func NewInformerCache(stopCh <-chan struct{}, client dynamic.Interface, restMapp
 		c.logger = log.NopLogger()
 	}
 	if c.notifyCh != nil {
-		c.internalNotify = make(chan CacheNotification)
+		c.internalNotify = make(chan Notification)
 		go c.runNotifyHandler()
 	}
 	return c
@@ -115,7 +115,7 @@ func (c *InformerCache) runNotifyHandler() {
 	}
 }
 
-func (c *InformerCache) informerForKey(ck CacheKey) (informers.GenericInformer, error) {
+func (c *InformerCache) informerForKey(ck Key) (informers.GenericInformer, error) {
 	var namespace = ck.Namespace
 	if namespace == "" {
 		namespace = "default"
@@ -176,16 +176,16 @@ func (c *InformerCache) informerForKey(ck CacheKey) (informers.GenericInformer, 
 }
 
 // keyForObject returns a CacheKey representing a runtime.Object
-func keyForObject(obj interface{}) (CacheKey, error) {
+func keyForObject(obj interface{}) (Key, error) {
 	metaAcc, err := meta.Accessor(obj)
 	if err != nil {
-		return CacheKey{}, errors.Errorf("fetching metadata accessor: %v", err)
+		return Key{}, errors.Errorf("fetching metadata accessor: %v", err)
 	}
 	typeAcc, err := meta.TypeAccessor(obj)
 	if err != nil {
-		return CacheKey{}, errors.Errorf("fetching type accessor: %v", err)
+		return Key{}, errors.Errorf("fetching type accessor: %v", err)
 	}
-	return CacheKey{
+	return Key{
 		Namespace:  metaAcc.GetNamespace(),
 		APIVersion: typeAcc.GetAPIVersion(),
 		Name:       metaAcc.GetName(),
@@ -193,7 +193,7 @@ func keyForObject(obj interface{}) (CacheKey, error) {
 	}, nil
 }
 
-func (c *InformerCache) sendNotification(obj interface{}, action CacheAction) error {
+func (c *InformerCache) sendNotification(obj interface{}, action Action) error {
 	if c.internalNotify == nil {
 		return nil
 	}
@@ -203,7 +203,7 @@ func (c *InformerCache) sendNotification(obj interface{}, action CacheAction) er
 		return errors.Wrapf(err, "creating cache key")
 	}
 
-	notification := CacheNotification{
+	notification := Notification{
 		CacheKey: cacheKey,
 		Action:   action,
 	}
@@ -222,19 +222,19 @@ func (c *InformerCache) sendNotification(obj interface{}, action CacheAction) er
 func (c *InformerCache) installHandler(informer cache.SharedInformer) {
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
-			if err := c.sendNotification(obj, CacheStore); err != nil {
+			if err := c.sendNotification(obj, StoreAction); err != nil {
 				c.logger.Errorf("sending notification: %v", err)
 				return
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
-			if err := c.sendNotification(obj, CacheDelete); err != nil {
+			if err := c.sendNotification(obj, DeleteAction); err != nil {
 				c.logger.Errorf("sending notification: %v", err)
 				return
 			}
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
-			if err := c.sendNotification(newObj, CacheUpdate); err != nil {
+			if err := c.sendNotification(newObj, UpdateAction); err != nil {
 				c.logger.Errorf("sending notification: %v", err)
 				return
 			}
@@ -262,7 +262,7 @@ func channelContext(parentCh <-chan struct{}) (context.Context, context.CancelFu
 
 // Retrieve retrieves an object or list of objects from the cluster via cache.
 // Blocks if cache needs to be synced.
-func (c *InformerCache) Retrieve(key CacheKey) ([]*unstructured.Unstructured, error) {
+func (c *InformerCache) Retrieve(key Key) ([]*unstructured.Unstructured, error) {
 	if c.restMapper == nil {
 		return nil, errors.New("missing RESTMapper")
 	}
@@ -331,7 +331,7 @@ func (c *InformerCache) Delete(obj *unstructured.Unstructured) error {
 func (c *InformerCache) getEvents(u *unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
 	var events []*unstructured.Unstructured
 
-	var eventKey = CacheKey{
+	var eventKey = Key{
 		Namespace:  u.GetNamespace(),
 		APIVersion: "v1",
 		Kind:       "Event",

@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"github.com/heptio/developer-dash/internal/cache"
 	"strings"
 
 	"github.com/heptio/developer-dash/internal/content"
@@ -19,7 +20,7 @@ func NewIngressSummary(prefix, namespace string, c clock.Clock) View {
 	return &IngressSummary{}
 }
 
-func (js *IngressSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (js *IngressSummary) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	ingress, err := retrieveIngress(object)
 	if err != nil {
 		return nil, err
@@ -44,7 +45,7 @@ func NewIngressDetails(prefix, namespace string, c clock.Clock) View {
 	return &IngressDetails{}
 }
 
-func (ing *IngressDetails) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (ing *IngressDetails) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	ingress, err := retrieveIngress(object)
 	if err != nil {
 		return nil, err

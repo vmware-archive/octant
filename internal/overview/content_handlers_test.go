@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"github.com/heptio/developer-dash/internal/cache"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -41,27 +42,27 @@ func Test_loadObjects(t *testing.T) {
 		name      string
 		initCache func(*spyCache)
 		fields    map[string]string
-		keys      []CacheKey
+		keys      []cache.Key
 		expected  []*unstructured.Unstructured
 		isErr     bool
 	}{
 		{
 			name: "without name",
 			initCache: func(c *spyCache) {
-				c.spyRetrieve(CacheKey{
+				c.spyRetrieve(cache.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind"},
 					sampleObjects, nil)
 			},
 			fields:   map[string]string{},
-			keys:     []CacheKey{{APIVersion: "v1", Kind: "kind"}},
+			keys:     []cache.Key{{APIVersion: "v1", Kind: "kind"}},
 			expected: sortedSampleObjects,
 		},
 		{
 			name: "name",
 			initCache: func(c *spyCache) {
-				c.spyRetrieve(CacheKey{
+				c.spyRetrieve(cache.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind",
@@ -69,19 +70,19 @@ func Test_loadObjects(t *testing.T) {
 					[]*unstructured.Unstructured{}, nil)
 			},
 			fields: map[string]string{"name": "name"},
-			keys:   []CacheKey{{APIVersion: "v1", Kind: "kind"}},
+			keys:   []cache.Key{{APIVersion: "v1", Kind: "kind"}},
 		},
 		{
 			name: "cache retrieve error",
 			initCache: func(c *spyCache) {
-				c.spyRetrieve(CacheKey{
+				c.spyRetrieve(cache.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind"},
 					nil, errors.New("error"))
 			},
 			fields: map[string]string{},
-			keys:   []CacheKey{{APIVersion: "v1", Kind: "kind"}},
+			keys:   []cache.Key{{APIVersion: "v1", Kind: "kind"}},
 			isErr:  true,
 		},
 	}
@@ -152,7 +153,7 @@ func loadType(t *testing.T, path string) runtime.Object {
 	return obj
 }
 
-func loadUnstructured(t *testing.T, cache Cache, namespace, path string) {
+func loadUnstructured(t *testing.T, cache cache.Cache, namespace, path string) {
 	obj := loadType(t, path)
 	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
 	require.NoError(t, err)

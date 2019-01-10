@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"github.com/heptio/developer-dash/internal/cache"
 	"time"
 
 	"github.com/heptio/developer-dash/internal/content"
@@ -16,7 +17,7 @@ type ViewFactory func(prefix, namespace string, c clock.Clock) View
 
 // View is a view that can be embedded in the resource overview.
 type View interface {
-	Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error)
+	Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error)
 }
 
 func tableCol(name string) content.TableColumn {

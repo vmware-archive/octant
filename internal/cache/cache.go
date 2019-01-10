@@ -1,4 +1,4 @@
-package overview
+package cache
 
 import (
 	"sync"
@@ -11,14 +11,14 @@ import (
 // Cache stores Kubernetes objects.
 type Cache interface {
 	Store(obj *unstructured.Unstructured) error
-	Retrieve(key CacheKey) ([]*unstructured.Unstructured, error)
+	Retrieve(key Key) ([]*unstructured.Unstructured, error)
 	Delete(obj *unstructured.Unstructured) error
 
 	Events(obj *unstructured.Unstructured) ([]*unstructured.Unstructured, error)
 }
 
-// CacheKey is a key for the cache.
-type CacheKey struct {
+// Key is a key for the cache.
+type Key struct {
 	Namespace  string
 	APIVersion string
 	Kind       string
@@ -28,28 +28,28 @@ type CacheKey struct {
 // MemoryCacheOpt is an option for configuring memory cache.
 type MemoryCacheOpt func(*MemoryCache)
 
-// CacheAction is a cache action.
-type CacheAction string
+// Action is a cache action.
+type Action string
 
 const (
-	// CacheStore is a store action.
-	CacheStore CacheAction = "store"
-	// CacheDelete is a delete action.
-	CacheDelete CacheAction = "delete"
-	// CacheUpdate is an update action.
-	CacheUpdate CacheAction = "update"
+	// StoreAction is a store action.
+	StoreAction Action = "store"
+	// DeleteAction is a delete action.
+	DeleteAction Action = "delete"
+	// UpdateAction is an update action.
+	UpdateAction Action = "update"
 )
 
-// CacheNotification is a notification for a cache.
-type CacheNotification struct {
-	CacheKey CacheKey
-	Action   CacheAction
+// Notification is a notification for a cache.
+type Notification struct {
+	CacheKey Key
+	Action   Action
 }
 
-// CacheNotificationOpt sets a channel that will receive a notification
+// NotificationOpt sets a channel that will receive a notification
 // every time cache performs an add/delete.
 // The done channel can be used to cancel notifications that are blocked.
-func CacheNotificationOpt(ch chan<- CacheNotification, done <-chan struct{}) MemoryCacheOpt {
+func NotificationOpt(ch chan<- Notification, done <-chan struct{}) MemoryCacheOpt {
 	return func(c *MemoryCache) {
 		c.notifyCh = ch
 		c.notifyDone = done
@@ -58,10 +58,10 @@ func CacheNotificationOpt(ch chan<- CacheNotification, done <-chan struct{}) Mem
 
 // MemoryCache stores a cache of Kubernetes objects in memory.
 type MemoryCache struct {
-	store map[CacheKey]*unstructured.Unstructured
+	store map[Key]*unstructured.Unstructured
 
 	mu         sync.Mutex
-	notifyCh   chan<- CacheNotification
+	notifyCh   chan<- Notification
 	notifyDone <-chan struct{}
 }
 
@@ -70,7 +70,7 @@ var _ Cache = (*MemoryCache)(nil)
 // NewMemoryCache creates an instance of MemoryCache.
 func NewMemoryCache(opts ...MemoryCacheOpt) *MemoryCache {
 	mc := &MemoryCache{
-		store: make(map[CacheKey]*unstructured.Unstructured),
+		store: make(map[Key]*unstructured.Unstructured),
 	}
 
 	for _, opt := range opts {
@@ -92,7 +92,7 @@ func (mc *MemoryCache) Reset() {
 
 // Store stores an object to the object.
 func (mc *MemoryCache) Store(obj *unstructured.Unstructured) error {
-	key := CacheKey{
+	key := Key{
 		Namespace:  obj.GetNamespace(),
 		APIVersion: obj.GetAPIVersion(),
 		Kind:       obj.GetKind(),
@@ -103,13 +103,13 @@ func (mc *MemoryCache) Store(obj *unstructured.Unstructured) error {
 	mc.store[key] = obj
 	mc.mu.Unlock()
 
-	mc.notify(CacheStore, key)
+	mc.notify(StoreAction, key)
 
 	return nil
 }
 
 // Retrieve retrieves an object from the cache.
-func (mc *MemoryCache) Retrieve(key CacheKey) ([]*unstructured.Unstructured, error) {
+func (mc *MemoryCache) Retrieve(key Key) ([]*unstructured.Unstructured, error) {
 	mc.mu.Lock()
 	defer mc.mu.Unlock()
 
@@ -154,7 +154,7 @@ func (mc *MemoryCache) Delete(obj *unstructured.Unstructured) error {
 	kind := obj.GetKind()
 	name := obj.GetName()
 
-	key := CacheKey{
+	key := Key{
 		Namespace:  namespace,
 		APIVersion: apiVersion,
 		Kind:       kind,
@@ -165,7 +165,7 @@ func (mc *MemoryCache) Delete(obj *unstructured.Unstructured) error {
 	delete(mc.store, key)
 	mc.mu.Unlock()
 
-	mc.notify(CacheDelete, key)
+	mc.notify(DeleteAction, key)
 
 	return nil
 }
@@ -202,13 +202,13 @@ func (mc *MemoryCache) Events(u *unstructured.Unstructured) ([]*unstructured.Uns
 	return events, nil
 }
 
-func (mc *MemoryCache) notify(action CacheAction, key CacheKey) {
+func (mc *MemoryCache) notify(action Action, key Key) {
 	if mc.notifyCh == nil {
 		return
 	}
 
 	select {
-	case mc.notifyCh <- CacheNotification{Action: action, CacheKey: key}:
+	case mc.notifyCh <- Notification{Action: action, CacheKey: key}:
 	case <-mc.notifyDone:
 	}
 }

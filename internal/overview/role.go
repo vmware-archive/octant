@@ -3,6 +3,8 @@ package overview
 import (
 	"context"
 
+	"github.com/heptio/developer-dash/internal/cache"
+
 	"github.com/heptio/developer-dash/internal/content"
 
 	"github.com/pkg/errors"
@@ -20,7 +22,7 @@ func NewRoleSummary(prefix, namespace string, c clock.Clock) View {
 	return &RoleSummary{}
 }
 
-func (js *RoleSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (js *RoleSummary) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	secret, err := retrieveRole(object)
 	if err != nil {
 		return nil, err
@@ -45,7 +47,7 @@ func NewRoleRule(prefix, namespace string, c clock.Clock) View {
 	return &RoleRule{}
 }
 
-func (js *RoleRule) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (js *RoleRule) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	secret, err := retrieveRole(object)
 	if err != nil {
 		return nil, err
@@ -70,8 +72,8 @@ func retrieveRole(object runtime.Object) (*rbacv1.Role, error) {
 	return rc, nil
 }
 
-func getRole(namespace, name string, c Cache) (*rbacv1.Role, error) {
-	key := CacheKey{
+func getRole(namespace, name string, c cache.Cache) (*rbacv1.Role, error) {
+	key := cache.Key{
 		Namespace:  namespace,
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "Role",
@@ -90,7 +92,7 @@ func getRole(namespace, name string, c Cache) (*rbacv1.Role, error) {
 	return roles[0], nil
 }
 
-func loadRoles(key CacheKey, c Cache) ([]*rbacv1.Role, error) {
+func loadRoles(key cache.Key, c cache.Cache) ([]*rbacv1.Role, error) {
 	objects, err := c.Retrieve(key)
 	if err != nil {
 		return nil, err

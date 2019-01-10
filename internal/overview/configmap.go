@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"github.com/heptio/developer-dash/internal/cache"
 	"sort"
 
 	"github.com/heptio/developer-dash/internal/content"
@@ -19,7 +20,7 @@ func NewConfigMapSummary(prefix, namespace string, c clock.Clock) View {
 	return &ConfigMapSummary{}
 }
 
-func (cms *ConfigMapSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (cms *ConfigMapSummary) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	configMap, err := retrieveConfigMap(object)
 	if err != nil {
 		return nil, err
@@ -45,7 +46,7 @@ func NewConfigMapDetails(prefix, namespace string, c clock.Clock) View {
 }
 
 // Content describes human readable object details
-func (cm *ConfigMapDetails) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (cm *ConfigMapDetails) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	configMap, ok := object.(*corev1.ConfigMap)
 	if !ok {
 		return nil, errors.Errorf("expected object to be a ConfigMap, it was %T", object)

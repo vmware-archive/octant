@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ func NewDaemonSetSummary(prefix, namespace string, c clock.Clock) View {
 	return &DaemonSetSummary{}
 }
 
-func (rss *DaemonSetSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (rss *DaemonSetSummary) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	replicaSet, err := retrieveDaemonSet(object)
 	if err != nil {
 		return nil, err
@@ -27,7 +28,7 @@ func (rss *DaemonSetSummary) Content(ctx context.Context, object runtime.Object,
 	return rss.summary(replicaSet, c)
 }
 
-func (rss *DaemonSetSummary) summary(replicaSet *appsv1.DaemonSet, c Cache) ([]content.Content, error) {
+func (rss *DaemonSetSummary) summary(replicaSet *appsv1.DaemonSet, c cache.Cache) ([]content.Content, error) {
 	pods, err := listPods(replicaSet.GetNamespace(), replicaSet.Spec.Selector, replicaSet.GetUID(), c)
 	if err != nil {
 		return nil, err

@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"github.com/heptio/developer-dash/internal/cache"
 	"strconv"
 
 	"github.com/heptio/developer-dash/internal/content"
@@ -88,7 +89,7 @@ func statusForService(svc *corev1.Service) content.NodeStatus {
 	return content.NodeStatusOK
 }
 
-func statusForIngress(ingress *v1beta1.Ingress, c Cache) (ResourceStatusList, error) {
+func statusForIngress(ingress *v1beta1.Ingress, c cache.Cache) (ResourceStatusList, error) {
 	if ingress == nil {
 		return nil, nil
 	}
@@ -147,7 +148,7 @@ func statusForIngress(ingress *v1beta1.Ingress, c Cache) (ResourceStatusList, er
 			continue
 		}
 
-		key := CacheKey{
+		key := cache.Key{
 			Namespace:  ingress.Namespace,
 			APIVersion: "v1",
 			Kind:       "Secret",

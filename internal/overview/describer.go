@@ -3,6 +3,7 @@ package overview
 import (
 	"context"
 	"fmt"
+	"github.com/heptio/developer-dash/internal/cache"
 	"reflect"
 
 	"github.com/heptio/developer-dash/internal/cluster"
@@ -20,11 +21,11 @@ import (
 	printersinternal "k8s.io/kubernetes/pkg/printers/internalversion"
 )
 
-type LoaderFunc func(ctx context.Context, c Cache, namespace string, fields map[string]string) ([]*unstructured.Unstructured, error)
+type LoaderFunc func(ctx context.Context, c cache.Cache, namespace string, fields map[string]string) ([]*unstructured.Unstructured, error)
 
-var DefaultLoader = func(cacheKey CacheKey) LoaderFunc {
-	return func(ctx context.Context, c Cache, namespace string, fields map[string]string) ([]*unstructured.Unstructured, error) {
-		cacheKeys := []CacheKey{cacheKey}
+var DefaultLoader = func(cacheKey cache.Key) LoaderFunc {
+	return func(ctx context.Context, c cache.Cache, namespace string, fields map[string]string) ([]*unstructured.Unstructured, error) {
+		cacheKeys := []cache.Key{cacheKey}
 		return loadObjects(ctx, c, namespace, fields, cacheKeys)
 	}
 }
@@ -32,7 +33,7 @@ var DefaultLoader = func(cacheKey CacheKey) LoaderFunc {
 type ObjectTransformFunc func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error
 
 type DescriberOptions struct {
-	Cache  Cache
+	Cache  cache.Cache
 	Fields map[string]string
 }
 
@@ -59,11 +60,11 @@ type ListDescriber struct {
 	title               string
 	listType            func() interface{}
 	objectType          func() interface{}
-	cacheKey            CacheKey
+	cacheKey            cache.Key
 	objectTransformFunc ObjectTransformFunc
 }
 
-func NewListDescriber(p, title string, cacheKey CacheKey, listType, objectType func() interface{}, otf ObjectTransformFunc) *ListDescriber {
+func NewListDescriber(p, title string, cacheKey cache.Key, listType, objectType func() interface{}, otf ObjectTransformFunc) *ListDescriber {
 	return &ListDescriber{
 		path:                p,
 		title:               title,
@@ -79,7 +80,7 @@ func NewListDescriber(p, title string, cacheKey CacheKey, listType, objectType f
 func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
 	var contents []content.Content
 
-	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, []CacheKey{d.cacheKey})
+	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, []cache.Key{d.cacheKey})
 	if err != nil {
 		return emptyContentResponse, err
 	}

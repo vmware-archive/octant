@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/cache"
+
 	"github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
@@ -17,11 +19,11 @@ import (
 
 func TestListDescriber(t *testing.T) {
 	thePath := "/"
-	key := CacheKey{APIVersion: "v1", Kind: "Pod"}
+	key := cache.Key{APIVersion: "v1", Kind: "Pod"}
 	namespace := "default"
 	fields := map[string]string{}
 
-	cache := newSpyCache()
+	c := newSpyCache()
 
 	object := map[string]interface{}{
 		"kind":       "Pod",
@@ -31,8 +33,8 @@ func TestListDescriber(t *testing.T) {
 		},
 	}
 
-	retrieveKey := CacheKey{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
-	cache.spyRetrieve(retrieveKey, []*unstructured.Unstructured{{Object: object}}, nil)
+	retrieveKey := cache.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
+	c.spyRetrieve(retrieveKey, []*unstructured.Unstructured{{Object: object}}, nil)
 
 	listType := func() interface{} {
 		return &corev1.PodList{}
@@ -59,7 +61,7 @@ func TestListDescriber(t *testing.T) {
 	require.NoError(t, err)
 
 	options := DescriberOptions{
-		Cache:  cache,
+		Cache:  c,
 		Fields: fields,
 	}
 
@@ -90,16 +92,16 @@ func TestListDescriber(t *testing.T) {
 
 	assert.Equal(t, expected, cResponse)
 
-	assert.True(t, cache.isSatisfied(), "cache was not satisfied")
+	assert.True(t, c.isSatisfied(), "cache was not satisfied")
 }
 
 func TestObjectDescriber(t *testing.T) {
 	thePath := "/"
-	key := CacheKey{APIVersion: "v1", Kind: "Pod"}
+	key := cache.Key{APIVersion: "v1", Kind: "Pod"}
 	namespace := "default"
 	fields := map[string]string{}
 
-	cache := newSpyCache()
+	c := newSpyCache()
 
 	object := map[string]interface{}{
 		"kind":       "Pod",
@@ -109,8 +111,8 @@ func TestObjectDescriber(t *testing.T) {
 		},
 	}
 
-	retrieveKey := CacheKey{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
-	cache.spyRetrieve(retrieveKey, []*unstructured.Unstructured{{Object: object}}, nil)
+	retrieveKey := cache.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
+	c.spyRetrieve(retrieveKey, []*unstructured.Unstructured{{Object: object}}, nil)
 
 	objectType := func() interface{} {
 		return &corev1.Pod{}
@@ -134,7 +136,7 @@ func TestObjectDescriber(t *testing.T) {
 	require.NoError(t, err)
 
 	options := DescriberOptions{
-		Cache:  cache,
+		Cache:  c,
 		Fields: fields,
 	}
 
@@ -152,13 +154,13 @@ func TestObjectDescriber(t *testing.T) {
 		},
 	}
 	assert.Equal(t, expected, cResponse)
-	assert.True(t, cache.isSatisfied())
+	assert.True(t, c.isSatisfied())
 }
 
 func TestSectionDescriber(t *testing.T) {
 	namespace := "default"
 
-	cache := NewMemoryCache()
+	c := cache.NewMemoryCache()
 
 	scheme := runtime.NewScheme()
 	objects := []runtime.Object{}
@@ -166,7 +168,7 @@ func TestSectionDescriber(t *testing.T) {
 	require.NoError(t, err)
 
 	options := DescriberOptions{
-		Cache: cache,
+		Cache: c,
 	}
 
 	ctx := context.Background()

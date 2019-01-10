@@ -6,6 +6,8 @@ import (
 	"path"
 	"reflect"
 
+	"github.com/heptio/developer-dash/internal/cache"
+
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/content"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
@@ -31,7 +33,7 @@ type ContentSection struct {
 
 type ResourceOptions struct {
 	Path       string
-	CacheKey   CacheKey
+	CacheKey   cache.Key
 	ListType   interface{}
 	ObjectType interface{}
 	Titles     ResourceTitle

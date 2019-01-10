@@ -1,4 +1,4 @@
-package overview
+package cache
 
 import (
 	"sync/atomic"
@@ -150,13 +150,13 @@ func TestInformerCache_Retrieve(t *testing.T) {
 
 	cases := []struct {
 		name        string
-		key         CacheKey
+		key         Key
 		expectedLen int
 		expectErr   bool
 	}{
 		{
 			name: "ns, apiVersion, kind, name",
-			key: CacheKey{
+			key: Key{
 				Namespace:  "default",
 				APIVersion: "foo/v1",
 				Kind:       "Kind",
@@ -166,7 +166,7 @@ func TestInformerCache_Retrieve(t *testing.T) {
 		},
 		{
 			name: "ns, apiVersion, kind",
-			key: CacheKey{
+			key: Key{
 				Namespace:  "default",
 				APIVersion: "foo/v1",
 				Kind:       "Kind",
@@ -175,7 +175,7 @@ func TestInformerCache_Retrieve(t *testing.T) {
 		},
 		{
 			name: "ns, apiVersion: error because we require kind",
-			key: CacheKey{
+			key: Key{
 				Namespace:  "default",
 				APIVersion: "foo/v1",
 			},
@@ -183,7 +183,7 @@ func TestInformerCache_Retrieve(t *testing.T) {
 		},
 		{
 			name: "not found",
-			key: CacheKey{
+			key: Key{
 				Namespace:  "default",
 				APIVersion: "foo/v1",
 				Kind:       "Kind",
@@ -222,7 +222,7 @@ func TestInformerCache_Watch(t *testing.T) {
 
 	dynamicClient := clusterClient.FakeDynamic
 
-	notifyCh := make(chan CacheNotification)
+	notifyCh := make(chan Notification)
 	notifyDone := make(chan struct{})
 
 	restMapper, err := clusterClient.RESTMapper()
@@ -238,7 +238,7 @@ func TestInformerCache_Watch(t *testing.T) {
 	}()
 
 	// verify predefined objects are present
-	cacheKey := CacheKey{Namespace: "default", APIVersion: "apps/v1", Kind: "Deployment"}
+	cacheKey := Key{Namespace: "default", APIVersion: "apps/v1", Kind: "Deployment"}
 	found, err := cache.Retrieve(cacheKey)
 	require.NoError(t, err)
 
@@ -328,7 +328,7 @@ func TestInformerCache_Watch_Stop(t *testing.T) {
 
 	dynamicClient := clusterClient.FakeDynamic
 
-	notifyCh := make(chan CacheNotification)
+	notifyCh := make(chan Notification)
 	notifyDone := make(chan struct{})
 
 	restMapper, err := clusterClient.RESTMapper()
@@ -340,7 +340,7 @@ func TestInformerCache_Watch_Stop(t *testing.T) {
 	)
 
 	// verify predefined objects are present
-	cacheKey := CacheKey{Namespace: "default", APIVersion: "apps/v1", Kind: "Deployment"}
+	cacheKey := Key{Namespace: "default", APIVersion: "apps/v1", Kind: "Deployment"}
 	found, err := cache.Retrieve(cacheKey)
 	require.NoError(t, err)
 

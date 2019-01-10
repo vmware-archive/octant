@@ -6,6 +6,8 @@ import (
 	"sort"
 	"time"
 
+	"github.com/heptio/developer-dash/internal/cache"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/heptio/developer-dash/internal/cluster"
@@ -29,7 +31,7 @@ func NewEventList(prefix, namespace string, cl clock.Clock) View {
 	}
 }
 
-func (el *EventList) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+func (el *EventList) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
 	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(object)
 	if err != nil {
 		return nil, err
@@ -63,7 +65,7 @@ type EventsDescriber struct {
 
 	path      string
 	title     string
-	cacheKeys []CacheKey
+	cacheKeys []cache.Key
 }
 
 // NewEventsDescriber creates an instance of EventsDescriber.
@@ -72,7 +74,7 @@ func NewEventsDescriber(p string) *EventsDescriber {
 		baseDescriber: newBaseDescriber(),
 		path:          p,
 		title:         "Events",
-		cacheKeys: []CacheKey{
+		cacheKeys: []cache.Key{
 			{
 				APIVersion: "v1",
 				Kind:       "Event",
