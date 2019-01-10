@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/cluster/fake"
@@ -219,7 +220,7 @@ func (c fakeContent) MarshalJSON() ([]byte, error) {
 
 type fakeView struct{}
 
-var _ View = (*fakeView)(nil)
+var _ view.View = (*fakeView)(nil)
 
 func newFakeView() *fakeView {
 	return &fakeView{}

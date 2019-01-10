@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -16,9 +17,9 @@ import (
 
 type RoleSummary struct{}
 
-var _ View = (*RoleSummary)(nil)
+var _ view.View = (*RoleSummary)(nil)
 
-func NewRoleSummary(prefix, namespace string, c clock.Clock) View {
+func NewRoleSummary(prefix, namespace string, c clock.Clock) view.View {
 	return &RoleSummary{}
 }
 
@@ -41,9 +42,9 @@ func (js *RoleSummary) Content(ctx context.Context, object runtime.Object, c cac
 
 type RoleRule struct{}
 
-var _ View = (*RoleRule)(nil)
+var _ view.View = (*RoleRule)(nil)
 
-func NewRoleRule(prefix, namespace string, c clock.Clock) View {
+func NewRoleRule(prefix, namespace string, c clock.Clock) view.View {
 	return &RoleRule{}
 }
 

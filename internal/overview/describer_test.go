@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/content"
@@ -118,14 +119,14 @@ func TestObjectDescriber(t *testing.T) {
 		return &corev1.Pod{}
 	}
 
-	viewFac := func(string, string, clock.Clock) View {
+	viewFac := func(string, string, clock.Clock) view.View {
 		return newFakeView()
 	}
 	fn := DefaultLoader(key)
 	sections := []ContentSection{
 		{
 			Title: "section 1",
-			Views: []ViewFactory{viewFac},
+			Views: []view.ViewFactory{viewFac},
 		},
 	}
 	d := NewObjectDescriber(thePath, "object", fn, objectType, sections)

@@ -2,7 +2,9 @@ package overview
 
 import (
 	"context"
+
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
@@ -13,9 +15,9 @@ import (
 
 type DaemonSetSummary struct{}
 
-var _ View = (*DaemonSetSummary)(nil)
+var _ view.View = (*DaemonSetSummary)(nil)
 
-func NewDaemonSetSummary(prefix, namespace string, c clock.Clock) View {
+func NewDaemonSetSummary(prefix, namespace string, c clock.Clock) view.View {
 	return &DaemonSetSummary{}
 }
 

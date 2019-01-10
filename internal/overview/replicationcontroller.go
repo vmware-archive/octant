@@ -2,7 +2,9 @@ package overview
 
 import (
 	"context"
+
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -15,9 +17,9 @@ import (
 
 type ReplicationControllerSummary struct{}
 
-var _ View = (*ReplicationControllerSummary)(nil)
+var _ view.View = (*ReplicationControllerSummary)(nil)
 
-func NewReplicationControllerSummary(prefix, namespace string, c clock.Clock) View {
+func NewReplicationControllerSummary(prefix, namespace string, c clock.Clock) view.View {
 	return &ReplicationControllerSummary{}
 }
 

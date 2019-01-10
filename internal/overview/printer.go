@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/heptio/developer-dash/internal/content"
+	"github.com/heptio/developer-dash/internal/view"
 
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
@@ -56,7 +57,7 @@ func printCronJobSummary(cronJob *batchv1beta1.CronJob, jobs []*batch.Job) (cont
 	section.AddText("Namespace", cronJob.GetNamespace())
 	section.AddLabels("Labels", cronJob.GetLabels())
 	section.AddList("Annotations", cronJob.GetAnnotations())
-	section.AddTimestamp("Create Time", formatTime(&cronJob.CreationTimestamp))
+	section.AddTimestamp("Create Time", view.FormatTime(&cronJob.CreationTimestamp))
 
 	active := fmt.Sprintf("%d", len(cronJob.Status.Active))
 	section.AddText("Active", active)
@@ -71,7 +72,7 @@ func printCronJobSummary(cronJob *batchv1beta1.CronJob, jobs []*batch.Job) (cont
 	}
 	section.AddText("Suspend", suspend)
 
-	section.AddTimestamp("Last Schedule", formatTime(cronJob.Status.LastScheduleTime))
+	section.AddTimestamp("Last Schedule", view.FormatTime(cronJob.Status.LastScheduleTime))
 
 	section.AddText("Concurrency Policy", string(cronJob.Spec.ConcurrencyPolicy))
 
@@ -160,7 +161,7 @@ func printJobSummary(job *batch.Job, pods []*corev1.Pod) (content.Section, error
 	}
 
 	if st := job.Status.StartTime; st != nil {
-		section.AddTimestamp("Start Time", formatTime(st))
+		section.AddTimestamp("Start Time", view.FormatTime(st))
 	}
 
 	if ads := job.Spec.ActiveDeadlineSeconds; ads != nil {
@@ -185,7 +186,7 @@ func printPodSummary(pod *corev1.Pod, c clock.Clock) (content.Section, error) {
 	}
 
 	section.AddText("Node", stringOrNone(pod.Spec.NodeName))
-	section.AddTimestamp("Start Time", formatTime(pod.Status.StartTime))
+	section.AddTimestamp("Start Time", view.FormatTime(pod.Status.StartTime))
 	section.AddLabels("Labels", pod.GetLabels())
 	section.AddList("Annotations", pod.GetAnnotations())
 
@@ -310,7 +311,7 @@ func printStatefulSetSummary(ss *appsv1.StatefulSet, pods []*corev1.Pod) (conten
 	section := content.NewSection()
 	section.AddText("Name", ss.GetName())
 	section.AddText("Namespace", ss.GetNamespace())
-	section.AddText("CreationTimestamp", formatTime(&ss.CreationTimestamp))
+	section.AddText("CreationTimestamp", view.FormatTime(&ss.CreationTimestamp))
 
 	section.AddList("Selector", ss.Spec.Selector.MatchLabels)
 
@@ -548,7 +549,7 @@ func printRoleRule(role *rbacv1.Role) (content.Table, error) {
 	}
 
 	for _, name := range columnNames {
-		table.Columns = append(table.Columns, tableCol(name))
+		table.Columns = append(table.Columns, view.TableCol(name))
 	}
 
 	for _, rule := range role.Rules {
@@ -600,7 +601,7 @@ func printRoleBindingSubjects(roleBinding *rbacv1.RoleBinding) (content.Table, e
 	}
 
 	for _, name := range columnNames {
-		table.Columns = append(table.Columns, tableCol(name))
+		table.Columns = append(table.Columns, view.TableCol(name))
 	}
 
 	for _, subject := range roleBinding.Subjects {
@@ -732,7 +733,7 @@ func describeContainer(container corev1.Container, status corev1.ContainerStatus
 
 	} else if status.State.Running != nil {
 		section.AddText("State", "Running")
-		section.AddTimestamp("Started", formatTime(&status.State.Running.StartedAt))
+		section.AddTimestamp("Started", view.FormatTime(&status.State.Running.StartedAt))
 
 	} else if terminated := status.State.Terminated; terminated != nil {
 		section.AddText("State", "Terminated")
@@ -745,8 +746,8 @@ func describeContainer(container corev1.Container, status corev1.ContainerStatus
 		if terminated.Message != "" {
 			section.AddText("Message", terminated.Message)
 		}
-		section.AddTimestamp("Started At", formatTime(&terminated.StartedAt))
-		section.AddTimestamp("Finished At", formatTime(&terminated.FinishedAt))
+		section.AddTimestamp("Started At", view.FormatTime(&terminated.StartedAt))
+		section.AddTimestamp("Finished At", view.FormatTime(&terminated.FinishedAt))
 		section.AddText("Container ID", terminated.ContainerID)
 	}
 
@@ -877,7 +878,7 @@ func describeContainersEnvFrom(containers []corev1.Container) content.Table {
 	table := content.NewTable("Environment From",
 		"This container's environment is build from Secrets or a ConfigMap")
 
-	table.Columns = tableCols("Name", "From", "Prefix", "Optional")
+	table.Columns = view.TableCols("Name", "From", "Prefix", "Optional")
 
 	for _, container := range containers {
 		for _, e := range container.EnvFrom {

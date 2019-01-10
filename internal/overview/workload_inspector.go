@@ -3,10 +3,12 @@ package overview
 import (
 	"context"
 	"fmt"
-	"github.com/heptio/developer-dash/internal/cache"
 	"reflect"
 	"sort"
 	"strings"
+
+	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
@@ -98,7 +100,7 @@ func setViewChecks(m workloadChecks) workloadInspectorViewOpt {
 }
 
 // workloadViewFactory creates a view for workload inspect view.
-func workloadViewFactory(prefix, namespace string, c clock.Clock) View {
+func workloadViewFactory(prefix, namespace string, c clock.Clock) view.View {
 	return newWorkloadInspectorView(prefix, namespace, c)
 }
 

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
@@ -34,10 +35,10 @@ func TestIngressDetails(t *testing.T) {
 	require.NoError(t, err)
 
 	tlsTable := content.NewTable("TLS", "TLS is not configured for this Ingress")
-	tlsTable.Columns = tableCols("Secret", "Hosts")
+	tlsTable.Columns = view.TableCols("Secret", "Hosts")
 
 	rulesTable := content.NewTable("Rules", "Rules are not configured for this Ingress")
-	rulesTable.Columns = tableCols("Host", "Path", "Backend")
+	rulesTable.Columns = view.TableCols("Host", "Path", "Backend")
 	rulesTable.AddRow(content.TableRow{
 		"Backend": content.NewLinkText("test:80", "/content/overview/discovery-and-load-balancing/services/test"),
 		"Host":    content.NewStringText(""),

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
@@ -69,7 +70,7 @@ func TestCronJobJobs(t *testing.T) {
 	contents, err := cjj.Content(ctx, cronJob, c)
 	require.NoError(t, err)
 
-	jobColumns := tableCols("Name", "Completions", "Duration", "Age", "Containers",
+	jobColumns := view.TableCols("Name", "Completions", "Duration", "Age", "Containers",
 		"Images", "Selector", "Labels")
 
 	activeTable := content.NewTable("Active Jobs", "No active jobs")

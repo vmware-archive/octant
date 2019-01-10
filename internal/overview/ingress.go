@@ -2,8 +2,10 @@ package overview
 
 import (
 	"context"
-	"github.com/heptio/developer-dash/internal/cache"
 	"strings"
+
+	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
@@ -14,9 +16,9 @@ import (
 
 type IngressSummary struct{}
 
-var _ View = (*IngressSummary)(nil)
+var _ view.View = (*IngressSummary)(nil)
 
-func NewIngressSummary(prefix, namespace string, c clock.Clock) View {
+func NewIngressSummary(prefix, namespace string, c clock.Clock) view.View {
 	return &IngressSummary{}
 }
 
@@ -39,9 +41,9 @@ func (js *IngressSummary) Content(ctx context.Context, object runtime.Object, c 
 
 type IngressDetails struct{}
 
-var _ View = (*IngressDetails)(nil)
+var _ view.View = (*IngressDetails)(nil)
 
-func NewIngressDetails(prefix, namespace string, c clock.Clock) View {
+func NewIngressDetails(prefix, namespace string, c clock.Clock) view.View {
 	return &IngressDetails{}
 }
 
@@ -61,8 +63,8 @@ func ingressTLSTable(ingress *v1beta1.Ingress) *content.Table {
 	table := content.NewTable("TLS", "TLS is not configured for this Ingress")
 
 	table.Columns = []content.TableColumn{
-		tableCol("Secret"),
-		tableCol("Hosts"),
+		view.TableCol("Secret"),
+		view.TableCol("Hosts"),
 	}
 
 	for _, tls := range ingress.Spec.TLS {
@@ -78,7 +80,7 @@ func ingressTLSTable(ingress *v1beta1.Ingress) *content.Table {
 func ingressRulesTable(ingress *v1beta1.Ingress) *content.Table {
 	table := content.NewTable("Rules", "Rules are not configured for this Ingress")
 
-	table.Columns = tableCols("Host", "Path", "Backend")
+	table.Columns = view.TableCols("Host", "Path", "Backend")
 
 	for _, rule := range ingress.Spec.Rules {
 		if rule.HTTP != nil {
