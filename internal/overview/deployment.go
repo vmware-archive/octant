@@ -2,9 +2,10 @@ package overview
 
 import (
 	"context"
-	"github.com/heptio/developer-dash/internal/cache"
 	"reflect"
 	"sort"
+
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
@@ -139,7 +140,7 @@ func retrieveDeployment(object runtime.Object) (*appsv1.Deployment, error) {
 }
 
 func listReplicaSets(deployment *appsv1.Deployment, c cache.Cache) ([]*appsv1.ReplicaSet, error) {
-	key := cache.CacheKey{
+	key := cache.Key{
 		Namespace:  deployment.GetNamespace(),
 		APIVersion: deployment.APIVersion,
 		Kind:       "ReplicaSet",
@@ -160,7 +161,7 @@ func listReplicaSets(deployment *appsv1.Deployment, c cache.Cache) ([]*appsv1.Re
 	return owned, nil
 }
 
-func loadReplicaSets(key cache.CacheKey, c cache.Cache, selector *metav1.LabelSelector) ([]*appsv1.ReplicaSet, error) {
+func loadReplicaSets(key cache.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*appsv1.ReplicaSet, error) {
 	objects, err := c.Retrieve(key)
 	if err != nil {
 		return nil, err

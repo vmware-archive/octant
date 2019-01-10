@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+
 	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
@@ -124,7 +125,7 @@ func retrieveCronJob(object runtime.Object) (*batchv1beta1.CronJob, error) {
 }
 
 func listJobs(namespace string, uid types.UID, c cache.Cache) ([]*batch.Job, error) {
-	key := cache.CacheKey{
+	key := cache.Key{
 		Namespace:  namespace,
 		APIVersion: "batch/v1",
 		Kind:       "Job",
@@ -148,7 +149,7 @@ func listJobs(namespace string, uid types.UID, c cache.Cache) ([]*batch.Job, err
 	return owned, nil
 }
 
-func loadJobs(key cache.CacheKey, c cache.Cache) ([]*batch.Job, error) {
+func loadJobs(key cache.Key, c cache.Cache) ([]*batch.Job, error) {
 	objects, err := c.Retrieve(key)
 	if err != nil {
 		return nil, err

@@ -2,8 +2,9 @@ package overview
 
 import (
 	"context"
-	"github.com/heptio/developer-dash/internal/cache"
 	"sort"
+
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -18,7 +19,7 @@ import (
 type lookupFunc func(namespace, prefix string, cell interface{}) content.Text
 
 // loadObjects loads objects from the cache sorted by their name.
-func loadObjects(ctx context.Context, cache cache.Cache, namespace string, fields map[string]string, cacheKeys []cache.CacheKey) ([]*unstructured.Unstructured, error) {
+func loadObjects(ctx context.Context, cache cache.Cache, namespace string, fields map[string]string, cacheKeys []cache.Key) ([]*unstructured.Unstructured, error) {
 	var objects []*unstructured.Unstructured
 
 	for _, cacheKey := range cacheKeys {

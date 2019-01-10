@@ -23,9 +23,9 @@ import (
 
 type LoaderFunc func(ctx context.Context, c cache.Cache, namespace string, fields map[string]string) ([]*unstructured.Unstructured, error)
 
-var DefaultLoader = func(cacheKey cache.CacheKey) LoaderFunc {
+var DefaultLoader = func(cacheKey cache.Key) LoaderFunc {
 	return func(ctx context.Context, c cache.Cache, namespace string, fields map[string]string) ([]*unstructured.Unstructured, error) {
-		cacheKeys := []cache.CacheKey{cacheKey}
+		cacheKeys := []cache.Key{cacheKey}
 		return loadObjects(ctx, c, namespace, fields, cacheKeys)
 	}
 }
@@ -60,11 +60,11 @@ type ListDescriber struct {
 	title               string
 	listType            func() interface{}
 	objectType          func() interface{}
-	cacheKey            cache.CacheKey
+	cacheKey            cache.Key
 	objectTransformFunc ObjectTransformFunc
 }
 
-func NewListDescriber(p, title string, cacheKey cache.CacheKey, listType, objectType func() interface{}, otf ObjectTransformFunc) *ListDescriber {
+func NewListDescriber(p, title string, cacheKey cache.Key, listType, objectType func() interface{}, otf ObjectTransformFunc) *ListDescriber {
 	return &ListDescriber{
 		path:                p,
 		title:               title,
@@ -80,7 +80,7 @@ func NewListDescriber(p, title string, cacheKey cache.CacheKey, listType, object
 func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
 	var contents []content.Content
 
-	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, []cache.CacheKey{d.cacheKey})
+	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, []cache.Key{d.cacheKey})
 	if err != nil {
 		return emptyContentResponse, err
 	}

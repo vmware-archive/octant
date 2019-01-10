@@ -42,27 +42,27 @@ func Test_loadObjects(t *testing.T) {
 		name      string
 		initCache func(*spyCache)
 		fields    map[string]string
-		keys      []cache.CacheKey
+		keys      []cache.Key
 		expected  []*unstructured.Unstructured
 		isErr     bool
 	}{
 		{
 			name: "without name",
 			initCache: func(c *spyCache) {
-				c.spyRetrieve(cache.CacheKey{
+				c.spyRetrieve(cache.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind"},
 					sampleObjects, nil)
 			},
 			fields:   map[string]string{},
-			keys:     []cache.CacheKey{{APIVersion: "v1", Kind: "kind"}},
+			keys:     []cache.Key{{APIVersion: "v1", Kind: "kind"}},
 			expected: sortedSampleObjects,
 		},
 		{
 			name: "name",
 			initCache: func(c *spyCache) {
-				c.spyRetrieve(cache.CacheKey{
+				c.spyRetrieve(cache.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind",
@@ -70,19 +70,19 @@ func Test_loadObjects(t *testing.T) {
 					[]*unstructured.Unstructured{}, nil)
 			},
 			fields: map[string]string{"name": "name"},
-			keys:   []cache.CacheKey{{APIVersion: "v1", Kind: "kind"}},
+			keys:   []cache.Key{{APIVersion: "v1", Kind: "kind"}},
 		},
 		{
 			name: "cache retrieve error",
 			initCache: func(c *spyCache) {
-				c.spyRetrieve(cache.CacheKey{
+				c.spyRetrieve(cache.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind"},
 					nil, errors.New("error"))
 			},
 			fields: map[string]string{},
-			keys:   []cache.CacheKey{{APIVersion: "v1", Kind: "kind"}},
+			keys:   []cache.Key{{APIVersion: "v1", Kind: "kind"}},
 			isErr:  true,
 		},
 	}

@@ -2,11 +2,12 @@ package cache
 
 import (
 	"fmt"
+	"math/rand"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"math/rand"
-	"testing"
 )
 
 func TestMemoryCache_Store(t *testing.T) {
@@ -33,12 +34,12 @@ func TestMemoryCache_Retrieve(t *testing.T) {
 
 	cases := []struct {
 		name        string
-		key         CacheKey
+		key         Key
 		expectedLen int
 	}{
 		{
 			name: "ns, apiVersion, kind, name",
-			key: CacheKey{
+			key: Key{
 				Namespace:  "default",
 				APIVersion: "foo/v1",
 				Kind:       "Kind",
@@ -48,7 +49,7 @@ func TestMemoryCache_Retrieve(t *testing.T) {
 		},
 		{
 			name: "ns, apiVersion, kind",
-			key: CacheKey{
+			key: Key{
 				Namespace:  "default",
 				APIVersion: "foo/v1",
 				Kind:       "Kind",
@@ -57,7 +58,7 @@ func TestMemoryCache_Retrieve(t *testing.T) {
 		},
 		{
 			name: "ns, apiVersion",
-			key: CacheKey{
+			key: Key{
 				Namespace:  "default",
 				APIVersion: "foo/v1",
 			},
@@ -65,7 +66,7 @@ func TestMemoryCache_Retrieve(t *testing.T) {
 		},
 		{
 			name: "ns",
-			key: CacheKey{
+			key: Key{
 				Namespace: "default",
 			}, expectedLen: 4,
 		},

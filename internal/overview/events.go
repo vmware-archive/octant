@@ -3,9 +3,10 @@ package overview
 import (
 	"context"
 	"fmt"
-	"github.com/heptio/developer-dash/internal/cache"
 	"sort"
 	"time"
+
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -64,7 +65,7 @@ type EventsDescriber struct {
 
 	path      string
 	title     string
-	cacheKeys []cache.CacheKey
+	cacheKeys []cache.Key
 }
 
 // NewEventsDescriber creates an instance of EventsDescriber.
@@ -73,7 +74,7 @@ func NewEventsDescriber(p string) *EventsDescriber {
 		baseDescriber: newBaseDescriber(),
 		path:          p,
 		title:         "Events",
-		cacheKeys: []cache.CacheKey{
+		cacheKeys: []cache.Key{
 			{
 				APIVersion: "v1",
 				Kind:       "Event",

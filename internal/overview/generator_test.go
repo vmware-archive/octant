@@ -16,7 +16,7 @@ import (
 )
 
 func Test_realGenerator_Generate(t *testing.T) {
-	key := cache.CacheKey{Namespace: "default"}
+	key := cache.Key{Namespace: "default"}
 
 	describers := []Describer{
 		newStubDescriber("/other"),
@@ -60,7 +60,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 			name: "sub path",
 			path: "/sub/foo",
 			initCache: func(c *spyCache) {
-				subKey := cache.CacheKey{Namespace: key.Namespace, Name: "foo"}
+				subKey := cache.Key{Namespace: key.Namespace, Name: "foo"}
 				c.spyRetrieve(subKey, []*unstructured.Unstructured{}, nil)
 			},
 			expected: ContentResponse{
@@ -103,16 +103,16 @@ func Test_realGenerator_Generate(t *testing.T) {
 }
 
 type spyCache struct {
-	store map[cache.CacheKey][]*unstructured.Unstructured
-	errs  map[cache.CacheKey]error
-	used  map[cache.CacheKey]bool
+	store map[cache.Key][]*unstructured.Unstructured
+	errs  map[cache.Key]error
+	used  map[cache.Key]bool
 }
 
 func newSpyCache() *spyCache {
 	return &spyCache{
-		store: make(map[cache.CacheKey][]*unstructured.Unstructured),
-		errs:  make(map[cache.CacheKey]error),
-		used:  make(map[cache.CacheKey]bool),
+		store: make(map[cache.Key][]*unstructured.Unstructured),
+		errs:  make(map[cache.Key]error),
+		used:  make(map[cache.Key]bool),
 	}
 }
 
@@ -120,7 +120,7 @@ func (c *spyCache) Store(obj *unstructured.Unstructured) error {
 	return nil
 }
 
-func (c *spyCache) spyRetrieve(key cache.CacheKey, objects []*unstructured.Unstructured, err error) {
+func (c *spyCache) spyRetrieve(key cache.Key, objects []*unstructured.Unstructured, err error) {
 	c.store[key] = objects
 	c.errs[key] = err
 }
@@ -140,7 +140,7 @@ func (c *spyCache) isSatisfied() bool {
 	return true
 }
 
-func (c *spyCache) Retrieve(key cache.CacheKey) ([]*unstructured.Unstructured, error) {
+func (c *spyCache) Retrieve(key cache.Key) ([]*unstructured.Unstructured, error) {
 	c.used[key] = true
 
 	objs := c.store[key]

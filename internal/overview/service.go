@@ -3,6 +3,7 @@ package overview
 import (
 	"context"
 	"fmt"
+
 	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
@@ -115,7 +116,7 @@ func (js *ServiceEndpoints) Content(ctx context.Context, object runtime.Object, 
 		table.Columns = append(table.Columns, tableCol(name))
 	}
 
-	podKey := cache.CacheKey{
+	podKey := cache.Key{
 		Namespace:  ss.GetNamespace(),
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -182,7 +183,7 @@ func retrieveService(object runtime.Object) (*corev1.Service, error) {
 }
 
 func listEndpoints(namespace string, name string, c cache.Cache) ([]*core.Endpoints, error) {
-	key := cache.CacheKey{
+	key := cache.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Endpoints",
@@ -192,7 +193,7 @@ func listEndpoints(namespace string, name string, c cache.Cache) ([]*core.Endpoi
 	return loadEndpoints(key, c)
 }
 
-func loadEndpoints(key cache.CacheKey, c cache.Cache) ([]*core.Endpoints, error) {
+func loadEndpoints(key cache.Key, c cache.Cache) ([]*core.Endpoints, error) {
 	objects, err := c.Retrieve(key)
 	if err != nil {
 		return nil, err

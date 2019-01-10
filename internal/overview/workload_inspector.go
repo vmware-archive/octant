@@ -196,7 +196,7 @@ func listIngressBackends(ingress *v1beta1.Ingress, c cache.Cache) ([]v1beta1.Ing
 func loadServices(serviceNames []string, namespace string, c cache.Cache) ([]*corev1.Service, error) {
 	var services []*corev1.Service
 	for _, backend := range serviceNames {
-		key := cache.CacheKey{
+		key := cache.Key{
 			Namespace:  namespace,
 			APIVersion: "v1",
 			Kind:       "Service",
@@ -242,7 +242,7 @@ func findIngressesForService(svc *corev1.Service, c cache.Cache) ([]*v1beta1.Ing
 		return nil, errors.New("nil cache")
 	}
 
-	key := cache.CacheKey{
+	key := cache.Key{
 		Namespace:  svc.Namespace,
 		APIVersion: "extensions/v1beta1",
 		Kind:       "Ingress",
@@ -280,7 +280,7 @@ func findPodsForService(svc *corev1.Service, c cache.Cache) ([]*corev1.Pod, erro
 	if c == nil {
 		return nil, errors.New("nil cache")
 	}
-	key := cache.CacheKey{
+	key := cache.Key{
 		Namespace:  svc.Namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -308,7 +308,7 @@ func findServicesForPod(pod *corev1.Pod, c cache.Cache) ([]*corev1.Service, erro
 		return nil, errors.New("nil cache")
 	}
 
-	key := cache.CacheKey{
+	key := cache.Key{
 		Namespace:  pod.Namespace,
 		APIVersion: "v1",
 		Kind:       "Service",
@@ -353,7 +353,7 @@ func findReplicaSetsForPod(pod *corev1.Pod, c cache.Cache) ([]*appsv1.ReplicaSet
 		return nil, errors.New("nil cache")
 	}
 
-	key := cache.CacheKey{
+	key := cache.Key{
 		Namespace:  pod.Namespace,
 		APIVersion: "apps/v1",
 		Kind:       "ReplicaSet",
@@ -398,7 +398,7 @@ func findDeploymentsForPod(pod *corev1.Pod, c cache.Cache) ([]*appsv1.Deployment
 		return nil, errors.New("nil cache")
 	}
 
-	key := cache.CacheKey{
+	key := cache.Key{
 		Namespace:  pod.Namespace,
 		APIVersion: "apps/v1",
 		Kind:       "Deployment",
@@ -441,21 +441,21 @@ func findDeploymentForReplicaSet(rs *appsv1.ReplicaSet, c cache.Cache) (*appsv1.
 		return nil, errors.New("nil cache")
 	}
 
-	var key cache.CacheKey
+	var key cache.Key
 	for _, owner := range rs.OwnerReferences {
 		// Don't compare APIVersion - there may be several aliases
 		if owner.Kind != "Deployment" {
 			continue
 		}
 
-		key = cache.CacheKey{
+		key = cache.Key{
 			Namespace:  rs.Namespace,
 			APIVersion: "apps/v1",
 			Kind:       "Deployment",
 			Name:       owner.Name,
 		}
 	}
-	if (key == cache.CacheKey{}) {
+	if (key == cache.Key{}) {
 		return nil, nil
 	}
 
@@ -485,21 +485,21 @@ func findStatefulSetForPod(pod *corev1.Pod, c cache.Cache) (*appsv1.StatefulSet,
 		return nil, errors.New("nil cache")
 	}
 
-	var key cache.CacheKey
+	var key cache.Key
 	for _, owner := range pod.OwnerReferences {
 		// Don't compare APIVersion - there may be several aliases
 		if owner.Kind != "StatefulSet" {
 			continue
 		}
 
-		key = cache.CacheKey{
+		key = cache.Key{
 			Namespace:  pod.Namespace,
 			APIVersion: "apps/v1",
 			Kind:       "StatefulSet",
 			Name:       owner.Name,
 		}
 	}
-	if (key == cache.CacheKey{}) {
+	if (key == cache.Key{}) {
 		return nil, nil
 	}
 
@@ -529,21 +529,21 @@ func findReplicationControllerForPod(pod *corev1.Pod, c cache.Cache) (*corev1.Re
 		return nil, errors.New("nil cache")
 	}
 
-	var key cache.CacheKey
+	var key cache.Key
 	for _, owner := range pod.OwnerReferences {
 		// Don't compare APIVersion - there may be several aliases
 		if owner.Kind != "ReplicationController" {
 			continue
 		}
 
-		key = cache.CacheKey{
+		key = cache.Key{
 			Namespace:  pod.Namespace,
 			APIVersion: "v1",
 			Kind:       "ReplicationController",
 			Name:       owner.Name,
 		}
 	}
-	if (key == cache.CacheKey{}) {
+	if (key == cache.Key{}) {
 		return nil, nil
 	}
 
@@ -573,21 +573,21 @@ func findDaemonSetForPod(pod *corev1.Pod, c cache.Cache) (*appsv1.DaemonSet, err
 		return nil, errors.New("nil cache")
 	}
 
-	var key cache.CacheKey
+	var key cache.Key
 	for _, owner := range pod.OwnerReferences {
 		// Don't compare APIVersion - there may be several aliases
 		if owner.Kind != "DaemonSet" {
 			continue
 		}
 
-		key = cache.CacheKey{
+		key = cache.Key{
 			Namespace:  pod.Namespace,
 			APIVersion: "apps/v1",
 			Kind:       "DaemonSet",
 			Name:       owner.Name,
 		}
 	}
-	if (key == cache.CacheKey{}) {
+	if (key == cache.Key{}) {
 		return nil, nil
 	}
 

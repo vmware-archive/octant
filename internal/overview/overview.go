@@ -2,10 +2,11 @@ package overview
 
 import (
 	"fmt"
-	"github.com/heptio/developer-dash/internal/cache"
 	"net/http"
 	"os"
 	"sync"
+
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/heptio/developer-dash/internal/cluster"
@@ -38,7 +39,7 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string, logger
 	var opts []cache.InformerCacheOpt
 
 	if os.Getenv("DASH_VERBOSE_CACHE") != "" {
-		ch := make(chan cache.CacheNotification)
+		ch := make(chan cache.Notification)
 
 		go func() {
 			for notif := range ch {

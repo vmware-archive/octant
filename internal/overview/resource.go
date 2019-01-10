@@ -3,9 +3,10 @@ package overview
 import (
 	"context"
 	"fmt"
-	"github.com/heptio/developer-dash/internal/cache"
 	"path"
 	"reflect"
+
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/content"
@@ -32,7 +33,7 @@ type ContentSection struct {
 
 type ResourceOptions struct {
 	Path       string
-	CacheKey   cache.CacheKey
+	CacheKey   cache.Key
 	ListType   interface{}
 	ObjectType interface{}
 	Titles     ResourceTitle

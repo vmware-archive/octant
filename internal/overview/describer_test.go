@@ -19,7 +19,7 @@ import (
 
 func TestListDescriber(t *testing.T) {
 	thePath := "/"
-	key := cache.CacheKey{APIVersion: "v1", Kind: "Pod"}
+	key := cache.Key{APIVersion: "v1", Kind: "Pod"}
 	namespace := "default"
 	fields := map[string]string{}
 
@@ -33,7 +33,7 @@ func TestListDescriber(t *testing.T) {
 		},
 	}
 
-	retrieveKey := cache.CacheKey{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
+	retrieveKey := cache.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
 	c.spyRetrieve(retrieveKey, []*unstructured.Unstructured{{Object: object}}, nil)
 
 	listType := func() interface{} {
@@ -97,7 +97,7 @@ func TestListDescriber(t *testing.T) {
 
 func TestObjectDescriber(t *testing.T) {
 	thePath := "/"
-	key := cache.CacheKey{APIVersion: "v1", Kind: "Pod"}
+	key := cache.Key{APIVersion: "v1", Kind: "Pod"}
 	namespace := "default"
 	fields := map[string]string{}
 
@@ -111,7 +111,7 @@ func TestObjectDescriber(t *testing.T) {
 		},
 	}
 
-	retrieveKey := cache.CacheKey{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
+	retrieveKey := cache.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
 	c.spyRetrieve(retrieveKey, []*unstructured.Unstructured{{Object: object}}, nil)
 
 	objectType := func() interface{} {

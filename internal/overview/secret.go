@@ -3,9 +3,10 @@ package overview
 import (
 	"context"
 	"fmt"
-	"github.com/heptio/developer-dash/internal/cache"
 	"sort"
 	"strings"
+
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -90,7 +91,7 @@ func retrieveSecret(object runtime.Object) (*corev1.Secret, error) {
 }
 
 func listSecrets(namespace string, c cache.Cache) ([]*corev1.Secret, error) {
-	key := cache.CacheKey{
+	key := cache.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Secret",
@@ -99,7 +100,7 @@ func listSecrets(namespace string, c cache.Cache) ([]*corev1.Secret, error) {
 	return loadSecrets(key, c)
 }
 
-func loadSecrets(key cache.CacheKey, c cache.Cache) ([]*corev1.Secret, error) {
+func loadSecrets(key cache.Key, c cache.Cache) ([]*corev1.Secret, error) {
 	objects, err := c.Retrieve(key)
 	if err != nil {
 		return nil, err

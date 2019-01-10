@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+
 	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
@@ -72,7 +73,7 @@ func retrieveRole(object runtime.Object) (*rbacv1.Role, error) {
 }
 
 func getRole(namespace, name string, c cache.Cache) (*rbacv1.Role, error) {
-	key := cache.CacheKey{
+	key := cache.Key{
 		Namespace:  namespace,
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "Role",
@@ -91,7 +92,7 @@ func getRole(namespace, name string, c cache.Cache) (*rbacv1.Role, error) {
 	return roles[0], nil
 }
 
-func loadRoles(key cache.CacheKey, c cache.Cache) ([]*rbacv1.Role, error) {
+func loadRoles(key cache.Key, c cache.Cache) ([]*rbacv1.Role, error) {
 	objects, err := c.Retrieve(key)
 	if err != nil {
 		return nil, err

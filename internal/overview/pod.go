@@ -2,8 +2,9 @@ package overview
 
 import (
 	"context"
-	"github.com/heptio/developer-dash/internal/cache"
 	"time"
+
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -216,7 +217,7 @@ func createPodStatus(pods []*corev1.Pod) podStatus {
 }
 
 func listPods(namespace string, selector *metav1.LabelSelector, uid types.UID, c cache.Cache) ([]*corev1.Pod, error) {
-	key := cache.CacheKey{
+	key := cache.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -240,7 +241,7 @@ func listPods(namespace string, selector *metav1.LabelSelector, uid types.UID, c
 	return owned, nil
 }
 
-func loadPods(key cache.CacheKey, c cache.Cache, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
+func loadPods(key cache.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
 	objects, err := c.Retrieve(key)
 	if err != nil {
 		return nil, err

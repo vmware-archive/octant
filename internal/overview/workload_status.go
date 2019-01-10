@@ -148,7 +148,7 @@ func statusForIngress(ingress *v1beta1.Ingress, c cache.Cache) (ResourceStatusLi
 			continue
 		}
 
-		key := cache.CacheKey{
+		key := cache.Key{
 			Namespace:  ingress.Namespace,
 			APIVersion: "v1",
 			Kind:       "Secret",
