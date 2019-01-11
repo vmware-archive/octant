@@ -2,11 +2,13 @@ package overview
 
 import (
 	"context"
-	"github.com/heptio/developer-dash/internal/cache"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
@@ -190,15 +192,15 @@ func TestDeploymentReplicaSets(t *testing.T) {
 	require.NoError(t, err)
 
 	replicaSetColumns := []content.TableColumn{
-		tableCol("Name"),
-		tableCol("Desired"),
-		tableCol("Current"),
-		tableCol("Ready"),
-		tableCol("Age"),
-		tableCol("Containers"),
-		tableCol("Images"),
-		tableCol("Selector"),
-		tableCol("Labels"),
+		view.TableCol("Name"),
+		view.TableCol("Desired"),
+		view.TableCol("Current"),
+		view.TableCol("Ready"),
+		view.TableCol("Age"),
+		view.TableCol("Containers"),
+		view.TableCol("Images"),
+		view.TableCol("Selector"),
+		view.TableCol("Labels"),
 	}
 
 	newReplicaSetTable := content.NewTable("New Replica Set", "This Deployment does not have a current Replica")

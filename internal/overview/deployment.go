@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
@@ -20,9 +21,9 @@ import (
 
 type DeploymentSummary struct{}
 
-var _ View = (*DeploymentSummary)(nil)
+var _ view.View = (*DeploymentSummary)(nil)
 
-func NewDeploymentSummary(prefix, namespace string, c clock.Clock) View {
+func NewDeploymentSummary(prefix, namespace string, c clock.Clock) view.View {
 	return &DeploymentSummary{}
 }
 
@@ -51,9 +52,9 @@ func (ds *DeploymentSummary) summary(deployment *appsv1.Deployment) ([]content.C
 
 type DeploymentReplicaSets struct{}
 
-var _ View = (*DeploymentReplicaSets)(nil)
+var _ view.View = (*DeploymentReplicaSets)(nil)
 
-func NewDeploymentReplicaSets(prefix, namespace string, c clock.Clock) View {
+func NewDeploymentReplicaSets(prefix, namespace string, c clock.Clock) view.View {
 	return &DeploymentReplicaSets{}
 }
 

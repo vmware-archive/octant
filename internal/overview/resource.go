@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/content"
@@ -27,7 +28,7 @@ type ResourceTitle struct {
 }
 
 type ContentSection struct {
-	Views []ViewFactory
+	Views []view.ViewFactory
 	Title string
 }
 

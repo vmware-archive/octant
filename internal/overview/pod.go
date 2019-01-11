@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -25,7 +26,7 @@ import (
 
 type PodList struct{}
 
-func NewPodList(prefix, namespace string, c clock.Clock) View {
+func NewPodList(prefix, namespace string, c clock.Clock) view.View {
 	return &PodList{}
 }
 
@@ -70,9 +71,9 @@ func (pc *PodList) Content(ctx context.Context, object runtime.Object, c cache.C
 
 type PodSummary struct{}
 
-var _ View = (*PodSummary)(nil)
+var _ view.View = (*PodSummary)(nil)
 
-func NewPodSummary(prefix, namespace string, c clock.Clock) View {
+func NewPodSummary(prefix, namespace string, c clock.Clock) view.View {
 	return &PodSummary{}
 }
 
@@ -98,7 +99,7 @@ func (ps *PodSummary) Content(ctx context.Context, object runtime.Object, c cach
 
 type PodCondition struct{}
 
-func NewPodCondition(prefix, namespace string, c clock.Clock) View {
+func NewPodCondition(prefix, namespace string, c clock.Clock) view.View {
 	return &PodCondition{}
 }
 
@@ -112,12 +113,12 @@ func (pc *PodCondition) Content(ctx context.Context, object runtime.Object, c ca
 
 	table := content.NewTable("Conditions", "No conditions")
 	table.Columns = []content.TableColumn{
-		tableCol("Type"),
-		tableCol("Status"),
-		tableCol("Last probe time"),
-		tableCol("Last transition time"),
-		tableCol("Reason"),
-		tableCol("Message"),
+		view.TableCol("Type"),
+		view.TableCol("Status"),
+		view.TableCol("Last probe time"),
+		view.TableCol("Last transition time"),
+		view.TableCol("Reason"),
+		view.TableCol("Message"),
 	}
 
 	for _, condition := range conditions {
@@ -142,7 +143,7 @@ func (pc *PodCondition) Content(ctx context.Context, object runtime.Object, c ca
 
 type PodContainer struct{}
 
-func NewPodContainer(prefix, namespace string, c clock.Clock) View {
+func NewPodContainer(prefix, namespace string, c clock.Clock) view.View {
 	return &PodContainer{}
 }
 
@@ -160,7 +161,7 @@ func (pc *PodContainer) Content(ctx context.Context, object runtime.Object, c ca
 
 type PodVolume struct{}
 
-func NewPodVolume(prefix, namespace string, c clock.Clock) View {
+func NewPodVolume(prefix, namespace string, c clock.Clock) view.View {
 	return &PodVolume{}
 }
 

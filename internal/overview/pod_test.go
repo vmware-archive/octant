@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -38,16 +39,16 @@ func TestPodList(t *testing.T) {
 	require.NoError(t, err)
 
 	podColumns := []content.TableColumn{
-		tableCol("Name"),
-		tableCol("Ready"),
-		tableCol("Status"),
-		tableCol("Restarts"),
-		tableCol("Age"),
-		tableCol("IP"),
-		tableCol("Node"),
-		tableCol("Nominated Node"),
-		tableCol("Readiness Gates"),
-		tableCol("Labels"),
+		view.TableCol("Name"),
+		view.TableCol("Ready"),
+		view.TableCol("Status"),
+		view.TableCol("Restarts"),
+		view.TableCol("Age"),
+		view.TableCol("IP"),
+		view.TableCol("Node"),
+		view.TableCol("Nominated Node"),
+		view.TableCol("Readiness Gates"),
+		view.TableCol("Labels"),
 	}
 
 	listTable := content.NewTable("Pods", "No pods were found")

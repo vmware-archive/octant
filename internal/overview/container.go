@@ -2,7 +2,9 @@ package overview
 
 import (
 	"context"
+
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
@@ -16,9 +18,9 @@ import (
 
 type ContainerSummary struct{}
 
-var _ View = (*ContainerSummary)(nil)
+var _ view.View = (*ContainerSummary)(nil)
 
-func NewContainerSummary(prefix, namespace string, c clock.Clock) View {
+func NewContainerSummary(prefix, namespace string, c clock.Clock) view.View {
 	return &ContainerSummary{}
 }
 

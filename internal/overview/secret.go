@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -19,9 +20,9 @@ import (
 
 type SecretSummary struct{}
 
-var _ View = (*SecretSummary)(nil)
+var _ view.View = (*SecretSummary)(nil)
 
-func NewSecretSummary(prefix, namespace string, c clock.Clock) View {
+func NewSecretSummary(prefix, namespace string, c clock.Clock) view.View {
 	return &SecretSummary{}
 }
 
@@ -44,9 +45,9 @@ func (js *SecretSummary) Content(ctx context.Context, object runtime.Object, c c
 
 type SecretData struct{}
 
-var _ View = (*SecretData)(nil)
+var _ view.View = (*SecretData)(nil)
 
-func NewSecretData(prefix, namespace string, c clock.Clock) View {
+func NewSecretData(prefix, namespace string, c clock.Clock) view.View {
 	return &SecretData{}
 }
 

@@ -2,7 +2,9 @@ package overview
 
 import (
 	"context"
+
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -25,7 +27,7 @@ func (rv *resourceViewer) ViewComponent() content.ViewComponent {
 
 type ResourceViewerStub struct{}
 
-func NewResourceViewerStub(prefix, namespace string, c clock.Clock) View {
+func NewResourceViewerStub(prefix, namespace string, c clock.Clock) view.View {
 	return &ResourceViewerStub{}
 }
 

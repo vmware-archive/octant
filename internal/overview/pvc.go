@@ -2,7 +2,9 @@ package overview
 
 import (
 	"context"
+
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -14,9 +16,9 @@ import (
 
 type PersistentVolumeClaimSummary struct{}
 
-var _ View = (*PersistentVolumeClaimSummary)(nil)
+var _ view.View = (*PersistentVolumeClaimSummary)(nil)
 
-func NewPersistentVolumeClaimSummary(prefix, namespace string, c clock.Clock) View {
+func NewPersistentVolumeClaimSummary(prefix, namespace string, c clock.Clock) view.View {
 	return &PersistentVolumeClaimSummary{}
 }
 

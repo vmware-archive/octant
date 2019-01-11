@@ -2,8 +2,10 @@ package overview
 
 import (
 	"context"
-	"github.com/heptio/developer-dash/internal/cache"
 	"sort"
+
+	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
@@ -14,9 +16,9 @@ import (
 
 type ConfigMapSummary struct{}
 
-var _ View = (*ConfigMapSummary)(nil)
+var _ view.View = (*ConfigMapSummary)(nil)
 
-func NewConfigMapSummary(prefix, namespace string, c clock.Clock) View {
+func NewConfigMapSummary(prefix, namespace string, c clock.Clock) view.View {
 	return &ConfigMapSummary{}
 }
 
@@ -41,7 +43,7 @@ func (cms *ConfigMapSummary) Content(ctx context.Context, object runtime.Object,
 type ConfigMapDetails struct{}
 
 // NewConfigMapDetails constructs a new ConfigMapDetails object
-func NewConfigMapDetails(prefix, namespace string, c clock.Clock) View {
+func NewConfigMapDetails(prefix, namespace string, c clock.Clock) view.View {
 	return &ConfigMapDetails{}
 }
 
@@ -55,8 +57,8 @@ func (cm *ConfigMapDetails) Content(ctx context.Context, object runtime.Object, 
 	emptyMessage := "ConfigMap does not contain any data"
 	table := content.NewTable("ConfigMap Data", emptyMessage)
 	table.Columns = []content.TableColumn{
-		tableCol("Key"),
-		tableCol("Value"),
+		view.TableCol("Key"),
+		view.TableCol("Value"),
 	}
 
 	var keys []string

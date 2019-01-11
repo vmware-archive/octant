@@ -1,9 +1,10 @@
-package overview
+package view
 
 import (
 	"context"
-	"github.com/heptio/developer-dash/internal/cache"
 	"time"
+
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -20,14 +21,14 @@ type View interface {
 	Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error)
 }
 
-func tableCol(name string) content.TableColumn {
+func TableCol(name string) content.TableColumn {
 	return content.TableColumn{
 		Name:     name,
 		Accessor: name,
 	}
 }
 
-func tableCols(names ...string) []content.TableColumn {
+func TableCols(names ...string) []content.TableColumn {
 	columns := []content.TableColumn{}
 	for _, name := range names {
 		columns = append(columns, content.TableColumn{Name: name, Accessor: name})
@@ -36,7 +37,7 @@ func tableCols(names ...string) []content.TableColumn {
 	return columns
 }
 
-func formatTime(t *metav1.Time) string {
+func FormatTime(t *metav1.Time) string {
 	if t == nil {
 		return "-"
 	}

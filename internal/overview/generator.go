@@ -3,9 +3,11 @@ package overview
 import (
 	"context"
 	"fmt"
-	"github.com/heptio/developer-dash/internal/cache"
 	"regexp"
 	"sync"
+
+	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/pkg/errors"
@@ -61,7 +63,7 @@ var (
 		Transforms: cronJobTransforms,
 		Sections: []ContentSection{
 			{
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewCronJobSummary,
 					NewCronJobJobs,
 					NewEventList,
@@ -69,7 +71,7 @@ var (
 				Title: "Summary",
 			},
 			{
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewResourceViewerStub,
 				},
 				Title: "Resource Viewer",
@@ -87,7 +89,7 @@ var (
 		Sections: []ContentSection{
 			{
 				Title: "Summary",
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewDaemonSetSummary,
 					NewContainerSummary,
 					NewPodList,
@@ -96,7 +98,7 @@ var (
 			},
 			{
 				Title: "Resource Viewer",
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					workloadViewFactory,
 				},
 			},
@@ -113,7 +115,7 @@ var (
 		Sections: []ContentSection{
 			{
 				Title: "Summary",
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewDeploymentSummary,
 					NewContainerSummary,
 					NewDeploymentReplicaSets,
@@ -122,7 +124,7 @@ var (
 			},
 			{
 				Title: "Resource Viewer",
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					workloadViewFactory,
 				},
 			},
@@ -139,7 +141,7 @@ var (
 		Transforms: jobTransforms,
 		Sections: []ContentSection{
 			{
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewJobSummary,
 					NewContainerSummary,
 					NewPodList,
@@ -159,7 +161,7 @@ var (
 		Sections: []ContentSection{
 			{
 				Title: "Summary",
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewPodSummary,
 					NewPodContainer,
 					NewPodCondition,
@@ -169,7 +171,7 @@ var (
 			},
 			{
 				Title: "Resource Viewer",
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					workloadViewFactory,
 				},
 			},
@@ -186,7 +188,7 @@ var (
 		Sections: []ContentSection{
 			{
 				Title: "Summary",
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewReplicaSetSummary,
 					NewContainerSummary,
 					NewPodList,
@@ -195,7 +197,7 @@ var (
 			},
 			{
 				Title: "Resource Viewer",
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					workloadViewFactory,
 				},
 			},
@@ -212,7 +214,7 @@ var (
 		Sections: []ContentSection{
 			{
 				Title: "Summary",
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewReplicationControllerSummary,
 					NewContainerSummary,
 					NewPodList,
@@ -221,7 +223,7 @@ var (
 			},
 			{
 				Title: "Resource Viewer",
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					workloadViewFactory,
 				},
 			},
@@ -237,7 +239,7 @@ var (
 		Sections: []ContentSection{
 			{
 				Title: "Summary",
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewStatefulSetSummary,
 					NewContainerSummary,
 					NewPodList,
@@ -246,7 +248,7 @@ var (
 			},
 			{
 				Title: "Resource Viewer",
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					workloadViewFactory,
 				},
 			},
@@ -276,7 +278,7 @@ var (
 		Sections: []ContentSection{
 			{
 				Title: "Summary",
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewIngressSummary,
 					NewIngressDetails,
 					NewEventList,
@@ -284,7 +286,7 @@ var (
 			},
 			{
 				Title: "Resource Viewer",
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					workloadViewFactory,
 				},
 			},
@@ -301,7 +303,7 @@ var (
 		Sections: []ContentSection{
 			{
 				Title: "Summary",
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewServiceSummary,
 					NewServicePort,
 					NewServiceEndpoints,
@@ -310,7 +312,7 @@ var (
 			},
 			{
 				Title: "Resource Viewer",
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					workloadViewFactory,
 				},
 			},
@@ -333,7 +335,7 @@ var (
 		Transforms: configMapTransforms,
 		Sections: []ContentSection{
 			{
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewConfigMapSummary,
 					NewConfigMapDetails,
 					NewEventList,
@@ -351,7 +353,7 @@ var (
 		Transforms: pvcTransforms,
 		Sections: []ContentSection{
 			{
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewPersistentVolumeClaimSummary,
 					NewEventList,
 				},
@@ -368,7 +370,7 @@ var (
 		Transforms: secretTransforms,
 		Sections: []ContentSection{
 			{
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewSecretSummary,
 					NewSecretData,
 					NewEventList,
@@ -386,7 +388,7 @@ var (
 		Transforms: serviceAccountTransforms,
 		Sections: []ContentSection{
 			{
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewServiceAccountSummary,
 					NewEventList,
 				},
@@ -417,7 +419,7 @@ var (
 		Transforms: roleTransforms,
 		Sections: []ContentSection{
 			{
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewRoleSummary,
 					NewRoleRule,
 					NewEventList,
@@ -435,7 +437,7 @@ var (
 		Transforms: roleBindingTransforms,
 		Sections: []ContentSection{
 			{
-				Views: []ViewFactory{
+				Views: []view.ViewFactory{
 					NewRoleBindingSummary,
 					NewRoleBindingSubjects,
 					NewEventList,

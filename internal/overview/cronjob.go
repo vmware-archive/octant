@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
@@ -18,9 +19,9 @@ import (
 
 type CronJobSummary struct{}
 
-var _ View = (*CronJobSummary)(nil)
+var _ view.View = (*CronJobSummary)(nil)
 
-func NewCronJobSummary(prefix, namespace string, c clock.Clock) View {
+func NewCronJobSummary(prefix, namespace string, c clock.Clock) view.View {
 	return &CronJobSummary{}
 }
 
@@ -54,9 +55,9 @@ func (rss *CronJobSummary) summary(cronJob *batchv1beta1.CronJob, c cache.Cache)
 
 type CronJobJobs struct{}
 
-var _ View = (*CronJobJobs)(nil)
+var _ view.View = (*CronJobJobs)(nil)
 
-func NewCronJobJobs(prefix, namespace string, c clock.Clock) View {
+func NewCronJobJobs(prefix, namespace string, c clock.Clock) view.View {
 	return &CronJobJobs{}
 }
 

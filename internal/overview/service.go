@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -19,9 +20,9 @@ import (
 
 type ServiceSummary struct{}
 
-var _ View = (*ServiceSummary)(nil)
+var _ view.View = (*ServiceSummary)(nil)
 
-func NewServiceSummary(prefix, namespace string, c clock.Clock) View {
+func NewServiceSummary(prefix, namespace string, c clock.Clock) view.View {
 	return &ServiceSummary{}
 }
 
@@ -44,9 +45,9 @@ func (js *ServiceSummary) Content(ctx context.Context, object runtime.Object, c 
 
 type ServicePort struct{}
 
-var _ View = (*ServicePort)(nil)
+var _ view.View = (*ServicePort)(nil)
 
-func NewServicePort(prefix, namespace string, c clock.Clock) View {
+func NewServicePort(prefix, namespace string, c clock.Clock) view.View {
 	return &ServicePort{}
 }
 
@@ -94,9 +95,9 @@ var serviceEndpointsColumns = []string{
 
 type ServiceEndpoints struct{}
 
-var _ View = (*ServiceEndpoints)(nil)
+var _ view.View = (*ServiceEndpoints)(nil)
 
-func NewServiceEndpoints(prefix, namespace string, c clock.Clock) View {
+func NewServiceEndpoints(prefix, namespace string, c clock.Clock) view.View {
 	return &ServiceEndpoints{}
 }
 
@@ -113,7 +114,7 @@ func (js *ServiceEndpoints) Content(ctx context.Context, object runtime.Object, 
 
 	table := content.NewTable("Endpoints", "This service does not have any endpoints")
 	for _, name := range serviceEndpointsColumns {
-		table.Columns = append(table.Columns, tableCol(name))
+		table.Columns = append(table.Columns, view.TableCol(name))
 	}
 
 	podKey := cache.Key{

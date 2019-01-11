@@ -2,7 +2,9 @@ package overview
 
 import (
 	"context"
+
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -14,9 +16,9 @@ import (
 
 type StatefulSetSummary struct{}
 
-var _ View = (*StatefulSetSummary)(nil)
+var _ view.View = (*StatefulSetSummary)(nil)
 
-func NewStatefulSetSummary(prefix, namespace string, c clock.Clock) View {
+func NewStatefulSetSummary(prefix, namespace string, c clock.Clock) view.View {
 	return &StatefulSetSummary{}
 }
 

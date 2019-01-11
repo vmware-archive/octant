@@ -2,7 +2,9 @@ package overview
 
 import (
 	"context"
+
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/content"
 
@@ -14,9 +16,9 @@ import (
 
 type RoleBindingSummary struct{}
 
-var _ View = (*RoleBindingSummary)(nil)
+var _ view.View = (*RoleBindingSummary)(nil)
 
-func NewRoleBindingSummary(prefix, namespace string, c clock.Clock) View {
+func NewRoleBindingSummary(prefix, namespace string, c clock.Clock) view.View {
 	return &RoleBindingSummary{}
 }
 
@@ -44,9 +46,9 @@ func (js *RoleBindingSummary) Content(ctx context.Context, object runtime.Object
 
 type RoleBindingSubjects struct{}
 
-var _ View = (*RoleBindingSubjects)(nil)
+var _ view.View = (*RoleBindingSubjects)(nil)
 
-func NewRoleBindingSubjects(prefix, namespace string, c clock.Clock) View {
+func NewRoleBindingSubjects(prefix, namespace string, c clock.Clock) view.View {
 	return &RoleBindingSubjects{}
 }
 

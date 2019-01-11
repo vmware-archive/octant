@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/view"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -23,7 +24,7 @@ type EventList struct {
 	clock     clock.Clock
 }
 
-func NewEventList(prefix, namespace string, cl clock.Clock) View {
+func NewEventList(prefix, namespace string, cl clock.Clock) view.View {
 	return &EventList{
 		prefix:    prefix,
 		namespace: namespace,
