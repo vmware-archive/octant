@@ -3,7 +3,7 @@ package component
 import (
 	"encoding/json"
 	"io/ioutil"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,7 +21,7 @@ func Test_Table_Marshal(t *testing.T) {
 			name: "general",
 			input: &Table{
 				Metadata: Metadata{
-					Title: "mytable",
+					Title: "my table",
 				},
 				Config: TableConfig{
 					Columns: []TableCol{
@@ -65,10 +65,10 @@ func Test_Table_Marshal(t *testing.T) {
 			actual, err := json.Marshal(tc.input)
 			isErr := (err != nil)
 			if isErr != tc.isErr {
-				t.Fatalf("Unexepected error: %v", err)
+				t.Fatalf("Unexpected error: %v", err)
 			}
 
-			expected, err := ioutil.ReadFile(path.Join("testdata", tc.expectedPath))
+			expected, err := ioutil.ReadFile(filepath.Join("testdata", tc.expectedPath))
 			require.NoError(t, err, "reading test fixtures")
 			assert.JSONEq(t, string(expected), string(actual))
 		})
