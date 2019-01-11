@@ -2,6 +2,12 @@ package component
 
 import "encoding/json"
 
+var labelsFilteredKeys = []string{
+	"controller-revision-hash",
+	"controller-uid",
+	"pod-template-generation",
+}
+
 // Labels is a component representing key/value based labels
 type Labels struct {
 	Metadata Metadata     `json:"metadata"`
@@ -30,16 +36,34 @@ func (t *Labels) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifes whether the component is considered empty. Implements ViewComponent.
+// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
 func (t *Labels) IsEmpty() bool {
 	return len(t.Config.Labels) == 0
 }
 
 type labelsMarshal Labels
 
-// MarshalJSON implements json.Marshaler
+// MarshalJSON implements json.Marshaler. It will filter
+// label keys specified in `labelsFilteredKeys`.
 func (t *Labels) MarshalJSON() ([]byte, error) {
-	m := labelsMarshal(*t)
+	filtered := &Labels{Config: LabelsConfig{Labels: make(map[string]string)}}
+	for k, v := range t.Config.Labels {
+		if !isInStringSlice(k, labelsFilteredKeys) {
+			filtered.Config.Labels[k] = v
+		}
+	}
+
+	m := labelsMarshal(*filtered)
 	m.Metadata.Type = "labels"
 	return json.Marshal(&m)
+}
+
+func isInStringSlice(s string, sl []string) bool {
+	for i := range sl {
+		if sl[i] == s {
+			return true
+		}
+	}
+
+	return false
 }

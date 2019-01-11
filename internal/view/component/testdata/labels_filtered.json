@@ -1,0 +1,10 @@
+{
+  "config": {
+    "labels": {
+      "foo": "bar"
+    }
+  },
+  "metadata": {
+    "type": "labels"
+  }
+}
