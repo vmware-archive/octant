@@ -107,7 +107,8 @@ func (co *ClusterOverview) Handler(prefix string) http.Handler {
 
 // Navigation returns navigation entries for overview.
 func (co *ClusterOverview) Navigation(root string) (*hcli.Navigation, error) {
-	return navigationEntries(root)
+	nf := NewNavigationFactory(root)
+	return nf.Entries()
 }
 
 // SetNamespace sets the current namespace.
