@@ -28,7 +28,8 @@ type TableRow map[string]ViewComponent
 func NewTable(title string, cols []TableCol) *Table {
 	return &Table{
 		Metadata: Metadata{
-			Type: "table",
+			Type:  "table",
+			Title: title,
 		},
 		Config: TableConfig{
 			Columns: cols,
