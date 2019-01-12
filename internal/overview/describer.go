@@ -3,8 +3,11 @@ package overview
 import (
 	"context"
 	"fmt"
-	"github.com/heptio/developer-dash/internal/cache"
 	"reflect"
+
+	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/overview/printer"
+	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/content"
@@ -33,8 +36,9 @@ var DefaultLoader = func(cacheKey cache.Key) LoaderFunc {
 type ObjectTransformFunc func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error
 
 type DescriberOptions struct {
-	Cache  cache.Cache
-	Fields map[string]string
+	Cache   cache.Cache
+	Fields  map[string]string
+	Printer printer.Printer
 }
 
 // Describer creates content.
@@ -78,18 +82,20 @@ func NewListDescriber(p, title string, cacheKey cache.Key, listType, objectType 
 
 // Describe creates content.
 func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
-	var contents []content.Content
+	if options.Printer == nil {
+		return emptyContentResponse, errors.New("Object list describer requires a printer")
+	}
 
 	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, []cache.Key{d.cacheKey})
 	if err != nil {
 		return emptyContentResponse, err
 	}
 
-	viewComponent := NewList(d.title)
+	list := component.NewList(d.title, nil)
 
-	list := d.listType()
+	listType := d.listType()
 
-	v := reflect.ValueOf(list)
+	v := reflect.ValueOf(listType)
 	f := reflect.Indirect(v).FieldByName("Items")
 
 	// Convert unstructured objects to typed runtime objects
@@ -107,31 +113,21 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 		f.Set(newSlice)
 	}
 
-	listObject, ok := list.(runtime.Object)
+	listObject, ok := listType.(runtime.Object)
 	if !ok {
 		return emptyContentResponse, errors.Errorf("expected list to be a runtime object. It was a %T",
-			list)
+			listType)
 	}
 
-	otf := d.objectTransformFunc(namespace, prefix, &contents)
-	if err := printObject(listObject, otf); err != nil {
+	viewComponent, err := options.Printer.Print(listObject)
+	if err != nil {
 		return emptyContentResponse, err
 	}
 
-	for _, c := range contents {
-		viewComponent.Add(c)
-	}
+	list.Add(viewComponent)
 
 	return ContentResponse{
-		Views: []Content{
-			{
-				Contents: contents,
-				Title:    "",
-			},
-		},
-		ViewComponents: []content.ViewComponent{
-			viewComponent.ViewComponent(),
-		},
+		ViewComponents: []component.ViewComponent{list},
 	}, nil
 }
 
@@ -163,6 +159,10 @@ func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType f
 }
 
 func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
+	if options.Printer == nil {
+		return emptyContentResponse, errors.New("Object describer requires a printer")
+	}
+
 	objects, err := d.loaderFunc(ctx, options.Cache, namespace, options.Fields)
 	if err != nil {
 		return emptyContentResponse, err
@@ -200,28 +200,14 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 			item)
 	}
 
-	cr := ContentResponse{
-		Title: title,
+	vc, err := options.Printer.Print(newObject)
+	if err != nil {
+		return emptyContentResponse, err
 	}
 
-	cl := &clock.RealClock{}
-
-	for _, section := range d.sections {
-		var contents []content.Content
-		for _, viewFactory := range section.Views {
-			view := viewFactory(prefix, namespace, cl)
-			viewContent, err := view.Content(ctx, newObject, options.Cache)
-			if err != nil {
-				return emptyContentResponse, err
-			}
-
-			contents = append(contents, viewContent...)
-		}
-
-		cr.Views = append(cr.Views, Content{
-			Contents: contents,
-			Title:    section.Title,
-		})
+	cr := ContentResponse{
+		Title:          title,
+		ViewComponents: []component.ViewComponent{vc},
 	}
 
 	return cr, nil
@@ -354,9 +340,7 @@ func NewSectionDescriber(p, title string, describers ...Describer) *SectionDescr
 
 // Describe generates content.
 func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
-	var contents []content.Content
-
-	list := NewList(d.title)
+	list := component.NewList(d.title, nil)
 
 	for _, child := range d.describers {
 		cResponse, err := child.Describe(ctx, prefix, namespace, clusterClient, options)
@@ -364,28 +348,16 @@ func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace strin
 			return emptyContentResponse, err
 		}
 
-		for _, views := range cResponse.Views {
-			for _, childContent := range views.Contents {
-				if !childContent.IsEmpty() {
-					contents = append(contents, childContent)
-					list.Add(childContent)
-				}
+		for _, vc := range cResponse.ViewComponents {
+			if nestedList, ok := vc.(*component.List); ok {
+				list.Add(nestedList.Config.Items...)
 			}
 		}
 	}
 
-	if len(contents) == 0 {
-		tbl := content.NewTable(d.title, fmt.Sprintf("Namespace %s does not have any resources of this type", namespace))
-		contents = append(contents, &tbl)
-	}
-
 	cr := ContentResponse{
-		Views: []Content{
-			{Contents: contents, Title: d.title},
-		},
-		ViewComponents: []content.ViewComponent{
-			list.ViewComponent(),
-		},
+		ViewComponents: []component.ViewComponent{list},
+		Title:          d.title,
 	}
 
 	return cr, nil

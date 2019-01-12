@@ -3,9 +3,12 @@ package overview
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/view"
+	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/content"
@@ -30,7 +33,8 @@ func TestListDescriber(t *testing.T) {
 		"kind":       "Pod",
 		"apiVersion": "v1",
 		"metadata": map[string]interface{}{
-			"name": "name",
+			"name":              "name",
+			"creationTimestamp": "2019-01-14T13:34:56+00:00",
 		},
 	}
 
@@ -45,10 +49,7 @@ func TestListDescriber(t *testing.T) {
 		return &corev1.Pod{}
 	}
 
-	theContent := newFakeContent(false)
-
 	otf := func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error {
-		*contents = append(*contents, theContent)
 		return func(*metav1beta1.Table) error {
 			return nil
 		}
@@ -62,33 +63,28 @@ func TestListDescriber(t *testing.T) {
 	require.NoError(t, err)
 
 	options := DescriberOptions{
-		Cache:  c,
-		Fields: fields,
+		Cache:   c,
+		Fields:  fields,
+		Printer: printer.NewResource(c),
 	}
 
 	ctx := context.Background()
 	cResponse, err := d.Describe(ctx, "/path", namespace, clusterClient, options)
 	require.NoError(t, err)
 
+	list := component.NewList("", nil)
+
+	tableCols := component.NewTableCols("Name", "Labels", "Age")
+	table := component.NewTable("*v1.PodList", tableCols)
+	table.Add(component.TableRow{
+		"Age":    component.NewTimestamp(time.Unix(1547472896, 0)),
+		"Labels": component.NewLabels(nil),
+		"Name":   component.NewText("", "name"),
+	})
+	list.Add(table)
+
 	expected := ContentResponse{
-		Views: []Content{
-			{
-				Contents: stubbedContent,
-			},
-		},
-		ViewComponents: []content.ViewComponent{
-			{
-				Metadata: content.Metadata{
-					Type:  "list",
-					Title: "list",
-				},
-				Config: ListConfig{
-					Items: []content.ViewComponent{
-						{},
-					},
-				},
-			},
-		},
+		ViewComponents: []component.ViewComponent{list},
 	}
 
 	assert.Equal(t, expected, cResponse)
@@ -137,8 +133,9 @@ func TestObjectDescriber(t *testing.T) {
 	require.NoError(t, err)
 
 	options := DescriberOptions{
-		Cache:  c,
-		Fields: fields,
+		Cache:   c,
+		Fields:  fields,
+		Printer: printer.NewResource(c),
 	}
 
 	ctx := context.Background()
@@ -147,11 +144,8 @@ func TestObjectDescriber(t *testing.T) {
 
 	expected := ContentResponse{
 		Title: "object: name",
-		Views: []Content{
-			{
-				Contents: stubbedContent,
-				Title:    "section 1",
-			},
+		ViewComponents: []component.ViewComponent{
+			component.NewText("", "*v1.Pod"),
 		},
 	}
 	assert.Equal(t, expected, cResponse)
@@ -187,24 +181,9 @@ func TestSectionDescriber(t *testing.T) {
 				newStubDescriber("/foo"),
 			),
 			expected: ContentResponse{
-				Views: []Content{
-					{
-						Contents: stubbedContent,
-						Title:    "section",
-					},
-				},
-				ViewComponents: []content.ViewComponent{
-					{
-						Metadata: content.Metadata{
-							Type:  "list",
-							Title: "section",
-						},
-						Config: ListConfig{
-							Items: []content.ViewComponent{
-								{},
-							},
-						},
-					},
+				Title: "section",
+				ViewComponents: []component.ViewComponent{
+					component.NewList("", nil),
 				},
 			},
 		},
@@ -217,28 +196,9 @@ func TestSectionDescriber(t *testing.T) {
 				newEmptyDescriber("/bar"),
 			),
 			expected: ContentResponse{
-				Views: []Content{
-					{
-						Title: "section",
-						Contents: []content.Content{
-							&content.Table{
-								Type:         "table",
-								Title:        "section",
-								EmptyContent: "Namespace default does not have any resources of this type",
-							},
-						},
-					},
-				},
-				ViewComponents: []content.ViewComponent{
-					{
-						Metadata: content.Metadata{
-							Type:  "list",
-							Title: "section",
-						},
-						Config: ListConfig{
-							Items: []content.ViewComponent{},
-						},
-					},
+				Title: "section",
+				ViewComponents: []component.ViewComponent{
+					component.NewList("", nil),
 				},
 			},
 		},

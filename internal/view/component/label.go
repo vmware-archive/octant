@@ -6,6 +6,9 @@ var labelsFilteredKeys = []string{
 	"controller-revision-hash",
 	"controller-uid",
 	"pod-template-generation",
+	"pod-template-hash",
+	"statefulset.kubernetes.io/pod-name",
+	"job-name",
 }
 
 // Labels is a component representing key/value based labels

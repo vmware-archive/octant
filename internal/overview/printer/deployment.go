@@ -10,7 +10,7 @@ import (
 	"github.com/heptio/developer-dash/internal/view/component"
 )
 
-// DeploymentListHandler lists deployments
+// DeploymentListHandler is a printFunc that lists deployments
 func DeploymentListHandler(list *appsv1.DeploymentList, opts Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
@@ -40,6 +40,21 @@ func DeploymentListHandler(list *appsv1.DeploymentList, opts Options) (component
 		tbl.Add(row)
 	}
 	return tbl, nil
+}
+
+// DeploymentHandler is a printFunc that printers a Deployments.
+// This handler is incomplete.
+func DeploymentHandler(deployment *appsv1.Deployment, options Options) (component.ViewComponent, error) {
+	grid := component.NewGrid("Summary")
+
+	detailsSummary := component.NewSummary("Details")
+
+	detailsPanel := component.NewPanel("", detailsSummary)
+	grid.Add(*detailsPanel)
+
+	list := component.NewList("", []component.ViewComponent{grid})
+
+	return list, nil
 }
 
 func printSelector(selector *metav1.LabelSelector) *component.Selectors {
