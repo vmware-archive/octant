@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/view"
 
 	"github.com/heptio/developer-dash/internal/cluster"
@@ -483,16 +484,24 @@ type realGenerator struct {
 	cache         cache.Cache
 	pathFilters   []pathFilter
 	clusterClient cluster.ClientInterface
+	printer       printer.Printer
 
 	mu sync.Mutex
 }
 
-func newGenerator(cache cache.Cache, pathFilters []pathFilter, clusterClient cluster.ClientInterface) *realGenerator {
+func newGenerator(cache cache.Cache, pathFilters []pathFilter, clusterClient cluster.ClientInterface) (*realGenerator, error) {
+	p := printer.NewResource(cache)
+
+	if err := AddPrintHandlers(p); err != nil {
+		return nil, errors.Wrap(err, "add print handlers")
+	}
+
 	return &realGenerator{
 		cache:         cache,
 		pathFilters:   pathFilters,
 		clusterClient: clusterClient,
-	}
+		printer:       p,
+	}, nil
 }
 
 func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace string) (ContentResponse, error) {
@@ -506,8 +515,9 @@ func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace st
 
 		fields := pf.Fields(path)
 		options := DescriberOptions{
-			Cache:  g.cache,
-			Fields: fields,
+			Cache:   g.cache,
+			Fields:  fields,
+			Printer: g.printer,
 		}
 
 		cResponse, err := pf.describer.Describe(ctx, prefix, namespace, g.clusterClient, options)
@@ -519,4 +529,25 @@ func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace st
 	}
 
 	return emptyContentResponse, contentNotFound
+}
+
+// PrinterHandler configures handlers for a printer.
+type PrinterHandler interface {
+	Handler(printFunc interface{}) error
+}
+
+// AddPrintHandlers adds print handlers to a printer.
+func AddPrintHandlers(p PrinterHandler) error {
+	handlers := []interface{}{
+		printer.DeploymentHandler,
+		printer.DeploymentListHandler,
+	}
+
+	for _, handler := range handlers {
+		if err := p.Handler(handler); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

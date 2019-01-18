@@ -245,7 +245,7 @@ func findNewReplicaSet(deployment *appsv1.Deployment, rsList []*appsv1.ReplicaSe
 	return nil
 }
 
-// findOldReplicaSets returns the old replica sets targeted by the given Deployment, with the given slice of RSes.
+// findOldReplicaSets returns the old replica sets targeted by the given Deployment, with the given slice of replica sets.
 // Note that the first set of old replica sets doesn't include the ones with no pods, and the second set of old replica sets include all old replica sets.
 func findOldReplicaSets(deployment *appsv1.Deployment, rsList []*appsv1.ReplicaSet) []*appsv1.ReplicaSet {
 	var requiredRSs []*appsv1.ReplicaSet

@@ -9,7 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/content"
+	"github.com/heptio/developer-dash/internal/view/component"
+
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +18,7 @@ import (
 )
 
 func Test_handler_routes(t *testing.T) {
-	dynamicContent := newFakeContent(false)
+	vcs := []component.ViewComponent{component.NewText("", "text")}
 
 	cases := []struct {
 		name         string
@@ -31,9 +32,9 @@ func Test_handler_routes(t *testing.T) {
 			name:         "GET dynamic content",
 			path:         "/api/real",
 			values:       url.Values{"namespace": []string{"default"}},
-			generator:    newStubbedGenerator([]content.Content{dynamicContent}, nil),
+			generator:    newStubbedGenerator(vcs, nil),
 			expectedCode: http.StatusOK,
-			expectedBody: `{"views":[{"contents":[{"type":"stubbed"}],"title":"main title"}],"viewComponents":null}`,
+			expectedBody: `{"viewComponents":[{"metadata":{"type":"text"},"config":{"value":"text"}}]}`,
 		},
 		{
 			name:         "error generating dynamic content",
@@ -46,7 +47,7 @@ func Test_handler_routes(t *testing.T) {
 		{
 			name:         "GET invalid path",
 			path:         "/api/missing",
-			generator:    newStubbedGenerator([]content.Content{dynamicContent}, nil),
+			generator:    newStubbedGenerator(vcs, nil),
 			expectedCode: http.StatusNotFound,
 			expectedBody: `{"error":{"code":404,"message":"content not found"}}`,
 		},
@@ -84,14 +85,14 @@ var (
 )
 
 type stubbedGenerator struct {
-	Contents []content.Content
-	genErr   error
+	viewComponents []component.ViewComponent
+	genErr         error
 }
 
-func newStubbedGenerator(contents []content.Content, genErr error) *stubbedGenerator {
+func newStubbedGenerator(vcs []component.ViewComponent, genErr error) *stubbedGenerator {
 	return &stubbedGenerator{
-		Contents: contents,
-		genErr:   genErr,
+		viewComponents: vcs,
+		genErr:         genErr,
 	}
 }
 
@@ -99,12 +100,7 @@ func (g *stubbedGenerator) Generate(ctx context.Context, path, prefix, namespace
 	switch {
 	case strings.HasPrefix(path, "/real"):
 		return ContentResponse{
-			Views: []Content{
-				{
-					Title:    "main title",
-					Contents: stubbedContent,
-				},
-			},
+			ViewComponents: g.viewComponents,
 		}, g.genErr
 
 	default:

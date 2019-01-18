@@ -8,7 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/content"
+	"github.com/heptio/developer-dash/internal/view/component"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -16,7 +17,8 @@ import (
 func Test_contentStreamer(t *testing.T) {
 	w := httptest.NewRecorder()
 	ctx, cancel := context.WithCancel(context.Background())
-	g := newStubbedGenerator([]content.Content{newFakeContent(false)}, nil)
+	vcs := []component.ViewComponent{component.NewText("", "text")}
+	g := newStubbedGenerator(vcs, nil)
 
 	rcv := make(chan bool, 1)
 
@@ -24,7 +26,7 @@ func Test_contentStreamer(t *testing.T) {
 		msg := <-ch
 
 		assert.Equal(t,
-			"{\"views\":[{\"contents\":[{\"type\":\"stubbed\"}],\"title\":\"main title\"}],\"viewComponents\":null}",
+			`{"viewComponents":[{"metadata":{"type":"text"},"config":{"value":"text"}}]}`,
 			string(msg))
 		rcv <- true
 	}

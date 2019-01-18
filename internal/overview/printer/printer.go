@@ -121,7 +121,7 @@ func DefaultPrintFunc(object runtime.Object, options Options) (component.ViewCom
 
 	items, ok := m["items"].([]interface{})
 	if !ok {
-		return nil, errors.Errorf("default printer can only print lists")
+		return component.NewText("", fmt.Sprintf("%T", object)), nil
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Age")

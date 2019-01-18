@@ -65,7 +65,7 @@ func (nf *NavigationFactory) Entries() (*hcli.Navigation, error) {
 }
 
 func (nf *NavigationFactory) genNode(name string, childFn func(string) []*hcli.Navigation) *hcli.Navigation {
-	leaf := hcli.NewNavigation(name, navPathLookup[name])
+	leaf := hcli.NewNavigation(name, nf.pathFor(navPathLookup[name]))
 	if childFn != nil {
 		leaf.Children = childFn(leaf.Path)
 	}
@@ -78,7 +78,7 @@ func (nf *NavigationFactory) workloadEntries(prefix string) []*hcli.Navigation {
 		// TODO: re-enable as functionality returns
 		// hcli.NewNavigation("Cron Jobs", nf.pathFor(prefix, "cron-jobs")),
 		// hcli.NewNavigation("Daemon Sets", nf.pathFor(prefix, "daemon-sets")),
-		hcli.NewNavigation("Deployments", nf.pathFor(prefix, "deployments")),
+		hcli.NewNavigation("Deployments", path.Join(prefix, "deployments")),
 		// hcli.NewNavigation("Jobs", nf.pathFor(prefix, "jobs")),
 		// hcli.NewNavigation("Pods", nf.pathFor(prefix, "pods")),
 		// hcli.NewNavigation("Replica Sets", nf.pathFor(prefix, "replica-sets")),

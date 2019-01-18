@@ -87,7 +87,8 @@ func Test_realGenerator_Generate(t *testing.T) {
 			clusterClient, err := fake.NewClient(scheme, resources, objects)
 			require.NoError(t, err)
 
-			g := newGenerator(c, pathFilters, clusterClient)
+			g, err := newGenerator(c, pathFilters, clusterClient)
+			require.NoError(t, err)
 
 			ctx := context.Background()
 			cResponse, err := g.Generate(ctx, tc.path, "/prefix", "default")

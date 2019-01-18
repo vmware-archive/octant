@@ -32,9 +32,9 @@ func Test_Resource_Print(t *testing.T) {
 			expectedType: "type1",
 		},
 		{
-			name:   "print unregistered type is error",
-			object: &appsv1.Deployment{},
-			isErr:  true,
+			name:         "print unregistered type returns text component",
+			object:       &appsv1.Deployment{},
+			expectedType: "text",
 		},
 		{
 			name: "print handler returned error",
@@ -195,10 +195,6 @@ func Test_DefaultPrinter_invalid_object(t *testing.T) {
 		{
 			name:   "nil object",
 			object: nil,
-		},
-		{
-			name:   "non list",
-			object: &appsv1.Deployment{},
 		},
 	}
 

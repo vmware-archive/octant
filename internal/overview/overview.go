@@ -77,7 +77,10 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string, logger
 	pathFilters = append(pathFilters, rootDescriber.PathFilters(namespace)...)
 	pathFilters = append(pathFilters, eventsDescriber.PathFilters(namespace)...)
 
-	g := newGenerator(cache, pathFilters, client)
+	g, err := newGenerator(cache, pathFilters, client)
+	if err != nil {
+		return nil, errors.Wrap(err, "create overview generator")
+	}
 
 	co := &ClusterOverview{
 		namespace: namespace,
