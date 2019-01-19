@@ -1,9 +1,10 @@
-import React from 'react'
 import _ from 'lodash'
-import Quadrant, {IQuadrant} from '../Grid/components/Quadrant'
-import Label, {ILabel} from '../Grid/components/Label'
-import Summary, {ISummary} from '../Summary'
-import Table, {ITable} from '../Table'
+import React from 'react'
+
+import Label, { ILabel } from '../Grid/components/Label'
+import Quadrant, { IQuadrant } from '../Grid/components/Quadrant'
+import Summary, { ISummary } from '../Summary'
+import Table, { ITable } from '../Table'
 
 export interface IList {
   metadata: {
@@ -40,7 +41,7 @@ export default function List(props: Props) {
                     case 'table':
                       return <Table data={item as ITable} />
                     default:
-                      return `unknown content type [${type}]`
+                    return <div/>
                   }
                 })()
               }
