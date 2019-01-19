@@ -1,0 +1,77 @@
+@import '~css/variables/variables.scss';
+
+.header--container {
+  display: flex;
+  height: 60px;
+  padding: 15px 10px;
+}
+
+.header--logo{
+  flex: 1;
+  font-size: 24px;
+}
+
+.header--namespace{
+  flex: 1;
+}
+
+.header--filter{
+  flex: 2;
+  text-align: right;
+
+  input[type=text] {
+    margin: 0 15px;
+    height: 38px;
+    width: 50%;
+
+    border: 1px solid $white;
+    border-radius: 4px;
+    background-color: $blue-dark;
+    padding: 2px 16px;
+    color: $white;
+    font-weight: 700px;
+  }
+
+  input[type=text]::placeholder {
+    color: $white;
+  }
+
+  text-align: right;
+}
+
+.header--context{
+  flex: 1;
+  text-align: right;
+}
+
+.header--selector {
+  &__control {
+    background-color: $blue-dark;
+    color: $white;
+
+    border: none;
+    border-bottom: 1px solid $white;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  &__menu {
+    margin: 0;
+  }
+
+  &__menu-list {
+    background-color: $blue-dark;
+    padding: 0;
+  }
+
+  &__single-value {
+    padding: 2px 0 2px 0;
+  }
+
+  &__option--is-focused,
+  &__option--is-selected,
+  &__option:active {
+    background-color: $white;
+    color: $blue-dark;
+  }
+}

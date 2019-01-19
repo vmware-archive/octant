@@ -1,8 +1,9 @@
-import React from 'react'
-import _ from 'lodash'
-import Selector from 'components/Selector'
-import NavigationSection from './components/NavigationSection'
 import './styles.scss'
+
+import _ from 'lodash'
+import React from 'react'
+
+import NavigationSection from './components/NavigationSection'
 
 interface Props {
   navSections: NavigationSectionType[];
@@ -23,14 +24,7 @@ export default function Navigation({
 }: Props) {
   return (
     <nav className='navigation--left'>
-      <div className='navigation-namespace-selector'>
-        <Selector
-          placeholder='Select namespace...'
-          options={namespaceOptions}
-          value={namespaceValue}
-          onChange={onNamespaceChange}
-        />
-      </div>
+
       {_.map(navSections, (section) => (
         <NavigationSection
           key={section.title}

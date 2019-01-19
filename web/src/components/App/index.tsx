@@ -1,13 +1,14 @@
-import React, { Component } from 'react'
-import {
-  Switch, Route, withRouter, Redirect, RouteComponentProps,
-} from 'react-router-dom'
-import _ from 'lodash'
+import './styles.scss'
+
 import { setNamespace } from 'api'
+import Header from 'components/Header'
+import _ from 'lodash'
 import Overview from 'pages/Overview'
+import React, { Component } from 'react'
+import { Redirect, Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom'
+
 import Navigation from '../Navigation'
 import getInitialState from './state/getInitialState'
-import './styles.scss'
 
 interface AppState {
   isLoading: boolean;
@@ -101,12 +102,20 @@ class App extends Component<RouteComponentProps, AppState> {
 
     return (
       <div className='app'>
+        <Header
+          namespaceOptions={namespaceOptions}
+          namespace={currentNamespace}
+          namespaceValue={namespaceOption}
+          onNamespaceChange={this.onNamespaceChange}
+        />
         <div className='app-page'>
           <div className='app-nav'>
             <Navigation
               navSections={navSections}
               currentNavLinkPath={currentNavLinkPath}
-              onNavChange={(linkPath) => this.setState({ currentNavLinkPath: linkPath })}
+              onNavChange={(linkPath) =>
+                this.setState({ currentNavLinkPath: linkPath })
+              }
               namespaceOptions={namespaceOptions}
               namespaceValue={namespaceOption}
               onNamespaceChange={this.onNamespaceChange}
@@ -125,7 +134,9 @@ class App extends Component<RouteComponentProps, AppState> {
                     isLoading={isLoading}
                     hasError={hasError}
                     errorMessage={errorMessage}
-                    setIsLoading={(loading) => this.setState({ isLoading: loading })}
+                    setIsLoading={(loading) =>
+                      this.setState({ isLoading: loading })
+                    }
                     setError={this.setError}
                   />
                 )}
