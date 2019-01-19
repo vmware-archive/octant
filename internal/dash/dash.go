@@ -8,7 +8,6 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
-	"runtime"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -20,7 +19,6 @@ import (
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/web"
-	"github.com/heptio/go-telemetry/pkg/telemetry"
 	"github.com/skratchdot/open-golang/open"
 )
 
@@ -30,7 +28,7 @@ const (
 )
 
 // Run runs the dashboard.
-func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Logger, telemetryClient telemetry.Interface) error {
+func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Logger) error {
 	logger.Debugf("Loading configuration: %v", kubeconfig)
 	clusterClient, err := cluster.FromKubeconfig(kubeconfig)
 	if err != nil {
@@ -64,18 +62,7 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Lo
 		return errors.Wrap(err, "failed to create net listener")
 	}
 
-	version, err := clusterClient.Version()
-	if err != nil {
-		// Fail-open
-		logger.Errorf("failed to get kubernetes version from cluster")
-	}
-
-	telemetryClient = telemetryClient.With(telemetry.Labels{
-		"os":                 runtime.GOOS,
-		"kubernetes.version": version,
-	})
-
-	d, err := newDash(listener, namespace, uiURL, nsClient, infoClient, moduleManager, logger, telemetryClient)
+	d, err := newDash(listener, namespace, uiURL, nsClient, infoClient, moduleManager, logger)
 	if err != nil {
 		return errors.Wrap(err, "failed to create dash instance")
 	}
@@ -113,11 +100,10 @@ type dash struct {
 	apiHandler      api.Service
 	willOpenBrowser bool
 	logger          log.Logger
-	telemetryClient telemetry.Interface
 }
 
-func newDash(listener net.Listener, namespace, uiURL string, nsClient cluster.NamespaceInterface, infoClient cluster.InfoInterface, moduleManager module.ManagerInterface, logger log.Logger, telemetryClient telemetry.Interface) (*dash, error) {
-	ah := api.New(apiPathPrefix, nsClient, infoClient, moduleManager, logger, telemetryClient)
+func newDash(listener net.Listener, namespace, uiURL string, nsClient cluster.NamespaceInterface, infoClient cluster.InfoInterface, moduleManager module.ManagerInterface, logger log.Logger) (*dash, error) {
+	ah := api.New(apiPathPrefix, nsClient, infoClient, moduleManager, logger)
 
 	for _, m := range moduleManager.Modules() {
 		if err := ah.RegisterModule(m); err != nil {
@@ -133,13 +119,10 @@ func newDash(listener net.Listener, namespace, uiURL string, nsClient cluster.Na
 		willOpenBrowser: true,
 		apiHandler:      ah,
 		logger:          logger,
-		telemetryClient: telemetryClient,
 	}, nil
 }
 
 func (d *dash) Run(ctx context.Context) error {
-	d.telemetryClient.SendEvent("dash.startup", telemetry.Measurements{"count": 1})
-
 	handler, err := d.handler()
 	if err != nil {
 		return err
@@ -158,9 +141,7 @@ func (d *dash) Run(ctx context.Context) error {
 	d.logger.Infof("Dashboard is available at %s\n", dashboardURL)
 
 	if d.willOpenBrowser {
-		d.telemetryClient.SendEvent("dash.browser.open", telemetry.Measurements{"count": 1})
 		if err = open.Run(dashboardURL); err != nil {
-			d.telemetryClient.SendEvent("dash.browser.failure", telemetry.Measurements{"count": 1})
 			d.logger.Warnf("unable to open browser: %v", err)
 		}
 	}

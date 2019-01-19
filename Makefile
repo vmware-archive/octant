@@ -17,17 +17,17 @@ version:
 .PHONY: test
 test:
 	@echo "-> $@"
-	@go test -v ./{cmd,internal}/...
+	@env GO111MODULE=on go test -v -mod=vendor ./internal/...
 
 # Run govet
 .PHONY: vet
 vet:
 	@echo "-> $@"
-	@go vet ./...
+	@env GO111MODULE=on go vet -mod=vendor ./...
 
 hcli-dev:
 	@mkdir -p ./build
-	@$(GOBUILD) -o build/hcli $(GO_FLAGS) ./cmd/hcli
+	@env GO111MODULE=on $(GOBUILD) -o build/hcli -mod=vendor $(GO_FLAGS) ./cmd/hcli
 
 setup-web: web-deps run-web
 
@@ -47,10 +47,13 @@ ui-server:
 ui-client:
 	cd web; API_BASE=http://localhost:3001 npm run start
 
+gen-electron:
+	@GOCACHE=${HOME}/cache/go-build astilectron-bundler -v -c configs/electron/bundler.json
+
 .PHONY: release
 release:
 	git tag -a $(VERSION) -m "Release $(VERSION)"
 	git push --follow-tags
 
 .PHONY: ci
-ci: test vet web-build hcli-dev
+ci: gen-electron test vet web-build hcli-dev

@@ -13,6 +13,7 @@
 package unix
 
 import (
+	"runtime"
 	"syscall"
 	"unsafe"
 )
@@ -190,6 +191,13 @@ func IoctlGetTermios(fd int, req uint) (*Termios, error) {
 	return &value, err
 }
 
+func IoctlGetPtmget(fd int, req uint) (*Ptmget, error) {
+	var value Ptmget
+	err := ioctl(fd, req, uintptr(unsafe.Pointer(&value)))
+	runtime.KeepAlive(value)
+	return &value, err
+}
+
 func Uname(uname *Utsname) error {
 	mib := []_C_int{CTL_KERN, KERN_OSTYPE}
 	n := unsafe.Sizeof(uname.Sysname)
@@ -234,6 +242,13 @@ func Uname(uname *Utsname) error {
 	}
 
 	return nil
+}
+
+func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err error) {
+	if raceenabled {
+		raceReleaseMerge(unsafe.Pointer(&ioSync))
+	}
+	return sendfile(outfd, infd, offset, count)
 }
 
 /*

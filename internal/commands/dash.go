@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"time"
 
 	"github.com/heptio/developer-dash/internal/dash"
 	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/go-telemetry/pkg/telemetry"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -47,11 +45,8 @@ func newDashCmd() *cobra.Command {
 
 			runCh := make(chan bool, 1)
 
-			telemetryClient := newTelemetry(logger)
-			startTime := time.Now()
-
 			go func() {
-				if err := dash.Run(ctx, namespace, uiURL, kubeconfig, logger, telemetryClient); err != nil {
+				if err := dash.Run(ctx, namespace, uiURL, kubeconfig, logger); err != nil {
 					logger.Errorf("running dashboard: %v", err)
 					os.Exit(1)
 				}
@@ -61,21 +56,10 @@ func newDashCmd() *cobra.Command {
 
 			select {
 			case <-sigCh:
-				msDuration := int64(time.Since(startTime) / time.Millisecond)
-				telemetryClient.With(telemetry.Labels{"type": "signal"}).SendEvent("dash.shutdown", telemetry.Measurements{
-					"duration": msDuration,
-					"count":    1,
-				})
 				logger.Debugf("Shutting dashboard down due to interrupt")
-				telemetryClient.Close()
+
 			case <-runCh:
-				msDuration := int64(time.Since(startTime) / time.Millisecond)
-				telemetryClient.With(telemetry.Labels{"type": "normal"}).SendEvent("dash.shutdown", telemetry.Measurements{
-					"duration": msDuration,
-					"count":    1,
-				})
 				logger.Debugf("Dashboard has exited")
-				telemetryClient.Close()
 			}
 		},
 	}
@@ -89,25 +73,6 @@ func newDashCmd() *cobra.Command {
 	dashCmd.Flags().StringVar(&kubeconfig, "kubeconfig", kubeconfig, "absolute path to kubeconfig file")
 
 	return dashCmd
-}
-
-func newTelemetry(logger log.Logger) telemetry.Interface {
-	if _, ok := os.LookupEnv("DASH_DISABLE_TELEMETRY"); ok {
-		return &telemetry.NilClient{}
-	}
-
-	telemetryAddress := os.Getenv("DASH_TELEMETRY_ADDRESS")
-	if telemetryAddress == "" {
-		telemetryAddress = telemetry.DefaultAddress
-	}
-
-	telemetryClient, err := telemetry.NewClient(telemetryAddress, 10*time.Second, logger.Named("telemetry"))
-	if err != nil {
-		logger.Errorf("failed creating telemetry client", err)
-		return &telemetry.NilClient{}
-	}
-
-	return telemetryClient
 }
 
 // Returns a new zap logger, setting level according to the provided

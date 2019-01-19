@@ -23,5 +23,5 @@ rice-box.go
 /vendor/electron*
 /vendor/status.json
 /output
-/cmd/devdash/bind*.go
+/cmd/devdash/bind*
 /cmd/devdash/windows.syso

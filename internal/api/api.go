@@ -4,14 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 	"path"
-	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/go-telemetry/pkg/telemetry"
 	"github.com/pkg/errors"
 )
 
@@ -50,38 +48,31 @@ func respondWithError(w http.ResponseWriter, code int, message string) error {
 
 // API is the API for the dashboard client
 type API struct {
-	nsClient        cluster.NamespaceInterface
-	infoClient      cluster.InfoInterface
-	moduleManager   module.ManagerInterface
-	sections        []*hcli.Navigation
-	prefix          string
-	logger          log.Logger
-	telemetryClient telemetry.Interface
+	nsClient      cluster.NamespaceInterface
+	infoClient    cluster.InfoInterface
+	moduleManager module.ManagerInterface
+	sections      []*hcli.Navigation
+	prefix        string
+	logger        log.Logger
 
 	modules map[string]http.Handler
 }
 
 func (a *API) telemetryMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		startTime := time.Now()
 		next.ServeHTTP(w, r)
-		msDuration := int64(time.Since(startTime) / time.Millisecond)
-		if a.telemetryClient != nil {
-			go a.telemetryClient.With(telemetry.Labels{"endpoint": r.URL.Path, "client.useragent": r.Header.Get("User-Agent")}).SendEvent("dash.api", telemetry.Measurements{"count": 1, "duration": msDuration})
-		}
 	})
 }
 
 // New creates an instance of API.
-func New(prefix string, nsClient cluster.NamespaceInterface, infoClient cluster.InfoInterface, moduleManager module.ManagerInterface, logger log.Logger, telemetryClient telemetry.Interface) *API {
+func New(prefix string, nsClient cluster.NamespaceInterface, infoClient cluster.InfoInterface, moduleManager module.ManagerInterface, logger log.Logger) *API {
 	return &API{
-		prefix:          prefix,
-		nsClient:        nsClient,
-		infoClient:      infoClient,
-		moduleManager:   moduleManager,
-		modules:         make(map[string]http.Handler),
-		logger:          logger,
-		telemetryClient: telemetryClient,
+		prefix:        prefix,
+		nsClient:      nsClient,
+		infoClient:    infoClient,
+		moduleManager: moduleManager,
+		modules:       make(map[string]http.Handler),
+		logger:        logger,
 	}
 }
 

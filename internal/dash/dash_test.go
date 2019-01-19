@@ -15,12 +15,9 @@ import (
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	modulefake "github.com/heptio/developer-dash/internal/module/fake"
-	"github.com/heptio/go-telemetry/pkg/telemetry"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-var telemetryClient = &telemetry.NilClient{}
 
 func Test_dash_Run(t *testing.T) {
 	cases := []struct {
@@ -68,7 +65,7 @@ func Test_dash_Run(t *testing.T) {
 			manager := modulefake.NewStubManager("default", []module.Module{o})
 
 			infoClient := fake.ClusterInfo{}
-			d, err := newDash(listener, namespace, uiURL, nsClient, infoClient, manager, log.NopLogger(), telemetryClient)
+			d, err := newDash(listener, namespace, uiURL, nsClient, infoClient, manager, log.NopLogger())
 			require.NoError(t, err)
 
 			d.willOpenBrowser = false
@@ -138,10 +135,10 @@ func Test_dash_routes(t *testing.T) {
 			manager := modulefake.NewStubManager("default", []module.Module{o})
 
 			infoClient := fake.ClusterInfo{}
-			d, err := newDash(listener, namespace, uiURL, nsClient, infoClient, manager, log.NopLogger(), telemetryClient)
+			d, err := newDash(listener, namespace, uiURL, nsClient, infoClient, manager, log.NopLogger())
 			require.NoError(t, err)
 
-			service := api.New(apiPathPrefix, nsClient, infoClient, manager, log.NopLogger(), telemetryClient)
+			service := api.New(apiPathPrefix, nsClient, infoClient, manager, log.NopLogger())
 			d.apiHandler = service
 
 			d.defaultHandler = func() (http.Handler, error) {

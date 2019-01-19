@@ -13,12 +13,9 @@ import (
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	modulefake "github.com/heptio/developer-dash/internal/module/fake"
-	"github.com/heptio/go-telemetry/pkg/telemetry"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-var telemetryClient = &telemetry.NilClient{}
 
 func TestAPI_routes(t *testing.T) {
 	cases := []struct {
@@ -76,7 +73,7 @@ func TestAPI_routes(t *testing.T) {
 
 			nsClient := fake.NewNamespaceClient([]string{"default"}, nil, "default")
 			infoClient := fake.ClusterInfo{}
-			srv := New("/", nsClient, infoClient, manager, log.NopLogger(), telemetryClient)
+			srv := New("/", nsClient, infoClient, manager, log.NopLogger())
 
 			err := srv.RegisterModule(m)
 			require.NoError(t, err)

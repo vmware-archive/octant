@@ -21,6 +21,8 @@ matrix:
             - $TRAVIS_BUILD_DIR/web/node_modules
         before_install:
           - npm i -g npm@6.4.1
+        env:
+          - GO111MODULE=on
       - os: windows
         if: branch = master
         cache:
@@ -44,16 +46,20 @@ addons:
 # TODO: Update goreleaser.yml and add when open sourced
 #    - snapd
 #
+env:
+  - GO111MODULE=on
+
+# TODO: Enable for snapd
 #env:
 #- PATH=/snap/bin:$PATH
 #
 #install:
 #- sudo snap install snapcraft --classic
 
-# Install rice tool
 before_script:
-  - go install $TRAVIS_BUILD_DIR/vendor/github.com/GeertJohan/go.rice
-  - go install $TRAVIS_BUILD_DIR/vendor/github.com/GeertJohan/go.rice/rice
+  - go get github.com/GeertJohan/go.rice
+  - go get github.com/GeertJohan/go.rice/rice
+  - env GO111MODULE=off go get github.com/asticode/go-astilectron-bundler/...
 
 script:
 - make ci
