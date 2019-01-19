@@ -17,3 +17,11 @@ rice-box.go
 
 /build
 /dist
+
+# electron bundling
+/vendor/astilectron*
+/vendor/electron*
+/vendor/status.json
+/output
+/cmd/devdash/bind*.go
+/cmd/devdash/windows.syso

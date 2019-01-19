@@ -1,0 +1,13 @@
+{
+  "app_name": "Test",
+  "icon_path_darwin": "cmd/devdash/resources/icon.icns",
+  "icon_path_linux": "cmd/devdash/resources/icon.png",
+  "icon_path_windows": "cmd/devdash/resources/icon.ico",
+  "input_path": "cmd/devdash",
+
+  "environments": [
+    {"arch": "amd64", "os": "darwin"},
+    {"arch": "amd64", "os": "linux"},
+    {"arch": "amd64", "os": "windows"}
+  ]
+}

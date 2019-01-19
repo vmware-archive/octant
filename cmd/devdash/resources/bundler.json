@@ -1,0 +1,13 @@
+{
+  "app_name": "Test",
+  "icon_path_darwin": "configs/electron/icon.icns",
+  "icon_path_linux": "configs/electron/icon.png",
+  "icon_path_windows": "configs/electron/icon.ico",
+  "input_path": "cmd/devdash",
+  "resources_path": "../../configs/electron",
+  "environments": [
+    {"arch": "amd64", "os": "darwin"},
+    {"arch": "amd64", "os": "linux"},
+    {"arch": "amd64", "os": "windows"}
+  ]
+}
