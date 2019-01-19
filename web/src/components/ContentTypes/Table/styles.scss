@@ -1,13 +1,17 @@
 @import '~css/variables/variables.scss';
 
 .table--component {
+  border: 1px solid #d8d8d8;
+
   .table-component-title {
     margin-bottom: 10px;
+    padding: 12px;
+    border-bottom: 1px solid #d8d8d8;
   }
 
   .table--link {
     @include bold;
-    color: $orange;
+    color: $white;
     text-decoration: none;
 
     &:hover {
@@ -20,6 +24,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  border: 0;
 
   .rt-table {
     align-items: stretch;
@@ -43,10 +48,10 @@
     }
 
     &.-filters {
-      border-bottom: 1px solid $orange;
+      border-bottom: 1px solid $blue-dark;
 
       .rt-th {
-        border-right: 1px solid $orange;
+        border-right: 1px solid $blue-dark;
       }
     }
 
@@ -86,7 +91,7 @@
       &.-sort-asc .rt-resizable-header-content
       {
         &::after {
-          color: $orange;
+          color: $white;
           transition: all 120ms;
         }
       }

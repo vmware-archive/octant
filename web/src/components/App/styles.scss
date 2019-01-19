@@ -1,7 +1,8 @@
 @import '~css/variables/variables.scss';
 
 .app {
-  background-color: $gray-lightest;
+  background-color: $blue-dark;
+  color: $white;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -12,7 +13,6 @@
     flex-direction: row;
 
     .app-nav {
-      background-color: $white;
       flex: 0 0 auto;
       width: 250px;
     }

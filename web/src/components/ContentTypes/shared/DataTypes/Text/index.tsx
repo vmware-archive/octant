@@ -8,12 +8,12 @@ interface Props {
 export default function Item(props: Props) {
   const { params } = props
   const {
-    label,
-    data: { value },
+    metadata: { title },
+    config: { value },
   } = params
   return (
     <div className='summary--data summary--data-basic'>
-      {label && <div className='summary--data-key'>{label}</div>}
+      {title && <div className='summary--data-key'>{title}</div>}
       <div className='summary--data-value'>{value}</div>
     </div>
   )

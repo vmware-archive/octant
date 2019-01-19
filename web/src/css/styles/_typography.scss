@@ -1,3 +1,5 @@
+@import '~css/variables/variables.scss';
+
 h1 {
   @include bold;
 }

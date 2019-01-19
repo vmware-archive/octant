@@ -1,13 +1,12 @@
 @import '~css/variables/variables.scss';
 
 .component--title {
-  @include box-shadow;
-  align-items: center;
-  background-color: $white;
   display: flex;
+  align-items: center;
   height: 50px;
   padding-left: 50px;
   width: 100%;
+  border-bottom: 1px solid $white;
 
   h2 {
     @include normal;

@@ -1,38 +1,35 @@
-interface ContentType {
+interface Metadata {
   type: string;
-  label: string;
-  data: {
-    value: string;
-  }
+  title: string;
+}
+
+interface ContentType {
+  metadata: Metadata
+  config: any;
 }
 
 type ListContentType = ContentType & {
-  data: {
+  config: {
     items: ContentType[];
   };
 }
 
 type LinkContentType = ContentType & {
-  data: {
+  config: {
     value: string;
     ref: string;
   };
 }
 
-interface ContentSection {
-  title: string;
-  items: ContentType[];
+type LabelsContentType = ContentType & {
+  config: {
+    labels: { [x: string]: string };
+  };
 }
 
-interface BaseContent {
-  type: string;
-  title: string;
+interface GridPosition {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 }
-
-type ContentSummary = BaseContent & {
-  sections: ContentSection[];
-}
-
-type ContentTable = BaseContent
-
-type Content = ContentSummary | ContentTable

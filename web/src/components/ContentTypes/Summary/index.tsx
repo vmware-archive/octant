@@ -1,30 +1,34 @@
 import React from 'react'
 import _ from 'lodash'
-import Section from './components/Section'
+import ItemList from '../shared/ItemList'
 import './styles.scss'
 
-interface Props {
-  data: ContentSummary,
+export interface ISummary {
+  metadata: {
+    type: 'summary';
+    title: string;
+  },
+  config: {
+    empty_content: string;
+    sections: Array<{
+      header: string;
+      content: ContentType;
+    }>;
+  };
 }
 
-export default function Summary(props: Props) {
-  const { data } = props
-  const { sections, title = '' } = data
+interface Props {
+  data: ISummary,
+}
+
+export default function Summary({ data }: Props) {
+  const { metadata: { title }, config: { sections }  } = data
+  const items = _.map(sections, 'content')
   return (
-    <div className='summary--component'>
+    <div className='summary-component'>
       <h2 className='summary-component-title'>{title}</h2>
-      <hr />
-      <div className='summary--component-sections'>
-        {_.map(sections, (section) => {
-          const sectionTitle = section.title[0] === '_' ? '' : section.title
-          return (
-            <Section
-              key={sectionTitle}
-              title={sectionTitle}
-              items={section.items}
-            />
-          )
-        })}
+      <div className='summary-component-section'>
+        <ItemList items={items} />
       </div>
     </div>
   )

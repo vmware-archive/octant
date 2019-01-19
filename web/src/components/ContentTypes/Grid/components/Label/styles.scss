@@ -1,0 +1,18 @@
+.grid-label {
+  display: flex;
+  flex-direction: row;
+
+  .grid-label-title {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 18px;
+    margin-right: 8px;
+  }
+
+  .grid-label-sub {
+    font-size: 13px;
+  }
+}

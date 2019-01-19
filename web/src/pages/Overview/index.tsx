@@ -1,4 +1,3 @@
-import './styles.scss'
 import 'react-tabs/style/react-tabs.css'
 import { getAPIBase, getContentsUrl, POLL_WAIT } from 'api'
 import cx from 'classnames'
@@ -8,6 +7,9 @@ import _ from 'lodash'
 import React, { Component } from 'react'
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs'
 import Content from './components/Content'
+import './styles.scss'
+// mock
+import DeploymentMock from 'api/deployment-mock'
 
 export interface OverviewProps {
   title: string;
@@ -22,7 +24,10 @@ export interface OverviewProps {
 }
 
 interface OverviewState {
-  data: any;
+  data: {
+    title: string;
+    viewComponents: ContentType[];
+  };
 }
 
 export default class Overview extends Component<OverviewProps, OverviewState> {
@@ -80,18 +85,19 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
     })
   }
 
-  renderViewsWithTabs = (views: any) => {
+  renderViewsWithTabs = (views: ContentType[]) => {
     const tabs = []
     const panels = []
 
     _.forEach(views, (view, index) => {
-      const tabContents = view.contents.map((content, i) => (
+      const contents = [view]
+      const tabContents = _.map(contents, (content, i) => (
         <div key={i} className='component--primary'>
           <Content content={content} />
         </div>
       ))
 
-      tabs.push(<Tab key={index}>{view.title}</Tab>)
+      tabs.push(<Tab key={index}>{view.metadata.title}</Tab>)
       panels.push(<TabPanel key={index}>{tabContents}</TabPanel>)
     })
 
@@ -103,12 +109,12 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
     )
   }
 
-  renderViewsWithoutTabs = (contents: Content[]) => {
-    return contents.map((content, i) => (
-      <div key={i} className='component--primary'>
-        <Content content={content} />
+  renderViewsWithoutTabs = (view: ContentType) => {
+    return (
+      <div className='component--primary'>
+        <Content content={view} />
       </div>
-    ))
+    )
   }
 
   renderUnknownContent = (hasError: boolean) => {
@@ -134,6 +140,7 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
   render() {
     const { isLoading, hasError } = this.props
     const { data } = this.state
+    // console.log('data', data)
     let title
     let mainContent
     if (isLoading) {
@@ -142,8 +149,8 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
           <Loading />
         </div>
       )
-    } else if (data && data.views) {
-      const views = data.views.filter((v) => v.contents)  // Keep only views with contents
+    } else if (data && data.viewComponents) {
+      const views = data.viewComponents
       title = data.title
 
       if (views.length > 1) {
@@ -151,7 +158,7 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
         mainContent = this.renderViewsWithTabs(views)
       } else if (views.length === 1) {
         // only a single view
-        mainContent = this.renderViewsWithoutTabs(views[0].contents)
+        mainContent = this.renderViewsWithoutTabs(views[0])
       } else {
         mainContent = this.renderUnknownContent(true)
       }

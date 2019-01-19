@@ -7,14 +7,13 @@ interface Props {
 }
 
 export default function Item(props: Props) {
-  const { params } = props
   const {
-    label,
-    data: { value, ref },
-  } = params
+    metadata: { title },
+    config: { value, ref },
+  } = props.params
   return (
     <div className='summary--data summary--data-link'>
-      <div className='summary--data-key'>{label}</div>
+      <div className='summary--data-key'>{title}</div>
       <div className='summary--data-link'>
         <Link className='link--gray' to={ref}>
           {value || ref}

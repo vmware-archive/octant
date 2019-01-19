@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 import _ from 'lodash'
 import Text from '../DataTypes/Text'
 import JSON from '../DataTypes/JSON'
@@ -22,15 +22,16 @@ interface Props {
 
 export default function({ items }: Props) {
   return (
-    <React.Fragment>
+    <Fragment>
       {_.map(items, (item: ContentType, index: number) => {
-        const elem = dataTypeMap[item.type]
+        const { metadata: { type } } = item
+        const elem = dataTypeMap[type]
         if (!elem) return null
-        return React.createElement(dataTypeMap[item.type], {
+        return React.createElement(dataTypeMap[type], {
           key: index,
           params: item,
         })
       })}
-    </React.Fragment>
+    </Fragment>
   )
 }

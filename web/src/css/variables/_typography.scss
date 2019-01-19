@@ -6,6 +6,10 @@
   font-family: 'Lato', sans-serif;
 }
 
+@mixin titillium {
+  font-family: 'Titillium Web', sans-serif;
+}
+
 @mixin monospace {
   @include font-size('12');
   font-family: 'Consolas', 'Menlo', monospace;

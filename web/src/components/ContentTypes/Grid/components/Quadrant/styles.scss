@@ -1,0 +1,51 @@
+@import '~css/variables/variables.scss';
+$border: 1px solid $white;
+
+.quadrant {
+  height: 100%;
+  border-radius: 3px;
+  border: 1px solid $white;
+
+  .quadrant-header {
+    padding: 14px 16px;
+  }
+
+  .quadrant-body {
+    display: grid;
+    grid-template-columns: 2fr 2fr;
+    padding: 14px 20px;
+
+    .quadrant-ne, .quadrant-nw, .quadrant-se, .quadrant-sw {
+      padding: 20px 35px;
+
+      .quadrant-value {
+        font-weight: bold;
+        margin-bottom: 6px;
+      }
+
+      .quadrant-label {
+        font-size: 13px;
+      }
+    }
+
+    .quadrant-ne {
+      border-right: $border;
+      border-bottom: $border;
+    }
+
+    .quadrant-nw {
+      border-left: $border;
+      border-bottom: $border;
+    }
+
+    .quadrant-se {
+      border-right: $border;
+      border-top: $border;
+    }
+
+    .quadrant-sw {
+      border-left: $border;
+      border-top: $border;
+    }
+  }
+}
