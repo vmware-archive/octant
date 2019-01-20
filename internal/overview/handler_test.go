@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/mime"
 	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/heptio/developer-dash/internal/log"
@@ -74,7 +75,7 @@ func Test_handler_routes(t *testing.T) {
 			require.NoError(t, err)
 
 			assert.Equal(t, tc.expectedCode, resp.StatusCode)
-			assert.Equal(t, "application/json; charset=utf-8", resp.Header.Get("Content-Type"))
+			assert.Equal(t, mime.JSONContentType, resp.Header.Get("Content-Type"))
 			assert.Equal(t, tc.expectedBody, strings.TrimSpace(string(body)))
 		})
 	}

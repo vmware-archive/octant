@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/mime"
 )
 
 type errorMessage struct {
@@ -28,7 +29,7 @@ func respondWithError(w http.ResponseWriter, code int, message string, logger lo
 		},
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", mime.JSONContentType)
 
 	w.WriteHeader(code)
 
@@ -80,7 +81,7 @@ func newHandler(prefix string, g generator, sfn streamFn, logger log.Logger) *ha
 			cs.content(ctx)
 		}
 
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.Header().Set("Content-Type", mime.JSONContentType)
 		cResponse, err := g.Generate(ctx, path, prefix, namespace)
 		if err != nil {
 			switch {

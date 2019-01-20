@@ -6,6 +6,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/mime"
 )
 
 type clusterInfo struct {
@@ -29,7 +30,7 @@ func newClusterInfo(infoClient cluster.InfoInterface, logger log.Logger) cluster
 
 // ServerHTTP implements http.Handler and returns details about the cluster connection
 func (ci clusterInfo) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", mime.JSONContentType)
 	resp := clusterInfoResponse{
 		Context: ci.infoClient.Context(),
 		Cluster: ci.infoClient.Cluster(),

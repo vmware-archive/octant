@@ -9,9 +9,16 @@ import (
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/mime"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/pkg/errors"
 )
+
+func serveAsJSON(w http.ResponseWriter, v interface{}, logger log.Logger) {
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		logger.Errorf("encoding JSON response: %v", err)
+	}
+}
 
 // Service is an API service.
 type Service interface {
@@ -36,7 +43,7 @@ func respondWithError(w http.ResponseWriter, code int, message string) error {
 		},
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", mime.JSONContentType)
 
 	w.WriteHeader(code)
 
@@ -55,7 +62,8 @@ type API struct {
 	prefix        string
 	logger        log.Logger
 
-	modules map[string]http.Handler
+	modules  map[string]http.Handler
+	modules2 []module.Module
 }
 
 func (a *API) telemetryMiddleware(next http.Handler) http.Handler {
@@ -85,7 +93,9 @@ func (a *API) Handler() *mux.Router {
 	namespacesService := newNamespaces(a.nsClient, a.logger)
 	s.Handle("/namespaces", namespacesService).Methods(http.MethodGet)
 
-	navigationService := newNavigation(a.sections, a.logger)
+	ans := newAPINavSections(a.modules2)
+
+	navigationService := newNavigation(ans, a.logger)
 	s.Handle("/navigation", navigationService).Methods(http.MethodGet)
 
 	namespaceUpdateService := newNamespace(a.moduleManager, a.logger)
@@ -121,6 +131,33 @@ func (a *API) RegisterModule(m module.Module) error {
 	}
 
 	a.sections = append(a.sections, nav)
+	a.modules2 = append(a.modules2, m)
 
 	return nil
+}
+
+type apiNavSections struct {
+	modules []module.Module
+}
+
+func newAPINavSections(modules []module.Module) *apiNavSections {
+	return &apiNavSections{
+		modules: modules,
+	}
+}
+
+func (ans *apiNavSections) Sections() ([]*hcli.Navigation, error) {
+	var sections []*hcli.Navigation
+
+	for _, m := range ans.modules {
+		contentPath := path.Join("/content", m.ContentPath())
+		nav, err := m.Navigation(contentPath)
+		if err != nil {
+			return nil, err
+		}
+
+		sections = append(sections, nav)
+	}
+
+	return sections, nil
 }
