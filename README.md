@@ -85,3 +85,4 @@ Navigate to `localhost:7777` on a browser to view cluster data.
 ### Caveats
 
 * If using [fish shell](https://fishshell.com), tilde expansion may not occur when using `env` to set environment variables.
+* This project is configured using Go 1.11 modules.
