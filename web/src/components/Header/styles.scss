@@ -1,10 +1,16 @@
 @import '~css/variables/variables.scss';
 
+$container-bg: lighten($blue-dark, 5%);
+
 .header--container {
   display: flex;
-  height: 60px;
-  padding: 15px 10px;
-  margin: 31px 0 0 0;
+  height: 70px;
+  padding: 15px 10px 25px 10px;
+  background-color: $container-bg;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 10;
 }
 
 .header--logo{

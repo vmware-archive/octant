@@ -1,25 +1,29 @@
 @import '~css/variables/variables.scss';
 
+$sidebarWidth: 295px;
+
 .app {
+  position: relative;
   background-color: $blue-dark;
   color: $white;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  margin-top: 70px;
 
-  .app-page {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: row;
+  .app-nav, .app-main {
+    float: left;
+  }
 
-    .app-nav {
-      flex: 0 0 auto;
-      width: 260px;
-    }
+  .app-nav {
+    width: $sidebarWidth;
+    height: 100%;
+    position: fixed;
+  }
 
-    .app-main {
-      flex: 1 1 auto;
-      min-width: 0;
-    }
+  .app-main {
+    position: relative;
+    left: $sidebarWidth;
+    width: calc(100% - #{$sidebarWidth});
   }
 }
