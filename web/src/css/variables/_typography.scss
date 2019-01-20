@@ -10,6 +10,10 @@
   font-family: 'Titillium Web', sans-serif;
 }
 
+@mixin metropolis {
+  font-family: 'Metropolis', sans-serif;
+}
+
 @mixin monospace {
   @include font-size('12');
   font-family: 'Consolas', 'Menlo', monospace;

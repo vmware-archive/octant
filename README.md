@@ -59,14 +59,10 @@ The `hcli` binary will be found in `$GOPATH/src/github.com/heptio/developer-dash
 ### Environment variables
 
 * `KUBECONFIG` - set to non-empty location if you want to set KUBECONFIG with an environment variable.
-
 * `DASH_DISABLE_OPEN_BROWSER` - set to a non-empty value if you don't the browser launched when the dashboard start up.
 * `DASH_LISTENER_ADDR` - set to address you want dashboard service to start on. (e.g. `localhost:8080`)
-
 * `DASH_VERBOSE_CACHE` - set to a non-empty value to view cache actions
-
 * `DASH_TELEMETRY_ADDRESS` - set telemetry address (defaults to `telemetry.corp.heptio.net:443`)
-* `DASH_DISABLE_TELEMETRY` - set to non-empty value to disable telemetry
 
 ### Running development web UI
 

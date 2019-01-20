@@ -10,7 +10,7 @@
 @import url('https://fonts.googleapis.com/css?family=Titillium+Web');
 
 body {
-  @include titillium;
+  @include metropolis;
   @include font-smoothing;
   font-size: $base-font-size;
 }

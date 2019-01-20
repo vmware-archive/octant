@@ -26,7 +26,7 @@ class Header extends React.Component<Props> {
       <header>
         <ul className='header--container'>
           <li className='header--logo'>
-            <h1>Developer Dashboard</h1>
+            <h1>Dev Dash</h1>
           </li>
           <li className='header--namespace'>
             <Select
