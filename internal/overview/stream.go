@@ -14,6 +14,10 @@ const (
 	defaultEventTimeout = 5 * time.Second
 )
 
+type dashResponse struct {
+	Content ContentResponse `json:"content,omitempty"`
+}
+
 type streamFn func(ctx context.Context, w http.ResponseWriter, ch chan []byte)
 
 type contentStreamer struct {
@@ -25,6 +29,7 @@ type contentStreamer struct {
 	streamFn     streamFn
 	eventTimeout time.Duration
 	logger       log.Logger
+	marshalFn    func(interface{}) ([]byte, error)
 }
 
 func (cs contentStreamer) content(ctx context.Context) {
@@ -44,11 +49,14 @@ func (cs contentStreamer) content(ctx context.Context) {
 					cs.logger.Errorf("generate error: %v", err)
 				}
 
-				cr := &cResponse
+				dr := dashResponse{
+					Content: cResponse,
+				}
 
-				data, err := json.Marshal(cr)
+				data, err := cs.marshal(dr)
 				if err != nil {
 					cs.logger.Errorf("marshal err: %v", err)
+					break
 				}
 
 				ch <- data
@@ -59,6 +67,14 @@ func (cs contentStreamer) content(ctx context.Context) {
 	}()
 
 	cs.streamFn(ctx, cs.w, ch)
+}
+
+func (cs *contentStreamer) marshal(v interface{}) ([]byte, error) {
+	if cs.marshalFn != nil {
+		return cs.marshalFn(v)
+	}
+
+	return json.Marshal(v)
 }
 
 func stream(ctx context.Context, w http.ResponseWriter, ch chan []byte) {

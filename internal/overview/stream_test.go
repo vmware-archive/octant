@@ -26,7 +26,7 @@ func Test_contentStreamer(t *testing.T) {
 		msg := <-ch
 
 		assert.Equal(t,
-			`{"viewComponents":[{"metadata":{"type":"text"},"config":{"value":"text"}}]}`,
+			`{"content":{"viewComponents":[{"metadata":{"type":"text"},"config":{"value":"text"}}]}}`,
 			string(msg))
 		rcv <- true
 	}

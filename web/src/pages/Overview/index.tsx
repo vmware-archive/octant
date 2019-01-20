@@ -1,4 +1,6 @@
+import './styles.scss'
 import 'react-tabs/style/react-tabs.css'
+
 import { getAPIBase, getContentsUrl, POLL_WAIT } from 'api'
 import cx from 'classnames'
 import Loading from 'components/Icons/Loading'
@@ -6,12 +8,10 @@ import Title from 'components/Title'
 import _ from 'lodash'
 import React, { Component } from 'react'
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs'
-import Content from './components/Content'
-import './styles.scss'
-// mock
-import DeploymentMock from 'api/deployment-mock'
 
-export interface OverviewProps {
+import Content from './components/Content'
+
+interface Props {
   title: string;
   path: string;
   namespace: string;
@@ -23,17 +23,19 @@ export interface OverviewProps {
   setError(hasError: boolean, errorMessage?: string): void;
 }
 
-interface OverviewState {
+interface State {
   data: {
+    content: {
     title: string;
     viewComponents: ContentType[];
+    },
   };
 }
 
-export default class Overview extends Component<OverviewProps, OverviewState> {
+export default class Overview extends Component<Props, State> {
   private source: any
 
-  constructor(props: OverviewProps) {
+  constructor(props: Props) {
     super(props)
     this.state = { data: null }
   }
@@ -140,18 +142,17 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
   render() {
     const { isLoading, hasError } = this.props
     const { data } = this.state
-    // console.log('data', data)
-    let title
-    let mainContent
+    let title = ''
+    let mainContent = <div/>
     if (isLoading) {
       mainContent = (
         <div className='loading-parent'>
           <Loading />
         </div>
       )
-    } else if (data && data.viewComponents) {
-      const views = data.viewComponents
-      title = data.title
+    } else if (data && data.content.viewComponents) {
+      const views = data.content.viewComponents
+      title = data.content.title
 
       if (views.length > 1) {
         // there are multiple views
