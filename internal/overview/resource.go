@@ -8,6 +8,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view"
+	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/content"
@@ -52,7 +53,7 @@ func NewResource(options ResourceOptions) *Resource {
 	}
 }
 
-func (r *Resource) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
+func (r *Resource) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
 	return r.List(namespace).Describe(ctx, prefix, namespace, clusterClient, options)
 }
 

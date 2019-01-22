@@ -49,13 +49,13 @@ func TestAPI_routes(t *testing.T) {
 			path:            "/content/module/",
 			method:          http.MethodGet,
 			expectedCode:    http.StatusOK,
-			expectedContent: "root",
+			expectedContent: "{\"title\":\"/\",\"viewComponents\":null}\n",
 		},
 		{
 			path:            "/content/module/nested",
 			method:          http.MethodGet,
 			expectedCode:    http.StatusOK,
-			expectedContent: "module",
+			expectedContent: "{\"title\":\"/nested\",\"viewComponents\":null}\n",
 		},
 		{
 			path:         "/missing",

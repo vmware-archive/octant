@@ -5,7 +5,6 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/overview"
 )
 
 // ManagerInterface is an interface for managing module lifecycle.
@@ -21,6 +20,8 @@ type Manager struct {
 	namespace     string
 	logger        log.Logger
 
+	registeredModules []Module
+
 	loadedModules []Module
 }
 
@@ -34,29 +35,23 @@ func NewManager(clusterClient cluster.ClientInterface, namespace string, logger 
 		logger:        logger,
 	}
 
-	if err := manager.Load(); err != nil {
-		return nil, err
-	}
-
 	return manager, nil
+}
+
+// Register register a module with the manager.
+func (m *Manager) Register(mod Module) {
+	m.registeredModules = append(m.registeredModules, mod)
 }
 
 // Load loads modules.
 func (m *Manager) Load() error {
-	overviewModule, err := overview.NewClusterOverview(m.clusterClient, m.namespace, m.logger)
-	if err != nil {
-		return errors.Wrap(err, "loading overview module")
-	}
-
-	modules := []Module{overviewModule}
-
-	for _, module := range modules {
+	for _, module := range m.registeredModules {
 		if err := module.Start(); err != nil {
 			return errors.Wrapf(err, "%s module failed to start", module.Name())
 		}
 	}
 
-	m.loadedModules = modules
+	m.loadedModules = m.registeredModules
 
 	return nil
 }

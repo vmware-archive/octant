@@ -1,11 +1,14 @@
 package module
 
 import (
+	"context"
+	"net/http"
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/cluster/fake"
+	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -25,16 +28,17 @@ func TestManager(t *testing.T) {
 
 	modules := manager.Modules()
 	require.NoError(t, err)
+	require.Len(t, modules, 0)
+
+	manager.Register(&stubModule{})
+	require.NoError(t, manager.Load())
+
+	modules = manager.Modules()
+	require.NoError(t, err)
 	require.Len(t, modules, 1)
 
 	manager.SetNamespace("other")
 	manager.Unload()
-}
-
-func TestManager_badClient(t *testing.T) {
-	var badClient cluster.ClientInterface
-	_, err := NewManager(badClient, "default", log.NopLogger())
-	require.Error(t, err)
 }
 
 func newUnstructured(apiVersion, kind, namespace, name string) *unstructured.Unstructured {
@@ -48,4 +52,37 @@ func newUnstructured(apiVersion, kind, namespace, name string) *unstructured.Uns
 			},
 		},
 	}
+}
+
+type stubModule struct{}
+
+func (m *stubModule) Name() string {
+	return "stub-module"
+}
+
+func (m *stubModule) ContentPath() string {
+	panic("not implemented")
+}
+
+func (m *stubModule) Handler(root string) http.Handler {
+	panic("not implemented")
+}
+
+func (m *stubModule) Navigation(root string) (*hcli.Navigation, error) {
+	panic("not implemented")
+}
+
+func (m *stubModule) SetNamespace(namespace string) error {
+	return nil
+}
+
+func (m *stubModule) Start() error {
+	return nil
+}
+
+func (m *stubModule) Stop() {
+}
+
+func (m *stubModule) Content(ctx context.Context, contentPath string, prefix string, namespace string) (component.ContentResponse, error) {
+	panic("not implemented")
 }

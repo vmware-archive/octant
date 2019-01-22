@@ -8,6 +8,7 @@ import (
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/content"
+	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -62,14 +63,7 @@ func TestEventsDescriber(t *testing.T) {
 		"sub_object": content.NewStringText(""),
 	})
 
-	expected := ContentResponse{
-		Views: []Content{
-			{
-				Title:    "Events",
-				Contents: []content.Content{&table},
-			},
-		},
-	}
+	expected := component.ContentResponse{}
 	assert.Equal(t, expected, cResponse)
 }
 

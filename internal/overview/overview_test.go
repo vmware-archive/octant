@@ -1,10 +1,12 @@
 package overview
 
 import (
+	"context"
 	"testing"
 
 	"github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -47,4 +49,11 @@ func TestClusterOverview_SetNamespace(t *testing.T) {
 
 	err = o.SetNamespace("ns2")
 	require.NoError(t, err)
+}
+
+// generatorFunc allows a bare Generate function to implement Generator
+type generatorFunc func(ctx context.Context, path, prefix, namespace string) (component.ContentResponse, error)
+
+func (g generatorFunc) Generate(ctx context.Context, path, prefix, namespace string) (component.ContentResponse, error) {
+	return g(ctx, path, prefix, namespace)
 }

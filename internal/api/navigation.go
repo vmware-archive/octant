@@ -5,7 +5,6 @@ import (
 
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/mime"
 )
 
 type navSections interface {
@@ -32,28 +31,15 @@ func newNavigation(ns navSections, logger log.Logger) *navigation {
 
 func (n *navigation) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if n.navSections == nil {
-		msg := map[string]interface{}{
-			"code":    http.StatusInternalServerError,
-			"message": "unable to generate navigation sections",
-		}
-
-		w.Header().Set("Content-Type", mime.JSONContentType)
-		w.WriteHeader(http.StatusInternalServerError)
-
-		serveAsJSON(w, msg, n.logger)
+		respondWithError(w, http.StatusInternalServerError,
+			"unable to generate navigation sections", n.logger)
 		return
 	}
 	ns, err := n.navSections.Sections()
 	if err != nil {
-		msg := map[string]interface{}{
-			"code":    http.StatusInternalServerError,
-			"message": "unable to generate navigation sections",
-		}
-
-		w.Header().Set("Content-Type", mime.JSONContentType)
-		w.WriteHeader(http.StatusInternalServerError)
-
-		serveAsJSON(w, msg, n.logger)
+		respondWithError(w, http.StatusInternalServerError,
+			"unable to generate navigation sections", n.logger)
+		return
 	}
 
 	nr := navigationResponse{

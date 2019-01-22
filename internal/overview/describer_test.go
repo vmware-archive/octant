@@ -83,7 +83,7 @@ func TestListDescriber(t *testing.T) {
 	})
 	list.Add(table)
 
-	expected := ContentResponse{
+	expected := component.ContentResponse{
 		ViewComponents: []component.ViewComponent{list},
 	}
 
@@ -142,7 +142,7 @@ func TestObjectDescriber(t *testing.T) {
 	cResponse, err := d.Describe(ctx, "/path", namespace, clusterClient, options)
 	require.NoError(t, err)
 
-	expected := ContentResponse{
+	expected := component.ContentResponse{
 		Title: "object: name",
 		ViewComponents: []component.ViewComponent{
 			component.NewText("", "*v1.Pod"),
@@ -171,7 +171,7 @@ func TestSectionDescriber(t *testing.T) {
 	tests := []struct {
 		name     string
 		d        *SectionDescriber
-		expected ContentResponse
+		expected component.ContentResponse
 	}{
 		{
 			name: "general",
@@ -180,7 +180,7 @@ func TestSectionDescriber(t *testing.T) {
 				"section",
 				newStubDescriber("/foo"),
 			),
-			expected: ContentResponse{
+			expected: component.ContentResponse{
 				Title: "section",
 				ViewComponents: []component.ViewComponent{
 					component.NewList("", nil),
@@ -195,7 +195,7 @@ func TestSectionDescriber(t *testing.T) {
 				newEmptyDescriber("/foo"),
 				newEmptyDescriber("/bar"),
 			),
-			expected: ContentResponse{
+			expected: component.ContentResponse{
 				Title: "section",
 				ViewComponents: []component.ViewComponent{
 					component.NewList("", nil),

@@ -6,6 +6,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view"
+	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/cluster/fake"
@@ -19,10 +20,14 @@ import (
 func Test_realGenerator_Generate(t *testing.T) {
 	key := cache.Key{Namespace: "default"}
 
+	textOther := component.NewText("title", "other")
+	textFoo := component.NewText("title", "foo")
+	textSub := component.NewText("title", "sub")
+
 	describers := []Describer{
-		newStubDescriber("/other"),
-		newStubDescriber("/foo"),
-		newStubDescriber("/sub/(?P<name>.*?)"),
+		newStubDescriber("/other", textOther),
+		newStubDescriber("/foo", textFoo),
+		newStubDescriber("/sub/(?P<name>.*?)", textSub),
 	}
 
 	var pathFilters []pathFilter
@@ -34,7 +39,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 		name      string
 		path      string
 		initCache func(*spyCache)
-		expected  ContentResponse
+		expected  component.ContentResponse
 		isErr     bool
 	}{
 		{
@@ -43,14 +48,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 			initCache: func(c *spyCache) {
 				c.spyRetrieve(key, []*unstructured.Unstructured{}, nil)
 			},
-			expected: ContentResponse{
-				Views: []Content{
-					{
-						Contents: stubbedContent,
-						Title:    "section content",
-					},
-				},
-			},
+			expected: component.ContentResponse{ViewComponents: []component.ViewComponent{textFoo}},
 		},
 		{
 			name:  "invalid path",
@@ -64,13 +62,8 @@ func Test_realGenerator_Generate(t *testing.T) {
 				subKey := cache.Key{Namespace: key.Namespace, Name: "foo"}
 				c.spyRetrieve(subKey, []*unstructured.Unstructured{}, nil)
 			},
-			expected: ContentResponse{
-				Views: []Content{
-					{
-						Contents: stubbedContent,
-						Title:    "section content",
-					},
-				},
+			expected: component.ContentResponse{
+				ViewComponents: []component.ViewComponent{textSub},
 			},
 		},
 	}
@@ -160,32 +153,26 @@ func (c *spyCache) Events(obj *unstructured.Unstructured) ([]*unstructured.Unstr
 }
 
 type stubDescriber struct {
-	path     string
-	contents []content.Content
+	path       string
+	components []component.ViewComponent
 }
 
-func newStubDescriber(p string) *stubDescriber {
+func newStubDescriber(p string, components ...component.ViewComponent) *stubDescriber {
 	return &stubDescriber{
-		path:     p,
-		contents: []content.Content{newFakeContent(false)},
+		path:       p,
+		components: components,
 	}
 }
 
 func newEmptyDescriber(p string) *stubDescriber {
 	return &stubDescriber{
-		path:     p,
-		contents: []content.Content{newFakeContent(true)},
+		path: p,
 	}
 }
 
-func (d *stubDescriber) Describe(context.Context, string, string, cluster.ClientInterface, DescriberOptions) (ContentResponse, error) {
-	return ContentResponse{
-		Views: []Content{
-			{
-				Contents: d.contents,
-				Title:    "section content",
-			},
-		},
+func (d *stubDescriber) Describe(context.Context, string, string, cluster.ClientInterface, DescriberOptions) (component.ContentResponse, error) {
+	return component.ContentResponse{
+		ViewComponents: d.components,
 	}, nil
 }
 

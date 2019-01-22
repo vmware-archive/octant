@@ -1,9 +1,10 @@
 package fake
 
 import (
-	"net/http"
+	"context"
 
 	"github.com/heptio/developer-dash/internal/hcli"
+	"github.com/heptio/developer-dash/internal/view/component"
 )
 
 // SimpleClusterOverview is a fake that implements overview.Interface.
@@ -19,9 +20,9 @@ func (sco *SimpleClusterOverview) Name() string {
 	return "overview"
 }
 
-// Handler returns a nil HTTP handler.
-func (sco *SimpleClusterOverview) Handler(prefix string) http.Handler {
-	return nil
+// Content generates content
+func (sco *SimpleClusterOverview) Content(ctx context.Context, contentPath, prefix, namespace string) (component.ContentResponse, error) {
+	return component.ContentResponse{}, nil
 }
 
 // ContentPath returns the content path for mounting this module.

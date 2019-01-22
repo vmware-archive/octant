@@ -18,6 +18,7 @@ import (
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
+	"github.com/heptio/developer-dash/internal/overview"
 	"github.com/heptio/developer-dash/web"
 	"github.com/skratchdot/open-golang/open"
 )
@@ -52,9 +53,9 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Lo
 		return errors.Wrap(err, "failed to create info client")
 	}
 
-	moduleManager, err := module.NewManager(clusterClient, namespace, logger)
+	moduleManager, err := initModuleManager(clusterClient, namespace, logger)
 	if err != nil {
-		return errors.Wrap(err, "create module manager")
+		return errors.Wrap(err, "init module manager")
 	}
 
 	listener, err := buildListener()
@@ -81,6 +82,26 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Lo
 	moduleManager.Unload()
 
 	return nil
+}
+
+func initModuleManager(clusterClient *cluster.Cluster, namespace string, logger log.Logger) (*module.Manager, error) {
+	moduleManager, err := module.NewManager(clusterClient, namespace, logger)
+	if err != nil {
+		return nil, errors.Wrap(err, "create module manager")
+	}
+
+	overviewModule, err := overview.NewClusterOverview(clusterClient, namespace, logger)
+	if err != nil {
+		return nil, errors.Wrap(err, "create overview module")
+	}
+
+	moduleManager.Register(overviewModule)
+
+	if err = moduleManager.Load(); err != nil {
+		return nil, errors.Wrap(err, "modules load")
+	}
+
+	return moduleManager, nil
 }
 
 func buildListener() (net.Listener, error) {

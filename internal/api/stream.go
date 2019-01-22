@@ -1,4 +1,4 @@
-package overview
+package api
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/view/component"
 )
 
 const (
@@ -15,13 +16,13 @@ const (
 )
 
 type dashResponse struct {
-	Content ContentResponse `json:"content,omitempty"`
+	Content component.ContentResponse `json:"content,omitempty"`
 }
 
 type streamFn func(ctx context.Context, w http.ResponseWriter, ch chan []byte)
 
 type contentStreamer struct {
-	generator    generator
+	generatorFn  func(context.Context, string, string, string) (component.ContentResponse, error)
 	w            http.ResponseWriter
 	path         string
 	prefix       string
@@ -44,7 +45,7 @@ func (cs contentStreamer) content(ctx context.Context) {
 			case <-ctx.Done():
 				isRunning = false
 			case <-timer.C:
-				cResponse, err := cs.generator.Generate(ctx, cs.path, cs.prefix, cs.namespace)
+				cResponse, err := cs.generatorFn(ctx, cs.path, cs.prefix, cs.namespace)
 				if err != nil {
 					cs.logger.Errorf("generate error: %v", err)
 				}

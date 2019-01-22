@@ -1,4 +1,4 @@
-package overview
+package api
 
 import (
 	"context"
@@ -17,8 +17,12 @@ import (
 func Test_contentStreamer(t *testing.T) {
 	w := httptest.NewRecorder()
 	ctx, cancel := context.WithCancel(context.Background())
-	vcs := []component.ViewComponent{component.NewText("", "text")}
-	g := newStubbedGenerator(vcs, nil)
+
+	genFn := func(context.Context, string, string, string) (component.ContentResponse, error) {
+		return component.ContentResponse{
+			ViewComponents: []component.ViewComponent{component.NewText("", "text")},
+		}, nil
+	}
 
 	rcv := make(chan bool, 1)
 
@@ -32,12 +36,12 @@ func Test_contentStreamer(t *testing.T) {
 	}
 
 	cs := contentStreamer{
-		generator: g,
-		w:         w,
-		path:      "/real/foo",
-		prefix:    "/real",
-		namespace: "default",
-		streamFn:  fn,
+		generatorFn: genFn,
+		w:           w,
+		path:        "/real/foo",
+		prefix:      "/real",
+		namespace:   "default",
+		streamFn:    fn,
 	}
 
 	cs.content(ctx)

@@ -1,74 +1,25 @@
 package fake
 
 import (
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
+	"context"
 	"testing"
 
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
 )
 
+func TestModule_Name(t *testing.T) {
+	m := NewModule("module", log.NopLogger())
+	assert.Equal(t, "module", m.Name())
+}
+
 func TestModule_ContentPath(t *testing.T) {
 	m := NewModule("module", log.NopLogger())
 	assert.Equal(t, "/module", m.ContentPath())
-}
-
-func TestModule_Handler(t *testing.T) {
-	m := NewModule("module", log.NopLogger())
-
-	ts := httptest.NewServer(m.Handler("/module"))
-	defer ts.Close()
-
-	u, err := url.Parse(ts.URL)
-	require.NoError(t, err)
-
-	cases := []struct {
-		path           string
-		expectedStatus int
-		expectedBody   string
-	}{
-		{
-			path:           "/module",
-			expectedStatus: http.StatusOK,
-			expectedBody:   "root",
-		},
-		{
-			path:           "/module/nested",
-			expectedStatus: http.StatusOK,
-			expectedBody:   "module",
-		},
-		{
-			path:           "/module/missing",
-			expectedStatus: http.StatusNotFound,
-		},
-	}
-
-	for _, tc := range cases {
-		name := fmt.Sprintf("GET %s", tc.path)
-		t.Run(name, func(t *testing.T) {
-			u.Path = tc.path
-			resp, err := http.Get(u.String())
-			require.NoError(t, err)
-
-			defer resp.Body.Close()
-
-			require.Equal(t, tc.expectedStatus, resp.StatusCode)
-
-			data, err := ioutil.ReadAll(resp.Body)
-			require.NoError(t, err)
-
-			if tc.expectedBody != "" {
-				assert.Equal(t, tc.expectedBody, string(data))
-			}
-		})
-	}
 }
 
 func TestModule_Navigation(t *testing.T) {
@@ -83,4 +34,43 @@ func TestModule_Navigation(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, expected, got)
+}
+
+func TestModule_Content(t *testing.T) {
+	m := NewModule("module", log.NopLogger())
+
+	cases := []struct {
+		path     string
+		expected component.ContentResponse
+		isErr    bool
+	}{
+		{
+			path:     "/",
+			expected: component.ContentResponse{Title: "/"},
+		},
+		{
+			path:     "/nested",
+			expected: component.ContentResponse{Title: "/nested"},
+		},
+		{
+			path:  "/missing",
+			isErr: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.path, func(t *testing.T) {
+			ctx := context.Background()
+
+			got, err := m.Content(ctx, tc.path, "/prefix", "namespace")
+			if tc.isErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.expected, got)
+		})
+	}
 }

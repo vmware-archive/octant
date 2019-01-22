@@ -8,6 +8,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view"
+	"github.com/heptio/developer-dash/internal/view/component"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -85,13 +86,13 @@ func NewEventsDescriber(p string) *EventsDescriber {
 }
 
 // Describe creates content.
-func (d *EventsDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
+func (d *EventsDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
 	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, d.cacheKeys)
 	if err != nil {
 		return emptyContentResponse, err
 	}
 
-	var contents []content.Content
+	// var contents []content.Content
 
 	t := newEventTable(d.title, nil)
 
@@ -112,12 +113,12 @@ func (d *EventsDescriber) Describe(ctx context.Context, prefix, namespace string
 		t.Rows = append(t.Rows, printEvent(event, prefix, namespace, d.clock()))
 	}
 
-	contents = append(contents, &t)
+	// contents = append(contents, &t)
 
-	return ContentResponse{
-		Views: []Content{
-			Content{Contents: contents, Title: "Events"},
-		},
+	return component.ContentResponse{
+		// Views: []Content{
+		// 	Content{Contents: contents, Title: "Events"},
+		// },
 	}, nil
 }
 

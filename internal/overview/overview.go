@@ -1,17 +1,18 @@
 package overview
 
 import (
+	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"sync"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/hcli"
-	"github.com/heptio/developer-dash/internal/log"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/restmapper"
 )
@@ -103,11 +104,6 @@ func (co *ClusterOverview) ContentPath() string {
 	return fmt.Sprintf("/%s", co.Name())
 }
 
-// Handler returns a handler for serving overview HTTP content.
-func (co *ClusterOverview) Handler(prefix string) http.Handler {
-	return newHandler(prefix, co.generator, stream, co.logger)
-}
-
 // Navigation returns navigation entries for overview.
 func (co *ClusterOverview) Navigation(root string) (*hcli.Navigation, error) {
 	nf := NewNavigationFactory(root)
@@ -132,4 +128,8 @@ func (co *ClusterOverview) Stop() {
 	defer co.mu.Unlock()
 	close(co.stopCh)
 	co.stopCh = nil
+}
+
+func (co *ClusterOverview) Content(ctx context.Context, contentPath, prefix, namespace string) (component.ContentResponse, error) {
+	return co.generator.Generate(ctx, contentPath, prefix, namespace)
 }

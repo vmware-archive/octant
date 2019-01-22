@@ -1,12 +1,13 @@
 package fake
 
 import (
+	"context"
 	"fmt"
-	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/pkg/errors"
 )
 
 // Module is a fake module.
@@ -33,27 +34,6 @@ func (m *Module) ContentPath() string {
 	return fmt.Sprintf("/%s", m.name)
 }
 
-// Handler is a HTTP handler for the module.
-func (m *Module) Handler(prefix string) http.Handler {
-	router := mux.NewRouter().StrictSlash(true)
-	s := router.PathPrefix(prefix).Subrouter()
-	s.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "root")
-	}))
-
-	s.Handle("/nested", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, m.name)
-	}))
-
-	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		m.logger.Errorf("fake module path not found: %s", r.URL.String())
-		w.WriteHeader(http.StatusNotFound)
-	})
-
-	return router
-
-}
-
 // Navigation returns navigation entries for the module.
 func (m *Module) Navigation(prefix string) (*hcli.Navigation, error) {
 	nav := &hcli.Navigation{
@@ -76,4 +56,15 @@ func (m *Module) Start() error {
 
 // Stop doesn't do anything.
 func (m *Module) Stop() {
+}
+
+func (m *Module) Content(ctx context.Context, contentPath, prefix, namespace string) (component.ContentResponse, error) {
+	switch contentPath {
+	case "/":
+		return component.ContentResponse{Title: "/"}, nil
+	case "/nested":
+		return component.ContentResponse{Title: "/nested"}, nil
+	default:
+		return component.ContentResponse{}, errors.New("not found")
+	}
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/view"
+	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/pkg/errors"
@@ -476,10 +477,6 @@ var (
 
 var contentNotFound = errors.Errorf("content not found")
 
-type generator interface {
-	Generate(ctx context.Context, path, prefix, namespace string) (ContentResponse, error)
-}
-
 type realGenerator struct {
 	cache         cache.Cache
 	pathFilters   []pathFilter
@@ -504,7 +501,7 @@ func newGenerator(cache cache.Cache, pathFilters []pathFilter, clusterClient clu
 	}, nil
 }
 
-func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace string) (ContentResponse, error) {
+func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace string) (component.ContentResponse, error) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 
@@ -528,6 +525,7 @@ func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace st
 		return cResponse, nil
 	}
 
+	fmt.Println("content not found for", path)
 	return emptyContentResponse, contentNotFound
 }
 

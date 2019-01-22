@@ -11,10 +11,10 @@ import (
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/mime"
 	"github.com/heptio/developer-dash/internal/module"
-	"github.com/pkg/errors"
 )
 
 func serveAsJSON(w http.ResponseWriter, v interface{}, logger log.Logger) {
+	w.Header().Set("Content-Type", mime.JSONContentType)
 	if err := json.NewEncoder(w).Encode(v); err != nil {
 		logger.Errorf("encoding JSON response: %v", err)
 	}
@@ -35,7 +35,7 @@ type errorResponse struct {
 	Error errorMessage `json:"error,omitempty"`
 }
 
-func respondWithError(w http.ResponseWriter, code int, message string) error {
+func respondWithError(w http.ResponseWriter, code int, message string, logger log.Logger) {
 	r := &errorResponse{
 		Error: errorMessage{
 			Code:    code,
@@ -48,9 +48,8 @@ func respondWithError(w http.ResponseWriter, code int, message string) error {
 	w.WriteHeader(code)
 
 	if err := json.NewEncoder(w).Encode(r); err != nil {
-		return errors.Errorf("encoding response: %v", err)
+		logger.Errorf("encoding JSON response: %v", err)
 	}
-	return nil
 }
 
 // API is the API for the dashboard client
@@ -58,12 +57,11 @@ type API struct {
 	nsClient      cluster.NamespaceInterface
 	infoClient    cluster.InfoInterface
 	moduleManager module.ManagerInterface
-	sections      []*hcli.Navigation
 	prefix        string
 	logger        log.Logger
 
-	modules  map[string]http.Handler
-	modules2 []module.Module
+	modulePaths map[string]module.Module
+	modules     []module.Module
 }
 
 func (a *API) telemetryMiddleware(next http.Handler) http.Handler {
@@ -79,7 +77,7 @@ func New(prefix string, nsClient cluster.NamespaceInterface, infoClient cluster.
 		nsClient:      nsClient,
 		infoClient:    infoClient,
 		moduleManager: moduleManager,
-		modules:       make(map[string]http.Handler),
+		modulePaths:   make(map[string]module.Module),
 		logger:        logger,
 	}
 }
@@ -93,7 +91,7 @@ func (a *API) Handler() *mux.Router {
 	namespacesService := newNamespaces(a.nsClient, a.logger)
 	s.Handle("/namespaces", namespacesService).Methods(http.MethodGet)
 
-	ans := newAPINavSections(a.modules2)
+	ans := newAPINavSections(a.modules)
 
 	navigationService := newNavigation(ans, a.logger)
 	s.Handle("/navigation", navigationService).Methods(http.MethodGet)
@@ -105,15 +103,16 @@ func (a *API) Handler() *mux.Router {
 	infoService := newClusterInfo(a.infoClient, a.logger)
 	s.Handle("/cluster-info", infoService)
 
-	for p, h := range a.modules {
-		s.PathPrefix(p).Handler(h)
+	contentService := &contentHandler{
+		modulePaths: a.modulePaths,
+		logger:      a.logger,
+		prefix:      a.prefix,
 	}
+	s.Handle(`/content/{rest:[a-zA-Z0-9=\-\/]+}`, contentService).Methods(http.MethodGet)
 
 	s.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		a.logger.Errorf("api handler not found: %s", r.URL.String())
-		if err := respondWithError(w, http.StatusNotFound, "not found"); err != nil {
-			a.logger.Errorf("responding: %v", err)
-		}
+		respondWithError(w, http.StatusNotFound, "not found", a.logger)
 	})
 
 	return router
@@ -123,15 +122,7 @@ func (a *API) Handler() *mux.Router {
 func (a *API) RegisterModule(m module.Module) error {
 	contentPath := path.Join("/content", m.ContentPath())
 	a.logger.Debugf("registering content path %s", contentPath)
-	a.modules[contentPath] = m.Handler(path.Join(a.prefix, contentPath))
-
-	nav, err := m.Navigation(contentPath)
-	if err != nil {
-		return err
-	}
-
-	a.sections = append(a.sections, nav)
-	a.modules2 = append(a.modules2, m)
+	a.modulePaths[contentPath] = m
 
 	return nil
 }

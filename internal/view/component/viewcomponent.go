@@ -1,5 +1,10 @@
 package component
 
+type ContentResponse struct {
+	Title          string          `json:"title,omitempty"`
+	ViewComponents []ViewComponent `json:"viewComponents"`
+}
+
 // Metadata collects common fields describing ViewComponents
 type Metadata struct {
 	Type  string `json:"type"`

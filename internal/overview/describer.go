@@ -43,7 +43,7 @@ type DescriberOptions struct {
 
 // Describer creates content.
 type Describer interface {
-	Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error)
+	Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error)
 	PathFilters(namespace string) []pathFilter
 }
 
@@ -81,7 +81,7 @@ func NewListDescriber(p, title string, cacheKey cache.Key, listType, objectType 
 }
 
 // Describe creates content.
-func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
+func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
 	if options.Printer == nil {
 		return emptyContentResponse, errors.New("Object list describer requires a printer")
 	}
@@ -126,7 +126,7 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 
 	list.Add(viewComponent)
 
-	return ContentResponse{
+	return component.ContentResponse{
 		ViewComponents: []component.ViewComponent{list},
 	}, nil
 }
@@ -158,7 +158,7 @@ func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType f
 	}
 }
 
-func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
+func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
 	if options.Printer == nil {
 		return emptyContentResponse, errors.New("Object describer requires a printer")
 	}
@@ -205,7 +205,7 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 		return emptyContentResponse, err
 	}
 
-	cr := ContentResponse{
+	cr := component.ContentResponse{
 		Title:          title,
 		ViewComponents: []component.ViewComponent{vc},
 	}
@@ -339,7 +339,7 @@ func NewSectionDescriber(p, title string, describers ...Describer) *SectionDescr
 }
 
 // Describe generates content.
-func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (ContentResponse, error) {
+func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
 	list := component.NewList(d.title, nil)
 
 	for _, child := range d.describers {
@@ -355,7 +355,7 @@ func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace strin
 		}
 	}
 
-	cr := ContentResponse{
+	cr := component.ContentResponse{
 		ViewComponents: []component.ViewComponent{list},
 		Title:          d.title,
 	}
