@@ -21,12 +21,7 @@ import (
 	"go.opencensus.io"
 )
 
-// NodeWithStartTime creates a node using nodeName and derives:
-//  Hostname from the environment
-//  Pid from the current process
-//  StartTimestamp from the start time of this process
-//  Language and library information.
-func NodeWithStartTime(nodeName string) *commonpb.Node {
+func createNodeInfo(nodeName string) *commonpb.Node {
 	return &commonpb.Node{
 		Identifier: &commonpb.ProcessIdentifier{
 			HostName:       os.Getenv("HOSTNAME"),

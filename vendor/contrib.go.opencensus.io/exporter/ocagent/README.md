@@ -14,7 +14,7 @@ Ultimately we may want to move the OC-Agent Go Exporter to [OpenCensus Go core l
 ## Installation
 
 ```bash
-$ go get -u contrib.go.opencensus.io/exporter/ocagent
+$ go get -u contrib.go.opencensus.io/exporter/ocagent/v1
 ```
 
 ## Usage
@@ -26,7 +26,7 @@ import (
 	"log"
 	"time"
 
-	"contrib.go.opencensus.io/exporter/ocagent"
+	"contrib.go.opencensus.io/exporter/ocagent/v1"
 	"go.opencensus.io/trace"
 )
 

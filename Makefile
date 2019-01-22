@@ -17,17 +17,17 @@ version:
 .PHONY: test
 test:
 	@echo "-> $@"
-	@env GO111MODULE=on go test -v -mod=vendor ./internal/...
+	@env go test -v ./internal/...
 
 # Run govet
 .PHONY: vet
 vet:
 	@echo "-> $@"
-	@env GO111MODULE=on go vet -mod=vendor ./...
+	@env go vet  ./...
 
 hcli-dev:
 	@mkdir -p ./build
-	@env GO111MODULE=on $(GOBUILD) -o build/hcli -mod=vendor $(GO_FLAGS) ./cmd/hcli
+	@env $(GOBUILD) -o build/hcli $(GO_FLAGS) ./cmd/hcli
 
 setup-web: web-deps run-web
 

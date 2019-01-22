@@ -1,0 +1,86 @@
+# Dependencies for rice tool
+required = [
+  "github.com/GeertJohan/go.incremental",
+  "github.com/akavel/rsrc",
+  "github.com/jessevdk/go-flags"
+]
+
+[prune]
+  go-tests = true
+  unused-packages = true
+
+  [[prune.project]]
+    name = "github.com/GeertJohan/go.rice"
+    unused-packages = false
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/GeertJohan/go.rice"
+
+[[constraint]]
+  name = "github.com/gorilla/mux"
+  version = "1.6.2"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/skratchdot/open-golang"
+
+[[constraint]]
+  name = "github.com/spf13/cobra"
+  version = "0.0.3"
+
+[[override]]
+  name = "k8s.io/client-go"
+  version = "10.0.0"
+
+[[override]]
+  name = "k8s.io/apimachinery"
+  version = "kubernetes-1.13.1"
+
+[[override]]
+  name = "k8s.io/api"
+  version = "kubernetes-1.13.1"
+
+[[override]]
+  name = "k8s.io/apiserver"
+  version = "kubernetes-1.13.1"
+
+[[override]]
+  name = "k8s.io/apiextensions-apiserver"
+  version = "kubernetes-1.13.1"
+
+[[override]]
+  name = "k8s.io/kubernetes"
+  version = "1.13.1"
+
+[[override]]
+  name = "github.com/docker/distribution"
+  branch = "master"
+
+[[override]]
+  name = "github.com/russross/blackfriday"
+  version = "1.5.2"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/heptio/go-telemetry"
+
+[[constraint]]
+  name = "go.uber.org/zap"
+  version = "1.9.1"
+
+[[override]]
+  name = "github.com/Azure/go-autorest"
+  version = "11.1.0"
+
+[[override]]
+  name = "github.com/asticode/go-astilectron"
+  revision = "dc637586d54687b902b904a991b15ff633575d78"
+
+[[override]]
+  name = "github.com/akavel/rsrc"
+  revision = "f6a15ece2cfd2560077c556499f19340ddc768e9"
+
+[[override]]
+  name = "github.com/asticode/go-astilectron-bundler"
+  revision = "6cf585e0ac075996c50636c2812d2a3c4f6f39ee"

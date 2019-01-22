@@ -43,7 +43,7 @@ func Record(ctx context.Context, ms ...Measurement) {
 	}
 	record := false
 	for _, m := range ms {
-		if m.desc.subscribed() {
+		if m.m.subscribed() {
 			record = true
 			break
 		}
