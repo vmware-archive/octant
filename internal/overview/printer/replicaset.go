@@ -9,21 +9,21 @@ import (
 	"github.com/heptio/developer-dash/internal/view/component"
 )
 
-// DeploymentListHandler is a printFunc that lists deployments
-func DeploymentListHandler(list *appsv1.DeploymentList, opts Options) (component.ViewComponent, error) {
+// ReplicaSetListHandler is a printFunc that lists deployments
+func ReplicaSetListHandler(list *appsv1.ReplicaSetList, opts Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
-	tbl := component.NewTable("Deployments", cols)
+	tbl := component.NewTable("ReplicaSets", cols)
 
 	for _, d := range list.Items {
 		row := component.TableRow{}
 		row["Name"] = component.NewText("", d.Name)
 		row["Labels"] = component.NewLabels(d.Labels)
 
-		status := fmt.Sprintf("%d/%d", d.Status.AvailableReplicas, d.Status.AvailableReplicas+d.Status.UnavailableReplicas)
+		status := fmt.Sprintf("%d/%d", d.Status.AvailableReplicas, d.Status.Replicas)
 		row["Status"] = component.NewText("", status)
 
 		ts := d.CreationTimestamp.Time
@@ -41,9 +41,9 @@ func DeploymentListHandler(list *appsv1.DeploymentList, opts Options) (component
 	return tbl, nil
 }
 
-// DeploymentHandler is a printFunc that prints a Deployments.
+// ReplicaSetHandler is a printFunc that prints a ReplicaSets.
 // TODO: This handler is incomplete.
-func DeploymentHandler(deployment *appsv1.Deployment, options Options) (component.ViewComponent, error) {
+func ReplicaSetHandler(deployment *appsv1.ReplicaSet, options Options) (component.ViewComponent, error) {
 	grid := component.NewGrid("Summary")
 
 	detailsSummary := component.NewSummary("Details")
