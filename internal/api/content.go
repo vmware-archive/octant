@@ -14,6 +14,7 @@ import (
 
 type contentHandler struct {
 	modulePaths map[string]module.Module
+	modules     []module.Module
 	logger      log.Logger
 	prefix      string
 }
@@ -51,19 +52,29 @@ func (h *contentHandler) handlePoll(ctx context.Context, poll, namespace string,
 		eventTimeout = time.Duration(timeout) * time.Second
 	}
 
-	cs := contentStreamer{
-		generatorFn:  m.Content,
-		w:            w,
-		path:         h.contentPath(r, m),
-		prefix:       h.prefix,
-		namespace:    namespace,
-		streamFn:     stream,
-		eventTimeout: eventTimeout,
-		logger:       h.logger,
+	eventGenerators := []eventGenerator{
+		&contentEventGenerator{
+			generatorFn: m.Content,
+			path:        h.contentPath(r, m),
+			prefix:      h.prefix,
+			namespace:   namespace,
+			runEvery:    eventTimeout,
+		},
+		&navigationEventGenerator{
+			modules: h.modules,
+		},
 	}
 
-	cs.content(ctx)
+	cs := contentStreamer{
+		eventGenerators: eventGenerators,
+		w:               w,
+		logger:          h.logger,
+		streamFn:        stream,
+	}
 
+	if err = cs.content(ctx); err != nil {
+		h.logger.Errorf("content error: %v", err)
+	}
 }
 
 func (h *contentHandler) modulePrefix(m module.Module) string {
