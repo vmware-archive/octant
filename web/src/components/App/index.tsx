@@ -1,6 +1,6 @@
 import './styles.scss'
 
-import { setNamespace } from 'api'
+import { getAPIBase, getContentsUrl, POLL_WAIT, setNamespace } from 'api'
 import Header from 'components/Header'
 import _ from 'lodash'
 import Overview from 'pages/Overview'
@@ -19,10 +19,19 @@ interface AppState {
   namespaceOption: NamespaceOption;
   namespaceOptions: NamespaceOption[];
   title: string;
+
+  overviewData: {
+    content: {
+      title: string;
+      viewComponents: ContentType[];
+    };
+  };
 }
 
 class App extends Component<RouteComponentProps, AppState> {
   private lastFetchedNamespace: string
+
+  private source: any
 
   constructor(props) {
     super(props)
@@ -35,13 +44,82 @@ class App extends Component<RouteComponentProps, AppState> {
       currentNavLinkPath: [],
       namespaceOption: null,
       namespaceOptions: [],
+      overviewData: null,
     }
   }
 
   async componentDidMount() {
+    let namespace = 'default'
+
     const { location } = this.props
     const initialState = await getInitialState(location.pathname)
     this.setState(initialState as AppState)
+
+    if (this.state.namespaceOption) {
+      namespace = this.state.namespaceOption.value
+    }
+
+    this.setEventSourceStream(location.pathname, namespace)
+  }
+
+  componentDidUpdate(
+    { location: previousLocation },
+    { namespaceOption: previousNamespace },
+  ) {
+    const { location } = this.props
+    const { namespaceOption: namespace } = this.state
+
+    const prevNamespace = previousNamespace ? previousNamespace.value : ''
+
+    if (
+      location.pathname !== previousLocation.pathname ||
+      namespace.value !== prevNamespace
+    ) {
+      this.setEventSourceStream(location.pathname, namespace.value)
+    }
+  }
+
+  componentWillUnmount(): void {
+    if (this.source) {
+      this.source.close()
+      this.source = null
+    }
+  }
+
+  setEventSourceStream(path: string, namespace: string) {
+    // clear state and this.source on change
+    if (this.source) {
+      this.source.close()
+      this.source = null
+    }
+
+    if (!path || !namespace) return
+
+    this.setState({ isLoading: true })
+
+    this.setState({ overviewData: null })
+
+    const url = getContentsUrl(path, namespace, POLL_WAIT)
+
+    this.source = new window.EventSource(`${getAPIBase()}/${url}`)
+
+    this.source.addEventListener('message', (e) => {
+      const data = JSON.parse(e.data)
+      this.setState({ overviewData: data, isLoading: false })
+    })
+
+    this.source.addEventListener('navigation', (e) => {
+      const data = JSON.parse(e.data)
+      this.setState({ navigation: data })
+    })
+
+    this.source.addEventListener('error', () => {
+      this.setState({ isLoading: false })
+      this.setError(
+        true,
+        'Looks like the back end source has gone away. Retrying...',
+      )
+    })
   }
 
   onNamespaceChange = async (namespaceOption) => {
@@ -84,9 +162,6 @@ class App extends Component<RouteComponentProps, AppState> {
       namespaceOption,
       title,
     } = this.state
-    const { location } = this.props
-
-    const currentPath = location.pathname
 
     let currentNamespace = null
     if (namespaceOption) {
@@ -129,15 +204,11 @@ class App extends Component<RouteComponentProps, AppState> {
                   <Overview
                     {...props}
                     title={title}
-                    path={currentPath}
-                    namespace={currentNamespace}
                     isLoading={isLoading}
                     hasError={hasError}
                     errorMessage={errorMessage}
-                    setIsLoading={(loading) =>
-                      this.setState({ isLoading: loading })
-                    }
                     setError={this.setError}
+                    data={this.state.overviewData}
                   />
                 )}
               />

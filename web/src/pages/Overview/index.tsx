@@ -1,7 +1,6 @@
 import './styles.scss'
 import 'react-tabs/style/react-tabs.css'
 
-import { getAPIBase, getContentsUrl, POLL_WAIT } from 'api'
 import cx from 'classnames'
 import Loading from 'components/Icons/Loading'
 import Title from 'components/Title'
@@ -13,78 +12,23 @@ import Content from './components/Content'
 
 interface Props {
   title: string;
-  path: string;
-  namespace: string;
   isLoading: boolean;
   hasError: boolean;
   errorMessage: string;
 
-  setIsLoading(isLoading: boolean);
+  data: {
+    content: {
+      title: string;
+      viewComponents: ContentType[];
+    };
+  };
+
   setError(hasError: boolean, errorMessage?: string): void;
 }
 
-interface State {
-  data: {
-    content: {
-    title: string;
-    viewComponents: ContentType[];
-    },
-  };
-}
-
-export default class Overview extends Component<Props, State> {
-  private source: any
-
+export default class Overview extends Component<Props> {
   constructor(props: Props) {
     super(props)
-    this.state = { data: null }
-  }
-
-  componentDidMount() {
-    const { path, namespace } = this.props
-    this.setEventSourceStream(path, namespace)
-  }
-
-  componentDidUpdate({ path: previousPath, namespace: previousNamespace }) {
-    const { path, namespace } = this.props
-    if (path !== previousPath || namespace !== previousNamespace) {
-      this.setEventSourceStream(path, namespace)
-    }
-  }
-
-  componentWillUnmount(): void {
-    if (this.source) {
-      this.source.close()
-      this.source = null
-    }
-  }
-
-  setEventSourceStream(path: string, namespace: string) {
-    // clear state and this.source on change
-    if (this.source) {
-      this.source.close()
-      this.source = null
-    }
-
-    if (!path || !namespace) return
-
-    this.props.setIsLoading(true)
-    this.setState({ data: null })
-
-    const url = getContentsUrl(path, namespace, POLL_WAIT)
-
-    this.source = new window.EventSource(`${getAPIBase()}/${url}`)
-
-    this.source.addEventListener('message', (e) => {
-      const data = JSON.parse(e.data)
-      this.setState({ data })
-      this.props.setIsLoading(false)
-    })
-
-    this.source.addEventListener('error', () => {
-      this.props.setIsLoading(false)
-      this.props.setError(true, 'Looks like the backend source has gone away. Retrying...')
-    })
   }
 
   renderViewsWithTabs = (views: ContentType[]) => {
@@ -140,10 +84,9 @@ export default class Overview extends Component<Props, State> {
   }
 
   render() {
-    const { isLoading, hasError } = this.props
-    const { data } = this.state
+    const { isLoading, hasError, data } = this.props
     let title = ''
-    let mainContent = <div/>
+    let mainContent = <div />
     if (isLoading) {
       mainContent = (
         <div className='loading-parent'>

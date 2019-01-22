@@ -105,6 +105,7 @@ func (a *API) Handler() *mux.Router {
 
 	contentService := &contentHandler{
 		modulePaths: a.modulePaths,
+		modules:     a.modules,
 		logger:      a.logger,
 		prefix:      a.prefix,
 	}
@@ -123,6 +124,7 @@ func (a *API) RegisterModule(m module.Module) error {
 	contentPath := path.Join("/content", m.ContentPath())
 	a.logger.Debugf("registering content path %s", contentPath)
 	a.modulePaths[contentPath] = m
+	a.modules = append(a.modules, m)
 
 	return nil
 }
