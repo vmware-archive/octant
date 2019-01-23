@@ -1,0 +1,16 @@
+{
+  "position": {
+    "x": 1,
+    "y": 2,
+    "w": 3,
+    "h": 4
+  },
+  "content": {
+    "metadata": {
+      "type": "text"
+    },
+    "config": {
+      "value": "Panel contents"
+    }
+  }
+}

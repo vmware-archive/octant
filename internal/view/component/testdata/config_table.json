@@ -1,0 +1,50 @@
+{
+  "columns": [
+    {
+      "name": "Name",
+      "accessor": "Name"
+    },
+    {
+      "name": "Description",
+      "accessor": "Description"
+    }
+  ],
+  "rows": [
+    {
+      "Description": {
+        "metadata": {
+          "type": "text"
+        },
+        "config": {
+          "value": "The first row"
+        }
+      },
+      "Name": {
+        "metadata": {
+          "type": "text"
+        },
+        "config": {
+          "value": "First"
+        }
+      }
+    },
+    {
+      "Description": {
+        "metadata": {
+          "type": "text"
+        },
+        "config": {
+          "value": "The last row"
+        }
+      },
+      "Name": {
+        "metadata": {
+          "type": "text"
+        },
+        "config": {
+          "value": "Last"
+        }
+      }
+    }
+  ]
+}

@@ -28,7 +28,7 @@ Go to the [releases page](https://github.com/heptio/developer-dash/releases) and
 
 Extract the tarball:
 
-```
+```sh
 $ tar -xzvf ~/Downloads/hcli_0.1.1_Linux-64bit.tar.gz
 hcli_0.1.1_Linux-64bit/README.md
 hcli_0.1.1_Linux-64bit/hcli
@@ -62,7 +62,7 @@ The `hcli` binary will be found in `$GOPATH/src/github.com/heptio/developer-dash
 * `DASH_DISABLE_OPEN_BROWSER` - set to a non-empty value if you don't the browser launched when the dashboard start up.
 * `DASH_LISTENER_ADDR` - set to address you want dashboard service to start on. (e.g. `localhost:8080`)
 * `DASH_VERBOSE_CACHE` - set to a non-empty value to view cache actions
-* `DASH_TELEMETRY_ADDRESS` - set telemetry address (defaults to `telemetry.corp.heptio.net:443`)
+* `DASH_LOCAL_CONTENT` - set to a directory and dash will serve content responses from here. An example directory lives in `examples/content`
 
 ### Running development web UI
 

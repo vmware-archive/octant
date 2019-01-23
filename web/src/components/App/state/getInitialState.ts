@@ -1,6 +1,7 @@
-import PromisePolyfill from 'promise'
-import _ from 'lodash'
 import { getNamespace, getNamespaces, getNavigation } from 'api'
+import _ from 'lodash'
+import PromisePolyfill from 'promise'
+
 import getNavLinkPath from './getNavLinkPath'
 
 interface InitialState {
@@ -40,9 +41,10 @@ export default async function(currentPathname): Promise<InitialState> {
     const option: NamespaceOption = _.find(initialState.namespaceOptions, {
       value: namespace.namespace as string,
     })
-    if (option) {
-      initialState.namespaceOption = option
-    }
+
+    initialState.namespaceOption = option
+      ? option
+      : { label: 'default', value: 'default' }
   }
 
   return initialState

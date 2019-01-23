@@ -16,6 +16,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/internal/localcontent"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/overview"
@@ -96,6 +97,12 @@ func initModuleManager(clusterClient *cluster.Cluster, namespace string, logger 
 	}
 
 	moduleManager.Register(overviewModule)
+
+	localContentPath := os.Getenv("DASH_LOCAL_CONTENT")
+	if localContentPath != "" {
+		localContentModule := localcontent.New(localContentPath)
+		moduleManager.Register(localContentModule)
+	}
 
 	if err = moduleManager.Load(); err != nil {
 		return nil, errors.Wrap(err, "modules load")

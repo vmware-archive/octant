@@ -1,0 +1,31 @@
+[
+  {
+    "metadata": {
+      "type": "list",
+      "title": "mylist"
+    },
+    "config": {
+      "items": [
+        {
+          "metadata": {
+            "type": "link"
+          },
+          "config": {
+            "value": "nginx-deployment",
+            "ref": "/overview/deployments/nginx-deployment"
+          }
+        },
+        {
+          "metadata": {
+            "type": "labels"
+          },
+          "config": {
+            "labels": {
+              "app": "nginx"
+            }
+          }
+        }
+      ]
+    }
+  }
+]

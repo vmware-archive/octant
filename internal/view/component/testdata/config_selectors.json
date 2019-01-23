@@ -1,0 +1,23 @@
+{
+  "selectors": [
+    {
+      "metadata": {
+        "type": "labelSelector"
+      },
+      "config": {
+        "key": "app",
+        "value": "nginx"
+      }
+    },
+    {
+      "metadata": {
+        "type": "expressionSelector"
+      },
+      "config": {
+        "key": "environment",
+        "operator": "In",
+        "values": ["production", "qa"]
+      }
+    }
+  ]
+}

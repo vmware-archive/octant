@@ -1,6 +1,8 @@
 package component
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 // Panel contains other ViewComponents
 type Panel struct {
@@ -12,6 +14,27 @@ type Panel struct {
 type PanelConfig struct {
 	Content  ViewComponent `json:"content"`
 	Position PanelPosition `json:"position"`
+}
+
+func (t *PanelConfig) UnmarshalJSON(data []byte) error {
+	x := struct {
+		Position PanelPosition
+		Content  typedObject
+	}{}
+
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+
+	t.Position = x.Position
+
+	var err error
+	t.Content, err = x.Content.ToViewComponent()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // PanelPosition represents the relative location and size of a panel within a grid
@@ -39,7 +62,7 @@ func (t *Panel) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifes whether the component is considered empty. Implements ViewComponent.
+// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
 func (t *Panel) IsEmpty() bool {
 	return t.Config.Content == nil
 }

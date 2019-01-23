@@ -51,13 +51,11 @@ func (nf *NavigationFactory) Entries() (*hcli.Navigation, error) {
 		Children: []*hcli.Navigation{
 
 			nf.genNode("Workloads", nf.workloadEntries),
-
-			// TODO: re-enable as functionality returns
-			// nf.genNode("Discovery and Load Balancing", nf.discoAndLBEntries),
-			// nf.genNode("Config and Storage", nf.configAndStorageEntries),
-			// nf.genNode("Custom Resources", nil),
-			// nf.genNode("RBAC", nf.rbacEntries),
-			// nf.genNode("Events", nil),
+			nf.genNode("Discovery and Load Balancing", nf.discoAndLBEntries),
+			nf.genNode("Config and Storage", nf.configAndStorageEntries),
+			nf.genNode("Custom Resources", nil),
+			nf.genNode("RBAC", nf.rbacEntries),
+			nf.genNode("Events", nil),
 		},
 	}
 
@@ -75,15 +73,14 @@ func (nf *NavigationFactory) genNode(name string, childFn func(string) []*hcli.N
 
 func (nf *NavigationFactory) workloadEntries(prefix string) []*hcli.Navigation {
 	return []*hcli.Navigation{
-		// TODO: re-enable as functionality returns
-		// hcli.NewNavigation("Cron Jobs", nf.pathFor(prefix, "cron-jobs")),
-		// hcli.NewNavigation("Daemon Sets", nf.pathFor(prefix, "daemon-sets")),
+		hcli.NewNavigation("Cron Jobs", nf.pathFor(prefix, "cron-jobs")),
+		hcli.NewNavigation("Daemon Sets", nf.pathFor(prefix, "daemon-sets")),
 		hcli.NewNavigation("Deployments", path.Join(prefix, "deployments")),
-		// hcli.NewNavigation("Jobs", nf.pathFor(prefix, "jobs")),
-		// hcli.NewNavigation("Pods", nf.pathFor(prefix, "pods")),
-		// hcli.NewNavigation("Replica Sets", nf.pathFor(prefix, "replica-sets")),
-		// hcli.NewNavigation("Replication Controllers", nf.pathFor(prefix, "replication-controllers")),
-		// hcli.NewNavigation("Stateful Sets", nf.pathFor(prefix, "stateful-sets")),
+		hcli.NewNavigation("Jobs", nf.pathFor(prefix, "jobs")),
+		hcli.NewNavigation("Pods", nf.pathFor(prefix, "pods")),
+		hcli.NewNavigation("Replica Sets", nf.pathFor(prefix, "replica-sets")),
+		hcli.NewNavigation("Replication Controllers", nf.pathFor(prefix, "replication-controllers")),
+		hcli.NewNavigation("Stateful Sets", nf.pathFor(prefix, "stateful-sets")),
 	}
 }
 

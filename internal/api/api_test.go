@@ -41,11 +41,6 @@ func TestAPI_routes(t *testing.T) {
 			expectedCode: http.StatusOK,
 		},
 		{
-			path:         "/content/",
-			method:       http.MethodGet,
-			expectedCode: http.StatusNotFound,
-		},
-		{
 			path:            "/content/module/",
 			method:          http.MethodGet,
 			expectedCode:    http.StatusOK,

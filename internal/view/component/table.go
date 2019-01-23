@@ -1,6 +1,8 @@
 package component
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 // Table contains other ViewComponents
 type Table struct {
@@ -23,6 +25,27 @@ type TableCol struct {
 
 // TableRow is a row in table. Each key->value represents a particular column in the row.
 type TableRow map[string]ViewComponent
+
+func (t *TableRow) UnmarshalJSON(data []byte) error {
+	*t = make(TableRow)
+
+	x := map[string]typedObject{}
+
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+
+	for k, v := range x {
+		vc, err := v.ToViewComponent()
+		if err != nil {
+			return err
+		}
+
+		(*t)[k] = vc
+	}
+
+	return nil
+}
 
 // NewTable creates a table component
 func NewTable(title string, cols []TableCol) *Table {
@@ -58,7 +81,7 @@ func (t *Table) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifes whether the component is considered empty. Implements ViewComponent.
+// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
 func (t *Table) IsEmpty() bool {
 	return len(t.Config.Rows) == 0 || len(t.Config.Columns) == 0
 }

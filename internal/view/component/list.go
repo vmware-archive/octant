@@ -1,6 +1,8 @@
 package component
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 // List contains other ViewComponents
 type List struct {
@@ -11,6 +13,26 @@ type List struct {
 // ListConfig is the contents of a List
 type ListConfig struct {
 	Items []ViewComponent `json:"items"`
+}
+
+func (t *ListConfig) UnmarshalJSON(data []byte) error {
+	x := struct {
+		Items []typedObject
+	}{}
+
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+
+	for _, item := range x.Items {
+		listItem, err := item.ToViewComponent()
+		if err != nil {
+			return err
+		}
+		t.Items = append(t.Items, listItem)
+	}
+
+	return nil
 }
 
 // NewList creates a list component

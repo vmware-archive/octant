@@ -19,6 +19,26 @@ type SummarySection struct {
 	Content ViewComponent `json:"content"`
 }
 
+func (t *SummarySection) UnmarshalJSON(data []byte) error {
+	x := struct {
+		Header  string      `json:"header,omitempty"`
+		Content typedObject `json:"content,omitempty"`
+	}{}
+
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+
+	t.Header = x.Header
+	var err error
+	t.Content, err = x.Content.ToViewComponent()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // NewSummary creates a summary component
 func NewSummary(title string, sections ...SummarySection) *Summary {
 	s := append([]SummarySection(nil), sections...) // Make a copy
