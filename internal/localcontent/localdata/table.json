@@ -1,0 +1,83 @@
+{
+    "title": "Sample content",
+    "viewComponents": [
+      {
+        "metadata": {
+          "type": "list"
+        },
+        "config": {
+          "items": [
+            {
+              "metadata": {
+                "type": "table",
+                "title": "example table"
+              },
+              "config": {
+                "columns": [
+                  { "name": "one", "accessor": "one" },
+                  { "name": "two", "accessor": "two" },
+                  { "name": "three", "accessor": "three" }
+                ],
+                "rows": [
+                  {
+                    "one": {
+                      "config": {
+                        "ref": "/foo",
+                        "value": "foo"
+                      },
+                      "metadata": {
+                        "type": "link"
+                      }
+                    },
+                    "two": {
+                      "config": {
+                        "value": "hello"
+                      },
+                      "metadata": {
+                        "type": "text"
+                      }
+                    },
+                    "three": {
+                      "config": {
+                        "value": "world"
+                      },
+                      "metadata": {
+                        "type": "text"
+                      }
+                    }
+                  },
+                  {
+                    "one": {
+                      "config": {
+                        "ref": "/bar",
+                        "value": "bar"
+                      },
+                      "metadata": {
+                        "type": "link"
+                      }
+                    },
+                    "two": {
+                      "config": {
+                        "value": "hello"
+                      },
+                      "metadata": {
+                        "type": "text"
+                      }
+                    },
+                    "three": {
+                      "config": {
+                        "value": "world"
+                      },
+                      "metadata": {
+                        "type": "text"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }

@@ -109,7 +109,7 @@ func (a *API) Handler() *mux.Router {
 		logger:      a.logger,
 		prefix:      a.prefix,
 	}
-	s.Handle(`/content/{rest:[a-zA-Z0-9=\-\/]+}`, contentService).Methods(http.MethodGet)
+	s.Handle(`/content/{rest:.*?}`, contentService).Methods(http.MethodGet)
 
 	s.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		a.logger.Errorf("api handler not found: %s", r.URL.String())

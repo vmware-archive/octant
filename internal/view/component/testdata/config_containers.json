@@ -1,0 +1,12 @@
+{
+  "containers": [
+    {
+      "name": "nginx",
+      "image": "nginx:1.15"
+    },
+    {
+      "name": "kuard",
+      "image": "gcr.io/kuar-demo/kuard-amd64:1"
+    }
+  ]
+}

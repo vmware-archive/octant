@@ -33,6 +33,40 @@ type QuadrantConfig struct {
 	SW ViewComponent
 }
 
+func (t *QuadrantConfig) UnmarshalJSON(data []byte) error {
+	x := struct {
+		NW typedObject
+		NE typedObject
+		SW typedObject
+		SE typedObject
+	}{}
+
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+
+	var err error
+
+	t.NW, err = x.NW.ToViewComponent()
+	if err != nil {
+		return err
+	}
+	t.NE, err = x.NE.ToViewComponent()
+	if err != nil {
+		return err
+	}
+	t.SW, err = x.SW.ToViewComponent()
+	if err != nil {
+		return err
+	}
+	t.SE, err = x.SE.ToViewComponent()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // NewQuadrant creates a quadrant component
 func NewQuadrant() *Quadrant {
 	return &Quadrant{

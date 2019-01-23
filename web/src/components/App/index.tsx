@@ -10,6 +10,13 @@ import { Redirect, Route, RouteComponentProps, Switch, withRouter } from 'react-
 import Navigation from '../Navigation'
 import getInitialState from './state/getInitialState'
 
+interface ContentResponse {
+  content: {
+    title: string;
+    viewComponents: ContentType[];
+  };
+}
+
 interface AppState {
   isLoading: boolean;
   hasError: boolean;
@@ -20,12 +27,7 @@ interface AppState {
   namespaceOptions: NamespaceOption[];
   title: string;
 
-  overviewData: {
-    content: {
-      title: string;
-      viewComponents: ContentType[];
-    };
-  };
+  overviewData: ContentResponse;
 }
 
 class App extends Component<RouteComponentProps, AppState> {
@@ -67,15 +69,16 @@ class App extends Component<RouteComponentProps, AppState> {
     { namespaceOption: previousNamespace },
   ) {
     const { location } = this.props
-    const { namespaceOption: namespace } = this.state
+    const { namespaceOption } = this.state
 
+    const namespace = namespaceOption ? namespaceOption.value : 'default'
     const prevNamespace = previousNamespace ? previousNamespace.value : ''
 
     if (
       location.pathname !== previousLocation.pathname ||
-      namespace.value !== prevNamespace
+      namespace !== prevNamespace
     ) {
-      this.setEventSourceStream(location.pathname, namespace.value)
+      this.setEventSourceStream(location.pathname, namespace)
     }
   }
 
@@ -95,16 +98,14 @@ class App extends Component<RouteComponentProps, AppState> {
 
     if (!path || !namespace) return
 
-    this.setState({ isLoading: true })
-
-    this.setState({ overviewData: null })
+    // this.setState({ isLoading: true, overviewData: null })
 
     const url = getContentsUrl(path, namespace, POLL_WAIT)
 
     this.source = new window.EventSource(`${getAPIBase()}/${url}`)
 
     this.source.addEventListener('message', (e) => {
-      const data = JSON.parse(e.data)
+      const data: ContentResponse = JSON.parse(e.data)
       this.setState({ overviewData: data, isLoading: false })
     })
 
@@ -199,7 +200,6 @@ class App extends Component<RouteComponentProps, AppState> {
           <div className='app-main'>
             <Switch>
               <Route
-                path={rootNavigationPath}
                 render={(props) => (
                   <Overview
                     {...props}
