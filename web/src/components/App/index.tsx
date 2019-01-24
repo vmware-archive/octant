@@ -53,15 +53,15 @@ class App extends Component<RouteComponentProps, AppState> {
   async componentDidMount() {
     let namespace = 'default'
 
-    const { location } = this.props
-    const initialState = await getInitialState(location.pathname)
+    const { location: initialLocation } = this.props
+    const initialState = await getInitialState(initialLocation.pathname)
     this.setState(initialState as AppState)
 
     if (this.state.namespaceOption) {
       namespace = this.state.namespaceOption.value
     }
 
-    this.setEventSourceStream(location.pathname, namespace)
+    this.setEventSourceStream(this.props.location.pathname, namespace)
   }
 
   componentDidUpdate(
@@ -97,8 +97,6 @@ class App extends Component<RouteComponentProps, AppState> {
     }
 
     if (!path || !namespace) return
-
-    // this.setState({ isLoading: true, overviewData: null })
 
     const url = getContentsUrl(path, namespace, POLL_WAIT)
 
@@ -199,6 +197,7 @@ class App extends Component<RouteComponentProps, AppState> {
           </div>
           <div className='app-main'>
             <Switch>
+              <Redirect exact from='/' to={rootNavigationPath} />
               <Route
                 render={(props) => (
                   <Overview
@@ -212,7 +211,6 @@ class App extends Component<RouteComponentProps, AppState> {
                   />
                 )}
               />
-              <Redirect exact from='/' to={rootNavigationPath} />
             </Switch>
           </div>
         </div>
