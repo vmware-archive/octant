@@ -1,0 +1,34 @@
+{
+  "NW": {
+    "metadata": {
+      "type": "text"
+    },
+    "config": {
+      "value": "nw"
+    }
+  },
+  "NE": {
+    "metadata": {
+      "type": "text"
+    },
+    "config": {
+      "value": "ne"
+    }
+  },
+  "SW": {
+    "metadata": {
+      "type": "text"
+    },
+    "config": {
+      "value": "sw"
+    }
+  },
+  "SE": {
+    "metadata": {
+      "type": "text"
+    },
+    "config": {
+      "value": "se"
+    }
+  }
+}

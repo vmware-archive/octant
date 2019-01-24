@@ -1,9 +1,9 @@
+import Grid, { IGrid } from 'components/ContentTypes/Grid'
+import List, { IList } from 'components/ContentTypes/List'
 import ResourceViewer from 'components/ContentTypes/ResourceViewer'
 import { IResourceViewer } from 'components/ContentTypes/ResourceViewer/schema'
 import Summary, { ISummary } from 'components/ContentTypes/Summary'
 import Table, { ITable } from 'components/ContentTypes/Table'
-import Grid, { IGrid } from 'components/ContentTypes/Grid'
-import List, { IList } from 'components/ContentTypes/List'
 import React from 'react'
 
 interface Props {
@@ -24,6 +24,7 @@ export default function({ content }: Props) {
     case 'list':
       return <List data={content as IList} />
     default:
+
       return <div>Can not render content type</div>
   }
 }

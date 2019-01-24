@@ -61,7 +61,7 @@ func Test_Text_Marshal(t *testing.T) {
 			actual, err := json.Marshal(tc.input)
 			isErr := (err != nil)
 			if isErr != tc.isErr {
-				t.Fatalf("Unexepected error: %v", err)
+				t.Fatalf("Unexpected error: %v", err)
 			}
 
 			assert.JSONEq(t, tc.expected, string(actual))

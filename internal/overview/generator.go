@@ -543,6 +543,8 @@ func AddPrintHandlers(p PrinterHandler) error {
 		printer.ReplicaSetListHandler,
 		printer.PodHandler,
 		printer.PodListHandler,
+		printer.ServiceHandler,
+		printer.ServiceListHandler,
 	}
 
 	for _, handler := range handlers {

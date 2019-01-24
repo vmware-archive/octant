@@ -1,6 +1,8 @@
 package component
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 // Selector identifies a ViewComponent as being a selector flavor.
 type Selector interface {
@@ -16,6 +18,29 @@ type Selectors struct {
 // SelectorsConfig is the contents of a Selectors
 type SelectorsConfig struct {
 	Selectors []Selector `json:"selectors"`
+}
+
+func (t *SelectorsConfig) UnmarshalJSON(data []byte) error {
+	x := struct {
+		Selectors []typedObject
+	}{}
+
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+
+	for _, to := range x.Selectors {
+		i, err := unmarshal(to)
+		if err != nil {
+			return err
+		}
+
+		if s, ok := i.(Selector); ok {
+			t.Selectors = append(t.Selectors, s)
+		}
+	}
+
+	return nil
 }
 
 // NewSelectors creates a selectors component
@@ -35,7 +60,7 @@ func (t *Selectors) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifes whether the component is considered empty. Implements ViewComponent.
+// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
 func (t *Selectors) IsEmpty() bool {
 	return len(t.Config.Selectors) == 0
 }

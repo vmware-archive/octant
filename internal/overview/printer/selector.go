@@ -22,3 +22,16 @@ func printSelector(selector *metav1.LabelSelector) *component.Selectors {
 
 	return s
 }
+
+func printSelectorMap(selector map[string]string) *component.Selectors {
+	s := component.NewSelectors(nil)
+	if len(selector) == 0 {
+		return s
+	}
+
+	for k, v := range selector {
+		s.Add(component.NewLabelSelector(k, v))
+	}
+
+	return s
+}
