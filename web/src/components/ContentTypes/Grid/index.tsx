@@ -1,11 +1,13 @@
-import React from 'react'
-import _ from 'lodash'
-import GridLayout from 'react-grid-layout'
+import './styles.scss'
+
 import Summary, { ISummary } from 'components/ContentTypes/Summary'
 import Table, { ITable } from 'components/ContentTypes/Table'
-import Quadrant, { IQuadrant } from './components/Quadrant'
+import _ from 'lodash'
+import React from 'react'
+import GridLayout from 'react-grid-layout'
+
 import Label, { ILabel } from './components/Label'
-import './styles.scss'
+import Quadrant, { IQuadrant } from './components/Quadrant'
 
 type GridPanel = ContentType & {
   metadata: {
@@ -56,7 +58,7 @@ export default function Grid({ data }: Props) {
                   switch (content.metadata.type) {
                     case 'quadrant':
                       return <Quadrant data={content as IQuadrant} />
-                    case 'label':
+                    case 'labels':
                       return <Label data={content as ILabel} />
                     case 'summary':
                       return <Summary data={content as ISummary} />

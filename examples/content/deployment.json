@@ -1,0 +1,700 @@
+{
+  "title": "Deployment: nginx-deployment",
+  "viewComponents": [
+    {
+      "metadata": {
+        "type": "grid",
+        "title": "Detail"
+      },
+      "config": {
+        "panels": [
+          {
+            "metadata": {
+              "type": "panel"
+            },
+            "config": {
+              "position": { "x": 0, "y": 0, "w": 12, "h": 7 },
+              "content": {
+                "metadata": {
+                  "type": "summary",
+                  "title": "Details"
+                },
+                "config": {
+                  "sections": [
+                    {
+                      "content": {
+                        "metadata": {
+                          "type": "text",
+                          "title": "Strategy"
+                        },
+                        "config": {
+                          "value": "RollingUpdate"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Selector",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "app=nginx-deploy"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Min Ready Seconds",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "0"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Revision History Limit",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "10"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Rolling Update Strategy",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "Max Surge: 25%, Max Unavailable: 25%"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "metadata": {
+              "type": "panel"
+            },
+            "config": {
+              "position": { "x": 0, "y": 7, "w": 8, "h": 7 },
+              "content": {
+                "metadata": {
+                  "type": "quadrant",
+                  "title": "Status"
+                },
+                "config": {
+                  "nw": {"label": "Total", "value": "1"},
+                  "ne": {"label": "Updated", "value": "1"},
+                  "sw": {"label": "Available", "value": "1"},
+                  "se": {"label": "Unavailable", "value": "1"}
+                }
+              }
+            }
+          },
+          {
+            "metadata": {
+              "type": "panel"
+            },
+            "config": {
+              "position": { "x": 0, "y": 15, "w": 24, "h": 1 },
+              "content": {
+                "metadata": {
+                  "type": "labels",
+                  "title": "Pod Template"
+                },
+                "config": {
+                  "labels": {
+                    "app": "nginx-deployment"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "metadata": {
+              "type": "panel"
+            },
+            "config": {
+              "position": { "x": 0, "y": 16, "w": 12, "h": 7 },
+              "content": {
+                "metadata": {
+                  "type": "summary",
+                  "title": "Container container-1"
+                },
+                "config": {
+                  "sections": [
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Image",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "nginx:1.15"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Port",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "80/TCP"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Host Port",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "80/TCP"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Environment",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "none"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Mounts",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "/usr/share/nginx/html=www(rw)"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "metadata": {
+              "type": "panel"
+            },
+            "config": {
+              "position": { "x": 12, "y": 16, "w": 12, "h": 7 },
+              "content": {
+                "metadata": {
+                  "type": "summary",
+                  "title": "Container container-2"
+                },
+                "config": {
+                  "sections": [
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Image",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "nginx:1.15"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Port",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "80/TCP"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Host Port",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "80/TCP"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Environment",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "none"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Mounts",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "/usr/share/nginx/html=www(rw)"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "metadata": {
+              "type": "panel"
+            },
+            "config": {
+              "position": { "x": 0, "y": 23, "w": 12, "h": 7 },
+              "content": {
+                "metadata": {
+                  "type": "summary",
+                  "title": "Container container-n"
+                },
+                "config": {
+                  "sections": [
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Image",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "nginx:1.15"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Port",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "80/TCP"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Host Port",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "80/TCP"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Environment",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "none"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Mounts",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "/usr/share/nginx/html=www(rw)"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "metadata": {
+              "type": "panel"
+            },
+            "config": {
+              "position": { "x": 0, "y": 30, "w": 12, "h": 7 },
+              "content": {
+                "metadata": {
+                  "type": "table",
+                  "title": "Volumes"
+                },
+                "config": {
+                  "columns": [
+                    { "name": "Name", "accessor": "Name" },
+                    { "name": "Labels", "accessor": "Labels" },
+                    { "name": "Desired", "accessor": "Desired" },
+                    { "name": "Current", "accessor": "Current" },
+                    { "name": "Ready", "accessor": "Ready" },
+                    { "name": "Age", "accessor": "Age" },
+                    { "name": "Containers", "accessor": "Containers" },
+                    { "name": "Images", "accessor": "Images" },
+                    { "name": "Selector", "accessor": "Selector" }
+                  ],
+                  "rows": [
+                    {
+                      "Name": {
+                        "config": {
+                          "ref": "/content/overview/workloads/replica-sets/nginx-deployment-7778c58546",
+                          "value": "nginx-deployment-7778c58546"
+                        },
+                        "metadata": {
+                          "type": "link"
+                        }
+                      },
+                      "Age": {
+                        "config": { "timestamp": 1545166466 },
+                        "metadata": {
+                          "type": "timestamp"
+                        }
+                      },
+                      "Containers": {
+                        "config": { "value": "nginx" },
+                        "metadata": {
+                          "type": "text"
+                        }
+                      },
+                      "Current": {
+                        "config": { "value": "3" },
+                        "metadata": { "type": "text" }
+                      },
+                      "Desired": {
+                        "config": { "value": "3" },
+                        "metadata": { "type": "text" }
+                      },
+                      "Images": {
+                        "config": { "value": "nginx:1.12" },
+                        "metadata": {
+                          "type": "text"
+                        }
+                      },
+                      "Labels": {
+                        "config": {
+                          "labels": {
+                            "app": "nginx-deploy"
+                          }
+                        },
+                        "metadata": {
+                          "type": "labels"
+                        }
+                      },
+                      "Ready": {
+                        "config": { "value": "3" },
+                        "metadata": { "type": "text" }
+                      },
+                      "Selector": {
+                        "config": { "value": "app=nginx-deploy" },
+                        "metadata": { "type": "text" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "metadata": {
+              "type": "panel"
+            },
+            "config": {
+              "position": { "x": 12, "y": 30, "w": 12, "h": 7 },
+              "content": {
+                "metadata": {
+                  "type": "summary",
+                  "title": "Additional properties"
+                },
+                "config": {
+                  "sections": [
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Image",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "nginx:1.15"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Port",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "80/TCP"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Host Port",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "80/TCP"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Environment",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "none"
+                        }
+                      }
+                    },
+                    {
+                      "content": {
+                        "metadata": {
+                          "title": "Mounts",
+                          "type": "text"
+                        },
+                        "config": {
+                          "value": "/usr/share/nginx/html=www(rw)"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "metadata": {
+              "type": "panel"
+            },
+            "config": {
+              "position": { "x": 0, "y": 38, "w": 12, "h": 7 },
+              "content": {
+                "metadata": {
+                  "title": "Conditions",
+                  "type": "table"
+                },
+                "config": {
+                  "columns": [
+                    { "name": "Name", "accessor": "Name" },
+                    { "name": "Labels", "accessor": "Labels" },
+                    { "name": "Desired", "accessor": "Desired" },
+                    { "name": "Current", "accessor": "Current" },
+                    { "name": "Ready", "accessor": "Ready" },
+                    { "name": "Age", "accessor": "Age" },
+                    { "name": "Containers", "accessor": "Containers" },
+                    { "name": "Images", "accessor": "Images" },
+                    { "name": "Selector", "accessor": "Selector" }
+                  ],
+                  "rows": [
+                    {
+                      "Name": {
+                        "config": {
+                          "ref": "/content/overview/workloads/replica-sets/nginx-deployment-7778c58546",
+                          "value": "nginx-deployment-7778c58546"
+                        },
+                        "metadata": {
+                          "type": "link"
+                        }
+                      },
+                      "Age": {
+                        "config": { "timestamp": 1545166466 },
+                        "metadata": {
+                          "type": "timestamp"
+                        }
+                      },
+                      "Containers": {
+                        "config": { "value": "nginx" },
+                        "metadata": {
+                          "type": "text"
+                        }
+                      },
+                      "Current": {
+                        "config": { "value": "3" },
+                        "metadata": { "type": "text" }
+                      },
+                      "Desired": {
+                        "config": { "value": "3" },
+                        "metadata": { "type": "text" }
+                      },
+                      "Images": {
+                        "config": { "value": "nginx:1.12" },
+                        "metadata": {
+                          "type": "text"
+                        }
+                      },
+                      "Labels": {
+                        "config": {
+                          "labels": {
+                            "app": "nginx-deploy"
+                          }
+                        },
+                        "metadata": {
+                          "type": "labels"
+                        }
+                      },
+                      "Ready": {
+                        "config": { "value": "3" },
+                        "metadata": { "type": "text" }
+                      },
+                      "Selector": {
+                        "config": { "value": "app=nginx-deploy" },
+                        "metadata": {
+                          "type": "text"
+                        }
+                      }
+                    }
+                  ],
+                  "empty_content": "This Deployment does not have a current Replica"
+                }
+              }
+            }
+          },
+          {
+            "metadata": {
+              "type": "panel"
+            },
+            "config": {
+              "position": { "x": 12, "y": 38, "w": 12, "h": 7 },
+              "content": {
+                "metadata": {
+                  "type": "table",
+                  "title": "Replica Sets"
+                },
+                "config": {
+                  "columns": [
+                    { "name": "Name", "accessor": "Name" },
+                    { "name": "Labels", "accessor": "Labels" },
+                    { "name": "Desired", "accessor": "Desired" },
+                    { "name": "Current", "accessor": "Current" },
+                    { "name": "Ready", "accessor": "Ready" },
+                    { "name": "Age", "accessor": "Age" },
+                    { "name": "Containers", "accessor": "Containers" },
+                    { "name": "Images", "accessor": "Images" },
+                    { "name": "Selector", "accessor": "Selector" }
+                  ],
+                  "rows": [
+                    {
+                      "Name": {
+                        "config": {
+                          "ref": "/content/overview/workloads/replica-sets/nginx-deployment-7778c58546",
+                          "value": "nginx-deployment-7778c58546"
+                        },
+                        "metadata": {
+                          "type": "link"
+                        }
+                      },
+                      "Age": {
+                        "config": { "timestamp": 1545166466 },
+                        "metadata": {
+                          "type": "timestamp"
+                        }
+                      },
+                      "Containers": {
+                        "config": { "value": "nginx" },
+                        "metadata": {
+                          "type": "text"
+                        }
+                      },
+                      "Current": {
+                        "config": { "value": "3" },
+                        "metadata": { "type": "text" }
+                      },
+                      "Desired": {
+                        "config": { "value": "3" },
+                        "metadata": { "type": "text" }
+                      },
+                      "Images": {
+                        "config": { "value": "nginx:1.12" },
+                        "metadata": {
+                          "type": "text"
+                        }
+                      },
+                      "Labels": {
+                        "config": {
+                          "labels": {
+                            "app": "nginx-deploy"
+                          }
+                        },
+                        "metadata": {
+                          "type": "labels"
+                        }
+                      },
+                      "Ready": {
+                        "config": { "value": "3" },
+                        "metadata": { "type": "text" }
+                      },
+                      "Selector": {
+                        "config": { "value": "app=nginx-deploy" },
+                        "metadata": { "type": "text" }
+                      }
+                    }
+                  ],
+                  "empty_content": "This Deployment does not have a current Replica"
+                }
+              }
+            }
+          },
+          {
+            "metadata": {
+              "type": "panel"
+            },
+            "config": {
+              "position": { "x": 0, "y": 45, "w": 24, "h": 7 },
+              "content": {
+                "metadata": {
+                  "type": "table"
+                },
+                "config": {
+                  "columns": [
+                    { "name": "Message", "accessor": "message" },
+                    { "name": "Source", "accessor": "source" },
+                    { "name": "Sub-Object", "accessor": "sub_object" },
+                    { "name": "Count", "accessor": "count" },
+                    { "name": "First Seen", "accessor": "first_seen" },
+                    { "name": "Last Seen", "accessor": "last_seen" }
+                  ],
+                  "empty_content": "Namespace overview does not contain any events for this Deployment"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+
+  ]
+}
