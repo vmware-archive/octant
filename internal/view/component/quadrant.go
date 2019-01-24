@@ -17,6 +17,9 @@ const (
 	QuadSE
 	// QuadSW denotes the south-west position within a quadrant
 	QuadSW
+
+	// quadrantType is the component type for a quadrant
+	quadrantType = "quadrant"
 )
 
 // Quadrant contains other ViewComponents
@@ -25,53 +28,29 @@ type Quadrant struct {
 	Config   QuadrantConfig `json:"config"`
 }
 
-// QuadrantConfig is the contents of a Quadrant
-type QuadrantConfig struct {
-	NW ViewComponent
-	NE ViewComponent
-	SE ViewComponent
-	SW ViewComponent
+type QuadrantValue struct {
+	Value string `json:"value,omitempty"`
+	Label string `json:"label,omitempty"`
 }
 
-func (t *QuadrantConfig) UnmarshalJSON(data []byte) error {
-	x := struct {
-		NW typedObject
-		NE typedObject
-		SW typedObject
-		SE typedObject
-	}{}
+// IsEmpty returns true if the quadrant's value or label are blank.
+func (qv *QuadrantValue) IsEmpty() bool {
+	return qv.Value == "" || qv.Label == ""
+}
 
-	if err := json.Unmarshal(data, &x); err != nil {
-		return err
-	}
-
-	var err error
-
-	t.NW, err = x.NW.ToViewComponent()
-	if err != nil {
-		return err
-	}
-	t.NE, err = x.NE.ToViewComponent()
-	if err != nil {
-		return err
-	}
-	t.SW, err = x.SW.ToViewComponent()
-	if err != nil {
-		return err
-	}
-	t.SE, err = x.SE.ToViewComponent()
-	if err != nil {
-		return err
-	}
-
-	return nil
+// QuadrantConfig is the contents of a Quadrant
+type QuadrantConfig struct {
+	NW QuadrantValue `json:"nw,omitempty"`
+	NE QuadrantValue `json:"ne,omitempty"`
+	SE QuadrantValue `json:"se,omitempty"`
+	SW QuadrantValue `json:"sw,omitempty"`
 }
 
 // NewQuadrant creates a quadrant component
 func NewQuadrant() *Quadrant {
 	return &Quadrant{
 		Metadata: Metadata{
-			Type: "quadrant",
+			Type: quadrantType,
 		},
 		Config: QuadrantConfig{},
 	}
@@ -82,25 +61,26 @@ func (t *Quadrant) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifes whether the component is considered empty. Implements ViewComponent.
+// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
 func (t *Quadrant) IsEmpty() bool {
-	return t.Config.NW == nil &&
-		t.Config.NE == nil &&
-		t.Config.SE == nil &&
-		t.Config.SW == nil
+	return t.Config.NW.IsEmpty() ||
+		t.Config.NE.IsEmpty() ||
+		t.Config.SW.IsEmpty() ||
+		t.Config.SE.IsEmpty()
 }
 
 // Set adds additional panels to the quadrant
-func (t *Quadrant) Set(pos QuadrantPosition, content ViewComponent) error {
+func (t *Quadrant) Set(pos QuadrantPosition, label, value string) error {
+	qv := QuadrantValue{Label: label, Value: value}
 	switch pos {
 	case QuadNW:
-		t.Config.NW = content
+		t.Config.NW = qv
 	case QuadNE:
-		t.Config.NE = content
+		t.Config.NE = qv
 	case QuadSE:
-		t.Config.SE = content
+		t.Config.SE = qv
 	case QuadSW:
-		t.Config.SW = content
+		t.Config.SW = qv
 	default:
 		return fmt.Errorf("invalid quadrant position: %v", pos)
 	}
@@ -112,6 +92,6 @@ type quadrantMarshal Quadrant
 // MarshalJSON implements json.Marshaler
 func (t *Quadrant) MarshalJSON() ([]byte, error) {
 	m := quadrantMarshal(*t)
-	m.Metadata.Type = "quadrant"
+	m.Metadata.Type = quadrantType
 	return json.Marshal(&m)
 }

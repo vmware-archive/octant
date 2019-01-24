@@ -1,7 +1,9 @@
-import React from 'react'
-import _ from 'lodash'
-import ItemList from '../shared/ItemList'
 import './styles.scss'
+
+import _ from 'lodash'
+import React from 'react'
+
+import ItemList from '../shared/ItemList'
 
 export interface ISummary {
   metadata: {

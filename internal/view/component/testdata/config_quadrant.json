@@ -1,34 +1,6 @@
 {
-  "NW": {
-    "metadata": {
-      "type": "text"
-    },
-    "config": {
-      "value": "nw"
-    }
-  },
-  "NE": {
-    "metadata": {
-      "type": "text"
-    },
-    "config": {
-      "value": "ne"
-    }
-  },
-  "SW": {
-    "metadata": {
-      "type": "text"
-    },
-    "config": {
-      "value": "sw"
-    }
-  },
-  "SE": {
-    "metadata": {
-      "type": "text"
-    },
-    "config": {
-      "value": "se"
-    }
-  }
+  "NW": { "label": "nw", "value": "1"},
+  "NE": { "label": "ne", "value": "1"},
+  "SW": { "label": "sw", "value": "1"},
+  "SE": { "label": "se", "value": "1"}
 }

@@ -6,13 +6,15 @@
   flex-wrap: wrap;
 
   .content-label {
-    background-color: $white;
-    color: $blue-dark;
-
+    border: 1px solid $label-border;
     border-radius: 4px;
+    color: $label-text;
+
     margin-bottom: 2px;
     margin-right: 4px;
     padding: 5px 10px;
+
+    font-size: 12px;
 
     &:last-child {
       margin-right: 0;

@@ -137,22 +137,10 @@ func Test_unmarshal(t *testing.T) {
 			objectType: "quadrant",
 			expected: &Quadrant{
 				Config: QuadrantConfig{
-					NW: &Text{
-						Config:   TextConfig{Text: "nw"},
-						Metadata: Metadata{Type: "text"},
-					},
-					NE: &Text{
-						Config:   TextConfig{Text: "ne"},
-						Metadata: Metadata{Type: "text"},
-					},
-					SW: &Text{
-						Config:   TextConfig{Text: "sw"},
-						Metadata: Metadata{Type: "text"},
-					},
-					SE: &Text{
-						Config:   TextConfig{Text: "se"},
-						Metadata: Metadata{Type: "text"},
-					},
+					NW: QuadrantValue{Label: "nw", Value: "1"},
+					NE: QuadrantValue{Label: "ne", Value: "1"},
+					SW: QuadrantValue{Label: "sw", Value: "1"},
+					SE: QuadrantValue{Label: "se", Value: "1"},
 				},
 				Metadata: Metadata{Type: "quadrant"},
 			},
