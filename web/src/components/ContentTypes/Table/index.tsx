@@ -1,12 +1,14 @@
 import './styles.scss'
 import 'react-table/react-table.css'
+
 import _ from 'lodash'
-import moment from 'moment'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import ReactTable from 'react-table'
+
 import EmptyContent from '../shared/EmptyContent'
 import Labels from '../shared/Labels'
+import Timestamp from '../shared/Timestamp'
 
 export interface ITable {
   metadata: {
@@ -44,10 +46,6 @@ export default function Table({ data }: Props) {
           return _.entries(config.labels)[0]
         case 'list':
           return config.list[0]
-        case 'time':
-          // currently a string, but should consider parsing into
-          // a js date for sorting
-          return config.timestamp
         case 'link':
         case 'text':
         case 'string':
@@ -72,9 +70,9 @@ export default function Table({ data }: Props) {
             </Link>
           )
         case 'timestamp': {
-          const t = moment(config.timestamp)
-          if (!t.isValid()) return config.timestamp
-          return t.toISOString()
+          return(
+            <Timestamp config={config} />
+          )
         }
         default:
           return row.value

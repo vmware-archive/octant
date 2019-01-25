@@ -6,6 +6,7 @@ import _ from 'lodash'
 import Overview from 'pages/Overview'
 import React, { Component } from 'react'
 import { Redirect, Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom'
+import ReactTooltip from 'react-tooltip'
 
 import Navigation from '../Navigation'
 import getInitialState from './state/getInitialState'
@@ -80,6 +81,9 @@ class App extends Component<RouteComponentProps, AppState> {
     ) {
       this.setEventSourceStream(location.pathname, namespace)
     }
+
+    // this is required to make tool tips show.
+    ReactTooltip.rebuild()
   }
 
   componentWillUnmount(): void {
@@ -213,6 +217,7 @@ class App extends Component<RouteComponentProps, AppState> {
               />
             </Switch>
           </div>
+          <ReactTooltip />
         </div>
       </div>
     )
