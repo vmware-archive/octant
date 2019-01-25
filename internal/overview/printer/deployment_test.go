@@ -45,7 +45,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 				Spec: appsv1.DeploymentSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app": "myapp",
+							"app": "my_app",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
@@ -80,7 +80,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 		"Name":       component.NewText("", "deployment"),
 		"Labels":     component.NewLabels(labels),
 		"Age":        component.NewTimestamp(now),
-		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
+		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "my_app")}),
 		"Status":     component.NewText("", "2/3"),
 		"Containers": containers,
 	})
@@ -207,3 +207,26 @@ var (
 		},
 	}
 )
+
+func TestDeploymentStatus(t *testing.T) {
+	d := &appsv1.Deployment{
+		Status: appsv1.DeploymentStatus{
+			UpdatedReplicas:     1,
+			Replicas:            2,
+			UnavailableReplicas: 3,
+			AvailableReplicas:   4,
+		},
+	}
+
+	ds := printer.NewDeploymentStatus(d)
+	got, err := ds.Create()
+	require.NoError(t, err)
+
+	expected := component.NewQuadrant()
+	require.NoError(t, expected.Set(component.QuadNW, "Updated", "1"))
+	require.NoError(t, expected.Set(component.QuadNE, "Total", "2"))
+	require.NoError(t, expected.Set(component.QuadSW, "Unavailable", "3"))
+	require.NoError(t, expected.Set(component.QuadSE, "Available", "4"))
+
+	assert.Equal(t, expected, got)
+}
