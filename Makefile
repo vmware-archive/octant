@@ -41,6 +41,9 @@ web-build: web-deps
 	@cd web; npm run-script build
 	@go generate ./web
 
+web-test: web-deps
+	@cd web; npm test
+
 ui-server:
 	DASH_DISABLE_OPEN_BROWSER=false DASH_LISTENER_ADDR=localhost:3001 $(GOCMD) run ./cmd/hcli/main.go dash $(DASH_FLAGS)
 
@@ -56,4 +59,4 @@ release:
 	git push --follow-tags
 
 .PHONY: ci
-ci: gen-electron test vet web-build hcli-dev
+ci: gen-electron test vet web-test web-build hcli-dev
