@@ -148,3 +148,40 @@ func (dc *DeploymentConfiguration) Create() (*component.Summary, error) {
 
 	return summary, nil
 }
+
+// DeploymentStatus generates deployment status.
+type DeploymentStatus struct {
+	deployment *appsv1.Deployment
+}
+
+// NewDeploymentStatus creates an instance of DeploymentStatus.
+func NewDeploymentStatus(d *appsv1.Deployment) *DeploymentStatus {
+	return &DeploymentStatus{
+		deployment: d,
+	}
+}
+
+// Create generates a deployment status quadrant.
+func (ds *DeploymentStatus) Create() (*component.Quadrant, error) {
+	if ds.deployment == nil {
+		return nil, errors.New("deployment is nil")
+	}
+
+	status := ds.deployment.Status
+
+	quadrant := component.NewQuadrant()
+	if err := quadrant.Set(component.QuadNW, "Updated", fmt.Sprintf("%d", status.UpdatedReplicas)); err != nil {
+		return nil, errors.New("unable to set quadrant nw")
+	}
+	if err := quadrant.Set(component.QuadNE, "Total", fmt.Sprintf("%d", status.Replicas)); err != nil {
+		return nil, errors.New("unable to set quadrant ne")
+	}
+	if err := quadrant.Set(component.QuadSW, "Unavailable", fmt.Sprintf("%d", status.UnavailableReplicas)); err != nil {
+		return nil, errors.New("unable to set quadrant sw")
+	}
+	if err := quadrant.Set(component.QuadSE, "Available", fmt.Sprintf("%d", status.AvailableReplicas)); err != nil {
+		return nil, errors.New("unable to set quadrant se")
+	}
+
+	return quadrant, nil
+}
