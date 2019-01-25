@@ -1,6 +1,10 @@
 package component
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/pkg/errors"
+)
 
 // ExpressionSelector is a component for a single expression within a selector
 type ExpressionSelector struct {
@@ -29,6 +33,18 @@ const (
 	// OperatorDoesNotExist means a key does not exists on the selected resource
 	OperatorDoesNotExist Operator = "DoesNotExist"
 )
+
+// MatchOperator matches an operator.
+func MatchOperator(s string) (Operator, error) {
+	operators := []Operator{OperatorIn, OperatorNotIn, OperatorExists, OperatorExists}
+	for _, o := range operators {
+		if string(o) == s {
+			return o, nil
+		}
+	}
+
+	return Operator("invalid"), errors.Errorf("operator %q is not valid", s)
+}
 
 // NewExpressionSelector creates a expressionSelector component
 func NewExpressionSelector(k string, o Operator, values []string) *ExpressionSelector {
