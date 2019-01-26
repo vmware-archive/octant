@@ -12,8 +12,9 @@ type Table struct {
 
 // TableConfig is the contents of a Table
 type TableConfig struct {
-	Columns []TableCol `json:"columns"`
-	Rows    []TableRow `json:"rows"`
+	Columns      []TableCol `json:"columns"`
+	Rows         []TableRow `json:"rows"`
+	EmptyContent string     `json:"emptyContent"`
 }
 
 // TableCol describes a column from a table. Accessor is the key this

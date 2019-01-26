@@ -22,6 +22,7 @@
                 "config": {
                   "sections": [
                     {
+                      "header": "Strategy",
                       "content": {
                         "metadata": {
                           "type": "text",
@@ -33,6 +34,7 @@
                       }
                     },
                     {
+                      "header": "Selector",
                       "content": {
                         "metadata": {
                           "title": "Selector",
@@ -44,6 +46,7 @@
                       }
                     },
                     {
+                      "header": "Min Ready Seconds",
                       "content": {
                         "metadata": {
                           "title": "Min Ready Seconds",
@@ -55,6 +58,7 @@
                       }
                     },
                     {
+                      "header": "Revision History Limit",
                       "content": {
                         "metadata": {
                           "title": "Revision History Limit",
@@ -66,6 +70,7 @@
                       }
                     },
                     {
+                      "header": "Rolling Update Strategy",
                       "content": {
                         "metadata": {
                           "title": "Rolling Update Strategy",
@@ -93,10 +98,10 @@
                   "title": "Status"
                 },
                 "config": {
-                  "nw": {"label": "Total", "value": "1"},
-                  "ne": {"label": "Updated", "value": "1"},
-                  "sw": {"label": "Available", "value": "1"},
-                  "se": {"label": "Unavailable", "value": "1"}
+                  "nw": { "label": "Total", "value": "1" },
+                  "ne": { "label": "Updated", "value": "1" },
+                  "sw": { "label": "Available", "value": "1" },
+                  "se": { "label": "Unavailable", "value": "1" }
                 }
               }
             }
@@ -109,13 +114,22 @@
               "position": { "x": 0, "y": 15, "w": 24, "h": 1 },
               "content": {
                 "metadata": {
-                  "type": "labels",
+                  "type": "selectors",
                   "title": "Pod Template"
                 },
                 "config": {
-                  "labels": {
-                    "app": "nginx-deployment"
-                  }
+                  "selectors": [
+                    {
+                      "metadata": {
+                        "type": "labelSelector",
+                        "title": ""
+                      },
+                      "config": {
+                        "key": "app",
+                        "value": "nginx-deployment"
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -134,6 +148,7 @@
                 "config": {
                   "sections": [
                     {
+                      "header": "Image",
                       "content": {
                         "metadata": {
                           "title": "Image",
@@ -145,6 +160,7 @@
                       }
                     },
                     {
+                      "header": "Port",
                       "content": {
                         "metadata": {
                           "title": "Port",
@@ -156,6 +172,7 @@
                       }
                     },
                     {
+                      "header": "Host Port",
                       "content": {
                         "metadata": {
                           "title": "Host Port",
@@ -167,6 +184,7 @@
                       }
                     },
                     {
+                      "header": "Environment",
                       "content": {
                         "metadata": {
                           "title": "Environment",
@@ -178,6 +196,7 @@
                       }
                     },
                     {
+                      "header": "Mounts",
                       "content": {
                         "metadata": {
                           "title": "Mounts",
@@ -207,6 +226,7 @@
                 "config": {
                   "sections": [
                     {
+                      "header": "Image",
                       "content": {
                         "metadata": {
                           "title": "Image",
@@ -218,6 +238,7 @@
                       }
                     },
                     {
+                      "header": "Port",
                       "content": {
                         "metadata": {
                           "title": "Port",
@@ -229,6 +250,7 @@
                       }
                     },
                     {
+                      "header": "Host Port",
                       "content": {
                         "metadata": {
                           "title": "Host Port",
@@ -240,6 +262,7 @@
                       }
                     },
                     {
+                      "header": "Environment",
                       "content": {
                         "metadata": {
                           "title": "Environment",
@@ -251,6 +274,7 @@
                       }
                     },
                     {
+                      "header": "Mounts",
                       "content": {
                         "metadata": {
                           "title": "Mounts",
@@ -280,6 +304,7 @@
                 "config": {
                   "sections": [
                     {
+                      "header": "Image",
                       "content": {
                         "metadata": {
                           "title": "Image",
@@ -291,6 +316,7 @@
                       }
                     },
                     {
+                      "header": "Port",
                       "content": {
                         "metadata": {
                           "title": "Port",
@@ -302,6 +328,7 @@
                       }
                     },
                     {
+                      "header": "Host Port",
                       "content": {
                         "metadata": {
                           "title": "Host Port",
@@ -313,6 +340,7 @@
                       }
                     },
                     {
+                      "header": "Environment",
                       "content": {
                         "metadata": {
                           "title": "Environment",
@@ -324,6 +352,7 @@
                       }
                     },
                     {
+                      "header": "Mounts",
                       "content": {
                         "metadata": {
                           "title": "Mounts",
@@ -437,6 +466,7 @@
                 "config": {
                   "sections": [
                     {
+                      "header": "Image",
                       "content": {
                         "metadata": {
                           "title": "Image",
@@ -448,6 +478,7 @@
                       }
                     },
                     {
+                      "header": "Port",
                       "content": {
                         "metadata": {
                           "title": "Port",
@@ -459,6 +490,7 @@
                       }
                     },
                     {
+                      "header": "Host Port",
                       "content": {
                         "metadata": {
                           "title": "Host Port",
@@ -470,6 +502,7 @@
                       }
                     },
                     {
+                      "header": "Environment",
                       "content": {
                         "metadata": {
                           "title": "Environment",
@@ -481,6 +514,7 @@
                       }
                     },
                     {
+                      "header": "Mounts",
                       "content": {
                         "metadata": {
                           "title": "Mounts",
@@ -578,7 +612,7 @@
                       }
                     }
                   ],
-                  "empty_content": "This Deployment does not have a current Replica"
+                  "emptyContent": "This Deployment does not have a current Replica"
                 }
               }
             }
@@ -663,7 +697,7 @@
                       }
                     }
                   ],
-                  "empty_content": "This Deployment does not have a current Replica"
+                  "emptyContent": "This Deployment does not have a current Replica"
                 }
               }
             }
@@ -676,7 +710,8 @@
               "position": { "x": 0, "y": 45, "w": 24, "h": 7 },
               "content": {
                 "metadata": {
-                  "type": "table"
+                  "type": "table",
+                  "title": "Events"
                 },
                 "config": {
                   "columns": [
@@ -687,7 +722,7 @@
                     { "name": "First Seen", "accessor": "first_seen" },
                     { "name": "Last Seen", "accessor": "last_seen" }
                   ],
-                  "empty_content": "Namespace overview does not contain any events for this Deployment"
+                  "emptyContent": "Namespace overview does not contain any events for this Deployment"
                 }
               }
             }
@@ -695,6 +730,5 @@
         ]
       }
     }
-
   ]
 }

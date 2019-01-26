@@ -3,6 +3,7 @@ import './styles.scss'
 import { getAPIBase, getContentsUrl, POLL_WAIT, setNamespace } from 'api'
 import Header from 'components/Header'
 import _ from 'lodash'
+import JSONContentResponse, { Parse } from 'models/ContentResponse'
 import Overview from 'pages/Overview'
 import React, { Component } from 'react'
 import { Redirect, Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom'
@@ -10,13 +11,6 @@ import ReactTooltip from 'react-tooltip'
 
 import Navigation from '../Navigation'
 import getInitialState from './state/getInitialState'
-
-interface ContentResponse {
-  content: {
-    title: string;
-    viewComponents: ContentType[];
-  };
-}
 
 interface AppState {
   isLoading: boolean;
@@ -28,7 +22,7 @@ interface AppState {
   namespaceOptions: NamespaceOption[];
   title: string;
 
-  overviewData: ContentResponse;
+  contentResponse: JSONContentResponse;
 }
 
 class App extends Component<RouteComponentProps, AppState> {
@@ -47,7 +41,7 @@ class App extends Component<RouteComponentProps, AppState> {
       currentNavLinkPath: [],
       namespaceOption: null,
       namespaceOptions: [],
-      overviewData: null,
+      contentResponse: null,
     }
   }
 
@@ -107,8 +101,12 @@ class App extends Component<RouteComponentProps, AppState> {
     this.source = new window.EventSource(`${getAPIBase()}/${url}`)
 
     this.source.addEventListener('message', (e) => {
-      const data: ContentResponse = JSON.parse(e.data)
-      this.setState({ overviewData: data, isLoading: false })
+      const cr2 = Parse(e.data)
+
+      this.setState({
+        contentResponse: cr2,
+        isLoading: false,
+      })
     })
 
     this.source.addEventListener('navigation', (e) => {
@@ -211,7 +209,7 @@ class App extends Component<RouteComponentProps, AppState> {
                     hasError={hasError}
                     errorMessage={errorMessage}
                     setError={this.setError}
-                    data={this.state.overviewData}
+                    data={this.state.contentResponse}
                   />
                 )}
               />

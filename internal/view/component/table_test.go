@@ -54,6 +54,7 @@ func Test_Table_Marshal(t *testing.T) {
 							},
 						},
 					},
+					EmptyContent: "",
 				},
 			},
 			expectedPath: "table.json",
