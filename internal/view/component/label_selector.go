@@ -2,12 +2,6 @@ package component
 
 import "encoding/json"
 
-// LabelSelector is a component for a single label within a selector
-type LabelSelector struct {
-	Metadata Metadata            `json:"metadata"`
-	Config   LabelSelectorConfig `json:"config"`
-}
-
 // LabelSelectorConfig is the contents of LabelSelector
 type LabelSelectorConfig struct {
 	Key   string `json:"key"`
@@ -27,12 +21,23 @@ func NewLabelSelector(k, v string) *LabelSelector {
 	}
 }
 
+// LabelSelector is a component for a single label within a selector
+type LabelSelector struct {
+	Metadata Metadata            `json:"metadata"`
+	Config   LabelSelectorConfig `json:"config"`
+}
+
+// Name is the name of the LabelSelector.
+func (t *LabelSelector) Name() string {
+	return t.Config.Key
+}
+
 // GetMetadata accesses the components metadata. Implements ViewComponent.
 func (t *LabelSelector) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifes whether the component is considered empty. Implements ViewComponent.
+// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
 func (t *LabelSelector) IsEmpty() bool {
 	return t.Config.Key == "" && t.Config.Value == ""
 }

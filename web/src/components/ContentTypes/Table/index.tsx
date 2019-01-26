@@ -8,6 +8,7 @@ import ReactTable from 'react-table'
 
 import EmptyContent from '../shared/EmptyContent'
 import Labels from '../shared/Labels'
+import Selectors from '../shared/Selector'
 import Timestamp from '../shared/Timestamp'
 
 export interface ITable {
@@ -72,6 +73,11 @@ export default function Table({ data }: Props) {
         case 'timestamp': {
           return(
             <Timestamp config={config} />
+          )
+        }
+        case 'selectors': {
+          return (
+            <Selectors config={config} />
           )
         }
         default:

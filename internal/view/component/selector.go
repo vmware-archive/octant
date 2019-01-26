@@ -2,11 +2,13 @@ package component
 
 import (
 	"encoding/json"
+	"sort"
 )
 
 // Selector identifies a ViewComponent as being a selector flavor.
 type Selector interface {
 	IsSelector()
+	Name() string
 }
 
 // Selectors contains other ViewComponents
@@ -74,7 +76,23 @@ type selectorsMarshal Selectors
 
 // MarshalJSON implements json.Marshaler
 func (t *Selectors) MarshalJSON() ([]byte, error) {
-	m := selectorsMarshal(*t)
-	m.Metadata.Type = "selectors"
+	filtered := &Selectors{}
+	for _, s := range t.Config.Selectors {
+		if !isInStringSlice(s.Name(), labelsFilteredKeys) {
+			filtered.Config.Selectors = append(filtered.Config.Selectors, s)
+		}
+	}
+
+	filtered.Metadata.Type = "selectors"
+	filtered.Metadata.Title = t.Metadata.Title
+
+	m := selectorsMarshal(*filtered)
+
+	sort.Slice(m.Config.Selectors, func(i, j int) bool {
+		a := m.Config.Selectors[i]
+		b := m.Config.Selectors[j]
+		return a.Name() < b.Name()
+	})
+
 	return json.Marshal(&m)
 }

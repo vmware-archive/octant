@@ -21,7 +21,7 @@ func Test_Selectors_Marshal(t *testing.T) {
 			name: "general",
 			input: &Selectors{
 				Metadata: Metadata{
-					Title: "mysummary",
+					Title: "my-summary",
 				},
 				Config: SelectorsConfig{
 					Selectors: []Selector{
@@ -50,7 +50,7 @@ func Test_Selectors_Marshal(t *testing.T) {
 			actual, err := json.Marshal(tc.input)
 			isErr := (err != nil)
 			if isErr != tc.isErr {
-				t.Fatalf("Unexepected error: %v", err)
+				t.Fatalf("Unexpected error: %v", err)
 			}
 
 			expected, err := ioutil.ReadFile(path.Join("testdata", tc.expectedPath))
