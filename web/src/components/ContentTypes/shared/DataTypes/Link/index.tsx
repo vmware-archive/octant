@@ -1,23 +1,23 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link as RouterLink } from 'react-router-dom'
 import './styles.scss'
 
 interface Props {
   params: LinkContentType;
 }
 
-export default function Item(props: Props) {
+export default function Link({ params }: Props) {
   const {
     metadata: { title },
     config: { value, ref },
-  } = props.params
+  } = params
   return (
     <div className='summary--data summary--data-link'>
-      <div className='summary--data-key'>{title}</div>
+      <div className='summary--data-key' data-test='title'>{title}</div>
       <div className='summary--data-link'>
-        <Link className='link--gray' to={ref}>
+        <RouterLink className='link--gray' to={ref}>
           {value || ref}
-        </Link>
+        </RouterLink>
       </div>
     </div>
   )

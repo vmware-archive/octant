@@ -1,4 +1,4 @@
-import { shallow } from 'enzyme'
+import {shallow} from 'enzyme'
 import React from 'react'
 import Text from './index'
 
@@ -11,7 +11,7 @@ describe('render text', () => {
     config: {
       value: '10',
     },
-  };
+  }
 
   const component = shallow(<Text params={params}/>)
 
