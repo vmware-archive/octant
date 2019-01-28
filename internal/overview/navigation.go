@@ -73,36 +73,36 @@ func (nf *NavigationFactory) genNode(name string, childFn func(string) []*hcli.N
 
 func (nf *NavigationFactory) workloadEntries(prefix string) []*hcli.Navigation {
 	return []*hcli.Navigation{
-		hcli.NewNavigation("Cron Jobs", nf.pathFor(prefix, "cron-jobs")),
-		hcli.NewNavigation("Daemon Sets", nf.pathFor(prefix, "daemon-sets")),
+		hcli.NewNavigation("Cron Jobs", path.Join(prefix, "cron-jobs")),
+		hcli.NewNavigation("Daemon Sets", path.Join(prefix, "daemon-sets")),
 		hcli.NewNavigation("Deployments", path.Join(prefix, "deployments")),
-		hcli.NewNavigation("Jobs", nf.pathFor(prefix, "jobs")),
-		hcli.NewNavigation("Pods", nf.pathFor(prefix, "pods")),
-		hcli.NewNavigation("Replica Sets", nf.pathFor(prefix, "replica-sets")),
-		hcli.NewNavigation("Replication Controllers", nf.pathFor(prefix, "replication-controllers")),
-		hcli.NewNavigation("Stateful Sets", nf.pathFor(prefix, "stateful-sets")),
+		hcli.NewNavigation("Jobs", path.Join(prefix, "jobs")),
+		hcli.NewNavigation("Pods", path.Join(prefix, "pods")),
+		hcli.NewNavigation("Replica Sets", path.Join(prefix, "replica-sets")),
+		hcli.NewNavigation("Replication Controllers", path.Join(prefix, "replication-controllers")),
+		hcli.NewNavigation("Stateful Sets", path.Join(prefix, "stateful-sets")),
 	}
 }
 
 func (nf *NavigationFactory) discoAndLBEntries(prefix string) []*hcli.Navigation {
 	return []*hcli.Navigation{
-		hcli.NewNavigation("Ingresses", nf.pathFor(prefix, "ingresses")),
-		hcli.NewNavigation("Services", nf.pathFor(prefix, "services")),
+		hcli.NewNavigation("Ingresses", path.Join(prefix, "ingresses")),
+		hcli.NewNavigation("Services", path.Join(prefix, "services")),
 	}
 }
 
 func (nf *NavigationFactory) configAndStorageEntries(prefix string) []*hcli.Navigation {
 	return []*hcli.Navigation{
-		hcli.NewNavigation("Config Maps", nf.pathFor(prefix, "config-maps")),
-		hcli.NewNavigation("Persistent Volume Claims", nf.pathFor(prefix, "persistent-volume-claims")),
-		hcli.NewNavigation("Secrets", nf.pathFor(prefix, "secrets")),
-		hcli.NewNavigation("Service Accounts", nf.pathFor(prefix, "service-accounts")),
+		hcli.NewNavigation("Config Maps", path.Join(prefix, "config-maps")),
+		hcli.NewNavigation("Persistent Volume Claims", path.Join(prefix, "persistent-volume-claims")),
+		hcli.NewNavigation("Secrets", path.Join(prefix, "secrets")),
+		hcli.NewNavigation("Service Accounts", path.Join(prefix, "service-accounts")),
 	}
 }
 
 func (nf *NavigationFactory) rbacEntries(prefix string) []*hcli.Navigation {
 	return []*hcli.Navigation{
-		hcli.NewNavigation("Roles", nf.pathFor(prefix, "roles")),
-		hcli.NewNavigation("Role Bindings", nf.pathFor(prefix, "role-bindings")),
+		hcli.NewNavigation("Roles", path.Join(prefix, "roles")),
+		hcli.NewNavigation("Role Bindings", path.Join(prefix, "role-bindings")),
 	}
 }
