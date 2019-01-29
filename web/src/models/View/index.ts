@@ -8,8 +8,8 @@ import { JSONQuadrant } from 'models/Quadrant'
 import { JSONSelectors } from 'models/Selectors'
 import { JSONSummary } from 'models/Summary'
 import { JSONTable } from 'models/Table'
-import { JSONText } from 'models/Text'
-import { JSONTimestamp } from 'models/Timestamp'
+import { compareTextModel, JSONText, TextModel } from 'models/Text'
+import { compareTimestampModel, JSONTimestamp, TimestampModel } from 'models/Timestamp'
 
 export * from 'models/List'
 export * from 'models/Summary'
@@ -27,6 +27,12 @@ export * from 'models/Selectors'
 export interface View {
   readonly type: string;
   readonly title: string;
+
+  readonly isComparable?: boolean;
+}
+
+export function instanceOfComparableView(object: any): object is View {
+  return object.isComparable
 }
 
 export function viewFromContentType(ct: ContentType): View {
@@ -63,5 +69,24 @@ export function viewFromContentType(ct: ContentType): View {
       throw new Error(
         `can't handle content response view '${ct.metadata.type}'`,
       )
+  }
+}
+
+export function compareModel(a: View, b: View): number {
+  if (a.type !== b.type) {
+    throw new Error(`unable to compare ${a.type} to ${b.type}`)
+  }
+
+  if (!a.isComparable && !b.isComparable) {
+    throw new Error(`views are not comparable`)
+  }
+
+  switch (a.type) {
+    case 'text':
+      return compareTextModel(a as TextModel, b as TextModel)
+    case 'timestamp':
+      return compareTimestampModel(a as TimestampModel, b as TimestampModel)
+    default:
+      return 0
   }
 }

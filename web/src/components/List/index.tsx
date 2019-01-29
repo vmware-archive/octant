@@ -1,8 +1,8 @@
-import React from 'react'
-import _ from 'lodash'
-import { ListModel } from 'models/List'
-import { renderView } from 'views'
 import './styles.scss'
+
+import { ListModel } from 'models/List'
+import React from 'react'
+import { renderView } from 'views'
 
 interface Props {
   view: ListModel
@@ -10,6 +10,7 @@ interface Props {
 
 export default function List(props: Props) {
   const { view } = props
+
   return (
     <div className='content-type-list' data-test='list'>
       {
@@ -18,10 +19,7 @@ export default function List(props: Props) {
             <div className='content-type-list-item' key={i} >
               {
                 (() => {
-                  if (_.includes(['quadrant', 'label', 'summary', 'table'], item.type)) {
-                    return renderView(item)
-                  }
-                  return <div />
+                  return renderView(item)
                 })()
               }
             </div>

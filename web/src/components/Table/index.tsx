@@ -2,8 +2,7 @@ import './styles.scss'
 import 'react-table/react-table.css'
 
 import EmptyContent from 'components/EmptyContent'
-import _ from 'lodash'
-import { TableModel, viewFromContentType } from 'models/View'
+import { compareModel, instanceOfComparableView, TableModel, TableRow, TextModel, View } from 'models/View'
 import React from 'react'
 import ReactTable from 'react-table'
 import { renderView } from 'views'
@@ -15,53 +14,89 @@ interface Props {
 export default function Table({ view }: Props) {
   const { title, rows, columns, emptyContent } = view
 
-  const tableColumns = _.map(columns, ({ name, accessor }: { name: string, accessor: string }, index: number) => ({
-    Header: name,
-
-    // TODO: re-enable when calculating column width
-    // width: getColumnWidth(rows, accessor, name),
-    id: `column_${index}`,
-    Cell: (row) => {
-      const entry = row.original
-      const content = entry[accessor] as ContentType
-      if (!_.isObject(content)) return content
-
-      const cellView = viewFromContentType(content)
-      return renderView(cellView)
-    },
-  }))
+  const tableColumns = columns.map(({ name, accessor }, index) => {
+    return {
+      Header: name,
+      id: `column_${index}`,
+      accessor: (row) => row[name],
+      Cell: (row) => {
+        const entry = row.original
+        const cellView = entry[accessor]
+        return renderView(cellView)
+      },
+      maxWidth: getColumnWidth(rows, accessor),
+      sortMethod: sortMethod(),
+      sortable: isSortable(rows, accessor),
+    }
+  })
 
   const pageSize = rows && rows.length ? rows.length : null
 
-  return (
-    <div className='table--component'>
-      <h2 className='table-component-title'>{title}</h2>
-      {!rows || !rows.length ? (
-        <EmptyContent emptyContent={emptyContent} />
-      ) : (
+  const noDataText = emptyContent || 'no data'
+  if (rows.length > 0) {
+    return (
+      <div className='table--component'>
+        <h2 className='table-component-title'>{title}</h2>
         <ReactTable
+          noDataText={noDataText}
           columns={tableColumns}
           data={rows}
           showPagination={false}
           pageSize={pageSize}
-          defaultSorted={[
-            {
-              id: 'column_0',
-            },
-          ]}
+          multiSort={false}
         />
-      )}
+      </div>
+    )
+  }
+
+  return (
+    <div className='table--component'>
+      <h2 className='table-component-title'>{title}</h2>
+      <EmptyContent emptyContent={emptyContent} />
     </div>
   )
 }
 
-function getColumnWidth(rows: Array<{ [x: string]: ContentType; }>, accessor: string, headerText: string): number {
-  const maxWidth = 600
-  const magicSpacing = 10
-  const cellLength = Math.max(
-    ...rows.map((row) => (`${row[accessor]}` || '').length),
-    headerText.length,
-  )
+export function getColumnWidth(
+  rows: Array<{
+    [key: string]: View;
+  }>,
+  accessor: string,
+): number | undefined {
+  const lens = rows
+    .map((row) => {
+      if (!row.hasOwnProperty(accessor)) {
+        throw new Error(`table doesn't have a column named "${accessor}"`)
+      }
 
-  return Math.min(maxWidth, cellLength * magicSpacing)
+      const view = row[accessor]
+      switch (view.type) {
+        case 'timestamp':
+          return 60
+        case 'text':
+          return (view as TextModel).value.length * 45
+        default:
+          return 0
+      }
+    })
+    .map((n) => Math.max(n, accessor.length * 45))
+
+  const max = Math.max(...lens)
+  return max === 0 ? undefined : max
+}
+
+export function isSortable(rows: TableRow[], accessor: string): boolean {
+  return (
+    (rows.length > 0 && instanceOfComparableView(rows[0][accessor])) || false
+  )
+}
+
+export function sortMethod(): (a, b, desc) => number {
+  return (a: View, b: View, desc: boolean) => {
+    if (instanceOfComparableView(a)) {
+      const n = compareModel(a, b)
+      return desc ? n : n * -1
+    }
+    return 0
+  }
 }
