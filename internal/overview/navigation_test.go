@@ -15,6 +15,8 @@ func Test_NavigationFactory_Entries(t *testing.T) {
 
 	assert.Equal(t, got.Title, "Overview")
 	assert.Equal(t, got.Path, "/content/overview/")
+
+	assert.Equal(t, "/content/overview/workloads/cron-jobs", got.Children[0].Children[0].Path)
 }
 
 func Test_NavigationFactory_Root(t *testing.T) {
