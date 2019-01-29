@@ -19,6 +19,22 @@ type SummarySection struct {
 	Content ViewComponent `json:"content"`
 }
 
+// SummarySections is a slice of summary sections
+type SummarySections []SummarySection
+
+// Add adds sections to a sections slice
+func (s *SummarySections) Add(sections ...SummarySection) {
+	*s = append(*s, sections...)
+}
+
+// AddText adds a section with a single text component
+func (s *SummarySections) AddText(header string, text string) {
+	*s = append(*s, SummarySection{
+		Header:  header,
+		Content: NewText("", text),
+	})
+}
+
 func (t *SummarySection) UnmarshalJSON(data []byte) error {
 	x := struct {
 		Header  string      `json:"header,omitempty"`
