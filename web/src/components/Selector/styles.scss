@@ -1,53 +1,23 @@
-@import '~css/variables/variables.scss';
+$selector-color: #00c986;
 
-.dd-selector-container {
+.selectors {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
 
-  .dd-selector__control {
-    background-color: $blue-dark;
-    color: $white;
+  .selectors--label, .selectors--expression {
+    border: 1px solid $selector-color;
+    border-radius: 4px;
+    color: $selector-color;
 
-    border: none;
-    border-bottom: 1px solid $white;
-    border-radius: 0;
-    box-shadow: none;
-    height: 50px;
+    margin-bottom: 2px;
+    margin-right: 4px;
+    padding: 5px 10px;
 
-    &:hover {
-      //color: $gray-dark;
-      //border-color: $gray-dark;
+    font-size: 12px;
+
+    &:last-child {
+      margin-right: 0;
     }
-  }
-
-  .dd-selector__indicator-separator {
-    visibility: hidden;
-  }
-
-  .dd-selector__indicator {
-    border: none;
-    color: $white;
-
-    &:hover {
-      //color: $gray-dark;
-    }
-  }
-
-  .dd-selector__single-value {
-    padding-bottom: 2px;
-    padding-top: 2px;
-    color: $white;
-  }
-
-  .dd-selector__menu {
-    margin: 0;
-  }
-
-  .dd-selector__menu-list {
-    background-color: $blue-dark;
-    padding: 0;
-  }
-
-  .dd-selector__option--is-focused, .dd-selector__option--is-selected, .dd-selector__option:active {
-    background-color: $white;
-    color: $blue-dark;
   }
 }
