@@ -1,8 +1,8 @@
-import './styles.scss'
-
-import { ListModel } from 'models/List'
 import React from 'react'
+import _ from 'lodash'
+import { ListModel } from 'models/List'
 import { renderView } from 'views'
+import './styles.scss'
 
 interface Props {
   view: ListModel
@@ -11,23 +11,17 @@ interface Props {
 export default function List(props: Props) {
   const { view } = props
   return (
-    <div className='content-type-list'>
+    <div className='content-type-list' data-test='list'>
       {
         view.items().map((item, i) => {
-
           return (
             <div className='content-type-list-item' key={i} >
               {
                 (() => {
-                  switch (item.type) {
-                    case 'quadrant':
-                    case 'label':
-                    case 'summary':
-                    case 'table':
-                        return renderView(item)
-                    default:
-                    return <div/>
+                  if (_.includes(['quadrant', 'label', 'summary', 'table'], item.type)) {
+                    return renderView(item)
                   }
+                  return <div />
                 })()
               }
             </div>
