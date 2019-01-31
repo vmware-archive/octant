@@ -9,18 +9,12 @@ interface Props {
   navSections: NavigationSectionType[];
   currentNavLinkPath: NavigationSectionType[];
   onNavChange: (NavigationPathLink) => void;
-  namespaceOptions: NamespaceOption[];
-  namespaceValue: NamespaceOption;
-  onNamespaceChange: (NamespaceOption) => void;
 }
 
 export default function Navigation({
   navSections,
   currentNavLinkPath,
   onNavChange,
-  namespaceOptions,
-  namespaceValue,
-  onNamespaceChange,
 }: Props) {
   return (
     <nav className='navigation--left'>

@@ -1,7 +1,7 @@
 @import '~css/variables/variables.scss';
 
 .navigation--left-section {
-  margin-left: 10px;
+  margin-left: $navLeftPadding;
 
   &:first-child {
     padding-top: 10px;

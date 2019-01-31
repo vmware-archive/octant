@@ -1,7 +1,6 @@
-import './styles.scss'
-
-import React from 'react'
+import React, { Component } from 'react'
 import Select from 'react-select'
+import './styles.scss'
 
 interface Props {
   namespaceOptions: NamespaceOption[];
@@ -10,7 +9,7 @@ interface Props {
   onNamespaceChange: (NamespaceOption) => void;
 }
 
-class Header extends React.Component<Props> {
+export default class extends Component<Props> {
   namespaces() {
     return this.props.namespaceOptions.map((option, i) => {
       return (
@@ -24,11 +23,11 @@ class Header extends React.Component<Props> {
   render() {
     return (
       <header>
-        <ul className='header--container'>
-          <li className='header--logo'>
+        <div className='header--container'>
+          <div className='header--logo'>
             <h1>Dev Dash</h1>
-          </li>
-          <li className='header--namespace'>
+          </div>
+          <div className='header--namespace'>
             <Select
               className='header--selector'
               classNamePrefix='header--selector'
@@ -37,15 +36,13 @@ class Header extends React.Component<Props> {
               value={this.props.namespaceValue}
               onChange={this.props.onNamespaceChange}
             />
-          </li>
-          <li className='header--filter'>
-            <input type='text' placeholder='label filter' />
-          </li>
-          <li className='header--context'>context display</li>
-        </ul>
+          </div>
+          <div className='header--filter'>
+            <input className='header-filter-input' type='text' placeholder='Filter by label' />
+          </div>
+          <div className='header--context'>kubecontext</div>
+        </div>
       </header>
     )
   }
 }
-
-export default Header

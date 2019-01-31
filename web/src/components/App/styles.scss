@@ -1,7 +1,5 @@
 @import '~css/variables/variables.scss';
 
-$sidebarWidth: 295px;
-
 .app {
   position: relative;
   background-color: $blue-dark;
@@ -9,21 +7,21 @@ $sidebarWidth: 295px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  margin-top: 70px;
+  margin-top: $headerHeight;
 
   .app-nav, .app-main {
     float: left;
   }
 
   .app-nav {
-    width: $sidebarWidth;
+    width: $navWidth;
     height: 100%;
     position: fixed;
   }
 
   .app-main {
     position: relative;
-    left: $sidebarWidth;
-    width: calc(100% - #{$sidebarWidth});
+    left: $navWidth;
+    width: calc(100% - #{$navWidth});
   }
 }

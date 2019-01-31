@@ -14,6 +14,14 @@
   font-family: 'MetropolisRegular', sans-serif;
 }
 
+@mixin metropolisBold {
+  font-family: 'MetropolisBold','MetropolisRegular', sans-serif;
+}
+
+@mixin metropolisSemiBold {
+  font-family: 'MetropolisSemiBold', 'MetropolisBold','MetropolisRegular', sans-serif;
+}
+
 @mixin monospace {
   @include font-size('12');
   font-family: 'Consolas', 'Menlo', monospace;
@@ -76,10 +84,10 @@ $lineheight-map: (
   font-weight: 500;
 }
 
-@mixin semi-bold {
-  font-weight: 600;
+@mixin semiBold {
+  @include metropolisSemiBold;
 }
 
 @mixin bold {
-  font-weight: 700;
+  @include metropolisBold;
 }

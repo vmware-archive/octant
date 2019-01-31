@@ -192,9 +192,6 @@ class App extends Component<RouteComponentProps, AppState> {
               onNavChange={(linkPath) =>
                 this.setState({ currentNavLinkPath: linkPath })
               }
-              namespaceOptions={namespaceOptions}
-              namespaceValue={namespaceOption}
-              onNamespaceChange={this.onNamespaceChange}
             />
           </div>
           <div className='app-main'>

@@ -3,7 +3,7 @@
 .overview {
   .main {
     height: 100%;
-    padding: 50px;
+    padding: 20px 50px;
 
     .component--primary {
       margin-bottom: 50px;
@@ -24,6 +24,12 @@
 
     .loading-parent {
       margin-top: 10vh;
+    }
+
+    .content-type-list {
+      .content-type-list-item {
+        margin-bottom: 20px;
+      }
     }
   }
 }
