@@ -29,7 +29,7 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 				readyCounter++
 			}
 		}
-		ready := fmt.Sprintf("%d/%d", readyCounter, len(d.Status.ContainerStatuses))
+		ready := fmt.Sprintf("%d/%d", readyCounter, len(d.Spec.Containers))
 		row["Ready"] = component.NewText("", ready)
 
 		status := fmt.Sprintf("%s", d.Status.Phase)
