@@ -7,6 +7,9 @@ import (
 
 	"github.com/heptio/developer-dash/internal/view/component"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
 // PodListHandler is a printFunc that prints pods
@@ -63,4 +66,36 @@ func PodHandler(p *corev1.Pod, opts Options) (component.ViewComponent, error) {
 	list := component.NewList("", []component.ViewComponent{grid})
 
 	return list, nil
+}
+
+type podStatus struct {
+	Running   int
+	Waiting   int
+	Succeeded int
+	Failed    int
+}
+
+func CreatePodStatus(c corev1client.PodInterface, selector labels.Selector) podStatus {
+	var ps podStatus
+
+	options := metav1.ListOptions{LabelSelector: selector.String()}
+	pods, err := c.List(options)
+	if err != nil {
+		return ps
+	}
+
+	for _, pod := range pods.Items {
+		switch pod.Status.Phase {
+		case corev1.PodRunning:
+			ps.Running++
+		case corev1.PodPending:
+			ps.Waiting++
+		case corev1.PodSucceeded:
+			ps.Succeeded++
+		case corev1.PodFailed:
+			ps.Failed++
+		}
+	}
+
+	return ps
 }
