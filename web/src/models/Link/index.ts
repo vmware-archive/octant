@@ -9,7 +9,7 @@ export class JSONLink implements LinkModel {
   readonly ref: string
   readonly value: string
   readonly title: string
-  readonly type = 'text'
+  readonly type = 'link'
 
   constructor(private readonly ct: ContentType) {
     this.title = ct.metadata.title

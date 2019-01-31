@@ -19,6 +19,8 @@ func gvkPath(apiVersion, kind, name string) string {
 		p = "/content/overview/workloads/stateful-sets"
 	case apiVersion == "extensions/v1beta1" && kind == "Deployment":
 		p = "/content/overview/workloads/deployments"
+	case apiVersion == "apps/v1" && kind == "Deployment":
+		p = "/content/overview/workloads/deployments"
 	case apiVersion == "batch/v1beta1" && kind == "CronJob":
 		p = "/content/overview/workloads/cron-jobs"
 	case (apiVersion == "batch/v1beta1" || apiVersion == "batch/v1") && kind == "Job":

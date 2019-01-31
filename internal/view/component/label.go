@@ -58,6 +58,7 @@ func (t *Labels) MarshalJSON() ([]byte, error) {
 
 	m := labelsMarshal(*filtered)
 	m.Metadata.Type = "labels"
+	m.Metadata.Title = t.Metadata.Title
 	return json.Marshal(&m)
 }
 

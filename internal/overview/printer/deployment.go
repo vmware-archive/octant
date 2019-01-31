@@ -6,6 +6,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 
 	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/internal/view/gridlayout"
 	"github.com/pkg/errors"
 )
 
@@ -20,7 +21,8 @@ func DeploymentListHandler(list *appsv1.DeploymentList, opts Options) (component
 
 	for _, d := range list.Items {
 		row := component.TableRow{}
-		row["Name"] = component.NewText("", d.Name)
+		deploymentPath := gvkPath(d.TypeMeta.APIVersion, d.TypeMeta.Kind, d.Name)
+		row["Name"] = component.NewLink("", d.Name, deploymentPath)
 		row["Labels"] = component.NewLabels(d.Labels)
 
 		status := fmt.Sprintf("%d/%d", d.Status.AvailableReplicas, d.Status.AvailableReplicas+d.Status.UnavailableReplicas)
@@ -44,16 +46,36 @@ func DeploymentListHandler(list *appsv1.DeploymentList, opts Options) (component
 // DeploymentHandler is a printFunc that prints a Deployments.
 // TODO: This handler is incomplete.
 func DeploymentHandler(deployment *appsv1.Deployment, options Options) (component.ViewComponent, error) {
-	grid := component.NewGrid("Summary")
+	gl := gridlayout.New()
 
-	detailsSummary := component.NewSummary("Details")
+	configSection := gl.CreateSection(8)
 
-	detailsPanel := component.NewPanel("", detailsSummary)
-	grid.Add(*detailsPanel)
+	deployConfigGen := NewDeploymentConfiguration(deployment)
+	configView, err := deployConfigGen.Create()
+	if err != nil {
+		return nil, err
+	}
 
-	list := component.NewList("", []component.ViewComponent{grid})
+	configSection.Add(configView, 16)
 
-	return list, nil
+	summarySection := gl.CreateSection(8)
+
+	deploySummaryGen := NewDeploymentStatus(deployment)
+	statusView, err := deploySummaryGen.Create()
+	if err != nil {
+		return nil, err
+	}
+
+	summarySection.Add(statusView, 8)
+
+	podTemplate := NewPodTemplate(deployment.Spec.Template)
+	if err = podTemplate.AddToGridLayout(gl); err != nil {
+		return nil, err
+	}
+
+	grid := gl.ToGrid()
+
+	return grid, nil
 }
 
 // DeploymentConfiguration generates deployment configuration.

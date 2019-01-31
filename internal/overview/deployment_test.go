@@ -38,6 +38,10 @@ func TestDeploymentSummary(t *testing.T) {
 
 	twentyFivePercent := intstr.FromString("25%")
 	object := &appsv1.Deployment{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "apps/v1",
+			Kind:       "Deployment",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "deployment",
 			Namespace: "default",

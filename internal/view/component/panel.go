@@ -57,6 +57,14 @@ func NewPanel(title string, content ViewComponent) *Panel {
 	}
 }
 
+// Position sets the position for the panel in a grid.
+func (t *Panel) Position(x, y, w, h int) {
+	t.Config.Position.X = x
+	t.Config.Position.Y = y
+	t.Config.Position.W = w
+	t.Config.Position.H = h
+}
+
 // GetMetadata accesses the components metadata. Implements ViewComponent.
 func (t *Panel) GetMetadata() Metadata {
 	return t.Metadata

@@ -117,7 +117,7 @@ func Test_ContainerConfiguration(t *testing.T) {
 		{
 			name:      "general",
 			container: validContainer,
-			expected: component.NewSummary("nginx", []component.SummarySection{
+			expected: component.NewSummary("Container nginx", []component.SummarySection{
 				{
 					Header:  "Image",
 					Content: component.NewText("", "nginx:1.15"),
@@ -141,8 +141,9 @@ func Test_ContainerConfiguration(t *testing.T) {
 							Columns: component.NewTableCols("Name", "Value", "Source"),
 							Rows: []component.TableRow{
 								component.TableRow{
-									"Name":  component.NewText("", "tier"),
-									"Value": component.NewText("", "prod"),
+									"Name":   component.NewText("", "tier"),
+									"Value":  component.NewText("", "prod"),
+									"Source": component.NewText("", ""),
 								},
 								component.TableRow{
 									"Name":   component.NewText("", "fieldref"),

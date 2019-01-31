@@ -68,7 +68,7 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 		})
 	}
 
-	summary := component.NewSummary(c.Name, sections...)
+	summary := component.NewSummary(fmt.Sprintf("Container %s", c.Name), sections...)
 	return summary, nil
 }
 
@@ -114,6 +114,9 @@ func describeEnvRows(vars []corev1.EnvVar) []component.TableRow {
 	for _, e := range vars {
 		row := component.TableRow{}
 		rows = append(rows, row)
+
+		// each row requires data for each defined column
+		row["Source"] = component.NewText("", "")
 
 		row["Name"] = component.NewText("", e.Name)
 		row["Value"] = component.NewText("", e.Value) // TODO should we resolve values when source is a reference (valueFrom)?
