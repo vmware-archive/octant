@@ -22,6 +22,13 @@ func Test_EventListHandler(t *testing.T) {
 	object := &corev1.EventList{
 		Items: []corev1.Event{
 			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "event-12345",
+				},
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "v1",
+					Kind:       "Event",
+				},
 				InvolvedObject: corev1.ObjectReference{
 					APIVersion: "apps/v1",
 					Kind:       "Deployment",
@@ -48,7 +55,7 @@ func Test_EventListHandler(t *testing.T) {
 			component.NewLink("", "d1", "/content/overview/workloads/deployments/d1"),
 			component.NewText("", "1234"),
 		}),
-		"Message":    component.NewText("", "message"),
+		"Message":    component.NewLink("", "message", "/content/overview/events/event-12345"),
 		"Reason":     component.NewText("", "Reason"),
 		"Type":       component.NewText("", "Type"),
 		"First Seen": component.NewTimestamp(time.Unix(1548424410, 0)),
@@ -156,6 +163,87 @@ func Test_ReplicasetEvents(t *testing.T) {
 		"From":       component.NewText("", "replicaset-controller"),
 		"Count":      component.NewText("", "1"),
 	})
+
+	assert.Equal(t, expected, got)
+}
+
+func Test_EventHandler(t *testing.T) {
+	printOptions := printer.Options{
+		Cache: cache.NewMemoryCache(),
+	}
+
+	event := &corev1.Event{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "event-12345",
+		},
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "Event",
+		},
+		InvolvedObject: corev1.ObjectReference{
+			APIVersion: "apps/v1",
+			Kind:       "Deployment",
+			Name:       "d1",
+		},
+		Count:          1234,
+		Message:        "message",
+		Reason:         "Reason",
+		Type:           corev1.EventTypeNormal,
+		FirstTimestamp: metav1.Time{Time: time.Unix(1548424410, 0)},
+		LastTimestamp:  metav1.Time{Time: time.Unix(1548424410, 0)},
+		Source: corev1.EventSource{
+			Component: "component",
+			Host:      "host",
+		},
+	}
+
+	got, err := printer.EventHandler(event, printOptions)
+	require.NoError(t, err)
+
+	eventDetailSections := []component.SummarySection{
+		{
+			Header:  "Last Seen",
+			Content: component.NewTimestamp(time.Unix(1548424410, 0)),
+		},
+		{
+			Header:  "First Seen",
+			Content: component.NewTimestamp(time.Unix(1548424410, 0)),
+		},
+		{
+			Header:  "Count",
+			Content: component.NewText("", "1234"),
+		},
+		{
+			Header:  "Message",
+			Content: component.NewText("", "message"),
+		},
+		{
+			Header:  "Kind",
+			Content: component.NewText("", "Deployment"),
+		},
+		{
+			Header:  "Involved Object",
+			Content: component.NewLink("", "d1", "/content/overview/workloads/deployments/d1"),
+		},
+		{
+			Header:  "Type",
+			Content: component.NewText("", "Normal"),
+		},
+		{
+			Header:  "Reason",
+			Content: component.NewText("", "Reason"),
+		},
+		{
+			Header:  "Source",
+			Content: component.NewText("", "component on host"),
+		},
+	}
+	eventDetailView := component.NewSummary("Event Detail", eventDetailSections...)
+
+	eventDetailPanel := component.NewPanel("", eventDetailView)
+	eventDetailPanel.Position(0, 0, 24, 10)
+
+	expected := component.NewGrid("", *eventDetailPanel)
 
 	assert.Equal(t, expected, got)
 }

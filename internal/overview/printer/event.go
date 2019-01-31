@@ -8,6 +8,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/internal/view/gridlayout"
 )
 
 // EventListHandler is a printFunc that lists events.
@@ -35,7 +36,8 @@ func EventListHandler(list *corev1.EventList, opts Options) (component.ViewCompo
 		info := component.NewList("", infoItems)
 
 		row["Kind"] = info
-		row["Message"] = component.NewText("", event.Message)
+		eventPath := gvkPath(event.TypeMeta.APIVersion, event.TypeMeta.Kind, event.Name)
+		row["Message"] = component.NewLink("", event.Message, eventPath)
 		row["Reason"] = component.NewText("", event.Reason)
 		row["Type"] = component.NewText("", event.Type)
 		row["First Seen"] = component.NewTimestamp(event.FirstTimestamp.Time)
@@ -45,6 +47,80 @@ func EventListHandler(list *corev1.EventList, opts Options) (component.ViewCompo
 	}
 
 	return table, nil
+}
+
+func EventHandler(event *corev1.Event, opts Options) (component.ViewComponent, error) {
+	if event == nil {
+		return nil, errors.New("event can not be nil")
+	}
+
+	var detailSections []component.SummarySection
+
+	detailSections = append(detailSections, component.SummarySection{
+		Header:  "Last Seen",
+		Content: component.NewTimestamp(event.LastTimestamp.Time),
+	})
+
+	detailSections = append(detailSections, component.SummarySection{
+		Header:  "First Seen",
+		Content: component.NewTimestamp(event.FirstTimestamp.Time),
+	})
+
+	detailSections = append(detailSections, component.SummarySection{
+		Header:  "Count",
+		Content: component.NewText("", fmt.Sprintf("%d", event.Count)),
+	})
+
+	detailSections = append(detailSections, component.SummarySection{
+		Header:  "Message",
+		Content: component.NewText("", event.Message),
+	})
+
+	detailSections = append(detailSections, component.SummarySection{
+		Header:  "Kind",
+		Content: component.NewText("", event.InvolvedObject.Kind),
+	})
+
+	// NOTE: object reference can contain a field path to the object,
+	// and that is not reported.
+	refPath, err := ObjectReferencePath(event.InvolvedObject)
+	if err != nil {
+		return nil, err
+	}
+	detailSections = append(detailSections, component.SummarySection{
+		Header:  "Involved Object",
+		Content: component.NewLink("", event.InvolvedObject.Name, refPath),
+	})
+
+	detailSections = append(detailSections, component.SummarySection{
+		Header:  "Type",
+		Content: component.NewText("", event.Type),
+	})
+
+	detailSections = append(detailSections, component.SummarySection{
+		Header:  "Reason",
+		Content: component.NewText("", event.Reason),
+	})
+
+	sourceMsg := event.Source.Component
+	if event.Source.Host != "" {
+		sourceMsg = fmt.Sprintf("%s on %s",
+			event.Source.Component, event.Source.Host)
+	}
+	detailSections = append(detailSections, component.SummarySection{
+		Header:  "Source",
+		Content: component.NewText("", sourceMsg),
+	})
+
+	summary := component.NewSummary("Event Detail", detailSections...)
+
+	gl := gridlayout.New()
+
+	summarySection := gl.CreateSection(10)
+	summarySection.Add(summary, 24)
+
+	grid := gl.ToGrid()
+	return grid, nil
 }
 
 // PrintEvents collects events for a resource
