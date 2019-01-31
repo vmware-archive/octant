@@ -35,6 +35,18 @@ func Test_PodListHandler(t *testing.T) {
 					},
 					Labels: labels,
 				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						corev1.Container{
+							Name:  "nginx",
+							Image: "nginx:1.15",
+						},
+						corev1.Container{
+							Name:  "kuard",
+							Image: "gcr.io/kuar-demo/kuard-amd64:1",
+						},
+					},
+				},
 				Status: corev1.PodStatus{
 					Phase: "Pending",
 					ContainerStatuses: []corev1.ContainerStatus{
