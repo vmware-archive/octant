@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	appsv1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientset "k8s.io/client-go/kubernetes"
 
 	"github.com/heptio/developer-dash/internal/view/component"
 )
@@ -43,7 +45,7 @@ func ReplicaSetListHandler(list *appsv1.ReplicaSetList, opts Options) (component
 
 // ReplicaSetHandler is a printFunc that prints a ReplicaSets.
 // TODO: This handler is incomplete.
-func ReplicaSetHandler(deployment *appsv1.ReplicaSet, options Options) (component.ViewComponent, error) {
+func ReplicaSetHandler(rs *appsv1.ReplicaSet, options Options) (component.ViewComponent, error) {
 	grid := component.NewGrid("Summary")
 
 	detailsSummary := component.NewSummary("Details")
@@ -54,4 +56,46 @@ func ReplicaSetHandler(deployment *appsv1.ReplicaSet, options Options) (componen
 	list := component.NewList("", []component.ViewComponent{grid})
 
 	return list, nil
+}
+
+// ReplicaSet generates a replicaset satatus
+type ReplicaSetConfiguration struct {
+	replicaset *appsv1.ReplicaSet
+	client     clientset.Interface
+}
+
+// NewReplicaSetConfiguration ...
+func NewReplicaSetConfiguration(rs *appsv1.ReplicaSet, c clientset.Interface) *ReplicaSetConfiguration {
+	return &ReplicaSetConfiguration{
+		replicaset: rs,
+		client:     c,
+	}
+}
+
+// Create generates a replicaset status
+func (rc *ReplicaSetConfiguration) Create() (*component.Quadrant, error) {
+	if rc.replicaset == nil {
+		return nil, errors.New("replicaset is nil")
+	}
+	pods := rc.client.Core().Pods(rc.replicaset.Namespace)
+
+	selector, _ := metav1.LabelSelectorAsSelector(rc.replicaset.Spec.Selector)
+
+	ps := CreatePodStatus(pods, selector)
+
+	quadrant := component.NewQuadrant()
+	if err := quadrant.Set(component.QuadNW, "Running", fmt.Sprintf("%d", ps.Running)); err != nil {
+		return nil, errors.New("unable to set quadrant nw")
+	}
+	if err := quadrant.Set(component.QuadNE, "Waiting", fmt.Sprintf("%d", ps.Waiting)); err != nil {
+		return nil, errors.New("unable to set quadrant ne")
+	}
+	if err := quadrant.Set(component.QuadSW, "Succeeded", fmt.Sprintf("%d", ps.Succeeded)); err != nil {
+		return nil, errors.New("unable to set quadrant sw")
+	}
+	if err := quadrant.Set(component.QuadSE, "Failed", fmt.Sprintf("%d", ps.Failed)); err != nil {
+		return nil, errors.New("unable to set quadrant se")
+	}
+
+	return quadrant, nil
 }
