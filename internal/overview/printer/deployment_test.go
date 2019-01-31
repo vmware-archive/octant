@@ -30,6 +30,10 @@ func Test_DeploymentListHandler(t *testing.T) {
 	object := &appsv1.DeploymentList{
 		Items: []appsv1.Deployment{
 			{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "apps/v1",
+					Kind:       "Deployment",
+				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "deployment",
 					CreationTimestamp: metav1.Time{
@@ -77,7 +81,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
 	expected := component.NewTable("Deployments", cols)
 	expected.Add(component.TableRow{
-		"Name":       component.NewText("", "deployment"),
+		"Name":       component.NewLink("", "deployment", "/content/overview/workloads/deployments/deployment"),
 		"Labels":     component.NewLabels(labels),
 		"Age":        component.NewTimestamp(now),
 		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "my_app")}),
@@ -155,6 +159,10 @@ func Test_deploymentConfiguration(t *testing.T) {
 var (
 	rhl             int32 = 5
 	validDeployment       = &appsv1.Deployment{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "apps/v1",
+			Kind:       "Deployment",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "deployment",
 			CreationTimestamp: metav1.Time{

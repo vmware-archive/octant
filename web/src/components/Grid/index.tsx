@@ -31,8 +31,8 @@ export default function Grid({ view }: Props) {
           <div className='grid-layout-panel' key={i} data-grid={dataGrid}>
             {(() => {
               switch (content.type) {
-                case 'selectors':
-                  return <div className='podtemplate-selector'>
+                case 'labels':
+                  return <div className='podtemplate-labels'>
                     <h3>{content.title}</h3>
                     {renderView(content)}
                   </div>
