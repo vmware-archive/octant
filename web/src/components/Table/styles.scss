@@ -1,12 +1,17 @@
 @import '~css/variables/variables.scss';
 
+$border-color: rgba(173, 187, 196, 0.3);
+
 .table--component {
-  border: 1px solid #d8d8d8;
+  border: 1px solid $border-color;
+  margin-bottom: 35px;
+  height: 100%;
 
   .table-component-title {
+    font-size: 16px;
     margin-bottom: 10px;
     padding: 12px;
-    border-bottom: 1px solid #d8d8d8;
+    border-bottom: 1px solid $border-color;
   }
 
   .table--link {
@@ -64,6 +69,7 @@
       outline: none;
       padding: 5px;
       position: relative;
+      white-space: unset;
 
       .rt-resizable-header-content {
         align-items: center;
@@ -104,11 +110,8 @@
 
   .rt-tbody {
     .rt-tr-group {
-      border-bottom: solid 1px $gray-dark;
+      border-bottom: solid 1px $border-color;
       cursor: pointer;
-      padding-bottom: 5px;
-      padding-top: 5px;
-
 
       &:last-child {
         border-bottom: 0;
@@ -133,17 +136,18 @@
   }
 
   .rt-tr {
+    padding: 5px 12px;
     display: inline-flex;
     flex: 1 0 auto
   }
 
   .rt-td {
-    @include font-size('13');
+    @include font-size('14');
     flex: 1 0 0;
     overflow: hidden;
     padding: 10px 5px;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: unset;
   }
 
   .rt-th.-hidden,
@@ -232,3 +236,15 @@
   }
 }
 
+.table--component {
+  .content-type-list-item {
+    &:first-of-type {
+      margin-bottom: 10px;
+      font-weight: 700px;
+    }
+
+    &:not(:first-of-type) {
+      font-style: italic;
+    }
+  }
+}
