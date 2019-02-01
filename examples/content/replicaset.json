@@ -1,0 +1,89 @@
+{
+  "title": "Replica Set: frontend",
+  "viewComponents": [
+    {
+      "metadata": {
+        "type": "grid",
+        "title": "Detail"
+      },
+      "config": {
+        "panels": [
+          {
+            "metadata": {
+              "type": "panel"
+            },
+            "config": {
+              "position": {"x": 0, "y": 0, "w": 12, "h": 7},
+              "content": {
+                "metadata": {
+                  "type": "summary",
+                  "title": "Details"
+                },
+                "config": {
+                  "sections": [
+                    {
+                      "header": "Controlled By",
+                      "content": {
+                        "metadata": {
+                          "type": "text",
+                          "title": "Controlled By"
+                        },
+                        "config": {
+                          "value": "ReplicaSet/replicaset-controller"
+                        }
+                      }
+                    },
+                    {
+                      "header": "Replica Status",
+                      "content": {
+                        "metadata": {
+                          "type": "text",
+                          "title": "Replica Status"
+                        },
+                        "config": {
+                          "value": "Current 3 / Desired 3"
+                        }
+                      }
+                    },
+                    {
+                      "header": "Replicas",
+                      "content": {
+                        "metadata": {
+                          "type": "text",
+                          "title": "Replicas"
+                        },
+                        "config": {
+                          "value": "3"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "metadata": {
+              "type": "panel"
+            },
+            "config": {
+              "position": {"x": 0, "y": 7, "w": 8, "h": 7},
+              "content": {
+                "metadata": {
+                  "type": "quadrant",
+                  "title": "Status"
+                },
+                "config": {
+                  "nw": { "label": "Running", "value": "3"},
+                  "ne": { "label": "Waiting", "value": "0"},
+                  "sw": { "label": "Succeeded", "value": "0"},
+                  "se": { "label": "Failed", "value": "0"}
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

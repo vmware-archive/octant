@@ -5,11 +5,17 @@ import (
 
 	"github.com/pkg/errors"
 
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
-	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes/scheme"
 
+	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view/component"
 )
 
@@ -76,16 +82,10 @@ type podStatus struct {
 	Failed    int
 }
 
-func CreatePodStatus(c corev1client.PodInterface, selector labels.Selector) podStatus {
+func createPodStatus(pods []*corev1.Pod) podStatus {
 	var ps podStatus
 
-	options := metav1.ListOptions{LabelSelector: selector.String()}
-	pods, err := c.List(options)
-	if err != nil {
-		return ps
-	}
-
-	for _, pod := range pods.Items {
+	for _, pod := range pods {
 		switch pod.Status.Phase {
 		case corev1.PodRunning:
 			ps.Running++
@@ -178,4 +178,113 @@ func (p *PodConfiguration) Create() (*component.Summary, error) {
 
 	summary := component.NewSummary("Configuration", sections...)
 	return summary, nil
+}
+
+func listPods(namespace string, selector *metav1.LabelSelector, uid types.UID, c cache.Cache) ([]*corev1.Pod, error) {
+	key := cache.Key{
+		Namespace:  namespace,
+		APIVersion: "v1",
+		Kind:       "Pod",
+	}
+
+	pods, err := loadPods(key, c, selector)
+	if err != nil {
+		return nil, err
+	}
+
+	var owned []*corev1.Pod
+	for _, pod := range pods {
+		controllerRef := metav1.GetControllerOf(pod)
+		if controllerRef == nil || controllerRef.UID != uid {
+			continue
+		}
+
+		owned = append(owned, pod)
+	}
+
+	return owned, nil
+}
+
+func loadPods(key cache.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
+	objects, err := c.List(key)
+	if err != nil {
+		return nil, err
+	}
+
+	var list []*corev1.Pod
+
+	for _, object := range objects {
+		pod := &corev1.Pod{}
+		if err := scheme.Scheme.Convert(object, pod, runtime.InternalGroupVersioner); err != nil {
+			return nil, err
+		}
+
+		if err := copyObjectMeta(pod, object); err != nil {
+			return nil, err
+		}
+
+		podSelector := &metav1.LabelSelector{
+			MatchLabels: pod.GetLabels(),
+		}
+
+		if selector == nil || isEqualSelector(selector, podSelector) {
+			list = append(list, pod)
+		}
+	}
+
+	return list, nil
+}
+
+func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
+	object, ok := to.(metav1.Object)
+	if !ok {
+		return errors.Errorf("%T is not an object", to)
+	}
+
+	t, err := meta.TypeAccessor(object)
+	if err != nil {
+		return errors.Wrapf(err, "accessing type meta")
+	}
+	t.SetAPIVersion(from.GetAPIVersion())
+	t.SetKind(from.GetObjectKind().GroupVersionKind().Kind)
+
+	object.SetNamespace(from.GetNamespace())
+	object.SetName(from.GetName())
+	object.SetGenerateName(from.GetGenerateName())
+	object.SetUID(from.GetUID())
+	object.SetResourceVersion(from.GetResourceVersion())
+	object.SetGeneration(from.GetGeneration())
+	object.SetSelfLink(from.GetSelfLink())
+	object.SetCreationTimestamp(from.GetCreationTimestamp())
+	object.SetDeletionTimestamp(from.GetDeletionTimestamp())
+	object.SetDeletionGracePeriodSeconds(from.GetDeletionGracePeriodSeconds())
+	object.SetLabels(from.GetLabels())
+	object.SetAnnotations(from.GetAnnotations())
+	object.SetInitializers(from.GetInitializers())
+	object.SetOwnerReferences(from.GetOwnerReferences())
+	object.SetClusterName(from.GetClusterName())
+	object.SetFinalizers(from.GetFinalizers())
+
+	return nil
+}
+
+// extraKeys are keys that should be ignored in labels. These keys are added
+// by tools or by Kubernetes itself.
+var extraKeys = []string{
+	"statefulset.kubernetes.io/pod-name",
+	appsv1.DefaultDeploymentUniqueLabelKey,
+	"controller-revision-hash",
+	"pod-template-generation",
+}
+
+func isEqualSelector(s1, s2 *metav1.LabelSelector) bool {
+	s1Copy := s1.DeepCopy()
+	s2Copy := s2.DeepCopy()
+
+	for _, key := range extraKeys {
+		delete(s1Copy.MatchLabels, key)
+		delete(s2Copy.MatchLabels, key)
+	}
+
+	return apiequality.Semantic.DeepEqual(s1Copy, s2Copy)
 }
