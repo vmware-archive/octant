@@ -12,7 +12,6 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/content"
-	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
 )
 
 func resourceLink(sectionType, resourceType string) lookupFunc {
@@ -39,7 +38,6 @@ type ResourceOptions struct {
 	ListType   interface{}
 	ObjectType interface{}
 	Titles     ResourceTitle
-	Transforms map[string]lookupFunc
 	Sections   []ContentSection
 }
 
@@ -58,8 +56,6 @@ func (r *Resource) Describe(ctx context.Context, prefix, namespace string, clust
 }
 
 func (r *Resource) List(namespace string) *ListDescriber {
-	emptyMessage := fmt.Sprintf("Namespace %s does not have any %s",
-		namespace, r.Titles.List)
 	return NewListDescriber(
 		r.Path,
 		r.Titles.List,
@@ -70,7 +66,6 @@ func (r *Resource) List(namespace string) *ListDescriber {
 		func() interface{} {
 			return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
 		},
-		summaryFunc(r.Titles.List, emptyMessage, r.Transforms),
 	)
 }
 
@@ -112,19 +107,4 @@ func buildTransforms(transforms map[string]lookupFunc) map[string]lookupFunc {
 	}
 
 	return m
-}
-
-// summaryFunc creates an ObjectTransformFunc given a title and a lookup.
-func summaryFunc(title, emptyMessage string, m map[string]lookupFunc) ObjectTransformFunc {
-	return func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error {
-		return func(tbl *metav1beta1.Table) error {
-			contentTable, err := printContentTable(title, namespace, prefix, emptyMessage, tbl, m)
-			if err != nil {
-				return err
-			}
-
-			*contents = append(*contents, contentTable)
-			return nil
-		}
-	}
 }

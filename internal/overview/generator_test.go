@@ -135,7 +135,7 @@ func (c *spyCache) isSatisfied() bool {
 	return true
 }
 
-func (c *spyCache) Retrieve(key cache.Key) ([]*unstructured.Unstructured, error) {
+func (c *spyCache) List(key cache.Key) ([]*unstructured.Unstructured, error) {
 	c.used[key] = true
 
 	objs := c.store[key]
@@ -144,12 +144,12 @@ func (c *spyCache) Retrieve(key cache.Key) ([]*unstructured.Unstructured, error)
 	return objs, err
 }
 
-func (c *spyCache) Delete(obj *unstructured.Unstructured) error {
-	return nil
+func (c *spyCache) Get(key cache.Key) (*unstructured.Unstructured, error) {
+	panic("not implemented")
 }
 
-func (c *spyCache) Events(obj *unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
-	return []*unstructured.Unstructured{}, nil
+func (c *spyCache) Delete(obj *unstructured.Unstructured) error {
+	return nil
 }
 
 type stubDescriber struct {

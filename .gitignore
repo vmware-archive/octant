@@ -18,6 +18,10 @@ rice-box.go
 /build
 /dist
 
+# generated fakes
+/internal/cache/fake
+/internal/queryer/fake
+
 # electron bundling
 /vendor/astilectron*
 /vendor/electron*

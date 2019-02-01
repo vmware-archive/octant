@@ -11,12 +11,10 @@ import (
 	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster/fake"
-	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
 )
@@ -49,13 +47,7 @@ func TestListDescriber(t *testing.T) {
 		return &corev1.Pod{}
 	}
 
-	otf := func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error {
-		return func(*metav1beta1.Table) error {
-			return nil
-		}
-	}
-
-	d := NewListDescriber(thePath, "list", key, listType, objectType, otf)
+	d := NewListDescriber(thePath, "list", key, listType, objectType)
 
 	scheme := runtime.NewScheme()
 	objects := []runtime.Object{}

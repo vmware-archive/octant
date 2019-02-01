@@ -1,0 +1,10 @@
+linters-settings:
+  golint:
+    min-confidence: 0.1
+
+linters:
+  enable:
+    - golint
+    - govet
+    - megacheck
+    - dupl

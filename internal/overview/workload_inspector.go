@@ -9,6 +9,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view"
+	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
@@ -31,7 +32,7 @@ type resourceVisitor struct {
 	visitors map[runtime.Object]visitFunc
 }
 
-func (rv *resourceVisitor) visit(ctx context.Context, object runtime.Object, c cache.Cache, visited visitSet) ([]content.Content, error) {
+func (rv *resourceVisitor) visit(ctx context.Context, object runtime.Object, c cache.Cache, visited visitSet) (component.ViewComponent, error) {
 	dag := content.NewDAG()
 	acc := meta.NewAccessor()
 
@@ -51,7 +52,8 @@ func (rv *resourceVisitor) visit(ctx context.Context, object runtime.Object, c c
 			return nil, err
 		}
 
-		return []content.Content{dag}, nil
+		panic("not here chief")
+		// return []content.Content{dag}, nil
 	}
 
 	return nil, errors.Errorf("unable to visit resource of type %T", object)
@@ -101,7 +103,8 @@ func setViewChecks(m workloadChecks) workloadInspectorViewOpt {
 
 // workloadViewFactory creates a view for workload inspect view.
 func workloadViewFactory(prefix, namespace string, c clock.Clock) view.View {
-	return newWorkloadInspectorView(prefix, namespace, c)
+	panic("not here chief")
+	// return newWorkloadInspectorView(prefix, namespace, c)
 }
 
 // newWorkloadInspectorView creates an instance of workloadInspectorView
@@ -128,11 +131,13 @@ func (wiv *workloadInspectorView) checkResource(r runtime.Object) (ResourceStatu
 }
 
 // Implements View.Content
-func (wiv *workloadInspectorView) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
-	visited := visitSet{}
+func (wiv *workloadInspectorView) Content(ctx context.Context, object runtime.Object, c cache.Cache) (component.ViewComponent, error) {
+	// visited := resourceviewer.VisitSet{}
 
 	// TODO: pass the resource visitor in instead of assuming the default will always be used.
-	return defaultResourceVisitor.visit(ctx, object, c, visited)
+	// return resourceviewer.Default.Visit(ctx, object, c, visited)
+	// return defaultResourceVisitor.visit(ctx, object, c, visited)
+	panic("not here chief")
 }
 
 func visitKeyForObject(obj runtime.Object) visitKey {
@@ -204,7 +209,7 @@ func loadServices(serviceNames []string, namespace string, c cache.Cache) ([]*co
 			Kind:       "Service",
 			Name:       backend,
 		}
-		ul, err := c.Retrieve(key)
+		ul, err := c.List(key)
 		if err != nil {
 			return nil, errors.Wrapf(err, "retrieving service backend: %v", backend)
 		}
@@ -249,7 +254,7 @@ func findIngressesForService(svc *corev1.Service, c cache.Cache) ([]*v1beta1.Ing
 		APIVersion: "extensions/v1beta1",
 		Kind:       "Ingress",
 	}
-	ul, err := c.Retrieve(key)
+	ul, err := c.List(key)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving ingresses")
 	}
@@ -315,7 +320,7 @@ func findServicesForPod(pod *corev1.Pod, c cache.Cache) ([]*corev1.Service, erro
 		APIVersion: "v1",
 		Kind:       "Service",
 	}
-	ul, err := c.Retrieve(key)
+	ul, err := c.List(key)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving services")
 	}
@@ -360,7 +365,7 @@ func findReplicaSetsForPod(pod *corev1.Pod, c cache.Cache) ([]*appsv1.ReplicaSet
 		APIVersion: "apps/v1",
 		Kind:       "ReplicaSet",
 	}
-	ul, err := c.Retrieve(key)
+	ul, err := c.List(key)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving replicaSets")
 	}
@@ -405,7 +410,7 @@ func findDeploymentsForPod(pod *corev1.Pod, c cache.Cache) ([]*appsv1.Deployment
 		APIVersion: "apps/v1",
 		Kind:       "Deployment",
 	}
-	ul, err := c.Retrieve(key)
+	ul, err := c.List(key)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving deployments")
 	}
@@ -461,7 +466,7 @@ func findDeploymentForReplicaSet(rs *appsv1.ReplicaSet, c cache.Cache) (*appsv1.
 		return nil, nil
 	}
 
-	ul, err := c.Retrieve(key)
+	ul, err := c.List(key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "retrieving deployment: %v", key)
 	}
@@ -505,7 +510,7 @@ func findStatefulSetForPod(pod *corev1.Pod, c cache.Cache) (*appsv1.StatefulSet,
 		return nil, nil
 	}
 
-	ul, err := c.Retrieve(key)
+	ul, err := c.List(key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "retrieving statefulset: %v", key)
 	}
@@ -549,7 +554,7 @@ func findReplicationControllerForPod(pod *corev1.Pod, c cache.Cache) (*corev1.Re
 		return nil, nil
 	}
 
-	ul, err := c.Retrieve(key)
+	ul, err := c.List(key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "retrieving replicationcontroller: %v", key)
 	}
@@ -593,7 +598,7 @@ func findDaemonSetForPod(pod *corev1.Pod, c cache.Cache) (*appsv1.DaemonSet, err
 		return nil, nil
 	}
 
-	ul, err := c.Retrieve(key)
+	ul, err := c.List(key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "retrieving daemonset: %v", key)
 	}
