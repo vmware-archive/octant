@@ -87,3 +87,119 @@ func Test_PodListHandler(t *testing.T) {
 
 	assert.Equal(t, expected, got)
 }
+
+var (
+	now      = time.Unix(1547211430, 0)
+	validPod = &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "pod",
+			OwnerReferences: []metav1.OwnerReference{
+				metav1.OwnerReference{
+					APIVersion: "v1",
+					Kind:       "ReplicationController",
+					Name:       "myreplicationcontroller",
+					Controller: ptrbool(true),
+				},
+			},
+			CreationTimestamp: metav1.Time{
+				Time: now,
+			},
+			DeletionTimestamp: &metav1.Time{
+				Time: now,
+			},
+			DeletionGracePeriodSeconds: ptr64(30),
+		},
+		Spec: corev1.PodSpec{
+			Priority:           ptr32(1000000),
+			PriorityClassName:  "high-priority",
+			ServiceAccountName: "default",
+		},
+		Status: corev1.PodStatus{
+			StartTime:         &metav1.Time{Time: now},
+			Phase:             corev1.PodRunning,
+			Reason:            "SleepExpired",
+			Message:           "Sleep expired",
+			NominatedNodeName: "mynode",
+			QOSClass:          "Guaranteed",
+		},
+	}
+)
+
+func Test_PodConfiguration(t *testing.T) {
+	cases := []struct {
+		name     string
+		pod      *corev1.Pod
+		isErr    bool
+		expected *component.Summary
+	}{
+		{
+			name: "general",
+			pod:  validPod,
+			expected: component.NewSummary("Configuration", []component.SummarySection{
+				{
+					Header:  "Priority",
+					Content: component.NewText("", "1000000"),
+				},
+				{
+					Header:  "PriorityClassName",
+					Content: component.NewText("", "high-priority"),
+				},
+				{
+					Header:  "Start Time",
+					Content: component.NewTimestamp(now),
+				},
+				{
+					Header:  "Status: Terminating",
+					Content: component.NewTimestamp(now),
+				},
+				{
+					Header:  "Termination Grace Period",
+					Content: component.NewText("", "30s"),
+				},
+				{
+					Header:  "Reason",
+					Content: component.NewText("", "SleepExpired"),
+				},
+				{
+					Header:  "Message",
+					Content: component.NewText("", "Sleep expired"),
+				},
+				{
+					Header:  "Controlled By",
+					Content: component.NewLink("", "myreplicationcontroller", "/content/overview/workloads/replication-controllers/myreplicationcontroller"),
+				},
+				{
+					Header:  "NominatedNodeName",
+					Content: component.NewText("", "mynode"),
+				},
+				{
+					Header:  "QoS Class",
+					Content: component.NewText("", "Guaranteed"),
+				},
+				{
+					Header:  "Service Account",
+					Content: component.NewLink("", "default", "/content/overview/config-and-storage/service-accounts/default"),
+				},
+			}...),
+		},
+		{
+			name:  "pod is nil",
+			pod:   nil,
+			isErr: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			cc := printer.NewPodConfiguration(tc.pod)
+			summary, err := cc.Create()
+			if tc.isErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.expected, summary)
+		})
+	}
+}

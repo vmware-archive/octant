@@ -3,6 +3,8 @@ package printer
 import (
 	"path"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/heptio/developer-dash/internal/view/component"
 )
 
@@ -52,4 +54,14 @@ func gvkPath(apiVersion, kind, name string) string {
 func linkForObject(apiVersion, kind, name, text string) *component.Link {
 	path := gvkPath(apiVersion, kind, name)
 	return component.NewLink("", text, path)
+}
+
+func linkForOwner(controllerRef *metav1.OwnerReference) *component.Link {
+	if controllerRef == nil {
+		return component.NewLink("", "none", "")
+	}
+	return linkForObject(controllerRef.APIVersion,
+		controllerRef.Kind,
+		controllerRef.Name,
+		controllerRef.Name)
 }
