@@ -141,7 +141,3 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 		})
 	}
 }
-
-func ptr64(i int64) *int64 {
-	return &i
-}

@@ -5,11 +5,12 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/heptio/developer-dash/internal/view/component"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
+
+	"github.com/heptio/developer-dash/internal/view/component"
 )
 
 // PodListHandler is a printFunc that prints pods
@@ -98,4 +99,83 @@ func CreatePodStatus(c corev1client.PodInterface, selector labels.Selector) podS
 	}
 
 	return ps
+}
+
+// PodConfiguration generates pod configuration.
+type PodConfiguration struct {
+	pod *corev1.Pod
+}
+
+// NewPodConfiguration creates an instance of PodConfiguration.
+func NewPodConfiguration(p *corev1.Pod) *PodConfiguration {
+	return &PodConfiguration{
+		pod: p,
+	}
+}
+
+// Create creates a pod configuration summary.
+func (p *PodConfiguration) Create() (*component.Summary, error) {
+	if p.pod == nil {
+		return nil, errors.New("pod is nil")
+	}
+	pod := p.pod
+
+	sections := component.SummarySections{}
+
+	if pod.Spec.Priority != nil {
+		sections.AddText("Priority", fmt.Sprintf("%d", *pod.Spec.Priority))
+	}
+	if pod.Spec.PriorityClassName != "" {
+		sections.AddText("PriorityClassName", pod.Spec.PriorityClassName)
+	}
+
+	if pod.Status.StartTime != nil {
+		sections = append(sections, component.SummarySection{
+			Header:  "Start Time",
+			Content: component.NewTimestamp(pod.Status.StartTime.Time),
+		})
+	}
+
+	if pod.DeletionTimestamp != nil {
+		sections = append(sections, component.SummarySection{
+			Header:  "Status: Terminating",
+			Content: component.NewTimestamp(pod.DeletionTimestamp.Time),
+		})
+		if pod.DeletionGracePeriodSeconds != nil {
+			sections.AddText("Termination Grace Period", fmt.Sprintf("%ds", *pod.DeletionGracePeriodSeconds))
+		}
+	} else {
+		sections.AddText("Status", string(pod.Status.Phase))
+	}
+
+	if pod.Status.Reason != "" {
+		sections.AddText("Reason", pod.Status.Reason)
+	}
+	if pod.Status.Message != "" {
+		sections.AddText("Message", pod.Status.Message)
+	}
+
+	if controllerRef := metav1.GetControllerOf(pod); controllerRef != nil {
+		sections = append(sections, component.SummarySection{
+			Header:  "Controlled By",
+			Content: linkForOwner(controllerRef),
+		})
+	}
+
+	if pod.Status.NominatedNodeName != "" {
+		sections.AddText("NominatedNodeName", pod.Status.NominatedNodeName)
+	}
+
+	if pod.Status.QOSClass != "" {
+		sections.AddText("QoS Class", string(pod.Status.QOSClass))
+	}
+
+	sections = append(sections, component.SummarySection{
+		Header: "Service Account",
+		Content: linkForObject("v1", "ServiceAccount", pod.Spec.ServiceAccountName,
+			pod.Spec.ServiceAccountName),
+	})
+
+	summary := component.NewSummary("Configuration", sections...)
+	return summary, nil
 }
