@@ -22,7 +22,7 @@ func ServiceListHandler(list *corev1.ServiceList, opts Options) (component.ViewC
 
 	for _, d := range list.Items {
 		row := component.TableRow{}
-		row["Name"] = component.NewText("", d.Name)
+		row["Name"] = linkForObject("v1", "Service", d.Name, d.Name)
 		row["Labels"] = component.NewLabels(d.Labels)
 		row["Type"] = component.NewText("", string(d.Spec.Type))
 		row["Cluster IP"] = component.NewText("", d.Spec.ClusterIP)

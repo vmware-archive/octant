@@ -69,7 +69,7 @@ func Test_ServiceListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Type", "Cluster IP", "External IP", "Ports", "Age", "Selector")
 	expected := component.NewTable("Services", cols)
 	expected.Add(component.TableRow{
-		"Name":        component.NewText("", "service"),
+		"Name":        component.NewLink("", "service", "/content/overview/discovery-and-load-balancing/services/service"),
 		"Labels":      component.NewLabels(labels),
 		"Type":        component.NewText("", "ClusterIP"),
 		"Cluster IP":  component.NewText("", "1.2.3.4"),
