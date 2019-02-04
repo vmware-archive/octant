@@ -63,6 +63,10 @@
         padding-left: $navLeftPadding;
       }
 
+      &__placeholder, &__menu-notice--no-options {
+        color: $gray-dark;
+      }
+
       &__menu {
         margin: 0;
 
@@ -107,25 +111,41 @@
     padding: 13px $navLeftPadding;
     border-right: 1px solid $dividerColor;
 
-    .header-filter-input {
+    .react-tagsinput {
       @include semiBold;
 
       height: 34px;
-      width: 300px;
-      padding-left: 8px;
+      width: 500px;
 
       border: 1px solid $blue-dark;
       border-radius: 4px;
       background-color: $blue-dark;
 
-      font-size: 16px;
-      color: $white;
+      padding-top: 0;
 
-      outline: none;
-    }
+      &-input {
+        @include semiBold;
+        font-size: 16px;
+        color: $white;
 
-    .header-filter-input::placeholder {
-      color: $gray-dark;
+        outline: none;
+        height: 30px;
+        width: 250px;
+
+        margin-bottom: 0;
+        margin-top: 0;
+
+        &::placeholder {
+          color: $gray-dark;
+        }
+      }
+
+      &-tag {
+        @include resourceLabel;
+
+        padding: 2px 3px;
+        font-size: 12px;
+      }
     }
   }
 

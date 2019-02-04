@@ -1,10 +1,9 @@
-import './styles.scss'
-
 import _ from 'lodash'
 import { GridModel } from 'models/View'
 import React from 'react'
 import GridLayout from 'react-grid-layout'
 import { renderView } from 'views'
+import './styles.scss'
 
 interface Props {
   view: GridModel;
@@ -22,7 +21,7 @@ export default function Grid({ view }: Props) {
       margin={[15, 10]}
       verticalCompact={true}
       compactType='vertical'
-      autoSize={true}
+      autoSize
     >
       {_.map(panels, (panel, i) => {
         const { position, content } = panel
@@ -32,12 +31,14 @@ export default function Grid({ view }: Props) {
             {(() => {
               switch (content.type) {
                 case 'labels':
-                  return <div className='podtemplate-labels'>
-                    <h3>{content.title}</h3>
-                    {renderView(content)}
-                  </div>
+                  return (
+                    <div className='podtemplate-labels'>
+                      <h3>{content.title}</h3>
+                      {renderView(content)}
+                    </div>
+                  )
                 default:
-                return renderView(content)
+                  return renderView(content)
               }
 
             })()}

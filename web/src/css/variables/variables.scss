@@ -8,3 +8,12 @@ $navLeftPadding: 10px;
 $headerHeight: 60px;
 $headerBGColor: #404e60;
 $dividerColor: rgba(255, 255, 255, 0.15);
+
+@mixin resourceLabel {
+  @include regular;
+
+  border: 1px solid $label-border;
+  border-radius: 4px;
+  color: $label-text;
+  background-color: transparent;
+}

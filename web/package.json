@@ -30,6 +30,7 @@
     "react-select": "^2.1.0",
     "react-table": "^6.8.6",
     "react-tabs": "^2.3.0",
+    "react-tagsinput": "^3.19.0",
     "react-tooltip": "^3.9.2",
     "resolve": "1.6.0",
     "whatwg-fetch": "2.0.3"

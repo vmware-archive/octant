@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 import Select from 'react-select'
+import TagsInput from 'react-tagsinput'
+import 'react-tagsinput/react-tagsinput.css'
 import './styles.scss'
 
 interface Props {
@@ -9,7 +11,15 @@ interface Props {
   onNamespaceChange: (NamespaceOption) => void;
 }
 
+interface State {
+  tags: any[];
+}
+
 export default class extends Component<Props> {
+  state = {
+    tags: [],
+  }
+
   namespaces() {
     return this.props.namespaceOptions.map((option, i) => {
       return (
@@ -21,6 +31,8 @@ export default class extends Component<Props> {
   }
 
   render() {
+    const { namespaceOptions, namespaceValue, onNamespaceChange } = this.props
+    const { tags } = this.state;
     return (
       <header>
         <div className='header--container'>
@@ -32,13 +44,17 @@ export default class extends Component<Props> {
               className='header--selector'
               classNamePrefix='header--selector'
               placeholder='Select namespace...'
-              options={this.props.namespaceOptions}
-              value={this.props.namespaceValue}
-              onChange={this.props.onNamespaceChange}
+              options={namespaceOptions}
+              value={namespaceValue}
+              onChange={onNamespaceChange}
             />
           </div>
           <div className='header--filter'>
-            <input className='header-filter-input' type='text' placeholder='Filter by label' />
+            <TagsInput
+              inputProps={{ placeholder: 'Filter by label' }}
+              value={tags}
+              onChange={(tags) => this.setState({ tags })}
+            />
           </div>
           <div className='header--context'>kubecontext</div>
         </div>

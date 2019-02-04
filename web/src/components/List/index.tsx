@@ -8,7 +8,7 @@ interface Props {
   view: ListModel
 }
 
-export default function List(props: Props) {
+export default function List (props: Props) {
   const { view } = props
 
   return (
@@ -17,11 +17,7 @@ export default function List(props: Props) {
         view.items().map((item, i) => {
           return (
             <div className='content-type-list-item' key={i} >
-              {
-                (() => {
-                  return renderView(item)
-                })()
-              }
+              {renderView(item)}
             </div>
           )
         })

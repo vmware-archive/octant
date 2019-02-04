@@ -20,6 +20,6 @@ describe('render web link', () => {
   )
 
   test('creates an anchor', () => {
-    expect(webLink.html()).toEqual('<a href="/ref">value</a>')
+    expect(webLink.html()).toEqual('<a class="web-link" href="/ref">value</a>')
   })
 })
