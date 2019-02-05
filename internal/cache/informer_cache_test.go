@@ -142,7 +142,7 @@ func newCache(t *testing.T, objects []runtime.Object) (*InformerCache, cancelFun
 	return NewInformerCache(stopCh, client.FakeDynamic, restMapper), func() { close(stopCh) }, nil
 }
 
-func TestInformerCache_Retrieve(t *testing.T) {
+func TestInformerCache_List(t *testing.T) {
 	objects := []runtime.Object{}
 	for _, u := range genObjectsSeed() {
 		objects = append(objects, u)
@@ -198,7 +198,7 @@ func TestInformerCache_Retrieve(t *testing.T) {
 			c, cancel, err := newCache(t, objects)
 			require.NoError(t, err)
 
-			objs, err := c.Retrieve(tc.key)
+			objs, err := c.List(tc.key)
 			hadErr := (err != nil)
 			assert.Equalf(t, tc.expectErr, hadErr, "error mismatch: %v", err)
 			assert.Len(t, objs, tc.expectedLen)
@@ -239,7 +239,7 @@ func TestInformerCache_Watch(t *testing.T) {
 
 	// verify predefined objects are present
 	cacheKey := Key{Namespace: "default", APIVersion: "apps/v1", Kind: "Deployment"}
-	found, err := cache.Retrieve(cacheKey)
+	found, err := cache.List(cacheKey)
 	require.NoError(t, err)
 
 	require.Len(t, found, 1)
@@ -279,7 +279,7 @@ func TestInformerCache_Watch(t *testing.T) {
 	case <-notifyCh:
 	}
 
-	found, err = cache.Retrieve(cacheKey)
+	found, err = cache.List(cacheKey)
 	require.NoError(t, err)
 
 	// 2 == initial + the new object
@@ -295,11 +295,11 @@ func TestInformerCache_Watch(t *testing.T) {
 	// wait for cache to store an item before proceeding.
 	select {
 	case <-time.After(2 * time.Second):
-		t.Fatal("timed out wating for update object to notify")
+		t.Fatal("timed out waiting for update object to notify")
 	case <-notifyCh:
 	}
 
-	found, err = cache.Retrieve(cacheKey)
+	found, err = cache.List(cacheKey)
 	require.NoError(t, err)
 
 	require.Len(t, found, 2)
@@ -341,7 +341,7 @@ func TestInformerCache_Watch_Stop(t *testing.T) {
 
 	// verify predefined objects are present
 	cacheKey := Key{Namespace: "default", APIVersion: "apps/v1", Kind: "Deployment"}
-	found, err := cache.Retrieve(cacheKey)
+	found, err := cache.List(cacheKey)
 	require.NoError(t, err)
 
 	require.Len(t, found, 0)
@@ -383,7 +383,7 @@ func TestInformerCache_Watch_Stop(t *testing.T) {
 	_, err = resClient.Create(obj, metav1.CreateOptions{})
 	require.NoError(t, err)
 
-	found, err = cache.Retrieve(cacheKey)
+	found, err = cache.List(cacheKey)
 	require.NoError(t, err)
 
 	// The second object is not seen because we shutdown the informer

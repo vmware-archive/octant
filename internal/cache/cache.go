@@ -3,18 +3,18 @@ package cache
 import (
 	"sync"
 
-	corev1 "k8s.io/api/core/v1"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 )
+
+//go:generate mockgen -destination=./fake/mock_cache.go -package=fake github.com/heptio/developer-dash/internal/cache Cache
 
 // Cache stores Kubernetes objects.
 type Cache interface {
 	Store(obj *unstructured.Unstructured) error
-	Retrieve(key Key) ([]*unstructured.Unstructured, error)
+	List(key Key) ([]*unstructured.Unstructured, error)
+	Get(key Key) (*unstructured.Unstructured, error)
 	Delete(obj *unstructured.Unstructured) error
-
-	Events(obj *unstructured.Unstructured) ([]*unstructured.Unstructured, error)
 }
 
 // Key is a key for the cache.
@@ -108,43 +108,55 @@ func (mc *MemoryCache) Store(obj *unstructured.Unstructured) error {
 	return nil
 }
 
-// Retrieve retrieves an object from the cache.
-func (mc *MemoryCache) Retrieve(key Key) ([]*unstructured.Unstructured, error) {
+// List retrieves a slice of objects from the cache.
+func (mc *MemoryCache) List(key Key) ([]*unstructured.Unstructured, error) {
+	if key.Name != "" {
+		return nil, errors.Errorf("can't specify a name when listing objects")
+	}
+
+	if key.Namespace == "" ||
+		key.APIVersion == "" ||
+		key.Kind == "" {
+		return nil, errors.New("requires namespace, apiVersion, and kind")
+	}
+
 	mc.mu.Lock()
 	defer mc.mu.Unlock()
 
-	var objs []*unstructured.Unstructured
+	var objects []*unstructured.Unstructured
 
-	for k, v := range mc.store {
-		if k.Namespace != key.Namespace {
-			continue
-		}
-
-		if key.APIVersion == "" {
-			objs = append(objs, v)
-			continue
-		}
-
-		if k.APIVersion == key.APIVersion {
-			if key.Kind == "" {
-				objs = append(objs, v)
-				continue
-			}
-
-			if k.Kind == key.Kind {
-				if key.Name == "" {
-					objs = append(objs, v)
-					continue
-				}
-
-				if k.Name == key.Name {
-					objs = append(objs, v)
-				}
-			}
+	for _, v := range mc.store {
+		if key.Namespace == v.GetNamespace() &&
+			key.APIVersion == v.GetAPIVersion() &&
+			key.Kind == v.GetKind() {
+			objects = append(objects, v)
 		}
 	}
 
-	return objs, nil
+	return objects, nil
+}
+
+// List retrieves an object from the cache.
+func (mc *MemoryCache) Get(key Key) (*unstructured.Unstructured, error) {
+	if key.Namespace == "" ||
+		key.APIVersion == "" ||
+		key.Kind == "" ||
+		key.Name == "" {
+		return nil, errors.New("requires namespace, apiVersion, kind, and name")
+	}
+	mc.mu.Lock()
+	defer mc.mu.Unlock()
+
+	for _, v := range mc.store {
+		if key.Namespace == v.GetNamespace() &&
+			key.APIVersion == v.GetAPIVersion() &&
+			key.Kind == v.GetKind() &&
+			key.Name == v.GetName() {
+			return v, nil
+		}
+	}
+
+	return nil, errors.Errorf("object not found")
 }
 
 // Delete deletes an object from the cache.
@@ -168,38 +180,6 @@ func (mc *MemoryCache) Delete(obj *unstructured.Unstructured) error {
 	mc.notify(DeleteAction, key)
 
 	return nil
-}
-
-// Events returns events for an object.
-func (mc *MemoryCache) Events(u *unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
-	mc.mu.Lock()
-	defer mc.mu.Unlock()
-
-	var events []*unstructured.Unstructured
-
-	for _, obj := range mc.store {
-
-		if obj.GetAPIVersion() != "v1" && obj.GetKind() != "Event" {
-			continue
-		}
-
-		event := &corev1.Event{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.Object, event)
-		if err != nil {
-			return nil, err
-		}
-
-		involvedObject := event.InvolvedObject
-
-		if involvedObject.Namespace == u.GetNamespace() &&
-			involvedObject.APIVersion == u.GetAPIVersion() &&
-			involvedObject.Kind == u.GetKind() &&
-			involvedObject.Name == u.GetName() {
-			events = append(events, obj)
-		}
-	}
-
-	return events, nil
 }
 
 func (mc *MemoryCache) notify(action Action, key Key) {

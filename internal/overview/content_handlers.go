@@ -9,9 +9,7 @@ import (
 	"github.com/heptio/developer-dash/internal/content"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/util/duration"
 )
@@ -29,7 +27,7 @@ func loadObjects(ctx context.Context, cache cache.Cache, namespace string, field
 			cacheKey.Name = name
 		}
 
-		cacheObjects, err := cache.Retrieve(cacheKey)
+		cacheObjects, err := cache.List(cacheKey)
 		if err != nil {
 			return nil, err
 		}
@@ -53,24 +51,4 @@ func translateTimestamp(timestamp metav1.Time, c clock.Clock) string {
 	}
 
 	return duration.ShortHumanDuration(c.Since(timestamp.Time))
-}
-
-func eventsForObject(object *unstructured.Unstructured, cache cache.Cache, prefix, namespace string, cl clock.Clock) (*content.Table, error) {
-	eventObjects, err := cache.Events(object)
-	if err != nil {
-		return nil, err
-	}
-
-	eventsTable := newEventTable(namespace, object)
-	for _, obj := range eventObjects {
-		event := &corev1.Event{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.Object, event)
-		if err != nil {
-			return nil, err
-		}
-
-		eventsTable.AddRow(printEvent(event, prefix, namespace, cl))
-	}
-
-	return &eventsTable, nil
 }

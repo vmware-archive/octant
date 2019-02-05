@@ -72,13 +72,13 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string, logger
 	rm := restmapper.NewDiscoveryRESTMapper(groupResources)
 
 	opts = append(opts, cache.InformerCacheLoggerOpt(logger))
-	cache := cache.NewInformerCache(stopCh, dynamicClient, rm, opts...)
+	informerCache := cache.NewInformerCache(stopCh, dynamicClient, rm, opts...)
 
 	var pathFilters []pathFilter
 	pathFilters = append(pathFilters, rootDescriber.PathFilters(namespace)...)
 	pathFilters = append(pathFilters, eventsDescriber.PathFilters(namespace)...)
 
-	g, err := newGenerator(cache, pathFilters, client)
+	g, err := newGenerator(informerCache, pathFilters, client)
 	if err != nil {
 		return nil, errors.Wrap(err, "create overview generator")
 	}
@@ -87,7 +87,7 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string, logger
 		namespace: namespace,
 		client:    client,
 		logger:    logger,
-		cache:     cache,
+		cache:     informerCache,
 		generator: g,
 		stopCh:    stopCh,
 	}

@@ -2,7 +2,7 @@ package content
 
 var _ Content = (*DAG)(nil)
 
-// DAG represents a directed acylic graph, although we do not currently check for absense of cycles :)
+// DAG represents a directed acyclic graph, although we do not currently check for absense of cycles :)
 type DAG struct {
 	Type     string  `json:"type"`
 	Selected string  `json:"selected"`

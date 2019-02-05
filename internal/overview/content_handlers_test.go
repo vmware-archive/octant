@@ -2,20 +2,17 @@ package overview
 
 import (
 	"context"
-	"github.com/heptio/developer-dash/internal/cache"
-	"io/ioutil"
-	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
-	"k8s.io/client-go/kubernetes/scheme"
 )
 
 func createObject(name string) *unstructured.Unstructured {
@@ -140,30 +137,4 @@ func Test_translateTimestamp(t *testing.T) {
 			assert.Equal(t, tc.expected, got)
 		})
 	}
-}
-
-func loadType(t *testing.T, path string) runtime.Object {
-	data, err := ioutil.ReadFile(filepath.Join("testdata", path))
-	require.NoError(t, err)
-
-	decode := scheme.Codecs.UniversalDeserializer().Decode
-	obj, _, err := decode(data, nil, nil)
-	require.NoError(t, err)
-
-	return obj
-}
-
-func loadUnstructured(t *testing.T, cache cache.Cache, namespace, path string) {
-	obj := loadType(t, path)
-	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
-	require.NoError(t, err)
-
-	u := &unstructured.Unstructured{
-		Object: m,
-	}
-	u.Object = m
-	u.SetNamespace(namespace)
-
-	err = cache.Store(u)
-	require.NoError(t, err)
 }

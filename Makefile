@@ -15,7 +15,7 @@ version:
 
 # Run all tests
 .PHONY: test
-test:
+test: generate
 	@echo "-> $@"
 	@env go test -v ./internal/...
 
@@ -33,6 +33,9 @@ setup-web: web-deps run-web
 
 run-web:
 	@cd web; BROWSER=none npm start
+
+generate:
+	@go generate ./internal/...
 
 web-deps:
 	@cd web; npm ci

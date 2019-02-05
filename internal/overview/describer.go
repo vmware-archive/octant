@@ -11,17 +11,13 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/content"
-	"github.com/heptio/developer-dash/internal/printers"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
-	kprinters "k8s.io/kubernetes/pkg/printers"
-	printersinternal "k8s.io/kubernetes/pkg/printers/internalversion"
 )
 
 type LoaderFunc func(ctx context.Context, c cache.Cache, namespace string, fields map[string]string) ([]*unstructured.Unstructured, error)
@@ -53,37 +49,31 @@ func newBaseDescriber() *baseDescriber {
 	return &baseDescriber{}
 }
 
-func (d *baseDescriber) clock() clock.Clock {
-	return &clock.RealClock{}
-}
-
 type ListDescriber struct {
 	*baseDescriber
 
-	path                string
-	title               string
-	listType            func() interface{}
-	objectType          func() interface{}
-	cacheKey            cache.Key
-	objectTransformFunc ObjectTransformFunc
+	path       string
+	title      string
+	listType   func() interface{}
+	objectType func() interface{}
+	cacheKey   cache.Key
 }
 
-func NewListDescriber(p, title string, cacheKey cache.Key, listType, objectType func() interface{}, otf ObjectTransformFunc) *ListDescriber {
+func NewListDescriber(p, title string, cacheKey cache.Key, listType, objectType func() interface{}) *ListDescriber {
 	return &ListDescriber{
-		path:                p,
-		title:               title,
-		baseDescriber:       newBaseDescriber(),
-		cacheKey:            cacheKey,
-		listType:            listType,
-		objectType:          objectType,
-		objectTransformFunc: otf,
+		path:          p,
+		title:         title,
+		baseDescriber: newBaseDescriber(),
+		cacheKey:      cacheKey,
+		listType:      listType,
+		objectType:    objectType,
 	}
 }
 
 // Describe creates content.
 func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
 	if options.Printer == nil {
-		return emptyContentResponse, errors.New("Object list describer requires a printer")
+		return emptyContentResponse, errors.New("object list describer requires a printer")
 	}
 
 	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, []cache.Key{d.cacheKey})
@@ -160,7 +150,7 @@ func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType f
 
 func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
 	if options.Printer == nil {
-		return emptyContentResponse, errors.New("Object describer requires a printer")
+		return emptyContentResponse, errors.New("object describer requires a printer")
 	}
 
 	objects, err := d.loaderFunc(ctx, options.Cache, namespace, options.Fields)
@@ -248,39 +238,6 @@ func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
 	object.SetOwnerReferences(from.GetOwnerReferences())
 	object.SetClusterName(from.GetClusterName())
 	object.SetFinalizers(from.GetFinalizers())
-
-	return nil
-}
-
-func convertToInternal(in runtime.Object) (runtime.Object, error) {
-	return scheme.Scheme.ConvertToVersion(in, runtime.InternalGroupVersioner)
-}
-
-func printObject(object runtime.Object, transformFunc func(*metav1beta1.Table) error) error {
-	options := kprinters.PrintOptions{
-		Wide:       true,
-		ShowLabels: true,
-		WithKind:   true,
-	}
-
-	decoder := scheme.Codecs.UniversalDecoder()
-	p := printers.NewHumanReadablePrinter(decoder, options)
-
-	printersinternal.AddHandlers(p)
-
-	internal, err := convertToInternal(object)
-	if err != nil {
-		return errors.Wrapf(err, "converting to internal: %T", object)
-	}
-
-	tbl, err := p.PrintTable(internal, options)
-	if err != nil {
-		return err
-	}
-
-	if transformFunc != nil {
-		return transformFunc(tbl)
-	}
 
 	return nil
 }

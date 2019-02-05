@@ -7,7 +7,6 @@ import (
 
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -20,7 +19,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-// InformerCacheOpt is an option for configuring memory cache.
+// InformerCacheOpt is an option for configuring informer cache.
 type InformerCacheOpt func(*InformerCache)
 
 // InformerCacheNotificationOpt sets a channel that will receive a notification
@@ -260,9 +259,9 @@ func channelContext(parentCh <-chan struct{}) (context.Context, context.CancelFu
 	return ctx, cancel
 }
 
-// Retrieve retrieves an object or list of objects from the cluster via cache.
+// List retrieves a list of objects from the cluster via cache.
 // Blocks if cache needs to be synced.
-func (c *InformerCache) Retrieve(key Key) ([]*unstructured.Unstructured, error) {
+func (c *InformerCache) List(key Key) ([]*unstructured.Unstructured, error) {
 	if c.restMapper == nil {
 		return nil, errors.New("missing RESTMapper")
 	}
@@ -315,6 +314,44 @@ func (c *InformerCache) Retrieve(key Key) ([]*unstructured.Unstructured, error) 
 	}, nil
 }
 
+// Get retrieves an object from the cluster via cache.
+// Blocks if cache needs to be synced.
+func (c *InformerCache) Get(key Key) (*unstructured.Unstructured, error) {
+	if c.restMapper == nil {
+		return nil, errors.New("missing RESTMapper")
+	}
+
+	if key.Namespace == "" ||
+		key.APIVersion == "" ||
+		key.Kind == "" ||
+		key.Name == "" {
+		return nil, errors.New("requires namespace, apiVersion, kind, and name")
+	}
+
+	// NOTE: This blocks when setting up new informers
+	// TODO: Pass context for timeout
+	gi, err := c.informerForKey(key)
+	if err != nil {
+		return nil, err
+	}
+
+	// Handle get operation
+	// c.logger.With("key", key, "gvk", gvk, "resource", restMapping.Resource).Debugf("getting single object: %v", key.Name)
+	lister := gi.Lister().ByNamespace(key.Namespace)
+	obj, err := lister.Get(key.Name)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil, nil
+		}
+		return nil, errors.Wrapf(err, "fetching %v", key)
+	}
+	u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
+	if err != nil {
+		return nil, errors.Wrapf(err, "converting %T to unstructured", obj)
+	}
+	return &unstructured.Unstructured{Object: u}, nil
+}
+
 // Store is not implemented
 func (c *InformerCache) Store(obj *unstructured.Unstructured) error {
 	return errors.New("not implemented: Store")
@@ -323,44 +360,4 @@ func (c *InformerCache) Store(obj *unstructured.Unstructured) error {
 // Delete is not implemented
 func (c *InformerCache) Delete(obj *unstructured.Unstructured) error {
 	return errors.New("not implemented: Delete")
-}
-
-// Returns events related to the specified object.
-// TODO consider reworking this to use EventExpansion.Search(), which
-//      utilizes FieldSelectors (involvedObject.uid)
-func (c *InformerCache) getEvents(u *unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
-	var events []*unstructured.Unstructured
-
-	var eventKey = Key{
-		Namespace:  u.GetNamespace(),
-		APIVersion: "v1",
-		Kind:       "Event",
-	}
-
-	allEvents, err := c.Retrieve(eventKey)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, obj := range allEvents {
-		event := &corev1.Event{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.Object, event)
-		if err != nil {
-			return nil, err
-		}
-
-		involvedObject := event.InvolvedObject
-		if involvedObject.Namespace == u.GetNamespace() &&
-			involvedObject.APIVersion == u.GetAPIVersion() &&
-			involvedObject.Kind == u.GetKind() &&
-			involvedObject.Name == u.GetName() {
-			events = append(events, obj)
-		}
-	}
-	return events, nil
-}
-
-// Events returns events for an object.
-func (c *InformerCache) Events(u *unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
-	return c.getEvents(u)
 }

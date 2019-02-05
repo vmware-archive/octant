@@ -81,7 +81,6 @@
   revision = "b3211646d2056d041dcc403e0ab57ad7d12449df"
 
 [[projects]]
-  branch = "master"
   digest = "1:83b79fff1d2f724f8121403d0ca8c77ad054e927243d9734daf2ff92c1b55284"
   name = "github.com/asticode/go-astilectron-bundler"
   packages = ["."]
@@ -179,14 +178,6 @@
   version = "v4.1.0"
 
 [[projects]]
-  digest = "1:bbc4aacabe6880bdbce849c64cb061b7eddf39f132af4ea2853ddd32f85fbec3"
-  name = "github.com/fatih/camelcase"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "44e46d280b43ec1531bb25252440e34f1b800b65"
-  version = "v1.0.0"
-
-[[projects]]
   digest = "1:b402bb9a24d108a9405a6f34675091b036c8b056aac843bf6ef2389a65c5cf48"
   name = "github.com/gogo/protobuf"
   packages = [
@@ -195,6 +186,14 @@
   ]
   pruneopts = "UT"
   revision = "4cbf7e384e768b4e01799441fdf2a706a5635ae7"
+  version = "v1.2.0"
+
+[[projects]]
+  digest = "1:b60efdeb75d3c0ceed88783ac2495256aba3491a537d0f31401202579fd62a94"
+  name = "github.com/golang/mock"
+  packages = ["gomock"]
+  pruneopts = "UT"
+  revision = "51421b967af1f557f93a59e0057aaf15ca02e29c"
   version = "v1.2.0"
 
 [[projects]]
@@ -563,23 +562,17 @@
   revision = "770c60269bf0ef965e9e7ac8bedcb6bca2a1cefd"
 
 [[projects]]
-  digest = "1:e5a8511f063c38c51ab9ab80e718e9149f692652aeb4e393a8c020dd1bf38ca2"
+  digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
   name = "golang.org/x/text"
   packages = [
     "collate",
     "collate/build",
-    "encoding",
-    "encoding/internal",
-    "encoding/internal/identifier",
-    "encoding/unicode",
     "internal/colltab",
     "internal/gen",
     "internal/tag",
     "internal/triegen",
     "internal/ucd",
-    "internal/utf8internal",
     "language",
-    "runes",
     "secure/bidirule",
     "transform",
     "unicode/bidi",
@@ -691,10 +684,9 @@
   version = "v2.2.2"
 
 [[projects]]
-  digest = "1:a218faabd81ea62d514604e97d040b9c6d17ea0bbd5cf9a4e542d2d02f79512f"
+  digest = "1:0d299a04c6472e4458461d7034c76d014cc6f632a3262cbf21d123b19ce13e65"
   name = "k8s.io/api"
   packages = [
-    "admission/v1beta1",
     "admissionregistration/v1alpha1",
     "admissionregistration/v1beta1",
     "apps/v1",
@@ -716,7 +708,6 @@
     "core/v1",
     "events/v1beta1",
     "extensions/v1beta1",
-    "imagepolicy/v1alpha1",
     "networking/v1",
     "policy/v1beta1",
     "rbac/v1",
@@ -742,7 +733,7 @@
   version = "kubernetes-1.13.1"
 
 [[projects]]
-  digest = "1:bb5f276f026f5f7a2a86fc91af6b650c31a0b8c2a39e4791ddfa40448a6596b2"
+  digest = "1:03a58257ff1241b12c160a8d3b09328f393f3abdbd47e3b26988d9a229f8e46f"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/equality",
@@ -752,7 +743,6 @@
     "pkg/apis/meta/internalversion",
     "pkg/apis/meta/v1",
     "pkg/apis/meta/v1/unstructured",
-    "pkg/apis/meta/v1/unstructured/unstructuredscheme",
     "pkg/apis/meta/v1beta1",
     "pkg/conversion",
     "pkg/conversion/queryparams",
@@ -805,18 +795,6 @@
   pruneopts = "UT"
   revision = "3ccfe8365421eb08e334b195786a2973460741d8"
   version = "kubernetes-1.13.1"
-
-[[projects]]
-  branch = "master"
-  digest = "1:76dfb6be8ea39b6376311aca36ea531c042b33e46414659fd99e8d10b2952dda"
-  name = "k8s.io/cli-runtime"
-  packages = [
-    "pkg/genericclioptions",
-    "pkg/genericclioptions/printers",
-    "pkg/genericclioptions/resource",
-  ]
-  pruneopts = "UT"
-  revision = "e15d12b9962e18090e97f0dedee7ce8d06f0e717"
 
 [[projects]]
   digest = "1:45d8671f845dfcd612df41ff31e66610e357bee3964777328b0288aae0e14f51"
@@ -1022,7 +1000,7 @@
   revision = "ced9eb3070a5f1c548ef46e8dfe2a97c208d9f03"
 
 [[projects]]
-  digest = "1:eca8d2188b4b039767408957472da9347209d3a16ceeeb77a6e4f29e967df81a"
+  digest = "1:eb6e6ed913f0c6a7e37dd4c2eac93c79a90c7f0e4b9beacdc014e6b2893103d8"
   name = "k8s.io/kubernetes"
   packages = [
     "pkg/api/legacyscheme",
@@ -1063,10 +1041,8 @@
     "pkg/apis/coordination/install",
     "pkg/apis/coordination/v1beta1",
     "pkg/apis/core",
-    "pkg/apis/core/helper",
     "pkg/apis/core/install",
     "pkg/apis/core/v1",
-    "pkg/apis/core/v1/helper",
     "pkg/apis/events",
     "pkg/apis/events/install",
     "pkg/apis/events/v1beta1",
@@ -1093,28 +1069,12 @@
     "pkg/apis/settings/v1alpha1",
     "pkg/apis/storage",
     "pkg/apis/storage/install",
-    "pkg/apis/storage/util",
     "pkg/apis/storage/v1",
     "pkg/apis/storage/v1alpha1",
     "pkg/apis/storage/v1beta1",
     "pkg/client/clientset_generated/internalclientset/scheme",
     "pkg/features",
-    "pkg/kubectl/describe",
-    "pkg/kubectl/describe/versioned",
-    "pkg/kubectl/scheme",
-    "pkg/kubectl/util/certificate",
-    "pkg/kubectl/util/deployment",
-    "pkg/kubectl/util/event",
-    "pkg/kubectl/util/fieldpath",
-    "pkg/kubectl/util/qos",
-    "pkg/kubectl/util/rbac",
-    "pkg/kubectl/util/resource",
-    "pkg/kubectl/util/slice",
-    "pkg/kubectl/util/storage",
-    "pkg/kubelet/apis",
     "pkg/printers",
-    "pkg/printers/internalversion",
-    "pkg/util/node",
     "pkg/util/parsers",
     "staging/src/k8s.io/apimachinery/pkg/util/duration",
   ]
@@ -1150,6 +1110,8 @@
     "github.com/asticode/go-astilectron-bootstrap",
     "github.com/asticode/go-astilog",
     "github.com/davecgh/go-spew/spew",
+    "github.com/golang/mock/gomock",
+    "github.com/googleapis/gnostic/OpenAPIv2",
     "github.com/gorilla/handlers",
     "github.com/gorilla/mux",
     "github.com/jessevdk/go-flags",
@@ -1181,7 +1143,7 @@
     "k8s.io/apimachinery/pkg/util/duration",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/runtime",
-    "k8s.io/apimachinery/pkg/util/sets",
+    "k8s.io/apimachinery/pkg/version",
     "k8s.io/apimachinery/pkg/watch",
     "k8s.io/client-go/discovery",
     "k8s.io/client-go/discovery/fake",
@@ -1189,8 +1151,10 @@
     "k8s.io/client-go/dynamic/dynamicinformer",
     "k8s.io/client-go/dynamic/fake",
     "k8s.io/client-go/informers",
+    "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/kubernetes/fake",
     "k8s.io/client-go/kubernetes/scheme",
+    "k8s.io/client-go/kubernetes/typed/core/v1",
     "k8s.io/client-go/plugin/pkg/client/auth/azure",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/plugin/pkg/client/auth/oidc",
@@ -1202,13 +1166,8 @@
     "k8s.io/kubernetes/pkg/apis/apps",
     "k8s.io/kubernetes/pkg/apis/batch",
     "k8s.io/kubernetes/pkg/apis/core",
-    "k8s.io/kubernetes/pkg/apis/core/v1/helper",
     "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme",
-    "k8s.io/kubernetes/pkg/kubectl/describe/versioned",
-    "k8s.io/kubernetes/pkg/kubectl/util/qos",
-    "k8s.io/kubernetes/pkg/kubectl/util/resource",
     "k8s.io/kubernetes/pkg/printers",
-    "k8s.io/kubernetes/pkg/printers/internalversion",
     "k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/util/duration",
   ]
   solver-name = "gps-cdcl"
