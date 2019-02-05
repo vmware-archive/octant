@@ -1,16 +1,14 @@
-import './styles.scss'
-
-import { getAPIBase, getContentsUrl, POLL_WAIT, setNamespace } from 'api'
-import Header from 'components/Header'
-import _ from 'lodash'
-import JSONContentResponse, { Parse } from 'models/ContentResponse'
-import Overview from 'pages/Overview'
 import React, { Component } from 'react'
+import _ from 'lodash'
 import { Redirect, Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom'
 import ReactTooltip from 'react-tooltip'
-
+import Overview from 'pages/Overview'
+import Header from 'components/Header'
+import JSONContentResponse, { Parse } from 'models/ContentResponse'
 import Navigation from '../Navigation'
 import getInitialState from './state/getInitialState'
+import { getAPIBase, getContentsUrl, POLL_WAIT, setNamespace, ContentsUrlParams } from 'api'
+import './styles.scss'
 
 interface AppState {
   isLoading: boolean;
@@ -21,8 +19,8 @@ interface AppState {
   namespaceOption: NamespaceOption;
   namespaceOptions: NamespaceOption[];
   title: string;
-
   contentResponse: JSONContentResponse;
+  filterTags: string[];
 }
 
 class App extends Component<RouteComponentProps, AppState> {
@@ -42,6 +40,7 @@ class App extends Component<RouteComponentProps, AppState> {
       namespaceOption: null,
       namespaceOptions: [],
       contentResponse: null,
+      filterTags: [],
     }
   }
 
@@ -96,7 +95,15 @@ class App extends Component<RouteComponentProps, AppState> {
 
     if (!path || !namespace) return
 
-    const url = getContentsUrl(path, namespace, POLL_WAIT)
+    const params: ContentsUrlParams = {
+      namespace,
+      poll: POLL_WAIT,
+    };
+
+    const { filterTags } = this.state
+    if (filterTags && filterTags.length) params.filter = filterTags
+
+    const url = getContentsUrl(path, params)
 
     this.source = new window.EventSource(`${getAPIBase()}/${url}`)
 
@@ -147,6 +154,14 @@ class App extends Component<RouteComponentProps, AppState> {
     }
   }
 
+  onTagsChange = (newFilterTags) => {
+    this.setState({ filterTags: newFilterTags }, () => {
+      const { location } = this.props
+      const { namespaceOption } = this.state
+      this.setEventSourceStream(location.pathname, namespaceOption.value)
+    })
+  };
+
   setError = (hasError: boolean, errorMessage?: string): void => {
     errorMessage = errorMessage || 'Oops, something is not right, try again.'
     this.setState({ hasError, errorMessage })
@@ -162,6 +177,7 @@ class App extends Component<RouteComponentProps, AppState> {
       namespaceOptions,
       namespaceOption,
       title,
+      filterTags,
     } = this.state
 
     let currentNamespace = null
@@ -183,6 +199,8 @@ class App extends Component<RouteComponentProps, AppState> {
           namespace={currentNamespace}
           namespaceValue={namespaceOption}
           onNamespaceChange={this.onNamespaceChange}
+          filterTags={filterTags}
+          onFilterTagsChange={this.onTagsChange}
         />
         <div className='app-page'>
           <div className='app-nav'>

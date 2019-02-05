@@ -70,19 +70,16 @@ export function getNamespaces() {
   return buildRequest(params)
 }
 
-export function getContentsUrl(path: string, namespace: string, poll?: number) {
+export type ContentsUrlParams = Partial<{
+  namespace: string;
+  poll: number;
+  filter: string[];
+}>
+
+export function getContentsUrl(path: string, params?: ContentsUrlParams): string | null {
   if (!path || path === '/') return null
-  let query = ''
-  if (namespace) query = `?${queryString.stringify({ namespace })}`
-  // if poll is set poll the API
-  if (poll) query += `&poll=${poll}`
-
-  return `api/v1${path}${query}`
-}
-
-export function getContents(path: string, namespace: string) {
-  const endpoint = getContentsUrl(path, namespace)
-  return buildRequest({ endpoint })
+  if (params) path += `?${queryString.stringify(params)}`
+  return `api/v1${path}`
 }
 
 export function setNamespace(namespace: string) {
