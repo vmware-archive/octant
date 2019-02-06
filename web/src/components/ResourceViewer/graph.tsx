@@ -1,17 +1,17 @@
 import './graph.scss'
 
+import * as d3 from 'd3'
+import dagreD3 from 'dagre-d3'
 import React from 'react'
 import isEqual from 'react-fast-compare'
-import dagreD3 from 'dagre-d3'
-import * as d3 from 'd3'
 
 interface Props {
-  nodes: any;
-  edges: any[];
-  height?: string;
-  width?: string;
-  shapeRenders?: any;
-  onNodeClick(name: string): void;
+  nodes: any
+  edges: any[]
+  height?: string
+  width?: string
+  shapeRenders?: any
+  onNodeClick(name: string): void
 }
 
 class Graph extends React.Component<Props> {
@@ -40,6 +40,11 @@ class Graph extends React.Component<Props> {
       g.setNode(id, node)
     }
 
+    g.nodes().forEach((v) => {
+      const node = g.node(v)
+      node.rx = node.ry = 4
+    })
+
     for (const edge of this.props.edges) {
       g.setEdge(edge[0], edge[1], edge[2])
     }
@@ -49,22 +54,29 @@ class Graph extends React.Component<Props> {
 
     const render = new dagreD3.render()
 
-    // @ts-ignore
-    render(inner, g)
+    // swallow type error that can happen if edges are in transition.
+    try {
+      // @ts-ignore
+      render(inner, g)
 
-    const { height: gHeight, width: gWidth } = g.graph()
-    const { height, width } = this.nodeTree.current.getBBox()
-    const transX = width - gWidth + 40
-    const transY = height - gHeight + 40
-    svg.attr('height', height + 80)
-    svg.attr('width', width + 80)
-    // @ts-ignore
-    inner.attr('transform', d3.zoomIdentity.translate(transX, transY))
+      const { height: gHeight, width: gWidth } = g.graph()
+      const { height, width } = this.nodeTree.current.getBBox()
+      const transX = width - gWidth + 40
+      const transY = height - gHeight + 40
+      svg.attr('height', height + 80)
+      svg.attr('width', width + 80)
+      // @ts-ignore
+      inner.attr('transform', d3.zoomIdentity.translate(transX, transY))
 
-    if (this.props.onNodeClick) {
-      svg.selectAll('g.node').on('click', (id) => {
-        this.props.onNodeClick(id as string)
-      })
+      if (this.props.onNodeClick) {
+        svg.selectAll('g.node').on('click', (id) => {
+          this.props.onNodeClick(id as string)
+        })
+      }
+    } catch (e) {
+      if (!(e instanceof TypeError)) {
+        throw e
+      }
     }
   }
 

@@ -1,24 +1,25 @@
-import React, { Component } from 'react'
-import QuickView from './quickview'
-import { IResourceViewer } from './schema'
-import Graph from './graph'
-import ResourceNode from './node'
 import './index.scss'
 import './resource'
 
+import { ResourceViewerModel } from 'models/View'
+import React, { Component } from 'react'
+
+import Graph from './graph'
+import ResourceNode from './node'
+
 interface Props {
-  data: IResourceViewer;
+  view: ResourceViewerModel
 }
 
 interface State {
-  currentResource: string;
+  currentResource: string
 }
 
 class ResourceViewer extends Component<Props, State> {
   constructor(props: Props) {
     super(props)
     this.state = {
-      currentResource: props.data.config.selected,
+      currentResource: '',
     }
   }
 
@@ -27,12 +28,11 @@ class ResourceViewer extends Component<Props, State> {
   }
 
   render() {
-    const { data: { config } } = this.props
-    const adjacencyList = config.adjacencyList
-    const objects = config.objects
+    const adjacencyList = this.props.view.edges
+    const objects = this.props.view.nodes
     const currentObject = objects[this.state.currentResource]
     const nodes = {}
-    for (const [id, object] of Object.entries(config.objects)) {
+    for (const [id, object] of Object.entries(objects)) {
       nodes[id] = new ResourceNode(
         object,
         this.state.currentResource === id,
@@ -41,7 +41,16 @@ class ResourceViewer extends Component<Props, State> {
 
     const edges = []
     for (const [node, nodeEdges] of Object.entries(adjacencyList)) {
-      edges.push(...nodeEdges.map((e) => [node, e.node, { arrowhead: 'vee' }]))
+      edges.push(
+        ...nodeEdges.map((e) => [
+          node,
+          e.node,
+          {
+            arrowhead: 'undirected',
+            arrowheadStyle: 'fill: rgba(173, 187, 196, 0.3)',
+          },
+        ]),
+      )
     }
 
     return (
@@ -53,7 +62,6 @@ class ResourceViewer extends Component<Props, State> {
           edges={edges}
           onNodeClick={this.setCurrentResource}
         />
-        {currentObject ? <QuickView object={currentObject} /> : null}
       </div>
     )
   }

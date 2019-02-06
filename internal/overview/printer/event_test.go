@@ -243,7 +243,7 @@ func Test_EventHandler(t *testing.T) {
 	eventDetailPanel := component.NewPanel("", eventDetailView)
 	eventDetailPanel.Position(0, 0, 24, 10)
 
-	expected := component.NewGrid("", *eventDetailPanel)
+	expected := component.NewGrid("Summary", *eventDetailPanel)
 
 	assert.Equal(t, expected, got)
 }

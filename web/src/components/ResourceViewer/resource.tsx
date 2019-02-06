@@ -62,7 +62,6 @@ class Resource extends React.Component<Props, any> {
         ref={this.resourceRef}
         className={`resource ${selected}`}
         style={resourceStyle}
-        onClick={this.updateSelection}
       >
         <div className='resource-name'>{object.name}</div>
         <div className='resource-type'>

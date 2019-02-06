@@ -33,12 +33,12 @@ type ContentSection struct {
 }
 
 type ResourceOptions struct {
-	Path       string
-	CacheKey   cache.Key
-	ListType   interface{}
-	ObjectType interface{}
-	Titles     ResourceTitle
-	Sections   []ContentSection
+	Path                  string
+	CacheKey              cache.Key
+	ListType              interface{}
+	ObjectType            interface{}
+	Titles                ResourceTitle
+	DisableResourceViewer bool
 }
 
 type Resource struct {
@@ -77,7 +77,7 @@ func (r *Resource) Object() *ObjectDescriber {
 		func() interface{} {
 			return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
 		},
-		r.Sections,
+		r.DisableResourceViewer,
 	)
 }
 

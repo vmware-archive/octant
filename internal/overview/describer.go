@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/heptio/developer-dash/internal/queryer"
+
+	"github.com/heptio/developer-dash/internal/overview/resourceviewer"
+
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/view/component"
@@ -32,6 +36,7 @@ var DefaultLoader = func(cacheKey cache.Key) LoaderFunc {
 type ObjectTransformFunc func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error
 
 type DescriberOptions struct {
+	Queryer queryer.Queryer
 	Cache   cache.Cache
 	Fields  map[string]string
 	Printer printer.Printer
@@ -130,21 +135,21 @@ func (d *ListDescriber) PathFilters(namespace string) []pathFilter {
 type ObjectDescriber struct {
 	*baseDescriber
 
-	path       string
-	baseTitle  string
-	objectType func() interface{}
-	loaderFunc LoaderFunc
-	sections   []ContentSection
+	path                  string
+	baseTitle             string
+	objectType            func() interface{}
+	loaderFunc            LoaderFunc
+	disableResourceViewer bool
 }
 
-func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType func() interface{}, sections []ContentSection) *ObjectDescriber {
+func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType func() interface{}, disableResourceViewer bool) *ObjectDescriber {
 	return &ObjectDescriber{
-		path:          p,
-		baseTitle:     baseTitle,
-		baseDescriber: newBaseDescriber(),
-		loaderFunc:    loaderFunc,
-		objectType:    objectType,
-		sections:      sections,
+		path:                  p,
+		baseTitle:             baseTitle,
+		baseDescriber:         newBaseDescriber(),
+		loaderFunc:            loaderFunc,
+		objectType:            objectType,
+		disableResourceViewer: disableResourceViewer,
 	}
 }
 
@@ -198,6 +203,20 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 	cr := component.ContentResponse{
 		Title:          title,
 		ViewComponents: []component.ViewComponent{vc},
+	}
+
+	if !d.disableResourceViewer {
+		rv, err := resourceviewer.New(resourceviewer.WithDefaultQueryer(options.Queryer))
+		if err != nil {
+			return emptyContentResponse, err
+		}
+
+		resourceViewerComponent, err := rv.Visit(newObject)
+		if err != nil {
+			return emptyContentResponse, err
+		}
+
+		cr.ViewComponents = append(cr.ViewComponents, resourceViewerComponent)
 	}
 
 	return cr, nil

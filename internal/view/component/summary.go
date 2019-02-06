@@ -74,7 +74,7 @@ func (t *Summary) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifes whether the component is considered empty. Implements ViewComponent.
+// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
 func (t *Summary) IsEmpty() bool {
 	return len(t.Config.Sections) == 0
 }

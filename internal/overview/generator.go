@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"sync"
 
+	"github.com/heptio/developer-dash/internal/queryer"
+
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/view/component"
@@ -52,6 +54,7 @@ var contentNotFound = errors.Errorf("content not found")
 
 type realGenerator struct {
 	cache         cache.Cache
+	queryer       queryer.Queryer
 	pathFilters   []pathFilter
 	clusterClient cluster.ClientInterface
 	printer       printer.Printer
@@ -59,7 +62,7 @@ type realGenerator struct {
 	mu sync.Mutex
 }
 
-func newGenerator(cache cache.Cache, pathFilters []pathFilter, clusterClient cluster.ClientInterface) (*realGenerator, error) {
+func newGenerator(cache cache.Cache, q queryer.Queryer, pathFilters []pathFilter, clusterClient cluster.ClientInterface) (*realGenerator, error) {
 	p := printer.NewResource(cache)
 
 	if err := AddPrintHandlers(p); err != nil {
@@ -68,6 +71,7 @@ func newGenerator(cache cache.Cache, pathFilters []pathFilter, clusterClient clu
 
 	return &realGenerator{
 		cache:         cache,
+		queryer:       q,
 		pathFilters:   pathFilters,
 		clusterClient: clusterClient,
 		printer:       p,
@@ -86,6 +90,7 @@ func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace st
 		fields := pf.Fields(path)
 		options := DescriberOptions{
 			Cache:   g.cache,
+			Queryer: g.queryer,
 			Fields:  fields,
 			Printer: g.printer,
 		}

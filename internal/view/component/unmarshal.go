@@ -56,6 +56,11 @@ func unmarshal(to typedObject) (interface{}, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal quadrant config in %q", t.Metadata.Title)
 		o = t
+	case "resourceViewer":
+		t := &ResourceViewer{Metadata: to.Metadata}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal resourceViewer config in %q", t.Metadata.Title)
+		o = t
 	case "selectors":
 		t := &Selectors{Metadata: to.Metadata}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),

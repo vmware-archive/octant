@@ -7,16 +7,10 @@ interface Props {
 }
 
 export default function({ view }: Props) {
-  switch (view.type) {
-    case 'table':
-    case 'summary':
-    // TODO: re-enable resource view
-    // case 'resourceViewer':
-    //   return <ResourceViewer data={content as IResourceViewer} />
-    case 'grid':
-    case 'list':
-      return renderView(view)
-    default:
-      return <div>Can not render content type</div>
+  const supportedTypes = new Set(['table', 'summary', 'resourceViewer', 'grid', 'list'])
+  if (supportedTypes.has(view.type)) {
+    return renderView(view)
   }
+
+  return <div>Can not render content type {view.type}</div>
 }

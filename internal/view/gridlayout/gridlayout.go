@@ -49,7 +49,7 @@ func (gl *GridLayout) ToGrid() *component.Grid {
 		row += section.Height + 1
 	}
 
-	grid := component.NewGrid("", panels...)
+	grid := component.NewGrid("Summary", panels...)
 
 	return grid
 }
