@@ -3,11 +3,10 @@
 .overview {
   .main {
     height: 100%;
-    padding: 20px 50px;
 
     .component--primary {
       margin-bottom: 50px;
-      padding: 20px;
+      padding: 20px 50px;
 
       .content-text {
         text-align: center;
@@ -30,6 +29,42 @@
       .content-type-list-item {
         margin-bottom: 20px;
       }
+    }
+  }
+}
+
+.react-tabs {
+  -webkit-tap-highlight-color: transparent;
+
+  &__tab-list {
+    border-bottom: 1px solid rgba(173, 187, 196, 0.3);
+    margin: 0 0 10px;
+    padding: 0 0 0 50px;
+  }
+
+  &__tab {
+    display: inline-block;
+    border: 1px solid transparent;
+    border-bottom: none;
+    bottom: -1px;
+    position: relative;
+    list-style: none;
+    padding: 6px 0;
+    margin: 0 18px 0 0;
+    cursor: pointer;
+    color: adjust-color($white, $lightness: -30%);
+
+    &--selected {
+      color: $white;
+      border-bottom: 3px solid $blue-light;
+    }
+  }
+
+  &__tab-panel {
+    display: none;
+
+    &--selected {
+      display: block;
     }
   }
 }
