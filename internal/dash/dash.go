@@ -180,6 +180,7 @@ func (d *dash) Run(ctx context.Context) error {
 	return server.Shutdown(ctx)
 }
 
+// handler configures primary http routes
 func (d *dash) handler() (http.Handler, error) {
 	handler, err := d.uiHandler()
 	if err != nil {
