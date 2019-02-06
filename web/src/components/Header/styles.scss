@@ -1,56 +1,56 @@
 @import '~css/variables/variables.scss';
 
 .header--container {
-  z-index: 10;
+
+  background-color: $headerBGColor;
+
+  display: flex;
+  font-size: 16px;
+  height: $headerHeight;
 
   position: fixed;
   top: 0;
-  height: $headerHeight;
   width: 100%;
-
-  display: flex;
-
-  background-color: $headerBGColor;
-  font-size: 16px;
+  z-index: 10;
 
   .header--logo {
     @include bold;
-
-    width: $navWidth;
+    align-items: center;
+    border-right: 1px solid $dividerColor;
 
     display: flex;
-    align-items: center;
+
+    font-size: 22px;
 
     padding-left: $navLeftPadding;
 
-    font-size: 22px;
-    border-right: 1px solid $dividerColor;
+    width: $navWidth;
 
     .header-logo-icon {
-      width: 20px;
-      height: 20px;
       border: 1px solid white;
+      height: 20px;
       margin-right: 10px;
+      width: 20px;
     }
   }
 
   .header--namespace {
+    border-right: 1px solid $dividerColor;
     flex: 1;
     max-width: 400px;
-    border-right: 1px solid $dividerColor;
 
     .header--selector {
-      height: 100%;
       color: $white;
+      height: 100%;
 
       &__control {
-        height: 100%;
 
         background-color: $headerBGColor;
-        color: $white;
 
         border: none;
         box-shadow: none;
+        color: $white;
+        height: 100%;
       }
 
       &__value-container, &__input, &__single-value, &__input input {
@@ -68,19 +68,19 @@
       }
 
       &__menu {
-        margin: 0;
 
         background-color: $headerBGColor;
         border-bottom-left-radius: 6px;
         border-bottom-right-radius: 6px;
+        margin: 0;
       }
 
       &__menu-list {
-        padding: 0;
 
         background-color: $headerBGColor;
         border-bottom-left-radius: 6px;
         border-bottom-right-radius: 6px;
+        padding: 0;
       }
 
       &__option {
@@ -107,33 +107,33 @@
   }
 
   .header--filter {
+    border-right: 1px solid $dividerColor;
     flex: 3;
     padding: 13px $navLeftPadding;
-    border-right: 1px solid $dividerColor;
 
     .react-tagsinput {
       @include semiBold;
-
-      height: 34px;
-      width: 500px;
+      background-color: $blue-dark;
 
       border: 1px solid $blue-dark;
       border-radius: 4px;
-      background-color: $blue-dark;
+
+      height: 34px;
 
       padding-top: 0;
+      width: 500px;
 
       &-input {
         @include semiBold;
-        font-size: 16px;
         color: $white;
-
-        outline: none;
+        font-size: 16px;
         height: 30px;
-        width: 250px;
 
         margin-bottom: 0;
         margin-top: 0;
+
+        outline: none;
+        width: 250px;
 
         &::placeholder {
           color: $gray-dark;
@@ -142,25 +142,25 @@
 
       &-tag {
         @include resourceLabel;
+        font-size: 12px;
 
         padding: 2px 3px;
-        font-size: 12px;
       }
     }
   }
 
   .header--context {
     @include semiBold;
-
-    flex: 1;
-    max-width: 400px;
-
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
     align-items: center;
 
     cursor: pointer;
+
+    display: flex;
+
+    flex: 1;
+    flex-direction: row;
+    justify-content: center;
+    max-width: 400px;
   }
 }
 

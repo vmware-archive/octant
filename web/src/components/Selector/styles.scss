@@ -10,11 +10,11 @@ $selector-color: #00c986;
     border-radius: 4px;
     color: $selector-color;
 
+    font-size: 12px;
+
     margin-bottom: 2px;
     margin-right: 4px;
     padding: 5px 10px;
-
-    font-size: 12px;
 
     &:last-child {
       margin-right: 0;

@@ -4,21 +4,21 @@
   border: 1px solid #d8d8d8;
 
   .summary-component-title {
-    padding: 12px;
     border-bottom: 1px solid #d8d8d8;
+    padding: 12px;
   }
 
   .summary-component-section {
-    margin-right: 30px;
     flex: 1;
+    margin-right: 30px;
     padding: 12px;
 
     .summary--data {
       align-items: center;
       display: flex;
       flex-direction: row;
-      padding: 5px 0;
       font-size: 14px;
+      padding: 5px 0;
 
       .summary--data-key {
         @include bold;

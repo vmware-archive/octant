@@ -12,8 +12,8 @@ export default function({ view }: Props) {
     <div className='content-labels'>
       {Object.entries(view.labels).map(([key, value], index) => (
         <div key={index} className='content-label'>
-        {key}:{value}
-      </div>
+          {key}:{value}
+        </div>
       ))}
     </div>
   )

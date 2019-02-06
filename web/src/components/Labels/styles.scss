@@ -8,11 +8,11 @@
   .content-label {
     @include resourceLabel;
 
+    font-size: 12px;
+
     margin-bottom: 2px;
     margin-right: 4px;
     padding: 5px 10px;
-
-    font-size: 12px;
 
     &:last-child {
       margin-right: 0;

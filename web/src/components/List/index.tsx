@@ -8,7 +8,7 @@ interface Props {
   view: ListModel
 }
 
-export default function List (props: Props) {
+export default function List(props: Props) {
   const { view } = props
 
   return (

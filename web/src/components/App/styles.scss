@@ -1,27 +1,27 @@
 @import '~css/variables/variables.scss';
 
 .app {
-  position: relative;
   background-color: $blue-dark;
   color: $white;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
   margin-top: $headerHeight;
+  min-height: 100vh;
+  position: relative;
 
   .app-nav, .app-main {
     float: left;
   }
 
   .app-nav {
-    width: $navWidth;
     height: 100%;
     position: fixed;
+    width: $navWidth;
   }
 
   .app-main {
-    position: relative;
     left: $navWidth;
+    position: relative;
     width: calc(100% - #{$navWidth});
   }
 }

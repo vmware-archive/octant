@@ -11,9 +11,9 @@ $dividerColor: rgba(255, 255, 255, 0.15);
 
 @mixin resourceLabel {
   @include regular;
+  background-color: transparent;
 
   border: 1px solid $label-border;
   border-radius: 4px;
   color: $label-text;
-  background-color: transparent;
 }

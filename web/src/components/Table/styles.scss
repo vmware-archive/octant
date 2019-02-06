@@ -7,10 +7,10 @@ $border-color: rgba(173, 187, 196, 0.3);
   height: 100%;
 
   .table-component-title {
+    border-bottom: 1px solid $border-color;
     font-size: 16px;
     margin-bottom: 10px;
     padding: 12px;
-    border-bottom: 1px solid $border-color;
   }
 
   .table--link {
@@ -25,10 +25,10 @@ $border-color: rgba(173, 187, 196, 0.3);
 }
 
 .table--component > .ReactTable {
+  border: 0;
   display: flex;
   flex-direction: column;
   position: relative;
-  border: 0;
 
   .rt-table {
     align-items: stretch;
@@ -135,9 +135,9 @@ $border-color: rgba(173, 187, 196, 0.3);
   }
 
   .rt-tr {
-    padding: 5px 12px;
     display: inline-flex;
-    flex: 1 0 auto
+    flex: 1 0 auto;
+    padding: 5px 12px
   }
 
   .rt-td {
@@ -238,8 +238,8 @@ $border-color: rgba(173, 187, 196, 0.3);
 .table--component {
   .content-type-list-item {
     &:first-of-type {
-      margin-bottom: 10px;
       font-weight: 700px;
+      margin-bottom: 10px;
     }
 
     &:not(:first-of-type) {

@@ -98,7 +98,7 @@ class App extends Component<RouteComponentProps, AppState> {
     const params: ContentsUrlParams = {
       namespace,
       poll: POLL_WAIT,
-    };
+    }
 
     const { filterTags } = this.state
     if (filterTags && filterTags.length) params.filter = filterTags
@@ -160,7 +160,7 @@ class App extends Component<RouteComponentProps, AppState> {
       const { namespaceOption } = this.state
       this.setEventSourceStream(location.pathname, namespaceOption.value)
     })
-  };
+  }
 
   setError = (hasError: boolean, errorMessage?: string): void => {
     errorMessage = errorMessage || 'Oops, something is not right, try again.'
