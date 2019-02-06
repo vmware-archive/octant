@@ -1,8 +1,9 @@
+import './styles.scss'
+import 'react-tagsinput/react-tagsinput.css'
+
 import React, { Component } from 'react'
 import Select from 'react-select'
 import TagsInput from 'react-tagsinput'
-import 'react-tagsinput/react-tagsinput.css'
-import './styles.scss'
 
 interface Props {
   namespaceOptions: NamespaceOption[];
@@ -34,7 +35,7 @@ export default class extends Component<Props> {
       <header>
         <div className='header--container'>
           <div className='header--logo'>
-            <h1>Dev Dash</h1>
+            <h1>Sugarloaf</h1>
           </div>
           <div className='header--namespace'>
             <Select
