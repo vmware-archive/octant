@@ -1,5 +1,4 @@
 import './styles.scss'
-import 'react-tabs/style/react-tabs.css'
 
 import cx from 'classnames'
 import Loading from 'components/Icons/Loading'
