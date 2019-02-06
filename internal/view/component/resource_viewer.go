@@ -1,5 +1,7 @@
 package component
 
+import "encoding/json"
+
 // AdjList is an adjacency list - it maps nodes to edges
 type AdjList map[string][]Edge
 
@@ -42,7 +44,7 @@ const (
 )
 
 // Nodes is a set of graph nodes
-type Nodes map[string]*Node
+type Nodes map[string]Node
 
 // Node is a node in a graph, representing a kubernetes object
 // IsNetwork is a hint to the layout engine.
@@ -73,5 +75,41 @@ func NewResourceViewer(title string) *ResourceViewer {
 			Type:  "resourceViewer",
 			Title: title,
 		},
+		Config: ResourceViewerConfig{
+			Edges: AdjList{},
+			Nodes: Nodes{},
+		},
 	}
+}
+
+func (rv *ResourceViewer) AddEdge(nodeID, childID string, edgeType EdgeType) {
+	edge := Edge{
+		Node: childID,
+		Type: edgeType,
+	}
+	rv.Config.Edges[nodeID] = append(rv.Config.Edges[nodeID], edge)
+}
+
+func (rv *ResourceViewer) AddNode(id string, node Node) {
+	rv.Config.Nodes[id] = node
+}
+
+func (rv *ResourceViewer) GetMetadata() Metadata {
+	return rv.Metadata
+}
+
+// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
+func (rv *ResourceViewer) IsEmpty() bool {
+	return len(rv.Config.Nodes) == 0
+}
+
+type resourceViewerMarshal ResourceViewer
+
+// MarshalJSON implements json.Marshaler
+func (rv *ResourceViewer) MarshalJSON() ([]byte, error) {
+	m := resourceViewerMarshal(*rv)
+	m.Metadata.Type = "resourceViewer"
+	m.Metadata.Title = rv.Metadata.Title
+
+	return json.Marshal(&m)
 }

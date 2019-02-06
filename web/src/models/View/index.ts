@@ -5,6 +5,7 @@ import { JSONLink } from 'models/Link'
 import { JSONList } from 'models/List'
 import { JSONPanel } from 'models/Panel'
 import { JSONQuadrant } from 'models/Quadrant'
+import { JSONResourceViewer } from 'models/ResourceViewer'
 import { JSONSelectors } from 'models/Selectors'
 import { JSONSummary } from 'models/Summary'
 import { JSONTable } from 'models/Table'
@@ -23,12 +24,13 @@ export * from 'models/Link'
 export * from 'models/Timestamp'
 export * from 'models/Containers'
 export * from 'models/Selectors'
+export * from 'models/ResourceViewer'
 
 export interface View {
-  readonly type: string;
-  readonly title: string;
+  readonly type: string
+  readonly title: string
 
-  readonly isComparable?: boolean;
+  readonly isComparable?: boolean
 }
 
 export function instanceOfComparableView(object: any): object is View {
@@ -55,6 +57,8 @@ export function viewFromContentType(ct: ContentType): View {
       return new JSONPanel(ct)
     case 'quadrant':
       return new JSONQuadrant(ct)
+    case 'resourceViewer':
+      return new JSONResourceViewer(ct)
     case 'selectors':
       return new JSONSelectors(ct)
     case 'summary':

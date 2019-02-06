@@ -7,7 +7,6 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/overview/printer"
-	"github.com/heptio/developer-dash/internal/view"
 	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster/fake"
@@ -16,7 +15,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/clock"
 )
 
 func TestListDescriber(t *testing.T) {
@@ -107,17 +105,9 @@ func TestObjectDescriber(t *testing.T) {
 		return &corev1.Pod{}
 	}
 
-	viewFac := func(string, string, clock.Clock) view.View {
-		return newFakeView()
-	}
 	fn := DefaultLoader(key)
-	sections := []ContentSection{
-		{
-			Title: "section 1",
-			Views: []view.ViewFactory{viewFac},
-		},
-	}
-	d := NewObjectDescriber(thePath, "object", fn, objectType, sections)
+
+	d := NewObjectDescriber(thePath, "object", fn, objectType, true)
 
 	scheme := runtime.NewScheme()
 	objects := []runtime.Object{}

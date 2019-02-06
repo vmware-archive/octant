@@ -3,6 +3,7 @@ import Grid from 'components/Grid'
 import Labels from 'components/Labels'
 import List from 'components/List'
 import Quadrant from 'components/Quadrant'
+import ResourceViewer from 'components/ResourceViewer'
 import Selectors from 'components/Selector'
 import Summary from 'components/Summary'
 import Table from 'components/Table'
@@ -16,6 +17,7 @@ import {
   LinkModel,
   ListModel,
   QuadrantModel,
+  ResourceViewerModel,
   SelectorsModel,
   SummaryModel,
   TableModel,
@@ -39,6 +41,8 @@ export function renderView(view: View): JSX.Element {
       return <List view={view as ListModel} />
     case 'quadrant':
       return <Quadrant view={view as QuadrantModel} />
+    case 'resourceViewer':
+      return <ResourceViewer view={view as ResourceViewerModel} />
     case 'selectors':
       return <Selectors view={view as SelectorsModel} />
     case 'summary':

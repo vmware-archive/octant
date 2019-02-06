@@ -13,7 +13,6 @@ import (
 func Test_unmarshal(t *testing.T) {
 	cases := []struct {
 		name       string
-		config     json.RawMessage
 		configFile string
 		objectType string
 		expected   interface{}
@@ -143,6 +142,64 @@ func Test_unmarshal(t *testing.T) {
 					SE: QuadrantValue{Label: "se", Value: "1"},
 				},
 				Metadata: Metadata{Type: "quadrant"},
+			},
+		},
+		{
+			name:       "resourceViewer",
+			configFile: "config_resource_viewer.json",
+			objectType: "resourceViewer",
+			expected: &ResourceViewer{
+				Config: ResourceViewerConfig{
+					Edges: AdjList{
+						"69e4ea11-2985-11e9-b356-42010a8000e5": []Edge{
+							{
+								Node: "bf4800b5b6602c4c78ba3b654af02b3b",
+								Type: "explicit",
+							},
+						},
+						"71c2b4eb-2949-11e9-b356-42010a8000e5": []Edge{
+							{
+								Node: "8682460a-29b5-11e9-b356-42010a8000e5",
+								Type: "explicit",
+							},
+						},
+						"8682460a-29b5-11e9-b356-42010a8000e5": []Edge{
+							{
+								Node: "bf4800b5b6602c4c78ba3b654af02b3b",
+								Type: "explicit",
+							},
+						},
+					},
+					Nodes: Nodes{
+						"69e4ea11-2985-11e9-b356-42010a8000e5": Node{
+							Name:       "my-nginx",
+							APIVersion: "v1",
+							Kind:       "Service",
+							Status:     "ok",
+						},
+						"71c2b4eb-2949-11e9-b356-42010a8000e5": Node{
+							Name:       "nginx-deployment",
+							APIVersion: "apps/v1",
+							Kind:       "Deployment",
+							Status:     "ok",
+						},
+						"8682460a-29b5-11e9-b356-42010a8000e5": Node{
+							Name:       "nginx-deployment-56c74bb7cd",
+							APIVersion: "extensions/v1beta1",
+							Kind:       "ReplicaSet",
+							Status:     "ok",
+						},
+						"bf4800b5b6602c4c78ba3b654af02b3b": Node{
+							Name:       "nginx-deployment-56c74bb7cd pods",
+							APIVersion: "v1",
+							Kind:       "Pod",
+							Status:     "ok",
+						},
+					},
+				},
+				Metadata: Metadata{
+					Type: "resourceViewer",
+				},
 			},
 		},
 		{

@@ -1,9 +1,11 @@
 .resourceViewer {
   .node {
+    cursor: pointer;
     fill: white;
 
     rect {
-      stroke: black;
+      border-radius: 4px;
+      stroke:rgba(173, 187, 196, 0.3);
       stroke-width: 1px;
     }
 
@@ -19,7 +21,7 @@
 
     &.node-ok {
       rect {
-        fill: #a3f94d;
+        fill: #22343c;
       }
     }
 
@@ -38,8 +40,8 @@
 
   .edgePath {
     path.path {
-      fill: black;
-      stroke: black;
+      fill: rgba(173, 187, 196, 0.3);
+      stroke: rgba(173, 187, 196, 0.3);
       stroke-width: 1.5px;
     }
   }

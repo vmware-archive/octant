@@ -6,6 +6,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/heptio/developer-dash/internal/queryer"
+
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/view/component"
@@ -78,7 +80,9 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string, logger
 	pathFilters = append(pathFilters, rootDescriber.PathFilters(namespace)...)
 	pathFilters = append(pathFilters, eventsDescriber.PathFilters(namespace)...)
 
-	g, err := newGenerator(informerCache, pathFilters, client)
+	queryer := queryer.New(informerCache, di)
+
+	g, err := newGenerator(informerCache, queryer, pathFilters, client)
 	if err != nil {
 		return nil, errors.Wrap(err, "create overview generator")
 	}

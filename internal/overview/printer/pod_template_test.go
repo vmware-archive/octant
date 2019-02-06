@@ -38,7 +38,7 @@ func TestPodTemplate(t *testing.T) {
 		*headerLabelsPanel,
 	}
 
-	expected := component.NewGrid("", panels...)
+	expected := component.NewGrid("Summary", panels...)
 
 	assert.Equal(t, expected, got)
 }

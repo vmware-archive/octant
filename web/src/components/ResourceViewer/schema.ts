@@ -1,26 +1,26 @@
 export interface IResourceViewer {
   metadata: {
-    type: 'resourceViewer';
-    title: string;
-  };
+    type: 'resourceViewer'
+    title: string,
+  }
   config: {
-    adjacencyList: {
+    edges: {
       [key: string]: Array<{
-        node: string;
-        edge: string;
-      }>;
-    };
+        node: string
+        edge: string,
+      }>,
+    }
     objects: {
-      [key: string]: ResourceObject;
-    };
-    selected: string;
-  };
+      [key: string]: ResourceObject,
+    }
+    selected: string,
+  }
 }
 
 export interface ResourceObject {
-  name: string;
-  apiVersion: string;
-  kind: string;
-  status: string;
-  isNetwork?: boolean;
+  name: string
+  apiVersion: string
+  kind: string
+  status: string
+  isNetwork?: boolean
 }

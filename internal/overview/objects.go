@@ -191,10 +191,11 @@ var (
 	)
 
 	eventsDescriber = NewResource(ResourceOptions{
-		Path:       "/events",
-		CacheKey:   cache.Key{APIVersion: "v1", Kind: "Event"},
-		ListType:   &corev1.EventList{},
-		ObjectType: &corev1.Event{},
-		Titles:     ResourceTitle{List: "Events", Object: "Event"},
+		Path:                  "/events",
+		CacheKey:              cache.Key{APIVersion: "v1", Kind: "Event"},
+		ListType:              &corev1.EventList{},
+		ObjectType:            &corev1.Event{},
+		Titles:                ResourceTitle{List: "Events", Object: "Event"},
+		DisableResourceViewer: true,
 	})
 )

@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/queryer"
+
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view"
 	"github.com/heptio/developer-dash/internal/view/component"
@@ -75,12 +77,14 @@ func Test_realGenerator_Generate(t *testing.T) {
 				tc.initCache(c)
 			}
 
+			q := queryer.New(c, nil)
+
 			scheme := runtime.NewScheme()
 			objects := []runtime.Object{}
 			clusterClient, err := fake.NewClient(scheme, resources, objects)
 			require.NoError(t, err)
 
-			g, err := newGenerator(c, pathFilters, clusterClient)
+			g, err := newGenerator(c, q, pathFilters, clusterClient)
 			require.NoError(t, err)
 
 			ctx := context.Background()

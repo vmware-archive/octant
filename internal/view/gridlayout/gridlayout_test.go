@@ -54,7 +54,7 @@ func TestGridLayout(t *testing.T) {
 	panels := []component.Panel{
 		*p1, *p2, *p3, *p4, *p5, *p6,
 	}
-	expected := component.NewGrid("", panels...)
+	expected := component.NewGrid("Summary", panels...)
 
 	assert.Equal(t, expected, got)
 }

@@ -1,0 +1,48 @@
+{
+  "edges": {
+    "69e4ea11-2985-11e9-b356-42010a8000e5": [
+      {
+        "node": "bf4800b5b6602c4c78ba3b654af02b3b",
+        "edge": "explicit"
+      }
+    ],
+    "71c2b4eb-2949-11e9-b356-42010a8000e5": [
+      {
+        "node": "8682460a-29b5-11e9-b356-42010a8000e5",
+        "edge": "explicit"
+      }
+    ],
+    "8682460a-29b5-11e9-b356-42010a8000e5": [
+      {
+        "node": "bf4800b5b6602c4c78ba3b654af02b3b",
+        "edge": "explicit"
+      }
+    ]
+  },
+  "nodes": {
+    "69e4ea11-2985-11e9-b356-42010a8000e5": {
+      "name": "my-nginx",
+      "apiVersion": "v1",
+      "kind": "Service",
+      "status": "ok"
+    },
+    "71c2b4eb-2949-11e9-b356-42010a8000e5": {
+      "name": "nginx-deployment",
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "status": "ok"
+    },
+    "8682460a-29b5-11e9-b356-42010a8000e5": {
+      "name": "nginx-deployment-56c74bb7cd",
+      "apiVersion": "extensions/v1beta1",
+      "kind": "ReplicaSet",
+      "status": "ok"
+    },
+    "bf4800b5b6602c4c78ba3b654af02b3b": {
+      "name": "nginx-deployment-56c74bb7cd pods",
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "status": "ok"
+    }
+  }
+}
