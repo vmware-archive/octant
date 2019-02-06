@@ -43,6 +43,8 @@ func gvkPath(apiVersion, kind, name string) string {
 		p = "/content/overview/rbac/roles"
 	case apiVersion == "v1" && kind == "Event":
 		p = "/content/overview/events"
+	case apiVersion == "v1" && kind == "Pod":
+		p = "/content/overview/workloads/pods"
 	default:
 		return "/content/overview"
 	}
