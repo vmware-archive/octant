@@ -9,8 +9,8 @@ interface Props {
   namespace: string;
   namespaceValue: NamespaceOption;
   onNamespaceChange: (NamespaceOption) => void;
-  filterTags: string[];
-  onFilterTagsChange: (filterTags: string[]) => void;
+  resourceFilters: string[];
+  onResourceFiltersChange: (filterTags: string[]) => void;
 }
 
 export default class extends Component<Props> {
@@ -29,7 +29,7 @@ export default class extends Component<Props> {
   }
 
   render() {
-    const { namespaceOptions, namespaceValue, onNamespaceChange, filterTags, onFilterTagsChange } = this.props
+    const { namespaceOptions, namespaceValue, onNamespaceChange, resourceFilters, onResourceFiltersChange } = this.props
     return (
       <header>
         <div className='header--container'>
@@ -49,8 +49,8 @@ export default class extends Component<Props> {
           <div className='header--filter'>
             <TagsInput
               inputProps={{ placeholder: 'Filter by label' }}
-              value={filterTags}
-              onChange={onFilterTagsChange}
+              value={resourceFilters}
+              onChange={onResourceFiltersChange}
             />
           </div>
           <div className='header--context'>kubecontext</div>

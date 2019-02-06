@@ -114,24 +114,18 @@
     .react-tagsinput {
       @include semiBold;
       background-color: $blue-dark;
-
       border: 1px solid $blue-dark;
       border-radius: 4px;
-
       height: 34px;
-
-      padding-top: 0;
       width: 500px;
 
       &-input {
         @include semiBold;
         color: $white;
         font-size: 16px;
-        height: 30px;
-
+        height: 22px;
         margin-bottom: 0;
         margin-top: 0;
-
         outline: none;
         width: 250px;
 
@@ -143,7 +137,6 @@
       &-tag {
         @include resourceLabel;
         font-size: 12px;
-
         padding: 2px 3px;
       }
     }

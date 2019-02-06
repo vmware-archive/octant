@@ -7,6 +7,7 @@ import Header from 'components/Header'
 import JSONContentResponse, { Parse } from 'models/ContentResponse'
 import Navigation from '../Navigation'
 import getInitialState from './state/getInitialState'
+import ResourceFiltersContext from 'contexts/resource-filters'
 import { getAPIBase, getContentsUrl, POLL_WAIT, setNamespace, ContentsUrlParams } from 'api'
 import './styles.scss'
 
@@ -20,7 +21,7 @@ interface AppState {
   namespaceOptions: NamespaceOption[];
   title: string;
   contentResponse: JSONContentResponse;
-  filterTags: string[];
+  resourceFilters: string[];
 }
 
 class App extends Component<RouteComponentProps, AppState> {
@@ -40,7 +41,7 @@ class App extends Component<RouteComponentProps, AppState> {
       namespaceOption: null,
       namespaceOptions: [],
       contentResponse: null,
-      filterTags: [],
+      resourceFilters: [],
     }
   }
 
@@ -100,8 +101,8 @@ class App extends Component<RouteComponentProps, AppState> {
       poll: POLL_WAIT,
     }
 
-    const { filterTags } = this.state
-    if (filterTags && filterTags.length) params.filter = filterTags
+    const { resourceFilters } = this.state
+    if (resourceFilters && resourceFilters.length) params.filter = resourceFilters
 
     const url = getContentsUrl(path, params)
 
@@ -155,12 +156,18 @@ class App extends Component<RouteComponentProps, AppState> {
   }
 
   onTagsChange = (newFilterTags) => {
-    this.setState({ filterTags: newFilterTags }, () => {
+    this.setState({ resourceFilters: newFilterTags }, () => {
       const { location } = this.props
       const { namespaceOption } = this.state
       this.setEventSourceStream(location.pathname, namespaceOption.value)
     })
   }
+
+  onLabelClick = (key: string, value: string) => {
+    const tag = `${key}:${value}`
+    const { resourceFilters } = this.state;
+    this.setState({ resourceFilters: [...resourceFilters, tag]})
+  };
 
   setError = (hasError: boolean, errorMessage?: string): void => {
     errorMessage = errorMessage || 'Oops, something is not right, try again.'
@@ -177,7 +184,7 @@ class App extends Component<RouteComponentProps, AppState> {
       namespaceOptions,
       namespaceOption,
       title,
-      filterTags,
+      resourceFilters,
     } = this.state
 
     let currentNamespace = null
@@ -199,39 +206,41 @@ class App extends Component<RouteComponentProps, AppState> {
           namespace={currentNamespace}
           namespaceValue={namespaceOption}
           onNamespaceChange={this.onNamespaceChange}
-          filterTags={filterTags}
-          onFilterTagsChange={this.onTagsChange}
+          resourceFilters={resourceFilters}
+          onResourceFiltersChange={this.onTagsChange}
         />
-        <div className='app-page'>
-          <div className='app-nav'>
-            <Navigation
-              navSections={navSections}
-              currentNavLinkPath={currentNavLinkPath}
-              onNavChange={(linkPath) =>
-                this.setState({ currentNavLinkPath: linkPath })
-              }
-            />
-          </div>
-          <div className='app-main'>
-            <Switch>
-              <Redirect exact from='/' to={rootNavigationPath} />
-              <Route
-                render={(props) => (
-                  <Overview
-                    {...props}
-                    title={title}
-                    isLoading={isLoading}
-                    hasError={hasError}
-                    errorMessage={errorMessage}
-                    setError={this.setError}
-                    data={this.state.contentResponse}
-                  />
-                )}
+        <ResourceFiltersContext.Provider value={{ onLabelClick: this.onLabelClick }}>
+          <div className='app-page'>
+            <div className='app-nav'>
+              <Navigation
+                navSections={navSections}
+                currentNavLinkPath={currentNavLinkPath}
+                onNavChange={(linkPath) =>
+                  this.setState({ currentNavLinkPath: linkPath })
+                }
               />
-            </Switch>
+            </div>
+            <div className='app-main'>
+              <Switch>
+                <Redirect exact from='/' to={rootNavigationPath} />
+                <Route
+                  render={(props) => (
+                    <Overview
+                      {...props}
+                      title={title}
+                      isLoading={isLoading}
+                      hasError={hasError}
+                      errorMessage={errorMessage}
+                      setError={this.setError}
+                      data={this.state.contentResponse}
+                    />
+                  )}
+                />
+              </Switch>
+            </div>
+            <ReactTooltip />
           </div>
-          <ReactTooltip />
-        </div>
+        </ResourceFiltersContext.Provider>
       </div>
     )
   }
