@@ -17,3 +17,13 @@ $dividerColor: rgba(255, 255, 255, 0.15);
   border-radius: 4px;
   color: $label-text;
 }
+
+@mixin webLink {
+  color: $white;
+  text-decoration: underline;
+
+  &:hover {
+    color: $gray-dark;
+    text-decoration: underline;
+  }
+}
