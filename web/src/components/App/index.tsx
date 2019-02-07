@@ -1,15 +1,17 @@
-import React, { Component } from 'react'
+import './styles.scss'
+
+import { ContentsUrlParams, getAPIBase, getContentsUrl, POLL_WAIT, setNamespace } from 'api'
+import Header from 'components/Header'
+import ResourceFiltersContext from 'contexts/resource-filters'
 import _ from 'lodash'
+import JSONContentResponse, { Parse } from 'models/ContentResponse'
+import Overview from 'pages/Overview'
+import React, { Component } from 'react'
 import { Redirect, Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom'
 import ReactTooltip from 'react-tooltip'
-import Overview from 'pages/Overview'
-import Header from 'components/Header'
-import JSONContentResponse, { Parse } from 'models/ContentResponse'
+
 import Navigation from '../Navigation'
 import getInitialState from './state/getInitialState'
-import ResourceFiltersContext from 'contexts/resource-filters'
-import { getAPIBase, getContentsUrl, POLL_WAIT, setNamespace, ContentsUrlParams } from 'api'
-import './styles.scss'
 
 interface AppState {
   isLoading: boolean;
@@ -169,7 +171,7 @@ class App extends Component<RouteComponentProps, AppState> {
     const tag = `${key}:${value}`
     const { resourceFilters } = this.state
     this.setState({ resourceFilters: [...resourceFilters, tag]}, this.refreshEventStream)
-  };
+  }
 
   setError = (hasError: boolean, errorMessage?: string): void => {
     errorMessage = errorMessage || 'Oops, something is not right, try again.'
@@ -240,7 +242,7 @@ class App extends Component<RouteComponentProps, AppState> {
                 />
               </Switch>
             </div>
-            <ReactTooltip />
+            <ReactTooltip html />
           </div>
         </ResourceFiltersContext.Provider>
       </div>

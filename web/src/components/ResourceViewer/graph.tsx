@@ -36,8 +36,8 @@ class Graph extends React.Component<Props> {
   renderDag() {
     const g = new dagreD3.graphlib.Graph().setGraph({})
 
-    for (const [id, node] of Object.entries(this.props.nodes)) {
-      g.setNode(id, node)
+    for (const [id, n] of Object.entries(this.props.nodes)) {
+      g.setNode(id, n)
     }
 
     g.nodes().forEach((v) => {
@@ -69,9 +69,14 @@ class Graph extends React.Component<Props> {
       inner.attr('transform', d3.zoomIdentity.translate(transX, transY))
 
       if (this.props.onNodeClick) {
-        svg.selectAll('g.node').on('click', (id) => {
-          this.props.onNodeClick(id as string)
-        })
+        svg
+          .selectAll('g.node')
+          .attr('data-for', (v) => g.node(v).id)
+          .attr('data-tip', (v) => g.node(v).description)
+          .attr('data-event', 'click')
+          .on('click', (id: string) => {
+            this.props.onNodeClick(id)
+          })
       }
     } catch (e) {
       if (!(e instanceof TypeError)) {
