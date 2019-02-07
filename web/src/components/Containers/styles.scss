@@ -1,0 +1,31 @@
+@import '~css/variables/variables.scss';
+
+.table-containers {
+  display: flex;
+  flex-direction: row;
+  padding-left: 4px;
+  padding-right: 4px;
+
+  &-name, &-image {
+    font-size: 13px;
+    line-height: 16px;
+  }
+
+  &-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: normal;
+    margin-right: 8px;
+  }
+
+  &-image {
+    flex: 2;
+  }
+
+  &:not(:first-child) {
+    border-top: 1px solid $dividerColor;
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+}
