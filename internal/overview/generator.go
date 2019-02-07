@@ -117,6 +117,8 @@ func AddPrintHandlers(p PrinterHandler) error {
 	handlers := []interface{}{
 		printer.EventListHandler,
 		printer.EventHandler,
+		printer.ConfigMapListHandler,
+		printer.ConfigMapHandler,
 		printer.DeploymentHandler,
 		printer.DeploymentListHandler,
 		printer.ReplicaSetHandler,
