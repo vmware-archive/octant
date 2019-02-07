@@ -19,11 +19,13 @@ import (
 
 func TestAPI_routes(t *testing.T) {
 	cases := []struct {
-		path            string
-		method          string
-		body            io.Reader
-		expectedCode    int
-		expectedContent string
+		path                string
+		method              string
+		body                io.Reader
+		expectedCode        int
+		expectedContent     string
+		expectedContentPath string
+		expectedNamespace   string
 	}{
 		{
 			path:         "/cluster-info",
@@ -47,10 +49,42 @@ func TestAPI_routes(t *testing.T) {
 			expectedContent: "{\"title\":\"/\",\"viewComponents\":null}\n",
 		},
 		{
+			path:                "/content/module/namespace/another-namespace/",
+			method:              http.MethodGet,
+			expectedCode:        http.StatusOK,
+			expectedContent:     "{\"title\":\"/\",\"viewComponents\":null}\n",
+			expectedNamespace:   "another-namespace",
+			expectedContentPath: "/",
+		},
+		{
+			path:                "/content/module/?namespace=fromquery",
+			method:              http.MethodGet,
+			expectedCode:        http.StatusOK,
+			expectedContent:     "{\"title\":\"/\",\"viewComponents\":null}\n",
+			expectedNamespace:   "fromquery",
+			expectedContentPath: "/",
+		},
+		{
+			path:                "/content/module/namespace/path-takes-precedence/?namespace=fromquery",
+			method:              http.MethodGet,
+			expectedCode:        http.StatusOK,
+			expectedContent:     "{\"title\":\"/\",\"viewComponents\":null}\n",
+			expectedNamespace:   "path-takes-precedence",
+			expectedContentPath: "/",
+		},
+		{
 			path:            "/content/module/nested",
 			method:          http.MethodGet,
 			expectedCode:    http.StatusOK,
 			expectedContent: "{\"title\":\"/nested\",\"viewComponents\":null}\n",
+		},
+		{
+			path:                "/content/module/namespace/default/nested",
+			method:              http.MethodGet,
+			expectedCode:        http.StatusOK,
+			expectedContent:     "{\"title\":\"/nested\",\"viewComponents\":null}\n",
+			expectedNamespace:   "default",
+			expectedContentPath: "/nested",
 		},
 		{
 			path:         "/missing",
@@ -79,7 +113,8 @@ func TestAPI_routes(t *testing.T) {
 			u, err := url.Parse(ts.URL)
 			require.NoError(t, err)
 
-			u.Path = tc.path
+			// Add relative section to server url
+			u, err = u.Parse(tc.path)
 
 			req, err := http.NewRequest(tc.method, u.String(), tc.body)
 			require.NoError(t, err)
@@ -96,6 +131,13 @@ func TestAPI_routes(t *testing.T) {
 				assert.Equal(t, tc.expectedContent, string(data))
 			}
 			assert.Equal(t, tc.expectedCode, res.StatusCode)
+
+			if tc.expectedContentPath != "" {
+				assert.Equal(t, tc.expectedContentPath, m.ObservedContentPath, "content path mismatch")
+			}
+			if tc.expectedNamespace != "" {
+				assert.Equal(t, tc.expectedNamespace, m.ObservedNamespace, "namespace mismatch")
+			}
 		})
 	}
 }

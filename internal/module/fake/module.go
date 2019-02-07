@@ -14,6 +14,9 @@ import (
 type Module struct {
 	name   string
 	logger log.Logger
+
+	ObservedContentPath string
+	ObservedNamespace   string
 }
 
 // NewModule creates an instance of Module.
@@ -59,6 +62,9 @@ func (m *Module) Stop() {
 }
 
 func (m *Module) Content(ctx context.Context, contentPath, prefix, namespace string) (component.ContentResponse, error) {
+	m.ObservedContentPath = contentPath
+	m.ObservedNamespace = namespace
+
 	switch contentPath {
 	case "/":
 		return component.ContentResponse{Title: "/"}, nil

@@ -103,13 +103,14 @@ func (a *API) Handler() *mux.Router {
 	infoService := newClusterInfo(a.infoClient, a.logger)
 	s.Handle("/cluster-info", infoService)
 
+	// Register content routes
 	contentService := &contentHandler{
 		modulePaths: a.modulePaths,
 		modules:     a.modules,
 		logger:      a.logger,
 		prefix:      a.prefix,
 	}
-	s.Handle(`/content/{rest:.*?}`, contentService).Methods(http.MethodGet)
+	contentService.RegisterRoutes(s)
 
 	s.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		a.logger.Errorf("api handler not found: %s", r.URL.String())
