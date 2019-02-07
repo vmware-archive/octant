@@ -17,6 +17,8 @@ func gvkPath(apiVersion, kind, name string) string {
 		p = "/content/overview/workloads/daemon-sets"
 	case apiVersion == "extensions/v1beta1" && kind == "ReplicaSet":
 		p = "/content/overview/workloads/replica-sets"
+	case apiVersion == "apps/v1" && kind == "ReplicaSet":
+		p = "/content/overview/workloads/replica-sets"
 	case apiVersion == "apps/v1" && kind == "StatefulSet":
 		p = "/content/overview/workloads/stateful-sets"
 	case apiVersion == "extensions/v1beta1" && kind == "Deployment":
