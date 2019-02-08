@@ -44,7 +44,6 @@ func DeploymentListHandler(list *appsv1.DeploymentList, opts Options) (component
 }
 
 // DeploymentHandler is a printFunc that prints a Deployments.
-// TODO: This handler is incomplete.
 func DeploymentHandler(deployment *appsv1.Deployment, options Options) (component.ViewComponent, error) {
 	gl := gridlayout.New()
 
