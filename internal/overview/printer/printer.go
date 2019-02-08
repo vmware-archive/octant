@@ -108,7 +108,8 @@ func ValidatePrintHandlerFunc(printFunc reflect.Value) error {
 }
 
 // DefaultPrintFunc is a default object printer. It prints Kubernetes resource
-// lists with three columns: name, labels, age.
+// lists with three columns: name, labels, age. Returns nil if the object
+// should not be printed.
 func DefaultPrintFunc(object runtime.Object, options Options) (component.ViewComponent, error) {
 	if object == nil {
 		return nil, errors.New("unable to print nil objects")
@@ -119,13 +120,20 @@ func DefaultPrintFunc(object runtime.Object, options Options) (component.ViewCom
 		return nil, err
 	}
 
-	items, ok := m["items"].([]interface{})
-	if !ok {
-		return component.NewText("", fmt.Sprintf("%T", object)), nil
+	if _, ok := m["items"]; !ok {
+		// It's not a list, so return empty content
+		return nil, nil
+	}
+
+	if m["items"] == nil {
+		// List is empty, so return empty content
+		return nil, nil
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Age")
 	table := component.NewTable(fmt.Sprintf("%T", object), cols)
+
+	items := m["items"].([]interface{})
 
 	for _, item := range items {
 		r, ok := item.(map[string]interface{})

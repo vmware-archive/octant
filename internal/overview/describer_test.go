@@ -114,10 +114,16 @@ func TestObjectDescriber(t *testing.T) {
 	clusterClient, err := fake.NewClient(scheme, resources, objects)
 	require.NoError(t, err)
 
+	p := printer.NewResource(c)
+	err = p.Handler(func(*corev1.Pod, printer.Options) (component.ViewComponent, error) {
+		return component.NewText("", "*v1.Pod"), nil
+	})
+	require.NoError(t, err)
+
 	options := DescriberOptions{
 		Cache:   c,
 		Fields:  fields,
-		Printer: printer.NewResource(c),
+		Printer: p,
 	}
 
 	ctx := context.Background()

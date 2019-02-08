@@ -21,6 +21,7 @@ func Test_Resource_Print(t *testing.T) {
 		printFunc    interface{}
 		object       runtime.Object
 		isErr        bool
+		isNil        bool
 		expectedType string
 	}{
 		{
@@ -32,12 +33,17 @@ func Test_Resource_Print(t *testing.T) {
 			expectedType: "type1",
 		},
 		{
-			name:         "print unregistered type returns text component",
-			object:       &appsv1.Deployment{},
-			expectedType: "text",
+			name:   "print unregistered type returns error",
+			object: &appsv1.Deployment{},
+			isNil:  true,
 		},
 		{
-			name: "print handler returned error",
+			name:   "print unregistered list type runs a nil",
+			object: &appsv1.DeploymentList{},
+			isNil:  true,
+		},
+		{
+			name: "print handler returns error",
 			printFunc: func(deployment *appsv1.Deployment, options printer.Options) (component.ViewComponent, error) {
 				return nil, errors.New("failed")
 			},
@@ -63,6 +69,11 @@ func Test_Resource_Print(t *testing.T) {
 			}
 
 			require.NoError(t, err)
+
+			if tc.isNil {
+				assert.Nil(t, got)
+				return
+			}
 			assert.Equal(t, tc.expectedType, got.GetMetadata().Type)
 
 		})
