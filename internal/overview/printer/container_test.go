@@ -158,7 +158,7 @@ func Test_ContainerConfiguration(t *testing.T) {
 								component.TableRow{
 									"Name":   component.NewText("", "configmapref"),
 									"Value":  component.NewText("", ""),
-									"Source": component.NewLink("", "myconfig:somekey", "/content/overview/config-and-storage/configmaps/myconfig"),
+									"Source": component.NewLink("", "myconfig:somekey", "/content/overview/config-and-storage/config-maps/myconfig"),
 								},
 								component.TableRow{
 									"Name":   component.NewText("", "secretref"),
@@ -167,7 +167,7 @@ func Test_ContainerConfiguration(t *testing.T) {
 								},
 								// EnvFromSource
 								component.TableRow{
-									"Source": component.NewLink("", "fromconfig", "/content/overview/config-and-storage/configmaps/fromconfig"),
+									"Source": component.NewLink("", "fromconfig", "/content/overview/config-and-storage/config-maps/fromconfig"),
 								},
 								component.TableRow{
 									"Source": component.NewLink("", "fromsecret", "/content/overview/config-and-storage/secrets/fromsecret"),

@@ -34,7 +34,7 @@ func gvkPath(apiVersion, kind, name string) string {
 	case apiVersion == "v1" && kind == "Secret":
 		p = "/content/overview/config-and-storage/secrets"
 	case apiVersion == "v1" && kind == "ConfigMap":
-		p = "/content/overview/config-and-storage/configmaps"
+		p = "/content/overview/config-and-storage/config-maps"
 	case apiVersion == "v1" && kind == "PersistentVolumeClaim":
 		p = "/content/overview/config-and-storage/persistent-volume-claims"
 	case apiVersion == "v1" && kind == "ServiceAccount":
