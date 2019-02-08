@@ -3,10 +3,31 @@ package printer
 import (
 	"path"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/pkg/errors"
 )
+
+// gvkPathFromObject composes a path given an object.
+func gvkPathFromObject(object runtime.Object) (string, error) {
+	if object == nil {
+		return "", errors.New("object is nil")
+	}
+
+	gvk := object.GetObjectKind().GroupVersionKind()
+	apiVersion, kind := gvk.ToAPIVersionAndKind()
+
+	accessor := meta.NewAccessor()
+	name, err := accessor.Name(object)
+	if err != nil {
+		return "", errors.Wrap(err, "retrieve name from object")
+	}
+
+	return gvkPath(apiVersion, kind, name), nil
+}
 
 // gvkPath composes a path given resource coordinates
 func gvkPath(apiVersion, kind, name string) string {

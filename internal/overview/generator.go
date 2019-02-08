@@ -127,6 +127,8 @@ func AddPrintHandlers(p PrinterHandler) error {
 		printer.PodListHandler,
 		printer.ServiceHandler,
 		printer.ServiceListHandler,
+		printer.SecretHandler,
+		printer.SecretListHandler,
 	}
 
 	for _, handler := range handlers {
