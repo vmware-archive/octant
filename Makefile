@@ -23,7 +23,7 @@ test: generate
 .PHONY: vet
 vet:
 	@echo "-> $@"
-	@env go vet  ./...
+	@env go vet  ./internal/...
 
 hcli-dev:
 	@mkdir -p ./build
@@ -62,4 +62,4 @@ release:
 	git push --follow-tags
 
 .PHONY: ci
-ci: gen-electron test vet web-test web-build hcli-dev
+ci: test vet web-test web-build hcli-dev
