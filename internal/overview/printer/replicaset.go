@@ -118,7 +118,7 @@ func (rc *ReplicaSetConfiguration) Create() (*component.Summary, error) {
 	replicas := fmt.Sprintf("%d", rs.Status.Replicas)
 	sections.AddText("Replicas", replicas)
 
-	summary := component.NewSummary(fmt.Sprintf("Configuration"), sections...)
+	summary := component.NewSummary("Configuration", sections...)
 
 	return summary, nil
 }
