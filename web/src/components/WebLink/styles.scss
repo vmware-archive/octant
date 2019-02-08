@@ -1,11 +1,5 @@
 @import '~css/variables/variables.scss';
 
 .web-link {
-  color: $white;
-  text-decoration: none;
-
-  &:hover {
-    color: $white;
-    text-decoration: underline;
-  }
+  @include webLink
 }

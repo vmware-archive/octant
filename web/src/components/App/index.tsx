@@ -155,18 +155,20 @@ class App extends Component<RouteComponentProps, AppState> {
     }
   }
 
+  refreshEventStream = () => {
+    const { location } = this.props
+    const { namespaceOption } = this.state
+    this.setEventSourceStream(location.pathname, namespaceOption.value)
+  }
+
   onTagsChange = (newFilterTags) => {
-    this.setState({ resourceFilters: newFilterTags }, () => {
-      const { location } = this.props
-      const { namespaceOption } = this.state
-      this.setEventSourceStream(location.pathname, namespaceOption.value)
-    })
+    this.setState({ resourceFilters: newFilterTags }, this.refreshEventStream)
   }
 
   onLabelClick = (key: string, value: string) => {
     const tag = `${key}:${value}`
-    const { resourceFilters } = this.state;
-    this.setState({ resourceFilters: [...resourceFilters, tag]})
+    const { resourceFilters } = this.state
+    this.setState({ resourceFilters: [...resourceFilters, tag]}, this.refreshEventStream)
   };
 
   setError = (hasError: boolean, errorMessage?: string): void => {
