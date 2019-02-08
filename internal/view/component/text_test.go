@@ -36,7 +36,7 @@ func Test_Text_Marshal(t *testing.T) {
 			name: "with title",
 			input: &Text{
 				Metadata: Metadata{
-					Title: "image",
+					Title: []TitleViewComponent{NewText("image")},
 				},
 				Config: TextConfig{
 					Text: "nginx:latest",
@@ -45,8 +45,13 @@ func Test_Text_Marshal(t *testing.T) {
 			expected: `
             {
                 "metadata": {
-                  "type": "text",
-                  "title": "image"
+									"type": "text",
+									"title": [
+										{
+											"config": { "value": "image" },
+											"metadata": { "type": "text" }
+										}
+									]
                 },
                 "config": {
                   "value": "nginx:latest"

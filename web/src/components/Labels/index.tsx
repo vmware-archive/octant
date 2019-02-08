@@ -1,6 +1,6 @@
 import ResourceFiltersContext from 'contexts/resource-filters'
 import _ from 'lodash'
-import { LabelsModel } from 'models/View'
+import { LabelsModel } from 'models'
 import React from 'react'
 
 import './styles.scss'

@@ -11,6 +11,7 @@ $border-color: rgba(173, 187, 196, 0.3);
     font-size: 16px;
     margin-bottom: 10px;
     padding: 12px;
+    @include semiBold;
   }
 
   .table--link {
@@ -41,6 +42,7 @@ $border-color: rgba(173, 187, 196, 0.3);
 
   .rt-thead {
     @include font-size('14');
+    @include semiBold;
     display: flex;
     flex: 1 0 auto;
     flex-direction: column;

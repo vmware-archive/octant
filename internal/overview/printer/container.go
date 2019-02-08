@@ -116,10 +116,10 @@ func describeEnvRows(vars []corev1.EnvVar) []component.TableRow {
 		rows = append(rows, row)
 
 		// each row requires data for each defined column
-		row["Source"] = component.NewText("", "")
+		row["Source"] = component.NewText("")
 
-		row["Name"] = component.NewText("", e.Name)
-		row["Value"] = component.NewText("", e.Value) // TODO should we resolve values when source is a reference (valueFrom)?
+		row["Name"] = component.NewText(e.Name)
+		row["Value"] = component.NewText(e.Value) // TODO should we resolve values when source is a reference (valueFrom)?
 		if e.Value != "" || e.ValueFrom == nil {
 			continue
 		}
@@ -127,10 +127,10 @@ func describeEnvRows(vars []corev1.EnvVar) []component.TableRow {
 		switch {
 		case e.ValueFrom.FieldRef != nil:
 			ref := e.ValueFrom.FieldRef
-			row["Source"] = component.NewText("", ref.FieldPath)
+			row["Source"] = component.NewText(ref.FieldPath)
 		case e.ValueFrom.ResourceFieldRef != nil:
 			ref := e.ValueFrom.ResourceFieldRef
-			row["Source"] = component.NewText("", ref.Resource)
+			row["Source"] = component.NewText(ref.Resource)
 		case e.ValueFrom.SecretKeyRef != nil:
 			ref := e.ValueFrom.SecretKeyRef
 			row["Source"] = linkForObject("v1", "Secret", ref.Name,
@@ -195,14 +195,14 @@ func describeVolumeMounts(c *corev1.Container) *component.Table {
 
 	for _, m := range c.VolumeMounts {
 		row := component.TableRow{}
-		row["Name"] = component.NewText("", m.Name)
-		row["Mount Path"] = component.NewText("", printVolumeMountPath(m))
+		row["Name"] = component.NewText(m.Name)
+		row["Mount Path"] = component.NewText(printVolumeMountPath(m))
 
 		var prop string
 		if m.MountPropagation != nil {
 			prop = string(*m.MountPropagation)
 		}
-		row["Propagation"] = component.NewText("", prop)
+		row["Propagation"] = component.NewText(prop)
 
 		tbl.Add(row)
 	}

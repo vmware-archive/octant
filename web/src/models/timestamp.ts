@@ -1,18 +1,17 @@
-import { View } from 'models/View'
-
-export interface TimestampModel extends View {
-  timestamp: number
-}
+import { TimestampModel, TitleView, toTitle } from 'models'
 
 export class JSONTimestamp implements TimestampModel {
   readonly isComparable = true
 
   readonly timestamp: number
-  readonly title: string
   readonly type = 'timestamp'
+  readonly title: TitleView
 
   constructor(ct: ContentType) {
-    this.title = ct.metadata.title
+    if (ct.metadata.title) {
+      this.title = toTitle(ct.metadata.title)
+    }
+
     this.timestamp = ct.config.timestamp
   }
 }

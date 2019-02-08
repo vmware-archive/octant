@@ -1,5 +1,5 @@
 import { mount } from 'enzyme'
-import { LinkModel } from 'models/View'
+import { LinkModel } from 'models'
 import React from 'react'
 import { MemoryRouter } from 'react-router'
 
@@ -10,7 +10,7 @@ describe('render web link', () => {
     type: 'link',
     ref: 'ref',
     value: 'value',
-    title: 'title',
+    title: [{ type: 'text', value: 'text' }],
   }
 
   const webLink = mount(

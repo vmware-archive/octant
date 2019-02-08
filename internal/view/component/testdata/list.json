@@ -1,7 +1,12 @@
 {
   "metadata": {
     "type": "list",
-    "title": "mylist"
+    "title": [
+      {
+        "config": { "value": "mylist" },
+        "metadata": { "type": "text" }
+      }
+    ]
   },
   "config": {
     "items": [

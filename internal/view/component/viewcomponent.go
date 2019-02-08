@@ -7,8 +7,8 @@ import (
 )
 
 type ContentResponse struct {
-	Title          string          `json:"title,omitempty"`
-	ViewComponents []ViewComponent `json:"viewComponents"`
+	Title          []TitleViewComponent `json:"title,omitempty"`
+	ViewComponents []ViewComponent      `json:"viewComponents"`
 }
 
 func (c *ContentResponse) UnmarshalJSON(data []byte) error {
@@ -21,7 +21,9 @@ func (c *ContentResponse) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	c.Title = stage.Title
+	c.Title = []TitleViewComponent{
+		NewText(stage.Title),
+	}
 
 	for _, to := range stage.ViewComponents {
 		vc, err := to.ToViewComponent()
@@ -57,8 +59,48 @@ func (to *typedObject) ToViewComponent() (ViewComponent, error) {
 
 // Metadata collects common fields describing ViewComponents
 type Metadata struct {
-	Type  string `json:"type"`
-	Title string `json:"title,omitempty"`
+	Type  string               `json:"type"`
+	Title []TitleViewComponent `json:"title,omitempty"`
+}
+
+// SetTitleText sets the title using text components.
+func (m *Metadata) SetTitleText(parts ...string) {
+	var titleViewComponents []TitleViewComponent
+
+	for _, part := range parts {
+		titleViewComponents = append(titleViewComponents, NewText(part))
+	}
+
+	m.Title = titleViewComponents
+}
+
+func (m *Metadata) UnmarshalJSON(data []byte) error {
+	x := struct {
+		Type  string        `json:"type,omitempty"`
+		Title []typedObject `json:"title,omitempty"`
+	}{}
+
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+
+	m.Type = x.Type
+
+	for _, title := range x.Title {
+		vc, err := title.ToViewComponent()
+		if err != nil {
+			return errors.Wrap(err, "unmarshaling title")
+		}
+
+		tvc, ok := vc.(TitleViewComponent)
+		if !ok {
+			return errors.New("component in title isn't a title view component")
+		}
+
+		m.Title = append(m.Title, tvc)
+	}
+
+	return nil
 }
 
 // ViewComponent is a common interface for the data representation
@@ -66,4 +108,11 @@ type Metadata struct {
 type ViewComponent interface {
 	IsEmpty() bool
 	GetMetadata() Metadata
+}
+
+// TitleViewComponent is a view component that can be used for a title.
+type TitleViewComponent interface {
+	ViewComponent
+
+	SupportsTitle()
 }

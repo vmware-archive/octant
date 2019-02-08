@@ -66,7 +66,7 @@ func NewPodTemplateHeader(labels map[string]string) *PodTemplateHeader {
 // Create creates a labels component.
 func (pth *PodTemplateHeader) Create() (*component.Labels, error) {
 	view := component.NewLabels(pth.labels)
-	view.Metadata.Title = "Pod Template"
+	view.Metadata.SetTitleText("Pod Template")
 
 	return view, nil
 }

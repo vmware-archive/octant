@@ -53,7 +53,7 @@ func NewTable(title string, cols []TableCol) *Table {
 	return &Table{
 		Metadata: Metadata{
 			Type:  "table",
-			Title: title,
+			Title: []TitleViewComponent{NewText(title)},
 		},
 		Config: TableConfig{
 			Columns: cols,

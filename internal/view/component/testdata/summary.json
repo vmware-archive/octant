@@ -1,7 +1,12 @@
 {
   "metadata": {
     "type": "summary",
-    "title": "mysummary"
+    "title": [
+      {
+        "config": { "value": "mysummary" },
+        "metadata": { "type": "text" }
+      }
+    ]
   },
   "config": {
     "sections": [
@@ -10,14 +15,24 @@
         "content": {
           "metadata": {
             "type": "list",
-            "title": "nginx"
+            "title": [
+              {
+                "config": { "value": "nginx" },
+                "metadata": { "type": "text" }
+              }
+            ]
           },
           "config": {
             "items": [
               {
                 "metadata": {
                   "type": "text",
-                  "title": "Image"
+                  "title": [
+                    {
+                      "config": { "value": "Image" },
+                      "metadata": { "type": "text" }
+                    }
+                  ]
                 },
                 "config": {
                   "value": "nginx:latest"
@@ -26,7 +41,12 @@
               {
                 "metadata": {
                   "type": "text",
-                  "title": "Port"
+                  "title": [
+                    {
+                      "config": { "value": "Port" },
+                      "metadata": { "type": "text" }
+                    }
+                  ]
                 },
                 "config": {
                   "value": "80/TCP"

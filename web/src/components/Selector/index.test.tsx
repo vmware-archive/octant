@@ -1,41 +1,16 @@
 import { shallow } from 'enzyme'
-import { JSONSelectors } from 'models/View'
 import React from 'react'
 
 import Selectors from '.'
 
 describe('render label selector', () => {
-  const view = new JSONSelectors({
-    config: {
-      selectors: [
-        {
-          metadata: {
-            type: 'labelSelector',
-            title: '',
-          },
-          config: {
-            key: 'key',
-            value: 'value',
-          },
-        },
-        {
-          metadata: {
-            type: 'expressionSelector',
-            title: '',
-          },
-          config: {
-            key: 'key',
-            operator: 'In',
-            values: ['value'],
-          },
-        },
-      ],
-    },
-    metadata: {
-      type: 'selectors',
-      title: 'selectors',
-    },
-  })
+  const view = {
+    type: 'selectors',
+    selectors: [
+      { key: 'key', value: 'value', type: 'labelSelector' },
+      { key: 'key', operator: 'In', values: ['value'], type: 'expressionSelector' },
+    ],
+  }
 
   const selectors = shallow(<Selectors view={view} />)
 

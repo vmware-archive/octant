@@ -143,7 +143,7 @@ func DefaultPrintFunc(object runtime.Object, options Options) (component.ViewCom
 
 		u := unstructured.Unstructured{Object: r}
 
-		name := component.NewText("", u.GetName())
+		name := component.NewText(u.GetName())
 		labels := component.NewLabels(u.GetLabels())
 		age := component.NewTimestamp(u.GetCreationTimestamp().Time)
 

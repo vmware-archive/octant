@@ -69,7 +69,7 @@ func TestListDescriber(t *testing.T) {
 	table.Add(component.TableRow{
 		"Age":    component.NewTimestamp(time.Unix(1547472896, 0)),
 		"Labels": component.NewLabels(nil),
-		"Name":   component.NewText("", "name"),
+		"Name":   component.NewText("name"),
 	})
 	list.Add(table)
 
@@ -116,7 +116,7 @@ func TestObjectDescriber(t *testing.T) {
 
 	p := printer.NewResource(c)
 	err = p.Handler(func(*corev1.Pod, printer.Options) (component.ViewComponent, error) {
-		return component.NewText("", "*v1.Pod"), nil
+		return component.NewText("*v1.Pod"), nil
 	})
 	require.NoError(t, err)
 
@@ -131,9 +131,12 @@ func TestObjectDescriber(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := component.ContentResponse{
-		Title: "object: name",
+		Title: []component.TitleViewComponent{
+			component.NewText("object"),
+			component.NewText("name"),
+		},
 		ViewComponents: []component.ViewComponent{
-			component.NewText("", "*v1.Pod"),
+			component.NewText("*v1.Pod"),
 		},
 	}
 	assert.Equal(t, expected, cResponse)
@@ -169,7 +172,9 @@ func TestSectionDescriber(t *testing.T) {
 				newStubDescriber("/foo"),
 			),
 			expected: component.ContentResponse{
-				Title: "section",
+				Title: []component.TitleViewComponent{
+					component.NewText("section"),
+				},
 				ViewComponents: []component.ViewComponent{
 					component.NewList("", nil),
 				},
@@ -184,7 +189,9 @@ func TestSectionDescriber(t *testing.T) {
 				newEmptyDescriber("/bar"),
 			),
 			expected: component.ContentResponse{
-				Title: "section",
+				Title: []component.TitleViewComponent{
+					component.NewText("section"),
+				},
 				ViewComponents: []component.ViewComponent{
 					component.NewList("", nil),
 				},

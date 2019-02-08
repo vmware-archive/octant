@@ -1,17 +1,15 @@
-import { compareTextModel } from '.'
+import { compareTextModel } from './text'
 
 describe('Text', () => {
   describe('compare', () => {
     const view1 = {
       type: 'text',
       value: 'a',
-      title: '',
       isComparable: true,
     }
     const view2 = {
       type: 'text',
       value: 'b',
-      title: '',
       isComparable: true,
     }
 

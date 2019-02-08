@@ -53,11 +53,11 @@ func Test_EventListHandler(t *testing.T) {
 	expected.Add(component.TableRow{
 		"Kind": component.NewList("", []component.ViewComponent{
 			component.NewLink("", "d1", "/content/overview/workloads/deployments/d1"),
-			component.NewText("", "1234"),
+			component.NewText("1234"),
 		}),
 		"Message":    component.NewLink("", "message", "/content/overview/events/event-12345"),
-		"Reason":     component.NewText("", "Reason"),
-		"Type":       component.NewText("", "Type"),
+		"Reason":     component.NewText("Reason"),
+		"Type":       component.NewText("Type"),
 		"First Seen": component.NewTimestamp(time.Unix(1548424410, 0)),
 		"Last Seen":  component.NewTimestamp(time.Unix(1548424410, 0)),
 	})
@@ -135,33 +135,33 @@ func Test_ReplicasetEvents(t *testing.T) {
 	expected := component.NewTable("Events", cols)
 
 	expected.Add(component.TableRow{
-		"Message":    component.NewText("", "Created pod: frontend-97k6z"),
-		"Reason":     component.NewText("", "SuccessfulCreate"),
-		"Type":       component.NewText("", "Normal"),
+		"Message":    component.NewText("Created pod: frontend-97k6z"),
+		"Reason":     component.NewText("SuccessfulCreate"),
+		"Type":       component.NewText("Normal"),
 		"First Seen": component.NewTimestamp(time.Unix(1548424410, 0)),
 		"Last Seen":  component.NewTimestamp(time.Unix(1548424410, 0)),
-		"From":       component.NewText("", "replicaset-controller"),
-		"Count":      component.NewText("", "1"),
+		"From":       component.NewText("replicaset-controller"),
+		"Count":      component.NewText("1"),
 	})
 
 	expected.Add(component.TableRow{
-		"Message":    component.NewText("", "Created pod: frontend-8n77p"),
-		"Reason":     component.NewText("", "SuccessfulCreate"),
-		"Type":       component.NewText("", "Normal"),
+		"Message":    component.NewText("Created pod: frontend-8n77p"),
+		"Reason":     component.NewText("SuccessfulCreate"),
+		"Type":       component.NewText("Normal"),
 		"First Seen": component.NewTimestamp(time.Unix(1548424410, 0)),
 		"Last Seen":  component.NewTimestamp(time.Unix(1548424410, 0)),
-		"From":       component.NewText("", "replicaset-controller"),
-		"Count":      component.NewText("", "1"),
+		"From":       component.NewText("replicaset-controller"),
+		"Count":      component.NewText("1"),
 	})
 
 	expected.Add(component.TableRow{
-		"Message":    component.NewText("", "Created pod: frontend-b7fxf"),
-		"Reason":     component.NewText("", "SuccessfulCreate"),
-		"Type":       component.NewText("", "Normal"),
+		"Message":    component.NewText("Created pod: frontend-b7fxf"),
+		"Reason":     component.NewText("SuccessfulCreate"),
+		"Type":       component.NewText("Normal"),
 		"First Seen": component.NewTimestamp(time.Unix(1548424410, 0)),
 		"Last Seen":  component.NewTimestamp(time.Unix(1548424410, 0)),
-		"From":       component.NewText("", "replicaset-controller"),
-		"Count":      component.NewText("", "1"),
+		"From":       component.NewText("replicaset-controller"),
+		"Count":      component.NewText("1"),
 	})
 
 	assert.Equal(t, expected, got)
@@ -211,15 +211,15 @@ func Test_EventHandler(t *testing.T) {
 		},
 		{
 			Header:  "Count",
-			Content: component.NewText("", "1234"),
+			Content: component.NewText("1234"),
 		},
 		{
 			Header:  "Message",
-			Content: component.NewText("", "message"),
+			Content: component.NewText("message"),
 		},
 		{
 			Header:  "Kind",
-			Content: component.NewText("", "Deployment"),
+			Content: component.NewText("Deployment"),
 		},
 		{
 			Header:  "Involved Object",
@@ -227,15 +227,15 @@ func Test_EventHandler(t *testing.T) {
 		},
 		{
 			Header:  "Type",
-			Content: component.NewText("", "Normal"),
+			Content: component.NewText("Normal"),
 		},
 		{
 			Header:  "Reason",
-			Content: component.NewText("", "Reason"),
+			Content: component.NewText("Reason"),
 		},
 		{
 			Header:  "Source",
-			Content: component.NewText("", "component on host"),
+			Content: component.NewText("component on host"),
 		},
 	}
 	eventDetailView := component.NewSummary("Event Detail", eventDetailSections...)

@@ -31,7 +31,7 @@ func (s *SummarySections) Add(sections ...SummarySection) {
 func (s *SummarySections) AddText(header string, text string) {
 	*s = append(*s, SummarySection{
 		Header:  header,
-		Content: NewText("", text),
+		Content: NewText(text),
 	})
 }
 
@@ -61,7 +61,7 @@ func NewSummary(title string, sections ...SummarySection) *Summary {
 	return &Summary{
 		Metadata: Metadata{
 			Type:  "summary",
-			Title: title,
+			Title: []TitleViewComponent{NewText(title)},
 		},
 		Config: SummaryConfig{
 			Sections: s,

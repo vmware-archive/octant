@@ -1,10 +1,32 @@
 {
-  "title": "Deployment: nginx-deployment",
+  "title": [
+    {
+      "config": {
+        "value": "Deployment"
+      },
+      "metadata": {
+        "type": "text"
+      }
+    },
+    {
+      "config": {
+        "value": "nginx-deployment"
+      },
+      "metadata": {
+        "type": "text"
+      }
+    }
+  ],
   "viewComponents": [
     {
       "metadata": {
         "type": "grid",
-        "title": "Detail"
+        "title": [
+          {
+            "config": { "value": "Detail" },
+            "metadata": { "type": "text" }
+          }
+        ]
       },
       "config": {
         "panels": [
@@ -17,7 +39,12 @@
               "content": {
                 "metadata": {
                   "type": "summary",
-                  "title": "Details"
+                  "title": [
+                    {
+                      "config": { "value": "Details" },
+                      "metadata": { "type": "text" }
+                    }
+                  ]
                 },
                 "config": {
                   "sections": [
@@ -26,7 +53,12 @@
                       "content": {
                         "metadata": {
                           "type": "text",
-                          "title": "Strategy"
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Strategy" }
+                            }
+                          ]
                         },
                         "config": {
                           "value": "RollingUpdate"
@@ -37,7 +69,12 @@
                       "header": "Selector",
                       "content": {
                         "metadata": {
-                          "title": "Selector",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Selector" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -49,7 +86,12 @@
                       "header": "Min Ready Seconds",
                       "content": {
                         "metadata": {
-                          "title": "Min Ready Seconds",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Min Ready Seconds" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -61,7 +103,12 @@
                       "header": "Revision History Limit",
                       "content": {
                         "metadata": {
-                          "title": "Revision History Limit",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Revision History Limit" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -73,7 +120,12 @@
                       "header": "Rolling Update Strategy",
                       "content": {
                         "metadata": {
-                          "title": "Rolling Update Strategy",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Rolling Update Strategy" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -95,7 +147,12 @@
               "content": {
                 "metadata": {
                   "type": "quadrant",
-                  "title": "Status"
+                  "title": [
+                    {
+                      "metadata": { "type": "text" },
+                      "config": { "value": "Status" }
+                    }
+                  ]
                 },
                 "config": {
                   "nw": { "label": "Total", "value": "1" },
@@ -115,14 +172,24 @@
               "content": {
                 "metadata": {
                   "type": "selectors",
-                  "title": "Pod Template"
+                  "title": [
+                    {
+                      "metadata": { "type": "text" },
+                      "config": { "value": "Pod Template" }
+                    }
+                  ]
                 },
                 "config": {
                   "selectors": [
                     {
                       "metadata": {
                         "type": "labelSelector",
-                        "title": ""
+                        "title": [
+                          {
+                            "metadata": { "type": "text" },
+                            "config": { "value": "" }
+                          }
+                        ]
                       },
                       "config": {
                         "key": "app",
@@ -143,7 +210,12 @@
               "content": {
                 "metadata": {
                   "type": "summary",
-                  "title": "Container container-1"
+                  "title": [
+                    {
+                      "metadata": { "type": "text" },
+                      "config": { "value": "Container container-1" }
+                    }
+                  ]
                 },
                 "config": {
                   "sections": [
@@ -151,7 +223,12 @@
                       "header": "Image",
                       "content": {
                         "metadata": {
-                          "title": "Image",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Image" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -163,7 +240,12 @@
                       "header": "Port",
                       "content": {
                         "metadata": {
-                          "title": "Port",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Port" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -175,7 +257,12 @@
                       "header": "Host Port",
                       "content": {
                         "metadata": {
-                          "title": "Host Port",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Host Port" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -187,7 +274,12 @@
                       "header": "Environment",
                       "content": {
                         "metadata": {
-                          "title": "Environment",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Environment" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -199,7 +291,12 @@
                       "header": "Mounts",
                       "content": {
                         "metadata": {
-                          "title": "Mounts",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Mounts" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -221,7 +318,12 @@
               "content": {
                 "metadata": {
                   "type": "summary",
-                  "title": "Container container-2"
+                  "title": [
+                    {
+                      "metadata": { "type": "text" },
+                      "config": { "value": "Container container-2" }
+                    }
+                  ]
                 },
                 "config": {
                   "sections": [
@@ -229,7 +331,12 @@
                       "header": "Image",
                       "content": {
                         "metadata": {
-                          "title": "Image",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Image" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -241,7 +348,12 @@
                       "header": "Port",
                       "content": {
                         "metadata": {
-                          "title": "Port",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Port" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -253,7 +365,12 @@
                       "header": "Host Port",
                       "content": {
                         "metadata": {
-                          "title": "Host Port",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Host Port" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -265,7 +382,12 @@
                       "header": "Environment",
                       "content": {
                         "metadata": {
-                          "title": "Environment",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Environment" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -277,7 +399,12 @@
                       "header": "Mounts",
                       "content": {
                         "metadata": {
-                          "title": "Mounts",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Mounts" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -299,7 +426,12 @@
               "content": {
                 "metadata": {
                   "type": "summary",
-                  "title": "Container container-n"
+                  "title": [
+                    {
+                      "metadata": { "type": "text" },
+                      "config": { "value": "Container container-n" }
+                    }
+                  ]
                 },
                 "config": {
                   "sections": [
@@ -307,7 +439,12 @@
                       "header": "Image",
                       "content": {
                         "metadata": {
-                          "title": "Image",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Image" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -319,7 +456,12 @@
                       "header": "Port",
                       "content": {
                         "metadata": {
-                          "title": "Port",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Port" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -331,7 +473,12 @@
                       "header": "Host Port",
                       "content": {
                         "metadata": {
-                          "title": "Host Port",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Host Port" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -343,7 +490,12 @@
                       "header": "Environment",
                       "content": {
                         "metadata": {
-                          "title": "Environment",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Environment" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -355,7 +507,12 @@
                       "header": "Mounts",
                       "content": {
                         "metadata": {
-                          "title": "Mounts",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Mounts" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -377,7 +534,12 @@
               "content": {
                 "metadata": {
                   "type": "table",
-                  "title": "Volumes"
+                  "title": [
+                    {
+                      "metadata": { "type": "text" },
+                      "config": { "value": "Volumes" }
+                    }
+                  ]
                 },
                 "config": {
                   "columns": [
@@ -461,7 +623,12 @@
               "content": {
                 "metadata": {
                   "type": "summary",
-                  "title": "Additional properties"
+                  "title": [
+                    {
+                      "metadata": { "type": "text" },
+                      "config": { "value": "Additional properties" }
+                    }
+                  ]
                 },
                 "config": {
                   "sections": [
@@ -469,7 +636,12 @@
                       "header": "Image",
                       "content": {
                         "metadata": {
-                          "title": "Image",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Image" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -481,7 +653,12 @@
                       "header": "Port",
                       "content": {
                         "metadata": {
-                          "title": "Port",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Port" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -493,7 +670,12 @@
                       "header": "Host Port",
                       "content": {
                         "metadata": {
-                          "title": "Host Port",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Host Port" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -505,7 +687,12 @@
                       "header": "Environment",
                       "content": {
                         "metadata": {
-                          "title": "Environment",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Environment" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -517,7 +704,12 @@
                       "header": "Mounts",
                       "content": {
                         "metadata": {
-                          "title": "Mounts",
+                          "title": [
+                            {
+                              "metadata": { "type": "text" },
+                              "config": { "value": "Mounts" }
+                            }
+                          ],
                           "type": "text"
                         },
                         "config": {
@@ -538,7 +730,12 @@
               "position": { "x": 0, "y": 38, "w": 12, "h": 7 },
               "content": {
                 "metadata": {
-                  "title": "Conditions",
+                  "title": [
+                    {
+                      "metadata": { "type": "text" },
+                      "config": { "value": "Conditions" }
+                    }
+                  ],
                   "type": "table"
                 },
                 "config": {
@@ -626,7 +823,12 @@
               "content": {
                 "metadata": {
                   "type": "table",
-                  "title": "Replica Sets"
+                  "title": [
+                    {
+                      "metadata": { "type": "text" },
+                      "config": { "value": "Replica Sets" }
+                    }
+                  ]
                 },
                 "config": {
                   "columns": [
@@ -711,7 +913,12 @@
               "content": {
                 "metadata": {
                   "type": "table",
-                  "title": "Events"
+                  "title": [
+                    {
+                      "metadata": { "type": "text" },
+                      "config": { "value": "Events" }
+                    }
+                  ]
                 },
                 "config": {
                   "columns": [

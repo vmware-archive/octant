@@ -1,18 +1,17 @@
-import { View } from 'models/View'
-
-export interface TextModel extends View {
-  value: string
-}
+import { TextModel, TitleView, toTitle } from 'models'
 
 export class JSONText implements TextModel {
   readonly isComparable = true
 
   readonly value: string
-  readonly title: string
   readonly type = 'text'
+  readonly title: TitleView
 
   constructor(ct: ContentType) {
-    this.title = ct.metadata.title
+    if (ct.metadata.title) {
+      this.title = toTitle(ct.metadata.title)
+    }
+
     this.value = ct.config.value
   }
 }

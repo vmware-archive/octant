@@ -2,7 +2,7 @@ import { ContentsUrlParams, getAPIBase, getContentsUrl, POLL_WAIT, setNamespace 
 import Header from 'components/Header'
 import ResourceFiltersContext from 'contexts/resource-filters'
 import _ from 'lodash'
-import JSONContentResponse, { Parse } from 'models/ContentResponse'
+import JSONContentResponse, { Parse } from 'models/contentresponse'
 import Overview from 'pages/Overview'
 import React, { Component } from 'react'
 import { Redirect, Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom'
@@ -105,10 +105,10 @@ class App extends Component<RouteComponentProps, AppState> {
     this.source = new window.EventSource(`${getAPIBase()}/${url}`)
 
     this.source.addEventListener('message', (e) => {
-      const cr2 = Parse(e.data)
+      const contentResponse = Parse(e.data)
 
       this.setState({
-        contentResponse: cr2,
+        contentResponse,
         isLoading: false,
       })
     })

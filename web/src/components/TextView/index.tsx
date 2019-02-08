@@ -1,4 +1,4 @@
-import { TextModel } from 'models/View'
+import { TextModel } from 'models'
 import React from 'react'
 
 interface Props {

@@ -46,13 +46,13 @@ func TestAPI_routes(t *testing.T) {
 			path:            "/content/module/",
 			method:          http.MethodGet,
 			expectedCode:    http.StatusOK,
-			expectedContent: "{\"title\":\"/\",\"viewComponents\":null}\n",
+			expectedContent: "{\"title\":[{\"metadata\":{\"type\":\"text\"},\"config\":{\"value\":\"/\"}}],\"viewComponents\":null}\n",
 		},
 		{
 			path:                "/content/module/namespace/another-namespace/",
 			method:              http.MethodGet,
 			expectedCode:        http.StatusOK,
-			expectedContent:     "{\"title\":\"/\",\"viewComponents\":null}\n",
+			expectedContent:     "{\"title\":[{\"metadata\":{\"type\":\"text\"},\"config\":{\"value\":\"/\"}}],\"viewComponents\":null}\n",
 			expectedNamespace:   "another-namespace",
 			expectedContentPath: "/",
 		},
@@ -60,7 +60,7 @@ func TestAPI_routes(t *testing.T) {
 			path:                "/content/module/?namespace=fromquery",
 			method:              http.MethodGet,
 			expectedCode:        http.StatusOK,
-			expectedContent:     "{\"title\":\"/\",\"viewComponents\":null}\n",
+			expectedContent:     "{\"title\":[{\"metadata\":{\"type\":\"text\"},\"config\":{\"value\":\"/\"}}],\"viewComponents\":null}\n",
 			expectedNamespace:   "fromquery",
 			expectedContentPath: "/",
 		},
@@ -68,7 +68,7 @@ func TestAPI_routes(t *testing.T) {
 			path:                "/content/module/namespace/path-takes-precedence/?namespace=fromquery",
 			method:              http.MethodGet,
 			expectedCode:        http.StatusOK,
-			expectedContent:     "{\"title\":\"/\",\"viewComponents\":null}\n",
+			expectedContent:     "{\"title\":[{\"metadata\":{\"type\":\"text\"},\"config\":{\"value\":\"/\"}}],\"viewComponents\":null}\n",
 			expectedNamespace:   "path-takes-precedence",
 			expectedContentPath: "/",
 		},
@@ -76,13 +76,13 @@ func TestAPI_routes(t *testing.T) {
 			path:            "/content/module/nested",
 			method:          http.MethodGet,
 			expectedCode:    http.StatusOK,
-			expectedContent: "{\"title\":\"/nested\",\"viewComponents\":null}\n",
+			expectedContent: "{\"title\":[{\"metadata\":{\"type\":\"text\"},\"config\":{\"value\":\"/nested\"}}],\"viewComponents\":null}\n",
 		},
 		{
 			path:                "/content/module/namespace/default/nested",
 			method:              http.MethodGet,
 			expectedCode:        http.StatusOK,
-			expectedContent:     "{\"title\":\"/nested\",\"viewComponents\":null}\n",
+			expectedContent:     "{\"title\":[{\"metadata\":{\"type\":\"text\"},\"config\":{\"value\":\"/nested\"}}],\"viewComponents\":null}\n",
 			expectedNamespace:   "default",
 			expectedContentPath: "/nested",
 		},
@@ -115,6 +115,7 @@ func TestAPI_routes(t *testing.T) {
 
 			// Add relative section to server url
 			u, err = u.Parse(tc.path)
+			require.NoError(t, err)
 
 			req, err := http.NewRequest(tc.method, u.String(), tc.body)
 			require.NoError(t, err)

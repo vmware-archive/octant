@@ -1,4 +1,4 @@
-import { ResourceViewerModel } from 'models/View'
+import { ResourceViewerModel } from 'models'
 import React, { Component } from 'react'
 
 import { Tooltip } from './components/Tooltip'
@@ -47,18 +47,20 @@ class ResourceViewer extends Component<Props, State> {
     }
 
     const edges = []
-    for (const [node, nodeEdges] of Object.entries(adjacencyList)) {
-      edges.push(
-        ...nodeEdges.map((e) => [
-          node,
-          e.node,
-          {
-            arrowhead: 'undirected',
-            arrowheadStyle: 'fill: rgba(173, 187, 196, 0.3)',
-          },
-        ])
-      )
-    }
+    if (adjacencyList) {
+      for (const [node, nodeEdges] of Object.entries(adjacencyList)) {
+        edges.push(
+          ...nodeEdges.map((e) => [
+            node,
+            e.node,
+            {
+              arrowhead: 'undirected',
+              arrowheadStyle: 'fill: rgba(173, 187, 196, 0.3)',
+            },
+          ])
+          )
+        }
+      }
 
     return (
       <div className='resourceViewer'>

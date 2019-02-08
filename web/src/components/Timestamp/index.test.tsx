@@ -1,5 +1,4 @@
 import { shallow } from 'enzyme'
-import { JSONTimestamp } from 'models/View'
 import React from 'react'
 
 import Timestamp, { summarizeTimestamp } from '.'
@@ -19,7 +18,7 @@ describe('render timestamp', () => {
     },
   }
 
-  const view = new JSONTimestamp(ct)
+  const view = { type: 'timestamp', timestamp: 1548430000 }
 
   const timestamp = shallow(<Timestamp view={view} baseTime={baseDate} />)
 

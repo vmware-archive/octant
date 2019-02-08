@@ -1,4 +1,4 @@
-import { TimestampModel } from 'models/View'
+import { TimestampModel } from 'models'
 import moment from 'moment'
 import React from 'react'
 

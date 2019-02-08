@@ -13,9 +13,9 @@ func TestGridLayout(t *testing.T) {
 
 	section1 := gl.CreateSection(8)
 
-	t1 := component.NewText("", "panel1")
-	t2 := component.NewText("", "panel2")
-	t3 := component.NewText("", "panel3")
+	t1 := component.NewText("panel1")
+	t2 := component.NewText("panel2")
+	t3 := component.NewText("panel3")
 
 	section1.Add(t1, 12)
 	section1.Add(t2, 12)
@@ -23,9 +23,9 @@ func TestGridLayout(t *testing.T) {
 
 	section2 := gl.CreateSection(2)
 
-	t4 := component.NewText("", "panel4")
-	t5 := component.NewText("", "panel5")
-	t6 := component.NewText("", "panel6")
+	t4 := component.NewText("panel4")
+	t5 := component.NewText("panel5")
+	t6 := component.NewText("panel6")
 
 	section2.Add(t4, 8)
 	section2.Add(t5, 8)

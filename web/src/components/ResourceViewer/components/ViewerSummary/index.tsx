@@ -1,4 +1,4 @@
-import { ResourceViewerNode } from 'models/View'
+import { ResourceViewerNode } from 'models'
 import React from 'react'
 
 import './styles.scss'

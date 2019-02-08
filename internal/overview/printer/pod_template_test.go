@@ -30,7 +30,7 @@ func TestPodTemplate(t *testing.T) {
 	got := gl.ToGrid()
 
 	headerLabels := component.NewLabels(map[string]string{"key": "value"})
-	headerLabels.Metadata.Title = "Pod Template"
+	headerLabels.Metadata.SetTitleText("Pod Template")
 	headerLabelsPanel := component.NewPanel("", headerLabels)
 	headerLabelsPanel.Position(0, 0, 23, 2)
 
@@ -54,5 +54,10 @@ func TestPodTemplateHeader(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Len(t, got.Config.Labels, 1)
-	assert.Equal(t, "Pod Template", got.Metadata.Title)
+
+	expected := []component.TitleViewComponent{
+		component.NewText("Pod Template"),
+	}
+
+	assert.Equal(t, expected, got.Metadata.Title)
 }

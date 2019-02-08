@@ -1,12 +1,7 @@
-import { QuadrantModel } from 'models/View'
+import { QuadrantModel } from 'models'
 import React from 'react'
 
 import './styles.scss'
-
-interface QuadrantValue {
-  value: number
-  label: string
-}
 
 interface Props {
   view: QuadrantModel

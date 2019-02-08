@@ -38,7 +38,7 @@ func Test_Link_Marshal(t *testing.T) {
 			name: "with title",
 			input: &Link{
 				Metadata: Metadata{
-					Title: "Name",
+					Title: []TitleViewComponent{NewText("Name")},
 				},
 				Config: LinkConfig{
 					Text: "nginx-deployment",
@@ -49,7 +49,12 @@ func Test_Link_Marshal(t *testing.T) {
             {
                 "metadata": {
                   "type": "link",
-                  "title": "Name"
+                  "title": [
+									  {
+											"metadata": { "type": "text" },
+											"config": { "value": "Name" }
+										}
+									]
                 },
                 "config": {
                   "value": "nginx-deployment",
@@ -65,7 +70,7 @@ func Test_Link_Marshal(t *testing.T) {
 			actual, err := json.Marshal(tc.input)
 			isErr := (err != nil)
 			if isErr != tc.isErr {
-				t.Fatalf("Unexepected error: %v", err)
+				t.Fatalf("Unexpected error: %v", err)
 			}
 
 			assert.JSONEq(t, tc.expected, string(actual))

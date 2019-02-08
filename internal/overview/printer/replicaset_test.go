@@ -85,7 +85,7 @@ func Test_ReplicaSetListHandler(t *testing.T) {
 		"Labels":     component.NewLabels(labels),
 		"Age":        component.NewTimestamp(now),
 		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
-		"Status":     component.NewText("", "2/3"),
+		"Status":     component.NewText("2/3"),
 		"Containers": containers,
 	})
 
@@ -134,11 +134,11 @@ func TestReplicaSetConfiguration(t *testing.T) {
 				},
 				{
 					Header:  "Replica Status",
-					Content: component.NewText("", "Current 3 / Desired 3"),
+					Content: component.NewText("Current 3 / Desired 3"),
 				},
 				{
 					Header:  "Replicas",
-					Content: component.NewText("", "3"),
+					Content: component.NewText("3"),
 				},
 			}...),
 		},

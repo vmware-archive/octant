@@ -1,29 +1,14 @@
-import { View } from 'models/View'
-
-export interface LabelSelector {
-  key: string
-  value: string
-  type: string
-}
-
-export interface ExpressionSelector {
-  key: string
-  operator: string
-  values: string[]
-  type: string
-}
-
-export interface SelectorsModel extends View {
-  selectors: Array<LabelSelector | ExpressionSelector>
-}
+import { ExpressionSelector, LabelSelector, SelectorsModel, TitleView, toTitle } from 'models'
 
 export class JSONSelectors implements SelectorsModel {
   readonly selectors: Array<LabelSelector | ExpressionSelector>
-  readonly title: string
   readonly type = 'selectors'
+  readonly title: TitleView
 
   constructor(ct: ContentType) {
-    this.title = ct.metadata.title
+    if (ct.metadata.title) {
+      this.title = toTitle(ct.metadata.title)
+    }
 
     if (ct.config.selectors) {
       this.selectors = ct.config.selectors.map((selector) => {

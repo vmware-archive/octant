@@ -1,4 +1,4 @@
-import { View } from 'models/View'
+import { View } from 'models'
 import React from 'react'
 import { renderView } from 'views'
 

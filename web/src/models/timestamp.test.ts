@@ -1,16 +1,14 @@
-import { compareTimestampModel } from '.'
+import { compareTimestampModel } from './timestamp'
 
 describe('Timestamp', () => {
   describe('compare', () => {
     const ts1 = {
       type: 'timestamp',
-      title: '',
       isComparable: true,
       timestamp: 5,
     }
     const ts2 = {
       type: 'timestamp',
-      title: '',
       isComparable: true,
       timestamp: 7,
     }

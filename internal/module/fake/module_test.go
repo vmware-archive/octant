@@ -45,12 +45,20 @@ func TestModule_Content(t *testing.T) {
 		isErr    bool
 	}{
 		{
-			path:     "/",
-			expected: component.ContentResponse{Title: "/"},
+			path: "/",
+			expected: component.ContentResponse{
+				Title: []component.TitleViewComponent{
+					component.NewText("/"),
+				},
+			},
 		},
 		{
-			path:     "/nested",
-			expected: component.ContentResponse{Title: "/nested"},
+			path: "/nested",
+			expected: component.ContentResponse{
+				Title: []component.TitleViewComponent{
+					component.NewText("/nested"),
+				},
+			},
 		},
 		{
 			path:  "/missing",

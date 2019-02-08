@@ -49,9 +49,14 @@ func (l *LocalContent) list() (component.ContentResponse, error) {
 	table := component.NewTable("Local Components", cols)
 
 	err := l.walk(func(name, base string, content component.ContentResponse) error {
+		title, err := l.titleToText(content.Title)
+		if err != nil {
+			return errors.Wrap(err, "convert title to text")
+		}
+
 		table.Add(component.TableRow{
-			"Title": component.NewLink("", content.Title, path.Join("/content/local", base)),
-			"File":  component.NewText("", name),
+			"Title": component.NewLink("", title, path.Join("/content/local", base)),
+			"File":  component.NewText(name),
 		})
 
 		return nil
@@ -61,7 +66,10 @@ func (l *LocalContent) list() (component.ContentResponse, error) {
 		return out, nil
 	}
 
-	out.Title = "Local Contents"
+	out.Title = []component.TitleViewComponent{
+		component.NewText("Local Contents"),
+	}
+
 	out.ViewComponents = []component.ViewComponent{
 		table,
 	}
@@ -136,9 +144,9 @@ func (l *LocalContent) Navigation(root string) (*hcli.Navigation, error) {
 	}
 
 	err := l.walk(func(name, base string, content component.ContentResponse) error {
-		title := content.Title
-		if title == "" {
-			title = name
+		title, err := l.titleToText(content.Title)
+		if err != nil {
+			return errors.Wrap(err, "convert title to text")
 		}
 
 		nav.Children = append(nav.Children, &hcli.Navigation{
@@ -154,6 +162,23 @@ func (l *LocalContent) Navigation(root string) (*hcli.Navigation, error) {
 	}
 
 	return nav, nil
+}
+
+func (l *LocalContent) titleToText(title []component.TitleViewComponent) (string, error) {
+	if len(title) < 1 {
+		return "", errors.New("title is empty")
+	}
+
+	var parts []string
+	for _, titlePart := range title {
+		text, ok := titlePart.(*component.Text)
+		if !ok {
+			return "", errors.New("title has a not text component")
+		}
+		parts = append(parts, text.Config.Text)
+	}
+
+	return strings.Join(parts, " > "), nil
 }
 
 func (l *LocalContent) SetNamespace(namespace string) error {

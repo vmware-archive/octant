@@ -32,7 +32,7 @@ func (td *TolerationDescriber) Create() (*component.List, error) {
 			msg = fmt.Sprintf("%s Evict after %d seconds.", msg, *evictSecs)
 		}
 
-		items = append(items, component.NewText("", msg))
+		items = append(items, component.NewText(msg))
 	}
 
 	list := component.NewList("", items)

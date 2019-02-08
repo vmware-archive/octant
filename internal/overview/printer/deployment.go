@@ -26,7 +26,7 @@ func DeploymentListHandler(list *appsv1.DeploymentList, opts Options) (component
 		row["Labels"] = component.NewLabels(d.Labels)
 
 		status := fmt.Sprintf("%d/%d", d.Status.AvailableReplicas, d.Status.AvailableReplicas+d.Status.UnavailableReplicas)
-		row["Status"] = component.NewText("", status)
+		row["Status"] = component.NewText(status)
 
 		ts := d.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
@@ -100,7 +100,7 @@ func (dc *DeploymentConfiguration) Create() (*component.Summary, error) {
 	strategyType := dc.deployment.Spec.Strategy.Type
 	sections = append(sections, component.SummarySection{
 		Header:  "Deployment Strategy",
-		Content: component.NewText("", string(strategyType)),
+		Content: component.NewText(string(strategyType)),
 	})
 
 	switch strategyType {
@@ -117,7 +117,7 @@ func (dc *DeploymentConfiguration) Create() (*component.Summary, error) {
 
 		sections = append(sections, component.SummarySection{
 			Header:  "Rolling Update Strategy",
-			Content: component.NewText("", rollingUpdateText),
+			Content: component.NewText(rollingUpdateText),
 		})
 
 		if selector := dc.deployment.Spec.Selector; selector != nil {
@@ -147,14 +147,14 @@ func (dc *DeploymentConfiguration) Create() (*component.Summary, error) {
 		minReadySeconds := fmt.Sprintf("%d", dc.deployment.Spec.MinReadySeconds)
 		sections = append(sections, component.SummarySection{
 			Header:  "Min Ready Seconds",
-			Content: component.NewText("", minReadySeconds),
+			Content: component.NewText(minReadySeconds),
 		})
 
 		if rhl := dc.deployment.Spec.RevisionHistoryLimit; rhl != nil {
 			revisionHistoryLimit := fmt.Sprintf("%d", *rhl)
 			sections = append(sections, component.SummarySection{
 				Header:  "Revision History Limit",
-				Content: component.NewText("", revisionHistoryLimit),
+				Content: component.NewText(revisionHistoryLimit),
 			})
 		}
 	}

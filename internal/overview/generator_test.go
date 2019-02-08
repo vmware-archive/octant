@@ -22,9 +22,9 @@ import (
 func Test_realGenerator_Generate(t *testing.T) {
 	key := cache.Key{Namespace: "default"}
 
-	textOther := component.NewText("title", "other")
-	textFoo := component.NewText("title", "foo")
-	textSub := component.NewText("title", "sub")
+	textOther := component.NewText("other")
+	textFoo := component.NewText("foo")
+	textSub := component.NewText("sub")
 
 	describers := []Describer{
 		newStubDescriber("/other", textOther),

@@ -73,13 +73,14 @@ func NewResourceViewer(title string) *ResourceViewer {
 	return &ResourceViewer{
 		Metadata: Metadata{
 			Type:  "resourceViewer",
-			Title: title,
+			Title: []TitleViewComponent{NewText(title)},
 		},
 		Config: ResourceViewerConfig{
 			Edges: AdjList{},
 			Nodes: Nodes{},
 		},
 	}
+
 }
 
 func (rv *ResourceViewer) AddEdge(nodeID, childID string, edgeType EdgeType) {

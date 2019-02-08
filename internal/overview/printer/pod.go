@@ -30,7 +30,7 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 
 	for _, d := range list.Items {
 		row := component.TableRow{}
-		row["Name"] = component.NewText("", d.Name)
+		row["Name"] = component.NewText(d.Name)
 		row["Labels"] = component.NewLabels(d.Labels)
 
 		readyCounter := 0
@@ -40,17 +40,17 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 			}
 		}
 		ready := fmt.Sprintf("%d/%d", readyCounter, len(d.Spec.Containers))
-		row["Ready"] = component.NewText("", ready)
+		row["Ready"] = component.NewText(ready)
 
 		status := fmt.Sprintf("%s", d.Status.Phase)
-		row["Status"] = component.NewText("", status)
+		row["Status"] = component.NewText(status)
 
 		restartCounter := 0
 		for _, c := range d.Status.ContainerStatuses {
 			restartCounter += int(c.RestartCount)
 		}
 		restarts := fmt.Sprintf("%d", restartCounter)
-		row["Restarts"] = component.NewText("", restarts)
+		row["Restarts"] = component.NewText(restarts)
 
 		ts := d.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)

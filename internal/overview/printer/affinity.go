@@ -23,7 +23,7 @@ func (ad *AffinityDescriber) Create() (*component.List, error) {
 	var items []component.ViewComponent
 
 	if affinity := ad.podSpec.Affinity; affinity == nil {
-		items = append(items, component.NewText("", "Pod affinity is not configured."))
+		items = append(items, component.NewText("Pod affinity is not configured."))
 	} else {
 		items = append(items, ad.nodeAffinity(*affinity)...)
 		items = append(items, ad.podAffinity(*affinity)...)
@@ -111,7 +111,7 @@ func (ad *AffinityDescriber) podAffinityTerms(terms []corev1.PodAffinityTerm, op
 			b.WriteString(fmt.Sprintf(" Weight %d.", options.weight))
 		}
 
-		items = append(items, component.NewText("", b.String()))
+		items = append(items, component.NewText(b.String()))
 	}
 
 	return items
@@ -192,7 +192,7 @@ func (ad *AffinityDescriber) nodeSelectorRequirement(itemType string, options no
 			b.WriteString(fmt.Sprintf(" Weight %d.", options.weight))
 		}
 
-		items = append(items, component.NewText("", b.String()))
+		items = append(items, component.NewText(b.String()))
 	}
 
 	return items

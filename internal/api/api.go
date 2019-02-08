@@ -110,7 +110,10 @@ func (a *API) Handler() *mux.Router {
 		logger:      a.logger,
 		prefix:      a.prefix,
 	}
-	contentService.RegisterRoutes(s)
+
+	if err := contentService.RegisterRoutes(s); err != nil {
+		a.logger.Errorf("register routers: %v", err)
+	}
 
 	s.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		a.logger.Errorf("api handler not found: %s", r.URL.String())

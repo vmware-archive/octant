@@ -28,7 +28,7 @@ func ReplicaSetListHandler(list *appsv1.ReplicaSetList, opts Options) (component
 		row["Labels"] = component.NewLabels(rs.Labels)
 
 		status := fmt.Sprintf("%d/%d", rs.Status.AvailableReplicas, rs.Status.Replicas)
-		row["Status"] = component.NewText("", status)
+		row["Status"] = component.NewText(status)
 
 		ts := rs.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)

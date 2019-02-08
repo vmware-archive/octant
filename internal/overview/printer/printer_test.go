@@ -190,7 +190,7 @@ func Test_DefaultPrinter(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Age")
 	expected := component.NewTable("*v1.DeploymentList", cols)
 	expected.Add(component.TableRow{
-		"Name":   component.NewText("", "deployment"),
+		"Name":   component.NewText("deployment"),
 		"Labels": component.NewLabels(labels),
 		"Age":    component.NewTimestamp(now),
 	})

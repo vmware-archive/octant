@@ -1,4 +1,4 @@
-import { LinkModel } from 'models/Link'
+import { LinkModel } from 'models'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
