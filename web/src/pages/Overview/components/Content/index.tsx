@@ -3,7 +3,7 @@ import React from 'react'
 import { renderView } from 'views'
 
 interface Props {
-  view: View;
+  view: View
 }
 
 export default function({ view }: Props) {

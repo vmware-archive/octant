@@ -1,20 +1,20 @@
 import { View } from 'models/View'
 
 export interface LabelSelector {
-  key: string;
-  value: string;
-  type: string;
+  key: string
+  value: string
+  type: string
 }
 
 export interface ExpressionSelector {
-  key: string;
-  operator: string;
-  values: string[];
-  type: string;
+  key: string
+  operator: string
+  values: string[]
+  type: string
 }
 
 export interface SelectorsModel extends View {
-  selectors: Array<LabelSelector | ExpressionSelector>;
+  selectors: Array<LabelSelector | ExpressionSelector>
 }
 
 export class JSONSelectors implements SelectorsModel {

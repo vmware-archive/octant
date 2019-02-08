@@ -1,7 +1,7 @@
 import { View } from 'models/View'
 
 export interface TextModel extends View {
-  value: string;
+  value: string
 }
 
 export class JSONText implements TextModel {

@@ -1,19 +1,19 @@
 export interface IResourceViewer {
   metadata: {
     type: 'resourceViewer'
-    title: string,
+    title: string
   }
   config: {
     edges: {
       [key: string]: Array<{
         node: string
-        edge: string,
-      }>,
+        edge: string
+      }>
     }
     objects: {
-      [key: string]: ResourceObject,
+      [key: string]: ResourceObject
     }
-    selected: string,
+    selected: string
   }
 }
 

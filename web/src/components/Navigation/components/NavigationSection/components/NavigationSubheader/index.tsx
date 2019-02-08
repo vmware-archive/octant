@@ -1,12 +1,13 @@
-import React from 'react'
 import _ from 'lodash'
+import React from 'react'
 import { NavLink } from 'react-router-dom'
+
 import './styles.scss'
 
 interface Props {
-  linkPath: NavigationSectionType[];
-  childLinks: NavigationSectionType[];
-  onNavChange: (NavigationSectionType) => void;
+  linkPath: NavigationSectionType[]
+  childLinks: NavigationSectionType[]
+  onNavChange: (NavigationSectionType) => void
 }
 
 export default function NavigationSubheader(props: Props) {
@@ -23,10 +24,7 @@ export default function NavigationSubheader(props: Props) {
         const { title: childTitle, path: childPath } = link
         return (
           <div key={childPath} className='navigation-subheader-link'>
-            <NavLink
-              to={childPath}
-              onClick={() => onNavChange([...parentLinkPath, link])}
-            >
+            <NavLink to={childPath} onClick={() => onNavChange([...parentLinkPath, link])}>
               {childTitle}
             </NavLink>
           </div>

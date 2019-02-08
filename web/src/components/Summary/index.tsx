@@ -1,12 +1,12 @@
-import './styles.scss'
-
 import { SummaryItem } from 'models/SummaryItem'
 import { SummaryModel } from 'models/View'
 import React from 'react'
 import { renderView } from 'views'
 
+import './styles.scss'
+
 interface Props {
-  view: SummaryModel;
+  view: SummaryModel
 }
 
 export default function Summary({ view }: Props) {

@@ -15,7 +15,3 @@ body {
   @include font-smoothing;
   font-size: $base-font-size;
 }
-
-html, body {
-  outline: 10px solid red;
-}

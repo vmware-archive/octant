@@ -1,17 +1,17 @@
-import './styles.scss'
-import 'react-tagsinput/react-tagsinput.css'
-
 import React, { Component } from 'react'
 import Select from 'react-select'
 import TagsInput from 'react-tagsinput'
+import 'react-tagsinput/react-tagsinput.css'
+
+import './styles.scss'
 
 interface Props {
-  namespaceOptions: NamespaceOption[];
-  namespace: string;
-  namespaceValue: NamespaceOption;
-  onNamespaceChange: (NamespaceOption) => void;
-  resourceFilters: string[];
-  onResourceFiltersChange: (filterTags: string[]) => void;
+  namespaceOptions: NamespaceOption[]
+  namespace: string
+  namespaceValue: NamespaceOption
+  onNamespaceChange: (NamespaceOption) => void
+  resourceFilters: string[]
+  onResourceFiltersChange: (filterTags: string[]) => void
 }
 
 export default class extends Component<Props> {

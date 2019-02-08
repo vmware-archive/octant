@@ -1,7 +1,7 @@
-import './styles.scss'
-
 import { ResourceViewerNode } from 'models/View'
 import React from 'react'
+
+import './styles.scss'
 
 interface Props {
   node?: ResourceViewerNode

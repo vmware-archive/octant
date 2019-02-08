@@ -3,10 +3,11 @@ import { GridModel } from 'models/View'
 import React from 'react'
 import GridLayout from 'react-grid-layout'
 import { renderView } from 'views'
+
 import './styles.scss'
 
 interface Props {
-  view: GridModel;
+  view: GridModel
 }
 
 export default function Grid({ view }: Props) {
@@ -40,7 +41,6 @@ export default function Grid({ view }: Props) {
                 default:
                   return renderView(content)
               }
-
             })()}
           </div>
         )

@@ -1,11 +1,12 @@
-import React from 'react'
 import _ from 'lodash'
+import React from 'react'
 import { NavLink } from 'react-router-dom'
+
 import './styles.scss'
 
 interface Props {
-  linkPath: NavigationSectionType[];
-  onNavChange: (NavigationSectionType) => void;
+  linkPath: NavigationSectionType[]
+  onNavChange: (NavigationSectionType) => void
 }
 
 export default function NavigationHeader(props: Props) {

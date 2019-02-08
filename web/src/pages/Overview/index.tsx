@@ -1,5 +1,3 @@
-import './styles.scss'
-
 import cx from 'classnames'
 import Loading from 'components/Icons/Loading'
 import Title from 'components/Title'
@@ -7,16 +5,17 @@ import JSONContentResponse from 'models/ContentResponse'
 import React, { Component } from 'react'
 
 import Renderer from './renderer'
+import './styles.scss'
 
 interface Props {
-  title: string;
-  isLoading: boolean;
-  hasError: boolean;
-  errorMessage: string;
+  title: string
+  isLoading: boolean
+  hasError: boolean
+  errorMessage: string
 
-  data: JSONContentResponse;
+  data: JSONContentResponse
 
-  setError(hasError: boolean, errorMessage?: string): void;
+  setError(hasError: boolean, errorMessage?: string): void
 }
 
 export default class Overview extends Component<Props> {
@@ -35,11 +34,7 @@ export default class Overview extends Component<Props> {
 
     return (
       <div className='component--primary'>
-        <h3 className={classNames}>
-          {hasError === true
-            ? errorMessage
-            : 'There is nothing to display here'}
-        </h3>
+        <h3 className={classNames}>{hasError === true ? errorMessage : 'There is nothing to display here'}</h3>
       </div>
     )
   }

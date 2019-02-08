@@ -2,8 +2,8 @@ import queryString from 'query-string'
 
 declare global {
   interface Window {
-    API_BASE: string;
-    EventSource(uri: string): void;
+    API_BASE: string
+    EventSource(uri: string): void
   }
 }
 
@@ -16,9 +16,9 @@ export function getAPIBase() {
 export const POLL_WAIT: number = 5
 
 interface BuildRequestParams {
-  endpoint: string;
-  method?: string;
-  data?: object;
+  endpoint: string
+  method?: string
+  data?: object
 }
 
 async function buildRequest(params: BuildRequestParams): Promise<any> {
@@ -33,9 +33,9 @@ async function buildRequest(params: BuildRequestParams): Promise<any> {
 
   if (apiBase) {
     const fetchOptions: {
-      headers: HeadersInit;
-      method: string;
-      body?: string;
+      headers: HeadersInit
+      method: string
+      body?: string
     } = {
       headers,
       method: method || 'GET',
@@ -71,9 +71,9 @@ export function getNamespaces() {
 }
 
 export type ContentsUrlParams = Partial<{
-  namespace: string;
-  poll: number;
-  filter: string[];
+  namespace: string
+  poll: number
+  filter: string[]
 }>
 
 export function getContentsUrl(path: string, params?: ContentsUrlParams): string | null {

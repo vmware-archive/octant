@@ -1,9 +1,9 @@
-import './styles.scss'
-
 import React from 'react'
 
+import './styles.scss'
+
 interface Props {
-  emptyContent: string;
+  emptyContent: string
 }
 
 export default function({ emptyContent }: Props) {

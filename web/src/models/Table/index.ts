@@ -1,12 +1,12 @@
 import { View, viewFromContentType } from 'models/View'
 
 export interface TableRow {
-  [key: string]: View;
+  [key: string]: View
 }
 export interface TableModel extends View {
-  readonly columns: Array<{ name: string; accessor: string }>;
-  readonly rows: TableRow[];
-  readonly emptyContent: string;
+  readonly columns: Array<{ name: string; accessor: string }>
+  readonly rows: TableRow[]
+  readonly emptyContent: string
 }
 
 export class JSONTable implements TableModel {

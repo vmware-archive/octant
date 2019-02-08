@@ -28,9 +28,7 @@ describe('render timestamp', () => {
   })
 
   test('sets the full date', () => {
-    expect(timestamp.prop('data-tip')).toBe(
-      'Friday, January 25, 2019 3:26 PM UTC',
-    )
+    expect(timestamp.prop('data-tip')).toBe('Friday, January 25, 2019 3:26 PM UTC')
   })
 })
 

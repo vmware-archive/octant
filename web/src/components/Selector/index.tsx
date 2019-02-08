@@ -1,7 +1,7 @@
-import './styles.scss'
-
 import { ExpressionSelector, LabelSelector, SelectorsModel } from 'models/View'
 import React from 'react'
+
+import './styles.scss'
 
 interface Props {
   view: SelectorsModel
@@ -30,9 +30,7 @@ export default function Selectors({ view }: Props) {
           </div>
         )
       default:
-        throw new Error(
-          `unknown label selector ${JSON.stringify(selector)}`,
-        )
+        throw new Error(`unknown label selector ${JSON.stringify(selector)}`)
     }
   })
 

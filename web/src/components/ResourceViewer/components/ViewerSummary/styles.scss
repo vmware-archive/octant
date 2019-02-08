@@ -12,8 +12,8 @@
   color: $blue-light;
   font-weight: bold;
   padding: 7px 0;
-  text-align: center;
   position: relative;
+  text-align: center;
 }
 
 .status--ok {
@@ -21,10 +21,10 @@
   border-radius: 50%;
   display: inline-block;
   height: 3px;
-  width: 3px;
   margin-left: -6px;
   position: absolute;
   top: 45%;
+  width: 3px;
 }
 
 .viewSummary--content {

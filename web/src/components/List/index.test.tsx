@@ -1,13 +1,13 @@
-import React from 'react'
-import { shallow } from 'enzyme'
-import List from './index'
-import { JSONList } from 'models/List'
 import Quadrant from 'components/Quadrant'
 import Summary from 'components/Summary'
 import Table from 'components/Table'
+import { shallow } from 'enzyme'
+import { JSONList } from 'models/List'
+import React from 'react'
+
+import List from './index'
 
 describe('render list', () => {
-
   test('empty list', () => {
     const listJSON: ContentType = {
       metadata: {
@@ -15,8 +15,7 @@ describe('render list', () => {
         title: 'List',
       },
       config: {
-        items: [
-        ],
+        items: [],
       },
     }
 

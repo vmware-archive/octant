@@ -1,7 +1,7 @@
 import { View } from 'models/View'
 
 export interface LabelsModel extends View {
-  labels: { [key: string]: string };
+  labels: { [key: string]: string }
 }
 
 export class JSONLabels implements LabelsModel {

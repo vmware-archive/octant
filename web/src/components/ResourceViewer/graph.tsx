@@ -1,9 +1,9 @@
-import './graph.scss'
-
 import * as d3 from 'd3'
 import dagreD3 from 'dagre-d3'
 import React from 'react'
 import isEqual from 'react-fast-compare'
+
+import './graph.scss'
 
 interface Props {
   nodes: any
@@ -19,10 +19,7 @@ class Graph extends React.Component<Props> {
   private nodeTreeGroup = React.createRef<SVGGElement>()
 
   shouldComponentUpdate(nextProps: Props, _): boolean {
-    return (
-      !isEqual(this.props.nodes, nextProps.nodes) ||
-      !isEqual(this.props.edges, nextProps.edges)
-    )
+    return !isEqual(this.props.nodes, nextProps.nodes) || !isEqual(this.props.edges, nextProps.edges)
   }
 
   componentDidMount() {
@@ -87,12 +84,7 @@ class Graph extends React.Component<Props> {
 
   render() {
     return (
-      <svg
-        className='dagre-d3'
-        ref={this.nodeTree}
-        width={this.props.height}
-        height={this.props.width}
-      >
+      <svg className='dagre-d3' ref={this.nodeTree} width={this.props.height} height={this.props.width}>
         <g ref={this.nodeTreeGroup} />
       </svg>
     )

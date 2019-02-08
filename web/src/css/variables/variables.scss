@@ -29,7 +29,7 @@ $dividerColor: rgba(255, 255, 255, 0.15);
 }
 
 @mixin text-ellipsis {
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }

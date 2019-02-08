@@ -1,11 +1,11 @@
-import './styles.scss'
-
 import { QuadrantModel } from 'models/View'
 import React from 'react'
 
+import './styles.scss'
+
 interface QuadrantValue {
-  value: number;
-  label: string;
+  value: number
+  label: string
 }
 
 interface Props {
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function Quadrant({ view }: Props) {
-  const  { nw, ne, sw, se, title } = view
+  const { nw, ne, sw, se, title } = view
   return (
     <div className='quadrant'>
       <div className='quadrant-header'>{title}</div>

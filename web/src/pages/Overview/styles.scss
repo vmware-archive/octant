@@ -43,20 +43,20 @@
   }
 
   &__tab {
-    display: inline-block;
     border: 1px solid transparent;
     border-bottom: none;
     bottom: -1px;
-    position: relative;
-    list-style: none;
-    padding: 6px 0;
-    margin: 0 18px 0 0;
-    cursor: pointer;
     color: adjust-color($white, $lightness: -30%);
+    cursor: pointer;
+    display: inline-block;
+    list-style: none;
+    margin: 0 18px 0 0;
+    padding: 6px 0;
+    position: relative;
 
     &--selected {
-      color: $white;
       border-bottom: 3px solid $blue-light;
+      color: $white;
     }
   }
 

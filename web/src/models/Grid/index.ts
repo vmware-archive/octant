@@ -1,7 +1,7 @@
 import { PanelModel, View, viewFromContentType } from 'models/View'
 
 export interface GridModel extends View {
-  panels: PanelModel[];
+  panels: PanelModel[]
 }
 
 export class JSONGrid implements GridModel {
@@ -11,8 +11,6 @@ export class JSONGrid implements GridModel {
 
   constructor(ct: ContentType) {
     this.title = ct.metadata.title
-    this.panels = ct.config.panels.map((panelContentType) =>
-      viewFromContentType(panelContentType),
-    )
+    this.panels = ct.config.panels.map((panelContentType) => viewFromContentType(panelContentType))
   }
 }

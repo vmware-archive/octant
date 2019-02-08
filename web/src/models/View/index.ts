@@ -70,9 +70,7 @@ export function viewFromContentType(ct: ContentType): View {
     case 'timestamp':
       return new JSONTimestamp(ct)
     default:
-      throw new Error(
-        `can't handle content response view '${ct.metadata.type}'`,
-      )
+      throw new Error(`can't handle content response view '${ct.metadata.type}'`)
   }
 }
 

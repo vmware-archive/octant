@@ -1,35 +1,35 @@
 interface Metadata {
-  type: string;
-  title: string;
+  type: string
+  title: string
 }
 
 interface ContentType {
   metadata: Metadata
-  config: any;
+  config: any
 }
 
 type ListContentType = ContentType & {
   config: {
-    items: ContentType[];
-  };
+    items: ContentType[]
+  }
 }
 
 type LinkContentType = ContentType & {
   config: {
-    value: string;
-    ref: string;
-  };
+    value: string
+    ref: string
+  }
 }
 
 type LabelsContentType = ContentType & {
   config: {
-    labels: { [x: string]: string };
-  };
+    labels: { [x: string]: string }
+  }
 }
 
 interface GridPosition {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
+  x: number
+  y: number
+  w: number
+  h: number
 }
