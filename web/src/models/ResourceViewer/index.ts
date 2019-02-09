@@ -1,6 +1,6 @@
 import { View } from 'models/View'
 
-interface Node {
+export interface ResourceViewerNode {
   name: string
   apiVersion: string
   kind: string
@@ -14,14 +14,14 @@ interface Edge {
 
 export interface ResourceViewerModel extends View {
   readonly edges: { [key: string]: Edge[] }
-  readonly nodes: { [key: string]: Node }
+  readonly nodes: { [key: string]: ResourceViewerNode }
   readonly title: string
   readonly type: 'resourceViewer'
 }
 
 export class JSONResourceViewer implements ResourceViewerModel {
   readonly edges: { [key: string]: Edge[] }
-  readonly nodes: { [key: string]: Node }
+  readonly nodes: { [key: string]: ResourceViewerNode }
   readonly title: string
   readonly type = 'resourceViewer'
 

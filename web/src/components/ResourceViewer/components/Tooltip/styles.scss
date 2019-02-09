@@ -1,0 +1,21 @@
+@import '~css/variables/variables.scss';
+
+.viewerTooltip {
+  background-color: #17242b !important;
+  border: 1px solid $blue-light !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  color: #406880 !important;
+  opacity: 1 !important;
+  padding: 0 !important;
+
+  &::before {
+    border: 0 !important;
+    left: 0 !important;
+    margin: 0 !important;
+    top: 0 !important;
+  }
+
+  &::after {
+    border: 0 !important;
+  }
+}
