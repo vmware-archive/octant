@@ -16,11 +16,8 @@ describe('getContentsUrl', () => {
   test('adds query params', () => {
     const fakePath = '/path'
     expect(getContentsUrl(fakePath, { poll: 10 })).toBe('api/v1/path?poll=10')
-    expect(
-      getContentsUrl(
-        fakePath,
-        { filter: ['app:nginx', 'deployment:dev'] },
-      ))
-      .toBe('api/v1/path?filter=app%3Anginx&filter=deployment%3Adev')
+    expect(getContentsUrl(fakePath, { filter: ['app:nginx', 'deployment:dev'] })).toBe(
+      'api/v1/path?filter=app%3Anginx&filter=deployment%3Adev'
+    )
   })
 })

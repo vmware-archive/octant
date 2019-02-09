@@ -1,8 +1,8 @@
 import { View } from 'models/View'
 
 export interface LinkModel extends View {
-  ref: string;
-  value: string;
+  ref: string
+  value: string
 }
 
 export class JSONLink implements LinkModel {

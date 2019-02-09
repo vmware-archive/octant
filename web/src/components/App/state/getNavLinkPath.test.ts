@@ -3,10 +3,7 @@ import getNavLinkPath from './getNavLinkPath'
 
 describe('getNavLinkPath', () => {
   test('generates nav link path from a valid path', () => {
-    const linkPath = getNavLinkPath(
-      mockNavigation,
-      '/content/overview/workloads/cron-jobs',
-    )
+    const linkPath = getNavLinkPath(mockNavigation, '/content/overview/workloads/cron-jobs')
     expect(linkPath.length).toBe(3)
 
     expect(linkPath[0].path).toBe('/content/overview')
@@ -20,10 +17,7 @@ describe('getNavLinkPath', () => {
   })
 
   test('returns undefined on an invalid path', () => {
-    const linkPath = getNavLinkPath(
-      mockNavigation,
-      '/content/this/is/invalid/cron-jobs',
-    )
+    const linkPath = getNavLinkPath(mockNavigation, '/content/this/is/invalid/cron-jobs')
     expect(linkPath).toBeUndefined()
   })
 

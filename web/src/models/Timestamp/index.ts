@@ -1,7 +1,7 @@
 import { View } from 'models/View'
 
 export interface TimestampModel extends View {
-  timestamp: number;
+  timestamp: number
 }
 
 export class JSONTimestamp implements TimestampModel {
@@ -17,10 +17,7 @@ export class JSONTimestamp implements TimestampModel {
   }
 }
 
-export function compareTimestampModel(
-  a: TimestampModel,
-  b: TimestampModel,
-): number {
+export function compareTimestampModel(a: TimestampModel, b: TimestampModel): number {
   if (a.timestamp < b.timestamp) {
     return -1
   } else if (a.timestamp > b.timestamp) {

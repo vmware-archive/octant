@@ -1,5 +1,3 @@
-import './styles.scss'
-
 import { ContentsUrlParams, getAPIBase, getContentsUrl, POLL_WAIT, setNamespace } from 'api'
 import Header from 'components/Header'
 import ResourceFiltersContext from 'contexts/resource-filters'
@@ -11,19 +9,21 @@ import { Redirect, Route, RouteComponentProps, Switch, withRouter } from 'react-
 import ReactTooltip from 'react-tooltip'
 
 import Navigation from '../Navigation'
+
 import getInitialState from './state/getInitialState'
+import './styles.scss'
 
 interface AppState {
-  isLoading: boolean;
-  hasError: boolean;
-  errorMessage: string;
-  navigation: { sections: NavigationSectionType[] };
-  currentNavLinkPath: NavigationSectionType[];
-  namespaceOption: NamespaceOption;
-  namespaceOptions: NamespaceOption[];
-  title: string;
-  contentResponse: JSONContentResponse;
-  resourceFilters: string[];
+  isLoading: boolean
+  hasError: boolean
+  errorMessage: string
+  navigation: { sections: NavigationSectionType[] }
+  currentNavLinkPath: NavigationSectionType[]
+  namespaceOption: NamespaceOption
+  namespaceOptions: NamespaceOption[]
+  title: string
+  contentResponse: JSONContentResponse
+  resourceFilters: string[]
 }
 
 class App extends Component<RouteComponentProps, AppState> {
@@ -61,20 +61,14 @@ class App extends Component<RouteComponentProps, AppState> {
     this.setEventSourceStream(this.props.location.pathname, namespace)
   }
 
-  componentDidUpdate(
-    { location: previousLocation },
-    { namespaceOption: previousNamespace },
-  ) {
+  componentDidUpdate({ location: previousLocation }, { namespaceOption: previousNamespace }) {
     const { location } = this.props
     const { namespaceOption } = this.state
 
     const namespace = namespaceOption ? namespaceOption.value : 'default'
     const prevNamespace = previousNamespace ? previousNamespace.value : ''
 
-    if (
-      location.pathname !== previousLocation.pathname ||
-      namespace !== prevNamespace
-    ) {
+    if (location.pathname !== previousLocation.pathname || namespace !== prevNamespace) {
       this.setEventSourceStream(location.pathname, namespace)
     }
 
@@ -126,10 +120,7 @@ class App extends Component<RouteComponentProps, AppState> {
 
     this.source.addEventListener('error', () => {
       this.setState({ isLoading: false })
-      this.setError(
-        true,
-        'Looks like the back end source has gone away. Retrying...',
-      )
+      this.setError(true, 'Looks like the back end source has gone away. Retrying...')
     })
   }
 
@@ -170,7 +161,7 @@ class App extends Component<RouteComponentProps, AppState> {
   onLabelClick = (key: string, value: string) => {
     const tag = `${key}:${value}`
     const { resourceFilters } = this.state
-    this.setState({ resourceFilters: [...resourceFilters, tag]}, this.refreshEventStream)
+    this.setState({ resourceFilters: [...resourceFilters, tag] }, this.refreshEventStream)
   }
 
   setError = (hasError: boolean, errorMessage?: string): void => {
@@ -219,9 +210,7 @@ class App extends Component<RouteComponentProps, AppState> {
               <Navigation
                 navSections={navSections}
                 currentNavLinkPath={currentNavLinkPath}
-                onNavChange={(linkPath) =>
-                  this.setState({ currentNavLinkPath: linkPath })
-                }
+                onNavChange={(linkPath) => this.setState({ currentNavLinkPath: linkPath })}
               />
             </div>
             <div className='app-main'>

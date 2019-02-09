@@ -1,15 +1,15 @@
 import { View, viewFromContentType } from 'models/View'
 
 export interface PanelPosition {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
+  x: number
+  y: number
+  w: number
+  h: number
 }
 
 export interface PanelModel extends View {
-  readonly position: PanelPosition;
-  readonly content: View;
+  readonly position: PanelPosition
+  readonly content: View
 }
 
 export class JSONPanel implements PanelModel {

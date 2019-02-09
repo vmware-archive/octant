@@ -1,15 +1,15 @@
 import { View } from 'models/View'
 
 export interface QuadrantModel extends View {
-  nw: QuadrantSector;
-  ne: QuadrantSector;
-  sw: QuadrantSector;
-  se: QuadrantSector;
+  nw: QuadrantSector
+  ne: QuadrantSector
+  sw: QuadrantSector
+  se: QuadrantSector
 }
 
 export interface QuadrantSector {
-  value: string;
-  label: string;
+  value: string
+  label: string
 }
 
 export class JSONQuadrant implements QuadrantModel {

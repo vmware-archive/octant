@@ -1,14 +1,14 @@
-import './styles.scss'
-import 'react-table/react-table.css'
-
 import EmptyContent from 'components/EmptyContent'
 import { compareModel, instanceOfComparableView, TableModel, TableRow, TextModel, View } from 'models/View'
 import React from 'react'
 import ReactTable from 'react-table'
+import 'react-table/react-table.css'
 import { renderView } from 'views'
 
+import './styles.scss'
+
 interface Props {
-  view: TableModel;
+  view: TableModel
 }
 
 export default function Table({ view }: Props) {
@@ -59,9 +59,9 @@ export default function Table({ view }: Props) {
 
 export function getColumnWidth(
   rows: Array<{
-    [key: string]: View;
+    [key: string]: View
   }>,
-  accessor: string,
+  accessor: string
 ): number | undefined {
   const lens = rows
     .map((row) => {
@@ -86,9 +86,7 @@ export function getColumnWidth(
 }
 
 export function isSortable(rows: TableRow[], accessor: string): boolean {
-  return (
-    (rows.length > 0 && instanceOfComparableView(rows[0][accessor])) || false
-  )
+  return (rows.length > 0 && instanceOfComparableView(rows[0][accessor])) || false
 }
 
 export function sortMethod(): (a, b, desc) => number {

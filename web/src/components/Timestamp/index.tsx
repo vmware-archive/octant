@@ -3,8 +3,8 @@ import moment from 'moment'
 import React from 'react'
 
 interface Props {
-  view: TimestampModel;
-  baseTime?: Date;
+  view: TimestampModel
+  baseTime?: Date
 }
 
 export default function Timestamp({ view, baseTime: baseDate }: Props) {
@@ -12,11 +12,7 @@ export default function Timestamp({ view, baseTime: baseDate }: Props) {
     .utcOffset('+0000')
     .format('LLLL z')
 
-  return (
-    <a data-tip={humanReadable}>
-      {summarizeTimestamp(view.timestamp, baseDate)}
-    </a>
-  )
+  return <a data-tip={humanReadable}>{summarizeTimestamp(view.timestamp, baseDate)}</a>
 }
 
 /**

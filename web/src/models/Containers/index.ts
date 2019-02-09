@@ -1,12 +1,12 @@
 import { View } from 'models/View'
 
 export interface ContainerDef {
-  name: string;
-  image: string;
+  name: string
+  image: string
 }
 
 export interface ContainersModel extends View {
-  containerDefs: ContainerDef[];
+  containerDefs: ContainerDef[]
 }
 
 export class JSONContainers implements ContainersModel {

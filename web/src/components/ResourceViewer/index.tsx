@@ -1,13 +1,12 @@
-import './index.scss'
-import './resource'
-
 import { ResourceViewerModel } from 'models/View'
 import React, { Component } from 'react'
 
 import { Tooltip } from './components/Tooltip'
 import ViewSummary from './components/ViewerSummary'
 import Graph from './graph'
+import './index.scss'
 import ResourceNode from './node'
+import './resource'
 
 interface Props {
   view: ResourceViewerModel
@@ -38,16 +37,12 @@ class ResourceViewer extends Component<Props, State> {
     const tooltips: JSX.Element[] = []
 
     for (const [id, object] of Object.entries(objects)) {
-      nodes[id] = new ResourceNode(
-        id,
-        object,
-        this.state.currentResource === id,
-      ).toDescriptor()
+      nodes[id] = new ResourceNode(id, object, this.state.currentResource === id).toDescriptor()
 
       tooltips.push(
         <Tooltip key={id} id={id}>
           <ViewSummary node={currentObject} />
-        </Tooltip>,
+        </Tooltip>
       )
     }
 
@@ -61,19 +56,13 @@ class ResourceViewer extends Component<Props, State> {
             arrowhead: 'undirected',
             arrowheadStyle: 'fill: rgba(173, 187, 196, 0.3)',
           },
-        ]),
+        ])
       )
     }
 
     return (
       <div className='resourceViewer'>
-        <Graph
-          width='100%'
-          height='100%'
-          nodes={nodes}
-          edges={edges}
-          onNodeClick={this.setCurrentResource}
-        />
+        <Graph width='100%' height='100%' nodes={nodes} edges={edges} onNodeClick={this.setCurrentResource} />
         {tooltips}
       </div>
     )

@@ -16,7 +16,7 @@ describe('render web link', () => {
   const webLink = mount(
     <MemoryRouter>
       <WebLink view={view} />
-    </MemoryRouter>,
+    </MemoryRouter>
   )
 
   test('creates an anchor', () => {

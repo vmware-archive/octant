@@ -1,8 +1,7 @@
-import './resource.scss'
-
 import * as React from 'react'
 import { createRef } from 'react'
 
+import './resource.scss'
 import { ResourceObject } from './schema'
 
 const resourceStyle = {
@@ -11,18 +10,18 @@ const resourceStyle = {
 }
 
 export interface Rect {
-  top: number;
-  left: number;
-  height: number;
-  width: number;
+  top: number
+  left: number
+  height: number
+  width: number
 }
 
 interface Props {
-  name: string;
-  object: ResourceObject;
-  selected: boolean;
-  setOffset(name: string, rect: Rect): void;
-  updateSelected(name: string): void;
+  name: string
+  object: ResourceObject
+  selected: boolean
+  setOffset(name: string, rect: Rect): void
+  updateSelected(name: string): void
 }
 
 class Resource extends React.Component<Props, any> {
@@ -58,11 +57,7 @@ class Resource extends React.Component<Props, any> {
     const object = this.props.object
     const selected = this.props.selected ? 'selected' : ''
     return (
-      <div
-        ref={this.resourceRef}
-        className={`resource ${selected}`}
-        style={resourceStyle}
-      >
+      <div ref={this.resourceRef} className={`resource ${selected}`} style={resourceStyle}>
         <div className='resource-name'>{object.name}</div>
         <div className='resource-type'>
           {object.apiVersion} {object.kind}

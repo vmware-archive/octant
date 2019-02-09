@@ -1,9 +1,10 @@
 import { ContainersModel } from 'models/View'
 import React from 'react'
+
 import './styles.scss'
 
 interface Props {
-  view: ContainersModel;
+  view: ContainersModel
 }
 
 export default function({ view }: Props) {
@@ -13,12 +14,8 @@ export default function({ view }: Props) {
         return (
           <>
             <div key={index} className='table-containers'>
-              <div className='table-containers-name'>
-                {containerDef.name}
-              </div>
-              <div className='table-containers-image'>
-                {containerDef.image}
-              </div>
+              <div className='table-containers-name'>{containerDef.name}</div>
+              <div className='table-containers-image'>{containerDef.image}</div>
             </div>
           </>
         )

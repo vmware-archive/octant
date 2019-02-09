@@ -60,8 +60,7 @@ export default {
             },
             {
               title: 'Persistent Volume Claims',
-              path:
-                '/content/overview/config-and-storage/persistent-volume-claims',
+              path: '/content/overview/config-and-storage/persistent-volume-claims',
             },
             {
               title: 'Secrets',

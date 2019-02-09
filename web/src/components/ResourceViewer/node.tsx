@@ -6,7 +6,7 @@ export default class ResourceNode {
   constructor(
     private readonly id: string,
     private readonly object: ResourceObject,
-    private readonly isSelected: boolean,
+    private readonly isSelected: boolean
   ) {}
 
   toDescriptor(): any {
@@ -29,9 +29,7 @@ export default class ResourceNode {
   }
 
   subTitle(): string {
-    return `<div class="resource-type">${this.object.apiVersion} ${
-      this.object.kind
-    }</div>`
+    return `<div class="resource-type">${this.object.apiVersion} ${this.object.kind}</div>`
   }
 
   summary() {

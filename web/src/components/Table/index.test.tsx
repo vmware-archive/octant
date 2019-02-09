@@ -9,18 +9,15 @@ describe('render table', () => {
     const view = {
       type: 'table',
       title: 'my table',
-      columns: [
-        { name: 'one', accessor: 'one' },
-        { name: 'two', accessor: 'two' },
-      ],
+      columns: [{ name: 'one', accessor: 'one' }, { name: 'two', accessor: 'two' }],
       rows: [
         {
           one: { type: 'text', value: 'a', title: '', isComparable: true },
-          two: { type: 'labels', labels: {a: 'a'}, title: ''},
+          two: { type: 'labels', labels: { a: 'a' }, title: '' },
         },
         {
           one: { type: 'text', value: 'c', title: '', isComparable: true },
-          two: { type: 'labels', labels: {b: 'b'}, title: ''  },
+          two: { type: 'labels', labels: { b: 'b' }, title: '' },
         },
       ],
       emptyContent: 'is empty',

@@ -3,7 +3,7 @@ import { SummaryItem } from 'models/SummaryItem'
 import { View, viewFromContentType } from 'models/View'
 
 export interface SummaryModel extends View {
-  items: SummaryItem[];
+  items: SummaryItem[]
 }
 
 export class JSONSummary implements SummaryModel {

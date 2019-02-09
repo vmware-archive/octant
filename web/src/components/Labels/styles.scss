@@ -7,9 +7,9 @@
 
   .content-label {
     @include resourceLabel;
+    cursor: pointer;
 
     font-size: 12px;
-    cursor: pointer;
 
     margin-bottom: 2px;
     margin-right: 4px;

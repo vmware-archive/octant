@@ -1,14 +1,14 @@
 interface NamespaceOption {
-  label: string;
-  value: string;
+  label: string
+  value: string
 }
 
 interface NavigationSectionType {
-  title: string;
-  path: string;
-  children: NavigationSectionType[];
+  title: string
+  path: string
+  children: NavigationSectionType[]
 }
 
 interface Navigation {
-  sections: NavigationSectionType[];
+  sections: NavigationSectionType[]
 }

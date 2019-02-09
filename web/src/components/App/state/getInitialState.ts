@@ -5,22 +5,19 @@ import PromisePolyfill from 'promise'
 import getNavLinkPath from './getNavLinkPath'
 
 interface InitialState {
-  isLoading?: boolean;
-  hasError?: boolean;
-  navigation?: { sections: NavigationSectionType[] };
-  currentNavLinkPath?: NavigationSectionType[];
-  namespaceOption?: NamespaceOption;
-  namespaceOptions?: NamespaceOption[];
+  isLoading?: boolean
+  hasError?: boolean
+  navigation?: { sections: NavigationSectionType[] }
+  currentNavLinkPath?: NavigationSectionType[]
+  namespaceOption?: NamespaceOption
+  namespaceOptions?: NamespaceOption[]
 }
 
 export default async function(currentPathname): Promise<InitialState> {
   let navigation, namespaces, namespace
   try {
-    [navigation, namespaces, namespace] = await PromisePolyfill.all([
-      getNavigation(),
-      getNamespaces(),
-      getNamespace(),
-    ])
+    // tslint:disable-next-line
+    ;[navigation, namespaces, namespace] = await PromisePolyfill.all([getNavigation(), getNamespaces(), getNamespace()])
   } catch (e) {
     return { isLoading: false, hasError: true }
   }
@@ -42,9 +39,7 @@ export default async function(currentPathname): Promise<InitialState> {
       value: namespace.namespace as string,
     })
 
-    initialState.namespaceOption = option
-      ? option
-      : { label: 'default', value: 'default' }
+    initialState.namespaceOption = option ? option : { label: 'default', value: 'default' }
   }
 
   return initialState

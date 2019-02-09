@@ -1,7 +1,7 @@
 import { View, viewFromContentType } from 'models/View'
 
 export interface ListModel extends View {
-  items(): View[];
+  items(): View[]
 }
 
 export class JSONList implements ListModel {

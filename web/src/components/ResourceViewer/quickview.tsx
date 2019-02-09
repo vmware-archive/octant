@@ -1,10 +1,11 @@
 import React from 'react'
+
 import QuickViewTitle from './components/QuickView/components/Title'
-import { ResourceObject } from './schema'
 import './quickview.scss'
+import { ResourceObject } from './schema'
 
 interface Props {
-  object: ResourceObject;
+  object: ResourceObject
 }
 
 export default function({ object }: Props) {

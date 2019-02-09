@@ -1,27 +1,21 @@
-import React from 'react'
 import _ from 'lodash'
-import NavigationSubheader from './components/NavigationSubheader'
+import React from 'react'
+
 import NavigationHeader from './components/NavigationHeader'
+import NavigationSubheader from './components/NavigationSubheader'
 import './styles.scss'
 
 interface Props {
-  linkPath: NavigationSectionType[];
-  childLinks: NavigationSectionType[];
-  onNavChange: (NavigationPathLink) => void;
+  linkPath: NavigationSectionType[]
+  childLinks: NavigationSectionType[]
+  onNavChange: (NavigationPathLink) => void
 }
 
 export default function NavigationSection(props: Props) {
-  const {
-    linkPath: parentLinkPath,
-    childLinks,
-    onNavChange,
-  } = props
+  const { linkPath: parentLinkPath, childLinks, onNavChange } = props
   return (
     <div className='navigation--left-section'>
-      <NavigationHeader
-        linkPath={parentLinkPath}
-        onNavChange={onNavChange}
-      />
+      <NavigationHeader linkPath={parentLinkPath} onNavChange={onNavChange} />
       <ul className='navigation--left-items'>
         {_.map(childLinks, (link) => (
           <div key={link.title} className='navigation--left-item'>

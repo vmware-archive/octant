@@ -2,9 +2,9 @@ import { View, viewFromContentType } from 'models/View'
 
 interface ContentResponse {
   content: {
-    title: string;
-    viewComponents: ContentType[];
-  };
+    title: string
+    viewComponents: ContentType[]
+  }
 }
 
 export function Parse(data: any): JSONContentResponse {
