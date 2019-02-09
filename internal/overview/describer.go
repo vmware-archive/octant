@@ -119,7 +119,9 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 		return emptyContentResponse, err
 	}
 
-	list.Add(viewComponent)
+	if viewComponent != nil {
+		list.Add(viewComponent)
+	}
 
 	return component.ContentResponse{
 		ViewComponents: []component.ViewComponent{list},
