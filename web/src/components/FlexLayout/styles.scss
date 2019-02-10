@@ -1,0 +1,33 @@
+.flexLayout--section {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: flex-start;
+  margin-bottom: 30px;
+}
+
+.flexLayout--section-item {
+  flex-grow: 0;
+  flex-shrink: 0;
+  margin: 0 15px;
+
+  &:first-child {
+    margin-left: 0;
+  }
+
+  &:last-child {
+    margin-right: 0;
+  }
+
+  .podtemplate-labels {
+    h3 {
+      float: left;
+      margin-right: 10px;
+    }
+  }
+
+  .grid-layout-panel {
+    overflow-y: hidden;
+  }
+
+}

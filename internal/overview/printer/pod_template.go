@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/pkg/errors"
@@ -17,6 +18,39 @@ func NewPodTemplate(podTemplateSpec corev1.PodTemplateSpec) *PodTemplate {
 	return &PodTemplate{
 		podTemplateSpec: podTemplateSpec,
 	}
+}
+
+func (pt *PodTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout) error {
+	if fl == nil {
+		return errors.New("flex layout is nil")
+	}
+
+	headerSection := fl.AddSection()
+	podTemplateHeader := NewPodTemplateHeader(pt.podTemplateSpec.ObjectMeta.Labels)
+	headerLabels, err := podTemplateHeader.Create()
+	if err != nil {
+		return err
+	}
+
+	if err := headerSection.Add(headerLabels, 23); err != nil {
+		return errors.Wrap(err, "add pod template header")
+	}
+
+	containerSection := fl.AddSection()
+
+	for _, container := range pt.podTemplateSpec.Spec.Containers {
+		containerConfig := NewContainerConfiguration(&container)
+		summary, err := containerConfig.Create()
+		if err != nil {
+			return err
+		}
+
+		if err := containerSection.Add(summary, 16); err != nil {
+			return errors.Wrap(err, "add container")
+		}
+	}
+
+	return nil
 }
 
 func (pt *PodTemplate) AddToGridLayout(gl *gridlayout.GridLayout) error {

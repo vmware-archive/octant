@@ -1,4 +1,5 @@
 import Containers from 'components/Containers'
+import FlexLayout from 'components/FlexLayout'
 import Grid from 'components/Grid'
 import Labels from 'components/Labels'
 import List from 'components/List'
@@ -12,6 +13,7 @@ import Timestamp from 'components/Timestamp'
 import WebLink from 'components/WebLink'
 import {
   ContainersModel,
+  FlexLayoutModel,
   GridModel,
   LabelsModel,
   LinkModel,
@@ -29,10 +31,12 @@ import React from 'react'
 
 export function renderView(view: View): JSX.Element {
   switch (view.type) {
-    case 'grid':
-      return <Grid view={view as GridModel} />
     case 'containers':
       return <Containers view={view as ContainersModel} />
+    case 'flexlayout':
+      return <FlexLayout view={view as FlexLayoutModel} />
+    case 'grid':
+      return <Grid view={view as GridModel} />
     case 'labels':
       return <Labels view={view as LabelsModel} />
     case 'link':

@@ -1,4 +1,5 @@
 import { JSONContainers } from './containers'
+import { JSONFlexLayout } from './flexlayout'
 import { JSONGrid } from './grid'
 import { JSONLabels } from './labels'
 import { JSONLink } from './link'
@@ -32,6 +33,17 @@ export interface ContainersModel extends View {
 
 export interface GridModel extends View {
   panels: PanelModel[]
+}
+
+export interface FlexLayoutItem {
+  width: number
+  view: View
+}
+
+export type FlexLayoutSection = FlexLayoutItem[]
+
+export interface FlexLayoutModel extends View {
+  sections: FlexLayoutSection[]
 }
 
 export interface LabelsModel extends View {
@@ -158,6 +170,8 @@ export function viewFromContentType(ct: ContentType): View {
   switch (ct.metadata.type) {
     case 'containers':
       return new JSONContainers(ct)
+    case 'flexlayout':
+      return new JSONFlexLayout(ct)
     case 'grid':
       return new JSONGrid(ct)
     case 'labels':
