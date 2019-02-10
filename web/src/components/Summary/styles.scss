@@ -1,11 +1,18 @@
 @import '~css/variables/variables.scss';
 
+$border-color: rgba(173, 187, 196, 0.3);
+
 .summary-component {
-  border: 1px solid #d8d8d8;
+  border: 1px solid $border-color;
 
   .summary-component-title {
-    border-bottom: 1px solid #d8d8d8;
+    border-bottom: 1px solid $border-color;
     padding: 12px;
+
+    span {
+      @include semiBold;
+      font-size: 16px;
+    }
   }
 
   .summary-component-section {

@@ -1,8 +1,8 @@
 @import '~css/variables/variables.scss';
-$border: 1px solid $white;
+$border: 1px solid rgba(173, 187, 196, 0.3);
 
 .quadrant {
-  border: 1px solid $white;
+  border: $border;
   border-radius: 3px;
   height: 100%;
 
