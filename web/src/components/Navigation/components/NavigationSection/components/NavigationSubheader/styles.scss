@@ -16,15 +16,35 @@
 
       a {
         color: $white;
+        display: block;
+        font-size: 14px;
+        text-decoration: none;
       }
+
+      a.active {
+        @include semiBold;
+        border-right: 3px solid $blue-light;
+      }
+
+
     }
 
     .navigation-subheader-link {
       margin-bottom: 8px;
 
       a {
+        display: block;
+        font-size: 14px;
         margin-left: 10px;
+        padding: 4px 0;
+        text-decoration: none;
       }
+
+      a.active {
+        @include semiBold;
+        border-right: 3px solid $blue-light;
+      }
+
     }
   }
 }
