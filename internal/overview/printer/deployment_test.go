@@ -47,6 +47,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 					UnavailableReplicas: 1,
 				},
 				Spec: appsv1.DeploymentSpec{
+					Replicas: ptrInt32(3),
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
 							"app": "my_app",
@@ -132,6 +133,10 @@ func Test_deploymentConfiguration(t *testing.T) {
 					Header:  "Age",
 					Content: component.NewTimestamp(time.Unix(1548377609, 0)),
 				},
+				{
+					Header:  "Replicas",
+					Content: component.NewText("3"),
+				},
 			}...),
 		},
 		{
@@ -178,6 +183,7 @@ var (
 			UnavailableReplicas: 1,
 		},
 		Spec: appsv1.DeploymentSpec{
+			Replicas:             ptrInt32(3),
 			RevisionHistoryLimit: &rhl,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{

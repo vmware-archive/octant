@@ -188,7 +188,7 @@ func Test_DefaultPrinter(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Age")
-	expected := component.NewTable("*v1.DeploymentList", cols)
+	expected := component.NewTable("/v1, Kind=DeploymentList", cols)
 	expected.Add(component.TableRow{
 		"Name":   component.NewText("deployment"),
 		"Labels": component.NewLabels(labels),

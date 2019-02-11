@@ -3,13 +3,14 @@ package printer
 import (
 	"fmt"
 	"reflect"
-
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"strings"
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type Options struct {
@@ -131,7 +132,13 @@ func DefaultPrintFunc(object runtime.Object, options Options) (component.ViewCom
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Age")
-	table := component.NewTable(fmt.Sprintf("%T", object), cols)
+
+	title := strings.TrimPrefix(fmt.Sprintf("%T", object), "*")
+	desc := strings.Split(title, ".")
+	gvk := schema.FromAPIVersionAndKind(desc[0], desc[1])
+	title = gvk.String()
+
+	table := component.NewTable(title, cols)
 
 	items := m["items"].([]interface{})
 

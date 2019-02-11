@@ -6,7 +6,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 
 	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/gridlayout"
+	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/pkg/errors"
 )
 
@@ -45,19 +45,18 @@ func DeploymentListHandler(list *appsv1.DeploymentList, opts Options) (component
 
 // DeploymentHandler is a printFunc that prints a Deployments.
 func DeploymentHandler(deployment *appsv1.Deployment, options Options) (component.ViewComponent, error) {
-	gl := gridlayout.New()
+	fl := flexlayout.New()
 
-	configSection := gl.CreateSection(8)
-
+	configSection := fl.AddSection()
 	deployConfigGen := NewDeploymentConfiguration(deployment)
 	configView, err := deployConfigGen.Create()
 	if err != nil {
 		return nil, err
 	}
 
-	configSection.Add(configView, 16)
-
-	summarySection := gl.CreateSection(8)
+	if err := configSection.Add(configView, 16); err != nil {
+		return nil, errors.Wrap(err, "add deployment config to layout")
+	}
 
 	deploySummaryGen := NewDeploymentStatus(deployment)
 	statusView, err := deploySummaryGen.Create()
@@ -65,16 +64,18 @@ func DeploymentHandler(deployment *appsv1.Deployment, options Options) (componen
 		return nil, err
 	}
 
-	summarySection.Add(statusView, 8)
-
-	podTemplate := NewPodTemplate(deployment.Spec.Template)
-	if err = podTemplate.AddToGridLayout(gl); err != nil {
-		return nil, err
+	if err := configSection.Add(statusView, 8); err != nil {
+		return nil, errors.Wrap(err, "add deployment summary to layout")
 	}
 
-	grid := gl.ToGrid()
+	podTemplate := NewPodTemplate(deployment.Spec.Template)
+	if err = podTemplate.AddToFlexLayout(fl); err != nil {
+		return nil, errors.Wrap(err, "add pod template to layout")
+	}
 
-	return grid, nil
+	view := fl.ToComponent("Summary")
+
+	return view, nil
 }
 
 // DeploymentConfiguration generates deployment configuration.
@@ -163,6 +164,16 @@ func (dc *DeploymentConfiguration) Create() (*component.Summary, error) {
 	sections = append(sections, component.SummarySection{
 		Header:  "Age",
 		Content: component.NewTimestamp(creationTimestamp),
+	})
+
+	var replicas int32
+	if dc.deployment.Spec.Replicas != nil {
+		replicas = *dc.deployment.Spec.Replicas
+	}
+
+	sections = append(sections, component.SummarySection{
+		Header:  "Replicas",
+		Content: component.NewText(fmt.Sprintf("%d", replicas)),
 	})
 
 	summary := component.NewSummary("Configuration", sections...)

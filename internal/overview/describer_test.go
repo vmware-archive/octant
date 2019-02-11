@@ -65,7 +65,7 @@ func TestListDescriber(t *testing.T) {
 	list := component.NewList("", nil)
 
 	tableCols := component.NewTableCols("Name", "Labels", "Age")
-	table := component.NewTable("*v1.PodList", tableCols)
+	table := component.NewTable("/v1, Kind=PodList", tableCols)
 	table.Add(component.TableRow{
 		"Age":    component.NewTimestamp(time.Unix(1547472896, 0)),
 		"Labels": component.NewLabels(nil),

@@ -110,7 +110,7 @@ var (
 			DeletionGracePeriodSeconds: ptr64(30),
 		},
 		Spec: corev1.PodSpec{
-			Priority:           ptr32(1000000),
+			Priority:           ptrInt32(1000000),
 			PriorityClassName:  "high-priority",
 			ServiceAccountName: "default",
 		},

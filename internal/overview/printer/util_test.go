@@ -1,6 +1,6 @@
 package printer_test
 
-func ptr32(i int32) *int32 {
+func ptrInt32(i int32) *int32 {
 	return &i
 }
 

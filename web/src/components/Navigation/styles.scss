@@ -2,6 +2,8 @@
 
 .navigation--left {
   @include box-shadow;
+  background-color: #17242b;
   border-right: 1px solid $dividerColor;
   height: 100%;
+
 }
