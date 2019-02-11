@@ -1,5 +1,6 @@
+import { ViewTitle } from 'components/ViewTitle'
 import _ from 'lodash'
-import { GridModel } from 'models/View'
+import { GridModel } from 'models'
 import React from 'react'
 import GridLayout from 'react-grid-layout'
 import { renderView } from 'views'
@@ -34,7 +35,9 @@ export default function Grid({ view }: Props) {
                 case 'labels':
                   return (
                     <div className='podtemplate-labels'>
-                      <h3>{content.title}</h3>
+                      <h3>
+                        <ViewTitle parts={view.title} />
+                      </h3>
                       {renderView(content)}
                     </div>
                   )

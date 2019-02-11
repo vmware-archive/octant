@@ -120,49 +120,51 @@ func Test_ContainerConfiguration(t *testing.T) {
 			expected: component.NewSummary("Container nginx", []component.SummarySection{
 				{
 					Header:  "Image",
-					Content: component.NewText("", "nginx:1.15"),
+					Content: component.NewText("nginx:1.15"),
 				},
 				{
 					Header:  "Host Ports",
-					Content: component.NewText("", "80/TCP, 8080/TCP"),
+					Content: component.NewText("80/TCP, 8080/TCP"),
 				},
 				{
 					Header:  "Container Ports",
-					Content: component.NewText("", "443/TCP, 443/UDP"),
+					Content: component.NewText("443/TCP, 443/UDP"),
 				},
 				{
 					Header: "Environment",
 					Content: &component.Table{
 						Metadata: component.Metadata{
-							Type:  "table",
-							Title: "Environment",
+							Type: "table",
+							Title: []component.TitleViewComponent{
+								component.NewText("Environment"),
+							},
 						},
 						Config: component.TableConfig{
 							Columns: component.NewTableCols("Name", "Value", "Source"),
 							Rows: []component.TableRow{
 								component.TableRow{
-									"Name":   component.NewText("", "tier"),
-									"Value":  component.NewText("", "prod"),
-									"Source": component.NewText("", ""),
+									"Name":   component.NewText("tier"),
+									"Value":  component.NewText("prod"),
+									"Source": component.NewText(""),
 								},
 								component.TableRow{
-									"Name":   component.NewText("", "fieldref"),
-									"Value":  component.NewText("", ""),
-									"Source": component.NewText("", "metadata.name"),
+									"Name":   component.NewText("fieldref"),
+									"Value":  component.NewText(""),
+									"Source": component.NewText("metadata.name"),
 								},
 								component.TableRow{
-									"Name":   component.NewText("", "resourcefieldref"),
-									"Value":  component.NewText("", ""),
-									"Source": component.NewText("", "requests.cpu"),
+									"Name":   component.NewText("resourcefieldref"),
+									"Value":  component.NewText(""),
+									"Source": component.NewText("requests.cpu"),
 								},
 								component.TableRow{
-									"Name":   component.NewText("", "configmapref"),
-									"Value":  component.NewText("", ""),
+									"Name":   component.NewText("configmapref"),
+									"Value":  component.NewText(""),
 									"Source": component.NewLink("", "myconfig:somekey", "/content/overview/config-and-storage/config-maps/myconfig"),
 								},
 								component.TableRow{
-									"Name":   component.NewText("", "secretref"),
-									"Value":  component.NewText("", ""),
+									"Name":   component.NewText("secretref"),
+									"Value":  component.NewText(""),
 									"Source": component.NewLink("", "mysecret:somesecretkey", "/content/overview/config-and-storage/secrets/mysecret"),
 								},
 								// EnvFromSource
@@ -178,31 +180,33 @@ func Test_ContainerConfiguration(t *testing.T) {
 				},
 				{
 					Header:  "Command",
-					Content: component.NewText("", "['/usr/bin/nginx']"),
+					Content: component.NewText("['/usr/bin/nginx']"),
 				},
 				{
 					Header:  "Args",
-					Content: component.NewText("", "['-v', '-p', '80']"),
+					Content: component.NewText("['-v', '-p', '80']"),
 				},
 				{
 					Header: "Volume Mounts",
 					Content: &component.Table{
 						Metadata: component.Metadata{
-							Type:  "table",
-							Title: "Volume Mounts",
+							Type: "table",
+							Title: []component.TitleViewComponent{
+								component.NewText("Volume Mounts"),
+							},
 						},
 						Config: component.TableConfig{
 							Columns: component.NewTableCols("Name", "Mount Path", "Propagation"),
 							Rows: []component.TableRow{
 								component.TableRow{
-									"Name":        component.NewText("", "config"),
-									"Mount Path":  component.NewText("", "/etc/nginx (ro)"),
-									"Propagation": component.NewText("", ""),
+									"Name":        component.NewText("config"),
+									"Mount Path":  component.NewText("/etc/nginx (ro)"),
+									"Propagation": component.NewText(""),
 								},
 								component.TableRow{
-									"Name":        component.NewText("", "data"),
-									"Mount Path":  component.NewText("", "/var/www/content (rw)"),
-									"Propagation": component.NewText("", "HostToContainer"),
+									"Name":        component.NewText("data"),
+									"Mount Path":  component.NewText("/var/www/content (rw)"),
+									"Propagation": component.NewText("HostToContainer"),
 								},
 							},
 						},

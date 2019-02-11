@@ -27,7 +27,7 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Schedule on nodes with key:value taint."),
+				component.NewText("Schedule on nodes with key:value taint."),
 			}),
 		},
 		{
@@ -43,8 +43,8 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Schedule on nodes with key1:value1 taint."),
-				component.NewText("", "Schedule on nodes with key2:value2 taint."),
+				component.NewText("Schedule on nodes with key1:value1 taint."),
+				component.NewText("Schedule on nodes with key2:value2 taint."),
 			}),
 		},
 		{
@@ -57,7 +57,7 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Schedule on nodes with key:value:NoSchedule taint."),
+				component.NewText("Schedule on nodes with key:value:NoSchedule taint."),
 			}),
 		},
 		{
@@ -68,7 +68,7 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Schedule on nodes with NoSchedule taint."),
+				component.NewText("Schedule on nodes with NoSchedule taint."),
 			}),
 		},
 		{
@@ -81,7 +81,7 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("",
+				component.NewText(
 					"Schedule on nodes with key:value taint. Evict after 3600 seconds."),
 			}),
 		},
@@ -94,7 +94,7 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("",
+				component.NewText(
 					"Schedule on nodes with key taint."),
 			}),
 		},
@@ -106,7 +106,7 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("",
+				component.NewText(
 					"Schedule on all nodes."),
 			}),
 		},

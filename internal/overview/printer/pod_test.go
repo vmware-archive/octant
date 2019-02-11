@@ -77,11 +77,11 @@ func Test_PodListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Ready", "Status", "Restarts", "Age")
 	expected := component.NewTable("Pods", cols)
 	expected.Add(component.TableRow{
-		"Name":     component.NewText("", "pod"),
+		"Name":     component.NewText("pod"),
 		"Labels":   component.NewLabels(labels),
-		"Ready":    component.NewText("", "1/2"),
-		"Status":   component.NewText("", "Pending"),
-		"Restarts": component.NewText("", "0"),
+		"Ready":    component.NewText("1/2"),
+		"Status":   component.NewText("Pending"),
+		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(now),
 	})
 
@@ -138,11 +138,11 @@ func Test_PodConfiguration(t *testing.T) {
 			expected: component.NewSummary("Configuration", []component.SummarySection{
 				{
 					Header:  "Priority",
-					Content: component.NewText("", "1000000"),
+					Content: component.NewText("1000000"),
 				},
 				{
 					Header:  "PriorityClassName",
-					Content: component.NewText("", "high-priority"),
+					Content: component.NewText("high-priority"),
 				},
 				{
 					Header:  "Start Time",
@@ -154,15 +154,15 @@ func Test_PodConfiguration(t *testing.T) {
 				},
 				{
 					Header:  "Termination Grace Period",
-					Content: component.NewText("", "30s"),
+					Content: component.NewText("30s"),
 				},
 				{
 					Header:  "Reason",
-					Content: component.NewText("", "SleepExpired"),
+					Content: component.NewText("SleepExpired"),
 				},
 				{
 					Header:  "Message",
-					Content: component.NewText("", "Sleep expired"),
+					Content: component.NewText("Sleep expired"),
 				},
 				{
 					Header:  "Controlled By",
@@ -170,11 +170,11 @@ func Test_PodConfiguration(t *testing.T) {
 				},
 				{
 					Header:  "NominatedNodeName",
-					Content: component.NewText("", "mynode"),
+					Content: component.NewText("mynode"),
 				},
 				{
 					Header:  "QoS Class",
-					Content: component.NewText("", "Guaranteed"),
+					Content: component.NewText("Guaranteed"),
 				},
 				{
 					Header:  "Service Account",

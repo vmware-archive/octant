@@ -1,7 +1,12 @@
 {
   "metadata": {
     "type": "resourceViewer",
-    "title": "Resource Viewer"
+    "title": [
+      {
+        "config": { "value": "Resource Viewer" },
+        "metadata": { "type": "text" }
+      }
+    ]
   },
   "config": {
     "edges": {

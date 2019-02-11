@@ -48,12 +48,12 @@ func Test_VolumeListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Kind")
 	expected := component.NewTable("Volumes", cols)
 	expected.Add(component.TableRow{
-		"Name": component.NewText("", "gluster-volume"),
-		"Kind": component.NewText("", "Glusterfs (a Glusterfs mount on the host that shares a pod's lifetime)"),
+		"Name": component.NewText("gluster-volume"),
+		"Kind": component.NewText("Glusterfs (a Glusterfs mount on the host that shares a pod's lifetime)"),
 	})
 	expected.Add(component.TableRow{
-		"Name": component.NewText("", "ebs-volume"),
-		"Kind": component.NewText("", "AWSElasticBlockStore (a Persistent Disk resource in AWS)"),
+		"Name": component.NewText("ebs-volume"),
+		"Kind": component.NewText("AWSElasticBlockStore (a Persistent Disk resource in AWS)"),
 	})
 
 	assert.Equal(t, expected, got)

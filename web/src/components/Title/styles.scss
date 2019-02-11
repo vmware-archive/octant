@@ -8,6 +8,18 @@
   width: 100%;
 
   h2 {
+    @include metropolis;
     @include normal;
+    font-size: 18px;
+
+    span:last-child {
+      font-weight: 600;
+    }
   }
+}
+
+.component--title-separator {
+  @include metropolis;
+  color: $gray-darker;
+  margin: 0 11px;
 }

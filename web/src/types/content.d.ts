@@ -1,6 +1,6 @@
 interface Metadata {
   type: string
-  title: string
+  title?: ContentType[]
 }
 
 interface ContentType {

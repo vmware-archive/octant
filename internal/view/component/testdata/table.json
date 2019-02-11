@@ -1,7 +1,12 @@
 {
   "metadata": {
     "type": "table",
-    "title": "my table"
+    "title": [
+      {
+        "config": { "value": "my table" },
+        "metadata": { "type": "text" }
+      }
+    ]
   },
   "config": {
     "columns": [

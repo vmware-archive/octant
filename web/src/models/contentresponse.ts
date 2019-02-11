@@ -1,8 +1,8 @@
-import { View, viewFromContentType } from 'models/View'
+import { TitleView, toTitle, View, viewFromContentType } from 'models'
 
 interface ContentResponse {
   content: {
-    title: string
+    title: ContentType[]
     viewComponents: ContentType[]
   }
 }
@@ -14,11 +14,13 @@ export function Parse(data: any): JSONContentResponse {
 }
 
 export default class JSONContentResponse {
-  readonly title: string
+  readonly title: TitleView
   readonly views: View[]
 
-  constructor(private readonly cr: ContentResponse) {
-    this.title = cr.content.title
+  constructor(cr: ContentResponse) {
+    if (cr.content.title) {
+      this.title = toTitle(cr.content.title)
+    }
 
     this.views = cr.content.viewComponents.map((view) => {
       return viewFromContentType(view)

@@ -1,23 +1,17 @@
-import { View, viewFromContentType } from 'models/View'
-
-export interface TableRow {
-  [key: string]: View
-}
-export interface TableModel extends View {
-  readonly columns: Array<{ name: string; accessor: string }>
-  readonly rows: TableRow[]
-  readonly emptyContent: string
-}
+import { TableModel, TableRow, TitleView, toTitle, View, viewFromContentType } from 'models'
 
 export class JSONTable implements TableModel {
   readonly type = 'table'
-  readonly title: string
+  readonly title: TitleView
   readonly rows: TableRow[]
   readonly columns: Array<{ name: string; accessor: string }>
   readonly emptyContent: string
 
   constructor(ct: ContentType) {
-    this.title = ct.metadata.title
+    if (ct.metadata.title) {
+      this.title = toTitle(ct.metadata.title)
+    }
+
     this.columns = ct.config.columns
     this.emptyContent = ct.config.emptyContent
 

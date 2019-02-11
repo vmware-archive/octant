@@ -1,7 +1,12 @@
 {
   "metadata": {
     "type": "selectors",
-    "title": "my-summary"
+    "title": [
+      {
+        "config": { "value": "my summary" },
+        "metadata": { "type": "text" }
+      }
+    ]
   },
   "config": {
     "selectors": [

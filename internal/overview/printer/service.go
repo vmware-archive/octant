@@ -26,9 +26,9 @@ func ServiceListHandler(list *corev1.ServiceList, opts Options) (component.ViewC
 		row := component.TableRow{}
 		row["Name"] = linkForObject("v1", "Service", d.Name, d.Name)
 		row["Labels"] = component.NewLabels(d.Labels)
-		row["Type"] = component.NewText("", string(d.Spec.Type))
-		row["Cluster IP"] = component.NewText("", d.Spec.ClusterIP)
-		row["External IP"] = component.NewText("", strings.Join(d.Spec.ExternalIPs, ","))
+		row["Type"] = component.NewText(string(d.Spec.Type))
+		row["Cluster IP"] = component.NewText(d.Spec.ClusterIP)
+		row["External IP"] = component.NewText(strings.Join(d.Spec.ExternalIPs, ","))
 		row["Target Ports"] = printServicePorts(d.Spec.Ports)
 
 		ts := d.CreationTimestamp.Time
@@ -79,7 +79,7 @@ func printServicePorts(ports []corev1.ServicePort) component.ViewComponent {
 		out[i] = describeTargetPort(port)
 	}
 
-	return component.NewText("", strings.Join(out, ", "))
+	return component.NewText(strings.Join(out, ", "))
 }
 
 func serviceConfiguration(service *corev1.Service) (*component.Summary, error) {
@@ -102,7 +102,7 @@ func serviceConfiguration(service *corev1.Service) (*component.Summary, error) {
 
 	sections = append(sections, component.SummarySection{
 		Header:  "Type",
-		Content: component.NewText("", string(service.Spec.Type)),
+		Content: component.NewText(string(service.Spec.Type)),
 	})
 
 	var ports []string
@@ -111,32 +111,32 @@ func serviceConfiguration(service *corev1.Service) (*component.Summary, error) {
 	}
 	sections = append(sections, component.SummarySection{
 		Header:  "Ports",
-		Content: component.NewText("", strings.Join(ports, ", ")),
+		Content: component.NewText(strings.Join(ports, ", ")),
 	})
 
 	sections = append(sections, component.SummarySection{
 		Header:  "Session Affinity",
-		Content: component.NewText("", string(service.Spec.SessionAffinity)),
+		Content: component.NewText(string(service.Spec.SessionAffinity)),
 	})
 
 	if service.Spec.ExternalTrafficPolicy != "" {
 		sections = append(sections, component.SummarySection{
 			Header:  "External Traffic Policy",
-			Content: component.NewText("", string(service.Spec.ExternalTrafficPolicy)),
+			Content: component.NewText(string(service.Spec.ExternalTrafficPolicy)),
 		})
 	}
 
 	if service.Spec.HealthCheckNodePort != 0 {
 		sections = append(sections, component.SummarySection{
 			Header:  "Health Check Node Port",
-			Content: component.NewText("", fmt.Sprintf("%d", service.Spec.HealthCheckNodePort)),
+			Content: component.NewText(fmt.Sprintf("%d", service.Spec.HealthCheckNodePort)),
 		})
 	}
 
 	if len(service.Spec.LoadBalancerSourceRanges) > 0 {
 		sections = append(sections, component.SummarySection{
 			Header:  "Load Balancer Source Ranges",
-			Content: component.NewText("", strings.Join(service.Spec.LoadBalancerSourceRanges, ", ")),
+			Content: component.NewText(strings.Join(service.Spec.LoadBalancerSourceRanges, ", ")),
 		})
 
 	}
@@ -155,27 +155,27 @@ func serviceSummary(service *corev1.Service) (*component.Summary, error) {
 
 	sections = append(sections, component.SummarySection{
 		Header:  "Cluster IP",
-		Content: component.NewText("", service.Spec.ClusterIP),
+		Content: component.NewText(service.Spec.ClusterIP),
 	})
 
 	if externalIPs := service.Spec.ExternalIPs; len(externalIPs) > 0 {
 		sections = append(sections, component.SummarySection{
 			Header:  "External IPs",
-			Content: component.NewText("", strings.Join(externalIPs, ", ")),
+			Content: component.NewText(strings.Join(externalIPs, ", ")),
 		})
 	}
 
 	if service.Spec.LoadBalancerIP != "" {
 		sections = append(sections, component.SummarySection{
 			Header:  "Load Balancer IP",
-			Content: component.NewText("", service.Spec.LoadBalancerIP),
+			Content: component.NewText(service.Spec.LoadBalancerIP),
 		})
 	}
 
 	if service.Spec.ExternalName != "" {
 		sections = append(sections, component.SummarySection{
 			Header:  "External Name",
-			Content: component.NewText("", service.Spec.ExternalName),
+			Content: component.NewText(service.Spec.ExternalName),
 		})
 	}
 
@@ -217,20 +217,20 @@ func serviceEndpoints(c cache.Cache, service *corev1.Service) (*component.Table,
 		for _, address := range subset.Addresses {
 			row := component.TableRow{}
 
-			var target component.ViewComponent = component.NewText("", "No target")
+			var target component.ViewComponent = component.NewText("No target")
 			if targetRef := address.TargetRef; targetRef != nil {
 				ref := gvkPath(targetRef.APIVersion, targetRef.Kind, targetRef.Name)
 				target = component.NewLink("", targetRef.Name, ref)
 			}
 
 			row["Target"] = target
-			row["IP"] = component.NewText("", address.IP)
+			row["IP"] = component.NewText(address.IP)
 
 			nodeName := ""
 			if address.NodeName != nil {
 				nodeName = *address.NodeName
 			}
-			row["Node Name"] = component.NewText("", nodeName)
+			row["Node Name"] = component.NewText(nodeName)
 
 			table.Add(row)
 		}

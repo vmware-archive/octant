@@ -1,4 +1,4 @@
-import { View } from 'models/View'
+import { View } from 'models'
 import React from 'react'
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs'
 
@@ -35,7 +35,16 @@ export default class Renderer {
         </div>
       ))
 
-      tabs.push(<Tab key={index}>{view.title}</Tab>)
+      if (!view.title) {
+        throw new Error('view does not have a title')
+      }
+
+      if (view.title && view.title.length === 1 && view.title[0].type === 'text') {
+        tabs.push(<Tab key={index}>{view.title[0].value}</Tab>)
+      } else {
+        throw new Error('invalid view title')
+      }
+
       panels.push(<TabPanel key={index}>{tabContents}</TabPanel>)
     })
 

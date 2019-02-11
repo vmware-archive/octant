@@ -39,7 +39,7 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Prefer to schedule on nodes with label foo with values x, y."),
+				component.NewText("Prefer to schedule on nodes with label foo with values x, y."),
 			}),
 		},
 		{
@@ -62,7 +62,7 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Prefer to schedule on nodes with label foo without values x, y."),
+				component.NewText("Prefer to schedule on nodes with label foo without values x, y."),
 			}),
 		},
 		{
@@ -84,7 +84,7 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Prefer to schedule on nodes where label foo exists."),
+				component.NewText("Prefer to schedule on nodes where label foo exists."),
 			}),
 		},
 		{
@@ -106,7 +106,7 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Prefer to schedule on nodes where label foo does not exist."),
+				component.NewText("Prefer to schedule on nodes where label foo does not exist."),
 			}),
 		},
 		{
@@ -129,7 +129,7 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Prefer to schedule on nodes where label foo is greater than 1."),
+				component.NewText("Prefer to schedule on nodes where label foo is greater than 1."),
 			}),
 		},
 		{
@@ -152,7 +152,7 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Prefer to schedule on nodes where label foo is less than 1."),
+				component.NewText("Prefer to schedule on nodes where label foo is less than 1."),
 			}),
 		},
 		{
@@ -175,7 +175,7 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Prefer to schedule on nodes with field foo with values x, y."),
+				component.NewText("Prefer to schedule on nodes with field foo with values x, y."),
 			}),
 		},
 		{
@@ -199,7 +199,7 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Prefer to schedule on nodes with field foo with values x, y. Weight 10."),
+				component.NewText("Prefer to schedule on nodes with field foo with values x, y. Weight 10."),
 			}),
 		},
 		{
@@ -222,7 +222,7 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Schedule on nodes with field foo with values x, y."),
+				component.NewText("Schedule on nodes with field foo with values x, y."),
 			}),
 		},
 		{
@@ -243,7 +243,7 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Schedule with pod labeled bar:foo, foo:bar in topology topology."),
+				component.NewText("Schedule with pod labeled bar:foo, foo:bar in topology topology."),
 			}),
 		},
 		{
@@ -266,7 +266,7 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Schedule with pod where key exists in topology topology."),
+				component.NewText("Schedule with pod where key exists in topology topology."),
 			}),
 		},
 		{
@@ -293,7 +293,7 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Schedule with pod labeled bar:foo, foo:bar where key exists in topology topology."),
+				component.NewText("Schedule with pod labeled bar:foo, foo:bar where key exists in topology topology."),
 			}),
 		},
 		{
@@ -316,7 +316,7 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Prefer to schedule with pod labeled bar:foo, foo:bar in topology topology."),
+				component.NewText("Prefer to schedule with pod labeled bar:foo, foo:bar in topology topology."),
 			}),
 		},
 		{
@@ -340,7 +340,7 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Prefer to schedule with pod labeled bar:foo, foo:bar in topology topology. Weight 5."),
+				component.NewText("Prefer to schedule with pod labeled bar:foo, foo:bar in topology topology. Weight 5."),
 			}),
 		},
 		{
@@ -363,7 +363,7 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 				},
 			},
 			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("", "Prefer to not schedule with pod labeled bar:foo, foo:bar in topology topology."),
+				component.NewText("Prefer to not schedule with pod labeled bar:foo, foo:bar in topology topology."),
 			}),
 		},
 	}

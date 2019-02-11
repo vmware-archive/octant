@@ -67,9 +67,17 @@ func (m *Module) Content(ctx context.Context, contentPath, prefix, namespace str
 
 	switch contentPath {
 	case "/":
-		return component.ContentResponse{Title: "/"}, nil
+		return component.ContentResponse{
+			Title: []component.TitleViewComponent{
+				component.NewText("/"),
+			},
+		}, nil
 	case "/nested":
-		return component.ContentResponse{Title: "/nested"}, nil
+		return component.ContentResponse{
+			Title: []component.TitleViewComponent{
+				component.NewText("/nested"),
+			},
+		}, nil
 	default:
 		return component.ContentResponse{}, errors.New("not found")
 	}

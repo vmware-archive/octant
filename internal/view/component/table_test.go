@@ -21,7 +21,7 @@ func Test_Table_Marshal(t *testing.T) {
 			name: "general",
 			input: &Table{
 				Metadata: Metadata{
-					Title: "my table",
+					Title: []TitleViewComponent{NewText("my table")},
 				},
 				Config: TableConfig{
 					Columns: []TableCol{

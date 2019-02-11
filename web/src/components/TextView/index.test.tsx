@@ -7,7 +7,7 @@ describe('render text', () => {
   const view = {
     type: 'text',
     value: '10',
-    title: 'Revision History Limit',
+    title: [{ value: 'Revision History Limit', type: 'text' }],
   }
 
   const component = shallow(<TextView view={view} />)

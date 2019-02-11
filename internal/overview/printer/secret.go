@@ -30,8 +30,8 @@ func SecretListHandler(list *corev1.SecretList, opts Options) (component.ViewCom
 		}
 		row["Name"] = component.NewLink("", secret.Name, secretPath)
 		row["Labels"] = component.NewLabels(secret.ObjectMeta.Labels)
-		row["Type"] = component.NewText("", string(secret.Type))
-		row["Data"] = component.NewText("", fmt.Sprintf("%d", len(secret.Data)))
+		row["Type"] = component.NewText(string(secret.Type))
+		row["Data"] = component.NewText(fmt.Sprintf("%d", len(secret.Data)))
 		row["Age"] = component.NewTimestamp(secret.ObjectMeta.CreationTimestamp.Time)
 
 		table.Add(row)
@@ -69,7 +69,7 @@ func secretConfiguration(secret corev1.Secret) (*component.Summary, error) {
 
 	sections = append(sections, component.SummarySection{
 		Header:  "Type",
-		Content: component.NewText("", string(secret.Type)),
+		Content: component.NewText(string(secret.Type)),
 	})
 
 	summary := component.NewSummary("Configuration", sections...)
@@ -81,7 +81,7 @@ func secretData(secret corev1.Secret) (*component.Table, error) {
 
 	for key := range secret.Data {
 		row := component.TableRow{}
-		row["Key"] = component.NewText("", key)
+		row["Key"] = component.NewText(key)
 
 		table.Add(row)
 	}

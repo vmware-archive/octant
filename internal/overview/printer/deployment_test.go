@@ -85,7 +85,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 		"Labels":     component.NewLabels(labels),
 		"Age":        component.NewTimestamp(now),
 		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "my_app")}),
-		"Status":     component.NewText("", "2/3"),
+		"Status":     component.NewText("2/3"),
 		"Containers": containers,
 	})
 
@@ -105,11 +105,11 @@ func Test_deploymentConfiguration(t *testing.T) {
 			expected: component.NewSummary("Configuration", []component.SummarySection{
 				{
 					Header:  "Deployment Strategy",
-					Content: component.NewText("", "RollingUpdate"),
+					Content: component.NewText("RollingUpdate"),
 				},
 				{
 					Header:  "Rolling Update Strategy",
-					Content: component.NewText("", "Max Surge 25%, Max Unavailable 25%"),
+					Content: component.NewText("Max Surge 25%, Max Unavailable 25%"),
 				},
 				{
 					Header: "Selectors",
@@ -122,11 +122,11 @@ func Test_deploymentConfiguration(t *testing.T) {
 				},
 				{
 					Header:  "Min Ready Seconds",
-					Content: component.NewText("", "0"),
+					Content: component.NewText("0"),
 				},
 				{
 					Header:  "Revision History Limit",
-					Content: component.NewText("", "5"),
+					Content: component.NewText("5"),
 				},
 				{
 					Header:  "Age",

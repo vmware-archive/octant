@@ -41,7 +41,7 @@ func Test_Timestamp_Marshal(t *testing.T) {
 			name: "with title",
 			input: &Timestamp{
 				Metadata: Metadata{
-					Title: "LandedOn",
+					Title: []TitleViewComponent{NewText("LandedOn")},
 				},
 				Config: TimestampConfig{
 					Timestamp: ts.Unix(),
@@ -50,8 +50,13 @@ func Test_Timestamp_Marshal(t *testing.T) {
 			expected: `
             {
                 "metadata": {
-                  "type": "timestamp",
-                  "title": "LandedOn"
+									"type": "timestamp",
+									"title": [
+										{
+											"config": { "value": "LandedOn" },
+											"metadata": { "type": "text" }
+										}
+									]
                 },
                 "config": {
                   "timestamp": -14159040

@@ -19,7 +19,7 @@ func NewLink(title, s, ref string) *Link {
 	return &Link{
 		Metadata: Metadata{
 			Type:  "link",
-			Title: title,
+			Title: []TitleViewComponent{NewText(title)},
 		},
 		Config: LinkConfig{
 			Text: s,
@@ -33,7 +33,7 @@ func (t *Link) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifes whether the component is considered empty. Implements ViewComponent.
+// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
 func (t *Link) IsEmpty() bool {
 	return t.Config.Text == "" && t.Config.Ref == ""
 }

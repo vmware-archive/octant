@@ -1,7 +1,8 @@
 import cx from 'classnames'
 import Loading from 'components/Icons/Loading'
 import Title from 'components/Title'
-import JSONContentResponse from 'models/ContentResponse'
+import { TitleView } from 'models'
+import JSONContentResponse from 'models/contentresponse'
 import React, { Component } from 'react'
 
 import Renderer from './renderer'
@@ -41,7 +42,7 @@ export default class Overview extends Component<Props> {
 
   render() {
     const { isLoading, hasError, data } = this.props
-    let title = ''
+    let title: TitleView
     let mainContent = <div />
     if (isLoading) {
       mainContent = (
@@ -60,7 +61,7 @@ export default class Overview extends Component<Props> {
 
     return (
       <div className='overview'>
-        <Title title={title} />
+        <Title parts={title} />
         <div className='main'>{mainContent}</div>
       </div>
     )

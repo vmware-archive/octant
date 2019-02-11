@@ -1,4 +1,4 @@
-import { ListModel } from 'models/List'
+import { ListModel } from 'models'
 import React from 'react'
 import { renderView } from 'views'
 
@@ -13,7 +13,7 @@ export default function List(props: Props) {
 
   return (
     <div className='content-type-list' data-test='list'>
-      {view.items().map((item, i) => {
+      {view.items.map((item, i) => {
         return (
           <div className='content-type-list-item' key={i}>
             {renderView(item)}

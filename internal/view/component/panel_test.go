@@ -7,7 +7,7 @@ import (
 )
 
 func Test_Panel_Position(t *testing.T) {
-	p := NewPanel("", NewText("", "text"))
+	p := NewPanel("", NewText("text"))
 
 	p.Position(1, 2, 3, 4)
 

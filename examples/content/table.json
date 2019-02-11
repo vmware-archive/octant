@@ -1,5 +1,14 @@
 {
-  "title": "Table",
+  "title": [
+    {
+      "config": {
+        "value": "table"
+      },
+      "metadata": {
+        "type": "text"
+      }
+    }
+  ],
   "viewComponents": [
     {
       "metadata": {
@@ -9,8 +18,13 @@
         "items": [
           {
             "metadata": {
-			  "type": "table",
-			  "title": "example table"
+              "type": "table",
+              "title": [
+                {
+                  "metadata": { "type": "text" },
+                  "config": { "value": "example table" }
+                }
+              ]
             },
             "config": {
               "columns": [

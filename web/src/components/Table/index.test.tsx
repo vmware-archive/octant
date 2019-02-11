@@ -1,5 +1,5 @@
 import { mount } from 'enzyme'
-import { TableRow } from 'models/View'
+import { TableRow } from 'models'
 import React from 'react'
 
 import Table, { getColumnWidth, isSortable, sortMethod } from '.'
@@ -8,16 +8,16 @@ describe('render table', () => {
   describe('creates a table', () => {
     const view = {
       type: 'table',
-      title: 'my table',
+      title: [{ type: 'text', value: 'my table' }],
       columns: [{ name: 'one', accessor: 'one' }, { name: 'two', accessor: 'two' }],
       rows: [
         {
-          one: { type: 'text', value: 'a', title: '', isComparable: true },
-          two: { type: 'labels', labels: { a: 'a' }, title: '' },
+          one: { type: 'text', value: 'a', isComparable: true },
+          two: { type: 'labels', labels: { a: 'a' } },
         },
         {
-          one: { type: 'text', value: 'c', title: '', isComparable: true },
-          two: { type: 'labels', labels: { b: 'b' }, title: '' },
+          one: { type: 'text', value: 'c', isComparable: true },
+          two: { type: 'labels', labels: { b: 'b' } },
         },
       ],
       emptyContent: 'is empty',
@@ -42,20 +42,17 @@ describe('render table', () => {
     const ts = {
       type: 'timestamp',
       timestamp: 5,
-      title: '',
       isComparable: true,
     }
 
     const text = {
       type: 'text',
       value: 'a',
-      title: '',
       isComparable: true,
     }
 
     const other = {
       type: 'over',
-      title: '',
     }
 
     test('invalid column accessor', () => {
@@ -87,13 +84,11 @@ describe('render table', () => {
   describe('isSortable', () => {
     const textView = {
       type: 'text',
-      title: '',
       isComparable: true,
     }
 
     const labelsView = {
       type: 'labels',
-      title: '',
     }
 
     const rows: TableRow[] = [{ text: textView, labels: labelsView }]

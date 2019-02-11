@@ -1,4 +1,4 @@
-import { ExpressionSelector, LabelSelector, SelectorsModel } from 'models/View'
+import { ExpressionSelector, LabelSelector, SelectorsModel } from 'models'
 import React from 'react'
 
 import './styles.scss'

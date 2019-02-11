@@ -31,15 +31,15 @@ func EventListHandler(list *corev1.EventList, opts Options) (component.ViewCompo
 
 		infoItems := []component.ViewComponent{
 			component.NewLink("", event.InvolvedObject.Name, objectPath),
-			component.NewText("", fmt.Sprintf("%d", event.Count)),
+			component.NewText(fmt.Sprintf("%d", event.Count)),
 		}
 		info := component.NewList("", infoItems)
 
 		row["Kind"] = info
 		eventPath := gvkPath(event.TypeMeta.APIVersion, event.TypeMeta.Kind, event.Name)
 		row["Message"] = component.NewLink("", event.Message, eventPath)
-		row["Reason"] = component.NewText("", event.Reason)
-		row["Type"] = component.NewText("", event.Type)
+		row["Reason"] = component.NewText(event.Reason)
+		row["Type"] = component.NewText(event.Type)
 		row["First Seen"] = component.NewTimestamp(event.FirstTimestamp.Time)
 		row["Last Seen"] = component.NewTimestamp(event.LastTimestamp.Time)
 
@@ -68,17 +68,17 @@ func EventHandler(event *corev1.Event, opts Options) (component.ViewComponent, e
 
 	detailSections = append(detailSections, component.SummarySection{
 		Header:  "Count",
-		Content: component.NewText("", fmt.Sprintf("%d", event.Count)),
+		Content: component.NewText(fmt.Sprintf("%d", event.Count)),
 	})
 
 	detailSections = append(detailSections, component.SummarySection{
 		Header:  "Message",
-		Content: component.NewText("", event.Message),
+		Content: component.NewText(event.Message),
 	})
 
 	detailSections = append(detailSections, component.SummarySection{
 		Header:  "Kind",
-		Content: component.NewText("", event.InvolvedObject.Kind),
+		Content: component.NewText(event.InvolvedObject.Kind),
 	})
 
 	// NOTE: object reference can contain a field path to the object,
@@ -94,12 +94,12 @@ func EventHandler(event *corev1.Event, opts Options) (component.ViewComponent, e
 
 	detailSections = append(detailSections, component.SummarySection{
 		Header:  "Type",
-		Content: component.NewText("", event.Type),
+		Content: component.NewText(event.Type),
 	})
 
 	detailSections = append(detailSections, component.SummarySection{
 		Header:  "Reason",
-		Content: component.NewText("", event.Reason),
+		Content: component.NewText(event.Reason),
 	})
 
 	sourceMsg := event.Source.Component
@@ -109,7 +109,7 @@ func EventHandler(event *corev1.Event, opts Options) (component.ViewComponent, e
 	}
 	detailSections = append(detailSections, component.SummarySection{
 		Header:  "Source",
-		Content: component.NewText("", sourceMsg),
+		Content: component.NewText(sourceMsg),
 	})
 
 	summary := component.NewSummary("Event Detail", detailSections...)
@@ -135,17 +135,17 @@ func PrintEvents(list *corev1.EventList, opts Options) (component.ViewComponent,
 	for _, event := range list.Items {
 		row := component.TableRow{}
 
-		row["Message"] = component.NewText("", event.Message)
-		row["Reason"] = component.NewText("", event.Reason)
-		row["Type"] = component.NewText("", event.Type)
+		row["Message"] = component.NewText(event.Message)
+		row["Reason"] = component.NewText(event.Reason)
+		row["Type"] = component.NewText(event.Type)
 
 		row["First Seen"] = component.NewTimestamp(event.FirstTimestamp.Time)
 		row["Last Seen"] = component.NewTimestamp(event.LastTimestamp.Time)
 
-		row["From"] = component.NewText("", formatEventSource(event.Source))
+		row["From"] = component.NewText(formatEventSource(event.Source))
 
 		count := fmt.Sprintf("%d", event.Count)
-		row["Count"] = component.NewText("", count)
+		row["Count"] = component.NewText(count)
 
 		table.Add(row)
 	}

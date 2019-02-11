@@ -52,8 +52,8 @@ func Test_SecretListHandler(t *testing.T) {
 	expected.Add(component.TableRow{
 		"Name":   component.NewLink("", "secret", "/content/overview/config-and-storage/secrets/secret"),
 		"Labels": component.NewLabels(labels),
-		"Type":   component.NewText("", "Opaque"),
-		"Data":   component.NewText("", "1"),
+		"Type":   component.NewText("Opaque"),
+		"Data":   component.NewText("1"),
 		"Age":    component.NewTimestamp(now),
 	})
 
@@ -95,7 +95,7 @@ func Test_SecretHandler(t *testing.T) {
 	config := component.NewSummary("Configuration", []component.SummarySection{
 		{
 			Header:  "Type",
-			Content: component.NewText("", "Opaque"),
+			Content: component.NewText("Opaque"),
 		},
 	}...)
 	configPanel := component.NewPanel("", config)
@@ -103,7 +103,7 @@ func Test_SecretHandler(t *testing.T) {
 
 	data := component.NewTable("Data", secretDataCols)
 	data.Add(component.TableRow{
-		"Key": component.NewText("", "key"),
+		"Key": component.NewText("key"),
 	})
 
 	dataPanel := component.NewPanel("", data)

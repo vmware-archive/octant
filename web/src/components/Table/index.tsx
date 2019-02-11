@@ -1,5 +1,6 @@
 import EmptyContent from 'components/EmptyContent'
-import { compareModel, instanceOfComparableView, TableModel, TableRow, TextModel, View } from 'models/View'
+import { ViewTitle } from 'components/ViewTitle'
+import { compareModel, instanceOfComparableView, TableModel, TableRow, TextModel, View } from 'models'
 import React from 'react'
 import ReactTable from 'react-table'
 import 'react-table/react-table.css'
@@ -36,7 +37,9 @@ export default function Table({ view }: Props) {
   if (rows.length > 0) {
     return (
       <div className='table--component'>
-        <h2 className='table-component-title'>{title}</h2>
+        <h2 className='table-component-title'>
+          <ViewTitle parts={title} />
+        </h2>
         <ReactTable
           noDataText={noDataText}
           columns={tableColumns}
@@ -51,7 +54,9 @@ export default function Table({ view }: Props) {
 
   return (
     <div className='table--component'>
-      <h2 className='table-component-title'>{title}</h2>
+      <h2 className='table-component-title'>
+        <ViewTitle parts={title} />
+      </h2>
       <EmptyContent emptyContent={emptyContent} />
     </div>
   )

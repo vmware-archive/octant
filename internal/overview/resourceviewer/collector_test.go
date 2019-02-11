@@ -80,8 +80,10 @@ func Test_Collector(t *testing.T) {
 
 	expected := &component.ResourceViewer{
 		Metadata: component.Metadata{
-			Type:  "resourceViewer",
-			Title: "Resource Viewer",
+			Type: "resourceViewer",
+			Title: []component.TitleViewComponent{
+				component.NewText("Resource Viewer"),
+			},
 		},
 		Config: component.ResourceViewerConfig{
 			Edges: component.AdjList{

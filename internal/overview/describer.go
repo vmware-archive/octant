@@ -183,12 +183,13 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 
 	objectName := object.GetName()
 
-	var title string
+	var title []component.TitleViewComponent
 
 	if objectName == "" {
-		title = d.baseTitle
+		title = append(title, component.NewText(d.baseTitle))
 	} else {
-		title = fmt.Sprintf("%s: %s", d.baseTitle, objectName)
+		title = append(title, component.NewText(d.baseTitle),
+			component.NewText(objectName))
 	}
 
 	newObject, ok := item.(runtime.Object)
@@ -335,7 +336,9 @@ func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace strin
 
 	cr := component.ContentResponse{
 		ViewComponents: []component.ViewComponent{list},
-		Title:          d.title,
+		Title: []component.TitleViewComponent{
+			component.NewText(d.title),
+		},
 	}
 
 	return cr, nil

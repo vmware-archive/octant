@@ -21,7 +21,7 @@ func Test_List_Marshal(t *testing.T) {
 			name: "general",
 			input: &List{
 				Metadata: Metadata{
-					Title: "mylist",
+					Title: []TitleViewComponent{NewText("mylist")},
 				},
 				Config: ListConfig{
 					Items: []ViewComponent{
@@ -50,7 +50,7 @@ func Test_List_Marshal(t *testing.T) {
 			actual, err := json.Marshal(tc.input)
 			isErr := (err != nil)
 			if isErr != tc.isErr {
-				t.Fatalf("Unexepected error: %v", err)
+				t.Fatalf("Unexpected error: %v", err)
 			}
 
 			expected, err := ioutil.ReadFile(path.Join("testdata", tc.expectedPath))

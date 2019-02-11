@@ -1,5 +1,5 @@
-import { SummaryItem } from 'models/SummaryItem'
-import { SummaryModel } from 'models/View'
+import { ViewTitle } from 'components/ViewTitle'
+import { SummaryItem, SummaryModel } from 'models'
 import React from 'react'
 import { renderView } from 'views'
 
@@ -12,7 +12,9 @@ interface Props {
 export default function Summary({ view }: Props) {
   return (
     <div className='summary-component'>
-      <h2 className='summary-component-title'>{view.title}</h2>
+      <h2 className='summary-component-title'>
+        <ViewTitle parts={view.title} />
+      </h2>
       <div className='summary-component-section'>
         {view.items.map((section, index) => summaryContent(section, index))}
       </div>

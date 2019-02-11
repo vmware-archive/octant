@@ -10,7 +10,12 @@
             {
               "metadata": {
                 "type": "table",
-                "title": "example table"
+                "title": [
+                  {
+                    "config": { "value": "example table" },
+                    "metadata": { "type": "text" }
+                  }
+                ]
               },
               "config": {
                 "columns": [

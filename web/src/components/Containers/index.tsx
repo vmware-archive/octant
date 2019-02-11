@@ -1,4 +1,4 @@
-import { ContainersModel } from 'models/View'
+import { ContainersModel } from 'models'
 import React from 'react'
 
 import './styles.scss'
@@ -12,12 +12,10 @@ export default function({ view }: Props) {
     <>
       {view.containerDefs.map((containerDef, index) => {
         return (
-          <>
-            <div key={index} className='table-containers'>
-              <div className='table-containers-name'>{containerDef.name}</div>
-              <div className='table-containers-image'>{containerDef.image}</div>
-            </div>
-          </>
+          <div key={index} className='table-containers'>
+            <div className='table-containers-name'>{containerDef.name}</div>
+            <div className='table-containers-image'>{containerDef.image}</div>
+          </div>
         )
       })}
     </>

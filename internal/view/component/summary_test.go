@@ -21,7 +21,7 @@ func Test_Summary_Marshal(t *testing.T) {
 			name: "general",
 			input: &Summary{
 				Metadata: Metadata{
-					Title: "mysummary",
+					Title: []TitleViewComponent{NewText("mysummary")},
 				},
 				Config: SummaryConfig{
 					Sections: []SummarySection{
@@ -29,13 +29,13 @@ func Test_Summary_Marshal(t *testing.T) {
 							Header: "Containers",
 							Content: &List{
 								Metadata: Metadata{
-									Title: "nginx",
+									Title: []TitleViewComponent{NewText("nginx")},
 								},
 								Config: ListConfig{
 									Items: []ViewComponent{
 										&Text{
 											Metadata: Metadata{
-												Title: "Image",
+												Title: []TitleViewComponent{NewText("Image")},
 											},
 											Config: TextConfig{
 												Text: "nginx:latest",
@@ -43,7 +43,7 @@ func Test_Summary_Marshal(t *testing.T) {
 										},
 										&Text{
 											Metadata: Metadata{
-												Title: "Port",
+												Title: []TitleViewComponent{NewText("Port")},
 											},
 											Config: TextConfig{
 												Text: "80/TCP",

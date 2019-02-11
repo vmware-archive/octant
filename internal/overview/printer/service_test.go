@@ -72,10 +72,10 @@ func Test_ServiceListHandler(t *testing.T) {
 	expected.Add(component.TableRow{
 		"Name":         component.NewLink("", "service", "/content/overview/discovery-and-load-balancing/services/service"),
 		"Labels":       component.NewLabels(labels),
-		"Type":         component.NewText("", "ClusterIP"),
-		"Cluster IP":   component.NewText("", "1.2.3.4"),
-		"External IP":  component.NewText("", "8.8.8.8,8.8.4.4"),
-		"Target Ports": component.NewText("", "8181/TCP, 8888/UDP"),
+		"Type":         component.NewText("ClusterIP"),
+		"Cluster IP":   component.NewText("1.2.3.4"),
+		"External IP":  component.NewText("8.8.8.8,8.8.4.4"),
+		"Target Ports": component.NewText("8181/TCP, 8888/UDP"),
 		"Age":          component.NewTimestamp(now),
 		"Selector":     component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
 	})
@@ -108,27 +108,27 @@ func Test_describeServiceConfiguration(t *testing.T) {
 		},
 		{
 			Header:  "Type",
-			Content: component.NewText("", "ClusterIP"),
+			Content: component.NewText("ClusterIP"),
 		},
 		{
 			Header:  "Ports",
-			Content: component.NewText("", "http 8080/TCP"),
+			Content: component.NewText("http 8080/TCP"),
 		},
 		{
 			Header:  "Session Affinity",
-			Content: component.NewText("", "None"),
+			Content: component.NewText("None"),
 		},
 		{
 			Header:  "External Traffic Policy",
-			Content: component.NewText("", "Cluster"),
+			Content: component.NewText("Cluster"),
 		},
 		{
 			Header:  "Health Check Node Port",
-			Content: component.NewText("", "31311"),
+			Content: component.NewText("31311"),
 		},
 		{
 			Header:  "Load Balancer Source Ranges",
-			Content: component.NewText("", "range1, range2"),
+			Content: component.NewText("range1, range2"),
 		},
 	}
 
@@ -152,19 +152,19 @@ func Test_serviceSummary(t *testing.T) {
 	sections := []component.SummarySection{
 		{
 			Header:  "Cluster IP",
-			Content: component.NewText("", "10.5.5.5"),
+			Content: component.NewText("10.5.5.5"),
 		},
 		{
 			Header:  "External IPs",
-			Content: component.NewText("", "10.20.1.5, 10.21.1.6"),
+			Content: component.NewText("10.20.1.5, 10.21.1.6"),
 		},
 		{
 			Header:  "Load Balancer IP",
-			Content: component.NewText("", "10.100.1.32"),
+			Content: component.NewText("10.100.1.32"),
 		},
 		{
 			Header:  "External Name",
-			Content: component.NewText("", "my-service"),
+			Content: component.NewText("my-service"),
 		},
 	}
 
@@ -216,8 +216,8 @@ func Test_serviceEndpoints(t *testing.T) {
 	expected := component.NewTable("Endpoints", cols)
 	expected.Add(component.TableRow{
 		"Target":    component.NewLink("", "pod-1", "/content/overview/workloads/pods/pod-1"),
-		"IP":        component.NewText("", "10.1.1.1"),
-		"Node Name": component.NewText("", "node"),
+		"IP":        component.NewText("10.1.1.1"),
+		"Node Name": component.NewText("node"),
 	})
 
 	assert.Equal(t, expected, got)

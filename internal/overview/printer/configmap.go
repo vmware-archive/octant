@@ -28,7 +28,7 @@ func ConfigMapListHandler(list *corev1.ConfigMapList, opts Options) (component.V
 		row["Labels"] = component.NewLabels(c.Labels)
 
 		data := fmt.Sprintf("%d", len(c.Data))
-		row["Data"] = component.NewText("", data)
+		row["Data"] = component.NewText(data)
 
 		ts := c.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
@@ -130,9 +130,9 @@ func describeConfigMapDataRows(cm *corev1.ConfigMap) []component.TableRow {
 		row := component.TableRow{}
 		rows = append(rows, row)
 
-		row["Key"] = component.NewText("", k)
+		row["Key"] = component.NewText(k)
 
-		row["Value"] = component.NewText("", data[k])
+		row["Value"] = component.NewText(data[k])
 	}
 
 	return rows

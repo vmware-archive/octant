@@ -14,17 +14,19 @@ type TextConfig struct {
 }
 
 // NewText creates a text component
-func NewText(title, s string) *Text {
+func NewText(s string) *Text {
 	return &Text{
 		Metadata: Metadata{
-			Type:  "text",
-			Title: title,
+			Type: "text",
 		},
 		Config: TextConfig{
 			Text: s,
 		},
 	}
 }
+
+// SupportsTitle designates this is a TextViewComponent.
+func (t *Text) SupportsTitle() {}
 
 // GetMetadata accesses the components metadata. Implements ViewComponent.
 func (t *Text) GetMetadata() Metadata {

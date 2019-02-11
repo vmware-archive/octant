@@ -24,7 +24,7 @@ import {
   TextModel,
   TimestampModel,
   View,
-} from 'models/View'
+} from 'models'
 import React from 'react'
 
 export function renderView(view: View): JSX.Element {

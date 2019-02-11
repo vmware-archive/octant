@@ -52,7 +52,7 @@ func Test_ConfigMapListHandler(t *testing.T) {
 	expected.Add(component.TableRow{
 		"Name":   component.NewLink("", "configmap", "/content/overview/config-and-storage/config-maps/configmap"),
 		"Labels": component.NewLabels(labels),
-		"Data":   component.NewText("", "2"),
+		"Data":   component.NewText("2"),
 		"Age":    component.NewTimestamp(now),
 	})
 
