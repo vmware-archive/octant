@@ -110,8 +110,8 @@ module.exports = {
   },
   performance: {
     hints: "warning", // enum
-    maxAssetSize: 15000000, // int (in bytes) default size is 200000
-    maxEntrypointSize: 1500000, // int (in bytes)
+    maxAssetSize: 17000000, // int (in bytes) default size is 200000
+    maxEntrypointSize: 1700000, // int (in bytes)
     assetFilter(assetFilename) {
       // Function predicate that provides asset filenames
       return assetFilename.endsWith(".css") || assetFilename.endsWith(".js")

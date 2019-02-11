@@ -137,6 +137,17 @@ func TestObjectDescriber(t *testing.T) {
 		},
 		ViewComponents: []component.ViewComponent{
 			component.NewText("*v1.Pod"),
+			&component.YAML{
+				Metadata: component.Metadata{
+					Title: []component.TitleViewComponent{
+						component.NewText("YAML"),
+					},
+					Type: "yaml",
+				},
+				Config: component.YAMLConfig{
+					Data: "---\napiVersion: v1\nkind: Pod\nmetadata:\n  creationTimestamp: null\n  name: name\nspec:\n  containers: null\nstatus: {}\n",
+				},
+			},
 		},
 	}
 	assert.Equal(t, expected, cResponse)

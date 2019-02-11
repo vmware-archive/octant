@@ -2,8 +2,9 @@ package overview
 
 import (
 	"context"
-	"fmt"
 	"reflect"
+
+	"github.com/heptio/developer-dash/internal/overview/yamlviewer"
 
 	"github.com/heptio/developer-dash/internal/queryer"
 
@@ -203,10 +204,8 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 		return emptyContentResponse, err
 	}
 
-	cr := component.ContentResponse{
-		Title:          title,
-		ViewComponents: []component.ViewComponent{vc},
-	}
+	cr := component.NewContentResponse(title)
+	cr.Add(vc)
 
 	if !d.disableResourceViewer {
 		rv, err := resourceviewer.New(resourceviewer.WithDefaultQueryer(options.Queryer))
@@ -219,10 +218,17 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 			return emptyContentResponse, err
 		}
 
-		cr.ViewComponents = append(cr.ViewComponents, resourceViewerComponent)
+		cr.Add(resourceViewerComponent)
 	}
 
-	return cr, nil
+	yvComponent, err := yamlviewer.ToComponent(newObject)
+	if err != nil {
+		return emptyContentResponse, err
+	}
+
+	cr.Add(yvComponent)
+
+	return *cr, nil
 }
 
 func (d *ObjectDescriber) PathFilters(namespace string) []pathFilter {
@@ -262,43 +268,6 @@ func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
 	object.SetFinalizers(from.GetFinalizers())
 
 	return nil
-}
-
-func printContentTable(title, namespace, prefix, emptyMessage string, tbl *metav1beta1.Table, m map[string]lookupFunc) (*content.Table, error) {
-	contentTable := content.NewTable(title, emptyMessage)
-
-	headers := make(map[int]string)
-
-	for i, column := range tbl.ColumnDefinitions {
-
-		headers[i] = column.Name
-
-		contentTable.Columns = append(contentTable.Columns, content.TableColumn{
-			Name:     column.Name,
-			Accessor: column.Name,
-		})
-	}
-
-	transforms := buildTransforms(m)
-
-	for _, row := range tbl.Rows {
-		contentRow := content.TableRow{}
-
-		for pos, header := range headers {
-			cell := row.Cells[pos]
-
-			c, ok := transforms[header]
-			if !ok {
-				contentRow[header] = content.NewStringText(fmt.Sprintf("%v", cell))
-			} else {
-				contentRow[header] = c(namespace, prefix, cell)
-			}
-		}
-
-		contentTable.AddRow(contentRow)
-	}
-
-	return &contentTable, nil
 }
 
 // SectionDescriber is a wrapper to combine content from multiple describers.
