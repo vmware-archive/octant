@@ -36,7 +36,7 @@ func EventListHandler(list *corev1.EventList, opts Options) (component.ViewCompo
 		info := component.NewList("", infoItems)
 
 		row["Kind"] = info
-		eventPath := gvkPath(event.TypeMeta.APIVersion, event.TypeMeta.Kind, event.Name)
+		eventPath := gvkPath(event.Namespace, event.TypeMeta.APIVersion, event.TypeMeta.Kind, event.Name)
 		row["Message"] = component.NewLink("", event.Message, eventPath)
 		row["Reason"] = component.NewText(event.Reason)
 		row["Type"] = component.NewText(event.Type)

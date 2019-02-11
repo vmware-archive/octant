@@ -23,7 +23,7 @@ func ReplicaSetListHandler(list *appsv1.ReplicaSetList, opts Options) (component
 
 	for _, rs := range list.Items {
 		row := component.TableRow{}
-		replicasetPath := gvkPath(rs.TypeMeta.APIVersion, rs.TypeMeta.Kind, rs.Name)
+		replicasetPath := gvkPath(rs.Namespace, rs.TypeMeta.APIVersion, rs.TypeMeta.Kind, rs.Name)
 		row["Name"] = component.NewLink("", rs.Name, replicasetPath)
 		row["Labels"] = component.NewLabels(rs.Labels)
 
@@ -103,7 +103,7 @@ func (rc *ReplicaSetConfiguration) Create() (*component.Summary, error) {
 	if controllerRef := metav1.GetControllerOf(rs); controllerRef != nil {
 		sections = append(sections, component.SummarySection{
 			Header:  "Controlled By",
-			Content: linkForOwner(controllerRef),
+			Content: linkForOwner(rs, controllerRef),
 		})
 	}
 

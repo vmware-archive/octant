@@ -23,7 +23,8 @@ func Test_EventListHandler(t *testing.T) {
 		Items: []corev1.Event{
 			{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "event-12345",
+					Name:      "event-12345",
+					Namespace: "default",
 				},
 				TypeMeta: metav1.TypeMeta{
 					APIVersion: "v1",
@@ -33,6 +34,7 @@ func Test_EventListHandler(t *testing.T) {
 					APIVersion: "apps/v1",
 					Kind:       "Deployment",
 					Name:       "d1",
+					Namespace:  "default",
 				},
 				Count:          1234,
 				Message:        "message",
@@ -52,10 +54,10 @@ func Test_EventListHandler(t *testing.T) {
 	expected := component.NewTable("Events", cols)
 	expected.Add(component.TableRow{
 		"Kind": component.NewList("", []component.ViewComponent{
-			component.NewLink("", "d1", "/content/overview/workloads/deployments/d1"),
+			component.NewLink("", "d1", "/content/overview/namespace/default/workloads/deployments/d1"),
 			component.NewText("1234"),
 		}),
-		"Message":    component.NewLink("", "message", "/content/overview/events/event-12345"),
+		"Message":    component.NewLink("", "message", "/content/overview/namespace/default/events/event-12345"),
 		"Reason":     component.NewText("Reason"),
 		"Type":       component.NewText("Type"),
 		"First Seen": component.NewTimestamp(time.Unix(1548424410, 0)),

@@ -31,8 +31,13 @@ func Test_ServiceListHandler(t *testing.T) {
 	object := &corev1.ServiceList{
 		Items: []corev1.Service{
 			{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "v1",
+					Kind:       "Service",
+				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "service",
+					Name:      "service",
+					Namespace: "default",
 					CreationTimestamp: metav1.Time{
 						Time: now,
 					},
@@ -70,7 +75,7 @@ func Test_ServiceListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Type", "Cluster IP", "External IP", "Target Ports", "Age", "Selector")
 	expected := component.NewTable("Services", cols)
 	expected.Add(component.TableRow{
-		"Name":         component.NewLink("", "service", "/content/overview/discovery-and-load-balancing/services/service"),
+		"Name":         component.NewLink("", "service", "/content/overview/namespace/default/discovery-and-load-balancing/services/service"),
 		"Labels":       component.NewLabels(labels),
 		"Type":         component.NewText("ClusterIP"),
 		"Cluster IP":   component.NewText("1.2.3.4"),
@@ -191,6 +196,7 @@ func Test_serviceEndpoints(t *testing.T) {
 							APIVersion: "v1",
 							Kind:       "Pod",
 							Name:       "pod-1",
+							Namespace:  "default",
 						},
 						NodeName: &nodeName,
 						IP:       "10.1.1.1",
@@ -215,7 +221,7 @@ func Test_serviceEndpoints(t *testing.T) {
 	cols := component.NewTableCols("Target", "IP", "Node Name")
 	expected := component.NewTable("Endpoints", cols)
 	expected.Add(component.TableRow{
-		"Target":    component.NewLink("", "pod-1", "/content/overview/workloads/pods/pod-1"),
+		"Target":    component.NewLink("", "pod-1", "/content/overview/namespace/default/workloads/pods/pod-1"),
 		"IP":        component.NewText("10.1.1.1"),
 		"Node Name": component.NewText("node"),
 	})

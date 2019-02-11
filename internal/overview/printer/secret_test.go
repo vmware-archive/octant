@@ -31,7 +31,8 @@ func Test_SecretListHandler(t *testing.T) {
 					Kind:       "Secret",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "secret",
+					Name:      "secret",
+					Namespace: "default",
 					CreationTimestamp: metav1.Time{
 						Time: now,
 					},
@@ -50,7 +51,7 @@ func Test_SecretListHandler(t *testing.T) {
 
 	expected := component.NewTable("Secrets", secretTableCols)
 	expected.Add(component.TableRow{
-		"Name":   component.NewLink("", "secret", "/content/overview/config-and-storage/secrets/secret"),
+		"Name":   component.NewLink("", "secret", "/content/overview/namespace/default/config-and-storage/secrets/secret"),
 		"Labels": component.NewLabels(labels),
 		"Type":   component.NewText("Opaque"),
 		"Data":   component.NewText("1"),

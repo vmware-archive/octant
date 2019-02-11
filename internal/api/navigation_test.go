@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/heptio/developer-dash/internal/hcli"
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -23,6 +24,8 @@ func Test_navigation_handler(t *testing.T) {
 		sectionsErr: errors.Errorf("foo"),
 	}
 
+	logger := log.TestLogger(t)
+
 	cases := []struct {
 		name       string
 		nav        *navigation
@@ -32,18 +35,18 @@ func Test_navigation_handler(t *testing.T) {
 
 		{
 			name:       "in general",
-			nav:        newNavigation(validSections, nil),
+			nav:        newNavigation(validSections, logger),
 			statusCode: http.StatusOK,
 			body:       []byte("{\"sections\":[{}]}\n"),
 		},
 		{
 			name:       "no section generator",
-			nav:        newNavigation(nil, nil),
+			nav:        newNavigation(nil, logger),
 			statusCode: http.StatusInternalServerError,
 		},
 		{
 			name:       "section generate error",
-			nav:        newNavigation(invalidSections, nil),
+			nav:        newNavigation(invalidSections, logger),
 			statusCode: http.StatusInternalServerError,
 		},
 	}
@@ -74,6 +77,6 @@ type fakeNavSections struct {
 	sectionsErr error
 }
 
-func (ns *fakeNavSections) Sections() ([]*hcli.Navigation, error) {
+func (ns *fakeNavSections) Sections(namespace string) ([]*hcli.Navigation, error) {
 	return ns.sections, ns.sectionsErr
 }

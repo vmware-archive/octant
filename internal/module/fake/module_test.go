@@ -30,7 +30,7 @@ func TestModule_Navigation(t *testing.T) {
 		Title: "module",
 	}
 
-	got, err := m.Navigation("/module")
+	got, err := m.Navigation("", "/module")
 	require.NoError(t, err)
 
 	assert.Equal(t, expected, got)

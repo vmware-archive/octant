@@ -94,7 +94,9 @@ func (a *API) Handler() *mux.Router {
 	ans := newAPINavSections(a.modules)
 
 	navigationService := newNavigation(ans, a.logger)
+	// Support no namespace (default) or specifying namespace in path
 	s.Handle("/navigation", navigationService).Methods(http.MethodGet)
+	s.Handle("/navigation/namespace/{namespace}", navigationService).Methods(http.MethodGet)
 
 	namespaceUpdateService := newNamespace(a.moduleManager, a.logger)
 	s.HandleFunc("/namespace", namespaceUpdateService.update).Methods(http.MethodPost)
@@ -143,12 +145,12 @@ func newAPINavSections(modules []module.Module) *apiNavSections {
 	}
 }
 
-func (ans *apiNavSections) Sections() ([]*hcli.Navigation, error) {
+func (ans *apiNavSections) Sections(namespace string) ([]*hcli.Navigation, error) {
 	var sections []*hcli.Navigation
 
 	for _, m := range ans.modules {
 		contentPath := path.Join("/content", m.ContentPath())
-		nav, err := m.Navigation(contentPath)
+		nav, err := m.Navigation(namespace, contentPath)
 		if err != nil {
 			return nil, err
 		}

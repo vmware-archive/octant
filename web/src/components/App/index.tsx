@@ -93,14 +93,13 @@ class App extends Component<RouteComponentProps, AppState> {
     if (!path || !namespace) return
 
     const params: ContentsUrlParams = {
-      namespace,
       poll: POLL_WAIT,
     }
 
     const { resourceFilters } = this.state
     if (resourceFilters && resourceFilters.length) params.filter = resourceFilters
 
-    const url = getContentsUrl(path, params)
+    const url = getContentsUrl(path, namespace, params)
 
     this.source = new window.EventSource(`${getAPIBase()}/${url}`)
 
@@ -133,19 +132,45 @@ class App extends Component<RouteComponentProps, AppState> {
     const { value } = namespaceOption
     const { history } = this.props
     try {
-      this.lastFetchedNamespace = value
-
-      await setNamespace(value)
-
-      if (this.lastFetchedNamespace === value) {
-        const { currentNavLinkPath } = this.state
-        const { path } = _.last(currentNavLinkPath)
-        history.push(path)
-        this.setState({ namespaceOption, isLoading: false, hasError: false })
-      }
+      const { currentNavLinkPath } = this.state
+      const path = this.removeObjectNameFromPath(history.location.pathname)
+      const fixedPath = this.injectNamespace(path, value)
+      history.push(fixedPath)
+      this.setState({ namespaceOption, isLoading: false, hasError: false })
     } catch (e) {
       this.setState({ namespaceOption, isLoading: false, hasError: true })
     }
+  }
+
+  // Injects a namespace into an optionally namespaced overview content url
+  injectNamespace = (url: string, namespace: string) => {
+    // Insert a /namespace/... segment if it was missing
+    let addNamespace = /(\/api\/v1)?\/content\/overview(\/namespace\/[^/]+)?(.*)/
+    let withNamespace = url.replace(addNamespace, "$1/content/overview/namespace/...$3")
+
+    // Now replace the actual namespace with the new namespace
+    let re = /(\/api\/v1)?\/content\/overview\/namespace\/[^/]+(.*)/
+    let final = withNamespace.replace(re, "$1/content/overview/namespace/" + namespace + "$2")
+
+    return final
+  }
+
+  // Returns whether an overview content url is namespaced
+  hasNamespace = (url: string) => {
+    let re = /(\/api\/v1)?\/content\/overview\/namespace\/[^/]+(.*)/
+    return re.test(url)
+  }
+
+  removeObjectNameFromPath = (url: string) => {
+    let parts = url.split('/')
+
+    // e.g. /content/overview/namespace/default/workloads/pods
+    if (this.hasNamespace(url)) {
+      let ret = _.slice(parts, 0, 7).join("/")
+      return ret
+    }
+    // e.g. /content/overview/workloads/pods
+    return _.slice(parts, 0, 5).join("/")
   }
 
   refreshEventStream = () => {

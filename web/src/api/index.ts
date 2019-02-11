@@ -71,13 +71,17 @@ export function getNamespaces() {
 }
 
 export type ContentsUrlParams = Partial<{
-  namespace: string
   poll: number
   filter: string[]
 }>
 
-export function getContentsUrl(path: string, params?: ContentsUrlParams): string | null {
+export function getContentsUrl(path: string, namespace: string, params?: ContentsUrlParams): string | null {
   if (!path || path === '/') return null
+
+  // Inject the new namespace into the path
+  let re = /\/namespace\/([^/]+)\//
+  path = path.replace(re, "/namespace/" + namespace + "/")
+
   if (params) path += `?${queryString.stringify(params)}`
   return `api/v1${path}`
 }

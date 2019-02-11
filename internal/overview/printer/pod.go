@@ -158,7 +158,7 @@ func (p *PodConfiguration) Create() (*component.Summary, error) {
 	if controllerRef := metav1.GetControllerOf(pod); controllerRef != nil {
 		sections = append(sections, component.SummarySection{
 			Header:  "Controlled By",
-			Content: linkForOwner(controllerRef),
+			Content: linkForOwner(pod, controllerRef),
 		})
 	}
 
@@ -172,7 +172,7 @@ func (p *PodConfiguration) Create() (*component.Summary, error) {
 
 	sections = append(sections, component.SummarySection{
 		Header: "Service Account",
-		Content: linkForObject("v1", "ServiceAccount", pod.Spec.ServiceAccountName,
+		Content: linkForGVK(pod.Namespace, "v1", "ServiceAccount", pod.Spec.ServiceAccountName,
 			pod.Spec.ServiceAccountName),
 	})
 

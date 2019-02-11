@@ -3,6 +3,7 @@ package printer
 import (
 	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/pkg/errors"
 
@@ -11,11 +12,13 @@ import (
 )
 
 type PodTemplate struct {
+	parent          runtime.Object
 	podTemplateSpec corev1.PodTemplateSpec
 }
 
-func NewPodTemplate(podTemplateSpec corev1.PodTemplateSpec) *PodTemplate {
+func NewPodTemplate(parent runtime.Object, podTemplateSpec corev1.PodTemplateSpec) *PodTemplate {
 	return &PodTemplate{
+		parent:          parent,
 		podTemplateSpec: podTemplateSpec,
 	}
 }
@@ -39,7 +42,7 @@ func (pt *PodTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout) error {
 	containerSection := fl.AddSection()
 
 	for _, container := range pt.podTemplateSpec.Spec.Containers {
-		containerConfig := NewContainerConfiguration(&container)
+		containerConfig := NewContainerConfiguration(pt.parent, &container)
 		summary, err := containerConfig.Create()
 		if err != nil {
 			return err
@@ -71,7 +74,7 @@ func (pt *PodTemplate) AddToGridLayout(gl *gridlayout.GridLayout) error {
 	containerSection := gl.CreateSection(16)
 
 	for _, container := range pt.podTemplateSpec.Spec.Containers {
-		containerConfig := NewContainerConfiguration(&container)
+		containerConfig := NewContainerConfiguration(pt.parent, &container)
 		summary, err := containerConfig.Create()
 		if err != nil {
 			return err

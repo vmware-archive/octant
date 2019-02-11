@@ -78,7 +78,7 @@ func Test_LocalContent_Content_invalid_file(t *testing.T) {
 
 func Test_LocalContent_Navigation(t *testing.T) {
 	withLocalContent(t, func(lc *localcontent.LocalContent) {
-		nav, err := lc.Navigation("/root")
+		nav, err := lc.Navigation("", "/root")
 		require.NoError(t, err)
 
 		expectedNav := &hcli.Navigation{

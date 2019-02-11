@@ -20,17 +20,21 @@ var (
 
 // NavigationFactory generates navigation entries.
 type NavigationFactory struct {
-	root string
+	root      string
+	namespace string
 }
 
 // NewNavigationFactory creates an instance of NewNavigationFactory.
-func NewNavigationFactory(root string) *NavigationFactory {
-	rootPath := root
+func NewNavigationFactory(namespace string, root string) *NavigationFactory {
+	var rootPath = root
+	if namespace != "" {
+		rootPath = path.Join(root, "namespace", namespace, "")
+	}
 	if !strings.HasSuffix(rootPath, "/") {
 		rootPath = rootPath + "/"
 	}
 
-	return &NavigationFactory{root: rootPath}
+	return &NavigationFactory{root: rootPath, namespace: namespace}
 }
 
 // Root returns the root of the navigation tree.
@@ -39,6 +43,7 @@ func (nf *NavigationFactory) Root() string {
 }
 
 func (nf *NavigationFactory) pathFor(elements ...string) string {
+	// return path.Join(append([]string{nf.root, "namespace", nf.namespace}, elements...)...)
 	return path.Join(append([]string{nf.root}, elements...)...)
 }
 
@@ -63,12 +68,12 @@ func (nf *NavigationFactory) Entries() (*hcli.Navigation, error) {
 }
 
 func (nf *NavigationFactory) genNode(name string, childFn func(string) []*hcli.Navigation) *hcli.Navigation {
-	leaf := hcli.NewNavigation(name, nf.pathFor(navPathLookup[name]))
+	node := hcli.NewNavigation(name, nf.pathFor(navPathLookup[name]))
 	if childFn != nil {
-		leaf.Children = childFn(leaf.Path)
+		node.Children = childFn(node.Path)
 	}
 
-	return leaf
+	return node
 }
 
 func (nf *NavigationFactory) workloadEntries(prefix string) []*hcli.Navigation {

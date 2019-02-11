@@ -48,6 +48,11 @@ func ObjectReferencePath(or corev1.ObjectReference) (string, error) {
 			key.apiVersion, key.kind)
 	}
 
-	objectPath := path.Join("/content/overview", section, or.Name)
+	var objectPath string
+	if or.Namespace != "" {
+		objectPath = path.Join("/content/overview/namespace", or.Namespace, section, or.Name)
+	} else {
+		objectPath = path.Join("/content/overview", section, or.Name)
+	}
 	return objectPath, nil
 }

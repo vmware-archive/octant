@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"fmt"
 	"path"
 
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -26,67 +27,90 @@ func gvkPathFromObject(object runtime.Object) (string, error) {
 		return "", errors.Wrap(err, "retrieve name from object")
 	}
 
-	return gvkPath(apiVersion, kind, name), nil
+	ns, err := accessor.Namespace(object)
+	if err != nil {
+		return "", errors.Wrap(err, "retrieve namespace from object")
+	}
+
+	return gvkPath(ns, apiVersion, kind, name), nil
 }
 
 // gvkPath composes a path given resource coordinates
-func gvkPath(apiVersion, kind, name string) string {
+func gvkPath(namespace, apiVersion, kind, name string) string {
 	var p string
 
 	switch {
 	case apiVersion == "apps/v1" && kind == "DaemonSet":
-		p = "/content/overview/workloads/daemon-sets"
+		p = "/workloads/daemon-sets"
 	case apiVersion == "extensions/v1beta1" && kind == "ReplicaSet":
-		p = "/content/overview/workloads/replica-sets"
+		p = "/workloads/replica-sets"
 	case apiVersion == "apps/v1" && kind == "ReplicaSet":
-		p = "/content/overview/workloads/replica-sets"
+		p = "/workloads/replica-sets"
 	case apiVersion == "apps/v1" && kind == "StatefulSet":
-		p = "/content/overview/workloads/stateful-sets"
+		p = "/workloads/stateful-sets"
 	case apiVersion == "extensions/v1beta1" && kind == "Deployment":
-		p = "/content/overview/workloads/deployments"
+		p = "/workloads/deployments"
 	case apiVersion == "apps/v1" && kind == "Deployment":
-		p = "/content/overview/workloads/deployments"
+		p = "/workloads/deployments"
 	case apiVersion == "batch/v1beta1" && kind == "CronJob":
-		p = "/content/overview/workloads/cron-jobs"
+		p = "/workloads/cron-jobs"
 	case (apiVersion == "batch/v1beta1" || apiVersion == "batch/v1") && kind == "Job":
-		p = "/content/overview/workloads/jobs"
+		p = "/workloads/jobs"
 	case apiVersion == "v1" && kind == "ReplicationController":
-		p = "/content/overview/workloads/replication-controllers"
+		p = "/workloads/replication-controllers"
 	case apiVersion == "v1" && kind == "Secret":
-		p = "/content/overview/config-and-storage/secrets"
+		p = "/config-and-storage/secrets"
 	case apiVersion == "v1" && kind == "ConfigMap":
-		p = "/content/overview/config-and-storage/config-maps"
+		p = "/config-and-storage/config-maps"
 	case apiVersion == "v1" && kind == "PersistentVolumeClaim":
-		p = "/content/overview/config-and-storage/persistent-volume-claims"
+		p = "/config-and-storage/persistent-volume-claims"
 	case apiVersion == "v1" && kind == "ServiceAccount":
-		p = "/content/overview/config-and-storage/service-accounts"
+		p = "/config-and-storage/service-accounts"
 	case apiVersion == "v1" && kind == "Service":
-		p = "/content/overview/discovery-and-load-balancing/services"
+		p = "/discovery-and-load-balancing/services"
 	case apiVersion == "rbac.authorization.k8s.io/v1" && kind == "Role":
-		p = "/content/overview/rbac/roles"
+		p = "/rbac/roles"
 	case apiVersion == "v1" && kind == "Event":
-		p = "/content/overview/events"
+		p = "/events"
 	case apiVersion == "v1" && kind == "Pod":
-		p = "/content/overview/workloads/pods"
+		p = "/workloads/pods"
 	default:
-		return "/content/overview"
+		return fmt.Sprintf("/content/overview/%s", namespace)
 	}
 
-	return path.Join(p, name)
+	prefix := fmt.Sprintf("/content/overview/namespace/%s", namespace)
+	return path.Join(prefix, p, name)
 }
 
 // linkForObject returns a link component referencing an object
-func linkForObject(apiVersion, kind, name, text string) *component.Link {
-	path := gvkPath(apiVersion, kind, name)
+// Returns an empty link if an error occurs.
+func linkForObject(object runtime.Object, text string) *component.Link {
+	path, _ := gvkPathFromObject(object)
 	return component.NewLink("", text, path)
 }
 
-func linkForOwner(controllerRef *metav1.OwnerReference) *component.Link {
-	if controllerRef == nil {
+// linkForGVK returns a link component referencing an object
+func linkForGVK(namespace, apiVersion, kind, name, text string) *component.Link {
+	path := gvkPath(namespace, apiVersion, kind, name)
+	return component.NewLink("", text, path)
+}
+
+func linkForOwner(parent runtime.Object, controllerRef *metav1.OwnerReference) *component.Link {
+	if controllerRef == nil || parent == nil {
 		return component.NewLink("", "none", "")
 	}
-	return linkForObject(controllerRef.APIVersion,
+
+	accessor := meta.NewAccessor()
+	ns, err := accessor.Namespace(parent)
+	if err != nil {
+		return component.NewLink("", "none", "")
+	}
+
+	return linkForGVK(
+		ns,
+		controllerRef.APIVersion,
 		controllerRef.Kind,
 		controllerRef.Name,
-		controllerRef.Name)
+		controllerRef.Name,
+	)
 }

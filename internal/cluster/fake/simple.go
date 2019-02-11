@@ -31,7 +31,7 @@ func (sco *SimpleClusterOverview) ContentPath() string {
 }
 
 // Navigation is a no-op.
-func (sco *SimpleClusterOverview) Navigation(root string) (*hcli.Navigation, error) {
+func (sco *SimpleClusterOverview) Navigation(namespace, root string) (*hcli.Navigation, error) {
 	return nil, nil
 }
 

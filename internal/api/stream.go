@@ -67,13 +67,14 @@ func (g *contentEventGenerator) RunEvery() time.Duration {
 // navigationEventGenerator generates events to update navigation.
 type navigationEventGenerator struct {
 	// modules is a list of modules to query for events.
-	modules []module.Module
+	modules   []module.Module
+	namespace string
 }
 
 func (g *navigationEventGenerator) Generate(ctx context.Context) (event, error) {
 	ans := newAPINavSections(g.modules)
 
-	ns, err := ans.Sections()
+	ns, err := ans.Sections(g.namespace)
 	if err != nil {
 		return event{}, err
 	}
