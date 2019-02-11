@@ -12,6 +12,7 @@ import { JSONSummary } from './summary'
 import { JSONTable } from './table'
 import { compareTextModel, JSONText } from './text'
 import { compareTimestampModel, JSONTimestamp } from './timestamp'
+import { JSONYAMLViewer } from './yaml'
 
 export type TitleView = Array<TextModel | LinkModel>
 
@@ -144,6 +145,10 @@ export interface TimestampModel extends View {
   timestamp: number
 }
 
+export interface YAMLViewerModel extends View {
+  data: string
+}
+
 export function toTitle(parts?: ContentType[]): TitleView | undefined {
   return parts.map((part) => {
     const view = viewFromContentType(part)
@@ -196,6 +201,8 @@ export function viewFromContentType(ct: ContentType): View {
       return new JSONText(ct)
     case 'timestamp':
       return new JSONTimestamp(ct)
+    case 'yaml':
+      return new JSONYAMLViewer(ct)
     default:
       throw new Error(`can't handle content response view '${ct.metadata.type}'`)
   }

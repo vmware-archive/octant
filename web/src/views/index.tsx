@@ -11,6 +11,7 @@ import Table from 'components/Table'
 import TextView from 'components/TextView'
 import Timestamp from 'components/Timestamp'
 import WebLink from 'components/WebLink'
+import YAML from 'components/YAML'
 import {
   ContainersModel,
   FlexLayoutModel,
@@ -26,6 +27,7 @@ import {
   TextModel,
   TimestampModel,
   View,
+  YAMLViewerModel,
 } from 'models'
 import React from 'react'
 
@@ -57,6 +59,8 @@ export function renderView(view: View): JSX.Element {
       return <TextView view={view as TextModel} />
     case 'timestamp':
       return <Timestamp view={view as TimestampModel} />
+    case 'yaml':
+      return <YAML view={view as YAMLViewerModel} />
     default:
       throw new Error(`unable to render view of type ${view.type}`)
   }

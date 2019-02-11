@@ -6,11 +6,26 @@ import (
 	"github.com/pkg/errors"
 )
 
+// ContentResponse is a a content response. It contains a
+// title and one or more components.
 type ContentResponse struct {
 	Title          []TitleViewComponent `json:"title,omitempty"`
 	ViewComponents []ViewComponent      `json:"viewComponents"`
 }
 
+// NewContentResponse creates an instance of ContentResponse.
+func NewContentResponse(title []TitleViewComponent) *ContentResponse {
+	return &ContentResponse{
+		Title: title,
+	}
+}
+
+// Add adds zero or more components to a content response.
+func (c *ContentResponse) Add(components ...ViewComponent) {
+	c.ViewComponents = append(c.ViewComponents, components...)
+}
+
+// UnmarshalJSON unarmshals a content response from JSON.
 func (c *ContentResponse) UnmarshalJSON(data []byte) error {
 	stage := struct {
 		Title          string        `json:"title,omitempty"`

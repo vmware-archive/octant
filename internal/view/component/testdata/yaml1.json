@@ -1,0 +1,8 @@
+{
+    "config": {
+        "data": "---\nfoo: bar"
+    },
+    "metadata": {
+        "type": "yaml"
+    }
+}
