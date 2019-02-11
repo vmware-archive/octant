@@ -166,6 +166,16 @@ func (dc *DeploymentConfiguration) Create() (*component.Summary, error) {
 		Content: component.NewTimestamp(creationTimestamp),
 	})
 
+	var replicas int32
+	if dc.deployment.Spec.Replicas != nil {
+		replicas = *dc.deployment.Spec.Replicas
+	}
+
+	sections = append(sections, component.SummarySection{
+		Header:  "Replicas",
+		Content: component.NewText(fmt.Sprintf("%d", replicas)),
+	})
+
 	summary := component.NewSummary("Configuration", sections...)
 
 	return summary, nil
