@@ -3,8 +3,6 @@ package printer
 import (
 	"fmt"
 
-	"github.com/heptio/developer-dash/internal/view/flexlayout"
-
 	"github.com/pkg/errors"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -33,19 +31,13 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 
 	for _, p := range list.Items {
 		row := component.TableRow{}
-<<<<<<< HEAD
-		podPath := gvkPath(p.TypeMeta.APIVersion, p.TypeMeta.Kind, p.Name)
-		row["Name"] = component.NewLink("", p.Name, podPath)
-		row["Labels"] = component.NewLabels(p.Labels)
-=======
-		podPath, err := gvkPathFromObject(&d)
+		podPath, err := gvkPathFromObject(&p)
 		if err != nil {
 			return nil, errors.Wrap(err, "get path for pod")
 		}
 
-		row["Name"] = component.NewLink("", d.Name, podPath)
-		row["Labels"] = component.NewLabels(d.Labels)
->>>>>>> Create log viewer
+		row["Name"] = component.NewLink("", p.Name, podPath)
+		row["Labels"] = component.NewLabels(p.Labels)
 
 		readyCounter := 0
 		for _, c := range p.Status.ContainerStatuses {
@@ -56,12 +48,7 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 		ready := fmt.Sprintf("%d/%d", readyCounter, len(p.Spec.Containers))
 		row["Ready"] = component.NewText(ready)
 
-<<<<<<< HEAD
-		status := fmt.Sprintf("%s", p.Status.Phase)
-		row["Status"] = component.NewText(status)
-=======
-		row["Status"] = component.NewText(string(d.Status.Phase))
->>>>>>> Create log viewer
+		row["Status"] = component.NewText(string(p.Status.Phase))
 
 		restartCounter := 0
 		for _, c := range p.Status.ContainerStatuses {
