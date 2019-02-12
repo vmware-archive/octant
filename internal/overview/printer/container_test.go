@@ -7,12 +7,19 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/heptio/developer-dash/internal/overview/printer"
 )
 
 var (
-	propagation    = corev1.MountPropagationHostToContainer
+	propagation = corev1.MountPropagationHostToContainer
+	parentPod   = &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "pod",
+			Namespace: "default",
+		},
+	}
 	validContainer = &corev1.Container{
 		Name:  "nginx",
 		Image: "nginx:1.15",
@@ -160,19 +167,19 @@ func Test_ContainerConfiguration(t *testing.T) {
 								component.TableRow{
 									"Name":   component.NewText("configmapref"),
 									"Value":  component.NewText(""),
-									"Source": component.NewLink("", "myconfig:somekey", "/content/overview/config-and-storage/config-maps/myconfig"),
+									"Source": component.NewLink("", "myconfig:somekey", "/content/overview/namespace/default/config-and-storage/config-maps/myconfig"),
 								},
 								component.TableRow{
 									"Name":   component.NewText("secretref"),
 									"Value":  component.NewText(""),
-									"Source": component.NewLink("", "mysecret:somesecretkey", "/content/overview/config-and-storage/secrets/mysecret"),
+									"Source": component.NewLink("", "mysecret:somesecretkey", "/content/overview/namespace/default/config-and-storage/secrets/mysecret"),
 								},
 								// EnvFromSource
 								component.TableRow{
-									"Source": component.NewLink("", "fromconfig", "/content/overview/config-and-storage/config-maps/fromconfig"),
+									"Source": component.NewLink("", "fromconfig", "/content/overview/namespace/default/config-and-storage/config-maps/fromconfig"),
 								},
 								component.TableRow{
-									"Source": component.NewLink("", "fromsecret", "/content/overview/config-and-storage/secrets/fromsecret"),
+									"Source": component.NewLink("", "fromsecret", "/content/overview/namespace/default/config-and-storage/secrets/fromsecret"),
 								},
 							},
 						},
@@ -223,7 +230,7 @@ func Test_ContainerConfiguration(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			cc := printer.NewContainerConfiguration(tc.container)
+			cc := printer.NewContainerConfiguration(parentPod, tc.container)
 			summary, err := cc.Create()
 			if tc.isErr {
 				require.Error(t, err)

@@ -23,7 +23,7 @@ func ConfigMapListHandler(list *corev1.ConfigMapList, opts Options) (component.V
 
 	for _, c := range list.Items {
 		row := component.TableRow{}
-		configmapPath := gvkPath(c.TypeMeta.APIVersion, c.TypeMeta.Kind, c.Name)
+		configmapPath := gvkPath(c.Namespace, c.TypeMeta.APIVersion, c.TypeMeta.Kind, c.Name)
 		row["Name"] = component.NewLink("", c.Name, configmapPath)
 		row["Labels"] = component.NewLabels(c.Labels)
 

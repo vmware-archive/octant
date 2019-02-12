@@ -8,6 +8,6 @@ import (
 
 func TestSimpleClusterOverview_Navigation(t *testing.T) {
 	sco := NewSimpleClusterOverview()
-	_, err := sco.Navigation("/root")
+	_, err := sco.Navigation("", "/root")
 	require.NoError(t, err)
 }

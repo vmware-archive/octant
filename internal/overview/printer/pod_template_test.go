@@ -23,7 +23,7 @@ func TestPodTemplate(t *testing.T) {
 		},
 	}
 
-	pt := printer.NewPodTemplate(podTemplateSpec)
+	pt := printer.NewPodTemplate(parentPod, podTemplateSpec)
 	err := pt.AddToGridLayout(gl)
 	require.NoError(t, err)
 

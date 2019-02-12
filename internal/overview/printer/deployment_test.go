@@ -35,7 +35,8 @@ func Test_DeploymentListHandler(t *testing.T) {
 					Kind:       "Deployment",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "deployment",
+					Name:      "deployment",
+					Namespace: "default",
 					CreationTimestamp: metav1.Time{
 						Time: now,
 					},
@@ -82,7 +83,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
 	expected := component.NewTable("Deployments", cols)
 	expected.Add(component.TableRow{
-		"Name":       component.NewLink("", "deployment", "/content/overview/workloads/deployments/deployment"),
+		"Name":       component.NewLink("", "deployment", "/content/overview/namespace/default/workloads/deployments/deployment"),
 		"Labels":     component.NewLabels(labels),
 		"Age":        component.NewTimestamp(now),
 		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "my_app")}),

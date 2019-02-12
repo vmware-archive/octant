@@ -9,16 +9,20 @@ import (
 
 	"github.com/heptio/developer-dash/internal/view/component"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // ContainerConfiguration generates container configuration.
 type ContainerConfiguration struct {
+	parent    runtime.Object
 	container *corev1.Container
 }
 
 // NewContainerConfiguration creates an instance of ContainerConfiguration.
-func NewContainerConfiguration(c *corev1.Container) *ContainerConfiguration {
+func NewContainerConfiguration(parent runtime.Object, c *corev1.Container) *ContainerConfiguration {
 	return &ContainerConfiguration{
+		parent:    parent,
 		container: c,
 	}
 }
@@ -43,7 +47,7 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 		sections.AddText("Container Ports", containerPorts)
 	}
 
-	envTbl, err := describeContainerEnv(c)
+	envTbl, err := describeContainerEnv(cc.parent, c)
 	if err != nil {
 		return nil, errors.Wrap(err, "describing environment")
 	}
@@ -95,21 +99,30 @@ func describeContainerHostPorts(cPorts []corev1.ContainerPort) string {
 }
 
 // describeContainerEnv returns a table describing a container environment
-func describeContainerEnv(c *corev1.Container) (*component.Table, error) {
+func describeContainerEnv(parent runtime.Object, c *corev1.Container) (*component.Table, error) {
 	if c == nil {
 		return nil, errors.New("container is nil")
 	}
 
+	var ns string
+	if parent != nil {
+		accessor := meta.NewAccessor()
+		ns, _ = accessor.Namespace(parent)
+	}
+	if ns == "" {
+		ns = "default"
+	}
+
 	cols := component.NewTableCols("Name", "Value", "Source")
 	tbl := component.NewTable("Environment", cols)
-	tbl.Add(describeEnvRows(c.Env)...)
-	tbl.Add(describeEnvFromRows(c.EnvFrom)...)
+	tbl.Add(describeEnvRows(ns, c.Env)...)
+	tbl.Add(describeEnvFromRows(ns, c.EnvFrom)...)
 	return tbl, nil
 }
 
 // describeEnvRows renders container environment variables as table rows.
 // Expected columns: Name, Value, Source
-func describeEnvRows(vars []corev1.EnvVar) []component.TableRow {
+func describeEnvRows(namespace string, vars []corev1.EnvVar) []component.TableRow {
 	rows := make([]component.TableRow, 0)
 	for _, e := range vars {
 		row := component.TableRow{}
@@ -133,11 +146,11 @@ func describeEnvRows(vars []corev1.EnvVar) []component.TableRow {
 			row["Source"] = component.NewText(ref.Resource)
 		case e.ValueFrom.SecretKeyRef != nil:
 			ref := e.ValueFrom.SecretKeyRef
-			row["Source"] = linkForObject("v1", "Secret", ref.Name,
+			row["Source"] = linkForGVK(namespace, "v1", "Secret", ref.Name,
 				fmt.Sprintf("%s:%s", ref.Name, ref.Key))
 		case e.ValueFrom.ConfigMapKeyRef != nil:
 			ref := e.ValueFrom.ConfigMapKeyRef
-			row["Source"] = linkForObject("v1", "ConfigMap", ref.Name,
+			row["Source"] = linkForGVK(namespace, "v1", "ConfigMap", ref.Name,
 				fmt.Sprintf("%s:%s", ref.Name, ref.Key))
 		}
 	}
@@ -148,7 +161,7 @@ func describeEnvRows(vars []corev1.EnvVar) []component.TableRow {
 // describeEnvFromRows renders container environmentFrom references as table rows.
 // Expected columns: Name, Value, Source
 // TODO: Consider expanding variables from referenced configmap / secret
-func describeEnvFromRows(vars []corev1.EnvFromSource) []component.TableRow {
+func describeEnvFromRows(namespace string, vars []corev1.EnvFromSource) []component.TableRow {
 	rows := make([]component.TableRow, 0)
 	for _, e := range vars {
 		row := component.TableRow{}
@@ -157,10 +170,10 @@ func describeEnvFromRows(vars []corev1.EnvFromSource) []component.TableRow {
 		switch {
 		case e.SecretRef != nil:
 			ref := e.SecretRef
-			row["Source"] = linkForObject("v1", "Secret", ref.Name, ref.Name)
+			row["Source"] = linkForGVK(namespace, "v1", "Secret", ref.Name, ref.Name)
 		case e.ConfigMapRef != nil:
 			ref := e.ConfigMapRef
-			row["Source"] = linkForObject("v1", "ConfigMap", ref.Name, ref.Name)
+			row["Source"] = linkForGVK(namespace, "v1", "ConfigMap", ref.Name, ref.Name)
 		}
 	}
 

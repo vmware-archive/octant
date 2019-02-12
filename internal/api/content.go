@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"path"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -61,7 +60,7 @@ func (h *contentHandler) handlerForModule(m module.Module) http.HandlerFunc {
 		poll := r.URL.Query().Get("poll")
 
 		if poll != "" {
-			h.handlePoll(ctx, poll, namespace, w, r, m)
+			h.handlePoll(ctx, poll, namespace, contentPath, w, r, m)
 			return
 		}
 
@@ -75,7 +74,7 @@ func (h *contentHandler) handlerForModule(m module.Module) http.HandlerFunc {
 	}
 }
 
-func (h *contentHandler) handlePoll(ctx context.Context, poll, namespace string, w http.ResponseWriter, r *http.Request, m module.Module) {
+func (h *contentHandler) handlePoll(ctx context.Context, poll, namespace, contentPath string, w http.ResponseWriter, r *http.Request, m module.Module) {
 	eventTimeout := defaultEventTimeout
 	timeout, err := strconv.Atoi(poll)
 	if err == nil {
@@ -85,13 +84,14 @@ func (h *contentHandler) handlePoll(ctx context.Context, poll, namespace string,
 	eventGenerators := []eventGenerator{
 		&contentEventGenerator{
 			generatorFn: m.Content,
-			path:        h.contentPath(r, m),
+			path:        contentPath,
 			prefix:      h.prefix,
 			namespace:   namespace,
 			runEvery:    eventTimeout,
 		},
 		&navigationEventGenerator{
-			modules: h.modules,
+			modules:   h.modules,
+			namespace: namespace,
 		},
 	}
 
@@ -105,12 +105,4 @@ func (h *contentHandler) handlePoll(ctx context.Context, poll, namespace string,
 	if err = cs.content(ctx); err != nil {
 		h.logger.Errorf("content error: %v", err)
 	}
-}
-
-func (h *contentHandler) modulePrefix(m module.Module) string {
-	return path.Join(h.prefix, "content", m.ContentPath())
-}
-
-func (h *contentHandler) contentPath(r *http.Request, m module.Module) string {
-	return strings.TrimPrefix(r.URL.Path, h.modulePrefix(m))
 }

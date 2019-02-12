@@ -38,7 +38,7 @@ func (m *Module) ContentPath() string {
 }
 
 // Navigation returns navigation entries for the module.
-func (m *Module) Navigation(prefix string) (*hcli.Navigation, error) {
+func (m *Module) Navigation(namespace, prefix string) (*hcli.Navigation, error) {
 	nav := &hcli.Navigation{
 		Path:  prefix,
 		Title: m.name,

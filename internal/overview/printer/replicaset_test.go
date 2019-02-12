@@ -36,7 +36,8 @@ func Test_ReplicaSetListHandler(t *testing.T) {
 					Kind:       "ReplicaSet",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "replicaset-test",
+					Name:      "replicaset-test",
+					Namespace: "default",
 					CreationTimestamp: metav1.Time{
 						Time: now,
 					},
@@ -81,7 +82,7 @@ func Test_ReplicaSetListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
 	expected := component.NewTable("ReplicaSets", cols)
 	expected.Add(component.TableRow{
-		"Name":       component.NewLink("", "replicaset-test", "/content/overview/workloads/replica-sets/replicaset-test"),
+		"Name":       component.NewLink("", "replicaset-test", "/content/overview/namespace/default/workloads/replica-sets/replicaset-test"),
 		"Labels":     component.NewLabels(labels),
 		"Age":        component.NewTimestamp(now),
 		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
@@ -99,7 +100,8 @@ func TestReplicaSetConfiguration(t *testing.T) {
 
 	rs := &appsv1.ReplicaSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "rs-frontend",
+			Name:      "rs-frontend",
+			Namespace: "default",
 			OwnerReferences: []metav1.OwnerReference{
 				metav1.OwnerReference{
 					APIVersion: "v1",
@@ -130,7 +132,7 @@ func TestReplicaSetConfiguration(t *testing.T) {
 			expected: component.NewSummary("Configuration", []component.SummarySection{
 				{
 					Header:  "Controlled By",
-					Content: component.NewLink("", "replicaset-controller", "/content/overview/workloads/replication-controllers/replicaset-controller"),
+					Content: component.NewLink("", "replicaset-controller", "/content/overview/namespace/default/workloads/replication-controllers/replicaset-controller"),
 				},
 				{
 					Header:  "Replica Status",

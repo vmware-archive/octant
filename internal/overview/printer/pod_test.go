@@ -29,7 +29,8 @@ func Test_PodListHandler(t *testing.T) {
 		Items: []corev1.Pod{
 			{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "pod",
+					Name:      "pod",
+					Namespace: "default",
 					CreationTimestamp: metav1.Time{
 						Time: now,
 					},
@@ -92,7 +93,8 @@ var (
 	now      = time.Unix(1547211430, 0)
 	validPod = &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "pod",
+			Name:      "pod",
+			Namespace: "default",
 			OwnerReferences: []metav1.OwnerReference{
 				metav1.OwnerReference{
 					APIVersion: "v1",
@@ -166,7 +168,7 @@ func Test_PodConfiguration(t *testing.T) {
 				},
 				{
 					Header:  "Controlled By",
-					Content: component.NewLink("", "myreplicationcontroller", "/content/overview/workloads/replication-controllers/myreplicationcontroller"),
+					Content: component.NewLink("", "myreplicationcontroller", "/content/overview/namespace/default/workloads/replication-controllers/myreplicationcontroller"),
 				},
 				{
 					Header:  "NominatedNodeName",
@@ -178,7 +180,7 @@ func Test_PodConfiguration(t *testing.T) {
 				},
 				{
 					Header:  "Service Account",
-					Content: component.NewLink("", "default", "/content/overview/config-and-storage/service-accounts/default"),
+					Content: component.NewLink("", "default", "/content/overview/namespace/default/config-and-storage/service-accounts/default"),
 				},
 			}...),
 		},

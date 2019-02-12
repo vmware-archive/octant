@@ -17,6 +17,16 @@ func TestObjectReferencePath(t *testing.T) {
 		expected        string
 	}{
 		{
+			name: "cron job (namespace)",
+			objectReference: corev1.ObjectReference{
+				APIVersion: "batch/v1beta1",
+				Kind:       "CronJob",
+				Name:       "cj1",
+				Namespace:  "default",
+			},
+			expected: "/content/overview/namespace/default/workloads/cron-jobs/cj1",
+		},
+		{
 			name: "cron job",
 			objectReference: corev1.ObjectReference{
 				APIVersion: "batch/v1beta1",

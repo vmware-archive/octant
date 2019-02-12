@@ -16,7 +16,7 @@ type Module interface {
 	// ContentPath will be used to construct content paths.
 	ContentPath() string
 	// Navigation returns navigation entries for this module.
-	Navigation(root string) (*hcli.Navigation, error)
+	Navigation(namespace, root string) (*hcli.Navigation, error)
 	// SetNamespace is called when the current namespace changes.
 	SetNamespace(namespace string) error
 	// Start starts the module.

@@ -13,7 +13,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ServiceListHandler is a printFunc that lists deployments
+// ServiceListHandler is a printFunc that lists services
 func ServiceListHandler(list *corev1.ServiceList, opts Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
@@ -22,19 +22,19 @@ func ServiceListHandler(list *corev1.ServiceList, opts Options) (component.ViewC
 	cols := component.NewTableCols("Name", "Labels", "Type", "Cluster IP", "External IP", "Target Ports", "Age", "Selector")
 	tbl := component.NewTable("Services", cols)
 
-	for _, d := range list.Items {
+	for _, s := range list.Items {
 		row := component.TableRow{}
-		row["Name"] = linkForObject("v1", "Service", d.Name, d.Name)
-		row["Labels"] = component.NewLabels(d.Labels)
-		row["Type"] = component.NewText(string(d.Spec.Type))
-		row["Cluster IP"] = component.NewText(d.Spec.ClusterIP)
-		row["External IP"] = component.NewText(strings.Join(d.Spec.ExternalIPs, ","))
-		row["Target Ports"] = printServicePorts(d.Spec.Ports)
+		row["Name"] = linkForObject(&s, s.Name)
+		row["Labels"] = component.NewLabels(s.Labels)
+		row["Type"] = component.NewText(string(s.Spec.Type))
+		row["Cluster IP"] = component.NewText(s.Spec.ClusterIP)
+		row["External IP"] = component.NewText(strings.Join(s.Spec.ExternalIPs, ","))
+		row["Target Ports"] = printServicePorts(s.Spec.Ports)
 
-		ts := d.CreationTimestamp.Time
+		ts := s.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
 
-		row["Selector"] = printSelectorMap(d.Spec.Selector)
+		row["Selector"] = printSelectorMap(s.Spec.Selector)
 
 		tbl.Add(row)
 	}
@@ -219,7 +219,7 @@ func serviceEndpoints(c cache.Cache, service *corev1.Service) (*component.Table,
 
 			var target component.ViewComponent = component.NewText("No target")
 			if targetRef := address.TargetRef; targetRef != nil {
-				ref := gvkPath(targetRef.APIVersion, targetRef.Kind, targetRef.Name)
+				ref := gvkPath(service.Namespace, targetRef.APIVersion, targetRef.Kind, targetRef.Name)
 				target = component.NewLink("", targetRef.Name, ref)
 			}
 

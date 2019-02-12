@@ -133,7 +133,7 @@ func (l *LocalContent) walk(fn walkFn) error {
 	return nil
 }
 
-func (l *LocalContent) Navigation(root string) (*hcli.Navigation, error) {
+func (l *LocalContent) Navigation(namespace, root string) (*hcli.Navigation, error) {
 	if !strings.HasSuffix(root, "/") {
 		root = fmt.Sprintf("%s/", root)
 	}

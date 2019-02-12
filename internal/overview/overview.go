@@ -25,8 +25,6 @@ type ClusterOverview struct {
 
 	mu sync.Mutex
 
-	namespace string
-
 	logger log.Logger
 
 	cache  cache.Cache
@@ -88,7 +86,6 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string, logger
 	}
 
 	co := &ClusterOverview{
-		namespace: namespace,
 		client:    client,
 		logger:    logger,
 		cache:     informerCache,
@@ -109,15 +106,14 @@ func (co *ClusterOverview) ContentPath() string {
 }
 
 // Navigation returns navigation entries for overview.
-func (co *ClusterOverview) Navigation(root string) (*hcli.Navigation, error) {
-	nf := NewNavigationFactory(root)
+func (co *ClusterOverview) Navigation(namespace, root string) (*hcli.Navigation, error) {
+	nf := NewNavigationFactory(namespace, root)
 	return nf.Entries()
 }
 
 // SetNamespace sets the current namespace.
 func (co *ClusterOverview) SetNamespace(namespace string) error {
-	co.logger.With("namespace", namespace, "module", "overview").Debugf("setting namespace")
-	co.namespace = namespace
+	co.logger.With("namespace", namespace, "module", "overview").Debugf("setting namespace (noop)")
 	return nil
 }
 

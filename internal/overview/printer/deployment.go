@@ -21,7 +21,7 @@ func DeploymentListHandler(list *appsv1.DeploymentList, opts Options) (component
 
 	for _, d := range list.Items {
 		row := component.TableRow{}
-		deploymentPath := gvkPath(d.TypeMeta.APIVersion, d.TypeMeta.Kind, d.Name)
+		deploymentPath := gvkPath(d.Namespace, d.TypeMeta.APIVersion, d.TypeMeta.Kind, d.Name)
 		row["Name"] = component.NewLink("", d.Name, deploymentPath)
 		row["Labels"] = component.NewLabels(d.Labels)
 
@@ -68,7 +68,7 @@ func DeploymentHandler(deployment *appsv1.Deployment, options Options) (componen
 		return nil, errors.Wrap(err, "add deployment summary to layout")
 	}
 
-	podTemplate := NewPodTemplate(deployment.Spec.Template)
+	podTemplate := NewPodTemplate(deployment, deployment.Spec.Template)
 	if err = podTemplate.AddToFlexLayout(fl); err != nil {
 		return nil, errors.Wrap(err, "add pod template to layout")
 	}

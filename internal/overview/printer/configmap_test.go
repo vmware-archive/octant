@@ -30,7 +30,8 @@ func Test_ConfigMapListHandler(t *testing.T) {
 					Kind:       "ConfigMap",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "configmap",
+					Name:      "configmap",
+					Namespace: "default",
 					CreationTimestamp: metav1.Time{
 						Time: now,
 					},
@@ -50,7 +51,7 @@ func Test_ConfigMapListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Data", "Age")
 	expected := component.NewTable("ConfigMaps", cols)
 	expected.Add(component.TableRow{
-		"Name":   component.NewLink("", "configmap", "/content/overview/config-and-storage/config-maps/configmap"),
+		"Name":   component.NewLink("", "configmap", "/content/overview/namespace/default/config-and-storage/config-maps/configmap"),
 		"Labels": component.NewLabels(labels),
 		"Data":   component.NewText("2"),
 		"Age":    component.NewTimestamp(now),
