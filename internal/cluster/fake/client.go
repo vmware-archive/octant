@@ -17,6 +17,7 @@ import (
 	fakediscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/dynamic"
 	dynamicfake "k8s.io/client-go/dynamic/fake"
+	"k8s.io/client-go/kubernetes"
 	fakeclientset "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/testing"
@@ -53,6 +54,10 @@ func NewClient(scheme *runtime.Scheme, resources []*metav1.APIResourceList, obje
 		FakeDynamic:   dynamicClient,
 		FakeDiscovery: fakeDiscovery,
 	}, nil
+}
+
+func (c *Client) KubernetesClient() (kubernetes.Interface, error) {
+	panic("not implemented")
 }
 
 // DynamicClient returns a dynamic client or an error.

@@ -28,6 +28,10 @@ func Test_PodListHandler(t *testing.T) {
 	object := &corev1.PodList{
 		Items: []corev1.Pod{
 			{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "v1",
+					Kind:       "Pod",
+				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "pod",
 					Namespace: "default",

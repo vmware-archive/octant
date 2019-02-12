@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 
+	"github.com/heptio/developer-dash/internal/overview/logviewer"
 	"github.com/heptio/developer-dash/internal/overview/yamlviewer"
 
 	"github.com/heptio/developer-dash/internal/queryer"
@@ -228,6 +229,15 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 
 	cr.Add(yvComponent)
 
+	if isPod(newObject) {
+		logsComponent, err := logviewer.ToComponent(newObject)
+		if err != nil {
+			return emptyContentResponse, err
+		}
+
+		cr.Add(logsComponent)
+	}
+
 	return *cr, nil
 }
 
@@ -323,4 +333,10 @@ func (d *SectionDescriber) PathFilters(namespace string) []pathFilter {
 	}
 
 	return pathFilters
+}
+
+func isPod(object runtime.Object) bool {
+	gvk := object.GetObjectKind().GroupVersionKind()
+	apiVersion, kind := gvk.ToAPIVersionAndKind()
+	return apiVersion == "v1" && kind == "Pod"
 }

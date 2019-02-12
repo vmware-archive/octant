@@ -3,12 +3,16 @@ import Loading from 'components/Icons/Loading'
 import Title from 'components/Title'
 import { TitleView } from 'models'
 import JSONContentResponse from 'models/contentresponse'
+import queryString from 'query-string'
 import React, { Component } from 'react'
+import { RouteComponentProps, withRouter } from 'react-router'
 
 import Renderer from './renderer'
 import './styles.scss'
 
-interface Props {
+const tabIndicator = 'tab'
+
+interface Props extends RouteComponentProps {
   title: string
   isLoading: boolean
   hasError: boolean
@@ -19,9 +23,47 @@ interface Props {
   setError(hasError: boolean, errorMessage?: string): void
 }
 
-export default class Overview extends Component<Props> {
+interface State {
+  currentTab: number
+}
+
+class Overview extends Component<Props, State> {
   constructor(props: Props) {
     super(props)
+
+    this.state = {
+      currentTab: 0,
+    }
+  }
+
+  componentDidMount() {
+    const values = queryString.parse(this.props.location.search)
+
+    let currentTab = 0
+    const keys = Object.keys(values)
+    if (keys.indexOf(tabIndicator) > -1) {
+      if (typeof values.tab === 'string') {
+        currentTab = parseInt(values.tab as string, 10)
+      }
+    }
+
+    this.setState({
+      currentTab,
+    })
+
+    this.setTab(currentTab)
+  }
+
+  setTab = (index: number): void => {
+    const { history } = this.props
+
+    const newSearch = `?${queryString.stringify({ [tabIndicator]: index })}`
+
+    if (history.location.search !== newSearch) {
+      history.push({
+        search: newSearch,
+      })
+    }
   }
 
   renderUnknownContent = (hasError: boolean) => {
@@ -42,6 +84,8 @@ export default class Overview extends Component<Props> {
 
   render() {
     const { isLoading, hasError, data } = this.props
+    const { currentTab } = this.state
+
     let title: TitleView
     let mainContent = <div />
     if (isLoading) {
@@ -52,8 +96,7 @@ export default class Overview extends Component<Props> {
       )
     } else if (data) {
       title = data.title
-      const renderer = new Renderer(data.views)
-      mainContent = renderer.content()
+      mainContent = <Renderer views={data.views} setTab={this.setTab} currentTab={currentTab} />
     } else {
       // no views or an error
       mainContent = this.renderUnknownContent(hasError)
@@ -67,3 +110,5 @@ export default class Overview extends Component<Props> {
     )
   }
 }
+
+export default withRouter(Overview)

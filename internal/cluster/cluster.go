@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -17,6 +18,7 @@ import (
 
 // ClientInterface is a client for cluster operations.
 type ClientInterface interface {
+	KubernetesClient() (kubernetes.Interface, error)
 	DynamicClient() (dynamic.Interface, error)
 	DiscoveryClient() (discovery.DiscoveryInterface, error)
 	NamespaceClient() (NamespaceInterface, error)
@@ -30,6 +32,11 @@ type Cluster struct {
 }
 
 var _ ClientInterface = (*Cluster)(nil)
+
+// KubernetesClient returns a Kubernetes client.
+func (c *Cluster) KubernetesClient() (kubernetes.Interface, error) {
+	return kubernetes.NewForConfig(c.restClient)
+}
 
 // NamespaceClient returns a namespace client.
 func (c *Cluster) NamespaceClient() (NamespaceInterface, error) {

@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function({ view }: Props) {
-  const supportedTypes = new Set(['table', 'summary', 'resourceViewer', 'grid', 'list', 'flexlayout', 'yaml'])
+  const supportedTypes = new Set(['table', 'summary', 'resourceViewer', 'grid', 'list', 'flexlayout', 'yaml', 'logs'])
   if (supportedTypes.has(view.type)) {
     return renderView(view)
   }

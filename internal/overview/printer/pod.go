@@ -3,6 +3,8 @@ package printer
 import (
 	"fmt"
 
+	"github.com/heptio/developer-dash/internal/view/flexlayout"
+
 	"github.com/pkg/errors"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -31,9 +33,19 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 
 	for _, p := range list.Items {
 		row := component.TableRow{}
+<<<<<<< HEAD
 		podPath := gvkPath(p.TypeMeta.APIVersion, p.TypeMeta.Kind, p.Name)
 		row["Name"] = component.NewLink("", p.Name, podPath)
 		row["Labels"] = component.NewLabels(p.Labels)
+=======
+		podPath, err := gvkPathFromObject(&d)
+		if err != nil {
+			return nil, errors.Wrap(err, "get path for pod")
+		}
+
+		row["Name"] = component.NewLink("", d.Name, podPath)
+		row["Labels"] = component.NewLabels(d.Labels)
+>>>>>>> Create log viewer
 
 		readyCounter := 0
 		for _, c := range p.Status.ContainerStatuses {
@@ -44,8 +56,12 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 		ready := fmt.Sprintf("%d/%d", readyCounter, len(p.Spec.Containers))
 		row["Ready"] = component.NewText(ready)
 
+<<<<<<< HEAD
 		status := fmt.Sprintf("%s", p.Status.Phase)
 		row["Status"] = component.NewText(status)
+=======
+		row["Status"] = component.NewText(string(d.Status.Phase))
+>>>>>>> Create log viewer
 
 		restartCounter := 0
 		for _, c := range p.Status.ContainerStatuses {
@@ -64,7 +80,6 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 }
 
 // PodHandler is a printFunc that prints Pods
-// TODO: This handler is incomplete
 func PodHandler(p *corev1.Pod, opts Options) (component.ViewComponent, error) {
 	fl := flexlayout.New()
 
@@ -76,12 +91,12 @@ func PodHandler(p *corev1.Pod, opts Options) (component.ViewComponent, error) {
 	}
 
 	if err := configSection.Add(configView, 16); err != nil {
-		return nil, errors.Wrap(err, "add pod configation to layout")
+		return nil, errors.Wrap(err, "add pod config to layout")
 	}
 
 	view := fl.ToComponent("Summary")
-
 	return view, nil
+
 }
 
 type podStatus struct {

@@ -37,11 +37,15 @@ func (h *contentHandler) registerModuleRoute(router module.Router, m module.Modu
 	parent := router.PathPrefix(path.Join("/", m.Name())).Subrouter() // e.g. /overview
 
 	ns := parent.PathPrefix("/namespace/{namespace}").Subrouter()
-	handler := h.handlerForModule(m)
+
+	for path, handler := range m.Handlers() {
+		ns.Handle(path, handler)
+	}
 
 	// Namespace is optional, so register two alternatives
-	ns.HandleFunc("/{contentPath:.*?}", handler)
-	parent.HandleFunc("/{contentPath:.*?}", handler)
+	contentHandler := h.handlerForModule(m)
+	ns.HandleFunc("/{contentPath:.*?}", contentHandler)
+	parent.HandleFunc("/{contentPath:.*?}", contentHandler)
 }
 
 // Returns a content http handler for the specified module

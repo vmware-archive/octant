@@ -15,6 +15,7 @@
 
   .app-nav {
     height: 100%;
+    overflow: scroll;
     position: fixed;
     width: $navWidth;
   }

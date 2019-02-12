@@ -2,10 +2,16 @@ package overview
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
+	"strings"
 	"sync"
+	"time"
 
+	"github.com/gorilla/mux"
+	"github.com/heptio/developer-dash/internal/overview/container"
 	"github.com/heptio/developer-dash/internal/queryer"
 
 	"github.com/heptio/developer-dash/internal/cache"
@@ -132,4 +138,77 @@ func (co *ClusterOverview) Stop() {
 
 func (co *ClusterOverview) Content(ctx context.Context, contentPath, prefix, namespace string) (component.ContentResponse, error) {
 	return co.generator.Generate(ctx, contentPath, prefix, namespace)
+}
+
+type logEntry struct {
+	Timestamp time.Time `json:"timestamp,omitempty"`
+	Message   string    `json:"message,omitempty"`
+}
+
+type logResponse struct {
+	Entries []logEntry `json:"entries,omitempty"`
+}
+
+func (co *ClusterOverview) Handlers() map[string]http.Handler {
+	return map[string]http.Handler{
+		"/logs/pod/{pod}/container/{container}": containerLogsHandler(co.client),
+	}
+}
+
+func containerLogsHandler(clusterClient cluster.ClientInterface) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+
+		containerName := vars["container"]
+		podName := vars["pod"]
+		namespace := vars["namespace"]
+
+		kubeClient, err := clusterClient.KubernetesClient()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		lines := make(chan string)
+		done := make(chan bool)
+
+		var entries []logEntry
+
+		go func() {
+			for line := range lines {
+				parts := strings.SplitN(line, " ", 2)
+				logTime, err := time.Parse(time.RFC3339, parts[0])
+				if err == nil {
+					entries = append(entries, logEntry{
+						Timestamp: logTime,
+						Message:   parts[1],
+					})
+				}
+			}
+
+			done <- true
+		}()
+
+		err = container.Logs(r.Context(), kubeClient, namespace, podName, containerName, lines)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		<-done
+
+		var lr logResponse
+
+		if len(entries) <= 100 {
+			lr.Entries = entries
+		} else {
+			// take last 100 entries from the slice
+			lr.Entries = entries[len(entries)-100:]
+		}
+
+		if err := json.NewEncoder(w).Encode(&lr); err != nil {
+			fmt.Println("oops", err)
+		}
+	}
 }

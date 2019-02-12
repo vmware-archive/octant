@@ -3,9 +3,11 @@ package fake
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
 )
@@ -18,6 +20,8 @@ type Module struct {
 	ObservedContentPath string
 	ObservedNamespace   string
 }
+
+var _ module.Module = (*Module)(nil)
 
 // NewModule creates an instance of Module.
 func NewModule(name string, logger log.Logger) *Module {
@@ -81,4 +85,8 @@ func (m *Module) Content(ctx context.Context, contentPath, prefix, namespace str
 	default:
 		return component.ContentResponse{}, errors.New("not found")
 	}
+}
+
+func (m *Module) Handlers() map[string]http.Handler {
+	return make(map[string]http.Handler)
 }

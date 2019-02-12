@@ -1,12 +1,24 @@
 @import '~css/variables/variables.scss';
 
 .overview {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+
+
   .main {
-    height: 100%;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
 
     .component--primary {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
       margin-bottom: 50px;
       padding: 20px 50px;
+      width: 100%;
 
       .content-text {
         text-align: center;
@@ -17,7 +29,7 @@
       }
 
       .error-content-text {
-        color: $red
+        color: $red;
       }
     }
 
@@ -34,7 +46,11 @@
 }
 
 .react-tabs {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   -webkit-tap-highlight-color: transparent;
+
 
   &__tab-list {
     border-bottom: 1px solid rgba(173, 187, 196, 0.3);
@@ -64,8 +80,12 @@
   &__tab-panel {
     display: none;
 
+    flex: 1;
+    width: 100%;
+
     &--selected {
-      display: block;
+      display: flex;
+      flex-direction: column;
     }
   }
 }

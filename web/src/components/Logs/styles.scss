@@ -1,0 +1,28 @@
+@import '~css/variables/variables.scss';
+
+.logs {
+
+  display: flex;
+  flex-direction: column;
+
+  height: 75vh;
+  min-height: 400px;
+
+  overflow: hidden;
+  padding: 30px 0;
+  width: 100%;
+}
+
+.logs--messages {
+  @include monospace;
+  background-color: #000;
+
+  display: grid;
+  gap: 8px 10px;
+  grid-template-columns: 250px auto;
+  margin: 30px 0;
+  overflow: scroll;
+  padding: 10px;
+  position: relative;
+  width: 100%;
+}

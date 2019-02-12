@@ -94,7 +94,18 @@ func TestObjectDescriber(t *testing.T) {
 		"kind":       "Pod",
 		"apiVersion": "v1",
 		"metadata": map[string]interface{}{
-			"name": "name",
+			"name":      "pod",
+			"namespace": "default",
+		},
+		"spec": map[string]interface{}{
+			"containers": []interface{}{
+				map[string]interface{}{
+					"name": "one",
+				},
+				map[string]interface{}{
+					"name": "two",
+				},
+			},
 		},
 	}
 
@@ -133,7 +144,7 @@ func TestObjectDescriber(t *testing.T) {
 	expected := component.ContentResponse{
 		Title: []component.TitleViewComponent{
 			component.NewText("object"),
-			component.NewText("name"),
+			component.NewText("pod"),
 		},
 		ViewComponents: []component.ViewComponent{
 			component.NewText("*v1.Pod"),
@@ -145,9 +156,10 @@ func TestObjectDescriber(t *testing.T) {
 					Type: "yaml",
 				},
 				Config: component.YAMLConfig{
-					Data: "---\napiVersion: v1\nkind: Pod\nmetadata:\n  creationTimestamp: null\n  name: name\nspec:\n  containers: null\nstatus: {}\n",
+					Data: "---\napiVersion: v1\nkind: Pod\nmetadata:\n  creationTimestamp: null\n  name: pod\n  namespace: default\nspec:\n  containers:\n  - name: one\n    resources: {}\n  - name: two\n    resources: {}\nstatus: {}\n",
 				},
 			},
+			component.NewLogs("default", "pod", []string{"one", "two"}),
 		},
 	}
 	assert.Equal(t, expected, cResponse)
