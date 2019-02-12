@@ -123,7 +123,7 @@ func (rc *ReplicaSetConfiguration) Create() (*component.Summary, error) {
 	return summary, nil
 }
 
-// ReplicaSet generates a replicaset status
+// ReplicaSetStatus generates a replicaset status
 type ReplicaSetStatus struct {
 	replicaset *appsv1.ReplicaSet
 }
