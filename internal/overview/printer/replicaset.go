@@ -1,15 +1,16 @@
 package printer
 
 import (
-	"errors"
 	"fmt"
+
+	"github.com/pkg/errors"
 
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/gridlayout"
+	"github.com/heptio/developer-dash/internal/view/flexlayout"
 )
 
 // ReplicaSetListHandler is a printFunc that lists deployments
@@ -46,11 +47,10 @@ func ReplicaSetListHandler(list *appsv1.ReplicaSetList, opts Options) (component
 }
 
 // ReplicaSetHandler is a printFunc that prints a ReplicaSets.
-// TODO: This handler is incomplete.
 func ReplicaSetHandler(rs *appsv1.ReplicaSet, options Options) (component.ViewComponent, error) {
-	gl := gridlayout.New()
+	fl := flexlayout.New()
 
-	configSection := gl.CreateSection(8)
+	configSection := fl.AddSection()
 
 	rsConfigGen := NewReplicaSetConfiguration(rs)
 	configView, err := rsConfigGen.Create()
@@ -58,9 +58,11 @@ func ReplicaSetHandler(rs *appsv1.ReplicaSet, options Options) (component.ViewCo
 		return nil, err
 	}
 
-	configSection.Add(configView, 16)
+	if err := configSection.Add(configView, 16); err != nil {
+		return nil, errors.Wrap(err, "add replicaset config to layout")
+	}
 
-	summarySection := gl.CreateSection(8)
+	summarySection := fl.AddSection()
 
 	rsSummaryGen := NewReplicaSetStatus(rs)
 	statusView, err := rsSummaryGen.Create(options.Cache)
@@ -68,14 +70,13 @@ func ReplicaSetHandler(rs *appsv1.ReplicaSet, options Options) (component.ViewCo
 		return nil, err
 	}
 
-	summarySection.Add(statusView, 8)
-	if err != nil {
-		return nil, err
+	if err := summarySection.Add(statusView, 8); err != nil {
+		return nil, errors.Wrap(err, "add replicaset summary to layout")
 	}
 
-	grid := gl.ToGrid()
+	view := fl.ToComponent("Summary")
 
-	return grid, nil
+	return view, nil
 }
 
 // ReplicaSetConfiguration generates a replicaset configuration

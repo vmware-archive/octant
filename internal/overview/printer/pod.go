@@ -17,6 +17,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/internal/view/flexlayout"
 )
 
 // PodListHandler is a printFunc that prints pods
@@ -28,31 +29,32 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 	cols := component.NewTableCols("Name", "Labels", "Ready", "Status", "Restarts", "Age")
 	tbl := component.NewTable("Pods", cols)
 
-	for _, d := range list.Items {
+	for _, p := range list.Items {
 		row := component.TableRow{}
-		row["Name"] = component.NewText(d.Name)
-		row["Labels"] = component.NewLabels(d.Labels)
+		podPath := gvkPath(p.TypeMeta.APIVersion, p.TypeMeta.Kind, p.Name)
+		row["Name"] = component.NewLink("", p.Name, podPath)
+		row["Labels"] = component.NewLabels(p.Labels)
 
 		readyCounter := 0
-		for _, c := range d.Status.ContainerStatuses {
+		for _, c := range p.Status.ContainerStatuses {
 			if c.Ready {
 				readyCounter++
 			}
 		}
-		ready := fmt.Sprintf("%d/%d", readyCounter, len(d.Spec.Containers))
+		ready := fmt.Sprintf("%d/%d", readyCounter, len(p.Spec.Containers))
 		row["Ready"] = component.NewText(ready)
 
-		status := fmt.Sprintf("%s", d.Status.Phase)
+		status := fmt.Sprintf("%s", p.Status.Phase)
 		row["Status"] = component.NewText(status)
 
 		restartCounter := 0
-		for _, c := range d.Status.ContainerStatuses {
+		for _, c := range p.Status.ContainerStatuses {
 			restartCounter += int(c.RestartCount)
 		}
 		restarts := fmt.Sprintf("%d", restartCounter)
 		row["Restarts"] = component.NewText(restarts)
 
-		ts := d.CreationTimestamp.Time
+		ts := p.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
 
 		tbl.Add(row)
@@ -64,15 +66,22 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 // PodHandler is a printFunc that prints Pods
 // TODO: This handler is incomplete
 func PodHandler(p *corev1.Pod, opts Options) (component.ViewComponent, error) {
-	grid := component.NewGrid("Summary")
-	summary := component.NewSummary("Details")
-	panel := component.NewPanel("", summary)
+	fl := flexlayout.New()
 
-	grid.Add(*panel)
+	configSection := fl.AddSection()
+	podConfigGen := NewPodConfiguration(p)
+	configView, err := podConfigGen.Create()
+	if err != nil {
+		return nil, err
+	}
 
-	list := component.NewList("", []component.ViewComponent{grid})
+	if err := configSection.Add(configView, 16); err != nil {
+		return nil, errors.Wrap(err, "add pod configation to layout")
+	}
 
-	return list, nil
+	view := fl.ToComponent("Summary")
+
+	return view, nil
 }
 
 type podStatus struct {

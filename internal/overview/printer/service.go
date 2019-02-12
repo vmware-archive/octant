@@ -9,7 +9,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/gridlayout"
+	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/pkg/errors"
 )
 
@@ -43,34 +43,40 @@ func ServiceListHandler(list *corev1.ServiceList, opts Options) (component.ViewC
 
 // ServiceHandler is a printFunc that prints a Services.
 func ServiceHandler(service *corev1.Service, options Options) (component.ViewComponent, error) {
-	gl := gridlayout.New()
+	fl := flexlayout.New()
 
-	configSection := gl.CreateSection(9)
+	configSection := fl.AddSection()
 
 	configView, err := serviceConfiguration(service)
 	if err != nil {
 		return nil, err
 	}
 
-	configSection.Add(configView, 12)
+	if err := configSection.Add(configView, 12); err != nil {
+		return nil, errors.Wrap(err, "add service config to layout")
+	}
 
 	summaryView, err := serviceSummary(service)
 	if err != nil {
 		return nil, err
 	}
 
-	configSection.Add(summaryView, 12)
+	if err := configSection.Add(summaryView, 12); err != nil {
+		return nil, errors.Wrap(err, "add service summary to layout")
+	}
 
-	endpointsSection := gl.CreateSection(8)
+	endpointsSection := fl.AddSection()
 	endpointsView, err := serviceEndpoints(options.Cache, service)
 	if err != nil {
 		return nil, err
 	}
-	endpointsSection.Add(endpointsView, 24)
+	if err := endpointsSection.Add(endpointsView, 24); err != nil {
+		return nil, errors.Wrap(err, "add service end points to layout")
+	}
 
-	grid := gl.ToGrid()
+	view := fl.ToComponent("Summary")
 
-	return grid, nil
+	return view, nil
 }
 
 func printServicePorts(ports []corev1.ServicePort) component.ViewComponent {

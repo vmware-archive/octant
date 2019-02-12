@@ -35,6 +35,10 @@ func Test_PodListHandler(t *testing.T) {
 					},
 					Labels: labels,
 				},
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "v1",
+					Kind:       "Pod",
+				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						corev1.Container{
@@ -77,7 +81,7 @@ func Test_PodListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Ready", "Status", "Restarts", "Age")
 	expected := component.NewTable("Pods", cols)
 	expected.Add(component.TableRow{
-		"Name":     component.NewText("pod"),
+		"Name":     component.NewLink("", "pod", "/content/overview/workloads/pods/pod"),
 		"Labels":   component.NewLabels(labels),
 		"Ready":    component.NewText("1/2"),
 		"Status":   component.NewText("Pending"),
