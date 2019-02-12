@@ -5,7 +5,7 @@ import (
 	"sort"
 
 	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/gridlayout"
+	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/pkg/errors"
 
 	corev1 "k8s.io/api/core/v1"
@@ -41,9 +41,9 @@ func ConfigMapListHandler(list *corev1.ConfigMapList, opts Options) (component.V
 
 // ConfigMapHandler is a printFunc that prints a ConfigMap
 func ConfigMapHandler(cm *corev1.ConfigMap, options Options) (component.ViewComponent, error) {
-	gl := gridlayout.New()
+	fl := flexlayout.New()
 
-	configSection := gl.CreateSection(4)
+	configSection := fl.AddSection()
 
 	cmConfigGen := NewConfigMapConfiguration(cm)
 	configView, err := cmConfigGen.Create()
@@ -51,19 +51,23 @@ func ConfigMapHandler(cm *corev1.ConfigMap, options Options) (component.ViewComp
 		return nil, err
 	}
 
-	configSection.Add(configView, 16)
+	if err := configSection.Add(configView, 16); err != nil {
+		return nil, errors.Wrap(err, "add configmap config to layout")
+	}
 
-	dataSection := gl.CreateSection(8)
+	dataSection := fl.AddSection()
 	dataTable, err := cmConfigGen.describeConfigMapData()
 	if err != nil {
 		return nil, err
 	}
 
-	dataSection.Add(dataTable, 16)
+	if err := dataSection.Add(dataTable, 16); err != nil {
+		return nil, errors.Wrap(err, "add configmap data to layout")
+	}
 
-	grid := gl.ToGrid()
+	view := fl.ToComponent("Summary")
 
-	return grid, nil
+	return view, nil
 }
 
 // ConfigMapConfiguration generates configmap configuration
