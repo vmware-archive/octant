@@ -1,0 +1,14 @@
+{
+    "metadata": {
+      "type": "logs",
+      "title": [
+        {
+          "config": { "value": "Logs" },
+          "metadata": { "type": "text" }
+        }
+      ]
+    },
+    "config": {
+        "containers": ["one", "two"]
+    }
+}

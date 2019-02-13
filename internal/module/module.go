@@ -2,6 +2,7 @@ package module
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/view/component"
@@ -11,6 +12,8 @@ import (
 type Module interface {
 	// Name is the name of the module.
 	Name() string
+	// Handlers are additional handlers for the module
+	Handlers() map[string]http.Handler
 	// Content generates content for a path.
 	Content(ctx context.Context, contentPath, prefix, namespace string) (component.ContentResponse, error)
 	// ContentPath will be used to construct content paths.

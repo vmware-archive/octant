@@ -2,6 +2,7 @@ package fake
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/view/component"
@@ -47,4 +48,9 @@ func (sco *SimpleClusterOverview) Start() error {
 
 // Stop stops the module. It is a no-op.
 func (sco *SimpleClusterOverview) Stop() {
+}
+
+// Handlers returns an empty set of handlers.
+func (sco *SimpleClusterOverview) Handlers() map[string]http.Handler {
+	return make(map[string]http.Handler)
 }

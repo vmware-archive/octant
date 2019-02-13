@@ -52,7 +52,7 @@ func (t *List) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifes whether the component is considered empty. Implements ViewComponent.
+// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
 func (t *List) IsEmpty() bool {
 	return len(t.Config.Items) == 0
 }

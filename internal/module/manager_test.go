@@ -86,3 +86,7 @@ func (m *stubModule) Stop() {
 func (m *stubModule) Content(ctx context.Context, contentPath string, prefix string, namespace string) (component.ContentResponse, error) {
 	panic("not implemented")
 }
+
+func (m *stubModule) Handlers() map[string]http.Handler {
+	return make(map[string]http.Handler)
+}

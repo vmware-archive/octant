@@ -31,7 +31,11 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 
 	for _, p := range list.Items {
 		row := component.TableRow{}
-		podPath := gvkPath(p.TypeMeta.APIVersion, p.TypeMeta.Kind, p.Name)
+		podPath, err := gvkPathFromObject(&p)
+		if err != nil {
+			return nil, errors.Wrap(err, "get path for pod")
+		}
+
 		row["Name"] = component.NewLink("", p.Name, podPath)
 		row["Labels"] = component.NewLabels(p.Labels)
 
@@ -44,8 +48,7 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 		ready := fmt.Sprintf("%d/%d", readyCounter, len(p.Spec.Containers))
 		row["Ready"] = component.NewText(ready)
 
-		status := fmt.Sprintf("%s", p.Status.Phase)
-		row["Status"] = component.NewText(status)
+		row["Status"] = component.NewText(string(p.Status.Phase))
 
 		restartCounter := 0
 		for _, c := range p.Status.ContainerStatuses {
@@ -64,7 +67,6 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 }
 
 // PodHandler is a printFunc that prints Pods
-// TODO: This handler is incomplete
 func PodHandler(p *corev1.Pod, opts Options) (component.ViewComponent, error) {
 	fl := flexlayout.New()
 
@@ -76,12 +78,12 @@ func PodHandler(p *corev1.Pod, opts Options) (component.ViewComponent, error) {
 	}
 
 	if err := configSection.Add(configView, 16); err != nil {
-		return nil, errors.Wrap(err, "add pod configation to layout")
+		return nil, errors.Wrap(err, "add pod config to layout")
 	}
 
 	view := fl.ToComponent("Summary")
-
 	return view, nil
+
 }
 
 type podStatus struct {

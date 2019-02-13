@@ -1,12 +1,18 @@
 @import '~css/variables/variables.scss';
 
 .overview {
+  width: 100%;
+
   .main {
-    height: 100%;
+    margin-top: 50px;
+    width: 100%;
+    position: relative;
+    overflow: scroll;
+
 
     .component--primary {
-      margin-bottom: 50px;
       padding: 20px 50px;
+      width: 100%;
 
       .content-text {
         text-align: center;
@@ -17,7 +23,7 @@
       }
 
       .error-content-text {
-        color: $red
+        color: $red;
       }
     }
 
@@ -35,6 +41,9 @@
 
 .react-tabs {
   -webkit-tap-highlight-color: transparent;
+  overflow: scroll;
+  position: fixed;
+  width: calc(100% - #{$navWidth});
 
   &__tab-list {
     border-bottom: 1px solid rgba(173, 187, 196, 0.3);
@@ -62,6 +71,7 @@
   }
 
   &__tab-panel {
+    width: 100%;
     display: none;
 
     &--selected {

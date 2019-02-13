@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -190,4 +191,8 @@ func (l *LocalContent) Start() error {
 }
 
 func (l *LocalContent) Stop() {
+}
+
+func (l *LocalContent) Handlers() map[string]http.Handler {
+	return make(map[string]http.Handler)
 }

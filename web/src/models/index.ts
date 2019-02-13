@@ -4,6 +4,7 @@ import { JSONGrid } from './grid'
 import { JSONLabels } from './labels'
 import { JSONLink } from './link'
 import { JSONList } from './list'
+import { JSONLogs } from './logs'
 import { JSONPanel } from './panel'
 import { JSONQuadrant } from './quadrant'
 import { JSONResourceViewer } from './resourceviewer'
@@ -84,16 +85,22 @@ export interface ListModel extends View {
   readonly items: View[]
 }
 
+export interface LogsModel extends View {
+  readonly namespace: string
+  readonly name: string
+  readonly containers: string[]
+}
+
 export interface ResourceViewerNode {
-  name: string
-  apiVersion: string
-  kind: string
-  status: string
+  readonly name: string
+  readonly apiVersion: string
+  readonly kind: string
+  readonly status: string
 }
 
 export interface Edge {
-  node: string
-  type: string
+  readonly node: string
+  readonly type: string
 }
 
 export interface ResourceViewerModel extends View {
@@ -185,6 +192,8 @@ export function viewFromContentType(ct: ContentType): View {
       return new JSONLink(ct)
     case 'list':
       return new JSONList(ct)
+    case 'logs':
+      return new JSONLogs(ct)
     case 'panel':
       return new JSONPanel(ct)
     case 'quadrant':

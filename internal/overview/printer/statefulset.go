@@ -22,7 +22,7 @@ func StatefulSetListHandler(list *appsv1.StatefulSetList, opts Options) (compone
 
 	for _, sts := range list.Items {
 		row := component.TableRow{}
-		statefulsetPath := gvkPath(sts.TypeMeta.APIVersion, sts.TypeMeta.Kind, sts.Name)
+		statefulsetPath := gvkPath(sts.Namespace, sts.TypeMeta.APIVersion, sts.TypeMeta.Kind, sts.Name)
 		row["Name"] = component.NewLink("", sts.Name, statefulsetPath)
 		row["Labels"] = component.NewLabels(sts.Labels)
 
@@ -69,7 +69,7 @@ func StatefulSetHandler(sts *appsv1.StatefulSet, options Options) (component.Vie
 		return nil, errors.Wrap(err, "add statefulset summary to layout")
 	}
 
-	PodTemplate := NewPodTemplate(sts.Spec.Template)
+	PodTemplate := NewPodTemplate(sts, sts.Spec.Template)
 	if err = PodTemplate.AddToFlexLayout(fl); err != nil {
 		return nil, errors.Wrap(err, "add pod template to layout")
 	}

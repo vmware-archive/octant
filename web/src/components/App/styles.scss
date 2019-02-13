@@ -9,19 +9,28 @@
   min-height: 100vh;
   position: relative;
 
-  .app-nav, .app-main {
-    float: left;
+
+  .app-page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 
   .app-nav {
+    float: left;
     height: 100%;
+    overflow: scroll;
     position: fixed;
     width: $navWidth;
   }
 
   .app-main {
+    flex: 1;
     left: $navWidth;
     position: relative;
     width: calc(100% - #{$navWidth});
+    display: flex;
+    flex-direction: column;
+
   }
 }

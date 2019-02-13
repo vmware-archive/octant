@@ -3,6 +3,7 @@ import FlexLayout from 'components/FlexLayout'
 import Grid from 'components/Grid'
 import Labels from 'components/Labels'
 import List from 'components/List'
+import Logs from 'components/Logs'
 import Quadrant from 'components/Quadrant'
 import ResourceViewer from 'components/ResourceViewer'
 import Selectors from 'components/Selector'
@@ -19,6 +20,7 @@ import {
   LabelsModel,
   LinkModel,
   ListModel,
+  LogsModel,
   QuadrantModel,
   ResourceViewerModel,
   SelectorsModel,
@@ -45,6 +47,8 @@ export function renderView(view: View): JSX.Element {
       return <WebLink view={view as LinkModel} />
     case 'list':
       return <List view={view as ListModel} />
+    case 'logs':
+      return <Logs view={view as LogsModel} />
     case 'quadrant':
       return <Quadrant view={view as QuadrantModel} />
     case 'resourceViewer':
