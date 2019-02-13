@@ -13,8 +13,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+// Options are printer options.
 type Options struct {
-	Cache cache.Cache
+	Cache         cache.Cache
+	DisableLabels bool
 }
 
 // Printer is an interface for printing runtime objects.

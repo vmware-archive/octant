@@ -4,11 +4,20 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/heptio/developer-dash/internal/view/flexlayout"
+
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/internal/view/gridlayout"
+)
+
+var (
+	objectEventCols = component.NewTableCols("Message", "Reason", "Type", "First Seen", "Last Seen", "From", "Count")
 )
 
 // EventListHandler is a printFunc that lists events.
@@ -129,8 +138,7 @@ func PrintEvents(list *corev1.EventList, opts Options) (component.ViewComponent,
 		return nil, errors.New("nil list")
 	}
 
-	cols := component.NewTableCols("Type", "Reason", "Age", "From", "Message")
-	table := component.NewTable("Events", cols)
+	table := component.NewTable("Events", objectEventCols)
 
 	for _, event := range list.Items {
 		row := component.TableRow{}
@@ -160,4 +168,80 @@ func formatEventSource(es corev1.EventSource) string {
 		EventSourceString = append(EventSourceString, es.Host)
 	}
 	return strings.Join(EventSourceString, ", ")
+}
+
+func createEventsForObject(fl *flexlayout.FlexLayout, object runtime.Object, opts Options) error {
+	eventList, err := eventsForObject(object, opts.Cache)
+	if err != nil {
+		return errors.Wrap(err, "list events for object")
+	}
+
+	if len(eventList.Items) > 0 {
+		eventTable, err := PrintEvents(eventList, opts)
+		if err != nil {
+			return errors.Wrap(err, "create event table for object")
+		}
+
+		eventsSection := fl.AddSection()
+		if err := eventsSection.Add(eventTable, 24); err != nil {
+			return errors.Wrap(err, "add event table to layout")
+		}
+	}
+
+	return nil
+}
+
+func eventsForObject(object runtime.Object, c cache.Cache) (*corev1.EventList, error) {
+	accessor := meta.NewAccessor()
+
+	namespace, err := accessor.Namespace(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "get namespace for object")
+	}
+
+	apiVersion, err := accessor.APIVersion(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "Get apiVersion for object")
+	}
+
+	kind, err := accessor.Kind(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "get kind for object")
+	}
+
+	name, err := accessor.Name(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "get name for object")
+	}
+
+	key := cache.Key{
+		Namespace:  namespace,
+		APIVersion: "v1",
+		Kind:       "Event",
+	}
+
+	list, err := c.List(key)
+	if err != nil {
+		return nil, errors.Wrap(err, "list events for object")
+	}
+
+	eventList := &corev1.EventList{}
+
+	for _, unstructuredEvent := range list {
+		event := &corev1.Event{}
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(unstructuredEvent.Object, event)
+		if err != nil {
+			return nil, err
+		}
+
+		involvedObject := event.InvolvedObject
+		if involvedObject.Namespace == namespace &&
+			involvedObject.APIVersion == apiVersion &&
+			involvedObject.Kind == kind &&
+			involvedObject.Name == name {
+			eventList.Items = append(eventList.Items, *event)
+		}
+	}
+
+	return eventList, nil
 }

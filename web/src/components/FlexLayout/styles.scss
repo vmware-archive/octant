@@ -9,14 +9,18 @@
 .flexLayout--section-item {
   flex-grow: 0;
   flex-shrink: 0;
-  margin: 0 15px;
+  padding: 0 15px;
 
   &:first-child {
-    margin-left: 0;
+    padding-left: 0;
   }
 
   &:last-child {
-    margin-right: 0;
+    padding-right: 0;
+  }
+
+  & > * {
+    height: 100%;
   }
 
   .podtemplate-labels {

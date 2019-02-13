@@ -20,13 +20,22 @@ import (
 	"github.com/heptio/developer-dash/internal/view/flexlayout"
 )
 
+var (
+	podColsWithLabels    = component.NewTableCols("Name", "Labels", "Ready", "Status", "Restarts", "Age")
+	podColsWithOutLabels = component.NewTableCols("Name", "Ready", "Status", "Restarts", "Age")
+)
+
 // PodListHandler is a printFunc that prints pods
 func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("list is nil")
 	}
 
-	cols := component.NewTableCols("Name", "Labels", "Ready", "Status", "Restarts", "Age")
+	cols := podColsWithLabels
+	if opts.DisableLabels {
+		cols = podColsWithOutLabels
+	}
+
 	tbl := component.NewTable("Pods", cols)
 
 	for _, p := range list.Items {
@@ -37,7 +46,10 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 		}
 
 		row["Name"] = component.NewLink("", p.Name, podPath)
-		row["Labels"] = component.NewLabels(p.Labels)
+
+		if !opts.DisableLabels {
+			row["Labels"] = component.NewLabels(p.Labels)
+		}
 
 		readyCounter := 0
 		for _, c := range p.Status.ContainerStatuses {
@@ -298,4 +310,69 @@ func isEqualSelector(s1, s2 *metav1.LabelSelector) bool {
 	}
 
 	return apiequality.Semantic.DeepEqual(s1Copy, s2Copy)
+}
+
+func createPodListView(object runtime.Object, options Options) (component.ViewComponent, error) {
+	options.DisableLabels = true
+
+	podList := &corev1.PodList{}
+
+	if options.Cache == nil {
+		return nil, errors.New("cache is nil")
+	}
+
+	accessor := meta.NewAccessor()
+
+	namespace, err := accessor.Namespace(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "get namespace for object")
+	}
+
+	apiVersion, err := accessor.APIVersion(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "Get apiVersion for object")
+	}
+
+	kind, err := accessor.Kind(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "get kind for object")
+	}
+
+	name, err := accessor.Name(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "get name for object")
+	}
+
+	key := cache.Key{
+		Namespace:  namespace,
+		APIVersion: "v1",
+		Kind:       "Pod",
+	}
+
+	list, err := options.Cache.List(key)
+	if err != nil {
+		return nil, errors.Wrapf(err, "list all objects for key %+v", key)
+	}
+
+	for _, u := range list {
+		pod := &corev1.Pod{}
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, pod)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := copyObjectMeta(pod, u); err != nil {
+			return nil, errors.Wrap(err, "copy object metadata")
+		}
+
+		for _, ownerReference := range pod.OwnerReferences {
+			if ownerReference.APIVersion == apiVersion &&
+				ownerReference.Kind == kind &&
+				ownerReference.Name == name {
+				podList.Items = append(podList.Items, *pod)
+			}
+		}
+	}
+
+	return PodListHandler(podList, options)
 }

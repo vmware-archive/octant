@@ -51,10 +51,13 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "describing environment")
 	}
-	sections.Add(component.SummarySection{
-		Header:  "Environment",
-		Content: envTbl,
-	})
+
+	if len(envTbl.Config.Rows) > 0 {
+		sections.Add(component.SummarySection{
+			Header:  "Environment",
+			Content: envTbl,
+		})
+	}
 
 	cmd := printSlice(c.Command)
 	if cmd != "" {
