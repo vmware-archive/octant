@@ -1,8 +1,12 @@
-package printer_test
+package printer
 
 import (
 	"testing"
 	"time"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
+	"github.com/golang/mock/gomock"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -10,12 +14,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/overview/printer"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	"github.com/heptio/developer-dash/internal/view/component"
 )
 
 func Test_EventListHandler(t *testing.T) {
-	printOptions := printer.Options{
+	printOptions := Options{
 		Cache: cache.NewMemoryCache(),
 	}
 
@@ -46,7 +50,7 @@ func Test_EventListHandler(t *testing.T) {
 		},
 	}
 
-	got, err := printer.EventListHandler(object, printOptions)
+	got, err := EventListHandler(object, printOptions)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Kind", "Message", "Reason", "Type",
@@ -68,7 +72,7 @@ func Test_EventListHandler(t *testing.T) {
 }
 
 func Test_ReplicasetEvents(t *testing.T) {
-	printOptions := printer.Options{
+	printOptions := Options{
 		Cache: cache.NewMemoryCache(),
 	}
 
@@ -130,11 +134,10 @@ func Test_ReplicasetEvents(t *testing.T) {
 		},
 	}
 
-	got, err := printer.PrintEvents(object, printOptions)
+	got, err := PrintEvents(object, printOptions)
 	require.NoError(t, err)
 
-	cols := component.NewTableCols("Type", "Reason", "Age", "From", "Message")
-	expected := component.NewTable("Events", cols)
+	expected := component.NewTable("Events", objectEventCols)
 
 	expected.Add(component.TableRow{
 		"Message":    component.NewText("Created pod: frontend-97k6z"),
@@ -170,7 +173,7 @@ func Test_ReplicasetEvents(t *testing.T) {
 }
 
 func Test_EventHandler(t *testing.T) {
-	printOptions := printer.Options{
+	printOptions := Options{
 		Cache: cache.NewMemoryCache(),
 	}
 
@@ -199,7 +202,7 @@ func Test_EventHandler(t *testing.T) {
 		},
 	}
 
-	got, err := printer.EventHandler(event, printOptions)
+	got, err := EventHandler(event, printOptions)
 	require.NoError(t, err)
 
 	eventDetailSections := []component.SummarySection{
@@ -248,4 +251,73 @@ func Test_EventHandler(t *testing.T) {
 	expected := component.NewGrid("Summary", *eventDetailPanel)
 
 	assert.Equal(t, expected, got)
+}
+
+func Test_eventsForObject(t *testing.T) {
+	object := &corev1.Pod{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "Pod",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "pod",
+			Namespace: "default",
+		},
+	}
+
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	c := cachefake.NewMockCache(controller)
+	key := cache.Key{
+		Namespace:  "default",
+		APIVersion: "v1",
+		Kind:       "Event",
+	}
+
+	eventList := []*unstructured.Unstructured{
+		{
+			Object: map[string]interface{}{
+				"involvedObject": map[string]interface{}{
+					"namespace":  "default",
+					"apiVersion": "v1",
+					"kind":       "Pod",
+					"name":       "pod",
+				},
+				"message": "pod",
+			},
+		},
+		{
+			Object: map[string]interface{}{
+				"involvedObject": map[string]interface{}{
+					"namespace":  "default",
+					"apiVersion": "v1",
+					"kind":       "Pod",
+					"name":       "pod2",
+				},
+				"message": "pod2",
+			},
+		},
+	}
+
+	c.EXPECT().List(gomock.Eq(key)).Return(eventList, nil)
+
+	got, err := eventsForObject(object, c)
+	require.NoError(t, err)
+
+	expected := &corev1.EventList{
+		Items: []corev1.Event{
+			{
+				InvolvedObject: corev1.ObjectReference{
+					Namespace:  "default",
+					APIVersion: "v1",
+					Kind:       "Pod",
+					Name:       "pod",
+				},
+				Message: "pod",
+			},
+		},
+	}
+
+	assert.Equal(t, expected.Items, got.Items)
 }
