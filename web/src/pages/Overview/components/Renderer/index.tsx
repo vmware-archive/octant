@@ -1,9 +1,8 @@
 import { View } from 'models'
 import React, { Component } from 'react'
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs'
-import URLParse from 'url-parse'
 
-import Content from './components/Content'
+import Content from '../Content'
 
 interface Props {
   views: View[]

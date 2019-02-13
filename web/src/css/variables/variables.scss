@@ -20,7 +20,7 @@ $dividerColor: rgba(255, 255, 255, 0.15);
 
 @mixin webLink {
   color: $white;
-  text-decoration: underline;
+  text-decoration: none;
 
   &:hover {
     color: $gray-dark;

@@ -7,7 +7,7 @@ import queryString from 'query-string'
 import React, { Component } from 'react'
 import { RouteComponentProps, withRouter } from 'react-router'
 
-import Renderer from './renderer'
+import Renderer from './components/Renderer'
 import './styles.scss'
 
 const tabIndicator = 'tab'
@@ -111,4 +111,4 @@ class Overview extends Component<Props, State> {
   }
 }
 
-export default withRouter(Overview)
+export default Overview
