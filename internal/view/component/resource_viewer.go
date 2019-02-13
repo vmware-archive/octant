@@ -49,11 +49,11 @@ type Nodes map[string]Node
 // Node is a node in a graph, representing a kubernetes object
 // IsNetwork is a hint to the layout engine.
 type Node struct {
-	Name       string     `json:"name,omitempty"`
-	APIVersion string     `json:"apiVersion,omitempty"`
-	Kind       string     `json:"kind,omitempty"`
-	Status     NodeStatus `json:"status,omitempty"`
-	IsNetwork  bool       `json:"isNetwork,omitempty"`
+	Name           string     `json:"name,omitempty"`
+	APIVersion     string     `json:"apiVersion,omitempty"`
+	Kind           string     `json:"kind,omitempty"`
+	Status         NodeStatus `json:"status,omitempty"`
+	StatusMessages []string   `json:"statusMessages,omitempty"`
 }
 
 // ResourceViewerConfig is configuration for a resource viewer.

@@ -17,7 +17,7 @@ export default function ViewSummary(props: Props) {
   return (
     <div className='viewSummary'>
       <div className='viewSummary--title'>
-        <span className='status--ok' />
+        <span className={`status--${node.status}`} />
         {node.name}
       </div>
       <div className='viewSummary--content'>

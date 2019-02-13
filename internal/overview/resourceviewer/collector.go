@@ -4,6 +4,8 @@ import (
 	"crypto/md5"
 	"fmt"
 
+	"github.com/heptio/developer-dash/internal/overview/objectstatus"
+
 	"github.com/heptio/developer-dash/internal/overview/objectvisitor"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
@@ -138,11 +140,14 @@ func (c *Collector) createObjectNode(object objectvisitor.ClusterObject) (string
 		return "", component.Node{}, errors.New("unable to get object name")
 	}
 
+	// TODO: hookup node status here
+	objectStatus := objectstatus.Status(object)
+
 	node := component.Node{
 		Name:       name,
 		APIVersion: apiVersion,
 		Kind:       kind,
-		Status:     component.NodeStatusOK,
+		Status:     objectStatus.NodeStatus,
 	}
 
 	return string(uid), node, nil
