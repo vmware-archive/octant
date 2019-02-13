@@ -1,22 +1,16 @@
 @import '~css/variables/variables.scss';
 
 .overview {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-
+  width: 100%;
 
   .main {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
+    margin-top: 50px;
+    width: 100%;
+    position: relative;
+    overflow: scroll;
 
 
     .component--primary {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-      margin-bottom: 50px;
       padding: 20px 50px;
       width: 100%;
 
@@ -46,11 +40,10 @@
 }
 
 .react-tabs {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
   -webkit-tap-highlight-color: transparent;
-
+  overflow: scroll;
+  position: fixed;
+  width: calc(100% - #{$navWidth});
 
   &__tab-list {
     border-bottom: 1px solid rgba(173, 187, 196, 0.3);
@@ -78,14 +71,11 @@
   }
 
   &__tab-panel {
+    width: 100%;
     display: none;
 
-    flex: 1;
-    width: 100%;
-
     &--selected {
-      display: flex;
-      flex-direction: column;
+      display: block;
     }
   }
 }
