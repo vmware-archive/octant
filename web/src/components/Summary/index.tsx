@@ -26,6 +26,8 @@ function summaryContent(item: SummaryItem, key: number): JSX.Element {
   let content: JSX.Element
 
   switch (item.content.type) {
+    case 'annotations':
+    case 'labels':
     case 'link':
     case 'selectors':
     case 'table':

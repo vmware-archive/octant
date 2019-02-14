@@ -1,3 +1,4 @@
+import Annotations from 'components/Annotations'
 import Containers from 'components/Containers'
 import FlexLayout from 'components/FlexLayout'
 import Grid from 'components/Grid'
@@ -14,6 +15,7 @@ import Timestamp from 'components/Timestamp'
 import WebLink from 'components/WebLink'
 import YAML from 'components/YAML'
 import {
+  AnnotationsModel,
   ContainersModel,
   FlexLayoutModel,
   GridModel,
@@ -35,6 +37,8 @@ import React from 'react'
 
 export function renderView(view: View): JSX.Element {
   switch (view.type) {
+    case 'annotations':
+      return <Annotations view={view as AnnotationsModel} />
     case 'containers':
       return <Containers view={view as ContainersModel} />
     case 'flexlayout':

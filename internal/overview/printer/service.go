@@ -66,6 +66,15 @@ func ServiceHandler(service *corev1.Service, options Options) (component.ViewCom
 		return nil, errors.Wrap(err, "add service summary to layout")
 	}
 
+	metadata, err := NewMetadata(service)
+	if err != nil {
+		return nil, errors.Wrap(err, "create metadata generator")
+	}
+
+	if err := metadata.AddToFlexLayout(fl); err != nil {
+		return nil, errors.Wrap(err, "add metadata to layout")
+	}
+
 	endpointsSection := fl.AddSection()
 	endpointsView, err := serviceEndpoints(options.Cache, service)
 	if err != nil {

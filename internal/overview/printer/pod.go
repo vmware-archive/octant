@@ -91,6 +91,15 @@ func PodHandler(p *corev1.Pod, opts Options) (component.ViewComponent, error) {
 		return nil, errors.Wrap(err, "add pod config to layout")
 	}
 
+	metadata, err := NewMetadata(p)
+	if err != nil {
+		return nil, errors.Wrap(err, "create metadata generator")
+	}
+
+	if err := metadata.AddToFlexLayout(fl); err != nil {
+		return nil, errors.Wrap(err, "add metadata to layout")
+	}
+
 	view := fl.ToComponent("Summary")
 	return view, nil
 

@@ -50,7 +50,7 @@ func ReplicaSetListHandler(list *appsv1.ReplicaSetList, opts Options) (component
 func ReplicaSetHandler(rs *appsv1.ReplicaSet, options Options) (component.ViewComponent, error) {
 	fl := flexlayout.New()
 
-	configSection := fl.AddSection()
+	summarySection := fl.AddSection()
 
 	rsConfigGen := NewReplicaSetConfiguration(rs)
 	configView, err := rsConfigGen.Create()
@@ -58,11 +58,9 @@ func ReplicaSetHandler(rs *appsv1.ReplicaSet, options Options) (component.ViewCo
 		return nil, err
 	}
 
-	if err := configSection.Add(configView, 16); err != nil {
+	if err := summarySection.Add(configView, 16); err != nil {
 		return nil, errors.Wrap(err, "add replicaset config to layout")
 	}
-
-	summarySection := fl.AddSection()
 
 	rsSummaryGen := NewReplicaSetStatus(rs)
 	statusView, err := rsSummaryGen.Create(options.Cache)
@@ -72,6 +70,15 @@ func ReplicaSetHandler(rs *appsv1.ReplicaSet, options Options) (component.ViewCo
 
 	if err := summarySection.Add(statusView, 8); err != nil {
 		return nil, errors.Wrap(err, "add replicaset summary to layout")
+	}
+
+	metadata, err := NewMetadata(rs)
+	if err != nil {
+		return nil, errors.Wrap(err, "create metadata generator")
+	}
+
+	if err := metadata.AddToFlexLayout(fl); err != nil {
+		return nil, errors.Wrap(err, "add metadata to layout")
 	}
 
 	view := fl.ToComponent("Summary")

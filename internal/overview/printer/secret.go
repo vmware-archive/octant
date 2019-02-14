@@ -6,7 +6,7 @@ import (
 	"github.com/heptio/developer-dash/internal/overview/link"
 
 	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/gridlayout"
+	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -44,23 +44,36 @@ func SecretHandler(secret *corev1.Secret, options Options) (component.ViewCompon
 	if secret == nil {
 		return nil, errors.New("secret is nil")
 	}
-	gl := gridlayout.New()
+	fl := flexlayout.New()
 
-	configSection := gl.CreateSection(8)
+	configSection := fl.AddSection()
 	configView, err := secretConfiguration(*secret)
 	if err != nil {
 		return nil, errors.Wrapf(err, "summarize configuration for secret %s", secret.Name)
 	}
-	configSection.Add(configView, 12)
+	if err := configSection.Add(configView, 16); err != nil {
+		return nil, errors.Wrap(err, "add secret config to layout")
+	}
 
-	dataSection := gl.CreateSection(8)
+	metadata, err := NewMetadata(secret)
+	if err != nil {
+		return nil, errors.Wrap(err, "create metadata generator")
+	}
+
+	if err := metadata.AddToFlexLayout(fl); err != nil {
+		return nil, errors.Wrap(err, "add metadata to layout")
+	}
+
+	dataSection := fl.AddSection()
 	dataView, err := secretData(*secret)
 	if err != nil {
 		return nil, errors.Wrapf(err, "summary data for secret %s", secret.Name)
 	}
-	dataSection.Add(dataView, 24)
+	if err := dataSection.Add(dataView, 24); err != nil {
+		return nil, errors.Wrap(err, "add secret data to layout")
+	}
 
-	return gl.ToGrid(), nil
+	return fl.ToComponent("Summary"), nil
 }
 
 func secretConfiguration(secret corev1.Secret) (*component.Summary, error) {

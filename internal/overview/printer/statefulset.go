@@ -70,8 +70,17 @@ func StatefulSetHandler(sts *appsv1.StatefulSet, options Options) (component.Vie
 		return nil, errors.Wrap(err, "add statefulset summary to layout")
 	}
 
-	PodTemplate := NewPodTemplate(sts, sts.Spec.Template)
-	if err = PodTemplate.AddToFlexLayout(fl); err != nil {
+	metadata, err := NewMetadata(sts)
+	if err != nil {
+		return nil, errors.Wrap(err, "create metadata generator")
+	}
+
+	if err := metadata.AddToFlexLayout(fl); err != nil {
+		return nil, errors.Wrap(err, "add metadata to layout")
+	}
+
+	podTemplate := NewPodTemplate(sts, sts.Spec.Template)
+	if err = podTemplate.AddToFlexLayout(fl); err != nil {
 		return nil, errors.Wrap(err, "add pod template to layout")
 	}
 
@@ -137,12 +146,6 @@ func (sc *StatefulSetConfiguration) Create() (*component.Summary, error) {
 	}
 
 	sections.AddText("Pod Management Policy", string(sts.Spec.PodManagementPolicy))
-
-	createTimestamp := sts.CreationTimestamp.Time
-	sections = append(sections, component.SummarySection{
-		Header:  "Age",
-		Content: component.NewTimestamp(createTimestamp),
-	})
 
 	summary := component.NewSummary("Configuration", sections...)
 	return summary, nil
