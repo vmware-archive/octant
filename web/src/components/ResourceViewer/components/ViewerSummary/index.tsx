@@ -21,16 +21,29 @@ export default function ViewSummary(props: Props) {
     return <li key={index}>{renderView(detail)}</li>
   })
 
+  let title:
+    | string
+    | number
+    | boolean
+    | {}
+    | JSX.Element
+    | React.ReactElement<any>
+    | React.ReactNodeArray
+    | React.ReactPortal
+  if (node.path) {
+    title = renderView(node.path)
+  } else {
+    title = node.name
+  }
+
   return (
     <div className='viewSummary'>
       <div className='viewSummary--title'>
         <span className={`status--${node.status}`} />
-        {node.name}
+        {title}
       </div>
       <div className='viewSummary--content'>
-        <ul>
-          {statusMessages}
-        </ul>
+        <ul>{statusMessages}</ul>
       </div>
     </div>
   )

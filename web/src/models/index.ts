@@ -97,6 +97,7 @@ export interface ResourceViewerNode {
   readonly kind: string
   readonly status: string
   readonly details: TitleView
+  readonly path?: LinkModel
 }
 
 export interface Edge {
