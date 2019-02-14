@@ -141,10 +141,8 @@ func Test_ContainerConfiguration(t *testing.T) {
 					Header: "Environment",
 					Content: &component.Table{
 						Metadata: component.Metadata{
-							Type: "table",
-							Title: []component.TitleViewComponent{
-								component.NewText("Environment"),
-							},
+							Type:  "table",
+							Title: component.Title(component.NewText("Environment")),
 						},
 						Config: component.TableConfig{
 							Columns: component.NewTableCols("Name", "Value", "Source"),
@@ -197,10 +195,8 @@ func Test_ContainerConfiguration(t *testing.T) {
 					Header: "Volume Mounts",
 					Content: &component.Table{
 						Metadata: component.Metadata{
-							Type: "table",
-							Title: []component.TitleViewComponent{
-								component.NewText("Volume Mounts"),
-							},
+							Type:  "table",
+							Title: component.Title(component.NewText("Volume Mounts")),
 						},
 						Config: component.TableConfig{
 							Columns: component.NewTableCols("Name", "Mount Path", "Propagation"),

@@ -28,23 +28,16 @@ func replicaSetExtV1Beta1(object runtime.Object) (ObjectStatus, error) {
 	case status.Replicas == 0:
 		return ObjectStatus{
 			NodeStatus: component.NodeStatusError,
-			Details: []component.TitleViewComponent{
-				component.NewText(fmt.Sprintf("Replica Set has no pods available")),
-			},
+			Details:    component.Title(component.NewText(fmt.Sprintf("Replica Set has no pods available"))),
 		}, nil
 	case status.Replicas == status.AvailableReplicas:
 		return ObjectStatus{NodeStatus: component.NodeStatusOK,
-			Details: []component.TitleViewComponent{
-				component.NewText(fmt.Sprintf("Replica Set is OK")),
-			},
+			Details: component.Title(component.NewText(fmt.Sprintf("Replica Set is OK"))),
 		}, nil
 	default:
 		return ObjectStatus{
 			NodeStatus: component.NodeStatusWarning,
-			Details: []component.TitleViewComponent{
-				component.NewText(fmt.Sprintf("Expected %d replicas, but %d are available",
-					status.Replicas, status.AvailableReplicas)),
-			},
+			Details:    component.Title(component.NewText(fmt.Sprintf("Expected %d replicas, but %d are available", status.Replicas, status.AvailableReplicas))),
 		}, nil
 	}
 
@@ -67,23 +60,16 @@ func replicaSetAppsV1Beta1(object runtime.Object) (ObjectStatus, error) {
 	case status.Replicas == 0:
 		return ObjectStatus{
 			NodeStatus: component.NodeStatusError,
-			Details: []component.TitleViewComponent{
-				component.NewText(fmt.Sprintf("Replica Set has no pods available")),
-			},
+			Details:    component.Title(component.NewText(fmt.Sprintf("Replica Set has no pods available"))),
 		}, nil
 	case status.Replicas == status.AvailableReplicas:
 		return ObjectStatus{NodeStatus: component.NodeStatusOK,
-			Details: []component.TitleViewComponent{
-				component.NewText(fmt.Sprintf("Replica Set is OK")),
-			},
+			Details: component.Title(component.NewText(fmt.Sprintf("Replica Set is OK"))),
 		}, nil
 	default:
 		return ObjectStatus{
 			NodeStatus: component.NodeStatusWarning,
-			Details: []component.TitleViewComponent{
-				component.NewText(fmt.Sprintf("Expected %d pods, but %d are available",
-					status.Replicas, status.AvailableReplicas)),
-			},
+			Details:    component.Title(component.NewText(fmt.Sprintf("Expected %d pods, but %d are available", status.Replicas, status.AvailableReplicas))),
 		}, nil
 	}
 

@@ -26,9 +26,7 @@ func Status(object runtime.Object) (ObjectStatus, error) {
 	default:
 		return ObjectStatus{
 			NodeStatus: component.NodeStatusOK,
-			Details: []component.TitleViewComponent{
-				component.NewText(fmt.Sprintf("%s %s is OK", apiVersion, kind)),
-			},
+			Details:    component.Title(component.NewText(fmt.Sprintf("%s %s is OK", apiVersion, kind))),
 		}, nil
 	}
 }

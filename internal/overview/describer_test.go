@@ -142,18 +142,13 @@ func TestObjectDescriber(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := component.ContentResponse{
-		Title: []component.TitleViewComponent{
-			component.NewText("object"),
-			component.NewText("pod"),
-		},
+		Title: component.Title(component.NewText("object"), component.NewText("pod")),
 		ViewComponents: []component.ViewComponent{
 			component.NewText("*v1.Pod"),
 			&component.YAML{
 				Metadata: component.Metadata{
-					Title: []component.TitleViewComponent{
-						component.NewText("YAML"),
-					},
-					Type: "yaml",
+					Title: component.Title(component.NewText("YAML")),
+					Type:  "yaml",
 				},
 				Config: component.YAMLConfig{
 					Data: "---\napiVersion: v1\nkind: Pod\nmetadata:\n  creationTimestamp: null\n  name: pod\n  namespace: default\nspec:\n  containers:\n  - name: one\n    resources: {}\n  - name: two\n    resources: {}\nstatus: {}\n",
@@ -195,9 +190,7 @@ func TestSectionDescriber(t *testing.T) {
 				newStubDescriber("/foo"),
 			),
 			expected: component.ContentResponse{
-				Title: []component.TitleViewComponent{
-					component.NewText("section"),
-				},
+				Title: component.Title(component.NewText("section")),
 				ViewComponents: []component.ViewComponent{
 					component.NewList("", nil),
 				},
@@ -212,9 +205,7 @@ func TestSectionDescriber(t *testing.T) {
 				newEmptyDescriber("/bar"),
 			),
 			expected: component.ContentResponse{
-				Title: []component.TitleViewComponent{
-					component.NewText("section"),
-				},
+				Title: component.Title(component.NewText("section")),
 				ViewComponents: []component.ViewComponent{
 					component.NewList("", nil),
 				},

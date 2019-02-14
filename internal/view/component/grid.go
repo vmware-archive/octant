@@ -19,7 +19,7 @@ func NewGrid(title string, panels ...Panel) *Grid {
 	return &Grid{
 		Metadata: Metadata{
 			Type:  "grid",
-			Title: []TitleViewComponent{NewText(title)},
+			Title: Title(NewText(title)),
 		},
 		Config: GridConfig{
 			Panels: p,

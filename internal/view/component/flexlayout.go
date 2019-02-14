@@ -27,7 +27,7 @@ func NewFlexLayout(title string) *FlexLayout {
 	return &FlexLayout{
 		Metadata: Metadata{
 			Type:  "flexlayout",
-			Title: []TitleViewComponent{NewText(title)},
+			Title: Title(NewText(title)),
 		},
 	}
 }

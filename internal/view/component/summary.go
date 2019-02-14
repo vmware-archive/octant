@@ -61,7 +61,7 @@ func NewSummary(title string, sections ...SummarySection) *Summary {
 	return &Summary{
 		Metadata: Metadata{
 			Type:  "summary",
-			Title: []TitleViewComponent{NewText(title)},
+			Title: Title(NewText(title)),
 		},
 		Config: SummaryConfig{
 			Sections: s,

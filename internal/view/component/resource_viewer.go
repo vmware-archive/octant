@@ -75,7 +75,7 @@ func NewResourceViewer(title string) *ResourceViewer {
 	return &ResourceViewer{
 		Metadata: Metadata{
 			Type:  "resourceViewer",
-			Title: []TitleViewComponent{NewText(title)},
+			Title: Title(NewText(title)),
 		},
 		Config: ResourceViewerConfig{
 			Edges: AdjList{},

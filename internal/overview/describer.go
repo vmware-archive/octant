@@ -318,9 +318,7 @@ func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace strin
 
 	cr := component.ContentResponse{
 		ViewComponents: []component.ViewComponent{list},
-		Title: []component.TitleViewComponent{
-			component.NewText(d.title),
-		},
+		Title:          component.Title(component.NewText(d.title)),
 	}
 
 	return cr, nil

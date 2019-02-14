@@ -88,10 +88,8 @@ func Test_Collector(t *testing.T) {
 
 	expected := &component.ResourceViewer{
 		Metadata: component.Metadata{
-			Type: "resourceViewer",
-			Title: []component.TitleViewComponent{
-				component.NewText("Resource Viewer"),
-			},
+			Type:  "resourceViewer",
+			Title: component.Title(component.NewText("Resource Viewer")),
 		},
 		Config: component.ResourceViewerConfig{
 			Edges: component.AdjList{
@@ -114,27 +112,21 @@ func Test_Collector(t *testing.T) {
 					Kind:       "Deployment",
 					Name:       "deployment",
 					Status:     "ok",
-					Details: []component.TitleViewComponent{
-						component.NewText("Deployment is OK"),
-					},
+					Details:    component.Title(component.NewText("Deployment is OK")),
 				},
 				"replicaSet1": component.Node{
 					APIVersion: "extensions/v1beta1",
 					Kind:       "ReplicaSet",
 					Name:       "replicaSet1",
 					Status:     "ok",
-					Details: []component.TitleViewComponent{
-						component.NewText("Replica Set is OK"),
-					},
+					Details:    component.Title(component.NewText("Replica Set is OK")),
 				},
 				"pods-replicaSet1": component.Node{
 					APIVersion: "v1",
 					Kind:       "Pod",
 					Name:       "replicaSet1 pods",
 					Status:     "ok",
-					Details: []component.TitleViewComponent{
-						component.NewText("Pod count: 1"),
-					},
+					Details:    component.Title(component.NewText("Pod count: 1")),
 				},
 			},
 		},

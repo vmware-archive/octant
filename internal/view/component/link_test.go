@@ -38,7 +38,7 @@ func Test_Link_Marshal(t *testing.T) {
 			name: "with title",
 			input: &Link{
 				Metadata: Metadata{
-					Title: []TitleViewComponent{NewText("Name")},
+					Title: Title(NewText("Name")),
 				},
 				Config: LinkConfig{
 					Text: "nginx-deployment",

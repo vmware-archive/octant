@@ -23,10 +23,8 @@ func NewLogs(namespace, name string, containers []string) *Logs {
 			Containers: containers,
 		},
 		Metadata: Metadata{
-			Type: "logs",
-			Title: []TitleViewComponent{
-				NewText("Logs"),
-			},
+			Type:  "logs",
+			Title: Title(NewText("Logs")),
 		},
 	}
 }

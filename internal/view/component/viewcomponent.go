@@ -36,9 +36,7 @@ func (c *ContentResponse) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	c.Title = []TitleViewComponent{
-		NewText(stage.Title),
-	}
+	c.Title = Title(NewText(stage.Title))
 
 	for _, to := range stage.ViewComponents {
 		vc, err := to.ToViewComponent()
@@ -129,4 +127,9 @@ type TitleViewComponent interface {
 	ViewComponent
 
 	SupportsTitle()
+}
+
+// Title is a convenience method for creating a title.
+func Title(components ...TitleViewComponent) []TitleViewComponent {
+	return components
 }

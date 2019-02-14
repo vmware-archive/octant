@@ -18,10 +18,8 @@ func Test_ToComponent(t *testing.T) {
 
 	expected := &component.YAML{
 		Metadata: component.Metadata{
-			Title: []component.TitleViewComponent{
-				component.NewText("YAML"),
-			},
-			Type: "yaml",
+			Title: component.Title(component.NewText("YAML")),
+			Type:  "yaml",
 		},
 		Config: component.YAMLConfig{
 			Data: "---\nmetadata:\n  creationTimestamp: null\nspec:\n  containers: null\nstatus: {}\n",

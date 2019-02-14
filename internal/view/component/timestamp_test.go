@@ -41,7 +41,7 @@ func Test_Timestamp_Marshal(t *testing.T) {
 			name: "with title",
 			input: &Timestamp{
 				Metadata: Metadata{
-					Title: []TitleViewComponent{NewText("LandedOn")},
+					Title: Title(NewText("LandedOn")),
 				},
 				Config: TimestampConfig{
 					Timestamp: ts.Unix(),
