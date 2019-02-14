@@ -70,7 +70,7 @@ func Test_ResourceViewer_Marshal(t *testing.T) {
 				},
 				Metadata: Metadata{
 					Type:  "resourceViewer",
-					Title: []TitleViewComponent{NewText("Resource Viewer")},
+					Title: Title(NewText("Resource Viewer")),
 				},
 			},
 			expectedPath: "resource_viewer.json",

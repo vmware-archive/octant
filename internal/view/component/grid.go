@@ -19,7 +19,7 @@ func NewGrid(title string, panels ...Panel) *Grid {
 	return &Grid{
 		Metadata: Metadata{
 			Type:  "grid",
-			Title: []TitleViewComponent{NewText(title)},
+			Title: Title(NewText(title)),
 		},
 		Config: GridConfig{
 			Panels: p,
@@ -30,11 +30,6 @@ func NewGrid(title string, panels ...Panel) *Grid {
 // GetMetadata accesses the components metadata. Implements ViewComponent.
 func (t *Grid) GetMetadata() Metadata {
 	return t.Metadata
-}
-
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (t *Grid) IsEmpty() bool {
-	return len(t.Config.Panels) == 0
 }
 
 // Add adds additional panels to the grid

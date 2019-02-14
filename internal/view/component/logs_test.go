@@ -22,7 +22,7 @@ func Test_Logs_Marshal(t *testing.T) {
 			input: &Logs{
 				Metadata: Metadata{
 					Type:  "logs",
-					Title: []TitleViewComponent{NewText("Logs")},
+					Title: Title(NewText("Logs")),
 				},
 				Config: LogsConfig{
 					Containers: []string{"one", "two"},

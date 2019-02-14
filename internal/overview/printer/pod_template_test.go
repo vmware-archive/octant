@@ -55,9 +55,7 @@ func TestPodTemplateHeader(t *testing.T) {
 
 	assert.Len(t, got.Config.Labels, 1)
 
-	expected := []component.TitleViewComponent{
-		component.NewText("Pod Template"),
-	}
+	expected := component.Title(component.NewText("Pod Template"))
 
 	assert.Equal(t, expected, got.Metadata.Title)
 }

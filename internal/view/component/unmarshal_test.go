@@ -251,7 +251,7 @@ func Test_unmarshal(t *testing.T) {
 											},
 											Metadata: Metadata{
 												Type:  "text",
-												Title: []TitleViewComponent{NewText("Image")},
+												Title: Title(NewText("Image")),
 											},
 										},
 										&Text{
@@ -260,14 +260,14 @@ func Test_unmarshal(t *testing.T) {
 											},
 											Metadata: Metadata{
 												Type:  "text",
-												Title: []TitleViewComponent{NewText("Port")},
+												Title: Title(NewText("Port")),
 											},
 										},
 									},
 								},
 								Metadata: Metadata{
 									Type:  "list",
-									Title: []TitleViewComponent{NewText("nginx")},
+									Title: Title(NewText("nginx")),
 								},
 							},
 						},

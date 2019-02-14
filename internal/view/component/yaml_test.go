@@ -46,7 +46,7 @@ func Test_YAML_Marshal(t *testing.T) {
 }
 
 func Test_YAML_Data(t *testing.T) {
-	y := NewYAML([]TitleViewComponent{NewText("Title")})
+	y := NewYAML(Title(NewText("Title")))
 
 	pod := &corev1.Pod{}
 	require.NoError(t, y.Data(pod))

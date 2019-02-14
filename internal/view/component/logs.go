@@ -23,10 +23,8 @@ func NewLogs(namespace, name string, containers []string) *Logs {
 			Containers: containers,
 		},
 		Metadata: Metadata{
-			Type: "logs",
-			Title: []TitleViewComponent{
-				NewText("Logs"),
-			},
+			Type:  "logs",
+			Title: Title(NewText("Logs")),
 		},
 	}
 }
@@ -34,11 +32,6 @@ func NewLogs(namespace, name string, containers []string) *Logs {
 // GetMetadata accesses the components metadata. Implements ViewComponent.
 func (l *Logs) GetMetadata() Metadata {
 	return l.Metadata
-}
-
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (l *Logs) IsEmpty() bool {
-	return len(l.Config.Containers) == 0
 }
 
 type logsMarshal Logs

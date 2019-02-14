@@ -51,10 +51,6 @@ func (y *YAML) GetMetadata() Metadata {
 	return y.Metadata
 }
 
-func (y *YAML) IsEmpty() bool {
-	return y.Config.Data == ""
-}
-
 type yamlMarshal YAML
 
 func (y *YAML) MarshalJSON() ([]byte, error) {

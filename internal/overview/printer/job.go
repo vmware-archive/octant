@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/pkg/errors"
@@ -27,12 +28,7 @@ func JobListHandler(list *batchv1.JobList, opts Options) (component.ViewComponen
 	for _, job := range list.Items {
 		row := component.TableRow{}
 
-		jobPath, err := gvkPathFromObject(&job)
-		if err != nil {
-			return nil, errors.Wrap(err, "get path for job")
-		}
-
-		row["Name"] = component.NewLink("", job.Name, jobPath)
+		row["Name"] = link.ForObject(&job, job.Name)
 		row["Labels"] = component.NewLabels(job.Labels)
 		row["Completions"] = component.NewText(ptrInt32ToString(job.Spec.Completions))
 		succeeded := fmt.Sprintf("%d", job.Status.Succeeded)

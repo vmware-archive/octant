@@ -70,11 +70,6 @@ func (t *Panel) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (t *Panel) IsEmpty() bool {
-	return t.Config.Content == nil
-}
-
 type panelMarshal Panel
 
 // MarshalJSON implements json.Marshaler

@@ -61,7 +61,7 @@ func NewSummary(title string, sections ...SummarySection) *Summary {
 	return &Summary{
 		Metadata: Metadata{
 			Type:  "summary",
-			Title: []TitleViewComponent{NewText(title)},
+			Title: Title(NewText(title)),
 		},
 		Config: SummaryConfig{
 			Sections: s,
@@ -72,11 +72,6 @@ func NewSummary(title string, sections ...SummarySection) *Summary {
 // GetMetadata accesses the components metadata. Implements ViewComponent.
 func (t *Summary) GetMetadata() Metadata {
 	return t.Metadata
-}
-
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (t *Summary) IsEmpty() bool {
-	return len(t.Config.Sections) == 0
 }
 
 // Add adds additional items to the tail of the summary.

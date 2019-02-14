@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/heptio/developer-dash/internal/overview/link"
+
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/pkg/errors"
@@ -22,8 +24,7 @@ func CronJobListHandler(list *batchv1beta1.CronJobList, opts Options) (component
 
 	for _, c := range list.Items {
 		row := component.TableRow{}
-		cronjobPath := gvkPath(c.Namespace, c.TypeMeta.APIVersion, c.TypeMeta.Kind, c.Name)
-		row["Name"] = component.NewLink("", c.Name, cronjobPath)
+		row["Name"] = link.ForObject(&c, c.Name)
 		row["Labels"] = component.NewLabels(c.Labels)
 
 		row["Schedule"] = component.NewText(c.Spec.Schedule)

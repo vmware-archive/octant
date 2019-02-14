@@ -21,7 +21,7 @@ func Test_Selectors_Marshal(t *testing.T) {
 			name: "general",
 			input: &Selectors{
 				Metadata: Metadata{
-					Title: []TitleViewComponent{NewText("my summary")},
+					Title: Title(NewText("my summary")),
 				},
 				Config: SelectorsConfig{
 					Selectors: []Selector{

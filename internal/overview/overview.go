@@ -137,6 +137,8 @@ func (co *ClusterOverview) Stop() {
 }
 
 func (co *ClusterOverview) Content(ctx context.Context, contentPath, prefix, namespace string) (component.ContentResponse, error) {
+	ctx = log.WithLoggerContext(ctx, co.logger)
+
 	return co.generator.Generate(ctx, contentPath, prefix, namespace)
 }
 

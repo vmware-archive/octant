@@ -29,8 +29,7 @@ func Test_LocalContent_Content_root(t *testing.T) {
 		content, err := lc.Content(ctx, "/", "prefix", "namespace")
 		require.NoError(t, err)
 
-		assert.Equal(t, []component.TitleViewComponent{component.NewText("Local Contents")},
-			content.Title)
+		assert.Equal(t, component.Title(component.NewText("Local Contents")), content.Title)
 		assert.Len(t, content.ViewComponents, 1)
 
 		table, ok := content.ViewComponents[0].(*component.Table)
@@ -55,7 +54,7 @@ func Test_LocalContent_Content_file(t *testing.T) {
 		content, err := lc.Content(ctx, "/table", "prefix", "namespace")
 		require.NoError(t, err)
 
-		assert.Equal(t, []component.TitleViewComponent{component.NewText("Sample content")},
+		assert.Equal(t, component.Title(component.NewText("Sample content")),
 			content.Title)
 		assert.Len(t, content.ViewComponents, 1)
 

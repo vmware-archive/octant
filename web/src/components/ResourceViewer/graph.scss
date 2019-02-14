@@ -7,14 +7,9 @@
 
     rect {
       border-radius: 4px;
-      stroke:rgba(173, 187, 196, 0.3);
+      stroke: rgba(173, 187, 196, 0.3);
       stroke-width: 1px;
-    }
-
-    &.selected {
-      rect {
-        stroke: $blue-light;
-      }
+      fill: #22343c;
     }
 
     .label {
@@ -24,19 +19,19 @@
     &.node-ok {
       filter: box-shadow 0 4px 10px rgba(0, 0, 0, 0.3);
       rect {
-        fill: #22343c;
+        stroke: green;
       }
     }
 
     &.node-warning {
       rect {
-        fill: #ffb630;
+        stroke: #ffb630;
       }
     }
 
     &.node-error {
       rect {
-        fill: #ff3730;
+        stroke: #ff3730;
       }
     }
   }

@@ -67,9 +67,7 @@ func (l *LocalContent) list() (component.ContentResponse, error) {
 		return out, nil
 	}
 
-	out.Title = []component.TitleViewComponent{
-		component.NewText("Local Contents"),
-	}
+	out.Title = component.Title(component.NewText("Local Contents"))
 
 	out.ViewComponents = []component.ViewComponent{
 		table,

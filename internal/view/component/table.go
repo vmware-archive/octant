@@ -53,7 +53,7 @@ func NewTable(title string, cols []TableCol) *Table {
 	return &Table{
 		Metadata: Metadata{
 			Type:  "table",
-			Title: []TitleViewComponent{NewText(title)},
+			Title: Title(NewText(title)),
 		},
 		Config: TableConfig{
 			Columns: cols,
@@ -80,11 +80,6 @@ func NewTableCols(keys ...string) []TableCol {
 // GetMetadata accesses the components metadata. Implements ViewComponent.
 func (t *Table) GetMetadata() Metadata {
 	return t.Metadata
-}
-
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (t *Table) IsEmpty() bool {
-	return len(t.Config.Rows) == 0 || len(t.Config.Columns) == 0
 }
 
 // Add adds additional items to the tail of the table.

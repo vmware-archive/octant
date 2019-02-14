@@ -36,9 +36,7 @@ func (c *ContentResponse) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	c.Title = []TitleViewComponent{
-		NewText(stage.Title),
-	}
+	c.Title = Title(NewText(stage.Title))
 
 	for _, to := range stage.ViewComponents {
 		vc, err := to.ToViewComponent()
@@ -121,7 +119,6 @@ func (m *Metadata) UnmarshalJSON(data []byte) error {
 // ViewComponent is a common interface for the data representation
 // of visual components as rendered by the UI.
 type ViewComponent interface {
-	IsEmpty() bool
 	GetMetadata() Metadata
 }
 
@@ -130,4 +127,9 @@ type TitleViewComponent interface {
 	ViewComponent
 
 	SupportsTitle()
+}
+
+// Title is a convenience method for creating a title.
+func Title(components ...TitleViewComponent) []TitleViewComponent {
+	return components
 }

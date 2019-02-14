@@ -39,11 +39,6 @@ func (t *Labels) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (t *Labels) IsEmpty() bool {
-	return len(t.Config.Labels) == 0
-}
-
 type labelsMarshal Labels
 
 // MarshalJSON implements json.Marshaler. It will filter

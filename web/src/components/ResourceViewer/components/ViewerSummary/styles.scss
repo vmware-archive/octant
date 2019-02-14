@@ -4,14 +4,14 @@
   border-radius: 4px;
   color: #e9ecef;
   font-size: 12px;
-  width: 175px;
+  max-width: 275px;
 }
 
 .viewSummary--title {
   border-bottom: 1px solid rgba(173, 187, 196, 0.3);
   color: $blue-light;
   font-weight: bold;
-  padding: 7px 0;
+  padding: 7px 20px;
   position: relative;
   text-align: center;
 }
@@ -27,10 +27,40 @@
   width: 3px;
 }
 
+.status--warning {
+  background-color: orange;
+  border-radius: 50%;
+  display: inline-block;
+  height: 3px;
+  margin-left: -6px;
+  position: absolute;
+  top: 45%;
+  width: 3px;
+}
+
+.status--error {
+  background-color: red;
+  border-radius: 50%;
+  display: inline-block;
+  height: 3px;
+  margin-left: -6px;
+  position: absolute;
+  top: 45%;
+  width: 3px;
+}
+
 .viewSummary--content {
   padding: 8px;
 
-  div {
-    margin-bottom: 5px;
+  li {
+    margin: 0 0 5px;
+    text-align: start;
+
+  }
+
+  li:before {
+    content: '•';
+    padding-right: 8px;
+    color: $blue-light;
   }
 }

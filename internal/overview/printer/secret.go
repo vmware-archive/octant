@@ -3,6 +3,8 @@ package printer
 import (
 	"fmt"
 
+	"github.com/heptio/developer-dash/internal/overview/link"
+
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/internal/view/gridlayout"
 	"github.com/pkg/errors"
@@ -24,11 +26,8 @@ func SecretListHandler(list *corev1.SecretList, opts Options) (component.ViewCom
 
 	for _, secret := range list.Items {
 		row := component.TableRow{}
-		secretPath, err := gvkPathFromObject(&secret)
-		if err != nil {
-			return nil, errors.Wrapf(err, "build path for secret %s", secret.Name)
-		}
-		row["Name"] = component.NewLink("", secret.Name, secretPath)
+
+		row["Name"] = link.ForObject(&secret, secret.Name)
 		row["Labels"] = component.NewLabels(secret.ObjectMeta.Labels)
 		row["Type"] = component.NewText(string(secret.Type))
 		row["Data"] = component.NewText(fmt.Sprintf("%d", len(secret.Data)))

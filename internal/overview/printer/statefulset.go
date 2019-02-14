@@ -3,6 +3,8 @@ package printer
 import (
 	"fmt"
 
+	"github.com/heptio/developer-dash/internal/overview/link"
+
 	"github.com/heptio/developer-dash/internal/view/flexlayout"
 
 	"github.com/heptio/developer-dash/internal/cache"
@@ -22,8 +24,7 @@ func StatefulSetListHandler(list *appsv1.StatefulSetList, opts Options) (compone
 
 	for _, sts := range list.Items {
 		row := component.TableRow{}
-		statefulsetPath := gvkPath(sts.Namespace, sts.TypeMeta.APIVersion, sts.TypeMeta.Kind, sts.Name)
-		row["Name"] = component.NewLink("", sts.Name, statefulsetPath)
+		row["Name"] = link.ForObject(&sts, sts.Name)
 		row["Labels"] = component.NewLabels(sts.Labels)
 
 		desired := fmt.Sprintf("%d", *sts.Spec.Replicas)
@@ -84,7 +85,7 @@ type StatefulSetConfiguration struct {
 	statefulset *appsv1.StatefulSet
 }
 
-// NewStatefulSetConfiguration creates an insteance of StatefulSetconfiguration
+// NewStatefulSetConfiguration creates an instance of StatefulSetconfiguration
 func NewStatefulSetConfiguration(sts *appsv1.StatefulSet) *StatefulSetConfiguration {
 	return &StatefulSetConfiguration{
 		statefulset: sts,

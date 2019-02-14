@@ -31,7 +31,9 @@ class Graph extends React.Component<Props> {
   }
 
   renderDag() {
-    const g = new dagreD3.graphlib.Graph().setGraph({})
+    const g = new dagreD3.graphlib.Graph().setGraph({
+      align: 'DR',
+    })
 
     for (const [id, n] of Object.entries(this.props.nodes)) {
       g.setNode(id, n)

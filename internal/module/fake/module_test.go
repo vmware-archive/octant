@@ -47,17 +47,13 @@ func TestModule_Content(t *testing.T) {
 		{
 			path: "/",
 			expected: component.ContentResponse{
-				Title: []component.TitleViewComponent{
-					component.NewText("/"),
-				},
+				Title: component.Title(component.NewText("/")),
 			},
 		},
 		{
 			path: "/nested",
 			expected: component.ContentResponse{
-				Title: []component.TitleViewComponent{
-					component.NewText("/nested"),
-				},
+				Title: component.Title(component.NewText("/nested")),
 			},
 		},
 		{

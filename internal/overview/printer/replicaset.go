@@ -9,6 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/internal/view/flexlayout"
 )
@@ -24,8 +25,7 @@ func ReplicaSetListHandler(list *appsv1.ReplicaSetList, opts Options) (component
 
 	for _, rs := range list.Items {
 		row := component.TableRow{}
-		replicasetPath := gvkPath(rs.Namespace, rs.TypeMeta.APIVersion, rs.TypeMeta.Kind, rs.Name)
-		row["Name"] = component.NewLink("", rs.Name, replicasetPath)
+		row["Name"] = link.ForObject(&rs, rs.Name)
 		row["Labels"] = component.NewLabels(rs.Labels)
 
 		status := fmt.Sprintf("%d/%d", rs.Status.AvailableReplicas, rs.Status.Replicas)
@@ -104,7 +104,7 @@ func (rc *ReplicaSetConfiguration) Create() (*component.Summary, error) {
 	if controllerRef := metav1.GetControllerOf(rs); controllerRef != nil {
 		sections = append(sections, component.SummarySection{
 			Header:  "Controlled By",
-			Content: linkForOwner(rs, controllerRef),
+			Content: link.ForOwner(rs, controllerRef),
 		})
 	}
 

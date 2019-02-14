@@ -49,11 +49,12 @@ type Nodes map[string]Node
 // Node is a node in a graph, representing a kubernetes object
 // IsNetwork is a hint to the layout engine.
 type Node struct {
-	Name       string     `json:"name,omitempty"`
-	APIVersion string     `json:"apiVersion,omitempty"`
-	Kind       string     `json:"kind,omitempty"`
-	Status     NodeStatus `json:"status,omitempty"`
-	IsNetwork  bool       `json:"isNetwork,omitempty"`
+	Name       string               `json:"name,omitempty"`
+	APIVersion string               `json:"apiVersion,omitempty"`
+	Kind       string               `json:"kind,omitempty"`
+	Status     NodeStatus           `json:"status,omitempty"`
+	Details    []TitleViewComponent `json:"details,omitempty"`
+	Path       *Link                `json:"path,omitempty"`
 }
 
 // ResourceViewerConfig is configuration for a resource viewer.
@@ -73,7 +74,7 @@ func NewResourceViewer(title string) *ResourceViewer {
 	return &ResourceViewer{
 		Metadata: Metadata{
 			Type:  "resourceViewer",
-			Title: []TitleViewComponent{NewText(title)},
+			Title: Title(NewText(title)),
 		},
 		Config: ResourceViewerConfig{
 			Edges: AdjList{},
@@ -97,11 +98,6 @@ func (rv *ResourceViewer) AddNode(id string, node Node) {
 
 func (rv *ResourceViewer) GetMetadata() Metadata {
 	return rv.Metadata
-}
-
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (rv *ResourceViewer) IsEmpty() bool {
-	return len(rv.Config.Nodes) == 0
 }
 
 type resourceViewerMarshal ResourceViewer

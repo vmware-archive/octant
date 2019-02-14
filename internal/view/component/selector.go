@@ -62,11 +62,6 @@ func (t *Selectors) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (t *Selectors) IsEmpty() bool {
-	return len(t.Config.Selectors) == 0
-}
-
 // Add adds additional items to the tail of the selectors.
 func (t *Selectors) Add(selectors ...Selector) {
 	t.Config.Selectors = append(t.Config.Selectors, selectors...)

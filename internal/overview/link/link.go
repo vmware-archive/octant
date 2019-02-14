@@ -1,4 +1,4 @@
-package printer
+package link
 
 import (
 	"fmt"
@@ -82,20 +82,21 @@ func gvkPath(namespace, apiVersion, kind, name string) string {
 	return path.Join(prefix, p, name)
 }
 
-// linkForObject returns a link component referencing an object
+// ForObject returns a link component referencing an object
 // Returns an empty link if an error occurs.
-func linkForObject(object runtime.Object, text string) *component.Link {
+func ForObject(object runtime.Object, text string) *component.Link {
 	path, _ := gvkPathFromObject(object)
 	return component.NewLink("", text, path)
 }
 
-// linkForGVK returns a link component referencing an object
-func linkForGVK(namespace, apiVersion, kind, name, text string) *component.Link {
+// ForGVK returns a link component referencing an object
+func ForGVK(namespace, apiVersion, kind, name, text string) *component.Link {
 	path := gvkPath(namespace, apiVersion, kind, name)
 	return component.NewLink("", text, path)
 }
 
-func linkForOwner(parent runtime.Object, controllerRef *metav1.OwnerReference) *component.Link {
+// ForOwner returns a link component for an owner.
+func ForOwner(parent runtime.Object, controllerRef *metav1.OwnerReference) *component.Link {
 	if controllerRef == nil || parent == nil {
 		return component.NewLink("", "none", "")
 	}
@@ -106,7 +107,7 @@ func linkForOwner(parent runtime.Object, controllerRef *metav1.OwnerReference) *
 		return component.NewLink("", "none", "")
 	}
 
-	return linkForGVK(
+	return ForGVK(
 		ns,
 		controllerRef.APIVersion,
 		controllerRef.Kind,

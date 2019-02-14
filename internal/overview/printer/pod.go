@@ -3,6 +3,8 @@ package printer
 import (
 	"fmt"
 
+	"github.com/heptio/developer-dash/internal/overview/link"
+
 	"github.com/pkg/errors"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -40,13 +42,9 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 
 	for _, p := range list.Items {
 		row := component.TableRow{}
-		podPath, err := gvkPathFromObject(&p)
-		if err != nil {
-			return nil, errors.Wrap(err, "get path for pod")
-		}
 
-		row["Name"] = component.NewLink("", p.Name, podPath)
-
+		row["Name"] = link.ForObject(&p, p.Name)
+		row["Labels"] = component.NewLabels(p.Labels)
 		if !opts.DisableLabels {
 			row["Labels"] = component.NewLabels(p.Labels)
 		}
@@ -181,7 +179,7 @@ func (p *PodConfiguration) Create() (*component.Summary, error) {
 	if controllerRef := metav1.GetControllerOf(pod); controllerRef != nil {
 		sections = append(sections, component.SummarySection{
 			Header:  "Controlled By",
-			Content: linkForOwner(pod, controllerRef),
+			Content: link.ForOwner(pod, controllerRef),
 		})
 	}
 
@@ -195,7 +193,7 @@ func (p *PodConfiguration) Create() (*component.Summary, error) {
 
 	sections = append(sections, component.SummarySection{
 		Header: "Service Account",
-		Content: linkForGVK(pod.Namespace, "v1", "ServiceAccount", pod.Spec.ServiceAccountName,
+		Content: link.ForGVK(pod.Namespace, "v1", "ServiceAccount", pod.Spec.ServiceAccountName,
 			pod.Spec.ServiceAccountName),
 	})
 

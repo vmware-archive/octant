@@ -70,11 +70,6 @@ func (t *ExpressionSelector) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (t *ExpressionSelector) IsEmpty() bool {
-	return t.Config.Key == ""
-}
-
 // IsSelector marks the component as selector flavor. Implements Selector.
 func (t *ExpressionSelector) IsSelector() {
 }

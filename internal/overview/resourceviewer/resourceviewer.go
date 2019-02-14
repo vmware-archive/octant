@@ -1,6 +1,7 @@
 package resourceviewer
 
 import (
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/overview/objectvisitor"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/internal/view/component"
@@ -30,10 +31,12 @@ type ResourceViewer struct {
 }
 
 // New creates an instance of ResourceViewer.
-func New(opts ...ViewerOpt) (*ResourceViewer, error) {
+func New(logger log.Logger, opts ...ViewerOpt) (*ResourceViewer, error) {
 	rv := &ResourceViewer{
 		collector: NewCollector(),
 	}
+
+	rv.collector.logger = logger
 
 	for _, opt := range opts {
 		if err := opt(rv); err != nil {

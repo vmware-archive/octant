@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/internal/view/gridlayout"
 )
@@ -45,8 +46,7 @@ func EventListHandler(list *corev1.EventList, opts Options) (component.ViewCompo
 		info := component.NewList("", infoItems)
 
 		row["Kind"] = info
-		eventPath := gvkPath(event.Namespace, event.TypeMeta.APIVersion, event.TypeMeta.Kind, event.Name)
-		row["Message"] = component.NewLink("", event.Message, eventPath)
+		row["Message"] = link.ForObject(&event, event.Message)
 		row["Reason"] = component.NewText(event.Reason)
 		row["Type"] = component.NewText(event.Type)
 		row["First Seen"] = component.NewTimestamp(event.FirstTimestamp.Time)

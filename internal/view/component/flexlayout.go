@@ -27,7 +27,7 @@ func NewFlexLayout(title string) *FlexLayout {
 	return &FlexLayout{
 		Metadata: Metadata{
 			Type:  "flexlayout",
-			Title: []TitleViewComponent{NewText(title)},
+			Title: Title(NewText(title)),
 		},
 	}
 }
@@ -35,11 +35,6 @@ func NewFlexLayout(title string) *FlexLayout {
 // GetMetdata returns the metadata for the flex layout view.
 func (fl *FlexLayout) GetMetadata() Metadata {
 	return fl.Metadata
-}
-
-// IsEmpty returns true if the flex layout has no sections.
-func (fl *FlexLayout) IsEmpty() bool {
-	return len(fl.Config.Sections) == 0
 }
 
 // AddSections adds one or more sections to the flex layout.

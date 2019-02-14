@@ -21,7 +21,7 @@ func Test_List_Marshal(t *testing.T) {
 			name: "general",
 			input: &List{
 				Metadata: Metadata{
-					Title: []TitleViewComponent{NewText("mylist")},
+					Title: Title(NewText("mylist")),
 				},
 				Config: ListConfig{
 					Items: []ViewComponent{

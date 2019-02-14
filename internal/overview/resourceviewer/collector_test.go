@@ -3,6 +3,8 @@ package resourceviewer
 import (
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/overview/link"
+
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,6 +23,10 @@ func Test_Collector(t *testing.T) {
 			Name: "deployment",
 			UID:  types.UID("deployment"),
 		},
+		Status: appsv1.DeploymentStatus{
+			Replicas:          1,
+			AvailableReplicas: 1,
+		},
 	}
 
 	replicaSet1 := &extv1beta1.ReplicaSet{
@@ -31,6 +37,10 @@ func Test_Collector(t *testing.T) {
 		},
 		Spec: extv1beta1.ReplicaSetSpec{
 			Replicas: ptrInt32(1),
+		},
+		Status: extv1beta1.ReplicaSetStatus{
+			Replicas:          1,
+			AvailableReplicas: 1,
 		},
 	}
 
@@ -80,10 +90,8 @@ func Test_Collector(t *testing.T) {
 
 	expected := &component.ResourceViewer{
 		Metadata: component.Metadata{
-			Type: "resourceViewer",
-			Title: []component.TitleViewComponent{
-				component.NewText("Resource Viewer"),
-			},
+			Type:  "resourceViewer",
+			Title: component.Title(component.NewText("Resource Viewer")),
 		},
 		Config: component.ResourceViewerConfig{
 			Edges: component.AdjList{
@@ -95,7 +103,7 @@ func Test_Collector(t *testing.T) {
 				},
 				"replicaSet1": []component.Edge{
 					{
-						Node: "90fb60516b7db6d0a6a2fe908d305051",
+						Node: "pods-replicaSet1",
 						Type: "explicit",
 					},
 				},
@@ -106,18 +114,23 @@ func Test_Collector(t *testing.T) {
 					Kind:       "Deployment",
 					Name:       "deployment",
 					Status:     "ok",
+					Details:    component.Title(component.NewText("Deployment is OK")),
+					Path:       link.ForObject(deployment, deployment.Name),
 				},
 				"replicaSet1": component.Node{
 					APIVersion: "extensions/v1beta1",
 					Kind:       "ReplicaSet",
 					Name:       "replicaSet1",
 					Status:     "ok",
+					Details:    component.Title(component.NewText("Replica Set is OK")),
+					Path:       link.ForObject(replicaSet1, replicaSet1.Name),
 				},
-				"90fb60516b7db6d0a6a2fe908d305051": component.Node{
+				"pods-replicaSet1": component.Node{
 					APIVersion: "v1",
 					Kind:       "Pod",
 					Name:       "replicaSet1 pods",
 					Status:     "ok",
+					Details:    component.Title(component.NewText("Pod count: 1")),
 				},
 			},
 		},

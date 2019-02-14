@@ -42,43 +42,12 @@ func Test_Containers_Marshal(t *testing.T) {
 			actual, err := json.Marshal(tc.input)
 			isErr := (err != nil)
 			if isErr != tc.isErr {
-				t.Fatalf("Unexepected error: %v", err)
+				t.Fatalf("Unexpected error: %v", err)
 			}
 
 			expected, err := ioutil.ReadFile(filepath.Join("testdata", tc.expectedPath))
 			require.NoError(t, err, "reading test fixtures")
 			assert.JSONEq(t, string(expected), string(actual))
-		})
-	}
-}
-
-func Test_Containers_IsEmpty(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    ViewComponent
-		expected bool
-	}{
-		{
-			name: "general",
-			input: &Containers{
-				Config: ContainersConfig{
-					Containers: []ContainerDef{
-						ContainerDef{},
-					},
-				},
-			},
-			expected: false,
-		},
-		{
-			name:     "empty",
-			input:    &Containers{},
-			expected: true,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			assert.Equal(t, tc.expected, tc.input.IsEmpty(), "IsEmpty mismatch")
 		})
 	}
 }
