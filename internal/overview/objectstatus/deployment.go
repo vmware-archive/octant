@@ -10,6 +10,8 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
+// deploymentAppsV1 creates status for an v1/apps deployment. This is
+// not the final implementation. It is included to generate output.
 func deploymentAppsV1(object runtime.Object) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("deployment is nil")

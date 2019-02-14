@@ -3,6 +3,8 @@ package resourceviewer
 import (
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/overview/link"
+
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -113,6 +115,7 @@ func Test_Collector(t *testing.T) {
 					Name:       "deployment",
 					Status:     "ok",
 					Details:    component.Title(component.NewText("Deployment is OK")),
+					Path:       link.ForObject(deployment, deployment.Name),
 				},
 				"replicaSet1": component.Node{
 					APIVersion: "extensions/v1beta1",
@@ -120,6 +123,7 @@ func Test_Collector(t *testing.T) {
 					Name:       "replicaSet1",
 					Status:     "ok",
 					Details:    component.Title(component.NewText("Replica Set is OK")),
+					Path:       link.ForObject(replicaSet1, replicaSet1.Name),
 				},
 				"pods-replicaSet1": component.Node{
 					APIVersion: "v1",

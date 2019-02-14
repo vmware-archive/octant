@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/heptio/developer-dash/internal/overview/link"
+
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/overview/objectstatus"
 	"github.com/heptio/developer-dash/internal/overview/objectvisitor"
@@ -167,6 +169,7 @@ func (c *Collector) createObjectNode(object objectvisitor.ClusterObject) (string
 		Kind:       kind,
 		Status:     objectStatus.NodeStatus,
 		Details:    objectStatus.Details,
+		Path:       link.ForObject(object, name),
 	}
 
 	return string(uid), node, nil

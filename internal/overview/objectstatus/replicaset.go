@@ -11,6 +11,8 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
+// replicaSetExtV1Beta1 creates status for an ext/v1beta1 replica set. This is
+// not the final implementation. It is included to generate output.
 func replicaSetExtV1Beta1(object runtime.Object) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("replica set is nil")
@@ -43,7 +45,9 @@ func replicaSetExtV1Beta1(object runtime.Object) (ObjectStatus, error) {
 
 }
 
-func replicaSetAppsV1Beta1(object runtime.Object) (ObjectStatus, error) {
+// replicaSetExtV1Beta1 creates status for an v1/apps replica set. This is
+// not the final implementation. It is included to generate output.
+func replicaSetAppsV1(object runtime.Object) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("replica set is nil")
 	}

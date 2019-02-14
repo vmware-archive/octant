@@ -85,7 +85,7 @@ type StatefulSetConfiguration struct {
 	statefulset *appsv1.StatefulSet
 }
 
-// NewStatefulSetConfiguration creates an insteance of StatefulSetconfiguration
+// NewStatefulSetConfiguration creates an instance of StatefulSetconfiguration
 func NewStatefulSetConfiguration(sts *appsv1.StatefulSet) *StatefulSetConfiguration {
 	return &StatefulSetConfiguration{
 		statefulset: sts,
