@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/pkg/errors"
@@ -23,8 +24,7 @@ func ConfigMapListHandler(list *corev1.ConfigMapList, opts Options) (component.V
 
 	for _, c := range list.Items {
 		row := component.TableRow{}
-		configmapPath := gvkPath(c.Namespace, c.TypeMeta.APIVersion, c.TypeMeta.Kind, c.Name)
-		row["Name"] = component.NewLink("", c.Name, configmapPath)
+		row["Name"] = link.ForObject(&c, c.Name)
 		row["Labels"] = component.NewLabels(c.Labels)
 
 		data := fmt.Sprintf("%d", len(c.Data))

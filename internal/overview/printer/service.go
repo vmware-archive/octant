@@ -8,6 +8,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/pkg/errors"
@@ -24,7 +25,7 @@ func ServiceListHandler(list *corev1.ServiceList, opts Options) (component.ViewC
 
 	for _, s := range list.Items {
 		row := component.TableRow{}
-		row["Name"] = linkForObject(&s, s.Name)
+		row["Name"] = link.ForObject(&s, s.Name)
 		row["Labels"] = component.NewLabels(s.Labels)
 		row["Type"] = component.NewText(string(s.Spec.Type))
 		row["Cluster IP"] = component.NewText(s.Spec.ClusterIP)
@@ -225,8 +226,8 @@ func serviceEndpoints(c cache.Cache, service *corev1.Service) (*component.Table,
 
 			var target component.ViewComponent = component.NewText("No target")
 			if targetRef := address.TargetRef; targetRef != nil {
-				ref := gvkPath(service.Namespace, targetRef.APIVersion, targetRef.Kind, targetRef.Name)
-				target = component.NewLink("", targetRef.Name, ref)
+				target = link.ForGVK(service.Namespace, targetRef.APIVersion, targetRef.Kind,
+					targetRef.Name, targetRef.Name)
 			}
 
 			row["Target"] = target

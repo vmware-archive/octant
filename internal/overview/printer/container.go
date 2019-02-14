@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/view/component"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -149,11 +150,11 @@ func describeEnvRows(namespace string, vars []corev1.EnvVar) []component.TableRo
 			row["Source"] = component.NewText(ref.Resource)
 		case e.ValueFrom.SecretKeyRef != nil:
 			ref := e.ValueFrom.SecretKeyRef
-			row["Source"] = linkForGVK(namespace, "v1", "Secret", ref.Name,
+			row["Source"] = link.ForGVK(namespace, "v1", "Secret", ref.Name,
 				fmt.Sprintf("%s:%s", ref.Name, ref.Key))
 		case e.ValueFrom.ConfigMapKeyRef != nil:
 			ref := e.ValueFrom.ConfigMapKeyRef
-			row["Source"] = linkForGVK(namespace, "v1", "ConfigMap", ref.Name,
+			row["Source"] = link.ForGVK(namespace, "v1", "ConfigMap", ref.Name,
 				fmt.Sprintf("%s:%s", ref.Name, ref.Key))
 		}
 	}
@@ -173,10 +174,10 @@ func describeEnvFromRows(namespace string, vars []corev1.EnvFromSource) []compon
 		switch {
 		case e.SecretRef != nil:
 			ref := e.SecretRef
-			row["Source"] = linkForGVK(namespace, "v1", "Secret", ref.Name, ref.Name)
+			row["Source"] = link.ForGVK(namespace, "v1", "Secret", ref.Name, ref.Name)
 		case e.ConfigMapRef != nil:
 			ref := e.ConfigMapRef
-			row["Source"] = linkForGVK(namespace, "v1", "ConfigMap", ref.Name, ref.Name)
+			row["Source"] = link.ForGVK(namespace, "v1", "ConfigMap", ref.Name, ref.Name)
 		}
 	}
 

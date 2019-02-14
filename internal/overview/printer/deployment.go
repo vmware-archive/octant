@@ -3,6 +3,8 @@ package printer
 import (
 	"fmt"
 
+	"github.com/heptio/developer-dash/internal/overview/link"
+
 	appsv1 "k8s.io/api/apps/v1"
 
 	"github.com/heptio/developer-dash/internal/view/component"
@@ -21,8 +23,7 @@ func DeploymentListHandler(list *appsv1.DeploymentList, opts Options) (component
 
 	for _, d := range list.Items {
 		row := component.TableRow{}
-		deploymentPath := gvkPath(d.Namespace, d.TypeMeta.APIVersion, d.TypeMeta.Kind, d.Name)
-		row["Name"] = component.NewLink("", d.Name, deploymentPath)
+		row["Name"] = link.ForObject(&d, d.Name)
 		row["Labels"] = component.NewLabels(d.Labels)
 
 		status := fmt.Sprintf("%d/%d", d.Status.AvailableReplicas, d.Status.AvailableReplicas+d.Status.UnavailableReplicas)

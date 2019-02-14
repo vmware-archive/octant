@@ -54,6 +54,7 @@ type Node struct {
 	Kind       string               `json:"kind,omitempty"`
 	Status     NodeStatus           `json:"status,omitempty"`
 	Details    []TitleViewComponent `json:"details,omitempty"`
+	Path       *Link                `json:"path,omitempty"`
 }
 
 // ResourceViewerConfig is configuration for a resource viewer.
