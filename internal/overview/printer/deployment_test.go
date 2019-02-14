@@ -131,10 +131,6 @@ func Test_deploymentConfiguration(t *testing.T) {
 					Content: component.NewText("5"),
 				},
 				{
-					Header:  "Age",
-					Content: component.NewTimestamp(time.Unix(1548377609, 0)),
-				},
-				{
 					Header:  "Replicas",
 					Content: component.NewText("3"),
 				},

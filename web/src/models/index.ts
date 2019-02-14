@@ -1,3 +1,4 @@
+import { JSONAnnotations } from './annotations'
 import { JSONContainers } from './containers'
 import { JSONFlexLayout } from './flexlayout'
 import { JSONGrid } from './grid'
@@ -22,6 +23,10 @@ export interface View {
   readonly title?: TitleView
 
   readonly isComparable?: boolean
+}
+
+export interface AnnotationsModel extends View {
+  annotations: { [key: string]: string }
 }
 
 export interface ContainerDef {
@@ -182,6 +187,8 @@ export function viewFromContentType(ct: ContentType): View {
   }
 
   switch (ct.metadata.type) {
+    case 'annotations':
+      return new JSONAnnotations(ct)
     case 'containers':
       return new JSONContainers(ct)
     case 'flexlayout':

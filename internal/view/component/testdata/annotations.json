@@ -1,0 +1,10 @@
+{
+  "config": {
+    "annotations": {
+      "foo": "bar"
+    }
+  },
+  "metadata": {
+    "type": "annotations"
+  }
+}

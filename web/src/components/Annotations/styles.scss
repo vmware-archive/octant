@@ -1,0 +1,22 @@
+@import '~css/variables/variables';
+
+.content-labels {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  .content-label {
+    @include resourceLabel;
+    cursor: pointer;
+
+    font-size: 12px;
+
+    margin-bottom: 2px;
+    margin-right: 4px;
+    padding: 5px 10px;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}

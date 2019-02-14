@@ -55,6 +55,15 @@ func ConfigMapHandler(cm *corev1.ConfigMap, options Options) (component.ViewComp
 		return nil, errors.Wrap(err, "add configmap config to layout")
 	}
 
+	metadata, err := NewMetadata(cm)
+	if err != nil {
+		return nil, errors.Wrap(err, "create metadata generator")
+	}
+
+	if err := metadata.AddToFlexLayout(fl); err != nil {
+		return nil, errors.Wrap(err, "add metadata to layout")
+	}
+
 	dataSection := fl.AddSection()
 	dataTable, err := cmConfigGen.describeConfigMapData()
 	if err != nil {

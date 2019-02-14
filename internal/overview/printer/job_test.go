@@ -33,20 +33,6 @@ func Test_JobListHandler(t *testing.T) {
 	assert.Equal(t, expected, got)
 }
 
-func Test_JobHandler(t *testing.T) {
-	printOptions := printer.Options{
-		Cache: cache.NewMemoryCache(),
-	}
-
-	got, err := printer.JobHandler(validJob, printOptions)
-	require.NoError(t, err)
-
-	layout, ok := got.(*component.FlexLayout)
-	require.True(t, ok)
-
-	assert.Len(t, layout.Config.Sections, 5)
-}
-
 var (
 	validJobLabels = map[string]string{
 		"app": "testing",

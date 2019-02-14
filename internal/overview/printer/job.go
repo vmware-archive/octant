@@ -66,6 +66,15 @@ func JobHandler(job *batchv1.Job, opts Options) (component.ViewComponent, error)
 		return nil, errors.Wrap(err, "add job status to layout")
 	}
 
+	metadata, err := NewMetadata(job)
+	if err != nil {
+		return nil, errors.Wrap(err, "create metadata generator")
+	}
+
+	if err := metadata.AddToFlexLayout(fl); err != nil {
+		return nil, errors.Wrap(err, "add metadata to layout")
+	}
+
 	podListSection := fl.AddSection()
 	podListTable, err := createPodListView(job, opts)
 	if err != nil {

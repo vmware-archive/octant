@@ -69,6 +69,15 @@ func DeploymentHandler(deployment *appsv1.Deployment, options Options) (componen
 		return nil, errors.Wrap(err, "add deployment summary to layout")
 	}
 
+	metadata, err := NewMetadata(deployment)
+	if err != nil {
+		return nil, errors.Wrap(err, "create metadata generator")
+	}
+
+	if err := metadata.AddToFlexLayout(fl); err != nil {
+		return nil, errors.Wrap(err, "add metadata to layout")
+	}
+
 	podTemplate := NewPodTemplate(deployment, deployment.Spec.Template)
 	if err = podTemplate.AddToFlexLayout(fl); err != nil {
 		return nil, errors.Wrap(err, "add pod template to layout")
@@ -160,12 +169,6 @@ func (dc *DeploymentConfiguration) Create() (*component.Summary, error) {
 			})
 		}
 	}
-
-	creationTimestamp := dc.deployment.CreationTimestamp.Time
-	sections = append(sections, component.SummarySection{
-		Header:  "Age",
-		Content: component.NewTimestamp(creationTimestamp),
-	})
 
 	var replicas int32
 	if dc.deployment.Spec.Replicas != nil {
