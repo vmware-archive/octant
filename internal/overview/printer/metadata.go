@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/pkg/errors"
@@ -72,7 +73,7 @@ func (m *Metadata) createSummary() (*component.Summary, error) {
 	if ownerReference != nil {
 		sections.Add(component.SummarySection{
 			Header: "Controlled By",
-			Content: linkForGVK(
+			Content: link.ForGVK(
 				object.GetNamespace(),
 				ownerReference.APIVersion,
 				ownerReference.Kind,
