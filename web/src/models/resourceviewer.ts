@@ -2,7 +2,7 @@ import { Edge, ResourceViewerModel, ResourceViewerNode, TitleView, toTitle } fro
 
 export class JSONResourceViewer implements ResourceViewerModel {
   readonly edges: { [key: string]: Edge[] }
-  readonly nodes: { [key: string]: ResourceViewerNode }
+  readonly nodes: { [key: string]: ResourceViewerNode } = {}
   readonly type = 'resourceViewer'
   readonly title: TitleView
 
@@ -12,6 +12,19 @@ export class JSONResourceViewer implements ResourceViewerModel {
     }
 
     this.edges = ct.config.edges
-    this.nodes = ct.config.nodes
+
+    Object.keys(ct.config.nodes).forEach((name) => {
+      const ctNode = ct.config.nodes[name]
+      const details = ctNode.details || []
+      const node: ResourceViewerNode = {
+        name: ctNode.name,
+        apiVersion: ctNode.apiVersion,
+        kind: ctNode.kind,
+        status: ctNode.status,
+        details: toTitle(details),
+      }
+
+      this.nodes[name] = node
+    })
   }
 }

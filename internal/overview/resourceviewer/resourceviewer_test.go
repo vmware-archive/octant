@@ -42,7 +42,7 @@ func Test_ResourceViewer(t *testing.T) {
 		},
 	}
 
-	rv, err := New(stubVisitor(false))
+	rv, err := New(nil, stubVisitor(false))
 	require.NoError(t, err)
 
 	vc, err := rv.Visit(deployment)
@@ -59,7 +59,7 @@ func Test_ResourceViewer_visitor_fails(t *testing.T) {
 		},
 	}
 
-	rv, err := New(stubVisitor(true))
+	rv, err := New(nil, stubVisitor(true))
 	require.NoError(t, err)
 
 	_, err = rv.Visit(deployment)

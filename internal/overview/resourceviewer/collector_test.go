@@ -21,6 +21,10 @@ func Test_Collector(t *testing.T) {
 			Name: "deployment",
 			UID:  types.UID("deployment"),
 		},
+		Status: appsv1.DeploymentStatus{
+			Replicas:          1,
+			AvailableReplicas: 1,
+		},
 	}
 
 	replicaSet1 := &extv1beta1.ReplicaSet{
@@ -31,6 +35,10 @@ func Test_Collector(t *testing.T) {
 		},
 		Spec: extv1beta1.ReplicaSetSpec{
 			Replicas: ptrInt32(1),
+		},
+		Status: extv1beta1.ReplicaSetStatus{
+			Replicas:          1,
+			AvailableReplicas: 1,
 		},
 	}
 
@@ -95,7 +103,7 @@ func Test_Collector(t *testing.T) {
 				},
 				"replicaSet1": []component.Edge{
 					{
-						Node: "90fb60516b7db6d0a6a2fe908d305051",
+						Node: "pods-replicaSet1",
 						Type: "explicit",
 					},
 				},
@@ -106,18 +114,27 @@ func Test_Collector(t *testing.T) {
 					Kind:       "Deployment",
 					Name:       "deployment",
 					Status:     "ok",
+					Details: []component.TitleViewComponent{
+						component.NewText("Deployment is OK"),
+					},
 				},
 				"replicaSet1": component.Node{
 					APIVersion: "extensions/v1beta1",
 					Kind:       "ReplicaSet",
 					Name:       "replicaSet1",
 					Status:     "ok",
+					Details: []component.TitleViewComponent{
+						component.NewText("Replica Set is OK"),
+					},
 				},
-				"90fb60516b7db6d0a6a2fe908d305051": component.Node{
+				"pods-replicaSet1": component.Node{
 					APIVersion: "v1",
 					Kind:       "Pod",
 					Name:       "replicaSet1 pods",
 					Status:     "ok",
+					Details: []component.TitleViewComponent{
+						component.NewText("Pod count: 1"),
+					},
 				},
 			},
 		},

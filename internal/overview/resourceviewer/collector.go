@@ -1,15 +1,16 @@
 package resourceviewer
 
 import (
-	"crypto/md5"
 	"fmt"
+	"strings"
 
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/overview/objectstatus"
-
 	"github.com/heptio/developer-dash/internal/overview/objectvisitor"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -17,15 +18,20 @@ import (
 
 // Collector collects objects to construct a resource viewer.
 type Collector struct {
-	edges map[string][]string
-	nodes map[string]component.Node
+	edges  map[string][]string
+	nodes  map[string]component.Node
+	logger log.Logger
+
+	podStats map[string]int
 }
 
 var _ objectvisitor.ObjectHandler = (*Collector)(nil)
 
 // NewCollector creates an instance of Collector.
 func NewCollector() *Collector {
-	c := &Collector{}
+	c := &Collector{
+		podStats: make(map[string]int),
+	}
 	c.Reset()
 
 	return c
@@ -44,6 +50,15 @@ func (c *Collector) Process(object objectvisitor.ClusterObject) error {
 	var err error
 
 	if c.isPod(object) {
+		pod := &corev1.Pod{}
+		if err := scheme.Scheme.Convert(object, pod, 0); err != nil {
+			return errors.Wrap(err, "unable to convert object to pod")
+		}
+
+		if ownerReference := metav1.GetControllerOf(pod); ownerReference != nil {
+			c.podStats[string(ownerReference.UID)]++
+		}
+
 		uid, node, err = c.createPodGroupNode(object)
 	} else {
 		uid, node, err = c.createObjectNode(object)
@@ -140,14 +155,18 @@ func (c *Collector) createObjectNode(object objectvisitor.ClusterObject) (string
 		return "", component.Node{}, errors.New("unable to get object name")
 	}
 
-	// TODO: hookup node status here
-	objectStatus := objectstatus.Status(object)
+	objectStatus, err := objectstatus.Status(object)
+	if err != nil {
+		c.log().Errorf("error retrieving object status: %v", err)
+		objectStatus.NodeStatus = component.NodeStatusOK
+	}
 
 	node := component.Node{
 		Name:       name,
 		APIVersion: apiVersion,
 		Kind:       kind,
 		Status:     objectStatus.NodeStatus,
+		Details:    objectStatus.Details,
 	}
 
 	return string(uid), node, nil
@@ -209,10 +228,7 @@ func (c *Collector) podGroupDetails(object objectvisitor.ClusterObject) (podGrou
 	}
 
 	reference := metav1.GetControllerOf(obj)
-
-	data := []byte(reference.UID)
-	// use MD5 sum of controller uid for pod group id.
-	id := fmt.Sprintf("%x", md5.Sum(data))
+	id := fmt.Sprintf("pods-%s", reference.UID)
 
 	pgd := podGroupDetails{
 		id:   id,
@@ -227,6 +243,13 @@ func (c *Collector) ViewComponent() (component.ViewComponent, error) {
 
 	var nodeIDs []string
 	for nodeID, node := range c.nodes {
+		if strings.HasPrefix(nodeID, "pods-") {
+			ownerID := strings.TrimPrefix(nodeID, "pods-")
+			node.Details = append(node.Details,
+				component.NewText(fmt.Sprintf("Pod count: %d", c.podStats[ownerID])))
+			c.nodes[nodeID] = node
+		}
+
 		rv.AddNode(nodeID, node)
 		nodeIDs = append(nodeIDs, nodeID)
 	}
@@ -240,6 +263,14 @@ func (c *Collector) ViewComponent() (component.ViewComponent, error) {
 	}
 
 	return rv, nil
+}
+
+func (c *Collector) log() log.Logger {
+	if c.logger != nil {
+		return c.logger
+	}
+
+	return log.NopLogger()
 }
 
 func listContains(lst []string, s string) bool {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/overview/logviewer"
 	"github.com/heptio/developer-dash/internal/overview/yamlviewer"
 
@@ -158,6 +159,8 @@ func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType f
 }
 
 func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
+	logger := log.From(ctx)
+
 	if options.Printer == nil {
 		return emptyContentResponse, errors.New("object describer requires a printer")
 	}
@@ -209,7 +212,7 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 	cr.Add(vc)
 
 	if !d.disableResourceViewer {
-		rv, err := resourceviewer.New(resourceviewer.WithDefaultQueryer(options.Queryer))
+		rv, err := resourceviewer.New(logger, resourceviewer.WithDefaultQueryer(options.Queryer))
 		if err != nil {
 			return emptyContentResponse, err
 		}
