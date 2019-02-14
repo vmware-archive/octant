@@ -3,10 +3,13 @@ package printer
 import (
 	"fmt"
 
+	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/pkg/errors"
 	batchv1 "k8s.io/api/batch/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 var (
@@ -164,4 +167,69 @@ func createJobConditions(conditions []batchv1.JobCondition) (*component.Table, e
 	}
 
 	return table, nil
+}
+
+func createJobListView(object runtime.Object, options Options) (component.ViewComponent, error) {
+	options.DisableLabels = true
+
+	jobList := &batchv1.JobList{}
+
+	if options.Cache == nil {
+		return nil, errors.New("cache is nil")
+	}
+
+	accessor := meta.NewAccessor()
+
+	namespace, err := accessor.Namespace(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "get namespace for object")
+	}
+
+	apiVersion, err := accessor.APIVersion(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "Get apiVersion for object")
+	}
+
+	kind, err := accessor.Kind(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "get kind for object")
+	}
+
+	name, err := accessor.Name(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "get name for object")
+	}
+
+	key := cache.Key{
+		Namespace:  namespace,
+		APIVersion: "batch/v1beta1",
+		Kind:       "Job",
+	}
+
+	list, err := options.Cache.List(key)
+	if err != nil {
+		return nil, errors.Wrapf(err, "list all objects for key %+v", key)
+	}
+
+	for _, u := range list {
+		job := &batchv1.Job{}
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, job)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := copyObjectMeta(job, u); err != nil {
+			return nil, errors.Wrap(err, "copy object metadata")
+		}
+
+		for _, ownerReference := range job.OwnerReferences {
+			if ownerReference.APIVersion == apiVersion &&
+				ownerReference.Kind == kind &&
+				ownerReference.Name == name {
+				jobList.Items = append(jobList.Items, *job)
+			}
+		}
+	}
+
+	return JobListHandler(jobList, options)
 }
