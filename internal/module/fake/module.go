@@ -65,7 +65,7 @@ func (m *Module) Start() error {
 func (m *Module) Stop() {
 }
 
-func (m *Module) Content(ctx context.Context, contentPath, prefix, namespace string) (component.ContentResponse, error) {
+func (m *Module) Content(ctx context.Context, contentPath, prefix, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
 	m.ObservedContentPath = contentPath
 	m.ObservedNamespace = namespace
 

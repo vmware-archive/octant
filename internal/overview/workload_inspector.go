@@ -209,21 +209,23 @@ func loadServices(serviceNames []string, namespace string, c cache.Cache) ([]*co
 			Kind:       "Service",
 			Name:       backend,
 		}
-		ul, err := c.List(key)
+		u, err := c.Get(key)
 		if err != nil {
 			return nil, errors.Wrapf(err, "retrieving service backend: %v", backend)
 		}
-		for _, u := range ul {
-			svc := &corev1.Service{}
-			err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, svc)
-			if err != nil {
-				return nil, errors.Wrap(err, "converting unstructured service")
-			}
-			if err := copyObjectMeta(svc, u); err != nil {
-				return nil, errors.Wrap(err, "copying object metadata")
-			}
-			services = append(services, svc)
+		if u == nil {
+			return nil, errors.Wrapf(err, "backend not found: %v", backend)
 		}
+
+		svc := &corev1.Service{}
+		err = runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, svc)
+		if err != nil {
+			return nil, errors.Wrap(err, "converting unstructured service")
+		}
+		if err := copyObjectMeta(svc, u); err != nil {
+			return nil, errors.Wrap(err, "copying object metadata")
+		}
+		services = append(services, svc)
 	}
 	return services, nil
 }

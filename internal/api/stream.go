@@ -12,6 +12,7 @@ import (
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 const (
@@ -28,7 +29,7 @@ type eventGenerator interface {
 // contentEventGenerator generates events that contain components.
 type contentEventGenerator struct {
 	// generatorFn is a function that generates the component.
-	generatorFn func(ctx context.Context, path, prefix, namespace string) (component.ContentResponse, error)
+	generatorFn func(ctx context.Context, path, prefix, namespace string, opts module.ContentOptions) (component.ContentResponse, error)
 	// path is the path to the content.
 	path string
 	// prefix the API path prefix. It could be prepended to the path to create
@@ -36,6 +37,8 @@ type contentEventGenerator struct {
 	prefix string
 	// namespace is the current namespace.
 	namespace string
+	// selector is a label selector to filter any content.
+	selector labels.Selector
 	// runEvery is how often the event generator should be run.
 	runEvery time.Duration
 }
@@ -43,7 +46,7 @@ type contentEventGenerator struct {
 // Generate generates an event from a component using `generatorFn` and wraps it in a
 // `dashResponse`.
 func (g *contentEventGenerator) Generate(ctx context.Context) (event, error) {
-	resp, err := g.generatorFn(ctx, g.path, g.prefix, g.namespace)
+	resp, err := g.generatorFn(ctx, g.path, g.prefix, g.namespace, module.ContentOptions{Selector: g.selector})
 	if err != nil {
 		return event{}, err
 	}

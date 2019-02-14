@@ -1,4 +1,4 @@
-package module
+package module_test
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -23,7 +24,7 @@ func TestManager(t *testing.T) {
 	clusterClient, err := fake.NewClient(scheme, nil, objects)
 	require.NoError(t, err)
 
-	manager, err := NewManager(clusterClient, "default", log.NopLogger())
+	manager, err := module.NewManager(clusterClient, "default", log.NopLogger())
 	require.NoError(t, err)
 
 	modules := manager.Modules()
@@ -83,7 +84,7 @@ func (m *stubModule) Start() error {
 func (m *stubModule) Stop() {
 }
 
-func (m *stubModule) Content(ctx context.Context, contentPath string, prefix string, namespace string) (component.ContentResponse, error) {
+func (m *stubModule) Content(ctx context.Context, contentPath string, prefix string, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
 	panic("not implemented")
 }
 

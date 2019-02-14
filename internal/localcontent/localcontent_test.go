@@ -10,6 +10,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/localcontent"
+	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
 
@@ -26,7 +27,7 @@ func Test_LocalContent_Name(t *testing.T) {
 func Test_LocalContent_Content_root(t *testing.T) {
 	withLocalContent(t, func(lc *localcontent.LocalContent) {
 		ctx := context.Background()
-		content, err := lc.Content(ctx, "/", "prefix", "namespace")
+		content, err := lc.Content(ctx, "/", "prefix", "namespace", module.ContentOptions{})
 		require.NoError(t, err)
 
 		assert.Equal(t, component.Title(component.NewText("Local Contents")), content.Title)
@@ -51,7 +52,7 @@ func Test_LocalContent_Content_root(t *testing.T) {
 func Test_LocalContent_Content_file(t *testing.T) {
 	withLocalContent(t, func(lc *localcontent.LocalContent) {
 		ctx := context.Background()
-		content, err := lc.Content(ctx, "/table", "prefix", "namespace")
+		content, err := lc.Content(ctx, "/table", "prefix", "namespace", module.ContentOptions{})
 		require.NoError(t, err)
 
 		assert.Equal(t, component.Title(component.NewText("Sample content")),
@@ -70,7 +71,7 @@ func Test_LocalContent_Content_file(t *testing.T) {
 func Test_LocalContent_Content_invalid_file(t *testing.T) {
 	withLocalContent(t, func(lc *localcontent.LocalContent) {
 		ctx := context.Background()
-		_, err := lc.Content(ctx, "/invalid", "prefix", "namespace")
+		_, err := lc.Content(ctx, "/invalid", "prefix", "namespace", module.ContentOptions{})
 		require.Error(t, err)
 	})
 }

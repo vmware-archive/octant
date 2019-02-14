@@ -16,6 +16,22 @@ import (
 
 type lookupFunc func(namespace, prefix string, cell interface{}) content.Text
 
+// loadObject loads a single object from the cache.
+func loadObject(ctx context.Context, cache cache.Cache, namespace string, fields map[string]string, cacheKey cache.Key) (*unstructured.Unstructured, error) {
+	cacheKey.Namespace = namespace
+
+	if name, ok := fields["name"]; ok && name != "" {
+		cacheKey.Name = name
+	}
+
+	object, err := cache.Get(cacheKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return object, nil
+}
+
 // loadObjects loads objects from the cache sorted by their name.
 func loadObjects(ctx context.Context, cache cache.Cache, namespace string, fields map[string]string, cacheKeys []cache.Key) ([]*unstructured.Unstructured, error) {
 	var objects []*unstructured.Unstructured

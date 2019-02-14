@@ -1,8 +1,9 @@
 package overview
 
 import (
-	"github.com/heptio/developer-dash/internal/cache"
 	"strconv"
+
+	"github.com/heptio/developer-dash/internal/cache"
 
 	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
@@ -154,13 +155,14 @@ func statusForIngress(ingress *v1beta1.Ingress, c cache.Cache) (ResourceStatusLi
 			Kind:       "Secret",
 			Name:       tls.SecretName,
 		}
-		secrets, err := loadSecrets(key, c)
+		secret, err := loadSecret(key, c)
 		if err != nil {
 			// Special case - we assume if there was an error it was an access error
 			// (the user may not be allowed to see secrets) - and will skip validating TLS.
 			break
 		}
-		if len(secrets) > 0 {
+		if secret != nil {
+			// Found the secret, no error
 			continue
 		}
 

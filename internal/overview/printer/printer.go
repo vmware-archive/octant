@@ -9,13 +9,15 @@ import (
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// Options are printer options.
+// Options provides options to a print handler
 type Options struct {
 	Cache         cache.Cache
+	Selector      labels.Selector
 	DisableLabels bool
 }
 

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/overview/container"
 	"github.com/heptio/developer-dash/internal/queryer"
 
@@ -136,10 +137,12 @@ func (co *ClusterOverview) Stop() {
 	co.stopCh = nil
 }
 
-func (co *ClusterOverview) Content(ctx context.Context, contentPath, prefix, namespace string) (component.ContentResponse, error) {
+func (co *ClusterOverview) Content(ctx context.Context, contentPath, prefix, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
 	ctx = log.WithLoggerContext(ctx, co.logger)
-
-	return co.generator.Generate(ctx, contentPath, prefix, namespace)
+	genOpts := GeneratorOptions{
+		Selector: opts.Selector,
+	}
+	return co.generator.Generate(ctx, contentPath, prefix, namespace, genOpts)
 }
 
 type logEntry struct {

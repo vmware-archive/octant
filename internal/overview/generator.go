@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/heptio/developer-dash/internal/queryer"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/overview/printer"
@@ -37,6 +38,8 @@ func (pf *pathFilter) Match(path string) bool {
 	return pf.re.MatchString(path)
 }
 
+// Fields extracts parameters from the request path.
+// In practice, this finds the field "name" for an object request.
 func (pf *pathFilter) Fields(path string) map[string]string {
 	out := make(map[string]string)
 
@@ -54,12 +57,17 @@ var contentNotFound = errors.Errorf("content not found")
 
 type realGenerator struct {
 	cache         cache.Cache
-	queryer       queryer.Queryer
+	queryer       queryer.Queryer // Queryer is used by the ResourceViewer and should not be filtered
 	pathFilters   []pathFilter
 	clusterClient cluster.ClientInterface
 	printer       printer.Printer
 
 	mu sync.Mutex
+}
+
+// GeneratorOptions are additional options to pass a generator
+type GeneratorOptions struct {
+	Selector labels.Selector
 }
 
 func newGenerator(cache cache.Cache, q queryer.Queryer, pathFilters []pathFilter, clusterClient cluster.ClientInterface) (*realGenerator, error) {
@@ -78,7 +86,7 @@ func newGenerator(cache cache.Cache, q queryer.Queryer, pathFilters []pathFilter
 	}, nil
 }
 
-func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace string) (component.ContentResponse, error) {
+func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace string, opts GeneratorOptions) (component.ContentResponse, error) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 
@@ -89,10 +97,11 @@ func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace st
 
 		fields := pf.Fields(path)
 		options := DescriberOptions{
-			Cache:   g.cache,
-			Queryer: g.queryer,
-			Fields:  fields,
-			Printer: g.printer,
+			Cache:    g.cache,
+			Queryer:  g.queryer,
+			Fields:   fields,
+			Printer:  g.printer,
+			Selector: opts.Selector,
 		}
 
 		cResponse, err := pf.describer.Describe(ctx, prefix, namespace, g.clusterClient, options)

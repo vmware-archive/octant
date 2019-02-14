@@ -6,7 +6,13 @@ import (
 
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/view/component"
+	"k8s.io/apimachinery/pkg/labels"
 )
+
+// ContentOptions are addtional options for content generation
+type ContentOptions struct {
+	Selector labels.Selector
+}
 
 // Module is an hcli plugin.
 type Module interface {
@@ -15,7 +21,7 @@ type Module interface {
 	// Handlers are additional handlers for the module
 	Handlers() map[string]http.Handler
 	// Content generates content for a path.
-	Content(ctx context.Context, contentPath, prefix, namespace string) (component.ContentResponse, error)
+	Content(ctx context.Context, contentPath, prefix, namespace string, opts ContentOptions) (component.ContentResponse, error)
 	// ContentPath will be used to construct content paths.
 	ContentPath() string
 	// Navigation returns navigation entries for this module.

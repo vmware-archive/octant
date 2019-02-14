@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 //go:generate mockgen -destination=./fake/mock_cache.go -package=fake github.com/heptio/developer-dash/internal/cache Cache
@@ -23,6 +24,7 @@ type Key struct {
 	APIVersion string
 	Kind       string
 	Name       string
+	Selector   labels.Selector
 }
 
 // MemoryCacheOpt is an option for configuring memory cache.

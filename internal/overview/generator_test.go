@@ -88,7 +88,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 			require.NoError(t, err)
 
 			ctx := context.Background()
-			cResponse, err := g.Generate(ctx, tc.path, "/prefix", "default")
+			cResponse, err := g.Generate(ctx, tc.path, "/prefix", "default", GeneratorOptions{})
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -149,7 +149,16 @@ func (c *spyCache) List(key cache.Key) ([]*unstructured.Unstructured, error) {
 }
 
 func (c *spyCache) Get(key cache.Key) (*unstructured.Unstructured, error) {
-	panic("not implemented")
+	c.used[key] = true
+
+	var obj *unstructured.Unstructured
+	objs := c.store[key]
+	if len(objs) > 0 {
+		obj = objs[0]
+	}
+	err := c.errs[key]
+
+	return obj, err
 }
 
 func (c *spyCache) Delete(obj *unstructured.Unstructured) error {
