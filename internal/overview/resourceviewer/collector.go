@@ -24,6 +24,7 @@ type Collector struct {
 	nodes  map[string]component.Node
 	logger log.Logger
 
+	// podStats counts pods in a replica set.
 	podStats map[string]int
 }
 

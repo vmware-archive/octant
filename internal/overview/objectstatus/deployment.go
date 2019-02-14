@@ -33,7 +33,7 @@ func deploymentAppsV1(object runtime.Object) (ObjectStatus, error) {
 	case status.Replicas == status.AvailableReplicas:
 		return ObjectStatus{
 			NodeStatus: component.NodeStatusOK,
-			Details:    component.Title(component.NewText(fmt.Sprintf("Deployment is OK")))}, nil
+			Details:    component.Title(component.NewText("Deployment is OK"))}, nil
 	default:
 		return ObjectStatus{
 			NodeStatus: component.NodeStatusWarning,

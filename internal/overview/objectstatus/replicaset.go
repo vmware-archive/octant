@@ -64,11 +64,11 @@ func replicaSetAppsV1(object runtime.Object) (ObjectStatus, error) {
 	case status.Replicas == 0:
 		return ObjectStatus{
 			NodeStatus: component.NodeStatusError,
-			Details:    component.Title(component.NewText(fmt.Sprintf("Replica Set has no pods available"))),
+			Details:    component.Title(component.NewText("Replica Set has no pods available")),
 		}, nil
 	case status.Replicas == status.AvailableReplicas:
 		return ObjectStatus{NodeStatus: component.NodeStatusOK,
-			Details: component.Title(component.NewText(fmt.Sprintf("Replica Set is OK"))),
+			Details: component.Title(component.NewText("Replica Set is OK")),
 		}, nil
 	default:
 		return ObjectStatus{
