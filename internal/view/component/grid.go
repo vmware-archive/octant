@@ -32,11 +32,6 @@ func (t *Grid) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (t *Grid) IsEmpty() bool {
-	return len(t.Config.Panels) == 0
-}
-
 // Add adds additional panels to the grid
 func (t *Grid) Add(panels ...Panel) {
 	t.Config.Panels = append(t.Config.Panels, panels...)

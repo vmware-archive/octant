@@ -34,11 +34,6 @@ func (t *Containers) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (t *Containers) IsEmpty() bool {
-	return len(t.Config.Containers) == 0
-}
-
 // Add adds additional items to the tail of the containers.
 func (t *Containers) Add(name string, image string) {
 	t.Config.Containers = append(t.Config.Containers, ContainerDef{Name: name, Image: image})

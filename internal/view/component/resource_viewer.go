@@ -101,11 +101,6 @@ func (rv *ResourceViewer) GetMetadata() Metadata {
 	return rv.Metadata
 }
 
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (rv *ResourceViewer) IsEmpty() bool {
-	return len(rv.Config.Nodes) == 0
-}
-
 type resourceViewerMarshal ResourceViewer
 
 // MarshalJSON implements json.Marshaler

@@ -77,33 +77,3 @@ func Test_Link_Marshal(t *testing.T) {
 		})
 	}
 }
-
-func Test_Link_IsEmpty(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    ViewComponent
-		expected bool
-	}{
-		{
-			name: "general",
-			input: &Link{
-				Config: LinkConfig{
-					Text: "nginx-deployment",
-					Ref:  "/overview/deployments/nginx-deployment",
-				},
-			},
-			expected: false,
-		},
-		{
-			name:     "empty",
-			input:    &Link{},
-			expected: true,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			assert.Equal(t, tc.expected, tc.input.IsEmpty(), "IsEmpty mismatch")
-		})
-	}
-}

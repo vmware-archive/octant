@@ -33,11 +33,6 @@ func (t *Text) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (t *Text) IsEmpty() bool {
-	return t.Config.Text == ""
-}
-
 type textMarshal Text
 
 // MarshalJSON implements json.Marshaler

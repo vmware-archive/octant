@@ -75,37 +75,3 @@ func Test_Table_Marshal(t *testing.T) {
 		})
 	}
 }
-
-func Test_Table_IsEmpty(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    ViewComponent
-		expected bool
-	}{
-		{
-			name: "general",
-			input: &Table{
-				Config: TableConfig{
-					Columns: []TableCol{
-						TableCol{},
-					},
-					Rows: []TableRow{
-						TableRow{},
-					},
-				},
-			},
-			expected: false,
-		},
-		{
-			name:     "empty",
-			input:    &Table{},
-			expected: true,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			assert.Equal(t, tc.expected, tc.input.IsEmpty(), "IsEmpty mismatch")
-		})
-	}
-}

@@ -37,11 +37,6 @@ func (fl *FlexLayout) GetMetadata() Metadata {
 	return fl.Metadata
 }
 
-// IsEmpty returns true if the flex layout has no sections.
-func (fl *FlexLayout) IsEmpty() bool {
-	return len(fl.Config.Sections) == 0
-}
-
 // AddSections adds one or more sections to the flex layout.
 func (fl *FlexLayout) AddSections(sections ...FlexLayoutSection) {
 	fl.Config.Sections = append(fl.Config.Sections, sections...)

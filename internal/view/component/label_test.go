@@ -39,38 +39,6 @@ func Test_Labels_Marshal(t *testing.T) {
 	}
 }
 
-func Test_Labels_IsEmpty(t *testing.T) {
-	cases := []struct {
-		name    string
-		input   *component.Labels
-		isEmpty bool
-	}{
-		{
-			name:    "empty (nil)",
-			input:   component.NewLabels(nil),
-			isEmpty: true,
-		},
-		{
-			name:    "empty",
-			input:   component.NewLabels(map[string]string{}),
-			isEmpty: true,
-		},
-		{
-			name: "not empty",
-			input: component.NewLabels(map[string]string{
-				"foo": "bar",
-			}),
-			isEmpty: false,
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			assert.Equal(t, tc.isEmpty, tc.input.IsEmpty())
-		})
-	}
-}
-
 func Test_Labels_GetMetadata(t *testing.T) {
 	input := component.NewLabels(map[string]string{
 		"foo": "bar",

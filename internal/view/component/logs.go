@@ -36,11 +36,6 @@ func (l *Logs) GetMetadata() Metadata {
 	return l.Metadata
 }
 
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (l *Logs) IsEmpty() bool {
-	return len(l.Config.Containers) == 0
-}
-
 type logsMarshal Logs
 
 func (l *Logs) MarshalJSON() ([]byte, error) {

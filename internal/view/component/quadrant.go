@@ -33,11 +33,6 @@ type QuadrantValue struct {
 	Label string `json:"label,omitempty"`
 }
 
-// IsEmpty returns true if the quadrant's value or label are blank.
-func (qv *QuadrantValue) IsEmpty() bool {
-	return qv.Value == "" || qv.Label == ""
-}
-
 // QuadrantConfig is the contents of a Quadrant
 type QuadrantConfig struct {
 	NW QuadrantValue `json:"nw,omitempty"`
@@ -59,14 +54,6 @@ func NewQuadrant() *Quadrant {
 // GetMetadata accesses the components metadata. Implements ViewComponent.
 func (t *Quadrant) GetMetadata() Metadata {
 	return t.Metadata
-}
-
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (t *Quadrant) IsEmpty() bool {
-	return t.Config.NW.IsEmpty() ||
-		t.Config.NE.IsEmpty() ||
-		t.Config.SW.IsEmpty() ||
-		t.Config.SE.IsEmpty()
 }
 
 // Set adds additional panels to the quadrant

@@ -82,11 +82,6 @@ func (t *Table) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (t *Table) IsEmpty() bool {
-	return len(t.Config.Rows) == 0 || len(t.Config.Columns) == 0
-}
-
 // Add adds additional items to the tail of the table.
 func (t *Table) Add(rows ...TableRow) {
 	t.Config.Rows = append(t.Config.Rows, rows...)

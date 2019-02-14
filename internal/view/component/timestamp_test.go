@@ -71,39 +71,10 @@ func Test_Timestamp_Marshal(t *testing.T) {
 			actual, err := json.Marshal(tc.input)
 			isErr := (err != nil)
 			if isErr != tc.isErr {
-				t.Fatalf("Unexepected error: %v", err)
+				t.Fatalf("Unexpected error: %v", err)
 			}
 
 			assert.JSONEq(t, tc.expected, string(actual))
-		})
-	}
-}
-
-func Test_Timestamp_IsEmpty(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    ViewComponent
-		expected bool
-	}{
-		{
-			name: "general",
-			input: &Timestamp{
-				Config: TimestampConfig{
-					Timestamp: -14159040,
-				},
-			},
-			expected: false,
-		},
-		{
-			name:     "empty",
-			input:    &Timestamp{},
-			expected: true,
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			assert.Equal(t, tc.expected, tc.input.IsEmpty(), "IsEmpty mismatch")
 		})
 	}
 }

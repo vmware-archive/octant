@@ -33,11 +33,6 @@ func (t *Link) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (t *Link) IsEmpty() bool {
-	return t.Config.Text == "" && t.Config.Ref == ""
-}
-
 type linkMarshal Link
 
 // MarshalJSON implements json.Marshaler

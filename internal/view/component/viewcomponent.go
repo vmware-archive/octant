@@ -121,7 +121,6 @@ func (m *Metadata) UnmarshalJSON(data []byte) error {
 // ViewComponent is a common interface for the data representation
 // of visual components as rendered by the UI.
 type ViewComponent interface {
-	IsEmpty() bool
 	GetMetadata() Metadata
 }
 

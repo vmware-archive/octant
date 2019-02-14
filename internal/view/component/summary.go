@@ -74,11 +74,6 @@ func (t *Summary) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (t *Summary) IsEmpty() bool {
-	return len(t.Config.Sections) == 0
-}
-
 // Add adds additional items to the tail of the summary.
 func (t *Summary) Add(sections ...SummarySection) {
 	t.Config.Sections = append(t.Config.Sections, sections...)

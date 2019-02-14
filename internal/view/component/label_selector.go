@@ -37,11 +37,6 @@ func (t *LabelSelector) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-// IsEmpty specifies whether the component is considered empty. Implements ViewComponent.
-func (t *LabelSelector) IsEmpty() bool {
-	return t.Config.Key == "" && t.Config.Value == ""
-}
-
 // IsSelector marks the component as selector flavor. Implements Selector.
 func (t *LabelSelector) IsSelector() {
 }
