@@ -120,14 +120,42 @@ func genObjectsSeed() []*unstructured.Unstructured {
 
 	type source struct {
 		ns, apiVersion, kind, name string
+		labels                     map[string]string
 	}
 
 	sources := []source{
-		{"app-1", "foo/v1", "Kind", "foo1"},
-		{"default", "foo/v1", "Kind", "foo1"},
-		{"default", "foo/v1", "Kind", "foo2"},
-		{"default", "foo/v1", "Other", "other1"},
-		{"default", "bar/v1", "Bar", "bar1"},
+		{
+			ns:         "app-1",
+			apiVersion: "foo/v1",
+			kind:       "Kind",
+			name:       "foo1",
+		},
+		{
+			ns:         "default",
+			apiVersion: "foo/v1",
+			kind:       "Kind",
+			name:       "foo1",
+			labels:     map[string]string{"app": "first"},
+		},
+		{
+			ns:         "default",
+			apiVersion: "foo/v1",
+			kind:       "Kind",
+			name:       "foo2",
+			labels:     map[string]string{"app": "second"},
+		},
+		{
+			ns:         "default",
+			apiVersion: "foo/v1",
+			kind:       "Other",
+			name:       "other1",
+		},
+		{
+			ns:         "default",
+			apiVersion: "bar/v1",
+			kind:       "Bar",
+			name:       "bar1",
+		},
 	}
 
 	for _, src := range sources {
@@ -136,6 +164,9 @@ func genObjectsSeed() []*unstructured.Unstructured {
 		o.SetAPIVersion(src.apiVersion)
 		o.SetKind(src.kind)
 		o.SetName(src.name)
+		if src.labels != nil {
+			o.SetLabels(src.labels)
+		}
 
 		objects = append(objects, o)
 	}

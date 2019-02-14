@@ -20,7 +20,7 @@ import (
 func Test_contentEventGenerator(t *testing.T) {
 	runEvery := 1 * time.Second
 
-	fn := func(context.Context, string, string, string) (component.ContentResponse, error) {
+	fn := func(ctx context.Context, path, prefix, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
 		return component.ContentResponse{}, nil
 	}
 

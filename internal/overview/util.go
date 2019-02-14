@@ -334,3 +334,29 @@ func loadSecrets(key cache.Key, c cache.Cache) ([]*corev1.Secret, error) {
 
 	return list, nil
 }
+
+// loadSecret loads a single secret from the cache.
+// Note if the secret is not found, a nil error and secret is returned,
+// i.e. it is not an error.
+func loadSecret(key cache.Key, c cache.Cache) (*corev1.Secret, error) {
+	object, err := c.Get(key)
+	if err != nil {
+		return nil, err
+	}
+
+	// Object not found is not an error
+	if object == nil {
+		return nil, nil
+	}
+
+	secret := &corev1.Secret{}
+	if err := scheme.Scheme.Convert(object, secret, runtime.InternalGroupVersioner); err != nil {
+		return nil, err
+	}
+
+	if err := copyObjectMeta(secret, object); err != nil {
+		return nil, err
+	}
+
+	return secret, nil
+}

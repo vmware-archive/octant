@@ -6,6 +6,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/require"
 
@@ -66,7 +67,7 @@ func TestModule_Content(t *testing.T) {
 		t.Run(tc.path, func(t *testing.T) {
 			ctx := context.Background()
 
-			got, err := m.Content(ctx, tc.path, "/prefix", "namespace")
+			got, err := m.Content(ctx, tc.path, "/prefix", "namespace", module.ContentOptions{})
 			if tc.isErr {
 				require.Error(t, err)
 				return

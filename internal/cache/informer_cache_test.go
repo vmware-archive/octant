@@ -11,8 +11,10 @@ import (
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/selection"
 )
 
 var resources = []*metav1.APIResourceList{
@@ -155,14 +157,14 @@ func TestInformerCache_List(t *testing.T) {
 		expectErr   bool
 	}{
 		{
-			name: "ns, apiVersion, kind, name",
+			name: "error - ns, apiVersion, kind, name",
 			key: Key{
 				Namespace:  "default",
 				APIVersion: "foo/v1",
 				Kind:       "Kind",
 				Name:       "foo1",
 			},
-			expectedLen: 1,
+			expectErr: true,
 		},
 		{
 			name: "ns, apiVersion, kind",
@@ -172,6 +174,90 @@ func TestInformerCache_List(t *testing.T) {
 				Kind:       "Kind",
 			},
 			expectedLen: 2,
+		},
+		{
+			name: "selector filters away some",
+			key: Key{
+				Namespace:  "default",
+				APIVersion: "foo/v1",
+				Kind:       "Kind",
+				Selector:   makeTestSelector("app", "first"),
+			},
+			expectedLen: 1,
+		},
+		{
+			name: "selector filters away all",
+			key: Key{
+				Namespace:  "default",
+				APIVersion: "foo/v1",
+				Kind:       "Kind",
+				Selector:   makeTestSelector("app", "none"),
+			},
+			expectedLen: 0,
+		},
+		{
+			name: "ns, apiVersion: error because we require kind",
+			key: Key{
+				Namespace:  "default",
+				APIVersion: "foo/v1",
+			},
+			expectErr: true,
+		},
+		{
+			name: "not found",
+			key: Key{
+				Namespace:  "default",
+				APIVersion: "apps/v1",
+				Kind:       "Deployment",
+			},
+			expectedLen: 0,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c, cancel, err := newCache(t, objects)
+			require.NoError(t, err)
+
+			objs, err := c.List(tc.key)
+			hadErr := (err != nil)
+			assert.Equalf(t, tc.expectErr, hadErr, "error mismatch: %v", err)
+			assert.Len(t, objs, tc.expectedLen)
+			cancel()
+		})
+	}
+}
+
+func TestInformerCache_Get(t *testing.T) {
+	objects := []runtime.Object{}
+	for _, u := range genObjectsSeed() {
+		objects = append(objects, u)
+	}
+
+	cases := []struct {
+		name        string
+		key         Key
+		expectFound bool
+		expectErr   bool
+	}{
+		{
+			name: "ns, apiVersion, kind, name",
+			key: Key{
+				Namespace:  "default",
+				APIVersion: "foo/v1",
+				Kind:       "Kind",
+				Name:       "foo1",
+			},
+			expectFound: true,
+		},
+		{
+			name: "error - name required - ns, apiVersion, kind",
+			key: Key{
+				Namespace:  "default",
+				APIVersion: "foo/v1",
+				Kind:       "Kind",
+			},
+			expectErr: true,
 		},
 		{
 			name: "ns, apiVersion: error because we require kind",
@@ -189,7 +275,17 @@ func TestInformerCache_List(t *testing.T) {
 				Kind:       "Kind",
 				Name:       "does-not-exist",
 			},
-			expectedLen: 0,
+			expectFound: false,
+		},
+		{
+			name: "no such kind",
+			key: Key{
+				Namespace:  "default",
+				APIVersion: "foo/v1",
+				Kind:       "NoSuchKind",
+				Name:       "does-not-exist",
+			},
+			expectErr: true,
 		},
 	}
 
@@ -198,10 +294,11 @@ func TestInformerCache_List(t *testing.T) {
 			c, cancel, err := newCache(t, objects)
 			require.NoError(t, err)
 
-			objs, err := c.List(tc.key)
+			obj, err := c.Get(tc.key)
 			hadErr := (err != nil)
+			wasFound := (obj != nil)
 			assert.Equalf(t, tc.expectErr, hadErr, "error mismatch: %v", err)
-			assert.Len(t, objs, tc.expectedLen)
+			assert.Equal(t, tc.expectFound, wasFound, "found status mismatch")
 			cancel()
 		})
 	}
@@ -423,4 +520,10 @@ func TestChannelContext(t *testing.T) {
 	close(parentCh)
 	<-done2
 	assert.Equal(t, int32(0), atomic.LoadInt32(&count))
+}
+
+func makeTestSelector(k, v string) labels.Selector {
+	selector := labels.NewSelector()
+	r, _ := labels.NewRequirement(k, selection.Equals, []string{v})
+	return selector.Add(*r)
 }

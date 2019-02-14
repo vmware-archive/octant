@@ -17,32 +17,31 @@ import (
 	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/content"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
 )
 
-type LoaderFunc func(ctx context.Context, c cache.Cache, namespace string, fields map[string]string) ([]*unstructured.Unstructured, error)
+type LoaderFunc func(ctx context.Context, c cache.Cache, namespace string, fields map[string]string) (*unstructured.Unstructured, error)
 
+// Returns a loader that loads a single object from the cache
 var DefaultLoader = func(cacheKey cache.Key) LoaderFunc {
-	return func(ctx context.Context, c cache.Cache, namespace string, fields map[string]string) ([]*unstructured.Unstructured, error) {
-		cacheKeys := []cache.Key{cacheKey}
-		return loadObjects(ctx, c, namespace, fields, cacheKeys)
+	return func(ctx context.Context, c cache.Cache, namespace string, fields map[string]string) (*unstructured.Unstructured, error) {
+		return loadObject(ctx, c, namespace, fields, cacheKey)
 	}
 }
 
-type ObjectTransformFunc func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error
-
+// DescriberOptions provides options to describers
 type DescriberOptions struct {
-	Queryer queryer.Queryer
-	Cache   cache.Cache
-	Fields  map[string]string
-	Printer printer.Printer
+	Queryer  queryer.Queryer
+	Cache    cache.Cache
+	Fields   map[string]string
+	Printer  printer.Printer
+	Selector labels.Selector
 }
 
 // Describer creates content.
@@ -84,7 +83,11 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 		return emptyContentResponse, errors.New("object list describer requires a printer")
 	}
 
-	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, []cache.Key{d.cacheKey})
+	// Pass through selector if provided to filter objects
+	var key = d.cacheKey // copy
+	key.Selector = options.Selector
+
+	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, []cache.Key{key})
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -165,16 +168,14 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 		return emptyContentResponse, errors.New("object describer requires a printer")
 	}
 
-	objects, err := d.loaderFunc(ctx, options.Cache, namespace, options.Fields)
+	object, err := d.loaderFunc(ctx, options.Cache, namespace, options.Fields)
 	if err != nil {
 		return emptyContentResponse, err
 	}
 
-	if len(objects) != 1 {
-		return emptyContentResponse, errors.Errorf("expected exactly one object")
+	if object == nil {
+		return emptyContentResponse, errors.Errorf("object not found")
 	}
-
-	object := objects[0]
 
 	item := d.objectType()
 

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/heptio/developer-dash/internal/hcli"
+	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/view/component"
 )
 
@@ -22,7 +23,7 @@ func (sco *SimpleClusterOverview) Name() string {
 }
 
 // Content generates content
-func (sco *SimpleClusterOverview) Content(ctx context.Context, contentPath, prefix, namespace string) (component.ContentResponse, error) {
+func (sco *SimpleClusterOverview) Content(ctx context.Context, contentPath, prefix, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
 	return component.ContentResponse{}, nil
 }
 

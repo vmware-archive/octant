@@ -2,14 +2,18 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
 )
 
 type contentHandler struct {
@@ -61,14 +65,25 @@ func (h *contentHandler) handlerForModule(m module.Module) http.HandlerFunc {
 		h.logger.Debugf("Serving content module %v, path %v, namespace %v, contentPath: %v", m.Name(), r.URL.Path, namespace, contentPath)
 
 		ctx := log.WithLoggerContext(r.Context(), h.logger)
-		poll := r.URL.Query().Get("poll")
+		q := r.URL.Query()
+		poll := q.Get("poll")
+
+		filters := q["filter"]
+		h.logger.Debugf("filter query: %v", filters)
+		selector, err := selectorFromFilters(filters)
+		if err != nil {
+			h.logger.Errorf("invalid filters: %v", err)
+			respondWithError(w, http.StatusInternalServerError, err.Error(), h.logger)
+			return
+		}
+		h.logger.Debugf("Selector: %v", selector)
 
 		if poll != "" {
-			h.handlePoll(ctx, poll, namespace, contentPath, w, r, m)
+			h.handlePoll(ctx, poll, namespace, selector, contentPath, w, r, m)
 			return
 		}
 
-		resp, err := m.Content(ctx, contentPath, h.prefix, namespace)
+		resp, err := m.Content(ctx, contentPath, h.prefix, namespace, module.ContentOptions{Selector: selector})
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err.Error(), h.logger)
 			return
@@ -78,7 +93,7 @@ func (h *contentHandler) handlerForModule(m module.Module) http.HandlerFunc {
 	}
 }
 
-func (h *contentHandler) handlePoll(ctx context.Context, poll, namespace, contentPath string, w http.ResponseWriter, r *http.Request, m module.Module) {
+func (h *contentHandler) handlePoll(ctx context.Context, poll, namespace string, selector labels.Selector, contentPath string, w http.ResponseWriter, r *http.Request, m module.Module) {
 	eventTimeout := defaultEventTimeout
 	timeout, err := strconv.Atoi(poll)
 	if err == nil {
@@ -91,6 +106,7 @@ func (h *contentHandler) handlePoll(ctx context.Context, poll, namespace, conten
 			path:        contentPath,
 			prefix:      h.prefix,
 			namespace:   namespace,
+			selector:    selector,
 			runEvery:    eventTimeout,
 		},
 		&navigationEventGenerator{
@@ -109,4 +125,28 @@ func (h *contentHandler) handlePoll(ctx context.Context, poll, namespace, conten
 	if err = cs.content(ctx); err != nil {
 		h.logger.Errorf("content error: %v", err)
 	}
+}
+
+// selectorFromFilters builds a labels.Selector from a list of
+// "key:value" formatted strings
+func selectorFromFilters(filters []string) (labels.Selector, error) {
+	if len(filters) == 0 {
+		return labels.Everything(), nil
+	}
+
+	s := labels.NewSelector()
+	for _, f := range filters {
+		// Filters will be of the format "key:value"
+		split := strings.SplitN(f, ":", 2)
+		if len(split) < 2 {
+			return nil, fmt.Errorf("invalid filter: %s", f)
+		}
+		r, err := labels.NewRequirement(split[0], selection.Equals, []string{split[1]})
+		if err != nil {
+			return nil, fmt.Errorf("invalid filter: %s", f)
+		}
+		s = s.Add(*r)
+	}
+
+	return s, nil
 }

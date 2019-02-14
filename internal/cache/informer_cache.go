@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -276,42 +277,31 @@ func (c *InformerCache) List(key Key) ([]*unstructured.Unstructured, error) {
 		return nil, err
 	}
 
+	if key.Name != "" {
+		// return nil, errors.New("list key should not include object name)
+		return nil, fmt.Errorf("list key should not include object name: %v", key)
+	}
+
 	// Handle list operation
-	if key.Name == "" {
-		// c.logger.With("key", key, "gvk", gvk, "resource", restMapping.Resource).Debugf("listing all objects")
-		objs, err := gi.Lister().List(labels.Everything())
+	// c.logger.With("key", key, "gvk", gvk, "resource", restMapping.Resource).Debugf("listing all objects")
+	var selector = labels.Everything()
+	if key.Selector != nil {
+		selector = key.Selector
+	}
+	objs, err := gi.Lister().List(selector)
+	if err != nil {
+		return nil, errors.Wrapf(err, "listing")
+	}
+
+	ret := make([]*unstructured.Unstructured, len(objs))
+	for i, obj := range objs {
+		u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
 		if err != nil {
-			return nil, errors.Wrapf(err, "listing")
+			return nil, errors.Wrapf(err, "converting %T to unstructured", obj)
 		}
-
-		ret := make([]*unstructured.Unstructured, len(objs))
-		for i, obj := range objs {
-			u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
-			if err != nil {
-				return nil, errors.Wrapf(err, "converting %T to unstructured", obj)
-			}
-			ret[i] = &unstructured.Unstructured{Object: u}
-		}
-		return ret, nil
+		ret[i] = &unstructured.Unstructured{Object: u}
 	}
-
-	// Handle get operation
-	// c.logger.With("key", key, "gvk", gvk, "resource", restMapping.Resource).Debugf("getting single object: %v", key.Name)
-	lister := gi.Lister().ByNamespace(key.Namespace)
-	obj, err := lister.Get(key.Name)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			return nil, nil
-		}
-		return nil, errors.Wrapf(err, "fetching %v", key)
-	}
-	u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
-	if err != nil {
-		return nil, errors.Wrapf(err, "converting %T to unstructured", obj)
-	}
-	return []*unstructured.Unstructured{
-		&unstructured.Unstructured{Object: u},
-	}, nil
+	return ret, nil
 }
 
 // Get retrieves an object from the cluster via cache.
@@ -345,6 +335,20 @@ func (c *InformerCache) Get(key Key) (*unstructured.Unstructured, error) {
 		}
 		return nil, errors.Wrapf(err, "fetching %v", key)
 	}
+
+	// Verify the selector matches if provided
+	if key.Selector != nil {
+		accessor := meta.NewAccessor()
+		m, err := accessor.Labels(obj)
+		if err != nil {
+			return nil, errors.New("retrieving labels")
+		}
+		lbls := labels.Set(m)
+		if !key.Selector.Matches(lbls) {
+			return nil, errors.New("object found but filtered by selector")
+		}
+	}
+
 	u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
 	if err != nil {
 		return nil, errors.Wrapf(err, "converting %T to unstructured", obj)
