@@ -34,7 +34,7 @@ func new(object runtime.Object) (*yamlViewer, error) {
 
 // ToComponent converts the YAMLViewer to a component.
 func (yv *yamlViewer) ToComponent() (*component.YAML, error) {
-	y := component.NewYAML(component.Title(component.NewText("YAML")))
+	y := component.NewYAML(component.TitleFromString("YAML"), "")
 	if err := y.Data(yv.object); err != nil {
 		return nil, errors.Wrap(err, "add YAML data")
 	}

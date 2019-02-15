@@ -22,27 +22,20 @@ func Test_Metadata(t *testing.T) {
 
 	got := fl.ToComponent("Summary")
 
-	expected := &component.FlexLayout{
-		Metadata: component.Metadata{
-			Title: []component.TitleViewComponent{component.NewText("Summary")},
-			Type:  "flexlayout",
-		},
-		Config: component.FlexLayoutConfig{
-			Sections: []component.FlexLayoutSection{
-				{
+	expected := component.NewFlexLayout("Summary")
+	expected.AddSections([]component.FlexLayoutSection{
+		{
+			{
+				Width: 16,
+				View: component.NewSummary("Metadata", component.SummarySections{
 					{
-						Width: 16,
-						View: component.NewSummary("Metadata", component.SummarySections{
-							{
-								Header:  "Age",
-								Content: component.NewTimestamp(deployment.CreationTimestamp.Time),
-							},
-						}...),
+						Header:  "Age",
+						Content: component.NewTimestamp(deployment.CreationTimestamp.Time),
 					},
-				},
+				}...),
 			},
 		},
-	}
+	}...)
 
 	assert.Equal(t, expected, got)
 }

@@ -23,6 +23,7 @@ export interface View {
   readonly title?: TitleView
 
   readonly isComparable?: boolean
+  readonly accessor?: string
 }
 
 export interface AnnotationsModel extends View {

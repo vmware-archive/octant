@@ -16,17 +16,16 @@ type YAMLConfig struct {
 }
 
 type YAML struct {
-	Metadata Metadata   `json:"metadata,omitempty"`
-	Config   YAMLConfig `json:"config,omitempty"`
+	base
+	Config YAMLConfig `json:"config,omitempty"`
 }
 
-func NewYAML(title []TitleViewComponent) *YAML {
+func NewYAML(title []TitleViewComponent, data string) *YAML {
 	return &YAML{
-		Metadata: Metadata{
-			Type:  "yaml",
-			Title: title,
+		base: newBase(typeYAML, title),
+		Config: YAMLConfig{
+			Data: data,
 		},
-		Config: YAMLConfig{},
 	}
 }
 
@@ -55,6 +54,6 @@ type yamlMarshal YAML
 
 func (y *YAML) MarshalJSON() ([]byte, error) {
 	m := yamlMarshal(*y)
-	m.Metadata.Type = "yaml"
+	m.Metadata.Type = typeYAML
 	return json.Marshal(&m)
 }

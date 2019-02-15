@@ -68,10 +68,7 @@ func Test_ResourceViewer_Marshal(t *testing.T) {
 						},
 					},
 				},
-				Metadata: Metadata{
-					Type:  "resourceViewer",
-					Title: Title(NewText("Resource Viewer")),
-				},
+				base: newBase(typeResourceViewer, TitleFromString("Resource Viewer")),
 			},
 			expectedPath: "resource_viewer.json",
 		},

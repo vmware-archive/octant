@@ -4,8 +4,8 @@ import "encoding/json"
 
 // Link is a text component that contains a link.
 type Link struct {
-	Metadata Metadata   `json:"metadata"`
-	Config   LinkConfig `json:"config"`
+	base
+	Config LinkConfig `json:"config"`
 }
 
 // LinkConfig is the contents of Link
@@ -17,10 +17,7 @@ type LinkConfig struct {
 // NewLink creates a link component
 func NewLink(title, s, ref string) *Link {
 	return &Link{
-		Metadata: Metadata{
-			Type:  "link",
-			Title: Title(NewText(title)),
-		},
+		base: newBase(typeLink, TitleFromString(title)),
 		Config: LinkConfig{
 			Text: s,
 			Ref:  ref,
@@ -38,6 +35,6 @@ type linkMarshal Link
 // MarshalJSON implements json.Marshaler
 func (t *Link) MarshalJSON() ([]byte, error) {
 	m := linkMarshal(*t)
-	m.Metadata.Type = "link"
+	m.Metadata.Type = typeLink
 	return json.Marshal(&m)
 }

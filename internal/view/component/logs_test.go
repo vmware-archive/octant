@@ -20,10 +20,7 @@ func Test_Logs_Marshal(t *testing.T) {
 		{
 			name: "in general",
 			input: &Logs{
-				Metadata: Metadata{
-					Type:  "logs",
-					Title: Title(NewText("Logs")),
-				},
+				base: newBase(typeLogs, TitleFromString("Logs")),
 				Config: LogsConfig{
 					Containers: []string{"one", "two"},
 				},

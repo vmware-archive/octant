@@ -24,7 +24,7 @@ func Test_YAML_Marshal(t *testing.T) {
 				Config: YAMLConfig{
 					Data: "---\nfoo: bar",
 				},
-				Metadata: Metadata{},
+				base: newBase(typeYAML, nil),
 			},
 			expectedPath: "yaml1.json",
 		},
@@ -46,7 +46,7 @@ func Test_YAML_Marshal(t *testing.T) {
 }
 
 func Test_YAML_Data(t *testing.T) {
-	y := NewYAML(Title(NewText("Title")))
+	y := NewYAML(TitleFromString("Title"), "")
 
 	pod := &corev1.Pod{}
 	require.NoError(t, y.Data(pod))

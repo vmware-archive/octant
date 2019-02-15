@@ -35,9 +35,7 @@ func Test_Text_Marshal(t *testing.T) {
 		{
 			name: "with title",
 			input: &Text{
-				Metadata: Metadata{
-					Title: Title(NewText("image")),
-				},
+				base: newBase(typeText, TitleFromString("image")),
 				Config: TextConfig{
 					Text: "nginx:latest",
 				},

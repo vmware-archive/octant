@@ -1,6 +1,7 @@
 interface Metadata {
   type: string
   title?: ContentType[]
+  accessor?: string
 }
 
 interface ContentType {

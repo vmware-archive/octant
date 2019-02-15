@@ -28,33 +28,7 @@ func Test_unmarshal(t *testing.T) {
 						{Name: "kuard", Image: "gcr.io/kuar-demo/kuard-amd64:1"},
 					},
 				},
-				Metadata: Metadata{Type: "containers"},
-			},
-		},
-		{
-			name:       "grid",
-			configFile: "config_grid.json",
-			objectType: "grid",
-			expected: &Grid{
-				Config: GridConfig{
-					Panels: []Panel{
-						{
-							Config: PanelConfig{
-								Content: &Text{
-									Config:   TextConfig{Text: "Panel contents"},
-									Metadata: Metadata{Type: "text"},
-								},
-								Position: PanelPosition{
-									X: 0, Y: 0, W: 12, H: 7,
-								},
-							},
-							Metadata: Metadata{
-								Type: "panel",
-							},
-						},
-					},
-				},
-				Metadata: Metadata{Type: "grid"},
+				base: newBase(typeContainers, nil),
 			},
 		},
 		{
@@ -65,7 +39,7 @@ func Test_unmarshal(t *testing.T) {
 				Config: LabelsConfig{Labels: map[string]string{
 					"foo": "bar",
 				}},
-				Metadata: Metadata{Type: "labels"},
+				base: newBase(typeLabels, nil),
 			},
 		},
 		{
@@ -77,7 +51,7 @@ func Test_unmarshal(t *testing.T) {
 					Text: "text",
 					Ref:  "ref",
 				},
-				Metadata: Metadata{Type: "link"},
+				base: newBase(typeLink, nil),
 			},
 		},
 		{
@@ -92,9 +66,7 @@ func Test_unmarshal(t *testing.T) {
 								Text: "nginx-deployment",
 								Ref:  "/overview/deployments/nginx-deployment",
 							},
-							Metadata: Metadata{
-								Type: "link",
-							},
+							base: newBase(typeLink, nil),
 						},
 						&Labels{
 							Config: LabelsConfig{
@@ -102,13 +74,11 @@ func Test_unmarshal(t *testing.T) {
 									"app": "nginx",
 								},
 							},
-							Metadata: Metadata{
-								Type: "labels",
-							},
+							base: newBase(typeLabels, nil),
 						},
 					},
 				},
-				Metadata: Metadata{Type: "list"},
+				base: newBase(typeList, nil),
 			},
 		},
 		{
@@ -117,17 +87,12 @@ func Test_unmarshal(t *testing.T) {
 			objectType: "panel",
 			expected: &Panel{
 				Config: PanelConfig{
-					Content: &Text{
-						Config:   TextConfig{Text: "Panel contents"},
-						Metadata: Metadata{Type: "text"},
-					},
+					Content: NewText("Panel contents"),
 					Position: PanelPosition{
 						X: 1, Y: 2, W: 3, H: 4,
 					},
 				},
-				Metadata: Metadata{
-					Type: "panel",
-				},
+				base: newBase(typePanel, nil),
 			},
 		},
 		{
@@ -141,7 +106,7 @@ func Test_unmarshal(t *testing.T) {
 					SW: QuadrantValue{Label: "sw", Value: "1"},
 					SE: QuadrantValue{Label: "se", Value: "1"},
 				},
-				Metadata: Metadata{Type: "quadrant"},
+				base: newBase(typeQuadrant, nil),
 			},
 		},
 		{
@@ -197,9 +162,7 @@ func Test_unmarshal(t *testing.T) {
 						},
 					},
 				},
-				Metadata: Metadata{
-					Type: "resourceViewer",
-				},
+				base: newBase(typeResourceViewer, nil),
 			},
 		},
 		{
@@ -214,9 +177,7 @@ func Test_unmarshal(t *testing.T) {
 								Key:   "app",
 								Value: "nginx",
 							},
-							Metadata: Metadata{
-								Type: "labelSelector",
-							},
+							base: newBase(typeLabelSelector, nil),
 						},
 						&ExpressionSelector{
 							Config: ExpressionSelectorConfig{
@@ -224,13 +185,11 @@ func Test_unmarshal(t *testing.T) {
 								Operator: "In",
 								Values:   []string{"production", "qa"},
 							},
-							Metadata: Metadata{
-								Type: "expressionSelector",
-							},
+							base: newBase(typeExpressionSelector, nil),
 						},
 					},
 				},
-				Metadata: Metadata{Type: "selectors"},
+				base: newBase(typeSelectors, nil),
 			},
 		},
 		{
@@ -249,26 +208,17 @@ func Test_unmarshal(t *testing.T) {
 											Config: TextConfig{
 												Text: "nginx:latest",
 											},
-											Metadata: Metadata{
-												Type:  "text",
-												Title: Title(NewText("Image")),
-											},
+											base: newBase(typeText, TitleFromString("Image")),
 										},
 										&Text{
 											Config: TextConfig{
 												Text: "80/TCP",
 											},
-											Metadata: Metadata{
-												Type:  "text",
-												Title: Title(NewText("Port")),
-											},
+											base: newBase(typeText, TitleFromString("Port")),
 										},
 									},
 								},
-								Metadata: Metadata{
-									Type:  "list",
-									Title: Title(NewText("nginx")),
-								},
+								base: newBase(typeList, TitleFromString("nginx")),
 							},
 						},
 						{
@@ -277,14 +227,12 @@ func Test_unmarshal(t *testing.T) {
 								Config: TextConfig{
 									Text: "Nothing to see here",
 								},
-								Metadata: Metadata{
-									Type: "text",
-								},
+								base: newBase(typeText, nil),
 							},
 						},
 					},
 				},
-				Metadata: Metadata{Type: "summary"},
+				base: newBase(typeSummary, nil),
 			},
 		},
 		{
@@ -300,17 +248,13 @@ func Test_unmarshal(t *testing.T) {
 								Config: TextConfig{
 									Text: "The first row",
 								},
-								Metadata: Metadata{
-									Type: "text",
-								},
+								base: newBase(typeText, nil),
 							},
 							"Name": &Text{
 								Config: TextConfig{
 									Text: "First",
 								},
-								Metadata: Metadata{
-									Type: "text",
-								},
+								base: newBase(typeText, nil),
 							},
 						},
 						{
@@ -318,22 +262,18 @@ func Test_unmarshal(t *testing.T) {
 								Config: TextConfig{
 									Text: "The last row",
 								},
-								Metadata: Metadata{
-									Type: "text",
-								},
+								base: newBase(typeText, nil),
 							},
 							"Name": &Text{
 								Config: TextConfig{
 									Text: "Last",
 								},
-								Metadata: Metadata{
-									Type: "text",
-								},
+								base: newBase(typeText, nil),
 							},
 						},
 					},
 				},
-				Metadata: Metadata{Type: "table"},
+				base: newBase(typeTable, nil),
 			},
 		},
 		{
@@ -341,8 +281,8 @@ func Test_unmarshal(t *testing.T) {
 			configFile: "config_text.json",
 			objectType: "text",
 			expected: &Text{
-				Config:   TextConfig{Text: "text"},
-				Metadata: Metadata{Type: "text"},
+				Config: TextConfig{Text: "text"},
+				base:   newBase(typeText, nil),
 			},
 		},
 		{
@@ -350,8 +290,8 @@ func Test_unmarshal(t *testing.T) {
 			configFile: "config_timestamp.json",
 			objectType: "timestamp",
 			expected: &Timestamp{
-				Config:   TimestampConfig{Timestamp: 1548198349},
-				Metadata: Metadata{Type: "timestamp"},
+				Config: TimestampConfig{Timestamp: 1548198349},
+				base:   newBase(typeTimestamp, nil),
 			},
 		},
 	}

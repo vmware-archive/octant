@@ -11,12 +11,6 @@ type Selector interface {
 	Name() string
 }
 
-// Selectors contains other ViewComponents
-type Selectors struct {
-	Metadata Metadata        `json:"metadata"`
-	Config   SelectorsConfig `json:"config"`
-}
-
 // SelectorsConfig is the contents of a Selectors
 type SelectorsConfig struct {
 	Selectors []Selector `json:"selectors"`
@@ -45,12 +39,16 @@ func (t *SelectorsConfig) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// Selectors contains other ViewComponents
+type Selectors struct {
+	base
+	Config SelectorsConfig `json:"config"`
+}
+
 // NewSelectors creates a selectors component
 func NewSelectors(selectors []Selector) *Selectors {
 	return &Selectors{
-		Metadata: Metadata{
-			Type: "selectors",
-		},
+		base: newBase(typeSelectors, nil),
 		Config: SelectorsConfig{
 			Selectors: selectors,
 		},
@@ -78,7 +76,7 @@ func (t *Selectors) MarshalJSON() ([]byte, error) {
 		}
 	}
 
-	filtered.Metadata.Type = "selectors"
+	filtered.Metadata.Type = typeSelectors
 	filtered.Metadata.Title = t.Metadata.Title
 
 	m := selectorsMarshal(*filtered)

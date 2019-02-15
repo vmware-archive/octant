@@ -20,9 +20,7 @@ func Test_Table_Marshal(t *testing.T) {
 		{
 			name: "general",
 			input: &Table{
-				Metadata: Metadata{
-					Title: Title(NewText("my table")),
-				},
+				base: newBase(typeTable, TitleFromString("my table")),
 				Config: TableConfig{
 					Columns: []TableCol{
 						TableCol{Name: "Name", Accessor: "Name"},

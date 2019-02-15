@@ -4,8 +4,8 @@ import "encoding/json"
 
 // Grid contains other ViewComponents
 type Grid struct {
-	Metadata Metadata   `json:"metadata"`
-	Config   GridConfig `json:"config"`
+	base
+	Config GridConfig `json:"config"`
 }
 
 // GridConfig is the contents of a Grid
@@ -17,10 +17,7 @@ type GridConfig struct {
 func NewGrid(title string, panels ...Panel) *Grid {
 	p := append([]Panel(nil), panels...) // Make a copy
 	return &Grid{
-		Metadata: Metadata{
-			Type:  "grid",
-			Title: Title(NewText(title)),
-		},
+		base: newBase(typeGrid, TitleFromString(title)),
 		Config: GridConfig{
 			Panels: p,
 		},
@@ -42,6 +39,6 @@ type gridMarshal Grid
 // MarshalJSON implements json.Marshaler
 func (t *Grid) MarshalJSON() ([]byte, error) {
 	m := gridMarshal(*t)
-	m.Metadata.Type = "grid"
+	m.Metadata.Type = typeGrid
 	return json.Marshal(&m)
 }

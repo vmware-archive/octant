@@ -16,15 +16,8 @@ func Test_ToComponent(t *testing.T) {
 	got, err := ToComponent(object)
 	require.NoError(t, err)
 
-	expected := &component.YAML{
-		Metadata: component.Metadata{
-			Title: component.Title(component.NewText("YAML")),
-			Type:  "yaml",
-		},
-		Config: component.YAMLConfig{
-			Data: "---\nmetadata:\n  creationTimestamp: null\nspec:\n  containers: null\nstatus: {}\n",
-		},
-	}
+	data := "---\nmetadata:\n  creationTimestamp: null\nspec:\n  containers: null\nstatus: {}\n"
+	expected := component.NewYAML(component.TitleFromString("YAML"), data)
 
 	assert.Equal(t, expected, got)
 }

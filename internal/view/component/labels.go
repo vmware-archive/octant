@@ -13,8 +13,8 @@ var labelsFilteredKeys = []string{
 
 // Labels is a component representing key/value based labels
 type Labels struct {
-	Metadata Metadata     `json:"metadata"`
-	Config   LabelsConfig `json:"config"`
+	base
+	Config LabelsConfig `json:"config"`
 }
 
 // LabelsConfig is the contents of Labels
@@ -25,9 +25,7 @@ type LabelsConfig struct {
 // NewLabels creates a labels component
 func NewLabels(labels map[string]string) *Labels {
 	return &Labels{
-		Metadata: Metadata{
-			Type: "labels",
-		},
+		base: newBase(typeLabels, nil),
 		Config: LabelsConfig{
 			Labels: labels,
 		},
@@ -52,7 +50,7 @@ func (t *Labels) MarshalJSON() ([]byte, error) {
 	}
 
 	m := labelsMarshal(*filtered)
-	m.Metadata.Type = "labels"
+	m.Metadata.Type = typeLabels
 	m.Metadata.Title = t.Metadata.Title
 	return json.Marshal(&m)
 }

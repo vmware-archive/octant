@@ -8,12 +8,14 @@ export class JSONResourceViewer implements ResourceViewerModel {
   readonly type = 'resourceViewer'
   readonly selected: string
   readonly title: TitleView
+  readonly accessor: string
 
   constructor(ct: ContentType) {
     if (ct.metadata.title) {
       this.title = toTitle(ct.metadata.title)
     }
 
+    this.accessor = ct.metadata.accessor
     this.edges = ct.config.edges
     this.selected = ct.config.selected
 

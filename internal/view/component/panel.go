@@ -4,12 +4,6 @@ import (
 	"encoding/json"
 )
 
-// Panel contains other ViewComponents
-type Panel struct {
-	Metadata Metadata    `json:"metadata"`
-	Config   PanelConfig `json:"config"`
-}
-
 // PanelConfig is the contents of a Panel
 type PanelConfig struct {
 	Content  ViewComponent `json:"content"`
@@ -45,12 +39,16 @@ type PanelPosition struct {
 	H int `json:"h"`
 }
 
+// Panel contains other ViewComponents
+type Panel struct {
+	base
+	Config PanelConfig `json:"config"`
+}
+
 // NewPanel creates a panel component
 func NewPanel(title string, content ViewComponent) *Panel {
 	return &Panel{
-		Metadata: Metadata{
-			Type: "panel",
-		},
+		base: newBase(typePanel, TitleFromString(title)),
 		Config: PanelConfig{
 			Content: content,
 		},
@@ -75,6 +73,6 @@ type panelMarshal Panel
 // MarshalJSON implements json.Marshaler
 func (t *Panel) MarshalJSON() ([]byte, error) {
 	m := panelMarshal(*t)
-	m.Metadata.Type = "panel"
+	m.Metadata.Type = typePanel
 	return json.Marshal(&m)
 }

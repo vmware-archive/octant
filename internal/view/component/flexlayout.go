@@ -18,17 +18,14 @@ type FlexLayoutConfig struct {
 
 // FlexLayout is a flex layout view.
 type FlexLayout struct {
-	Metadata Metadata         `json:"metadata,omitempty"`
-	Config   FlexLayoutConfig `json:"config,omitempty"`
+	base
+	Config FlexLayoutConfig `json:"config,omitempty"`
 }
 
 // NewFlexLayout creates an instance of FlexLayout.
 func NewFlexLayout(title string) *FlexLayout {
 	return &FlexLayout{
-		Metadata: Metadata{
-			Type:  "flexlayout",
-			Title: Title(NewText(title)),
-		},
+		base: newBase(typeFlexLayout, TitleFromString(title)),
 	}
 }
 
@@ -47,6 +44,6 @@ type flexLayoutMarshal FlexLayout
 // MarshalJSON marshals the flex layout to JSON.
 func (fl *FlexLayout) MarshalJSON() ([]byte, error) {
 	x := flexLayoutMarshal(*fl)
-	x.Metadata.Type = "flexlayout"
+	x.Metadata.Type = typeFlexLayout
 	return json.Marshal(&x)
 }

@@ -3,14 +3,11 @@ import Loading from 'components/Icons/Loading'
 import Title from 'components/Title'
 import { TitleView } from 'models'
 import JSONContentResponse from 'models/contentresponse'
-import queryString from 'query-string'
 import React, { Component } from 'react'
-import { RouteComponentProps, withRouter } from 'react-router'
+import { RouteComponentProps } from 'react-router'
 
 import Renderer from './components/Renderer'
 import './styles.scss'
-
-const tabIndicator = 'tab'
 
 interface Props extends RouteComponentProps {
   title: string
@@ -23,49 +20,7 @@ interface Props extends RouteComponentProps {
   setError(hasError: boolean, errorMessage?: string): void
 }
 
-interface State {
-  currentTab: number
-}
-
-class Overview extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props)
-
-    this.state = {
-      currentTab: 0,
-    }
-  }
-
-  componentDidMount() {
-    const values = queryString.parse(this.props.location.search)
-
-    let currentTab = 0
-    const keys = Object.keys(values)
-    if (keys.indexOf(tabIndicator) > -1) {
-      if (typeof values.tab === 'string') {
-        currentTab = parseInt(values.tab as string, 10)
-      }
-    }
-
-    this.setState({
-      currentTab,
-    })
-
-    this.setTab(currentTab)
-  }
-
-  setTab = (index: number): void => {
-    const { history } = this.props
-
-    const newSearch = `?${queryString.stringify({ [tabIndicator]: index })}`
-
-    if (history.location.search !== newSearch) {
-      history.push({
-        search: newSearch,
-      })
-    }
-  }
-
+class Overview extends Component<Props> {
   renderUnknownContent = (hasError: boolean) => {
     const classNames = cx({
       'content-text': true,
@@ -84,7 +39,6 @@ class Overview extends Component<Props, State> {
 
   render() {
     const { isLoading, hasError, data } = this.props
-    const { currentTab } = this.state
 
     let title: TitleView
     let mainContent = <div />
@@ -96,7 +50,7 @@ class Overview extends Component<Props, State> {
       )
     } else if (data) {
       title = data.title
-      mainContent = <Renderer views={data.views} setTab={this.setTab} currentTab={currentTab} />
+      mainContent = <Renderer views={data.views} />
     } else {
       // no views or an error
       mainContent = this.renderUnknownContent(hasError)

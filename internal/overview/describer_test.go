@@ -62,7 +62,7 @@ func TestListDescriber(t *testing.T) {
 	cResponse, err := d.Describe(ctx, "/path", namespace, clusterClient, options)
 	require.NoError(t, err)
 
-	list := component.NewList("", nil)
+	list := component.NewList("list", nil)
 
 	tableCols := component.NewTableCols("Name", "Labels", "Age")
 	table := component.NewTable("/v1, Kind=PodList", tableCols)
@@ -141,20 +141,22 @@ func TestObjectDescriber(t *testing.T) {
 	cResponse, err := d.Describe(ctx, "/path", namespace, clusterClient, options)
 	require.NoError(t, err)
 
+	summary := component.NewText("*v1.Pod")
+	summary.SetAccessor("summary")
+
+	yaml := component.NewYAML(component.TitleFromString("YAML"),
+		"---\napiVersion: v1\nkind: Pod\nmetadata:\n  creationTimestamp: null\n  name: pod\n  namespace: default\nspec:\n  containers:\n  - name: one\n    resources: {}\n  - name: two\n    resources: {}\nstatus: {}\n")
+	yaml.SetAccessor("yaml")
+
+	logs := component.NewLogs("default", "pod", []string{"one", "two"})
+	logs.SetAccessor("logs")
+
 	expected := component.ContentResponse{
 		Title: component.Title(component.NewText("object"), component.NewText("pod")),
 		ViewComponents: []component.ViewComponent{
-			component.NewText("*v1.Pod"),
-			&component.YAML{
-				Metadata: component.Metadata{
-					Title: component.Title(component.NewText("YAML")),
-					Type:  "yaml",
-				},
-				Config: component.YAMLConfig{
-					Data: "---\napiVersion: v1\nkind: Pod\nmetadata:\n  creationTimestamp: null\n  name: pod\n  namespace: default\nspec:\n  containers:\n  - name: one\n    resources: {}\n  - name: two\n    resources: {}\nstatus: {}\n",
-				},
-			},
-			component.NewLogs("default", "pod", []string{"one", "two"}),
+			summary,
+			yaml,
+			logs,
 		},
 	}
 	assert.Equal(t, expected, cResponse)
@@ -192,7 +194,7 @@ func TestSectionDescriber(t *testing.T) {
 			expected: component.ContentResponse{
 				Title: component.Title(component.NewText("section")),
 				ViewComponents: []component.ViewComponent{
-					component.NewList("", nil),
+					component.NewList("section", nil),
 				},
 			},
 		},
@@ -207,7 +209,7 @@ func TestSectionDescriber(t *testing.T) {
 			expected: component.ContentResponse{
 				Title: component.Title(component.NewText("section")),
 				ViewComponents: []component.ViewComponent{
-					component.NewList("", nil),
+					component.NewList("section", nil),
 				},
 			},
 		},

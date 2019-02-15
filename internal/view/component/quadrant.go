@@ -17,16 +17,7 @@ const (
 	QuadSE
 	// QuadSW denotes the south-west position within a quadrant
 	QuadSW
-
-	// quadrantType is the component type for a quadrant
-	quadrantType = "quadrant"
 )
-
-// Quadrant contains other ViewComponents
-type Quadrant struct {
-	Metadata Metadata       `json:"metadata"`
-	Config   QuadrantConfig `json:"config"`
-}
 
 type QuadrantValue struct {
 	Value string `json:"value,omitempty"`
@@ -41,12 +32,15 @@ type QuadrantConfig struct {
 	SW QuadrantValue `json:"sw,omitempty"`
 }
 
+type Quadrant struct {
+	base
+	Config QuadrantConfig `json:"config"`
+}
+
 // NewQuadrant creates a quadrant component
 func NewQuadrant() *Quadrant {
 	return &Quadrant{
-		Metadata: Metadata{
-			Type: quadrantType,
-		},
+		base:   newBase(typeQuadrant, nil),
 		Config: QuadrantConfig{},
 	}
 }
@@ -79,6 +73,6 @@ type quadrantMarshal Quadrant
 // MarshalJSON implements json.Marshaler
 func (t *Quadrant) MarshalJSON() ([]byte, error) {
 	m := quadrantMarshal(*t)
-	m.Metadata.Type = quadrantType
+	m.Metadata.Type = typeQuadrant
 	return json.Marshal(&m)
 }

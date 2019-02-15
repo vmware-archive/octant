@@ -35,16 +35,14 @@ func MatchOperator(s string) (Operator, error) {
 
 // ExpressionSelector is a component for a single expression within a selector
 type ExpressionSelector struct {
-	Metadata Metadata                 `json:"metadata"`
-	Config   ExpressionSelectorConfig `json:"config"`
+	base
+	Config ExpressionSelectorConfig `json:"config"`
 }
 
 // NewExpressionSelector creates a expressionSelector component
 func NewExpressionSelector(k string, o Operator, values []string) *ExpressionSelector {
 	return &ExpressionSelector{
-		Metadata: Metadata{
-			Type: "expressionSelector",
-		},
+		base: newBase(typeExpressionSelector, nil),
 		Config: ExpressionSelectorConfig{
 			Key:      k,
 			Operator: o,
@@ -79,6 +77,6 @@ type expressionSelectorMarshal ExpressionSelector
 // MarshalJSON implements json.Marshaler
 func (t *ExpressionSelector) MarshalJSON() ([]byte, error) {
 	m := expressionSelectorMarshal(*t)
-	m.Metadata.Type = "expressionSelector"
+	m.Metadata.Type = typeExpressionSelector
 	return json.Marshal(&m)
 }

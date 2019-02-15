@@ -20,9 +20,7 @@ func Test_Selectors_Marshal(t *testing.T) {
 		{
 			name: "general",
 			input: &Selectors{
-				Metadata: Metadata{
-					Title: Title(NewText("my summary")),
-				},
+				base: newBase(typeSelectors, TitleFromString("my summary")),
 				Config: SelectorsConfig{
 					Selectors: []Selector{
 						&LabelSelector{

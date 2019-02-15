@@ -4,8 +4,8 @@ import "encoding/json"
 
 // Text is a component for freetext
 type Text struct {
-	Metadata Metadata   `json:"metadata"`
-	Config   TextConfig `json:"config"`
+	base
+	Config TextConfig `json:"config"`
 }
 
 // TextConfig is the contents of Text
@@ -16,9 +16,7 @@ type TextConfig struct {
 // NewText creates a text component
 func NewText(s string) *Text {
 	return &Text{
-		Metadata: Metadata{
-			Type: "text",
-		},
+		base: newBase(typeText, nil),
 		Config: TextConfig{
 			Text: s,
 		},
@@ -38,6 +36,6 @@ type textMarshal Text
 // MarshalJSON implements json.Marshaler
 func (t *Text) MarshalJSON() ([]byte, error) {
 	m := textMarshal(*t)
-	m.Metadata.Type = "text"
+	m.Metadata.Type = typeText
 	return json.Marshal(&m)
 }

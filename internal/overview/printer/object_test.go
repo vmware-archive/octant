@@ -44,31 +44,23 @@ func Test_Object_ToComponent(t *testing.T) {
 		name     string
 		object   runtime.Object
 		initFunc func(*Object)
-		expected *component.FlexLayout
+		sections []component.FlexLayoutSection
 		isErr    bool
 	}{
 		{
 			name:   "in general",
 			object: deployment,
-			expected: &component.FlexLayout{
-				Metadata: component.Metadata{
-					Title: component.Title(component.NewText("Summary")),
-					Type:  "flexlayout",
+			sections: []component.FlexLayoutSection{
+				{
+					{
+						Width: 12,
+						View:  component.NewText("config"),
+					},
 				},
-				Config: component.FlexLayoutConfig{
-					Sections: []component.FlexLayoutSection{
-						{
-							{
-								Width: 12,
-								View:  component.NewText("config"),
-							},
-						},
-						{
-							{
-								Width: 12,
-								View:  component.NewText("metadata"),
-							},
-						},
+				{
+					{
+						Width: 12,
+						View:  component.NewText("metadata"),
 					},
 				},
 			},
@@ -84,33 +76,25 @@ func Test_Object_ToComponent(t *testing.T) {
 					return component.NewText("summary object 2"), nil
 				}, 12)
 			},
-			expected: &component.FlexLayout{
-				Metadata: component.Metadata{
-					Title: component.Title(component.NewText("Summary")),
-					Type:  "flexlayout",
+			sections: []component.FlexLayoutSection{
+				{
+					{
+						Width: 12,
+						View:  component.NewText("config"),
+					},
+					{
+						Width: 12,
+						View:  component.NewText("summary object 1"),
+					},
+					{
+						Width: 12,
+						View:  component.NewText("summary object 2"),
+					},
 				},
-				Config: component.FlexLayoutConfig{
-					Sections: []component.FlexLayoutSection{
-						{
-							{
-								Width: 12,
-								View:  component.NewText("config"),
-							},
-							{
-								Width: 12,
-								View:  component.NewText("summary object 1"),
-							},
-							{
-								Width: 12,
-								View:  component.NewText("summary object 2"),
-							},
-						},
-						{
-							{
-								Width: 12,
-								View:  component.NewText("metadata"),
-							},
-						},
+				{
+					{
+						Width: 12,
+						View:  component.NewText("metadata"),
 					},
 				},
 			},
@@ -121,31 +105,23 @@ func Test_Object_ToComponent(t *testing.T) {
 			initFunc: func(o *Object) {
 				o.EnablePodTemplate(deployment.Spec.Template)
 			},
-			expected: &component.FlexLayout{
-				Metadata: component.Metadata{
-					Title: component.Title(component.NewText("Summary")),
-					Type:  "flexlayout",
+			sections: []component.FlexLayoutSection{
+				{
+					{
+						Width: 12,
+						View:  component.NewText("config"),
+					},
 				},
-				Config: component.FlexLayoutConfig{
-					Sections: []component.FlexLayoutSection{
-						{
-							{
-								Width: 12,
-								View:  component.NewText("config"),
-							},
-						},
-						{
-							{
-								Width: 12,
-								View:  component.NewText("metadata"),
-							},
-						},
-						{
-							{
-								Width: 12,
-								View:  component.NewText("pod template"),
-							},
-						},
+				{
+					{
+						Width: 12,
+						View:  component.NewText("metadata"),
+					},
+				},
+				{
+					{
+						Width: 12,
+						View:  component.NewText("pod template"),
 					},
 				},
 			},
@@ -156,31 +132,23 @@ func Test_Object_ToComponent(t *testing.T) {
 			initFunc: func(o *Object) {
 				o.EnableEvents()
 			},
-			expected: &component.FlexLayout{
-				Metadata: component.Metadata{
-					Title: component.Title(component.NewText("Summary")),
-					Type:  "flexlayout",
+			sections: []component.FlexLayoutSection{
+				{
+					{
+						Width: 12,
+						View:  component.NewText("config"),
+					},
 				},
-				Config: component.FlexLayoutConfig{
-					Sections: []component.FlexLayoutSection{
-						{
-							{
-								Width: 12,
-								View:  component.NewText("config"),
-							},
-						},
-						{
-							{
-								Width: 12,
-								View:  component.NewText("metadata"),
-							},
-						},
-						{
-							{
-								Width: 12,
-								View:  component.NewText("events"),
-							},
-						},
+				{
+					{
+						Width: 12,
+						View:  component.NewText("metadata"),
+					},
+				},
+				{
+					{
+						Width: 12,
+						View:  component.NewText("events"),
 					},
 				},
 			},
@@ -210,41 +178,33 @@ func Test_Object_ToComponent(t *testing.T) {
 					Width: 12,
 				})
 			},
-			expected: &component.FlexLayout{
-				Metadata: component.Metadata{
-					Title: component.Title(component.NewText("Summary")),
-					Type:  "flexlayout",
+			sections: []component.FlexLayoutSection{
+				{
+					{
+						Width: 12,
+						View:  component.NewText("config"),
+					},
 				},
-				Config: component.FlexLayoutConfig{
-					Sections: []component.FlexLayoutSection{
-						{
-							{
-								Width: 12,
-								View:  component.NewText("config"),
-							},
-						},
-						{
-							{
-								Width: 12,
-								View:  component.NewText("metadata"),
-							},
-						},
-						{
-							{
-								Width: 12,
-								View:  component.NewText("item1"),
-							},
-							{
-								Width: 12,
-								View:  component.NewText("item2"),
-							},
-						},
-						{
-							{
-								Width: 12,
-								View:  component.NewText("item3"),
-							},
-						},
+				{
+					{
+						Width: 12,
+						View:  component.NewText("metadata"),
+					},
+				},
+				{
+					{
+						Width: 12,
+						View:  component.NewText("item1"),
+					},
+					{
+						Width: 12,
+						View:  component.NewText("item2"),
+					},
+				},
+				{
+					{
+						Width: 12,
+						View:  component.NewText("item3"),
 					},
 				},
 			},
@@ -279,7 +239,10 @@ func Test_Object_ToComponent(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			assert.Equal(t, tc.expected, got)
+			expected := component.NewFlexLayout("Summary")
+			expected.AddSections(tc.sections...)
+
+			assert.Equal(t, expected, got)
 
 		})
 	}

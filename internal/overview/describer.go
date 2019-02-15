@@ -209,6 +209,7 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 		return emptyContentResponse, err
 	}
 
+	vc.SetAccessor("summary")
 	cr := component.NewContentResponse(title)
 	cr.Add(vc)
 
@@ -223,7 +224,9 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 			return emptyContentResponse, err
 		}
 
+		resourceViewerComponent.SetAccessor("resourceViewer")
 		cr.Add(resourceViewerComponent)
+
 	}
 
 	yvComponent, err := yamlviewer.ToComponent(newObject)
@@ -231,6 +234,7 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 		return emptyContentResponse, err
 	}
 
+	yvComponent.SetAccessor("yaml")
 	cr.Add(yvComponent)
 
 	if isPod(newObject) {
@@ -239,6 +243,7 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 			return emptyContentResponse, err
 		}
 
+		logsComponent.SetAccessor("logs")
 		cr.Add(logsComponent)
 	}
 
