@@ -1,6 +1,8 @@
 .resourceViewer {
-  align-items: stretch;
   display: flex;
-  justify-content: center;
-  margin: 50px;
+  // width: 100%;
+
+  .dagre-d3 {
+    flex: 3 0 auto;
+  }
 }

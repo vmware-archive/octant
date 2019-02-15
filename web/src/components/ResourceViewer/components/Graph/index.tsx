@@ -3,7 +3,7 @@ import dagreD3 from 'dagre-d3'
 import React from 'react'
 import isEqual from 'react-fast-compare'
 
-import './graph.scss'
+import './styles.scss'
 
 interface Props {
   nodes: any

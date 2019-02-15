@@ -59,8 +59,9 @@ type Node struct {
 
 // ResourceViewerConfig is configuration for a resource viewer.
 type ResourceViewerConfig struct {
-	Edges AdjList `json:"edges,omitempty"`
-	Nodes Nodes   `json:"nodes,omitempty"`
+	Edges    AdjList `json:"edges,omitempty"`
+	Nodes    Nodes   `json:"nodes,omitempty"`
+	Selected string  `json:"selected,omitempty"`
 }
 
 // ResourceView is a resource viewer component.
@@ -94,6 +95,10 @@ func (rv *ResourceViewer) AddEdge(nodeID, childID string, edgeType EdgeType) {
 
 func (rv *ResourceViewer) AddNode(id string, node Node) {
 	rv.Config.Nodes[id] = node
+}
+
+func (rv *ResourceViewer) Select(id string) {
+	rv.Config.Selected = id
 }
 
 func (rv *ResourceViewer) GetMetadata() Metadata {

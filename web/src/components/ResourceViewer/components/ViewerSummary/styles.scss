@@ -1,10 +1,12 @@
 @import '~css/variables/variables.scss';
 
 .viewSummary {
-  border-radius: 4px;
   color: #e9ecef;
   font-size: 12px;
   max-width: 275px;
+
+  background-color: #17242b;
+  flex: 0 0 250px;
 }
 
 .viewSummary--title {
@@ -55,7 +57,6 @@
   li {
     margin: 0 0 5px;
     text-align: start;
-
   }
 
   li:before {

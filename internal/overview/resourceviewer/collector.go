@@ -242,7 +242,7 @@ func (c *Collector) podGroupDetails(object objectvisitor.ClusterObject) (podGrou
 	return pgd, nil
 }
 
-func (c *Collector) ViewComponent() (component.ViewComponent, error) {
+func (c *Collector) ViewComponent(selected string) (component.ViewComponent, error) {
 	rv := component.NewResourceViewer("Resource Viewer")
 
 	var nodeIDs []string
@@ -265,6 +265,8 @@ func (c *Collector) ViewComponent() (component.ViewComponent, error) {
 			}
 		}
 	}
+
+	rv.Select(selected)
 
 	return rv, nil
 }
