@@ -4,11 +4,9 @@
   width: 100%;
 
   .main {
-    margin-top: 50px;
     width: 100%;
-    position: relative;
+    margin-top: 50px;
     overflow: scroll;
-
 
     .component--primary {
       padding: 20px 50px;
@@ -41,9 +39,11 @@
 
 .react-tabs {
   -webkit-tap-highlight-color: transparent;
-  overflow: scroll;
+  overflow-y: scroll;
   position: fixed;
   width: calc(100% - #{$navWidth});
+  height: 100%;
+  margin-bottom: 50px;
 
   &__tab-list {
     border-bottom: 1px solid rgba(173, 187, 196, 0.3);
