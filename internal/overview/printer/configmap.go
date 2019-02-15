@@ -6,7 +6,6 @@ import (
 
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/pkg/errors"
 
 	corev1 "k8s.io/api/core/v1"
@@ -41,42 +40,20 @@ func ConfigMapListHandler(list *corev1.ConfigMapList, opts Options) (component.V
 
 // ConfigMapHandler is a printFunc that prints a ConfigMap
 func ConfigMapHandler(cm *corev1.ConfigMap, options Options) (component.ViewComponent, error) {
-	fl := flexlayout.New()
+	o := NewObject(cm)
 
-	configSection := fl.AddSection()
+	o.RegisterConfig(func() (component.ViewComponent, error) {
+		return describeConfigMapConfig(cm)
+	}, 16)
 
-	cmConfigGen := NewConfigMapConfiguration(cm)
-	configView, err := cmConfigGen.Create()
-	if err != nil {
-		return nil, err
-	}
+	o.RegisterItems(ItemDescriptor{
+		Func: func() (component.ViewComponent, error) {
+			return describeConfigMapData(cm)
+		},
+		Width: 24,
+	})
 
-	if err := configSection.Add(configView, 16); err != nil {
-		return nil, errors.Wrap(err, "add configmap config to layout")
-	}
-
-	metadata, err := NewMetadata(cm)
-	if err != nil {
-		return nil, errors.Wrap(err, "create metadata generator")
-	}
-
-	if err := metadata.AddToFlexLayout(fl); err != nil {
-		return nil, errors.Wrap(err, "add metadata to layout")
-	}
-
-	dataSection := fl.AddSection()
-	dataTable, err := cmConfigGen.describeConfigMapData()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := dataSection.Add(dataTable, 16); err != nil {
-		return nil, errors.Wrap(err, "add configmap data to layout")
-	}
-
-	view := fl.ToComponent("Summary")
-
-	return view, nil
+	return o.ToComponent(options)
 }
 
 // ConfigMapConfiguration generates configmap configuration
@@ -92,12 +69,10 @@ func NewConfigMapConfiguration(cm *corev1.ConfigMap) *ConfigMapConfiguration {
 }
 
 // Create a configmap configuration summary
-func (cc *ConfigMapConfiguration) Create() (*component.Summary, error) {
-	if cc == nil || cc.configmap == nil {
-		return nil, errors.New("configmap is nil")
+func describeConfigMapConfig(cm *corev1.ConfigMap) (*component.Summary, error) {
+	if cm == nil {
+		return nil, errors.New("config map is nil")
 	}
-
-	cm := cc.configmap
 
 	sections := component.SummarySections{}
 
@@ -112,23 +87,31 @@ func (cc *ConfigMapConfiguration) Create() (*component.Summary, error) {
 }
 
 // describeDataTable returns a table containing configmap data
-func (cc *ConfigMapConfiguration) describeConfigMapData() (*component.Table, error) {
-	if cc == nil || cc.configmap == nil {
-		return nil, errors.New("configmap is nil")
+func describeConfigMapData(cm *corev1.ConfigMap) (*component.Table, error) {
+	if cm == nil {
+		return nil, errors.New("config map is nil")
 	}
-
-	cm := cc.configmap
 
 	cols := component.NewTableCols("Key", "Value")
 	tbl := component.NewTable("Data", cols)
 
-	tbl.Add(describeConfigMapDataRows(cm)...)
+	rows, err := describeConfigMapDataRows(cm)
+	if err != nil {
+		return nil, err
+	}
+	for _, row := range rows {
+		tbl.Add(row)
+	}
 
 	return tbl, nil
 }
 
 // describeDataRows prints key value pairs from data
-func describeConfigMapDataRows(cm *corev1.ConfigMap) []component.TableRow {
+func describeConfigMapDataRows(cm *corev1.ConfigMap) ([]component.TableRow, error) {
+	if cm == nil {
+		return nil, errors.New("config map is nil")
+	}
+
 	rows := make([]component.TableRow, 0)
 	data := cm.Data
 
@@ -148,5 +131,5 @@ func describeConfigMapDataRows(cm *corev1.ConfigMap) []component.TableRow {
 		row["Value"] = component.NewText(data[k])
 	}
 
-	return rows
+	return rows, nil
 }

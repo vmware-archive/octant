@@ -123,10 +123,6 @@ func TestCronJobConfiguration(t *testing.T) {
 					Content: component.NewText("200s"),
 				},
 				{
-					Header:  "Age",
-					Content: component.NewTimestamp(now),
-				},
-				{
 					Header:  "Successful Job History Limit",
 					Content: component.NewText("3"),
 				},

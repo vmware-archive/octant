@@ -10,7 +10,6 @@ import (
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/pkg/errors"
 )
 
@@ -44,49 +43,26 @@ func ServiceListHandler(list *corev1.ServiceList, opts Options) (component.ViewC
 
 // ServiceHandler is a printFunc that prints a Services.
 func ServiceHandler(service *corev1.Service, options Options) (component.ViewComponent, error) {
-	fl := flexlayout.New()
+	o := NewObject(service)
 
-	configSection := fl.AddSection()
+	o.RegisterConfig(func() (component.ViewComponent, error) {
+		return serviceConfiguration(service)
+	}, 12)
 
-	configView, err := serviceConfiguration(service)
-	if err != nil {
-		return nil, err
-	}
+	o.RegisterSummary(func() (component.ViewComponent, error) {
+		return serviceSummary(service)
+	}, 12)
 
-	if err := configSection.Add(configView, 12); err != nil {
-		return nil, errors.Wrap(err, "add service config to layout")
-	}
+	o.RegisterItems(ItemDescriptor{
+		Func: func() (component.ViewComponent, error) {
+			return serviceEndpoints(options.Cache, service)
+		},
+		Width: 24,
+	})
 
-	summaryView, err := serviceSummary(service)
-	if err != nil {
-		return nil, err
-	}
+	o.EnableEvents()
 
-	if err := configSection.Add(summaryView, 12); err != nil {
-		return nil, errors.Wrap(err, "add service summary to layout")
-	}
-
-	metadata, err := NewMetadata(service)
-	if err != nil {
-		return nil, errors.Wrap(err, "create metadata generator")
-	}
-
-	if err := metadata.AddToFlexLayout(fl); err != nil {
-		return nil, errors.Wrap(err, "add metadata to layout")
-	}
-
-	endpointsSection := fl.AddSection()
-	endpointsView, err := serviceEndpoints(options.Cache, service)
-	if err != nil {
-		return nil, err
-	}
-	if err := endpointsSection.Add(endpointsView, 24); err != nil {
-		return nil, errors.Wrap(err, "add service end points to layout")
-	}
-
-	view := fl.ToComponent("Summary")
-
-	return view, nil
+	return o.ToComponent(options)
 }
 
 func printServicePorts(ports []corev1.ServicePort) component.ViewComponent {

@@ -5,15 +5,13 @@ import (
 
 	"github.com/heptio/developer-dash/internal/overview/link"
 
-	"github.com/heptio/developer-dash/internal/view/flexlayout"
-
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 )
 
-// StatefulSetListHandler is a printFunc that lists deployments
+// StatefulSetListHandler is a printFunc that list stateful sets
 func StatefulSetListHandler(list *appsv1.StatefulSetList, opts Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
@@ -22,21 +20,21 @@ func StatefulSetListHandler(list *appsv1.StatefulSetList, opts Options) (compone
 	cols := component.NewTableCols("Name", "Labels", "Desired", "Current", "Age", "Selector")
 	tbl := component.NewTable("StatefulSets", cols)
 
-	for _, sts := range list.Items {
+	for _, statefulSet := range list.Items {
 		row := component.TableRow{}
-		row["Name"] = link.ForObject(&sts, sts.Name)
-		row["Labels"] = component.NewLabels(sts.Labels)
+		row["Name"] = link.ForObject(&statefulSet, statefulSet.Name)
+		row["Labels"] = component.NewLabels(statefulSet.Labels)
 
-		desired := fmt.Sprintf("%d", *sts.Spec.Replicas)
+		desired := fmt.Sprintf("%d", *statefulSet.Spec.Replicas)
 		row["Desired"] = component.NewText(desired)
 
-		current := fmt.Sprintf("%d", sts.Status.Replicas)
+		current := fmt.Sprintf("%d", statefulSet.Status.Replicas)
 		row["Current"] = component.NewText(current)
 
-		ts := sts.CreationTimestamp.Time
+		ts := statefulSet.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
 
-		row["Selector"] = printSelector(sts.Spec.Selector)
+		row["Selector"] = printSelector(statefulSet.Spec.Selector)
 
 		tbl.Add(row)
 	}
@@ -45,48 +43,31 @@ func StatefulSetListHandler(list *appsv1.StatefulSetList, opts Options) (compone
 }
 
 // StatefulSetHandler is a printFunc that prints a StatefulSet
-func StatefulSetHandler(sts *appsv1.StatefulSet, options Options) (component.ViewComponent, error) {
-	fl := flexlayout.New()
+func StatefulSetHandler(statefulSet *appsv1.StatefulSet, options Options) (component.ViewComponent, error) {
+	o := NewObject(statefulSet)
 
-	configSection := fl.AddSection()
+	o.RegisterConfig(func() (component.ViewComponent, error) {
+		statefulSetConfigGen := NewStatefulSetConfiguration(statefulSet)
+		return statefulSetConfigGen.Create()
+	}, 16)
 
-	stsConfigGen := NewStatefulSetConfiguration(sts)
-	configView, err := stsConfigGen.Create()
-	if err != nil {
-		return nil, err
-	}
+	o.RegisterSummary(func() (component.ViewComponent, error) {
+		statefulSetSummaryGen := NewStatefulSetStatus(statefulSet)
+		return statefulSetSummaryGen.Create(options.Cache)
+	}, 8)
 
-	if err := configSection.Add(configView, 16); err != nil {
-		return nil, errors.Wrap(err, "add replicaset config to layout")
-	}
+	o.EnablePodTemplate(statefulSet.Spec.Template)
 
-	stsSummaryGen := NewStatefulSetStatus(sts)
-	statusView, err := stsSummaryGen.Create(options.Cache)
-	if err != nil {
-		return nil, err
-	}
+	o.RegisterItems(ItemDescriptor{
+		Func: func() (component.ViewComponent, error) {
+			return createPodListView(statefulSet, options)
+		},
+		Width: 24,
+	})
 
-	if err := configSection.Add(statusView, 8); err != nil {
-		return nil, errors.Wrap(err, "add statefulset summary to layout")
-	}
+	o.EnableEvents()
 
-	metadata, err := NewMetadata(sts)
-	if err != nil {
-		return nil, errors.Wrap(err, "create metadata generator")
-	}
-
-	if err := metadata.AddToFlexLayout(fl); err != nil {
-		return nil, errors.Wrap(err, "add metadata to layout")
-	}
-
-	podTemplate := NewPodTemplate(sts, sts.Spec.Template)
-	if err = podTemplate.AddToFlexLayout(fl); err != nil {
-		return nil, errors.Wrap(err, "add pod template to layout")
-	}
-
-	view := fl.ToComponent("Summary")
-
-	return view, nil
+	return o.ToComponent(options)
 }
 
 // StatefulSetConfiguration generates a statefulset configuration
@@ -95,9 +76,9 @@ type StatefulSetConfiguration struct {
 }
 
 // NewStatefulSetConfiguration creates an instance of StatefulSetconfiguration
-func NewStatefulSetConfiguration(sts *appsv1.StatefulSet) *StatefulSetConfiguration {
+func NewStatefulSetConfiguration(statefulSet *appsv1.StatefulSet) *StatefulSetConfiguration {
 	return &StatefulSetConfiguration{
-		statefulset: sts,
+		statefulset: statefulSet,
 	}
 }
 
@@ -107,13 +88,13 @@ func (sc *StatefulSetConfiguration) Create() (*component.Summary, error) {
 		return nil, errors.New("statefulset is nil")
 	}
 
-	sts := sc.statefulset
+	statefulSet := sc.statefulset
 
 	sections := component.SummarySections{}
 
-	sections.AddText("Update Strategy", string(sts.Spec.UpdateStrategy.Type))
+	sections.AddText("Update Strategy", string(statefulSet.Spec.UpdateStrategy.Type))
 
-	if selector := sts.Spec.Selector; selector != nil {
+	if selector := statefulSet.Spec.Selector; selector != nil {
 		var selectors []component.Selector
 
 		for _, lsr := range selector.MatchExpressions {
@@ -137,15 +118,15 @@ func (sc *StatefulSetConfiguration) Create() (*component.Summary, error) {
 		})
 	}
 
-	total := fmt.Sprintf("%d", sts.Status.Replicas)
+	total := fmt.Sprintf("%d", statefulSet.Status.Replicas)
 
-	if desired := sts.Spec.Replicas; desired != nil {
+	if desired := statefulSet.Spec.Replicas; desired != nil {
 		desired := fmt.Sprintf("%d", *desired)
 		status := fmt.Sprintf("%s Desired / %s Total", desired, total)
 		sections.AddText("Replicas", status)
 	}
 
-	sections.AddText("Pod Management Policy", string(sts.Spec.PodManagementPolicy))
+	sections.AddText("Pod Management Policy", string(statefulSet.Spec.PodManagementPolicy))
 
 	summary := component.NewSummary("Configuration", sections...)
 	return summary, nil
@@ -157,19 +138,19 @@ type StatefulSetStatus struct {
 }
 
 // NewStatefulSetStatus creates an instance of StatefulSetStatus
-func NewStatefulSetStatus(sts *appsv1.StatefulSet) *StatefulSetStatus {
+func NewStatefulSetStatus(statefulSet *appsv1.StatefulSet) *StatefulSetStatus {
 	return &StatefulSetStatus{
-		statefulset: sts,
+		statefulset: statefulSet,
 	}
 }
 
 // Create generates a statefulset status quadrant
-func (sts *StatefulSetStatus) Create(c cache.Cache) (*component.Quadrant, error) {
-	if sts.statefulset == nil {
+func (statefulSet *StatefulSetStatus) Create(c cache.Cache) (*component.Quadrant, error) {
+	if statefulSet.statefulset == nil {
 		return nil, errors.New("statefulset is nil")
 	}
 
-	pods, err := listPods(sts.statefulset.ObjectMeta.Namespace, sts.statefulset.Spec.Selector, sts.statefulset.GetUID(), c)
+	pods, err := listPods(statefulSet.statefulset.ObjectMeta.Namespace, statefulSet.statefulset.Spec.Selector, statefulSet.statefulset.GetUID(), c)
 	if err != nil {
 		return nil, err
 	}

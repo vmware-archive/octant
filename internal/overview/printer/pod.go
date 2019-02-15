@@ -19,7 +19,6 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/flexlayout"
 )
 
 var (
@@ -78,31 +77,16 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 
 // PodHandler is a printFunc that prints Pods
 func PodHandler(p *corev1.Pod, opts Options) (component.ViewComponent, error) {
-	fl := flexlayout.New()
+	o := NewObject(p)
 
-	configSection := fl.AddSection()
 	podConfigGen := NewPodConfiguration(p)
-	configView, err := podConfigGen.Create()
-	if err != nil {
-		return nil, err
-	}
+	o.RegisterConfig(func() (component.ViewComponent, error) {
+		return podConfigGen.Create()
+	}, 16)
 
-	if err := configSection.Add(configView, 16); err != nil {
-		return nil, errors.Wrap(err, "add pod config to layout")
-	}
+	o.EnableEvents()
 
-	metadata, err := NewMetadata(p)
-	if err != nil {
-		return nil, errors.Wrap(err, "create metadata generator")
-	}
-
-	if err := metadata.AddToFlexLayout(fl); err != nil {
-		return nil, errors.Wrap(err, "add metadata to layout")
-	}
-
-	view := fl.ToComponent("Summary")
-	return view, nil
-
+	return o.ToComponent(opts)
 }
 
 type podStatus struct {
