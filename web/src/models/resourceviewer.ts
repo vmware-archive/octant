@@ -6,6 +6,7 @@ export class JSONResourceViewer implements ResourceViewerModel {
   readonly edges: { [key: string]: Edge[] }
   readonly nodes: { [key: string]: ResourceViewerNode } = {}
   readonly type = 'resourceViewer'
+  readonly selected: string
   readonly title: TitleView
 
   constructor(ct: ContentType) {
@@ -14,6 +15,7 @@ export class JSONResourceViewer implements ResourceViewerModel {
     }
 
     this.edges = ct.config.edges
+    this.selected = ct.config.selected
 
     Object.keys(ct.config.nodes).forEach((name) => {
       const ctNode = ct.config.nodes[name]

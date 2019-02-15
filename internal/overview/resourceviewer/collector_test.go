@@ -85,7 +85,7 @@ func Test_Collector(t *testing.T) {
 	err = c.AddChild(replicaSet1, pod)
 	require.NoError(t, err)
 
-	got, err := c.ViewComponent()
+	got, err := c.ViewComponent("deployment")
 	require.NoError(t, err)
 
 	expected := &component.ResourceViewer{
@@ -133,6 +133,7 @@ func Test_Collector(t *testing.T) {
 					Details:    component.Title(component.NewText("Pod count: 1")),
 				},
 			},
+			Selected: "deployment",
 		},
 	}
 

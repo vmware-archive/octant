@@ -34,6 +34,10 @@
         stroke: #ff3730;
       }
     }
+
+    &.selected .resource-name {
+      color: $blue-light;
+    }
   }
 
   .edgePath {
@@ -42,5 +46,45 @@
       stroke: rgba(173, 187, 196, 0.3);
       stroke-width: 1.5px;
     }
+
+
+  }
+
+  .resource {
+    background-color: #fff;
+    border: 1px solid black;
+    padding: 10px 30px;
+    position: relative;
+  }
+
+  .resource-name {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+
+  .resource-type {
+    font-size: 12px;
+    font-weight: 200;
+  }
+
+  .resource-status {
+    bottom: 0;
+    height: 15px;
+    left: 0;
+    position: absolute;
+    width: 100%;
+  }
+
+  .status-ok {
+    background-color: blue;
+  }
+
+  .status-warning {
+    background-color: orange;
+  }
+
+  .status-error {
+    background-color: red;
   }
 }

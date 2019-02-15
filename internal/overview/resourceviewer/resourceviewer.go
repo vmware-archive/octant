@@ -6,6 +6,7 @@ import (
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 )
 
 // ViewerOpt is an option for ResourceViewer.
@@ -59,7 +60,13 @@ func (rv *ResourceViewer) Visit(object objectvisitor.ClusterObject) (component.V
 		return nil, err
 	}
 
-	return rv.collector.ViewComponent()
+	accessor := meta.NewAccessor()
+	uid, err := accessor.UID(object)
+	if err != nil {
+		return nil, err
+	}
+
+	return rv.collector.ViewComponent(string(uid))
 }
 
 func (rv *ResourceViewer) factoryFunc() objectvisitor.ObjectHandlerFactory {

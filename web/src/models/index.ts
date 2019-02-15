@@ -113,6 +113,7 @@ export interface Edge {
 export interface ResourceViewerModel extends View {
   readonly edges: { [key: string]: Edge[] }
   readonly nodes: { [key: string]: ResourceViewerNode }
+  readonly selected: string
   readonly type: 'resourceViewer'
 }
 

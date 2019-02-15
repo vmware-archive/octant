@@ -1,12 +1,10 @@
 import { ResourceViewerModel } from 'models'
 import React, { Component } from 'react'
 
-import { Tooltip } from './components/Tooltip'
+import Graph from './components/Graph'
 import ViewSummary from './components/ViewerSummary'
-import Graph from './graph'
 import './index.scss'
 import ResourceNode from './node'
-import './resource'
 
 interface Props {
   view: ResourceViewerModel
@@ -20,7 +18,7 @@ class ResourceViewer extends Component<Props, State> {
   constructor(props: Props) {
     super(props)
     this.state = {
-      currentResource: '',
+      currentResource: this.props.view.selected,
     }
   }
 
@@ -34,16 +32,8 @@ class ResourceViewer extends Component<Props, State> {
     const currentObject = objects[this.state.currentResource]
     const nodes = {}
 
-    const tooltips: JSX.Element[] = []
-
     for (const [id, object] of Object.entries(objects)) {
       nodes[id] = new ResourceNode(id, object, this.state.currentResource === id).toDescriptor()
-
-      tooltips.push(
-        <Tooltip key={id} id={id}>
-          <ViewSummary node={currentObject} />
-        </Tooltip>
-      )
     }
 
     const edges = []
@@ -65,7 +55,7 @@ class ResourceViewer extends Component<Props, State> {
     return (
       <div className='resourceViewer'>
         <Graph width='100%' height='100%' nodes={nodes} edges={edges} onNodeClick={this.setCurrentResource} />
-        {tooltips}
+        <ViewSummary node={currentObject} />
       </div>
     )
   }

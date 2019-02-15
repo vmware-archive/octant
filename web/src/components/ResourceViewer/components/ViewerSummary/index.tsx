@@ -33,7 +33,7 @@ export default function ViewSummary(props: Props) {
   if (node.path) {
     title = renderView(node.path)
   } else {
-    title = node.name
+    title = <span>{node.name}</span>
   }
 
   return (
