@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/conversion"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/pkg/errors"
 	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -30,7 +30,7 @@ func JobListHandler(list *batchv1.JobList, opts Options) (component.ViewComponen
 
 		row["Name"] = link.ForObject(&job, job.Name)
 		row["Labels"] = component.NewLabels(job.Labels)
-		row["Completions"] = component.NewText(ptrInt32ToString(job.Spec.Completions))
+		row["Completions"] = component.NewText(conversion.PtrInt32ToString(job.Spec.Completions))
 		succeeded := fmt.Sprintf("%d", job.Status.Succeeded)
 		row["Successful"] = component.NewText(succeeded)
 		row["Age"] = component.NewTimestamp(job.CreationTimestamp.Time)
@@ -43,66 +43,35 @@ func JobListHandler(list *batchv1.JobList, opts Options) (component.ViewComponen
 
 // JobHandler printers a job.
 func JobHandler(job *batchv1.Job, opts Options) (component.ViewComponent, error) {
-	if job == nil {
-		return nil, errors.New("job is nil")
-	}
+	o := NewObject(job)
 
-	fl := flexlayout.New()
+	o.RegisterConfig(func() (component.ViewComponent, error) {
+		return createJobConfiguration(*job)
+	}, 12)
 
-	summarySection := fl.AddSection()
-	jobConfigView, err := createJobConfiguration(*job)
-	if err != nil {
-		return nil, errors.Wrap(err, "create job configuration view")
-	}
-	if err := summarySection.Add(jobConfigView, 12); err != nil {
-		return nil, errors.Wrap(err, "add job config to layout")
-	}
+	o.RegisterSummary(func() (component.ViewComponent, error) {
+		return createJobStatus(*job)
+	}, 12)
 
-	jobStatusView, err := createJobStatus(*job)
-	if err != nil {
-		return nil, errors.Wrap(err, "create job status view")
-	}
-	if err := summarySection.Add(jobStatusView, 12); err != nil {
-		return nil, errors.Wrap(err, "add job status to layout")
-	}
+	o.EnablePodTemplate(job.Spec.Template)
 
-	metadata, err := NewMetadata(job)
-	if err != nil {
-		return nil, errors.Wrap(err, "create metadata generator")
-	}
+	o.RegisterItems(ItemDescriptor{
+		Func: func() (component.ViewComponent, error) {
+			return createPodListView(job, opts)
+		},
+		Width: 24,
+	})
 
-	if err := metadata.AddToFlexLayout(fl); err != nil {
-		return nil, errors.Wrap(err, "add metadata to layout")
-	}
+	o.RegisterItems(ItemDescriptor{
+		Func: func() (component.ViewComponent, error) {
+			return createJobConditions(job.Status.Conditions)
+		},
+		Width: 24,
+	})
 
-	podListSection := fl.AddSection()
-	podListTable, err := createPodListView(job, opts)
-	if err != nil {
-		return nil, errors.Wrap(err, "create pod list for job")
-	}
-	if err := podListSection.Add(podListTable, 24); err != nil {
-		return nil, errors.Wrap(err, "add pod list to layout")
-	}
+	o.EnableEvents()
 
-	conditionSection := fl.AddSection()
-	conditionTable, err := createJobConditions(job.Status.Conditions)
-	if err != nil {
-		return nil, errors.Wrap(err, "create job conditions")
-	}
-	if err := conditionSection.Add(conditionTable, 24); err != nil {
-		return nil, errors.Wrap(err, "add job status conditions to layout")
-	}
-
-	podTemplate := NewPodTemplate(job, job.Spec.Template)
-	if err := podTemplate.AddToFlexLayout(fl); err != nil {
-		return nil, errors.Wrap(err, "add pod template to layout")
-	}
-
-	if err := createEventsForObject(fl, job, opts); err != nil {
-		return nil, errors.Wrap(err, "add events to layout")
-	}
-
-	return fl.ToComponent("Summary"), nil
+	return o.ToComponent(opts)
 }
 
 func createJobConfiguration(job batchv1.Job) (*component.Summary, error) {
@@ -110,17 +79,17 @@ func createJobConfiguration(job batchv1.Job) (*component.Summary, error) {
 
 	sections.Add(component.SummarySection{
 		Header:  "Back Off Limit",
-		Content: component.NewText(ptrInt32ToString(job.Spec.BackoffLimit)),
+		Content: component.NewText(conversion.PtrInt32ToString(job.Spec.BackoffLimit)),
 	})
 
 	sections.Add(component.SummarySection{
 		Header:  "Completions",
-		Content: component.NewText(ptrInt32ToString(job.Spec.Completions)),
+		Content: component.NewText(conversion.PtrInt32ToString(job.Spec.Completions)),
 	})
 
 	sections.Add(component.SummarySection{
 		Header:  "Parallelism",
-		Content: component.NewText(ptrInt32ToString(job.Spec.Parallelism)),
+		Content: component.NewText(conversion.PtrInt32ToString(job.Spec.Parallelism)),
 	})
 
 	summary := component.NewSummary("Configuration", sections...)

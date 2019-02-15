@@ -15,5 +15,5 @@ body {
   @include font-smoothing;
   background-color: $blue-dark;
   font-size: $base-font-size;
-  overscroll-behavior-y: none;
+  // overscroll-behavior-y: none;
 }

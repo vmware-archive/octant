@@ -232,6 +232,14 @@ func (c *Collector) podGroupDetails(object objectvisitor.ClusterObject) (podGrou
 	}
 
 	reference := metav1.GetControllerOf(obj)
+	if reference == nil {
+
+		return podGroupDetails{
+			id:   string(obj.GetUID()),
+			name: obj.GetName(),
+		}, nil
+	}
+
 	id := fmt.Sprintf("pods-%s", reference.UID)
 
 	pgd := podGroupDetails{

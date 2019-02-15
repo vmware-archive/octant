@@ -8,7 +8,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 
 	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/pkg/errors"
 )
 
@@ -46,46 +45,23 @@ func DeploymentListHandler(list *appsv1.DeploymentList, opts Options) (component
 
 // DeploymentHandler is a printFunc that prints a Deployments.
 func DeploymentHandler(deployment *appsv1.Deployment, options Options) (component.ViewComponent, error) {
-	fl := flexlayout.New()
+	o := NewObject(deployment)
 
-	configSection := fl.AddSection()
 	deployConfigGen := NewDeploymentConfiguration(deployment)
-	configView, err := deployConfigGen.Create()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := configSection.Add(configView, 16); err != nil {
-		return nil, errors.Wrap(err, "add deployment config to layout")
-	}
+	o.RegisterConfig(func() (component.ViewComponent, error) {
+		return deployConfigGen.Create()
+	}, 16)
 
 	deploySummaryGen := NewDeploymentStatus(deployment)
-	statusView, err := deploySummaryGen.Create()
-	if err != nil {
-		return nil, err
-	}
+	o.RegisterSummary(func() (component.ViewComponent, error) {
+		return deploySummaryGen.Create()
+	}, 8)
 
-	if err := configSection.Add(statusView, 8); err != nil {
-		return nil, errors.Wrap(err, "add deployment summary to layout")
-	}
+	o.EnablePodTemplate(deployment.Spec.Template)
 
-	metadata, err := NewMetadata(deployment)
-	if err != nil {
-		return nil, errors.Wrap(err, "create metadata generator")
-	}
+	o.EnableEvents()
 
-	if err := metadata.AddToFlexLayout(fl); err != nil {
-		return nil, errors.Wrap(err, "add metadata to layout")
-	}
-
-	podTemplate := NewPodTemplate(deployment, deployment.Spec.Template)
-	if err = podTemplate.AddToFlexLayout(fl); err != nil {
-		return nil, errors.Wrap(err, "add pod template to layout")
-	}
-
-	view := fl.ToComponent("Summary")
-
-	return view, nil
+	return o.ToComponent(options)
 }
 
 // DeploymentConfiguration generates deployment configuration.

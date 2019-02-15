@@ -11,7 +11,6 @@ import (
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/flexlayout"
 )
 
 // ReplicaSetListHandler is a printFunc that lists deployments
@@ -48,42 +47,30 @@ func ReplicaSetListHandler(list *appsv1.ReplicaSetList, opts Options) (component
 
 // ReplicaSetHandler is a printFunc that prints a ReplicaSets.
 func ReplicaSetHandler(rs *appsv1.ReplicaSet, options Options) (component.ViewComponent, error) {
-	fl := flexlayout.New()
+	o := NewObject(rs)
 
-	summarySection := fl.AddSection()
+	replicaSetConfigGen := NewReplicaSetConfiguration(rs)
+	o.RegisterConfig(func() (component.ViewComponent, error) {
+		return replicaSetConfigGen.Create()
+	}, 16)
 
-	rsConfigGen := NewReplicaSetConfiguration(rs)
-	configView, err := rsConfigGen.Create()
-	if err != nil {
-		return nil, err
-	}
+	replicaSetStatusGen := NewReplicaSetStatus(rs)
+	o.RegisterSummary(func() (component.ViewComponent, error) {
+		return replicaSetStatusGen.Create(options.Cache)
+	}, 8)
 
-	if err := summarySection.Add(configView, 16); err != nil {
-		return nil, errors.Wrap(err, "add replicaset config to layout")
-	}
+	o.RegisterItems(ItemDescriptor{
+		Func: func() (component.ViewComponent, error) {
+			return createPodListView(rs, options)
+		},
+		Width: 24,
+	})
 
-	rsSummaryGen := NewReplicaSetStatus(rs)
-	statusView, err := rsSummaryGen.Create(options.Cache)
-	if err != nil {
-		return nil, err
-	}
+	o.EnablePodTemplate(rs.Spec.Template)
 
-	if err := summarySection.Add(statusView, 8); err != nil {
-		return nil, errors.Wrap(err, "add replicaset summary to layout")
-	}
+	o.EnableEvents()
 
-	metadata, err := NewMetadata(rs)
-	if err != nil {
-		return nil, errors.Wrap(err, "create metadata generator")
-	}
-
-	if err := metadata.AddToFlexLayout(fl); err != nil {
-		return nil, errors.Wrap(err, "add metadata to layout")
-	}
-
-	view := fl.ToComponent("Summary")
-
-	return view, nil
+	return o.ToComponent(options)
 }
 
 // ReplicaSetConfiguration generates a replicaset configuration

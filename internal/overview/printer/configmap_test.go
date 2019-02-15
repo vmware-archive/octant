@@ -1,11 +1,10 @@
-package printer_test
+package printer
 
 import (
 	"testing"
 	"time"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -14,13 +13,15 @@ import (
 )
 
 func Test_ConfigMapListHandler(t *testing.T) {
-	printOptions := printer.Options{
+	printOptions := Options{
 		Cache: cache.NewMemoryCache(),
 	}
 
 	labels := map[string]string{
 		"foo": "bar",
 	}
+
+	now := time.Unix(1547211430, 0)
 
 	object := &corev1.ConfigMapList{
 		Items: []corev1.ConfigMap{
@@ -45,7 +46,7 @@ func Test_ConfigMapListHandler(t *testing.T) {
 		},
 	}
 
-	got, err := printer.ConfigMapListHandler(object, printOptions)
+	got, err := ConfigMapListHandler(object, printOptions)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Data", "Age")
@@ -60,7 +61,7 @@ func Test_ConfigMapListHandler(t *testing.T) {
 	assert.Equal(t, expected, got)
 }
 
-func TestConfigMapConfiguration(t *testing.T) {
+func Test_describeConfigMapConfiguration(t *testing.T) {
 	var validConfigMap = &corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
@@ -102,9 +103,7 @@ func TestConfigMapConfiguration(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			cc := printer.NewConfigMapConfiguration(tc.configmap)
-
-			summary, err := cc.Create()
+			summary, err := describeConfigMapConfig(tc.configmap)
 			if tc.isErr {
 				require.Error(t, err)
 				return

@@ -7,7 +7,6 @@ import (
 	"github.com/heptio/developer-dash/internal/overview/link"
 
 	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/pkg/errors"
 
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
@@ -40,39 +39,25 @@ func CronJobListHandler(list *batchv1beta1.CronJobList, opts Options) (component
 
 // CronJobHandler is a printFunc that prints a CronJob
 func CronJobHandler(c *batchv1beta1.CronJob, opts Options) (component.ViewComponent, error) {
-	fl := flexlayout.New()
+	o := NewObject(c)
 
-	configSection := fl.AddSection()
 	cronjobConfigGen := NewCronJobConfiguration(c)
-	configView, err := cronjobConfigGen.Create()
-	if err != nil {
-		return nil, err
-	}
+	o.RegisterConfig(func() (component.ViewComponent, error) {
+		return cronjobConfigGen.Create()
+	}, 16)
 
-	if err := configSection.Add(configView, 14); err != nil {
-		return nil, errors.Wrap(err, "add cronjob config to layout")
-	}
+	o.EnableJobTemplate(c.Spec.JobTemplate)
 
-	jobListSection := fl.AddSection()
-	jobListTable, err := createJobListView(c, opts)
-	if err != nil {
-		return nil, errors.Wrap(err, "create job list for cronjob")
-	}
-	if err := jobListSection.Add(jobListTable, 24); err != nil {
-		return nil, errors.Wrap(err, "add job list to layout")
-	}
+	o.RegisterItems(ItemDescriptor{
+		Func: func() (component.ViewComponent, error) {
+			return createJobListView(c, opts)
+		},
+		Width: 24,
+	})
 
-	podTemplate := NewJobTemplate(c, c.Spec.JobTemplate)
-	if err = podTemplate.AddToFlexLayout(fl); err != nil {
-		return nil, errors.Wrap(err, "add job template to layout")
-	}
+	o.EnableEvents()
 
-	if err := createEventsForObject(fl, c, opts); err != nil {
-		return nil, errors.Wrap(err, "add events to layout")
-	}
-
-	view := fl.ToComponent("Summary")
-	return view, nil
+	return o.ToComponent(opts)
 }
 
 // CronJobConfiguration generates cronjob configuration
@@ -117,12 +102,6 @@ func (cc *CronJobConfiguration) Create() (*component.Summary, error) {
 			Content: component.NewText(seconds),
 		})
 	}
-
-	creationTimestamp := cc.cronjob.CreationTimestamp.Time
-	sections = append(sections, component.SummarySection{
-		Header:  "Age",
-		Content: component.NewTimestamp(creationTimestamp),
-	})
 
 	sjhl := cc.cronjob.Spec.SuccessfulJobsHistoryLimit
 	fjhl := cc.cronjob.Spec.FailedJobsHistoryLimit
