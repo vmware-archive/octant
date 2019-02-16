@@ -72,8 +72,9 @@ func (to *typedObject) ToViewComponent() (ViewComponent, error) {
 
 // Metadata collects common fields describing ViewComponents
 type Metadata struct {
-	Type  string               `json:"type"`
-	Title []TitleViewComponent `json:"title,omitempty"`
+	Type     string               `json:"type"`
+	Title    []TitleViewComponent `json:"title,omitempty"`
+	Accessor string               `json:"accessor,omitempty"`
 }
 
 // SetTitleText sets the title using text components.
@@ -120,6 +121,7 @@ func (m *Metadata) UnmarshalJSON(data []byte) error {
 // of visual components as rendered by the UI.
 type ViewComponent interface {
 	GetMetadata() Metadata
+	SetAccessor(string)
 }
 
 // TitleViewComponent is a view component that can be used for a title.
@@ -132,4 +134,9 @@ type TitleViewComponent interface {
 // Title is a convenience method for creating a title.
 func Title(components ...TitleViewComponent) []TitleViewComponent {
 	return components
+}
+
+// TitleFromString is a convenience methods for create a title from a string.
+func TitleFromString(s string) []TitleViewComponent {
+	return Title(NewText(s))
 }

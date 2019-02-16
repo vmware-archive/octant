@@ -48,9 +48,9 @@ class ResourceViewer extends Component<Props, State> {
               arrowheadStyle: 'fill: rgba(173, 187, 196, 0.3)',
             },
           ])
-          )
-        }
+        )
       }
+    }
 
     return (
       <div className='resourceViewer'>

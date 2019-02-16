@@ -2,12 +2,6 @@ package component
 
 import "encoding/json"
 
-// Summary contains other ViewComponents
-type Summary struct {
-	Metadata Metadata      `json:"metadata"`
-	Config   SummaryConfig `json:"config"`
-}
-
 // SummaryConfig is the contents of a Summary
 type SummaryConfig struct {
 	Sections []SummarySection `json:"sections"`
@@ -55,14 +49,17 @@ func (t *SummarySection) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// Summary contains other ViewComponents
+type Summary struct {
+	base
+	Config SummaryConfig `json:"config"`
+}
+
 // NewSummary creates a summary component
 func NewSummary(title string, sections ...SummarySection) *Summary {
 	s := append([]SummarySection(nil), sections...) // Make a copy
 	return &Summary{
-		Metadata: Metadata{
-			Type:  "summary",
-			Title: Title(NewText(title)),
-		},
+		base: newBase(typeSummary, TitleFromString(title)),
 		Config: SummaryConfig{
 			Sections: s,
 		},

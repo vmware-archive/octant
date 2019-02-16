@@ -2,6 +2,7 @@ package link
 
 import (
 	"fmt"
+	"net/url"
 	"path"
 
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -87,6 +88,15 @@ func gvkPath(namespace, apiVersion, kind, name string) string {
 func ForObject(object runtime.Object, text string) *component.Link {
 	path, _ := gvkPathFromObject(object)
 	return component.NewLink("", text, path)
+}
+
+// ForObjectWithQuery returns a link component references an object with a query.
+// Return an empty link if an error occurs.
+func ForObjectWithQuery(object runtime.Object, text string, query url.Values) *component.Link {
+	path, _ := gvkPathFromObject(object)
+	u := url.URL{Path: path}
+	u.RawQuery = query.Encode()
+	return component.NewLink("", text, u.String())
 }
 
 // ForGVK returns a link component referencing an object

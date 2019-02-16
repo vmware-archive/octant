@@ -8,23 +8,21 @@ type LabelSelectorConfig struct {
 	Value string `json:"value"`
 }
 
+// LabelSelector is a component for a single label within a selector
+type LabelSelector struct {
+	base
+	Config LabelSelectorConfig `json:"config"`
+}
+
 // NewLabelSelector creates a labelSelector component
 func NewLabelSelector(k, v string) *LabelSelector {
 	return &LabelSelector{
-		Metadata: Metadata{
-			Type: "labelSelector",
-		},
+		base: newBase(typeLabelSelector, nil),
 		Config: LabelSelectorConfig{
 			Key:   k,
 			Value: v,
 		},
 	}
-}
-
-// LabelSelector is a component for a single label within a selector
-type LabelSelector struct {
-	Metadata Metadata            `json:"metadata"`
-	Config   LabelSelectorConfig `json:"config"`
 }
 
 // Name is the name of the LabelSelector.
@@ -46,6 +44,6 @@ type labelSelectorMarshal LabelSelector
 // MarshalJSON implements json.Marshaler
 func (t *LabelSelector) MarshalJSON() ([]byte, error) {
 	m := labelSelectorMarshal(*t)
-	m.Metadata.Type = "labelSelector"
+	m.Metadata.Type = typeLabelSelector
 	return json.Marshal(&m)
 }

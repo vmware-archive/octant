@@ -6,8 +6,8 @@ import (
 
 // List contains other ViewComponents
 type List struct {
-	Metadata Metadata   `json:"metadata"`
-	Config   ListConfig `json:"config"`
+	base
+	Config ListConfig `json:"config"`
 }
 
 // ListConfig is the contents of a List
@@ -38,9 +38,7 @@ func (t *ListConfig) UnmarshalJSON(data []byte) error {
 // NewList creates a list component
 func NewList(title string, items []ViewComponent) *List {
 	return &List{
-		Metadata: Metadata{
-			Type: "list",
-		},
+		base: newBase(typeList, TitleFromString(title)),
 		Config: ListConfig{
 			Items: items,
 		},
@@ -62,6 +60,6 @@ type listMarshal List
 // MarshalJSON implements json.Marshaler
 func (t *List) MarshalJSON() ([]byte, error) {
 	m := listMarshal(*t)
-	m.Metadata.Type = "list"
+	m.Metadata.Type = typeList
 	return json.Marshal(&m)
 }

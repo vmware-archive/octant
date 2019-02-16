@@ -4,12 +4,6 @@ import (
 	"encoding/json"
 )
 
-// Table contains other ViewComponents
-type Table struct {
-	Metadata Metadata    `json:"metadata"`
-	Config   TableConfig `json:"config"`
-}
-
 // TableConfig is the contents of a Table
 type TableConfig struct {
 	Columns      []TableCol `json:"columns"`
@@ -48,13 +42,16 @@ func (t *TableRow) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// Table contains other ViewComponents
+type Table struct {
+	base
+	Config TableConfig `json:"config"`
+}
+
 // NewTable creates a table component
 func NewTable(title string, cols []TableCol) *Table {
 	return &Table{
-		Metadata: Metadata{
-			Type:  "table",
-			Title: Title(NewText(title)),
-		},
+		base: newBase(typeTable, TitleFromString(title)),
 		Config: TableConfig{
 			Columns: cols,
 		},
@@ -92,6 +89,6 @@ type tableMarshal Table
 // MarshalJSON implements json.Marshaler
 func (t *Table) MarshalJSON() ([]byte, error) {
 	m := tableMarshal(*t)
-	m.Metadata.Type = "table"
+	m.Metadata.Type = typeTable
 	return json.Marshal(&m)
 }

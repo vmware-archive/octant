@@ -155,9 +155,7 @@ func (v *stubViewComponent) GetMetadata() component.Metadata {
 	}
 }
 
-func (v *stubViewComponent) IsEmpty() bool {
-	return false
-}
+func (v *stubViewComponent) SetAccessor(string) {}
 
 func Test_DefaultPrinter(t *testing.T) {
 	printOptions := printer.Options{

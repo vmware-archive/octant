@@ -1,9 +1,12 @@
 package resourceviewer
 
 import (
+	"net/url"
 	"testing"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
+
+	"github.com/heptio/developer-dash/internal/conversion"
 
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
@@ -36,7 +39,7 @@ func Test_Collector(t *testing.T) {
 			UID:  types.UID("replicaSet1"),
 		},
 		Spec: extv1beta1.ReplicaSetSpec{
-			Replicas: ptrInt32(1),
+			Replicas: conversion.PtrInt32(1),
 		},
 		Status: extv1beta1.ReplicaSetStatus{
 			Replicas:          1,
@@ -88,58 +91,37 @@ func Test_Collector(t *testing.T) {
 	got, err := c.ViewComponent("deployment")
 	require.NoError(t, err)
 
-	expected := &component.ResourceViewer{
-		Metadata: component.Metadata{
-			Type:  "resourceViewer",
-			Title: component.Title(component.NewText("Resource Viewer")),
-		},
-		Config: component.ResourceViewerConfig{
-			Edges: component.AdjList{
-				"deployment": []component.Edge{
-					{
-						Node: "replicaSet1",
-						Type: "explicit",
-					},
-				},
-				"replicaSet1": []component.Edge{
-					{
-						Node: "pods-replicaSet1",
-						Type: "explicit",
-					},
-				},
-			},
-			Nodes: component.Nodes{
-				"deployment": component.Node{
-					APIVersion: "apps/v1",
-					Kind:       "Deployment",
-					Name:       "deployment",
-					Status:     "ok",
-					Details:    component.Title(component.NewText("Deployment is OK")),
-					Path:       link.ForObject(deployment, deployment.Name),
-				},
-				"replicaSet1": component.Node{
-					APIVersion: "extensions/v1beta1",
-					Kind:       "ReplicaSet",
-					Name:       "replicaSet1",
-					Status:     "ok",
-					Details:    component.Title(component.NewText("Replica Set is OK")),
-					Path:       link.ForObject(replicaSet1, replicaSet1.Name),
-				},
-				"pods-replicaSet1": component.Node{
-					APIVersion: "v1",
-					Kind:       "Pod",
-					Name:       "replicaSet1 pods",
-					Status:     "ok",
-					Details:    component.Title(component.NewText("Pod count: 1")),
-				},
-			},
-			Selected: "deployment",
-		},
-	}
+	q := url.Values{}
+	q.Set("view", "summary")
+
+	expected := component.NewResourceViewer("Resource Viewer")
+	expected.AddEdge("deployment", "replicaSet1", component.EdgeTypeExplicit)
+	expected.AddEdge("replicaSet1", "pods-replicaSet1", component.EdgeTypeExplicit)
+	expected.AddNode("deployment", component.Node{
+		APIVersion: "apps/v1",
+		Kind:       "Deployment",
+		Name:       "deployment",
+		Status:     "ok",
+		Details:    component.Title(component.NewText("Deployment is OK")),
+		Path:       link.ForObjectWithQuery(deployment, deployment.Name, q),
+	})
+
+	expected.AddNode("replicaSet1", component.Node{
+		APIVersion: "extensions/v1beta1",
+		Kind:       "ReplicaSet",
+		Name:       "replicaSet1",
+		Status:     "ok",
+		Details:    component.Title(component.NewText("Replica Set is OK")),
+		Path:       link.ForObjectWithQuery(replicaSet1, replicaSet1.Name, q),
+	})
+	expected.AddNode("pods-replicaSet1", component.Node{
+		APIVersion: "v1",
+		Kind:       "Pod",
+		Name:       "replicaSet1 pods",
+		Status:     "ok",
+		Details:    component.Title(component.NewText("Pod count: 1")),
+	})
+	expected.Select("deployment")
 
 	assert.Equal(t, expected, got)
-}
-
-func ptrInt32(i int32) *int32 {
-	return &i
 }

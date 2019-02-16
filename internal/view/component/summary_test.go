@@ -20,31 +20,23 @@ func Test_Summary_Marshal(t *testing.T) {
 		{
 			name: "general",
 			input: &Summary{
-				Metadata: Metadata{
-					Title: Title(NewText("mysummary")),
-				},
+				base: newBase(typeSummary, TitleFromString("mysummary")),
 				Config: SummaryConfig{
 					Sections: []SummarySection{
 						SummarySection{
 							Header: "Containers",
 							Content: &List{
-								Metadata: Metadata{
-									Title: Title(NewText("nginx")),
-								},
+								base: newBase(typeList, TitleFromString("nginx")),
 								Config: ListConfig{
 									Items: []ViewComponent{
 										&Text{
-											Metadata: Metadata{
-												Title: Title(NewText("Image")),
-											},
+											base: newBase(typeText, TitleFromString("Image")),
 											Config: TextConfig{
 												Text: "nginx:latest",
 											},
 										},
 										&Text{
-											Metadata: Metadata{
-												Title: Title(NewText("Port")),
-											},
+											base: newBase(typeText, TitleFromString("Port")),
 											Config: TextConfig{
 												Text: "80/TCP",
 											},

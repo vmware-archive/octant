@@ -4,8 +4,8 @@ import "encoding/json"
 
 // Containers is a component wrapping multiple docker container definitions
 type Containers struct {
-	Metadata Metadata         `json:"metadata"`
-	Config   ContainersConfig `json:"config"`
+	base
+	Config ContainersConfig `json:"config"`
 }
 
 // ContainersConfig is the contents of a Containers wrapper
@@ -22,9 +22,7 @@ type ContainerDef struct {
 // NewContainers creates a containers component
 func NewContainers() *Containers {
 	return &Containers{
-		Metadata: Metadata{
-			Type: "containers",
-		},
+		base:   newBase("containers", nil),
 		Config: ContainersConfig{},
 	}
 }

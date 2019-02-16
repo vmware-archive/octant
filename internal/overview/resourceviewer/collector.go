@@ -2,6 +2,7 @@ package resourceviewer
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
@@ -164,13 +165,17 @@ func (c *Collector) createObjectNode(object objectvisitor.ClusterObject) (string
 		objectStatus.NodeStatus = component.NodeStatusOK
 	}
 
+	q := url.Values{}
+	q.Set("view", "summary")
+	objectPath := link.ForObjectWithQuery(object, name, q)
+
 	node := component.Node{
 		Name:       name,
 		APIVersion: apiVersion,
 		Kind:       kind,
 		Status:     objectStatus.NodeStatus,
 		Details:    objectStatus.Details,
-		Path:       link.ForObject(object, name),
+		Path:       objectPath,
 	}
 
 	return string(uid), node, nil

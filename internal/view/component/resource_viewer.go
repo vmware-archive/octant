@@ -66,17 +66,14 @@ type ResourceViewerConfig struct {
 
 // ResourceView is a resource viewer component.
 type ResourceViewer struct {
-	Metadata Metadata             `json:"metadata,omitempty"`
-	Config   ResourceViewerConfig `json:"config,omitempty"`
+	base
+	Config ResourceViewerConfig `json:"config,omitempty"`
 }
 
 // NewResourceViewer creates a resource viewer component.
 func NewResourceViewer(title string) *ResourceViewer {
 	return &ResourceViewer{
-		Metadata: Metadata{
-			Type:  "resourceViewer",
-			Title: Title(NewText(title)),
-		},
+		base: newBase(typeResourceViewer, TitleFromString(title)),
 		Config: ResourceViewerConfig{
 			Edges: AdjList{},
 			Nodes: Nodes{},
@@ -110,7 +107,7 @@ type resourceViewerMarshal ResourceViewer
 // MarshalJSON implements json.Marshaler
 func (rv *ResourceViewer) MarshalJSON() ([]byte, error) {
 	m := resourceViewerMarshal(*rv)
-	m.Metadata.Type = "resourceViewer"
+	m.Metadata.Type = typeResourceViewer
 	m.Metadata.Title = rv.Metadata.Title
 
 	return json.Marshal(&m)

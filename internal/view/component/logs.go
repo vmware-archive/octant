@@ -11,8 +11,8 @@ type LogsConfig struct {
 }
 
 type Logs struct {
-	Metadata Metadata   `json:"metadata,omitempty"`
-	Config   LogsConfig `json:"config,omitempty"`
+	base
+	Config LogsConfig `json:"config,omitempty"`
 }
 
 func NewLogs(namespace, name string, containers []string) *Logs {
@@ -22,10 +22,7 @@ func NewLogs(namespace, name string, containers []string) *Logs {
 			Name:       name,
 			Containers: containers,
 		},
-		Metadata: Metadata{
-			Type:  "logs",
-			Title: Title(NewText("Logs")),
-		},
+		base: newBase(typeLogs, TitleFromString("Logs")),
 	}
 }
 
@@ -38,7 +35,7 @@ type logsMarshal Logs
 
 func (l *Logs) MarshalJSON() ([]byte, error) {
 	m := logsMarshal(*l)
-	m.Metadata.Type = "logs"
+	m.Metadata.Type = typeLogs
 
 	return json.Marshal(&m)
 }

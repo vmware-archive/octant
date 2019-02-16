@@ -20,9 +20,7 @@ func Test_List_Marshal(t *testing.T) {
 		{
 			name: "general",
 			input: &List{
-				Metadata: Metadata{
-					Title: Title(NewText("mylist")),
-				},
+				base: newBase(typeList, TitleFromString("mylist")),
 				Config: ListConfig{
 					Items: []ViewComponent{
 						&Link{

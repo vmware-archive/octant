@@ -4,8 +4,8 @@ import "encoding/json"
 
 // Annotations is a component representing key/value based annotations
 type Annotations struct {
-	Metadata Metadata          `json:"metadata"`
-	Config   AnnotationsConfig `json:"config"`
+	base
+	Config AnnotationsConfig `json:"config"`
 }
 
 // AnnotationsConfig is the contents of Annotations
@@ -16,9 +16,7 @@ type AnnotationsConfig struct {
 // NewAnnotations creates a annotations component
 func NewAnnotations(annotations map[string]string) *Annotations {
 	return &Annotations{
-		Metadata: Metadata{
-			Type: "annotations",
-		},
+		base: newBase(typeAnnotations, nil),
 		Config: AnnotationsConfig{
 			Annotations: annotations,
 		},
