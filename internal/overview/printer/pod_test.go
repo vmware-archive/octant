@@ -51,6 +51,7 @@ func Test_PodListHandler(t *testing.T) {
 							Image: "gcr.io/kuar-demo/kuard-amd64:1",
 						},
 					},
+					NodeName: "node",
 				},
 				Status: corev1.PodStatus{
 					Phase: "Pending",
@@ -79,7 +80,7 @@ func Test_PodListHandler(t *testing.T) {
 	containers := component.NewContainers()
 	containers.Add("nginx", "nginx:1.15")
 
-	cols := component.NewTableCols("Name", "Labels", "Ready", "Status", "Restarts", "Age")
+	cols := component.NewTableCols("Name", "Labels", "Ready", "Status", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", cols)
 	expected.Add(component.TableRow{
 		"Name":     component.NewLink("", "pod", "/content/overview/namespace/default/workloads/pods/pod"),
@@ -88,6 +89,7 @@ func Test_PodListHandler(t *testing.T) {
 		"Status":   component.NewText("Pending"),
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(now),
+		"Node":     component.NewText("node"),
 	})
 
 	assert.Equal(t, expected, got)

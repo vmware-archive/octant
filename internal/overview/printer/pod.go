@@ -22,8 +22,8 @@ import (
 )
 
 var (
-	podColsWithLabels    = component.NewTableCols("Name", "Labels", "Ready", "Status", "Restarts", "Age")
-	podColsWithOutLabels = component.NewTableCols("Name", "Ready", "Status", "Restarts", "Age")
+	podColsWithLabels    = component.NewTableCols("Name", "Labels", "Ready", "Status", "Restarts", "Node", "Age")
+	podColsWithOutLabels = component.NewTableCols("Name", "Ready", "Status", "Restarts", "Node", "Age")
 )
 
 // PodListHandler is a printFunc that prints pods
@@ -65,6 +65,8 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 		}
 		restarts := fmt.Sprintf("%d", restartCounter)
 		row["Restarts"] = component.NewText(restarts)
+
+		row["Node"] = component.NewText(p.Spec.NodeName)
 
 		ts := p.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)

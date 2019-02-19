@@ -50,6 +50,13 @@ func DaemonSetHandler(daemonSet *appsv1.DaemonSet, options Options) (component.V
 
 	o.EnablePodTemplate(daemonSet.Spec.Template)
 
+	o.RegisterItems(ItemDescriptor{
+		Func: func() (component.ViewComponent, error) {
+			return createPodListView(daemonSet, options)
+		},
+		Width: 24,
+	})
+
 	o.EnableEvents()
 
 	return o.ToComponent(options)
