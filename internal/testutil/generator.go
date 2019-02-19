@@ -6,19 +6,12 @@ import (
 	"github.com/heptio/developer-dash/internal/conversion"
 	"github.com/heptio/developer-dash/internal/overview/objectvisitor"
 	appsv1 "k8s.io/api/apps/v1"
+	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
-
-// CreateDeployment creates a deployment
-func CreateDeployment(name string) *appsv1.Deployment {
-	return &appsv1.Deployment{
-		TypeMeta:   genTypeMeta(objectvisitor.DeploymentGVK),
-		ObjectMeta: genObjectMeta(name),
-	}
-}
 
 // CreateDaemonSet creates a daemon set
 func CreateDaemonSet(name string) *appsv1.DaemonSet {
@@ -41,6 +34,28 @@ func CreateDaemonSet(name string) *appsv1.DaemonSet {
 			NumberAvailable:        1,
 			NumberReady:            1,
 			UpdatedNumberScheduled: 1,
+		},
+	}
+}
+
+// CreateDeployment creates a deployment
+func CreateDeployment(name string) *appsv1.Deployment {
+	return &appsv1.Deployment{
+		TypeMeta:   genTypeMeta(objectvisitor.DeploymentGVK),
+		ObjectMeta: genObjectMeta(name),
+	}
+}
+
+// CreateIngress creates an ingress
+func CreateIngress(name string) *extv1beta1.Ingress {
+	return &extv1beta1.Ingress{
+		TypeMeta:   genTypeMeta(objectvisitor.IngressGVK),
+		ObjectMeta: genObjectMeta(name),
+		Spec: extv1beta1.IngressSpec{
+			Backend: &extv1beta1.IngressBackend{
+				ServiceName: "app",
+				ServicePort: intstr.FromInt(80),
+			},
 		},
 	}
 }

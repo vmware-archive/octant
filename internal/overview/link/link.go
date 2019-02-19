@@ -67,6 +67,8 @@ func gvkPath(namespace, apiVersion, kind, name string) string {
 		p = "/config-and-storage/persistent-volume-claims"
 	case apiVersion == "v1" && kind == "ServiceAccount":
 		p = "/config-and-storage/service-accounts"
+	case apiVersion == "extensions/v1beta1" && kind == "Ingress":
+		p = "/discovery-and-load-balancing/ingresses"
 	case apiVersion == "v1" && kind == "Service":
 		p = "/discovery-and-load-balancing/services"
 	case apiVersion == "rbac.authorization.k8s.io/v1" && kind == "Role":
