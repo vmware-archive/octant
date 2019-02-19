@@ -16,7 +16,9 @@ export default function Summary({ view }: Props) {
         <ViewTitle parts={view.title} />
       </h2>
       <div className='summary-component-section'>
-        {view.items.map((section, index) => summaryContent(section, index))}
+        <table>
+          <tbody>{view.items.map((section, index) => summaryContent(section, index))}</tbody>
+        </table>
       </div>
     </div>
   )
@@ -40,9 +42,9 @@ function summaryContent(item: SummaryItem, key: number): JSX.Element {
   }
 
   return (
-    <div key={key} className='summary--data summary--data-basic'>
-      <div className='summary--data-key'>{item.header} </div>
-      <div className='summary--data-value'>{content} </div>
-    </div>
+    <tr key={key}>
+      <th>{item.header}</th>
+      <td>{content}</td>
+    </tr>
   )
 }
