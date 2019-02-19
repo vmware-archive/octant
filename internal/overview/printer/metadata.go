@@ -50,37 +50,27 @@ func (m *Metadata) createSummary() (*component.Summary, error) {
 		return nil, errors.New("object is a meta v1 object")
 	}
 
-	sections.Add(component.SummarySection{
-		Header:  "Age",
-		Content: component.NewTimestamp(object.GetCreationTimestamp().Time),
-	})
+	sections.Add("Age", component.NewTimestamp(object.GetCreationTimestamp().Time))
 
 	if labels := object.GetLabels(); len(labels) > 0 {
-		sections.Add(component.SummarySection{
-			Header:  "Labels",
-			Content: component.NewLabels(labels),
-		})
+		sections.Add("Labels", component.NewLabels(labels))
 	}
 
 	if annotations := object.GetAnnotations(); len(annotations) > 0 {
-		sections.Add(component.SummarySection{
-			Header:  "Annotations",
-			Content: component.NewAnnotations(annotations),
-		})
+		sections.Add("Annotations", component.NewAnnotations(annotations))
 	}
 
 	ownerReference := metav1.GetControllerOf(object)
 	if ownerReference != nil {
-		sections.Add(component.SummarySection{
-			Header: "Controlled By",
-			Content: link.ForGVK(
+		sections.Add("Controlled By",
+			link.ForGVK(
 				object.GetNamespace(),
 				ownerReference.APIVersion,
 				ownerReference.Kind,
 				ownerReference.Name,
 				ownerReference.Name,
 			),
-		})
+		)
 	}
 
 	summary := component.NewSummary("Metadata", sections...)

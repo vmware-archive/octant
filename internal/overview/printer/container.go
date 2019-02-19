@@ -54,10 +54,7 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 	}
 
 	if len(envTbl.Config.Rows) > 0 {
-		sections.Add(component.SummarySection{
-			Header:  "Environment",
-			Content: envTbl,
-		})
+		sections.Add("Environment", envTbl)
 	}
 
 	cmd := printSlice(c.Command)
@@ -70,10 +67,7 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 	}
 
 	if len(c.VolumeMounts) > 0 {
-		sections.Add(component.SummarySection{
-			Header:  "Volume Mounts",
-			Content: describeVolumeMounts(c),
-		})
+		sections.Add("Volume Mounts", describeVolumeMounts(c))
 	}
 
 	summary := component.NewSummary(fmt.Sprintf("Container %s", c.Name), sections...)

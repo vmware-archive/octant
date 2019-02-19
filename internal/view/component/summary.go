@@ -16,9 +16,11 @@ type SummarySection struct {
 // SummarySections is a slice of summary sections
 type SummarySections []SummarySection
 
-// Add adds sections to a sections slice
-func (s *SummarySections) Add(sections ...SummarySection) {
-	*s = append(*s, sections...)
+func (s *SummarySections) Add(header string, view ViewComponent) {
+	*s = append(*s, SummarySection{
+		Header:  header,
+		Content: view,
+	})
 }
 
 // AddText adds a section with a single text component

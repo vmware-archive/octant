@@ -77,20 +77,9 @@ func JobHandler(job *batchv1.Job, opts Options) (component.ViewComponent, error)
 func createJobConfiguration(job batchv1.Job) (*component.Summary, error) {
 	var sections component.SummarySections
 
-	sections.Add(component.SummarySection{
-		Header:  "Back Off Limit",
-		Content: component.NewText(conversion.PtrInt32ToString(job.Spec.BackoffLimit)),
-	})
-
-	sections.Add(component.SummarySection{
-		Header:  "Completions",
-		Content: component.NewText(conversion.PtrInt32ToString(job.Spec.Completions)),
-	})
-
-	sections.Add(component.SummarySection{
-		Header:  "Parallelism",
-		Content: component.NewText(conversion.PtrInt32ToString(job.Spec.Parallelism)),
-	})
+	sections.Add("Back Off Limit", component.NewText(conversion.PtrInt32ToString(job.Spec.BackoffLimit)))
+	sections.Add("Completions", component.NewText(conversion.PtrInt32ToString(job.Spec.Completions)))
+	sections.Add("Parallelism", component.NewText(conversion.PtrInt32ToString(job.Spec.Parallelism)))
 
 	summary := component.NewSummary("Configuration", sections...)
 	return summary, nil
@@ -100,23 +89,14 @@ func createJobStatus(job batchv1.Job) (*component.Summary, error) {
 	var sections component.SummarySections
 
 	if startTime := job.Status.StartTime; startTime != nil {
-		sections.Add(component.SummarySection{
-			Header:  "Started",
-			Content: component.NewTimestamp(startTime.Time),
-		})
+		sections.Add("Started", component.NewTimestamp(startTime.Time))
 	}
 
 	if completionTime := job.Status.CompletionTime; completionTime != nil {
-		sections.Add(component.SummarySection{
-			Header:  "Completed",
-			Content: component.NewTimestamp(completionTime.Time),
-		})
+		sections.Add("Completed", component.NewTimestamp(completionTime.Time))
 	}
 
-	sections.Add(component.SummarySection{
-		Header:  "Succeeded",
-		Content: component.NewText(fmt.Sprintf("%d", job.Status.Succeeded)),
-	})
+	sections.Add("Succeeded", component.NewText(fmt.Sprintf("%d", job.Status.Succeeded)))
 
 	summary := component.NewSummary("Status", sections...)
 	return summary, nil
