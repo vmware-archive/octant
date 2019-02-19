@@ -114,7 +114,11 @@ class Renderer extends Component<Props, State> {
   }
 
   private renderViewsWithTabs = (views: View[]) => {
-    const { currentTab } = this.state
+    let { currentTab } = this.state
+
+    if (currentTab < 0) {
+      currentTab = 0
+    }
 
     const tabs = []
     const panels = []
