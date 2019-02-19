@@ -15,30 +15,25 @@ $border-color: rgba(173, 187, 196, 0.3);
     }
   }
 
+  table {
+    font-size: 14px;
+    width: 100%;
+
+    td,
+    th {
+      padding: 0 0 10px 0;
+    }
+
+    th {
+      @include bold;
+      text-align: left;
+      padding-right: 30px;
+      white-space: nowrap;
+    }
+  }
+
   .summary-component-section {
     flex: 1;
-    margin-right: 30px;
     padding: 12px;
-
-    .summary--data {
-      align-items: center;
-      display: flex;
-      flex-direction: row;
-      font-size: 14px;
-      padding: 5px 0;
-
-      .summary--data-key {
-        @include bold;
-        align-self: flex-start;
-        box-sizing: content-box;
-        flex: 0 0 auto;
-        overflow: hidden;
-        padding-right: 50px;
-        text-align: left;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        width: 200px;
-      }
-    }
   }
 }
