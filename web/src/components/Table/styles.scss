@@ -90,13 +90,13 @@ $border-color: rgba(173, 187, 196, 0.3);
         }
       }
 
-      &.-sort-desc, &.-sort-asc {
+      &.-sort-desc,
+      &.-sort-asc {
         box-shadow: none;
       }
 
       &.-sort-desc .rt-resizable-header-content,
-      &.-sort-asc .rt-resizable-header-content
-      {
+      &.-sort-asc .rt-resizable-header-content {
         &::after {
           color: $white;
           transition: all 120ms;
@@ -139,7 +139,7 @@ $border-color: rgba(173, 187, 196, 0.3);
   .rt-tr {
     display: inline-flex;
     flex: 1 0 auto;
-    padding: 5px 12px
+    padding: 5px 12px;
   }
 
   .rt-td {
@@ -157,11 +157,12 @@ $border-color: rgba(173, 187, 196, 0.3);
     min-width: 0 !important;
     opacity: 0 !important;
     padding: 0 !important;
-    width: 0 !important
+    width: 0 !important;
   }
 
   .rt-expander {
-    background: url("data:image/svg+xml;utf8,<svg viewBox='0 0 11 8' xmlns='http://www.w3.org/2000/svg'><path class='caret--fill' d='M1.3.8L5.5 5 9.7.8 11 2 5.5 7.6 0 2z' fillRule='nonzero' fill='%23f2582d' /></svg>") no-repeat;
+    background: url("data:image/svg+xml;utf8,<svg viewBox='0 0 11 8' xmlns='http://www.w3.org/2000/svg'><path class='caret--fill' d='M1.3.8L5.5 5 9.7.8 11 2 5.5 7.6 0 2z' fillRule='nonzero' fill='%23f2582d' /></svg>")
+      no-repeat;
     color: transparent;
     height: 8px;
     margin: 2px 0 0 10px;
@@ -184,7 +185,7 @@ $border-color: rgba(173, 187, 196, 0.3);
     right: -18px;
     top: 0;
     width: 36px;
-    z-index: 10
+    z-index: 10;
   }
 
   .rt-tfoot {
@@ -196,7 +197,7 @@ $border-color: rgba(173, 187, 196, 0.3);
       border-right: 1px solid rgba(0, 0, 0, 0.05);
 
       &:last-child {
-        border-right: 0
+        border-right: 0;
       }
     }
   }
@@ -211,15 +212,15 @@ $border-color: rgba(173, 187, 196, 0.3);
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%);
-    transition: all .3s ease;
-    z-index: 1
+    transition: all 0.3s ease;
+    z-index: 1;
   }
 
   .rt-resizing .rt-th,
   .rt-resizing .rt-td {
     cursor: col-resize;
     transition: none !important;
-    user-select: none
+    user-select: none;
   }
 
   .audit--table-expand {
@@ -232,7 +233,7 @@ $border-color: rgba(173, 187, 196, 0.3);
     color: $orange;
 
     .rt-tr {
-      box-shadow: 0 1px 4px 0 rgba(0,0,0,0.50);
+      box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.5);
     }
   }
 }

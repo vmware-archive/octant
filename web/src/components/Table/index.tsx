@@ -10,9 +10,10 @@ import './styles.scss'
 
 interface Props {
   view: TableModel
+  noHeader?: boolean
 }
 
-export default function Table({ view }: Props) {
+export default function Table({ view, noHeader }: Props) {
   const { title, rows, columns, emptyContent } = view
 
   const tableColumns = columns.map(({ name, accessor }, index) => {
@@ -34,12 +35,17 @@ export default function Table({ view }: Props) {
   const pageSize = rows && rows.length ? rows.length : null
 
   const noDataText = emptyContent || 'no data'
+
+  const tableClassName = 'table--component'
+
   if (rows.length > 0) {
     return (
-      <div className='table--component'>
-        <h2 className='table-component-title'>
-          <ViewTitle parts={title} />
-        </h2>
+      <div className={tableClassName}>
+        {!noHeader && (
+          <h2 className='table-component-title'>
+            <ViewTitle parts={title} />
+          </h2>
+        )}
         <ReactTable
           noDataText={noDataText}
           columns={tableColumns}

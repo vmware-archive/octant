@@ -35,40 +35,40 @@ import {
 } from 'models'
 import React from 'react'
 
-export function renderView(view: View): JSX.Element {
+export function renderView(view: View, extraProps?: any): JSX.Element {
   switch (view.type) {
     case 'annotations':
-      return <Annotations view={view as AnnotationsModel} />
+      return <Annotations view={view as AnnotationsModel} {...extraProps} />
     case 'containers':
-      return <Containers view={view as ContainersModel} />
+      return <Containers view={view as ContainersModel} {...extraProps} />
     case 'flexlayout':
-      return <FlexLayout view={view as FlexLayoutModel} />
+      return <FlexLayout view={view as FlexLayoutModel} {...extraProps} />
     case 'grid':
-      return <Grid view={view as GridModel} />
+      return <Grid view={view as GridModel} {...extraProps} />
     case 'labels':
-      return <Labels view={view as LabelsModel} />
+      return <Labels view={view as LabelsModel} {...extraProps} />
     case 'link':
-      return <WebLink view={view as LinkModel} />
+      return <WebLink view={view as LinkModel} {...extraProps} />
     case 'list':
-      return <List view={view as ListModel} />
+      return <List view={view as ListModel} {...extraProps} />
     case 'logs':
-      return <Logs view={view as LogsModel} />
+      return <Logs view={view as LogsModel} {...extraProps} />
     case 'quadrant':
-      return <Quadrant view={view as QuadrantModel} />
+      return <Quadrant view={view as QuadrantModel} {...extraProps} />
     case 'resourceViewer':
-      return <ResourceViewer view={view as ResourceViewerModel} />
+      return <ResourceViewer view={view as ResourceViewerModel} {...extraProps} />
     case 'selectors':
-      return <Selectors view={view as SelectorsModel} />
+      return <Selectors view={view as SelectorsModel} {...extraProps} />
     case 'summary':
-      return <Summary view={view as SummaryModel} />
+      return <Summary view={view as SummaryModel} {...extraProps} />
     case 'table':
-      return <Table view={view as TableModel} />
+      return <Table view={view as TableModel} {...extraProps} />
     case 'text':
-      return <TextView view={view as TextModel} />
+      return <TextView view={view as TextModel} {...extraProps} />
     case 'timestamp':
-      return <Timestamp view={view as TimestampModel} />
+      return <Timestamp view={view as TimestampModel} {...extraProps} />
     case 'yaml':
-      return <YAML view={view as YAMLViewerModel} />
+      return <YAML view={view as YAMLViewerModel} {...extraProps} />
     default:
       throw new Error(`unable to render view of type ${view.type}`)
   }

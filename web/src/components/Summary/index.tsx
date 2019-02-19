@@ -33,7 +33,7 @@ function summaryContent(item: SummaryItem, key: number): JSX.Element {
     case 'table':
     case 'text':
     case 'timestamp':
-      content = renderView(item.content)
+      content = renderView(item.content, {noHeader: true, noBorder: true})
       break
     default:
       throw new Error(`unsupported summary content type '${item.content.type}'`)

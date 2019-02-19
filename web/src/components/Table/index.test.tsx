@@ -5,24 +5,24 @@ import React from 'react'
 import Table, { getColumnWidth, isSortable, sortMethod } from '.'
 
 describe('render table', () => {
-  describe('creates a table', () => {
-    const view = {
-      type: 'table',
-      title: [{ type: 'text', value: 'my table' }],
-      columns: [{ name: 'one', accessor: 'one' }, { name: 'two', accessor: 'two' }],
-      rows: [
-        {
-          one: { type: 'text', value: 'a', isComparable: true },
-          two: { type: 'labels', labels: { a: 'a' } },
-        },
-        {
-          one: { type: 'text', value: 'c', isComparable: true },
-          two: { type: 'labels', labels: { b: 'b' } },
-        },
-      ],
-      emptyContent: 'is empty',
-    }
+  const view = {
+    type: 'table',
+    title: [{ type: 'text', value: 'my table' }],
+    columns: [{ name: 'one', accessor: 'one' }, { name: 'two', accessor: 'two' }],
+    rows: [
+      {
+        one: { type: 'text', value: 'a', isComparable: true },
+        two: { type: 'labels', labels: { a: 'a' } },
+      },
+      {
+        one: { type: 'text', value: 'c', isComparable: true },
+        two: { type: 'labels', labels: { b: 'b' } },
+      },
+    ],
+    emptyContent: 'is empty',
+  }
 
+  describe('creates a table', () => {
     const table = mount(<Table view={view} />)
 
     test('it draws a title', () => {
@@ -35,6 +35,14 @@ describe('render table', () => {
 
     test('it has two columns', () => {
       expect(table.find('.rt-thead .rt-tr').children().length).toEqual(2)
+    })
+  })
+
+  describe('with no title', () => {
+    const table = mount(<Table view={view} noHeader={true}/>)
+
+    test('it does not draw a title', () => {
+      expect(table.exists('.table-component-title')).toBe(false)
     })
   })
 
