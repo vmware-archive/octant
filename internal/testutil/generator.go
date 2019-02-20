@@ -6,6 +6,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -80,6 +81,36 @@ func CreateService(name string) *corev1.Service {
 	return &corev1.Service{
 		TypeMeta:   genTypeMeta(gvk.ServiceGVK),
 		ObjectMeta: genObjectMeta(name),
+	}
+}
+
+// CreatePersistentVolumeClaim creates a persistent volume claim
+func CreatePersistentVolumeClaim(name string) *corev1.PersistentVolumeClaim {
+	storageClass := "manual"
+	file := corev1.PersistentVolumeFilesystem
+
+	return &corev1.PersistentVolumeClaim{
+		TypeMeta:   genTypeMeta(gvk.PersistentVolumeClaimGVK),
+		ObjectMeta: genObjectMeta(name),
+		Spec: corev1.PersistentVolumeClaimSpec{
+			VolumeName:       "task-pv-volume",
+			StorageClassName: &storageClass,
+			Resources: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceName(corev1.ResourceStorage): resource.MustParse("3Gi"),
+				},
+			},
+			AccessModes: []corev1.PersistentVolumeAccessMode{
+				corev1.ReadWriteOnce,
+			},
+			VolumeMode: &file,
+		},
+		Status: corev1.PersistentVolumeClaimStatus{
+			Phase: corev1.ClaimBound,
+			Capacity: corev1.ResourceList{
+				corev1.ResourceName(corev1.ResourceStorage): resource.MustParse("10Gi"),
+			},
+		},
 	}
 }
 
