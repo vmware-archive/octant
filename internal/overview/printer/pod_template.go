@@ -48,9 +48,19 @@ func (pt *PodTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout) error {
 			return err
 		}
 
-		if err := containerSection.Add(summary, 16); err != nil {
+		if err := containerSection.Add(summary, 12); err != nil {
 			return errors.Wrap(err, "add container")
 		}
+	}
+
+	podSection := fl.AddSection()
+
+	volumeTable, err := printVolumes(pt.podTemplateSpec.Spec.Volumes)
+	if err != nil {
+		return errors.Wrap(err, "print volumes")
+	}
+	if err := podSection.Add(volumeTable, 12); err != nil {
+		return err
 	}
 
 	return nil

@@ -1,99 +1,143 @@
 package printer
 
 import (
+	"encoding/json"
+
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/pkg/errors"
 )
 
-// VolumeListHandler is a printFunc that lists volumes
-func VolumeListHandler(spec *corev1.PodSpec, opts Options) (component.ViewComponent, error) {
-	if spec == nil {
-		return nil, errors.New("nil list")
-	}
+const (
+	volumeKindHostPath              = "HostPath (bare host directory volume)"
+	volumeKindEmptyDir              = "EmptyDir (a temporary directory that shares a pod's lifetime)"
+	volumeKindGCEPersistentDisk     = "GCEPersistentDisk (a Persistent Disk resource in Google Compute Engine)"
+	volumeKindAWSElasticBlockStore  = "AWSElasticBlockStore (a Persistent Disk resource in AWS)"
+	volumeKindGitRepo               = "GitRepo (a volume that is pulled from git when the pod is created)"
+	volumeKindSecret                = "Secret (a volume populated by a Secret)"
+	volumeKindConfigMap             = "ConfigMap (a volume populated by a ConfigMap)"
+	volumeKindNFS                   = "NFS (an NFS mount that lasts the lifetime of a pod)"
+	volumeKindISCSI                 = "ISCSI (an ISCSI Disk resource that is attached to a kubelet's host machine and then exposed to the pod)"
+	volumeKindGlusterfs             = "Glusterfs (a Glusterfs mount on the host that shares a pod's lifetime)"
+	volumeKindPersistentVolumeClaim = "PersistentVolumeClaim"
+	volumeKindRBD                   = "RBD (a Rados Block Device mount on the host that shares a pod's lifetime)"
+	volumeKindQuobyte               = "Quobyte (a Quobyte mount on the host that shares a pod's lifetime)"
+	volumeKindDownwardAPI           = "DownwardAPI (a volume populated by information about the pod)"
+	volumeKindAzureDisk             = "AzureDisk (an Azure Data Disk mount on the host and bind mount to the pod)"
+	volumeKindSphereVolume          = "SphereVolume (a Persistent Disk resource in vSphere)"
+	volumeKindCinder                = "Cinder (a Persistent Disk resource in OpenStack)"
+	volumeKindPhotonPersistentDisk  = "PhotonPersistentDisk (a Persistent Disk resource in photon platform)"
+	volumeKindPortworxVolume        = "PortworxVolume (a Portworx Volume resource)"
+	volumeKindScaleIO               = "ScaleIO (a persistent volume backed by a block device in ScaleIO)"
+	volumeKindCephFS                = "CephFS (a CephFS mount on the host that shares a pod's lifetime)"
+	volumeKindStorageOS             = "StorageOS (a StorageOS Persistent Disk resource)"
+	volumeKindFC                    = "FC (a Fibre Channel disk)"
+	volumeKindAzureFile             = "AzureFile (an Azure File Service mount on the host and bind mount to the pod)"
+	volumeKindFlexVolume            = "FlexVolume (a generic volume resource that is provisioned/attached using an exec based plugin)"
+	volumeKindFlocker               = "Flocker (a Flocker volume mounted by the Flocker agent)"
+	volumeKindUnknown               = "Unknown"
+)
 
-	cols := component.NewTableCols("Name", "Kind")
-	tbl := component.NewTable("Volumes", cols)
+// printVolumes prints volumes as a table.
+func printVolumes(volumes []corev1.Volume) (component.ViewComponent, error) {
+	cols := component.NewTableCols("Name", "Kind", "Description")
+	table := component.NewTable("Volumes", cols)
 
-	for _, volume := range spec.Volumes {
+	for _, volume := range volumes {
 		row := component.TableRow{}
 		row["Name"] = component.NewText(volume.Name)
 
 		switch {
 		case volume.VolumeSource.HostPath != nil:
-			row["Kind"] = component.NewText("HostPath (bare host directory volume)")
+			row["Kind"] = component.NewText(volumeKindHostPath)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.HostPath))
 		case volume.VolumeSource.EmptyDir != nil:
-			row["Kind"] = component.NewText("EmptyDir (a temporary directory that shares a pod's lifetime)")
+			row["Kind"] = component.NewText(volumeKindEmptyDir)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.EmptyDir))
 		case volume.VolumeSource.GCEPersistentDisk != nil:
-			row["Kind"] = component.NewText("GCEPersistentDisk (a Persistent Disk resource in Google Compute Engine)")
+			row["Kind"] = component.NewText(volumeKindGCEPersistentDisk)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.GCEPersistentDisk))
 		case volume.VolumeSource.AWSElasticBlockStore != nil:
-			row["Kind"] = component.NewText("AWSElasticBlockStore (a Persistent Disk resource in AWS)")
+			row["Kind"] = component.NewText(volumeKindAWSElasticBlockStore)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.AWSElasticBlockStore))
 		case volume.VolumeSource.GitRepo != nil:
-			row["Kind"] = component.NewText("GitRepo (a volume that is pulled from git when the pod is created)")
+			row["Kind"] = component.NewText(volumeKindGitRepo)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.GitRepo))
 		case volume.VolumeSource.Secret != nil:
-			row["Kind"] = component.NewText("Secret (a volume populated by a Secret)")
+			row["Kind"] = component.NewText(volumeKindSecret)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.Secret))
 		case volume.VolumeSource.ConfigMap != nil:
-			row["Kind"] = component.NewText("ConfigMapSecret (a volume populated by a ConfigMap)")
+			row["Kind"] = component.NewText(volumeKindConfigMap)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.ConfigMap))
 		case volume.VolumeSource.NFS != nil:
-			row["Kind"] = component.NewText("NFS (an NFS mount that lasts the lifetime of a pod)")
+			row["Kind"] = component.NewText(volumeKindNFS)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.NFS))
 		case volume.VolumeSource.ISCSI != nil:
-			row["Kind"] = component.NewText("ISCSI (an ISCSI Disk resource that is attached to a kubelet's host machine and then exposed to the pod)")
+			row["Kind"] = component.NewText(volumeKindISCSI)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.ISCSI))
 		case volume.VolumeSource.Glusterfs != nil:
-			row["Kind"] = component.NewText("Glusterfs (a Glusterfs mount on the host that shares a pod's lifetime)")
+			row["Kind"] = component.NewText(volumeKindGlusterfs)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.Glusterfs))
 		case volume.VolumeSource.PersistentVolumeClaim != nil:
-			row["Kind"] = component.NewText("PersistentVolumeClaim")
+			row["Kind"] = component.NewText(volumeKindPersistentVolumeClaim)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.PersistentVolumeClaim))
 		case volume.VolumeSource.RBD != nil:
-			row["Kind"] = component.NewText("RBD (a Rados Block Device mount on the host that shares a pod's lifetime)")
+			row["Kind"] = component.NewText(volumeKindRBD)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.RBD))
 		case volume.VolumeSource.Quobyte != nil:
-			row["Kind"] = component.NewText("Quobyte (a Quobyte mount on the host that shares a pod's lifetime)")
+			row["Kind"] = component.NewText(volumeKindQuobyte)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.Quobyte))
 		case volume.VolumeSource.DownwardAPI != nil:
-			row["Kind"] = component.NewText("DownwardAPI (a volume populated by information about the pod)")
+			row["Kind"] = component.NewText(volumeKindDownwardAPI)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.DownwardAPI))
 		case volume.VolumeSource.AzureDisk != nil:
-			row["Kind"] = component.NewText("AzureDisk (an Azure Data Disk mount on the host and bind mount to the pod)")
+			row["Kind"] = component.NewText(volumeKindAzureDisk)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.AzureDisk))
 		case volume.VolumeSource.VsphereVolume != nil:
-			row["Kind"] = component.NewText("SphereVolume (a Persistent Disk resource in vSphere)")
+			row["Kind"] = component.NewText(volumeKindSphereVolume)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.VsphereVolume))
 		case volume.VolumeSource.Cinder != nil:
-			row["Kind"] = component.NewText("Cinder (a Persistent Disk resource in OpenStack)")
+			row["Kind"] = component.NewText(volumeKindCinder)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.Cinder))
 		case volume.VolumeSource.PhotonPersistentDisk != nil:
-			row["Kind"] = component.NewText("PhotonPersistentDisk (a Persistent Disk resource in photon platform)")
+			row["Kind"] = component.NewText(volumeKindPhotonPersistentDisk)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.PhotonPersistentDisk))
 		case volume.VolumeSource.PortworxVolume != nil:
-			row["Kind"] = component.NewText("PortworxVolume (a Portworx Volume resource)")
+			row["Kind"] = component.NewText(volumeKindPortworxVolume)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.PortworxVolume))
 		case volume.VolumeSource.ScaleIO != nil:
-			row["Kind"] = component.NewText("ScaleIO (a persistent volume backed by a block device in ScaleIO)")
+			row["Kind"] = component.NewText(volumeKindScaleIO)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.ScaleIO))
 		case volume.VolumeSource.CephFS != nil:
-			row["Kind"] = component.NewText("CephFS (a CephFS mount on the host that shares a pod's lifetime)")
+			row["Kind"] = component.NewText(volumeKindCephFS)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.CephFS))
 		case volume.VolumeSource.StorageOS != nil:
-			row["Kind"] = component.NewText("StorageOS (a StorageOS Persistent Disk resource)")
+			row["Kind"] = component.NewText(volumeKindStorageOS)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.StorageOS))
 		case volume.VolumeSource.FC != nil:
-			row["Kind"] = component.NewText("FC (a Fibre Channel disk)")
+			row["Kind"] = component.NewText(volumeKindFC)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.FC))
 		case volume.VolumeSource.AzureFile != nil:
-			row["Kind"] = component.NewText("AzureFile (an Azure File Service mount on the host and bind mount to the pod)")
+			row["Kind"] = component.NewText(volumeKindAzureFile)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.AzureFile))
 		case volume.VolumeSource.FlexVolume != nil:
-			row["Kind"] = component.NewText("FlexVolume (a generic volume resource that is provisioned/attached using an exec based plugin)")
+			row["Kind"] = component.NewText(volumeKindFlexVolume)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.FlexVolume))
 		case volume.VolumeSource.Flocker != nil:
-			row["Kind"] = component.NewText("Flocker (a Flocker volume mounted by the Flocker agent)")
+			row["Kind"] = component.NewText(volumeKindFlocker)
+			row["Description"] = component.NewText(describeVolumeSource(volume.VolumeSource.Flocker))
 		default:
-			row["Kind"] = component.NewText("Unknown")
+			row["Kind"] = component.NewText(volumeKindUnknown)
+			row["Description"] = component.NewText("")
 		}
 
-		tbl.Add(row)
+		table.Add(row)
 	}
 
-	return tbl, nil
+	return table, nil
 }
 
-// VolumeHandler is a printFunc that prints Volumes.
-// TODO: This handler is incomplete.
-func VolumeHandler(volume *corev1.Volume, options Options) (component.ViewComponent, error) {
-	grid := component.NewGrid("Summary")
-
-	detailsSummary := component.NewSummary("Details")
-
-	detailsPanel := component.NewPanel("", detailsSummary)
-	grid.Add(*detailsPanel)
-
-	list := component.NewList("", []component.ViewComponent{grid})
-
-	return list, nil
+func describeVolumeSource(source interface{}) string {
+	data, _ := json.Marshal(source)
+	return string(data)
 }
