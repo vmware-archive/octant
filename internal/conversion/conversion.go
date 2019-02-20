@@ -1,6 +1,8 @@
 package conversion
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // PtrInt32ToString convert *int32 to string
 func PtrInt32ToString(p *int32) string {

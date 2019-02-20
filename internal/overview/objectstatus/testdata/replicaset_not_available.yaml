@@ -1,0 +1,55 @@
+apiVersion: extensions/v1beta1
+kind: ReplicaSet
+metadata:
+  annotations:
+    deployment.kubernetes.io/desired-replicas: "1"
+    deployment.kubernetes.io/max-replicas: "2"
+    deployment.kubernetes.io/revision: "1"
+  creationTimestamp: "2019-02-11T21:00:19Z"
+  generation: 1
+  labels:
+    app: hello-node
+    pod-template-hash: 64c578bdf8
+  name: hello-node-64c578bdf8
+  namespace: default
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Deployment
+    name: hello-node
+    uid: 0a64996f-2e40-11e9-b01e-025000000001
+  resourceVersion: "1489487"
+  selfLink: /apis/extensions/v1beta1/namespaces/default/replicasets/hello-node-64c578bdf8
+  uid: 0a65f564-2e40-11e9-b01e-025000000001
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-node
+      pod-template-hash: 64c578bdf8
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: hello-node
+        pod-template-hash: 64c578bdf8
+    spec:
+      containers:
+      - image: gcr.io/hello-minikube-zero-install/hello-node
+        imagePullPolicy: Always
+        name: hello-node
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+status:
+  availableReplicas: 0
+  fullyLabeledReplicas: 1
+  observedGeneration: 1
+  readyReplicas: 1
+  replicas: 1

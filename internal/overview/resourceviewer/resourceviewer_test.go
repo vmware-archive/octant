@@ -3,6 +3,7 @@ package resourceviewer
 import (
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/overview/objectvisitor"
 	"github.com/pkg/errors"
 
@@ -42,7 +43,9 @@ func Test_ResourceViewer(t *testing.T) {
 		},
 	}
 
-	rv, err := New(nil, stubVisitor(false))
+	c := cache.NewMemoryCache()
+
+	rv, err := New(nil, c, stubVisitor(false))
 	require.NoError(t, err)
 
 	vc, err := rv.Visit(deployment)
@@ -59,7 +62,9 @@ func Test_ResourceViewer_visitor_fails(t *testing.T) {
 		},
 	}
 
-	rv, err := New(nil, stubVisitor(true))
+	c := cache.NewMemoryCache()
+
+	rv, err := New(nil, c, stubVisitor(true))
 	require.NoError(t, err)
 
 	_, err = rv.Visit(deployment)

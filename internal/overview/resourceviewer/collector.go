@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/overview/link"
 
 	"github.com/heptio/developer-dash/internal/log"
@@ -27,18 +28,21 @@ type Collector struct {
 
 	// podStats counts pods in a replica set.
 	podStats map[string]int
+
+	cache cache.Cache
 }
 
 var _ objectvisitor.ObjectHandler = (*Collector)(nil)
 
 // NewCollector creates an instance of Collector.
-func NewCollector() *Collector {
-	c := &Collector{
+func NewCollector(c cache.Cache) *Collector {
+	collector := &Collector{
 		podStats: make(map[string]int),
+		cache:    c,
 	}
-	c.Reset()
+	collector.Reset()
 
-	return c
+	return collector
 }
 
 // Reset resets a Collector's nodes and edges.
@@ -159,10 +163,14 @@ func (c *Collector) createObjectNode(object objectvisitor.ClusterObject) (string
 		return "", component.Node{}, errors.New("unable to get object name")
 	}
 
-	objectStatus, err := objectstatus.Status(object)
+	var nodeStatus component.NodeStatus
+
+	status, err := objectstatus.Status(object, c.cache)
 	if err != nil {
 		c.log().Errorf("error retrieving object status: %v", err)
-		objectStatus.NodeStatus = component.NodeStatusOK
+		nodeStatus = component.NodeStatusOK
+	} else {
+		nodeStatus = status.Status()
 	}
 
 	q := url.Values{}
@@ -173,8 +181,8 @@ func (c *Collector) createObjectNode(object objectvisitor.ClusterObject) (string
 		Name:       name,
 		APIVersion: apiVersion,
 		Kind:       kind,
-		Status:     objectStatus.NodeStatus,
-		Details:    objectStatus.Details,
+		Status:     nodeStatus,
+		Details:    status.Details,
 		Path:       objectPath,
 	}
 

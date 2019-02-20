@@ -288,6 +288,10 @@ func (cq *CacheQueryer) ServicesForIngress(ingress *extv1beta1.Ingress) ([]*core
 			return nil, errors.Wrapf(err, "retrieving service backend: %v", backend)
 		}
 
+		if u == nil {
+			continue
+		}
+
 		svc := &corev1.Service{}
 		err = runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, svc)
 		if err != nil {
