@@ -58,6 +58,13 @@ func NewTable(title string, cols []TableCol) *Table {
 	}
 }
 
+// NewTableWithRows creates a table with rows.
+func NewTableWithRows(title string, cols []TableCol, rows []TableRow) *Table {
+	table := NewTable(title, cols)
+	table.Add(rows...)
+	return table
+}
+
 // NewTableCols returns a slice of table columns, each with name/accessor
 // set according to the provided keys arguments.
 func NewTableCols(keys ...string) []TableCol {
