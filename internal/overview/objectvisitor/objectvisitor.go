@@ -1,6 +1,7 @@
 package objectvisitor
 
 import (
+	"github.com/heptio/developer-dash/internal/gvk"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -279,10 +280,10 @@ func (dv *DefaultVisitor) visitObject(object ClusterObject, visitorObject Object
 	apiVersion := u.GetAPIVersion()
 	kind := u.GetKind()
 
-	gvk := schema.FromAPIVersionAndKind(apiVersion, kind)
+	objectGVK := schema.FromAPIVersionAndKind(apiVersion, kind)
 
-	switch gvk {
-	case IngressGVK:
+	switch objectGVK {
+	case gvk.IngressGVK:
 		ingress := &extv1beta1.Ingress{}
 		if err := dv.convertToType(u, ingress); err != nil {
 			return err
@@ -295,7 +296,7 @@ func (dv *DefaultVisitor) visitObject(object ClusterObject, visitorObject Object
 		if err := visitorObject.AddChild(object, children...); err != nil {
 			return err
 		}
-	case PodGVK:
+	case gvk.PodGVK:
 		pod := &corev1.Pod{}
 		if err := dv.convertToType(u, pod); err != nil {
 			return err
@@ -303,7 +304,7 @@ func (dv *DefaultVisitor) visitObject(object ClusterObject, visitorObject Object
 		if err := dv.visitPod(pod); err != nil {
 			return err
 		}
-	case ServiceGVK:
+	case gvk.ServiceGVK:
 		service := &corev1.Service{}
 		if err := dv.convertToType(u, service); err != nil {
 			return err

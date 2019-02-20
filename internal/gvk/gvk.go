@@ -1,4 +1,4 @@
-package objectvisitor
+package gvk
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -10,7 +10,7 @@ var (
 	IngressGVK               = schema.GroupVersionKind{Group: "extensions", Version: "v1beta1", Kind: "Ingress"}
 	ServiceGVK               = schema.GroupVersionKind{Version: "v1", Kind: "Service"}
 	PodGVK                   = schema.GroupVersionKind{Version: "v1", Kind: "Pod"}
-	ReplicaSetGSK            = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "ReplicaSet"}
+	ReplicaSetGVK            = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "ReplicaSet"}
 	ReplicationControllerGSK = schema.GroupVersionKind{Version: "v1", Kind: "ReplicationController"}
-	StatefulSetGSK           = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "StatefulSet"}
+	StatefulSetGVK           = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "StatefulSet"}
 )

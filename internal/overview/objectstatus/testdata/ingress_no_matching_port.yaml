@@ -1,0 +1,13 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+    name: ingress-bad-port
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+    rules:
+    - http:
+        paths:
+        - path: /testpath
+          backend:
+            serviceName: service-wrong-port
+            servicePort: 80

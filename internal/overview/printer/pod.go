@@ -40,6 +40,11 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 	tbl := component.NewTable("Pods", cols)
 
 	for _, p := range list.Items {
+		if p.Status.Phase == corev1.PodSucceeded {
+			// skip succeeded pods
+			continue
+		}
+
 		row := component.TableRow{}
 
 		row["Name"] = link.ForObject(&p, p.Name)

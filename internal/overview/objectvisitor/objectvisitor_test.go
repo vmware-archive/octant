@@ -5,25 +5,22 @@ import (
 	"sort"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
 	"github.com/golang/mock/gomock"
+	"github.com/heptio/developer-dash/internal/gvk"
 	queryerfake "github.com/heptio/developer-dash/internal/queryer/fake"
+	tu "github.com/heptio/developer-dash/internal/testutil"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 func Test_DefaultVisitor_Visit(t *testing.T) {
-
 	type mocks struct {
 		q *queryerfake.MockQueryer
 	}
@@ -37,11 +34,11 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 		{
 			name: "workload with pod",
 			init: func(t *testing.T, m *mocks) []ClusterObject {
-				daemonSet := createDaemonSet("daemonset")
-				pod := createPod("pod")
+				daemonSet := tu.CreateDaemonSet("daemonset")
+				pod := tu.CreatePod("pod")
 				pod.SetOwnerReferences(toOwnerReferences(t, daemonSet))
 
-				expectChildren(t, m.q, daemonSet, []runtime.Object{toUnstructured(t, pod)}, nil)
+				expectChildren(t, m.q, daemonSet, []runtime.Object{tu.ToUnstructured(t, pod)}, nil)
 
 				m.q.EXPECT().
 					ServicesForPod(gomock.Eq(pod)).
@@ -66,8 +63,8 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 		{
 			name: "service with pod",
 			init: func(t *testing.T, m *mocks) []ClusterObject {
-				service := createService("service")
-				pod := createPod("pod")
+				service := tu.CreateService("service")
+				pod := tu.CreatePod("pod")
 
 				m.q.EXPECT().
 					PodsForService(gomock.Eq(service)).
@@ -97,9 +94,9 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 		{
 			name: "ingress with service and pod",
 			init: func(t *testing.T, m *mocks) []ClusterObject {
-				ingress := createIngress("ingress")
-				service := createService("service")
-				pod := createPod("pod")
+				ingress := tu.CreateIngress("ingress")
+				service := tu.CreateService("service")
+				pod := tu.CreatePod("pod")
 
 				m.q.EXPECT().
 					ServicesForIngress(gomock.Eq(ingress)).
@@ -136,11 +133,11 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 		{
 			name: "full workload",
 			init: func(t *testing.T, m *mocks) []ClusterObject {
-				ingress := createIngress("ingress")
-				service := createService("service")
-				pod := createPod("pod")
-				deployment := createDeployment("deployment")
-				replicaSet := createReplicaSet("replicaSet")
+				ingress := tu.CreateIngress("ingress")
+				service := tu.CreateService("service")
+				pod := tu.CreatePod("pod")
+				deployment := tu.CreateDeployment("deployment")
+				replicaSet := tu.CreateReplicaSet("replicaSet")
 
 				replicaSet.SetOwnerReferences(toOwnerReferences(t, deployment))
 				pod.SetOwnerReferences(toOwnerReferences(t, replicaSet))
@@ -164,8 +161,8 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 				expectChildren(t, m.q, ingress, []runtime.Object{}, nil)
 				expectChildren(t, m.q, service, []runtime.Object{}, nil)
 				expectChildren(t, m.q, pod, []runtime.Object{}, nil)
-				expectChildren(t, m.q, replicaSet, []runtime.Object{toUnstructured(t, pod)}, nil)
-				expectChildren(t, m.q, deployment, []runtime.Object{toUnstructured(t, replicaSet)}, nil)
+				expectChildren(t, m.q, replicaSet, []runtime.Object{tu.ToUnstructured(t, pod)}, nil)
+				expectChildren(t, m.q, deployment, []runtime.Object{tu.ToUnstructured(t, replicaSet)}, nil)
 
 				m.q.EXPECT().
 					OwnerReference(gomock.Eq("namespace"), gomock.Eq(pod.OwnerReferences[0])).
@@ -194,30 +191,30 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 		{
 			name: "multiple workloads/services, single ingress",
 			init: func(t *testing.T, m *mocks) []ClusterObject {
-				d1 := createDeployment("d1")
-				d1rs1 := createReplicaSet("d1rs1")
+				d1 := tu.CreateDeployment("d1")
+				d1rs1 := tu.CreateReplicaSet("d1rs1")
 				d1rs1.SetOwnerReferences(toOwnerReferences(t, d1))
-				d1rs1p1 := createPod("d1rs1p1")
+				d1rs1p1 := tu.CreatePod("d1rs1p1")
 				d1rs1p1.SetOwnerReferences(toOwnerReferences(t, d1rs1))
-				d1rs1p2 := createPod("d1rs1p2")
+				d1rs1p2 := tu.CreatePod("d1rs1p2")
 				d1rs1p2.SetOwnerReferences(toOwnerReferences(t, d1rs1))
-				s1 := createService("s1")
+				s1 := tu.CreateService("s1")
 
-				d2 := createDeployment("d2")
-				d2rs1 := createReplicaSet("d2rs1")
+				d2 := tu.CreateDeployment("d2")
+				d2rs1 := tu.CreateReplicaSet("d2rs1")
 				d2rs1.SetOwnerReferences(toOwnerReferences(t, d2))
-				d2rs1p1 := createPod("d2rs1p1")
+				d2rs1p1 := tu.CreatePod("d2rs1p1")
 				d2rs1p1.SetOwnerReferences(toOwnerReferences(t, d2rs1))
-				s2 := createService("s2")
+				s2 := tu.CreateService("s2")
 
-				ingress := createIngress("i1")
+				ingress := tu.CreateIngress("i1")
 
-				expectChildren(t, m.q, d1, []runtime.Object{toUnstructured(t, d1rs1)}, nil)
-				expectChildren(t, m.q, d1rs1, []runtime.Object{toUnstructured(t, d1rs1p1), toUnstructured(t, d1rs1p2)}, nil)
+				expectChildren(t, m.q, d1, []runtime.Object{tu.ToUnstructured(t, d1rs1)}, nil)
+				expectChildren(t, m.q, d1rs1, []runtime.Object{tu.ToUnstructured(t, d1rs1p1), tu.ToUnstructured(t, d1rs1p2)}, nil)
 				expectChildren(t, m.q, d1rs1p1, []runtime.Object{}, nil)
 				expectChildren(t, m.q, d1rs1p2, []runtime.Object{}, nil)
-				expectChildren(t, m.q, d2, []runtime.Object{toUnstructured(t, d2rs1)}, nil)
-				expectChildren(t, m.q, d2rs1, []runtime.Object{toUnstructured(t, d2rs1p1)}, nil)
+				expectChildren(t, m.q, d2, []runtime.Object{tu.ToUnstructured(t, d2rs1)}, nil)
+				expectChildren(t, m.q, d2rs1, []runtime.Object{tu.ToUnstructured(t, d2rs1p1)}, nil)
 				expectChildren(t, m.q, d2rs1p1, []runtime.Object{}, nil)
 				expectChildren(t, m.q, s1, []runtime.Object{}, nil)
 				expectChildren(t, m.q, s2, []runtime.Object{}, nil)
@@ -302,8 +299,8 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 		},
 	}
 
-	gvks := []schema.GroupVersionKind{DaemonSetGVK, DeploymentGVK, IngressGVK, PodGVK,
-		ServiceGVK, ReplicaSetGSK, ReplicationControllerGSK, StatefulSetGSK}
+	gvks := []schema.GroupVersionKind{gvk.DaemonSetGVK, gvk.DeploymentGVK, gvk.IngressGVK, gvk.PodGVK,
+		gvk.ServiceGVK, gvk.ReplicaSetGVK, gvk.ReplicationControllerGSK, gvk.StatefulSetGVK}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -342,48 +339,6 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 	}
 }
 
-func createDaemonSet(name string) *appsv1.DaemonSet {
-	return &appsv1.DaemonSet{
-		TypeMeta:   genTypeMeta(DaemonSetGVK),
-		ObjectMeta: genObjectMeta(name),
-	}
-}
-
-func createDeployment(name string) *appsv1.Deployment {
-	return &appsv1.Deployment{
-		TypeMeta:   genTypeMeta(DeploymentGVK),
-		ObjectMeta: genObjectMeta(name),
-	}
-}
-
-func createIngress(name string) *extv1beta1.Ingress {
-	return &extv1beta1.Ingress{
-		TypeMeta:   genTypeMeta(IngressGVK),
-		ObjectMeta: genObjectMeta(name),
-	}
-}
-
-func createPod(name string) *corev1.Pod {
-	return &corev1.Pod{
-		TypeMeta:   genTypeMeta(PodGVK),
-		ObjectMeta: genObjectMeta(name),
-	}
-}
-
-func createReplicaSet(name string) *appsv1.ReplicaSet {
-	return &appsv1.ReplicaSet{
-		TypeMeta:   genTypeMeta(ReplicaSetGSK),
-		ObjectMeta: genObjectMeta(name),
-	}
-}
-
-func createService(name string) *corev1.Service {
-	return &corev1.Service{
-		TypeMeta:   genTypeMeta(ServiceGVK),
-		ObjectMeta: genObjectMeta(name),
-	}
-}
-
 func toOwnerReferences(t *testing.T, object ClusterObject) []metav1.OwnerReference {
 	objectKind := object.GetObjectKind()
 	apiVersion, kind := objectKind.GroupVersionKind().ToAPIVersionAndKind()
@@ -405,16 +360,9 @@ func toOwnerReferences(t *testing.T, object ClusterObject) []metav1.OwnerReferen
 	}
 }
 
-func toUnstructured(t *testing.T, object runtime.Object) *unstructured.Unstructured {
-	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(object)
-	require.NoError(t, err)
-
-	return &unstructured.Unstructured{Object: m}
-}
-
 func expectChildren(t *testing.T, q *queryerfake.MockQueryer, object runtime.Object, rets ...interface{}) {
 	q.EXPECT().
-		Children(gomock.Eq(toUnstructured(t, object))).
+		Children(gomock.Eq(tu.ToUnstructured(t, object))).
 		Return(rets...).AnyTimes()
 }
 
@@ -423,14 +371,6 @@ func genTypeMeta(gvk schema.GroupVersionKind) metav1.TypeMeta {
 	return metav1.TypeMeta{
 		APIVersion: apiVersion,
 		Kind:       kind,
-	}
-}
-
-func genObjectMeta(name string) metav1.ObjectMeta {
-	return metav1.ObjectMeta{
-		Name:      name,
-		Namespace: "namespace",
-		UID:       types.UID(name),
 	}
 }
 

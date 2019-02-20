@@ -1,11 +1,10 @@
 package testutil
 
 import (
-	"time"
-
 	"github.com/heptio/developer-dash/internal/conversion"
-	"github.com/heptio/developer-dash/internal/overview/objectvisitor"
+	"github.com/heptio/developer-dash/internal/gvk"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -18,7 +17,7 @@ func CreateDaemonSet(name string) *appsv1.DaemonSet {
 	maxUnavailable := intstr.FromInt(1)
 
 	return &appsv1.DaemonSet{
-		TypeMeta:   genTypeMeta(objectvisitor.DaemonSetGVK),
+		TypeMeta:   genTypeMeta(gvk.DaemonSetGVK),
 		ObjectMeta: genObjectMeta(name),
 		Spec: appsv1.DaemonSetSpec{
 			RevisionHistoryLimit: conversion.PtrInt32(10),
@@ -41,7 +40,7 @@ func CreateDaemonSet(name string) *appsv1.DaemonSet {
 // CreateDeployment creates a deployment
 func CreateDeployment(name string) *appsv1.Deployment {
 	return &appsv1.Deployment{
-		TypeMeta:   genTypeMeta(objectvisitor.DeploymentGVK),
+		TypeMeta:   genTypeMeta(gvk.DeploymentGVK),
 		ObjectMeta: genObjectMeta(name),
 	}
 }
@@ -49,7 +48,7 @@ func CreateDeployment(name string) *appsv1.Deployment {
 // CreateIngress creates an ingress
 func CreateIngress(name string) *extv1beta1.Ingress {
 	return &extv1beta1.Ingress{
-		TypeMeta:   genTypeMeta(objectvisitor.IngressGVK),
+		TypeMeta:   genTypeMeta(gvk.IngressGVK),
 		ObjectMeta: genObjectMeta(name),
 		Spec: extv1beta1.IngressSpec{
 			Backend: &extv1beta1.IngressBackend{
@@ -57,6 +56,30 @@ func CreateIngress(name string) *extv1beta1.Ingress {
 				ServicePort: intstr.FromInt(80),
 			},
 		},
+	}
+}
+
+// CreatePod creates a pod
+func CreatePod(name string) *corev1.Pod {
+	return &corev1.Pod{
+		TypeMeta:   genTypeMeta(gvk.PodGVK),
+		ObjectMeta: genObjectMeta(name),
+	}
+}
+
+// CreateReplicaSet creates a replica set
+func CreateReplicaSet(name string) *appsv1.ReplicaSet {
+	return &appsv1.ReplicaSet{
+		TypeMeta:   genTypeMeta(gvk.ReplicaSetGVK),
+		ObjectMeta: genObjectMeta(name),
+	}
+}
+
+// CreateSer4vice creates a service
+func CreateService(name string) *corev1.Service {
+	return &corev1.Service{
+		TypeMeta:   genTypeMeta(gvk.ServiceGVK),
+		ObjectMeta: genObjectMeta(name),
 	}
 }
 
@@ -70,9 +93,8 @@ func genTypeMeta(gvk schema.GroupVersionKind) metav1.TypeMeta {
 
 func genObjectMeta(name string) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
-		Name:              name,
-		Namespace:         "namespace",
-		UID:               types.UID(name),
-		CreationTimestamp: metav1.Time{Time: time.Now()},
+		Name:      name,
+		Namespace: "namespace",
+		UID:       types.UID(name),
 	}
 }

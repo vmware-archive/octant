@@ -1,0 +1,53 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  creationTimestamp: "2019-02-19T00:10:21Z"
+  generation: 1
+  labels:
+    project: dev-dashboard
+  name: fluentd
+  namespace: default
+  resourceVersion: "2343559"
+  selfLink: /apis/extensions/v1beta1/namespaces/default/daemonsets/fluentd
+  uid: bf5a8711-33da-11e9-b0b2-025000000001
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      name: fluentd
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        name: fluentd
+    spec:
+      containers:
+      - image: gcr.io/google-containers/fluentd-elasticsearch:1.20
+        imagePullPolicy: IfNotPresent
+        name: fluentd
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+  templateGeneration: 1
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+status:
+  currentNumberScheduled: 1
+  desiredNumberScheduled: 1
+  numberAvailable: 1
+  numberMisscheduled: 0
+  numberReady: 1
+  observedGeneration: 1
+  updatedNumberScheduled: 1

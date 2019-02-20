@@ -214,7 +214,7 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 	cr.Add(vc)
 
 	if !d.disableResourceViewer {
-		rv, err := resourceviewer.New(logger, resourceviewer.WithDefaultQueryer(options.Queryer))
+		rv, err := resourceviewer.New(logger, options.Cache, resourceviewer.WithDefaultQueryer(options.Queryer))
 		if err != nil {
 			return emptyContentResponse, err
 		}
