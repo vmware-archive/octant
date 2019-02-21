@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  creationTimestamp: "2019-02-13T12:59:31Z"
+  generateName: pi-
+  labels:
+    controller-uid: 3432af66-2f8f-11e9-b01e-025000000001
+    job-name: pi-9qgsm
+  name: pi-9qgsm
+  namespace: default
+  resourceVersion: "1662501"
+  selfLink: /apis/batch/v1/namespaces/default/jobs/pi-9qgsm
+  uid: 3432af66-2f8f-11e9-b01e-025000000001
+spec:
+  backoffLimit: 4
+  completions: 1
+  parallelism: 1
+  selector:
+    matchLabels:
+      controller-uid: 3432af66-2f8f-11e9-b01e-025000000001
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        controller-uid: 3432af66-2f8f-11e9-b01e-025000000001
+        job-name: pi-9qgsm
+    spec:
+      containers:
+      - command:
+        - perl
+        - -Mbignum=bpi
+        - -wle
+        - print bpi(2000)
+        image: perl
+        imagePullPolicy: Always
+        name: pi
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Never
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+status:
+  completionTime: "2019-02-13T12:59:42Z"
+  conditions:
+  - lastProbeTime: "2019-02-13T12:59:42Z"
+    lastTransitionTime: "2019-02-13T12:59:42Z"
+    status: "True"
+    type: Complete
+  startTime: "2019-02-13T12:59:31Z"
+  succeeded: 1
