@@ -31,6 +31,7 @@ function summaryContent(item: SummaryItem, key: number): JSX.Element {
     case 'annotations':
     case 'labels':
     case 'link':
+    case 'list':
     case 'selectors':
     case 'table':
     case 'text':

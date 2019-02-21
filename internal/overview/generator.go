@@ -146,6 +146,8 @@ func AddPrintHandlers(p PrinterHandler) error {
 		printer.PodListHandler,
 		printer.PersistentVolumeClaimHandler,
 		printer.PersistentVolumeClaimListHandler,
+		printer.ServiceAccountListHandler,
+		printer.ServiceAccountHandler,
 		printer.ServiceHandler,
 		printer.ServiceListHandler,
 		printer.SecretHandler,
