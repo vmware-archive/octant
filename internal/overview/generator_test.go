@@ -7,7 +7,6 @@ import (
 	"github.com/heptio/developer-dash/internal/queryer"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/view"
 	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster"
@@ -217,16 +216,4 @@ func (c *fakeContent) ViewComponent() content.ViewComponent {
 
 func (c fakeContent) MarshalJSON() ([]byte, error) {
 	return []byte(`{"type":"stubbed"}`), nil
-}
-
-type fakeView struct{}
-
-var _ view.View = (*fakeView)(nil)
-
-func newFakeView() *fakeView {
-	return &fakeView{}
-}
-
-func (v *fakeView) Content(ctx context.Context, object runtime.Object, c cache.Cache) ([]content.Content, error) {
-	return stubbedContent, nil
 }

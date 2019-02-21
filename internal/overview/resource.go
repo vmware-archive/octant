@@ -7,7 +7,6 @@ import (
 	"reflect"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/view"
 	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster"
@@ -25,11 +24,6 @@ func resourceLink(sectionType, resourceType string) lookupFunc {
 type ResourceTitle struct {
 	List   string
 	Object string
-}
-
-type ContentSection struct {
-	Views []view.ViewFactory
-	Title string
 }
 
 type ResourceOptions struct {
