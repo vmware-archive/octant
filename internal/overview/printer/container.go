@@ -18,13 +18,15 @@ import (
 type ContainerConfiguration struct {
 	parent    runtime.Object
 	container *corev1.Container
+	isInit    bool
 }
 
 // NewContainerConfiguration creates an instance of ContainerConfiguration.
-func NewContainerConfiguration(parent runtime.Object, c *corev1.Container) *ContainerConfiguration {
+func NewContainerConfiguration(parent runtime.Object, c *corev1.Container, isInit bool) *ContainerConfiguration {
 	return &ContainerConfiguration{
 		parent:    parent,
 		container: c,
+		isInit:    isInit,
 	}
 }
 
@@ -70,7 +72,12 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 		sections.Add("Volume Mounts", describeVolumeMounts(c))
 	}
 
-	summary := component.NewSummary(fmt.Sprintf("Container %s", c.Name), sections...)
+	title := "Container"
+	if cc.isInit {
+		title = "Init Container"
+	}
+
+	summary := component.NewSummary(fmt.Sprintf("%s %s", title, c.Name), sections...)
 	return summary, nil
 }
 

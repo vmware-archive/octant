@@ -39,7 +39,7 @@ func (jt *JobTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout) error {
 	containerSection := fl.AddSection()
 
 	for _, container := range jt.jobTemplateSpec.Spec.Template.Spec.Containers {
-		containerConfig := NewContainerConfiguration(jt.parent, &container)
+		containerConfig := NewContainerConfiguration(jt.parent, &container, false)
 		summary, err := containerConfig.Create()
 		if err != nil {
 			return err

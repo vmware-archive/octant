@@ -1,4 +1,4 @@
-package printer_test
+package printer
 
 import (
 	"testing"
@@ -8,15 +8,27 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/view/component"
 )
 
-func Test_AffinityDescriber_Create(t *testing.T) {
+func affinityTable(affinityType, description string) *component.Table {
+	return component.NewTableWithRows(
+		"Affinities and Anti-Affinities",
+		component.NewTableCols("Type", "Description"),
+		[]component.TableRow{
+			{
+				"Type":        component.NewText(affinityType),
+				"Description": component.NewText(description),
+			},
+		},
+	)
+}
+
+func Test_affinityDescriber_Create(t *testing.T) {
 	cases := []struct {
 		name     string
 		affinity *corev1.Affinity
-		expected *component.List
+		expected *component.Table
 		isErr    bool
 	}{
 		{
@@ -38,9 +50,8 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Prefer to schedule on nodes with label foo with values x, y."),
-			}),
+			expected: affinityTable("Node",
+				"Prefer to schedule on nodes with label foo with values x, y."),
 		},
 		{
 			name: "preferred node label value not in",
@@ -61,9 +72,8 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Prefer to schedule on nodes with label foo without values x, y."),
-			}),
+			expected: affinityTable("Node",
+				"Prefer to schedule on nodes with label foo without values x, y."),
 		},
 		{
 			name: "preferred node label exists",
@@ -83,9 +93,8 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Prefer to schedule on nodes where label foo exists."),
-			}),
+			expected: affinityTable("Node",
+				"Prefer to schedule on nodes where label foo exists."),
 		},
 		{
 			name: "preferred node label does not exists",
@@ -105,9 +114,8 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Prefer to schedule on nodes where label foo does not exist."),
-			}),
+			expected: affinityTable("Node",
+				"Prefer to schedule on nodes where label foo does not exist."),
 		},
 		{
 			name: "preferred node label greater than",
@@ -128,9 +136,8 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Prefer to schedule on nodes where label foo is greater than 1."),
-			}),
+			expected: affinityTable("Node",
+				"Prefer to schedule on nodes where label foo is greater than 1."),
 		},
 		{
 			name: "preferred node label less than",
@@ -151,9 +158,8 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Prefer to schedule on nodes where label foo is less than 1."),
-			}),
+			expected: affinityTable("Node",
+				"Prefer to schedule on nodes where label foo is less than 1."),
 		},
 		{
 			name: "preferred node field value in",
@@ -174,9 +180,8 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Prefer to schedule on nodes with field foo with values x, y."),
-			}),
+			expected: affinityTable("Node",
+				"Prefer to schedule on nodes with field foo with values x, y."),
 		},
 		{
 			name: "preferred node field with weight",
@@ -198,9 +203,8 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Prefer to schedule on nodes with field foo with values x, y. Weight 10."),
-			}),
+			expected: affinityTable("Node",
+				"Prefer to schedule on nodes with field foo with values x, y. Weight 10."),
 		},
 		{
 			name: "required node field with weight",
@@ -221,9 +225,8 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Schedule on nodes with field foo with values x, y."),
-			}),
+			expected: affinityTable("Node",
+				"Schedule on nodes with field foo with values x, y."),
 		},
 		{
 			name: "affinity: required pod label selector with match labels",
@@ -242,9 +245,8 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Schedule with pod labeled bar:foo, foo:bar in topology topology."),
-			}),
+			expected: affinityTable("Pod",
+				"Schedule with pod labeled bar:foo, foo:bar in topology topology."),
 		},
 		{
 			name: "affinity: required pod label selector with match expressions",
@@ -265,9 +267,8 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Schedule with pod where key exists in topology topology."),
-			}),
+			expected: affinityTable("Pod",
+				"Schedule with pod where key exists in topology topology."),
 		},
 		{
 			name: "affinity: required pod label selector with match expressions and match labels",
@@ -292,9 +293,8 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Schedule with pod labeled bar:foo, foo:bar where key exists in topology topology."),
-			}),
+			expected: affinityTable("Pod",
+				"Schedule with pod labeled bar:foo, foo:bar where key exists in topology topology."),
 		},
 		{
 			name: "affinity: preferred pod label selector with match labels",
@@ -315,9 +315,8 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Prefer to schedule with pod labeled bar:foo, foo:bar in topology topology."),
-			}),
+			expected: affinityTable("Pod",
+				"Prefer to schedule with pod labeled bar:foo, foo:bar in topology topology."),
 		},
 		{
 			name: "affinity: preferred pod label selector with match labels weighed",
@@ -339,9 +338,8 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Prefer to schedule with pod labeled bar:foo, foo:bar in topology topology. Weight 5."),
-			}),
+			expected: affinityTable("Pod",
+				"Prefer to schedule with pod labeled bar:foo, foo:bar in topology topology. Weight 5."),
 		},
 		{
 			name: "anti-affinity: preferred pod label selector with match labels",
@@ -362,9 +360,8 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Prefer to not schedule with pod labeled bar:foo, foo:bar in topology topology."),
-			}),
+			expected: affinityTable("Pod",
+				"Prefer to not schedule with pod labeled bar:foo, foo:bar in topology topology."),
 		},
 	}
 
@@ -374,9 +371,7 @@ func Test_AffinityDescriber_Create(t *testing.T) {
 				Affinity: tc.affinity,
 			}
 
-			ad := printer.NewAffinityDescriber(podSpec)
-
-			got, err := ad.Create()
+			got, err := printAffinity(podSpec)
 			if tc.isErr {
 				require.Error(t, err)
 				return

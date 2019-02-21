@@ -216,7 +216,7 @@ func Test_ContainerConfiguration(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			cc := printer.NewContainerConfiguration(parentPod, tc.container)
+			cc := printer.NewContainerConfiguration(parentPod, tc.container, false)
 			summary, err := cc.Create()
 			if tc.isErr {
 				require.Error(t, err)

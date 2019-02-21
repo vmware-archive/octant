@@ -93,6 +93,53 @@ func PodHandler(p *corev1.Pod, opts Options) (component.ViewComponent, error) {
 
 	o.EnableEvents()
 
+	var initContainerItems []ItemDescriptor
+	for _, container := range p.Spec.InitContainers {
+		cc := NewContainerConfiguration(p, &container, true)
+		initContainerItems = append(initContainerItems, ItemDescriptor{
+			Width: 12,
+			Func: func() (component.ViewComponent, error) {
+				return cc.Create()
+			},
+		})
+	}
+
+	o.RegisterItems(initContainerItems...)
+
+	var containerItems []ItemDescriptor
+	for _, container := range p.Spec.Containers {
+		cc := NewContainerConfiguration(p, &container, false)
+		containerItems = append(initContainerItems, ItemDescriptor{
+			Width: 12,
+			Func: func() (component.ViewComponent, error) {
+				return cc.Create()
+			},
+		})
+	}
+
+	o.RegisterItems(containerItems...)
+
+	o.RegisterItems([]ItemDescriptor{
+		{
+			Width: 12,
+			Func: func() (component.ViewComponent, error) {
+				return printVolumes(p.Spec.Volumes)
+			},
+		},
+		{
+			Width: 12,
+			Func: func() (component.ViewComponent, error) {
+				return printTolerations(p.Spec)
+			},
+		},
+		{
+			Width: 12,
+			Func: func() (component.ViewComponent, error) {
+				return printAffinity(p.Spec)
+			},
+		},
+	}...)
+
 	return o.ToComponent(opts)
 }
 

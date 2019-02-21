@@ -9,29 +9,37 @@ import (
 	"github.com/heptio/developer-dash/internal/view/component"
 )
 
-type AffinityDescriber struct {
+func printAffinity(podSpec corev1.PodSpec) (component.ViewComponent, error) {
+	ad := &affinityDescriber{podSpec: podSpec}
+	return ad.Create()
+}
+
+type affinityDescriber struct {
 	podSpec corev1.PodSpec
 }
 
-func NewAffinityDescriber(podSpec corev1.PodSpec) *AffinityDescriber {
-	return &AffinityDescriber{
-		podSpec: podSpec,
+func (ad *affinityDescriber) Create() (*component.Table, error) {
+
+	cols := component.NewTableCols("Type", "Description")
+	table := component.NewTable("Affinities and Anti-Affinities", cols)
+
+	if affinity := ad.podSpec.Affinity; affinity != nil {
+		for _, nodeAffinity := range ad.nodeAffinity(*affinity) {
+			table.Add(component.TableRow{
+				"Type":        component.NewText("Node"),
+				"Description": nodeAffinity,
+			})
+		}
+
+		for _, podAffinity := range ad.podAffinity(*affinity) {
+			table.Add(component.TableRow{
+				"Type":        component.NewText("Pod"),
+				"Description": podAffinity,
+			})
+		}
 	}
-}
 
-func (ad *AffinityDescriber) Create() (*component.List, error) {
-	var items []component.ViewComponent
-
-	if affinity := ad.podSpec.Affinity; affinity == nil {
-		items = append(items, component.NewText("Pod affinity is not configured."))
-	} else {
-		items = append(items, ad.nodeAffinity(*affinity)...)
-		items = append(items, ad.podAffinity(*affinity)...)
-	}
-
-	list := component.NewList("", items)
-
-	return list, nil
+	return table, nil
 }
 
 type podAffinityOptions struct {
@@ -40,7 +48,7 @@ type podAffinityOptions struct {
 	anti       bool
 }
 
-func (ad *AffinityDescriber) podAffinity(affinity corev1.Affinity) []component.ViewComponent {
+func (ad *affinityDescriber) podAffinity(affinity corev1.Affinity) []component.ViewComponent {
 	var items []component.ViewComponent
 
 	if podAffinity := affinity.PodAffinity; podAffinity != nil {
@@ -76,7 +84,7 @@ func (ad *AffinityDescriber) podAffinity(affinity corev1.Affinity) []component.V
 	return items
 }
 
-func (ad *AffinityDescriber) podAffinityTerms(terms []corev1.PodAffinityTerm, options podAffinityOptions) []component.ViewComponent {
+func (ad *affinityDescriber) podAffinityTerms(terms []corev1.PodAffinityTerm, options podAffinityOptions) []component.ViewComponent {
 	var items []component.ViewComponent
 
 	for _, term := range terms {
@@ -117,7 +125,7 @@ func (ad *AffinityDescriber) podAffinityTerms(terms []corev1.PodAffinityTerm, op
 	return items
 }
 
-func (ad *AffinityDescriber) nodeAffinity(affinity corev1.Affinity) []component.ViewComponent {
+func (ad *affinityDescriber) nodeAffinity(affinity corev1.Affinity) []component.ViewComponent {
 	var items []component.ViewComponent
 
 	if nodeAffinity := affinity.NodeAffinity; nodeAffinity != nil {
@@ -144,7 +152,7 @@ type nodeSelectorRequirementOptions struct {
 	weight     int32
 }
 
-func (ad *AffinityDescriber) nodeSelectorTerms(terms []corev1.NodeSelectorTerm, options nodeSelectorRequirementOptions) []component.ViewComponent {
+func (ad *affinityDescriber) nodeSelectorTerms(terms []corev1.NodeSelectorTerm, options nodeSelectorRequirementOptions) []component.ViewComponent {
 	var items []component.ViewComponent
 
 	for _, term := range terms {
@@ -155,7 +163,7 @@ func (ad *AffinityDescriber) nodeSelectorTerms(terms []corev1.NodeSelectorTerm, 
 	return items
 }
 
-func (ad *AffinityDescriber) nodeSelectorRequirement(itemType string, options nodeSelectorRequirementOptions, nodeSelectorRequirements []corev1.NodeSelectorRequirement) []component.ViewComponent {
+func (ad *affinityDescriber) nodeSelectorRequirement(itemType string, options nodeSelectorRequirementOptions, nodeSelectorRequirements []corev1.NodeSelectorRequirement) []component.ViewComponent {
 	preamble := "Prefer to schedule on nodes"
 	if options.isRequired {
 		preamble = "Schedule on nodes"
