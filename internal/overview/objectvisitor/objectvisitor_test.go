@@ -300,7 +300,7 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 	}
 
 	gvks := []schema.GroupVersionKind{gvk.DaemonSetGVK, gvk.DeploymentGVK, gvk.IngressGVK, gvk.PodGVK,
-		gvk.ServiceGVK, gvk.ReplicaSetGVK, gvk.ReplicationControllerGSK, gvk.StatefulSetGVK}
+		gvk.ServiceGVK, gvk.ReplicaSetGVK, gvk.ReplicationControllerGVK, gvk.StatefulSetGVK}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

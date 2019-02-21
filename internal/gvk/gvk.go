@@ -11,6 +11,7 @@ var (
 	ServiceGVK               = schema.GroupVersionKind{Version: "v1", Kind: "Service"}
 	PodGVK                   = schema.GroupVersionKind{Version: "v1", Kind: "Pod"}
 	ReplicaSetGVK            = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "ReplicaSet"}
-	ReplicationControllerGSK = schema.GroupVersionKind{Version: "v1", Kind: "ReplicationController"}
+	PersistentVolumeClaimGVK = schema.GroupVersionKind{Version: "v1", Kind: "PersistentVolumeClaim"}
+	ReplicationControllerGVK = schema.GroupVersionKind{Version: "v1", Kind: "ReplicationController"}
 	StatefulSetGVK           = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "StatefulSet"}
 )

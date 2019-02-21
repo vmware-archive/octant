@@ -374,3 +374,36 @@ func createPodListView(object runtime.Object, options Options) (component.ViewCo
 
 	return PodListHandler(podList, options)
 }
+
+func createMountedPodListView(namespace string, persistentVolumeClaimName string, options Options) (component.ViewComponent, error) {
+	key := cache.Key{
+		Namespace:  namespace,
+		APIVersion: "v1",
+		Kind:       "Pod",
+	}
+
+	mountedPodList := &corev1.PodList{}
+
+	pods, err := loadPods(key, options.Cache, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, pod := range pods {
+		var volumeClaims []corev1.Volume
+
+		for _, volume := range pod.Spec.Volumes {
+			if volume.VolumeSource.PersistentVolumeClaim != nil {
+				volumeClaims = append(volumeClaims, volume)
+			}
+		}
+
+		for _, persistentVolumeClaim := range volumeClaims {
+			if persistentVolumeClaim.PersistentVolumeClaim.ClaimName == persistentVolumeClaimName {
+				mountedPodList.Items = append(mountedPodList.Items, *pod)
+			}
+		}
+	}
+
+	return PodListHandler(mountedPodList, options)
+}
