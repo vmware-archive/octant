@@ -76,10 +76,26 @@ func CreateReplicaSet(name string) *appsv1.ReplicaSet {
 	}
 }
 
-// CreateSer4vice creates a service
+// CreateSecret creates a secret
+func CreateSecret(name string) *corev1.Secret {
+	return &corev1.Secret{
+		TypeMeta:   genTypeMeta(gvk.SecretGVK),
+		ObjectMeta: genObjectMeta(name),
+	}
+}
+
+// CreateService creates a service
 func CreateService(name string) *corev1.Service {
 	return &corev1.Service{
 		TypeMeta:   genTypeMeta(gvk.ServiceGVK),
+		ObjectMeta: genObjectMeta(name),
+	}
+}
+
+// CreateServiceAccount creates a service account
+func CreateServiceAccount(name string) *corev1.ServiceAccount {
+	return &corev1.ServiceAccount{
+		TypeMeta:   genTypeMeta(gvk.ServiceAccountGVK),
 		ObjectMeta: genObjectMeta(name),
 	}
 }
