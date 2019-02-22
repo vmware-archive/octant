@@ -1,21 +1,34 @@
-package printer_test
+package printer
 
 import (
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/heptio/developer-dash/internal/overview/printer"
+	"github.com/heptio/developer-dash/internal/conversion"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+func tolerationTable(descriptions ...string) *component.Table {
+	table := component.NewTableWithRows(
+		"Taints and Tolerations",
+		component.NewTableCols("Description"),
+		[]component.TableRow{})
+
+	for _, description := range descriptions {
+		table.Add(component.TableRow{"Description": component.NewText(description)})
+	}
+
+	return table
+}
+
 func Test_TolerationDescriber_Create(t *testing.T) {
 	cases := []struct {
 		name        string
 		tolerations []corev1.Toleration
-		expected    *component.List
+		expected    *component.Table
 		isErr       bool
 	}{
 		{
@@ -26,9 +39,7 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 					Value: "value",
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Schedule on nodes with key:value taint."),
-			}),
+			expected: tolerationTable("Schedule on nodes with key:value taint."),
 		},
 		{
 			name: "multiple tolerations",
@@ -42,10 +53,10 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 					Value: "value2",
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Schedule on nodes with key1:value1 taint."),
-				component.NewText("Schedule on nodes with key2:value2 taint."),
-			}),
+			expected: tolerationTable(
+				"Schedule on nodes with key1:value1 taint.",
+				"Schedule on nodes with key2:value2 taint.",
+			),
 		},
 		{
 			name: "key,value",
@@ -56,9 +67,7 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 					Effect: corev1.TaintEffectNoSchedule,
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Schedule on nodes with key:value:NoSchedule taint."),
-			}),
+			expected: tolerationTable("Schedule on nodes with key:value:NoSchedule taint."),
 		},
 		{
 			name: "effect",
@@ -67,9 +76,7 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 					Effect: corev1.TaintEffectNoSchedule,
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText("Schedule on nodes with NoSchedule taint."),
-			}),
+			expected: tolerationTable("Schedule on nodes with NoSchedule taint."),
 		},
 		{
 			name: "key,value with evict secs",
@@ -77,13 +84,10 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 				{
 					Key:               "key",
 					Value:             "value",
-					TolerationSeconds: ptr64(3600),
+					TolerationSeconds: conversion.PtrInt64(3600),
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText(
-					"Schedule on nodes with key:value taint. Evict after 3600 seconds."),
-			}),
+			expected: tolerationTable("Schedule on nodes with key:value taint. Evict after 3600 seconds."),
 		},
 		{
 			name: "key exists",
@@ -93,10 +97,7 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 					Operator: corev1.TolerationOpExists,
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText(
-					"Schedule on nodes with key taint."),
-			}),
+			expected: tolerationTable("Schedule on nodes with key taint."),
 		},
 		{
 			name: "exists with no key",
@@ -105,10 +106,7 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 					Operator: corev1.TolerationOpExists,
 				},
 			},
-			expected: component.NewList("", []component.ViewComponent{
-				component.NewText(
-					"Schedule on all nodes."),
-			}),
+			expected: tolerationTable("Schedule on all nodes."),
 		},
 		{
 			name: "unsupported toleration",
@@ -127,9 +125,7 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 				Tolerations: tc.tolerations,
 			}
 
-			td := printer.NewTolerationDescriber(podSpec)
-
-			got, err := td.Create()
+			got, err := printTolerations(podSpec)
 			if tc.isErr {
 				require.Error(t, err)
 				return

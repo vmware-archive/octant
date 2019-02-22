@@ -42,15 +42,41 @@ func (pt *PodTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout) error {
 	containerSection := fl.AddSection()
 
 	for _, container := range pt.podTemplateSpec.Spec.Containers {
-		containerConfig := NewContainerConfiguration(pt.parent, &container)
+		containerConfig := NewContainerConfiguration(pt.parent, &container, false)
 		summary, err := containerConfig.Create()
 		if err != nil {
 			return err
 		}
 
-		if err := containerSection.Add(summary, 16); err != nil {
+		if err := containerSection.Add(summary, 12); err != nil {
 			return errors.Wrap(err, "add container")
 		}
+	}
+
+	podSection := fl.AddSection()
+
+	volumeTable, err := printVolumes(pt.podTemplateSpec.Spec.Volumes)
+	if err != nil {
+		return errors.Wrap(err, "print volumes")
+	}
+	if err := podSection.Add(volumeTable, 12); err != nil {
+		return err
+	}
+
+	tolerationList, err := printTolerations(pt.podTemplateSpec.Spec)
+	if err != nil {
+		return errors.Wrap(err, "print tolerations")
+	}
+	if err := podSection.Add(tolerationList, 12); err != nil {
+		return err
+	}
+
+	affinityList, err := printAffinity(pt.podTemplateSpec.Spec)
+	if err != nil {
+		return errors.Wrap(err, "print affinities")
+	}
+	if err := podSection.Add(affinityList, 12); err != nil {
+		return err
 	}
 
 	return nil
@@ -74,7 +100,7 @@ func (pt *PodTemplate) AddToGridLayout(gl *gridlayout.GridLayout) error {
 	containerSection := gl.CreateSection(16)
 
 	for _, container := range pt.podTemplateSpec.Spec.Containers {
-		containerConfig := NewContainerConfiguration(pt.parent, &container)
+		containerConfig := NewContainerConfiguration(pt.parent, &container, false)
 		summary, err := containerConfig.Create()
 		if err != nil {
 			return err

@@ -3,20 +3,20 @@
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: flex-start;
-  margin-bottom: 30px;
 }
 
 .flexLayout--section-item {
   flex-grow: 0;
   flex-shrink: 0;
-  padding: 0 15px;
+  overflow-x: scroll;
+  margin: 0 30px 30px 0;
 
   &:first-child {
-    padding-left: 0;
+    margin-left: 0;
   }
 
   &:last-child {
-    padding-right: 0;
+    margin-right: 0;
   }
 
   & > * {

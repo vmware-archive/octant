@@ -18,3 +18,8 @@ func PtrInt32ToString(p *int32) string {
 func PtrInt32(i int32) *int32 {
 	return &i
 }
+
+// PtrInt64 converts int64 to *int64
+func PtrInt64(i int64) *int64 {
+	return &i
+}

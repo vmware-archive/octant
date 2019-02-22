@@ -26,7 +26,7 @@ func (fl *FlexLayout) ToComponent(title string) *component.FlexLayout {
 	var sections []component.FlexLayoutSection
 
 	for _, section := range fl.sections {
-		var layoutSection component.FlexLayoutSection
+		layoutSection := component.FlexLayoutSection{}
 
 		for _, member := range section.Members {
 			item := component.FlexLayoutItem{
