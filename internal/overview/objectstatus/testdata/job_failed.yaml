@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  creationTimestamp: "2019-02-21T13:19:27Z"
+  generateName: job-fail-
+  labels:
+    sugarloaf-scenario: failed-job
+  name: job-fail-szjpx
+  namespace: default
+  resourceVersion: "2681618"
+  selfLink: /apis/batch/v1/namespaces/default/jobs/job-fail-szjpx
+  uid: 50a73260-35db-11e9-b0b2-025000000001
+spec:
+  backoffLimit: 4
+  completions: 1
+  parallelism: 1
+  selector:
+    matchLabels:
+      controller-uid: 50a73260-35db-11e9-b0b2-025000000001
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        controller-uid: 50a73260-35db-11e9-b0b2-025000000001
+        job-name: job-fail-szjpx
+    spec:
+      containers:
+      - command:
+        - sh
+        - -c
+        - exit 1
+        image: busybox
+        imagePullPolicy: Always
+        name: pi
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Never
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+status:
+  conditions:
+  - lastProbeTime: "2019-02-21T13:22:23Z"
+    lastTransitionTime: "2019-02-21T13:22:23Z"
+    message: Job has reached the specified backoff limit
+    reason: BackoffLimitExceeded
+    status: "True"
+    type: Failed
+  failed: 5
+  startTime: "2019-02-21T13:19:27Z"

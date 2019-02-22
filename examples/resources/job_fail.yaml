@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: job-fail-
+  labels:
+    sugarloaf-scenario: failed-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: executor
+        image: busybox
+        command: ["sh", "-c", "sleep 5; echo 'job fail'; exit 1"]
+      restartPolicy: Never

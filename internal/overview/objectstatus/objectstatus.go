@@ -23,6 +23,7 @@ var (
 		{apiVersion: "apps/v1", kind: "DaemonSet"}:             daemonSet,
 		{apiVersion: "apps/v1", kind: "Deployment"}:            deploymentAppsV1,
 		{apiVersion: "apps/v1", kind: "ReplicaSet"}:            replicaSetAppsV1,
+		{apiVersion: "batch/v1", kind: "Job"}:                  runJobStatus,
 		{apiVersion: "extensions/v1beta1", kind: "Ingress"}:    runIngressStatus,
 		{apiVersion: "extensions/v1beta1", kind: "ReplicaSet"}: replicaSetExtV1Beta1,
 	}
