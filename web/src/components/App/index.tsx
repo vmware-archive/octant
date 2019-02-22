@@ -40,7 +40,7 @@ class App extends Component<RouteComponentProps, AppState> {
       errorMessage: '',
       navigation: null,
       currentNavLinkPath: [],
-      namespaceOption: null,
+      namespaceOption: { label: 'default', value: 'default' },
       namespaceOptions: [],
       contentResponse: null,
       resourceFilters: [],
@@ -48,27 +48,20 @@ class App extends Component<RouteComponentProps, AppState> {
   }
 
   async componentDidMount() {
-    let namespace = 'default'
-
     const { location: initialLocation } = this.props
     const initialState = await getInitialState(initialLocation.pathname)
     this.setState(initialState as AppState)
-
-    if (this.state.namespaceOption) {
-      namespace = this.state.namespaceOption.value
-    }
-
-    this.setEventSourceStream(this.props.location.pathname, namespace)
+    this.setEventSourceStream(this.props.location.pathname, this.state.namespaceOption.value)
   }
 
   componentDidUpdate({ location: previousLocation }, { namespaceOption: previousNamespace }) {
     const { location } = this.props
     const { namespaceOption } = this.state
 
-    const namespace = namespaceOption ? namespaceOption.value : 'default'
-    const prevNamespace = previousNamespace ? previousNamespace.value : ''
+    const namespace = namespaceOption.value
+    const prevNamespace = previousNamespace.value
 
-    if (location.pathname !== previousLocation.pathname || namespace !== prevNamespace) {
+    if ((location.pathname !== previousLocation.pathname) || (namespace !== prevNamespace)) {
       this.setEventSourceStream(location.pathname, namespace)
     }
 
