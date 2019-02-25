@@ -26,8 +26,8 @@ spec:
       labels:
         app: nginx-rc
     spec:
-      - image: nginx
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 80
-          protocol: TCP
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80

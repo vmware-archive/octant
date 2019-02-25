@@ -6,6 +6,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -127,6 +128,26 @@ func CreatePersistentVolumeClaim(name string) *corev1.PersistentVolumeClaim {
 				corev1.ResourceName(corev1.ResourceStorage): resource.MustParse("10Gi"),
 			},
 		},
+	}
+}
+
+func CreateRoleBindingSubject(kind, name string) *rbacv1.Subject {
+	return &rbacv1.Subject{
+		Kind: kind,
+		Name: name,
+	}
+}
+
+func CreateRoleBinding(roleBindingName, roleName string, subjects []rbacv1.Subject) *rbacv1.RoleBinding {
+	return &rbacv1.RoleBinding{
+		TypeMeta:   genTypeMeta(gvk.RoleBindingGVK),
+		ObjectMeta: genObjectMeta(roleBindingName),
+		RoleRef: rbacv1.RoleRef{
+			Kind:     "Role",
+			Name:     roleName,
+			APIGroup: "rbac.authorization.k8s.io",
+		},
+		Subjects: subjects,
 	}
 }
 

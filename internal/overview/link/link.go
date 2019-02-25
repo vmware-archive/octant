@@ -32,7 +32,6 @@ func gvkPathFromObject(object runtime.Object) (string, error) {
 	if err != nil {
 		return "", errors.Wrap(err, "retrieve namespace from object")
 	}
-
 	return gvkPath(ns, apiVersion, kind, name), nil
 }
 
@@ -73,6 +72,8 @@ func gvkPath(namespace, apiVersion, kind, name string) string {
 		p = "/discovery-and-load-balancing/services"
 	case apiVersion == "rbac.authorization.k8s.io/v1" && kind == "Role":
 		p = "/rbac/roles"
+	case apiVersion == "rbac.authorization.k8s.io/v1" && kind == "RoleBinding":
+		p = "/rbac/role-bindings"
 	case apiVersion == "v1" && kind == "Event":
 		p = "/events"
 	case apiVersion == "v1" && kind == "Pod":
@@ -81,7 +82,12 @@ func gvkPath(namespace, apiVersion, kind, name string) string {
 		return fmt.Sprintf("/content/overview/%s", namespace)
 	}
 
-	prefix := fmt.Sprintf("/content/overview/namespace/%s", namespace)
+	prefix := "/content/overview"
+
+	if namespace != "" {
+		prefix = fmt.Sprintf("%s/namespace/%s", prefix, namespace)
+	}
+
 	return path.Join(prefix, p, name)
 }
 

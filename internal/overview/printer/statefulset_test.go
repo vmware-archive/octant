@@ -73,7 +73,7 @@ func Test_StatefulSetListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Desired", "Current", "Age", "Selector")
 	expected := component.NewTable("StatefulSets", cols)
 	expected.Add(component.TableRow{
-		"Name":     component.NewLink("", "web", "/content/overview/namespace/workloads/stateful-sets/web"),
+		"Name":     component.NewLink("", "web", "/content/overview/workloads/stateful-sets/web"),
 		"Labels":   component.NewLabels(labels),
 		"Desired":  component.NewText("3"),
 		"Current":  component.NewText("1"),
