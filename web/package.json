@@ -15,7 +15,10 @@
     "fix": "NODE_ENV=development npm run csslint:fix && npm run tslint:fix && npm run prettier"
   },
   "jest": {
-    "setupTestFrameworkScriptFile": "<rootDir>/config/jest/setup.js",
+    "verbose": true,
+    "setupFilesAfterEnv": [
+      "<rootDir>/config/jest/setup.js"
+    ],
     "collectCoverageFrom": [
       "src/**/*.{js,jsx,ts,tsx,mjs}"
     ],
@@ -36,7 +39,7 @@
       "^(?!.*\\.(js|jsx|mjs|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
     },
     "transformIgnorePatterns": [
-      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs)$"
+      "<rootDir>/node_modules/(?!react-syntax-highlighter).*\\.js"
     ],
     "moduleDirectories": [
       "node_modules",
@@ -80,7 +83,23 @@
     "plugins": [
       "@babel/plugin-transform-runtime",
       "@babel/plugin-proposal-class-properties"
-    ]
+    ],
+    "env": {
+      "test": {
+        "presets": [
+          [
+            "@babel/preset-env",
+            {
+              "debug": false,
+              "modules": "cjs",
+              "targets": {
+                "node": "current"
+              }
+            }
+          ]
+        ]
+      }
+    }
   },
   "dependencies": {
     "@types/d3": "^5.0.1",
@@ -138,7 +157,7 @@
     "@types/react-tooltip": "^3.9.0",
     "@types/url-parse": "^1.4.3",
     "babel-core": "^7.0.0-bridge.0",
-    "babel-jest": "^23.6.0",
+    "babel-jest": "^24.1.0",
     "babel-loader": "^8.0.4",
     "case-sensitive-paths-webpack-plugin": "^2.1.2",
     "css-loader": "^1.0.1",
@@ -147,7 +166,7 @@
     "file-loader": "^2.0.0",
     "html-webpack-plugin": "^3.2.0",
     "interpolate-html-plugin": "^3.0.0",
-    "jest": "^23.6.0",
+    "jest": "^24.1.0",
     "mini-css-extract-plugin": "^0.4.5",
     "node-sass": "^4.9.3",
     "postcss-flexbugs-fixes": "3.2.0",
@@ -158,10 +177,10 @@
     "sass-loader": "^7.1.0",
     "source-map-loader": "^0.2.4",
     "style-loader": "^0.23.1",
-    "stylelint": "^9.5.0",
+    "stylelint": "^9.10.1",
     "stylelint-order": "^1.0.0",
     "sw-precache-webpack-plugin": "^0.11.5",
-    "ts-jest": "^23.10.5",
+    "ts-jest": "^24.0.0",
     "ts-loader": "^5.3.0",
     "tslint": "^5.12.1",
     "tslint-react": "^3.6.0",

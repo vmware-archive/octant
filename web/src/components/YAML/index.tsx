@@ -1,13 +1,16 @@
 import { YAMLViewerModel } from 'models'
 import React, { Component } from 'react'
-import SyntaxHighlighter from 'react-syntax-highlighter/dist'
-import { atomOneDark } from 'react-syntax-highlighter/dist/styles/hljs'
+import SyntaxHighlighter from 'react-syntax-highlighter/dist/cjs/light'
+import yaml from 'react-syntax-highlighter/dist/cjs/languages/hljs/yaml'
+import atomOneDark from 'react-syntax-highlighter/dist/cjs/styles/hljs/atom-one-dark'
 
 import './styles.scss'
 
 interface Props {
   view: YAMLViewerModel
 }
+
+SyntaxHighlighter.registerLanguage('yaml', yaml)
 
 export default class extends Component<Props> {
   constructor(props: Props) {
