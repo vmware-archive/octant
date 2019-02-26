@@ -95,6 +95,7 @@ class App extends Component<RouteComponentProps, AppState> {
     const url = getContentsUrl(path, namespace, params)
 
     this.source = new window.EventSource(`${getAPIBase()}/${url}`)
+    this.setState({isLoading: true})
 
     this.source.addEventListener('message', (e) => {
       const contentResponse = Parse(e.data)
