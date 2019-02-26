@@ -206,7 +206,7 @@ class App extends Component<RouteComponentProps, AppState> {
     }
 
     let navSections = null
-    let rootNavigationPath = '/content/overview/'
+    let rootNavigationPath = `/content/overview/namespace/${currentNamespace}/`
     if (navigation && navigation.sections) {
       navSections = navigation.sections
       rootNavigationPath = navigation.sections[0].path
