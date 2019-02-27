@@ -13,10 +13,16 @@
   "rules": {
     "semicolon": [true, "never", "ignore-interfaces"],
     "quotemark": [true, "single", "jsx-single"],
-    "interface-name" : false,
+    "interface-name" : {
+      "severity": "off"
+    },
     "object-literal-key-quotes": [true, "as-needed"],
-    "object-literal-sort-keys": false,
-    "one-variable-per-declaration": false,
+    "object-literal-sort-keys": {
+      "severity": "off"
+    },
+    "one-variable-per-declaration": {
+      "severity": "off"
+    },
     "curly": [true, "ignore-same-line"],
     "member-access": [false, "check-parameter-property"],
     "no-console": [true, "log"],
@@ -32,9 +38,18 @@
       },
       "esSpecCompliant": true
     }],
-    "jsx-boolean-value": ["never"],
-    "jsx-no-multiline-js": ["none"],
-    "jsx-no-lambda": ["none"]
+    "jsx-boolean-value": {
+      "severity": "off"
+    },
+    "jsx-no-multiline-js": {
+      "severity": "off"
+    },
+    "jsx-no-lambda": {
+      "severity": "off"
+    },
+    "jsx-wrap-multiline": {
+      "severity": "off"
+    }
   },
   "rulesDirectory": []
 }

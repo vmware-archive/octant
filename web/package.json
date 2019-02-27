@@ -12,7 +12,8 @@
     "tslint": "tslint \"./src/**/*.{ts,tsx}\" --project .",
     "tslint:fix": "npm run tslint -- --fix",
     "prettier": "prettier --write \"./src/**/*.{ts,tsx}\"",
-    "fix": "NODE_ENV=development npm run csslint:fix && npm run tslint:fix && npm run prettier"
+    "lint": "NODE_ENV=development npm run csslint && npm run tslint",
+    "lint:fix": "NODE_ENV=development npm run csslint:fix && npm run tslint:fix && npm run prettier"
   },
   "jest": {
     "verbose": true,

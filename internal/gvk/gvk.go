@@ -17,4 +17,5 @@ var (
 	ReplicationControllerGVK = schema.GroupVersionKind{Version: "v1", Kind: "ReplicationController"}
 	StatefulSetGVK           = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "StatefulSet"}
 	RoleBindingGVK           = schema.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "RoleBinding"}
+	RoleGVK                  = schema.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "Role"}
 )

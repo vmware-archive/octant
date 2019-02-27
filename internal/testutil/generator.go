@@ -131,6 +131,28 @@ func CreatePersistentVolumeClaim(name string) *corev1.PersistentVolumeClaim {
 	}
 }
 
+func CreateRole(name string) *rbacv1.Role {
+	return &rbacv1.Role{
+		TypeMeta:   genTypeMeta(gvk.RoleGVK),
+		ObjectMeta: genObjectMeta(name),
+		Rules: []rbacv1.PolicyRule{
+			{
+				APIGroups: []string{
+					"",
+				},
+				Resources: []string{
+					"pods",
+				},
+				Verbs: []string{
+					"get",
+					"watch",
+					"list",
+				},
+			},
+		},
+	}
+}
+
 func CreateRoleBindingSubject(kind, name string) *rbacv1.Subject {
 	return &rbacv1.Subject{
 		Kind: kind,

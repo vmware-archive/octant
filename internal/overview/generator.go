@@ -156,6 +156,8 @@ func AddPrintHandlers(p PrinterHandler) error {
 		printer.StatefulSetListHandler,
 		printer.RoleBindingListHandler,
 		printer.RoleBindingHandler,
+		printer.RoleListHandler,
+		printer.RoleHandler,
 	}
 
 	for _, handler := range handlers {

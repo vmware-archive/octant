@@ -73,6 +73,10 @@ func printRoleBindingConfig(roleBinding *rbacv1.RoleBinding) (component.ViewComp
 }
 
 func printRoleBindingSubjects(roleBinding *rbacv1.RoleBinding) (component.ViewComponent, error) {
+	if roleBinding == nil {
+		return nil, errors.New("role binding is nil")
+	}
+
 	columns := component.NewTableCols("Kind", "Name", "Namespace")
 	table := component.NewTable("Subjects", columns)
 
