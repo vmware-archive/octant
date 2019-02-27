@@ -111,6 +111,18 @@ class App extends Component<RouteComponentProps, AppState> {
       this.setState({ navigation: data })
     })
 
+    this.source.addEventListener('namespaces', (e) => {
+      const data = JSON.parse(e.data)
+      const updated = data.namespaces.map((ns) => ({
+        label: ns,
+        value: ns,
+      }))
+
+      // TODO if current namespace is not in list, redirect to the
+      // the first item in the list.
+      this.setState({ namespaceOptions: updated })
+    })
+
     this.source.addEventListener('error', () => {
       this.setState({ isLoading: false })
       this.setError(true, 'Looks like the back end source has gone away. Retrying...')

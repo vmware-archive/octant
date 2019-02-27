@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	"k8s.io/apimachinery/pkg/labels"
@@ -21,6 +22,7 @@ type contentHandler struct {
 	modules     []module.Module
 	logger      log.Logger
 	prefix      string
+	nsClient    cluster.NamespaceInterface
 }
 
 func (h *contentHandler) RegisterRoutes(router *mux.Router) error {
@@ -112,6 +114,9 @@ func (h *contentHandler) handlePoll(ctx context.Context, poll, namespace string,
 		&navigationEventGenerator{
 			modules:   h.modules,
 			namespace: namespace,
+		},
+		&namespaceEventGenerator{
+			nsClient: h.nsClient,
 		},
 	}
 

@@ -107,6 +107,7 @@ func (a *API) Handler() *mux.Router {
 
 	// Register content routes
 	contentService := &contentHandler{
+		nsClient:    a.nsClient,
 		modulePaths: a.modulePaths,
 		modules:     a.modules,
 		logger:      a.logger,

@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/view/component"
@@ -95,6 +96,34 @@ func (g *navigationEventGenerator) Generate(ctx context.Context) (event, error) 
 }
 
 func (g *navigationEventGenerator) RunEvery() time.Duration {
+	return 5 * time.Second
+}
+
+type namespaceEventGenerator struct {
+	nsClient cluster.NamespaceInterface
+}
+
+func (g *namespaceEventGenerator) Generate(ctx context.Context) (event, error) {
+	if g.nsClient == nil {
+		return event{}, errors.New("unable to query namespaces, client is nil")
+	}
+
+	names, err := g.nsClient.Names()
+	if err != nil {
+		initialNamespace := g.nsClient.InitialNamespace()
+		names = []string{initialNamespace}
+	}
+
+	nr := &namespacesResponse{Namespaces: names}
+	data, err := json.Marshal(nr)
+	if err != nil {
+		return event{}, errors.New("unable to marshal namespaces")
+	}
+
+	return event{name: "namespaces", data: data}, nil
+}
+
+func (g *namespaceEventGenerator) RunEvery() time.Duration {
 	return 5 * time.Second
 }
 
