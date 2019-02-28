@@ -165,6 +165,14 @@ var (
 		Titles:     ResourceTitle{List: "Roles", Object: "Role"},
 	})
 
+	rbacClusterRoles = NewResource(ResourceOptions{
+		Path:       "/rbac/cluster-roles",
+		CacheKey:   cache.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "ClusterRole"},
+		ListType:   &rbacv1.ClusterRoleList{},
+		ObjectType: &rbacv1.ClusterRole{},
+		Titles:     ResourceTitle{List: "Cluster Roles", Object: "Cluster Role"},
+	})
+
 	rbacRoleBindings = NewResource(ResourceOptions{
 		Path:       "/rbac/role-bindings",
 		CacheKey:   cache.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "RoleBinding"},
@@ -185,6 +193,7 @@ var (
 	rbacDescriber = NewSectionDescriber(
 		"/rbac",
 		"RBAC",
+		rbacClusterRoles,
 		rbacClusterRoleBindings,
 		rbacRoles,
 		rbacRoleBindings,

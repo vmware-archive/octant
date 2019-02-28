@@ -158,6 +158,7 @@ func (nf *NavigationFactory) configAndStorageEntries(prefix string) ([]*hcli.Nav
 
 func (nf *NavigationFactory) rbacEntries(prefix string) ([]*hcli.Navigation, error) {
 	return []*hcli.Navigation{
+		hcli.NewNavigation("Cluster Roles", path.Join(prefix, "cluster-roles")),
 		hcli.NewNavigation("Cluster Role Bindings", path.Join(prefix, "cluster-role-bindings")),
 		hcli.NewNavigation("Roles", path.Join(prefix, "roles")),
 		hcli.NewNavigation("Role Bindings", path.Join(prefix, "role-bindings")),
