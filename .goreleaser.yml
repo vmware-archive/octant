@@ -4,10 +4,10 @@ release:
 before:
   hooks:
   - make web-build
-project_name: hcli
+project_name: sugarloaf
 builds:
 - main: ./cmd/hcli/main.go
-  binary: hcli
+  binary: sugarloaf
   env:
     - CGO_ENABLED=0
   goos:
@@ -17,16 +17,6 @@ builds:
   goarch:
     - amd64
   ldflags: -X "main.buildTime={{.Date}}" -X "main.gitCommit={{.Commit}}" -X "main.version={{.Version}}"
-brew:
-  github:
-    owner: heptio
-    name: homebrew-tap
-  download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
-  folder: Formula
-  homepage: "https://github.com/heptio/developer-dash"
-  description: ""
-  test: |
-    system "#{bin}/hcli version"
 nfpm:
   formats:
     - deb
