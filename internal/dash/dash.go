@@ -10,11 +10,14 @@ import (
 	"os"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/restmapper"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/api"
+	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/localcontent"
 	"github.com/heptio/developer-dash/internal/log"
@@ -54,7 +57,12 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Lo
 		return errors.Wrap(err, "failed to create info client")
 	}
 
-	moduleManager, err := initModuleManager(clusterClient, namespace, logger)
+	cache, err := initCache(ctx.Done(), clusterClient, logger)
+	if err != nil {
+		return errors.Wrap(err, "initializing cache")
+	}
+
+	moduleManager, err := initModuleManager(ctx, clusterClient, cache, namespace, logger)
 	if err != nil {
 		return errors.Wrap(err, "init module manager")
 	}
@@ -64,7 +72,15 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Lo
 		return errors.Wrap(err, "failed to create net listener")
 	}
 
-	d, err := newDash(listener, namespace, uiURL, nsClient, infoClient, moduleManager, logger)
+	// Initialize the API
+	ah := api.New(ctx, apiPathPrefix, nsClient, infoClient, moduleManager, logger)
+	for _, m := range moduleManager.Modules() {
+		if err := ah.RegisterModule(m); err != nil {
+			return errors.Wrapf(err, "registering module: %v", m.Name())
+		}
+	}
+
+	d, err := newDash(listener, namespace, uiURL, ah, logger)
 	if err != nil {
 		return errors.Wrap(err, "failed to create dash instance")
 	}
@@ -85,13 +101,56 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Lo
 	return nil
 }
 
-func initModuleManager(clusterClient *cluster.Cluster, namespace string, logger log.Logger) (*module.Manager, error) {
+// initCache initializes the cluster cache interface
+func initCache(stopCh <-chan struct{}, client cluster.ClientInterface, logger log.Logger) (cache.Cache, error) {
+	var opts []cache.InformerCacheOpt
+
+	if os.Getenv("DASH_VERBOSE_CACHE") != "" {
+		ch := make(chan cache.Notification)
+
+		go func() {
+			for notif := range ch {
+				spew.Dump(notif)
+			}
+		}()
+
+		opts = append(opts, cache.InformerCacheNotificationOpt(ch, stopCh))
+	}
+
+	if client == nil {
+		return nil, errors.New("nil cluster client")
+	}
+
+	dynamicClient, err := client.DynamicClient()
+	if err != nil {
+		return nil, errors.Wrapf(err, "creating DynamicClient")
+	}
+	di, err := client.DiscoveryClient()
+	if err != nil {
+		return nil, errors.Wrapf(err, "creating DiscoveryClient")
+	}
+
+	groupResources, err := restmapper.GetAPIGroupResources(di)
+	if err != nil {
+		logger.Errorf("discovering APIGroupResources: %v", err)
+		return nil, errors.Wrapf(err, "mapping APIGroupResources")
+	}
+	rm := restmapper.NewDiscoveryRESTMapper(groupResources)
+
+	opts = append(opts, cache.InformerCacheLoggerOpt(logger))
+	informerCache := cache.NewInformerCache(stopCh, dynamicClient, rm, opts...)
+
+	return informerCache, nil
+}
+
+// initModuleManager initializes the moduleManager (and currently the modules themselves)
+func initModuleManager(ctx context.Context, clusterClient *cluster.Cluster, cache cache.Cache, namespace string, logger log.Logger) (*module.Manager, error) {
 	moduleManager, err := module.NewManager(clusterClient, namespace, logger)
 	if err != nil {
 		return nil, errors.Wrap(err, "create module manager")
 	}
 
-	overviewModule, err := overview.NewClusterOverview(clusterClient, namespace, logger)
+	overviewModule, err := overview.NewClusterOverview(ctx, clusterClient, cache, namespace, logger)
 	if err != nil {
 		return nil, errors.Wrap(err, "create overview module")
 	}
@@ -130,22 +189,14 @@ type dash struct {
 	logger          log.Logger
 }
 
-func newDash(listener net.Listener, namespace, uiURL string, nsClient cluster.NamespaceInterface, infoClient cluster.InfoInterface, moduleManager module.ManagerInterface, logger log.Logger) (*dash, error) {
-	ah := api.New(apiPathPrefix, nsClient, infoClient, moduleManager, logger)
-
-	for _, m := range moduleManager.Modules() {
-		if err := ah.RegisterModule(m); err != nil {
-			return nil, err
-		}
-	}
-
+func newDash(listener net.Listener, namespace, uiURL string, apiHandler api.Service, logger log.Logger) (*dash, error) {
 	return &dash{
 		listener:        listener,
 		namespace:       namespace,
 		uiURL:           uiURL,
 		defaultHandler:  web.Handler,
 		willOpenBrowser: true,
-		apiHandler:      ah,
+		apiHandler:      apiHandler,
 		logger:          logger,
 	}, nil
 }

@@ -170,6 +170,17 @@
   revision = "b75069ef13a1de846c0cdf964f5917f5b00c1a47"
 
 [[projects]]
+  branch = "master"
+  digest = "1:ecdc8e0fe3bc7d549af1c9c36acf3820523b707d6c071b6d0c3860882c6f7b42"
+  name = "github.com/docker/spdystream"
+  packages = [
+    ".",
+    "spdy",
+  ]
+  pruneopts = "UT"
+  revision = "6480d4af844c189cf5dd913db24ddd339d3a4f85"
+
+[[projects]]
   digest = "1:f1f2bd73c025d24c3b93abf6364bccb802cf2fdedaa44360804c67800e8fab8d"
   name = "github.com/evanphx/json-patch"
   packages = ["."]
@@ -226,6 +237,14 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "24818f796faf91cd76ec7bddd72458fbced7a6c1"
+
+[[projects]]
+  digest = "1:236d7e1bdb50d8f68559af37dbcf9d142d56b431c9b2176d41e2a009b664cda8"
+  name = "github.com/google/uuid"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8"
+  version = "v1.1.0"
 
 [[projects]]
   digest = "1:65c4414eeb350c47b8de71110150d0ea8a281835b1f386eacaa3ad7325929c21"
@@ -733,7 +752,7 @@
   version = "kubernetes-1.13.1"
 
 [[projects]]
-  digest = "1:03a58257ff1241b12c160a8d3b09328f393f3abdbd47e3b26988d9a229f8e46f"
+  digest = "1:d61163a37e4e6d7412354bd7203a1274821a27c311014fdb0bc723af4a8b0eed"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/equality",
@@ -764,6 +783,8 @@
     "pkg/util/duration",
     "pkg/util/errors",
     "pkg/util/framer",
+    "pkg/util/httpstream",
+    "pkg/util/httpstream/spdy",
     "pkg/util/intstr",
     "pkg/util/json",
     "pkg/util/mergepatch",
@@ -779,6 +800,7 @@
     "pkg/version",
     "pkg/watch",
     "third_party/forked/golang/json",
+    "third_party/forked/golang/netutil",
     "third_party/forked/golang/reflect",
   ]
   pruneopts = "UT"
@@ -797,7 +819,7 @@
   version = "kubernetes-1.13.1"
 
 [[projects]]
-  digest = "1:45d8671f845dfcd612df41ff31e66610e357bee3964777328b0288aae0e14f51"
+  digest = "1:96cde6cbdb91e0cd9a5249d4c73c61d132db1033d8d93f6abfe8d1c584c8e737"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -968,8 +990,10 @@
     "tools/clientcmd/api/v1",
     "tools/metrics",
     "tools/pager",
+    "tools/portforward",
     "tools/reference",
     "transport",
+    "transport/spdy",
     "util/buffer",
     "util/cert",
     "util/connrotation",
@@ -1111,6 +1135,7 @@
     "github.com/asticode/go-astilog",
     "github.com/davecgh/go-spew/spew",
     "github.com/golang/mock/gomock",
+    "github.com/google/uuid",
     "github.com/googleapis/gnostic/OpenAPIv2",
     "github.com/gorilla/handlers",
     "github.com/gorilla/mux",
@@ -1138,11 +1163,14 @@
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/runtime/serializer",
+    "k8s.io/apimachinery/pkg/runtime/serializer/json",
+    "k8s.io/apimachinery/pkg/selection",
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/clock",
     "k8s.io/apimachinery/pkg/util/duration",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/runtime",
+    "k8s.io/apimachinery/pkg/util/sets",
     "k8s.io/apimachinery/pkg/version",
     "k8s.io/apimachinery/pkg/watch",
     "k8s.io/client-go/discovery",
@@ -1154,7 +1182,6 @@
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/kubernetes/fake",
     "k8s.io/client-go/kubernetes/scheme",
-    "k8s.io/client-go/kubernetes/typed/core/v1",
     "k8s.io/client-go/plugin/pkg/client/auth/azure",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/plugin/pkg/client/auth/oidc",
@@ -1163,12 +1190,16 @@
     "k8s.io/client-go/testing",
     "k8s.io/client-go/tools/cache",
     "k8s.io/client-go/tools/clientcmd",
+    "k8s.io/client-go/tools/clientcmd/api/latest",
+    "k8s.io/client-go/tools/portforward",
+    "k8s.io/client-go/transport/spdy",
     "k8s.io/kubernetes/pkg/apis/apps",
     "k8s.io/kubernetes/pkg/apis/batch",
     "k8s.io/kubernetes/pkg/apis/core",
     "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme",
     "k8s.io/kubernetes/pkg/printers",
     "k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/util/duration",
+    "k8s.io/utils/pointer",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

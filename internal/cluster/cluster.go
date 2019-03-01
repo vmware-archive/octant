@@ -4,9 +4,12 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -23,19 +26,25 @@ type ClientInterface interface {
 	DiscoveryClient() (discovery.DiscoveryInterface, error)
 	NamespaceClient() (NamespaceInterface, error)
 	InfoClient() (InfoInterface, error)
+	RESTInterface
+}
+
+type RESTInterface interface {
+	RESTClient() (rest.Interface, error)
+	RESTConfig() *rest.Config
 }
 
 // Cluster is a client for cluster operations
 type Cluster struct {
 	clientConfig clientcmd.ClientConfig
-	restClient   *rest.Config
+	restConfig   *rest.Config
 }
 
 var _ ClientInterface = (*Cluster)(nil)
 
 // KubernetesClient returns a Kubernetes client.
 func (c *Cluster) KubernetesClient() (kubernetes.Interface, error) {
-	return kubernetes.NewForConfig(c.restClient)
+	return kubernetes.NewForConfig(c.restConfig)
 }
 
 // NamespaceClient returns a namespace client.
@@ -54,12 +63,12 @@ func (c *Cluster) NamespaceClient() (NamespaceInterface, error) {
 
 // DynamicClient returns a dynamic client.
 func (c *Cluster) DynamicClient() (dynamic.Interface, error) {
-	return dynamic.NewForConfig(c.restClient)
+	return dynamic.NewForConfig(c.restConfig)
 }
 
 // DiscoveryClient returns a DiscoveryClient for the cluster.
 func (c *Cluster) DiscoveryClient() (discovery.DiscoveryInterface, error) {
-	return discovery.NewDiscoveryClientForConfig(c.restClient)
+	return discovery.NewDiscoveryClientForConfig(c.restConfig)
 }
 
 // InfoClient returns an InfoClient for the cluster.
@@ -67,7 +76,18 @@ func (c *Cluster) InfoClient() (InfoInterface, error) {
 	return newClusterInfo(c.clientConfig), nil
 }
 
-// Version returns a ServerVersion for the cluster
+// RESTClient returns a RESTClient for the cluster.
+func (c *Cluster) RESTClient() (rest.Interface, error) {
+	config := withConfigDefaults(c.restConfig)
+	return rest.RESTClientFor(config)
+}
+
+// RESTConfig returns configuration for communicating with the cluster.
+func (c *Cluster) RESTConfig() *rest.Config {
+	return c.restConfig
+}
+
+// Version returns a ServerVersion for the cluster.
 func (c *Cluster) Version() (string, error) {
 	dc, err := c.DiscoveryClient()
 	if err != nil {
@@ -94,6 +114,21 @@ func FromKubeconfig(kubeconfig string) (*Cluster, error) {
 
 	return &Cluster{
 		clientConfig: cc,
-		restClient:   config,
+		restConfig:   config,
 	}, nil
+}
+
+// withConfigDefaults returns an extended rest.Config object with additional defaults applied
+// See core_client.go#setConfigDefaults
+func withConfigDefaults(inConfig *rest.Config) *rest.Config {
+	config := rest.CopyConfig(inConfig)
+	config.APIPath = "/api"
+	if config.GroupVersion == nil || config.GroupVersion.Group != scheme.Scheme.PrioritizedVersionsForGroup("")[0].Group {
+		gv := scheme.Scheme.PrioritizedVersionsForGroup("")[0]
+		config.GroupVersion = &gv
+	}
+	codec := runtime.NoopEncoder{Decoder: scheme.Codecs.UniversalDecoder()}
+	config.NegotiatedSerializer = serializer.NegotiatedSerializerWrapper(runtime.SerializerInfo{Serializer: codec})
+
+	return config
 }

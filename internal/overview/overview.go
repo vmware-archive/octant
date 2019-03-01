@@ -6,98 +6,88 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/heptio/developer-dash/internal/mime"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/overview/container"
+	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/internal/queryer"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/view/component"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/pkg/errors"
-	"k8s.io/client-go/restmapper"
 )
 
 // ClusterOverview is an API for generating a cluster overview.
 type ClusterOverview struct {
-	client cluster.ClientInterface
-
 	mu sync.Mutex
 
-	logger log.Logger
-
-	cache  cache.Cache
-	stopCh chan struct{}
-
-	generator *realGenerator
+	client         cluster.ClientInterface
+	logger         log.Logger
+	cache          cache.Cache
+	generator      *realGenerator
+	portForwardSvc portforward.PortForwardInterface
 }
 
 // NewClusterOverview creates an instance of ClusterOverview.
-func NewClusterOverview(client cluster.ClientInterface, namespace string, logger log.Logger) (*ClusterOverview, error) {
-	stopCh := make(chan struct{})
-
-	var opts []cache.InformerCacheOpt
-
-	if os.Getenv("DASH_VERBOSE_CACHE") != "" {
-		ch := make(chan cache.Notification)
-
-		go func() {
-			for notif := range ch {
-				spew.Dump(notif)
-			}
-		}()
-
-		opts = append(opts, cache.InformerCacheNotificationOpt(ch, stopCh))
-	}
-
+func NewClusterOverview(ctx context.Context, client cluster.ClientInterface, cache cache.Cache, namespace string, logger log.Logger) (*ClusterOverview, error) {
 	if client == nil {
 		return nil, errors.New("nil cluster client")
 	}
 
-	dynamicClient, err := client.DynamicClient()
-	if err != nil {
-		return nil, errors.Wrapf(err, "creating DynamicClient")
-	}
 	di, err := client.DiscoveryClient()
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating DiscoveryClient")
 	}
 
-	groupResources, err := restmapper.GetAPIGroupResources(di)
-	if err != nil {
-		logger.Errorf("discovering APIGroupResources: %v", err)
-		return nil, errors.Wrapf(err, "mapping APIGroupResources")
-	}
-	rm := restmapper.NewDiscoveryRESTMapper(groupResources)
-
-	opts = append(opts, cache.InformerCacheLoggerOpt(logger))
-	informerCache := cache.NewInformerCache(stopCh, dynamicClient, rm, opts...)
-
 	var pathFilters []pathFilter
 	pathFilters = append(pathFilters, rootDescriber.PathFilters(namespace)...)
 	pathFilters = append(pathFilters, eventsDescriber.PathFilters(namespace)...)
 
-	queryer := queryer.New(informerCache, di)
+	queryer := queryer.New(cache, di)
 
-	g, err := newGenerator(informerCache, queryer, pathFilters, client)
+	// Port Forwarding
+	restClient, err := client.RESTClient()
+	if err != nil {
+		return nil, errors.Wrap(err, "fetching RESTClient")
+	}
+	pfOpts := portforward.PortForwardSvcOptions{
+		RESTClient: restClient,
+		Config:     client.RESTConfig(),
+		Cache:      cache,
+		// TODO -  streams
+		PortForwarder: &portforward.DefaultPortForwarder{
+			IOStreams: portforward.IOStreams{
+				In:     os.Stdin,
+				Out:    os.Stdout,
+				ErrOut: os.Stderr,
+			},
+		},
+	}
+	pfSvc := portforward.NewPortForwardService(ctx, pfOpts, logger)
+	////
+
+	g, err := newGenerator(cache, queryer, pathFilters, client, pfSvc)
 	if err != nil {
 		return nil, errors.Wrap(err, "create overview generator")
 	}
 
 	co := &ClusterOverview{
-		client:    client,
-		logger:    logger,
-		cache:     informerCache,
-		generator: g,
-		stopCh:    stopCh,
+		client:         client,
+		logger:         logger,
+		cache:          cache,
+		generator:      g,
+		portForwardSvc: pfSvc,
 	}
 	return co, nil
 }
@@ -131,16 +121,14 @@ func (co *ClusterOverview) Start() error {
 
 // Stop stops overview.
 func (co *ClusterOverview) Stop() {
-	co.mu.Lock()
-	defer co.mu.Unlock()
-	close(co.stopCh)
-	co.stopCh = nil
+	// NOOP
 }
 
 func (co *ClusterOverview) Content(ctx context.Context, contentPath, prefix, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
 	ctx = log.WithLoggerContext(ctx, co.logger)
 	genOpts := GeneratorOptions{
-		Selector: opts.Selector,
+		Selector:       opts.Selector,
+		PortForwardSvc: co.portForwardSvc,
 	}
 	return co.generator.Generate(ctx, contentPath, prefix, namespace, genOpts)
 }
@@ -156,7 +144,11 @@ type logResponse struct {
 
 func (co *ClusterOverview) Handlers() map[string]http.Handler {
 	return map[string]http.Handler{
-		"/logs/pod/{pod}/container/{container}": containerLogsHandler(co.client),
+		"/logs/pod/{pod}/container/{container}":                   containerLogsHandler(co.client),
+		"/portforward/create/pod/{pod}/port/{port}":               co.portForwardHandler(),
+		"/portforward/create/service/{service}/port/{port}":       co.portForwardHandler(),
+		"/portforward/create/deployment/{deployment}/port/{port}": co.portForwardHandler(),
+		"/portforward/delete/{id}":                                co.portForwardDeleteHandler(),
 	}
 }
 
@@ -215,5 +207,69 @@ func containerLogsHandler(clusterClient cluster.ClientInterface) http.HandlerFun
 		if err := json.NewEncoder(w).Encode(&lr); err != nil {
 			fmt.Println("oops", err)
 		}
+	}
+}
+
+func (co *ClusterOverview) portForwardHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if co.portForwardSvc == nil {
+			http.Error(w, "portforward service is nil", http.StatusInternalServerError)
+			return
+		}
+
+		vars := mux.Vars(r)
+
+		podName := vars["pod"]
+		namespace := vars["namespace"]
+		// serviceName := vars["service"]
+		// deploymentName := vars["deployment"]
+		portStr := vars["port"]
+
+		port, err := strconv.ParseUint(portStr, 10, 16)
+		if err != nil {
+			http.Error(w, errors.Wrapf(err, "invalid port").Error(), http.StatusInternalServerError)
+			return
+		}
+
+		var resp portforward.PortForwardCreateResponse
+		switch {
+		case podName != "":
+			gvk := schema.GroupVersionKind{
+				Group:   "",
+				Version: "v1",
+				Kind:    "Pod",
+			}
+			resp, err = co.portForwardSvc.Create(gvk, podName, namespace, uint16(port))
+			if err != nil {
+				http.Error(w, errors.Wrapf(err, "creating forwarder for pod").Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+
+		w.Header().Set("Content-Type", mime.JSONContentType)
+		w.WriteHeader(http.StatusOK)
+
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			co.logger.Errorf("encoding JSON response: %v", err)
+		}
+	}
+}
+
+func (co *ClusterOverview) portForwardDeleteHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if co.portForwardSvc == nil {
+			http.Error(w, "portforward service is nil", http.StatusInternalServerError)
+			return
+		}
+
+		vars := mux.Vars(r)
+
+		id := vars["id"]
+
+		co.logger.Debugf("Stopping port forwarder %s", id)
+		co.portForwardSvc.StopForwarder(id)
+
+		w.WriteHeader(http.StatusOK)
+		http.Redirect(w, r, "/content/overview/portforward", 302)
 	}
 }

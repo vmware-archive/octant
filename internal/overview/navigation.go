@@ -15,6 +15,7 @@ var (
 		"Custom Resources":             "custom-resources",
 		"RBAC":                         "rbac",
 		"Events":                       "events",
+		"Port Forwarding":              "portforward",
 	}
 )
 
@@ -61,6 +62,7 @@ func (nf *NavigationFactory) Entries() (*hcli.Navigation, error) {
 			nf.genNode("Custom Resources", nil),
 			nf.genNode("RBAC", nf.rbacEntries),
 			nf.genNode("Events", nil),
+			nf.genNode("Port Forwarding", nil),
 		},
 	}
 

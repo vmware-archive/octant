@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -102,7 +103,8 @@ func TestAPI_routes(t *testing.T) {
 
 			nsClient := fake.NewNamespaceClient([]string{"default"}, nil, "default")
 			infoClient := fake.ClusterInfo{}
-			srv := New("/", nsClient, infoClient, manager, log.NopLogger())
+			ctx := context.Background()
+			srv := New(ctx, "/", nsClient, infoClient, manager, log.NopLogger())
 
 			err := srv.RegisterModule(m)
 			require.NoError(t, err)

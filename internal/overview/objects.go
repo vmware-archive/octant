@@ -188,6 +188,7 @@ var (
 		configAndStorageDescriber,
 		customResourcesDescriber,
 		rbacDescriber,
+		portForwardDescriber,
 	)
 
 	eventsDescriber = NewResource(ResourceOptions{
@@ -198,4 +199,6 @@ var (
 		Titles:                ResourceTitle{List: "Events", Object: "Event"},
 		DisableResourceViewer: true,
 	})
+
+	portForwardDescriber = NewPortForwardListDescriber()
 )

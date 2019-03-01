@@ -45,7 +45,9 @@ func (h *contentHandler) registerModuleRoute(router module.Router, m module.Modu
 	ns := parent.PathPrefix("/namespace/{namespace}").Subrouter()
 
 	for path, handler := range m.Handlers() {
+		// Namespace is optional, so register two alternatives
 		ns.Handle(path, handler)
+		parent.Handle(path, handler)
 	}
 
 	// Namespace is optional, so register two alternatives
