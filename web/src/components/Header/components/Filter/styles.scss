@@ -1,0 +1,98 @@
+@import '~css/variables/variables.scss';
+
+$borderRadius: 4px;
+$paddingPx: 8px;
+
+.header-filter-component {
+  width: 500px;
+
+  .header-filter-input-wrapper {
+    display: flex;
+    flex-direction: row;
+
+    .header-filter-input {
+      flex: 1;
+      position: relative;
+
+      input[type="text"] {
+        @include semiBold;
+        background-color: $blue-dark;
+
+        border-top: 1px solid $dividerColor;
+        border-bottom: 1px solid $dividerColor;
+        border-left: 1px solid $dividerColor;
+        border-right: 1px solid $dividerColor;
+
+        border-radius: 4px 0 0 4px;
+
+        color: $white;
+        font-size: 16px;
+        margin-bottom: 0;
+        margin-top: 0;
+        outline: none;
+        height: 34px;
+        width: 100%;
+        padding-left: 8px;
+
+        &::placeholder {
+          color: $gray-dark;
+        }
+      }
+    }
+
+    .header-filter-downarrow {
+      padding: 6px 4px 0 4px;
+      background-color: $blue-dark;
+
+      border-radius: 0 4px 4px 0;
+      border-top: 1px solid $dividerColor;
+      border-right: 1px solid $dividerColor;
+      border-bottom: 1px solid $dividerColor;
+      border-left: 0;
+    }
+  }
+
+  .header-filter-tagslist {
+    background-color: $blue-dark;
+    border-right: 1px solid $dividerColor;
+    border-bottom: 1px solid $dividerColor;
+    border-left: 1px solid $dividerColor;
+    border-radius: 0 0 $borderRadius $borderRadius;
+    max-height: 150px;
+    padding: $paddingPx $paddingPx 0 $paddingPx;
+    overflow-y: auto;
+
+    &-text {
+      @include semiBold;
+      color: $gray-dark;
+      font-size: 16px;
+      margin-bottom: $paddingPx;
+      text-align: center;
+      padding: $paddingPx;
+    }
+
+    &-row {
+      display: inline-block;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    &-tag {
+      @include resourceLabel;
+      display: inline-block;
+      font-size: 12px;
+      padding: 2px 3px;
+      height: 24px;
+      background-color: $blue-dark;
+    }
+
+    &-remove {
+      cursor: pointer;
+      font-weight: bold;
+
+      &::before {
+        content: " \D7";
+      }
+    }
+  }
+}

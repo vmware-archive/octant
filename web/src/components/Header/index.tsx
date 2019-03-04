@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import Select from 'react-select'
-import TagsInput from 'react-tagsinput'
-import 'react-tagsinput/react-tagsinput.css'
+import Filter from './components/Filter'
 
 import './styles.scss'
 
@@ -48,10 +47,9 @@ export default class extends Component<Props> {
             />
           </div>
           <div className='header--filter'>
-            <TagsInput
-              inputProps={{ placeholder: 'Filter by label' }}
-              value={resourceFilters}
-              onChange={onResourceFiltersChange}
+            <Filter
+              resourceFilters={resourceFilters}
+              onResourceFiltersChange={onResourceFiltersChange}
             />
           </div>
           <div className='header--context'>kubecontext</div>

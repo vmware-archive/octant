@@ -44,9 +44,7 @@
       height: 100%;
 
       &__control {
-
         background-color: $headerBGColor;
-
         border: none;
         box-shadow: none;
         color: $white;
@@ -55,7 +53,6 @@
 
       &__value-container, &__input, &__single-value, &__input input {
         @include semiBold;
-
         color: $white;
       }
 
@@ -68,7 +65,6 @@
       }
 
       &__menu {
-
         background-color: $headerBGColor;
         border-bottom-left-radius: 6px;
         border-bottom-right-radius: 6px;
@@ -76,7 +72,6 @@
       }
 
       &__menu-list {
-
         background-color: $headerBGColor;
         border-bottom-left-radius: 6px;
         border-bottom-right-radius: 6px;
@@ -110,36 +105,6 @@
     border-right: 1px solid $dividerColor;
     flex: 3;
     padding: 13px $navLeftPadding;
-
-    .react-tagsinput {
-      @include semiBold;
-      background-color: $blue-dark;
-      border: 1px solid $blue-dark;
-      border-radius: 4px;
-      height: 34px;
-      width: 500px;
-
-      &-input {
-        @include semiBold;
-        color: $white;
-        font-size: 16px;
-        height: 22px;
-        margin-bottom: 0;
-        margin-top: 0;
-        outline: none;
-        width: 250px;
-
-        &::placeholder {
-          color: $gray-dark;
-        }
-      }
-
-      &-tag {
-        @include resourceLabel;
-        font-size: 12px;
-        padding: 2px 3px;
-      }
-    }
   }
 
   .header--context {

@@ -11,8 +11,8 @@
 
 
   .app-page {
-    flex: 1;
     display: flex;
+    flex: 1;
     flex-direction: column;
   }
 
@@ -25,12 +25,12 @@
   }
 
   .app-main {
+    display: flex;
     flex: 1;
+    flex-direction: column;
     left: $navWidth;
     position: relative;
     width: calc(100% - #{$navWidth});
-    display: flex;
-    flex-direction: column;
 
   }
 }

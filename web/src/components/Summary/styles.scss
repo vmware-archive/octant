@@ -26,8 +26,8 @@ $border-color: rgba(173, 187, 196, 0.3);
 
     th {
       @include bold;
-      text-align: left;
       padding-right: 30px;
+      text-align: left;
       white-space: nowrap;
     }
   }

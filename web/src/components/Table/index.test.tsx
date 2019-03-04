@@ -39,7 +39,7 @@ describe('render table', () => {
   })
 
   describe('with no title', () => {
-    const table = mount(<Table view={view} noHeader={true}/>)
+    const table = mount(<Table view={view} noHeader={true} />)
 
     test('it does not draw a title', () => {
       expect(table.exists('.table-component-title')).toBe(false)

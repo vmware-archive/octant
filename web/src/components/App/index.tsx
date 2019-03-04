@@ -61,7 +61,7 @@ class App extends Component<RouteComponentProps, AppState> {
     const namespace = namespaceOption.value
     const prevNamespace = previousNamespace.value
 
-    if ((location.pathname !== previousLocation.pathname) || (namespace !== prevNamespace)) {
+    if (location.pathname !== previousLocation.pathname || namespace !== prevNamespace) {
       this.setEventSourceStream(location.pathname, namespace)
     }
 
@@ -95,7 +95,7 @@ class App extends Component<RouteComponentProps, AppState> {
     const url = getContentsUrl(path, namespace, params)
 
     this.source = new window.EventSource(`${getAPIBase()}/${url}`)
-    this.setState({isLoading: true})
+    this.setState({ isLoading: true })
 
     this.source.addEventListener('message', (e) => {
       const contentResponse = Parse(e.data)

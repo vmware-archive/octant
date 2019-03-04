@@ -1,12 +1,12 @@
 @import '~css/variables/variables.scss';
 
 .viewSummary {
-  color: #e9ecef;
-  font-size: 12px;
-  max-width: 275px;
 
   background-color: #17242b;
+  color: #e9ecef;
   flex: 0 0 250px;
+  font-size: 12px;
+  max-width: 275px;
 }
 
 .viewSummary--title {
@@ -60,8 +60,8 @@
   }
 
   li:before {
+    color: $blue-light;
     content: '•';
     padding-right: 8px;
-    color: $blue-light;
   }
 }

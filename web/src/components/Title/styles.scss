@@ -2,12 +2,12 @@
 
 .component--title {
   align-items: center;
+  background-color: $blue-dark;
   display: flex;
   height: 50px;
   padding-left: 50px;
-  width: 100%;
   position: fixed;
-  background-color: $blue-dark;
+  width: 100%;
 
   h2 {
     @include metropolis;

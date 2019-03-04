@@ -8,8 +8,8 @@
 .flexLayout--section-item {
   flex-grow: 0;
   flex-shrink: 0;
-  overflow-x: scroll;
   margin: 0 30px 30px 0;
+  overflow-x: scroll;
 
   &:first-child {
     margin-left: 0;

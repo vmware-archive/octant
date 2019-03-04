@@ -79,8 +79,8 @@ export function getContentsUrl(path: string, namespace: string, params?: Content
   if (!path || path === '/') return null
 
   // Inject the new namespace into the path
-  let re = /\/namespace\/([^/]+)\//
-  path = path.replace(re, "/namespace/" + namespace + "/")
+  const re = /\/namespace\/([^/]+)\//
+  path = path.replace(re, '/namespace/' + namespace + '/')
 
   if (params) path += `?${queryString.stringify(params)}`
   return `api/v1${path}`
