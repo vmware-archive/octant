@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"StatefulSet","metadata":{"annotations":{},"labels":{"project":"dev-dashboard"},"name":"web","namespace":"default"},"spec":{"replicas":3,"selector":{"matchLabels":{"app":"stateful"}},"serviceName":"nginx","template":{"metadata":{"labels":{"app":"stateful"}},"spec":{"containers":[{"image":"nginx:1.7.9","name":"nginx","ports":[{"containerPort":80,"name":"web"}],"volumeMounts":[{"mountPath":"/usr/share/nginx/html","name":"www"}]}],"terminationGracePeriodSeconds":10}},"volumeClaimTemplates":[{"metadata":{"name":"www"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"hostpath"}}]}}
+  creationTimestamp: "2019-03-05T17:20:09Z"
+  generation: 1
+  labels:
+    project: dev-dashboard
+  name: web
+  namespace: default
+  resourceVersion: "1217601"
+  selfLink: /apis/apps/v1/namespaces/default/statefulsets/web
+  uid: ed730e9b-3f6a-11e9-91d0-025000000001
+spec:
+  podManagementPolicy: OrderedReady
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: stateful
+  serviceName: nginx
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: stateful
+    spec:
+      containers:
+        - image: nginx:1.7.9
+          imagePullPolicy: IfNotPresent
+          name: nginx
+          ports:
+            - containerPort: 80
+              name: web
+              protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /usr/share/nginx/html
+              name: www
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 10
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+  volumeClaimTemplates:
+    - metadata:
+        creationTimestamp: null
+        name: www
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        dataSource: null
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: hostpath
+        volumeMode: Filesystem
+      status:
+        phase: Pending
+status:
+  collisionCount: 0
+  currentReplicas: 3
+  currentRevision: web-5857ddd8fb
+  observedGeneration: 1
+  readyReplicas: 3
+  replicas: 3
+  updateRevision: web-5857ddd8fb
+  updatedReplicas: 3

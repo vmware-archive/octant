@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Endpoints
+metadata:
+  creationTimestamp: "2019-03-05T17:20:09Z"
+  labels:
+    project: dev-dashboard
+  name: stateful
+  namespace: default
+  resourceVersion: "1217600"
+  selfLink: /api/v1/namespaces/default/endpoints/stateful
+  uid: ed736467-3f6a-11e9-91d0-025000000001
+subsets:
+  - addresses:
+      - ip: 10.1.85.145
+        nodeName: docker-desktop
+        targetRef:
+          kind: Pod
+          name: web-0
+          namespace: default
+          resourceVersion: "1217525"
+          uid: ed85e9f9-3f6a-11e9-91d0-025000000001
+      - ip: 10.1.85.146
+        nodeName: docker-desktop
+        targetRef:
+          kind: Pod
+          name: web-1
+          namespace: default
+          resourceVersion: "1217563"
+          uid: eee6801a-3f6a-11e9-91d0-025000000001
+      - ip: 10.1.85.147
+        nodeName: docker-desktop
+        targetRef:
+          kind: Pod
+          name: web-2
+          namespace: default
+          resourceVersion: "1217599"
+          uid: f02232bc-3f6a-11e9-91d0-025000000001
+    ports:
+      - name: web
+        port: 80
+        protocol: TCP

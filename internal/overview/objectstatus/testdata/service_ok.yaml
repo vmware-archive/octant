@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"project":"dev-dashboard"},"name":"stateful","namespace":"default"},"spec":{"ports":[{"name":"web","port":80}],"selector":{"app":"stateful"}}}
+  creationTimestamp: "2019-03-05T17:20:09Z"
+  labels:
+    project: dev-dashboard
+  name: stateful
+  namespace: default
+  resourceVersion: "1217486"
+  selfLink: /api/v1/namespaces/default/services/stateful
+  uid: ed6e2bd8-3f6a-11e9-91d0-025000000001
+spec:
+  clusterIP: 10.105.16.37
+  ports:
+  - name: web
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: stateful
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
