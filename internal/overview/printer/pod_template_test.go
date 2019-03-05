@@ -1,4 +1,4 @@
-package printer_test
+package printer
 
 import (
 	"testing"
@@ -8,7 +8,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/internal/view/gridlayout"
 )
@@ -23,7 +22,7 @@ func TestPodTemplate(t *testing.T) {
 		},
 	}
 
-	pt := printer.NewPodTemplate(parentPod, podTemplateSpec)
+	pt := NewPodTemplate(parentPod, podTemplateSpec)
 	err := pt.AddToGridLayout(gl)
 	require.NoError(t, err)
 
@@ -48,7 +47,7 @@ func TestPodTemplateHeader(t *testing.T) {
 		"key": "value",
 	}
 
-	pth := printer.NewPodTemplateHeader(labels)
+	pth := NewPodTemplateHeader(labels)
 	got, err := pth.Create()
 
 	require.NoError(t, err)

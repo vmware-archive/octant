@@ -10,13 +10,20 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/cluster/fake"
+	"github.com/golang/mock/gomock"
+
+	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	modulefake "github.com/heptio/developer-dash/internal/module/fake"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+type testMocks struct {
+	namespace *clusterfake.MockNamespaceInterface
+	info      *clusterfake.MockInfoInterface
+}
 
 func TestAPI_routes(t *testing.T) {
 	cases := []struct {
@@ -97,14 +104,27 @@ func TestAPI_routes(t *testing.T) {
 	for _, tc := range cases {
 		name := fmt.Sprintf("%s: %s", tc.method, tc.path)
 		t.Run(name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			mocks := &testMocks{
+				namespace: clusterfake.NewMockNamespaceInterface(controller),
+				info:      clusterfake.NewMockInfoInterface(controller),
+			}
+
+			mocks.info.EXPECT().Context().Return("main-context").AnyTimes()
+			mocks.info.EXPECT().Cluster().Return("my-cluster").AnyTimes()
+			mocks.info.EXPECT().Server().Return("https://localhost:6443").AnyTimes()
+			mocks.info.EXPECT().User().Return("me-of-course").AnyTimes()
+
+			mocks.namespace.EXPECT().Names().Return([]string{"default"}, nil).AnyTimes()
+
 			m := modulefake.NewModule("module", log.NopLogger())
 
 			manager := modulefake.NewStubManager("default", []module.Module{m})
 
-			nsClient := fake.NewNamespaceClient([]string{"default"}, nil, "default")
-			infoClient := fake.ClusterInfo{}
 			ctx := context.Background()
-			srv := New(ctx, "/", nsClient, infoClient, manager, log.NopLogger())
+			srv := New(ctx, "/", mocks.namespace, mocks.info, manager, log.NopLogger())
 
 			err := srv.RegisterModule(m)
 			require.NoError(t, err)

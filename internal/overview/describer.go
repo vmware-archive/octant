@@ -4,32 +4,33 @@ import (
 	"context"
 	"reflect"
 
+	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/overview/logviewer"
+	"github.com/heptio/developer-dash/internal/overview/printer"
+	"github.com/heptio/developer-dash/internal/overview/resourceviewer"
 	"github.com/heptio/developer-dash/internal/overview/yamlviewer"
 	"github.com/heptio/developer-dash/internal/portforward"
-
 	"github.com/heptio/developer-dash/internal/queryer"
-
-	"github.com/heptio/developer-dash/internal/overview/resourceviewer"
-
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/view/component"
-
-	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/labels"
+	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
 )
 
+const (
+	resourceNameRegex = "(?P<name>.*?)"
+)
+
+// LoaderFunc loads an object from the cache.
 type LoaderFunc func(ctx context.Context, c cache.Cache, namespace string, fields map[string]string) (*unstructured.Unstructured, error)
 
-// Returns a loader that loads a single object from the cache
+// DefaultLoader returns a loader that loads a single object from the cache
 var DefaultLoader = func(cacheKey cache.Key) LoaderFunc {
 	return func(ctx context.Context, c cache.Cache, namespace string, fields map[string]string) (*unstructured.Unstructured, error) {
 		return loadObject(ctx, c, namespace, fields, cacheKey)
@@ -42,14 +43,14 @@ type DescriberOptions struct {
 	Cache          cache.Cache
 	Fields         map[string]string
 	Printer        printer.Printer
-	Selector       labels.Selector
+	Selector       kLabels.Selector
 	PortForwardSvc portforward.PortForwardInterface
 }
 
 // Describer creates content.
 type Describer interface {
 	Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error)
-	PathFilters(namespace string) []pathFilter
+	PathFilters() []pathFilter
 }
 
 type baseDescriber struct{}
@@ -58,6 +59,7 @@ func newBaseDescriber() *baseDescriber {
 	return &baseDescriber{}
 }
 
+// ListDescriber describes a list of objects.
 type ListDescriber struct {
 	*baseDescriber
 
@@ -68,6 +70,7 @@ type ListDescriber struct {
 	cacheKey   cache.Key
 }
 
+// NewListDescriber creates an instance of ListDescriber.
 func NewListDescriber(p, title string, cacheKey cache.Key, listType, objectType func() interface{}) *ListDescriber {
 	return &ListDescriber{
 		path:          p,
@@ -136,12 +139,14 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 	}, nil
 }
 
-func (d *ListDescriber) PathFilters(namespace string) []pathFilter {
+// PathFilters returns path filters for this describer.
+func (d *ListDescriber) PathFilters() []pathFilter {
 	return []pathFilter{
 		*newPathFilter(d.path, d),
 	}
 }
 
+// ObjectDescriber describes an object.
 type ObjectDescriber struct {
 	*baseDescriber
 
@@ -152,6 +157,7 @@ type ObjectDescriber struct {
 	disableResourceViewer bool
 }
 
+// NewObjectDescriber creates an instance of ObjectDescriber.
 func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType func() interface{}, disableResourceViewer bool) *ObjectDescriber {
 	return &ObjectDescriber{
 		path:                  p,
@@ -163,6 +169,7 @@ func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType f
 	}
 }
 
+// Describe describes an object.
 func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
 	logger := log.From(ctx)
 
@@ -252,7 +259,7 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 	return *cr, nil
 }
 
-func (d *ObjectDescriber) PathFilters(namespace string) []pathFilter {
+func (d *ObjectDescriber) PathFilters() []pathFilter {
 	return []pathFilter{
 		*newPathFilter(d.path, d),
 	}
@@ -332,13 +339,13 @@ func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace strin
 	return cr, nil
 }
 
-func (d *SectionDescriber) PathFilters(namespace string) []pathFilter {
+func (d *SectionDescriber) PathFilters() []pathFilter {
 	pathFilters := []pathFilter{
 		*newPathFilter(d.path, d),
 	}
 
 	for _, child := range d.describers {
-		pathFilters = append(pathFilters, child.PathFilters(namespace)...)
+		pathFilters = append(pathFilters, child.PathFilters()...)
 	}
 
 	return pathFilters

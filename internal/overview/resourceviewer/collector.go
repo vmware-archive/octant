@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"sync"
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/overview/link"
@@ -30,6 +31,8 @@ type Collector struct {
 	podStats map[string]int
 
 	cache cache.Cache
+
+	mu sync.Mutex
 }
 
 var _ objectvisitor.ObjectHandler = (*Collector)(nil)
@@ -53,6 +56,9 @@ func (c *Collector) Reset() {
 
 // Process process an object by saving the object to a map.
 func (c *Collector) Process(object objectvisitor.ClusterObject) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	var uid string
 	var node component.Node
 	var err error
@@ -65,6 +71,7 @@ func (c *Collector) Process(object objectvisitor.ClusterObject) error {
 
 		if ownerReference := metav1.GetControllerOf(pod); ownerReference != nil {
 			c.podStats[string(ownerReference.UID)]++
+
 		}
 
 		uid, node, err = c.createPodGroupNode(object)
@@ -191,6 +198,9 @@ func (c *Collector) createObjectNode(object objectvisitor.ClusterObject) (string
 
 // AddChild adds children for an object to create edges. Pods are collated to a single object.
 func (c *Collector) AddChild(parent objectvisitor.ClusterObject, children ...objectvisitor.ClusterObject) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	accessor := meta.NewAccessor()
 	pid, err := accessor.UID(parent)
 	if err != nil {
@@ -264,6 +274,9 @@ func (c *Collector) podGroupDetails(object objectvisitor.ClusterObject) (podGrou
 }
 
 func (c *Collector) ViewComponent(selected string) (component.ViewComponent, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	rv := component.NewResourceViewer("Resource Viewer")
 
 	var nodeIDs []string

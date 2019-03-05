@@ -1,22 +1,26 @@
-package printer_test
+package printer
 
 import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	"github.com/heptio/developer-dash/internal/conversion"
+	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/overview/printer"
 )
 
 func Test_PodListHandler(t *testing.T) {
-	printOptions := printer.Options{
-		Cache: cache.NewMemoryCache(),
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	printOptions := Options{
+		Cache: cachefake.NewMockCache(controller),
 	}
 
 	labels := map[string]string{
@@ -74,7 +78,7 @@ func Test_PodListHandler(t *testing.T) {
 		},
 	}
 
-	got, err := printer.PodListHandler(object, printOptions)
+	got, err := PodListHandler(object, printOptions)
 	require.NoError(t, err)
 
 	containers := component.NewContainers()
@@ -106,7 +110,7 @@ var (
 					APIVersion: "v1",
 					Kind:       "ReplicationController",
 					Name:       "myreplicationcontroller",
-					Controller: ptrbool(true),
+					Controller: conversion.PtrBool(true),
 				},
 			},
 			CreationTimestamp: metav1.Time{
@@ -115,10 +119,10 @@ var (
 			DeletionTimestamp: &metav1.Time{
 				Time: now,
 			},
-			DeletionGracePeriodSeconds: ptr64(30),
+			DeletionGracePeriodSeconds: conversion.PtrInt64(30),
 		},
 		Spec: corev1.PodSpec{
-			Priority:           ptrInt32(1000000),
+			Priority:           conversion.PtrInt32(1000000),
 			PriorityClassName:  "high-priority",
 			ServiceAccountName: "default",
 		},
@@ -199,7 +203,7 @@ func Test_PodConfiguration(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			cc := printer.NewPodConfiguration(tc.pod)
+			cc := NewPodConfiguration(tc.pod)
 			summary, err := cc.Create()
 			if tc.isErr {
 				require.Error(t, err)
@@ -210,4 +214,16 @@ func Test_PodConfiguration(t *testing.T) {
 			assert.Equal(t, tc.expected, summary)
 		})
 	}
+}
+
+func createPodWithPhase(name string, podLabels map[string]string, phase corev1.PodPhase, owner *metav1.OwnerReference) *corev1.Pod {
+	pod := testutil.CreatePod(name)
+	pod.Namespace = "testing"
+	pod.Labels = podLabels
+	pod.Status.Phase = phase
+
+	if owner != nil {
+		pod.SetOwnerReferences([]metav1.OwnerReference{*owner})
+	}
+	return pod
 }

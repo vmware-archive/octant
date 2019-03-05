@@ -1,14 +1,15 @@
-package printer_test
+package printer
 
 import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/overview/printer"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	"github.com/heptio/developer-dash/internal/conversion"
 	"github.com/heptio/developer-dash/internal/view/component"
 
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
@@ -16,8 +17,11 @@ import (
 )
 
 func Test_CronJobListHandler(t *testing.T) {
-	printOptions := printer.Options{
-		Cache: cache.NewMemoryCache(),
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	printOptions := Options{
+		Cache: cachefake.NewMockCache(controller),
 	}
 
 	labels := map[string]string{
@@ -49,7 +53,7 @@ func Test_CronJobListHandler(t *testing.T) {
 		},
 	}
 
-	got, err := printer.CronJobListHandler(object, printOptions)
+	got, err := CronJobListHandler(object, printOptions)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Schedule", "Age")
@@ -79,11 +83,11 @@ func TestCronJobConfiguration(t *testing.T) {
 		},
 		Spec: batchv1beta1.CronJobSpec{
 			Schedule:                   "*/1 * * * *",
-			StartingDeadlineSeconds:    ptr64(200),
+			StartingDeadlineSeconds:    conversion.PtrInt64(200),
 			ConcurrencyPolicy:          batchv1beta1.ForbidConcurrent,
 			Suspend:                    &suspend,
-			SuccessfulJobsHistoryLimit: ptrInt32(3),
-			FailedJobsHistoryLimit:     ptrInt32(1),
+			SuccessfulJobsHistoryLimit: conversion.PtrInt32(3),
+			FailedJobsHistoryLimit:     conversion.PtrInt32(1),
 		},
 		Status: batchv1beta1.CronJobStatus{
 			LastScheduleTime: &metav1.Time{
@@ -141,7 +145,7 @@ func TestCronJobConfiguration(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			cc := printer.NewCronJobConfiguration(tc.cronjob)
+			cc := NewCronJobConfiguration(tc.cronjob)
 
 			summary, err := cc.Create()
 			if tc.isErr {

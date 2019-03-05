@@ -10,9 +10,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
-	"k8s.io/client-go/restmapper"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -40,6 +38,8 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Lo
 		return errors.Wrap(err, "failed to init cluster client")
 	}
 
+	ctx = log.WithLoggerContext(ctx, logger)
+
 	nsClient, err := clusterClient.NamespaceClient()
 	if err != nil {
 		return errors.Wrap(err, "failed to create namespace client")
@@ -57,12 +57,12 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Lo
 		return errors.Wrap(err, "failed to create info client")
 	}
 
-	cache, err := initCache(ctx.Done(), clusterClient, logger)
+	appCache, err := initCache(ctx.Done(), clusterClient, logger)
 	if err != nil {
 		return errors.Wrap(err, "initializing cache")
 	}
 
-	moduleManager, err := initModuleManager(ctx, clusterClient, cache, namespace, logger)
+	moduleManager, err := initModuleManager(ctx, clusterClient, appCache, namespace, logger)
 	if err != nil {
 		return errors.Wrap(err, "init module manager")
 	}
@@ -103,44 +103,16 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Lo
 
 // initCache initializes the cluster cache interface
 func initCache(stopCh <-chan struct{}, client cluster.ClientInterface, logger log.Logger) (cache.Cache, error) {
-	var opts []cache.InformerCacheOpt
-
-	if os.Getenv("DASH_VERBOSE_CACHE") != "" {
-		ch := make(chan cache.Notification)
-
-		go func() {
-			for notif := range ch {
-				spew.Dump(notif)
-			}
-		}()
-
-		opts = append(opts, cache.InformerCacheNotificationOpt(ch, stopCh))
-	}
-
 	if client == nil {
 		return nil, errors.New("nil cluster client")
 	}
 
-	dynamicClient, err := client.DynamicClient()
+	appCache, err := cache.NewDynamicCache(client, stopCh)
 	if err != nil {
-		return nil, errors.Wrapf(err, "creating DynamicClient")
-	}
-	di, err := client.DiscoveryClient()
-	if err != nil {
-		return nil, errors.Wrapf(err, "creating DiscoveryClient")
+		return nil, errors.Wrapf(err, "creating cache for app")
 	}
 
-	groupResources, err := restmapper.GetAPIGroupResources(di)
-	if err != nil {
-		logger.Errorf("discovering APIGroupResources: %v", err)
-		return nil, errors.Wrapf(err, "mapping APIGroupResources")
-	}
-	rm := restmapper.NewDiscoveryRESTMapper(groupResources)
-
-	opts = append(opts, cache.InformerCacheLoggerOpt(logger))
-	informerCache := cache.NewInformerCache(stopCh, dynamicClient, rm, opts...)
-
-	return informerCache, nil
+	return appCache, nil
 }
 
 // initModuleManager initializes the moduleManager (and currently the modules themselves)

@@ -1,6 +1,10 @@
 package objectvisitor
 
 import (
+	"sync"
+
+	"golang.org/x/sync/errgroup"
+
 	"github.com/heptio/developer-dash/internal/gvk"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/pkg/errors"
@@ -86,6 +90,7 @@ type DefaultVisitor struct {
 	queryer        queryer.Queryer
 	handlerFactory ObjectHandlerFactory
 	visited        map[types.UID]bool
+	visitedMu      sync.Mutex
 }
 
 var _ Visitor = (*DefaultVisitor)(nil)
@@ -107,6 +112,9 @@ func NewDefaultVisitor(q queryer.Queryer, factory ObjectHandlerFactory) (*Defaul
 // object has not been visited, it returns false, and sets the object
 // visit status to true.
 func (dv *DefaultVisitor) hasVisited(object runtime.Object) (bool, error) {
+	dv.visitedMu.Lock()
+	defer dv.visitedMu.Unlock()
+
 	accessor := meta.NewAccessor()
 	uid, err := accessor.UID(object)
 	if err != nil {
@@ -130,7 +138,7 @@ func (dv *DefaultVisitor) Visit(object ClusterObject) error {
 
 	hasVisited, err := dv.hasVisited(object)
 	if err != nil {
-		return errors.Wrap(err, "visit object")
+		return errors.Wrap(err, "check for visit object")
 	}
 	if hasVisited {
 		return nil
@@ -226,21 +234,27 @@ func (dv *DefaultVisitor) handleObject(object ClusterObject, visitorObject Objec
 
 	u := &unstructured.Unstructured{Object: m}
 
+	var g errgroup.Group
+
 	for _, ownerReference := range u.GetOwnerReferences() {
-		o, err := dv.queryer.OwnerReference(u.GetNamespace(), ownerReference)
-		if err != nil {
-			return err
-		}
+		g.Go(func() error {
+			o, err := dv.queryer.OwnerReference(u.GetNamespace(), ownerReference)
+			if err != nil {
+				return err
+			}
 
-		owner := o.(ClusterObject)
+			owner := o.(ClusterObject)
 
-		if object == nil {
-			continue
-		}
+			if object == nil {
+				return nil
+			}
 
-		if err := dv.Visit(owner); err != nil {
-			return err
-		}
+			if err := dv.Visit(owner); err != nil {
+				return err
+			}
+
+			return nil
+		})
 	}
 
 	children, err := dv.queryer.Children(u)
@@ -248,16 +262,24 @@ func (dv *DefaultVisitor) handleObject(object ClusterObject, visitorObject Objec
 		return err
 	}
 
-	for _, child := range children {
-		o := child.(ClusterObject)
+	for i := range children {
+		index := i
+		g.Go(func() error {
+			o := children[index].(ClusterObject)
+			if err := dv.Visit(o); err != nil {
+				return err
+			}
 
-		if err := dv.Visit(o); err != nil {
-			return err
-		}
+			if err := visitorObject.AddChild(object, o); err != nil {
+				return errors.Wrap(err, "add child")
+			}
 
-		if err := visitorObject.AddChild(object, o); err != nil {
-			return errors.Wrap(err, "add child")
-		}
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return err
 	}
 
 	return visitorObject.Process(object)
@@ -266,6 +288,7 @@ func (dv *DefaultVisitor) handleObject(object ClusterObject, visitorObject Objec
 // visitObject visits an object. If the object is a service, ingress, or pod, it
 // also runs custom visitor code for them.
 func (dv *DefaultVisitor) visitObject(object ClusterObject, visitorObject ObjectHandler) error {
+
 	if object == nil {
 		return errors.New("can't visit a nil object")
 	}

@@ -4,7 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/golang/mock/gomock"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
@@ -15,8 +16,11 @@ import (
 )
 
 func Test_DaemonSetListHandler(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	printOptions := Options{
-		Cache: cache.NewMemoryCache(),
+		Cache: cachefake.NewMockCache(controller),
 	}
 
 	labels := map[string]string{

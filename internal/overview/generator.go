@@ -4,18 +4,17 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"sync"
-
-	"github.com/heptio/developer-dash/internal/queryer"
-	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/portforward"
+	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/internal/view/component"
-
-	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/pkg/errors"
+	kLabels "k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/discovery"
 )
 
 type pathFilter struct {
@@ -33,6 +32,10 @@ func newPathFilter(path string, describer Describer) *pathFilter {
 		path:      path,
 		describer: describer,
 	}
+}
+
+func (pf *pathFilter) String() string {
+	return pf.path
 }
 
 func (pf *pathFilter) Match(path string) bool {
@@ -54,71 +57,71 @@ func (pf *pathFilter) Fields(path string) map[string]string {
 	return out
 }
 
-var contentNotFound = errors.Errorf("content not found")
-
 type realGenerator struct {
-	cache          cache.Cache
-	queryer        queryer.Queryer // Queryer is used by the ResourceViewer and should not be filtered
-	pathFilters    []pathFilter
-	clusterClient  cluster.ClientInterface
-	printer        printer.Printer
-	portForwardSvc portforward.PortForwardInterface
-
-	mu sync.Mutex
+	cache              cache.Cache
+	pathMatcher        *pathMatcher
+	clusterClient      cluster.ClientInterface
+	printer            printer.Printer
+	portForwardSvc     portforward.PortForwardInterface
+	discoveryInterface discovery.DiscoveryInterface
 }
 
 // GeneratorOptions are additional options to pass a generator
 type GeneratorOptions struct {
-	Selector       labels.Selector
+	Selector       kLabels.Selector
 	PortForwardSvc portforward.PortForwardInterface
 }
 
-func newGenerator(cache cache.Cache, q queryer.Queryer, pathFilters []pathFilter, clusterClient cluster.ClientInterface, portForwardSvc portforward.PortForwardInterface) (*realGenerator, error) {
+func newGenerator(cache cache.Cache, di discovery.DiscoveryInterface, pm *pathMatcher, clusterClient cluster.ClientInterface, portForwardSvc portforward.PortForwardInterface) (*realGenerator, error) {
 	p := printer.NewResource(cache)
 
 	if err := AddPrintHandlers(p); err != nil {
 		return nil, errors.Wrap(err, "add print handlers")
 	}
 
+	if pm == nil {
+		return nil, errors.New("path matcher is nil")
+	}
+
 	return &realGenerator{
-		cache:          cache,
-		queryer:        q,
-		pathFilters:    pathFilters,
-		clusterClient:  clusterClient,
-		portForwardSvc: portForwardSvc,
-		printer:        p,
+		cache:              cache,
+		discoveryInterface: di,
+		pathMatcher:        pm,
+		clusterClient:      clusterClient,
+		portForwardSvc:     portForwardSvc,
+		printer:            p,
 	}, nil
 }
 
 func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace string, opts GeneratorOptions) (component.ContentResponse, error) {
-	g.mu.Lock()
-	defer g.mu.Unlock()
+	logger := log.From(ctx)
 
-	for _, pf := range g.pathFilters {
-		if !pf.Match(path) {
-			continue
+	pf, err := g.pathMatcher.Find(path)
+	if err != nil {
+		if err == errPathNotFound {
+			logger.Errorf("content not found for %q", path)
 		}
-
-		fields := pf.Fields(path)
-		options := DescriberOptions{
-			Cache:          g.cache,
-			Queryer:        g.queryer,
-			Fields:         fields,
-			Printer:        g.printer,
-			Selector:       opts.Selector,
-			PortForwardSvc: opts.PortForwardSvc,
-		}
-
-		cResponse, err := pf.describer.Describe(ctx, prefix, namespace, g.clusterClient, options)
-		if err != nil {
-			return emptyContentResponse, err
-		}
-
-		return cResponse, nil
+		return emptyContentResponse, err
 	}
 
-	fmt.Println("content not found for", path)
-	return emptyContentResponse, contentNotFound
+	q := queryer.New(g.cache, g.discoveryInterface)
+
+	fields := pf.Fields(path)
+	options := DescriberOptions{
+		Cache:          g.cache,
+		Queryer:        q,
+		Fields:         fields,
+		Printer:        g.printer,
+		Selector:       opts.Selector,
+		PortForwardSvc: opts.PortForwardSvc,
+	}
+
+	cResponse, err := pf.describer.Describe(ctx, prefix, namespace, g.clusterClient, options)
+	if err != nil {
+		return emptyContentResponse, err
+	}
+
+	return cResponse, nil
 }
 
 // PrinterHandler configures handlers for a printer.

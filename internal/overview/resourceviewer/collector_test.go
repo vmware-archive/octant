@@ -4,12 +4,13 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/golang/mock/gomock"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/testutil"
 
 	"github.com/heptio/developer-dash/internal/conversion"
 
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -51,7 +52,9 @@ func Test_Collector(t *testing.T) {
 		},
 	}
 
-	ca := cache.NewMemoryCache()
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+	ca := cachefake.NewMockCache(controller)
 	c := NewCollector(ca)
 
 	err := c.Process(deployment)

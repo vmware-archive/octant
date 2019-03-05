@@ -1,9 +1,10 @@
-package printer_test
+package printer
 
 import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
@@ -11,14 +12,17 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/overview/printer"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	"github.com/heptio/developer-dash/internal/conversion"
 	"github.com/heptio/developer-dash/internal/view/component"
 )
 
 func Test_DeploymentListHandler(t *testing.T) {
-	printOptions := printer.Options{
-		Cache: cache.NewMemoryCache(),
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	printOptions := Options{
+		Cache: cachefake.NewMockCache(controller),
 	}
 
 	labels := map[string]string{
@@ -48,7 +52,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 					UnavailableReplicas: 1,
 				},
 				Spec: appsv1.DeploymentSpec{
-					Replicas: ptrInt32(3),
+					Replicas: conversion.PtrInt32(3),
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
 							"app": "my_app",
@@ -73,7 +77,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 		},
 	}
 
-	got, err := printer.DeploymentListHandler(object, printOptions)
+	got, err := DeploymentListHandler(object, printOptions)
 	require.NoError(t, err)
 
 	containers := component.NewContainers()
@@ -145,7 +149,7 @@ func Test_deploymentConfiguration(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			dc := printer.NewDeploymentConfiguration(tc.deployment)
+			dc := NewDeploymentConfiguration(tc.deployment)
 			summary, err := dc.Create()
 			if tc.isErr {
 				require.Error(t, err)
@@ -180,7 +184,7 @@ var (
 			UnavailableReplicas: 1,
 		},
 		Spec: appsv1.DeploymentSpec{
-			Replicas:             ptrInt32(3),
+			Replicas:             conversion.PtrInt32(3),
 			RevisionHistoryLimit: &rhl,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
@@ -197,8 +201,8 @@ var (
 			Strategy: appsv1.DeploymentStrategy{
 				Type: appsv1.RollingUpdateDeploymentStrategyType,
 				RollingUpdate: &appsv1.RollingUpdateDeployment{
-					MaxSurge:       &intstr.IntOrString{Type: intstr.Int, IntVal: 25},
-					MaxUnavailable: &intstr.IntOrString{Type: intstr.Int, IntVal: 25},
+					MaxSurge:       &intstr.IntOrString{Type: intstr.String, StrVal: "25%"},
+					MaxUnavailable: &intstr.IntOrString{Type: intstr.String, StrVal: "25%"},
 				},
 			},
 			Template: corev1.PodTemplateSpec{
@@ -229,7 +233,7 @@ func TestDeploymentStatus(t *testing.T) {
 		},
 	}
 
-	ds := printer.NewDeploymentStatus(d)
+	ds := NewDeploymentStatus(d)
 	got, err := ds.Create()
 	require.NoError(t, err)
 

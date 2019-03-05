@@ -1,11 +1,12 @@
-package printer_test
+package printer
 
 import (
 	"testing"
 	"time"
 
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/overview/printer"
+	"github.com/golang/mock/gomock"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	"github.com/heptio/developer-dash/internal/conversion"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -14,14 +15,17 @@ import (
 )
 
 func Test_JobListHandler(t *testing.T) {
-	printOptions := printer.Options{
-		Cache: cache.NewMemoryCache(),
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	printOptions := Options{
+		Cache: cachefake.NewMockCache(controller),
 	}
 
-	got, err := printer.JobListHandler(validJobList, printOptions)
+	got, err := JobListHandler(validJobList, printOptions)
 	require.NoError(t, err)
 
-	expected := component.NewTable("Jobs", printer.JobCols)
+	expected := component.NewTable("Jobs", JobCols)
 	expected.Add(component.TableRow{
 		"Name":        component.NewLink("", "job", "/content/overview/namespace/default/workloads/jobs/job"),
 		"Labels":      component.NewLabels(validJobLabels),
@@ -54,7 +58,7 @@ var (
 			Labels: validJobLabels,
 		},
 		Spec: batchv1.JobSpec{
-			Completions: ptrInt32(1),
+			Completions: conversion.PtrInt32(1),
 		},
 		Status: batchv1.JobStatus{
 			Succeeded: 1,

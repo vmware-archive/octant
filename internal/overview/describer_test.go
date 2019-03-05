@@ -5,16 +5,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/heptio/developer-dash/internal/cache"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/view/component"
-
-	"github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func TestListDescriber(t *testing.T) {
@@ -23,8 +23,14 @@ func TestListDescriber(t *testing.T) {
 	namespace := "default"
 	fields := map[string]string{}
 
-	c := newSpyCache()
+	controller := gomock.NewController(t)
+	defer controller.Finish()
 
+	c := cachefake.NewMockCache(controller)
+
+	client := clusterfake.NewMockClientInterface(controller)
+
+	retrieveKey := cache.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
 	object := map[string]interface{}{
 		"kind":       "Pod",
 		"apiVersion": "v1",
@@ -34,8 +40,9 @@ func TestListDescriber(t *testing.T) {
 		},
 	}
 
-	retrieveKey := cache.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
-	c.spyRetrieve(retrieveKey, []*unstructured.Unstructured{{Object: object}}, nil)
+	c.EXPECT().
+		List(gomock.Eq(retrieveKey)).
+		Return([]*unstructured.Unstructured{{Object: object}}, nil)
 
 	listType := func() interface{} {
 		return &corev1.PodList{}
@@ -47,11 +54,6 @@ func TestListDescriber(t *testing.T) {
 
 	d := NewListDescriber(thePath, "list", key, listType, objectType)
 
-	scheme := runtime.NewScheme()
-	objects := []runtime.Object{}
-	clusterClient, err := fake.NewClient(scheme, resources, objects)
-	require.NoError(t, err)
-
 	options := DescriberOptions{
 		Cache:   c,
 		Fields:  fields,
@@ -59,7 +61,7 @@ func TestListDescriber(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	cResponse, err := d.Describe(ctx, "/path", namespace, clusterClient, options)
+	cResponse, err := d.Describe(ctx, "/path", namespace, client, options)
 	require.NoError(t, err)
 
 	list := component.NewList("list", nil)
@@ -78,8 +80,6 @@ func TestListDescriber(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, cResponse)
-
-	assert.True(t, c.isSatisfied(), "cache was not satisfied")
 }
 
 func TestObjectDescriber(t *testing.T) {
@@ -88,29 +88,38 @@ func TestObjectDescriber(t *testing.T) {
 	namespace := "default"
 	fields := map[string]string{}
 
-	c := newSpyCache()
+	controller := gomock.NewController(t)
+	defer controller.Finish()
 
-	object := map[string]interface{}{
-		"kind":       "Pod",
-		"apiVersion": "v1",
-		"metadata": map[string]interface{}{
-			"name":      "pod",
-			"namespace": "default",
-		},
-		"spec": map[string]interface{}{
-			"containers": []interface{}{
-				map[string]interface{}{
-					"name": "one",
-				},
-				map[string]interface{}{
-					"name": "two",
+	c := cachefake.NewMockCache(controller)
+	clusterClient := clusterfake.NewMockClientInterface(controller)
+
+	object := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"kind":       "Pod",
+			"apiVersion": "v1",
+			"metadata": map[string]interface{}{
+				"name":      "pod",
+				"namespace": "default",
+			},
+			"spec": map[string]interface{}{
+				"containers": []interface{}{
+					map[string]interface{}{
+						"name": "one",
+					},
+					map[string]interface{}{
+						"name": "two",
+					},
 				},
 			},
 		},
 	}
 
 	retrieveKey := cache.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
-	c.spyRetrieve(retrieveKey, []*unstructured.Unstructured{{Object: object}}, nil)
+
+	c.EXPECT().
+		Get(gomock.Eq(retrieveKey)).
+		Return(object, nil)
 
 	objectType := func() interface{} {
 		return &corev1.Pod{}
@@ -120,13 +129,8 @@ func TestObjectDescriber(t *testing.T) {
 
 	d := NewObjectDescriber(thePath, "object", fn, objectType, true)
 
-	scheme := runtime.NewScheme()
-	objects := []runtime.Object{}
-	clusterClient, err := fake.NewClient(scheme, resources, objects)
-	require.NoError(t, err)
-
 	p := printer.NewResource(c)
-	err = p.Handler(func(*corev1.Pod, printer.Options) (component.ViewComponent, error) {
+	err := p.Handler(func(*corev1.Pod, printer.Options) (component.ViewComponent, error) {
 		return component.NewText("*v1.Pod"), nil
 	})
 	require.NoError(t, err)
@@ -160,18 +164,16 @@ func TestObjectDescriber(t *testing.T) {
 		},
 	}
 	assert.Equal(t, expected, cResponse)
-	assert.True(t, c.isSatisfied())
 }
 
 func TestSectionDescriber(t *testing.T) {
 	namespace := "default"
 
-	c := cache.NewMemoryCache()
+	controller := gomock.NewController(t)
+	defer controller.Finish()
 
-	scheme := runtime.NewScheme()
-	objects := []runtime.Object{}
-	clusterClient, err := fake.NewClient(scheme, resources, objects)
-	require.NoError(t, err)
+	clusterClient := clusterfake.NewMockClientInterface(controller)
+	c := cachefake.NewMockCache(controller)
 
 	options := DescriberOptions{
 		Cache: c,

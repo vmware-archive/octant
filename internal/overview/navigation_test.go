@@ -3,13 +3,30 @@ package overview_test
 import (
 	"testing"
 
+	"github.com/golang/mock/gomock"
+	"github.com/heptio/developer-dash/internal/cache"
+	fakecache "github.com/heptio/developer-dash/internal/cache/fake"
 	"github.com/heptio/developer-dash/internal/overview"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 func Test_NavigationFactory_Entries(t *testing.T) {
-	nf := overview.NewNavigationFactory("", "/content/overview")
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+	c := fakecache.NewMockCache(controller)
+
+	key := cache.Key{
+		APIVersion: "apiextensions.k8s.io/v1beta1",
+		Kind:       "CustomResourceDefinition",
+	}
+
+	c.EXPECT().
+		List(gomock.Eq(key)).
+		Return([]*unstructured.Unstructured{}, nil)
+
+	nf := overview.NewNavigationFactory("", "/content/overview", c)
 	got, err := nf.Entries()
 	require.NoError(t, err)
 
@@ -20,7 +37,20 @@ func Test_NavigationFactory_Entries(t *testing.T) {
 }
 
 func Test_NavigationFactory_Entries_Namespace(t *testing.T) {
-	nf := overview.NewNavigationFactory("default", "/content/overview")
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+	c := fakecache.NewMockCache(controller)
+
+	key := cache.Key{
+		APIVersion: "apiextensions.k8s.io/v1beta1",
+		Kind:       "CustomResourceDefinition",
+	}
+
+	c.EXPECT().
+		List(gomock.Eq(key)).
+		Return([]*unstructured.Unstructured{}, nil)
+
+	nf := overview.NewNavigationFactory("default", "/content/overview", c)
 	got, err := nf.Entries()
 	require.NoError(t, err)
 
@@ -63,7 +93,11 @@ func Test_NavigationFactory_Root(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			nf := overview.NewNavigationFactory(tc.namespace, tc.path)
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+			c := fakecache.NewMockCache(controller)
+
+			nf := overview.NewNavigationFactory(tc.namespace, tc.path, c)
 			assert.Equal(t, tc.expected, nf.Root())
 		})
 	}

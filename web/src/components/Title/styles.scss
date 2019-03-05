@@ -17,6 +17,16 @@
     span:last-child {
       font-weight: 600;
     }
+
+    a:link, a:visited {
+      color: $white;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
   }
 }
 

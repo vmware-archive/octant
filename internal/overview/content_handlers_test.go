@@ -5,8 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/heptio/developer-dash/internal/cache"
-
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -36,21 +37,24 @@ func Test_loadObjects(t *testing.T) {
 	}
 
 	cases := []struct {
-		name      string
-		initCache func(*spyCache)
-		fields    map[string]string
-		keys      []cache.Key
-		expected  []*unstructured.Unstructured
-		isErr     bool
+		name     string
+		init     func(*testing.T, *cachefake.MockCache)
+		fields   map[string]string
+		keys     []cache.Key
+		expected []*unstructured.Unstructured
+		isErr    bool
 	}{
 		{
 			name: "without name",
-			initCache: func(c *spyCache) {
-				c.spyRetrieve(cache.Key{
+			init: func(t *testing.T, c *cachefake.MockCache) {
+				key := cache.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
-					Kind:       "kind"},
-					sampleObjects, nil)
+					Kind:       "kind"}
+
+				c.EXPECT().
+					List(gomock.Eq(key)).
+					Return(sampleObjects, nil)
 			},
 			fields:   map[string]string{},
 			keys:     []cache.Key{{APIVersion: "v1", Kind: "kind"}},
@@ -58,25 +62,32 @@ func Test_loadObjects(t *testing.T) {
 		},
 		{
 			name: "name",
-			initCache: func(c *spyCache) {
-				c.spyRetrieve(cache.Key{
+			init: func(t *testing.T, c *cachefake.MockCache) {
+				key := cache.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind",
-					Name:       "name"},
-					[]*unstructured.Unstructured{}, nil)
+					Name:       "name"}
+
+				c.EXPECT().
+					List(gomock.Eq(key)).
+					Return([]*unstructured.Unstructured{}, nil)
+
 			},
 			fields: map[string]string{"name": "name"},
 			keys:   []cache.Key{{APIVersion: "v1", Kind: "kind"}},
 		},
 		{
 			name: "cache retrieve error",
-			initCache: func(c *spyCache) {
-				c.spyRetrieve(cache.Key{
+			init: func(t *testing.T, c *cachefake.MockCache) {
+				key := cache.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
-					Kind:       "kind"},
-					nil, errors.New("error"))
+					Kind:       "kind"}
+
+				c.EXPECT().
+					List(gomock.Eq(key)).
+					Return(nil, errors.New("error"))
 			},
 			fields: map[string]string{},
 			keys:   []cache.Key{{APIVersion: "v1", Kind: "kind"}},
@@ -86,15 +97,16 @@ func Test_loadObjects(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			cache := newSpyCache()
-			if tc.initCache != nil {
-				tc.initCache(cache)
-			}
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			c := cachefake.NewMockCache(controller)
+			tc.init(t, c)
 
 			namespace := "default"
 
 			ctx := context.Background()
-			got, err := loadObjects(ctx, cache, namespace, tc.fields, tc.keys)
+			got, err := loadObjects(ctx, c, namespace, tc.fields, tc.keys)
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -102,7 +114,6 @@ func Test_loadObjects(t *testing.T) {
 
 			require.NoError(t, err)
 
-			assert.True(t, cache.isSatisfied())
 			assert.Equal(t, tc.expected, got)
 		})
 	}

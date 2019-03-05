@@ -4,21 +4,26 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func Test_ReplicationControllerListHandler(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	printOptions := Options{
-		Cache: cache.NewMemoryCache(),
+		Cache: cachefake.NewMockCache(controller),
 	}
 
 	got, err := ReplicationControllerListHandler(validReplicationControllerList, printOptions)
@@ -90,53 +95,55 @@ var (
 )
 
 func TestReplicationControllerStatus(t *testing.T) {
-	c := cache.NewMemoryCache()
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	c := cachefake.NewMockCache(controller)
+
+	replicationController := testutil.CreateReplicationController("rc")
+	replicationController.Labels = map[string]string{
+		"foo": "bar",
+	}
+	replicationController.Spec.Selector = map[string]string{
+		"foo": "bar",
+	}
+	replicationController.Namespace = "testing"
+
+	p1 := *createPodWithPhase(
+		"nginx-g7f72",
+		replicationController.Labels,
+		corev1.PodRunning,
+		metav1.NewControllerRef(replicationController, replicationController.GroupVersionKind()))
+
+	p2 := *createPodWithPhase(
+		"nginx-p64jr",
+		replicationController.Labels,
+		corev1.PodRunning,
+		metav1.NewControllerRef(replicationController, replicationController.GroupVersionKind()))
+
+	p3 := *createPodWithPhase(
+		"nginx-x8nrk",
+		replicationController.Labels,
+		corev1.PodRunning,
+		metav1.NewControllerRef(replicationController, replicationController.GroupVersionKind()))
 
 	pods := &corev1.PodList{
-		Items: []corev1.Pod{
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "nginx-g7f72",
-					Namespace: "default",
-					Labels:    validReplicationControllerLabels,
-				},
-				Status: corev1.PodStatus{
-					Phase: corev1.PodRunning,
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "nginx-p64jr",
-					Namespace: "default",
-					Labels:    validReplicationControllerLabels,
-				},
-				Status: corev1.PodStatus{
-					Phase: corev1.PodRunning,
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "nginx-x8nrk",
-					Namespace: "testing",
-					Labels:    validReplicationControllerLabels,
-				},
-				Status: corev1.PodStatus{
-					Phase: corev1.PodRunning,
-				},
-			},
-		},
+		Items: []corev1.Pod{p1, p2, p3},
 	}
 
+	var podList []*unstructured.Unstructured
 	for _, p := range pods.Items {
-		u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(p)
-		if err != nil {
-			return
-		}
-
-		c.Store(&unstructured.Unstructured{Object: u})
+		u := testutil.ToUnstructured(t, &p)
+		podList = append(podList, u)
+	}
+	key := cache.Key{
+		Namespace:  "testing",
+		APIVersion: "v1",
+		Kind:       "Pod",
 	}
 
-	rcs := NewReplicationControllerStatus(validReplicationController)
+	c.EXPECT().List(gomock.Eq(key)).Return(podList, nil)
+	rcs := NewReplicationControllerStatus(replicationController)
 	got, err := rcs.Create(c)
 	require.NoError(t, err)
 

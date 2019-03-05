@@ -1,4 +1,4 @@
-package printer_test
+package printer
 
 import (
 	"testing"
@@ -8,8 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/heptio/developer-dash/internal/overview/printer"
 )
 
 var (
@@ -216,7 +214,7 @@ func Test_ContainerConfiguration(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			cc := printer.NewContainerConfiguration(parentPod, tc.container, false)
+			cc := NewContainerConfiguration(parentPod, tc.container, false)
 			summary, err := cc.Create()
 			if tc.isErr {
 				require.Error(t, err)

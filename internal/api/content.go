@@ -66,21 +66,32 @@ func (h *contentHandler) handlerForModule(m module.Module) http.HandlerFunc {
 			namespace = r.URL.Query().Get("namespace")
 		}
 		contentPath := path.Join("/", vars["contentPath"]) // the trailing path after optional namespace
-		h.logger.Debugf("Serving content module %v, path %v, namespace %v, contentPath: %v", m.Name(), r.URL.Path, namespace, contentPath)
 
 		ctx := log.WithLoggerContext(r.Context(), h.logger)
 		q := r.URL.Query()
 		poll := q.Get("poll")
 
 		filters := q["filter"]
-		h.logger.Debugf("filter query: %v", filters)
+
+		h.logger.With(
+			"module", m.Name(),
+			"path", r.URL.Path,
+			"namespace", namespace,
+			"contentPath", contentPath,
+			"poll", poll,
+			"filters", fmt.Sprintf("%v", filters),
+		).Debugf("content")
+
 		selector, err := selectorFromFilters(filters)
 		if err != nil {
 			h.logger.Errorf("invalid filters: %v", err)
 			respondWithError(w, http.StatusInternalServerError, err.Error(), h.logger)
 			return
 		}
-		h.logger.Debugf("Selector: %v", selector)
+
+		if s := selector.String(); s != "" {
+			h.logger.Debugf("Selector: %s", selector)
+		}
 
 		if poll != "" {
 			h.handlePoll(ctx, poll, namespace, selector, contentPath, w, r, m)

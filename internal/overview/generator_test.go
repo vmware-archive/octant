@@ -4,23 +4,17 @@ import (
 	"context"
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/queryer"
-
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/golang/mock/gomock"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/view/component"
-
-	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/cluster/fake"
-	"github.com/heptio/developer-dash/internal/content"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/heptio/developer-dash/internal/cluster"
 )
 
 func Test_realGenerator_Generate(t *testing.T) {
-	key := cache.Key{Namespace: "default"}
-
 	textOther := component.NewText("other")
 	textFoo := component.NewText("foo")
 	textSub := component.NewText("sub")
@@ -33,22 +27,18 @@ func Test_realGenerator_Generate(t *testing.T) {
 
 	var pathFilters []pathFilter
 	for _, d := range describers {
-		pathFilters = append(pathFilters, d.PathFilters("default")...)
+		pathFilters = append(pathFilters, d.PathFilters()...)
 	}
 
 	cases := []struct {
-		name      string
-		path      string
-		initCache func(*spyCache)
-		expected  component.ContentResponse
-		isErr     bool
+		name     string
+		path     string
+		expected component.ContentResponse
+		isErr    bool
 	}{
 		{
-			name: "dynamic content",
-			path: "/foo",
-			initCache: func(c *spyCache) {
-				c.spyRetrieve(key, []*unstructured.Unstructured{}, nil)
-			},
+			name:     "dynamic content",
+			path:     "/foo",
 			expected: component.ContentResponse{ViewComponents: []component.ViewComponent{textFoo}},
 		},
 		{
@@ -59,10 +49,6 @@ func Test_realGenerator_Generate(t *testing.T) {
 		{
 			name: "sub path",
 			path: "/sub/foo",
-			initCache: func(c *spyCache) {
-				subKey := cache.Key{Namespace: key.Namespace, Name: "foo"}
-				c.spyRetrieve(subKey, []*unstructured.Unstructured{}, nil)
-			},
 			expected: component.ContentResponse{
 				ViewComponents: []component.ViewComponent{textSub},
 			},
@@ -71,22 +57,23 @@ func Test_realGenerator_Generate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := newSpyCache()
-			if tc.initCache != nil {
-				tc.initCache(c)
-			}
+			controller := gomock.NewController(t)
+			defer controller.Finish()
 
-			q := queryer.New(c, nil)
+			clusterClient := clusterfake.NewMockClientInterface(controller)
+			c := cachefake.NewMockCache(controller)
 
-			scheme := runtime.NewScheme()
-			objects := []runtime.Object{}
-			clusterClient, err := fake.NewClient(scheme, resources, objects)
-			require.NoError(t, err)
-
-			g, err := newGenerator(c, q, pathFilters, clusterClient, nil)
-			require.NoError(t, err)
+			di := clusterfake.NewMockDiscoveryInterface(controller)
 
 			ctx := context.Background()
+			pm := newPathMatcher()
+			for _, pf := range pathFilters {
+				pm.Register(ctx, pf)
+			}
+
+			g, err := newGenerator(c, di, pm, clusterClient, nil)
+			require.NoError(t, err)
+
 			cResponse, err := g.Generate(ctx, tc.path, "/prefix", "default", GeneratorOptions{})
 			if tc.isErr {
 				require.Error(t, err)
@@ -98,70 +85,6 @@ func Test_realGenerator_Generate(t *testing.T) {
 			assert.Equal(t, tc.expected, cResponse)
 		})
 	}
-}
-
-type spyCache struct {
-	store map[cache.Key][]*unstructured.Unstructured
-	errs  map[cache.Key]error
-	used  map[cache.Key]bool
-}
-
-func newSpyCache() *spyCache {
-	return &spyCache{
-		store: make(map[cache.Key][]*unstructured.Unstructured),
-		errs:  make(map[cache.Key]error),
-		used:  make(map[cache.Key]bool),
-	}
-}
-
-func (c *spyCache) Store(obj *unstructured.Unstructured) error {
-	return nil
-}
-
-func (c *spyCache) spyRetrieve(key cache.Key, objects []*unstructured.Unstructured, err error) {
-	c.store[key] = objects
-	c.errs[key] = err
-}
-
-func (c *spyCache) isSatisfied() bool {
-	for k := range c.store {
-		isUsed, ok := c.used[k]
-		if !ok {
-			return false
-		}
-
-		if !isUsed {
-			return false
-		}
-	}
-
-	return true
-}
-
-func (c *spyCache) List(key cache.Key) ([]*unstructured.Unstructured, error) {
-	c.used[key] = true
-
-	objs := c.store[key]
-	err := c.errs[key]
-
-	return objs, err
-}
-
-func (c *spyCache) Get(key cache.Key) (*unstructured.Unstructured, error) {
-	c.used[key] = true
-
-	var obj *unstructured.Unstructured
-	objs := c.store[key]
-	if len(objs) > 0 {
-		obj = objs[0]
-	}
-	err := c.errs[key]
-
-	return obj, err
-}
-
-func (c *spyCache) Delete(obj *unstructured.Unstructured) error {
-	return nil
 }
 
 type stubDescriber struct {
@@ -188,32 +111,8 @@ func (d *stubDescriber) Describe(context.Context, string, string, cluster.Client
 	}, nil
 }
 
-func (d *stubDescriber) PathFilters(namespace string) []pathFilter {
+func (d *stubDescriber) PathFilters() []pathFilter {
 	return []pathFilter{
 		*newPathFilter(d.path, d),
 	}
-}
-
-var stubbedContent = []content.Content{newFakeContent(false)}
-
-type fakeContent struct {
-	isEmpty bool
-}
-
-func newFakeContent(isEmpty bool) *fakeContent {
-	return &fakeContent{
-		isEmpty: isEmpty,
-	}
-}
-
-func (c *fakeContent) IsEmpty() bool {
-	return c.isEmpty
-}
-
-func (c *fakeContent) ViewComponent() content.ViewComponent {
-	return content.ViewComponent{}
-}
-
-func (c fakeContent) MarshalJSON() ([]byte, error) {
-	return []byte(`{"type":"stubbed"}`), nil
 }

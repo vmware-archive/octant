@@ -1,7 +1,11 @@
 package printer
 
 import (
-	"github.com/heptio/developer-dash/internal/cache"
+	"testing"
+	"time"
+
+	"github.com/golang/mock/gomock"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
@@ -9,11 +13,12 @@ import (
 	"github.com/stretchr/testify/require"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
-	"time"
 )
 
 func Test_RoleListHandler(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	now := time.Unix(1547211430, 0)
 
 	role := testutil.CreateRole("pod-reader")
@@ -24,7 +29,9 @@ func Test_RoleListHandler(t *testing.T) {
 		},
 	}
 
-	observed, err := RoleListHandler(roleList, Options{Cache: cache.NewMemoryCache()})
+	c := cachefake.NewMockCache(controller)
+
+	observed, err := RoleListHandler(roleList, Options{Cache: c})
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Age")

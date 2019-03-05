@@ -3,6 +3,7 @@ package queryer
 import (
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -12,8 +13,9 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
+	kLabels "k8s.io/apimachinery/pkg/labels"
+	kruntime "k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/kubernetes/pkg/apis/apps"
@@ -25,10 +27,10 @@ import (
 //go:generate mockgen -destination=./fake/mock_discovery.go -package=fake k8s.io/client-go/discovery DiscoveryInterface
 
 type Queryer interface {
-	Children(object metav1.Object) ([]runtime.Object, error)
+	Children(object metav1.Object) ([]kruntime.Object, error)
 	Events(object metav1.Object) ([]*corev1.Event, error)
 	IngressesForService(service *corev1.Service) ([]*extv1beta1.Ingress, error)
-	OwnerReference(namespace string, ownerReference metav1.OwnerReference) (runtime.Object, error)
+	OwnerReference(namespace string, ownerReference metav1.OwnerReference) (kruntime.Object, error)
 	PodsForService(service *corev1.Service) ([]*corev1.Pod, error)
 	ServicesForIngress(ingress *extv1beta1.Ingress) ([]*corev1.Service, error)
 	ServicesForPod(pod *corev1.Pod) ([]*corev1.Service, error)
@@ -37,6 +39,10 @@ type Queryer interface {
 type CacheQueryer struct {
 	cache           cache.Cache
 	discoveryClient discovery.DiscoveryInterface
+
+	children        map[types.UID][]kruntime.Object
+	podsForServices map[types.UID][]*corev1.Pod
+	owner           map[cache.Key]kruntime.Object
 }
 
 var _ Queryer = (*CacheQueryer)(nil)
@@ -45,20 +51,38 @@ func New(c cache.Cache, discoveryClient discovery.DiscoveryInterface) *CacheQuer
 	return &CacheQueryer{
 		cache:           c,
 		discoveryClient: discoveryClient,
+
+		children:        make(map[types.UID][]kruntime.Object),
+		podsForServices: make(map[types.UID][]*corev1.Pod),
+		owner:           make(map[cache.Key]kruntime.Object),
 	}
 }
 
-func (cq *CacheQueryer) Children(owner metav1.Object) ([]runtime.Object, error) {
+func (cq *CacheQueryer) Children(owner metav1.Object) ([]kruntime.Object, error) {
 	if owner == nil {
 		return nil, errors.New("owner is nil")
 	}
+
+	cached, ok := cq.children[owner.GetUID()]
+	if ok {
+		return cached, nil
+	}
+
+	var children []kruntime.Object
+
+	ch := make(chan kruntime.Object)
+	go func() {
+		for child := range ch {
+			children = append(children, child)
+		}
+	}()
 
 	resourceLists, err := cq.discoveryClient.ServerResources()
 	if err != nil {
 		return nil, err
 	}
 
-	var children []runtime.Object
+	var g errgroup.Group
 
 	for resourceListIndex := range resourceLists {
 		resourceList := resourceLists[resourceListIndex]
@@ -83,18 +107,30 @@ func (cq *CacheQueryer) Children(owner metav1.Object) ([]runtime.Object, error) 
 				continue
 			}
 
-			objects, err := cq.cache.List(key)
-			if err != nil {
-				return nil, errors.Wrapf(err, "unable to retrieve %+v", key)
-			}
-
-			for _, object := range objects {
-				if metav1.IsControlledBy(object, owner) {
-					children = append(children, object)
+			g.Go(func() error {
+				objects, err := cq.cache.List(key)
+				if err != nil {
+					return errors.Wrapf(err, "unable to retrieve %+v", key)
 				}
-			}
+
+				for _, object := range objects {
+					if metav1.IsControlledBy(object, owner) {
+						children = append(children, object)
+					}
+				}
+
+				return nil
+			})
 		}
 	}
+
+	if err := g.Wait(); err != nil {
+		return nil, errors.Wrap(err, "find children")
+	}
+
+	close(ch)
+
+	cq.children[owner.GetUID()] = children
 
 	return children, nil
 }
@@ -104,7 +140,7 @@ func (cq *CacheQueryer) Events(object metav1.Object) ([]*corev1.Event, error) {
 		return nil, errors.New("object is nil")
 	}
 
-	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(object)
+	m, err := kruntime.DefaultUnstructuredConverter.ToUnstructured(object)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +161,7 @@ func (cq *CacheQueryer) Events(object metav1.Object) ([]*corev1.Event, error) {
 	var events []*corev1.Event
 	for _, unstructuredEvent := range allEvents {
 		event := &corev1.Event{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(unstructuredEvent.Object, event)
+		err := kruntime.DefaultUnstructuredConverter.FromUnstructured(unstructuredEvent.Object, event)
 		if err != nil {
 			return nil, err
 		}
@@ -161,7 +197,7 @@ func (cq *CacheQueryer) IngressesForService(service *corev1.Service) ([]*v1beta1
 
 	for _, u := range ul {
 		ingress := &v1beta1.Ingress{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, ingress)
+		err := kruntime.DefaultUnstructuredConverter.FromUnstructured(u.Object, ingress)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured ingress")
 		}
@@ -200,7 +236,7 @@ func (cq *CacheQueryer) listIngressBackends(ingress v1beta1.Ingress) []extv1beta
 	return backends
 }
 
-func (cq *CacheQueryer) OwnerReference(namespace string, ownerReference metav1.OwnerReference) (runtime.Object, error) {
+func (cq *CacheQueryer) OwnerReference(namespace string, ownerReference metav1.OwnerReference) (kruntime.Object, error) {
 	key := cache.Key{
 		Namespace:  namespace,
 		APIVersion: ownerReference.APIVersion,
@@ -208,10 +244,17 @@ func (cq *CacheQueryer) OwnerReference(namespace string, ownerReference metav1.O
 		Name:       ownerReference.Name,
 	}
 
+	object, ok := cq.owner[key]
+	if ok {
+		return object, nil
+	}
+
 	owner, err := cq.cache.Get(key)
 	if err != nil {
 		return nil, err
 	}
+
+	cq.owner[key] = owner
 
 	return owner, nil
 }
@@ -219,6 +262,11 @@ func (cq *CacheQueryer) OwnerReference(namespace string, ownerReference metav1.O
 func (cq *CacheQueryer) PodsForService(service *corev1.Service) ([]*corev1.Pod, error) {
 	if service == nil {
 		return nil, errors.New("nil service")
+	}
+
+	cached, ok := cq.podsForServices[service.UID]
+	if ok {
+		return cached, nil
 	}
 
 	key := cache.Key{
@@ -236,6 +284,8 @@ func (cq *CacheQueryer) PodsForService(service *corev1.Service) ([]*corev1.Pod, 
 		return nil, errors.Wrapf(err, "fetching pods for service: %v", service.Name)
 	}
 
+	cq.podsForServices[service.UID] = pods
+
 	return pods, nil
 }
 
@@ -249,7 +299,7 @@ func (cq *CacheQueryer) loadPods(key cache.Key, selector *metav1.LabelSelector) 
 
 	for _, object := range objects {
 		pod := &corev1.Pod{}
-		if err := scheme.Scheme.Convert(object, pod, runtime.InternalGroupVersioner); err != nil {
+		if err := scheme.Scheme.Convert(object, pod, kruntime.InternalGroupVersioner); err != nil {
 			return nil, err
 		}
 
@@ -293,7 +343,7 @@ func (cq *CacheQueryer) ServicesForIngress(ingress *extv1beta1.Ingress) ([]*core
 		}
 
 		svc := &corev1.Service{}
-		err = runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, svc)
+		err = kruntime.DefaultUnstructuredConverter.FromUnstructured(u.Object, svc)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured service")
 		}
@@ -322,7 +372,7 @@ func (cq *CacheQueryer) ServicesForPod(pod *corev1.Pod) ([]*corev1.Service, erro
 	}
 	for _, u := range ul {
 		svc := &corev1.Service{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, svc)
+		err := kruntime.DefaultUnstructuredConverter.FromUnstructured(u.Object, svc)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured service")
 		}
@@ -338,7 +388,7 @@ func (cq *CacheQueryer) ServicesForPod(pod *corev1.Pod) ([]*corev1.Service, erro
 			return nil, errors.Wrap(err, "invalid selector")
 		}
 
-		if selector.Empty() || !selector.Matches(labels.Set(pod.Labels)) {
+		if selector.Empty() || !selector.Matches(kLabels.Set(pod.Labels)) {
 			continue
 		}
 		results = append(results, svc)
@@ -346,7 +396,7 @@ func (cq *CacheQueryer) ServicesForPod(pod *corev1.Pod) ([]*corev1.Service, erro
 	return results, nil
 }
 
-func (cq *CacheQueryer) getSelector(object runtime.Object) (*metav1.LabelSelector, error) {
+func (cq *CacheQueryer) getSelector(object kruntime.Object) (*metav1.LabelSelector, error) {
 	switch t := object.(type) {
 	case *appsv1.DaemonSet:
 		return t.Spec.Selector, nil

@@ -5,24 +5,21 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/cluster/fake"
+	"github.com/golang/mock/gomock"
+
+	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func TestManager(t *testing.T) {
-	scheme := runtime.NewScheme()
-	objects := []runtime.Object{
-		newUnstructured("apps/v1", "Deployment", "default", "deploy3"),
-	}
-
-	clusterClient, err := fake.NewClient(scheme, nil, objects)
-	require.NoError(t, err)
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+	clusterClient := clusterfake.NewMockClientInterface(controller)
 
 	manager, err := module.NewManager(clusterClient, "default", log.NopLogger())
 	require.NoError(t, err)

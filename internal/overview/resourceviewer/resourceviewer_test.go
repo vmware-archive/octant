@@ -3,7 +3,8 @@ package resourceviewer
 import (
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/golang/mock/gomock"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	"github.com/heptio/developer-dash/internal/overview/objectvisitor"
 	"github.com/pkg/errors"
 
@@ -43,7 +44,9 @@ func Test_ResourceViewer(t *testing.T) {
 		},
 	}
 
-	c := cache.NewMemoryCache()
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+	c := cachefake.NewMockCache(controller)
 
 	rv, err := New(nil, c, stubVisitor(false))
 	require.NoError(t, err)
@@ -62,7 +65,9 @@ func Test_ResourceViewer_visitor_fails(t *testing.T) {
 		},
 	}
 
-	c := cache.NewMemoryCache()
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+	c := cachefake.NewMockCache(controller)
 
 	rv, err := New(nil, c, stubVisitor(true))
 	require.NoError(t, err)

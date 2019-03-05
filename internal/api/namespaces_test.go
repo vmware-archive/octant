@@ -2,11 +2,12 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/golang/mock/gomock"
+	"github.com/pkg/errors"
+
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/stretchr/testify/assert"
@@ -18,23 +19,34 @@ func Test_namespaces_list(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		nsClient cluster.NamespaceInterface
+		init     func(*clusterfake.MockNamespaceInterface)
 		expected []string
 	}{
 		{
-			name:     "general",
-			nsClient: clusterfake.NewNamespaceClient([]string{"default", "other"}, nil, "default"),
+			name: "general",
+			init: func(ns *clusterfake.MockNamespaceInterface) {
+				ns.EXPECT().Names().Return([]string{"default", "other"}, nil)
+			},
 			expected: []string{"default", "other"},
 		},
 		{
-			name:     "cannot list due to rbac error",
-			nsClient: clusterfake.NewNamespaceClient(nil, errors.New("rbac error"), "initial-namespace"),
+			name: "cannot list due to rbac error",
+			init: func(ns *clusterfake.MockNamespaceInterface) {
+				ns.EXPECT().Names().Return(nil, errors.Errorf("error"))
+				ns.EXPECT().InitialNamespace().Return("initial-namespace")
+			},
 			expected: []string{"initial-namespace"},
 		},
 	}
 
 	for _, tc := range tests {
-		handler := newNamespaces(tc.nsClient, log.NopLogger())
+		controller := gomock.NewController(t)
+		defer controller.Finish()
+
+		nsClient := clusterfake.NewMockNamespaceInterface(controller)
+		tc.init(nsClient)
+
+		handler := newNamespaces(nsClient, log.NopLogger())
 		resp := httptest.NewRecorder()
 		handler.ServeHTTP(resp, req)
 

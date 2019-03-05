@@ -9,7 +9,7 @@ import (
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/labels"
+	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -17,7 +17,7 @@ import (
 // Options provides options to a print handler
 type Options struct {
 	Cache         cache.Cache
-	Selector      labels.Selector
+	Selector      kLabels.Selector
 	DisableLabels bool
 }
 

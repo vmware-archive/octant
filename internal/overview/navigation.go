@@ -2,9 +2,14 @@ package overview
 
 import (
 	"path"
+	"sort"
 	"strings"
+	"sync"
 
+	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/hcli"
+	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -23,10 +28,11 @@ var (
 type NavigationFactory struct {
 	root      string
 	namespace string
+	cache     cache.Cache
 }
 
 // NewNavigationFactory creates an instance of NewNavigationFactory.
-func NewNavigationFactory(namespace string, root string) *NavigationFactory {
+func NewNavigationFactory(namespace string, root string, c cache.Cache) *NavigationFactory {
 	var rootPath = root
 	if namespace != "" {
 		rootPath = path.Join(root, "namespace", namespace, "")
@@ -35,7 +41,11 @@ func NewNavigationFactory(namespace string, root string) *NavigationFactory {
 		rootPath = rootPath + "/"
 	}
 
-	return &NavigationFactory{root: rootPath, namespace: namespace}
+	return &NavigationFactory{
+		root:      rootPath,
+		namespace: namespace,
+		cache:     c,
+	}
 }
 
 // Root returns the root of the navigation tree.
@@ -50,35 +60,74 @@ func (nf *NavigationFactory) pathFor(elements ...string) string {
 
 // Entries returns navigation entries.
 func (nf *NavigationFactory) Entries() (*hcli.Navigation, error) {
+	m := map[string]entriesFunc{
+		"Workloads":                    nf.workloadEntries,
+		"Discovery and Load Balancing": nf.discoAndLBEntries,
+		"Config and Storage":           nf.configAndStorageEntries,
+		"Custom Resources":             nf.crdEntries,
+		"RBAC":                         nf.rbacEntries,
+		"Events":                       nil,
+		"Port Forwarding":              nil,
+	}
+
+	navOrder := []string{
+		"Workloads",
+		"Discovery and Load Balancing",
+		"Config and Storage",
+		"Custom Resources",
+		"RBAC",
+		"Events",
+		"Port Forwarding",
+	}
 
 	n := &hcli.Navigation{
-		Title: "Overview",
-		Path:  nf.root,
-		Children: []*hcli.Navigation{
+		Title:    "Overview",
+		Path:     nf.root,
+		Children: []*hcli.Navigation{},
+	}
 
-			nf.genNode("Workloads", nf.workloadEntries),
-			nf.genNode("Discovery and Load Balancing", nf.discoAndLBEntries),
-			nf.genNode("Config and Storage", nf.configAndStorageEntries),
-			nf.genNode("Custom Resources", nil),
-			nf.genNode("RBAC", nf.rbacEntries),
-			nf.genNode("Events", nil),
-			nf.genNode("Port Forwarding", nil),
-		},
+	var mu sync.Mutex
+	var g errgroup.Group
+
+	for _, name := range navOrder {
+		g.Go(func() error {
+			children, err := nf.genNode(name, m[name])
+			if err != nil {
+				return errors.Wrapf(err, "generate entries for %s", name)
+			}
+
+			mu.Lock()
+			n.Children = append(n.Children, children)
+			mu.Unlock()
+
+			return nil
+		})
+
+		if err := g.Wait(); err != nil {
+			return nil, err
+		}
+
 	}
 
 	return n, nil
 }
 
-func (nf *NavigationFactory) genNode(name string, childFn func(string) []*hcli.Navigation) *hcli.Navigation {
+type entriesFunc func(string) ([]*hcli.Navigation, error)
+
+func (nf *NavigationFactory) genNode(name string, childFn entriesFunc) (*hcli.Navigation, error) {
 	node := hcli.NewNavigation(name, nf.pathFor(navPathLookup[name]))
 	if childFn != nil {
-		node.Children = childFn(node.Path)
+		children, err := childFn(node.Path)
+		if err != nil {
+			return nil, err
+		}
+		node.Children = children
 	}
 
-	return node
+	return node, nil
 }
 
-func (nf *NavigationFactory) workloadEntries(prefix string) []*hcli.Navigation {
+func (nf *NavigationFactory) workloadEntries(prefix string) ([]*hcli.Navigation, error) {
 	return []*hcli.Navigation{
 		hcli.NewNavigation("Cron Jobs", path.Join(prefix, "cron-jobs")),
 		hcli.NewNavigation("Daemon Sets", path.Join(prefix, "daemon-sets")),
@@ -88,28 +137,57 @@ func (nf *NavigationFactory) workloadEntries(prefix string) []*hcli.Navigation {
 		hcli.NewNavigation("Replica Sets", path.Join(prefix, "replica-sets")),
 		hcli.NewNavigation("Replication Controllers", path.Join(prefix, "replication-controllers")),
 		hcli.NewNavigation("Stateful Sets", path.Join(prefix, "stateful-sets")),
-	}
+	}, nil
 }
 
-func (nf *NavigationFactory) discoAndLBEntries(prefix string) []*hcli.Navigation {
+func (nf *NavigationFactory) discoAndLBEntries(prefix string) ([]*hcli.Navigation, error) {
 	return []*hcli.Navigation{
 		hcli.NewNavigation("Ingresses", path.Join(prefix, "ingresses")),
 		hcli.NewNavigation("Services", path.Join(prefix, "services")),
-	}
+	}, nil
 }
 
-func (nf *NavigationFactory) configAndStorageEntries(prefix string) []*hcli.Navigation {
+func (nf *NavigationFactory) configAndStorageEntries(prefix string) ([]*hcli.Navigation, error) {
 	return []*hcli.Navigation{
 		hcli.NewNavigation("Config Maps", path.Join(prefix, "config-maps")),
 		hcli.NewNavigation("Persistent Volume Claims", path.Join(prefix, "persistent-volume-claims")),
 		hcli.NewNavigation("Secrets", path.Join(prefix, "secrets")),
 		hcli.NewNavigation("Service Accounts", path.Join(prefix, "service-accounts")),
-	}
+	}, nil
 }
 
-func (nf *NavigationFactory) rbacEntries(prefix string) []*hcli.Navigation {
+func (nf *NavigationFactory) rbacEntries(prefix string) ([]*hcli.Navigation, error) {
 	return []*hcli.Navigation{
 		hcli.NewNavigation("Roles", path.Join(prefix, "roles")),
 		hcli.NewNavigation("Role Bindings", path.Join(prefix, "role-bindings")),
+	}, nil
+}
+
+func (nf *NavigationFactory) crdEntries(prefix string) ([]*hcli.Navigation, error) {
+	var list []*hcli.Navigation
+
+	crdNames, err := customResourceDefinitionNames(nf.cache)
+	if err != nil {
+		return nil, errors.Wrap(err, "retrieving CRD names")
 	}
+
+	sort.Strings(crdNames)
+
+	for _, name := range crdNames {
+		crd, err := customResourceDefinition(name, nf.cache)
+		if err != nil {
+			return nil, errors.Wrapf(err, "load %q custom resource definition", name)
+		}
+
+		objects, err := listCustomResources(crd, nf.namespace, nf.cache)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(objects) > 0 {
+			list = append(list, hcli.NewNavigation(name, path.Join(prefix, name)))
+		}
+	}
+
+	return list, nil
 }

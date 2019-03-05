@@ -29,3 +29,21 @@ func LoadObjectFromFile(t *testing.T, objectFile string) runtime.Object {
 
 	return object
 }
+
+// LoadTypedObjectFromFile loads a file from the `testdata` directory. It will
+// assign it a `default` namespace if one is not set.
+func LoadTypedObjectFromFile(t *testing.T, objectFile string, into runtime.Object) {
+	data, err := ioutil.ReadFile(filepath.Join("testdata", objectFile))
+	require.NoError(t, err)
+
+	gvk := into.GetObjectKind().GroupVersionKind()
+	object, _, err := scheme.Codecs.UniversalDeserializer().Decode(data, &gvk, into)
+	require.NoError(t, err)
+
+	accessor := meta.NewAccessor()
+	namespace, err := accessor.Namespace(object)
+	require.NoError(t, err)
+	if namespace == "" {
+		require.NoError(t, accessor.SetNamespace(object, "default"))
+	}
+}

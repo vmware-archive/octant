@@ -19,8 +19,11 @@ import (
 )
 
 func Test_EventListHandler(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	printOptions := Options{
-		Cache: cache.NewMemoryCache(),
+		Cache: cachefake.NewMockCache(controller),
 	}
 
 	object := &corev1.EventList{
@@ -72,8 +75,11 @@ func Test_EventListHandler(t *testing.T) {
 }
 
 func Test_ReplicasetEvents(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	printOptions := Options{
-		Cache: cache.NewMemoryCache(),
+		Cache: cachefake.NewMockCache(controller),
 	}
 
 	now := time.Unix(1547211430, 0)
@@ -173,8 +179,11 @@ func Test_ReplicasetEvents(t *testing.T) {
 }
 
 func Test_EventHandler(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	printOptions := Options{
-		Cache: cache.NewMemoryCache(),
+		Cache: cachefake.NewMockCache(controller),
 	}
 
 	event := &corev1.Event{

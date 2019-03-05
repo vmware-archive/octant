@@ -1,11 +1,11 @@
-package printer_test
+package printer
 
 import (
 	"testing"
 	"time"
 
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/overview/printer"
+	"github.com/golang/mock/gomock"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -26,7 +26,7 @@ func Test_Resource_Print(t *testing.T) {
 	}{
 		{
 			name: "print known object",
-			printFunc: func(deployment *appsv1.Deployment, options printer.Options) (component.ViewComponent, error) {
+			printFunc: func(deployment *appsv1.Deployment, options Options) (component.ViewComponent, error) {
 				return &stubViewComponent{Type: "type1"}, nil
 			},
 			object:       &appsv1.Deployment{},
@@ -44,7 +44,7 @@ func Test_Resource_Print(t *testing.T) {
 		},
 		{
 			name: "print handler returns error",
-			printFunc: func(deployment *appsv1.Deployment, options printer.Options) (component.ViewComponent, error) {
+			printFunc: func(deployment *appsv1.Deployment, options Options) (component.ViewComponent, error) {
 				return nil, errors.New("failed")
 			},
 			object: &appsv1.Deployment{},
@@ -54,8 +54,12 @@ func Test_Resource_Print(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := cache.NewMemoryCache()
-			p := printer.NewResource(c)
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			c := cachefake.NewMockCache(controller)
+
+			p := NewResource(c)
 
 			if tc.printFunc != nil {
 				err := p.Handler(tc.printFunc)
@@ -89,7 +93,7 @@ func Test_Resource_Handler(t *testing.T) {
 	}{
 		{
 			name: "valid printer",
-			printFunc: func(int, printer.Options) (component.ViewComponent, error) {
+			printFunc: func(int, Options) (component.ViewComponent, error) {
 				return &stubViewComponent{Type: "type1"}, nil
 			},
 		},
@@ -112,8 +116,12 @@ func Test_Resource_Handler(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := cache.NewMemoryCache()
-			p := printer.NewResource(c)
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			c := cachefake.NewMockCache(controller)
+
+			p := NewResource(c)
 
 			err := p.Handler(tc.printFunc)
 
@@ -128,12 +136,16 @@ func Test_Resource_Handler(t *testing.T) {
 }
 
 func Test_Resource_DuplicateHandler(t *testing.T) {
-	printFunc := func(int, printer.Options) (component.ViewComponent, error) {
+	printFunc := func(int, Options) (component.ViewComponent, error) {
 		return &stubViewComponent{Type: "type1"}, nil
 	}
 
-	c := cache.NewMemoryCache()
-	p := printer.NewResource(c)
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	c := cachefake.NewMockCache(controller)
+
+	p := NewResource(c)
 
 	err := p.Handler(printFunc)
 	require.NoError(t, err)
@@ -158,8 +170,11 @@ func (v *stubViewComponent) GetMetadata() component.Metadata {
 func (v *stubViewComponent) SetAccessor(string) {}
 
 func Test_DefaultPrinter(t *testing.T) {
-	printOptions := printer.Options{
-		Cache: cache.NewMemoryCache(),
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	printOptions := Options{
+		Cache: cachefake.NewMockCache(controller),
 	}
 
 	labels := map[string]string{
@@ -182,7 +197,7 @@ func Test_DefaultPrinter(t *testing.T) {
 		},
 	}
 
-	got, err := printer.DefaultPrintFunc(object, printOptions)
+	got, err := DefaultPrintFunc(object, printOptions)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Age")
@@ -209,11 +224,14 @@ func Test_DefaultPrinter_invalid_object(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			printOptions := printer.Options{
-				Cache: cache.NewMemoryCache(),
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			printOptions := Options{
+				Cache: cachefake.NewMockCache(controller),
 			}
 
-			_, err := printer.DefaultPrintFunc(tc.object, printOptions)
+			_, err := DefaultPrintFunc(tc.object, printOptions)
 			assert.Error(t, err)
 		})
 	}

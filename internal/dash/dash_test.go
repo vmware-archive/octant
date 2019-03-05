@@ -10,8 +10,9 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/heptio/developer-dash/internal/api"
-	"github.com/heptio/developer-dash/internal/cluster/fake"
+	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	modulefake "github.com/heptio/developer-dash/internal/module/fake"
@@ -38,6 +39,9 @@ func Test_dash_Run(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
 			ctx, cancel := context.WithCancel(context.Background())
 			namespace := "default"
 			listener, err := net.Listen("tcp", "127.0.0.1:0")
@@ -59,17 +63,15 @@ func Test_dash_Run(t *testing.T) {
 				}), nil
 			}
 
-			nsClient := fake.NewNamespaceClient([]string{"default"}, nil, "default")
+			nsClient := clusterfake.NewMockNamespaceInterface(controller)
+			nsClient.EXPECT().InitialNamespace().Return("default").AnyTimes()
 
-			o := fake.NewSimpleClusterOverview()
+			o := newDashModule()
 			manager := modulefake.NewStubManager("default", []module.Module{o})
 
-			infoClient := fake.ClusterInfo{}
-
+			infoClient := clusterfake.NewMockInfoInterface(controller)
 			service := api.New(ctx, apiPathPrefix, nsClient, infoClient, manager, log.NopLogger())
-
 			d, err := newDash(listener, namespace, uiURL, service, log.NopLogger())
-
 			require.NoError(t, err)
 
 			d.willOpenBrowser = false
@@ -128,17 +130,22 @@ func Test_dash_routes(t *testing.T) {
 	for _, tc := range cases {
 		name := fmt.Sprintf("GET: %s", tc.path)
 		t.Run(name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
 			namespace := "default"
 			uiURL := ""
 			listener, err := net.Listen("tcp", "127.0.0.1:0")
 			require.NoError(t, err)
 
-			nsClient := fake.NewNamespaceClient([]string{"default"}, nil, "default")
+			nsClient := clusterfake.NewMockNamespaceInterface(controller)
+			nsClient.EXPECT().InitialNamespace().Return("default").AnyTimes()
+			nsClient.EXPECT().Names().Return([]string{"default"}, nil).AnyTimes()
 
-			o := fake.NewSimpleClusterOverview()
+			o := newDashModule()
 			manager := modulefake.NewStubManager("default", []module.Module{o})
 
-			infoClient := fake.ClusterInfo{}
+			infoClient := clusterfake.NewMockInfoInterface(controller)
 
 			ctx := context.Background()
 			service := api.New(ctx, apiPathPrefix, nsClient, infoClient, manager, log.NopLogger())

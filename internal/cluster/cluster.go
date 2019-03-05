@@ -2,9 +2,14 @@ package cluster
 
 import (
 	"fmt"
+	"time"
+
+	"k8s.io/client-go/restmapper"
 
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
@@ -19,8 +24,15 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 )
 
+//go:generate mockgen -destination=./fake/mock_client_interface.go -package=fake github.com/heptio/developer-dash/internal/cluster ClientInterface
+//go:generate mockgen -destination=./fake/mock_dynamicinformer.go -package=fake k8s.io/client-go/dynamic/dynamicinformer DynamicSharedInformerFactory
+//go:generate mockgen -destination=./fake/mock_genericinformer.go -package=fake k8s.io/client-go/informers GenericInformer
+//go:generate mockgen -destination=./fake/mock_discoveryinterface.go -package=fake k8s.io/client-go/discovery DiscoveryInterface
+
 // ClientInterface is a client for cluster operations.
 type ClientInterface interface {
+	ResourceExists(schema.GroupVersionResource) bool
+	Resource(schema.GroupKind) (schema.GroupVersionResource, error)
 	KubernetesClient() (kubernetes.Interface, error)
 	DynamicClient() (dynamic.Interface, error)
 	DiscoveryClient() (discovery.DiscoveryInterface, error)
@@ -37,14 +49,90 @@ type RESTInterface interface {
 // Cluster is a client for cluster operations
 type Cluster struct {
 	clientConfig clientcmd.ClientConfig
-	restConfig   *rest.Config
+	restClient   *rest.Config
+
+	kubernetesClient kubernetes.Interface
+	dynamicClient    dynamic.Interface
+	discoveryClient  discovery.DiscoveryInterface
 }
 
 var _ ClientInterface = (*Cluster)(nil)
 
+func newCluster(clientConfig clientcmd.ClientConfig, restClient *rest.Config) (*Cluster, error) {
+	kubernetesClient, err := kubernetes.NewForConfig(restClient)
+	if err != nil {
+		return nil, errors.Wrap(err, "create kubernetes client")
+	}
+
+	dynamicClient, err := dynamic.NewForConfig(restClient)
+	if err != nil {
+		return nil, errors.Wrap(err, "create dynamic client")
+	}
+
+	discoveryClient, err := discovery.NewDiscoveryClientForConfig(restClient)
+	if err != nil {
+		return nil, errors.Wrap(err, "create discovery client")
+	}
+
+	c := &Cluster{
+		clientConfig:     clientConfig,
+		restClient:       restClient,
+		kubernetesClient: kubernetesClient,
+		dynamicClient:    dynamicClient,
+		discoveryClient:  discoveryClient,
+	}
+
+	return c, nil
+}
+
+func (c *Cluster) ResourceExists(gvr schema.GroupVersionResource) bool {
+	restMapper, err := c.restMapper()
+	if err != nil {
+		return false
+	}
+	_, err = restMapper.KindFor(gvr)
+	return err == nil
+}
+
+func (c *Cluster) restMapper() (meta.RESTMapper, error) {
+	groupResources, err := restmapper.GetAPIGroupResources(c.discoveryClient)
+	if err != nil {
+		return nil, errors.Wrap(err, "rest mapper: unable to get API group resources")
+	}
+
+	restMapper := restmapper.NewDiscoveryRESTMapper(groupResources)
+	return restMapper, nil
+}
+
+func (c *Cluster) Resource(gk schema.GroupKind) (schema.GroupVersionResource, error) {
+	restMapper, err := c.restMapper()
+	if err != nil {
+		return schema.GroupVersionResource{}, errors.Wrap(err, "get rest mapper")
+	}
+
+	retries := 0
+
+	for retries < 5 {
+		restMapping, err := restMapper.RESTMapping(gk)
+		if err != nil {
+			if meta.IsNoMatchError(err) {
+				retries++
+				time.Sleep(1 * time.Second)
+				continue
+			}
+
+			return schema.GroupVersionResource{}, errors.Wrap(err, "unable to retrieve rest mapping")
+		}
+
+		return restMapping.Resource, nil
+	}
+
+	return schema.GroupVersionResource{}, errors.New("unable to retrieve rest mapping (retried multiple times)")
+}
+
 // KubernetesClient returns a Kubernetes client.
 func (c *Cluster) KubernetesClient() (kubernetes.Interface, error) {
-	return kubernetes.NewForConfig(c.restConfig)
+	return c.kubernetesClient, nil
 }
 
 // NamespaceClient returns a namespace client.
@@ -63,12 +151,12 @@ func (c *Cluster) NamespaceClient() (NamespaceInterface, error) {
 
 // DynamicClient returns a dynamic client.
 func (c *Cluster) DynamicClient() (dynamic.Interface, error) {
-	return dynamic.NewForConfig(c.restConfig)
+	return c.dynamicClient, nil
 }
 
 // DiscoveryClient returns a DiscoveryClient for the cluster.
 func (c *Cluster) DiscoveryClient() (discovery.DiscoveryInterface, error) {
-	return discovery.NewDiscoveryClientForConfig(c.restConfig)
+	return c.discoveryClient, nil
 }
 
 // InfoClient returns an InfoClient for the cluster.
@@ -78,13 +166,13 @@ func (c *Cluster) InfoClient() (InfoInterface, error) {
 
 // RESTClient returns a RESTClient for the cluster.
 func (c *Cluster) RESTClient() (rest.Interface, error) {
-	config := withConfigDefaults(c.restConfig)
+	config := withConfigDefaults(c.restClient)
 	return rest.RESTClientFor(config)
 }
 
 // RESTConfig returns configuration for communicating with the cluster.
 func (c *Cluster) RESTConfig() *rest.Config {
-	return c.restConfig
+	return c.restClient
 }
 
 // Version returns a ServerVersion for the cluster.
@@ -112,10 +200,7 @@ func FromKubeconfig(kubeconfig string) (*Cluster, error) {
 		return nil, err
 	}
 
-	return &Cluster{
-		clientConfig: cc,
-		restConfig:   config,
-	}, nil
+	return newCluster(cc, config)
 }
 
 // withConfigDefaults returns an extended rest.Config object with additional defaults applied

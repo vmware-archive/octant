@@ -155,28 +155,30 @@ func (o *Object) ToComponent(options Options) (component.ViewComponent, error) {
 		return nil, errors.New("object is nil")
 	}
 
-	if o.config.Func == nil {
-		return nil, errors.New("config view was not setup")
-	}
-
-	configSection := o.flexlayout.AddSection()
-	configView, err := o.config.Func()
-	if err != nil {
-		return nil, errors.Wrap(err, "generate config view")
-	}
-
-	if err := configSection.Add(configView, o.config.Width); err != nil {
-		return nil, errors.Wrap(err, "add config view to layout")
-	}
-
-	for _, summaryItem := range o.summary {
-		view, err := summaryItem.Func()
+	if o.config.Func != nil {
+		configView, err := o.config.Func()
 		if err != nil {
-			return nil, errors.Wrap(err, "generate summary item view")
+			return nil, errors.Wrap(err, "generate config view")
 		}
 
-		if err := configSection.Add(view, summaryItem.Width); err != nil {
-			return nil, errors.Wrap(err, "add summary view to layout")
+		configSection := o.flexlayout.AddSection()
+		if configView != nil {
+			if err := configSection.Add(configView, o.config.Width); err != nil {
+				return nil, errors.Wrap(err, "add config view to layout")
+			}
+		}
+
+		for _, summaryItem := range o.summary {
+			view, err := summaryItem.Func()
+			if err != nil {
+				return nil, errors.Wrap(err, "generate summary item view")
+			}
+
+			if view != nil {
+				if err := configSection.Add(view, summaryItem.Width); err != nil {
+					return nil, errors.Wrap(err, "add summary view to layout")
+				}
+			}
 		}
 	}
 

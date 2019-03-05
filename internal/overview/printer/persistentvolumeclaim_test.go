@@ -4,11 +4,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	"github.com/heptio/developer-dash/internal/overview/link"
 
-	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
@@ -18,8 +19,11 @@ import (
 )
 
 func Test_PersistentVolumeListHandler(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	printOptions := Options{
-		Cache: cache.NewMemoryCache(),
+		Cache: cachefake.NewMockCache(controller),
 	}
 
 	labels := map[string]string{

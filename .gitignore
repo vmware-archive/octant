@@ -21,6 +21,7 @@ rice-box.go
 # generated fakes
 /internal/cache/fake
 /internal/queryer/fake
+/internal/cluster/fake
 
 # electron bundling
 /vendor/astilectron*

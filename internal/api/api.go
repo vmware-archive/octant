@@ -44,6 +44,11 @@ func respondWithError(w http.ResponseWriter, code int, message string, logger lo
 		},
 	}
 
+	logger.With(
+		"code", code,
+		"message", message,
+	).Infof("unable to serve")
+
 	w.Header().Set("Content-Type", mime.JSONContentType)
 
 	w.WriteHeader(code)

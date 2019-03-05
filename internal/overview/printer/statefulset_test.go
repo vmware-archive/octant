@@ -1,27 +1,32 @@
-package printer_test
+package printer
 
 import (
 	"testing"
 	"time"
 
+	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/testutil"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/overview/printer"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	"github.com/heptio/developer-dash/internal/conversion"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func Test_StatefulSetListHandler(t *testing.T) {
-	printOptions := printer.Options{
-		Cache: cache.NewMemoryCache(),
-	}
+	controller := gomock.NewController(t)
+	defer controller.Finish()
 
+	printOptions := Options{
+		Cache: cachefake.NewMockCache(controller),
+	}
 	labels := map[string]string{
 		"foo": "bar",
 	}
@@ -51,7 +56,7 @@ func Test_StatefulSetListHandler(t *testing.T) {
 							"app": "myapp",
 						},
 					},
-					Replicas: ptrInt32(3),
+					Replicas: conversion.PtrInt32(3),
 					Template: corev1.PodTemplateSpec{
 						Spec: corev1.PodSpec{
 							Containers: []corev1.Container{
@@ -67,7 +72,7 @@ func Test_StatefulSetListHandler(t *testing.T) {
 		},
 	}
 
-	got, err := printer.StatefulSetListHandler(object, printOptions)
+	got, err := StatefulSetListHandler(object, printOptions)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Desired", "Current", "Age", "Selector")
@@ -85,13 +90,23 @@ func Test_StatefulSetListHandler(t *testing.T) {
 }
 
 func Test_StatefulSetStatus(t *testing.T) {
-	c := cache.NewMemoryCache()
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	c := cachefake.NewMockCache(controller)
+	printOptions := Options{
+		Cache: c,
+	}
 
 	labels := map[string]string{
 		"app": "myapp",
 	}
 
 	sts := &appsv1.StatefulSet{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "apps/v1",
+			Kind:       "StatefulSet",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "statefulset",
 			Namespace: "testing",
@@ -107,59 +122,28 @@ func Test_StatefulSetStatus(t *testing.T) {
 
 	pods := &corev1.PodList{
 		Items: []corev1.Pod{
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "web-0",
-					Namespace: "testing",
-					Labels:    labels,
-				},
-				Status: corev1.PodStatus{
-					Phase: corev1.PodRunning,
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "web-1",
-					Namespace: "testing",
-					Labels:    labels,
-				},
-				Status: corev1.PodStatus{
-					Phase: corev1.PodRunning,
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "web-2",
-					Namespace: "testing",
-					Labels:    labels,
-				},
-				Status: corev1.PodStatus{
-					Phase: corev1.PodPending,
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "random-pod",
-					Namespace: "testing",
-				},
-				Status: corev1.PodStatus{
-					Phase: corev1.PodRunning,
-				},
-			},
+			*createPodWithPhase("web-0", labels, corev1.PodRunning, metav1.NewControllerRef(sts, sts.GroupVersionKind())),
+			*createPodWithPhase("web-1", labels, corev1.PodRunning, metav1.NewControllerRef(sts, sts.GroupVersionKind())),
+			*createPodWithPhase("web-2", labels, corev1.PodPending, metav1.NewControllerRef(sts, sts.GroupVersionKind())),
+			*createPodWithPhase("random-pod", nil, corev1.PodRunning, nil),
 		},
 	}
 
+	var podList []*unstructured.Unstructured
 	for _, p := range pods.Items {
-		u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(p)
-		if err != nil {
-			return
-		}
-
-		c.Store(&unstructured.Unstructured{Object: u})
+		u := testutil.ToUnstructured(t, &p)
+		podList = append(podList, u)
+	}
+	key := cache.Key{
+		Namespace:  "testing",
+		APIVersion: "v1",
+		Kind:       "Pod",
 	}
 
-	stsc := printer.NewStatefulSetStatus(sts)
-	got, err := stsc.Create(c)
+	c.EXPECT().List(gomock.Eq(key)).Return(podList, nil)
+
+	stsc := NewStatefulSetStatus(sts)
+	got, err := stsc.Create(printOptions.Cache)
 	require.NoError(t, err)
 
 	expected := component.NewQuadrant()

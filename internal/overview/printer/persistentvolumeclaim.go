@@ -79,7 +79,7 @@ func printPersistentVolumeClaimConfig(persistentVolumeClaim *corev1.PersistentVo
 	var sections component.SummarySections
 
 	if volumeMode := persistentVolumeClaim.Spec.VolumeMode; volumeMode != nil {
-		sections.AddText("Volume Mode", fmt.Sprintf("%s", *volumeMode))
+		sections.AddText("Volume Mode", string(*volumeMode))
 	}
 
 	if accessMode := persistentVolumeClaim.Spec.AccessModes; accessMode != nil {
@@ -91,7 +91,7 @@ func printPersistentVolumeClaimConfig(persistentVolumeClaim *corev1.PersistentVo
 	}
 
 	if storageClassName := persistentVolumeClaim.Spec.StorageClassName; storageClassName != nil {
-		sections.AddText("Storage Class Name", fmt.Sprintf("%s", *storageClassName))
+		sections.AddText("Storage Class Name", string(*storageClassName))
 	}
 
 	if labels := persistentVolumeClaim.Labels; labels != nil {
@@ -119,7 +119,7 @@ func printPersistentVolumeClaimStatus(persistentVolumeClaim *corev1.PersistentVo
 	}
 
 	if requestedStorage := persistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage]; &requestedStorage != nil {
-		sections.AddText("Storage Requested", fmt.Sprintf("%s", &requestedStorage))
+		sections.AddText("Storage Requested", requestedStorage.String())
 	}
 
 	if persistentVolumeClaim.Spec.VolumeName != "" {
@@ -132,7 +132,7 @@ func printPersistentVolumeClaimStatus(persistentVolumeClaim *corev1.PersistentVo
 		}
 
 		if availableStorage := persistentVolumeClaim.Status.Capacity[corev1.ResourceStorage]; &availableStorage != nil {
-			sections.AddText("Total Volume Capacity", fmt.Sprintf("%s", &availableStorage))
+			sections.AddText("Total Volume Capacity", availableStorage.String())
 		}
 	}
 

@@ -5,12 +5,13 @@ import (
 	"net/url"
 	"path"
 
-	"k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // gvkPathFromObject composes a path given an object.
@@ -89,6 +90,22 @@ func gvkPath(namespace, apiVersion, kind, name string) string {
 	}
 
 	return path.Join(prefix, p, name)
+}
+
+// ForCustomResourceName returns a link component referencing
+// a custom resource definition.
+func ForCustomResourceDefinition(crdName, namespace string) *component.Link {
+	ref := path.Join("/content/overview/namespace", namespace,
+		"custom-resources", crdName)
+	return component.NewLink("", crdName, ref)
+}
+
+// ForCustomResource returns a link component referenceing
+// a custom resource.
+func ForCustomResource(crdName string, object *unstructured.Unstructured) *component.Link {
+	ref := path.Join("/content/overview/namespace", object.GetNamespace(),
+		"custom-resources", crdName, object.GetName())
+	return component.NewLink("", object.GetName(), ref)
 }
 
 // ForObject returns a link component referencing an object

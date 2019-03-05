@@ -9,6 +9,8 @@ import (
 	"k8s.io/client-go/dynamic"
 )
 
+//go:generate mockgen -destination=./fake/mock_namespace_interface.go -package=fake github.com/heptio/developer-dash/internal/cluster NamespaceInterface
+
 // NamespaceInterface is an interface for querying namespace details.
 type NamespaceInterface interface {
 	Names() ([]string, error)

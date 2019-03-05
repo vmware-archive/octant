@@ -9,6 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	fakecache "github.com/heptio/developer-dash/internal/cache/fake"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/testutil"
@@ -20,8 +21,11 @@ import (
 )
 
 func Test_ServiceAccountListHandler(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
 	printOptions := Options{
-		Cache: cache.NewMemoryCache(),
+		Cache: cachefake.NewMockCache(controller),
 	}
 
 	labels := map[string]string{

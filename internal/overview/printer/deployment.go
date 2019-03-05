@@ -97,7 +97,7 @@ func (dc *DeploymentConfiguration) Create() (*component.Summary, error) {
 			return nil, errors.Errorf("deployment strategy type is RollingUpdate, but configuration is nil")
 		}
 
-		rollingUpdateText := fmt.Sprintf("Max Surge %s%%, Max Unavailable %s%%",
+		rollingUpdateText := fmt.Sprintf("Max Surge %s, Max Unavailable %s",
 			rollingUpdate.MaxSurge.String(),
 			rollingUpdate.MaxUnavailable.String(),
 		)

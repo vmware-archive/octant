@@ -7,12 +7,21 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
+
+// CreateCRD creates a CRD
+func CreateCRD(name string) *apiextv1beta1.CustomResourceDefinition {
+	return &apiextv1beta1.CustomResourceDefinition{
+		TypeMeta:   genTypeMeta(gvk.CustomResourceDefinitionGVK),
+		ObjectMeta: genObjectMeta(name),
+	}
+}
 
 // CreateDaemonSet creates a daemon set
 func CreateDaemonSet(name string) *appsv1.DaemonSet {
@@ -65,6 +74,14 @@ func CreateIngress(name string) *extv1beta1.Ingress {
 func CreatePod(name string) *corev1.Pod {
 	return &corev1.Pod{
 		TypeMeta:   genTypeMeta(gvk.PodGVK),
+		ObjectMeta: genObjectMeta(name),
+	}
+}
+
+// CreateReplicationController creates a replication controller
+func CreateReplicationController(name string) *corev1.ReplicationController {
+	return &corev1.ReplicationController{
+		TypeMeta:   genTypeMeta(gvk.ReplicationControllerGVK),
 		ObjectMeta: genObjectMeta(name),
 	}
 }

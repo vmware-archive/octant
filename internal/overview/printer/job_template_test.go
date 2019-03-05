@@ -1,9 +1,8 @@
-package printer_test
+package printer
 
 import (
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -14,7 +13,7 @@ func TestJobTemplateHeader(t *testing.T) {
 		"app": "myapp",
 	}
 
-	jth := printer.NewJobTemplateHeader(labels)
+	jth := NewJobTemplateHeader(labels)
 	got, err := jth.Create()
 
 	require.NoError(t, err)

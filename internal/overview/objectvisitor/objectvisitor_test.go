@@ -3,6 +3,7 @@ package objectvisitor
 import (
 	"fmt"
 	"sort"
+	"sync"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -360,18 +361,10 @@ func toOwnerReferences(t *testing.T, object ClusterObject) []metav1.OwnerReferen
 	}
 }
 
-func expectChildren(t *testing.T, q *queryerfake.MockQueryer, object runtime.Object, rets ...interface{}) {
+func expectChildren(t *testing.T, q *queryerfake.MockQueryer, object runtime.Object, found ...interface{}) {
 	q.EXPECT().
 		Children(gomock.Eq(tu.ToUnstructured(t, object))).
-		Return(rets...).AnyTimes()
-}
-
-func genTypeMeta(gvk schema.GroupVersionKind) metav1.TypeMeta {
-	apiVersion, kind := gvk.ToAPIVersionAndKind()
-	return metav1.TypeMeta{
-		APIVersion: apiVersion,
-		Kind:       kind,
-	}
+		Return(found...).AnyTimes()
 }
 
 func factoryRegister(
@@ -386,6 +379,7 @@ func factoryRegister(
 type testObject struct {
 	processFn  func(object ClusterObject) error
 	addChildFn func(parent ClusterObject, children ...ClusterObject) error
+	mu         sync.Mutex
 }
 
 func (o *testObject) Process(object ClusterObject) error {
@@ -393,6 +387,8 @@ func (o *testObject) Process(object ClusterObject) error {
 }
 
 func (o *testObject) AddChild(parent ClusterObject, children ...ClusterObject) error {
+	o.mu.Lock()
+	defer o.mu.Unlock()
 	return o.addChildFn(parent, children...)
 }
 
@@ -402,6 +398,8 @@ type identityCollector struct {
 	gotChildren map[string][]string
 
 	o *testObject
+
+	mu sync.Mutex
 }
 
 func (ic *identityCollector) factoryFn(object ClusterObject) (ObjectHandler, error) {
@@ -417,6 +415,9 @@ func (ic *identityCollector) factoryFn(object ClusterObject) (ObjectHandler, err
 
 		ic.o = &testObject{
 			processFn: func(clusterObject ClusterObject) error {
+				ic.mu.Lock()
+				defer ic.mu.Unlock()
+
 				name, err := accessor.Name(clusterObject)
 				if err != nil {
 					return err
@@ -439,6 +440,9 @@ func (ic *identityCollector) factoryFn(object ClusterObject) (ObjectHandler, err
 				return nil
 			},
 			addChildFn: func(parent ClusterObject, children ...ClusterObject) error {
+				ic.mu.Lock()
+				defer ic.mu.Unlock()
+
 				parentUID, err := accessor.UID(parent)
 				if err != nil {
 					return err

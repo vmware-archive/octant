@@ -257,7 +257,7 @@ func listPods(namespace string, selector *metav1.LabelSelector, uid types.UID, c
 
 	pods, err := loadPods(key, c, selector)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "load pods")
 	}
 
 	var owned []*corev1.Pod

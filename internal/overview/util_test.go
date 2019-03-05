@@ -1,11 +1,6 @@
 package overview
 
 import (
-	"testing"
-
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/cluster/fake"
-	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
@@ -144,23 +139,4 @@ func newUnstructured(apiVersion, kind, namespace, name string) *unstructured.Uns
 			},
 		},
 	}
-}
-
-type cancelFunc func()
-
-func cancelNop() {}
-
-func newCache(t *testing.T, objects []runtime.Object) (*cache.InformerCache, cancelFunc, error) {
-	scheme := newScheme()
-
-	client, err := fake.NewClient(scheme, resources, objects)
-	require.NoError(t, err)
-	if err != nil {
-		return nil, cancelNop, err
-	}
-	stopCh := make(chan struct{})
-
-	restMapper, err := client.RESTMapper()
-	require.NoError(t, err, "fetching RESTMapper")
-	return cache.NewInformerCache(stopCh, client.FakeDynamic, restMapper), func() { close(stopCh) }, nil
 }

@@ -4,6 +4,7 @@ $border-color: rgba(173, 187, 196, 0.3);
 
 .summary-component {
   border: 1px solid $border-color;
+  overflow-x: hidden;
 
   .summary-component-title {
     border-bottom: 1px solid $border-color;
@@ -18,6 +19,7 @@ $border-color: rgba(173, 187, 196, 0.3);
   table {
     font-size: 14px;
     width: 100%;
+    overflow: hidden;
 
     td,
     th {

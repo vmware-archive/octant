@@ -25,6 +25,9 @@ func NewLink(title, s, ref string) *Link {
 	}
 }
 
+// SupportsTitle designates this is a TextViewComponent.
+func (t *Link) SupportsTitle() {}
+
 // GetMetadata accesses the components metadata. Implements ViewComponent.
 func (t *Link) GetMetadata() Metadata {
 	return t.Metadata

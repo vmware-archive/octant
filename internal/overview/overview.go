@@ -11,12 +11,13 @@ import (
 	"sync"
 	"time"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/mime"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/overview/container"
 	"github.com/heptio/developer-dash/internal/portforward"
-	"github.com/heptio/developer-dash/internal/queryer"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/heptio/developer-dash/internal/cache"
@@ -40,7 +41,8 @@ type ClusterOverview struct {
 }
 
 // NewClusterOverview creates an instance of ClusterOverview.
-func NewClusterOverview(ctx context.Context, client cluster.ClientInterface, cache cache.Cache, namespace string, logger log.Logger) (*ClusterOverview, error) {
+// TODO: why does cache get passed in here?
+func NewClusterOverview(ctx context.Context, client cluster.ClientInterface, c cache.Cache, namespace string, logger log.Logger) (*ClusterOverview, error) {
 	if client == nil {
 		return nil, errors.New("nil cluster client")
 	}
@@ -50,11 +52,38 @@ func NewClusterOverview(ctx context.Context, client cluster.ClientInterface, cac
 		return nil, errors.Wrapf(err, "creating DiscoveryClient")
 	}
 
-	var pathFilters []pathFilter
-	pathFilters = append(pathFilters, rootDescriber.PathFilters(namespace)...)
-	pathFilters = append(pathFilters, eventsDescriber.PathFilters(namespace)...)
+	informerCache, err := cache.NewDynamicCache(client, ctx.Done())
+	if err != nil {
+		return nil, errors.Wrapf(err, "create cache")
+	}
 
-	queryer := queryer.New(cache, di)
+	pm := newPathMatcher()
+	for _, pf := range rootDescriber.PathFilters() {
+		pm.Register(ctx, pf)
+	}
+
+	for _, pf := range eventsDescriber.PathFilters() {
+		pm.Register(ctx, pf)
+	}
+
+	crdAddFunc := func(pm *pathMatcher, csd *crdSectionDescriber) objectHandler {
+		return func(ctx context.Context, object *unstructured.Unstructured) {
+			if object == nil {
+				return
+			}
+			addCRD(ctx, object.GetName(), pm, csd)
+		}
+	}(pm, customResourcesDescriber)
+	crdDeleteFunc := func(pm *pathMatcher, csd *crdSectionDescriber) objectHandler {
+		return func(ctx context.Context, object *unstructured.Unstructured) {
+			if object == nil {
+				return
+			}
+			deleteCRD(ctx, object.GetName(), pm, csd)
+		}
+	}(pm, customResourcesDescriber)
+
+	go watchCRDs(ctx, informerCache, crdAddFunc, crdDeleteFunc)
 
 	// Port Forwarding
 	restClient, err := client.RESTClient()
@@ -64,7 +93,7 @@ func NewClusterOverview(ctx context.Context, client cluster.ClientInterface, cac
 	pfOpts := portforward.PortForwardSvcOptions{
 		RESTClient: restClient,
 		Config:     client.RESTConfig(),
-		Cache:      cache,
+		Cache:      c,
 		// TODO -  streams
 		PortForwarder: &portforward.DefaultPortForwarder{
 			IOStreams: portforward.IOStreams{
@@ -75,9 +104,8 @@ func NewClusterOverview(ctx context.Context, client cluster.ClientInterface, cac
 		},
 	}
 	pfSvc := portforward.NewPortForwardService(ctx, pfOpts, logger)
-	////
 
-	g, err := newGenerator(cache, queryer, pathFilters, client, pfSvc)
+	g, err := newGenerator(c, di, pm, client, pfSvc)
 	if err != nil {
 		return nil, errors.Wrap(err, "create overview generator")
 	}
@@ -85,7 +113,7 @@ func NewClusterOverview(ctx context.Context, client cluster.ClientInterface, cac
 	co := &ClusterOverview{
 		client:         client,
 		logger:         logger,
-		cache:          cache,
+		cache:          c,
 		generator:      g,
 		portForwardSvc: pfSvc,
 	}
@@ -104,7 +132,7 @@ func (co *ClusterOverview) ContentPath() string {
 
 // Navigation returns navigation entries for overview.
 func (co *ClusterOverview) Navigation(namespace, root string) (*hcli.Navigation, error) {
-	nf := NewNavigationFactory(namespace, root)
+	nf := NewNavigationFactory(namespace, root, co.cache)
 	return nf.Entries()
 }
 
@@ -124,6 +152,7 @@ func (co *ClusterOverview) Stop() {
 	// NOOP
 }
 
+// Content serves content for overview.
 func (co *ClusterOverview) Content(ctx context.Context, contentPath, prefix, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
 	ctx = log.WithLoggerContext(ctx, co.logger)
 	genOpts := GeneratorOptions{
@@ -142,6 +171,7 @@ type logResponse struct {
 	Entries []logEntry `json:"entries,omitempty"`
 }
 
+// Handlers are extra handlers for overview
 func (co *ClusterOverview) Handlers() map[string]http.Handler {
 	return map[string]http.Handler{
 		"/logs/pod/{pod}/container/{container}":                   containerLogsHandler(co.client),

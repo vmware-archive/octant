@@ -1,6 +1,11 @@
 package main
 
-import "github.com/heptio/developer-dash/internal/commands"
+import (
+	"math/rand"
+	"time"
+
+	"github.com/heptio/developer-dash/internal/commands"
+)
 
 // Default variables overridden by ldflags
 var (
@@ -8,6 +13,10 @@ var (
 	gitCommit = "(dev-commit)"
 	buildTime = "(dev-buildtime)"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 func main() {
 	commands.Execute(version, gitCommit, buildTime)

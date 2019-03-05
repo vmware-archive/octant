@@ -3,7 +3,10 @@ package objectstatus
 import (
 	"testing"
 
+	"github.com/golang/mock/gomock"
+
 	"github.com/heptio/developer-dash/internal/cache"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
@@ -52,7 +55,10 @@ func Test_status(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := cache.NewMemoryCache()
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			c := cachefake.NewMockCache(controller)
 
 			got, err := status(tc.object, c, tc.lookup)
 			if tc.isErr {

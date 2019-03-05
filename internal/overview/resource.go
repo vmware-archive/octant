@@ -46,10 +46,10 @@ func NewResource(options ResourceOptions) *Resource {
 }
 
 func (r *Resource) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
-	return r.List(namespace).Describe(ctx, prefix, namespace, clusterClient, options)
+	return r.List().Describe(ctx, prefix, namespace, clusterClient, options)
 }
 
-func (r *Resource) List(namespace string) *ListDescriber {
+func (r *Resource) List() *ListDescriber {
 	return NewListDescriber(
 		r.Path,
 		r.Titles.List,
@@ -65,7 +65,7 @@ func (r *Resource) List(namespace string) *ListDescriber {
 
 func (r *Resource) Object() *ObjectDescriber {
 	return NewObjectDescriber(
-		path.Join(r.Path, "(?P<name>.*?)"),
+		path.Join(r.Path, resourceNameRegex),
 		r.Titles.Object,
 		DefaultLoader(r.CacheKey),
 		func() interface{} {
@@ -75,10 +75,10 @@ func (r *Resource) Object() *ObjectDescriber {
 	)
 }
 
-func (r *Resource) PathFilters(namespace string) []pathFilter {
+func (r *Resource) PathFilters() []pathFilter {
 	filters := []pathFilter{
-		*newPathFilter(r.Path, r.List(namespace)),
-		*newPathFilter(path.Join(r.Path, "(?P<name>.*?)"), r.Object()),
+		*newPathFilter(r.Path, r.List()),
+		*newPathFilter(path.Join(r.Path, resourceNameRegex), r.Object()),
 	}
 
 	return filters

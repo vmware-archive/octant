@@ -127,9 +127,17 @@ func Test_stream(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			ch := make(chan event)
 
-			go stream(ctx, w, ch)
+			done := make(chan bool, 1)
+
+			go func() {
+				stream(ctx, w, ch)
+				done <- true
+			}()
 
 			ch <- tc.event
+			cancel()
+
+			<-done
 
 			resp := w.Result()
 			defer resp.Body.Close()
@@ -152,8 +160,6 @@ func Test_stream(t *testing.T) {
 				assert.Equalf(t, expected, actual, "expected header %s to be %s; actual %s",
 					k, expected, actual)
 			}
-
-			cancel()
 
 		})
 	}

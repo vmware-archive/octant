@@ -1,4 +1,4 @@
-package printer_test
+package printer
 
 import (
 	"testing"
@@ -6,20 +6,24 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
+	"github.com/golang/mock/gomock"
 	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/overview/printer"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func Test_ReplicaSetListHandler(t *testing.T) {
-	printOptions := printer.Options{
-		Cache: cache.NewMemoryCache(),
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	printOptions := Options{
+		Cache: cachefake.NewMockCache(controller),
 	}
 
 	labels := map[string]string{
@@ -72,7 +76,7 @@ func Test_ReplicaSetListHandler(t *testing.T) {
 		},
 	}
 
-	got, err := printer.ReplicaSetListHandler(object, printOptions)
+	got, err := ReplicaSetListHandler(object, printOptions)
 	require.NoError(t, err)
 
 	containers := component.NewContainers()
@@ -153,7 +157,7 @@ func TestReplicaSetConfiguration(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			rc := printer.NewReplicaSetConfiguration(tc.replicaset)
+			rc := NewReplicaSetConfiguration(tc.replicaset)
 
 			summary, err := rc.Create()
 			if tc.isErr {
@@ -168,7 +172,10 @@ func TestReplicaSetConfiguration(t *testing.T) {
 }
 
 func TestReplicaSetStatus(t *testing.T) {
-	c := cache.NewMemoryCache()
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	c := cachefake.NewMockCache(controller)
 
 	labels := map[string]string{
 		"app": "myapp",
@@ -190,59 +197,26 @@ func TestReplicaSetStatus(t *testing.T) {
 
 	pods := &corev1.PodList{
 		Items: []corev1.Pod{
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "frontend-l82ph",
-					Namespace: "testing",
-					Labels:    labels,
-				},
-				Status: corev1.PodStatus{
-					Phase: corev1.PodRunning,
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "frontend-rs95v",
-					Namespace: "testing",
-					Labels:    labels,
-				},
-				Status: corev1.PodStatus{
-					Phase: corev1.PodRunning,
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "frontend-sl8sv",
-					Namespace: "testing",
-					Labels:    labels,
-				},
-				Status: corev1.PodStatus{
-					Phase: corev1.PodRunning,
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "frontend-sl8sv",
-					Namespace: "prod",
-					Labels:    labels,
-				},
-				Status: corev1.PodStatus{
-					Phase: corev1.PodRunning,
-				},
-			},
+			*createPodWithPhase("frontend-l82ph", labels, corev1.PodRunning, metav1.NewControllerRef(rs, rs.GroupVersionKind())),
+			*createPodWithPhase("frontend-rs95v", labels, corev1.PodRunning, metav1.NewControllerRef(rs, rs.GroupVersionKind())),
+			*createPodWithPhase("frontend-sl8sv", labels, corev1.PodRunning, metav1.NewControllerRef(rs, rs.GroupVersionKind())),
 		},
 	}
 
+	var podList []*unstructured.Unstructured
 	for _, p := range pods.Items {
-		u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(p)
-		if err != nil {
-			return
-		}
-
-		c.Store(&unstructured.Unstructured{Object: u})
+		u := testutil.ToUnstructured(t, &p)
+		podList = append(podList, u)
+	}
+	key := cache.Key{
+		Namespace:  "testing",
+		APIVersion: "v1",
+		Kind:       "Pod",
 	}
 
-	rsc := printer.NewReplicaSetStatus(rs)
+	c.EXPECT().List(gomock.Eq(key)).Return(podList, nil)
+
+	rsc := NewReplicaSetStatus(rs)
 	got, err := rsc.Create(c)
 	require.NoError(t, err)
 

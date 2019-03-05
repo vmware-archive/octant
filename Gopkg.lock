@@ -563,9 +563,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:75515eedc0dc2cb0b40372008b616fa2841d831c63eedd403285ff286c593295"
+  digest = "1:04a5b0e4138f98eef79ce12a955a420ee358e9f787044cc3a553ac3c3ade997e"
   name = "golang.org/x/sync"
-  packages = ["semaphore"]
+  packages = [
+    "errgroup",
+    "semaphore",
+  ]
   pruneopts = "UT"
   revision = "37e7f081c4d4c64e13b10787722085407fe5d15f"
 
@@ -744,9 +747,13 @@
   version = "kubernetes-1.13.1"
 
 [[projects]]
-  digest = "1:5c8e30a40644c03c864f2a9e3d32b6346ab05c8cafafd1833954c3957abcb160"
+  digest = "1:0a1552c2393a7cf39f90f027edf9777eea6b79e38b2cc698073d7bccb5cbafe5"
   name = "k8s.io/apiextensions-apiserver"
-  packages = ["pkg/features"]
+  packages = [
+    "pkg/apis/apiextensions",
+    "pkg/apis/apiextensions/v1beta1",
+    "pkg/features",
+  ]
   pruneopts = "UT"
   revision = "0fe22c71c47604641d9aa352c785b7912c200562"
   version = "kubernetes-1.13.1"
@@ -819,11 +826,10 @@
   version = "kubernetes-1.13.1"
 
 [[projects]]
-  digest = "1:96cde6cbdb91e0cd9a5249d4c73c61d132db1033d8d93f6abfe8d1c584c8e737"
+  digest = "1:c40148eb7143f5688873f994917172462595d22598a7a4911c84138bdb9fed37"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
-    "discovery/fake",
     "dynamic",
     "dynamic/dynamicinformer",
     "dynamic/dynamiclister",
@@ -875,72 +881,39 @@
     "informers/storage/v1alpha1",
     "informers/storage/v1beta1",
     "kubernetes",
-    "kubernetes/fake",
     "kubernetes/scheme",
     "kubernetes/typed/admissionregistration/v1alpha1",
-    "kubernetes/typed/admissionregistration/v1alpha1/fake",
     "kubernetes/typed/admissionregistration/v1beta1",
-    "kubernetes/typed/admissionregistration/v1beta1/fake",
     "kubernetes/typed/apps/v1",
-    "kubernetes/typed/apps/v1/fake",
     "kubernetes/typed/apps/v1beta1",
-    "kubernetes/typed/apps/v1beta1/fake",
     "kubernetes/typed/apps/v1beta2",
-    "kubernetes/typed/apps/v1beta2/fake",
     "kubernetes/typed/auditregistration/v1alpha1",
-    "kubernetes/typed/auditregistration/v1alpha1/fake",
     "kubernetes/typed/authentication/v1",
-    "kubernetes/typed/authentication/v1/fake",
     "kubernetes/typed/authentication/v1beta1",
-    "kubernetes/typed/authentication/v1beta1/fake",
     "kubernetes/typed/authorization/v1",
-    "kubernetes/typed/authorization/v1/fake",
     "kubernetes/typed/authorization/v1beta1",
-    "kubernetes/typed/authorization/v1beta1/fake",
     "kubernetes/typed/autoscaling/v1",
-    "kubernetes/typed/autoscaling/v1/fake",
     "kubernetes/typed/autoscaling/v2beta1",
-    "kubernetes/typed/autoscaling/v2beta1/fake",
     "kubernetes/typed/autoscaling/v2beta2",
-    "kubernetes/typed/autoscaling/v2beta2/fake",
     "kubernetes/typed/batch/v1",
-    "kubernetes/typed/batch/v1/fake",
     "kubernetes/typed/batch/v1beta1",
-    "kubernetes/typed/batch/v1beta1/fake",
     "kubernetes/typed/batch/v2alpha1",
-    "kubernetes/typed/batch/v2alpha1/fake",
     "kubernetes/typed/certificates/v1beta1",
-    "kubernetes/typed/certificates/v1beta1/fake",
     "kubernetes/typed/coordination/v1beta1",
-    "kubernetes/typed/coordination/v1beta1/fake",
     "kubernetes/typed/core/v1",
-    "kubernetes/typed/core/v1/fake",
     "kubernetes/typed/events/v1beta1",
-    "kubernetes/typed/events/v1beta1/fake",
     "kubernetes/typed/extensions/v1beta1",
-    "kubernetes/typed/extensions/v1beta1/fake",
     "kubernetes/typed/networking/v1",
-    "kubernetes/typed/networking/v1/fake",
     "kubernetes/typed/policy/v1beta1",
-    "kubernetes/typed/policy/v1beta1/fake",
     "kubernetes/typed/rbac/v1",
-    "kubernetes/typed/rbac/v1/fake",
     "kubernetes/typed/rbac/v1alpha1",
-    "kubernetes/typed/rbac/v1alpha1/fake",
     "kubernetes/typed/rbac/v1beta1",
-    "kubernetes/typed/rbac/v1beta1/fake",
     "kubernetes/typed/scheduling/v1alpha1",
-    "kubernetes/typed/scheduling/v1alpha1/fake",
     "kubernetes/typed/scheduling/v1beta1",
-    "kubernetes/typed/scheduling/v1beta1/fake",
     "kubernetes/typed/settings/v1alpha1",
-    "kubernetes/typed/settings/v1alpha1/fake",
     "kubernetes/typed/storage/v1",
-    "kubernetes/typed/storage/v1/fake",
     "kubernetes/typed/storage/v1alpha1",
-    "kubernetes/typed/storage/v1alpha1/fake",
     "kubernetes/typed/storage/v1beta1",
-    "kubernetes/typed/storage/v1beta1/fake",
     "listers/admissionregistration/v1alpha1",
     "listers/admissionregistration/v1beta1",
     "listers/apps/v1",
@@ -990,7 +963,6 @@
     "tools/clientcmd/api/v1",
     "tools/metrics",
     "tools/pager",
-    "tools/portforward",
     "tools/reference",
     "transport",
     "transport/spdy",
@@ -1133,7 +1105,6 @@
     "github.com/asticode/go-astilectron",
     "github.com/asticode/go-astilectron-bootstrap",
     "github.com/asticode/go-astilog",
-    "github.com/davecgh/go-spew/spew",
     "github.com/golang/mock/gomock",
     "github.com/google/uuid",
     "github.com/googleapis/gnostic/OpenAPIv2",
@@ -1147,15 +1118,18 @@
     "github.com/stretchr/testify/require",
     "go.uber.org/zap",
     "go.uber.org/zap/zapcore",
+    "golang.org/x/sync/errgroup",
     "k8s.io/api/apps/v1",
     "k8s.io/api/batch/v1",
     "k8s.io/api/batch/v1beta1",
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",
     "k8s.io/api/rbac/v1",
+    "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apimachinery/pkg/api/equality",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/meta",
+    "k8s.io/apimachinery/pkg/api/resource",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured",
     "k8s.io/apimachinery/pkg/apis/meta/v1beta1",
@@ -1168,31 +1142,29 @@
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/clock",
     "k8s.io/apimachinery/pkg/util/duration",
+    "k8s.io/apimachinery/pkg/util/httpstream",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/runtime",
     "k8s.io/apimachinery/pkg/util/sets",
+    "k8s.io/apimachinery/pkg/util/yaml",
     "k8s.io/apimachinery/pkg/version",
-    "k8s.io/apimachinery/pkg/watch",
     "k8s.io/client-go/discovery",
-    "k8s.io/client-go/discovery/fake",
     "k8s.io/client-go/dynamic",
     "k8s.io/client-go/dynamic/dynamicinformer",
     "k8s.io/client-go/dynamic/fake",
     "k8s.io/client-go/informers",
     "k8s.io/client-go/kubernetes",
-    "k8s.io/client-go/kubernetes/fake",
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/plugin/pkg/client/auth/azure",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/plugin/pkg/client/auth/oidc",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/restmapper",
-    "k8s.io/client-go/testing",
     "k8s.io/client-go/tools/cache",
     "k8s.io/client-go/tools/clientcmd",
     "k8s.io/client-go/tools/clientcmd/api/latest",
-    "k8s.io/client-go/tools/portforward",
     "k8s.io/client-go/transport/spdy",
+    "k8s.io/client-go/util/jsonpath",
     "k8s.io/kubernetes/pkg/apis/apps",
     "k8s.io/kubernetes/pkg/apis/batch",
     "k8s.io/kubernetes/pkg/apis/core",

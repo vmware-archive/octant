@@ -152,7 +152,7 @@ func (statefulSet *StatefulSetStatus) Create(c cache.Cache) (*component.Quadrant
 
 	pods, err := listPods(statefulSet.statefulset.ObjectMeta.Namespace, statefulSet.statefulset.Spec.Selector, statefulSet.statefulset.GetUID(), c)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "list pods")
 	}
 
 	ps := createPodStatus(pods)

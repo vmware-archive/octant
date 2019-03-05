@@ -1,9 +1,8 @@
-package printer_test
+package printer
 
 import (
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/internal/view/flexlayout"
@@ -15,7 +14,7 @@ func Test_Metadata(t *testing.T) {
 	fl := flexlayout.New()
 
 	deployment := testutil.CreateDeployment("deployment")
-	metadata, err := printer.NewMetadata(deployment)
+	metadata, err := NewMetadata(deployment)
 	require.NoError(t, err)
 
 	require.NoError(t, metadata.AddToFlexLayout(fl))

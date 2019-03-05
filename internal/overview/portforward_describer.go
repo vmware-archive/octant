@@ -43,7 +43,7 @@ func (d *PortForwardListDescriber) Describe(ctx context.Context, prefix, namespa
 	}, nil
 }
 
-func (d *PortForwardListDescriber) PathFilters(namespace string) []pathFilter {
+func (d *PortForwardListDescriber) PathFilters() []pathFilter {
 	filter := newPathFilter("/portforward", d)
 	return []pathFilter{*filter}
 }

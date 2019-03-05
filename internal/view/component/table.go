@@ -91,6 +91,14 @@ func (t *Table) Add(rows ...TableRow) {
 	t.Config.Rows = append(t.Config.Rows, rows...)
 }
 
+// AddColumn adds a column to the table.
+func (t *Table) AddColumn(name string) {
+	t.Config.Columns = append(t.Config.Columns, TableCol{
+		Name:     name,
+		Accessor: name,
+	})
+}
+
 type tableMarshal Table
 
 // MarshalJSON implements json.Marshaler

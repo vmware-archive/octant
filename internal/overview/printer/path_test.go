@@ -1,9 +1,8 @@
-package printer_test
+package printer
 
 import (
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -192,7 +191,7 @@ func TestObjectReferencePath(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := printer.ObjectReferencePath(tc.objectReference)
+			got, err := ObjectReferencePath(tc.objectReference)
 			if tc.isErr {
 				require.Error(t, err)
 				return

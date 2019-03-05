@@ -152,7 +152,7 @@ var (
 		csServiceAccounts,
 	)
 
-	customResourcesDescriber = NewSectionDescriber(
+	customResourcesDescriber = newCRDSectionDescriber(
 		"/custom-resources",
 		"Custom Resources",
 	)
