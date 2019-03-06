@@ -1,11 +1,12 @@
 package printer
 
 import (
+	"sort"
+
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
 	rbacv1 "k8s.io/api/rbac/v1"
-	"sort"
 )
 
 func RoleListHandler(roleList *rbacv1.RoleList, opts Options) (component.ViewComponent, error) {

@@ -151,6 +151,8 @@ func AddPrintHandlers(p PrinterHandler) error {
 		printer.ConfigMapHandler,
 		printer.CronJobListHandler,
 		printer.CronJobHandler,
+		printer.ClusterRoleListHandler,
+		printer.ClusterRoleHandler,
 		printer.DaemonSetListHandler,
 		printer.DaemonSetHandler,
 		printer.DeploymentHandler,

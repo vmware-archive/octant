@@ -189,6 +189,32 @@ func CreateRole(name string) *rbacv1.Role {
 	}
 }
 
+func CreateClusterRole(name string) *rbacv1.ClusterRole {
+	return &rbacv1.ClusterRole{
+		TypeMeta:   genTypeMeta(gvk.ClusterRoleGVK),
+		ObjectMeta: genObjectMeta(name),
+		Rules: []rbacv1.PolicyRule{
+			{
+				APIGroups: []string{
+					"stable.example.com",
+				},
+				Resources: []string{
+					"crontabs",
+				},
+				Verbs: []string{
+					"get",
+					"list",
+					"watch",
+					"create",
+					"update",
+					"patch",
+					"delete",
+				},
+			},
+		},
+	}
+}
+
 func CreateRoleBindingSubject(kind, name string) *rbacv1.Subject {
 	return &rbacv1.Subject{
 		Kind: kind,
