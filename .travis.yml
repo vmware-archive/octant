@@ -65,10 +65,3 @@ script:
 # choco install scripts points to private GH repo but windows cannot have secure env
 # - if [[ $TRAVIS_OS_NAME == 'windows' ]]; then ./ci/travis-choco.sh; fi
 
-deploy:
-- provider: script
-  skip_cleanup: true
-  script: ./ci/travis-deploy.sh
-  on:
-    tags: true
-    condition: $TRAVIS_OS_NAME = linux
