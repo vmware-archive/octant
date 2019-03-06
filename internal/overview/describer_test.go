@@ -52,7 +52,7 @@ func TestListDescriber(t *testing.T) {
 		return &corev1.Pod{}
 	}
 
-	d := NewListDescriber(thePath, "list", key, listType, objectType)
+	d := NewListDescriber(thePath, "list", key, listType, objectType, false)
 
 	options := DescriberOptions{
 		Cache:   c,

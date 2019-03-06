@@ -9,20 +9,21 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 )
 
-func RoleBindingListHandler(roleBindingList *rbacv1.RoleBindingList, opts Options) (component.ViewComponent, error) {
-	if roleBindingList == nil {
-		return nil, errors.New("role binding list is nil")
+func ClusterRoleBindingListHandler(clusterRoleBindingList *rbacv1.ClusterRoleBindingList, opts Options) (component.ViewComponent, error) {
+	if clusterRoleBindingList == nil {
+		return nil, errors.New("cluster role binding list is nil")
 	}
 
-	columns := component.NewTableCols("Name", "Age", "Role kind", "Role name")
-	table := component.NewTable("Role Bindings", columns)
+	columns := component.NewTableCols("Name", "Labels", "Age", "Role kind", "Role name")
+	table := component.NewTable("Cluster Role Bindings", columns)
 
-	for _, roleBinding := range roleBindingList.Items {
+	for _, roleBinding := range clusterRoleBindingList.Items {
 		row := component.TableRow{}
 		row["Name"] = link.ForObject(&roleBinding, roleBinding.Name)
+		row["Labels"] = component.NewLabels(roleBinding.Labels)
 		row["Age"] = component.NewTimestamp(roleBinding.CreationTimestamp.Time)
 		row["Role kind"] = component.NewText(roleBinding.RoleRef.Kind)
-		row["Role name"] = roleLinkFromRoleBinding(&roleBinding)
+		row["Role name"] = roleLinkFromClusterRoleBinding(&roleBinding)
 
 		table.Add(row)
 	}
@@ -30,7 +31,7 @@ func RoleBindingListHandler(roleBindingList *rbacv1.RoleBindingList, opts Option
 	return table, nil
 }
 
-func roleLinkFromRoleBinding(roleBinding *rbacv1.RoleBinding) *component.Link {
+func roleLinkFromClusterRoleBinding(roleBinding *rbacv1.ClusterRoleBinding) *component.Link {
 	roleRef := roleBinding.RoleRef
 
 	namespace := ""
@@ -42,16 +43,16 @@ func roleLinkFromRoleBinding(roleBinding *rbacv1.RoleBinding) *component.Link {
 	return link.ForGVK(namespace, apiVersion, roleRef.Kind, roleRef.Name, roleRef.Name)
 }
 
-func RoleBindingHandler(roleBinding *rbacv1.RoleBinding, opts Options) (component.ViewComponent, error) {
+func ClusterRoleBindingHandler(roleBinding *rbacv1.ClusterRoleBinding, opts Options) (component.ViewComponent, error) {
 	o := NewObject(roleBinding)
 
 	o.RegisterConfig(func() (component.ViewComponent, error) {
-		return printRoleBindingConfig(roleBinding)
+		return printClusterRoleBindingConfig(roleBinding)
 	}, 16)
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.ViewComponent, error) {
-			return printRoleBindingSubjects(roleBinding)
+			return printClusterRoleBindingSubjects(roleBinding)
 		},
 		Width: 24,
 	})
@@ -59,7 +60,7 @@ func RoleBindingHandler(roleBinding *rbacv1.RoleBinding, opts Options) (componen
 	return o.ToComponent(opts)
 }
 
-func printRoleBindingConfig(roleBinding *rbacv1.RoleBinding) (component.ViewComponent, error) {
+func printClusterRoleBindingConfig(roleBinding *rbacv1.ClusterRoleBinding) (component.ViewComponent, error) {
 	if roleBinding == nil {
 		return nil, errors.New("role binding is nil")
 	}
@@ -67,13 +68,13 @@ func printRoleBindingConfig(roleBinding *rbacv1.RoleBinding) (component.ViewComp
 	var sections component.SummarySections
 
 	sections.AddText("Role kind", roleBinding.RoleRef.Kind)
-	sections.Add("Role name", roleLinkFromRoleBinding(roleBinding))
+	sections.Add("Role name", roleLinkFromClusterRoleBinding(roleBinding))
 
 	summary := component.NewSummary("Configuration", sections...)
 	return summary, nil
 }
 
-func printRoleBindingSubjects(roleBinding *rbacv1.RoleBinding) (component.ViewComponent, error) {
+func printClusterRoleBindingSubjects(roleBinding *rbacv1.ClusterRoleBinding) (component.ViewComponent, error) {
 	if roleBinding == nil {
 		return nil, errors.New("role binding is nil")
 	}

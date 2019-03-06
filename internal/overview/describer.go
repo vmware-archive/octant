@@ -63,15 +63,16 @@ func newBaseDescriber() *baseDescriber {
 type ListDescriber struct {
 	*baseDescriber
 
-	path       string
-	title      string
-	listType   func() interface{}
-	objectType func() interface{}
-	cacheKey   cache.Key
+	path          string
+	title         string
+	listType      func() interface{}
+	objectType    func() interface{}
+	cacheKey      cache.Key
+	isClusterWide bool
 }
 
 // NewListDescriber creates an instance of ListDescriber.
-func NewListDescriber(p, title string, cacheKey cache.Key, listType, objectType func() interface{}) *ListDescriber {
+func NewListDescriber(p, title string, cacheKey cache.Key, listType, objectType func() interface{}, isClusterWide bool) *ListDescriber {
 	return &ListDescriber{
 		path:          p,
 		title:         title,
@@ -79,6 +80,7 @@ func NewListDescriber(p, title string, cacheKey cache.Key, listType, objectType 
 		cacheKey:      cacheKey,
 		listType:      listType,
 		objectType:    objectType,
+		isClusterWide: isClusterWide,
 	}
 }
 
@@ -91,6 +93,10 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 	// Pass through selector if provided to filter objects
 	var key = d.cacheKey // copy
 	key.Selector = options.Selector
+
+	if d.isClusterWide {
+		namespace = ""
+	}
 
 	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, []cache.Key{key})
 	if err != nil {
@@ -216,6 +222,10 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 	vc, err := options.Printer.Print(newObject)
 	if err != nil {
 		return emptyContentResponse, err
+	}
+
+	if vc == nil {
+		return emptyContentResponse, errors.Wrap(err, "unable to print a nil object")
 	}
 
 	vc.SetAccessor("summary")

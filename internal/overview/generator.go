@@ -7,7 +7,6 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/internal/queryer"
@@ -93,13 +92,25 @@ func newGenerator(cache cache.Cache, di discovery.DiscoveryInterface, pm *pathMa
 	}, nil
 }
 
-func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace string, opts GeneratorOptions) (component.ContentResponse, error) {
-	logger := log.From(ctx)
+type notFoundError struct {
+	path string
+}
 
+func (e *notFoundError) Path() string {
+	return e.path
+}
+
+func (e *notFoundError) NotFound() bool { return true }
+
+func (e *notFoundError) Error() string {
+	return "Not found"
+}
+
+func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace string, opts GeneratorOptions) (component.ContentResponse, error) {
 	pf, err := g.pathMatcher.Find(path)
 	if err != nil {
 		if err == errPathNotFound {
-			logger.Errorf("content not found for %q", path)
+			return emptyContentResponse, &notFoundError{path: path}
 		}
 		return emptyContentResponse, err
 	}
@@ -134,6 +145,8 @@ func AddPrintHandlers(p PrinterHandler) error {
 	handlers := []interface{}{
 		printer.EventListHandler,
 		printer.EventHandler,
+		printer.ClusterRoleBindingListHandler,
+		printer.ClusterRoleBindingHandler,
 		printer.ConfigMapListHandler,
 		printer.ConfigMapHandler,
 		printer.CronJobListHandler,

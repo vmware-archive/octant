@@ -73,8 +73,12 @@ func gvkPath(namespace, apiVersion, kind, name string) string {
 		p = "/discovery-and-load-balancing/services"
 	case apiVersion == "rbac.authorization.k8s.io/v1" && kind == "Role":
 		p = "/rbac/roles"
+	case apiVersion == "rbac.authorization.k8s.io/v1" && kind == "ClusterRole":
+		p = "/rbac/cluster-roles"
 	case apiVersion == "rbac.authorization.k8s.io/v1" && kind == "RoleBinding":
 		p = "/rbac/role-bindings"
+	case apiVersion == "rbac.authorization.k8s.io/v1" && kind == "ClusterRoleBinding":
+		p = "/rbac/cluster-role-bindings"
 	case apiVersion == "v1" && kind == "Event":
 		p = "/events"
 	case apiVersion == "v1" && kind == "Pod":

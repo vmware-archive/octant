@@ -15,6 +15,25 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
+// CreateClusterRoleBinding creates a cluster role binding
+func CreateClusterRoleBinding(name string) *rbacv1.ClusterRoleBinding {
+	return &rbacv1.ClusterRoleBinding{
+		TypeMeta:   genTypeMeta(gvk.ClusterRoleBindingGVK),
+		ObjectMeta: genObjectMeta(name),
+		RoleRef: rbacv1.RoleRef{
+			Kind:     "Role",
+			Name:     "role-name",
+			APIGroup: "rbac.authorization.k8s.io",
+		},
+		Subjects: []rbacv1.Subject{
+			{
+				Kind: "User",
+				Name: "test@example.com",
+			},
+		},
+	}
+}
+
 // CreateCRD creates a CRD
 func CreateCRD(name string) *apiextv1beta1.CustomResourceDefinition {
 	return &apiextv1beta1.CustomResourceDefinition{

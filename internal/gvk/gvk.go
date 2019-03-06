@@ -5,6 +5,7 @@ import (
 )
 
 var (
+	ClusterRoleBindingGVK       = schema.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "ClusterRoleBinding"}
 	CustomResourceDefinitionGVK = schema.GroupVersionKind{Group: "apiextensions.k8s.io", Version: "v1beta1", Kind: "CustomResourceDefinition"}
 	DaemonSetGVK                = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "DaemonSet"}
 	DeploymentGVK               = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "Deployment"}

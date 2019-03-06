@@ -20,6 +20,11 @@ const (
 	defaultEventTimeout = 5 * time.Second
 )
 
+type notFound interface {
+	NotFound() bool
+	Path() string
+}
+
 type eventGenerator interface {
 	// Generate generates an event or an error.
 	Generate(context.Context) (event, error)
@@ -171,6 +176,13 @@ func (cs *contentStreamer) content(ctx context.Context) error {
 				case <-timer.C:
 					e, err := eg.Generate(ctx)
 					if err != nil {
+						if nfe, ok := err.(notFound); ok && nfe.NotFound() {
+							cs.logger.With(
+								"path", nfe.Path(),
+							).Infof("content not found")
+							break
+						}
+
 						cs.logger.Errorf("event generator error: %v", err)
 
 						// This could be one time error, or it could be a huge failure.

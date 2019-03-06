@@ -33,6 +33,7 @@ type ResourceOptions struct {
 	ObjectType            interface{}
 	Titles                ResourceTitle
 	DisableResourceViewer bool
+	ClusterWide           bool
 }
 
 type Resource struct {
@@ -60,6 +61,7 @@ func (r *Resource) List() *ListDescriber {
 		func() interface{} {
 			return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
 		},
+		r.ClusterWide,
 	)
 }
 
