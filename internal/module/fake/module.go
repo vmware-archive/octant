@@ -42,7 +42,7 @@ func (m *Module) ContentPath() string {
 }
 
 // Navigation returns navigation entries for the module.
-func (m *Module) Navigation(namespace, prefix string) (*hcli.Navigation, error) {
+func (m *Module) Navigation(ctx context.Context, namespace, prefix string) (*hcli.Navigation, error) {
 	nav := &hcli.Navigation{
 		Path:  prefix,
 		Title: m.name,
@@ -83,6 +83,6 @@ func (m *Module) Content(ctx context.Context, contentPath, prefix, namespace str
 	}
 }
 
-func (m *Module) Handlers() map[string]http.Handler {
+func (m *Module) Handlers(ctx context.Context) map[string]http.Handler {
 	return make(map[string]http.Handler)
 }

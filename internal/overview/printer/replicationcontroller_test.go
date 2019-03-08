@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -26,7 +27,8 @@ func Test_ReplicationControllerListHandler(t *testing.T) {
 		Cache: cachefake.NewMockCache(controller),
 	}
 
-	got, err := ReplicationControllerListHandler(validReplicationControllerList, printOptions)
+	ctx := context.Background()
+	got, err := ReplicationControllerListHandler(ctx, validReplicationControllerList, printOptions)
 	require.NoError(t, err)
 
 	containers := component.NewContainers()
@@ -142,9 +144,10 @@ func TestReplicationControllerStatus(t *testing.T) {
 		Kind:       "Pod",
 	}
 
-	c.EXPECT().List(gomock.Eq(key)).Return(podList, nil)
+	c.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, nil)
 	rcs := NewReplicationControllerStatus(replicationController)
-	got, err := rcs.Create(c)
+	ctx := context.Background()
+	got, err := rcs.Create(ctx, c)
 	require.NoError(t, err)
 
 	expected := component.NewQuadrant()

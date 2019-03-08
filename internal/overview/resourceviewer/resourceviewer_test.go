@@ -1,6 +1,7 @@
 package resourceviewer
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -19,7 +20,7 @@ type stubbedVisitor struct{ visitErr error }
 
 var _ objectvisitor.Visitor = (*stubbedVisitor)(nil)
 
-func (v stubbedVisitor) Visit(objectvisitor.ClusterObject) error {
+func (v stubbedVisitor) Visit(context.Context, objectvisitor.ClusterObject) error {
 	return v.visitErr
 }
 
@@ -51,7 +52,9 @@ func Test_ResourceViewer(t *testing.T) {
 	rv, err := New(nil, c, stubVisitor(false))
 	require.NoError(t, err)
 
-	vc, err := rv.Visit(deployment)
+	ctx := context.Background()
+
+	vc, err := rv.Visit(ctx, deployment)
 	require.NoError(t, err)
 	assert.NotNil(t, vc)
 }
@@ -72,6 +75,8 @@ func Test_ResourceViewer_visitor_fails(t *testing.T) {
 	rv, err := New(nil, c, stubVisitor(true))
 	require.NoError(t, err)
 
-	_, err = rv.Visit(deployment)
+	ctx := context.Background()
+
+	_, err = rv.Visit(ctx, deployment)
 	require.Error(t, err)
 }

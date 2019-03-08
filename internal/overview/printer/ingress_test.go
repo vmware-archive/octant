@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -95,7 +96,8 @@ func Test_IngressListHandler(t *testing.T) {
 				Cache: cachefake.NewMockCache(controller),
 			}
 
-			got, err := IngressListHandler(tc.list, printOptions)
+			ctx := context.Background()
+			got, err := IngressListHandler(ctx, tc.list, printOptions)
 			if tc.isErr {
 				require.Error(t, err)
 				return

@@ -1,6 +1,7 @@
 package resourceviewer
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -55,7 +56,7 @@ func (c *Collector) Reset() {
 }
 
 // Process process an object by saving the object to a map.
-func (c *Collector) Process(object objectvisitor.ClusterObject) error {
+func (c *Collector) Process(ctx context.Context, object objectvisitor.ClusterObject) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -76,7 +77,7 @@ func (c *Collector) Process(object objectvisitor.ClusterObject) error {
 
 		uid, node, err = c.createPodGroupNode(object)
 	} else {
-		uid, node, err = c.createObjectNode(object)
+		uid, node, err = c.createObjectNode(ctx, object)
 	}
 
 	if err != nil {
@@ -140,7 +141,7 @@ func (e skipNode) Error() string {
 	return "skip node"
 }
 
-func (c *Collector) createObjectNode(object objectvisitor.ClusterObject) (string, component.Node, error) {
+func (c *Collector) createObjectNode(ctx context.Context, object objectvisitor.ClusterObject) (string, component.Node, error) {
 	objectKind := object.GetObjectKind()
 	gvk := objectKind.GroupVersionKind()
 	apiVersion, kind := gvk.ToAPIVersionAndKind()
@@ -172,7 +173,7 @@ func (c *Collector) createObjectNode(object objectvisitor.ClusterObject) (string
 
 	var nodeStatus component.NodeStatus
 
-	status, err := objectstatus.Status(object, c.cache)
+	status, err := objectstatus.Status(ctx, object, c.cache)
 	if err != nil {
 		c.log().Errorf("error retrieving object status: %v", err)
 		nodeStatus = component.NodeStatusOK

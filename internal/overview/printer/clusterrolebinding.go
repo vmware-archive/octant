@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
@@ -9,7 +10,7 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 )
 
-func ClusterRoleBindingListHandler(clusterRoleBindingList *rbacv1.ClusterRoleBindingList, opts Options) (component.ViewComponent, error) {
+func ClusterRoleBindingListHandler(ctx context.Context, clusterRoleBindingList *rbacv1.ClusterRoleBindingList, opts Options) (component.ViewComponent, error) {
 	if clusterRoleBindingList == nil {
 		return nil, errors.New("cluster role binding list is nil")
 	}
@@ -43,7 +44,7 @@ func roleLinkFromClusterRoleBinding(roleBinding *rbacv1.ClusterRoleBinding) *com
 	return link.ForGVK(namespace, apiVersion, roleRef.Kind, roleRef.Name, roleRef.Name)
 }
 
-func ClusterRoleBindingHandler(roleBinding *rbacv1.ClusterRoleBinding, opts Options) (component.ViewComponent, error) {
+func ClusterRoleBindingHandler(ctx context.Context, roleBinding *rbacv1.ClusterRoleBinding, opts Options) (component.ViewComponent, error) {
 	o := NewObject(roleBinding)
 
 	o.RegisterConfig(func() (component.ViewComponent, error) {
@@ -57,7 +58,7 @@ func ClusterRoleBindingHandler(roleBinding *rbacv1.ClusterRoleBinding, opts Opti
 		Width: 24,
 	})
 
-	return o.ToComponent(opts)
+	return o.ToComponent(ctx, opts)
 }
 
 func printClusterRoleBindingConfig(roleBinding *rbacv1.ClusterRoleBinding) (component.ViewComponent, error) {

@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -14,7 +15,7 @@ import (
 )
 
 // ServiceListHandler is a printFunc that lists services
-func ServiceListHandler(list *corev1.ServiceList, opts Options) (component.ViewComponent, error) {
+func ServiceListHandler(ctx context.Context, list *corev1.ServiceList, opts Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -42,7 +43,7 @@ func ServiceListHandler(list *corev1.ServiceList, opts Options) (component.ViewC
 }
 
 // ServiceHandler is a printFunc that prints a Services.
-func ServiceHandler(service *corev1.Service, options Options) (component.ViewComponent, error) {
+func ServiceHandler(ctx context.Context, service *corev1.Service, options Options) (component.ViewComponent, error) {
 	o := NewObject(service)
 
 	o.RegisterConfig(func() (component.ViewComponent, error) {
@@ -55,14 +56,14 @@ func ServiceHandler(service *corev1.Service, options Options) (component.ViewCom
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.ViewComponent, error) {
-			return serviceEndpoints(options.Cache, service)
+			return serviceEndpoints(ctx, options.Cache, service)
 		},
 		Width: 24,
 	})
 
 	o.EnableEvents()
 
-	return o.ToComponent(options)
+	return o.ToComponent(ctx, options)
 }
 
 func printServicePorts(ports []corev1.ServicePort) component.ViewComponent {
@@ -176,7 +177,7 @@ func serviceSummary(service *corev1.Service) (*component.Summary, error) {
 	return summary, nil
 }
 
-func serviceEndpoints(c cache.Cache, service *corev1.Service) (*component.Table, error) {
+func serviceEndpoints(ctx context.Context, c cache.Cache, service *corev1.Service) (*component.Table, error) {
 	if c == nil {
 		return nil, errors.New("cache is nil")
 	}
@@ -192,7 +193,7 @@ func serviceEndpoints(c cache.Cache, service *corev1.Service) (*component.Table,
 		Name:       service.Name,
 	}
 
-	object, err := c.Get(key)
+	object, err := c.Get(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "get endpoints for service %s", service.Name)
 	}

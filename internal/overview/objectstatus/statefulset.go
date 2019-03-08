@@ -1,6 +1,8 @@
 package objectstatus
 
 import (
+	"context"
+
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
@@ -9,7 +11,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
-func statefulSet(object runtime.Object, _ cache.Cache) (ObjectStatus, error) {
+func statefulSet(_ context.Context, object runtime.Object, _ cache.Cache) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("stateful set is nil")
 	}

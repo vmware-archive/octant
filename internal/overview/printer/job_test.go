@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -22,7 +23,8 @@ func Test_JobListHandler(t *testing.T) {
 		Cache: cachefake.NewMockCache(controller),
 	}
 
-	got, err := JobListHandler(validJobList, printOptions)
+	ctx := context.Background()
+	got, err := JobListHandler(ctx, validJobList, printOptions)
 	require.NoError(t, err)
 
 	expected := component.NewTable("Jobs", JobCols)

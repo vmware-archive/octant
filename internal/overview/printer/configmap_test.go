@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -50,7 +51,8 @@ func Test_ConfigMapListHandler(t *testing.T) {
 		},
 	}
 
-	got, err := ConfigMapListHandler(object, printOptions)
+	ctx := context.Background()
+	got, err := ConfigMapListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Data", "Age")

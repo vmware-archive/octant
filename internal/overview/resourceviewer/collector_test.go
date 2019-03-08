@@ -1,6 +1,7 @@
 package resourceviewer
 
 import (
+	"context"
 	"net/url"
 	"testing"
 
@@ -57,16 +58,18 @@ func Test_Collector(t *testing.T) {
 	ca := cachefake.NewMockCache(controller)
 	c := NewCollector(ca)
 
-	err := c.Process(deployment)
+	ctx := context.Background()
+
+	err := c.Process(ctx, deployment)
 	require.NoError(t, err)
 
-	err = c.Process(replicaSet1)
+	err = c.Process(ctx, replicaSet1)
 	require.NoError(t, err)
 
-	err = c.Process(replicaSet2)
+	err = c.Process(ctx, replicaSet2)
 	require.NoError(t, err)
 
-	err = c.Process(pod)
+	err = c.Process(ctx, pod)
 	require.NoError(t, err)
 
 	err = c.AddChild(deployment, replicaSet1, replicaSet2)

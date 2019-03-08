@@ -1,6 +1,7 @@
 package objectstatus
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -81,7 +82,8 @@ func Test_replicaSetAppsV1(t *testing.T) {
 
 			object := tc.init(t, c)
 
-			status, err := replicaSetAppsV1(object, c)
+			ctx := context.Background()
+			status, err := replicaSetAppsV1(ctx, object, c)
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -161,7 +163,8 @@ func Test_replicaSetExtV1Beta1(t *testing.T) {
 
 			object := tc.init(t, c)
 
-			status, err := replicaSetExtV1Beta1(object, c)
+			ctx := context.Background()
+			status, err := replicaSetExtV1Beta1(ctx, object, c)
 			if tc.isErr {
 				require.Error(t, err)
 				return

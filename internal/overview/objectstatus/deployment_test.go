@@ -1,6 +1,7 @@
 package objectstatus
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -81,7 +82,8 @@ func Test_deploymentAppsV1(t *testing.T) {
 
 			object := tc.init(t, c)
 
-			status, err := deploymentAppsV1(object, c)
+			ctx := context.Background()
+			status, err := deploymentAppsV1(ctx, object, c)
 			if tc.isErr {
 				require.Error(t, err)
 				return

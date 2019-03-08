@@ -1,12 +1,15 @@
 package resourceviewer
 
 import (
+	"context"
+
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/overview/objectvisitor"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
+	"go.opencensus.io/trace"
 	"k8s.io/apimachinery/pkg/api/meta"
 )
 
@@ -54,10 +57,13 @@ func New(logger log.Logger, c cache.Cache, opts ...ViewerOpt) (*ResourceViewer, 
 }
 
 // Visit visits an object and creates a view component.
-func (rv *ResourceViewer) Visit(object objectvisitor.ClusterObject) (component.ViewComponent, error) {
+func (rv *ResourceViewer) Visit(ctx context.Context, object objectvisitor.ClusterObject) (component.ViewComponent, error) {
 	rv.collector.Reset()
 
-	if err := rv.visitor.Visit(object); err != nil {
+	ctx, span := trace.StartSpan(ctx, "resourceviewer")
+	defer span.End()
+
+	if err := rv.visitor.Visit(ctx, object); err != nil {
 		return nil, err
 	}
 

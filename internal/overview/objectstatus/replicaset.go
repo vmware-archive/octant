@@ -1,6 +1,7 @@
 package objectstatus
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/cache"
@@ -14,7 +15,7 @@ import (
 
 // replicaSetExtV1Beta1 creates status for an ext/v1beta1 replica set. This is
 // not the final implementation. It is included to generate output.
-func replicaSetExtV1Beta1(object runtime.Object, _ cache.Cache) (ObjectStatus, error) {
+func replicaSetExtV1Beta1(_ context.Context, object runtime.Object, _ cache.Cache) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("replica set is nil")
 	}
@@ -49,7 +50,7 @@ func replicaSetExtV1Beta1(object runtime.Object, _ cache.Cache) (ObjectStatus, e
 
 // replicaSetExtV1Beta1 creates status for an v1/apps replica set. This is
 // not the final implementation. It is included to generate output.
-func replicaSetAppsV1(object runtime.Object, _ cache.Cache) (ObjectStatus, error) {
+func replicaSetAppsV1(_ context.Context, object runtime.Object, _ cache.Cache) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("replica set is nil")
 	}

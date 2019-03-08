@@ -25,26 +25,26 @@ type contentHandler struct {
 	nsClient    cluster.NamespaceInterface
 }
 
-func (h *contentHandler) RegisterRoutes(router *mux.Router) error {
+func (h *contentHandler) RegisterRoutes(ctx context.Context, router *mux.Router) error {
 	s := router.PathPrefix("/content").Subrouter() // Expands to "/api/v1/content"
 	sm := module.MuxRouter{Router: s}
 
 	// Register content paths for all modules
 	for _, m := range h.modules {
 		// Registers a content handler for the module - adds up to /api/v1/content/{module}/.....
-		h.registerModuleRoute(sm, m)
+		h.registerModuleRoute(ctx, sm, m)
 	}
 	return nil
 }
 
 // Register content routes for a specified module
-func (h *contentHandler) registerModuleRoute(router module.Router, m module.Module) {
+func (h *contentHandler) registerModuleRoute(ctx context.Context, router module.Router, m module.Module) {
 	h.logger.Infof("Registering routes for %v", m.Name())
 	parent := router.PathPrefix(path.Join("/", m.Name())).Subrouter() // e.g. /overview
 
 	ns := parent.PathPrefix("/namespace/{namespace}").Subrouter()
 
-	for path, handler := range m.Handlers() {
+	for path, handler := range m.Handlers(ctx) {
 		// Namespace is optional, so register two alternatives
 		ns.Handle(path, handler)
 		parent.Handle(path, handler)

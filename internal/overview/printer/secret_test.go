@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -50,7 +51,8 @@ func Test_SecretListHandler(t *testing.T) {
 		},
 	}
 
-	got, err := SecretListHandler(object, printOptions)
+	ctx := context.Background()
+	got, err := SecretListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
 	expected := component.NewTable("Secrets", secretTableCols)

@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -78,7 +79,8 @@ func Test_PodListHandler(t *testing.T) {
 		},
 	}
 
-	got, err := PodListHandler(object, printOptions)
+	ctx := context.Background()
+	got, err := PodListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
 	containers := component.NewContainers()

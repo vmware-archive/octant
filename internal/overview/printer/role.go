@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"sort"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
@@ -9,7 +10,7 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 )
 
-func RoleListHandler(roleList *rbacv1.RoleList, opts Options) (component.ViewComponent, error) {
+func RoleListHandler(ctx context.Context, roleList *rbacv1.RoleList, opts Options) (component.ViewComponent, error) {
 	if roleList == nil {
 		return nil, errors.New("role list is nil")
 	}
@@ -27,7 +28,7 @@ func RoleListHandler(roleList *rbacv1.RoleList, opts Options) (component.ViewCom
 	return table, nil
 }
 
-func RoleHandler(role *rbacv1.Role, opts Options) (component.ViewComponent, error) {
+func RoleHandler(ctx context.Context, role *rbacv1.Role, opts Options) (component.ViewComponent, error) {
 	o := NewObject(role)
 
 	o.RegisterConfig(func() (component.ViewComponent, error) {
@@ -41,7 +42,7 @@ func RoleHandler(role *rbacv1.Role, opts Options) (component.ViewComponent, erro
 		Width: 24,
 	})
 
-	return o.ToComponent(opts)
+	return o.ToComponent(ctx, opts)
 }
 
 func printRoleConfig(role *rbacv1.Role) (component.ViewComponent, error) {

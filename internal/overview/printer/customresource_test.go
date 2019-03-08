@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -29,8 +30,8 @@ func Test_CustomResourceListHandler(t *testing.T) {
 	list := []*unstructured.Unstructured{
 		resource,
 	}
-
-	got, err := CustomResourceListHandler(crd.Name, "default", crd, list)
+	ctx := context.Background()
+	got, err := CustomResourceListHandler(ctx, crd.Name, "default", crd, list)
 	require.NoError(t, err)
 
 	expected := component.NewTableWithRows(
@@ -61,7 +62,8 @@ func Test_CustomResourceListHandler_custom_columns(t *testing.T) {
 		resource,
 	}
 
-	got, err := CustomResourceListHandler(crd.Name, "default", crd, list)
+	ctx := context.Background()
+	got, err := CustomResourceListHandler(ctx, crd.Name, "default", crd, list)
 	require.NoError(t, err)
 
 	expected := component.NewTableWithRows(

@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -14,7 +15,7 @@ import (
 )
 
 // ReplicaSetListHandler is a printFunc that lists deployments
-func ReplicaSetListHandler(list *appsv1.ReplicaSetList, opts Options) (component.ViewComponent, error) {
+func ReplicaSetListHandler(ctx context.Context, list *appsv1.ReplicaSetList, opts Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -46,7 +47,7 @@ func ReplicaSetListHandler(list *appsv1.ReplicaSetList, opts Options) (component
 }
 
 // ReplicaSetHandler is a printFunc that prints a ReplicaSets.
-func ReplicaSetHandler(rs *appsv1.ReplicaSet, options Options) (component.ViewComponent, error) {
+func ReplicaSetHandler(ctx context.Context, rs *appsv1.ReplicaSet, options Options) (component.ViewComponent, error) {
 	o := NewObject(rs)
 
 	replicaSetConfigGen := NewReplicaSetConfiguration(rs)
@@ -56,12 +57,12 @@ func ReplicaSetHandler(rs *appsv1.ReplicaSet, options Options) (component.ViewCo
 
 	replicaSetStatusGen := NewReplicaSetStatus(rs)
 	o.RegisterSummary(func() (component.ViewComponent, error) {
-		return replicaSetStatusGen.Create(options.Cache)
+		return replicaSetStatusGen.Create(ctx, options.Cache)
 	}, 8)
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.ViewComponent, error) {
-			return createPodListView(rs, options)
+			return createPodListView(ctx, rs, options)
 		},
 		Width: 24,
 	})
@@ -70,7 +71,7 @@ func ReplicaSetHandler(rs *appsv1.ReplicaSet, options Options) (component.ViewCo
 
 	o.EnableEvents()
 
-	return o.ToComponent(options)
+	return o.ToComponent(ctx, options)
 }
 
 // ReplicaSetConfiguration generates a replicaset configuration
@@ -131,11 +132,11 @@ func NewReplicaSetStatus(rs *appsv1.ReplicaSet) *ReplicaSetStatus {
 }
 
 // Create generates a replicaset status quadrant
-func (rs *ReplicaSetStatus) Create(c cache.Cache) (*component.Quadrant, error) {
+func (rs *ReplicaSetStatus) Create(ctx context.Context, c cache.Cache) (*component.Quadrant, error) {
 	if rs == nil || rs.replicaset == nil {
 		return nil, errors.New("replicaset is nil")
 	}
-	pods, err := listPods(rs.replicaset.Namespace, rs.replicaset.Spec.Selector, rs.replicaset.GetUID(), c)
+	pods, err := listPods(ctx, rs.replicaset.Namespace, rs.replicaset.Spec.Selector, rs.replicaset.GetUID(), c)
 	if err != nil {
 		return nil, err
 	}

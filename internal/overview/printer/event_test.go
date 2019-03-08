@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -53,7 +54,8 @@ func Test_EventListHandler(t *testing.T) {
 		},
 	}
 
-	got, err := EventListHandler(object, printOptions)
+	ctx := context.Background()
+	got, err := EventListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Kind", "Message", "Reason", "Type",
@@ -211,7 +213,8 @@ func Test_EventHandler(t *testing.T) {
 		},
 	}
 
-	got, err := EventHandler(event, printOptions)
+	ctx := context.Background()
+	got, err := EventHandler(ctx, event, printOptions)
 	require.NoError(t, err)
 
 	eventDetailSections := []component.SummarySection{
@@ -309,9 +312,10 @@ func Test_eventsForObject(t *testing.T) {
 		},
 	}
 
-	c.EXPECT().List(gomock.Eq(key)).Return(eventList, nil)
+	c.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(eventList, nil)
 
-	got, err := eventsForObject(object, c)
+	ctx := context.Background()
+	got, err := eventsForObject(ctx, object, c)
 	require.NoError(t, err)
 
 	expected := &corev1.EventList{

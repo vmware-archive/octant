@@ -129,7 +129,7 @@ func TestAPI_routes(t *testing.T) {
 			err := srv.RegisterModule(m)
 			require.NoError(t, err)
 
-			ts := httptest.NewServer(srv.Handler())
+			ts := httptest.NewServer(srv.Handler(ctx))
 			defer ts.Close()
 
 			u, err := url.Parse(ts.URL)

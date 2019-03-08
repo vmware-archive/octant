@@ -1,6 +1,7 @@
 package objectvisitor
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"sync"
@@ -42,11 +43,11 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 				expectChildren(t, m.q, daemonSet, []runtime.Object{tu.ToUnstructured(t, pod)}, nil)
 
 				m.q.EXPECT().
-					ServicesForPod(gomock.Eq(pod)).
+					ServicesForPod(gomock.Any(), gomock.Eq(pod)).
 					Return([]*corev1.Service{}, nil).AnyTimes()
 
 				m.q.EXPECT().
-					OwnerReference(gomock.Eq("namespace"), gomock.Eq(pod.OwnerReferences[0])).
+					OwnerReference(gomock.Any(), gomock.Eq("namespace"), gomock.Eq(pod.OwnerReferences[0])).
 					Return(daemonSet, nil).AnyTimes()
 
 				expectChildren(t, m.q, pod, []runtime.Object{}, nil)
@@ -68,18 +69,18 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 				pod := tu.CreatePod("pod")
 
 				m.q.EXPECT().
-					PodsForService(gomock.Eq(service)).
+					PodsForService(gomock.Any(), gomock.Eq(service)).
 					Return([]*corev1.Pod{pod}, nil).AnyTimes()
 
 				m.q.EXPECT().
-					ServicesForPod(gomock.Eq(pod)).
+					ServicesForPod(gomock.Any(), gomock.Eq(pod)).
 					Return([]*corev1.Service{service}, nil).AnyTimes()
 
 				expectChildren(t, m.q, pod, []runtime.Object{}, nil)
 				expectChildren(t, m.q, service, []runtime.Object{}, nil)
 
 				m.q.EXPECT().
-					IngressesForService(gomock.Eq(service)).
+					IngressesForService(gomock.Any(), gomock.Eq(service)).
 					Return([]*extv1beta1.Ingress{}, nil).AnyTimes()
 
 				return []ClusterObject{service}
@@ -100,19 +101,19 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 				pod := tu.CreatePod("pod")
 
 				m.q.EXPECT().
-					ServicesForIngress(gomock.Eq(ingress)).
+					ServicesForIngress(gomock.Any(), gomock.Eq(ingress)).
 					Return([]*corev1.Service{service}, nil).AnyTimes()
 
 				m.q.EXPECT().
-					IngressesForService(gomock.Eq(service)).
+					IngressesForService(gomock.Any(), gomock.Eq(service)).
 					Return([]*extv1beta1.Ingress{ingress}, nil).AnyTimes()
 
 				m.q.EXPECT().
-					PodsForService(gomock.Eq(service)).
+					PodsForService(gomock.Any(), gomock.Eq(service)).
 					Return([]*corev1.Pod{pod}, nil).AnyTimes()
 
 				m.q.EXPECT().
-					ServicesForPod(gomock.Eq(pod)).
+					ServicesForPod(gomock.Any(), gomock.Eq(pod)).
 					Return([]*corev1.Service{service}, nil).AnyTimes()
 
 				expectChildren(t, m.q, ingress, []runtime.Object{}, nil)
@@ -144,19 +145,19 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 				pod.SetOwnerReferences(toOwnerReferences(t, replicaSet))
 
 				m.q.EXPECT().
-					ServicesForIngress(gomock.Eq(ingress)).
+					ServicesForIngress(gomock.Any(), gomock.Eq(ingress)).
 					Return([]*corev1.Service{service}, nil).AnyTimes()
 
 				m.q.EXPECT().
-					IngressesForService(gomock.Eq(service)).
+					IngressesForService(gomock.Any(), gomock.Eq(service)).
 					Return([]*extv1beta1.Ingress{ingress}, nil).AnyTimes()
 
 				m.q.EXPECT().
-					PodsForService(gomock.Eq(service)).
+					PodsForService(gomock.Any(), gomock.Eq(service)).
 					Return([]*corev1.Pod{pod}, nil).AnyTimes()
 
 				m.q.EXPECT().
-					ServicesForPod(gomock.Eq(pod)).
+					ServicesForPod(gomock.Any(), gomock.Eq(pod)).
 					Return([]*corev1.Service{service}, nil).AnyTimes()
 
 				expectChildren(t, m.q, ingress, []runtime.Object{}, nil)
@@ -166,11 +167,11 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 				expectChildren(t, m.q, deployment, []runtime.Object{tu.ToUnstructured(t, replicaSet)}, nil)
 
 				m.q.EXPECT().
-					OwnerReference(gomock.Eq("namespace"), gomock.Eq(pod.OwnerReferences[0])).
+					OwnerReference(gomock.Any(), gomock.Eq("namespace"), gomock.Eq(pod.OwnerReferences[0])).
 					Return(replicaSet, nil).AnyTimes()
 
 				m.q.EXPECT().
-					OwnerReference(gomock.Eq("namespace"), gomock.Eq(replicaSet.OwnerReferences[0])).
+					OwnerReference(gomock.Any(), gomock.Eq("namespace"), gomock.Eq(replicaSet.OwnerReferences[0])).
 					Return(deployment, nil).AnyTimes()
 
 				return []ClusterObject{ingress, service, pod, replicaSet, deployment}
@@ -222,55 +223,55 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 				expectChildren(t, m.q, ingress, []runtime.Object{}, nil)
 
 				m.q.EXPECT().
-					OwnerReference(gomock.Eq("namespace"), gomock.Eq(d1rs1.OwnerReferences[0])).
+					OwnerReference(gomock.Any(), gomock.Eq("namespace"), gomock.Eq(d1rs1.OwnerReferences[0])).
 					Return(d1, nil).AnyTimes()
 
 				m.q.EXPECT().
-					OwnerReference(gomock.Eq("namespace"), gomock.Eq(d2rs1.OwnerReferences[0])).
+					OwnerReference(gomock.Any(), gomock.Eq("namespace"), gomock.Eq(d2rs1.OwnerReferences[0])).
 					Return(d2, nil).AnyTimes()
 
 				m.q.EXPECT().
-					OwnerReference(gomock.Eq("namespace"), gomock.Eq(d1rs1p1.OwnerReferences[0])).
+					OwnerReference(gomock.Any(), gomock.Eq("namespace"), gomock.Eq(d1rs1p1.OwnerReferences[0])).
 					Return(d1rs1, nil).AnyTimes()
 
 				m.q.EXPECT().
-					OwnerReference(gomock.Eq("namespace"), gomock.Eq(d1rs1p2.OwnerReferences[0])).
+					OwnerReference(gomock.Any(), gomock.Eq("namespace"), gomock.Eq(d1rs1p2.OwnerReferences[0])).
 					Return(d1rs1, nil).AnyTimes()
 
 				m.q.EXPECT().
-					OwnerReference(gomock.Eq("namespace"), gomock.Eq(d2rs1p1.OwnerReferences[0])).
+					OwnerReference(gomock.Any(), gomock.Eq("namespace"), gomock.Eq(d2rs1p1.OwnerReferences[0])).
 					Return(d2rs1, nil).AnyTimes()
 
 				m.q.EXPECT().
-					ServicesForPod(gomock.Eq(d1rs1p1)).
+					ServicesForPod(gomock.Any(), gomock.Eq(d1rs1p1)).
 					Return([]*corev1.Service{s1}, nil).AnyTimes()
 
 				m.q.EXPECT().
-					ServicesForPod(gomock.Eq(d1rs1p2)).
+					ServicesForPod(gomock.Any(), gomock.Eq(d1rs1p2)).
 					Return([]*corev1.Service{s1}, nil).AnyTimes()
 
 				m.q.EXPECT().
-					ServicesForPod(gomock.Eq(d2rs1p1)).
+					ServicesForPod(gomock.Any(), gomock.Eq(d2rs1p1)).
 					Return([]*corev1.Service{s2}, nil).AnyTimes()
 
 				m.q.EXPECT().
-					PodsForService(gomock.Eq(s1)).
+					PodsForService(gomock.Any(), gomock.Eq(s1)).
 					Return([]*corev1.Pod{d1rs1p1, d1rs1p2}, nil).AnyTimes()
 
 				m.q.EXPECT().
-					PodsForService(gomock.Eq(s2)).
+					PodsForService(gomock.Any(), gomock.Eq(s2)).
 					Return([]*corev1.Pod{d2rs1p1}, nil).AnyTimes()
 
 				m.q.EXPECT().
-					IngressesForService(gomock.Eq(s1)).
+					IngressesForService(gomock.Any(), gomock.Eq(s1)).
 					Return([]*extv1beta1.Ingress{ingress}, nil).AnyTimes()
 
 				m.q.EXPECT().
-					IngressesForService(gomock.Eq(s2)).
+					IngressesForService(gomock.Any(), gomock.Eq(s2)).
 					Return([]*extv1beta1.Ingress{ingress}, nil).AnyTimes()
 
 				m.q.EXPECT().
-					ServicesForIngress(gomock.Eq(ingress)).
+					ServicesForIngress(gomock.Any(), gomock.Eq(ingress)).
 					Return([]*corev1.Service{s1, s2}, nil).AnyTimes()
 
 				return []ClusterObject{d1, d1rs1, d1rs1p1, d1rs1p2, d2, d2rs1,
@@ -329,7 +330,9 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 					dv, err := NewDefaultVisitor(m.q, factoryGen.FactoryFunc())
 					require.NoError(t, err)
 
-					err = dv.Visit(object)
+					ctx := context.Background()
+
+					err = dv.Visit(ctx, object)
 					require.NoError(t, err)
 
 					ic.assertMatch(tc.expectedObjects)
@@ -363,7 +366,7 @@ func toOwnerReferences(t *testing.T, object ClusterObject) []metav1.OwnerReferen
 
 func expectChildren(t *testing.T, q *queryerfake.MockQueryer, object runtime.Object, found ...interface{}) {
 	q.EXPECT().
-		Children(gomock.Eq(tu.ToUnstructured(t, object))).
+		Children(gomock.Any(), gomock.Eq(tu.ToUnstructured(t, object))).
 		Return(found...).AnyTimes()
 }
 
@@ -377,13 +380,13 @@ func factoryRegister(
 }
 
 type testObject struct {
-	processFn  func(object ClusterObject) error
+	processFn  func(ctx context.Context, object ClusterObject) error
 	addChildFn func(parent ClusterObject, children ...ClusterObject) error
 	mu         sync.Mutex
 }
 
-func (o *testObject) Process(object ClusterObject) error {
-	return o.processFn(object)
+func (o *testObject) Process(ctx context.Context, object ClusterObject) error {
+	return o.processFn(ctx, object)
 }
 
 func (o *testObject) AddChild(parent ClusterObject, children ...ClusterObject) error {
@@ -414,7 +417,7 @@ func (ic *identityCollector) factoryFn(object ClusterObject) (ObjectHandler, err
 		accessor := meta.NewAccessor()
 
 		ic.o = &testObject{
-			processFn: func(clusterObject ClusterObject) error {
+			processFn: func(ctx context.Context, clusterObject ClusterObject) error {
 				ic.mu.Lock()
 				defer ic.mu.Unlock()
 

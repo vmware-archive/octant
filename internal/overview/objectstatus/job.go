@@ -1,6 +1,7 @@
 package objectstatus
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/cache"
@@ -10,7 +11,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
-func runJobStatus(object runtime.Object, c cache.Cache) (ObjectStatus, error) {
+func runJobStatus(_ context.Context, object runtime.Object, c cache.Cache) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("job is nil")
 	}

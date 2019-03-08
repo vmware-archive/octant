@@ -25,13 +25,13 @@ import (
 	kcache "k8s.io/client-go/tools/cache"
 )
 
-func customResourceDefinitionNames(c cache.Cache) ([]string, error) {
+func customResourceDefinitionNames(ctx context.Context, c cache.Cache) ([]string, error) {
 	key := cache.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
 
-	rawList, err := c.List(key)
+	rawList, err := c.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "listing CRDs")
 	}
@@ -51,7 +51,7 @@ func customResourceDefinitionNames(c cache.Cache) ([]string, error) {
 	return list, nil
 }
 
-func customResourceDefinition(name string, c cache.Cache) (*apiextv1beta1.CustomResourceDefinition, error) {
+func customResourceDefinition(ctx context.Context, name string, c cache.Cache) (*apiextv1beta1.CustomResourceDefinition, error) {
 	key := cache.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
@@ -59,7 +59,7 @@ func customResourceDefinition(name string, c cache.Cache) (*apiextv1beta1.Custom
 	}
 
 	crd := &apiextv1beta1.CustomResourceDefinition{}
-	if err := cache.GetAs(c, key, crd); err != nil {
+	if err := cache.GetAs(ctx, c, key, crd); err != nil {
 		return nil, errors.Wrap(err, "get CRD from cache")
 	}
 
@@ -134,7 +134,7 @@ func (csd *crdSectionDescriber) PathFilters() []pathFilter {
 	}
 }
 
-type crdListPrinter func(name, namespace string, crd *apiextv1beta1.CustomResourceDefinition, objects []*unstructured.Unstructured) (component.ViewComponent, error)
+type crdListPrinter func(ctx context.Context, name, namespace string, crd *apiextv1beta1.CustomResourceDefinition, objects []*unstructured.Unstructured) (component.ViewComponent, error)
 
 type crdListDescriptionOption func(*crdListDescriber)
 
@@ -161,17 +161,17 @@ func newCRDListDescriber(name, path string, options ...crdListDescriptionOption)
 }
 
 func (cld *crdListDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
-	crd, err := customResourceDefinition(cld.name, options.Cache)
+	crd, err := customResourceDefinition(ctx, cld.name, options.Cache)
 	if err != nil {
 		return emptyContentResponse, err
 	}
 
-	objects, err := listCustomResources(crd, namespace, options.Cache)
+	objects, err := listCustomResources(ctx, crd, namespace, options.Cache)
 	if err != nil {
 		return emptyContentResponse, err
 	}
 
-	table, err := cld.printer(cld.name, namespace, crd, objects)
+	table, err := cld.printer(ctx, cld.name, namespace, crd, objects)
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -182,6 +182,7 @@ func (cld *crdListDescriber) Describe(ctx context.Context, prefix, namespace str
 }
 
 func listCustomResources(
+	ctx context.Context,
 	crd *apiextv1beta1.CustomResourceDefinition,
 	namespace string,
 	c cache.Cache) ([]*unstructured.Unstructured, error) {
@@ -202,7 +203,7 @@ func listCustomResources(
 		Kind:       kind,
 	}
 
-	objects, err := c.List(key)
+	objects, err := c.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "listing custom resources for %q", crd.Name)
 	}
@@ -216,7 +217,7 @@ func (cld *crdListDescriber) PathFilters() []pathFilter {
 	}
 }
 
-type crdPrinter func(crd *apiextv1beta1.CustomResourceDefinition, object *unstructured.Unstructured, options printer.Options) (component.ViewComponent, error)
+type crdPrinter func(ctx context.Context, crd *apiextv1beta1.CustomResourceDefinition, object *unstructured.Unstructured, options printer.Options) (component.ViewComponent, error)
 type resourceViewerPrinter func(ctx context.Context, object *unstructured.Unstructured, c cache.Cache, q queryer.Queryer) (component.ViewComponent, error)
 type yamlPrinter func(runtime.Object) (*component.YAML, error)
 
@@ -249,7 +250,7 @@ func newCRDDescriber(name, path string, options ...crdDescriberOption) *crdDescr
 }
 
 func (cd *crdDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
-	crd, err := customResourceDefinition(cd.name, options.Cache)
+	crd, err := customResourceDefinition(ctx, cd.name, options.Cache)
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -269,7 +270,7 @@ func (cd *crdDescriber) Describe(ctx context.Context, prefix, namespace string, 
 		Name:       options.Fields["name"],
 	}
 
-	object, err := options.Cache.Get(key)
+	object, err := options.Cache.Get(ctx, key)
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -289,7 +290,7 @@ func (cd *crdDescriber) Describe(ctx context.Context, prefix, namespace string, 
 		Cache: options.Cache,
 	}
 
-	summary, err := cd.summaryPrinter(crd, object, printOptions)
+	summary, err := cd.summaryPrinter(ctx, crd, object, printOptions)
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -330,7 +331,7 @@ func createCRDResourceViewer(ctx context.Context, object *unstructured.Unstructu
 		return nil, err
 	}
 
-	return rv.Visit(object)
+	return rv.Visit(ctx, object)
 }
 
 type objectHandler func(ctx context.Context, object *unstructured.Unstructured)

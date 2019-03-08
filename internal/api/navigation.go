@@ -1,15 +1,17 @@
 package api
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
+	"go.opencensus.io/trace"
 )
 
 type navSections interface {
-	Sections(namespace string) ([]*hcli.Navigation, error)
+	Sections(ctx context.Context, namespace string) ([]*hcli.Navigation, error)
 }
 
 type navigationResponse struct {
@@ -35,6 +37,9 @@ func newNavigation(ns navSections, logger log.Logger) *navigation {
 }
 
 func (n *navigation) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx, span := trace.StartSpan(r.Context(), "api:navigation")
+	defer span.End()
+
 	if n.navSections == nil {
 		respondWithError(w, http.StatusInternalServerError,
 			"unable to generate navigation sections", n.logger)
@@ -50,7 +55,7 @@ func (n *navigation) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	n.logger.Debugf("navigation for namespace %s", namespace)
 
-	ns, err := n.navSections.Sections(namespace)
+	ns, err := n.navSections.Sections(ctx, namespace)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError,
 			"unable to generate navigation sections", n.logger)

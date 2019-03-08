@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -37,7 +38,8 @@ func Test_DaemonSetListHandler(t *testing.T) {
 		Items: []appsv1.DaemonSet{*object},
 	}
 
-	got, err := DaemonSetListHandler(list, printOptions)
+	ctx := context.Background()
+	got, err := DaemonSetListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Desired", "Current", "Ready",

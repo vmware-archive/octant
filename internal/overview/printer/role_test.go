@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -31,7 +32,8 @@ func Test_RoleListHandler(t *testing.T) {
 
 	c := cachefake.NewMockCache(controller)
 
-	observed, err := RoleListHandler(roleList, Options{Cache: c})
+	ctx := context.Background()
+	observed, err := RoleListHandler(ctx, roleList, Options{Cache: c})
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Age")

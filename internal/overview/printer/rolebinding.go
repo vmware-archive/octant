@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
@@ -9,7 +10,7 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 )
 
-func RoleBindingListHandler(roleBindingList *rbacv1.RoleBindingList, opts Options) (component.ViewComponent, error) {
+func RoleBindingListHandler(ctx context.Context, roleBindingList *rbacv1.RoleBindingList, opts Options) (component.ViewComponent, error) {
 	if roleBindingList == nil {
 		return nil, errors.New("role binding list is nil")
 	}
@@ -22,7 +23,7 @@ func RoleBindingListHandler(roleBindingList *rbacv1.RoleBindingList, opts Option
 		row["Name"] = link.ForObject(&roleBinding, roleBinding.Name)
 		row["Age"] = component.NewTimestamp(roleBinding.CreationTimestamp.Time)
 		row["Role kind"] = component.NewText(roleBinding.RoleRef.Kind)
-		row["Role name"] = roleLinkFromRoleBinding(&roleBinding)
+		row["Role name"] = roleLinkFromRoleBinding(ctx, &roleBinding)
 
 		table.Add(row)
 	}
@@ -30,7 +31,7 @@ func RoleBindingListHandler(roleBindingList *rbacv1.RoleBindingList, opts Option
 	return table, nil
 }
 
-func roleLinkFromRoleBinding(roleBinding *rbacv1.RoleBinding) *component.Link {
+func roleLinkFromRoleBinding(ctx context.Context, roleBinding *rbacv1.RoleBinding) *component.Link {
 	roleRef := roleBinding.RoleRef
 
 	namespace := ""
@@ -42,11 +43,11 @@ func roleLinkFromRoleBinding(roleBinding *rbacv1.RoleBinding) *component.Link {
 	return link.ForGVK(namespace, apiVersion, roleRef.Kind, roleRef.Name, roleRef.Name)
 }
 
-func RoleBindingHandler(roleBinding *rbacv1.RoleBinding, opts Options) (component.ViewComponent, error) {
+func RoleBindingHandler(ctx context.Context, roleBinding *rbacv1.RoleBinding, opts Options) (component.ViewComponent, error) {
 	o := NewObject(roleBinding)
 
 	o.RegisterConfig(func() (component.ViewComponent, error) {
-		return printRoleBindingConfig(roleBinding)
+		return printRoleBindingConfig(ctx, roleBinding)
 	}, 16)
 
 	o.RegisterItems(ItemDescriptor{
@@ -56,10 +57,10 @@ func RoleBindingHandler(roleBinding *rbacv1.RoleBinding, opts Options) (componen
 		Width: 24,
 	})
 
-	return o.ToComponent(opts)
+	return o.ToComponent(ctx, opts)
 }
 
-func printRoleBindingConfig(roleBinding *rbacv1.RoleBinding) (component.ViewComponent, error) {
+func printRoleBindingConfig(ctx context.Context, roleBinding *rbacv1.RoleBinding) (component.ViewComponent, error) {
 	if roleBinding == nil {
 		return nil, errors.New("role binding is nil")
 	}
@@ -67,7 +68,7 @@ func printRoleBindingConfig(roleBinding *rbacv1.RoleBinding) (component.ViewComp
 	var sections component.SummarySections
 
 	sections.AddText("Role kind", roleBinding.RoleRef.Kind)
-	sections.Add("Role name", roleLinkFromRoleBinding(roleBinding))
+	sections.Add("Role name", roleLinkFromRoleBinding(ctx, roleBinding))
 
 	summary := component.NewSummary("Configuration", sections...)
 	return summary, nil

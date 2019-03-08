@@ -131,7 +131,7 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 			listType)
 	}
 
-	viewComponent, err := options.Printer.Print(listObject)
+	viewComponent, err := options.Printer.Print(ctx, listObject)
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -219,7 +219,7 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 			item)
 	}
 
-	vc, err := options.Printer.Print(newObject)
+	vc, err := options.Printer.Print(ctx, newObject)
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -238,7 +238,7 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 			return emptyContentResponse, err
 		}
 
-		resourceViewerComponent, err := rv.Visit(newObject)
+		resourceViewerComponent, err := rv.Visit(ctx, newObject)
 		if err != nil {
 			return emptyContentResponse, err
 		}

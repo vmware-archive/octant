@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -32,7 +33,8 @@ func Test_RoleBindingListHandler(t *testing.T) {
 
 	c := cachefake.NewMockCache(controller)
 
-	observed, err := RoleBindingListHandler(roleBindingList, Options{Cache: c})
+	ctx := context.Background()
+	observed, err := RoleBindingListHandler(ctx, roleBindingList, Options{Cache: c})
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Age", "Role kind", "Role name")
@@ -71,7 +73,8 @@ func Test_printRoleBindingConfig(t *testing.T) {
 	subject := testutil.CreateRoleBindingSubject("User", "test@test.com")
 	roleBinding := testutil.CreateRoleBinding("read-pods", "pod-reader", []rbacv1.Subject{*subject})
 
-	observed, err := printRoleBindingConfig(roleBinding)
+	ctx := context.Background()
+	observed, err := printRoleBindingConfig(ctx, roleBinding)
 	require.NoError(t, err)
 
 	var sections component.SummarySections

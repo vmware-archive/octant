@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -77,6 +78,6 @@ type fakeNavSections struct {
 	sectionsErr error
 }
 
-func (ns *fakeNavSections) Sections(namespace string) ([]*hcli.Navigation, error) {
+func (ns *fakeNavSections) Sections(ctx context.Context, namespace string) ([]*hcli.Navigation, error) {
 	return ns.sections, ns.sectionsErr
 }

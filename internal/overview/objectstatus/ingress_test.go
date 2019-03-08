@@ -1,6 +1,7 @@
 package objectstatus
 
 import (
+	"context"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -38,7 +39,7 @@ func Test_runIngressStatus(t *testing.T) {
 			name: "no matching backends",
 			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
 				key := cache.Key{Namespace: "default", APIVersion: "v1", Kind: "Service", Name: "no-such-service"}
-				c.EXPECT().Get(gomock.Eq(key)).Return(nil, nil)
+				c.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(nil, nil)
 
 				objectFile := "ingress_no_matching_backend.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
@@ -82,7 +83,7 @@ func Test_runIngressStatus(t *testing.T) {
 				mockServiceInCache(t, c, "default", "my-service", "service_my-service.yaml")
 
 				key := cache.Key{Namespace: "default", APIVersion: "v1", Kind: "Secret", Name: "no-such-secret"}
-				c.EXPECT().Get(gomock.Eq(key)).Return(nil, nil)
+				c.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(nil, nil)
 
 				objectFile := "ingress_ingress-bad-tls-host.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
@@ -118,7 +119,8 @@ func Test_runIngressStatus(t *testing.T) {
 
 			object := tc.init(t, c)
 
-			status, err := runIngressStatus(object, c)
+			ctx := context.Background()
+			status, err := runIngressStatus(ctx, object, c)
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -139,7 +141,7 @@ func mockSecretInCache(t *testing.T, c *cachefake.MockCache, namespace, name, fi
 		Name:       name,
 	}
 
-	c.EXPECT().Get(gomock.Eq(key)).Return(testutil.ToUnstructured(t, secret), nil)
+	c.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(testutil.ToUnstructured(t, secret), nil)
 
 	return secret
 }
@@ -153,7 +155,7 @@ func mockServiceInCache(t *testing.T, c *cachefake.MockCache, namespace, name, f
 		Name:       name,
 	}
 
-	c.EXPECT().Get(gomock.Eq(key)).Return(testutil.ToUnstructured(t, secret), nil)
+	c.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(testutil.ToUnstructured(t, secret), nil)
 
 	return secret
 }

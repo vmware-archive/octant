@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -53,7 +54,8 @@ func Test_CronJobListHandler(t *testing.T) {
 		},
 	}
 
-	got, err := CronJobListHandler(object, printOptions)
+	ctx := context.Background()
+	got, err := CronJobListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Schedule", "Age")

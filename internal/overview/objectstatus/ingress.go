@@ -1,6 +1,7 @@
 package objectstatus
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/heptio/developer-dash/internal/cache"
@@ -16,7 +17,7 @@ const (
 	ingressNoBackendsDefined = "No backends defined. All traffic will be sent to the default backend configured for the ingress controller."
 )
 
-func runIngressStatus(object runtime.Object, c cache.Cache) (ObjectStatus, error) {
+func runIngressStatus(ctx context.Context, object runtime.Object, c cache.Cache) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("ingress is nil")
 	}
@@ -31,7 +32,7 @@ func runIngressStatus(object runtime.Object, c cache.Cache) (ObjectStatus, error
 		ingress: *ingress,
 		cache:   c,
 	}
-	status, err := is.run()
+	status, err := is.run(ctx)
 	if err != nil {
 		return ObjectStatus{}, errors.Wrap(err, "build status for ingress")
 	}
@@ -48,7 +49,7 @@ type ingressStatus struct {
 	cache   cache.Cache
 }
 
-func (is *ingressStatus) run() (ObjectStatus, error) {
+func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 	status := ObjectStatus{}
 
 	ingress := is.ingress
@@ -74,7 +75,7 @@ func (is *ingressStatus) run() (ObjectStatus, error) {
 
 		service := &corev1.Service{}
 
-		if err := cache.GetAs(c, key, service); err != nil {
+		if err := cache.GetAs(ctx, c, key, service); err != nil {
 			return ObjectStatus{}, errors.Wrap(err, "get service from cache")
 		}
 
@@ -121,7 +122,7 @@ func (is *ingressStatus) run() (ObjectStatus, error) {
 			Name:       tls.SecretName,
 		}
 
-		secret, err := is.cache.Get(key)
+		secret, err := is.cache.Get(ctx, key)
 		if err != nil {
 			// assume an error means the secret couldn't be accessed
 			break

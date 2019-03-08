@@ -49,7 +49,11 @@ func Test_DynamicCache_List(t *testing.T) {
 
 	client := clusterfake.NewMockClientInterface(controller)
 	informerFactory := clusterfake.NewMockDynamicSharedInformerFactory(controller)
+	sharedIndexInformer := clusterfake.NewMockSharedIndexInformer(controller)
 	informer := clusterfake.NewMockGenericInformer(controller)
+
+	informer.EXPECT().Informer().Return(sharedIndexInformer)
+	sharedIndexInformer.EXPECT().HasSynced().Return(true)
 
 	pod := testutil.CreatePod("pod")
 	objects := []runtime.Object{pod}
@@ -85,7 +89,7 @@ func Test_DynamicCache_List(t *testing.T) {
 		Kind:       "Pod",
 	}
 
-	got, err := c.List(key)
+	got, err := c.List(ctx, key)
 	require.NoError(t, err)
 
 	expected := []*unstructured.Unstructured{
@@ -105,6 +109,9 @@ func Test_DynamicCache_Get(t *testing.T) {
 	client := clusterfake.NewMockClientInterface(controller)
 	informerFactory := clusterfake.NewMockDynamicSharedInformerFactory(controller)
 	informer := clusterfake.NewMockGenericInformer(controller)
+	sharedIndexInformer := clusterfake.NewMockSharedIndexInformer(controller)
+	informer.EXPECT().Informer().Return(sharedIndexInformer)
+	sharedIndexInformer.EXPECT().HasSynced().Return(true)
 
 	pod := testutil.CreatePod("pod")
 
@@ -140,7 +147,7 @@ func Test_DynamicCache_Get(t *testing.T) {
 		Name:       "pod",
 	}
 
-	got, err := c.Get(key)
+	got, err := c.Get(ctx, key)
 	require.NoError(t, err)
 
 	expected := testutil.ToUnstructured(t, pod)

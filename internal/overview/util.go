@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"context"
 	"path"
 	"sort"
 
@@ -71,14 +72,14 @@ func getSelector(object runtime.Object) (*metav1.LabelSelector, error) {
 	}
 }
 
-func listPods(namespace string, selector *metav1.LabelSelector, uid types.UID, c cache.Cache) ([]*corev1.Pod, error) {
+func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelector, uid types.UID, c cache.Cache) ([]*corev1.Pod, error) {
 	key := cache.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
 	}
 
-	pods, err := loadPods(key, c, selector)
+	pods, err := loadPods(ctx, key, c, selector)
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +97,8 @@ func listPods(namespace string, selector *metav1.LabelSelector, uid types.UID, c
 	return owned, nil
 }
 
-func loadPods(key cache.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
-	objects, err := c.List(key)
+func loadPods(ctx context.Context, key cache.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
+	objects, err := c.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -188,14 +189,14 @@ func gvkPath(apiVersion, kind, name string) string {
 	return path.Join(p, name)
 }
 
-func listReplicaSets(deployment *appsv1.Deployment, c cache.Cache) ([]*appsv1.ReplicaSet, error) {
+func listReplicaSets(ctx context.Context, deployment *appsv1.Deployment, c cache.Cache) ([]*appsv1.ReplicaSet, error) {
 	key := cache.Key{
 		Namespace:  deployment.GetNamespace(),
 		APIVersion: deployment.APIVersion,
 		Kind:       "ReplicaSet",
 	}
 
-	replicaSets, err := loadReplicaSets(key, c, deployment.Spec.Selector)
+	replicaSets, err := loadReplicaSets(ctx, key, c, deployment.Spec.Selector)
 	if err != nil {
 		return nil, err
 	}
@@ -210,8 +211,8 @@ func listReplicaSets(deployment *appsv1.Deployment, c cache.Cache) ([]*appsv1.Re
 	return owned, nil
 }
 
-func loadReplicaSets(key cache.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*appsv1.ReplicaSet, error) {
-	objects, err := c.List(key)
+func loadReplicaSets(ctx context.Context, key cache.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*appsv1.ReplicaSet, error) {
+	objects, err := c.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -301,18 +302,18 @@ func equalIgnoreHash(template1, template2 *corev1.PodTemplateSpec) bool {
 	return apiequality.Semantic.DeepEqual(t1Copy, t2Copy)
 }
 
-func listSecrets(namespace string, c cache.Cache) ([]*corev1.Secret, error) {
+func listSecrets(ctx context.Context, namespace string, c cache.Cache) ([]*corev1.Secret, error) {
 	key := cache.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Secret",
 	}
 
-	return loadSecrets(key, c)
+	return loadSecrets(ctx, key, c)
 }
 
-func loadSecrets(key cache.Key, c cache.Cache) ([]*corev1.Secret, error) {
-	objects, err := c.List(key)
+func loadSecrets(ctx context.Context, key cache.Key, c cache.Cache) ([]*corev1.Secret, error) {
+	objects, err := c.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -338,8 +339,8 @@ func loadSecrets(key cache.Key, c cache.Cache) ([]*corev1.Secret, error) {
 // loadSecret loads a single secret from the cache.
 // Note if the secret is not found, a nil error and secret is returned,
 // i.e. it is not an error.
-func loadSecret(key cache.Key, c cache.Cache) (*corev1.Secret, error) {
-	object, err := c.Get(key)
+func loadSecret(ctx context.Context, key cache.Key, c cache.Cache) (*corev1.Secret, error) {
+	object, err := c.Get(ctx, key)
 	if err != nil {
 		return nil, err
 	}

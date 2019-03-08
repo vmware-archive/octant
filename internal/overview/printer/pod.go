@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
@@ -27,7 +28,7 @@ var (
 )
 
 // PodListHandler is a printFunc that prints pods
-func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent, error) {
+func PodListHandler(ctx context.Context, list *corev1.PodList, opts Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("list is nil")
 	}
@@ -83,7 +84,7 @@ func PodListHandler(list *corev1.PodList, opts Options) (component.ViewComponent
 }
 
 // PodHandler is a printFunc that prints Pods
-func PodHandler(p *corev1.Pod, opts Options) (component.ViewComponent, error) {
+func PodHandler(ctx context.Context, p *corev1.Pod, opts Options) (component.ViewComponent, error) {
 	o := NewObject(p)
 
 	podConfigGen := NewPodConfiguration(p)
@@ -140,7 +141,7 @@ func PodHandler(p *corev1.Pod, opts Options) (component.ViewComponent, error) {
 		},
 	}...)
 
-	return o.ToComponent(opts)
+	return o.ToComponent(ctx, opts)
 }
 
 type podStatus struct {
@@ -248,14 +249,14 @@ func (p *PodConfiguration) Create() (*component.Summary, error) {
 	return summary, nil
 }
 
-func listPods(namespace string, selector *metav1.LabelSelector, uid types.UID, c cache.Cache) ([]*corev1.Pod, error) {
+func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelector, uid types.UID, c cache.Cache) ([]*corev1.Pod, error) {
 	key := cache.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
 	}
 
-	pods, err := loadPods(key, c, selector)
+	pods, err := loadPods(ctx, key, c, selector)
 	if err != nil {
 		return nil, errors.Wrap(err, "load pods")
 	}
@@ -273,8 +274,8 @@ func listPods(namespace string, selector *metav1.LabelSelector, uid types.UID, c
 	return owned, nil
 }
 
-func loadPods(key cache.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
-	objects, err := c.List(key)
+func loadPods(ctx context.Context, key cache.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
+	objects, err := c.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -357,7 +358,7 @@ func isEqualSelector(s1, s2 *metav1.LabelSelector) bool {
 	return apiequality.Semantic.DeepEqual(s1Copy, s2Copy)
 }
 
-func createPodListView(object runtime.Object, options Options) (component.ViewComponent, error) {
+func createPodListView(ctx context.Context, object runtime.Object, options Options) (component.ViewComponent, error) {
 	options.DisableLabels = true
 
 	podList := &corev1.PodList{}
@@ -394,7 +395,7 @@ func createPodListView(object runtime.Object, options Options) (component.ViewCo
 		Kind:       "Pod",
 	}
 
-	list, err := options.Cache.List(key)
+	list, err := options.Cache.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "list all objects for key %+v", key)
 	}
@@ -419,10 +420,10 @@ func createPodListView(object runtime.Object, options Options) (component.ViewCo
 		}
 	}
 
-	return PodListHandler(podList, options)
+	return PodListHandler(ctx, podList, options)
 }
 
-func createMountedPodListView(namespace string, persistentVolumeClaimName string, options Options) (component.ViewComponent, error) {
+func createMountedPodListView(ctx context.Context, namespace string, persistentVolumeClaimName string, options Options) (component.ViewComponent, error) {
 	key := cache.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
@@ -431,7 +432,7 @@ func createMountedPodListView(namespace string, persistentVolumeClaimName string
 
 	mountedPodList := &corev1.PodList{}
 
-	pods, err := loadPods(key, options.Cache, nil)
+	pods, err := loadPods(ctx, key, options.Cache, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -452,5 +453,5 @@ func createMountedPodListView(namespace string, persistentVolumeClaimName string
 		}
 	}
 
-	return PodListHandler(mountedPodList, options)
+	return PodListHandler(ctx, mountedPodList, options)
 }

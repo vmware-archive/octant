@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -34,7 +35,7 @@ func Test_Object_ToComponent(t *testing.T) {
 	}
 
 	fnEvent := func(o *Object) {
-		o.EventsGen = func(_ runtime.Object, fl *flexlayout.FlexLayout, _ Options) error {
+		o.EventsGen = func(_ context.Context, _ runtime.Object, fl *flexlayout.FlexLayout, _ Options) error {
 			section := fl.AddSection()
 			require.NoError(t, section.Add(component.NewText("events"), 12))
 			return nil
@@ -236,7 +237,8 @@ func Test_Object_ToComponent(t *testing.T) {
 				tc.initFunc(o)
 			}
 
-			got, err := o.ToComponent(printOptions)
+			ctx := context.Background()
+			got, err := o.ToComponent(ctx, printOptions)
 			if tc.isErr {
 				require.Error(t, err)
 				return

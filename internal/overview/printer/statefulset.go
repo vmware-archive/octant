@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
@@ -12,7 +13,7 @@ import (
 )
 
 // StatefulSetListHandler is a printFunc that list stateful sets
-func StatefulSetListHandler(list *appsv1.StatefulSetList, opts Options) (component.ViewComponent, error) {
+func StatefulSetListHandler(ctx context.Context, list *appsv1.StatefulSetList, opts Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -43,7 +44,7 @@ func StatefulSetListHandler(list *appsv1.StatefulSetList, opts Options) (compone
 }
 
 // StatefulSetHandler is a printFunc that prints a StatefulSet
-func StatefulSetHandler(statefulSet *appsv1.StatefulSet, options Options) (component.ViewComponent, error) {
+func StatefulSetHandler(ctx context.Context, statefulSet *appsv1.StatefulSet, options Options) (component.ViewComponent, error) {
 	o := NewObject(statefulSet)
 
 	o.RegisterConfig(func() (component.ViewComponent, error) {
@@ -53,21 +54,21 @@ func StatefulSetHandler(statefulSet *appsv1.StatefulSet, options Options) (compo
 
 	o.RegisterSummary(func() (component.ViewComponent, error) {
 		statefulSetSummaryGen := NewStatefulSetStatus(statefulSet)
-		return statefulSetSummaryGen.Create(options.Cache)
+		return statefulSetSummaryGen.Create(ctx, options.Cache)
 	}, 8)
 
 	o.EnablePodTemplate(statefulSet.Spec.Template)
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.ViewComponent, error) {
-			return createPodListView(statefulSet, options)
+			return createPodListView(ctx, statefulSet, options)
 		},
 		Width: 24,
 	})
 
 	o.EnableEvents()
 
-	return o.ToComponent(options)
+	return o.ToComponent(ctx, options)
 }
 
 // StatefulSetConfiguration generates a statefulset configuration
@@ -145,12 +146,12 @@ func NewStatefulSetStatus(statefulSet *appsv1.StatefulSet) *StatefulSetStatus {
 }
 
 // Create generates a statefulset status quadrant
-func (statefulSet *StatefulSetStatus) Create(c cache.Cache) (*component.Quadrant, error) {
+func (statefulSet *StatefulSetStatus) Create(ctx context.Context, c cache.Cache) (*component.Quadrant, error) {
 	if statefulSet.statefulset == nil {
 		return nil, errors.New("statefulset is nil")
 	}
 
-	pods, err := listPods(statefulSet.statefulset.ObjectMeta.Namespace, statefulSet.statefulset.Spec.Selector, statefulSet.statefulset.GetUID(), c)
+	pods, err := listPods(ctx, statefulSet.statefulset.ObjectMeta.Namespace, statefulSet.statefulset.Spec.Selector, statefulSet.statefulset.GetUID(), c)
 	if err != nil {
 		return nil, errors.Wrap(err, "list pods")
 	}

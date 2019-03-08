@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"sort"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
@@ -11,7 +12,7 @@ import (
 )
 
 // ClusterRoleListHandler is a printFunc that prints cluster roles
-func ClusterRoleListHandler(list *rbacv1.ClusterRoleList, options Options) (component.ViewComponent, error) {
+func ClusterRoleListHandler(ctx context.Context, list *rbacv1.ClusterRoleList, options Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("cluster role list is nil")
 	}
@@ -32,7 +33,7 @@ func ClusterRoleListHandler(list *rbacv1.ClusterRoleList, options Options) (comp
 }
 
 // ClusterRoleHandler is a printFunc that prints a cluster role
-func ClusterRoleHandler(clusterRole *rbacv1.ClusterRole, options Options) (component.ViewComponent, error) {
+func ClusterRoleHandler(ctx context.Context, clusterRole *rbacv1.ClusterRole, options Options) (component.ViewComponent, error) {
 	o := NewObject(clusterRole)
 
 	o.RegisterConfig(func() (component.ViewComponent, error) {
@@ -46,7 +47,7 @@ func ClusterRoleHandler(clusterRole *rbacv1.ClusterRole, options Options) (compo
 		Width: 24,
 	})
 
-	return o.ToComponent(options)
+	return o.ToComponent(ctx, options)
 }
 
 func printClusterRoleConfig(clusterRole *rbacv1.ClusterRole) (component.ViewComponent, error) {

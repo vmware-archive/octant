@@ -10,8 +10,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pkg/errors"
-
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/api"
@@ -22,7 +20,10 @@ import (
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/overview"
 	"github.com/heptio/developer-dash/web"
+	"github.com/pkg/errors"
 	"github.com/skratchdot/open-golang/open"
+	"go.opencensus.io/exporter/jaeger"
+	"go.opencensus.io/trace"
 )
 
 const (
@@ -30,12 +31,25 @@ const (
 	defaultListenerAddr = "127.0.0.1:0"
 )
 
+type Options struct {
+	EnableOpenCensus bool
+	KubeConfig       string
+	Namespace        string
+	FrontendURL      string
+}
+
 // Run runs the dashboard.
-func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Logger) error {
-	logger.Debugf("Loading configuration: %v", kubeconfig)
-	clusterClient, err := cluster.FromKubeconfig(kubeconfig)
+func Run(ctx context.Context, logger log.Logger, options Options) error {
+	logger.Debugf("Loading configuration: %v", options.KubeConfig)
+	clusterClient, err := cluster.FromKubeconfig(options.KubeConfig)
 	if err != nil {
 		return errors.Wrap(err, "failed to init cluster client")
+	}
+
+	if options.EnableOpenCensus {
+		if err := enableOpenCensus(); err != nil {
+			return errors.Wrap(err, "enabling open census")
+		}
 	}
 
 	ctx = log.WithLoggerContext(ctx, logger)
@@ -46,11 +60,11 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Lo
 	}
 
 	// If not overridden, use initial namespace from current context in KUBECONFIG
-	if namespace == "" {
-		namespace = nsClient.InitialNamespace()
+	if options.Namespace == "" {
+		options.Namespace = nsClient.InitialNamespace()
 	}
 
-	logger.Debugf("initial namespace for dashboard is %s", namespace)
+	logger.Debugf("initial namespace for dashboard is %s", options.Namespace)
 
 	infoClient, err := clusterClient.InfoClient()
 	if err != nil {
@@ -62,7 +76,7 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Lo
 		return errors.Wrap(err, "initializing cache")
 	}
 
-	moduleManager, err := initModuleManager(ctx, clusterClient, appCache, namespace, logger)
+	moduleManager, err := initModuleManager(ctx, clusterClient, appCache, options.Namespace, logger)
 	if err != nil {
 		return errors.Wrap(err, "init module manager")
 	}
@@ -80,7 +94,7 @@ func Run(ctx context.Context, namespace, uiURL, kubeconfig string, logger log.Lo
 		}
 	}
 
-	d, err := newDash(listener, namespace, uiURL, ah, logger)
+	d, err := newDash(listener, options.Namespace, options.FrontendURL, ah, logger)
 	if err != nil {
 		return errors.Wrap(err, "failed to create dash instance")
 	}
@@ -174,7 +188,7 @@ func newDash(listener net.Listener, namespace, uiURL string, apiHandler api.Serv
 }
 
 func (d *dash) Run(ctx context.Context) error {
-	handler, err := d.handler()
+	handler, err := d.handler(ctx)
 	if err != nil {
 		return err
 	}
@@ -204,14 +218,14 @@ func (d *dash) Run(ctx context.Context) error {
 }
 
 // handler configures primary http routes
-func (d *dash) handler() (http.Handler, error) {
+func (d *dash) handler(ctx context.Context) (http.Handler, error) {
 	handler, err := d.uiHandler()
 	if err != nil {
 		return nil, err
 	}
 
 	router := mux.NewRouter()
-	router.PathPrefix(apiPathPrefix).Handler(d.apiHandler.Handler())
+	router.PathPrefix(apiPathPrefix).Handler(d.apiHandler.Handler(ctx))
 	router.PathPrefix("/").Handler(handler)
 
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
@@ -248,4 +262,24 @@ func (d *dash) uiProxy() (*httputil.ReverseProxy, error) {
 
 	proxy := httputil.NewSingleHostReverseProxy(u)
 	return proxy, nil
+}
+
+func enableOpenCensus() error {
+	agentEndpointURI := "localhost:6831"
+	collectorEndpointURI := "http://localhost:14268"
+
+	je, err := jaeger.NewExporter(jaeger.Options{
+		AgentEndpoint: agentEndpointURI,
+		Endpoint:      collectorEndpointURI,
+		ServiceName:   "sugarloaf",
+	})
+
+	if err != nil {
+		return errors.Wrap(err, "failed to create Jaeger exporter")
+	}
+
+	trace.RegisterExporter(je)
+	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
+
+	return nil
 }

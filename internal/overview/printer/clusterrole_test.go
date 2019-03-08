@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -32,7 +33,8 @@ func Test_ClusterRoleListHandler(t *testing.T) {
 		Items: []rbacv1.ClusterRole{*object},
 	}
 
-	got, err := ClusterRoleListHandler(list, printOptions)
+	ctx := context.Background()
+	got, err := ClusterRoleListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Age")

@@ -1,6 +1,7 @@
 package objectstatus
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -33,7 +34,7 @@ func Test_service(t *testing.T) {
 
 				endpoints := testutil.LoadObjectFromFile(t, "endpoints_ok.yaml")
 
-				c.EXPECT().Get(gomock.Eq(key)).
+				c.EXPECT().Get(gomock.Any(), gomock.Eq(key)).
 					Return(testutil.ToUnstructured(t, endpoints), nil)
 
 				objectFile := "service_ok.yaml"
@@ -57,7 +58,7 @@ func Test_service(t *testing.T) {
 
 				endpoints := testutil.LoadObjectFromFile(t, "endpoints_no_subsets.yaml")
 
-				c.EXPECT().Get(gomock.Eq(key)).
+				c.EXPECT().Get(gomock.Any(), gomock.Eq(key)).
 					Return(testutil.ToUnstructured(t, endpoints), nil)
 
 				objectFile := "service_ok.yaml"
@@ -94,7 +95,8 @@ func Test_service(t *testing.T) {
 
 			object := tc.init(t, c)
 
-			status, err := service(object, c)
+			ctx := context.Background()
+			status, err := service(ctx, object, c)
 			if tc.isErr {
 				require.Error(t, err)
 				return

@@ -21,6 +21,8 @@ type LocalContent struct {
 	root string
 }
 
+var _ module.Module = (*LocalContent)(nil)
+
 func New(root string) *LocalContent {
 	return &LocalContent{
 		root: root,
@@ -133,7 +135,7 @@ func (l *LocalContent) walk(fn walkFn) error {
 	return nil
 }
 
-func (l *LocalContent) Navigation(namespace, root string) (*hcli.Navigation, error) {
+func (l *LocalContent) Navigation(ctx context.Context, namespace, root string) (*hcli.Navigation, error) {
 	if !strings.HasSuffix(root, "/") {
 		root = fmt.Sprintf("%s/", root)
 	}
@@ -192,6 +194,6 @@ func (l *LocalContent) Start() error {
 func (l *LocalContent) Stop() {
 }
 
-func (l *LocalContent) Handlers() map[string]http.Handler {
+func (l *LocalContent) Handlers(ctx context.Context) map[string]http.Handler {
 	return make(map[string]http.Handler)
 }

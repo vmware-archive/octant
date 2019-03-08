@@ -1,6 +1,7 @@
 package objectstatus
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -69,7 +70,8 @@ func Test_statefulSet(t *testing.T) {
 
 			object := tc.init(t, c)
 
-			status, err := statefulSet(object, c)
+			ctx := context.Background()
+			status, err := statefulSet(ctx, object, c)
 			if tc.isErr {
 				require.Error(t, err)
 				return

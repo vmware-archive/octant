@@ -19,13 +19,13 @@ type Module interface {
 	// Name is the name of the module.
 	Name() string
 	// Handlers are additional handlers for the module
-	Handlers() map[string]http.Handler
+	Handlers(ctx context.Context) map[string]http.Handler
 	// Content generates content for a path.
 	Content(ctx context.Context, contentPath, prefix, namespace string, opts ContentOptions) (component.ContentResponse, error)
 	// ContentPath will be used to construct content paths.
 	ContentPath() string
 	// Navigation returns navigation entries for this module.
-	Navigation(namespace, root string) (*hcli.Navigation, error)
+	Navigation(ctx context.Context, namespace, root string) (*hcli.Navigation, error)
 	// SetNamespace is called when the current namespace changes.
 	SetNamespace(namespace string) error
 	// Start starts the module.

@@ -66,7 +66,7 @@ func (m *stubModule) Handler(root string) http.Handler {
 	panic("not implemented")
 }
 
-func (m *stubModule) Navigation(namespace, root string) (*hcli.Navigation, error) {
+func (m *stubModule) Navigation(ctx context.Context, namespace, root string) (*hcli.Navigation, error) {
 	panic("not implemented")
 }
 
@@ -85,6 +85,6 @@ func (m *stubModule) Content(ctx context.Context, contentPath string, prefix str
 	panic("not implemented")
 }
 
-func (m *stubModule) Handlers() map[string]http.Handler {
+func (m *stubModule) Handlers(ctx context.Context) map[string]http.Handler {
 	return make(map[string]http.Handler)
 }

@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -40,7 +41,8 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 		Items: []corev1.PersistentVolumeClaim{*object},
 	}
 
-	got, err := PersistentVolumeClaimListHandler(list, printOptions)
+	ctx := context.Background()
+	got, err := PersistentVolumeClaimListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Status", "Volume", "Capacity", "Access Modes",

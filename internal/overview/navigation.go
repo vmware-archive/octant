@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"context"
 	"path"
 	"sort"
 	"strings"
@@ -59,7 +60,7 @@ func (nf *NavigationFactory) pathFor(elements ...string) string {
 }
 
 // Entries returns navigation entries.
-func (nf *NavigationFactory) Entries() (*hcli.Navigation, error) {
+func (nf *NavigationFactory) Entries(ctx context.Context) (*hcli.Navigation, error) {
 	m := map[string]entriesFunc{
 		"Workloads":                    nf.workloadEntries,
 		"Discovery and Load Balancing": nf.discoAndLBEntries,
@@ -91,7 +92,7 @@ func (nf *NavigationFactory) Entries() (*hcli.Navigation, error) {
 
 	for _, name := range navOrder {
 		g.Go(func() error {
-			children, err := nf.genNode(name, m[name])
+			children, err := nf.genNode(ctx, name, m[name])
 			if err != nil {
 				return errors.Wrapf(err, "generate entries for %s", name)
 			}
@@ -112,12 +113,12 @@ func (nf *NavigationFactory) Entries() (*hcli.Navigation, error) {
 	return n, nil
 }
 
-type entriesFunc func(string) ([]*hcli.Navigation, error)
+type entriesFunc func(context.Context, string) ([]*hcli.Navigation, error)
 
-func (nf *NavigationFactory) genNode(name string, childFn entriesFunc) (*hcli.Navigation, error) {
+func (nf *NavigationFactory) genNode(ctx context.Context, name string, childFn entriesFunc) (*hcli.Navigation, error) {
 	node := hcli.NewNavigation(name, nf.pathFor(navPathLookup[name]))
 	if childFn != nil {
-		children, err := childFn(node.Path)
+		children, err := childFn(ctx, node.Path)
 		if err != nil {
 			return nil, err
 		}
@@ -127,7 +128,7 @@ func (nf *NavigationFactory) genNode(name string, childFn entriesFunc) (*hcli.Na
 	return node, nil
 }
 
-func (nf *NavigationFactory) workloadEntries(prefix string) ([]*hcli.Navigation, error) {
+func (nf *NavigationFactory) workloadEntries(ctx context.Context, prefix string) ([]*hcli.Navigation, error) {
 	return []*hcli.Navigation{
 		hcli.NewNavigation("Cron Jobs", path.Join(prefix, "cron-jobs")),
 		hcli.NewNavigation("Daemon Sets", path.Join(prefix, "daemon-sets")),
@@ -140,14 +141,14 @@ func (nf *NavigationFactory) workloadEntries(prefix string) ([]*hcli.Navigation,
 	}, nil
 }
 
-func (nf *NavigationFactory) discoAndLBEntries(prefix string) ([]*hcli.Navigation, error) {
+func (nf *NavigationFactory) discoAndLBEntries(ctx context.Context, prefix string) ([]*hcli.Navigation, error) {
 	return []*hcli.Navigation{
 		hcli.NewNavigation("Ingresses", path.Join(prefix, "ingresses")),
 		hcli.NewNavigation("Services", path.Join(prefix, "services")),
 	}, nil
 }
 
-func (nf *NavigationFactory) configAndStorageEntries(prefix string) ([]*hcli.Navigation, error) {
+func (nf *NavigationFactory) configAndStorageEntries(ctx context.Context, prefix string) ([]*hcli.Navigation, error) {
 	return []*hcli.Navigation{
 		hcli.NewNavigation("Config Maps", path.Join(prefix, "config-maps")),
 		hcli.NewNavigation("Persistent Volume Claims", path.Join(prefix, "persistent-volume-claims")),
@@ -156,7 +157,7 @@ func (nf *NavigationFactory) configAndStorageEntries(prefix string) ([]*hcli.Nav
 	}, nil
 }
 
-func (nf *NavigationFactory) rbacEntries(prefix string) ([]*hcli.Navigation, error) {
+func (nf *NavigationFactory) rbacEntries(ctx context.Context, prefix string) ([]*hcli.Navigation, error) {
 	return []*hcli.Navigation{
 		hcli.NewNavigation("Cluster Roles", path.Join(prefix, "cluster-roles")),
 		hcli.NewNavigation("Cluster Role Bindings", path.Join(prefix, "cluster-role-bindings")),
@@ -165,10 +166,10 @@ func (nf *NavigationFactory) rbacEntries(prefix string) ([]*hcli.Navigation, err
 	}, nil
 }
 
-func (nf *NavigationFactory) crdEntries(prefix string) ([]*hcli.Navigation, error) {
+func (nf *NavigationFactory) crdEntries(ctx context.Context, prefix string) ([]*hcli.Navigation, error) {
 	var list []*hcli.Navigation
 
-	crdNames, err := customResourceDefinitionNames(nf.cache)
+	crdNames, err := customResourceDefinitionNames(ctx, nf.cache)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving CRD names")
 	}
@@ -176,12 +177,12 @@ func (nf *NavigationFactory) crdEntries(prefix string) ([]*hcli.Navigation, erro
 	sort.Strings(crdNames)
 
 	for _, name := range crdNames {
-		crd, err := customResourceDefinition(name, nf.cache)
+		crd, err := customResourceDefinition(ctx, name, nf.cache)
 		if err != nil {
 			return nil, errors.Wrapf(err, "load %q custom resource definition", name)
 		}
 
-		objects, err := listCustomResources(crd, nf.namespace, nf.cache)
+		objects, err := listCustomResources(ctx, crd, nf.namespace, nf.cache)
 		if err != nil {
 			return nil, err
 		}

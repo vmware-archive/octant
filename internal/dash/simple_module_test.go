@@ -33,7 +33,7 @@ func (m *dashModule) ContentPath() string {
 }
 
 // Navigation is a no-op.
-func (m *dashModule) Navigation(namespace, root string) (*hcli.Navigation, error) {
+func (m *dashModule) Navigation(ctx context.Context, namespace, root string) (*hcli.Navigation, error) {
 	return nil, nil
 }
 
@@ -52,6 +52,6 @@ func (m *dashModule) Stop() {
 }
 
 // Handlers returns an empty set of handlers.
-func (m *dashModule) Handlers() map[string]http.Handler {
+func (m *dashModule) Handlers(ctx context.Context) map[string]http.Handler {
 	return make(map[string]http.Handler)
 }

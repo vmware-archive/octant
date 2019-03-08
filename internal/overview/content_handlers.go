@@ -24,7 +24,7 @@ func loadObject(ctx context.Context, cache cache.Cache, namespace string, fields
 		cacheKey.Name = name
 	}
 
-	object, err := cache.Get(cacheKey)
+	object, err := cache.Get(ctx, cacheKey)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func loadObjects(ctx context.Context, cache cache.Cache, namespace string, field
 			cacheKey.Name = name
 		}
 
-		cacheObjects, err := cache.List(cacheKey)
+		cacheObjects, err := cache.List(ctx, cacheKey)
 		if err != nil {
 			return nil, err
 		}

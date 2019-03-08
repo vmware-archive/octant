@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -26,7 +27,7 @@ func Test_Resource_Print(t *testing.T) {
 	}{
 		{
 			name: "print known object",
-			printFunc: func(deployment *appsv1.Deployment, options Options) (component.ViewComponent, error) {
+			printFunc: func(ctx context.Context, deployment *appsv1.Deployment, options Options) (component.ViewComponent, error) {
 				return &stubViewComponent{Type: "type1"}, nil
 			},
 			object:       &appsv1.Deployment{},
@@ -44,7 +45,7 @@ func Test_Resource_Print(t *testing.T) {
 		},
 		{
 			name: "print handler returns error",
-			printFunc: func(deployment *appsv1.Deployment, options Options) (component.ViewComponent, error) {
+			printFunc: func(ctx context.Context, deployment *appsv1.Deployment, options Options) (component.ViewComponent, error) {
 				return nil, errors.New("failed")
 			},
 			object: &appsv1.Deployment{},
@@ -66,7 +67,8 @@ func Test_Resource_Print(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			got, err := p.Print(tc.object)
+			ctx := context.Background()
+			got, err := p.Print(ctx, tc.object)
 			if tc.isErr {
 				assert.Error(t, err)
 				return
@@ -93,7 +95,7 @@ func Test_Resource_Handler(t *testing.T) {
 	}{
 		{
 			name: "valid printer",
-			printFunc: func(int, Options) (component.ViewComponent, error) {
+			printFunc: func(context.Context, int, Options) (component.ViewComponent, error) {
 				return &stubViewComponent{Type: "type1"}, nil
 			},
 		},
@@ -136,7 +138,7 @@ func Test_Resource_Handler(t *testing.T) {
 }
 
 func Test_Resource_DuplicateHandler(t *testing.T) {
-	printFunc := func(int, Options) (component.ViewComponent, error) {
+	printFunc := func(context.Context, int, Options) (component.ViewComponent, error) {
 		return &stubViewComponent{Type: "type1"}, nil
 	}
 
@@ -197,7 +199,8 @@ func Test_DefaultPrinter(t *testing.T) {
 		},
 	}
 
-	got, err := DefaultPrintFunc(object, printOptions)
+	ctx := context.Background()
+	got, err := DefaultPrintFunc(ctx, object, printOptions)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Age")
@@ -231,7 +234,8 @@ func Test_DefaultPrinter_invalid_object(t *testing.T) {
 				Cache: cachefake.NewMockCache(controller),
 			}
 
-			_, err := DefaultPrintFunc(tc.object, printOptions)
+			ctx := context.Background()
+			_, err := DefaultPrintFunc(ctx, tc.object, printOptions)
 			assert.Error(t, err)
 		})
 	}

@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
@@ -10,7 +11,7 @@ import (
 )
 
 // DaemonSetListHandler is a printFunc that lists daemon sets
-func DaemonSetListHandler(list *appsv1.DaemonSetList, opts Options) (component.ViewComponent, error) {
+func DaemonSetListHandler(ctx context.Context, list *appsv1.DaemonSetList, opts Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("daemon set list is nil")
 	}
@@ -37,7 +38,7 @@ func DaemonSetListHandler(list *appsv1.DaemonSetList, opts Options) (component.V
 }
 
 // DaemonSetHandler is a printFunc that prints a daemon set
-func DaemonSetHandler(daemonSet *appsv1.DaemonSet, options Options) (component.ViewComponent, error) {
+func DaemonSetHandler(ctx context.Context, daemonSet *appsv1.DaemonSet, options Options) (component.ViewComponent, error) {
 	o := NewObject(daemonSet)
 
 	o.RegisterConfig(func() (component.ViewComponent, error) {
@@ -52,14 +53,14 @@ func DaemonSetHandler(daemonSet *appsv1.DaemonSet, options Options) (component.V
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.ViewComponent, error) {
-			return createPodListView(daemonSet, options)
+			return createPodListView(ctx, daemonSet, options)
 		},
 		Width: 24,
 	})
 
 	o.EnableEvents()
 
-	return o.ToComponent(options)
+	return o.ToComponent(ctx, options)
 }
 
 func printDaemonSetConfig(daemonSet *appsv1.DaemonSet) (component.ViewComponent, error) {

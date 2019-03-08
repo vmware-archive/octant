@@ -1,6 +1,7 @@
 package objectstatus
 
 import (
+	"context"
 	"testing"
 
 	"github.com/heptio/developer-dash/internal/testutil"
@@ -79,7 +80,8 @@ func Test_runJobStatus(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			object := tc.init(t)
 
-			status, err := runJobStatus(object, nil)
+			ctx := context.Background()
+			status, err := runJobStatus(ctx, object, nil)
 			if tc.isErr {
 				require.Error(t, err)
 				return

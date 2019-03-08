@@ -41,7 +41,7 @@ func TestListDescriber(t *testing.T) {
 	}
 
 	c.EXPECT().
-		List(gomock.Eq(retrieveKey)).
+		List(gomock.Any(), gomock.Eq(retrieveKey)).
 		Return([]*unstructured.Unstructured{{Object: object}}, nil)
 
 	listType := func() interface{} {
@@ -118,7 +118,7 @@ func TestObjectDescriber(t *testing.T) {
 	retrieveKey := cache.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
 
 	c.EXPECT().
-		Get(gomock.Eq(retrieveKey)).
+		Get(gomock.Any(), gomock.Eq(retrieveKey)).
 		Return(object, nil)
 
 	objectType := func() interface{} {
@@ -130,7 +130,7 @@ func TestObjectDescriber(t *testing.T) {
 	d := NewObjectDescriber(thePath, "object", fn, objectType, true)
 
 	p := printer.NewResource(c)
-	err := p.Handler(func(*corev1.Pod, printer.Options) (component.ViewComponent, error) {
+	err := p.Handler(func(context.Context, *corev1.Pod, printer.Options) (component.ViewComponent, error) {
 		return component.NewText("*v1.Pod"), nil
 	})
 	require.NoError(t, err)

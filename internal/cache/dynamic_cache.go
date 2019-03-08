@@ -1,12 +1,14 @@
 package cache
 
 import (
-	"fmt"
+	"context"
+	"sync"
 	"time"
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/util/retry"
 	"github.com/pkg/errors"
+	"go.opencensus.io/trace"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -42,6 +44,9 @@ type DynamicCache struct {
 	factory         dynamicinformer.DynamicSharedInformerFactory
 	client          cluster.ClientInterface
 	stopCh          <-chan struct{}
+	seenGVKs        map[schema.GroupVersionKind]bool
+
+	mu sync.Mutex
 }
 
 var _ (Cache) = (*DynamicCache)(nil)
@@ -52,6 +57,7 @@ func NewDynamicCache(client cluster.ClientInterface, stopCh <-chan struct{}, opt
 		initFactoryFunc: initDynamicSharedInformerFactory,
 		client:          client,
 		stopCh:          stopCh,
+		seenGVKs:        make(map[schema.GroupVersionKind]bool),
 	}
 
 	for _, option := range options {
@@ -64,9 +70,6 @@ func NewDynamicCache(client cluster.ClientInterface, stopCh <-chan struct{}, opt
 	}
 
 	c.factory = factory
-
-	fmt.Println("cache init")
-
 	return c, nil
 }
 
@@ -85,11 +88,34 @@ func (dc *DynamicCache) currentInformer(key Key) (informers.GenericInformer, err
 	informer := dc.factory.ForResource(gvr)
 	dc.factory.Start(dc.stopCh)
 
+	dc.mu.Lock()
+	defer dc.mu.Unlock()
+
+	if _, ok := dc.seenGVKs[gvk]; ok {
+		return informer, nil
+	}
+
+	ctx := context.Background()
+	if !kcache.WaitForCacheSync(ctx.Done(), informer.Informer().HasSynced) {
+		return nil, errors.New("shutting down")
+	}
+
+	dc.seenGVKs[gvk] = true
+
 	return informer, nil
 }
 
 // List lists objects.
-func (dc *DynamicCache) List(key Key) ([]*unstructured.Unstructured, error) {
+func (dc *DynamicCache) List(ctx context.Context, key Key) ([]*unstructured.Unstructured, error) {
+	ctx, span := trace.StartSpan(ctx, "dynamicCacheList")
+	defer span.End()
+
+	span.Annotate([]trace.Attribute{
+		trace.StringAttribute("namespace", key.Namespace),
+		trace.StringAttribute("apiVersion", key.APIVersion),
+		trace.StringAttribute("kind", key.Kind),
+	}, "list key")
+
 	informer, err := dc.currentInformer(key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "retrieving informer for %v", key)
@@ -129,7 +155,17 @@ type getter interface {
 }
 
 // Get retrieves a single object.
-func (dc *DynamicCache) Get(key Key) (*unstructured.Unstructured, error) {
+func (dc *DynamicCache) Get(ctx context.Context, key Key) (*unstructured.Unstructured, error) {
+	ctx, span := trace.StartSpan(ctx, "dynamicCacheList")
+	defer span.End()
+
+	span.Annotate([]trace.Attribute{
+		trace.StringAttribute("namespace", key.Namespace),
+		trace.StringAttribute("apiVersion", key.APIVersion),
+		trace.StringAttribute("kind", key.Kind),
+		trace.StringAttribute("name", key.Name),
+	}, "get key")
+
 	informer, err := dc.currentInformer(key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "retrieving informer for %v", key)
@@ -142,11 +178,14 @@ func (dc *DynamicCache) Get(key Key) (*unstructured.Unstructured, error) {
 		g = informer.Lister().ByNamespace(key.Namespace)
 	}
 
+	var retryCount int64
+
 	var object kruntime.Object
 	retryErr := retry.Retry(3, time.Second, func() error {
 		object, err = g.Get(key.Name)
 		if err != nil {
 			if !kerrors.IsNotFound(err) {
+				retryCount++
 				return retry.Stop(errors.Wrap(err, "lister Get"))
 			}
 			return err
@@ -154,6 +193,12 @@ func (dc *DynamicCache) Get(key Key) (*unstructured.Unstructured, error) {
 
 		return nil
 	})
+
+	if retryCount > 0 {
+		span.Annotate([]trace.Attribute{
+			trace.Int64Attribute("retryCount", retryCount),
+		}, "get retried")
+	}
 
 	if retryErr != nil {
 		return nil, err

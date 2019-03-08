@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -22,7 +23,7 @@ var (
 )
 
 // EventListHandler is a printFunc that lists events.
-func EventListHandler(list *corev1.EventList, opts Options) (component.ViewComponent, error) {
+func EventListHandler(ctx context.Context, list *corev1.EventList, opts Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -58,7 +59,7 @@ func EventListHandler(list *corev1.EventList, opts Options) (component.ViewCompo
 	return table, nil
 }
 
-func EventHandler(event *corev1.Event, opts Options) (component.ViewComponent, error) {
+func EventHandler(ctx context.Context, event *corev1.Event, opts Options) (component.ViewComponent, error) {
 	if event == nil {
 		return nil, errors.New("event can not be nil")
 	}
@@ -170,8 +171,8 @@ func formatEventSource(es corev1.EventSource) string {
 	return strings.Join(EventSourceString, ", ")
 }
 
-func createEventsForObject(fl *flexlayout.FlexLayout, object runtime.Object, opts Options) error {
-	eventList, err := eventsForObject(object, opts.Cache)
+func createEventsForObject(ctx context.Context, fl *flexlayout.FlexLayout, object runtime.Object, opts Options) error {
+	eventList, err := eventsForObject(ctx, object, opts.Cache)
 	if err != nil {
 		return errors.Wrap(err, "list events for object")
 	}
@@ -191,7 +192,7 @@ func createEventsForObject(fl *flexlayout.FlexLayout, object runtime.Object, opt
 	return nil
 }
 
-func eventsForObject(object runtime.Object, c cache.Cache) (*corev1.EventList, error) {
+func eventsForObject(ctx context.Context, object runtime.Object, c cache.Cache) (*corev1.EventList, error) {
 	accessor := meta.NewAccessor()
 
 	namespace, err := accessor.Namespace(object)
@@ -220,7 +221,7 @@ func eventsForObject(object runtime.Object, c cache.Cache) (*corev1.EventList, e
 		Kind:       "Event",
 	}
 
-	list, err := c.List(key)
+	list, err := c.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "list events for object")
 	}

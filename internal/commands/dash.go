@@ -19,6 +19,7 @@ func newDashCmd() *cobra.Command {
 	var uiURL string
 	var kubeconfig string
 	var verboseLevel int
+	var enableOpenCensus bool
 
 	dashCmd := &cobra.Command{
 		Use:   "dash",
@@ -28,9 +29,7 @@ func newDashCmd() *cobra.Command {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			// Configure glog verbosity (in client-go)
-			// flag.CommandLine.Parse([]string{"-logtostderr", "-v", strconv.Itoa(verboseLevel)}) // Set glog to verbose
-			// TODO how does this work in klog??
+			// TODO enable support for klog
 
 			z, err := newZapLogger(verboseLevel)
 			if err != nil {
@@ -46,7 +45,14 @@ func newDashCmd() *cobra.Command {
 			runCh := make(chan bool, 1)
 
 			go func() {
-				if err := dash.Run(ctx, namespace, uiURL, kubeconfig, logger); err != nil {
+				options := dash.Options{
+					EnableOpenCensus: enableOpenCensus,
+					KubeConfig:       kubeconfig,
+					Namespace:        namespace,
+					FrontendURL:      uiURL,
+				}
+
+				if err := dash.Run(ctx, logger, options); err != nil {
 					logger.Errorf("running dashboard: %v", err)
 					os.Exit(1)
 				}
@@ -69,6 +75,7 @@ func newDashCmd() *cobra.Command {
 	dashCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "initial namespace")
 	dashCmd.Flags().StringVar(&uiURL, "ui-url", "", "dashboard url")
 	dashCmd.Flags().CountVarP(&verboseLevel, "verbose", "v", "verbosity level")
+	dashCmd.Flags().BoolVarP(&enableOpenCensus, "enable-opencensus", "c", false, "enable open census")
 
 	kubeconfig = clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
 

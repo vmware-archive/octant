@@ -89,7 +89,7 @@ type navigationEventGenerator struct {
 func (g *navigationEventGenerator) Generate(ctx context.Context) (event, error) {
 	ans := newAPINavSections(g.modules)
 
-	ns, err := ans.Sections(g.namespace)
+	ns, err := ans.Sections(ctx, g.namespace)
 	if err != nil {
 		return event{}, err
 	}

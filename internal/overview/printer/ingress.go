@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -12,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-func IngressListHandler(list *extv1beta1.IngressList, options Options) (component.ViewComponent, error) {
+func IngressListHandler(ctx context.Context, list *extv1beta1.IngressList, options Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("ingress list is nil")
 	}
@@ -40,7 +41,7 @@ func IngressListHandler(list *extv1beta1.IngressList, options Options) (componen
 	return table, nil
 }
 
-func IngressHandler(ingress *extv1beta1.Ingress, options Options) (component.ViewComponent, error) {
+func IngressHandler(ctx context.Context, ingress *extv1beta1.Ingress, options Options) (component.ViewComponent, error) {
 	o := NewObject(ingress)
 
 	o.RegisterConfig(func() (component.ViewComponent, error) {
@@ -56,7 +57,7 @@ func IngressHandler(ingress *extv1beta1.Ingress, options Options) (component.Vie
 
 	o.EnableEvents()
 
-	return o.ToComponent(options)
+	return o.ToComponent(ctx, options)
 }
 
 func printIngressConfig(ingress *extv1beta1.Ingress) (component.ViewComponent, error) {

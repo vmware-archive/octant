@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/cache"
@@ -11,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func ServiceAccountListHandler(list *corev1.ServiceAccountList, opts Options) (component.ViewComponent, error) {
+func ServiceAccountListHandler(ctx context.Context, list *corev1.ServiceAccountList, opts Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("service account list is nil")
 	}
@@ -32,19 +33,19 @@ func ServiceAccountListHandler(list *corev1.ServiceAccountList, opts Options) (c
 	return table, nil
 }
 
-func ServiceAccountHandler(serviceAccount *corev1.ServiceAccount, options Options) (component.ViewComponent, error) {
+func ServiceAccountHandler(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) (component.ViewComponent, error) {
 	o := NewObject(serviceAccount)
 
 	o.RegisterConfig(func() (component.ViewComponent, error) {
-		return printServiceAccountConfig(serviceAccount, options.Cache)
+		return printServiceAccountConfig(ctx, serviceAccount, options.Cache)
 	}, 16)
 
 	o.EnableEvents()
 
-	return o.ToComponent(options)
+	return o.ToComponent(ctx, options)
 }
 
-func printServiceAccountConfig(serviceAccount *corev1.ServiceAccount, c cache.Cache) (component.ViewComponent, error) {
+func printServiceAccountConfig(ctx context.Context, serviceAccount *corev1.ServiceAccount, c cache.Cache) (component.ViewComponent, error) {
 	if serviceAccount == nil {
 		return nil, errors.New("service account is nil")
 	}
@@ -72,7 +73,7 @@ func printServiceAccountConfig(serviceAccount *corev1.ServiceAccount, c cache.Ca
 			generateServiceAccountSecretsList(serviceAccount.Namespace, mountSecrets))
 	}
 
-	tokens, err := serviceAccountTokens(*serviceAccount, c)
+	tokens, err := serviceAccountTokens(ctx, *serviceAccount, c)
 	if err != nil {
 		return nil, errors.Wrap(err, "get tokens for service account")
 	}
@@ -94,13 +95,13 @@ func generateServiceAccountSecretsList(namespace string, secretNames []string) *
 	return component.NewList("", items)
 }
 
-func serviceAccountTokens(serviceAccount corev1.ServiceAccount, c cache.Cache) ([]string, error) {
+func serviceAccountTokens(ctx context.Context, serviceAccount corev1.ServiceAccount, c cache.Cache) ([]string, error) {
 	key := cache.Key{
 		Namespace:  serviceAccount.Namespace,
 		APIVersion: "v1",
 		Kind:       "Secret",
 	}
-	secretList, err := c.List(key)
+	secretList, err := c.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "find secrets for service account")
 	}

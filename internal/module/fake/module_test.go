@@ -31,7 +31,8 @@ func TestModule_Navigation(t *testing.T) {
 		Title: "module",
 	}
 
-	got, err := m.Navigation("", "/module")
+	ctx := context.Background()
+	got, err := m.Navigation(ctx, "", "/module")
 	require.NoError(t, err)
 
 	assert.Equal(t, expected, got)

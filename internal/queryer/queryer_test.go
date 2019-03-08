@@ -1,6 +1,7 @@
 package queryer
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"testing"
@@ -78,12 +79,12 @@ func TestCacheQueryer_Children(t *testing.T) {
 			setup: func(t *testing.T, c *fakecache.MockCache, disco *fakequeryer.MockDiscoveryInterface) {
 				deploymentKey := cache.Key{Namespace: "default", APIVersion: "apps/v1", Kind: "Deployment"}
 				c.EXPECT().
-					List(gomock.Eq(deploymentKey)).
+					List(gomock.Any(), gomock.Eq(deploymentKey)).
 					Return([]*unstructured.Unstructured{toUnstructured(t, deployment)}, nil).Times(1)
 
 				rsKey := cache.Key{Namespace: "default", APIVersion: "apps/v1", Kind: "ReplicaSet"}
 				c.EXPECT().
-					List(gomock.Eq(rsKey)).
+					List(gomock.Any(), gomock.Eq(rsKey)).
 					Return([]*unstructured.Unstructured{toUnstructured(t, rs)}, nil).Times(1)
 
 				disco.EXPECT().
@@ -118,12 +119,12 @@ func TestCacheQueryer_Children(t *testing.T) {
 			setup: func(t *testing.T, c *fakecache.MockCache, disco *fakequeryer.MockDiscoveryInterface) {
 				deploymentKey := cache.Key{Namespace: "default", APIVersion: "apps/v1", Kind: "Deployment"}
 				c.EXPECT().
-					List(gomock.Eq(deploymentKey)).
+					List(gomock.Any(), gomock.Eq(deploymentKey)).
 					Return(nil, errors.New("failed")).Times(1)
 
 				rsKey := cache.Key{Namespace: "default", APIVersion: "apps/v1", Kind: "ReplicaSet"}
 				c.EXPECT().
-					List(gomock.Eq(rsKey)).
+					List(gomock.Any(), gomock.Eq(rsKey)).
 					Return([]*unstructured.Unstructured{toUnstructured(t, rs)}, nil).AnyTimes()
 
 				disco.EXPECT().
@@ -148,7 +149,8 @@ func TestCacheQueryer_Children(t *testing.T) {
 
 			cq := New(c, discovery)
 
-			got, err := cq.Children(tc.owner)
+			ctx := context.Background()
+			got, err := cq.Children(ctx, tc.owner)
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -195,7 +197,7 @@ func TestCacheQueryer_Events(t *testing.T) {
 					Kind:       "Event",
 				}
 				c.EXPECT().
-					List(gomock.Eq(key)).
+					List(gomock.Any(), gomock.Eq(key)).
 					Return([]*unstructured.Unstructured{
 						toUnstructured(t, events[0]),
 						toUnstructured(t, events[1]),
@@ -221,7 +223,8 @@ func TestCacheQueryer_Events(t *testing.T) {
 
 			cq := New(c, discovery)
 
-			events, err := cq.Events(tc.object)
+			ctx := context.Background()
+			events, err := cq.Events(ctx, tc.object)
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -309,7 +312,7 @@ func TestCacheQueryer_IngressesForService(t *testing.T) {
 					Kind:       "Ingress",
 				}
 				c.EXPECT().
-					List(gomock.Eq(ingressesKey)).
+					List(gomock.Any(), gomock.Eq(ingressesKey)).
 					Return([]*unstructured.Unstructured{
 						toUnstructured(t, ingress1),
 						toUnstructured(t, ingress2),
@@ -335,7 +338,7 @@ func TestCacheQueryer_IngressesForService(t *testing.T) {
 					Kind:       "Ingress",
 				}
 				c.EXPECT().
-					List(gomock.Eq(ingressesKey)).
+					List(gomock.Any(), gomock.Eq(ingressesKey)).
 					Return(nil, errors.New("failed"))
 			},
 			isErr: true,
@@ -356,7 +359,8 @@ func TestCacheQueryer_IngressesForService(t *testing.T) {
 
 			cq := New(c, discovery)
 
-			got, err := cq.IngressesForService(tc.service)
+			ctx := context.Background()
+			got, err := cq.IngressesForService(ctx, tc.service)
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -396,7 +400,7 @@ func TestCacheQueryer_OwnerReference(t *testing.T) {
 					Name:       "deployment",
 				}
 				c.EXPECT().
-					Get(gomock.Eq(key)).
+					Get(gomock.Any(), gomock.Eq(key)).
 					Return(toUnstructured(t, deployment), nil)
 			},
 			expected: func(t *testing.T) runtime.Object {
@@ -413,7 +417,7 @@ func TestCacheQueryer_OwnerReference(t *testing.T) {
 					Name:       "deployment",
 				}
 				c.EXPECT().
-					Get(gomock.Eq(key)).
+					Get(gomock.Any(), gomock.Eq(key)).
 					Return(nil, errors.New("failed"))
 			},
 			isErr: true,
@@ -434,7 +438,8 @@ func TestCacheQueryer_OwnerReference(t *testing.T) {
 
 			cq := New(c, discovery)
 
-			got, err := cq.OwnerReference("default", ownerReference)
+			ctx := context.Background()
+			got, err := cq.OwnerReference(ctx, "default", ownerReference)
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -496,7 +501,7 @@ func TestCacheQueryer_PodsForService(t *testing.T) {
 					Kind:       "Pod",
 				}
 				c.EXPECT().
-					List(gomock.Eq(key)).
+					List(gomock.Any(), gomock.Eq(key)).
 					Return([]*unstructured.Unstructured{
 						toUnstructured(t, pod1),
 						toUnstructured(t, pod2),
@@ -519,7 +524,7 @@ func TestCacheQueryer_PodsForService(t *testing.T) {
 					Kind:       "Pod",
 				}
 				c.EXPECT().
-					List(gomock.Eq(key)).
+					List(gomock.Any(), gomock.Eq(key)).
 					Return(nil, errors.New("failed"))
 			},
 			isErr: true,
@@ -540,7 +545,8 @@ func TestCacheQueryer_PodsForService(t *testing.T) {
 
 			cq := New(c, discovery)
 
-			got, err := cq.PodsForService(tc.service)
+			ctx := context.Background()
+			got, err := cq.PodsForService(ctx, tc.service)
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -628,7 +634,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 					Name:       "service1",
 				}
 				c.EXPECT().
-					Get(gomock.Eq(key)).
+					Get(gomock.Any(), gomock.Eq(key)).
 					Return(toUnstructured(t, service1), nil)
 			},
 			expected: []string{"service1"},
@@ -644,7 +650,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 					Name:       "service1",
 				}
 				c.EXPECT().
-					Get(gomock.Eq(key1)).
+					Get(gomock.Any(), gomock.Eq(key1)).
 					Return(toUnstructured(t, service1), nil)
 				key2 := cache.Key{
 					Namespace:  "default",
@@ -653,7 +659,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 					Name:       "service2",
 				}
 				c.EXPECT().
-					Get(gomock.Eq(key2)).
+					Get(gomock.Any(), gomock.Eq(key2)).
 					Return(toUnstructured(t, service2), nil)
 			},
 			expected: []string{"service1", "service2"},
@@ -674,7 +680,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 					Name:       "service1",
 				}
 				c.EXPECT().
-					Get(gomock.Eq(key)).
+					Get(gomock.Any(), gomock.Eq(key)).
 					Return(nil, errors.New("failed"))
 			},
 			isErr: true,
@@ -695,7 +701,8 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 
 			cq := New(c, discovery)
 
-			services, err := cq.ServicesForIngress(tc.ingress)
+			ctx := context.Background()
+			services, err := cq.ServicesForIngress(ctx, tc.ingress)
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -763,7 +770,7 @@ func TestCacheQueryer_ServicesForPods(t *testing.T) {
 					Kind:       "Service",
 				}
 				c.EXPECT().
-					List(gomock.Eq(key)).
+					List(gomock.Any(), gomock.Eq(key)).
 					Return([]*unstructured.Unstructured{
 						toUnstructured(t, service1),
 						toUnstructured(t, service2),
@@ -786,7 +793,7 @@ func TestCacheQueryer_ServicesForPods(t *testing.T) {
 					Kind:       "Service",
 				}
 				c.EXPECT().
-					List(gomock.Eq(key)).
+					List(gomock.Any(), gomock.Eq(key)).
 					Return(nil, errors.New("failed"))
 			},
 			isErr: true,
@@ -807,7 +814,8 @@ func TestCacheQueryer_ServicesForPods(t *testing.T) {
 
 			cq := New(c, discovery)
 
-			services, err := cq.ServicesForPod(tc.pod)
+			ctx := context.Background()
+			services, err := cq.ServicesForPod(ctx, tc.pod)
 			if tc.isErr {
 				require.Error(t, err)
 				return

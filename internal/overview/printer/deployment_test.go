@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -77,7 +78,8 @@ func Test_DeploymentListHandler(t *testing.T) {
 		},
 	}
 
-	got, err := DeploymentListHandler(object, printOptions)
+	ctx := context.Background()
+	got, err := DeploymentListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
 	containers := component.NewContainers()

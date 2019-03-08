@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
@@ -13,7 +14,7 @@ import (
 )
 
 // CronJobListHandler is a printFunc that lists cronjobs
-func CronJobListHandler(list *batchv1beta1.CronJobList, opts Options) (component.ViewComponent, error) {
+func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opts Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -38,7 +39,7 @@ func CronJobListHandler(list *batchv1beta1.CronJobList, opts Options) (component
 }
 
 // CronJobHandler is a printFunc that prints a CronJob
-func CronJobHandler(c *batchv1beta1.CronJob, opts Options) (component.ViewComponent, error) {
+func CronJobHandler(ctx context.Context, c *batchv1beta1.CronJob, opts Options) (component.ViewComponent, error) {
 	o := NewObject(c)
 
 	cronjobConfigGen := NewCronJobConfiguration(c)
@@ -50,14 +51,14 @@ func CronJobHandler(c *batchv1beta1.CronJob, opts Options) (component.ViewCompon
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.ViewComponent, error) {
-			return createJobListView(c, opts)
+			return createJobListView(ctx, c, opts)
 		},
 		Width: 24,
 	})
 
 	o.EnableEvents()
 
-	return o.ToComponent(opts)
+	return o.ToComponent(ctx, opts)
 }
 
 // CronJobConfiguration generates cronjob configuration

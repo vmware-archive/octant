@@ -1,6 +1,7 @@
 package objectstatus
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -14,7 +15,7 @@ type statusKey struct {
 	kind       string
 }
 
-type statusFunc func(runtime.Object, cache.Cache) (ObjectStatus, error)
+type statusFunc func(context.Context, runtime.Object, cache.Cache) (ObjectStatus, error)
 
 type statusLookup map[statusKey]statusFunc
 
@@ -67,11 +68,11 @@ func (os *ObjectStatus) Status() component.NodeStatus {
 }
 
 // Status creates an ObjectStatus for an object.
-func Status(object runtime.Object, c cache.Cache) (ObjectStatus, error) {
-	return status(object, c, defaultStatusLookup)
+func Status(ctx context.Context, object runtime.Object, c cache.Cache) (ObjectStatus, error) {
+	return status(ctx, object, c, defaultStatusLookup)
 }
 
-func status(object runtime.Object, c cache.Cache, lookup statusLookup) (ObjectStatus, error) {
+func status(ctx context.Context, object runtime.Object, c cache.Cache, lookup statusLookup) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.New("object is nil")
 	}
@@ -92,5 +93,5 @@ func status(object runtime.Object, c cache.Cache, lookup statusLookup) (ObjectSt
 
 	}
 
-	return fn(object, c)
+	return fn(ctx, object, c)
 }

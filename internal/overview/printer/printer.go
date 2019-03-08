@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
@@ -24,7 +25,7 @@ type Options struct {
 // Printer is an interface for printing runtime objects.
 type Printer interface {
 	// Print prints a runtime object.
-	Print(object runtime.Object) (component.ViewComponent, error)
+	Print(ctx context.Context, object runtime.Object) (component.ViewComponent, error)
 }
 
 // Resource prints runtime objects.
@@ -45,7 +46,7 @@ func NewResource(c cache.Cache) *Resource {
 
 // Print prints a runtime object. If not handler can be found for the type,
 // it will print using `DefaultPrintFunc`.
-func (p *Resource) Print(object runtime.Object) (component.ViewComponent, error) {
+func (p *Resource) Print(ctx context.Context, object runtime.Object) (component.ViewComponent, error) {
 	printOptions := Options{
 		Cache: p.cache,
 	}
@@ -53,7 +54,10 @@ func (p *Resource) Print(object runtime.Object) (component.ViewComponent, error)
 	t := reflect.TypeOf(object)
 	printFunc, ok := p.handlerMap[t]
 	if ok {
-		args := []reflect.Value{reflect.ValueOf(object), reflect.ValueOf(printOptions)}
+		args := []reflect.Value{
+			reflect.ValueOf(ctx),
+			reflect.ValueOf(object),
+			reflect.ValueOf(printOptions)}
 		results := printFunc.Call(args)
 		if !results[1].IsNil() {
 			return nil, results[1].Interface().(error)
@@ -63,7 +67,7 @@ func (p *Resource) Print(object runtime.Object) (component.ViewComponent, error)
 		return viewComponent, nil
 	}
 
-	return DefaultPrintFunc(object, printOptions)
+	return DefaultPrintFunc(ctx, object, printOptions)
 }
 
 // Handler adds a printer handler.
@@ -74,7 +78,7 @@ func (p *Resource) Handler(printFunc interface{}) error {
 		return err
 	}
 
-	objType := printFuncValue.Type().In(0)
+	objType := printFuncValue.Type().In(1)
 	if _, ok := p.handlerMap[objType]; ok {
 		return errors.Errorf("registered duplicate printer for %v", objType)
 	}
@@ -87,7 +91,7 @@ func (p *Resource) Handler(printFunc interface{}) error {
 // ValidatePrintHandlerFunc validates print handler signature.
 // printFunc is the function that will be called to print an object.
 // printFunc must be of the following type:
-//   func printFunc(object ObjectType, options Options) (component.ViewComponent, error)
+//   func printFunc(ctx context.Context, object ObjectType, options Options) (component.ViewComponent, error)
 // where:
 //   ObjectType is the type of object that will be printed
 func ValidatePrintHandlerFunc(printFunc reflect.Value) error {
@@ -96,16 +100,20 @@ func ValidatePrintHandlerFunc(printFunc reflect.Value) error {
 	}
 
 	funcType := printFunc.Type()
-	if funcType.NumIn() != 2 || funcType.NumOut() != 2 {
-		return errors.New("invalid printer handler. " +
-			"Must accept 2 parameters and 2 return values.")
+	if numIn, numOut := funcType.NumIn(), funcType.NumOut(); numIn != 3 || numOut != 2 {
+		return errors.Errorf("invalid printer handler. "+
+			"Must accept 3 parameters and 2 return values. "+
+			"It accepted %d parameters and returned %d values",
+			numIn, numOut,
+		)
 	}
 
-	if funcType.In(1) != reflect.TypeOf((*Options)(nil)).Elem() ||
+	if funcType.In(0) != reflect.TypeOf((*context.Context)(nil)).Elem() ||
+		funcType.In(2) != reflect.TypeOf((*Options)(nil)).Elem() ||
 		funcType.Out(0) != reflect.TypeOf((*component.ViewComponent)(nil)).Elem() ||
 		funcType.Out(1) != reflect.TypeOf((*error)(nil)).Elem() {
 		return errors.Errorf("invalid print handler. The expected signature is: "+
-			"func handler(obj %v, options *PrintOptions) (component.ViewComponent, error)",
+			"func handler(ctx context.Context, obj %v, options *PrintOptions) (component.ViewComponent, error)",
 			funcType.In(0))
 	}
 
@@ -115,7 +123,7 @@ func ValidatePrintHandlerFunc(printFunc reflect.Value) error {
 // DefaultPrintFunc is a default object printer. It prints Kubernetes resource
 // lists with three columns: name, labels, age. Returns nil if the object
 // should not be printed.
-func DefaultPrintFunc(object runtime.Object, options Options) (component.ViewComponent, error) {
+func DefaultPrintFunc(ctx context.Context, object runtime.Object, options Options) (component.ViewComponent, error) {
 	if object == nil {
 		return nil, errors.New("unable to print nil objects")
 	}

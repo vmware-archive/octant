@@ -29,7 +29,7 @@ var (
 type PortForwardInterface interface {
 	List() []PortForwardState
 	Get(id string) (PortForwardState, bool)
-	Create(gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (PortForwardCreateResponse, error)
+	Create(ctx context.Context, gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (PortForwardCreateResponse, error)
 	Stop()
 	StopForwarder(id string)
 }
@@ -204,7 +204,7 @@ func (s *PortForwardService) validateCreateRequest(r PortForwardCreateRequest) e
 // forward to. Service/deployments selectors will be resolved into pods and a random
 // one will be chosen. A pod has to be active.
 // Returns: pod name or error.
-func (s *PortForwardService) resolvePod(r PortForwardCreateRequest) (string, error) {
+func (s *PortForwardService) resolvePod(ctx context.Context, r PortForwardCreateRequest) (string, error) {
 	c := s.opts.Cache
 	if c == nil {
 		return "", errors.New("nil cache")
@@ -213,7 +213,7 @@ func (s *PortForwardService) resolvePod(r PortForwardCreateRequest) (string, err
 	switch {
 	case r.APIVersion == "v1" && r.Kind == "Pod":
 		// Verify pod exists and status is running
-		if ok, err := s.verifyPod(r.Namespace, r.Name); !ok || err != nil {
+		if ok, err := s.verifyPod(ctx, r.Namespace, r.Name); !ok || err != nil {
 			return "", fmt.Errorf("verifying pod %q: %v", r.Name, err)
 		}
 		return r.Name, nil
@@ -231,7 +231,7 @@ func (s *PortForwardService) resolvePod(r PortForwardCreateRequest) (string, err
 
 // verifyPod returns true if the specified pod can be found and is in the running phase.
 // Otherwise returns false and an error describing the cause.
-func (s *PortForwardService) verifyPod(namespace, name string) (bool, error) {
+func (s *PortForwardService) verifyPod(ctx context.Context, namespace, name string) (bool, error) {
 	c := s.opts.Cache
 	if c == nil {
 		return false, errors.New("nil cache")
@@ -244,7 +244,7 @@ func (s *PortForwardService) verifyPod(namespace, name string) (bool, error) {
 		Name:       name,
 	}
 	var pod corev1.Pod
-	if err := cache.GetAs(c, key, &pod); err != nil {
+	if err := cache.GetAs(ctx, c, key, &pod); err != nil {
 		return false, err
 	}
 	if pod.Name == "" {
@@ -464,7 +464,7 @@ func (s *PortForwardService) Get(id string) (PortForwardState, bool) {
 
 // Create creates a new port forward for the specified object and remote port.
 // Implements PortForwardInterface.
-func (s *PortForwardService) Create(gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (PortForwardCreateResponse, error) {
+func (s *PortForwardService) Create(ctx context.Context, gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (PortForwardCreateResponse, error) {
 	log := s.logger.With("context", "PortForwardService.Create")
 	req := newForwardRequest(gvk, name, namespace, remotePort)
 
@@ -474,7 +474,7 @@ func (s *PortForwardService) Create(gvk schema.GroupVersionKind, name string, na
 
 	// Resolve the request into a pod, update the request
 	log.Debugf("resolving pod from object %v/%v %q (ns=%v)", req.APIVersion, req.Kind, req.Name, req.Namespace)
-	podName, err := s.resolvePod(req)
+	podName, err := s.resolvePod(ctx, req)
 	if err != nil {
 		return emptyPortForwardResponse, errors.Wrap(err, "resolving pod")
 	}

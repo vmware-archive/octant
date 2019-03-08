@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -11,7 +12,7 @@ import (
 )
 
 // PersistentVolumeClaimListHandler is a printFunc that prints persistentvolumeclaims
-func PersistentVolumeClaimListHandler(list *corev1.PersistentVolumeClaimList, options Options) (component.ViewComponent, error) {
+func PersistentVolumeClaimListHandler(ctx context.Context, list *corev1.PersistentVolumeClaimList, options Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -48,7 +49,7 @@ func PersistentVolumeClaimListHandler(list *corev1.PersistentVolumeClaimList, op
 }
 
 // PersistentVolumeClaimHandler is a printFunc that prints a PersistentVolumeClaim
-func PersistentVolumeClaimHandler(persistentVolumeClaim *corev1.PersistentVolumeClaim, options Options) (component.ViewComponent, error) {
+func PersistentVolumeClaimHandler(ctx context.Context, persistentVolumeClaim *corev1.PersistentVolumeClaim, options Options) (component.ViewComponent, error) {
 	o := NewObject(persistentVolumeClaim)
 
 	o.RegisterConfig(func() (component.ViewComponent, error) {
@@ -61,14 +62,14 @@ func PersistentVolumeClaimHandler(persistentVolumeClaim *corev1.PersistentVolume
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.ViewComponent, error) {
-			return createMountedPodListView(persistentVolumeClaim.Namespace, persistentVolumeClaim.Name, options)
+			return createMountedPodListView(ctx, persistentVolumeClaim.Namespace, persistentVolumeClaim.Name, options)
 		},
 		Width: 24,
 	})
 
 	o.EnableEvents()
 
-	return o.ToComponent(options)
+	return o.ToComponent(ctx, options)
 }
 
 func printPersistentVolumeClaimConfig(persistentVolumeClaim *corev1.PersistentVolumeClaim) (component.ViewComponent, error) {

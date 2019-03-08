@@ -1,8 +1,12 @@
 package queryer
 
 import (
+	"context"
+	"sync"
+
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/pkg/errors"
+	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
@@ -27,13 +31,13 @@ import (
 //go:generate mockgen -destination=./fake/mock_discovery.go -package=fake k8s.io/client-go/discovery DiscoveryInterface
 
 type Queryer interface {
-	Children(object metav1.Object) ([]kruntime.Object, error)
-	Events(object metav1.Object) ([]*corev1.Event, error)
-	IngressesForService(service *corev1.Service) ([]*extv1beta1.Ingress, error)
-	OwnerReference(namespace string, ownerReference metav1.OwnerReference) (kruntime.Object, error)
-	PodsForService(service *corev1.Service) ([]*corev1.Pod, error)
-	ServicesForIngress(ingress *extv1beta1.Ingress) ([]*corev1.Service, error)
-	ServicesForPod(pod *corev1.Pod) ([]*corev1.Service, error)
+	Children(ctx context.Context, object metav1.Object) ([]kruntime.Object, error)
+	Events(ctx context.Context, object metav1.Object) ([]*corev1.Event, error)
+	IngressesForService(ctx context.Context, service *corev1.Service) ([]*extv1beta1.Ingress, error)
+	OwnerReference(ctx context.Context, namespace string, ownerReference metav1.OwnerReference) (kruntime.Object, error)
+	PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error)
+	ServicesForIngress(ctx context.Context, ingress *extv1beta1.Ingress) ([]*corev1.Service, error)
+	ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Service, error)
 }
 
 type CacheQueryer struct {
@@ -43,6 +47,8 @@ type CacheQueryer struct {
 	children        map[types.UID][]kruntime.Object
 	podsForServices map[types.UID][]*corev1.Pod
 	owner           map[cache.Key]kruntime.Object
+
+	mu sync.Mutex
 }
 
 var _ Queryer = (*CacheQueryer)(nil)
@@ -58,10 +64,20 @@ func New(c cache.Cache, discoveryClient discovery.DiscoveryInterface) *CacheQuer
 	}
 }
 
-func (cq *CacheQueryer) Children(owner metav1.Object) ([]kruntime.Object, error) {
+func (cq *CacheQueryer) Children(ctx context.Context, owner metav1.Object) ([]kruntime.Object, error) {
 	if owner == nil {
 		return nil, errors.New("owner is nil")
 	}
+
+	ctx, span := trace.StartSpan(ctx, "queryer:Children")
+	defer span.End()
+
+	// span.Annotate([]trace.Attribute{
+	// 	trace.StringAttribute("get", ""),
+	// 	trace.StringAttribute("kind", u.GetKind()),
+	// 	trace.StringAttribute("name", u.GetName()),
+	// 	trace.StringAttribute("namespace", u.GetNamespace()),
+	// }, "handling object")
 
 	cached, ok := cq.children[owner.GetUID()]
 	if ok {
@@ -108,7 +124,7 @@ func (cq *CacheQueryer) Children(owner metav1.Object) ([]kruntime.Object, error)
 			}
 
 			g.Go(func() error {
-				objects, err := cq.cache.List(key)
+				objects, err := cq.cache.List(ctx, key)
 				if err != nil {
 					return errors.Wrapf(err, "unable to retrieve %+v", key)
 				}
@@ -130,12 +146,14 @@ func (cq *CacheQueryer) Children(owner metav1.Object) ([]kruntime.Object, error)
 
 	close(ch)
 
+	cq.mu.Lock()
 	cq.children[owner.GetUID()] = children
+	cq.mu.Unlock()
 
 	return children, nil
 }
 
-func (cq *CacheQueryer) Events(object metav1.Object) ([]*corev1.Event, error) {
+func (cq *CacheQueryer) Events(ctx context.Context, object metav1.Object) ([]*corev1.Event, error) {
 	if object == nil {
 		return nil, errors.New("object is nil")
 	}
@@ -153,7 +171,7 @@ func (cq *CacheQueryer) Events(object metav1.Object) ([]*corev1.Event, error) {
 		Kind:       "Event",
 	}
 
-	allEvents, err := cq.cache.List(key)
+	allEvents, err := cq.cache.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +196,7 @@ func (cq *CacheQueryer) Events(object metav1.Object) ([]*corev1.Event, error) {
 	return events, nil
 }
 
-func (cq *CacheQueryer) IngressesForService(service *corev1.Service) ([]*v1beta1.Ingress, error) {
+func (cq *CacheQueryer) IngressesForService(ctx context.Context, service *corev1.Service) ([]*v1beta1.Ingress, error) {
 	if service == nil {
 		return nil, errors.New("nil service")
 	}
@@ -188,7 +206,7 @@ func (cq *CacheQueryer) IngressesForService(service *corev1.Service) ([]*v1beta1
 		APIVersion: "extensions/v1beta1",
 		Kind:       "Ingress",
 	}
-	ul, err := cq.cache.List(key)
+	ul, err := cq.cache.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving ingresses")
 	}
@@ -236,7 +254,7 @@ func (cq *CacheQueryer) listIngressBackends(ingress v1beta1.Ingress) []extv1beta
 	return backends
 }
 
-func (cq *CacheQueryer) OwnerReference(namespace string, ownerReference metav1.OwnerReference) (kruntime.Object, error) {
+func (cq *CacheQueryer) OwnerReference(ctx context.Context, namespace string, ownerReference metav1.OwnerReference) (kruntime.Object, error) {
 	key := cache.Key{
 		Namespace:  namespace,
 		APIVersion: ownerReference.APIVersion,
@@ -249,7 +267,7 @@ func (cq *CacheQueryer) OwnerReference(namespace string, ownerReference metav1.O
 		return object, nil
 	}
 
-	owner, err := cq.cache.Get(key)
+	owner, err := cq.cache.Get(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -259,7 +277,7 @@ func (cq *CacheQueryer) OwnerReference(namespace string, ownerReference metav1.O
 	return owner, nil
 }
 
-func (cq *CacheQueryer) PodsForService(service *corev1.Service) ([]*corev1.Pod, error) {
+func (cq *CacheQueryer) PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error) {
 	if service == nil {
 		return nil, errors.New("nil service")
 	}
@@ -279,7 +297,7 @@ func (cq *CacheQueryer) PodsForService(service *corev1.Service) ([]*corev1.Pod, 
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating pod selector for service: %v", service.Name)
 	}
-	pods, err := cq.loadPods(key, selector)
+	pods, err := cq.loadPods(ctx, key, selector)
 	if err != nil {
 		return nil, errors.Wrapf(err, "fetching pods for service: %v", service.Name)
 	}
@@ -289,8 +307,8 @@ func (cq *CacheQueryer) PodsForService(service *corev1.Service) ([]*corev1.Pod, 
 	return pods, nil
 }
 
-func (cq *CacheQueryer) loadPods(key cache.Key, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
-	objects, err := cq.cache.List(key)
+func (cq *CacheQueryer) loadPods(ctx context.Context, key cache.Key, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
+	objects, err := cq.cache.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -319,7 +337,7 @@ func (cq *CacheQueryer) loadPods(key cache.Key, selector *metav1.LabelSelector) 
 	return list, nil
 }
 
-func (cq *CacheQueryer) ServicesForIngress(ingress *extv1beta1.Ingress) ([]*corev1.Service, error) {
+func (cq *CacheQueryer) ServicesForIngress(ctx context.Context, ingress *extv1beta1.Ingress) ([]*corev1.Service, error) {
 	if ingress == nil {
 		return nil, errors.New("ingress is nil")
 	}
@@ -333,7 +351,7 @@ func (cq *CacheQueryer) ServicesForIngress(ingress *extv1beta1.Ingress) ([]*core
 			Kind:       "Service",
 			Name:       backend.ServiceName,
 		}
-		u, err := cq.cache.Get(key)
+		u, err := cq.cache.Get(ctx, key)
 		if err != nil {
 			return nil, errors.Wrapf(err, "retrieving service backend: %v", backend)
 		}
@@ -355,7 +373,7 @@ func (cq *CacheQueryer) ServicesForIngress(ingress *extv1beta1.Ingress) ([]*core
 	return services, nil
 }
 
-func (cq *CacheQueryer) ServicesForPod(pod *corev1.Pod) ([]*corev1.Service, error) {
+func (cq *CacheQueryer) ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Service, error) {
 	var results []*corev1.Service
 	if pod == nil {
 		return nil, errors.New("nil pod")
@@ -366,7 +384,7 @@ func (cq *CacheQueryer) ServicesForPod(pod *corev1.Pod) ([]*corev1.Service, erro
 		APIVersion: "v1",
 		Kind:       "Service",
 	}
-	ul, err := cq.cache.List(key)
+	ul, err := cq.cache.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving services")
 	}

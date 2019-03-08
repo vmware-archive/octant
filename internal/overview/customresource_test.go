@@ -37,9 +37,10 @@ func Test_customResourceDefinitionNames(t *testing.T) {
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
-	c.EXPECT().List(gomock.Eq(crdKey)).Return(crdList, nil)
+	c.EXPECT().List(gomock.Any(), gomock.Eq(crdKey)).Return(crdList, nil)
 
-	got, err := customResourceDefinitionNames(c)
+	ctx := context.Background()
+	got, err := customResourceDefinitionNames(ctx, c)
 	require.NoError(t, err)
 
 	expected := []string{"crd1.example.com", "crd2.example.com"}
@@ -60,10 +61,11 @@ func Test_customResourceDefinition(t *testing.T) {
 		Kind:       "CustomResourceDefinition",
 		Name:       "crd1.example.com",
 	}
-	c.EXPECT().Get(gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd1), nil)
+	c.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd1), nil)
 
 	name := "crd1.example.com"
-	got, err := customResourceDefinition(name, c)
+	ctx := context.Background()
+	got, err := customResourceDefinition(ctx, name, c)
 	require.NoError(t, err)
 
 	assert.Equal(t, crd1, got)
@@ -122,7 +124,7 @@ func Test_crdListDescriber(t *testing.T) {
 		Name:       crd.Name,
 	}
 
-	c.EXPECT().Get(gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
+	c.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
 
 	crKey := cache.Key{
 		Namespace:  "default",
@@ -131,10 +133,10 @@ func Test_crdListDescriber(t *testing.T) {
 	}
 
 	objects := []*unstructured.Unstructured{}
-	c.EXPECT().List(gomock.Eq(crKey)).Return(objects, nil)
+	c.EXPECT().List(gomock.Any(), gomock.Eq(crKey)).Return(objects, nil)
 
 	listPrinter := func(cld *crdListDescriber) {
-		cld.printer = func(name, namespace string, crd *apiextv1beta1.CustomResourceDefinition, objects []*unstructured.Unstructured) (component.ViewComponent, error) {
+		cld.printer = func(ctx context.Context, name, namespace string, crd *apiextv1beta1.CustomResourceDefinition, objects []*unstructured.Unstructured) (component.ViewComponent, error) {
 			return component.NewText("crd list"), nil
 		}
 	}
@@ -173,7 +175,7 @@ func Test_crdDescriber(t *testing.T) {
 		Name:       crd.Name,
 	}
 
-	c.EXPECT().Get(gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
+	c.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
 
 	crKey := cache.Key{
 		Namespace:  "default",
@@ -182,10 +184,10 @@ func Test_crdDescriber(t *testing.T) {
 	}
 
 	object := &unstructured.Unstructured{}
-	c.EXPECT().Get(gomock.Eq(crKey)).Return(object, nil)
+	c.EXPECT().Get(gomock.Any(), gomock.Eq(crKey)).Return(object, nil)
 
 	crPrinter := func(cd *crdDescriber) {
-		cd.summaryPrinter = func(crd *apiextv1beta1.CustomResourceDefinition, object *unstructured.Unstructured, options printer.Options) (component.ViewComponent, error) {
+		cd.summaryPrinter = func(ctx context.Context, crd *apiextv1beta1.CustomResourceDefinition, object *unstructured.Unstructured, options printer.Options) (component.ViewComponent, error) {
 			return component.NewText("cr"), nil
 		}
 

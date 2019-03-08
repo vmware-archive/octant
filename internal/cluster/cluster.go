@@ -28,6 +28,7 @@ import (
 //go:generate mockgen -destination=./fake/mock_dynamicinformer.go -package=fake k8s.io/client-go/dynamic/dynamicinformer DynamicSharedInformerFactory
 //go:generate mockgen -destination=./fake/mock_genericinformer.go -package=fake k8s.io/client-go/informers GenericInformer
 //go:generate mockgen -destination=./fake/mock_discoveryinterface.go -package=fake k8s.io/client-go/discovery DiscoveryInterface
+//go:generate mockgen -destination=./fake/mock_sharedindexinformer.go -package=fake k8s.io/client-go/tools/cache SharedIndexInformer
 
 // ClientInterface is a client for cluster operations.
 type ClientInterface interface {

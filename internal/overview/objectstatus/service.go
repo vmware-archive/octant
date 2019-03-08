@@ -1,6 +1,8 @@
 package objectstatus
 
 import (
+	"context"
+
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
@@ -9,7 +11,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
-func service(object runtime.Object, c cache.Cache) (ObjectStatus, error) {
+func service(ctx context.Context, object runtime.Object, c cache.Cache) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("service is nil")
 	}
@@ -29,7 +31,7 @@ func service(object runtime.Object, c cache.Cache) (ObjectStatus, error) {
 
 	endpoints := &corev1.Endpoints{}
 
-	if err := cache.GetAs(c, key, endpoints); err != nil {
+	if err := cache.GetAs(ctx, c, key, endpoints); err != nil {
 		return ObjectStatus{}, errors.Wrapf(err, "get endpoints for service %s", service.Name)
 	}
 

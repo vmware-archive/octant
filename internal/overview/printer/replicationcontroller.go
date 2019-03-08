@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/cache"
@@ -12,7 +13,7 @@ import (
 )
 
 // ReplicationControllerListHandler is a printFunc that lists ReplicationControllers
-func ReplicationControllerListHandler(list *corev1.ReplicationControllerList, options Options) (component.ViewComponent, error) {
+func ReplicationControllerListHandler(ctx context.Context, list *corev1.ReplicationControllerList, options Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -46,7 +47,7 @@ func ReplicationControllerListHandler(list *corev1.ReplicationControllerList, op
 }
 
 // ReplicationControllerHandler is a printFunc that prints a ReplicationController
-func ReplicationControllerHandler(rc *corev1.ReplicationController, options Options) (component.ViewComponent, error) {
+func ReplicationControllerHandler(ctx context.Context, rc *corev1.ReplicationController, options Options) (component.ViewComponent, error) {
 	o := NewObject(rc)
 
 	rcConfigGen := NewReplicationControllerConfiguration(rc)
@@ -56,12 +57,12 @@ func ReplicationControllerHandler(rc *corev1.ReplicationController, options Opti
 
 	rcSummaryGen := NewReplicationControllerStatus(rc)
 	o.RegisterSummary(func() (component.ViewComponent, error) {
-		return rcSummaryGen.Create(options.Cache)
+		return rcSummaryGen.Create(ctx, options.Cache)
 	}, 8)
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.ViewComponent, error) {
-			return createPodListView(rc, options)
+			return createPodListView(ctx, rc, options)
 		},
 		Width: 24,
 	})
@@ -70,7 +71,7 @@ func ReplicationControllerHandler(rc *corev1.ReplicationController, options Opti
 
 	o.EnableEvents()
 
-	return o.ToComponent(options)
+	return o.ToComponent(ctx, options)
 }
 
 // ReplicationControllerConfiguration generates a replicationcontroller configuration
@@ -130,7 +131,7 @@ func NewReplicationControllerStatus(replicationController *corev1.ReplicationCon
 }
 
 // Create generates a replicaset status quadrant
-func (replicationController *ReplicationControllerStatus) Create(c cache.Cache) (*component.Quadrant, error) {
+func (replicationController *ReplicationControllerStatus) Create(ctx context.Context, c cache.Cache) (*component.Quadrant, error) {
 	if replicationController.replicationcontroller == nil {
 		return nil, errors.New("replicationcontroller is nil")
 	}
@@ -139,7 +140,7 @@ func (replicationController *ReplicationControllerStatus) Create(c cache.Cache) 
 		MatchLabels: replicationController.replicationcontroller.Spec.Selector,
 	}
 
-	pods, err := listPods(replicationController.replicationcontroller.Namespace, &selectors, replicationController.replicationcontroller.GetUID(), c)
+	pods, err := listPods(ctx, replicationController.replicationcontroller.Namespace, &selectors, replicationController.replicationcontroller.GetUID(), c)
 	if err != nil {
 		return nil, err
 	}

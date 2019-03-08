@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/cache"
@@ -18,7 +19,7 @@ var (
 )
 
 // JobListHandler prints a job list.
-func JobListHandler(list *batchv1.JobList, opts Options) (component.ViewComponent, error) {
+func JobListHandler(ctx context.Context, list *batchv1.JobList, opts Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("job list is nil")
 	}
@@ -42,7 +43,7 @@ func JobListHandler(list *batchv1.JobList, opts Options) (component.ViewComponen
 }
 
 // JobHandler printers a job.
-func JobHandler(job *batchv1.Job, opts Options) (component.ViewComponent, error) {
+func JobHandler(ctx context.Context, job *batchv1.Job, opts Options) (component.ViewComponent, error) {
 	o := NewObject(job)
 
 	o.RegisterConfig(func() (component.ViewComponent, error) {
@@ -57,7 +58,7 @@ func JobHandler(job *batchv1.Job, opts Options) (component.ViewComponent, error)
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.ViewComponent, error) {
-			return createPodListView(job, opts)
+			return createPodListView(ctx, job, opts)
 		},
 		Width: 24,
 	})
@@ -71,7 +72,7 @@ func JobHandler(job *batchv1.Job, opts Options) (component.ViewComponent, error)
 
 	o.EnableEvents()
 
-	return o.ToComponent(opts)
+	return o.ToComponent(ctx, opts)
 }
 
 func createJobConfiguration(job batchv1.Job) (*component.Summary, error) {
@@ -123,7 +124,7 @@ func createJobConditions(conditions []batchv1.JobCondition) (*component.Table, e
 	return table, nil
 }
 
-func createJobListView(object runtime.Object, options Options) (component.ViewComponent, error) {
+func createJobListView(ctx context.Context, object runtime.Object, options Options) (component.ViewComponent, error) {
 	options.DisableLabels = true
 
 	jobList := &batchv1.JobList{}
@@ -160,7 +161,7 @@ func createJobListView(object runtime.Object, options Options) (component.ViewCo
 		Kind:       "Job",
 	}
 
-	list, err := options.Cache.List(key)
+	list, err := options.Cache.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "list all objects for key %+v", key)
 	}
@@ -185,5 +186,5 @@ func createJobListView(object runtime.Object, options Options) (component.ViewCo
 		}
 	}
 
-	return JobListHandler(jobList, options)
+	return JobListHandler(ctx, jobList, options)
 }

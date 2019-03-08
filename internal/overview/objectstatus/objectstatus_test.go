@@ -1,6 +1,7 @@
 package objectstatus
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -21,7 +22,7 @@ func Test_status(t *testing.T) {
 	}
 
 	lookup := statusLookup{
-		{apiVersion: "v1", kind: "Object"}: func(runtime.Object, cache.Cache) (ObjectStatus, error) {
+		{apiVersion: "v1", kind: "Object"}: func(context.Context, runtime.Object, cache.Cache) (ObjectStatus, error) {
 			return deployObjectStatus, nil
 		},
 	}
@@ -60,7 +61,8 @@ func Test_status(t *testing.T) {
 
 			c := cachefake.NewMockCache(controller)
 
-			got, err := status(tc.object, c, tc.lookup)
+			ctx := context.Background()
+			got, err := status(ctx, tc.object, c, tc.lookup)
 			if tc.isErr {
 				require.Error(t, err)
 				return

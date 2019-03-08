@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -16,6 +17,7 @@ import (
 // CustomResourceListHandler prints a list of custom resources with
 // optional custom columns.
 func CustomResourceListHandler(
+	ctx context.Context,
 	name, namespace string,
 	crd *apiextv1beta1.CustomResourceDefinition,
 	list []*unstructured.Unstructured) (component.ViewComponent, error) {
@@ -96,6 +98,7 @@ func printCustomColumn(m map[string]interface{}, column apiextv1beta1.CustomReso
 // CustomResourceHandler prints custom resource objects. If the
 // object has columns specified, it will print those columns as well.
 func CustomResourceHandler(
+	ctx context.Context,
 	crd *apiextv1beta1.CustomResourceDefinition,
 	object *unstructured.Unstructured,
 	options Options) (component.ViewComponent, error) {
@@ -110,7 +113,7 @@ func CustomResourceHandler(
 
 	o.EnableEvents()
 
-	view, err := o.ToComponent(options)
+	view, err := o.ToComponent(ctx, options)
 	if err != nil {
 		return nil, err
 	}

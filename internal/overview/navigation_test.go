@@ -1,6 +1,7 @@
 package overview_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -23,11 +24,12 @@ func Test_NavigationFactory_Entries(t *testing.T) {
 	}
 
 	c.EXPECT().
-		List(gomock.Eq(key)).
+		List(gomock.Any(), gomock.Eq(key)).
 		Return([]*unstructured.Unstructured{}, nil)
 
 	nf := overview.NewNavigationFactory("", "/content/overview", c)
-	got, err := nf.Entries()
+	ctx := context.Background()
+	got, err := nf.Entries(ctx)
 	require.NoError(t, err)
 
 	assert.Equal(t, got.Title, "Overview")
@@ -47,11 +49,12 @@ func Test_NavigationFactory_Entries_Namespace(t *testing.T) {
 	}
 
 	c.EXPECT().
-		List(gomock.Eq(key)).
+		List(gomock.Any(), gomock.Eq(key)).
 		Return([]*unstructured.Unstructured{}, nil)
 
 	nf := overview.NewNavigationFactory("default", "/content/overview", c)
-	got, err := nf.Entries()
+	ctx := context.Background()
+	got, err := nf.Entries(ctx)
 	require.NoError(t, err)
 
 	assert.Equal(t, got.Title, "Overview")

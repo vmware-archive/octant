@@ -24,7 +24,7 @@ func serveAsJSON(w http.ResponseWriter, v interface{}, logger log.Logger) {
 // Service is an API service.
 type Service interface {
 	RegisterModule(module.Module) error
-	Handler() *mux.Router
+	Handler(ctx context.Context) *mux.Router
 }
 
 type errorMessage struct {
@@ -91,7 +91,7 @@ func New(ctx context.Context, prefix string, nsClient cluster.NamespaceInterface
 }
 
 // Handler returns a HTTP handler for the service.
-func (a *API) Handler() *mux.Router {
+func (a *API) Handler(ctx context.Context) *mux.Router {
 	router := mux.NewRouter()
 	router.Use(a.telemetryMiddleware)
 	s := router.PathPrefix(a.prefix).Subrouter()
@@ -122,7 +122,7 @@ func (a *API) Handler() *mux.Router {
 		prefix:      a.prefix,
 	}
 
-	if err := contentService.RegisterRoutes(s); err != nil {
+	if err := contentService.RegisterRoutes(ctx, s); err != nil {
 		a.logger.Errorf("register routers: %v", err)
 	}
 
@@ -154,12 +154,12 @@ func newAPINavSections(modules []module.Module) *apiNavSections {
 	}
 }
 
-func (ans *apiNavSections) Sections(namespace string) ([]*hcli.Navigation, error) {
+func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]*hcli.Navigation, error) {
 	var sections []*hcli.Navigation
 
 	for _, m := range ans.modules {
 		contentPath := path.Join("/content", m.ContentPath())
-		nav, err := m.Navigation(namespace, contentPath)
+		nav, err := m.Navigation(ctx, namespace, contentPath)
 		if err != nil {
 			return nil, err
 		}

@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -73,7 +74,8 @@ func Test_ServiceListHandler(t *testing.T) {
 		},
 	}
 
-	got, err := ServiceListHandler(object, printOptions)
+	ctx := context.Background()
+	got, err := ServiceListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Type", "Cluster IP", "External IP", "Target Ports", "Age", "Selector")
@@ -216,10 +218,11 @@ func Test_serviceEndpoints(t *testing.T) {
 
 	key := cache.Key{Namespace: "default", APIVersion: "v1", Kind: "Endpoints", Name: "service"}
 	c.EXPECT().
-		Get(gomock.Eq(key)).
+		Get(gomock.Any(), gomock.Eq(key)).
 		Return(toUnstructured(t, endpoints), nil)
 
-	got, err := serviceEndpoints(c, service)
+	ctx := context.Background()
+	got, err := serviceEndpoints(ctx, c, service)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Target", "IP", "Node Name")

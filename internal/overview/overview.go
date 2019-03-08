@@ -131,9 +131,9 @@ func (co *ClusterOverview) ContentPath() string {
 }
 
 // Navigation returns navigation entries for overview.
-func (co *ClusterOverview) Navigation(namespace, root string) (*hcli.Navigation, error) {
+func (co *ClusterOverview) Navigation(ctx context.Context, namespace, root string) (*hcli.Navigation, error) {
 	nf := NewNavigationFactory(namespace, root, co.cache)
-	return nf.Entries()
+	return nf.Entries(ctx)
 }
 
 // SetNamespace sets the current namespace.
@@ -172,12 +172,12 @@ type logResponse struct {
 }
 
 // Handlers are extra handlers for overview
-func (co *ClusterOverview) Handlers() map[string]http.Handler {
+func (co *ClusterOverview) Handlers(ctx context.Context) map[string]http.Handler {
 	return map[string]http.Handler{
 		"/logs/pod/{pod}/container/{container}":                   containerLogsHandler(co.client),
-		"/portforward/create/pod/{pod}/port/{port}":               co.portForwardHandler(),
-		"/portforward/create/service/{service}/port/{port}":       co.portForwardHandler(),
-		"/portforward/create/deployment/{deployment}/port/{port}": co.portForwardHandler(),
+		"/portforward/create/pod/{pod}/port/{port}":               co.portForwardHandler(ctx),
+		"/portforward/create/service/{service}/port/{port}":       co.portForwardHandler(ctx),
+		"/portforward/create/deployment/{deployment}/port/{port}": co.portForwardHandler(ctx),
 		"/portforward/delete/{id}":                                co.portForwardDeleteHandler(),
 	}
 }
@@ -240,7 +240,7 @@ func containerLogsHandler(clusterClient cluster.ClientInterface) http.HandlerFun
 	}
 }
 
-func (co *ClusterOverview) portForwardHandler() http.HandlerFunc {
+func (co *ClusterOverview) portForwardHandler(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if co.portForwardSvc == nil {
 			http.Error(w, "portforward service is nil", http.StatusInternalServerError)
@@ -269,7 +269,7 @@ func (co *ClusterOverview) portForwardHandler() http.HandlerFunc {
 				Version: "v1",
 				Kind:    "Pod",
 			}
-			resp, err = co.portForwardSvc.Create(gvk, podName, namespace, uint16(port))
+			resp, err = co.portForwardSvc.Create(ctx, gvk, podName, namespace, uint16(port))
 			if err != nil {
 				http.Error(w, errors.Wrapf(err, "creating forwarder for pod").Error(), http.StatusInternalServerError)
 				return

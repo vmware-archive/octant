@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -76,7 +77,8 @@ func Test_ReplicaSetListHandler(t *testing.T) {
 		},
 	}
 
-	got, err := ReplicaSetListHandler(object, printOptions)
+	ctx := context.Background()
+	got, err := ReplicaSetListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
 	containers := component.NewContainers()
@@ -214,10 +216,11 @@ func TestReplicaSetStatus(t *testing.T) {
 		Kind:       "Pod",
 	}
 
-	c.EXPECT().List(gomock.Eq(key)).Return(podList, nil)
+	c.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, nil)
 
+	ctx := context.Background()
 	rsc := NewReplicaSetStatus(rs)
-	got, err := rsc.Create(c)
+	got, err := rsc.Create(ctx, c)
 	require.NoError(t, err)
 
 	expected := component.NewQuadrant()

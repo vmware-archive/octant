@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -43,7 +44,8 @@ func Test_ServiceAccountListHandler(t *testing.T) {
 		Items: []corev1.ServiceAccount{*object},
 	}
 
-	got, err := ServiceAccountListHandler(list, printOptions)
+	ctx := context.Background()
+	got, err := ServiceAccountListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Secrets", "Age")
@@ -84,10 +86,11 @@ func Test_printServiceAccountConfig(t *testing.T) {
 		corev1.ServiceAccountUIDKey:  string(object.UID),
 	}
 
-	c.EXPECT().List(gomock.Eq(key)).
+	c.EXPECT().List(gomock.Any(), gomock.Eq(key)).
 		Return([]*unstructured.Unstructured{testutil.ToUnstructured(t, secret)}, nil)
 
-	got, err := printServiceAccountConfig(object, c)
+	ctx := context.Background()
+	got, err := printServiceAccountConfig(ctx, object, c)
 	require.NoError(t, err)
 
 	var sections component.SummarySections

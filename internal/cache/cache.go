@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -17,8 +18,8 @@ import (
 
 // Cache stores Kubernetes objects.
 type Cache interface {
-	List(key Key) ([]*unstructured.Unstructured, error)
-	Get(key Key) (*unstructured.Unstructured, error)
+	List(ctx context.Context, key Key) ([]*unstructured.Unstructured, error)
+	Get(ctx context.Context, key Key) (*unstructured.Unstructured, error)
 	Watch(key Key, handler kcache.ResourceEventHandler) error
 }
 
@@ -55,8 +56,8 @@ func (k Key) String() string {
 }
 
 // GetAs gets an object from the cache by key.
-func GetAs(c Cache, key Key, as interface{}) error {
-	u, err := c.Get(key)
+func GetAs(ctx context.Context, c Cache, key Key, as interface{}) error {
+	u, err := c.Get(ctx, key)
 	if err != nil {
 		return errors.Wrap(err, "get object from cache")
 	}

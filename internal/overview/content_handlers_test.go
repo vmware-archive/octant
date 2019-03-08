@@ -53,7 +53,7 @@ func Test_loadObjects(t *testing.T) {
 					Kind:       "kind"}
 
 				c.EXPECT().
-					List(gomock.Eq(key)).
+					List(gomock.Any(), gomock.Eq(key)).
 					Return(sampleObjects, nil)
 			},
 			fields:   map[string]string{},
@@ -70,7 +70,7 @@ func Test_loadObjects(t *testing.T) {
 					Name:       "name"}
 
 				c.EXPECT().
-					List(gomock.Eq(key)).
+					List(gomock.Any(), gomock.Eq(key)).
 					Return([]*unstructured.Unstructured{}, nil)
 
 			},
@@ -86,7 +86,7 @@ func Test_loadObjects(t *testing.T) {
 					Kind:       "kind"}
 
 				c.EXPECT().
-					List(gomock.Eq(key)).
+					List(gomock.Any(), gomock.Eq(key)).
 					Return(nil, errors.New("error"))
 			},
 			fields: map[string]string{},

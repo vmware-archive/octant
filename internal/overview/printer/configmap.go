@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 	"sort"
 
@@ -12,7 +13,7 @@ import (
 )
 
 // ConfigMapListHandler is a printFunc that prints ConfigMaps
-func ConfigMapListHandler(list *corev1.ConfigMapList, opts Options) (component.ViewComponent, error) {
+func ConfigMapListHandler(ctx context.Context, list *corev1.ConfigMapList, opts Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("list is nil")
 	}
@@ -39,7 +40,7 @@ func ConfigMapListHandler(list *corev1.ConfigMapList, opts Options) (component.V
 }
 
 // ConfigMapHandler is a printFunc that prints a ConfigMap
-func ConfigMapHandler(cm *corev1.ConfigMap, options Options) (component.ViewComponent, error) {
+func ConfigMapHandler(ctx context.Context, cm *corev1.ConfigMap, options Options) (component.ViewComponent, error) {
 	o := NewObject(cm)
 
 	o.RegisterConfig(func() (component.ViewComponent, error) {
@@ -53,7 +54,7 @@ func ConfigMapHandler(cm *corev1.ConfigMap, options Options) (component.ViewComp
 		Width: 24,
 	})
 
-	return o.ToComponent(options)
+	return o.ToComponent(ctx, options)
 }
 
 // ConfigMapConfiguration generates configmap configuration

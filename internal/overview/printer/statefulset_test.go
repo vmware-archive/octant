@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -72,7 +73,8 @@ func Test_StatefulSetListHandler(t *testing.T) {
 		},
 	}
 
-	got, err := StatefulSetListHandler(object, printOptions)
+	ctx := context.Background()
+	got, err := StatefulSetListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Desired", "Current", "Age", "Selector")
@@ -140,10 +142,11 @@ func Test_StatefulSetStatus(t *testing.T) {
 		Kind:       "Pod",
 	}
 
-	c.EXPECT().List(gomock.Eq(key)).Return(podList, nil)
+	c.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, nil)
 
 	stsc := NewStatefulSetStatus(sts)
-	got, err := stsc.Create(printOptions.Cache)
+	ctx := context.Background()
+	got, err := stsc.Create(ctx, printOptions.Cache)
 	require.NoError(t, err)
 
 	expected := component.NewQuadrant()

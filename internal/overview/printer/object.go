@@ -1,6 +1,8 @@
 package printer
 
 import (
+	"context"
+
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/pkg/errors"
@@ -40,8 +42,8 @@ func defaultJobTemplateGen(object runtime.Object, template batchv1beta1.JobTempl
 	return nil
 }
 
-func defaultEventsGen(object runtime.Object, fl *flexlayout.FlexLayout, options Options) error {
-	if err := createEventsForObject(fl, object, options); err != nil {
+func defaultEventsGen(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout, options Options) error {
+	if err := createEventsForObject(ctx, fl, object, options); err != nil {
 		return errors.Wrap(err, "add events to layout")
 	}
 
@@ -92,7 +94,7 @@ type Object struct {
 	MetadataGen    func(runtime.Object, *flexlayout.FlexLayout) error
 	PodTemplateGen func(runtime.Object, corev1.PodTemplateSpec, *flexlayout.FlexLayout) error
 	JobTemplateGen func(runtime.Object, batchv1beta1.JobTemplateSpec, *flexlayout.FlexLayout) error
-	EventsGen      func(object runtime.Object, fl *flexlayout.FlexLayout, options Options) error
+	EventsGen      func(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout, options Options) error
 }
 
 // NewObject creates an instance of Object.
@@ -150,7 +152,7 @@ func (o *Object) RegisterItems(items ...ItemDescriptor) {
 }
 
 // ToComponent converts Object to a view.
-func (o *Object) ToComponent(options Options) (component.ViewComponent, error) {
+func (o *Object) ToComponent(ctx context.Context, options Options) (component.ViewComponent, error) {
 	if o.object == nil {
 		return nil, errors.New("object is nil")
 	}
@@ -214,7 +216,7 @@ func (o *Object) ToComponent(options Options) (component.ViewComponent, error) {
 	}
 
 	if o.isEventsEnabled {
-		if err := o.EventsGen(o.object, o.flexlayout, options); err != nil {
+		if err := o.EventsGen(ctx, o.object, o.flexlayout, options); err != nil {
 			return nil, errors.Wrap(err, "add events to layout")
 		}
 	}

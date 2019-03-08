@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
@@ -12,7 +13,7 @@ import (
 )
 
 // DeploymentListHandler is a printFunc that lists deployments
-func DeploymentListHandler(list *appsv1.DeploymentList, opts Options) (component.ViewComponent, error) {
+func DeploymentListHandler(ctx context.Context, list *appsv1.DeploymentList, opts Options) (component.ViewComponent, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -44,7 +45,7 @@ func DeploymentListHandler(list *appsv1.DeploymentList, opts Options) (component
 }
 
 // DeploymentHandler is a printFunc that prints a Deployments.
-func DeploymentHandler(deployment *appsv1.Deployment, options Options) (component.ViewComponent, error) {
+func DeploymentHandler(ctx context.Context, deployment *appsv1.Deployment, options Options) (component.ViewComponent, error) {
 	o := NewObject(deployment)
 
 	deployConfigGen := NewDeploymentConfiguration(deployment)
@@ -61,7 +62,7 @@ func DeploymentHandler(deployment *appsv1.Deployment, options Options) (componen
 
 	o.EnableEvents()
 
-	return o.ToComponent(options)
+	return o.ToComponent(ctx, options)
 }
 
 // DeploymentConfiguration generates deployment configuration.

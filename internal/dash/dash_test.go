@@ -158,7 +158,7 @@ func Test_dash_routes(t *testing.T) {
 				}), nil
 			}
 
-			handler, err := d.handler()
+			handler, err := d.handler(ctx)
 			require.NoError(t, err)
 
 			ts := httptest.NewServer(handler)

@@ -18,6 +18,7 @@ before_script:
 
 script:
   - embedmd -d README.md              # Ensure embedded code is up-to-date
+  - export GO111MODULE=on
   - go build ./...                    # Ensure dependency updates don't break build
   - if [ -n "$(gofmt -s -l $GO_FILES)" ]; then echo "gofmt the following files:"; gofmt -s -l $GO_FILES; exit 1; fi
   - go vet ./...
