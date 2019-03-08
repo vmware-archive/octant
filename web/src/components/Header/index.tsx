@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import Select from 'react-select'
-import Filter from './components/Filter'
 
+import Filter from './components/Filter'
 import './styles.scss'
 
 interface Props {
@@ -52,7 +52,6 @@ export default class extends Component<Props> {
               onResourceFiltersChange={onResourceFiltersChange}
             />
           </div>
-          <div className='header--context'>kubecontext</div>
         </div>
       </header>
     )
