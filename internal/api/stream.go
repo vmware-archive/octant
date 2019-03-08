@@ -30,6 +30,8 @@ type eventGenerator interface {
 	Generate(context.Context) (event, error)
 	// RunEvery schedules the event to run every x.
 	RunEvery() time.Duration
+	// Name is the generator name.
+	Name() string
 }
 
 // contentEventGenerator generates events that contain components.
@@ -73,6 +75,10 @@ func (g *contentEventGenerator) RunEvery() time.Duration {
 	return g.runEvery
 }
 
+func (g *contentEventGenerator) Name() string {
+	return "content"
+}
+
 // navigationEventGenerator generates events to update navigation.
 type navigationEventGenerator struct {
 	// modules is a list of modules to query for events.
@@ -104,6 +110,10 @@ func (g *navigationEventGenerator) RunEvery() time.Duration {
 	return 5 * time.Second
 }
 
+func (g *navigationEventGenerator) Name() string {
+	return "navigation"
+}
+
 type namespaceEventGenerator struct {
 	nsClient cluster.NamespaceInterface
 }
@@ -130,6 +140,10 @@ func (g *namespaceEventGenerator) Generate(ctx context.Context) (event, error) {
 
 func (g *namespaceEventGenerator) RunEvery() time.Duration {
 	return 5 * time.Second
+}
+
+func (g *namespaceEventGenerator) Name() string {
+	return "namespace"
 }
 
 type dashResponse struct {
@@ -174,6 +188,7 @@ func (cs *contentStreamer) content(ctx context.Context) error {
 				case <-ctx.Done():
 					isRunning = false
 				case <-timer.C:
+					now := time.Now()
 					e, err := eg.Generate(ctx)
 					if err != nil {
 						if nfe, ok := err.(notFound); ok && nfe.NotFound() {
@@ -191,6 +206,10 @@ func (cs *contentStreamer) content(ctx context.Context) error {
 						break
 					}
 
+					cs.logger.With(
+						"elapsed", time.Since(now),
+						"generator", eg.Name(),
+					).Debugf("generate complete")
 					ch <- e
 
 					nextTick := eg.RunEvery()

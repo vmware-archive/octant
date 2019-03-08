@@ -103,6 +103,10 @@ func (g *fakeEventGenerator) RunEvery() time.Duration {
 	return 0
 }
 
+func (g *fakeEventGenerator) Name() string {
+	return "fakeEventGenerator"
+}
+
 func Test_stream(t *testing.T) {
 	cases := []struct {
 		name         string
