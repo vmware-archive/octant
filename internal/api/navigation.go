@@ -5,17 +5,17 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"go.opencensus.io/trace"
 )
 
 type navSections interface {
-	Sections(ctx context.Context, namespace string) ([]*hcli.Navigation, error)
+	Sections(ctx context.Context, namespace string) ([]*sugarloaf.Navigation, error)
 }
 
 type navigationResponse struct {
-	Sections []*hcli.Navigation `json:"sections,omitempty"`
+	Sections []*sugarloaf.Navigation `json:"sections,omitempty"`
 }
 
 type navigation struct {

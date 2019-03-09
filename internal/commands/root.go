@@ -13,7 +13,7 @@ func init() {
 	log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
 }
 
-// Execute executes hcli.
+// Execute executes sugarloaf.
 func Execute(version string, gitCommit string, buildTime string) {
 	rootCmd := newRoot(version, gitCommit, buildTime)
 	if err := rootCmd.Execute(); err != nil {
@@ -24,8 +24,8 @@ func Execute(version string, gitCommit string, buildTime string) {
 
 func newRoot(version string, gitCommit string, buildTime string) *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:   "hcli",
-		Short: "hcli is the Heptio CLI",
+		Use:   "sugarloaf",
+		Short: "sugarloaf is a dashboard for high bandwidth cluster analysis operations",
 	}
 
 	rootCmd.AddCommand(newDashCmd())

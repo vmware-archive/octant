@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/hcli"
+	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/heptio/developer-dash/internal/localcontent"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/view/component"
@@ -82,10 +82,10 @@ func Test_LocalContent_Navigation(t *testing.T) {
 		nav, err := lc.Navigation(ctx, "", "/root")
 		require.NoError(t, err)
 
-		expectedNav := &hcli.Navigation{
+		expectedNav := &sugarloaf.Navigation{
 			Title: "Local Content",
 			Path:  "/root/",
-			Children: []*hcli.Navigation{
+			Children: []*sugarloaf.Navigation{
 				{
 					Title: "Sample content",
 					Path:  "/root/table",

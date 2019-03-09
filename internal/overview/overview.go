@@ -25,7 +25,7 @@ import (
 	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/hcli"
+	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/pkg/errors"
 )
 
@@ -131,7 +131,7 @@ func (co *ClusterOverview) ContentPath() string {
 }
 
 // Navigation returns navigation entries for overview.
-func (co *ClusterOverview) Navigation(ctx context.Context, namespace, root string) (*hcli.Navigation, error) {
+func (co *ClusterOverview) Navigation(ctx context.Context, namespace, root string) (*sugarloaf.Navigation, error) {
 	nf := NewNavigationFactory(namespace, root, co.cache)
 	return nf.Entries(ctx)
 }

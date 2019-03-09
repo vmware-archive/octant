@@ -8,10 +8,10 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/mime"
 	"github.com/heptio/developer-dash/internal/module"
+	"github.com/heptio/developer-dash/internal/sugarloaf"
 )
 
 func serveAsJSON(w http.ResponseWriter, v interface{}, logger log.Logger) {
@@ -154,8 +154,8 @@ func newAPINavSections(modules []module.Module) *apiNavSections {
 	}
 }
 
-func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]*hcli.Navigation, error) {
-	var sections []*hcli.Navigation
+func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]*sugarloaf.Navigation, error) {
+	var sections []*sugarloaf.Navigation
 
 	for _, m := range ans.modules {
 		contentPath := path.Join("/content", m.ContentPath())

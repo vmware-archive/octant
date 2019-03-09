@@ -25,9 +25,9 @@ vet:
 	@echo "-> $@"
 	@env go vet  ./internal/...
 
-hcli-dev:
+sugarloaf-dev:
 	@mkdir -p ./build
-	@env $(GOBUILD) -o build/hcli $(GO_FLAGS) ./cmd/hcli
+	@env $(GOBUILD) -o build/sugarloaf $(GO_FLAGS) ./cmd/sugarloaf
 
 setup-web: web-deps run-web
 
@@ -48,7 +48,7 @@ web-test: web-deps
 	@cd web; npm test
 
 ui-server:
-	DASH_DISABLE_OPEN_BROWSER=false DASH_LISTENER_ADDR=localhost:3001 $(GOCMD) run ./cmd/hcli/main.go dash $(DASH_FLAGS)
+	DASH_DISABLE_OPEN_BROWSER=false DASH_LISTENER_ADDR=localhost:3001 $(GOCMD) run ./cmd/sugarloaf/main.go dash $(DASH_FLAGS)
 
 ui-client:
 	cd web; API_BASE=http://localhost:3001 npm run start
@@ -62,4 +62,4 @@ release:
 	git push --follow-tags
 
 .PHONY: ci
-ci: test vet web-test web-build hcli-dev
+ci: test vet web-test web-build sugarloaf-dev

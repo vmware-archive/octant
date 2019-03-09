@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,7 +16,7 @@ import (
 
 func Test_navigation_handler(t *testing.T) {
 	validSections := &fakeNavSections{
-		sections: []*hcli.Navigation{
+		sections: []*sugarloaf.Navigation{
 			{},
 		},
 	}
@@ -74,10 +74,10 @@ func Test_navigation_handler(t *testing.T) {
 }
 
 type fakeNavSections struct {
-	sections    []*hcli.Navigation
+	sections    []*sugarloaf.Navigation
 	sectionsErr error
 }
 
-func (ns *fakeNavSections) Sections(ctx context.Context, namespace string) ([]*hcli.Navigation, error) {
+func (ns *fakeNavSections) Sections(ctx context.Context, namespace string) ([]*sugarloaf.Navigation, error) {
 	return ns.sections, ns.sectionsErr
 }

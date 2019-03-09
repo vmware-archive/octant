@@ -1,9 +1,9 @@
-package hcli_test
+package sugarloaf_test
 
 import (
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/hcli"
+	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -11,7 +11,7 @@ func Test_NewNavigation(t *testing.T) {
 	path := "/path"
 	title := "title"
 
-	nav := hcli.NewNavigation(title, path)
+	nav := sugarloaf.NewNavigation(title, path)
 
 	assert.Equal(t, path, nav.Path)
 	assert.Equal(t, title, nav.Title)

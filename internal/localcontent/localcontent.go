@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/module"
+	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
 )
@@ -135,14 +135,14 @@ func (l *LocalContent) walk(fn walkFn) error {
 	return nil
 }
 
-func (l *LocalContent) Navigation(ctx context.Context, namespace, root string) (*hcli.Navigation, error) {
+func (l *LocalContent) Navigation(ctx context.Context, namespace, root string) (*sugarloaf.Navigation, error) {
 	if !strings.HasSuffix(root, "/") {
 		root = fmt.Sprintf("%s/", root)
 	}
-	nav := &hcli.Navigation{
+	nav := &sugarloaf.Navigation{
 		Title:    "Local Content",
 		Path:     root,
-		Children: []*hcli.Navigation{},
+		Children: []*sugarloaf.Navigation{},
 	}
 
 	err := l.walk(func(name, base string, content component.ContentResponse) error {
@@ -151,7 +151,7 @@ func (l *LocalContent) Navigation(ctx context.Context, namespace, root string) (
 			return errors.Wrap(err, "convert title to text")
 		}
 
-		nav.Children = append(nav.Children, &hcli.Navigation{
+		nav.Children = append(nav.Children, &sugarloaf.Navigation{
 			Title: title,
 			Path:  path.Join(root, base),
 		})

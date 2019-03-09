@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/module"
+	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/heptio/developer-dash/internal/view/component"
 )
 
@@ -33,7 +33,7 @@ func (m *dashModule) ContentPath() string {
 }
 
 // Navigation is a no-op.
-func (m *dashModule) Navigation(ctx context.Context, namespace, root string) (*hcli.Navigation, error) {
+func (m *dashModule) Navigation(ctx context.Context, namespace, root string) (*sugarloaf.Navigation, error) {
 	return nil, nil
 }
 

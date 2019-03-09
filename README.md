@@ -6,11 +6,11 @@ Kubernetes dashboard for developers
 
 Start the developer dashboard:
 
-`$ hcli dash`
+`$ sugarloaf dash`
 
 Check the version:
 
-`$ hcli version`
+`$ sugarloaf version`
 
 ### Prerequisites
 
@@ -31,16 +31,16 @@ Go to the [releases page](https://github.com/heptio/developer-dash/releases) and
 Extract the tarball:
 
 ```sh
-$ tar -xzvf ~/Downloads/hcli_0.1.1_Linux-64bit.tar.gz
-hcli_0.1.1_Linux-64bit/README.md
-hcli_0.1.1_Linux-64bit/hcli
+$ tar -xzvf ~/Downloads/sugarloaf_0.3.0_Linux-64bit.tar.gz
+sugarloaf_0.3.0_Linux-64bit/README.md
+sugarloaf_0.3.0_Linux-64bit/sugarloaf
 ```
 
 Verify it runs:
 
-`$ ./hcli_0.1.1_Linux-64bit/hcli version`
+`$ ./sugarloaf_0.3.0_Linux-64bit/sugarloaf version`
 
-Decide to move the binary in `/usr/local/bin` or your home directory. Installing to `/usr/local/bin` is for system-wide installation but makes running multiple versions difficult. If the dashboard is installed to your home directory, make sure to update your `$PATH` variable then check `which hcli` to verify installation is successful.
+Decide to move the binary in `/usr/local/bin` or your home directory. Installing to `/usr/local/bin` is for system-wide installation but makes running multiple versions difficult. If the dashboard is installed to your home directory, make sure to update your `$PATH` variable then check `which sugarloaf` to verify installation is successful.
 
 ### Manually build and install
 
@@ -54,9 +54,9 @@ Package the web assets to be built into the binary.
 
 There should be a new directory: `$GOPATH/src/github.com/heptio/developer-dash/web/build`. Finally, build the binary:
 
-`$ make hcli-dev`
+`$ make sugarloaf-dev`
 
-The `hcli` binary will be found in `$GOPATH/src/github.com/heptio/developer-dash/build`.
+The `sugarloaf` binary will be found in `$GOPATH/src/github.com/heptio/developer-dash/build`.
 
 ### Environment variables
 

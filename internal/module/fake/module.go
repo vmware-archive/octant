@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/heptio/developer-dash/internal/hcli"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
+	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
 )
@@ -42,8 +42,8 @@ func (m *Module) ContentPath() string {
 }
 
 // Navigation returns navigation entries for the module.
-func (m *Module) Navigation(ctx context.Context, namespace, prefix string) (*hcli.Navigation, error) {
-	nav := &hcli.Navigation{
+func (m *Module) Navigation(ctx context.Context, namespace, prefix string) (*sugarloaf.Navigation, error) {
+	nav := &sugarloaf.Navigation{
 		Path:  prefix,
 		Title: m.name,
 	}

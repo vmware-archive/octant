@@ -1,4 +1,4 @@
-package hcli
+package sugarloaf
 
 // Navigation is a set of navigation entries.
 type Navigation struct {

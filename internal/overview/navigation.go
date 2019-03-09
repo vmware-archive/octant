@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/hcli"
+	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
@@ -60,7 +60,7 @@ func (nf *NavigationFactory) pathFor(elements ...string) string {
 }
 
 // Entries returns navigation entries.
-func (nf *NavigationFactory) Entries(ctx context.Context) (*hcli.Navigation, error) {
+func (nf *NavigationFactory) Entries(ctx context.Context) (*sugarloaf.Navigation, error) {
 	m := map[string]entriesFunc{
 		"Workloads":                    nf.workloadEntries,
 		"Discovery and Load Balancing": nf.discoAndLBEntries,
@@ -81,10 +81,10 @@ func (nf *NavigationFactory) Entries(ctx context.Context) (*hcli.Navigation, err
 		"Port Forwarding",
 	}
 
-	n := &hcli.Navigation{
+	n := &sugarloaf.Navigation{
 		Title:    "Overview",
 		Path:     nf.root,
-		Children: []*hcli.Navigation{},
+		Children: []*sugarloaf.Navigation{},
 	}
 
 	var mu sync.Mutex
@@ -113,10 +113,10 @@ func (nf *NavigationFactory) Entries(ctx context.Context) (*hcli.Navigation, err
 	return n, nil
 }
 
-type entriesFunc func(context.Context, string) ([]*hcli.Navigation, error)
+type entriesFunc func(context.Context, string) ([]*sugarloaf.Navigation, error)
 
-func (nf *NavigationFactory) genNode(ctx context.Context, name string, childFn entriesFunc) (*hcli.Navigation, error) {
-	node := hcli.NewNavigation(name, nf.pathFor(navPathLookup[name]))
+func (nf *NavigationFactory) genNode(ctx context.Context, name string, childFn entriesFunc) (*sugarloaf.Navigation, error) {
+	node := sugarloaf.NewNavigation(name, nf.pathFor(navPathLookup[name]))
 	if childFn != nil {
 		children, err := childFn(ctx, node.Path)
 		if err != nil {
@@ -128,46 +128,46 @@ func (nf *NavigationFactory) genNode(ctx context.Context, name string, childFn e
 	return node, nil
 }
 
-func (nf *NavigationFactory) workloadEntries(ctx context.Context, prefix string) ([]*hcli.Navigation, error) {
-	return []*hcli.Navigation{
-		hcli.NewNavigation("Cron Jobs", path.Join(prefix, "cron-jobs")),
-		hcli.NewNavigation("Daemon Sets", path.Join(prefix, "daemon-sets")),
-		hcli.NewNavigation("Deployments", path.Join(prefix, "deployments")),
-		hcli.NewNavigation("Jobs", path.Join(prefix, "jobs")),
-		hcli.NewNavigation("Pods", path.Join(prefix, "pods")),
-		hcli.NewNavigation("Replica Sets", path.Join(prefix, "replica-sets")),
-		hcli.NewNavigation("Replication Controllers", path.Join(prefix, "replication-controllers")),
-		hcli.NewNavigation("Stateful Sets", path.Join(prefix, "stateful-sets")),
+func (nf *NavigationFactory) workloadEntries(ctx context.Context, prefix string) ([]*sugarloaf.Navigation, error) {
+	return []*sugarloaf.Navigation{
+		sugarloaf.NewNavigation("Cron Jobs", path.Join(prefix, "cron-jobs")),
+		sugarloaf.NewNavigation("Daemon Sets", path.Join(prefix, "daemon-sets")),
+		sugarloaf.NewNavigation("Deployments", path.Join(prefix, "deployments")),
+		sugarloaf.NewNavigation("Jobs", path.Join(prefix, "jobs")),
+		sugarloaf.NewNavigation("Pods", path.Join(prefix, "pods")),
+		sugarloaf.NewNavigation("Replica Sets", path.Join(prefix, "replica-sets")),
+		sugarloaf.NewNavigation("Replication Controllers", path.Join(prefix, "replication-controllers")),
+		sugarloaf.NewNavigation("Stateful Sets", path.Join(prefix, "stateful-sets")),
 	}, nil
 }
 
-func (nf *NavigationFactory) discoAndLBEntries(ctx context.Context, prefix string) ([]*hcli.Navigation, error) {
-	return []*hcli.Navigation{
-		hcli.NewNavigation("Ingresses", path.Join(prefix, "ingresses")),
-		hcli.NewNavigation("Services", path.Join(prefix, "services")),
+func (nf *NavigationFactory) discoAndLBEntries(ctx context.Context, prefix string) ([]*sugarloaf.Navigation, error) {
+	return []*sugarloaf.Navigation{
+		sugarloaf.NewNavigation("Ingresses", path.Join(prefix, "ingresses")),
+		sugarloaf.NewNavigation("Services", path.Join(prefix, "services")),
 	}, nil
 }
 
-func (nf *NavigationFactory) configAndStorageEntries(ctx context.Context, prefix string) ([]*hcli.Navigation, error) {
-	return []*hcli.Navigation{
-		hcli.NewNavigation("Config Maps", path.Join(prefix, "config-maps")),
-		hcli.NewNavigation("Persistent Volume Claims", path.Join(prefix, "persistent-volume-claims")),
-		hcli.NewNavigation("Secrets", path.Join(prefix, "secrets")),
-		hcli.NewNavigation("Service Accounts", path.Join(prefix, "service-accounts")),
+func (nf *NavigationFactory) configAndStorageEntries(ctx context.Context, prefix string) ([]*sugarloaf.Navigation, error) {
+	return []*sugarloaf.Navigation{
+		sugarloaf.NewNavigation("Config Maps", path.Join(prefix, "config-maps")),
+		sugarloaf.NewNavigation("Persistent Volume Claims", path.Join(prefix, "persistent-volume-claims")),
+		sugarloaf.NewNavigation("Secrets", path.Join(prefix, "secrets")),
+		sugarloaf.NewNavigation("Service Accounts", path.Join(prefix, "service-accounts")),
 	}, nil
 }
 
-func (nf *NavigationFactory) rbacEntries(ctx context.Context, prefix string) ([]*hcli.Navigation, error) {
-	return []*hcli.Navigation{
-		hcli.NewNavigation("Cluster Roles", path.Join(prefix, "cluster-roles")),
-		hcli.NewNavigation("Cluster Role Bindings", path.Join(prefix, "cluster-role-bindings")),
-		hcli.NewNavigation("Roles", path.Join(prefix, "roles")),
-		hcli.NewNavigation("Role Bindings", path.Join(prefix, "role-bindings")),
+func (nf *NavigationFactory) rbacEntries(ctx context.Context, prefix string) ([]*sugarloaf.Navigation, error) {
+	return []*sugarloaf.Navigation{
+		sugarloaf.NewNavigation("Cluster Roles", path.Join(prefix, "cluster-roles")),
+		sugarloaf.NewNavigation("Cluster Role Bindings", path.Join(prefix, "cluster-role-bindings")),
+		sugarloaf.NewNavigation("Roles", path.Join(prefix, "roles")),
+		sugarloaf.NewNavigation("Role Bindings", path.Join(prefix, "role-bindings")),
 	}, nil
 }
 
-func (nf *NavigationFactory) crdEntries(ctx context.Context, prefix string) ([]*hcli.Navigation, error) {
-	var list []*hcli.Navigation
+func (nf *NavigationFactory) crdEntries(ctx context.Context, prefix string) ([]*sugarloaf.Navigation, error) {
+	var list []*sugarloaf.Navigation
 
 	crdNames, err := customResourceDefinitionNames(ctx, nf.cache)
 	if err != nil {
@@ -188,7 +188,7 @@ func (nf *NavigationFactory) crdEntries(ctx context.Context, prefix string) ([]*
 		}
 
 		if len(objects) > 0 {
-			list = append(list, hcli.NewNavigation(name, path.Join(prefix, name)))
+			list = append(list, sugarloaf.NewNavigation(name, path.Join(prefix, name)))
 		}
 	}
 

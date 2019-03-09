@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/hcli"
+	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/view/component"
@@ -26,7 +26,7 @@ func TestModule_ContentPath(t *testing.T) {
 func TestModule_Navigation(t *testing.T) {
 	m := NewModule("module", log.NopLogger())
 
-	expected := &hcli.Navigation{
+	expected := &sugarloaf.Navigation{
 		Path:  "/module",
 		Title: "module",
 	}
