@@ -11,10 +11,15 @@ import './styles.scss'
 interface Props {
   view: TableModel
   noHeader?: boolean
+  hideIfEmpty?: boolean
 }
 
-export default function Table({ view, noHeader }: Props) {
+export default function Table({ view, noHeader, hideIfEmpty }: Props) {
   const { title, rows, columns, emptyContent } = view
+
+  if (hideIfEmpty && rows.length === 0) {
+    return <></>
+  }
 
   const tableColumns = columns.map(({ name, accessor }, index) => {
     return {
