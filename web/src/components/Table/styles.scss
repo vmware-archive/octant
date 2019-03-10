@@ -40,6 +40,10 @@ $border-color: rgba(173, 187, 196, 0.3);
     width: 100%;
   }
 
+  .rt-head, .rt-body {
+    min-width: 0;
+  }
+
   .rt-thead {
     @include font-size('14');
     @include semiBold;
@@ -147,8 +151,8 @@ $border-color: rgba(173, 187, 196, 0.3);
     flex: 1 0 0;
     overflow: hidden;
     padding: 10px 5px;
-    text-overflow: ellipsis;
     white-space: unset;
+    word-wrap: break-word
   }
 
   .rt-th.-hidden,

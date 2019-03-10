@@ -14,7 +14,7 @@ export default function({ view: { annotations } }: Props) {
       {_.map(annotations, (value, key) => {
         return (
           <div key={key} className='content-annotation'>
-            {key}: {value}
+            <span className='content-annotation-key'>{key}</span>: {value}
           </div>
         )
       })}

@@ -14,7 +14,8 @@ export default function FlexLayout({ view }: Props) {
   const sections = view.sections.map((section, sectionIndex) => {
     const items = section.map((item, itemIndex) => {
       const style = {
-        flexBasis: `${40 * item.width}px`,
+        // flexBasis: `${40 * item.width}px`,
+        flexBasis: `${item.width / 24 * 100 - 5}%`,
       }
 
       return (

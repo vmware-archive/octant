@@ -18,8 +18,9 @@ $border-color: rgba(173, 187, 196, 0.3);
 
   table {
     font-size: 14px;
+    table-layout: fixed;
+    border-collapse: collapse;
     width: 100%;
-    overflow: hidden;
 
     td,
     th {
@@ -31,11 +32,18 @@ $border-color: rgba(173, 187, 196, 0.3);
       padding-right: 30px;
       text-align: left;
       white-space: nowrap;
+      width: 150px;
+    }
+
+    td {
+      white-space: normal;
+      word-wrap: break-word;
     }
   }
 
   .summary-component-section {
-    flex: 1;
+    display: relative;
     padding: 12px;
+    width: 100%;
   }
 }
