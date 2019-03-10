@@ -7,6 +7,9 @@ import { JSONLink } from './link'
 import { JSONList } from './list'
 import { JSONLogs } from './logs'
 import { JSONPanel } from './panel'
+import { JSONPort } from './port'
+import { JSONPortForward } from './portforward'
+import { JSONPorts } from './ports'
 import { JSONQuadrant } from './quadrant'
 import { JSONResourceViewer } from './resourceviewer'
 import { JSONSelectors } from './selectors'
@@ -95,6 +98,40 @@ export interface LogsModel extends View {
   readonly namespace: string
   readonly name: string
   readonly containers: string[]
+}
+
+export interface PortForwardState {
+  isForwardable: boolean
+  isForwarded: boolean
+  port: number
+  id: string
+}
+
+export interface PortModel extends View {
+  readonly namespace: string
+  readonly apiVersion: string
+  readonly kind: string
+  readonly name: string
+  readonly port: number
+  readonly protocol: string
+  state: PortForwardState
+}
+
+export interface PortsModel extends View {
+  readonly ports: PortModel[]
+}
+
+export interface PortForwardSpec {
+  local: number
+  remote: number
+}
+
+export interface PortForwardModel extends View {
+  readonly text: string
+  readonly id: string
+  readonly action: string
+  readonly status: string
+  readonly ports: PortForwardSpec[]
 }
 
 export interface ResourceViewerNode {
@@ -207,6 +244,12 @@ export function viewFromContentType(ct: ContentType): View {
       return new JSONLogs(ct)
     case 'panel':
       return new JSONPanel(ct)
+    case 'port':
+      return new JSONPort(ct)
+    case 'ports':
+      return new JSONPorts(ct)
+    case 'portforward':
+      return new JSONPortForward(ct)
     case 'quadrant':
       return new JSONQuadrant(ct)
     case 'resourceViewer':

@@ -12,6 +12,8 @@ const (
 	typeList               = "list"
 	typeLogs               = "logs"
 	typePanel              = "panel"
+	typePort               = "port"
+	typePorts              = "ports"
 	typePortForward        = "portforward"
 	typeQuadrant           = "quadrant"
 	typeResourceViewer     = "resourceViewer"

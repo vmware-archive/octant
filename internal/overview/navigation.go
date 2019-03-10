@@ -21,7 +21,7 @@ var (
 		"Custom Resources":             "custom-resources",
 		"RBAC":                         "rbac",
 		"Events":                       "events",
-		"Port Forwarding":              "portforward",
+		"Port Forwards":                "portforward",
 	}
 )
 
@@ -68,7 +68,7 @@ func (nf *NavigationFactory) Entries(ctx context.Context) (*sugarloaf.Navigation
 		"Custom Resources":             nf.crdEntries,
 		"RBAC":                         nf.rbacEntries,
 		"Events":                       nil,
-		"Port Forwarding":              nil,
+		"Port Forwards":                nil,
 	}
 
 	navOrder := []string{
@@ -78,7 +78,7 @@ func (nf *NavigationFactory) Entries(ctx context.Context) (*sugarloaf.Navigation
 		"Custom Resources",
 		"RBAC",
 		"Events",
-		"Port Forwarding",
+		"Port Forwards",
 	}
 
 	n := &sugarloaf.Navigation{

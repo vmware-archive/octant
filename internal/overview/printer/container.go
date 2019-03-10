@@ -5,6 +5,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/heptio/developer-dash/internal/portforward"
+
 	"github.com/pkg/errors"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
@@ -12,21 +14,24 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // ContainerConfiguration generates container configuration.
 type ContainerConfiguration struct {
-	parent    runtime.Object
-	container *corev1.Container
-	isInit    bool
+	parent             runtime.Object
+	container          *corev1.Container
+	portForwardService portforward.PortForwardInterface
+	isInit             bool
 }
 
 // NewContainerConfiguration creates an instance of ContainerConfiguration.
-func NewContainerConfiguration(parent runtime.Object, c *corev1.Container, isInit bool) *ContainerConfiguration {
+func NewContainerConfiguration(parent runtime.Object, c *corev1.Container, pfs portforward.PortForwardInterface, isInit bool) *ContainerConfiguration {
 	return &ContainerConfiguration{
-		parent:    parent,
-		container: c,
-		isInit:    isInit,
+		parent:             parent,
+		container:          c,
+		isInit:             isInit,
+		portForwardService: pfs,
 	}
 }
 
@@ -45,9 +50,12 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 	if hostPorts != "" {
 		sections.AddText("Host Ports", hostPorts)
 	}
-	containerPorts := describeContainerPorts(c.Ports)
-	if containerPorts != "" {
-		sections.AddText("Container Ports", containerPorts)
+	containerPorts, err := describeContainerPorts(cc.parent, c.Ports, cc.portForwardService)
+	if err != nil {
+		return nil, errors.Wrap(err, "describe container ports")
+	}
+	if len(containerPorts) > 0 {
+		sections.Add("Container Ports", component.NewPorts(containerPorts))
 	}
 
 	envTbl, err := describeContainerEnv(cc.parent, c)
@@ -81,15 +89,88 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 	return summary, nil
 }
 
-func describeContainerPorts(cPorts []corev1.ContainerPort) string {
-	ports := make([]string, 0, len(cPorts))
+func isPodGVK(gvk schema.GroupVersionKind) bool {
+	return gvk.Group == "" && gvk.Version == "v1" && gvk.Kind == "Pod"
+}
+
+type notFound interface {
+	NotFound() bool
+}
+
+func isNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	notFoundErr, ok := errors.Cause(err).(notFound)
+	if !ok {
+		return false
+	}
+
+	return notFoundErr.NotFound()
+}
+
+func describeContainerPorts(
+	parent runtime.Object,
+	cPorts []corev1.ContainerPort,
+	portForwardService portforward.PortForwardInterface) ([]component.Port, error) {
+	var list []component.Port
+
+	var namespace string
+	var name string
+	var err error
+	gvk := parent.GetObjectKind().GroupVersionKind()
+	isPod := isPodGVK(gvk)
+	if isPod {
+		accessor := meta.NewAccessor()
+		namespace, err = accessor.Namespace(parent)
+		if err != nil {
+			return nil, errors.Wrap(err, "find parent namespace")
+		}
+
+		name, err = accessor.Name(parent)
+		if err != nil {
+			return nil, errors.Wrap(err, "find parent name")
+		}
+	}
+
 	for _, cPort := range cPorts {
 		if cPort.ContainerPort == 0 {
 			continue
 		}
-		ports = append(ports, fmt.Sprintf("%d/%s", cPort.ContainerPort, cPort.Protocol))
+		pfs := component.PortForwardState{}
+
+		var port *component.Port
+		if isPod && cPort.Protocol == "TCP" {
+			pfs.IsForwardable = true
+			state, err := portForwardService.Find(namespace, gvk, name)
+			if err != nil {
+				if _, ok := err.(notFound); !ok {
+					return nil, errors.Wrap(err, "query portforward service for pod")
+				}
+			} else {
+				pfs.ID = state.ID
+				for _, forwarded := range state.Ports {
+					if int(forwarded.Remote) == int(cPort.ContainerPort) {
+						pfs.Port = int(forwarded.Local)
+					}
+				}
+				pfs.IsForwarded = true
+			}
+		}
+
+		apiVersion, kind := gvk.ToAPIVersionAndKind()
+
+		port = component.NewPort(
+			namespace,
+			apiVersion,
+			kind,
+			name,
+			int(cPort.ContainerPort),
+			string(cPort.Protocol), pfs)
+		list = append(list, *port)
 	}
-	return strings.Join(ports, ", ")
+	return list, nil
 }
 
 func describeContainerHostPorts(cPorts []corev1.ContainerPort) string {

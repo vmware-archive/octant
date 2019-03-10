@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/heptio/developer-dash/internal/portforward"
+
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
@@ -18,6 +20,7 @@ import (
 // Options provides options to a print handler
 type Options struct {
 	Cache         cache.Cache
+	PortForward   portforward.PortForwardInterface
 	Selector      kLabels.Selector
 	DisableLabels bool
 }
@@ -30,17 +33,19 @@ type Printer interface {
 
 // Resource prints runtime objects.
 type Resource struct {
-	handlerMap map[reflect.Type]reflect.Value
-	cache      cache.Cache
+	handlerMap  map[reflect.Type]reflect.Value
+	cache       cache.Cache
+	portForward portforward.PortForwardInterface
 }
 
 var _ Printer = (*Resource)(nil)
 
 // NewResource creates an instance of ResourcePrinter.
-func NewResource(c cache.Cache) *Resource {
+func NewResource(c cache.Cache, portForwardService portforward.PortForwardInterface) *Resource {
 	return &Resource{
-		handlerMap: make(map[reflect.Type]reflect.Value),
-		cache:      c,
+		handlerMap:  make(map[reflect.Type]reflect.Value),
+		cache:       c,
+		portForward: portForwardService,
 	}
 }
 
@@ -48,7 +53,8 @@ func NewResource(c cache.Cache) *Resource {
 // it will print using `DefaultPrintFunc`.
 func (p *Resource) Print(ctx context.Context, object runtime.Object) (component.ViewComponent, error) {
 	printOptions := Options{
-		Cache: p.cache,
+		Cache:       p.cache,
+		PortForward: p.portForward,
 	}
 
 	t := reflect.TypeOf(object)

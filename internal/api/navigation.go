@@ -41,7 +41,7 @@ func (n *navigation) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer span.End()
 
 	if n.navSections == nil {
-		respondWithError(w, http.StatusInternalServerError,
+		RespondWithError(w, http.StatusInternalServerError,
 			"unable to generate navigation sections", n.logger)
 		return
 	}
@@ -57,7 +57,7 @@ func (n *navigation) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	ns, err := n.navSections.Sections(ctx, namespace)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError,
+		RespondWithError(w, http.StatusInternalServerError,
 			"unable to generate navigation sections", n.logger)
 		return
 	}

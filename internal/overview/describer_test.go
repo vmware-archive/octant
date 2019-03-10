@@ -10,6 +10,7 @@ import (
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/overview/printer"
+	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -27,6 +28,8 @@ func TestListDescriber(t *testing.T) {
 	defer controller.Finish()
 
 	c := cachefake.NewMockCache(controller)
+
+	pf := pffake.NewMockPortForwardInterface(controller)
 
 	client := clusterfake.NewMockClientInterface(controller)
 
@@ -57,7 +60,7 @@ func TestListDescriber(t *testing.T) {
 	options := DescriberOptions{
 		Cache:   c,
 		Fields:  fields,
-		Printer: printer.NewResource(c),
+		Printer: printer.NewResource(c, pf),
 	}
 
 	ctx := context.Background()
@@ -93,6 +96,7 @@ func TestObjectDescriber(t *testing.T) {
 
 	c := cachefake.NewMockCache(controller)
 	clusterClient := clusterfake.NewMockClientInterface(controller)
+	pf := pffake.NewMockPortForwardInterface(controller)
 
 	object := &unstructured.Unstructured{
 		Object: map[string]interface{}{
@@ -129,7 +133,7 @@ func TestObjectDescriber(t *testing.T) {
 
 	d := NewObjectDescriber(thePath, "object", fn, objectType, true)
 
-	p := printer.NewResource(c)
+	p := printer.NewResource(c, pf)
 	err := p.Handler(func(context.Context, *corev1.Pod, printer.Options) (component.ViewComponent, error) {
 		return component.NewText("*v1.Pod"), nil
 	})

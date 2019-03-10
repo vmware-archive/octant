@@ -29,12 +29,12 @@ func (n *namespace) update(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&nr)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "unable to decode request", n.logger)
+		RespondWithError(w, http.StatusInternalServerError, "unable to decode request", n.logger)
 		return
 	}
 
 	if nr.Namespace == "" {
-		respondWithError(w, http.StatusBadRequest, "unable to decode request", n.logger)
+		RespondWithError(w, http.StatusBadRequest, "unable to decode request", n.logger)
 		return
 	}
 

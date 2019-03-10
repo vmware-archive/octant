@@ -32,6 +32,7 @@ function summaryContent(item: SummaryItem, key: number): JSX.Element {
     case 'labels':
     case 'link':
     case 'list':
+    case 'ports':
     case 'selectors':
     case 'table':
     case 'text':

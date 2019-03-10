@@ -96,7 +96,7 @@ func PodHandler(ctx context.Context, p *corev1.Pod, opts Options) (component.Vie
 
 	var initContainerItems []ItemDescriptor
 	for _, container := range p.Spec.InitContainers {
-		cc := NewContainerConfiguration(p, &container, true)
+		cc := NewContainerConfiguration(p, &container, opts.PortForward, true)
 		initContainerItems = append(initContainerItems, ItemDescriptor{
 			Width: 12,
 			Func: func() (component.ViewComponent, error) {
@@ -109,7 +109,7 @@ func PodHandler(ctx context.Context, p *corev1.Pod, opts Options) (component.Vie
 
 	var containerItems []ItemDescriptor
 	for _, container := range p.Spec.Containers {
-		cc := NewContainerConfiguration(p, &container, false)
+		cc := NewContainerConfiguration(p, &container, opts.PortForward, false)
 		containerItems = append(initContainerItems, ItemDescriptor{
 			Width: 12,
 			Func: func() (component.ViewComponent, error) {

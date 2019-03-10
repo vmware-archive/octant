@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/gridlayout"
 )
 
 type PodTemplate struct {
@@ -23,7 +22,7 @@ func NewPodTemplate(parent runtime.Object, podTemplateSpec corev1.PodTemplateSpe
 	}
 }
 
-func (pt *PodTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout) error {
+func (pt *PodTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout, options Options) error {
 	if fl == nil {
 		return errors.New("flex layout is nil")
 	}
@@ -42,7 +41,7 @@ func (pt *PodTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout) error {
 	containerSection := fl.AddSection()
 
 	for _, container := range pt.podTemplateSpec.Spec.Containers {
-		containerConfig := NewContainerConfiguration(pt.parent, &container, false)
+		containerConfig := NewContainerConfiguration(pt.parent, &container, options.PortForward, false)
 		summary, err := containerConfig.Create()
 		if err != nil {
 			return err
@@ -77,36 +76,6 @@ func (pt *PodTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout) error {
 	}
 	if err := podSection.Add(affinityList, 12); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (pt *PodTemplate) AddToGridLayout(gl *gridlayout.GridLayout) error {
-	if gl == nil {
-		return errors.New("grid layout is nil")
-	}
-
-	headerSection := gl.CreateSection(2)
-
-	podTemplateHeader := NewPodTemplateHeader(pt.podTemplateSpec.ObjectMeta.Labels)
-	headerLabels, err := podTemplateHeader.Create()
-	if err != nil {
-		return err
-	}
-
-	headerSection.Add(headerLabels, 23)
-
-	containerSection := gl.CreateSection(16)
-
-	for _, container := range pt.podTemplateSpec.Spec.Containers {
-		containerConfig := NewContainerConfiguration(pt.parent, &container, false)
-		summary, err := containerConfig.Create()
-		if err != nil {
-			return err
-		}
-
-		containerSection.Add(summary, 16)
 	}
 
 	return nil

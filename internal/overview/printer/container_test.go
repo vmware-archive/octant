@@ -3,21 +3,21 @@ package printer
 import (
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/portforward"
+
+	"github.com/golang/mock/gomock"
+
+	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
+	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var (
-	propagation = corev1.MountPropagationHostToContainer
-	parentPod   = &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "pod",
-			Namespace: "default",
-		},
-	}
+	propagation    = corev1.MountPropagationHostToContainer
 	validContainer = &corev1.Container{
 		Name:  "nginx",
 		Image: "nginx:1.15",
@@ -134,19 +134,19 @@ func Test_ContainerConfiguration(t *testing.T) {
 		component.TableRow{
 			"Name":   component.NewText("configmapref"),
 			"Value":  component.NewText(""),
-			"Source": component.NewLink("", "myconfig:somekey", "/content/overview/namespace/default/config-and-storage/config-maps/myconfig"),
+			"Source": component.NewLink("", "myconfig:somekey", "/content/overview/namespace/namespace/config-and-storage/config-maps/myconfig"),
 		},
 		component.TableRow{
 			"Name":   component.NewText("secretref"),
 			"Value":  component.NewText(""),
-			"Source": component.NewLink("", "mysecret:somesecretkey", "/content/overview/namespace/default/config-and-storage/secrets/mysecret"),
+			"Source": component.NewLink("", "mysecret:somesecretkey", "/content/overview/namespace/namespace/config-and-storage/secrets/mysecret"),
 		},
 		// EnvFromSource
 		component.TableRow{
-			"Source": component.NewLink("", "fromconfig", "/content/overview/namespace/default/config-and-storage/config-maps/fromconfig"),
+			"Source": component.NewLink("", "fromconfig", "/content/overview/namespace/namespace/config-and-storage/config-maps/fromconfig"),
 		},
 		component.TableRow{
-			"Source": component.NewLink("", "fromsecret", "/content/overview/namespace/default/config-and-storage/secrets/fromsecret"),
+			"Source": component.NewLink("", "fromsecret", "/content/overview/namespace/namespace/config-and-storage/secrets/fromsecret"),
 		},
 	)
 
@@ -184,8 +184,11 @@ func Test_ContainerConfiguration(t *testing.T) {
 					Content: component.NewText("80/TCP, 8080/TCP"),
 				},
 				{
-					Header:  "Container Ports",
-					Content: component.NewText("443/TCP, 443/UDP"),
+					Header: "Container Ports",
+					Content: component.NewPorts([]component.Port{
+						*component.NewPort("namespace", "v1", "Pod", "pod", 443, "TCP", component.PortForwardState{IsForwardable: true, IsForwarded: true}),
+						*component.NewPort("namespace", "v1", "Pod", "pod", 443, "UDP", component.PortForwardState{IsForwardable: false, IsForwarded: false}),
+					}),
 				},
 				{
 					Header:  "Environment",
@@ -214,7 +217,19 @@ func Test_ContainerConfiguration(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			cc := NewContainerConfiguration(parentPod, tc.container, false)
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			pf := pffake.NewMockPortForwardInterface(controller)
+			gvk := schema.GroupVersionKind{Version: "v1", Kind: "Pod"}
+
+			state := portforward.PortForwardState{}
+			pf.EXPECT().Find("namespace", gomock.Eq(gvk), "pod").Return(state, nil).AnyTimes()
+
+			parentPod := testutil.CreatePod("pod")
+			parentPod.Namespace = "namespace"
+
+			cc := NewContainerConfiguration(parentPod, tc.container, pf, false)
 			summary, err := cc.Create()
 			if tc.isErr {
 				require.Error(t, err)

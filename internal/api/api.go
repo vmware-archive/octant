@@ -36,7 +36,8 @@ type errorResponse struct {
 	Error errorMessage `json:"error,omitempty"`
 }
 
-func respondWithError(w http.ResponseWriter, code int, message string, logger log.Logger) {
+// RespondWithError responds with an error message.
+func RespondWithError(w http.ResponseWriter, code int, message string, logger log.Logger) {
 	r := &errorResponse{
 		Error: errorMessage{
 			Code:    code,
@@ -128,7 +129,7 @@ func (a *API) Handler(ctx context.Context) *mux.Router {
 
 	s.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		a.logger.Errorf("api handler not found: %s", r.URL.String())
-		respondWithError(w, http.StatusNotFound, "not found", a.logger)
+		RespondWithError(w, http.StatusNotFound, "not found", a.logger)
 	})
 
 	return router
@@ -137,7 +138,7 @@ func (a *API) Handler(ctx context.Context) *mux.Router {
 // RegisterModule registers a module with the API service.
 func (a *API) RegisterModule(m module.Module) error {
 	contentPath := path.Join("/content", m.ContentPath())
-	a.logger.Debugf("registering content path %s", contentPath)
+	a.logger.With("contentPath", contentPath).Debugf("registering content path")
 	a.modulePaths[contentPath] = m
 	a.modules = append(a.modules, m)
 

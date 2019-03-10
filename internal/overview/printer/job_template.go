@@ -20,7 +20,7 @@ func NewJobTemplate(parent runtime.Object, jobTemplateSpec batchv1beta1.JobTempl
 	}
 }
 
-func (jt *JobTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout) error {
+func (jt *JobTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout, options Options) error {
 	if fl == nil {
 		return errors.New("flex layout is nil")
 	}
@@ -39,7 +39,7 @@ func (jt *JobTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout) error {
 	containerSection := fl.AddSection()
 
 	for _, container := range jt.jobTemplateSpec.Spec.Template.Spec.Containers {
-		containerConfig := NewContainerConfiguration(jt.parent, &container, false)
+		containerConfig := NewContainerConfiguration(jt.parent, &container, options.PortForward, false)
 		summary, err := containerConfig.Create()
 		if err != nil {
 			return err

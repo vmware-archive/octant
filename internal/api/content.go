@@ -85,7 +85,7 @@ func (h *contentHandler) handlerForModule(m module.Module) http.HandlerFunc {
 		selector, err := selectorFromFilters(filters)
 		if err != nil {
 			h.logger.Errorf("invalid filters: %v", err)
-			respondWithError(w, http.StatusInternalServerError, err.Error(), h.logger)
+			RespondWithError(w, http.StatusInternalServerError, err.Error(), h.logger)
 			return
 		}
 
@@ -100,7 +100,7 @@ func (h *contentHandler) handlerForModule(m module.Module) http.HandlerFunc {
 
 		resp, err := m.Content(ctx, contentPath, h.prefix, namespace, module.ContentOptions{Selector: selector})
 		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err.Error(), h.logger)
+			RespondWithError(w, http.StatusInternalServerError, err.Error(), h.logger)
 			return
 		}
 

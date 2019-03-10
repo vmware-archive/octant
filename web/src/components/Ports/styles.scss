@@ -1,0 +1,16 @@
+@import '~css/variables/variables.scss';
+
+
+.port {
+  a {
+    @include webLink;
+    font-size: 12px;
+    margin-left: 15px;
+
+    &:link {
+      text-decoration: underline;
+    }
+  }
+
+
+}

@@ -30,7 +30,7 @@ func (pm *pathMatcher) Register(ctx context.Context, pf pathFilter) {
 	pm.Lock()
 	defer pm.Unlock()
 
-	logger.Debugf("register path %s", pf.path)
+	logger.With("path", pf.path).Debugf("register path")
 	pm.filters[pf.path] = pf
 }
 
@@ -41,7 +41,7 @@ func (pm *pathMatcher) Deregister(ctx context.Context, paths ...string) {
 	defer pm.Unlock()
 
 	for _, p := range paths {
-		logger.Debugf("deregister path %s", p)
+		logger.With("path", p).Debugf("deregister path")
 		delete(pm.filters, p)
 	}
 

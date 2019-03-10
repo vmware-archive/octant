@@ -24,18 +24,18 @@ func defaultMetadataGen(object runtime.Object, fl *flexlayout.FlexLayout) error 
 	return nil
 }
 
-func defaultPodTemplateGen(object runtime.Object, template corev1.PodTemplateSpec, fl *flexlayout.FlexLayout) error {
+func defaultPodTemplateGen(object runtime.Object, template corev1.PodTemplateSpec, fl *flexlayout.FlexLayout, options Options) error {
 	podTemplate := NewPodTemplate(object, template)
-	if err := podTemplate.AddToFlexLayout(fl); err != nil {
+	if err := podTemplate.AddToFlexLayout(fl, options); err != nil {
 		return errors.Wrap(err, "add pod template to layout")
 	}
 
 	return nil
 }
 
-func defaultJobTemplateGen(object runtime.Object, template batchv1beta1.JobTemplateSpec, fl *flexlayout.FlexLayout) error {
+func defaultJobTemplateGen(object runtime.Object, template batchv1beta1.JobTemplateSpec, fl *flexlayout.FlexLayout, options Options) error {
 	podTemplate := NewJobTemplate(object, template)
-	if err := podTemplate.AddToFlexLayout(fl); err != nil {
+	if err := podTemplate.AddToFlexLayout(fl, options); err != nil {
 		return errors.Wrap(err, "add job template to layout")
 	}
 
@@ -92,8 +92,8 @@ type Object struct {
 	flexlayout *flexlayout.FlexLayout
 
 	MetadataGen    func(runtime.Object, *flexlayout.FlexLayout) error
-	PodTemplateGen func(runtime.Object, corev1.PodTemplateSpec, *flexlayout.FlexLayout) error
-	JobTemplateGen func(runtime.Object, batchv1beta1.JobTemplateSpec, *flexlayout.FlexLayout) error
+	PodTemplateGen func(runtime.Object, corev1.PodTemplateSpec, *flexlayout.FlexLayout, Options) error
+	JobTemplateGen func(runtime.Object, batchv1beta1.JobTemplateSpec, *flexlayout.FlexLayout, Options) error
 	EventsGen      func(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout, options Options) error
 }
 
@@ -204,13 +204,13 @@ func (o *Object) ToComponent(ctx context.Context, options Options) (component.Vi
 	}
 
 	if o.isPodTemplateEnabled {
-		if err := o.PodTemplateGen(o.object, o.podTemplateOptions.template, o.flexlayout); err != nil {
+		if err := o.PodTemplateGen(o.object, o.podTemplateOptions.template, o.flexlayout, options); err != nil {
 			return nil, errors.Wrap(err, "generate pod template")
 		}
 	}
 
 	if o.isJobTemplateEnabled {
-		if err := o.JobTemplateGen(o.object, o.jobTemplateOptions.template, o.flexlayout); err != nil {
+		if err := o.JobTemplateGen(o.object, o.jobTemplateOptions.template, o.flexlayout, options); err != nil {
 			return nil, errors.Wrap(err, "generate job template")
 		}
 	}

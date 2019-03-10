@@ -2,23 +2,18 @@ package overview
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/gorilla/mux"
-	"github.com/heptio/developer-dash/internal/mime"
+	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/internal/overview/container"
 	"github.com/heptio/developer-dash/internal/portforward"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/log"
@@ -174,132 +169,65 @@ type logResponse struct {
 // Handlers are extra handlers for overview
 func (co *ClusterOverview) Handlers(ctx context.Context) map[string]http.Handler {
 	return map[string]http.Handler{
-		"/logs/pod/{pod}/container/{container}":                   containerLogsHandler(co.client),
-		"/portforward/create/pod/{pod}/port/{port}":               co.portForwardHandler(ctx),
-		"/portforward/create/service/{service}/port/{port}":       co.portForwardHandler(ctx),
-		"/portforward/create/deployment/{deployment}/port/{port}": co.portForwardHandler(ctx),
-		"/portforward/delete/{id}":                                co.portForwardDeleteHandler(),
+		"/logs/pod/{pod}/container/{container}": containerLogsHandler(co.client),
+		"/port-forwards":                        co.portForwardsHandler(),
+		"/port-forwards/{id}":                   co.portForwardHandler(),
 	}
 }
 
-func containerLogsHandler(clusterClient cluster.ClientInterface) http.HandlerFunc {
-
+func (co *ClusterOverview) portForwardsHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-
-		containerName := vars["container"]
-		podName := vars["pod"]
-		namespace := vars["namespace"]
-
-		kubeClient, err := clusterClient.KubernetesClient()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		svc := co.portForwardSvc
+		if svc == nil {
+			co.logger.Errorf("port forward service is nil")
+			http.Error(w, "portforward service is nil", http.StatusInternalServerError)
 			return
 		}
 
-		lines := make(chan string)
-		done := make(chan bool)
+		ctx := log.WithLoggerContext(r.Context(), co.logger)
 
-		var entries []logEntry
+		defer r.Body.Close()
 
-		go func() {
-			for line := range lines {
-				parts := strings.SplitN(line, " ", 2)
-				logTime, err := time.Parse(time.RFC3339, parts[0])
-				if err == nil {
-					entries = append(entries, logEntry{
-						Timestamp: logTime,
-						Message:   parts[1],
-					})
-				}
-			}
-
-			done <- true
-		}()
-
-		err = container.Logs(r.Context(), kubeClient, namespace, podName, containerName, lines)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		<-done
-
-		var lr logResponse
-
-		if len(entries) <= 100 {
-			lr.Entries = entries
-		} else {
-			// take last 100 entries from the slice
-			lr.Entries = entries[len(entries)-100:]
-		}
-
-		if err := json.NewEncoder(w).Encode(&lr); err != nil {
-			fmt.Println("oops", err)
+		switch r.Method {
+		case http.MethodPost:
+			err := createPortforward(ctx, r.Body, co.portForwardSvc, w)
+			handlePortforwardError(w, err, co.logger)
+		default:
+			api.RespondWithError(
+				w,
+				http.StatusNotFound,
+				fmt.Sprintf("unhandled HTTP method %s", r.Method),
+				co.logger,
+			)
 		}
 	}
 }
 
-func (co *ClusterOverview) portForwardHandler(ctx context.Context) http.HandlerFunc {
+func (co *ClusterOverview) portForwardHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if co.portForwardSvc == nil {
+		svc := co.portForwardSvc
+		if svc == nil {
+			co.logger.Errorf("port forward service is nil")
 			http.Error(w, "portforward service is nil", http.StatusInternalServerError)
 			return
 		}
 
 		vars := mux.Vars(r)
-
-		podName := vars["pod"]
-		namespace := vars["namespace"]
-		// serviceName := vars["service"]
-		// deploymentName := vars["deployment"]
-		portStr := vars["port"]
-
-		port, err := strconv.ParseUint(portStr, 10, 16)
-		if err != nil {
-			http.Error(w, errors.Wrapf(err, "invalid port").Error(), http.StatusInternalServerError)
-			return
-		}
-
-		var resp portforward.PortForwardCreateResponse
-		switch {
-		case podName != "":
-			gvk := schema.GroupVersionKind{
-				Group:   "",
-				Version: "v1",
-				Kind:    "Pod",
-			}
-			resp, err = co.portForwardSvc.Create(ctx, gvk, podName, namespace, uint16(port))
-			if err != nil {
-				http.Error(w, errors.Wrapf(err, "creating forwarder for pod").Error(), http.StatusInternalServerError)
-				return
-			}
-		}
-
-		w.Header().Set("Content-Type", mime.JSONContentType)
-		w.WriteHeader(http.StatusOK)
-
-		if err := json.NewEncoder(w).Encode(resp); err != nil {
-			co.logger.Errorf("encoding JSON response: %v", err)
-		}
-	}
-}
-
-func (co *ClusterOverview) portForwardDeleteHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if co.portForwardSvc == nil {
-			http.Error(w, "portforward service is nil", http.StatusInternalServerError)
-			return
-		}
-
-		vars := mux.Vars(r)
-
 		id := vars["id"]
 
-		co.logger.Debugf("Stopping port forwarder %s", id)
-		co.portForwardSvc.StopForwarder(id)
+		ctx := log.WithLoggerContext(r.Context(), co.logger)
 
-		w.WriteHeader(http.StatusOK)
-		http.Redirect(w, r, "/content/overview/portforward", 302)
+		switch r.Method {
+		case http.MethodDelete:
+			err := deletePortForward(ctx, id, co.portForwardSvc, w)
+			handlePortforwardError(w, err, co.logger)
+		default:
+			api.RespondWithError(
+				w,
+				http.StatusNotFound,
+				fmt.Sprintf("unhandled HTTP method %s", r.Method),
+				co.logger,
+			)
+		}
 	}
 }

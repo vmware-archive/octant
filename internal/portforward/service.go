@@ -21,6 +21,8 @@ import (
 	restclient "k8s.io/client-go/rest"
 )
 
+//go:generate mockgen -destination=./fake/mock_interface.go -package=fake github.com/heptio/developer-dash/internal/portforward PortForwardInterface
+
 var (
 	emptyPortForwardResponse = PortForwardCreateResponse{}
 )
@@ -30,6 +32,7 @@ type PortForwardInterface interface {
 	List() []PortForwardState
 	Get(id string) (PortForwardState, bool)
 	Create(ctx context.Context, gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (PortForwardCreateResponse, error)
+	Find(namespace string, gvk schema.GroupVersionKind, name string) (PortForwardState, error)
 	Stop()
 	StopForwarder(id string)
 }
@@ -71,12 +74,10 @@ type portForwardListResponse struct {
 }
 
 type portForwardDeleteResponse struct {
-	ID      string `json:"ID"`
+	ID      string `json:"id"`
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }
-
-////////
 
 // PortForwardTarget references a kubernetes object
 type PortForwardTarget struct {
@@ -124,6 +125,11 @@ type PortForwardSvcOptions struct {
 	PortForwarder portForwarder
 }
 
+type forwarderEvent struct {
+	ID  string
+	err error
+}
+
 type PortForwardService struct {
 	logger   log.Logger
 	opts     PortForwardSvcOptions
@@ -133,10 +139,7 @@ type PortForwardService struct {
 	state    PortForwardStates
 }
 
-type forwarderEvent struct {
-	ID  string
-	err error
-}
+var _ PortForwardInterface = (*PortForwardService)(nil)
 
 func NewPortForwardService(ctx context.Context, opts PortForwardSvcOptions, logger log.Logger) *PortForwardService {
 	ctx, cancel := context.WithCancel(ctx)
@@ -263,7 +266,6 @@ func (s *PortForwardService) verifyPod(ctx context.Context, namespace, name stri
 // Returns forwarder id.
 func (s *PortForwardService) createForwarder(r PortForwardCreateRequest) (string, error) {
 	log := s.logger.With("context", "PortForwardService.createForwarder")
-	log.Debugf("called")
 
 	if s.opts.PortForwarder == nil {
 		return "", errors.New("portforwarder is nil")
@@ -338,7 +340,7 @@ func (s *PortForwardService) createForwarder(r PortForwardCreateRequest) (string
 
 	go func() {
 		// Blocks until forwarder completes
-		log.Debugf("starting port-forward (%v)", req.URL())
+		log.With("url", req.URL()).Debugf("starting port-forward")
 		err := s.opts.PortForwarder.ForwardPorts("POST", req.URL(), opts)
 
 		log.Debugf("forwarding terminated: %v", err)
@@ -399,7 +401,7 @@ func (s *PortForwardService) localPortsHandler(ctx context.Context, id string) (
 	go func() {
 		select {
 		case p := <-portsChan:
-			log.Debugf("received ports for port-forward: %v", p)
+			log.With("ports", p).Debugf("received ports for port-forward")
 			if err := s.updatePorts(id, p); err != nil {
 				log.Warnf("%s", err.Error())
 			}
@@ -473,7 +475,12 @@ func (s *PortForwardService) Create(ctx context.Context, gvk schema.GroupVersion
 	}
 
 	// Resolve the request into a pod, update the request
-	log.Debugf("resolving pod from object %v/%v %q (ns=%v)", req.APIVersion, req.Kind, req.Name, req.Namespace)
+	log.With(
+		"apiVersion", req.APIVersion,
+		"kind", req.Kind,
+		"name", req.Name,
+		"namespace", req.Namespace,
+	).Debugf("resolving pod from object")
 	podName, err := s.resolvePod(ctx, req)
 	if err != nil {
 		return emptyPortForwardResponse, errors.Wrap(err, "resolving pod")
@@ -511,6 +518,34 @@ func (s *PortForwardService) StopForwarder(id string) {
 		pf.cancel()
 	}
 	delete(s.state.portForwards, id)
+}
+
+type notFound struct{}
+
+var _ error = (*notFound)(nil)
+
+func (e *notFound) Error() string {
+	return "port forward not found"
+}
+
+func (e *notFound) NotFound() bool {
+	return true
+}
+
+func (s *PortForwardService) Find(namespace string, gvk schema.GroupVersionKind, name string) (PortForwardState, error) {
+	s.state.Lock()
+	defer s.state.Unlock()
+
+	for _, state := range s.state.portForwards {
+		target := state.Target
+		if target.GVK.String() == gvk.String() &&
+			namespace == target.Namespace &&
+			name == target.Name {
+			return state, nil
+		}
+	}
+
+	return PortForwardState{}, &notFound{}
 }
 
 type errorMessage struct {

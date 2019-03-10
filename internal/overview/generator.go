@@ -72,7 +72,7 @@ type GeneratorOptions struct {
 }
 
 func newGenerator(cache cache.Cache, di discovery.DiscoveryInterface, pm *pathMatcher, clusterClient cluster.ClientInterface, portForwardSvc portforward.PortForwardInterface) (*realGenerator, error) {
-	p := printer.NewResource(cache)
+	p := printer.NewResource(cache, portForwardSvc)
 
 	if err := AddPrintHandlers(p); err != nil {
 		return nil, errors.Wrap(err, "add print handlers")

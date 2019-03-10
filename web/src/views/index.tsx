@@ -5,6 +5,8 @@ import Grid from 'components/Grid'
 import Labels from 'components/Labels'
 import List from 'components/List'
 import Logs from 'components/Logs'
+import PortForward from 'components/PortForward'
+import Ports from 'components/Ports'
 import Quadrant from 'components/Quadrant'
 import ResourceViewer from 'components/ResourceViewer'
 import Selectors from 'components/Selector'
@@ -23,6 +25,8 @@ import {
   LinkModel,
   ListModel,
   LogsModel,
+  PortForwardModel,
+  PortsModel,
   QuadrantModel,
   ResourceViewerModel,
   SelectorsModel,
@@ -53,6 +57,10 @@ export function renderView(view: View, extraProps?: any): JSX.Element {
       return <List view={view as ListModel} {...extraProps} />
     case 'logs':
       return <Logs view={view as LogsModel} {...extraProps} />
+    case 'ports':
+      return <Ports view={view as PortsModel} {...extraProps} />
+    case 'portforward':
+      return <PortForward view={view as PortForwardModel} {...extraProps} />
     case 'quadrant':
       return <Quadrant view={view as QuadrantModel} {...extraProps} />
     case 'resourceViewer':

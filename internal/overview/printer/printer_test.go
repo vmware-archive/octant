@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -59,8 +60,9 @@ func Test_Resource_Print(t *testing.T) {
 			defer controller.Finish()
 
 			c := cachefake.NewMockCache(controller)
+			pf := pffake.NewMockPortForwardInterface(controller)
 
-			p := NewResource(c)
+			p := NewResource(c, pf)
 
 			if tc.printFunc != nil {
 				err := p.Handler(tc.printFunc)
@@ -122,8 +124,9 @@ func Test_Resource_Handler(t *testing.T) {
 			defer controller.Finish()
 
 			c := cachefake.NewMockCache(controller)
+			pf := pffake.NewMockPortForwardInterface(controller)
 
-			p := NewResource(c)
+			p := NewResource(c, pf)
 
 			err := p.Handler(tc.printFunc)
 
@@ -146,8 +149,9 @@ func Test_Resource_DuplicateHandler(t *testing.T) {
 	defer controller.Finish()
 
 	c := cachefake.NewMockCache(controller)
+	pf := pffake.NewMockPortForwardInterface(controller)
 
-	p := NewResource(c)
+	p := NewResource(c, pf)
 
 	err := p.Handler(printFunc)
 	require.NoError(t, err)

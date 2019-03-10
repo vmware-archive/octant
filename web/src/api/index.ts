@@ -15,13 +15,13 @@ export function getAPIBase() {
 
 export const POLL_WAIT: number = 5
 
-interface BuildRequestParams {
+export interface BuildRequestParams {
   endpoint: string
   method?: string
   data?: object
 }
 
-async function buildRequest(params: BuildRequestParams): Promise<any> {
+export async function buildRequest(params: BuildRequestParams): Promise<any> {
   const apiBase = getAPIBase()
 
   const { endpoint, method, data } = params
