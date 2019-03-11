@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
@@ -66,7 +67,7 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 	}
 
 	for _, backend := range backends {
-		key := cache.Key{
+		key := cacheutil.Key{
 			Namespace:  ingress.Namespace,
 			APIVersion: "v1",
 			Kind:       "Service",
@@ -115,7 +116,7 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 			continue
 		}
 
-		key := cache.Key{
+		key := cacheutil.Key{
 			Namespace:  ingress.Namespace,
 			APIVersion: "v1",
 			Kind:       "Secret",

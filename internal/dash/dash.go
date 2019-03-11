@@ -121,7 +121,9 @@ func initCache(stopCh <-chan struct{}, client cluster.ClientInterface, logger lo
 		return nil, errors.New("nil cluster client")
 	}
 
-	appCache, err := cache.NewDynamicCache(client, stopCh)
+	appCache, err := cache.NewWatch(client, stopCh)
+
+	// appCache, err := cache.NewDynamicCache(client, stopCh)
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating cache for app")
 	}

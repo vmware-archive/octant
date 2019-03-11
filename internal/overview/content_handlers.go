@@ -5,11 +5,10 @@ import (
 	"sort"
 
 	"github.com/heptio/developer-dash/internal/cache"
-
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/content"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/util/duration"
 )
@@ -17,7 +16,7 @@ import (
 type lookupFunc func(namespace, prefix string, cell interface{}) content.Text
 
 // loadObject loads a single object from the cache.
-func loadObject(ctx context.Context, cache cache.Cache, namespace string, fields map[string]string, cacheKey cache.Key) (*unstructured.Unstructured, error) {
+func loadObject(ctx context.Context, cache cache.Cache, namespace string, fields map[string]string, cacheKey cacheutil.Key) (*unstructured.Unstructured, error) {
 	cacheKey.Namespace = namespace
 
 	if name, ok := fields["name"]; ok && name != "" {
@@ -33,7 +32,7 @@ func loadObject(ctx context.Context, cache cache.Cache, namespace string, fields
 }
 
 // loadObjects loads objects from the cache sorted by their name.
-func loadObjects(ctx context.Context, cache cache.Cache, namespace string, fields map[string]string, cacheKeys []cache.Key) ([]*unstructured.Unstructured, error) {
+func loadObjects(ctx context.Context, cache cache.Cache, namespace string, fields map[string]string, cacheKeys []cacheutil.Key) ([]*unstructured.Unstructured, error) {
 	var objects []*unstructured.Unstructured
 
 	for _, cacheKey := range cacheKeys {

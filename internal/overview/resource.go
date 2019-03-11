@@ -6,7 +6,7 @@ import (
 	"path"
 	"reflect"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster"
@@ -28,7 +28,7 @@ type ResourceTitle struct {
 
 type ResourceOptions struct {
 	Path                  string
-	CacheKey              cache.Key
+	CacheKey              cacheutil.Key
 	ListType              interface{}
 	ObjectType            interface{}
 	Titles                ResourceTitle

@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/kubernetes/scheme"
-
 	"github.com/heptio/developer-dash/internal/cache"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
 // ServiceListHandler is a printFunc that lists services
@@ -186,7 +186,7 @@ func serviceEndpoints(ctx context.Context, c cache.Cache, service *corev1.Servic
 		return nil, errors.New("service is nil")
 	}
 
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  service.Namespace,
 		APIVersion: "v1",
 		Kind:       "Endpoints",

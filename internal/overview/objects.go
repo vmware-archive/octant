@@ -1,7 +1,7 @@
 package overview
 
 import (
-	"github.com/heptio/developer-dash/internal/cache"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
@@ -13,7 +13,7 @@ import (
 var (
 	workloadsCronJobs = NewResource(ResourceOptions{
 		Path:       "/workloads/cron-jobs",
-		CacheKey:   cache.Key{APIVersion: "batch/v1beta1", Kind: "CronJob"},
+		CacheKey:   cacheutil.Key{APIVersion: "batch/v1beta1", Kind: "CronJob"},
 		ListType:   &batchv1beta1.CronJobList{},
 		ObjectType: &batchv1beta1.CronJob{},
 		Titles:     ResourceTitle{List: "Cron Jobs", Object: "Cron Job"},
@@ -21,7 +21,7 @@ var (
 
 	workloadsDaemonSets = NewResource(ResourceOptions{
 		Path:       "/workloads/daemon-sets",
-		CacheKey:   cache.Key{APIVersion: "apps/v1", Kind: "DaemonSet"},
+		CacheKey:   cacheutil.Key{APIVersion: "apps/v1", Kind: "DaemonSet"},
 		ListType:   &appsv1.DaemonSetList{},
 		ObjectType: &appsv1.DaemonSet{},
 		Titles:     ResourceTitle{List: "Daemon Sets", Object: "Daemon Set"},
@@ -29,7 +29,7 @@ var (
 
 	workloadsDeployments = NewResource(ResourceOptions{
 		Path:       "/workloads/deployments",
-		CacheKey:   cache.Key{APIVersion: "apps/v1", Kind: "Deployment"},
+		CacheKey:   cacheutil.Key{APIVersion: "apps/v1", Kind: "Deployment"},
 		ListType:   &appsv1.DeploymentList{},
 		ObjectType: &appsv1.Deployment{},
 		Titles:     ResourceTitle{List: "Deployments", Object: "Deployment"},
@@ -37,7 +37,7 @@ var (
 
 	workloadsJobs = NewResource(ResourceOptions{
 		Path:       "/workloads/jobs",
-		CacheKey:   cache.Key{APIVersion: "batch/v1", Kind: "Job"},
+		CacheKey:   cacheutil.Key{APIVersion: "batch/v1", Kind: "Job"},
 		ListType:   &batchv1.JobList{},
 		ObjectType: &batchv1.Job{},
 
@@ -46,7 +46,7 @@ var (
 
 	workloadsPods = NewResource(ResourceOptions{
 		Path:       "/workloads/pods",
-		CacheKey:   cache.Key{APIVersion: "v1", Kind: "Pod"},
+		CacheKey:   cacheutil.Key{APIVersion: "v1", Kind: "Pod"},
 		ListType:   &corev1.PodList{},
 		ObjectType: &corev1.Pod{},
 		Titles:     ResourceTitle{List: "Pods", Object: "Pod"},
@@ -54,7 +54,7 @@ var (
 
 	workloadsReplicaSets = NewResource(ResourceOptions{
 		Path:       "/workloads/replica-sets",
-		CacheKey:   cache.Key{APIVersion: "apps/v1", Kind: "ReplicaSet"},
+		CacheKey:   cacheutil.Key{APIVersion: "apps/v1", Kind: "ReplicaSet"},
 		ListType:   &appsv1.ReplicaSetList{},
 		ObjectType: &appsv1.ReplicaSet{},
 		Titles:     ResourceTitle{List: "Replica Sets", Object: "Replica Set"},
@@ -62,14 +62,14 @@ var (
 
 	workloadsReplicationControllers = NewResource(ResourceOptions{
 		Path:       "/workloads/replication-controllers",
-		CacheKey:   cache.Key{APIVersion: "v1", Kind: "ReplicationController"},
+		CacheKey:   cacheutil.Key{APIVersion: "v1", Kind: "ReplicationController"},
 		ListType:   &corev1.ReplicationControllerList{},
 		ObjectType: &corev1.ReplicationController{},
 		Titles:     ResourceTitle{List: "Replication Controllers", Object: "Replication Controller"},
 	})
 	workloadsStatefulSets = NewResource(ResourceOptions{
 		Path:       "/workloads/stateful-sets",
-		CacheKey:   cache.Key{APIVersion: "apps/v1", Kind: "StatefulSet"},
+		CacheKey:   cacheutil.Key{APIVersion: "apps/v1", Kind: "StatefulSet"},
 		ListType:   &appsv1.StatefulSetList{},
 		ObjectType: &appsv1.StatefulSet{},
 		Titles:     ResourceTitle{List: "Stateful Sets", Object: "Stateful Set"},
@@ -90,7 +90,7 @@ var (
 
 	dlbIngresses = NewResource(ResourceOptions{
 		Path:       "/discovery-and-load-balancing/ingresses",
-		CacheKey:   cache.Key{APIVersion: "extensions/v1beta1", Kind: "Ingress"},
+		CacheKey:   cacheutil.Key{APIVersion: "extensions/v1beta1", Kind: "Ingress"},
 		ListType:   &v1beta1.IngressList{},
 		ObjectType: &v1beta1.Ingress{},
 		Titles:     ResourceTitle{List: "Ingresses", Object: "Ingress"},
@@ -98,7 +98,7 @@ var (
 
 	dlbServices = NewResource(ResourceOptions{
 		Path:       "/discovery-and-load-balancing/services",
-		CacheKey:   cache.Key{APIVersion: "v1", Kind: "Service"},
+		CacheKey:   cacheutil.Key{APIVersion: "v1", Kind: "Service"},
 		ListType:   &corev1.ServiceList{},
 		ObjectType: &corev1.Service{},
 		Titles:     ResourceTitle{List: "Services", Object: "Service"},
@@ -113,7 +113,7 @@ var (
 
 	csConfigMaps = NewResource(ResourceOptions{
 		Path:       "/config-and-storage/config-maps",
-		CacheKey:   cache.Key{APIVersion: "v1", Kind: "ConfigMap"},
+		CacheKey:   cacheutil.Key{APIVersion: "v1", Kind: "ConfigMap"},
 		ListType:   &corev1.ConfigMapList{},
 		ObjectType: &corev1.ConfigMap{},
 		Titles:     ResourceTitle{List: "Config Maps", Object: "Config Map"},
@@ -121,7 +121,7 @@ var (
 
 	csPVCs = NewResource(ResourceOptions{
 		Path:       "/config-and-storage/persistent-volume-claims",
-		CacheKey:   cache.Key{APIVersion: "v1", Kind: "PersistentVolumeClaim"},
+		CacheKey:   cacheutil.Key{APIVersion: "v1", Kind: "PersistentVolumeClaim"},
 		ListType:   &corev1.PersistentVolumeClaimList{},
 		ObjectType: &corev1.PersistentVolumeClaim{},
 		Titles:     ResourceTitle{List: "Persistent Volume Claims", Object: "Persistent Volume Claim"},
@@ -129,7 +129,7 @@ var (
 
 	csSecrets = NewResource(ResourceOptions{
 		Path:       "/config-and-storage/secrets",
-		CacheKey:   cache.Key{APIVersion: "v1", Kind: "Secret"},
+		CacheKey:   cacheutil.Key{APIVersion: "v1", Kind: "Secret"},
 		ListType:   &corev1.SecretList{},
 		ObjectType: &corev1.Secret{},
 		Titles:     ResourceTitle{List: "Secrets", Object: "Secret"},
@@ -137,7 +137,7 @@ var (
 
 	csServiceAccounts = NewResource(ResourceOptions{
 		Path:       "/config-and-storage/service-accounts",
-		CacheKey:   cache.Key{APIVersion: "v1", Kind: "ServiceAccount"},
+		CacheKey:   cacheutil.Key{APIVersion: "v1", Kind: "ServiceAccount"},
 		ListType:   &corev1.ServiceAccountList{},
 		ObjectType: &corev1.ServiceAccount{},
 		Titles:     ResourceTitle{List: "Service Accounts", Object: "Service Account"},
@@ -159,7 +159,7 @@ var (
 
 	rbacRoles = NewResource(ResourceOptions{
 		Path:       "/rbac/roles",
-		CacheKey:   cache.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "Role"},
+		CacheKey:   cacheutil.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "Role"},
 		ListType:   &rbacv1.RoleList{},
 		ObjectType: &rbacv1.Role{},
 		Titles:     ResourceTitle{List: "Roles", Object: "Role"},
@@ -167,7 +167,7 @@ var (
 
 	rbacClusterRoles = NewResource(ResourceOptions{
 		Path:       "/rbac/cluster-roles",
-		CacheKey:   cache.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "ClusterRole"},
+		CacheKey:   cacheutil.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "ClusterRole"},
 		ListType:   &rbacv1.ClusterRoleList{},
 		ObjectType: &rbacv1.ClusterRole{},
 		Titles:     ResourceTitle{List: "Cluster Roles", Object: "Cluster Role"},
@@ -175,7 +175,7 @@ var (
 
 	rbacRoleBindings = NewResource(ResourceOptions{
 		Path:       "/rbac/role-bindings",
-		CacheKey:   cache.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "RoleBinding"},
+		CacheKey:   cacheutil.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "RoleBinding"},
 		ListType:   &rbacv1.RoleBindingList{},
 		ObjectType: &rbacv1.RoleBinding{},
 		Titles:     ResourceTitle{List: "Role Bindings", Object: "Role Binding"},
@@ -183,7 +183,7 @@ var (
 
 	rbacClusterRoleBindings = NewResource(ResourceOptions{
 		Path:        "/rbac/cluster-role-bindings",
-		CacheKey:    cache.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "ClusterRoleBinding"},
+		CacheKey:    cacheutil.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "ClusterRoleBinding"},
 		ListType:    &rbacv1.ClusterRoleBindingList{},
 		ObjectType:  &rbacv1.ClusterRoleBinding{},
 		Titles:      ResourceTitle{List: "Cluster Role Bindings", Object: "Cluster Role Binding"},
@@ -212,7 +212,7 @@ var (
 
 	eventsDescriber = NewResource(ResourceOptions{
 		Path:                  "/events",
-		CacheKey:              cache.Key{APIVersion: "v1", Kind: "Event"},
+		CacheKey:              cacheutil.Key{APIVersion: "v1", Kind: "Event"},
 		ListType:              &corev1.EventList{},
 		ObjectType:            &corev1.Event{},
 		Titles:                ResourceTitle{List: "Events", Object: "Event"},

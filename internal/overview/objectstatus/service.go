@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -22,7 +23,7 @@ func service(ctx context.Context, object runtime.Object, c cache.Cache) (ObjectS
 		return ObjectStatus{}, errors.Wrap(err, "convert object to service")
 	}
 
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  service.Namespace,
 		APIVersion: "v1",
 		Kind:       "Endpoints",

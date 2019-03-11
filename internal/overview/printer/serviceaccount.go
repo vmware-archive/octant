@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
@@ -96,7 +97,7 @@ func generateServiceAccountSecretsList(namespace string, secretNames []string) *
 }
 
 func serviceAccountTokens(ctx context.Context, serviceAccount corev1.ServiceAccount, c cache.Cache) ([]string, error) {
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  serviceAccount.Namespace,
 		APIVersion: "v1",
 		Kind:       "Secret",

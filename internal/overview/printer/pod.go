@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/heptio/developer-dash/internal/cache"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/overview/link"
-
+	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
-
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
@@ -17,9 +18,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
-
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/view/component"
 )
 
 var (
@@ -250,7 +248,7 @@ func (p *PodConfiguration) Create() (*component.Summary, error) {
 }
 
 func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelector, uid types.UID, c cache.Cache) ([]*corev1.Pod, error) {
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -274,7 +272,7 @@ func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelec
 	return owned, nil
 }
 
-func loadPods(ctx context.Context, key cache.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
+func loadPods(ctx context.Context, key cacheutil.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
 	objects, err := c.List(ctx, key)
 	if err != nil {
 		return nil, err
@@ -389,7 +387,7 @@ func createPodListView(ctx context.Context, object runtime.Object, options Optio
 		return nil, errors.Wrap(err, "get name for object")
 	}
 
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -424,7 +422,7 @@ func createPodListView(ctx context.Context, object runtime.Object, options Optio
 }
 
 func createMountedPodListView(ctx context.Context, namespace string, persistentVolumeClaimName string, options Options) (component.ViewComponent, error) {
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",

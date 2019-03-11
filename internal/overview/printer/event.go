@@ -5,17 +5,16 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/heptio/developer-dash/internal/cache"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/internal/overview/link"
+	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/internal/view/flexlayout"
-
+	"github.com/heptio/developer-dash/internal/view/gridlayout"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
-
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/gridlayout"
 )
 
 var (
@@ -215,7 +214,7 @@ func eventsForObject(ctx context.Context, object runtime.Object, c cache.Cache) 
 		return nil, errors.Wrap(err, "get name for object")
 	}
 
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Event",

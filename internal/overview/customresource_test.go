@@ -4,19 +4,19 @@ import (
 	"context"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/heptio/developer-dash/internal/cache"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-
-	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func Test_customResourceDefinitionNames(t *testing.T) {
@@ -33,7 +33,7 @@ func Test_customResourceDefinitionNames(t *testing.T) {
 		testutil.ToUnstructured(t, crd2),
 	}
 
-	crdKey := cache.Key{
+	crdKey := cacheutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
@@ -56,7 +56,7 @@ func Test_customResourceDefinition(t *testing.T) {
 
 	crd1 := testutil.CreateCRD("crd1.example.com")
 
-	crdKey := cache.Key{
+	crdKey := cacheutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 		Name:       "crd1.example.com",
@@ -118,7 +118,7 @@ func Test_crdListDescriber(t *testing.T) {
 	crd.Spec.Version = "v1"
 	crd.Spec.Names.Kind = "Name"
 
-	crdKey := cache.Key{
+	crdKey := cacheutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 		Name:       crd.Name,
@@ -126,7 +126,7 @@ func Test_crdListDescriber(t *testing.T) {
 
 	c.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
 
-	crKey := cache.Key{
+	crKey := cacheutil.Key{
 		Namespace:  "default",
 		APIVersion: "foo.example.com/v1",
 		Kind:       "Name",
@@ -169,7 +169,7 @@ func Test_crdDescriber(t *testing.T) {
 	crd.Spec.Version = "v1"
 	crd.Spec.Names.Kind = "Name"
 
-	crdKey := cache.Key{
+	crdKey := cacheutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 		Name:       crd.Name,
@@ -177,7 +177,7 @@ func Test_crdDescriber(t *testing.T) {
 
 	c.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
 
-	crKey := cache.Key{
+	crKey := cacheutil.Key{
 		Namespace:  "default",
 		APIVersion: "foo.example.com/v1",
 		Kind:       "Name",

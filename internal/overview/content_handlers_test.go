@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/heptio/developer-dash/internal/cache"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -40,14 +40,14 @@ func Test_loadObjects(t *testing.T) {
 		name     string
 		init     func(*testing.T, *cachefake.MockCache)
 		fields   map[string]string
-		keys     []cache.Key
+		keys     []cacheutil.Key
 		expected []*unstructured.Unstructured
 		isErr    bool
 	}{
 		{
 			name: "without name",
 			init: func(t *testing.T, c *cachefake.MockCache) {
-				key := cache.Key{
+				key := cacheutil.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind"}
@@ -57,13 +57,13 @@ func Test_loadObjects(t *testing.T) {
 					Return(sampleObjects, nil)
 			},
 			fields:   map[string]string{},
-			keys:     []cache.Key{{APIVersion: "v1", Kind: "kind"}},
+			keys:     []cacheutil.Key{{APIVersion: "v1", Kind: "kind"}},
 			expected: sortedSampleObjects,
 		},
 		{
 			name: "name",
 			init: func(t *testing.T, c *cachefake.MockCache) {
-				key := cache.Key{
+				key := cacheutil.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind",
@@ -75,12 +75,12 @@ func Test_loadObjects(t *testing.T) {
 
 			},
 			fields: map[string]string{"name": "name"},
-			keys:   []cache.Key{{APIVersion: "v1", Kind: "kind"}},
+			keys:   []cacheutil.Key{{APIVersion: "v1", Kind: "kind"}},
 		},
 		{
 			name: "cache retrieve error",
 			init: func(t *testing.T, c *cachefake.MockCache) {
-				key := cache.Key{
+				key := cacheutil.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind"}
@@ -90,7 +90,7 @@ func Test_loadObjects(t *testing.T) {
 					Return(nil, errors.New("error"))
 			},
 			fields: map[string]string{},
-			keys:   []cache.Key{{APIVersion: "v1", Kind: "kind"}},
+			keys:   []cacheutil.Key{{APIVersion: "v1", Kind: "kind"}},
 			isErr:  true,
 		},
 	}

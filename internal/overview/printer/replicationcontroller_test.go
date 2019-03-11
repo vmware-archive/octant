@@ -6,14 +6,12 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/require"
-
-	"github.com/heptio/developer-dash/internal/cache"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
-
+	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -138,7 +136,7 @@ func TestReplicationControllerStatus(t *testing.T) {
 		u := testutil.ToUnstructured(t, &p)
 		podList = append(podList, u)
 	}
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  "testing",
 		APIVersion: "v1",
 		Kind:       "Pod",

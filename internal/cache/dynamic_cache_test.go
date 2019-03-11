@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/cluster"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
@@ -83,7 +84,7 @@ func Test_DynamicCache_List(t *testing.T) {
 	c, err := NewDynamicCache(client, ctx.Done(), factoryFunc)
 	require.NoError(t, err)
 
-	key := Key{
+	key := cacheutil.Key{
 		Namespace:  "default",
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -140,7 +141,7 @@ func Test_DynamicCache_Get(t *testing.T) {
 	c, err := NewDynamicCache(client, ctx.Done(), factoryFunc)
 	require.NoError(t, err)
 
-	key := Key{
+	key := cacheutil.Key{
 		Namespace:  "default",
 		APIVersion: "v1",
 		Kind:       "Pod",

@@ -11,9 +11,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/heptio/developer-dash/internal/cache"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/mime"
-
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -240,7 +240,7 @@ func (s *PortForwardService) verifyPod(ctx context.Context, namespace, name stri
 		return false, errors.New("nil cache")
 	}
 
-	key := cache.Key{
+	key := cacheutil.Key{
 		APIVersion: "v1",
 		Kind:       "Pod",
 		Namespace:  namespace,

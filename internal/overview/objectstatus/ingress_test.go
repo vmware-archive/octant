@@ -4,15 +4,14 @@ import (
 	"context"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
 	"github.com/golang/mock/gomock"
-	"github.com/heptio/developer-dash/internal/cache"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -38,7 +37,7 @@ func Test_runIngressStatus(t *testing.T) {
 		{
 			name: "no matching backends",
 			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
-				key := cache.Key{Namespace: "default", APIVersion: "v1", Kind: "Service", Name: "no-such-service"}
+				key := cacheutil.Key{Namespace: "default", APIVersion: "v1", Kind: "Service", Name: "no-such-service"}
 				c.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(nil, nil)
 
 				objectFile := "ingress_no_matching_backend.yaml"
@@ -82,7 +81,7 @@ func Test_runIngressStatus(t *testing.T) {
 			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
 				mockServiceInCache(t, c, "default", "my-service", "service_my-service.yaml")
 
-				key := cache.Key{Namespace: "default", APIVersion: "v1", Kind: "Secret", Name: "no-such-secret"}
+				key := cacheutil.Key{Namespace: "default", APIVersion: "v1", Kind: "Secret", Name: "no-such-secret"}
 				c.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(nil, nil)
 
 				objectFile := "ingress_ingress-bad-tls-host.yaml"
@@ -134,7 +133,7 @@ func Test_runIngressStatus(t *testing.T) {
 
 func mockSecretInCache(t *testing.T, c *cachefake.MockCache, namespace, name, file string) runtime.Object {
 	secret := testutil.LoadObjectFromFile(t, file)
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Secret",
@@ -148,7 +147,7 @@ func mockSecretInCache(t *testing.T, c *cachefake.MockCache, namespace, name, fi
 
 func mockServiceInCache(t *testing.T, c *cachefake.MockCache, namespace, name, file string) runtime.Object {
 	secret := testutil.LoadObjectFromFile(t, file)
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Service",

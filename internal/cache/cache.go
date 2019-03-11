@@ -2,14 +2,12 @@ package cache
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	kcache "k8s.io/client-go/tools/cache"
 )
@@ -18,45 +16,13 @@ import (
 
 // Cache stores Kubernetes objects.
 type Cache interface {
-	List(ctx context.Context, key Key) ([]*unstructured.Unstructured, error)
-	Get(ctx context.Context, key Key) (*unstructured.Unstructured, error)
-	Watch(key Key, handler kcache.ResourceEventHandler) error
-}
-
-// Key is a key for the cache.
-type Key struct {
-	Namespace  string
-	APIVersion string
-	Kind       string
-	Name       string
-	Selector   kLabels.Selector
-}
-
-func (k Key) String() string {
-	var sb strings.Builder
-
-	sb.WriteString("CacheKey[")
-	if k.Namespace != "" {
-		fmt.Fprintf(&sb, "Namespace=%q, ", k.Namespace)
-	}
-	fmt.Fprintf(&sb, "APIVersion=%q, ", k.APIVersion)
-	fmt.Fprintf(&sb, "Kind=%q", k.Kind)
-
-	if k.Name != "" {
-		fmt.Fprintf(&sb, ", Name=%q", k.Name)
-	}
-
-	if k.Selector != nil {
-		fmt.Fprintf(&sb, ", Selector=%q", k.Selector.String())
-	}
-
-	sb.WriteString("]")
-
-	return sb.String()
+	List(ctx context.Context, key cacheutil.Key) ([]*unstructured.Unstructured, error)
+	Get(ctx context.Context, key cacheutil.Key) (*unstructured.Unstructured, error)
+	Watch(key cacheutil.Key, handler kcache.ResourceEventHandler) error
 }
 
 // GetAs gets an object from the cache by key.
-func GetAs(ctx context.Context, c Cache, key Key, as interface{}) error {
+func GetAs(ctx context.Context, c Cache, key cacheutil.Key, as interface{}) error {
 	u, err := c.Get(ctx, key)
 	if err != nil {
 		return errors.Wrap(err, "get object from cache")

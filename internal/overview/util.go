@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
@@ -73,7 +74,7 @@ func getSelector(object runtime.Object) (*metav1.LabelSelector, error) {
 }
 
 func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelector, uid types.UID, c cache.Cache) ([]*corev1.Pod, error) {
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -97,7 +98,7 @@ func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelec
 	return owned, nil
 }
 
-func loadPods(ctx context.Context, key cache.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
+func loadPods(ctx context.Context, key cacheutil.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
 	objects, err := c.List(ctx, key)
 	if err != nil {
 		return nil, err
@@ -190,7 +191,7 @@ func gvkPath(apiVersion, kind, name string) string {
 }
 
 func listReplicaSets(ctx context.Context, deployment *appsv1.Deployment, c cache.Cache) ([]*appsv1.ReplicaSet, error) {
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  deployment.GetNamespace(),
 		APIVersion: deployment.APIVersion,
 		Kind:       "ReplicaSet",
@@ -211,7 +212,7 @@ func listReplicaSets(ctx context.Context, deployment *appsv1.Deployment, c cache
 	return owned, nil
 }
 
-func loadReplicaSets(ctx context.Context, key cache.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*appsv1.ReplicaSet, error) {
+func loadReplicaSets(ctx context.Context, key cacheutil.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*appsv1.ReplicaSet, error) {
 	objects, err := c.List(ctx, key)
 	if err != nil {
 		return nil, err
@@ -303,7 +304,7 @@ func equalIgnoreHash(template1, template2 *corev1.PodTemplateSpec) bool {
 }
 
 func listSecrets(ctx context.Context, namespace string, c cache.Cache) ([]*corev1.Secret, error) {
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Secret",
@@ -312,7 +313,7 @@ func listSecrets(ctx context.Context, namespace string, c cache.Cache) ([]*corev
 	return loadSecrets(ctx, key, c)
 }
 
-func loadSecrets(ctx context.Context, key cache.Key, c cache.Cache) ([]*corev1.Secret, error) {
+func loadSecrets(ctx context.Context, key cacheutil.Key, c cache.Cache) ([]*corev1.Secret, error) {
 	objects, err := c.List(ctx, key)
 	if err != nil {
 		return nil, err
@@ -339,7 +340,7 @@ func loadSecrets(ctx context.Context, key cache.Key, c cache.Cache) ([]*corev1.S
 // loadSecret loads a single secret from the cache.
 // Note if the secret is not found, a nil error and secret is returned,
 // i.e. it is not an error.
-func loadSecret(ctx context.Context, key cache.Key, c cache.Cache) (*corev1.Secret, error) {
+func loadSecret(ctx context.Context, key cacheutil.Key, c cache.Cache) (*corev1.Secret, error) {
 	object, err := c.Get(ctx, key)
 	if err != nil {
 		return nil, err

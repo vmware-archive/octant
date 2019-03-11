@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/heptio/developer-dash/internal/cache"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/overview/logviewer"
@@ -31,7 +32,7 @@ const (
 type LoaderFunc func(ctx context.Context, c cache.Cache, namespace string, fields map[string]string) (*unstructured.Unstructured, error)
 
 // DefaultLoader returns a loader that loads a single object from the cache
-var DefaultLoader = func(cacheKey cache.Key) LoaderFunc {
+var DefaultLoader = func(cacheKey cacheutil.Key) LoaderFunc {
 	return func(ctx context.Context, c cache.Cache, namespace string, fields map[string]string) (*unstructured.Unstructured, error) {
 		return loadObject(ctx, c, namespace, fields, cacheKey)
 	}
@@ -67,12 +68,12 @@ type ListDescriber struct {
 	title         string
 	listType      func() interface{}
 	objectType    func() interface{}
-	cacheKey      cache.Key
+	cacheKey      cacheutil.Key
 	isClusterWide bool
 }
 
 // NewListDescriber creates an instance of ListDescriber.
-func NewListDescriber(p, title string, cacheKey cache.Key, listType, objectType func() interface{}, isClusterWide bool) *ListDescriber {
+func NewListDescriber(p, title string, cacheKey cacheutil.Key, listType, objectType func() interface{}, isClusterWide bool) *ListDescriber {
 	return &ListDescriber{
 		path:          p,
 		title:         title,
@@ -98,7 +99,7 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 		namespace = ""
 	}
 
-	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, []cache.Key{key})
+	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, []cacheutil.Key{key})
 	if err != nil {
 		return emptyContentResponse, err
 	}

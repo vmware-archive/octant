@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/heptio/developer-dash/internal/cache"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
@@ -25,7 +25,7 @@ func Test_service(t *testing.T) {
 		{
 			name: "in general",
 			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
-				key := cache.Key{
+				key := cacheutil.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "Endpoints",
@@ -49,7 +49,7 @@ func Test_service(t *testing.T) {
 		{
 			name: "no endpoint subsets",
 			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
-				key := cache.Key{
+				key := cacheutil.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "Endpoints",

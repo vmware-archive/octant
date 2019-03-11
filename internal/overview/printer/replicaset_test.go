@@ -8,8 +8,8 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/golang/mock/gomock"
-	"github.com/heptio/developer-dash/internal/cache"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
@@ -210,7 +210,7 @@ func TestReplicaSetStatus(t *testing.T) {
 		u := testutil.ToUnstructured(t, &p)
 		podList = append(podList, u)
 	}
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  "testing",
 		APIVersion: "v1",
 		Kind:       "Pod",

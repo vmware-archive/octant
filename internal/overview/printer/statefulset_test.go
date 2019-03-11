@@ -5,20 +5,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/testutil"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/require"
-
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/conversion"
+	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 func Test_StatefulSetListHandler(t *testing.T) {
@@ -136,7 +134,7 @@ func Test_StatefulSetStatus(t *testing.T) {
 		u := testutil.ToUnstructured(t, &p)
 		podList = append(podList, u)
 	}
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  "testing",
 		APIVersion: "v1",
 		Kind:       "Pod",

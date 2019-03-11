@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/conversion"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/view/component"
@@ -155,7 +155,7 @@ func createJobListView(ctx context.Context, object runtime.Object, options Optio
 		return nil, errors.Wrap(err, "get name for object")
 	}
 
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  namespace,
 		APIVersion: "batch/v1beta1",
 		Kind:       "Job",

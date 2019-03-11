@@ -12,6 +12,7 @@ import (
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
+	"go.opencensus.io/trace"
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/discovery"
 )
@@ -107,6 +108,9 @@ func (e *notFoundError) Error() string {
 }
 
 func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace string, opts GeneratorOptions) (component.ContentResponse, error) {
+	ctx, span := trace.StartSpan(ctx, "Generate")
+	defer span.End()
+
 	pf, err := g.pathMatcher.Find(path)
 	if err != nil {
 		if err == errPathNotFound {

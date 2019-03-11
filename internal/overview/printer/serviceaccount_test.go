@@ -9,9 +9,9 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"github.com/heptio/developer-dash/internal/cache"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	fakecache "github.com/heptio/developer-dash/internal/cache/fake"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
@@ -73,7 +73,7 @@ func Test_printServiceAccountConfig(t *testing.T) {
 	object.Secrets = []corev1.ObjectReference{{Name: "secret"}}
 	object.ImagePullSecrets = []corev1.LocalObjectReference{{Name: "secret"}}
 
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  object.Namespace,
 		APIVersion: "v1",
 		Kind:       "Secret",

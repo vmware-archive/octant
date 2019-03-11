@@ -6,27 +6,26 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/queryer"
-
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
 	"github.com/heptio/developer-dash/internal/cache"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/overview/resourceviewer"
 	"github.com/heptio/developer-dash/internal/overview/yamlviewer"
+	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	kcache "k8s.io/client-go/tools/cache"
 )
 
 func customResourceDefinitionNames(ctx context.Context, c cache.Cache) ([]string, error) {
-	key := cache.Key{
+	key := cacheutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
@@ -52,7 +51,7 @@ func customResourceDefinitionNames(ctx context.Context, c cache.Cache) ([]string
 }
 
 func customResourceDefinition(ctx context.Context, name string, c cache.Cache) (*apiextv1beta1.CustomResourceDefinition, error) {
-	key := cache.Key{
+	key := cacheutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 		Name:       name,
@@ -197,7 +196,7 @@ func listCustomResources(
 
 	apiVersion, kind := gvk.ToAPIVersionAndKind()
 
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  namespace,
 		APIVersion: apiVersion,
 		Kind:       kind,
@@ -263,7 +262,7 @@ func (cd *crdDescriber) Describe(ctx context.Context, prefix, namespace string, 
 
 	apiVersion, kind := gvk.ToAPIVersionAndKind()
 
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  namespace,
 		APIVersion: apiVersion,
 		Kind:       kind,
@@ -357,7 +356,7 @@ func watchCRDs(ctx context.Context, c cache.Cache, crdAddFunc, crdDeleteFunc obj
 		}
 	}
 
-	key := cache.Key{
+	key := cacheutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}

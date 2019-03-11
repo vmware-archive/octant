@@ -36,7 +36,6 @@ type ClusterOverview struct {
 }
 
 // NewClusterOverview creates an instance of ClusterOverview.
-// TODO: why does cache get passed in here?
 func NewClusterOverview(ctx context.Context, client cluster.ClientInterface, c cache.Cache, namespace string, logger log.Logger) (*ClusterOverview, error) {
 	if client == nil {
 		return nil, errors.New("nil cluster client")
@@ -45,11 +44,6 @@ func NewClusterOverview(ctx context.Context, client cluster.ClientInterface, c c
 	di, err := client.DiscoveryClient()
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating DiscoveryClient")
-	}
-
-	informerCache, err := cache.NewDynamicCache(client, ctx.Done())
-	if err != nil {
-		return nil, errors.Wrapf(err, "create cache")
 	}
 
 	pm := newPathMatcher()
@@ -78,7 +72,7 @@ func NewClusterOverview(ctx context.Context, client cluster.ClientInterface, c c
 		}
 	}(pm, customResourcesDescriber)
 
-	go watchCRDs(ctx, informerCache, crdAddFunc, crdDeleteFunc)
+	go watchCRDs(ctx, c, crdAddFunc, crdDeleteFunc)
 
 	// Port Forwarding
 	restClient, err := client.RESTClient()

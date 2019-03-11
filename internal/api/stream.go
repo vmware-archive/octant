@@ -157,6 +157,7 @@ type contentStreamer struct {
 	w               http.ResponseWriter
 	streamFn        streamFn
 	logger          log.Logger
+	contentPath     string
 }
 
 func (cs *contentStreamer) content(ctx context.Context) error {
@@ -209,6 +210,7 @@ func (cs *contentStreamer) content(ctx context.Context) error {
 					cs.logger.With(
 						"elapsed", time.Since(now),
 						"generator", eg.Name(),
+						"contentPath", cs.contentPath,
 					).Debugf("generate complete")
 					ch <- e
 

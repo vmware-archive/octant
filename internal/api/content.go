@@ -138,6 +138,7 @@ func (h *contentHandler) handlePoll(ctx context.Context, poll, namespace string,
 		w:               w,
 		logger:          h.logger,
 		streamFn:        stream,
+		contentPath:     contentPath,
 	}
 
 	if err = cs.content(ctx); err != nil {

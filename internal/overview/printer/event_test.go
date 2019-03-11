@@ -5,18 +5,15 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
 	"github.com/golang/mock/gomock"
-
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/heptio/developer-dash/internal/cache"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 func Test_EventListHandler(t *testing.T) {
@@ -281,7 +278,7 @@ func Test_eventsForObject(t *testing.T) {
 	defer controller.Finish()
 
 	c := cachefake.NewMockCache(controller)
-	key := cache.Key{
+	key := cacheutil.Key{
 		Namespace:  "default",
 		APIVersion: "v1",
 		Kind:       "Event",

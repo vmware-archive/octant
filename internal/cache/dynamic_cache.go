@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/util/retry"
 	"github.com/pkg/errors"
@@ -33,6 +34,32 @@ func initDynamicSharedInformerFactory(client cluster.ClientInterface) (dynamicin
 
 	factory := dynamicinformer.NewDynamicSharedInformerFactory(dynamicClient, defaultInformerResync)
 	return factory, nil
+}
+
+func currentInformer(
+	key cacheutil.Key,
+	client cluster.ClientInterface,
+	factory dynamicinformer.DynamicSharedInformerFactory,
+	stopCh <-chan struct{}) (informers.GenericInformer, error) {
+	if factory == nil {
+		return nil, errors.New("dynamic shared informer factory is nil")
+	}
+
+	if client == nil {
+		return nil, errors.New("cluster client is nil")
+	}
+
+	gvk := key.GroupVersionKind()
+
+	gvr, err := client.Resource(gvk.GroupKind())
+	if err != nil {
+		return nil, err
+	}
+
+	informer := factory.ForResource(gvr)
+	factory.Start(stopCh)
+
+	return informer, nil
 }
 
 // DynamicCacheOpt is an option for configuration DynamicCache.
@@ -77,16 +104,13 @@ type lister interface {
 	List(selector kLabels.Selector) ([]kruntime.Object, error)
 }
 
-func (dc *DynamicCache) currentInformer(key Key) (informers.GenericInformer, error) {
-	gvk := schema.FromAPIVersionAndKind(key.APIVersion, key.Kind)
+func (dc *DynamicCache) currentInformer(key cacheutil.Key) (informers.GenericInformer, error) {
+	gvk := key.GroupVersionKind()
 
-	gvr, err := dc.client.Resource(gvk.GroupKind())
+	informer, err := currentInformer(key, dc.client, dc.factory, dc.stopCh)
 	if err != nil {
 		return nil, err
 	}
-
-	informer := dc.factory.ForResource(gvr)
-	dc.factory.Start(dc.stopCh)
 
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
@@ -106,7 +130,7 @@ func (dc *DynamicCache) currentInformer(key Key) (informers.GenericInformer, err
 }
 
 // List lists objects.
-func (dc *DynamicCache) List(ctx context.Context, key Key) ([]*unstructured.Unstructured, error) {
+func (dc *DynamicCache) List(ctx context.Context, key cacheutil.Key) ([]*unstructured.Unstructured, error) {
 	ctx, span := trace.StartSpan(ctx, "dynamicCacheList")
 	defer span.End()
 
@@ -155,7 +179,7 @@ type getter interface {
 }
 
 // Get retrieves a single object.
-func (dc *DynamicCache) Get(ctx context.Context, key Key) (*unstructured.Unstructured, error) {
+func (dc *DynamicCache) Get(ctx context.Context, key cacheutil.Key) (*unstructured.Unstructured, error) {
 	ctx, span := trace.StartSpan(ctx, "dynamicCacheList")
 	defer span.End()
 
@@ -226,7 +250,7 @@ func (dc *DynamicCache) Get(ctx context.Context, key Key) (*unstructured.Unstruc
 
 // Watch watches the cluster for an event and performs actions with the
 // supplied handler.
-func (dc *DynamicCache) Watch(key Key, handler kcache.ResourceEventHandler) error {
+func (dc *DynamicCache) Watch(key cacheutil.Key, handler kcache.ResourceEventHandler) error {
 	informer, err := dc.currentInformer(key)
 	if err != nil {
 		return errors.Wrapf(err, "retrieving informer for %s", key)

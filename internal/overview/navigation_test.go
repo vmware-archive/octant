@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/heptio/developer-dash/internal/cache"
 	fakecache "github.com/heptio/developer-dash/internal/cache/fake"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/overview"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,7 +18,7 @@ func Test_NavigationFactory_Entries(t *testing.T) {
 	defer controller.Finish()
 	c := fakecache.NewMockCache(controller)
 
-	key := cache.Key{
+	key := cacheutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
@@ -43,7 +43,7 @@ func Test_NavigationFactory_Entries_Namespace(t *testing.T) {
 	defer controller.Finish()
 	c := fakecache.NewMockCache(controller)
 
-	key := cache.Key{
+	key := cacheutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}

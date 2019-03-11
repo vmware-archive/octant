@@ -6,9 +6,8 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/heptio/developer-dash/internal/cache"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	fakecache "github.com/heptio/developer-dash/internal/cache/fake"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -214,9 +213,9 @@ func Test_serviceEndpoints(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	c := fakecache.NewMockCache(ctrl)
+	c := cachefake.NewMockCache(ctrl)
 
-	key := cache.Key{Namespace: "default", APIVersion: "v1", Kind: "Endpoints", Name: "service"}
+	key := cacheutil.Key{Namespace: "default", APIVersion: "v1", Kind: "Endpoints", Name: "service"}
 	c.EXPECT().
 		Get(gomock.Any(), gomock.Eq(key)).
 		Return(toUnstructured(t, endpoints), nil)

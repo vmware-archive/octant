@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/heptio/developer-dash/internal/cache"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
@@ -20,7 +20,7 @@ import (
 
 func TestListDescriber(t *testing.T) {
 	thePath := "/"
-	key := cache.Key{APIVersion: "v1", Kind: "Pod"}
+	key := cacheutil.Key{APIVersion: "v1", Kind: "Pod"}
 	namespace := "default"
 	fields := map[string]string{}
 
@@ -33,7 +33,7 @@ func TestListDescriber(t *testing.T) {
 
 	client := clusterfake.NewMockClientInterface(controller)
 
-	retrieveKey := cache.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
+	retrieveKey := cacheutil.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
 	object := map[string]interface{}{
 		"kind":       "Pod",
 		"apiVersion": "v1",
@@ -87,7 +87,7 @@ func TestListDescriber(t *testing.T) {
 
 func TestObjectDescriber(t *testing.T) {
 	thePath := "/"
-	key := cache.Key{APIVersion: "v1", Kind: "Pod"}
+	key := cacheutil.Key{APIVersion: "v1", Kind: "Pod"}
 	namespace := "default"
 	fields := map[string]string{}
 
@@ -119,7 +119,7 @@ func TestObjectDescriber(t *testing.T) {
 		},
 	}
 
-	retrieveKey := cache.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
+	retrieveKey := cacheutil.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
 
 	c.EXPECT().
 		Get(gomock.Any(), gomock.Eq(retrieveKey)).
