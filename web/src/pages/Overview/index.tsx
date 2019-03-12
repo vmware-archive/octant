@@ -14,9 +14,7 @@ interface Props extends RouteComponentProps {
   isLoading: boolean
   hasError: boolean
   errorMessage: string
-
   data: JSONContentResponse
-
   setError(hasError: boolean, errorMessage?: string): void
 }
 
@@ -42,18 +40,20 @@ class Overview extends Component<Props> {
 
     let title: TitleView
     let mainContent = <div />
-    if (isLoading) {
-      mainContent = (
-        <div className='loading-parent'>
-          <Loading />
-        </div>
-      )
-    } else if (data) {
-      title = data.title
-      mainContent = <Renderer views={data.views} />
-    } else {
-      // no views or an error
+
+    if (hasError) {
       mainContent = this.renderUnknownContent(hasError)
+    } else {
+      if (isLoading) {
+        mainContent = (
+          <div className='loading-parent'>
+            <Loading />
+          </div>
+        )
+      } else if (data) {
+        title = data.title
+        mainContent = <Renderer views={data.views} />
+      }
     }
 
     return (

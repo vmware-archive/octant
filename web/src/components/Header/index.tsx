@@ -18,16 +18,6 @@ export default class extends Component<Props> {
     tags: [],
   }
 
-  namespaces() {
-    return this.props.namespaceOptions.map((option, i) => {
-      return (
-        <option key={i} value={option.value}>
-          {option.label}
-        </option>
-      )
-    })
-  }
-
   render() {
     const { namespaceOptions, namespaceValue, onNamespaceChange, resourceFilters, onResourceFiltersChange } = this.props
     return (
