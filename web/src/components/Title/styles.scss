@@ -4,16 +4,17 @@
   align-items: center;
   background-color: $blue-dark;
   display: flex;
-  height: 50px;
-  padding-left: 50px;
+  height: 54px;
+  padding: 12px 0 12px 50px;
   position: fixed;
   width: 100%;
   z-index: 5;
+  border-bottom: 1px solid $dividerColor;
 
   h2 {
     @include metropolis;
     @include normal;
-    font-size: 18px;
+    font-size: 25px;
 
     span:last-child {
       font-weight: 600;
