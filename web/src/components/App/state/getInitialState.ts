@@ -13,11 +13,14 @@ interface InitialState {
   namespaceOptions?: NamespaceOption[]
 }
 
+const namespaceRe = /\/content\/overview\/namespace\/([A-Za-z-]+)\//ig
+
 export default async function(currentPathname): Promise<InitialState> {
-  let navigation, namespaces, namespace
+  let navigation, namespaces, namespace: string
+
   try {
     // tslint:disable-next-line
-    ;[navigation, namespaces, namespace] = await PromisePolyfill.all([getNavigation(), getNamespaces(), getNamespace()])
+    ;[navigation, namespaces] = await PromisePolyfill.all([getNavigation(), getNamespaces()])
   } catch (e) {
     return { isLoading: false, hasError: true }
   }
@@ -27,6 +30,11 @@ export default async function(currentPathname): Promise<InitialState> {
     currentNavLinkPath: getNavLinkPath(navigation, currentPathname),
   }
 
+  const matches = namespaceRe.exec(currentPathname)
+  if (matches && matches.length > 1) {
+    namespace = matches[1]
+  }
+
   if (namespaces && namespaces.namespaces && namespaces.namespaces.length) {
     initialState.namespaceOptions = namespaces.namespaces.map((ns) => ({
       label: ns,
@@ -34,13 +42,11 @@ export default async function(currentPathname): Promise<InitialState> {
     }))
   }
 
-  if (namespace && initialState.namespaceOptions.length) {
-    const option: NamespaceOption = _.find(initialState.namespaceOptions, {
-      value: namespace.namespace as string,
-    })
+  const option: NamespaceOption = _.find(initialState.namespaceOptions, {
+    value: namespace,
+  })
 
-    initialState.namespaceOption = option ? option : { label: 'default', value: 'default' }
-  }
+  initialState.namespaceOption = option ? option : { label: 'default', value: 'default' }
 
   return initialState
 }
