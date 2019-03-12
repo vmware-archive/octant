@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"strings"
@@ -81,18 +82,20 @@ func printCustomCRDListTable(name, namespace string,
 	return table, nil
 }
 
-func printCustomColumn(m map[string]interface{}, column apiextv1beta1.CustomResourceColumnDefinition) (string, error) {
+func printCustomColumn(m interface{}, column apiextv1beta1.CustomResourceColumnDefinition) (string, error) {
 	j := jsonpath.New(column.Name)
-	if err := j.Parse(fmt.Sprintf("{%s}", column.JSONPath)); err != nil {
-		return "", errors.Wrap(err, "parsing jsonpath")
+	buf := bytes.Buffer{}
+
+	s := strings.Replace(column.JSONPath, "\\", "", -1)
+
+	if err := j.Parse(fmt.Sprintf("{%s}", s)); err != nil {
+		return "", err
+	}
+	if err := j.Execute(&buf, m); err != nil {
+		return "", err
 	}
 
-	var sb strings.Builder
-	if err := j.Execute(&sb, m); err != nil {
-		return "", nil
-	}
-
-	return sb.String(), nil
+	return buf.String(), nil
 }
 
 // CustomResourceHandler prints custom resource objects. If the
