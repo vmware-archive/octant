@@ -5,11 +5,6 @@ import (
 	"sort"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/dynamic/dynamicinformer"
-
 	"github.com/golang/mock/gomock"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
@@ -18,6 +13,11 @@ import (
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/dynamic/dynamicinformer"
 )
 
 type watchMocks struct {
@@ -147,6 +147,68 @@ func Test_WatchList_cached(t *testing.T) {
 	expected := []*unstructured.Unstructured{
 		testutil.ToUnstructured(t, pod1),
 		testutil.ToUnstructured(t, pod2),
+	}
+
+	sort.Slice(got, func(i, j int) bool {
+		return got[i].GetName() < got[j].GetName()
+	})
+
+	assert.Equal(t, expected, got)
+}
+
+func Test_WatchList_cached_with_selector(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	mocks := newWatchMocks(t)
+	defer mocks.controller.Finish()
+
+	pod1 := testutil.CreatePod("pod1")
+	pod1.Namespace = "test"
+	pod1.Labels = map[string]string{
+		"app": "app1",
+	}
+	pod2 := testutil.CreatePod("pod2")
+	pod2.Namespace = "test"
+
+	ls := labels.Set{
+		"app": "app1",
+	}
+
+	listKey := cacheutil.Key{
+		Namespace:  "test",
+		APIVersion: "v1",
+		Kind:       "Pod",
+		Selector:   ls.AsSelector(),
+	}
+
+	factoryFunc := func(c *Watch) {
+		c.initFactoryFunc = func(cluster.ClientInterface) (dynamicinformer.DynamicSharedInformerFactory, error) {
+			return mocks.informerFactory, nil
+		}
+	}
+
+	setBackendFunc := func(w *Watch) {
+		w.backendCache = mocks.backendCache
+	}
+
+	cacheKeyFunc := func(w *Watch) {
+		gvk := listKey.GroupVersionKind()
+		w.watchedGVKs[gvk] = true
+		w.cachedObjects[gvk] = map[types.UID]*unstructured.Unstructured{
+			pod1.UID: testutil.ToUnstructured(t, pod1),
+			pod2.UID: testutil.ToUnstructured(t, pod2),
+		}
+	}
+
+	watch, err := NewWatch(mocks.client, ctx.Done(), factoryFunc, setBackendFunc, cacheKeyFunc)
+	require.NoError(t, err)
+
+	got, err := watch.List(ctx, listKey)
+	require.NoError(t, err)
+
+	expected := []*unstructured.Unstructured{
+		testutil.ToUnstructured(t, pod1),
 	}
 
 	sort.Slice(got, func(i, j int) bool {

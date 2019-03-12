@@ -4,6 +4,8 @@ import (
 	"context"
 	"sync"
 
+	"k8s.io/apimachinery/pkg/labels"
+
 	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/pkg/errors"
@@ -90,12 +92,20 @@ func (w *Watch) List(ctx context.Context, key cacheutil.Key) ([]*unstructured.Un
 	if w.isKeyCached(key) {
 		var filteredObjects []*unstructured.Unstructured
 
+		selector := key.Selector
+		if selector == nil {
+			selector = labels.Everything()
+		}
+
 		w.objectLock.RLock()
 		defer w.objectLock.RUnlock()
 		cachedObjects := w.cachedObjects[gvk]
 		for _, object := range cachedObjects {
 			if key.Namespace == object.GetNamespace() {
-				filteredObjects = append(filteredObjects, object)
+				objectLabels := labels.Set(object.GetLabels())
+				if selector.Matches(objectLabels) {
+					filteredObjects = append(filteredObjects, object)
+				}
 			}
 		}
 
