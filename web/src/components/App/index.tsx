@@ -95,7 +95,7 @@ class App extends Component<RouteComponentProps, AppState> {
     const url = getContentsUrl(path, namespace, params)
 
     this.source = new window.EventSource(`${getAPIBase()}/${url}`)
-    this.setState({ isLoading: true })
+    this.setState({ isLoading: true, hasError: false, contentResponse: null })
 
     this.source.addEventListener('message', (e) => {
       const contentResponse = Parse(e.data)
@@ -103,6 +103,7 @@ class App extends Component<RouteComponentProps, AppState> {
       this.setState({
         contentResponse,
         isLoading: false,
+        hasError: false,
       })
     })
 
@@ -212,6 +213,7 @@ class App extends Component<RouteComponentProps, AppState> {
       namespaceOption,
       title,
       resourceFilters,
+      contentResponse,
     } = this.state
 
     let currentNamespace = null
@@ -257,7 +259,7 @@ class App extends Component<RouteComponentProps, AppState> {
                       hasError={hasError}
                       errorMessage={errorMessage}
                       setError={this.setError}
-                      data={this.state.contentResponse}
+                      data={contentResponse}
                     />
                   )}
                 />
