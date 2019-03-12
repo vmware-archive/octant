@@ -66,6 +66,9 @@ func New(c cache.Cache, discoveryClient discovery.DiscoveryInterface) *CacheQuer
 }
 
 func (cq *CacheQueryer) Children(ctx context.Context, owner metav1.Object) ([]kruntime.Object, error) {
+	cq.mu.Lock()
+	defer cq.mu.Unlock()
+
 	if owner == nil {
 		return nil, errors.New("owner is nil")
 	}
@@ -74,6 +77,7 @@ func (cq *CacheQueryer) Children(ctx context.Context, owner metav1.Object) ([]kr
 	defer span.End()
 
 	cached, ok := cq.children[owner.GetUID()]
+
 	if ok {
 		return cached, nil
 	}
@@ -143,9 +147,7 @@ func (cq *CacheQueryer) Children(ctx context.Context, owner metav1.Object) ([]kr
 
 	close(ch)
 
-	cq.mu.Lock()
 	cq.children[owner.GetUID()] = children
-	cq.mu.Unlock()
 
 	return children, nil
 }
