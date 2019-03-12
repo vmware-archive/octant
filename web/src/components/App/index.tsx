@@ -185,14 +185,15 @@ class App extends Component<RouteComponentProps, AppState> {
     this.setEventSourceStream(location.pathname, namespaceOption.value)
   }
 
-  onTagsChange = (newFilterTags) => {
-    this.setState({ resourceFilters: newFilterTags }, this.refreshEventStream)
+  onResourceFiltersChange = (newFilterTags) => {
+    const newResourceFilters = _.uniq(newFilterTags) as string[]
+    this.setState({ resourceFilters: newResourceFilters }, this.refreshEventStream)
   }
 
   onLabelClick = (key: string, value: string) => {
     const tag = `${key}:${value}`
     const { resourceFilters } = this.state
-    this.setState({ resourceFilters: [...resourceFilters, tag] }, this.refreshEventStream)
+    this.onResourceFiltersChange([...resourceFilters, tag])
   }
 
   setError = (hasError: boolean, errorMessage?: string): void => {
@@ -233,7 +234,7 @@ class App extends Component<RouteComponentProps, AppState> {
           namespaceValue={namespaceOption}
           onNamespaceChange={this.onNamespaceChange}
           resourceFilters={resourceFilters}
-          onResourceFiltersChange={this.onTagsChange}
+          onResourceFiltersChange={this.onResourceFiltersChange}
         />
         <ResourceFiltersContext.Provider value={{ onLabelClick: this.onLabelClick }}>
           <div className='app-page'>

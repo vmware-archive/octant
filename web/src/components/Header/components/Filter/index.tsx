@@ -44,13 +44,18 @@ export default class Filter extends Component<Props, State> {
   render() {
     const { resourceFilters, onResourceFiltersChange } = this.props;
     const { inputValue, showFilters } = this.state
+    const numOfFilters = resourceFilters ? resourceFilters.length : 0
+    let placeholderText = 'Filter by label'
+    if (numOfFilters > 0) {
+      placeholderText += ` (${numOfFilters} filter${numOfFilters > 1 ? 's' : ''} applied)`
+    }
     return (
       <div className='header-filter-component'  ref={this.node}>
         <div className='header-filter-input-wrapper'>
           <div className='header-filter-input'>
             <input
               type='text'
-              placeholder='Filter by label'
+              placeholder={placeholderText}
               value={inputValue}
               onChange={(evt) => {
                 this.setState({ inputValue: evt.currentTarget.value })
