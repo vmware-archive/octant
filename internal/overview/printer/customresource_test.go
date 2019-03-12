@@ -187,6 +187,63 @@ func Test_printResourceStatus(t *testing.T) {
 	}
 }
 
+func Test_printCustomColumn(t *testing.T) {
+	cases := []struct {
+		name       string
+		objectPath string
+		jsonPath   string
+		expected   string
+		isErr      bool
+	}{
+		{
+			name:       "simple",
+			objectPath: "certificate.yaml",
+			jsonPath:   ".metadata.name",
+			expected:   "kubecon-panel",
+		},
+		{
+			name:       "with a filter",
+			objectPath: "certificate.yaml",
+			jsonPath:   ".status.conditions[?(@.type==\"Ready\")].status",
+			expected:   "True",
+		},
+		{
+			name:       "invalid json path",
+			objectPath: "certificate.yaml",
+			jsonPath:   ".status.conditions[?(@.type==\"Ready\"].status",
+			isErr:      true,
+		},
+		{
+			name:       "execute error",
+			objectPath: "certificate.yaml",
+			jsonPath:   ".missing",
+			isErr:      true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			resource := loadCRFromFile(t, tc.objectPath)
+
+			def := apiextv1beta1.CustomResourceColumnDefinition{
+				Name:     "name",
+				JSONPath: tc.jsonPath,
+			}
+
+			got, err := printCustomColumn(resource.Object, def)
+			if tc.isErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.expected, got)
+		})
+	}
+
+}
+
 func loadCRDFromFile(t *testing.T, filename string) *apiextv1beta1.CustomResourceDefinition {
 	crd := testutil.CreateCRD("crd")
 	testutil.LoadTypedObjectFromFile(t, filename, crd)

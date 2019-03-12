@@ -1,0 +1,37 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  creationTimestamp: "2019-03-12T17:03:42Z"
+  generation: 1
+  name: kubecon-panel
+  namespace: kubecon-panel
+  ownerReferences:
+  - apiVersion: extensions/v1beta1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Ingress
+    name: kubecon-panel
+    uid: c9d78310-44e8-11e9-9216-46cee21f0af4
+  resourceVersion: "10394240"
+  selfLink: /apis/certmanager.k8s.io/v1alpha1/namespaces/kubecon-panel/certificates/kubecon-panel
+  uid: c9da0b57-44e8-11e9-9216-46cee21f0af4
+spec:
+  acme:
+    config:
+    - domains:
+      - kubecon.pifft.com
+      http01: {}
+  dnsNames:
+  - kubecon.pifft.com
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  secretName: kubecon-panel
+status:
+  conditions:
+  - lastTransitionTime: "2019-03-12T17:03:42Z"
+    message: Certificate is up to date and has not expired
+    reason: Ready
+    status: "True"
+    type: Ready
+  notAfter: "2019-06-10T15:16:35Z"
