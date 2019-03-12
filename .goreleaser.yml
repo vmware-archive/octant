@@ -6,7 +6,7 @@ before:
   - make web-build
 project_name: sugarloaf
 builds:
-- main: ./cmd/hcli/main.go
+- main: ./cmd/sugarloaf/main.go
   binary: sugarloaf
   env:
     - CGO_ENABLED=0
