@@ -13,7 +13,6 @@ import (
 	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 func TestManager(t *testing.T) {
@@ -37,19 +36,6 @@ func TestManager(t *testing.T) {
 
 	manager.SetNamespace("other")
 	manager.Unload()
-}
-
-func newUnstructured(apiVersion, kind, namespace, name string) *unstructured.Unstructured {
-	return &unstructured.Unstructured{
-		Object: map[string]interface{}{
-			"apiVersion": apiVersion,
-			"kind":       kind,
-			"metadata": map[string]interface{}{
-				"namespace": namespace,
-				"name":      name,
-			},
-		},
-	}
 }
 
 type stubModule struct{}

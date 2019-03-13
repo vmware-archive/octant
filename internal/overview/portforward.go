@@ -59,7 +59,7 @@ func (e *portForwardError) Error() string {
 	return e.message
 }
 
-func createPortforward(ctx context.Context, body io.Reader, pfs portforward.PortForwardInterface, w http.ResponseWriter) error {
+func createPortforward(ctx context.Context, body io.Reader, pfs portforward.PortForwarder, w http.ResponseWriter) error {
 	if pfs == nil {
 		return errors.New("portforward service is nil")
 	}
@@ -97,7 +97,7 @@ func createPortforward(ctx context.Context, body io.Reader, pfs portforward.Port
 	return nil
 }
 
-func deletePortForward(ctx context.Context, id string, pfs portforward.PortForwardInterface, w http.ResponseWriter) error {
+func deletePortForward(ctx context.Context, id string, pfs portforward.PortForwarder, w http.ResponseWriter) error {
 	if pfs == nil {
 		return errors.New("portforward service is nil")
 	}
@@ -123,5 +123,4 @@ func handlePortforwardError(w http.ResponseWriter, err error, logger log.Logger)
 	}
 
 	api.RespondWithError(w, code, message, logger)
-	return
 }

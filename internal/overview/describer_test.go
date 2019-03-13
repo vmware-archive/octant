@@ -29,7 +29,7 @@ func TestListDescriber(t *testing.T) {
 
 	c := cachefake.NewMockCache(controller)
 
-	pf := pffake.NewMockPortForwardInterface(controller)
+	pf := pffake.NewMockPortForwarder(controller)
 
 	client := clusterfake.NewMockClientInterface(controller)
 
@@ -96,7 +96,7 @@ func TestObjectDescriber(t *testing.T) {
 
 	c := cachefake.NewMockCache(controller)
 	clusterClient := clusterfake.NewMockClientInterface(controller)
-	pf := pffake.NewMockPortForwardInterface(controller)
+	pf := pffake.NewMockPortForwarder(controller)
 
 	object := &unstructured.Unstructured{
 		Object: map[string]interface{}{

@@ -2,7 +2,6 @@ package overview
 
 import (
 	"context"
-	"fmt"
 	"path"
 	"reflect"
 
@@ -10,16 +9,7 @@ import (
 	"github.com/heptio/developer-dash/internal/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/content"
 )
-
-func resourceLink(sectionType, resourceType string) lookupFunc {
-	return func(namespace, prefix string, cell interface{}) content.Text {
-		name := fmt.Sprintf("%v", cell)
-		resourcePath := path.Join("/content", "overview", sectionType, resourceType, name)
-		return content.NewLinkText(name, resourcePath)
-	}
-}
 
 type ResourceTitle struct {
 	List   string
@@ -84,23 +74,4 @@ func (r *Resource) PathFilters() []pathFilter {
 	}
 
 	return filters
-}
-
-var defaultTransforms = map[string]lookupFunc{
-	"Labels": func(namespace, prefix string, cell interface{}) content.Text {
-		text := fmt.Sprintf("%v", cell)
-		return content.NewStringText(text)
-	},
-}
-
-func buildTransforms(transforms map[string]lookupFunc) map[string]lookupFunc {
-	m := make(map[string]lookupFunc)
-	for k, v := range defaultTransforms {
-		m[k] = v
-	}
-	for k, v := range transforms {
-		m[k] = v
-	}
-
-	return m
 }

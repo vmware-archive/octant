@@ -131,7 +131,7 @@ func (dc *DynamicCache) currentInformer(key cacheutil.Key) (informers.GenericInf
 
 // List lists objects.
 func (dc *DynamicCache) List(ctx context.Context, key cacheutil.Key) ([]*unstructured.Unstructured, error) {
-	ctx, span := trace.StartSpan(ctx, "dynamicCacheList")
+	_, span := trace.StartSpan(ctx, "dynamicCacheList")
 	defer span.End()
 
 	span.Annotate([]trace.Attribute{
@@ -180,7 +180,7 @@ type getter interface {
 
 // Get retrieves a single object.
 func (dc *DynamicCache) Get(ctx context.Context, key cacheutil.Key) (*unstructured.Unstructured, error) {
-	ctx, span := trace.StartSpan(ctx, "dynamicCacheList")
+	_, span := trace.StartSpan(ctx, "dynamicCacheList")
 	defer span.End()
 
 	span.Annotate([]trace.Attribute{
