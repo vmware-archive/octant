@@ -52,7 +52,7 @@ func NewPortForwardListDescriber() *PortForwardListDescriber {
 	return &PortForwardListDescriber{}
 }
 
-func describePortForwardPorts(pf portforward.PortForwardState) component.ViewComponent {
+func describePortForwardPorts(pf portforward.State) component.ViewComponent {
 	lst := component.NewList("", nil)
 
 	for _, p := range pf.Ports {

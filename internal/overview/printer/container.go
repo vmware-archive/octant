@@ -21,12 +21,12 @@ import (
 type ContainerConfiguration struct {
 	parent             runtime.Object
 	container          *corev1.Container
-	portForwardService portforward.PortForwardInterface
+	portForwardService portforward.PortForwarder
 	isInit             bool
 }
 
 // NewContainerConfiguration creates an instance of ContainerConfiguration.
-func NewContainerConfiguration(parent runtime.Object, c *corev1.Container, pfs portforward.PortForwardInterface, isInit bool) *ContainerConfiguration {
+func NewContainerConfiguration(parent runtime.Object, c *corev1.Container, pfs portforward.PortForwarder, isInit bool) *ContainerConfiguration {
 	return &ContainerConfiguration{
 		parent:             parent,
 		container:          c,
@@ -97,23 +97,10 @@ type notFound interface {
 	NotFound() bool
 }
 
-func isNotFound(err error) bool {
-	if err == nil {
-		return false
-	}
-
-	notFoundErr, ok := errors.Cause(err).(notFound)
-	if !ok {
-		return false
-	}
-
-	return notFoundErr.NotFound()
-}
-
 func describeContainerPorts(
 	parent runtime.Object,
 	cPorts []corev1.ContainerPort,
-	portForwardService portforward.PortForwardInterface) ([]component.Port, error) {
+	portForwardService portforward.PortForwarder) ([]component.Port, error) {
 	var list []component.Port
 
 	var namespace string

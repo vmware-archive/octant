@@ -60,7 +60,7 @@ func Test_Resource_Print(t *testing.T) {
 			defer controller.Finish()
 
 			c := cachefake.NewMockCache(controller)
-			pf := pffake.NewMockPortForwardInterface(controller)
+			pf := pffake.NewMockPortForwarder(controller)
 
 			p := NewResource(c, pf)
 
@@ -124,7 +124,7 @@ func Test_Resource_Handler(t *testing.T) {
 			defer controller.Finish()
 
 			c := cachefake.NewMockCache(controller)
-			pf := pffake.NewMockPortForwardInterface(controller)
+			pf := pffake.NewMockPortForwarder(controller)
 
 			p := NewResource(c, pf)
 
@@ -149,7 +149,7 @@ func Test_Resource_DuplicateHandler(t *testing.T) {
 	defer controller.Finish()
 
 	c := cachefake.NewMockCache(controller)
-	pf := pffake.NewMockPortForwardInterface(controller)
+	pf := pffake.NewMockPortForwarder(controller)
 
 	p := NewResource(c, pf)
 

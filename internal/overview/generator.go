@@ -62,17 +62,17 @@ type realGenerator struct {
 	pathMatcher        *pathMatcher
 	clusterClient      cluster.ClientInterface
 	printer            printer.Printer
-	portForwardSvc     portforward.PortForwardInterface
+	portForwardSvc     portforward.PortForwarder
 	discoveryInterface discovery.DiscoveryInterface
 }
 
 // GeneratorOptions are additional options to pass a generator
 type GeneratorOptions struct {
 	Selector       kLabels.Selector
-	PortForwardSvc portforward.PortForwardInterface
+	PortForwardSvc portforward.PortForwarder
 }
 
-func newGenerator(cache cache.Cache, di discovery.DiscoveryInterface, pm *pathMatcher, clusterClient cluster.ClientInterface, portForwardSvc portforward.PortForwardInterface) (*realGenerator, error) {
+func newGenerator(cache cache.Cache, di discovery.DiscoveryInterface, pm *pathMatcher, clusterClient cluster.ClientInterface, portForwardSvc portforward.PortForwarder) (*realGenerator, error) {
 	p := printer.NewResource(cache, portForwardSvc)
 
 	if err := AddPrintHandlers(p); err != nil {

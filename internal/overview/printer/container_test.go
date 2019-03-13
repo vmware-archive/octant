@@ -220,10 +220,10 @@ func Test_ContainerConfiguration(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			pf := pffake.NewMockPortForwardInterface(controller)
+			pf := pffake.NewMockPortForwarder(controller)
 			gvk := schema.GroupVersionKind{Version: "v1", Kind: "Pod"}
 
-			state := portforward.PortForwardState{}
+			state := portforward.State{}
 			pf.EXPECT().Find("namespace", gomock.Eq(gvk), "pod").Return(state, nil).AnyTimes()
 
 			parentPod := testutil.CreatePod("pod")

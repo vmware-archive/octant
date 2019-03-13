@@ -11,9 +11,9 @@ import (
 	"k8s.io/client-go/transport/spdy"
 )
 
+// Options contains all the options for running a port-forward
 // <snip> from pkg/kubectl/cmd/portforward/portforward.go <snip>
-// portForwardOptions contains all the options for running a port-forward
-type PortForwardOptions struct {
+type Options struct {
 	Config        *restclient.Config
 	RESTClient    rest.Interface
 	Address       []string
@@ -25,15 +25,13 @@ type PortForwardOptions struct {
 }
 
 type portForwarder interface {
-	ForwardPorts(method string, url *url.URL, opts PortForwardOptions) error
+	ForwardPorts(method string, url *url.URL, opts Options) error
 }
 
 type DefaultPortForwarder struct {
-	// genericclioptions.IOStreams
 	IOStreams
 }
 
-// (genericclioptions.IOStreams)
 // IOStreams provides the standard names for iostreams.  This is useful for embedding and for unit testing.
 // Inconsistent and different names make it hard to read and review code
 type IOStreams struct {
@@ -50,7 +48,7 @@ type ForwardedPort struct {
 	Remote uint16
 }
 
-func (f *DefaultPortForwarder) ForwardPorts(method string, url *url.URL, opts PortForwardOptions) error {
+func (f *DefaultPortForwarder) ForwardPorts(method string, url *url.URL, opts Options) error {
 	transport, upgrader, err := spdy.RoundTripperFor(opts.Config)
 	if err != nil {
 		return err
@@ -72,7 +70,7 @@ func (f *DefaultPortForwarder) ForwardPorts(method string, url *url.URL, opts Po
 
 // localPortsHandler manages passing up the resolved local ports from the forwarder when
 // they become available via the PortsChannel.
-func localPortsHandler(fw *portforward.PortForwarder, opts PortForwardOptions) {
+func localPortsHandler(fw *portforward.PortForwarder, opts Options) {
 	if fw == nil {
 		return
 	}

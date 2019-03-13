@@ -45,7 +45,7 @@ type DescriberOptions struct {
 	Fields         map[string]string
 	Printer        printer.Printer
 	Selector       kLabels.Selector
-	PortForwardSvc portforward.PortForwardInterface
+	PortForwardSvc portforward.PortForwarder
 }
 
 // Describer creates content.

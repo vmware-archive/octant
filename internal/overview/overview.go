@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"sync"
 	"time"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -26,13 +25,11 @@ import (
 
 // ClusterOverview is an API for generating a cluster overview.
 type ClusterOverview struct {
-	mu sync.Mutex
-
 	client         cluster.ClientInterface
 	logger         log.Logger
 	cache          cache.Cache
 	generator      *realGenerator
-	portForwardSvc portforward.PortForwardInterface
+	portForwardSvc portforward.PortForwarder
 }
 
 // NewClusterOverview creates an instance of ClusterOverview.
@@ -79,7 +76,7 @@ func NewClusterOverview(ctx context.Context, client cluster.ClientInterface, c c
 	if err != nil {
 		return nil, errors.Wrap(err, "fetching RESTClient")
 	}
-	pfOpts := portforward.PortForwardSvcOptions{
+	pfOpts := portforward.ServiceOptions{
 		RESTClient: restClient,
 		Config:     client.RESTConfig(),
 		Cache:      c,
@@ -92,7 +89,7 @@ func NewClusterOverview(ctx context.Context, client cluster.ClientInterface, c c
 			},
 		},
 	}
-	pfSvc := portforward.NewPortForwardService(ctx, pfOpts, logger)
+	pfSvc := portforward.New(ctx, pfOpts, logger)
 
 	g, err := newGenerator(c, di, pm, client, pfSvc)
 	if err != nil {

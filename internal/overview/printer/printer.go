@@ -20,7 +20,7 @@ import (
 // Options provides options to a print handler
 type Options struct {
 	Cache         cache.Cache
-	PortForward   portforward.PortForwardInterface
+	PortForward   portforward.PortForwarder
 	Selector      kLabels.Selector
 	DisableLabels bool
 }
@@ -35,13 +35,13 @@ type Printer interface {
 type Resource struct {
 	handlerMap  map[reflect.Type]reflect.Value
 	cache       cache.Cache
-	portForward portforward.PortForwardInterface
+	portForward portforward.PortForwarder
 }
 
 var _ Printer = (*Resource)(nil)
 
 // NewResource creates an instance of ResourcePrinter.
-func NewResource(c cache.Cache, portForwardService portforward.PortForwardInterface) *Resource {
+func NewResource(c cache.Cache, portForwardService portforward.PortForwarder) *Resource {
 	return &Resource{
 		handlerMap:  make(map[reflect.Type]reflect.Value),
 		cache:       c,
