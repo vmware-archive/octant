@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -215,8 +216,10 @@ func (d *dash) Run(ctx context.Context) error {
 
 	<-ctx.Done()
 
-	// TODO context is already done - pass a different one too allow time for graceful shutdown
-	return server.Shutdown(ctx)
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
+
+	return server.Shutdown(shutdownCtx)
 }
 
 // handler configures primary http routes
