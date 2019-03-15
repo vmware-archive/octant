@@ -68,15 +68,16 @@ func Test_CustomResourceListHandler_custom_columns(t *testing.T) {
 
 	expected := component.NewTableWithRows(
 		"crontabs.stable.example.com",
-		component.NewTableCols("Name", "Labels", "Spec", "Replicas", "Errors", "Age"),
+		component.NewTableCols("Name", "Labels", "Spec", "Replicas", "Errors", "Resource Age", "Age"),
 		[]component.TableRow{
 			{
-				"Name":     component.NewLink("", "my-crontab", "/content/overview/namespace/default/custom-resources/crontabs.stable.example.com/my-crontab"),
-				"Age":      component.NewTimestamp(now),
-				"Labels":   component.NewLabels(labels),
-				"Replicas": component.NewText("1"),
-				"Spec":     component.NewText("* * * * */5"),
-				"Errors":   component.NewText("1"),
+				"Name":         component.NewLink("", "my-crontab", "/content/overview/namespace/default/custom-resources/crontabs.stable.example.com/my-crontab"),
+				"Age":          component.NewTimestamp(now),
+				"Labels":       component.NewLabels(labels),
+				"Replicas":     component.NewText("1"),
+				"Spec":         component.NewText("* * * * */5"),
+				"Errors":       component.NewText("1"),
+				"Resource Age": component.NewText(resource.GetCreationTimestamp().UTC().Format(time.RFC3339)),
 			},
 		})
 

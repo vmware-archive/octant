@@ -6,6 +6,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cache"
 	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	dashstrings "github.com/heptio/developer-dash/internal/util/strings"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
@@ -117,8 +118,8 @@ func (cq *CacheQueryer) Children(ctx context.Context, owner metav1.Object) ([]kr
 				Kind:       apiResource.Kind,
 			}
 
-			if !containsString("watch", apiResource.Verbs) ||
-				!containsString("list", apiResource.Verbs) {
+			if !dashstrings.Contains("watch", apiResource.Verbs) ||
+				!dashstrings.Contains("list", apiResource.Verbs) {
 				continue
 			}
 
@@ -528,15 +529,5 @@ func containsBackend(lst []v1beta1.IngressBackend, s string) bool {
 			return true
 		}
 	}
-	return false
-}
-
-func containsString(s string, sl []string) bool {
-	for i := range sl {
-		if s == sl[i] {
-			return true
-		}
-	}
-
 	return false
 }
