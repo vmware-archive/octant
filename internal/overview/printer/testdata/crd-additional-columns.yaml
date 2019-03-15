@@ -25,4 +25,7 @@ spec:
       type: integer
       description: Errors in CronJob
       JSONPath: .status.errors
-
+    - name: Age
+      type: string
+      description: A custom timestamp
+      JSONPath: .metadata.creationTimestamp

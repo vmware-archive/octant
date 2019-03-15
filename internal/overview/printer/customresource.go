@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/client-go/util/jsonpath"
-
 	"github.com/heptio/developer-dash/internal/overview/link"
+	dashstrings "github.com/heptio/developer-dash/internal/util/strings"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/util/jsonpath"
 )
 
 // CustomResourceListHandler prints a list of custom resources with
@@ -54,7 +54,11 @@ func printCustomCRDListTable(name, namespace string,
 
 	table := component.NewTable(name, component.NewTableCols("Name", "Labels"))
 	for _, column := range crd.Spec.AdditionalPrinterColumns {
-		table.AddColumn(column.Name)
+		name := column.Name
+		if dashstrings.Contains(column.Name, []string{"Name", "Labels", "Age"}) {
+			name = fmt.Sprintf("Resource %s", column.Name)
+		}
+		table.AddColumn(name)
 	}
 
 	table.AddColumn("Age")
@@ -73,7 +77,14 @@ func printCustomCRDListTable(name, namespace string,
 					column.Name, crd.Name)
 			}
 
-			row[column.Name] = component.NewText(s)
+			name := column.Name
+
+			if _, ok := row[column.Name]; ok {
+				name = fmt.Sprintf("Resource %s", column.Name)
+			}
+
+			row[name] = component.NewText(s)
+
 		}
 
 		table.Add(row)

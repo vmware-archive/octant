@@ -8,11 +8,11 @@ import (
 	"sync"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/overview/link"
-
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/overview/objectstatus"
 	"github.com/heptio/developer-dash/internal/overview/objectvisitor"
+	dashstrings "github.com/heptio/developer-dash/internal/util/strings"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
@@ -227,7 +227,7 @@ func (c *Collector) AddChild(parent objectvisitor.ClusterObject, children ...obj
 			cid = string(id)
 		}
 
-		if !listContains(c.edges[string(pid)], cid) {
+		if !dashstrings.Contains(cid, c.edges[string(pid)]) {
 			c.edges[string(pid)] = append(c.edges[string(pid)], cid)
 		}
 	}
@@ -295,7 +295,7 @@ func (c *Collector) ViewComponent(selected string) (component.ViewComponent, err
 
 	for nodeID, edges := range c.edges {
 		for _, edgeID := range edges {
-			if listContains(nodeIDs, edgeID) {
+			if dashstrings.Contains(edgeID, nodeIDs) {
 				rv.AddEdge(nodeID, edgeID, component.EdgeTypeExplicit)
 			}
 		}
@@ -312,13 +312,4 @@ func (c *Collector) log() log.Logger {
 	}
 
 	return log.NopLogger()
-}
-
-func listContains(lst []string, s string) bool {
-	for _, item := range lst {
-		if item == s {
-			return true
-		}
-	}
-	return false
 }
