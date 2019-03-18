@@ -159,38 +159,6 @@ func Test_PodConfiguration(t *testing.T) {
 					Content: component.NewText("high-priority"),
 				},
 				{
-					Header:  "Start Time",
-					Content: component.NewTimestamp(now),
-				},
-				{
-					Header:  "Status: Terminating",
-					Content: component.NewTimestamp(now),
-				},
-				{
-					Header:  "Termination Grace Period",
-					Content: component.NewText("30s"),
-				},
-				{
-					Header:  "Reason",
-					Content: component.NewText("SleepExpired"),
-				},
-				{
-					Header:  "Message",
-					Content: component.NewText("Sleep expired"),
-				},
-				{
-					Header:  "Controlled By",
-					Content: component.NewLink("", "myreplicationcontroller", "/content/overview/namespace/default/workloads/replication-controllers/myreplicationcontroller"),
-				},
-				{
-					Header:  "NominatedNodeName",
-					Content: component.NewText("mynode"),
-				},
-				{
-					Header:  "QoS Class",
-					Content: component.NewText("Guaranteed"),
-				},
-				{
 					Header:  "Service Account",
 					Content: component.NewLink("", "default", "/content/overview/namespace/default/config-and-storage/service-accounts/default"),
 				},
@@ -216,6 +184,27 @@ func Test_PodConfiguration(t *testing.T) {
 			assert.Equal(t, tc.expected, summary)
 		})
 	}
+}
+
+func Test_createPodSummaryStatus(t *testing.T) {
+	pod := testutil.CreatePod("pod")
+	pod.Status.QOSClass = corev1.PodQOSBestEffort
+	pod.Status.Phase = corev1.PodRunning
+	pod.Status.PodIP = "10.1.1.1"
+	pod.Status.HostIP = "10.2.1.1"
+
+	got, err := createPodSummaryStatus(pod)
+	require.NoError(t, err)
+
+	sections := component.SummarySections{
+		{Header: "QoS", Content: component.NewText("BestEffort")},
+		{Header: "Status", Content: component.NewText("Running")},
+		{Header: "Pod IP", Content: component.NewText("10.1.1.1")},
+		{Header: "Host IP", Content: component.NewText("10.2.1.1")},
+	}
+	expected := component.NewSummary("Status", sections...)
+
+	assert.Equal(t, expected, got)
 }
 
 func createPodWithPhase(name string, podLabels map[string]string, phase corev1.PodPhase, owner *metav1.OwnerReference) *corev1.Pod {
