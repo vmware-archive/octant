@@ -1,7 +1,9 @@
 package printer
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/heptio/developer-dash/internal/portforward"
 
@@ -13,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -113,6 +116,8 @@ var (
 )
 
 func Test_ContainerConfiguration(t *testing.T) {
+	now := time.Now()
+
 	envTable := component.NewTable("Environment",
 		component.NewTableCols("Name", "Value", "Source"))
 	envTable.Add(
@@ -172,7 +177,7 @@ func Test_ContainerConfiguration(t *testing.T) {
 		expected  *component.Summary
 	}{
 		{
-			name:      "general",
+			name:      "in general",
 			container: validContainer,
 			expected: component.NewSummary("Container nginx", []component.SummarySection{
 				{
@@ -189,6 +194,22 @@ func Test_ContainerConfiguration(t *testing.T) {
 						*component.NewPort("namespace", "v1", "Pod", "pod", 443, "TCP", component.PortForwardState{IsForwardable: true, IsForwarded: true}),
 						*component.NewPort("namespace", "v1", "Pod", "pod", 443, "UDP", component.PortForwardState{IsForwardable: false, IsForwarded: false}),
 					}),
+				},
+				{
+					Header:  "Last State",
+					Content: component.NewText(fmt.Sprintf("terminated with 255 at %s: reason", now)),
+				},
+				{
+					Header:  "Current State",
+					Content: component.NewText(fmt.Sprintf("started at %s", now)),
+				},
+				{
+					Header:  "Ready",
+					Content: component.NewText("true"),
+				},
+				{
+					Header:  "Restart Count",
+					Content: component.NewText("2"),
 				},
 				{
 					Header:  "Environment",
@@ -228,6 +249,27 @@ func Test_ContainerConfiguration(t *testing.T) {
 
 			parentPod := testutil.CreatePod("pod")
 			parentPod.Namespace = "namespace"
+			parentPod.Status = corev1.PodStatus{
+				ContainerStatuses: []corev1.ContainerStatus{
+					{
+						Name:         "nginx",
+						Ready:        true,
+						RestartCount: 2,
+						State: corev1.ContainerState{
+							Running: &corev1.ContainerStateRunning{
+								StartedAt: metav1.Time{Time: now},
+							},
+						},
+						LastTerminationState: corev1.ContainerState{
+							Terminated: &corev1.ContainerStateTerminated{
+								FinishedAt: metav1.Time{Time: now},
+								Reason:     "reason",
+								ExitCode:   255,
+							},
+						},
+					},
+				},
+			}
 
 			cc := NewContainerConfiguration(parentPod, tc.container, pf, false)
 			summary, err := cc.Create()
