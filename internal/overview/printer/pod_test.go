@@ -207,6 +207,36 @@ func Test_createPodSummaryStatus(t *testing.T) {
 	assert.Equal(t, expected, got)
 }
 
+func Test_createPodConditionsView(t *testing.T) {
+	now := metav1.Time{Time: time.Now()}
+
+	pod := testutil.CreatePod("pod")
+	pod.Status.Conditions = []corev1.PodCondition{
+		{
+			Type:               corev1.PodInitialized,
+			LastTransitionTime: now,
+			Message:            "message",
+			Reason:             "reason",
+		},
+	}
+
+	got, err := createPodConditionsView(pod)
+	require.NoError(t, err)
+
+	cols := component.NewTableCols("Type", "Last Transition Time", "Message", "Reason")
+	expected := component.NewTable("Pod Conditions", cols)
+	expected.Add([]component.TableRow{
+		{
+			"Type":                 component.NewText("Initialized"),
+			"Last Transition Time": component.NewTimestamp(now.Time),
+			"Message":              component.NewText("message"),
+			"Reason":               component.NewText("reason"),
+		},
+	}...)
+
+	assert.Equal(t, expected, got)
+}
+
 func createPodWithPhase(name string, podLabels map[string]string, phase corev1.PodPhase, owner *metav1.OwnerReference) *corev1.Pod {
 	pod := testutil.CreatePod(name)
 	pod.Namespace = "testing"

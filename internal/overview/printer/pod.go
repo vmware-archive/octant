@@ -96,6 +96,15 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.V
 		return createPodSummaryStatus(pod)
 	}, 12)
 
+	conditionDescription := ItemDescriptor{
+		Width: 24,
+		Func: func() (component.ViewComponent, error) {
+			return createPodConditionsView(pod)
+		},
+	}
+
+	o.RegisterItems(conditionDescription)
+
 	var initContainerItems []ItemDescriptor
 	for _, container := range pod.Spec.InitContainers {
 		cc := NewContainerConfiguration(pod, &container, opts.PortForward, true)
@@ -454,4 +463,26 @@ func createMountedPodListView(ctx context.Context, namespace string, persistentV
 	}
 
 	return PodListHandler(ctx, mountedPodList, options)
+}
+
+func createPodConditionsView(pod *corev1.Pod) (component.ViewComponent, error) {
+	if pod == nil {
+		return nil, errors.New("pod is nil")
+	}
+
+	cols := component.NewTableCols("Type", "Last Transition Time", "Message", "Reason")
+	table := component.NewTable("Pod Conditions", cols)
+
+	for _, condition := range pod.Status.Conditions {
+		row := component.TableRow{}
+
+		row["Type"] = component.NewText(string(condition.Type))
+		row["Last Transition Time"] = component.NewTimestamp(condition.LastTransitionTime.Time)
+		row["Message"] = component.NewText(condition.Message)
+		row["Reason"] = component.NewText(condition.Reason)
+
+		table.Add(row)
+	}
+
+	return table, nil
 }
