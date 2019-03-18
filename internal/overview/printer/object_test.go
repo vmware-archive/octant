@@ -9,6 +9,7 @@ import (
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/internal/view/flexlayout"
+	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -17,6 +18,16 @@ import (
 
 func Test_Object_ToComponent(t *testing.T) {
 	deployment := testutil.CreateDeployment("deployment")
+
+	defaultConfig := component.NewSummary("config",
+		component.SummarySection{Header: "local"})
+
+	metadataSection := component.FlexLayoutSection{
+		{
+			Width: component.WidthHalf,
+			View:  component.NewText("metadata"),
+		},
+	}
 
 	fnMetdata := func(o *Object) {
 		o.MetadataGen = func(object runtime.Object, fl *flexlayout.FlexLayout) error {
@@ -45,7 +56,7 @@ func Test_Object_ToComponent(t *testing.T) {
 	cases := []struct {
 		name     string
 		object   runtime.Object
-		initFunc func(*Object)
+		initFunc func(*Object, *Options)
 		sections []component.FlexLayoutSection
 		isErr    bool
 	}{
@@ -56,21 +67,44 @@ func Test_Object_ToComponent(t *testing.T) {
 				{
 					{
 						Width: component.WidthHalf,
-						View:  component.NewText("config"),
+						View:  defaultConfig,
 					},
 				},
+				metadataSection,
+			},
+		},
+		{
+			name:   "config data from plugin",
+			object: deployment,
+			initFunc: func(o *Object, options *Options) {
+				printResponse := plugin.PrintResponse{
+					Config: []component.SummarySection{
+						{Header: "from plugin"},
+					},
+				}
+
+				options.PluginPrinter = &fakePluginPrinter{
+					printResponse: printResponse,
+				}
+			},
+			sections: []component.FlexLayoutSection{
 				{
 					{
 						Width: component.WidthHalf,
-						View:  component.NewText("metadata"),
+						View: component.NewSummary("config",
+							[]component.SummarySection{
+								{Header: "local"},
+								{Header: "from plugin"},
+							}...),
 					},
 				},
+				metadataSection,
 			},
 		},
 		{
 			name:   "extra summary items",
 			object: deployment,
-			initFunc: func(o *Object) {
+			initFunc: func(o *Object, options *Options) {
 				o.RegisterSummary(func() (component.ViewComponent, error) {
 					return component.NewText("summary object 1"), nil
 				}, 12)
@@ -82,7 +116,7 @@ func Test_Object_ToComponent(t *testing.T) {
 				{
 					{
 						Width: component.WidthHalf,
-						View:  component.NewText("config"),
+						View:  defaultConfig,
 					},
 					{
 						Width: component.WidthHalf,
@@ -93,33 +127,23 @@ func Test_Object_ToComponent(t *testing.T) {
 						View:  component.NewText("summary object 2"),
 					},
 				},
-				{
-					{
-						Width: component.WidthHalf,
-						View:  component.NewText("metadata"),
-					},
-				},
+				metadataSection,
 			},
 		},
 		{
 			name:   "enable pod template",
 			object: deployment,
-			initFunc: func(o *Object) {
+			initFunc: func(o *Object, options *Options) {
 				o.EnablePodTemplate(deployment.Spec.Template)
 			},
 			sections: []component.FlexLayoutSection{
 				{
 					{
 						Width: component.WidthHalf,
-						View:  component.NewText("config"),
+						View:  defaultConfig,
 					},
 				},
-				{
-					{
-						Width: component.WidthHalf,
-						View:  component.NewText("metadata"),
-					},
-				},
+				metadataSection,
 				{
 					{
 						Width: component.WidthHalf,
@@ -131,22 +155,17 @@ func Test_Object_ToComponent(t *testing.T) {
 		{
 			name:   "enable events",
 			object: deployment,
-			initFunc: func(o *Object) {
+			initFunc: func(o *Object, options *Options) {
 				o.EnableEvents()
 			},
 			sections: []component.FlexLayoutSection{
 				{
 					{
 						Width: component.WidthHalf,
-						View:  component.NewText("config"),
+						View:  defaultConfig,
 					},
 				},
-				{
-					{
-						Width: component.WidthHalf,
-						View:  component.NewText("metadata"),
-					},
-				},
+				metadataSection,
 				{
 					{
 						Width: component.WidthHalf,
@@ -158,7 +177,7 @@ func Test_Object_ToComponent(t *testing.T) {
 		{
 			name:   "register items",
 			object: deployment,
-			initFunc: func(o *Object) {
+			initFunc: func(o *Object, options *Options) {
 				o.RegisterItems([]ItemDescriptor{
 					{
 						Func: func() (component.ViewComponent, error) {
@@ -184,15 +203,10 @@ func Test_Object_ToComponent(t *testing.T) {
 				{
 					{
 						Width: component.WidthHalf,
-						View:  component.NewText("config"),
+						View:  defaultConfig,
 					},
 				},
-				{
-					{
-						Width: component.WidthHalf,
-						View:  component.NewText("metadata"),
-					},
-				},
+				metadataSection,
 				{
 					{
 						Width: component.WidthHalf,
@@ -224,17 +238,18 @@ func Test_Object_ToComponent(t *testing.T) {
 			defer controller.Finish()
 
 			printOptions := Options{
-				Cache: cachefake.NewMockCache(controller),
+				Cache:         cachefake.NewMockCache(controller),
+				PluginPrinter: &fakePluginPrinter{},
 			}
 
 			o := NewObject(tc.object, fnMetdata, fnPodTemplate, fnEvent)
 
 			o.RegisterConfig(func() (component.ViewComponent, error) {
-				return component.NewText("config"), nil
+				return defaultConfig, nil
 			}, 12)
 
 			if tc.initFunc != nil {
-				tc.initFunc(o)
+				tc.initFunc(o, &printOptions)
 			}
 
 			ctx := context.Background()

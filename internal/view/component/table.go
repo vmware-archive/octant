@@ -24,7 +24,7 @@ type TableRow map[string]ViewComponent
 func (t *TableRow) UnmarshalJSON(data []byte) error {
 	*t = make(TableRow)
 
-	x := map[string]typedObject{}
+	x := map[string]TypedObject{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
 		return err

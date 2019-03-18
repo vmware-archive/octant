@@ -15,6 +15,26 @@ type FlexLayoutItem struct {
 	View  ViewComponent `json:"view,omitempty"`
 }
 
+func (fli *FlexLayoutItem) UnmarshalJSON(data []byte) error {
+	x := struct {
+		Width int
+		View  TypedObject
+	}{}
+
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+
+	fli.Width = x.Width
+	var err error
+	fli.View, err = x.View.ToViewComponent()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // FlexLayoutSection is a slice of items group together.
 type FlexLayoutSection []FlexLayoutItem
 

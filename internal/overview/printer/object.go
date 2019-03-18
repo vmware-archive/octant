@@ -157,6 +157,11 @@ func (o *Object) ToComponent(ctx context.Context, options Options) (component.Vi
 		return nil, errors.New("object is nil")
 	}
 
+	pluginPrinter := options.PluginPrinter
+	if pluginPrinter == nil {
+		return nil, errors.New("plugin printer is nil")
+	}
+
 	if o.config.Func != nil {
 		configView, err := o.config.Func()
 		if err != nil {
@@ -165,6 +170,17 @@ func (o *Object) ToComponent(ctx context.Context, options Options) (component.Vi
 
 		configSection := o.flexlayout.AddSection()
 		if configView != nil {
+			pr, err := pluginPrinter.Print(o.object)
+			if err != nil {
+				return nil, errors.Wrap(err, "plugin manager")
+			}
+
+			// TODO: configView is always a summary, so we can make this explicit
+			summary, ok := configView.(*component.Summary)
+			if ok {
+				summary.Add(pr.Config...)
+			}
+
 			if err := configSection.Add(configView, o.config.Width); err != nil {
 				return nil, errors.Wrap(err, "add config view to layout")
 			}
