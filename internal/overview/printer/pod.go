@@ -82,19 +82,23 @@ func PodListHandler(ctx context.Context, list *corev1.PodList, opts Options) (co
 }
 
 // PodHandler is a printFunc that prints Pods
-func PodHandler(ctx context.Context, p *corev1.Pod, opts Options) (component.ViewComponent, error) {
-	o := NewObject(p)
+func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.ViewComponent, error) {
+	o := NewObject(pod)
 
-	podConfigGen := NewPodConfiguration(p)
+	podConfigGen := NewPodConfiguration(pod)
 	o.RegisterConfig(func() (component.ViewComponent, error) {
 		return podConfigGen.Create()
-	}, 16)
+	}, 12)
 
 	o.EnableEvents()
 
+	o.RegisterSummary(func() (component.ViewComponent, error) {
+		return createPodSummaryStatus(pod)
+	}, 12)
+
 	var initContainerItems []ItemDescriptor
-	for _, container := range p.Spec.InitContainers {
-		cc := NewContainerConfiguration(p, &container, opts.PortForward, true)
+	for _, container := range pod.Spec.InitContainers {
+		cc := NewContainerConfiguration(pod, &container, opts.PortForward, true)
 		initContainerItems = append(initContainerItems, ItemDescriptor{
 			Width: 12,
 			Func: func() (component.ViewComponent, error) {
@@ -106,8 +110,8 @@ func PodHandler(ctx context.Context, p *corev1.Pod, opts Options) (component.Vie
 	o.RegisterItems(initContainerItems...)
 
 	var containerItems []ItemDescriptor
-	for _, container := range p.Spec.Containers {
-		cc := NewContainerConfiguration(p, &container, opts.PortForward, false)
+	for _, container := range pod.Spec.Containers {
+		cc := NewContainerConfiguration(pod, &container, opts.PortForward, false)
 		containerItems = append(initContainerItems, ItemDescriptor{
 			Width: 12,
 			Func: func() (component.ViewComponent, error) {
@@ -122,24 +126,63 @@ func PodHandler(ctx context.Context, p *corev1.Pod, opts Options) (component.Vie
 		{
 			Width: 12,
 			Func: func() (component.ViewComponent, error) {
-				return printVolumes(p.Spec.Volumes)
+				return printVolumes(pod.Spec.Volumes)
 			},
 		},
 		{
 			Width: 12,
 			Func: func() (component.ViewComponent, error) {
-				return printTolerations(p.Spec)
+				return printTolerations(pod.Spec)
 			},
 		},
 		{
 			Width: 12,
 			Func: func() (component.ViewComponent, error) {
-				return printAffinity(p.Spec)
+				return printAffinity(pod.Spec)
 			},
 		},
 	}...)
 
 	return o.ToComponent(ctx, opts)
+}
+
+func createPodSummaryStatus(pod *corev1.Pod) (*component.Summary, error) {
+	if pod == nil {
+		return nil, errors.New("pod is nil")
+	}
+
+	var sections component.SummarySections
+
+	sections.AddText("QoS", string(pod.Status.QOSClass))
+
+	if pod.DeletionTimestamp != nil {
+		sections = append(sections, component.SummarySection{
+			Header:  "Status: Terminating",
+			Content: component.NewTimestamp(pod.DeletionTimestamp.Time),
+		})
+		if pod.DeletionGracePeriodSeconds != nil {
+			sections.AddText("Termination Grace Period", fmt.Sprintf("%ds", *pod.DeletionGracePeriodSeconds))
+		}
+	} else {
+		sections.AddText("Status", string(pod.Status.Phase))
+	}
+
+	if pod.Status.Reason != "" {
+		sections.AddText("Reason", pod.Status.Reason)
+	}
+	if pod.Status.Message != "" {
+		sections.AddText("Message", pod.Status.Message)
+	}
+
+	sections.AddText("Pod IP", pod.Status.PodIP)
+	sections.AddText("Host IP", pod.Status.HostIP)
+
+	if pod.Status.NominatedNodeName != "" {
+		sections.AddText("NominatedNodeName", pod.Status.NominatedNodeName)
+	}
+
+	summary := component.NewSummary("Status", sections...)
+	return summary, nil
 }
 
 type podStatus struct {
@@ -194,47 +237,6 @@ func (p *PodConfiguration) Create() (*component.Summary, error) {
 	}
 	if pod.Spec.PriorityClassName != "" {
 		sections.AddText("PriorityClassName", pod.Spec.PriorityClassName)
-	}
-
-	if pod.Status.StartTime != nil {
-		sections = append(sections, component.SummarySection{
-			Header:  "Start Time",
-			Content: component.NewTimestamp(pod.Status.StartTime.Time),
-		})
-	}
-
-	if pod.DeletionTimestamp != nil {
-		sections = append(sections, component.SummarySection{
-			Header:  "Status: Terminating",
-			Content: component.NewTimestamp(pod.DeletionTimestamp.Time),
-		})
-		if pod.DeletionGracePeriodSeconds != nil {
-			sections.AddText("Termination Grace Period", fmt.Sprintf("%ds", *pod.DeletionGracePeriodSeconds))
-		}
-	} else {
-		sections.AddText("Status", string(pod.Status.Phase))
-	}
-
-	if pod.Status.Reason != "" {
-		sections.AddText("Reason", pod.Status.Reason)
-	}
-	if pod.Status.Message != "" {
-		sections.AddText("Message", pod.Status.Message)
-	}
-
-	if controllerRef := metav1.GetControllerOf(pod); controllerRef != nil {
-		sections = append(sections, component.SummarySection{
-			Header:  "Controlled By",
-			Content: link.ForOwner(pod, controllerRef),
-		})
-	}
-
-	if pod.Status.NominatedNodeName != "" {
-		sections.AddText("NominatedNodeName", pod.Status.NominatedNodeName)
-	}
-
-	if pod.Status.QOSClass != "" {
-		sections.AddText("QoS Class", string(pod.Status.QOSClass))
 	}
 
 	sections = append(sections, component.SummarySection{
