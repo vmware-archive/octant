@@ -51,7 +51,7 @@ func ConfigMapHandler(ctx context.Context, cm *corev1.ConfigMap, options Options
 		Func: func() (component.ViewComponent, error) {
 			return describeConfigMapData(cm)
 		},
-		Width: 24,
+		Width: component.WidthFull,
 	})
 
 	return o.ToComponent(ctx, options)

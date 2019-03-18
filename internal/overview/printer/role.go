@@ -39,7 +39,7 @@ func RoleHandler(ctx context.Context, role *rbacv1.Role, opts Options) (componen
 		Func: func() (component.ViewComponent, error) {
 			return printRolePolicyRules(role)
 		},
-		Width: 24,
+		Width: component.WidthFull,
 	})
 
 	return o.ToComponent(ctx, opts)

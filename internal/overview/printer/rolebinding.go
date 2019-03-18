@@ -54,7 +54,7 @@ func RoleBindingHandler(ctx context.Context, roleBinding *rbacv1.RoleBinding, op
 		Func: func() (component.ViewComponent, error) {
 			return printRoleBindingSubjects(roleBinding)
 		},
-		Width: 24,
+		Width: component.WidthFull,
 	})
 
 	return o.ToComponent(ctx, opts)

@@ -51,7 +51,7 @@ func SecretHandler(ctx context.Context, secret *corev1.Secret, options Options) 
 		Func: func() (component.ViewComponent, error) {
 			return secretData(*secret)
 		},
-		Width: 24,
+		Width: component.WidthFull,
 	})
 
 	return o.ToComponent(ctx, options)

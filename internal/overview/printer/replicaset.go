@@ -64,7 +64,7 @@ func ReplicaSetHandler(ctx context.Context, rs *appsv1.ReplicaSet, options Optio
 		Func: func() (component.ViewComponent, error) {
 			return createPodListView(ctx, rs, options)
 		},
-		Width: 24,
+		Width: component.WidthFull,
 	})
 
 	o.EnablePodTemplate(rs.Spec.Template)

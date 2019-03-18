@@ -64,7 +64,7 @@ func ReplicationControllerHandler(ctx context.Context, rc *corev1.ReplicationCon
 		Func: func() (component.ViewComponent, error) {
 			return createPodListView(ctx, rc, options)
 		},
-		Width: 24,
+		Width: component.WidthFull,
 	})
 
 	o.EnablePodTemplate(*rc.Spec.Template)

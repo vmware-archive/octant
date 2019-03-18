@@ -55,13 +55,13 @@ func Test_Object_ToComponent(t *testing.T) {
 			sections: []component.FlexLayoutSection{
 				{
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("config"),
 					},
 				},
 				{
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("metadata"),
 					},
 				},
@@ -81,21 +81,21 @@ func Test_Object_ToComponent(t *testing.T) {
 			sections: []component.FlexLayoutSection{
 				{
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("config"),
 					},
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("summary object 1"),
 					},
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("summary object 2"),
 					},
 				},
 				{
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("metadata"),
 					},
 				},
@@ -110,19 +110,19 @@ func Test_Object_ToComponent(t *testing.T) {
 			sections: []component.FlexLayoutSection{
 				{
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("config"),
 					},
 				},
 				{
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("metadata"),
 					},
 				},
 				{
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("pod template"),
 					},
 				},
@@ -137,19 +137,19 @@ func Test_Object_ToComponent(t *testing.T) {
 			sections: []component.FlexLayoutSection{
 				{
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("config"),
 					},
 				},
 				{
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("metadata"),
 					},
 				},
 				{
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("events"),
 					},
 				},
@@ -164,48 +164,48 @@ func Test_Object_ToComponent(t *testing.T) {
 						Func: func() (component.ViewComponent, error) {
 							return component.NewText("item1"), nil
 						},
-						Width: 12,
+						Width: component.WidthHalf,
 					},
 					{
 						Func: func() (component.ViewComponent, error) {
 							return component.NewText("item2"), nil
 						},
-						Width: 12,
+						Width: component.WidthHalf,
 					},
 				}...)
 				o.RegisterItems(ItemDescriptor{
 					Func: func() (component.ViewComponent, error) {
 						return component.NewText("item3"), nil
 					},
-					Width: 12,
+					Width: component.WidthHalf,
 				})
 			},
 			sections: []component.FlexLayoutSection{
 				{
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("config"),
 					},
 				},
 				{
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("metadata"),
 					},
 				},
 				{
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("item1"),
 					},
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("item2"),
 					},
 				},
 				{
 					{
-						Width: 12,
+						Width: component.WidthHalf,
 						View:  component.NewText("item3"),
 					},
 				},

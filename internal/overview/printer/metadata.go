@@ -35,7 +35,7 @@ func (m *Metadata) AddToFlexLayout(fl *flexlayout.FlexLayout) error {
 		return errors.Wrap(err, "create summary")
 	}
 
-	if err := section.Add(summary, 16); err != nil {
+	if err := section.Add(summary, component.WidthFull); err != nil {
 		return errors.Wrap(err, "add summary to layout")
 	}
 

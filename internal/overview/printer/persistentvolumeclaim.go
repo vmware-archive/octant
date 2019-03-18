@@ -64,7 +64,7 @@ func PersistentVolumeClaimHandler(ctx context.Context, persistentVolumeClaim *co
 		Func: func() (component.ViewComponent, error) {
 			return createMountedPodListView(ctx, persistentVolumeClaim.Namespace, persistentVolumeClaim.Name, options)
 		},
-		Width: 24,
+		Width: component.WidthFull,
 	})
 
 	o.EnableEvents()
