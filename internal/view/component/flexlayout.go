@@ -2,6 +2,13 @@ package component
 
 import "encoding/json"
 
+const (
+	// WidthHalf is a half width section.
+	WidthHalf int = 12
+	// WidthFull is a full width section.
+	WidthFull int = 24
+)
+
 // FlexLayoutItem is an item in a flex layout.
 type FlexLayoutItem struct {
 	Width int           `json:"width,omitempty"`

@@ -97,7 +97,7 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.V
 	}, 12)
 
 	conditionDescription := ItemDescriptor{
-		Width: 24,
+		Width: component.WidthFull,
 		Func: func() (component.ViewComponent, error) {
 			return createPodConditionsView(pod)
 		},
@@ -109,7 +109,7 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.V
 	for _, container := range pod.Spec.InitContainers {
 		cc := NewContainerConfiguration(pod, &container, opts.PortForward, true)
 		initContainerItems = append(initContainerItems, ItemDescriptor{
-			Width: 12,
+			Width: component.WidthHalf,
 			Func: func() (component.ViewComponent, error) {
 				return cc.Create()
 			},
@@ -122,7 +122,7 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.V
 	for _, container := range pod.Spec.Containers {
 		cc := NewContainerConfiguration(pod, &container, opts.PortForward, false)
 		containerItems = append(initContainerItems, ItemDescriptor{
-			Width: 12,
+			Width: component.WidthHalf,
 			Func: func() (component.ViewComponent, error) {
 				return cc.Create()
 			},
@@ -133,19 +133,19 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.V
 
 	o.RegisterItems([]ItemDescriptor{
 		{
-			Width: 12,
+			Width: component.WidthHalf,
 			Func: func() (component.ViewComponent, error) {
 				return printVolumes(pod.Spec.Volumes)
 			},
 		},
 		{
-			Width: 12,
+			Width: component.WidthHalf,
 			Func: func() (component.ViewComponent, error) {
 				return printTolerations(pod.Spec)
 			},
 		},
 		{
-			Width: 12,
+			Width: component.WidthHalf,
 			Func: func() (component.ViewComponent, error) {
 				return printAffinity(pod.Spec)
 			},

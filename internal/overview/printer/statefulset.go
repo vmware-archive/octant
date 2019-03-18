@@ -63,7 +63,7 @@ func StatefulSetHandler(ctx context.Context, statefulSet *appsv1.StatefulSet, op
 		Func: func() (component.ViewComponent, error) {
 			return createPodListView(ctx, statefulSet, options)
 		},
-		Width: 24,
+		Width: component.WidthFull,
 	})
 
 	o.EnableEvents()

@@ -53,7 +53,7 @@ func CronJobHandler(ctx context.Context, c *batchv1beta1.CronJob, opts Options) 
 		Func: func() (component.ViewComponent, error) {
 			return createJobListView(ctx, c, opts)
 		},
-		Width: 24,
+		Width: component.WidthFull,
 	})
 
 	o.EnableEvents()

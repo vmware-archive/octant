@@ -55,7 +55,7 @@ func ClusterRoleBindingHandler(ctx context.Context, roleBinding *rbacv1.ClusterR
 		Func: func() (component.ViewComponent, error) {
 			return printClusterRoleBindingSubjects(roleBinding)
 		},
-		Width: 24,
+		Width: component.WidthFull,
 	})
 
 	return o.ToComponent(ctx, opts)

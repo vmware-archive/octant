@@ -55,7 +55,7 @@ func DaemonSetHandler(ctx context.Context, daemonSet *appsv1.DaemonSet, options 
 		Func: func() (component.ViewComponent, error) {
 			return createPodListView(ctx, daemonSet, options)
 		},
-		Width: 24,
+		Width: component.WidthFull,
 	})
 
 	o.EnableEvents()

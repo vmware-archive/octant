@@ -44,7 +44,7 @@ func ClusterRoleHandler(ctx context.Context, clusterRole *rbacv1.ClusterRole, op
 		Func: func() (component.ViewComponent, error) {
 			return printClusterRolePolicyRules(clusterRole)
 		},
-		Width: 24,
+		Width: component.WidthFull,
 	})
 
 	return o.ToComponent(ctx, options)

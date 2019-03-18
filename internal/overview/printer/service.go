@@ -58,7 +58,7 @@ func ServiceHandler(ctx context.Context, service *corev1.Service, options Option
 		Func: func() (component.ViewComponent, error) {
 			return serviceEndpoints(ctx, options.Cache, service)
 		},
-		Width: 24,
+		Width: component.WidthFull,
 	})
 
 	o.EnableEvents()

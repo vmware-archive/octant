@@ -60,14 +60,14 @@ func JobHandler(ctx context.Context, job *batchv1.Job, opts Options) (component.
 		Func: func() (component.ViewComponent, error) {
 			return createPodListView(ctx, job, opts)
 		},
-		Width: 24,
+		Width: component.WidthFull,
 	})
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.ViewComponent, error) {
 			return createJobConditions(job.Status.Conditions)
 		},
-		Width: 24,
+		Width: component.WidthFull,
 	})
 
 	o.EnableEvents()

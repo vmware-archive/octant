@@ -25,7 +25,7 @@ func Test_Metadata(t *testing.T) {
 	expected.AddSections([]component.FlexLayoutSection{
 		{
 			{
-				Width: 16,
+				Width: component.WidthFull,
 				View: component.NewSummary("Metadata", component.SummarySections{
 					{
 						Header:  "Age",

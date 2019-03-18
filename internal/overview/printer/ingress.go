@@ -52,7 +52,7 @@ func IngressHandler(ctx context.Context, ingress *extv1beta1.Ingress, options Op
 		Func: func() (component.ViewComponent, error) {
 			return printRulesForIngress(ingress)
 		},
-		Width: 16,
+		Width: component.WidthFull,
 	})
 
 	o.EnableEvents()
