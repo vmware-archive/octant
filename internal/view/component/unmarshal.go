@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func unmarshal(to typedObject) (interface{}, error) {
+func unmarshal(to TypedObject) (interface{}, error) {
 	var o interface{}
 	var err error
 
@@ -18,6 +18,11 @@ func unmarshal(to typedObject) (interface{}, error) {
 		o = t
 	case "expressionSelector":
 		t := &ExpressionSelector{base: base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal expressionSelector config")
+		o = t
+	case "flexLayout":
+		t := &FlexLayout{base: base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal expressionSelector config")
 		o = t

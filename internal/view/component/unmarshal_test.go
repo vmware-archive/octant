@@ -301,7 +301,7 @@ func Test_unmarshal(t *testing.T) {
 			configData, err := ioutil.ReadFile(filepath.Join("testdata", tc.configFile))
 			require.NoError(t, err)
 
-			to := typedObject{
+			to := TypedObject{
 				Config:   json.RawMessage(configData),
 				Metadata: Metadata{Type: tc.objectType},
 			}

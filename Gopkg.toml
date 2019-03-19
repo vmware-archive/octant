@@ -13,6 +13,14 @@ required = [
     name = "github.com/GeertJohan/go.rice"
     unused-packages = false
 
+  [[prune.project]]
+    name = "github.com/golang/protobuf"
+    unused-packages = false
+
+  [[prune.project]]
+    name = "github.com/gogo/protobuf"
+    unused-packages = false
+
 [[constraint]]
   branch = "master"
   name = "github.com/GeertJohan/go.rice"
@@ -25,9 +33,13 @@ required = [
   branch = "master"
   name = "github.com/skratchdot/open-golang"
 
-[[constraint]]
+[[override]]
   name = "github.com/spf13/cobra"
   version = "0.0.3"
+
+[[override]]
+  name = "github.com/spf13/pflag"
+  version = "1.0.3"
 
 [[override]]
   name = "k8s.io/client-go"
@@ -88,3 +100,15 @@ required = [
 [[constraint]]
   name = "go.opencensus.io"
   version = "0.19.1"
+
+[[constraint]]
+  name = "github.com/golang/protobuf"
+  version = "1.2.0"
+
+[[constraint]]
+  name = "github.com/spf13/afero"
+  version = "1.2.1"
+
+[[override]]
+  name = "github.com/gogo/protobuf"
+  version = "1.2.1"

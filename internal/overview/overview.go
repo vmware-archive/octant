@@ -13,6 +13,7 @@ import (
 	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/portforward"
+	"github.com/heptio/developer-dash/pkg/plugin"
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/log"
@@ -23,6 +24,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+type Options struct {
+	Client        cluster.ClientInterface
+	Cache         cache.Cache
+	Namespace     string
+	Logger        log.Logger
+	PluginManager *plugin.Manager
+}
+
 // ClusterOverview is an API for generating a cluster overview.
 type ClusterOverview struct {
 	client         cluster.ClientInterface
@@ -30,15 +39,20 @@ type ClusterOverview struct {
 	cache          cache.Cache
 	generator      *realGenerator
 	portForwardSvc portforward.PortForwarder
+	pluginManager  *plugin.Manager
 }
 
 // NewClusterOverview creates an instance of ClusterOverview.
-func NewClusterOverview(ctx context.Context, client cluster.ClientInterface, c cache.Cache, namespace string, logger log.Logger) (*ClusterOverview, error) {
-	if client == nil {
+func NewClusterOverview(ctx context.Context, options Options) (*ClusterOverview, error) {
+	if options.Client == nil {
 		return nil, errors.New("nil cluster client")
 	}
 
-	di, err := client.DiscoveryClient()
+	if options.PluginManager == nil {
+		return nil, errors.New("plugin manager is nil")
+	}
+
+	di, err := options.Client.DiscoveryClient()
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating DiscoveryClient")
 	}
@@ -69,18 +83,17 @@ func NewClusterOverview(ctx context.Context, client cluster.ClientInterface, c c
 		}
 	}(pm, customResourcesDescriber)
 
-	go watchCRDs(ctx, c, crdAddFunc, crdDeleteFunc)
+	go watchCRDs(ctx, options.Cache, crdAddFunc, crdDeleteFunc)
 
 	// Port Forwarding
-	restClient, err := client.RESTClient()
+	restClient, err := options.Client.RESTClient()
 	if err != nil {
 		return nil, errors.Wrap(err, "fetching RESTClient")
 	}
 	pfOpts := portforward.ServiceOptions{
 		RESTClient: restClient,
-		Config:     client.RESTConfig(),
-		Cache:      c,
-		// TODO -  streams
+		Config:     options.Client.RESTConfig(),
+		Cache:      options.Cache,
 		PortForwarder: &portforward.DefaultPortForwarder{
 			IOStreams: portforward.IOStreams{
 				In:     os.Stdin,
@@ -89,19 +102,20 @@ func NewClusterOverview(ctx context.Context, client cluster.ClientInterface, c c
 			},
 		},
 	}
-	pfSvc := portforward.New(ctx, pfOpts, logger)
+	pfSvc := portforward.New(ctx, pfOpts, options.Logger)
 
-	g, err := newGenerator(c, di, pm, client, pfSvc)
+	g, err := newGenerator(options.Cache, di, pm, options.Client, pfSvc)
 	if err != nil {
 		return nil, errors.Wrap(err, "create overview generator")
 	}
 
 	co := &ClusterOverview{
-		client:         client,
-		logger:         logger,
-		cache:          c,
+		client:         options.Client,
+		logger:         options.Logger,
+		cache:          options.Cache,
 		generator:      g,
 		portForwardSvc: pfSvc,
+		pluginManager:  options.PluginManager,
 	}
 	return co, nil
 }
@@ -144,6 +158,7 @@ func (co *ClusterOverview) Content(ctx context.Context, contentPath, prefix, nam
 	genOpts := GeneratorOptions{
 		Selector:       opts.Selector,
 		PortForwardSvc: co.portForwardSvc,
+		PluginManager:  co.pluginManager,
 	}
 	return co.generator.Generate(ctx, contentPath, prefix, namespace, genOpts)
 }

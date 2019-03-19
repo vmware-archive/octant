@@ -15,6 +15,7 @@ import (
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -46,6 +47,8 @@ type DescriberOptions struct {
 	Printer        printer.Printer
 	Selector       kLabels.Selector
 	PortForwardSvc portforward.PortForwarder
+	// TODO: turn this into an interface
+	PluginManager *plugin.Manager
 }
 
 // Describer creates content.
@@ -132,7 +135,7 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 			listType)
 	}
 
-	viewComponent, err := options.Printer.Print(ctx, listObject)
+	viewComponent, err := options.Printer.Print(ctx, listObject, options.PluginManager)
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -220,7 +223,7 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 			item)
 	}
 
-	vc, err := options.Printer.Print(ctx, newObject)
+	vc, err := options.Printer.Print(ctx, newObject, options.PluginManager)
 	if err != nil {
 		return emptyContentResponse, err
 	}

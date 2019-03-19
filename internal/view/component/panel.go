@@ -13,7 +13,7 @@ type PanelConfig struct {
 func (t *PanelConfig) UnmarshalJSON(data []byte) error {
 	x := struct {
 		Position PanelPosition
-		Content  typedObject
+		Content  TypedObject
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {

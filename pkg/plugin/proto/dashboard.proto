@@ -1,0 +1,114 @@
+syntax = "proto3";
+package proto;
+
+import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
+
+message Empty {}
+
+message KeyRequest {
+    message Key {
+        string namespace = 1;
+        string apiVersion = 2;
+        string kind = 3;
+        string name = 4;
+        k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector labelSelector = 5;
+    }
+
+    Key key = 1;
+}
+
+message ListResponse {
+    bytes objects = 1;
+}
+
+message GetResponse {
+    bytes object = 1;
+}
+
+message WatchResponse {
+    string watchID = 1;
+}
+
+message CancelWatchRequest {
+    string watchID = 1;
+}
+
+message PortForwardRequest {
+    string namespace = 1;
+    string podName = 2;
+    string containerName = 3;
+    uint32 portNumber = 4;
+}
+
+message PortForwardResponse {
+    string portForwardID = 1;
+    uint32 portNumber = 2;
+}
+
+message CancelPortForwardRequest {
+    string portForwardID = 1;
+}
+
+
+service Dashboard {
+    rpc List(KeyRequest) returns (ListResponse);
+    rpc Get(KeyRequest) returns (GetResponse);
+    rpc Watch(KeyRequest) returns (WatchResponse);
+    rpc CancelWatch(CancelWatchRequest) returns (Empty);
+    rpc PortForward(PortForwardRequest) returns (PortForwardResponse);
+    rpc CancelPortForward(CancelPortForwardRequest) returns (Empty);
+}
+
+
+message RegisterResponse {
+    message GroupVersionKind {
+        string group = 1;
+        string version = 2;
+        string kind = 3;
+    }
+    message Capabilities {
+        repeated GroupVersionKind supportsPrinterConfig = 1;
+        repeated GroupVersionKind supportsPrinterStatus = 2;
+        repeated GroupVersionKind supportsPrinterItems = 3;
+        repeated GroupVersionKind supportsObjectStatus = 4;
+        repeated GroupVersionKind supportsTab = 5;
+    }
+
+    string pluginName = 1;
+    string description = 2;
+    Capabilities capabilities = 3;
+}
+
+message ObjectRequest {
+    bytes object = 1;
+}
+
+message PrintResponse {
+    message SummaryItem {
+        string header = 1;
+        bytes component = 2;
+    }
+
+    repeated SummaryItem config = 1;
+    repeated SummaryItem status = 2;
+    bytes items = 3;
+}
+
+message ObjectStatusResponse {
+    bytes objectStatus = 1;
+}
+
+message WatchRequest {
+    string watchID = 1;
+    bytes object = 2;
+}
+
+service Plugin {
+    rpc Register(Empty) returns (RegisterResponse);
+    rpc Print(ObjectRequest) returns (PrintResponse);
+    rpc ObjectStatus(ObjectRequest) returns (ObjectStatusResponse);
+    rpc PrintTab(ObjectRequest) returns (PrintResponse);
+    rpc WatchAdd(WatchRequest) returns (Empty);
+    rpc WatchUpdate(WatchRequest) returns (Empty);
+    rpc WatchDelete(WatchRequest) returns (Empty);
+}

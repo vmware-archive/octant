@@ -17,7 +17,7 @@ type ListConfig struct {
 
 func (t *ListConfig) UnmarshalJSON(data []byte) error {
 	x := struct {
-		Items []typedObject
+		Items []TypedObject
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {

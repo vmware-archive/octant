@@ -29,7 +29,7 @@ func (c *ContentResponse) Add(components ...ViewComponent) {
 func (c *ContentResponse) UnmarshalJSON(data []byte) error {
 	stage := struct {
 		Title          string        `json:"title,omitempty"`
-		ViewComponents []typedObject `json:"viewComponents,omitempty"`
+		ViewComponents []TypedObject `json:"viewComponents,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &stage); err != nil {
@@ -50,12 +50,12 @@ func (c *ContentResponse) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-type typedObject struct {
+type TypedObject struct {
 	Config   json.RawMessage `json:"config,omitempty"`
 	Metadata Metadata        `json:"metadata,omitempty"`
 }
 
-func (to *typedObject) ToViewComponent() (ViewComponent, error) {
+func (to *TypedObject) ToViewComponent() (ViewComponent, error) {
 	o, err := unmarshal(*to)
 	if err != nil {
 		return nil, err
@@ -91,7 +91,7 @@ func (m *Metadata) SetTitleText(parts ...string) {
 func (m *Metadata) UnmarshalJSON(data []byte) error {
 	x := struct {
 		Type  string        `json:"type,omitempty"`
-		Title []typedObject `json:"title,omitempty"`
+		Title []TypedObject `json:"title,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {

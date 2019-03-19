@@ -9,6 +9,7 @@ import (
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
 	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -69,8 +70,10 @@ func Test_Resource_Print(t *testing.T) {
 				require.NoError(t, err)
 			}
 
+			pluginPrinter := &fakePluginPrinter{}
+
 			ctx := context.Background()
-			got, err := p.Print(ctx, tc.object)
+			got, err := p.Print(ctx, tc.object, pluginPrinter)
 			if tc.isErr {
 				assert.Error(t, err)
 				return
@@ -244,4 +247,14 @@ func Test_DefaultPrinter_invalid_object(t *testing.T) {
 		})
 	}
 
+}
+
+type fakePluginPrinter struct {
+	printResponse plugin.PrintResponse
+}
+
+var _ PluginPrinter = (*fakePluginPrinter)(nil)
+
+func (p *fakePluginPrinter) Print(object runtime.Object) (*plugin.PrintResponse, error) {
+	return &p.printResponse, nil
 }

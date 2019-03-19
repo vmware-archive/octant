@@ -17,13 +17,13 @@ version:
 .PHONY: test
 test: generate
 	@echo "-> $@"
-	@env go test -v ./internal/...
+	@env go test -v ./internal/... ./pkg/...
 
 # Run govet
 .PHONY: vet
 vet:
 	@echo "-> $@"
-	@env go vet  ./internal/...
+	@env go vet  ./internal/... ./vet/...
 
 sugarloaf-dev:
 	@mkdir -p ./build
@@ -35,7 +35,7 @@ run-web:
 	@cd web/react; BROWSER=none npm start
 
 generate:
-	@go generate ./internal/...
+	@go generate ./internal/... ./pkg/...
 
 web-deps:
 	@cd web/react; npm ci

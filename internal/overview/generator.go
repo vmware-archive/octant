@@ -11,6 +11,7 @@ import (
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	kLabels "k8s.io/apimachinery/pkg/labels"
@@ -70,6 +71,7 @@ type realGenerator struct {
 type GeneratorOptions struct {
 	Selector       kLabels.Selector
 	PortForwardSvc portforward.PortForwarder
+	PluginManager  *plugin.Manager
 }
 
 func newGenerator(cache cache.Cache, di discovery.DiscoveryInterface, pm *pathMatcher, clusterClient cluster.ClientInterface, portForwardSvc portforward.PortForwarder) (*realGenerator, error) {
@@ -129,6 +131,7 @@ func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace st
 		Printer:        g.printer,
 		Selector:       opts.Selector,
 		PortForwardSvc: opts.PortForwardSvc,
+		PluginManager:  opts.PluginManager,
 	}
 
 	cResponse, err := pf.describer.Describe(ctx, prefix, namespace, g.clusterClient, options)

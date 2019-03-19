@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/heptio/developer-dash/internal/portforward"
+	"github.com/heptio/developer-dash/pkg/plugin"
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/view/component"
@@ -17,18 +18,24 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+// PluginPrinter will print using plugins.
+type PluginPrinter interface {
+	Print(runtime.Object) (*plugin.PrintResponse, error)
+}
+
 // Options provides options to a print handler
 type Options struct {
 	Cache         cache.Cache
 	PortForward   portforward.PortForwarder
 	Selector      kLabels.Selector
 	DisableLabels bool
+	PluginPrinter PluginPrinter
 }
 
 // Printer is an interface for printing runtime objects.
 type Printer interface {
 	// Print prints a runtime object.
-	Print(ctx context.Context, object runtime.Object) (component.ViewComponent, error)
+	Print(ctx context.Context, object runtime.Object, pm PluginPrinter) (component.ViewComponent, error)
 }
 
 // Resource prints runtime objects.
@@ -51,10 +58,11 @@ func NewResource(c cache.Cache, portForwardService portforward.PortForwarder) *R
 
 // Print prints a runtime object. If not handler can be found for the type,
 // it will print using `DefaultPrintFunc`.
-func (p *Resource) Print(ctx context.Context, object runtime.Object) (component.ViewComponent, error) {
+func (p *Resource) Print(ctx context.Context, object runtime.Object, pm PluginPrinter) (component.ViewComponent, error) {
 	printOptions := Options{
-		Cache:       p.cache,
-		PortForward: p.portForward,
+		Cache:         p.cache,
+		PortForward:   p.portForward,
+		PluginPrinter: pm,
 	}
 
 	t := reflect.TypeOf(object)

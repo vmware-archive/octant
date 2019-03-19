@@ -34,7 +34,7 @@ func (s *SummarySections) AddText(header string, text string) {
 func (t *SummarySection) UnmarshalJSON(data []byte) error {
 	x := struct {
 		Header  string      `json:"header,omitempty"`
-		Content typedObject `json:"content,omitempty"`
+		Content TypedObject `json:"content,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {

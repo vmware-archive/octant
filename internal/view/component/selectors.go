@@ -18,7 +18,7 @@ type SelectorsConfig struct {
 
 func (t *SelectorsConfig) UnmarshalJSON(data []byte) error {
 	x := struct {
-		Selectors []typedObject
+		Selectors []TypedObject
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {

@@ -21,6 +21,8 @@ import (
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/overview"
 	"github.com/heptio/developer-dash/web/react"
+	"github.com/heptio/developer-dash/pkg/plugin"
+
 	"github.com/pkg/errors"
 	"github.com/skratchdot/open-golang/open"
 	"go.opencensus.io/exporter/jaeger"
@@ -77,7 +79,19 @@ func Run(ctx context.Context, logger log.Logger, options Options) error {
 		return errors.Wrap(err, "initializing cache")
 	}
 
-	moduleManager, err := initModuleManager(ctx, clusterClient, appCache, options.Namespace, logger)
+	pluginManager, err := initPlugin(ctx)
+	if err != nil {
+		return errors.Wrap(err, "initializing plugin manager")
+	}
+
+	mo := moduleOptions{
+		clusterClient: clusterClient,
+		cache:         appCache,
+		namespace:     options.Namespace,
+		logger:        logger,
+		pluginManager: pluginManager,
+	}
+	moduleManager, err := initModuleManager(ctx, mo)
 	if err != nil {
 		return errors.Wrap(err, "init module manager")
 	}
@@ -111,7 +125,11 @@ func Run(ctx context.Context, logger log.Logger, options Options) error {
 	}()
 
 	<-ctx.Done()
+
+	shutdownCtx := log.WithLoggerContext(context.Background(), logger)
+
 	moduleManager.Unload()
+	pluginManager.Stop(shutdownCtx)
 
 	return nil
 }
@@ -132,14 +150,29 @@ func initCache(stopCh <-chan struct{}, client cluster.ClientInterface, logger lo
 	return appCache, nil
 }
 
+type moduleOptions struct {
+	clusterClient *cluster.Cluster
+	cache         cache.Cache
+	namespace     string
+	logger        log.Logger
+	pluginManager *plugin.Manager
+}
+
 // initModuleManager initializes the moduleManager (and currently the modules themselves)
-func initModuleManager(ctx context.Context, clusterClient *cluster.Cluster, cache cache.Cache, namespace string, logger log.Logger) (*module.Manager, error) {
-	moduleManager, err := module.NewManager(clusterClient, namespace, logger)
+func initModuleManager(ctx context.Context, options moduleOptions) (*module.Manager, error) {
+	moduleManager, err := module.NewManager(options.clusterClient, options.namespace, options.logger)
 	if err != nil {
 		return nil, errors.Wrap(err, "create module manager")
 	}
 
-	overviewModule, err := overview.NewClusterOverview(ctx, clusterClient, cache, namespace, logger)
+	overviewOptions := overview.Options{
+		Client:        options.clusterClient,
+		Cache:         options.cache,
+		Namespace:     options.namespace,
+		Logger:        options.logger,
+		PluginManager: options.pluginManager,
+	}
+	overviewModule, err := overview.NewClusterOverview(ctx, overviewOptions)
 	if err != nil {
 		return nil, errors.Wrap(err, "create overview module")
 	}
