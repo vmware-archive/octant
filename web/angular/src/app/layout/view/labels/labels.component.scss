@@ -1,0 +1,13 @@
+@import 'src/styles.scss';
+
+.view-labels {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  cursor: pointer;
+
+  .view-label {
+    position: relative;
+    @include pill($label-color);
+  }
+}

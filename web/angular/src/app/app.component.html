@@ -1,0 +1,50 @@
+<div class="main-container">
+  <div class="alert alert-app-level">
+    ... top
+  </div>
+  <header class="header header-6">
+    <div class="branding">
+      <a [routerLink]="['/']">
+        <clr-icon shape="vm-bug"></clr-icon>
+        <span class="title">Sugarloaf</span>
+      </a>
+    </div>
+    <div class="header-actions">
+      <app-namespace></app-namespace>
+    </div>
+  </header>
+
+  <div class="content-container">
+    <div class="content-area">
+      <router-outlet></router-outlet>
+    </div>
+    <clr-vertical-nav>
+      <ng-container *ngIf="navigation?.sections">
+        <ng-container *ngFor="let section of navigation.sections">
+          <a clrVerticalNavLink [routerLink]="section.path" routerLinkActive="active">
+            {{ section.title }}
+          </a>
+
+          <ng-container *ngFor="let category of section.children">
+            <clr-vertical-nav-group [clrVerticalNavGroupExpanded]="true">
+              <a clrVerticalNavLink [routerLink]="category.path" routerLinkActive="active">
+                {{ category.title }}
+              </a>
+
+              <clr-vertical-nav-group-children>
+                <a
+                  clrVerticalNavLink
+                  *ngFor="let entry of category.children"
+                  [routerLink]="entry.path"
+                  routerLinkActive="active"
+                >
+                  {{ entry.title }}
+                </a>
+              </clr-vertical-nav-group-children>
+            </clr-vertical-nav-group>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+    </clr-vertical-nav>
+  </div>
+</div>

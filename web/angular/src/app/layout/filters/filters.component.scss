@@ -1,0 +1,21 @@
+@import 'src/styles.scss';
+
+.filters {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  .filter {
+    position: relative;
+    @include pill($label-color)
+  }
+
+  .filter-remove {
+    font-weight: bold;
+    cursor: pointer;
+
+    &::before {
+      content: " \D7";
+    }
+  }
+}

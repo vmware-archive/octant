@@ -1,0 +1,6 @@
+<div class="filters">
+  <div class="filter" *ngFor="let filter of filters">
+    {{ filter.key }}:{{ filter.value }}
+    <a class="filter-remove" (click)="remove(filter)"></a>
+  </div>
+</div>

@@ -1,0 +1,5 @@
+@import 'src/styles.scss';
+
+.selector--expression {
+  @include pill($selector-color);
+}

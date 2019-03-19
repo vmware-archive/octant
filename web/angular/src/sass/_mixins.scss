@@ -1,0 +1,18 @@
+@mixin pill($color) {
+  font-family: 'MetropolisRegular', sans-serif;
+  background-color: transparent;
+
+  border: 1px solid $color;
+  border-radius: 4px;
+  color: $color;
+
+  font-size: 12px;
+
+  margin-bottom: 2px;
+  margin-right: 4px;
+  padding: 5px 10px;
+
+  &:last-child {
+    margin-right: 0;
+  }
+}

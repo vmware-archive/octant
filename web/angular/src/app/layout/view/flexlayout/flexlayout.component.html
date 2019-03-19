@@ -1,0 +1,5 @@
+<div class="clr-row" *ngFor="let section of sections">
+  <div class="clr-col-md-{{ item.width / 2 }}" *ngFor="let item of section">
+    <app-view [view]="item.view"></app-view>
+  </div>
+</div>

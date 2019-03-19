@@ -20,7 +20,7 @@ import (
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/overview"
-	"github.com/heptio/developer-dash/web"
+	"github.com/heptio/developer-dash/web/react"
 	"github.com/pkg/errors"
 	"github.com/skratchdot/open-golang/open"
 	"go.opencensus.io/exporter/jaeger"

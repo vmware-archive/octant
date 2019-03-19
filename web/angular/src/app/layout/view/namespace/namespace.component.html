@@ -1,0 +1,12 @@
+<clr-dropdown>
+  <button type="button" class="btn" clrDropdownTrigger>
+    {{ currentNamespace }}
+    <clr-icon shape="caret down"></clr-icon>
+  </button>
+
+  <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
+    <button (click)="selectNamespace(namespace)" type="button" clrDropdownItem *ngFor="let namespace of namespaces">
+      {{ namespace }}
+    </button>
+  </clr-dropdown-menu>
+</clr-dropdown>

@@ -1,0 +1,7 @@
+<h3 *ngIf="title">{{ title }}</h3>
+
+<div class="view-labels">
+  <div *ngFor="let key of labelKeys" class="view-label" (click)="click(key, labels[key])">
+    {{ key }}:{{ labels[key] }}
+  </div>
+</div>

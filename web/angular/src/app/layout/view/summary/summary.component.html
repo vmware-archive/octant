@@ -1,0 +1,41 @@
+<div class="card">
+  <div class="card-block">
+    <h3 class="card-title">{{ title }}</h3>
+    <table class="table table-vertical table-noborder">
+      <tbody>
+        <tr *ngFor="let item of items">
+          <th>{{ item.header }}</th>
+          <td [ngSwitch]="item.content.metadata.type">
+            <ng-container *ngSwitchCase="'annotations'">
+              <app-view-annotations [view]="item.content"></app-view-annotations>
+            </ng-container>
+            <ng-container *ngSwitchCase="'labels'">
+              <app-view-labels [view]="item.content"></app-view-labels>
+            </ng-container>
+            <ng-container *ngSwitchCase="'link'">
+              <app-view-link [view]="item.content"></app-view-link>
+            </ng-container>
+            <ng-container *ngSwitchCase="'selectors'">
+              <app-view-selectors [view]="item.content"></app-view-selectors>
+            </ng-container>
+            <ng-container *ngSwitchCase="'text'">
+              <app-view-text [view]="item.content"></app-view-text>
+            </ng-container>
+            <ng-container *ngSwitchCase="'timestamp'">
+              <app-view-timestamp [view]="item.content"></app-view-timestamp>
+            </ng-container>
+            <ng-container *ngSwitchCase="'table'">
+              <app-view-table [view]="item.content"></app-view-table>
+            </ng-container>
+            <div class="alert alert-danger static" *ngSwitchDefault>
+              <span class="alert-icon-wrapper">
+                <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+              </span>
+              <span class="alert-text"> {{ item.content.metadata.type }} not implemented </span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

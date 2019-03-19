@@ -1,0 +1,62 @@
+<ng-container *ngIf="currentViewType">
+  <span [ngSwitch]="currentViewType">
+    <ng-container *ngSwitchCase="'annotations'">
+      <app-view-annotations [view]="currentView"></app-view-annotations>
+    </ng-container>
+    <ng-container *ngSwitchCase="'containers'">
+      <app-view-containers [view]="currentView"></app-view-containers>
+    </ng-container>
+    <ng-container *ngSwitchCase="'expressionSelector'">
+      <app-view-expression-selector [view]="currentView"></app-view-expression-selector>
+    </ng-container>
+    <ng-container *ngSwitchCase="'flexlayout'">
+      <app-view-flexlayout [view]="currentView"></app-view-flexlayout>
+    </ng-container>
+    <ng-container *ngSwitchCase="'labels'">
+      <app-view-labels [view]="currentView"></app-view-labels>
+    </ng-container>
+    <ng-container *ngSwitchCase="'labelSelector'">
+      <app-view-label-selector [view]="currentView"></app-view-label-selector>
+    </ng-container>
+    <ng-container *ngSwitchCase="'link'">
+      <app-view-link [view]="currentView"></app-view-link>
+    </ng-container>
+    <ng-container *ngSwitchCase="'list'">
+      <app-view-list [listView]="currentView"></app-view-list>
+    </ng-container>
+    <ng-container *ngSwitchCase="'portforward'">
+      <app-view-port-forward [view]="currentView"></app-view-port-forward>
+    </ng-container>
+    <ng-container *ngSwitchCase="'quadrant'">
+      <app-view-quadrant [view]="currentView"></app-view-quadrant>
+    </ng-container>
+    <ng-container *ngSwitchCase="'resourceViewer'">
+      <app-view-resource-viewer [view]="currentView"></app-view-resource-viewer>
+    </ng-container>
+    <ng-container *ngSwitchCase="'selectors'">
+      <app-view-selectors [view]="currentView"></app-view-selectors>
+    </ng-container>
+    <ng-container *ngSwitchCase="'summary'">
+      <app-view-summary [view]="currentView"></app-view-summary>
+    </ng-container>
+    <ng-container *ngSwitchCase="'table'">
+      <app-view-datagrid [view]="currentView"></app-view-datagrid>
+    </ng-container>
+    <ng-container *ngSwitchCase="'text'">
+      <app-view-text [view]="currentView"></app-view-text>
+    </ng-container>
+    <ng-container *ngSwitchCase="'timestamp'">
+      <app-view-timestamp [view]="currentView"></app-view-timestamp>
+    </ng-container>
+    <ng-container *ngSwitchCase="'yaml'">
+      <app-view-yaml [view]="currentView"></app-view-yaml>
+    </ng-container>
+
+    <div class="alert alert-danger static" *ngSwitchDefault>
+      <span class="alert-icon-wrapper">
+        <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+      </span>
+      <span class="alert-text"> {{ currentViewType }} not implemented </span>
+    </div>
+  </span>
+</ng-container>

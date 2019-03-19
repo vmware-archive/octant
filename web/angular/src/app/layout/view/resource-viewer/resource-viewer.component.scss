@@ -1,0 +1,98 @@
+.resourceViewer {
+  display: flex;
+  min-height: 75vh;
+
+  .dagre-d3 {
+    flex: 3 0 auto;
+
+  }
+
+  .node {
+    cursor: pointer;
+    fill: white;
+
+    rect {
+      border-radius: 4px;
+      fill: #22343c;
+      stroke: rgba(173, 187, 196, 0.3);
+      stroke-width: 1px;
+    }
+
+    .label {
+      fill: black;
+    }
+
+    &.selected .resource-name {
+      color: pink;
+    }
+
+    &-ok {
+      filter: box-shadow 0 4px 10px rgba(0, 0, 0, 0.3);
+      rect {
+        stroke: green;
+      }
+    }
+
+    &-warning {
+      rect {
+        stroke: #ffb630;
+      }
+    }
+
+    &-error {
+      rect {
+        stroke: #ff3730;
+      }
+    }
+  }
+
+
+  .edgePath {
+    path.path {
+      fill: rgba(173, 187, 196, 0.3);
+      stroke: rgba(173, 187, 196, 0.3);
+      stroke-width: 1.5px;
+    }
+
+
+  }
+
+  .resource {
+    background-color: #fff;
+    border: 1px solid black;
+    padding: 10px 30px;
+    position: relative;
+  }
+
+  .resource-name {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+
+  .resource-type {
+    font-size: 12px;
+    font-weight: 200;
+  }
+
+  .resource-status {
+    bottom: 0;
+    height: 15px;
+    left: 0;
+    position: absolute;
+    width: 100%;
+  }
+
+  .status-ok {
+    background-color: blue;
+  }
+
+  .status-warning {
+    background-color: orange;
+  }
+
+  .status-error {
+    background-color: red;
+  }
+}
