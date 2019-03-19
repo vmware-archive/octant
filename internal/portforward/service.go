@@ -151,20 +151,9 @@ func (s *Service) validateCreateRequest(r CreateRequest) error {
 	if r.Name == "" {
 		return errors.New("name field required")
 	}
-	switch r.APIVersion {
-	case "v1":
-	case "apps/v1":
-	default:
-		return errors.Errorf("unsupported apiVersion (%s) - must be one of (v1, apps/v1)", r.APIVersion)
-	}
 
-	switch r.Kind {
-	case "Deployment":
-		if r.APIVersion != "v1" {
-			return errors.Errorf("unsupported resource: %s/%s", r.APIVersion, r.Kind)
-		}
-	default:
-		return errors.Errorf("unsupported kind (%s) - must be one of (Deployment, Service, Pod)", r.Kind)
+	if r.APIVersion != "v1" || r.Kind != "Pod" {
+		return errors.Errorf("port forwards only work with pods")
 	}
 
 	for _, p := range r.Ports {
