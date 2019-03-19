@@ -58,6 +58,18 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 		sections.Add("Container Ports", component.NewPorts(containerPorts))
 	}
 
+	if pod, ok := cc.parent.(*corev1.Pod); ok {
+		status, err := findContainerStatus(pod, cc.container.Name, cc.isInit)
+		if err != nil {
+			return nil, errors.Wrapf(err, "get container status for %q", cc.container.Name)
+		}
+
+		sections.AddText("Last State", printContainerState(status.LastTerminationState))
+		sections.AddText("Current State", printContainerState(status.State))
+		sections.AddText("Ready", fmt.Sprintf("%t", status.Ready))
+		sections.AddText("Restart Count", fmt.Sprintf("%d", status.RestartCount))
+	}
+
 	envTbl, err := describeContainerEnv(cc.parent, c)
 	if err != nil {
 		return nil, errors.Wrap(err, "describing environment")
@@ -87,6 +99,49 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 
 	summary := component.NewSummary(fmt.Sprintf("%s %s", title, c.Name), sections...)
 	return summary, nil
+}
+
+func printContainerState(state corev1.ContainerState) string {
+	switch {
+	case state.Running != nil:
+		return fmt.Sprintf("started at %s", state.Running.StartedAt)
+	case state.Waiting != nil:
+		return fmt.Sprintf("waiting: %s", state.Waiting.Message)
+	case state.Terminated != nil:
+		return fmt.Sprintf("terminated with %d at %s: %s",
+			state.Terminated.ExitCode,
+			state.Terminated.FinishedAt,
+			state.Terminated.Reason)
+	}
+
+	return "indeterminate"
+}
+
+type containerNotFoundError struct {
+	name string
+}
+
+func (e *containerNotFoundError) Error() string {
+	return fmt.Sprintf("container %q not found", e.name)
+}
+
+func findContainerStatus(pod *corev1.Pod, name string, isInit bool) (*corev1.ContainerStatus, error) {
+	if pod == nil {
+		return nil, errors.New("pod is nil")
+	}
+
+	statuses := pod.Status.ContainerStatuses
+	if isInit {
+		statuses = pod.Status.InitContainerStatuses
+	}
+
+	for _, status := range statuses {
+		if status.Name == name {
+			return &status, nil
+		}
+	}
+
+	return nil, &containerNotFoundError{name: name}
 }
 
 func isPodGVK(gvk schema.GroupVersionKind) bool {
