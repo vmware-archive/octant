@@ -100,10 +100,15 @@ func printCustomColumn(m interface{}, column apiextv1beta1.CustomResourceColumnD
 	s := strings.Replace(column.JSONPath, "\\", "", -1)
 
 	if err := j.Parse(fmt.Sprintf("{%s}", s)); err != nil {
-		return "", err
+		return "", errors.Wrapf(err, "jsonpath parse error: %s", s)
 	}
 	if err := j.Execute(&buf, m); err != nil {
-		return "", err
+		// inspecting the error string because jsonpath doesn't do typed errors
+		if strings.Contains(err.Error(), "is not found") {
+			return "<not found>", nil
+		}
+
+		return "", errors.Wrapf(err, "jsonpath execute error")
 	}
 
 	return buf.String(), nil
