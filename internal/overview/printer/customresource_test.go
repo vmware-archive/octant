@@ -215,10 +215,10 @@ func Test_printCustomColumn(t *testing.T) {
 			isErr:      true,
 		},
 		{
-			name:       "execute error",
+			name:       "execute error: not found",
 			objectPath: "certificate.yaml",
 			jsonPath:   ".missing",
-			isErr:      true,
+			expected:   "<not found>",
 		},
 	}
 
