@@ -14,8 +14,8 @@ import (
 	"github.com/heptio/developer-dash/internal/overview/yamlviewer"
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/internal/queryer"
-	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/pkg/plugin"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -145,7 +145,7 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 	}
 
 	return component.ContentResponse{
-		ViewComponents: []component.ViewComponent{list},
+		Components: []component.Component{list},
 	}, nil
 }
 
@@ -208,7 +208,7 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 
 	objectName := object.GetName()
 
-	var title []component.TitleViewComponent
+	var title []component.TitleComponent
 
 	if objectName == "" {
 		title = append(title, component.NewText(d.baseTitle))
@@ -338,7 +338,7 @@ func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace strin
 			return emptyContentResponse, err
 		}
 
-		for _, vc := range cResponse.ViewComponents {
+		for _, vc := range cResponse.Components {
 			if nestedList, ok := vc.(*component.List); ok {
 				list.Add(nestedList.Config.Items...)
 			}
@@ -346,8 +346,8 @@ func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace strin
 	}
 
 	cr := component.ContentResponse{
-		ViewComponents: []component.ViewComponent{list},
-		Title:          component.Title(component.NewText(d.title)),
+		Components: []component.Component{list},
+		Title:      component.Title(component.NewText(d.title)),
 	}
 
 	return cr, nil

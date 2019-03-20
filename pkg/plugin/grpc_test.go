@@ -249,7 +249,7 @@ func Test_GRPCServer_Print(t *testing.T) {
 	})
 }
 
-func encodeComponent(t *testing.T, view component.ViewComponent) []byte {
+func encodeComponent(t *testing.T, view component.Component) []byte {
 	data, err := json.Marshal(view)
 	require.NoError(t, err)
 	return data

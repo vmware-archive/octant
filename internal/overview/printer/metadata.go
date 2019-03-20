@@ -2,8 +2,8 @@ package printer
 
 import (
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/flexlayout"
+	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

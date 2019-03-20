@@ -11,11 +11,11 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
 // ReplicaSetListHandler is a printFunc that lists deployments
-func ReplicaSetListHandler(ctx context.Context, list *appsv1.ReplicaSetList, opts Options) (component.ViewComponent, error) {
+func ReplicaSetListHandler(ctx context.Context, list *appsv1.ReplicaSetList, opts Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -47,21 +47,21 @@ func ReplicaSetListHandler(ctx context.Context, list *appsv1.ReplicaSetList, opt
 }
 
 // ReplicaSetHandler is a printFunc that prints a ReplicaSets.
-func ReplicaSetHandler(ctx context.Context, rs *appsv1.ReplicaSet, options Options) (component.ViewComponent, error) {
+func ReplicaSetHandler(ctx context.Context, rs *appsv1.ReplicaSet, options Options) (component.Component, error) {
 	o := NewObject(rs)
 
 	replicaSetConfigGen := NewReplicaSetConfiguration(rs)
-	o.RegisterConfig(func() (component.ViewComponent, error) {
+	o.RegisterConfig(func() (component.Component, error) {
 		return replicaSetConfigGen.Create()
 	}, 16)
 
 	replicaSetStatusGen := NewReplicaSetStatus(rs)
-	o.RegisterSummary(func() (component.ViewComponent, error) {
+	o.RegisterSummary(func() (component.Component, error) {
 		return replicaSetStatusGen.Create(ctx, options.Cache)
 	}, 8)
 
 	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.ViewComponent, error) {
+		Func: func() (component.Component, error) {
 			return createPodListView(ctx, rs, options)
 		},
 		Width: component.WidthFull,

@@ -3,8 +3,8 @@ package printer
 import (
 	"context"
 
-	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/flexlayout"
+	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	"github.com/pkg/errors"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -51,7 +51,7 @@ func defaultEventsGen(ctx context.Context, object runtime.Object, fl *flexlayout
 }
 
 // ObjectPrinterFunc is a func that create a view.
-type ObjectPrinterFunc func() (component.ViewComponent, error)
+type ObjectPrinterFunc func() (component.Component, error)
 
 // ObjectPrinterLayoutFunc is a func that render a view in a flex layout.
 type ObjectPrinterLayoutFunc func(*flexlayout.FlexLayout) error
@@ -152,7 +152,7 @@ func (o *Object) RegisterItems(items ...ItemDescriptor) {
 }
 
 // ToComponent converts Object to a view.
-func (o *Object) ToComponent(ctx context.Context, options Options) (component.ViewComponent, error) {
+func (o *Object) ToComponent(ctx context.Context, options Options) (component.Component, error) {
 	if o.object == nil {
 		return nil, errors.New("object is nil")
 	}

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/pkg/plugin"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"

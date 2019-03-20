@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"

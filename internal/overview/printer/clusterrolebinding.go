@@ -5,12 +5,12 @@ import (
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	rbacv1 "k8s.io/api/rbac/v1"
 )
 
-func ClusterRoleBindingListHandler(ctx context.Context, clusterRoleBindingList *rbacv1.ClusterRoleBindingList, opts Options) (component.ViewComponent, error) {
+func ClusterRoleBindingListHandler(ctx context.Context, clusterRoleBindingList *rbacv1.ClusterRoleBindingList, opts Options) (component.Component, error) {
 	if clusterRoleBindingList == nil {
 		return nil, errors.New("cluster role binding list is nil")
 	}
@@ -44,15 +44,15 @@ func roleLinkFromClusterRoleBinding(roleBinding *rbacv1.ClusterRoleBinding) *com
 	return link.ForGVK(namespace, apiVersion, roleRef.Kind, roleRef.Name, roleRef.Name)
 }
 
-func ClusterRoleBindingHandler(ctx context.Context, roleBinding *rbacv1.ClusterRoleBinding, opts Options) (component.ViewComponent, error) {
+func ClusterRoleBindingHandler(ctx context.Context, roleBinding *rbacv1.ClusterRoleBinding, opts Options) (component.Component, error) {
 	o := NewObject(roleBinding)
 
-	o.RegisterConfig(func() (component.ViewComponent, error) {
+	o.RegisterConfig(func() (component.Component, error) {
 		return printClusterRoleBindingConfig(roleBinding)
 	}, 16)
 
 	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.ViewComponent, error) {
+		Func: func() (component.Component, error) {
 			return printClusterRoleBindingSubjects(roleBinding)
 		},
 		Width: component.WidthFull,
@@ -61,7 +61,7 @@ func ClusterRoleBindingHandler(ctx context.Context, roleBinding *rbacv1.ClusterR
 	return o.ToComponent(ctx, opts)
 }
 
-func printClusterRoleBindingConfig(roleBinding *rbacv1.ClusterRoleBinding) (component.ViewComponent, error) {
+func printClusterRoleBindingConfig(roleBinding *rbacv1.ClusterRoleBinding) (component.Component, error) {
 	if roleBinding == nil {
 		return nil, errors.New("role binding is nil")
 	}
@@ -75,7 +75,7 @@ func printClusterRoleBindingConfig(roleBinding *rbacv1.ClusterRoleBinding) (comp
 	return summary, nil
 }
 
-func printClusterRoleBindingSubjects(roleBinding *rbacv1.ClusterRoleBinding) (component.ViewComponent, error) {
+func printClusterRoleBindingSubjects(roleBinding *rbacv1.ClusterRoleBinding) (component.Component, error) {
 	if roleBinding == nil {
 		return nil, errors.New("role binding is nil")
 	}

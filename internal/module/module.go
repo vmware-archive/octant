@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/heptio/developer-dash/internal/sugarloaf"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"k8s.io/apimachinery/pkg/labels"
 )
 

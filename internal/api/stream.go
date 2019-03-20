@@ -11,7 +11,7 @@ import (
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/labels"
 )

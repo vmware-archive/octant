@@ -7,7 +7,7 @@ import (
 	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/conversion"
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -19,7 +19,7 @@ var (
 )
 
 // JobListHandler prints a job list.
-func JobListHandler(ctx context.Context, list *batchv1.JobList, opts Options) (component.ViewComponent, error) {
+func JobListHandler(ctx context.Context, list *batchv1.JobList, opts Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("job list is nil")
 	}
@@ -43,28 +43,28 @@ func JobListHandler(ctx context.Context, list *batchv1.JobList, opts Options) (c
 }
 
 // JobHandler printers a job.
-func JobHandler(ctx context.Context, job *batchv1.Job, opts Options) (component.ViewComponent, error) {
+func JobHandler(ctx context.Context, job *batchv1.Job, opts Options) (component.Component, error) {
 	o := NewObject(job)
 
-	o.RegisterConfig(func() (component.ViewComponent, error) {
+	o.RegisterConfig(func() (component.Component, error) {
 		return createJobConfiguration(*job)
 	}, 12)
 
-	o.RegisterSummary(func() (component.ViewComponent, error) {
+	o.RegisterSummary(func() (component.Component, error) {
 		return createJobStatus(*job)
 	}, 12)
 
 	o.EnablePodTemplate(job.Spec.Template)
 
 	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.ViewComponent, error) {
+		Func: func() (component.Component, error) {
 			return createPodListView(ctx, job, opts)
 		},
 		Width: component.WidthFull,
 	})
 
 	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.ViewComponent, error) {
+		Func: func() (component.Component, error) {
 			return createJobConditions(job.Status.Conditions)
 		},
 		Width: component.WidthFull,
@@ -124,7 +124,7 @@ func createJobConditions(conditions []batchv1.JobCondition) (*component.Table, e
 	return table, nil
 }
 
-func createJobListView(ctx context.Context, object runtime.Object, options Options) (component.ViewComponent, error) {
+func createJobListView(ctx context.Context, object runtime.Object, options Options) (component.Component, error) {
 	options.DisableLabels = true
 
 	jobList := &batchv1.JobList{}

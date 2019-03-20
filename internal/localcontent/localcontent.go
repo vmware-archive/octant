@@ -13,7 +13,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/sugarloaf"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 )
 
@@ -72,7 +72,7 @@ func (l *LocalContent) list() (component.ContentResponse, error) {
 
 	out.Title = component.Title(component.NewText("Local Contents"))
 
-	out.ViewComponents = []component.ViewComponent{
+	out.Components = []component.Component{
 		table,
 	}
 
@@ -166,7 +166,7 @@ func (l *LocalContent) Navigation(ctx context.Context, namespace, root string) (
 	return nav, nil
 }
 
-func (l *LocalContent) titleToText(title []component.TitleViewComponent) (string, error) {
+func (l *LocalContent) titleToText(title []component.TitleComponent) (string, error) {
 	if len(title) < 1 {
 		return "", errors.New("title is empty")
 	}

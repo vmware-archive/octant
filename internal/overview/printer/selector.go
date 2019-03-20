@@ -1,7 +1,7 @@
 package printer
 
 import (
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

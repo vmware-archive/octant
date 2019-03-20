@@ -12,7 +12,7 @@ import (
 	"github.com/heptio/developer-dash/internal/conversion"
 
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
@@ -78,7 +78,7 @@ func Test_Collector(t *testing.T) {
 	err = c.AddChild(replicaSet1, pod)
 	require.NoError(t, err)
 
-	got, err := c.ViewComponent("deployment")
+	got, err := c.Component("deployment")
 	require.NoError(t, err)
 
 	q := url.Values{}

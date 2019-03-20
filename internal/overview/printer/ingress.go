@@ -6,14 +6,14 @@ import (
 	"strings"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-func IngressListHandler(ctx context.Context, list *extv1beta1.IngressList, options Options) (component.ViewComponent, error) {
+func IngressListHandler(ctx context.Context, list *extv1beta1.IngressList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("ingress list is nil")
 	}
@@ -41,15 +41,15 @@ func IngressListHandler(ctx context.Context, list *extv1beta1.IngressList, optio
 	return table, nil
 }
 
-func IngressHandler(ctx context.Context, ingress *extv1beta1.Ingress, options Options) (component.ViewComponent, error) {
+func IngressHandler(ctx context.Context, ingress *extv1beta1.Ingress, options Options) (component.Component, error) {
 	o := NewObject(ingress)
 
-	o.RegisterConfig(func() (component.ViewComponent, error) {
+	o.RegisterConfig(func() (component.Component, error) {
 		return printIngressConfig(ingress)
 	}, 16)
 
 	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.ViewComponent, error) {
+		Func: func() (component.Component, error) {
 			return printRulesForIngress(ingress)
 		},
 		Width: component.WidthFull,
@@ -60,7 +60,7 @@ func IngressHandler(ctx context.Context, ingress *extv1beta1.Ingress, options Op
 	return o.ToComponent(ctx, options)
 }
 
-func printIngressConfig(ingress *extv1beta1.Ingress) (component.ViewComponent, error) {
+func printIngressConfig(ingress *extv1beta1.Ingress) (component.Component, error) {
 	if ingress == nil {
 		return nil, errors.New("ingress is nil")
 	}
@@ -81,7 +81,7 @@ func printIngressConfig(ingress *extv1beta1.Ingress) (component.ViewComponent, e
 	return summary, nil
 }
 
-func printRulesForIngress(ingress *extv1beta1.Ingress) (component.ViewComponent, error) {
+func printRulesForIngress(ingress *extv1beta1.Ingress) (component.Component, error) {
 	if ingress == nil {
 		return nil, errors.New("ingress is nil")
 	}

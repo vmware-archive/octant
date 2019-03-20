@@ -6,13 +6,13 @@ import (
 	"strings"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 )
 
 // PersistentVolumeClaimListHandler is a printFunc that prints persistentvolumeclaims
-func PersistentVolumeClaimListHandler(ctx context.Context, list *corev1.PersistentVolumeClaimList, options Options) (component.ViewComponent, error) {
+func PersistentVolumeClaimListHandler(ctx context.Context, list *corev1.PersistentVolumeClaimList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -49,19 +49,19 @@ func PersistentVolumeClaimListHandler(ctx context.Context, list *corev1.Persiste
 }
 
 // PersistentVolumeClaimHandler is a printFunc that prints a PersistentVolumeClaim
-func PersistentVolumeClaimHandler(ctx context.Context, persistentVolumeClaim *corev1.PersistentVolumeClaim, options Options) (component.ViewComponent, error) {
+func PersistentVolumeClaimHandler(ctx context.Context, persistentVolumeClaim *corev1.PersistentVolumeClaim, options Options) (component.Component, error) {
 	o := NewObject(persistentVolumeClaim)
 
-	o.RegisterConfig(func() (component.ViewComponent, error) {
+	o.RegisterConfig(func() (component.Component, error) {
 		return printPersistentVolumeClaimConfig(persistentVolumeClaim)
 	}, 12)
 
-	o.RegisterSummary(func() (component.ViewComponent, error) {
+	o.RegisterSummary(func() (component.Component, error) {
 		return printPersistentVolumeClaimStatus(persistentVolumeClaim)
 	}, 12)
 
 	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.ViewComponent, error) {
+		Func: func() (component.Component, error) {
 			return createMountedPodListView(ctx, persistentVolumeClaim.Namespace, persistentVolumeClaim.Name, options)
 		},
 		Width: component.WidthFull,
@@ -72,7 +72,7 @@ func PersistentVolumeClaimHandler(ctx context.Context, persistentVolumeClaim *co
 	return o.ToComponent(ctx, options)
 }
 
-func printPersistentVolumeClaimConfig(persistentVolumeClaim *corev1.PersistentVolumeClaim) (component.ViewComponent, error) {
+func printPersistentVolumeClaimConfig(persistentVolumeClaim *corev1.PersistentVolumeClaim) (component.Component, error) {
 	if persistentVolumeClaim == nil {
 		return nil, errors.New("persistentvolumeclaim is nil")
 	}
@@ -108,7 +108,7 @@ func printPersistentVolumeClaimConfig(persistentVolumeClaim *corev1.PersistentVo
 	return summary, nil
 }
 
-func printPersistentVolumeClaimStatus(persistentVolumeClaim *corev1.PersistentVolumeClaim) (component.ViewComponent, error) {
+func printPersistentVolumeClaimStatus(persistentVolumeClaim *corev1.PersistentVolumeClaim) (component.Component, error) {
 	if persistentVolumeClaim == nil {
 		return nil, errors.New("persistentvolumeclaim is nil")
 	}

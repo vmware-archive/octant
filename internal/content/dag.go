@@ -80,6 +80,6 @@ func (d *DAG) IsEmpty() bool {
 	return len(d.Nodes) == 0
 }
 
-func (d *DAG) ViewComponent() ViewComponent {
-	return ViewComponent{}
+func (d *DAG) Component() Component {
+	return Component{}
 }

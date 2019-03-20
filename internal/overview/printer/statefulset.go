@@ -7,13 +7,13 @@ import (
 	"github.com/heptio/developer-dash/internal/overview/link"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 )
 
 // StatefulSetListHandler is a printFunc that list stateful sets
-func StatefulSetListHandler(ctx context.Context, list *appsv1.StatefulSetList, opts Options) (component.ViewComponent, error) {
+func StatefulSetListHandler(ctx context.Context, list *appsv1.StatefulSetList, opts Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -44,15 +44,15 @@ func StatefulSetListHandler(ctx context.Context, list *appsv1.StatefulSetList, o
 }
 
 // StatefulSetHandler is a printFunc that prints a StatefulSet
-func StatefulSetHandler(ctx context.Context, statefulSet *appsv1.StatefulSet, options Options) (component.ViewComponent, error) {
+func StatefulSetHandler(ctx context.Context, statefulSet *appsv1.StatefulSet, options Options) (component.Component, error) {
 	o := NewObject(statefulSet)
 
-	o.RegisterConfig(func() (component.ViewComponent, error) {
+	o.RegisterConfig(func() (component.Component, error) {
 		statefulSetConfigGen := NewStatefulSetConfiguration(statefulSet)
 		return statefulSetConfigGen.Create()
 	}, 16)
 
-	o.RegisterSummary(func() (component.ViewComponent, error) {
+	o.RegisterSummary(func() (component.Component, error) {
 		statefulSetSummaryGen := NewStatefulSetStatus(statefulSet)
 		return statefulSetSummaryGen.Create(ctx, options.Cache)
 	}, 8)
@@ -60,7 +60,7 @@ func StatefulSetHandler(ctx context.Context, statefulSet *appsv1.StatefulSet, op
 	o.EnablePodTemplate(statefulSet.Spec.Template)
 
 	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.ViewComponent, error) {
+		Func: func() (component.Component, error) {
 			return createPodListView(ctx, statefulSet, options)
 		},
 		Width: component.WidthFull,

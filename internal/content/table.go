@@ -35,14 +35,14 @@ func (t *Table) AddRow(row TableRow) {
 	t.Rows = append(t.Rows, row)
 }
 
-func (t *Table) ViewComponent() ViewComponent {
+func (t *Table) Component() Component {
 	tc := TableConfig{
 		Columns:      t.Columns,
 		Rows:         t.Rows,
 		EmptyContent: t.EmptyContent,
 	}
 
-	return ViewComponent{
+	return Component{
 		Metadata: Metadata{
 			Type:  "table",
 			Title: t.Title,

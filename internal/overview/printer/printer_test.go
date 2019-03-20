@@ -8,8 +8,8 @@ import (
 	"github.com/golang/mock/gomock"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
-	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/pkg/plugin"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -29,8 +29,8 @@ func Test_Resource_Print(t *testing.T) {
 	}{
 		{
 			name: "print known object",
-			printFunc: func(ctx context.Context, deployment *appsv1.Deployment, options Options) (component.ViewComponent, error) {
-				return &stubViewComponent{Type: "type1"}, nil
+			printFunc: func(ctx context.Context, deployment *appsv1.Deployment, options Options) (component.Component, error) {
+				return &stubComponent{Type: "type1"}, nil
 			},
 			object:       &appsv1.Deployment{},
 			expectedType: "type1",
@@ -47,7 +47,7 @@ func Test_Resource_Print(t *testing.T) {
 		},
 		{
 			name: "print handler returns error",
-			printFunc: func(ctx context.Context, deployment *appsv1.Deployment, options Options) (component.ViewComponent, error) {
+			printFunc: func(ctx context.Context, deployment *appsv1.Deployment, options Options) (component.Component, error) {
 				return nil, errors.New("failed")
 			},
 			object: &appsv1.Deployment{},
@@ -100,8 +100,8 @@ func Test_Resource_Handler(t *testing.T) {
 	}{
 		{
 			name: "valid printer",
-			printFunc: func(context.Context, int, Options) (component.ViewComponent, error) {
-				return &stubViewComponent{Type: "type1"}, nil
+			printFunc: func(context.Context, int, Options) (component.Component, error) {
+				return &stubComponent{Type: "type1"}, nil
 			},
 		},
 		{
@@ -144,8 +144,8 @@ func Test_Resource_Handler(t *testing.T) {
 }
 
 func Test_Resource_DuplicateHandler(t *testing.T) {
-	printFunc := func(context.Context, int, Options) (component.ViewComponent, error) {
-		return &stubViewComponent{Type: "type1"}, nil
+	printFunc := func(context.Context, int, Options) (component.Component, error) {
+		return &stubComponent{Type: "type1"}, nil
 	}
 
 	controller := gomock.NewController(t)
@@ -164,19 +164,19 @@ func Test_Resource_DuplicateHandler(t *testing.T) {
 
 }
 
-type stubViewComponent struct {
+type stubComponent struct {
 	Type string
 }
 
-var _ component.ViewComponent = (*stubViewComponent)(nil)
+var _ component.Component = (*stubComponent)(nil)
 
-func (v *stubViewComponent) GetMetadata() component.Metadata {
+func (v *stubComponent) GetMetadata() component.Metadata {
 	return component.Metadata{
 		Type: v.Type,
 	}
 }
 
-func (v *stubViewComponent) SetAccessor(string) {}
+func (v *stubComponent) SetAccessor(string) {}
 
 func Test_DefaultPrinter(t *testing.T) {
 	controller := gomock.NewController(t)

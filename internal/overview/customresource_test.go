@@ -11,7 +11,7 @@ import (
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -85,8 +85,8 @@ func Test_crdSectionDescriber(t *testing.T) {
 
 	expect1 := component.ContentResponse{
 		Title: component.TitleFromString("title"),
-		ViewComponents: []component.ViewComponent{
-			component.NewList("", []component.ViewComponent{d1View}),
+		Components: []component.Component{
+			component.NewList("", []component.Component{d1View}),
 		},
 	}
 
@@ -99,7 +99,7 @@ func Test_crdSectionDescriber(t *testing.T) {
 
 	expect2 := component.ContentResponse{
 		Title: component.TitleFromString("title"),
-		ViewComponents: []component.ViewComponent{
+		Components: []component.Component{
 			component.NewList("", nil),
 		},
 	}
@@ -136,7 +136,7 @@ func Test_crdListDescriber(t *testing.T) {
 	c.EXPECT().List(gomock.Any(), gomock.Eq(crKey)).Return(objects, nil)
 
 	listPrinter := func(cld *crdListDescriber) {
-		cld.printer = func(ctx context.Context, name, namespace string, crd *apiextv1beta1.CustomResourceDefinition, objects []*unstructured.Unstructured) (component.ViewComponent, error) {
+		cld.printer = func(ctx context.Context, name, namespace string, crd *apiextv1beta1.CustomResourceDefinition, objects []*unstructured.Unstructured) (component.Component, error) {
 			return component.NewText("crd list"), nil
 		}
 	}
@@ -187,11 +187,11 @@ func Test_crdDescriber(t *testing.T) {
 	c.EXPECT().Get(gomock.Any(), gomock.Eq(crKey)).Return(object, nil)
 
 	crPrinter := func(cd *crdDescriber) {
-		cd.summaryPrinter = func(ctx context.Context, crd *apiextv1beta1.CustomResourceDefinition, object *unstructured.Unstructured, options printer.Options) (component.ViewComponent, error) {
+		cd.summaryPrinter = func(ctx context.Context, crd *apiextv1beta1.CustomResourceDefinition, object *unstructured.Unstructured, options printer.Options) (component.Component, error) {
 			return component.NewText("cr"), nil
 		}
 
-		cd.resourceViewerPrinter = func(ctx context.Context, object *unstructured.Unstructured, c cache.Cache, q queryer.Queryer) (component.ViewComponent, error) {
+		cd.resourceViewerPrinter = func(ctx context.Context, object *unstructured.Unstructured, c cache.Cache, q queryer.Queryer) (component.Component, error) {
 			return component.NewText("rv"), nil
 		}
 
@@ -211,7 +211,7 @@ func Test_crdDescriber(t *testing.T) {
 	got, err := cd.Describe(ctx, "prefix", "default", nil, options)
 	require.NoError(t, err)
 
-	expected := *component.NewContentResponse([]component.TitleViewComponent{
+	expected := *component.NewContentResponse([]component.TitleComponent{
 		component.NewLink("", "crd1", "/content/overview/namespace/default/custom-resources/crd1"),
 		component.NewText(""),
 	})

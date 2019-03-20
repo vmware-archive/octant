@@ -5,13 +5,13 @@ import (
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 )
 
 // DaemonSetListHandler is a printFunc that lists daemon sets
-func DaemonSetListHandler(ctx context.Context, list *appsv1.DaemonSetList, opts Options) (component.ViewComponent, error) {
+func DaemonSetListHandler(ctx context.Context, list *appsv1.DaemonSetList, opts Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("daemon set list is nil")
 	}
@@ -38,21 +38,21 @@ func DaemonSetListHandler(ctx context.Context, list *appsv1.DaemonSetList, opts 
 }
 
 // DaemonSetHandler is a printFunc that prints a daemon set
-func DaemonSetHandler(ctx context.Context, daemonSet *appsv1.DaemonSet, options Options) (component.ViewComponent, error) {
+func DaemonSetHandler(ctx context.Context, daemonSet *appsv1.DaemonSet, options Options) (component.Component, error) {
 	o := NewObject(daemonSet)
 
-	o.RegisterConfig(func() (component.ViewComponent, error) {
+	o.RegisterConfig(func() (component.Component, error) {
 		return printDaemonSetConfig(daemonSet)
 	}, 12)
 
-	o.RegisterSummary(func() (component.ViewComponent, error) {
+	o.RegisterSummary(func() (component.Component, error) {
 		return printDaemonSetStatus(daemonSet)
 	}, 12)
 
 	o.EnablePodTemplate(daemonSet.Spec.Template)
 
 	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.ViewComponent, error) {
+		Func: func() (component.Component, error) {
 			return createPodListView(ctx, daemonSet, options)
 		},
 		Width: component.WidthFull,
@@ -63,7 +63,7 @@ func DaemonSetHandler(ctx context.Context, daemonSet *appsv1.DaemonSet, options 
 	return o.ToComponent(ctx, options)
 }
 
-func printDaemonSetConfig(daemonSet *appsv1.DaemonSet) (component.ViewComponent, error) {
+func printDaemonSetConfig(daemonSet *appsv1.DaemonSet) (component.Component, error) {
 	if daemonSet == nil {
 		return nil, errors.New("daemon set is nil")
 	}
@@ -95,7 +95,7 @@ func printDaemonSetConfig(daemonSet *appsv1.DaemonSet) (component.ViewComponent,
 	return summary, nil
 }
 
-func printDaemonSetStatus(daemonSet *appsv1.DaemonSet) (component.ViewComponent, error) {
+func printDaemonSetStatus(daemonSet *appsv1.DaemonSet) (component.Component, error) {
 	if daemonSet == nil {
 		return nil, errors.New("daemon set is nil")
 	}

@@ -11,7 +11,7 @@ import (
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
@@ -130,7 +130,7 @@ func Test_printIngressConfig(t *testing.T) {
 	cases := []struct {
 		name     string
 		object   *extv1beta1.Ingress
-		expected component.ViewComponent
+		expected component.Component
 		isErr    bool
 	}{
 		{
@@ -203,7 +203,7 @@ func Test_printIngressHosts(t *testing.T) {
 	cases := []struct {
 		name     string
 		object   *extv1beta1.Ingress
-		expected component.ViewComponent
+		expected component.Component
 		isErr    bool
 	}{
 		{

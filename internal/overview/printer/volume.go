@@ -5,7 +5,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
 const (
@@ -39,7 +39,7 @@ const (
 )
 
 // printVolumes prints volumes as a table.
-func printVolumes(volumes []corev1.Volume) (component.ViewComponent, error) {
+func printVolumes(volumes []corev1.Volume) (component.Component, error) {
 	cols := component.NewTableCols("Name", "Kind", "Description")
 	table := component.NewTable("Volumes", cols)
 

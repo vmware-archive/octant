@@ -7,9 +7,9 @@ import (
 	"github.com/golang/mock/gomock"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/flexlayout"
 	"github.com/heptio/developer-dash/pkg/plugin"
+	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -105,10 +105,10 @@ func Test_Object_ToComponent(t *testing.T) {
 			name:   "extra summary items",
 			object: deployment,
 			initFunc: func(o *Object, options *Options) {
-				o.RegisterSummary(func() (component.ViewComponent, error) {
+				o.RegisterSummary(func() (component.Component, error) {
 					return component.NewText("summary object 1"), nil
 				}, 12)
-				o.RegisterSummary(func() (component.ViewComponent, error) {
+				o.RegisterSummary(func() (component.Component, error) {
 					return component.NewText("summary object 2"), nil
 				}, 12)
 			},
@@ -180,20 +180,20 @@ func Test_Object_ToComponent(t *testing.T) {
 			initFunc: func(o *Object, options *Options) {
 				o.RegisterItems([]ItemDescriptor{
 					{
-						Func: func() (component.ViewComponent, error) {
+						Func: func() (component.Component, error) {
 							return component.NewText("item1"), nil
 						},
 						Width: component.WidthHalf,
 					},
 					{
-						Func: func() (component.ViewComponent, error) {
+						Func: func() (component.Component, error) {
 							return component.NewText("item2"), nil
 						},
 						Width: component.WidthHalf,
 					},
 				}...)
 				o.RegisterItems(ItemDescriptor{
-					Func: func() (component.ViewComponent, error) {
+					Func: func() (component.Component, error) {
 						return component.NewText("item3"), nil
 					},
 					Width: component.WidthHalf,
@@ -244,7 +244,7 @@ func Test_Object_ToComponent(t *testing.T) {
 
 			o := NewObject(tc.object, fnMetdata, fnPodTemplate, fnEvent)
 
-			o.RegisterConfig(func() (component.ViewComponent, error) {
+			o.RegisterConfig(func() (component.Component, error) {
 				return defaultConfig, nil
 			}, 12)
 

@@ -1,14 +1,14 @@
 package logviewer
 
 import (
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // ToComponent converts an object into a logviewer component.
-func ToComponent(object runtime.Object) (component.ViewComponent, error) {
+func ToComponent(object runtime.Object) (component.Component, error) {
 	if object == nil {
 		return nil, errors.Errorf("object is nil")
 	}

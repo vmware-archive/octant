@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"

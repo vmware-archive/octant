@@ -3,8 +3,8 @@ package plugin
 import (
 	"encoding/json"
 
-	"github.com/heptio/developer-dash/internal/view/component"
 	"github.com/heptio/developer-dash/pkg/plugin/proto"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -106,7 +106,7 @@ func convertToSummarySection(in proto.PrintResponse_SummaryItem) (component.Summ
 		return component.SummarySection{}, err
 	}
 
-	view, err := typedObject.ToViewComponent()
+	view, err := typedObject.ToComponent()
 	if err != nil {
 		return component.SummarySection{}, err
 	}

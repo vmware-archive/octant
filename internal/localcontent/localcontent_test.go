@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/heptio/developer-dash/internal/localcontent"
 	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/internal/sugarloaf"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 
 	"github.com/stretchr/testify/assert"
@@ -31,9 +31,9 @@ func Test_LocalContent_Content_root(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Equal(t, component.Title(component.NewText("Local Contents")), content.Title)
-		assert.Len(t, content.ViewComponents, 1)
+		assert.Len(t, content.Components, 1)
 
-		table, ok := content.ViewComponents[0].(*component.Table)
+		table, ok := content.Components[0].(*component.Table)
 		if assert.True(t, ok, "component is not a table") {
 			expectedCols := component.NewTableCols("Title", "File")
 			assert.Equal(t, expectedCols, table.Config.Columns)
@@ -57,9 +57,9 @@ func Test_LocalContent_Content_file(t *testing.T) {
 
 		assert.Equal(t, component.Title(component.NewText("Sample content")),
 			content.Title)
-		assert.Len(t, content.ViewComponents, 1)
+		assert.Len(t, content.Components, 1)
 
-		list, ok := content.ViewComponents[0].(*component.List)
+		list, ok := content.Components[0].(*component.List)
 		if assert.Truef(t, ok, "component is not a list (%T)", list) {
 			require.Len(t, list.Config.Items, 1)
 			table, ok := list.Config.Items[0].(*component.Table)

@@ -5,11 +5,11 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 )
 
-func printTolerations(podSpec corev1.PodSpec) (component.ViewComponent, error) {
+func printTolerations(podSpec corev1.PodSpec) (component.Component, error) {
 	td := &tolerationDescriber{
 		podSpec: podSpec,
 	}

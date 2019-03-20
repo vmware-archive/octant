@@ -17,8 +17,8 @@ func (s *Summary) IsEmpty() bool {
 	return len(s.Sections) == 0
 }
 
-func (s *Summary) ViewComponent() ViewComponent {
-	return ViewComponent{}
+func (s *Summary) Component() Component {
+	return Component{}
 }
 
 type Section struct {

@@ -1,8 +1,8 @@
 package printer
 
 import (
-	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/flexlayout"
+	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	"github.com/pkg/errors"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"

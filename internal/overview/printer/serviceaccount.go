@@ -7,13 +7,13 @@ import (
 	"github.com/heptio/developer-dash/internal/cache"
 	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func ServiceAccountListHandler(ctx context.Context, list *corev1.ServiceAccountList, opts Options) (component.ViewComponent, error) {
+func ServiceAccountListHandler(ctx context.Context, list *corev1.ServiceAccountList, opts Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("service account list is nil")
 	}
@@ -34,10 +34,10 @@ func ServiceAccountListHandler(ctx context.Context, list *corev1.ServiceAccountL
 	return table, nil
 }
 
-func ServiceAccountHandler(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) (component.ViewComponent, error) {
+func ServiceAccountHandler(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) (component.Component, error) {
 	o := NewObject(serviceAccount)
 
-	o.RegisterConfig(func() (component.ViewComponent, error) {
+	o.RegisterConfig(func() (component.Component, error) {
 		return printServiceAccountConfig(ctx, serviceAccount, options.Cache)
 	}, 16)
 
@@ -46,7 +46,7 @@ func ServiceAccountHandler(ctx context.Context, serviceAccount *corev1.ServiceAc
 	return o.ToComponent(ctx, options)
 }
 
-func printServiceAccountConfig(ctx context.Context, serviceAccount *corev1.ServiceAccount, c cache.Cache) (component.ViewComponent, error) {
+func printServiceAccountConfig(ctx context.Context, serviceAccount *corev1.ServiceAccount, c cache.Cache) (component.Component, error) {
 	if serviceAccount == nil {
 		return nil, errors.New("service account is nil")
 	}
@@ -89,7 +89,7 @@ func printServiceAccountConfig(ctx context.Context, serviceAccount *corev1.Servi
 }
 
 func generateServiceAccountSecretsList(namespace string, secretNames []string) *component.List {
-	var items []component.ViewComponent
+	var items []component.Component
 	for _, name := range secretNames {
 		items = append(items, link.ForGVK(namespace, "v1", "Secret", name, name))
 	}

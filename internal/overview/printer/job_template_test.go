@@ -3,7 +3,7 @@ package printer
 import (
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -20,7 +20,7 @@ func TestJobTemplateHeader(t *testing.T) {
 
 	assert.Len(t, got.Config.Labels, 1)
 
-	expected := []component.TitleViewComponent{
+	expected := []component.TitleComponent{
 		component.NewText("Job Template"),
 	}
 

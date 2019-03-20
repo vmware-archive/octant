@@ -1,13 +1,13 @@
 package printer
 
 import (
-	"github.com/heptio/developer-dash/internal/view/flexlayout"
+	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/pkg/errors"
 
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
 type PodTemplate struct {

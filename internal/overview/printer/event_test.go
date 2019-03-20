@@ -8,7 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -59,7 +59,7 @@ func Test_EventListHandler(t *testing.T) {
 		"First Seen", "Last Seen")
 	expected := component.NewTable("Events", cols)
 	expected.Add(component.TableRow{
-		"Kind": component.NewList("", []component.ViewComponent{
+		"Kind": component.NewList("", []component.Component{
 			component.NewLink("", "d1", "/content/overview/namespace/default/workloads/deployments/d1"),
 			component.NewText("1234"),
 		}),

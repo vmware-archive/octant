@@ -5,7 +5,7 @@ type Metadata struct {
 	Title string `json:"title,omitempty"`
 }
 
-type ViewComponent struct {
+type Component struct {
 	Metadata Metadata    `json:"metadata,omitempty"`
 	Config   interface{} `json:"config,omitempty"`
 }
@@ -14,5 +14,5 @@ type ViewComponent struct {
 type Content interface {
 	IsEmpty() bool
 
-	ViewComponent() ViewComponent
+	Component() Component
 }

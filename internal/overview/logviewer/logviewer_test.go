@@ -3,7 +3,7 @@ package logviewer
 import (
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -15,7 +15,7 @@ func Test_ToComponent(t *testing.T) {
 	cases := []struct {
 		name     string
 		object   runtime.Object
-		expected component.ViewComponent
+		expected component.Component
 		isErr    bool
 	}{
 		{

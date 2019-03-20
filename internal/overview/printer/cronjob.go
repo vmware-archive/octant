@@ -7,14 +7,14 @@ import (
 
 	"github.com/heptio/developer-dash/internal/overview/link"
 
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 )
 
 // CronJobListHandler is a printFunc that lists cronjobs
-func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opts Options) (component.ViewComponent, error) {
+func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opts Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -39,18 +39,18 @@ func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opt
 }
 
 // CronJobHandler is a printFunc that prints a CronJob
-func CronJobHandler(ctx context.Context, c *batchv1beta1.CronJob, opts Options) (component.ViewComponent, error) {
+func CronJobHandler(ctx context.Context, c *batchv1beta1.CronJob, opts Options) (component.Component, error) {
 	o := NewObject(c)
 
 	cronjobConfigGen := NewCronJobConfiguration(c)
-	o.RegisterConfig(func() (component.ViewComponent, error) {
+	o.RegisterConfig(func() (component.Component, error) {
 		return cronjobConfigGen.Create()
 	}, 16)
 
 	o.EnableJobTemplate(c.Spec.JobTemplate)
 
 	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.ViewComponent, error) {
+		Func: func() (component.Component, error) {
 			return createJobListView(ctx, c, opts)
 		},
 		Width: component.WidthFull,
