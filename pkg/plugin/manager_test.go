@@ -5,11 +5,9 @@ import (
 	"testing"
 
 	"github.com/heptio/developer-dash/internal/gvk"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/heptio/developer-dash/internal/testutil"
-
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/go-plugin"
 	dashplugin "github.com/heptio/developer-dash/pkg/plugin"
