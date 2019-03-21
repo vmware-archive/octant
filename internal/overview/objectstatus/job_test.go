@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -26,7 +26,7 @@ func Test_runJobStatus(t *testing.T) {
 				return testutil.LoadObjectFromFile(t, objectFile)
 			},
 			expected: ObjectStatus{
-				Details: []component.TitleViewComponent{
+				Details: []component.TitleComponent{
 					component.NewText("Job has succeeded 1 time"),
 					component.NewText("Job completed in 11s"),
 				},
@@ -40,7 +40,7 @@ func Test_runJobStatus(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusWarning,
-				Details: []component.TitleViewComponent{
+				Details: []component.TitleComponent{
 					component.NewText("Job has failed 2 times"),
 					component.NewText("Job is in progress"),
 				},
@@ -54,7 +54,7 @@ func Test_runJobStatus(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusError,
-				Details: []component.TitleViewComponent{
+				Details: []component.TitleComponent{
 					component.NewText("Job has failed 5 times"),
 					component.NewText("Job has reached the specified backoff limit"),
 				},

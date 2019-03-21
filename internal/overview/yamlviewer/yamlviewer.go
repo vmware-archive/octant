@@ -1,7 +1,7 @@
 package yamlviewer
 
 import (
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 )

@@ -8,7 +8,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/overview/link"
 	dashstrings "github.com/heptio/developer-dash/internal/util/strings"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -21,7 +21,7 @@ func CustomResourceListHandler(
 	ctx context.Context,
 	name, namespace string,
 	crd *apiextv1beta1.CustomResourceDefinition,
-	list []*unstructured.Unstructured) (component.ViewComponent, error) {
+	list []*unstructured.Unstructured) (component.Component, error) {
 
 	hasCustomColumns := len(crd.Spec.AdditionalPrinterColumns) > 0
 	if hasCustomColumns {
@@ -31,7 +31,7 @@ func CustomResourceListHandler(
 	return printGenericCRDTable(name, namespace, list)
 }
 
-func printGenericCRDTable(name, namespace string, list []*unstructured.Unstructured) (component.ViewComponent, error) {
+func printGenericCRDTable(name, namespace string, list []*unstructured.Unstructured) (component.Component, error) {
 	cols := component.NewTableCols("Name", "Labels", "Age")
 	table := component.NewTable(name, cols)
 
@@ -50,7 +50,7 @@ func printGenericCRDTable(name, namespace string, list []*unstructured.Unstructu
 
 func printCustomCRDListTable(name, namespace string,
 	crd *apiextv1beta1.CustomResourceDefinition,
-	list []*unstructured.Unstructured) (component.ViewComponent, error) {
+	list []*unstructured.Unstructured) (component.Component, error) {
 
 	table := component.NewTable(name, component.NewTableCols("Name", "Labels"))
 	for _, column := range crd.Spec.AdditionalPrinterColumns {
@@ -120,13 +120,13 @@ func CustomResourceHandler(
 	ctx context.Context,
 	crd *apiextv1beta1.CustomResourceDefinition,
 	object *unstructured.Unstructured,
-	options Options) (component.ViewComponent, error) {
+	options Options) (component.Component, error) {
 	o := NewObject(object)
 
-	o.RegisterConfig(func() (component.ViewComponent, error) {
+	o.RegisterConfig(func() (component.Component, error) {
 		return printCustomResourceConfig(object, crd)
 	}, 12)
-	o.RegisterSummary(func() (component.ViewComponent, error) {
+	o.RegisterSummary(func() (component.Component, error) {
 		return printCustomResourceStatus(object, crd)
 	}, 12)
 
@@ -140,7 +140,7 @@ func CustomResourceHandler(
 	return view, nil
 }
 
-func printCustomResourceConfig(u *unstructured.Unstructured, crd *apiextv1beta1.CustomResourceDefinition) (component.ViewComponent, error) {
+func printCustomResourceConfig(u *unstructured.Unstructured, crd *apiextv1beta1.CustomResourceDefinition) (component.Component, error) {
 	if crd == nil {
 		return nil, errors.New("CRD is nil")
 	}
@@ -169,7 +169,7 @@ func printCustomResourceConfig(u *unstructured.Unstructured, crd *apiextv1beta1.
 	return component.NewSummary("Configuration", sections...), nil
 }
 
-func printCustomResourceStatus(u *unstructured.Unstructured, crd *apiextv1beta1.CustomResourceDefinition) (component.ViewComponent, error) {
+func printCustomResourceStatus(u *unstructured.Unstructured, crd *apiextv1beta1.CustomResourceDefinition) (component.Component, error) {
 	if crd == nil {
 		return nil, errors.New("CRD is nil")
 	}

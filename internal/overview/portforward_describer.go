@@ -7,7 +7,7 @@ import (
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/portforward"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 )
 
@@ -39,7 +39,7 @@ func (d *PortForwardListDescriber) Describe(ctx context.Context, prefix, namespa
 	}
 
 	return component.ContentResponse{
-		ViewComponents: []component.ViewComponent{list},
+		Components: []component.Component{list},
 	}, nil
 }
 
@@ -52,7 +52,7 @@ func NewPortForwardListDescriber() *PortForwardListDescriber {
 	return &PortForwardListDescriber{}
 }
 
-func describePortForwardPorts(pf portforward.State) component.ViewComponent {
+func describePortForwardPorts(pf portforward.State) component.Component {
 	lst := component.NewList("", nil)
 
 	for _, p := range pf.Ports {

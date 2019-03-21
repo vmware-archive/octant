@@ -5,20 +5,17 @@ import (
 	"encoding/json"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
-	"github.com/heptio/developer-dash/internal/view/component"
-
 	"github.com/golang/mock/gomock"
-
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/plugin/fake"
 	"github.com/heptio/developer-dash/pkg/plugin/proto"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type grpcClientMocks struct {
@@ -249,7 +246,7 @@ func Test_GRPCServer_Print(t *testing.T) {
 	})
 }
 
-func encodeComponent(t *testing.T, view component.ViewComponent) []byte {
+func encodeComponent(t *testing.T, view component.Component) []byte {
 	data, err := json.Marshal(view)
 	require.NoError(t, err)
 	return data

@@ -6,14 +6,14 @@ import (
 	"sort"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 
 	corev1 "k8s.io/api/core/v1"
 )
 
 // ConfigMapListHandler is a printFunc that prints ConfigMaps
-func ConfigMapListHandler(ctx context.Context, list *corev1.ConfigMapList, opts Options) (component.ViewComponent, error) {
+func ConfigMapListHandler(ctx context.Context, list *corev1.ConfigMapList, opts Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("list is nil")
 	}
@@ -40,15 +40,15 @@ func ConfigMapListHandler(ctx context.Context, list *corev1.ConfigMapList, opts 
 }
 
 // ConfigMapHandler is a printFunc that prints a ConfigMap
-func ConfigMapHandler(ctx context.Context, cm *corev1.ConfigMap, options Options) (component.ViewComponent, error) {
+func ConfigMapHandler(ctx context.Context, cm *corev1.ConfigMap, options Options) (component.Component, error) {
 	o := NewObject(cm)
 
-	o.RegisterConfig(func() (component.ViewComponent, error) {
+	o.RegisterConfig(func() (component.Component, error) {
 		return describeConfigMapConfig(cm)
 	}, 16)
 
 	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.ViewComponent, error) {
+		Func: func() (component.Component, error) {
 			return describeConfigMapData(cm)
 		},
 		Width: component.WidthFull,

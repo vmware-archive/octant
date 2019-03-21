@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -89,7 +89,7 @@ func Test_printResourceConfig(t *testing.T) {
 		name     string
 		crd      string
 		cr       string
-		expected component.ViewComponent
+		expected component.Component
 		isErr    bool
 	}{
 		{
@@ -143,7 +143,7 @@ func Test_printResourceStatus(t *testing.T) {
 		name     string
 		crd      string
 		cr       string
-		expected component.ViewComponent
+		expected component.Component
 		isErr    bool
 	}{
 		{

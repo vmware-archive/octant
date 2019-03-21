@@ -5,12 +5,12 @@ import (
 	"sort"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	rbacv1 "k8s.io/api/rbac/v1"
 )
 
-func RoleListHandler(ctx context.Context, roleList *rbacv1.RoleList, opts Options) (component.ViewComponent, error) {
+func RoleListHandler(ctx context.Context, roleList *rbacv1.RoleList, opts Options) (component.Component, error) {
 	if roleList == nil {
 		return nil, errors.New("role list is nil")
 	}
@@ -28,15 +28,15 @@ func RoleListHandler(ctx context.Context, roleList *rbacv1.RoleList, opts Option
 	return table, nil
 }
 
-func RoleHandler(ctx context.Context, role *rbacv1.Role, opts Options) (component.ViewComponent, error) {
+func RoleHandler(ctx context.Context, role *rbacv1.Role, opts Options) (component.Component, error) {
 	o := NewObject(role)
 
-	o.RegisterConfig(func() (component.ViewComponent, error) {
+	o.RegisterConfig(func() (component.Component, error) {
 		return printRoleConfig(role)
 	}, 16)
 
 	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.ViewComponent, error) {
+		Func: func() (component.Component, error) {
 			return printRolePolicyRules(role)
 		},
 		Width: component.WidthFull,
@@ -45,7 +45,7 @@ func RoleHandler(ctx context.Context, role *rbacv1.Role, opts Options) (componen
 	return o.ToComponent(ctx, opts)
 }
 
-func printRoleConfig(role *rbacv1.Role) (component.ViewComponent, error) {
+func printRoleConfig(role *rbacv1.Role) (component.Component, error) {
 	if role == nil {
 		return nil, errors.New("role is nil")
 	}

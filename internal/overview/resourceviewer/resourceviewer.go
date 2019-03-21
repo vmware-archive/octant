@@ -7,7 +7,7 @@ import (
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/overview/objectvisitor"
 	"github.com/heptio/developer-dash/internal/queryer"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -57,7 +57,7 @@ func New(logger log.Logger, c cache.Cache, opts ...ViewerOpt) (*ResourceViewer, 
 }
 
 // Visit visits an object and creates a view component.
-func (rv *ResourceViewer) Visit(ctx context.Context, object objectvisitor.ClusterObject) (component.ViewComponent, error) {
+func (rv *ResourceViewer) Visit(ctx context.Context, object objectvisitor.ClusterObject) (component.Component, error) {
 	rv.collector.Reset()
 
 	ctx, span := trace.StartSpan(ctx, "resourceviewer")
@@ -73,7 +73,7 @@ func (rv *ResourceViewer) Visit(ctx context.Context, object objectvisitor.Cluste
 		return nil, err
 	}
 
-	return rv.collector.ViewComponent(string(uid))
+	return rv.collector.Component(string(uid))
 }
 
 func (rv *ResourceViewer) factoryFunc() objectvisitor.ObjectHandlerFactory {

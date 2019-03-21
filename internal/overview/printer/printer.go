@@ -10,7 +10,7 @@ import (
 	"github.com/heptio/developer-dash/pkg/plugin"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kLabels "k8s.io/apimachinery/pkg/labels"
@@ -35,7 +35,7 @@ type Options struct {
 // Printer is an interface for printing runtime objects.
 type Printer interface {
 	// Print prints a runtime object.
-	Print(ctx context.Context, object runtime.Object, pm PluginPrinter) (component.ViewComponent, error)
+	Print(ctx context.Context, object runtime.Object, pm PluginPrinter) (component.Component, error)
 }
 
 // Resource prints runtime objects.
@@ -58,7 +58,7 @@ func NewResource(c cache.Cache, portForwardService portforward.PortForwarder) *R
 
 // Print prints a runtime object. If not handler can be found for the type,
 // it will print using `DefaultPrintFunc`.
-func (p *Resource) Print(ctx context.Context, object runtime.Object, pm PluginPrinter) (component.ViewComponent, error) {
+func (p *Resource) Print(ctx context.Context, object runtime.Object, pm PluginPrinter) (component.Component, error) {
 	printOptions := Options{
 		Cache:         p.cache,
 		PortForward:   p.portForward,
@@ -77,7 +77,7 @@ func (p *Resource) Print(ctx context.Context, object runtime.Object, pm PluginPr
 			return nil, results[1].Interface().(error)
 		}
 
-		viewComponent := results[0].Interface().(component.ViewComponent)
+		viewComponent := results[0].Interface().(component.Component)
 		return viewComponent, nil
 	}
 
@@ -105,7 +105,7 @@ func (p *Resource) Handler(printFunc interface{}) error {
 // ValidatePrintHandlerFunc validates print handler signature.
 // printFunc is the function that will be called to print an object.
 // printFunc must be of the following type:
-//   func printFunc(ctx context.Context, object ObjectType, options Options) (component.ViewComponent, error)
+//   func printFunc(ctx context.Context, object ObjectType, options Options) (component.Component, error)
 // where:
 //   ObjectType is the type of object that will be printed
 func ValidatePrintHandlerFunc(printFunc reflect.Value) error {
@@ -124,10 +124,10 @@ func ValidatePrintHandlerFunc(printFunc reflect.Value) error {
 
 	if funcType.In(0) != reflect.TypeOf((*context.Context)(nil)).Elem() ||
 		funcType.In(2) != reflect.TypeOf((*Options)(nil)).Elem() ||
-		funcType.Out(0) != reflect.TypeOf((*component.ViewComponent)(nil)).Elem() ||
+		funcType.Out(0) != reflect.TypeOf((*component.Component)(nil)).Elem() ||
 		funcType.Out(1) != reflect.TypeOf((*error)(nil)).Elem() {
 		return errors.Errorf("invalid print handler. The expected signature is: "+
-			"func handler(ctx context.Context, obj %v, options *PrintOptions) (component.ViewComponent, error)",
+			"func handler(ctx context.Context, obj %v, options *PrintOptions) (component.Component, error)",
 			funcType.In(0))
 	}
 
@@ -137,7 +137,7 @@ func ValidatePrintHandlerFunc(printFunc reflect.Value) error {
 // DefaultPrintFunc is a default object printer. It prints Kubernetes resource
 // lists with three columns: name, labels, age. Returns nil if the object
 // should not be printed.
-func DefaultPrintFunc(ctx context.Context, object runtime.Object, options Options) (component.ViewComponent, error) {
+func DefaultPrintFunc(ctx context.Context, object runtime.Object, options Options) (component.Component, error) {
 	if object == nil {
 		return nil, errors.New("unable to print nil objects")
 	}

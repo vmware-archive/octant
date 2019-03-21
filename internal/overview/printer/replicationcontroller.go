@@ -6,14 +6,14 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ReplicationControllerListHandler is a printFunc that lists ReplicationControllers
-func ReplicationControllerListHandler(ctx context.Context, list *corev1.ReplicationControllerList, options Options) (component.ViewComponent, error) {
+func ReplicationControllerListHandler(ctx context.Context, list *corev1.ReplicationControllerList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -47,21 +47,21 @@ func ReplicationControllerListHandler(ctx context.Context, list *corev1.Replicat
 }
 
 // ReplicationControllerHandler is a printFunc that prints a ReplicationController
-func ReplicationControllerHandler(ctx context.Context, rc *corev1.ReplicationController, options Options) (component.ViewComponent, error) {
+func ReplicationControllerHandler(ctx context.Context, rc *corev1.ReplicationController, options Options) (component.Component, error) {
 	o := NewObject(rc)
 
 	rcConfigGen := NewReplicationControllerConfiguration(rc)
-	o.RegisterConfig(func() (component.ViewComponent, error) {
+	o.RegisterConfig(func() (component.Component, error) {
 		return rcConfigGen.Create()
 	}, 16)
 
 	rcSummaryGen := NewReplicationControllerStatus(rc)
-	o.RegisterSummary(func() (component.ViewComponent, error) {
+	o.RegisterSummary(func() (component.Component, error) {
 		return rcSummaryGen.Create(ctx, options.Cache)
 	}, 8)
 
 	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.ViewComponent, error) {
+		Func: func() (component.Component, error) {
 			return createPodListView(ctx, rc, options)
 		},
 		Width: component.WidthFull,

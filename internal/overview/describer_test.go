@@ -11,7 +11,7 @@ import (
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -79,7 +79,7 @@ func TestListDescriber(t *testing.T) {
 	list.Add(table)
 
 	expected := component.ContentResponse{
-		ViewComponents: []component.ViewComponent{list},
+		Components: []component.Component{list},
 	}
 
 	assert.Equal(t, expected, cResponse)
@@ -134,7 +134,7 @@ func TestObjectDescriber(t *testing.T) {
 	d := NewObjectDescriber(thePath, "object", fn, objectType, true)
 
 	p := printer.NewResource(c, pf)
-	err := p.Handler(func(context.Context, *corev1.Pod, printer.Options) (component.ViewComponent, error) {
+	err := p.Handler(func(context.Context, *corev1.Pod, printer.Options) (component.Component, error) {
 		return component.NewText("*v1.Pod"), nil
 	})
 	require.NoError(t, err)
@@ -161,7 +161,7 @@ func TestObjectDescriber(t *testing.T) {
 
 	expected := component.ContentResponse{
 		Title: component.Title(component.NewText("object"), component.NewText("pod")),
-		ViewComponents: []component.ViewComponent{
+		Components: []component.Component{
 			summary,
 			yaml,
 			logs,
@@ -199,7 +199,7 @@ func TestSectionDescriber(t *testing.T) {
 			),
 			expected: component.ContentResponse{
 				Title: component.Title(component.NewText("section")),
-				ViewComponents: []component.ViewComponent{
+				Components: []component.Component{
 					component.NewList("section", nil),
 				},
 			},
@@ -214,7 +214,7 @@ func TestSectionDescriber(t *testing.T) {
 			),
 			expected: component.ContentResponse{
 				Title: component.Title(component.NewText("section")),
-				ViewComponents: []component.ViewComponent{
+				Components: []component.Component{
 					component.NewList("section", nil),
 				},
 			},

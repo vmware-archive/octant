@@ -8,14 +8,14 @@ import (
 	"github.com/heptio/developer-dash/internal/cache"
 	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
 // ServiceListHandler is a printFunc that lists services
-func ServiceListHandler(ctx context.Context, list *corev1.ServiceList, opts Options) (component.ViewComponent, error) {
+func ServiceListHandler(ctx context.Context, list *corev1.ServiceList, opts Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -43,19 +43,19 @@ func ServiceListHandler(ctx context.Context, list *corev1.ServiceList, opts Opti
 }
 
 // ServiceHandler is a printFunc that prints a Services.
-func ServiceHandler(ctx context.Context, service *corev1.Service, options Options) (component.ViewComponent, error) {
+func ServiceHandler(ctx context.Context, service *corev1.Service, options Options) (component.Component, error) {
 	o := NewObject(service)
 
-	o.RegisterConfig(func() (component.ViewComponent, error) {
+	o.RegisterConfig(func() (component.Component, error) {
 		return serviceConfiguration(service)
 	}, 12)
 
-	o.RegisterSummary(func() (component.ViewComponent, error) {
+	o.RegisterSummary(func() (component.Component, error) {
 		return serviceSummary(service)
 	}, 12)
 
 	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.ViewComponent, error) {
+		Func: func() (component.Component, error) {
 			return serviceEndpoints(ctx, options.Cache, service)
 		},
 		Width: component.WidthFull,
@@ -66,7 +66,7 @@ func ServiceHandler(ctx context.Context, service *corev1.Service, options Option
 	return o.ToComponent(ctx, options)
 }
 
-func printServicePorts(ports []corev1.ServicePort) component.ViewComponent {
+func printServicePorts(ports []corev1.ServicePort) component.Component {
 	out := make([]string, len(ports))
 	for i, port := range ports {
 		out[i] = describeTargetPort(port)
@@ -210,7 +210,7 @@ func serviceEndpoints(ctx context.Context, c cache.Cache, service *corev1.Servic
 		for _, address := range subset.Addresses {
 			row := component.TableRow{}
 
-			var target component.ViewComponent = component.NewText("No target")
+			var target component.Component = component.NewText("No target")
 			if targetRef := address.TargetRef; targetRef != nil {
 				target = link.ForGVK(service.Namespace, targetRef.APIVersion, targetRef.Kind,
 					targetRef.Name, targetRef.Name)

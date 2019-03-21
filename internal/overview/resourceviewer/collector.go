@@ -13,7 +13,7 @@ import (
 	"github.com/heptio/developer-dash/internal/overview/objectstatus"
 	"github.com/heptio/developer-dash/internal/overview/objectvisitor"
 	dashstrings "github.com/heptio/developer-dash/internal/util/strings"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -274,7 +274,7 @@ func (c *Collector) podGroupDetails(object objectvisitor.ClusterObject) (podGrou
 	return pgd, nil
 }
 
-func (c *Collector) ViewComponent(selected string) (component.ViewComponent, error) {
+func (c *Collector) Component(selected string) (component.Component, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

@@ -14,7 +14,7 @@ import (
 	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -94,17 +94,17 @@ func Test_printServiceAccountConfig(t *testing.T) {
 	require.NoError(t, err)
 
 	var sections component.SummarySections
-	pullSecretsList := component.NewList("", []component.ViewComponent{
+	pullSecretsList := component.NewList("", []component.Component{
 		link.ForGVK(object.Namespace, "v1", "Secret", "secret", "secret"),
 	})
 	sections.Add("Image Pull Secrets", pullSecretsList)
 
-	mountSecretsList := component.NewList("", []component.ViewComponent{
+	mountSecretsList := component.NewList("", []component.Component{
 		link.ForGVK(object.Namespace, "v1", "Secret", "secret", "secret"),
 	})
 	sections.Add("Mountable Secrets", mountSecretsList)
 
-	tokenSecretsList := component.NewList("", []component.ViewComponent{
+	tokenSecretsList := component.NewList("", []component.Component{
 		link.ForGVK(object.Namespace, "v1", "Secret", "secret", "secret"),
 	})
 	sections.Add("Tokens", tokenSecretsList)

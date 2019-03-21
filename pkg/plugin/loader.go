@@ -76,6 +76,14 @@ func AvailablePlugins(config Config) ([]string, error) {
 		return nil, errors.Wrap(err, "get plugin directory")
 	}
 
+	_, err = config.Fs().Stat(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []string{}, nil
+		}
+		return nil, errors.Wrap(err, "check plugin directory")
+	}
+
 	fis, err := afero.ReadDir(config.Fs(), dir)
 	if err != nil {
 		return nil, errors.Wrap(err, "read files in plugin directory")

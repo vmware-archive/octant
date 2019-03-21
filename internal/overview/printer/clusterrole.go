@@ -5,14 +5,14 @@ import (
 	"sort"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 
 	rbacv1 "k8s.io/api/rbac/v1"
 )
 
 // ClusterRoleListHandler is a printFunc that prints cluster roles
-func ClusterRoleListHandler(ctx context.Context, list *rbacv1.ClusterRoleList, options Options) (component.ViewComponent, error) {
+func ClusterRoleListHandler(ctx context.Context, list *rbacv1.ClusterRoleList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("cluster role list is nil")
 	}
@@ -33,15 +33,15 @@ func ClusterRoleListHandler(ctx context.Context, list *rbacv1.ClusterRoleList, o
 }
 
 // ClusterRoleHandler is a printFunc that prints a cluster role
-func ClusterRoleHandler(ctx context.Context, clusterRole *rbacv1.ClusterRole, options Options) (component.ViewComponent, error) {
+func ClusterRoleHandler(ctx context.Context, clusterRole *rbacv1.ClusterRole, options Options) (component.Component, error) {
 	o := NewObject(clusterRole)
 
-	o.RegisterConfig(func() (component.ViewComponent, error) {
+	o.RegisterConfig(func() (component.Component, error) {
 		return printClusterRoleConfig(clusterRole)
 	}, 12)
 
 	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.ViewComponent, error) {
+		Func: func() (component.Component, error) {
 			return printClusterRolePolicyRules(clusterRole)
 		},
 		Width: component.WidthFull,
@@ -50,7 +50,7 @@ func ClusterRoleHandler(ctx context.Context, clusterRole *rbacv1.ClusterRole, op
 	return o.ToComponent(ctx, options)
 }
 
-func printClusterRoleConfig(clusterRole *rbacv1.ClusterRole) (component.ViewComponent, error) {
+func printClusterRoleConfig(clusterRole *rbacv1.ClusterRole) (component.Component, error) {
 	if clusterRole == nil {
 		return nil, errors.New("cluster role is nil")
 	}

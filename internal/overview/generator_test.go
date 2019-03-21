@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -39,7 +39,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 		{
 			name:     "dynamic content",
 			path:     "/foo",
-			expected: component.ContentResponse{ViewComponents: []component.ViewComponent{textFoo}},
+			expected: component.ContentResponse{Components: []component.Component{textFoo}},
 		},
 		{
 			name:  "invalid path",
@@ -50,7 +50,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 			name: "sub path",
 			path: "/sub/foo",
 			expected: component.ContentResponse{
-				ViewComponents: []component.ViewComponent{textSub},
+				Components: []component.Component{textSub},
 			},
 		},
 	}
@@ -89,10 +89,10 @@ func Test_realGenerator_Generate(t *testing.T) {
 
 type stubDescriber struct {
 	path       string
-	components []component.ViewComponent
+	components []component.Component
 }
 
-func newStubDescriber(p string, components ...component.ViewComponent) *stubDescriber {
+func newStubDescriber(p string, components ...component.Component) *stubDescriber {
 	return &stubDescriber{
 		path:       p,
 		components: components,
@@ -107,7 +107,7 @@ func newEmptyDescriber(p string) *stubDescriber {
 
 func (d *stubDescriber) Describe(context.Context, string, string, cluster.ClientInterface, DescriberOptions) (component.ContentResponse, error) {
 	return component.ContentResponse{
-		ViewComponents: d.components,
+		Components: d.components,
 	}, nil
 }
 

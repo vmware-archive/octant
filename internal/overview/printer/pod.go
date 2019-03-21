@@ -7,7 +7,7 @@ import (
 	"github.com/heptio/developer-dash/internal/cache"
 	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -26,7 +26,7 @@ var (
 )
 
 // PodListHandler is a printFunc that prints pods
-func PodListHandler(ctx context.Context, list *corev1.PodList, opts Options) (component.ViewComponent, error) {
+func PodListHandler(ctx context.Context, list *corev1.PodList, opts Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("list is nil")
 	}
@@ -82,23 +82,23 @@ func PodListHandler(ctx context.Context, list *corev1.PodList, opts Options) (co
 }
 
 // PodHandler is a printFunc that prints Pods
-func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.ViewComponent, error) {
+func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.Component, error) {
 	o := NewObject(pod)
 
 	podConfigGen := NewPodConfiguration(pod)
-	o.RegisterConfig(func() (component.ViewComponent, error) {
+	o.RegisterConfig(func() (component.Component, error) {
 		return podConfigGen.Create()
 	}, 12)
 
 	o.EnableEvents()
 
-	o.RegisterSummary(func() (component.ViewComponent, error) {
+	o.RegisterSummary(func() (component.Component, error) {
 		return createPodSummaryStatus(pod)
 	}, 12)
 
 	conditionDescription := ItemDescriptor{
 		Width: component.WidthFull,
-		Func: func() (component.ViewComponent, error) {
+		Func: func() (component.Component, error) {
 			return createPodConditionsView(pod)
 		},
 	}
@@ -110,7 +110,7 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.V
 		cc := NewContainerConfiguration(pod, &container, opts.PortForward, true)
 		initContainerItems = append(initContainerItems, ItemDescriptor{
 			Width: component.WidthHalf,
-			Func: func() (component.ViewComponent, error) {
+			Func: func() (component.Component, error) {
 				return cc.Create()
 			},
 		})
@@ -123,7 +123,7 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.V
 		cc := NewContainerConfiguration(pod, &container, opts.PortForward, false)
 		containerItems = append(initContainerItems, ItemDescriptor{
 			Width: component.WidthHalf,
-			Func: func() (component.ViewComponent, error) {
+			Func: func() (component.Component, error) {
 				return cc.Create()
 			},
 		})
@@ -134,19 +134,19 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.V
 	o.RegisterItems([]ItemDescriptor{
 		{
 			Width: component.WidthHalf,
-			Func: func() (component.ViewComponent, error) {
+			Func: func() (component.Component, error) {
 				return printVolumes(pod.Spec.Volumes)
 			},
 		},
 		{
 			Width: component.WidthHalf,
-			Func: func() (component.ViewComponent, error) {
+			Func: func() (component.Component, error) {
 				return printTolerations(pod.Spec)
 			},
 		},
 		{
 			Width: component.WidthHalf,
-			Func: func() (component.ViewComponent, error) {
+			Func: func() (component.Component, error) {
 				return printAffinity(pod.Spec)
 			},
 		},
@@ -367,7 +367,7 @@ func isEqualSelector(s1, s2 *metav1.LabelSelector) bool {
 	return apiequality.Semantic.DeepEqual(s1Copy, s2Copy)
 }
 
-func createPodListView(ctx context.Context, object runtime.Object, options Options) (component.ViewComponent, error) {
+func createPodListView(ctx context.Context, object runtime.Object, options Options) (component.Component, error) {
 	options.DisableLabels = true
 
 	podList := &corev1.PodList{}
@@ -432,7 +432,7 @@ func createPodListView(ctx context.Context, object runtime.Object, options Optio
 	return PodListHandler(ctx, podList, options)
 }
 
-func createMountedPodListView(ctx context.Context, namespace string, persistentVolumeClaimName string, options Options) (component.ViewComponent, error) {
+func createMountedPodListView(ctx context.Context, namespace string, persistentVolumeClaimName string, options Options) (component.Component, error) {
 	key := cacheutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
@@ -465,7 +465,7 @@ func createMountedPodListView(ctx context.Context, namespace string, persistentV
 	return PodListHandler(ctx, mountedPodList, options)
 }
 
-func createPodConditionsView(pod *corev1.Pod) (component.ViewComponent, error) {
+func createPodConditionsView(pod *corev1.Pod) (component.Component, error) {
 	if pod == nil {
 		return nil, errors.New("pod is nil")
 	}

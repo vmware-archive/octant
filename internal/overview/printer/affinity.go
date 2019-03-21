@@ -6,10 +6,10 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
-func printAffinity(podSpec corev1.PodSpec) (component.ViewComponent, error) {
+func printAffinity(podSpec corev1.PodSpec) (component.Component, error) {
 	ad := &affinityDescriber{podSpec: podSpec}
 	return ad.Create()
 }
@@ -48,8 +48,8 @@ type podAffinityOptions struct {
 	anti       bool
 }
 
-func (ad *affinityDescriber) podAffinity(affinity corev1.Affinity) []component.ViewComponent {
-	var items []component.ViewComponent
+func (ad *affinityDescriber) podAffinity(affinity corev1.Affinity) []component.Component {
+	var items []component.Component
 
 	if podAffinity := affinity.PodAffinity; podAffinity != nil {
 		requiredOptions := podAffinityOptions{isRequired: true}
@@ -84,8 +84,8 @@ func (ad *affinityDescriber) podAffinity(affinity corev1.Affinity) []component.V
 	return items
 }
 
-func (ad *affinityDescriber) podAffinityTerms(terms []corev1.PodAffinityTerm, options podAffinityOptions) []component.ViewComponent {
-	var items []component.ViewComponent
+func (ad *affinityDescriber) podAffinityTerms(terms []corev1.PodAffinityTerm, options podAffinityOptions) []component.Component {
+	var items []component.Component
 
 	for _, term := range terms {
 		var b strings.Builder
@@ -125,8 +125,8 @@ func (ad *affinityDescriber) podAffinityTerms(terms []corev1.PodAffinityTerm, op
 	return items
 }
 
-func (ad *affinityDescriber) nodeAffinity(affinity corev1.Affinity) []component.ViewComponent {
-	var items []component.ViewComponent
+func (ad *affinityDescriber) nodeAffinity(affinity corev1.Affinity) []component.Component {
+	var items []component.Component
 
 	if nodeAffinity := affinity.NodeAffinity; nodeAffinity != nil {
 		for _, preferred := range nodeAffinity.PreferredDuringSchedulingIgnoredDuringExecution {
@@ -152,8 +152,8 @@ type nodeSelectorRequirementOptions struct {
 	weight     int32
 }
 
-func (ad *affinityDescriber) nodeSelectorTerms(terms []corev1.NodeSelectorTerm, options nodeSelectorRequirementOptions) []component.ViewComponent {
-	var items []component.ViewComponent
+func (ad *affinityDescriber) nodeSelectorTerms(terms []corev1.NodeSelectorTerm, options nodeSelectorRequirementOptions) []component.Component {
+	var items []component.Component
 
 	for _, term := range terms {
 		items = append(items, ad.nodeSelectorRequirement("label", options, term.MatchExpressions)...)
@@ -163,13 +163,13 @@ func (ad *affinityDescriber) nodeSelectorTerms(terms []corev1.NodeSelectorTerm, 
 	return items
 }
 
-func (ad *affinityDescriber) nodeSelectorRequirement(itemType string, options nodeSelectorRequirementOptions, nodeSelectorRequirements []corev1.NodeSelectorRequirement) []component.ViewComponent {
+func (ad *affinityDescriber) nodeSelectorRequirement(itemType string, options nodeSelectorRequirementOptions, nodeSelectorRequirements []corev1.NodeSelectorRequirement) []component.Component {
 	preamble := "Prefer to schedule on nodes"
 	if options.isRequired {
 		preamble = "Schedule on nodes"
 	}
 
-	var items []component.ViewComponent
+	var items []component.Component
 	for _, nsr := range nodeSelectorRequirements {
 		var b strings.Builder
 

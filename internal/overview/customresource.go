@@ -15,7 +15,7 @@ import (
 	"github.com/heptio/developer-dash/internal/overview/resourceviewer"
 	"github.com/heptio/developer-dash/internal/overview/yamlviewer"
 	"github.com/heptio/developer-dash/internal/queryer"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -116,12 +116,12 @@ func (csd *crdSectionDescriber) Describe(ctx context.Context, prefix, namespace 
 			return emptyContentResponse, err
 		}
 
-		list.Add(resp.ViewComponents...)
+		list.Add(resp.Components...)
 	}
 
 	cr := component.ContentResponse{
-		ViewComponents: []component.ViewComponent{list},
-		Title:          component.TitleFromString(csd.title),
+		Components: []component.Component{list},
+		Title:      component.TitleFromString(csd.title),
 	}
 
 	return cr, nil
@@ -133,7 +133,7 @@ func (csd *crdSectionDescriber) PathFilters() []pathFilter {
 	}
 }
 
-type crdListPrinter func(ctx context.Context, name, namespace string, crd *apiextv1beta1.CustomResourceDefinition, objects []*unstructured.Unstructured) (component.ViewComponent, error)
+type crdListPrinter func(ctx context.Context, name, namespace string, crd *apiextv1beta1.CustomResourceDefinition, objects []*unstructured.Unstructured) (component.Component, error)
 
 type crdListDescriptionOption func(*crdListDescriber)
 
@@ -176,7 +176,7 @@ func (cld *crdListDescriber) Describe(ctx context.Context, prefix, namespace str
 	}
 
 	return component.ContentResponse{
-		ViewComponents: []component.ViewComponent{table},
+		Components: []component.Component{table},
 	}, nil
 }
 
@@ -216,8 +216,8 @@ func (cld *crdListDescriber) PathFilters() []pathFilter {
 	}
 }
 
-type crdPrinter func(ctx context.Context, crd *apiextv1beta1.CustomResourceDefinition, object *unstructured.Unstructured, options printer.Options) (component.ViewComponent, error)
-type resourceViewerPrinter func(ctx context.Context, object *unstructured.Unstructured, c cache.Cache, q queryer.Queryer) (component.ViewComponent, error)
+type crdPrinter func(ctx context.Context, crd *apiextv1beta1.CustomResourceDefinition, object *unstructured.Unstructured, options printer.Options) (component.Component, error)
+type resourceViewerPrinter func(ctx context.Context, object *unstructured.Unstructured, c cache.Cache, q queryer.Queryer) (component.Component, error)
 type yamlPrinter func(runtime.Object) (*component.YAML, error)
 
 type crdDescriberOption func(*crdDescriber)
@@ -322,7 +322,7 @@ func (cd *crdDescriber) PathFilters() []pathFilter {
 	}
 }
 
-func createCRDResourceViewer(ctx context.Context, object *unstructured.Unstructured, c cache.Cache, q queryer.Queryer) (component.ViewComponent, error) {
+func createCRDResourceViewer(ctx context.Context, object *unstructured.Unstructured, c cache.Cache, q queryer.Queryer) (component.Component, error) {
 	logger := log.From(ctx)
 
 	rv, err := resourceviewer.New(logger, c, resourceviewer.WithDefaultQueryer(q))

@@ -47,3 +47,23 @@ func Test_AvailablePlugins(t *testing.T) {
 
 	assert.Equal(t, expected, got)
 }
+
+func Test_AvailablePlugins_no_plugin_dir(t *testing.T) {
+	fs := afero.NewMemMapFs()
+
+	homePath := filepath.Join("/home", "user")
+
+	c := &defaultConfig{
+		fs: fs,
+		homeFn: func() string {
+			return homePath
+		},
+	}
+
+	got, err := AvailablePlugins(c)
+	require.NoError(t, err)
+
+	expected := []string{}
+
+	assert.Equal(t, expected, got)
+}

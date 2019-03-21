@@ -8,9 +8,9 @@ import (
 	"github.com/heptio/developer-dash/internal/cache"
 	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/internal/view/component"
-	"github.com/heptio/developer-dash/internal/view/flexlayout"
-	"github.com/heptio/developer-dash/internal/view/gridlayout"
+	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/heptio/developer-dash/pkg/view/flexlayout"
+	"github.com/heptio/developer-dash/pkg/view/gridlayout"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -22,7 +22,7 @@ var (
 )
 
 // EventListHandler is a printFunc that lists events.
-func EventListHandler(ctx context.Context, list *corev1.EventList, opts Options) (component.ViewComponent, error) {
+func EventListHandler(ctx context.Context, list *corev1.EventList, opts Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -39,7 +39,7 @@ func EventListHandler(ctx context.Context, list *corev1.EventList, opts Options)
 			return nil, err
 		}
 
-		infoItems := []component.ViewComponent{
+		infoItems := []component.Component{
 			component.NewLink("", event.InvolvedObject.Name, objectPath),
 			component.NewText(fmt.Sprintf("%d", event.Count)),
 		}
@@ -58,7 +58,7 @@ func EventListHandler(ctx context.Context, list *corev1.EventList, opts Options)
 	return table, nil
 }
 
-func EventHandler(ctx context.Context, event *corev1.Event, opts Options) (component.ViewComponent, error) {
+func EventHandler(ctx context.Context, event *corev1.Event, opts Options) (component.Component, error) {
 	if event == nil {
 		return nil, errors.New("event can not be nil")
 	}
@@ -133,7 +133,7 @@ func EventHandler(ctx context.Context, event *corev1.Event, opts Options) (compo
 }
 
 // PrintEvents collects events for a resource
-func PrintEvents(list *corev1.EventList, opts Options) (component.ViewComponent, error) {
+func PrintEvents(list *corev1.EventList, opts Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}

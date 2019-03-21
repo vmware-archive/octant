@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/internal/view/component"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -35,7 +35,7 @@ var (
 
 type ObjectStatus struct {
 	nodeStatus component.NodeStatus
-	Details    []component.TitleViewComponent
+	Details    []component.TitleComponent
 }
 
 func (os *ObjectStatus) AddDetail(detail string) {
