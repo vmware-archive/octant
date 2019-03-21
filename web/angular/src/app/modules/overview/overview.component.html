@@ -1,0 +1,15 @@
+<app-filters></app-filters>
+
+<ng-container *ngIf="hasReceivedContent; else loading">
+  <ng-container *ngIf="hasTabs; then withTabs; else withoutTabs"></ng-container>
+  <ng-template #withTabs>
+    <app-object-tabs [views]="views" [title]="title"></app-object-tabs>
+  </ng-template>
+  <ng-template #withoutTabs>
+    <app-content-switcher [view]="singleView"></app-content-switcher>
+  </ng-template>
+</ng-container>
+
+<ng-template #loading>
+  <div class="progress loop"><progress></progress></div>
+</ng-template>

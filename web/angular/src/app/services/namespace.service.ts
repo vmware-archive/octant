@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
-import { DataService } from '../data.service';
+import { DataService } from './data.service';
 import { Namespaces } from '../models/namespace';
 
 @Injectable({

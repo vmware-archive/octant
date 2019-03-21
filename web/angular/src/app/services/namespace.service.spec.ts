@@ -2,8 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { ReplaySubject } from 'rxjs';
 
-import { DataService } from '../data.service';
-import { ViewModule } from '../layout/view/view.module';
+import { DataService } from './data.service';
+import { OverviewModule } from '../modules/overview/overview.module';
 import { NamespaceService } from './namespace.service';
 
 const dataServiceSpy = jasmine.createSpyObj('DataService', ['getNamespaces', 'pollNamespaces']);
@@ -13,7 +13,7 @@ const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 describe('NamespaceService', () => {
   beforeEach(() =>
     TestBed.configureTestingModule({
-      imports: [ViewModule],
+      imports: [OverviewModule],
       providers: [{ provide: Router, useValue: routerSpy }, { provide: DataService, useValue: dataServiceSpy }],
     })
   );

@@ -9,7 +9,7 @@ import { ClarityModule } from '@clr/angular';
 import { AppRouterModule } from './app-router/router.module';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { ViewModule } from './layout/view/view.module';
+import { OverviewModule } from './modules/overview/overview.module';
 
 @Injectable()
 export class UnstripTrailingSlashLocation extends Location {
@@ -27,7 +27,7 @@ export class UnstripTrailingSlashLocation extends Location {
     BrowserAnimationsModule,
     HttpClientModule,
     AppRouterModule,
-    ViewModule,
+    OverviewModule,
   ],
   providers: [{ provide: Location, useClass: UnstripTrailingSlashLocation }],
   bootstrap: [AppComponent],

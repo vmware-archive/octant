@@ -4,7 +4,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { ClarityModule } from '@clr/angular';
 
 import { AppComponent } from './app.component';
-import { NamespaceComponent } from './layout/view/namespace/namespace.component';
+import { NamespaceComponent } from './modules/overview/components/namespace/namespace.component';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {

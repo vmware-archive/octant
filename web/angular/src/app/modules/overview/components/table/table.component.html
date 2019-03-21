@@ -1,0 +1,12 @@
+<table class="table table-compact table-noborder">
+  <thead>
+    <th *ngFor="let column of columns">{{ column }}</th>
+  </thead>
+  <tbody>
+    <tr *ngFor="let row of rows">
+      <td *ngFor="let column of columns">
+        <app-content-switcher [view]="row[column]"></app-content-switcher>
+      </td>
+    </tr>
+  </tbody>
+</table>

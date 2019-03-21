@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { DataService } from './data.service';
+import { DataService } from './services/data.service';
 import { Navigation } from './models/navigation';
 
 @Component({
