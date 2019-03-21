@@ -47,9 +47,12 @@ func roleLinkFromClusterRoleBinding(roleBinding *rbacv1.ClusterRoleBinding) *com
 func ClusterRoleBindingHandler(ctx context.Context, roleBinding *rbacv1.ClusterRoleBinding, opts Options) (component.Component, error) {
 	o := NewObject(roleBinding)
 
-	o.RegisterConfig(func() (component.Component, error) {
-		return printClusterRoleBindingConfig(roleBinding)
-	}, 16)
+	summary, err := printClusterRoleBindingConfig(roleBinding)
+	if err != nil {
+		return nil, err
+	}
+
+	o.RegisterConfig(summary)
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {
@@ -61,7 +64,7 @@ func ClusterRoleBindingHandler(ctx context.Context, roleBinding *rbacv1.ClusterR
 	return o.ToComponent(ctx, opts)
 }
 
-func printClusterRoleBindingConfig(roleBinding *rbacv1.ClusterRoleBinding) (component.Component, error) {
+func printClusterRoleBindingConfig(roleBinding *rbacv1.ClusterRoleBinding) (*component.Summary, error) {
 	if roleBinding == nil {
 		return nil, errors.New("role binding is nil")
 	}

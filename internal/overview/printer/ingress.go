@@ -44,9 +44,12 @@ func IngressListHandler(ctx context.Context, list *extv1beta1.IngressList, optio
 func IngressHandler(ctx context.Context, ingress *extv1beta1.Ingress, options Options) (component.Component, error) {
 	o := NewObject(ingress)
 
-	o.RegisterConfig(func() (component.Component, error) {
-		return printIngressConfig(ingress)
-	}, 16)
+	configSummary, err := printIngressConfig(ingress)
+	if err != nil {
+		return nil, err
+	}
+
+	o.RegisterConfig(configSummary)
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {
@@ -60,7 +63,7 @@ func IngressHandler(ctx context.Context, ingress *extv1beta1.Ingress, options Op
 	return o.ToComponent(ctx, options)
 }
 
-func printIngressConfig(ingress *extv1beta1.Ingress) (component.Component, error) {
+func printIngressConfig(ingress *extv1beta1.Ingress) (*component.Summary, error) {
 	if ingress == nil {
 		return nil, errors.New("ingress is nil")
 	}

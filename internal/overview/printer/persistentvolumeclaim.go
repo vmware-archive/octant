@@ -52,27 +52,30 @@ func PersistentVolumeClaimListHandler(ctx context.Context, list *corev1.Persiste
 func PersistentVolumeClaimHandler(ctx context.Context, persistentVolumeClaim *corev1.PersistentVolumeClaim, options Options) (component.Component, error) {
 	o := NewObject(persistentVolumeClaim)
 
-	o.RegisterConfig(func() (component.Component, error) {
-		return printPersistentVolumeClaimConfig(persistentVolumeClaim)
-	}, 12)
+	configSummary, err := printPersistentVolumeClaimConfig(persistentVolumeClaim)
+	if err != nil {
+		return nil, err
+	}
 
-	o.RegisterSummary(func() (component.Component, error) {
-		return printPersistentVolumeClaimStatus(persistentVolumeClaim)
-	}, 12)
+	statusSummary, err := printPersistentVolumeClaimStatus(persistentVolumeClaim)
+	if err != nil {
+		return nil, err
+	}
 
+	o.RegisterConfig(configSummary)
+	o.RegisterSummary(statusSummary)
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {
 			return createMountedPodListView(ctx, persistentVolumeClaim.Namespace, persistentVolumeClaim.Name, options)
 		},
 		Width: component.WidthFull,
 	})
-
 	o.EnableEvents()
 
 	return o.ToComponent(ctx, options)
 }
 
-func printPersistentVolumeClaimConfig(persistentVolumeClaim *corev1.PersistentVolumeClaim) (component.Component, error) {
+func printPersistentVolumeClaimConfig(persistentVolumeClaim *corev1.PersistentVolumeClaim) (*component.Summary, error) {
 	if persistentVolumeClaim == nil {
 		return nil, errors.New("persistentvolumeclaim is nil")
 	}
@@ -108,7 +111,7 @@ func printPersistentVolumeClaimConfig(persistentVolumeClaim *corev1.PersistentVo
 	return summary, nil
 }
 
-func printPersistentVolumeClaimStatus(persistentVolumeClaim *corev1.PersistentVolumeClaim) (component.Component, error) {
+func printPersistentVolumeClaimStatus(persistentVolumeClaim *corev1.PersistentVolumeClaim) (*component.Summary, error) {
 	if persistentVolumeClaim == nil {
 		return nil, errors.New("persistentvolumeclaim is nil")
 	}

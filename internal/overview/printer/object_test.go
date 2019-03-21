@@ -19,7 +19,7 @@ import (
 func Test_Object_ToComponent(t *testing.T) {
 	deployment := testutil.CreateDeployment("deployment")
 
-	defaultConfig := component.NewSummary("config",
+	defaultConfig := component.NewSummary("Configuration",
 		component.SummarySection{Header: "local"})
 
 	metadataSection := component.FlexLayoutSection{
@@ -91,40 +91,11 @@ func Test_Object_ToComponent(t *testing.T) {
 				{
 					{
 						Width: component.WidthHalf,
-						View: component.NewSummary("config",
+						View: component.NewSummary("Configuration",
 							[]component.SummarySection{
 								{Header: "local"},
 								{Header: "from plugin"},
 							}...),
-					},
-				},
-				metadataSection,
-			},
-		},
-		{
-			name:   "extra summary items",
-			object: deployment,
-			initFunc: func(o *Object, options *Options) {
-				o.RegisterSummary(func() (component.Component, error) {
-					return component.NewText("summary object 1"), nil
-				}, 12)
-				o.RegisterSummary(func() (component.Component, error) {
-					return component.NewText("summary object 2"), nil
-				}, 12)
-			},
-			sections: []component.FlexLayoutSection{
-				{
-					{
-						Width: component.WidthHalf,
-						View:  defaultConfig,
-					},
-					{
-						Width: component.WidthHalf,
-						View:  component.NewText("summary object 1"),
-					},
-					{
-						Width: component.WidthHalf,
-						View:  component.NewText("summary object 2"),
 					},
 				},
 				metadataSection,
@@ -244,9 +215,7 @@ func Test_Object_ToComponent(t *testing.T) {
 
 			o := NewObject(tc.object, fnMetdata, fnPodTemplate, fnEvent)
 
-			o.RegisterConfig(func() (component.Component, error) {
-				return defaultConfig, nil
-			}, 12)
+			o.RegisterConfig(defaultConfig)
 
 			if tc.initFunc != nil {
 				tc.initFunc(o, &printOptions)

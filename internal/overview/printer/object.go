@@ -75,8 +75,8 @@ type ObjectOpts func(o *Object)
 
 // Object prints an object.
 type Object struct {
-	config          ItemDescriptor
-	summary         []ItemDescriptor
+	config          *component.Summary
+	summary         *component.Summary
 	isEventsEnabled bool
 
 	itemsLists [][]ItemDescriptor
@@ -117,15 +117,13 @@ func NewObject(object runtime.Object, opts ...ObjectOpts) *Object {
 }
 
 // RegisterConfig registers the config view for an object.
-func (o *Object) RegisterConfig(fn ObjectPrinterFunc, width int) {
-	o.config = ItemDescriptor{Func: fn, Width: width}
+func (o *Object) RegisterConfig(summary *component.Summary) {
+	o.config = summary
 }
 
-// RegisterSummary registers a summary view for an object. You can
-// call this multiple times. Summaries are printed in the same section
-// as the config view.
-func (o *Object) RegisterSummary(fn ObjectPrinterFunc, width int) {
-	o.summary = append(o.summary, ItemDescriptor{Func: fn, Width: width})
+// RegisterSummary registers a summary view for an object.
+func (o *Object) RegisterSummary(summary *component.Summary) {
+	o.summary = summary
 }
 
 // EnablePodTemplate enables the pod template view for the object.
@@ -151,53 +149,54 @@ func (o *Object) RegisterItems(items ...ItemDescriptor) {
 	o.itemsLists = append(o.itemsLists, items)
 }
 
+func (o *Object) summaryComponent(title string, summary *component.Summary, section *flexlayout.Section, additional ...component.SummarySection) error {
+	if section == nil {
+		return errors.Errorf("section is nil")
+	}
+
+	if summary == nil {
+		summary = component.NewSummary(title)
+	} else {
+		summary.SetTitleText(title)
+	}
+
+	summary.Add(additional...)
+
+	if len(summary.Sections()) < 1 {
+		return nil
+	}
+
+	if err := section.Add(summary, component.WidthHalf); err != nil {
+		return errors.Wrapf(err, "add component to %q layout", title)
+	}
+
+	return nil
+}
+
 // ToComponent converts Object to a view.
 func (o *Object) ToComponent(ctx context.Context, options Options) (component.Component, error) {
 	if o.object == nil {
 		return nil, errors.New("object is nil")
 	}
 
+	summarySection := o.flexlayout.AddSection()
+
 	pluginPrinter := options.PluginPrinter
 	if pluginPrinter == nil {
 		return nil, errors.New("plugin printer is nil")
 	}
 
-	if o.config.Func != nil {
-		configView, err := o.config.Func()
-		if err != nil {
-			return nil, errors.Wrap(err, "generate config view")
-		}
+	pr, err := pluginPrinter.Print(o.object)
+	if err != nil {
+		return nil, errors.Wrap(err, "plugin manager")
+	}
 
-		configSection := o.flexlayout.AddSection()
-		if configView != nil {
-			pr, err := pluginPrinter.Print(o.object)
-			if err != nil {
-				return nil, errors.Wrap(err, "plugin manager")
-			}
+	if err := o.summaryComponent("Configuration", o.config, summarySection, pr.Config...); err != nil {
+		return nil, errors.Wrap(err, "generate configuration component")
+	}
 
-			// TODO: configView is always a summary, so we can make this explicit
-			summary, ok := configView.(*component.Summary)
-			if ok {
-				summary.Add(pr.Config...)
-			}
-
-			if err := configSection.Add(configView, o.config.Width); err != nil {
-				return nil, errors.Wrap(err, "add config view to layout")
-			}
-		}
-
-		for _, summaryItem := range o.summary {
-			view, err := summaryItem.Func()
-			if err != nil {
-				return nil, errors.Wrap(err, "generate summary item view")
-			}
-
-			if view != nil {
-				if err := configSection.Add(view, summaryItem.Width); err != nil {
-					return nil, errors.Wrap(err, "add summary view to layout")
-				}
-			}
-		}
+	if err := o.summaryComponent("Status", o.summary, summarySection, pr.Status...); err != nil {
+		return nil, errors.Wrap(err, "generate summary component")
 	}
 
 	if err := o.MetadataGen(o.object, o.flexlayout); err != nil {
@@ -215,6 +214,16 @@ func (o *Object) ToComponent(ctx context.Context, options Options) (component.Co
 
 			if err := section.Add(vc, item.Width); err != nil {
 				return nil, errors.Wrap(err, "unable to add item to layout section in object printer")
+			}
+		}
+	}
+
+	if len(pr.Items) > 0 {
+		section := o.flexlayout.AddSection()
+
+		for _, item := range pr.Items {
+			if err := section.Add(item.View, item.Width); err != nil {
+				return nil, errors.Wrap(err, "unable to add plugin item to layout section in object printer")
 			}
 		}
 	}

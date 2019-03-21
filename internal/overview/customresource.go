@@ -286,7 +286,8 @@ func (cd *crdDescriber) Describe(ctx context.Context, prefix, namespace string, 
 	cr := component.NewContentResponse(title)
 
 	printOptions := printer.Options{
-		Cache: options.Cache,
+		Cache:         options.Cache,
+		PluginPrinter: options.PluginManager,
 	}
 
 	summary, err := cd.summaryPrinter(ctx, crd, object, printOptions)

@@ -41,29 +41,31 @@ func DaemonSetListHandler(ctx context.Context, list *appsv1.DaemonSetList, opts 
 func DaemonSetHandler(ctx context.Context, daemonSet *appsv1.DaemonSet, options Options) (component.Component, error) {
 	o := NewObject(daemonSet)
 
-	o.RegisterConfig(func() (component.Component, error) {
-		return printDaemonSetConfig(daemonSet)
-	}, 12)
+	configSummary, err := printDaemonSetConfig(daemonSet)
+	if err != nil {
+		return nil, err
+	}
 
-	o.RegisterSummary(func() (component.Component, error) {
-		return printDaemonSetStatus(daemonSet)
-	}, 12)
+	statusSummary, err := printDaemonSetStatus(daemonSet)
+	if err != nil {
+		return nil, err
+	}
 
+	o.RegisterConfig(configSummary)
+	o.RegisterSummary(statusSummary)
 	o.EnablePodTemplate(daemonSet.Spec.Template)
-
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {
 			return createPodListView(ctx, daemonSet, options)
 		},
 		Width: component.WidthFull,
 	})
-
 	o.EnableEvents()
 
 	return o.ToComponent(ctx, options)
 }
 
-func printDaemonSetConfig(daemonSet *appsv1.DaemonSet) (component.Component, error) {
+func printDaemonSetConfig(daemonSet *appsv1.DaemonSet) (*component.Summary, error) {
 	if daemonSet == nil {
 		return nil, errors.New("daemon set is nil")
 	}
@@ -95,7 +97,7 @@ func printDaemonSetConfig(daemonSet *appsv1.DaemonSet) (component.Component, err
 	return summary, nil
 }
 
-func printDaemonSetStatus(daemonSet *appsv1.DaemonSet) (component.Component, error) {
+func printDaemonSetStatus(daemonSet *appsv1.DaemonSet) (*component.Summary, error) {
 	if daemonSet == nil {
 		return nil, errors.New("daemon set is nil")
 	}

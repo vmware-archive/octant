@@ -264,6 +264,7 @@ func (m *Manager) Print(object runtime.Object) (*PrintResponse, error) {
 				}
 
 				mu.Lock()
+
 				defer mu.Unlock()
 
 				pr.Config = append(pr.Config, resp.Config...)

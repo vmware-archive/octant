@@ -36,11 +36,24 @@ func (s *stub) Print(object runtime.Object) (plugin.PrintResponse, error) {
 		return plugin.PrintResponse{}, errors.Errorf("object is nil")
 	}
 
-	msg := fmt.Sprintf("update from plugin at %s", time.Now())
+	msg := fmt.Sprintf("update from plugin at %s", time.Now().Format(time.RFC3339))
 
 	return plugin.PrintResponse{
 		Config: []component.SummarySection{
 			{Header: "from-plugin", Content: component.NewText(msg)},
+		},
+		Status: []component.SummarySection{
+			{Header: "from-plugin", Content: component.NewText(msg)},
+		},
+		Items: []component.FlexLayoutItem{
+			{
+				Width: component.WidthHalf,
+				View:  component.NewText("item 1 from plugin"),
+			},
+			{
+				Width: component.WidthFull,
+				View:  component.NewText("item 2 from plugin"),
+			},
 		},
 	}, nil
 }

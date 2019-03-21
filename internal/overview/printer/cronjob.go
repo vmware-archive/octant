@@ -43,19 +43,19 @@ func CronJobHandler(ctx context.Context, c *batchv1beta1.CronJob, opts Options) 
 	o := NewObject(c)
 
 	cronjobConfigGen := NewCronJobConfiguration(c)
-	o.RegisterConfig(func() (component.Component, error) {
-		return cronjobConfigGen.Create()
-	}, 16)
+	summary, err := cronjobConfigGen.Create()
+	if err != nil {
+		return nil, err
+	}
 
+	o.RegisterConfig(summary)
 	o.EnableJobTemplate(c.Spec.JobTemplate)
-
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {
 			return createJobListView(ctx, c, opts)
 		},
 		Width: component.WidthFull,
 	})
-
 	o.EnableEvents()
 
 	return o.ToComponent(ctx, opts)

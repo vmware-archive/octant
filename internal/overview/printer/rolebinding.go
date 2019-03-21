@@ -46,9 +46,12 @@ func roleLinkFromRoleBinding(ctx context.Context, roleBinding *rbacv1.RoleBindin
 func RoleBindingHandler(ctx context.Context, roleBinding *rbacv1.RoleBinding, opts Options) (component.Component, error) {
 	o := NewObject(roleBinding)
 
-	o.RegisterConfig(func() (component.Component, error) {
-		return printRoleBindingConfig(ctx, roleBinding)
-	}, 16)
+	configSummary, err := printRoleBindingConfig(ctx, roleBinding)
+	if err != nil {
+		return nil, err
+	}
+
+	o.RegisterConfig(configSummary)
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {
@@ -60,7 +63,7 @@ func RoleBindingHandler(ctx context.Context, roleBinding *rbacv1.RoleBinding, op
 	return o.ToComponent(ctx, opts)
 }
 
-func printRoleBindingConfig(ctx context.Context, roleBinding *rbacv1.RoleBinding) (component.Component, error) {
+func printRoleBindingConfig(ctx context.Context, roleBinding *rbacv1.RoleBinding) (*component.Summary, error) {
 	if roleBinding == nil {
 		return nil, errors.New("role binding is nil")
 	}

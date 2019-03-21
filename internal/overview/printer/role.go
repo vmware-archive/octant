@@ -31,9 +31,12 @@ func RoleListHandler(ctx context.Context, roleList *rbacv1.RoleList, opts Option
 func RoleHandler(ctx context.Context, role *rbacv1.Role, opts Options) (component.Component, error) {
 	o := NewObject(role)
 
-	o.RegisterConfig(func() (component.Component, error) {
-		return printRoleConfig(role)
-	}, 16)
+	configSummary, err := printRoleConfig(role)
+	if err != nil {
+		return nil, err
+	}
+
+	o.RegisterConfig(configSummary)
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {
@@ -45,7 +48,7 @@ func RoleHandler(ctx context.Context, role *rbacv1.Role, opts Options) (componen
 	return o.ToComponent(ctx, opts)
 }
 
-func printRoleConfig(role *rbacv1.Role) (component.Component, error) {
+func printRoleConfig(role *rbacv1.Role) (*component.Summary, error) {
 	if role == nil {
 		return nil, errors.New("role is nil")
 	}

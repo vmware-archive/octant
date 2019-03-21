@@ -51,15 +51,20 @@ func ReplicaSetHandler(ctx context.Context, rs *appsv1.ReplicaSet, options Optio
 	o := NewObject(rs)
 
 	replicaSetConfigGen := NewReplicaSetConfiguration(rs)
-	o.RegisterConfig(func() (component.Component, error) {
-		return replicaSetConfigGen.Create()
-	}, 16)
+	configSummary, err := replicaSetConfigGen.Create()
+	if err != nil {
+		return nil, err
+	}
 
 	replicaSetStatusGen := NewReplicaSetStatus(rs)
-	o.RegisterSummary(func() (component.Component, error) {
-		return replicaSetStatusGen.Create(ctx, options.Cache)
-	}, 8)
 
+	o.RegisterConfig(configSummary)
+	o.RegisterItems(ItemDescriptor{
+		Func: func() (component.Component, error) {
+			return replicaSetStatusGen.Create(ctx, options.Cache)
+		},
+		Width: component.WidthQuarter,
+	})
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {
 			return createPodListView(ctx, rs, options)

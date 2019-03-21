@@ -46,13 +46,18 @@ func JobListHandler(ctx context.Context, list *batchv1.JobList, opts Options) (c
 func JobHandler(ctx context.Context, job *batchv1.Job, opts Options) (component.Component, error) {
 	o := NewObject(job)
 
-	o.RegisterConfig(func() (component.Component, error) {
-		return createJobConfiguration(*job)
-	}, 12)
+	configSummary, err := createJobConfiguration(*job)
+	if err != nil {
+		return nil, err
+	}
 
-	o.RegisterSummary(func() (component.Component, error) {
-		return createJobStatus(*job)
-	}, 12)
+	statusSummary, err := createJobStatus(*job)
+	if err != nil {
+		return nil, err
+	}
+
+	o.RegisterConfig(configSummary)
+	o.RegisterSummary(statusSummary)
 
 	o.EnablePodTemplate(job.Spec.Template)
 

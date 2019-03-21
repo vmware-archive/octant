@@ -78,6 +78,11 @@ func (t *Summary) Add(sections ...SummarySection) {
 	t.Config.Sections = append(t.Config.Sections, sections...)
 }
 
+// Sections returns sections for the summary.
+func (t *Summary) Sections() []SummarySection {
+	return t.Config.Sections
+}
+
 type summaryMarshal Summary
 
 // MarshalJSON implements json.Marshaler

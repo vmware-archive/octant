@@ -36,9 +36,12 @@ func ClusterRoleListHandler(ctx context.Context, list *rbacv1.ClusterRoleList, o
 func ClusterRoleHandler(ctx context.Context, clusterRole *rbacv1.ClusterRole, options Options) (component.Component, error) {
 	o := NewObject(clusterRole)
 
-	o.RegisterConfig(func() (component.Component, error) {
-		return printClusterRoleConfig(clusterRole)
-	}, 12)
+	summary, err := printClusterRoleConfig(clusterRole)
+	if err != nil {
+		return nil, err
+	}
+
+	o.RegisterConfig(summary)
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {
@@ -50,7 +53,7 @@ func ClusterRoleHandler(ctx context.Context, clusterRole *rbacv1.ClusterRole, op
 	return o.ToComponent(ctx, options)
 }
 
-func printClusterRoleConfig(clusterRole *rbacv1.ClusterRole) (component.Component, error) {
+func printClusterRoleConfig(clusterRole *rbacv1.ClusterRole) (*component.Summary, error) {
 	if clusterRole == nil {
 		return nil, errors.New("cluster role is nil")
 	}

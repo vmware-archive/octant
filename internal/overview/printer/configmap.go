@@ -43,9 +43,12 @@ func ConfigMapListHandler(ctx context.Context, list *corev1.ConfigMapList, opts 
 func ConfigMapHandler(ctx context.Context, cm *corev1.ConfigMap, options Options) (component.Component, error) {
 	o := NewObject(cm)
 
-	o.RegisterConfig(func() (component.Component, error) {
-		return describeConfigMapConfig(cm)
-	}, 16)
+	summary, err := describeConfigMapConfig(cm)
+	if err != nil {
+		return nil, err
+	}
+
+	o.RegisterConfig(summary)
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {
