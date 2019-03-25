@@ -2,7 +2,10 @@
 required = [
   "github.com/GeertJohan/go.incremental",
   "github.com/akavel/rsrc",
-  "github.com/jessevdk/go-flags"
+  "github.com/jessevdk/go-flags",
+  "github.com/nkovacs/streamquote",
+  "github.com/valyala/fasttemplate",
+  "github.com/golang/mock/mockgen"
 ]
 
 [prune]
