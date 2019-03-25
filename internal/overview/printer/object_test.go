@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	printerfake "github.com/heptio/developer-dash/internal/overview/printer/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/view/component"
@@ -17,6 +18,11 @@ import (
 )
 
 func Test_Object_ToComponent(t *testing.T) {
+	type initOptions struct {
+		Options       *Options
+		PluginPrinter *printerfake.MockPluginPrinter
+	}
+
 	deployment := testutil.CreateDeployment("deployment")
 
 	defaultConfig := component.NewSummary("Configuration",
@@ -53,16 +59,25 @@ func Test_Object_ToComponent(t *testing.T) {
 		}
 	}
 
+	mockNoPlugins := func(pluginPrinter *printerfake.MockPluginPrinter) {
+		printResponse := &plugin.PrintResponse{}
+		pluginPrinter.EXPECT().
+			Print(gomock.Any()).Return(printResponse, nil)
+	}
+
 	cases := []struct {
 		name     string
 		object   runtime.Object
-		initFunc func(*Object, *Options)
+		initFunc func(*Object, *initOptions)
 		sections []component.FlexLayoutSection
 		isErr    bool
 	}{
 		{
 			name:   "in general",
 			object: deployment,
+			initFunc: func(o *Object, options *initOptions) {
+				mockNoPlugins(options.PluginPrinter)
+			},
 			sections: []component.FlexLayoutSection{
 				{
 					{
@@ -76,16 +91,15 @@ func Test_Object_ToComponent(t *testing.T) {
 		{
 			name:   "config data from plugin",
 			object: deployment,
-			initFunc: func(o *Object, options *Options) {
+			initFunc: func(o *Object, options *initOptions) {
 				printResponse := plugin.PrintResponse{
 					Config: []component.SummarySection{
 						{Header: "from plugin"},
 					},
 				}
 
-				options.PluginPrinter = &fakePluginPrinter{
-					printResponse: printResponse,
-				}
+				options.PluginPrinter.EXPECT().
+					Print(gomock.Any()).Return(&printResponse, nil)
 			},
 			sections: []component.FlexLayoutSection{
 				{
@@ -104,8 +118,9 @@ func Test_Object_ToComponent(t *testing.T) {
 		{
 			name:   "enable pod template",
 			object: deployment,
-			initFunc: func(o *Object, options *Options) {
+			initFunc: func(o *Object, options *initOptions) {
 				o.EnablePodTemplate(deployment.Spec.Template)
+				mockNoPlugins(options.PluginPrinter)
 			},
 			sections: []component.FlexLayoutSection{
 				{
@@ -126,8 +141,9 @@ func Test_Object_ToComponent(t *testing.T) {
 		{
 			name:   "enable events",
 			object: deployment,
-			initFunc: func(o *Object, options *Options) {
+			initFunc: func(o *Object, options *initOptions) {
 				o.EnableEvents()
+				mockNoPlugins(options.PluginPrinter)
 			},
 			sections: []component.FlexLayoutSection{
 				{
@@ -148,7 +164,8 @@ func Test_Object_ToComponent(t *testing.T) {
 		{
 			name:   "register items",
 			object: deployment,
-			initFunc: func(o *Object, options *Options) {
+			initFunc: func(o *Object, options *initOptions) {
+				mockNoPlugins(options.PluginPrinter)
 				o.RegisterItems([]ItemDescriptor{
 					{
 						Func: func() (component.Component, error) {
@@ -208,9 +225,11 @@ func Test_Object_ToComponent(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
+			pluginPrinter := printerfake.NewMockPluginPrinter(controller)
+
 			printOptions := Options{
 				Cache:         cachefake.NewMockCache(controller),
-				PluginPrinter: &fakePluginPrinter{},
+				PluginPrinter: pluginPrinter,
 			}
 
 			o := NewObject(tc.object, fnMetdata, fnPodTemplate, fnEvent)
@@ -218,7 +237,11 @@ func Test_Object_ToComponent(t *testing.T) {
 			o.RegisterConfig(defaultConfig)
 
 			if tc.initFunc != nil {
-				tc.initFunc(o, &printOptions)
+				options := &initOptions{
+					Options:       &printOptions,
+					PluginPrinter: pluginPrinter,
+				}
+				tc.initFunc(o, options)
 			}
 
 			ctx := context.Background()

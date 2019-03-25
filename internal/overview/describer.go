@@ -14,7 +14,6 @@ import (
 	"github.com/heptio/developer-dash/internal/overview/yamlviewer"
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/internal/queryer"
-	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -47,8 +46,7 @@ type DescriberOptions struct {
 	Printer        printer.Printer
 	Selector       kLabels.Selector
 	PortForwardSvc portforward.PortForwarder
-	// TODO: turn this into an interface
-	PluginManager *plugin.Manager
+	PluginManager  printer.PluginPrinter
 }
 
 // Describer creates content.
@@ -179,95 +177,54 @@ func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType f
 	}
 }
 
+type tabFunc func(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options DescriberOptions) error
+
 // Describe describes an object.
 func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
-	logger := log.From(ctx)
-
 	if options.Printer == nil {
 		return emptyContentResponse, errors.New("object describer requires a printer")
 	}
 
-	object, err := d.loaderFunc(ctx, options.Cache, namespace, options.Fields)
+	if options.PluginManager == nil {
+		return emptyContentResponse, errors.New("plugin manager is nil")
+	}
+
+	newObject, err := d.currentObject(ctx, namespace, options)
 	if err != nil {
 		return emptyContentResponse, err
 	}
 
-	if object == nil {
-		return emptyContentResponse, errors.Errorf("object not found")
+	accessor := meta.NewAccessor()
+	objectName, _ := accessor.Name(newObject)
+
+	title := append([]component.TitleComponent{}, component.NewText(d.baseTitle))
+	if objectName != "" {
+		title = append(title, component.NewText(objectName))
 	}
 
-	item := d.objectType()
-
-	if err := scheme.Scheme.Convert(object, item, nil); err != nil {
-		return emptyContentResponse, err
-	}
-
-	if err := copyObjectMeta(item, object); err != nil {
-		return emptyContentResponse, errors.Wrapf(err, "copying object metadata")
-	}
-
-	objectName := object.GetName()
-
-	var title []component.TitleComponent
-
-	if objectName == "" {
-		title = append(title, component.NewText(d.baseTitle))
-	} else {
-		title = append(title, component.NewText(d.baseTitle),
-			component.NewText(objectName))
-	}
-
-	newObject, ok := item.(runtime.Object)
-	if !ok {
-		return emptyContentResponse, errors.Errorf("expected item to be a runtime object. It was a %T",
-			item)
-	}
-
-	vc, err := options.Printer.Print(ctx, newObject, options.PluginManager)
-	if err != nil {
-		return emptyContentResponse, err
-	}
-
-	if vc == nil {
-		return emptyContentResponse, errors.Wrap(err, "unable to print a nil object")
-	}
-
-	vc.SetAccessor("summary")
 	cr := component.NewContentResponse(title)
-	cr.Add(vc)
 
-	if !d.disableResourceViewer {
-		rv, err := resourceviewer.New(logger, options.Cache, resourceviewer.WithDefaultQueryer(options.Queryer))
-		if err != nil {
-			return emptyContentResponse, err
-		}
-
-		resourceViewerComponent, err := rv.Visit(ctx, newObject)
-		if err != nil {
-			return emptyContentResponse, err
-		}
-
-		resourceViewerComponent.SetAccessor("resourceViewer")
-		cr.Add(resourceViewerComponent)
-
+	tabFuncs := []tabFunc{
+		d.addSummaryTab,
+		d.addResourceViewerTab,
+		d.addYAMLViewerTab,
+		d.addLogsTab,
 	}
 
-	yvComponent, err := yamlviewer.ToComponent(newObject)
+	for _, fn := range tabFuncs {
+		if err := fn(ctx, newObject, cr, options); err != nil {
+			return emptyContentResponse, errors.Wrap(err, "adding tab")
+		}
+	}
+
+	tabs, err := options.PluginManager.Tabs(newObject)
 	if err != nil {
-		return emptyContentResponse, err
+		return emptyContentResponse, errors.Wrap(err, "getting tabs from plugins")
 	}
 
-	yvComponent.SetAccessor("yaml")
-	cr.Add(yvComponent)
-
-	if isPod(newObject) {
-		logsComponent, err := logviewer.ToComponent(newObject)
-		if err != nil {
-			return emptyContentResponse, err
-		}
-
-		logsComponent.SetAccessor("logs")
-		cr.Add(logsComponent)
+	for _, tab := range tabs {
+		tab.Contents.SetAccessor(tab.Name)
+		cr.Add(&tab.Contents)
 	}
 
 	return *cr, nil
@@ -277,6 +234,98 @@ func (d *ObjectDescriber) PathFilters() []pathFilter {
 	return []pathFilter{
 		*newPathFilter(d.path, d),
 	}
+}
+
+func (d *ObjectDescriber) currentObject(ctx context.Context, namespace string, options DescriberOptions) (runtime.Object, error) {
+	object, err := d.loaderFunc(ctx, options.Cache, namespace, options.Fields)
+	if err != nil {
+		return nil, err
+	}
+
+	if object == nil {
+		return nil, errors.Errorf("object not found")
+	}
+
+	item := d.objectType()
+
+	if err := scheme.Scheme.Convert(object, item, nil); err != nil {
+		return nil, err
+	}
+
+	if err := copyObjectMeta(item, object); err != nil {
+		return nil, errors.Wrapf(err, "copying object metadata")
+	}
+
+	newObject, ok := item.(runtime.Object)
+	if !ok {
+		return nil, errors.Errorf("expected item to be a runtime object. It was a %T",
+			item)
+	}
+
+	return newObject, nil
+}
+
+func (d *ObjectDescriber) addSummaryTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options DescriberOptions) error {
+	vc, err := options.Printer.Print(ctx, object, options.PluginManager)
+	if err != nil {
+		return err
+	}
+
+	if vc == nil {
+		return errors.Wrap(err, "unable to print a nil object")
+	}
+
+	vc.SetAccessor("summary")
+	cr.Add(vc)
+
+	return nil
+}
+
+func (d *ObjectDescriber) addResourceViewerTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options DescriberOptions) error {
+	logger := log.From(ctx)
+
+	if !d.disableResourceViewer {
+		rv, err := resourceviewer.New(logger, options.Cache, resourceviewer.WithDefaultQueryer(options.Queryer))
+		if err != nil {
+			return err
+		}
+
+		resourceViewerComponent, err := rv.Visit(ctx, object)
+		if err != nil {
+			return err
+		}
+
+		resourceViewerComponent.SetAccessor("resourceViewer")
+		cr.Add(resourceViewerComponent)
+	}
+
+	return nil
+}
+
+func (d *ObjectDescriber) addYAMLViewerTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options DescriberOptions) error {
+	yvComponent, err := yamlviewer.ToComponent(object)
+	if err != nil {
+		return err
+	}
+
+	yvComponent.SetAccessor("yaml")
+	cr.Add(yvComponent)
+
+	return nil
+}
+
+func (d *ObjectDescriber) addLogsTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options DescriberOptions) error {
+	if isPod(object) {
+		logsComponent, err := logviewer.ToComponent(object)
+		if err != nil {
+			return err
+		}
+
+		logsComponent.SetAccessor("logs")
+		cr.Add(logsComponent)
+	}
+
+	return nil
 }
 
 func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {

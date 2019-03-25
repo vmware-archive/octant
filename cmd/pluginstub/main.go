@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	"time"
 
 	"github.com/heptio/developer-dash/pkg/plugin"
@@ -56,6 +57,26 @@ func (s *stub) Print(object runtime.Object) (plugin.PrintResponse, error) {
 			},
 		},
 	}, nil
+}
+
+func (s *stub) PrintTab(object runtime.Object) (*component.Tab, error) {
+	if object == nil {
+		return nil, errors.New("object is nil")
+	}
+
+	layout := flexlayout.New()
+	section := layout.AddSection()
+	err := section.Add(component.NewText("content from a plugin"), component.WidthHalf)
+	if err != nil {
+		return nil, err
+	}
+
+	tab := component.Tab{
+		Name:     "PluginStub",
+		Contents: *layout.ToComponent("Plugin"),
+	}
+
+	return &tab, nil
 }
 
 func main() {

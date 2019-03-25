@@ -1,6 +1,6 @@
 language: go
 go:
-  - "1.11"
+  - "1.12"
 
 # Secure environment variables causes choco install to hang indefinitely: https://travis-ci.community/t/choco-install-hangs-forever/307
 matrix:

@@ -18,9 +18,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+//go:generate mockgen -destination=./fake/mock_plugin_printer.go -package=fake github.com/heptio/developer-dash/internal/overview/printer PluginPrinter
+
 // PluginPrinter will print using plugins.
 type PluginPrinter interface {
 	Print(runtime.Object) (*plugin.PrintResponse, error)
+	Tabs(object runtime.Object) ([]component.Tab, error)
 }
 
 // Options provides options to a print handler

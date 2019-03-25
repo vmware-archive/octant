@@ -4,15 +4,17 @@ import (
 	"context"
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/gvk"
-	"github.com/heptio/developer-dash/pkg/view/component"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/go-plugin"
+	"github.com/heptio/developer-dash/internal/gvk"
+	"github.com/heptio/developer-dash/internal/testutil"
 	dashplugin "github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/plugin/fake"
+	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func TestDefaultStore(t *testing.T) {
@@ -81,52 +83,97 @@ func TestManager_Print(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	name1 := "plugin1"
-	name2 := "plugin2"
 	pod := testutil.CreatePod("pod")
 
 	var options []dashplugin.ManagerOption
 
 	store := fake.NewMockManagerStore(controller)
-	clientFactory := fake.NewMockClientFactory(controller)
+	store.EXPECT().ClientNames().Return([]string{"plugin1", "plugin2"})
 
-	client1 := newFakePluginClient(name1, controller)
-	client2 := newFakePluginClient(name2, controller)
-	clients := map[string]dashplugin.Client{
-		name1: client1,
-		name2: client2,
-	}
-	store.EXPECT().Clients().Return(clients)
+	ch := make(chan dashplugin.PrintResponse)
+	printRunner := dashplugin.DefaultRunner{
+		RunFunc: func(name string, gvk schema.GroupVersionKind, object runtime.Object) error {
+			if name == "plugin1" {
+				resp1 := dashplugin.PrintResponse{
+					Config: []component.SummarySection{{Header: "resp1"}},
+				}
+				resp2 := dashplugin.PrintResponse{
+					Config: []component.SummarySection{{Header: "resp2"}},
+				}
+				ch <- resp1
+				ch <- resp2
+			}
 
-	setupClient := func(client *fakePluginClient) {
-		pr := dashplugin.PrintResponse{
-			Config: []component.SummarySection{
-				{Header: client.name},
-			},
-		}
-
-		client.service.EXPECT().Print(gomock.Eq(pod)).
-			Return(pr, nil).AnyTimes()
-		store.EXPECT().GetMetadata(gomock.Eq(client.name)).
-			Return(client.metadata(), nil).AnyTimes()
-		store.EXPECT().GetService(gomock.Eq(client.name)).
-			Return(client.service, nil).AnyTimes()
-		client.service.EXPECT().Print(pod).Return(pr, nil).AnyTimes()
+			return nil
+		},
 	}
 
-	setupClient(client1)
-	setupClient(client2)
+	runners := fake.NewMockRunners(controller)
+	runners.EXPECT().
+		Print(gomock.Eq(store)).Return(printRunner, ch)
 
 	options = append(options, func(m *dashplugin.Manager) {
 		m.Store = store
-		m.ClientFactory = clientFactory
+		m.Runners = runners
 	})
 
 	manager := dashplugin.NewManager(options...)
 
-	_, err := manager.Print(pod)
+	got, err := manager.Print(pod)
 	require.NoError(t, err)
 
+	expected := &dashplugin.PrintResponse{
+		Config: []component.SummarySection{
+			{Header: "resp1"},
+			{Header: "resp2"},
+		},
+	}
+	assert.Equal(t, expected, got)
+}
+
+func TestManager_Tabs(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	pod := testutil.CreatePod("pod")
+
+	var options []dashplugin.ManagerOption
+
+	store := fake.NewMockManagerStore(controller)
+	store.EXPECT().ClientNames().Return([]string{"plugin1", "plugin2"})
+
+	ch := make(chan component.Tab)
+	tabRunner := dashplugin.DefaultRunner{
+		RunFunc: func(name string, gvk schema.GroupVersionKind, object runtime.Object) error {
+			ch <- component.Tab{Name: name}
+
+			return nil
+		},
+	}
+
+	runners := fake.NewMockRunners(controller)
+	runners.EXPECT().
+		Tab(gomock.Eq(store)).Return(tabRunner, ch)
+
+	options = append(options, func(m *dashplugin.Manager) {
+		m.Store = store
+		m.Runners = runners
+	})
+
+	manager := dashplugin.NewManager(options...)
+
+	got, err := manager.Tabs(pod)
+	require.NoError(t, err)
+
+	expected := []component.Tab{
+		{
+			Name: "plugin1",
+		},
+		{
+			Name: "plugin2",
+		},
+	}
+	assert.Equal(t, expected, got)
 }
 
 type fakePluginClient struct {

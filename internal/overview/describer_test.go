@@ -10,6 +10,7 @@ import (
 	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/overview/printer"
+	printerfake "github.com/heptio/developer-dash/internal/overview/printer/fake"
 	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
@@ -97,6 +98,7 @@ func TestObjectDescriber(t *testing.T) {
 	c := cachefake.NewMockCache(controller)
 	clusterClient := clusterfake.NewMockClientInterface(controller)
 	pf := pffake.NewMockPortForwarder(controller)
+	pluginPrinter := printerfake.NewMockPluginPrinter(controller)
 
 	object := &unstructured.Unstructured{
 		Object: map[string]interface{}{
@@ -125,6 +127,8 @@ func TestObjectDescriber(t *testing.T) {
 		Get(gomock.Any(), gomock.Eq(retrieveKey)).
 		Return(object, nil)
 
+	pluginPrinter.EXPECT().Tabs(gomock.Any()).Return([]component.Tab{}, nil)
+
 	objectType := func() interface{} {
 		return &corev1.Pod{}
 	}
@@ -140,9 +144,10 @@ func TestObjectDescriber(t *testing.T) {
 	require.NoError(t, err)
 
 	options := DescriberOptions{
-		Cache:   c,
-		Fields:  fields,
-		Printer: p,
+		Cache:         c,
+		Fields:        fields,
+		Printer:       p,
+		PluginManager: pluginPrinter,
 	}
 
 	ctx := context.Background()

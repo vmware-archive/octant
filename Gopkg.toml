@@ -24,6 +24,10 @@ required = [
     name = "github.com/gogo/protobuf"
     unused-packages = false
 
+  [[prune.project]]
+    name = "github.com/golang/mock"
+    unused-packages = false
+
 [[constraint]]
   branch = "master"
   name = "github.com/GeertJohan/go.rice"
@@ -115,3 +119,7 @@ required = [
 [[override]]
   name = "github.com/gogo/protobuf"
   version = "1.2.1"
+
+[[override]]
+  name = "github.com/golang/mock"
+  revision = "2105010f04ec0f4d7a7335a70547be132ebd7b7b"

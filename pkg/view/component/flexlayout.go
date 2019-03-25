@@ -76,3 +76,9 @@ func (fl *FlexLayout) MarshalJSON() ([]byte, error) {
 	x.Metadata.Type = typeFlexLayout
 	return json.Marshal(&x)
 }
+
+// Tab represents a tab. A tab is a flex layout with a name.
+type Tab struct {
+	Name     string
+	Contents FlexLayout
+}
