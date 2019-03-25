@@ -70,6 +70,7 @@ The `sugarloaf` binary will be found in `$GOPATH/src/github.com/heptio/developer
 
 `$ make setup-web`
 
+
 ### Running development server
 
 The development server allows running the dashboard while monitoring changes in `/web`.
@@ -79,6 +80,17 @@ Start the dashboard running on a development server:
 `$ make -j ui-client ui-server`
 
 Navigate to `localhost:7777` on a browser to view cluster data.
+
+#### Running Angular (temporary)
+
+For the time being and until we reach feature parity, we will have both an web/react and web/angular directory.
+By default, we are building the React app, but are allowing development of the Angular app through the following command:
+
+`$ make ui-client-ang`
+
+This is temporary. Eventually, all of the regular commands (`make ui-client`) will default to building the Angular app.
+
+Note: The command `make setup-web` will not work for the Angular app. You'll have to install dependencies through `npm`.
 
 ### Caveats
 
