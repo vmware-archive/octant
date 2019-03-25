@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	"time"
+
+	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 
 	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/view/component"
