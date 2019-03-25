@@ -188,9 +188,13 @@
   version = "v1.2.1"
 
 [[projects]]
-  digest = "1:b60efdeb75d3c0ceed88783ac2495256aba3491a537d0f31401202579fd62a94"
+  digest = "1:552a143cfb2692a4a8cbae568a9b4633ec4e7ce9269cfe74c07ea08ce50d866f"
   name = "github.com/golang/mock"
-  packages = ["gomock"]
+  packages = [
+    "gomock",
+    "mockgen",
+    "mockgen/model",
+  ]
   pruneopts = "UT"
   revision = "51421b967af1f557f93a59e0057aaf15ca02e29c"
   version = "v1.2.0"
@@ -407,6 +411,14 @@
   version = "1.0.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:fd7513836421d33b022b8d82b9ecc7e063b367ef42245f4e7be0101e9cbfa355"
+  name = "github.com/nkovacs/streamquote"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "49af9bddb229e5d1e8d3d111b6f6ce1e58dc3fc6"
+
+[[projects]]
   digest = "1:9ec6cf1df5ad1d55cf41a43b6b1e7e118a91bade4f68ff4303379343e40c0e25"
   name = "github.com/oklog/run"
   packages = ["."]
@@ -507,6 +519,22 @@
   pruneopts = "UT"
   revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
   version = "v1.3.0"
+
+[[projects]]
+  digest = "1:c468422f334a6b46a19448ad59aaffdfc0a36b08fdcc1c749a0b29b6453d7e59"
+  name = "github.com/valyala/bytebufferpool"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "e746df99fe4a3986f4d4f79e13c1e0117ce9c2f7"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:4d29fdc69817829d8c78473d61613d984ce59675110cee7a2f0314f332cc70a2"
+  name = "github.com/valyala/fasttemplate"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "8b5e4e491ab636663841c42ea3c5a9adebabaf36"
+  version = "v1.0.1"
 
 [[projects]]
   digest = "1:16f983ecb799070a90f10633111973727dd9a0f7324b951485dc34db3edecf5f"
@@ -1140,6 +1168,7 @@
     "github.com/asticode/go-astilectron-bootstrap",
     "github.com/asticode/go-astilog",
     "github.com/golang/mock/gomock",
+    "github.com/golang/mock/mockgen",
     "github.com/golang/protobuf/proto",
     "github.com/google/uuid",
     "github.com/googleapis/gnostic/OpenAPIv2",
@@ -1147,12 +1176,14 @@
     "github.com/gorilla/mux",
     "github.com/hashicorp/go-plugin",
     "github.com/jessevdk/go-flags",
+    "github.com/nkovacs/streamquote",
     "github.com/pkg/errors",
     "github.com/skratchdot/open-golang/open",
     "github.com/spf13/afero",
     "github.com/spf13/cobra",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
+    "github.com/valyala/fasttemplate",
     "go.opencensus.io/exporter/jaeger",
     "go.opencensus.io/trace",
     "go.uber.org/zap",

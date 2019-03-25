@@ -6,6 +6,7 @@ LD_FLAGS= '-X "main.buildTime=$(BUILD_TIME)" -X main.gitCommit=$(GIT_COMMIT)'
 GO_FLAGS= -ldflags=$(LD_FLAGS)
 GOCMD=go
 GOBUILD=$(GOCMD) build
+GOINSTALL=$(GOCMD) install
 
 VERSION ?= v0.1.0
 
@@ -36,6 +37,14 @@ run-web:
 
 generate:
 	@go generate ./internal/... ./pkg/...
+
+go-install:
+	$(GOINSTALL) ./vendor/github.com/GeertJohan/go.rice
+	$(GOINSTALL) ./vendor/github.com/GeertJohan/go.rice/rice
+	$(GOINSTALL) ./vendor/github.com/asticode/go-astilectron-bundler/...
+	$(GOINSTALL) ./vendor/github.com/golang/mock/gomock
+	$(GOINSTALL) ./vendor/github.com/golang/mock/mockgen
+	$(GOINSTALL) ./vendor/github.com/golang/protobuf/protoc-gen-go
 
 web-deps:
 	@cd web/react; npm ci
