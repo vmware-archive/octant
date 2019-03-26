@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"context"
 	"path/filepath"
 	"testing"
 
@@ -9,6 +10,6 @@ import (
 
 func Test_FromKubeConfig(t *testing.T) {
 	kubeconfig := filepath.Join("testdata", "kubeconfig.yaml")
-	_, err := FromKubeconfig(kubeconfig)
+	_, err := FromKubeconfig(context.TODO(), kubeconfig)
 	require.NoError(t, err)
 }

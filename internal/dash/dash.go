@@ -20,8 +20,8 @@ import (
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/overview"
-	"github.com/heptio/developer-dash/web/react"
 	"github.com/heptio/developer-dash/pkg/plugin"
+	web "github.com/heptio/developer-dash/web/react"
 
 	"github.com/pkg/errors"
 	"github.com/skratchdot/open-golang/open"
@@ -43,8 +43,10 @@ type Options struct {
 
 // Run runs the dashboard.
 func Run(ctx context.Context, logger log.Logger, options Options) error {
+	ctx = log.WithLoggerContext(ctx, logger)
+
 	logger.Debugf("Loading configuration: %v", options.KubeConfig)
-	clusterClient, err := cluster.FromKubeconfig(options.KubeConfig)
+	clusterClient, err := cluster.FromKubeconfig(ctx, options.KubeConfig)
 	if err != nil {
 		return errors.Wrap(err, "failed to init cluster client")
 	}
@@ -54,8 +56,6 @@ func Run(ctx context.Context, logger log.Logger, options Options) error {
 			return errors.Wrap(err, "enabling open census")
 		}
 	}
-
-	ctx = log.WithLoggerContext(ctx, logger)
 
 	nsClient, err := clusterClient.NamespaceClient()
 	if err != nil {

@@ -1,11 +1,13 @@
 package cluster
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	"k8s.io/client-go/restmapper"
 
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -51,6 +53,7 @@ type RESTInterface interface {
 type Cluster struct {
 	clientConfig clientcmd.ClientConfig
 	restClient   *rest.Config
+	logger       log.Logger
 
 	kubernetesClient kubernetes.Interface
 	dynamicClient    dynamic.Interface
@@ -59,7 +62,7 @@ type Cluster struct {
 
 var _ ClientInterface = (*Cluster)(nil)
 
-func newCluster(clientConfig clientcmd.ClientConfig, restClient *rest.Config) (*Cluster, error) {
+func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restClient *rest.Config) (*Cluster, error) {
 	kubernetesClient, err := kubernetes.NewForConfig(restClient)
 	if err != nil {
 		return nil, errors.Wrap(err, "create kubernetes client")
@@ -81,6 +84,7 @@ func newCluster(clientConfig clientcmd.ClientConfig, restClient *rest.Config) (*
 		kubernetesClient: kubernetesClient,
 		dynamicClient:    dynamicClient,
 		discoveryClient:  discoveryClient,
+		logger:           log.From(ctx),
 	}
 
 	return c, nil
@@ -106,29 +110,44 @@ func (c *Cluster) restMapper() (meta.RESTMapper, error) {
 }
 
 func (c *Cluster) Resource(gk schema.GroupKind) (schema.GroupVersionResource, error) {
-	restMapper, err := c.restMapper()
+	var err error
+	var restMapper meta.RESTMapper
+
+	restConfig, err := c.clientConfig.ClientConfig()
 	if err != nil {
-		return schema.GroupVersionResource{}, errors.Wrap(err, "get rest mapper")
+		return schema.GroupVersionResource{}, errors.Wrap(err, "get rest config")
 	}
 
 	retries := 0
+	for retries < 5 {
+		restMapper, err = c.restMapper()
+		if err != nil {
+			retries++
+			c.logger.Infof("Having trouble connecting to your cluster at %s. Retrying.....", restConfig.Host)
+			time.Sleep(5 * time.Second)
+		}
+	}
+	if err != nil {
+		c.logger.Infof("Developer Dashboard could not connect to your cluster at %s. Can you verify that it is running? Full error details below.", restConfig.Host)
+		return schema.GroupVersionResource{}, errors.Wrap(err, "get rest mapper")
+	}
 
+	retries = 0
 	for retries < 5 {
 		restMapping, err := restMapper.RESTMapping(gk)
 		if err != nil {
 			if meta.IsNoMatchError(err) {
 				retries++
-				time.Sleep(1 * time.Second)
+				c.logger.Infof("Having trouble retriving the REST mapping from your cluster at %s. Retrying.....", restConfig.Host)
+				time.Sleep(5 * time.Second)
 				continue
 			}
-
 			return schema.GroupVersionResource{}, errors.Wrap(err, "unable to retrieve rest mapping")
 		}
-
 		return restMapping.Resource, nil
 	}
-
-	return schema.GroupVersionResource{}, errors.New("unable to retrieve rest mapping (retried multiple times)")
+	c.logger.Infof("Unable to retireve the REST mapping from your cluster at %s. Full error details below.", restConfig.Host)
+	return schema.GroupVersionResource{}, errors.New("unable to retrieve rest mapping")
 }
 
 // KubernetesClient returns a Kubernetes client.
@@ -190,7 +209,7 @@ func (c *Cluster) Version() (string, error) {
 }
 
 // FromKubeconfig creates a Cluster from a kubeconfig.
-func FromKubeconfig(kubeconfig string) (*Cluster, error) {
+func FromKubeconfig(ctx context.Context, kubeconfig string) (*Cluster, error) {
 	rules := clientcmd.NewDefaultClientConfigLoadingRules()
 	if kubeconfig != "" {
 		rules.ExplicitPath = kubeconfig
@@ -201,7 +220,7 @@ func FromKubeconfig(kubeconfig string) (*Cluster, error) {
 		return nil, err
 	}
 
-	return newCluster(cc, config)
+	return newCluster(ctx, cc, config)
 }
 
 // withConfigDefaults returns an extended rest.Config object with additional defaults applied
