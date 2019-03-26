@@ -86,15 +86,19 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.C
 	o := NewObject(pod)
 
 	podConfigGen := NewPodConfiguration(pod)
-	o.RegisterConfig(func() (component.Component, error) {
-		return podConfigGen.Create()
-	}, 12)
+	configSummary, err := podConfigGen.Create()
+	if err != nil {
+		return nil, err
+	}
 
+	statusSummary, err := createPodSummaryStatus(pod)
+	if err != nil {
+		return nil, err
+	}
+
+	o.RegisterConfig(configSummary)
+	o.RegisterSummary(statusSummary)
 	o.EnableEvents()
-
-	o.RegisterSummary(func() (component.Component, error) {
-		return createPodSummaryStatus(pod)
-	}, 12)
 
 	conditionDescription := ItemDescriptor{
 		Width: component.WidthFull,

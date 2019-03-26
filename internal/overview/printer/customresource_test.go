@@ -84,7 +84,7 @@ func Test_CustomResourceListHandler_custom_columns(t *testing.T) {
 	assert.Equal(t, expected, got)
 }
 
-func Test_printResourceConfig(t *testing.T) {
+func Test_printCustomResourceConfig(t *testing.T) {
 	cases := []struct {
 		name     string
 		crd      string
@@ -111,6 +111,7 @@ func Test_printResourceConfig(t *testing.T) {
 			name: "in general",
 			crd:  "crd.yaml",
 			cr:   "crd-resource.yaml",
+			expected: component.NewSummary("Configuration"),
 		},
 	}
 
@@ -138,7 +139,7 @@ func Test_printResourceConfig(t *testing.T) {
 	}
 }
 
-func Test_printResourceStatus(t *testing.T) {
+func Test_printCustomResourceStatus(t *testing.T) {
 	cases := []struct {
 		name     string
 		crd      string
@@ -161,6 +162,7 @@ func Test_printResourceStatus(t *testing.T) {
 			name: "in general",
 			crd:  "crd.yaml",
 			cr:   "crd-resource.yaml",
+			expected: component.NewSummary("Status"),
 		},
 	}
 

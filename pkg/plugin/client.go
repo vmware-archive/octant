@@ -25,11 +25,17 @@ type Capabilities struct {
 	SupportsTab []schema.GroupVersionKind
 }
 
-// SupportsPrinter returns true if this plugin supports the supplied GVK.
-func (c Capabilities) SupportsPrinter(gvk schema.GroupVersionKind) bool {
+// HasPrinterSupport returns true if this plugin supports the supplied GVK.
+func (c Capabilities) HasPrinterSupport(gvk schema.GroupVersionKind) bool {
 	return includesGVK(gvk, c.SupportsPrinterConfig) ||
 		includesGVK(gvk, c.SupportsPrinterStatus) ||
 		includesGVK(gvk, c.SupportsPrinterItems)
+}
+
+// HasTabSupport returns true if this plugins supports creating a tab for
+// the supplied GVK.
+func (c Capabilities) HasTabSupport(gvk schema.GroupVersionKind) bool {
+	return includesGVK(gvk, c.SupportsTab)
 }
 
 // PrintResponse is a printer response from the plugin. The dashboard
@@ -54,6 +60,7 @@ type Metadata struct {
 type Service interface {
 	Register() (Metadata, error)
 	Print(object runtime.Object) (PrintResponse, error)
+	PrintTab(object runtime.Object) (*component.Tab, error)
 }
 
 func includesGVK(gvk schema.GroupVersionKind, list []schema.GroupVersionKind) bool {

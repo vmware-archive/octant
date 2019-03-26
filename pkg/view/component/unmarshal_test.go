@@ -32,6 +32,24 @@ func Test_unmarshal(t *testing.T) {
 			},
 		},
 		{
+			name:       "flexlayout",
+			configFile: "config_flexlayout.json",
+			objectType: "flexlayout",
+			expected: &FlexLayout{
+				Config: FlexLayoutConfig{
+					Sections: []FlexLayoutSection{
+						{
+							{
+								Width: WidthFull,
+								View:  NewText("text"),
+							},
+						},
+					},
+				},
+				base: newBase(typeFlexLayout, nil),
+			},
+		},
+		{
 			name:       "labels",
 			configFile: "config_labels.json",
 			objectType: "labels",

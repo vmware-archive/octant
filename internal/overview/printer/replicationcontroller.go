@@ -51,14 +51,19 @@ func ReplicationControllerHandler(ctx context.Context, rc *corev1.ReplicationCon
 	o := NewObject(rc)
 
 	rcConfigGen := NewReplicationControllerConfiguration(rc)
-	o.RegisterConfig(func() (component.Component, error) {
-		return rcConfigGen.Create()
-	}, 16)
+	configSummary, err := rcConfigGen.Create()
+	if err != nil {
+		return nil, err
+	}
+	o.RegisterConfig(configSummary)
 
 	rcSummaryGen := NewReplicationControllerStatus(rc)
-	o.RegisterSummary(func() (component.Component, error) {
-		return rcSummaryGen.Create(ctx, options.Cache)
-	}, 8)
+	o.RegisterItems(ItemDescriptor{
+		Width: component.WidthQuarter,
+		Func: func() (component.Component, error) {
+			return rcSummaryGen.Create(ctx, options.Cache)
+		},
+	})
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {

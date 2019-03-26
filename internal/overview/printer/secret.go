@@ -41,11 +41,18 @@ func SecretListHandler(ctx context.Context, list *corev1.SecretList, opts Option
 
 // SecretHandler is a printFunc for printing a secret summary.
 func SecretHandler(ctx context.Context, secret *corev1.Secret, options Options) (component.Component, error) {
+	if secret == nil {
+		return nil, errors.New("secret is nil")
+	}
+
 	o := NewObject(secret)
 
-	o.RegisterConfig(func() (component.Component, error) {
-		return secretConfiguration(*secret)
-	}, 16)
+	configSummary, err := secretConfiguration(*secret)
+	if err != nil {
+		return nil, err
+	}
+
+	o.RegisterConfig(configSummary)
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {

@@ -9,6 +9,7 @@ import (
 )
 
 //go:generate protoc -I$GOPATH/src/github.com/heptio/developer-dash/vendor -I$GOPATH/src/github.com/heptio/developer-dash -I. --go_out=plugins=grpc:. proto/dashboard.proto
+//go:generate mockgen -destination=./fake/mock_runners.go -package=fake github.com/heptio/developer-dash/pkg/plugin Runners
 //go:generate mockgen -destination=./fake/mock_manager_store.go -package=fake github.com/heptio/developer-dash/pkg/plugin ManagerStore
 //go:generate mockgen -destination=./fake/mock_client_factory.go -package=fake github.com/heptio/developer-dash/pkg/plugin ClientFactory
 //go:generate mockgen -destination=./fake/mock_service.go -package=fake github.com/heptio/developer-dash/pkg/plugin Service

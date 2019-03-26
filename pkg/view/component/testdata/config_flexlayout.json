@@ -1,0 +1,17 @@
+{
+  "sections":[
+    [
+      {
+        "width":24,
+        "view":{
+          "metadata":{
+            "type":"text"
+          },
+          "config":{
+            "value":"text"
+          }
+        }
+      }
+    ]
+  ]
+}

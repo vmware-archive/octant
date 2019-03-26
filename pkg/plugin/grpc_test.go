@@ -11,6 +11,7 @@ import (
 	"github.com/heptio/developer-dash/pkg/plugin/fake"
 	"github.com/heptio/developer-dash/pkg/plugin/proto"
 	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -107,7 +108,7 @@ func Test_GRPCClient_Print(t *testing.T) {
 		object := testutil.CreateDeployment("deployment")
 
 		items := component.FlexLayoutSection{
-			{Width: 24, View: component.NewText("section 1")},
+			{Width: component.WidthFull, View: component.NewText("section 1")},
 		}
 		itemsData, err := json.Marshal(items)
 		require.NoError(t, err)
@@ -144,8 +145,53 @@ func Test_GRPCClient_Print(t *testing.T) {
 				{Header: "status1", Content: status1},
 			},
 			Items: component.FlexLayoutSection{
-				{Width: 24, View: component.NewText("section 1")},
+				{Width: component.WidthFull, View: component.NewText("section 1")},
 			},
+		}
+
+		assert.Equal(t, expected, got)
+	})
+}
+
+func Test_GRPCClient_PrintTab(t *testing.T) {
+	testWithGRPCClient(t, func(mocks *grpcClientMocks) {
+		object := testutil.CreateDeployment("deployment")
+
+		objectData, err := json.Marshal(object)
+		require.NoError(t, err)
+		objectRequest := &proto.ObjectRequest{
+			Object: objectData,
+		}
+
+		layout := flexlayout.New()
+		section := layout.AddSection()
+		err = section.Add(component.NewText("text"), component.WidthFull)
+		require.NoError(t, err)
+
+		tabResponse := &proto.PrintTabResponse{
+			Name:   "tab name",
+			Layout: encodeComponent(t, layout.ToComponent("component title")),
+		}
+
+		mocks.protoClient.EXPECT().
+			PrintTab(gomock.Any(), gomock.Eq(objectRequest)).
+			Return(tabResponse, nil)
+
+		client := mocks.genClient()
+		got, err := client.PrintTab(object)
+		require.NoError(t, err)
+
+		expectedLayout := component.NewFlexLayout("component title")
+		expectedLayout.AddSections(
+			component.FlexLayoutSection{
+				{
+					Width: component.WidthFull,
+					View:  component.NewText("text")},
+			},
+		)
+		expected := &component.Tab{
+			Name:     "tab name",
+			Contents: *expectedLayout,
 		}
 
 		assert.Equal(t, expected, got)

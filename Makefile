@@ -24,7 +24,7 @@ test: generate
 .PHONY: vet
 vet:
 	@echo "-> $@"
-	@env go vet  ./internal/... ./vet/...
+	@env go vet  ./internal/... ./pkg/...
 
 sugarloaf-dev:
 	@mkdir -p ./build
@@ -36,7 +36,8 @@ run-web:
 	@cd web/react; BROWSER=none npm start
 
 generate:
-	@go generate ./internal/... ./pkg/...
+	@echo "-> $@"
+	@go generate -v ./pkg/... ./internal/...
 
 go-install:
 	$(GOINSTALL) ./vendor/github.com/GeertJohan/go.rice

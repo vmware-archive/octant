@@ -46,13 +46,18 @@ func ServiceListHandler(ctx context.Context, list *corev1.ServiceList, opts Opti
 func ServiceHandler(ctx context.Context, service *corev1.Service, options Options) (component.Component, error) {
 	o := NewObject(service)
 
-	o.RegisterConfig(func() (component.Component, error) {
-		return serviceConfiguration(service)
-	}, 12)
+	configSummary, err := serviceConfiguration(service)
+	if err != nil {
+		return nil, err
+	}
 
-	o.RegisterSummary(func() (component.Component, error) {
-		return serviceSummary(service)
-	}, 12)
+	serviceSummary, err := serviceSummary(service)
+	if err != nil {
+		return nil, err
+	}
+
+	o.RegisterConfig(configSummary)
+	o.RegisterSummary(serviceSummary)
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {

@@ -22,6 +22,7 @@ rice-box.go
 /internal/cache/fake
 /internal/queryer/fake
 /internal/cluster/fake
+/internal/overview/printer/fake
 /pkg/plugin/fake
 
 # generated from protobufs

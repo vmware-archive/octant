@@ -37,16 +37,19 @@ func ServiceAccountListHandler(ctx context.Context, list *corev1.ServiceAccountL
 func ServiceAccountHandler(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) (component.Component, error) {
 	o := NewObject(serviceAccount)
 
-	o.RegisterConfig(func() (component.Component, error) {
-		return printServiceAccountConfig(ctx, serviceAccount, options.Cache)
-	}, 16)
+	configSummary, err := printServiceAccountConfig(ctx, serviceAccount, options.Cache)
+	if err != nil {
+		return nil, err
+	}
+
+	o.RegisterConfig(configSummary)
 
 	o.EnableEvents()
 
 	return o.ToComponent(ctx, options)
 }
 
-func printServiceAccountConfig(ctx context.Context, serviceAccount *corev1.ServiceAccount, c cache.Cache) (component.Component, error) {
+func printServiceAccountConfig(ctx context.Context, serviceAccount *corev1.ServiceAccount, c cache.Cache) (*component.Summary, error) {
 	if serviceAccount == nil {
 		return nil, errors.New("service account is nil")
 	}

@@ -7,8 +7,8 @@ import (
 
 	"github.com/golang/mock/gomock"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	printerfake "github.com/heptio/developer-dash/internal/overview/printer/fake"
 	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
-	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -62,6 +62,7 @@ func Test_Resource_Print(t *testing.T) {
 
 			c := cachefake.NewMockCache(controller)
 			pf := pffake.NewMockPortForwarder(controller)
+			pluginPrinter := printerfake.NewMockPluginPrinter(controller)
 
 			p := NewResource(c, pf)
 
@@ -69,8 +70,6 @@ func Test_Resource_Print(t *testing.T) {
 				err := p.Handler(tc.printFunc)
 				require.NoError(t, err)
 			}
-
-			pluginPrinter := &fakePluginPrinter{}
 
 			ctx := context.Background()
 			got, err := p.Print(ctx, tc.object, pluginPrinter)
@@ -247,14 +246,4 @@ func Test_DefaultPrinter_invalid_object(t *testing.T) {
 		})
 	}
 
-}
-
-type fakePluginPrinter struct {
-	printResponse plugin.PrintResponse
-}
-
-var _ PluginPrinter = (*fakePluginPrinter)(nil)
-
-func (p *fakePluginPrinter) Print(object runtime.Object) (*plugin.PrintResponse, error) {
-	return &p.printResponse, nil
 }

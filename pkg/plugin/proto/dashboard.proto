@@ -94,6 +94,11 @@ message PrintResponse {
     bytes items = 3;
 }
 
+message PrintTabResponse {
+    string name = 1;
+    bytes layout = 2;
+}
+
 message ObjectStatusResponse {
     bytes objectStatus = 1;
 }
@@ -107,7 +112,7 @@ service Plugin {
     rpc Register(Empty) returns (RegisterResponse);
     rpc Print(ObjectRequest) returns (PrintResponse);
     rpc ObjectStatus(ObjectRequest) returns (ObjectStatusResponse);
-    rpc PrintTab(ObjectRequest) returns (PrintResponse);
+    rpc PrintTab(ObjectRequest) returns (PrintTabResponse);
     rpc WatchAdd(WatchRequest) returns (Empty);
     rpc WatchUpdate(WatchRequest) returns (Empty);
     rpc WatchDelete(WatchRequest) returns (Empty);

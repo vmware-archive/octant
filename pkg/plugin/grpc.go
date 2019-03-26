@@ -4,12 +4,11 @@ import (
 	"context"
 	"encoding/json"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
 	"github.com/heptio/developer-dash/pkg/plugin/proto"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -85,13 +84,9 @@ func (c *GRPCClient) Print(object runtime.Object) (PrintResponse, error) {
 	var pr PrintResponse
 
 	err := c.run(func() error {
-		data, err := json.Marshal(object)
+		in, err := createObjectRequest(object)
 		if err != nil {
 			return err
-		}
-
-		in := &proto.ObjectRequest{
-			Object: data,
 		}
 
 		resp, err := c.client.Print(context.Background(), in)
@@ -132,6 +127,62 @@ func (c *GRPCClient) Print(object runtime.Object) (PrintResponse, error) {
 	return pr, nil
 }
 
+func createObjectRequest(object runtime.Object) (*proto.ObjectRequest, error) {
+	data, err := json.Marshal(object)
+	if err != nil {
+		return nil, err
+	}
+
+	or := &proto.ObjectRequest{
+		Object: data,
+	}
+
+	return or, err
+}
+
+// PrintTab creates a tab for an object.
+func (c *GRPCClient) PrintTab(object runtime.Object) (*component.Tab, error) {
+	var tab component.Tab
+
+	err := c.run(func() error {
+		in, err := createObjectRequest(object)
+		if err != nil {
+			return err
+		}
+
+		resp, err := c.client.PrintTab(context.Background(), in)
+		if err != nil {
+			return errors.Wrap(err, "grpc client print tab")
+		}
+
+		var to component.TypedObject
+		if err := json.Unmarshal(resp.Layout, &to); err != nil {
+			return err
+		}
+
+		c, err := to.ToComponent()
+		if err != nil {
+			return err
+		}
+
+		layout, ok := c.(*component.FlexLayout)
+		if !ok {
+			return errors.Errorf("expected to be flexlayout was: %T", c)
+		}
+
+		tab.Name = resp.Name
+		tab.Contents = *layout
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &tab, nil
+}
+
 // GRPCServer is the grpc server the dashboard will use to communicate with the
 // the plugin.
 type GRPCServer struct {
@@ -159,14 +210,10 @@ func (s *GRPCServer) Register(context.Context, *proto.Empty) (*proto.RegisterRes
 
 // Print prints an object.
 func (s *GRPCServer) Print(ctx context.Context, objectRequest *proto.ObjectRequest) (*proto.PrintResponse, error) {
-	m := map[string]interface{}{}
-
-	err := json.Unmarshal(objectRequest.Object, &m)
+	u, err := decodeObjectRequest(objectRequest)
 	if err != nil {
 		return nil, err
 	}
-
-	u := &unstructured.Unstructured{Object: m}
 
 	pr, err := s.Impl.Print(u)
 	if err != nil {
@@ -202,9 +249,41 @@ func (s *GRPCServer) ObjectStatus(context.Context, *proto.ObjectRequest) (*proto
 	panic("not implemented")
 }
 
+func decodeObjectRequest(req *proto.ObjectRequest) (*unstructured.Unstructured, error) {
+	m := map[string]interface{}{}
+
+	err := json.Unmarshal(req.Object, &m)
+	if err != nil {
+		return nil, err
+	}
+
+	u := &unstructured.Unstructured{Object: m}
+	return u, nil
+}
+
 // PrintTab prints a tab for an object.
-func (s *GRPCServer) PrintTab(context.Context, *proto.ObjectRequest) (*proto.PrintResponse, error) {
-	panic("not implemented")
+func (s *GRPCServer) PrintTab(ctx context.Context, objectRequest *proto.ObjectRequest) (*proto.PrintTabResponse, error) {
+	u, err := decodeObjectRequest(objectRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	tab, err := s.Impl.PrintTab(u)
+	if err != nil {
+		return nil, errors.Wrap(err, "grpc server print tab")
+	}
+
+	layoutBytes, err := json.Marshal(tab.Contents)
+	if err != nil {
+		return nil, err
+	}
+
+	out := &proto.PrintTabResponse{
+		Name:   tab.Name,
+		Layout: layoutBytes,
+	}
+
+	return out, nil
 }
 
 // WatchAdd is called when a watched GVK has a new object added.

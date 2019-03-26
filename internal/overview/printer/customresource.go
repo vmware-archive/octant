@@ -123,31 +123,37 @@ func CustomResourceHandler(
 	options Options) (component.Component, error) {
 	o := NewObject(object)
 
-	o.RegisterConfig(func() (component.Component, error) {
-		return printCustomResourceConfig(object, crd)
-	}, 12)
-	o.RegisterSummary(func() (component.Component, error) {
-		return printCustomResourceStatus(object, crd)
-	}, 12)
+	configSummary, err := printCustomResourceConfig(object, crd)
+	if err != nil {
+		return nil, err
+	}
 
+	statusSummary, err := printCustomResourceStatus(object, crd)
+	if err != nil {
+		return nil, err
+	}
+
+	o.RegisterConfig(configSummary)
+	o.RegisterSummary(statusSummary)
 	o.EnableEvents()
 
 	view, err := o.ToComponent(ctx, options)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "print custom resource")
 	}
 
 	return view, nil
 }
 
-func printCustomResourceConfig(u *unstructured.Unstructured, crd *apiextv1beta1.CustomResourceDefinition) (component.Component, error) {
+func printCustomResourceConfig(u *unstructured.Unstructured, crd *apiextv1beta1.CustomResourceDefinition) (*component.Summary, error) {
 	if crd == nil {
 		return nil, errors.New("CRD is nil")
 	}
 
+	summary := component.NewSummary("Configuration")
+
 	if len(crd.Spec.AdditionalPrinterColumns) < 1 {
-		// nothing to do
-		return nil, nil
+		return summary, nil
 	}
 
 	var sections component.SummarySections
@@ -166,17 +172,20 @@ func printCustomResourceConfig(u *unstructured.Unstructured, crd *apiextv1beta1.
 		}
 	}
 
-	return component.NewSummary("Configuration", sections...), nil
+	summary.Add(sections...)
+
+	return summary, nil
 }
 
-func printCustomResourceStatus(u *unstructured.Unstructured, crd *apiextv1beta1.CustomResourceDefinition) (component.Component, error) {
+func printCustomResourceStatus(u *unstructured.Unstructured, crd *apiextv1beta1.CustomResourceDefinition) (*component.Summary, error) {
 	if crd == nil {
 		return nil, errors.New("CRD is nil")
 	}
 
+	summary := component.NewSummary("Status")
+
 	if len(crd.Spec.AdditionalPrinterColumns) < 1 {
-		// nothing to do
-		return nil, nil
+		return summary, nil
 	}
 
 	var sections component.SummarySections
@@ -192,5 +201,7 @@ func printCustomResourceStatus(u *unstructured.Unstructured, crd *apiextv1beta1.
 		}
 	}
 
-	return component.NewSummary("Status", sections...), nil
+	summary.Add(sections...)
+
+	return summary, nil
 }

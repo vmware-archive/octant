@@ -4,12 +4,13 @@ import (
 	"context"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"sync"
 
 	"github.com/hashicorp/go-plugin"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
-	"golang.org/x/sync/errgroup"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -53,6 +54,7 @@ type ManagerStore interface {
 	GetMetadata(name string) (Metadata, error)
 	GetService(name string) (Service, error)
 	Clients() map[string]Client
+	ClientNames() []string
 }
 
 // DefaultStore is the default implement of ManagerStore.
@@ -117,6 +119,15 @@ func (s *DefaultStore) Clients() map[string]Client {
 	return s.clients
 }
 
+// ClientNames returns the client names in the store.
+func (s *DefaultStore) ClientNames() []string {
+	var list []string
+	for name := range s.Clients() {
+		list = append(list, name)
+	}
+	return list
+}
+
 type config struct {
 	cmd  string
 	name string
@@ -130,6 +141,8 @@ type Manager struct {
 	Store         ManagerStore
 	ClientFactory ClientFactory
 
+	Runners Runners
+
 	configs []config
 
 	lock sync.Mutex
@@ -140,6 +153,8 @@ func NewManager(options ...ManagerOption) *Manager {
 	m := &Manager{
 		Store:         NewDefaultStore(),
 		ClientFactory: NewDefaultClientFactory(),
+
+		Runners: newDefaultRunners(),
 	}
 
 	for _, option := range options {
@@ -239,63 +254,63 @@ func (m *Manager) Stop(ctx context.Context) {
 // Print prints an object with plugins which are configured to print the objects's
 // GVK.
 func (m *Manager) Print(object runtime.Object) (*PrintResponse, error) {
-	if object == nil {
-		return nil, errors.New("can't print a nil object")
+	if m.Runners == nil {
+		return nil, errors.New("runners is nil")
 	}
 
-	var mu sync.Mutex
-	var g errgroup.Group
-
-	gvk := object.GetObjectKind().GroupVersionKind()
+	runner, ch := m.Runners.Print(m.Store)
+	done := make(chan bool)
 
 	var pr PrintResponse
 
-	for name := range m.Store.Clients() {
-		metadata, err := m.Store.GetMetadata(name)
-		if err != nil {
-			return nil, err
+	go func() {
+		for resp := range ch {
+			pr.Config = append(pr.Config, resp.Config...)
+			pr.Status = append(pr.Status, resp.Status...)
+			pr.Items = append(pr.Items, resp.Items...)
 		}
 
-		fn := func(name string) func() error {
-			return func() error {
-				resp, err := printObject(m.Store, name, object)
-				if err != nil {
-					return err
-				}
+		done <- true
+	}()
 
-				mu.Lock()
-				defer mu.Unlock()
-
-				pr.Config = append(pr.Config, resp.Config...)
-				pr.Status = append(pr.Status, resp.Config...)
-				pr.Items = append(pr.Items, resp.Items...)
-
-				return nil
-			}
-		}
-
-		if metadata.Capabilities.SupportsPrinter(gvk) {
-			g.Go(fn(name))
-		}
+	if err := runner.Run(object, m.Store.ClientNames()); err != nil {
+		return nil, err
 	}
+	close(ch)
 
-	if err := g.Wait(); err != nil {
-		return nil, errors.Wrap(err, "print object")
-	}
-
+	<-done
 	return &pr, nil
 }
 
-func printObject(store ManagerStore, pluginName string, object runtime.Object) (PrintResponse, error) {
-	service, err := store.GetService(pluginName)
-	if err != nil {
-		return PrintResponse{}, err
+// Tabs queries plugins for tabs for an object.
+func (m *Manager) Tabs(object runtime.Object) ([]component.Tab, error) {
+	if m.Runners == nil {
+		return nil, errors.New("runners is nil")
 	}
 
-	resp, err := service.Print(object)
-	if err != nil {
-		return PrintResponse{}, errors.Wrapf(err, "print object with plugin %q", pluginName)
+	runner, ch := m.Runners.Tab(m.Store)
+	done := make(chan bool)
+
+	var tabs []component.Tab
+
+	go func() {
+		for tab := range ch {
+			tabs = append(tabs, tab)
+		}
+
+		done <- true
+	}()
+
+	if err := runner.Run(object, m.Store.ClientNames()); err != nil {
+		return nil, err
 	}
 
-	return resp, nil
+	close(ch)
+	<-done
+
+	sort.Slice(tabs, func(i, j int) bool {
+		return tabs[i].Name < tabs[j].Name
+	})
+
+	return tabs, nil
 }

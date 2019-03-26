@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	"time"
 
 	"github.com/heptio/developer-dash/pkg/plugin"
@@ -36,13 +37,46 @@ func (s *stub) Print(object runtime.Object) (plugin.PrintResponse, error) {
 		return plugin.PrintResponse{}, errors.Errorf("object is nil")
 	}
 
-	msg := fmt.Sprintf("update from plugin at %s", time.Now())
+	msg := fmt.Sprintf("update from plugin at %s", time.Now().Format(time.RFC3339))
 
 	return plugin.PrintResponse{
 		Config: []component.SummarySection{
 			{Header: "from-plugin", Content: component.NewText(msg)},
 		},
+		Status: []component.SummarySection{
+			{Header: "from-plugin", Content: component.NewText(msg)},
+		},
+		Items: []component.FlexLayoutItem{
+			{
+				Width: component.WidthHalf,
+				View:  component.NewText("item 1 from plugin"),
+			},
+			{
+				Width: component.WidthFull,
+				View:  component.NewText("item 2 from plugin"),
+			},
+		},
 	}, nil
+}
+
+func (s *stub) PrintTab(object runtime.Object) (*component.Tab, error) {
+	if object == nil {
+		return nil, errors.New("object is nil")
+	}
+
+	layout := flexlayout.New()
+	section := layout.AddSection()
+	err := section.Add(component.NewText("content from a plugin"), component.WidthHalf)
+	if err != nil {
+		return nil, err
+	}
+
+	tab := component.Tab{
+		Name:     "PluginStub",
+		Contents: *layout.ToComponent("Plugin"),
+	}
+
+	return &tab, nil
 }
 
 func main() {

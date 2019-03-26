@@ -3,6 +3,8 @@ package component
 import "encoding/json"
 
 const (
+	// WidthQuarter is a quarter width section.
+	WidthQuarter int = 6
 	// WidthHalf is a half width section.
 	WidthHalf int = 12
 	// WidthFull is a full width section.
@@ -73,4 +75,10 @@ func (fl *FlexLayout) MarshalJSON() ([]byte, error) {
 	x := flexLayoutMarshal(*fl)
 	x.Metadata.Type = typeFlexLayout
 	return json.Marshal(&x)
+}
+
+// Tab represents a tab. A tab is a flex layout with a name.
+type Tab struct {
+	Name     string
+	Contents FlexLayout
 }

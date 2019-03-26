@@ -49,17 +49,27 @@ func DeploymentHandler(ctx context.Context, deployment *appsv1.Deployment, optio
 	o := NewObject(deployment)
 
 	deployConfigGen := NewDeploymentConfiguration(deployment)
-	o.RegisterConfig(func() (component.Component, error) {
-		return deployConfigGen.Create()
-	}, 16)
+	configSummary, err := deployConfigGen.Create()
+	if err != nil {
+		return nil, err
+	}
 
 	deploySummaryGen := NewDeploymentStatus(deployment)
-	o.RegisterSummary(func() (component.Component, error) {
-		return deploySummaryGen.Create()
-	}, 8)
+	statusSummary, err := deploySummaryGen.Create()
+	if err != nil {
+		return nil, err
+	}
 
+	o.RegisterConfig(configSummary)
+	o.RegisterItems([]ItemDescriptor{
+		{
+			Width: component.WidthQuarter,
+			Func: func() (component.Component, error) {
+				return statusSummary, nil
+			},
+		},
+	}...)
 	o.EnablePodTemplate(deployment.Spec.Template)
-
 	o.EnableEvents()
 
 	return o.ToComponent(ctx, options)

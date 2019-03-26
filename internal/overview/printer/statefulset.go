@@ -47,15 +47,22 @@ func StatefulSetListHandler(ctx context.Context, list *appsv1.StatefulSetList, o
 func StatefulSetHandler(ctx context.Context, statefulSet *appsv1.StatefulSet, options Options) (component.Component, error) {
 	o := NewObject(statefulSet)
 
-	o.RegisterConfig(func() (component.Component, error) {
-		statefulSetConfigGen := NewStatefulSetConfiguration(statefulSet)
-		return statefulSetConfigGen.Create()
-	}, 16)
+	statefulSetConfigGen := NewStatefulSetConfiguration(statefulSet)
+	configSummary, err := statefulSetConfigGen.Create()
+	if err != nil {
+		return nil, err
+	}
 
-	o.RegisterSummary(func() (component.Component, error) {
-		statefulSetSummaryGen := NewStatefulSetStatus(statefulSet)
-		return statefulSetSummaryGen.Create(ctx, options.Cache)
-	}, 8)
+	statefulSetSummaryGen := NewStatefulSetStatus(statefulSet)
+
+	o.RegisterConfig(configSummary)
+
+	o.RegisterItems(ItemDescriptor{
+		Width: component.WidthQuarter,
+		Func: func() (component.Component, error) {
+			return statefulSetSummaryGen.Create(ctx, options.Cache)
+		},
+	})
 
 	o.EnablePodTemplate(statefulSet.Spec.Template)
 
