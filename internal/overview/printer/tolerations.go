@@ -52,6 +52,8 @@ func (td *tolerationDescriber) describe(toleration corev1.Toleration) (string, e
 
 	if toleration.Effect != "" && toleration.Key == "" && toleration.Value == "" {
 		a = append(a, string(toleration.Effect))
+	} else if toleration.Effect != "" && toleration.Key != "" && toleration.Value == "" {
+		a = append(a, fmt.Sprintf("%s:%s", toleration.Key, toleration.Effect))
 	} else if toleration.Key != "" && toleration.Value != "" && toleration.Effect == "" {
 		a = append(a, fmt.Sprintf("%s:%s", toleration.Key, toleration.Value))
 	} else if toleration.Key != "" && toleration.Value != "" && toleration.Effect != "" {
@@ -61,7 +63,7 @@ func (td *tolerationDescriber) describe(toleration corev1.Toleration) (string, e
 	} else if toleration.Key == "" && toleration.Operator == corev1.TolerationOpExists {
 		msgFmt = wildcardFmt
 	} else {
-		return "", errors.Errorf("unable to describe toleration")
+		return "", errors.Errorf("unable to describe toleration: %v", toleration)
 	}
 
 	return fmt.Sprintf(msgFmt, a...), nil
