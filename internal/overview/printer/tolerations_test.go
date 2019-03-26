@@ -109,6 +109,23 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 			expected: tolerationTable("Schedule on all nodes."),
 		},
 		{
+			name: "coredns toleration",
+			tolerations: []corev1.Toleration{
+				{
+					Key:      "CriticalAddonsOnly",
+					Operator: corev1.TolerationOpExists,
+				},
+				{
+					Key:    "node-role.kubernetes.io/master",
+					Effect: corev1.TaintEffectNoExecute,
+				},
+			},
+			expected: tolerationTable(
+				"Schedule on nodes with CriticalAddonsOnly taint.",
+				"Schedule on nodes with node-role.kubernetes.io/master:NoExecute taint.",
+			),
+		},
+		{
 			name: "unsupported toleration",
 			tolerations: []corev1.Toleration{
 				{
