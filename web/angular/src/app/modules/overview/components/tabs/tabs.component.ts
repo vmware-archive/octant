@@ -4,7 +4,6 @@ import { ViewUtil } from 'src/app/util/view';
 
 interface Tab {
   name: string;
-  active: boolean;
   view: View;
   accessor: string;
 }
@@ -19,7 +18,7 @@ export class TabsComponent implements OnChanges {
   @Input() views: View[];
 
   tabs: Tab[] = [];
-  checkTab = false;
+  activeTab: string;
 
   constructor() {}
 
@@ -32,13 +31,14 @@ export class TabsComponent implements OnChanges {
 
         return {
           name: title,
-          active: index === 0,
           view,
           accessor: view.metadata.accessor,
         };
       });
 
-      this.checkTab = true;
+      if (!this.activeTab) {
+        this.activeTab = this.tabs[0].name;
+      }
     }
   }
 }

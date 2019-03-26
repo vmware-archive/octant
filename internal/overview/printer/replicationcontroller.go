@@ -147,7 +147,7 @@ func (replicationController *ReplicationControllerStatus) Create(ctx context.Con
 
 	ps := createPodStatus(pods)
 
-	quadrant := component.NewQuadrant()
+	quadrant := component.NewQuadrant("Status")
 	if err := quadrant.Set(component.QuadNW, "Running", fmt.Sprintf("%d", ps.Running)); err != nil {
 		return nil, errors.New("unable to set quadrant nw")
 	}

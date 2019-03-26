@@ -1,5 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { QuadrantValue, QuadrantView } from 'src/app/models/content';
+import { titleAsText } from 'src/app/util/view';
 
 @Component({
   selector: 'app-view-quadrant',
@@ -20,6 +21,7 @@ export class QuadrantComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {
       const view = changes.view.currentValue as QuadrantView;
+      this.title = titleAsText(view.metadata.title);
       this.nw = view.config.nw;
       this.ne = view.config.ne;
       this.sw = view.config.sw;

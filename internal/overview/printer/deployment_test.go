@@ -239,7 +239,7 @@ func TestDeploymentStatus(t *testing.T) {
 	got, err := ds.Create()
 	require.NoError(t, err)
 
-	expected := component.NewQuadrant()
+	expected := component.NewQuadrant("Status")
 	require.NoError(t, expected.Set(component.QuadNW, "Updated", "1"))
 	require.NoError(t, expected.Set(component.QuadNE, "Total", "2"))
 	require.NoError(t, expected.Set(component.QuadSW, "Unavailable", "3"))

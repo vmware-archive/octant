@@ -38,9 +38,9 @@ type Quadrant struct {
 }
 
 // NewQuadrant creates a quadrant component
-func NewQuadrant() *Quadrant {
+func NewQuadrant(title string) *Quadrant {
 	return &Quadrant{
-		base:   newBase(typeQuadrant, nil),
+		base:   newBase(typeQuadrant, TitleFromString(title)),
 		Config: QuadrantConfig{},
 	}
 }

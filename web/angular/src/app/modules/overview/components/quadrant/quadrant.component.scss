@@ -4,39 +4,50 @@ $border: 1px solid rgba(173, 187, 196, 0.3);
   border: $border;
   border-radius: 3px;
   height: 100%;
+
+  .quadrant-body {
+    display: grid;
+    grid-template-columns: 2fr 2fr;
+    padding: 14px 20px;
+
+    .quadrant-ne, .quadrant-nw, .quadrant-se, .quadrant-sw {
+      padding: 20px 35px;
+    }
+
+    .quadrant-ne {
+      border-bottom: $border;
+      border-right: $border;
+    }
+
+    .quadrant-nw {
+      border-bottom: $border;
+      border-left: $border;
+    }
+
+    .quadrant-se {
+      border-right: $border;
+      border-top: $border;
+    }
+
+    .quadrant-sw {
+      border-left: $border;
+      border-top: $border;
+    }
+
+    .quadrant-value {
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .quadrant-label {
+      font-size: 13px;
+    }
+  }
 }
 
-.quadrant--body {
-  display: grid;
-  grid-template-columns: 2fr 2fr;
-  padding: 14px 20px;
-}
 
-.quadrant-ne, .quadrant-nw, .quadrant-se, .quadrant-sw {
-  padding: 20px 35px;
-}
 
-.quadrant-value {
-  font-weight: bold;
-  margin-bottom: 6px;
-}
-.quadrant-label {
-  font-size: 13px;
-}
 
-.quadrant--ne {
-  border-bottom: $border;
-  border-right: $border;
-}
-.quadrant--nw {
-  border-bottom: $border;
-  border-left: $border;
-}
-.quadrant--se {
-  border-right: $border;
-  border-top: $border;
-}
-.quadrant--sw {
-  border-left: $border;
-  border-top: $border;
-}
+
+
+

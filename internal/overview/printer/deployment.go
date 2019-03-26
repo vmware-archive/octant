@@ -182,7 +182,7 @@ func (ds *DeploymentStatus) Create() (*component.Quadrant, error) {
 
 	status := ds.deployment.Status
 
-	quadrant := component.NewQuadrant()
+	quadrant := component.NewQuadrant("Status")
 	if err := quadrant.Set(component.QuadNW, "Updated", fmt.Sprintf("%d", status.UpdatedReplicas)); err != nil {
 		return nil, errors.New("unable to set quadrant nw")
 	}

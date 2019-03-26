@@ -158,7 +158,7 @@ func (statefulSet *StatefulSetStatus) Create(ctx context.Context, c cache.Cache)
 
 	ps := createPodStatus(pods)
 
-	quadrant := component.NewQuadrant()
+	quadrant := component.NewQuadrant("Status")
 	if err := quadrant.Set(component.QuadNW, "Running", fmt.Sprintf("%d", ps.Running)); err != nil {
 		return nil, errors.New("unable to set quadrant nw")
 	}

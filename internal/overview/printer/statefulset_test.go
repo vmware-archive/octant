@@ -147,7 +147,7 @@ func Test_StatefulSetStatus(t *testing.T) {
 	got, err := stsc.Create(ctx, printOptions.Cache)
 	require.NoError(t, err)
 
-	expected := component.NewQuadrant()
+	expected := component.NewQuadrant("Status")
 	require.NoError(t, expected.Set(component.QuadNW, "Running", "2"))
 	require.NoError(t, expected.Set(component.QuadNE, "Waiting", "1"))
 	require.NoError(t, expected.Set(component.QuadSW, "Succeeded", "0"))

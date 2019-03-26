@@ -148,7 +148,7 @@ func TestReplicationControllerStatus(t *testing.T) {
 	got, err := rcs.Create(ctx, c)
 	require.NoError(t, err)
 
-	expected := component.NewQuadrant()
+	expected := component.NewQuadrant("Status")
 	require.NoError(t, expected.Set(component.QuadNW, "Running", "3"))
 	require.NoError(t, expected.Set(component.QuadNE, "Waiting", "0"))
 	require.NoError(t, expected.Set(component.QuadSW, "Succeeded", "0"))
