@@ -121,11 +121,13 @@ func (c *Cluster) Resource(gk schema.GroupKind) (schema.GroupVersionResource, er
 	retries := 0
 	for retries < 5 {
 		restMapper, err = c.restMapper()
-		if err != nil {
-			retries++
-			c.logger.Infof("Having trouble connecting to your cluster at %s. Retrying.....", restConfig.Host)
-			time.Sleep(5 * time.Second)
+		if err == nil {
+			break
 		}
+
+		retries++
+		c.logger.Infof("Having trouble connecting to your cluster at %s. Retrying.....", restConfig.Host)
+		time.Sleep(5 * time.Second)
 	}
 	if err != nil {
 		c.logger.Infof("Developer Dashboard could not connect to your cluster at %s. Can you verify that it is running? Full error details below.", restConfig.Host)
