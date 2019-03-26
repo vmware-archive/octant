@@ -29,7 +29,7 @@ type Logger interface {
 	Named(name string) Logger
 }
 
-// sugaredLogWrapper adapts a zap.SuggaredLogger to the Logger interface
+// sugaredLogWrapper adapts a zap.SugaredLogger to the Logger interface
 type sugaredLogWrapper struct {
 	*zap.SugaredLogger
 }

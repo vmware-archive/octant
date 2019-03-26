@@ -17,7 +17,7 @@ import (
 // ClientFactory is a factory for creating clients.
 type ClientFactory interface {
 	// Init initializes a client.
-	Init(cmd string) Client
+	Init(ctx context.Context, cmd string) Client
 }
 
 // DefaultClientFactory is the default client factory
@@ -31,14 +31,19 @@ func NewDefaultClientFactory() *DefaultClientFactory {
 }
 
 // Init creates a new client.
-func (f *DefaultClientFactory) Init(cmd string) Client {
+func (f *DefaultClientFactory) Init(ctx context.Context, cmd string) Client {
+	loggerAdapter := &zapAdapter{
+		dashLogger: log.From(ctx),
+	}
+
 	return plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig: Handshake,
 		Plugins:         pluginMap,
-		Cmd:             exec.Command("sh", "-c", cmd),
+		Cmd:             exec.Command(cmd),
 		AllowedProtocols: []plugin.Protocol{
 			plugin.ProtocolGRPC,
 		},
+		Logger: loggerAdapter,
 	})
 }
 
@@ -205,7 +210,7 @@ func (m *Manager) Start(ctx context.Context) error {
 	for _, c := range m.configs {
 		logger = logger.With("plugin-name", c.name)
 
-		client := m.ClientFactory.Init(c.cmd)
+		client := m.ClientFactory.Init(ctx, c.cmd)
 
 		rpcClient, err := client.Client()
 		if err != nil {

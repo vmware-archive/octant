@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/heptio/developer-dash/pkg/view/flexlayout"
+	"log"
 	"time"
 
 	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -80,5 +81,6 @@ func (s *stub) PrintTab(object runtime.Object) (*component.Tab, error) {
 }
 
 func main() {
+	log.Print("plugin is starting")
 	plugin.Serve(&stub{})
 }

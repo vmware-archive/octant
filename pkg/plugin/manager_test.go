@@ -54,7 +54,7 @@ func TestManager(t *testing.T) {
 
 	clientFactory := fake.NewMockClientFactory(controller)
 	client := newFakePluginClient(name, controller)
-	clientFactory.EXPECT().Init(gomock.Eq(name)).Return(client)
+	clientFactory.EXPECT().Init(gomock.Any(), gomock.Eq(name)).Return(client)
 
 	metadata := dashplugin.Metadata{
 		Name: name,
