@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReplaySubject } from 'rxjs';
-import { Filter, LabelFilterService } from 'src/app/services/label-filter.service';
+import { Filter, LabelFilterService } from 'src/app/services/label-filter/label-filter.service';
 import { ActivatedRouteStub } from 'src/app/testing/activated-route-stub';
 
 import { OverviewModule } from '../../overview.module';

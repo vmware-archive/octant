@@ -3,7 +3,6 @@
     {{ currentNamespace }}
     <clr-icon shape="caret down"></clr-icon>
   </button>
-
   <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
     <button (click)="selectNamespace(namespace)" type="button" clrDropdownItem *ngFor="let namespace of namespaces">
       {{ namespace }}

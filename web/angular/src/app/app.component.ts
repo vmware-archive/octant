@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { DataService } from './services/data.service';
+import { DataService } from './services/data/data.service';
 import { Navigation } from './models/navigation';
 
 @Component({
@@ -14,7 +14,7 @@ export class AppComponent implements OnInit {
   constructor(private dataService: DataService) {}
 
   ngOnInit(): void {
-    this.dataService.getNavigation().subscribe((navigation: Navigation) => {
+    this.dataService.pollNavigation().subscribe((navigation: Navigation) => {
       this.navigation = navigation;
     });
   }

@@ -1,6 +1,4 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
-import { appRoutes } from 'src/app/app-router/router.module';
 
 import { OverviewModule } from '../../overview.module';
 import { TabsComponent } from './tabs.component';
@@ -11,7 +9,7 @@ describe('TabsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [OverviewModule, RouterTestingModule.withRoutes(appRoutes)],
+      imports: [OverviewModule],
     }).compileComponents();
   }));
 

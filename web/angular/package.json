@@ -28,6 +28,7 @@
     "d3-zoom": "^1.7.3",
     "dagre-d3": "^0.6.3",
     "highlight.js": "^9.15.6",
+    "lodash.isequal": "^4.5.0",
     "moment": "^2.24.0",
     "ngx-highlightjs": "^3.0.3",
     "rxjs": "~6.3.3",

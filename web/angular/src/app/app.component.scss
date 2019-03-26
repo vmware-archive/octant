@@ -1,0 +1,18 @@
+.clr-vertical-nav, .main-container .content-container .content-area {
+  padding-top: 0;
+}
+
+.branding {
+  min-width: 10rem;
+}
+
+.main-container .header-nav {
+  padding-left: 1rem;
+}
+
+.namespace-switcher {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}

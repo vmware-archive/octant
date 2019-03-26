@@ -1,7 +1,4 @@
 <div class="main-container">
-  <div class="alert alert-app-level">
-    ... top
-  </div>
   <header class="header header-6">
     <div class="branding">
       <a [routerLink]="['/']">
@@ -9,8 +6,10 @@
         <span class="title">Sugarloaf</span>
       </a>
     </div>
-    <div class="header-actions">
-      <app-namespace></app-namespace>
+    <div class="header-nav">
+      <div class="namespace-switcher">
+        <app-namespace></app-namespace>
+      </div>
     </div>
   </header>
   <div class="content-container">

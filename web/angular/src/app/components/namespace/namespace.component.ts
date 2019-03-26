@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NamespaceService } from 'src/app/services/namespace.service';
+import { NamespaceService } from 'src/app/services/namespace/namespace.service';
 
 @Component({
   selector: 'app-namespace',

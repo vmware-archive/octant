@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { LabelsView } from 'src/app/models/content';
-import { LabelFilterService } from 'src/app/services/label-filter.service';
+import { LabelFilterService } from 'src/app/services/label-filter/label-filter.service';
 import { ViewUtil } from 'src/app/util/view';
 
 @Component({

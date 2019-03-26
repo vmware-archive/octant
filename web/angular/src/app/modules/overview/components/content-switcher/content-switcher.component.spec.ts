@@ -1,6 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ContentSwitcherComponent } from './content-switcher.component';
+import { OverviewModule } from '../../overview.module';
 
 describe('ContentSwitcherComponent', () => {
   let component: ContentSwitcherComponent;
@@ -8,7 +9,7 @@ describe('ContentSwitcherComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ContentSwitcherComponent ]
+      imports: [OverviewModule],
     })
     .compileComponents();
   }));

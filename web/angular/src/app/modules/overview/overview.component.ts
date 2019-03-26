@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
-import { DataService } from 'src/app/services/data.service';
+import { DataService } from 'src/app/services/data/data.service';
 import { ContentResponse, View } from 'src/app/models/content';
 import { titleAsText } from 'src/app/util/view';
 
@@ -19,14 +18,12 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
   hasReceivedContent = false;
   constructor(private route: ActivatedRoute, private dataService: DataService) {}
-
-  currentPath: Subject<string> = new Subject<string>();
-
   private previousUrl = '';
 
   ngOnInit() {
+    // TODO: check if the namespace is a real one; error if not (or redirect to default)
     this.route.url.subscribe((url) => {
-      const currentPath = `${url.map((u) => u.path).join('/')}`;
+      const currentPath = url.map((u) => u.path).join('/');
       if (currentPath !== this.previousUrl) {
         this.previousUrl = currentPath;
         this.dataService.startPoller(currentPath);

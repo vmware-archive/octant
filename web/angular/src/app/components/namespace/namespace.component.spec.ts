@@ -1,8 +1,6 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
 
-import { OverviewModule } from '../../overview.module';
+import { AppModule } from '../../app.module';
 import { NamespaceComponent } from './namespace.component';
 
 describe('NamespaceComponent', () => {
@@ -11,7 +9,7 @@ describe('NamespaceComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [OverviewModule, HttpClientTestingModule, RouterTestingModule],
+      imports: [AppModule],
     }).compileComponents();
   }));
 
@@ -25,3 +23,4 @@ describe('NamespaceComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+

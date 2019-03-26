@@ -5,7 +5,6 @@ import { ClarityModule } from '@clr/angular';
 import json from 'highlight.js/lib/languages/json';
 import yaml from 'highlight.js/lib/languages/yaml';
 import { HighlightModule } from 'ngx-highlightjs';
-import { PageNotFoundComponent } from 'src/app/util/page-not-found/page-not-found.component';
 
 import { FiltersComponent } from './components/filters/filters.component';
 import { TabsComponent } from './components/tabs/tabs.component';
@@ -18,7 +17,6 @@ import { LabelSelectorComponent } from './components/label-selector/label-select
 import { LabelsComponent } from './components/labels/labels.component';
 import { LinkComponent } from './components/link/link.component';
 import { ViewListComponent } from './components/list/list.component';
-import { NamespaceComponent } from './components/namespace/namespace.component';
 import { PortForwardComponent } from './components/port-forward/port-forward.component';
 import { QuadrantComponent } from './components/quadrant/quadrant.component';
 import { ResourceViewerComponent } from './components/resource-viewer/resource-viewer.component';
@@ -46,10 +44,7 @@ const hljsLanguages = () => {
     LabelSelectorComponent,
     LabelsComponent,
     LinkComponent,
-    NamespaceComponent,
     ViewListComponent,
-    PageNotFoundComponent,
-    PortForwardComponent,
     QuadrantComponent,
     ResourceViewerComponent,
     SelectorsComponent,
@@ -71,7 +66,7 @@ const hljsLanguages = () => {
     }),
     RouterModule,
   ],
-  exports: [NamespaceComponent],
+  exports: [],
 })
 
 export class OverviewModule {}
