@@ -1,23 +1,13 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { FlexLayoutItem, FlexLayoutView } from 'src/app/models/content';
+import { Component, Input } from '@angular/core';
+import { FlexLayoutView } from 'src/app/models/content';
+import trackByIndex from 'src/app/util/trackBy/trackByIndex';
 
 @Component({
   selector: 'app-view-flexlayout',
   templateUrl: './flexlayout.component.html',
   styleUrls: ['./flexlayout.component.scss'],
 })
-export class FlexlayoutComponent implements OnChanges {
-  @Input()
-  view: FlexLayoutView;
-
-  sections: FlexLayoutItem[][];
-
-  constructor() {}
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view.currentValue) {
-      const view = changes.view.currentValue as FlexLayoutView;
-      this.sections = view.config.sections;
-    }
-  }
+export class FlexlayoutComponent {
+  @Input() view: FlexLayoutView;
+  identifySection = trackByIndex;
 }

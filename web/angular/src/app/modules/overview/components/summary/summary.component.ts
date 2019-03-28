@@ -9,20 +9,17 @@ import { ViewUtil } from 'src/app/util/view';
 })
 export class SummaryComponent implements OnChanges {
   @Input() view: SummaryView;
-
   title: string;
-
-  items: SummaryItem[];
-
-  constructor() {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {
       const view = changes.view.currentValue;
-
       const vu = new ViewUtil(view);
       this.title = vu.titleAsText();
-      this.items = view.config.sections;
     }
+  }
+
+  identifyItem(index: number, item: SummaryItem): string {
+    return `${index}-${item.header}`;
   }
 }

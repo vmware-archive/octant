@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ExpressionSelectorView, LabelSelectorView, SelectorsView } from 'src/app/models/content';
 
 @Component({
@@ -6,17 +6,17 @@ import { ExpressionSelectorView, LabelSelectorView, SelectorsView } from 'src/ap
   templateUrl: './selectors.component.html',
   styleUrls: ['./selectors.component.scss'],
 })
-export class SelectorsComponent implements OnChanges {
+export class SelectorsComponent {
   @Input() view: SelectorsView;
 
-  selectors: Array<ExpressionSelectorView | LabelSelectorView> = [];
-
-  constructor() {}
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view.currentValue) {
-      const view = changes.view.currentValue as SelectorsView;
-      this.selectors = view.config.selectors;
+  identifyItem(index: number, item: ExpressionSelectorView | LabelSelectorView): string {
+    const { key } = item.config;
+    const labelSelector = item as LabelSelectorView;
+    const expressionSelector = item as ExpressionSelectorView;
+    if (labelSelector.config.value) {
+      return `${key}-${labelSelector.config.value}`;
+    } else if (expressionSelector.config.values) {
+      return `${key}-${expressionSelector.config.operator}-${expressionSelector.config.values.join(',')}`;
     }
   }
 }

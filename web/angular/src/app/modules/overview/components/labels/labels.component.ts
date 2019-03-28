@@ -12,7 +12,6 @@ export class LabelsComponent implements OnChanges {
   @Input() view: LabelsView;
 
   title: string;
-
   labelKeys: string[];
   labels: { [key: string]: string };
 

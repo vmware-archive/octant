@@ -11,3 +11,26 @@
     @include pill($label-color);
   }
 }
+
+.label-with-title {
+  display: flex;
+  flex-direction: row;
+  margin-top: 1rem;
+
+  & > h3 {
+    margin-top: 3px;
+    margin-right: 16px;
+  }
+
+  .view-labels {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+
+    & > .view-label {
+      max-height: 30px;
+      line-height: 20px;
+      text-align: center;
+    }
+  }
+}

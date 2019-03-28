@@ -21,7 +21,6 @@ export class ContentSwitcherComponent implements OnChanges {
       if (view.metadata) {
         this.currentViewType = view.metadata.type;
         this.currentView = view;
-
         this.view = view;
       }
     }

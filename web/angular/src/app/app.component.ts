@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { DataService } from './services/data/data.service';
-import { Navigation } from './models/navigation';
+import { Navigation, NavigationChild } from './models/navigation';
 
 @Component({
   selector: 'app-root',
@@ -17,5 +17,9 @@ export class AppComponent implements OnInit {
     this.dataService.pollNavigation().subscribe((navigation: Navigation) => {
       this.navigation = navigation;
     });
+  }
+
+  identifyNavigationItem(index: number, item: NavigationChild): string {
+    return item.title;
   }
 }

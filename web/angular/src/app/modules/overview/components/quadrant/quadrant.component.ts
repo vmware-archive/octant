@@ -2,6 +2,8 @@ import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { QuadrantValue, QuadrantView } from 'src/app/models/content';
 import { titleAsText } from 'src/app/util/view';
 
+const emptyQuadrantValue = { value: '', label: '' };
+
 @Component({
   selector: 'app-view-quadrant',
   templateUrl: './quadrant.component.html',
@@ -30,4 +32,3 @@ export class QuadrantComponent implements OnChanges {
   }
 }
 
-const emptyQuadrantValue = { value: '', label: '' };

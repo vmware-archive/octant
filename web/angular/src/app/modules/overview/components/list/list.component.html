@@ -1,3 +1,3 @@
-<ng-container *ngFor="let item of items">
+<ng-container *ngFor="let item of listView.config.items; trackBy: identifyItem">
   <app-content-switcher [view]="item"></app-content-switcher>
 </ng-container>

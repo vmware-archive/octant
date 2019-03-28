@@ -1,7 +1,18 @@
-<h3 *ngIf="title">{{ title }}</h3>
-
-<div class="view-labels">
-  <div *ngFor="let key of labelKeys" class="view-label" (click)="click(key, labels[key])">
-    {{ key }}:{{ labels[key] }}
+<ng-template [ngIf]="title" [ngIfElse]="noTitle">
+  <div class="label-with-title clr-col-md-12">
+    <h3>{{ title }}</h3>
+    <div class="view-labels">
+      <div *ngFor="let key of labelKeys" class="view-label" (click)="click(key, labels[key])">
+        {{ key }}:{{ labels[key] }}
+      </div>
+    </div>
   </div>
-</div>
+</ng-template>
+<ng-template #noTitle>
+  <div class="view-labels">
+    <div *ngFor="let key of labelKeys" class="view-label" (click)="click(key, labels[key])">
+      {{ key }}:{{ labels[key] }}
+    </div>
+  </div>
+</ng-template>
+

@@ -6,6 +6,21 @@ export interface Filter {
   value: string;
 }
 
+/**
+ * hash a string into a number
+ *
+ * @param s string
+ */
+const hashCode = (s: string): number => {
+  let h: number;
+  for (let i = (h = 0); i < s.length; i++) {
+    // tslint:disable-next-line:no-bitwise
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  }
+  return h;
+};
+
+
 @Injectable({
   providedIn: 'root',
 })
@@ -53,17 +68,3 @@ export class LabelFilterService {
     return hashCode(s);
   }
 }
-
-/**
- * hash a string into a number
- *
- * @param s string
- */
-const hashCode = (s: string): number => {
-  let h: number;
-  for (let i = (h = 0); i < s.length; i++) {
-    // tslint:disable-next-line:no-bitwise
-    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-  }
-  return h;
-};

@@ -1,5 +1,5 @@
-<div class="clr-row" *ngFor="let section of sections">
-  <div class="clr-col-md-{{ item.width / 2 }}" *ngFor="let item of section">
+<div class="clr-row" *ngFor="let section of view.config.sections; trackBy: identifySection">
+  <div class="clr-col-md-{{ item.width / 2 }}" *ngFor="let item of section; trackBy: identifySection">
     <app-content-switcher [view]="item.view"></app-content-switcher>
   </div>
 </div>

@@ -1,6 +1,6 @@
 <h2>{{ title }}</h2>
 <clr-tabs *ngIf="tabs.length > 0">
-  <clr-tab *ngFor="let tab of tabs">
+  <clr-tab *ngFor="let tab of tabs; trackBy: identifyTab">
     <button clrTabLink class="tab-button" (click)="activeTab = tab.name">{{ tab.name }}</button>
     <ng-template [clrIfActive]="activeTab === tab.name">
       <clr-tab-content>

@@ -32,6 +32,10 @@ export class FiltersComponent implements OnInit {
     });
   }
 
+  identifyFilter(index: number, item: Filter): string {
+    return `${item.key}-${item.value}`;
+  }
+
   remove(filter: Filter) {
     this.labelFilter.remove(filter);
   }

@@ -16,6 +16,44 @@ import { graphlib } from 'dagre-d3';
 import * as d3 from 'd3';
 import { zoom } from 'd3';
 
+interface ResourceObject {
+  name: string;
+  apiVersion: string;
+  kind: string;
+  status: string;
+}
+
+class ResourceNode {
+  constructor(
+    private readonly id: string,
+    private readonly object: ResourceObject,
+    private readonly isSelected: boolean
+  ) {}
+
+  toDescriptor(): dagreD3.Label {
+    let nodeClass = `node-${this.object.status}`;
+    if (this.isSelected) {
+      nodeClass += ` selected`;
+    }
+
+    return {
+      id: this.id,
+      label: `${this.title()}${this.subTitle()}`,
+      labelType: 'html',
+      class: `${nodeClass}`,
+    };
+  }
+
+  title(): string {
+    return `<div class="resource-name">${this.object.name}</div>`;
+  }
+
+  subTitle(): string {
+    return `<div class="resource-type">${this.object.apiVersion} ${this.object.kind}</div>`;
+  }
+}
+
+
 @Component({
   selector: 'app-view-resource-viewer',
   template: `
@@ -140,41 +178,4 @@ export class ResourceViewerComponent implements OnInit, OnChanges, AfterViewChec
 
     this.changed = false;
   }
-}
-
-class ResourceNode {
-  constructor(
-    private readonly id: string,
-    private readonly object: ResourceObject,
-    private readonly isSelected: boolean
-  ) {}
-
-  toDescriptor(): dagreD3.Label {
-    let nodeClass = `node-${this.object.status}`;
-    if (this.isSelected) {
-      nodeClass += ` selected`;
-    }
-
-    return {
-      id: this.id,
-      label: `${this.title()}${this.subTitle()}`,
-      labelType: 'html',
-      class: `${nodeClass}`,
-    };
-  }
-
-  title(): string {
-    return `<div class="resource-name">${this.object.name}</div>`;
-  }
-
-  subTitle(): string {
-    return `<div class="resource-type">${this.object.apiVersion} ${this.object.kind}</div>`;
-  }
-}
-
-interface ResourceObject {
-  name: string;
-  apiVersion: string;
-  kind: string;
-  status: string;
 }

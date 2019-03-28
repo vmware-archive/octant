@@ -10,6 +10,18 @@ import { Filter, LabelFilterService } from '../label-filter/label-filter.service
 const pollEvery = 5;
 const API_BASE = 'http://localhost:3001';
 
+const emptyContentResponse: ContentResponse = {
+  content: {
+    viewComponents: [],
+    title: [],
+  },
+};
+
+const emptyNavigation: Navigation = {
+  sections: [],
+};
+
+
 @Injectable({
   providedIn: 'root',
 })
@@ -108,13 +120,3 @@ export class DataService {
   }
 }
 
-const emptyContentResponse: ContentResponse = {
-  content: {
-    viewComponents: [],
-    title: [],
-  },
-};
-
-const emptyNavigation: Navigation = {
-  sections: [],
-};

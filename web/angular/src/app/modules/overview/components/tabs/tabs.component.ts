@@ -25,7 +25,7 @@ export class TabsComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.views.currentValue) {
       const views = changes.views.currentValue as View[];
-      this.tabs = views.map((view, index) => {
+      this.tabs = views.map((view) => {
         const vu = new ViewUtil(view);
         const title = vu.titleAsText();
 
@@ -40,5 +40,9 @@ export class TabsComponent implements OnChanges {
         this.activeTab = this.tabs[0].name;
       }
     }
+  }
+
+  identifyTab(index: number, item: Tab): string {
+    return item.name;
   }
 }
