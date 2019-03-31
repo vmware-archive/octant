@@ -24,9 +24,8 @@ rice-box.go
 /internal/cluster/fake
 /internal/overview/printer/fake
 /pkg/plugin/fake
+/pkg/plugin/api/fake
 
-# generated from protobufs
-/pkg/plugin/proto/*.pb.go
 
 # electron bundling
 /vendor/astilectron*

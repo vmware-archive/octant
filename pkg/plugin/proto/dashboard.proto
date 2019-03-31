@@ -1,64 +1,11 @@
 syntax = "proto3";
 package proto;
 
-import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
-
 message Empty {}
 
-message KeyRequest {
-    message Key {
-        string namespace = 1;
-        string apiVersion = 2;
-        string kind = 3;
-        string name = 4;
-        k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector labelSelector = 5;
-    }
-
-    Key key = 1;
+message RegisterRequest {
+    string dashboardAPIAddress = 1;
 }
-
-message ListResponse {
-    bytes objects = 1;
-}
-
-message GetResponse {
-    bytes object = 1;
-}
-
-message WatchResponse {
-    string watchID = 1;
-}
-
-message CancelWatchRequest {
-    string watchID = 1;
-}
-
-message PortForwardRequest {
-    string namespace = 1;
-    string podName = 2;
-    string containerName = 3;
-    uint32 portNumber = 4;
-}
-
-message PortForwardResponse {
-    string portForwardID = 1;
-    uint32 portNumber = 2;
-}
-
-message CancelPortForwardRequest {
-    string portForwardID = 1;
-}
-
-
-service Dashboard {
-    rpc List(KeyRequest) returns (ListResponse);
-    rpc Get(KeyRequest) returns (GetResponse);
-    rpc Watch(KeyRequest) returns (WatchResponse);
-    rpc CancelWatch(CancelWatchRequest) returns (Empty);
-    rpc PortForward(PortForwardRequest) returns (PortForwardResponse);
-    rpc CancelPortForward(CancelPortForwardRequest) returns (Empty);
-}
-
 
 message RegisterResponse {
     message GroupVersionKind {
@@ -109,7 +56,7 @@ message WatchRequest {
 }
 
 service Plugin {
-    rpc Register(Empty) returns (RegisterResponse);
+    rpc Register(RegisterRequest) returns (RegisterResponse);
     rpc Print(ObjectRequest) returns (PrintResponse);
     rpc ObjectStatus(ObjectRequest) returns (ObjectStatusResponse);
     rpc PrintTab(ObjectRequest) returns (PrintTabResponse);

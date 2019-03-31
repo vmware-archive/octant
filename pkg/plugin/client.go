@@ -58,7 +58,7 @@ type Metadata struct {
 
 // Service is the interface that is exposed as a plugin.
 type Service interface {
-	Register() (Metadata, error)
+	Register(dashboardAPIAddress string) (Metadata, error)
 	Print(object runtime.Object) (PrintResponse, error)
 	PrintTab(object runtime.Object) (*component.Tab, error)
 }

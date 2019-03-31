@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
+	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/pkg/plugin"
+	"github.com/heptio/developer-dash/pkg/plugin/api"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	"github.com/pkg/errors"
@@ -13,12 +17,27 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-type stub struct{}
+type stub struct {
+	apiClient api.Service
+	mu        sync.Mutex
+}
 
 var _ plugin.Service = (*stub)(nil)
 
-func (s *stub) Register() (plugin.Metadata, error) {
+func (s *stub) Register(apiAddress string) (plugin.Metadata, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	client, err := api.NewClient(apiAddress)
+	if err != nil {
+		return plugin.Metadata{}, errors.Wrap(err, "create api client")
+	}
+
+	s.apiClient = client
+
 	podGVK := schema.GroupVersionKind{Version: "v1", Kind: "Pod"}
+
+	log.Println("the dashboard plugin api is at", apiAddress)
 
 	return plugin.Metadata{
 		Name:        "plugin-name",
@@ -37,6 +56,18 @@ func (s *stub) Print(object runtime.Object) (plugin.PrintResponse, error) {
 	if object == nil {
 		return plugin.PrintResponse{}, errors.Errorf("object is nil")
 	}
+
+	ctx := context.Background()
+	key, err := cacheutil.KeyFromObject(object)
+	if err != nil {
+		return plugin.PrintResponse{}, err
+	}
+	u, err := s.apiClient.Get(ctx, key)
+	if err != nil {
+		return plugin.PrintResponse{}, err
+	}
+
+	log.Printf("loaded object from cache: %v", u)
 
 	msg := fmt.Sprintf("update from plugin at %s", time.Now().Format(time.RFC3339))
 

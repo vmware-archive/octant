@@ -83,7 +83,8 @@ func Test_GRPCClient_Register(t *testing.T) {
 		mocks.protoClient.EXPECT().Register(gomock.Any(), gomock.Any()).Return(resp, nil)
 
 		client := mocks.genClient()
-		got, err := client.Register()
+		apiAddress := "localhost:54321"
+		got, err := client.Register(apiAddress)
 		require.NoError(t, err)
 
 		outGVKs := []schema.GroupVersionKind{{Version: "v1", Kind: "Pod"}}
@@ -213,12 +214,17 @@ func Test_GRPCServer_Register(t *testing.T) {
 				SupportsTab:           inGVKs,
 			},
 		}
-		mocks.service.EXPECT().Register().Return(metadata, nil)
+
+		apiAddress := "localhost:54321"
+
+		mocks.service.EXPECT().Register(gomock.Eq(apiAddress)).Return(metadata, nil)
 
 		server := mocks.genServer()
 
 		ctx := context.Background()
-		got, err := server.Register(ctx, &proto.Empty{})
+		got, err := server.Register(ctx, &proto.RegisterRequest{
+			DashboardAPIAddress: apiAddress,
+		})
 		require.NoError(t, err)
 
 		outGVKs := []*proto.RegisterResponse_GroupVersionKind{{Version: "v1", Kind: "Pod"}}

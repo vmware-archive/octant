@@ -20,6 +20,7 @@ import (
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/overview"
+	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/pkg/plugin"
 	web "github.com/heptio/developer-dash/web/react"
 
@@ -79,7 +80,12 @@ func Run(ctx context.Context, logger log.Logger, options Options) error {
 		return errors.Wrap(err, "initializing cache")
 	}
 
-	pluginManager, err := initPlugin(ctx)
+	portForwarder, err := initPortwarder(ctx, clusterClient, appCache)
+	if err != nil {
+		return errors.Wrap(err, "initializing port forwarder")
+	}
+
+	pluginManager, err := initPlugin(ctx, portForwarder, appCache)
 	if err != nil {
 		return errors.Wrap(err, "initializing plugin manager")
 	}
@@ -90,6 +96,7 @@ func Run(ctx context.Context, logger log.Logger, options Options) error {
 		namespace:     options.Namespace,
 		logger:        logger,
 		pluginManager: pluginManager,
+		portForwarder: portForwarder,
 	}
 	moduleManager, err := initModuleManager(ctx, mo)
 	if err != nil {
@@ -150,12 +157,17 @@ func initCache(stopCh <-chan struct{}, client cluster.ClientInterface, logger lo
 	return appCache, nil
 }
 
+func initPortwarder(ctx context.Context, client cluster.ClientInterface, appCache cache.Cache) (portforward.PortForwarder, error) {
+	return portforward.Default(ctx, client, appCache)
+}
+
 type moduleOptions struct {
 	clusterClient *cluster.Cluster
 	cache         cache.Cache
 	namespace     string
 	logger        log.Logger
 	pluginManager *plugin.Manager
+	portForwarder portforward.PortForwarder
 }
 
 // initModuleManager initializes the moduleManager (and currently the modules themselves)
@@ -171,6 +183,7 @@ func initModuleManager(ctx context.Context, options moduleOptions) (*module.Mana
 		Namespace:     options.namespace,
 		Logger:        options.logger,
 		PluginManager: options.pluginManager,
+		PortForwarder: options.portForwarder,
 	}
 	overviewModule, err := overview.NewClusterOverview(ctx, overviewOptions)
 	if err != nil {

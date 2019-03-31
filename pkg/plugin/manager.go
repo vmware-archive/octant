@@ -9,6 +9,8 @@ import (
 
 	"github.com/hashicorp/go-plugin"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/portforward"
+	"github.com/heptio/developer-dash/pkg/plugin/api"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -143,6 +145,8 @@ type ManagerOption func(*Manager)
 
 // Manager manages plugins
 type Manager struct {
+	PortForwarder portforward.PortForwarder
+	API           api.API
 	Store         ManagerStore
 	ClientFactory ClientFactory
 
@@ -154,12 +158,12 @@ type Manager struct {
 }
 
 // NewManager creates an instance of Manager.
-func NewManager(options ...ManagerOption) *Manager {
+func NewManager(apiService api.API, options ...ManagerOption) *Manager {
 	m := &Manager{
 		Store:         NewDefaultStore(),
 		ClientFactory: NewDefaultClientFactory(),
-
-		Runners: newDefaultRunners(),
+		Runners:       newDefaultRunners(),
+		API:           apiService,
 	}
 
 	for _, option := range options {
@@ -202,13 +206,20 @@ func (m *Manager) Start(ctx context.Context) error {
 		return errors.New("manager client factory is nil")
 	}
 
+	if err := m.API.Start(ctx); err != nil {
+		return errors.Wrap(err, "start api service")
+	}
+
 	logger := log.From(ctx)
+	logger.With("addr", m.API.Addr()).Debugf("starting plugin api service")
 
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	for _, c := range m.configs {
-		logger = logger.With("plugin-name", c.name)
+	for i := range m.configs {
+		c := m.configs[i]
+
+		pluginLogger := logger.With("plugin-name", c.name)
 
 		client := m.ClientFactory.Init(ctx, c.cmd)
 
@@ -227,14 +238,14 @@ func (m *Manager) Start(ctx context.Context) error {
 			return errors.Errorf("unknown type for plugin %q: %T", c.name, raw)
 		}
 
-		metadata, err := p.Register()
+		metadata, err := p.Register(m.API.Addr())
 		if err != nil {
 			return errors.Wrapf(err, "register plugin %q", c.name)
 		}
 
 		m.Store.Store(c.name, client, metadata)
 
-		logger.With(
+		pluginLogger.With(
 			"cmd", c.cmd,
 			"metadata", metadata,
 		).Debugf("registered plugin")

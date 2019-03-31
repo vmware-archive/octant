@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	kLabels "k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -43,4 +45,36 @@ func (k Key) String() string {
 // GroupVersionKind converts the Key to a GroupVersionKind.
 func (k Key) GroupVersionKind() schema.GroupVersionKind {
 	return schema.FromAPIVersionAndKind(k.APIVersion, k.Kind)
+}
+
+// KeyFromObject creates a key from a runtime object.
+func KeyFromObject(object runtime.Object) (Key, error) {
+	accessor := meta.NewAccessor()
+
+	namespace, err := accessor.Namespace(object)
+	if err != nil {
+		return Key{}, err
+	}
+
+	apiVersion, err := accessor.APIVersion(object)
+	if err != nil {
+		return Key{}, err
+	}
+
+	kind, err := accessor.Kind(object)
+	if err != nil {
+		return Key{}, err
+	}
+
+	name, err := accessor.Name(object)
+	if err != nil {
+		return Key{}, err
+	}
+
+	return Key{
+		Namespace:  namespace,
+		APIVersion: apiVersion,
+		Kind:       kind,
+		Name:       name,
+	}, nil
 }
