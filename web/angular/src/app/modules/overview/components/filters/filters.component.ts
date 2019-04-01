@@ -17,7 +17,7 @@ export class FiltersComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.labelFilter.filters().subscribe((filters) => {
+    this.labelFilter.filters.subscribe((filters) => {
       this.filters = filters;
       const filterParams = filters.map((filter) => encodeURIComponent(`${filter.key}:${filter.value}`));
       const queryParams: Params = {

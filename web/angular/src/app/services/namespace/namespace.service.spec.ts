@@ -7,8 +7,7 @@ import { OverviewModule } from '../../modules/overview/overview.module';
 import { NamespaceService } from './namespace.service';
 
 const dataServiceSpy = jasmine.createSpyObj('DataService', ['getNamespaces', 'pollNamespaces']);
-
-const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+const routerSpy = jasmine.createSpyObj('Router', ['navigate', 'events.subscribe']);
 
 describe('NamespaceService', () => {
   beforeEach(() =>
@@ -23,6 +22,7 @@ describe('NamespaceService', () => {
 
     dataServiceSpy.getNamespaces.and.returnValue(namespaces);
     dataServiceSpy.pollNamespaces.and.returnValue(namespaces);
+    routerSpy.events = { subscribe: () => {} };
 
     const service: NamespaceService = TestBed.get(NamespaceService);
     expect(service).toBeTruthy();

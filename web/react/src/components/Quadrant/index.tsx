@@ -8,10 +8,10 @@ interface Props {
 }
 
 export default function Quadrant({ view }: Props) {
-  const { nw, ne, sw, se, title } = view
+  const { nw, ne, sw, se } = view
   return (
     <div className='quadrant'>
-      <div className='quadrant-header'>{title}</div>
+      <div className='quadrant-header'>Status</div>
       <div className='quadrant-body'>
         <div className='quadrant-ne'>
           <div className='quadrant-value'>{ne.value}</div>

@@ -1,0 +1,26 @@
+<div class="input-filter">
+  <div class="input-filter-control">
+    <input
+      clrInput
+      class="text-input"
+      placeholder={{placeholderText}}
+      name="input"
+      [(ngModel)]="inputValue"
+      (keyup.enter)="onEnter()"
+    />
+    <clr-icon class="down-icon" (click)="toggleTagList()" shape="caret down"></clr-icon>
+  </div>
+  <ng-container *ngIf="showTagList">
+    <div class="input-filter-tags">
+      <div *ngIf="filters?.length < 1" class="input-filter-empty">
+        No current filters
+      </div>
+      <div *ngIf="filters?.length > 0" class="input-filter-tags-list">
+        <div class="input-filter-tag" *ngFor="let filter of filters; trackBy: identifyFilter">
+          {{ filter.key }}:{{ filter.value }}
+          <clr-icon class="input-filter-tag-remove" shape="times" (click)="remove(filter)"></clr-icon>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

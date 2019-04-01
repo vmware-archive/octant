@@ -30,6 +30,6 @@ export class LabelsComponent implements OnChanges {
   }
 
   click(key: string, value: string) {
-    this.labelFilter.select(key, value);
+    this.labelFilter.add({ key, value });
   }
 }

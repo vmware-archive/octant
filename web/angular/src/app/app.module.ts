@@ -4,6 +4,7 @@ import { Injectable, NgModule, NgZone } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { ClarityModule } from '@clr/angular';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -12,6 +13,7 @@ import { AppComponent } from './app.component';
 import { NamespaceComponent } from './components/namespace/namespace.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { OverviewModule } from './modules/overview/overview.module';
+import { InputFilterComponent } from './components/input-filter/input-filter.component';
 
 @Injectable()
 export class UnstripTrailingSlashLocation extends Location {
@@ -24,7 +26,8 @@ export class UnstripTrailingSlashLocation extends Location {
   declarations: [
     AppComponent,
     NamespaceComponent,
-    PageNotFoundComponent
+    PageNotFoundComponent,
+    InputFilterComponent,
   ],
   imports: [
     BrowserModule,
@@ -32,6 +35,7 @@ export class UnstripTrailingSlashLocation extends Location {
     BrowserAnimationsModule,
     HttpClientModule,
     RouterModule,
+    FormsModule,
     AppRoutingModule,
     OverviewModule,
   ],

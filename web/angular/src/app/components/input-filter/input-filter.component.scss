@@ -1,0 +1,61 @@
+@import 'src/styles.scss';
+
+.input-filter {
+  &-control {
+    position: relative;
+
+    .text-input {
+      color: white;
+      width: 100%;
+      display: block;
+    }
+
+    & ::ng-deep .clr-form-control {
+      margin-top: 0.75rem;
+
+      & .clr-control-container {
+        width: 100%;
+      }
+    }
+
+    & .down-icon {
+      position: absolute;
+      right: 0;
+      top: 4px;
+      cursor: pointer;
+    }
+  }
+
+  &-tags {
+    background: #FFF;
+    border: 1px solid #ccc;
+    border-bottom-left-radius: .125rem;
+    border-bottom-right-radius: .125rem;
+    box-shadow: 0 1px 0.125rem rgba(115,115,115,.25);
+    padding: 8px;
+
+    .input-filter-empty {
+      color: #485969;
+      font-size: 12px;
+    }
+
+    &-list {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+
+      .input-filter-tag {
+        @include pill($label-color);
+        text-align: center;
+        margin: 0 4px 4px 0;
+        padding: 0 8px;
+
+        &-remove {
+          cursor: pointer;
+          height: 12px;
+          width: 12px;
+        }
+      }
+    }
+  }
+}

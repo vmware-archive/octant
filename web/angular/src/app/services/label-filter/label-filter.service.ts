@@ -1,70 +1,77 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
+import _ from 'lodash';
+import {ActivatedRoute, NavigationEnd, Params, PRIMARY_OUTLET, Router, UrlSegment} from '@angular/router';
 
 export interface Filter {
   key: string;
   value: string;
 }
 
-/**
- * hash a string into a number
- *
- * @param s string
- */
-const hashCode = (s: string): number => {
-  let h: number;
-  for (let i = (h = 0); i < s.length; i++) {
-    // tslint:disable-next-line:no-bitwise
-    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-  }
-  return h;
-};
-
-
 @Injectable({
   providedIn: 'root',
 })
 export class LabelFilterService {
-  private labels: { [key: number]: Filter } = {};
+  public filters = new BehaviorSubject<Filter[]>([]);
+  private activatedRoute: ActivatedRoute;
 
-  private filterObservable = new BehaviorSubject<Filter[]>([]);
+  constructor(private router: Router) {
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.activatedRoute = this.router.routerState.root;
+        const params = _.map(this.filters.getValue(), this.encodeFilter);
+        this.router.navigate([], {
+          relativeTo: this.activatedRoute,
+          replaceUrl: true,
+          queryParams: { filter: params },
+          queryParamsHandling: 'merge',
+        });
+      }
+    });
 
-  constructor() {}
-
-  select(key: string, value: string) {
-    const label = `${key}:${value}`;
-    const hashed = hashCode(label);
-    if (!this.labels.hasOwnProperty(hashed)) {
-      this.labels[hashed] = {
-        key,
-        value,
-      };
-      this.publish();
-    }
-  }
-
-  set(filters: Filter[]) {
-    filters.forEach((filter) => {
-      this.select(filter.key, filter.value);
+    this.router.routerState.root.queryParamMap.subscribe((paramMap) => {
+      if (_.includes(paramMap.keys, 'filter')) {
+        const filtersRaw = paramMap.getAll('filter');
+        const filters = _.map(filtersRaw, this.decodeFilter);
+        this.filters.next(filters);
+      }
     });
   }
 
-  remove(filter: Filter) {
-    const hash = this.hash(filter);
-    delete this.labels[hash];
-    this.publish();
+  add(filter: Filter): void {
+    const current = this.filters.getValue();
+    if (_.find(current, filter)) {
+      return;
+    }
+    current.push(filter);
+    this.publish(current);
   }
 
-  filters(): Observable<Filter[]> {
-    return this.filterObservable;
+  remove(filter: Filter): void {
+    const current = this.filters.getValue();
+    _.remove(current, (f) => _.isEqual(filter, f));
+    this.publish(current);
   }
 
-  private publish() {
-    this.filterObservable.next(Object.values(this.labels));
+  private encodeFilter(fil: Filter): string {
+    return `${fil.key}:${fil.value}`;
   }
 
-  private hash(filter: Filter): number {
-    const s = `${filter.key}:${filter.value}`;
-    return hashCode(s);
+  public decodeFilter(filStr: string): Filter | null {
+    const spl = filStr.split(':');
+    if (spl.length > 1) {
+      return { key: spl[0], value: spl[1] };
+    }
+    return null;
+  }
+
+  private publish(list: Filter[]): void {
+    this.filters.next(list);
+    const filterParams = list.map(this.encodeFilter);
+    this.router.navigate([], {
+      relativeTo: this.activatedRoute,
+      queryParams: { filter: filterParams },
+      queryParamsHandling: 'merge',
+    });
   }
 }

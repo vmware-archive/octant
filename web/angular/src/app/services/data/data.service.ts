@@ -36,7 +36,7 @@ export class DataService {
   private currentPath: string;
 
   constructor(private http: HttpClient, labelFilter: LabelFilterService) {
-    labelFilter.filters().subscribe((filters) => {
+    labelFilter.filters.subscribe((filters) => {
       this.filters = filters;
       this.restartPoller();
     });
