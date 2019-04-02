@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import _ from 'lodash';
-import {ActivatedRoute, NavigationEnd, Params, PRIMARY_OUTLET, Router, UrlSegment} from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 
 export interface Filter {
   key: string;

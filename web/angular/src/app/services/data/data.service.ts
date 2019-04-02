@@ -1,14 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-
+import getAPIBase from '../common/getAPIBase';
 import { ContentResponse } from '../../models/content';
 import { Namespaces } from '../../models/namespace';
 import { Navigation } from '../../models/navigation';
 import { Filter, LabelFilterService } from '../label-filter/label-filter.service';
 
 const pollEvery = 5;
-const API_BASE = 'http://localhost:3001';
+const API_BASE = getAPIBase();
 
 const emptyContentResponse: ContentResponse = {
   content: {

@@ -28,6 +28,7 @@ import { TimestampComponent } from './components/timestamp/timestamp.component';
 import { OverviewComponent } from './overview.component';
 import { YamlComponent } from './components/yaml/yaml.component';
 import { ContentSwitcherComponent } from './components/content-switcher/content-switcher.component';
+import { LogsComponent } from './components/logs/logs.component';
 
 const hljsLanguages = () => {
   return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
@@ -57,6 +58,7 @@ const hljsLanguages = () => {
     OverviewComponent,
     PortForwardComponent,
     ContentSwitcherComponent,
+    LogsComponent,
   ],
   imports: [
     CommonModule,

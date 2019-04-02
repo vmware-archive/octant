@@ -189,3 +189,20 @@ export interface YAMLView extends View {
     data: string
   };
 }
+
+export interface LogsView extends View {
+  config: {
+    namespace: string;
+    name: string;
+    containers: string[];
+  };
+}
+
+export interface LogEntry {
+  timestamp: string; // TODO: should be Date
+  message: string;
+}
+
+export interface LogResponse {
+  entries: LogEntry[];
+}
