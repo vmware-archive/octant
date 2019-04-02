@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -30,6 +29,7 @@ type Options struct {
 	Namespace     string
 	Logger        log.Logger
 	PluginManager *plugin.Manager
+	PortForwarder portforward.PortForwarder
 }
 
 // ClusterOverview is an API for generating a cluster overview.
@@ -50,6 +50,10 @@ func NewClusterOverview(ctx context.Context, options Options) (*ClusterOverview,
 
 	if options.PluginManager == nil {
 		return nil, errors.New("plugin manager is nil")
+	}
+
+	if options.PortForwarder == nil {
+		return nil, errors.New("port forward service is nil")
 	}
 
 	di, err := options.Client.DiscoveryClient()
@@ -85,24 +89,10 @@ func NewClusterOverview(ctx context.Context, options Options) (*ClusterOverview,
 
 	go watchCRDs(ctx, options.Cache, crdAddFunc, crdDeleteFunc)
 
-	// Port Forwarding
-	restClient, err := options.Client.RESTClient()
+	pfSvc, err := portforward.Default(ctx, options.Client, options.Cache)
 	if err != nil {
-		return nil, errors.Wrap(err, "fetching RESTClient")
+		return nil, err
 	}
-	pfOpts := portforward.ServiceOptions{
-		RESTClient: restClient,
-		Config:     options.Client.RESTConfig(),
-		Cache:      options.Cache,
-		PortForwarder: &portforward.DefaultPortForwarder{
-			IOStreams: portforward.IOStreams{
-				In:     os.Stdin,
-				Out:    os.Stdout,
-				ErrOut: os.Stderr,
-			},
-		},
-	}
-	pfSvc := portforward.New(ctx, pfOpts, options.Logger)
 
 	g, err := newGenerator(options.Cache, di, pm, options.Client, pfSvc)
 	if err != nil {

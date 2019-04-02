@@ -34,17 +34,19 @@ type PortForwarder interface {
 	StopForwarder(id string)
 }
 
-type portForwardPortSpec struct {
+// PortForwardPortSpec describes a forwarded port.
+type PortForwardPortSpec struct {
 	Remote uint16 `json:"remote"`
 	Local  uint16 `json:"local,omitempty"`
 }
 
+// PortForwardSpec describes a port forward.
 // TODO Merge with PortForwardState
-type portForwardSpec struct {
+type PortForwardSpec struct {
 	ID        string                `json:"id"`
 	Status    string                `json:"status"`
 	Message   string                `json:"message"`
-	Ports     []portForwardPortSpec `json:"ports"`
+	Ports     []PortForwardPortSpec `json:"ports"`
 	CreatedAt time.Time             `json:"createdAt"`
 }
 
@@ -53,10 +55,10 @@ type CreateRequest struct {
 	APIVersion string                `json:"apiVersion"`
 	Kind       string                `json:"kind"`
 	Name       string                `json:"name"`
-	Ports      []portForwardPortSpec `json:"ports"`
+	Ports      []PortForwardPortSpec `json:"ports"`
 }
 
-type CreateResponse portForwardSpec
+type CreateResponse PortForwardSpec
 
 // Target references a kubernetes object
 type Target struct {
@@ -338,7 +340,7 @@ func (s *Service) responseForCreate(id string) (CreateResponse, error) {
 
 	response.ID = id
 	response.CreatedAt = state.CreatedAt
-	rp := make([]portForwardPortSpec, len(state.Ports))
+	rp := make([]PortForwardPortSpec, len(state.Ports))
 	for i := range state.Ports {
 		rp[i].Local = state.Ports[i].Local
 		rp[i].Remote = state.Ports[i].Remote
@@ -506,8 +508,8 @@ func newForwardRequest(gvk schema.GroupVersionKind, name string, namespace strin
 		Kind:       kind,
 		Namespace:  namespace,
 		Name:       name,
-		Ports: []portForwardPortSpec{
-			portForwardPortSpec{
+		Ports: []PortForwardPortSpec{
+			PortForwardPortSpec{
 				Remote: remotePort,
 			},
 		},

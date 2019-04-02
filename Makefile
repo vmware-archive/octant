@@ -37,7 +37,7 @@ run-web:
 
 generate:
 	@echo "-> $@"
-	@go generate -v ./pkg/... ./internal/...
+	@go generate -v ./pkg/plugin/api/proto ./pkg/plugin/proto ./pkg/plugin/api ./pkg/plugin ./internal/...
 
 go-install:
 	$(GOINSTALL) ./vendor/github.com/GeertJohan/go.rice
@@ -76,3 +76,7 @@ release:
 
 .PHONY: ci
 ci: test vet web-test web-build sugarloaf-dev
+
+install-test-plugin:
+	mkdir -p ~/.config/vmdash/plugins
+	go build -o ~/.config/vmdash/plugins/pluginstub github.com/heptio/developer-dash/cmd/pluginstub

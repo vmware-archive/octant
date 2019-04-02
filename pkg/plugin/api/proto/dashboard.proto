@@ -1,0 +1,45 @@
+syntax = "proto3";
+package proto;
+
+import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
+
+message Empty {}
+
+message KeyRequest {
+    string namespace = 1;
+    string apiVersion = 2;
+    string kind = 3;
+    string name = 4;
+    k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector labelSelector = 5;
+}
+
+message ListResponse {
+    repeated bytes objects = 1;
+}
+
+message GetResponse {
+    bytes object = 1;
+}
+
+message PortForwardRequest {
+    string namespace = 1;
+    string podName = 2;
+    string containerName = 3;
+    uint32 portNumber = 4;
+}
+
+message PortForwardResponse {
+    string portForwardID = 1;
+    uint32 portNumber = 2;
+}
+
+message CancelPortForwardRequest {
+    string portForwardID = 1;
+}
+
+service Dashboard {
+    rpc List(KeyRequest) returns (ListResponse);
+    rpc Get(KeyRequest) returns (GetResponse);
+    rpc PortForward(PortForwardRequest) returns (PortForwardResponse);
+    rpc CancelPortForward(CancelPortForwardRequest) returns (Empty);
+}

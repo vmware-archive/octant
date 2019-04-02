@@ -6,9 +6,9 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/go-plugin"
-	"github.com/heptio/developer-dash/internal/gvk"
 	"github.com/heptio/developer-dash/internal/testutil"
 	dashplugin "github.com/heptio/developer-dash/pkg/plugin"
+	"github.com/heptio/developer-dash/pkg/plugin/api"
 	"github.com/heptio/developer-dash/pkg/plugin/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
@@ -49,10 +49,10 @@ func TestManager(t *testing.T) {
 	var options []dashplugin.ManagerOption
 
 	store := fake.NewMockManagerStore(controller)
+	clientFactory := fake.NewMockClientFactory(controller)
 
 	name := "plugin1"
 
-	clientFactory := fake.NewMockClientFactory(controller)
 	client := newFakePluginClient(name, controller)
 	clientFactory.EXPECT().Init(gomock.Any(), gomock.Eq(name)).Return(client)
 
@@ -67,7 +67,8 @@ func TestManager(t *testing.T) {
 		m.ClientFactory = clientFactory
 	})
 
-	manager := dashplugin.NewManager(options...)
+	apiService := &stubAPIService{}
+	manager := dashplugin.NewManager(apiService, options...)
 
 	err := manager.Load(name)
 	require.NoError(t, err)
@@ -88,6 +89,7 @@ func TestManager_Print(t *testing.T) {
 	var options []dashplugin.ManagerOption
 
 	store := fake.NewMockManagerStore(controller)
+
 	store.EXPECT().ClientNames().Return([]string{"plugin1", "plugin2"})
 
 	ch := make(chan dashplugin.PrintResponse)
@@ -117,7 +119,8 @@ func TestManager_Print(t *testing.T) {
 		m.Runners = runners
 	})
 
-	manager := dashplugin.NewManager(options...)
+	apiService := &stubAPIService{}
+	manager := dashplugin.NewManager(apiService, options...)
 
 	got, err := manager.Print(pod)
 	require.NoError(t, err)
@@ -140,6 +143,7 @@ func TestManager_Tabs(t *testing.T) {
 	var options []dashplugin.ManagerOption
 
 	store := fake.NewMockManagerStore(controller)
+
 	store.EXPECT().ClientNames().Return([]string{"plugin1", "plugin2"})
 
 	ch := make(chan component.Tab)
@@ -160,7 +164,8 @@ func TestManager_Tabs(t *testing.T) {
 		m.Runners = runners
 	})
 
-	manager := dashplugin.NewManager(options...)
+	apiService := &stubAPIService{}
+	manager := dashplugin.NewManager(apiService, options...)
 
 	got, err := manager.Tabs(pod)
 	require.NoError(t, err)
@@ -189,7 +194,7 @@ func newFakePluginClient(name string, controller *gomock.Controller) *fakePlugin
 	metadata := dashplugin.Metadata{
 		Name: name,
 	}
-	service.EXPECT().Register().Return(metadata, nil).AnyTimes()
+	service.EXPECT().Register(gomock.Eq("localhost:54321")).Return(metadata, nil).AnyTimes()
 
 	clientProtocol := fake.NewMockClientProtocol(controller)
 	clientProtocol.EXPECT().Dispense("plugin").Return(service, nil).AnyTimes()
@@ -207,11 +212,14 @@ func (c *fakePluginClient) Client() (plugin.ClientProtocol, error) {
 
 func (c *fakePluginClient) Kill() {}
 
-func (c *fakePluginClient) metadata() dashplugin.Metadata {
-	return dashplugin.Metadata{
-		Name: c.name,
-		Capabilities: dashplugin.Capabilities{
-			SupportsPrinterConfig: []schema.GroupVersionKind{gvk.PodGVK},
-		},
-	}
+type stubAPIService struct{}
+
+var _ api.API = (*stubAPIService)(nil)
+
+func (f *stubAPIService) Addr() string {
+	return "localhost:54321"
+}
+
+func (f *stubAPIService) Start(context.Context) error {
+	return nil
 }

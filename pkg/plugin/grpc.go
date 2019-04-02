@@ -52,11 +52,15 @@ func (c *GRPCClient) run(fn func() error) error {
 }
 
 // Register register a plugin.
-func (c *GRPCClient) Register() (Metadata, error) {
+func (c *GRPCClient) Register(dashboardAPIAddress string) (Metadata, error) {
 	var m Metadata
 
 	err := c.run(func() error {
-		resp, err := c.client.Register(context.Background(), &proto.Empty{})
+		registerRequest := &proto.RegisterRequest{
+			DashboardAPIAddress: dashboardAPIAddress,
+		}
+
+		resp, err := c.client.Register(context.Background(), registerRequest)
 		if err != nil {
 			return errors.Wrap(err, "grpc client register")
 		}
@@ -193,8 +197,8 @@ type GRPCServer struct {
 var _ proto.PluginServer = (*GRPCServer)(nil)
 
 // Register register a plugin.
-func (s *GRPCServer) Register(context.Context, *proto.Empty) (*proto.RegisterResponse, error) {
-	m, err := s.Impl.Register()
+func (s *GRPCServer) Register(ctx context.Context, registerRequest *proto.RegisterRequest) (*proto.RegisterResponse, error) {
+	m, err := s.Impl.Register(registerRequest.DashboardAPIAddress)
 	if err != nil {
 		return nil, err
 	}
