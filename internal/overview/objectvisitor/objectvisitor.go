@@ -138,7 +138,8 @@ func (dv *DefaultVisitor) Visit(ctx context.Context, object ClusterObject) error
 		return errors.New("trying to visit a nil object")
 	}
 
-	hasVisited, err := dv.hasVisited(object)
+	objectCopy := object.DeepCopyObject()
+	hasVisited, err := dv.hasVisited(objectCopy)
 	if err != nil {
 		return errors.Wrap(err, "check for visit object")
 	}
@@ -148,12 +149,12 @@ func (dv *DefaultVisitor) Visit(ctx context.Context, object ClusterObject) error
 
 	// Create a handler factory for this object. This allows the visitor's caller to
 	// interact with the ancestors and descendants of the object.
-	o, err := dv.handlerFactory(object)
+	o, err := dv.handlerFactory(objectCopy)
 	if err != nil {
 		return err
 	}
 
-	return dv.visitObject(ctx, object, o)
+	return dv.visitObject(ctx, objectCopy, o)
 }
 
 // visitIngress visits an ingress' service backends.
