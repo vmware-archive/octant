@@ -80,7 +80,7 @@ func Run(ctx context.Context, logger log.Logger, options Options) error {
 		return errors.Wrap(err, "initializing cache")
 	}
 
-	portForwarder, err := initPortwarder(ctx, clusterClient, appCache)
+	portForwarder, err := initPortForwarder(ctx, clusterClient, appCache)
 	if err != nil {
 		return errors.Wrap(err, "initializing port forwarder")
 	}
@@ -157,7 +157,7 @@ func initCache(stopCh <-chan struct{}, client cluster.ClientInterface, logger lo
 	return appCache, nil
 }
 
-func initPortwarder(ctx context.Context, client cluster.ClientInterface, appCache cache.Cache) (portforward.PortForwarder, error) {
+func initPortForwarder(ctx context.Context, client cluster.ClientInterface, appCache cache.Cache) (portforward.PortForwarder, error) {
 	return portforward.Default(ctx, client, appCache)
 }
 
