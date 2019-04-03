@@ -248,7 +248,7 @@ func (m *Manager) Start(ctx context.Context) error {
 		pluginLogger.With(
 			"cmd", c.cmd,
 			"metadata", metadata,
-		).Debugf("registered plugin")
+		).Infof("registered plugin %q", metadata.Name)
 	}
 
 	return nil
