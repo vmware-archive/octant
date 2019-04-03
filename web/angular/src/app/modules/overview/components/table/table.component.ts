@@ -18,11 +18,10 @@ export class TableComponent implements OnChanges {
   constructor() {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.tableView) {
-      const vu = new ViewUtil(this.view);
+    if (changes.view) {
+      const current = changes.view.currentValue;
+      const vu = new ViewUtil(current);
       this.title = vu.titleAsText();
-
-      const current = changes.tableView.currentValue;
       this.columns = current.config.columns.map((column) => column.name);
       this.rows = current.config.rows;
       this.placeholder = current.config.emptyContent;

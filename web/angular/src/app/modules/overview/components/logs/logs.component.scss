@@ -5,9 +5,10 @@
 
   .container-logs {
     border: 1px solid #CCC;
+    border-radius: 4px;
+    background-color: black;
 
     &-bg {
-      background-color: black;
       color: white;
       padding: 4px 8px;
       min-height: 20vh;

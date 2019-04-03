@@ -14,6 +14,7 @@ import { NamespaceComponent } from './components/namespace/namespace.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { OverviewModule } from './modules/overview/overview.module';
 import { InputFilterComponent } from './components/input-filter/input-filter.component';
+import { NotifierComponent } from './components/notifier/notifier.component';
 
 @Injectable()
 export class UnstripTrailingSlashLocation extends Location {
@@ -28,6 +29,7 @@ export class UnstripTrailingSlashLocation extends Location {
     NamespaceComponent,
     PageNotFoundComponent,
     InputFilterComponent,
+    NotifierComponent,
   ],
   imports: [
     BrowserModule,

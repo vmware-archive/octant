@@ -6,6 +6,7 @@ import { ContentResponse } from '../../models/content';
 import { Namespaces } from '../../models/namespace';
 import { Navigation } from '../../models/navigation';
 import { Filter, LabelFilterService } from '../label-filter/label-filter.service';
+import { NotifierService } from '../notifier/notifier.service';
 
 const pollEvery = 5;
 const API_BASE = getAPIBase();
@@ -35,7 +36,7 @@ export class DataService {
   private filters: Filter[] = [];
   private currentPath: string;
 
-  constructor(private http: HttpClient, labelFilter: LabelFilterService) {
+  constructor(private http: HttpClient, private labelFilter: LabelFilterService, private notifierService: NotifierService) {
     labelFilter.filters.subscribe((filters) => {
       this.filters = filters;
       this.restartPoller();
@@ -81,11 +82,14 @@ export class DataService {
     }
 
     const url = `${API_BASE}/api/v1/content/${path}?poll=${pollEvery}${filterQuery}`;
+    this.notifierService.loading.next(true);
     this.eventSource = new EventSource(url);
 
     this.eventSource.addEventListener('message', (message: MessageEvent) => {
       const data = JSON.parse(message.data) as ContentResponse;
       this.content.next(data);
+      this.notifierService.loading.next(false);
+      this.notifierService.error.next(null);
     });
 
     this.eventSource.addEventListener('navigation', (message: MessageEvent) => {
@@ -96,6 +100,10 @@ export class DataService {
     this.eventSource.addEventListener('namespaces', (message: MessageEvent) => {
       const data = JSON.parse(message.data) as Namespaces;
       this.namespaces.next(data.namespaces);
+    });
+
+    this.eventSource.addEventListener('error', () => {
+      this.notifierService.error.next('Lost backend source. Currently retrying...');
     });
   }
 
