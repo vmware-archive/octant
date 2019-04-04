@@ -45,8 +45,8 @@ type contentEventGenerator struct {
 	prefix string
 	// namespace is the current namespace.
 	namespace string
-	// selector is a label selector to filter any content.
-	selector labels.Selector
+	// labelSet is a label set to filter any content.
+	labelSet *labels.Set
 	// runEvery is how often the event generator should be run.
 	runEvery time.Duration
 }
@@ -54,7 +54,7 @@ type contentEventGenerator struct {
 // Generate generates an event from a component using `generatorFn` and wraps it in a
 // `dashResponse`.
 func (g *contentEventGenerator) Generate(ctx context.Context) (event, error) {
-	resp, err := g.generatorFn(ctx, g.path, g.prefix, g.namespace, module.ContentOptions{Selector: g.selector})
+	resp, err := g.generatorFn(ctx, g.path, g.prefix, g.namespace, module.ContentOptions{LabelSet: g.labelSet})
 	if err != nil {
 		return event{}, err
 	}

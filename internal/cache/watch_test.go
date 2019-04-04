@@ -171,7 +171,7 @@ func Test_WatchList_cached_with_selector(t *testing.T) {
 	pod2 := testutil.CreatePod("pod2")
 	pod2.Namespace = "test"
 
-	ls := labels.Set{
+	ls := &labels.Set{
 		"app": "app1",
 	}
 
@@ -179,7 +179,7 @@ func Test_WatchList_cached_with_selector(t *testing.T) {
 		Namespace:  "test",
 		APIVersion: "v1",
 		Kind:       "Pod",
-		Selector:   ls.AsSelector(),
+		Selector:   ls,
 	}
 
 	factoryFunc := func(c *Watch) {

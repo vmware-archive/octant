@@ -16,7 +16,7 @@ type Key struct {
 	APIVersion string
 	Kind       string
 	Name       string
-	Selector   kLabels.Selector
+	Selector   *kLabels.Set
 }
 
 func (k Key) String() string {
