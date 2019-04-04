@@ -314,6 +314,16 @@ func (cd *crdDescriber) Describe(ctx context.Context, prefix, namespace string, 
 	yvComponent.SetAccessor("yaml")
 	cr.Add(yvComponent)
 
+	tabs, err := options.PluginManager.Tabs(object)
+	if err != nil {
+		return emptyContentResponse, errors.Wrap(err, "getting tabs from plugins")
+	}
+
+	for _, tab := range tabs {
+		tab.Contents.SetAccessor(tab.Name)
+		cr.Add(&tab.Contents)
+	}
+
 	return *cr, nil
 }
 

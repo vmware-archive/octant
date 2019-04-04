@@ -9,6 +9,7 @@ import (
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
 	"github.com/heptio/developer-dash/internal/overview/printer"
+	printerfake "github.com/heptio/developer-dash/internal/overview/printer/fake"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
@@ -164,6 +165,9 @@ func Test_crdDescriber(t *testing.T) {
 
 	c := cachefake.NewMockCache(controller)
 
+	pluginPrinter := printerfake.NewMockPluginPrinter(controller)
+	pluginPrinter.EXPECT().Tabs(gomock.Any()).Return([]component.Tab{}, nil)
+
 	crd := testutil.CreateCRD("crd1")
 	crd.Spec.Group = "foo.example.com"
 	crd.Spec.Version = "v1"
@@ -203,7 +207,8 @@ func Test_crdDescriber(t *testing.T) {
 	cd := newCRDDescriber(crd.Name, "path", crPrinter)
 
 	options := DescriberOptions{
-		Cache: c,
+		Cache:         c,
+		PluginManager: pluginPrinter,
 	}
 
 	ctx := context.Background()
