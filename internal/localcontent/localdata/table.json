@@ -1,5 +1,14 @@
 {
-    "title": "Sample content",
+    "title": [
+      {
+        "config": {
+          "value": "Sample content"
+        },
+        "metadata": {
+          "type": "text"
+        }
+      }
+    ],
     "viewComponents": [
       {
         "metadata": {

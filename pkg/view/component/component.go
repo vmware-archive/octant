@@ -2,6 +2,7 @@ package component
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/pkg/errors"
 )
@@ -28,7 +29,7 @@ func (c *ContentResponse) Add(components ...Component) {
 // UnmarshalJSON unarmshals a content response from JSON.
 func (c *ContentResponse) UnmarshalJSON(data []byte) error {
 	stage := struct {
-		Title      string        `json:"title,omitempty"`
+		Title      []TypedObject `json:"title,omitempty"`
 		Components []TypedObject `json:"viewComponents,omitempty"`
 	}{}
 
@@ -36,7 +37,14 @@ func (c *ContentResponse) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	c.Title = Title(NewText(stage.Title))
+	for _, t := range stage.Title {
+		title, err := getTitleByUnmarshalInterface(t.Config)
+		if err != nil {
+			return err
+		}
+
+		c.Title = Title(NewText(title))
+	}
 
 	for _, to := range stage.Components {
 		vc, err := to.ToComponent()
@@ -48,6 +56,19 @@ func (c *ContentResponse) UnmarshalJSON(data []byte) error {
 	}
 
 	return nil
+}
+
+func getTitleByUnmarshalInterface(config json.RawMessage) (string, error) {
+	var objmap map[string]interface{}
+	if err := json.Unmarshal(config, &objmap); err != nil {
+		return "", err
+	}
+
+	if value, ok := objmap["value"].(string); ok {
+		return value, nil
+	}
+
+	return "", fmt.Errorf("title does not have a value")
 }
 
 type TypedObject struct {
