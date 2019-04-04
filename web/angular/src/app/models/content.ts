@@ -34,6 +34,12 @@ export interface ContainersView extends View {
   };
 }
 
+export interface GraphvizView {
+  config: {
+    dot: string;
+  };
+}
+
 export interface FlexLayoutItem {
   width: number;
   view: View;

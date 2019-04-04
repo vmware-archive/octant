@@ -1,0 +1,21 @@
+.graphviz{
+  .node {
+    fill: #333;
+
+    rect: {
+      stroke: #333;
+      stroke-width: 1.5px;
+    }
+  }
+
+  .label {
+    fill: white;
+  }
+
+  .edgePath {
+    path.path {
+      stroke: #333;
+      stroke-width: 1.5px;
+    }
+  }
+}
