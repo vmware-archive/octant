@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/heptio/developer-dash/internal/cache"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	printerfake "github.com/heptio/developer-dash/internal/overview/printer/fake"
 	"github.com/heptio/developer-dash/internal/queryer"

@@ -5,7 +5,7 @@ import (
 	"path"
 	"reflect"
 
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster"

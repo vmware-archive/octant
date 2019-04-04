@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/plugin/api/proto"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"

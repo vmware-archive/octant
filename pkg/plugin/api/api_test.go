@@ -9,7 +9,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/gvk"
 	"github.com/heptio/developer-dash/internal/portforward"
 	pffake "github.com/heptio/developer-dash/internal/portforward/fake"

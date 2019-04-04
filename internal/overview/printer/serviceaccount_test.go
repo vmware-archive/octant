@@ -11,7 +11,7 @@ import (
 
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	fakecache "github.com/heptio/developer-dash/internal/cache/fake"
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/pkg/view/component"

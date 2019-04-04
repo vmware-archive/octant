@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/util/retry"
 	"github.com/pkg/errors"

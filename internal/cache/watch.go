@@ -6,7 +6,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/labels"
 
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
