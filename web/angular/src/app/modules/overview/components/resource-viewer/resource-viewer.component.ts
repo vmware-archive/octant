@@ -1,20 +1,8 @@
-import {
-  Component,
-  Input,
-  OnChanges,
-  OnInit,
-  SimpleChanges,
-  ViewChild,
-  ElementRef,
-  ViewEncapsulation,
-  DoCheck,
-  AfterViewChecked,
-} from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, Input, ViewChild, ViewEncapsulation } from '@angular/core';
+import * as d3 from 'd3';
 import * as dagreD3 from 'dagre-d3';
 import { ResourceViewerView } from 'src/app/models/content';
-import { graphlib } from 'dagre-d3';
-import * as d3 from 'd3';
-import { zoom } from 'd3';
+import { Edge } from 'dagre';
 
 interface ResourceObject {
   name: string;
@@ -54,128 +42,112 @@ class ResourceNode {
 }
 
 
+
 @Component({
   selector: 'app-view-resource-viewer',
   template: `
     <div class="resourceViewer" #viewer>
-      <svg:svg class="dagre-d3" #parent>
-        <g #container></g>
-      </svg:svg>
     </div>
   `,
   styleUrls: ['./resource-viewer.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class ResourceViewerComponent implements OnInit, OnChanges, AfterViewChecked {
-  constructor() {}
+export class ResourceViewerComponent implements AfterViewChecked {
+
   @ViewChild('viewer') private viewer: ElementRef;
-  @ViewChild('parent') private parent: ElementRef;
-  @ViewChild('container') private container: ElementRef;
 
   @Input() view: ResourceViewerView;
 
-  private changed = false;
+  constructor() {}
 
-  ngOnInit() {}
 
-  ngOnChanges(changes: SimpleChanges): void {
-    const a = JSON.stringify(changes.view.previousValue);
-    const b = JSON.stringify(changes.view.currentValue);
-    if (a !== b) {
-      this.changed = true;
-      const view = changes.view.currentValue as ResourceViewerView;
 
-      const objects = view.config.nodes;
-      const adjacencyList = view.config.edges;
-
-      const nodes: { [key: string]: dagreD3.Label } = {};
-
-      for (const [id, object] of Object.entries(objects)) {
-        nodes[id] = new ResourceNode(id, object, false).toDescriptor();
-      }
-      const edges = [];
-      if (adjacencyList) {
-        for (const [node, nodeEdges] of Object.entries(adjacencyList)) {
-          edges.push(
-            ...nodeEdges.map((e) => [
-              node,
-              e.node,
-              {
-                arrowhead: 'undirected',
-                arrowheadStyle: 'fill: rgba(173, 187, 196, 0.3)',
-              },
-            ])
-          );
-        }
-      }
-
-      const g = new dagreD3.graphlib.Graph().setGraph({
-        align: 'DR',
-      });
-
-      for (const [id, label] of Object.entries(nodes)) {
-        g.setNode(id, label);
-      }
-
-      g.nodes().forEach((v) => {
-        const node = g.node(v);
-        node.rx = node.ry = 4;
-      });
-
-      edges.forEach((edge) => g.setEdge(edge[0], edge[1], edge[2]));
-
-      const containerElement = this.container.nativeElement;
-      const inner = d3.select(containerElement);
-
-      const render = new dagreD3.render();
-      // @ts-ignore
-      render(inner, g);
-    }
+  ngAfterViewChecked(): void {
+    this.updateGraph();
   }
 
-  ngAfterViewChecked() {
-    // this translates/scales after the view has been shown. it is not optimal, and should
-    // be performed sooner.
-    const viewerElement = this.viewer.nativeElement;
-    const viewerHeight = viewerElement.offsetHeight;
-    const viewerWidth = viewerElement.offsetWidth;
-    if (viewerHeight < 1 || viewerWidth < 1 || !this.changed) {
+  updateGraph() {
+    const viewer = this.viewer.nativeElement;
+    if (viewer.offsetWidth === 0 || viewer.offsetHeight === 0) {
+      // nothing to do until the viewer has dimensions
       return;
     }
 
-    this.resize();
+    const g = new dagreD3.graphlib.Graph().setGraph({});
+
+    for (const [id, label] of Object.entries(this.nodes())) {
+      g.setNode(id, label);
+    }
+
+    g.nodes().forEach((v: any) => {
+      const node = g.node(v);
+      node.rx = node.ry = 4;
+    });
+
+    this.edges().forEach((edge) => g.setEdge(edge[0], edge[1], edge[2]));
+
+
+    d3.select(viewer).selectAll('*').remove();
+    const svg = d3.select(viewer).append('svg')
+      .attr('width', viewer.offsetWidth)
+      .attr('height', viewer.offsetHeight)
+      .attr('class', 'dagre-d3');
+
+    const inner = svg.append('g');
+
+    const render = new dagreD3.render();
+    render(inner, g);
+
+    const initialScale = 1.2;
+
+    const width = parseInt(svg.attr('width'), 10);
+    const height = parseInt(svg.attr('height'), 10);
+
+    // Set up zoom support
+    const zoom = d3.zoom()
+      .on('zoom', () => {
+        inner.attr('transform', d3.event.transform);
+      });
+    svg.call(zoom);
+
+    // Center the graph
+    const translation = d3.zoomIdentity.translate(
+      (width - g.graph().width * initialScale) / 2,
+      (height - g.graph().height * initialScale) / 2,
+      ).scale(initialScale);
+    svg.call(zoom.transform, translation);
   }
 
-  resize() {
-    const viewerElement = this.viewer.nativeElement;
+  edges(): Array<Edge> {
+    const adjacencyList = this.view.config.edges;
+    const edges: Array<Edge> = [];
 
-    const parentElement = this.parent.nativeElement;
-    const svg = d3.select(parentElement);
+    if (adjacencyList) {
+      for (const [node, nodeEdges] of Object.entries(adjacencyList)) {
+        edges.push(
+          ...nodeEdges.map((e) => [
+            node,
+            e.node,
+            {
+              arrowhead: 'undirected',
+            },
+          ])
+        );
+      }
+    }
 
-    const containerElement = this.container.nativeElement;
-    const inner = d3.select(containerElement);
+    return edges;
+  }
 
-    const viewerHeight = viewerElement.offsetHeight;
-    const viewerWidth = viewerElement.offsetWidth;
-    const { height, width } = parentElement.getBBox();
+  nodes() {
+    const objects = this.view.config.nodes;
 
-    svg.attr('height', viewerHeight);
-    svg.attr('width', viewerWidth);
+    const nodes: { [key: string]: dagreD3.Label } = {};
 
-    const bounds = inner.node().getBBox();
-    const parent = inner.node().parentElement;
-    const fullWidth = parent.clientWidth;
-    const fullHeight = parent.clientHeight;
-    const innerWidth = bounds.width;
-    const innerHeight = bounds.height;
-    const midX = bounds.x + innerWidth / 2;
-    const midY = bounds.y + innerHeight / 2;
-    const scale = 0.4 / Math.max(width / fullWidth, height / fullHeight);
-    const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
+    for (const [id, object] of Object.entries(objects)) {
+      nodes[id] = new ResourceNode(id, object, false).toDescriptor();
+    }
 
-    // @ts-ignore
-    inner.attr('transform', `translate(${translate[0]}, ${translate[1]}) scale(${scale})`);
-
-    this.changed = false;
+    return nodes;
   }
 }

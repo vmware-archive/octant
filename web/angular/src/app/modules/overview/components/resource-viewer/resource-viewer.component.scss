@@ -1,11 +1,5 @@
 .resourceViewer {
-  display: flex;
   min-height: 75vh;
-
-  .dagre-d3 {
-    flex: 3 0 auto;
-
-  }
 
   .node {
     cursor: pointer;
@@ -13,9 +7,9 @@
 
     rect {
       border-radius: 4px;
-      fill: #22343c;
+      fill: #004A70;
       stroke: rgba(173, 187, 196, 0.3);
-      stroke-width: 1px;
+      stroke-width: 2px;
     }
 
     .label {
@@ -29,32 +23,29 @@
     &-ok {
       filter: box-shadow 0 4px 10px rgba(0, 0, 0, 0.3);
       rect {
-        stroke: green;
+        stroke: #aadb1e;
       }
     }
 
     &-warning {
       rect {
-        stroke: #ffb630;
+        stroke: #ff9c32;
       }
     }
 
     &-error {
       rect {
-        stroke: #ff3730;
+        stroke: #e12200;
       }
     }
   }
 
-
   .edgePath {
     path.path {
-      fill: rgba(173, 187, 196, 0.3);
-      stroke: rgba(173, 187, 196, 0.3);
-      stroke-width: 1.5px;
+      fill: #565656;
+      stroke: #565656;
+      stroke-width: 2px;
     }
-
-
   }
 
   .resource {
@@ -67,11 +58,12 @@
   .resource-name {
     color: #fff;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 500;
     margin-bottom: 5px;
   }
 
   .resource-type {
+    color: white;
     font-size: 12px;
     font-weight: 200;
   }
@@ -82,17 +74,5 @@
     left: 0;
     position: absolute;
     width: 100%;
-  }
-
-  .status-ok {
-    background-color: blue;
-  }
-
-  .status-warning {
-    background-color: orange;
-  }
-
-  .status-error {
-    background-color: red;
   }
 }
