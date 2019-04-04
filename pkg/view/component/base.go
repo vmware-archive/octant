@@ -5,6 +5,7 @@ const (
 	typeContainers         = "containers"
 	typeExpressionSelector = "expressionSelector"
 	typeFlexLayout         = "flexlayout"
+	typeGraphviz           = "graphviz"
 	typeGrid               = "grid"
 	typeLabels             = "labels"
 	typeLabelSelector      = "labelSelector"
