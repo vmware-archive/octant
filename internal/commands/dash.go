@@ -44,6 +44,8 @@ func newDashCmd() *cobra.Command {
 
 			runCh := make(chan bool, 1)
 
+			shutdownCh := make(chan bool, 1)
+
 			go func() {
 				options := dash.Options{
 					EnableOpenCensus: enableOpenCensus,
@@ -52,7 +54,7 @@ func newDashCmd() *cobra.Command {
 					FrontendURL:      uiURL,
 				}
 
-				if err := dash.Run(ctx, logger, options); err != nil {
+				if err := dash.Run(ctx, logger, shutdownCh, options); err != nil {
 					logger.Errorf("running dashboard: %v", err)
 					os.Exit(1)
 				}
@@ -66,6 +68,7 @@ func newDashCmd() *cobra.Command {
 				cancel()
 				// TODO implement graceful shutdown semantics
 
+				<-shutdownCh
 			case <-runCh:
 				logger.Debugf("Dashboard has exited")
 			}

@@ -57,7 +57,7 @@ type Client interface {
 
 // ManagerStore is the data store for Manager.
 type ManagerStore interface {
-	Store(name string, client Client, metadata Metadata)
+	Store(name string, client Client, metadata Metadata) error
 	GetMetadata(name string) (Metadata, error)
 	GetService(name string) (Service, error)
 	Clients() map[string]Client
@@ -81,9 +81,15 @@ func NewDefaultStore() *DefaultStore {
 }
 
 // Store stores information for a plugin.
-func (s *DefaultStore) Store(name string, client Client, metadata Metadata) {
+func (s *DefaultStore) Store(name string, client Client, metadata Metadata) error {
+	if _, ok := s.clients[name]; ok {
+		return errors.Errorf("plugin %q is already stored", name)
+	}
+
 	s.clients[name] = client
 	s.metadata[name] = metadata
+
+	return nil
 }
 
 // GetService gets the service for a plugin.
@@ -243,7 +249,9 @@ func (m *Manager) Start(ctx context.Context) error {
 			return errors.Wrapf(err, "register plugin %q", c.name)
 		}
 
-		m.Store.Store(c.name, client, metadata)
+		if err := m.Store.Store(c.name, client, metadata); err != nil {
+			return errors.Wrapf(err, "storing plugin")
+		}
 
 		pluginLogger.With(
 			"cmd", c.cmd,
