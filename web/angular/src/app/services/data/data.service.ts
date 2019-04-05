@@ -63,6 +63,7 @@ export class DataService {
   startPoller(path: string) {
     if (this.eventSource) {
       this.eventSource.close();
+      this.eventSource = null;
     }
 
     // if path ends with a namespace and no slash, append a slash

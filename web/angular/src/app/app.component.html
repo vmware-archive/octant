@@ -19,34 +19,11 @@
     <app-notifier></app-notifier>
   </div>
   <div class="content-container">
+    <div class="navigation">
+      <app-navigation [navigation]="navigation"></app-navigation>
+    </div>
     <div class="content-area">
       <router-outlet></router-outlet>
     </div>
-    <clr-vertical-nav>
-      <ng-container *ngIf="navigation?.sections">
-        <ng-container *ngFor="let section of navigation.sections; trackBy: identifyNavigationItem">
-          <a clrVerticalNavLink [routerLink]="section.path" routerLinkActive="active">
-            {{ section.title }}
-          </a>
-          <ng-container *ngFor="let category of section.children; trackBy: identifyNavigationItem">
-            <clr-vertical-nav-group [clrVerticalNavGroupExpanded]="true">
-              <a clrVerticalNavLink [routerLink]="category.path" routerLinkActive="active">
-                {{ category.title }}
-              </a>
-              <clr-vertical-nav-group-children>
-                <a
-                  clrVerticalNavLink
-                  *ngFor="let entry of category.children; trackBy: identifyNavigationItem"
-                  [routerLink]="entry.path"
-                  routerLinkActive="active"
-                >
-                  {{ entry.title }}
-                </a>
-              </clr-vertical-nav-group-children>
-            </clr-vertical-nav-group>
-          </ng-container>
-        </ng-container>
-      </ng-container>
-    </clr-vertical-nav>
   </div>
 </div>

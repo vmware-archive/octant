@@ -18,8 +18,4 @@ export class AppComponent implements OnInit {
       this.navigation = navigation;
     });
   }
-
-  identifyNavigationItem(index: number, item: NavigationChild): string {
-    return item.title;
-  }
 }

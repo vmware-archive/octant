@@ -1,28 +1,44 @@
-.clr-vertical-nav, .main-container .content-container .content-area {
-  padding-top: 0;
+.main-container {
+  .header {
+    .branding {
+      min-width: 10rem;
+    }
+
+    .header-nav {
+      padding-left: 1rem;
+
+      .namespace-switcher, .input-filter {
+        margin-right: 10px;
+      }
+
+      .namespace-switcher {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin-right: 20px;
+      }
+
+      .input-filter {
+        z-index: 999; // clarity's data-grid beats this
+        width: 300px;
+      }
+    }
+  }
+
+  .notifier {}
+
+  .content-container {
+    .navigation {
+      overflow-y: auto;
+      min-width: 2rem;
+      width: 10rem;
+    }
+
+    .content-area {
+      flex: 1;
+      padding-top: 0;
+    }
+  }
 }
 
-.branding {
-  min-width: 10rem;
-}
-
-.main-container .header-nav {
-  padding-left: 1rem;
-}
-
-.namespace-switcher, .input-filter {
-  margin-right: 10px;
-}
-
-.namespace-switcher {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  margin-right: 20px;
-}
-
-.input-filter {
-  z-index: 999; // clarity's data-grid beats this
-  width: 300px;
-}

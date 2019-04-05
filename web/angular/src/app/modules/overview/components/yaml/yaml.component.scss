@@ -1,4 +1,5 @@
 .yaml-window > pre {
-  height: 100%;
-  max-height: 850px;
+  min-height: 20vh;
+  max-height: calc(100vh - 230px);
+
 }

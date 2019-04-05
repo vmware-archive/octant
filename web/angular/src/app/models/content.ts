@@ -206,3 +206,26 @@ export interface LogEntry {
 export interface LogResponse {
   entries: LogEntry[];
 }
+
+export interface Port extends View {
+  config: {
+    namespace: string;
+    apiVersion: string;
+    kind: string;
+    name: string;
+    port: number;
+    protocol: string;
+    state: {
+      id: string;
+      isForwarded: boolean;
+      isForwardable: boolean;
+      port: number;
+    };
+  };
+}
+
+export interface PortsView extends View {
+  config: {
+    ports: Port[];
+  };
+}

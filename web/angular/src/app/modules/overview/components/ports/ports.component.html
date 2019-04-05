@@ -1,0 +1,24 @@
+<div class="ports">
+  <div class="port" *ngFor="let port of view.config.ports; trackBy: identifyPort">
+    <div class="port-text">
+      {{port.config.port}}/{{port.config.protocol}}
+    </div>
+    <div class="port-actions">
+      <ng-container *ngIf="port.config.state?.isForwarded else notRunning">
+        <button class="btn btn-small open-pf" (click)="openPortForward(port)">
+          Open localhost:{{port.config.state.port}}
+        </button>
+        <button class="btn btn-small remove-pf" (click)="removePortForward(port)">
+          Remove
+        </button>
+      </ng-container>
+      <ng-template #notRunning>
+        <button class="btn btn-small start-pf" (click)="startPortForward(port)">
+          Start port forward
+        </button>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
+

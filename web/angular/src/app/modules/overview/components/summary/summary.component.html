@@ -27,6 +27,9 @@
             <ng-container *ngSwitchCase="'table'">
               <app-view-table [view]="item.content"></app-view-table>
             </ng-container>
+            <ng-container *ngSwitchCase="'ports'">
+              <app-ports [view]="item.content"></app-ports>
+            </ng-container>
             <div class="alert alert-danger static" *ngSwitchDefault>
               <span class="alert-icon-wrapper">
                 <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
