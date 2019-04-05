@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/cluster"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
@@ -171,7 +171,7 @@ func Test_WatchList_cached_with_selector(t *testing.T) {
 	pod2 := testutil.CreatePod("pod2")
 	pod2.Namespace = "test"
 
-	ls := labels.Set{
+	ls := &labels.Set{
 		"app": "app1",
 	}
 
@@ -179,7 +179,7 @@ func Test_WatchList_cached_with_selector(t *testing.T) {
 		Namespace:  "test",
 		APIVersion: "v1",
 		Kind:       "Pod",
-		Selector:   ls.AsSelector(),
+		Selector:   ls,
 	}
 
 	factoryFunc := func(c *Watch) {

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/gvk"
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/pkg/plugin/api/proto"

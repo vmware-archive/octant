@@ -3,15 +3,14 @@ package api
 import (
 	"encoding/json"
 
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/plugin/api/proto"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 func convertFromKey(in cacheutil.Key) (*proto.KeyRequest, error) {
-	// TODO: support label selector
-
 	return &proto.KeyRequest{
 		Namespace:  in.Namespace,
 		ApiVersion: in.APIVersion,
@@ -25,14 +24,27 @@ func convertToKey(in *proto.KeyRequest) (cacheutil.Key, error) {
 		return cacheutil.Key{}, errors.New("key request is nil")
 	}
 
-	// TODO: support label selector
+	matchLabels := labels.Set{}
 
-	return cacheutil.Key{
+	value := in.GetLabelSelector()
+	if value != nil {
+		if err := json.Unmarshal(value.Value, &matchLabels); err != nil {
+			return cacheutil.Key{}, errors.Wrap(err, "unmarshal label selector")
+		}
+	}
+
+	key := cacheutil.Key{
 		Namespace:  in.Namespace,
 		APIVersion: in.ApiVersion,
 		Kind:       in.Kind,
 		Name:       in.Name,
-	}, nil
+	}
+
+	if len(matchLabels) > 0 {
+		key.Selector = &matchLabels
+	}
+
+	return key, nil
 }
 
 func convertFromObjects(in []*unstructured.Unstructured) ([][]byte, error) {

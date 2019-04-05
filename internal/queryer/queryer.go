@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	dashstrings "github.com/heptio/developer-dash/internal/util/strings"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"

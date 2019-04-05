@@ -69,7 +69,7 @@ type realGenerator struct {
 
 // GeneratorOptions are additional options to pass a generator
 type GeneratorOptions struct {
-	Selector       kLabels.Selector
+	LabelSet       *kLabels.Set
 	PortForwardSvc portforward.PortForwarder
 	PluginManager  *plugin.Manager
 }
@@ -129,7 +129,7 @@ func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace st
 		Queryer:        q,
 		Fields:         fields,
 		Printer:        g.printer,
-		Selector:       opts.Selector,
+		LabelSet:       opts.LabelSet,
 		PortForwardSvc: opts.PortForwardSvc,
 		PluginManager:  opts.PluginManager,
 	}

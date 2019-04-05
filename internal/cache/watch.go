@@ -6,7 +6,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/labels"
 
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
@@ -92,9 +92,9 @@ func (w *Watch) List(ctx context.Context, key cacheutil.Key) ([]*unstructured.Un
 	if w.isKeyCached(key) {
 		var filteredObjects []*unstructured.Unstructured
 
-		selector := key.Selector
-		if selector == nil {
-			selector = labels.Everything()
+		var selector = labels.Everything()
+		if key.Selector != nil {
+			selector = key.Selector.AsSelector()
 		}
 
 		w.objectLock.RLock()

@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/pkg/plugin/api/proto"
 	"google.golang.org/grpc"

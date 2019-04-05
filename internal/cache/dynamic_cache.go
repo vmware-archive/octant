@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/util/retry"
 	"github.com/pkg/errors"
@@ -154,7 +154,7 @@ func (dc *DynamicCache) List(ctx context.Context, key cacheutil.Key) ([]*unstruc
 
 	var selector = kLabels.Everything()
 	if key.Selector != nil {
-		selector = key.Selector
+		selector = key.Selector.AsSelector()
 	}
 
 	objects, err := l.List(selector)
@@ -236,7 +236,8 @@ func (dc *DynamicCache) Get(ctx context.Context, key cacheutil.Key) (*unstructur
 			return nil, errors.New("retrieving labels")
 		}
 		labels := kLabels.Set(m)
-		if !key.Selector.Matches(labels) {
+		selector := key.Selector.AsSelector()
+		if !selector.Matches(labels) {
 			return nil, errors.New("object found but filtered by selector")
 		}
 	}

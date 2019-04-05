@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/overview/logviewer"
@@ -44,7 +44,7 @@ type DescriberOptions struct {
 	Cache          cache.Cache
 	Fields         map[string]string
 	Printer        printer.Printer
-	Selector       kLabels.Selector
+	LabelSet       *kLabels.Set
 	PortForwardSvc portforward.PortForwarder
 	PluginManager  printer.PluginPrinter
 }
@@ -94,7 +94,7 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 
 	// Pass through selector if provided to filter objects
 	var key = d.cacheKey // copy
-	key.Selector = options.Selector
+	key.Selector = options.LabelSet
 
 	if d.isClusterWide {
 		namespace = ""

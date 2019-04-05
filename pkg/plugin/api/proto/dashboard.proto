@@ -1,7 +1,7 @@
 syntax = "proto3";
 package proto;
 
-import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
+import "google/protobuf/wrappers.proto";
 
 message Empty {}
 
@@ -10,7 +10,7 @@ message KeyRequest {
     string apiVersion = 2;
     string kind = 3;
     string name = 4;
-    k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector labelSelector = 5;
+    google.protobuf.BytesValue labelSelector = 5;
 }
 
 message ListResponse {

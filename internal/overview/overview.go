@@ -146,7 +146,7 @@ func (co *ClusterOverview) Stop() {
 func (co *ClusterOverview) Content(ctx context.Context, contentPath, prefix, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
 	ctx = log.WithLoggerContext(ctx, co.logger)
 	genOpts := GeneratorOptions{
-		Selector:       opts.Selector,
+		LabelSet:       opts.LabelSet,
 		PortForwardSvc: co.portForwardSvc,
 		PluginManager:  co.pluginManager,
 	}

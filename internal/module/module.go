@@ -9,9 +9,9 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-// ContentOptions are addtional options for content generation
+// ContentOptions are additional options for content generation
 type ContentOptions struct {
-	Selector labels.Selector
+	LabelSet *labels.Set
 }
 
 // Module is an sugarloaf plugin.

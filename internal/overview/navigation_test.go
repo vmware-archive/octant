@@ -6,7 +6,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	fakecache "github.com/heptio/developer-dash/internal/cache/fake"
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/overview"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
