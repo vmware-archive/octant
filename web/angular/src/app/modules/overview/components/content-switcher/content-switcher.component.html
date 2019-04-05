@@ -9,6 +9,9 @@
     <ng-container *ngSwitchCase="'expressionSelector'">
       <app-view-expression-selector [view]="currentView"></app-view-expression-selector>
     </ng-container>
+    <ng-container *ngSwitchCase="'graphviz'">
+      <app-view-graphviz [view]="currentView"></app-view-graphviz>
+    </ng-container>
     <ng-container *ngSwitchCase="'flexlayout'">
       <app-view-flexlayout [view]="currentView"></app-view-flexlayout>
     </ng-container>
