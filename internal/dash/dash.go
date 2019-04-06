@@ -22,7 +22,7 @@ import (
 	"github.com/heptio/developer-dash/internal/overview"
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/pkg/plugin"
-	web "github.com/heptio/developer-dash/web/react"
+	web "github.com/heptio/developer-dash/web"
 
 	"github.com/pkg/errors"
 	"github.com/skratchdot/open-golang/open"

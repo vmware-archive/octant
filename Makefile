@@ -33,7 +33,7 @@ sugarloaf-dev:
 setup-web: web-deps run-web
 
 run-web:
-	@cd web/react; BROWSER=none npm start
+	@cd web; BROWSER=none npm start
 
 generate:
 	@echo "-> $@"
@@ -48,23 +48,20 @@ go-install:
 	$(GOINSTALL) ./vendor/github.com/golang/protobuf/protoc-gen-go
 
 web-deps:
-	@cd web/react; npm ci
+	@cd web; npm ci
 
 web-build: web-deps
-	@cd web/react; npm run build
-	@go generate ./web/react
+	@cd web; npm run build
+	@go generate ./web
 
 web-test: web-deps
-	@cd web/react; npm run test
+	@cd web; npm run test:headless
 
 ui-server:
 	DASH_DISABLE_OPEN_BROWSER=false DASH_LISTENER_ADDR=localhost:3001 $(GOCMD) run ./cmd/sugarloaf/main.go dash $(DASH_FLAGS)
 
 ui-client:
-	cd web/react; API_BASE=http://localhost:3001 npm run start
-
-ui-client-ang:
-	cd web/angular; API_BASE=http://localhost:3001 npm run start
+	cd web; API_BASE=http://localhost:3001 npm run start
 
 gen-electron:
 	@GOCACHE=${HOME}/cache/go-build astilectron-bundler -v -c configs/electron/bundler.json

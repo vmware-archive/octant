@@ -1,0 +1,33 @@
+.ports {
+  .port {
+    display: flex;
+    flex-direction: row;
+
+    .port-text {
+      margin-right: 16px;
+      height: 26px;
+      line-height: 26px;
+    }
+
+    .port-actions {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+
+      .btn, .open-pf {
+        outline: none;
+        height: 26px;
+        line-height: 26px;
+      }
+
+      .btn {
+        font-size: 10px;
+      }
+
+      .open-pf {
+        margin-right: 16px;
+        cursor: pointer;
+      }
+    }
+  }
+}
