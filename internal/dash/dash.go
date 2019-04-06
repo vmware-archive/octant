@@ -43,7 +43,7 @@ type Options struct {
 }
 
 // Run runs the dashboard.
-func Run(ctx context.Context, logger log.Logger, options Options) error {
+func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options Options) error {
 	ctx = log.WithLoggerContext(ctx, logger)
 
 	logger.Debugf("Loading configuration: %v", options.KubeConfig)
@@ -137,6 +137,8 @@ func Run(ctx context.Context, logger log.Logger, options Options) error {
 
 	moduleManager.Unload()
 	pluginManager.Stop(shutdownCtx)
+
+	shutdownCh <- true
 
 	return nil
 }
