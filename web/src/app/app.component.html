@@ -1,4 +1,7 @@
 <div class="main-container">
+  <div class="notifier">
+    <app-notifier></app-notifier>
+  </div>
   <header class="header header-6">
     <div class="branding">
       <a [routerLink]="['/']">
@@ -15,9 +18,6 @@
       </div>
     </div>
   </header>
-  <div class="notifier">
-    <app-notifier></app-notifier>
-  </div>
   <div class="content-container">
     <div class="navigation">
       <app-navigation [navigation]="navigation"></app-navigation>
