@@ -49,3 +49,9 @@ func (b *base) GetMetadata() Metadata {
 func (b *base) SetAccessor(accessor string) {
 	b.Metadata.Accessor = accessor
 }
+
+// IsEmpty returns false by default. Let the components that wrap base
+// determine if they are empty or not if they wish.
+func (b *base) IsEmpty() bool {
+	return false
+}

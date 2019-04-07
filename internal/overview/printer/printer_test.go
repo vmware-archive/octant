@@ -175,6 +175,10 @@ func (v *stubComponent) GetMetadata() component.Metadata {
 	}
 }
 
+func (v *stubComponent) IsEmpty() bool {
+	return false
+}
+
 func (v *stubComponent) SetAccessor(string) {}
 
 func Test_DefaultPrinter(t *testing.T) {

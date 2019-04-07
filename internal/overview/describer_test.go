@@ -7,11 +7,11 @@ import (
 
 	"github.com/golang/mock/gomock"
 	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	printerfake "github.com/heptio/developer-dash/internal/overview/printer/fake"
 	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -216,6 +216,20 @@ func TestSectionDescriber(t *testing.T) {
 				"section",
 				newEmptyDescriber("/foo"),
 				newEmptyDescriber("/bar"),
+			),
+			expected: component.ContentResponse{
+				Title: component.Title(component.NewText("section")),
+				Components: []component.Component{
+					component.NewList("section", nil),
+				},
+			},
+		},
+		{
+			name: "empty component",
+			d: NewSectionDescriber(
+				"/section",
+				"section",
+				newStubDescriber("/foo", &emptyComponent{}),
 			),
 			expected: component.ContentResponse{
 				Title: component.Title(component.NewText("section")),

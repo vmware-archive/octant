@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/overview/logviewer"
@@ -14,6 +13,7 @@ import (
 	"github.com/heptio/developer-dash/internal/overview/yamlviewer"
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/internal/queryer"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -389,7 +389,12 @@ func (d *SectionDescriber) Describe(ctx context.Context, prefix, namespace strin
 
 		for _, vc := range cResponse.Components {
 			if nestedList, ok := vc.(*component.List); ok {
-				list.Add(nestedList.Config.Items...)
+				for i := range nestedList.Config.Items {
+					item := nestedList.Config.Items[i]
+					if !item.IsEmpty() {
+						list.Add(item)
+					}
+				}
 			}
 		}
 	}

@@ -81,9 +81,9 @@ func NewTableCols(keys ...string) []TableCol {
 	return cols
 }
 
-// GetMetadata accesses the components metadata. Implements Component.
-func (t *Table) GetMetadata() Metadata {
-	return t.Metadata
+// IsEmpty returns true if there is one or more rows.
+func (t *Table) IsEmpty() bool {
+	return len(t.Config.Rows) < 1
 }
 
 // Add adds additional items to the tail of the table.
