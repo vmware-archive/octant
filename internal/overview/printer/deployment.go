@@ -5,11 +5,13 @@ import (
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
-
-	appsv1 "k8s.io/api/apps/v1"
-
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // DeploymentListHandler is a printFunc that lists deployments
@@ -62,6 +64,12 @@ func DeploymentHandler(ctx context.Context, deployment *appsv1.Deployment, optio
 
 	o.RegisterConfig(configSummary)
 	o.RegisterItems([]ItemDescriptor{
+		{
+			Func: func() (component.Component, error) {
+				return deploymentPods(ctx, deployment, options)
+			},
+			Width: component.WidthFull,
+		},
 		{
 			Width: component.WidthQuarter,
 			Func: func() (component.Component, error) {
@@ -207,4 +215,46 @@ func (ds *DeploymentStatus) Create() (*component.Quadrant, error) {
 	}
 
 	return quadrant, nil
+}
+
+func deploymentPods(ctx context.Context, deployment *appsv1.Deployment, options Options) (component.Component, error) {
+	if deployment == nil {
+		return nil, errors.New("deployment is nil")
+	}
+
+	if options.Cache == nil {
+		return nil, errors.New("cache is nil")
+	}
+
+	selector := labels.Set(deployment.Spec.Template.ObjectMeta.Labels)
+
+	key := cacheutil.Key{
+		Namespace:  deployment.Namespace,
+		APIVersion: "v1",
+		Kind:       "Pod",
+		Selector:   &selector,
+	}
+
+	list, err := options.Cache.List(ctx, key)
+	if err != nil {
+		return nil, errors.Wrapf(err, "list all objects for key %s", key)
+	}
+
+	podList := &corev1.PodList{}
+	for _, u := range list {
+		pod := &corev1.Pod{}
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, pod)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := copyObjectMeta(pod, u); err != nil {
+			return nil, errors.Wrap(err, "copy object metadata")
+		}
+
+		podList.Items = append(podList.Items, *pod)
+	}
+
+	options.DisableLabels = true
+	return PodListHandler(ctx, podList, options)
 }
