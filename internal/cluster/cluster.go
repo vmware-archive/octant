@@ -3,9 +3,9 @@ package cluster
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"time"
-
-	"k8s.io/client-go/restmapper"
 
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/pkg/errors"
@@ -18,6 +18,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/clientcmd"
 
 	// auth plugins
@@ -58,11 +59,15 @@ type Cluster struct {
 	kubernetesClient kubernetes.Interface
 	dynamicClient    dynamic.Interface
 	discoveryClient  discovery.DiscoveryInterface
+
+	restMapper meta.RESTMapper
 }
 
 var _ ClientInterface = (*Cluster)(nil)
 
 func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restClient *rest.Config) (*Cluster, error) {
+	logger := log.From(ctx).With("component", "cluster client")
+
 	kubernetesClient, err := kubernetes.NewForConfig(restClient)
 	if err != nil {
 		return nil, errors.Wrap(err, "create kubernetes client")
@@ -78,65 +83,61 @@ func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restCl
 		return nil, errors.Wrap(err, "create discovery client")
 	}
 
+	dir, err := ioutil.TempDir("", "sugarloaf")
+	if err != nil {
+		return nil, errors.Wrap(err, "create temp directory")
+	}
+
+	logger.With("dir", dir).Debugf("created temp directory")
+
+	cachedDiscoveryClient, err := discovery.NewCachedDiscoveryClientForConfig(
+		restClient,
+		dir,
+		dir,
+		180*time.Second,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "create cached discovery client")
+	}
+
+	restMapper := restmapper.NewDeferredDiscoveryRESTMapper(cachedDiscoveryClient)
+
 	c := &Cluster{
 		clientConfig:     clientConfig,
 		restClient:       restClient,
 		kubernetesClient: kubernetesClient,
 		dynamicClient:    dynamicClient,
 		discoveryClient:  discoveryClient,
+		restMapper:       restMapper,
 		logger:           log.From(ctx),
 	}
+
+	go func() {
+		<-ctx.Done()
+		logger.Debugf("removing cluster client template directory")
+		os.RemoveAll(dir)
+
+	}()
 
 	return c, nil
 }
 
 func (c *Cluster) ResourceExists(gvr schema.GroupVersionResource) bool {
-	restMapper, err := c.restMapper()
-	if err != nil {
-		return false
-	}
-	_, err = restMapper.KindFor(gvr)
+	restMapper := c.restMapper
+	_, err := restMapper.KindFor(gvr)
 	return err == nil
 }
 
-func (c *Cluster) restMapper() (meta.RESTMapper, error) {
-	groupResources, err := restmapper.GetAPIGroupResources(c.discoveryClient)
-	if err != nil {
-		return nil, errors.Wrap(err, "rest mapper: unable to get API group resources")
-	}
-
-	restMapper := restmapper.NewDiscoveryRESTMapper(groupResources)
-	return restMapper, nil
-}
-
 func (c *Cluster) Resource(gk schema.GroupKind) (schema.GroupVersionResource, error) {
-	var err error
-	var restMapper meta.RESTMapper
-
 	restConfig, err := c.clientConfig.ClientConfig()
 	if err != nil {
 		return schema.GroupVersionResource{}, errors.Wrap(err, "get rest config")
 	}
 
 	retries := 0
-	for retries < 5 {
-		restMapper, err = c.restMapper()
-		if err == nil {
-			break
-		}
 
-		retries++
-		c.logger.Infof("Having trouble connecting to your cluster at %s. Retrying.....", restConfig.Host)
-		time.Sleep(5 * time.Second)
-	}
-	if err != nil {
-		c.logger.Infof("Developer Dashboard could not connect to your cluster at %s. Can you verify that it is running? Full error details below.", restConfig.Host)
-		return schema.GroupVersionResource{}, errors.Wrap(err, "get rest mapper")
-	}
-
-	retries = 0
 	for retries < 5 {
-		restMapping, err := restMapper.RESTMapping(gk)
+		restMapping, err := c.restMapper.RESTMapping(gk)
 		if err != nil {
 			if meta.IsNoMatchError(err) {
 				retries++

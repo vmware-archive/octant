@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/util/retry"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
