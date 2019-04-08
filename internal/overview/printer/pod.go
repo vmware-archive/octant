@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/overview/link"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
@@ -47,7 +47,6 @@ func PodListHandler(ctx context.Context, list *corev1.PodList, opts Options) (co
 		row := component.TableRow{}
 
 		row["Name"] = link.ForObject(&p, p.Name)
-		row["Labels"] = component.NewLabels(p.Labels)
 		if !opts.DisableLabels {
 			row["Labels"] = component.NewLabels(p.Labels)
 		}

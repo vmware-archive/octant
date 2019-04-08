@@ -5,17 +5,22 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	"github.com/golang/mock/gomock"
+	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	"github.com/heptio/developer-dash/internal/conversion"
+	"github.com/heptio/developer-dash/internal/overview/link"
+	"github.com/heptio/developer-dash/internal/testutil"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
-
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	"github.com/heptio/developer-dash/internal/conversion"
-	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
 func Test_DeploymentListHandler(t *testing.T) {
@@ -244,6 +249,56 @@ func TestDeploymentStatus(t *testing.T) {
 	require.NoError(t, expected.Set(component.QuadNE, "Total", "2"))
 	require.NoError(t, expected.Set(component.QuadSW, "Unavailable", "3"))
 	require.NoError(t, expected.Set(component.QuadSE, "Available", "4"))
+
+	assert.Equal(t, expected, got)
+}
+
+func Test_deploymentPods(t *testing.T) {
+	controller := gomock.NewController((t))
+	defer controller.Finish()
+
+	podLabels := map[string]string{
+		"foo": "bar",
+	}
+
+	deployment := testutil.CreateDeployment("deployment")
+	deployment.Spec.Template.ObjectMeta.Labels = podLabels
+
+	now := time.Now()
+	pod := testutil.CreatePod("pod")
+	pod.ObjectMeta.CreationTimestamp = metav1.Time{Time: now}
+
+	appCache := cachefake.NewMockCache(controller)
+	selector := labels.Set(podLabels)
+	key := cacheutil.Key{
+		Namespace:  "namespace",
+		APIVersion: "v1",
+		Kind:       "Pod",
+		Selector:   &selector,
+	}
+	appCache.EXPECT().
+		List(gomock.Any(), key).
+		Return([]*unstructured.Unstructured{testutil.ToUnstructured(t, pod)}, nil)
+
+	ctx := context.Background()
+
+	options := Options{
+		Cache: appCache,
+	}
+
+	got, err := deploymentPods(ctx, deployment, options)
+	require.NoError(t, err)
+
+	expected := component.NewTableWithRows("Pods", podColsWithOutLabels, []component.TableRow{
+		{
+			"Name":     link.ForObject(pod, pod.Name),
+			"Age":      component.NewTimestamp(now),
+			"Ready":    component.NewText("0/0"),
+			"Restarts": component.NewText("0"),
+			"Status":   component.NewText(""),
+			"Node":     component.NewText(""),
+		},
+	})
 
 	assert.Equal(t, expected, got)
 }
