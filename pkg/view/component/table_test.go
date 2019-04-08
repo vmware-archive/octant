@@ -73,3 +73,30 @@ func Test_Table_Marshal(t *testing.T) {
 		})
 	}
 }
+
+func Test_Table_isEmpty(t *testing.T) {
+	cases := []struct {
+		name    string
+		table   *Table
+		isEmpty bool
+	}{
+		{
+			name:    "empty",
+			table:   NewTable("my table", NewTableCols("col1")),
+			isEmpty: true,
+		},
+		{
+			name: "not empty",
+			table: NewTableWithRows("my table", NewTableCols("col1"), []TableRow{
+				{"col1": NewText("cell1")},
+			}),
+			isEmpty: false,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.isEmpty, tc.table.IsEmpty())
+		})
+	}
+}

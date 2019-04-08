@@ -143,6 +143,7 @@ func (m *Metadata) UnmarshalJSON(data []byte) error {
 type Component interface {
 	GetMetadata() Metadata
 	SetAccessor(string)
+	IsEmpty() bool
 }
 
 // TitleComponent is a view component that can be used for a title.

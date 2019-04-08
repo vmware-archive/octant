@@ -116,3 +116,21 @@ func (d *stubDescriber) PathFilters() []pathFilter {
 		*newPathFilter(d.path, d),
 	}
 }
+
+type emptyComponent struct{}
+
+var _ component.Component = (*emptyComponent)(nil)
+
+func (c *emptyComponent) GetMetadata() component.Metadata {
+	return component.Metadata{
+		Type: "empty",
+	}
+}
+
+func (c *emptyComponent) SetAccessor(string) {
+	// no-op
+}
+
+func (c *emptyComponent) IsEmpty() bool {
+	return true
+}

@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/overview/link"
@@ -15,6 +14,7 @@ import (
 	"github.com/heptio/developer-dash/internal/overview/resourceviewer"
 	"github.com/heptio/developer-dash/internal/overview/yamlviewer"
 	"github.com/heptio/developer-dash/internal/queryer"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -116,7 +116,12 @@ func (csd *crdSectionDescriber) Describe(ctx context.Context, prefix, namespace 
 			return emptyContentResponse, err
 		}
 
-		list.Add(resp.Components...)
+		for i := range resp.Components {
+			c := resp.Components[i]
+			if !c.IsEmpty() {
+				list.Add(c)
+			}
+		}
 	}
 
 	cr := component.ContentResponse{
