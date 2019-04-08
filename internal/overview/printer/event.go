@@ -3,11 +3,12 @@ package printer
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/overview/link"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	"github.com/heptio/developer-dash/pkg/view/gridlayout"
@@ -54,6 +55,21 @@ func EventListHandler(ctx context.Context, list *corev1.EventList, opts Options)
 
 		table.Add(row)
 	}
+
+	sort.Slice(table.Config.Rows, func(i, j int) bool {
+		a, ok := table.Config.Rows[i]["Last Seen"].(*component.Timestamp)
+		if !ok {
+			return false
+		}
+
+		b, ok := table.Config.Rows[j]["Last Seen"].(*component.Timestamp)
+		if !ok {
+			return false
+		}
+
+		return b.Config.Timestamp < a.Config.Timestamp
+
+	})
 
 	return table, nil
 }
@@ -242,6 +258,13 @@ func eventsForObject(ctx context.Context, object runtime.Object, c cache.Cache) 
 			eventList.Items = append(eventList.Items, *event)
 		}
 	}
+
+	sort.SliceStable(eventList.Items, func(i, j int) bool {
+		a := eventList.Items[i]
+		b := eventList.Items[j]
+
+		return a.LastTimestamp.After(b.LastTimestamp.Time)
+	})
 
 	return eventList, nil
 }
