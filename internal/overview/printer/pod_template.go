@@ -1,24 +1,41 @@
 package printer
 
 import (
+	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/heptio/developer-dash/pkg/view/flexlayout"
+	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-
-	"github.com/pkg/errors"
-
-	"github.com/heptio/developer-dash/pkg/view/component"
 )
+
+type podTemplateLayoutOptions struct {
+	parent          runtime.Object
+	containers      []corev1.Container
+	podTemplateSpec corev1.PodTemplateSpec
+	isInit          bool
+	printOptions    Options
+}
+
+type podTemplateFunc func(fl *flexlayout.FlexLayout, options podTemplateLayoutOptions) error
 
 type PodTemplate struct {
 	parent          runtime.Object
 	podTemplateSpec corev1.PodTemplateSpec
+
+	podTemplateHeaderFunc           podTemplateFunc
+	podTemplateInitContainersFunc   podTemplateFunc
+	podTemplateContainersFunc       podTemplateFunc
+	podTemplatePodConfigurationFunc podTemplateFunc
 }
 
 func NewPodTemplate(parent runtime.Object, podTemplateSpec corev1.PodTemplateSpec) *PodTemplate {
 	return &PodTemplate{
-		parent:          parent,
-		podTemplateSpec: podTemplateSpec,
+		parent:                          parent,
+		podTemplateSpec:                 podTemplateSpec,
+		podTemplateHeaderFunc:           podTemplateHeader,
+		podTemplateInitContainersFunc:   podTemplateContainers,
+		podTemplateContainersFunc:       podTemplateContainers,
+		podTemplatePodConfigurationFunc: podTemplatePodConfiguration,
 	}
 }
 
@@ -27,55 +44,104 @@ func (pt *PodTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout, options Option
 		return errors.New("flex layout is nil")
 	}
 
-	headerSection := fl.AddSection()
-	podTemplateHeader := NewPodTemplateHeader(pt.podTemplateSpec.ObjectMeta.Labels)
-	headerLabels, err := podTemplateHeader.Create()
-	if err != nil {
-		return err
+	baseOptions := podTemplateLayoutOptions{
+		parent:          pt.parent,
+		podTemplateSpec: pt.podTemplateSpec,
+		printOptions:    options,
 	}
 
-	if err := headerSection.Add(headerLabels, 23); err != nil {
+	if err := pt.podTemplateHeaderFunc(fl, baseOptions); err != nil {
+		return errors.Wrap(err, "pod template header")
+	}
+
+	initContainerOptions := baseOptions
+	initContainerOptions.containers = pt.podTemplateSpec.Spec.InitContainers
+	initContainerOptions.isInit = true
+
+	if err := pt.podTemplateInitContainersFunc(fl, initContainerOptions); err != nil {
+		return errors.Wrap(err, "pod template init containers")
+	}
+
+	containerOptions := baseOptions
+	containerOptions.containers = pt.podTemplateSpec.Spec.Containers
+	containerOptions.isInit = false
+
+	if err := pt.podTemplateContainersFunc(fl, containerOptions); err != nil {
+		return errors.Wrap(err, "pod template containers")
+	}
+
+	if err := pt.podTemplatePodConfigurationFunc(fl, baseOptions); err != nil {
+		return errors.Wrap(err, "pod template pod configuration")
+	}
+
+	return nil
+}
+
+func podTemplateHeader(fl *flexlayout.FlexLayout, options podTemplateLayoutOptions) error {
+	headerSection := fl.AddSection()
+	podTemplateHeader := NewPodTemplateHeader(options.podTemplateSpec.ObjectMeta.Labels)
+	headerLabels := podTemplateHeader.Create()
+
+	if err := headerSection.Add(headerLabels, component.WidthFull); err != nil {
 		return errors.Wrap(err, "add pod template header")
+	}
+
+	return nil
+}
+
+func podTemplateContainers(fl *flexlayout.FlexLayout, options podTemplateLayoutOptions) error {
+	if len(options.containers) < 1 {
+		return nil
 	}
 
 	containerSection := fl.AddSection()
 
-	for _, container := range pt.podTemplateSpec.Spec.Containers {
-		containerConfig := NewContainerConfiguration(pt.parent, &container, options.PortForward, false)
+	for _, container := range options.containers {
+		containerConfig := NewContainerConfiguration(options.parent, &container, options.printOptions.PortForward, false)
 		summary, err := containerConfig.Create()
 		if err != nil {
 			return err
 		}
 
-		if err := containerSection.Add(summary, 12); err != nil {
+		if err := containerSection.Add(summary, component.WidthHalf); err != nil {
 			return errors.Wrap(err, "add container")
 		}
 	}
 
+	return nil
+}
+
+func podTemplatePodConfiguration(fl *flexlayout.FlexLayout, options podTemplateLayoutOptions) error {
 	podSection := fl.AddSection()
 
-	volumeTable, err := printVolumes(pt.podTemplateSpec.Spec.Volumes)
+	volumeTable, err := printVolumes(options.podTemplateSpec.Spec.Volumes)
 	if err != nil {
 		return errors.Wrap(err, "print volumes")
 	}
-	if err := podSection.Add(volumeTable, 12); err != nil {
-		return err
+	if !volumeTable.IsEmpty() {
+		if err := podSection.Add(volumeTable, component.WidthHalf); err != nil {
+			return err
+		}
 	}
 
-	tolerationList, err := printTolerations(pt.podTemplateSpec.Spec)
+	tolerationList, err := printTolerations(options.podTemplateSpec.Spec)
 	if err != nil {
 		return errors.Wrap(err, "print tolerations")
 	}
-	if err := podSection.Add(tolerationList, 12); err != nil {
-		return err
+	if !tolerationList.IsEmpty() {
+		if err := podSection.Add(tolerationList, component.WidthHalf); err != nil {
+			return err
+		}
 	}
 
-	affinityList, err := printAffinity(pt.podTemplateSpec.Spec)
+	affinityList, err := printAffinity(options.podTemplateSpec.Spec)
 	if err != nil {
 		return errors.Wrap(err, "print affinities")
 	}
-	if err := podSection.Add(affinityList, 12); err != nil {
-		return err
+	if !affinityList.IsEmpty() {
+		if err := podSection.Add(affinityList, component.WidthHalf); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -96,9 +162,9 @@ func NewPodTemplateHeader(labels map[string]string) *PodTemplateHeader {
 }
 
 // Create creates a labels component.
-func (pth *PodTemplateHeader) Create() (*component.Labels, error) {
+func (pth *PodTemplateHeader) Create() *component.Labels {
 	view := component.NewLabels(pth.labels)
 	view.Metadata.SetTitleText("Pod Template")
 
-	return view, nil
+	return view
 }
