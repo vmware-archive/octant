@@ -166,11 +166,12 @@ var (
 	})
 
 	rbacClusterRoles = NewResource(ResourceOptions{
-		Path:       "/rbac/cluster-roles",
-		CacheKey:   cacheutil.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "ClusterRole"},
-		ListType:   &rbacv1.ClusterRoleList{},
-		ObjectType: &rbacv1.ClusterRole{},
-		Titles:     ResourceTitle{List: "Cluster Roles", Object: "Cluster Role"},
+		Path:        "/rbac/cluster-roles",
+		CacheKey:    cacheutil.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "ClusterRole"},
+		ListType:    &rbacv1.ClusterRoleList{},
+		ObjectType:  &rbacv1.ClusterRole{},
+		Titles:      ResourceTitle{List: "Cluster Roles", Object: "Cluster Role"},
+		ClusterWide: true,
 	})
 
 	rbacRoleBindings = NewResource(ResourceOptions{
