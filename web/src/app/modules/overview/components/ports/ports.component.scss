@@ -2,11 +2,13 @@
   .port {
     display: flex;
     flex-direction: row;
+    margin-bottom: 8px;
 
     .port-text {
       margin-right: 16px;
       height: 26px;
       line-height: 26px;
+      min-widtH: 80px;
     }
 
     .port-actions {
