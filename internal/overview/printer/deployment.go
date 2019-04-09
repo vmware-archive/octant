@@ -222,8 +222,8 @@ func deploymentPods(ctx context.Context, deployment *appsv1.Deployment, options 
 		return nil, errors.New("deployment is nil")
 	}
 
-	if options.Cache == nil {
-		return nil, errors.New("cache is nil")
+	if options.ObjectStore == nil {
+		return nil, errors.New("objectstore is nil")
 	}
 
 	selector := labels.Set(deployment.Spec.Template.ObjectMeta.Labels)
@@ -235,7 +235,7 @@ func deploymentPods(ctx context.Context, deployment *appsv1.Deployment, options 
 		Selector:   &selector,
 	}
 
-	list, err := options.Cache.List(ctx, key)
+	list, err := options.ObjectStore.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "list all objects for key %s", key)
 	}

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
@@ -31,11 +31,10 @@ func Test_RoleBindingListHandler(t *testing.T) {
 		},
 	}
 
-
-	c := cachefake.NewMockCache(controller)
+	o := storefake.NewMockObjectStore(controller)
 
 	ctx := context.Background()
-	observed, err := RoleBindingListHandler(ctx, roleBindingList, Options{Cache: c})
+	observed, err := RoleBindingListHandler(ctx, roleBindingList, Options{ObjectStore: o})
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Age", "Role kind", "Role name")

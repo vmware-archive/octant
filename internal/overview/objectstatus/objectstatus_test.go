@@ -6,8 +6,8 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"github.com/heptio/developer-dash/internal/cache"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	"github.com/heptio/developer-dash/internal/objectstore"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
@@ -22,7 +22,7 @@ func Test_status(t *testing.T) {
 	}
 
 	lookup := statusLookup{
-		{apiVersion: "v1", kind: "Object"}: func(context.Context, runtime.Object, cache.Cache) (ObjectStatus, error) {
+		{apiVersion: "v1", kind: "Object"}: func(context.Context, runtime.Object, objectstore.ObjectStore) (ObjectStatus, error) {
 			return deployObjectStatus, nil
 		},
 	}
@@ -59,10 +59,10 @@ func Test_status(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			c := cachefake.NewMockCache(controller)
+			o := storefake.NewMockObjectStore(controller)
 
 			ctx := context.Background()
-			got, err := status(ctx, tc.object, c, tc.lookup)
+			got, err := status(ctx, tc.object, o, tc.lookup)
 			if tc.isErr {
 				require.Error(t, err)
 				return

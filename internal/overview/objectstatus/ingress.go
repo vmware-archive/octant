@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -18,7 +18,7 @@ const (
 	ingressNoBackendsDefined = "No backends defined. All traffic will be sent to the default backend configured for the ingress controller."
 )
 
-func runIngressStatus(ctx context.Context, object runtime.Object, c cache.Cache) (ObjectStatus, error) {
+func runIngressStatus(ctx context.Context, object runtime.Object, o objectstore.ObjectStore) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("ingress is nil")
 	}
@@ -30,8 +30,8 @@ func runIngressStatus(ctx context.Context, object runtime.Object, c cache.Cache)
 	}
 
 	is := ingressStatus{
-		ingress: *ingress,
-		cache:   c,
+		ingress:     *ingress,
+		objectstore: o,
 	}
 	status, err := is.run(ctx)
 	if err != nil {
@@ -46,8 +46,8 @@ func runIngressStatus(ctx context.Context, object runtime.Object, c cache.Cache)
 }
 
 type ingressStatus struct {
-	ingress extv1beta1.Ingress
-	cache   cache.Cache
+	ingress     extv1beta1.Ingress
+	objectstore objectstore.ObjectStore
 }
 
 func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
@@ -55,9 +55,9 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 
 	ingress := is.ingress
 
-	c := is.cache
-	if c == nil {
-		return status, errors.New("ingress status requires a non nil cache")
+	o := is.objectstore
+	if o == nil {
+		return status, errors.New("ingress status requires a non nil objectstore")
 	}
 
 	backends := is.backends()
@@ -76,8 +76,8 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 
 		service := &corev1.Service{}
 
-		if err := cache.GetAs(ctx, c, key, service); err != nil {
-			return ObjectStatus{}, errors.Wrap(err, "get service from cache")
+		if err := objectstore.GetAs(ctx, o, key, service); err != nil {
+			return ObjectStatus{}, errors.Wrap(err, "get service from objectstore")
 		}
 
 		if service.Name == "" {
@@ -123,7 +123,7 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 			Name:       tls.SecretName,
 		}
 
-		secret, err := is.cache.Get(ctx, key)
+		secret, err := is.objectstore.Get(ctx, key)
 		if err != nil {
 			// assume an error means the secret couldn't be accessed
 			break

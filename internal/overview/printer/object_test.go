@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	printerfake "github.com/heptio/developer-dash/internal/overview/printer/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/pkg/plugin"
@@ -228,7 +228,7 @@ func Test_Object_ToComponent(t *testing.T) {
 			pluginPrinter := printerfake.NewMockPluginPrinter(controller)
 
 			printOptions := Options{
-				Cache:         cachefake.NewMockCache(controller),
+				ObjectStore:   storefake.NewMockObjectStore(controller),
 				PluginPrinter: pluginPrinter,
 			}
 

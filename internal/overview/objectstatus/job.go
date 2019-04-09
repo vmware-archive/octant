@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/pkg/errors"
 	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
-func runJobStatus(_ context.Context, object runtime.Object, c cache.Cache) (ObjectStatus, error) {
+func runJobStatus(_ context.Context, object runtime.Object, o objectstore.ObjectStore) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("job is nil")
 	}

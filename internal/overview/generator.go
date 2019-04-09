@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/internal/queryer"
@@ -59,7 +59,7 @@ func (pf *pathFilter) Fields(path string) map[string]string {
 }
 
 type realGenerator struct {
-	cache              cache.Cache
+	objectStore        objectstore.ObjectStore
 	pathMatcher        *pathMatcher
 	clusterClient      cluster.ClientInterface
 	printer            printer.Printer
@@ -74,8 +74,8 @@ type GeneratorOptions struct {
 	PluginManager  *plugin.Manager
 }
 
-func newGenerator(cache cache.Cache, di discovery.DiscoveryInterface, pm *pathMatcher, clusterClient cluster.ClientInterface, portForwardSvc portforward.PortForwarder) (*realGenerator, error) {
-	p := printer.NewResource(cache, portForwardSvc)
+func newGenerator(objectStore objectstore.ObjectStore, di discovery.DiscoveryInterface, pm *pathMatcher, clusterClient cluster.ClientInterface, portForwardSvc portforward.PortForwarder) (*realGenerator, error) {
+	p := printer.NewResource(objectStore, portForwardSvc)
 
 	if err := AddPrintHandlers(p); err != nil {
 		return nil, errors.Wrap(err, "add print handlers")
@@ -86,7 +86,7 @@ func newGenerator(cache cache.Cache, di discovery.DiscoveryInterface, pm *pathMa
 	}
 
 	return &realGenerator{
-		cache:              cache,
+		objectStore:        objectStore,
 		discoveryInterface: di,
 		pathMatcher:        pm,
 		clusterClient:      clusterClient,
@@ -121,11 +121,11 @@ func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace st
 		return emptyContentResponse, err
 	}
 
-	q := queryer.New(g.cache, g.discoveryInterface)
+	q := queryer.New(g.objectStore, g.discoveryInterface)
 
 	fields := pf.Fields(path)
 	options := DescriberOptions{
-		Cache:          g.cache,
+		ObjectStore:    g.objectStore,
 		Queryer:        q,
 		Fields:         fields,
 		Printer:        g.printer,

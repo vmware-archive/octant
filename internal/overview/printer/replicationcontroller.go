@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
@@ -61,7 +61,7 @@ func ReplicationControllerHandler(ctx context.Context, rc *corev1.ReplicationCon
 	o.RegisterItems(ItemDescriptor{
 		Width: component.WidthQuarter,
 		Func: func() (component.Component, error) {
-			return rcSummaryGen.Create(ctx, options.Cache)
+			return rcSummaryGen.Create(ctx, options.ObjectStore)
 		},
 	})
 
@@ -136,7 +136,7 @@ func NewReplicationControllerStatus(replicationController *corev1.ReplicationCon
 }
 
 // Create generates a replicaset status quadrant
-func (replicationController *ReplicationControllerStatus) Create(ctx context.Context, c cache.Cache) (*component.Quadrant, error) {
+func (replicationController *ReplicationControllerStatus) Create(ctx context.Context, o objectstore.ObjectStore) (*component.Quadrant, error) {
 	if replicationController.replicationcontroller == nil {
 		return nil, errors.New("replicationcontroller is nil")
 	}
@@ -145,7 +145,7 @@ func (replicationController *ReplicationControllerStatus) Create(ctx context.Con
 		MatchLabels: replicationController.replicationcontroller.Spec.Selector,
 	}
 
-	pods, err := listPods(ctx, replicationController.replicationcontroller.Namespace, &selectors, replicationController.replicationcontroller.GetUID(), c)
+	pods, err := listPods(ctx, replicationController.replicationcontroller.Namespace, &selectors, replicationController.replicationcontroller.GetUID(), o)
 	if err != nil {
 		return nil, err
 	}

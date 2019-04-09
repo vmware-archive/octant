@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
@@ -261,14 +261,14 @@ func (p *PodConfiguration) Create() (*component.Summary, error) {
 	return summary, nil
 }
 
-func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelector, uid types.UID, c cache.Cache) ([]*corev1.Pod, error) {
+func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelector, uid types.UID, o objectstore.ObjectStore) ([]*corev1.Pod, error) {
 	key := cacheutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
 	}
 
-	pods, err := loadPods(ctx, key, c, selector)
+	pods, err := loadPods(ctx, key, o, selector)
 	if err != nil {
 		return nil, errors.Wrap(err, "load pods")
 	}
@@ -286,8 +286,8 @@ func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelec
 	return owned, nil
 }
 
-func loadPods(ctx context.Context, key cacheutil.Key, c cache.Cache, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
-	objects, err := c.List(ctx, key)
+func loadPods(ctx context.Context, key cacheutil.Key, o objectstore.ObjectStore, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
+	objects, err := o.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -375,8 +375,8 @@ func createPodListView(ctx context.Context, object runtime.Object, options Optio
 
 	podList := &corev1.PodList{}
 
-	if options.Cache == nil {
-		return nil, errors.New("cache is nil")
+	if options.ObjectStore == nil {
+		return nil, errors.New("objectstore is nil")
 	}
 
 	accessor := meta.NewAccessor()
@@ -407,7 +407,7 @@ func createPodListView(ctx context.Context, object runtime.Object, options Optio
 		Kind:       "Pod",
 	}
 
-	list, err := options.Cache.List(ctx, key)
+	list, err := options.ObjectStore.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "list all objects for key %+v", key)
 	}
@@ -444,7 +444,7 @@ func createMountedPodListView(ctx context.Context, namespace string, persistentV
 
 	mountedPodList := &corev1.PodList{}
 
-	pods, err := loadPods(ctx, key, options.Cache, nil)
+	pods, err := loadPods(ctx, key, options.ObjectStore, nil)
 	if err != nil {
 		return nil, err
 	}

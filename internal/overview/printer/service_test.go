@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +23,7 @@ func Test_ServiceListHandler(t *testing.T) {
 	defer controller.Finish()
 
 	printOptions := Options{
-		Cache: cachefake.NewMockCache(controller),
+		ObjectStore: storefake.NewMockObjectStore(controller),
 	}
 
 	labels := map[string]string{
@@ -213,15 +213,15 @@ func Test_serviceEndpoints(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	c := cachefake.NewMockCache(ctrl)
+	o := storefake.NewMockObjectStore(ctrl)
 
 	key := cacheutil.Key{Namespace: "default", APIVersion: "v1", Kind: "Endpoints", Name: "service"}
-	c.EXPECT().
+	o.EXPECT().
 		Get(gomock.Any(), gomock.Eq(key)).
 		Return(toUnstructured(t, endpoints), nil)
 
 	ctx := context.Background()
-	got, err := serviceEndpoints(ctx, c, service)
+	got, err := serviceEndpoints(ctx, o, service)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Target", "IP", "Node Name")

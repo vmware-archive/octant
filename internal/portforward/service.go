@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/objectstore"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -102,7 +102,7 @@ type States struct {
 type ServiceOptions struct {
 	RESTClient    rest.Interface
 	Config        *restclient.Config
-	Cache         cache.Cache
+	ObjectStore   objectstore.ObjectStore
 	PortForwarder portForwarder
 }
 
@@ -172,9 +172,9 @@ func (s *Service) validateCreateRequest(r CreateRequest) error {
 // one will be chosen. A pod has to be active.
 // Returns: pod name or error.
 func (s *Service) resolvePod(ctx context.Context, r CreateRequest) (string, error) {
-	c := s.opts.Cache
-	if c == nil {
-		return "", errors.New("nil cache")
+	o := s.opts.ObjectStore
+	if o == nil {
+		return "", errors.New("nil objectstore")
 	}
 
 	switch {
@@ -193,9 +193,9 @@ func (s *Service) resolvePod(ctx context.Context, r CreateRequest) (string, erro
 // verifyPod returns true if the specified pod can be found and is in the running phase.
 // Otherwise returns false and an error describing the cause.
 func (s *Service) verifyPod(ctx context.Context, namespace, name string) (bool, error) {
-	c := s.opts.Cache
-	if c == nil {
-		return false, errors.New("nil cache")
+	o := s.opts.ObjectStore
+	if o == nil {
+		return false, errors.New("nil objectstore")
 	}
 
 	key := cacheutil.Key{
@@ -205,7 +205,7 @@ func (s *Service) verifyPod(ctx context.Context, namespace, name string) (bool, 
 		Name:       name,
 	}
 	var pod corev1.Pod
-	if err := cache.GetAs(ctx, c, key, &pod); err != nil {
+	if err := objectstore.GetAs(ctx, o, key, &pod); err != nil {
 		return false, err
 	}
 	if pod.Name == "" {

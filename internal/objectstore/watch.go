@@ -1,4 +1,4 @@
-package cache
+package objectstore
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -32,12 +32,12 @@ type Watch struct {
 	cachedObjects   map[schema.GroupVersionKind]map[types.UID]*unstructured.Unstructured
 	handlers        map[schema.GroupVersionKind]watchEventHandler
 
-	backendCache Cache
-	gvkLock      sync.Mutex
-	objectLock   sync.RWMutex
+	backendObjectStore ObjectStore
+	gvkLock            sync.Mutex
+	objectLock         sync.RWMutex
 }
 
-var _ Cache = (*Watch)(nil)
+var _ ObjectStore = (*Watch)(nil)
 
 // NewWatch create an instance of new watch. By default, it will create a dynamic cache as its
 // backend.
@@ -60,8 +60,8 @@ func NewWatch(client cluster.ClientInterface, stopCh <-chan struct{}, options ..
 		return nil, errors.Wrap(err, "initialize dynamic shared informer factory")
 	}
 
-	if c.backendCache == nil {
-		backendCache, err := NewDynamicCache(client, stopCh, func(d *DynamicCache) {
+	if c.backendObjectStore == nil {
+		backendObjectStore, err := NewDynamicCache(client, stopCh, func(d *DynamicCache) {
 			d.initFactoryFunc = func(cluster.ClientInterface) (dynamicinformer.DynamicSharedInformerFactory, error) {
 				return factory, nil
 			}
@@ -70,7 +70,7 @@ func NewWatch(client cluster.ClientInterface, stopCh <-chan struct{}, options ..
 			return nil, errors.Wrap(err, "initial dynamic cache")
 		}
 
-		c.backendCache = backendCache
+		c.backendObjectStore = backendObjectStore
 	}
 
 	c.factory = factory
@@ -83,8 +83,8 @@ func (w *Watch) List(ctx context.Context, key cacheutil.Key) ([]*unstructured.Un
 	ctx, span := trace.StartSpan(ctx, "watchCacheList")
 	defer span.End()
 
-	if w.backendCache == nil {
-		return nil, errors.New("backend cached is nil")
+	if w.backendObjectStore == nil {
+		return nil, errors.New("backend objectstore is nil")
 	}
 
 	gvk := key.GroupVersionKind()
@@ -117,7 +117,7 @@ func (w *Watch) List(ctx context.Context, key cacheutil.Key) ([]*unstructured.Un
 
 	go w.handleUpdates(updateCh, deleteCh)
 
-	objects, err := w.backendCache.List(ctx, key)
+	objects, err := w.backendObjectStore.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +143,7 @@ func (w *Watch) Get(ctx context.Context, key cacheutil.Key) (*unstructured.Unstr
 	ctx, span := trace.StartSpan(ctx, "watchCacheGet")
 	defer span.End()
 
-	if w.backendCache == nil {
+	if w.backendObjectStore == nil {
 		return nil, errors.New("backend cached is nil")
 	}
 
@@ -169,7 +169,7 @@ func (w *Watch) Get(ctx context.Context, key cacheutil.Key) (*unstructured.Unstr
 
 	go w.handleUpdates(updateCh, deleteCh)
 
-	object, err := w.backendCache.Get(ctx, key)
+	object, err := w.backendObjectStore.Get(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -190,11 +190,11 @@ func (w *Watch) Get(ctx context.Context, key cacheutil.Key) (*unstructured.Unstr
 
 // Watch watches the cluster given a key and a handler.
 func (w *Watch) Watch(key cacheutil.Key, handler kcache.ResourceEventHandler) error {
-	if w.backendCache == nil {
-		return errors.New("backend cached is nil")
+	if w.backendObjectStore == nil {
+		return errors.New("backend objectstore is nil")
 	}
 
-	return w.backendCache.Watch(key, handler)
+	return w.backendObjectStore.Watch(key, handler)
 }
 
 func (w *Watch) isKeyCached(key cacheutil.Key) bool {

@@ -1,4 +1,4 @@
-package cache
+package objectstore
 
 import (
 	"context"
@@ -6,11 +6,11 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/cluster"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -27,7 +27,7 @@ type watchMocks struct {
 	informer            *clusterfake.MockGenericInformer
 	client              *clusterfake.MockClientInterface
 	sharedIndexInformer *clusterfake.MockSharedIndexInformer
-	backendCache        *cachefake.MockCache
+	backendObjectStore  *storefake.MockObjectStore
 }
 
 func newWatchMocks(t *testing.T) *watchMocks {
@@ -37,7 +37,7 @@ func newWatchMocks(t *testing.T) *watchMocks {
 		informerFactory:     clusterfake.NewMockDynamicSharedInformerFactory(controller),
 		informer:            clusterfake.NewMockGenericInformer(controller),
 		client:              clusterfake.NewMockClientInterface(controller),
-		backendCache:        cachefake.NewMockCache(controller),
+		backendObjectStore:  storefake.NewMockObjectStore(controller),
 		sharedIndexInformer: clusterfake.NewMockSharedIndexInformer(controller),
 	}
 
@@ -80,7 +80,7 @@ func Test_WatchList_not_cached(t *testing.T) {
 		testutil.ToUnstructured(t, pod2),
 	}
 
-	mocks.backendCache.EXPECT().List(gomock.Any(), gomock.Eq(listKey)).Return(objects, nil)
+	mocks.backendObjectStore.EXPECT().List(gomock.Any(), gomock.Eq(listKey)).Return(objects, nil)
 
 	factoryFunc := func(c *Watch) {
 		c.initFactoryFunc = func(cluster.ClientInterface) (dynamicinformer.DynamicSharedInformerFactory, error) {
@@ -89,7 +89,7 @@ func Test_WatchList_not_cached(t *testing.T) {
 	}
 
 	setBackendFunc := func(w *Watch) {
-		w.backendCache = mocks.backendCache
+		w.backendObjectStore = mocks.backendObjectStore
 	}
 
 	watch, err := NewWatch(mocks.client, ctx.Done(), factoryFunc, setBackendFunc)
@@ -105,7 +105,7 @@ func Test_WatchList_not_cached(t *testing.T) {
 	assert.Equal(t, expected, got)
 }
 
-func Test_WatchList_cached(t *testing.T) {
+func Test_WatchList_stored(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -126,7 +126,7 @@ func Test_WatchList_cached(t *testing.T) {
 	}
 
 	setBackendFunc := func(w *Watch) {
-		w.backendCache = mocks.backendCache
+		w.backendObjectStore = mocks.backendObjectStore
 	}
 
 	cacheKeyFunc := func(w *Watch) {
@@ -156,7 +156,7 @@ func Test_WatchList_cached(t *testing.T) {
 	assert.Equal(t, expected, got)
 }
 
-func Test_WatchList_cached_with_selector(t *testing.T) {
+func Test_WatchList_stored_with_selector(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -189,7 +189,7 @@ func Test_WatchList_cached_with_selector(t *testing.T) {
 	}
 
 	setBackendFunc := func(w *Watch) {
-		w.backendCache = mocks.backendCache
+		w.backendObjectStore = mocks.backendObjectStore
 	}
 
 	cacheKeyFunc := func(w *Watch) {
@@ -218,7 +218,7 @@ func Test_WatchList_cached_with_selector(t *testing.T) {
 	assert.Equal(t, expected, got)
 }
 
-func Test_WatchGet_not_cached(t *testing.T) {
+func Test_WatchGet_not_stored(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -247,7 +247,7 @@ func Test_WatchGet_not_cached(t *testing.T) {
 	pod1.Namespace = "test"
 
 	getKey := cacheutil.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod", Name: pod1.Name}
-	mocks.backendCache.EXPECT().Get(gomock.Any(), gomock.Eq(getKey)).Return(testutil.ToUnstructured(t, pod1), nil)
+	mocks.backendObjectStore.EXPECT().Get(gomock.Any(), gomock.Eq(getKey)).Return(testutil.ToUnstructured(t, pod1), nil)
 
 	factoryFunc := func(c *Watch) {
 		c.initFactoryFunc = func(cluster.ClientInterface) (dynamicinformer.DynamicSharedInformerFactory, error) {
@@ -256,7 +256,7 @@ func Test_WatchGet_not_cached(t *testing.T) {
 	}
 
 	setBackendFunc := func(w *Watch) {
-		w.backendCache = mocks.backendCache
+		w.backendObjectStore = mocks.backendObjectStore
 	}
 
 	watch, err := NewWatch(mocks.client, ctx.Done(), factoryFunc, setBackendFunc)
@@ -269,7 +269,7 @@ func Test_WatchGet_not_cached(t *testing.T) {
 	assert.Equal(t, expected, got)
 }
 
-func Test_WatchGet_cached(t *testing.T) {
+func Test_WatchGet_stored(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -288,7 +288,7 @@ func Test_WatchGet_cached(t *testing.T) {
 	}
 
 	setBackendFunc := func(w *Watch) {
-		w.backendCache = mocks.backendCache
+		w.backendObjectStore = mocks.backendObjectStore
 	}
 
 	cacheKeyFunc := func(w *Watch) {

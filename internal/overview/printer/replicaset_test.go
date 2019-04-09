@@ -8,9 +8,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -24,7 +24,7 @@ func Test_ReplicaSetListHandler(t *testing.T) {
 	defer controller.Finish()
 
 	printOptions := Options{
-		Cache: cachefake.NewMockCache(controller),
+		ObjectStore: storefake.NewMockObjectStore(controller),
 	}
 
 	labels := map[string]string{
@@ -177,7 +177,7 @@ func TestReplicaSetStatus(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	c := cachefake.NewMockCache(controller)
+	o := storefake.NewMockObjectStore(controller)
 
 	labels := map[string]string{
 		"app": "myapp",
@@ -216,11 +216,11 @@ func TestReplicaSetStatus(t *testing.T) {
 		Kind:       "Pod",
 	}
 
-	c.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, nil)
+	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, nil)
 
 	ctx := context.Background()
 	rsc := NewReplicaSetStatus(rs)
-	got, err := rsc.Create(ctx, c)
+	got, err := rsc.Create(ctx, o)
 	require.NoError(t, err)
 
 	expected := component.NewQuadrant("Status")

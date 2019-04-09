@@ -1,4 +1,4 @@
-package cache
+package objectstore
 
 import (
 	"context"
@@ -76,7 +76,7 @@ type DynamicCache struct {
 	mu sync.Mutex
 }
 
-var _ (Cache) = (*DynamicCache)(nil)
+var _ (ObjectStore) = (*DynamicCache)(nil)
 
 // NewDynamicCache creates an instance of DynamicCache.
 func NewDynamicCache(client cluster.ClientInterface, stopCh <-chan struct{}, options ...DynamicCacheOpt) (*DynamicCache, error) {

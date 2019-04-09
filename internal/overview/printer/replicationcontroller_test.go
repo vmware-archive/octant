@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -22,7 +22,7 @@ func Test_ReplicationControllerListHandler(t *testing.T) {
 	defer controller.Finish()
 
 	printOptions := Options{
-		Cache: cachefake.NewMockCache(controller),
+		ObjectStore: storefake.NewMockObjectStore(controller),
 	}
 
 	ctx := context.Background()
@@ -98,7 +98,7 @@ func TestReplicationControllerStatus(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	c := cachefake.NewMockCache(controller)
+	o := storefake.NewMockObjectStore(controller)
 
 	replicationController := testutil.CreateReplicationController("rc")
 	replicationController.Labels = map[string]string{
@@ -142,10 +142,10 @@ func TestReplicationControllerStatus(t *testing.T) {
 		Kind:       "Pod",
 	}
 
-	c.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, nil)
+	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, nil)
 	rcs := NewReplicationControllerStatus(replicationController)
 	ctx := context.Background()
-	got, err := rcs.Create(ctx, c)
+	got, err := rcs.Create(ctx, o)
 	require.NoError(t, err)
 
 	expected := component.NewQuadrant("Status")

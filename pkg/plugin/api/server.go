@@ -3,10 +3,10 @@ package api
 import (
 	"context"
 
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/gvk"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/portforward"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/plugin/api/proto"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -36,7 +36,7 @@ type Service interface {
 
 // GRPCService is an implementation of the dashboard service based on GRPC.
 type GRPCService struct {
-	Cache         cache.Cache
+	ObjectStore   objectstore.ObjectStore
 	PortForwarder portforward.PortForwarder
 }
 
@@ -44,12 +44,12 @@ var _ Service = (*GRPCService)(nil)
 
 // List lists objects.
 func (s *GRPCService) List(ctx context.Context, key cacheutil.Key) ([]*unstructured.Unstructured, error) {
-	return s.Cache.List(ctx, key)
+	return s.ObjectStore.List(ctx, key)
 }
 
 // Get retrieves an object.
 func (s *GRPCService) Get(ctx context.Context, key cacheutil.Key) (*unstructured.Unstructured, error) {
-	return s.Cache.Get(ctx, key)
+	return s.ObjectStore.Get(ctx, key)
 }
 
 // PortForward creates a port forward.

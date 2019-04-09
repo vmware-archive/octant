@@ -14,8 +14,8 @@ import (
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/pkg/plugin"
 
-	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/pkg/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster"
@@ -25,7 +25,7 @@ import (
 
 type Options struct {
 	Client        cluster.ClientInterface
-	Cache         cache.Cache
+	ObjectStore   objectstore.ObjectStore
 	Namespace     string
 	Logger        log.Logger
 	PluginManager *plugin.Manager
@@ -36,7 +36,7 @@ type Options struct {
 type ClusterOverview struct {
 	client         cluster.ClientInterface
 	logger         log.Logger
-	cache          cache.Cache
+	objectstore    objectstore.ObjectStore
 	generator      *realGenerator
 	portForwardSvc portforward.PortForwarder
 	pluginManager  *plugin.Manager
@@ -87,14 +87,14 @@ func NewClusterOverview(ctx context.Context, options Options) (*ClusterOverview,
 		}
 	}(pm, customResourcesDescriber)
 
-	go watchCRDs(ctx, options.Cache, crdAddFunc, crdDeleteFunc)
+	go watchCRDs(ctx, options.ObjectStore, crdAddFunc, crdDeleteFunc)
 
-	pfSvc, err := portforward.Default(ctx, options.Client, options.Cache)
+	pfSvc, err := portforward.Default(ctx, options.Client, options.ObjectStore)
 	if err != nil {
 		return nil, err
 	}
 
-	g, err := newGenerator(options.Cache, di, pm, options.Client, pfSvc)
+	g, err := newGenerator(options.ObjectStore, di, pm, options.Client, pfSvc)
 	if err != nil {
 		return nil, errors.Wrap(err, "create overview generator")
 	}
@@ -102,7 +102,7 @@ func NewClusterOverview(ctx context.Context, options Options) (*ClusterOverview,
 	co := &ClusterOverview{
 		client:         options.Client,
 		logger:         options.Logger,
-		cache:          options.Cache,
+		objectstore:    options.ObjectStore,
 		generator:      g,
 		portForwardSvc: pfSvc,
 		pluginManager:  options.PluginManager,
@@ -122,7 +122,7 @@ func (co *ClusterOverview) ContentPath() string {
 
 // Navigation returns navigation entries for overview.
 func (co *ClusterOverview) Navigation(ctx context.Context, namespace, root string) (*sugarloaf.Navigation, error) {
-	nf := NewNavigationFactory(namespace, root, co.cache)
+	nf := NewNavigationFactory(namespace, root, co.objectstore)
 	return nf.Entries(ctx)
 }
 

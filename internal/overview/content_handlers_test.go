@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -38,7 +38,7 @@ func Test_loadObjects(t *testing.T) {
 
 	cases := []struct {
 		name     string
-		init     func(*testing.T, *cachefake.MockCache)
+		init     func(*testing.T, *storefake.MockObjectStore)
 		fields   map[string]string
 		keys     []cacheutil.Key
 		expected []*unstructured.Unstructured
@@ -46,13 +46,13 @@ func Test_loadObjects(t *testing.T) {
 	}{
 		{
 			name: "without name",
-			init: func(t *testing.T, c *cachefake.MockCache) {
+			init: func(t *testing.T, o *storefake.MockObjectStore) {
 				key := cacheutil.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind"}
 
-				c.EXPECT().
+				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(key)).
 					Return(sampleObjects, nil)
 			},
@@ -62,14 +62,14 @@ func Test_loadObjects(t *testing.T) {
 		},
 		{
 			name: "name",
-			init: func(t *testing.T, c *cachefake.MockCache) {
+			init: func(t *testing.T, o *storefake.MockObjectStore) {
 				key := cacheutil.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind",
 					Name:       "name"}
 
-				c.EXPECT().
+				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(key)).
 					Return([]*unstructured.Unstructured{}, nil)
 
@@ -79,13 +79,13 @@ func Test_loadObjects(t *testing.T) {
 		},
 		{
 			name: "cache retrieve error",
-			init: func(t *testing.T, c *cachefake.MockCache) {
+			init: func(t *testing.T, o *storefake.MockObjectStore) {
 				key := cacheutil.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind"}
 
-				c.EXPECT().
+				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(key)).
 					Return(nil, errors.New("error"))
 			},
@@ -100,13 +100,13 @@ func Test_loadObjects(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			c := cachefake.NewMockCache(controller)
-			tc.init(t, c)
+			o := storefake.NewMockObjectStore(controller)
+			tc.init(t, o)
 
 			namespace := "default"
 
 			ctx := context.Background()
-			got, err := loadObjects(ctx, c, namespace, tc.fields, tc.keys)
+			got, err := loadObjects(ctx, o, namespace, tc.fields, tc.keys)
 			if tc.isErr {
 				require.Error(t, err)
 				return

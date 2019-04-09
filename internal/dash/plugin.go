@@ -3,16 +3,16 @@ package dash
 import (
 	"context"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/plugin/api"
 	"github.com/pkg/errors"
 )
 
-func initPlugin(ctx context.Context, portForwarder portforward.PortForwarder, appCache cache.Cache) (*plugin.Manager, error) {
+func initPlugin(ctx context.Context, portForwarder portforward.PortForwarder, appObjectStore objectstore.ObjectStore) (*plugin.Manager, error) {
 	service := &api.GRPCService{
-		Cache:         appCache,
+		ObjectStore:   appObjectStore,
 		PortForwarder: portForwarder,
 	}
 

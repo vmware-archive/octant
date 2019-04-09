@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
@@ -17,13 +17,13 @@ import (
 func Test_replicaSetAppsV1(t *testing.T) {
 	cases := []struct {
 		name     string
-		init     func(*testing.T, *cachefake.MockCache) runtime.Object
+		init     func(*testing.T, *storefake.MockObjectStore) runtime.Object
 		expected ObjectStatus
 		isErr    bool
 	}{
 		{
 			name: "in general",
-			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
 				objectFile := "replicaset_ok.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
@@ -35,7 +35,7 @@ func Test_replicaSetAppsV1(t *testing.T) {
 		},
 		{
 			name: "no replicas",
-			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
 				objectFile := "replicaset_no_replicas.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
@@ -47,7 +47,7 @@ func Test_replicaSetAppsV1(t *testing.T) {
 		},
 		{
 			name: "not available",
-			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
 				objectFile := "replicaset_not_available.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
@@ -59,14 +59,14 @@ func Test_replicaSetAppsV1(t *testing.T) {
 		},
 		{
 			name: "object is nil",
-			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
 				return nil
 			},
 			isErr: true,
 		},
 		{
 			name: "object is not a daemon set",
-			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
 				return &unstructured.Unstructured{}
 			},
 			isErr: true,
@@ -78,12 +78,12 @@ func Test_replicaSetAppsV1(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			c := cachefake.NewMockCache(controller)
+			o := storefake.NewMockObjectStore(controller)
 
-			object := tc.init(t, c)
+			object := tc.init(t, o)
 
 			ctx := context.Background()
-			status, err := replicaSetAppsV1(ctx, object, c)
+			status, err := replicaSetAppsV1(ctx, object, o)
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -98,13 +98,13 @@ func Test_replicaSetAppsV1(t *testing.T) {
 func Test_replicaSetExtV1Beta1(t *testing.T) {
 	cases := []struct {
 		name     string
-		init     func(*testing.T, *cachefake.MockCache) runtime.Object
+		init     func(*testing.T, *storefake.MockObjectStore) runtime.Object
 		expected ObjectStatus
 		isErr    bool
 	}{
 		{
 			name: "in general",
-			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
 				objectFile := "replicaset_ok.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
@@ -116,7 +116,7 @@ func Test_replicaSetExtV1Beta1(t *testing.T) {
 		},
 		{
 			name: "no replicas",
-			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
 				objectFile := "replicaset_no_replicas.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
@@ -128,7 +128,7 @@ func Test_replicaSetExtV1Beta1(t *testing.T) {
 		},
 		{
 			name: "not available",
-			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
 				objectFile := "replicaset_not_available.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
@@ -140,14 +140,14 @@ func Test_replicaSetExtV1Beta1(t *testing.T) {
 		},
 		{
 			name: "object is nil",
-			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
 				return nil
 			},
 			isErr: true,
 		},
 		{
 			name: "object is not a daemon set",
-			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
 				return &unstructured.Unstructured{}
 			},
 			isErr: true,
@@ -159,12 +159,12 @@ func Test_replicaSetExtV1Beta1(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			c := cachefake.NewMockCache(controller)
+			o := storefake.NewMockObjectStore(controller)
 
-			object := tc.init(t, c)
+			object := tc.init(t, o)
 
 			ctx := context.Background()
-			status, err := replicaSetExtV1Beta1(ctx, object, c)
+			status, err := replicaSetExtV1Beta1(ctx, object, o)
 			if tc.isErr {
 				require.Error(t, err)
 				return

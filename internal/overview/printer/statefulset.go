@@ -6,7 +6,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/overview/link"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
@@ -60,7 +60,7 @@ func StatefulSetHandler(ctx context.Context, statefulSet *appsv1.StatefulSet, op
 	o.RegisterItems(ItemDescriptor{
 		Width: component.WidthQuarter,
 		Func: func() (component.Component, error) {
-			return statefulSetSummaryGen.Create(ctx, options.Cache)
+			return statefulSetSummaryGen.Create(ctx, options.ObjectStore)
 		},
 	})
 
@@ -153,12 +153,12 @@ func NewStatefulSetStatus(statefulSet *appsv1.StatefulSet) *StatefulSetStatus {
 }
 
 // Create generates a statefulset status quadrant
-func (statefulSet *StatefulSetStatus) Create(ctx context.Context, c cache.Cache) (*component.Quadrant, error) {
+func (statefulSet *StatefulSetStatus) Create(ctx context.Context, o objectstore.ObjectStore) (*component.Quadrant, error) {
 	if statefulSet.statefulset == nil {
 		return nil, errors.New("statefulset is nil")
 	}
 
-	pods, err := listPods(ctx, statefulSet.statefulset.ObjectMeta.Namespace, statefulSet.statefulset.Spec.Selector, statefulSet.statefulset.GetUID(), c)
+	pods, err := listPods(ctx, statefulSet.statefulset.ObjectMeta.Namespace, statefulSet.statefulset.Spec.Selector, statefulSet.statefulset.GetUID(), o)
 	if err != nil {
 		return nil, errors.Wrap(err, "list pods")
 	}

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/overview/objectvisitor"
 	"github.com/pkg/errors"
 
@@ -47,9 +47,9 @@ func Test_ResourceViewer(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	defer controller.Finish()
-	c := cachefake.NewMockCache(controller)
+	o := storefake.NewMockObjectStore(controller)
 
-	rv, err := New(nil, c, stubVisitor(false))
+	rv, err := New(nil, o, stubVisitor(false))
 	require.NoError(t, err)
 
 	ctx := context.Background()
@@ -70,9 +70,9 @@ func Test_ResourceViewer_visitor_fails(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	defer controller.Finish()
-	c := cachefake.NewMockCache(controller)
+	o := storefake.NewMockObjectStore(controller)
 
-	rv, err := New(nil, c, stubVisitor(true))
+	rv, err := New(nil, o, stubVisitor(true))
 	require.NoError(t, err)
 
 	ctx := context.Background()

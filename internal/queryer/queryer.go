@@ -4,9 +4,9 @@ import (
 	"context"
 	"sync"
 
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	dashstrings "github.com/heptio/developer-dash/internal/util/strings"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
@@ -42,8 +42,8 @@ type Queryer interface {
 	ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Service, error)
 }
 
-type CacheQueryer struct {
-	cache           cache.Cache
+type ObjectStoreQueryer struct {
+	objectstore     objectstore.ObjectStore
 	discoveryClient discovery.DiscoveryInterface
 
 	children        map[types.UID][]kruntime.Object
@@ -53,11 +53,11 @@ type CacheQueryer struct {
 	mu sync.Mutex
 }
 
-var _ Queryer = (*CacheQueryer)(nil)
+var _ Queryer = (*ObjectStoreQueryer)(nil)
 
-func New(c cache.Cache, discoveryClient discovery.DiscoveryInterface) *CacheQueryer {
-	return &CacheQueryer{
-		cache:           c,
+func New(o objectstore.ObjectStore, discoveryClient discovery.DiscoveryInterface) *ObjectStoreQueryer {
+	return &ObjectStoreQueryer{
+		objectstore:     o,
 		discoveryClient: discoveryClient,
 
 		children:        make(map[types.UID][]kruntime.Object),
@@ -66,9 +66,9 @@ func New(c cache.Cache, discoveryClient discovery.DiscoveryInterface) *CacheQuer
 	}
 }
 
-func (cq *CacheQueryer) Children(ctx context.Context, owner metav1.Object) ([]kruntime.Object, error) {
-	cq.mu.Lock()
-	defer cq.mu.Unlock()
+func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner metav1.Object) ([]kruntime.Object, error) {
+	osq.mu.Lock()
+	defer osq.mu.Unlock()
 
 	if owner == nil {
 		return nil, errors.New("owner is nil")
@@ -77,10 +77,10 @@ func (cq *CacheQueryer) Children(ctx context.Context, owner metav1.Object) ([]kr
 	ctx, span := trace.StartSpan(ctx, "queryer:Children")
 	defer span.End()
 
-	cached, ok := cq.children[owner.GetUID()]
+	stored, ok := osq.children[owner.GetUID()]
 
 	if ok {
-		return cached, nil
+		return stored, nil
 	}
 
 	var children []kruntime.Object
@@ -92,7 +92,7 @@ func (cq *CacheQueryer) Children(ctx context.Context, owner metav1.Object) ([]kr
 		}
 	}()
 
-	resourceLists, err := cq.discoveryClient.ServerResources()
+	resourceLists, err := osq.discoveryClient.ServerResources()
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (cq *CacheQueryer) Children(ctx context.Context, owner metav1.Object) ([]kr
 			}
 
 			g.Go(func() error {
-				objects, err := cq.cache.List(ctx, key)
+				objects, err := osq.objectstore.List(ctx, key)
 				if err != nil {
 					return errors.Wrapf(err, "unable to retrieve %+v", key)
 				}
@@ -148,12 +148,12 @@ func (cq *CacheQueryer) Children(ctx context.Context, owner metav1.Object) ([]kr
 
 	close(ch)
 
-	cq.children[owner.GetUID()] = children
+	osq.children[owner.GetUID()] = children
 
 	return children, nil
 }
 
-func (cq *CacheQueryer) Events(ctx context.Context, object metav1.Object) ([]*corev1.Event, error) {
+func (osq *ObjectStoreQueryer) Events(ctx context.Context, object metav1.Object) ([]*corev1.Event, error) {
 	if object == nil {
 		return nil, errors.New("object is nil")
 	}
@@ -171,7 +171,7 @@ func (cq *CacheQueryer) Events(ctx context.Context, object metav1.Object) ([]*co
 		Kind:       "Event",
 	}
 
-	allEvents, err := cq.cache.List(ctx, key)
+	allEvents, err := osq.objectstore.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +196,7 @@ func (cq *CacheQueryer) Events(ctx context.Context, object metav1.Object) ([]*co
 	return events, nil
 }
 
-func (cq *CacheQueryer) IngressesForService(ctx context.Context, service *corev1.Service) ([]*v1beta1.Ingress, error) {
+func (osq *ObjectStoreQueryer) IngressesForService(ctx context.Context, service *corev1.Service) ([]*v1beta1.Ingress, error) {
 	if service == nil {
 		return nil, errors.New("nil service")
 	}
@@ -206,7 +206,7 @@ func (cq *CacheQueryer) IngressesForService(ctx context.Context, service *corev1
 		APIVersion: "extensions/v1beta1",
 		Kind:       "Ingress",
 	}
-	ul, err := cq.cache.List(ctx, key)
+	ul, err := osq.objectstore.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving ingresses")
 	}
@@ -222,7 +222,7 @@ func (cq *CacheQueryer) IngressesForService(ctx context.Context, service *corev1
 		if err = copyObjectMeta(ingress, u); err != nil {
 			return nil, errors.Wrap(err, "copying object metadata")
 		}
-		backends := cq.listIngressBackends(*ingress)
+		backends := osq.listIngressBackends(*ingress)
 		if !containsBackend(backends, service.Name) {
 			continue
 		}
@@ -232,7 +232,7 @@ func (cq *CacheQueryer) IngressesForService(ctx context.Context, service *corev1
 	return results, nil
 }
 
-func (cq *CacheQueryer) listIngressBackends(ingress v1beta1.Ingress) []extv1beta1.IngressBackend {
+func (osq *ObjectStoreQueryer) listIngressBackends(ingress v1beta1.Ingress) []extv1beta1.IngressBackend {
 	var backends []v1beta1.IngressBackend
 
 	if ingress.Spec.Backend != nil && ingress.Spec.Backend.ServiceName != "" {
@@ -254,9 +254,9 @@ func (cq *CacheQueryer) listIngressBackends(ingress v1beta1.Ingress) []extv1beta
 	return backends
 }
 
-func (cq *CacheQueryer) OwnerReference(ctx context.Context, namespace string, ownerReference metav1.OwnerReference) (kruntime.Object, error) {
-	cq.mu.Lock()
-	defer cq.mu.Unlock()
+func (osq *ObjectStoreQueryer) OwnerReference(ctx context.Context, namespace string, ownerReference metav1.OwnerReference) (kruntime.Object, error) {
+	osq.mu.Lock()
+	defer osq.mu.Unlock()
 
 	key := cacheutil.Key{
 		Namespace:  namespace,
@@ -265,32 +265,32 @@ func (cq *CacheQueryer) OwnerReference(ctx context.Context, namespace string, ow
 		Name:       ownerReference.Name,
 	}
 
-	object, ok := cq.owner[key]
+	object, ok := osq.owner[key]
 	if ok {
 		return object, nil
 	}
 
-	owner, err := cq.cache.Get(ctx, key)
+	owner, err := osq.objectstore.Get(ctx, key)
 	if err != nil {
 		return nil, err
 	}
 
-	cq.owner[key] = owner
+	osq.owner[key] = owner
 
 	return owner, nil
 }
 
-func (cq *CacheQueryer) PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error) {
-	cq.mu.Lock()
-	defer cq.mu.Unlock()
+func (osq *ObjectStoreQueryer) PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error) {
+	osq.mu.Lock()
+	defer osq.mu.Unlock()
 
 	if service == nil {
 		return nil, errors.New("nil service")
 	}
 
-	cached, ok := cq.podsForServices[service.UID]
+	stored, ok := osq.podsForServices[service.UID]
 	if ok {
-		return cached, nil
+		return stored, nil
 	}
 
 	key := cacheutil.Key{
@@ -299,22 +299,22 @@ func (cq *CacheQueryer) PodsForService(ctx context.Context, service *corev1.Serv
 		Kind:       "Pod",
 	}
 
-	selector, err := cq.getSelector(service)
+	selector, err := osq.getSelector(service)
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating pod selector for service: %v", service.Name)
 	}
-	pods, err := cq.loadPods(ctx, key, selector)
+	pods, err := osq.loadPods(ctx, key, selector)
 	if err != nil {
 		return nil, errors.Wrapf(err, "fetching pods for service: %v", service.Name)
 	}
 
-	cq.podsForServices[service.UID] = pods
+	osq.podsForServices[service.UID] = pods
 
 	return pods, nil
 }
 
-func (cq *CacheQueryer) loadPods(ctx context.Context, key cacheutil.Key, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
-	objects, err := cq.cache.List(ctx, key)
+func (osq *ObjectStoreQueryer) loadPods(ctx context.Context, key cacheutil.Key, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
+	objects, err := osq.objectstore.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -343,12 +343,12 @@ func (cq *CacheQueryer) loadPods(ctx context.Context, key cacheutil.Key, selecto
 	return list, nil
 }
 
-func (cq *CacheQueryer) ServicesForIngress(ctx context.Context, ingress *extv1beta1.Ingress) ([]*corev1.Service, error) {
+func (osq *ObjectStoreQueryer) ServicesForIngress(ctx context.Context, ingress *extv1beta1.Ingress) ([]*corev1.Service, error) {
 	if ingress == nil {
 		return nil, errors.New("ingress is nil")
 	}
 
-	backends := cq.listIngressBackends(*ingress)
+	backends := osq.listIngressBackends(*ingress)
 	var services []*corev1.Service
 	for _, backend := range backends {
 		key := cacheutil.Key{
@@ -357,7 +357,7 @@ func (cq *CacheQueryer) ServicesForIngress(ctx context.Context, ingress *extv1be
 			Kind:       "Service",
 			Name:       backend.ServiceName,
 		}
-		u, err := cq.cache.Get(ctx, key)
+		u, err := osq.objectstore.Get(ctx, key)
 		if err != nil {
 			return nil, errors.Wrapf(err, "retrieving service backend: %v", backend)
 		}
@@ -379,7 +379,7 @@ func (cq *CacheQueryer) ServicesForIngress(ctx context.Context, ingress *extv1be
 	return services, nil
 }
 
-func (cq *CacheQueryer) ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Service, error) {
+func (osq *ObjectStoreQueryer) ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Service, error) {
 	var results []*corev1.Service
 	if pod == nil {
 		return nil, errors.New("nil pod")
@@ -390,7 +390,7 @@ func (cq *CacheQueryer) ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]
 		APIVersion: "v1",
 		Kind:       "Service",
 	}
-	ul, err := cq.cache.List(ctx, key)
+	ul, err := osq.objectstore.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving services")
 	}
@@ -403,7 +403,7 @@ func (cq *CacheQueryer) ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]
 		if err = copyObjectMeta(svc, u); err != nil {
 			return nil, errors.Wrap(err, "copying object metadata")
 		}
-		labelSelector, err := cq.getSelector(svc)
+		labelSelector, err := osq.getSelector(svc)
 		if err != nil {
 			return nil, errors.Wrapf(err, "creating pod selector for service: %v", svc.Name)
 		}
@@ -420,7 +420,7 @@ func (cq *CacheQueryer) ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]
 	return results, nil
 }
 
-func (cq *CacheQueryer) getSelector(object kruntime.Object) (*metav1.LabelSelector, error) {
+func (osq *ObjectStoreQueryer) getSelector(object kruntime.Object) (*metav1.LabelSelector, error) {
 	switch t := object.(type) {
 	case *appsv1.DaemonSet:
 		return t.Spec.Selector, nil

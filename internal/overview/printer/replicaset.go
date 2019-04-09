@@ -9,7 +9,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
@@ -61,7 +61,7 @@ func ReplicaSetHandler(ctx context.Context, rs *appsv1.ReplicaSet, options Optio
 	o.RegisterConfig(configSummary)
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {
-			return replicaSetStatusGen.Create(ctx, options.Cache)
+			return replicaSetStatusGen.Create(ctx, options.ObjectStore)
 		},
 		Width: component.WidthQuarter,
 	})
@@ -137,11 +137,11 @@ func NewReplicaSetStatus(rs *appsv1.ReplicaSet) *ReplicaSetStatus {
 }
 
 // Create generates a replicaset status quadrant
-func (rs *ReplicaSetStatus) Create(ctx context.Context, c cache.Cache) (*component.Quadrant, error) {
+func (rs *ReplicaSetStatus) Create(ctx context.Context, o objectstore.ObjectStore) (*component.Quadrant, error) {
 	if rs == nil || rs.replicaset == nil {
 		return nil, errors.New("replicaset is nil")
 	}
-	pods, err := listPods(ctx, rs.replicaset.Namespace, rs.replicaset.Spec.Selector, rs.replicaset.GetUID(), c)
+	pods, err := listPods(ctx, rs.replicaset.Namespace, rs.replicaset.Spec.Selector, rs.replicaset.GetUID(), o)
 	if err != nil {
 		return nil, err
 	}

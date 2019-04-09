@@ -5,13 +5,13 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/heptio/developer-dash/internal/cache"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/internal/objectstore"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	printerfake "github.com/heptio/developer-dash/internal/overview/printer/fake"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/internal/testutil"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -24,7 +24,7 @@ func Test_customResourceDefinitionNames(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	c := cachefake.NewMockCache(controller)
+	o := storefake.NewMockObjectStore(controller)
 
 	crd1 := testutil.CreateCRD("crd1.example.com")
 	crd2 := testutil.CreateCRD("crd2.example.com")
@@ -38,10 +38,10 @@ func Test_customResourceDefinitionNames(t *testing.T) {
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
-	c.EXPECT().List(gomock.Any(), gomock.Eq(crdKey)).Return(crdList, nil)
+	o.EXPECT().List(gomock.Any(), gomock.Eq(crdKey)).Return(crdList, nil)
 
 	ctx := context.Background()
-	got, err := customResourceDefinitionNames(ctx, c)
+	got, err := customResourceDefinitionNames(ctx, o)
 	require.NoError(t, err)
 
 	expected := []string{"crd1.example.com", "crd2.example.com"}
@@ -53,7 +53,7 @@ func Test_customResourceDefinition(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	c := cachefake.NewMockCache(controller)
+	o := storefake.NewMockObjectStore(controller)
 
 	crd1 := testutil.CreateCRD("crd1.example.com")
 
@@ -62,11 +62,11 @@ func Test_customResourceDefinition(t *testing.T) {
 		Kind:       "CustomResourceDefinition",
 		Name:       "crd1.example.com",
 	}
-	c.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd1), nil)
+	o.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd1), nil)
 
 	name := "crd1.example.com"
 	ctx := context.Background()
-	got, err := customResourceDefinition(ctx, name, c)
+	got, err := customResourceDefinition(ctx, name, o)
 	require.NoError(t, err)
 
 	assert.Equal(t, crd1, got)
@@ -112,7 +112,7 @@ func Test_crdListDescriber(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	c := cachefake.NewMockCache(controller)
+	o := storefake.NewMockObjectStore(controller)
 
 	crd := testutil.CreateCRD("crd1")
 	crd.Spec.Group = "foo.example.com"
@@ -125,7 +125,7 @@ func Test_crdListDescriber(t *testing.T) {
 		Name:       crd.Name,
 	}
 
-	c.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
+	o.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
 
 	crKey := cacheutil.Key{
 		Namespace:  "default",
@@ -134,7 +134,7 @@ func Test_crdListDescriber(t *testing.T) {
 	}
 
 	objects := []*unstructured.Unstructured{}
-	c.EXPECT().List(gomock.Any(), gomock.Eq(crKey)).Return(objects, nil)
+	o.EXPECT().List(gomock.Any(), gomock.Eq(crKey)).Return(objects, nil)
 
 	listPrinter := func(cld *crdListDescriber) {
 		cld.printer = func(ctx context.Context, name, namespace string, crd *apiextv1beta1.CustomResourceDefinition, objects []*unstructured.Unstructured) (component.Component, error) {
@@ -145,7 +145,7 @@ func Test_crdListDescriber(t *testing.T) {
 	cld := newCRDListDescriber(crd.Name, "path", listPrinter)
 
 	options := DescriberOptions{
-		Cache: c,
+		ObjectStore: o,
 	}
 
 	ctx := context.Background()
@@ -163,7 +163,7 @@ func Test_crdDescriber(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	c := cachefake.NewMockCache(controller)
+	o := storefake.NewMockObjectStore(controller)
 
 	pluginPrinter := printerfake.NewMockPluginPrinter(controller)
 	pluginPrinter.EXPECT().Tabs(gomock.Any()).Return([]component.Tab{}, nil)
@@ -179,7 +179,7 @@ func Test_crdDescriber(t *testing.T) {
 		Name:       crd.Name,
 	}
 
-	c.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
+	o.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
 
 	crKey := cacheutil.Key{
 		Namespace:  "default",
@@ -188,14 +188,14 @@ func Test_crdDescriber(t *testing.T) {
 	}
 
 	object := &unstructured.Unstructured{}
-	c.EXPECT().Get(gomock.Any(), gomock.Eq(crKey)).Return(object, nil)
+	o.EXPECT().Get(gomock.Any(), gomock.Eq(crKey)).Return(object, nil)
 
 	crPrinter := func(cd *crdDescriber) {
 		cd.summaryPrinter = func(ctx context.Context, crd *apiextv1beta1.CustomResourceDefinition, object *unstructured.Unstructured, options printer.Options) (component.Component, error) {
 			return component.NewText("cr"), nil
 		}
 
-		cd.resourceViewerPrinter = func(ctx context.Context, object *unstructured.Unstructured, c cache.Cache, q queryer.Queryer) (component.Component, error) {
+		cd.resourceViewerPrinter = func(ctx context.Context, object *unstructured.Unstructured, o objectstore.ObjectStore, q queryer.Queryer) (component.Component, error) {
 			return component.NewText("rv"), nil
 		}
 
@@ -207,7 +207,7 @@ func Test_crdDescriber(t *testing.T) {
 	cd := newCRDDescriber(crd.Name, "path", crPrinter)
 
 	options := DescriberOptions{
-		Cache:         c,
+		ObjectStore:   o,
 		PluginManager: pluginPrinter,
 	}
 

@@ -9,7 +9,7 @@ import (
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/pkg/plugin"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -28,7 +28,7 @@ type PluginPrinter interface {
 
 // Options provides options to a print handler
 type Options struct {
-	Cache         cache.Cache
+	ObjectStore   objectstore.ObjectStore
 	PortForward   portforward.PortForwarder
 	Selector      kLabels.Selector
 	DisableLabels bool
@@ -44,17 +44,17 @@ type Printer interface {
 // Resource prints runtime objects.
 type Resource struct {
 	handlerMap  map[reflect.Type]reflect.Value
-	cache       cache.Cache
+	objectStore objectstore.ObjectStore
 	portForward portforward.PortForwarder
 }
 
 var _ Printer = (*Resource)(nil)
 
 // NewResource creates an instance of ResourcePrinter.
-func NewResource(c cache.Cache, portForwardService portforward.PortForwarder) *Resource {
+func NewResource(o objectstore.ObjectStore, portForwardService portforward.PortForwarder) *Resource {
 	return &Resource{
 		handlerMap:  make(map[reflect.Type]reflect.Value),
-		cache:       c,
+		objectStore: o,
 		portForward: portForwardService,
 	}
 }
@@ -63,7 +63,7 @@ func NewResource(c cache.Cache, portForwardService portforward.PortForwarder) *R
 // it will print using `DefaultPrintFunc`.
 func (p *Resource) Print(ctx context.Context, object runtime.Object, pm PluginPrinter) (component.Component, error) {
 	printOptions := Options{
-		Cache:         p.cache,
+		ObjectStore:   p.objectStore,
 		PortForward:   p.portForward,
 		PluginPrinter: pm,
 	}

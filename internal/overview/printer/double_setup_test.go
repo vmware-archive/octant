@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/view/flexlayout"
@@ -14,8 +14,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func mockObjectsEvents(t *testing.T, appCache *cachefake.MockCache, namespace string, events ...corev1.Event) {
-	require.NotNil(t, appCache)
+func mockObjectsEvents(t *testing.T, appObjectStore *storefake.MockObjectStore, namespace string, events ...corev1.Event) {
+	require.NotNil(t, appObjectStore)
 
 	var objects []*unstructured.Unstructured
 
@@ -29,7 +29,7 @@ func mockObjectsEvents(t *testing.T, appCache *cachefake.MockCache, namespace st
 		Kind:       "Event",
 	}
 
-	appCache.EXPECT().
+	appObjectStore.EXPECT().
 		List(gomock.Any(), key).
 		Return(objects, nil)
 }

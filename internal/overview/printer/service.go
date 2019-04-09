@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/link"
+	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -61,7 +61,7 @@ func ServiceHandler(ctx context.Context, service *corev1.Service, options Option
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {
-			return serviceEndpoints(ctx, options.Cache, service)
+			return serviceEndpoints(ctx, options.ObjectStore, service)
 		},
 		Width: component.WidthFull,
 	})
@@ -182,9 +182,9 @@ func serviceSummary(service *corev1.Service) (*component.Summary, error) {
 	return summary, nil
 }
 
-func serviceEndpoints(ctx context.Context, c cache.Cache, service *corev1.Service) (*component.Table, error) {
-	if c == nil {
-		return nil, errors.New("cache is nil")
+func serviceEndpoints(ctx context.Context, o objectstore.ObjectStore, service *corev1.Service) (*component.Table, error) {
+	if o == nil {
+		return nil, errors.New("objectstore is nil")
 	}
 
 	if service == nil {
@@ -198,7 +198,7 @@ func serviceEndpoints(ctx context.Context, c cache.Cache, service *corev1.Servic
 		Name:       service.Name,
 	}
 
-	object, err := c.Get(ctx, key)
+	object, err := o.Get(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "get endpoints for service %s", service.Name)
 	}
