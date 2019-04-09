@@ -48,6 +48,28 @@ func Test_EventListHandler(t *testing.T) {
 				FirstTimestamp: metav1.Time{Time: time.Unix(1548424410, 0)},
 				LastTimestamp:  metav1.Time{Time: time.Unix(1548424410, 0)},
 			},
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "event-12345",
+					Namespace: "default",
+				},
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "v1",
+					Kind:       "Event",
+				},
+				InvolvedObject: corev1.ObjectReference{
+					APIVersion: "apps/v1",
+					Kind:       "Deployment",
+					Name:       "d1",
+					Namespace:  "default",
+				},
+				Count:          1234,
+				Message:        "message",
+				Reason:         "Reason",
+				Type:           "Type",
+				FirstTimestamp: metav1.Time{Time: time.Unix(1548424410, 0)},
+				LastTimestamp:  metav1.Time{Time: time.Unix(1548424420, 0)},
+			},
 		},
 	}
 
@@ -57,17 +79,29 @@ func Test_EventListHandler(t *testing.T) {
 
 	cols := component.NewTableCols("Kind", "Message", "Reason", "Type",
 		"First Seen", "Last Seen")
-	expected := component.NewTable("Events", cols)
-	expected.Add(component.TableRow{
-		"Kind": component.NewList("", []component.Component{
-			component.NewLink("", "d1", "/content/overview/namespace/default/workloads/deployments/d1"),
-			component.NewText("1234"),
-		}),
-		"Message":    component.NewLink("", "message", "/content/overview/namespace/default/events/event-12345"),
-		"Reason":     component.NewText("Reason"),
-		"Type":       component.NewText("Type"),
-		"First Seen": component.NewTimestamp(time.Unix(1548424410, 0)),
-		"Last Seen":  component.NewTimestamp(time.Unix(1548424410, 0)),
+	expected := component.NewTableWithRows("Events", cols, []component.TableRow{
+		{
+			"Kind": component.NewList("", []component.Component{
+				component.NewLink("", "d1", "/content/overview/namespace/default/workloads/deployments/d1"),
+				component.NewText("1234"),
+			}),
+			"Message":    component.NewLink("", "message", "/content/overview/namespace/default/events/event-12345"),
+			"Reason":     component.NewText("Reason"),
+			"Type":       component.NewText("Type"),
+			"First Seen": component.NewTimestamp(time.Unix(1548424410, 0)),
+			"Last Seen":  component.NewTimestamp(time.Unix(1548424420, 0)),
+		},
+		{
+			"Kind": component.NewList("", []component.Component{
+				component.NewLink("", "d1", "/content/overview/namespace/default/workloads/deployments/d1"),
+				component.NewText("1234"),
+			}),
+			"Message":    component.NewLink("", "message", "/content/overview/namespace/default/events/event-12345"),
+			"Reason":     component.NewText("Reason"),
+			"Type":       component.NewText("Type"),
+			"First Seen": component.NewTimestamp(time.Unix(1548424410, 0)),
+			"Last Seen":  component.NewTimestamp(time.Unix(1548424410, 0)),
+		},
 	})
 
 	assert.Equal(t, expected, got)
