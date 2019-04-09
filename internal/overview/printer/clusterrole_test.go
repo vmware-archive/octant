@@ -73,7 +73,7 @@ func Test_printClusterRolePolicyRule(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Resources", "Non-Resource URLs", "Resource Names", "Verbs")
-	expected := component.NewTable("PolicyRules", cols)
+	expected := component.NewTable("Policy Rules", cols)
 
 	row := component.TableRow{}
 	row["Resources"] = component.NewText("crontabs.stable.example.com")

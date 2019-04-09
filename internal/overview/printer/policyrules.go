@@ -14,9 +14,9 @@ type simpleResource struct {
 	ResourceName      string
 }
 
-// CompactRules combines rules that contain a single APIGroup/Resource, differ only by verb, and contain no other attributes.
+// compactRules combines rules that contain a single APIGroup/Resource, differ only by verb, and contain no other attributes.
 // this is a fast check, and works well with the decomposed "missing rules" list from a Covers check.
-func CompactRules(rules []rbacv1.PolicyRule) ([]rbacv1.PolicyRule, error) {
+func compactRules(rules []rbacv1.PolicyRule) ([]rbacv1.PolicyRule, error) {
 	compacted := make([]rbacv1.PolicyRule, 0, len(rules))
 
 	simpleRules := map[simpleResource]*rbacv1.PolicyRule{}
@@ -101,15 +101,6 @@ func BreakdownRule(rule rbacv1.PolicyRule) []rbacv1.PolicyRule {
 	}
 
 	return subrules
-}
-
-// SortableRuleSlice is used to sort rule slice
-type SortableRuleSlice []rbacv1.PolicyRule
-
-func (s SortableRuleSlice) Len() int      { return len(s) }
-func (s SortableRuleSlice) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
-func (s SortableRuleSlice) Less(i, j int) bool {
-	return strings.Compare(s[i].String(), s[j].String()) < 0
 }
 
 func CombineResourceGroup(resource, group []string) string {

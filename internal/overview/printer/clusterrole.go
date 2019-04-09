@@ -89,22 +89,28 @@ func printClusterRolePolicyRules(clusterRole *rbacv1.ClusterRole) (*component.Ta
 		return nil, errors.New("cluster role is nil")
 	}
 
-	rules := clusterRole.Rules
+	return printPolicyRules(clusterRole.Rules)
+}
+
+func printPolicyRules(rules []rbacv1.PolicyRule) (*component.Table, error) {
 	breakdownRules := []rbacv1.PolicyRule{}
 	for _, rule := range rules {
 		breakdownRules = append(breakdownRules, BreakdownRule(rule)...)
 	}
 
-	compactRules, err := CompactRules(breakdownRules)
+	rules, err := compactRules(breakdownRules)
 	if err != nil {
 		return nil, errors.New("cannot compact rules")
 	}
-	sort.Stable(SortableRuleSlice(compactRules))
+
+	sort.SliceStable(rules, func(i, j int) bool {
+		return rules[i].String() < rules[j].String()
+	})
 
 	cols := component.NewTableCols("Resources", "Non-Resource URLs", "Resource Names", "Verbs")
-	tbl := component.NewTable("PolicyRules", cols)
+	tbl := component.NewTable("Policy Rules", cols)
 
-	for _, r := range compactRules {
+	for _, r := range rules {
 		row := component.TableRow{}
 		row["Resources"] = component.NewText(CombineResourceGroup(r.Resources, r.APIGroups))
 		row["Non-Resource URLs"] = component.NewText(printSlice(r.NonResourceURLs))

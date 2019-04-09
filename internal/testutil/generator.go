@@ -16,21 +16,16 @@ import (
 )
 
 // CreateClusterRoleBinding creates a cluster role binding
-func CreateClusterRoleBinding(name string) *rbacv1.ClusterRoleBinding {
+func CreateClusterRoleBinding(name, roleName string, subjects []rbacv1.Subject) *rbacv1.ClusterRoleBinding {
 	return &rbacv1.ClusterRoleBinding{
 		TypeMeta:   genTypeMeta(gvk.ClusterRoleBindingGVK),
-		ObjectMeta: genObjectMeta(name),
+		ObjectMeta: genObjectMeta(name, false),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "Role",
-			Name:     "role-name",
+			Name:     roleName,
 			APIGroup: "rbac.authorization.k8s.io",
 		},
-		Subjects: []rbacv1.Subject{
-			{
-				Kind: "User",
-				Name: "test@example.com",
-			},
-		},
+		Subjects: subjects,
 	}
 }
 
@@ -38,7 +33,7 @@ func CreateClusterRoleBinding(name string) *rbacv1.ClusterRoleBinding {
 func CreateCRD(name string) *apiextv1beta1.CustomResourceDefinition {
 	return &apiextv1beta1.CustomResourceDefinition{
 		TypeMeta:   genTypeMeta(gvk.CustomResourceDefinitionGVK),
-		ObjectMeta: genObjectMeta(name),
+		ObjectMeta: genObjectMeta(name, true),
 	}
 }
 
@@ -48,7 +43,7 @@ func CreateDaemonSet(name string) *appsv1.DaemonSet {
 
 	return &appsv1.DaemonSet{
 		TypeMeta:   genTypeMeta(gvk.DaemonSetGVK),
-		ObjectMeta: genObjectMeta(name),
+		ObjectMeta: genObjectMeta(name, true),
 		Spec: appsv1.DaemonSetSpec{
 			RevisionHistoryLimit: conversion.PtrInt32(10),
 			UpdateStrategy: appsv1.DaemonSetUpdateStrategy{
@@ -71,7 +66,7 @@ func CreateDaemonSet(name string) *appsv1.DaemonSet {
 func CreateDeployment(name string) *appsv1.Deployment {
 	return &appsv1.Deployment{
 		TypeMeta:   genTypeMeta(gvk.DeploymentGVK),
-		ObjectMeta: genObjectMeta(name),
+		ObjectMeta: genObjectMeta(name, true),
 	}
 }
 
@@ -79,7 +74,7 @@ func CreateDeployment(name string) *appsv1.Deployment {
 func CreateIngress(name string) *extv1beta1.Ingress {
 	return &extv1beta1.Ingress{
 		TypeMeta:   genTypeMeta(gvk.IngressGVK),
-		ObjectMeta: genObjectMeta(name),
+		ObjectMeta: genObjectMeta(name, true),
 		Spec: extv1beta1.IngressSpec{
 			Backend: &extv1beta1.IngressBackend{
 				ServiceName: "app",
@@ -93,7 +88,7 @@ func CreateIngress(name string) *extv1beta1.Ingress {
 func CreatePod(name string) *corev1.Pod {
 	return &corev1.Pod{
 		TypeMeta:   genTypeMeta(gvk.PodGVK),
-		ObjectMeta: genObjectMeta(name),
+		ObjectMeta: genObjectMeta(name, true),
 	}
 }
 
@@ -101,7 +96,7 @@ func CreatePod(name string) *corev1.Pod {
 func CreateReplicationController(name string) *corev1.ReplicationController {
 	return &corev1.ReplicationController{
 		TypeMeta:   genTypeMeta(gvk.ReplicationControllerGVK),
-		ObjectMeta: genObjectMeta(name),
+		ObjectMeta: genObjectMeta(name, true),
 	}
 }
 
@@ -109,7 +104,7 @@ func CreateReplicationController(name string) *corev1.ReplicationController {
 func CreateReplicaSet(name string) *appsv1.ReplicaSet {
 	return &appsv1.ReplicaSet{
 		TypeMeta:   genTypeMeta(gvk.ReplicaSetGVK),
-		ObjectMeta: genObjectMeta(name),
+		ObjectMeta: genObjectMeta(name, true),
 	}
 }
 
@@ -117,7 +112,7 @@ func CreateReplicaSet(name string) *appsv1.ReplicaSet {
 func CreateSecret(name string) *corev1.Secret {
 	return &corev1.Secret{
 		TypeMeta:   genTypeMeta(gvk.SecretGVK),
-		ObjectMeta: genObjectMeta(name),
+		ObjectMeta: genObjectMeta(name, true),
 	}
 }
 
@@ -125,7 +120,7 @@ func CreateSecret(name string) *corev1.Secret {
 func CreateService(name string) *corev1.Service {
 	return &corev1.Service{
 		TypeMeta:   genTypeMeta(gvk.ServiceGVK),
-		ObjectMeta: genObjectMeta(name),
+		ObjectMeta: genObjectMeta(name, true),
 	}
 }
 
@@ -133,7 +128,7 @@ func CreateService(name string) *corev1.Service {
 func CreateServiceAccount(name string) *corev1.ServiceAccount {
 	return &corev1.ServiceAccount{
 		TypeMeta:   genTypeMeta(gvk.ServiceAccountGVK),
-		ObjectMeta: genObjectMeta(name),
+		ObjectMeta: genObjectMeta(name, true),
 	}
 }
 
@@ -144,7 +139,7 @@ func CreatePersistentVolumeClaim(name string) *corev1.PersistentVolumeClaim {
 
 	return &corev1.PersistentVolumeClaim{
 		TypeMeta:   genTypeMeta(gvk.PersistentVolumeClaimGVK),
-		ObjectMeta: genObjectMeta(name),
+		ObjectMeta: genObjectMeta(name, true),
 		Spec: corev1.PersistentVolumeClaimSpec{
 			VolumeName:       "task-pv-volume",
 			StorageClassName: &storageClass,
@@ -167,10 +162,11 @@ func CreatePersistentVolumeClaim(name string) *corev1.PersistentVolumeClaim {
 	}
 }
 
+// CreateRole creates a role.
 func CreateRole(name string) *rbacv1.Role {
 	return &rbacv1.Role{
 		TypeMeta:   genTypeMeta(gvk.RoleGVK),
-		ObjectMeta: genObjectMeta(name),
+		ObjectMeta: genObjectMeta(name, true),
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{
@@ -189,10 +185,11 @@ func CreateRole(name string) *rbacv1.Role {
 	}
 }
 
+// CreateClusterRole creates a cluster role.
 func CreateClusterRole(name string) *rbacv1.ClusterRole {
 	return &rbacv1.ClusterRole{
 		TypeMeta:   genTypeMeta(gvk.ClusterRoleGVK),
-		ObjectMeta: genObjectMeta(name),
+		ObjectMeta: genObjectMeta(name, false),
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{
@@ -215,7 +212,7 @@ func CreateClusterRole(name string) *rbacv1.ClusterRole {
 	}
 }
 
-func CreateRoleBindingSubject(kind, name string) *rbacv1.Subject {
+func CreateRoleBindingSubject(kind, name, namespace string) *rbacv1.Subject {
 	return &rbacv1.Subject{
 		Kind: kind,
 		Name: name,
@@ -225,7 +222,7 @@ func CreateRoleBindingSubject(kind, name string) *rbacv1.Subject {
 func CreateRoleBinding(roleBindingName, roleName string, subjects []rbacv1.Subject) *rbacv1.RoleBinding {
 	return &rbacv1.RoleBinding{
 		TypeMeta:   genTypeMeta(gvk.RoleBindingGVK),
-		ObjectMeta: genObjectMeta(roleBindingName),
+		ObjectMeta: genObjectMeta(roleBindingName, true),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "Role",
 			Name:     roleName,
@@ -243,10 +240,15 @@ func genTypeMeta(gvk schema.GroupVersionKind) metav1.TypeMeta {
 	}
 }
 
-func genObjectMeta(name string) metav1.ObjectMeta {
+func genObjectMeta(name string, withNamespace bool) metav1.ObjectMeta {
+	var namespace string
+	if withNamespace {
+		namespace = "namespace"
+	}
+
 	return metav1.ObjectMeta{
 		Name:      name,
-		Namespace: "namespace",
+		Namespace: namespace,
 		UID:       types.UID(name),
 	}
 }

@@ -70,16 +70,19 @@ func printRolePolicyRules(role *rbacv1.Role) (*component.Table, error) {
 		breakdownRules = append(breakdownRules, BreakdownRule(rule)...)
 	}
 
-	compactRules, err := CompactRules(breakdownRules)
+	rules, err := compactRules(breakdownRules)
 	if err != nil {
 		return nil, errors.New("cannot compact rules")
 	}
-	sort.Stable(SortableRuleSlice(compactRules))
+
+	sort.SliceStable(rules, func(i, j int) bool {
+		return rules[i].String() < rules[j].String()
+	})
 
 	cols := component.NewTableCols("Resources", "Non-Resource URLs", "Resource Names", "Verbs")
 	tbl := component.NewTable("PolicyRules", cols)
 
-	for _, r := range compactRules {
+	for _, r := range rules {
 		row := component.TableRow{}
 		row["Resources"] = component.NewText(CombineResourceGroup(r.Resources, r.APIGroups))
 		row["Non-Resource URLs"] = component.NewText(printSlice(r.NonResourceURLs))

@@ -22,7 +22,7 @@ func Test_RoleBindingListHandler(t *testing.T) {
 
 	now := time.Unix(1547211430, 0)
 
-	subject := testutil.CreateRoleBindingSubject("User", "test@test.com")
+	subject := testutil.CreateRoleBindingSubject("User", "test@test.com", "namespace")
 	roleBinding := testutil.CreateRoleBinding("read-pods", "pod-reader", []rbacv1.Subject{*subject})
 	roleBinding.CreationTimestamp = metav1.Time{Time: now}
 	roleBindingList := &rbacv1.RoleBindingList{
@@ -30,6 +30,7 @@ func Test_RoleBindingListHandler(t *testing.T) {
 			*roleBinding,
 		},
 	}
+
 
 	c := cachefake.NewMockCache(controller)
 
@@ -50,7 +51,7 @@ func Test_RoleBindingListHandler(t *testing.T) {
 }
 
 func Test_printRoleBindingSubjects(t *testing.T) {
-	subject := testutil.CreateRoleBindingSubject("User", "test@test.com")
+	subject := testutil.CreateRoleBindingSubject("User", "test@test.com", "namespace")
 	roleBinding := testutil.CreateRoleBinding("read-pods", "pod-reader", []rbacv1.Subject{*subject})
 
 	observed, err := printRoleBindingSubjects(roleBinding)
@@ -70,7 +71,7 @@ func Test_printRoleBindingSubjects(t *testing.T) {
 }
 
 func Test_printRoleBindingConfig(t *testing.T) {
-	subject := testutil.CreateRoleBindingSubject("User", "test@test.com")
+	subject := testutil.CreateRoleBindingSubject("User", "test@test.com", "namespace")
 	roleBinding := testutil.CreateRoleBinding("read-pods", "pod-reader", []rbacv1.Subject{*subject})
 
 	ctx := context.Background()

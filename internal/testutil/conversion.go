@@ -15,3 +15,14 @@ func ToUnstructured(t *testing.T, object runtime.Object) *unstructured.Unstructu
 
 	return &unstructured.Unstructured{Object: m}
 }
+
+// ToUnstructuredList converts a list of objects to a list of unstructured.
+func ToUnstructuredList(t *testing.T, objects ...runtime.Object) []*unstructured.Unstructured {
+	var list []*unstructured.Unstructured
+
+	for _, object := range objects {
+		list = append(list, ToUnstructured(t, object))
+	}
+
+	return list
+}
