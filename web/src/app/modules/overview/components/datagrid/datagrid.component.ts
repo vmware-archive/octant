@@ -1,6 +1,8 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { TableRow, TableView } from 'src/app/models/content';
 import { ViewUtil } from 'src/app/util/view';
+import trackByIndex from 'src/app/util/trackBy/trackByIndex';
+import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 
 @Component({
   selector: 'app-view-datagrid',
@@ -17,6 +19,9 @@ export class DatagridComponent implements OnChanges {
 
   lastUpdated: Date;
 
+  identifyRow = trackByIndex;
+  identifyColumn = trackByIdentity;
+
   constructor() {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -31,4 +36,5 @@ export class DatagridComponent implements OnChanges {
       this.lastUpdated = new Date();
     }
   }
+
 }

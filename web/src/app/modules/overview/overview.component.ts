@@ -25,6 +25,8 @@ export class OverviewComponent implements OnInit, OnDestroy {
     this.route.url.subscribe((url) => {
       const currentPath = url.map((u) => u.path).join('/');
       if (currentPath !== this.previousUrl) {
+        this.singleView = null;
+        this.views = null;
         this.previousUrl = currentPath;
         this.dataService.startPoller(currentPath);
         this.dataService.pollContent().subscribe((contentResponse: ContentResponse) => {

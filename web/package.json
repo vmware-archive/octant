@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --prod",
     "test": "ng test",
     "test:headless": "echo \"Error: Need to install Chrome to run Chrome headless or look into alternatives\"",
     "lint": "ng lint",

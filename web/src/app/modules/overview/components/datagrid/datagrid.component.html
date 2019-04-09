@@ -3,10 +3,9 @@
     <h3 class="card-title">{{ title }}</h3>
     <clr-datagrid>
       <clr-dg-placeholder *ngIf="placeholder?.length > 0">{{ placeholder }}</clr-dg-placeholder>
-      <clr-dg-column *ngFor="let item of columns">{{ item }}</clr-dg-column>
-
-      <clr-dg-row *ngFor="let row of rows">
-        <clr-dg-cell *ngFor="let column of columns">
+      <clr-dg-column *ngFor="let item of columns; trackBy: identifyColumn">{{ item }}</clr-dg-column>
+      <clr-dg-row *ngFor="let row of rows; trackBy: identifyRow">
+        <clr-dg-cell *ngFor="let column of columns; trackBy: identifyColumn">
           <app-content-switcher [view]="row[column]"></app-content-switcher>
         </clr-dg-cell>
       </clr-dg-row>

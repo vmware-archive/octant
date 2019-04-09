@@ -5,7 +5,6 @@ import { ClarityModule } from '@clr/angular';
 import json from 'highlight.js/lib/languages/json';
 import yaml from 'highlight.js/lib/languages/yaml';
 import { HighlightModule } from 'ngx-highlightjs';
-
 import { AnnotationsComponent } from './components/annotations/annotations.component';
 import { ContainersComponent } from './components/containers/containers.component';
 import { ContentSwitcherComponent } from './components/content-switcher/content-switcher.component';
@@ -31,10 +30,6 @@ import { TextComponent } from './components/text/text.component';
 import { TimestampComponent } from './components/timestamp/timestamp.component';
 import { YamlComponent } from './components/yaml/yaml.component';
 import { OverviewComponent } from './overview.component';
-
-const hljsLanguages = () => {
-  return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
-};
 
 @NgModule({
   declarations: [
@@ -68,11 +63,12 @@ const hljsLanguages = () => {
     CommonModule,
     ClarityModule,
     HighlightModule.forRoot({
-      languages: hljsLanguages,
+      languages() {
+        return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
+      },
     }),
     RouterModule,
   ],
   exports: [],
 })
-
 export class OverviewModule {}

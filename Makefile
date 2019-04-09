@@ -28,7 +28,7 @@ vet:
 
 sugarloaf-dev:
 	@mkdir -p ./build
-	@env $(GOBUILD) -o build/sugarloaf $(GO_FLAGS) ./cmd/sugarloaf
+	@env $(GOBUILD) -o build/sugarloaf $(GO_FLAGS) -v ./cmd/sugarloaf
 
 setup-web: web-deps run-web
 
@@ -73,6 +73,12 @@ release:
 
 .PHONY: ci
 ci: test vet web-test web-build sugarloaf-dev
+
+.PHONY: ci-quick
+ci-quick:
+	@cd web; npm run build
+	@go generate ./web
+	make sugarloaf-dev
 
 install-test-plugin:
 	mkdir -p ~/.config/vmdash/plugins
