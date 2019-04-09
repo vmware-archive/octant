@@ -22,7 +22,13 @@ func Test_ClusterRoleBindingListHandler(t *testing.T) {
 
 	now := time.Unix(1547211430, 0)
 
-	clusterRoleBinding := testutil.CreateClusterRoleBinding("read-pods")
+	subjects := []rbacv1.Subject{
+		{
+			Kind: "User",
+			Name: "test@example.com",
+		},
+	}
+	clusterRoleBinding := testutil.CreateClusterRoleBinding("read-pods", "role-name", subjects)
 	labels := map[string]string{"foo": "bar"}
 	clusterRoleBinding.Labels = labels
 	clusterRoleBinding.CreationTimestamp = metav1.Time{Time: now}
@@ -45,7 +51,7 @@ func Test_ClusterRoleBindingListHandler(t *testing.T) {
 		"Labels":    component.NewLabels(labels),
 		"Age":       component.NewTimestamp(now),
 		"Role kind": component.NewText("Role"),
-		"Role name": component.NewLink("", "role-name", "/content/overview/namespace/namespace/rbac/roles/role-name"),
+		"Role name": component.NewLink("", "role-name", "/content/overview/rbac/roles/role-name"),
 	})
 
 	assert.Equal(t, expected, observed)
@@ -54,7 +60,13 @@ func Test_ClusterRoleBindingListHandler(t *testing.T) {
 func Test_printClusterRoleBindingSubjects(t *testing.T) {
 	now := time.Unix(1547211430, 0)
 
-	clusterRoleBinding := testutil.CreateClusterRoleBinding("read-pods")
+	subjects := []rbacv1.Subject{
+		{
+			Kind: "User",
+			Name: "test@example.com",
+		},
+	}
+	clusterRoleBinding := testutil.CreateClusterRoleBinding("read-pods", "role-name", subjects)
 	labels := map[string]string{"foo": "bar"}
 	clusterRoleBinding.Labels = labels
 	clusterRoleBinding.CreationTimestamp = metav1.Time{Time: now}
@@ -76,7 +88,7 @@ func Test_printClusterRoleBindingSubjects(t *testing.T) {
 }
 
 func Test_printClusterRoleBindingConfig(t *testing.T) {
-	subject := testutil.CreateRoleBindingSubject("User", "test@test.com")
+	subject := testutil.CreateRoleBindingSubject("User", "test@test.com", "namespace")
 	roleBinding := testutil.CreateRoleBinding("read-pods", "pod-reader", []rbacv1.Subject{*subject})
 
 	ctx := context.Background()

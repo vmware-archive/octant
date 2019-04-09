@@ -15,6 +15,9 @@ export class NamespaceComponent implements OnInit {
   ngOnInit() {
     this.namespaceService.current.subscribe((namespace: string) => {
       this.currentNamespace = namespace;
+      if (!this.currentNamespace) {
+        this.currentNamespace = '<Cluster Scoped>';
+      }
     });
 
     this.namespaceService.list.subscribe((namespaces: string[]) => {
