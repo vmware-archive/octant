@@ -12,6 +12,8 @@ matrix:
             - $TRAVIS_BUILD_DIR/web/node_modules
         before_install:
           - npm i -g npm@6.4.1
+        addons:
+          chrome: stable
         install:
           $TRAVIS_BUILD_DIR/hacks/ci-linux.sh
         env:
@@ -25,6 +27,8 @@ matrix:
             - node --version
         before_install:
           - npm i -g npm@6.4.1
+        addons:
+          chrome: stable
         install:
           $TRAVIS_BUILD_DIR/hacks/ci-macos.sh
         env:
