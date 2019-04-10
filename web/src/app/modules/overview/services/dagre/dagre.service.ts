@@ -1,7 +1,6 @@
-import { Injectable, ElementRef } from '@angular/core';
+import { ElementRef, Injectable } from '@angular/core';
 import * as d3 from 'd3';
 import * as dagreD3 from 'dagre-d3';
-import { Graph } from 'graphlib';
 
 @Injectable({
   providedIn: 'root'
@@ -26,10 +25,9 @@ export class DagreService {
 
     render(inner, g);
 
-    const initialScale = 1.2;
+    const initialScale = 1.0;
 
-    const width = parseInt(svg.attr('width'), 10);
-    const height = parseInt(svg.attr('height'), 10);
+    const svgWidth = parseInt(svg.attr('width'), 10);
 
     // Set up zoom support
     const zoom = d3.zoom()
@@ -38,11 +36,16 @@ export class DagreService {
       });
     svg.call(zoom);
 
+    const translateX = (svgWidth - g.graph().width * initialScale) / 2;
+
     // Center the graph
     const translation = d3.zoomIdentity.translate(
-      (width - g.graph().width * initialScale) / 2,
-      (height - g.graph().height * initialScale) / 2,
+      translateX,
+      80,
       ).scale(initialScale);
-    svg.call(zoom.transform, translation);
+
+    if (!Number.isNaN(translateX)) {
+      svg.call(zoom.transform, translation);
+    }
   }
 }

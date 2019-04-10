@@ -1,74 +1,76 @@
-import { AfterViewChecked, Component, ElementRef, Input, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+  AfterViewChecked,
+  Component,
+  ElementRef,
+  HostListener,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import * as d3 from 'd3';
-import * as dagreD3 from 'dagre-d3';
-import { ResourceViewerView } from 'src/app/models/content';
 import { Edge } from 'dagre';
+import * as dagreD3 from 'dagre-d3';
+import _ from 'lodash';
+import { Node, ResourceViewerView } from 'src/app/models/content';
+import { ResourceNode } from 'src/app/models/resource-node';
+
 import { DagreService } from '../../services/dagre/dagre.service';
-
-interface ResourceObject {
-  name: string;
-  apiVersion: string;
-  kind: string;
-  status: string;
-}
-
-class ResourceNode {
-  constructor(
-    private readonly id: string,
-    private readonly object: ResourceObject,
-    private readonly isSelected: boolean
-  ) {}
-
-  toDescriptor(): dagreD3.Label {
-    let nodeClass = `node-${this.object.status}`;
-    if (this.isSelected) {
-      nodeClass += ` selected`;
-    }
-
-    return {
-      id: this.id,
-      label: `${this.title()}${this.subTitle()}`,
-      labelType: 'html',
-      class: `${nodeClass}`,
-    };
-  }
-
-  title(): string {
-    return `<div class="resource-name">${this.object.name}</div>`;
-  }
-
-  subTitle(): string {
-    return `<div class="resource-type">${this.object.apiVersion} ${this.object.kind}</div>`;
-  }
-}
 
 @Component({
   selector: 'app-view-resource-viewer',
-  template: `
-    <div class="resourceViewer" #viewer>
-    </div>
-  `,
+  templateUrl: './resource-viewer.component.html',
   styleUrls: ['./resource-viewer.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class ResourceViewerComponent implements AfterViewChecked {
+export class ResourceViewerComponent implements OnChanges, AfterViewChecked {
+
+  constructor(private dagreService: DagreService) {
+  }
 
   @ViewChild('viewer') private viewer: ElementRef;
 
   @Input() view: ResourceViewerView;
 
-  constructor(private dagreService: DagreService) {}
+  currentView: ResourceViewerView;
 
+  selected: string;
+  selectedNode: Node;
 
+  private runUpdate = false;
+  private hasDrawn = false;
+
+  ngOnChanges(changes: SimpleChanges): void {
+
+    this.currentView = changes.view.currentValue as ResourceViewerView;
+
+    const isEqual = _.isEqual(changes.view.currentValue, changes.view.previousValue);
+
+    if (changes.view.isFirstChange()) {
+      this.select(this.currentView.config.selected);
+      this.runUpdate = true;
+    } else if (!isEqual) {
+      this.select(this.selected);
+      this.runUpdate = true;
+    } else if (!this.hasDrawn) {
+      this.runUpdate = true;
+    }
+  }
 
   ngAfterViewChecked(): void {
     this.updateGraph();
   }
 
-  updateGraph() {
-    const viewer = this.viewer.nativeElement;
-    if (viewer.offsetWidth === 0 || viewer.offsetHeight === 0) {
-      // nothing to do until the viewer has dimensions
+  @HostListener('window:resize') onResize() {
+    if (this.viewer) {
+      this.runUpdate = true;
+      this.updateGraph();
+    }
+  }
+
+  private updateGraph() {
+    if (!this.runUpdate) {
       return;
     }
 
@@ -86,10 +88,32 @@ export class ResourceViewerComponent implements AfterViewChecked {
     this.edges().forEach((edge) => g.setEdge(edge[0], edge[1], edge[2]));
 
     this.dagreService.render(this.viewer, g);
+
+    const svg = d3.select('.viewer svg');
+    const nodes = svg.selectAll('g.node');
+
+    if (nodes.nodes().length > 0) {
+      this.runUpdate = false;
+      this.hasDrawn = true;
+
+      nodes.on('click', (id: string) => {
+        this.onClick(id);
+      });
+    }
+  }
+
+  private onClick(id: string) {
+    this.select(id);
+  }
+
+  private select(id: string) {
+    this.runUpdate = true;
+    this.selected = id;
+    this.selectedNode = this.currentView.config.nodes[id];
   }
 
   edges(): Array<Edge> {
-    const adjacencyList = this.view.config.edges;
+    const adjacencyList = this.currentView.config.edges;
     const edges: Array<Edge> = [];
 
     if (adjacencyList) {
@@ -100,6 +124,7 @@ export class ResourceViewerComponent implements AfterViewChecked {
             e.node,
             {
               arrowhead: 'undirected',
+              lineCurve: d3.curveBasis,
             },
           ])
         );
@@ -110,12 +135,13 @@ export class ResourceViewerComponent implements AfterViewChecked {
   }
 
   nodes() {
-    const objects = this.view.config.nodes;
+    const objects = this.currentView.config.nodes;
 
     const nodes: { [key: string]: dagreD3.Label } = {};
 
     for (const [id, object] of Object.entries(objects)) {
-      nodes[id] = new ResourceNode(id, object, false).toDescriptor();
+      const isSelected = id === this.selected;
+      nodes[id] = new ResourceNode(id, object, isSelected).toDescriptor();
     }
 
     return nodes;

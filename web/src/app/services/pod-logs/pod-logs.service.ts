@@ -26,7 +26,7 @@ export class PodLogsStreamer {
   public start(): void {
     this.logEntries = new BehaviorSubject([]);
     this.poll();
-    this.intervalID = setInterval(() => this.poll(), 5000);
+    this.intervalID = window.setInterval(() => this.poll(), 5000);
   }
 
   public close(): void {

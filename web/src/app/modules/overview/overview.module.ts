@@ -30,6 +30,7 @@ import { TextComponent } from './components/text/text.component';
 import { TimestampComponent } from './components/timestamp/timestamp.component';
 import { YamlComponent } from './components/yaml/yaml.component';
 import { OverviewComponent } from './overview.component';
+import { ObjectStatusComponent } from './components/object-status/object-status.component';
 
 @NgModule({
   declarations: [
@@ -58,6 +59,7 @@ import { OverviewComponent } from './overview.component';
     ContentSwitcherComponent,
     LogsComponent,
     PortsComponent,
+    ObjectStatusComponent,
   ],
   imports: [
     CommonModule,

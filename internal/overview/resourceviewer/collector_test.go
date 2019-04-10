@@ -82,7 +82,6 @@ func Test_Collector(t *testing.T) {
 	require.NoError(t, err)
 
 	q := url.Values{}
-	q.Set("view", "summary")
 
 	expected := component.NewResourceViewer("Resource Viewer")
 	expected.AddEdge("deployment", "replicaSet1", component.EdgeTypeExplicit)
@@ -112,6 +111,13 @@ func Test_Collector(t *testing.T) {
 		Details:    component.Title(component.NewText("Pod count: 1")),
 	})
 	expected.Select("deployment")
+
+	assert.Equal(t, expected, got)
+
+	got, err = c.Component("pod")
+	require.NoError(t, err)
+
+	expected.Select("pods-replicaSet1")
 
 	assert.Equal(t, expected, got)
 }
