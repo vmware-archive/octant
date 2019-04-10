@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"fmt"
 	"path"
 	"sort"
 	"sync"
@@ -108,7 +109,7 @@ func (csd *crdSectionDescriber) Describe(ctx context.Context, prefix, namespace 
 
 	sort.Strings(names)
 
-	list := component.NewList("", nil)
+	list := component.NewList("Custom Resources", nil)
 
 	for _, name := range names {
 		resp, err := csd.describers[name].Describe(ctx, prefix, namespace, clusterClient, options)
@@ -180,8 +181,12 @@ func (cld *crdListDescriber) Describe(ctx context.Context, prefix, namespace str
 		return emptyContentResponse, err
 	}
 
+	list := component.NewList(fmt.Sprintf("Custom Resources / %s", cld.name), []component.Component{
+		table,
+	})
+
 	return component.ContentResponse{
-		Components: []component.Component{table},
+		Components: []component.Component{list},
 	}, nil
 }
 

@@ -1,16 +1,26 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ListView, View } from 'src/app/models/content';
-import { titleAsText } from 'src/app/util/view';
+import { titleAsText, ViewUtil } from 'src/app/util/view';
 
 @Component({
   selector: 'app-view-list',
   templateUrl: './list.component.html',
   styleUrls: ['./list.component.scss'],
 })
-export class ViewListComponent {
+export class ViewListComponent implements OnChanges {
   @Input() listView: ListView;
+
+  title: string;
 
   identifyItem(index: number, item: View): string {
     return titleAsText(item.metadata.title);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.listView) {
+      const current = changes.listView.currentValue;
+      const vu = new ViewUtil(current);
+      this.title = vu.titleAsText();
+    }
   }
 }
