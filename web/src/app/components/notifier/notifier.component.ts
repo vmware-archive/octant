@@ -11,6 +11,7 @@ export class NotifierComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[];
   loading = false;
   error: string;
+  warning: string;
 
   constructor(private notifierService: NotifierService) { }
 
@@ -18,10 +19,15 @@ export class NotifierComponent implements OnInit, OnDestroy {
     this.subscriptions = [
       this.notifierService.loading.subscribe((loading) => this.loading = loading),
       this.notifierService.error.subscribe((error) => this.error = error),
+      this.notifierService.warning.subscribe((warning) => this.warning = warning),
     ];
   }
 
+  onWarningClose() {
+    this.warning = '';
+  }
+
   ngOnDestroy(): void {
-    this.subscriptions.map(subscription => subscription.unsubscribe());
+    this.subscriptions.forEach(subscription => subscription.unsubscribe());
   }
 }

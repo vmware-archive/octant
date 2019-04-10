@@ -93,7 +93,7 @@ func (h *contentHandler) handlerForModule(m module.Module) http.HandlerFunc {
 		}
 
 		if poll != "" {
-			h.handlePoll(ctx, poll, namespace, &set, contentPath, w, r, m)
+			h.handlePoll(ctx, poll, r.URL.Path, namespace, &set, contentPath, w, r, m)
 			return
 		}
 
@@ -107,7 +107,7 @@ func (h *contentHandler) handlerForModule(m module.Module) http.HandlerFunc {
 	}
 }
 
-func (h *contentHandler) handlePoll(ctx context.Context, poll, namespace string, labelSet *labels.Set, contentPath string, w http.ResponseWriter, r *http.Request, m module.Module) {
+func (h *contentHandler) handlePoll(ctx context.Context, poll, requestPath, namespace string, labelSet *labels.Set, contentPath string, w http.ResponseWriter, r *http.Request, m module.Module) {
 	eventTimeout := defaultEventTimeout
 	timeout, err := strconv.Atoi(poll)
 	if err == nil {
@@ -138,6 +138,7 @@ func (h *contentHandler) handlePoll(ctx context.Context, poll, namespace string,
 		logger:          h.logger,
 		streamFn:        stream,
 		contentPath:     contentPath,
+		requestPath:     requestPath,
 	}
 
 	if err = cs.content(ctx); err != nil {
