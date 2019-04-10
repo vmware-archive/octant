@@ -14,17 +14,17 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func newDashCmd() *cobra.Command {
+func newSugarloafCmd() *cobra.Command {
 	var namespace string
 	var uiURL string
 	var kubeconfig string
 	var verboseLevel int
 	var enableOpenCensus bool
 
-	dashCmd := &cobra.Command{
-		Use:   "dash",
-		Short: "Show dashboard",
-		Long:  `Heptio Kubernetes dashboard`,
+	sugarloafCmd := &cobra.Command{
+		Use:   "sugarloaf",
+		Short: "sugarloaf kubernetes dashboard",
+		Long:  "sugarloaf is a dashboard for high bandwidth cluster analysis operations",
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
@@ -75,16 +75,16 @@ func newDashCmd() *cobra.Command {
 		},
 	}
 
-	dashCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "initial namespace")
-	dashCmd.Flags().StringVar(&uiURL, "ui-url", "", "dashboard url")
-	dashCmd.Flags().CountVarP(&verboseLevel, "verbose", "v", "verbosity level")
-	dashCmd.Flags().BoolVarP(&enableOpenCensus, "enable-opencensus", "c", false, "enable open census")
+	sugarloafCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "initial namespace")
+	sugarloafCmd.Flags().StringVar(&uiURL, "ui-url", "", "dashboard url")
+	sugarloafCmd.Flags().CountVarP(&verboseLevel, "verbose", "v", "verbosity level")
+	sugarloafCmd.Flags().BoolVarP(&enableOpenCensus, "enable-opencensus", "c", false, "enable open census")
 
 	kubeconfig = clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
 
-	dashCmd.Flags().StringVar(&kubeconfig, "kubeconfig", kubeconfig, "absolute path to kubeconfig file")
+	sugarloafCmd.Flags().StringVar(&kubeconfig, "kubeconfig", kubeconfig, "absolute path to kubeconfig file")
 
-	return dashCmd
+	return sugarloafCmd
 }
 
 // Returns a new zap logger, setting level according to the provided

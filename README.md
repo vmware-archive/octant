@@ -61,10 +61,10 @@ The `sugarloaf` binary will be found in `$GOPATH/src/github.com/heptio/developer
 ### Environment variables
 
 * `KUBECONFIG` - set to non-empty location if you want to set KUBECONFIG with an environment variable.
-* `DASH_DISABLE_OPEN_BROWSER` - set to a non-empty value if you don't the browser launched when the dashboard start up.
-* `DASH_LISTENER_ADDR` - set to address you want dashboard service to start on. (e.g. `localhost:8080`)
-* `DASH_VERBOSE_CACHE` - set to a non-empty value to view cache actions
-* `DASH_LOCAL_CONTENT` - set to a directory and dash will serve content responses from here. An example directory lives in `examples/content`
+* `SUGARLOAF_DISABLE_OPEN_BROWSER` - set to a non-empty value if you don't the browser launched when the dashboard start up.
+* `SUGARLOAF_LISTENER_ADDR` - set to address you want dashboard service to start on. (e.g. `localhost:8080`)
+* `SUGARLOAF_VERBOSE_CACHE` - set to a non-empty value to view cache actions
+* `SUGARLOAF_LOCAL_CONTENT` - set to a directory and dash will serve content responses from here. An example directory lives in `examples/content`
 
 ### Running development web UI
 
