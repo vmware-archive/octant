@@ -16,7 +16,7 @@ var (
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "batch/v1beta1", Kind: "CronJob"},
 		ListType:       &batchv1beta1.CronJobList{},
 		ObjectType:     &batchv1beta1.CronJob{},
-		Titles:         ResourceTitle{List: "Cron Jobs", Object: "Cron Job"},
+		Titles:         ResourceTitle{List: "Workloads / Cron Jobs", Object: "Cron Job"},
 	})
 
 	workloadsDaemonSets = NewResource(ResourceOptions{
@@ -24,7 +24,7 @@ var (
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "apps/v1", Kind: "DaemonSet"},
 		ListType:       &appsv1.DaemonSetList{},
 		ObjectType:     &appsv1.DaemonSet{},
-		Titles:         ResourceTitle{List: "Daemon Sets", Object: "Daemon Set"},
+		Titles:         ResourceTitle{List: "Workloads / Daemon Sets", Object: "Daemon Set"},
 	})
 
 	workloadsDeployments = NewResource(ResourceOptions{
@@ -32,7 +32,7 @@ var (
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "apps/v1", Kind: "Deployment"},
 		ListType:       &appsv1.DeploymentList{},
 		ObjectType:     &appsv1.Deployment{},
-		Titles:         ResourceTitle{List: "Deployments", Object: "Deployment"},
+		Titles:         ResourceTitle{List: "Workloads / Deployments", Object: "Deployment"},
 	})
 
 	workloadsJobs = NewResource(ResourceOptions{
@@ -41,7 +41,7 @@ var (
 		ListType:       &batchv1.JobList{},
 		ObjectType:     &batchv1.Job{},
 
-		Titles: ResourceTitle{List: "Jobs", Object: "Job"},
+		Titles: ResourceTitle{List: "Workloads / Jobs", Object: "Job"},
 	})
 
 	workloadsPods = NewResource(ResourceOptions{
@@ -49,7 +49,7 @@ var (
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "v1", Kind: "Pod"},
 		ListType:       &corev1.PodList{},
 		ObjectType:     &corev1.Pod{},
-		Titles:         ResourceTitle{List: "Pods", Object: "Pod"},
+		Titles:         ResourceTitle{List: "Workloads / Pods", Object: "Pod"},
 	})
 
 	workloadsReplicaSets = NewResource(ResourceOptions{
@@ -57,7 +57,7 @@ var (
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "apps/v1", Kind: "ReplicaSet"},
 		ListType:       &appsv1.ReplicaSetList{},
 		ObjectType:     &appsv1.ReplicaSet{},
-		Titles:         ResourceTitle{List: "Replica Sets", Object: "Replica Set"},
+		Titles:         ResourceTitle{List: "Workloads / Replica Sets", Object: "Replica Set"},
 	})
 
 	workloadsReplicationControllers = NewResource(ResourceOptions{
@@ -65,14 +65,14 @@ var (
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "v1", Kind: "ReplicationController"},
 		ListType:       &corev1.ReplicationControllerList{},
 		ObjectType:     &corev1.ReplicationController{},
-		Titles:         ResourceTitle{List: "Replication Controllers", Object: "Replication Controller"},
+		Titles:         ResourceTitle{List: "Workloads / Replication Controllers", Object: "Replication Controller"},
 	})
 	workloadsStatefulSets = NewResource(ResourceOptions{
 		Path:           "/workloads/stateful-sets",
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "apps/v1", Kind: "StatefulSet"},
 		ListType:       &appsv1.StatefulSetList{},
 		ObjectType:     &appsv1.StatefulSet{},
-		Titles:         ResourceTitle{List: "Stateful Sets", Object: "Stateful Set"},
+		Titles:         ResourceTitle{List: "Workloads / Stateful Sets", Object: "Stateful Set"},
 	})
 
 	workloadsDescriber = NewSectionDescriber(
@@ -93,7 +93,7 @@ var (
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "extensions/v1beta1", Kind: "Ingress"},
 		ListType:       &v1beta1.IngressList{},
 		ObjectType:     &v1beta1.Ingress{},
-		Titles:         ResourceTitle{List: "Ingresses", Object: "Ingress"},
+		Titles:         ResourceTitle{List: "Discovery & Load Balancing / Ingresses", Object: "Ingress"},
 	})
 
 	dlbServices = NewResource(ResourceOptions{
@@ -101,7 +101,7 @@ var (
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "v1", Kind: "Service"},
 		ListType:       &corev1.ServiceList{},
 		ObjectType:     &corev1.Service{},
-		Titles:         ResourceTitle{List: "Services", Object: "Service"},
+		Titles:         ResourceTitle{List: "Discovery & Load Balancing / Services", Object: "Service"},
 	})
 
 	discoveryAndLoadBalancingDescriber = NewSectionDescriber(
@@ -116,7 +116,7 @@ var (
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "v1", Kind: "ConfigMap"},
 		ListType:       &corev1.ConfigMapList{},
 		ObjectType:     &corev1.ConfigMap{},
-		Titles:         ResourceTitle{List: "Config Maps", Object: "Config Map"},
+		Titles:         ResourceTitle{List: "Config & Storage / Config Maps", Object: "Config Map"},
 	})
 
 	csPVCs = NewResource(ResourceOptions{
@@ -124,7 +124,7 @@ var (
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "v1", Kind: "PersistentVolumeClaim"},
 		ListType:       &corev1.PersistentVolumeClaimList{},
 		ObjectType:     &corev1.PersistentVolumeClaim{},
-		Titles:         ResourceTitle{List: "Persistent Volume Claims", Object: "Persistent Volume Claim"},
+		Titles:         ResourceTitle{List: "Config & Storage / Persistent Volume Claims", Object: "Persistent Volume Claim"},
 	})
 
 	csSecrets = NewResource(ResourceOptions{
@@ -132,7 +132,7 @@ var (
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "v1", Kind: "Secret"},
 		ListType:       &corev1.SecretList{},
 		ObjectType:     &corev1.Secret{},
-		Titles:         ResourceTitle{List: "Secrets", Object: "Secret"},
+		Titles:         ResourceTitle{List: "Config & Storage / Secrets", Object: "Secret"},
 	})
 
 	csServiceAccounts = NewResource(ResourceOptions{
@@ -140,7 +140,7 @@ var (
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "v1", Kind: "ServiceAccount"},
 		ListType:       &corev1.ServiceAccountList{},
 		ObjectType:     &corev1.ServiceAccount{},
-		Titles:         ResourceTitle{List: "Service Accounts", Object: "Service Account"},
+		Titles:         ResourceTitle{List: "Config & Storage / Service Accounts", Object: "Service Account"},
 	})
 
 	configAndStorageDescriber = NewSectionDescriber(
@@ -162,7 +162,7 @@ var (
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "Role"},
 		ListType:       &rbacv1.RoleList{},
 		ObjectType:     &rbacv1.Role{},
-		Titles:         ResourceTitle{List: "Roles", Object: "Role"},
+		Titles:         ResourceTitle{List: "RBAC / Roles", Object: "Role"},
 	})
 
 	rbacClusterRoles = NewResource(ResourceOptions{
@@ -170,7 +170,7 @@ var (
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "ClusterRole"},
 		ListType:       &rbacv1.ClusterRoleList{},
 		ObjectType:     &rbacv1.ClusterRole{},
-		Titles:         ResourceTitle{List: "Cluster Roles", Object: "Cluster Role"},
+		Titles:         ResourceTitle{List: "RBAC / Cluster Roles", Object: "Cluster Role"},
 		ClusterWide:    true,
 	})
 
@@ -179,7 +179,7 @@ var (
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "RoleBinding"},
 		ListType:       &rbacv1.RoleBindingList{},
 		ObjectType:     &rbacv1.RoleBinding{},
-		Titles:         ResourceTitle{List: "Role Bindings", Object: "Role Binding"},
+		Titles:         ResourceTitle{List: "RBAC / Role Bindings", Object: "Role Binding"},
 	})
 
 	rbacClusterRoleBindings = NewResource(ResourceOptions{
@@ -187,7 +187,7 @@ var (
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "ClusterRoleBinding"},
 		ListType:       &rbacv1.ClusterRoleBindingList{},
 		ObjectType:     &rbacv1.ClusterRoleBinding{},
-		Titles:         ResourceTitle{List: "Cluster Role Bindings", Object: "Cluster Role Binding"},
+		Titles:         ResourceTitle{List: "RBAC / Cluster Role Bindings", Object: "Cluster Role Binding"},
 		ClusterWide:    true,
 	})
 

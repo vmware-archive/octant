@@ -87,7 +87,7 @@ func Test_crdSectionDescriber(t *testing.T) {
 	expect1 := component.ContentResponse{
 		Title: component.TitleFromString("title"),
 		Components: []component.Component{
-			component.NewList("", []component.Component{d1View}),
+			component.NewList("Custom Resources", []component.Component{d1View}),
 		},
 	}
 
@@ -101,7 +101,7 @@ func Test_crdSectionDescriber(t *testing.T) {
 	expect2 := component.ContentResponse{
 		Title: component.TitleFromString("title"),
 		Components: []component.Component{
-			component.NewList("", nil),
+			component.NewList("Custom Resources", nil),
 		},
 	}
 
@@ -154,7 +154,10 @@ func Test_crdListDescriber(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := *component.NewContentResponse(nil)
-	expected.Add(component.NewText("crd list"))
+	list := component.NewList("Custom Resources / crd1", []component.Component{
+		component.NewText("crd list"),
+	})
+	expected.Add(list)
 
 	assert.Equal(t, expected, got)
 }
