@@ -6,7 +6,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
@@ -262,7 +262,7 @@ func (p *PodConfiguration) Create() (*component.Summary, error) {
 }
 
 func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelector, uid types.UID, o objectstore.ObjectStore) ([]*corev1.Pod, error) {
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -286,7 +286,7 @@ func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelec
 	return owned, nil
 }
 
-func loadPods(ctx context.Context, key cacheutil.Key, o objectstore.ObjectStore, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
+func loadPods(ctx context.Context, key objectstoreutil.Key, o objectstore.ObjectStore, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
 	objects, err := o.List(ctx, key)
 	if err != nil {
 		return nil, err
@@ -401,7 +401,7 @@ func createPodListView(ctx context.Context, object runtime.Object, options Optio
 		return nil, errors.Wrap(err, "get name for object")
 	}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -436,7 +436,7 @@ func createPodListView(ctx context.Context, object runtime.Object, options Optio
 }
 
 func createMountedPodListView(ctx context.Context, namespace string, persistentVolumeClaimName string, options Options) (component.Component, error) {
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",

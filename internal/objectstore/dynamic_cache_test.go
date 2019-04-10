@@ -8,7 +8,7 @@ import (
 	"github.com/heptio/developer-dash/internal/cluster"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -84,7 +84,7 @@ func Test_DynamicCache_List(t *testing.T) {
 	c, err := NewDynamicCache(client, ctx.Done(), factoryFunc)
 	require.NoError(t, err)
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  "default",
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -141,7 +141,7 @@ func Test_DynamicCache_Get(t *testing.T) {
 	c, err := NewDynamicCache(client, ctx.Done(), factoryFunc)
 	require.NoError(t, err)
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  "default",
 		APIVersion: "v1",
 		Kind:       "Pod",

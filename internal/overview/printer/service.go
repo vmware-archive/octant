@@ -7,7 +7,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -191,7 +191,7 @@ func serviceEndpoints(ctx context.Context, o objectstore.ObjectStore, service *c
 		return nil, errors.New("service is nil")
 	}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  service.Namespace,
 		APIVersion: "v1",
 		Kind:       "Endpoints",

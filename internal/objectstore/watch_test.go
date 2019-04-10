@@ -10,7 +10,7 @@ import (
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -74,7 +74,7 @@ func Test_WatchList_not_cached(t *testing.T) {
 	pod2 := testutil.CreatePod("pod2")
 	pod2.Namespace = "test"
 
-	listKey := cacheutil.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod"}
+	listKey := objectstoreutil.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod"}
 	objects := []*unstructured.Unstructured{
 		testutil.ToUnstructured(t, pod1),
 		testutil.ToUnstructured(t, pod2),
@@ -117,7 +117,7 @@ func Test_WatchList_stored(t *testing.T) {
 	pod2 := testutil.CreatePod("pod2")
 	pod2.Namespace = "test"
 
-	listKey := cacheutil.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod"}
+	listKey := objectstoreutil.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod"}
 
 	factoryFunc := func(c *Watch) {
 		c.initFactoryFunc = func(cluster.ClientInterface) (dynamicinformer.DynamicSharedInformerFactory, error) {
@@ -175,7 +175,7 @@ func Test_WatchList_stored_with_selector(t *testing.T) {
 		"app": "app1",
 	}
 
-	listKey := cacheutil.Key{
+	listKey := objectstoreutil.Key{
 		Namespace:  "test",
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -246,7 +246,7 @@ func Test_WatchGet_not_stored(t *testing.T) {
 	pod1 := testutil.CreatePod("pod1")
 	pod1.Namespace = "test"
 
-	getKey := cacheutil.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod", Name: pod1.Name}
+	getKey := objectstoreutil.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod", Name: pod1.Name}
 	mocks.backendObjectStore.EXPECT().Get(gomock.Any(), gomock.Eq(getKey)).Return(testutil.ToUnstructured(t, pod1), nil)
 
 	factoryFunc := func(c *Watch) {
@@ -279,7 +279,7 @@ func Test_WatchGet_stored(t *testing.T) {
 	pod1 := testutil.CreatePod("pod1")
 	pod1.Namespace = "test"
 
-	getKey := cacheutil.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod", Name: pod1.Name}
+	getKey := objectstoreutil.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod", Name: pod1.Name}
 
 	factoryFunc := func(c *Watch) {
 		c.initFactoryFunc = func(cluster.ClientInterface) (dynamicinformer.DynamicSharedInformerFactory, error) {

@@ -8,7 +8,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	"github.com/heptio/developer-dash/pkg/view/gridlayout"
@@ -230,7 +230,7 @@ func eventsForObject(ctx context.Context, object runtime.Object, o objectstore.O
 		return nil, errors.Wrap(err, "get name for object")
 	}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Event",

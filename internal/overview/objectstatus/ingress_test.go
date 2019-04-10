@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,7 +37,7 @@ func Test_runIngressStatus(t *testing.T) {
 		{
 			name: "no matching backends",
 			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
-				key := cacheutil.Key{Namespace: "default", APIVersion: "v1", Kind: "Service", Name: "no-such-service"}
+				key := objectstoreutil.Key{Namespace: "default", APIVersion: "v1", Kind: "Service", Name: "no-such-service"}
 				o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(nil, nil)
 
 				objectFile := "ingress_no_matching_backend.yaml"
@@ -81,7 +81,7 @@ func Test_runIngressStatus(t *testing.T) {
 			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
 				mockServiceInCache(t, o, "default", "my-service", "service_my-service.yaml")
 
-				key := cacheutil.Key{Namespace: "default", APIVersion: "v1", Kind: "Secret", Name: "no-such-secret"}
+				key := objectstoreutil.Key{Namespace: "default", APIVersion: "v1", Kind: "Secret", Name: "no-such-secret"}
 				o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(nil, nil)
 
 				objectFile := "ingress_ingress-bad-tls-host.yaml"
@@ -133,7 +133,7 @@ func Test_runIngressStatus(t *testing.T) {
 
 func mockSecretInCache(t *testing.T, o *storefake.MockObjectStore, namespace, name, file string) runtime.Object {
 	secret := testutil.LoadObjectFromFile(t, file)
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Secret",
@@ -147,7 +147,7 @@ func mockSecretInCache(t *testing.T, o *storefake.MockObjectStore, namespace, na
 
 func mockServiceInCache(t *testing.T, o *storefake.MockObjectStore, namespace, name, file string) runtime.Object {
 	secret := testutil.LoadObjectFromFile(t, file)
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Service",

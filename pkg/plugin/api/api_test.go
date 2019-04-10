@@ -13,7 +13,7 @@ import (
 	"github.com/heptio/developer-dash/internal/portforward"
 	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/plugin/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -26,7 +26,7 @@ type apiMocks struct {
 }
 
 func TestAPI(t *testing.T) {
-	listKey := cacheutil.Key{
+	listKey := objectstoreutil.Key{
 		Namespace:  "default",
 		APIVersion: "apps/v1",
 		Kind:       "Deployment",
@@ -36,7 +36,7 @@ func TestAPI(t *testing.T) {
 		testutil.ToUnstructured(t, testutil.CreateDeployment("deployment")),
 	}
 
-	getKey := cacheutil.Key{
+	getKey := objectstoreutil.Key{
 		Namespace:  "default",
 		APIVersion: "apps/v1",
 		Kind:       "Deployment",

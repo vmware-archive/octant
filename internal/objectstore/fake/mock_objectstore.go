@@ -7,7 +7,7 @@ package fake
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	cacheutil "github.com/heptio/developer-dash/pkg/cacheutil"
+	objectstoreutil "github.com/heptio/developer-dash/pkg/objectstoreutil"
 	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	cache "k8s.io/client-go/tools/cache"
 	reflect "reflect"
@@ -37,7 +37,7 @@ func (m *MockObjectStore) EXPECT() *MockObjectStoreMockRecorder {
 }
 
 // Get mocks base method
-func (m *MockObjectStore) Get(arg0 context.Context, arg1 cacheutil.Key) (*unstructured.Unstructured, error) {
+func (m *MockObjectStore) Get(arg0 context.Context, arg1 objectstoreutil.Key) (*unstructured.Unstructured, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].(*unstructured.Unstructured)
@@ -52,7 +52,7 @@ func (mr *MockObjectStoreMockRecorder) Get(arg0, arg1 interface{}) *gomock.Call 
 }
 
 // List mocks base method
-func (m *MockObjectStore) List(arg0 context.Context, arg1 cacheutil.Key) ([]*unstructured.Unstructured, error) {
+func (m *MockObjectStore) List(arg0 context.Context, arg1 objectstoreutil.Key) ([]*unstructured.Unstructured, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", arg0, arg1)
 	ret0, _ := ret[0].([]*unstructured.Unstructured)
@@ -67,7 +67,7 @@ func (mr *MockObjectStoreMockRecorder) List(arg0, arg1 interface{}) *gomock.Call
 }
 
 // Watch mocks base method
-func (m *MockObjectStore) Watch(arg0 cacheutil.Key, arg1 cache.ResourceEventHandler) error {
+func (m *MockObjectStore) Watch(arg0 objectstoreutil.Key, arg1 cache.ResourceEventHandler) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Watch", arg0, arg1)
 	ret0, _ := ret[0].(error)

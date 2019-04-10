@@ -11,7 +11,7 @@ import (
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	printerfake "github.com/heptio/developer-dash/internal/overview/printer/fake"
 	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,7 +21,7 @@ import (
 
 func TestListDescriber(t *testing.T) {
 	thePath := "/"
-	key := cacheutil.Key{APIVersion: "v1", Kind: "Pod"}
+	key := objectstoreutil.Key{APIVersion: "v1", Kind: "Pod"}
 	namespace := "default"
 	fields := map[string]string{}
 
@@ -34,7 +34,7 @@ func TestListDescriber(t *testing.T) {
 
 	client := clusterfake.NewMockClientInterface(controller)
 
-	retrieveKey := cacheutil.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
+	retrieveKey := objectstoreutil.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
 	object := map[string]interface{}{
 		"kind":       "Pod",
 		"apiVersion": "v1",
@@ -88,7 +88,7 @@ func TestListDescriber(t *testing.T) {
 
 func TestObjectDescriber(t *testing.T) {
 	thePath := "/"
-	key := cacheutil.Key{APIVersion: "v1", Kind: "Pod"}
+	key := objectstoreutil.Key{APIVersion: "v1", Kind: "Pod"}
 	namespace := "default"
 	fields := map[string]string{}
 
@@ -121,7 +121,7 @@ func TestObjectDescriber(t *testing.T) {
 		},
 	}
 
-	retrieveKey := cacheutil.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
+	retrieveKey := objectstoreutil.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
 
 	o.EXPECT().
 		Get(gomock.Any(), gomock.Eq(retrieveKey)).

@@ -12,7 +12,7 @@ import (
 	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -270,7 +270,7 @@ func Test_deploymentPods(t *testing.T) {
 
 	appObjectStore := storefake.NewMockObjectStore(controller)
 	selector := labels.Set(podLabels)
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  "namespace",
 		APIVersion: "v1",
 		Kind:       "Pod",

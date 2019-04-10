@@ -1,4 +1,4 @@
-package cacheutil
+package objectstoreutil
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// Key is a key for the cache.
+// Key is a key for the objectstore.
 type Key struct {
 	Namespace  string
 	APIVersion string

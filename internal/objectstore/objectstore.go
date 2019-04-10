@@ -3,7 +3,7 @@ package objectstore
 import (
 	"context"
 
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,13 +16,13 @@ import (
 
 // ObjectStore stores Kubernetes objects.
 type ObjectStore interface {
-	List(ctx context.Context, key cacheutil.Key) ([]*unstructured.Unstructured, error)
-	Get(ctx context.Context, key cacheutil.Key) (*unstructured.Unstructured, error)
-	Watch(key cacheutil.Key, handler kcache.ResourceEventHandler) error
+	List(ctx context.Context, key objectstoreutil.Key) ([]*unstructured.Unstructured, error)
+	Get(ctx context.Context, key objectstoreutil.Key) (*unstructured.Unstructured, error)
+	Watch(key objectstoreutil.Key, handler kcache.ResourceEventHandler) error
 }
 
 // GetAs gets an object from the objectstore by key.
-func GetAs(ctx context.Context, o ObjectStore, key cacheutil.Key, as interface{}) error {
+func GetAs(ctx context.Context, o ObjectStore, key objectstoreutil.Key, as interface{}) error {
 	u, err := o.Get(ctx, key)
 	if err != nil {
 		return errors.Wrap(err, "get object from objectstore")

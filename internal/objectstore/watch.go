@@ -7,7 +7,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -79,7 +79,7 @@ func NewWatch(client cluster.ClientInterface, stopCh <-chan struct{}, options ..
 }
 
 // List lists objects using a key.
-func (w *Watch) List(ctx context.Context, key cacheutil.Key) ([]*unstructured.Unstructured, error) {
+func (w *Watch) List(ctx context.Context, key objectstoreutil.Key) ([]*unstructured.Unstructured, error) {
 	ctx, span := trace.StartSpan(ctx, "watchCacheList")
 	defer span.End()
 
@@ -139,7 +139,7 @@ func (w *Watch) List(ctx context.Context, key cacheutil.Key) ([]*unstructured.Un
 }
 
 // Get gets an object using a key.
-func (w *Watch) Get(ctx context.Context, key cacheutil.Key) (*unstructured.Unstructured, error) {
+func (w *Watch) Get(ctx context.Context, key objectstoreutil.Key) (*unstructured.Unstructured, error) {
 	ctx, span := trace.StartSpan(ctx, "watchCacheGet")
 	defer span.End()
 
@@ -189,7 +189,7 @@ func (w *Watch) Get(ctx context.Context, key cacheutil.Key) (*unstructured.Unstr
 }
 
 // Watch watches the cluster given a key and a handler.
-func (w *Watch) Watch(key cacheutil.Key, handler kcache.ResourceEventHandler) error {
+func (w *Watch) Watch(key objectstoreutil.Key, handler kcache.ResourceEventHandler) error {
 	if w.backendObjectStore == nil {
 		return errors.New("backend objectstore is nil")
 	}
@@ -197,7 +197,7 @@ func (w *Watch) Watch(key cacheutil.Key, handler kcache.ResourceEventHandler) er
 	return w.backendObjectStore.Watch(key, handler)
 }
 
-func (w *Watch) isKeyCached(key cacheutil.Key) bool {
+func (w *Watch) isKeyCached(key objectstoreutil.Key) bool {
 	w.gvkLock.Lock()
 	defer w.gvkLock.Unlock()
 
@@ -228,7 +228,7 @@ func (w *Watch) handleUpdates(updateCh, deleteCh chan watchEvent) {
 	}
 }
 
-func (w *Watch) createEventHandler(key cacheutil.Key, updateCh, deleteCh chan watchEvent) error {
+func (w *Watch) createEventHandler(key objectstoreutil.Key, updateCh, deleteCh chan watchEvent) error {
 	handler := &watchEventHandler{
 		gvk: key.GroupVersionKind(),
 		updateFunc: func(event watchEvent) {

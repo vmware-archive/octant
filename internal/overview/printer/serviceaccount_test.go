@@ -12,7 +12,7 @@ import (
 	"github.com/heptio/developer-dash/internal/overview/link"
 	printerfake "github.com/heptio/developer-dash/internal/overview/printer/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/heptio/developer-dash/pkg/view/flexlayout"
@@ -131,7 +131,7 @@ func Test_printServiceAccountConfig(t *testing.T) {
 	object.Secrets = []corev1.ObjectReference{{Name: "secret"}}
 	object.ImagePullSecrets = []corev1.LocalObjectReference{{Name: "secret"}}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  object.Namespace,
 		APIVersion: "v1",
 		Kind:       "Secret",
@@ -180,7 +180,7 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 
 	appObjectStore := storefake.NewMockObjectStore(controller)
 
-	roleBindingKey := cacheutil.Key{
+	roleBindingKey := objectstoreutil.Key{
 		Namespace:  serviceAccount.Namespace,
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "RoleBinding",
@@ -204,7 +204,7 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 		List(gomock.Any(), roleBindingKey).
 		Return(roleBindingObjects, nil)
 
-	clusterRoleBindingKey := cacheutil.Key{
+	clusterRoleBindingKey := objectstoreutil.Key{
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "ClusterRoleBinding",
 	}
@@ -225,14 +225,14 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 		List(gomock.Any(), clusterRoleBindingKey).
 		Return(clusterRoleBindingObjects, nil)
 
-	role1Key, err := cacheutil.KeyFromObject(role1)
+	role1Key, err := objectstoreutil.KeyFromObject(role1)
 	require.NoError(t, err)
 
 	appObjectStore.EXPECT().
 		Get(gomock.Any(), role1Key).
 		Return(testutil.ToUnstructured(t, role1), nil)
 
-	role2Key, err := cacheutil.KeyFromObject(role2)
+	role2Key, err := objectstoreutil.KeyFromObject(role2)
 	require.NoError(t, err)
 
 	spew.Dump(role2Key)

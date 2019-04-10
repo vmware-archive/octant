@@ -7,7 +7,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/util/retry"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
@@ -37,7 +37,7 @@ func initDynamicSharedInformerFactory(client cluster.ClientInterface) (dynamicin
 }
 
 func currentInformer(
-	key cacheutil.Key,
+	key objectstoreutil.Key,
 	client cluster.ClientInterface,
 	factory dynamicinformer.DynamicSharedInformerFactory,
 	stopCh <-chan struct{}) (informers.GenericInformer, error) {
@@ -104,7 +104,7 @@ type lister interface {
 	List(selector kLabels.Selector) ([]kruntime.Object, error)
 }
 
-func (dc *DynamicCache) currentInformer(key cacheutil.Key) (informers.GenericInformer, error) {
+func (dc *DynamicCache) currentInformer(key objectstoreutil.Key) (informers.GenericInformer, error) {
 	gvk := key.GroupVersionKind()
 
 	informer, err := currentInformer(key, dc.client, dc.factory, dc.stopCh)
@@ -130,7 +130,7 @@ func (dc *DynamicCache) currentInformer(key cacheutil.Key) (informers.GenericInf
 }
 
 // List lists objects.
-func (dc *DynamicCache) List(ctx context.Context, key cacheutil.Key) ([]*unstructured.Unstructured, error) {
+func (dc *DynamicCache) List(ctx context.Context, key objectstoreutil.Key) ([]*unstructured.Unstructured, error) {
 	_, span := trace.StartSpan(ctx, "dynamicCacheList")
 	defer span.End()
 
@@ -179,7 +179,7 @@ type getter interface {
 }
 
 // Get retrieves a single object.
-func (dc *DynamicCache) Get(ctx context.Context, key cacheutil.Key) (*unstructured.Unstructured, error) {
+func (dc *DynamicCache) Get(ctx context.Context, key objectstoreutil.Key) (*unstructured.Unstructured, error) {
 	_, span := trace.StartSpan(ctx, "dynamicCacheList")
 	defer span.End()
 
@@ -251,7 +251,7 @@ func (dc *DynamicCache) Get(ctx context.Context, key cacheutil.Key) (*unstructur
 
 // Watch watches the cluster for an event and performs actions with the
 // supplied handler.
-func (dc *DynamicCache) Watch(key cacheutil.Key, handler kcache.ResourceEventHandler) error {
+func (dc *DynamicCache) Watch(key objectstoreutil.Key, handler kcache.ResourceEventHandler) error {
 	informer, err := dc.currentInformer(key)
 	if err != nil {
 		return errors.Wrapf(err, "retrieving informer for %s", key)

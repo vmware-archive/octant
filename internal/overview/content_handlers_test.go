@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -40,14 +40,14 @@ func Test_loadObjects(t *testing.T) {
 		name     string
 		init     func(*testing.T, *storefake.MockObjectStore)
 		fields   map[string]string
-		keys     []cacheutil.Key
+		keys     []objectstoreutil.Key
 		expected []*unstructured.Unstructured
 		isErr    bool
 	}{
 		{
 			name: "without name",
 			init: func(t *testing.T, o *storefake.MockObjectStore) {
-				key := cacheutil.Key{
+				key := objectstoreutil.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind"}
@@ -57,13 +57,13 @@ func Test_loadObjects(t *testing.T) {
 					Return(sampleObjects, nil)
 			},
 			fields:   map[string]string{},
-			keys:     []cacheutil.Key{{APIVersion: "v1", Kind: "kind"}},
+			keys:     []objectstoreutil.Key{{APIVersion: "v1", Kind: "kind"}},
 			expected: sortedSampleObjects,
 		},
 		{
 			name: "name",
 			init: func(t *testing.T, o *storefake.MockObjectStore) {
-				key := cacheutil.Key{
+				key := objectstoreutil.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind",
@@ -75,12 +75,12 @@ func Test_loadObjects(t *testing.T) {
 
 			},
 			fields: map[string]string{"name": "name"},
-			keys:   []cacheutil.Key{{APIVersion: "v1", Kind: "kind"}},
+			keys:   []objectstoreutil.Key{{APIVersion: "v1", Kind: "kind"}},
 		},
 		{
 			name: "cache retrieve error",
 			init: func(t *testing.T, o *storefake.MockObjectStore) {
-				key := cacheutil.Key{
+				key := objectstoreutil.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind"}
@@ -90,7 +90,7 @@ func Test_loadObjects(t *testing.T) {
 					Return(nil, errors.New("error"))
 			},
 			fields: map[string]string{},
-			keys:   []cacheutil.Key{{APIVersion: "v1", Kind: "kind"}},
+			keys:   []objectstoreutil.Key{{APIVersion: "v1", Kind: "kind"}},
 			isErr:  true,
 		},
 	}

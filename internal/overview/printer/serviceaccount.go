@@ -6,7 +6,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -140,7 +140,7 @@ func generateServiceAccountSecretsList(namespace string, secretNames []string) *
 }
 
 func serviceAccountTokens(ctx context.Context, serviceAccount corev1.ServiceAccount, o objectstore.ObjectStore) ([]string, error) {
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  serviceAccount.Namespace,
 		APIVersion: "v1",
 		Kind:       "Secret",
@@ -213,7 +213,7 @@ func (s *serviceAccountPolicyRules) run() (*component.Table, error) {
 	var policyRules []rbacv1.PolicyRule
 
 	for _, roleRef := range roleRefs {
-		key := cacheutil.Key{
+		key := objectstoreutil.Key{
 			APIVersion: "rbac.authorization.k8s.io/v1",
 			Kind:       roleRef.Kind,
 			Name:       roleRef.Name,
@@ -256,7 +256,7 @@ func (s *serviceAccountPolicyRules) run() (*component.Table, error) {
 }
 
 func (s *serviceAccountPolicyRules) listRoleBindings() ([]rbacv1.RoleRef, error) {
-	roleBindingKey := cacheutil.Key{
+	roleBindingKey := objectstoreutil.Key{
 		Namespace:  s.serviceAccount.Namespace,
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "RoleBinding",
@@ -284,7 +284,7 @@ func (s *serviceAccountPolicyRules) listRoleBindings() ([]rbacv1.RoleRef, error)
 }
 
 func (s *serviceAccountPolicyRules) listClusterRoleBindings() ([]rbacv1.RoleRef, error) {
-	roleBindingKey := cacheutil.Key{
+	roleBindingKey := objectstoreutil.Key{
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "ClusterRoleBinding",
 	}

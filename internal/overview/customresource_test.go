@@ -11,7 +11,7 @@ import (
 	printerfake "github.com/heptio/developer-dash/internal/overview/printer/fake"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -34,7 +34,7 @@ func Test_customResourceDefinitionNames(t *testing.T) {
 		testutil.ToUnstructured(t, crd2),
 	}
 
-	crdKey := cacheutil.Key{
+	crdKey := objectstoreutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
@@ -57,7 +57,7 @@ func Test_customResourceDefinition(t *testing.T) {
 
 	crd1 := testutil.CreateCRD("crd1.example.com")
 
-	crdKey := cacheutil.Key{
+	crdKey := objectstoreutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 		Name:       "crd1.example.com",
@@ -119,7 +119,7 @@ func Test_crdListDescriber(t *testing.T) {
 	crd.Spec.Version = "v1"
 	crd.Spec.Names.Kind = "Name"
 
-	crdKey := cacheutil.Key{
+	crdKey := objectstoreutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 		Name:       crd.Name,
@@ -127,7 +127,7 @@ func Test_crdListDescriber(t *testing.T) {
 
 	o.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
 
-	crKey := cacheutil.Key{
+	crKey := objectstoreutil.Key{
 		Namespace:  "default",
 		APIVersion: "foo.example.com/v1",
 		Kind:       "Name",
@@ -173,7 +173,7 @@ func Test_crdDescriber(t *testing.T) {
 	crd.Spec.Version = "v1"
 	crd.Spec.Names.Kind = "Name"
 
-	crdKey := cacheutil.Key{
+	crdKey := objectstoreutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 		Name:       crd.Name,
@@ -181,7 +181,7 @@ func Test_crdDescriber(t *testing.T) {
 
 	o.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
 
-	crKey := cacheutil.Key{
+	crKey := objectstoreutil.Key{
 		Namespace:  "default",
 		APIVersion: "foo.example.com/v1",
 		Kind:       "Name",

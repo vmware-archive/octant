@@ -6,7 +6,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/conversion"
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	batchv1 "k8s.io/api/batch/v1"
@@ -160,7 +160,7 @@ func createJobListView(ctx context.Context, object runtime.Object, options Optio
 		return nil, errors.Wrap(err, "get name for object")
 	}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  namespace,
 		APIVersion: "batch/v1beta1",
 		Kind:       "Job",

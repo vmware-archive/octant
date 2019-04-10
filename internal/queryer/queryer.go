@@ -6,7 +6,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/objectstore"
 	dashstrings "github.com/heptio/developer-dash/internal/util/strings"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
@@ -48,7 +48,7 @@ type ObjectStoreQueryer struct {
 
 	children        map[types.UID][]kruntime.Object
 	podsForServices map[types.UID][]*corev1.Pod
-	owner           map[cacheutil.Key]kruntime.Object
+	owner           map[objectstoreutil.Key]kruntime.Object
 
 	mu sync.Mutex
 }
@@ -62,7 +62,7 @@ func New(o objectstore.ObjectStore, discoveryClient discovery.DiscoveryInterface
 
 		children:        make(map[types.UID][]kruntime.Object),
 		podsForServices: make(map[types.UID][]*corev1.Pod),
-		owner:           make(map[cacheutil.Key]kruntime.Object),
+		owner:           make(map[objectstoreutil.Key]kruntime.Object),
 	}
 }
 
@@ -112,7 +112,7 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner metav1.Object
 				continue
 			}
 
-			key := cacheutil.Key{
+			key := objectstoreutil.Key{
 				Namespace:  owner.GetNamespace(),
 				APIVersion: resourceList.GroupVersion,
 				Kind:       apiResource.Kind,
@@ -165,7 +165,7 @@ func (osq *ObjectStoreQueryer) Events(ctx context.Context, object metav1.Object)
 
 	u := &unstructured.Unstructured{Object: m}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  u.GetNamespace(),
 		APIVersion: "v1",
 		Kind:       "Event",
@@ -201,7 +201,7 @@ func (osq *ObjectStoreQueryer) IngressesForService(ctx context.Context, service 
 		return nil, errors.New("nil service")
 	}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  service.Namespace,
 		APIVersion: "extensions/v1beta1",
 		Kind:       "Ingress",
@@ -258,7 +258,7 @@ func (osq *ObjectStoreQueryer) OwnerReference(ctx context.Context, namespace str
 	osq.mu.Lock()
 	defer osq.mu.Unlock()
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  namespace,
 		APIVersion: ownerReference.APIVersion,
 		Kind:       ownerReference.Kind,
@@ -293,7 +293,7 @@ func (osq *ObjectStoreQueryer) PodsForService(ctx context.Context, service *core
 		return stored, nil
 	}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  service.Namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -313,7 +313,7 @@ func (osq *ObjectStoreQueryer) PodsForService(ctx context.Context, service *core
 	return pods, nil
 }
 
-func (osq *ObjectStoreQueryer) loadPods(ctx context.Context, key cacheutil.Key, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
+func (osq *ObjectStoreQueryer) loadPods(ctx context.Context, key objectstoreutil.Key, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
 	objects, err := osq.objectstore.List(ctx, key)
 	if err != nil {
 		return nil, err
@@ -351,7 +351,7 @@ func (osq *ObjectStoreQueryer) ServicesForIngress(ctx context.Context, ingress *
 	backends := osq.listIngressBackends(*ingress)
 	var services []*corev1.Service
 	for _, backend := range backends {
-		key := cacheutil.Key{
+		key := objectstoreutil.Key{
 			Namespace:  ingress.Namespace,
 			APIVersion: "v1",
 			Kind:       "Service",
@@ -385,7 +385,7 @@ func (osq *ObjectStoreQueryer) ServicesForPod(ctx context.Context, pod *corev1.P
 		return nil, errors.New("nil pod")
 	}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  pod.Namespace,
 		APIVersion: "v1",
 		Kind:       "Service",

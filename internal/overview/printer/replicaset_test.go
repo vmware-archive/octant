@@ -10,7 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -210,7 +210,7 @@ func TestReplicaSetStatus(t *testing.T) {
 		u := testutil.ToUnstructured(t, &p)
 		podList = append(podList, u)
 	}
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  "testing",
 		APIVersion: "v1",
 		Kind:       "Pod",

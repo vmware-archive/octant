@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	fakestore "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/overview"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -18,7 +18,7 @@ func Test_NavigationFactory_Entries(t *testing.T) {
 	defer controller.Finish()
 	o := fakestore.NewMockObjectStore(controller)
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
@@ -43,7 +43,7 @@ func Test_NavigationFactory_Entries_Namespace(t *testing.T) {
 	defer controller.Finish()
 	o := fakestore.NewMockObjectStore(controller)
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}

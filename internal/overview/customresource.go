@@ -14,7 +14,7 @@ import (
 	"github.com/heptio/developer-dash/internal/overview/resourceviewer"
 	"github.com/heptio/developer-dash/internal/overview/yamlviewer"
 	"github.com/heptio/developer-dash/internal/queryer"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -25,7 +25,7 @@ import (
 )
 
 func customResourceDefinitionNames(ctx context.Context, o objectstore.ObjectStore) ([]string, error) {
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
@@ -51,7 +51,7 @@ func customResourceDefinitionNames(ctx context.Context, o objectstore.ObjectStor
 }
 
 func customResourceDefinition(ctx context.Context, name string, o objectstore.ObjectStore) (*apiextv1beta1.CustomResourceDefinition, error) {
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 		Name:       name,
@@ -201,7 +201,7 @@ func listCustomResources(
 
 	apiVersion, kind := gvk.ToAPIVersionAndKind()
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  namespace,
 		APIVersion: apiVersion,
 		Kind:       kind,
@@ -267,7 +267,7 @@ func (cd *crdDescriber) Describe(ctx context.Context, prefix, namespace string, 
 
 	apiVersion, kind := gvk.ToAPIVersionAndKind()
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  namespace,
 		APIVersion: apiVersion,
 		Kind:       kind,
@@ -372,7 +372,7 @@ func watchCRDs(ctx context.Context, o objectstore.ObjectStore, crdAddFunc, crdDe
 		}
 	}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}

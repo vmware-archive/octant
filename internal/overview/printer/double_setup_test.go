@@ -6,7 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -23,7 +23,7 @@ func mockObjectsEvents(t *testing.T, appObjectStore *storefake.MockObjectStore, 
 		objects = append(objects, testutil.ToUnstructured(t, &event))
 	}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Event",

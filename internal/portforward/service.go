@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/objectstore"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -198,7 +198,7 @@ func (s *Service) verifyPod(ctx context.Context, namespace, name string) (bool, 
 		return false, errors.New("nil objectstore")
 	}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		APIVersion: "v1",
 		Kind:       "Pod",
 		Namespace:  namespace,

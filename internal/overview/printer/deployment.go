@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
@@ -228,7 +228,7 @@ func deploymentPods(ctx context.Context, deployment *appsv1.Deployment, options 
 
 	selector := labels.Set(deployment.Spec.Template.ObjectMeta.Labels)
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  deployment.Namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
