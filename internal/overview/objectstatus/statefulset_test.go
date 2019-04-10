@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
@@ -17,13 +17,13 @@ import (
 func Test_statefulSet(t *testing.T) {
 	cases := []struct {
 		name     string
-		init     func(*testing.T, *cachefake.MockCache) runtime.Object
+		init     func(*testing.T, *storefake.MockObjectStore) runtime.Object
 		expected ObjectStatus
 		isErr    bool
 	}{
 		{
 			name: "in general",
-			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
 				objectFile := "statefulset_ok.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
@@ -35,7 +35,7 @@ func Test_statefulSet(t *testing.T) {
 		},
 		{
 			name: "not ready",
-			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
 				objectFile := "statefulset_not_ready.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
@@ -47,14 +47,14 @@ func Test_statefulSet(t *testing.T) {
 		},
 		{
 			name: "object is nil",
-			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
 				return nil
 			},
 			isErr: true,
 		},
 		{
 			name: "object is not a replication controller",
-			init: func(t *testing.T, c *cachefake.MockCache) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
 				return &unstructured.Unstructured{}
 			},
 			isErr: true,
@@ -66,12 +66,12 @@ func Test_statefulSet(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			c := cachefake.NewMockCache(controller)
+			o := storefake.NewMockObjectStore(controller)
 
-			object := tc.init(t, c)
+			object := tc.init(t, o)
 
 			ctx := context.Background()
-			status, err := statefulSet(ctx, object, c)
+			status, err := statefulSet(ctx, object, o)
 			if tc.isErr {
 				require.Error(t, err)
 				return

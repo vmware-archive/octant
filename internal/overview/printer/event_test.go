@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,7 +21,7 @@ func Test_EventListHandler(t *testing.T) {
 	defer controller.Finish()
 
 	printOptions := Options{
-		Cache: cachefake.NewMockCache(controller),
+		ObjectStore: storefake.NewMockObjectStore(controller),
 	}
 
 	object := &corev1.EventList{
@@ -112,7 +112,7 @@ func Test_ReplicasetEvents(t *testing.T) {
 	defer controller.Finish()
 
 	printOptions := Options{
-		Cache: cachefake.NewMockCache(controller),
+		ObjectStore: storefake.NewMockObjectStore(controller),
 	}
 
 	now := time.Unix(1547211430, 0)
@@ -216,7 +216,7 @@ func Test_EventHandler(t *testing.T) {
 	defer controller.Finish()
 
 	printOptions := Options{
-		Cache: cachefake.NewMockCache(controller),
+		ObjectStore: storefake.NewMockObjectStore(controller),
 	}
 
 	event := &corev1.Event{
@@ -311,8 +311,8 @@ func Test_eventsForObject(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	c := cachefake.NewMockCache(controller)
-	key := cacheutil.Key{
+	o := storefake.NewMockObjectStore(controller)
+	key := objectstoreutil.Key{
 		Namespace:  "default",
 		APIVersion: "v1",
 		Kind:       "Event",
@@ -343,10 +343,10 @@ func Test_eventsForObject(t *testing.T) {
 		},
 	}
 
-	c.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(eventList, nil)
+	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(eventList, nil)
 
 	ctx := context.Background()
-	got, err := eventsForObject(ctx, object, c)
+	got, err := eventsForObject(ctx, object, o)
 	require.NoError(t, err)
 
 	expected := &corev1.EventList{

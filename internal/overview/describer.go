@@ -4,16 +4,16 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/logviewer"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/overview/resourceviewer"
 	"github.com/heptio/developer-dash/internal/overview/yamlviewer"
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/internal/queryer"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -28,20 +28,20 @@ const (
 	resourceNameRegex = "(?P<name>.*?)"
 )
 
-// LoaderFunc loads an object from the cache.
-type LoaderFunc func(ctx context.Context, c cache.Cache, namespace string, fields map[string]string) (*unstructured.Unstructured, error)
+// LoaderFunc loads an object from the objectstore.
+type LoaderFunc func(ctx context.Context, o objectstore.ObjectStore, namespace string, fields map[string]string) (*unstructured.Unstructured, error)
 
-// DefaultLoader returns a loader that loads a single object from the cache
-var DefaultLoader = func(cacheKey cacheutil.Key) LoaderFunc {
-	return func(ctx context.Context, c cache.Cache, namespace string, fields map[string]string) (*unstructured.Unstructured, error) {
-		return loadObject(ctx, c, namespace, fields, cacheKey)
+// DefaultLoader returns a loader that loads a single object from the objectstore
+var DefaultLoader = func(objectStoreKey objectstoreutil.Key) LoaderFunc {
+	return func(ctx context.Context, o objectstore.ObjectStore, namespace string, fields map[string]string) (*unstructured.Unstructured, error) {
+		return loadObject(ctx, o, namespace, fields, objectStoreKey)
 	}
 }
 
 // DescriberOptions provides options to describers
 type DescriberOptions struct {
 	Queryer        queryer.Queryer
-	Cache          cache.Cache
+	ObjectStore    objectstore.ObjectStore
 	Fields         map[string]string
 	Printer        printer.Printer
 	LabelSet       *kLabels.Set
@@ -65,24 +65,24 @@ func newBaseDescriber() *baseDescriber {
 type ListDescriber struct {
 	*baseDescriber
 
-	path          string
-	title         string
-	listType      func() interface{}
-	objectType    func() interface{}
-	cacheKey      cacheutil.Key
-	isClusterWide bool
+	path           string
+	title          string
+	listType       func() interface{}
+	objectType     func() interface{}
+	objectStoreKey objectstoreutil.Key
+	isClusterWide  bool
 }
 
 // NewListDescriber creates an instance of ListDescriber.
-func NewListDescriber(p, title string, cacheKey cacheutil.Key, listType, objectType func() interface{}, isClusterWide bool) *ListDescriber {
+func NewListDescriber(p, title string, objectStoreKey objectstoreutil.Key, listType, objectType func() interface{}, isClusterWide bool) *ListDescriber {
 	return &ListDescriber{
-		path:          p,
-		title:         title,
-		baseDescriber: newBaseDescriber(),
-		cacheKey:      cacheKey,
-		listType:      listType,
-		objectType:    objectType,
-		isClusterWide: isClusterWide,
+		path:           p,
+		title:          title,
+		baseDescriber:  newBaseDescriber(),
+		objectStoreKey: objectStoreKey,
+		listType:       listType,
+		objectType:     objectType,
+		isClusterWide:  isClusterWide,
 	}
 }
 
@@ -93,14 +93,14 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 	}
 
 	// Pass through selector if provided to filter objects
-	var key = d.cacheKey // copy
+	var key = d.objectStoreKey // copy
 	key.Selector = options.LabelSet
 
 	if d.isClusterWide {
 		namespace = ""
 	}
 
-	objects, err := loadObjects(ctx, options.Cache, namespace, options.Fields, []cacheutil.Key{key})
+	objects, err := loadObjects(ctx, options.ObjectStore, namespace, options.Fields, []objectstoreutil.Key{key})
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -237,7 +237,7 @@ func (d *ObjectDescriber) PathFilters() []pathFilter {
 }
 
 func (d *ObjectDescriber) currentObject(ctx context.Context, namespace string, options DescriberOptions) (runtime.Object, error) {
-	object, err := d.loaderFunc(ctx, options.Cache, namespace, options.Fields)
+	object, err := d.loaderFunc(ctx, options.ObjectStore, namespace, options.Fields)
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +285,7 @@ func (d *ObjectDescriber) addResourceViewerTab(ctx context.Context, object runti
 	logger := log.From(ctx)
 
 	if !d.disableResourceViewer {
-		rv, err := resourceviewer.New(logger, options.Cache, resourceviewer.WithDefaultQueryer(options.Queryer))
+		rv, err := resourceviewer.New(logger, options.ObjectStore, resourceviewer.WithDefaultQueryer(options.Queryer))
 		if err != nil {
 			return err
 		}

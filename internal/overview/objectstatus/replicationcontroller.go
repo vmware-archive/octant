@@ -3,7 +3,7 @@ package objectstatus
 import (
 	"context"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -11,7 +11,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
-func replicationController(_ context.Context, object runtime.Object, _ cache.Cache) (ObjectStatus, error) {
+func replicationController(_ context.Context, object runtime.Object, _ objectstore.ObjectStore) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("replication controller is nil")
 	}

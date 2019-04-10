@@ -4,23 +4,23 @@ import (
 	"context"
 	"os"
 
-	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/pkg/errors"
 )
 
 // Default create a portforward instance.
-func Default(ctx context.Context, client cluster.ClientInterface, appCache cache.Cache) (PortForwarder, error) {
+func Default(ctx context.Context, client cluster.ClientInterface, objectStore objectstore.ObjectStore) (PortForwarder, error) {
 	logger := log.From(ctx)
 	restClient, err := client.RESTClient()
 	if err != nil {
 		return nil, errors.Wrap(err, "fetching RESTClient")
 	}
 	pfOpts := ServiceOptions{
-		RESTClient: restClient,
-		Config:     client.RESTConfig(),
-		Cache:      appCache,
+		RESTClient:  restClient,
+		Config:      client.RESTConfig(),
+		ObjectStore: objectStore,
 		PortForwarder: &DefaultPortForwarder{
 			IOStreams: IOStreams{
 				In:     os.Stdin,

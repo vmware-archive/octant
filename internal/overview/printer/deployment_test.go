@@ -8,11 +8,11 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	"github.com/heptio/developer-dash/internal/conversion"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -28,7 +28,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 	defer controller.Finish()
 
 	printOptions := Options{
-		Cache: cachefake.NewMockCache(controller),
+		ObjectStore: storefake.NewMockObjectStore(controller),
 	}
 
 	labels := map[string]string{
@@ -268,22 +268,22 @@ func Test_deploymentPods(t *testing.T) {
 	pod := testutil.CreatePod("pod")
 	pod.ObjectMeta.CreationTimestamp = metav1.Time{Time: now}
 
-	appCache := cachefake.NewMockCache(controller)
+	appObjectStore := storefake.NewMockObjectStore(controller)
 	selector := labels.Set(podLabels)
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  "namespace",
 		APIVersion: "v1",
 		Kind:       "Pod",
 		Selector:   &selector,
 	}
-	appCache.EXPECT().
+	appObjectStore.EXPECT().
 		List(gomock.Any(), key).
 		Return([]*unstructured.Unstructured{testutil.ToUnstructured(t, pod)}, nil)
 
 	ctx := context.Background()
 
 	options := Options{
-		Cache: appCache,
+		ObjectStore: appObjectStore,
 	}
 
 	got, err := deploymentPods(ctx, deployment, options)

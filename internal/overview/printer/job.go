@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/conversion"
 	"github.com/heptio/developer-dash/internal/overview/link"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	batchv1 "k8s.io/api/batch/v1"
@@ -134,8 +134,8 @@ func createJobListView(ctx context.Context, object runtime.Object, options Optio
 
 	jobList := &batchv1.JobList{}
 
-	if options.Cache == nil {
-		return nil, errors.New("cache is nil")
+	if options.ObjectStore == nil {
+		return nil, errors.New("objectstore is nil")
 	}
 
 	accessor := meta.NewAccessor()
@@ -160,13 +160,13 @@ func createJobListView(ctx context.Context, object runtime.Object, options Optio
 		return nil, errors.Wrap(err, "get name for object")
 	}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  namespace,
 		APIVersion: "batch/v1beta1",
 		Kind:       "Job",
 	}
 
-	list, err := options.Cache.List(ctx, key)
+	list, err := options.ObjectStore.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "list all objects for key %+v", key)
 	}

@@ -6,12 +6,12 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	printerfake "github.com/heptio/developer-dash/internal/overview/printer/fake"
 	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,20 +21,20 @@ import (
 
 func TestListDescriber(t *testing.T) {
 	thePath := "/"
-	key := cacheutil.Key{APIVersion: "v1", Kind: "Pod"}
+	key := objectstoreutil.Key{APIVersion: "v1", Kind: "Pod"}
 	namespace := "default"
 	fields := map[string]string{}
 
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	c := cachefake.NewMockCache(controller)
+	o := storefake.NewMockObjectStore(controller)
 
 	pf := pffake.NewMockPortForwarder(controller)
 
 	client := clusterfake.NewMockClientInterface(controller)
 
-	retrieveKey := cacheutil.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
+	retrieveKey := objectstoreutil.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
 	object := map[string]interface{}{
 		"kind":       "Pod",
 		"apiVersion": "v1",
@@ -44,7 +44,7 @@ func TestListDescriber(t *testing.T) {
 		},
 	}
 
-	c.EXPECT().
+	o.EXPECT().
 		List(gomock.Any(), gomock.Eq(retrieveKey)).
 		Return([]*unstructured.Unstructured{{Object: object}}, nil)
 
@@ -59,9 +59,9 @@ func TestListDescriber(t *testing.T) {
 	d := NewListDescriber(thePath, "list", key, listType, objectType, false)
 
 	options := DescriberOptions{
-		Cache:   c,
-		Fields:  fields,
-		Printer: printer.NewResource(c, pf),
+		ObjectStore: o,
+		Fields:      fields,
+		Printer:     printer.NewResource(o, pf),
 	}
 
 	ctx := context.Background()
@@ -88,14 +88,14 @@ func TestListDescriber(t *testing.T) {
 
 func TestObjectDescriber(t *testing.T) {
 	thePath := "/"
-	key := cacheutil.Key{APIVersion: "v1", Kind: "Pod"}
+	key := objectstoreutil.Key{APIVersion: "v1", Kind: "Pod"}
 	namespace := "default"
 	fields := map[string]string{}
 
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	c := cachefake.NewMockCache(controller)
+	o := storefake.NewMockObjectStore(controller)
 	clusterClient := clusterfake.NewMockClientInterface(controller)
 	pf := pffake.NewMockPortForwarder(controller)
 	pluginPrinter := printerfake.NewMockPluginPrinter(controller)
@@ -121,9 +121,9 @@ func TestObjectDescriber(t *testing.T) {
 		},
 	}
 
-	retrieveKey := cacheutil.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
+	retrieveKey := objectstoreutil.Key{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
 
-	c.EXPECT().
+	o.EXPECT().
 		Get(gomock.Any(), gomock.Eq(retrieveKey)).
 		Return(object, nil)
 
@@ -137,14 +137,14 @@ func TestObjectDescriber(t *testing.T) {
 
 	d := NewObjectDescriber(thePath, "object", fn, objectType, true)
 
-	p := printer.NewResource(c, pf)
+	p := printer.NewResource(o, pf)
 	err := p.Handler(func(context.Context, *corev1.Pod, printer.Options) (component.Component, error) {
 		return component.NewText("*v1.Pod"), nil
 	})
 	require.NoError(t, err)
 
 	options := DescriberOptions{
-		Cache:         c,
+		ObjectStore:   o,
 		Fields:        fields,
 		Printer:       p,
 		PluginManager: pluginPrinter,
@@ -182,10 +182,10 @@ func TestSectionDescriber(t *testing.T) {
 	defer controller.Finish()
 
 	clusterClient := clusterfake.NewMockClientInterface(controller)
-	c := cachefake.NewMockCache(controller)
+	o := storefake.NewMockObjectStore(controller)
 
 	options := DescriberOptions{
-		Cache: c,
+		ObjectStore: o,
 	}
 
 	ctx := context.Background()

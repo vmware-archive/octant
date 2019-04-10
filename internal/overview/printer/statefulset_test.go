@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/conversion"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -24,7 +24,7 @@ func Test_StatefulSetListHandler(t *testing.T) {
 	defer controller.Finish()
 
 	printOptions := Options{
-		Cache: cachefake.NewMockCache(controller),
+		ObjectStore: storefake.NewMockObjectStore(controller),
 	}
 	labels := map[string]string{
 		"foo": "bar",
@@ -93,9 +93,9 @@ func Test_StatefulSetStatus(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	c := cachefake.NewMockCache(controller)
+	o := storefake.NewMockObjectStore(controller)
 	printOptions := Options{
-		Cache: c,
+		ObjectStore: o,
 	}
 
 	labels := map[string]string{
@@ -134,17 +134,17 @@ func Test_StatefulSetStatus(t *testing.T) {
 		u := testutil.ToUnstructured(t, &p)
 		podList = append(podList, u)
 	}
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  "testing",
 		APIVersion: "v1",
 		Kind:       "Pod",
 	}
 
-	c.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, nil)
+	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, nil)
 
 	stsc := NewStatefulSetStatus(sts)
 	ctx := context.Background()
-	got, err := stsc.Create(ctx, printOptions.Cache)
+	got, err := stsc.Create(ctx, printOptions.ObjectStore)
 	require.NoError(t, err)
 
 	expected := component.NewQuadrant("Status")

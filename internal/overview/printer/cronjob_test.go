@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
 	"github.com/heptio/developer-dash/internal/conversion"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
@@ -22,7 +22,7 @@ func Test_CronJobListHandler(t *testing.T) {
 	defer controller.Finish()
 
 	printOptions := Options{
-		Cache: cachefake.NewMockCache(controller),
+		ObjectStore: storefake.NewMockObjectStore(controller),
 	}
 
 	labels := map[string]string{

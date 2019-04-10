@@ -5,7 +5,7 @@ import (
 	"path"
 	"reflect"
 
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster"
@@ -18,7 +18,7 @@ type ResourceTitle struct {
 
 type ResourceOptions struct {
 	Path                  string
-	CacheKey              cacheutil.Key
+	ObjectStoreKey        objectstoreutil.Key
 	ListType              interface{}
 	ObjectType            interface{}
 	Titles                ResourceTitle
@@ -44,7 +44,7 @@ func (r *Resource) List() *ListDescriber {
 	return NewListDescriber(
 		r.Path,
 		r.Titles.List,
-		r.CacheKey,
+		r.ObjectStoreKey,
 		func() interface{} {
 			return reflect.New(reflect.ValueOf(r.ListType).Elem().Type()).Interface()
 		},
@@ -59,7 +59,7 @@ func (r *Resource) Object() *ObjectDescriber {
 	return NewObjectDescriber(
 		path.Join(r.Path, resourceNameRegex),
 		r.Titles.Object,
-		DefaultLoader(r.CacheKey),
+		DefaultLoader(r.ObjectStoreKey),
 		func() interface{} {
 			return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
 		},

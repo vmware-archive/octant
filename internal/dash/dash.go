@@ -14,11 +14,11 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/api"
-	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/localcontent"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview"
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/pkg/plugin"
@@ -75,24 +75,24 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return errors.Wrap(err, "failed to create info client")
 	}
 
-	appCache, err := initCache(ctx.Done(), clusterClient, logger)
+	appObjectStore, err := initObjectStore(ctx.Done(), clusterClient, logger)
 	if err != nil {
 		return errors.Wrap(err, "initializing cache")
 	}
 
-	portForwarder, err := initPortForwarder(ctx, clusterClient, appCache)
+	portForwarder, err := initPortForwarder(ctx, clusterClient, appObjectStore)
 	if err != nil {
 		return errors.Wrap(err, "initializing port forwarder")
 	}
 
-	pluginManager, err := initPlugin(ctx, portForwarder, appCache)
+	pluginManager, err := initPlugin(ctx, portForwarder, appObjectStore)
 	if err != nil {
 		return errors.Wrap(err, "initializing plugin manager")
 	}
 
 	mo := moduleOptions{
 		clusterClient: clusterClient,
-		cache:         appCache,
+		objectStore:   appObjectStore,
 		namespace:     options.Namespace,
 		logger:        logger,
 		pluginManager: pluginManager,
@@ -143,29 +143,28 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 	return nil
 }
 
-// initCache initializes the cluster cache interface
-func initCache(stopCh <-chan struct{}, client cluster.ClientInterface, logger log.Logger) (cache.Cache, error) {
+// initObjectStore initializes the cluster objectstore interface
+func initObjectStore(stopCh <-chan struct{}, client cluster.ClientInterface, logger log.Logger) (objectstore.ObjectStore, error) {
 	if client == nil {
 		return nil, errors.New("nil cluster client")
 	}
 
-	appCache, err := cache.NewWatch(client, stopCh)
+	appObjectStore, err := objectstore.NewWatch(client, stopCh)
 
-	// appCache, err := cache.NewDynamicCache(client, stopCh)
 	if err != nil {
-		return nil, errors.Wrapf(err, "creating cache for app")
+		return nil, errors.Wrapf(err, "creating objectstore for app")
 	}
 
-	return appCache, nil
+	return appObjectStore, nil
 }
 
-func initPortForwarder(ctx context.Context, client cluster.ClientInterface, appCache cache.Cache) (portforward.PortForwarder, error) {
-	return portforward.Default(ctx, client, appCache)
+func initPortForwarder(ctx context.Context, client cluster.ClientInterface, appObjectStore objectstore.ObjectStore) (portforward.PortForwarder, error) {
+	return portforward.Default(ctx, client, appObjectStore)
 }
 
 type moduleOptions struct {
 	clusterClient *cluster.Cluster
-	cache         cache.Cache
+	objectStore   objectstore.ObjectStore
 	namespace     string
 	logger        log.Logger
 	pluginManager *plugin.Manager
@@ -181,7 +180,7 @@ func initModuleManager(ctx context.Context, options moduleOptions) (*module.Mana
 
 	overviewOptions := overview.Options{
 		Client:        options.clusterClient,
-		Cache:         options.cache,
+		ObjectStore:   options.objectStore,
 		Namespace:     options.namespace,
 		Logger:        options.logger,
 		PluginManager: options.pluginManager,

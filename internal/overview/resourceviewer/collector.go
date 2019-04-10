@@ -7,8 +7,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/overview/objectstatus"
 	"github.com/heptio/developer-dash/internal/overview/objectvisitor"
@@ -31,7 +31,7 @@ type Collector struct {
 	// podStats counts pods in a replica set.
 	podStats map[string]int
 
-	cache cache.Cache
+	objectStore objectstore.ObjectStore
 
 	mu sync.Mutex
 }
@@ -39,10 +39,10 @@ type Collector struct {
 var _ objectvisitor.ObjectHandler = (*Collector)(nil)
 
 // NewCollector creates an instance of Collector.
-func NewCollector(c cache.Cache) *Collector {
+func NewCollector(o objectstore.ObjectStore) *Collector {
 	collector := &Collector{
-		podStats: make(map[string]int),
-		cache:    c,
+		podStats:    make(map[string]int),
+		objectStore: o,
 	}
 	collector.Reset()
 
@@ -173,7 +173,7 @@ func (c *Collector) createObjectNode(ctx context.Context, object objectvisitor.C
 
 	var nodeStatus component.NodeStatus
 
-	status, err := objectstatus.Status(ctx, object, c.cache)
+	status, err := objectstatus.Status(ctx, object, c.objectStore)
 	if err != nil {
 		c.log().Errorf("error retrieving object status: %v", err)
 		nodeStatus = component.NodeStatusOK

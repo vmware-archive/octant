@@ -1,9 +1,9 @@
-package cache
+package objectstore
 
 import (
 	"context"
 
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,20 +12,20 @@ import (
 	kcache "k8s.io/client-go/tools/cache"
 )
 
-//go:generate mockgen -destination=./fake/mock_cache.go -package=fake github.com/heptio/developer-dash/internal/cache Cache
+//go:generate mockgen -destination=./fake/mock_objectstore.go -package=fake github.com/heptio/developer-dash/internal/objectstore ObjectStore
 
-// Cache stores Kubernetes objects.
-type Cache interface {
-	List(ctx context.Context, key cacheutil.Key) ([]*unstructured.Unstructured, error)
-	Get(ctx context.Context, key cacheutil.Key) (*unstructured.Unstructured, error)
-	Watch(key cacheutil.Key, handler kcache.ResourceEventHandler) error
+// ObjectStore stores Kubernetes objects.
+type ObjectStore interface {
+	List(ctx context.Context, key objectstoreutil.Key) ([]*unstructured.Unstructured, error)
+	Get(ctx context.Context, key objectstoreutil.Key) (*unstructured.Unstructured, error)
+	Watch(key objectstoreutil.Key, handler kcache.ResourceEventHandler) error
 }
 
-// GetAs gets an object from the cache by key.
-func GetAs(ctx context.Context, c Cache, key cacheutil.Key, as interface{}) error {
-	u, err := c.Get(ctx, key)
+// GetAs gets an object from the objectstore by key.
+func GetAs(ctx context.Context, o ObjectStore, key objectstoreutil.Key, as interface{}) error {
+	u, err := o.Get(ctx, key)
 	if err != nil {
-		return errors.Wrap(err, "get object from cache")
+		return errors.Wrap(err, "get object from objectstore")
 	}
 
 	if u == nil {

@@ -3,10 +3,10 @@ package api
 import (
 	"context"
 
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/gvk"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/portforward"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/plugin/api/proto"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -28,28 +28,28 @@ type PortForwardResponse struct {
 
 // Service is the dashboard service.
 type Service interface {
-	List(ctx context.Context, key cacheutil.Key) ([]*unstructured.Unstructured, error)
-	Get(ctx context.Context, key cacheutil.Key) (*unstructured.Unstructured, error)
+	List(ctx context.Context, key objectstoreutil.Key) ([]*unstructured.Unstructured, error)
+	Get(ctx context.Context, key objectstoreutil.Key) (*unstructured.Unstructured, error)
 	PortForward(ctx context.Context, req PortForwardRequest) (PortForwardResponse, error)
 	CancelPortForward(ctx context.Context, id string)
 }
 
 // GRPCService is an implementation of the dashboard service based on GRPC.
 type GRPCService struct {
-	Cache         cache.Cache
+	ObjectStore   objectstore.ObjectStore
 	PortForwarder portforward.PortForwarder
 }
 
 var _ Service = (*GRPCService)(nil)
 
 // List lists objects.
-func (s *GRPCService) List(ctx context.Context, key cacheutil.Key) ([]*unstructured.Unstructured, error) {
-	return s.Cache.List(ctx, key)
+func (s *GRPCService) List(ctx context.Context, key objectstoreutil.Key) ([]*unstructured.Unstructured, error) {
+	return s.ObjectStore.List(ctx, key)
 }
 
 // Get retrieves an object.
-func (s *GRPCService) Get(ctx context.Context, key cacheutil.Key) (*unstructured.Unstructured, error) {
-	return s.Cache.Get(ctx, key)
+func (s *GRPCService) Get(ctx context.Context, key objectstoreutil.Key) (*unstructured.Unstructured, error) {
+	return s.ObjectStore.Get(ctx, key)
 }
 
 // PortForward creates a port forward.

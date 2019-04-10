@@ -4,23 +4,23 @@ import (
 	"context"
 	"sort"
 
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/internal/objectstore"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/util/duration"
 )
 
-// loadObject loads a single object from the cache.
-func loadObject(ctx context.Context, cache cache.Cache, namespace string, fields map[string]string, cacheKey cacheutil.Key) (*unstructured.Unstructured, error) {
-	cacheKey.Namespace = namespace
+// loadObject loads a single object from the objectstore.
+func loadObject(ctx context.Context, objectstore objectstore.ObjectStore, namespace string, fields map[string]string, objectStoreKey objectstoreutil.Key) (*unstructured.Unstructured, error) {
+	objectStoreKey.Namespace = namespace
 
 	if name, ok := fields["name"]; ok && name != "" {
-		cacheKey.Name = name
+		objectStoreKey.Name = name
 	}
 
-	object, err := cache.Get(ctx, cacheKey)
+	object, err := objectstore.Get(ctx, objectStoreKey)
 	if err != nil {
 		return nil, err
 	}
@@ -28,23 +28,23 @@ func loadObject(ctx context.Context, cache cache.Cache, namespace string, fields
 	return object, nil
 }
 
-// loadObjects loads objects from the cache sorted by their name.
-func loadObjects(ctx context.Context, cache cache.Cache, namespace string, fields map[string]string, cacheKeys []cacheutil.Key) ([]*unstructured.Unstructured, error) {
+// loadObjects loads objects from the objectstore sorted by their name.
+func loadObjects(ctx context.Context, objectstore objectstore.ObjectStore, namespace string, fields map[string]string, objectStoreKeys []objectstoreutil.Key) ([]*unstructured.Unstructured, error) {
 	var objects []*unstructured.Unstructured
 
-	for _, cacheKey := range cacheKeys {
-		cacheKey.Namespace = namespace
+	for _, objectStoreKey := range objectStoreKeys {
+		objectStoreKey.Namespace = namespace
 
 		if name, ok := fields["name"]; ok && name != "" {
-			cacheKey.Name = name
+			objectStoreKey.Name = name
 		}
 
-		cacheObjects, err := cache.List(ctx, cacheKey)
+		storedObjects, err := objectstore.List(ctx, objectStoreKey)
 		if err != nil {
 			return nil, err
 		}
 
-		objects = append(objects, cacheObjects...)
+		objects = append(objects, storedObjects...)
 	}
 
 	sort.SliceStable(objects, func(i, j int) bool {

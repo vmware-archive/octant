@@ -7,13 +7,12 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/golang/mock/gomock"
-	"github.com/heptio/developer-dash/internal/cache"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	fakecache "github.com/heptio/developer-dash/internal/cache/fake"
+	"github.com/heptio/developer-dash/internal/objectstore"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	printerfake "github.com/heptio/developer-dash/internal/overview/printer/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/heptio/developer-dash/pkg/view/flexlayout"
@@ -30,7 +29,7 @@ func Test_ServiceAccountListHandler(t *testing.T) {
 	defer controller.Finish()
 
 	printOptions := Options{
-		Cache: cachefake.NewMockCache(controller),
+		ObjectStore: storefake.NewMockObjectStore(controller),
 	}
 
 	labels := map[string]string{
@@ -77,11 +76,11 @@ func Test_serviceAccountHandler(t *testing.T) {
 		Print(gomock.Any()).
 		Return(&plugin.PrintResponse{}, nil)
 
-	appCache := cachefake.NewMockCache(controller)
-	mockObjectsEvents(t, appCache, object.Namespace)
+	appObjectStore := storefake.NewMockObjectStore(controller)
+	mockObjectsEvents(t, appObjectStore, object.Namespace)
 
 	printOptions := Options{
-		Cache:         appCache,
+		ObjectStore:   appObjectStore,
 		PluginPrinter: pluginPrinter,
 	}
 
@@ -93,12 +92,12 @@ func Test_serviceAccountHandler(t *testing.T) {
 	summaryConfig := component.NewSummary("config", component.SummarySection{
 		Header: "foo", Content: component.NewText("bar")})
 
-	h.configFunc = func(ctx context.Context, serviceAccount corev1.ServiceAccount, c cache.Cache) (*component.Summary, error) {
+	h.configFunc = func(ctx context.Context, serviceAccount corev1.ServiceAccount, o objectstore.ObjectStore) (*component.Summary, error) {
 		return summaryConfig, nil
 	}
 
 	policyTable := component.NewTable("policyTable", component.NewTableCols("col1"))
-	h.policyRulesFunc = func(ctx context.Context, serviceAccount corev1.ServiceAccount, appCache cache.Cache) (*component.Table, error) {
+	h.policyRulesFunc = func(ctx context.Context, serviceAccount corev1.ServiceAccount, appObjectStore objectstore.ObjectStore) (*component.Table, error) {
 		return policyTable, nil
 	}
 
@@ -123,7 +122,7 @@ func Test_printServiceAccountConfig(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	c := fakecache.NewMockCache(controller)
+	o := storefake.NewMockObjectStore(controller)
 
 	now := time.Unix(1547211430, 0)
 
@@ -132,7 +131,7 @@ func Test_printServiceAccountConfig(t *testing.T) {
 	object.Secrets = []corev1.ObjectReference{{Name: "secret"}}
 	object.ImagePullSecrets = []corev1.LocalObjectReference{{Name: "secret"}}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  object.Namespace,
 		APIVersion: "v1",
 		Kind:       "Secret",
@@ -145,11 +144,11 @@ func Test_printServiceAccountConfig(t *testing.T) {
 		corev1.ServiceAccountUIDKey:  string(object.UID),
 	}
 
-	c.EXPECT().List(gomock.Any(), gomock.Eq(key)).
+	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).
 		Return([]*unstructured.Unstructured{testutil.ToUnstructured(t, secret)}, nil)
 
 	ctx := context.Background()
-	got, err := printServiceAccountConfig(ctx, *object, c)
+	got, err := printServiceAccountConfig(ctx, *object, o)
 	require.NoError(t, err)
 
 	var sections component.SummarySections
@@ -179,9 +178,9 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 
 	serviceAccount := testutil.CreateServiceAccount("sa")
 
-	appCache := fakecache.NewMockCache(controller)
+	appObjectStore := storefake.NewMockObjectStore(controller)
 
-	roleBindingKey := cacheutil.Key{
+	roleBindingKey := objectstoreutil.Key{
 		Namespace:  serviceAccount.Namespace,
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "RoleBinding",
@@ -201,11 +200,11 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 	roleBinding := testutil.CreateRoleBinding("rb1", role1.Name, subjects1)
 	roleBindingObjects := testutil.ToUnstructuredList(t, roleBinding)
 
-	appCache.EXPECT().
+	appObjectStore.EXPECT().
 		List(gomock.Any(), roleBindingKey).
 		Return(roleBindingObjects, nil)
 
-	clusterRoleBindingKey := cacheutil.Key{
+	clusterRoleBindingKey := objectstoreutil.Key{
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "ClusterRoleBinding",
 	}
@@ -222,29 +221,29 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 	clusterRoleBinding.RoleRef.Kind = "ClusterRole"
 	clusterRoleBindingObjects := testutil.ToUnstructuredList(t, clusterRoleBinding)
 
-	appCache.EXPECT().
+	appObjectStore.EXPECT().
 		List(gomock.Any(), clusterRoleBindingKey).
 		Return(clusterRoleBindingObjects, nil)
 
-	role1Key, err := cacheutil.KeyFromObject(role1)
+	role1Key, err := objectstoreutil.KeyFromObject(role1)
 	require.NoError(t, err)
 
-	appCache.EXPECT().
+	appObjectStore.EXPECT().
 		Get(gomock.Any(), role1Key).
 		Return(testutil.ToUnstructured(t, role1), nil)
 
-	role2Key, err := cacheutil.KeyFromObject(role2)
+	role2Key, err := objectstoreutil.KeyFromObject(role2)
 	require.NoError(t, err)
 
 	spew.Dump(role2Key)
 
-	appCache.EXPECT().
+	appObjectStore.EXPECT().
 		Get(gomock.Any(), role2Key).
 		Return(testutil.ToUnstructured(t, role2), nil)
 
 	ctx := context.Background()
 
-	s := newServiceAccountPolicyRules(ctx, *serviceAccount, appCache)
+	s := newServiceAccountPolicyRules(ctx, *serviceAccount, appObjectStore)
 
 	var policyRules []rbacv1.PolicyRule
 	s.printPolicyRulesFunc = func(rules []rbacv1.PolicyRule) (*component.Table, error) {

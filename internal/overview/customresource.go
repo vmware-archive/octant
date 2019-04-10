@@ -6,15 +6,15 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	"github.com/heptio/developer-dash/internal/overview/resourceviewer"
 	"github.com/heptio/developer-dash/internal/overview/yamlviewer"
 	"github.com/heptio/developer-dash/internal/queryer"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -24,13 +24,13 @@ import (
 	kcache "k8s.io/client-go/tools/cache"
 )
 
-func customResourceDefinitionNames(ctx context.Context, c cache.Cache) ([]string, error) {
-	key := cacheutil.Key{
+func customResourceDefinitionNames(ctx context.Context, o objectstore.ObjectStore) ([]string, error) {
+	key := objectstoreutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
 
-	rawList, err := c.List(ctx, key)
+	rawList, err := o.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "listing CRDs")
 	}
@@ -50,16 +50,16 @@ func customResourceDefinitionNames(ctx context.Context, c cache.Cache) ([]string
 	return list, nil
 }
 
-func customResourceDefinition(ctx context.Context, name string, c cache.Cache) (*apiextv1beta1.CustomResourceDefinition, error) {
-	key := cacheutil.Key{
+func customResourceDefinition(ctx context.Context, name string, o objectstore.ObjectStore) (*apiextv1beta1.CustomResourceDefinition, error) {
+	key := objectstoreutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 		Name:       name,
 	}
 
 	crd := &apiextv1beta1.CustomResourceDefinition{}
-	if err := cache.GetAs(ctx, c, key, crd); err != nil {
-		return nil, errors.Wrap(err, "get CRD from cache")
+	if err := objectstore.GetAs(ctx, o, key, crd); err != nil {
+		return nil, errors.Wrap(err, "get CRD from objecstore")
 	}
 
 	return crd, nil
@@ -165,12 +165,12 @@ func newCRDListDescriber(name, path string, options ...crdListDescriptionOption)
 }
 
 func (cld *crdListDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
-	crd, err := customResourceDefinition(ctx, cld.name, options.Cache)
+	crd, err := customResourceDefinition(ctx, cld.name, options.ObjectStore)
 	if err != nil {
 		return emptyContentResponse, err
 	}
 
-	objects, err := listCustomResources(ctx, crd, namespace, options.Cache)
+	objects, err := listCustomResources(ctx, crd, namespace, options.ObjectStore)
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -189,7 +189,7 @@ func listCustomResources(
 	ctx context.Context,
 	crd *apiextv1beta1.CustomResourceDefinition,
 	namespace string,
-	c cache.Cache) ([]*unstructured.Unstructured, error) {
+	o objectstore.ObjectStore) ([]*unstructured.Unstructured, error) {
 	if crd == nil {
 		return nil, errors.New("crd is nil")
 	}
@@ -201,13 +201,13 @@ func listCustomResources(
 
 	apiVersion, kind := gvk.ToAPIVersionAndKind()
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  namespace,
 		APIVersion: apiVersion,
 		Kind:       kind,
 	}
 
-	objects, err := c.List(ctx, key)
+	objects, err := o.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "listing custom resources for %q", crd.Name)
 	}
@@ -222,7 +222,7 @@ func (cld *crdListDescriber) PathFilters() []pathFilter {
 }
 
 type crdPrinter func(ctx context.Context, crd *apiextv1beta1.CustomResourceDefinition, object *unstructured.Unstructured, options printer.Options) (component.Component, error)
-type resourceViewerPrinter func(ctx context.Context, object *unstructured.Unstructured, c cache.Cache, q queryer.Queryer) (component.Component, error)
+type resourceViewerPrinter func(ctx context.Context, object *unstructured.Unstructured, o objectstore.ObjectStore, q queryer.Queryer) (component.Component, error)
 type yamlPrinter func(runtime.Object) (*component.YAML, error)
 
 type crdDescriberOption func(*crdDescriber)
@@ -254,7 +254,7 @@ func newCRDDescriber(name, path string, options ...crdDescriberOption) *crdDescr
 }
 
 func (cd *crdDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
-	crd, err := customResourceDefinition(ctx, cd.name, options.Cache)
+	crd, err := customResourceDefinition(ctx, cd.name, options.ObjectStore)
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -267,14 +267,14 @@ func (cd *crdDescriber) Describe(ctx context.Context, prefix, namespace string, 
 
 	apiVersion, kind := gvk.ToAPIVersionAndKind()
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  namespace,
 		APIVersion: apiVersion,
 		Kind:       kind,
 		Name:       options.Fields["name"],
 	}
 
-	object, err := options.Cache.Get(ctx, key)
+	object, err := options.ObjectStore.Get(ctx, key)
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -291,7 +291,7 @@ func (cd *crdDescriber) Describe(ctx context.Context, prefix, namespace string, 
 	cr := component.NewContentResponse(title)
 
 	printOptions := printer.Options{
-		Cache:         options.Cache,
+		ObjectStore:   options.ObjectStore,
 		PluginPrinter: options.PluginManager,
 	}
 
@@ -303,7 +303,7 @@ func (cd *crdDescriber) Describe(ctx context.Context, prefix, namespace string, 
 
 	cr.Add(summary)
 
-	resourceViewerComponent, err := cd.resourceViewerPrinter(ctx, object, options.Cache, options.Queryer)
+	resourceViewerComponent, err := cd.resourceViewerPrinter(ctx, object, options.ObjectStore, options.Queryer)
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -338,10 +338,10 @@ func (cd *crdDescriber) PathFilters() []pathFilter {
 	}
 }
 
-func createCRDResourceViewer(ctx context.Context, object *unstructured.Unstructured, c cache.Cache, q queryer.Queryer) (component.Component, error) {
+func createCRDResourceViewer(ctx context.Context, object *unstructured.Unstructured, o objectstore.ObjectStore, q queryer.Queryer) (component.Component, error) {
 	logger := log.From(ctx)
 
-	rv, err := resourceviewer.New(logger, c, resourceviewer.WithDefaultQueryer(q))
+	rv, err := resourceviewer.New(logger, o, resourceviewer.WithDefaultQueryer(q))
 	if err != nil {
 		return nil, err
 	}
@@ -351,7 +351,7 @@ func createCRDResourceViewer(ctx context.Context, object *unstructured.Unstructu
 
 type objectHandler func(ctx context.Context, object *unstructured.Unstructured)
 
-func watchCRDs(ctx context.Context, c cache.Cache, crdAddFunc, crdDeleteFunc objectHandler) {
+func watchCRDs(ctx context.Context, o objectstore.ObjectStore, crdAddFunc, crdDeleteFunc objectHandler) {
 	handler := &kcache.ResourceEventHandlerFuncs{}
 
 	if crdAddFunc != nil {
@@ -372,14 +372,14 @@ func watchCRDs(ctx context.Context, c cache.Cache, crdAddFunc, crdDeleteFunc obj
 		}
 	}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
 
 	logger := log.From(ctx)
 
-	if err := c.Watch(key, handler); err != nil {
+	if err := o.Watch(key, handler); err != nil {
 		logger.Errorf("crd watcher has failed: %v", err)
 	}
 }

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	printerfake "github.com/heptio/developer-dash/internal/overview/printer/fake"
 	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
@@ -60,11 +60,11 @@ func Test_Resource_Print(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			c := cachefake.NewMockCache(controller)
+			o := storefake.NewMockObjectStore(controller)
 			pf := pffake.NewMockPortForwarder(controller)
 			pluginPrinter := printerfake.NewMockPluginPrinter(controller)
 
-			p := NewResource(c, pf)
+			p := NewResource(o, pf)
 
 			if tc.printFunc != nil {
 				err := p.Handler(tc.printFunc)
@@ -125,10 +125,10 @@ func Test_Resource_Handler(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			c := cachefake.NewMockCache(controller)
+			o := storefake.NewMockObjectStore(controller)
 			pf := pffake.NewMockPortForwarder(controller)
 
-			p := NewResource(c, pf)
+			p := NewResource(o, pf)
 
 			err := p.Handler(tc.printFunc)
 
@@ -150,10 +150,10 @@ func Test_Resource_DuplicateHandler(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	c := cachefake.NewMockCache(controller)
+	o := storefake.NewMockObjectStore(controller)
 	pf := pffake.NewMockPortForwarder(controller)
 
-	p := NewResource(c, pf)
+	p := NewResource(o, pf)
 
 	err := p.Handler(printFunc)
 	require.NoError(t, err)
@@ -186,7 +186,7 @@ func Test_DefaultPrinter(t *testing.T) {
 	defer controller.Finish()
 
 	printOptions := Options{
-		Cache: cachefake.NewMockCache(controller),
+		ObjectStore: storefake.NewMockObjectStore(controller),
 	}
 
 	labels := map[string]string{
@@ -241,7 +241,7 @@ func Test_DefaultPrinter_invalid_object(t *testing.T) {
 			defer controller.Finish()
 
 			printOptions := Options{
-				Cache: cachefake.NewMockCache(controller),
+				ObjectStore: storefake.NewMockObjectStore(controller),
 			}
 
 			ctx := context.Background()

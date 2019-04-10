@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -38,59 +38,59 @@ func Test_loadObjects(t *testing.T) {
 
 	cases := []struct {
 		name     string
-		init     func(*testing.T, *cachefake.MockCache)
+		init     func(*testing.T, *storefake.MockObjectStore)
 		fields   map[string]string
-		keys     []cacheutil.Key
+		keys     []objectstoreutil.Key
 		expected []*unstructured.Unstructured
 		isErr    bool
 	}{
 		{
 			name: "without name",
-			init: func(t *testing.T, c *cachefake.MockCache) {
-				key := cacheutil.Key{
+			init: func(t *testing.T, o *storefake.MockObjectStore) {
+				key := objectstoreutil.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind"}
 
-				c.EXPECT().
+				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(key)).
 					Return(sampleObjects, nil)
 			},
 			fields:   map[string]string{},
-			keys:     []cacheutil.Key{{APIVersion: "v1", Kind: "kind"}},
+			keys:     []objectstoreutil.Key{{APIVersion: "v1", Kind: "kind"}},
 			expected: sortedSampleObjects,
 		},
 		{
 			name: "name",
-			init: func(t *testing.T, c *cachefake.MockCache) {
-				key := cacheutil.Key{
+			init: func(t *testing.T, o *storefake.MockObjectStore) {
+				key := objectstoreutil.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind",
 					Name:       "name"}
 
-				c.EXPECT().
+				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(key)).
 					Return([]*unstructured.Unstructured{}, nil)
 
 			},
 			fields: map[string]string{"name": "name"},
-			keys:   []cacheutil.Key{{APIVersion: "v1", Kind: "kind"}},
+			keys:   []objectstoreutil.Key{{APIVersion: "v1", Kind: "kind"}},
 		},
 		{
 			name: "cache retrieve error",
-			init: func(t *testing.T, c *cachefake.MockCache) {
-				key := cacheutil.Key{
+			init: func(t *testing.T, o *storefake.MockObjectStore) {
+				key := objectstoreutil.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind"}
 
-				c.EXPECT().
+				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(key)).
 					Return(nil, errors.New("error"))
 			},
 			fields: map[string]string{},
-			keys:   []cacheutil.Key{{APIVersion: "v1", Kind: "kind"}},
+			keys:   []objectstoreutil.Key{{APIVersion: "v1", Kind: "kind"}},
 			isErr:  true,
 		},
 	}
@@ -100,13 +100,13 @@ func Test_loadObjects(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			c := cachefake.NewMockCache(controller)
-			tc.init(t, c)
+			o := storefake.NewMockObjectStore(controller)
+			tc.init(t, o)
 
 			namespace := "default"
 
 			ctx := context.Background()
-			got, err := loadObjects(ctx, c, namespace, tc.fields, tc.keys)
+			got, err := loadObjects(ctx, o, namespace, tc.fields, tc.keys)
 			if tc.isErr {
 				require.Error(t, err)
 				return

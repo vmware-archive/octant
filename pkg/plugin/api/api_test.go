@@ -8,12 +8,12 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
 	"github.com/heptio/developer-dash/internal/gvk"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/portforward"
 	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/plugin/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,12 +21,12 @@ import (
 )
 
 type apiMocks struct {
-	cache *cachefake.MockCache
-	pf    *pffake.MockPortForwarder
+	objectstore *storefake.MockObjectStore
+	pf          *pffake.MockPortForwarder
 }
 
 func TestAPI(t *testing.T) {
-	listKey := cacheutil.Key{
+	listKey := objectstoreutil.Key{
 		Namespace:  "default",
 		APIVersion: "apps/v1",
 		Kind:       "Deployment",
@@ -36,7 +36,7 @@ func TestAPI(t *testing.T) {
 		testutil.ToUnstructured(t, testutil.CreateDeployment("deployment")),
 	}
 
-	getKey := cacheutil.Key{
+	getKey := objectstoreutil.Key{
 		Namespace:  "default",
 		APIVersion: "apps/v1",
 		Kind:       "Deployment",
@@ -63,7 +63,7 @@ func TestAPI(t *testing.T) {
 		{
 			name: "list",
 			initFunc: func(t *testing.T, mocks *apiMocks) {
-				mocks.cache.EXPECT().
+				mocks.objectstore.EXPECT().
 					List(gomock.Any(), gomock.Eq(listKey)).Return(objects, nil)
 			},
 			doFunc: func(t *testing.T, client *api.Client) {
@@ -81,7 +81,7 @@ func TestAPI(t *testing.T) {
 		{
 			name: "get",
 			initFunc: func(t *testing.T, mocks *apiMocks) {
-				mocks.cache.EXPECT().
+				mocks.objectstore.EXPECT().
 					Get(gomock.Any(), gomock.Eq(getKey)).Return(object, nil)
 			},
 			doFunc: func(t *testing.T, client *api.Client) {
@@ -170,14 +170,14 @@ func TestAPI(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			appCache := cachefake.NewMockCache(controller)
+			appObjectStore := storefake.NewMockObjectStore(controller)
 			pf := pffake.NewMockPortForwarder(controller)
 			tc.initFunc(t, &apiMocks{
-				cache: appCache,
-				pf:    pf})
+				objectstore: appObjectStore,
+				pf:          pf})
 
 			service := &api.GRPCService{
-				Cache:         appCache,
+				ObjectStore:   appObjectStore,
 				PortForwarder: pf,
 			}
 

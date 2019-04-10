@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -15,7 +15,7 @@ type statusKey struct {
 	kind       string
 }
 
-type statusFunc func(context.Context, runtime.Object, cache.Cache) (ObjectStatus, error)
+type statusFunc func(context.Context, runtime.Object, objectstore.ObjectStore) (ObjectStatus, error)
 
 type statusLookup map[statusKey]statusFunc
 
@@ -68,11 +68,11 @@ func (os *ObjectStatus) Status() component.NodeStatus {
 }
 
 // Status creates an ObjectStatus for an object.
-func Status(ctx context.Context, object runtime.Object, c cache.Cache) (ObjectStatus, error) {
-	return status(ctx, object, c, defaultStatusLookup)
+func Status(ctx context.Context, object runtime.Object, o objectstore.ObjectStore) (ObjectStatus, error) {
+	return status(ctx, object, o, defaultStatusLookup)
 }
 
-func status(ctx context.Context, object runtime.Object, c cache.Cache, lookup statusLookup) (ObjectStatus, error) {
+func status(ctx context.Context, object runtime.Object, o objectstore.ObjectStore, lookup statusLookup) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.New("object is nil")
 	}
@@ -93,5 +93,5 @@ func status(ctx context.Context, object runtime.Object, c cache.Cache, lookup st
 
 	}
 
-	return fn(ctx, object, c)
+	return fn(ctx, object, o)
 }

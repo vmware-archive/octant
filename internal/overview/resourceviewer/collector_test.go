@@ -11,7 +11,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/conversion"
 
-	cachefake "github.com/heptio/developer-dash/internal/cache/fake"
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -55,8 +55,8 @@ func Test_Collector(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	defer controller.Finish()
-	ca := cachefake.NewMockCache(controller)
-	c := NewCollector(ca)
+	o := storefake.NewMockObjectStore(controller)
+	c := NewCollector(o)
 
 	ctx := context.Background()
 

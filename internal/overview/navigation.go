@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
@@ -27,13 +27,13 @@ var (
 
 // NavigationFactory generates navigation entries.
 type NavigationFactory struct {
-	root      string
-	namespace string
-	cache     cache.Cache
+	root        string
+	namespace   string
+	objectstore objectstore.ObjectStore
 }
 
 // NewNavigationFactory creates an instance of NewNavigationFactory.
-func NewNavigationFactory(namespace string, root string, c cache.Cache) *NavigationFactory {
+func NewNavigationFactory(namespace string, root string, o objectstore.ObjectStore) *NavigationFactory {
 	var rootPath = root
 	if namespace != "" {
 		rootPath = path.Join(root, "namespace", namespace, "")
@@ -43,9 +43,9 @@ func NewNavigationFactory(namespace string, root string, c cache.Cache) *Navigat
 	}
 
 	return &NavigationFactory{
-		root:      rootPath,
-		namespace: namespace,
-		cache:     c,
+		root:        rootPath,
+		namespace:   namespace,
+		objectstore: o,
 	}
 }
 
@@ -169,7 +169,7 @@ func (nf *NavigationFactory) rbacEntries(ctx context.Context, prefix string) ([]
 func (nf *NavigationFactory) crdEntries(ctx context.Context, prefix string) ([]*sugarloaf.Navigation, error) {
 	var list []*sugarloaf.Navigation
 
-	crdNames, err := customResourceDefinitionNames(ctx, nf.cache)
+	crdNames, err := customResourceDefinitionNames(ctx, nf.objectstore)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving CRD names")
 	}
@@ -177,12 +177,12 @@ func (nf *NavigationFactory) crdEntries(ctx context.Context, prefix string) ([]*
 	sort.Strings(crdNames)
 
 	for _, name := range crdNames {
-		crd, err := customResourceDefinition(ctx, name, nf.cache)
+		crd, err := customResourceDefinition(ctx, name, nf.objectstore)
 		if err != nil {
 			return nil, errors.Wrapf(err, "load %q custom resource definition", name)
 		}
 
-		objects, err := listCustomResources(ctx, crd, nf.namespace, nf.cache)
+		objects, err := listCustomResources(ctx, crd, nf.namespace, nf.objectstore)
 		if err != nil {
 			return nil, err
 		}

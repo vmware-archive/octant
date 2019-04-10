@@ -3,8 +3,8 @@ package resourceviewer
 import (
 	"context"
 
-	"github.com/heptio/developer-dash/internal/cache"
 	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/objectvisitor"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/pkg/view/component"
@@ -36,9 +36,9 @@ type ResourceViewer struct {
 }
 
 // New creates an instance of ResourceViewer.
-func New(logger log.Logger, c cache.Cache, opts ...ViewerOpt) (*ResourceViewer, error) {
+func New(logger log.Logger, o objectstore.ObjectStore, opts ...ViewerOpt) (*ResourceViewer, error) {
 	rv := &ResourceViewer{
-		collector: NewCollector(c),
+		collector: NewCollector(o),
 	}
 
 	rv.collector.logger = logger

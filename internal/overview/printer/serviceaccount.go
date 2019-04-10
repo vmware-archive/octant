@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -50,8 +50,8 @@ type serviceAccountHandler struct {
 	serviceAccount corev1.ServiceAccount
 	options        Options
 
-	configFunc      func(ctx context.Context, serviceAccount corev1.ServiceAccount, c cache.Cache) (*component.Summary, error)
-	policyRulesFunc func(ctx context.Context, serviceAccount corev1.ServiceAccount, appCache cache.Cache) (*component.Table, error)
+	configFunc      func(ctx context.Context, serviceAccount corev1.ServiceAccount, o objectstore.ObjectStore) (*component.Summary, error)
+	policyRulesFunc func(ctx context.Context, serviceAccount corev1.ServiceAccount, appObjectStore objectstore.ObjectStore) (*component.Table, error)
 }
 
 func newServiceAccountHandler(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) (*serviceAccountHandler, error) {
@@ -64,8 +64,8 @@ func newServiceAccountHandler(ctx context.Context, serviceAccount *corev1.Servic
 		serviceAccount: *serviceAccount,
 		options:        options,
 		configFunc:     printServiceAccountConfig,
-		policyRulesFunc: func(ctx context.Context, serviceAccount corev1.ServiceAccount, appCache cache.Cache) (*component.Table, error) {
-			s := newServiceAccountPolicyRules(ctx, serviceAccount, appCache)
+		policyRulesFunc: func(ctx context.Context, serviceAccount corev1.ServiceAccount, appObjectStore objectstore.ObjectStore) (*component.Table, error) {
+			s := newServiceAccountPolicyRules(ctx, serviceAccount, appObjectStore)
 			return s.run()
 		},
 	}, nil
@@ -74,7 +74,7 @@ func newServiceAccountHandler(ctx context.Context, serviceAccount *corev1.Servic
 func (h *serviceAccountHandler) run() (component.Component, error) {
 	o := NewObject(&h.serviceAccount)
 
-	configSummary, err := h.configFunc(h.ctx, h.serviceAccount, h.options.Cache)
+	configSummary, err := h.configFunc(h.ctx, h.serviceAccount, h.options.ObjectStore)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (h *serviceAccountHandler) run() (component.Component, error) {
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {
-			return h.policyRulesFunc(h.ctx, h.serviceAccount, h.options.Cache)
+			return h.policyRulesFunc(h.ctx, h.serviceAccount, h.options.ObjectStore)
 		},
 		Width: component.WidthFull,
 	})
@@ -93,7 +93,7 @@ func (h *serviceAccountHandler) run() (component.Component, error) {
 	return o.ToComponent(h.ctx, h.options)
 }
 
-func printServiceAccountConfig(ctx context.Context, serviceAccount corev1.ServiceAccount, c cache.Cache) (*component.Summary, error) {
+func printServiceAccountConfig(ctx context.Context, serviceAccount corev1.ServiceAccount, o objectstore.ObjectStore) (*component.Summary, error) {
 	var sections component.SummarySections
 
 	var pullSecrets []string
@@ -117,7 +117,7 @@ func printServiceAccountConfig(ctx context.Context, serviceAccount corev1.Servic
 			generateServiceAccountSecretsList(serviceAccount.Namespace, mountSecrets))
 	}
 
-	tokens, err := serviceAccountTokens(ctx, serviceAccount, c)
+	tokens, err := serviceAccountTokens(ctx, serviceAccount, o)
 	if err != nil {
 		return nil, errors.Wrap(err, "get tokens for service account")
 	}
@@ -139,13 +139,13 @@ func generateServiceAccountSecretsList(namespace string, secretNames []string) *
 	return component.NewList("", items)
 }
 
-func serviceAccountTokens(ctx context.Context, serviceAccount corev1.ServiceAccount, c cache.Cache) ([]string, error) {
-	key := cacheutil.Key{
+func serviceAccountTokens(ctx context.Context, serviceAccount corev1.ServiceAccount, o objectstore.ObjectStore) ([]string, error) {
+	key := objectstoreutil.Key{
 		Namespace:  serviceAccount.Namespace,
 		APIVersion: "v1",
 		Kind:       "Secret",
 	}
-	secretList, err := c.List(ctx, key)
+	secretList, err := o.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "find secrets for service account")
 	}
@@ -179,16 +179,16 @@ func serviceAccountTokens(ctx context.Context, serviceAccount corev1.ServiceAcco
 type serviceAccountPolicyRules struct {
 	ctx            context.Context
 	serviceAccount corev1.ServiceAccount
-	appCache       cache.Cache
+	appObjectStore objectstore.ObjectStore
 
 	printPolicyRulesFunc func([]rbacv1.PolicyRule) (*component.Table, error)
 }
 
-func newServiceAccountPolicyRules(ctx context.Context, serviceAccount corev1.ServiceAccount, appCache cache.Cache) *serviceAccountPolicyRules {
+func newServiceAccountPolicyRules(ctx context.Context, serviceAccount corev1.ServiceAccount, appObjectStore objectstore.ObjectStore) *serviceAccountPolicyRules {
 	return &serviceAccountPolicyRules{
 		ctx:                  ctx,
 		serviceAccount:       serviceAccount,
-		appCache:             appCache,
+		appObjectStore:       appObjectStore,
 		printPolicyRulesFunc: printPolicyRules,
 	}
 }
@@ -213,14 +213,14 @@ func (s *serviceAccountPolicyRules) run() (*component.Table, error) {
 	var policyRules []rbacv1.PolicyRule
 
 	for _, roleRef := range roleRefs {
-		key := cacheutil.Key{
+		key := objectstoreutil.Key{
 			APIVersion: "rbac.authorization.k8s.io/v1",
 			Kind:       roleRef.Kind,
 			Name:       roleRef.Name,
 		}
 		switch kind := roleRef.Kind; kind {
 		case "ClusterRole":
-			object, err := s.appCache.Get(s.ctx, key)
+			object, err := s.appObjectStore.Get(s.ctx, key)
 			if err != nil {
 				return nil, err
 			}
@@ -235,7 +235,7 @@ func (s *serviceAccountPolicyRules) run() (*component.Table, error) {
 		case "Role":
 			key.Namespace = s.serviceAccount.Namespace
 
-			object, err := s.appCache.Get(s.ctx, key)
+			object, err := s.appObjectStore.Get(s.ctx, key)
 			if err != nil {
 				return nil, err
 			}
@@ -256,13 +256,13 @@ func (s *serviceAccountPolicyRules) run() (*component.Table, error) {
 }
 
 func (s *serviceAccountPolicyRules) listRoleBindings() ([]rbacv1.RoleRef, error) {
-	roleBindingKey := cacheutil.Key{
+	roleBindingKey := objectstoreutil.Key{
 		Namespace:  s.serviceAccount.Namespace,
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "RoleBinding",
 	}
 
-	objects, err := s.appCache.List(s.ctx, roleBindingKey)
+	objects, err := s.appObjectStore.List(s.ctx, roleBindingKey)
 	if err != nil {
 		return nil, err
 	}
@@ -284,12 +284,12 @@ func (s *serviceAccountPolicyRules) listRoleBindings() ([]rbacv1.RoleRef, error)
 }
 
 func (s *serviceAccountPolicyRules) listClusterRoleBindings() ([]rbacv1.RoleRef, error) {
-	roleBindingKey := cacheutil.Key{
+	roleBindingKey := objectstoreutil.Key{
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "ClusterRoleBinding",
 	}
 
-	objects, err := s.appCache.List(s.ctx, roleBindingKey)
+	objects, err := s.appObjectStore.List(s.ctx, roleBindingKey)
 	if err != nil {
 		return nil, err
 	}

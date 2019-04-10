@@ -3,8 +3,8 @@ package objectstatus
 import (
 	"context"
 
-	"github.com/heptio/developer-dash/internal/cache"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/internal/objectstore"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -12,7 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
-func service(ctx context.Context, object runtime.Object, c cache.Cache) (ObjectStatus, error) {
+func service(ctx context.Context, object runtime.Object, o objectstore.ObjectStore) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("service is nil")
 	}
@@ -23,7 +23,7 @@ func service(ctx context.Context, object runtime.Object, c cache.Cache) (ObjectS
 		return ObjectStatus{}, errors.Wrap(err, "convert object to service")
 	}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  service.Namespace,
 		APIVersion: "v1",
 		Kind:       "Endpoints",
@@ -32,7 +32,7 @@ func service(ctx context.Context, object runtime.Object, c cache.Cache) (ObjectS
 
 	endpoints := &corev1.Endpoints{}
 
-	if err := cache.GetAs(ctx, c, key, endpoints); err != nil {
+	if err := objectstore.GetAs(ctx, o, key, endpoints); err != nil {
 		return ObjectStatus{}, errors.Wrapf(err, "get endpoints for service %s", service.Name)
 	}
 

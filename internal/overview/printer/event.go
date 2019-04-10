@@ -6,9 +6,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/heptio/developer-dash/internal/cache"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	"github.com/heptio/developer-dash/pkg/view/gridlayout"
@@ -187,7 +187,7 @@ func formatEventSource(es corev1.EventSource) string {
 }
 
 func createEventsForObject(ctx context.Context, fl *flexlayout.FlexLayout, object runtime.Object, opts Options) error {
-	eventList, err := eventsForObject(ctx, object, opts.Cache)
+	eventList, err := eventsForObject(ctx, object, opts.ObjectStore)
 	if err != nil {
 		return errors.Wrap(err, "list events for object")
 	}
@@ -207,7 +207,7 @@ func createEventsForObject(ctx context.Context, fl *flexlayout.FlexLayout, objec
 	return nil
 }
 
-func eventsForObject(ctx context.Context, object runtime.Object, c cache.Cache) (*corev1.EventList, error) {
+func eventsForObject(ctx context.Context, object runtime.Object, o objectstore.ObjectStore) (*corev1.EventList, error) {
 	accessor := meta.NewAccessor()
 
 	namespace, err := accessor.Namespace(object)
@@ -230,13 +230,13 @@ func eventsForObject(ctx context.Context, object runtime.Object, c cache.Cache) 
 		return nil, errors.Wrap(err, "get name for object")
 	}
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Event",
 	}
 
-	list, err := c.List(ctx, key)
+	list, err := o.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "list events for object")
 	}

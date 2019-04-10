@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/heptio/developer-dash/internal/overview/link"
-	"github.com/heptio/developer-dash/pkg/cacheutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
@@ -222,20 +222,20 @@ func deploymentPods(ctx context.Context, deployment *appsv1.Deployment, options 
 		return nil, errors.New("deployment is nil")
 	}
 
-	if options.Cache == nil {
-		return nil, errors.New("cache is nil")
+	if options.ObjectStore == nil {
+		return nil, errors.New("objectstore is nil")
 	}
 
 	selector := labels.Set(deployment.Spec.Template.ObjectMeta.Labels)
 
-	key := cacheutil.Key{
+	key := objectstoreutil.Key{
 		Namespace:  deployment.Namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
 		Selector:   &selector,
 	}
 
-	list, err := options.Cache.List(ctx, key)
+	list, err := options.ObjectStore.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "list all objects for key %s", key)
 	}
