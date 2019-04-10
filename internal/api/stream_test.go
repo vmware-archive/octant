@@ -38,7 +38,8 @@ func Test_contentEventGenerator(t *testing.T) {
 	require.NoError(t, err)
 
 	expectedEvent := event{
-		data: []byte(`{"content":{"viewComponents":null}}`),
+		eventType: eventTypeContent,
+		data:      []byte(`{"content":{"viewComponents":null}}`),
 	}
 
 	assert.Equal(t, expectedEvent, got)
@@ -57,8 +58,8 @@ func Test_navigationEventGenerator(t *testing.T) {
 	require.NoError(t, err)
 
 	expectedEvent := event{
-		name: "navigation",
-		data: []byte(`{"sections":[{"title":"module","path":"/content/module"}]}`),
+		eventType: eventTypeNavigation,
+		data:      []byte(`{"sections":[{"title":"module","path":"/content/module"}]}`),
 	}
 
 	assert.Equal(t, expectedEvent, got)
@@ -74,16 +75,19 @@ func Test_contentStreamer(t *testing.T) {
 		e := <-ch
 
 		assert.Equal(t, "data", string(e.data))
-		assert.Equal(t, "name", e.name)
+		assert.Equal(t, eventType("name"), e.eventType)
 
 		rcv <- true
 	}
 
 	cs := contentStreamer{
-		eventGenerators: []eventGenerator{&fakeEventGenerator{}},
-		w:               w,
-		streamFn:        fn,
-		logger:          log.NopLogger(),
+		eventGenerators: []eventGenerator{&fakeEventGenerator{
+			event:    fakeEvent,
+			eventErr: nil,
+		}},
+		w:        w,
+		streamFn: fn,
+		logger:   log.NopLogger(),
 	}
 
 	err := cs.content(ctx)
@@ -93,10 +97,45 @@ func Test_contentStreamer(t *testing.T) {
 	cancel()
 }
 
-type fakeEventGenerator struct{}
+func Test_contentStream_object_not_found(t *testing.T) {
+	w := httptest.NewRecorder()
+	ctx, cancel := context.WithCancel(context.Background())
+
+	rcv := make(chan bool, 1)
+
+	fn := func(ctx context.Context, w http.ResponseWriter, ch chan event) {
+		e := <-ch
+
+		assert.Equal(t, "/content/overview/namespace/default/workloads/deployments", string(e.data))
+		assert.Equal(t, eventTypeObjectNotFound, e.eventType)
+
+		rcv <- true
+	}
+
+	cs := contentStreamer{
+		eventGenerators: []eventGenerator{&fakeEventGenerator{
+			eventErr: NewNotFoundError("/path"),
+		}},
+		w:           w,
+		streamFn:    fn,
+		logger:      log.NopLogger(),
+		requestPath: "/api/v1/content/overview/namespace/default/workloads/deployments/nginx-deployment/",
+	}
+
+	err := cs.content(ctx)
+	require.NoError(t, err)
+
+	<-rcv
+	cancel()
+}
+
+type fakeEventGenerator struct {
+	event    event
+	eventErr error
+}
 
 func (g *fakeEventGenerator) Generate(ctx context.Context) (event, error) {
-	return event{data: []byte("data"), name: "name"}, nil
+	return g.event, g.eventErr
 }
 
 func (g *fakeEventGenerator) RunEvery() time.Duration {
@@ -106,6 +145,8 @@ func (g *fakeEventGenerator) RunEvery() time.Duration {
 func (g *fakeEventGenerator) Name() string {
 	return "fakeEventGenerator"
 }
+
+var fakeEvent = event{data: []byte("data"), eventType: "name"}
 
 func Test_stream(t *testing.T) {
 	cases := []struct {
@@ -120,7 +161,7 @@ func Test_stream(t *testing.T) {
 		},
 		{
 			name:         "event with name and data",
-			event:        event{name: "name", data: []byte("output")},
+			event:        event{eventType: "name", data: []byte("output")},
 			expectedBody: fmt.Sprintf("event: name\ndata: output\n\n"),
 		},
 	}
@@ -165,6 +206,33 @@ func Test_stream(t *testing.T) {
 					k, expected, actual)
 			}
 
+		})
+	}
+}
+
+func Test_notFoundRedirectPath(t *testing.T) {
+	cases := []struct {
+		name     string
+		expected string
+	}{
+		{
+			name:     "/api/v1/content/overview/namespace/default/workloads/deployments/nginx-deployment/",
+			expected: "/content/overview/namespace/default/workloads/deployments",
+		},
+		{
+			name:     "/api/v1/content/overview/namespace/default/workloads/invalid/",
+			expected: "/content/overview/namespace/default/workloads",
+		},
+		{
+			name:     "/api/v1/content/overview/namespace/default/invalid/",
+			expected: "/content/overview/namespace/default",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := notFoundRedirectPath(tc.name)
+			assert.Equal(t, tc.expected, got)
 		})
 	}
 }

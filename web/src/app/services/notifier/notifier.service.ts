@@ -7,6 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 export class NotifierService {
   loading: BehaviorSubject<boolean> = new BehaviorSubject(false);
   error: BehaviorSubject<string> = new BehaviorSubject('');
+  warning: BehaviorSubject<string> = new BehaviorSubject('');
 
   constructor() { }
 }

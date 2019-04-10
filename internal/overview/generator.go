@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/printer"
@@ -95,20 +96,6 @@ func newGenerator(objectStore objectstore.ObjectStore, di discovery.DiscoveryInt
 	}, nil
 }
 
-type notFoundError struct {
-	path string
-}
-
-func (e *notFoundError) Path() string {
-	return e.path
-}
-
-func (e *notFoundError) NotFound() bool { return true }
-
-func (e *notFoundError) Error() string {
-	return "Not found"
-}
-
 func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace string, opts GeneratorOptions) (component.ContentResponse, error) {
 	ctx, span := trace.StartSpan(ctx, "Generate")
 	defer span.End()
@@ -116,7 +103,7 @@ func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace st
 	pf, err := g.pathMatcher.Find(path)
 	if err != nil {
 		if err == errPathNotFound {
-			return emptyContentResponse, &notFoundError{path: path}
+			return emptyContentResponse, api.NewNotFoundError(path)
 		}
 		return emptyContentResponse, err
 	}

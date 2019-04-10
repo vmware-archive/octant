@@ -1,23 +1,29 @@
-<ng-container *ngIf="loading; then loadingT; else errorT">
+<ng-container *ngIf="loading">
+    <div class="progress loop"><progress></progress></div>
 </ng-container>
 
-<ng-template #loadingT>
-  <div class="progress loop"><progress></progress></div>
-</ng-template>
 
-<ng-template #errorT>
-  <ng-container *ngIf="!loading && error">
-    <div class="alert alert-app-level alert-danger">
-      <div class="alert-items">
-        <div class="alert-item static">
-          <div class="alert-icon-wrapper">
-            <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
-          </div>
-          <div class="alert-text">
-            {{error}}
-          </div>
+<ng-container *ngIf="!loading && error">
+  <div class="alert alert-app-level alert-danger">
+    <div class="alert-items">
+      <div class="alert-item static">
+        <div class="alert-icon-wrapper">
+          <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+        </div>
+        <div class="alert-text">
+          {{error}}
         </div>
       </div>
     </div>
-  </ng-container>
-</ng-template>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="!loading && warning">
+  <clr-alert [clrAlertType]="'warning'" (clrAlertClosedChange)="onWarningClose()" [clrAlertIcon]="'info-circle'" [clrAlertAppLevel]="true">
+    <clr-alert-item>
+      <span class="alert-text">
+        {{warning}}
+      </span>
+    </clr-alert-item>
+  </clr-alert>
+</ng-container>

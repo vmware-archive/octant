@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path"
+	"strings"
 	"sync"
 	"time"
 
@@ -20,9 +22,46 @@ const (
 	defaultEventTimeout = 5 * time.Second
 )
 
+type eventType string
+
+const (
+	eventTypeContent        eventType = "content"
+	eventTypeNamespaces     eventType = "namespaces"
+	eventTypeNavigation     eventType = "navigation"
+	eventTypeObjectNotFound eventType = "objectNotFound"
+)
+
+type event struct {
+	eventType eventType
+	data      []byte
+}
+
 type notFound interface {
 	NotFound() bool
 	Path() string
+}
+
+// NotFoundError is a not found error.
+type NotFoundError struct {
+	path string
+}
+
+// NewNotFoundError creates an instance of NotFoundError
+func NewNotFoundError(path string) *NotFoundError {
+	return &NotFoundError{path: path}
+}
+
+// Path is the path of the error.
+func (e *NotFoundError) Path() string {
+	return e.path
+}
+
+// NotFound returns true to signify this is a not found error.
+func (e *NotFoundError) NotFound() bool { return true }
+
+// Error returns the error string.
+func (e *NotFoundError) Error() string {
+	return "Not found"
 }
 
 type eventGenerator interface {
@@ -68,7 +107,7 @@ func (g *contentEventGenerator) Generate(ctx context.Context) (event, error) {
 		return event{}, err
 	}
 
-	return event{data: data}, nil
+	return event{eventType: eventTypeContent, data: data}, nil
 }
 
 func (g *contentEventGenerator) RunEvery() time.Duration {
@@ -103,7 +142,7 @@ func (g *navigationEventGenerator) Generate(ctx context.Context) (event, error) 
 		return event{}, err
 	}
 
-	return event{name: "navigation", data: data}, nil
+	return event{eventType: eventTypeNavigation, data: data}, nil
 }
 
 func (g *navigationEventGenerator) RunEvery() time.Duration {
@@ -135,7 +174,7 @@ func (g *namespaceEventGenerator) Generate(ctx context.Context) (event, error) {
 		return event{}, errors.New("unable to marshal namespaces")
 	}
 
-	return event{name: "namespaces", data: data}, nil
+	return event{eventType: eventTypeNamespaces, data: data}, nil
 }
 
 func (g *namespaceEventGenerator) RunEvery() time.Duration {
@@ -158,6 +197,7 @@ type contentStreamer struct {
 	streamFn        streamFn
 	logger          log.Logger
 	contentPath     string
+	requestPath     string
 }
 
 func (cs *contentStreamer) content(ctx context.Context) error {
@@ -194,8 +234,15 @@ func (cs *contentStreamer) content(ctx context.Context) error {
 					if err != nil {
 						if nfe, ok := err.(notFound); ok && nfe.NotFound() {
 							cs.logger.With(
-								"path", nfe.Path(),
+								"path", cs.contentPath,
+								"requestPath", cs.requestPath,
 							).Infof("content not found")
+							isRunning = false
+
+							ch <- event{
+								eventType: eventTypeObjectNotFound,
+								data:      []byte(notFoundRedirectPath(cs.requestPath)),
+							}
 							break
 						}
 
@@ -234,11 +281,6 @@ func (cs *contentStreamer) content(ctx context.Context) error {
 	return nil
 }
 
-type event struct {
-	name string
-	data []byte
-}
-
 func stream(ctx context.Context, w http.ResponseWriter, ch chan event) {
 	flusher, ok := w.(http.Flusher)
 	if !ok {
@@ -258,11 +300,19 @@ func stream(ctx context.Context, w http.ResponseWriter, ch chan event) {
 		case <-ctx.Done():
 			isStreaming = false
 		case e := <-ch:
-			if e.name != "" {
-				fmt.Fprintf(w, "event: %s\n", e.name)
+			if e.eventType != "" {
+				fmt.Fprintf(w, "event: %s\n", e.eventType)
 			}
 			fmt.Fprintf(w, "data: %s\n\n", string(e.data))
 			flusher.Flush()
 		}
 	}
+}
+
+func notFoundRedirectPath(requestPath string) string {
+	parts := strings.Split(requestPath, "/")
+	if len(parts) < 5 {
+		return ""
+	}
+	return path.Join(append([]string{"/"}, parts[3:len(parts)-2]...)...)
 }

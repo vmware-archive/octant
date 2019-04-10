@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 
+	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/objectstore"
@@ -16,6 +17,7 @@ import (
 	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -239,11 +241,14 @@ func (d *ObjectDescriber) PathFilters() []pathFilter {
 func (d *ObjectDescriber) currentObject(ctx context.Context, namespace string, options DescriberOptions) (runtime.Object, error) {
 	object, err := d.loaderFunc(ctx, options.ObjectStore, namespace, options.Fields)
 	if err != nil {
+		if kerrors.IsNotFound(err) {
+			return nil, api.NewNotFoundError(d.path)
+		}
 		return nil, err
 	}
 
 	if object == nil {
-		return nil, errors.Errorf("object not found")
+		return nil, api.NewNotFoundError(d.path)
 	}
 
 	item := d.objectType()

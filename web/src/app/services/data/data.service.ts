@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import {Location} from '@angular/common';
 import { BehaviorSubject, Observable } from 'rxjs';
 import getAPIBase from '../common/getAPIBase';
 import { ContentResponse } from '../../models/content';
@@ -36,7 +37,10 @@ export class DataService {
   private filters: Filter[] = [];
   private currentPath: string;
 
-  constructor(private http: HttpClient, private labelFilter: LabelFilterService, private notifierService: NotifierService) {
+  constructor(private http: HttpClient,
+              labelFilter: LabelFilterService,
+              private notifierService: NotifierService,
+              private location: Location) {
     labelFilter.filters.subscribe((filters) => {
       this.filters = filters;
       this.restartPoller();
@@ -86,7 +90,7 @@ export class DataService {
     this.notifierService.loading.next(true);
     this.eventSource = new EventSource(url);
 
-    this.eventSource.addEventListener('message', (message: MessageEvent) => {
+    this.eventSource.addEventListener('content', (message: MessageEvent) => {
       const data = JSON.parse(message.data) as ContentResponse;
       this.content.next(data);
       this.notifierService.loading.next(false);
@@ -103,8 +107,16 @@ export class DataService {
       this.namespaces.next(data.namespaces);
     });
 
+    this.eventSource.addEventListener('objectNotFound', (message: MessageEvent) => {
+      const redirectPath = message.data as string;
+      this.location.go(redirectPath);
+      this.currentPath = redirectPath.replace(/^(\/content\/)/, '');
+      this.restartPoller();
+      this.notifierService.warning.next('Kubernetes object was deleted from the cluster.');
+    });
+
     this.eventSource.addEventListener('error', () => {
-      this.notifierService.error.next('Lost backend source. Currently retrying...');
+      this.notifierService.error.next('Lost back end source. Currently retrying...');
     });
   }
 
@@ -128,4 +140,3 @@ export class DataService {
     this.currentPath = undefined;
   }
 }
-
