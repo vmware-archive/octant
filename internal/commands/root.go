@@ -23,12 +23,7 @@ func Execute(version string, gitCommit string, buildTime string) {
 }
 
 func newRoot(version string, gitCommit string, buildTime string) *cobra.Command {
-	rootCmd := &cobra.Command{
-		Use:   "sugarloaf",
-		Short: "sugarloaf is a dashboard for high bandwidth cluster analysis operations",
-	}
-
-	rootCmd.AddCommand(newDashCmd())
+	rootCmd := newSugarloafCmd()
 	rootCmd.AddCommand(newVersionCmd(version, gitCommit, buildTime))
 
 	return rootCmd
