@@ -141,7 +141,15 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 	}
 
 	if viewComponent != nil {
-		list.Add(viewComponent)
+
+		if table, ok := viewComponent.(*component.Table); ok {
+			if err := table.Config.Rows.Sort("Name"); err != nil {
+				return emptyContentResponse, errors.Wrap(err, "sorting list by Name column")
+			}
+			list.Add(table)
+		} else {
+			list.Add(viewComponent)
+		}
 	}
 
 	return component.ContentResponse{

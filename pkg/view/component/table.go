@@ -2,12 +2,13 @@ package component
 
 import (
 	"encoding/json"
+	"sort"
 )
 
 // TableConfig is the contents of a Table
 type TableConfig struct {
 	Columns      []TableCol `json:"columns"`
-	Rows         []TableRow `json:"rows"`
+	Rows         TableRows  `json:"rows"`
 	EmptyContent string     `json:"emptyContent"`
 }
 
@@ -20,6 +21,20 @@ type TableCol struct {
 
 // TableRow is a row in table. Each key->value represents a particular column in the row.
 type TableRow map[string]Component
+
+// TablesRows are multiple rows.
+type TableRows []TableRow
+
+func (t TableRows) Sort(name string) error {
+	sort.Slice(t, func(i, j int) bool {
+		a := t[i][name]
+		b := t[j][name]
+
+		return a.String() < b.String()
+	})
+
+	return nil
+}
 
 func (t *TableRow) UnmarshalJSON(data []byte) error {
 	*t = make(TableRow)

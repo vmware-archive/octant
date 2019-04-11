@@ -38,7 +38,7 @@ func Test_LocalContent_Content_root(t *testing.T) {
 			expectedCols := component.NewTableCols("Title", "File")
 			assert.Equal(t, expectedCols, table.Config.Columns)
 
-			expectedRows := []component.TableRow{
+			expectedRows := component.TableRows{
 				{
 					"Title": component.NewLink("", "Sample content", "/content/local/table"),
 					"File":  component.NewText("table.json"),

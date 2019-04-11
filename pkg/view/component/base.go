@@ -55,3 +55,9 @@ func (b *base) SetAccessor(accessor string) {
 func (b *base) IsEmpty() bool {
 	return false
 }
+
+// String returns an empty string. If a component wants to provide a value
+// it can override this function.
+func (b *base) String() string {
+	return ""
+}

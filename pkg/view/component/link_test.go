@@ -75,3 +75,8 @@ func Test_Link_Marshal(t *testing.T) {
 		})
 	}
 }
+
+func Test_Link_String(t *testing.T) {
+	c := NewLink("title", "string", "/path")
+	assert.Equal(t, "string", c.String())
+}
