@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -286,7 +287,7 @@ func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelec
 	return owned, nil
 }
 
-func loadPods(ctx context.Context, key objectstoreutil.Key, o objectstore.ObjectStore, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
+func loadPods(ctx context.Context, key objectstoreutil.Key, o objectstore.ObjectStore, labelSelector *metav1.LabelSelector) ([]*corev1.Pod, error) {
 	objects, err := o.List(ctx, key)
 	if err != nil {
 		return nil, err
@@ -308,7 +309,12 @@ func loadPods(ctx context.Context, key objectstoreutil.Key, o objectstore.Object
 			MatchLabels: pod.GetLabels(),
 		}
 
-		if selector == nil || isEqualSelector(selector, podSelector) {
+		selector, err := metav1.LabelSelectorAsSelector(labelSelector)
+		if err != nil {
+			return nil, err
+		}
+
+		if selector == nil || isEqualSelector(labelSelector, podSelector) || selector.Matches(kLabels.Set(pod.Labels)) {
 			list = append(list, pod)
 		}
 	}

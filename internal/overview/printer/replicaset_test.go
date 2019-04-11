@@ -216,12 +216,16 @@ func TestReplicaSetStatus(t *testing.T) {
 		Kind:       "Pod",
 	}
 
-	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, nil)
+	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, nil).AnyTimes()
 
 	ctx := context.Background()
 	rsc := NewReplicaSetStatus(rs)
 	got, err := rsc.Create(ctx, o)
 	require.NoError(t, err)
+
+	filteredPods, err := listPods(ctx, rs.Namespace, rs.Spec.Selector, rs.UID, o)
+	require.NoError(t, err)
+	assert.Equal(t, 3, len(filteredPods))
 
 	expected := component.NewQuadrant("Status")
 	require.NoError(t, expected.Set(component.QuadNW, "Running", "3"))

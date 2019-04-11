@@ -313,7 +313,7 @@ func (osq *ObjectStoreQueryer) PodsForService(ctx context.Context, service *core
 	return pods, nil
 }
 
-func (osq *ObjectStoreQueryer) loadPods(ctx context.Context, key objectstoreutil.Key, selector *metav1.LabelSelector) ([]*corev1.Pod, error) {
+func (osq *ObjectStoreQueryer) loadPods(ctx context.Context, key objectstoreutil.Key, labelSelector *metav1.LabelSelector) ([]*corev1.Pod, error) {
 	objects, err := osq.objectstore.List(ctx, key)
 	if err != nil {
 		return nil, err
@@ -335,7 +335,12 @@ func (osq *ObjectStoreQueryer) loadPods(ctx context.Context, key objectstoreutil
 			MatchLabels: pod.GetLabels(),
 		}
 
-		if selector == nil || isEqualSelector(selector, podSelector) {
+		selector, err := metav1.LabelSelectorAsSelector(labelSelector)
+		if err != nil {
+			return nil, err
+		}
+
+		if selector == nil || isEqualSelector(labelSelector, podSelector) || selector.Matches(kLabels.Set(pod.Labels)) {
 			list = append(list, pod)
 		}
 	}
