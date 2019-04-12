@@ -198,10 +198,9 @@ func Test_serviceEndpoints(t *testing.T) {
 				Addresses: []corev1.EndpointAddress{
 					{
 						TargetRef: &corev1.ObjectReference{
-							APIVersion: "v1",
-							Kind:       "Pod",
-							Name:       "pod-1",
-							Namespace:  "default",
+							Kind:      "Pod",
+							Name:      "pod-1",
+							Namespace: "default",
 						},
 						NodeName: &nodeName,
 						IP:       "10.1.1.1",
