@@ -1,57 +1,56 @@
 .resourceViewer {
-  min-height: 75vh;
+  .viewer {
+    min-height: 75vh;
+  }
 
   .node {
     cursor: pointer;
     fill: white;
 
-    rect {
-      border-radius: 4px;
-      fill: #004A70;
-      stroke: rgba(173, 187, 196, 0.3);
-      stroke-width: 2px;
-    }
-
     .label {
       fill: black;
     }
 
-    &.selected .resource-name {
-      color: pink;
+    &.selected {
+      stroke: #003d79;
+      stroke-width: 2.5px;
     }
 
     &-ok {
       filter: box-shadow 0 4px 10px rgba(0, 0, 0, 0.3);
       rect {
-        stroke: #aadb1e;
+        fill: #60b515;
       }
     }
 
     &-warning {
       rect {
-        stroke: #ff9c32;
+        fill: #f57600;
       }
     }
 
     &-error {
       rect {
-        stroke: #e12200;
+        fill: #e12200;
       }
     }
   }
 
   .edgePath {
     path.path {
-      fill: #565656;
-      stroke: #565656;
+      stroke: #003d79;
       stroke-width: 1.5px;
     }
+  }
+
+  .label {
+    margin: 20px 0;
   }
 
   .resource {
     background-color: #fff;
     border: 1px solid black;
-    padding: 10px 30px;
+    padding: 25px 40px;
     position: relative;
   }
 
@@ -59,12 +58,12 @@
     color: #fff;
     font-size: 14px;
     font-weight: 500;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
   }
 
   .resource-type {
     color: white;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 200;
   }
 

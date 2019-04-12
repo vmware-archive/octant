@@ -30,6 +30,7 @@ import { TextComponent } from './components/text/text.component';
 import { TimestampComponent } from './components/timestamp/timestamp.component';
 import { YamlComponent } from './components/yaml/yaml.component';
 import { OverviewComponent } from './overview.component';
+import { ObjectStatusComponent } from './components/object-status/object-status.component';
 
 export function hljsLanguages() {
   return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
@@ -62,6 +63,7 @@ export function hljsLanguages() {
     ContentSwitcherComponent,
     LogsComponent,
     PortsComponent,
+    ObjectStatusComponent,
   ],
   imports: [
     CommonModule,

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"sort"
 	"strings"
 	"sync"
 
@@ -28,6 +29,13 @@ type Collector struct {
 	nodes  map[string]component.Node
 	logger log.Logger
 
+	// groupPods sets the pod grouping. If it is true, group pods in one
+	// graph node. If not, show them separately.
+	groupPods bool
+
+	// podGroupIDs maps a pod to a pod group
+	podGroupIDs map[string]string
+
 	// podStats counts pods in a replica set.
 	podStats map[string]int
 
@@ -43,6 +51,8 @@ func NewCollector(o objectstore.ObjectStore) *Collector {
 	collector := &Collector{
 		podStats:    make(map[string]int),
 		objectStore: o,
+		groupPods:   true,
+		podGroupIDs: make(map[string]string),
 	}
 	collector.Reset()
 
@@ -64,7 +74,7 @@ func (c *Collector) Process(ctx context.Context, object objectvisitor.ClusterObj
 	var node component.Node
 	var err error
 
-	if c.isPod(object) {
+	if c.isPod(object) && c.groupPods {
 		pod := &corev1.Pod{}
 		if err := scheme.Scheme.Convert(object, pod, 0); err != nil {
 			return errors.Wrap(err, "unable to convert object to pod")
@@ -118,6 +128,14 @@ func (c *Collector) createPodGroupNode(object objectvisitor.ClusterObject) (stri
 		// set all statuses to ok until we start checking for the real status.
 		Status: component.NodeStatusOK,
 	}
+
+	accessor := meta.NewAccessor()
+	uid, err := accessor.UID(object)
+	if err != nil {
+		return "", component.Node{}, errors.Wrap(err, "getting uid for pod")
+	}
+
+	c.podGroupIDs[string(uid)] = pgd.id
 
 	return pgd.id, node, nil
 }
@@ -182,7 +200,6 @@ func (c *Collector) createObjectNode(ctx context.Context, object objectvisitor.C
 	}
 
 	q := url.Values{}
-	q.Set("view", "summary")
 	objectPath := link.ForObjectWithQuery(object, name, q)
 
 	node := component.Node{
@@ -203,15 +220,17 @@ func (c *Collector) AddChild(parent objectvisitor.ClusterObject, children ...obj
 	defer c.mu.Unlock()
 
 	accessor := meta.NewAccessor()
-	pid, err := accessor.UID(parent)
+	uid, err := accessor.UID(parent)
 	if err != nil {
 		return err
 	}
 
+	pid := string(uid)
+
 	for _, child := range children {
 		var cid string
 
-		if c.isPod(child) {
+		if c.isPod(child) && c.groupPods {
 			pgd, err := c.podGroupDetails(child)
 			if err != nil {
 				return errors.Wrap(err, "find pod group id for pod")
@@ -227,8 +246,8 @@ func (c *Collector) AddChild(parent objectvisitor.ClusterObject, children ...obj
 			cid = string(id)
 		}
 
-		if !dashstrings.Contains(cid, c.edges[string(pid)]) {
-			c.edges[string(pid)] = append(c.edges[string(pid)], cid)
+		if !dashstrings.Contains(cid, c.edges[pid]) {
+			c.edges[pid] = append(c.edges[pid], cid)
 		}
 	}
 
@@ -278,15 +297,22 @@ func (c *Collector) Component(selected string) (component.Component, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
+	fmt.Println("in collector selected:", selected)
+
+	nodes := make(map[string]component.Node)
+	for k, v := range c.nodes {
+		nodes[k] = v
+	}
+
 	rv := component.NewResourceViewer("Resource Viewer")
 
 	var nodeIDs []string
-	for nodeID, node := range c.nodes {
+	for nodeID, node := range nodes {
 		if strings.HasPrefix(nodeID, "pods-") {
 			ownerID := strings.TrimPrefix(nodeID, "pods-")
 			node.Details = append(node.Details,
 				component.NewText(fmt.Sprintf("Pod count: %d", c.podStats[ownerID])))
-			c.nodes[nodeID] = node
+			nodes[nodeID] = node
 		}
 
 		rv.AddNode(nodeID, node)
@@ -294,11 +320,17 @@ func (c *Collector) Component(selected string) (component.Component, error) {
 	}
 
 	for nodeID, edges := range c.edges {
+		sort.Strings(edges)
 		for _, edgeID := range edges {
 			if dashstrings.Contains(edgeID, nodeIDs) {
 				rv.AddEdge(nodeID, edgeID, component.EdgeTypeExplicit)
 			}
 		}
+	}
+
+	podGroupID, ok := c.podGroupIDs[selected]
+	if ok {
+		selected = podGroupID
 	}
 
 	rv.Select(selected)
