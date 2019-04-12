@@ -31,6 +31,10 @@ import { TimestampComponent } from './components/timestamp/timestamp.component';
 import { YamlComponent } from './components/yaml/yaml.component';
 import { OverviewComponent } from './overview.component';
 
+export function hljsLanguages() {
+  return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
+}
+
 @NgModule({
   declarations: [
     AnnotationsComponent,
@@ -63,9 +67,7 @@ import { OverviewComponent } from './overview.component';
     CommonModule,
     ClarityModule,
     HighlightModule.forRoot({
-      languages() {
-        return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
-      },
+      languages: hljsLanguages,
     }),
     RouterModule,
   ],

@@ -1,4 +1,6 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import _ from 'lodash';
 import { View } from 'src/app/models/content';
 import { ViewUtil } from 'src/app/util/view';
 
@@ -13,14 +15,21 @@ interface Tab {
   templateUrl: './tabs.component.html',
   styleUrls: ['./tabs.component.scss'],
 })
-export class TabsComponent implements OnChanges {
+export class TabsComponent implements OnChanges, OnInit {
   @Input() title: string;
   @Input() views: View[];
 
   tabs: Tab[] = [];
   activeTab: string;
 
-  constructor() {}
+  constructor(private router: Router, private activatedRoute: ActivatedRoute) {}
+
+  ngOnInit() {
+    const { queryParams } = this.activatedRoute.snapshot;
+    if (queryParams.tabView) {
+      this.activeTab = queryParams.tabView;
+    }
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.views.currentValue) {
@@ -28,7 +37,6 @@ export class TabsComponent implements OnChanges {
       this.tabs = views.map((view) => {
         const vu = new ViewUtil(view);
         const title = vu.titleAsText();
-
         return {
           name: title,
           view,
@@ -37,12 +45,25 @@ export class TabsComponent implements OnChanges {
       });
 
       if (!this.activeTab) {
-        this.activeTab = this.tabs[0].name;
+        this.activeTab = this.tabs[0].accessor;
       }
     }
   }
 
   identifyTab(index: number, item: Tab): string {
     return item.name;
+  }
+
+  clickTab(tabAccessor: string) {
+    if (this.activeTab === name) {
+      return;
+    }
+    this.activeTab = tabAccessor;
+    this.router.navigate([], {
+      relativeTo: this.activatedRoute,
+      replaceUrl: true,
+      queryParams: { tabView: tabAccessor },
+      queryParamsHandling: 'merge',
+    });
   }
 }

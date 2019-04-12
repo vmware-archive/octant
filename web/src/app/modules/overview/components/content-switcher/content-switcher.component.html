@@ -1,5 +1,5 @@
 <ng-container *ngIf="currentViewType">
-  <span [ngSwitch]="currentViewType">
+  <ng-container [ngSwitch]="currentViewType">
     <ng-container *ngSwitchCase="'annotations'">
       <app-view-annotations [view]="currentView"></app-view-annotations>
     </ng-container>
@@ -66,5 +66,5 @@
       </span>
       <span class="alert-text"> {{ currentViewType }} not implemented </span>
     </div>
-  </span>
+  </ng-container>
 </ng-container>

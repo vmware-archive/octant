@@ -3,6 +3,7 @@ import { TableRow, TableView } from 'src/app/models/content';
 import { ViewUtil } from 'src/app/util/view';
 import trackByIndex from 'src/app/util/trackBy/trackByIndex';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
+import _ from 'lodash';
 
 @Component({
   selector: 'app-view-datagrid',
@@ -16,7 +17,6 @@ export class DatagridComponent implements OnChanges {
   rows: TableRow[];
   title: string;
   placeholder: string;
-
   lastUpdated: Date;
 
   identifyRow = trackByIndex;
@@ -31,7 +31,6 @@ export class DatagridComponent implements OnChanges {
 
       const current = changes.view.currentValue;
       this.columns = current.config.columns.map((column) => column.name);
-      this.rows = current.config.rows;
       this.placeholder = current.config.emptyContent;
       this.lastUpdated = new Date();
     }
