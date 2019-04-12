@@ -86,13 +86,13 @@ func Test_PodListHandler(t *testing.T) {
 	containers := component.NewContainers()
 	containers.Add("nginx", "nginx:1.15")
 
-	cols := component.NewTableCols("Name", "Labels", "Ready", "Status", "Restarts", "Node", "Age")
+	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", cols)
 	expected.Add(component.TableRow{
 		"Name":     component.NewLink("", "pod", "/content/overview/namespace/default/workloads/pods/pod"),
 		"Labels":   component.NewLabels(labels),
 		"Ready":    component.NewText("1/2"),
-		"Status":   component.NewText("Pending"),
+		"Phase":    component.NewText("Pending"),
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(now),
 		"Node":     component.NewText("node"),
@@ -198,7 +198,7 @@ func Test_createPodSummaryStatus(t *testing.T) {
 
 	sections := component.SummarySections{
 		{Header: "QoS", Content: component.NewText("BestEffort")},
-		{Header: "Status", Content: component.NewText("Running")},
+		{Header: "Phase", Content: component.NewText("Running")},
 		{Header: "Pod IP", Content: component.NewText("10.1.1.1")},
 		{Header: "Host IP", Content: component.NewText("10.2.1.1")},
 	}

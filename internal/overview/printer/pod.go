@@ -22,8 +22,8 @@ import (
 )
 
 var (
-	podColsWithLabels    = component.NewTableCols("Name", "Labels", "Ready", "Status", "Restarts", "Node", "Age")
-	podColsWithOutLabels = component.NewTableCols("Name", "Ready", "Status", "Restarts", "Node", "Age")
+	podColsWithLabels    = component.NewTableCols("Name", "Labels", "Ready", "Phase", "Restarts", "Node", "Age")
+	podColsWithOutLabels = component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
 )
 
 // PodListHandler is a printFunc that prints pods
@@ -61,7 +61,7 @@ func PodListHandler(ctx context.Context, list *corev1.PodList, opts Options) (co
 		ready := fmt.Sprintf("%d/%d", readyCounter, len(p.Spec.Containers))
 		row["Ready"] = component.NewText(ready)
 
-		row["Status"] = component.NewText(string(p.Status.Phase))
+		row["Phase"] = component.NewText(string(p.Status.Phase))
 
 		restartCounter := 0
 		for _, c := range p.Status.ContainerStatuses {
@@ -177,7 +177,7 @@ func createPodSummaryStatus(pod *corev1.Pod) (*component.Summary, error) {
 			sections.AddText("Termination Grace Period", fmt.Sprintf("%ds", *pod.DeletionGracePeriodSeconds))
 		}
 	} else {
-		sections.AddText("Status", string(pod.Status.Phase))
+		sections.AddText("Phase", string(pod.Status.Phase))
 	}
 
 	if pod.Status.Reason != "" {

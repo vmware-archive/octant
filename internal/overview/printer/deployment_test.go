@@ -295,7 +295,7 @@ func Test_deploymentPods(t *testing.T) {
 			"Age":      component.NewTimestamp(now),
 			"Ready":    component.NewText("0/0"),
 			"Restarts": component.NewText("0"),
-			"Status":   component.NewText(""),
+			"Phase":    component.NewText(""),
 			"Node":     component.NewText(""),
 		},
 	})

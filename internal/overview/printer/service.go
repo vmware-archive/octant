@@ -217,7 +217,8 @@ func serviceEndpoints(ctx context.Context, o objectstore.ObjectStore, service *c
 
 			var target component.Component = component.NewText("No target")
 			if targetRef := address.TargetRef; targetRef != nil {
-				target = link.ForGVK(service.Namespace, targetRef.APIVersion, targetRef.Kind,
+				// Only references to v1/Pod are possible here
+				target = link.ForGVK(service.Namespace, "v1", targetRef.Kind,
 					targetRef.Name, targetRef.Name)
 			}
 
