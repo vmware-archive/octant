@@ -315,10 +315,6 @@ func (pf *PortForwarder) nextRequestID() int {
 func (pf *PortForwarder) handleConnection(conn net.Conn, port ForwardedPort) {
 	defer conn.Close()
 
-	if pf.out != nil {
-		fmt.Fprintf(pf.out, "Handling connection for %d\n", port.Local)
-	}
-
 	requestID := pf.nextRequestID()
 
 	// create error stream
