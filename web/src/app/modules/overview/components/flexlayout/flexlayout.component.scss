@@ -1,5 +1,6 @@
 .content-card-parent {
   ::ng-deep .card {
     height: calc(100% - 1rem);
+    overflow: auto hidden;
   }
 }

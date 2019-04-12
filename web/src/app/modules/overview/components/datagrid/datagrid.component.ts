@@ -31,9 +31,9 @@ export class DatagridComponent implements OnChanges {
 
       const current = changes.view.currentValue;
       this.columns = current.config.columns.map((column) => column.name);
+      this.rows = current.config.rows;
       this.placeholder = current.config.emptyContent;
       this.lastUpdated = new Date();
     }
   }
-
 }
