@@ -20,6 +20,7 @@ import (
 	"github.com/pkg/errors"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	kcache "k8s.io/client-go/tools/cache"
@@ -171,7 +172,7 @@ func (cld *crdListDescriber) Describe(ctx context.Context, prefix, namespace str
 		return emptyContentResponse, err
 	}
 
-	objects, err := listCustomResources(ctx, crd, namespace, options.ObjectStore)
+	objects, err := listCustomResources(ctx, crd, namespace, options.ObjectStore, options.LabelSet)
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -194,7 +195,8 @@ func listCustomResources(
 	ctx context.Context,
 	crd *apiextv1beta1.CustomResourceDefinition,
 	namespace string,
-	o objectstore.ObjectStore) ([]*unstructured.Unstructured, error) {
+	o objectstore.ObjectStore,
+	selector *labels.Set) ([]*unstructured.Unstructured, error) {
 	if crd == nil {
 		return nil, errors.New("crd is nil")
 	}
@@ -210,6 +212,7 @@ func listCustomResources(
 		Namespace:  namespace,
 		APIVersion: apiVersion,
 		Kind:       kind,
+		Selector:   selector,
 	}
 
 	objects, err := o.List(ctx, key)

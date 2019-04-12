@@ -182,7 +182,7 @@ func (nf *NavigationFactory) crdEntries(ctx context.Context, prefix string) ([]*
 			return nil, errors.Wrapf(err, "load %q custom resource definition", name)
 		}
 
-		objects, err := listCustomResources(ctx, crd, nf.namespace, nf.objectstore)
+		objects, err := listCustomResources(ctx, crd, nf.namespace, nf.objectstore, nil)
 		if err != nil {
 			return nil, err
 		}
