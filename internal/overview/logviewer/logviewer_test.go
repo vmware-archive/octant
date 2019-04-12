@@ -35,6 +35,25 @@ func Test_ToComponent(t *testing.T) {
 			expected: component.NewLogs("default", "pod", []string{"one", "two"}),
 		},
 		{
+			name: "with init containers",
+			object: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "pod",
+					Namespace: "default",
+				},
+				Spec: corev1.PodSpec{
+					InitContainers: []corev1.Container{
+						{Name: "init"},
+					},
+					Containers: []corev1.Container{
+						{Name: "one"},
+						{Name: "two"},
+					},
+				},
+			},
+			expected: component.NewLogs("default", "pod", []string{"init", "one", "two"}),
+		},
+		{
 			name:   "nil",
 			object: nil,
 			isErr:  true,

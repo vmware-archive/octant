@@ -20,6 +20,10 @@ func ToComponent(object runtime.Object) (component.Component, error) {
 
 	var containerNames []string
 
+	for _, c := range pod.Spec.InitContainers {
+		containerNames = append(containerNames, c.Name)
+	}
+
 	for _, c := range pod.Spec.Containers {
 		containerNames = append(containerNames, c.Name)
 	}
