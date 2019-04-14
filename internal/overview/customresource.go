@@ -61,7 +61,7 @@ func customResourceDefinition(ctx context.Context, name string, o objectstore.Ob
 
 	crd := &apiextv1beta1.CustomResourceDefinition{}
 	if err := objectstore.GetAs(ctx, o, key, crd); err != nil {
-		return nil, errors.Wrap(err, "get CRD from objecstore")
+		return nil, errors.Wrap(err, "get CRD from objectstore")
 	}
 
 	return crd, nil
@@ -119,9 +119,13 @@ func (csd *crdSectionDescriber) Describe(ctx context.Context, prefix, namespace 
 		}
 
 		for i := range resp.Components {
-			c := resp.Components[i]
-			if !c.IsEmpty() {
-				list.Add(c)
+			if nestedList, ok := resp.Components[i].(*component.List); ok {
+				for i := range nestedList.Config.Items {
+					item := nestedList.Config.Items[i]
+					if !item.IsEmpty() {
+						list.Add(item)
+					}
+				}
 			}
 		}
 	}
