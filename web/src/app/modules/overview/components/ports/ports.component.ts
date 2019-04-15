@@ -1,8 +1,8 @@
-import _ from 'lodash';
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { PortsView, Port } from 'src/app/models/content';
-import { PortForwardService } from 'src/app/services/port-forward/port-forward.service';
+import _ from 'lodash';
+import { Port, PortsView } from 'src/app/models/content';
 import { NotifierService } from 'src/app/services/notifier/notifier.service';
+import { PortForwardService } from 'src/app/services/port-forward/port-forward.service';
 
 @Component({
   selector: 'app-ports',

@@ -14,12 +14,10 @@
         </button>
       </ng-container>
       <ng-template #notRunning>
-        <button class="btn btn-small start-pf" (click)="startPortForward(port)">
+        <button *ngIf="port.config.state?.isForwardable" class="btn btn-small start-pf" (click)="startPortForward(port)">
           Start port forward
         </button>
       </ng-template>
     </div>
   </div>
 </div>
-
-
