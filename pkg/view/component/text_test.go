@@ -71,3 +71,8 @@ func Test_Text_Marshal(t *testing.T) {
 		})
 	}
 }
+
+func Test_Text_String(t *testing.T) {
+	c := NewText("string")
+	assert.Equal(t, "string", c.String())
+}

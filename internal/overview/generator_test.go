@@ -134,3 +134,7 @@ func (c *emptyComponent) SetAccessor(string) {
 func (c *emptyComponent) IsEmpty() bool {
 	return true
 }
+
+func (c *emptyComponent) String() string {
+	return ""
+}

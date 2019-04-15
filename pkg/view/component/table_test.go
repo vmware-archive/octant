@@ -100,3 +100,20 @@ func Test_Table_isEmpty(t *testing.T) {
 		})
 	}
 }
+
+func TestTableRows(t *testing.T) {
+	rows := TableRows{
+		{"Name": NewText("z")},
+		{"Name": NewText("a")},
+	}
+
+	err := rows.Sort("Name")
+	require.NoError(t, err)
+
+	expected := TableRows{
+		{"Name": NewText("a")},
+		{"Name": NewText("z")},
+	}
+
+	assert.Equal(t, expected, rows)
+}

@@ -181,6 +181,8 @@ func (v *stubComponent) IsEmpty() bool {
 
 func (v *stubComponent) SetAccessor(string) {}
 
+func (v *stubComponent) String() string { return "" }
+
 func Test_DefaultPrinter(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()

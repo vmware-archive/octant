@@ -45,6 +45,10 @@ func printGenericCRDTable(name, namespace string, list []*unstructured.Unstructu
 		table.Add(row)
 	}
 
+	if err := table.Config.Rows.Sort("Name"); err != nil {
+		return nil, errors.Wrap(err, "sorting table by column 'Name'")
+	}
+
 	return table, nil
 }
 
@@ -88,6 +92,10 @@ func printCustomCRDListTable(name, namespace string,
 		}
 
 		table.Add(row)
+	}
+
+	if err := table.Config.Rows.Sort("Name"); err != nil {
+		return nil, errors.Wrap(err, "sorting table by column 'Name'")
 	}
 
 	return table, nil

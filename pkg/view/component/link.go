@@ -41,3 +41,8 @@ func (t *Link) MarshalJSON() ([]byte, error) {
 	m.Metadata.Type = typeLink
 	return json.Marshal(&m)
 }
+
+// String returns the link's text.
+func (t *Link) String() string {
+	return t.Config.Text
+}

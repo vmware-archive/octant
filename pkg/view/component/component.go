@@ -144,6 +144,7 @@ type Component interface {
 	GetMetadata() Metadata
 	SetAccessor(string)
 	IsEmpty() bool
+	String() string
 }
 
 // TitleComponent is a view component that can be used for a title.
