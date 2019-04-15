@@ -1,12 +1,14 @@
 # Developer Dashboard (Sugarloaf)
 
-Kubernetes dashboard for developers
+A web-based Kubernetes dashboard for developers that want to augment their kubectl experience.
 
 ## Running
 
+Note: make sure to confirm you currently have access to a healthy cluster with `kubectl cluster-info`.
+
 Start the developer dashboard:
 
-`$ sugarloaf dash`
+`$ sugarloaf`
 
 Check the version:
 
@@ -20,7 +22,7 @@ Check the version:
 * [rice CLI](https://github.com/GeertJohan/go.rice)
   * Install with `go get github.com/GeertJohan/go.rice/rice`
 * [mockgen](https://github.com/golang/gomock)
-  * go get github.com/golang/mock/gomock && go install github.com/golang/mock/mockgen
+  * `go get github.com/golang/mock/gomock` && `go install github.com/golang/mock/mockgen`
 
 ## Install
 
