@@ -297,8 +297,6 @@ func (c *Collector) Component(selected string) (component.Component, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	fmt.Println("in collector selected:", selected)
-
 	nodes := make(map[string]component.Node)
 	for k, v := range c.nodes {
 		nodes[k] = v

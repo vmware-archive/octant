@@ -165,7 +165,7 @@ type logResponse struct {
 // Handlers are extra handlers for overview
 func (co *ClusterOverview) Handlers(ctx context.Context) map[string]http.Handler {
 	return map[string]http.Handler{
-		"/logs/pod/{pod}/container/{container}": containerLogsHandler(co.client),
+		"/logs/pod/{pod}/container/{container}": containerLogsHandler(ctx, co.client),
 		"/port-forwards":                        co.portForwardsHandler(),
 		"/port-forwards/{id}":                   co.portForwardHandler(),
 	}

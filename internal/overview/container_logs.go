@@ -1,18 +1,19 @@
 package overview
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/overview/container"
 )
 
-func containerLogsHandler(clusterClient cluster.ClientInterface) http.HandlerFunc {
+func containerLogsHandler(ctx context.Context, clusterClient cluster.ClientInterface) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -65,7 +66,8 @@ func containerLogsHandler(clusterClient cluster.ClientInterface) http.HandlerFun
 		}
 
 		if err := json.NewEncoder(w).Encode(&lr); err != nil {
-			fmt.Println("oops", err)
+			logger := log.From(ctx)
+			logger.With("err", err.Error()).Errorf("unable to encode log entries")
 		}
 	}
 }

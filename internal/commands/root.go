@@ -17,7 +17,7 @@ func init() {
 func Execute(version string, gitCommit string, buildTime string) {
 	rootCmd := newRoot(version, gitCommit, buildTime)
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
