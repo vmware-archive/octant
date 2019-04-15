@@ -76,7 +76,8 @@ func Test_crdSectionDescriber(t *testing.T) {
 	csd := newCRDSectionDescriber("/path", "title")
 
 	d1View := component.NewText("d1")
-	d1 := newStubDescriber("/d1", d1View)
+	d1 := newStubDescriber("/d1", component.NewList("", []component.Component{d1View}))
+
 	csd.Add("d1", d1)
 
 	ctx := context.Background()
