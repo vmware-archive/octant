@@ -365,6 +365,10 @@ var extraKeys = []string{
 }
 
 func isEqualSelector(s1, s2 *metav1.LabelSelector) bool {
+	if s1 == nil || s2 == nil {
+		return false
+	}
+
 	s1Copy := s1.DeepCopy()
 	s2Copy := s2.DeepCopy()
 

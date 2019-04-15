@@ -215,6 +215,12 @@ func (cs *contentStreamer) content(ctx context.Context) error {
 		return errors.Errorf("logger is not configured")
 	}
 
+	defer func() {
+        if r := recover(); r != nil {
+			cs.logger.With("err", r).Errorf("content streamer paniced")
+        }
+    }()
+
 	var wg sync.WaitGroup
 	wg.Add(len(cs.eventGenerators))
 
