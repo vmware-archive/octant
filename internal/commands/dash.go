@@ -33,7 +33,7 @@ func newSugarloafCmd() *cobra.Command {
 
 			z, err := newZapLogger(verboseLevel)
 			if err != nil {
-				fmt.Printf("failed to initialize logger: %v\n", err)
+				fmt.Fprintf(os.Stderr, "failed to initialize logger: %v\n", err)
 				os.Exit(1)
 			}
 			defer z.Sync()
