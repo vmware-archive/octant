@@ -1,7 +1,12 @@
-# Change Log
+## Development release:
+  * [Unreleased Changes][0]
 
-##v0.1.0
+## Current release:
+  * [CHANGELOG-0.2.md][2]
 
-This is the intitial release for the developer dashboard!
+## Older releases:
+  * [CHANGELOG-0.1.md][1]
 
-Follow the [project planning document](https://docs.google.com/document/d/1Dmk0DHY_-xVqhZOK8xOtx8x4F9QvxRHcuQhrPwutep8/) for current discussions and the feature roadmap.
+[2]: https://github.com/heptio/developer-dash/blob/master/changelogs/CHANGELOG-0.2.md
+[1]: https://github.com/heptio/developer-dash/blob/master/changelogs/CHANGELOG-0.1.md
+[0]: https://github.com/heptio/developer-dash/blob/master/changelogs/unreleased

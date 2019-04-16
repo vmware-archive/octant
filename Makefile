@@ -66,6 +66,10 @@ ui-client:
 gen-electron:
 	@GOCACHE=${HOME}/cache/go-build astilectron-bundler -v -c configs/electron/bundler.json
 
+.PHONY: changelogs
+changelogs:
+	hacks/changelogs.sh
+
 .PHONY: release
 release:
 	git tag -a $(VERSION) -m "Release $(VERSION)"
