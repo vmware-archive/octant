@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import * as Moment from 'moment';
+import moment from 'moment';
 import { TimestampView } from 'src/app/models/content';
 
 @Component({
@@ -20,7 +20,7 @@ export class TimestampComponent implements OnChanges {
       const view = changes.view.currentValue as TimestampView;
 
       const timestamp = view.config.timestamp;
-      this.humanReadable = Moment(timestamp * 1000)
+      this.humanReadable = moment(timestamp * 1000)
         .utcOffset('+0000')
         .format('LLLL z');
       this.age = this.summarizeTimestamp(timestamp);

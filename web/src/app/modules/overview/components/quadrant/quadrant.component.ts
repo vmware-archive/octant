@@ -31,4 +31,3 @@ export class QuadrantComponent implements OnChanges {
     }
   }
 }
-

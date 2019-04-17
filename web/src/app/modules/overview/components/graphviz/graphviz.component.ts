@@ -14,15 +14,15 @@ import { DagreService } from '../../services/dagre/dagre.service';
 })
 export class GraphvizComponent implements AfterViewChecked {
   @ViewChild('viewer') private viewer: ElementRef;
-
   @Input() view: GraphvizView;
 
   constructor(private dagreService: DagreService) { }
 
   ngAfterViewChecked() {
-    const current = this.view.config.dot;
-
-    const g = dot.read(current);
-    this.dagreService.render(this.viewer, g);
+    if (this.view) {
+      const current = this.view.config.dot;
+      const g = dot.read(current);
+      this.dagreService.render(this.viewer, g);
+    }
   }
 }

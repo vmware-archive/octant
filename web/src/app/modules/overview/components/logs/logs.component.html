@@ -2,7 +2,7 @@
   <clr-select-container class="container-select">
     <label>Choose a container:</label>
     <select clrSelect name="options" [value]="selectedContainer" (change)="onContainerChange($event.target.value)">
-      <option *ngFor="let container of view.config.containers" value="{{container}}">{{container}}</option>
+      <option *ngFor="let container of view?.config.containers" value="{{container}}">{{container}}</option>
     </select>
   </clr-select-container>
   <div class="container-logs">

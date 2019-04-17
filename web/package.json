@@ -47,6 +47,7 @@
     "@types/graphlib-dot": "^0.6.1",
     "@types/jasmine": "~2.8.8",
     "@types/jasminewd2": "~2.0.3",
+    "@types/lodash": "^4.14.123",
     "@types/node": "~8.9.4",
     "codelyzer": "^4.5.0",
     "jasmine-core": "~2.99.1",

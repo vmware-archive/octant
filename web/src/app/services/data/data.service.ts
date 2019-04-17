@@ -23,7 +23,6 @@ const emptyNavigation: Navigation = {
   sections: [],
 };
 
-
 @Injectable({
   providedIn: 'root',
 })

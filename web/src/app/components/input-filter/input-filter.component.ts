@@ -9,7 +9,7 @@ import {Filter, LabelFilterService} from '../../services/label-filter/label-filt
 export class InputFilterComponent implements OnInit {
   inputValue = '';
   showTagList = false;
-  filters: Filter[] = [{key: 'fake', value: 'tag'}, {key: 'fake', value: 'tag'}, {key: 'fake', value: 'tag'}, {key: 'fake', value: 'tag'}];
+  filters: Filter[] = [];
 
   constructor(private eRef: ElementRef, private labelFilterService: LabelFilterService) { }
 

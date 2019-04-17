@@ -1,3 +1,3 @@
 <div class="view-selectors">
-  <app-content-switcher [view]="selector" *ngFor="let selector of view.config.selectors; trackBy: identifyItem"></app-content-switcher>
+  <app-content-switcher [view]="selector" *ngFor="let selector of view?.config.selectors; trackBy: identifyItem"></app-content-switcher>
 </div>

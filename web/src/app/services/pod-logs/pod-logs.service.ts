@@ -46,7 +46,6 @@ export class PodLogsStreamer {
   }
 }
 
-
 @Injectable({
   providedIn: 'root'
 })

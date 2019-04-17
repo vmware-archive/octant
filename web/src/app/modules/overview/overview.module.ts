@@ -16,7 +16,7 @@ import { GraphvizComponent } from './components/graphviz/graphviz.component';
 import { LabelSelectorComponent } from './components/label-selector/label-selector.component';
 import { LabelsComponent } from './components/labels/labels.component';
 import { LinkComponent } from './components/link/link.component';
-import { ViewListComponent } from './components/list/list.component';
+import { ListComponent } from './components/list/list.component';
 import { LogsComponent } from './components/logs/logs.component';
 import { PortForwardComponent } from './components/port-forward/port-forward.component';
 import { PortsComponent } from './components/ports/ports.component';
@@ -48,7 +48,7 @@ export function hljsLanguages() {
     LabelSelectorComponent,
     LabelsComponent,
     LinkComponent,
-    ViewListComponent,
+    ListComponent,
     QuadrantComponent,
     ResourceViewerComponent,
     SelectorsComponent,

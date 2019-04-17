@@ -23,4 +23,3 @@ describe('NamespaceComponent', () => {
     expect(component).toBeTruthy();
   });
 });
-

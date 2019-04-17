@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { OverviewModule } from '../../overview.module';
 import { ResourceViewerComponent } from './resource-viewer.component';
 
 describe('ResourceViewerComponent', () => {
@@ -8,7 +8,7 @@ describe('ResourceViewerComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ResourceViewerComponent ]
+      imports: [ OverviewModule ],
     })
     .compileComponents();
   }));

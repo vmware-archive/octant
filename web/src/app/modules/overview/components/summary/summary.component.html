@@ -3,7 +3,7 @@
     <h3 class="card-title">{{ title }}</h3>
     <table class="table table-vertical table-noborder">
       <tbody>
-        <tr *ngFor="let item of view.config.sections; trackBy: identifyItem">
+        <tr *ngFor="let item of view?.config.sections; trackBy: identifyItem">
           <th>{{ item.header }}</th>
           <td [ngSwitch]="item.content.metadata.type">
             <ng-container *ngSwitchCase="'annotations'">

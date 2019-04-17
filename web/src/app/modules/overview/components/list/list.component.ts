@@ -7,9 +7,8 @@ import { titleAsText, ViewUtil } from 'src/app/util/view';
   templateUrl: './list.component.html',
   styleUrls: ['./list.component.scss'],
 })
-export class ViewListComponent implements OnChanges {
+export class ListComponent implements OnChanges {
   @Input() listView: ListView;
-
   title: string;
 
   identifyItem(index: number, item: View): string {

@@ -20,10 +20,12 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
   ) { }
 
   ngOnInit() {
-    if (this.view.config.containers && this.view.config.containers.length > 0) {
-      this.selectedContainer = this.view.config.containers[0];
+    if (this.view) {
+      if (this.view.config.containers && this.view.config.containers.length > 0) {
+        this.selectedContainer = this.view.config.containers[0];
+      }
+      this.startStream();
     }
-    this.startStream();
   }
 
   onContainerChange(containerSelection: string): void {

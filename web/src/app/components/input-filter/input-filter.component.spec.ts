@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { FormsModule } from '@angular/forms';
 import { InputFilterComponent } from './input-filter.component';
 
 describe('InputFilterComponent', () => {
@@ -8,7 +8,12 @@ describe('InputFilterComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ InputFilterComponent ]
+      imports: [
+        FormsModule,
+      ],
+      declarations: [
+        InputFilterComponent,
+      ],
     })
     .compileComponents();
   }));

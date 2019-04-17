@@ -1,15 +1,15 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ReplaySubject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { Filter, LabelFilterService } from 'src/app/services/label-filter/label-filter.service';
 import { ActivatedRouteStub } from 'src/app/testing/activated-route-stub';
-
+import { FormsModule } from '@angular/forms';
 import { OverviewModule } from '../../overview.module';
 import { FiltersComponent } from './filters.component';
 
-const filterSubject = new ReplaySubject<Filter[]>();
+const filterSubject = new BehaviorSubject<Filter[]>([]);
 const labelFilterService: Partial<LabelFilterService> = {
-  filters: () => filterSubject.asObservable(),
+  filters: filterSubject,
 };
 
 const activatedRouteStub = new ActivatedRouteStub();
@@ -25,7 +25,10 @@ describe('FiltersComponent', () => {
     };
 
     TestBed.configureTestingModule({
-      imports: [OverviewModule],
+      imports: [
+        OverviewModule,
+        FormsModule,
+      ],
       providers: [
         { provide: Router, useValue: mockRouter },
         { provide: ActivatedRoute, useValue: activatedRouteStub },

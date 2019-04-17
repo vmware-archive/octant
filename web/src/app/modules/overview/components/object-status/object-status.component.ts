@@ -8,7 +8,6 @@ import { Node } from 'src/app/models/content';
   encapsulation: ViewEncapsulation.Emulated,
 })
 export class ObjectStatusComponent {
-
   @Input() node: Node;
 
   constructor() { }

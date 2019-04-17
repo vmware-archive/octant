@@ -1,11 +1,11 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { OverviewModule } from '../../overview.module';
-import { ViewListComponent } from './list.component';
+import { ListComponent } from './list.component';
 
-describe('ViewListComponent', () => {
-  let component: ViewListComponent;
-  let fixture: ComponentFixture<ViewListComponent>;
+describe('ListComponent', () => {
+  let component: ListComponent;
+  let fixture: ComponentFixture<ListComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -14,7 +14,7 @@ describe('ViewListComponent', () => {
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ViewListComponent);
+    fixture = TestBed.createComponent(ListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

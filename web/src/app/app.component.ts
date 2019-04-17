@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { DataService } from './services/data/data.service';
-import { Navigation, NavigationChild } from './models/navigation';
+import { Navigation } from './models/navigation';
 
 @Component({
   selector: 'app-root',
