@@ -141,10 +141,16 @@ func (m *Metadata) UnmarshalJSON(data []byte) error {
 // Component is a common interface for the data representation
 // of visual components as rendered by the UI.
 type Component interface {
+	// GetMetadata returns metadata for the component.
 	GetMetadata() Metadata
+	// SetAccessor sets the accessfor the component.
 	SetAccessor(string)
+	// IsEmpty returns true if the component is "empty".
 	IsEmpty() bool
+	// String returns a string representation of the component.
 	String() string
+	// LessThan returns true if the components value is less than the other value.
+	LessThan(other interface{}) bool
 }
 
 // TitleComponent is a view component that can be used for a title.

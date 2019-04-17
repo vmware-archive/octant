@@ -61,3 +61,8 @@ func (b *base) IsEmpty() bool {
 func (b *base) String() string {
 	return ""
 }
+
+// LessThan returns false.
+func (b *base) LessThan(i interface{}) bool {
+	return false
+}

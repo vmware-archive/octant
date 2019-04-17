@@ -183,6 +183,10 @@ func (v *stubComponent) SetAccessor(string) {}
 
 func (v *stubComponent) String() string { return "" }
 
+func (v *stubComponent) LessThan(interface{}) bool {
+	return false
+}
+
 func Test_DefaultPrinter(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()

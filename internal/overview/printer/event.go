@@ -11,7 +11,6 @@ import (
 	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/heptio/developer-dash/pkg/view/flexlayout"
-	"github.com/heptio/developer-dash/pkg/view/gridlayout"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -40,13 +39,14 @@ func EventListHandler(ctx context.Context, list *corev1.EventList, opts Options)
 			return nil, err
 		}
 
-		infoItems := []component.Component{
-			component.NewLink("", event.InvolvedObject.Name, objectPath),
-			component.NewText(fmt.Sprintf("%d", event.Count)),
+		var kind component.Component = component.NewLink("",
+			fmt.Sprintf("%s (%d)", event.InvolvedObject.Name, event.Count), objectPath)
+		if objectPath == "" {
+			kind = component.NewText(
+				fmt.Sprintf("%s (%d)", event.InvolvedObject.Name, event.Count))
 		}
-		info := component.NewList("", infoItems)
 
-		row["Kind"] = info
+		row["Kind"] = kind
 		row["Message"] = link.ForObject(&event, event.Message)
 		row["Reason"] = component.NewText(event.Reason)
 		row["Type"] = component.NewText(event.Type)
@@ -56,20 +56,7 @@ func EventListHandler(ctx context.Context, list *corev1.EventList, opts Options)
 		table.Add(row)
 	}
 
-	sort.Slice(table.Config.Rows, func(i, j int) bool {
-		a, ok := table.Config.Rows[i]["Last Seen"].(*component.Timestamp)
-		if !ok {
-			return false
-		}
-
-		b, ok := table.Config.Rows[j]["Last Seen"].(*component.Timestamp)
-		if !ok {
-			return false
-		}
-
-		return b.Config.Timestamp < a.Config.Timestamp
-
-	})
+	table.Sort("Last Seen", true)
 
 	return table, nil
 }
@@ -112,10 +99,13 @@ func EventHandler(ctx context.Context, event *corev1.Event, opts Options) (compo
 	if err != nil {
 		return nil, err
 	}
-	detailSections = append(detailSections, component.SummarySection{
-		Header:  "Involved Object",
-		Content: component.NewLink("", event.InvolvedObject.Name, refPath),
-	})
+
+	if refPath != "" {
+		detailSections = append(detailSections, component.SummarySection{
+			Header:  "Involved Object",
+			Content: component.NewLink("", event.InvolvedObject.Name, refPath),
+		})
+	}
 
 	detailSections = append(detailSections, component.SummarySection{
 		Header:  "Type",
@@ -139,13 +129,13 @@ func EventHandler(ctx context.Context, event *corev1.Event, opts Options) (compo
 
 	summary := component.NewSummary("Event Detail", detailSections...)
 
-	gl := gridlayout.New()
+	fl := flexlayout.New()
+	summarySection := fl.AddSection()
+	if err := summarySection.Add(summary, component.WidthFull); err != nil {
+		return nil, errors.Wrap(err, "add event to layout")
+	}
 
-	summarySection := gl.CreateSection(10)
-	summarySection.Add(summary, 24)
-
-	grid := gl.ToGrid()
-	return grid, nil
+	return fl.ToComponent("Event"), nil
 }
 
 // PrintEvents collects events for a resource

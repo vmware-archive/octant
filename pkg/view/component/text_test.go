@@ -72,7 +72,49 @@ func Test_Text_Marshal(t *testing.T) {
 	}
 }
 
+func Test_Text_SupportsTitle(t *testing.T) {
+	var c Component = NewText("text")
+
+	_, ok := c.(TitleComponent)
+	assert.True(t, ok)
+}
+
 func Test_Text_String(t *testing.T) {
 	c := NewText("string")
 	assert.Equal(t, "string", c.String())
+}
+
+func Test_Text_LessThan(t *testing.T) {
+	cases := []struct{
+		name string
+		ts Text
+		other Component
+		expected bool
+	}{
+		{
+			name: "is less",
+			ts: *NewText("b"),
+			other: NewText("c"),
+			expected: true,
+		},
+		{
+			name: "is not less",
+			ts: *NewText("b"),
+			other: NewText("a"),
+			expected: false,
+		},
+		{
+			name: "other is not a timestamp",
+			ts: *NewText("b"),
+			other: nil,
+			expected: false,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T){
+			got := tc.ts.LessThan(tc.other)
+			assert.Equal(t, tc.expected, got)
+		})
+	}
 }

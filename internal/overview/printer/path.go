@@ -3,7 +3,6 @@ package printer
 import (
 	"path"
 
-	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -44,8 +43,7 @@ func ObjectReferencePath(or corev1.ObjectReference) (string, error) {
 
 	section, ok := objectReferenceLookup[key]
 	if !ok {
-		return "", errors.Errorf("unable to locate overview section for %s/%s",
-			key.apiVersion, key.kind)
+		return "", nil
 	}
 
 	var objectPath string

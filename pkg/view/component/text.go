@@ -23,7 +23,7 @@ func NewText(s string) *Text {
 	}
 }
 
-// SupportsTitle designates this is a TextComponent.
+// SupportsTitle denotes this is a TextComponent.
 func (t *Text) SupportsTitle() {}
 
 type textMarshal Text
@@ -38,4 +38,15 @@ func (t *Text) MarshalJSON() ([]byte, error) {
 // String returns the text content of the component.
 func (t *Text) String() string {
 	return t.Config.Text
+}
+
+// LessThan returns true if this component's value is less than the argument supplied.
+func (t *Text) LessThan(i interface{}) bool {
+	v, ok := i.(*Text)
+	if !ok {
+		return false
+	}
+
+	return t.Config.Text < v.Config.Text
+
 }

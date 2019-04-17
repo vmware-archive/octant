@@ -138,3 +138,7 @@ func (c *emptyComponent) IsEmpty() bool {
 func (c *emptyComponent) String() string {
 	return ""
 }
+
+func (c *emptyComponent) LessThan(interface{}) bool {
+	return false
+}
