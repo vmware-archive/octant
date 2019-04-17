@@ -14,6 +14,14 @@ import (
 	"github.com/heptio/developer-dash/internal/sugarloaf"
 )
 
+var (
+	// acceptedHosts are the hosts this api will answer for.
+	acceptedHosts = []string{
+		"localhost",
+		"127.0.0.1",
+	}
+)
+
 func serveAsJSON(w http.ResponseWriter, v interface{}, logger log.Logger) {
 	w.Header().Set("Content-Type", mime.JSONContentType)
 	if err := json.NewEncoder(w).Encode(v); err != nil {
@@ -72,12 +80,6 @@ type API struct {
 	modules     []module.Module
 }
 
-func (a *API) telemetryMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		next.ServeHTTP(w, r)
-	})
-}
-
 // New creates an instance of API.
 func New(ctx context.Context, prefix string, nsClient cluster.NamespaceInterface, infoClient cluster.InfoInterface, moduleManager module.ManagerInterface, logger log.Logger) *API {
 	return &API{
@@ -94,7 +96,8 @@ func New(ctx context.Context, prefix string, nsClient cluster.NamespaceInterface
 // Handler returns a HTTP handler for the service.
 func (a *API) Handler(ctx context.Context) *mux.Router {
 	router := mux.NewRouter()
-	router.Use(a.telemetryMiddleware)
+	router.Use(rebindHandler(acceptedHosts))
+
 	s := router.PathPrefix(a.prefix).Subrouter()
 
 	namespacesService := newNamespaces(a.nsClient, a.logger)
