@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	cacheutil "github.com/heptio/developer-dash/internal/cache/util"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/plugin/api"
 	"github.com/heptio/developer-dash/pkg/view/component"
@@ -58,7 +58,7 @@ func (s *stub) Print(object runtime.Object) (plugin.PrintResponse, error) {
 	}
 
 	ctx := context.Background()
-	key, err := cacheutil.KeyFromObject(object)
+	key, err := objectstoreutil.KeyFromObject(object)
 	if err != nil {
 		return plugin.PrintResponse{}, err
 	}
@@ -67,7 +67,7 @@ func (s *stub) Print(object runtime.Object) (plugin.PrintResponse, error) {
 		return plugin.PrintResponse{}, err
 	}
 
-	log.Printf("loaded object from cache: %v", u)
+	log.Printf("loaded object from objectstore: %v", u)
 
 	msg := fmt.Sprintf("update from plugin at %s", time.Now().Format(time.RFC3339))
 
