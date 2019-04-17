@@ -29,7 +29,7 @@ var _ API = (*grpcAPI)(nil)
 
 // New creates a new API instance for DashService.
 func New(service Service) (API, error) {
-	listener, err := net.Listen("tcp", ":0")
+	listener, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
 		return nil, errors.Wrap(err, "create listener")
 	}
