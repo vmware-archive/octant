@@ -6,7 +6,7 @@
     "start": "ng serve",
     "build": "ng build --prod",
     "test": "ng test",
-    "test:headless": "echo \"Error: Need to install Chrome to run Chrome headless or look into alternatives\"",
+    "test:headless": "ng test --watch=false --browsers=ChromeHeadless",
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
