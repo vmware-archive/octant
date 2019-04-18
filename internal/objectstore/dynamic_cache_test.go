@@ -11,6 +11,9 @@ import (
 	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	authorizationapi "k8s.io/api/authorization/v1"
+	authorizationv1 "k8s.io/api/authorization/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -52,6 +55,9 @@ func Test_DynamicCache_List(t *testing.T) {
 	informerFactory := clusterfake.NewMockDynamicSharedInformerFactory(controller)
 	sharedIndexInformer := clusterfake.NewMockSharedIndexInformer(controller)
 	informer := clusterfake.NewMockGenericInformer(controller)
+	kubernetesClient := clusterfake.NewMockKubernetesInterface(controller)
+	authClient := clusterfake.NewMockAuthorizationV1Interface(controller)
+	accessClient := clusterfake.NewMockSelfSubjectAccessReviewInterface(controller)
 
 	informer.EXPECT().Informer().Return(sharedIndexInformer)
 	sharedIndexInformer.EXPECT().HasSynced().Return(true)
@@ -69,6 +75,33 @@ func Test_DynamicCache_List(t *testing.T) {
 		Kind: "Pod",
 	}
 	client.EXPECT().Resource(gomock.Eq(podGK)).Return(podGVR, nil)
+
+	client.EXPECT().KubernetesClient().Return(kubernetesClient, nil)
+	kubernetesClient.EXPECT().AuthorizationV1().Return(authClient)
+
+	authResp := &authorizationapi.SelfSubjectAccessReview{
+		Status: authorizationapi.SubjectAccessReviewStatus{
+			Allowed: true,
+		},
+	}
+
+	verbs := []string{"get", "list", "watch"}
+	for _, verb := range verbs {
+		resourceAttributes := &authorizationv1.ResourceAttributes{
+			Verb:      verb,
+			Version:   "v1",
+			Resource:  "pods",
+			Namespace: metav1.NamespaceAll,
+		}
+
+		sar := &authorizationv1.SelfSubjectAccessReview{
+			Spec: authorizationv1.SelfSubjectAccessReviewSpec{
+				ResourceAttributes: resourceAttributes,
+			},
+		}
+		authClient.EXPECT().SelfSubjectAccessReviews().Return(accessClient)
+		accessClient.EXPECT().Create(sar).Return(authResp, nil)
+	}
 
 	informerFactory.EXPECT().Start(gomock.Eq(ctx.Done()))
 
@@ -111,6 +144,10 @@ func Test_DynamicCache_Get(t *testing.T) {
 	informerFactory := clusterfake.NewMockDynamicSharedInformerFactory(controller)
 	informer := clusterfake.NewMockGenericInformer(controller)
 	sharedIndexInformer := clusterfake.NewMockSharedIndexInformer(controller)
+	kubernetesClient := clusterfake.NewMockKubernetesInterface(controller)
+	authClient := clusterfake.NewMockAuthorizationV1Interface(controller)
+	accessClient := clusterfake.NewMockSelfSubjectAccessReviewInterface(controller)
+
 	informer.EXPECT().Informer().Return(sharedIndexInformer)
 	sharedIndexInformer.EXPECT().HasSynced().Return(true)
 
@@ -126,6 +163,33 @@ func Test_DynamicCache_Get(t *testing.T) {
 		Kind: "Pod",
 	}
 	client.EXPECT().Resource(gomock.Eq(podGK)).Return(podGVR, nil)
+
+	client.EXPECT().KubernetesClient().Return(kubernetesClient, nil)
+	kubernetesClient.EXPECT().AuthorizationV1().Return(authClient)
+
+	authResp := &authorizationapi.SelfSubjectAccessReview{
+		Status: authorizationapi.SubjectAccessReviewStatus{
+			Allowed: true,
+		},
+	}
+
+	verbs := []string{"get", "list", "watch"}
+	for _, verb := range verbs {
+		resourceAttributes := &authorizationv1.ResourceAttributes{
+			Verb:      verb,
+			Version:   "v1",
+			Resource:  "pods",
+			Namespace: metav1.NamespaceAll,
+		}
+
+		sar := &authorizationv1.SelfSubjectAccessReview{
+			Spec: authorizationv1.SelfSubjectAccessReviewSpec{
+				ResourceAttributes: resourceAttributes,
+			},
+		}
+		authClient.EXPECT().SelfSubjectAccessReviews().Return(accessClient)
+		accessClient.EXPECT().Create(sar).Return(authResp, nil)
+	}
 
 	informerFactory.EXPECT().Start(gomock.Eq(ctx.Done()))
 

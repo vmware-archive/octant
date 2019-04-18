@@ -104,7 +104,7 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 
 	objects, err := loadObjects(ctx, options.ObjectStore, namespace, options.Fields, []objectstoreutil.Key{key})
 	if err != nil {
-		return emptyContentResponse, err
+		return emptyContentResponse, errors.Wrap(err, "loadObjects")
 	}
 
 	list := component.NewList(d.title, nil)
@@ -258,7 +258,7 @@ func (d *ObjectDescriber) currentObject(ctx context.Context, namespace string, o
 		if kerrors.IsNotFound(err) {
 			return nil, api.NewNotFoundError(d.path)
 		}
-		return nil, err
+		return nil, errors.Wrap(err, "calling loaderFunc")
 	}
 
 	if object == nil {
