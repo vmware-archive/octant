@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/heptio/developer-dash/pkg/plugin/proto"
+	"github.com/heptio/developer-dash/pkg/plugin/dashboard"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -15,13 +15,13 @@ import (
 // GRPCClient is the dashboard GRPC client.
 type GRPCClient struct {
 	broker Broker
-	client proto.PluginClient
+	client dashboard.PluginClient
 }
 
 var _ Service = (*GRPCClient)(nil)
 
 // NewGRPCClient creates an instance of GRPCClient.
-func NewGRPCClient(broker Broker, client proto.PluginClient) *GRPCClient {
+func NewGRPCClient(broker Broker, client dashboard.PluginClient) *GRPCClient {
 	return &GRPCClient{
 		client: client,
 		broker: broker,
@@ -56,7 +56,7 @@ func (c *GRPCClient) Register(dashboardAPIAddress string) (Metadata, error) {
 	var m Metadata
 
 	err := c.run(func() error {
-		registerRequest := &proto.RegisterRequest{
+		registerRequest := &dashboard.RegisterRequest{
 			DashboardAPIAddress: dashboardAPIAddress,
 		}
 
@@ -131,13 +131,13 @@ func (c *GRPCClient) Print(object runtime.Object) (PrintResponse, error) {
 	return pr, nil
 }
 
-func createObjectRequest(object runtime.Object) (*proto.ObjectRequest, error) {
+func createObjectRequest(object runtime.Object) (*dashboard.ObjectRequest, error) {
 	data, err := json.Marshal(object)
 	if err != nil {
 		return nil, err
 	}
 
-	or := &proto.ObjectRequest{
+	or := &dashboard.ObjectRequest{
 		Object: data,
 	}
 
@@ -194,10 +194,10 @@ type GRPCServer struct {
 	broker Broker
 }
 
-var _ proto.PluginServer = (*GRPCServer)(nil)
+var _ dashboard.PluginServer = (*GRPCServer)(nil)
 
 // Register register a plugin.
-func (s *GRPCServer) Register(ctx context.Context, registerRequest *proto.RegisterRequest) (*proto.RegisterResponse, error) {
+func (s *GRPCServer) Register(ctx context.Context, registerRequest *dashboard.RegisterRequest) (*dashboard.RegisterResponse, error) {
 	m, err := s.Impl.Register(registerRequest.DashboardAPIAddress)
 	if err != nil {
 		return nil, err
@@ -205,7 +205,7 @@ func (s *GRPCServer) Register(ctx context.Context, registerRequest *proto.Regist
 
 	capabilities := convertFromCapabilities(m.Capabilities)
 
-	return &proto.RegisterResponse{
+	return &dashboard.RegisterResponse{
 		PluginName:   m.Name,
 		Description:  m.Description,
 		Capabilities: &capabilities,
@@ -213,7 +213,7 @@ func (s *GRPCServer) Register(ctx context.Context, registerRequest *proto.Regist
 }
 
 // Print prints an object.
-func (s *GRPCServer) Print(ctx context.Context, objectRequest *proto.ObjectRequest) (*proto.PrintResponse, error) {
+func (s *GRPCServer) Print(ctx context.Context, objectRequest *dashboard.ObjectRequest) (*dashboard.PrintResponse, error) {
 	u, err := decodeObjectRequest(objectRequest)
 	if err != nil {
 		return nil, err
@@ -239,7 +239,7 @@ func (s *GRPCServer) Print(ctx context.Context, objectRequest *proto.ObjectReque
 		return nil, err
 	}
 
-	out := &proto.PrintResponse{
+	out := &dashboard.PrintResponse{
 		Config: config,
 		Status: status,
 		Items:  itemBytes,
@@ -249,11 +249,11 @@ func (s *GRPCServer) Print(ctx context.Context, objectRequest *proto.ObjectReque
 }
 
 // ObjectStatus generates status for an object.
-func (s *GRPCServer) ObjectStatus(context.Context, *proto.ObjectRequest) (*proto.ObjectStatusResponse, error) {
+func (s *GRPCServer) ObjectStatus(context.Context, *dashboard.ObjectRequest) (*dashboard.ObjectStatusResponse, error) {
 	panic("not implemented")
 }
 
-func decodeObjectRequest(req *proto.ObjectRequest) (*unstructured.Unstructured, error) {
+func decodeObjectRequest(req *dashboard.ObjectRequest) (*unstructured.Unstructured, error) {
 	m := map[string]interface{}{}
 
 	err := json.Unmarshal(req.Object, &m)
@@ -266,7 +266,7 @@ func decodeObjectRequest(req *proto.ObjectRequest) (*unstructured.Unstructured, 
 }
 
 // PrintTab prints a tab for an object.
-func (s *GRPCServer) PrintTab(ctx context.Context, objectRequest *proto.ObjectRequest) (*proto.PrintTabResponse, error) {
+func (s *GRPCServer) PrintTab(ctx context.Context, objectRequest *dashboard.ObjectRequest) (*dashboard.PrintTabResponse, error) {
 	u, err := decodeObjectRequest(objectRequest)
 	if err != nil {
 		return nil, err
@@ -282,7 +282,7 @@ func (s *GRPCServer) PrintTab(ctx context.Context, objectRequest *proto.ObjectRe
 		return nil, err
 	}
 
-	out := &proto.PrintTabResponse{
+	out := &dashboard.PrintTabResponse{
 		Name:   tab.Name,
 		Layout: layoutBytes,
 	}
@@ -291,16 +291,16 @@ func (s *GRPCServer) PrintTab(ctx context.Context, objectRequest *proto.ObjectRe
 }
 
 // WatchAdd is called when a watched GVK has a new object added.
-func (s *GRPCServer) WatchAdd(context.Context, *proto.WatchRequest) (*proto.Empty, error) {
+func (s *GRPCServer) WatchAdd(context.Context, *dashboard.WatchRequest) (*dashboard.Empty, error) {
 	panic("not implemented")
 }
 
 // WatchUpdate is caleld when a watched GVK has an object updated.
-func (s *GRPCServer) WatchUpdate(context.Context, *proto.WatchRequest) (*proto.Empty, error) {
+func (s *GRPCServer) WatchUpdate(context.Context, *dashboard.WatchRequest) (*dashboard.Empty, error) {
 	panic("not implemented")
 }
 
 // WatchDelete is called when a watched GVK has an object deleted.
-func (s *GRPCServer) WatchDelete(context.Context, *proto.WatchRequest) (*proto.Empty, error) {
+func (s *GRPCServer) WatchDelete(context.Context, *dashboard.WatchRequest) (*dashboard.Empty, error) {
 	panic("not implemented")
 }
