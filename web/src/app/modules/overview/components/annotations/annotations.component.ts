@@ -1,5 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { AnnotationsView } from 'src/app/models/content';
+import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 
 @Component({
   selector: 'app-view-annotations',
@@ -8,9 +9,9 @@ import { AnnotationsView } from 'src/app/models/content';
 })
 export class AnnotationsComponent implements OnChanges {
   @Input() view: AnnotationsView;
-
   annotations: { [key: string]: string };
   annotationKeys: string[];
+  trackByIdentity = trackByIdentity;
 
   constructor() {}
 

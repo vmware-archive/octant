@@ -2,7 +2,7 @@
   <div class="label-with-title clr-col-md-12">
     <h3>{{ title }}</h3>
     <div class="view-labels">
-      <div *ngFor="let key of labelKeys" class="view-label" (click)="click(key, labels[key])">
+      <div *ngFor="let key of labelKeys; trackBy: trackByIdentity" class="view-label" (click)="click(key, labels[key])">
         {{ key }}:{{ labels[key] }}
       </div>
     </div>
@@ -10,7 +10,7 @@
 </ng-template>
 <ng-template #noTitle>
   <div class="view-labels">
-    <div *ngFor="let key of labelKeys" class="view-label" (click)="click(key, labels[key])">
+    <div *ngFor="let key of labelKeys; trackBy: trackByIdentity" class="view-label" (click)="click(key, labels[key])">
       {{ key }}:{{ labels[key] }}
     </div>
   </div>

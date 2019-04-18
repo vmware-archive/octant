@@ -1,0 +1,10 @@
+.table {
+  margin-top: 0;
+
+  &.table-noborder {
+    th:first-child, td:first-child {
+      padding-left: .5rem;
+    }
+  }
+
+}

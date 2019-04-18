@@ -1,5 +1,5 @@
 .app-logs {
-  .container-select {
+  .log-actions, .container-select {
     margin-bottom: 20px;
   }
 
@@ -12,7 +12,7 @@
       color: white;
       padding: 4px 8px;
       min-height: 20vh;
-      max-height: calc(100vh - 300px);
+      max-height: calc(100vh - 325px);
       overflow-y: auto;
     }
 
@@ -24,11 +24,16 @@
       flex-direction: row;
 
       &-timestamp {
-        width: 300px;
+        min-width: 280px;
+        width: 280px;
+        color: #A9B6BE;
       }
 
       &-message {
         flex: 1;
+        color: #FAFAFA;
+        word-wrap: break-word;
+        min-width: 100px;
       }
     }
   }

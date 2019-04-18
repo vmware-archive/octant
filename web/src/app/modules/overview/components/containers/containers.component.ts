@@ -8,7 +8,6 @@ import { ContainerDef, ContainersView } from 'src/app/models/content';
 })
 export class ContainersComponent implements OnChanges {
   @Input() view: ContainersView;
-
   containers: ContainerDef[];
 
   constructor() {}
@@ -18,5 +17,9 @@ export class ContainersComponent implements OnChanges {
       const view = changes.view.currentValue as ContainersView;
       this.containers = view.config.containers;
     }
+  }
+
+  trackItem(index: number, item: ContainerDef): string {
+    return item.name;
   }
 }

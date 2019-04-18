@@ -1,6 +1,8 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { TableRow, TableView } from 'src/app/models/content';
 import { ViewUtil } from 'src/app/util/view';
+import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
+import trackByIndex from 'src/app/util/trackBy/trackByIndex';
 
 @Component({
   selector: 'app-view-table',
@@ -9,11 +11,12 @@ import { ViewUtil } from 'src/app/util/view';
 })
 export class TableComponent implements OnChanges {
   @Input() view: TableView;
-
   columns: string[];
   rows: TableRow[];
   title: string;
   placeholder: string;
+  trackByIdentity = trackByIdentity;
+  trackByIndex = trackByIndex;
 
   constructor() {}
 

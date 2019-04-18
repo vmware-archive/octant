@@ -1,6 +1,6 @@
 <table class="table table-compact table-noborder table-vertical">
   <tbody>
-    <tr *ngFor="let key of annotationKeys">
+    <tr *ngFor="let key of annotationKeys; trackBy: trackByIdentity">
       <th>{{ key }}</th>
       <td>
         <code>{{ annotations[key] }}</code>

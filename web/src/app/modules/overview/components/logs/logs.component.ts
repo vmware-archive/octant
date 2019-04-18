@@ -10,10 +10,12 @@ import { PodLogsService, PodLogsStreamer } from 'src/app/services/pod-logs/pod-l
 export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
   @Input() view: LogsView;
   @ViewChild('scrollTarget') scrollTarget: ElementRef;
-  scrollToBottom = false;
-  selectedContainer = '';
   containerLogs: LogEntry[];
   logStream: PodLogsStreamer;
+
+  scrollToBottom = false;
+  selectedContainer = '';
+  shouldDisplayTimestamp = true;
 
   constructor(
     private podLogsService: PodLogsService,
@@ -36,6 +38,10 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.logStream = null;
     }
     this.startStream();
+  }
+
+  toggleTimestampDisplay(): void {
+    this.shouldDisplayTimestamp = !this.shouldDisplayTimestamp;
   }
 
   startStream() {

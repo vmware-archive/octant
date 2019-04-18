@@ -57,4 +57,8 @@ export class InputFilterComponent implements OnInit {
       // TODO: user input value not a valid filter;
     }
   }
+
+  clearAllFilters() {
+    this.labelFilterService.clearAll();
+  }
 }

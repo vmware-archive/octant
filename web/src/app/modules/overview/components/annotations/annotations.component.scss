@@ -1,3 +1,12 @@
 pre {
   display: inline-block;
 }
+
+.table {
+  margin-top: 0;
+
+  &.table-noborder th:first-child {
+    padding-left: .5rem;
+  }
+}
+

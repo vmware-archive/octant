@@ -53,6 +53,10 @@ export class LabelFilterService {
     this.publish(current);
   }
 
+  clearAll(): void {
+    this.publish([]);
+  }
+
   private encodeFilter(fil: Filter): string {
     return `${fil.key}:${fil.value}`;
   }

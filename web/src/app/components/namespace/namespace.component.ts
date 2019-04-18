@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { NamespaceService } from 'src/app/services/namespace/namespace.service';
+import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 
 @Component({
   selector: 'app-namespace',
@@ -9,6 +10,7 @@ import { NamespaceService } from 'src/app/services/namespace/namespace.service';
 export class NamespaceComponent implements OnInit {
   namespaces: string[];
   currentNamespace: string;
+  trackByIdentity = trackByIdentity;
 
   constructor(private namespaceService: NamespaceService) {}
 

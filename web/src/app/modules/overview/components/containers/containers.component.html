@@ -1,5 +1,5 @@
 <ul class="list-unstyled">
-  <li *ngFor="let container of containers">
+  <li *ngFor="let container of containers; trackBy: trackItem">
     {{ container.name }}
   </li>
 </ul>

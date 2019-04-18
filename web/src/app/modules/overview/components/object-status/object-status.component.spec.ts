@@ -11,10 +11,6 @@ describe('ObjectStatusComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         OverviewModule,
-      ],
-      declarations: [
-        // ObjectStatusComponent,
-        // ContentSwitcherComponent,
       ]
     })
     .compileComponents();

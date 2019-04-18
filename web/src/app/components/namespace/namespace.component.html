@@ -4,7 +4,7 @@
     <clr-icon shape="caret down"></clr-icon>
   </button>
   <clr-dropdown-menu class="namespace-dropdown" clrPosition="bottom-left" *clrIfOpen>
-    <button (click)="selectNamespace(namespace)" type="button" clrDropdownItem *ngFor="let namespace of namespaces">
+    <button (click)="selectNamespace(namespace)" type="button" clrDropdownItem *ngFor="let namespace of namespaces; trackBy: trackByIdentity">
       {{ namespace }}
     </button>
   </clr-dropdown-menu>

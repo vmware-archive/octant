@@ -1,18 +1,24 @@
 <div class="app-logs">
-  <clr-select-container class="container-select">
-    <label>Choose a container:</label>
-    <select clrSelect name="options" [value]="selectedContainer" (change)="onContainerChange($event.target.value)">
-      <option *ngFor="let container of view?.config.containers" value="{{container}}">{{container}}</option>
-    </select>
-  </clr-select-container>
+  <div class="log-actions">
+    <clr-select-container class="container-select">
+      <label>Choose a container:</label>
+      <select clrSelect name="options" [value]="selectedContainer" (change)="onContainerChange($event.target.value)">
+        <option *ngFor="let container of view?.config.containers" value="{{container}}">{{container}}</option>
+      </select>
+    </clr-select-container>
+    <clr-checkbox-wrapper class="timestamp-toggle">
+      <input type="checkbox" clrCheckbox [checked]="shouldDisplayTimestamp" (click)="toggleTimestampDisplay()"/>
+      <label>Display timestamp</label>
+    </clr-checkbox-wrapper>
+  </div>
   <div class="container-logs">
     <div class="container-logs-bg" #scrollTarget (scroll)="onScroll($event)" >
       <ng-container *ngIf="containerLogs?.length < 1">
         No logs
       </ng-container>
       <div class="container-log code language-bash" *ngFor="let log of containerLogs; trackBy: identifyLog">
-        <div class="container-log-timestamp">
-          {{log.timestamp | date:'long' }}
+        <div class="container-log-timestamp" *ngIf="shouldDisplayTimestamp">
+          [{{log.timestamp | date:'long' }}]
         </div>
         <div class="container-log-message">
           {{log.message}}
