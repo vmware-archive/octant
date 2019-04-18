@@ -191,6 +191,8 @@ type tabFunc func(ctx context.Context, object runtime.Object, cr *component.Cont
 
 // Describe describes an object.
 func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
+	logger := log.From(ctx)
+
 	if options.Printer == nil {
 		return emptyContentResponse, errors.New("object describer requires a printer")
 	}
@@ -214,17 +216,25 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 
 	cr := component.NewContentResponse(title)
 
-	tabFuncs := []tabFunc{
-		d.addSummaryTab,
-		d.addResourceViewerTab,
-		d.addYAMLViewerTab,
-		d.addLogsTab,
+	tabFuncs := map[string]tabFunc{
+		"summary":         d.addSummaryTab,
+		"resource viewer": d.addResourceViewerTab,
+		"yaml":            d.addYAMLViewerTab,
+		"logs":            d.addLogsTab,
 	}
 
-	for _, fn := range tabFuncs {
+	hasTabError := false
+	for name, fn := range tabFuncs {
 		if err := fn(ctx, newObject, cr, options); err != nil {
-			return emptyContentResponse, errors.Wrap(err, "adding tab")
+			hasTabError = true
+			logger.With(
+				"err", err,
+				"tab-name", name).Errorf("generating object describer tab")
 		}
+	}
+
+	if hasTabError {
+		logger.With("tab-object", newObject).Errorf("unable to generate all tabs for object")
 	}
 
 	tabs, err := options.PluginManager.Tabs(newObject)
