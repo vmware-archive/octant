@@ -75,7 +75,7 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 		return nil, errors.Wrap(err, "describing environment")
 	}
 
-	if len(envTbl.Config.Rows) > 0 {
+	if len(envTbl.Rows()) > 0 {
 		sections.Add("Environment", envTbl)
 	}
 

@@ -10,6 +10,34 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func Test_TableCols(t *testing.T) {
+	cases := []struct {
+		name     string
+		in       []string
+		expected []TableCol
+	}{
+		{
+			name: "in general",
+			in:   []string{"a"},
+			expected: []TableCol{
+				{Name: "a", Accessor: "a"},
+			},
+		},
+		{
+			name:     "empty list",
+			in:       []string{},
+			expected: []TableCol{},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := NewTableCols(tc.in...)
+			assert.Equal(t, tc.expected, got)
+		})
+	}
+}
+
 func Test_Table_Marshal(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -101,19 +129,58 @@ func Test_Table_isEmpty(t *testing.T) {
 	}
 }
 
-func TestTableRows(t *testing.T) {
-	rows := TableRows{
-		{"Name": NewText("z")},
-		{"Name": NewText("a")},
+func Test_Table_AddColumn(t *testing.T) {
+	table := NewTable("table", NewTableCols("a"))
+	table.AddColumn("b")
+	expected := NewTableCols("a", "b")
+
+	assert.Equal(t, expected, table.Columns())
+}
+
+func Test_Table_Sort(t *testing.T) {
+	cases := []struct {
+		name     string
+		rows     []TableRow
+		reverse  bool
+		expected []TableRow
+	}{
+		{
+			name: "asc sort",
+			rows: []TableRow{
+				{"a": NewText("2")},
+				{"a": NewText("1")},
+				{"a": NewText("3")},
+			},
+			reverse: false,
+			expected: []TableRow{
+				{"a": NewText("1")},
+				{"a": NewText("2")},
+				{"a": NewText("3")},
+			},
+		},
+		{
+			name: "desc sort",
+			rows: []TableRow{
+				{"a": NewText("2")},
+				{"a": NewText("1")},
+				{"a": NewText("3")},
+			},
+			reverse: true,
+			expected: []TableRow{
+				{"a": NewText("3")},
+				{"a": NewText("2")},
+				{"a": NewText("1")},
+			},
+		},
 	}
 
-	err := rows.Sort("Name")
-	require.NoError(t, err)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			table := NewTableWithRows("table", NewTableCols("a"), tc.rows)
+			table.Sort("a", tc.reverse)
+			expected := NewTableWithRows("table", NewTableCols("a"), tc.expected)
 
-	expected := TableRows{
-		{"Name": NewText("a")},
-		{"Name": NewText("z")},
+			assert.Equal(t, expected, table)
+		})
 	}
-
-	assert.Equal(t, expected, rows)
 }

@@ -38,7 +38,7 @@ func Test_EventListHandler(t *testing.T) {
 				InvolvedObject: corev1.ObjectReference{
 					APIVersion: "apps/v1",
 					Kind:       "Deployment",
-					Name:       "d1",
+					Name:       "d2",
 					Namespace:  "default",
 				},
 				Count:          1234,
@@ -81,10 +81,7 @@ func Test_EventListHandler(t *testing.T) {
 		"First Seen", "Last Seen")
 	expected := component.NewTableWithRows("Events", cols, []component.TableRow{
 		{
-			"Kind": component.NewList("", []component.Component{
-				component.NewLink("", "d1", "/content/overview/namespace/default/workloads/deployments/d1"),
-				component.NewText("1234"),
-			}),
+			"Kind":       component.NewLink("", "d1 (1234)", "/content/overview/namespace/default/workloads/deployments/d1"),
 			"Message":    component.NewLink("", "message", "/content/overview/namespace/default/events/event-12345"),
 			"Reason":     component.NewText("Reason"),
 			"Type":       component.NewText("Type"),
@@ -92,10 +89,7 @@ func Test_EventListHandler(t *testing.T) {
 			"Last Seen":  component.NewTimestamp(time.Unix(1548424420, 0)),
 		},
 		{
-			"Kind": component.NewList("", []component.Component{
-				component.NewLink("", "d1", "/content/overview/namespace/default/workloads/deployments/d1"),
-				component.NewText("1234"),
-			}),
+			"Kind":       component.NewLink("", "d2 (1234)", "/content/overview/namespace/default/workloads/deployments/d2"),
 			"Message":    component.NewLink("", "message", "/content/overview/namespace/default/events/event-12345"),
 			"Reason":     component.NewText("Reason"),
 			"Type":       component.NewText("Type"),
@@ -291,7 +285,12 @@ func Test_EventHandler(t *testing.T) {
 	eventDetailPanel := component.NewPanel("", eventDetailView)
 	eventDetailPanel.Position(0, 0, 24, 10)
 
-	expected := component.NewGrid("Summary", *eventDetailPanel)
+	expected := component.NewFlexLayout("Event")
+	expected.AddSections([]component.FlexLayoutSection{
+		{
+			{Width: component.WidthFull, View: eventDetailView},
+		},
+	}...)
 
 	assert.Equal(t, expected, got)
 }

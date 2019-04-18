@@ -76,3 +76,38 @@ func Test_Timestamp_Marshal(t *testing.T) {
 		})
 	}
 }
+
+func Test_Timestamp_LessThan(t *testing.T) {
+	cases := []struct{
+		name string
+		ts Timestamp
+		other Component
+		expected bool
+	}{
+		{
+			name: "is less",
+			ts: *NewTimestamp(time.Unix(5, 0)),
+			other: NewTimestamp(time.Unix(6, 0)),
+			expected: true,
+		},
+		{
+			name: "is not less",
+			ts: *NewTimestamp(time.Unix(5, 0)),
+			other: NewTimestamp(time.Unix(4, 0)),
+			expected: false,
+		},
+		{
+			name: "other is not a timestamp",
+			ts: *NewTimestamp(time.Unix(5, 0)),
+			other: nil,
+			expected: false,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T){
+			got := tc.ts.LessThan(tc.other)
+			assert.Equal(t, tc.expected, got)
+		})
+	}
+}

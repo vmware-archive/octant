@@ -11,6 +11,8 @@ type Timestamp struct {
 	Config TimestampConfig `json:"config"`
 }
 
+var _ (Component) = (*Timestamp)(nil)
+
 // TimestampConfig is the contents of Timestamp
 type TimestampConfig struct {
 	Timestamp int64 `json:"timestamp"`
@@ -26,11 +28,6 @@ func NewTimestamp(t time.Time) *Timestamp {
 	}
 }
 
-// GetMetadata accesses the components metadata. Implements Component.
-func (t *Timestamp) GetMetadata() Metadata {
-	return t.Metadata
-}
-
 type timestampMarshal Timestamp
 
 // MarshalJSON implements json.Marshaler
@@ -38,4 +35,15 @@ func (t *Timestamp) MarshalJSON() ([]byte, error) {
 	m := timestampMarshal(*t)
 	m.Metadata.Type = typeTimestamp
 	return json.Marshal(&m)
+}
+
+// LessThan returns true if this component's value is less than the argument supplied.
+func (t *Timestamp) LessThan(i interface{}) bool {
+	v, ok := i.(*Timestamp)
+	if !ok {
+		return false
+	}
+
+	return t.Config.Timestamp < v.Config.Timestamp
+
 }

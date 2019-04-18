@@ -185,7 +185,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "Event",
 				Name:       "e1",
 			},
-			isErr: true,
+			isErr: false,
 		},
 	}
 
