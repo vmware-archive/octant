@@ -9,7 +9,7 @@ import (
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/plugin/fake"
-	"github.com/heptio/developer-dash/pkg/plugin/proto"
+	"github.com/heptio/developer-dash/pkg/plugin/dashboard"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	"github.com/stretchr/testify/assert"
@@ -66,12 +66,12 @@ func testWithGRPCServer(t *testing.T, fn func(*grpcServerMocks)) {
 
 func Test_GRPCClient_Register(t *testing.T) {
 	testWithGRPCClient(t, func(mocks *grpcClientMocks) {
-		inGVKs := []*proto.RegisterResponse_GroupVersionKind{{Version: "v1", Kind: "Pod"}}
+		inGVKs := []*dashboard.RegisterResponse_GroupVersionKind{{Version: "v1", Kind: "Pod"}}
 
-		resp := &proto.RegisterResponse{
+		resp := &dashboard.RegisterResponse{
 			PluginName:  "my-plugin",
 			Description: "description",
-			Capabilities: &proto.RegisterResponse_Capabilities{
+			Capabilities: &dashboard.RegisterResponse_Capabilities{
 				SupportsPrinterConfig: inGVKs,
 				SupportsPrinterStatus: inGVKs,
 				SupportsPrinterItems:  inGVKs,
@@ -116,18 +116,18 @@ func Test_GRPCClient_Print(t *testing.T) {
 
 		objectData, err := json.Marshal(object)
 		require.NoError(t, err)
-		objectRequest := &proto.ObjectRequest{
+		objectRequest := &dashboard.ObjectRequest{
 			Object: objectData,
 		}
 
 		config1 := component.NewText("config1 value")
 		status1 := component.NewText("status1 value")
 
-		printResponse := &proto.PrintResponse{
-			Config: []*proto.PrintResponse_SummaryItem{
+		printResponse := &dashboard.PrintResponse{
+			Config: []*dashboard.PrintResponse_SummaryItem{
 				{Header: "config1", Component: encodeComponent(t, config1)},
 			},
-			Status: []*proto.PrintResponse_SummaryItem{
+			Status: []*dashboard.PrintResponse_SummaryItem{
 				{Header: "status1", Component: encodeComponent(t, status1)},
 			},
 			Items: itemsData,
@@ -160,7 +160,7 @@ func Test_GRPCClient_PrintTab(t *testing.T) {
 
 		objectData, err := json.Marshal(object)
 		require.NoError(t, err)
-		objectRequest := &proto.ObjectRequest{
+		objectRequest := &dashboard.ObjectRequest{
 			Object: objectData,
 		}
 
@@ -169,7 +169,7 @@ func Test_GRPCClient_PrintTab(t *testing.T) {
 		err = section.Add(component.NewText("text"), component.WidthFull)
 		require.NoError(t, err)
 
-		tabResponse := &proto.PrintTabResponse{
+		tabResponse := &dashboard.PrintTabResponse{
 			Name:   "tab name",
 			Layout: encodeComponent(t, layout.ToComponent("component title")),
 		}
@@ -222,16 +222,16 @@ func Test_GRPCServer_Register(t *testing.T) {
 		server := mocks.genServer()
 
 		ctx := context.Background()
-		got, err := server.Register(ctx, &proto.RegisterRequest{
+		got, err := server.Register(ctx, &dashboard.RegisterRequest{
 			DashboardAPIAddress: apiAddress,
 		})
 		require.NoError(t, err)
 
-		outGVKs := []*proto.RegisterResponse_GroupVersionKind{{Version: "v1", Kind: "Pod"}}
-		expected := &proto.RegisterResponse{
+		outGVKs := []*dashboard.RegisterResponse_GroupVersionKind{{Version: "v1", Kind: "Pod"}}
+		expected := &dashboard.RegisterResponse{
 			PluginName:  "my-plugin",
 			Description: "description",
-			Capabilities: &proto.RegisterResponse_Capabilities{
+			Capabilities: &dashboard.RegisterResponse_Capabilities{
 				SupportsPrinterConfig: outGVKs,
 				SupportsPrinterStatus: outGVKs,
 				SupportsPrinterItems:  outGVKs,
@@ -273,7 +273,7 @@ func Test_GRPCServer_Print(t *testing.T) {
 		require.NoError(t, err)
 
 		ctx := context.Background()
-		objectRequest := &proto.ObjectRequest{
+		objectRequest := &dashboard.ObjectRequest{
 			Object: objectData,
 		}
 
@@ -284,11 +284,11 @@ func Test_GRPCServer_Print(t *testing.T) {
 		expectedItems, err := json.Marshal(pr.Items)
 		require.NoError(t, err)
 
-		expected := &proto.PrintResponse{
-			Config: []*proto.PrintResponse_SummaryItem{
+		expected := &dashboard.PrintResponse{
+			Config: []*dashboard.PrintResponse_SummaryItem{
 				{Header: "extra config", Component: encodeComponent(t, config)},
 			},
-			Status: []*proto.PrintResponse_SummaryItem{
+			Status: []*dashboard.PrintResponse_SummaryItem{
 				{Header: "extra status", Component: encodeComponent(t, status)},
 			},
 			Items: expectedItems,

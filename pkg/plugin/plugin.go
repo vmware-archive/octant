@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-plugin"
-	"github.com/heptio/developer-dash/pkg/plugin/proto"
+	"github.com/heptio/developer-dash/pkg/plugin/dashboard"
 	"google.golang.org/grpc"
 )
 
@@ -25,7 +25,7 @@ var _ plugin.GRPCPlugin = (*ServicePlugin)(nil)
 
 // GRPCServer is the plugin's GRPC server.
 func (p *ServicePlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
-	proto.RegisterPluginServer(s, &GRPCServer{
+	dashboard.RegisterPluginServer(s, &GRPCServer{
 		Impl:   p.Impl,
 		broker: broker,
 	})
@@ -36,7 +36,7 @@ func (p *ServicePlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) er
 // GRPCClient is the plugin's GRPC client.
 func (p *ServicePlugin) GRPCClient(ctx context.Context, broker *plugin.GRPCBroker, c *grpc.ClientConn) (interface{}, error) {
 	return &GRPCClient{
-		client: proto.NewPluginClient(c),
+		client: dashboard.NewPluginClient(c),
 		broker: broker,
 	}, nil
 }

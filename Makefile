@@ -37,7 +37,7 @@ run-web:
 
 generate:
 	@echo "-> $@"
-	@go generate -v ./pkg/plugin/api/proto ./pkg/plugin/proto ./pkg/plugin/api ./pkg/plugin ./internal/...
+	@go generate -v ./pkg/plugin/api/proto ./pkg/plugin/dashboard ./pkg/plugin/api ./pkg/plugin ./internal/...
 
 go-install:
 	$(GOINSTALL) ./vendor/github.com/GeertJohan/go.rice

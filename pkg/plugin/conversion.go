@@ -3,12 +3,12 @@ package plugin
 import (
 	"encoding/json"
 
-	"github.com/heptio/developer-dash/pkg/plugin/proto"
+	"github.com/heptio/developer-dash/pkg/plugin/dashboard"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func convertToCapabilities(in *proto.RegisterResponse_Capabilities) Capabilities {
+func convertToCapabilities(in *dashboard.RegisterResponse_Capabilities) Capabilities {
 	if in == nil {
 		return Capabilities{}
 	}
@@ -24,8 +24,8 @@ func convertToCapabilities(in *proto.RegisterResponse_Capabilities) Capabilities
 	return c
 }
 
-func convertFromCapabilities(in Capabilities) proto.RegisterResponse_Capabilities {
-	c := proto.RegisterResponse_Capabilities{
+func convertFromCapabilities(in Capabilities) dashboard.RegisterResponse_Capabilities {
+	c := dashboard.RegisterResponse_Capabilities{
 		SupportsPrinterStatus: convertFromGroupVersionKindList(in.SupportsObjectStatus),
 		SupportsPrinterConfig: convertFromGroupVersionKindList(in.SupportsPrinterConfig),
 		SupportsPrinterItems:  convertFromGroupVersionKindList(in.SupportsPrinterItems),
@@ -36,7 +36,7 @@ func convertFromCapabilities(in Capabilities) proto.RegisterResponse_Capabilitie
 	return c
 }
 
-func convertToGroupVersionKindList(in []*proto.RegisterResponse_GroupVersionKind) []schema.GroupVersionKind {
+func convertToGroupVersionKindList(in []*dashboard.RegisterResponse_GroupVersionKind) []schema.GroupVersionKind {
 	var list []schema.GroupVersionKind
 	for i := range in {
 		list = append(list, convertToGroupVersionKind(*in[i]))
@@ -45,8 +45,8 @@ func convertToGroupVersionKindList(in []*proto.RegisterResponse_GroupVersionKind
 	return list
 }
 
-func convertFromGroupVersionKindList(in []schema.GroupVersionKind) []*proto.RegisterResponse_GroupVersionKind {
-	var list []*proto.RegisterResponse_GroupVersionKind
+func convertFromGroupVersionKindList(in []schema.GroupVersionKind) []*dashboard.RegisterResponse_GroupVersionKind {
+	var list []*dashboard.RegisterResponse_GroupVersionKind
 	for i := range in {
 		item := convertFromGroupVersionKind(in[i])
 		list = append(list, &item)
@@ -55,7 +55,7 @@ func convertFromGroupVersionKindList(in []schema.GroupVersionKind) []*proto.Regi
 	return list
 }
 
-func convertToGroupVersionKind(in proto.RegisterResponse_GroupVersionKind) schema.GroupVersionKind {
+func convertToGroupVersionKind(in dashboard.RegisterResponse_GroupVersionKind) schema.GroupVersionKind {
 	return schema.GroupVersionKind{
 		Group:   in.Group,
 		Version: in.Version,
@@ -63,15 +63,15 @@ func convertToGroupVersionKind(in proto.RegisterResponse_GroupVersionKind) schem
 	}
 }
 
-func convertFromGroupVersionKind(in schema.GroupVersionKind) proto.RegisterResponse_GroupVersionKind {
-	return proto.RegisterResponse_GroupVersionKind{
+func convertFromGroupVersionKind(in schema.GroupVersionKind) dashboard.RegisterResponse_GroupVersionKind {
+	return dashboard.RegisterResponse_GroupVersionKind{
 		Group:   in.Group,
 		Version: in.Version,
 		Kind:    in.Kind,
 	}
 }
 
-func convertToSummarySections(in []*proto.PrintResponse_SummaryItem) ([]component.SummarySection, error) {
+func convertToSummarySections(in []*dashboard.PrintResponse_SummaryItem) ([]component.SummarySection, error) {
 	var list []component.SummarySection
 
 	for _, item := range in {
@@ -85,8 +85,8 @@ func convertToSummarySections(in []*proto.PrintResponse_SummaryItem) ([]componen
 	return list, nil
 }
 
-func convertFromSummarySections(in []component.SummarySection) ([]*proto.PrintResponse_SummaryItem, error) {
-	var list []*proto.PrintResponse_SummaryItem
+func convertFromSummarySections(in []component.SummarySection) ([]*dashboard.PrintResponse_SummaryItem, error) {
+	var list []*dashboard.PrintResponse_SummaryItem
 
 	for _, section := range in {
 		converted, err := convertFromSummarySection(section)
@@ -99,7 +99,7 @@ func convertFromSummarySections(in []component.SummarySection) ([]*proto.PrintRe
 	return list, nil
 }
 
-func convertToSummarySection(in proto.PrintResponse_SummaryItem) (component.SummarySection, error) {
+func convertToSummarySection(in dashboard.PrintResponse_SummaryItem) (component.SummarySection, error) {
 	var typedObject component.TypedObject
 	err := json.Unmarshal(in.Component, &typedObject)
 	if err != nil {
@@ -117,13 +117,13 @@ func convertToSummarySection(in proto.PrintResponse_SummaryItem) (component.Summ
 	}, nil
 }
 
-func convertFromSummarySection(in component.SummarySection) (*proto.PrintResponse_SummaryItem, error) {
+func convertFromSummarySection(in component.SummarySection) (*dashboard.PrintResponse_SummaryItem, error) {
 	data, err := json.Marshal(in.Content)
 	if err != nil {
 		return nil, err
 	}
 
-	return &proto.PrintResponse_SummaryItem{
+	return &dashboard.PrintResponse_SummaryItem{
 		Header:    in.Header,
 		Component: data,
 	}, nil
