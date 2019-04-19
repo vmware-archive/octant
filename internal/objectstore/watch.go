@@ -119,7 +119,7 @@ func (w *Watch) List(ctx context.Context, key objectstoreutil.Key) ([]*unstructu
 
 	objects, err := w.backendObjectStore.List(ctx, key)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "backend ObjectStore")
 	}
 
 	w.objectLock.Lock()
