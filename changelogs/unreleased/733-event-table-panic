@@ -1,5 +1,0 @@
-Fix regression that doesn't allow event lists with node events to render
-
-* Use a mutex when sorting table rows because it is possible the table will change while it is being sorted.
-* Don't try to link to nodes because dash doesn't support them
-* Don't try to sort event tables by column name (it doesn't exist)
