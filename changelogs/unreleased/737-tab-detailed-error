@@ -1,1 +1,0 @@
-Generate more detailed error output when a describer tab function fails. Also, if a tab function fails, do not stop processing.

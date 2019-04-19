@@ -1,1 +1,0 @@
-Check the host header. If it isn't localhost, or 127.0.0.1, return with forbidden status #738

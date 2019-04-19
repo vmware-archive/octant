@@ -8,7 +8,7 @@ GOCMD=go
 GOBUILD=$(GOCMD) build
 GOINSTALL=$(GOCMD) install
 
-VERSION ?= v0.2.0
+VERSION ?= v0.2.1
 
 .PHONY: version
 version:
