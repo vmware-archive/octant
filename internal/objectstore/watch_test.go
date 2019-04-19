@@ -13,9 +13,6 @@ import (
 	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	authorizationapi "k8s.io/api/authorization/v1"
-	authorizationv1 "k8s.io/api/authorization/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -29,9 +26,6 @@ type watchMocks struct {
 	informerFactory     *clusterfake.MockDynamicSharedInformerFactory
 	informer            *clusterfake.MockGenericInformer
 	client              *clusterfake.MockClientInterface
-	kubernetesClient    *clusterfake.MockKubernetesInterface
-	authClient          *clusterfake.MockAuthorizationV1Interface
-	accessClient        *clusterfake.MockSelfSubjectAccessReviewInterface
 	sharedIndexInformer *clusterfake.MockSharedIndexInformer
 	backendObjectStore  *storefake.MockObjectStore
 }
@@ -45,9 +39,6 @@ func newWatchMocks(t *testing.T) *watchMocks {
 		client:              clusterfake.NewMockClientInterface(controller),
 		backendObjectStore:  storefake.NewMockObjectStore(controller),
 		sharedIndexInformer: clusterfake.NewMockSharedIndexInformer(controller),
-		kubernetesClient:    clusterfake.NewMockKubernetesInterface(controller),
-		authClient:          clusterfake.NewMockAuthorizationV1Interface(controller),
-		accessClient:        clusterfake.NewMockSelfSubjectAccessReviewInterface(controller),
 	}
 
 	return m
@@ -90,32 +81,6 @@ func Test_WatchList_not_cached(t *testing.T) {
 	}
 
 	mocks.backendObjectStore.EXPECT().List(gomock.Any(), gomock.Eq(listKey)).Return(objects, nil)
-	mocks.client.EXPECT().KubernetesClient().Return(mocks.kubernetesClient, nil)
-	mocks.kubernetesClient.EXPECT().AuthorizationV1().Return(mocks.authClient)
-
-	authResp := &authorizationapi.SelfSubjectAccessReview{
-		Status: authorizationapi.SubjectAccessReviewStatus{
-			Allowed: true,
-		},
-	}
-
-	verbs := []string{"get", "list", "watch"}
-	for _, verb := range verbs {
-		resourceAttributes := &authorizationv1.ResourceAttributes{
-			Verb:      verb,
-			Version:   "v1",
-			Resource:  "pods",
-			Namespace: metav1.NamespaceAll,
-		}
-
-		sar := &authorizationv1.SelfSubjectAccessReview{
-			Spec: authorizationv1.SelfSubjectAccessReviewSpec{
-				ResourceAttributes: resourceAttributes,
-			},
-		}
-		mocks.authClient.EXPECT().SelfSubjectAccessReviews().Return(mocks.accessClient)
-		mocks.accessClient.EXPECT().Create(sar).Return(authResp, nil)
-	}
 
 	factoryFunc := func(c *Watch) {
 		c.initFactoryFunc = func(cluster.ClientInterface) (dynamicinformer.DynamicSharedInformerFactory, error) {
@@ -275,7 +240,6 @@ func Test_WatchGet_not_stored(t *testing.T) {
 		Kind: "Pod",
 	}
 	mocks.client.EXPECT().Resource(gomock.Eq(podGK)).Return(podGVR, nil)
-	mocks.client.EXPECT().KubernetesClient().Return(mocks.kubernetesClient, nil)
 
 	mocks.informerFactory.EXPECT().Start(gomock.Eq(ctx.Done()))
 
@@ -284,33 +248,6 @@ func Test_WatchGet_not_stored(t *testing.T) {
 
 	getKey := objectstoreutil.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod", Name: pod1.Name}
 	mocks.backendObjectStore.EXPECT().Get(gomock.Any(), gomock.Eq(getKey)).Return(testutil.ToUnstructured(t, pod1), nil)
-
-	//	mocks.client.EXPECT().KubernetesClient().Return(mocks.kubernetesClient, nil)
-	mocks.kubernetesClient.EXPECT().AuthorizationV1().Return(mocks.authClient)
-
-	authResp := &authorizationapi.SelfSubjectAccessReview{
-		Status: authorizationapi.SubjectAccessReviewStatus{
-			Allowed: true,
-		},
-	}
-
-	verbs := []string{"get", "list", "watch"}
-	for _, verb := range verbs {
-		resourceAttributes := &authorizationv1.ResourceAttributes{
-			Verb:      verb,
-			Version:   "v1",
-			Resource:  "pods",
-			Namespace: metav1.NamespaceAll,
-		}
-
-		sar := &authorizationv1.SelfSubjectAccessReview{
-			Spec: authorizationv1.SelfSubjectAccessReviewSpec{
-				ResourceAttributes: resourceAttributes,
-			},
-		}
-		mocks.authClient.EXPECT().SelfSubjectAccessReviews().Return(mocks.accessClient)
-		mocks.accessClient.EXPECT().Create(sar).Return(authResp, nil)
-	}
 
 	factoryFunc := func(c *Watch) {
 		c.initFactoryFunc = func(cluster.ClientInterface) (dynamicinformer.DynamicSharedInformerFactory, error) {
