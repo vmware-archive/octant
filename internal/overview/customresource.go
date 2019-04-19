@@ -27,19 +27,17 @@ import (
 )
 
 func customResourceDefinitionNames(ctx context.Context, o objectstore.ObjectStore) ([]string, error) {
-	logger := log.From(ctx)
-
 	key := objectstoreutil.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
 
-	var list []string
 	rawList, err := o.List(ctx, key)
 	if err != nil {
-		logger.Errorf("listing CRDs failed: %v", err)
-		return list, nil
+		return nil, errors.Wrap(err, "listing CRDs")
 	}
+
+	var list []string
 
 	for _, object := range rawList {
 		crd := &apiextv1beta1.CustomResourceDefinition{}
@@ -392,6 +390,7 @@ func watchCRDs(ctx context.Context, o objectstore.ObjectStore, crdAddFunc, crdDe
 	}
 
 	logger := log.From(ctx)
+
 	if err := o.Watch(key, handler); err != nil {
 		logger.Errorf("crd watcher has failed: %v", err)
 	}

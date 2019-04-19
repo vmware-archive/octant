@@ -2,7 +2,6 @@ package objectstore
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
@@ -11,10 +10,8 @@ import (
 	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
-	authorizationv1 "k8s.io/api/authorization/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
@@ -35,8 +32,6 @@ func initDynamicSharedInformerFactory(client cluster.ClientInterface) (dynamicin
 		return nil, err
 	}
 
-	// TODO: make this respect namespaces instead of using cluster scope.
-	// Related: https://github.com/kubernetes/kubernetes/issues/71714
 	factory := dynamicinformer.NewDynamicSharedInformerFactory(dynamicClient, defaultInformerResync)
 	return factory, nil
 }
@@ -58,74 +53,13 @@ func currentInformer(
 
 	gvr, err := client.Resource(gvk.GroupKind())
 	if err != nil {
-		return nil, errors.Wrap(err, "client resource")
-	}
-
-	if err := checkAccess(client, key, gvr); err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("check access: %s", gvr.Resource))
+		return nil, err
 	}
 
 	informer := factory.ForResource(gvr)
 	factory.Start(stopCh)
 
 	return informer, nil
-}
-
-func checkAccess(client cluster.ClientInterface, key objectstoreutil.Key, gvr schema.GroupVersionResource) error {
-	k8sClient, err := client.KubernetesClient()
-	if err != nil {
-		errors.Wrap(err, "client kubernetes")
-	}
-	authClient := k8sClient.AuthorizationV1()
-
-	checkVerb := func(verb string) bool {
-		resourceAttributes := &authorizationv1.ResourceAttributes{
-			Verb:     verb,
-			Group:    gvr.Group,
-			Version:  gvr.Version,
-			Resource: gvr.Resource,
-		}
-
-		if key.Namespace != "" {
-			// TODO: use namespace once we fix our Informer filter
-			// resourceAttributes.Namespace = key.Namespace
-			resourceAttributes.Namespace = metav1.NamespaceAll
-		}
-
-		sar := &authorizationv1.SelfSubjectAccessReview{
-			Spec: authorizationv1.SelfSubjectAccessReviewSpec{
-				ResourceAttributes: resourceAttributes,
-			},
-		}
-
-		response, err := authClient.SelfSubjectAccessReviews().Create(sar)
-		if err != nil {
-			return false
-		}
-
-		if response.Status.Allowed {
-			return true
-		}
-		return false
-	}
-
-	verbs := []string{"get", "list", "watch"}
-	mustHaveVerbs := map[string]bool{"get": false, "list": false, "watch": false}
-	for _, v := range verbs {
-		mustHaveVerbs[v] = checkVerb(v)
-	}
-
-	for _, v := range mustHaveVerbs {
-		if v == false {
-			currentAccess := fmt.Sprintf("get: %t, list: %t, watch: %t",
-				mustHaveVerbs["get"],
-				mustHaveVerbs["list"],
-				mustHaveVerbs["watch"],
-			)
-			return errors.New(fmt.Sprintf("requires cluster scoped get/list/watch access, have %s", currentAccess))
-		}
-	}
-	return nil
 }
 
 // DynamicCacheOpt is an option for configuration DynamicCache.
