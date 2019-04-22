@@ -39,21 +39,11 @@ addons:
   apt:
     packages:
     - rpm
-# TODO: Update goreleaser.yml and add when open sourced
-#    - snapd
-#
-
-# TODO: Enable for snapd
-#env:
-#- PATH=/snap/bin:$PATH
-#
-#install:
-#- sudo snap install snapcraft --classic
 
 before_script:
   - nvm install $(cat .nvmrc)
   - make go-install
 script:
-- make ci
+- $TRAVIS_BUILD_DIR/hacks/test-runner.sh
 # choco install scripts points to private GH repo but windows cannot have secure env
 # - if [[ $TRAVIS_OS_NAME == 'windows' ]]; then ./ci/travis-choco.sh; fi
