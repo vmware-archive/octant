@@ -185,6 +185,11 @@ func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType f
 
 type tabFunc func(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options DescriberOptions) error
 
+type tabFuncDescriptor struct {
+	name    string
+	tabFunc tabFunc
+}
+
 // Describe describes an object.
 func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) (component.ContentResponse, error) {
 	logger := log.From(ctx)
@@ -212,20 +217,20 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 
 	cr := component.NewContentResponse(title)
 
-	tabFuncs := map[string]tabFunc{
-		"summary":         d.addSummaryTab,
-		"resource viewer": d.addResourceViewerTab,
-		"yaml":            d.addYAMLViewerTab,
-		"logs":            d.addLogsTab,
+	tabFuncDescriptors := []tabFuncDescriptor{
+		{name: "summary", tabFunc: d.addSummaryTab},
+		{name: "resource viewer", tabFunc: d.addResourceViewerTab},
+		{name: "yaml", tabFunc: d.addYAMLViewerTab},
+		{name: "logs", tabFunc: d.addLogsTab},
 	}
 
 	hasTabError := false
-	for name, fn := range tabFuncs {
-		if err := fn(ctx, newObject, cr, options); err != nil {
+	for _, tfd := range tabFuncDescriptors {
+		if err := tfd.tabFunc(ctx, newObject, cr, options); err != nil {
 			hasTabError = true
 			logger.With(
 				"err", err,
-				"tab-name", name).Errorf("generating object describer tab")
+				"tab-name", tfd.name).Errorf("generating object describer tab")
 		}
 	}
 
