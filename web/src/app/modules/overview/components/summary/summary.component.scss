@@ -1,3 +1,10 @@
 .table.table-noborder th:first-child {
   padding-left: .5rem;
 }
+
+.progress.loop {
+  height: 5px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}

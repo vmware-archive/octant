@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { NotifierService } from 'src/app/services/notifier/notifier.service';
+import { NotifierService, NotifierSignalType } from 'src/app/services/notifier/notifier.service';
 import { Subscription } from 'rxjs';
+import _ from 'lodash';
 
 @Component({
   selector: 'app-notifier',
@@ -8,7 +9,7 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./notifier.component.scss']
 })
 export class NotifierComponent implements OnInit, OnDestroy {
-  private subscriptions: Subscription[];
+  private signalSubscription: Subscription;
   loading = false;
   error: string;
   warning: string;
@@ -16,18 +17,26 @@ export class NotifierComponent implements OnInit, OnDestroy {
   constructor(private notifierService: NotifierService) { }
 
   ngOnInit() {
-    this.subscriptions = [
-      this.notifierService.loading.subscribe((loading) => this.loading = loading),
-      this.notifierService.error.subscribe((error) => this.error = error),
-      this.notifierService.warning.subscribe((warning) => this.warning = warning),
-    ];
+    this.signalSubscription = this.notifierService.globalSignalsStream.subscribe((currentSignals) => {
+      const lastLoadingSignal = _.findLast(currentSignals, { type: NotifierSignalType.LOADING });
+      this.loading = lastLoadingSignal ? true : false;
+
+      const lastWarningSignal = _.findLast(currentSignals, { type: NotifierSignalType.WARNING });
+      this.warning = lastWarningSignal ? lastWarningSignal.data as string : '';
+
+      const lastErrorSignal = _.findLast(currentSignals, { type: NotifierSignalType.ERROR });
+      this.error = lastErrorSignal ? lastErrorSignal.data as string : '';
+    });
   }
 
   onWarningClose() {
     this.warning = '';
+    // TODO: remove warning from signals queue?
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(subscription => subscription.unsubscribe());
+    if (this.signalSubscription) {
+      this.signalSubscription.unsubscribe();
+    }
   }
 }

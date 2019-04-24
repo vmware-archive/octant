@@ -1,7 +1,7 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, Output, EventEmitter, OnDestroy } from '@angular/core';
 import _ from 'lodash';
 import { Port, PortsView } from 'src/app/models/content';
-import { NotifierService } from 'src/app/services/notifier/notifier.service';
+import { NotifierService, NotifierServiceSession, NotifierSignalType } from 'src/app/services/notifier/notifier.service';
 import { PortForwardService } from 'src/app/services/port-forward/port-forward.service';
 
 @Component({
@@ -9,15 +9,20 @@ import { PortForwardService } from 'src/app/services/port-forward/port-forward.s
   templateUrl: './ports.component.html',
   styleUrls: ['./ports.component.scss']
 })
-export class PortsComponent implements OnChanges {
+export class PortsComponent implements OnChanges, OnDestroy {
   @Input() view: PortsView;
   submittedPFCreation: string;
   submittedPFRemoval: string;
+  notifierServiceSession: NotifierServiceSession;
+
+  @Output() portLoad: EventEmitter<boolean> = new EventEmitter(true);
 
   constructor(
     private portForwardService: PortForwardService,
-    private notifierService: NotifierService,
-  ) { }
+    notifierService: NotifierService,
+  ) {
+    this.notifierServiceSession = notifierService.createSession();
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {
@@ -28,7 +33,7 @@ export class PortsComponent implements OnChanges {
           return this.submittedPFCreation === port.config.name;
         }) as Port;
         if (foundPort && foundPort.config.state.isForwarded) {
-          this.notifierService.loading.next(false);
+          this.portLoad.emit(false);
           this.submittedPFCreation = '';
         }
       } else if (this.submittedPFRemoval) {
@@ -36,7 +41,7 @@ export class PortsComponent implements OnChanges {
           return this.submittedPFRemoval === port.config.name;
         }) as Port;
         if (foundPort && !foundPort.config.state.isForwarded) {
-          this.notifierService.loading.next(false);
+          this.portLoad.emit(false);
           this.submittedPFCreation = '';
         }
       }
@@ -48,26 +53,26 @@ export class PortsComponent implements OnChanges {
   }
 
   startPortForward(port: Port) {
-    this.notifierService.loading.next(true);
+    this.portLoad.emit(true);
     this.submittedPFCreation = port.config.name;
 
     this.portForwardService.create(port).subscribe(() => {
       // TODO: handle success
     }, () => {
-      this.notifierService.error.next('There was an issue starting your port-forward');
-      this.notifierService.loading.next(false);
+      this.notifierServiceSession.pushSignal(NotifierSignalType.ERROR, 'There was an issue starting your port-forward');
+      this.portLoad.emit(false);
     });
   }
 
   removePortForward(port: Port) {
-    this.notifierService.loading.next(true);
+    this.portLoad.emit(true);
     this.submittedPFRemoval = port.config.name;
 
     this.portForwardService.remove(port).subscribe(() => {
       // TODO: handle success
     }, () => {
-      this.notifierService.error.next('There was an issue removing your port-forward');
-      this.notifierService.loading.next(false);
+      this.notifierServiceSession.pushSignal(NotifierSignalType.ERROR, 'There was an issue removing your port-forward');
+      this.portLoad.emit(false);
     });
   }
 
@@ -77,5 +82,9 @@ export class PortsComponent implements OnChanges {
     }
     const localhostUrl = `http://localhost:${port.config.state.port}`;
     window.open(localhostUrl, '_blank');
+  }
+
+  ngOnDestroy() {
+    this.notifierServiceSession.removeAllSignals();
   }
 }

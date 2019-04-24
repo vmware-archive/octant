@@ -7,7 +7,7 @@ import { ContentResponse } from '../../models/content';
 import { Namespaces } from '../../models/namespace';
 import { Navigation } from '../../models/navigation';
 import { Filter, LabelFilterService } from '../label-filter/label-filter.service';
-import { NotifierService } from '../notifier/notifier.service';
+import { NotifierService, NotifierServiceSession, NotifierSignalType } from '../notifier/notifier.service';
 
 const pollEvery = 5;
 const API_BASE = getAPIBase();
@@ -28,7 +28,7 @@ const emptyNavigation: Navigation = {
 })
 export class DataService {
   private eventSource: EventSource;
-
+  private notifierServiceSession: NotifierServiceSession;
   private content = new BehaviorSubject<ContentResponse>(emptyContentResponse);
   private namespaces = new BehaviorSubject<string[]>([]);
   private navigation = new BehaviorSubject<Navigation>(emptyNavigation);
@@ -44,6 +44,7 @@ export class DataService {
       this.filters = filters;
       this.restartPoller();
     });
+    this.notifierServiceSession = this.notifierService.createSession();
   }
 
   getNavigation() {
@@ -59,6 +60,7 @@ export class DataService {
       const path = this.currentPath;
 
       this.stopPoller();
+      this.notifierServiceSession.removeAllSignals();
       this.startPoller(path);
     }
   }
@@ -86,14 +88,14 @@ export class DataService {
     }
 
     const url = `${API_BASE}/api/v1/content/${path}?poll=${pollEvery}${filterQuery}`;
-    this.notifierService.loading.next(true);
     this.eventSource = new EventSource(url);
+
+    this.notifierServiceSession.pushSignal(NotifierSignalType.LOADING, true);
 
     this.eventSource.addEventListener('content', (message: MessageEvent) => {
       const data = JSON.parse(message.data) as ContentResponse;
       this.content.next(data);
-      this.notifierService.loading.next(false);
-      this.notifierService.error.next(null);
+      this.notifierServiceSession.removeAllSignals();
     });
 
     this.eventSource.addEventListener('navigation', (message: MessageEvent) => {
@@ -111,11 +113,11 @@ export class DataService {
       this.location.go(redirectPath);
       this.currentPath = redirectPath.replace(/^(\/content\/)/, '');
       this.restartPoller();
-      this.notifierService.warning.next('Kubernetes object was deleted from the cluster.');
+      this.notifierServiceSession.pushSignal(NotifierSignalType.WARNING, 'Kubernetes object was deleted from the cluster.');
     });
 
     this.eventSource.addEventListener('error', () => {
-      this.notifierService.error.next('Lost back end source. Currently retrying...');
+      this.notifierServiceSession.pushSignal(NotifierSignalType.ERROR, 'Lost back end source. Currently retrying...');
     });
   }
 

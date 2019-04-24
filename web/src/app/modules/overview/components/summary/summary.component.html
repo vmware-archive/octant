@@ -1,4 +1,5 @@
 <div class="card">
+  <div class="progress loop" *ngIf="isLoading"><progress></progress></div>
   <div class="card-block">
     <h3 class="card-title">{{ title }}</h3>
     <table class="table table-vertical table-noborder">
@@ -28,7 +29,7 @@
               <app-view-table [view]="item.content"></app-view-table>
             </ng-container>
             <ng-container *ngSwitchCase="'ports'">
-              <app-ports [view]="item.content"></app-ports>
+              <app-ports [view]="item.content" (portLoad)="onPortLoad($event)"></app-ports>
             </ng-container>
             <ng-container *ngSwitchCase="'list'">
               <app-view-list [listView]="item.content"></app-view-list>

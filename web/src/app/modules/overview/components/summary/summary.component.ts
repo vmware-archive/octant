@@ -10,6 +10,7 @@ import { ViewUtil } from 'src/app/util/view';
 export class SummaryComponent implements OnChanges {
   @Input() view: SummaryView;
   title: string;
+  isLoading = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {
@@ -21,5 +22,9 @@ export class SummaryComponent implements OnChanges {
 
   identifyItem(index: number, item: SummaryItem): string {
     return `${index}-${item.header}`;
+  }
+
+  onPortLoad(isLoading: boolean) {
+    this.isLoading = isLoading;
   }
 }
