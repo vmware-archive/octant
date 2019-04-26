@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+
 	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/overview/link"
 	"github.com/heptio/developer-dash/internal/testutil"
@@ -50,23 +51,46 @@ func Test_RoleBindingListHandler(t *testing.T) {
 }
 
 func Test_printRoleBindingSubjects(t *testing.T) {
-	subject := testutil.CreateRoleBindingSubject("User", "test@test.com", "namespace")
-	roleBinding := testutil.CreateRoleBinding("read-pods", "pod-reader", []rbacv1.Subject{*subject})
+	cases := []struct {
+		name     string
+		subject  *rbacv1.Subject
+		expected component.TableRow
+	}{
+		{
+			name:    "User",
+			subject: testutil.CreateRoleBindingSubject("User", "test@test.com", "namespace"),
+			expected: component.TableRow{
+				"Kind":      component.NewText("User"),
+				"Name":      component.NewText("test@test.com"),
+				"Namespace": component.NewText("namespace"),
+			},
+		},
+		{
+			name:    "Service Account",
+			subject: testutil.CreateRoleBindingSubject("ServiceAccount", "svc-auto", "namespace"),
+			expected: component.TableRow{
+				"Kind":      component.NewText("ServiceAccount"),
+				"Name":      component.NewLink("", "svc-auto", "/content/overview/namespace/namespace/config-and-storage/service-accounts/svc-auto"),
+				"Namespace": component.NewText("namespace"),
+			},
+		},
+	}
 
-	observed, err := printRoleBindingSubjects(roleBinding)
-	require.NoError(t, err)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			roleBinding := testutil.CreateRoleBinding("read-pods", "pod-reader", []rbacv1.Subject{*tc.subject})
 
-	columns := component.NewTableCols("Kind", "Name", "Namespace")
-	expected := component.NewTable("Subjects", columns)
+			ctx := context.Background()
+			observed, err := printRoleBindingSubjects(ctx, roleBinding)
+			require.NoError(t, err)
 
-	row := component.TableRow{}
-	row["Kind"] = component.NewText("User")
-	row["Name"] = component.NewText("test@test.com")
-	row["Namespace"] = component.NewText("")
+			expected := component.NewTableWithRows("Subjects",
+				component.NewTableCols("Kind", "Name", "Namespace"),
+				[]component.TableRow{tc.expected})
 
-	expected.Add(row)
-
-	assert.Equal(t, expected, observed)
+			assert.Equal(t, expected, observed)
+		})
+	}
 }
 
 func Test_printRoleBindingConfig(t *testing.T) {

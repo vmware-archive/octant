@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/golang/mock/gomock"
 	"github.com/heptio/developer-dash/internal/objectstore"
 	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
@@ -234,8 +233,6 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 
 	role2Key, err := objectstoreutil.KeyFromObject(role2)
 	require.NoError(t, err)
-
-	spew.Dump(role2Key)
 
 	appObjectStore.EXPECT().
 		Get(gomock.Any(), role2Key).
