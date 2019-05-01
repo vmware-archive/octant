@@ -1,0 +1,7 @@
+resources:
+  - deployment.yaml
+
+images:
+  - name: sugarloaf
+    newName: harbor.bryanl.dev/test/sugarloaf
+    newTag: latest
