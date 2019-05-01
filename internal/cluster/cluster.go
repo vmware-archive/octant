@@ -27,7 +27,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 )
 
-//go:generate mockgen -destination=./fake/mock_client_interface.go -package=fake github.com/heptio/developer-dash/internal/cluster ClientInterface
+//go:generate mockgen -source=cluster.go -destination=./fake/mock_client_interface.go -package=fake github.com/heptio/developer-dash/internal/cluster ClientInterface
 //go:generate mockgen -destination=./fake/mock_dynamicinformer.go -package=fake k8s.io/client-go/dynamic/dynamicinformer DynamicSharedInformerFactory
 //go:generate mockgen -destination=./fake/mock_genericinformer.go -package=fake k8s.io/client-go/informers GenericInformer
 //go:generate mockgen -destination=./fake/mock_discoveryinterface.go -package=fake k8s.io/client-go/discovery DiscoveryInterface

@@ -18,7 +18,7 @@ import (
 	restclient "k8s.io/client-go/rest"
 )
 
-//go:generate mockgen -destination=./fake/mock_interface.go -package=fake github.com/heptio/developer-dash/internal/portforward PortForwarder
+//go:generate mockgen -source=service.go -destination=./fake/mock_interface.go -package=fake github.com/heptio/developer-dash/internal/portforward PortForwarder
 
 var (
 	emptyPortForwardResponse = CreateResponse{}

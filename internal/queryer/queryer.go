@@ -29,7 +29,7 @@ import (
 	"k8s.io/kubernetes/pkg/apis/core"
 )
 
-//go:generate mockgen -destination=./fake/mock_queryer.go -package=fake github.com/heptio/developer-dash/internal/queryer Queryer
+//go:generate mockgen -source=queryer.go -destination=./fake/mock_queryer.go -package=fake github.com/heptio/developer-dash/internal/queryer Queryer
 //go:generate mockgen -destination=./fake/mock_discovery.go -package=fake k8s.io/client-go/discovery DiscoveryInterface
 
 type Queryer interface {
