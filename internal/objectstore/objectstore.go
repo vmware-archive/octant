@@ -12,7 +12,7 @@ import (
 	kcache "k8s.io/client-go/tools/cache"
 )
 
-//go:generate mockgen -destination=./fake/mock_objectstore.go -package=fake github.com/heptio/developer-dash/internal/objectstore ObjectStore
+//go:generate mockgen -source=objectstore.go -destination=./fake/mock_objectstore.go -package=fake github.com/heptio/developer-dash/internal/objectstore ObjectStore
 
 // ObjectStore stores Kubernetes objects.
 type ObjectStore interface {
