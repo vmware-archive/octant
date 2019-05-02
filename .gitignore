@@ -19,7 +19,8 @@ rice-box.go
 /dist
 
 # generated fakes
-/internal/cache/fake
+/internal/portforward/fake
+/internal/objectstore/fake
 /internal/queryer/fake
 /internal/cluster/fake
 /internal/overview/printer/fake

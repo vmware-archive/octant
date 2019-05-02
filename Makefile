@@ -47,6 +47,17 @@ go-install:
 	$(GOINSTALL) ./vendor/github.com/golang/mock/mockgen
 	$(GOINSTALL) ./vendor/github.com/golang/protobuf/protoc-gen-go
 
+# Remove all generated fakes
+.PHONY: clean
+clean:
+	@rm -rf ./internal/portforward/fake
+	@rm -rf ./internal/objectstore/fake
+	@rm -rf ./internal/queryer/fake
+	@rm -rf ./internal/cluster/fake
+	@rm -rf ./internal/overview/printer/fake
+	@rm -rf ./pkg/plugin/fake
+	@rm -rf ./pkg/plugin/api/fake
+
 web-deps:
 	@cd web; npm ci
 

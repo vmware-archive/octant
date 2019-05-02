@@ -122,4 +122,4 @@ required = [
 
 [[override]]
   name = "github.com/golang/mock"
-  revision = "2105010f04ec0f4d7a7335a70547be132ebd7b7b"
+  revision = "98178306b791e0b8ce16c5e1277c4669d981c799"

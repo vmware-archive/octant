@@ -188,7 +188,7 @@
   version = "v1.2.1"
 
 [[projects]]
-  digest = "1:53ed804cee6288266ac78233fdd3ba0a082fce464f45d98d53881133f6afcbab"
+  digest = "1:b750ce99db13d5b0531f061e81333748e28228d695eb45f5609a057a968560f0"
   name = "github.com/golang/mock"
   packages = [
     "gomock",
@@ -196,7 +196,7 @@
     "mockgen/model",
   ]
   pruneopts = "T"
-  revision = "2105010f04ec0f4d7a7335a70547be132ebd7b7b"
+  revision = "98178306b791e0b8ce16c5e1277c4669d981c799"
 
 [[projects]]
   digest = "1:a2ecb56e5053d942aafc86738915fb94c9131bac848c543b8b6764365fd69080"
@@ -207,6 +207,7 @@
     "ptypes/any",
     "ptypes/duration",
     "ptypes/timestamp",
+    "ptypes/wrappers",
   ]
   pruneopts = "T"
   revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
@@ -1184,13 +1185,15 @@
     "github.com/asticode/go-astilectron",
     "github.com/asticode/go-astilectron-bootstrap",
     "github.com/asticode/go-astilog",
+    "github.com/davecgh/go-spew/spew",
     "github.com/golang/mock/gomock",
     "github.com/golang/mock/mockgen",
     "github.com/golang/protobuf/proto",
+    "github.com/golang/protobuf/ptypes/wrappers",
     "github.com/google/uuid",
-    "github.com/googleapis/gnostic/OpenAPIv2",
     "github.com/gorilla/handlers",
     "github.com/gorilla/mux",
+    "github.com/hashicorp/go-hclog",
     "github.com/hashicorp/go-plugin",
     "github.com/jessevdk/go-flags",
     "github.com/nkovacs/streamquote",
@@ -1226,7 +1229,6 @@
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/runtime/serializer",
     "k8s.io/apimachinery/pkg/runtime/serializer/json",
-    "k8s.io/apimachinery/pkg/selection",
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/clock",
     "k8s.io/apimachinery/pkg/util/httpstream",
@@ -1234,7 +1236,6 @@
     "k8s.io/apimachinery/pkg/util/runtime",
     "k8s.io/apimachinery/pkg/util/sets",
     "k8s.io/apimachinery/pkg/util/yaml",
-    "k8s.io/apimachinery/pkg/version",
     "k8s.io/client-go/discovery",
     "k8s.io/client-go/dynamic",
     "k8s.io/client-go/dynamic/dynamicinformer",
