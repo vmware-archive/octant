@@ -30,7 +30,7 @@ import (
 )
 
 //go:generate mockgen -source=queryer.go -destination=./fake/mock_queryer.go -package=fake github.com/heptio/developer-dash/internal/queryer Queryer
-//go:generate mockgen -destination=./fake/mock_discovery.go -package=fake k8s.io/client-go/discovery DiscoveryInterface
+//go:generate mockgen -source=../../vendor/k8s.io/client-go/discovery/discovery_client.go -imports=openapi_v2=github.com/googleapis/gnostic/OpenAPIv2 -destination=./fake/mock_discovery.go -package=fake k8s.io/client-go/discovery DiscoveryInterface
 
 type Queryer interface {
 	Children(ctx context.Context, object metav1.Object) ([]kruntime.Object, error)

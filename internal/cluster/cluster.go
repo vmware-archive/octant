@@ -28,9 +28,9 @@ import (
 )
 
 //go:generate mockgen -source=cluster.go -destination=./fake/mock_client_interface.go -package=fake github.com/heptio/developer-dash/internal/cluster ClientInterface
-//go:generate mockgen -destination=./fake/mock_dynamicinformer.go -package=fake k8s.io/client-go/dynamic/dynamicinformer DynamicSharedInformerFactory
-//go:generate mockgen -destination=./fake/mock_genericinformer.go -package=fake k8s.io/client-go/informers GenericInformer
-//go:generate mockgen -destination=./fake/mock_discoveryinterface.go -package=fake k8s.io/client-go/discovery DiscoveryInterface
+//go:generate mockgen -source=../../vendor/k8s.io/client-go/dynamic/dynamicinformer/interface.go -destination=./fake/mock_dynamicinformer.go -package=fake k8s.io/client-go/dynamic/dynamicinformer DynamicSharedInformerFactory
+//go:generate mockgen -source=../../vendor/k8s.io/client-go/informers/generic.go -destination=./fake/mock_genericinformer.go -package=fake k8s.io/client-go/informers GenericInformer
+//go:generate mockgen -source=../../vendor/k8s.io/client-go/discovery/discovery_client.go -imports=openapi_v2=github.com/googleapis/gnostic/OpenAPIv2 -destination=./fake/mock_discoveryinterface.go -package=fake k8s.io/client-go/discovery DiscoveryInterface
 //go:generate mockgen -destination=./fake/mock_sharedindexinformer.go -package=fake k8s.io/client-go/tools/cache SharedIndexInformer
 
 // ClientInterface is a client for cluster operations.
