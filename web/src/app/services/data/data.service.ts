@@ -1,4 +1,3 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {Location} from '@angular/common';
 import { BehaviorSubject, Observable } from 'rxjs';
@@ -7,7 +6,9 @@ import { ContentResponse } from '../../models/content';
 import { Namespaces } from '../../models/namespace';
 import { Navigation } from '../../models/navigation';
 import { Filter, LabelFilterService } from '../label-filter/label-filter.service';
-import { NotifierService, NotifierServiceSession, NotifierSignalType } from '../notifier/notifier.service';
+import { NotifierService, NotifierSession, NotifierSignalType } from '../notifier/notifier.service';
+import { EventSourceService } from './event-source.service';
+import _ from 'lodash';
 
 const pollEvery = 5;
 const API_BASE = getAPIBase();
@@ -28,116 +29,96 @@ const emptyNavigation: Navigation = {
 })
 export class DataService {
   private eventSource: EventSource;
-  private notifierServiceSession: NotifierServiceSession;
-  private content = new BehaviorSubject<ContentResponse>(emptyContentResponse);
-  private namespaces = new BehaviorSubject<string[]>([]);
-  private navigation = new BehaviorSubject<Navigation>(emptyNavigation);
-
-  private filters: Filter[] = [];
+  private notifierSession: NotifierSession;
   private currentPath: string;
 
-  constructor(private http: HttpClient,
-              labelFilter: LabelFilterService,
-              private notifierService: NotifierService,
-              private location: Location) {
-    labelFilter.filters.subscribe((filters) => {
-      this.filters = filters;
-      this.restartPoller();
-    });
-    this.notifierServiceSession = this.notifierService.createSession();
+  content = new BehaviorSubject<ContentResponse>(emptyContentResponse);
+  namespaces = new BehaviorSubject<string[]>([]);
+  navigation = new BehaviorSubject<Navigation>(emptyNavigation);
+
+  constructor(
+    private notifierService: NotifierService,
+    private location: Location,
+    private eventSourceService: EventSourceService,
+    private labelFilterService: LabelFilterService
+  ) {
+    this.labelFilterService.filters.subscribe(() => this.restartStream());
+    this.notifierSession = this.notifierService.createSession();
   }
 
-  getNavigation() {
-    return this.http.get(`${API_BASE}/api/v1/navigation`);
+  private handleContentEvent = (message: MessageEvent) => {
+    const data = JSON.parse(message.data) as ContentResponse;
+    this.content.next(data);
+    this.notifierSession.removeAllSignals();
   }
 
-  getNamespaces() {
-    return this.http.get(`${API_BASE}/api/v1/namespaces`);
+  private handleNavigationEvent = (message: MessageEvent) => {
+    const data = JSON.parse(message.data);
+    this.navigation.next(data);
   }
 
-  private restartPoller() {
-    if (this.currentPath) {
-      const path = this.currentPath;
-
-      this.stopPoller();
-      this.notifierServiceSession.removeAllSignals();
-      this.startPoller(path);
-    }
+  private handleNamespaceEvent = (message: MessageEvent) => {
+    const data = JSON.parse(message.data) as Namespaces;
+    this.namespaces.next(data.namespaces);
   }
 
-  startPoller(path: string) {
-    if (this.eventSource) {
-      this.eventSource.close();
-      this.eventSource = null;
-    }
+  private handleObjectNotFoundEvent = (message: MessageEvent) => {
+    const redirectPath = message.data as string;
+    this.location.go(redirectPath);
+    this.currentPath = redirectPath.replace(/^(\/content\/)/, '');
+    this.restartStream();
+    this.notifierSession.pushSignal(NotifierSignalType.WARNING, 'Kubernetes object was deleted from the cluster.');
+  }
 
-    // if path ends with a namespace and no slash, append a slash
-    if (path.match(/namespace\/.*[^\/]$/)) {
-      path = path + '/';
-    }
+  private handleErrorEvent = () => {
+    this.notifierSession.pushSignal(NotifierSignalType.ERROR, 'Lost back end source. Currently retrying...');
+  }
 
-    this.currentPath = path;
+  private createEventSourceUrl = (path: string) => {
+    const filters = this.labelFilterService.filters.getValue();
 
-    const filters = this.filters;
-
-    let filterQuery = filters.reduce((prev: string, cur: Filter, i: number) => {
+    let filterQuery = _.reduce(filters, (prev: string, cur: Filter, i: number) => {
       return prev + (i > 0 ? '&' : '') + 'filter=' + encodeURIComponent(`${cur.key}:${cur.value}`);
     }, '');
+
     if (filterQuery.length > 0) {
       filterQuery = `&${filterQuery}`;
     }
 
-    const url = `${API_BASE}/api/v1/content/${path}?poll=${pollEvery}${filterQuery}`;
-    this.eventSource = new EventSource(url);
-
-    this.notifierServiceSession.pushSignal(NotifierSignalType.LOADING, true);
-
-    this.eventSource.addEventListener('content', (message: MessageEvent) => {
-      const data = JSON.parse(message.data) as ContentResponse;
-      this.content.next(data);
-      this.notifierServiceSession.removeAllSignals();
-    });
-
-    this.eventSource.addEventListener('navigation', (message: MessageEvent) => {
-      const data = JSON.parse(message.data);
-      this.navigation.next(data);
-    });
-
-    this.eventSource.addEventListener('namespaces', (message: MessageEvent) => {
-      const data = JSON.parse(message.data) as Namespaces;
-      this.namespaces.next(data.namespaces);
-    });
-
-    this.eventSource.addEventListener('objectNotFound', (message: MessageEvent) => {
-      const redirectPath = message.data as string;
-      this.location.go(redirectPath);
-      this.currentPath = redirectPath.replace(/^(\/content\/)/, '');
-      this.restartPoller();
-      this.notifierServiceSession.pushSignal(NotifierSignalType.WARNING, 'Kubernetes object was deleted from the cluster.');
-    });
-
-    this.eventSource.addEventListener('error', () => {
-      this.notifierServiceSession.pushSignal(NotifierSignalType.ERROR, 'Lost back end source. Currently retrying...');
-    });
-  }
-
-  pollNavigation(): Observable<Navigation> {
-    return this.navigation;
-  }
-
-  pollContent(): Observable<ContentResponse> {
-    return this.content;
-  }
-
-  pollNamespaces(): Observable<string[]> {
-    return this.namespaces;
-  }
-
-  stopPoller() {
-    if (this.eventSource) {
-      this.eventSource.close();
+    if (_.last(path) !== '/') {
+      path += '/';
     }
 
-    this.currentPath = undefined;
+    return `${API_BASE}/api/v1/content/${path}?poll=${pollEvery}${filterQuery}`;
+  }
+
+  private restartStream() {
+    if (this.currentPath) {
+      const path = this.currentPath;
+      this.closeStream();
+      this.openStream(path);
+    }
+  }
+
+  openStream(path: string) {
+    this.closeStream();
+    this.currentPath = path;
+    const eventSourceUrl = this.createEventSourceUrl(path);
+    this.eventSource = this.eventSourceService.createEventSource(eventSourceUrl);
+    this.notifierSession.pushSignal(NotifierSignalType.LOADING, true);
+    this.eventSource.addEventListener('content', this.handleContentEvent);
+    this.eventSource.addEventListener('navigation', this.handleNavigationEvent);
+    this.eventSource.addEventListener('namespaces', this.handleNamespaceEvent);
+    this.eventSource.addEventListener('error', this.handleErrorEvent);
+    this.eventSource.addEventListener('objectNotFound', this.handleObjectNotFoundEvent);
+  }
+
+  closeStream() {
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = null;
+    }
+    this.currentPath = null;
+    this.notifierSession.removeAllSignals();
   }
 }

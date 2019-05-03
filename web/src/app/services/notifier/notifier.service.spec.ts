@@ -68,7 +68,7 @@ describe('NotifierService', () => {
         sessionID: 'baseSignal',
         type: NotifierSignalType.WARNING,
         data: 'nope nope nope',
-      },{
+      }, {
         id: errorSignalID,
         sessionID: 'baseSignal',
         type: NotifierSignalType.ERROR,

@@ -84,7 +84,7 @@ describe('InputFilterComponent - LabelFilterService integration test', () => {
   });
 
   it('should update service if filter is added from input', () => {
-    const inputDebugElement: DebugElement = fixture.debugElement.query(By.css('.text-input'))
+    const inputDebugElement: DebugElement = fixture.debugElement.query(By.css('.text-input'));
     const inputElement: HTMLInputElement = inputDebugElement.nativeElement;
     inputElement.value = 'test1:value1';
     inputElement.dispatchEvent(new Event('input'));

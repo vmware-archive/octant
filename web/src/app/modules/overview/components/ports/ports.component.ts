@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges, Output, EventEmitter, OnDestroy } from '@angular/core';
 import _ from 'lodash';
 import { Port, PortsView } from 'src/app/models/content';
-import { NotifierService, NotifierServiceSession, NotifierSignalType } from 'src/app/services/notifier/notifier.service';
+import { NotifierService, NotifierSession, NotifierSignalType } from 'src/app/services/notifier/notifier.service';
 import { PortForwardService } from 'src/app/services/port-forward/port-forward.service';
 
 @Component({
@@ -10,10 +10,11 @@ import { PortForwardService } from 'src/app/services/port-forward/port-forward.s
   styleUrls: ['./ports.component.scss']
 })
 export class PortsComponent implements OnChanges, OnDestroy {
+  private notifierSession: NotifierSession;
+
   @Input() view: PortsView;
   submittedPFCreation: string;
   submittedPFRemoval: string;
-  notifierServiceSession: NotifierServiceSession;
 
   @Output() portLoad: EventEmitter<boolean> = new EventEmitter(true);
 
@@ -21,7 +22,7 @@ export class PortsComponent implements OnChanges, OnDestroy {
     private portForwardService: PortForwardService,
     notifierService: NotifierService,
   ) {
-    this.notifierServiceSession = notifierService.createSession();
+    this.notifierSession = notifierService.createSession();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -59,7 +60,7 @@ export class PortsComponent implements OnChanges, OnDestroy {
     this.portForwardService.create(port).subscribe(() => {
       // TODO: handle success
     }, () => {
-      this.notifierServiceSession.pushSignal(NotifierSignalType.ERROR, 'There was an issue starting your port-forward');
+      this.notifierSession.pushSignal(NotifierSignalType.ERROR, 'There was an issue starting your port-forward');
       this.portLoad.emit(false);
     });
   }
@@ -71,7 +72,7 @@ export class PortsComponent implements OnChanges, OnDestroy {
     this.portForwardService.remove(port).subscribe(() => {
       // TODO: handle success
     }, () => {
-      this.notifierServiceSession.pushSignal(NotifierSignalType.ERROR, 'There was an issue removing your port-forward');
+      this.notifierSession.pushSignal(NotifierSignalType.ERROR, 'There was an issue removing your port-forward');
       this.portLoad.emit(false);
     });
   }
@@ -85,6 +86,6 @@ export class PortsComponent implements OnChanges, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.notifierServiceSession.removeAllSignals();
+    this.notifierSession.removeAllSignals();
   }
 }

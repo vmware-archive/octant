@@ -7,7 +7,7 @@ import { OverviewModule } from './overview.module';
 import { OverviewComponent } from './overview.component';
 
 const dataServiceStub: Partial<DataService> = {
-  stopPoller: () => {},
+  closeStream: () => {},
 };
 const activatedRouteStub = new ActivatedRouteStub();
 

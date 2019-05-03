@@ -1,0 +1,27 @@
+.git
+web/node_modules
+build
+dist
+.vscode
+examples
+web/rice-box.go
+choco
+ci
+configs
+
+
+# generated fakes
+/internal/cache/fake
+/internal/queryer/fake
+/internal/cluster/fake
+/internal/overview/printer/fake
+/pkg/plugin/fake
+/pkg/plugin/api/fake
+
+
+# electron bundling
+/vendor/astilectron*
+/vendor/electron*
+/vendor/status.json
+/output
+/cmd/devdash

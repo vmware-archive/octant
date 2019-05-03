@@ -9,12 +9,7 @@ describe('LabelFilterService', () => {
   let ngZone: NgZone;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [
-        LabelFilterService
-      ],
-    });
-
+    TestBed.configureTestingModule({});
     service = TestBed.get(LabelFilterService);
     router = TestBed.get(Router);
     ngZone = TestBed.get(NgZone);

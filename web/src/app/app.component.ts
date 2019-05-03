@@ -14,7 +14,7 @@ export class AppComponent implements OnInit {
   constructor(private dataService: DataService) {}
 
   ngOnInit(): void {
-    this.dataService.pollNavigation().subscribe((navigation: Navigation) => {
+    this.dataService.navigation.subscribe((navigation: Navigation) => {
       this.navigation = navigation;
     });
   }

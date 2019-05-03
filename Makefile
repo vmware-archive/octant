@@ -30,6 +30,9 @@ sugarloaf-dev:
 	@mkdir -p ./build
 	@env $(GOBUILD) -o build/sugarloaf $(GO_FLAGS) -v ./cmd/sugarloaf
 
+sugarloaf-docker:
+	@env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o /sugarloaf $(GO_FLAGS) -v ./cmd/sugarloaf
+
 setup-web: web-deps run-web
 
 run-web:
@@ -98,3 +101,6 @@ ci-quick:
 install-test-plugin:
 	mkdir -p ~/.config/vmdash/plugins
 	go build -o ~/.config/vmdash/plugins/pluginstub github.com/heptio/developer-dash/cmd/pluginstub
+
+.PHONY:
+build-deps:
