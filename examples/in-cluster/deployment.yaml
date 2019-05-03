@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sugarloaf
+  labels:
+    app: sugarloaf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sugarloaf
+  template:
+    metadata:
+      labels:
+        app: sugarloaf
+    spec:
+      containers:
+      - name: sugarloaf
+        image: sugarloaf
+        command: ["/sugarloaf"]
+        args: ["-v", "--kubeconfig", "/kube/dev-dash-kubeconfig.yaml"]
+        ports:
+        - containerPort: 7777
+        env:
+          - name: SUGARLOAF_LISTENER_ADDR
+            value: 0.0.0.0:7777
+          - name: SUGARLOAF_DISABLE_OPEN_BROWSER
+            value: "1"
+        volumeMounts:
+          - name: kubeconfig
+            mountPath: /kube/
+      volumes:
+        - name: kubeconfig
+          secret:
+            secretName: sugarloaf-kubeconfig
+            defaultMode: 256
