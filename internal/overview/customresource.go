@@ -32,6 +32,10 @@ func customResourceDefinitionNames(ctx context.Context, o objectstore.ObjectStor
 		Kind:       "CustomResourceDefinition",
 	}
 
+	if err := o.CheckAccess(key); err != nil {
+		return []string{}, nil
+	}
+
 	rawList, err := o.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "listing CRDs")
@@ -219,6 +223,10 @@ func listCustomResources(
 		Selector:   selector,
 	}
 
+	if err := o.CheckAccess(key); err != nil {
+		return []*unstructured.Unstructured{}, nil
+	}
+
 	objects, err := o.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "listing custom resources for %q", crd.Name)
@@ -390,8 +398,7 @@ func watchCRDs(ctx context.Context, o objectstore.ObjectStore, crdAddFunc, crdDe
 	}
 
 	logger := log.From(ctx)
-
-	if err := o.Watch(key, handler); err != nil {
+	if err := o.Watch(ctx, key, handler); err != nil {
 		logger.Errorf("crd watcher has failed: %v", err)
 	}
 }

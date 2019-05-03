@@ -12,6 +12,7 @@ import (
 	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/portforward"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/plugin"
 
 	"github.com/heptio/developer-dash/internal/log"
@@ -70,24 +71,30 @@ func NewClusterOverview(ctx context.Context, options Options) (*ClusterOverview,
 		pm.Register(ctx, pf)
 	}
 
-	crdAddFunc := func(pm *pathMatcher, csd *crdSectionDescriber) objectHandler {
-		return func(ctx context.Context, object *unstructured.Unstructured) {
-			if object == nil {
-				return
+	key := objectstoreutil.Key{
+		APIVersion: "apiextensions.k8s.io/v1beta1",
+		Kind:       "CustomResourceDefinition",
+	}
+	if err := options.ObjectStore.CheckAccess(key); err == nil {
+		crdAddFunc := func(pm *pathMatcher, csd *crdSectionDescriber) objectHandler {
+			return func(ctx context.Context, object *unstructured.Unstructured) {
+				if object == nil {
+					return
+				}
+				addCRD(ctx, object.GetName(), pm, csd)
 			}
-			addCRD(ctx, object.GetName(), pm, csd)
-		}
-	}(pm, customResourcesDescriber)
-	crdDeleteFunc := func(pm *pathMatcher, csd *crdSectionDescriber) objectHandler {
-		return func(ctx context.Context, object *unstructured.Unstructured) {
-			if object == nil {
-				return
+		}(pm, customResourcesDescriber)
+		crdDeleteFunc := func(pm *pathMatcher, csd *crdSectionDescriber) objectHandler {
+			return func(ctx context.Context, object *unstructured.Unstructured) {
+				if object == nil {
+					return
+				}
+				deleteCRD(ctx, object.GetName(), pm, csd)
 			}
-			deleteCRD(ctx, object.GetName(), pm, csd)
-		}
-	}(pm, customResourcesDescriber)
+		}(pm, customResourcesDescriber)
 
-	go watchCRDs(ctx, options.ObjectStore, crdAddFunc, crdDeleteFunc)
+		go watchCRDs(ctx, options.ObjectStore, crdAddFunc, crdDeleteFunc)
+	}
 
 	pfSvc, err := portforward.Default(ctx, options.Client, options.ObjectStore)
 	if err != nil {

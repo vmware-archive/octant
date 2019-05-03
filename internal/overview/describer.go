@@ -97,6 +97,7 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 	// Pass through selector if provided to filter objects
 	var key = d.objectStoreKey // copy
 	key.Selector = options.LabelSet
+	key.Namespace = namespace
 
 	if d.isClusterWide {
 		namespace = ""
