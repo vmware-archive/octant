@@ -6,7 +6,7 @@ export enum NotifierSignalType {
   LOADING = 'LOADING',
   ERROR = 'ERROR',
   WARNING = 'WARNING'
-};
+}
 
 export interface NotifierSignal {
   id: string;
@@ -15,7 +15,7 @@ export interface NotifierSignal {
   data: boolean | string;
 }
 
-export class NotifierServiceSession {
+export class NotifierSession {
   id: string;
 
   constructor(
@@ -66,11 +66,11 @@ export class NotifierServiceSession {
   providedIn: 'root'
 })
 export class NotifierService {
-  baseSignalSession: NotifierServiceSession;
+  baseSignalSession: NotifierSession;
   globalSignalsStream: BehaviorSubject<NotifierSignal[]> = new BehaviorSubject([]);
 
   constructor() {
-    this.baseSignalSession = new NotifierServiceSession(this.globalSignalsStream, 'baseSignal');
+    this.baseSignalSession = new NotifierSession(this.globalSignalsStream, 'baseSignal');
   }
 
   pushSignal(type: NotifierSignalType, data: boolean | string): string {
@@ -85,7 +85,7 @@ export class NotifierService {
     return this.baseSignalSession.removeSignals(ids);
   }
 
-  createSession(): NotifierServiceSession {
-    return new NotifierServiceSession(this.globalSignalsStream, _.uniqueId('signalSession'));
+  createSession(): NotifierSession {
+    return new NotifierSession(this.globalSignalsStream, _.uniqueId('signalSession'));
   }
 }

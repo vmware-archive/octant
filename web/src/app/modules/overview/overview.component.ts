@@ -10,26 +10,24 @@ import { titleAsText } from 'src/app/util/view';
   styleUrls: ['./overview.component.scss'],
 })
 export class OverviewComponent implements OnInit, OnDestroy {
+  private previousUrl = '';
   hasTabs = false;
-
+  hasReceivedContent = false;
   title: string = null;
   views: View[] = null;
   singleView: View = null;
 
-  hasReceivedContent = false;
   constructor(private route: ActivatedRoute, private dataService: DataService) {}
-  private previousUrl = '';
 
   ngOnInit() {
-    // TODO: check if the namespace is a real one; error if not (or redirect to default)
     this.route.url.subscribe((url) => {
       const currentPath = url.map((u) => u.path).join('/');
       if (currentPath !== this.previousUrl) {
         this.singleView = null;
         this.views = null;
         this.previousUrl = currentPath;
-        this.dataService.startPoller(currentPath);
-        this.dataService.pollContent().subscribe((contentResponse: ContentResponse) => {
+        this.dataService.openStream(currentPath);
+        this.dataService.content.subscribe((contentResponse: ContentResponse) => {
           this.connect(contentResponse);
         });
       }
@@ -55,6 +53,6 @@ export class OverviewComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.dataService.stopPoller();
+    this.dataService.closeStream();
   }
 }
