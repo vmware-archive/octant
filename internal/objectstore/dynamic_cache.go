@@ -6,18 +6,21 @@ import (
 	"time"
 
 	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/util/retry"
 	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
+	authorizationv1 "k8s.io/api/authorization/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/informers"
+	authclientv1 "k8s.io/client-go/kubernetes/typed/authorization/v1"
 	kcache "k8s.io/client-go/tools/cache"
 )
 
@@ -26,34 +29,23 @@ const (
 	defaultInformerResync = time.Second * 180
 )
 
-func initDynamicSharedInformerFactory(client cluster.ClientInterface) (dynamicinformer.DynamicSharedInformerFactory, error) {
+func initDynamicSharedInformerFactory(client cluster.ClientInterface, namespace string) (dynamicinformer.DynamicSharedInformerFactory, error) {
 	dynamicClient, err := client.DynamicClient()
 	if err != nil {
 		return nil, err
 	}
-
-	factory := dynamicinformer.NewDynamicSharedInformerFactory(dynamicClient, defaultInformerResync)
-	return factory, nil
+	if namespace == "" {
+		return dynamicinformer.NewDynamicSharedInformerFactory(dynamicClient, defaultInformerResync), nil
+	}
+	return dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicClient, defaultInformerResync, namespace, nil), nil
 }
 
 func currentInformer(
-	key objectstoreutil.Key,
-	client cluster.ClientInterface,
+	gvr schema.GroupVersionResource,
 	factory dynamicinformer.DynamicSharedInformerFactory,
 	stopCh <-chan struct{}) (informers.GenericInformer, error) {
 	if factory == nil {
 		return nil, errors.New("dynamic shared informer factory is nil")
-	}
-
-	if client == nil {
-		return nil, errors.New("cluster client is nil")
-	}
-
-	gvk := key.GroupVersionKind()
-
-	gvr, err := client.Resource(gvk.GroupKind())
-	if err != nil {
-		return nil, err
 	}
 
 	informer := factory.ForResource(gvr)
@@ -62,16 +54,20 @@ func currentInformer(
 	return informer, nil
 }
 
+// accessMap  [Namespace][Group][Resource]
+type accessMap map[string]map[string]map[string]bool
+
 // DynamicCacheOpt is an option for configuration DynamicCache.
 type DynamicCacheOpt func(*DynamicCache)
 
 // DynamicCache is a cache based on the dynamic shared informer factory.
 type DynamicCache struct {
-	initFactoryFunc func(cluster.ClientInterface) (dynamicinformer.DynamicSharedInformerFactory, error)
-	factory         dynamicinformer.DynamicSharedInformerFactory
+	initFactoryFunc func(cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error)
+	factories       map[string]dynamicinformer.DynamicSharedInformerFactory
 	client          cluster.ClientInterface
 	stopCh          <-chan struct{}
-	seenGVKs        map[schema.GroupVersionKind]bool
+	seenGVKs        map[string]map[schema.GroupVersionKind]bool
+	access          accessMap
 
 	mu sync.Mutex
 }
@@ -80,23 +76,48 @@ var _ (ObjectStore) = (*DynamicCache)(nil)
 
 // NewDynamicCache creates an instance of DynamicCache.
 func NewDynamicCache(client cluster.ClientInterface, stopCh <-chan struct{}, options ...DynamicCacheOpt) (*DynamicCache, error) {
+
 	c := &DynamicCache{
 		initFactoryFunc: initDynamicSharedInformerFactory,
 		client:          client,
 		stopCh:          stopCh,
-		seenGVKs:        make(map[schema.GroupVersionKind]bool),
+		seenGVKs:        make(map[string]map[schema.GroupVersionKind]bool),
 	}
 
 	for _, option := range options {
 		option(c)
 	}
 
-	factory, err := c.initFactoryFunc(client)
-	if err != nil {
-		return nil, errors.Wrap(err, "initialize dynamic shared informer factory")
+	if c.access == nil {
+		access, err := c.initAccess()
+		if err != nil {
+			return nil, errors.Wrap(err, "initialize dynamic shared informer access check")
+		}
+		c.access = access
 	}
 
-	c.factory = factory
+	namespaceClient, err := client.NamespaceClient()
+	if err != nil {
+		return nil, errors.Wrap(err, "client namespace")
+	}
+
+	namespaces, err := namespaceClient.Names()
+	if err != nil {
+		namespaces = []string{namespaceClient.InitialNamespace()}
+	}
+
+	namespaces = append(namespaces, "")
+
+	factories := make(map[string]dynamicinformer.DynamicSharedInformerFactory)
+	for _, namespace := range namespaces {
+		factory, err := c.initFactoryFunc(client, namespace)
+		if err != nil {
+			return nil, errors.Wrap(err, "initialize dynamic shared informer factory")
+		}
+		factories[namespace] = factory
+		c.seenGVKs[namespace] = make(map[schema.GroupVersionKind]bool)
+	}
+	c.factories = factories
 	return c, nil
 }
 
@@ -104,10 +125,180 @@ type lister interface {
 	List(selector kLabels.Selector) ([]kruntime.Object, error)
 }
 
-func (dc *DynamicCache) currentInformer(key objectstoreutil.Key) (informers.GenericInformer, error) {
-	gvk := key.GroupVersionKind()
+func (dc *DynamicCache) initAccess() (accessMap, error) {
+	k8sClient, err := dc.client.KubernetesClient()
+	if err != nil {
+		return nil, errors.Wrap(err, "client kubernetes")
+	}
+	namespaceClient, err := dc.client.NamespaceClient()
+	if err != nil {
+		return nil, errors.Wrap(err, "client namespace")
+	}
 
-	informer, err := currentInformer(key, dc.client, dc.factory, dc.stopCh)
+	authClient := k8sClient.AuthorizationV1()
+
+	access := make(accessMap)
+	namespaces, err := namespaceClient.Names()
+	if err != nil {
+		namespaces = []string{namespaceClient.InitialNamespace()}
+	}
+	for _, namespace := range namespaces {
+		if _, ok := access[namespace]; !ok {
+			access[namespace] = make(map[string]map[string]bool)
+		}
+		srr := &authorizationv1.SelfSubjectRulesReview{
+			Spec: authorizationv1.SelfSubjectRulesReviewSpec{
+				Namespace: namespace,
+			},
+		}
+		rresponse, err := authClient.SelfSubjectRulesReviews().Create(srr)
+		if err != nil {
+			return nil, errors.Wrap(err, "client auth")
+		}
+		for _, resource := range rresponse.Status.ResourceRules {
+			if len(resource.Resources) > 0 {
+				for _, group := range resource.APIGroups {
+					for _, res := range resource.Resources {
+						if _, ok := access[namespace][group]; !ok {
+							access[namespace][group] = make(map[string]bool)
+						}
+						access[namespace][group][res] = hasGetListWatch(resource.Verbs)
+					}
+				}
+			}
+		}
+	}
+	clusterAccess, err := initClusterScopedAccess(authClient)
+	if err != nil {
+		return nil, errors.Wrap(err, "client auth, initClusterScopedAccess")
+	}
+	for k, v := range clusterAccess {
+		access[k] = v
+	}
+
+	return access, nil
+}
+
+func initClusterScopedAccess(authClient authclientv1.AuthorizationV1Interface) (accessMap, error) {
+	access := make(accessMap)
+	for _, gvr := range []struct {
+		group    string
+		version  string
+		resource string
+		key      string
+	}{
+		{"apiextensions.k8s.io", "v1beta1", "CustomResourceDefinition", "customresourcedefinitions"},
+		{"rbac.authorization.k8s.io", "v1", "ClusterRole", "clusterroles"},
+		{"rbac.authorization.k8s.io", "v1", "ClusterRoleBinding", "clusterrolebindings"},
+	} {
+		verbs := []string{}
+		for _, verb := range []string{"get", "list", "watch"} {
+			sar := &authorizationv1.SelfSubjectAccessReview{
+				Spec: authorizationv1.SelfSubjectAccessReviewSpec{
+					ResourceAttributes: &authorizationv1.ResourceAttributes{
+						Verb:     verb,
+						Group:    gvr.group,
+						Version:  gvr.version,
+						Resource: gvr.resource,
+					},
+				},
+			}
+			aresponse, err := authClient.SelfSubjectAccessReviews().Create(sar)
+			if err != nil {
+				return nil, errors.Wrap(err, "client auth")
+			}
+			if aresponse.Status.Allowed {
+				verbs = append(verbs, verb)
+			}
+		}
+		if _, ok := access[""]; !ok {
+			access[""] = make(map[string]map[string]bool)
+		}
+		if _, ok := access[""][gvr.group]; !ok {
+			access[""][gvr.group] = make(map[string]bool)
+		}
+		access[""][gvr.group][gvr.key] = hasGetListWatch(verbs)
+	}
+	return access, nil
+}
+
+func hasGetListWatch(verbs []string) bool {
+	// * implies all verbs
+	if len(verbs) == 1 {
+		if verbs[0] == "*" {
+			return true
+		}
+	}
+	// get, list, watch needed so check for greater than 2
+	if len(verbs) > 2 {
+		neededVerbs := map[string]bool{"get": false, "list": false, "watch": false}
+		for verb := range neededVerbs {
+			for _, providedVerb := range verbs {
+				if providedVerb == verb {
+					neededVerbs[verb] = true
+					continue
+				}
+			}
+		}
+		return neededVerbs["get"] && neededVerbs["list"] && neededVerbs["watch"]
+	}
+	return false
+}
+
+// CheckAccess returns an error if the current user does not have access to the key
+func (dc *DynamicCache) CheckAccess(key objectstoreutil.Key) error {
+	gvk := key.GroupVersionKind()
+	gvr, err := dc.client.Resource(gvk.GroupKind())
+	if err != nil {
+		return errors.Wrap(err, "client resource")
+	}
+	namespace, groupName, resourceName := key.Namespace, gvr.Group, gvr.Resource
+
+	access, ok := dc.access[namespace]
+	if !ok {
+		return errors.Errorf("uknown namespace: %s", namespace)
+	}
+
+	group, ok := access["*"]
+	if !ok {
+		group, ok = access[groupName]
+		if !ok {
+			return errors.Errorf("unknown group: %s", groupName)
+		}
+	}
+
+	resourceAccess, ok := group["*"]
+	if ok && resourceAccess == true {
+		return nil
+	}
+
+	resourceAccess, ok = group[resourceName]
+	if !ok {
+		return errors.Errorf("unknown resource: %s", resourceName)
+	}
+	if resourceAccess == false {
+		return errors.Errorf("forbidden resource: %s", resourceName)
+	}
+	return nil
+}
+
+func (dc *DynamicCache) currentInformer(key objectstoreutil.Key) (informers.GenericInformer, error) {
+	if dc.client == nil {
+		return nil, errors.New("cluster client is nil")
+	}
+
+	gvk := key.GroupVersionKind()
+	gvr, err := dc.client.Resource(gvk.GroupKind())
+	if err != nil {
+		return nil, errors.Wrap(err, "client resource")
+	}
+
+	factory, ok := dc.factories[key.Namespace]
+	if !ok {
+		return nil, errors.Errorf("no informer factory for namespace %s", key.Namespace)
+	}
+
+	informer, err := currentInformer(gvr, factory, dc.stopCh)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +306,7 @@ func (dc *DynamicCache) currentInformer(key objectstoreutil.Key) (informers.Gene
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
 
-	if _, ok := dc.seenGVKs[gvk]; ok {
+	if _, ok := dc.seenGVKs[key.Namespace][gvk]; ok {
 		return informer, nil
 	}
 
@@ -124,7 +315,7 @@ func (dc *DynamicCache) currentInformer(key objectstoreutil.Key) (informers.Gene
 		return nil, errors.New("shutting down")
 	}
 
-	dc.seenGVKs[gvk] = true
+	dc.seenGVKs[key.Namespace][gvk] = true
 
 	return informer, nil
 }
@@ -134,6 +325,10 @@ func (dc *DynamicCache) List(ctx context.Context, key objectstoreutil.Key) ([]*u
 	_, span := trace.StartSpan(ctx, "dynamicCacheList")
 	defer span.End()
 
+	if err := dc.CheckAccess(key); err != nil {
+		return nil, errors.Wrapf(err, "list access forbidden to %+v", key)
+	}
+
 	span.Annotate([]trace.Attribute{
 		trace.StringAttribute("namespace", key.Namespace),
 		trace.StringAttribute("apiVersion", key.APIVersion),
@@ -142,7 +337,7 @@ func (dc *DynamicCache) List(ctx context.Context, key objectstoreutil.Key) ([]*u
 
 	informer, err := dc.currentInformer(key)
 	if err != nil {
-		return nil, errors.Wrapf(err, "retrieving informer for %v", key)
+		return nil, errors.Wrapf(err, "retrieving informer for %+v", key)
 	}
 
 	var l lister
@@ -182,6 +377,10 @@ type getter interface {
 func (dc *DynamicCache) Get(ctx context.Context, key objectstoreutil.Key) (*unstructured.Unstructured, error) {
 	_, span := trace.StartSpan(ctx, "dynamicCacheList")
 	defer span.End()
+
+	if err := dc.CheckAccess(key); err != nil {
+		return nil, errors.Wrapf(err, "get access forbidden to %+v", key)
+	}
 
 	span.Annotate([]trace.Attribute{
 		trace.StringAttribute("namespace", key.Namespace),
@@ -251,7 +450,13 @@ func (dc *DynamicCache) Get(ctx context.Context, key objectstoreutil.Key) (*unst
 
 // Watch watches the cluster for an event and performs actions with the
 // supplied handler.
-func (dc *DynamicCache) Watch(key objectstoreutil.Key, handler kcache.ResourceEventHandler) error {
+func (dc *DynamicCache) Watch(ctx context.Context, key objectstoreutil.Key, handler kcache.ResourceEventHandler) error {
+	logger := log.From(ctx)
+	if err := dc.CheckAccess(key); err != nil {
+		logger.Errorf("dynamiccache watch access forbidden to %+v", key)
+		return nil
+	}
+
 	informer, err := dc.currentInformer(key)
 	if err != nil {
 		return errors.Wrapf(err, "retrieving informer for %s", key)
