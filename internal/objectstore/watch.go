@@ -120,7 +120,7 @@ func (w *Watch) List(ctx context.Context, key objectstoreutil.Key) ([]*unstructu
 
 	logger := log.From(ctx)
 	if err := w.backendObjectStore.CheckAccess(key); err != nil {
-		logger.Errorf("access forbidden to %+v", key)
+		logger.Errorf("check access failed: %v, access forbidden to %+v.", err, key)
 		return []*unstructured.Unstructured{}, nil
 	}
 
@@ -185,7 +185,7 @@ func (w *Watch) Get(ctx context.Context, key objectstoreutil.Key) (*unstructured
 
 	logger := log.From(ctx)
 	if err := w.backendObjectStore.CheckAccess(key); err != nil {
-		logger.Errorf("access forbidden to %+v", key)
+		logger.Errorf("check access failed: %v, access forbidden to %+v", err, key)
 		u := unstructured.Unstructured{}
 		return &u, nil
 	}

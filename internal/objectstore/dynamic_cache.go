@@ -125,6 +125,26 @@ type lister interface {
 	List(selector kLabels.Selector) ([]kruntime.Object, error)
 }
 
+func resourceGroupNames() map[string][]string {
+	return map[string][]string{
+		"batch":      []string{"cronjobs", "jobs"},
+		"apps":       []string{"daemonsets", "deployments", "replicasets", "statefulsets", "controllerrevisions"},
+		"extensions": []string{"ingresses", "daemonsets", "replicasets", "deployments", "networkpolicies"},
+		"": []string{
+			"pods", "replicationcontrollers", "services",
+			"ingresses", "endpoints", "persistentvolumeclaims",
+			"configmaps", "secrets", "serviceaccounts", "limitranges",
+			"resourcequotas", "events", "controllerrevisions", "podtemplates",
+		},
+		"policy":                    []string{"poddisruptionbudgets"},
+		"autoscaling":               []string{"horizontalpodautoscalers"},
+		"rbac.authorization.k8s.io": []string{"roles", "rolebindings"},
+		"cloud.google.com":          []string{"backendconfigs"},
+		"networking.k8s.io":         []string{"networkpolicies"},
+		"networking.gke.io":         []string{"managedcertificates"},
+	}
+}
+
 func (dc *DynamicCache) initAccess() (accessMap, error) {
 	k8sClient, err := dc.client.KubernetesClient()
 	if err != nil {
@@ -146,28 +166,48 @@ func (dc *DynamicCache) initAccess() (accessMap, error) {
 		if _, ok := access[namespace]; !ok {
 			access[namespace] = make(map[string]map[string]bool)
 		}
-		srr := &authorizationv1.SelfSubjectRulesReview{
-			Spec: authorizationv1.SelfSubjectRulesReviewSpec{
-				Namespace: namespace,
+
+		skipResourceCheck := false
+		sar := &authorizationv1.SelfSubjectAccessReview{
+			Spec: authorizationv1.SelfSubjectAccessReviewSpec{
+				ResourceAttributes: &authorizationv1.ResourceAttributes{
+					Namespace: namespace,
+					Verb:      "watch",
+				},
 			},
 		}
-		rresponse, err := authClient.SelfSubjectRulesReviews().Create(srr)
+
+		rresponse, err := authClient.SelfSubjectAccessReviews().Create(sar)
 		if err != nil {
 			return nil, errors.Wrap(err, "client auth")
 		}
-		for _, resource := range rresponse.Status.ResourceRules {
-			if len(resource.Resources) > 0 {
-				for _, group := range resource.APIGroups {
-					for _, res := range resource.Resources {
-						if _, ok := access[namespace][group]; !ok {
-							access[namespace][group] = make(map[string]bool)
-						}
-						access[namespace][group][res] = hasGetListWatch(resource.Verbs)
+		if rresponse.Status.Allowed {
+			skipResourceCheck = true
+		}
+
+		for group, resources := range resourceGroupNames() {
+			for _, resource := range resources {
+				if !skipResourceCheck {
+					sar.Spec.ResourceAttributes.Resource = resource
+					rresponse, err = authClient.SelfSubjectAccessReviews().Create(sar)
+					if err != nil {
+						return nil, errors.Wrap(err, "client auth")
 					}
+				}
+
+				if _, ok := access[namespace][group]; !ok {
+					access[namespace][group] = make(map[string]bool)
+				}
+
+				if rresponse.Status.Allowed {
+					access[namespace][group][resource] = true
+				} else {
+					access[namespace][group][resource] = false
 				}
 			}
 		}
 	}
+
 	clusterAccess, err := initClusterScopedAccess(authClient)
 	if err != nil {
 		return nil, errors.Wrap(err, "client auth, initClusterScopedAccess")
@@ -191,58 +231,35 @@ func initClusterScopedAccess(authClient authclientv1.AuthorizationV1Interface) (
 		{"rbac.authorization.k8s.io", "v1", "ClusterRole", "clusterroles"},
 		{"rbac.authorization.k8s.io", "v1", "ClusterRoleBinding", "clusterrolebindings"},
 	} {
-		verbs := []string{}
-		for _, verb := range []string{"get", "list", "watch"} {
-			sar := &authorizationv1.SelfSubjectAccessReview{
-				Spec: authorizationv1.SelfSubjectAccessReviewSpec{
-					ResourceAttributes: &authorizationv1.ResourceAttributes{
-						Verb:     verb,
-						Group:    gvr.group,
-						Version:  gvr.version,
-						Resource: gvr.resource,
-					},
+		sar := &authorizationv1.SelfSubjectAccessReview{
+			Spec: authorizationv1.SelfSubjectAccessReviewSpec{
+				ResourceAttributes: &authorizationv1.ResourceAttributes{
+					Verb:     "watch",
+					Group:    gvr.group,
+					Version:  gvr.version,
+					Resource: gvr.resource,
 				},
-			}
-			aresponse, err := authClient.SelfSubjectAccessReviews().Create(sar)
-			if err != nil {
-				return nil, errors.Wrap(err, "client auth")
-			}
-			if aresponse.Status.Allowed {
-				verbs = append(verbs, verb)
-			}
+			},
 		}
+		aresponse, err := authClient.SelfSubjectAccessReviews().Create(sar)
+		if err != nil {
+			return nil, errors.Wrap(err, "client auth")
+		}
+
 		if _, ok := access[""]; !ok {
 			access[""] = make(map[string]map[string]bool)
 		}
 		if _, ok := access[""][gvr.group]; !ok {
 			access[""][gvr.group] = make(map[string]bool)
 		}
-		access[""][gvr.group][gvr.key] = hasGetListWatch(verbs)
+
+		if aresponse.Status.Allowed {
+			access[""][gvr.group][gvr.key] = true
+		} else {
+			access[""][gvr.group][gvr.key] = false
+		}
 	}
 	return access, nil
-}
-
-func hasGetListWatch(verbs []string) bool {
-	// * implies all verbs
-	if len(verbs) == 1 {
-		if verbs[0] == "*" {
-			return true
-		}
-	}
-	// get, list, watch needed so check for greater than 2
-	if len(verbs) > 2 {
-		neededVerbs := map[string]bool{"get": false, "list": false, "watch": false}
-		for verb := range neededVerbs {
-			for _, providedVerb := range verbs {
-				if providedVerb == verb {
-					neededVerbs[verb] = true
-					continue
-				}
-			}
-		}
-		return neededVerbs["get"] && neededVerbs["list"] && neededVerbs["watch"]
-	}
-	return false
 }
 
 // CheckAccess returns an error if the current user does not have access to the key
@@ -453,7 +470,7 @@ func (dc *DynamicCache) Get(ctx context.Context, key objectstoreutil.Key) (*unst
 func (dc *DynamicCache) Watch(ctx context.Context, key objectstoreutil.Key, handler kcache.ResourceEventHandler) error {
 	logger := log.From(ctx)
 	if err := dc.CheckAccess(key); err != nil {
-		logger.Errorf("dynamiccache watch access forbidden to %+v", key)
+		logger.Errorf("check access failed: %v, access forbidden to %+v", key)
 		return nil
 	}
 
