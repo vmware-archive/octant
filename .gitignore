@@ -35,3 +35,5 @@ rice-box.go
 /output
 /cmd/devdash/bind*
 /cmd/devdash/windows.syso
+
+.vscode

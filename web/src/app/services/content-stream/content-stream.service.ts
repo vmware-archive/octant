@@ -27,7 +27,7 @@ const emptyNavigation: Navigation = {
 @Injectable({
   providedIn: 'root',
 })
-export class DataService {
+export class ContentStreamService {
   private eventSource: EventSource;
   private notifierSession: NotifierSession;
   private currentPath: string;

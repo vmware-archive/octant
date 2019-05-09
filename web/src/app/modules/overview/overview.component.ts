@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { DataService } from 'src/app/services/data/data.service';
+import { ContentStreamService } from 'src/app/services/content-stream/content-stream.service';
 import { ContentResponse, View } from 'src/app/models/content';
 import { titleAsText } from 'src/app/util/view';
 
@@ -17,7 +17,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
   views: View[] = null;
   singleView: View = null;
 
-  constructor(private route: ActivatedRoute, private dataService: DataService) {}
+  constructor(private route: ActivatedRoute, private contentStreamService: ContentStreamService) {}
 
   ngOnInit() {
     this.route.url.subscribe((url) => {
@@ -26,8 +26,8 @@ export class OverviewComponent implements OnInit, OnDestroy {
         this.singleView = null;
         this.views = null;
         this.previousUrl = currentPath;
-        this.dataService.openStream(currentPath);
-        this.dataService.content.subscribe((contentResponse: ContentResponse) => {
+        this.contentStreamService.openStream(currentPath);
+        this.contentStreamService.content.subscribe((contentResponse: ContentResponse) => {
           this.connect(contentResponse);
         });
       }
@@ -53,6 +53,6 @@ export class OverviewComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.dataService.closeStream();
+    this.contentStreamService.closeStream();
   }
 }

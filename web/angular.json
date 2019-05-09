@@ -96,7 +96,11 @@
               "src/favicon.ico",
               "src/assets"
             ],
-            "codeCoverage": true
+            "codeCoverage": true,
+            "codeCoverageExclude": [
+              "src/app/models/**/*",
+              "src/environments/**/*"
+            ]
           }
         },
         "lint": {

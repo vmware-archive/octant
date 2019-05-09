@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-
-import { DataService } from './services/data/data.service';
+import { ContentStreamService } from './services/content-stream/content-stream.service';
 import { Navigation } from './models/navigation';
 
 @Component({
@@ -11,10 +10,10 @@ import { Navigation } from './models/navigation';
 export class AppComponent implements OnInit {
   navigation: Navigation;
 
-  constructor(private dataService: DataService) {}
+  constructor(private contentStreamService: ContentStreamService) {}
 
   ngOnInit(): void {
-    this.dataService.navigation.subscribe((navigation: Navigation) => {
+    this.contentStreamService.navigation.subscribe((navigation: Navigation) => {
       this.navigation = navigation;
     });
   }

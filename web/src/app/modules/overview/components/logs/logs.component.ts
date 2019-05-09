@@ -8,12 +8,13 @@ import { PodLogsService, PodLogsStreamer } from 'src/app/services/pod-logs/pod-l
   styleUrls: ['./logs.component.scss']
 })
 export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
+  private logStream: PodLogsStreamer;
+  private scrollToBottom = false;
+
   @Input() view: LogsView;
   @ViewChild('scrollTarget') scrollTarget: ElementRef;
-  containerLogs: LogEntry[];
-  logStream: PodLogsStreamer;
+  containerLogs: LogEntry[] = [];
 
-  scrollToBottom = false;
   selectedContainer = '';
   shouldDisplayTimestamp = true;
 

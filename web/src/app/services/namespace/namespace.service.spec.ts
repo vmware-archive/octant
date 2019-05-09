@@ -1,7 +1,7 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { NamespaceService } from './namespace.service';
 import { NotifierService, NotifierSignalType } from '../notifier/notifier.service';
-import { DataService } from '../data/data.service';
+import { ContentStreamService } from '../content-stream/content-stream.service';
 import _ from 'lodash';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -14,7 +14,7 @@ describe('NamespaceService', () => {
   let ngZone: NgZone;
 
   beforeEach(() => {
-    const dataServiceStub = {
+    const contentStreamServiceStub = {
       namespaces: new BehaviorSubject<string[]>([]),
     };
 
@@ -33,7 +33,7 @@ describe('NamespaceService', () => {
       ],
       providers: [
         NamespaceService,
-        { provide: DataService, useValue: dataServiceStub },
+        { provide: ContentStreamService, useValue: contentStreamServiceStub },
         { provide: NotifierService, useValue: notifierServiceStub },
       ],
     });

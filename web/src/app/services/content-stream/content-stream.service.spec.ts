@@ -1,12 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { DataService } from './data.service';
+import { ContentStreamService } from './content-stream.service';
 import { BehaviorSubject } from 'rxjs';
-import { EventSourceStub, EventSourceService } from '../data/event-source.service';
+import { EventSourceStub, EventSourceService } from './event-source.service';
 import { LabelFilterService, Filter } from '../label-filter/label-filter.service';
 import { NotifierService, NotifierSignalType } from '../notifier/notifier.service';
 import getAPIBase from '../common/getAPIBase';
 import { ContentResponse } from '../../models/content';
-import { Namespaces } from '../../models/namespace';
 import { Navigation } from '../../models/navigation';
 
 const emptyContentResponse: ContentResponse = {
@@ -20,9 +19,9 @@ const emptyNavigation: Navigation = {
   sections: [],
 };
 
-describe('DataService', () => {
+describe('ContentStreamService', () => {
   const API_BASE = getAPIBase();
-  let dataService: DataService;
+  let contentStreamService: ContentStreamService;
   let eventSourceService: {
     eventSourceStubs: Array<{ url: string, eventSourceStub: EventSourceStub }>;
   };
@@ -58,21 +57,21 @@ describe('DataService', () => {
       ],
     });
 
-    dataService = TestBed.get(DataService);
+    contentStreamService = TestBed.get(ContentStreamService);
     eventSourceService = TestBed.get(EventSourceService);
     labelFilterService = TestBed.get(LabelFilterService);
     notifierService = TestBed.get(NotifierService);
   });
 
   it('should create', () => {
-    expect(dataService).toBeTruthy();
+    expect(contentStreamService).toBeTruthy();
   });
 
   it('should stream content after setting valid path w/o filters', () => {
     const { eventSourceStubs } = eventSourceService;
     const { notifierSessionStub } = notifierService;
 
-    dataService.openStream('namespace/default/overview');
+    contentStreamService.openStream('namespace/default/overview');
 
     expect(notifierSessionStub.pushSignal.calls.count()).toBe(1);
     expect(notifierSessionStub.pushSignal.calls.first().args[0]).toBe(NotifierSignalType.LOADING);
@@ -86,9 +85,9 @@ describe('DataService', () => {
     eventSourceStub.queueMessage('namespaces', JSON.stringify({ namespaces: [] }));
     eventSourceStub.flush();
 
-    expect(dataService.content.getValue()).toEqual(emptyContentResponse);
-    expect(dataService.navigation.getValue()).toEqual(emptyNavigation);
-    expect(dataService.namespaces.getValue()).toEqual([]);
+    expect(contentStreamService.content.getValue()).toEqual(emptyContentResponse);
+    expect(contentStreamService.navigation.getValue()).toEqual(emptyNavigation);
+    expect(contentStreamService.namespaces.getValue()).toEqual([]);
 
     const testContentResponse: ContentResponse = {
       content: {
@@ -102,15 +101,15 @@ describe('DataService', () => {
     eventSourceStub.queueMessage('namespaces', JSON.stringify({ namespaces: ['namespaceA', 'namespaceB'] }));
     eventSourceStub.flush();
 
-    expect(dataService.content.getValue()).toEqual(testContentResponse);
-    expect(dataService.navigation.getValue()).toEqual(emptyNavigation);
-    expect(dataService.namespaces.getValue()).toEqual(['namespaceA', 'namespaceB']);
+    expect(contentStreamService.content.getValue()).toEqual(testContentResponse);
+    expect(contentStreamService.navigation.getValue()).toEqual(emptyNavigation);
+    expect(contentStreamService.namespaces.getValue()).toEqual(['namespaceA', 'namespaceB']);
   });
 
   it('should stream content after setting valid path w/ filters', () => {
     const { eventSourceStubs } = eventSourceService;
 
-    dataService.openStream('namespace/default/overview');
+    contentStreamService.openStream('namespace/default/overview');
     expect(eventSourceStubs.length).toBe(1);
     expect(eventSourceStubs[0].url).toBe(`${API_BASE}/api/v1/content/namespace/default/overview/?poll=5`);
 
@@ -124,7 +123,7 @@ describe('DataService', () => {
     const { eventSourceStubs } = eventSourceService;
     const { notifierSessionStub } = notifierService;
 
-    dataService.openStream('namespace/default/overview');
+    contentStreamService.openStream('namespace/default/overview');
 
     expect(eventSourceStubs.length).toBe(1);
 
@@ -140,7 +139,7 @@ describe('DataService', () => {
     const { eventSourceStubs } = eventSourceService;
     const { notifierSessionStub } = notifierService;
 
-    dataService.openStream('namespace/default/overview');
+    contentStreamService.openStream('namespace/default/overview');
 
     expect(eventSourceStubs.length).toBe(1);
 
@@ -154,11 +153,11 @@ describe('DataService', () => {
 
   it('should cancel previous stream when setting up a new one', () => {
     const { eventSourceStubs } = eventSourceService;
-    dataService.openStream('namespace/default/overview');
+    contentStreamService.openStream('namespace/default/overview');
 
     expect(eventSourceStubs.length).toBe(1);
 
-    dataService.openStream('namespace/testns/overview');
+    contentStreamService.openStream('namespace/testns/overview');
 
     expect(eventSourceStubs.length).toBe(2);
     expect(eventSourceStubs[1].url).toBe(`${API_BASE}/api/v1/content/namespace/testns/overview/?poll=5`);
@@ -166,7 +165,7 @@ describe('DataService', () => {
 
   it('should reset stream if filters change', () => {
     const { eventSourceStubs } = eventSourceService;
-    dataService.openStream('namespace/default/overview');
+    contentStreamService.openStream('namespace/default/overview');
 
     expect(eventSourceStubs.length).toBe(1);
     expect(eventSourceStubs[0].url).toBe(`${API_BASE}/api/v1/content/namespace/default/overview/?poll=5`);

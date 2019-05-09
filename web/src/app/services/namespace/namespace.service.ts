@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { NavigationEnd, PRIMARY_OUTLET, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import _ from 'lodash';
-import { DataService } from '../data/data.service';
+import { ContentStreamService } from '../content-stream/content-stream.service';
 import { NotifierService, NotifierSession, NotifierSignalType } from '../notifier/notifier.service';
 
 @Injectable({
@@ -13,10 +13,10 @@ export class NamespaceService {
   current = new BehaviorSubject<string>('default');
   list = new BehaviorSubject<string[]>([]);
 
-  constructor(private router: Router, private dataService: DataService, notifierService: NotifierService) {
+  constructor(private router: Router, private contentStreamService: ContentStreamService, notifierService: NotifierService) {
     this.notifierSession = notifierService.createSession();
 
-    this.dataService.namespaces.subscribe((namespaces: string[]) => {
+    this.contentStreamService.namespaces.subscribe((namespaces: string[]) => {
       this.list.next(namespaces);
     });
 
