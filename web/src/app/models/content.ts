@@ -221,12 +221,12 @@ export interface Port extends View {
     name: string;
     port: number;
     protocol: string;
-    state: {
+    state: Partial<{
       id: string;
       isForwarded: boolean;
       isForwardable: boolean;
       port: number;
-    };
+    }>;
   };
 }
 

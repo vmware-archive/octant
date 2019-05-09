@@ -171,7 +171,6 @@ describe('LogsComponent <-> PodsLogsService', () => {
     expect(logEntriesDebugElement[1].nativeElement.textContent).toMatch(/May 6, 2019(.*)+messageB/);
     expect(logEntriesDebugElement[2].nativeElement.textContent).toMatch(/May 6, 2019(.*)+messageC/);
 
-
     component.shouldDisplayTimestamp = false;
     fixture.detectChanges();
 
@@ -233,5 +232,5 @@ describe('LogsComponent <-> PodsLogsService', () => {
 
   afterEach(() => {
     httpTestingController.verify();
-  })
+  });
 });

@@ -7,6 +7,7 @@ import { NotifierService, NotifierSignalType } from '../notifier/notifier.servic
 import getAPIBase from '../common/getAPIBase';
 import { ContentResponse } from '../../models/content';
 import { Navigation } from '../../models/navigation';
+import { notifierServiceStubFactory } from '../../testing/notifier-service.stub';
 
 const emptyContentResponse: ContentResponse = {
   content: {
@@ -33,13 +34,6 @@ describe('ContentStreamService', () => {
       filters: new BehaviorSubject<Filter[]>([]),
     };
 
-    const notifierServiceStub = {
-      notifierSessionStub: jasmine.createSpyObj(['removeAllSignals', 'pushSignal']),
-      createSession() {
-        return this.notifierSessionStub;
-      }
-    };
-
     const eventSourceServiceStub = {
       eventSourceStubs: [],
       createEventSource(url: string) {
@@ -52,7 +46,7 @@ describe('ContentStreamService', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: LabelFilterService, useValue: labelFilterStub },
-        { provide: NotifierService, useValue: notifierServiceStub },
+        { provide: NotifierService, useFactory: notifierServiceStubFactory },
         { provide: EventSourceService, useValue:  eventSourceServiceStub },
       ],
     });

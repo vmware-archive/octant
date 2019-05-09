@@ -11,11 +11,10 @@ import { PortForwardService } from 'src/app/services/port-forward/port-forward.s
 })
 export class PortsComponent implements OnChanges, OnDestroy {
   private notifierSession: NotifierSession;
+  private submittedPFCreation: string;
+  private submittedPFRemoval: string;
 
   @Input() view: PortsView;
-  submittedPFCreation: string;
-  submittedPFRemoval: string;
-
   @Output() portLoad: EventEmitter<boolean> = new EventEmitter(true);
 
   constructor(

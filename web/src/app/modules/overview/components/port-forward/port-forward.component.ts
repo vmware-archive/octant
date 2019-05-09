@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { PortForwardView } from 'src/app/models/content';
 
 @Component({
@@ -6,10 +6,6 @@ import { PortForwardView } from 'src/app/models/content';
   templateUrl: './port-forward.component.html',
   styleUrls: ['./port-forward.component.scss'],
 })
-export class PortForwardComponent implements OnInit {
+export class PortForwardComponent {
   @Input() view: PortForwardView;
-
-  constructor() {}
-
-  ngOnInit() {}
 }
