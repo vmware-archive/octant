@@ -38,7 +38,7 @@ func Test_customResourceDefinitionNames(t *testing.T) {
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
-	o.EXPECT().CheckAccess(gomock.Any()).Return(nil)
+	o.EXPECT().HasAccess(gomock.Any(), "list").Return(nil)
 	o.EXPECT().List(gomock.Any(), gomock.Eq(crdKey)).Return(crdList, nil)
 
 	ctx := context.Background()
@@ -127,7 +127,7 @@ func Test_crdListDescriber(t *testing.T) {
 		Name:       crd.Name,
 	}
 
-	o.EXPECT().CheckAccess(gomock.Any()).Return(nil)
+	o.EXPECT().HasAccess(gomock.Any(), "list").Return(nil)
 	o.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
 
 	crKey := objectstoreutil.Key{

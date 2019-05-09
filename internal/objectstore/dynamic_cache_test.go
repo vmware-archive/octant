@@ -60,44 +60,6 @@ func expectNamespaceAccess(
 	accessClient.EXPECT().Create(gomock.Any()).Return(accessResp, nil).MaxTimes(namespaceCount)
 }
 
-func expectClusterScopedRoles(
-	accessClient *clusterfake.MockSelfSubjectAccessReviewInterface,
-	authClient *clusterfake.MockAuthorizationV1Interface,
-) {
-	// Cluster scoped access checking
-	for _, gvr := range []struct {
-		group    string
-		version  string
-		resource string
-		key      string
-	}{
-		{"apiextensions.k8s.io", "v1beta1", "CustomResourceDefinition", "customresourcedefinitions"},
-		{"rbac.authorization.k8s.io", "v1", "ClusterRole", "clusterroles"},
-		{"rbac.authorization.k8s.io", "v1", "ClusterRoleBinding", "clusterrolebindings"},
-	} {
-		resourceAttributes := &authorizationv1.ResourceAttributes{
-			Verb:     "watch",
-			Group:    gvr.group,
-			Version:  gvr.version,
-			Resource: gvr.resource,
-		}
-
-		sar := &authorizationv1.SelfSubjectAccessReview{
-			Spec: authorizationv1.SelfSubjectAccessReviewSpec{
-				ResourceAttributes: resourceAttributes,
-			},
-		}
-
-		accessResp := &authorizationv1.SelfSubjectAccessReview{
-			Status: authorizationv1.SubjectAccessReviewStatus{
-				Allowed: true,
-			},
-		}
-		accessClient.EXPECT().Create(sar).Return(accessResp, nil)
-		authClient.EXPECT().SelfSubjectAccessReviews().Return(accessClient)
-	}
-}
-
 func Test_DynamicCache_List(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -140,7 +102,6 @@ func Test_DynamicCache_List(t *testing.T) {
 	namespaceClient.EXPECT().Names().Return(namespaces, nil).MaxTimes(2)
 
 	expectNamespaceAccess(accessClient, authClient, len(namespaces))
-	expectClusterScopedRoles(accessClient, authClient)
 
 	informerFactory.EXPECT().Start(gomock.Eq(ctx.Done()))
 
@@ -213,7 +174,6 @@ func Test_DynamicCache_Get(t *testing.T) {
 	namespaceClient.EXPECT().Names().Return(namespaces, nil).MaxTimes(2)
 
 	expectNamespaceAccess(accessClient, authClient, len(namespaces))
-	expectClusterScopedRoles(accessClient, authClient)
 
 	informerFactory.EXPECT().Start(gomock.Eq(ctx.Done()))
 
@@ -244,7 +204,7 @@ func Test_DynamicCache_Get(t *testing.T) {
 	assert.Equal(t, expected, got)
 }
 
-func Test_DynamicCache_CheckAccess(t *testing.T) {
+func Test_DynamicCache_HasAccess(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -281,8 +241,13 @@ func Test_DynamicCache_CheckAccess(t *testing.T) {
 			},
 			accessFunc: func(c *DynamicCache) {
 				access := make(accessMap)
-				access[""] = make(map[string]map[string]bool)
-				access[""]["apps"] = map[string]bool{"pods": true}
+				aKey := accessKey{
+					Namespace: "",
+					Group: "apps",
+					Resource: "pods",
+					Verb: "get",
+				}
+				access[aKey] = true
 				c.access = access
 			},
 			expectErr: false,
@@ -296,8 +261,13 @@ func Test_DynamicCache_CheckAccess(t *testing.T) {
 			},
 			accessFunc: func(c *DynamicCache) {
 				access := make(accessMap)
-				access[""] = make(map[string]map[string]bool)
-				access[""]["apiextensions.k8s.io"] = map[string]bool{"customresourcedefinitions": true}
+				aKey := accessKey{
+					Namespace: "",
+					Group: "apiextensions.k8s.io",
+					Resource: "customresourcedefinitions",
+					Verb: "get",
+				}
+				access[aKey] = true
 				c.access = access
 			},
 			expectErr: false,
@@ -311,8 +281,13 @@ func Test_DynamicCache_CheckAccess(t *testing.T) {
 			},
 			accessFunc: func(c *DynamicCache) {
 				access := make(accessMap)
-				access[""] = make(map[string]map[string]bool)
-				access[""]["apiextensions.k8s.io"] = map[string]bool{"customresourcedefinitions": false}
+				aKey := accessKey{
+					Namespace: "",
+					Group: "apiextensions.k8s.io",
+					Resource: "customresourcedefinitions",
+					Verb: "get",
+				}
+				access[aKey] = false
 				c.access = access
 			},
 			expectErr: true,
@@ -333,9 +308,9 @@ func Test_DynamicCache_CheckAccess(t *testing.T) {
 			client.EXPECT().Resource(gomock.Eq(gvk.GroupKind())).Return(podGVR, nil)
 
 			if ts.expectErr {
-				require.Error(t, c.CheckAccess(ts.key))
+				require.Error(t, c.HasAccess(ts.key, "get"))
 			} else {
-				require.NoError(t, c.CheckAccess(ts.key))
+				require.NoError(t, c.HasAccess(ts.key, "get"))
 			}
 		})
 	}

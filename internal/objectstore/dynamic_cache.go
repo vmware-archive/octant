@@ -93,7 +93,7 @@ func NewDynamicCache(client cluster.ClientInterface, stopCh <-chan struct{}, opt
 	}
 
 	if c.access == nil {
-		c.access = make(map[accessKey]bool)
+		c.access = make(accessMap)
 	}
 
 	namespaceClient, err := client.NamespaceClient()
