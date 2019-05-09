@@ -23,7 +23,7 @@ func Test_NavigationFactory_Entries(t *testing.T) {
 		Kind:       "CustomResourceDefinition",
 	}
 
-	o.EXPECT().CheckAccess(gomock.Any()).Return(nil)
+	o.EXPECT().HasAccess(gomock.Any(), "list").Return(nil)
 	o.EXPECT().
 		List(gomock.Any(), gomock.Eq(key)).
 		Return([]*unstructured.Unstructured{}, nil)
@@ -49,7 +49,7 @@ func Test_NavigationFactory_Entries_Namespace(t *testing.T) {
 		Kind:       "CustomResourceDefinition",
 	}
 
-	o.EXPECT().CheckAccess(gomock.Any()).Return(nil)
+	o.EXPECT().HasAccess(gomock.Any(), "list").Return(nil)
 	o.EXPECT().
 		List(gomock.Any(), gomock.Eq(key)).
 		Return([]*unstructured.Unstructured{}, nil)

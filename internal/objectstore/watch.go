@@ -104,9 +104,9 @@ func NewWatch(client cluster.ClientInterface, stopCh <-chan struct{}, options ..
 	return c, nil
 }
 
-// CheckAccess access to objects using a key
-func (w *Watch) CheckAccess(key objectstoreutil.Key) error {
-	return w.backendObjectStore.CheckAccess(key)
+// HasAccess access to objects using a key
+func (w *Watch) HasAccess(key objectstoreutil.Key, verb string) error {
+	return w.backendObjectStore.HasAccess(key, verb)
 }
 
 // List lists objects using a key.
@@ -119,8 +119,8 @@ func (w *Watch) List(ctx context.Context, key objectstoreutil.Key) ([]*unstructu
 	}
 
 	logger := log.From(ctx)
-	if err := w.backendObjectStore.CheckAccess(key); err != nil {
-		logger.Errorf("access forbidden to %+v", key)
+	if err := w.backendObjectStore.HasAccess(key, "list"); err != nil {
+		logger.Errorf("check access failed: %v", err)
 		return []*unstructured.Unstructured{}, nil
 	}
 
@@ -184,8 +184,8 @@ func (w *Watch) Get(ctx context.Context, key objectstoreutil.Key) (*unstructured
 	}
 
 	logger := log.From(ctx)
-	if err := w.backendObjectStore.CheckAccess(key); err != nil {
-		logger.Errorf("access forbidden to %+v", key)
+	if err := w.backendObjectStore.HasAccess(key, "get"); err != nil {
+		logger.Errorf("check access failed: %v", err)
 		u := unstructured.Unstructured{}
 		return &u, nil
 	}

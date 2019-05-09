@@ -75,7 +75,7 @@ func NewClusterOverview(ctx context.Context, options Options) (*ClusterOverview,
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
-	if err := options.ObjectStore.CheckAccess(key); err == nil {
+	if err := options.ObjectStore.HasAccess(key, "watch"); err == nil {
 		crdAddFunc := func(pm *pathMatcher, csd *crdSectionDescriber) objectHandler {
 			return func(ctx context.Context, object *unstructured.Unstructured) {
 				if object == nil {

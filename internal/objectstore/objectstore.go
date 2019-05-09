@@ -19,7 +19,7 @@ type ObjectStore interface {
 	List(ctx context.Context, key objectstoreutil.Key) ([]*unstructured.Unstructured, error)
 	Get(ctx context.Context, key objectstoreutil.Key) (*unstructured.Unstructured, error)
 	Watch(ctx context.Context, key objectstoreutil.Key, handler kcache.ResourceEventHandler) error
-	CheckAccess(objectstoreutil.Key) error
+	HasAccess(objectstoreutil.Key, string) error
 }
 
 // GetAs gets an object from the objectstore by key.

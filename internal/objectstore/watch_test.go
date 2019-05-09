@@ -2,7 +2,6 @@ package objectstore
 
 import (
 	"context"
-	"fmt"
 	"sort"
 	"testing"
 
@@ -83,7 +82,7 @@ func Test_WatchList_not_cached(t *testing.T) {
 		testutil.ToUnstructured(t, pod2),
 	}
 
-	mocks.backendObjectStore.EXPECT().CheckAccess(gomock.Any()).Return(nil)
+	mocks.backendObjectStore.EXPECT().HasAccess(gomock.Any(), "list").Return(nil)
 	mocks.backendObjectStore.EXPECT().List(gomock.Any(), gomock.Eq(listKey)).Return(objects, nil)
 
 	factoryFunc := func(c *Watch) {
@@ -147,7 +146,6 @@ func Test_WatchList_stored(t *testing.T) {
 			pod1.UID: testutil.ToUnstructured(t, pod1),
 			pod2.UID: testutil.ToUnstructured(t, pod2),
 		}
-		fmt.Println(w.watchedGVKs)
 	}
 
 	mocks.client.EXPECT().NamespaceClient().Return(mocks.namespaceClient, nil)
@@ -157,7 +155,7 @@ func Test_WatchList_stored(t *testing.T) {
 	watch, err := NewWatch(mocks.client, ctx.Done(), factoryFunc, setBackendFunc, cacheKeyFunc)
 	require.NoError(t, err)
 
-	mocks.backendObjectStore.EXPECT().CheckAccess(gomock.Any()).Return(nil)
+	mocks.backendObjectStore.EXPECT().HasAccess(gomock.Any(), "list").Return(nil)
 	got, err := watch.List(ctx, listKey)
 	require.NoError(t, err)
 
@@ -228,7 +226,7 @@ func Test_WatchList_stored_with_selector(t *testing.T) {
 	watch, err := NewWatch(mocks.client, ctx.Done(), factoryFunc, setBackendFunc, cacheKeyFunc)
 	require.NoError(t, err)
 
-	mocks.backendObjectStore.EXPECT().CheckAccess(gomock.Any()).Return(nil)
+	mocks.backendObjectStore.EXPECT().HasAccess(gomock.Any(), "list").Return(nil)
 	got, err := watch.List(ctx, listKey)
 	require.NoError(t, err)
 
@@ -291,7 +289,7 @@ func Test_WatchGet_not_stored(t *testing.T) {
 	watch, err := NewWatch(mocks.client, ctx.Done(), factoryFunc, setBackendFunc)
 	require.NoError(t, err)
 
-	mocks.backendObjectStore.EXPECT().CheckAccess(gomock.Any()).Return(nil)
+	mocks.backendObjectStore.EXPECT().HasAccess(gomock.Any(), "get").Return(nil)
 	got, err := watch.Get(ctx, getKey)
 	require.NoError(t, err)
 
@@ -341,7 +339,7 @@ func Test_WatchGet_stored(t *testing.T) {
 	watch, err := NewWatch(mocks.client, ctx.Done(), factoryFunc, setBackendFunc, cacheKeyFunc)
 	require.NoError(t, err)
 
-	mocks.backendObjectStore.EXPECT().CheckAccess(gomock.Any()).Return(nil)
+	mocks.backendObjectStore.EXPECT().HasAccess(gomock.Any(), "get").Return(nil)
 	got, err := watch.Get(ctx, getKey)
 	require.NoError(t, err)
 

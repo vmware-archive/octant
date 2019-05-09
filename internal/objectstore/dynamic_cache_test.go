@@ -46,74 +46,18 @@ func verbs() []string {
 	return []string{"get", "list", "watch"}
 }
 
-func expectNamespaceRules(
-	namespaces []string,
-	authClient *clusterfake.MockAuthorizationV1Interface,
-	rulesClient *clusterfake.MockSelfSubjectRulesReviewInterface,
-) {
-	resourceRules := []authorizationv1.ResourceRule{
-		authorizationv1.ResourceRule{
-			Verbs:     verbs(),
-			APIGroups: []string{""},
-			Resources: []string{"pods"},
-		},
-	}
-
-	rulesResp := &authorizationv1.SelfSubjectRulesReview{
-		Status: authorizationv1.SubjectRulesReviewStatus{
-			ResourceRules: resourceRules,
-		},
-	}
-
-	for _, namespace := range namespaces {
-		srr := &authorizationv1.SelfSubjectRulesReview{
-			Spec: authorizationv1.SelfSubjectRulesReviewSpec{
-				Namespace: namespace,
-			},
-		}
-		authClient.EXPECT().SelfSubjectRulesReviews().Return(rulesClient)
-		rulesClient.EXPECT().Create(srr).Return(rulesResp, nil)
-	}
-}
-
-func expectClusterScopedRoles(
+func expectNamespaceAccess(
 	accessClient *clusterfake.MockSelfSubjectAccessReviewInterface,
 	authClient *clusterfake.MockAuthorizationV1Interface,
+	namespaceCount int,
 ) {
-	// Cluster scoped access checking
-	for _, gvr := range []struct {
-		group    string
-		version  string
-		resource string
-		key      string
-	}{
-		{"apiextensions.k8s.io", "v1beta1", "CustomResourceDefinition", "customresourcedefinitions"},
-		{"rbac.authorization.k8s.io", "v1", "ClusterRole", "clusterroles"},
-		{"rbac.authorization.k8s.io", "v1", "ClusterRoleBinding", "clusterrolebindings"},
-	} {
-		for _, verb := range verbs() {
-			resourceAttributes := &authorizationv1.ResourceAttributes{
-				Verb:     verb,
-				Group:    gvr.group,
-				Version:  gvr.version,
-				Resource: gvr.resource,
-			}
-
-			sar := &authorizationv1.SelfSubjectAccessReview{
-				Spec: authorizationv1.SelfSubjectAccessReviewSpec{
-					ResourceAttributes: resourceAttributes,
-				},
-			}
-
-			accessResp := &authorizationv1.SelfSubjectAccessReview{
-				Status: authorizationv1.SubjectAccessReviewStatus{
-					Allowed: true,
-				},
-			}
-			accessClient.EXPECT().Create(sar).Return(accessResp, nil)
-			authClient.EXPECT().SelfSubjectAccessReviews().Return(accessClient)
-		}
+	authClient.EXPECT().SelfSubjectAccessReviews().Return(accessClient).MaxTimes(namespaceCount)
+	accessResp := &authorizationv1.SelfSubjectAccessReview{
+		Status: authorizationv1.SubjectAccessReviewStatus{
+			Allowed: true,
+		},
 	}
+	accessClient.EXPECT().Create(gomock.Any()).Return(accessResp, nil).MaxTimes(namespaceCount)
 }
 
 func Test_DynamicCache_List(t *testing.T) {
@@ -129,7 +73,6 @@ func Test_DynamicCache_List(t *testing.T) {
 	informer := clusterfake.NewMockGenericInformer(controller)
 	kubernetesClient := clusterfake.NewMockKubernetesInterface(controller)
 	authClient := clusterfake.NewMockAuthorizationV1Interface(controller)
-	rulesClient := clusterfake.NewMockSelfSubjectRulesReviewInterface(controller)
 	accessClient := clusterfake.NewMockSelfSubjectAccessReviewInterface(controller)
 	namespaceClient := clusterfake.NewMockNamespaceInterface(controller)
 
@@ -158,8 +101,7 @@ func Test_DynamicCache_List(t *testing.T) {
 	namespaces := []string{"test", ""}
 	namespaceClient.EXPECT().Names().Return(namespaces, nil).MaxTimes(2)
 
-	expectNamespaceRules(namespaces, authClient, rulesClient)
-	expectClusterScopedRoles(accessClient, authClient)
+	expectNamespaceAccess(accessClient, authClient, len(namespaces))
 
 	informerFactory.EXPECT().Start(gomock.Eq(ctx.Done()))
 
@@ -204,7 +146,6 @@ func Test_DynamicCache_Get(t *testing.T) {
 	sharedIndexInformer := clusterfake.NewMockSharedIndexInformer(controller)
 	kubernetesClient := clusterfake.NewMockKubernetesInterface(controller)
 	authClient := clusterfake.NewMockAuthorizationV1Interface(controller)
-	rulesClient := clusterfake.NewMockSelfSubjectRulesReviewInterface(controller)
 	accessClient := clusterfake.NewMockSelfSubjectAccessReviewInterface(controller)
 	namespaceClient := clusterfake.NewMockNamespaceInterface(controller)
 
@@ -232,8 +173,7 @@ func Test_DynamicCache_Get(t *testing.T) {
 	namespaces := []string{"test", ""}
 	namespaceClient.EXPECT().Names().Return(namespaces, nil).MaxTimes(2)
 
-	expectNamespaceRules(namespaces, authClient, rulesClient)
-	expectClusterScopedRoles(accessClient, authClient)
+	expectNamespaceAccess(accessClient, authClient, len(namespaces))
 
 	informerFactory.EXPECT().Start(gomock.Eq(ctx.Done()))
 
@@ -264,49 +204,7 @@ func Test_DynamicCache_Get(t *testing.T) {
 	assert.Equal(t, expected, got)
 }
 
-func Test_DynamicCache_hasGetListWatch(t *testing.T) {
-	scenarios := []struct {
-		name     string
-		verbs    []string
-		expected bool
-	}{
-		// scenario 1
-		{
-			name:     "only get, list, watch",
-			verbs:    verbs(),
-			expected: true,
-		},
-		// scenario 2
-		{
-			name:     "get, list, but missing watch",
-			verbs:    []string{"get", "list", "create"},
-			expected: false,
-		},
-		// scenario 3
-		{
-			name:     "* (all verbs)",
-			verbs:    []string{"*"},
-			expected: true,
-		},
-		// scenario 4
-		{
-			name:     "create, watch, list, get",
-			verbs:    []string{"create", "watch", "list", "get"},
-			expected: true,
-		},
-	}
-
-	for _, ts := range scenarios {
-		t.Run(ts.name, func(t *testing.T) {
-			hasAccess := hasGetListWatch(ts.verbs)
-			if ts.expected != hasAccess {
-				t.Errorf("expected %t got %t", ts.expected, hasAccess)
-			}
-		})
-	}
-}
-
-func Test_DynamicCache_CheckAccess(t *testing.T) {
+func Test_DynamicCache_HasAccess(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -343,8 +241,13 @@ func Test_DynamicCache_CheckAccess(t *testing.T) {
 			},
 			accessFunc: func(c *DynamicCache) {
 				access := make(accessMap)
-				access[""] = make(map[string]map[string]bool)
-				access[""]["apps"] = map[string]bool{"pods": true}
+				aKey := accessKey{
+					Namespace: "",
+					Group: "apps",
+					Resource: "pods",
+					Verb: "get",
+				}
+				access[aKey] = true
 				c.access = access
 			},
 			expectErr: false,
@@ -358,8 +261,13 @@ func Test_DynamicCache_CheckAccess(t *testing.T) {
 			},
 			accessFunc: func(c *DynamicCache) {
 				access := make(accessMap)
-				access[""] = make(map[string]map[string]bool)
-				access[""]["apiextensions.k8s.io"] = map[string]bool{"customresourcedefinitions": true}
+				aKey := accessKey{
+					Namespace: "",
+					Group: "apiextensions.k8s.io",
+					Resource: "customresourcedefinitions",
+					Verb: "get",
+				}
+				access[aKey] = true
 				c.access = access
 			},
 			expectErr: false,
@@ -373,8 +281,13 @@ func Test_DynamicCache_CheckAccess(t *testing.T) {
 			},
 			accessFunc: func(c *DynamicCache) {
 				access := make(accessMap)
-				access[""] = make(map[string]map[string]bool)
-				access[""]["apiextensions.k8s.io"] = map[string]bool{"customresourcedefinitions": false}
+				aKey := accessKey{
+					Namespace: "",
+					Group: "apiextensions.k8s.io",
+					Resource: "customresourcedefinitions",
+					Verb: "get",
+				}
+				access[aKey] = false
 				c.access = access
 			},
 			expectErr: true,
@@ -395,9 +308,9 @@ func Test_DynamicCache_CheckAccess(t *testing.T) {
 			client.EXPECT().Resource(gomock.Eq(gvk.GroupKind())).Return(podGVR, nil)
 
 			if ts.expectErr {
-				require.Error(t, c.CheckAccess(ts.key))
+				require.Error(t, c.HasAccess(ts.key, "get"))
 			} else {
-				require.NoError(t, c.CheckAccess(ts.key))
+				require.NoError(t, c.HasAccess(ts.key, "get"))
 			}
 		})
 	}

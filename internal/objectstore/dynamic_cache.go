@@ -20,7 +20,6 @@ import (
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/informers"
-	authclientv1 "k8s.io/client-go/kubernetes/typed/authorization/v1"
 	kcache "k8s.io/client-go/tools/cache"
 )
 
@@ -54,8 +53,13 @@ func currentInformer(
 	return informer, nil
 }
 
-// accessMap  [Namespace][Group][Resource]
-type accessMap map[string]map[string]map[string]bool
+type accessKey struct {
+	Namespace string
+	Group     string
+	Resource  string
+	Verb      string
+}
+type accessMap map[accessKey]bool
 
 // DynamicCacheOpt is an option for configuration DynamicCache.
 type DynamicCacheOpt func(*DynamicCache)
@@ -89,11 +93,7 @@ func NewDynamicCache(client cluster.ClientInterface, stopCh <-chan struct{}, opt
 	}
 
 	if c.access == nil {
-		access, err := c.initAccess()
-		if err != nil {
-			return nil, errors.Wrap(err, "initialize dynamic shared informer access check")
-		}
-		c.access = access
+		c.access = make(accessMap)
 	}
 
 	namespaceClient, err := client.NamespaceClient()
@@ -125,160 +125,68 @@ type lister interface {
 	List(selector kLabels.Selector) ([]kruntime.Object, error)
 }
 
-func (dc *DynamicCache) initAccess() (accessMap, error) {
+func (dc *DynamicCache) fetchAccess(key accessKey, verb string) (bool, error) {
 	k8sClient, err := dc.client.KubernetesClient()
 	if err != nil {
-		return nil, errors.Wrap(err, "client kubernetes")
-	}
-	namespaceClient, err := dc.client.NamespaceClient()
-	if err != nil {
-		return nil, errors.Wrap(err, "client namespace")
+		return false, errors.Wrap(err, "client kubernetes")
 	}
 
 	authClient := k8sClient.AuthorizationV1()
-
-	access := make(accessMap)
-	namespaces, err := namespaceClient.Names()
-	if err != nil {
-		namespaces = []string{namespaceClient.InitialNamespace()}
-	}
-	for _, namespace := range namespaces {
-		if _, ok := access[namespace]; !ok {
-			access[namespace] = make(map[string]map[string]bool)
-		}
-		srr := &authorizationv1.SelfSubjectRulesReview{
-			Spec: authorizationv1.SelfSubjectRulesReviewSpec{
-				Namespace: namespace,
+	sar := &authorizationv1.SelfSubjectAccessReview{
+		Spec: authorizationv1.SelfSubjectAccessReviewSpec{
+			ResourceAttributes: &authorizationv1.ResourceAttributes{
+				Namespace: key.Namespace,
+				Group:     key.Group,
+				Resource:  key.Resource,
+				Verb:      verb,
 			},
-		}
-		rresponse, err := authClient.SelfSubjectRulesReviews().Create(srr)
-		if err != nil {
-			return nil, errors.Wrap(err, "client auth")
-		}
-		for _, resource := range rresponse.Status.ResourceRules {
-			if len(resource.Resources) > 0 {
-				for _, group := range resource.APIGroups {
-					for _, res := range resource.Resources {
-						if _, ok := access[namespace][group]; !ok {
-							access[namespace][group] = make(map[string]bool)
-						}
-						access[namespace][group][res] = hasGetListWatch(resource.Verbs)
-					}
-				}
-			}
-		}
+		},
 	}
-	clusterAccess, err := initClusterScopedAccess(authClient)
+
+	rresponse, err := authClient.SelfSubjectAccessReviews().Create(sar)
 	if err != nil {
-		return nil, errors.Wrap(err, "client auth, initClusterScopedAccess")
+		return false, errors.Wrap(err, "client auth")
 	}
-	for k, v := range clusterAccess {
-		access[k] = v
-	}
-
-	return access, nil
+	return rresponse.Status.Allowed, nil
 }
 
-func initClusterScopedAccess(authClient authclientv1.AuthorizationV1Interface) (accessMap, error) {
-	access := make(accessMap)
-	for _, gvr := range []struct {
-		group    string
-		version  string
-		resource string
-		key      string
-	}{
-		{"apiextensions.k8s.io", "v1beta1", "CustomResourceDefinition", "customresourcedefinitions"},
-		{"rbac.authorization.k8s.io", "v1", "ClusterRole", "clusterroles"},
-		{"rbac.authorization.k8s.io", "v1", "ClusterRoleBinding", "clusterrolebindings"},
-	} {
-		verbs := []string{}
-		for _, verb := range []string{"get", "list", "watch"} {
-			sar := &authorizationv1.SelfSubjectAccessReview{
-				Spec: authorizationv1.SelfSubjectAccessReviewSpec{
-					ResourceAttributes: &authorizationv1.ResourceAttributes{
-						Verb:     verb,
-						Group:    gvr.group,
-						Version:  gvr.version,
-						Resource: gvr.resource,
-					},
-				},
-			}
-			aresponse, err := authClient.SelfSubjectAccessReviews().Create(sar)
-			if err != nil {
-				return nil, errors.Wrap(err, "client auth")
-			}
-			if aresponse.Status.Allowed {
-				verbs = append(verbs, verb)
-			}
-		}
-		if _, ok := access[""]; !ok {
-			access[""] = make(map[string]map[string]bool)
-		}
-		if _, ok := access[""][gvr.group]; !ok {
-			access[""][gvr.group] = make(map[string]bool)
-		}
-		access[""][gvr.group][gvr.key] = hasGetListWatch(verbs)
-	}
-	return access, nil
-}
-
-func hasGetListWatch(verbs []string) bool {
-	// * implies all verbs
-	if len(verbs) == 1 {
-		if verbs[0] == "*" {
-			return true
-		}
-	}
-	// get, list, watch needed so check for greater than 2
-	if len(verbs) > 2 {
-		neededVerbs := map[string]bool{"get": false, "list": false, "watch": false}
-		for verb := range neededVerbs {
-			for _, providedVerb := range verbs {
-				if providedVerb == verb {
-					neededVerbs[verb] = true
-					continue
-				}
-			}
-		}
-		return neededVerbs["get"] && neededVerbs["list"] && neededVerbs["watch"]
-	}
-	return false
-}
-
-// CheckAccess returns an error if the current user does not have access to the key
-func (dc *DynamicCache) CheckAccess(key objectstoreutil.Key) error {
+// HasAccess returns an error if the current user does not have access to perform the verb action
+// for the given key.
+func (dc *DynamicCache) HasAccess(key objectstoreutil.Key, verb string) error {
 	gvk := key.GroupVersionKind()
 	gvr, err := dc.client.Resource(gvk.GroupKind())
 	if err != nil {
 		return errors.Wrap(err, "client resource")
 	}
-	namespace, groupName, resourceName := key.Namespace, gvr.Group, gvr.Resource
 
-	access, ok := dc.access[namespace]
-	if !ok {
-		return errors.Errorf("uknown namespace: %s", namespace)
+	aKey := accessKey{
+		Namespace: key.Namespace,
+		Group:     gvr.Group,
+		Resource:  gvr.Resource,
+		Verb:      verb,
 	}
 
-	group, ok := access["*"]
+	access, ok := dc.access[aKey]
 	if !ok {
-		group, ok = access[groupName]
+		val, err := dc.fetchAccess(aKey, verb)
+		if err != nil {
+			return errors.Wrapf(err, "fetch access: %+v", aKey)
+		}
+
+		dc.mu.Lock()
+		dc.access[aKey] = val
+		dc.mu.Unlock()
+
+		access, ok = dc.access[aKey]
 		if !ok {
-			return errors.Errorf("unknown group: %s", groupName)
+			return errors.Errorf("unknown key: %+v", aKey)
 		}
 	}
 
-	resourceAccess, ok := group["*"]
-	if ok && resourceAccess == true {
-		return nil
+	if !access {
+		return errors.Errorf("denied %+v", aKey)
 	}
 
-	resourceAccess, ok = group[resourceName]
-	if !ok {
-		return errors.Errorf("unknown resource: %s", resourceName)
-	}
-	if resourceAccess == false {
-		return errors.Errorf("forbidden resource: %s", resourceName)
-	}
 	return nil
 }
 
@@ -325,7 +233,7 @@ func (dc *DynamicCache) List(ctx context.Context, key objectstoreutil.Key) ([]*u
 	_, span := trace.StartSpan(ctx, "dynamicCacheList")
 	defer span.End()
 
-	if err := dc.CheckAccess(key); err != nil {
+	if err := dc.HasAccess(key, "list"); err != nil {
 		return nil, errors.Wrapf(err, "list access forbidden to %+v", key)
 	}
 
@@ -378,7 +286,7 @@ func (dc *DynamicCache) Get(ctx context.Context, key objectstoreutil.Key) (*unst
 	_, span := trace.StartSpan(ctx, "dynamicCacheList")
 	defer span.End()
 
-	if err := dc.CheckAccess(key); err != nil {
+	if err := dc.HasAccess(key, "get"); err != nil {
 		return nil, errors.Wrapf(err, "get access forbidden to %+v", key)
 	}
 
@@ -452,8 +360,8 @@ func (dc *DynamicCache) Get(ctx context.Context, key objectstoreutil.Key) (*unst
 // supplied handler.
 func (dc *DynamicCache) Watch(ctx context.Context, key objectstoreutil.Key, handler kcache.ResourceEventHandler) error {
 	logger := log.From(ctx)
-	if err := dc.CheckAccess(key); err != nil {
-		logger.Errorf("dynamiccache watch access forbidden to %+v", key)
+	if err := dc.HasAccess(key, "watch"); err != nil {
+		logger.Errorf("check access failed: %v, access forbidden to %+v", key)
 		return nil
 	}
 
