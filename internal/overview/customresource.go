@@ -32,7 +32,7 @@ func customResourceDefinitionNames(ctx context.Context, o objectstore.ObjectStor
 		Kind:       "CustomResourceDefinition",
 	}
 
-	if err := o.CheckAccess(key); err != nil {
+	if err := o.HasAccess(key, "list"); err != nil {
 		return []string{}, nil
 	}
 
@@ -223,7 +223,7 @@ func listCustomResources(
 		Selector:   selector,
 	}
 
-	if err := o.CheckAccess(key); err != nil {
+	if err := o.HasAccess(key, "list"); err != nil {
 		return []*unstructured.Unstructured{}, nil
 	}
 
