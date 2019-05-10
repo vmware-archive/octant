@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: "2019-02-21T13:19:27Z"
   generateName: job-fail-
   labels:
-    sugarloaf-scenario: failed-job
+    clustereye-scenario: failed-job
   name: job-fail-szjpx
   namespace: default
   resourceVersion: "2681618"

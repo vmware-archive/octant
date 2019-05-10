@@ -7,8 +7,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/internal/objectstore"
-	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
@@ -60,7 +60,7 @@ func (nf *NavigationFactory) pathFor(elements ...string) string {
 }
 
 // Entries returns navigation entries.
-func (nf *NavigationFactory) Entries(ctx context.Context) (*sugarloaf.Navigation, error) {
+func (nf *NavigationFactory) Entries(ctx context.Context) (*clustereye.Navigation, error) {
 	m := map[string]entriesFunc{
 		"Workloads":                    nf.workloadEntries,
 		"Discovery and Load Balancing": nf.discoAndLBEntries,
@@ -81,10 +81,10 @@ func (nf *NavigationFactory) Entries(ctx context.Context) (*sugarloaf.Navigation
 		"Port Forwards",
 	}
 
-	n := &sugarloaf.Navigation{
+	n := &clustereye.Navigation{
 		Title:    "Overview",
 		Path:     nf.root,
-		Children: []*sugarloaf.Navigation{},
+		Children: []*clustereye.Navigation{},
 	}
 
 	var mu sync.Mutex
@@ -113,10 +113,10 @@ func (nf *NavigationFactory) Entries(ctx context.Context) (*sugarloaf.Navigation
 	return n, nil
 }
 
-type entriesFunc func(context.Context, string) ([]*sugarloaf.Navigation, error)
+type entriesFunc func(context.Context, string) ([]*clustereye.Navigation, error)
 
-func (nf *NavigationFactory) genNode(ctx context.Context, name string, childFn entriesFunc) (*sugarloaf.Navigation, error) {
-	node := sugarloaf.NewNavigation(name, nf.pathFor(navPathLookup[name]))
+func (nf *NavigationFactory) genNode(ctx context.Context, name string, childFn entriesFunc) (*clustereye.Navigation, error) {
+	node := clustereye.NewNavigation(name, nf.pathFor(navPathLookup[name]))
 	if childFn != nil {
 		children, err := childFn(ctx, node.Path)
 		if err != nil {
@@ -128,46 +128,46 @@ func (nf *NavigationFactory) genNode(ctx context.Context, name string, childFn e
 	return node, nil
 }
 
-func (nf *NavigationFactory) workloadEntries(ctx context.Context, prefix string) ([]*sugarloaf.Navigation, error) {
-	return []*sugarloaf.Navigation{
-		sugarloaf.NewNavigation("Cron Jobs", path.Join(prefix, "cron-jobs")),
-		sugarloaf.NewNavigation("Daemon Sets", path.Join(prefix, "daemon-sets")),
-		sugarloaf.NewNavigation("Deployments", path.Join(prefix, "deployments")),
-		sugarloaf.NewNavigation("Jobs", path.Join(prefix, "jobs")),
-		sugarloaf.NewNavigation("Pods", path.Join(prefix, "pods")),
-		sugarloaf.NewNavigation("Replica Sets", path.Join(prefix, "replica-sets")),
-		sugarloaf.NewNavigation("Replication Controllers", path.Join(prefix, "replication-controllers")),
-		sugarloaf.NewNavigation("Stateful Sets", path.Join(prefix, "stateful-sets")),
+func (nf *NavigationFactory) workloadEntries(ctx context.Context, prefix string) ([]*clustereye.Navigation, error) {
+	return []*clustereye.Navigation{
+		clustereye.NewNavigation("Cron Jobs", path.Join(prefix, "cron-jobs")),
+		clustereye.NewNavigation("Daemon Sets", path.Join(prefix, "daemon-sets")),
+		clustereye.NewNavigation("Deployments", path.Join(prefix, "deployments")),
+		clustereye.NewNavigation("Jobs", path.Join(prefix, "jobs")),
+		clustereye.NewNavigation("Pods", path.Join(prefix, "pods")),
+		clustereye.NewNavigation("Replica Sets", path.Join(prefix, "replica-sets")),
+		clustereye.NewNavigation("Replication Controllers", path.Join(prefix, "replication-controllers")),
+		clustereye.NewNavigation("Stateful Sets", path.Join(prefix, "stateful-sets")),
 	}, nil
 }
 
-func (nf *NavigationFactory) discoAndLBEntries(ctx context.Context, prefix string) ([]*sugarloaf.Navigation, error) {
-	return []*sugarloaf.Navigation{
-		sugarloaf.NewNavigation("Ingresses", path.Join(prefix, "ingresses")),
-		sugarloaf.NewNavigation("Services", path.Join(prefix, "services")),
+func (nf *NavigationFactory) discoAndLBEntries(ctx context.Context, prefix string) ([]*clustereye.Navigation, error) {
+	return []*clustereye.Navigation{
+		clustereye.NewNavigation("Ingresses", path.Join(prefix, "ingresses")),
+		clustereye.NewNavigation("Services", path.Join(prefix, "services")),
 	}, nil
 }
 
-func (nf *NavigationFactory) configAndStorageEntries(ctx context.Context, prefix string) ([]*sugarloaf.Navigation, error) {
-	return []*sugarloaf.Navigation{
-		sugarloaf.NewNavigation("Config Maps", path.Join(prefix, "config-maps")),
-		sugarloaf.NewNavigation("Persistent Volume Claims", path.Join(prefix, "persistent-volume-claims")),
-		sugarloaf.NewNavigation("Secrets", path.Join(prefix, "secrets")),
-		sugarloaf.NewNavigation("Service Accounts", path.Join(prefix, "service-accounts")),
+func (nf *NavigationFactory) configAndStorageEntries(ctx context.Context, prefix string) ([]*clustereye.Navigation, error) {
+	return []*clustereye.Navigation{
+		clustereye.NewNavigation("Config Maps", path.Join(prefix, "config-maps")),
+		clustereye.NewNavigation("Persistent Volume Claims", path.Join(prefix, "persistent-volume-claims")),
+		clustereye.NewNavigation("Secrets", path.Join(prefix, "secrets")),
+		clustereye.NewNavigation("Service Accounts", path.Join(prefix, "service-accounts")),
 	}, nil
 }
 
-func (nf *NavigationFactory) rbacEntries(ctx context.Context, prefix string) ([]*sugarloaf.Navigation, error) {
-	return []*sugarloaf.Navigation{
-		sugarloaf.NewNavigation("Cluster Roles", path.Join(prefix, "cluster-roles")),
-		sugarloaf.NewNavigation("Cluster Role Bindings", path.Join(prefix, "cluster-role-bindings")),
-		sugarloaf.NewNavigation("Roles", path.Join(prefix, "roles")),
-		sugarloaf.NewNavigation("Role Bindings", path.Join(prefix, "role-bindings")),
+func (nf *NavigationFactory) rbacEntries(ctx context.Context, prefix string) ([]*clustereye.Navigation, error) {
+	return []*clustereye.Navigation{
+		clustereye.NewNavigation("Cluster Roles", path.Join(prefix, "cluster-roles")),
+		clustereye.NewNavigation("Cluster Role Bindings", path.Join(prefix, "cluster-role-bindings")),
+		clustereye.NewNavigation("Roles", path.Join(prefix, "roles")),
+		clustereye.NewNavigation("Role Bindings", path.Join(prefix, "role-bindings")),
 	}, nil
 }
 
-func (nf *NavigationFactory) crdEntries(ctx context.Context, prefix string) ([]*sugarloaf.Navigation, error) {
-	var list []*sugarloaf.Navigation
+func (nf *NavigationFactory) crdEntries(ctx context.Context, prefix string) ([]*clustereye.Navigation, error) {
+	var list []*clustereye.Navigation
 
 	crdNames, err := customResourceDefinitionNames(ctx, nf.objectstore)
 	if err != nil {
@@ -188,7 +188,7 @@ func (nf *NavigationFactory) crdEntries(ctx context.Context, prefix string) ([]*
 		}
 
 		if len(objects) > 0 {
-			list = append(list, sugarloaf.NewNavigation(name, path.Join(prefix, name)))
+			list = append(list, clustereye.NewNavigation(name, path.Join(prefix, name)))
 		}
 	}
 

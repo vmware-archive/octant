@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 )
@@ -135,14 +135,14 @@ func (l *LocalContent) walk(fn walkFn) error {
 	return nil
 }
 
-func (l *LocalContent) Navigation(ctx context.Context, namespace, root string) (*sugarloaf.Navigation, error) {
+func (l *LocalContent) Navigation(ctx context.Context, namespace, root string) (*clustereye.Navigation, error) {
 	if !strings.HasSuffix(root, "/") {
 		root = fmt.Sprintf("%s/", root)
 	}
-	nav := &sugarloaf.Navigation{
+	nav := &clustereye.Navigation{
 		Title:    "Local Content",
 		Path:     root,
-		Children: []*sugarloaf.Navigation{},
+		Children: []*clustereye.Navigation{},
 	}
 
 	err := l.walk(func(name, base string, content component.ContentResponse) error {
@@ -151,7 +151,7 @@ func (l *LocalContent) Navigation(ctx context.Context, namespace, root string) (
 			return errors.Wrap(err, "convert title to text")
 		}
 
-		nav.Children = append(nav.Children, &sugarloaf.Navigation{
+		nav.Children = append(nav.Children, &clustereye.Navigation{
 			Title: title,
 			Path:  path.Join(root, base),
 		})

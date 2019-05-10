@@ -1,30 +1,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sugarloaf
+  name: clustereye
   labels:
-    app: sugarloaf
+    app: clustereye
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: sugarloaf
+      app: clustereye
   template:
     metadata:
       labels:
-        app: sugarloaf
+        app: clustereye
     spec:
       containers:
-      - name: sugarloaf
-        image: sugarloaf
-        command: ["/sugarloaf"]
+      - name: clustereye
+        image: clustereye
+        command: ["/clustereye"]
         args: ["-v", "--kubeconfig", "/kube/dev-dash-kubeconfig.yaml"]
         ports:
         - containerPort: 7777
         env:
-          - name: SUGARLOAF_LISTENER_ADDR
+          - name: CLUSTEREYE_LISTENER_ADDR
             value: 0.0.0.0:7777
-          - name: SUGARLOAF_DISABLE_OPEN_BROWSER
+          - name: CLUSTEREYE_DISABLE_OPEN_BROWSER
             value: "1"
         volumeMounts:
           - name: kubeconfig
@@ -32,5 +32,5 @@ spec:
       volumes:
         - name: kubeconfig
           secret:
-            secretName: sugarloaf-kubeconfig
+            secretName: clustereye-kubeconfig
             defaultMode: 256

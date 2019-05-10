@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/heptio/developer-dash/internal/sugarloaf"
+	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -14,7 +14,7 @@ type ContentOptions struct {
 	LabelSet *labels.Set
 }
 
-// Module is an sugarloaf plugin.
+// Module is an clustereye plugin.
 type Module interface {
 	// Name is the name of the module.
 	Name() string
@@ -25,7 +25,7 @@ type Module interface {
 	// ContentPath will be used to construct content paths.
 	ContentPath() string
 	// Navigation returns navigation entries for this module.
-	Navigation(ctx context.Context, namespace, root string) (*sugarloaf.Navigation, error)
+	Navigation(ctx context.Context, namespace, root string) (*clustereye.Navigation, error)
 	// SetNamespace is called when the current namespace changes.
 	SetNamespace(namespace string) error
 	// Start starts the module.

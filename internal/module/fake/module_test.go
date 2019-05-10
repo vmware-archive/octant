@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/require"
 
@@ -26,7 +26,7 @@ func TestModule_ContentPath(t *testing.T) {
 func TestModule_Navigation(t *testing.T) {
 	m := NewModule("module", log.NopLogger())
 
-	expected := &sugarloaf.Navigation{
+	expected := &clustereye.Navigation{
 		Path:  "/module",
 		Title: "module",
 	}

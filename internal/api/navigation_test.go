@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,7 +16,7 @@ import (
 
 func Test_navigation_handler(t *testing.T) {
 	validSections := &fakeNavSections{
-		sections: []*sugarloaf.Navigation{
+		sections: []*clustereye.Navigation{
 			{},
 		},
 	}
@@ -74,10 +74,10 @@ func Test_navigation_handler(t *testing.T) {
 }
 
 type fakeNavSections struct {
-	sections    []*sugarloaf.Navigation
+	sections    []*clustereye.Navigation
 	sectionsErr error
 }
 
-func (ns *fakeNavSections) Sections(ctx context.Context, namespace string) ([]*sugarloaf.Navigation, error) {
+func (ns *fakeNavSections) Sections(ctx context.Context, namespace string) ([]*clustereye.Navigation, error) {
 	return ns.sections, ns.sectionsErr
 }

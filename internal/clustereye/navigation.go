@@ -1,4 +1,4 @@
-package sugarloaf
+package clustereye
 
 // Navigation is a set of navigation entries.
 type Navigation struct {

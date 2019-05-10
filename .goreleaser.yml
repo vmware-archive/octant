@@ -4,10 +4,10 @@ release:
 before:
   hooks:
   - make web-build
-project_name: sugarloaf
+project_name: clustereye
 builds:
-- main: ./cmd/sugarloaf/main.go
-  binary: sugarloaf
+- main: ./cmd/clustereye/main.go
+  binary: clustereye
   env:
     - CGO_ENABLED=0
   goos:

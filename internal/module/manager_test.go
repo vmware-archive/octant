@@ -8,9 +8,9 @@ import (
 	"github.com/golang/mock/gomock"
 
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
+	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/require"
 )
@@ -52,7 +52,7 @@ func (m *stubModule) Handler(root string) http.Handler {
 	panic("not implemented")
 }
 
-func (m *stubModule) Navigation(ctx context.Context, namespace, root string) (*sugarloaf.Navigation, error) {
+func (m *stubModule) Navigation(ctx context.Context, namespace, root string) (*clustereye.Navigation, error) {
 	panic("not implemented")
 }
 

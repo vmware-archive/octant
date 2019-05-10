@@ -13,7 +13,7 @@ func init() {
 	log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
 }
 
-// Execute executes sugarloaf.
+// Execute executes clustereye.
 func Execute(version string, gitCommit string, buildTime string) {
 	rootCmd := newRoot(version, gitCommit, buildTime)
 	if err := rootCmd.Execute(); err != nil {
@@ -23,7 +23,7 @@ func Execute(version string, gitCommit string, buildTime string) {
 }
 
 func newRoot(version string, gitCommit string, buildTime string) *cobra.Command {
-	rootCmd := newSugarloafCmd()
+	rootCmd := newClusterEyeCmd()
 	rootCmd.AddCommand(newVersionCmd(version, gitCommit, buildTime))
 
 	return rootCmd
