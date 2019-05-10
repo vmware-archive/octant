@@ -214,8 +214,9 @@ func CreateClusterRole(name string) *rbacv1.ClusterRole {
 
 func CreateRoleBindingSubject(kind, name, namespace string) *rbacv1.Subject {
 	return &rbacv1.Subject{
-		Kind: kind,
-		Name: name,
+		Kind:      kind,
+		Name:      name,
+		Namespace: namespace,
 	}
 }
 

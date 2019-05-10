@@ -55,7 +55,7 @@ func RoleBindingHandler(ctx context.Context, roleBinding *rbacv1.RoleBinding, op
 
 	o.RegisterItems(ItemDescriptor{
 		Func: func() (component.Component, error) {
-			return printRoleBindingSubjects(roleBinding)
+			return printRoleBindingSubjects(ctx, roleBinding)
 		},
 		Width: component.WidthFull,
 	})
@@ -77,7 +77,7 @@ func printRoleBindingConfig(ctx context.Context, roleBinding *rbacv1.RoleBinding
 	return summary, nil
 }
 
-func printRoleBindingSubjects(roleBinding *rbacv1.RoleBinding) (component.Component, error) {
+func printRoleBindingSubjects(ctx context.Context, roleBinding *rbacv1.RoleBinding) (component.Component, error) {
 	if roleBinding == nil {
 		return nil, errors.New("role binding is nil")
 	}
@@ -87,12 +87,27 @@ func printRoleBindingSubjects(roleBinding *rbacv1.RoleBinding) (component.Compon
 
 	for _, subject := range roleBinding.Subjects {
 		row := component.TableRow{}
+
 		row["Kind"] = component.NewText(subject.Kind)
-		row["Name"] = component.NewText(subject.Name)
+
+		if subject.Kind == "ServiceAccount" {
+			row["Name"] = serviceAccountLinkFromSubjects(ctx, &subject)
+		} else {
+			row["Name"] = component.NewText(subject.Name)
+		}
+
 		row["Namespace"] = component.NewText(subject.Namespace)
 
 		table.Add(row)
 	}
-
 	return table, nil
+}
+
+func serviceAccountLinkFromSubjects(ctx context.Context, subject *rbacv1.Subject) *component.Link {
+	namespace := ""
+	if subject.Kind == "ServiceAccount" {
+		namespace = subject.Namespace
+	}
+
+	return link.ForGVK(namespace, "v1", subject.Kind, subject.Name, subject.Name)
 }
