@@ -2,6 +2,6 @@ resources:
   - deployment.yaml
 
 images:
-  - name: sugarloaf
-    newName: harbor.bryanl.dev/test/sugarloaf
+  - name: clustereye
+    newName: harbor.bryanl.dev/test/clustereye
     newTag: latest

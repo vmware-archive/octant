@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/internal/localcontent"
 	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 
@@ -82,10 +82,10 @@ func Test_LocalContent_Navigation(t *testing.T) {
 		nav, err := lc.Navigation(ctx, "", "/root")
 		require.NoError(t, err)
 
-		expectedNav := &sugarloaf.Navigation{
+		expectedNav := &clustereye.Navigation{
 			Title: "Local Content",
 			Path:  "/root/",
-			Children: []*sugarloaf.Navigation{
+			Children: []*clustereye.Navigation{
 				{
 					Title: "Sample content",
 					Path:  "/root/table",

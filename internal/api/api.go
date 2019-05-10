@@ -8,10 +8,10 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/mime"
 	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/internal/sugarloaf"
 )
 
 var (
@@ -158,8 +158,8 @@ func newAPINavSections(modules []module.Module) *apiNavSections {
 	}
 }
 
-func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]*sugarloaf.Navigation, error) {
-	var sections []*sugarloaf.Navigation
+func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]*clustereye.Navigation, error) {
+	var sections []*clustereye.Navigation
 
 	for _, m := range ans.modules {
 		contentPath := path.Join("/content", m.ContentPath())

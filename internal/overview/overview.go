@@ -20,7 +20,7 @@ import (
 	"github.com/heptio/developer-dash/pkg/view/component"
 
 	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/sugarloaf"
+	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/pkg/errors"
 )
 
@@ -128,7 +128,7 @@ func (co *ClusterOverview) ContentPath() string {
 }
 
 // Navigation returns navigation entries for overview.
-func (co *ClusterOverview) Navigation(ctx context.Context, namespace, root string) (*sugarloaf.Navigation, error) {
+func (co *ClusterOverview) Navigation(ctx context.Context, namespace, root string) (*clustereye.Navigation, error) {
 	nf := NewNavigationFactory(namespace, root, co.objectstore)
 	return nf.Entries(ctx)
 }

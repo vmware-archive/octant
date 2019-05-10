@@ -32,7 +32,7 @@ else
   should_build
   if [[ $BUILD_FRONTEND == 0 ]]; then
       # Backend tests only
-      make test vet sugarloaf-dev
+      make test vet clustereye-dev
   else
     make web-test web-build
   fi

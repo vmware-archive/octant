@@ -121,7 +121,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return errors.Wrap(err, "failed to create dash instance")
 	}
 
-	if os.Getenv("SUGARLOAF_DISABLE_OPEN_BROWSER") != "" {
+	if os.Getenv("CLUSTEREYE_DISABLE_OPEN_BROWSER") != "" {
 		d.willOpenBrowser = false
 	}
 
@@ -193,7 +193,7 @@ func initModuleManager(ctx context.Context, options moduleOptions) (*module.Mana
 
 	moduleManager.Register(overviewModule)
 
-	localContentPath := os.Getenv("SUGARLOAF_LOCAL_CONTENT")
+	localContentPath := os.Getenv("CLUSTEREYE_LOCAL_CONTENT")
 	if localContentPath != "" {
 		localContentModule := localcontent.New(localContentPath)
 		moduleManager.Register(localContentModule)
@@ -208,7 +208,7 @@ func initModuleManager(ctx context.Context, options moduleOptions) (*module.Mana
 
 func buildListener() (net.Listener, error) {
 	listenerAddr := defaultListenerAddr
-	if customListenerAddr := os.Getenv("SUGARLOAF_LISTENER_ADDR"); customListenerAddr != "" {
+	if customListenerAddr := os.Getenv("CLUSTEREYE_LISTENER_ADDR"); customListenerAddr != "" {
 		listenerAddr = customListenerAddr
 	}
 
@@ -323,7 +323,7 @@ func enableOpenCensus() error {
 	je, err := jaeger.NewExporter(jaeger.Options{
 		AgentEndpoint: agentEndpointURI,
 		Endpoint:      collectorEndpointURI,
-		ServiceName:   "sugarloaf",
+		ServiceName:   "clustereye",
 	})
 
 	if err != nil {

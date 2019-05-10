@@ -14,17 +14,17 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func newSugarloafCmd() *cobra.Command {
+func newClusterEyeCmd() *cobra.Command {
 	var namespace string
 	var uiURL string
 	var kubeconfig string
 	var verboseLevel int
 	var enableOpenCensus bool
 
-	sugarloafCmd := &cobra.Command{
-		Use:   "sugarloaf",
-		Short: "sugarloaf kubernetes dashboard",
-		Long:  "sugarloaf is a dashboard for high bandwidth cluster analysis operations",
+	clusterEyeCmd := &cobra.Command{
+		Use:   "clustereye",
+		Short: "clustereye kubernetes dashboard",
+		Long:  "clustereye is a dashboard for high bandwidth cluster analysis operations",
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
@@ -75,16 +75,16 @@ func newSugarloafCmd() *cobra.Command {
 		},
 	}
 
-	sugarloafCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "initial namespace")
-	sugarloafCmd.Flags().StringVar(&uiURL, "ui-url", "", "dashboard url")
-	sugarloafCmd.Flags().CountVarP(&verboseLevel, "verbose", "v", "verbosity level")
-	sugarloafCmd.Flags().BoolVarP(&enableOpenCensus, "enable-opencensus", "c", false, "enable open census")
+	clusterEyeCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "initial namespace")
+	clusterEyeCmd.Flags().StringVar(&uiURL, "ui-url", "", "dashboard url")
+	clusterEyeCmd.Flags().CountVarP(&verboseLevel, "verbose", "v", "verbosity level")
+	clusterEyeCmd.Flags().BoolVarP(&enableOpenCensus, "enable-opencensus", "c", false, "enable open census")
 
 	kubeconfig = clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
 
-	sugarloafCmd.Flags().StringVar(&kubeconfig, "kubeconfig", kubeconfig, "absolute path to kubeconfig file")
+	clusterEyeCmd.Flags().StringVar(&kubeconfig, "kubeconfig", kubeconfig, "absolute path to kubeconfig file")
 
-	return sugarloafCmd
+	return clusterEyeCmd
 }
 
 // Returns a new zap logger, setting level according to the provided

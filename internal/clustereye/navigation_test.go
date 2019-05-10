@@ -1,9 +1,9 @@
-package sugarloaf_test
+package clustereye_test
 
 import (
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/sugarloaf"
+	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -11,7 +11,7 @@ func Test_NewNavigation(t *testing.T) {
 	path := "/path"
 	title := "title"
 
-	nav := sugarloaf.NewNavigation(title, path)
+	nav := clustereye.NewNavigation(title, path)
 
 	assert.Equal(t, path, nav.Path)
 	assert.Equal(t, title, nav.Title)

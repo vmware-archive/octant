@@ -26,12 +26,12 @@ vet:
 	@echo "-> $@"
 	@env go vet  ./internal/... ./pkg/...
 
-sugarloaf-dev:
+clustereye-dev:
 	@mkdir -p ./build
-	@env $(GOBUILD) -o build/sugarloaf $(GO_FLAGS) -v ./cmd/sugarloaf
+	@env $(GOBUILD) -o build/clustereye $(GO_FLAGS) -v ./cmd/clustereye
 
-sugarloaf-docker:
-	@env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o /sugarloaf $(GO_FLAGS) -v ./cmd/sugarloaf
+clustereye-docker:
+	@env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o /clustereye $(GO_FLAGS) -v ./cmd/clustereye
 
 setup-web: web-deps run-web
 
@@ -72,7 +72,7 @@ web-test: web-deps
 	@cd web; npm run test:headless
 
 ui-server:
-	SUGARLOAF_DISABLE_OPEN_BROWSER=false SUGARLOAF_LISTENER_ADDR=localhost:3001 $(GOCMD) run ./cmd/sugarloaf/main.go $(SUGARLOAF_FLAGS)
+	CLUSTEREYE_DISABLE_OPEN_BROWSER=false CLUSTEREYE_LISTENER_ADDR=localhost:3001 $(GOCMD) run ./cmd/clustereye/main.go $(CLUSTEREYE_FLAGS)
 
 ui-client:
 	cd web; API_BASE=http://localhost:3001 npm run start
@@ -90,13 +90,13 @@ release:
 	git push --follow-tags
 
 .PHONY: ci
-ci: test vet web-test web-build sugarloaf-dev
+ci: test vet web-test web-build clustereye-dev
 
 .PHONY: ci-quick
 ci-quick:
 	@cd web; npm run build
 	@go generate ./web
-	make sugarloaf-dev
+	make clustereye-dev
 
 install-test-plugin:
 	mkdir -p ~/.config/vmdash/plugins

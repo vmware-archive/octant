@@ -1,4 +1,4 @@
-# Developer Dashboard (Sugarloaf)
+# Developer Dashboard (clustereye)
 
 A web-based Kubernetes dashboard for developers that want to augment their kubectl experience.
 
@@ -8,11 +8,11 @@ Note: make sure to confirm you currently have access to a healthy cluster with `
 
 Start the developer dashboard:
 
-`$ sugarloaf`
+`$ clustereye`
 
 Check the version:
 
-`$ sugarloaf version`
+`$ clustereye version`
 
 ### Prerequisites for development
 
@@ -33,16 +33,16 @@ Go to the [releases page](https://github.com/heptio/developer-dash/releases) and
 Extract the tarball:
 
 ```sh
-$ tar -xzvf ~/Downloads/sugarloaf_0.3.0_Linux-64bit.tar.gz
-sugarloaf_0.3.0_Linux-64bit/README.md
-sugarloaf_0.3.0_Linux-64bit/sugarloaf
+$ tar -xzvf ~/Downloads/clustereye_0.3.0_Linux-64bit.tar.gz
+clustereye_0.3.0_Linux-64bit/README.md
+clustereye_0.3.0_Linux-64bit/clustereye
 ```
 
 Verify it runs:
 
-`$ ./sugarloaf_0.3.0_Linux-64bit/sugarloaf version`
+`$ ./clustereye_0.3.0_Linux-64bit/clustereye version`
 
-Decide to move the binary in `/usr/local/bin` or your home directory. Installing to `/usr/local/bin` is for system-wide installation but makes running multiple versions difficult. If the dashboard is installed to your home directory, make sure to update your `$PATH` variable then check `which sugarloaf` to verify installation is successful.
+Decide to move the binary in `/usr/local/bin` or your home directory. Installing to `/usr/local/bin` is for system-wide installation but makes running multiple versions difficult. If the dashboard is installed to your home directory, make sure to update your `$PATH` variable then check `which clustereye` to verify installation is successful.
 
 ### Manually build and install
 
@@ -56,17 +56,17 @@ Package the web assets to be built into the binary.
 
 There should be a new directory: `$GOPATH/src/github.com/heptio/developer-dash/web/build`. Finally, build the binary:
 
-`$ make sugarloaf-dev`
+`$ make clustereye-dev`
 
-The `sugarloaf` binary will be found in `$GOPATH/src/github.com/heptio/developer-dash/build`.
+The `clustereye` binary will be found in `$GOPATH/src/github.com/heptio/developer-dash/build`.
 
 ### Environment variables
 
 * `KUBECONFIG` - set to non-empty location if you want to set KUBECONFIG with an environment variable.
-* `SUGARLOAF_DISABLE_OPEN_BROWSER` - set to a non-empty value if you don't the browser launched when the dashboard start up.
-* `SUGARLOAF_LISTENER_ADDR` - set to address you want dashboard service to start on. (e.g. `localhost:8080`)
-* `SUGARLOAF_VERBOSE_CACHE` - set to a non-empty value to view cache actions
-* `SUGARLOAF_LOCAL_CONTENT` - set to a directory and dash will serve content responses from here. An example directory lives in `examples/content`
+* `CLUSTEREYE_DISABLE_OPEN_BROWSER` - set to a non-empty value if you don't the browser launched when the dashboard start up.
+* `CLUSTEREYE_LISTENER_ADDR` - set to address you want dashboard service to start on. (e.g. `localhost:8080`)
+* `CLUSTEREYE_VERBOSE_CACHE` - set to a non-empty value to view cache actions
+* `CLUSTEREYE_LOCAL_CONTENT` - set to a directory and dash will serve content responses from here. An example directory lives in `examples/content`
 
 ### Running development web UI
 

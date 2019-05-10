@@ -3,7 +3,7 @@ kind: Job
 metadata:
   generateName: job-fail-
   labels:
-    sugarloaf-scenario: failed-job
+    clustereye-scenario: failed-job
 spec:
   template:
     spec:

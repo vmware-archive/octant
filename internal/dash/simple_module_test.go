@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/internal/sugarloaf"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -33,7 +33,7 @@ func (m *dashModule) ContentPath() string {
 }
 
 // Navigation is a no-op.
-func (m *dashModule) Navigation(ctx context.Context, namespace, root string) (*sugarloaf.Navigation, error) {
+func (m *dashModule) Navigation(ctx context.Context, namespace, root string) (*clustereye.Navigation, error) {
 	return nil, nil
 }
 
