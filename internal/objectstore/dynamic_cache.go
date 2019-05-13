@@ -166,16 +166,17 @@ func (dc *DynamicCache) HasAccess(key objectstoreutil.Key, verb string) error {
 		Verb:      verb,
 	}
 
+	dc.mu.Lock()
+	defer dc.mu.Unlock()
 	access, ok := dc.access[aKey]
+
 	if !ok {
 		val, err := dc.fetchAccess(aKey, verb)
 		if err != nil {
 			return errors.Wrapf(err, "fetch access: %+v", aKey)
 		}
 
-		dc.mu.Lock()
 		dc.access[aKey] = val
-		dc.mu.Unlock()
 
 		access, ok = dc.access[aKey]
 		if !ok {
