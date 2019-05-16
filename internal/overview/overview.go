@@ -101,7 +101,7 @@ func NewClusterOverview(ctx context.Context, options Options) (*ClusterOverview,
 		return nil, err
 	}
 
-	g, err := newGenerator(options.ObjectStore, di, pm, options.Client, pfSvc)
+	g, err := newGenerator(options.ObjectStore, di, pm, options.Client, pfSvc, options.PluginManager.Store)
 	if err != nil {
 		return nil, errors.Wrap(err, "create overview generator")
 	}

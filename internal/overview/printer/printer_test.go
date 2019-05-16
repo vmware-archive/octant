@@ -9,6 +9,7 @@ import (
 	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	printerfake "github.com/heptio/developer-dash/internal/overview/printer/fake"
 	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
+	managerstorefake "github.com/heptio/developer-dash/pkg/plugin/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -63,8 +64,9 @@ func Test_Resource_Print(t *testing.T) {
 			o := storefake.NewMockObjectStore(controller)
 			pf := pffake.NewMockPortForwarder(controller)
 			pluginPrinter := printerfake.NewMockPluginPrinter(controller)
+			ms := managerstorefake.NewMockManagerStore(controller)
 
-			p := NewResource(o, pf)
+			p := NewResource(o, pf, ms)
 
 			if tc.printFunc != nil {
 				err := p.Handler(tc.printFunc)
@@ -127,8 +129,9 @@ func Test_Resource_Handler(t *testing.T) {
 
 			o := storefake.NewMockObjectStore(controller)
 			pf := pffake.NewMockPortForwarder(controller)
+			ms := managerstorefake.NewMockManagerStore(controller)
 
-			p := NewResource(o, pf)
+			p := NewResource(o, pf, ms)
 
 			err := p.Handler(tc.printFunc)
 
@@ -152,8 +155,9 @@ func Test_Resource_DuplicateHandler(t *testing.T) {
 
 	o := storefake.NewMockObjectStore(controller)
 	pf := pffake.NewMockPortForwarder(controller)
+	ms := managerstorefake.NewMockManagerStore(controller)
 
-	p := NewResource(o, pf)
+	p := NewResource(o, pf, ms)
 
 	err := p.Handler(printFunc)
 	require.NoError(t, err)

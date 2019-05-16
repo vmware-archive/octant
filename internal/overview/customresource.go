@@ -312,7 +312,7 @@ func (cd *crdDescriber) Describe(ctx context.Context, prefix, namespace string, 
 
 	printOptions := printer.Options{
 		ObjectStore:   options.ObjectStore,
-		PluginPrinter: options.PluginManager,
+		PluginPrinter: options.PluginPrinter,
 	}
 
 	summary, err := cd.summaryPrinter(ctx, crd, object, printOptions)
@@ -339,7 +339,7 @@ func (cd *crdDescriber) Describe(ctx context.Context, prefix, namespace string, 
 	yvComponent.SetAccessor("yaml")
 	cr.Add(yvComponent)
 
-	tabs, err := options.PluginManager.Tabs(object)
+	tabs, err := options.PluginPrinter.Tabs(object)
 	if err != nil {
 		return emptyContentResponse, errors.Wrap(err, "getting tabs from plugins")
 	}

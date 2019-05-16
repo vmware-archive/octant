@@ -66,6 +66,7 @@ type realGenerator struct {
 	printer            printer.Printer
 	portForwardSvc     portforward.PortForwarder
 	discoveryInterface discovery.DiscoveryInterface
+	pluginStore        plugin.ManagerStore
 }
 
 // GeneratorOptions are additional options to pass a generator
@@ -75,8 +76,8 @@ type GeneratorOptions struct {
 	PluginManager  *plugin.Manager
 }
 
-func newGenerator(objectStore objectstore.ObjectStore, di discovery.DiscoveryInterface, pm *pathMatcher, clusterClient cluster.ClientInterface, portForwardSvc portforward.PortForwarder) (*realGenerator, error) {
-	p := printer.NewResource(objectStore, portForwardSvc)
+func newGenerator(objectStore objectstore.ObjectStore, di discovery.DiscoveryInterface, pm *pathMatcher, clusterClient cluster.ClientInterface, portForwardSvc portforward.PortForwarder, pluginStore plugin.ManagerStore) (*realGenerator, error) {
+	p := printer.NewResource(objectStore, portForwardSvc, pluginStore)
 
 	if err := AddPrintHandlers(p); err != nil {
 		return nil, errors.Wrap(err, "add print handlers")
@@ -93,6 +94,7 @@ func newGenerator(objectStore objectstore.ObjectStore, di discovery.DiscoveryInt
 		clusterClient:      clusterClient,
 		portForwardSvc:     portForwardSvc,
 		printer:            p,
+		pluginStore:        pluginStore,
 	}, nil
 }
 
@@ -112,13 +114,14 @@ func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace st
 
 	fields := pf.Fields(path)
 	options := DescriberOptions{
-		ObjectStore:    g.objectStore,
-		Queryer:        q,
-		Fields:         fields,
-		Printer:        g.printer,
-		LabelSet:       opts.LabelSet,
-		PortForwardSvc: opts.PortForwardSvc,
-		PluginManager:  opts.PluginManager,
+		ObjectStore:        g.objectStore,
+		Queryer:            q,
+		Fields:             fields,
+		Printer:            g.printer,
+		LabelSet:           opts.LabelSet,
+		PortForwardSvc:     opts.PortForwardSvc,
+		PluginPrinter:      opts.PluginManager,
+		PluginManagerStore: g.pluginStore,
 	}
 
 	cResponse, err := pf.describer.Describe(ctx, prefix, namespace, g.clusterClient, options)

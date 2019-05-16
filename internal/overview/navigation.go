@@ -21,6 +21,7 @@ var (
 		"Custom Resources":             "custom-resources",
 		"RBAC":                         "rbac",
 		"Events":                       "events",
+		"Plugins":                      "plugins",
 		"Port Forwards":                "portforward",
 	}
 )
@@ -68,6 +69,7 @@ func (nf *NavigationFactory) Entries(ctx context.Context) (*clustereye.Navigatio
 		"Custom Resources":             nf.crdEntries,
 		"RBAC":                         nf.rbacEntries,
 		"Events":                       nil,
+		"Plugins":                      nil,
 		"Port Forwards":                nil,
 	}
 
@@ -78,6 +80,7 @@ func (nf *NavigationFactory) Entries(ctx context.Context) (*clustereye.Navigatio
 		"Custom Resources",
 		"RBAC",
 		"Events",
+		"Plugins",
 		"Port Forwards",
 	}
 

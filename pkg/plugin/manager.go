@@ -202,7 +202,7 @@ func (m *Manager) Load(cmd string) error {
 	return nil
 }
 
-// Start stars all plugins.
+// Start starts all plugins.
 func (m *Manager) Start(ctx context.Context) error {
 	if m.Store == nil {
 		return errors.New("manager store is nil")

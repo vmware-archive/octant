@@ -7,6 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
+	managerstorefake "github.com/heptio/developer-dash/pkg/plugin/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -65,13 +66,15 @@ func Test_realGenerator_Generate(t *testing.T) {
 
 			di := clusterfake.NewMockDiscoveryInterface(controller)
 
+			ms := managerstorefake.NewMockManagerStore(controller)
+
 			ctx := context.Background()
 			pm := newPathMatcher()
 			for _, pf := range pathFilters {
 				pm.Register(ctx, pf)
 			}
 
-			g, err := newGenerator(o, di, pm, clusterClient, nil)
+			g, err := newGenerator(o, di, pm, clusterClient, nil, ms)
 			require.NoError(t, err)
 
 			cResponse, err := g.Generate(ctx, tc.path, "/prefix", "default", GeneratorOptions{})

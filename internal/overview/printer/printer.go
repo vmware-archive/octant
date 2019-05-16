@@ -33,6 +33,7 @@ type Options struct {
 	Selector      kLabels.Selector
 	DisableLabels bool
 	PluginPrinter PluginPrinter
+	PluginStore   plugin.ManagerStore
 }
 
 // Printer is an interface for printing runtime objects.
@@ -46,16 +47,18 @@ type Resource struct {
 	handlerMap  map[reflect.Type]reflect.Value
 	objectStore objectstore.ObjectStore
 	portForward portforward.PortForwarder
+	pluginStore plugin.ManagerStore
 }
 
 var _ Printer = (*Resource)(nil)
 
 // NewResource creates an instance of ResourcePrinter.
-func NewResource(o objectstore.ObjectStore, portForwardService portforward.PortForwarder) *Resource {
+func NewResource(o objectstore.ObjectStore, portForwardService portforward.PortForwarder, pluginStore plugin.ManagerStore) *Resource {
 	return &Resource{
 		handlerMap:  make(map[reflect.Type]reflect.Value),
 		objectStore: o,
 		portForward: portForwardService,
+		pluginStore: pluginStore,
 	}
 }
 
@@ -66,6 +69,7 @@ func (p *Resource) Print(ctx context.Context, object runtime.Object, pm PluginPr
 		ObjectStore:   p.objectStore,
 		PortForward:   p.portForward,
 		PluginPrinter: pm,
+		PluginStore:   p.pluginStore,
 	}
 
 	t := reflect.TypeOf(object)

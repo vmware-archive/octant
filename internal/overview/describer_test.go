@@ -6,12 +6,16 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/hashicorp/go-plugin"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/overview/printer"
 	printerfake "github.com/heptio/developer-dash/internal/overview/printer/fake"
 	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
 	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	dashplugin "github.com/heptio/developer-dash/pkg/plugin"
+	"github.com/heptio/developer-dash/pkg/plugin/fake"
+	managerstorefake "github.com/heptio/developer-dash/pkg/plugin/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -31,6 +35,8 @@ func TestListDescriber(t *testing.T) {
 	o := storefake.NewMockObjectStore(controller)
 
 	pf := pffake.NewMockPortForwarder(controller)
+
+	ms := managerstorefake.NewMockManagerStore(controller)
 
 	client := clusterfake.NewMockClientInterface(controller)
 
@@ -61,7 +67,7 @@ func TestListDescriber(t *testing.T) {
 	options := DescriberOptions{
 		ObjectStore: o,
 		Fields:      fields,
-		Printer:     printer.NewResource(o, pf),
+		Printer:     printer.NewResource(o, pf, ms),
 	}
 
 	ctx := context.Background()
@@ -99,6 +105,7 @@ func TestObjectDescriber(t *testing.T) {
 	clusterClient := clusterfake.NewMockClientInterface(controller)
 	pf := pffake.NewMockPortForwarder(controller)
 	pluginPrinter := printerfake.NewMockPluginPrinter(controller)
+	ms := managerstorefake.NewMockManagerStore(controller)
 
 	object := &unstructured.Unstructured{
 		Object: map[string]interface{}{
@@ -137,7 +144,7 @@ func TestObjectDescriber(t *testing.T) {
 
 	d := NewObjectDescriber(thePath, "object", fn, objectType, true)
 
-	p := printer.NewResource(o, pf)
+	p := printer.NewResource(o, pf, ms)
 	err := p.Handler(func(context.Context, *corev1.Pod, printer.Options) (component.Component, error) {
 		return component.NewText("*v1.Pod"), nil
 	})
@@ -147,7 +154,7 @@ func TestObjectDescriber(t *testing.T) {
 		ObjectStore:   o,
 		Fields:        fields,
 		Printer:       p,
-		PluginManager: pluginPrinter,
+		PluginPrinter: pluginPrinter,
 	}
 
 	ctx := context.Background()
@@ -251,3 +258,79 @@ func TestSectionDescriber(t *testing.T) {
 	}
 
 }
+
+func TestPluginDescriber(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	name := "plugin-test"
+	namespace := "default"
+	metadata := dashplugin.Metadata{
+		Name:         name,
+		Description:  "this is a test",
+		Capabilities: dashplugin.Capabilities{},
+	}
+
+	store := dashplugin.NewDefaultStore()
+	clusterClient := clusterfake.NewMockClientInterface(controller)
+	client := newFakePluginClient(name, controller)
+	store.Store(name, client, metadata)
+
+	p := NewPluginListDescriber()
+
+	options := DescriberOptions{
+		PluginManagerStore: store,
+	}
+
+	ctx := context.Background()
+	cResponse, err := p.Describe(ctx, "/plugins", namespace, clusterClient, options)
+	require.NoError(t, err)
+
+	list := component.NewList("Plugins", nil)
+	tableCols := component.NewTableCols("Name", "Description", "Capabilities")
+	table := component.NewTable("Plugins", tableCols)
+	table.Add(component.TableRow{
+		"Name":        component.NewText(name),
+		"Description": component.NewText("this is a test"),
+		"Capability":  component.NewText("{\"SupportsPrinterConfig\":null,\"SupportsPrinterStatus\":null,\"SupportsPrinterItems\":null,\"SupportsObjectStatus\":null,\"SupportsTab\":null}"),
+	})
+
+	list.Add(table)
+
+	expected := component.ContentResponse{
+		Components: []component.Component{list},
+	}
+
+	assert.Equal(t, expected, cResponse)
+}
+
+type fakePluginClient struct {
+	clientProtocol *fake.MockClientProtocol
+	service        *fake.MockService
+	name           string
+}
+
+var _ dashplugin.Client = (*fakePluginClient)(nil)
+
+func newFakePluginClient(name string, controller *gomock.Controller) *fakePluginClient {
+	service := fake.NewMockService(controller)
+	metadata := dashplugin.Metadata{
+		Name: name,
+	}
+	service.EXPECT().Register(gomock.Eq("localhost:54321")).Return(metadata, nil).AnyTimes()
+
+	clientProtocol := fake.NewMockClientProtocol(controller)
+	clientProtocol.EXPECT().Dispense("plugin").Return(service, nil).AnyTimes()
+
+	return &fakePluginClient{
+		service:        service,
+		clientProtocol: clientProtocol,
+		name:           name,
+	}
+}
+
+func (c *fakePluginClient) Client() (plugin.ClientProtocol, error) {
+	return c.clientProtocol, nil
+}
+
+func (c *fakePluginClient) Kill() {}
