@@ -209,6 +209,7 @@ var (
 		customResourcesDescriber,
 		rbacDescriber,
 		portForwardDescriber,
+		pluginDescriber,
 	)
 
 	eventsDescriber = NewResource(ResourceOptions{
@@ -219,6 +220,8 @@ var (
 		Titles:                ResourceTitle{List: "Events", Object: "Event"},
 		DisableResourceViewer: true,
 	})
+
+	pluginDescriber = NewPluginListDescriber()
 
 	portForwardDescriber = NewPortForwardListDescriber()
 )

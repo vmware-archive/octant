@@ -15,6 +15,7 @@ import (
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
@@ -42,13 +43,14 @@ var DefaultLoader = func(objectStoreKey objectstoreutil.Key) LoaderFunc {
 
 // DescriberOptions provides options to describers
 type DescriberOptions struct {
-	Queryer        queryer.Queryer
-	ObjectStore    objectstore.ObjectStore
-	Fields         map[string]string
-	Printer        printer.Printer
-	LabelSet       *kLabels.Set
-	PortForwardSvc portforward.PortForwarder
-	PluginManager  printer.PluginPrinter
+	Queryer            queryer.Queryer
+	ObjectStore        objectstore.ObjectStore
+	Fields             map[string]string
+	Printer            printer.Printer
+	LabelSet           *kLabels.Set
+	PortForwardSvc     portforward.PortForwarder
+	PluginPrinter      printer.PluginPrinter
+	PluginManagerStore plugin.ManagerStore
 }
 
 // Describer creates content.
@@ -136,7 +138,7 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 			listType)
 	}
 
-	viewComponent, err := options.Printer.Print(ctx, listObject, options.PluginManager)
+	viewComponent, err := options.Printer.Print(ctx, listObject, options.PluginPrinter)
 	if err != nil {
 		return emptyContentResponse, err
 	}
@@ -199,8 +201,8 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 		return emptyContentResponse, errors.New("object describer requires a printer")
 	}
 
-	if options.PluginManager == nil {
-		return emptyContentResponse, errors.New("plugin manager is nil")
+	if options.PluginPrinter == nil {
+		return emptyContentResponse, errors.New("plugin printer is nil")
 	}
 
 	newObject, err := d.currentObject(ctx, namespace, options)
@@ -239,7 +241,7 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 		logger.With("tab-object", newObject).Errorf("unable to generate all tabs for object")
 	}
 
-	tabs, err := options.PluginManager.Tabs(newObject)
+	tabs, err := options.PluginPrinter.Tabs(newObject)
 	if err != nil {
 		return emptyContentResponse, errors.Wrap(err, "getting tabs from plugins")
 	}
@@ -291,7 +293,7 @@ func (d *ObjectDescriber) currentObject(ctx context.Context, namespace string, o
 }
 
 func (d *ObjectDescriber) addSummaryTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options DescriberOptions) error {
-	vc, err := options.Printer.Print(ctx, object, options.PluginManager)
+	vc, err := options.Printer.Print(ctx, object, options.PluginPrinter)
 	if err != nil {
 		return err
 	}

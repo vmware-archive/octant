@@ -214,7 +214,7 @@ func Test_crdDescriber(t *testing.T) {
 
 	options := DescriberOptions{
 		ObjectStore:   o,
-		PluginManager: pluginPrinter,
+		PluginPrinter: pluginPrinter,
 	}
 
 	ctx := context.Background()
