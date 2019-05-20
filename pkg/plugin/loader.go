@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
@@ -13,8 +14,8 @@ const configDir = "vmdash"
 
 // Config is configuration for the plugin manager.
 type Config interface {
-	// PluginDir returns the location of the plugin directory.
-	PluginDir() (string, error)
+	// PluginDirs returns the location of the plugin directories.
+	PluginDirs() ([]string, error)
 	// Home returns the user's home directory.
 	Home() string
 	// Fs is the afero filesystem
@@ -33,17 +34,24 @@ var (
 
 var _ Config = (*defaultConfig)(nil)
 
-// PluginDir returns the plugin directory. Current only works on macOS and Linux
+// PluginDirs returns the plugin directories. Current only works on macOS and Linux
 // and not in a container.
-func (c *defaultConfig) PluginDir() (string, error) {
+func (c *defaultConfig) PluginDirs() ([]string, error) {
 	home := c.Home()
 
 	if home == "" {
 		// home could be blank if running in a container, so bail out...
-		return "", errors.Errorf("running dash in a container is not yet supported: No $HOME env var")
+		return []string{}, errors.Errorf("running dash in a container is not yet supported: No $HOME env var")
 	}
 
-	return filepath.Join(home, ".config", configDir, "plugins"), nil
+	defaultDir := filepath.Join(home, ".config", configDir, "plugins")
+
+	if path := os.Getenv("CLUSTEREYE_PLUGIN_PATH"); path != "" {
+		path = strings.Trim(path, string(filepath.ListSeparator))
+		return append(filepath.SplitList(path), defaultDir), nil
+	}
+
+	return []string{defaultDir}, nil
 }
 
 func (c *defaultConfig) Home() string {
@@ -71,32 +79,35 @@ func AvailablePlugins(config Config) ([]string, error) {
 		return nil, errors.New("config is nil")
 	}
 
-	dir, err := config.PluginDir()
+	dirs, err := config.PluginDirs()
 	if err != nil {
 		return nil, errors.Wrap(err, "get plugin directory")
 	}
 
-	_, err = config.Fs().Stat(dir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return []string{}, nil
-		}
-		return nil, errors.Wrap(err, "check plugin directory")
-	}
-
-	fis, err := afero.ReadDir(config.Fs(), dir)
-	if err != nil {
-		return nil, errors.Wrap(err, "read files in plugin directory")
-	}
-
 	var list []string
 
-	for _, fi := range fis {
-		mode := fi.Mode()
+	for _, dir := range dirs {
+		_, err = config.Fs().Stat(dir)
+		if err != nil {
+			if os.IsNotExist(err) {
+				// no-op
+				continue
+			}
+			return nil, errors.Wrap(err, "check plugin directory")
+		}
 
-		if mode|64 == mode {
-			pluginPath := filepath.Join(dir, fi.Name())
-			list = append(list, pluginPath)
+		fis, err := afero.ReadDir(config.Fs(), dir)
+		if err != nil {
+			return nil, errors.Wrap(err, "read files in plugin directory")
+		}
+
+		for _, fi := range fis {
+			mode := fi.Mode()
+
+			if mode|64 == mode {
+				pluginPath := filepath.Join(dir, fi.Name())
+				list = append(list, pluginPath)
+			}
 		}
 	}
 

@@ -67,6 +67,7 @@ The `clustereye` binary will be found in `$GOPATH/src/github.com/heptio/develope
 * `CLUSTEREYE_LISTENER_ADDR` - set to address you want dashboard service to start on. (e.g. `localhost:8080`)
 * `CLUSTEREYE_VERBOSE_CACHE` - set to a non-empty value to view cache actions
 * `CLUSTEREYE_LOCAL_CONTENT` - set to a directory and dash will serve content responses from here. An example directory lives in `examples/content`
+* `CLUSTEREYE_PLUGIN_PATH` - add a plugin directory or multiple directories separated by `:`. Plugins will load by default from `$HOME/.config/vmdash/plugins`
 
 ### Running development web UI
 
