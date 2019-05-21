@@ -5,11 +5,19 @@ WORKDIR /go/src/github.com/heptio/developer-dash
 RUN hacks/setup-docker.sh
 RUN make clustereye-dev
 
-FROM alpine:3.9
-RUN apk --no-cache add ca-certificates
+FROM ubuntu:bionic
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        apt-transport-https \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /go/src/github.com/heptio/developer-dash/build/clustereye /clustereye
-RUN chmod +x /clustereye && \
-    mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
+RUN chmod +x /clustereye
+
+RUN useradd -s /sbin/nologin -M -u 10000 -U user
+USER user
 
 VOLUME [ "/kube"]
 EXPOSE 7777
