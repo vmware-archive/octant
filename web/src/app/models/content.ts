@@ -85,6 +85,17 @@ export interface LabelSelectorView extends View {
   };
 }
 
+export interface PodSummary {
+  details: View[];
+  status: string;
+}
+
+export interface PodStatusView extends View {
+  config: {
+    pods: { [key: string]: PodSummary }
+  };
+}
+
 export interface PortForwardPortSpec {
   local: number;
   remote: number;

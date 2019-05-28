@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ClarityModule } from '@clr/angular';
 import json from 'highlight.js/lib/languages/json';
 import yaml from 'highlight.js/lib/languages/yaml';
 import { HighlightModule } from 'ngx-highlightjs';
+
 import { AnnotationsComponent } from './components/annotations/annotations.component';
 import { ContainersComponent } from './components/containers/containers.component';
 import { ContentSwitcherComponent } from './components/content-switcher/content-switcher.component';
@@ -18,6 +20,8 @@ import { LabelsComponent } from './components/labels/labels.component';
 import { LinkComponent } from './components/link/link.component';
 import { ListComponent } from './components/list/list.component';
 import { LogsComponent } from './components/logs/logs.component';
+import { ObjectStatusComponent } from './components/object-status/object-status.component';
+import { PodStatusComponent } from './components/pod-status/pod-status.component';
 import { PortForwardComponent } from './components/port-forward/port-forward.component';
 import { PortsComponent } from './components/ports/ports.component';
 import { QuadrantComponent } from './components/quadrant/quadrant.component';
@@ -30,7 +34,10 @@ import { TextComponent } from './components/text/text.component';
 import { TimestampComponent } from './components/timestamp/timestamp.component';
 import { YamlComponent } from './components/yaml/yaml.component';
 import { OverviewComponent } from './overview.component';
-import { ObjectStatusComponent } from './components/object-status/object-status.component';
+import { HeptagonGridComponent } from './components/heptagon-grid/heptagon-grid.component';
+import { HeptagonGridRowComponent } from './components/heptagon-grid-row/heptagon-grid-row.component';
+import { HeptagonComponent } from './components/heptagon/heptagon.component';
+import { HeptagonLabelComponent } from './components/heptagon-label/heptagon-label.component';
 
 export function hljsLanguages() {
   return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
@@ -64,10 +71,16 @@ export function hljsLanguages() {
     LogsComponent,
     PortsComponent,
     ObjectStatusComponent,
+    PodStatusComponent,
+    HeptagonGridComponent,
+    HeptagonGridRowComponent,
+    HeptagonComponent,
+    HeptagonLabelComponent,
   ],
   imports: [
     CommonModule,
     ClarityModule,
+    FormsModule,
     HighlightModule.forRoot({
       languages: hljsLanguages,
     }),

@@ -1,0 +1,17 @@
+svg {
+  width: 100%;
+  height: auto;
+
+  overflow:visible;
+}
+
+g.tooltip {
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+
+  rect {
+    fill: lightblue;
+    stroke: gray;
+  }
+}

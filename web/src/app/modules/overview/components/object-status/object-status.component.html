@@ -9,9 +9,11 @@
         <app-content-switcher *ngIf="node && node.path" [view]="node.path"></app-content-switcher>
       </div>
       <div *ngIf="node" class="card-text">
-        <li *ngFor="let detail of node.details; trackBy: detailsTrackBy">
-          <app-content-switcher [view]="detail"></app-content-switcher>
-        </li>
+        <ul class="node-status">
+          <li *ngFor="let detail of node.details; trackBy: detailsTrackBy">
+            <app-content-switcher [view]="detail"></app-content-switcher>
+          </li>
+        </ul>
       </div>
     </div>
   </div>
