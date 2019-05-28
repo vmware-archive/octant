@@ -45,6 +45,7 @@ var DefaultLoader = func(objectStoreKey objectstoreutil.Key) LoaderFunc {
 type DescriberOptions struct {
 	Queryer            queryer.Queryer
 	ObjectStore        objectstore.ObjectStore
+	VCache             resourceviewer.VisitCache
 	Fields             map[string]string
 	Printer            printer.Printer
 	LabelSet           *kLabels.Set
@@ -309,21 +310,27 @@ func (d *ObjectDescriber) addSummaryTab(ctx context.Context, object runtime.Obje
 }
 
 func (d *ObjectDescriber) addResourceViewerTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options DescriberOptions) error {
-	logger := log.From(ctx)
-
 	if !d.disableResourceViewer {
-		rv, err := resourceviewer.New(logger, options.ObjectStore, resourceviewer.WithDefaultQueryer(options.Queryer))
+		logger := log.From(ctx)
+
+		key, err := objectstoreutil.KeyFromObject(object)
 		if err != nil {
 			return err
 		}
-
-		resourceViewerComponent, err := rv.Visit(ctx, object)
-		if err != nil {
-			return err
+		rvComponent, ok := options.VCache.Get(ctx, key, object)
+		if !ok {
+			rv, err := resourceviewer.New(logger, options.ObjectStore, resourceviewer.WithDefaultQueryer(options.Queryer))
+			if err != nil {
+				return err
+			}
+			rvComponent, err = options.VCache.Prime(ctx, key, rv, object)
+			if err != nil {
+				return err
+			}
 		}
 
-		resourceViewerComponent.SetAccessor("resourceViewer")
-		cr.Add(resourceViewerComponent)
+		rvComponent.SetAccessor("resourceViewer")
+		cr.Add(rvComponent)
 	}
 
 	return nil
