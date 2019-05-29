@@ -23,6 +23,10 @@ func (v stubbedVisitor) Visit(context.Context, objectvisitor.ClusterObject) erro
 	return v.visitErr
 }
 
+func (v stubbedVisitor) Reset() {
+
+}
+
 func stubVisitor(fail bool) ViewerOpt {
 	return func(rv *ResourceViewer) error {
 		sv := &stubbedVisitor{}

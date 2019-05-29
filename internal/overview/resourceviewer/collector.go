@@ -63,6 +63,8 @@ func NewCollector(o objectstore.ObjectStore) *Collector {
 func (c *Collector) Reset() {
 	c.edges = make(map[string][]string)
 	c.nodes = make(map[string]component.Node)
+	c.podGroupIDs = make(map[string]string)
+	c.podStats = make(map[string]int)
 }
 
 // Process process an object by saving the object to a map.
@@ -293,6 +295,7 @@ func (c *Collector) podGroupDetails(object objectvisitor.ClusterObject) (podGrou
 	return pgd, nil
 }
 
+// Component creates a new Resource Viewer view component.
 func (c *Collector) Component(selected string) (component.Component, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
