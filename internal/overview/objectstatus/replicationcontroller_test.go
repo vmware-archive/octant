@@ -30,7 +30,7 @@ func Test_replicationController(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusOK,
-				Details:    component.TitleFromString("Replication Controller is OK"),
+				Details:    []component.Component{component.NewText("Replication Controller is OK")},
 			},
 		},
 		{
@@ -42,7 +42,7 @@ func Test_replicationController(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusWarning,
-				Details:    component.TitleFromString("Replication Controller pods are not ready"),
+				Details:    []component.Component{component.NewText("Replication Controller pods are not ready")},
 			},
 		},
 		{

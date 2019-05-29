@@ -28,12 +28,12 @@ func statefulSet(_ context.Context, object runtime.Object, _ objectstore.ObjectS
 	case status.ReadyReplicas != status.Replicas:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusWarning,
-			Details:    component.TitleFromString("Stateful Set pods are not ready"),
+			Details:    []component.Component{component.NewText("Stateful Set pods are not ready")},
 		}, nil
 	default:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusOK,
-			Details:    component.TitleFromString("Stateful Set is OK"),
+			Details:    []component.Component{component.NewText("Stateful Set is OK")},
 		}, nil
 	}
 }

@@ -32,17 +32,17 @@ func replicaSetExtV1Beta1(_ context.Context, object runtime.Object, _ objectstor
 	case status.Replicas == 0:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusError,
-			Details:    component.Title(component.NewText(fmt.Sprintf("Replica Set has no replicas available"))),
+			Details:    []component.Component{component.NewText(fmt.Sprintf("Replica Set has no replicas available"))},
 		}, nil
 	case status.Replicas == status.AvailableReplicas:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusOK,
-			Details:    component.Title(component.NewText(fmt.Sprintf("Replica Set is OK"))),
+			Details:    []component.Component{component.NewText(fmt.Sprintf("Replica Set is OK"))},
 		}, nil
 	default:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusWarning,
-			Details:    component.Title(component.NewText(fmt.Sprintf("Expected %d replicas, but %d are available", status.Replicas, status.AvailableReplicas))),
+			Details:    []component.Component{component.NewText(fmt.Sprintf("Expected %d replicas, but %d are available", status.Replicas, status.AvailableReplicas))},
 		}, nil
 	}
 
@@ -67,16 +67,16 @@ func replicaSetAppsV1(_ context.Context, object runtime.Object, _ objectstore.Ob
 	case status.Replicas == 0:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusError,
-			Details:    component.Title(component.NewText("Replica Set has no replicas available")),
+			Details:    []component.Component{component.NewText("Replica Set has no replicas available")},
 		}, nil
 	case status.Replicas == status.AvailableReplicas:
 		return ObjectStatus{nodeStatus: component.NodeStatusOK,
-			Details: component.Title(component.NewText("Replica Set is OK")),
+			Details: []component.Component{component.NewText("Replica Set is OK")},
 		}, nil
 	default:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusWarning,
-			Details:    component.Title(component.NewText(fmt.Sprintf("Expected %d replicas, but %d are available", status.Replicas, status.AvailableReplicas))),
+			Details:    []component.Component{component.NewText(fmt.Sprintf("Expected %d replicas, but %d are available", status.Replicas, status.AvailableReplicas))},
 		}, nil
 	}
 

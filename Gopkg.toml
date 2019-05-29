@@ -28,6 +28,10 @@ required = [
     name = "github.com/golang/mock"
     unused-packages = false
 
+  [[prune.project]]
+    name = "k8s.io/client-go"
+    unused-packages = false
+
 [[constraint]]
   branch = "master"
   name = "github.com/GeertJohan/go.rice"
@@ -123,3 +127,7 @@ required = [
 [[override]]
   name = "github.com/golang/mock"
   revision = "98178306b791e0b8ce16c5e1277c4669d981c799"
+
+[[constraint]]
+  name = "github.com/stretchr/testify"
+  revision = "34c6fa2dc70986bccbbffcc6130f6920a924b075"

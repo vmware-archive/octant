@@ -1,6 +1,8 @@
 package component
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 // AdjList is an adjacency list - it maps nodes to edges
 type AdjList map[string][]Edge
@@ -49,12 +51,12 @@ type Nodes map[string]Node
 // Node is a node in a graph, representing a kubernetes object
 // IsNetwork is a hint to the layout engine.
 type Node struct {
-	Name       string           `json:"name,omitempty"`
-	APIVersion string           `json:"apiVersion,omitempty"`
-	Kind       string           `json:"kind,omitempty"`
-	Status     NodeStatus       `json:"status,omitempty"`
-	Details    []TitleComponent `json:"details,omitempty"`
-	Path       *Link            `json:"path,omitempty"`
+	Name       string      `json:"name,omitempty"`
+	APIVersion string      `json:"apiVersion,omitempty"`
+	Kind       string      `json:"kind,omitempty"`
+	Status     NodeStatus  `json:"status,omitempty"`
+	Details    []Component `json:"details,omitempty"`
+	Path       *Link       `json:"path,omitempty"`
 }
 
 // ResourceViewerConfig is configuration for a resource viewer.

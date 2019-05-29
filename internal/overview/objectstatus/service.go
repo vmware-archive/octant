@@ -45,12 +45,12 @@ func service(ctx context.Context, object runtime.Object, o objectstore.ObjectSto
 	if addressCount == 0 {
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusWarning,
-			Details:    component.TitleFromString("Service has no endpoints"),
+			Details:    []component.Component{component.NewText("Service has no endpoints")},
 		}, nil
 	}
 
 	return ObjectStatus{
 		nodeStatus: component.NodeStatusOK,
-		Details:    component.TitleFromString("Service is OK"),
+		Details:    []component.Component{component.NewText("Service is OK")},
 	}, nil
 }

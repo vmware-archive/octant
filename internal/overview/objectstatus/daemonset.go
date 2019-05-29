@@ -28,17 +28,17 @@ func daemonSet(_ context.Context, object runtime.Object, _ objectstore.ObjectSto
 	case status.NumberMisscheduled > 0:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusWarning,
-			Details:    component.TitleFromString("Daemon Set pods are running on nodes that aren't supposed to run Daemon Set pods"),
+			Details:    []component.Component{component.NewText("Daemon Set pods are running on nodes that aren't supposed to run Daemon Set pods")},
 		}, nil
 	case status.NumberAvailable != status.NumberReady:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusWarning,
-			Details:    component.TitleFromString("Daemon Set pods are not ready"),
+			Details:    []component.Component{component.NewText("Daemon Set pods are not ready")},
 		}, nil
 	default:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusOK,
-			Details:    component.TitleFromString("Daemon Set is OK"),
+			Details:    []component.Component{component.NewText("Daemon Set is OK")},
 		}, nil
 	}
 }

@@ -26,6 +26,7 @@ var (
 		{apiVersion: "apps/v1", kind: "ReplicaSet"}:            replicaSetAppsV1,
 		{apiVersion: "apps/v1", kind: "StatefulSet"}:           statefulSet,
 		{apiVersion: "batch/v1", kind: "Job"}:                  runJobStatus,
+		{apiVersion: "v1", kind: "Pod"}:                        pod,
 		{apiVersion: "v1", kind: "ReplicationController"}:      replicationController,
 		{apiVersion: "v1", kind: "Service"}:                    service,
 		{apiVersion: "extensions/v1beta1", kind: "Ingress"}:    runIngressStatus,
@@ -35,7 +36,7 @@ var (
 
 type ObjectStatus struct {
 	nodeStatus component.NodeStatus
-	Details    []component.TitleComponent
+	Details    []component.Component
 }
 
 func (os *ObjectStatus) AddDetail(detail string) {
@@ -88,7 +89,7 @@ func status(ctx context.Context, object runtime.Object, o objectstore.ObjectStor
 	if !ok {
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusOK,
-			Details:    component.Title(component.NewText(fmt.Sprintf("%s %s is OK", apiVersion, kind))),
+			Details:    []component.Component{component.NewText(fmt.Sprintf("%s %s is OK", apiVersion, kind))},
 		}, nil
 
 	}

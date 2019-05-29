@@ -2,6 +2,7 @@ package resourceviewer
 
 import (
 	"context"
+	"encoding/json"
 	"net/url"
 	"testing"
 
@@ -51,6 +52,9 @@ func Test_Collector(t *testing.T) {
 						replicaSet1.Kind)),
 			},
 		},
+		Status: corev1.PodStatus{
+			Phase: corev1.PodRunning,
+		},
 	}
 
 	controller := gomock.NewController(t)
@@ -91,33 +95,58 @@ func Test_Collector(t *testing.T) {
 		Kind:       "Deployment",
 		Name:       "deployment",
 		Status:     "ok",
-		Details:    component.Title(component.NewText("Deployment is OK")),
+		Details:    []component.Component{component.NewText("Deployment is OK")},
 		Path:       link.ForObjectWithQuery(deployment, deployment.Name, q),
 	})
 
 	expected.AddNode("replicaSet1", component.Node{
-		APIVersion: "apps/v1",
+		APIVersion: "extensions/v1beta1",
 		Kind:       "ReplicaSet",
 		Name:       "replicaSet1",
 		Status:     "ok",
-		Details:    component.Title(component.NewText("Replica Set is OK")),
+		Details:    []component.Component{component.NewText("Replica Set is OK")},
 		Path:       link.ForObjectWithQuery(replicaSet1, replicaSet1.Name, q),
 	})
+
+	podStatus := component.NewPodStatus()
+	details := []component.Component{
+		component.NewText(""),
+	}
+	podStatus.AddSummary("pod", details, component.NodeStatusOK)
+
 	expected.AddNode("pods-replicaSet1", component.Node{
 		APIVersion: "v1",
 		Kind:       "Pod",
 		Name:       "replicaSet1 pods",
 		Status:     "ok",
-		Details:    component.Title(component.NewText("Pod count: 1")),
+		Details: []component.Component{
+			podStatus,
+			component.NewText("Pod count: 1"),
+		},
 	})
 	expected.Select("deployment")
 
-	assert.Equal(t, expected, got)
+	assertComponentEqual(t, expected, got)
 
 	got, err = c.Component("pod")
 	require.NoError(t, err)
 
 	expected.Select("pods-replicaSet1")
 
-	assert.Equal(t, expected, got)
+	assertComponentEqual(t, expected, got)
+}
+
+func assertComponentEqual(t *testing.T, expected, got component.Component) {
+	transformer := func(in component.Component) string {
+		b, err := json.MarshalIndent(in, "  ", "  ")
+		require.NoError(t, err)
+
+		return string(b)
+
+	}
+
+	expectedString := transformer(expected)
+	gotString := transformer(got)
+
+	assert.Equal(t, expectedString, gotString)
 }

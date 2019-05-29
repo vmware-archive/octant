@@ -31,7 +31,7 @@ func Test_runIngressStatus(t *testing.T) {
 
 			},
 			expected: ObjectStatus{
-				Details: component.TitleFromString("Ingress is OK"),
+				Details: []component.Component{component.NewText("Ingress is OK")},
 			},
 		},
 		{
@@ -46,7 +46,7 @@ func Test_runIngressStatus(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusError,
-				Details:    component.TitleFromString("Backend refers to service \"no-such-service\" which doesn't exist"),
+				Details:    []component.Component{component.NewText("Backend refers to service \"no-such-service\" which doesn't exist")},
 			},
 		},
 		{
@@ -58,7 +58,7 @@ func Test_runIngressStatus(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusError,
-				Details:    component.TitleFromString("Backend for service \"service-wrong-port\" specifies an invalid port"),
+				Details:    []component.Component{component.NewText("Backend for service \"service-wrong-port\" specifies an invalid port")},
 			},
 		},
 		{
@@ -73,7 +73,7 @@ func Test_runIngressStatus(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusError,
-				Details:    component.TitleFromString("No matching TLS host for rule \"not-the-tls-host.com\""),
+				Details:    []component.Component{component.NewText("No matching TLS host for rule \"not-the-tls-host.com\"")},
 			},
 		},
 		{
@@ -90,7 +90,7 @@ func Test_runIngressStatus(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusError,
-				Details:    component.TitleFromString("Secret \"no-such-secret\" does not exist"),
+				Details:    []component.Component{component.NewText("Secret \"no-such-secret\" does not exist")},
 			},
 		},
 		{

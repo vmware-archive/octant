@@ -18,7 +18,7 @@ import (
 func Test_status(t *testing.T) {
 	deployObjectStatus := ObjectStatus{
 		nodeStatus: component.NodeStatusOK,
-		Details:    component.Title(component.NewText("apps/v1 Deployment is OK")),
+		Details:    []component.Component{component.NewText("apps/v1 Deployment is OK")},
 	}
 
 	lookup := statusLookup{
@@ -79,7 +79,7 @@ func Test_ObjectStatus_AddDetail(t *testing.T) {
 	os := ObjectStatus{}
 	os.AddDetail("detail")
 
-	expected := component.TitleFromString("detail")
+	expected := []component.Component{component.NewText("detail")}
 	assert.Equal(t, expected, os.Details)
 }
 
@@ -87,7 +87,7 @@ func Test_ObjectStatus_AddDetailf(t *testing.T) {
 	os := ObjectStatus{}
 	os.AddDetailf("detail %d", 1)
 
-	expected := component.TitleFromString("detail 1")
+	expected := []component.Component{component.NewText("detail 1")}
 	assert.Equal(t, expected, os.Details)
 }
 
