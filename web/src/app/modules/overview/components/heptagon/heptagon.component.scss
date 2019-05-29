@@ -1,0 +1,39 @@
+.heptagon {
+  stroke-width: 1px;
+  fill: orange;
+  cursor: pointer;
+  z-index: 5;
+}
+
+.status-ok {
+  fill: #60b515;
+}
+
+.status-ok:hover {
+  fill: #1D5100;
+}
+
+.status-warning {
+    fill: #f57600;
+}
+
+.status-warning:hover {
+  fill: #C47D00
+}
+
+.status-error {
+  fill: #e12200;
+}
+
+.status-error:hover {
+  fill: #A32100;
+}
+
+.status-invalid {
+  fill: #9a9a9a;
+}
+
+.status-invalid:hover {
+  fill: #313131;
+}
+

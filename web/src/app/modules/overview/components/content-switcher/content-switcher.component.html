@@ -27,6 +27,9 @@
     <ng-container *ngSwitchCase="'list'">
       <app-view-list [listView]="currentView"></app-view-list>
     </ng-container>
+    <ng-container *ngSwitchCase="'podStatus'">
+      <app-pod-status [view]="currentView"></app-pod-status>
+    </ng-container>
     <ng-container *ngSwitchCase="'portforward'">
       <app-view-port-forward [view]="currentView"></app-view-port-forward>
     </ng-container>
