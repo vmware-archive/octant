@@ -62,7 +62,7 @@ type Cluster struct {
 	dynamicClient    dynamic.Interface
 	discoveryClient  discovery.DiscoveryInterface
 
-	restMapper meta.RESTMapper
+	restMapper *restmapper.DeferredDiscoveryRESTMapper
 }
 
 var _ ClientInterface = (*Cluster)(nil)
@@ -137,21 +137,31 @@ func (c *Cluster) Resource(gk schema.GroupKind) (schema.GroupVersionResource, er
 	}
 
 	retries := 0
+	resetRestMapper := false
 
 	for retries < 5 {
 		restMapping, err := c.restMapper.RESTMapping(gk)
 		if err != nil {
 			if meta.IsNoMatchError(err) {
+				if !resetRestMapper {
+					c.restMapper.Reset()
+					resetRestMapper = true
+					continue
+				}
+
 				retries++
-				c.logger.Infof("Having trouble retriving the REST mapping from your cluster at %s. Retrying.....", restConfig.Host)
+				c.logger.
+					With("err", err).
+					Debugf("Having trouble retrieving the REST mapping from your cluster at %s. Retrying.....", restConfig.Host)
 				time.Sleep(5 * time.Second)
+
 				continue
 			}
 			return schema.GroupVersionResource{}, errors.Wrap(err, "unable to retrieve rest mapping")
 		}
 		return restMapping.Resource, nil
 	}
-	c.logger.Infof("Unable to retireve the REST mapping from your cluster at %s. Full error details below.", restConfig.Host)
+	c.logger.Infof("Unable to retrieve the REST mapping from your cluster at %s. Full error details below.", restConfig.Host)
 	return schema.GroupVersionResource{}, errors.New("unable to retrieve rest mapping")
 }
 
