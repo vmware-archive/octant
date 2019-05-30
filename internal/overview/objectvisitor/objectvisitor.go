@@ -36,7 +36,6 @@ type ObjectHandler interface {
 // its ancestors and descendants.
 type Visitor interface {
 	Visit(ctx context.Context, object ClusterObject) error
-	Reset()
 }
 
 // ObjectHandlerFactory creates ObjectHandler given a ClusterObject.
@@ -124,21 +123,13 @@ func (dv *DefaultVisitor) hasVisited(object runtime.Object) (bool, error) {
 		return false, errors.Wrap(err, "get uid from object")
 	}
 
-	if visited, ok := dv.visited[uid]; ok {
-		dv.visited[uid] = true
-		return visited, nil
+	if _, ok := dv.visited[uid]; ok {
+		return true, nil
 	}
 
 	dv.visited[uid] = true
+
 	return false, nil
-}
-
-// Reset resets the visited map.
-func (dv *DefaultVisitor) Reset() {
-	dv.visitedMu.Lock()
-	defer dv.visitedMu.Unlock()
-
-	dv.visited = make(map[types.UID]bool)
 }
 
 // Visit visits a ClusterObject.

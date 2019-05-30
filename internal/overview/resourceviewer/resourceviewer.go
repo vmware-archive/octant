@@ -56,20 +56,9 @@ func New(logger log.Logger, o objectstore.ObjectStore, opts ...ViewerOpt) (*Reso
 	return rv, nil
 }
 
-// Component calls Component for the ResourveViewer collector
-func (rv *ResourceViewer) Component(ctx context.Context, object objectvisitor.ClusterObject) (component.Component, error) {
-	accessor := meta.NewAccessor()
-	uid, err := accessor.UID(object)
-	if err != nil {
-		return nil, err
-	}
-	return rv.collector.Component(string(uid))
-}
-
 // Visit visits an object and creates a view component.
 func (rv *ResourceViewer) Visit(ctx context.Context, object objectvisitor.ClusterObject) (component.Component, error) {
 	rv.collector.Reset()
-	rv.visitor.Reset()
 
 	ctx, span := trace.StartSpan(ctx, "resourceviewer")
 	defer span.End()
@@ -78,31 +67,13 @@ func (rv *ResourceViewer) Visit(ctx context.Context, object objectvisitor.Cluste
 		return nil, err
 	}
 
-	return rv.Component(ctx, object)
-}
-
-// FakeVisit returns a component that has not been visited yet.
-// Use FakeVisit when you are running Visit in a goroutine and want to return a component quickly.
-func (rv *ResourceViewer) FakeVisit(ctx context.Context, object objectvisitor.ClusterObject) (component.Component, error) {
-	ctx, span := trace.StartSpan(ctx, "resourceviewer")
-	defer span.End()
-
 	accessor := meta.NewAccessor()
-	name, err := accessor.Name(object)
+	uid, err := accessor.UID(object)
 	if err != nil {
 		return nil, err
 	}
 
-	fakeNode := component.Node{
-		Name:       name,
-		APIVersion: "Loading",
-		Kind:       "...",
-		Status:     "ok",
-	}
-
-	r := component.NewResourceViewer("Resource Viewer")
-	r.AddNode("fakeID", fakeNode)
-	return r, nil
+	return rv.collector.Component(string(uid))
 }
 
 func (rv *ResourceViewer) factoryFunc() objectvisitor.ObjectHandlerFactory {

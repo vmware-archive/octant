@@ -9,7 +9,6 @@ import (
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/overview/printer"
-	"github.com/heptio/developer-dash/internal/overview/resourceviewer"
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/pkg/plugin"
@@ -62,7 +61,6 @@ func (pf *pathFilter) Fields(path string) map[string]string {
 
 type realGenerator struct {
 	objectStore        objectstore.ObjectStore
-	visitCache         resourceviewer.VisitCache
 	pathMatcher        *pathMatcher
 	clusterClient      cluster.ClientInterface
 	printer            printer.Printer
@@ -89,14 +87,8 @@ func newGenerator(objectStore objectstore.ObjectStore, di discovery.DiscoveryInt
 		return nil, errors.New("path matcher is nil")
 	}
 
-	visitCache, err := resourceviewer.NewVisitCache(100)
-	if err != nil {
-		return nil, errors.Wrap(err, "new visit cache")
-	}
-
 	return &realGenerator{
 		objectStore:        objectStore,
-		visitCache:         visitCache,
 		discoveryInterface: di,
 		pathMatcher:        pm,
 		clusterClient:      clusterClient,
@@ -123,7 +115,6 @@ func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace st
 	fields := pf.Fields(path)
 	options := DescriberOptions{
 		ObjectStore:        g.objectStore,
-		VCache:             g.visitCache,
 		Queryer:            q,
 		Fields:             fields,
 		Printer:            g.printer,
