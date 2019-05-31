@@ -1,0 +1,12 @@
+baseURL = 'https://example.com/'
+title = 'Dev Dash Plugins'
+theme = 'book'
+disableKinds = ['taxonomy', 'taxonomyTerm']
+
+enableGitInfo = true
+pygmentsCodeFences = true
+
+[params]
+  BookToC = 6
+  BookSection = 'docs'
+  BookEnableJS = true
