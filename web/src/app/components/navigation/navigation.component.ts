@@ -7,7 +7,9 @@ import { Navigation, NavigationChild } from '../../models/navigation';
   styleUrls: ['./navigation.component.scss']
 })
 export class NavigationComponent {
-  @Input() navigation: Navigation;
+  @Input() navigation: Navigation = {
+    sections: []
+  };
 
   constructor() { }
 
