@@ -43,7 +43,7 @@ func Test_service(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusOK,
-				Details:    component.TitleFromString("Service is OK"),
+				Details:    []component.Component{component.NewText("Service is OK")},
 			},
 		},
 		{
@@ -67,7 +67,7 @@ func Test_service(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusWarning,
-				Details:    component.TitleFromString("Service has no endpoints"),
+				Details:    []component.Component{component.NewText("Service has no endpoints")},
 			},
 		},
 		{

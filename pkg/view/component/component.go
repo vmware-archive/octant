@@ -141,6 +141,8 @@ func (m *Metadata) UnmarshalJSON(data []byte) error {
 // Component is a common interface for the data representation
 // of visual components as rendered by the UI.
 type Component interface {
+	json.Marshaler
+
 	// GetMetadata returns metadata for the component.
 	GetMetadata() Metadata
 	// SetAccessor sets the accessfor the component.

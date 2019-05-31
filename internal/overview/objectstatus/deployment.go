@@ -31,18 +31,20 @@ func deploymentAppsV1(_ context.Context, object runtime.Object, _ objectstore.Ob
 	case status.Replicas == status.UnavailableReplicas:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusError,
-			Details:    component.TitleFromString("No replicas exist for this deployment"),
+			Details:    []component.Component{component.NewText("No replicas exist for this deployment")},
 		}, nil
 	case status.Replicas == status.AvailableReplicas:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusOK,
-			Details:    component.Title(component.NewText("Deployment is OK"))}, nil
+			Details:    []component.Component{component.NewText("Deployment is OK")},
+		}, nil
 	default:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusWarning,
-			Details: component.Title(
+			Details: []component.Component{
 				component.NewText(
 					fmt.Sprintf("Expected %d replicas, but %d are available",
-						status.Replicas, status.AvailableReplicas)))}, nil
+						status.Replicas, status.AvailableReplicas))},
+		}, nil
 	}
 }

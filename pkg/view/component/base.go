@@ -13,6 +13,7 @@ const (
 	typeList               = "list"
 	typeLogs               = "logs"
 	typePanel              = "panel"
+	typePodStatus          = "podStatus"
 	typePort               = "port"
 	typePorts              = "ports"
 	typePortForward        = "portforward"

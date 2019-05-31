@@ -30,7 +30,7 @@ func Test_replicaSetAppsV1(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusOK,
-				Details:    component.TitleFromString("Replica Set is OK"),
+				Details:    []component.Component{component.NewText("Replica Set is OK")},
 			},
 		},
 		{
@@ -42,7 +42,7 @@ func Test_replicaSetAppsV1(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusError,
-				Details:    component.TitleFromString("Replica Set has no replicas available"),
+				Details:    []component.Component{component.NewText("Replica Set has no replicas available")},
 			},
 		},
 		{
@@ -54,7 +54,7 @@ func Test_replicaSetAppsV1(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusWarning,
-				Details:    component.TitleFromString("Expected 1 replicas, but 0 are available"),
+				Details:    []component.Component{component.NewText("Expected 1 replicas, but 0 are available")},
 			},
 		},
 		{
@@ -111,7 +111,7 @@ func Test_replicaSetExtV1Beta1(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusOK,
-				Details:    component.TitleFromString("Replica Set is OK"),
+				Details:    []component.Component{component.NewText("Replica Set is OK")},
 			},
 		},
 		{
@@ -123,7 +123,7 @@ func Test_replicaSetExtV1Beta1(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusError,
-				Details:    component.TitleFromString("Replica Set has no replicas available"),
+				Details:    []component.Component{component.NewText("Replica Set has no replicas available")},
 			},
 		},
 		{
@@ -135,7 +135,7 @@ func Test_replicaSetExtV1Beta1(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusWarning,
-				Details:    component.TitleFromString("Expected 1 replicas, but 0 are available"),
+				Details:    []component.Component{component.NewText("Expected 1 replicas, but 0 are available")},
 			},
 		},
 		{

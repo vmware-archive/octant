@@ -118,6 +118,7 @@ func (w *Watch) List(ctx context.Context, key objectstoreutil.Key) ([]*unstructu
 		return nil, errors.New("backend objectstore is nil")
 	}
 
+	// TODO: find out why this doesn't work with watch.
 	logger := log.From(ctx)
 	if err := w.backendObjectStore.HasAccess(key, "list"); err != nil {
 		logger.Errorf("check access failed: %v", err)

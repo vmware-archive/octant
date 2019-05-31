@@ -2,6 +2,7 @@ package overview
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -144,4 +145,10 @@ func (c *emptyComponent) String() string {
 
 func (c *emptyComponent) LessThan(interface{}) bool {
 	return false
+}
+
+func (c emptyComponent) MarshalJSON() ([]byte, error) {
+	m := make(map[string]interface{})
+
+	return json.Marshal(m)
 }

@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2019-05-30T15:06:26Z"
+  generateName: nginx-deployment-65cf97c8dd-
+  labels:
+    app: nginx-deployment
+    pod-template-hash: 65cf97c8dd
+  name: nginx-deployment-65cf97c8dd-jscsp
+  namespace: default
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: nginx-deployment-65cf97c8dd
+    uid: 17c06f63-82ec-11e9-9c8f-0242ac110002
+  resourceVersion: "324118"
+  selfLink: /api/v1/namespaces/default/pods/nginx-deployment-65cf97c8dd-jscsp
+  uid: 7ed4b512-82ec-11e9-9c8f-0242ac110002
+spec:
+  containers:
+  - image: nginx:stable
+    imagePullPolicy: IfNotPresent
+    name: nginx
+    ports:
+    - containerPort: 80
+      protocol: TCP
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: default-token-t5tpg
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: dash-control-plane
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: default-token-t5tpg
+    secret:
+      defaultMode: 420
+      secretName: default-token-t5tpg
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2019-05-30T15:06:26Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2019-05-30T15:06:30Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2019-05-30T15:06:30Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2019-05-30T15:06:26Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://3b53a2b9e55868603c0bb1497d58421591f1f7fbc1661e494e1ecd8cec6e4c1f
+    image: docker.io/library/nginx:stable
+    imageID: docker.io/library/nginx@sha256:22522eeb4c73d12733419fde030b55fa7bdb1d4d78d5b934df110cee154f39db
+    lastState: {}
+    name: nginx
+    ready: true
+    restartCount: 0
+    state:
+      running:
+        startedAt: "2019-05-30T15:06:29Z"
+  hostIP: 172.17.0.2
+  phase: Unknown
+  podIP: 10.32.0.13
+  qosClass: BestEffort
+  startTime: "2019-05-30T15:06:26Z"

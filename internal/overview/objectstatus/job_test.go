@@ -26,7 +26,7 @@ func Test_runJobStatus(t *testing.T) {
 				return testutil.LoadObjectFromFile(t, objectFile)
 			},
 			expected: ObjectStatus{
-				Details: []component.TitleComponent{
+				Details: []component.Component{
 					component.NewText("Job has succeeded 1 time"),
 					component.NewText("Job completed in 11s"),
 				},
@@ -40,7 +40,7 @@ func Test_runJobStatus(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusWarning,
-				Details: []component.TitleComponent{
+				Details: []component.Component{
 					component.NewText("Job has failed 2 times"),
 					component.NewText("Job is in progress"),
 				},
@@ -54,7 +54,7 @@ func Test_runJobStatus(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusError,
-				Details: []component.TitleComponent{
+				Details: []component.Component{
 					component.NewText("Job has failed 5 times"),
 					component.NewText("Job has reached the specified backoff limit"),
 				},

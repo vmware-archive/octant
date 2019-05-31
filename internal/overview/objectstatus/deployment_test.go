@@ -30,7 +30,7 @@ func Test_deploymentAppsV1(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusOK,
-				Details:    component.TitleFromString("Deployment is OK"),
+				Details:    []component.Component{component.NewText("Deployment is OK")},
 			},
 		},
 		{
@@ -42,7 +42,7 @@ func Test_deploymentAppsV1(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusError,
-				Details:    component.TitleFromString("No replicas exist for this deployment"),
+				Details:    []component.Component{component.NewText("No replicas exist for this deployment")},
 			},
 		},
 		{
@@ -54,7 +54,7 @@ func Test_deploymentAppsV1(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusWarning,
-				Details:    component.TitleFromString("Expected 1 replicas, but 0 are available"),
+				Details:    []component.Component{component.NewText("Expected 1 replicas, but 0 are available")},
 			},
 		},
 		{

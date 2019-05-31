@@ -39,6 +39,8 @@ type Collector struct {
 	// podStats counts pods in a replica set.
 	podStats map[string]int
 
+	podNodes map[string]component.PodStatus
+
 	objectStore objectstore.ObjectStore
 
 	mu sync.Mutex
@@ -53,6 +55,7 @@ func NewCollector(o objectstore.ObjectStore) *Collector {
 		objectStore: o,
 		groupPods:   true,
 		podGroupIDs: make(map[string]string),
+		podNodes:    make(map[string]component.PodStatus),
 	}
 	collector.Reset()
 
@@ -85,7 +88,7 @@ func (c *Collector) Process(ctx context.Context, object objectvisitor.ClusterObj
 
 		}
 
-		uid, node, err = c.createPodGroupNode(object)
+		uid, node, err = c.createPodGroupNode(ctx, object)
 	} else {
 		uid, node, err = c.createObjectNode(ctx, object)
 	}
@@ -112,27 +115,47 @@ func (c *Collector) Process(ctx context.Context, object objectvisitor.ClusterObj
 	return nil
 }
 
-func (c *Collector) createPodGroupNode(object objectvisitor.ClusterObject) (string, component.Node, error) {
+func (c *Collector) createPodGroupNode(ctx context.Context, object objectvisitor.ClusterObject) (string, component.Node, error) {
 	pgd, err := c.podGroupDetails(object)
 	if err != nil {
 		return "", component.Node{}, errors.Wrap(err, "getting pod group id for pod")
-	}
-
-	objectKind := object.GetObjectKind()
-	apiVersion, kind := objectKind.GroupVersionKind().ToAPIVersionAndKind()
-
-	node := component.Node{
-		Name:       pgd.name,
-		APIVersion: apiVersion,
-		Kind:       kind,
-		// set all statuses to ok until we start checking for the real status.
-		Status: component.NodeStatusOK,
 	}
 
 	accessor := meta.NewAccessor()
 	uid, err := accessor.UID(object)
 	if err != nil {
 		return "", component.Node{}, errors.Wrap(err, "getting uid for pod")
+	}
+
+	name, err := accessor.Name(object)
+	if err != nil {
+		return "", component.Node{}, errors.Wrap(err, "getting name for pod")
+	}
+
+	status, err := objectstatus.Status(ctx, object, c.objectStore)
+	if err != nil {
+		return "", component.Node{}, errors.Wrap(err, "getting status for pod")
+	}
+
+	objectKind := object.GetObjectKind()
+	apiVersion, kind := objectKind.GroupVersionKind().ToAPIVersionAndKind()
+
+	podStatus, ok := c.podNodes[pgd.id]
+	if !ok {
+		podStatus = *component.NewPodStatus()
+		c.podNodes[pgd.id] = podStatus
+	}
+
+	podStatus.AddSummary(name, status.Details, status.Status())
+
+	node := component.Node{
+		Name:       pgd.name,
+		APIVersion: apiVersion,
+		Kind:       kind,
+		Status:     podStatus.Status(),
+		Details: []component.Component{
+			&podStatus,
+		},
 	}
 
 	c.podGroupIDs[string(uid)] = pgd.id
@@ -168,6 +191,7 @@ func (c *Collector) createObjectNode(ctx context.Context, object objectvisitor.C
 
 	if (gvk.Group == "apps" || gvk.Group == "extensions") &&
 		gvk.Kind == "ReplicaSet" {
+		apiVersion = "extensions/v1beta1"
 		replicaSet := &appsv1.ReplicaSet{}
 		if err := scheme.Scheme.Convert(object, replicaSet, nil); err != nil {
 			return "", component.Node{}, errors.Wrap(err, "convert object to Replica Set")

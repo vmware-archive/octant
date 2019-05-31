@@ -30,7 +30,7 @@ func Test_statefulSet(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusOK,
-				Details:    component.TitleFromString("Stateful Set is OK"),
+				Details:    []component.Component{component.NewText("Stateful Set is OK")},
 			},
 		},
 		{
@@ -42,7 +42,7 @@ func Test_statefulSet(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusWarning,
-				Details:    component.TitleFromString("Stateful Set pods are not ready"),
+				Details:    []component.Component{component.NewText("Stateful Set pods are not ready")},
 			},
 		},
 		{

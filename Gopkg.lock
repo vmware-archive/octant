@@ -510,15 +510,14 @@
   version = "v1.0.3"
 
 [[projects]]
-  digest = "1:5da8ce674952566deae4dbc23d07c85caafc6cfa815b0b3e03e41979cedb8750"
+  digest = "1:45511ffd176fe0c5ab6cb08cdd141f3217df8e115124b176e894ab103925d53c"
   name = "github.com/stretchr/testify"
   packages = [
     "assert",
     "require",
   ]
   pruneopts = "UT"
-  revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
-  version = "v1.3.0"
+  revision = "34c6fa2dc70986bccbbffcc6130f6920a924b075"
 
 [[projects]]
   digest = "1:c468422f334a6b46a19448ad59aaffdfc0a36b08fdcc1c749a0b29b6453d7e59"
@@ -907,12 +906,11 @@
   version = "kubernetes-1.13.1"
 
 [[projects]]
-  digest = "1:c40148eb7143f5688873f994917172462595d22598a7a4911c84138bdb9fed37"
+  digest = "1:c43437141e0905409008e6a82e3574eff11d10af3db49d7ac9932cbbaab5035b"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
     "dynamic",
-    "dynamic/dynamicinformer",
     "dynamic/dynamiclister",
     "dynamic/fake",
     "informers",
@@ -1056,7 +1054,7 @@
     "util/jsonpath",
     "util/retry",
   ]
-  pruneopts = "UT"
+  pruneopts = "T"
   revision = "e64494209f554a6723674bd494d69445fb76a1d4"
   version = "v10.0.0"
 
@@ -1191,10 +1189,12 @@
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/ptypes/wrappers",
     "github.com/google/uuid",
+    "github.com/googleapis/gnostic/OpenAPIv2",
     "github.com/gorilla/handlers",
     "github.com/gorilla/mux",
     "github.com/hashicorp/go-hclog",
     "github.com/hashicorp/go-plugin",
+    "github.com/hashicorp/golang-lru",
     "github.com/jessevdk/go-flags",
     "github.com/nkovacs/streamquote",
     "github.com/pkg/errors",
@@ -1212,6 +1212,7 @@
     "golang.org/x/sync/errgroup",
     "google.golang.org/grpc",
     "k8s.io/api/apps/v1",
+    "k8s.io/api/authorization/v1",
     "k8s.io/api/batch/v1",
     "k8s.io/api/batch/v1beta1",
     "k8s.io/api/core/v1",
@@ -1236,13 +1237,47 @@
     "k8s.io/apimachinery/pkg/util/runtime",
     "k8s.io/apimachinery/pkg/util/sets",
     "k8s.io/apimachinery/pkg/util/yaml",
+    "k8s.io/apimachinery/pkg/version",
+    "k8s.io/apimachinery/pkg/watch",
     "k8s.io/client-go/discovery",
     "k8s.io/client-go/dynamic",
-    "k8s.io/client-go/dynamic/dynamicinformer",
+    "k8s.io/client-go/dynamic/dynamiclister",
     "k8s.io/client-go/dynamic/fake",
     "k8s.io/client-go/informers",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/kubernetes/scheme",
+    "k8s.io/client-go/kubernetes/typed/admissionregistration/v1alpha1",
+    "k8s.io/client-go/kubernetes/typed/admissionregistration/v1beta1",
+    "k8s.io/client-go/kubernetes/typed/apps/v1",
+    "k8s.io/client-go/kubernetes/typed/apps/v1beta1",
+    "k8s.io/client-go/kubernetes/typed/apps/v1beta2",
+    "k8s.io/client-go/kubernetes/typed/auditregistration/v1alpha1",
+    "k8s.io/client-go/kubernetes/typed/authentication/v1",
+    "k8s.io/client-go/kubernetes/typed/authentication/v1beta1",
+    "k8s.io/client-go/kubernetes/typed/authorization/v1",
+    "k8s.io/client-go/kubernetes/typed/authorization/v1beta1",
+    "k8s.io/client-go/kubernetes/typed/autoscaling/v1",
+    "k8s.io/client-go/kubernetes/typed/autoscaling/v2beta1",
+    "k8s.io/client-go/kubernetes/typed/autoscaling/v2beta2",
+    "k8s.io/client-go/kubernetes/typed/batch/v1",
+    "k8s.io/client-go/kubernetes/typed/batch/v1beta1",
+    "k8s.io/client-go/kubernetes/typed/batch/v2alpha1",
+    "k8s.io/client-go/kubernetes/typed/certificates/v1beta1",
+    "k8s.io/client-go/kubernetes/typed/coordination/v1beta1",
+    "k8s.io/client-go/kubernetes/typed/core/v1",
+    "k8s.io/client-go/kubernetes/typed/events/v1beta1",
+    "k8s.io/client-go/kubernetes/typed/extensions/v1beta1",
+    "k8s.io/client-go/kubernetes/typed/networking/v1",
+    "k8s.io/client-go/kubernetes/typed/policy/v1beta1",
+    "k8s.io/client-go/kubernetes/typed/rbac/v1",
+    "k8s.io/client-go/kubernetes/typed/rbac/v1alpha1",
+    "k8s.io/client-go/kubernetes/typed/rbac/v1beta1",
+    "k8s.io/client-go/kubernetes/typed/scheduling/v1alpha1",
+    "k8s.io/client-go/kubernetes/typed/scheduling/v1beta1",
+    "k8s.io/client-go/kubernetes/typed/settings/v1alpha1",
+    "k8s.io/client-go/kubernetes/typed/storage/v1",
+    "k8s.io/client-go/kubernetes/typed/storage/v1alpha1",
+    "k8s.io/client-go/kubernetes/typed/storage/v1beta1",
     "k8s.io/client-go/plugin/pkg/client/auth/azure",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/plugin/pkg/client/auth/oidc",

@@ -2,6 +2,7 @@ package printer
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -189,6 +190,12 @@ func (v *stubComponent) String() string { return "" }
 
 func (v *stubComponent) LessThan(interface{}) bool {
 	return false
+}
+
+func (v stubComponent) MarshalJSON() ([]byte, error) {
+	m := make(map[string]interface{})
+
+	return json.Marshal(m)
 }
 
 func Test_DefaultPrinter(t *testing.T) {
