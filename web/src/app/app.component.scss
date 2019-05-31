@@ -1,7 +1,9 @@
+$navigation-width: 12rem;
+
 .main-container {
   .header {
     .branding {
-      min-width: 10rem;
+      min-width: $navigation-width;
     }
 
     .header-nav {
@@ -26,13 +28,12 @@
     }
   }
 
-  .notifier {}
-
   .content-container {
     .navigation {
+      border-right: 1px solid rgb(215, 215, 215);
       overflow-y: auto;
       min-width: 2rem;
-      width: 10rem;
+      width: $navigation-width;
     }
 
     .content-area {
@@ -41,4 +42,3 @@
     }
   }
 }
-
