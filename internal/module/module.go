@@ -4,9 +4,11 @@ import (
 	"context"
 	"net/http"
 
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/pkg/view/component"
-	"k8s.io/apimachinery/pkg/labels"
 )
 
 // ContentOptions are additional options for content generation
@@ -25,11 +27,18 @@ type Module interface {
 	// ContentPath will be used to construct content paths.
 	ContentPath() string
 	// Navigation returns navigation entries for this module.
-	Navigation(ctx context.Context, namespace, root string) (*clustereye.Navigation, error)
+	Navigation(ctx context.Context, namespace, root string) ([]clustereye.Navigation, error)
 	// SetNamespace is called when the current namespace changes.
 	SetNamespace(namespace string) error
 	// Start starts the module.
 	Start() error
 	// Stop stops the module.
 	Stop()
+
+	// SupportedGroupVersionKind returns a slice of supported GVKs it owns.
+	SupportedGroupVersionKind() []schema.GroupVersionKind
+
+	// GroupVersionKindPath returns the path for an object . It will
+	// return an error if it is unable to generate a path
+	GroupVersionKindPath(namespace, apiVersion, kind, name string) (string, error)
 }

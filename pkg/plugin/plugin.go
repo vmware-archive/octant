@@ -4,8 +4,9 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-plugin"
-	"github.com/heptio/developer-dash/pkg/plugin/dashboard"
 	"google.golang.org/grpc"
+
+	"github.com/heptio/developer-dash/pkg/plugin/dashboard"
 )
 
 var (

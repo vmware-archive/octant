@@ -19,11 +19,15 @@ rice-box.go
 /dist
 
 # generated fakes
-/internal/portforward/fake
-/internal/objectstore/fake
-/internal/queryer/fake
-/internal/cluster/fake
-/internal/overview/printer/fake
+internal/cluster/fake
+internal/cache/fake
+internal/config/fake
+internal/objectstore/fake
+internal/link/fake
+internal/queryer/fake
+internal/modules/overview/printer/fake
+internal/modules/overview/resourceviewer/fake
+internal/portforward/fake
 /pkg/plugin/fake
 /pkg/plugin/api/fake
 
@@ -37,3 +41,4 @@ rice-box.go
 /cmd/devdash/windows.syso
 
 .vscode
+.idea

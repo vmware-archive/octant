@@ -1,5 +1,7 @@
 package plugin
 
+//go:generate mockgen -destination=./fake/mock_manager.go -package=fake github.com/heptio/developer-dash/pkg/plugin ManagerInterface
+
 import (
 	"context"
 	"os/exec"
@@ -8,12 +10,13 @@ import (
 	"sync"
 
 	"github.com/hashicorp/go-plugin"
+	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/runtime"
+
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/pkg/plugin/api"
 	"github.com/heptio/developer-dash/pkg/view/component"
-	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // ClientFactory is a factory for creating clients.
@@ -146,6 +149,18 @@ type config struct {
 	name string
 }
 
+// ManagerInterface is an interface which represent a plugin manager.
+type ManagerInterface interface {
+	// Print prints an object.
+	Print(object runtime.Object) (*PrintResponse, error)
+
+	// Tabs retrieves tabs for an object.
+	Tabs(object runtime.Object) ([]component.Tab, error)
+
+	// Store returns the manager's storage.
+	Store() ManagerStore
+}
+
 // ManagerOption is an option for configuring Manager.
 type ManagerOption func(*Manager)
 
@@ -153,20 +168,22 @@ type ManagerOption func(*Manager)
 type Manager struct {
 	PortForwarder portforward.PortForwarder
 	API           api.API
-	Store         ManagerStore
 	ClientFactory ClientFactory
 
 	Runners Runners
 
 	configs []config
+	store   ManagerStore
 
 	lock sync.Mutex
 }
 
+var _ ManagerInterface = (*Manager)(nil)
+
 // NewManager creates an instance of Manager.
 func NewManager(apiService api.API, options ...ManagerOption) *Manager {
 	m := &Manager{
-		Store:         NewDefaultStore(),
+		store:         NewDefaultStore(),
 		ClientFactory: NewDefaultClientFactory(),
 		Runners:       newDefaultRunners(),
 		API:           apiService,
@@ -177,6 +194,16 @@ func NewManager(apiService api.API, options ...ManagerOption) *Manager {
 	}
 
 	return m
+}
+
+// Store returns the store for the manager.
+func (m *Manager) Store() ManagerStore {
+	return m.store
+}
+
+// SetStore sets the store for the manager.
+func (m *Manager) SetStore(store ManagerStore) {
+	m.store = store
 }
 
 // Load loads a plugin.
@@ -204,7 +231,7 @@ func (m *Manager) Load(cmd string) error {
 
 // Start starts all plugins.
 func (m *Manager) Start(ctx context.Context) error {
-	if m.Store == nil {
+	if m.store == nil {
 		return errors.New("manager store is nil")
 	}
 
@@ -249,7 +276,7 @@ func (m *Manager) Start(ctx context.Context) error {
 			return errors.Wrapf(err, "register plugin %q", c.name)
 		}
 
-		if err := m.Store.Store(c.name, client, metadata); err != nil {
+		if err := m.store.Store(c.name, client, metadata); err != nil {
 			return errors.Wrapf(err, "storing plugin")
 		}
 
@@ -269,7 +296,7 @@ func (m *Manager) Stop(ctx context.Context) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	for name, client := range m.Store.Clients() {
+	for name, client := range m.store.Clients() {
 		logger.With("plugin-name", name).Debugf("stopping plugin")
 		client.Kill()
 	}
@@ -282,7 +309,7 @@ func (m *Manager) Print(object runtime.Object) (*PrintResponse, error) {
 		return nil, errors.New("runners is nil")
 	}
 
-	runner, ch := m.Runners.Print(m.Store)
+	runner, ch := m.Runners.Print(m.store)
 	done := make(chan bool)
 
 	var pr PrintResponse
@@ -297,7 +324,7 @@ func (m *Manager) Print(object runtime.Object) (*PrintResponse, error) {
 		done <- true
 	}()
 
-	if err := runner.Run(object, m.Store.ClientNames()); err != nil {
+	if err := runner.Run(object, m.store.ClientNames()); err != nil {
 		return nil, err
 	}
 	close(ch)
@@ -312,7 +339,7 @@ func (m *Manager) Tabs(object runtime.Object) ([]component.Tab, error) {
 		return nil, errors.New("runners is nil")
 	}
 
-	runner, ch := m.Runners.Tab(m.Store)
+	runner, ch := m.Runners.Tab(m.store)
 	done := make(chan bool)
 
 	var tabs []component.Tab
@@ -325,7 +352,7 @@ func (m *Manager) Tabs(object runtime.Object) ([]component.Tab, error) {
 		done <- true
 	}()
 
-	if err := runner.Run(object, m.Store.ClientNames()); err != nil {
+	if err := runner.Run(object, m.store.ClientNames()); err != nil {
 		return nil, err
 	}
 

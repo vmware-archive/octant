@@ -2,6 +2,7 @@ package module
 
 import (
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
@@ -12,6 +13,10 @@ type ManagerInterface interface {
 	Modules() []Module
 	SetNamespace(namespace string)
 	GetNamespace() string
+
+	ObjectPath(namespace, apiVersion, kind, name string) (string, error)
+	RegisterObjectPath(Module, schema.GroupVersionKind)
+	DeregisterObjectPath(schema.GroupVersionKind)
 }
 
 // Manager manages module lifecycle.
@@ -23,6 +28,8 @@ type Manager struct {
 	registeredModules []Module
 
 	loadedModules []Module
+
+	objectPaths map[schema.GroupVersionKind]Module
 }
 
 var _ ManagerInterface = (*Manager)(nil)
@@ -33,14 +40,20 @@ func NewManager(clusterClient cluster.ClientInterface, namespace string, logger 
 		clusterClient: clusterClient,
 		namespace:     namespace,
 		logger:        logger,
+		objectPaths:   make(map[schema.GroupVersionKind]Module),
 	}
 
 	return manager, nil
 }
 
+
 // Register register a module with the manager.
 func (m *Manager) Register(mod Module) {
 	m.registeredModules = append(m.registeredModules, mod)
+
+	for _, gvk := range mod.SupportedGroupVersionKind() {
+		m.objectPaths[gvk] = mod
+	}
 }
 
 // Load loads modules.
@@ -82,4 +95,32 @@ func (m *Manager) SetNamespace(namespace string) {
 // GetNamespace gets the current namespace.
 func (m *Manager) GetNamespace() string {
 	return m.namespace
+}
+
+func (m *Manager) ObjectPath(namespace, apiVersion, kind, name string) (string, error) {
+	gv, err := schema.ParseGroupVersion(apiVersion)
+	if err != nil {
+		return "", err
+	}
+
+	gvk := schema.GroupVersionKind{
+		Group:   gv.Group,
+		Version: gv.Version,
+		Kind:    kind,
+	}
+
+	owner, ok := m.objectPaths[gvk]
+	if !ok {
+		return "", errors.Errorf("no module claimed ownership of %s", gvk.String())
+	}
+
+	return owner.GroupVersionKindPath(namespace, apiVersion, kind, name)
+}
+
+func (m *Manager) RegisterObjectPath(mod Module, gvk schema.GroupVersionKind) {
+	m.objectPaths[gvk] = mod
+}
+
+func (m *Manager) DeregisterObjectPath(gvk schema.GroupVersionKind) {
+	delete(m.objectPaths, gvk)
 }

@@ -4,16 +4,17 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/heptio/developer-dash/internal/gvk"
-	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/plugin"
-	"github.com/heptio/developer-dash/pkg/plugin/fake"
-	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/heptio/developer-dash/internal/gvk"
+	"github.com/heptio/developer-dash/internal/testutil"
+	"github.com/heptio/developer-dash/pkg/plugin"
+	"github.com/heptio/developer-dash/pkg/plugin/fake"
+	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
 func TestDefaultRunner(t *testing.T) {
@@ -115,8 +116,11 @@ func Test_PrintRunner(t *testing.T) {
 		done <- true
 	}()
 
-	runner.Run(object, clientNames)
-	<-done
+	defer func() {
+		<-done
+	}()
+
+	require.NoError(t, runner.Run(object, clientNames))
 }
 
 func Test_TabRunner(t *testing.T) {
@@ -161,6 +165,9 @@ func Test_TabRunner(t *testing.T) {
 		done <- true
 	}()
 
-	runner.Run(object, clientNames)
-	<-done
+	defer func() {
+		<-done
+	}()
+
+	require.NoError(t, runner.Run(object, clientNames))
 }

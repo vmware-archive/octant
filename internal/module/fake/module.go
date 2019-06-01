@@ -10,6 +10,7 @@ import (
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // Module is a fake module.
@@ -20,6 +21,7 @@ type Module struct {
 	ObservedContentPath string
 	ObservedNamespace   string
 }
+
 
 var _ module.Module = (*Module)(nil)
 
@@ -42,13 +44,13 @@ func (m *Module) ContentPath() string {
 }
 
 // Navigation returns navigation entries for the module.
-func (m *Module) Navigation(ctx context.Context, namespace, prefix string) (*clustereye.Navigation, error) {
-	nav := &clustereye.Navigation{
+func (m *Module) Navigation(ctx context.Context, namespace, prefix string) ([]clustereye.Navigation, error) {
+	nav := clustereye.Navigation{
 		Path:  prefix,
 		Title: m.name,
 	}
 
-	return nav, nil
+	return []clustereye.Navigation{nav}, nil
 }
 
 // SetNamespace sets the current namespace.
@@ -85,4 +87,12 @@ func (m *Module) Content(ctx context.Context, contentPath, prefix, namespace str
 
 func (m *Module) Handlers(ctx context.Context) map[string]http.Handler {
 	return make(map[string]http.Handler)
+}
+
+func (m *Module) SupportedGroupVersionKind() []schema.GroupVersionKind {
+	panic("implement me")
+}
+
+func (m *Module) GroupVersionKindPath(namespace, apiVersion, kind, name string) (string, error) {
+	panic("implement me")
 }

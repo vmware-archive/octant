@@ -16,7 +16,7 @@ import (
 
 func Test_navigation_handler(t *testing.T) {
 	validSections := &fakeNavSections{
-		sections: []*clustereye.Navigation{
+		sections: []clustereye.Navigation{
 			{},
 		},
 	}
@@ -74,10 +74,10 @@ func Test_navigation_handler(t *testing.T) {
 }
 
 type fakeNavSections struct {
-	sections    []*clustereye.Navigation
+	sections    []clustereye.Navigation
 	sectionsErr error
 }
 
-func (ns *fakeNavSections) Sections(ctx context.Context, namespace string) ([]*clustereye.Navigation, error) {
+func (ns *fakeNavSections) Sections(ctx context.Context, namespace string) ([]clustereye.Navigation, error) {
 	return ns.sections, ns.sectionsErr
 }

@@ -10,12 +10,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/labels"
+
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/pkg/view/component"
-	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/labels"
 )
 
 const (
@@ -216,10 +217,10 @@ func (cs *contentStreamer) content(ctx context.Context) error {
 	}
 
 	defer func() {
-        if r := recover(); r != nil {
+		if r := recover(); r != nil {
 			cs.logger.With("err", r).Errorf("content streamer paniced")
-        }
-    }()
+		}
+	}()
 
 	var wg sync.WaitGroup
 	wg.Add(len(cs.eventGenerators))
@@ -307,9 +308,9 @@ func stream(ctx context.Context, w http.ResponseWriter, ch chan event) {
 			isStreaming = false
 		case e := <-ch:
 			if e.eventType != "" {
-				fmt.Fprintf(w, "event: %s\n", e.eventType)
+				_, _ = fmt.Fprintf(w, "event: %s\n", e.eventType)
 			}
-			fmt.Fprintf(w, "data: %s\n\n", string(e.data))
+			_, _ = fmt.Fprintf(w, "data: %s\n\n", string(e.data))
 			flusher.Flush()
 		}
 	}

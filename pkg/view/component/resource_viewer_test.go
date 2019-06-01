@@ -77,7 +77,7 @@ func Test_ResourceViewer_Marshal(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			actual, err := json.Marshal(tc.input)
-			isErr := (err != nil)
+			isErr := err != nil
 			if isErr != tc.isErr {
 				t.Fatalf("Unexpected error: %v", err)
 			}

@@ -158,17 +158,17 @@ func newAPINavSections(modules []module.Module) *apiNavSections {
 	}
 }
 
-func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]*clustereye.Navigation, error) {
-	var sections []*clustereye.Navigation
+func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]clustereye.Navigation, error) {
+	var sections []clustereye.Navigation
 
 	for _, m := range ans.modules {
 		contentPath := path.Join("/content", m.ContentPath())
-		nav, err := m.Navigation(ctx, namespace, contentPath)
+		navList, err := m.Navigation(ctx, namespace, contentPath)
 		if err != nil {
 			return nil, err
 		}
 
-		sections = append(sections, nav)
+		sections = append(sections, navList...)
 	}
 
 	return sections, nil
