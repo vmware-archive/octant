@@ -49,6 +49,12 @@ type PrintResponse struct {
 	Items []component.FlexLayoutItem
 }
 
+// ObjectStatusResponse is an object status response from plugin.
+type ObjectStatusResponse struct {
+	// ObjectStatus is status of an object.
+	ObjectStatus component.PodSummary
+}
+
 // Metadata is plugin metadata.
 type Metadata struct {
 	Name         string
@@ -61,6 +67,7 @@ type Service interface {
 	Register(dashboardAPIAddress string) (Metadata, error)
 	Print(object runtime.Object) (PrintResponse, error)
 	PrintTab(object runtime.Object) (*component.Tab, error)
+	ObjectStatus(object runtime.Object) (ObjectStatusResponse, error)
 }
 
 func includesGVK(gvk schema.GroupVersionKind, list []schema.GroupVersionKind) bool {

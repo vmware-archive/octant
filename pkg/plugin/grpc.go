@@ -83,6 +83,40 @@ func (c *GRPCClient) Register(dashboardAPIAddress string) (Metadata, error) {
 	return m, nil
 }
 
+// ObjectStatus gets an object status
+func (c *GRPCClient) ObjectStatus(object runtime.Object) (ObjectStatusResponse, error) {
+	var osr ObjectStatusResponse
+
+	err := c.run(func() error {
+		in, err := createObjectRequest(object)
+		if err != nil {
+			return err
+		}
+
+		resp, err := c.client.ObjectStatus(context.Background(), in)
+		if err != nil {
+			return errors.Wrap(err, "grpc client object status")
+		}
+
+		var objectstatus component.PodSummary
+		if err := json.Unmarshal(resp.ObjectStatus, &objectstatus); err != nil {
+			return errors.Wrap(err, "convert object status")
+		}
+
+		osr = ObjectStatusResponse{
+			ObjectStatus: objectstatus,
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return ObjectStatusResponse{}, err
+	}
+
+	return osr, nil
+}
+
 // Print prints an object.
 func (c *GRPCClient) Print(object runtime.Object) (PrintResponse, error) {
 	var pr PrintResponse
@@ -249,8 +283,27 @@ func (s *GRPCServer) Print(ctx context.Context, objectRequest *dashboard.ObjectR
 }
 
 // ObjectStatus generates status for an object.
-func (s *GRPCServer) ObjectStatus(context.Context, *dashboard.ObjectRequest) (*dashboard.ObjectStatusResponse, error) {
-	panic("not implemented")
+func (s *GRPCServer) ObjectStatus(ctx context.Context, objectRequest *dashboard.ObjectRequest) (*dashboard.ObjectStatusResponse, error) {
+	u, err := decodeObjectRequest(objectRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	osr, err := s.Impl.ObjectStatus(u)
+	if err != nil {
+		return nil, errors.Wrap(err, "grpc server object status")
+	}
+
+	objectStatusBytes, err := json.Marshal(osr.ObjectStatus)
+	if err != nil {
+		return nil, err
+	}
+
+	out := &dashboard.ObjectStatusResponse{
+		ObjectStatus: objectStatusBytes,
+	}
+
+	return out, nil
 }
 
 func decodeObjectRequest(req *dashboard.ObjectRequest) (*unstructured.Unstructured, error) {

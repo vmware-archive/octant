@@ -3,13 +3,14 @@ package plugin_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/pkg/plugin"
-	"github.com/heptio/developer-dash/pkg/plugin/fake"
 	"github.com/heptio/developer-dash/pkg/plugin/dashboard"
+	"github.com/heptio/developer-dash/pkg/plugin/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 	"github.com/stretchr/testify/assert"
@@ -199,6 +200,45 @@ func Test_GRPCClient_PrintTab(t *testing.T) {
 	})
 }
 
+func Test_GRPCClient_ObjectStatus(t *testing.T) {
+	testWithGRPCClient(t, func(mocks *grpcClientMocks) {
+		object := testutil.CreatePod("pod")
+
+		objectData, err := json.Marshal(object)
+		require.NoError(t, err)
+		objectRequest := &dashboard.ObjectRequest{
+			Object: objectData,
+		}
+
+		gvk := object.GroupVersionKind()
+		apiVersion, kind := gvk.ToAPIVersionAndKind()
+
+		status := component.PodSummary{
+			Status:  component.NodeStatusOK,
+			Details: []component.Component{component.NewText(fmt.Sprintf("%s %s is OK", apiVersion, kind))},
+		}
+
+		statusData, err := json.Marshal(status)
+		require.NoError(t, err)
+
+		objectStatusResponse := &dashboard.ObjectStatusResponse{
+			ObjectStatus: statusData,
+		}
+
+		mocks.protoClient.EXPECT().ObjectStatus(gomock.Any(), gomock.Eq(objectRequest)).Return(objectStatusResponse, nil)
+
+		client := mocks.genClient()
+		got, err := client.ObjectStatus(object)
+		require.NoError(t, err)
+
+		expected := plugin.ObjectStatusResponse{
+			ObjectStatus: status,
+		}
+
+		assert.Equal(t, expected, got)
+	})
+}
+
 func Test_GRPCServer_Register(t *testing.T) {
 	inGVKs := []schema.GroupVersionKind{{Version: "v1", Kind: "Pod"}}
 
@@ -295,6 +335,50 @@ func Test_GRPCServer_Print(t *testing.T) {
 		}
 		assert.Equal(t, expected, got)
 
+	})
+}
+
+func Test_GRPCServer_ObjectStatus(t *testing.T) {
+	testWithGRPCServer(t, func(mocks *grpcServerMocks) {
+		object := testutil.CreatePod("pod")
+		gvk := object.GroupVersionKind()
+		apiVersion, kind := gvk.ToAPIVersionAndKind()
+
+		status := component.PodSummary{
+			Status:  component.NodeStatusOK,
+			Details: []component.Component{component.NewText(fmt.Sprintf("%s %s is OK", apiVersion, kind))},
+		}
+
+		osr := plugin.ObjectStatusResponse{
+			ObjectStatus: status,
+		}
+
+		m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(object)
+		require.NoError(t, err)
+		u := &unstructured.Unstructured{Object: m}
+
+		mocks.service.EXPECT().ObjectStatus(gomock.Eq(u)).Return(osr, nil)
+
+		objectData, err := json.Marshal(object)
+		require.NoError(t, err)
+		objectRequest := &dashboard.ObjectRequest{
+			Object: objectData,
+		}
+
+		ctx := context.Background()
+
+		server := mocks.genServer()
+		got, err := server.ObjectStatus(ctx, objectRequest)
+		require.NoError(t, err)
+
+		encodedStatus, err := json.Marshal(status)
+		require.NoError(t, err)
+
+		expected := &dashboard.ObjectStatusResponse{
+			ObjectStatus: encodedStatus,
+		}
+
+		assert.Equal(t, expected, got)
 	})
 }
 

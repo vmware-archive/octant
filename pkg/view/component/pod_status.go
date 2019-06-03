@@ -64,3 +64,27 @@ func (ps *PodStatus) Status() NodeStatus {
 		return NodeStatusOK
 	}
 }
+
+func (podSummary *PodSummary) UnmarshalJSON(data []byte) error {
+	stage := struct {
+		Details []TypedObject `json:"details,omitempty"`
+		Status  NodeStatus    `json:"status,omitempty"`
+	}{}
+
+	if err := json.Unmarshal(data, &stage); err != nil {
+		return err
+	}
+
+	podSummary.Status = stage.Status
+
+	for _, to := range stage.Details {
+		status, err := to.ToComponent()
+		if err != nil {
+			return err
+		}
+
+		podSummary.Details = append(podSummary.Details, status)
+	}
+
+	return nil
+}
