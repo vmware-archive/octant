@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
+	cachefake "github.com/heptio/developer-dash/internal/overview/resourceviewer/fake"
 	managerstorefake "github.com/heptio/developer-dash/pkg/plugin/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/stretchr/testify/assert"
@@ -65,6 +66,10 @@ func Test_realGenerator_Generate(t *testing.T) {
 			clusterClient := clusterfake.NewMockClientInterface(controller)
 			o := storefake.NewMockObjectStore(controller)
 
+			cc := cachefake.NewMockComponentCache(controller)
+			if !tc.isErr {
+				cc.EXPECT().SetQueryer(gomock.Any())
+			}
 			di := clusterfake.NewMockDiscoveryInterface(controller)
 
 			ms := managerstorefake.NewMockManagerStore(controller)
@@ -75,7 +80,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 				pm.Register(ctx, pf)
 			}
 
-			g, err := newGenerator(o, di, pm, clusterClient, nil, ms)
+			g, err := newGenerator(o, cc, di, pm, clusterClient, nil, ms)
 			require.NoError(t, err)
 
 			cResponse, err := g.Generate(ctx, tc.path, "/prefix", "default", GeneratorOptions{})

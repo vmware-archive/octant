@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/heptio/developer-dash/internal/overview/resourceviewer"
+
 	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/objectstore"
@@ -61,6 +63,7 @@ func (pf *pathFilter) Fields(path string) map[string]string {
 
 type realGenerator struct {
 	objectStore        objectstore.ObjectStore
+	componentCache     resourceviewer.ComponentCache
 	pathMatcher        *pathMatcher
 	clusterClient      cluster.ClientInterface
 	printer            printer.Printer
@@ -76,7 +79,7 @@ type GeneratorOptions struct {
 	PluginManager  *plugin.Manager
 }
 
-func newGenerator(objectStore objectstore.ObjectStore, di discovery.DiscoveryInterface, pm *pathMatcher, clusterClient cluster.ClientInterface, portForwardSvc portforward.PortForwarder, pluginStore plugin.ManagerStore) (*realGenerator, error) {
+func newGenerator(objectStore objectstore.ObjectStore, componentCache resourceviewer.ComponentCache, di discovery.DiscoveryInterface, pm *pathMatcher, clusterClient cluster.ClientInterface, portForwardSvc portforward.PortForwarder, pluginStore plugin.ManagerStore) (*realGenerator, error) {
 	p := printer.NewResource(objectStore, portForwardSvc, pluginStore)
 
 	if err := AddPrintHandlers(p); err != nil {
@@ -89,6 +92,7 @@ func newGenerator(objectStore objectstore.ObjectStore, di discovery.DiscoveryInt
 
 	return &realGenerator{
 		objectStore:        objectStore,
+		componentCache:     componentCache,
 		discoveryInterface: di,
 		pathMatcher:        pm,
 		clusterClient:      clusterClient,
@@ -111,10 +115,12 @@ func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace st
 	}
 
 	q := queryer.New(g.objectStore, g.discoveryInterface)
+	g.componentCache.SetQueryer(q)
 
 	fields := pf.Fields(path)
 	options := DescriberOptions{
 		ObjectStore:        g.objectStore,
+		ComponentCache:     g.componentCache,
 		Queryer:            q,
 		Fields:             fields,
 		Printer:            g.printer,

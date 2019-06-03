@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/heptio/developer-dash/internal/overview/resourceviewer"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/gorilla/mux"
@@ -101,7 +103,12 @@ func NewClusterOverview(ctx context.Context, options Options) (*ClusterOverview,
 		return nil, err
 	}
 
-	g, err := newGenerator(options.ObjectStore, di, pm, options.Client, pfSvc, options.PluginManager.Store)
+	componentCache, err := resourceviewer.NewComponentCache(options.ObjectStore)
+	if err != nil {
+		return nil, errors.Wrap(err, "create component cache")
+	}
+
+	g, err := newGenerator(options.ObjectStore, componentCache, di, pm, options.Client, pfSvc, options.PluginManager.Store)
 	if err != nil {
 		return nil, errors.Wrap(err, "create overview generator")
 	}
