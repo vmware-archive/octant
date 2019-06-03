@@ -84,9 +84,9 @@ func (rv *ResourceViewer) Visit(ctx context.Context, object objectvisitor.Cluste
 	return rv.collector.Component(string(uid))
 }
 
-// FakeVisit returns a component that has not been visited yet.
-// Use FakeVisit when you are running Visit in a goroutine and want to return a component quickly.
-func (rv *ResourceViewer) FakeVisit(ctx context.Context, object objectvisitor.ClusterObject) (component.Component, error) {
+// EmptyVisit returns a component that has not been visited yet.
+// Use EmptyVisit when you are running Visit in a goroutine and want to return a component quickly.
+func (rv *ResourceViewer) EmptyVisit(ctx context.Context, object objectvisitor.ClusterObject) (component.Component, error) {
 	ctx, span := trace.StartSpan(ctx, "resourceviewer")
 	defer span.End()
 
@@ -96,7 +96,7 @@ func (rv *ResourceViewer) FakeVisit(ctx context.Context, object objectvisitor.Cl
 		return nil, err
 	}
 
-	fakeNode := component.Node{
+	emptyNode := component.Node{
 		Name:       name,
 		APIVersion: "Loading",
 		Kind:       "...",
@@ -104,7 +104,7 @@ func (rv *ResourceViewer) FakeVisit(ctx context.Context, object objectvisitor.Cl
 	}
 
 	r := component.NewResourceViewer("Resource Viewer")
-	r.AddNode("fakeID", fakeNode)
+	r.AddNode("emptyID", emptyNode)
 	return r, nil
 }
 
@@ -158,35 +158,16 @@ func (cc *componentCache) Get(ctx context.Context, object runtime.Object) (compo
 		return nil, err
 	}
 
-	done := make(chan objectstoreutil.Key, 1)
-	errChan := make(chan error, 1)
+	if cc.queryer == nil {
+		return nil, errors.New("no queryer set")
+	}
 
-	logger := log.From(ctx)
-	rv, err := New(logger, cc.store, WithDefaultQueryer(cc.queryer))
+	rv, err := cc.newResourceViewer(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	go func() {
-		defer close(done)
-		defer close(errChan)
-
-		component, err := rv.Visit(ctx, object)
-		if err != nil {
-			errChan <- err
-		} else {
-			cc.components.Add(key, component)
-			done <- key
-		}
-	}()
-
-	getComponent := func(key objectstoreutil.Key) (component.Component, error) {
-		componentValue, ok := cc.components.Get(key)
-		if !ok {
-			return rv.FakeVisit(ctx, object)
-		}
-		return componentValue.(component.Component), nil
-	}
+	done, errChan := cc.visit(ctx, key, object, rv)
 
 	select {
 	case err := <-errChan:
@@ -194,9 +175,52 @@ func (cc *componentCache) Get(ctx context.Context, object runtime.Object) (compo
 			return nil, err
 		}
 	case keyValue := <-done:
-		return getComponent(keyValue)
+		return cc.getComponent(ctx, keyValue, object, rv)
 	case <-time.After(750 * time.Millisecond):
-		return getComponent(key)
+		return cc.getComponent(ctx, key, object, rv)
 	}
 	return nil, errors.New("bad")
+}
+
+func (cc *componentCache) getComponent(
+	ctx context.Context,
+	key objectstoreutil.Key,
+	object runtime.Object,
+	rv *ResourceViewer,
+) (component.Component, error) {
+	componentValue, ok := cc.components.Get(key)
+	if !ok {
+		return rv.EmptyVisit(ctx, object)
+	}
+	return componentValue.(component.Component), nil
+}
+
+func (cc *componentCache) visit(
+	ctx context.Context,
+	key objectstoreutil.Key,
+	object runtime.Object,
+	rv *ResourceViewer,
+) (chan objectstoreutil.Key, chan error) {
+	done := make(chan objectstoreutil.Key, 1)
+	errChan := make(chan error, 1)
+
+	go func() {
+		defer close(done)
+		defer close(errChan)
+
+		rvComponent, err := rv.Visit(ctx, object)
+		if err != nil {
+			errChan <- err
+		} else {
+			cc.components.Add(key, rvComponent)
+			done <- key
+		}
+	}()
+
+	return done, errChan
+}
+
+func (cc *componentCache) newResourceViewer(ctx context.Context) (*ResourceViewer, error) {
+	logger := log.From(ctx)
+	return New(logger, cc.store, WithDefaultQueryer(cc.queryer))
 }
