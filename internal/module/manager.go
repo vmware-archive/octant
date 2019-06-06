@@ -28,8 +28,6 @@ type Manager struct {
 	registeredModules []Module
 
 	loadedModules []Module
-
-	objectPaths map[schema.GroupVersionKind]Module
 }
 
 var _ ManagerInterface = (*Manager)(nil)
@@ -40,20 +38,14 @@ func NewManager(clusterClient cluster.ClientInterface, namespace string, logger 
 		clusterClient: clusterClient,
 		namespace:     namespace,
 		logger:        logger,
-		objectPaths:   make(map[schema.GroupVersionKind]Module),
 	}
 
 	return manager, nil
 }
 
-
 // Register register a module with the manager.
 func (m *Manager) Register(mod Module) {
 	m.registeredModules = append(m.registeredModules, mod)
-
-	for _, gvk := range mod.SupportedGroupVersionKind() {
-		m.objectPaths[gvk] = mod
-	}
 }
 
 // Load loads modules.
@@ -109,7 +101,14 @@ func (m *Manager) ObjectPath(namespace, apiVersion, kind, name string) (string, 
 		Kind:    kind,
 	}
 
-	owner, ok := m.objectPaths[gvk]
+	objectPaths := make(map[schema.GroupVersionKind]Module)
+	for _, registered := range m.registeredModules {
+		for _, supported := range registered.SupportedGroupVersionKind() {
+			objectPaths[supported] = registered
+		}
+	}
+
+	owner, ok := objectPaths[gvk]
 	if !ok {
 		return "", errors.Errorf("no module claimed ownership of %s", gvk.String())
 	}
@@ -118,9 +117,9 @@ func (m *Manager) ObjectPath(namespace, apiVersion, kind, name string) (string, 
 }
 
 func (m *Manager) RegisterObjectPath(mod Module, gvk schema.GroupVersionKind) {
-	m.objectPaths[gvk] = mod
+	//m.objectPaths[gvk] = mod
 }
 
 func (m *Manager) DeregisterObjectPath(gvk schema.GroupVersionKind) {
-	delete(m.objectPaths, gvk)
+	//delete(m.objectPaths, gvk)
 }

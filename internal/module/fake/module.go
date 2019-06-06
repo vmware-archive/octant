@@ -5,15 +5,19 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/gvk"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/pkg/view/component"
-	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // Module is a fake module.
+// TODO replace this with mockgen
 type Module struct {
 	name   string
 	logger log.Logger
@@ -21,7 +25,6 @@ type Module struct {
 	ObservedContentPath string
 	ObservedNamespace   string
 }
-
 
 var _ module.Module = (*Module)(nil)
 
@@ -90,9 +93,19 @@ func (m *Module) Handlers(ctx context.Context) map[string]http.Handler {
 }
 
 func (m *Module) SupportedGroupVersionKind() []schema.GroupVersionKind {
-	panic("implement me")
+	return []schema.GroupVersionKind{
+		gvk.PodGVK,
+	}
 }
 
 func (m *Module) GroupVersionKindPath(namespace, apiVersion, kind, name string) (string, error) {
+	return "/pod", nil
+}
+
+func (m *Module) AddCRD(ctx context.Context, crd *unstructured.Unstructured) error {
+	panic("implement me")
+}
+
+func (m *Module) RemoveCRD(ctx context.Context, crd *unstructured.Unstructured) error {
 	panic("implement me")
 }

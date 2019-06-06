@@ -6,108 +6,58 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
-	"github.com/heptio/developer-dash/internal/gvk"
-	"github.com/heptio/developer-dash/internal/testutil"
 )
 
-func Test_objectPath_SupportedGroupVersionKind(t *testing.T) {
-	tests := []struct {
-		name string
-		gvk  schema.GroupVersionKind
-	}{
-		{
-			name: "cluster role",
-			gvk:  gvk.ClusterRoleGVK,
-		},
-		{
-			name: "cluster role binding",
-			gvk:  gvk.ClusterRoleBindingGVK,
-		},
-	}
+func Test_crdPath(t *testing.T) {
+	got, err := crdPath("namespace", "crdName", "name")
+	require.NoError(t, err)
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			op := objectPath{}
-			supported := op.SupportedGroupVersionKind()
-			requireGVKPresent(t, test.gvk, supported)
-		})
-	}
+	expected := path.Join("/content", "cluster-overview", "custom-resources", "crdName", "name")
+	assert.Equal(t, expected, got)
 }
 
-func Test_objectPath_GroupVersionKindPath(t *testing.T) {
+func Test_gvk_path(t *testing.T) {
 	tests := []struct {
-		name     string
-		object   runtime.Object
-		isErr    bool
-		expected string
+		name       string
+		apiVersion string
+		kind       string
+		objectName string
+		expected   string
+		isErr      bool
 	}{
 		{
-			name:     "cluster role",
-			object:   testutil.CreateClusterRole("object"),
-			expected: buildObjectPath("/rbac/cluster-roles/object"),
+			name:       "ClusterRole",
+			apiVersion: rbacAPIVersion,
+			kind:       "ClusterRole",
+			objectName: "cluster-role",
+			expected:   path.Join("/content", "cluster-overview", "rbac", "cluster-roles", "cluster-role"),
 		},
 		{
-			name:     "cluster role binding",
-			object:   testutil.CreateClusterRoleBinding("object", "roleName", nil),
-			expected: buildObjectPath("/rbac/cluster-role-bindings/object"),
+			name:       "ClusterRoleBinding",
+			apiVersion: rbacAPIVersion,
+			kind:       "ClusterRoleBinding",
+			objectName: "cluster-role-binding",
+			expected:   path.Join("/content", "cluster-overview", "rbac", "cluster-role-bindings", "cluster-role-binding"),
 		},
 		{
-			name: "unknown",
-			object: testutil.CreateEvent("object"),
-			isErr: true,
+			name:       "unknown",
+			apiVersion: "unknown",
+			kind:       "ClusterRoleBinding",
+			objectName: "cluster-role-binding",
+			isErr:      true,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			op := objectPath{}
-
-			apiVersion, kind, name := objectDetails(t, test.object)
-
-			got, err := op.GroupVersionKindPath(testutil.DefaultNamespace, apiVersion, kind, name)
+			got, err := gvkPath("", test.apiVersion, test.kind, test.objectName)
 			if test.isErr {
 				require.Error(t, err)
 				return
 			}
-
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expected, got)
 		})
 	}
-}
-
-func requireGVKPresent(t *testing.T, gvk schema.GroupVersionKind, list []schema.GroupVersionKind) {
-	for _, current := range list {
-		if current.Group == gvk.Group &&
-			current.Version == gvk.Version &&
-			current.Kind == gvk.Kind {
-			return
-		}
-	}
-
-	t.Fatalf("%s was not present", gvk.String())
-}
-
-func buildObjectPath(rest string) string {
-	return path.Join("/content/cluster-overview", rest)
-}
-
-func objectDetails(t *testing.T, object runtime.Object) (string, string, string) {
-	accessor := meta.NewAccessor()
-
-	apiVersion, err := accessor.APIVersion(object)
-	require.NoError(t, err)
-
-	kind, err := accessor.Kind(object)
-	require.NoError(t, err)
-
-	name, err := accessor.Name(object)
-	require.NoError(t, err)
-
-	return apiVersion, kind, name
 }

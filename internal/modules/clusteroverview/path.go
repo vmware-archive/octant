@@ -9,31 +9,30 @@ import (
 	"github.com/heptio/developer-dash/internal/gvk"
 )
 
-type objectPath struct{}
-
-func (op *objectPath) SupportedGroupVersionKind() []schema.GroupVersionKind{
-	return []schema.GroupVersionKind{
+var (
+	supportedGVKs = []schema.GroupVersionKind{
 		gvk.ClusterRoleBindingGVK,
 		gvk.ClusterRoleGVK,
 	}
+)
+
+const rbacAPIVersion = "rbac.authorization.k8s.io/v1"
+
+func crdPath(namespace, crdName, name string) (string, error) {
+	return path.Join("/content/cluster-overview/custom-resources", crdName, name), nil
 }
 
-func (op *objectPath) GroupVersionKindPath(namespace, apiVersion, kind, name string) (string, error) {
-	return gvkPath(apiVersion, kind, name)
-}
-
-func gvkPath(apiVersion, kind, name string) (string, error) {
+func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 	var p string
 
 	switch {
-	case apiVersion == "rbac.authorization.k8s.io/v1" && kind == "ClusterRole":
+	case apiVersion == rbacAPIVersion && kind == "ClusterRole":
 		p = "/rbac/cluster-roles"
-	case apiVersion == "rbac.authorization.k8s.io/v1" && kind == "ClusterRoleBinding":
+	case apiVersion == rbacAPIVersion && kind == "ClusterRoleBinding":
 		p = "/rbac/cluster-role-bindings"
 	default:
 		return "", errors.Errorf("unknown object %s %s", apiVersion, kind)
 	}
 
 	return path.Join("/content/cluster-overview", p, name), nil
-
 }

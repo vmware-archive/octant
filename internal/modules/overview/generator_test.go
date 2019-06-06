@@ -80,7 +80,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 			dashConfig.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
 
 			ctx := context.Background()
-			pathMatcher := describer.NewPathMatcher()
+			pathMatcher := describer.NewPathMatcher("module")
 			for _, pf := range PathFilters {
 				pathMatcher.Register(ctx, pf)
 			}

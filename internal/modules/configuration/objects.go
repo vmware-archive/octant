@@ -5,7 +5,7 @@ import "github.com/heptio/developer-dash/internal/describer"
 var (
 	pluginDescriber = &PluginListDescriber{}
 
-	rootDescriber = describer.NewSectionDescriber(
+	rootDescriber = describer.NewSection(
 		"/",
 		"Configuration",
 		pluginDescriber,

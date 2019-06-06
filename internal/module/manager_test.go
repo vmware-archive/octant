@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/stretchr/testify/require"
@@ -93,6 +94,7 @@ func TestManager_ObjectPath(t *testing.T) {
 	}
 }
 
+// TODO when module.Module has a mockgen module, this can be removed and all instances replaced with the mock
 type stubModule struct{}
 
 var _ module.Module = (*stubModule)(nil)
@@ -140,4 +142,12 @@ func (m *stubModule) SupportedGroupVersionKind() []schema.GroupVersionKind {
 
 func (m *stubModule) GroupVersionKindPath(namespace, apiVersion, kind, name string) (string, error) {
 	return "/foo/bar", nil
+}
+
+func (m *stubModule) AddCRD(ctx context.Context, crd *unstructured.Unstructured) error {
+	panic("implement me")
+}
+
+func (m *stubModule) RemoveCRD(ctx context.Context, crd *unstructured.Unstructured) error {
+	panic("implement me")
 }

@@ -243,7 +243,7 @@ func (cs *contentStreamer) content(ctx context.Context) error {
 							cs.logger.With(
 								"path", cs.contentPath,
 								"requestPath", cs.requestPath,
-							).Infof("content not found")
+							).Errorf("content not found")
 							isRunning = false
 
 							ch <- event{
@@ -253,7 +253,9 @@ func (cs *contentStreamer) content(ctx context.Context) error {
 							break
 						}
 
-						cs.logger.Errorf("event generator error: %v", err)
+						cs.logger.
+							WithErr(err).
+							Errorf("event generator error")
 
 						// This could be one time error, or it could be a huge failure.
 						// Either way, log, and move on. If this becomes a problem,

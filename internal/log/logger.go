@@ -26,12 +26,18 @@ type Logger interface {
 
 	With(args ...interface{}) Logger
 
+	WithErr(err error) Logger
+
 	Named(name string) Logger
 }
 
 // sugaredLogWrapper adapts a zap.SugaredLogger to the Logger interface
 type sugaredLogWrapper struct {
 	*zap.SugaredLogger
+}
+
+func (s *sugaredLogWrapper) WithErr(err error) Logger {
+	return &sugaredLogWrapper{s.SugaredLogger.With("err", err)}
 }
 
 func (s *sugaredLogWrapper) With(args ...interface{}) Logger {

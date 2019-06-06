@@ -8,6 +8,7 @@ import (
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -50,6 +51,26 @@ func CreateCRD(name string) *apiextv1beta1.CustomResourceDefinition {
 		TypeMeta:   genTypeMeta(gvk.CustomResourceDefinitionGVK),
 		ObjectMeta: genObjectMeta(name, true),
 	}
+}
+
+// CreateCustomResource creates a custom resource.
+func CreateCustomResource(name string) *unstructured.Unstructured {
+	m := map[string]interface{}{
+		"apiVersion": "stable.example.com/v1",
+		"kind":       "CronTab",
+		"metadata": map[string]interface{}{
+			"name": name,
+		},
+		"spec": map[string]interface{}{
+			"cronSpec": "* * * * */5",
+			"image":    "my-awesome-image",
+		},
+	}
+
+	u := &unstructured.Unstructured{Object: m}
+	u.SetNamespace(DefaultNamespace)
+
+	return u
 }
 
 func CreateCronJob(name string) *batchv1beta1.CronJob {

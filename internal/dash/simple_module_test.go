@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/heptio/developer-dash/internal/clustereye"
@@ -12,6 +13,7 @@ import (
 )
 
 // dashModule is a fake that implements overview.Interface.
+// TODO: replace and remove them with module.Module uses mockgen
 type dashModule struct{}
 
 var _ module.Module = (*dashModule)(nil)
@@ -65,5 +67,13 @@ func (m *dashModule) SupportedGroupVersionKind() []schema.GroupVersionKind {
 }
 
 func (m *dashModule) GroupVersionKindPath(namespace, apiVersion, kind, name string) (string, error) {
+	panic("implement me")
+}
+
+func (m *dashModule) AddCRD(ctx context.Context, crd *unstructured.Unstructured) error {
+	panic("implement me")
+}
+
+func (m *dashModule) RemoveCRD(ctx context.Context, crd *unstructured.Unstructured) error {
 	panic("implement me")
 }
