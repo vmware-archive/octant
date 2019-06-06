@@ -1,6 +1,10 @@
 package fake
 
-import "github.com/heptio/developer-dash/internal/module"
+import (
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/heptio/developer-dash/internal/module"
+)
 
 // StubManager is a stub for module.Module.
 type StubManager struct {
@@ -16,7 +20,7 @@ func NewStubManager(namespace string, modules []module.Module) *StubManager {
 	}
 }
 
-var _ (module.ManagerInterface) = (*StubManager)(nil)
+var _ module.ManagerInterface = (*StubManager)(nil)
 
 // Modules returns the modules stored in the stub.
 func (m *StubManager) Modules() []module.Module {
@@ -31,4 +35,16 @@ func (m *StubManager) SetNamespace(namespace string) {
 // GetNamespace returns the namespace
 func (m *StubManager) GetNamespace() string {
 	return m.namespace
+}
+
+func (m *StubManager) ObjectPath(namespace, apiVersion, kind, name string) (string, error) {
+	panic("implement me")
+}
+
+func (m *StubManager) RegisterObjectPath(module.Module, schema.GroupVersionKind) {
+	panic("implement me")
+}
+
+func (m *StubManager) DeregisterObjectPath(schema.GroupVersionKind) {
+	panic("implement me")
 }

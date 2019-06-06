@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/pkg/view/component"
@@ -11,6 +13,8 @@ import (
 
 // dashModule is a fake that implements overview.Interface.
 type dashModule struct{}
+
+var _ module.Module = (*dashModule)(nil)
 
 // newDashModule creates an instance of dashModule.
 func newDashModule() *dashModule {
@@ -33,8 +37,8 @@ func (m *dashModule) ContentPath() string {
 }
 
 // Navigation is a no-op.
-func (m *dashModule) Navigation(ctx context.Context, namespace, root string) (*clustereye.Navigation, error) {
-	return nil, nil
+func (m *dashModule) Navigation(ctx context.Context, namespace, root string) ([]clustereye.Navigation, error) {
+	return []clustereye.Navigation{}, nil
 }
 
 // SetNamespace sets the namespace for this module. It is a no-op.
@@ -54,4 +58,12 @@ func (m *dashModule) Stop() {
 // Handlers returns an empty set of handlers.
 func (m *dashModule) Handlers(ctx context.Context) map[string]http.Handler {
 	return make(map[string]http.Handler)
+}
+
+func (m *dashModule) SupportedGroupVersionKind() []schema.GroupVersionKind {
+	panic("implement me")
+}
+
+func (m *dashModule) GroupVersionKindPath(namespace, apiVersion, kind, name string) (string, error) {
+	panic("implement me")
 }

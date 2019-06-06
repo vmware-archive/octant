@@ -6,15 +6,16 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/go-plugin"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/heptio/developer-dash/internal/testutil"
 	dashplugin "github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/plugin/api"
 	"github.com/heptio/developer-dash/pkg/plugin/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func TestDefaultStore(t *testing.T) {
@@ -26,7 +27,8 @@ func TestDefaultStore(t *testing.T) {
 	metadata := dashplugin.Metadata{Name: name}
 
 	s := dashplugin.NewDefaultStore()
-	s.Store(name, client, metadata)
+	err := s.Store(name, client, metadata)
+	require.NoError(t, err)
 
 	gotMetadata, err := s.GetMetadata(name)
 	require.NoError(t, err)
@@ -63,12 +65,13 @@ func TestManager(t *testing.T) {
 	store.EXPECT().Clients().Return(map[string]dashplugin.Client{name: client})
 
 	options = append(options, func(m *dashplugin.Manager) {
-		m.Store = store
 		m.ClientFactory = clientFactory
 	})
 
 	apiService := &stubAPIService{}
 	manager := dashplugin.NewManager(apiService, options...)
+
+	manager.SetStore(store)
 
 	err := manager.Load(name)
 	require.NoError(t, err)
@@ -115,12 +118,12 @@ func TestManager_Print(t *testing.T) {
 		Print(gomock.Eq(store)).Return(printRunner, ch)
 
 	options = append(options, func(m *dashplugin.Manager) {
-		m.Store = store
 		m.Runners = runners
 	})
 
 	apiService := &stubAPIService{}
 	manager := dashplugin.NewManager(apiService, options...)
+	manager.SetStore(store)
 
 	got, err := manager.Print(pod)
 	require.NoError(t, err)
@@ -160,12 +163,12 @@ func TestManager_Tabs(t *testing.T) {
 		Tab(gomock.Eq(store)).Return(tabRunner, ch)
 
 	options = append(options, func(m *dashplugin.Manager) {
-		m.Store = store
 		m.Runners = runners
 	})
 
 	apiService := &stubAPIService{}
 	manager := dashplugin.NewManager(apiService, options...)
+	manager.SetStore(store)
 
 	got, err := manager.Tabs(pod)
 	require.NoError(t, err)

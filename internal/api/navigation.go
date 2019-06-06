@@ -5,17 +5,18 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"go.opencensus.io/trace"
+
 	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/internal/log"
-	"go.opencensus.io/trace"
 )
 
 type navSections interface {
-	Sections(ctx context.Context, namespace string) ([]*clustereye.Navigation, error)
+	Sections(ctx context.Context, namespace string) ([]clustereye.Navigation, error)
 }
 
 type navigationResponse struct {
-	Sections []*clustereye.Navigation `json:"sections,omitempty"`
+	Sections []clustereye.Navigation `json:"sections,omitempty"`
 }
 
 type navigation struct {

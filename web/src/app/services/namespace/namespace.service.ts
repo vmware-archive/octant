@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
-import { NavigationEnd, PRIMARY_OUTLET, Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import {Injectable} from '@angular/core';
+import {NavigationEnd, PRIMARY_OUTLET, Router} from '@angular/router';
+import {BehaviorSubject} from 'rxjs';
 import _ from 'lodash';
-import { ContentStreamService } from '../content-stream/content-stream.service';
-import { NotifierService, NotifierSession, NotifierSignalType } from '../notifier/notifier.service';
+import {ContentStreamService} from '../content-stream/content-stream.service';
+import {NotifierService, NotifierSession, NotifierSignalType} from '../notifier/notifier.service';
 
 @Injectable({
   providedIn: 'root',
@@ -32,7 +32,7 @@ export class NamespaceService {
     this.notifierSession.removeAllSignals();
     const namespace = this.getNamespaceFromUrlPath(this.router.url);
 
-    if (!this.isNamespaceValid(namespace)) {
+    if (namespace && !this.isNamespaceValid(namespace)) {
       this.notifierSession.pushSignal(NotifierSignalType.ERROR, 'The current set namespace is not valid');
       return;
     }

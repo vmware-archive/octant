@@ -26,9 +26,11 @@ func TestModule_ContentPath(t *testing.T) {
 func TestModule_Navigation(t *testing.T) {
 	m := NewModule("module", log.NopLogger())
 
-	expected := &clustereye.Navigation{
-		Path:  "/module",
-		Title: "module",
+	expected := []clustereye.Navigation{
+		{
+			Path:  "/module",
+			Title: "module",
+		},
 	}
 
 	ctx := context.Background()

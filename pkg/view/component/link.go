@@ -33,6 +33,16 @@ func (t *Link) GetMetadata() Metadata {
 	return t.Metadata
 }
 
+// Text returns the link's text.
+func (t *Link) Text() string {
+	return t.Config.Text
+}
+
+// Ref returns the link's ref.
+func (t *Link) Ref() string {
+	return t.Config.Ref
+}
+
 type linkMarshal Link
 
 // MarshalJSON implements json.Marshaler

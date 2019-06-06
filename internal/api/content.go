@@ -22,6 +22,8 @@ type contentHandler struct {
 	logger      log.Logger
 	prefix      string
 	nsClient    cluster.NamespaceInterface
+
+	previousNamespace string
 }
 
 func (h *contentHandler) RegisterRoutes(ctx context.Context, router *mux.Router) error {
@@ -108,6 +110,16 @@ func (h *contentHandler) handlerForModule(m module.Module) http.HandlerFunc {
 }
 
 func (h *contentHandler) handlePoll(ctx context.Context, poll, requestPath, namespace string, labelSet *labels.Set, contentPath string, w http.ResponseWriter, r *http.Request, m module.Module) {
+	if namespace != "" {
+		h.previousNamespace = namespace
+	} else {
+		h.previousNamespace = "default"
+	}
+
+	if namespace == "" && h.previousNamespace != "" {
+		namespace = h.previousNamespace
+	}
+
 	eventTimeout := defaultEventTimeout
 	timeout, err := strconv.Atoi(poll)
 	if err == nil {

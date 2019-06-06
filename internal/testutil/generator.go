@@ -1,8 +1,6 @@
 package testutil
 
 import (
-	"github.com/heptio/developer-dash/internal/conversion"
-	"github.com/heptio/developer-dash/internal/gvk"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
@@ -13,7 +11,16 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	batchv1 "k8s.io/api/batch/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
+
+	"github.com/heptio/developer-dash/internal/conversion"
+	"github.com/heptio/developer-dash/internal/gvk"
 )
+
+// DefaultNamespace is the namespace that objects will belong to.
+const DefaultNamespace = "namespace"
 
 // CreateClusterRoleBinding creates a cluster role binding
 func CreateClusterRoleBinding(name, roleName string, subjects []rbacv1.Subject) *rbacv1.ClusterRoleBinding {
@@ -29,10 +36,25 @@ func CreateClusterRoleBinding(name, roleName string, subjects []rbacv1.Subject) 
 	}
 }
 
+// CreateConfigMap creates a config map.
+func CreateConfigMap(name string) *corev1.ConfigMap {
+	return &corev1.ConfigMap{
+		TypeMeta:   genTypeMeta(gvk.ConfigMapGVK),
+		ObjectMeta: genObjectMeta(name, true),
+	}
+}
+
 // CreateCRD creates a CRD
 func CreateCRD(name string) *apiextv1beta1.CustomResourceDefinition {
 	return &apiextv1beta1.CustomResourceDefinition{
 		TypeMeta:   genTypeMeta(gvk.CustomResourceDefinitionGVK),
+		ObjectMeta: genObjectMeta(name, true),
+	}
+}
+
+func CreateCronJob(name string) *batchv1beta1.CronJob {
+	return &batchv1beta1.CronJob{
+		TypeMeta:   genTypeMeta(gvk.CronJobGVK),
 		ObjectMeta: genObjectMeta(name, true),
 	}
 }
@@ -70,6 +92,14 @@ func CreateDeployment(name string) *appsv1.Deployment {
 	}
 }
 
+// CreateEvent creates a event
+func CreateEvent(name string) *corev1.Event {
+	return &corev1.Event{
+		TypeMeta:   genTypeMeta(gvk.Event),
+		ObjectMeta: genObjectMeta(name, true),
+	}
+}
+
 // CreateIngress creates an ingress
 func CreateIngress(name string) *extv1beta1.Ingress {
 	return &extv1beta1.Ingress{
@@ -81,6 +111,13 @@ func CreateIngress(name string) *extv1beta1.Ingress {
 				ServicePort: intstr.FromInt(80),
 			},
 		},
+	}
+}
+
+func CreateJob(name string) *batchv1.Job {
+	return &batchv1.Job{
+		TypeMeta:   genTypeMeta(gvk.JobGVK),
+		ObjectMeta: genObjectMeta(name, true),
 	}
 }
 
@@ -128,6 +165,14 @@ func CreateService(name string) *corev1.Service {
 func CreateServiceAccount(name string) *corev1.ServiceAccount {
 	return &corev1.ServiceAccount{
 		TypeMeta:   genTypeMeta(gvk.ServiceAccountGVK),
+		ObjectMeta: genObjectMeta(name, true),
+	}
+}
+
+// CreateStatefulSet creates a stateful set
+func CreateStatefulSet(name string) *appsv1.StatefulSet {
+	return &appsv1.StatefulSet{
+		TypeMeta:   genTypeMeta(gvk.StatefulSetGVK),
 		ObjectMeta: genObjectMeta(name, true),
 	}
 }

@@ -57,12 +57,7 @@ func Test_navigationEventGenerator(t *testing.T) {
 	got, err := neg.Generate(context.Background())
 	require.NoError(t, err)
 
-	expectedEvent := event{
-		eventType: eventTypeNavigation,
-		data:      []byte(`{"sections":[{"title":"module","path":"/content/module"}]}`),
-	}
-
-	assert.Equal(t, expectedEvent, got)
+	assert.Equal(t, eventTypeNavigation, got.eventType)
 }
 
 func Test_contentStreamer(t *testing.T) {

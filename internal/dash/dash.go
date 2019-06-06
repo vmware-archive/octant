@@ -11,18 +11,23 @@ import (
 	"strings"
 	"time"
 
+	"github.com/heptio/developer-dash/internal/config"
+	"github.com/heptio/developer-dash/internal/modules/clusteroverview"
+	"github.com/heptio/developer-dash/internal/modules/configuration"
+
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+
 	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/localcontent"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
+	"github.com/heptio/developer-dash/internal/modules/localcontent"
+	"github.com/heptio/developer-dash/internal/modules/overview"
 	"github.com/heptio/developer-dash/internal/objectstore"
-	"github.com/heptio/developer-dash/internal/overview"
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/pkg/plugin"
-	web "github.com/heptio/developer-dash/web"
+	"github.com/heptio/developer-dash/web"
 
 	"github.com/pkg/errors"
 	"github.com/skratchdot/open-golang/open"
@@ -75,7 +80,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return errors.Wrap(err, "failed to create info client")
 	}
 
-	appObjectStore, err := initObjectStore(ctx.Done(), clusterClient, logger)
+	appObjectStore, err := initObjectStore(ctx.Done(), clusterClient)
 	if err != nil {
 		return errors.Wrap(err, "initializing cache")
 	}
@@ -143,8 +148,8 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 	return nil
 }
 
-// initObjectStore initializes the cluster objectstore interface
-func initObjectStore(stopCh <-chan struct{}, client cluster.ClientInterface, logger log.Logger) (objectstore.ObjectStore, error) {
+// initObjectStore initializes the cluster object store interface
+func initObjectStore(stopCh <-chan struct{}, client cluster.ClientInterface) (objectstore.ObjectStore, error) {
 	if client == nil {
 		return nil, errors.New("nil cluster client")
 	}
@@ -152,7 +157,7 @@ func initObjectStore(stopCh <-chan struct{}, client cluster.ClientInterface, log
 	appObjectStore, err := objectstore.NewWatch(client, stopCh)
 
 	if err != nil {
-		return nil, errors.Wrapf(err, "creating objectstore for app")
+		return nil, errors.Wrapf(err, "creating object store for app")
 	}
 
 	return appObjectStore, nil
@@ -178,20 +183,37 @@ func initModuleManager(ctx context.Context, options moduleOptions) (*module.Mana
 		return nil, errors.Wrap(err, "create module manager")
 	}
 
+	c := config.NewLiveConfig(
+		options.clusterClient,
+		options.logger,
+		moduleManager,
+		options.objectStore,
+		options.pluginManager,
+		options.portForwarder,
+	)
+
 	overviewOptions := overview.Options{
-		Client:        options.clusterClient,
-		ObjectStore:   options.objectStore,
 		Namespace:     options.namespace,
-		Logger:        options.logger,
-		PluginManager: options.pluginManager,
-		PortForwarder: options.portForwarder,
+		DashConfig:    c,
 	}
-	overviewModule, err := overview.NewClusterOverview(ctx, overviewOptions)
+	overviewModule, err := overview.New(ctx, overviewOptions)
 	if err != nil {
 		return nil, errors.Wrap(err, "create overview module")
 	}
 
 	moduleManager.Register(overviewModule)
+
+	clusterOverviewOptions := clusteroverview.Options{
+		DashConfig:    c,
+	}
+	clusterOverviewModule := clusteroverview.New(ctx, clusterOverviewOptions)
+	moduleManager.Register(clusterOverviewModule)
+
+	configurationOptions := configuration.Options{
+		DashConfig: c,
+	}
+	configurationModule := configuration.New(ctx, configurationOptions)
+	moduleManager.Register(configurationModule)
 
 	localContentPath := os.Getenv("CLUSTEREYE_LOCAL_CONTENT")
 	if localContentPath != "" {
@@ -318,12 +340,14 @@ func (d *dash) uiProxy() (*httputil.ReverseProxy, error) {
 
 func enableOpenCensus() error {
 	agentEndpointURI := "localhost:6831"
-	collectorEndpointURI := "http://localhost:14268"
+	collectorEndpointURI := "http://localhost:14268/api/traces"
 
 	je, err := jaeger.NewExporter(jaeger.Options{
-		AgentEndpoint: agentEndpointURI,
-		Endpoint:      collectorEndpointURI,
-		ServiceName:   "clustereye",
+		AgentEndpoint:     agentEndpointURI,
+		CollectorEndpoint: collectorEndpointURI,
+		Process: jaeger.Process{
+			ServiceName: "clustereye",
+		},
 	})
 
 	if err != nil {

@@ -10,13 +10,13 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import * as d3 from 'd3';
-import { Edge } from 'dagre';
+import {Edge} from 'dagre';
 import * as dagreD3 from 'dagre-d3';
 import _ from 'lodash';
-import { Node, ResourceViewerView } from 'src/app/models/content';
-import { ResourceNode } from 'src/app/models/resource-node';
+import {Node, ResourceViewerView} from 'src/app/models/content';
+import {ResourceNode} from 'src/app/models/resource-node';
 
-import { DagreService } from '../../services/dagre/dagre.service';
+import {DagreService} from '../../services/dagre/dagre.service';
 
 @Component({
   selector: 'app-view-resource-viewer',
@@ -70,7 +70,7 @@ export class ResourceViewerComponent implements OnChanges, AfterViewChecked {
   }
 
   private updateGraph() {
-    if (!this.runUpdate) {
+    if (!this.runUpdate || !this.currentView.config.nodes) {
       return;
     }
 
@@ -109,7 +109,12 @@ export class ResourceViewerComponent implements OnChanges, AfterViewChecked {
   private select(id: string) {
     this.runUpdate = true;
     this.selected = id;
-    this.selectedNode = this.currentView.config.nodes[id];
+
+    const nodes = this.currentView.config.nodes;
+
+    if (nodes && nodes[id]) {
+      this.selectedNode = nodes[id];
+    }
   }
 
   edges(): Array<Edge> {
@@ -139,9 +144,11 @@ export class ResourceViewerComponent implements OnChanges, AfterViewChecked {
 
     const nodes: { [key: string]: dagreD3.Label } = {};
 
-    for (const [id, object] of Object.entries(objects)) {
-      const isSelected = id === this.selected;
-      nodes[id] = new ResourceNode(id, object, isSelected).toDescriptor();
+    if (objects) {
+      for (const [id, object] of Object.entries(objects)) {
+        const isSelected = id === this.selected;
+        nodes[id] = new ResourceNode(id, object, isSelected).toDescriptor();
+      }
     }
 
     return nodes;

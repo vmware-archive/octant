@@ -13,7 +13,9 @@ func ToUnstructured(t *testing.T, object runtime.Object) *unstructured.Unstructu
 	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(object)
 	require.NoError(t, err)
 
-	return &unstructured.Unstructured{Object: m}
+	u := &unstructured.Unstructured{Object: m}
+
+	return u
 }
 
 // ToUnstructuredList converts a list of objects to a list of unstructured.
