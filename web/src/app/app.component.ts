@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { ContentStreamService } from './services/content-stream/content-stream.service';
 import { Navigation } from './models/navigation';
 
@@ -8,9 +8,13 @@ import { Navigation } from './models/navigation';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
+  @ViewChild('scrollTarget') scrollTarget: ElementRef;
   navigation: Navigation;
+  previousUrl: string;
 
-  constructor(private contentStreamService: ContentStreamService) {}
+  constructor(
+    private contentStreamService: ContentStreamService,
+  ) {}
 
   ngOnInit(): void {
     this.contentStreamService.navigation.subscribe((navigation: Navigation) => {

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ContentStreamService } from 'src/app/services/content-stream/content-stream.service';
 import { ContentResponse, View } from 'src/app/models/content';
@@ -11,30 +11,36 @@ import { titleAsText } from 'src/app/util/view';
 })
 export class OverviewComponent implements OnInit, OnDestroy {
   private previousUrl = '';
+
+  @ViewChild('scrollTarget') scrollTarget: ElementRef;
+
   hasTabs = false;
   hasReceivedContent = false;
   title: string = null;
   views: View[] = null;
   singleView: View = null;
 
-  constructor(private route: ActivatedRoute, private contentStreamService: ContentStreamService) {}
+  constructor(
+    private route: ActivatedRoute,
+    private contentStreamService: ContentStreamService,
+  ) {}
 
   ngOnInit() {
     this.route.url.subscribe((url) => {
       const currentPath = url.map((u) => u.path).join('/');
       if (currentPath !== this.previousUrl) {
+        this.title = null;
         this.singleView = null;
         this.views = null;
         this.previousUrl = currentPath;
         this.contentStreamService.openStream(currentPath);
-        this.contentStreamService.content.subscribe((contentResponse: ContentResponse) => {
-          this.connect(contentResponse);
-        });
+        this.contentStreamService.content.subscribe(this.setContent);
+        this.scrollTarget.nativeElement.scrollTop = 0;
       }
     });
   }
 
-  connect(contentResponse: ContentResponse) {
+  private setContent = (contentResponse: ContentResponse) => {
     const views = contentResponse.content.viewComponents;
     if (views.length === 0) {
       this.hasReceivedContent = false;
