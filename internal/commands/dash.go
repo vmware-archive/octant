@@ -56,7 +56,7 @@ func newClusterEyeCmd() *cobra.Command {
 				}
 
 				if err := dash.Run(ctx, logger, shutdownCh, options); err != nil {
-					logger.Errorf("running dashboard: %v", err)
+					logger.WithErr(err).Errorf("dashboard failed")
 					os.Exit(1)
 				}
 

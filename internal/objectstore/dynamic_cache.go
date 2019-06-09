@@ -204,7 +204,10 @@ func (dc *DynamicCache) currentInformer(key objectstoreutil.Key) (informers.Gene
 
 	factory, ok := dc.factories[key.Namespace]
 	if !ok {
-		return nil, errors.Errorf("no informer factory for namespace %s", key.Namespace)
+		factory, err = dc.initFactoryFunc(dc.client, key.Name)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	informer, err := currentInformer(gvr, factory, dc.stopCh)
@@ -224,6 +227,9 @@ func (dc *DynamicCache) currentInformer(key objectstoreutil.Key) (informers.Gene
 		return nil, errors.New("shutting down")
 	}
 
+	if _, ok := dc.seenGVKs[key.Namespace]; !ok {
+		dc.seenGVKs[key.Namespace] = make(map[schema.GroupVersionKind]bool)
+	}
 	dc.seenGVKs[key.Namespace][gvk] = true
 
 	return informer, nil

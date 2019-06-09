@@ -81,7 +81,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return errors.Wrap(err, "failed to create info client")
 	}
 
-	appObjectStore, err := initObjectStore(ctx.Done(), clusterClient)
+	appObjectStore, err := initObjectStore(ctx, ctx.Done(), clusterClient)
 	if err != nil {
 		return errors.Wrap(err, "initializing cache")
 	}
@@ -156,12 +156,12 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 }
 
 // initObjectStore initializes the cluster object store interface
-func initObjectStore(stopCh <-chan struct{}, client cluster.ClientInterface) (objectstore.ObjectStore, error) {
+func initObjectStore(ctx context.Context, stopCh <-chan struct{}, client cluster.ClientInterface) (objectstore.ObjectStore, error) {
 	if client == nil {
 		return nil, errors.New("nil cluster client")
 	}
 
-	appObjectStore, err := objectstore.NewWatch(client, stopCh)
+	appObjectStore, err := objectstore.NewWatch(ctx, client, stopCh)
 
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating object store for app")

@@ -5,11 +5,6 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/heptio/developer-dash/internal/cluster"
-	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
-	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
-	"github.com/heptio/developer-dash/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	authorizationv1 "k8s.io/api/authorization/v1"
@@ -18,6 +13,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/cache"
+
+	"github.com/heptio/developer-dash/internal/cluster"
+	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
+	"github.com/heptio/developer-dash/internal/testutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 )
 
 type fakeLister struct {
@@ -40,10 +41,6 @@ func (l fakeLister) Get(name string) (runtime.Object, error) {
 
 func (l fakeLister) ByNamespace(namespace string) cache.GenericNamespaceLister {
 	return l
-}
-
-func verbs() []string {
-	return []string{"get", "list", "watch"}
 }
 
 func expectNamespaceAccess(
@@ -243,9 +240,9 @@ func Test_DynamicCache_HasAccess(t *testing.T) {
 				access := make(accessMap)
 				aKey := accessKey{
 					Namespace: "",
-					Group: "apps",
-					Resource: "pods",
-					Verb: "get",
+					Group:     "apps",
+					Resource:  "pods",
+					Verb:      "get",
 				}
 				access[aKey] = true
 				c.access = access
@@ -263,9 +260,9 @@ func Test_DynamicCache_HasAccess(t *testing.T) {
 				access := make(accessMap)
 				aKey := accessKey{
 					Namespace: "",
-					Group: "apiextensions.k8s.io",
-					Resource: "customresourcedefinitions",
-					Verb: "get",
+					Group:     "apiextensions.k8s.io",
+					Resource:  "customresourcedefinitions",
+					Verb:      "get",
 				}
 				access[aKey] = true
 				c.access = access
@@ -283,9 +280,9 @@ func Test_DynamicCache_HasAccess(t *testing.T) {
 				access := make(accessMap)
 				aKey := accessKey{
 					Namespace: "",
-					Group: "apiextensions.k8s.io",
-					Resource: "customresourcedefinitions",
-					Verb: "get",
+					Group:     "apiextensions.k8s.io",
+					Resource:  "customresourcedefinitions",
+					Verb:      "get",
 				}
 				access[aKey] = false
 				c.access = access
