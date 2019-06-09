@@ -86,34 +86,34 @@ func Test_Text_String(t *testing.T) {
 
 func Test_Text_LessThan(t *testing.T) {
 	cases := []struct{
-		name string
-		ts Text
-		other Component
+		name     string
+		text     Text
+		other    Component
 		expected bool
 	}{
 		{
-			name: "is less",
-			ts: *NewText("b"),
-			other: NewText("c"),
+			name:     "is less",
+			text:     *NewText("b"),
+			other:    NewText("c"),
 			expected: true,
 		},
 		{
-			name: "is not less",
-			ts: *NewText("b"),
-			other: NewText("a"),
+			name:     "is not less",
+			text:     *NewText("b"),
+			other:    NewText("a"),
 			expected: false,
 		},
 		{
-			name: "other is not a timestamp",
-			ts: *NewText("b"),
-			other: nil,
+			name:     "other is not text",
+			text:     *NewText("b"),
+			other:    nil,
 			expected: false,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T){
-			got := tc.ts.LessThan(tc.other)
+			got := tc.text.LessThan(tc.other)
 			assert.Equal(t, tc.expected, got)
 		})
 	}
