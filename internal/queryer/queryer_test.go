@@ -7,9 +7,6 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
-	fakequeryer "github.com/heptio/developer-dash/internal/queryer/fake"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -20,6 +17,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
+	fakequeryer "github.com/heptio/developer-dash/internal/queryer/fake"
+	"github.com/heptio/developer-dash/internal/testutil"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 )
 
 func TestCacheQueryer_Children(t *testing.T) {
@@ -832,6 +834,33 @@ func TestCacheQueryer_ServicesForPods(t *testing.T) {
 			assert.Equal(t, tc.expected, got)
 		})
 	}
+}
+
+func TestObjectStoreQueryer_ServiceAccountForPod(t *testing.T) {
+	serviceAccount := testutil.CreateServiceAccount("service-account")
+
+	pod := testutil.CreatePod("pod")
+	pod.Spec.ServiceAccountName = serviceAccount.Name
+
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	o := storefake.NewMockObjectStore(controller)
+	key, err := objectstoreutil.KeyFromObject(serviceAccount)
+	require.NoError(t, err)
+	o.EXPECT().
+		Get(gomock.Any(), key).
+		Return(testutil.ToUnstructured(t, serviceAccount), nil)
+
+	discovery := fakequeryer.NewMockDiscoveryInterface(controller)
+
+	q := New(o, discovery)
+
+	ctx := context.Background()
+	got, err := q.ServiceAccountForPod(ctx, pod)
+	require.NoError(t, err)
+
+	require.Equal(t, serviceAccount, got)
 }
 
 func TestCacheQueryer_getSelector(t *testing.T) {

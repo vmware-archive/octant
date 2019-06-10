@@ -19,13 +19,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/heptio/developer-dash/internal/gvk"
-	queryerfake "github.com/heptio/developer-dash/internal/queryer/fake"
+	queryerFake "github.com/heptio/developer-dash/internal/queryer/fake"
 	tu "github.com/heptio/developer-dash/internal/testutil"
 )
 
 func Test_DefaultVisitor_Visit(t *testing.T) {
 	type mocks struct {
-		q *queryerfake.MockQueryer
+		q *queryerFake.MockQueryer
 	}
 
 	cases := []struct {
@@ -141,9 +141,11 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 				pod := tu.CreatePod("pod")
 				deployment := tu.CreateDeployment("deployment")
 				replicaSet := tu.CreateReplicaSet("replicaSet")
+				serviceAccount := tu.CreateServiceAccount("service-account")
 
 				replicaSet.SetOwnerReferences(toOwnerReferences(t, deployment))
 				pod.SetOwnerReferences(toOwnerReferences(t, replicaSet))
+				pod.Spec.ServiceAccountName = "service-account"
 
 				m.q.EXPECT().
 					ServicesForIngress(gomock.Any(), gomock.Eq(ingress)).
@@ -161,11 +163,16 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 					ServicesForPod(gomock.Any(), gomock.Eq(pod)).
 					Return([]*corev1.Service{service}, nil).AnyTimes()
 
+				m.q.EXPECT().
+					ServiceAccountForPod(gomock.Any(), gomock.Eq(pod)).
+					Return(serviceAccount, nil).AnyTimes()
+
 				expectChildren(t, m.q, ingress, []runtime.Object{}, nil)
 				expectChildren(t, m.q, service, []runtime.Object{}, nil)
 				expectChildren(t, m.q, pod, []runtime.Object{}, nil)
 				expectChildren(t, m.q, replicaSet, []runtime.Object{tu.ToUnstructured(t, pod)}, nil)
 				expectChildren(t, m.q, deployment, []runtime.Object{tu.ToUnstructured(t, replicaSet)}, nil)
+				expectChildren(t, m.q, serviceAccount, []runtime.Object{}, nil)
 
 				m.q.EXPECT().
 					OwnerReference(gomock.Any(), gomock.Eq("namespace"), gomock.Eq(pod.OwnerReferences[0])).
@@ -181,6 +188,7 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 				"extensions/v1beta1, Kind=Ingress:ingress",
 				"/v1, Kind=Pod:pod",
 				"/v1, Kind=Service:service",
+				"/v1, Kind=ServiceAccount:service-account",
 				"apps/v1, Kind=ReplicaSet:replicaSet",
 				"apps/v1, Kind=Deployment:deployment",
 			},
@@ -189,6 +197,7 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 				"replicaSet": {"pod"},
 				"ingress":    {"service"},
 				"deployment": {"replicaSet"},
+				"pod":        {"service-account"},
 			},
 		},
 		{
@@ -303,7 +312,7 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 	}
 
 	gvks := []schema.GroupVersionKind{gvk.DaemonSetGVK, gvk.DeploymentGVK, gvk.IngressGVK, gvk.PodGVK,
-		gvk.ServiceGVK, gvk.ReplicaSetGVK, gvk.ReplicationControllerGVK, gvk.StatefulSetGVK}
+		gvk.ServiceGVK, gvk.ReplicaSetGVK, gvk.ReplicationControllerGVK, gvk.StatefulSetGVK, gvk.ServiceAccountGVK}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -311,7 +320,7 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 			defer ctrl.Finish()
 
 			m := &mocks{
-				q: queryerfake.NewMockQueryer(ctrl),
+				q: queryerFake.NewMockQueryer(ctrl),
 			}
 
 			require.NotNil(t, tc.init, "init func is required")
@@ -324,8 +333,8 @@ func Test_DefaultVisitor_Visit(t *testing.T) {
 
 					ic := identityCollector{t: t}
 
-					for _, gvk := range gvks {
-						factoryRegister(t, factoryGen, gvk, ic.factoryFn)
+					for _, groupVersionKinds := range gvks {
+						factoryRegister(t, factoryGen, groupVersionKinds, ic.factoryFn)
 					}
 
 					dv, err := NewDefaultVisitor(m.q, factoryGen.FactoryFunc())
@@ -365,7 +374,7 @@ func toOwnerReferences(t *testing.T, object ClusterObject) []metav1.OwnerReferen
 	}
 }
 
-func expectChildren(t *testing.T, q *queryerfake.MockQueryer, object runtime.Object, found ...interface{}) {
+func expectChildren(t *testing.T, q *queryerFake.MockQueryer, object runtime.Object, found ...interface{}) {
 	q.EXPECT().
 		Children(gomock.Any(), gomock.Eq(tu.ToUnstructured(t, object))).
 		Return(found...).AnyTimes()
@@ -437,10 +446,10 @@ func (ic *identityCollector) factoryFn(object ClusterObject) (ObjectHandler, err
 					return err
 				}
 
-				gvk := schema.FromAPIVersionAndKind(apiVersion, kind)
+				groupVersionKind := schema.FromAPIVersionAndKind(apiVersion, kind)
 
 				ic.gotVisits = append(ic.gotVisits,
-					fmt.Sprintf("%s:%s", gvk, name))
+					fmt.Sprintf("%s:%s", groupVersionKind, name))
 				return nil
 			},
 			addChildFn: func(parent ClusterObject, children ...ClusterObject) error {
@@ -489,5 +498,5 @@ func (ic *identityCollector) assertChildren(expected map[string][]string) {
 		sort.Strings(got[k])
 	}
 
-	assert.Equal(ic.t, expected, got)
+	assert.Equal(ic.t, expected, got, "children did not match")
 }

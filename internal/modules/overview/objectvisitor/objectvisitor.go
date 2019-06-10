@@ -7,8 +7,6 @@ import (
 	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/heptio/developer-dash/internal/gvk"
-	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
@@ -17,6 +15,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+
+	"github.com/heptio/developer-dash/internal/gvk"
+	"github.com/heptio/developer-dash/internal/queryer"
 )
 
 // ClusterObject is a cluster object.
@@ -141,7 +142,7 @@ func (dv *DefaultVisitor) Visit(ctx context.Context, object ClusterObject) error
 	objectCopy := object.DeepCopyObject()
 	hasVisited, err := dv.hasVisited(objectCopy)
 	if err != nil {
-		return errors.Wrap(err, "check for visit object")
+		return errors.Wrapf(err, "check for visit object")
 	}
 	if hasVisited {
 		return nil
@@ -181,22 +182,39 @@ func (dv *DefaultVisitor) visitIngress(ctx context.Context, ingress *extv1beta1.
 }
 
 // visitPod visits a pod's services.
-func (dv *DefaultVisitor) visitPod(ctx context.Context, pod *corev1.Pod) error {
+func (dv *DefaultVisitor) visitPod(ctx context.Context, pod *corev1.Pod) ([]ClusterObject, error) {
 	ctx, span := trace.StartSpan(ctx, "visitPod")
 	defer span.End()
 
 	services, err := dv.queryer.ServicesForPod(ctx, pod)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	for _, service := range services {
 		if err := dv.Visit(ctx, service); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	var list []ClusterObject
+
+	if pod.Spec.ServiceAccountName != "" {
+		serviceAccount, err := dv.queryer.ServiceAccountForPod(ctx, pod)
+		if err != nil {
+			return nil, err
+		}
+
+		if serviceAccount != nil {
+			if err := dv.Visit(ctx, serviceAccount); err != nil {
+				return nil, err
+			}
+
+			list = append(list, serviceAccount)
+		}
+	}
+
+	return list, nil
 }
 
 // visitService visits a service's ingresses and pods.
@@ -348,7 +366,12 @@ func (dv *DefaultVisitor) visitObject(ctx context.Context, object ClusterObject,
 		if err := dv.convertToType(u, pod); err != nil {
 			return err
 		}
-		if err := dv.visitPod(ctx, pod); err != nil {
+		children, err := dv.visitPod(ctx, pod);
+		if err != nil {
+			return err
+		}
+
+		if err := visitorObject.AddChild(object, children...); err != nil {
 			return err
 		}
 	case gvk.ServiceGVK:
