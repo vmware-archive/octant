@@ -1,0 +1,1 @@
+Fix panic when trying to get container statuses from unscheduled pods
