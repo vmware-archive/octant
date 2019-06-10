@@ -38,7 +38,7 @@ func (m *StubManager) GetNamespace() string {
 }
 
 func (m *StubManager) ObjectPath(namespace, apiVersion, kind, name string) (string, error) {
-	panic("implement me")
+	return "/pod", nil
 }
 
 func (m *StubManager) RegisterObjectPath(module.Module, schema.GroupVersionKind) {

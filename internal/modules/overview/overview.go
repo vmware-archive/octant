@@ -28,7 +28,7 @@ type Options struct {
 
 // Overview is an API for generating a cluster overview.
 type Overview struct {
-	objectPath
+	*clustereye.ObjectPath
 
 	generator  *realGenerator
 	dashConfig config.Dash
@@ -46,13 +46,13 @@ func New(ctx context.Context, options Options) (*Overview, error) {
 		return nil, errors.Wrap(err, "dash configuration")
 	}
 
-	pm := describer.NewPathMatcher()
+	pathMatcher := describer.NewPathMatcher("overview")
 	for _, pf := range rootDescriber.PathFilters() {
-		pm.Register(ctx, pf)
+		pathMatcher.Register(ctx, pf)
 	}
 
 	for _, pf := range eventsDescriber.PathFilters() {
-		pm.Register(ctx, pf)
+		pathMatcher.Register(ctx, pf)
 	}
 
 	key := objectstoreutil.Key{
@@ -61,41 +61,61 @@ func New(ctx context.Context, options Options) (*Overview, error) {
 	}
 
 	objectStore := options.DashConfig.ObjectStore()
-	if err := objectStore.HasAccess(key, "watch"); err == nil {
-		crdAddFunc := func(pathMatcher *describer.PathMatcher, sectionDescriber *crdSectionDescriber) objectHandler {
-			return func(ctx context.Context, object *unstructured.Unstructured) {
-				if object == nil {
-					return
-				}
-				addCRD(ctx, object.GetName(), pathMatcher, sectionDescriber)
-			}
-		}(pm, customResourcesDescriber)
-		crdDeleteFunc := func(pm *describer.PathMatcher, csd *crdSectionDescriber) objectHandler {
-			return func(ctx context.Context, object *unstructured.Unstructured) {
-				if object == nil {
-					return
-				}
-				deleteCRD(ctx, object.GetName(), pm, csd)
-			}
-		}(pm, customResourcesDescriber)
-
-		go watchCRDs(ctx, objectStore, crdAddFunc, crdDeleteFunc)
-	}
 
 	componentCache, err := resourceviewer.NewComponentCache(options.DashConfig)
 	if err != nil {
 		return nil, errors.Wrap(err, "create component cache")
 	}
 
-	g, err := newGenerator(pm, options.DashConfig, componentCache)
+	g, err := newGenerator(pathMatcher, options.DashConfig, componentCache)
 	if err != nil {
 		return nil, errors.Wrap(err, "create overview generator")
 	}
 
+	objectPathConfig := clustereye.ObjectPathConfig{
+		ModuleName: "overview"	,
+		SupportedGVKs: supportedGVKs,
+		PathLookupFunc: gvkPath,
+		CRDPathGenFunc: crdPath,
+	}
+	objectPath, err := clustereye.NewObjectPath(objectPathConfig)
+	if err != nil {
+		return nil, errors.Wrap(err, "create module object path generator")
+	}
+
 	co := &Overview{
+		ObjectPath: objectPath,
 		generator:  g,
 		dashConfig: options.DashConfig,
 	}
+
+	crdWatcher := options.DashConfig.CRDWatcher()
+	if err := objectStore.HasAccess(key, "watch"); err == nil {
+		watchConfig := &config.CRDWatchConfig{
+			Add: func(_ *describer.PathMatcher, sectionDescriber *describer.CRDSection) config.ObjectHandler {
+				return func(ctx context.Context, object *unstructured.Unstructured) {
+					if object == nil {
+						return
+					}
+					describer.AddCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
+				}
+			}(pathMatcher, customResourcesDescriber),
+			Delete: func(_ *describer.PathMatcher, csd *describer.CRDSection) config.ObjectHandler {
+				return func(ctx context.Context, object *unstructured.Unstructured) {
+					if object == nil {
+						return
+					}
+					describer.DeleteCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
+				}
+			}(pathMatcher, customResourcesDescriber),
+			IsNamespaced: true,
+		}
+
+		if err := crdWatcher.Watch(ctx, watchConfig); err != nil {
+			return nil, errors.Wrap(err, "create namespaced CRD watcher for overview")
+		}
+	}
+
 	return co, nil
 }
 
@@ -111,11 +131,31 @@ func (co *Overview) ContentPath() string {
 
 // Navigation returns navigation entries for overview.
 func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]clustereye.Navigation, error) {
+	navigationEntries := clustereye.NavigationEntries{
+		Lookup: navPathLookup,
+		EntriesFuncs: map[string]clustereye.EntriesFunc{
+			"Workloads":                    workloadEntries,
+			"Discovery and Load Balancing": discoAndLBEntries,
+			"Config and Storage":           configAndStorageEntries,
+			"Custom Resources":             clustereye.CRDEntries,
+			"RBAC":                         rbacEntries,
+			"Events":                       nil,
+		},
+		Order: []string{
+			"Workloads",
+			"Discovery and Load Balancing",
+			"Config and Storage",
+			"Custom Resources",
+			"RBAC",
+			"Events",
+		},
+	}
+
 	objectStore := co.dashConfig.ObjectStore()
 
-	nf := NewNavigationFactory(namespace, root, objectStore)
+	nf := clustereye.NewNavigationFactory(namespace, root, objectStore, navigationEntries)
 
-	entries, err := nf.Entries(ctx)
+	entries, err := nf.Generate(ctx, "Overview")
 	if err != nil {
 		return nil, err
 	}

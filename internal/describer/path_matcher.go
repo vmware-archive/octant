@@ -4,8 +4,9 @@ import (
 	"context"
 	"sync"
 
-	"github.com/heptio/developer-dash/internal/log"
 	"github.com/pkg/errors"
+
+	"github.com/heptio/developer-dash/internal/log"
 )
 
 var (
@@ -13,13 +14,15 @@ var (
 )
 
 type PathMatcher struct {
+	name    string
 	filters map[string]PathFilter
 
 	sync.Mutex
 }
 
-func NewPathMatcher() *PathMatcher {
+func NewPathMatcher(name string) *PathMatcher {
 	return &PathMatcher{
+		name:    name,
 		filters: make(map[string]PathFilter),
 	}
 }
@@ -30,7 +33,10 @@ func (pm *PathMatcher) Register(ctx context.Context, pf PathFilter) {
 	pm.Lock()
 	defer pm.Unlock()
 
-	logger.With("path", pf.path).Debugf("register path")
+	logger.With(
+		"name", pm.name,
+		"path", pf.path,
+	).Debugf("register path")
 	pm.filters[pf.path] = pf
 }
 
@@ -41,7 +47,10 @@ func (pm *PathMatcher) Deregister(ctx context.Context, paths ...string) {
 	defer pm.Unlock()
 
 	for _, p := range paths {
-		logger.With("path", p).Debugf("deregister path")
+		logger.With(
+			"name", pm.name,
+			"path", p,
+		).Debugf("deregister path")
 		delete(pm.filters, p)
 	}
 

@@ -36,10 +36,16 @@ func printGenericCRDTable(crdName string, list []*unstructured.Unstructured, lin
 	cols := component.NewTableCols("Name", "Labels", "Age")
 	table := component.NewTable(crdName, cols)
 
-	for _, cr := range list {
+	for i := range list {
+		cr := list[i]
 		row := component.TableRow{}
 
-		row["Name"] = linkGenerator.ForCustomResource(crdName, cr)
+		name, err := linkGenerator.ForObject(cr, cr.GetName())
+		if err != nil {
+			return nil, err
+		}
+
+		row["Name"] = name
 		row["Labels"] = component.NewLabels(cr.GetLabels())
 		row["Age"] = component.NewTimestamp(cr.GetCreationTimestamp().Time)
 
@@ -68,10 +74,16 @@ func printCustomCRDListTable(
 
 	table.AddColumn("Age")
 
-	for _, cr := range list {
+	for i := range list {
+		cr := list[i]
 		row := component.TableRow{}
 
-		row["Name"] = linkGenerator.ForCustomResource(crdName, cr)
+		name, err := linkGenerator.ForObject(cr, cr.GetName())
+		if err != nil {
+			return nil, err
+		}
+
+		row["Name"] = name
 		row["Labels"] = component.NewLabels(cr.GetLabels())
 		row["Age"] = component.NewTimestamp(cr.GetCreationTimestamp().Time)
 

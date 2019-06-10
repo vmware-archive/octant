@@ -72,11 +72,6 @@ func (o *testPrinterOptions) PathForOwner(parent runtime.Object, ownerReference 
 	o.link.EXPECT().ForOwner(parent, ownerReference).Return(l, nil)
 }
 
-func (o *testPrinterOptions) PathForCustomResource(object runtime.Object, crdName string, ref string) {
-	l := component.NewLink("", crdName, ref)
-	o.link.EXPECT().ForCustomResource(crdName, object).Return(l).AnyTimes()
-}
-
 func assertComponentEqual(t *testing.T, expected, got component.Component) {
 	a, err := json.Marshal(expected)
 	require.NoError(t, err)

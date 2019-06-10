@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/heptio/developer-dash/internal/clustereye"
@@ -22,6 +23,8 @@ import (
 type LocalContent struct {
 	root string
 }
+
+
 
 var _ module.Module = (*LocalContent)(nil)
 
@@ -206,4 +209,12 @@ func (l *LocalContent) SupportedGroupVersionKind() []schema.GroupVersionKind {
 
 func (l *LocalContent) GroupVersionKindPath(namespace, apiVersion, kind, name string) (string, error) {
 	return "", errors.Errorf("local content can't create paths for %s %s", apiVersion, kind)
+}
+
+func (l *LocalContent) AddCRD(ctx context.Context, crd *unstructured.Unstructured) error {
+	return errors.Errorf("unable to add crd %s", crd.GetName())
+}
+
+func (l *LocalContent) RemoveCRD(ctx context.Context, crd *unstructured.Unstructured) error {
+	return errors.Errorf("unable to remove crd %s", crd.GetName())
 }

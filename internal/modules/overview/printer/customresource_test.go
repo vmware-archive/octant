@@ -30,7 +30,7 @@ func Test_CustomResourceListHandler(t *testing.T) {
 	now := time.Now()
 	resource.SetCreationTimestamp(metav1.Time{Time: now})
 
-	tpo.PathForCustomResource(resource, crd.Name, "/my-crontab")
+	tpo.PathForObject(resource, resource.GetName(), "/my-crontab")
 
 	labels := map[string]string{"foo": "bar"}
 	resource.SetLabels(labels)
@@ -46,7 +46,7 @@ func Test_CustomResourceListHandler(t *testing.T) {
 		component.NewTableCols("Name", "Labels", "Age"),
 		[]component.TableRow{
 			{
-				"Name":   component.NewLink("", crd.Name, "/my-crontab"),
+				"Name":   component.NewLink("", resource.GetName(), "/my-crontab"),
 				"Age":    component.NewTimestamp(now),
 				"Labels": component.NewLabels(labels),
 			},
@@ -67,7 +67,7 @@ func Test_CustomResourceListHandler_custom_columns(t *testing.T) {
 	now := time.Now()
 	resource.SetCreationTimestamp(metav1.Time{Time: now})
 
-	tpo.PathForCustomResource(resource, crd.Name, "/my-crontab")
+	tpo.PathForObject(resource, resource.GetName(), "/my-crontab")
 
 	labels := map[string]string{"foo": "bar"}
 	resource.SetLabels(labels)
@@ -84,7 +84,7 @@ func Test_CustomResourceListHandler_custom_columns(t *testing.T) {
 		component.NewTableCols("Name", "Labels", "Spec", "Replicas", "Errors", "Resource Age", "Age"),
 		[]component.TableRow{
 			{
-				"Name":         component.NewLink("", crd.Name, "/my-crontab"),
+				"Name":         component.NewLink("", resource.GetName(), "/my-crontab"),
 				"Age":          component.NewTimestamp(now),
 				"Labels":       component.NewLabels(labels),
 				"Replicas":     component.NewText("1"),

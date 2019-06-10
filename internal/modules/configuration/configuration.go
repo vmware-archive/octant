@@ -2,11 +2,11 @@ package configuration
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"path"
 
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/heptio/developer-dash/internal/api"
@@ -27,10 +27,11 @@ type Configuration struct {
 	pathMatcher *describer.PathMatcher
 }
 
+
 var _ module.Module = (*Configuration)(nil)
 
 func New(ctx context.Context, options Options) *Configuration {
-	pm := describer.NewPathMatcher()
+	pm := describer.NewPathMatcher("configuration")
 	for _, pf := range rootDescriber.PathFilters() {
 		pm.Register(ctx, pf)
 	}
@@ -73,7 +74,7 @@ func (c *Configuration) Content(ctx context.Context, contentPath, prefix, namesp
 }
 
 func (c *Configuration) ContentPath() string {
-	return fmt.Sprintf("%s", c.Name())
+	return c.Name()
 }
 
 func (c *Configuration) Navigation(ctx context.Context, namespace, root string) ([]clustereye.Navigation, error) {
@@ -108,4 +109,12 @@ func (c Configuration) SupportedGroupVersionKind() []schema.GroupVersionKind {
 
 func (c Configuration) GroupVersionKindPath(namespace, apiVersion, kind, name string) (string, error) {
 	return "", errors.Errorf("configuration can't create paths for %s %s", apiVersion, kind)
+}
+
+func (c Configuration) AddCRD(ctx context.Context, crd *unstructured.Unstructured) error {
+	return nil
+}
+
+func (c Configuration) RemoveCRD(ctx context.Context, crd *unstructured.Unstructured) error {
+	return nil
 }

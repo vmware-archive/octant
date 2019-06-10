@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/heptio/developer-dash/internal/config"
+	"github.com/heptio/developer-dash/internal/describer"
 	"github.com/heptio/developer-dash/internal/modules/clusteroverview"
 	"github.com/heptio/developer-dash/internal/modules/configuration"
 
@@ -80,9 +81,14 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return errors.Wrap(err, "failed to create info client")
 	}
 
-	appObjectStore, err := initObjectStore(ctx.Done(), clusterClient)
+	appObjectStore, err := initObjectStore(ctx, ctx.Done(), clusterClient)
 	if err != nil {
 		return errors.Wrap(err, "initializing cache")
+	}
+
+	crdWatcher, err := describer.NewDefaultCRDWatcher(appObjectStore)
+	if err != nil {
+		return errors.Wrap(err, "initializing CRD watcher")
 	}
 
 	portForwarder, err := initPortForwarder(ctx, clusterClient, appObjectStore)
@@ -97,6 +103,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 
 	mo := moduleOptions{
 		clusterClient: clusterClient,
+		crdWatcher:    crdWatcher,
 		objectStore:   appObjectStore,
 		namespace:     options.Namespace,
 		logger:        logger,
@@ -149,12 +156,12 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 }
 
 // initObjectStore initializes the cluster object store interface
-func initObjectStore(stopCh <-chan struct{}, client cluster.ClientInterface) (objectstore.ObjectStore, error) {
+func initObjectStore(ctx context.Context, stopCh <-chan struct{}, client cluster.ClientInterface) (objectstore.ObjectStore, error) {
 	if client == nil {
 		return nil, errors.New("nil cluster client")
 	}
 
-	appObjectStore, err := objectstore.NewWatch(client, stopCh)
+	appObjectStore, err := objectstore.NewWatch(ctx, client, stopCh)
 
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating object store for app")
@@ -169,6 +176,7 @@ func initPortForwarder(ctx context.Context, client cluster.ClientInterface, appO
 
 type moduleOptions struct {
 	clusterClient *cluster.Cluster
+	crdWatcher    config.CRDWatcher
 	objectStore   objectstore.ObjectStore
 	namespace     string
 	logger        log.Logger
@@ -185,6 +193,7 @@ func initModuleManager(ctx context.Context, options moduleOptions) (*module.Mana
 
 	c := config.NewLiveConfig(
 		options.clusterClient,
+		options.crdWatcher,
 		options.logger,
 		moduleManager,
 		options.objectStore,
@@ -193,8 +202,8 @@ func initModuleManager(ctx context.Context, options moduleOptions) (*module.Mana
 	)
 
 	overviewOptions := overview.Options{
-		Namespace:     options.namespace,
-		DashConfig:    c,
+		Namespace:  options.namespace,
+		DashConfig: c,
 	}
 	overviewModule, err := overview.New(ctx, overviewOptions)
 	if err != nil {
@@ -204,9 +213,13 @@ func initModuleManager(ctx context.Context, options moduleOptions) (*module.Mana
 	moduleManager.Register(overviewModule)
 
 	clusterOverviewOptions := clusteroverview.Options{
-		DashConfig:    c,
+		DashConfig: c,
 	}
-	clusterOverviewModule := clusteroverview.New(ctx, clusterOverviewOptions)
+	clusterOverviewModule, err := clusteroverview.New(ctx, clusterOverviewOptions)
+	if err != nil {
+		return nil, errors.Wrap(err, "create cluster overview module")
+	}
+
 	moduleManager.Register(clusterOverviewModule)
 
 	configurationOptions := configuration.Options{

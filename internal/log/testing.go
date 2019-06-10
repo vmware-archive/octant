@@ -26,6 +26,9 @@ func (t *testingLogger) Errorf(format string, args ...interface{}) {
 func (t *testingLogger) With(args ...interface{}) Logger {
 	return t
 }
+func(t *testingLogger) WithErr(err error) Logger {
+	return t.With("err", err)
+}
 func (t *testingLogger) Named(string) Logger {
 	return t
 }

@@ -77,7 +77,7 @@ var (
 		Titles:         describer.ResourceTitle{List: "Workloads / Stateful Sets", Object: "Stateful Set"},
 	})
 
-	workloadsDescriber = describer.NewSectionDescriber(
+	workloadsDescriber = describer.NewSection(
 		"/workloads",
 		"Workloads",
 		workloadsCronJobs,
@@ -106,7 +106,7 @@ var (
 		Titles:         describer.ResourceTitle{List: "Discovery & Load Balancing / Services", Object: "Service"},
 	})
 
-	discoveryAndLoadBalancingDescriber = describer.NewSectionDescriber(
+	discoveryAndLoadBalancingDescriber = describer.NewSection(
 		"/discovery-and-load-balancing",
 		"Discovery and Load Balancing",
 		dlbIngresses,
@@ -145,7 +145,7 @@ var (
 		Titles:         describer.ResourceTitle{List: "Config & Storage / Service Accounts", Object: "Service Account"},
 	})
 
-	configAndStorageDescriber = describer.NewSectionDescriber(
+	configAndStorageDescriber = describer.NewSection(
 		"/config-and-storage",
 		"Config and Storage",
 		csConfigMaps,
@@ -154,7 +154,7 @@ var (
 		csServiceAccounts,
 	)
 
-	customResourcesDescriber = newCRDSectionDescriber(
+	customResourcesDescriber = describer.NewCRDSection(
 		"/custom-resources",
 		"Custom Resources",
 	)
@@ -175,14 +175,14 @@ var (
 		Titles:         describer.ResourceTitle{List: "RBAC / Role Bindings", Object: "Role Binding"},
 	})
 
-	rbacDescriber = describer.NewSectionDescriber(
+	rbacDescriber = describer.NewSection(
 		"/rbac",
 		"RBAC",
 		rbacRoles,
 		rbacRoleBindings,
 	)
 
-	rootDescriber = describer.NewSectionDescriber(
+	rootDescriber = describer.NewSection(
 		"/",
 		"Overview",
 		workloadsDescriber,

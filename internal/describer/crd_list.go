@@ -1,0 +1,116 @@
+package describer
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/pkg/errors"
+	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/heptio/developer-dash/internal/link"
+	"github.com/heptio/developer-dash/internal/modules/overview/printer"
+	"github.com/heptio/developer-dash/internal/objectstore"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/view/component"
+)
+
+type crdListPrinter func(
+	crdName string,
+	crd *apiextv1beta1.CustomResourceDefinition,
+	objects []*unstructured.Unstructured,
+	linkGenerator link.Interface) (component.Component, error)
+
+type crdListDescriptionOption func(*crdList)
+
+type crdList struct {
+	name    string
+	path    string
+	printer crdListPrinter
+}
+
+var _ Describer = (*crdList)(nil)
+
+func newCRDList(name, path string, options ...crdListDescriptionOption) *crdList {
+	d := &crdList{
+		name:    name,
+		path:    path,
+		printer: printer.CustomResourceListHandler,
+	}
+
+	for _, option := range options {
+		option(d)
+	}
+
+	return d
+}
+
+func (cld *crdList) Describe(ctx context.Context, prefix, namespace string, options Options) (component.ContentResponse, error) {
+	objectStore := options.ObjectStore()
+	crd, err := CustomResourceDefinition(ctx, cld.name, objectStore)
+	if err != nil {
+		return EmptyContentResponse, err
+	}
+
+	objects, err := ListCustomResources(ctx, crd, namespace, objectStore, options.LabelSet)
+	if err != nil {
+		return EmptyContentResponse, err
+	}
+
+	table, err := cld.printer(cld.name, crd, objects, options.Link)
+	if err != nil {
+		return EmptyContentResponse, err
+	}
+
+	list := component.NewList(fmt.Sprintf("Custom Resources / %s", cld.name), []component.Component{
+		table,
+	})
+
+	return component.ContentResponse{
+		Components: []component.Component{list},
+	}, nil
+}
+
+func ListCustomResources(
+	ctx context.Context,
+	crd *apiextv1beta1.CustomResourceDefinition,
+	namespace string,
+	o objectstore.ObjectStore,
+	selector *labels.Set) ([]*unstructured.Unstructured, error) {
+	if crd == nil {
+		return nil, errors.New("crd is nil")
+	}
+	gvk := schema.GroupVersionKind{
+		Group:   crd.Spec.Group,
+		Version: crd.Spec.Version,
+		Kind:    crd.Spec.Names.Kind,
+	}
+
+	apiVersion, kind := gvk.ToAPIVersionAndKind()
+
+	key := objectstoreutil.Key{
+		Namespace:  namespace,
+		APIVersion: apiVersion,
+		Kind:       kind,
+		Selector:   selector,
+	}
+
+	if err := o.HasAccess(key, "list"); err != nil {
+		return []*unstructured.Unstructured{}, nil
+	}
+
+	objects, err := o.List(ctx, key)
+	if err != nil {
+		return nil, errors.Wrapf(err, "listing custom resources for %q", crd.Name)
+	}
+
+	return objects, nil
+}
+
+func (cld *crdList) PathFilters() []PathFilter {
+	return []PathFilter{
+		*NewPathFilter(cld.path, cld),
+	}
+}

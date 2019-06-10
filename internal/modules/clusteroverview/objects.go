@@ -8,6 +8,11 @@ import (
 )
 
 var (
+	customResourcesDescriber = describer.NewCRDSection(
+		"/custom-resources",
+		"Custom Resources",
+	)
+
 	rbacClusterRoles = describer.NewResource(describer.ResourceOptions{
 		Path:           "/rbac/cluster-roles",
 		ObjectStoreKey: objectstoreutil.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "ClusterRole"},
@@ -26,7 +31,7 @@ var (
 		ClusterWide:    true,
 	})
 
-	rbacDescriber = describer.NewSectionDescriber(
+	rbacDescriber = describer.NewSection(
 		"/rbac",
 		"RBAC",
 		rbacClusterRoles,
@@ -35,9 +40,10 @@ var (
 
 	portForwardDescriber = NewPortForwardListDescriber()
 
-	rootDescriber = describer.NewSectionDescriber(
+	rootDescriber = describer.NewSection(
 		"/",
 		"Cluster Overview",
+		customResourcesDescriber,
 		rbacDescriber,
 		portForwardDescriber,
 	)

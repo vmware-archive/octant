@@ -9,11 +9,8 @@ import (
 	"github.com/heptio/developer-dash/internal/gvk"
 )
 
-type objectPath struct {
-}
-
-func (op *objectPath) SupportedGroupVersionKind() []schema.GroupVersionKind {
-	return []schema.GroupVersionKind{
+var (
+	supportedGVKs = []schema.GroupVersionKind{
 		gvk.CronJobGVK,
 		gvk.DaemonSetGVK,
 		gvk.DeploymentGVK,
@@ -32,17 +29,21 @@ func (op *objectPath) SupportedGroupVersionKind() []schema.GroupVersionKind {
 		gvk.RoleGVK,
 		gvk.Event,
 	}
-}
+)
 
-func (op *objectPath) GroupVersionKindPath(namespace, apiVersion, kind, name string) (string, error) {
+func crdPath(namespace, crdName, name string) (string, error) {
 	if namespace == "" {
-		return "", errors.Errorf("unable to create path for %s %s", apiVersion, kind)
+		return "", errors.Errorf("unable to create CRD path for %s due to missing namespace", crdName)
 	}
 
-	return gvkPath(namespace, apiVersion, kind, name)
+	return path.Join("/content/overview/namespace", namespace, "custom-resources", crdName, name), nil
 }
 
 func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
+	if namespace == "" {
+		return "", errors.Errorf("unable to create  path for %s %s due to missing namespace", apiVersion, kind)
+	}
+
 	var p string
 
 	switch {

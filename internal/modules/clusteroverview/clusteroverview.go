@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/internal/clustereye"
@@ -16,7 +17,10 @@ import (
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/modules/overview/printer"
+	"github.com/heptio/developer-dash/internal/modules/overview/resourceviewer"
+	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/queryer"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -27,24 +31,72 @@ type Options struct {
 
 // ClusterOverview is a module for the cluster overview.
 type ClusterOverview struct {
+	*clustereye.ObjectPath
 	Options
-	objectPath
 
 	pathMatcher *describer.PathMatcher
 }
 
 var _ module.Module = (*ClusterOverview)(nil)
 
-func New(ctx context.Context, options Options) *ClusterOverview {
-	pm := describer.NewPathMatcher()
+func New(ctx context.Context, options Options) (*ClusterOverview, error) {
+	pathMatcher := describer.NewPathMatcher("cluster-overview")
 	for _, pf := range rootDescriber.PathFilters() {
-		pm.Register(ctx, pf)
+		pathMatcher.Register(ctx, pf)
 	}
 
-	return &ClusterOverview{
-		pathMatcher: pm,
+	objectPathConfig := clustereye.ObjectPathConfig{
+		ModuleName:     "cluster-overview",
+		SupportedGVKs:  supportedGVKs,
+		PathLookupFunc: gvkPath,
+		CRDPathGenFunc: crdPath,
+	}
+	objectPath, err := clustereye.NewObjectPath(objectPathConfig)
+	if err != nil {
+		return nil, errors.Wrap(err, "create module object path generator")
+	}
+
+	co := &ClusterOverview{
+		ObjectPath:  objectPath,
+		pathMatcher: pathMatcher,
 		Options:     options,
 	}
+
+	key := objectstoreutil.Key{
+		APIVersion: "apiextensions.k8s.io/v1beta1",
+		Kind:       "CustomResourceDefinition",
+	}
+
+	objectStore := options.DashConfig.ObjectStore()
+
+	crdWatcher := options.DashConfig.CRDWatcher()
+	if err := objectStore.HasAccess(key, "watch"); err == nil {
+		watchConfig := &config.CRDWatchConfig{
+			Add: func(_ *describer.PathMatcher, sectionDescriber *describer.CRDSection) config.ObjectHandler {
+				return func(ctx context.Context, object *unstructured.Unstructured) {
+					if object == nil {
+						return
+					}
+					describer.AddCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
+				}
+			}(pathMatcher, customResourcesDescriber),
+			Delete: func(_ *describer.PathMatcher, csd *describer.CRDSection) config.ObjectHandler {
+				return func(ctx context.Context, object *unstructured.Unstructured) {
+					if object == nil {
+						return
+					}
+					describer.DeleteCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
+				}
+			}(pathMatcher, customResourcesDescriber),
+			IsNamespaced: false,
+		}
+
+		if err := crdWatcher.Watch(ctx, watchConfig); err != nil {
+			return nil, errors.Wrap(err, "create namespaced CRD watcher for overview")
+		}
+	}
+
+	return co, nil
 }
 
 func (co *ClusterOverview) Name() string {
@@ -95,16 +147,23 @@ func (co *ClusterOverview) Content(ctx context.Context, contentPath string, pref
 
 	loaderFactory := describer.NewObjectLoaderFactory(co.DashConfig)
 
+	componentCache, err := resourceviewer.NewComponentCache(co.DashConfig)
+	if err != nil {
+		return describer.EmptyContentResponse, errors.Wrap(err, "create component cache")
+	}
+	componentCache.SetQueryer(q)
+
 	options := describer.Options{
-		Queryer:  q,
-		Fields:   pf.Fields(contentPath),
-		Printer:  p,
-		LabelSet: opts.LabelSet,
-		Dash:     co.DashConfig,
-		Link:     linkGenerator,
+		Queryer:        q,
+		Fields:         pf.Fields(contentPath),
+		Printer:        p,
+		LabelSet:       opts.LabelSet,
+		Dash:           co.DashConfig,
+		Link:           linkGenerator,
+		ComponentCache: componentCache,
 
 		LoadObjects: loaderFactory.LoadObjects,
-		LoadObject: loaderFactory.LoadObject,
+		LoadObject:  loaderFactory.LoadObject,
 	}
 
 	cResponse, err := pf.Describer.Describe(ctx, prefix, "", options)
@@ -120,31 +179,32 @@ func (co *ClusterOverview) ContentPath() string {
 }
 
 func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, root string) ([]clustereye.Navigation, error) {
-	return []clustereye.Navigation{
-		{
-			Title: "Cluster Overview",
-			Path:  path.Join("/content", co.ContentPath(), "/"),
-			Children: []clustereye.Navigation{
-				{
-					Title: "RBAC",
-					Path:  path.Join("/content", co.ContentPath(), "/rbac"),
-					Children: []clustereye.Navigation{
-						{
-							Title: "Cluster Roles",
-							Path:  path.Join("/content", co.ContentPath(), "/rbac", "cluster-roles"),
-						},
-						{
-							Title: "Cluster Role Bindings",
-							Path:  path.Join("/content", co.ContentPath(), "/rbac", "cluster-role-bindings"),
-						},
-					},
-				},
-				{
-					Title: "Port Forwards",
-					Path:  path.Join("/content", co.ContentPath(), "/port-forward"),
-				},
-			},
+	navigationEntries := clustereye.NavigationEntries{
+		Lookup: map[string]string{
+			"Custom Resources": "custom-resources",
+			"RBAC":             "rbac",
 		},
+		EntriesFuncs: map[string]clustereye.EntriesFunc{
+			"Custom Resources": clustereye.CRDEntries,
+			"RBAC":             rbacEntries,
+		},
+		Order: []string{
+			"Custom Resources",
+			"RBAC",
+		},
+	}
+
+	objectStore := co.DashConfig.ObjectStore()
+
+	nf := clustereye.NewNavigationFactory("", root, objectStore, navigationEntries)
+
+	entries, err := nf.Generate(ctx, "Cluster Overview")
+	if err != nil {
+		return nil, err
+	}
+
+	return []clustereye.Navigation{
+		*entries,
 	}, nil
 }
 
@@ -157,4 +217,11 @@ func (co *ClusterOverview) Start() error {
 }
 
 func (co *ClusterOverview) Stop() {
+}
+
+func rbacEntries(_ context.Context, prefix, _ string, _ objectstore.ObjectStore) ([]clustereye.Navigation, error) {
+	return []clustereye.Navigation{
+		*clustereye.NewNavigation("Cluster Roles", path.Join(prefix, "cluster-roles")),
+		*clustereye.NewNavigation("Cluster Role Bindings", path.Join(prefix, "cluster-role-bindings")),
+	}, nil
 }

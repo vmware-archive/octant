@@ -58,7 +58,7 @@ func (r *Resource) List() *List {
 }
 
 func (r *Resource) Object() *Object {
-	return NewObjectDescriber(
+	return NewObject(
 		path.Join(r.Path, ResourceNameRegex),
 		r.Titles.Object,
 		r.ObjectStoreKey,

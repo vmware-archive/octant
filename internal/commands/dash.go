@@ -6,12 +6,13 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/heptio/developer-dash/internal/dash"
-	"github.com/heptio/developer-dash/internal/log"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/heptio/developer-dash/internal/dash"
+	"github.com/heptio/developer-dash/internal/log"
 )
 
 func newClusterEyeCmd() *cobra.Command {
@@ -55,7 +56,7 @@ func newClusterEyeCmd() *cobra.Command {
 				}
 
 				if err := dash.Run(ctx, logger, shutdownCh, options); err != nil {
-					logger.Errorf("running dashboard: %v", err)
+					logger.WithErr(err).Errorf("dashboard failed")
 					os.Exit(1)
 				}
 

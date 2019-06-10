@@ -6,16 +6,17 @@ import (
 
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
-	"github.com/heptio/developer-dash/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	kcache "k8s.io/client-go/tools/cache"
+
+	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 )
 
 // WatchOpt is an option for configuration Watch.
@@ -42,7 +43,7 @@ var _ ObjectStore = (*Watch)(nil)
 
 // NewWatch create an instance of new watch. By default, it will create a dynamic cache as its
 // backend.
-func NewWatch(client cluster.ClientInterface, stopCh <-chan struct{}, options ...WatchOpt) (*Watch, error) {
+func NewWatch(ctx context.Context, client cluster.ClientInterface, stopCh <-chan struct{}, options ...WatchOpt) (*Watch, error) {
 	c := &Watch{
 		initFactoryFunc: initDynamicSharedInformerFactory,
 		client:          client,
@@ -99,6 +100,15 @@ func NewWatch(client cluster.ClientInterface, stopCh <-chan struct{}, options ..
 		}
 
 		c.backendObjectStore = backendObjectStore
+	}
+
+	nsKey := objectstoreutil.Key{APIVersion: "v1", Kind: "Namespace"}
+	nsHandler := &nsUpdateHandler{
+		watch:  c,
+		logger: log.From(ctx),
+	}
+	if err := c.Watch(ctx, nsKey, nsHandler); err != nil {
+		return nil, errors.Wrap(err, "create namespace watcher")
 	}
 
 	return c, nil
@@ -160,6 +170,9 @@ func (w *Watch) List(ctx context.Context, key objectstoreutil.Key) ([]*unstructu
 	}
 
 	w.objectLock.Lock()
+	if _, ok := w.cachedObjects[key.Namespace]; !ok {
+		w.cachedObjects[key.Namespace] = make(map[schema.GroupVersionKind]map[types.UID]*unstructured.Unstructured)
+	}
 	w.cachedObjects[key.Namespace][gvk] = make(map[types.UID]*unstructured.Unstructured)
 	for _, object := range objects {
 		w.cachedObjects[key.Namespace][gvk][object.GetUID()] = object
@@ -317,6 +330,9 @@ func (w *Watch) createEventHandler(key objectstoreutil.Key, updateCh, deleteCh c
 func (w *Watch) flagGVKWatched(key objectstoreutil.Key, gvk schema.GroupVersionKind) {
 	w.gvkLock.Lock()
 	defer w.gvkLock.Unlock()
+	if _, ok := w.watchedGVKs[key.Namespace]; !ok {
+		w.watchedGVKs[key.Namespace] = make(map[schema.GroupVersionKind]bool)
+	}
 	w.watchedGVKs[key.Namespace][gvk] = true
 }
 
@@ -352,5 +368,45 @@ func (h *watchEventHandler) OnDelete(obj interface{}) {
 	if object, ok := obj.(*unstructured.Unstructured); ok {
 		event := watchEvent{object: object, gvk: h.gvk}
 		h.deleteFunc(event)
+	}
+}
+
+var nsGVK = schema.GroupVersionKind{Version: "v1", Kind: "Namespace"}
+
+type nsUpdateHandler struct {
+	watch  *Watch
+	logger log.Logger
+}
+
+var _ kcache.ResourceEventHandler = (*nsUpdateHandler)(nil)
+
+func (h *nsUpdateHandler) OnAdd(obj interface{}) {
+	if h.watch.initFactoryFunc == nil {
+		return
+	}
+
+	if object, ok := obj.(*unstructured.Unstructured); ok && object.GroupVersionKind().String() == nsGVK.String() {
+		factory, err := h.watch.initFactoryFunc(h.watch.client, object.GetName())
+		if err != nil {
+			h.logger.WithErr(err).Errorf("create namespace factory")
+			return
+		}
+
+		h.logger.With("namespace", object.GetName()).Debugf("adding factory for namespace")
+		h.watch.factories[object.GetName()] = factory
+	}
+}
+
+func (h *nsUpdateHandler) OnUpdate(oldObj, newObj interface{}) {
+}
+
+func (h *nsUpdateHandler) OnDelete(obj interface{}) {
+	if h.watch.initFactoryFunc == nil {
+		return
+	}
+
+	if object, ok := obj.(*unstructured.Unstructured); ok && object.GroupVersionKind().String() == nsGVK.String() {
+		delete(h.watch.factories, object.GetName())
+		h.logger.With("namespace", object.GetName()).Debugf("removed factory for namespace")
 	}
 }

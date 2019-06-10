@@ -2,12 +2,10 @@ package link
 
 import (
 	"net/url"
-	"path"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/heptio/developer-dash/pkg/view/component"
@@ -18,8 +16,6 @@ import (
 type objectPathFn func(namespace, apiVersion, kind, name string) (string, error)
 
 type Interface interface {
-	ForCustomResourceDefinition(crdName, namespace string) *component.Link
-	ForCustomResource(crdName string, object *unstructured.Unstructured) *component.Link
 	ForObject(object runtime.Object, text string) (*component.Link, error)
 	ForObjectWithQuery(object runtime.Object, text string, query url.Values) (*component.Link, error)
 	ForGVK(namespace, apiVersion, kind, name, text string) (*component.Link, error)
@@ -44,22 +40,6 @@ func NewFromDashConfig(config Config) (*Link, error) {
 	return &Link{
 		objectPathFn: config.ObjectPath,
 	}, nil
-}
-
-// ForCustomResourceName returns a link component referencing
-// a custom resource definition.
-func (Link) ForCustomResourceDefinition(crdName, namespace string) *component.Link {
-	ref := path.Join("/content/overview/namespace", namespace,
-		"custom-resources", crdName)
-	return component.NewLink("", crdName, ref)
-}
-
-// ForCustomResource returns a link component referencing
-// a custom resource.
-func (Link) ForCustomResource(crdName string, object *unstructured.Unstructured) *component.Link {
-	ref := path.Join("/content/overview/namespace", object.GetNamespace(),
-		"custom-resources", crdName, object.GetName())
-	return component.NewLink("", object.GetName(), ref)
 }
 
 // ForObject returns a link component referencing an object

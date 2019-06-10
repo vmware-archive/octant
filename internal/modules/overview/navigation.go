@@ -3,12 +3,6 @@ package overview
 import (
 	"context"
 	"path"
-	"sort"
-	"strings"
-	"sync"
-
-	"github.com/pkg/errors"
-	"golang.org/x/sync/errgroup"
 
 	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/internal/objectstore"
@@ -22,112 +16,10 @@ var (
 		"Custom Resources":             "custom-resources",
 		"RBAC":                         "rbac",
 		"Events":                       "events",
-		"Plugins":                      "plugins",
-		"Port Forwards":                "portforward",
 	}
 )
 
-// NavigationFactory generates navigation entries.
-type NavigationFactory struct {
-	root        string
-	namespace   string
-	objectstore objectstore.ObjectStore
-}
-
-// NewNavigationFactory creates an instance of NewNavigationFactory.
-func NewNavigationFactory(namespace string, root string, o objectstore.ObjectStore) *NavigationFactory {
-	var rootPath = root
-	if namespace != "" {
-		rootPath = path.Join(root, "namespace", namespace, "")
-	}
-	if !strings.HasSuffix(rootPath, "/") {
-		rootPath = rootPath + "/"
-	}
-
-	return &NavigationFactory{
-		root:        rootPath,
-		namespace:   namespace,
-		objectstore: o,
-	}
-}
-
-// Root returns the root of the navigation tree.
-func (nf *NavigationFactory) Root() string {
-	return nf.root
-}
-
-func (nf *NavigationFactory) pathFor(elements ...string) string {
-	return path.Join(append([]string{nf.root}, elements...)...)
-}
-
-// Entries returns navigation entries.
-func (nf *NavigationFactory) Entries(ctx context.Context) (*clustereye.Navigation, error) {
-	m := map[string]entriesFunc{
-		"Workloads":                    nf.workloadEntries,
-		"Discovery and Load Balancing": nf.discoAndLBEntries,
-		"Config and Storage":           nf.configAndStorageEntries,
-		"Custom Resources":             nf.crdEntries,
-		"RBAC":                         nf.rbacEntries,
-		"Events":                       nil,
-	}
-
-	navOrder := []string{
-		"Workloads",
-		"Discovery and Load Balancing",
-		"Config and Storage",
-		"Custom Resources",
-		"RBAC",
-		"Events",
-	}
-
-	n := &clustereye.Navigation{
-		Title:    "Overview",
-		Path:     nf.root,
-		Children: []clustereye.Navigation{},
-	}
-
-	var mu sync.Mutex
-	var g errgroup.Group
-
-	for _, name := range navOrder {
-		g.Go(func() error {
-			children, err := nf.genNode(ctx, name, m[name])
-			if err != nil {
-				return errors.Wrapf(err, "generate entries for %s", name)
-			}
-
-			mu.Lock()
-			n.Children = append(n.Children, *children)
-			mu.Unlock()
-
-			return nil
-		})
-
-		if err := g.Wait(); err != nil {
-			return nil, err
-		}
-
-	}
-
-	return n, nil
-}
-
-type entriesFunc func(context.Context, string) ([]clustereye.Navigation, error)
-
-func (nf *NavigationFactory) genNode(ctx context.Context, name string, childFn entriesFunc) (*clustereye.Navigation, error) {
-	node := clustereye.NewNavigation(name, nf.pathFor(navPathLookup[name]))
-	if childFn != nil {
-		children, err := childFn(ctx, node.Path)
-		if err != nil {
-			return nil, err
-		}
-		node.Children = children
-	}
-
-	return node, nil
-}
-
-func (nf *NavigationFactory) workloadEntries(ctx context.Context, prefix string) ([]clustereye.Navigation, error) {
+func workloadEntries(_ context.Context, prefix, _ string, _ objectstore.ObjectStore) ([]clustereye.Navigation, error) {
 	return []clustereye.Navigation{
 		*clustereye.NewNavigation("Cron Jobs", path.Join(prefix, "cron-jobs")),
 		*clustereye.NewNavigation("Daemon Sets", path.Join(prefix, "daemon-sets")),
@@ -140,14 +32,14 @@ func (nf *NavigationFactory) workloadEntries(ctx context.Context, prefix string)
 	}, nil
 }
 
-func (nf *NavigationFactory) discoAndLBEntries(ctx context.Context, prefix string) ([]clustereye.Navigation, error) {
+func discoAndLBEntries(_ context.Context, prefix, _ string, _ objectstore.ObjectStore) ([]clustereye.Navigation, error) {
 	return []clustereye.Navigation{
 		*clustereye.NewNavigation("Ingresses", path.Join(prefix, "ingresses")),
 		*clustereye.NewNavigation("Services", path.Join(prefix, "services")),
 	}, nil
 }
 
-func (nf *NavigationFactory) configAndStorageEntries(ctx context.Context, prefix string) ([]clustereye.Navigation, error) {
+func configAndStorageEntries(_ context.Context, prefix, _ string, _ objectstore.ObjectStore) ([]clustereye.Navigation, error) {
 	return []clustereye.Navigation{
 		*clustereye.NewNavigation("Config Maps", path.Join(prefix, "config-maps")),
 		*clustereye.NewNavigation("Persistent Volume Claims", path.Join(prefix, "persistent-volume-claims")),
@@ -156,38 +48,11 @@ func (nf *NavigationFactory) configAndStorageEntries(ctx context.Context, prefix
 	}, nil
 }
 
-func (nf *NavigationFactory) rbacEntries(ctx context.Context, prefix string) ([]clustereye.Navigation, error) {
+func rbacEntries(_ context.Context, prefix, _ string, _ objectstore.ObjectStore) ([]clustereye.Navigation, error) {
 	return []clustereye.Navigation{
 		*clustereye.NewNavigation("Roles", path.Join(prefix, "roles")),
 		*clustereye.NewNavigation("Role Bindings", path.Join(prefix, "role-bindings")),
 	}, nil
 }
 
-func (nf *NavigationFactory) crdEntries(ctx context.Context, prefix string) ([]clustereye.Navigation, error) {
-	var list []clustereye.Navigation
 
-	crdNames, err := customResourceDefinitionNames(ctx, nf.objectstore)
-	if err != nil {
-		return nil, errors.Wrap(err, "retrieving CRD names")
-	}
-
-	sort.Strings(crdNames)
-
-	for _, name := range crdNames {
-		crd, err := customResourceDefinition(ctx, name, nf.objectstore)
-		if err != nil {
-			return nil, errors.Wrapf(err, "load %q custom resource definition", name)
-		}
-
-		objects, err := listCustomResources(ctx, crd, nf.namespace, nf.objectstore, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		if len(objects) > 0 {
-			list = append(list, *clustereye.NewNavigation(name, path.Join(prefix, name)))
-		}
-	}
-
-	return list, nil
-}

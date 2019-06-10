@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -41,4 +42,10 @@ type Module interface {
 	// GroupVersionKindPath returns the path for an object . It will
 	// return an error if it is unable to generate a path
 	GroupVersionKindPath(namespace, apiVersion, kind, name string) (string, error)
+
+	// AddCRD adds a CRD this module is responsible for.
+	AddCRD(ctx context.Context, crd *unstructured.Unstructured) error
+
+	// RemoveCRD removes a CRD this module was responsible for.
+	RemoveCRD(ctx context.Context, crd *unstructured.Unstructured) error
 }
