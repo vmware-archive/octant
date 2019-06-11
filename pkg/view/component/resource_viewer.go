@@ -2,6 +2,9 @@ package component
 
 import (
 	"encoding/json"
+	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // AdjList is an adjacency list - it maps nodes to edges
@@ -84,12 +87,23 @@ func NewResourceViewer(title string) *ResourceViewer {
 
 }
 
-func (rv *ResourceViewer) AddEdge(nodeID, childID string, edgeType EdgeType) {
+func (rv *ResourceViewer) AddEdge(nodeID, childID string, edgeType EdgeType) error {
+	if _, ok := rv.Config.Nodes[childID]; !ok {
+		var nodeIDs []string
+		for k := range rv.Config.Nodes {
+			nodeIDs = append(nodeIDs, k)
+		}
+		return errors.Errorf("node %q does not exist in graph. available [%s]",
+			childID, strings.Join(nodeIDs, ", "))
+	}
+
 	edge := Edge{
 		Node: childID,
 		Type: edgeType,
 	}
 	rv.Config.Edges[nodeID] = append(rv.Config.Edges[nodeID], edge)
+
+	return nil
 }
 
 func (rv *ResourceViewer) AddNode(id string, node Node) {
@@ -104,10 +118,34 @@ func (rv *ResourceViewer) GetMetadata() Metadata {
 	return rv.Metadata
 }
 
+func (rv *ResourceViewer) Validate() error {
+	for nodeID, edges := range rv.Config.Edges {
+		if _, ok := rv.Config.Nodes[nodeID]; ! ok {
+			var nodes []string
+			for node := range rv.Config.Nodes {
+				nodes = append(nodes, node)
+			}
+			return errors.Errorf("node %q in edges does not have a node entry. existing nodes: %s", nodeID, strings.Join(nodes, ", "))
+		}
+
+		for _, edge := range edges {
+			if _, ok := rv.Config.Nodes[edge.Node]; !ok {
+				return errors.Errorf("edge %q from node %q does not have a node entry", edge.Node, nodeID)
+			}
+		}
+	}
+
+	return nil
+}
+
 type resourceViewerMarshal ResourceViewer
 
 // MarshalJSON implements json.Marshaler
 func (rv *ResourceViewer) MarshalJSON() ([]byte, error) {
+	if err := rv.Validate(); err != nil {
+		return nil, errors.WithMessage(err, "validate resource viewer component")
+	}
+
 	m := resourceViewerMarshal(*rv)
 	m.Metadata.Type = typeResourceViewer
 	m.Metadata.Title = rv.Metadata.Title

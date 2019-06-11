@@ -253,22 +253,22 @@ func (cs *contentStreamer) content(ctx context.Context) error {
 							break
 						}
 
+						// This could be one time error, or it could be a huge failure.
+						// Either way, log, and move on. If this becomes a problem,
+						// a circuit breaker or some other pattern could be employed here.
 						cs.logger.
 							WithErr(err).
 							Errorf("event generator error")
 
-						// This could be one time error, or it could be a huge failure.
-						// Either way, log, and move on. If this becomes a problem,
-						// a circuit breaker or some other pattern could be employed here.
-						break
+					} else {
+						cs.logger.With(
+							"elapsed", time.Since(now),
+							"generator", eg.Name(),
+							"contentPath", cs.contentPath,
+						).Debugf("generate complete")
+						ch <- e
 					}
 
-					cs.logger.With(
-						"elapsed", time.Since(now),
-						"generator", eg.Name(),
-						"contentPath", cs.contentPath,
-					).Debugf("generate complete")
-					ch <- e
 
 					nextTick := eg.RunEvery()
 					if nextTick == 0 {

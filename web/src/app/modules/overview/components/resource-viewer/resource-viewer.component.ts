@@ -26,20 +26,16 @@ import {DagreService} from '../../services/dagre/dagre.service';
 })
 export class ResourceViewerComponent implements OnChanges, AfterViewChecked {
 
-  constructor(private dagreService: DagreService) {
-  }
-
-  @ViewChild('viewer') private viewer: ElementRef;
-
   @Input() view: ResourceViewerView;
-
   currentView: ResourceViewerView;
-
   selected: string;
   selectedNode: Node;
-
+  @ViewChild('viewer') private viewer: ElementRef;
   private runUpdate = false;
   private hasDrawn = false;
+
+  constructor(private dagreService: DagreService) {
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
 
@@ -66,54 +62,6 @@ export class ResourceViewerComponent implements OnChanges, AfterViewChecked {
     if (this.viewer) {
       this.runUpdate = true;
       this.updateGraph();
-    }
-  }
-
-  private updateGraph() {
-    if (!this.runUpdate || !this.currentView.config.nodes) {
-      return;
-    }
-
-    const g = new dagreD3.graphlib.Graph().setGraph({});
-
-    for (const [id, label] of Object.entries(this.nodes())) {
-      g.setNode(id, label);
-    }
-
-    g.nodes().forEach((v: any) => {
-      const node = g.node(v);
-      node.rx = node.ry = 4;
-    });
-
-    this.edges().forEach((edge) => g.setEdge(edge[0], edge[1], edge[2]));
-
-    this.dagreService.render(this.viewer, g);
-
-    const svg = d3.select('.viewer svg');
-    const nodes = svg.selectAll('g.node');
-
-    if (nodes.nodes().length > 0) {
-      this.runUpdate = false;
-      this.hasDrawn = true;
-
-      nodes.on('click', (id: string) => {
-        this.onClick(id);
-      });
-    }
-  }
-
-  private onClick(id: string) {
-    this.select(id);
-  }
-
-  private select(id: string) {
-    this.runUpdate = true;
-    this.selected = id;
-
-    const nodes = this.currentView.config.nodes;
-
-    if (nodes && nodes[id]) {
-      this.selectedNode = nodes[id];
     }
   }
 
@@ -152,5 +100,58 @@ export class ResourceViewerComponent implements OnChanges, AfterViewChecked {
     }
 
     return nodes;
+  }
+
+  private updateGraph() {
+    if (!this.runUpdate || !this.currentView.config.nodes) {
+      return;
+    }
+
+    try {
+      const g = new dagreD3.graphlib.Graph().setGraph({});
+
+      for (const [id, label] of Object.entries(this.nodes())) {
+        g.setNode(id, label);
+      }
+
+      g.nodes().forEach((v: any) => {
+        const node = g.node(v);
+        node.rx = node.ry = 4;
+      });
+
+      this.edges().forEach((edge) => g.setEdge(edge[0], edge[1], edge[2]));
+
+      this.dagreService.render(this.viewer, g);
+
+      const svg = d3.select('.viewer svg');
+      const nodes = svg.selectAll('g.node');
+
+      if (nodes.nodes().length > 0) {
+        this.runUpdate = false;
+        this.hasDrawn = true;
+
+        nodes.on('click', (id: string) => {
+          this.onClick(id);
+        });
+      }
+    } catch (error) {
+      console.log(`render resource viewer failed ${error}`, this.currentView.config);
+    }
+
+  }
+
+  private onClick(id: string) {
+    this.select(id);
+  }
+
+  private select(id: string) {
+    this.runUpdate = true;
+    this.selected = id;
+
+    const nodes = this.currentView.config.nodes;
+
+    if (nodes && nodes[id]) {
+      this.selectedNode = nodes[id];
+    }
   }
 }
