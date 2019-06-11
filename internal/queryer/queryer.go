@@ -4,9 +4,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/heptio/developer-dash/internal/objectstore"
-	dashstrings "github.com/heptio/developer-dash/internal/util/strings"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
@@ -27,6 +24,10 @@ import (
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/core"
+
+	"github.com/heptio/developer-dash/internal/objectstore"
+	dashstrings "github.com/heptio/developer-dash/internal/util/strings"
+	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 )
 
 //go:generate mockgen -source=queryer.go -destination=./fake/mock_queryer.go -package=fake github.com/heptio/developer-dash/internal/queryer Queryer
@@ -40,10 +41,11 @@ type Queryer interface {
 	PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error)
 	ServicesForIngress(ctx context.Context, ingress *extv1beta1.Ingress) ([]*corev1.Service, error)
 	ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Service, error)
+	ServiceAccountForPod(ctx context.Context, pod *corev1.Pod) (*corev1.ServiceAccount, error)
 }
 
 type ObjectStoreQueryer struct {
-	objectstore     objectstore.ObjectStore
+	objectStore     objectstore.ObjectStore
 	discoveryClient discovery.DiscoveryInterface
 
 	children        map[types.UID][]kruntime.Object
@@ -57,7 +59,7 @@ var _ Queryer = (*ObjectStoreQueryer)(nil)
 
 func New(o objectstore.ObjectStore, discoveryClient discovery.DiscoveryInterface) *ObjectStoreQueryer {
 	return &ObjectStoreQueryer{
-		objectstore:     o,
+		objectStore:     o,
 		discoveryClient: discoveryClient,
 
 		children:        make(map[types.UID][]kruntime.Object),
@@ -124,7 +126,7 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner metav1.Object
 			}
 
 			g.Go(func() error {
-				objects, err := osq.objectstore.List(ctx, key)
+				objects, err := osq.objectStore.List(ctx, key)
 				if err != nil {
 					return errors.Wrapf(err, "unable to retrieve %+v", key)
 				}
@@ -171,7 +173,7 @@ func (osq *ObjectStoreQueryer) Events(ctx context.Context, object metav1.Object)
 		Kind:       "Event",
 	}
 
-	allEvents, err := osq.objectstore.List(ctx, key)
+	allEvents, err := osq.objectStore.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +208,7 @@ func (osq *ObjectStoreQueryer) IngressesForService(ctx context.Context, service 
 		APIVersion: "extensions/v1beta1",
 		Kind:       "Ingress",
 	}
-	ul, err := osq.objectstore.List(ctx, key)
+	ul, err := osq.objectStore.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving ingresses")
 	}
@@ -270,7 +272,7 @@ func (osq *ObjectStoreQueryer) OwnerReference(ctx context.Context, namespace str
 		return object, nil
 	}
 
-	owner, err := osq.objectstore.Get(ctx, key)
+	owner, err := osq.objectStore.Get(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -314,7 +316,7 @@ func (osq *ObjectStoreQueryer) PodsForService(ctx context.Context, service *core
 }
 
 func (osq *ObjectStoreQueryer) loadPods(ctx context.Context, key objectstoreutil.Key, labelSelector *metav1.LabelSelector) ([]*corev1.Pod, error) {
-	objects, err := osq.objectstore.List(ctx, key)
+	objects, err := osq.objectStore.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -362,7 +364,7 @@ func (osq *ObjectStoreQueryer) ServicesForIngress(ctx context.Context, ingress *
 			Kind:       "Service",
 			Name:       backend.ServiceName,
 		}
-		u, err := osq.objectstore.Get(ctx, key)
+		u, err := osq.objectStore.Get(ctx, key)
 		if err != nil {
 			return nil, errors.Wrapf(err, "retrieving service backend: %v", backend)
 		}
@@ -395,7 +397,7 @@ func (osq *ObjectStoreQueryer) ServicesForPod(ctx context.Context, pod *corev1.P
 		APIVersion: "v1",
 		Kind:       "Service",
 	}
-	ul, err := osq.objectstore.List(ctx, key)
+	ul, err := osq.objectStore.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving services")
 	}
@@ -423,6 +425,41 @@ func (osq *ObjectStoreQueryer) ServicesForPod(ctx context.Context, pod *corev1.P
 		results = append(results, svc)
 	}
 	return results, nil
+}
+
+func (osq *ObjectStoreQueryer) ServiceAccountForPod(ctx context.Context, pod *corev1.Pod) (*corev1.ServiceAccount, error) {
+	if pod == nil {
+		return nil, errors.New("pod is nil")
+	}
+
+	if pod.Spec.ServiceAccountName == "" {
+		return nil, nil
+	}
+
+	key := objectstoreutil.Key{
+		Namespace:  pod.Namespace,
+		APIVersion: "v1",
+		Kind:       "ServiceAccount",
+		Name:       pod.Spec.ServiceAccountName,
+	}
+
+	u, err := osq.objectStore.Get(ctx, key)
+	if err != nil {
+		return nil, errors.WithMessagef(err, "retrieve service account %q from namespace %q",
+			key.Namespace, key.Namespace)
+	}
+
+	serviceAccount := &corev1.ServiceAccount{}
+	if err := kruntime.DefaultUnstructuredConverter.FromUnstructured(u.Object, serviceAccount); err != nil {
+		return nil, errors.WithMessage(err, "converting unstructured object to service account")
+	}
+
+	if err = copyObjectMeta(serviceAccount, u); err != nil {
+		return nil, errors.Wrap(err, "copying object metadata")
+	}
+
+	return serviceAccount, nil
+
 }
 
 func (osq *ObjectStoreQueryer) getSelector(object kruntime.Object) (*metav1.LabelSelector, error) {

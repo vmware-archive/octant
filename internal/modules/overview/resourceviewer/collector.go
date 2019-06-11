@@ -260,6 +260,17 @@ func (c *Collector) createObjectNode(ctx context.Context, object objectvisitor.C
 
 // AddChild adds children for an object to create edges. Pods are collated to a single object.
 func (c *Collector) AddChild(parent objectvisitor.ClusterObject, children ...objectvisitor.ClusterObject) error {
+	if c.isPod(parent) {
+		// reverse the relationship, so the pod group details don't need to be accounted for.
+		for _, child := range children {
+			if err := c.AddChild(child, parent); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
