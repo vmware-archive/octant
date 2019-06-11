@@ -1,0 +1,20 @@
+<clr-dropdown [clrCloseMenuOnItemClick]="false">
+  <button type="button" clrDropdownTrigger>
+    <clr-icon shape="cluster"></clr-icon>
+    {{ selected }}
+    <clr-icon shape="caret down"></clr-icon>
+  </button>
+  <clr-dropdown-menu *clrIfOpen [clrPosition]="'bottom-right'">
+    <label class="dropdown-header">Contexts</label>
+
+    <ng-container *ngFor="let context of contexts">
+      <button
+        type="button"
+        [ngClass]="contextClass(context)"
+        clrDropdownItem
+        (click)="selectContext(context)">
+        {{ context.name }}
+      </button>
+    </ng-container>
+  </clr-dropdown-menu>
+</clr-dropdown>

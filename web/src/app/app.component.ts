@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ContentStreamService } from './services/content-stream/content-stream.service';
 import { Navigation } from './models/navigation';
 
@@ -12,9 +12,7 @@ export class AppComponent implements OnInit {
   navigation: Navigation;
   previousUrl: string;
 
-  constructor(
-    private contentStreamService: ContentStreamService,
-  ) {}
+  constructor(private contentStreamService: ContentStreamService) {}
 
   ngOnInit(): void {
     this.contentStreamService.navigation.subscribe((navigation: Navigation) => {

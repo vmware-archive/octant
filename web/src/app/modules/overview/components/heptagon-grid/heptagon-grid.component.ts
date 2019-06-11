@@ -37,7 +37,7 @@ import { HoverStatus } from '../heptagon-grid-row/heptagon-grid-row.component';
       </svg:g>
     </svg>
   `,
-  styleUrls: ['./heptagon-grid.component.scss']
+  styleUrls: ['./heptagon-grid.component.scss'],
 })
 export class HeptagonGridComponent implements OnInit {
   @Input() podStatuses: PodStatus[] = [];
@@ -110,7 +110,6 @@ export class HeptagonGridComponent implements OnInit {
   }
 
   isActivated(index: number) {
-
     const row = this.row(index);
     const col = this.col(index);
 

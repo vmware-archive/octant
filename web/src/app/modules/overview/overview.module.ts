@@ -38,6 +38,7 @@ import { HeptagonGridComponent } from './components/heptagon-grid/heptagon-grid.
 import { HeptagonGridRowComponent } from './components/heptagon-grid-row/heptagon-grid-row.component';
 import { HeptagonComponent } from './components/heptagon/heptagon.component';
 import { HeptagonLabelComponent } from './components/heptagon-label/heptagon-label.component';
+import { ContextSelectorComponent } from './components/context-selector/context-selector.component';
 
 export function hljsLanguages() {
   return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
@@ -76,6 +77,7 @@ export function hljsLanguages() {
     HeptagonGridRowComponent,
     HeptagonComponent,
     HeptagonLabelComponent,
+    ContextSelectorComponent,
   ],
   imports: [
     CommonModule,
@@ -86,6 +88,6 @@ export function hljsLanguages() {
     }),
     RouterModule,
   ],
-  exports: [],
+  exports: [ContextSelectorComponent],
 })
 export class OverviewModule {}
