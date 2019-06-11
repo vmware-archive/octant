@@ -91,6 +91,21 @@ func (s *stub) Print(object runtime.Object) (plugin.PrintResponse, error) {
 	}, nil
 }
 
+func (s *stub) ObjectStatus(object runtime.Object) (plugin.ObjectStatusResponse, error) {
+	if object == nil {
+		return plugin.ObjectStatusResponse{}, errors.New("object is nil")
+	}
+
+	status := component.PodSummary{
+		Status:  component.NodeStatusOK,
+		Details: []component.Component{component.NewText("status details from plugin")},
+	}
+
+	return plugin.ObjectStatusResponse{
+		ObjectStatus: status,
+	}, nil
+}
+
 func (s *stub) PrintTab(object runtime.Object) (*component.Tab, error) {
 	if object == nil {
 		return nil, errors.New("object is nil")
