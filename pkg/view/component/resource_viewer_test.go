@@ -91,7 +91,13 @@ func Test_ResourceViewer_Marshal(t *testing.T) {
 
 func Test_ResourceViewer_AddEdge(t *testing.T) {
 	rv := NewResourceViewer("Resource Viewer")
-	rv.AddEdge("nodeID", "childID", EdgeTypeExplicit)
+
+	node := Node{}
+	childNode := Node{}
+	rv.AddNode("nodeID", node)
+	rv.AddNode("childID", childNode)
+
+	require.NoError(t, rv.AddEdge("nodeID", "childID", EdgeTypeExplicit))
 
 	expected := ResourceViewerConfig{
 		Edges: AdjList{
@@ -99,10 +105,25 @@ func Test_ResourceViewer_AddEdge(t *testing.T) {
 				{Node: "childID", Type: EdgeTypeExplicit},
 			},
 		},
-		Nodes: Nodes{},
+		Nodes: Nodes{
+			"nodeID":  node,
+			"childID": childNode,
+		},
 	}
 
 	assert.Equal(t, expected, rv.Config)
+}
+
+func Test_ResourceViewer_AddEdge_missing_node(t *testing.T) {
+	rv := NewResourceViewer("Resource Viewer")
+
+	require.Error(t, rv.AddEdge("nodeID", "childID", EdgeTypeExplicit))
+
+	node := Node{}
+	rv.AddNode("nodeID", node)
+
+
+	require.Error(t, rv.AddEdge("nodeID", "childID", EdgeTypeExplicit))
 }
 
 func Test_ResourceViewer_AddNode(t *testing.T) {

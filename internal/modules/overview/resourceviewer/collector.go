@@ -13,9 +13,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/heptio/developer-dash/internal/config"
+	"github.com/heptio/developer-dash/internal/gvk"
 	"github.com/heptio/developer-dash/internal/link"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/modules/overview/objectstatus"
@@ -25,6 +27,8 @@ import (
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
+const defaultPodGroupPrefix = "pods-"
+
 // CollectorOption is an option for configuring Collector.
 type CollectorOption func(c *Collector)
 
@@ -33,6 +37,8 @@ type Collector struct {
 	edges  map[string][]string
 	nodes  map[string]component.Node
 	logger log.Logger
+
+	podGroupPrefix string
 
 	// groupPods sets the pod grouping. If it is true, group pods in one
 	// graph node. If not, show them separately.
@@ -49,7 +55,7 @@ type Collector struct {
 	objectStore objectstore.ObjectStore
 	link        link.Interface
 
-	mu          sync.Mutex
+	mu sync.Mutex
 }
 
 var _ objectvisitor.ObjectHandler = (*Collector)(nil)
@@ -62,12 +68,10 @@ func NewCollector(dashConfig config.Dash, options ...CollectorOption) (*Collecto
 	}
 
 	collector := &Collector{
-		podStats:    make(map[string]int),
-		groupPods:   true,
-		podGroupIDs: make(map[string]string),
-		podNodes:    make(map[string]component.PodStatus),
-		objectStore: dashConfig.ObjectStore(),
-		link:        l,
+		groupPods:      true,
+		podGroupPrefix: defaultPodGroupPrefix,
+		objectStore:    dashConfig.ObjectStore(),
+		link:           l,
 	}
 
 	for _, option := range options {
@@ -83,6 +87,9 @@ func NewCollector(dashConfig config.Dash, options ...CollectorOption) (*Collecto
 func (c *Collector) Reset() {
 	c.edges = make(map[string][]string)
 	c.nodes = make(map[string]component.Node)
+	c.podNodes = make(map[string]component.PodStatus)
+	c.podGroupIDs = make(map[string]string)
+	c.podStats = make(map[string]int)
 }
 
 // Process process an object by saving the object to a map.
@@ -90,24 +97,25 @@ func (c *Collector) Process(ctx context.Context, object objectvisitor.ClusterObj
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	var uid string
+	var nodeID string
 	var node component.Node
 	var err error
 
-	if c.isPod(object) && c.groupPods {
+	if c.isObjectPod(object) && c.groupPods {
 		pod := &corev1.Pod{}
 		if err := scheme.Scheme.Convert(object, pod, 0); err != nil {
 			return errors.Wrap(err, "unable to convert object to pod")
 		}
 
 		if ownerReference := metav1.GetControllerOf(pod); ownerReference != nil {
-			c.podStats[string(ownerReference.UID)]++
+			id := fmt.Sprintf("%s-%s-%s", ownerReference.APIVersion, ownerReference.Kind, ownerReference.Name)
+			c.podStats[id]++
 
 		}
 
-		uid, node, err = c.createPodGroupNode(ctx, object)
+		nodeID, node, err = c.createPodGroupNode(ctx, object)
 	} else {
-		uid, node, err = c.createObjectNode(ctx, object)
+		nodeID, node, err = c.createObjectNode(ctx, object)
 	}
 
 	if err != nil {
@@ -125,8 +133,8 @@ func (c *Collector) Process(ctx context.Context, object objectvisitor.ClusterObj
 		return errors.Wrapf(err, "processing %s %s", gvk.String(), name)
 	}
 
-	if _, ok := c.nodes[uid]; !ok {
-		c.nodes[uid] = node
+	if _, ok := c.nodes[nodeID]; !ok {
+		c.nodes[nodeID] = node
 	}
 
 	return nil
@@ -139,10 +147,6 @@ func (c *Collector) createPodGroupNode(ctx context.Context, object objectvisitor
 	}
 
 	accessor := meta.NewAccessor()
-	uid, err := accessor.UID(object)
-	if err != nil {
-		return "", component.Node{}, errors.Wrap(err, "getting uid for pod")
-	}
 
 	name, err := accessor.Name(object)
 	if err != nil {
@@ -175,7 +179,8 @@ func (c *Collector) createPodGroupNode(ctx context.Context, object objectvisitor
 		},
 	}
 
-	c.podGroupIDs[string(uid)] = pgd.id
+	//c.podGroupIDs[string(uid)] = pgd.id
+	c.podGroupIDs[name] = pgd.id
 
 	return pgd.id, node, nil
 }
@@ -220,11 +225,6 @@ func (c *Collector) createObjectNode(ctx context.Context, object objectvisitor.C
 		}
 	}
 
-	uid, err := accessor.UID(object)
-	if err != nil {
-		return "", component.Node{}, err
-	}
-
 	name, err := accessor.Name(object)
 	if err != nil {
 		return "", component.Node{}, errors.New("unable to get object name")
@@ -255,12 +255,17 @@ func (c *Collector) createObjectNode(ctx context.Context, object objectvisitor.C
 		Path:       objectPath,
 	}
 
-	return string(uid), node, nil
+	nodeID, err := genNodeID(object)
+	if err != nil {
+		return "", component.Node{}, errors.New("unable to get object name")
+	}
+
+	return string(nodeID), node, nil
 }
 
 // AddChild adds children for an object to create edges. Pods are collated to a single object.
 func (c *Collector) AddChild(parent objectvisitor.ClusterObject, children ...objectvisitor.ClusterObject) error {
-	if c.isPod(parent) {
+	if c.isObjectPod(parent) {
 		// reverse the relationship, so the pod group details don't need to be accounted for.
 		for _, child := range children {
 			if err := c.AddChild(child, parent); err != nil {
@@ -274,18 +279,15 @@ func (c *Collector) AddChild(parent objectvisitor.ClusterObject, children ...obj
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	accessor := meta.NewAccessor()
-	uid, err := accessor.UID(parent)
+	pid, err := genNodeID(parent)
 	if err != nil {
 		return err
 	}
 
-	pid := string(uid)
-
 	for _, child := range children {
 		var cid string
 
-		if c.isPod(child) && c.groupPods {
+		if c.isObjectPod(child) && c.groupPods {
 			pgd, err := c.podGroupDetails(child)
 			if err != nil {
 				return errors.Wrap(err, "find pod group id for pod")
@@ -293,12 +295,10 @@ func (c *Collector) AddChild(parent objectvisitor.ClusterObject, children ...obj
 
 			cid = pgd.id
 		} else {
-			id, err := accessor.UID(child)
+			cid, err = genNodeID(child)
 			if err != nil {
 				return err
 			}
-
-			cid = string(id)
 		}
 
 		if !dashStrings.Contains(cid, c.edges[pid]) {
@@ -309,13 +309,11 @@ func (c *Collector) AddChild(parent objectvisitor.ClusterObject, children ...obj
 	return nil
 }
 
-func (c *Collector) isPod(object objectvisitor.ClusterObject) bool {
+func (c *Collector) isObjectPod(object objectvisitor.ClusterObject) bool {
 	objectKind := object.GetObjectKind()
-	gvk := objectKind.GroupVersionKind()
+	objectGVK := objectKind.GroupVersionKind()
 
-	return gvk.Group == "" &&
-		gvk.Version == "v1" &&
-		gvk.Kind == "Pod"
+	return objectGVK.String() == gvk.PodGVK.String()
 }
 
 type podGroupDetails struct {
@@ -324,6 +322,9 @@ type podGroupDetails struct {
 }
 
 func (c *Collector) podGroupDetails(object objectvisitor.ClusterObject) (podGroupDetails, error) {
+	if !c.isObjectPod(object) {
+		return podGroupDetails{}, errors.Errorf("can't create pod group details for a %T", object)
+	}
 	obj, err := meta.Accessor(object)
 	if err != nil {
 		return podGroupDetails{}, err
@@ -331,14 +332,14 @@ func (c *Collector) podGroupDetails(object objectvisitor.ClusterObject) (podGrou
 
 	reference := metav1.GetControllerOf(obj)
 	if reference == nil {
-
+		fmt.Println("creating pod group details for pod without parent")
 		return podGroupDetails{
-			id:   string(obj.GetUID()),
+			id:   string(obj.GetName()),
 			name: obj.GetName(),
 		}, nil
 	}
 
-	id := fmt.Sprintf("pods-%s", reference.UID)
+	id := fmt.Sprintf("%s%s-%s-%s", c.podGroupPrefix, reference.APIVersion, reference.Kind, reference.Name)
 
 	pgd := podGroupDetails{
 		id:   id,
@@ -361,8 +362,8 @@ func (c *Collector) Component(selected string) (component.Component, error) {
 
 	var nodeIDs []string
 	for nodeID, node := range nodes {
-		if strings.HasPrefix(nodeID, "pods-") {
-			ownerID := strings.TrimPrefix(nodeID, "pods-")
+		if strings.HasPrefix(nodeID, c.podGroupPrefix) {
+			ownerID := strings.TrimPrefix(nodeID, c.podGroupPrefix)
 			node.Details = append(node.Details,
 				component.NewText(fmt.Sprintf("Pod count: %d", c.podStats[ownerID])))
 			nodes[nodeID] = node
@@ -376,7 +377,9 @@ func (c *Collector) Component(selected string) (component.Component, error) {
 		sort.Strings(edges)
 		for _, edgeID := range edges {
 			if dashStrings.Contains(edgeID, nodeIDs) {
-				rv.AddEdge(nodeID, edgeID, component.EdgeTypeExplicit)
+				if err := rv.AddEdge(nodeID, edgeID, component.EdgeTypeExplicit); err != nil {
+					c.log().WithErr(err).Errorf("unable to add edge to object graph")
+				}
 			}
 		}
 	}
@@ -397,4 +400,21 @@ func (c *Collector) log() log.Logger {
 	}
 
 	return log.NopLogger()
+}
+
+func genNodeID(object runtime.Object) (string, error) {
+	if object == nil {
+		return "", errors.New("can't generate node id for nil object")
+	}
+
+	accessor := meta.NewAccessor()
+
+	name, err := accessor.Name(object)
+	if err != nil {
+		return "", err
+	}
+
+	apiVersion, kind := object.GetObjectKind().GroupVersionKind().ToAPIVersionAndKind()
+
+	return fmt.Sprintf("%s-%s-%s", apiVersion, kind, name), nil
 }

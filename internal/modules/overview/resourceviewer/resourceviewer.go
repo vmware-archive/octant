@@ -35,6 +35,7 @@ func WithDefaultQueryer(q queryer.Queryer) ViewerOpt {
 
 // ResourceViewer visits an object and creates a view component.
 type ResourceViewer struct {
+	dashConfig config.Dash
 	collector *Collector
 	visitor   objectvisitor.Visitor
 }
@@ -46,6 +47,7 @@ func New(dashConfig config.Dash, opts ...ViewerOpt) (*ResourceViewer, error) {
 		return nil, errors.Wrap(err, "create collector")
 	}
 	rv := &ResourceViewer{
+		dashConfig: dashConfig,
 		collector: collector,
 	}
 
@@ -63,7 +65,10 @@ func New(dashConfig config.Dash, opts ...ViewerOpt) (*ResourceViewer, error) {
 }
 
 // Visit visits an object and creates a view component.
+
 func (rv *ResourceViewer) Visit(ctx context.Context, object objectvisitor.ClusterObject) (component.Component, error) {
+
+
 	rv.collector.Reset()
 
 	ctx, span := trace.StartSpan(ctx, "resourceviewer")

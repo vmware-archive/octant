@@ -7,13 +7,14 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 
 	configFake "github.com/heptio/developer-dash/internal/config/fake"
@@ -40,23 +41,26 @@ func Test_Collector(t *testing.T) {
 		AvailableReplicas: 1,
 	}
 
+	setOwner(t, replicaSet1, deployment)
+
 	replicaSet2 := testutil.CreateReplicaSet("replicaSet2")
+
+	serviceAccount := testutil.CreateServiceAccount("service-account")
+	serviceAccount.UID = types.UID("service-account")
 
 	pod := &corev1.Pod{
 		TypeMeta: metav1.TypeMeta{APIVersion: "v1", Kind: "Pod"},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "pod",
 			UID:  types.UID("pod"),
-			OwnerReferences: []metav1.OwnerReference{
-				*metav1.NewControllerRef(replicaSet1,
-					schema.FromAPIVersionAndKind(replicaSet1.APIVersion,
-						replicaSet1.Kind)),
-			},
 		},
 		Status: corev1.PodStatus{
 			Phase: corev1.PodRunning,
 		},
 	}
+	pod.Spec.ServiceAccountName = serviceAccount.Name
+
+	setOwner(t, pod, replicaSet1)
 
 	controller := gomock.NewController(t)
 	defer controller.Finish()
@@ -79,6 +83,11 @@ func Test_Collector(t *testing.T) {
 		ForObjectWithQuery(replicaSet1, replicaSet1.Name, q).
 		Return(replicaSetLink, nil)
 
+	serviceAccountLink := component.NewLink("", "service-account", "/service-account")
+	linkGenerator.EXPECT().
+		ForObjectWithQuery(serviceAccount, serviceAccount.Name, q).
+		Return(serviceAccountLink, nil)
+
 	mockLink := func(c *Collector) {
 		c.link = linkGenerator
 	}
@@ -97,6 +106,9 @@ func Test_Collector(t *testing.T) {
 	err = c.Process(ctx, replicaSet2)
 	require.NoError(t, err)
 
+	err = c.Process(ctx, serviceAccount)
+	require.NoError(t, err)
+
 	err = c.Process(ctx, pod)
 	require.NoError(t, err)
 
@@ -106,13 +118,14 @@ func Test_Collector(t *testing.T) {
 	err = c.AddChild(replicaSet1, pod)
 	require.NoError(t, err)
 
+	err = c.AddChild(pod, serviceAccount)
+	require.NoError(t, err)
+
 	got, err := c.Component("deployment")
 	require.NoError(t, err)
 
 	expected := component.NewResourceViewer("Resource Viewer")
-	expected.AddEdge("deployment", "replicaSet1", component.EdgeTypeExplicit)
-	expected.AddEdge("replicaSet1", "pods-replicaSet1", component.EdgeTypeExplicit)
-	expected.AddNode("deployment", component.Node{
+	expected.AddNode("apps/v1-Deployment-deployment", component.Node{
 		APIVersion: "apps/v1",
 		Kind:       "Deployment",
 		Name:       "deployment",
@@ -121,7 +134,7 @@ func Test_Collector(t *testing.T) {
 		Path:       deploymentLink,
 	})
 
-	expected.AddNode("replicaSet1", component.Node{
+	expected.AddNode("apps/v1-ReplicaSet-replicaSet1", component.Node{
 		APIVersion: "extensions/v1beta1",
 		Kind:       "ReplicaSet",
 		Name:       "replicaSet1",
@@ -136,7 +149,7 @@ func Test_Collector(t *testing.T) {
 	}
 	podStatus.AddSummary("pod", details, component.NodeStatusOK)
 
-	expected.AddNode("pods-replicaSet1", component.Node{
+	expected.AddNode("pods-apps/v1-ReplicaSet-replicaSet1", component.Node{
 		APIVersion: "v1",
 		Kind:       "Pod",
 		Name:       "replicaSet1 pods",
@@ -146,6 +159,20 @@ func Test_Collector(t *testing.T) {
 			component.NewText("Pod count: 1"),
 		},
 	})
+
+	expected.AddNode("v1-ServiceAccount-service-account", component.Node{
+		APIVersion: "v1",
+		Kind:       "ServiceAccount",
+		Name:       "service-account",
+		Status:     "ok",
+		Details:    []component.Component{component.NewText("v1 ServiceAccount is OK")},
+		Path:       serviceAccountLink,
+	})
+
+	require.NoError(t, expected.AddEdge("apps/v1-Deployment-deployment", "apps/v1-ReplicaSet-replicaSet1", component.EdgeTypeExplicit))
+	require.NoError(t, expected.AddEdge("apps/v1-ReplicaSet-replicaSet1", "pods-apps/v1-ReplicaSet-replicaSet1", component.EdgeTypeExplicit))
+	require.NoError(t, expected.AddEdge("v1-ServiceAccount-service-account", "pods-apps/v1-ReplicaSet-replicaSet1", component.EdgeTypeExplicit))
+
 	expected.Select("deployment")
 
 	assertComponentEqual(t, expected, got)
@@ -153,7 +180,7 @@ func Test_Collector(t *testing.T) {
 	got, err = c.Component("pod")
 	require.NoError(t, err)
 
-	expected.Select("pods-replicaSet1")
+	expected.Select("pods-apps/v1-ReplicaSet-replicaSet1")
 
 	assertComponentEqual(t, expected, got)
 }
@@ -171,4 +198,35 @@ func assertComponentEqual(t *testing.T, expected, got component.Component) {
 	gotString := transformer(got)
 
 	assert.Equal(t, expectedString, gotString)
+}
+
+func setOwner(t *testing.T, object metav1.Object, owner runtime.Object) {
+	require.NotNil(t, object)
+	require.NotNil(t, owner)
+
+	accessor := meta.NewAccessor()
+	apiVersion, err := accessor.APIVersion(owner)
+	require.NoError(t, err)
+
+	kind, err := accessor.Kind(owner)
+	require.NoError(t, err)
+
+	name, err := accessor.Name(owner)
+	require.NoError(t, err)
+
+	uid, err := accessor.UID(owner)
+	require.NoError(t, err)
+
+	boolTrue := true
+
+	object.SetOwnerReferences([]metav1.OwnerReference{
+		{
+			APIVersion:         apiVersion,
+			Kind:               kind,
+			Name:               name,
+			UID:                uid,
+			Controller:         &boolTrue,
+			BlockOwnerDeletion: &boolTrue,
+		},
+	})
 }
