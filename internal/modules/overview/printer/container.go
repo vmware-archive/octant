@@ -62,14 +62,19 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 
 	if pod, ok := cc.parent.(*corev1.Pod); ok {
 		status, err := findContainerStatus(pod, cc.container.Name, cc.isInit)
-		if err != nil {
-			return nil, errors.Wrapf(err, "get container status for %q", cc.container.Name)
+		if err == nil {
+			sections.AddText("Last State", printContainerState(status.LastTerminationState))
+			sections.AddText("Current State", printContainerState(status.State))
+			sections.AddText("Ready", fmt.Sprintf("%t", status.Ready))
+			sections.AddText("Restart Count", fmt.Sprintf("%d", status.RestartCount))
+		} else {
+			switch err.(type) {
+			case *containerNotFoundError:
+				// no op
+			default:
+				return nil, errors.Wrapf(err, "get container status for %q", cc.container.Name)
+			}
 		}
-
-		sections.AddText("Last State", printContainerState(status.LastTerminationState))
-		sections.AddText("Current State", printContainerState(status.State))
-		sections.AddText("Ready", fmt.Sprintf("%t", status.Ready))
-		sections.AddText("Restart Count", fmt.Sprintf("%d", status.RestartCount))
 	}
 
 	envTbl, err := describeContainerEnv(cc.parent, c, cc.options)
@@ -119,12 +124,22 @@ func printContainerState(state corev1.ContainerState) string {
 	return "indeterminate"
 }
 
+type containerStatus interface {
+	isContainerFound() bool
+}
+
 type containerNotFoundError struct {
 	name string
 }
 
+var _ containerStatus = (*containerNotFoundError)(nil)
+
 func (e *containerNotFoundError) Error() string {
 	return fmt.Sprintf("container %q not found", e.name)
+}
+
+func (e *containerNotFoundError) isContainerFound() bool {
+	return false
 }
 
 func findContainerStatus(pod *corev1.Pod, name string, isInit bool) (*corev1.ContainerStatus, error) {

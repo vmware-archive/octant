@@ -2,8 +2,11 @@ package printer
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/heptio/developer-dash/internal/portforward"
 
@@ -288,6 +291,94 @@ func Test_ContainerConfiguration(t *testing.T) {
 			require.NoError(t, err)
 
 			assertComponentEqual(t, tc.expected, summary)
+		})
+	}
+}
+
+func Test_containerNotFoundError(t *testing.T) {
+	e := containerNotFoundError{name: "name"}
+
+	expected := fmt.Sprintf("container %q not found", "name")
+	assert.Equal(t, expected, e.Error())
+
+	assert.False(t, e.isContainerFound())
+}
+
+func Test_findContainerStatus(t *testing.T) {
+	tests := []struct {
+		name            string
+		podFactory      func(statusName string) *corev1.Pod
+		statusName      string
+		isInit          bool
+		isErr           bool
+		expectedErrType reflect.Type
+		expectedStatus  *corev1.ContainerStatus
+	}{
+		{
+			name:       "container with status",
+			statusName: "name",
+			podFactory: func(statusName string) *corev1.Pod {
+				pod := testutil.CreatePod("pod")
+
+				pod.Status.ContainerStatuses = append(
+					pod.Status.ContainerStatuses,
+					corev1.ContainerStatus{Name: statusName})
+
+				return pod
+			},
+			expectedStatus: &corev1.ContainerStatus{Name: "name"},
+		},
+		{
+			name:       "init container with status",
+			isInit:     true,
+			statusName: "name",
+			podFactory: func(statusName string) *corev1.Pod {
+				pod := testutil.CreatePod("pod")
+
+				pod.Status.InitContainerStatuses = append(
+					pod.Status.ContainerStatuses,
+					corev1.ContainerStatus{Name: statusName})
+
+				return pod
+			},
+			expectedStatus: &corev1.ContainerStatus{Name: "name"},
+		},
+		{
+			name: "no containers",
+			podFactory: func(statusName string) *corev1.Pod {
+				pod := testutil.CreatePod("pod")
+				return pod
+			},
+			isErr:           true,
+			expectedErrType: reflect.TypeOf(&containerNotFoundError{}),
+		},
+		{
+			name: "pod is nil",
+			podFactory: func(statusName string) *corev1.Pod {
+				return nil
+			},
+			isErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			pod := test.podFactory(test.statusName)
+
+			status, err := findContainerStatus(pod, test.statusName, test.isInit)
+			if test.isErr {
+				require.Error(t, err)
+
+				if test.expectedErrType != nil {
+					errType := reflect.TypeOf(err)
+					require.Equal(t, test.expectedErrType, errType)
+				}
+
+				return
+			}
+			require.NoError(t, err)
+
+			require.Equal(t, test.expectedStatus, status)
 		})
 	}
 }
