@@ -14,7 +14,6 @@ import (
 	"github.com/heptio/developer-dash/internal/config"
 	"github.com/heptio/developer-dash/internal/link"
 	"github.com/heptio/developer-dash/internal/modules/overview/printer"
-	"github.com/heptio/developer-dash/internal/modules/overview/resourceviewer"
 	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/pkg/objectstoreutil"
@@ -92,12 +91,11 @@ type LoaderFunc func(ctx context.Context, o objectstore.ObjectStore, namespace s
 type Options struct {
 	config.Dash
 
-	Queryer        queryer.Queryer
-	Fields         map[string]string
-	Printer        printer.Printer
-	LabelSet       *kLabels.Set
-	Link           link.Interface
-	ComponentCache resourceviewer.ComponentCache
+	Queryer  queryer.Queryer
+	Fields   map[string]string
+	Printer  printer.Printer
+	LabelSet *kLabels.Set
+	Link     link.Interface
 
 	LoadObjects func(ctx context.Context, namespace string, fields map[string]string, objectStoreKeys []objectstoreutil.Key) ([]*unstructured.Unstructured, error)
 	LoadObject  func(ctx context.Context, namespace string, fields map[string]string, objectStoreKey objectstoreutil.Key) (*unstructured.Unstructured, error)
@@ -114,7 +112,6 @@ type base struct{}
 func newBaseDescriber() *base {
 	return &base{}
 }
-
 
 func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
 	object, ok := to.(metav1.Object)
@@ -148,7 +145,6 @@ func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
 
 	return nil
 }
-
 
 func isPod(object runtime.Object) bool {
 	gvk := object.GetObjectKind().GroupVersionKind()

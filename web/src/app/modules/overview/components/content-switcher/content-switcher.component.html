@@ -21,6 +21,12 @@
     <ng-container *ngSwitchCase="'labelSelector'">
       <app-view-label-selector [view]="view"></app-view-label-selector>
     </ng-container>
+    <ng-container *ngSwitchCase="'loading'">
+      <app-view-loading [view]="view"></app-view-loading>
+    </ng-container>
+    <ng-container *ngSwitchCase="'error'">
+      <app-view-error [view]="view"></app-view-error>
+    </ng-container>
     <ng-container *ngSwitchCase="'link'">
       <app-view-link [view]="view"></app-view-link>
     </ng-container>

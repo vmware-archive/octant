@@ -12,7 +12,6 @@ import (
 	clusterFake "github.com/heptio/developer-dash/internal/cluster/fake"
 	configFake "github.com/heptio/developer-dash/internal/config/fake"
 	"github.com/heptio/developer-dash/internal/describer"
-	resouceviewerFake "github.com/heptio/developer-dash/internal/modules/overview/resourceviewer/fake"
 	objectStoreFake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
@@ -68,11 +67,6 @@ func Test_realGenerator_Generate(t *testing.T) {
 			clusterClient := clusterFake.NewMockClientInterface(controller)
 			dashConfig.EXPECT().ClusterClient().Return(clusterClient).AnyTimes()
 
-			componentCache := resouceviewerFake.NewMockComponentCache(controller)
-			if !tc.isErr {
-				componentCache.EXPECT().SetQueryer(gomock.Any())
-			}
-
 			discoveryInterface := clusterFake.NewMockDiscoveryInterface(controller)
 			clusterClient.EXPECT().DiscoveryClient().Return(discoveryInterface, nil).AnyTimes()
 
@@ -85,7 +79,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 				pathMatcher.Register(ctx, pf)
 			}
 
-			g, err := newGenerator(pathMatcher, dashConfig, componentCache)
+			g, err := newGenerator(pathMatcher, dashConfig)
 			require.NoError(t, err)
 
 			cResponse, err := g.Generate(ctx, tc.path, "/prefix", "default", GeneratorOptions{})

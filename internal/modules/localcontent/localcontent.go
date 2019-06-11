@@ -24,8 +24,6 @@ type LocalContent struct {
 	root string
 }
 
-
-
 var _ module.Module = (*LocalContent)(nil)
 
 func New(root string) *LocalContent {

@@ -17,7 +17,6 @@ import (
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/modules/overview/printer"
-	"github.com/heptio/developer-dash/internal/modules/overview/resourceviewer"
 	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/pkg/objectstoreutil"
@@ -147,20 +146,17 @@ func (co *ClusterOverview) Content(ctx context.Context, contentPath string, pref
 
 	loaderFactory := describer.NewObjectLoaderFactory(co.DashConfig)
 
-	componentCache, err := resourceviewer.NewComponentCache(co.DashConfig)
 	if err != nil {
 		return describer.EmptyContentResponse, errors.Wrap(err, "create component cache")
 	}
-	componentCache.SetQueryer(q)
 
 	options := describer.Options{
-		Queryer:        q,
-		Fields:         pf.Fields(contentPath),
-		Printer:        p,
-		LabelSet:       opts.LabelSet,
-		Dash:           co.DashConfig,
-		Link:           linkGenerator,
-		ComponentCache: componentCache,
+		Queryer:  q,
+		Fields:   pf.Fields(contentPath),
+		Printer:  p,
+		LabelSet: opts.LabelSet,
+		Dash:     co.DashConfig,
+		Link:     linkGenerator,
 
 		LoadObjects: loaderFactory.LoadObjects,
 		LoadObject:  loaderFactory.LoadObject,

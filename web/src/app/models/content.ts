@@ -246,3 +246,15 @@ export interface PortsView extends View {
     ports: Port[];
   };
 }
+
+export interface LoadingView extends View {
+  config: {
+    value: string
+  };
+}
+
+export interface ErrorView extends View {
+  config: {
+    data: string
+  };
+}

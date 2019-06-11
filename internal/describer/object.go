@@ -10,6 +10,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/modules/overview/logviewer"
+	"github.com/heptio/developer-dash/internal/modules/overview/resourceviewer"
 	"github.com/heptio/developer-dash/internal/modules/overview/yamlviewer"
 	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
@@ -145,13 +146,14 @@ func (d *Object) addSummaryTab(ctx context.Context, object runtime.Object, cr *c
 func (d *Object) addResourceViewerTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options Options) error {
 	if !d.disableResourceViewer {
 
-		resourceViewComponent, err := options.ComponentCache.Get(ctx, object)
+		cacheFn := resourceviewer.CachedResourceViewer(ctx, object, options.Dash, options.Queryer)
+		resourceViewerComponent, err := options.Dash.ComponentCache().Update(ctx, cacheFn)
 		if err != nil {
 			return errors.Wrap(err, "retrieve resource viewer from component cache")
 		}
 
-		resourceViewComponent.SetAccessor("resourceViewer")
-		cr.Add(resourceViewComponent)
+		resourceViewerComponent.SetAccessor("resourceViewer")
+		cr.Add(resourceViewerComponent)
 	}
 
 	return nil

@@ -12,6 +12,7 @@ import { ContainersComponent } from './components/containers/containers.componen
 import { ContentSwitcherComponent } from './components/content-switcher/content-switcher.component';
 import { DatagridComponent } from './components/datagrid/datagrid.component';
 import { ExpressionSelectorComponent } from './components/expression-selector/expression-selector.component';
+import { ErrorComponent } from './components/error/error.component';
 import { FiltersComponent } from './components/filters/filters.component';
 import { FlexlayoutComponent } from './components/flexlayout/flexlayout.component';
 import { GraphvizComponent } from './components/graphviz/graphviz.component';
@@ -19,6 +20,7 @@ import { LabelSelectorComponent } from './components/label-selector/label-select
 import { LabelsComponent } from './components/labels/labels.component';
 import { LinkComponent } from './components/link/link.component';
 import { ListComponent } from './components/list/list.component';
+import { LoadingComponent } from './components/loading/loading.component';
 import { LogsComponent } from './components/logs/logs.component';
 import { ObjectStatusComponent } from './components/object-status/object-status.component';
 import { PodStatusComponent } from './components/pod-status/pod-status.component';
@@ -50,11 +52,13 @@ export function hljsLanguages() {
     ContainersComponent,
     DatagridComponent,
     ExpressionSelectorComponent,
+    ErrorComponent,
     FiltersComponent,
     FlexlayoutComponent,
     GraphvizComponent,
     LabelSelectorComponent,
     LabelsComponent,
+    LoadingComponent,
     LinkComponent,
     ListComponent,
     QuadrantComponent,
@@ -90,4 +94,4 @@ export function hljsLanguages() {
   ],
   exports: [ContextSelectorComponent],
 })
-export class OverviewModule {}
+export class OverviewModule { }

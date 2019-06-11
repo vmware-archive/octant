@@ -3,6 +3,7 @@ package component
 const (
 	typeAnnotations        = "annotations"
 	typeContainers         = "containers"
+	typeError              = "error"
 	typeExpressionSelector = "expressionSelector"
 	typeFlexLayout         = "flexlayout"
 	typeGraphviz           = "graphviz"
@@ -11,6 +12,7 @@ const (
 	typeLabelSelector      = "labelSelector"
 	typeLink               = "link"
 	typeList               = "list"
+	typeLoading            = "loading"
 	typeLogs               = "logs"
 	typePanel              = "panel"
 	typePodStatus          = "podStatus"

@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/heptio/developer-dash/internal/componentcache"
+
 	"github.com/heptio/developer-dash/internal/config"
 	"github.com/heptio/developer-dash/internal/describer"
 	"github.com/heptio/developer-dash/internal/modules/clusteroverview"
@@ -83,7 +85,12 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 
 	appObjectStore, err := initObjectStore(ctx, ctx.Done(), clusterClient)
 	if err != nil {
-		return errors.Wrap(err, "initializing cache")
+		return errors.Wrap(err, "initializing store")
+	}
+
+	componentCache, err := componentcache.NewComponentCache(ctx)
+	if err != nil {
+		return errors.Wrap(err, "initializing component cache")
 	}
 
 	crdWatcher, err := describer.NewDefaultCRDWatcher(appObjectStore)
@@ -102,13 +109,14 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 	}
 
 	mo := moduleOptions{
-		clusterClient: clusterClient,
-		crdWatcher:    crdWatcher,
-		objectStore:   appObjectStore,
-		namespace:     options.Namespace,
-		logger:        logger,
-		pluginManager: pluginManager,
-		portForwarder: portForwarder,
+		clusterClient:  clusterClient,
+		crdWatcher:     crdWatcher,
+		objectStore:    appObjectStore,
+		componentCache: componentCache,
+		namespace:      options.Namespace,
+		logger:         logger,
+		pluginManager:  pluginManager,
+		portForwarder:  portForwarder,
 	}
 	moduleManager, err := initModuleManager(ctx, mo)
 	if err != nil {
@@ -175,13 +183,14 @@ func initPortForwarder(ctx context.Context, client cluster.ClientInterface, appO
 }
 
 type moduleOptions struct {
-	clusterClient *cluster.Cluster
-	crdWatcher    config.CRDWatcher
-	objectStore   objectstore.ObjectStore
-	namespace     string
-	logger        log.Logger
-	pluginManager *plugin.Manager
-	portForwarder portforward.PortForwarder
+	clusterClient  *cluster.Cluster
+	crdWatcher     config.CRDWatcher
+	objectStore    objectstore.ObjectStore
+	componentCache componentcache.ComponentCache
+	namespace      string
+	logger         log.Logger
+	pluginManager  *plugin.Manager
+	portForwarder  portforward.PortForwarder
 }
 
 // initModuleManager initializes the moduleManager (and currently the modules themselves)
@@ -197,6 +206,7 @@ func initModuleManager(ctx context.Context, options moduleOptions) (*module.Mana
 		options.logger,
 		moduleManager,
 		options.objectStore,
+		options.componentCache,
 		options.pluginManager,
 		options.portForwarder,
 	)
