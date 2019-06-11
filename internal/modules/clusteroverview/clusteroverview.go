@@ -215,6 +215,11 @@ func (co *ClusterOverview) Start() error {
 func (co *ClusterOverview) Stop() {
 }
 
+// Generators allow modules to send events to the frontend.
+func (co *ClusterOverview) Generators() []clustereye.Generator {
+	return []clustereye.Generator{}
+}
+
 func rbacEntries(_ context.Context, prefix, _ string, _ objectstore.ObjectStore) ([]clustereye.Navigation, error) {
 	return []clustereye.Navigation{
 		*clustereye.NewNavigation("Cluster Roles", path.Join(prefix, "cluster-roles")),

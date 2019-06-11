@@ -117,6 +117,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		logger:         logger,
 		pluginManager:  pluginManager,
 		portForwarder:  portForwarder,
+		kubeConfigPath: options.KubeConfig,
 	}
 	moduleManager, err := initModuleManager(ctx, mo)
 	if err != nil {
@@ -191,6 +192,7 @@ type moduleOptions struct {
 	logger         log.Logger
 	pluginManager  *plugin.Manager
 	portForwarder  portforward.PortForwarder
+	kubeConfigPath string
 }
 
 // initModuleManager initializes the moduleManager (and currently the modules themselves)
@@ -203,6 +205,7 @@ func initModuleManager(ctx context.Context, options moduleOptions) (*module.Mana
 	c := config.NewLiveConfig(
 		options.clusterClient,
 		options.crdWatcher,
+		[]string{options.kubeConfigPath},
 		options.logger,
 		moduleManager,
 		options.objectStore,
@@ -234,6 +237,7 @@ func initModuleManager(ctx context.Context, options moduleOptions) (*module.Mana
 
 	configurationOptions := configuration.Options{
 		DashConfig: c,
+		KubeConfigPath: options.kubeConfigPath,
 	}
 	configurationModule := configuration.New(ctx, configurationOptions)
 	moduleManager.Register(configurationModule)

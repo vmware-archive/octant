@@ -12,7 +12,6 @@ import (
 	clusterFake "github.com/heptio/developer-dash/internal/cluster/fake"
 	componentCacheFake "github.com/heptio/developer-dash/internal/componentcache/fake"
 	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/module"
 	moduleFake "github.com/heptio/developer-dash/internal/module/fake"
 	objectstoreFake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	portForwardFake "github.com/heptio/developer-dash/internal/portforward/fake"
@@ -66,17 +65,22 @@ func TestLiveConfig(t *testing.T) {
 	defer controller.Finish()
 
 	logger := log.NopLogger()
-	m := moduleFake.NewModule("module", logger)
 
 	clusterClient := clusterFake.NewMockClientInterface(controller)
 	crdWatcher := stubCRDWatcher{}
-	moduleManager := moduleFake.NewStubManager("", []module.Module{m})
+
+	moduleManager := moduleFake.NewMockManagerInterface(controller)
+	moduleManager.EXPECT().
+		ObjectPath(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return("/pod", nil)
+
 	objectStore := objectstoreFake.NewMockObjectStore(controller)
 	componentCache := componentCacheFake.NewMockComponentCache(controller)
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 	portForwarder := portForwardFake.NewMockPortForwarder(controller)
+	kubeConfigPaths := []string{"/path"}
 
-	config := NewLiveConfig(clusterClient, crdWatcher, logger, moduleManager, objectStore, componentCache, pluginManager, portForwarder)
+	config := NewLiveConfig(clusterClient, crdWatcher, kubeConfigPaths, logger, moduleManager, objectStore, componentCache, pluginManager, portForwarder)
 
 	assert.NoError(t, config.Validate())
 	assert.Equal(t, clusterClient, config.ClusterClient())

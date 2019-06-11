@@ -216,3 +216,8 @@ func (l *LocalContent) AddCRD(ctx context.Context, crd *unstructured.Unstructure
 func (l *LocalContent) RemoveCRD(ctx context.Context, crd *unstructured.Unstructured) error {
 	return errors.Errorf("unable to remove crd %s", crd.GetName())
 }
+
+// Generators allow modules to send events to the frontend.
+func (l *LocalContent) Generators() []clustereye.Generator {
+	return []clustereye.Generator{}
+}

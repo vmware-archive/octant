@@ -1,22 +1,17 @@
 package module_test
 
 import (
-	"context"
-	"net/http"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/stretchr/testify/require"
-
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
-	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/heptio/developer-dash/internal/module/fake"
 )
 
 func TestManager(t *testing.T) {
@@ -31,7 +26,12 @@ func TestManager(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, modules, 0)
 
-	manager.Register(&stubModule{})
+	m := fake.NewMockModule(controller)
+	m.EXPECT().Start().Return(nil)
+	m.EXPECT().Stop()
+	m.EXPECT().SetNamespace("other").Return(nil)
+
+	manager.Register(m)
 	require.NoError(t, manager.Load())
 
 	modules = manager.Modules()
@@ -54,7 +54,7 @@ func TestManager_ObjectPath(t *testing.T) {
 			name:       "exists",
 			apiVersion: "group/version",
 			kind:       "kind",
-			expected:   "/foo/bar",
+			expected:   "/path",
 		},
 		{
 			name:       "does not exist",
@@ -77,7 +77,18 @@ func TestManager_ObjectPath(t *testing.T) {
 			require.NoError(t, err)
 			require.Len(t, modules, 0)
 
-			manager.Register(&stubModule{})
+			m := fake.NewMockModule(controller)
+			m.EXPECT().Start().Return(nil)
+			supportedGVK := []schema.GroupVersionKind{
+				{Group: "group", Version: "version", Kind: "kind"},
+			}
+			m.EXPECT().SupportedGroupVersionKind().Return(supportedGVK)
+			m.EXPECT().
+				GroupVersionKindPath("namespace", "group/version",  "kind", "name").
+				Return("/path", nil).
+				AnyTimes()
+
+			manager.Register(m)
 			require.NoError(t, manager.Load())
 
 			got, err := manager.ObjectPath("namespace", tc.apiVersion, tc.kind, "name")
@@ -92,62 +103,4 @@ func TestManager_ObjectPath(t *testing.T) {
 			assert.Equal(t, tc.expected, got)
 		})
 	}
-}
-
-// TODO when module.Module has a mockgen module, this can be removed and all instances replaced with the mock
-type stubModule struct{}
-
-var _ module.Module = (*stubModule)(nil)
-
-func (m *stubModule) Name() string {
-	return "stub-module"
-}
-
-func (m *stubModule) ContentPath() string {
-	panic("not implemented")
-}
-
-func (m *stubModule) Handler(root string) http.Handler {
-	panic("not implemented")
-}
-
-func (m *stubModule) Navigation(ctx context.Context, namespace, root string) ([]clustereye.Navigation, error) {
-	panic("not implemented")
-}
-
-func (m *stubModule) SetNamespace(namespace string) error {
-	return nil
-}
-
-func (m *stubModule) Start() error {
-	return nil
-}
-
-func (m *stubModule) Stop() {
-}
-
-func (m *stubModule) Content(ctx context.Context, contentPath string, prefix string, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
-	panic("not implemented")
-}
-
-func (m *stubModule) Handlers(ctx context.Context) map[string]http.Handler {
-	return make(map[string]http.Handler)
-}
-
-func (m *stubModule) SupportedGroupVersionKind() []schema.GroupVersionKind {
-	return []schema.GroupVersionKind{
-		{Group: "group", Version: "version", Kind: "kind"},
-	}
-}
-
-func (m *stubModule) GroupVersionKindPath(namespace, apiVersion, kind, name string) (string, error) {
-	return "/foo/bar", nil
-}
-
-func (m *stubModule) AddCRD(ctx context.Context, crd *unstructured.Unstructured) error {
-	panic("implement me")
-}
-
-func (m *stubModule) RemoveCRD(ctx context.Context, crd *unstructured.Unstructured) error {
-	panic("implement me")
 }

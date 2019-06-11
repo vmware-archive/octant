@@ -76,20 +76,25 @@ type Dash interface {
 
 	PortForwarder() portforward.PortForwarder
 
+	KubeConfigsPaths() []string
+
 	Validate() error
 }
 
 // Live is a live version of dash config.
 type Live struct {
-	clusterClient  cluster.ClientInterface
-	crdWatcher     CRDWatcher
-	logger         log.Logger
-	moduleManager  module.ManagerInterface
-	objectStore    objectstore.ObjectStore
-	componentCache componentcache.ComponentCache
-	pluginManager  plugin.ManagerInterface
-	portForwarder  portforward.PortForwarder
+	clusterClient   cluster.ClientInterface
+	crdWatcher      CRDWatcher
+	logger          log.Logger
+	moduleManager   module.ManagerInterface
+	objectStore     objectstore.ObjectStore
+	componentCache  componentcache.ComponentCache
+	pluginManager   plugin.ManagerInterface
+	portForwarder   portforward.PortForwarder
+	kubeConfigPaths []string
 }
+
+
 
 var _ Dash = (*Live)(nil)
 
@@ -97,6 +102,7 @@ var _ Dash = (*Live)(nil)
 func NewLiveConfig(
 	clusterClient cluster.ClientInterface,
 	crdWatcher CRDWatcher,
+	kubeConfigPaths []string,
 	logger log.Logger,
 	moduleManager module.ManagerInterface,
 	objectStore objectstore.ObjectStore,
@@ -107,6 +113,7 @@ func NewLiveConfig(
 	return &Live{
 		clusterClient:  clusterClient,
 		crdWatcher:     crdWatcher,
+		kubeConfigPaths: kubeConfigPaths,
 		logger:         logger,
 		moduleManager:  moduleManager,
 		objectStore:    objectStore,
@@ -139,6 +146,11 @@ func (l *Live) ObjectStore() objectstore.ObjectStore {
 // ComponentCache returns an component cache.
 func (l *Live) ComponentCache() componentcache.ComponentCache {
 	return l.componentCache
+}
+
+// KubeConfigsPaths returns a slice of kube config paths.
+func (l *Live) KubeConfigsPaths() []string {
+	return l.kubeConfigPaths
 }
 
 // Logger returns a logger.

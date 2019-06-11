@@ -8,6 +8,8 @@ import (
 	"github.com/heptio/developer-dash/internal/log"
 )
 
+//go:generate mockgen -destination=./fake/mock_manager.go -package=fake github.com/heptio/developer-dash/internal/module ManagerInterface
+
 // ManagerInterface is an interface for managing module lifecycle.
 type ManagerInterface interface {
 	Modules() []Module

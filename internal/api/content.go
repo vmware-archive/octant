@@ -10,10 +10,13 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"k8s.io/apimachinery/pkg/labels"
+
 	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/event"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
-	"k8s.io/apimachinery/pkg/labels"
 )
 
 type contentHandler struct {
@@ -120,42 +123,42 @@ func (h *contentHandler) handlePoll(ctx context.Context, poll, requestPath, name
 		namespace = h.previousNamespace
 	}
 
-	eventTimeout := defaultEventTimeout
+	eventTimeout := event.DefaultScheduleDelay
 	timeout, err := strconv.Atoi(poll)
 	if err == nil {
 		eventTimeout = time.Duration(timeout) * time.Second
 	}
 
-	eventGenerators := []eventGenerator{
-		&contentEventGenerator{
-			generatorFn: m.Content,
-			path:        contentPath,
-			prefix:      h.prefix,
-			namespace:   namespace,
-			labelSet:    labelSet,
-			runEvery:    eventTimeout,
+	eventGenerators := []clustereye.Generator{
+		&event.ContentGenerator{
+			ResponseFactory: m.Content,
+			Path:            contentPath,
+			Prefix:          h.prefix,
+			Namespace:       namespace,
+			LabelSet:        labelSet,
+			RunEvery:        eventTimeout,
 		},
-		&navigationEventGenerator{
-			modules:   h.modules,
-			namespace: namespace,
+		&event.NavigationGenerator{
+			Modules:   h.modules,
+			Namespace: namespace,
 		},
-		&namespaceEventGenerator{
-			nsClient: h.nsClient,
+		&event.NamespacesGenerator{
+			NamespaceClient: h.nsClient,
 		},
 	}
 
-	cs := contentStreamer{
-		eventGenerators: eventGenerators,
-		w:               w,
-		logger:          h.logger,
-		streamFn:        stream,
-		contentPath:     contentPath,
-		requestPath:     requestPath,
+	for _, m := range h.modules {
+		eventGenerators = append(eventGenerators, m.Generators()...)
 	}
 
-	if err = cs.content(ctx); err != nil {
-		h.logger.Errorf("content error: %v", err)
+	streamer := &eventSourceStreamer{
+		w: w,
 	}
+
+	if err := event.Stream(ctx, streamer, eventGenerators, requestPath, contentPath); err != nil {
+		h.logger.WithErr(err).Errorf("stream error")
+	}
+
 }
 
 // selectorFromFilters builds a labels.Selector from a list of

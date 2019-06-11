@@ -13,12 +13,14 @@ import (
 	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/internal/config"
 	"github.com/heptio/developer-dash/internal/describer"
+	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
 type Options struct {
-	DashConfig config.Dash
+	DashConfig     config.Dash
+	KubeConfigPath string
 }
 
 type Configuration struct {
@@ -45,8 +47,20 @@ func (Configuration) Name() string {
 	return "configuration"
 }
 
-func (Configuration) Handlers(ctx context.Context) map[string]http.Handler {
-	return map[string]http.Handler{}
+func (c *Configuration) Handlers(ctx context.Context) map[string]http.Handler {
+	logger := log.From(ctx)
+
+	update := &updateCurrentContextHandler{
+		logger: logger,
+		contextUpdateFunc: func(name string) error {
+			logger.With("new-kube-context", name).Debugf("update context stub")
+			return nil
+		},
+	}
+
+	return map[string]http.Handler{
+		"/kube-contexts": update,
+	}
 }
 
 func (c *Configuration) Content(ctx context.Context, contentPath, prefix, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
@@ -116,4 +130,12 @@ func (c Configuration) AddCRD(ctx context.Context, crd *unstructured.Unstructure
 
 func (c Configuration) RemoveCRD(ctx context.Context, crd *unstructured.Unstructured) error {
 	return nil
+}
+
+// Generators allow modules to send events to the frontend.
+func (c Configuration) Generators() []clustereye.Generator {
+	kcg := newKubeContextGenerator(c.DashConfig.KubeConfigsPaths()[0])
+	return []clustereye.Generator{
+		kcg,
+	}
 }
