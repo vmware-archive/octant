@@ -3,6 +3,8 @@ package config
 import (
 	"context"
 
+	"github.com/heptio/developer-dash/internal/componentcache"
+
 	"github.com/pkg/errors"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -66,6 +68,8 @@ type Dash interface {
 
 	ObjectStore() objectstore.ObjectStore
 
+	ComponentCache() componentcache.ComponentCache
+
 	Logger() log.Logger
 
 	PluginManager() plugin.ManagerInterface
@@ -77,13 +81,14 @@ type Dash interface {
 
 // Live is a live version of dash config.
 type Live struct {
-	clusterClient cluster.ClientInterface
-	crdWatcher    CRDWatcher
-	logger        log.Logger
-	moduleManager module.ManagerInterface
-	objectStore   objectstore.ObjectStore
-	pluginManager plugin.ManagerInterface
-	portForwarder portforward.PortForwarder
+	clusterClient  cluster.ClientInterface
+	crdWatcher     CRDWatcher
+	logger         log.Logger
+	moduleManager  module.ManagerInterface
+	objectStore    objectstore.ObjectStore
+	componentCache componentcache.ComponentCache
+	pluginManager  plugin.ManagerInterface
+	portForwarder  portforward.PortForwarder
 }
 
 var _ Dash = (*Live)(nil)
@@ -95,17 +100,19 @@ func NewLiveConfig(
 	logger log.Logger,
 	moduleManager module.ManagerInterface,
 	objectStore objectstore.ObjectStore,
+	componentCache componentcache.ComponentCache,
 	pluginManager plugin.ManagerInterface,
 	portForwarder portforward.PortForwarder,
 ) *Live {
 	return &Live{
-		clusterClient: clusterClient,
-		crdWatcher:    crdWatcher,
-		logger:        logger,
-		moduleManager: moduleManager,
-		objectStore:   objectStore,
-		pluginManager: pluginManager,
-		portForwarder: portForwarder,
+		clusterClient:  clusterClient,
+		crdWatcher:     crdWatcher,
+		logger:         logger,
+		moduleManager:  moduleManager,
+		objectStore:    objectStore,
+		componentCache: componentCache,
+		pluginManager:  pluginManager,
+		portForwarder:  portForwarder,
 	}
 }
 
@@ -127,6 +134,11 @@ func (l *Live) CRDWatcher() CRDWatcher {
 // ObjectStore returns an object store.
 func (l *Live) ObjectStore() objectstore.ObjectStore {
 	return l.objectStore
+}
+
+// ComponentCache returns an component cache.
+func (l *Live) ComponentCache() componentcache.ComponentCache {
+	return l.componentCache
 }
 
 // Logger returns a logger.

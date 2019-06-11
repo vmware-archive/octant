@@ -366,7 +366,7 @@ func (dv *DefaultVisitor) visitObject(ctx context.Context, object ClusterObject,
 		if err := dv.convertToType(u, pod); err != nil {
 			return err
 		}
-		children, err := dv.visitPod(ctx, pod);
+		children, err := dv.visitPod(ctx, pod)
 		if err != nil {
 			return err
 		}

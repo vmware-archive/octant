@@ -16,7 +16,6 @@ import (
 	"github.com/heptio/developer-dash/internal/describer"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/internal/modules/overview/resourceviewer"
 	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
@@ -62,19 +61,14 @@ func New(ctx context.Context, options Options) (*Overview, error) {
 
 	objectStore := options.DashConfig.ObjectStore()
 
-	componentCache, err := resourceviewer.NewComponentCache(options.DashConfig)
-	if err != nil {
-		return nil, errors.Wrap(err, "create component cache")
-	}
-
-	g, err := newGenerator(pathMatcher, options.DashConfig, componentCache)
+	g, err := newGenerator(pathMatcher, options.DashConfig)
 	if err != nil {
 		return nil, errors.Wrap(err, "create overview generator")
 	}
 
 	objectPathConfig := clustereye.ObjectPathConfig{
-		ModuleName: "overview"	,
-		SupportedGVKs: supportedGVKs,
+		ModuleName:     "overview",
+		SupportedGVKs:  supportedGVKs,
 		PathLookupFunc: gvkPath,
 		CRDPathGenFunc: crdPath,
 	}

@@ -41,6 +41,11 @@ func unmarshal(to TypedObject) (interface{}, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal labelSelector config")
 		o = t
+	case typeLoading:
+		t := &Loading{base: base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal loading config")
+		o = t
 	case typeLink:
 		t := &Link{base: base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),

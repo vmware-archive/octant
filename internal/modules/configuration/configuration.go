@@ -27,7 +27,6 @@ type Configuration struct {
 	pathMatcher *describer.PathMatcher
 }
 
-
 var _ module.Module = (*Configuration)(nil)
 
 func New(ctx context.Context, options Options) *Configuration {

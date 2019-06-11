@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
-
 	clusterFake "github.com/heptio/developer-dash/internal/cluster/fake"
+	componentCacheFake "github.com/heptio/developer-dash/internal/componentcache/fake"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	moduleFake "github.com/heptio/developer-dash/internal/module/fake"
@@ -72,16 +72,18 @@ func TestLiveConfig(t *testing.T) {
 	crdWatcher := stubCRDWatcher{}
 	moduleManager := moduleFake.NewStubManager("", []module.Module{m})
 	objectStore := objectstoreFake.NewMockObjectStore(controller)
+	componentCache := componentCacheFake.NewMockComponentCache(controller)
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 	portForwarder := portForwardFake.NewMockPortForwarder(controller)
 
-	config := NewLiveConfig(clusterClient, crdWatcher, logger, moduleManager, objectStore, pluginManager, portForwarder)
+	config := NewLiveConfig(clusterClient, crdWatcher, logger, moduleManager, objectStore, componentCache, pluginManager, portForwarder)
 
 	assert.NoError(t, config.Validate())
 	assert.Equal(t, clusterClient, config.ClusterClient())
 	assert.Equal(t, crdWatcher, config.CRDWatcher())
 	assert.Equal(t, logger, config.Logger())
 	assert.Equal(t, objectStore, config.ObjectStore())
+	assert.Equal(t, componentCache, config.ComponentCache())
 	assert.Equal(t, pluginManager, config.PluginManager())
 	assert.Equal(t, portForwarder, config.PortForwarder())
 

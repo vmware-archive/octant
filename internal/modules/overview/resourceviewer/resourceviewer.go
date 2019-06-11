@@ -3,23 +3,19 @@ package resourceviewer
 import "C"
 import (
 	"context"
-	"sync"
-	"time"
+	"fmt"
 
-	lru "github.com/hashicorp/golang-lru"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/heptio/developer-dash/internal/componentcache"
 	"github.com/heptio/developer-dash/internal/config"
 	"github.com/heptio/developer-dash/internal/modules/overview/objectvisitor"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
-
-//go:generate mockgen -source=resourceviewer.go -destination=./fake/mock_component_cache.go -package=fake github.com/heptio/developer-dash/internal/modules/overview/resourceviewer ComponentCache
 
 // ViewerOpt is an option for ResourceViewer.
 type ViewerOpt func(*ResourceViewer) error
@@ -86,142 +82,46 @@ func (rv *ResourceViewer) Visit(ctx context.Context, object objectvisitor.Cluste
 	return rv.collector.Component(string(uid))
 }
 
-// EmptyVisit returns a component that has not been visited yet.
-// Use EmptyVisit when you are running Visit in a goroutine and want to return a component quickly.
-func (rv *ResourceViewer) EmptyVisit(ctx context.Context, object objectvisitor.ClusterObject) (component.Component, error) {
-	ctx, span := trace.StartSpan(ctx, "resourceviewer")
-	defer span.End()
-
-	accessor := meta.NewAccessor()
-	name, err := accessor.Name(object)
-	if err != nil {
-		return nil, err
-	}
-
-	emptyNode := component.Node{
-		Name:       name,
-		APIVersion: "Loading",
-		Kind:       "...",
-		Status:     "ok",
-	}
-
-	r := component.NewResourceViewer("Resource Viewer")
-	r.AddNode("emptyID", emptyNode)
-	return r, nil
-}
-
 func (rv *ResourceViewer) factoryFunc() objectvisitor.ObjectHandlerFactory {
 	return func(object objectvisitor.ClusterObject) (objectvisitor.ObjectHandler, error) {
 		return rv.collector, nil
 	}
 }
 
-// ComponentCache is cache of Components
-type ComponentCache interface {
-	Get(context.Context, runtime.Object) (component.Component, error)
-	SetQueryer(queryer.Queryer)
-}
+// CachedResourceViewer returns a RV component from the componentcache and starts a new visit.
+func CachedResourceViewer(ctx context.Context, object objectvisitor.ClusterObject, dashConfig config.Dash, q queryer.Queryer) componentcache.UpdateFn {
+	return func(ctx context.Context, cacheChan chan componentcache.Event) (string, error) {
+		var event componentcache.Event
+		event.Name = "Resource Viewer"
 
-type componentCache struct {
-	components *lru.Cache
-	queryer    queryer.Queryer
-	dashConfig config.Dash
+		copyObject := object.DeepCopyObject()
 
-	mu sync.Mutex
-}
-
-// NewComponentCache creates a new component cache.
-func NewComponentCache(dashConfig config.Dash) (ComponentCache, error) {
-	components, err := lru.New(100)
-	if err != nil {
-		return nil, err
-	}
-
-	return &componentCache{
-		components: components,
-		dashConfig: dashConfig,
-	}, nil
-}
-
-// SetQueryer sets the queryer for the component cache.
-func (cc *componentCache) SetQueryer(q queryer.Queryer) {
-	cc.mu.Lock()
-	defer cc.mu.Unlock()
-
-	cc.queryer = q
-}
-
-// Get creates a Resource Viewer and begins starts the Visit routine. After waiting a set amount of
-// time, Get returns the Component that is in the component cache. This value may or may not be the value
-// from the last Visit call. If the component cache is empty we return a Component from FakeVisit.
-func (cc *componentCache) Get(ctx context.Context, object runtime.Object) (component.Component, error) {
-	key, err := objectstoreutil.KeyFromObject(object)
-	if err != nil {
-		return nil, err
-	}
-
-	if cc.queryer == nil {
-		return nil, errors.New("no queryer set")
-	}
-
-	rv, err := cc.newResourceViewer(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	done, errChan := cc.visit(ctx, key, object, rv)
-
-	select {
-	case err := <-errChan:
+		key, err := objectstoreutil.KeyFromObject(copyObject)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
-	case keyValue := <-done:
-		return cc.getComponent(ctx, keyValue, object, rv)
-	case <-time.After(750 * time.Millisecond):
-		return cc.getComponent(ctx, key, object, rv)
-	}
-	return nil, errors.New("bad")
-}
+		sKey := fmt.Sprintf("%s-%s", "resourceviewer", key.String())
+		event.Key = sKey
 
-func (cc *componentCache) getComponent(
-	ctx context.Context,
-	key objectstoreutil.Key,
-	object runtime.Object,
-	rv *ResourceViewer,
-) (component.Component, error) {
-	componentValue, ok := cc.components.Get(key)
-	if !ok {
-		return rv.EmptyVisit(ctx, object)
-	}
-	return componentValue.(component.Component), nil
-}
+		componentCache := dashConfig.ComponentCache()
+		if _, ok := componentCache.Get(sKey); !ok {
+			title := component.Title(component.NewText("Resource Viewer"))
+			loading := component.NewLoading(title, "Resource Viewer")
+			componentCache.Add(sKey, loading)
+		}
 
-func (cc *componentCache) visit(
-	ctx context.Context,
-	key objectstoreutil.Key,
-	object runtime.Object,
-	rv *ResourceViewer,
-) (chan objectstoreutil.Key, chan error) {
-	done := make(chan objectstoreutil.Key, 1)
-	errChan := make(chan error, 1)
-
-	go func() {
-		defer close(done)
-		defer close(errChan)
-
-		rvComponent, err := rv.Visit(ctx, object)
+		rv, err := New(dashConfig, WithDefaultQueryer(q))
 		if err != nil {
-			errChan <- err
-		} else {
-			cc.components.Add(key, rvComponent)
-			done <- key
+			return sKey, err
 		}
-	}()
 
-	return done, errChan
-}
+		go func() {
+			c, err := rv.Visit(ctx, copyObject)
+			event.Err = err
+			event.CComponent = c
+			cacheChan <- event
+		}()
 
-func (cc *componentCache) newResourceViewer(ctx context.Context) (*ResourceViewer, error) {
-	return New(cc.dashConfig, WithDefaultQueryer(cc.queryer))
+		return sKey, nil
+	}
 }

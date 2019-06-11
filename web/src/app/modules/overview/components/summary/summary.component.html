@@ -34,6 +34,12 @@
             <ng-container *ngSwitchCase="'list'">
               <app-view-list [listView]="item.content"></app-view-list>
             </ng-container>
+            <ng-container *ngSwitchCase="'loading'">
+              <app-view-loading [view]="item.content"></app-view-loading>
+            </ng-container>
+            <ng-container *ngSwitchCase="'error'">
+              <app-view-error [view]="item.content"></app-view-error>
+            </ng-container>
             <div class="alert alert-danger static" *ngSwitchDefault>
               <span class="alert-icon-wrapper">
                 <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
