@@ -31,11 +31,6 @@ func unmarshal(to TypedObject) (interface{}, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal graphviz config")
 		o = t
-	case "grid":
-		t := &Grid{base: base{Metadata: to.Metadata}}
-		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
-			"unmarshal grid config")
-		o = t
 	case typeLabels:
 		t := &Labels{base: base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
@@ -55,11 +50,6 @@ func unmarshal(to TypedObject) (interface{}, error) {
 		t := &List{base: base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal list config")
-		o = t
-	case "panel":
-		t := &Panel{base: base{Metadata: to.Metadata}}
-		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
-			"unmarshal panel config")
 		o = t
 	case typeQuadrant:
 		t := &Quadrant{base: base{Metadata: to.Metadata}}

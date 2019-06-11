@@ -283,9 +283,6 @@ func Test_EventHandler(t *testing.T) {
 	}
 	eventDetailView := component.NewSummary("Event Detail", eventDetailSections...)
 
-	eventDetailPanel := component.NewPanel("", eventDetailView)
-	eventDetailPanel.Position(0, 0, 24, 10)
-
 	expected := component.NewFlexLayout("Event")
 	expected.AddSections([]component.FlexLayoutSection{
 		{

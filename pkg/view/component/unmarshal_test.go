@@ -100,20 +100,6 @@ func Test_unmarshal(t *testing.T) {
 			},
 		},
 		{
-			name:       "panel",
-			configFile: "config_panel.json",
-			objectType: "panel",
-			expected: &Panel{
-				Config: PanelConfig{
-					Content: NewText("Panel contents"),
-					Position: PanelPosition{
-						X: 1, Y: 2, W: 3, H: 4,
-					},
-				},
-				base: newBase(typePanel, nil),
-			},
-		},
-		{
 			name:       "quadrant",
 			configFile: "config_quadrant.json",
 			objectType: "quadrant",
