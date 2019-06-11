@@ -39,14 +39,3 @@ func (t *Loading) MarshalJSON() ([]byte, error) {
 func (t *Loading) String() string {
 	return t.Config.Text
 }
-
-// LessThan returns true if this component's value is less than the argument supplied.
-func (t *Loading) LessThan(i interface{}) bool {
-	v, ok := i.(*Loading)
-	if !ok {
-		return false
-	}
-
-	return t.Config.Text < v.Config.Text
-
-}

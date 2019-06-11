@@ -147,10 +147,10 @@ func Test_Worker_Event(t *testing.T) {
 	for _, ts := range scenarios {
 		t.Run(ts.name, func(t *testing.T) {
 			e := Event{
-				Name:       ts.name,
-				Key:        ts.eventKey,
-				CComponent: ts.eventValue,
-				Err:        ts.eventError,
+				Name:      ts.name,
+				Key:       ts.eventKey,
+				Component: ts.eventValue,
+				Err:       ts.eventError,
 			}
 			cc.ch <- e
 

@@ -123,7 +123,7 @@ func CachedResourceViewer(ctx context.Context, object objectvisitor.ClusterObjec
 		go func() {
 			c, err := rv.Visit(ctx, copyObject)
 			event.Err = err
-			event.CComponent = c
+			event.Component = c
 			cacheChan <- event
 		}()
 

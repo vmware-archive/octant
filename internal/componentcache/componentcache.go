@@ -13,10 +13,10 @@ import (
 
 // Event holds a Key, Component, and Error and is for writing to the cache.
 type Event struct {
-	Key        string
-	Name       string
-	CComponent component.Component
-	Err        error
+	Key       string
+	Name      string
+	Component component.Component
+	Err       error
 }
 
 // UpdateFn provides the current context and event channel and should return the key for the component.
@@ -75,7 +75,7 @@ func worker(ctx context.Context, cc *componentCache, ch chan Event) bool {
 			cc.Add(e.Key, errComponent)
 			return true
 		}
-		cc.Add(e.Key, e.CComponent)
+		cc.Add(e.Key, e.Component)
 		return true
 	default:
 		return true
