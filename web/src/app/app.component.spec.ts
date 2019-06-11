@@ -1,14 +1,15 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { async, TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
-import { AppComponent } from './app.component';
-import { NamespaceComponent } from './components/namespace/namespace.component';
-import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
-import { InputFilterComponent } from './components/input-filter/input-filter.component';
-import { NotifierComponent } from './components/notifier/notifier.component';
-import { NavigationComponent } from './components/navigation/navigation.component';
+import {HttpClientTestingModule} from '@angular/common/http/testing';
+import {async, TestBed} from '@angular/core/testing';
+import {RouterTestingModule} from '@angular/router/testing';
+import {ClarityModule} from '@clr/angular';
+import {FormsModule} from '@angular/forms';
+import {AppComponent} from './app.component';
+import {NamespaceComponent} from './components/namespace/namespace.component';
+import {PageNotFoundComponent} from './components/page-not-found/page-not-found.component';
+import {InputFilterComponent} from './components/input-filter/input-filter.component';
+import {NotifierComponent} from './components/notifier/notifier.component';
+import {NavigationComponent} from './components/navigation/navigation.component';
+import {ContextSelectorComponent} from './modules/overview/components/context-selector/context-selector.component';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
@@ -26,6 +27,7 @@ describe('AppComponent', () => {
         InputFilterComponent,
         NotifierComponent,
         NavigationComponent,
+        ContextSelectorComponent,
       ],
     }).compileComponents();
   }));

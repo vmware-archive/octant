@@ -1,7 +1,12 @@
 {
-  "extends": "tslint:recommended",
+  "extends": [
+    "tslint:recommended",
+    "tslint-config-prettier",
+    "tslint-plugin-prettier"
+  ],
   "rulesDirectory": [
-    "codelyzer"
+    "codelyzer",
+    "tslint-plugin-prettier"
   ],
   "rules": {
     "array-type": false,
@@ -13,6 +18,7 @@
       true,
       "rxjs/Rx"
     ],
+    "import-spacing": true,
     "interface-name": false,
     "max-classes-per-file": false,
     "max-line-length": [
@@ -59,6 +65,7 @@
     ],
     "object-literal-sort-keys": false,
     "ordered-imports": false,
+    "prettier": true,
     "quotemark": [
       true,
       "single"
