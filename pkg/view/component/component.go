@@ -26,7 +26,7 @@ func (c *ContentResponse) Add(components ...Component) {
 	c.Components = append(c.Components, components...)
 }
 
-// UnmarshalJSON unarmshals a content response from JSON.
+// UnmarshalJSON unmarshals a content response from JSON.
 func (c *ContentResponse) UnmarshalJSON(data []byte) error {
 	stage := struct {
 		Title      []TypedObject `json:"title,omitempty"`
