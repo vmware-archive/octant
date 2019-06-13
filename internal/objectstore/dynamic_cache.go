@@ -73,7 +73,8 @@ type DynamicCache struct {
 	seenGVKs        map[string]map[schema.GroupVersionKind]bool
 	access          accessMap
 
-	mu sync.Mutex
+	mu       sync.Mutex
+	accessMu sync.RWMutex
 }
 
 var _ (ObjectStore) = (*DynamicCache)(nil)
@@ -166,9 +167,9 @@ func (dc *DynamicCache) HasAccess(key objectstoreutil.Key, verb string) error {
 		Verb:      verb,
 	}
 
-	dc.mu.Lock()
-	defer dc.mu.Unlock()
+	dc.accessMu.RLock()
 	access, ok := dc.access[aKey]
+	dc.accessMu.RUnlock()
 
 	if !ok {
 		val, err := dc.fetchAccess(aKey, verb)
@@ -176,12 +177,11 @@ func (dc *DynamicCache) HasAccess(key objectstoreutil.Key, verb string) error {
 			return errors.Wrapf(err, "fetch access: %+v", aKey)
 		}
 
+		dc.accessMu.Lock()
 		dc.access[aKey] = val
+		dc.accessMu.Unlock()
 
-		access, ok = dc.access[aKey]
-		if !ok {
-			return errors.Errorf("unknown key: %+v", aKey)
-		}
+		access, ok = val, true
 	}
 
 	if !access {
