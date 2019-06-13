@@ -11,13 +11,17 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/pkg/errors"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
+	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	modulefake "github.com/heptio/developer-dash/internal/module/fake"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
 type testMocks struct {
@@ -119,9 +123,43 @@ func TestAPI_routes(t *testing.T) {
 
 			mocks.namespace.EXPECT().Names().Return([]string{"default"}, nil).AnyTimes()
 
-			m := modulefake.NewModule("module", log.NopLogger())
+			m := modulefake.NewMockModule(controller)
+			m.EXPECT().
+				Name().Return("module").AnyTimes()
+			m.EXPECT().
+				ContentPath().Return("/module").AnyTimes()
+			m.EXPECT().
+				Content(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				DoAndReturn(func(ctx context.Context, contentPath, prefix, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
+					switch contentPath {
+					case "/":
+						return component.ContentResponse{
+							Title: component.Title(component.NewText("/")),
+						}, nil
+					case "/nested":
+						return component.ContentResponse{
+							Title: component.Title(component.NewText("/nested")),
+						}, nil
+					default:
+						return component.ContentResponse{}, errors.New("not found")
+					}
+				}).
+				AnyTimes()
+			m.EXPECT().
+				Handlers(gomock.Any()).Return(make(map[string]http.Handler))
+			m.EXPECT().
+				Navigation(gomock.Any(), gomock.Any(), gomock.Any()).
+				DoAndReturn(func(ctx context.Context, namespace, prefix string) ([]clustereye.Navigation, error) {
+					nav := clustereye.Navigation{
+						Path:  prefix,
+						Title: "module",
+					}
 
-			manager := modulefake.NewStubManager("default", []module.Module{m})
+					return []clustereye.Navigation{nav}, nil
+				}).
+				AnyTimes()
+
+			manager := modulefake.NewMockManagerInterface(controller)
 
 			ctx := context.Background()
 			srv := New(ctx, "/", mocks.namespace, mocks.info, manager, log.NopLogger())
@@ -155,12 +193,6 @@ func TestAPI_routes(t *testing.T) {
 			}
 			assert.Equal(t, tc.expectedCode, res.StatusCode)
 
-			if tc.expectedContentPath != "" {
-				assert.Equal(t, tc.expectedContentPath, m.ObservedContentPath, "content path mismatch")
-			}
-			if tc.expectedNamespace != "" {
-				assert.Equal(t, tc.expectedNamespace, m.ObservedNamespace, "namespace mismatch")
-			}
 		})
 	}
 }

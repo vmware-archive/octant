@@ -7,11 +7,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/module"
-	modulefake "github.com/heptio/developer-dash/internal/module/fake"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/heptio/developer-dash/internal/log"
+	modulefake "github.com/heptio/developer-dash/internal/module/fake"
 )
 
 func Test_namespace_update(t *testing.T) {
@@ -37,8 +38,20 @@ func Test_namespace_update(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			m := modulefake.NewModule("module", log.NopLogger())
-			manager := modulefake.NewStubManager("default", []module.Module{m})
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			manager := modulefake.NewMockManagerInterface(controller)
+			namespace := "default"
+			manager.EXPECT().
+				SetNamespace(gomock.Any()).
+				DoAndReturn(func(updatedNamespace string) {
+					namespace = updatedNamespace
+				}).AnyTimes()
+			manager.EXPECT().
+				GetNamespace().DoAndReturn(func() string {
+				return namespace
+			})
 
 			handler := newNamespace(manager, log.NopLogger())
 
@@ -62,8 +75,20 @@ func Test_namespace_update(t *testing.T) {
 }
 
 func Test_namespace_read(t *testing.T) {
-	m := modulefake.NewModule("module", log.NopLogger())
-	manager := modulefake.NewStubManager("default", []module.Module{m})
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	manager := modulefake.NewMockManagerInterface(controller)
+	namespace := "default"
+	manager.EXPECT().
+		SetNamespace(gomock.Any()).
+		DoAndReturn(func(updatedNamespace string) {
+			namespace = updatedNamespace
+		}).AnyTimes()
+	manager.EXPECT().
+		GetNamespace().DoAndReturn(func() string {
+		return namespace
+	}).AnyTimes()
 
 	handler := newNamespace(manager, log.NopLogger())
 

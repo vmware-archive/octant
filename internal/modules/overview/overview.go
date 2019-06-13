@@ -159,6 +159,11 @@ func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]c
 	}, nil
 }
 
+// Generators allow modules to send events to the frontend.
+func (co *Overview) Generators() []clustereye.Generator {
+	return []clustereye.Generator{}
+}
+
 // SetNamespace sets the current namespace.
 func (co *Overview) SetNamespace(namespace string) error {
 	co.dashConfig.Logger().With("namespace", namespace, "module", "overview").Debugf("setting namespace (noop)")

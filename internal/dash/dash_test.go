@@ -11,13 +11,13 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/heptio/developer-dash/internal/api"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/module"
 	modulefake "github.com/heptio/developer-dash/internal/module/fake"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func Test_dash_Run(t *testing.T) {
@@ -66,8 +66,7 @@ func Test_dash_Run(t *testing.T) {
 			nsClient := clusterfake.NewMockNamespaceInterface(controller)
 			nsClient.EXPECT().InitialNamespace().Return("default").AnyTimes()
 
-			o := newDashModule()
-			manager := modulefake.NewStubManager("default", []module.Module{o})
+			manager := modulefake.NewMockManagerInterface(controller)
 
 			infoClient := clusterfake.NewMockInfoInterface(controller)
 			service := api.New(ctx, apiPathPrefix, nsClient, infoClient, manager, log.NopLogger())
@@ -142,8 +141,7 @@ func Test_dash_routes(t *testing.T) {
 			nsClient.EXPECT().InitialNamespace().Return("default").AnyTimes()
 			nsClient.EXPECT().Names().Return([]string{"default"}, nil).AnyTimes()
 
-			o := newDashModule()
-			manager := modulefake.NewStubManager("default", []module.Module{o})
+			manager := modulefake.NewMockManagerInterface(controller)
 
 			infoClient := clusterfake.NewMockInfoInterface(controller)
 

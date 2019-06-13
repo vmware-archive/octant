@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-
-export interface ContextDescription {
-  name: string;
-}
+import { HttpClient } from '@angular/common/http';
+import getAPIBase from '../../../../services/common/getAPIBase';
+import {
+  ContentStreamService,
+  ContextDescription,
+} from '../../../../services/content-stream/content-stream.service';
 
 @Injectable({
   providedIn: 'root',
@@ -17,24 +19,21 @@ export class KubeContextService {
     ''
   );
 
-  constructor() {
-    this.contextsSource.next([
-      {
-        name: 'kubernetes-admin@service-account',
-      },
-      {
-        name: 'kubernetes-admin@workload-test',
-      },
-    ]);
-
-    this.selectedSource.next('kubernetes-admin@service-account');
+  constructor(
+    private http: HttpClient,
+    private contentStream: ContentStreamService
+  ) {
+    contentStream.kubeContext.subscribe(update => {
+      this.contextsSource.next(update.contexts);
+      this.selectedSource.next(update.currentContext);
+    });
   }
 
   select(context: ContextDescription) {
     console.log(`settings active context to ${context.name}`);
     this.selectedSource.next(context.name);
 
-    // TODO: let backend know the context has changed
+    this.updateContext(context.name).subscribe();
   }
 
   selected() {
@@ -43,5 +42,21 @@ export class KubeContextService {
 
   contexts() {
     return this.contextsSource.asObservable();
+  }
+
+  private updateContext(name: string) {
+    const url = [
+      getAPIBase(),
+      'api/v1/content/configuration',
+      'kube-contexts',
+    ].join('/');
+
+    const payload = {
+      requestedContext: name,
+    };
+
+    console.log('updating?', url);
+
+    return this.http.post(url, payload);
   }
 }

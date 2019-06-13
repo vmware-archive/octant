@@ -12,6 +12,8 @@ import (
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
+//go:generate mockgen -destination=./fake/mock_module.go -package=fake github.com/heptio/developer-dash/internal/module Module
+
 // ContentOptions are additional options for content generation
 type ContentOptions struct {
 	LabelSet *labels.Set
@@ -35,6 +37,9 @@ type Module interface {
 	Start() error
 	// Stop stops the module.
 	Stop()
+
+	// Generators allow modules to send events to the frontend.
+	Generators() []clustereye.Generator
 
 	// SupportedGroupVersionKind returns a slice of supported GVKs it owns.
 	SupportedGroupVersionKind() []schema.GroupVersionKind
