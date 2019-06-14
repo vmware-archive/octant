@@ -24,6 +24,7 @@ import (
 	"github.com/heptio/developer-dash/internal/modules/overview/objectvisitor"
 	"github.com/heptio/developer-dash/internal/objectstore"
 	dashStrings "github.com/heptio/developer-dash/internal/util/strings"
+	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -52,8 +53,9 @@ type Collector struct {
 
 	podNodes map[string]component.PodStatus
 
-	objectStore objectstore.ObjectStore
-	link        link.Interface
+	objectStore   objectstore.ObjectStore
+	link          link.Interface
+	pluginPrinter plugin.ManagerInterface
 
 	mu sync.Mutex
 }
@@ -72,6 +74,7 @@ func NewCollector(dashConfig config.Dash, options ...CollectorOption) (*Collecto
 		podGroupPrefix: defaultPodGroupPrefix,
 		objectStore:    dashConfig.ObjectStore(),
 		link:           l,
+		pluginPrinter:  dashConfig.PluginManager(),
 	}
 
 	for _, option := range options {
@@ -179,10 +182,29 @@ func (c *Collector) createPodGroupNode(ctx context.Context, object objectvisitor
 		},
 	}
 
+	node, err = pluginStatus(object, node, c.pluginPrinter)
+	if err != nil {
+		return "", component.Node{}, err
+	}
+
 	//c.podGroupIDs[string(uid)] = pgd.id
 	c.podGroupIDs[name] = pgd.id
 
 	return pgd.id, node, nil
+}
+
+func pluginStatus(object objectvisitor.ClusterObject, node component.Node, pluginPrinter plugin.ManagerInterface) (component.Node, error) {
+	osr, err := pluginPrinter.ObjectStatus(object.(runtime.Object))
+	if err != nil {
+		return component.Node{}, errors.Wrap(err, "plugin object status error")
+	}
+	if osr.ObjectStatus.Status != "" {
+		node.Status = osr.ObjectStatus.Status
+	}
+	for _, detail := range osr.ObjectStatus.Details {
+		node.Details = append(node.Details, detail)
+	}
+	return node, nil
 }
 
 type isSkipped interface {
@@ -258,6 +280,11 @@ func (c *Collector) createObjectNode(ctx context.Context, object objectvisitor.C
 	nodeID, err := genNodeID(object)
 	if err != nil {
 		return "", component.Node{}, errors.New("unable to get object name")
+	}
+
+	node, err = pluginStatus(object, node, c.pluginPrinter)
+	if err != nil {
+		return "", component.Node{}, err
 	}
 
 	return string(nodeID), node, nil

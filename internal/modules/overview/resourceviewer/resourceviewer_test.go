@@ -15,6 +15,7 @@ import (
 	configFake "github.com/heptio/developer-dash/internal/config/fake"
 	"github.com/heptio/developer-dash/internal/modules/overview/objectvisitor"
 	storeFake "github.com/heptio/developer-dash/internal/objectstore/fake"
+	pluginFake "github.com/heptio/developer-dash/pkg/plugin/fake"
 )
 
 type stubbedVisitor struct{ visitErr error }
@@ -51,8 +52,11 @@ func Test_ResourceViewer(t *testing.T) {
 
 	objectStore := storeFake.NewMockObjectStore(controller)
 
+	pluginManager := pluginFake.NewMockManagerInterface(controller)
+
 	dashConfig := configFake.NewMockDash(controller)
 	dashConfig.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
+	dashConfig.EXPECT().PluginManager().Return(pluginManager).AnyTimes()
 
 	rv, err := New(dashConfig, stubVisitor(false))
 	require.NoError(t, err)
@@ -78,8 +82,11 @@ func Test_ResourceViewer_visitor_fails(t *testing.T) {
 
 	objectStore := storeFake.NewMockObjectStore(controller)
 
+	pluginManager := pluginFake.NewMockManagerInterface(controller)
+
 	dashConfig := configFake.NewMockDash(controller)
 	dashConfig.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
+	dashConfig.EXPECT().PluginManager().Return(pluginManager).AnyTimes()
 
 	rv, err := New(dashConfig, stubVisitor(true))
 	require.NoError(t, err)

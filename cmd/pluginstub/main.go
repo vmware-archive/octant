@@ -97,8 +97,8 @@ func (s *stub) ObjectStatus(object runtime.Object) (plugin.ObjectStatusResponse,
 	}
 
 	status := component.PodSummary{
-		Status:  component.NodeStatusOK,
-		Details: []component.Component{component.NewText("status details from plugin")},
+		Status:  component.NodeStatusError,
+		Details: []component.Component{component.NewText(fmt.Sprintf("Timestamp: %s", time.Now().Format(time.RFC850)))},
 	}
 
 	return plugin.ObjectStatusResponse{

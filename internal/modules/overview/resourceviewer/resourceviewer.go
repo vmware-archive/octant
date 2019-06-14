@@ -1,6 +1,5 @@
 package resourceviewer
 
-import "C"
 import (
 	"context"
 	"fmt"
@@ -36,8 +35,8 @@ func WithDefaultQueryer(q queryer.Queryer) ViewerOpt {
 // ResourceViewer visits an object and creates a view component.
 type ResourceViewer struct {
 	dashConfig config.Dash
-	collector *Collector
-	visitor   objectvisitor.Visitor
+	collector  *Collector
+	visitor    objectvisitor.Visitor
 }
 
 // New creates an instance of ResourceViewer.
@@ -48,7 +47,7 @@ func New(dashConfig config.Dash, opts ...ViewerOpt) (*ResourceViewer, error) {
 	}
 	rv := &ResourceViewer{
 		dashConfig: dashConfig,
-		collector: collector,
+		collector:  collector,
 	}
 
 	for _, opt := range opts {
@@ -67,7 +66,6 @@ func New(dashConfig config.Dash, opts ...ViewerOpt) (*ResourceViewer, error) {
 // Visit visits an object and creates a view component.
 
 func (rv *ResourceViewer) Visit(ctx context.Context, object objectvisitor.ClusterObject) (component.Component, error) {
-
 
 	rv.collector.Reset()
 

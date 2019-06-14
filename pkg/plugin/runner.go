@@ -17,6 +17,9 @@ type Runners interface {
 	// Tab returns a runner for tabs. The caller should close
 	// the channel when they are done with it.
 	Tab(ManagerStore) (DefaultRunner, chan component.Tab)
+	// ObjectStatus returns a runner for object status. The caller should
+	// close the channel when they are done with it.
+	ObjectStatus(ManagerStore) (DefaultRunner, chan ObjectStatusResponse)
 }
 
 type defaultRunners struct{}
@@ -35,6 +38,11 @@ func (dr *defaultRunners) Print(store ManagerStore) (DefaultRunner, chan PrintRe
 func (dr *defaultRunners) Tab(store ManagerStore) (DefaultRunner, chan component.Tab) {
 	ch := make(chan component.Tab)
 	return TabRunner(store, ch), ch
+}
+
+func (dr *defaultRunners) ObjectStatus(store ManagerStore) (DefaultRunner, chan ObjectStatusResponse) {
+	ch := make(chan ObjectStatusResponse)
+	return ObjectStatusRunner(store, ch), ch
 }
 
 // DefaultRunner runs a function against all plugins
@@ -161,4 +169,34 @@ func TabRunner(store ManagerStore, ch chan<- component.Tab) DefaultRunner {
 	}
 
 	return runner
+}
+
+
+// ObjectStatusRunner is a runner for object status.
+func ObjectStatusRunner(store ManagerStore, ch chan<- ObjectStatusResponse) DefaultRunner {
+	return DefaultRunner{
+		RunFunc: func(name string, gvk schema.GroupVersionKind, object runtime.Object) error {
+			metadata, err := store.GetMetadata(name)
+			if err != nil {
+				return err
+			}
+
+			if !metadata.Capabilities.HasPrinterSupport(gvk) {
+				return nil
+			}
+
+			service, err := store.GetService(name)
+			if err != nil {
+				return err
+			}
+
+			resp, err := service.ObjectStatus(object)
+			if err != nil {
+				return errors.Wrapf(err, "print object status with plugin %q", name)
+			}
+
+			ch <- resp
+			return nil
+		},
+	}
 }

@@ -159,6 +159,9 @@ type ManagerInterface interface {
 
 	// Store returns the manager's storage.
 	Store() ManagerStore
+
+	// ObjectStatus returns the object status
+	ObjectStatus(object runtime.Object) (*ObjectStatusResponse, error)
 }
 
 // ManagerOption is an option for configuring Manager.
@@ -364,4 +367,32 @@ func (m *Manager) Tabs(object runtime.Object) ([]component.Tab, error) {
 	})
 
 	return tabs, nil
+}
+
+// ObjectStatus updates the object status of an object configured from a plugin
+func (m *Manager) ObjectStatus(object runtime.Object) (*ObjectStatusResponse, error) {
+	if m.Runners == nil {
+		return nil, errors.New("runners is nil")
+	}
+
+	runner, ch := m.Runners.ObjectStatus(m.store)
+	done := make(chan bool)
+
+	var osr ObjectStatusResponse
+
+	go func() {
+		for resp := range ch {
+			osr.ObjectStatus = resp.ObjectStatus
+		}
+
+		done <- true
+	}()
+
+	if err := runner.Run(object, m.store.ClientNames()); err != nil {
+		return nil, err
+	}
+	close(ch)
+
+	<-done
+	return &osr, nil
 }

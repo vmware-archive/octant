@@ -22,6 +22,8 @@ import (
 	linkFake "github.com/heptio/developer-dash/internal/link/fake"
 	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
+	"github.com/heptio/developer-dash/pkg/plugin"
+	pluginFake "github.com/heptio/developer-dash/pkg/plugin/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -67,8 +69,11 @@ func Test_Collector(t *testing.T) {
 
 	objectStore := storefake.NewMockObjectStore(controller)
 
+	pluginManager := pluginFake.NewMockManagerInterface(controller)
+
 	dashConfig := configFake.NewMockDash(controller)
 	dashConfig.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
+	dashConfig.EXPECT().PluginManager().Return(pluginManager).AnyTimes()
 
 	linkGenerator := linkFake.NewMockInterface(controller)
 
@@ -77,6 +82,25 @@ func Test_Collector(t *testing.T) {
 	linkGenerator.EXPECT().
 		ForObjectWithQuery(deployment, deployment.Name, q).
 		Return(deploymentLink, nil)
+
+	emptyObjectStatusResponse := &plugin.ObjectStatusResponse{
+		ObjectStatus: component.PodSummary{
+			Status:  "",
+			Details: []component.Component{},
+		},
+	}
+
+	objectStatusResponse := &plugin.ObjectStatusResponse{
+		ObjectStatus: component.PodSummary{
+			Status:  component.NodeStatusError,
+			Details: []component.Component{component.NewText("from plugin")},
+		},
+	}
+
+	pluginManager.EXPECT().ObjectStatus(pod).Return(objectStatusResponse, nil)
+	pluginManager.EXPECT().ObjectStatus(deployment).Return(emptyObjectStatusResponse, nil)
+	pluginManager.EXPECT().ObjectStatus(replicaSet1).Return(emptyObjectStatusResponse, nil)
+	pluginManager.EXPECT().ObjectStatus(serviceAccount).Return(emptyObjectStatusResponse, nil)
 
 	replicaSetLink := component.NewLink("", "replicaSet1", "/replica-set")
 	linkGenerator.EXPECT().
@@ -130,8 +154,10 @@ func Test_Collector(t *testing.T) {
 		Kind:       "Deployment",
 		Name:       "deployment",
 		Status:     "ok",
-		Details:    []component.Component{component.NewText("Deployment is OK")},
-		Path:       deploymentLink,
+		Details: []component.Component{
+			component.NewText("Deployment is OK"),
+		},
+		Path: deploymentLink,
 	})
 
 	expected.AddNode("apps/v1-ReplicaSet-replicaSet1", component.Node{
@@ -139,8 +165,10 @@ func Test_Collector(t *testing.T) {
 		Kind:       "ReplicaSet",
 		Name:       "replicaSet1",
 		Status:     "ok",
-		Details:    []component.Component{component.NewText("Replica Set is OK")},
-		Path:       replicaSetLink,
+		Details: []component.Component{
+			component.NewText("Replica Set is OK"),
+		},
+		Path: replicaSetLink,
 	})
 
 	podStatus := component.NewPodStatus()
@@ -153,9 +181,10 @@ func Test_Collector(t *testing.T) {
 		APIVersion: "v1",
 		Kind:       "Pod",
 		Name:       "replicaSet1 pods",
-		Status:     "ok",
+		Status:     "error",
 		Details: []component.Component{
 			podStatus,
+			component.NewText("from plugin"),
 			component.NewText("Pod count: 1"),
 		},
 	})
@@ -165,8 +194,10 @@ func Test_Collector(t *testing.T) {
 		Kind:       "ServiceAccount",
 		Name:       "service-account",
 		Status:     "ok",
-		Details:    []component.Component{component.NewText("v1 ServiceAccount is OK")},
-		Path:       serviceAccountLink,
+		Details: []component.Component{
+			component.NewText("v1 ServiceAccount is OK"),
+		},
+		Path: serviceAccountLink,
 	})
 
 	require.NoError(t, expected.AddEdge("apps/v1-Deployment-deployment", "apps/v1-ReplicaSet-replicaSet1", component.EdgeTypeExplicit))
