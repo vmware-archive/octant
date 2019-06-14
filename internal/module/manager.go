@@ -1,6 +1,8 @@
 package module
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -15,6 +17,7 @@ type ManagerInterface interface {
 	Modules() []Module
 	SetNamespace(namespace string)
 	GetNamespace() string
+	UpdateContext(ctx context.Context, contextName string) error
 
 	ObjectPath(namespace, apiVersion, kind, name string) (string, error)
 	RegisterObjectPath(Module, schema.GroupVersionKind)
@@ -89,6 +92,16 @@ func (m *Manager) SetNamespace(namespace string) {
 // GetNamespace gets the current namespace.
 func (m *Manager) GetNamespace() string {
 	return m.namespace
+}
+
+func (m *Manager) UpdateContext(ctx context.Context, contextName string) error {
+	for _, module := range m.loadedModules {
+		if err := module.SetContext(ctx, contextName); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (m *Manager) ObjectPath(namespace, apiVersion, kind, name string) (string, error) {

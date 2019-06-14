@@ -15,7 +15,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 )
 
@@ -27,40 +27,81 @@ type WatchOpt func(*Watch)
 // and getting objects can happen in local memory instead of requiring a network request.
 type Watch struct {
 	initFactoryFunc func(cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error)
+	initBackendFunc func(watch *Watch) (store.Store, error)
 	client          cluster.ClientInterface
 	stopCh          <-chan struct{}
+	cancelFunc      context.CancelFunc
 	factories       map[string]dynamicinformer.DynamicSharedInformerFactory
 	watchedGVKs     map[string]map[schema.GroupVersionKind]bool
 	cachedObjects   map[string]map[schema.GroupVersionKind]map[types.UID]*unstructured.Unstructured
 	handlers        map[string]map[schema.GroupVersionKind]watchEventHandler
 
-	backendObjectStore ObjectStore
+	backendObjectStore store.Store
 	gvkLock            sync.Mutex
 	objectLock         sync.RWMutex
+
+	onClientUpdate chan store.Store
+	updateFns      []store.UpdateFn
 }
 
-var _ ObjectStore = (*Watch)(nil)
+var _ store.Store = (*Watch)(nil)
+
+func initWatchBackend(w *Watch) (store.Store, error) {
+	backendObjectStore, err := NewDynamicCache(w.client, w.stopCh, func(d *DynamicCache) {
+		d.initFactoryFunc = func(client cluster.ClientInterface, namespace string) (dynamicinformer.DynamicSharedInformerFactory, error) {
+			return w.factories[namespace], nil
+		}
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "initial dynamic cache")
+	}
+
+	return backendObjectStore, nil
+}
 
 // NewWatch create an instance of new watch. By default, it will create a dynamic cache as its
 // backend.
-func NewWatch(ctx context.Context, client cluster.ClientInterface, stopCh <-chan struct{}, options ...WatchOpt) (*Watch, error) {
+func NewWatch(ctx context.Context, client cluster.ClientInterface, options ...WatchOpt) (*Watch, error) {
 	c := &Watch{
 		initFactoryFunc: initDynamicSharedInformerFactory,
+		initBackendFunc: initWatchBackend,
 		client:          client,
-		stopCh:          stopCh,
 		factories:       make(map[string]dynamicinformer.DynamicSharedInformerFactory),
 		watchedGVKs:     make(map[string]map[schema.GroupVersionKind]bool),
 		cachedObjects:   make(map[string]map[schema.GroupVersionKind]map[types.UID]*unstructured.Unstructured),
 		handlers:        make(map[string]map[schema.GroupVersionKind]watchEventHandler),
+		onClientUpdate:  make(chan store.Store, 10),
 	}
 
 	for _, option := range options {
 		option(c)
 	}
 
-	namespaceClient, err := client.NamespaceClient()
+	if err := c.bootstrap(ctx, false); err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
+func (w *Watch) bootstrap(ctx context.Context, forceBackendInit bool) error {
+	logger := log.From(ctx)
+	logger.With("backend-init", forceBackendInit).Debugf("bootstrapping")
+
+	if forceBackendInit {
+		w.factories = make(map[string]dynamicinformer.DynamicSharedInformerFactory)
+		w.watchedGVKs = make(map[string]map[schema.GroupVersionKind]bool)
+		w.cachedObjects = make(map[string]map[schema.GroupVersionKind]map[types.UID]*unstructured.Unstructured)
+		w.handlers = make(map[string]map[schema.GroupVersionKind]watchEventHandler)
+	}
+
+	ctx, cancel := context.WithCancel(ctx)
+	w.cancelFunc = cancel
+	w.stopCh = ctx.Done()
+
+	namespaceClient, err := w.client.NamespaceClient()
 	if err != nil {
-		return nil, errors.Wrap(err, "client namespace")
+		return errors.Wrap(err, "client namespace")
 	}
 
 	namespaces, err := namespaceClient.Names()
@@ -70,62 +111,58 @@ func NewWatch(ctx context.Context, client cluster.ClientInterface, stopCh <-chan
 	namespaces = append(namespaces, "")
 
 	for _, namespace := range namespaces {
-		factory, err := c.initFactoryFunc(client, namespace)
+		factory, err := w.initFactoryFunc(w.client, namespace)
 		if err != nil {
-			return nil, errors.Wrap(err, "initialize dynamic shared informer factory")
+			return errors.Wrap(err, "initialize dynamic shared informer factory")
 		}
 
-		if _, ok := c.factories[namespace]; !ok {
-			c.factories[namespace] = factory
+		if _, ok := w.factories[namespace]; !ok {
+			w.factories[namespace] = factory
 		}
-		if _, ok := c.watchedGVKs[namespace]; !ok {
-			c.watchedGVKs[namespace] = make(map[schema.GroupVersionKind]bool)
+		if _, ok := w.watchedGVKs[namespace]; !ok {
+			w.watchedGVKs[namespace] = make(map[schema.GroupVersionKind]bool)
 		}
-		if _, ok := c.cachedObjects[namespace]; !ok {
-			c.cachedObjects[namespace] = make(map[schema.GroupVersionKind]map[types.UID]*unstructured.Unstructured)
+		if _, ok := w.cachedObjects[namespace]; !ok {
+			w.cachedObjects[namespace] = make(map[schema.GroupVersionKind]map[types.UID]*unstructured.Unstructured)
 		}
-		if _, ok := c.handlers[namespace]; !ok {
-			c.handlers[namespace] = make(map[schema.GroupVersionKind]watchEventHandler)
+		if _, ok := w.handlers[namespace]; !ok {
+			w.handlers[namespace] = make(map[schema.GroupVersionKind]watchEventHandler)
 		}
 	}
 
-	if c.backendObjectStore == nil {
-		backendObjectStore, err := NewDynamicCache(client, stopCh, func(d *DynamicCache) {
-			d.initFactoryFunc = func(client cluster.ClientInterface, namespace string) (dynamicinformer.DynamicSharedInformerFactory, error) {
-				return c.factories[namespace], nil
-			}
-		})
+	if w.backendObjectStore == nil || forceBackendInit {
+		backendObjectStore, err := w.initBackendFunc(w)
 		if err != nil {
-			return nil, errors.Wrap(err, "initial dynamic cache")
+			return errors.Wrap(err, "initial dynamic cache")
 		}
 
-		c.backendObjectStore = backendObjectStore
+		w.backendObjectStore = backendObjectStore
 	}
 
-	nsKey := objectstoreutil.Key{APIVersion: "v1", Kind: "Namespace"}
+	nsKey := store.Key{APIVersion: "v1", Kind: "Namespace"}
 	nsHandler := &nsUpdateHandler{
-		watch:  c,
+		watch:  w,
 		logger: log.From(ctx),
 	}
-	if err := c.Watch(ctx, nsKey, nsHandler); err != nil {
-		return nil, errors.Wrap(err, "create namespace watcher")
+	if err := w.Watch(ctx, nsKey, nsHandler); err != nil {
+		return errors.Wrap(err, "create namespace watcher")
 	}
 
-	return c, nil
+	return nil
 }
 
 // HasAccess access to objects using a key
-func (w *Watch) HasAccess(key objectstoreutil.Key, verb string) error {
+func (w *Watch) HasAccess(key store.Key, verb string) error {
 	return w.backendObjectStore.HasAccess(key, verb)
 }
 
 // List lists objects using a key.
-func (w *Watch) List(ctx context.Context, key objectstoreutil.Key) ([]*unstructured.Unstructured, error) {
+func (w *Watch) List(ctx context.Context, key store.Key) ([]*unstructured.Unstructured, error) {
 	ctx, span := trace.StartSpan(ctx, "watchCacheList")
 	defer span.End()
 
 	if w.backendObjectStore == nil {
-		return nil, errors.New("backend objectstore is nil")
+		return nil, errors.New("backend object store is nil")
 	}
 
 	// TODO: find out why this doesn't work with watch.
@@ -189,7 +226,7 @@ func (w *Watch) List(ctx context.Context, key objectstoreutil.Key) ([]*unstructu
 }
 
 // Get gets an object using a key.
-func (w *Watch) Get(ctx context.Context, key objectstoreutil.Key) (*unstructured.Unstructured, error) {
+func (w *Watch) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, error) {
 	ctx, span := trace.StartSpan(ctx, "watchCacheGet")
 	defer span.End()
 
@@ -246,14 +283,14 @@ func (w *Watch) Get(ctx context.Context, key objectstoreutil.Key) (*unstructured
 }
 
 // Watch watches the cluster given a key and a handler.
-func (w *Watch) Watch(ctx context.Context, key objectstoreutil.Key, handler kcache.ResourceEventHandler) error {
+func (w *Watch) Watch(ctx context.Context, key store.Key, handler kcache.ResourceEventHandler) error {
 	if w.backendObjectStore == nil {
-		return errors.New("backend objectstore is nil")
+		return errors.New("backend object store is nil")
 	}
 	return w.backendObjectStore.Watch(ctx, key, handler)
 }
 
-func (w *Watch) isKeyCached(key objectstoreutil.Key) bool {
+func (w *Watch) isKeyCached(key store.Key) bool {
 	w.gvkLock.Lock()
 	defer w.gvkLock.Unlock()
 
@@ -263,7 +300,7 @@ func (w *Watch) isKeyCached(key objectstoreutil.Key) bool {
 	return ok
 }
 
-func (w *Watch) handleUpdates(key objectstoreutil.Key, updateCh, deleteCh chan watchEvent) {
+func (w *Watch) handleUpdates(key store.Key, updateCh, deleteCh chan watchEvent) {
 	defer close(updateCh)
 	defer close(deleteCh)
 
@@ -284,7 +321,7 @@ func (w *Watch) handleUpdates(key objectstoreutil.Key, updateCh, deleteCh chan w
 	}
 }
 
-func (w *Watch) createEventHandler(key objectstoreutil.Key, updateCh, deleteCh chan watchEvent) error {
+func (w *Watch) createEventHandler(key store.Key, updateCh, deleteCh chan watchEvent) error {
 	handler := &watchEventHandler{
 		gvk: key.GroupVersionKind(),
 		updateFunc: func(event watchEvent) {
@@ -327,7 +364,7 @@ func (w *Watch) createEventHandler(key objectstoreutil.Key, updateCh, deleteCh c
 	return nil
 }
 
-func (w *Watch) flagGVKWatched(key objectstoreutil.Key, gvk schema.GroupVersionKind) {
+func (w *Watch) flagGVKWatched(key store.Key, gvk schema.GroupVersionKind) {
 	w.gvkLock.Lock()
 	defer w.gvkLock.Unlock()
 	if _, ok := w.watchedGVKs[key.Namespace]; !ok {
@@ -409,4 +446,29 @@ func (h *nsUpdateHandler) OnDelete(obj interface{}) {
 		delete(h.watch.factories, object.GetName())
 		h.logger.With("namespace", object.GetName()).Debugf("removed factory for namespace")
 	}
+}
+
+// UpdateClusterClient updates the cluster client.
+func (w *Watch) UpdateClusterClient(ctx context.Context, client cluster.ClientInterface) error {
+	logger := log.From(ctx)
+	logger.Debugf("watch is updating its cluster client")
+
+	w.cancelFunc()
+
+	w.client = client
+	if err := w.bootstrap(ctx, true); err != nil {
+		return err
+	}
+
+	for _, fn := range w.updateFns {
+		fn(w)
+	}
+
+	w.onClientUpdate <- w
+
+	return nil
+}
+
+func (w *Watch) RegisterOnUpdate(fn store.UpdateFn) {
+	w.updateFns = append(w.updateFns, fn)
 }

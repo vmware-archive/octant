@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/plugin/api/proto"
 	"google.golang.org/grpc"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -40,7 +40,7 @@ func (c *Client) Close() error {
 }
 
 // List lists objects in the dashboard's objectstore.
-func (c *Client) List(ctx context.Context, key objectstoreutil.Key) ([]*unstructured.Unstructured, error) {
+func (c *Client) List(ctx context.Context, key store.Key) ([]*unstructured.Unstructured, error) {
 	client := proto.NewDashboardClient(c.conn)
 
 	keyRequest, err := convertFromKey(key)
@@ -62,7 +62,7 @@ func (c *Client) List(ctx context.Context, key objectstoreutil.Key) ([]*unstruct
 }
 
 // Get retrieves an object from the dashboard's objectstore.
-func (c *Client) Get(ctx context.Context, key objectstoreutil.Key) (*unstructured.Unstructured, error) {
+func (c *Client) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, error) {
 	client := proto.NewDashboardClient(c.conn)
 
 	keyRequest, err := convertFromKey(key)

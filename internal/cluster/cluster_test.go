@@ -9,7 +9,7 @@ import (
 )
 
 func Test_FromKubeConfig(t *testing.T) {
-	kubeconfig := filepath.Join("testdata", "kubeconfig.yaml")
-	_, err := FromKubeconfig(context.TODO(), kubeconfig)
+	kubeConfig := filepath.Join("testdata", "kubeconfig.yaml")
+	_, err := FromKubeConfig(context.TODO(), kubeConfig, "")
 	require.NoError(t, err)
 }

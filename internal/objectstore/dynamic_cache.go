@@ -5,11 +5,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/util/retry"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
-	"github.com/heptio/developer-dash/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	authorizationv1 "k8s.io/api/authorization/v1"
@@ -21,6 +16,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/informers"
 	kcache "k8s.io/client-go/tools/cache"
+
+	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/internal/util/retry"
+	"github.com/heptio/developer-dash/pkg/store"
+	"github.com/heptio/developer-dash/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 )
 
 const (
@@ -77,7 +78,7 @@ type DynamicCache struct {
 	accessMu sync.RWMutex
 }
 
-var _ (ObjectStore) = (*DynamicCache)(nil)
+var _ store.Store = (*DynamicCache)(nil)
 
 // NewDynamicCache creates an instance of DynamicCache.
 func NewDynamicCache(client cluster.ClientInterface, stopCh <-chan struct{}, options ...DynamicCacheOpt) (*DynamicCache, error) {
@@ -153,8 +154,13 @@ func (dc *DynamicCache) fetchAccess(key accessKey, verb string) (bool, error) {
 
 // HasAccess returns an error if the current user does not have access to perform the verb action
 // for the given key.
-func (dc *DynamicCache) HasAccess(key objectstoreutil.Key, verb string) error {
+func (dc *DynamicCache) HasAccess(key store.Key, verb string) error {
 	gvk := key.GroupVersionKind()
+
+	if gvk.GroupKind().Empty() {
+		return errors.Errorf("unable to check access for key %s", key.String())
+	}
+
 	gvr, err := dc.client.Resource(gvk.GroupKind())
 	if err != nil {
 		return errors.Wrap(err, "client resource")
@@ -181,7 +187,7 @@ func (dc *DynamicCache) HasAccess(key objectstoreutil.Key, verb string) error {
 		dc.access[aKey] = val
 		dc.accessMu.Unlock()
 
-		access, ok = val, true
+		access = val
 	}
 
 	if !access {
@@ -191,7 +197,7 @@ func (dc *DynamicCache) HasAccess(key objectstoreutil.Key, verb string) error {
 	return nil
 }
 
-func (dc *DynamicCache) currentInformer(key objectstoreutil.Key) (informers.GenericInformer, error) {
+func (dc *DynamicCache) currentInformer(key store.Key) (informers.GenericInformer, error) {
 	if dc.client == nil {
 		return nil, errors.New("cluster client is nil")
 	}
@@ -236,7 +242,7 @@ func (dc *DynamicCache) currentInformer(key objectstoreutil.Key) (informers.Gene
 }
 
 // List lists objects.
-func (dc *DynamicCache) List(ctx context.Context, key objectstoreutil.Key) ([]*unstructured.Unstructured, error) {
+func (dc *DynamicCache) List(ctx context.Context, key store.Key) ([]*unstructured.Unstructured, error) {
 	_, span := trace.StartSpan(ctx, "dynamicCacheList")
 	defer span.End()
 
@@ -289,7 +295,7 @@ type getter interface {
 }
 
 // Get retrieves a single object.
-func (dc *DynamicCache) Get(ctx context.Context, key objectstoreutil.Key) (*unstructured.Unstructured, error) {
+func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, error) {
 	_, span := trace.StartSpan(ctx, "dynamicCacheList")
 	defer span.End()
 
@@ -365,7 +371,7 @@ func (dc *DynamicCache) Get(ctx context.Context, key objectstoreutil.Key) (*unst
 
 // Watch watches the cluster for an event and performs actions with the
 // supplied handler.
-func (dc *DynamicCache) Watch(ctx context.Context, key objectstoreutil.Key, handler kcache.ResourceEventHandler) error {
+func (dc *DynamicCache) Watch(ctx context.Context, key store.Key, handler kcache.ResourceEventHandler) error {
 	logger := log.From(ctx)
 	if err := dc.HasAccess(key, "watch"); err != nil {
 		logger.Errorf("check access failed: %v, access forbidden to %+v", key)
@@ -379,4 +385,17 @@ func (dc *DynamicCache) Watch(ctx context.Context, key objectstoreutil.Key, hand
 
 	informer.Informer().AddEventHandler(handler)
 	return nil
+}
+
+// UpdateClusterClient updates the cluster client.
+func (dc *DynamicCache) UpdateClusterClient(ctx context.Context, client cluster.ClientInterface) error {
+	panic("this should not be used")
+}
+
+func (dc *DynamicCache) OnUpdate() <-chan store.Store {
+	panic("this should not be used")
+}
+
+func (dc *DynamicCache) RegisterOnUpdate(fn store.UpdateFn) {
+	panic("this should not be used")
 }

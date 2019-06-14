@@ -7,7 +7,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/heptio/developer-dash/internal/log"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -20,6 +19,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/heptio/developer-dash/internal/log"
 
 	// auth plugins
 	_ "k8s.io/client-go/plugin/pkg/client/auth/azure"
@@ -44,6 +45,7 @@ type ClientInterface interface {
 	DiscoveryClient() (discovery.DiscoveryInterface, error)
 	NamespaceClient() (NamespaceInterface, error)
 	InfoClient() (InfoInterface, error)
+	Close()
 	RESTInterface
 }
 
@@ -63,6 +65,8 @@ type Cluster struct {
 	discoveryClient  discovery.DiscoveryInterface
 
 	restMapper *restmapper.DeferredDiscoveryRESTMapper
+
+	closeFn context.CancelFunc
 }
 
 var _ ClientInterface = (*Cluster)(nil)
@@ -114,14 +118,25 @@ func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restCl
 		logger:           log.From(ctx),
 	}
 
+	ctx, cancel := context.WithCancel(ctx)
+	c.closeFn = cancel
+
 	go func() {
 		<-ctx.Done()
-		logger.Debugf("removing cluster client template directory")
-		os.RemoveAll(dir)
+		logger.Infof("removing cluster client temporary directory")
 
+		if err := os.RemoveAll(dir); err != nil {
+			logger.WithErr(err).Errorf("closing temporary directory")
+		}
 	}()
 
 	return c, nil
+}
+
+func (c *Cluster) Close() {
+	if c.closeFn != nil {
+		c.closeFn()
+	}
 }
 
 func (c *Cluster) ResourceExists(gvr schema.GroupVersionResource) bool {
@@ -151,8 +166,9 @@ func (c *Cluster) Resource(gk schema.GroupKind) (schema.GroupVersionResource, er
 
 				retries++
 				c.logger.
-					With("err", err).
-					Debugf("Having trouble retrieving the REST mapping from your cluster at %s. Retrying.....", restConfig.Host)
+					WithErr(err).
+					With("group-kind", gk.String()).
+					Errorf("Having trouble retrieving the REST mapping from your cluster at %s. Retrying.....", restConfig.Host)
 				time.Sleep(5 * time.Second)
 
 				continue
@@ -161,7 +177,9 @@ func (c *Cluster) Resource(gk schema.GroupKind) (schema.GroupVersionResource, er
 		}
 		return restMapping.Resource, nil
 	}
-	c.logger.Infof("Unable to retrieve the REST mapping from your cluster at %s. Full error details below.", restConfig.Host)
+	c.logger.
+		With("group-kind", gk.String()).
+		Errorf("Unable to retrieve the REST mapping from your cluster at %s. Full error details below.", restConfig.Host)
 	return schema.GroupVersionResource{}, errors.New("unable to retrieve rest mapping")
 }
 
@@ -223,13 +241,18 @@ func (c *Cluster) Version() (string, error) {
 	return fmt.Sprint(serverVersion), nil
 }
 
-// FromKubeconfig creates a Cluster from a kubeconfig.
-func FromKubeconfig(ctx context.Context, kubeconfig string) (*Cluster, error) {
+// FromKubeConfig creates a Cluster from a kubeconfig.
+func FromKubeConfig(ctx context.Context, kubeconfig, contextName string) (*Cluster, error) {
 	rules := clientcmd.NewDefaultClientConfigLoadingRules()
 	if kubeconfig != "" {
 		rules.ExplicitPath = kubeconfig
 	}
-	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, &clientcmd.ConfigOverrides{})
+
+	overrides := &clientcmd.ConfigOverrides{}
+	if contextName != "" {
+		overrides.CurrentContext = contextName
+	}
+	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides)
 	config, err := cc.ClientConfig()
 	if err != nil {
 		return nil, err

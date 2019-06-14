@@ -9,13 +9,13 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
+	storefake "github.com/heptio/developer-dash/pkg/store/fake"
 	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 )
 
-func mockObjectsEvents(t *testing.T, appObjectStore *storefake.MockObjectStore, namespace string, events ...corev1.Event) {
+func mockObjectsEvents(t *testing.T, appObjectStore *storefake.MockStore, namespace string, events ...corev1.Event) {
 	require.NotNil(t, appObjectStore)
 
 	var objects []*unstructured.Unstructured
@@ -24,7 +24,7 @@ func mockObjectsEvents(t *testing.T, appObjectStore *storefake.MockObjectStore, 
 		objects = append(objects, testutil.ToUnstructured(t, &event))
 	}
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Event",

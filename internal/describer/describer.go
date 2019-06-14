@@ -14,9 +14,8 @@ import (
 	"github.com/heptio/developer-dash/internal/config"
 	"github.com/heptio/developer-dash/internal/link"
 	"github.com/heptio/developer-dash/internal/modules/overview/printer"
-	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/queryer"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -33,16 +32,16 @@ func NewObjectLoaderFactory(dashConfig config.Dash) *ObjectLoaderFactory {
 	}
 }
 
-func (f *ObjectLoaderFactory) LoadObject(ctx context.Context, namespace string, fields map[string]string, objectStoreKey objectstoreutil.Key) (*unstructured.Unstructured, error) {
+func (f *ObjectLoaderFactory) LoadObject(ctx context.Context, namespace string, fields map[string]string, objectStoreKey store.Key) (*unstructured.Unstructured, error) {
 	return LoadObject(ctx, f.dashConfig.ObjectStore(), namespace, fields, objectStoreKey)
 }
 
-func (f *ObjectLoaderFactory) LoadObjects(ctx context.Context, namespace string, fields map[string]string, objectStoreKeys []objectstoreutil.Key) ([]*unstructured.Unstructured, error) {
+func (f *ObjectLoaderFactory) LoadObjects(ctx context.Context, namespace string, fields map[string]string, objectStoreKeys []store.Key) ([]*unstructured.Unstructured, error) {
 	return LoadObjects(ctx, f.dashConfig.ObjectStore(), namespace, fields, objectStoreKeys)
 }
 
 // loadObject loads a single object from the object store.
-func LoadObject(ctx context.Context, objectStore objectstore.ObjectStore, namespace string, fields map[string]string, objectStoreKey objectstoreutil.Key) (*unstructured.Unstructured, error) {
+func LoadObject(ctx context.Context, objectStore store.Store, namespace string, fields map[string]string, objectStoreKey store.Key) (*unstructured.Unstructured, error) {
 	objectStoreKey.Namespace = namespace
 
 	if name, ok := fields["name"]; ok && name != "" {
@@ -58,7 +57,7 @@ func LoadObject(ctx context.Context, objectStore objectstore.ObjectStore, namesp
 }
 
 // loadObjects loads objects from the object store sorted by their name.
-func LoadObjects(ctx context.Context, objectStore objectstore.ObjectStore, namespace string, fields map[string]string, objectStoreKeys []objectstoreutil.Key) ([]*unstructured.Unstructured, error) {
+func LoadObjects(ctx context.Context, objectStore store.Store, namespace string, fields map[string]string, objectStoreKeys []store.Key) ([]*unstructured.Unstructured, error) {
 	var objects []*unstructured.Unstructured
 
 	for _, objectStoreKey := range objectStoreKeys {
@@ -85,7 +84,7 @@ func LoadObjects(ctx context.Context, objectStore objectstore.ObjectStore, names
 }
 
 // LoaderFunc loads an object from the object store.
-type LoaderFunc func(ctx context.Context, o objectstore.ObjectStore, namespace string, fields map[string]string) (*unstructured.Unstructured, error)
+type LoaderFunc func(ctx context.Context, o store.Store, namespace string, fields map[string]string) (*unstructured.Unstructured, error)
 
 // Options provides options to describers
 type Options struct {
@@ -97,8 +96,8 @@ type Options struct {
 	LabelSet *kLabels.Set
 	Link     link.Interface
 
-	LoadObjects func(ctx context.Context, namespace string, fields map[string]string, objectStoreKeys []objectstoreutil.Key) ([]*unstructured.Unstructured, error)
-	LoadObject  func(ctx context.Context, namespace string, fields map[string]string, objectStoreKey objectstoreutil.Key) (*unstructured.Unstructured, error)
+	LoadObjects func(ctx context.Context, namespace string, fields map[string]string, objectStoreKeys []store.Key) ([]*unstructured.Unstructured, error)
+	LoadObject  func(ctx context.Context, namespace string, fields map[string]string, objectStoreKey store.Key) (*unstructured.Unstructured, error)
 }
 
 // Describer creates content.

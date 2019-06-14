@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/heptio/developer-dash/internal/objectstore"
-	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
+	"github.com/heptio/developer-dash/pkg/store"
+	storefake "github.com/heptio/developer-dash/pkg/store/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
@@ -23,7 +23,7 @@ func Test_status(t *testing.T) {
 	}
 
 	lookup := statusLookup{
-		{apiVersion: "v1", kind: "Object"}: func(context.Context, runtime.Object, objectstore.ObjectStore) (ObjectStatus, error) {
+		{apiVersion: "v1", kind: "Object"}: func(context.Context, runtime.Object, store.Store) (ObjectStatus, error) {
 			return deployObjectStatus, nil
 		},
 	}
@@ -60,7 +60,7 @@ func Test_status(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			o := storefake.NewMockObjectStore(controller)
+			o := storefake.NewMockStore(controller)
 
 			ctx := context.Background()
 			got, err := status(ctx, tc.object, o, tc.lookup)

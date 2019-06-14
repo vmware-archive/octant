@@ -11,12 +11,11 @@ import (
 
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/internal/objectstore"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 )
 
-func CustomResourceDefinitionNames(ctx context.Context, o objectstore.ObjectStore) ([]string, error) {
-	key := objectstoreutil.Key{
+func CustomResourceDefinitionNames(ctx context.Context, o store.Store) ([]string, error) {
+	key := store.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
@@ -45,22 +44,20 @@ func CustomResourceDefinitionNames(ctx context.Context, o objectstore.ObjectStor
 	return list, nil
 }
 
-func CustomResourceDefinition(ctx context.Context, name string, o objectstore.ObjectStore) (*apiextv1beta1.CustomResourceDefinition, error) {
-	key := objectstoreutil.Key{
+func CustomResourceDefinition(ctx context.Context, name string, o store.Store) (*apiextv1beta1.CustomResourceDefinition, error) {
+	key := store.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 		Name:       name,
 	}
 
 	crd := &apiextv1beta1.CustomResourceDefinition{}
-	if err := objectstore.GetAs(ctx, o, key, crd); err != nil {
+	if err := store.GetAs(ctx, o, key, crd); err != nil {
 		return nil, errors.Wrap(err, "get CRD from object store")
 	}
 
 	return crd, nil
 }
-
-
 
 func AddCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatcher, crdSection *CRDSection, m module.Module) {
 	name := crd.GetName()

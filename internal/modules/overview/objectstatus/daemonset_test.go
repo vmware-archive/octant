@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
+	storefake "github.com/heptio/developer-dash/pkg/store/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
@@ -18,13 +18,13 @@ import (
 func Test_daemonSet(t *testing.T) {
 	cases := []struct {
 		name     string
-		init     func(*testing.T, *storefake.MockObjectStore) runtime.Object
+		init     func(*testing.T, *storefake.MockStore) runtime.Object
 		expected ObjectStatus
 		isErr    bool
 	}{
 		{
 			name: "in general",
-			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				objectFile := "daemonset_ok.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
@@ -36,7 +36,7 @@ func Test_daemonSet(t *testing.T) {
 		},
 		{
 			name: "misscheduled",
-			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				objectFile := "daemonset_misscheduled.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
@@ -48,7 +48,7 @@ func Test_daemonSet(t *testing.T) {
 		},
 		{
 			name: "not ready",
-			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				objectFile := "daemonset_not_ready.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
@@ -60,14 +60,14 @@ func Test_daemonSet(t *testing.T) {
 		},
 		{
 			name: "object is nil",
-			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				return nil
 			},
 			isErr: true,
 		},
 		{
 			name: "object is not a daemon set",
-			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				return &unstructured.Unstructured{}
 			},
 			isErr: true,
@@ -79,7 +79,7 @@ func Test_daemonSet(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			o := storefake.NewMockObjectStore(controller)
+			o := storefake.NewMockStore(controller)
 
 			object := tc.init(t, o)
 

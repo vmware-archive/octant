@@ -1,8 +1,9 @@
 package printer
 
 import (
-	"github.com/heptio/developer-dash/pkg/view/component"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
 func printSelector(selector *metav1.LabelSelector) *component.Selectors {

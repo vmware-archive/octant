@@ -30,7 +30,6 @@ export class KubeContextService {
   }
 
   select(context: ContextDescription) {
-    console.log(`settings active context to ${context.name}`);
     this.selectedSource.next(context.name);
 
     this.updateContext(context.name).subscribe();

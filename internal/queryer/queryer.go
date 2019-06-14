@@ -25,9 +25,8 @@ import (
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/core"
 
-	"github.com/heptio/developer-dash/internal/objectstore"
 	dashstrings "github.com/heptio/developer-dash/internal/util/strings"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 )
 
 //go:generate mockgen -source=queryer.go -destination=./fake/mock_queryer.go -package=fake github.com/heptio/developer-dash/internal/queryer Queryer
@@ -45,26 +44,26 @@ type Queryer interface {
 }
 
 type ObjectStoreQueryer struct {
-	objectStore     objectstore.ObjectStore
+	objectStore     store.Store
 	discoveryClient discovery.DiscoveryInterface
 
 	children        map[types.UID][]kruntime.Object
 	podsForServices map[types.UID][]*corev1.Pod
-	owner           map[objectstoreutil.Key]kruntime.Object
+	owner           map[store.Key]kruntime.Object
 
 	mu sync.Mutex
 }
 
 var _ Queryer = (*ObjectStoreQueryer)(nil)
 
-func New(o objectstore.ObjectStore, discoveryClient discovery.DiscoveryInterface) *ObjectStoreQueryer {
+func New(o store.Store, discoveryClient discovery.DiscoveryInterface) *ObjectStoreQueryer {
 	return &ObjectStoreQueryer{
 		objectStore:     o,
 		discoveryClient: discoveryClient,
 
 		children:        make(map[types.UID][]kruntime.Object),
 		podsForServices: make(map[types.UID][]*corev1.Pod),
-		owner:           make(map[objectstoreutil.Key]kruntime.Object),
+		owner:           make(map[store.Key]kruntime.Object),
 	}
 }
 
@@ -114,7 +113,7 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner metav1.Object
 				continue
 			}
 
-			key := objectstoreutil.Key{
+			key := store.Key{
 				Namespace:  owner.GetNamespace(),
 				APIVersion: resourceList.GroupVersion,
 				Kind:       apiResource.Kind,
@@ -167,7 +166,7 @@ func (osq *ObjectStoreQueryer) Events(ctx context.Context, object metav1.Object)
 
 	u := &unstructured.Unstructured{Object: m}
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  u.GetNamespace(),
 		APIVersion: "v1",
 		Kind:       "Event",
@@ -203,7 +202,7 @@ func (osq *ObjectStoreQueryer) IngressesForService(ctx context.Context, service 
 		return nil, errors.New("nil service")
 	}
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  service.Namespace,
 		APIVersion: "extensions/v1beta1",
 		Kind:       "Ingress",
@@ -260,7 +259,7 @@ func (osq *ObjectStoreQueryer) OwnerReference(ctx context.Context, namespace str
 	osq.mu.Lock()
 	defer osq.mu.Unlock()
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  namespace,
 		APIVersion: ownerReference.APIVersion,
 		Kind:       ownerReference.Kind,
@@ -295,7 +294,7 @@ func (osq *ObjectStoreQueryer) PodsForService(ctx context.Context, service *core
 		return stored, nil
 	}
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  service.Namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -315,7 +314,7 @@ func (osq *ObjectStoreQueryer) PodsForService(ctx context.Context, service *core
 	return pods, nil
 }
 
-func (osq *ObjectStoreQueryer) loadPods(ctx context.Context, key objectstoreutil.Key, labelSelector *metav1.LabelSelector) ([]*corev1.Pod, error) {
+func (osq *ObjectStoreQueryer) loadPods(ctx context.Context, key store.Key, labelSelector *metav1.LabelSelector) ([]*corev1.Pod, error) {
 	objects, err := osq.objectStore.List(ctx, key)
 	if err != nil {
 		return nil, err
@@ -358,7 +357,7 @@ func (osq *ObjectStoreQueryer) ServicesForIngress(ctx context.Context, ingress *
 	backends := osq.listIngressBackends(*ingress)
 	var services []*corev1.Service
 	for _, backend := range backends {
-		key := objectstoreutil.Key{
+		key := store.Key{
 			Namespace:  ingress.Namespace,
 			APIVersion: "v1",
 			Kind:       "Service",
@@ -392,7 +391,7 @@ func (osq *ObjectStoreQueryer) ServicesForPod(ctx context.Context, pod *corev1.P
 		return nil, errors.New("nil pod")
 	}
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  pod.Namespace,
 		APIVersion: "v1",
 		Kind:       "Service",
@@ -436,7 +435,7 @@ func (osq *ObjectStoreQueryer) ServiceAccountForPod(ctx context.Context, pod *co
 		return nil, nil
 	}
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  pod.Namespace,
 		APIVersion: "v1",
 		Kind:       "ServiceAccount",

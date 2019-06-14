@@ -10,13 +10,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/heptio/developer-dash/internal/objectstore"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
 // replicaSetExtV1Beta1 creates status for an ext/v1beta1 replica set. This is
 // not the final implementation. It is included to generate output.
-func replicaSetExtV1Beta1(_ context.Context, object runtime.Object, _ objectstore.ObjectStore) (ObjectStatus, error) {
+func replicaSetExtV1Beta1(_ context.Context, object runtime.Object, _ store.Store) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("replica set is nil")
 	}
@@ -51,7 +51,7 @@ func replicaSetExtV1Beta1(_ context.Context, object runtime.Object, _ objectstor
 
 // replicaSetExtV1Beta1 creates status for an v1/apps replica set. This is
 // not the final implementation. It is included to generate output.
-func replicaSetAppsV1(_ context.Context, object runtime.Object, _ objectstore.ObjectStore) (ObjectStatus, error) {
+func replicaSetAppsV1(_ context.Context, object runtime.Object, _ store.Store) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("replica set is nil")
 	}

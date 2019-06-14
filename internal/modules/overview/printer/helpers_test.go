@@ -12,7 +12,7 @@ import (
 
 	configFake "github.com/heptio/developer-dash/internal/config/fake"
 	linkFake "github.com/heptio/developer-dash/internal/link/fake"
-	objectStoreFake "github.com/heptio/developer-dash/internal/objectstore/fake"
+	objectStoreFake "github.com/heptio/developer-dash/pkg/store/fake"
 	pluginFake "github.com/heptio/developer-dash/pkg/plugin/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
@@ -25,12 +25,12 @@ type testPrinterOptions struct {
 	dashConfig *configFake.MockDash
 	link       *linkFake.MockInterface
 
-	objectStore   *objectStoreFake.MockObjectStore
+	objectStore   *objectStoreFake.MockStore
 	pluginManager *pluginFake.MockManagerInterface
 }
 
 func newTestPrinterOptions(controller *gomock.Controller) *testPrinterOptions {
-	objectStore := objectStoreFake.NewMockObjectStore(controller)
+	objectStore := objectStoreFake.NewMockStore(controller)
 
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 

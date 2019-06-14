@@ -44,7 +44,6 @@ func Test_ClusterRoleListHandler(t *testing.T) {
 		"Age":  component.NewTimestamp(now),
 	})
 
-
 	assertComponentEqual(t, expected, got)
 }
 

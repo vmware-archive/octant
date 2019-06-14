@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -235,7 +235,7 @@ func deploymentPods(ctx context.Context, deployment *appsv1.Deployment, options 
 
 	selector := labels.Set(deployment.Spec.Template.ObjectMeta.Labels)
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  deployment.Namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",

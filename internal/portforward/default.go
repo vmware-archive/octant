@@ -6,12 +6,13 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/objectstore"
+	"github.com/heptio/developer-dash/pkg/store"
+
 	"github.com/pkg/errors"
 )
 
 // Default create a portforward instance.
-func Default(ctx context.Context, client cluster.ClientInterface, objectStore objectstore.ObjectStore) (PortForwarder, error) {
+func Default(ctx context.Context, client cluster.ClientInterface, objectStore store.Store) (PortForwarder, error) {
 	logger := log.From(ctx)
 	restClient, err := client.RESTClient()
 	if err != nil {

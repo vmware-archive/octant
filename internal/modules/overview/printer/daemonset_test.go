@@ -46,7 +46,7 @@ func Test_DaemonSetListHandler(t *testing.T) {
 		"Up-To-Date", "Age", "Node Selector")
 	expected := component.NewTable("Daemon Sets", cols)
 	expected.Add(component.TableRow{
-		"Name": component.NewLink("", object.Name, "/path"),
+		"Name":          component.NewLink("", object.Name, "/path"),
 		"Labels":        component.NewLabels(labels),
 		"Age":           component.NewTimestamp(now),
 		"Desired":       component.NewText("1"),

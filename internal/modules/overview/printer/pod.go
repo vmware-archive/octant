@@ -16,8 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/heptio/developer-dash/internal/objectstore"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -273,8 +272,8 @@ func (p *PodConfiguration) Create(options Options) (*component.Summary, error) {
 	return summary, nil
 }
 
-func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelector, uid types.UID, o objectstore.ObjectStore) ([]*corev1.Pod, error) {
-	key := objectstoreutil.Key{
+func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelector, uid types.UID, o store.Store) ([]*corev1.Pod, error) {
+	key := store.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -298,7 +297,7 @@ func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelec
 	return owned, nil
 }
 
-func loadPods(ctx context.Context, key objectstoreutil.Key, o objectstore.ObjectStore, labelSelector *metav1.LabelSelector) ([]*corev1.Pod, error) {
+func loadPods(ctx context.Context, key store.Key, o store.Store, labelSelector *metav1.LabelSelector) ([]*corev1.Pod, error) {
 	objects, err := o.List(ctx, key)
 	if err != nil {
 		return nil, err
@@ -420,7 +419,7 @@ func createPodListView(ctx context.Context, object runtime.Object, options Optio
 		return nil, errors.Wrap(err, "get name for object")
 	}
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -455,7 +454,7 @@ func createPodListView(ctx context.Context, object runtime.Object, options Optio
 }
 
 func createMountedPodListView(ctx context.Context, namespace string, persistentVolumeClaimName string, options Options) (component.Component, error) {
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Pod",

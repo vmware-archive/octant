@@ -7,14 +7,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/plugin/api"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/heptio/developer-dash/pkg/view/flexlayout"
-	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type stub struct {
@@ -58,7 +59,7 @@ func (s *stub) Print(object runtime.Object) (plugin.PrintResponse, error) {
 	}
 
 	ctx := context.Background()
-	key, err := objectstoreutil.KeyFromObject(object)
+	key, err := store.KeyFromObject(object)
 	if err != nil {
 		return plugin.PrintResponse{}, err
 	}

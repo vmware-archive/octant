@@ -5,8 +5,9 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/pkg/errors"
+
+	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
 func printTolerations(podSpec corev1.PodSpec) (component.Component, error) {

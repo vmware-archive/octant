@@ -5,7 +5,7 @@ import (
 	"path"
 	"reflect"
 
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -20,7 +20,7 @@ type ResourceTitle struct {
 
 type ResourceOptions struct {
 	Path                  string
-	ObjectStoreKey        objectstoreutil.Key
+	ObjectStoreKey        store.Key
 	ListType              interface{}
 	ObjectType            interface{}
 	Titles                ResourceTitle

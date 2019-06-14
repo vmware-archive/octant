@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/heptio/developer-dash/internal/api"
+	apiFake "github.com/heptio/developer-dash/internal/api/fake"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/log"
 	modulefake "github.com/heptio/developer-dash/internal/module/fake"
@@ -65,11 +66,15 @@ func Test_dash_Run(t *testing.T) {
 
 			nsClient := clusterfake.NewMockNamespaceInterface(controller)
 			nsClient.EXPECT().InitialNamespace().Return("default").AnyTimes()
+			infoClient := clusterfake.NewMockInfoInterface(controller)
+
+			clusterClient := apiFake.NewMockClusterClient(controller)
+			clusterClient.EXPECT().NamespaceClient().Return(nsClient, nil).AnyTimes()
+			clusterClient.EXPECT().InfoClient().Return(infoClient, nil).AnyTimes()
 
 			manager := modulefake.NewMockManagerInterface(controller)
 
-			infoClient := clusterfake.NewMockInfoInterface(controller)
-			service := api.New(ctx, apiPathPrefix, nsClient, infoClient, manager, log.NopLogger())
+			service := api.New(ctx, apiPathPrefix, clusterClient, manager, log.NopLogger())
 			d, err := newDash(listener, namespace, uiURL, service, log.NopLogger())
 			require.NoError(t, err)
 
@@ -145,8 +150,12 @@ func Test_dash_routes(t *testing.T) {
 
 			infoClient := clusterfake.NewMockInfoInterface(controller)
 
+			clusterClient := apiFake.NewMockClusterClient(controller)
+			clusterClient.EXPECT().NamespaceClient().Return(nsClient, nil).AnyTimes()
+			clusterClient.EXPECT().InfoClient().Return(infoClient, nil).AnyTimes()
+
 			ctx := context.Background()
-			service := api.New(ctx, apiPathPrefix, nsClient, infoClient, manager, log.NopLogger())
+			service := api.New(ctx, apiPathPrefix, clusterClient, manager, log.NopLogger())
 
 			d, err := newDash(listener, namespace, uiURL, service, log.NopLogger())
 			require.NoError(t, err)

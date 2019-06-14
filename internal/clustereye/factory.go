@@ -9,11 +9,11 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/heptio/developer-dash/internal/objectstore"
+	"github.com/heptio/developer-dash/pkg/store"
 )
 
 // EntriesFunc is a function that can create navigation entries.
-type EntriesFunc func(ctx context.Context, prefix, namespace string, objectStore objectstore.ObjectStore) ([]Navigation, error)
+type EntriesFunc func(ctx context.Context, prefix, namespace string, objectStore store.Store) ([]Navigation, error)
 
 // NavigationEntries help construct navigation entries.
 type NavigationEntries struct {
@@ -27,11 +27,11 @@ type NavigationFactory struct {
 	rootPath    string
 	namespace   string
 	entries     NavigationEntries
-	objectStore objectstore.ObjectStore
+	objectStore store.Store
 }
 
 // NewNavigationFactory creates an instance of NewNavigationFactory.
-func NewNavigationFactory(namespace string, root string, objectStore objectstore.ObjectStore, entries NavigationEntries) *NavigationFactory {
+func NewNavigationFactory(namespace string, root string, objectStore store.Store, entries NavigationEntries) *NavigationFactory {
 	var rootPath = root
 	if namespace != "" {
 		rootPath = path.Join(root, "namespace", namespace, "")

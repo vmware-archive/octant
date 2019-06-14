@@ -3,14 +3,14 @@ package api
 import (
 	"encoding/json"
 
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/plugin/api/proto"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-func convertFromKey(in objectstoreutil.Key) (*proto.KeyRequest, error) {
+func convertFromKey(in store.Key) (*proto.KeyRequest, error) {
 	return &proto.KeyRequest{
 		Namespace:  in.Namespace,
 		ApiVersion: in.APIVersion,
@@ -19,9 +19,9 @@ func convertFromKey(in objectstoreutil.Key) (*proto.KeyRequest, error) {
 	}, nil
 }
 
-func convertToKey(in *proto.KeyRequest) (objectstoreutil.Key, error) {
+func convertToKey(in *proto.KeyRequest) (store.Key, error) {
 	if in == nil {
-		return objectstoreutil.Key{}, errors.New("key request is nil")
+		return store.Key{}, errors.New("key request is nil")
 	}
 
 	matchLabels := labels.Set{}
@@ -29,11 +29,11 @@ func convertToKey(in *proto.KeyRequest) (objectstoreutil.Key, error) {
 	value := in.GetLabelSelector()
 	if value != nil {
 		if err := json.Unmarshal(value.Value, &matchLabels); err != nil {
-			return objectstoreutil.Key{}, errors.Wrap(err, "unmarshal label selector")
+			return store.Key{}, errors.Wrap(err, "unmarshal label selector")
 		}
 	}
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  in.Namespace,
 		APIVersion: in.ApiVersion,
 		Kind:       in.Kind,

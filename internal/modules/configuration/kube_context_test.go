@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	dashConfigFake "github.com/heptio/developer-dash/internal/config/fake"
 	"github.com/heptio/developer-dash/internal/kubeconfig"
 	"github.com/heptio/developer-dash/internal/kubeconfig/fake"
 	"github.com/heptio/developer-dash/internal/log"
@@ -68,7 +69,11 @@ func Test_kubeContextGenerator(t *testing.T) {
 		x.ConfigLoader = loader
 	}
 
-	kgc := newKubeContextGenerator("/path", configLoaderFuncOpt)
+	dashConfig := dashConfigFake.NewMockDash(controller)
+	dashConfig.EXPECT().KubeConfigPath().Return("/path")
+	dashConfig.EXPECT().ContextName().Return("")
+
+	kgc := newKubeContextGenerator(dashConfig, configLoaderFuncOpt)
 
 	assert.Equal(t, "kubeConfig", kgc.Name())
 

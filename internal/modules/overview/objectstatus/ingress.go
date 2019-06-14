@@ -11,15 +11,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/heptio/developer-dash/internal/objectstore"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 )
 
 const (
 	ingressNoBackendsDefined = "No backends defined. All traffic will be sent to the default backend configured for the ingress controller."
 )
 
-func runIngressStatus(ctx context.Context, object runtime.Object, o objectstore.ObjectStore) (ObjectStatus, error) {
+func runIngressStatus(ctx context.Context, object runtime.Object, o store.Store) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("ingress is nil")
 	}
@@ -48,7 +47,7 @@ func runIngressStatus(ctx context.Context, object runtime.Object, o objectstore.
 
 type ingressStatus struct {
 	ingress     extv1beta1.Ingress
-	objectstore objectstore.ObjectStore
+	objectstore store.Store
 }
 
 func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
@@ -68,7 +67,7 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 	}
 
 	for _, backend := range backends {
-		key := objectstoreutil.Key{
+		key := store.Key{
 			Namespace:  ingress.Namespace,
 			APIVersion: "v1",
 			Kind:       "Service",
@@ -77,7 +76,7 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 
 		service := &corev1.Service{}
 
-		if err := objectstore.GetAs(ctx, o, key, service); err != nil {
+		if err := store.GetAs(ctx, o, key, service); err != nil {
 			return ObjectStatus{}, errors.Wrap(err, "get service from objectstore")
 		}
 
@@ -117,7 +116,7 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 			continue
 		}
 
-		key := objectstoreutil.Key{
+		key := store.Key{
 			Namespace:  ingress.Namespace,
 			APIVersion: "v1",
 			Kind:       "Secret",

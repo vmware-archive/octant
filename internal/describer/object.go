@@ -12,7 +12,7 @@ import (
 	"github.com/heptio/developer-dash/internal/modules/overview/logviewer"
 	"github.com/heptio/developer-dash/internal/modules/overview/resourceviewer"
 	"github.com/heptio/developer-dash/internal/modules/overview/yamlviewer"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -23,13 +23,13 @@ type Object struct {
 	path                  string
 	baseTitle             string
 	objectType            func() interface{}
-	objectStoreKey        objectstoreutil.Key
+	objectStoreKey        store.Key
 	disableResourceViewer bool
 	tabFuncDescriptors    []tabFuncDescriptor
 }
 
 // NewObject creates an instance of Object.
-func NewObject(p, baseTitle string, objectStoreKey objectstoreutil.Key, objectType func() interface{}, disableResourceViewer bool) *Object {
+func NewObject(p, baseTitle string, objectStoreKey store.Key, objectType func() interface{}, disableResourceViewer bool) *Object {
 	o := &Object{
 		path:                  p,
 		baseTitle:             baseTitle,

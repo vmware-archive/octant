@@ -12,7 +12,7 @@ import (
 	"github.com/heptio/developer-dash/internal/config"
 	"github.com/heptio/developer-dash/internal/modules/overview/objectvisitor"
 	"github.com/heptio/developer-dash/internal/queryer"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -99,7 +99,7 @@ func CachedResourceViewer(ctx context.Context, object objectvisitor.ClusterObjec
 
 		copyObject := object.DeepCopyObject()
 
-		key, err := objectstoreutil.KeyFromObject(copyObject)
+		key, err := store.KeyFromObject(copyObject)
 		if err != nil {
 			return "", err
 		}

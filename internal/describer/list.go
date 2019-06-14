@@ -8,7 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -20,12 +20,12 @@ type List struct {
 	title          string
 	listType       func() interface{}
 	objectType     func() interface{}
-	objectStoreKey objectstoreutil.Key
+	objectStoreKey store.Key
 	isClusterWide  bool
 }
 
 // NewList creates an instance of List.
-func NewList(p, title string, objectStoreKey objectstoreutil.Key, listType, objectType func() interface{}, isClusterWide bool) *List {
+func NewList(p, title string, objectStoreKey store.Key, listType, objectType func() interface{}, isClusterWide bool) *List {
 	return &List{
 		path:           p,
 		title:          title,
@@ -51,7 +51,7 @@ func (d *List) Describe(ctx context.Context, prefix, namespace string, options O
 		namespace = ""
 	}
 
-	objects, err := options.LoadObjects(ctx, namespace, options.Fields, []objectstoreutil.Key{key})
+	objects, err := options.LoadObjects(ctx, namespace, options.Fields, []store.Key{key})
 	if err != nil {
 		return EmptyContentResponse, err
 	}

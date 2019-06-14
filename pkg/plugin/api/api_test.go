@@ -9,11 +9,11 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/heptio/developer-dash/internal/gvk"
-	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
+	storefake "github.com/heptio/developer-dash/pkg/store/fake"
 	"github.com/heptio/developer-dash/internal/portforward"
 	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/plugin/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,12 +21,12 @@ import (
 )
 
 type apiMocks struct {
-	objectstore *storefake.MockObjectStore
+	objectstore *storefake.MockStore
 	pf          *pffake.MockPortForwarder
 }
 
 func TestAPI(t *testing.T) {
-	listKey := objectstoreutil.Key{
+	listKey := store.Key{
 		Namespace:  "default",
 		APIVersion: "apps/v1",
 		Kind:       "Deployment",
@@ -36,7 +36,7 @@ func TestAPI(t *testing.T) {
 		testutil.ToUnstructured(t, testutil.CreateDeployment("deployment")),
 	}
 
-	getKey := objectstoreutil.Key{
+	getKey := store.Key{
 		Namespace:  "default",
 		APIVersion: "apps/v1",
 		Kind:       "Deployment",
@@ -170,7 +170,7 @@ func TestAPI(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			appObjectStore := storefake.NewMockObjectStore(controller)
+			appObjectStore := storefake.NewMockStore(controller)
 			pf := pffake.NewMockPortForwarder(controller)
 			tc.initFunc(t, &apiMocks{
 				objectstore: appObjectStore,

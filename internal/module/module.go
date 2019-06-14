@@ -38,6 +38,9 @@ type Module interface {
 	// Stop stops the module.
 	Stop()
 
+	// SetContext sets the current context name.
+	SetContext(ctx context.Context, contextName string) error
+
 	// Generators allow modules to send events to the frontend.
 	Generators() []clustereye.Generator
 

@@ -9,7 +9,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -197,7 +197,7 @@ func serviceEndpoints(ctx context.Context, options Options, service *corev1.Serv
 		return nil, errors.New("service is nil")
 	}
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  service.Namespace,
 		APIVersion: "v1",
 		Kind:       "Endpoints",

@@ -14,10 +14,10 @@ import (
 	configFake "github.com/heptio/developer-dash/internal/config/fake"
 	linkFake "github.com/heptio/developer-dash/internal/link/fake"
 	"github.com/heptio/developer-dash/internal/modules/overview/printer"
-	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/queryer"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
+	storefake "github.com/heptio/developer-dash/pkg/store/fake"
 	pluginFake "github.com/heptio/developer-dash/pkg/plugin/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
@@ -28,7 +28,7 @@ func Test_crd(t *testing.T) {
 
 	dashConfig := configFake.NewMockDash(controller)
 
-	objectStore := storefake.NewMockObjectStore(controller)
+	objectStore := storefake.NewMockStore(controller)
 	dashConfig.EXPECT().ObjectStore().Return(objectStore)
 
 	crdObject := testutil.CreateCRD("crd1")
@@ -36,7 +36,7 @@ func Test_crd(t *testing.T) {
 	crdObject.Spec.Version = "v1"
 	crdObject.Spec.Names.Kind = "Name"
 
-	crdKey := objectstoreutil.Key{
+	crdKey := store.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 		Name:       crdObject.Name,
@@ -44,7 +44,7 @@ func Test_crd(t *testing.T) {
 
 	objectStore.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crdObject), nil)
 
-	crKey := objectstoreutil.Key{
+	crKey := store.Key{
 		Namespace:  "default",
 		APIVersion: "foo.example.com/v1",
 		Kind:       "Name",

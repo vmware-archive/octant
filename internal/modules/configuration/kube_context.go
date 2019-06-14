@@ -10,6 +10,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/api"
 	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/config"
 	"github.com/heptio/developer-dash/internal/event"
 	"github.com/heptio/developer-dash/internal/kubeconfig"
 	"github.com/heptio/developer-dash/internal/log"
@@ -28,7 +29,7 @@ type updateCurrentContextRequest struct {
 
 // updateCurrentContextHandler updates the current context.
 type updateCurrentContextHandler struct {
-	logger log.Logger
+	logger            log.Logger
 	contextUpdateFunc func(name string) error
 }
 
@@ -54,9 +55,6 @@ func (h *updateCurrentContextHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	h.logger.
-		With("requested-kube-context", req.RequestedContext).Debugf("updating kube context")
-
 	if err := h.contextUpdateFunc(req.RequestedContext); err != nil {
 		h.logger.WithErr(err).Errorf("unable to update context")
 		api.RespondWithError(w, http.StatusInternalServerError, err.Error(), h.logger)
@@ -75,16 +73,16 @@ type kubeContextGenerationOption func(generator *kubeContextGenerator)
 
 // kubeContextGenerator generates kube contexts for the front end.
 type kubeContextGenerator struct {
-	KubeConfigPath string
 	ConfigLoader kubeconfig.Loader
+	DashConfig   config.Dash
 }
 
 var _ clustereye.Generator = (*kubeContextGenerator)(nil)
 
-func newKubeContextGenerator(kubeConfigPath string, options ...kubeContextGenerationOption) *kubeContextGenerator {
+func newKubeContextGenerator(dashConfig config.Dash, options ...kubeContextGenerationOption) *kubeContextGenerator {
 	kcg := &kubeContextGenerator{
-		KubeConfigPath: kubeConfigPath,
 		ConfigLoader: kubeconfig.NewFSLoader(),
+		DashConfig:   dashConfig,
 	}
 
 	for _, option := range options {
@@ -95,13 +93,20 @@ func newKubeContextGenerator(kubeConfigPath string, options ...kubeContextGenera
 }
 
 func (g *kubeContextGenerator) Event(ctx context.Context) (clustereye.Event, error) {
-	kubeConfig, err := g.ConfigLoader.Load(g.KubeConfigPath)
+	configPath := g.DashConfig.KubeConfigPath()
+
+	kubeConfig, err := g.ConfigLoader.Load(configPath)
 	if err != nil {
 		return clustereye.Event{}, errors.Wrap(err, "unable to load kube config")
 	}
 
+	currentContext := g.DashConfig.ContextName()
+	if currentContext == "" {
+		currentContext = kubeConfig.CurrentContext
+	}
+
 	resp := kubeContextsResponse{
-		CurrentContext: kubeConfig.CurrentContext,
+		CurrentContext: currentContext,
 		Contexts:       kubeConfig.Contexts,
 	}
 

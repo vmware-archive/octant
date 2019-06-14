@@ -12,8 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/heptio/developer-dash/internal/objectstore"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 )
 
 // Navigation is a set of navigation entries.
@@ -29,7 +28,7 @@ func NewNavigation(title, path string) *Navigation {
 }
 
 // CRDEntries generates navigation entries for crds.
-func CRDEntries(ctx context.Context, prefix, namespace string, objectStore objectstore.ObjectStore) ([]Navigation, error) {
+func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store.Store) ([]Navigation, error) {
 	var list []Navigation
 
 	crdNames, err := CustomResourceDefinitionNames(ctx, objectStore)
@@ -59,8 +58,8 @@ func CRDEntries(ctx context.Context, prefix, namespace string, objectStore objec
 }
 
 // CustomResourceDefinitionNames returns the available custom resource definition names.
-func CustomResourceDefinitionNames(ctx context.Context, o objectstore.ObjectStore) ([]string, error) {
-	key := objectstoreutil.Key{
+func CustomResourceDefinitionNames(ctx context.Context, o store.Store) ([]string, error) {
+	key := store.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
@@ -90,15 +89,15 @@ func CustomResourceDefinitionNames(ctx context.Context, o objectstore.ObjectStor
 }
 
 // CustomResourceDefinition retrieves a CRD.
-func CustomResourceDefinition(ctx context.Context, name string, o objectstore.ObjectStore) (*apiextv1beta1.CustomResourceDefinition, error) {
-	key := objectstoreutil.Key{
+func CustomResourceDefinition(ctx context.Context, name string, o store.Store) (*apiextv1beta1.CustomResourceDefinition, error) {
+	key := store.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 		Name:       name,
 	}
 
 	crd := &apiextv1beta1.CustomResourceDefinition{}
-	if err := objectstore.GetAs(ctx, o, key, crd); err != nil {
+	if err := store.GetObjectAs(ctx, o, key, crd); err != nil {
 		return nil, errors.Wrap(err, "get CRD from object store")
 	}
 
@@ -110,7 +109,7 @@ func ListCustomResources(
 	ctx context.Context,
 	crd *apiextv1beta1.CustomResourceDefinition,
 	namespace string,
-	o objectstore.ObjectStore,
+	o store.Store,
 	selector *labels.Set) ([]*unstructured.Unstructured, error) {
 	if crd == nil {
 		return nil, errors.New("crd is nil")
@@ -123,7 +122,7 @@ func ListCustomResources(
 
 	apiVersion, kind := gvk.ToAPIVersionAndKind()
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  namespace,
 		APIVersion: apiVersion,
 		Kind:       kind,

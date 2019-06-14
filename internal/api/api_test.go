@@ -12,21 +12,21 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
+	apiFake "github.com/heptio/developer-dash/internal/api/fake"
+	clusterFake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
-	modulefake "github.com/heptio/developer-dash/internal/module/fake"
+	moduleFake "github.com/heptio/developer-dash/internal/module/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
 type testMocks struct {
-	namespace *clusterfake.MockNamespaceInterface
-	info      *clusterfake.MockInfoInterface
+	namespace *clusterFake.MockNamespaceInterface
+	info      *clusterFake.MockInfoInterface
 }
 
 func TestAPI_routes(t *testing.T) {
@@ -112,8 +112,8 @@ func TestAPI_routes(t *testing.T) {
 			defer controller.Finish()
 
 			mocks := &testMocks{
-				namespace: clusterfake.NewMockNamespaceInterface(controller),
-				info:      clusterfake.NewMockInfoInterface(controller),
+				namespace: clusterFake.NewMockNamespaceInterface(controller),
+				info:      clusterFake.NewMockInfoInterface(controller),
 			}
 
 			mocks.info.EXPECT().Context().Return("main-context").AnyTimes()
@@ -123,7 +123,7 @@ func TestAPI_routes(t *testing.T) {
 
 			mocks.namespace.EXPECT().Names().Return([]string{"default"}, nil).AnyTimes()
 
-			m := modulefake.NewMockModule(controller)
+			m := moduleFake.NewMockModule(controller)
 			m.EXPECT().
 				Name().Return("module").AnyTimes()
 			m.EXPECT().
@@ -159,15 +159,22 @@ func TestAPI_routes(t *testing.T) {
 				}).
 				AnyTimes()
 
-			manager := modulefake.NewMockManagerInterface(controller)
+			manager := moduleFake.NewMockManagerInterface(controller)
+
+			clusterClient := apiFake.NewMockClusterClient(controller)
+			clusterClient.EXPECT().NamespaceClient().Return(mocks.namespace, nil).AnyTimes()
+			clusterClient.EXPECT().InfoClient().Return(mocks.info, nil).AnyTimes()
 
 			ctx := context.Background()
-			srv := New(ctx, "/", mocks.namespace, mocks.info, manager, log.NopLogger())
+			srv := New(ctx, "/", clusterClient, manager, log.NopLogger())
 
 			err := srv.RegisterModule(m)
 			require.NoError(t, err)
 
-			ts := httptest.NewServer(srv.Handler(ctx))
+			handler, err := srv.Handler(ctx)
+			require.NoError(t, err)
+
+			ts := httptest.NewServer(handler)
 			defer ts.Close()
 
 			u, err := url.Parse(ts.URL)

@@ -11,9 +11,9 @@ import (
 
 	configFake "github.com/heptio/developer-dash/internal/config/fake"
 	"github.com/heptio/developer-dash/internal/link"
-	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
+	storefake "github.com/heptio/developer-dash/pkg/store/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -21,14 +21,14 @@ func Test_crdListDescriber(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	o := storefake.NewMockObjectStore(controller)
+	o := storefake.NewMockStore(controller)
 
 	crd := testutil.CreateCRD("crd1")
 	crd.Spec.Group = "foo.example.com"
 	crd.Spec.Version = "v1"
 	crd.Spec.Names.Kind = "Name"
 
-	crdKey := objectstoreutil.Key{
+	crdKey := store.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 		Name:       crd.Name,
@@ -37,7 +37,7 @@ func Test_crdListDescriber(t *testing.T) {
 	o.EXPECT().HasAccess(gomock.Any(), "list").Return(nil)
 	o.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
 
-	crKey := objectstoreutil.Key{
+	crKey := store.Key{
 		Namespace:  "default",
 		APIVersion: "foo.example.com/v1",
 		Kind:       "Name",

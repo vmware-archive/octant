@@ -18,9 +18,10 @@ import (
 func newClusterEyeCmd() *cobra.Command {
 	var namespace string
 	var uiURL string
-	var kubeconfig string
+	var kubeConfig string
 	var verboseLevel int
 	var enableOpenCensus bool
+	var initialContext string
 
 	clusterEyeCmd := &cobra.Command{
 		Use:   "clustereye",
@@ -50,9 +51,10 @@ func newClusterEyeCmd() *cobra.Command {
 			go func() {
 				options := dash.Options{
 					EnableOpenCensus: enableOpenCensus,
-					KubeConfig:       kubeconfig,
+					KubeConfig:       kubeConfig,
 					Namespace:        namespace,
 					FrontendURL:      uiURL,
+					Context:          initialContext,
 				}
 
 				if err := dash.Run(ctx, logger, shutdownCh, options); err != nil {
@@ -80,10 +82,11 @@ func newClusterEyeCmd() *cobra.Command {
 	clusterEyeCmd.Flags().StringVar(&uiURL, "ui-url", "", "dashboard url")
 	clusterEyeCmd.Flags().CountVarP(&verboseLevel, "verbose", "v", "verbosity level")
 	clusterEyeCmd.Flags().BoolVarP(&enableOpenCensus, "enable-opencensus", "c", false, "enable open census")
+	clusterEyeCmd.Flags().StringVarP(&initialContext, "context", "", "", "initial context")
 
-	kubeconfig = clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
+	kubeConfig = clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
 
-	clusterEyeCmd.Flags().StringVar(&kubeconfig, "kubeconfig", kubeconfig, "absolute path to kubeconfig file")
+	clusterEyeCmd.Flags().StringVar(&kubeConfig, "kubeConfig", kubeConfig, "absolute path to kubeConfig file")
 
 	return clusterEyeCmd
 }
