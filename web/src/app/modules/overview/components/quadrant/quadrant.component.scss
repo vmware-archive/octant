@@ -7,11 +7,11 @@ $border: 1px solid rgba(173, 187, 196, 0.3);
 
   .quadrant-body {
     display: grid;
-    grid-template-columns: 2fr 2fr;
+    grid-template-columns: 1fr 1fr;
     padding: 14px 20px;
 
     .quadrant-ne, .quadrant-nw, .quadrant-se, .quadrant-sw {
-      padding: 20px 35px;
+      padding: 15% 20%;
     }
 
     .quadrant-ne {

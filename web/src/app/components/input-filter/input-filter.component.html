@@ -18,7 +18,9 @@
       <ng-container *ngIf="filters?.length > 0">
         <div class="input-filter-tags-list">
           <div class="input-filter-tag" *ngFor="let filter of filters; trackBy: identifyFilter">
-            {{ filter.key }}:{{ filter.value }}
+            <div class="input-filter-tag-text">
+              {{ filter.key }}:{{ filter.value }}
+            </div>
             <clr-icon class="input-filter-tag-remove" shape="times" (click)="remove(filter)"></clr-icon>
           </div>
         </div>
