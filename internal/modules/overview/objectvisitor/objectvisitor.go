@@ -115,6 +115,11 @@ func NewDefaultVisitor(q queryer.Queryer, factory ObjectHandlerFactory) (*Defaul
 // object has not been visited, it returns false, and sets the object
 // visit status to true.
 func (dv *DefaultVisitor) hasVisited(object runtime.Object) (bool, error) {
+	// TODO: find root cause, object should not be nil at this point in the execution path.
+	if object == nil {
+		return true, nil
+	}
+
 	dv.visitedMu.Lock()
 	defer dv.visitedMu.Unlock()
 
