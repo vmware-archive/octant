@@ -8,7 +8,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/heptio/developer-dash/internal/objectstore"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -148,7 +148,7 @@ func NewReplicationControllerStatus(replicationController *corev1.ReplicationCon
 }
 
 // Create generates a replicaset status quadrant
-func (replicationController *ReplicationControllerStatus) Create(ctx context.Context, o objectstore.ObjectStore) (*component.Quadrant, error) {
+func (replicationController *ReplicationControllerStatus) Create(ctx context.Context, o store.Store) (*component.Quadrant, error) {
 	if replicationController.replicationcontroller == nil {
 		return nil, errors.New("replicationcontroller is nil")
 	}

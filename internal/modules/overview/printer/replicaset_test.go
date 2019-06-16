@@ -14,9 +14,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
+	storefake "github.com/heptio/developer-dash/pkg/store/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -173,7 +173,6 @@ func TestReplicaSetConfiguration(t *testing.T) {
 				tpo.PathForOwner(tc.replicaset, &tc.replicaset.OwnerReferences[0], "/owner")
 			}
 
-
 			summary, err := rc.Create(printOptions)
 			if tc.isErr {
 				require.Error(t, err)
@@ -190,7 +189,7 @@ func TestReplicaSetStatus(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	o := storefake.NewMockObjectStore(controller)
+	o := storefake.NewMockStore(controller)
 
 	labels := map[string]string{
 		"app": "myapp",
@@ -223,7 +222,7 @@ func TestReplicaSetStatus(t *testing.T) {
 		u := testutil.ToUnstructured(t, &p)
 		podList = append(podList, u)
 	}
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  "testing",
 		APIVersion: "v1",
 		Kind:       "Pod",

@@ -15,7 +15,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/conversion"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -135,7 +135,7 @@ func Test_StatefulSetStatus(t *testing.T) {
 		podList = append(podList, u)
 	}
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  "testing",
 		APIVersion: "v1",
 		Kind:       "Pod",

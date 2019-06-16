@@ -20,7 +20,7 @@ import (
 	configFake "github.com/heptio/developer-dash/internal/config/fake"
 	"github.com/heptio/developer-dash/internal/conversion"
 	linkFake "github.com/heptio/developer-dash/internal/link/fake"
-	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
+	storefake "github.com/heptio/developer-dash/pkg/store/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
 	"github.com/heptio/developer-dash/pkg/plugin"
 	pluginFake "github.com/heptio/developer-dash/pkg/plugin/fake"
@@ -67,7 +67,7 @@ func Test_Collector(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	objectStore := storefake.NewMockObjectStore(controller)
+	objectStore := storefake.NewMockStore(controller)
 
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 

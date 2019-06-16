@@ -24,6 +24,8 @@ type LocalContent struct {
 	root string
 }
 
+
+
 var _ module.Module = (*LocalContent)(nil)
 
 func New(root string) *LocalContent {
@@ -220,4 +222,9 @@ func (l *LocalContent) RemoveCRD(ctx context.Context, crd *unstructured.Unstruct
 // Generators allow modules to send events to the frontend.
 func (l *LocalContent) Generators() []clustereye.Generator {
 	return []clustereye.Generator{}
+}
+
+
+func (l *LocalContent) SetContext(ctx context.Context, contextName string) error {
+	return nil
 }

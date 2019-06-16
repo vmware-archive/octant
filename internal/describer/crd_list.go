@@ -12,8 +12,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/link"
 	"github.com/heptio/developer-dash/internal/modules/overview/printer"
-	"github.com/heptio/developer-dash/internal/objectstore"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -77,7 +76,7 @@ func ListCustomResources(
 	ctx context.Context,
 	crd *apiextv1beta1.CustomResourceDefinition,
 	namespace string,
-	o objectstore.ObjectStore,
+	o store.Store,
 	selector *labels.Set) ([]*unstructured.Unstructured, error) {
 	if crd == nil {
 		return nil, errors.New("crd is nil")
@@ -90,7 +89,7 @@ func ListCustomResources(
 
 	apiVersion, kind := gvk.ToAPIVersionAndKind()
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  namespace,
 		APIVersion: apiVersion,
 		Kind:       kind,

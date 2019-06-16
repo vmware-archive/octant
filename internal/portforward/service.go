@@ -8,14 +8,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/objectstore"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 	restclient "k8s.io/client-go/rest"
+
+	"github.com/heptio/developer-dash/internal/log"
+	"github.com/heptio/developer-dash/pkg/store"
 )
 
 //go:generate mockgen -source=service.go -destination=./fake/mock_interface.go -package=fake github.com/heptio/developer-dash/internal/portforward PortForwarder
@@ -102,7 +102,7 @@ type States struct {
 type ServiceOptions struct {
 	RESTClient    rest.Interface
 	Config        *restclient.Config
-	ObjectStore   objectstore.ObjectStore
+	ObjectStore   store.Store
 	PortForwarder portForwarder
 }
 
@@ -198,14 +198,14 @@ func (s *Service) verifyPod(ctx context.Context, namespace, name string) (bool, 
 		return false, errors.New("nil objectstore")
 	}
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		APIVersion: "v1",
 		Kind:       "Pod",
 		Namespace:  namespace,
 		Name:       name,
 	}
 	var pod corev1.Pod
-	if err := objectstore.GetAs(ctx, o, key, &pod); err != nil {
+	if err := store.GetAs(ctx, o, key, &pod); err != nil {
 		return false, err
 	}
 	if pod.Name == "" {
@@ -223,7 +223,7 @@ func (s *Service) verifyPod(ctx context.Context, namespace, name string) (bool, 
 // port state information is populated.
 // Returns forwarder id.
 func (s *Service) createForwarder(r CreateRequest) (string, error) {
-	log := s.logger.With("context", "PortForwardService.createForwarder")
+	logger := s.logger.With("context", "PortForwardService.createForwarder")
 
 	if s.opts.PortForwarder == nil {
 		return "", errors.New("portforwarder is nil")
@@ -234,7 +234,7 @@ func (s *Service) createForwarder(r CreateRequest) (string, error) {
 		return "", errors.Wrap(err, "generating uuid")
 	}
 	forwarderID := randomUUID.String()
-	log = log.With("id", forwarderID)
+	logger = logger.With("id", forwarderID)
 
 	var ports []string
 	for _, p := range r.Ports {
@@ -298,10 +298,10 @@ func (s *Service) createForwarder(r CreateRequest) (string, error) {
 
 	go func() {
 		// Blocks until forwarder completes
-		log.With("url", req.URL()).Debugf("starting port-forward")
+		logger.With("url", req.URL()).Debugf("starting port-forward")
 		err := s.opts.PortForwarder.ForwardPorts("POST", req.URL(), opts)
 
-		log.Debugf("forwarding terminated: %v", err)
+		logger.Debugf("forwarding terminated: %v", err)
 
 		// Notify the main forwarder of the termination
 		event := forwarderEvent{
@@ -351,7 +351,7 @@ func (s *Service) responseForCreate(id string) (CreateResponse, error) {
 }
 
 func (s *Service) localPortsHandler(ctx context.Context, id string) (portsChan chan []ForwardedPort, portsReady <-chan struct{}) {
-	log := s.logger.With("context", "PortForwardService.localPortsHandler", "id", id)
+	logger := s.logger.With("context", "PortForwardService.localPortsHandler", "id", id)
 	portsChan = make(chan []ForwardedPort, 1)
 	readyChan := make(chan struct{})
 	portsReady = readyChan
@@ -359,15 +359,15 @@ func (s *Service) localPortsHandler(ctx context.Context, id string) (portsChan c
 	go func() {
 		select {
 		case p := <-portsChan:
-			log.With("ports", p).Debugf("received ports for port-forward")
+			logger.With("ports", p).Debugf("received ports for port-forward")
 			if err := s.updatePorts(id, p); err != nil {
-				log.Warnf("%s", err.Error())
+				logger.Warnf("%s", err.Error())
 			}
 
 			close(readyChan)
 
 		case <-ctx.Done():
-			log.Debugf("terminated")
+			logger.Debugf("terminated")
 		}
 	}()
 
@@ -418,7 +418,7 @@ func (s *Service) Get(id string) (State, bool) {
 // Create creates a new port forward for the specified object and remote port.
 // Implements PortForwardInterface.
 func (s *Service) Create(ctx context.Context, gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (CreateResponse, error) {
-	log := s.logger.With("context", "PortForwardService.Create")
+	logger := s.logger.With("context", "PortForwardService.Create")
 	req := newForwardRequest(gvk, name, namespace, remotePort)
 
 	if err := s.validateCreateRequest(req); err != nil {
@@ -426,7 +426,7 @@ func (s *Service) Create(ctx context.Context, gvk schema.GroupVersionKind, name 
 	}
 
 	// Resolve the request into a pod, update the request
-	log.With(
+	logger.With(
 		"apiVersion", req.APIVersion,
 		"kind", req.Kind,
 		"name", req.Name,
@@ -436,7 +436,7 @@ func (s *Service) Create(ctx context.Context, gvk schema.GroupVersionKind, name 
 	if err != nil {
 		return emptyPortForwardResponse, errors.Wrap(err, "resolving pod")
 	}
-	log.Debugf("resolved to pod %q", podName)
+	logger.Debugf("resolved to pod %q", podName)
 	podReq := req
 	podReq.Name = podName
 
@@ -509,7 +509,7 @@ func newForwardRequest(gvk schema.GroupVersionKind, name string, namespace strin
 		Namespace:  namespace,
 		Name:       name,
 		Ports: []PortForwardPortSpec{
-			PortForwardPortSpec{
+			{
 				Remote: remotePort,
 			},
 		},

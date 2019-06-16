@@ -12,12 +12,13 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/heptio/developer-dash/internal/config"
-	objectStoreFake "github.com/heptio/developer-dash/internal/objectstore/fake"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
+	objectStoreFake "github.com/heptio/developer-dash/pkg/store/fake"
 )
 
 func TestNewDefaultCRDWatcher_requires_object_store(t *testing.T) {
-	_, err := NewDefaultCRDWatcher(nil)
+	ctx := context.Background()
+	_, err := NewDefaultCRDWatcher(ctx, nil)
 	require.Error(t, err)
 }
 
@@ -27,16 +28,18 @@ func TestDefaultCRDWatcher_Watch(t *testing.T) {
 
 	ctx := context.Background()
 
-	objectStore := objectStoreFake.NewMockObjectStore(controller)
+	objectStore := objectStoreFake.NewMockStore(controller)
 	objectStore.EXPECT().
 		Watch(ctx, crdKey, gomock.Any()).
-		DoAndReturn(func(_ context.Context, key objectstoreutil.Key, c *cache.ResourceEventHandlerFuncs) error {
+		DoAndReturn(func(_ context.Context, key store.Key, c *cache.ResourceEventHandlerFuncs) error {
 			assert.NotNil(t, c.AddFunc)
 			assert.NotNil(t, c.DeleteFunc)
 			return nil
 		})
+	objectStore.EXPECT().
+		RegisterOnUpdate(gomock.Any())
 
-	watcher, err := NewDefaultCRDWatcher(objectStore)
+	watcher, err := NewDefaultCRDWatcher(ctx, objectStore)
 	require.NoError(t, err)
 
 	watchConfig := &config.CRDWatchConfig{
@@ -55,14 +58,16 @@ func TestDefaultCRDWatcher_Watch_failure(t *testing.T) {
 
 	ctx := context.Background()
 
-	objectStore := objectStoreFake.NewMockObjectStore(controller)
+	objectStore := objectStoreFake.NewMockStore(controller)
 	objectStore.EXPECT().
 		Watch(ctx, crdKey, gomock.Any()).
-		DoAndReturn(func(_ context.Context, _ objectstoreutil.Key, c *cache.ResourceEventHandlerFuncs) error {
+		DoAndReturn(func(_ context.Context, _ store.Key, c *cache.ResourceEventHandlerFuncs) error {
 			return errors.New("failure")
 		})
+	objectStore.EXPECT().
+		RegisterOnUpdate(gomock.Any())
 
-	watcher, err := NewDefaultCRDWatcher(objectStore)
+	watcher, err := NewDefaultCRDWatcher(ctx, objectStore)
 	require.NoError(t, err)
 
 	watchConfig := &config.CRDWatchConfig{
@@ -84,7 +89,7 @@ func Test_performWatch(t *testing.T) {
 		name       string
 		canPerform func(t *testing.T) func(*unstructured.Unstructured) bool
 		handler    func(t *testing.T) config.ObjectHandler
-		object interface{}
+		object     interface{}
 	}{
 		{
 			name: "in general",
@@ -94,8 +99,8 @@ func Test_performWatch(t *testing.T) {
 					return true
 				}
 			},
-			handler:    func(t *testing.T) config.ObjectHandler {
-				return func(_ context.Context, u *unstructured.Unstructured)	 {
+			handler: func(t *testing.T) config.ObjectHandler {
+				return func(_ context.Context, u *unstructured.Unstructured) {
 					assert.Equal(t, object, u)
 				}
 			},
@@ -108,12 +113,11 @@ func Test_performWatch(t *testing.T) {
 					return true
 				}
 			},
-			handler:    func(t *testing.T) config.ObjectHandler {
-				return func(_ context.Context, u *unstructured.Unstructured)	 {
+			handler: func(t *testing.T) config.ObjectHandler {
+				return func(_ context.Context, u *unstructured.Unstructured) {
 				}
 			},
 			object: nil,
-
 		},
 	}
 

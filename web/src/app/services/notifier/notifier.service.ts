@@ -5,7 +5,7 @@ import _ from 'lodash';
 export enum NotifierSignalType {
   LOADING = 'LOADING',
   ERROR = 'ERROR',
-  WARNING = 'WARNING'
+  WARNING = 'WARNING',
 }
 
 export interface NotifierSignal {
@@ -28,14 +28,22 @@ export class NotifierSession {
   pushSignal(type: NotifierSignalType, data: boolean | string): string {
     const currentSignals = this.globalSignalsStream.getValue();
     const newSignalID = _.uniqueId(this.uniqueIDPrefix);
-    const newSignal = { id: newSignalID, sessionID: this.uniqueIDPrefix, type, data };
+    const newSignal = {
+      id: newSignalID,
+      sessionID: this.uniqueIDPrefix,
+      type,
+      data,
+    };
     this.globalSignalsStream.next([...currentSignals, newSignal]);
     return newSignalID;
   }
 
   removeSignal(id: string): boolean {
     const currentSignals = this.globalSignalsStream.getValue();
-    const foundSignalIndex = _.findIndex(currentSignals, { id, sessionID: this.uniqueIDPrefix });
+    const foundSignalIndex = _.findIndex(currentSignals, {
+      id,
+      sessionID: this.uniqueIDPrefix,
+    });
     if (foundSignalIndex < 0) {
       return false;
     }
@@ -63,14 +71,19 @@ export class NotifierSession {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NotifierService {
   baseSignalSession: NotifierSession;
-  globalSignalsStream: BehaviorSubject<NotifierSignal[]> = new BehaviorSubject([]);
+  globalSignalsStream: BehaviorSubject<NotifierSignal[]> = new BehaviorSubject(
+    []
+  );
 
   constructor() {
-    this.baseSignalSession = new NotifierSession(this.globalSignalsStream, 'baseSignal');
+    this.baseSignalSession = new NotifierSession(
+      this.globalSignalsStream,
+      'baseSignal'
+    );
   }
 
   pushSignal(type: NotifierSignalType, data: boolean | string): string {
@@ -86,6 +99,9 @@ export class NotifierService {
   }
 
   createSession(): NotifierSession {
-    return new NotifierSession(this.globalSignalsStream, _.uniqueId('signalSession'));
+    return new NotifierSession(
+      this.globalSignalsStream,
+      _.uniqueId('signalSession')
+    );
   }
 }

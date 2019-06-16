@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/heptio/developer-dash/internal/componentcache"
+	"github.com/heptio/developer-dash/pkg/store"
 
 	"github.com/pkg/errors"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -12,7 +13,6 @@ import (
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/portforward"
 	"github.com/heptio/developer-dash/pkg/plugin"
 )
@@ -66,7 +66,7 @@ type Dash interface {
 
 	CRDWatcher() CRDWatcher
 
-	ObjectStore() objectstore.ObjectStore
+	ObjectStore() store.Store
 
 	ComponentCache() componentcache.ComponentCache
 
@@ -76,25 +76,28 @@ type Dash interface {
 
 	PortForwarder() portforward.PortForwarder
 
-	KubeConfigsPaths() []string
+	KubeConfigPath() string
+
+	UseContext(ctx context.Context, contextName string) error
+
+	ContextName() string
 
 	Validate() error
 }
 
 // Live is a live version of dash config.
 type Live struct {
-	clusterClient   cluster.ClientInterface
-	crdWatcher      CRDWatcher
-	logger          log.Logger
-	moduleManager   module.ManagerInterface
-	objectStore     objectstore.ObjectStore
-	componentCache  componentcache.ComponentCache
-	pluginManager   plugin.ManagerInterface
-	portForwarder   portforward.PortForwarder
-	kubeConfigPaths []string
+	clusterClient      cluster.ClientInterface
+	crdWatcher         CRDWatcher
+	logger             log.Logger
+	moduleManager      module.ManagerInterface
+	objectStore        store.Store
+	componentCache     componentcache.ComponentCache
+	pluginManager      plugin.ManagerInterface
+	portForwarder      portforward.PortForwarder
+	kubeConfigPath     string
+	currentContextName string
 }
-
-
 
 var _ Dash = (*Live)(nil)
 
@@ -102,25 +105,32 @@ var _ Dash = (*Live)(nil)
 func NewLiveConfig(
 	clusterClient cluster.ClientInterface,
 	crdWatcher CRDWatcher,
-	kubeConfigPaths []string,
+	kubeConfigPath string,
 	logger log.Logger,
 	moduleManager module.ManagerInterface,
-	objectStore objectstore.ObjectStore,
+	objectStore store.Store,
 	componentCache componentcache.ComponentCache,
 	pluginManager plugin.ManagerInterface,
 	portForwarder portforward.PortForwarder,
+	currentContextName string,
 ) *Live {
-	return &Live{
-		clusterClient:  clusterClient,
-		crdWatcher:     crdWatcher,
-		kubeConfigPaths: kubeConfigPaths,
-		logger:         logger,
-		moduleManager:  moduleManager,
-		objectStore:    objectStore,
-		componentCache: componentCache,
-		pluginManager:  pluginManager,
-		portForwarder:  portForwarder,
+	l := &Live{
+		clusterClient:      clusterClient,
+		crdWatcher:         crdWatcher,
+		kubeConfigPath:     kubeConfigPath,
+		logger:             logger,
+		moduleManager:      moduleManager,
+		objectStore:        objectStore,
+		componentCache:     componentCache,
+		pluginManager:      pluginManager,
+		portForwarder:      portForwarder,
+		currentContextName: currentContextName,
 	}
+	objectStore.RegisterOnUpdate(func(store store.Store) {
+		l.objectStore = store
+	})
+
+	return l
 }
 
 // ObjectPath returns the path given an object description.
@@ -138,8 +148,8 @@ func (l *Live) CRDWatcher() CRDWatcher {
 	return l.crdWatcher
 }
 
-// ObjectStore returns an object store.
-func (l *Live) ObjectStore() objectstore.ObjectStore {
+// Store returns an object store.
+func (l *Live) ObjectStore() store.Store {
 	return l.objectStore
 }
 
@@ -148,9 +158,9 @@ func (l *Live) ComponentCache() componentcache.ComponentCache {
 	return l.componentCache
 }
 
-// KubeConfigsPaths returns a slice of kube config paths.
-func (l *Live) KubeConfigsPaths() []string {
-	return l.kubeConfigPaths
+// KubeConfigPath returns the kube config path.
+func (l *Live) KubeConfigPath() string {
+	return l.kubeConfigPath
 }
 
 // Logger returns a logger.
@@ -166,6 +176,35 @@ func (l *Live) PluginManager() plugin.ManagerInterface {
 // PortForwarder returns a port forwarder.
 func (l *Live) PortForwarder() portforward.PortForwarder {
 	return l.portForwarder
+}
+
+// UseContext switches context name.
+func (l *Live) UseContext(ctx context.Context, contextName string) error {
+	client, err := cluster.FromKubeConfig(ctx, l.kubeConfigPath, contextName)
+	if err != nil {
+		return err
+	}
+
+	l.ClusterClient().Close()
+	l.clusterClient = client
+
+	if err := l.objectStore.UpdateClusterClient(ctx, client); err != nil {
+		return err
+	}
+
+	if err := l.moduleManager.UpdateContext(ctx, contextName); err != nil {
+		return err
+	}
+
+	l.currentContextName = contextName
+	l.Logger().With("new-kube-context", contextName).Infof("updated kube config context")
+
+	return nil
+}
+
+// ContextName returns the current context name
+func (l *Live) ContextName() string {
+	return l.currentContextName
 }
 
 // Validate validates the configuration and returns an error if there is an issue.

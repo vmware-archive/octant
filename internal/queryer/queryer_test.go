@@ -18,10 +18,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
+	storefake "github.com/heptio/developer-dash/pkg/store/fake"
 	fakequeryer "github.com/heptio/developer-dash/internal/queryer/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 )
 
 func TestCacheQueryer_Children(t *testing.T) {
@@ -71,20 +71,20 @@ func TestCacheQueryer_Children(t *testing.T) {
 	cases := []struct {
 		name     string
 		owner    metav1.Object
-		setup    func(t *testing.T, c *storefake.MockObjectStore, disco *fakequeryer.MockDiscoveryInterface)
+		setup    func(t *testing.T, c *storefake.MockStore, disco *fakequeryer.MockDiscoveryInterface)
 		expected func(t *testing.T) []runtime.Object
 		isErr    bool
 	}{
 		{
 			name:  "in general",
 			owner: deployment,
-			setup: func(t *testing.T, o *storefake.MockObjectStore, disco *fakequeryer.MockDiscoveryInterface) {
-				deploymentKey := objectstoreutil.Key{Namespace: "default", APIVersion: "apps/v1", Kind: "Deployment"}
+			setup: func(t *testing.T, o *storefake.MockStore, disco *fakequeryer.MockDiscoveryInterface) {
+				deploymentKey := store.Key{Namespace: "default", APIVersion: "apps/v1", Kind: "Deployment"}
 				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(deploymentKey)).
 					Return([]*unstructured.Unstructured{toUnstructured(t, deployment)}, nil).Times(1)
 
-				rsKey := objectstoreutil.Key{Namespace: "default", APIVersion: "apps/v1", Kind: "ReplicaSet"}
+				rsKey := store.Key{Namespace: "default", APIVersion: "apps/v1", Kind: "ReplicaSet"}
 				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(rsKey)).
 					Return([]*unstructured.Unstructured{toUnstructured(t, rs)}, nil).Times(1)
@@ -108,7 +108,7 @@ func TestCacheQueryer_Children(t *testing.T) {
 		{
 			name:  "fetch resource lists failure",
 			owner: deployment,
-			setup: func(t *testing.T, o *storefake.MockObjectStore, disco *fakequeryer.MockDiscoveryInterface) {
+			setup: func(t *testing.T, o *storefake.MockStore, disco *fakequeryer.MockDiscoveryInterface) {
 				disco.EXPECT().
 					ServerResources().
 					Return(nil, errors.New("failed")).AnyTimes()
@@ -118,13 +118,13 @@ func TestCacheQueryer_Children(t *testing.T) {
 		{
 			name:  "objectstore list fails",
 			owner: deployment,
-			setup: func(t *testing.T, o *storefake.MockObjectStore, disco *fakequeryer.MockDiscoveryInterface) {
-				deploymentKey := objectstoreutil.Key{Namespace: "default", APIVersion: "apps/v1", Kind: "Deployment"}
+			setup: func(t *testing.T, o *storefake.MockStore, disco *fakequeryer.MockDiscoveryInterface) {
+				deploymentKey := store.Key{Namespace: "default", APIVersion: "apps/v1", Kind: "Deployment"}
 				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(deploymentKey)).
 					Return(nil, errors.New("failed")).Times(1)
 
-				rsKey := objectstoreutil.Key{Namespace: "default", APIVersion: "apps/v1", Kind: "ReplicaSet"}
+				rsKey := store.Key{Namespace: "default", APIVersion: "apps/v1", Kind: "ReplicaSet"}
 				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(rsKey)).
 					Return([]*unstructured.Unstructured{toUnstructured(t, rs)}, nil).AnyTimes()
@@ -142,7 +142,7 @@ func TestCacheQueryer_Children(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			o := storefake.NewMockObjectStore(controller)
+			o := storefake.NewMockStore(controller)
 			discovery := fakequeryer.NewMockDiscoveryInterface(controller)
 
 			if tc.setup != nil {
@@ -185,15 +185,15 @@ func TestCacheQueryer_Events(t *testing.T) {
 	cases := []struct {
 		name     string
 		object   metav1.Object
-		setup    func(t *testing.T, o *storefake.MockObjectStore)
+		setup    func(t *testing.T, o *storefake.MockStore)
 		isErr    bool
 		expected []string
 	}{
 		{
 			name:   "in general",
 			object: deployment,
-			setup: func(t *testing.T, o *storefake.MockObjectStore) {
-				key := objectstoreutil.Key{
+			setup: func(t *testing.T, o *storefake.MockStore) {
+				key := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "Event",
@@ -216,7 +216,7 @@ func TestCacheQueryer_Events(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			o := storefake.NewMockObjectStore(controller)
+			o := storefake.NewMockStore(controller)
 			discovery := fakequeryer.NewMockDiscoveryInterface(controller)
 
 			if tc.setup != nil {
@@ -300,15 +300,15 @@ func TestCacheQueryer_IngressesForService(t *testing.T) {
 	cases := []struct {
 		name     string
 		service  *corev1.Service
-		setup    func(t *testing.T, o *storefake.MockObjectStore)
+		setup    func(t *testing.T, o *storefake.MockStore)
 		expected []*extv1beta1.Ingress
 		isErr    bool
 	}{
 		{
 			name:    "in general",
 			service: service,
-			setup: func(t *testing.T, o *storefake.MockObjectStore) {
-				ingressesKey := objectstoreutil.Key{
+			setup: func(t *testing.T, o *storefake.MockStore) {
+				ingressesKey := store.Key{
 					Namespace:  "default",
 					APIVersion: "extensions/v1beta1",
 					Kind:       "Ingress",
@@ -333,8 +333,8 @@ func TestCacheQueryer_IngressesForService(t *testing.T) {
 		{
 			name:    "ingress list failure",
 			service: service,
-			setup: func(t *testing.T, o *storefake.MockObjectStore) {
-				ingressesKey := objectstoreutil.Key{
+			setup: func(t *testing.T, o *storefake.MockStore) {
+				ingressesKey := store.Key{
 					Namespace:  "default",
 					APIVersion: "extensions/v1beta1",
 					Kind:       "Ingress",
@@ -352,7 +352,7 @@ func TestCacheQueryer_IngressesForService(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			o := storefake.NewMockObjectStore(controller)
+			o := storefake.NewMockStore(controller)
 			discovery := fakequeryer.NewMockDiscoveryInterface(controller)
 
 			if tc.setup != nil {
@@ -388,14 +388,14 @@ func TestCacheQueryer_OwnerReference(t *testing.T) {
 
 	cases := []struct {
 		name     string
-		setup    func(t *testing.T, o *storefake.MockObjectStore)
+		setup    func(t *testing.T, o *storefake.MockStore)
 		expected func(t *testing.T) runtime.Object
 		isErr    bool
 	}{
 		{
 			name: "in general",
-			setup: func(t *testing.T, o *storefake.MockObjectStore) {
-				key := objectstoreutil.Key{
+			setup: func(t *testing.T, o *storefake.MockStore) {
+				key := store.Key{
 					Namespace:  "default",
 					APIVersion: "apps/v1",
 					Kind:       "Deployment",
@@ -411,8 +411,8 @@ func TestCacheQueryer_OwnerReference(t *testing.T) {
 		},
 		{
 			name: "objectstore get failure",
-			setup: func(t *testing.T, o *storefake.MockObjectStore) {
-				key := objectstoreutil.Key{
+			setup: func(t *testing.T, o *storefake.MockStore) {
+				key := store.Key{
 					Namespace:  "default",
 					APIVersion: "apps/v1",
 					Kind:       "Deployment",
@@ -431,7 +431,7 @@ func TestCacheQueryer_OwnerReference(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			o := storefake.NewMockObjectStore(controller)
+			o := storefake.NewMockStore(controller)
 			discovery := fakequeryer.NewMockDiscoveryInterface(controller)
 
 			if tc.setup != nil {
@@ -489,15 +489,15 @@ func TestCacheQueryer_PodsForService(t *testing.T) {
 	cases := []struct {
 		name     string
 		service  *corev1.Service
-		setup    func(t *testing.T, o *storefake.MockObjectStore)
+		setup    func(t *testing.T, o *storefake.MockStore)
 		expected []*corev1.Pod
 		isErr    bool
 	}{
 		{
 			name:    "in general",
 			service: service,
-			setup: func(t *testing.T, o *storefake.MockObjectStore) {
-				key := objectstoreutil.Key{
+			setup: func(t *testing.T, o *storefake.MockStore) {
+				key := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "Pod",
@@ -519,8 +519,8 @@ func TestCacheQueryer_PodsForService(t *testing.T) {
 		{
 			name:    "objectstore list failure",
 			service: service,
-			setup: func(t *testing.T, o *storefake.MockObjectStore) {
-				key := objectstoreutil.Key{
+			setup: func(t *testing.T, o *storefake.MockStore) {
+				key := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "Pod",
@@ -538,7 +538,7 @@ func TestCacheQueryer_PodsForService(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			o := storefake.NewMockObjectStore(controller)
+			o := storefake.NewMockStore(controller)
 			discovery := fakequeryer.NewMockDiscoveryInterface(controller)
 
 			if tc.setup != nil {
@@ -621,15 +621,15 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 	cases := []struct {
 		name     string
 		ingress  *extv1beta1.Ingress
-		setup    func(t *testing.T, o *storefake.MockObjectStore)
+		setup    func(t *testing.T, o *storefake.MockStore)
 		expected []string
 		isErr    bool
 	}{
 		{
 			name:    "in general: service defined as backend",
 			ingress: ingress1,
-			setup: func(t *testing.T, o *storefake.MockObjectStore) {
-				key := objectstoreutil.Key{
+			setup: func(t *testing.T, o *storefake.MockStore) {
+				key := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "Service",
@@ -644,8 +644,8 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 		{
 			name:    "in general: services defined in rules",
 			ingress: ingress2,
-			setup: func(t *testing.T, o *storefake.MockObjectStore) {
-				key1 := objectstoreutil.Key{
+			setup: func(t *testing.T, o *storefake.MockStore) {
+				key1 := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "Service",
@@ -654,7 +654,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 				o.EXPECT().
 					Get(gomock.Any(), gomock.Eq(key1)).
 					Return(toUnstructured(t, service1), nil)
-				key2 := objectstoreutil.Key{
+				key2 := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "Service",
@@ -674,8 +674,8 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 		{
 			name:    "objectstore list failure",
 			ingress: ingress1,
-			setup: func(t *testing.T, c *storefake.MockObjectStore) {
-				key := objectstoreutil.Key{
+			setup: func(t *testing.T, c *storefake.MockStore) {
+				key := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "Service",
@@ -694,7 +694,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			o := storefake.NewMockObjectStore(controller)
+			o := storefake.NewMockStore(controller)
 			discovery := fakequeryer.NewMockDiscoveryInterface(controller)
 
 			if tc.setup != nil {
@@ -758,15 +758,15 @@ func TestCacheQueryer_ServicesForPods(t *testing.T) {
 	cases := []struct {
 		name     string
 		pod      *corev1.Pod
-		setup    func(t *testing.T, o *storefake.MockObjectStore)
+		setup    func(t *testing.T, o *storefake.MockStore)
 		expected []string
 		isErr    bool
 	}{
 		{
 			name: "in general",
 			pod:  pod1,
-			setup: func(t *testing.T, o *storefake.MockObjectStore) {
-				key := objectstoreutil.Key{
+			setup: func(t *testing.T, o *storefake.MockStore) {
+				key := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "Service",
@@ -788,8 +788,8 @@ func TestCacheQueryer_ServicesForPods(t *testing.T) {
 		{
 			name: "objectstore list failure",
 			pod:  pod1,
-			setup: func(t *testing.T, o *storefake.MockObjectStore) {
-				key := objectstoreutil.Key{
+			setup: func(t *testing.T, o *storefake.MockStore) {
+				key := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "Service",
@@ -807,7 +807,7 @@ func TestCacheQueryer_ServicesForPods(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			o := storefake.NewMockObjectStore(controller)
+			o := storefake.NewMockStore(controller)
 			discovery := fakequeryer.NewMockDiscoveryInterface(controller)
 
 			if tc.setup != nil {
@@ -845,8 +845,8 @@ func TestObjectStoreQueryer_ServiceAccountForPod(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	o := storefake.NewMockObjectStore(controller)
-	key, err := objectstoreutil.KeyFromObject(serviceAccount)
+	o := storefake.NewMockStore(controller)
+	key, err := store.KeyFromObject(serviceAccount)
 	require.NoError(t, err)
 	o.EXPECT().
 		Get(gomock.Any(), key).
@@ -940,7 +940,7 @@ func TestCacheQueryer_getSelector(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			o := storefake.NewMockObjectStore(controller)
+			o := storefake.NewMockStore(controller)
 			discovery := fakequeryer.NewMockDiscoveryInterface(controller)
 
 			oq := New(o, discovery)

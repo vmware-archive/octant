@@ -12,7 +12,7 @@ import (
 	clusterFake "github.com/heptio/developer-dash/internal/cluster/fake"
 	configFake "github.com/heptio/developer-dash/internal/config/fake"
 	"github.com/heptio/developer-dash/internal/describer"
-	objectStoreFake "github.com/heptio/developer-dash/internal/objectstore/fake"
+	objectStoreFake "github.com/heptio/developer-dash/pkg/store/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -70,7 +70,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 			discoveryInterface := clusterFake.NewMockDiscoveryInterface(controller)
 			clusterClient.EXPECT().DiscoveryClient().Return(discoveryInterface, nil).AnyTimes()
 
-			objectStore := objectStoreFake.NewMockObjectStore(controller)
+			objectStore := objectStoreFake.NewMockStore(controller)
 			dashConfig.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
 
 			ctx := context.Background()

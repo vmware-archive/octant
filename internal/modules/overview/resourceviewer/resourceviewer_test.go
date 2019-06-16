@@ -14,7 +14,7 @@ import (
 
 	configFake "github.com/heptio/developer-dash/internal/config/fake"
 	"github.com/heptio/developer-dash/internal/modules/overview/objectvisitor"
-	storeFake "github.com/heptio/developer-dash/internal/objectstore/fake"
+	storeFake "github.com/heptio/developer-dash/pkg/store/fake"
 	pluginFake "github.com/heptio/developer-dash/pkg/plugin/fake"
 )
 
@@ -50,7 +50,7 @@ func Test_ResourceViewer(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	objectStore := storeFake.NewMockObjectStore(controller)
+	objectStore := storeFake.NewMockStore(controller)
 
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 
@@ -80,7 +80,7 @@ func Test_ResourceViewer_visitor_fails(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	objectStore := storeFake.NewMockObjectStore(controller)
+	objectStore := storeFake.NewMockStore(controller)
 
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 

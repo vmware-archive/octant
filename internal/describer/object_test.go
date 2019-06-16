@@ -14,7 +14,7 @@ import (
 	configFake "github.com/heptio/developer-dash/internal/config/fake"
 	printerfake "github.com/heptio/developer-dash/internal/modules/overview/printer/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
@@ -31,7 +31,7 @@ func TestObjectDescriber(t *testing.T) {
 		Time: time.Unix(1547472896, 0),
 	}
 
-	key, err := objectstoreutil.KeyFromObject(pod)
+	key, err := store.KeyFromObject(pod)
 	require.NoError(t, err)
 
 	dashConfig := configFake.NewMockDash(controller)
@@ -46,7 +46,7 @@ func TestObjectDescriber(t *testing.T) {
 	options := Options{
 		Dash:    dashConfig,
 		Printer: objectPrinter,
-		LoadObject: func(ctx context.Context, namespace string, fields map[string]string, objectStoreKey objectstoreutil.Key) (*unstructured.Unstructured, error) {
+		LoadObject: func(ctx context.Context, namespace string, fields map[string]string, objectStoreKey store.Key) (*unstructured.Unstructured, error) {
 			return testutil.ToUnstructured(t, pod), nil
 		},
 	}

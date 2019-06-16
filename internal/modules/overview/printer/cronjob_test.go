@@ -23,7 +23,6 @@ func Test_CronJobListHandler(t *testing.T) {
 	tpo := newTestPrinterOptions(controller)
 	printOptions := tpo.ToOptions()
 
-
 	labels := map[string]string{
 		"app": "myapp",
 	}
@@ -47,13 +46,12 @@ func Test_CronJobListHandler(t *testing.T) {
 			Schedule:    "*/1 * * * *",
 			JobTemplate: batchv1beta1.JobTemplateSpec{},
 		},
-
 	}
 
 	tpo.PathForObject(cronJob, cronJob.Name, "/cron")
 
 	object := &batchv1beta1.CronJobList{
-		Items: []batchv1beta1.CronJob{ *cronJob },
+		Items: []batchv1beta1.CronJob{*cronJob},
 	}
 
 	ctx := context.Background()

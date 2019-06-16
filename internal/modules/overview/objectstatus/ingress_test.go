@@ -10,22 +10,22 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
+	storefake "github.com/heptio/developer-dash/pkg/store/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
 func Test_runIngressStatus(t *testing.T) {
 	cases := []struct {
 		name     string
-		init     func(*testing.T, *storefake.MockObjectStore) runtime.Object
+		init     func(*testing.T, *storefake.MockStore) runtime.Object
 		expected ObjectStatus
 		isErr    bool
 	}{
 		{
 			name: "in general",
-			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				mockServiceInCache(t, o, "default", "single-service", "service_single_service.yaml")
 				objectFile := "ingress_single_service.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
@@ -37,8 +37,8 @@ func Test_runIngressStatus(t *testing.T) {
 		},
 		{
 			name: "no matching backends",
-			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
-				key := objectstoreutil.Key{Namespace: "default", APIVersion: "v1", Kind: "Service", Name: "no-such-service"}
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+				key := store.Key{Namespace: "default", APIVersion: "v1", Kind: "Service", Name: "no-such-service"}
 				o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(nil, nil)
 
 				objectFile := "ingress_no_matching_backend.yaml"
@@ -52,7 +52,7 @@ func Test_runIngressStatus(t *testing.T) {
 		},
 		{
 			name: "no matching port",
-			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				mockServiceInCache(t, o, "default", "service-wrong-port", "service_wrong_port.yaml")
 				objectFile := "ingress_no_matching_port.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
@@ -64,7 +64,7 @@ func Test_runIngressStatus(t *testing.T) {
 		},
 		{
 			name: "mismatched TLS host",
-			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				mockServiceInCache(t, o, "default", "my-service", "service_my-service.yaml")
 				mockSecretInCache(t, o, "default", "testsecret-tls", "secret_testsecret-tls.yaml")
 
@@ -79,10 +79,10 @@ func Test_runIngressStatus(t *testing.T) {
 		},
 		{
 			name: "missing TLS secret",
-			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				mockServiceInCache(t, o, "default", "my-service", "service_my-service.yaml")
 
-				key := objectstoreutil.Key{Namespace: "default", APIVersion: "v1", Kind: "Secret", Name: "no-such-secret"}
+				key := store.Key{Namespace: "default", APIVersion: "v1", Kind: "Secret", Name: "no-such-secret"}
 				o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(nil, nil)
 
 				objectFile := "ingress_ingress-bad-tls-host.yaml"
@@ -96,14 +96,14 @@ func Test_runIngressStatus(t *testing.T) {
 		},
 		{
 			name: "object is nil",
-			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				return nil
 			},
 			isErr: true,
 		},
 		{
 			name: "object is not an ingress",
-			init: func(t *testing.T, o *storefake.MockObjectStore) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				return &unstructured.Unstructured{}
 			},
 			isErr: true,
@@ -115,7 +115,7 @@ func Test_runIngressStatus(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			o := storefake.NewMockObjectStore(controller)
+			o := storefake.NewMockStore(controller)
 
 			object := tc.init(t, o)
 
@@ -132,9 +132,9 @@ func Test_runIngressStatus(t *testing.T) {
 	}
 }
 
-func mockSecretInCache(t *testing.T, o *storefake.MockObjectStore, namespace, name, file string) runtime.Object {
+func mockSecretInCache(t *testing.T, o *storefake.MockStore, namespace, name, file string) runtime.Object {
 	secret := testutil.LoadObjectFromFile(t, file)
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Secret",
@@ -146,9 +146,9 @@ func mockSecretInCache(t *testing.T, o *storefake.MockObjectStore, namespace, na
 	return secret
 }
 
-func mockServiceInCache(t *testing.T, o *storefake.MockObjectStore, namespace, name, file string) runtime.Object {
+func mockServiceInCache(t *testing.T, o *storefake.MockStore, namespace, name, file string) runtime.Object {
 	secret := testutil.LoadObjectFromFile(t, file)
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Service",

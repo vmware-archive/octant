@@ -7,12 +7,17 @@ import (
 	"path"
 
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
+
 	"github.com/heptio/developer-dash/internal/cluster"
 	"github.com/heptio/developer-dash/internal/clustereye"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/mime"
 	"github.com/heptio/developer-dash/internal/module"
 )
+
+//go:generate mockgen -destination=./fake/mock_cluster_client.go -package=fake github.com/heptio/developer-dash/internal/api ClusterClient
+//go:generate mockgen -destination=./fake/mock_service.go -package=fake github.com/heptio/developer-dash/internal/api Service
 
 var (
 	// acceptedHosts are the hosts this api will answer for.
@@ -32,7 +37,7 @@ func serveAsJSON(w http.ResponseWriter, v interface{}, logger log.Logger) {
 // Service is an API service.
 type Service interface {
 	RegisterModule(module.Module) error
-	Handler(ctx context.Context) *mux.Router
+	Handler(ctx context.Context) (*mux.Router, error)
 }
 
 type errorMessage struct {
@@ -67,11 +72,15 @@ func RespondWithError(w http.ResponseWriter, code int, message string, logger lo
 	}
 }
 
+type ClusterClient interface {
+	NamespaceClient() (cluster.NamespaceInterface, error)
+	InfoClient() (cluster.InfoInterface, error)
+}
+
 // API is the API for the dashboard client
 type API struct {
 	ctx           context.Context
-	nsClient      cluster.NamespaceInterface
-	infoClient    cluster.InfoInterface
+	clusterClient ClusterClient
 	moduleManager module.ManagerInterface
 	prefix        string
 	logger        log.Logger
@@ -80,13 +89,14 @@ type API struct {
 	modules     []module.Module
 }
 
+var _ Service = (*API)(nil)
+
 // New creates an instance of API.
-func New(ctx context.Context, prefix string, nsClient cluster.NamespaceInterface, infoClient cluster.InfoInterface, moduleManager module.ManagerInterface, logger log.Logger) *API {
+func New(ctx context.Context, prefix string, clusterClient ClusterClient, moduleManager module.ManagerInterface, logger log.Logger) *API {
 	return &API{
 		ctx:           ctx,
 		prefix:        prefix,
-		nsClient:      nsClient,
-		infoClient:    infoClient,
+		clusterClient: clusterClient,
 		moduleManager: moduleManager,
 		modulePaths:   make(map[string]module.Module),
 		logger:        logger,
@@ -94,13 +104,23 @@ func New(ctx context.Context, prefix string, nsClient cluster.NamespaceInterface
 }
 
 // Handler returns a HTTP handler for the service.
-func (a *API) Handler(ctx context.Context) *mux.Router {
+func (a *API) Handler(ctx context.Context) (*mux.Router, error) {
 	router := mux.NewRouter()
 	router.Use(rebindHandler(acceptedHosts))
 
 	s := router.PathPrefix(a.prefix).Subrouter()
 
-	namespacesService := newNamespaces(a.nsClient, a.logger)
+	nsClient, err := a.clusterClient.NamespaceClient()
+	if err != nil {
+		return nil, errors.Wrap(err, "retrieve namespace client")
+	}
+
+	infoClient, err := a.clusterClient.InfoClient()
+	if err != nil {
+		return nil, errors.Wrap(err, "retrieve cluster info client")
+	}
+
+	namespacesService := newNamespaces(nsClient, a.logger)
 	s.Handle("/namespaces", namespacesService).Methods(http.MethodGet)
 
 	ans := newAPINavSections(a.modules)
@@ -114,12 +134,12 @@ func (a *API) Handler(ctx context.Context) *mux.Router {
 	s.HandleFunc("/namespace", namespaceUpdateService.update).Methods(http.MethodPost)
 	s.HandleFunc("/namespace", namespaceUpdateService.read).Methods(http.MethodGet)
 
-	infoService := newClusterInfo(a.infoClient, a.logger)
+	infoService := newClusterInfo(infoClient, a.logger)
 	s.Handle("/cluster-info", infoService)
 
 	// Register content routes
 	contentService := &contentHandler{
-		nsClient:    a.nsClient,
+		nsClient:    nsClient,
 		modulePaths: a.modulePaths,
 		modules:     a.modules,
 		logger:      a.logger,
@@ -127,7 +147,7 @@ func (a *API) Handler(ctx context.Context) *mux.Router {
 	}
 
 	if err := contentService.RegisterRoutes(ctx, s); err != nil {
-		a.logger.Errorf("register routers: %v", err)
+		a.logger.WithErr(err).Errorf("register routers")
 	}
 
 	s.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -135,7 +155,7 @@ func (a *API) Handler(ctx context.Context) *mux.Router {
 		RespondWithError(w, http.StatusNotFound, "not found", a.logger)
 	})
 
-	return router
+	return router, nil
 }
 
 // RegisterModule registers a module with the API service.

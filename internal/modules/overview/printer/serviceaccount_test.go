@@ -13,10 +13,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/heptio/developer-dash/internal/objectstore"
-	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
+	storefake "github.com/heptio/developer-dash/pkg/store/fake"
 	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/heptio/developer-dash/pkg/view/flexlayout"
@@ -91,7 +90,7 @@ func Test_serviceAccountHandler(t *testing.T) {
 	}
 
 	policyTable := component.NewTable("policyTable", component.NewTableCols("col1"))
-	h.policyRulesFunc = func(ctx context.Context, serviceAccount corev1.ServiceAccount, appObjectStore objectstore.ObjectStore) (*component.Table, error) {
+	h.policyRulesFunc = func(ctx context.Context, serviceAccount corev1.ServiceAccount, appObjectStore store.Store) (*component.Table, error) {
 		return policyTable, nil
 	}
 
@@ -126,7 +125,7 @@ func Test_printServiceAccountConfig(t *testing.T) {
 	object.Secrets = []corev1.ObjectReference{{Name: "secret"}}
 	object.ImagePullSecrets = []corev1.LocalObjectReference{{Name: "secret"}}
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  object.Namespace,
 		APIVersion: "v1",
 		Kind:       "Secret",
@@ -176,9 +175,9 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 
 	serviceAccount := testutil.CreateServiceAccount("sa")
 
-	appObjectStore := storefake.NewMockObjectStore(controller)
+	appObjectStore := storefake.NewMockStore(controller)
 
-	roleBindingKey := objectstoreutil.Key{
+	roleBindingKey := store.Key{
 		Namespace:  serviceAccount.Namespace,
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "RoleBinding",
@@ -202,7 +201,7 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 		List(gomock.Any(), roleBindingKey).
 		Return(roleBindingObjects, nil)
 
-	clusterRoleBindingKey := objectstoreutil.Key{
+	clusterRoleBindingKey := store.Key{
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "ClusterRoleBinding",
 	}
@@ -223,14 +222,14 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 		List(gomock.Any(), clusterRoleBindingKey).
 		Return(clusterRoleBindingObjects, nil)
 
-	role1Key, err := objectstoreutil.KeyFromObject(role1)
+	role1Key, err := store.KeyFromObject(role1)
 	require.NoError(t, err)
 
 	appObjectStore.EXPECT().
 		Get(gomock.Any(), role1Key).
 		Return(testutil.ToUnstructured(t, role1), nil)
 
-	role2Key, err := objectstoreutil.KeyFromObject(role2)
+	role2Key, err := store.KeyFromObject(role2)
 	require.NoError(t, err)
 
 	appObjectStore.EXPECT().

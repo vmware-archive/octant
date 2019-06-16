@@ -5,7 +5,7 @@ import (
 	"path"
 
 	"github.com/heptio/developer-dash/internal/clustereye"
-	"github.com/heptio/developer-dash/internal/objectstore"
+	"github.com/heptio/developer-dash/pkg/store"
 )
 
 var (
@@ -19,7 +19,7 @@ var (
 	}
 )
 
-func workloadEntries(_ context.Context, prefix, _ string, _ objectstore.ObjectStore) ([]clustereye.Navigation, error) {
+func workloadEntries(_ context.Context, prefix, _ string, _ store.Store) ([]clustereye.Navigation, error) {
 	return []clustereye.Navigation{
 		*clustereye.NewNavigation("Cron Jobs", path.Join(prefix, "cron-jobs")),
 		*clustereye.NewNavigation("Daemon Sets", path.Join(prefix, "daemon-sets")),
@@ -32,14 +32,14 @@ func workloadEntries(_ context.Context, prefix, _ string, _ objectstore.ObjectSt
 	}, nil
 }
 
-func discoAndLBEntries(_ context.Context, prefix, _ string, _ objectstore.ObjectStore) ([]clustereye.Navigation, error) {
+func discoAndLBEntries(_ context.Context, prefix, _ string, _ store.Store) ([]clustereye.Navigation, error) {
 	return []clustereye.Navigation{
 		*clustereye.NewNavigation("Ingresses", path.Join(prefix, "ingresses")),
 		*clustereye.NewNavigation("Services", path.Join(prefix, "services")),
 	}, nil
 }
 
-func configAndStorageEntries(_ context.Context, prefix, _ string, _ objectstore.ObjectStore) ([]clustereye.Navigation, error) {
+func configAndStorageEntries(_ context.Context, prefix, _ string, _ store.Store) ([]clustereye.Navigation, error) {
 	return []clustereye.Navigation{
 		*clustereye.NewNavigation("Config Maps", path.Join(prefix, "config-maps")),
 		*clustereye.NewNavigation("Persistent Volume Claims", path.Join(prefix, "persistent-volume-claims")),
@@ -48,7 +48,7 @@ func configAndStorageEntries(_ context.Context, prefix, _ string, _ objectstore.
 	}, nil
 }
 
-func rbacEntries(_ context.Context, prefix, _ string, _ objectstore.ObjectStore) ([]clustereye.Navigation, error) {
+func rbacEntries(_ context.Context, prefix, _ string, _ store.Store) ([]clustereye.Navigation, error) {
 	return []clustereye.Navigation{
 		*clustereye.NewNavigation("Roles", path.Join(prefix, "roles")),
 		*clustereye.NewNavigation("Role Bindings", path.Join(prefix, "role-bindings")),

@@ -22,7 +22,7 @@ import (
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/modules/overview/objectstatus"
 	"github.com/heptio/developer-dash/internal/modules/overview/objectvisitor"
-	"github.com/heptio/developer-dash/internal/objectstore"
+	"github.com/heptio/developer-dash/pkg/store"
 	dashStrings "github.com/heptio/developer-dash/internal/util/strings"
 	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/pkg/view/component"
@@ -53,7 +53,7 @@ type Collector struct {
 
 	podNodes map[string]component.PodStatus
 
-	objectStore   objectstore.ObjectStore
+	objectStore   store.Store
 	link          link.Interface
 	pluginPrinter plugin.ManagerInterface
 

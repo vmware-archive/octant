@@ -7,7 +7,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/heptio/developer-dash/internal/objectstore"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -16,7 +16,7 @@ type statusKey struct {
 	kind       string
 }
 
-type statusFunc func(context.Context, runtime.Object, objectstore.ObjectStore) (ObjectStatus, error)
+type statusFunc func(context.Context, runtime.Object, store.Store) (ObjectStatus, error)
 
 type statusLookup map[statusKey]statusFunc
 
@@ -70,11 +70,11 @@ func (os *ObjectStatus) Status() component.NodeStatus {
 }
 
 // Status creates an ObjectStatus for an object.
-func Status(ctx context.Context, object runtime.Object, o objectstore.ObjectStore) (ObjectStatus, error) {
+func Status(ctx context.Context, object runtime.Object, o store.Store) (ObjectStatus, error) {
 	return status(ctx, object, o, defaultStatusLookup)
 }
 
-func status(ctx context.Context, object runtime.Object, o objectstore.ObjectStore, lookup statusLookup) (ObjectStatus, error) {
+func status(ctx context.Context, object runtime.Object, o store.Store, lookup statusLookup) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.New("object is nil")
 	}

@@ -1,29 +1,17 @@
-package objectstore
+package store
 
 import (
 	"context"
 
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	kcache "k8s.io/client-go/tools/cache"
 )
 
-//go:generate mockgen -source=objectstore.go -destination=./fake/mock_objectstore.go -package=fake github.com/heptio/developer-dash/internal/objectstore ObjectStore
-
-// ObjectStore stores Kubernetes objects.
-type ObjectStore interface {
-	List(ctx context.Context, key objectstoreutil.Key) ([]*unstructured.Unstructured, error)
-	Get(ctx context.Context, key objectstoreutil.Key) (*unstructured.Unstructured, error)
-	Watch(ctx context.Context, key objectstoreutil.Key, handler kcache.ResourceEventHandler) error
-	HasAccess(objectstoreutil.Key, string) error
-}
-
-// GetAs gets an object from the objectstore by key.
-func GetAs(ctx context.Context, o ObjectStore, key objectstoreutil.Key, as interface{}) error {
+// GetAs gets an object from the object store by key.
+func GetAs(ctx context.Context, o Store, key Key, as interface{}) error {
 	u, err := o.Get(ctx, key)
 	if err != nil {
 		return errors.Wrap(err, "get object from objectstore")

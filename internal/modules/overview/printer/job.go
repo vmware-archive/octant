@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/heptio/developer-dash/internal/conversion"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -162,7 +162,7 @@ func createJobListView(ctx context.Context, object runtime.Object, options Optio
 		return nil, errors.Wrap(err, "get name for object")
 	}
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  namespace,
 		APIVersion: "batch/v1beta1",
 		Kind:       "Job",

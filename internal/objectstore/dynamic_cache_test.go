@@ -17,7 +17,7 @@ import (
 	"github.com/heptio/developer-dash/internal/cluster"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 )
 
@@ -114,7 +114,7 @@ func Test_DynamicCache_List(t *testing.T) {
 	c, err := NewDynamicCache(client, ctx.Done(), factoryFunc)
 	require.NoError(t, err)
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  "test",
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -186,7 +186,7 @@ func Test_DynamicCache_Get(t *testing.T) {
 	c, err := NewDynamicCache(client, ctx.Done(), factoryFunc)
 	require.NoError(t, err)
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  "test",
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -225,14 +225,14 @@ func Test_DynamicCache_HasAccess(t *testing.T) {
 	scenarios := []struct {
 		name       string
 		resource   string
-		key        objectstoreutil.Key
+		key        store.Key
 		accessFunc func(c *DynamicCache)
 		expectErr  bool
 	}{
 		{
 			name:     "pods",
 			resource: "pods",
-			key: objectstoreutil.Key{
+			key: store.Key{
 				APIVersion: "apps/v1",
 				Kind:       "Pod",
 			},
@@ -252,7 +252,7 @@ func Test_DynamicCache_HasAccess(t *testing.T) {
 		{
 			name:     "crds",
 			resource: "customresourcedefinitions",
-			key: objectstoreutil.Key{
+			key: store.Key{
 				APIVersion: "apiextensions.k8s.io/v1beta1",
 				Kind:       "CustomResourceDefinition",
 			},
@@ -272,7 +272,7 @@ func Test_DynamicCache_HasAccess(t *testing.T) {
 		{
 			name:     "no access crds",
 			resource: "customresourcedefinitions",
-			key: objectstoreutil.Key{
+			key: store.Key{
 				APIVersion: "apiextensions.k8s.io/v1beta1",
 				Kind:       "CustomResourceDefinition",
 			},

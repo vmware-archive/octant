@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -16,7 +17,7 @@ import (
 	"github.com/heptio/developer-dash/internal/describer"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -29,8 +30,11 @@ type Options struct {
 type Overview struct {
 	*clustereye.ObjectPath
 
-	generator  *realGenerator
-	dashConfig config.Dash
+	generator   *realGenerator
+	dashConfig  config.Dash
+	contextName string
+
+	mu sync.Mutex
 }
 
 var _ module.Module = (*Overview)(nil)
@@ -45,6 +49,32 @@ func New(ctx context.Context, options Options) (*Overview, error) {
 		return nil, errors.Wrap(err, "dash configuration")
 	}
 
+	co := &Overview{
+		dashConfig: options.DashConfig,
+	}
+
+	if err := co.bootstrap(ctx); err != nil {
+		return nil, err
+	}
+
+	logger := log.From(ctx).With("module", "overview")
+
+	co.dashConfig.ObjectStore().RegisterOnUpdate(func(newObjectStore store.Store) {
+		logger.Debugf("object store was updated")
+		if err := co.bootstrap(ctx); err != nil {
+			logger.WithErr(err).Errorf("updating object store")
+		}
+	})
+
+	return co, nil
+}
+
+func (co *Overview) SetContext(ctx context.Context, contextName string) error {
+	co.contextName = contextName
+	return nil
+}
+
+func (co *Overview) bootstrap(ctx context.Context) error {
 	pathMatcher := describer.NewPathMatcher("overview")
 	for _, pf := range rootDescriber.PathFilters() {
 		pathMatcher.Register(ctx, pf)
@@ -54,16 +84,9 @@ func New(ctx context.Context, options Options) (*Overview, error) {
 		pathMatcher.Register(ctx, pf)
 	}
 
-	key := objectstoreutil.Key{
-		APIVersion: "apiextensions.k8s.io/v1beta1",
-		Kind:       "CustomResourceDefinition",
-	}
-
-	objectStore := options.DashConfig.ObjectStore()
-
-	g, err := newGenerator(pathMatcher, options.DashConfig)
+	g, err := newGenerator(pathMatcher, co.dashConfig)
 	if err != nil {
-		return nil, errors.Wrap(err, "create overview generator")
+		return errors.Wrap(err, "create overview generator")
 	}
 
 	objectPathConfig := clustereye.ObjectPathConfig{
@@ -74,17 +97,19 @@ func New(ctx context.Context, options Options) (*Overview, error) {
 	}
 	objectPath, err := clustereye.NewObjectPath(objectPathConfig)
 	if err != nil {
-		return nil, errors.Wrap(err, "create module object path generator")
+		return errors.Wrap(err, "create module object path generator")
 	}
 
-	co := &Overview{
-		ObjectPath: objectPath,
-		generator:  g,
-		dashConfig: options.DashConfig,
+	co.ObjectPath = objectPath
+	co.generator = g
+
+	key := store.Key{
+		APIVersion: "apiextensions.k8s.io/v1beta1",
+		Kind:       "CustomResourceDefinition",
 	}
 
-	crdWatcher := options.DashConfig.CRDWatcher()
-	if err := objectStore.HasAccess(key, "watch"); err == nil {
+	crdWatcher := co.dashConfig.CRDWatcher()
+	if err := co.dashConfig.ObjectStore().HasAccess(key, "watch"); err == nil {
 		watchConfig := &config.CRDWatchConfig{
 			Add: func(_ *describer.PathMatcher, sectionDescriber *describer.CRDSection) config.ObjectHandler {
 				return func(ctx context.Context, object *unstructured.Unstructured) {
@@ -106,11 +131,11 @@ func New(ctx context.Context, options Options) (*Overview, error) {
 		}
 
 		if err := crdWatcher.Watch(ctx, watchConfig); err != nil {
-			return nil, errors.Wrap(err, "create namespaced CRD watcher for overview")
+			return errors.Wrap(err, "create namespaced CRD watcher for overview")
 		}
 	}
 
-	return co, nil
+	return nil
 }
 
 // Name returns the name for this module.

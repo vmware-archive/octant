@@ -10,16 +10,16 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
+	storefake "github.com/heptio/developer-dash/pkg/store/fake"
 )
 
 func Test_customResourceDefinitionNames(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	o := storefake.NewMockObjectStore(controller)
+	o := storefake.NewMockStore(controller)
 
 	crd1 := testutil.CreateCRD("crd1.example.com")
 	crd2 := testutil.CreateCRD("crd2.example.com")
@@ -29,7 +29,7 @@ func Test_customResourceDefinitionNames(t *testing.T) {
 		testutil.ToUnstructured(t, crd2),
 	}
 
-	crdKey := objectstoreutil.Key{
+	crdKey := store.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
@@ -49,11 +49,11 @@ func Test_customResourceDefinition(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	o := storefake.NewMockObjectStore(controller)
+	o := storefake.NewMockStore(controller)
 
 	crd1 := testutil.CreateCRD("crd1.example.com")
 
-	crdKey := objectstoreutil.Key{
+	crdKey := store.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 		Name:       "crd1.example.com",

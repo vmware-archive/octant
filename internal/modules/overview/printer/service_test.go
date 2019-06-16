@@ -14,7 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -217,7 +217,7 @@ func Test_serviceEndpoints(t *testing.T) {
 	tpo := newTestPrinterOptions(controller)
 	printOptions := tpo.ToOptions()
 
-	key := objectstoreutil.Key{Namespace: "default", APIVersion: "v1", Kind: "Endpoints", Name: "service"}
+	key := store.Key{Namespace: "default", APIVersion: "v1", Kind: "Endpoints", Name: "service"}
 	tpo.objectStore.EXPECT().
 		Get(gomock.Any(), gomock.Eq(key)).
 		Return(toUnstructured(t, endpoints), nil)

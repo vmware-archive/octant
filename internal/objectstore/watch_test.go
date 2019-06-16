@@ -15,9 +15,9 @@ import (
 
 	"github.com/heptio/developer-dash/internal/cluster"
 	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
-	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
+	objectStoreFake "github.com/heptio/developer-dash/pkg/store/fake"
 	"github.com/heptio/developer-dash/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 )
 
@@ -29,7 +29,7 @@ type watchMocks struct {
 	client              *clusterfake.MockClientInterface
 	sharedIndexInformer *clusterfake.MockSharedIndexInformer
 	namespaceClient     *clusterfake.MockNamespaceInterface
-	backendObjectStore  *storefake.MockObjectStore
+	backendObjectStore  *objectStoreFake.MockStore
 }
 
 func newWatchMocks(t *testing.T) *watchMocks {
@@ -39,7 +39,7 @@ func newWatchMocks(t *testing.T) *watchMocks {
 		informerFactory:     clusterfake.NewMockDynamicSharedInformerFactory(controller),
 		informer:            clusterfake.NewMockGenericInformer(controller),
 		client:              clusterfake.NewMockClientInterface(controller),
-		backendObjectStore:  storefake.NewMockObjectStore(controller),
+		backendObjectStore:  objectStoreFake.NewMockStore(controller),
 		sharedIndexInformer: clusterfake.NewMockSharedIndexInformer(controller),
 		namespaceClient:     clusterfake.NewMockNamespaceInterface(controller),
 	}
@@ -70,14 +70,14 @@ func Test_WatchList_not_cached(t *testing.T) {
 	}
 	mocks.client.EXPECT().Resource(gomock.Eq(podGK)).Return(podGVR, nil)
 
-	mocks.informerFactory.EXPECT().Start(gomock.Eq(ctx.Done()))
+	mocks.informerFactory.EXPECT().Start(gomock.Any())
 
 	pod1 := testutil.CreatePod("pod1")
 	pod1.Namespace = "test"
 	pod2 := testutil.CreatePod("pod2")
 	pod2.Namespace = "test"
 
-	listKey := objectstoreutil.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod"}
+	listKey := store.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod"}
 	objects := []*unstructured.Unstructured{
 		testutil.ToUnstructured(t, pod1),
 		testutil.ToUnstructured(t, pod2),
@@ -86,7 +86,7 @@ func Test_WatchList_not_cached(t *testing.T) {
 	mocks.backendObjectStore.EXPECT().HasAccess(gomock.Any(), "list").Return(nil)
 	mocks.backendObjectStore.EXPECT().List(gomock.Any(), gomock.Eq(listKey)).Return(objects, nil)
 
-	nsKey := objectstoreutil.Key{APIVersion: "v1", Kind: "Namespace"}
+	nsKey := store.Key{APIVersion: "v1", Kind: "Namespace"}
 	mocks.backendObjectStore.EXPECT().Watch(gomock.Any(), nsKey, gomock.Any()).Return(nil)
 
 	factoryFunc := func(c *Watch) {
@@ -103,7 +103,7 @@ func Test_WatchList_not_cached(t *testing.T) {
 	namespaces := []string{"test"}
 	mocks.namespaceClient.EXPECT().Names().Return(namespaces, nil)
 
-	watch, err := NewWatch(ctx, mocks.client, ctx.Done(), factoryFunc, setBackendFunc)
+	watch, err := NewWatch(ctx, mocks.client, factoryFunc, setBackendFunc)
 	require.NoError(t, err)
 
 	got, err := watch.List(ctx, listKey)
@@ -128,7 +128,7 @@ func Test_WatchList_stored(t *testing.T) {
 	pod2 := testutil.CreatePod("pod2")
 	pod2.Namespace = "test"
 
-	listKey := objectstoreutil.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod"}
+	listKey := store.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod"}
 
 	factoryFunc := func(c *Watch) {
 		c.initFactoryFunc = func(cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
@@ -152,14 +152,14 @@ func Test_WatchList_stored(t *testing.T) {
 		}
 	}
 
-	nsKey := objectstoreutil.Key{APIVersion: "v1", Kind: "Namespace"}
+	nsKey := store.Key{APIVersion: "v1", Kind: "Namespace"}
 	mocks.backendObjectStore.EXPECT().Watch(gomock.Any(), nsKey, gomock.Any()).Return(nil)
 
 	mocks.client.EXPECT().NamespaceClient().Return(mocks.namespaceClient, nil)
 	namespaces := []string{"test"}
 	mocks.namespaceClient.EXPECT().Names().Return(namespaces, nil)
 
-	watch, err := NewWatch(ctx, mocks.client, ctx.Done(), factoryFunc, setBackendFunc, cacheKeyFunc)
+	watch, err := NewWatch(ctx, mocks.client, factoryFunc, setBackendFunc, cacheKeyFunc)
 	require.NoError(t, err)
 
 	mocks.backendObjectStore.EXPECT().HasAccess(gomock.Any(), "list").Return(nil)
@@ -197,7 +197,7 @@ func Test_WatchList_stored_with_selector(t *testing.T) {
 		"app": "app1",
 	}
 
-	listKey := objectstoreutil.Key{
+	listKey := store.Key{
 		Namespace:  "test",
 		APIVersion: "v1",
 		Kind:       "Pod",
@@ -230,10 +230,10 @@ func Test_WatchList_stored_with_selector(t *testing.T) {
 	namespaces := []string{"test"}
 	mocks.namespaceClient.EXPECT().Names().Return(namespaces, nil)
 
-	nsKey := objectstoreutil.Key{APIVersion: "v1", Kind: "Namespace"}
+	nsKey := store.Key{APIVersion: "v1", Kind: "Namespace"}
 	mocks.backendObjectStore.EXPECT().Watch(gomock.Any(), nsKey, gomock.Any()).Return(nil)
 
-	watch, err := NewWatch(ctx, mocks.client, ctx.Done(), factoryFunc, setBackendFunc, cacheKeyFunc)
+	watch, err := NewWatch(ctx, mocks.client, factoryFunc, setBackendFunc, cacheKeyFunc)
 	require.NoError(t, err)
 
 	mocks.backendObjectStore.EXPECT().HasAccess(gomock.Any(), "list").Return(nil)
@@ -274,15 +274,15 @@ func Test_WatchGet_not_stored(t *testing.T) {
 	}
 	mocks.client.EXPECT().Resource(gomock.Eq(podGK)).Return(podGVR, nil)
 
-	mocks.informerFactory.EXPECT().Start(gomock.Eq(ctx.Done()))
+	mocks.informerFactory.EXPECT().Start(gomock.Any())
 
 	pod1 := testutil.CreatePod("pod1")
 	pod1.Namespace = "test"
 
-	getKey := objectstoreutil.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod", Name: pod1.Name}
+	getKey := store.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod", Name: pod1.Name}
 	mocks.backendObjectStore.EXPECT().Get(gomock.Any(), gomock.Eq(getKey)).Return(testutil.ToUnstructured(t, pod1), nil)
 
-	nsKey := objectstoreutil.Key{APIVersion: "v1", Kind: "Namespace"}
+	nsKey := store.Key{APIVersion: "v1", Kind: "Namespace"}
 	mocks.backendObjectStore.EXPECT().Watch(gomock.Any(), nsKey, gomock.Any()).Return(nil)
 
 	factoryFunc := func(c *Watch) {
@@ -299,7 +299,7 @@ func Test_WatchGet_not_stored(t *testing.T) {
 	namespaces := []string{"test"}
 	mocks.namespaceClient.EXPECT().Names().Return(namespaces, nil)
 
-	watch, err := NewWatch(ctx, mocks.client, ctx.Done(), factoryFunc, setBackendFunc)
+	watch, err := NewWatch(ctx, mocks.client, factoryFunc, setBackendFunc)
 	require.NoError(t, err)
 
 	mocks.backendObjectStore.EXPECT().HasAccess(gomock.Any(), "get").Return(nil)
@@ -320,7 +320,7 @@ func Test_WatchGet_stored(t *testing.T) {
 	pod1 := testutil.CreatePod("pod1")
 	pod1.Namespace = "test"
 
-	getKey := objectstoreutil.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod", Name: pod1.Name}
+	getKey := store.Key{Namespace: "test", APIVersion: "v1", Kind: "Pod", Name: pod1.Name}
 
 	factoryFunc := func(c *Watch) {
 		c.initFactoryFunc = func(cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
@@ -349,10 +349,10 @@ func Test_WatchGet_stored(t *testing.T) {
 	namespaces := []string{"test"}
 	mocks.namespaceClient.EXPECT().Names().Return(namespaces, nil)
 
-	nsKey := objectstoreutil.Key{APIVersion: "v1", Kind: "Namespace"}
+	nsKey := store.Key{APIVersion: "v1", Kind: "Namespace"}
 	mocks.backendObjectStore.EXPECT().Watch(gomock.Any(), nsKey, gomock.Any()).Return(nil)
 
-	watch, err := NewWatch(ctx, mocks.client, ctx.Done(), factoryFunc, setBackendFunc, cacheKeyFunc)
+	watch, err := NewWatch(ctx, mocks.client, factoryFunc, setBackendFunc, cacheKeyFunc)
 	require.NoError(t, err)
 
 	mocks.backendObjectStore.EXPECT().HasAccess(gomock.Any(), "get").Return(nil)
@@ -362,4 +362,48 @@ func Test_WatchGet_stored(t *testing.T) {
 	expected := testutil.ToUnstructured(t, pod1)
 
 	assert.Equal(t, expected, got)
+}
+
+func TestWatch_UpdateClusterClient(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	mocks := newWatchMocks(t)
+	defer mocks.controller.Finish()
+
+	factoryFunc := func(c *Watch) {
+		c.initFactoryFunc = func(cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
+			return mocks.informerFactory, nil
+		}
+
+		c.initBackendFunc = func(w *Watch) (store.Store, error) {
+			return mocks.backendObjectStore, nil
+		}
+	}
+
+	namespaces := []string{"test"}
+	mocks.namespaceClient.EXPECT().Names().Return(namespaces, nil).AnyTimes()
+
+	mocks.client.EXPECT().NamespaceClient().Return(mocks.namespaceClient, nil)
+
+	nsKey := store.Key{APIVersion: "v1", Kind: "Namespace"}
+	mocks.backendObjectStore.EXPECT().Watch(gomock.Any(), nsKey, gomock.Any()).Return(nil)
+
+	watch, err := NewWatch(ctx, mocks.client, factoryFunc)
+	require.NoError(t, err)
+
+	newClient := clusterfake.NewMockClientInterface(mocks.controller)
+	newClient.EXPECT().NamespaceClient().Return(mocks.namespaceClient, nil)
+
+	newBackendStore := objectStoreFake.NewMockStore(mocks.controller)
+	newBackendStore.EXPECT().Watch(gomock.Any(), nsKey, gomock.Any()).Return(nil)
+
+	watch.initBackendFunc = func(*Watch) (store.Store, error) {
+		return newBackendStore, nil
+	}
+
+	err = watch.UpdateClusterClient(ctx, newClient)
+	require.NoError(t, err)
+
+	assert.Equal(t, newBackendStore, watch.backendObjectStore)
 }

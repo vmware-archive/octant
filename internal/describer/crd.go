@@ -15,7 +15,7 @@ import (
 	"github.com/heptio/developer-dash/internal/modules/overview/resourceviewer"
 	"github.com/heptio/developer-dash/internal/modules/overview/yamlviewer"
 	"github.com/heptio/developer-dash/internal/queryer"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -67,7 +67,7 @@ func (c *crd) Describe(ctx context.Context, prefix, namespace string, options Op
 
 	apiVersion, kind := gvk.ToAPIVersionAndKind()
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  namespace,
 		APIVersion: apiVersion,
 		Kind:       kind,

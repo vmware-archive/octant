@@ -121,7 +121,6 @@ func Test_printRoleBindingConfig(t *testing.T) {
 
 	tpo.PathForGVK("namespace", rbacAPIVersion, "Role", "pod-reader", "pod-reader", "/role")
 
-
 	ctx := context.Background()
 	observed, err := printRoleBindingConfig(ctx, roleBinding, printOptions)
 	require.NoError(t, err)

@@ -11,8 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/heptio/developer-dash/internal/objectstore"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 	"github.com/heptio/developer-dash/pkg/view/flexlayout"
 )
@@ -204,7 +203,7 @@ func createEventsForObject(ctx context.Context, fl *flexlayout.FlexLayout, objec
 	return nil
 }
 
-func eventsForObject(ctx context.Context, object runtime.Object, o objectstore.ObjectStore) (*corev1.EventList, error) {
+func eventsForObject(ctx context.Context, object runtime.Object, o store.Store) (*corev1.EventList, error) {
 	accessor := meta.NewAccessor()
 
 	namespace, err := accessor.Namespace(object)
@@ -227,7 +226,7 @@ func eventsForObject(ctx context.Context, object runtime.Object, o objectstore.O
 		return nil, errors.Wrap(err, "get name for object")
 	}
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",
 		Kind:       "Event",

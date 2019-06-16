@@ -26,7 +26,8 @@ type Options struct {
 type Configuration struct {
 	Options
 
-	pathMatcher *describer.PathMatcher
+	pathMatcher          *describer.PathMatcher
+	kubeContextGenerator *kubeContextGenerator
 }
 
 var _ module.Module = (*Configuration)(nil)
@@ -38,8 +39,9 @@ func New(ctx context.Context, options Options) *Configuration {
 	}
 
 	return &Configuration{
-		Options:     options,
-		pathMatcher: pm,
+		Options:              options,
+		pathMatcher:          pm,
+		kubeContextGenerator: newKubeContextGenerator(options.DashConfig),
 	}
 }
 
@@ -53,14 +55,17 @@ func (c *Configuration) Handlers(ctx context.Context) map[string]http.Handler {
 	update := &updateCurrentContextHandler{
 		logger: logger,
 		contextUpdateFunc: func(name string) error {
-			logger.With("new-kube-context", name).Debugf("update context stub")
-			return nil
+			return c.DashConfig.UseContext(ctx, name)
 		},
 	}
 
 	return map[string]http.Handler{
 		"/kube-contexts": update,
 	}
+}
+
+func (c *Configuration) SetContext(ctx context.Context, contextName string) error {
+	return nil
 }
 
 func (c *Configuration) Content(ctx context.Context, contentPath, prefix, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
@@ -134,8 +139,7 @@ func (c Configuration) RemoveCRD(ctx context.Context, crd *unstructured.Unstruct
 
 // Generators allow modules to send events to the frontend.
 func (c Configuration) Generators() []clustereye.Generator {
-	kcg := newKubeContextGenerator(c.DashConfig.KubeConfigsPaths()[0])
 	return []clustereye.Generator{
-		kcg,
+		c.kubeContextGenerator,
 	}
 }

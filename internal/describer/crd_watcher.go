@@ -3,6 +3,7 @@ package describer
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -10,30 +11,43 @@ import (
 
 	"github.com/heptio/developer-dash/internal/config"
 	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/objectstore"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 )
 
 // DefaultCRDWatcher is the default CRD watcher.
 type DefaultCRDWatcher struct {
-	objectStore objectstore.ObjectStore
+	objectStore store.Store
+
+	mu sync.Mutex
 }
 
 var _ config.CRDWatcher = (*DefaultCRDWatcher)(nil)
 
 // NewDefaultCRDWatcher creates an instance of DefaultCRDWatcher.
-func NewDefaultCRDWatcher(objectStore objectstore.ObjectStore) (*DefaultCRDWatcher, error) {
+func NewDefaultCRDWatcher(ctx context.Context, objectStore store.Store) (*DefaultCRDWatcher, error) {
 	if objectStore == nil {
 		return nil, errors.New("object store is nil")
 	}
 
-	return &DefaultCRDWatcher{
+	cw := &DefaultCRDWatcher{
 		objectStore: objectStore,
-	}, nil
+	}
+
+	objectStore.RegisterOnUpdate(func(newObjectStore store.Store){
+		cw.mu.Lock()
+		defer cw.mu.Unlock()
+
+		cw.objectStore = newObjectStore
+
+		logger := log.From(ctx)
+		logger.Debugf("default crd watcher updated object store")
+	})
+
+	return cw, nil
 }
 
 var (
-	crdKey = objectstoreutil.Key{
+	crdKey = store.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
@@ -44,6 +58,9 @@ func (cw *DefaultCRDWatcher) Watch(ctx context.Context, watchConfig *config.CRDW
 	if watchConfig == nil {
 		return errors.New("watch config is nil")
 	}
+
+	cw.mu.Lock()
+	defer cw.mu.Unlock()
 
 	handler := &kcache.ResourceEventHandlerFuncs{}
 

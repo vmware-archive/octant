@@ -12,8 +12,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
+	storefake "github.com/heptio/developer-dash/pkg/store/fake"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -308,8 +308,8 @@ func Test_eventsForObject(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	o := storefake.NewMockObjectStore(controller)
-	key := objectstoreutil.Key{
+	o := storefake.NewMockStore(controller)
+	key := store.Key{
 		Namespace:  "default",
 		APIVersion: "v1",
 		Kind:       "Event",

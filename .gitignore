@@ -19,19 +19,20 @@ rice-box.go
 /dist
 
 # generated fakes
+internal/api/fake
 internal/cluster/fake
 internal/cache/fake
 internal/clustereye/fake
 internal/config/fake
 internal/event/fake
 internal/kubeconfig/fake
-internal/objectstore/fake
 internal/link/fake
 internal/module/fake
 internal/queryer/fake
 internal/modules/overview/printer/fake
 internal/modules/overview/resourceviewer/fake
 internal/portforward/fake
+/pkg/store/fake
 /pkg/plugin/fake
 /pkg/plugin/api/fake
 

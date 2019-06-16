@@ -17,9 +17,8 @@ import (
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/modules/overview/printer"
-	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/queryer"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -61,7 +60,7 @@ func New(ctx context.Context, options Options) (*ClusterOverview, error) {
 		Options:     options,
 	}
 
-	key := objectstoreutil.Key{
+	key := store.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
@@ -146,10 +145,6 @@ func (co *ClusterOverview) Content(ctx context.Context, contentPath string, pref
 
 	loaderFactory := describer.NewObjectLoaderFactory(co.DashConfig)
 
-	if err != nil {
-		return describer.EmptyContentResponse, errors.Wrap(err, "create component cache")
-	}
-
 	options := describer.Options{
 		Queryer:  q,
 		Fields:   pf.Fields(contentPath),
@@ -220,9 +215,13 @@ func (co *ClusterOverview) Generators() []clustereye.Generator {
 	return []clustereye.Generator{}
 }
 
-func rbacEntries(_ context.Context, prefix, _ string, _ objectstore.ObjectStore) ([]clustereye.Navigation, error) {
+func rbacEntries(_ context.Context, prefix, _ string, _ store.Store) ([]clustereye.Navigation, error) {
 	return []clustereye.Navigation{
 		*clustereye.NewNavigation("Cluster Roles", path.Join(prefix, "cluster-roles")),
 		*clustereye.NewNavigation("Cluster Role Bindings", path.Join(prefix, "cluster-role-bindings")),
 	}, nil
+}
+
+func (co *ClusterOverview) SetContext(ctx context.Context, contextName string) error {
+	return nil
 }

@@ -9,13 +9,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/heptio/developer-dash/internal/objectstore"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
 // deploymentAppsV1 creates status for an v1/apps deployment. This is
 // not the final implementation. It is included to generate output.
-func deploymentAppsV1(_ context.Context, object runtime.Object, _ objectstore.ObjectStore) (ObjectStatus, error) {
+func deploymentAppsV1(_ context.Context, object runtime.Object, _ store.Store) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("deployment is nil")
 	}

@@ -14,8 +14,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/clock"
 
 	"github.com/heptio/developer-dash/internal/describer"
-	storefake "github.com/heptio/developer-dash/internal/objectstore/fake"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	storefake "github.com/heptio/developer-dash/pkg/store/fake"
+	"github.com/heptio/developer-dash/pkg/store"
 )
 
 func createObject(name string) *unstructured.Unstructured {
@@ -40,16 +40,16 @@ func Test_loadObjects(t *testing.T) {
 
 	cases := []struct {
 		name     string
-		init     func(*testing.T, *storefake.MockObjectStore)
+		init     func(*testing.T, *storefake.MockStore)
 		fields   map[string]string
-		keys     []objectstoreutil.Key
+		keys     []store.Key
 		expected []*unstructured.Unstructured
 		isErr    bool
 	}{
 		{
 			name: "without name",
-			init: func(t *testing.T, o *storefake.MockObjectStore) {
-				key := objectstoreutil.Key{
+			init: func(t *testing.T, o *storefake.MockStore) {
+				key := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind"}
@@ -59,13 +59,13 @@ func Test_loadObjects(t *testing.T) {
 					Return(sampleObjects, nil)
 			},
 			fields:   map[string]string{},
-			keys:     []objectstoreutil.Key{{APIVersion: "v1", Kind: "kind"}},
+			keys:     []store.Key{{APIVersion: "v1", Kind: "kind"}},
 			expected: sortedSampleObjects,
 		},
 		{
 			name: "name",
-			init: func(t *testing.T, o *storefake.MockObjectStore) {
-				key := objectstoreutil.Key{
+			init: func(t *testing.T, o *storefake.MockStore) {
+				key := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind",
@@ -77,12 +77,12 @@ func Test_loadObjects(t *testing.T) {
 
 			},
 			fields: map[string]string{"name": "name"},
-			keys:   []objectstoreutil.Key{{APIVersion: "v1", Kind: "kind"}},
+			keys:   []store.Key{{APIVersion: "v1", Kind: "kind"}},
 		},
 		{
 			name: "cache retrieve error",
-			init: func(t *testing.T, o *storefake.MockObjectStore) {
-				key := objectstoreutil.Key{
+			init: func(t *testing.T, o *storefake.MockStore) {
+				key := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
 					Kind:       "kind"}
@@ -92,7 +92,7 @@ func Test_loadObjects(t *testing.T) {
 					Return(nil, errors.New("error"))
 			},
 			fields: map[string]string{},
-			keys:   []objectstoreutil.Key{{APIVersion: "v1", Kind: "kind"}},
+			keys:   []store.Key{{APIVersion: "v1", Kind: "kind"}},
 			isErr:  true,
 		},
 	}
@@ -102,7 +102,7 @@ func Test_loadObjects(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			o := storefake.NewMockObjectStore(controller)
+			o := storefake.NewMockStore(controller)
 			tc.init(t, o)
 
 			namespace := "default"

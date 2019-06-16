@@ -8,11 +8,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/heptio/developer-dash/internal/objectstore"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
-func pod(ctx context.Context, object runtime.Object, o objectstore.ObjectStore) (ObjectStatus, error) {
+func pod(ctx context.Context, object runtime.Object, o store.Store) (ObjectStatus, error) {
 	if object == nil {
 		return ObjectStatus{}, errors.Errorf("pod is nil")
 	}

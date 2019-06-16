@@ -9,7 +9,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/heptio/developer-dash/internal/objectstore"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -147,7 +147,7 @@ func NewReplicaSetStatus(rs *appsv1.ReplicaSet) *ReplicaSetStatus {
 }
 
 // Create generates a replicaset status quadrant
-func (rs *ReplicaSetStatus) Create(ctx context.Context, o objectstore.ObjectStore) (*component.Quadrant, error) {
+func (rs *ReplicaSetStatus) Create(ctx context.Context, o store.Store) (*component.Quadrant, error) {
 	if rs == nil || rs.replicaset == nil {
 		return nil, errors.New("replicaset is nil")
 	}

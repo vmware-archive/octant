@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/heptio/developer-dash/internal/componentcache"
+	"github.com/heptio/developer-dash/internal/objectstore"
 
 	"github.com/heptio/developer-dash/internal/config"
 	"github.com/heptio/developer-dash/internal/describer"
@@ -27,8 +28,8 @@ import (
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/modules/localcontent"
 	"github.com/heptio/developer-dash/internal/modules/overview"
-	"github.com/heptio/developer-dash/internal/objectstore"
 	"github.com/heptio/developer-dash/internal/portforward"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/plugin"
 	"github.com/heptio/developer-dash/web"
 
@@ -48,20 +49,26 @@ type Options struct {
 	KubeConfig       string
 	Namespace        string
 	FrontendURL      string
+	Context          string
 }
 
 // Run runs the dashboard.
 func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options Options) error {
 	ctx = log.WithLoggerContext(ctx, logger)
 
+	if options.Context != "" {
+		logger.With("initial-context", options.Context).Infof("Setting initial context from user flags")
+	}
+
 	logger.Debugf("Loading configuration: %v", options.KubeConfig)
-	clusterClient, err := cluster.FromKubeconfig(ctx, options.KubeConfig)
+	clusterClient, err := cluster.FromKubeConfig(ctx, options.KubeConfig, options.Context)
 	if err != nil {
 		return errors.Wrap(err, "failed to init cluster client")
 	}
 
 	if options.EnableOpenCensus {
 		if err := enableOpenCensus(); err != nil {
+			logger.Infof("Enabling OpenCensus")
 			return errors.Wrap(err, "enabling open census")
 		}
 	}
@@ -78,12 +85,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 
 	logger.Debugf("initial namespace for dashboard is %s", options.Namespace)
 
-	infoClient, err := clusterClient.InfoClient()
-	if err != nil {
-		return errors.Wrap(err, "failed to create info client")
-	}
-
-	appObjectStore, err := initObjectStore(ctx, ctx.Done(), clusterClient)
+	appObjectStore, err := initObjectStore(ctx, clusterClient)
 	if err != nil {
 		return errors.Wrap(err, "initializing store")
 	}
@@ -93,7 +95,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return errors.Wrap(err, "initializing component cache")
 	}
 
-	crdWatcher, err := describer.NewDefaultCRDWatcher(appObjectStore)
+	crdWatcher, err := describer.NewDefaultCRDWatcher(ctx, appObjectStore)
 	if err != nil {
 		return errors.Wrap(err, "initializing CRD watcher")
 	}
@@ -118,6 +120,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		pluginManager:  pluginManager,
 		portForwarder:  portForwarder,
 		kubeConfigPath: options.KubeConfig,
+		initialContext: options.Context,
 	}
 	moduleManager, err := initModuleManager(ctx, mo)
 	if err != nil {
@@ -130,7 +133,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 	}
 
 	// Initialize the API
-	ah := api.New(ctx, apiPathPrefix, nsClient, infoClient, moduleManager, logger)
+	ah := api.New(ctx, apiPathPrefix, clusterClient, moduleManager, logger)
 	for _, m := range moduleManager.Modules() {
 		if err := ah.RegisterModule(m); err != nil {
 			return errors.Wrapf(err, "registering module: %v", m.Name())
@@ -165,12 +168,12 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 }
 
 // initObjectStore initializes the cluster object store interface
-func initObjectStore(ctx context.Context, stopCh <-chan struct{}, client cluster.ClientInterface) (objectstore.ObjectStore, error) {
+func initObjectStore(ctx context.Context, client cluster.ClientInterface) (store.Store, error) {
 	if client == nil {
 		return nil, errors.New("nil cluster client")
 	}
 
-	appObjectStore, err := objectstore.NewWatch(ctx, client, stopCh)
+	appObjectStore, err := objectstore.NewWatch(ctx, client)
 
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating object store for app")
@@ -179,20 +182,21 @@ func initObjectStore(ctx context.Context, stopCh <-chan struct{}, client cluster
 	return appObjectStore, nil
 }
 
-func initPortForwarder(ctx context.Context, client cluster.ClientInterface, appObjectStore objectstore.ObjectStore) (portforward.PortForwarder, error) {
+func initPortForwarder(ctx context.Context, client cluster.ClientInterface, appObjectStore store.Store) (portforward.PortForwarder, error) {
 	return portforward.Default(ctx, client, appObjectStore)
 }
 
 type moduleOptions struct {
 	clusterClient  *cluster.Cluster
 	crdWatcher     config.CRDWatcher
-	objectStore    objectstore.ObjectStore
+	objectStore    store.Store
 	componentCache componentcache.ComponentCache
 	namespace      string
 	logger         log.Logger
 	pluginManager  *plugin.Manager
 	portForwarder  portforward.PortForwarder
 	kubeConfigPath string
+	initialContext string
 }
 
 // initModuleManager initializes the moduleManager (and currently the modules themselves)
@@ -205,13 +209,14 @@ func initModuleManager(ctx context.Context, options moduleOptions) (*module.Mana
 	c := config.NewLiveConfig(
 		options.clusterClient,
 		options.crdWatcher,
-		[]string{options.kubeConfigPath},
+		options.kubeConfigPath,
 		options.logger,
 		moduleManager,
 		options.objectStore,
 		options.componentCache,
 		options.pluginManager,
 		options.portForwarder,
+		options.initialContext,
 	)
 
 	overviewOptions := overview.Options{
@@ -236,7 +241,7 @@ func initModuleManager(ctx context.Context, options moduleOptions) (*module.Mana
 	moduleManager.Register(clusterOverviewModule)
 
 	configurationOptions := configuration.Options{
-		DashConfig: c,
+		DashConfig:     c,
 		KubeConfigPath: options.kubeConfigPath,
 	}
 	configurationModule := configuration.New(ctx, configurationOptions)
@@ -326,7 +331,12 @@ func (d *dash) handler(ctx context.Context) (http.Handler, error) {
 	}
 
 	router := mux.NewRouter()
-	router.PathPrefix(apiPathPrefix).Handler(d.apiHandler.Handler(ctx))
+	apiHandler, err := d.apiHandler.Handler(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	router.PathPrefix(apiPathPrefix).Handler(apiHandler)
 	router.PathPrefix("/").Handler(handler)
 
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"})

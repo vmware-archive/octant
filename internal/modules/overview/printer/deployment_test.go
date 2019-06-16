@@ -18,7 +18,7 @@ import (
 
 	"github.com/heptio/developer-dash/internal/conversion"
 	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/objectstoreutil"
+	"github.com/heptio/developer-dash/pkg/store"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -75,13 +75,12 @@ func Test_DeploymentListHandler(t *testing.T) {
 				},
 			},
 		},
-
 	}
 
 	tpo.PathForObject(object, object.Name, "/path")
 
 	list := &appsv1.DeploymentList{
-		Items: []appsv1.Deployment{ *object },
+		Items: []appsv1.Deployment{*object},
 	}
 
 	ctx := context.Background()
@@ -275,7 +274,7 @@ func Test_deploymentPods(t *testing.T) {
 	tpo.PathForObject(pod, pod.Name, "/pod")
 
 	selector := labels.Set(podLabels)
-	key := objectstoreutil.Key{
+	key := store.Key{
 		Namespace:  "namespace",
 		APIVersion: "v1",
 		Kind:       "Pod",
