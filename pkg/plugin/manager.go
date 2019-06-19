@@ -1,3 +1,8 @@
+/*
+Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package plugin
 
 //go:generate mockgen -destination=./fake/mock_manager.go -package=fake github.com/heptio/developer-dash/pkg/plugin ManagerInterface
