@@ -1,3 +1,7 @@
+// Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+
 import { Component, OnDestroy, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ContentStreamService } from 'src/app/services/content-stream/content-stream.service';

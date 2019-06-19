@@ -1,3 +1,7 @@
+// Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+
 import { AfterViewChecked, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { LogsView, LogEntry } from 'src/app/models/content';
 import { PodLogsService, PodLogsStreamer } from 'src/app/services/pod-logs/pod-logs.service';

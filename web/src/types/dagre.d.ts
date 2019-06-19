@@ -1,3 +1,7 @@
+// Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+
 declare module "dagre" {
   import * as d3 from "d3";
   import * as dagre from "dagre";

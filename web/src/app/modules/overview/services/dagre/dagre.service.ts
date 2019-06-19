@@ -1,3 +1,7 @@
+// Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+
 import { ElementRef, Injectable } from '@angular/core';
 import * as d3 from 'd3';
 import * as dagreD3 from 'dagre-d3';

@@ -1,3 +1,7 @@
+// Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+
 import { TestBed } from '@angular/core/testing';
 import { ContentStreamService } from './content-stream.service';
 import { BehaviorSubject } from 'rxjs';

@@ -1,3 +1,7 @@
+// Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+
 import { TestBed } from '@angular/core/testing';
 
 import { PortForwardService } from './port-forward.service';

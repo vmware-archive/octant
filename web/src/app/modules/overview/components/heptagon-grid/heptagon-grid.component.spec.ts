@@ -1,3 +1,7 @@
+// Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HeptagonGridComponent } from './heptagon-grid.component';
 import { HeptagonGridRowComponent, HoverStatus } from '../heptagon-grid-row/heptagon-grid-row.component';

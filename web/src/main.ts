@@ -1,3 +1,7 @@
+// Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+
 // Note(marlon): zone.js seems to add a thread blocking event listener
 // to mouse scroll events: https://github.com/angular/zone.js/issues/1097
 // This makes all event listeners passive by default. To note when attaching

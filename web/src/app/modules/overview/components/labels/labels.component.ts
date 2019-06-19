@@ -1,3 +1,7 @@
+// Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { LabelsView } from 'src/app/models/content';
 import { LabelFilterService } from 'src/app/services/label-filter/label-filter.service';

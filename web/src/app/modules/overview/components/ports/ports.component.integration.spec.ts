@@ -1,3 +1,7 @@
+// Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+
 import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { PortsComponent } from './ports.component';
 import { PortForwardService } from 'src/app/services/port-forward/port-forward.service';

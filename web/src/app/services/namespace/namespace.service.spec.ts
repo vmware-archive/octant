@@ -1,3 +1,7 @@
+// Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { NamespaceService } from './namespace.service';
 import { NotifierService, NotifierSignalType } from '../notifier/notifier.service';

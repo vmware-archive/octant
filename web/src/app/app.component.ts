@@ -1,3 +1,7 @@
+// Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ContentStreamService } from './services/content-stream/content-stream.service';
 import { Navigation } from './models/navigation';

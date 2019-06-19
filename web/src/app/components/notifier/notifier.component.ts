@@ -1,3 +1,7 @@
+// Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NotifierService, NotifierSignalType } from 'src/app/services/notifier/notifier.service';
 import { Subscription } from 'rxjs';

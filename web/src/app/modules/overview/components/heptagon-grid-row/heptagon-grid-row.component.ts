@@ -1,3 +1,7 @@
+// Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+
 import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 
 import { PodStatus } from '../../models/pod-status';

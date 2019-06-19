@@ -1,3 +1,7 @@
+// Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+
 import { async, ComponentFixture, TestBed, fakeAsync, tick, discardPeriodicTasks} from '@angular/core/testing';
 import { LogsComponent } from './logs.component';
 import { PodLogsService } from 'src/app/services/pod-logs/pod-logs.service';
