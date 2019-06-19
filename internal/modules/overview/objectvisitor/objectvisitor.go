@@ -21,8 +21,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/heptio/developer-dash/internal/gvk"
-	"github.com/heptio/developer-dash/internal/queryer"
+	"github.com/vmware/octant/internal/gvk"
+	"github.com/vmware/octant/internal/queryer"
 )
 
 // ClusterObject is a cluster object.

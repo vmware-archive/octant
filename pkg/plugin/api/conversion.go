@@ -8,8 +8,8 @@ package api
 import (
 	"encoding/json"
 
-	"github.com/heptio/developer-dash/pkg/store"
-	"github.com/heptio/developer-dash/pkg/plugin/api/proto"
+	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware/octant/pkg/plugin/api/proto"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"

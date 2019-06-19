@@ -14,14 +14,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/heptio/developer-dash/internal/config"
-	"github.com/heptio/developer-dash/internal/link"
-	"github.com/heptio/developer-dash/internal/modules/overview/printer"
-	"github.com/heptio/developer-dash/internal/modules/overview/resourceviewer"
-	"github.com/heptio/developer-dash/internal/modules/overview/yamlviewer"
-	"github.com/heptio/developer-dash/internal/queryer"
-	"github.com/heptio/developer-dash/pkg/store"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/config"
+	"github.com/vmware/octant/internal/link"
+	"github.com/vmware/octant/internal/modules/overview/printer"
+	"github.com/vmware/octant/internal/modules/overview/resourceviewer"
+	"github.com/vmware/octant/internal/modules/overview/yamlviewer"
+	"github.com/vmware/octant/internal/queryer"
+	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 type crdPrinter func(ctx context.Context, crd *apiextv1beta1.CustomResourceDefinition, object *unstructured.Unstructured, options printer.Options) (component.Component, error)

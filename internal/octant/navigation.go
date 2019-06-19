@@ -17,7 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/heptio/developer-dash/pkg/store"
+	"github.com/vmware/octant/pkg/store"
 )
 
 // Navigation is a set of navigation entries.

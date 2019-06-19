@@ -15,9 +15,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/store"
-	storefake "github.com/heptio/developer-dash/pkg/store/fake"
+	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/store"
+	storefake "github.com/vmware/octant/pkg/store/fake"
 )
 
 func Test_customResourceDefinitionNames(t *testing.T) {

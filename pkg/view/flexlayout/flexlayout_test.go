@@ -8,8 +8,8 @@ package flexlayout_test
 import (
 	"testing"
 
-	"github.com/heptio/developer-dash/pkg/view/component"
-	"github.com/heptio/developer-dash/pkg/view/flexlayout"
+	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware/octant/pkg/view/flexlayout"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

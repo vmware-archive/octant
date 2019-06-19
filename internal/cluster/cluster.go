@@ -25,7 +25,7 @@ import (
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/heptio/developer-dash/internal/log"
+	"github.com/vmware/octant/internal/log"
 
 	// auth plugins
 	_ "k8s.io/client-go/plugin/pkg/client/auth/azure"
@@ -33,7 +33,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 )
 
-//go:generate mockgen -source=cluster.go -destination=./fake/mock_client_interface.go -package=fake github.com/heptio/developer-dash/internal/cluster ClientInterface
+//go:generate mockgen -source=cluster.go -destination=./fake/mock_client_interface.go -package=fake github.com/vmware/octant/internal/cluster ClientInterface
 //go:generate mockgen -source=../../vendor/k8s.io/client-go/dynamic/dynamicinformer/interface.go -destination=./fake/mock_dynamicinformer.go -package=fake k8s.io/client-go/dynamic/dynamicinformer DynamicSharedInformerFactory
 //go:generate mockgen -source=../../vendor/k8s.io/client-go/informers/generic.go -destination=./fake/mock_genericinformer.go -package=fake k8s.io/client-go/informers GenericInformer
 //go:generate mockgen -source=../../vendor/k8s.io/client-go/discovery/discovery_client.go -imports=openapi_v2=github.com/googleapis/gnostic/OpenAPIv2 -destination=./fake/mock_discoveryinterface.go -package=fake k8s.io/client-go/discovery DiscoveryInterface

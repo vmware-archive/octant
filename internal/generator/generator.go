@@ -10,9 +10,9 @@ import (
 
 	kLabels "k8s.io/apimachinery/pkg/labels"
 
-	"github.com/heptio/developer-dash/internal/portforward"
-	"github.com/heptio/developer-dash/pkg/plugin"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/portforward"
+	"github.com/vmware/octant/pkg/plugin"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 type Options struct {

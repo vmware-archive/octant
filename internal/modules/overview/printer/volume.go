@@ -10,7 +10,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 const (

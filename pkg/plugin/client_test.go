@@ -8,7 +8,7 @@ package plugin
 import (
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/gvk"
+	"github.com/vmware/octant/internal/gvk"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )

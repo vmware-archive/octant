@@ -14,9 +14,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/heptio/developer-dash/internal/octant"
-	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/internal/module"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 func TestContentGenerator_Event(t *testing.T) {

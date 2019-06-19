@@ -13,12 +13,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/modules/overview/logviewer"
-	"github.com/heptio/developer-dash/internal/modules/overview/resourceviewer"
-	"github.com/heptio/developer-dash/internal/modules/overview/yamlviewer"
-	"github.com/heptio/developer-dash/pkg/store"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/modules/overview/logviewer"
+	"github.com/vmware/octant/internal/modules/overview/resourceviewer"
+	"github.com/vmware/octant/internal/modules/overview/yamlviewer"
+	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 // Object describes an object.

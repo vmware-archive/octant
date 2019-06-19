@@ -11,7 +11,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/heptio/developer-dash/internal/log"
+	"github.com/vmware/octant/internal/log"
 )
 
 var (

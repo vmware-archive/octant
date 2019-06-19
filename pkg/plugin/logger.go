@@ -11,7 +11,7 @@ import (
 	"io"
 
 	"github.com/hashicorp/go-hclog"
-	"github.com/heptio/developer-dash/internal/log"
+	"github.com/vmware/octant/internal/log"
 )
 
 type zapAdapter struct {

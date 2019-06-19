@@ -9,8 +9,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/module"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/module"
 )
 
 type namespace struct {

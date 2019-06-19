@@ -14,11 +14,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	clusterFake "github.com/heptio/developer-dash/internal/cluster/fake"
-	configFake "github.com/heptio/developer-dash/internal/config/fake"
-	"github.com/heptio/developer-dash/internal/describer"
-	objectStoreFake "github.com/heptio/developer-dash/pkg/store/fake"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	clusterFake "github.com/vmware/octant/internal/cluster/fake"
+	configFake "github.com/vmware/octant/internal/config/fake"
+	"github.com/vmware/octant/internal/describer"
+	objectStoreFake "github.com/vmware/octant/pkg/store/fake"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 func Test_realGenerator_Generate(t *testing.T) {

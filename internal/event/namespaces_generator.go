@@ -12,8 +12,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/octant"
+	"github.com/vmware/octant/internal/cluster"
+	"github.com/vmware/octant/internal/octant"
 )
 
 type namespacesResponse struct {

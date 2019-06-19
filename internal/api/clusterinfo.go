@@ -9,9 +9,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/mime"
+	"github.com/vmware/octant/internal/cluster"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/mime"
 )
 
 type clusterInfo struct {

@@ -16,9 +16,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/heptio/developer-dash/internal/config"
-	"github.com/heptio/developer-dash/pkg/store"
-	objectStoreFake "github.com/heptio/developer-dash/pkg/store/fake"
+	"github.com/vmware/octant/internal/config"
+	"github.com/vmware/octant/pkg/store"
+	objectStoreFake "github.com/vmware/octant/pkg/store/fake"
 )
 
 func TestNewDefaultCRDWatcher_requires_object_store(t *testing.T) {

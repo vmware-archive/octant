@@ -13,8 +13,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/heptio/developer-dash/pkg/view/component"
-	"github.com/heptio/developer-dash/pkg/view/flexlayout"
+	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware/octant/pkg/view/flexlayout"
 )
 
 func defaultMetadataGen(object runtime.Object, fl *flexlayout.FlexLayout, options Options) error {

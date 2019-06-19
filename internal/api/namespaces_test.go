@@ -13,8 +13,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 
-	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
-	"github.com/heptio/developer-dash/internal/log"
+	clusterfake "github.com/vmware/octant/internal/cluster/fake"
+	"github.com/vmware/octant/internal/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

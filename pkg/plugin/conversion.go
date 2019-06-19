@@ -8,8 +8,8 @@ package plugin
 import (
 	"encoding/json"
 
-	"github.com/heptio/developer-dash/pkg/plugin/dashboard"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/pkg/plugin/dashboard"
+	"github.com/vmware/octant/pkg/view/component"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 

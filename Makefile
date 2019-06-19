@@ -100,7 +100,7 @@ ci-quick:
 
 install-test-plugin:
 	mkdir -p ~/.config/vmdash/plugins
-	go build -o ~/.config/vmdash/plugins/pluginstub github.com/heptio/developer-dash/cmd/pluginstub
+	go build -o ~/.config/vmdash/plugins/pluginstub github.com/vmware/octant/cmd/pluginstub
 
 .PHONY:
 build-deps:

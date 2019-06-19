@@ -11,7 +11,7 @@ import (
 	clientcmdapiv1 "k8s.io/client-go/tools/clientcmd/api/v1"
 )
 
-//go:generate mockgen -destination=./fake/mock_loader.go -package=fake github.com/heptio/developer-dash/internal/kubeconfig Loader
+//go:generate mockgen -destination=./fake/mock_loader.go -package=fake github.com/vmware/octant/internal/kubeconfig Loader
 
 // KubeConfig describes a kube config for dash.
 type KubeConfig struct {

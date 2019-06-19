@@ -10,7 +10,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/heptio/developer-dash/internal/portforward"
+	"github.com/vmware/octant/internal/portforward"
 
 	"github.com/pkg/errors"
 
@@ -19,7 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 // ContainerConfiguration generates container configuration.

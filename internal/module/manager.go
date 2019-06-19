@@ -11,11 +11,11 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/log"
+	"github.com/vmware/octant/internal/cluster"
+	"github.com/vmware/octant/internal/log"
 )
 
-//go:generate mockgen -destination=./fake/mock_manager.go -package=fake github.com/heptio/developer-dash/internal/module ManagerInterface
+//go:generate mockgen -destination=./fake/mock_manager.go -package=fake github.com/vmware/octant/internal/module ManagerInterface
 
 // ManagerInterface is an interface for managing module lifecycle.
 type ManagerInterface interface {

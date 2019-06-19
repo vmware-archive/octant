@@ -11,10 +11,10 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/heptio/developer-dash/internal/gvk"
-	"github.com/heptio/developer-dash/internal/portforward"
-	"github.com/heptio/developer-dash/pkg/store"
-	"github.com/heptio/developer-dash/pkg/plugin/api/proto"
+	"github.com/vmware/octant/internal/gvk"
+	"github.com/vmware/octant/internal/portforward"
+	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware/octant/pkg/plugin/api/proto"
 )
 
 // PortForwardRequest describes a port forward request.

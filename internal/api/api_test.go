@@ -20,13 +20,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	apiFake "github.com/heptio/developer-dash/internal/api/fake"
-	clusterFake "github.com/heptio/developer-dash/internal/cluster/fake"
-	"github.com/heptio/developer-dash/internal/octant"
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/module"
-	moduleFake "github.com/heptio/developer-dash/internal/module/fake"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	apiFake "github.com/vmware/octant/internal/api/fake"
+	clusterFake "github.com/vmware/octant/internal/cluster/fake"
+	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/module"
+	moduleFake "github.com/vmware/octant/internal/module/fake"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 type testMocks struct {

@@ -8,7 +8,7 @@ package octant_test
 import (
 	"testing"
 
-	"github.com/heptio/developer-dash/internal/octant"
+	"github.com/vmware/octant/internal/octant"
 	"github.com/stretchr/testify/assert"
 )
 

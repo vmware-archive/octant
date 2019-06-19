@@ -12,9 +12,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/heptio/developer-dash/internal/octant"
-	octantFake "github.com/heptio/developer-dash/internal/octant/fake"
-	eventFake "github.com/heptio/developer-dash/internal/event/fake"
+	"github.com/vmware/octant/internal/octant"
+	octantFake "github.com/vmware/octant/internal/octant/fake"
+	eventFake "github.com/vmware/octant/internal/event/fake"
 )
 
 func TestStream(t *testing.T) {

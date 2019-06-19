@@ -12,10 +12,10 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/heptio/developer-dash/internal/api"
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/mime"
-	"github.com/heptio/developer-dash/internal/portforward"
+	"github.com/vmware/octant/internal/api"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/mime"
+	"github.com/vmware/octant/internal/portforward"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )

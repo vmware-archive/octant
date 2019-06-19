@@ -14,15 +14,15 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 
-	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/octant"
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/mime"
-	"github.com/heptio/developer-dash/internal/module"
+	"github.com/vmware/octant/internal/cluster"
+	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/mime"
+	"github.com/vmware/octant/internal/module"
 )
 
-//go:generate mockgen -destination=./fake/mock_cluster_client.go -package=fake github.com/heptio/developer-dash/internal/api ClusterClient
-//go:generate mockgen -destination=./fake/mock_service.go -package=fake github.com/heptio/developer-dash/internal/api Service
+//go:generate mockgen -destination=./fake/mock_cluster_client.go -package=fake github.com/vmware/octant/internal/api ClusterClient
+//go:generate mockgen -destination=./fake/mock_service.go -package=fake github.com/vmware/octant/internal/api Service
 
 var (
 	// acceptedHosts are the hosts this api will answer for.

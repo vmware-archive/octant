@@ -15,11 +15,11 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/heptio/developer-dash/internal/octant"
-	"github.com/heptio/developer-dash/internal/log"
+	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/internal/log"
 )
 
-//go:generate mockgen -destination=./fake/mock_streamer.go -package=fake github.com/heptio/developer-dash/internal/event Streamer
+//go:generate mockgen -destination=./fake/mock_streamer.go -package=fake github.com/vmware/octant/internal/event Streamer
 
 const (
 	// DefaultScheduleDelay is how long events should delay before generating.

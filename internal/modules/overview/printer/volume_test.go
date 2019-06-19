@@ -8,7 +8,7 @@ package printer
 import (
 	"testing"
 
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/pkg/view/component"
 
 	corev1 "k8s.io/api/core/v1"
 

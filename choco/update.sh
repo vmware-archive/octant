@@ -5,8 +5,8 @@ set -e
 # This script requires a Github token with repo scope
 # It is used to update the chocolately package version
 
-BASE_URL="https://api.github.com/repos/heptio/developer-dash/releases"
-GITHUB_URL="https://github.com/heptio/developer-dash/releases"
+BASE_URL="https://api.github.com/repos/vmware/octant/releases"
+GITHUB_URL="https://github.com/vmware/octant/releases"
 
 semver=$(make version)
 version=$(echo $semver | cut -c2-)
@@ -26,7 +26,7 @@ checksum64=$(curl --fail -L -H 'Accept: application/octet-stream' "${download}" 
 url64="$GITHUB_URL/download/${semver}/$name"
 
 # If public, use this instead
-#url64="https://github.com/heptio/developer-dash/releases/download/$(make version)/hcli_$(make version | cut -c2-)_Windows-64bit.zip"
+#url64="https://github.com/vmware/octant/releases/download/$(make version)/hcli_$(make version | cut -c2-)_Windows-64bit.zip"
 #
 #checksum64=$(curl --fail -L "${url64}" | shasum -a 256 - | cut -f 1 -d " ")
 

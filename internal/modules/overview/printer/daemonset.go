@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 // DaemonSetListHandler is a printFunc that lists daemon sets

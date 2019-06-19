@@ -12,8 +12,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/heptio/developer-dash/pkg/store"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 type statusKey struct {

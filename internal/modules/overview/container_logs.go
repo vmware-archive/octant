@@ -14,9 +14,9 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/log"
-	container2 "github.com/heptio/developer-dash/internal/modules/overview/container"
+	"github.com/vmware/octant/internal/cluster"
+	"github.com/vmware/octant/internal/log"
+	container2 "github.com/vmware/octant/internal/modules/overview/container"
 )
 
 func containerLogsHandler(ctx context.Context, clusterClient cluster.ClientInterface) http.HandlerFunc {

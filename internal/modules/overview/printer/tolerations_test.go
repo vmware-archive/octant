@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/heptio/developer-dash/internal/conversion"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/conversion"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 func tolerationTable(descriptions ...string) *component.Table {

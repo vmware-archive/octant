@@ -5,4 +5,4 @@ SPDX-License-Identifier: Apache-2.0
 
 package api
 
-//go:generate mockgen -source=server.go -destination=./fake/mock_dash_service.go -package=fake github.com/heptio/developer-dash/pkg/plugin/api Service
+//go:generate mockgen -source=server.go -destination=./fake/mock_dash_service.go -package=fake github.com/vmware/octant/pkg/plugin/api Service

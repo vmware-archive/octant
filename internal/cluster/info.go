@@ -7,7 +7,7 @@ package cluster
 
 import "k8s.io/client-go/tools/clientcmd"
 
-//go:generate mockgen -source=info.go -destination=./fake/mock_info_interface.go -package=fake github.com/heptio/developer-dash/internal/cluster InfoInterface
+//go:generate mockgen -source=info.go -destination=./fake/mock_info_interface.go -package=fake github.com/vmware/octant/internal/cluster InfoInterface
 
 // InfoInterface provides connection details for a cluster
 type InfoInterface interface {

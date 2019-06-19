@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-//go:generate mockgen -destination=./fake/mock_generator.go -package=fake github.com/heptio/developer-dash/internal/octant Generator
+//go:generate mockgen -destination=./fake/mock_generator.go -package=fake github.com/vmware/octant/internal/octant Generator
 
 // Generator generates events.
 type Generator interface {

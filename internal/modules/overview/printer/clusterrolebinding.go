@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 	rbacv1 "k8s.io/api/rbac/v1"
 
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 func ClusterRoleBindingListHandler(_ context.Context, clusterRoleBindingList *rbacv1.ClusterRoleBindingList, options Options) (component.Component, error) {

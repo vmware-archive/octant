@@ -14,7 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/heptio/developer-dash/pkg/store"
+	"github.com/vmware/octant/pkg/store"
 )
 
 // EntriesFunc is a function that can create navigation entries.

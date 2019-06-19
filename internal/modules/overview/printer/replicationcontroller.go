@@ -13,8 +13,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/heptio/developer-dash/pkg/store"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 // ReplicationControllerListHandler is a printFunc that lists ReplicationControllers

@@ -28,7 +28,7 @@ Check the version:
 
 ### Download a prebuilt binary
 
-Go to the [releases page](https://github.com/heptio/developer-dash/releases) and download the tarball.
+Go to the [releases page](https://github.com/vmware/octant/releases) and download the tarball.
 
 Extract the tarball:
 
@@ -48,17 +48,17 @@ Decide to move the binary in `/usr/local/bin` or your home directory. Installing
 
 This option is for users who want to build from master. Make sure the prerequisites listed above are installed.
 
-`$ go get github.com/heptio/developer-dashboard`
+`$ go get github.com/vmware/octantboard`
 
 Package the web assets to be built into the binary.
 
 `$ make web-build`
 
-There should be a new directory: `$GOPATH/src/github.com/heptio/developer-dash/web/build`. Finally, build the binary:
+There should be a new directory: `$GOPATH/src/github.com/vmware/octant/web/build`. Finally, build the binary:
 
 `$ make octant-dev`
 
-The `octant` binary will be found in `$GOPATH/src/github.com/heptio/developer-dash/build`.
+The `octant` binary will be found in `$GOPATH/src/github.com/vmware/octant/build`.
 
 ### Environment variables
 

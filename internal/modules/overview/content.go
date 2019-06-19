@@ -5,6 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 
 package overview
 
-import "github.com/heptio/developer-dash/pkg/view/component"
+import "github.com/vmware/octant/pkg/view/component"
 
 var emptyContentResponse = component.ContentResponse{}

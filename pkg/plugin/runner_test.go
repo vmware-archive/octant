@@ -15,11 +15,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/heptio/developer-dash/internal/gvk"
-	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/plugin"
-	"github.com/heptio/developer-dash/pkg/plugin/fake"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/gvk"
+	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/plugin"
+	"github.com/vmware/octant/pkg/plugin/fake"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 func TestDefaultRunner(t *testing.T) {

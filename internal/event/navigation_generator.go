@@ -11,8 +11,8 @@ import (
 	"path"
 	"time"
 
-	"github.com/heptio/developer-dash/internal/octant"
-	"github.com/heptio/developer-dash/internal/module"
+	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/internal/module"
 )
 
 type navigationResponse struct {

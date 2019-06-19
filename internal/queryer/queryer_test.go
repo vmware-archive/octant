@@ -23,10 +23,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	storefake "github.com/heptio/developer-dash/pkg/store/fake"
-	fakequeryer "github.com/heptio/developer-dash/internal/queryer/fake"
-	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/store"
+	storefake "github.com/vmware/octant/pkg/store/fake"
+	fakequeryer "github.com/vmware/octant/internal/queryer/fake"
+	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/store"
 )
 
 func TestCacheQueryer_Children(t *testing.T) {

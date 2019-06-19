@@ -14,8 +14,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/heptio/developer-dash/internal/cluster/fake"
-	"github.com/heptio/developer-dash/internal/octant"
+	"github.com/vmware/octant/internal/cluster/fake"
+	"github.com/vmware/octant/internal/octant"
 )
 
 func TestNamespacesGenerator_Event(t *testing.T) {

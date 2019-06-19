@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package plugin
 
 import (
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/pkg/view/component"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 	"k8s.io/apimachinery/pkg/runtime"

@@ -8,8 +8,8 @@ package clusteroverview
 import (
 	rbacv1 "k8s.io/api/rbac/v1"
 
-	"github.com/heptio/developer-dash/internal/describer"
-	"github.com/heptio/developer-dash/pkg/store"
+	"github.com/vmware/octant/internal/describer"
+	"github.com/vmware/octant/pkg/store"
 )
 
 var (

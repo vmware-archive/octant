@@ -14,7 +14,7 @@ import (
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/heptio/developer-dash/internal/testutil"
+	"github.com/vmware/octant/internal/testutil"
 )
 
 func TestObjectPathConfig_Validate(t *testing.T) {

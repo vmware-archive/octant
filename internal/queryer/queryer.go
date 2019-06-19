@@ -30,11 +30,11 @@ import (
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/core"
 
-	dashstrings "github.com/heptio/developer-dash/internal/util/strings"
-	"github.com/heptio/developer-dash/pkg/store"
+	dashstrings "github.com/vmware/octant/internal/util/strings"
+	"github.com/vmware/octant/pkg/store"
 )
 
-//go:generate mockgen -source=queryer.go -destination=./fake/mock_queryer.go -package=fake github.com/heptio/developer-dash/internal/queryer Queryer
+//go:generate mockgen -source=queryer.go -destination=./fake/mock_queryer.go -package=fake github.com/vmware/octant/internal/queryer Queryer
 //go:generate mockgen -source=../../vendor/k8s.io/client-go/discovery/discovery_client.go -imports=openapi_v2=github.com/googleapis/gnostic/OpenAPIv2 -destination=./fake/mock_discovery.go -package=fake k8s.io/client-go/discovery DiscoveryInterface
 
 type Queryer interface {

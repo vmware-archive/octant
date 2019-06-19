@@ -14,9 +14,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kcache "k8s.io/client-go/tools/cache"
 
-	"github.com/heptio/developer-dash/internal/config"
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/pkg/store"
+	"github.com/vmware/octant/internal/config"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/pkg/store"
 )
 
 // DefaultCRDWatcher is the default CRD watcher.

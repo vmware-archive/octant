@@ -14,9 +14,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/pkg/store"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/module"
+	"github.com/vmware/octant/pkg/store"
 )
 
 func CustomResourceDefinitionNames(ctx context.Context, o store.Store) ([]string, error) {

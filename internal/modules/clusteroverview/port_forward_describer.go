@@ -9,9 +9,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/heptio/developer-dash/internal/describer"
-	"github.com/heptio/developer-dash/internal/portforward"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/describer"
+	"github.com/vmware/octant/internal/portforward"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 // PortForwardListDescriber describes a list of port-forwards

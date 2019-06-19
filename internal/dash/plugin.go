@@ -8,10 +8,10 @@ package dash
 import (
 	"context"
 
-	"github.com/heptio/developer-dash/pkg/store"
-	"github.com/heptio/developer-dash/internal/portforward"
-	"github.com/heptio/developer-dash/pkg/plugin"
-	"github.com/heptio/developer-dash/pkg/plugin/api"
+	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware/octant/internal/portforward"
+	"github.com/vmware/octant/pkg/plugin"
+	"github.com/vmware/octant/pkg/plugin/api"
 	"github.com/pkg/errors"
 )
 

@@ -9,9 +9,9 @@ import (
 	"context"
 	"os"
 
-	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/pkg/store"
+	"github.com/vmware/octant/internal/cluster"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/pkg/store"
 
 	"github.com/pkg/errors"
 )

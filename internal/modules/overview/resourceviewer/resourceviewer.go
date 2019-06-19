@@ -13,12 +13,12 @@ import (
 	"go.opencensus.io/trace"
 	"k8s.io/apimachinery/pkg/api/meta"
 
-	"github.com/heptio/developer-dash/internal/componentcache"
-	"github.com/heptio/developer-dash/internal/config"
-	"github.com/heptio/developer-dash/internal/modules/overview/objectvisitor"
-	"github.com/heptio/developer-dash/internal/queryer"
-	"github.com/heptio/developer-dash/pkg/store"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/componentcache"
+	"github.com/vmware/octant/internal/config"
+	"github.com/vmware/octant/internal/modules/overview/objectvisitor"
+	"github.com/vmware/octant/internal/queryer"
+	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 // ViewerOpt is an option for ResourceViewer.

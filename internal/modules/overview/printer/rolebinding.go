@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 	rbacv1 "k8s.io/api/rbac/v1"
 
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 func RoleBindingListHandler(ctx context.Context, roleBindingList *rbacv1.RoleBindingList, opts Options) (component.Component, error) {

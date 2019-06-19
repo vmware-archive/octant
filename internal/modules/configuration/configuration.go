@@ -14,13 +14,13 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/heptio/developer-dash/internal/api"
-	"github.com/heptio/developer-dash/internal/octant"
-	"github.com/heptio/developer-dash/internal/config"
-	"github.com/heptio/developer-dash/internal/describer"
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/api"
+	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/internal/config"
+	"github.com/vmware/octant/internal/describer"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/module"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 type Options struct {

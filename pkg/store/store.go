@@ -18,10 +18,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/heptio/developer-dash/internal/cluster"
+	"github.com/vmware/octant/internal/cluster"
 )
 
-//go:generate mockgen  -destination=./fake/mock_store.go -package=fake github.com/heptio/developer-dash/pkg/store Store
+//go:generate mockgen  -destination=./fake/mock_store.go -package=fake github.com/vmware/octant/pkg/store Store
 
 // UpdateFn is a function that is called when
 type UpdateFn func(store Store)

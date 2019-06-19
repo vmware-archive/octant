@@ -16,9 +16,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/util/jsonpath"
 
-	"github.com/heptio/developer-dash/internal/link"
-	dashstrings "github.com/heptio/developer-dash/internal/util/strings"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/link"
+	dashstrings "github.com/vmware/octant/internal/util/strings"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 // CustomResourceListHandler prints a list of custom resources with

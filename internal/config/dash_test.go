@@ -14,14 +14,14 @@ import (
 	"github.com/stretchr/testify/require"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
-	clusterFake "github.com/heptio/developer-dash/internal/cluster/fake"
-	componentCacheFake "github.com/heptio/developer-dash/internal/componentcache/fake"
-	"github.com/heptio/developer-dash/internal/log"
-	moduleFake "github.com/heptio/developer-dash/internal/module/fake"
-	portForwardFake "github.com/heptio/developer-dash/internal/portforward/fake"
-	"github.com/heptio/developer-dash/internal/testutil"
-	objectStoreFake "github.com/heptio/developer-dash/pkg/store/fake"
-	pluginFake "github.com/heptio/developer-dash/pkg/plugin/fake"
+	clusterFake "github.com/vmware/octant/internal/cluster/fake"
+	componentCacheFake "github.com/vmware/octant/internal/componentcache/fake"
+	"github.com/vmware/octant/internal/log"
+	moduleFake "github.com/vmware/octant/internal/module/fake"
+	portForwardFake "github.com/vmware/octant/internal/portforward/fake"
+	"github.com/vmware/octant/internal/testutil"
+	objectStoreFake "github.com/vmware/octant/pkg/store/fake"
+	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
 )
 
 func TestCRDWatchConfig_CanPerform(t *testing.T) {

@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 
 package plugin
 
-//go:generate mockgen -destination=./fake/mock_manager.go -package=fake github.com/heptio/developer-dash/pkg/plugin ManagerInterface
+//go:generate mockgen -destination=./fake/mock_manager.go -package=fake github.com/vmware/octant/pkg/plugin ManagerInterface
 
 import (
 	"context"
@@ -18,10 +18,10 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/portforward"
-	"github.com/heptio/developer-dash/pkg/plugin/api"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/portforward"
+	"github.com/vmware/octant/pkg/plugin/api"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 // ClientFactory is a factory for creating clients.

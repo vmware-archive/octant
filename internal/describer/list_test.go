@@ -17,12 +17,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	configFake "github.com/heptio/developer-dash/internal/config/fake"
-	printerfake "github.com/heptio/developer-dash/internal/modules/overview/printer/fake"
-	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/store"
-	"github.com/heptio/developer-dash/pkg/plugin"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	configFake "github.com/vmware/octant/internal/config/fake"
+	printerfake "github.com/vmware/octant/internal/modules/overview/printer/fake"
+	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware/octant/pkg/plugin"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 func TestListDescriber(t *testing.T) {

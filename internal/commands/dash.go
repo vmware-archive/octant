@@ -16,8 +16,8 @@ import (
 	"go.uber.org/zap/zapcore"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/heptio/developer-dash/internal/dash"
-	"github.com/heptio/developer-dash/internal/log"
+	"github.com/vmware/octant/internal/dash"
+	"github.com/vmware/octant/internal/log"
 )
 
 func newOctantCmd() *cobra.Command {

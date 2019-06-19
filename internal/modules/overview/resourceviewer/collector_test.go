@@ -22,14 +22,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	configFake "github.com/heptio/developer-dash/internal/config/fake"
-	"github.com/heptio/developer-dash/internal/conversion"
-	linkFake "github.com/heptio/developer-dash/internal/link/fake"
-	storefake "github.com/heptio/developer-dash/pkg/store/fake"
-	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/plugin"
-	pluginFake "github.com/heptio/developer-dash/pkg/plugin/fake"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	configFake "github.com/vmware/octant/internal/config/fake"
+	"github.com/vmware/octant/internal/conversion"
+	linkFake "github.com/vmware/octant/internal/link/fake"
+	storefake "github.com/vmware/octant/pkg/store/fake"
+	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/plugin"
+	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 func Test_Collector(t *testing.T) {

@@ -15,7 +15,7 @@ import (
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 func IngressListHandler(_ context.Context, list *extv1beta1.IngressList, options Options) (component.Component, error) {

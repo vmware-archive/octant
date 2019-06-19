@@ -17,11 +17,11 @@ import (
 	"github.com/gorilla/mux"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/octant"
-	"github.com/heptio/developer-dash/internal/event"
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/module"
+	"github.com/vmware/octant/internal/cluster"
+	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/internal/event"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/module"
 )
 
 type contentHandler struct {

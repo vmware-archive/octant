@@ -12,14 +12,14 @@ import (
 	"go.opencensus.io/trace"
 	kLabels "k8s.io/apimachinery/pkg/labels"
 
-	"github.com/heptio/developer-dash/internal/api"
-	"github.com/heptio/developer-dash/internal/componentcache"
-	"github.com/heptio/developer-dash/internal/config"
-	"github.com/heptio/developer-dash/internal/describer"
-	"github.com/heptio/developer-dash/internal/link"
-	"github.com/heptio/developer-dash/internal/modules/overview/printer"
-	"github.com/heptio/developer-dash/internal/queryer"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/api"
+	"github.com/vmware/octant/internal/componentcache"
+	"github.com/vmware/octant/internal/config"
+	"github.com/vmware/octant/internal/describer"
+	"github.com/vmware/octant/internal/link"
+	"github.com/vmware/octant/internal/modules/overview/printer"
+	"github.com/vmware/octant/internal/queryer"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 type realGenerator struct {

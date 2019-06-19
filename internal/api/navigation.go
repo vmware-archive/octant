@@ -12,8 +12,8 @@ import (
 	"github.com/gorilla/mux"
 	"go.opencensus.io/trace"
 
-	"github.com/heptio/developer-dash/internal/octant"
-	"github.com/heptio/developer-dash/internal/log"
+	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/internal/log"
 )
 
 type navSections interface {

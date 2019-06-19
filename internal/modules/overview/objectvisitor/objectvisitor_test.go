@@ -23,9 +23,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/heptio/developer-dash/internal/gvk"
-	queryerFake "github.com/heptio/developer-dash/internal/queryer/fake"
-	tu "github.com/heptio/developer-dash/internal/testutil"
+	"github.com/vmware/octant/internal/gvk"
+	queryerFake "github.com/vmware/octant/internal/queryer/fake"
+	tu "github.com/vmware/octant/internal/testutil"
 )
 
 func Test_DefaultVisitor_Visit(t *testing.T) {

@@ -18,9 +18,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/clock"
 
-	"github.com/heptio/developer-dash/internal/describer"
-	storefake "github.com/heptio/developer-dash/pkg/store/fake"
-	"github.com/heptio/developer-dash/pkg/store"
+	"github.com/vmware/octant/internal/describer"
+	storefake "github.com/vmware/octant/pkg/store/fake"
+	"github.com/vmware/octant/pkg/store"
 )
 
 func createObject(name string) *unstructured.Unstructured {

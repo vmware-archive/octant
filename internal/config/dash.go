@@ -8,21 +8,21 @@ package config
 import (
 	"context"
 
-	"github.com/heptio/developer-dash/internal/componentcache"
-	"github.com/heptio/developer-dash/pkg/store"
+	"github.com/vmware/octant/internal/componentcache"
+	"github.com/vmware/octant/pkg/store"
 
 	"github.com/pkg/errors"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/internal/portforward"
-	"github.com/heptio/developer-dash/pkg/plugin"
+	"github.com/vmware/octant/internal/cluster"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/module"
+	"github.com/vmware/octant/internal/portforward"
+	"github.com/vmware/octant/pkg/plugin"
 )
 
-//go:generate mockgen -source=dash.go -destination=./fake/mock_dash.go -package=fake github.com/heptio/developer-dash/internal/config Dash
+//go:generate mockgen -source=dash.go -destination=./fake/mock_dash.go -package=fake github.com/vmware/octant/internal/config Dash
 
 // CRDWatcher watches for CRDs.
 type CRDWatcher interface {

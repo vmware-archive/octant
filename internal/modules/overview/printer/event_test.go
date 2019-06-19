@@ -17,9 +17,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/heptio/developer-dash/pkg/store"
-	storefake "github.com/heptio/developer-dash/pkg/store/fake"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/pkg/store"
+	storefake "github.com/vmware/octant/pkg/store/fake"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 func Test_EventListHandler(t *testing.T) {

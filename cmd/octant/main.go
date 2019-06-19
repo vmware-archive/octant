@@ -9,7 +9,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/heptio/developer-dash/internal/commands"
+	"github.com/vmware/octant/internal/commands"
 )
 
 // Default variables overridden by ldflags

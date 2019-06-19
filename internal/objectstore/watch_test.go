@@ -18,12 +18,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/heptio/developer-dash/internal/cluster"
-	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
-	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/store"
-	objectStoreFake "github.com/heptio/developer-dash/pkg/store/fake"
-	"github.com/heptio/developer-dash/third_party/k8s.io/client-go/dynamic/dynamicinformer"
+	"github.com/vmware/octant/internal/cluster"
+	clusterfake "github.com/vmware/octant/internal/cluster/fake"
+	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/store"
+	objectStoreFake "github.com/vmware/octant/pkg/store/fake"
+	"github.com/vmware/octant/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 )
 
 type watchMocks struct {

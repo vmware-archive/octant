@@ -19,10 +19,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/store"
-	storefake "github.com/heptio/developer-dash/pkg/store/fake"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/store"
+	storefake "github.com/vmware/octant/pkg/store/fake"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 func Test_ReplicaSetListHandler(t *testing.T) {

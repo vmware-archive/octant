@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	configFake "github.com/heptio/developer-dash/internal/config/fake"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	configFake "github.com/vmware/octant/internal/config/fake"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 func TestSectionDescriber(t *testing.T) {

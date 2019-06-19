@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 
 package configuration
 
-import "github.com/heptio/developer-dash/internal/describer"
+import "github.com/vmware/octant/internal/describer"
 
 var (
 	pluginDescriber = &PluginListDescriber{}

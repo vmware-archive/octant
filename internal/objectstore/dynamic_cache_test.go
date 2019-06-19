@@ -19,11 +19,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/heptio/developer-dash/internal/cluster"
-	clusterfake "github.com/heptio/developer-dash/internal/cluster/fake"
-	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/store"
-	"github.com/heptio/developer-dash/third_party/k8s.io/client-go/dynamic/dynamicinformer"
+	"github.com/vmware/octant/internal/cluster"
+	clusterfake "github.com/vmware/octant/internal/cluster/fake"
+	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware/octant/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 )
 
 type fakeLister struct {

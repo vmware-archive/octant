@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	dashstrings "github.com/heptio/developer-dash/internal/util/strings"
+	dashstrings "github.com/vmware/octant/internal/util/strings"
 )
 
 // rebindHandler is a middleware that will only accept the supplied hosts

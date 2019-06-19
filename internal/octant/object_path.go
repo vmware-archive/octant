@@ -15,8 +15,8 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/heptio/developer-dash/internal/log"
-	dashStrings "github.com/heptio/developer-dash/internal/util/strings"
+	"github.com/vmware/octant/internal/log"
+	dashStrings "github.com/vmware/octant/internal/util/strings"
 )
 
 // CRDPathGenFunc is a function that generates a custom resource path.

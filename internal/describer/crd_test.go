@@ -15,16 +15,16 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/heptio/developer-dash/internal/config"
-	configFake "github.com/heptio/developer-dash/internal/config/fake"
-	linkFake "github.com/heptio/developer-dash/internal/link/fake"
-	"github.com/heptio/developer-dash/internal/modules/overview/printer"
-	"github.com/heptio/developer-dash/internal/queryer"
-	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/store"
-	storefake "github.com/heptio/developer-dash/pkg/store/fake"
-	pluginFake "github.com/heptio/developer-dash/pkg/plugin/fake"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/config"
+	configFake "github.com/vmware/octant/internal/config/fake"
+	linkFake "github.com/vmware/octant/internal/link/fake"
+	"github.com/vmware/octant/internal/modules/overview/printer"
+	"github.com/vmware/octant/internal/queryer"
+	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/store"
+	storefake "github.com/vmware/octant/pkg/store/fake"
+	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 func Test_crd(t *testing.T) {

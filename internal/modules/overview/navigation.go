@@ -9,8 +9,8 @@ import (
 	"context"
 	"path"
 
-	"github.com/heptio/developer-dash/internal/octant"
-	"github.com/heptio/developer-dash/pkg/store"
+	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/pkg/store"
 )
 
 var (

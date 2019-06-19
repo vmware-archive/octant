@@ -16,8 +16,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/heptio/developer-dash/internal/log"
-	modulefake "github.com/heptio/developer-dash/internal/module/fake"
+	"github.com/vmware/octant/internal/log"
+	modulefake "github.com/vmware/octant/internal/module/fake"
 )
 
 func Test_namespace_update(t *testing.T) {

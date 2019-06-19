@@ -11,8 +11,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/heptio/developer-dash/internal/describer"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/describer"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 // PluginListDescriber describes a list of plugins

@@ -5,7 +5,7 @@
 #### 2019-04-18
 
 ### Download
-- https://gitlab.eng.vmware.com/cna-oss/developer-dashboard/tags/v0.2.1
+- https://github.com/vmware/octant/tags/v0.2.1
 
 ### Bug Fixes / Other Changes:
   * Generated more detailed error output when a describer tab function fails. Also, if a tab function fails, do not stop processing. (#737, @bryanl)
@@ -23,7 +23,7 @@
 #### 2019-04-15
 
 ### Download
-- https://gitlab.eng.vmware.com/cna-oss/developer-dashboard/tags/v0.2.0
+- https://github.com/vmware/octant/tags/v0.2.0
 
 ### Highlights
 - Object viewer with the ability to switch between namespaces.

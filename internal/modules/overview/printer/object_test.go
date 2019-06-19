@@ -14,12 +14,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/heptio/developer-dash/pkg/plugin/fake"
+	"github.com/vmware/octant/pkg/plugin/fake"
 
-	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/plugin"
-	"github.com/heptio/developer-dash/pkg/view/component"
-	"github.com/heptio/developer-dash/pkg/view/flexlayout"
+	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/plugin"
+	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware/octant/pkg/view/flexlayout"
 )
 
 func Test_Object_ToComponent(t *testing.T) {

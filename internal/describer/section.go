@@ -8,7 +8,7 @@ package describer
 import (
 	"context"
 
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 // Section is a wrapper to combine content from multiple describers.

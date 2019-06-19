@@ -12,8 +12,8 @@ package fake
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	componentcache "github.com/heptio/developer-dash/internal/componentcache"
-	component "github.com/heptio/developer-dash/pkg/view/component"
+	componentcache "github.com/vmware/octant/internal/componentcache"
+	component "github.com/vmware/octant/pkg/view/component"
 	reflect "reflect"
 )
 

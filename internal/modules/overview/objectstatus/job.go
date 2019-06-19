@@ -14,7 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/heptio/developer-dash/pkg/store"
+	"github.com/vmware/octant/pkg/store"
 )
 
 func runJobStatus(_ context.Context, object runtime.Object, o store.Store) (ObjectStatus, error) {

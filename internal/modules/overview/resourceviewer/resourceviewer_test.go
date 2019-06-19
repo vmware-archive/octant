@@ -17,10 +17,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	configFake "github.com/heptio/developer-dash/internal/config/fake"
-	"github.com/heptio/developer-dash/internal/modules/overview/objectvisitor"
-	storeFake "github.com/heptio/developer-dash/pkg/store/fake"
-	pluginFake "github.com/heptio/developer-dash/pkg/plugin/fake"
+	configFake "github.com/vmware/octant/internal/config/fake"
+	"github.com/vmware/octant/internal/modules/overview/objectvisitor"
+	storeFake "github.com/vmware/octant/pkg/store/fake"
+	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
 )
 
 type stubbedVisitor struct{ visitErr error }

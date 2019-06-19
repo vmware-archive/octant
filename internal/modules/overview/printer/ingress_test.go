@@ -18,8 +18,8 @@ import (
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 func Test_IngressListHandler(t *testing.T) {

@@ -6,8 +6,8 @@
     <owners>Heptio</owners>
     <title>hcli</title>
     <authors>Sam Foo</authors>
-    <projectUrl>https://github.com/heptio/developer-dash</projectUrl>
-    <licenseUrl>https://github.com/heptio/developer-dash/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/vmware/octant</projectUrl>
+    <licenseUrl>https://github.com/vmware/octant/blob/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <tags>hcli kubernetes chocolatey kubectl heptio dashboard</tags>
     <summary>Kubernetes dashboard for viewing workloads</summary>

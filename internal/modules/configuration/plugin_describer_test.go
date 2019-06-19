@@ -14,12 +14,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	configFake "github.com/heptio/developer-dash/internal/config/fake"
-	"github.com/heptio/developer-dash/internal/describer"
-	dashplugin "github.com/heptio/developer-dash/pkg/plugin"
-	"github.com/heptio/developer-dash/pkg/plugin/fake"
-	pluginFake "github.com/heptio/developer-dash/pkg/plugin/fake"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	configFake "github.com/vmware/octant/internal/config/fake"
+	"github.com/vmware/octant/internal/describer"
+	dashplugin "github.com/vmware/octant/pkg/plugin"
+	"github.com/vmware/octant/pkg/plugin/fake"
+	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 func TestPluginDescriber(t *testing.T) {

@@ -12,7 +12,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/heptio/developer-dash/internal/octant"
+	"github.com/vmware/octant/internal/octant"
 )
 
 // NotFoundError is a not found error.

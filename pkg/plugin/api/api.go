@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/pkg/plugin/api/proto"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/pkg/plugin/api/proto"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )

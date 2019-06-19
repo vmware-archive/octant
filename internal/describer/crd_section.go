@@ -10,7 +10,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 type CRDSection struct {

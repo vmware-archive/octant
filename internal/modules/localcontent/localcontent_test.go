@@ -15,10 +15,10 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/heptio/developer-dash/internal/octant"
-	"github.com/heptio/developer-dash/internal/module"
-	"github.com/heptio/developer-dash/internal/modules/localcontent"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/internal/module"
+	"github.com/vmware/octant/internal/modules/localcontent"
+	"github.com/vmware/octant/pkg/view/component"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

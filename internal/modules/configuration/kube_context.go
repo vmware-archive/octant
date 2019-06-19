@@ -13,12 +13,12 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/heptio/developer-dash/internal/api"
-	"github.com/heptio/developer-dash/internal/octant"
-	"github.com/heptio/developer-dash/internal/config"
-	"github.com/heptio/developer-dash/internal/event"
-	"github.com/heptio/developer-dash/internal/kubeconfig"
-	"github.com/heptio/developer-dash/internal/log"
+	"github.com/vmware/octant/internal/api"
+	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/internal/config"
+	"github.com/vmware/octant/internal/event"
+	"github.com/vmware/octant/internal/kubeconfig"
+	"github.com/vmware/octant/internal/log"
 )
 
 // kubeContextsResponse is a response for current kube contexts.

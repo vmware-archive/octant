@@ -22,11 +22,11 @@ import (
 	"k8s.io/client-go/informers"
 	kcache "k8s.io/client-go/tools/cache"
 
-	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/internal/util/retry"
-	"github.com/heptio/developer-dash/pkg/store"
-	"github.com/heptio/developer-dash/third_party/k8s.io/client-go/dynamic/dynamicinformer"
+	"github.com/vmware/octant/internal/cluster"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/util/retry"
+	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware/octant/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 )
 
 const (

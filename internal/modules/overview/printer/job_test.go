@@ -16,8 +16,8 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/heptio/developer-dash/internal/conversion"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/internal/conversion"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 func Test_JobListHandler(t *testing.T) {

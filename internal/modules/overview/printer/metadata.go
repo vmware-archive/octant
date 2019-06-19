@@ -10,9 +10,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	link2 "github.com/heptio/developer-dash/internal/link"
-	"github.com/heptio/developer-dash/pkg/view/component"
-	"github.com/heptio/developer-dash/pkg/view/flexlayout"
+	link2 "github.com/vmware/octant/internal/link"
+	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware/octant/pkg/view/flexlayout"
 )
 
 type Metadata struct {

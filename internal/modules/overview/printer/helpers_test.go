@@ -15,11 +15,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	configFake "github.com/heptio/developer-dash/internal/config/fake"
-	linkFake "github.com/heptio/developer-dash/internal/link/fake"
-	objectStoreFake "github.com/heptio/developer-dash/pkg/store/fake"
-	pluginFake "github.com/heptio/developer-dash/pkg/plugin/fake"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	configFake "github.com/vmware/octant/internal/config/fake"
+	linkFake "github.com/vmware/octant/internal/link/fake"
+	objectStoreFake "github.com/vmware/octant/pkg/store/fake"
+	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 const (

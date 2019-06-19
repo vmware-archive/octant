@@ -11,10 +11,10 @@ import (
 	"time"
 
 	lru "github.com/hashicorp/golang-lru"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
-//go:generate mockgen -source=componentcache.go -destination=./fake/mock_component_cache.go -package=fake github.com/heptio/developer-dash/internal/componentcache/ ComponentCache
+//go:generate mockgen -source=componentcache.go -destination=./fake/mock_component_cache.go -package=fake github.com/vmware/octant/internal/componentcache/ ComponentCache
 
 // Event holds a Key, Component, and Error and is for writing to the cache.
 type Event struct {

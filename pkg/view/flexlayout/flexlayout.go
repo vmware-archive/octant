@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package flexlayout
 
 import (
-	"github.com/heptio/developer-dash/pkg/view/component"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 // FlexLayout is a flex layout manager.

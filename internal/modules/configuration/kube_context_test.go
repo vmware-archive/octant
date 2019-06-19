@@ -17,10 +17,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	dashConfigFake "github.com/heptio/developer-dash/internal/config/fake"
-	"github.com/heptio/developer-dash/internal/kubeconfig"
-	"github.com/heptio/developer-dash/internal/kubeconfig/fake"
-	"github.com/heptio/developer-dash/internal/log"
+	dashConfigFake "github.com/vmware/octant/internal/config/fake"
+	"github.com/vmware/octant/internal/kubeconfig"
+	"github.com/vmware/octant/internal/kubeconfig/fake"
+	"github.com/vmware/octant/internal/log"
 )
 
 func Test_updateCurrentContextHandler(t *testing.T) {

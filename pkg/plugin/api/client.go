@@ -8,9 +8,9 @@ package api
 import (
 	"context"
 
-	"github.com/heptio/developer-dash/internal/log"
-	"github.com/heptio/developer-dash/pkg/store"
-	"github.com/heptio/developer-dash/pkg/plugin/api/proto"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware/octant/pkg/plugin/api/proto"
 	"google.golang.org/grpc"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )

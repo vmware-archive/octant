@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/heptio/developer-dash/internal/octant"
+	"github.com/vmware/octant/internal/octant"
 )
 
 func Test_stream(t *testing.T) {

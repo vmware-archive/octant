@@ -13,7 +13,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/heptio/developer-dash/internal/portforward"
+	"github.com/vmware/octant/internal/portforward"
 
 	"github.com/golang/mock/gomock"
 
@@ -22,9 +22,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	pffake "github.com/heptio/developer-dash/internal/portforward/fake"
-	"github.com/heptio/developer-dash/internal/testutil"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	pffake "github.com/vmware/octant/internal/portforward/fake"
+	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 var (

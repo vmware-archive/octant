@@ -8,8 +8,8 @@ package clusteroverview
 import (
 	"context"
 
-	gen "github.com/heptio/developer-dash/internal/generator"
-	"github.com/heptio/developer-dash/pkg/view/component"
+	gen "github.com/vmware/octant/internal/generator"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 type generator struct{}

@@ -1,7 +1,7 @@
 FROM golang:1.12 as builder
 
-ADD . /go/src/github.com/heptio/developer-dash
-WORKDIR /go/src/github.com/heptio/developer-dash
+ADD . /go/src/github.com/vmware/octant
+WORKDIR /go/src/github.com/vmware/octant
 RUN hacks/setup-docker.sh
 RUN make octant-dev
 
@@ -13,7 +13,7 @@ RUN apt-get update && \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /go/src/github.com/heptio/developer-dash/build/octant /octant
+COPY --from=builder /go/src/github.com/vmware/octant/build/octant /octant
 RUN chmod +x /octant
 
 RUN useradd -s /sbin/nologin -M -u 10000 -U user

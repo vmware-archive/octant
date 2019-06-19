@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/heptio/developer-dash/internal/gvk"
+	"github.com/vmware/octant/internal/gvk"
 )
 
 var (
