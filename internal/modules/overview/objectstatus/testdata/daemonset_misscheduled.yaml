@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: "2019-02-19T00:10:21Z"
   generation: 1
   labels:
-    project: dev-dashboard
+    project: octant
   name: fluentd
   namespace: default
   resourceVersion: "2343559"

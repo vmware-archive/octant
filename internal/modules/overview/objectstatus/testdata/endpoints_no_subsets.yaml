@@ -3,7 +3,7 @@ kind: Endpoints
 metadata:
   creationTimestamp: "2019-03-05T17:20:09Z"
   labels:
-    project: dev-dashboard
+    project: octant
   name: stateful
   namespace: default
   resourceVersion: "1217600"

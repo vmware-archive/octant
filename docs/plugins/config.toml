@@ -1,5 +1,5 @@
 baseURL = 'https://example.com/'
-title = 'Dev Dash Plugins'
+title = 'Octant Plugins'
 theme = 'book'
 disableKinds = ['taxonomy', 'taxonomyTerm']
 

@@ -3,11 +3,11 @@ kind: StatefulSet
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"apps/v1","kind":"StatefulSet","metadata":{"annotations":{},"labels":{"project":"dev-dashboard"},"name":"web","namespace":"default"},"spec":{"replicas":3,"selector":{"matchLabels":{"app":"stateful"}},"serviceName":"nginx","template":{"metadata":{"labels":{"app":"stateful"}},"spec":{"containers":[{"image":"nginx:1.7.9","name":"nginx","ports":[{"containerPort":80,"name":"web"}],"volumeMounts":[{"mountPath":"/usr/share/nginx/html","name":"www"}]}],"terminationGracePeriodSeconds":10}},"volumeClaimTemplates":[{"metadata":{"name":"www"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"hostpath"}}]}}
+      {"apiVersion":"apps/v1","kind":"StatefulSet","metadata":{"annotations":{},"labels":{"project":"octant"},"name":"web","namespace":"default"},"spec":{"replicas":3,"selector":{"matchLabels":{"app":"stateful"}},"serviceName":"nginx","template":{"metadata":{"labels":{"app":"stateful"}},"spec":{"containers":[{"image":"nginx:1.7.9","name":"nginx","ports":[{"containerPort":80,"name":"web"}],"volumeMounts":[{"mountPath":"/usr/share/nginx/html","name":"www"}]}],"terminationGracePeriodSeconds":10}},"volumeClaimTemplates":[{"metadata":{"name":"www"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"hostpath"}}]}}
   creationTimestamp: "2019-03-05T17:20:09Z"
   generation: 1
   labels:
-    project: dev-dashboard
+    project: octant
   name: web
   namespace: default
   resourceVersion: "1217601"

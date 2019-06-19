@@ -24,4 +24,4 @@ configs
 /vendor/electron*
 /vendor/status.json
 /output
-/cmd/devdash
+/cmd/octant

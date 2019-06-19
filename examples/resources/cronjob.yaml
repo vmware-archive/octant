@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: hello
   labels:
-    project: dev-dashboard
+    project: octant
 spec:
   schedule: "*/1 * * * *"
   jobTemplate:

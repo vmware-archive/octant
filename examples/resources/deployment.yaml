@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: nginx-deployment
   labels:
-    project: dev-dashboard
+    project: octant
 spec:
   ports:
     - port: 80
@@ -16,7 +16,7 @@ kind: Deployment
 metadata:
   name: nginx-deployment
   labels:
-    project: dev-dashboard
+    project: octant
 spec:
   replicas: 3
   selector:

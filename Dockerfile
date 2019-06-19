@@ -1,3 +1,6 @@
+# Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 FROM golang:1.12 as builder
 
 ADD . /go/src/github.com/vmware/octant

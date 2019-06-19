@@ -3,7 +3,7 @@ kind: DaemonSet
 metadata:
   name: fluentd
   labels:
-    project: dev-dashboard
+    project: octant
 spec:
   selector:
     matchLabels:
