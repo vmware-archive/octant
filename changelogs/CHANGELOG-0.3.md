@@ -4,7 +4,7 @@
 #### 2019-06-17
 
 ### Download
-- https://github.com/vmware/octant/tags/v0.3.0 
+- https://github.com/vmware/octant/releases/tag/v0.3.0 
 
 ### Highlights
 - Speed and UX improvements.

@@ -48,7 +48,7 @@ Decide to move the binary in `/usr/local/bin` or your home directory. Installing
 
 This option is for users who want to build from master. Make sure the prerequisites listed above are installed.
 
-`$ go get github.com/vmware/octantboard`
+`$ go get github.com/vmware/octant`
 
 Package the web assets to be built into the binary.
 
