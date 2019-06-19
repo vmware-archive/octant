@@ -8,7 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
 
@@ -19,7 +19,7 @@ type ContentOptions struct {
 	LabelSet *labels.Set
 }
 
-// Module is an clustereye plugin.
+// Module is an octant plugin.
 type Module interface {
 	// Name is the name of the module.
 	Name() string
@@ -30,7 +30,7 @@ type Module interface {
 	// ContentPath will be used to construct content paths.
 	ContentPath() string
 	// Navigation returns navigation entries for this module.
-	Navigation(ctx context.Context, namespace, root string) ([]clustereye.Navigation, error)
+	Navigation(ctx context.Context, namespace, root string) ([]octant.Navigation, error)
 	// SetNamespace is called when the current namespace changes.
 	SetNamespace(namespace string) error
 	// Start starts the module.
@@ -42,7 +42,7 @@ type Module interface {
 	SetContext(ctx context.Context, contextName string) error
 
 	// Generators allow modules to send events to the frontend.
-	Generators() []clustereye.Generator
+	Generators() []octant.Generator
 
 	// SupportedGroupVersionKind returns a slice of supported GVKs it owns.
 	SupportedGroupVersionKind() []schema.GroupVersionKind

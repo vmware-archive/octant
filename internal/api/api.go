@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/mime"
 	"github.com/heptio/developer-dash/internal/module"
@@ -178,8 +178,8 @@ func newAPINavSections(modules []module.Module) *apiNavSections {
 	}
 }
 
-func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]clustereye.Navigation, error) {
-	var sections []clustereye.Navigation
+func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]octant.Navigation, error) {
+	var sections []octant.Navigation
 
 	for _, m := range ans.modules {
 		contentPath := path.Join("/content", m.ContentPath())

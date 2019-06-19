@@ -17,4 +17,4 @@ install_rice
 install_npm
 install_protoc_linux
 
-make generate web-build clustereye-docker
+make generate web-build octant-docker

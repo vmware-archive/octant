@@ -11,7 +11,7 @@ import (
 )
 
 func Test_AvailablePlugins(t *testing.T) {
-	pluginEnv := "CLUSTEREYE_PLUGIN_PATH"
+	pluginEnv := "OCTANT_PLUGIN_PATH"
 	defer os.Unsetenv(pluginEnv)
 	fs := afero.NewMemMapFs()
 

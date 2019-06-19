@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/heptio/developer-dash/internal/api"
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 	"github.com/heptio/developer-dash/internal/config"
 	"github.com/heptio/developer-dash/internal/describer"
 	"github.com/heptio/developer-dash/internal/log"
@@ -95,12 +95,12 @@ func (c *Configuration) ContentPath() string {
 	return c.Name()
 }
 
-func (c *Configuration) Navigation(ctx context.Context, namespace, root string) ([]clustereye.Navigation, error) {
-	return []clustereye.Navigation{
+func (c *Configuration) Navigation(ctx context.Context, namespace, root string) ([]octant.Navigation, error) {
+	return []octant.Navigation{
 		{
 			Title: "Configuration",
 			Path:  path.Join("/content", c.ContentPath(), "/"),
-			Children: []clustereye.Navigation{
+			Children: []octant.Navigation{
 				{
 					Title: "Plugins",
 					Path:  path.Join("/content", c.ContentPath(), "plugins"),
@@ -138,8 +138,8 @@ func (c Configuration) RemoveCRD(ctx context.Context, crd *unstructured.Unstruct
 }
 
 // Generators allow modules to send events to the frontend.
-func (c Configuration) Generators() []clustereye.Generator {
-	return []clustereye.Generator{
+func (c Configuration) Generators() []octant.Generator {
+	return []octant.Generator{
 		c.kubeContextGenerator,
 	}
 }

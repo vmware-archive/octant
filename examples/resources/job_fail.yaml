@@ -3,7 +3,7 @@ kind: Job
 metadata:
   generateName: job-fail-
   labels:
-    clustereye-scenario: failed-job
+    octant-scenario: failed-job
 spec:
   template:
     spec:

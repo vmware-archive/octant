@@ -1,4 +1,4 @@
-## Steps to release clustereye via TravisCI (Deprecated)
+## Steps to release octant via TravisCI (Deprecated)
 
 `GITHUB_TOKEN` needs to be set with the "repo" scope to have access to private repositories. This token should be regenerated once the project is public. See [TravisCI docs](https://docs.travis-ci.com/user/travis-ci-for-private/#how-can-i-make-a-private-repository-public) for changing from a private to public project.
 
@@ -18,7 +18,7 @@
 
 4. Commit the changes to `.travis.yml` and push.
 
-## Steps to release clustereye manually
+## Steps to release octant manually
 
 What you'll need:
 

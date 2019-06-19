@@ -22,7 +22,7 @@ rice-box.go
 internal/api/fake
 internal/cluster/fake
 internal/cache/fake
-internal/clustereye/fake
+internal/octant/fake
 internal/config/fake
 internal/event/fake
 internal/kubeconfig/fake

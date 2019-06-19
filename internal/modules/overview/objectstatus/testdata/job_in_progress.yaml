@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: "2019-02-21T13:57:32Z"
   generateName: job-fail-
   labels:
-    clustereye-scenario: failed-job
+    octant-scenario: failed-job
   name: job-fail-2wbdt
   namespace: default
   resourceVersion: "2684993"

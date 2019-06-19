@@ -4,10 +4,10 @@ release:
 before:
   hooks:
   - make web-build
-project_name: clustereye
+project_name: octant
 builds:
-- main: ./cmd/clustereye/main.go
-  binary: clustereye
+- main: ./cmd/octant/main.go
+  binary: octant
   env:
     - CGO_ENABLED=0
   goos:

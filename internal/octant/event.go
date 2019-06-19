@@ -1,4 +1,4 @@
-package clustereye
+package octant
 
 type EventType string
 

@@ -1,30 +1,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: clustereye
+  name: octant
   labels:
-    app: clustereye
+    app: octant
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: clustereye
+      app: octant
   template:
     metadata:
       labels:
-        app: clustereye
+        app: octant
     spec:
       containers:
-      - name: clustereye
-        image: clustereye
-        command: ["/clustereye"]
+      - name: octant
+        image: octant
+        command: ["/octant"]
         args: ["-v", "--kubeconfig", "/kube/dev-dash-kubeconfig.yaml"]
         ports:
         - containerPort: 7777
         env:
-          - name: CLUSTEREYE_LISTENER_ADDR
+          - name: OCTANT_LISTENER_ADDR
             value: 0.0.0.0:7777
-          - name: CLUSTEREYE_DISABLE_OPEN_BROWSER
+          - name: OCTANT_DISABLE_OPEN_BROWSER
             value: "1"
         volumeMounts:
           - name: kubeconfig
@@ -32,5 +32,5 @@ spec:
       volumes:
         - name: kubeconfig
           secret:
-            secretName: clustereye-kubeconfig
+            secretName: octant-kubeconfig
             defaultMode: 256

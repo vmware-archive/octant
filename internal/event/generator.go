@@ -10,7 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 	"github.com/heptio/developer-dash/internal/log"
 )
 
@@ -22,10 +22,10 @@ const (
 )
 
 type Streamer interface {
-	Stream(ctx context.Context, ch <-chan clustereye.Event)
+	Stream(ctx context.Context, ch <-chan octant.Event)
 }
 
-func Stream(ctx context.Context, streamer Streamer, generators []clustereye.Generator, requestPath, contentPath string) error {
+func Stream(ctx context.Context, streamer Streamer, generators []octant.Generator, requestPath, contentPath string) error {
 	if streamer == nil {
 		return errors.New("unable to stream because streamer is nil")
 	}
@@ -40,12 +40,12 @@ func Stream(ctx context.Context, streamer Streamer, generators []clustereye.Gene
 	logger.With("generator-names", generatorNames).Debugf("preparing to stream generators")
 
 	// setup generators
-	eventCh := make(chan clustereye.Event, 1)
+	eventCh := make(chan octant.Event, 1)
 
 	var wg sync.WaitGroup
 	for _, generator := range generators {
 		wg.Add(1)
-		go func(g clustereye.Generator) {
+		go func(g octant.Generator) {
 			runGenerator(ctx, eventCh, g, requestPath, contentPath)
 			wg.Done()
 		}(generator)
@@ -60,13 +60,13 @@ func Stream(ctx context.Context, streamer Streamer, generators []clustereye.Gene
 	return nil
 }
 
-func runGenerator(ctx context.Context, ch chan<- clustereye.Event, generator clustereye.Generator, requestPath, contentPath string) {
+func runGenerator(ctx context.Context, ch chan<- octant.Event, generator octant.Generator, requestPath, contentPath string) {
 	logger := log.From(ctx)
 
 	timer := time.NewTimer(0)
 	isRunning := true
 
-	eventCache := make(map[clustereye.EventType][]byte)
+	eventCache := make(map[octant.EventType][]byte)
 
 	for isRunning {
 		select {
@@ -87,8 +87,8 @@ func runGenerator(ctx context.Context, ch chan<- clustereye.Event, generator clu
 					).Errorf("content not found")
 					isRunning = false
 
-					ch <- clustereye.Event{
-						Type: clustereye.EventTypeObjectNotFound,
+					ch <- octant.Event{
+						Type: octant.EventTypeObjectNotFound,
 						Data: []byte(notFoundRedirectPath(requestPath)),
 					}
 					break

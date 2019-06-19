@@ -10,7 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/modules/localcontent"
 	"github.com/heptio/developer-dash/pkg/view/component"
@@ -83,11 +83,11 @@ func Test_LocalContent_Navigation(t *testing.T) {
 		nav, err := lc.Navigation(ctx, "", "/root")
 		require.NoError(t, err)
 
-		expectedNav := []clustereye.Navigation{
+		expectedNav := []octant.Navigation{
 			{
 				Title: "Local Content",
 				Path:  "/root/",
-				Children: []clustereye.Navigation{
+				Children: []octant.Navigation{
 					{
 						Title: "Sample content",
 						Path:  "/root/table",

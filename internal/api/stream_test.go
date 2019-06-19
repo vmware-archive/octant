@@ -11,23 +11,23 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 )
 
 func Test_stream(t *testing.T) {
 	cases := []struct {
 		name         string
-		event        clustereye.Event
+		event        octant.Event
 		expectedBody string
 	}{
 		{
 			name:         "event with data",
-			event:        clustereye.Event{Data: []byte("output")},
+			event:        octant.Event{Data: []byte("output")},
 			expectedBody: fmt.Sprintf("data: output\n\n"),
 		},
 		{
 			name:         "event with name and data",
-			event:        clustereye.Event{Type: "name", Data: []byte("output")},
+			event:        octant.Event{Type: "name", Data: []byte("output")},
 			expectedBody: fmt.Sprintf("event: name\ndata: output\n\n"),
 		},
 	}
@@ -36,7 +36,7 @@ func Test_stream(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			ctx, cancel := context.WithCancel(context.Background())
-			ch := make(chan clustereye.Event)
+			ch := make(chan octant.Event)
 
 			done := make(chan bool, 1)
 
@@ -138,14 +138,14 @@ func Test_stream_errors_without_flusher(t *testing.T) {
 	w := newSimpleResponseWriter()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	ch := make(chan clustereye.Event, 1)
+	ch := make(chan octant.Event, 1)
 
 	s := eventSourceStreamer{
 		w: w,
 	}
 
 	go s.Stream(ctx, ch)
-	ch <- clustereye.Event{Data: []byte("output")}
+	ch <- octant.Event{Data: []byte("output")}
 
 	<-w.writeCh
 

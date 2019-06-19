@@ -15,7 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
@@ -140,14 +140,14 @@ func (l *LocalContent) walk(fn walkFn) error {
 	return nil
 }
 
-func (l *LocalContent) Navigation(ctx context.Context, namespace, root string) ([]clustereye.Navigation, error) {
+func (l *LocalContent) Navigation(ctx context.Context, namespace, root string) ([]octant.Navigation, error) {
 	if !strings.HasSuffix(root, "/") {
 		root = fmt.Sprintf("%s/", root)
 	}
-	nav := clustereye.Navigation{
+	nav := octant.Navigation{
 		Title:    "Local Content",
 		Path:     root,
-		Children: []clustereye.Navigation{},
+		Children: []octant.Navigation{},
 	}
 
 	err := l.walk(func(name, base string, content component.ContentResponse) error {
@@ -156,7 +156,7 @@ func (l *LocalContent) Navigation(ctx context.Context, namespace, root string) (
 			return errors.Wrap(err, "convert title to text")
 		}
 
-		nav.Children = append(nav.Children, clustereye.Navigation{
+		nav.Children = append(nav.Children, octant.Navigation{
 			Title: title,
 			Path:  path.Join(root, base),
 		})
@@ -168,7 +168,7 @@ func (l *LocalContent) Navigation(ctx context.Context, namespace, root string) (
 		return nil, err
 	}
 
-	return []clustereye.Navigation{nav}, nil
+	return []octant.Navigation{nav}, nil
 }
 
 func (l *LocalContent) titleToText(title []component.TitleComponent) (string, error) {
@@ -220,8 +220,8 @@ func (l *LocalContent) RemoveCRD(ctx context.Context, crd *unstructured.Unstruct
 }
 
 // Generators allow modules to send events to the frontend.
-func (l *LocalContent) Generators() []clustereye.Generator {
-	return []clustereye.Generator{}
+func (l *LocalContent) Generators() []octant.Generator {
+	return []octant.Generator{}
 }
 
 

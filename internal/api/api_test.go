@@ -17,7 +17,7 @@ import (
 
 	apiFake "github.com/heptio/developer-dash/internal/api/fake"
 	clusterFake "github.com/heptio/developer-dash/internal/cluster/fake"
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
 	moduleFake "github.com/heptio/developer-dash/internal/module/fake"
@@ -149,13 +149,13 @@ func TestAPI_routes(t *testing.T) {
 				Handlers(gomock.Any()).Return(make(map[string]http.Handler))
 			m.EXPECT().
 				Navigation(gomock.Any(), gomock.Any(), gomock.Any()).
-				DoAndReturn(func(ctx context.Context, namespace, prefix string) ([]clustereye.Navigation, error) {
-					nav := clustereye.Navigation{
+				DoAndReturn(func(ctx context.Context, namespace, prefix string) ([]octant.Navigation, error) {
+					nav := octant.Navigation{
 						Path:  prefix,
 						Title: "module",
 					}
 
-					return []clustereye.Navigation{nav}, nil
+					return []octant.Navigation{nav}, nil
 				}).
 				AnyTimes()
 

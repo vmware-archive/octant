@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/internal/module/fake"
 )
@@ -23,13 +23,13 @@ func TestNavigationGenerator_Event(t *testing.T) {
 		ContentPath().Return("/module").AnyTimes()
 	mod.EXPECT().
 		Navigation(gomock.Any(), gomock.Any(), gomock.Any()).
-		DoAndReturn(func(ctx context.Context, namespace, prefix string) ([]clustereye.Navigation, error) {
-			nav := clustereye.Navigation{
+		DoAndReturn(func(ctx context.Context, namespace, prefix string) ([]octant.Navigation, error) {
+			nav := octant.Navigation{
 				Path:  prefix,
 				Title: "module",
 			}
 
-			return []clustereye.Navigation{nav}, nil
+			return []octant.Navigation{nav}, nil
 		}).
 		AnyTimes()
 
@@ -42,7 +42,7 @@ func TestNavigationGenerator_Event(t *testing.T) {
 	require.NoError(t, err)
 
 	expectedResponse := navigationResponse{
-		Sections: []clustereye.Navigation{
+		Sections: []octant.Navigation{
 			{
 				Path:  "/content/module",
 				Title: "module",
@@ -52,7 +52,7 @@ func TestNavigationGenerator_Event(t *testing.T) {
 	expectedData, err := json.Marshal(&expectedResponse)
 	require.NoError(t, err)
 
-	assert.Equal(t, clustereye.EventTypeNavigation, event.Type)
+	assert.Equal(t, octant.EventTypeNavigation, event.Type)
 	assert.JSONEq(t, string(expectedData), string(event.Data))
 	assert.Equal(t, expectedData, event.Data)
 }

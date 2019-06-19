@@ -145,7 +145,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return errors.Wrap(err, "failed to create dash instance")
 	}
 
-	if os.Getenv("CLUSTEREYE_DISABLE_OPEN_BROWSER") != "" {
+	if os.Getenv("OCTANT_DISABLE_OPEN_BROWSER") != "" {
 		d.willOpenBrowser = false
 	}
 
@@ -247,7 +247,7 @@ func initModuleManager(ctx context.Context, options moduleOptions) (*module.Mana
 	configurationModule := configuration.New(ctx, configurationOptions)
 	moduleManager.Register(configurationModule)
 
-	localContentPath := os.Getenv("CLUSTEREYE_LOCAL_CONTENT")
+	localContentPath := os.Getenv("OCTANT_LOCAL_CONTENT")
 	if localContentPath != "" {
 		localContentModule := localcontent.New(localContentPath)
 		moduleManager.Register(localContentModule)
@@ -262,7 +262,7 @@ func initModuleManager(ctx context.Context, options moduleOptions) (*module.Mana
 
 func buildListener() (net.Listener, error) {
 	listenerAddr := defaultListenerAddr
-	if customListenerAddr := os.Getenv("CLUSTEREYE_LISTENER_ADDR"); customListenerAddr != "" {
+	if customListenerAddr := os.Getenv("OCTANT_LISTENER_ADDR"); customListenerAddr != "" {
 		listenerAddr = customListenerAddr
 	}
 
@@ -383,7 +383,7 @@ func enableOpenCensus() error {
 		AgentEndpoint:     agentEndpointURI,
 		CollectorEndpoint: collectorEndpointURI,
 		Process: jaeger.Process{
-			ServiceName: "clustereye",
+			ServiceName: "octant",
 		},
 	})
 

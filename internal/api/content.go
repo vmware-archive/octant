@@ -13,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 	"github.com/heptio/developer-dash/internal/event"
 	"github.com/heptio/developer-dash/internal/log"
 	"github.com/heptio/developer-dash/internal/module"
@@ -129,7 +129,7 @@ func (h *contentHandler) handlePoll(ctx context.Context, poll, requestPath, name
 		eventTimeout = time.Duration(timeout) * time.Second
 	}
 
-	eventGenerators := []clustereye.Generator{
+	eventGenerators := []octant.Generator{
 		&event.ContentGenerator{
 			ResponseFactory: m.Content,
 			Path:            contentPath,

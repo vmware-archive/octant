@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/heptio/developer-dash/internal/cluster"
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 )
 
 type namespacesResponse struct {
@@ -21,12 +21,12 @@ type NamespacesGenerator struct {
 	NamespaceClient cluster.NamespaceInterface
 }
 
-var _ clustereye.Generator = (*NamespacesGenerator)(nil)
+var _ octant.Generator = (*NamespacesGenerator)(nil)
 
 // Event generates namespaces events
-func (g *NamespacesGenerator) Event(ctx context.Context) (clustereye.Event, error) {
+func (g *NamespacesGenerator) Event(ctx context.Context) (octant.Event, error) {
 	if g.NamespaceClient == nil {
-		return clustereye.Event{}, errors.New("unable to query namespaces, client is nil")
+		return octant.Event{}, errors.New("unable to query namespaces, client is nil")
 	}
 
 	names, err := g.NamespaceClient.Names()
@@ -38,11 +38,11 @@ func (g *NamespacesGenerator) Event(ctx context.Context) (clustereye.Event, erro
 	nr := &namespacesResponse{Namespaces: names}
 	data, err := json.Marshal(nr)
 	if err != nil {
-		return clustereye.Event{}, errors.New("unable to marshal namespaces")
+		return octant.Event{}, errors.New("unable to marshal namespaces")
 	}
 
-	return clustereye.Event{
-		Type: clustereye.EventTypeNamespaces,
+	return octant.Event{
+		Type: octant.EventTypeNamespaces,
 		Data: data,
 	}, nil
 }

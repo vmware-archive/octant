@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
@@ -48,7 +48,7 @@ func TestContentGenerator_Event(t *testing.T) {
 	event, err := g.Event(ctx)
 	require.NoError(t, err)
 
-	assert.Equal(t, clustereye.EventTypeContent, event.Type)
+	assert.Equal(t, octant.EventTypeContent, event.Type)
 
 	assert.Equal(t, expectedData, event.Data)
 }

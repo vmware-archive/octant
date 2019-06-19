@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/heptio/developer-dash/internal/api"
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 	"github.com/heptio/developer-dash/internal/config"
 	"github.com/heptio/developer-dash/internal/describer"
 	"github.com/heptio/developer-dash/internal/link"
@@ -29,7 +29,7 @@ type Options struct {
 
 // ClusterOverview is a module for the cluster overview.
 type ClusterOverview struct {
-	*clustereye.ObjectPath
+	*octant.ObjectPath
 	Options
 
 	pathMatcher *describer.PathMatcher
@@ -43,13 +43,13 @@ func New(ctx context.Context, options Options) (*ClusterOverview, error) {
 		pathMatcher.Register(ctx, pf)
 	}
 
-	objectPathConfig := clustereye.ObjectPathConfig{
+	objectPathConfig := octant.ObjectPathConfig{
 		ModuleName:     "cluster-overview",
 		SupportedGVKs:  supportedGVKs,
 		PathLookupFunc: gvkPath,
 		CRDPathGenFunc: crdPath,
 	}
-	objectPath, err := clustereye.NewObjectPath(objectPathConfig)
+	objectPath, err := octant.NewObjectPath(objectPathConfig)
 	if err != nil {
 		return nil, errors.Wrap(err, "create module object path generator")
 	}
@@ -169,14 +169,14 @@ func (co *ClusterOverview) ContentPath() string {
 	return fmt.Sprintf("/%s", co.Name())
 }
 
-func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, root string) ([]clustereye.Navigation, error) {
-	navigationEntries := clustereye.NavigationEntries{
+func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, root string) ([]octant.Navigation, error) {
+	navigationEntries := octant.NavigationEntries{
 		Lookup: map[string]string{
 			"Custom Resources": "custom-resources",
 			"RBAC":             "rbac",
 		},
-		EntriesFuncs: map[string]clustereye.EntriesFunc{
-			"Custom Resources": clustereye.CRDEntries,
+		EntriesFuncs: map[string]octant.EntriesFunc{
+			"Custom Resources": octant.CRDEntries,
 			"RBAC":             rbacEntries,
 		},
 		Order: []string{
@@ -187,14 +187,14 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 
 	objectStore := co.DashConfig.ObjectStore()
 
-	nf := clustereye.NewNavigationFactory("", root, objectStore, navigationEntries)
+	nf := octant.NewNavigationFactory("", root, objectStore, navigationEntries)
 
 	entries, err := nf.Generate(ctx, "Cluster Overview")
 	if err != nil {
 		return nil, err
 	}
 
-	return []clustereye.Navigation{
+	return []octant.Navigation{
 		*entries,
 	}, nil
 }
@@ -211,14 +211,14 @@ func (co *ClusterOverview) Stop() {
 }
 
 // Generators allow modules to send events to the frontend.
-func (co *ClusterOverview) Generators() []clustereye.Generator {
-	return []clustereye.Generator{}
+func (co *ClusterOverview) Generators() []octant.Generator {
+	return []octant.Generator{}
 }
 
-func rbacEntries(_ context.Context, prefix, _ string, _ store.Store) ([]clustereye.Navigation, error) {
-	return []clustereye.Navigation{
-		*clustereye.NewNavigation("Cluster Roles", path.Join(prefix, "cluster-roles")),
-		*clustereye.NewNavigation("Cluster Role Bindings", path.Join(prefix, "cluster-role-bindings")),
+func rbacEntries(_ context.Context, prefix, _ string, _ store.Store) ([]octant.Navigation, error) {
+	return []octant.Navigation{
+		*octant.NewNavigation("Cluster Roles", path.Join(prefix, "cluster-roles")),
+		*octant.NewNavigation("Cluster Role Bindings", path.Join(prefix, "cluster-role-bindings")),
 	}, nil
 }
 

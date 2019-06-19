@@ -7,8 +7,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/heptio/developer-dash/internal/clustereye"
-	clustereyeFake "github.com/heptio/developer-dash/internal/clustereye/fake"
+	"github.com/heptio/developer-dash/internal/octant"
+	octantFake "github.com/heptio/developer-dash/internal/octant/fake"
 	eventFake "github.com/heptio/developer-dash/internal/event/fake"
 )
 
@@ -18,11 +18,11 @@ func TestStream(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	event := clustereye.Event{
-		Type: clustereye.EventType("test"),
+	event := octant.Event{
+		Type: octant.EventType("test"),
 		Data: []byte("data"),
 	}
-	generator := clustereyeFake.NewMockGenerator(controller)
+	generator := octantFake.NewMockGenerator(controller)
 	generator.EXPECT().
 		Event(gomock.Any()).Return(event, nil)
 	generator.EXPECT().
@@ -35,14 +35,14 @@ func TestStream(t *testing.T) {
 	streamer := eventFake.NewMockStreamer(controller)
 	streamer.EXPECT().
 		Stream(gomock.Any(), gomock.Any()).
-		Do(func(ctx context.Context, ch <-chan clustereye.Event) {
+		Do(func(ctx context.Context, ch <-chan octant.Event) {
 			<-ch
 			done <- true
 
 		})
 
 	go func() {
-		err := Stream(ctx, streamer, []clustereye.Generator{generator}, "/request-path", "/content-path")
+		err := Stream(ctx, streamer, []octant.Generator{generator}, "/request-path", "/content-path")
 		require.NoError(t, err)
 	}()
 

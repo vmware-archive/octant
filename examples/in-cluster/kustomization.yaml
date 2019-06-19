@@ -2,6 +2,6 @@ resources:
   - deployment.yaml
 
 images:
-  - name: clustereye
-    newName: harbor.bryanl.dev/test/clustereye
+  - name: octant
+    newName: harbor.bryanl.dev/test/octant
     newTag: latest

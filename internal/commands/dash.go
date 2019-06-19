@@ -15,7 +15,7 @@ import (
 	"github.com/heptio/developer-dash/internal/log"
 )
 
-func newClusterEyeCmd() *cobra.Command {
+func newOctantCmd() *cobra.Command {
 	var namespace string
 	var uiURL string
 	var kubeConfig string
@@ -23,10 +23,10 @@ func newClusterEyeCmd() *cobra.Command {
 	var enableOpenCensus bool
 	var initialContext string
 
-	clusterEyeCmd := &cobra.Command{
-		Use:   "clustereye",
-		Short: "clustereye kubernetes dashboard",
-		Long:  "clustereye is a dashboard for high bandwidth cluster analysis operations",
+	octantCmd := &cobra.Command{
+		Use:   "octant",
+		Short: "octant kubernetes dashboard",
+		Long:  "octant is a dashboard for high bandwidth cluster analysis operations",
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
@@ -78,17 +78,17 @@ func newClusterEyeCmd() *cobra.Command {
 		},
 	}
 
-	clusterEyeCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "initial namespace")
-	clusterEyeCmd.Flags().StringVar(&uiURL, "ui-url", "", "dashboard url")
-	clusterEyeCmd.Flags().CountVarP(&verboseLevel, "verbose", "v", "verbosity level")
-	clusterEyeCmd.Flags().BoolVarP(&enableOpenCensus, "enable-opencensus", "c", false, "enable open census")
-	clusterEyeCmd.Flags().StringVarP(&initialContext, "context", "", "", "initial context")
+	octantCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "initial namespace")
+	octantCmd.Flags().StringVar(&uiURL, "ui-url", "", "dashboard url")
+	octantCmd.Flags().CountVarP(&verboseLevel, "verbose", "v", "verbosity level")
+	octantCmd.Flags().BoolVarP(&enableOpenCensus, "enable-opencensus", "c", false, "enable open census")
+	octantCmd.Flags().StringVarP(&initialContext, "context", "", "", "initial context")
 
 	kubeConfig = clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
 
-	clusterEyeCmd.Flags().StringVar(&kubeConfig, "kubeConfig", kubeConfig, "absolute path to kubeConfig file")
+	octantCmd.Flags().StringVar(&kubeConfig, "kubeConfig", kubeConfig, "absolute path to kubeConfig file")
 
-	return clusterEyeCmd
+	return octantCmd
 }
 
 // Returns a new zap logger, setting level according to the provided

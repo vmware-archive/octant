@@ -6,12 +6,12 @@ import (
 	"path"
 	"time"
 
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 	"github.com/heptio/developer-dash/internal/module"
 )
 
 type navigationResponse struct {
-	Sections []clustereye.Navigation `json:"sections,omitempty"`
+	Sections []octant.Navigation `json:"sections,omitempty"`
 }
 
 // NavigationGenerator generates navigation events.
@@ -26,15 +26,15 @@ type NavigationGenerator struct {
 	RunEvery time.Duration
 }
 
-var _ clustereye.Generator = (*NavigationGenerator)(nil)
+var _ octant.Generator = (*NavigationGenerator)(nil)
 
 // Event generates a navigation event.
-func (g *NavigationGenerator) Event(ctx context.Context) (clustereye.Event, error) {
+func (g *NavigationGenerator) Event(ctx context.Context) (octant.Event, error) {
 	ans := newAPINavSections(g.Modules)
 
 	ns, err := ans.Sections(ctx, g.Namespace)
 	if err != nil {
-		return clustereye.Event{}, err
+		return octant.Event{}, err
 	}
 
 	nr := navigationResponse{
@@ -43,11 +43,11 @@ func (g *NavigationGenerator) Event(ctx context.Context) (clustereye.Event, erro
 
 	data, err := json.Marshal(nr)
 	if err != nil {
-		return clustereye.Event{}, err
+		return octant.Event{}, err
 	}
 
-	return clustereye.Event{
-		Type: clustereye.EventTypeNavigation,
+	return octant.Event{
+		Type: octant.EventTypeNavigation,
 		Data: data,
 	}, nil
 }
@@ -72,8 +72,8 @@ func newAPINavSections(modules []module.Module) *apiNavSections {
 	}
 }
 
-func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]clustereye.Navigation, error) {
-	var sections []clustereye.Navigation
+func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]octant.Navigation, error) {
+	var sections []octant.Navigation
 
 	for _, m := range ans.modules {
 		contentPath := path.Join("/content", m.ContentPath())

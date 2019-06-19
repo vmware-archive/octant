@@ -7,7 +7,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 	"github.com/heptio/developer-dash/internal/module"
 	"github.com/heptio/developer-dash/pkg/view/component"
 )
@@ -34,17 +34,17 @@ type ContentGenerator struct {
 	RunEvery time.Duration
 }
 
-var _ clustereye.Generator = (*ContentGenerator)(nil)
+var _ octant.Generator = (*ContentGenerator)(nil)
 
 type dashResponse struct {
 	Content component.ContentResponse `json:"content,omitempty"`
 }
 
 // Event generates content events.
-func (g *ContentGenerator) Event(ctx context.Context) (clustereye.Event, error) {
+func (g *ContentGenerator) Event(ctx context.Context) (octant.Event, error) {
 	resp, err := g.ResponseFactory(ctx, g.Path, g.Prefix, g.Namespace, module.ContentOptions{LabelSet: g.LabelSet})
 	if err != nil {
-		return clustereye.Event{}, err
+		return octant.Event{}, err
 	}
 
 	dr := dashResponse{
@@ -53,11 +53,11 @@ func (g *ContentGenerator) Event(ctx context.Context) (clustereye.Event, error) 
 
 	data, err := json.Marshal(dr)
 	if err != nil {
-		return clustereye.Event{}, err
+		return octant.Event{}, err
 	}
 
-	return clustereye.Event{
-		Type: clustereye.EventTypeContent,
+	return octant.Event{
+		Type: octant.EventTypeContent,
 		Data: data,
 	}, nil
 }

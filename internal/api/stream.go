@@ -7,7 +7,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 )
 
 // NotFoundError is a not found error.
@@ -37,7 +37,7 @@ type eventSourceStreamer struct {
 	w http.ResponseWriter
 }
 
-func (s *eventSourceStreamer) Stream(ctx context.Context, ch <-chan clustereye.Event) {
+func (s *eventSourceStreamer) Stream(ctx context.Context, ch <-chan octant.Event) {
 	flusher, ok := s.w.(http.Flusher)
 	if !ok {
 		http.Error(s.w, "server sent events are unsupported", http.StatusInternalServerError)

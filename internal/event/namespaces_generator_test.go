@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/heptio/developer-dash/internal/cluster/fake"
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 )
 
 func TestNamespacesGenerator_Event(t *testing.T) {
@@ -37,7 +37,7 @@ func TestNamespacesGenerator_Event(t *testing.T) {
 	expectedData, err := json.Marshal(&expectedResponse)
 	require.NoError(t, err)
 
-	assert.Equal(t, clustereye.EventTypeNamespaces, event.Type)
+	assert.Equal(t, octant.EventTypeNamespaces, event.Type)
 	assert.Equal(t, expectedData, event.Data)
 }
 

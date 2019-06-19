@@ -1,11 +1,11 @@
-package clustereye
+package octant
 
 import (
 	"context"
 	"time"
 )
 
-//go:generate mockgen -destination=./fake/mock_generator.go -package=fake github.com/heptio/developer-dash/internal/clustereye Generator
+//go:generate mockgen -destination=./fake/mock_generator.go -package=fake github.com/heptio/developer-dash/internal/octant Generator
 
 // Generator generates events.
 type Generator interface {

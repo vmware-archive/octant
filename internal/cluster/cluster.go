@@ -89,7 +89,7 @@ func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restCl
 		return nil, errors.Wrap(err, "create discovery client")
 	}
 
-	dir, err := ioutil.TempDir("", "clustereye")
+	dir, err := ioutil.TempDir("", "octant")
 	if err != nil {
 		return nil, errors.Wrap(err, "create temp directory")
 	}

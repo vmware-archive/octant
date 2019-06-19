@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/heptio/developer-dash/internal/api"
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 	"github.com/heptio/developer-dash/internal/config"
 	"github.com/heptio/developer-dash/internal/describer"
 	"github.com/heptio/developer-dash/internal/log"
@@ -28,7 +28,7 @@ type Options struct {
 
 // Overview is an API for generating a cluster overview.
 type Overview struct {
-	*clustereye.ObjectPath
+	*octant.ObjectPath
 
 	generator   *realGenerator
 	dashConfig  config.Dash
@@ -89,13 +89,13 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 		return errors.Wrap(err, "create overview generator")
 	}
 
-	objectPathConfig := clustereye.ObjectPathConfig{
+	objectPathConfig := octant.ObjectPathConfig{
 		ModuleName:     "overview",
 		SupportedGVKs:  supportedGVKs,
 		PathLookupFunc: gvkPath,
 		CRDPathGenFunc: crdPath,
 	}
-	objectPath, err := clustereye.NewObjectPath(objectPathConfig)
+	objectPath, err := octant.NewObjectPath(objectPathConfig)
 	if err != nil {
 		return errors.Wrap(err, "create module object path generator")
 	}
@@ -149,14 +149,14 @@ func (co *Overview) ContentPath() string {
 }
 
 // Navigation returns navigation entries for overview.
-func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]clustereye.Navigation, error) {
-	navigationEntries := clustereye.NavigationEntries{
+func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]octant.Navigation, error) {
+	navigationEntries := octant.NavigationEntries{
 		Lookup: navPathLookup,
-		EntriesFuncs: map[string]clustereye.EntriesFunc{
+		EntriesFuncs: map[string]octant.EntriesFunc{
 			"Workloads":                    workloadEntries,
 			"Discovery and Load Balancing": discoAndLBEntries,
 			"Config and Storage":           configAndStorageEntries,
-			"Custom Resources":             clustereye.CRDEntries,
+			"Custom Resources":             octant.CRDEntries,
 			"RBAC":                         rbacEntries,
 			"Events":                       nil,
 		},
@@ -172,21 +172,21 @@ func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]c
 
 	objectStore := co.dashConfig.ObjectStore()
 
-	nf := clustereye.NewNavigationFactory(namespace, root, objectStore, navigationEntries)
+	nf := octant.NewNavigationFactory(namespace, root, objectStore, navigationEntries)
 
 	entries, err := nf.Generate(ctx, "Overview")
 	if err != nil {
 		return nil, err
 	}
 
-	return []clustereye.Navigation{
+	return []octant.Navigation{
 		*entries,
 	}, nil
 }
 
 // Generators allow modules to send events to the frontend.
-func (co *Overview) Generators() []clustereye.Generator {
-	return []clustereye.Generator{}
+func (co *Overview) Generators() []octant.Generator {
+	return []octant.Generator{}
 }
 
 // SetNamespace sets the current namespace.

@@ -26,12 +26,12 @@ vet:
 	@echo "-> $@"
 	@env go vet  ./internal/... ./pkg/...
 
-clustereye-dev:
+octant-dev:
 	@mkdir -p ./build
-	@env $(GOBUILD) -o build/clustereye $(GO_FLAGS) -v ./cmd/clustereye
+	@env $(GOBUILD) -o build/octant $(GO_FLAGS) -v ./cmd/octant
 
-clustereye-docker:
-	@env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o /clustereye $(GO_FLAGS) -v ./cmd/clustereye
+octant-docker:
+	@env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o /octant $(GO_FLAGS) -v ./cmd/octant
 
 setup-web: web-deps run-web
 
@@ -72,7 +72,7 @@ web-test: web-deps
 	@cd web; npm run test:headless
 
 ui-server:
-	CLUSTEREYE_DISABLE_OPEN_BROWSER=false CLUSTEREYE_LISTENER_ADDR=localhost:3001 $(GOCMD) run ./cmd/clustereye/main.go $(CLUSTEREYE_FLAGS)
+	OCTANT_DISABLE_OPEN_BROWSER=false OCTANT_LISTENER_ADDR=localhost:3001 $(GOCMD) run ./cmd/octant/main.go $(OCTANT_FLAGS)
 
 ui-client:
 	cd web; API_BASE=http://localhost:3001 npm run start
@@ -90,13 +90,13 @@ release:
 	git push --follow-tags
 
 .PHONY: ci
-ci: test vet web-test web-build clustereye-dev
+ci: test vet web-test web-build octant-dev
 
 .PHONY: ci-quick
 ci-quick:
 	@cd web; npm run build
 	@go generate ./web
-	make clustereye-dev
+	make octant-dev
 
 install-test-plugin:
 	mkdir -p ~/.config/vmdash/plugins

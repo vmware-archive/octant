@@ -20,7 +20,7 @@
   * Support cluster level custom resources (#817, @bryanl)
   * Fix panic when trying to get container statuses from unscheduled pods (#797, @bryanl)
   * Show service account from workload view (#692, @bryanl)
-  * Added `CLUSTEREYE_PLUGIN_PATH` environment variable to take list of paths (#790, @GuessWhoSamFoo)
+  * Added `OCTANT_PLUGIN_PATH` environment variable to take list of paths (#790, @GuessWhoSamFoo)
   * Added api endpoint for registered plugins (#788, @GuessWhoSamFoo)
   * Added clean command to Makefile for generated mock files. (#765, @GuessWhoSamFoo)
   * Added links to Service Accounts from Role Binding (#687, @GuessWhoSamFoo)

@@ -20,7 +20,7 @@ Alternatively, build the go binary using `go build` then move the binary to the 
 
 The Makefile installs plugins by creating a `$HOME/.config/vmdash/plugin/` directory then building the binary to that location.
 
-Run plugins from additional paths by setting paths to the `CLUSTEREYE_PLUGIN_PATH` environment variable when running the dashboard.
+Run plugins from additional paths by setting paths to the `OCTANT_PLUGIN_PATH` environment variable when running the dashboard.
 
 ## Define Capability
 

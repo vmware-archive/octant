@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/heptio/developer-dash/internal/api"
-	"github.com/heptio/developer-dash/internal/clustereye"
+	"github.com/heptio/developer-dash/internal/octant"
 	"github.com/heptio/developer-dash/internal/config"
 	"github.com/heptio/developer-dash/internal/event"
 	"github.com/heptio/developer-dash/internal/kubeconfig"
@@ -66,7 +66,7 @@ func (h *updateCurrentContextHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 
 const (
 	// eventTypeKubeConfig is an event for updating kube contexts on the front end.
-	eventTypeKubeConfig clustereye.EventType = "kubeConfig"
+	eventTypeKubeConfig octant.EventType = "kubeConfig"
 )
 
 type kubeContextGenerationOption func(generator *kubeContextGenerator)
@@ -77,7 +77,7 @@ type kubeContextGenerator struct {
 	DashConfig   config.Dash
 }
 
-var _ clustereye.Generator = (*kubeContextGenerator)(nil)
+var _ octant.Generator = (*kubeContextGenerator)(nil)
 
 func newKubeContextGenerator(dashConfig config.Dash, options ...kubeContextGenerationOption) *kubeContextGenerator {
 	kcg := &kubeContextGenerator{
@@ -92,12 +92,12 @@ func newKubeContextGenerator(dashConfig config.Dash, options ...kubeContextGener
 	return kcg
 }
 
-func (g *kubeContextGenerator) Event(ctx context.Context) (clustereye.Event, error) {
+func (g *kubeContextGenerator) Event(ctx context.Context) (octant.Event, error) {
 	configPath := g.DashConfig.KubeConfigPath()
 
 	kubeConfig, err := g.ConfigLoader.Load(configPath)
 	if err != nil {
-		return clustereye.Event{}, errors.Wrap(err, "unable to load kube config")
+		return octant.Event{}, errors.Wrap(err, "unable to load kube config")
 	}
 
 	currentContext := g.DashConfig.ContextName()
@@ -112,10 +112,10 @@ func (g *kubeContextGenerator) Event(ctx context.Context) (clustereye.Event, err
 
 	data, err := json.Marshal(&resp)
 	if err != nil {
-		return clustereye.Event{}, errors.Wrap(err, "encoding kube config data")
+		return octant.Event{}, errors.Wrap(err, "encoding kube config data")
 	}
 
-	e := clustereye.Event{
+	e := octant.Event{
 		Type: eventTypeKubeConfig,
 		Data: data,
 	}
