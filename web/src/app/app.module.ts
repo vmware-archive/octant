@@ -18,6 +18,7 @@ import { OverviewModule } from './modules/overview/overview.module';
 import { InputFilterComponent } from './components/input-filter/input-filter.component';
 import { NotifierComponent } from './components/notifier/notifier.component';
 import { NavigationComponent } from './components/navigation/navigation.component';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @Injectable()
 export class UnstripTrailingSlashLocation extends Location {
@@ -44,6 +45,7 @@ export class UnstripTrailingSlashLocation extends Location {
     FormsModule,
     AppRoutingModule,
     OverviewModule,
+    NgSelectModule,
   ],
   providers: [
     {

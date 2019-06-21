@@ -29,6 +29,7 @@
     "@clr/angular": "^1.1.0",
     "@clr/icons": "^1.1.0",
     "@clr/ui": "^1.1.0",
+    "@ng-select/ng-select": "^2.20.0",
     "@webcomponents/custom-elements": "^1.0.0",
     "core-js": "^2.5.4",
     "d3-selection": "~1.4.0",
