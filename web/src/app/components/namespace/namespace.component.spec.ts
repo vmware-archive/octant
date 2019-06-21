@@ -3,9 +3,8 @@
 //
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { AppModule } from '../../app.module';
 import { NamespaceComponent } from './namespace.component';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 describe('NamespaceComponent', () => {
   let component: NamespaceComponent;
@@ -13,7 +12,12 @@ describe('NamespaceComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [AppModule],
+      imports: [
+        NgSelectModule,
+      ],
+      declarations: [
+        NamespaceComponent,
+      ],
     }).compileComponents();
   }));
 

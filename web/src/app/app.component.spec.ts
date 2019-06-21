@@ -14,6 +14,7 @@ import {InputFilterComponent} from './components/input-filter/input-filter.compo
 import {NotifierComponent} from './components/notifier/notifier.component';
 import {NavigationComponent} from './components/navigation/navigation.component';
 import {ContextSelectorComponent} from './modules/overview/components/context-selector/context-selector.component';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
@@ -23,6 +24,7 @@ describe('AppComponent', () => {
         ClarityModule,
         HttpClientTestingModule,
         FormsModule,
+        NgSelectModule,
       ],
       declarations: [
         AppComponent,
