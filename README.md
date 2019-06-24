@@ -69,20 +69,9 @@ The `octant` binary will be found in `$GOPATH/src/github.com/vmware/octant/build
 * `OCTANT_LOCAL_CONTENT` - set to a directory and dash will serve content responses from here. An example directory lives in `examples/content`
 * `OCTANT_PLUGIN_PATH` - add a plugin directory or multiple directories separated by `:`. Plugins will load by default from `$HOME/.config/vmdash/plugins`
 
-### Running development web UI
+### Contributing to the UI
 
-`$ make setup-web`
-
-
-### Running development server
-
-The development server allows running the dashboard while monitoring changes in `/web`.
-
-Start the dashboard running on a development server:
-
-`$ make -j ui-client ui-server`
-
-Navigate to `localhost:7777` on a browser to view cluster data.
+[Octant's UI README](./web/src/README.md)
 
 ### Caveats
 

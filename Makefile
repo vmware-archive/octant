@@ -36,11 +36,6 @@ octant-dev:
 octant-docker:
 	@env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o /octant $(GO_FLAGS) -v ./cmd/octant
 
-setup-web: web-deps run-web
-
-run-web:
-	@cd web; BROWSER=none npm start
-
 generate:
 	@echo "-> $@"
 	@go generate -v ./pkg/store ./pkg/plugin/api/proto ./pkg/plugin/dashboard ./pkg/plugin/api ./pkg/plugin ./internal/...
@@ -78,7 +73,7 @@ ui-server:
 	OCTANT_DISABLE_OPEN_BROWSER=false OCTANT_LISTENER_ADDR=localhost:3001 $(GOCMD) run ./cmd/octant/main.go $(OCTANT_FLAGS)
 
 ui-client:
-	cd web; API_BASE=http://localhost:3001 npm run start
+	@cd web; API_BASE=http://localhost:3001 npm run start
 
 gen-electron:
 	@GOCACHE=${HOME}/cache/go-build astilectron-bundler -v -c configs/electron/bundler.json
