@@ -2,22 +2,33 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-.app-namespace {
-  .btn {
-    outline: none;
-    height: 30px;
-    line-height: 30px;
-    width: 200px;
-    text-align: left;
-  }
+.app-namespace-selector {
+  width: 250px;
 
   .namespace-dropdown {
-    width: 200px;
+    ::ng-deep {
+      .ng-select-container {
+        border-color: #0079b8;
+        background: transparent;
+      }
 
-    &-inner {
-      max-height: calc(100vh - 200px);
-      overflow: hidden;
-      overflow-y: auto;
+      .ng-value, .ng-input > input {
+        color: #0079b8;
+      }
+
+      .ng-arrow {
+        border-color: #0079b8 transparent transparent;
+      }
+
+      .ng-input {
+        padding-left: 5px;
+      }
+    }
+
+    &.ng-select-opened ::ng-deep {
+      .ng-select-container .ng-arrow {
+        border-color: transparent transparent #0079b8;
+      }
     }
   }
 }

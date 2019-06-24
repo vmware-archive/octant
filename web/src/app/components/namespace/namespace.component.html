@@ -1,13 +1,9 @@
-<clr-dropdown class="app-namespace">
-  <button type="button" class="btn btn-small" clrDropdownTrigger>
-    {{ currentNamespace }}
-    <clr-icon shape="caret down"></clr-icon>
-  </button>
-  <clr-dropdown-menu class="namespace-dropdown" clrPosition="bottom-left" *clrIfOpen>
-    <div class="namespace-dropdown-inner">
-      <button (click)="selectNamespace(namespace)" type="button" clrDropdownItem *ngFor="let namespace of namespaces; trackBy: trackByIdentity">
-        {{ namespace }}
-      </button>
-    </div>
-  </clr-dropdown-menu>
-</clr-dropdown>
+<div class="app-namespace-selector">
+  <ng-select
+    class="namespace-dropdown"
+    [items]="namespaces"
+    (change)="selectNamespace($event)"
+    [(ngModel)]="currentNamespace"
+    [clearable]=false
+  ></ng-select>
+</div>
