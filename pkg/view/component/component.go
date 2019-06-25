@@ -17,6 +17,8 @@ import (
 type ContentResponse struct {
 	Title      []TitleComponent `json:"title,omitempty"`
 	Components []Component      `json:"viewComponents"`
+	IconName   string           `json:"iconName,omitempty"`
+	IconSource string           `json:"iconSource,omitempty"`
 }
 
 // NewContentResponse creates an instance of ContentResponse.

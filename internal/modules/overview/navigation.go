@@ -7,8 +7,8 @@ package overview
 
 import (
 	"context"
-	"path"
 
+	"github.com/vmware/octant/internal/icon"
 	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/pkg/store"
 )
@@ -25,39 +25,42 @@ var (
 )
 
 func workloadEntries(_ context.Context, prefix, _ string, _ store.Store) ([]octant.Navigation, error) {
-	return []octant.Navigation{
-		*octant.NewNavigation("Cron Jobs", path.Join(prefix, "cron-jobs")),
-		*octant.NewNavigation("Daemon Sets", path.Join(prefix, "daemon-sets")),
-		*octant.NewNavigation("Deployments", path.Join(prefix, "deployments")),
-		*octant.NewNavigation("Jobs", path.Join(prefix, "jobs")),
-		*octant.NewNavigation("Pods", path.Join(prefix, "pods")),
-		*octant.NewNavigation("Replica Sets", path.Join(prefix, "replica-sets")),
-		*octant.NewNavigation("Replication Controllers", path.Join(prefix, "replication-controllers")),
-		*octant.NewNavigation("Stateful Sets", path.Join(prefix, "stateful-sets")),
-	}, nil
+	neh := octant.NavigationEntriesHelper{}
+	neh.Add("Cron Jobs", "cron-jobs", icon.OverviewCronJob)
+	neh.Add("Daemon Sets", "daemon-sets", icon.OverviewDaemonSet)
+	neh.Add("Deployments", "deployments", icon.OverviewDeployment)
+	neh.Add("Jobs", "jobs", icon.OverviewJob)
+	neh.Add("Pods", "pods", icon.OverviewPod)
+	neh.Add("Replica Sets", "replica-sets", icon.OverviewReplicaSet)
+	neh.Add("Replication Controllers", "replication-controllers", icon.OverviewReplicationController)
+	neh.Add("Stateful Sets", "stateful-sets", icon.OverviewStatefulSet)
+
+	return neh.Generate(prefix)
 }
 
 func discoAndLBEntries(_ context.Context, prefix, _ string, _ store.Store) ([]octant.Navigation, error) {
-	return []octant.Navigation{
-		*octant.NewNavigation("Ingresses", path.Join(prefix, "ingresses")),
-		*octant.NewNavigation("Services", path.Join(prefix, "services")),
-	}, nil
+	neh := octant.NavigationEntriesHelper{}
+	neh.Add("Ingresses", "ingresses", icon.OverviewIngress)
+	neh.Add("Services", "services", icon.OverviewService)
+
+	return neh.Generate(prefix)
 }
 
 func configAndStorageEntries(_ context.Context, prefix, _ string, _ store.Store) ([]octant.Navigation, error) {
-	return []octant.Navigation{
-		*octant.NewNavigation("Config Maps", path.Join(prefix, "config-maps")),
-		*octant.NewNavigation("Persistent Volume Claims", path.Join(prefix, "persistent-volume-claims")),
-		*octant.NewNavigation("Secrets", path.Join(prefix, "secrets")),
-		*octant.NewNavigation("Service Accounts", path.Join(prefix, "service-accounts")),
-	}, nil
+	neh := octant.NavigationEntriesHelper{}
+	neh.Add("Config Maps", "config-maps", icon.OverviewConfigMap)
+	neh.Add("Persistent Volume Claims", "persistent-volume-claims", icon.OverviewPersistentVolumeClaim)
+	neh.Add("Secrets", "secrets", icon.OverviewSecret)
+	neh.Add("Service Accounts", "service-accounts", icon.OverviewServiceAccount)
+
+	return neh.Generate(prefix)
 }
 
 func rbacEntries(_ context.Context, prefix, _ string, _ store.Store) ([]octant.Navigation, error) {
-	return []octant.Navigation{
-		*octant.NewNavigation("Roles", path.Join(prefix, "roles")),
-		*octant.NewNavigation("Role Bindings", path.Join(prefix, "role-bindings")),
-	}, nil
+	neh := octant.NavigationEntriesHelper{}
+
+	neh.Add("Roles", "roles", icon.OverviewRole)
+	neh.Add("Role Bindings", "role-bindings", icon.OverviewRoleBinding)
+
+	return neh.Generate(prefix)
 }
-
-

@@ -1,17 +1,17 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-
-import { async, ComponentFixture, TestBed, fakeAsync, tick, discardPeriodicTasks} from '@angular/core/testing';
-import { LogsComponent } from './logs.component';
-import { PodLogsService } from 'src/app/services/pod-logs/pod-logs.service';
-import { By } from '@angular/platform-browser';
-import { DebugElement } from '@angular/core';
-import { LogsView, LogEntry } from 'src/app/models/content';
 import { HttpClient } from '@angular/common/http';
 import { HttpTestingController } from '@angular/common/http/testing';
-import getAPIBase from 'src/app/services/common/getAPIBase';
+import { DebugElement } from '@angular/core';
+import { async, ComponentFixture, discardPeriodicTasks, fakeAsync, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import _ from 'lodash';
+import { LogEntry, LogsView } from 'src/app/models/content';
+import getAPIBase from 'src/app/services/common/getAPIBase';
+import { PodLogsService } from 'src/app/services/pod-logs/pod-logs.service';
+
+import { LogsComponent } from './logs.component';
 
 const API_BASE = getAPIBase();
 
@@ -46,12 +46,8 @@ describe('LogsComponent <-> PodsLogsService', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [
-        LogsComponent
-      ],
-      providers: [
-        PodLogsService,
-      ]
+      declarations: [LogsComponent],
+      providers: [PodLogsService],
     }).compileComponents();
   }));
 
@@ -67,27 +63,50 @@ describe('LogsComponent <-> PodsLogsService', () => {
   it('should render list of containers to choose from', () => {
     expect(component.selectedContainer).toBe('');
 
-    component.view = createTestLogsView(['containerA', 'containerB', 'containerC']);
+    component.view = createTestLogsView([
+      'containerA',
+      'containerB',
+      'containerC',
+    ]);
     fixture.detectChanges();
 
-    const selectOptionsDebugElements: DebugElement[] = fixture.debugElement.queryAll(By.css('.container-select select > option'));
+    const selectOptionsDebugElements: DebugElement[] = fixture.debugElement.queryAll(
+      By.css('.container-select select > option')
+    );
     expect(selectOptionsDebugElements.length).toBe(3);
-    expect(selectOptionsDebugElements[0].nativeElement.value).toBe('containerA');
-    expect(selectOptionsDebugElements[1].nativeElement.value).toBe('containerB');
-    expect(selectOptionsDebugElements[2].nativeElement.value).toBe('containerC');
+    expect(selectOptionsDebugElements[0].nativeElement.value).toBe(
+      'containerA'
+    );
+    expect(selectOptionsDebugElements[1].nativeElement.value).toBe(
+      'containerB'
+    );
+    expect(selectOptionsDebugElements[2].nativeElement.value).toBe(
+      'containerC'
+    );
   });
 
   it('should create new streams when choosing between containers', fakeAsync(() => {
     expect(component.selectedContainer).toBe('');
     expect(component.containerLogs.length).toBe(0);
     expect(component.shouldDisplayTimestamp).toBe(true);
-    expect(fixture.debugElement.query(By.css('.container-logs-bg')).nativeElement.textContent).toMatch(/No logs/i);
+    expect(
+      fixture.debugElement.query(By.css('.container-logs-bg')).nativeElement
+        .textContent
+    ).toMatch(/No logs/i);
 
-    component.view = createTestLogsView(['containerA', 'containerB', 'containerC']);
+    component.view = createTestLogsView([
+      'containerA',
+      'containerB',
+      'containerC',
+    ]);
     fixture.detectChanges();
 
-    const selectElement: HTMLSelectElement = fixture.debugElement.query(By.css('.container-select select')).nativeElement;
-    const selectOptionsDebugElements: DebugElement[] = fixture.debugElement.queryAll(By.css('.container-select select > option'));
+    const selectElement: HTMLSelectElement = fixture.debugElement.query(
+      By.css('.container-select select')
+    ).nativeElement;
+    const selectOptionsDebugElements: DebugElement[] = fixture.debugElement.queryAll(
+      By.css('.container-select select > option')
+    );
 
     expect(selectOptionsDebugElements.length).toBe(3);
 
@@ -116,11 +135,19 @@ describe('LogsComponent <-> PodsLogsService', () => {
       { timestamp: '2019-05-06T18:59:06.554540433Z', message: 'messageC' },
     ]);
 
-    let logEntriesDebugElement: DebugElement[] = fixture.debugElement.queryAll(By.css('.container-log'));
+    let logEntriesDebugElement: DebugElement[] = fixture.debugElement.queryAll(
+      By.css('.container-log')
+    );
     expect(logEntriesDebugElement.length).toBe(3);
-    expect(logEntriesDebugElement[0].nativeElement.textContent).toMatch(/messageA/);
-    expect(logEntriesDebugElement[1].nativeElement.textContent).toMatch(/messageB/);
-    expect(logEntriesDebugElement[2].nativeElement.textContent).toMatch(/messageC/);
+    expect(logEntriesDebugElement[0].nativeElement.textContent).toMatch(
+      /messageA/
+    );
+    expect(logEntriesDebugElement[1].nativeElement.textContent).toMatch(
+      /messageB/
+    );
+    expect(logEntriesDebugElement[2].nativeElement.textContent).toMatch(
+      /messageC/
+    );
 
     selectElement.value = selectOptionsDebugElements[2].nativeElement.value;
     selectElement.dispatchEvent(new Event('change'));
@@ -150,12 +177,22 @@ describe('LogsComponent <-> PodsLogsService', () => {
       { timestamp: '2019-05-06T18:59:06.554540433Z', message: 'messageG' },
     ]);
 
-    logEntriesDebugElement = fixture.debugElement.queryAll(By.css('.container-log'));
+    logEntriesDebugElement = fixture.debugElement.queryAll(
+      By.css('.container-log')
+    );
     expect(logEntriesDebugElement.length).toBe(4);
-    expect(logEntriesDebugElement[0].nativeElement.textContent).toMatch(/messageD/);
-    expect(logEntriesDebugElement[1].nativeElement.textContent).toMatch(/messageE/);
-    expect(logEntriesDebugElement[2].nativeElement.textContent).toMatch(/messageF/);
-    expect(logEntriesDebugElement[3].nativeElement.textContent).toMatch(/messageG/);
+    expect(logEntriesDebugElement[0].nativeElement.textContent).toMatch(
+      /messageD/
+    );
+    expect(logEntriesDebugElement[1].nativeElement.textContent).toMatch(
+      /messageE/
+    );
+    expect(logEntriesDebugElement[2].nativeElement.textContent).toMatch(
+      /messageF/
+    );
+    expect(logEntriesDebugElement[3].nativeElement.textContent).toMatch(
+      /messageG/
+    );
 
     discardPeriodicTasks();
   }));
@@ -169,68 +206,116 @@ describe('LogsComponent <-> PodsLogsService', () => {
     ];
     fixture.detectChanges();
 
-    let logEntriesDebugElement: DebugElement[] = fixture.debugElement.queryAll(By.css('.container-log'));
+    let logEntriesDebugElement: DebugElement[] = fixture.debugElement.queryAll(
+      By.css('.container-log')
+    );
     expect(logEntriesDebugElement.length).toBe(3);
-    expect(logEntriesDebugElement[0].nativeElement.textContent).toMatch(/May 6, 2019(.+)messageA/);
-    expect(logEntriesDebugElement[1].nativeElement.textContent).toMatch(/May 6, 2019(.*)+messageB/);
-    expect(logEntriesDebugElement[2].nativeElement.textContent).toMatch(/May 6, 2019(.*)+messageC/);
+    expect(logEntriesDebugElement[0].nativeElement.textContent).toMatch(
+      /May \d+, 2019(.+)messageA/
+    );
+    expect(logEntriesDebugElement[1].nativeElement.textContent).toMatch(
+      /May \d+, 2019(.*)+messageB/
+    );
+    expect(logEntriesDebugElement[2].nativeElement.textContent).toMatch(
+      /May \d+, 2019(.*)+messageC/
+    );
 
     component.shouldDisplayTimestamp = false;
     fixture.detectChanges();
 
-    logEntriesDebugElement = fixture.debugElement.queryAll(By.css('.container-log'));
+    logEntriesDebugElement = fixture.debugElement.queryAll(
+      By.css('.container-log')
+    );
     expect(logEntriesDebugElement.length).toBe(3);
-    expect(logEntriesDebugElement[0].nativeElement.textContent).toMatch(/^\s+messageA\s+$/);
-    expect(logEntriesDebugElement[1].nativeElement.textContent).toMatch(/^\s+messageB\s+$/);
-    expect(logEntriesDebugElement[2].nativeElement.textContent).toMatch(/^\s+messageC\s+$/);
+    expect(logEntriesDebugElement[0].nativeElement.textContent).toMatch(
+      /^\s+messageA\s+$/
+    );
+    expect(logEntriesDebugElement[1].nativeElement.textContent).toMatch(
+      /^\s+messageB\s+$/
+    );
+    expect(logEntriesDebugElement[2].nativeElement.textContent).toMatch(
+      /^\s+messageC\s+$/
+    );
   });
 
   it('should continously scroll to new logs if user has already scrolled to the bottom', () => {
     const numberOfEntriesRequiredToScroll = 200;
-    component.containerLogs = _.map(_.range(numberOfEntriesRequiredToScroll), createRandomLogEntry);
+    component.containerLogs = _.map(
+      _.range(numberOfEntriesRequiredToScroll),
+      createRandomLogEntry
+    );
     fixture.detectChanges();
 
-    const logWrapperDebugElement: DebugElement = fixture.debugElement.query(By.css('.container-logs-bg'));
-    let logWrapperNativeElement: HTMLDivElement = logWrapperDebugElement.nativeElement;
-    expect(logWrapperNativeElement.scrollHeight).toBeGreaterThan(logWrapperNativeElement.clientHeight);
+    const logWrapperDebugElement: DebugElement = fixture.debugElement.query(
+      By.css('.container-logs-bg')
+    );
+    let logWrapperNativeElement: HTMLDivElement =
+      logWrapperDebugElement.nativeElement;
+    expect(logWrapperNativeElement.scrollHeight).toBeGreaterThan(
+      logWrapperNativeElement.clientHeight
+    );
     expect(logWrapperNativeElement.scrollTop).toBe(0);
 
     const logWrapperHeight = logWrapperNativeElement.clientHeight;
     logWrapperNativeElement.scrollTop = logWrapperNativeElement.scrollHeight;
 
-    expect(logWrapperNativeElement.scrollTop).toEqual(logWrapperNativeElement.scrollHeight - logWrapperHeight);
+    expect(logWrapperNativeElement.scrollTop).toEqual(
+      logWrapperNativeElement.scrollHeight - logWrapperHeight
+    );
 
-    const newContainerLogs: LogEntry[] = _.map(_.range(numberOfEntriesRequiredToScroll), createRandomLogEntry);
+    const newContainerLogs: LogEntry[] = _.map(
+      _.range(numberOfEntriesRequiredToScroll),
+      createRandomLogEntry
+    );
     component.containerLogs.push(...newContainerLogs);
     logWrapperNativeElement.dispatchEvent(new Event('scroll'));
     fixture.detectChanges();
 
-    logWrapperNativeElement = fixture.debugElement.query(By.css('.container-logs-bg')).nativeElement;
-    expect(logWrapperNativeElement.scrollTop).toEqual(logWrapperNativeElement.scrollHeight - logWrapperHeight);
+    logWrapperNativeElement = fixture.debugElement.query(
+      By.css('.container-logs-bg')
+    ).nativeElement;
+    expect(logWrapperNativeElement.scrollTop).toEqual(
+      logWrapperNativeElement.scrollHeight - logWrapperHeight
+    );
   });
 
   it('should keep scroll position even if new logs are coming in and user is not at bottom', () => {
     const numberOfEntriesRequiredToScroll = 200;
-    component.containerLogs = _.map(_.range(numberOfEntriesRequiredToScroll), createRandomLogEntry);
+    component.containerLogs = _.map(
+      _.range(numberOfEntriesRequiredToScroll),
+      createRandomLogEntry
+    );
     fixture.detectChanges();
 
-    const logWrapperDebugElement: DebugElement = fixture.debugElement.query(By.css('.container-logs-bg'));
-    let logWrapperNativeElement: HTMLDivElement = logWrapperDebugElement.nativeElement;
-    expect(logWrapperNativeElement.scrollHeight).toBeGreaterThan(logWrapperNativeElement.clientHeight);
+    const logWrapperDebugElement: DebugElement = fixture.debugElement.query(
+      By.css('.container-logs-bg')
+    );
+    let logWrapperNativeElement: HTMLDivElement =
+      logWrapperDebugElement.nativeElement;
+    expect(logWrapperNativeElement.scrollHeight).toBeGreaterThan(
+      logWrapperNativeElement.clientHeight
+    );
     expect(logWrapperNativeElement.scrollTop).toBe(0);
 
     // scroll halfway
-    const halfwayScrollMark = Math.floor(logWrapperNativeElement.clientHeight / 2);
+    const halfwayScrollMark = Math.floor(
+      logWrapperNativeElement.clientHeight / 2
+    );
     logWrapperNativeElement.scrollTop = halfwayScrollMark;
     logWrapperNativeElement.dispatchEvent(new Event('scroll'));
 
     // add new logs
-    const newContainerLogs: LogEntry[] = _.map(_.range(numberOfEntriesRequiredToScroll), createRandomLogEntry);
+    const newContainerLogs: LogEntry[] = _.map(
+      _.range(numberOfEntriesRequiredToScroll),
+      createRandomLogEntry
+    );
     component.containerLogs.push(...newContainerLogs);
     fixture.detectChanges();
 
     // check scroll is in same place
-    logWrapperNativeElement = fixture.debugElement.query(By.css('.container-logs-bg')).nativeElement;
+    logWrapperNativeElement = fixture.debugElement.query(
+      By.css('.container-logs-bg')
+    ).nativeElement;
     expect(logWrapperNativeElement.scrollTop).toBe(halfwayScrollMark);
   });
 

@@ -1,12 +1,14 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-
-import { Component, OnDestroy, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ContentStreamService } from 'src/app/services/content-stream/content-stream.service';
 import { ContentResponse, View } from 'src/app/models/content';
+import { ContentStreamService } from 'src/app/services/content-stream/content-stream.service';
 import { titleAsText } from 'src/app/util/view';
+
+import { IconService } from './services/icon.service';
+
 
 @Component({
   selector: 'app-overview',
@@ -23,15 +25,17 @@ export class OverviewComponent implements OnInit, OnDestroy {
   title: string = null;
   views: View[] = null;
   singleView: View = null;
+  private iconName: string;
 
   constructor(
     private route: ActivatedRoute,
     private contentStreamService: ContentStreamService,
+    private iconService: IconService
   ) {}
 
   ngOnInit() {
-    this.route.url.subscribe((url) => {
-      const currentPath = url.map((u) => u.path).join('/');
+    this.route.url.subscribe(url => {
+      const currentPath = url.map(u => u.path).join('/');
       if (currentPath !== this.previousUrl) {
         this.title = null;
         this.singleView = null;
@@ -60,7 +64,9 @@ export class OverviewComponent implements OnInit, OnDestroy {
     }
 
     this.hasReceivedContent = true;
-  }
+
+    this.iconName = this.iconService.load(contentResponse.content);
+  };
 
   ngOnDestroy() {
     this.contentStreamService.closeStream();

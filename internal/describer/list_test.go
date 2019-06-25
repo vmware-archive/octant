@@ -20,8 +20,8 @@ import (
 	configFake "github.com/vmware/octant/internal/config/fake"
 	printerfake "github.com/vmware/octant/internal/modules/overview/printer/fake"
 	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/plugin"
+	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -60,12 +60,23 @@ func TestListDescriber(t *testing.T) {
 		},
 	}
 
-	d := NewList(thePath, "list", key, podListType, podObjectType, false)
+	listConfig := ListConfig{
+		Path:          thePath,
+		Title:         "list",
+		StoreKey:      key,
+		ListType:      podListType,
+		ObjectType:    podObjectType,
+		IsClusterWide: false,
+		IconName:      "icon-name",
+		IconSource:    "icon-source",
+	}
+	d := NewList(listConfig)
 	cResponse, err := d.Describe(ctx, "/path", namespace, options)
 	require.NoError(t, err)
 
 	list := component.NewList("list", nil)
 	list.Add(podListTable)
+	list.SetIcon("icon-name", "icon-source")
 	expected := component.ContentResponse{
 		Components: []component.Component{list},
 	}

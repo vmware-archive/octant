@@ -9,19 +9,19 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"path"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware/octant/internal/api"
-	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/describer"
+	"github.com/vmware/octant/internal/icon"
 	"github.com/vmware/octant/internal/link"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/modules/overview/printer"
+	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/queryer"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
@@ -194,7 +194,7 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 
 	nf := octant.NewNavigationFactory("", root, objectStore, navigationEntries)
 
-	entries, err := nf.Generate(ctx, "Cluster Overview")
+	entries, err := nf.Generate(ctx, "Cluster Overview", icon.ClusterOverview, "")
 	if err != nil {
 		return nil, err
 	}
@@ -221,10 +221,11 @@ func (co *ClusterOverview) Generators() []octant.Generator {
 }
 
 func rbacEntries(_ context.Context, prefix, _ string, _ store.Store) ([]octant.Navigation, error) {
-	return []octant.Navigation{
-		*octant.NewNavigation("Cluster Roles", path.Join(prefix, "cluster-roles")),
-		*octant.NewNavigation("Cluster Role Bindings", path.Join(prefix, "cluster-role-bindings")),
-	}, nil
+	neh := octant.NavigationEntriesHelper{}
+	neh.Add("Cluster Roles", "cluster-roles", icon.ClusterOverviewClusterRole)
+	neh.Add("Cluster Role Bindings", "cluster-role-bindings", icon.ClusterOverviewClusterRoleBinding)
+
+	return neh.Generate(prefix)
 }
 
 func (co *ClusterOverview) SetContext(ctx context.Context, contextName string) error {

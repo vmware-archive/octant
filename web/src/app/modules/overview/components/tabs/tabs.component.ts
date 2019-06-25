@@ -1,10 +1,8 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-
-import { Component, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import _ from 'lodash';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { View } from 'src/app/models/content';
 import { ViewUtil } from 'src/app/util/view';
 
@@ -22,6 +20,7 @@ interface Tab {
 export class TabsComponent implements OnChanges, OnInit {
   @Input() title: string;
   @Input() views: View[];
+  @Input() iconName: string;
 
   tabs: Tab[] = [];
   activeTab: string;
@@ -38,7 +37,7 @@ export class TabsComponent implements OnChanges, OnInit {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.views.currentValue) {
       const views = changes.views.currentValue as View[];
-      this.tabs = views.map((view) => {
+      this.tabs = views.map(view => {
         const vu = new ViewUtil(view);
         const title = vu.titleAsText();
         return {

@@ -59,12 +59,21 @@ func (nf *NavigationFactory) Root() string {
 }
 
 // Generate returns navigation entries.
-func (nf *NavigationFactory) Generate(ctx context.Context, title string) (*Navigation, error) {
+func (nf *NavigationFactory) Generate(ctx context.Context, title string, iconName, iconSource string) (*Navigation, error) {
 	n := &Navigation{
 		Title:    title,
 		Path:     nf.rootPath,
 		Children: []Navigation{},
 	}
+
+	if iconName != "" {
+		n.IconName = iconName
+
+		if iconSource != "" {
+			n.IconSource = iconSource
+		}
+	}
+
 
 	var mu sync.Mutex
 	var g errgroup.Group
@@ -97,7 +106,11 @@ func (nf *NavigationFactory) pathFor(elements ...string) string {
 }
 
 func (nf *NavigationFactory) genNode(ctx context.Context, name string, childFn EntriesFunc) (*Navigation, error) {
-	node := NewNavigation(name, nf.pathFor(nf.entries.Lookup[name]))
+	node, err := NewNavigation(name, nf.pathFor(nf.entries.Lookup[name]))
+	if err != nil {
+		return nil, err
+	}
+
 	if childFn != nil {
 		children, err := childFn(ctx, node.Path, nf.namespace, nf.objectStore)
 		if err != nil {

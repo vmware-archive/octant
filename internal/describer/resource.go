@@ -7,9 +7,11 @@ package describer
 
 import (
 	"context"
+	"fmt"
 	"path"
 	"reflect"
 
+	"github.com/vmware/octant/internal/icon"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -31,6 +33,7 @@ type ResourceOptions struct {
 	Titles                ResourceTitle
 	DisableResourceViewer bool
 	ClusterWide           bool
+	IconName              string
 }
 
 type Resource struct {
@@ -48,29 +51,41 @@ func (r *Resource) Describe(ctx context.Context, prefix, namespace string, optio
 }
 
 func (r *Resource) List() *List {
+	iconName, iconSource := loadIcon(r.IconName)
+
 	return NewList(
-		r.Path,
-		r.Titles.List,
-		r.ObjectStoreKey,
-		func() interface{} {
-			return reflect.New(reflect.ValueOf(r.ListType).Elem().Type()).Interface()
+		ListConfig{
+			Path:     r.Path,
+			Title:    r.Titles.List,
+			StoreKey: r.ObjectStoreKey,
+			ListType: func() interface{} {
+				return reflect.New(reflect.ValueOf(r.ListType).Elem().Type()).Interface()
+			},
+			ObjectType: func() interface{} {
+				return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
+			},
+			IsClusterWide: r.ClusterWide,
+			IconName:      iconName,
+			IconSource:    iconSource,
 		},
-		func() interface{} {
-			return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
-		},
-		r.ClusterWide,
 	)
 }
 
 func (r *Resource) Object() *Object {
+	iconName, iconSource := loadIcon(r.IconName)
+
 	return NewObject(
-		path.Join(r.Path, ResourceNameRegex),
-		r.Titles.Object,
-		r.ObjectStoreKey,
-		func() interface{} {
-			return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
+		ObjectConfig{
+			Path:      path.Join(r.Path, ResourceNameRegex),
+			BaseTitle: r.Titles.Object,
+			StoreKey:  r.ObjectStoreKey,
+			ObjectType: func() interface{} {
+				return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
+			},
+			DisableResourceViewer: r.DisableResourceViewer,
+			IconName:              iconName,
+			IconSource:            iconSource,
 		},
-		r.DisableResourceViewer,
 	)
 }
 
@@ -81,4 +96,15 @@ func (r *Resource) PathFilters() []PathFilter {
 	}
 
 	return filters
+}
+
+func loadIcon(name string) (string, string) {
+	source, err := icon.LoadIcon(name)
+	if err != nil {
+		return name, ""
+	}
+
+	internalName := fmt.Sprintf("internal:%s", name)
+
+	return internalName, source
 }

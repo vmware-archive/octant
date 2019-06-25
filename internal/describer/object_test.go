@@ -19,8 +19,8 @@ import (
 	configFake "github.com/vmware/octant/internal/config/fake"
 	printerfake "github.com/vmware/octant/internal/modules/overview/printer/fake"
 	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/plugin"
+	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -56,7 +56,16 @@ func TestObjectDescriber(t *testing.T) {
 		},
 	}
 
-	d := NewObject(thePath, "object", key, podObjectType, true)
+	objectConfig := ObjectConfig{
+		Path:                  thePath,
+		BaseTitle:             "object",
+		StoreKey:              key,
+		ObjectType:            podObjectType,
+		DisableResourceViewer: true,
+		IconName:              "icon-name",
+		IconSource:            "icon-source",
+	}
+	d := NewObject(objectConfig)
 
 	d.tabFuncDescriptors = []tabFuncDescriptor{
 		{name: "summary", tabFunc: d.addSummaryTab},
@@ -69,7 +78,9 @@ func TestObjectDescriber(t *testing.T) {
 	summary.SetAccessor("summary")
 
 	expected := component.ContentResponse{
-		Title: component.Title(component.NewText("object"), component.NewText("pod")),
+		Title:      component.Title(component.NewText("object"), component.NewText("pod")),
+		IconName:   "icon-name",
+		IconSource: "icon-source",
 		Components: []component.Component{
 			summary,
 		},

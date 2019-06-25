@@ -7,6 +7,7 @@ package octant
 
 import (
 	"context"
+	"fmt"
 	"path"
 	"sort"
 
@@ -17,22 +18,55 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"github.com/vmware/octant/internal/icon"
 	"github.com/vmware/octant/pkg/store"
 )
 
+// NavigationOption is an option for configuring navigation.
+type NavigationOption func(*Navigation) error
+
+// SetNavigationIcon sets the icon for the navigation entry.
+func SetNavigationIcon(name string) NavigationOption {
+	return func(n *Navigation) error {
+		if name == "" {
+			return nil
+		}
+
+		source, err := icon.LoadIcon(name)
+		if err != nil {
+			return err
+		}
+
+		n.IconName = fmt.Sprintf("internal:%s", name)
+		n.IconSource = source
+
+		return nil
+	}
+}
+
 // Navigation is a set of navigation entries.
 type Navigation struct {
-	Title    string       `json:"title,omitempty"`
-	Path     string       `json:"path,omitempty"`
-	Children []Navigation `json:"children,omitempty"`
+	Title      string       `json:"title,omitempty"`
+	Path       string       `json:"path,omitempty"`
+	Children   []Navigation `json:"children,omitempty"`
+	IconName   string       `json:"iconName,omitempty"`
+	IconSource string       `json:"iconSource,omitempty"`
 }
 
 // NewNavigation creates a Navigation.
-func NewNavigation(title, path string) *Navigation {
-	return &Navigation{Title: title, Path: path}
+func NewNavigation(title, path string, options ...NavigationOption) (*Navigation, error) {
+	navigation := &Navigation{Title: title, Path: path}
+
+	for _, option := range options {
+		if err := option(navigation); err != nil {
+			return nil, err
+		}
+	}
+
+	return navigation, nil
 }
 
-// CRDEntries generates navigation entries for crds.
+// CRDEntries generates navigation entries for CRDs.
 func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store.Store) ([]Navigation, error) {
 	var list []Navigation
 
@@ -55,7 +89,12 @@ func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store
 		}
 
 		if len(objects) > 0 {
-			list = append(list, *NewNavigation(name, path.Join(prefix, name)))
+			navigation, err := NewNavigation(name, path.Join(prefix, name), SetNavigationIcon(icon.CustomResourceDefinition))
+			if err != nil {
+				return nil, err
+			}
+
+			list = append(list, *navigation)
 		}
 	}
 
@@ -144,4 +183,38 @@ func ListCustomResources(
 	}
 
 	return objects, nil
+}
+
+type navConfig struct {
+	title    string
+	suffix   string
+	iconName string
+}
+
+// NavigationEntriesHelper generates navigation entries.
+type NavigationEntriesHelper struct {
+	navConfigs []navConfig
+}
+
+// Add adds an entry.
+func (neh *NavigationEntriesHelper) Add(title, suffix, iconName string) {
+	neh.navConfigs = append(neh.navConfigs, navConfig{
+		title: title, suffix: suffix, iconName: iconName,
+	})
+}
+
+// Generate generates navigation entries.
+func (neh *NavigationEntriesHelper) Generate(prefix string) ([]Navigation, error) {
+	var navigations []Navigation
+
+	for _, nc := range neh.navConfigs {
+		navigation, err := NewNavigation(nc.title, path.Join(prefix, nc.suffix), SetNavigationIcon(nc.iconName))
+		if err != nil {
+			return nil, err
+		}
+
+		navigations = append(navigations, *navigation)
+	}
+
+	return navigations, nil
 }

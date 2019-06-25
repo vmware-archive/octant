@@ -20,6 +20,7 @@ import (
 	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/describer"
+	"github.com/vmware/octant/internal/icon"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/pkg/store"
@@ -179,7 +180,7 @@ func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]o
 
 	nf := octant.NewNavigationFactory(namespace, root, objectStore, navigationEntries)
 
-	entries, err := nf.Generate(ctx, "Overview")
+	entries, err := nf.Generate(ctx, "Overview", icon.Overview, "")
 	if err != nil {
 		return nil, err
 	}

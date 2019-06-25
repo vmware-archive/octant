@@ -51,7 +51,7 @@ func Test_List_Marshal(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			actual, err := json.Marshal(tc.input)
-			isErr := (err != nil)
+			isErr := err != nil
 			if isErr != tc.isErr {
 				t.Fatalf("Unexpected error: %v", err)
 			}
@@ -61,4 +61,12 @@ func Test_List_Marshal(t *testing.T) {
 			assert.JSONEq(t, string(expected), string(actual))
 		})
 	}
+}
+
+func TestList_Add(t *testing.T) {
+	l := NewList("", []Component{})
+	l.SetIcon("icon-name", "icon-source")
+
+	assert.Equal(t, "icon-name", l.Config.IconName)
+	assert.Equal(t, "icon-source", l.Config.IconSource)
 }

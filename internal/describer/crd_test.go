@@ -17,6 +17,7 @@ import (
 
 	"github.com/vmware/octant/internal/config"
 	configFake "github.com/vmware/octant/internal/config/fake"
+	"github.com/vmware/octant/internal/icon"
 	linkFake "github.com/vmware/octant/internal/link/fake"
 	"github.com/vmware/octant/internal/modules/overview/printer"
 	"github.com/vmware/octant/internal/queryer"
@@ -97,6 +98,10 @@ func Test_crd(t *testing.T) {
 		component.NewText("crd1"),
 		component.NewText("cr"),
 	})
+
+	iconName, iconSource := loadIcon(icon.CustomResourceDefinition)
+	expected.IconName = iconName
+	expected.IconSource = iconSource
 
 	crView := component.NewText("cr")
 	crView.SetAccessor("summary")

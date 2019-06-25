@@ -21,6 +21,16 @@ import (
 	"github.com/vmware/octant/pkg/view/component"
 )
 
+type ObjectConfig struct {
+	Path                  string
+	BaseTitle             string
+	ObjectType            func() interface{}
+	StoreKey              store.Key
+	DisableResourceViewer bool
+	IconName              string
+	IconSource            string
+}
+
 // Object describes an object.
 type Object struct {
 	*base
@@ -31,17 +41,21 @@ type Object struct {
 	objectStoreKey        store.Key
 	disableResourceViewer bool
 	tabFuncDescriptors    []tabFuncDescriptor
+	iconName              string
+	iconSource            string
 }
 
 // NewObject creates an instance of Object.
-func NewObject(p, baseTitle string, objectStoreKey store.Key, objectType func() interface{}, disableResourceViewer bool) *Object {
+func NewObject(c ObjectConfig) *Object {
 	o := &Object{
-		path:                  p,
-		baseTitle:             baseTitle,
+		path:                  c.Path,
+		baseTitle:             c.BaseTitle,
 		base:                  newBaseDescriber(),
-		objectStoreKey:        objectStoreKey,
-		objectType:            objectType,
-		disableResourceViewer: disableResourceViewer,
+		objectStoreKey:        c.StoreKey,
+		objectType:            c.ObjectType,
+		disableResourceViewer: c.DisableResourceViewer,
+		iconName:              c.IconName,
+		iconSource:            c.IconSource,
 	}
 
 	o.tabFuncDescriptors = []tabFuncDescriptor{
@@ -91,6 +105,8 @@ func (d *Object) Describe(ctx context.Context, prefix, namespace string, options
 	}
 
 	cr := component.NewContentResponse(title)
+	cr.IconSource = d.iconSource
+	cr.IconName = d.iconName
 
 	currentObject, ok := item.(runtime.Object)
 	if !ok {
