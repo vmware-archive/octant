@@ -17,7 +17,9 @@ type List struct {
 
 // ListConfig is the contents of a List
 type ListConfig struct {
-	Items []Component `json:"items"`
+	IconName   string      `json:"iconName"`
+	IconSource string      `json:"iconSource"`
+	Items      []Component `json:"items"`
 }
 
 func (t *ListConfig) UnmarshalJSON(data []byte) error {
@@ -50,9 +52,10 @@ func NewList(title string, items []Component) *List {
 	}
 }
 
-// GetMetadata accesses the components metadata. Implements Component.
-func (t *List) GetMetadata() Metadata {
-	return t.Metadata
+// SetIcon sets the icon for a list.
+func (t *List) SetIcon(name, source string) {
+	t.Config.IconName = name
+	t.Config.IconSource = source
 }
 
 // Add adds additional items to the tail of the list.

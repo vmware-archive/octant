@@ -52,7 +52,9 @@
                   "value": "80/TCP"
                 }
               }
-            ]
+            ],
+            "iconName": "",
+            "iconSource": ""
           }
         }
       },

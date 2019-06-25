@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	configFake "github.com/vmware/octant/internal/config/fake"
+	"github.com/vmware/octant/internal/icon"
 	"github.com/vmware/octant/internal/link"
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/store"
@@ -74,6 +75,8 @@ func Test_crdListDescriber(t *testing.T) {
 	list := component.NewList("Custom Resources / crd1", []component.Component{
 		component.NewText("crd list"),
 	})
+	iconName, iconSource := loadIcon(icon.CustomResourceDefinition)
+	list.SetIcon(iconName, iconSource)
 	expected.Add(list)
 
 	assertJSONEqual(t, expected, got)

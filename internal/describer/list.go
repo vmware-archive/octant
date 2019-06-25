@@ -17,6 +17,17 @@ import (
 	"github.com/vmware/octant/pkg/view/component"
 )
 
+type ListConfig struct {
+	Path          string
+	Title         string
+	StoreKey      store.Key
+	ListType      func() interface{}
+	ObjectType    func() interface{}
+	IsClusterWide bool
+	IconName      string
+	IconSource    string
+}
+
 // List describes a list of objects.
 type List struct {
 	*base
@@ -27,18 +38,22 @@ type List struct {
 	objectType     func() interface{}
 	objectStoreKey store.Key
 	isClusterWide  bool
+	iconName       string
+	iconSource     string
 }
 
 // NewList creates an instance of List.
-func NewList(p, title string, objectStoreKey store.Key, listType, objectType func() interface{}, isClusterWide bool) *List {
+func NewList(c ListConfig) *List {
 	return &List{
-		path:           p,
-		title:          title,
+		path:           c.Path,
+		title:          c.Title,
 		base:           newBaseDescriber(),
-		objectStoreKey: objectStoreKey,
-		listType:       listType,
-		objectType:     objectType,
-		isClusterWide:  isClusterWide,
+		objectStoreKey: c.StoreKey,
+		listType:       c.ListType,
+		objectType:     c.ObjectType,
+		isClusterWide:  c.IsClusterWide,
+		iconName:       c.IconName,
+		iconSource:     c.IconSource,
 	}
 }
 
@@ -62,6 +77,7 @@ func (d *List) Describe(ctx context.Context, prefix, namespace string, options O
 	}
 
 	list := component.NewList(d.title, nil)
+	list.SetIcon(d.iconName, d.iconSource)
 
 	listType := d.listType()
 

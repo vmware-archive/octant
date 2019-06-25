@@ -1,7 +1,6 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-
 export interface ContentResponse {
   content: Content;
 }
@@ -9,6 +8,8 @@ export interface ContentResponse {
 export interface Content {
   viewComponents: View[];
   title: View[];
+  iconName?: string;
+  iconSource?: string;
 }
 
 export interface Metadata {
@@ -23,7 +24,7 @@ export interface View {
 
 export interface AnnotationsView extends View {
   config: {
-    annotations: { [key: string]: string }
+    annotations: { [key: string]: string };
   };
 }
 
@@ -34,7 +35,7 @@ export interface ContainerDef {
 
 export interface ContainersView extends View {
   config: {
-    containers: ContainerDef[]
+    containers: ContainerDef[];
   };
 }
 
@@ -51,41 +52,42 @@ export interface FlexLayoutItem {
 
 export interface FlexLayoutView extends View {
   config: {
-    sections: FlexLayoutItem[][]
+    sections: FlexLayoutItem[][];
   };
 }
 
 export interface LabelsView extends View {
   config: {
-    labels: { [key: string]: string }
+    labels: { [key: string]: string };
   };
 }
 
 export interface LinkView extends View {
   config: {
-    ref: string
-    value: string
+    ref: string;
+    value: string;
   };
 }
 
 export interface ListView extends View {
   config: {
-    items: View[]
+    iconName: string;
+    items: View[];
   };
 }
 
 export interface ExpressionSelectorView extends View {
   config: {
-    key: string
-    operator: string
-    values: string[]
+    key: string;
+    operator: string;
+    values: string[];
   };
 }
 
 export interface LabelSelectorView extends View {
   config: {
-    key: string
-    value: string
+    key: string;
+    value: string;
   };
 }
 
@@ -96,7 +98,7 @@ export interface PodSummary {
 
 export interface PodStatusView extends View {
   config: {
-    pods: { [key: string]: PodSummary }
+    pods: { [key: string]: PodSummary };
   };
 }
 
@@ -114,12 +116,12 @@ export interface PortForwardTarget {
 
 export interface PortForwardView extends View {
   config: {
-    text: string
-    id: string
-    action: string
-    status: string
-    ports: PortForwardPortSpec[]
-    target: PortForwardTarget
+    text: string;
+    id: string;
+    action: string;
+    status: string;
+    ports: PortForwardPortSpec[];
+    target: PortForwardTarget;
   };
 }
 
@@ -130,10 +132,10 @@ export interface QuadrantValue {
 
 export interface QuadrantView extends View {
   config: {
-    nw: QuadrantValue
-    ne: QuadrantValue
-    sw: QuadrantValue
-    se: QuadrantValue
+    nw: QuadrantValue;
+    ne: QuadrantValue;
+    sw: QuadrantValue;
+    se: QuadrantValue;
   };
 }
 
@@ -153,15 +155,15 @@ export interface Node {
 
 export interface ResourceViewerView extends View {
   config: {
-    edges: { [key: string]: Edge[] }
-    nodes: Node[]
-    selected: string
+    edges: { [key: string]: Edge[] };
+    nodes: Node[];
+    selected: string;
   };
 }
 
 export interface SelectorsView extends View {
   config: {
-    selectors: Array<ExpressionSelectorView | LabelSelectorView>
+    selectors: Array<ExpressionSelectorView | LabelSelectorView>;
   };
 }
 
@@ -172,15 +174,15 @@ export interface SummaryItem {
 
 export interface SummaryView extends View {
   config: {
-    sections: SummaryItem[]
+    sections: SummaryItem[];
   };
 }
 
 export interface TableView extends View {
   config: {
-    columns: TableColumn[]
-    rows: TableRow[]
-    emptyContent: string
+    columns: TableColumn[];
+    rows: TableRow[];
+    emptyContent: string;
   };
 }
 
@@ -195,19 +197,19 @@ export interface TableColumn {
 
 export interface TextView extends View {
   config: {
-    value: string
+    value: string;
   };
 }
 
 export interface TimestampView extends View {
   config: {
-    timestamp: number
+    timestamp: number;
   };
 }
 
 export interface YAMLView extends View {
   config: {
-    data: string
+    data: string;
   };
 }
 
@@ -253,12 +255,12 @@ export interface PortsView extends View {
 
 export interface LoadingView extends View {
   config: {
-    value: string
+    value: string;
   };
 }
 
 export interface ErrorView extends View {
   config: {
-    data: string
+    data: string;
   };
 }

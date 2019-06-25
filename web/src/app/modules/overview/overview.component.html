@@ -1,12 +1,12 @@
 <div class="overview-component" #scrollTarget>
-  <ng-container *ngIf="hasReceivedContent">
-    <ng-container *ngIf="hasTabs; then withTabs; else withoutTabs"></ng-container>
-    <ng-template #withTabs>
-      <app-object-tabs [views]="views" [title]="title"></app-object-tabs>
-    </ng-template>
-    <ng-template #withoutTabs>
-      <app-content-switcher [view]="singleView"></app-content-switcher>
-    </ng-template>
-  </ng-container>
+    <ng-container *ngIf="hasReceivedContent">
+        <ng-container *ngIf="hasTabs; then withTabs; else withoutTabs"></ng-container>
+        <ng-template #withTabs>
+            <app-object-tabs [views]="views" [title]="title" [iconName]="iconName"></app-object-tabs>
+        </ng-template>
+        <ng-template #withoutTabs>
+            <app-content-switcher [view]="singleView"></app-content-switcher>
+        </ng-template>
+    </ng-container>
 </div>
 

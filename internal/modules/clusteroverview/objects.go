@@ -9,6 +9,7 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 
 	"github.com/vmware/octant/internal/describer"
+	"github.com/vmware/octant/internal/icon"
 	"github.com/vmware/octant/pkg/store"
 )
 
@@ -25,6 +26,7 @@ var (
 		ObjectType:     &rbacv1.ClusterRole{},
 		Titles:         describer.ResourceTitle{List: "RBAC / Cluster Roles", Object: "Cluster Role"},
 		ClusterWide:    true,
+		IconName:       icon.ClusterOverviewClusterRole,
 	})
 
 	rbacClusterRoleBindings = describer.NewResource(describer.ResourceOptions{
@@ -34,6 +36,7 @@ var (
 		ObjectType:     &rbacv1.ClusterRoleBinding{},
 		Titles:         describer.ResourceTitle{List: "RBAC / Cluster Role Bindings", Object: "Cluster Role Binding"},
 		ClusterWide:    true,
+		IconName:       icon.ClusterOverviewClusterRoleBinding,
 	})
 
 	rbacDescriber = describer.NewSection(

@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"github.com/vmware/octant/internal/icon"
 	"github.com/vmware/octant/internal/link"
 	"github.com/vmware/octant/internal/modules/overview/printer"
 	"github.com/vmware/octant/pkg/store"
@@ -71,6 +72,9 @@ func (cld *crdList) Describe(ctx context.Context, prefix, namespace string, opti
 	list := component.NewList(fmt.Sprintf("Custom Resources / %s", cld.name), []component.Component{
 		table,
 	})
+
+	iconName, iconSource := loadIcon(icon.CustomResourceDefinition)
+	list.SetIcon(iconName, iconSource)
 
 	return component.ContentResponse{
 		Components: []component.Component{list},

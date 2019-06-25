@@ -7,6 +7,7 @@
     routerLinkActive="active"
     [routerLinkActiveOptions]="{exact: true}"
     class="clr-treenode-link section">
+    <clr-icon [attr.shape]="section.iconName | default:'home'"></clr-icon>
     {{ section.title }}
   </a>
 
@@ -18,6 +19,7 @@
       routerLinkActive="active"
       [routerLinkActiveOptions]="{exact: true}"
       class="clr-treenode-link category">
+      <clr-icon [attr.shape]="itemIcon(category) | default:'folder'"></clr-icon>
       {{ category.title }}
     </a>
 
@@ -27,6 +29,7 @@
         [routerLink]="entry.path"
         routerLinkActive="active"
         class="clr-treenode-link item">
+        <clr-icon [attr.shape]="itemIcon(entry) | default:'folder'"></clr-icon>
         {{ entry.title }}
       </a>
     </clr-tree-node>

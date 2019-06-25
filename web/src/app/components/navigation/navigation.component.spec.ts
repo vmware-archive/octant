@@ -1,10 +1,11 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { DefaultPipe } from '../../modules/overview/pipes/default.pipe';
 import { NavigationComponent } from './navigation.component';
+
 
 describe('NavigationComponent', () => {
   let component: NavigationComponent;
@@ -12,9 +13,8 @@ describe('NavigationComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ NavigationComponent ]
-    })
-    .compileComponents();
+      declarations: [NavigationComponent, DefaultPipe],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

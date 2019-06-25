@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware/octant/internal/config"
+	"github.com/vmware/octant/internal/icon"
 	"github.com/vmware/octant/internal/link"
 	"github.com/vmware/octant/internal/modules/overview/printer"
 	"github.com/vmware/octant/internal/modules/overview/resourceviewer"
@@ -93,7 +94,10 @@ func (c *crd) Describe(ctx context.Context, prefix, namespace string, options Op
 		component.NewText(crd.Name),
 		component.NewText(object.GetName()))
 
+	iconName, iconSource := loadIcon(icon.CustomResourceDefinition)
 	cr := component.NewContentResponse(title)
+	cr.IconName = iconName
+	cr.IconSource = iconSource
 
 	linkGenerator, err := link.NewFromDashConfig(options)
 	if err != nil {

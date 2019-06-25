@@ -1,11 +1,16 @@
-<h2>{{ title }}</h2>
+<h2>
+    <ng-container *ngIf="iconName">
+        <clr-icon [attr.shape]="iconName" size="24"></clr-icon>
+    </ng-container>
+    {{ title }}
+</h2>
 <clr-tabs *ngIf="tabs.length > 0">
-  <clr-tab *ngFor="let tab of tabs; trackBy: identifyTab">
-    <button clrTabLink class="tab-button" (click)="clickTab(tab.accessor)">{{ tab.name }}</button>
-    <ng-template [clrIfActive]="activeTab === tab.accessor">
-      <clr-tab-content>
-        <app-content-switcher [view]="tab.view"></app-content-switcher>
-      </clr-tab-content>
-    </ng-template>
-  </clr-tab>
+    <clr-tab *ngFor="let tab of tabs; trackBy: identifyTab">
+        <button clrTabLink class="tab-button" (click)="clickTab(tab.accessor)">{{ tab.name }}</button>
+        <ng-template [clrIfActive]="activeTab === tab.accessor">
+            <clr-tab-content>
+                <app-content-switcher [view]="tab.view"></app-content-switcher>
+            </clr-tab-content>
+        </ng-template>
+    </clr-tab>
 </clr-tabs>

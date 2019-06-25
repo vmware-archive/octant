@@ -28,7 +28,7 @@ func Test_Summary_Marshal(t *testing.T) {
 				base: newBase(typeSummary, TitleFromString("mysummary")),
 				Config: SummaryConfig{
 					Sections: []SummarySection{
-						SummarySection{
+						{
 							Header: "Containers",
 							Content: &List{
 								base: newBase(typeList, TitleFromString("nginx")),
@@ -50,7 +50,7 @@ func Test_Summary_Marshal(t *testing.T) {
 								},
 							},
 						},
-						SummarySection{
+						{
 							Header: "Empty Section",
 							Content: &Text{
 								Config: TextConfig{
