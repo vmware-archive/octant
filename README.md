@@ -71,7 +71,7 @@ The `octant` binary will be found in `$GOPATH/src/github.com/vmware/octant/build
 
 ### Contributing to the UI
 
-[Octant's UI README](./web/src/README.md)
+[Octant's UI README](web)
 
 ### Caveats
 
