@@ -9,7 +9,11 @@ describe('OlympusStacksComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ OlympusStacksComponent, WorkloadListComponent, WorkloadCardComponent ]
+      declarations: [
+        OlympusStacksComponent,
+        WorkloadListComponent,
+        WorkloadCardComponent,
+      ],
     })
     .compileComponents();
   }));

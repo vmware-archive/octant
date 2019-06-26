@@ -32,6 +32,22 @@
         font-size: 12px;
       }
     }
+
+    .revision-edit {
+      display: flex;
+      flex-direction: row;
+
+      .revision-edit-label {
+        margin-top: 4px;
+      }
+
+      .revision-input {
+        flex: 1;
+        .clr-input {
+          width: 100%;
+        }
+      }
+    }
   }
 
   .workload-actions {

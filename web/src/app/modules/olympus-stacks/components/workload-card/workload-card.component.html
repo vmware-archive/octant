@@ -5,20 +5,40 @@
   <div class="workload-details">
     <div class="pinned-text" *ngIf="workload.isPinned">pinned</div>
     <div class="following-text" *ngIf="workload.isFollowingChannel">following <span class="following-channel">{{workload.channelFollowing}}</span> channel</div>
-    <div class="last-updated-text">last updated: Friday, June 14th (5 days ago)</div>
+    <div class="last-updated-text">last updated: {{humanReadableTimestamp}}</div>
     <div class="sourceimage-text">sourceImage: {{workload.sourceImage}}</div>
-    <div class="revision-text">revision: <span class="revision-hash-text">{{workload.revision}}</span></div>
+    <ng-container *ngIf="editMode; else revisionText">
+      <div class="revision-edit">
+        <div class="revision-edit-label">revision: </div>
+        <div class="revision-input">
+          <input type="text" class="clr-input" placeholder="insert commit hash" (change)="this.newRevisionInput = $event.target.value">
+        </div>
+      </div>
+    </ng-container>
   </div>
   <div class="workload-actions">
     <ng-container *ngIf="workload.isComparedAgainst; else editBtn">
       <div class="pin-stack-btn">
-        <button class="btn btn-sm btn-link">Pin to stack</button>
+        <button class="btn btn-sm btn-link" (click)="pinToStack()">Pin to stack</button>
       </div>
     </ng-container>
-    <ng-template #editBtn>
-      <div class="edit-btn">
-        <button class="btn btn-sm btn-link">Edit</button>
-      </div>
-    </ng-template>
   </div>
 </div>
+<ng-template #revisionText>
+  <div class="revision-text">revision: <span class="revision-hash-text">{{workload.revision}}</span></div>
+</ng-template>
+<ng-template #editBtn>
+  <ng-container *ngIf="!editMode; else saveChangesBtnGroup">
+    <div class="edit-btn">
+      <button class="btn btn-sm btn-link" (click)="this.editMode = true">Edit</button>
+    </div>
+  </ng-container>
+</ng-template>
+<ng-template #saveChangesBtnGroup>
+  <div class="save-changes-btn">
+    <button class="btn btn-sm btn-link" (click)="saveChanges()">Save Changes</button>
+  </div>
+  <div class="cancel-changes-btn">
+      <button class="btn btn-sm btn-link" (click)="cancelChanges()">Cancel</button>
+    </div>
+</ng-template>
