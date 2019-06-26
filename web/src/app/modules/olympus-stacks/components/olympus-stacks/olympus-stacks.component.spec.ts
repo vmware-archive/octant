@@ -1,5 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { WorkloadListComponent } from '../workload-list/workload-list.component';
+import { WorkloadCardComponent } from '../workload-card/workload-card.component';
 import { OlympusStacksComponent } from './olympus-stacks.component';
 
 describe('OlympusStacksComponent', () => {
@@ -8,7 +9,7 @@ describe('OlympusStacksComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ OlympusStacksComponent ]
+      declarations: [ OlympusStacksComponent, WorkloadListComponent, WorkloadCardComponent ]
     })
     .compileComponents();
   }));

@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { WorkloadCardComponent } from '../workload-card/workload-card.component';
 import { WorkloadListComponent } from './workload-list.component';
 
 describe('WorkloadListComponent', () => {
@@ -8,7 +8,7 @@ describe('WorkloadListComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ WorkloadListComponent ]
+      declarations: [ WorkloadListComponent, WorkloadCardComponent ]
     })
     .compileComponents();
   }));
@@ -16,6 +16,12 @@ describe('WorkloadListComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(WorkloadListComponent);
     component = fixture.componentInstance;
+    component.workloadList = {
+      currentStack: 'olympusstackA',
+      stackOptions: ['olympusstackA', 'releaseChannelB', 'olympusstackC'],
+      channelFollowing: 'unstable',
+      workloads: [],
+    };
     fixture.detectChanges();
   });
 

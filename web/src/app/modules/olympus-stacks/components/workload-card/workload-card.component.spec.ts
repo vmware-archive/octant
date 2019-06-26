@@ -16,6 +16,13 @@ describe('WorkloadCardComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(WorkloadCardComponent);
     component = fixture.componentInstance;
+    component.workload = {
+      name: 'ui',
+      isPinned: true,
+      lastUpdated: new Date(),
+      revision: '2f2932c83b7a401d960f4538bf787e12c44dfd666',
+      sourceImage: 'sourceImageA',
+    };
     fixture.detectChanges();
   });
 
