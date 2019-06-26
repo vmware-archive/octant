@@ -19,6 +19,7 @@ import { NavigationComponent } from './components/navigation/navigation.componen
 import { NotifierComponent } from './components/notifier/notifier.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { OverviewModule } from './modules/overview/overview.module';
+import { OlympusStacksModule } from './modules/olympus-stacks/olympus-stacks.module';
 
 @Injectable()
 export class UnstripTrailingSlashLocation extends Location {
@@ -46,6 +47,7 @@ export class UnstripTrailingSlashLocation extends Location {
     AppRoutingModule,
     OverviewModule,
     NgSelectModule,
+    OlympusStacksModule,
   ],
   providers: [
     {
