@@ -1,0 +1,47 @@
+.workload-card-component {
+  padding: 0.5rem 0.5rem 0.25rem 0.5rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #C1CDD4;
+  border-radius: 3px;
+
+  &.mismatch {
+    background-color: #F8B7B6;
+  }
+
+  .workload-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 0.1rem;
+  }
+
+  .workload-details {
+    font-size: 12px;
+    line-height: 18px;
+    // color: #919FA8;
+
+    .following-text {
+      .following-channel {
+        color: #0079B8;
+        font-weight: bold;
+      }
+    }
+
+    .revision-text {
+      .revision-hash-text {
+        font-weight: 500;
+        font-size: 12px;
+      }
+    }
+  }
+
+  .workload-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+
+    .btn {
+      min-width: 1rem;
+      margin: 0;
+    }
+  }
+}

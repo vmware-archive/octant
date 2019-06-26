@@ -1,3 +1,7 @@
-<p>
-  olympus-stacks works!
-</p>
+<div class="clr-row workload-list-container">
+  <div class="clr-col clr-offset-1 workload-list" *ngFor="let workloadList of workloadsLists">
+    <app-workload-list [workloadList]="workloadList"></app-workload-list>
+  </div>
+  <div class="clr-col-1"></div>
+</div>
+

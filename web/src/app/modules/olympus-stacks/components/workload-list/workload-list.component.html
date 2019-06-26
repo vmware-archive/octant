@@ -1,0 +1,23 @@
+<div class="workload-list-component">
+  <div class="stack-selector">
+    <div class="stack-selector-label">Stack:</div>
+    <clr-select-container>
+      <select clrSelect value={{workloadList.currentStack}}>
+        <ng-container *ngFor="let stackOption of workloadList.stackOptions">
+          <option value={{stackOption}}>{{stackOption}}</option>
+        </ng-container>
+      </select>
+    </clr-select-container>
+  </div>
+  <div class="list-container">
+    <div class="following-banner">
+      Following <span class="following-channel">{{workloadList.channelFollowing}}</span> channel
+    </div>
+    <div class="workload-lists">
+      <div *ngFor="let workload of workloadList.workloads; trackBy: identifyWorkload">
+        <app-workload-card [workload]="workload"></app-workload-card>
+      </div>
+    </div>
+  </div>
+</div>
+

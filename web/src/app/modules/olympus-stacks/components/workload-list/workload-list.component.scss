@@ -1,0 +1,44 @@
+.workload-list-component {
+  padding: 0.5rem;
+  border: 1px solid #C1CDD4;
+  border-radius: 3px;
+  background-color: white;
+
+  .stack-selector {
+    display: flex;
+    flex-direction: row;
+
+    &-label {
+      font-size: 18px;
+      margin-right: 6px;
+    }
+
+    .clr-form-control {
+      margin-top: 0;
+      flex: 1;
+
+      ::ng-deep {
+        .clr-control-container, .clr-select-wrapper, .clr-select {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .list-container {
+    margin-top: 1rem;
+
+    .following-banner {
+      font-size: 18px;
+
+      .following-channel {
+        color: #0079B8;
+        font-weight: bold;
+      }
+    }
+
+    .workload-lists {
+      margin-top: 0.5rem;
+    }
+  }
+}

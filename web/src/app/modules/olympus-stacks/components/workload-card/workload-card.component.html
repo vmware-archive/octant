@@ -1,0 +1,24 @@
+<div class="workload-card-component" [class.mismatch]="workload.isMismatch">
+  <div class="workload-name">
+    {{ workload.name }}
+  </div>
+  <div class="workload-details">
+    <div class="pinned-text" *ngIf="workload.isPinned">pinned</div>
+    <div class="following-text" *ngIf="workload.isFollowingChannel">following <span class="following-channel">{{workload.channelFollowing}}</span> channel</div>
+    <div class="last-updated-text">last updated: Friday, June 14th (5 days ago)</div>
+    <div class="sourceimage-text">sourceImage: {{workload.sourceImage}}</div>
+    <div class="revision-text">revision: <span class="revision-hash-text">{{workload.revision}}</span></div>
+  </div>
+  <div class="workload-actions">
+    <ng-container *ngIf="workload.isComparedAgainst; else editBtn">
+      <div class="pin-stack-btn">
+        <button class="btn btn-sm btn-link">Pin to stack</button>
+      </div>
+    </ng-container>
+    <ng-template #editBtn>
+      <div class="edit-btn">
+        <button class="btn btn-sm btn-link">Edit</button>
+      </div>
+    </ng-template>
+  </div>
+</div>

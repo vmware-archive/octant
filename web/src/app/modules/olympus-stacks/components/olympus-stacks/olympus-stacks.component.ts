@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { WorkloadList } from '../../types';
+import example from './examplepayload';
 
 @Component({
   selector: 'app-olympus-stacks',
@@ -6,10 +8,12 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./olympus-stacks.component.scss']
 })
 export class OlympusStacksComponent implements OnInit {
+  workloadsLists: WorkloadList[];
 
-  constructor() { }
+  constructor() {
+    this.workloadsLists = example;
+  }
 
   ngOnInit() {
   }
-
 }
