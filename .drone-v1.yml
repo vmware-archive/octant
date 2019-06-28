@@ -1,37 +1,41 @@
+kind: pipeline
+name: default
+
 workspace:
   base: /go
   path: src/github.com/vmware/octant
 
-pipeline:
-
-  frontend:
-    image: node:10.15.3
-    group: testing
+steps:
+  - name: frontend
+    image: circleci/node:10.15.3-browsers
+    user: node
     commands:
       - cd web
       - npm ci
       - npm run-script build
-
-  backend:
+      - npm run test:headless
+  - name: backend
     image: golang:1.12
-    group: testing
     commands:
       - make go-install
       - make test
       - go generate ./web
       - make vet
-
-  build:
+  - name: build
     image: golang:1.12
     environment:
-      - CGO_ENABLED=0
+      CGO_ENABLED: 0
     commands:
       - make octant-dev
-
-  release:
+    depends_on:
+    - frontend
+    - backend
+  - name: release
     when:
       event:
         - tag
     image: goreleaser/goreleaser:v0.110-cgo
     commands:
       - /bin/bash ci/drone-deploy.sh
+    depends_on:
+    - build
