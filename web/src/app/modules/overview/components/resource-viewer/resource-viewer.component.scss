@@ -3,8 +3,19 @@
  */
 
 .resourceViewer {
-  .viewer {
-    min-height: 75vh;
+  .view-container {
+    height: 100vh;
+    width: 100%;
+    float: left;
+    overflow: auto;
+    overflow-y: hidden
+  }
+
+  .status-container {
+    height: 100vh;
+    width: 100%;
+    padding: 1rem;
+    background-color: #eeeeee;
   }
 
   .node {
@@ -21,7 +32,6 @@
     }
 
     &-ok {
-      filter: box-shadow 0 4px 10px rgba(0, 0, 0, 0.3);
       rect {
         fill: #60b515;
       }
@@ -77,5 +87,6 @@
     left: 0;
     position: absolute;
     width: 100%;
+    background-color: #eeeeee;
   }
 }

@@ -17,6 +17,7 @@ import { CardComponent } from './components/card/card.component';
 import { ContainersComponent } from './components/containers/containers.component';
 import { ContentSwitcherComponent } from './components/content-switcher/content-switcher.component';
 import { ContextSelectorComponent } from './components/context-selector/context-selector.component';
+import { CytoscapeComponent } from './components/cytoscape/cytoscape.component';
 import { DatagridComponent } from './components/datagrid/datagrid.component';
 import { ErrorComponent } from './components/error/error.component';
 import { ExpressionSelectorComponent } from './components/expression-selector/expression-selector.component';
@@ -94,6 +95,7 @@ export function hljsLanguages() {
     FormComponent,
     CardListComponent,
     CardComponent,
+    CytoscapeComponent,
   ],
   imports: [
     CommonModule,
