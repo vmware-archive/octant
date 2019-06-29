@@ -5,12 +5,13 @@ workspace:
 pipeline:
 
   frontend:
-    image: node:10.15.3
+    image: sfoo/node-chrome:0.0.1
     group: testing
     commands:
       - cd web
       - npm ci
       - npm run-script build
+      - npm run test:headless
 
   backend:
     image: golang:1.12
