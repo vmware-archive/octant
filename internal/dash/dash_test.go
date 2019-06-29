@@ -72,6 +72,7 @@ func Test_dash_Run(t *testing.T) {
 			nsClient := clusterfake.NewMockNamespaceInterface(controller)
 			nsClient.EXPECT().InitialNamespace().Return("default").AnyTimes()
 			infoClient := clusterfake.NewMockInfoInterface(controller)
+			actionDispactor := apiFake.NewMockActionDispatcher(controller)
 
 			clusterClient := apiFake.NewMockClusterClient(controller)
 			clusterClient.EXPECT().NamespaceClient().Return(nsClient, nil).AnyTimes()
@@ -79,7 +80,7 @@ func Test_dash_Run(t *testing.T) {
 
 			manager := modulefake.NewMockManagerInterface(controller)
 
-			service := api.New(ctx, apiPathPrefix, clusterClient, manager, log.NopLogger())
+			service := api.New(ctx, apiPathPrefix, clusterClient, manager, actionDispactor, log.NopLogger())
 			d, err := newDash(listener, namespace, uiURL, service, log.NopLogger())
 			require.NoError(t, err)
 
@@ -159,8 +160,10 @@ func Test_dash_routes(t *testing.T) {
 			clusterClient.EXPECT().NamespaceClient().Return(nsClient, nil).AnyTimes()
 			clusterClient.EXPECT().InfoClient().Return(infoClient, nil).AnyTimes()
 
+			actionDispatcher := apiFake.NewMockActionDispatcher(controller)
+
 			ctx := context.Background()
-			service := api.New(ctx, apiPathPrefix, clusterClient, manager, log.NopLogger())
+			service := api.New(ctx, apiPathPrefix, clusterClient, manager, actionDispatcher, log.NopLogger())
 
 			d, err := newDash(listener, namespace, uiURL, service, log.NopLogger())
 			require.NoError(t, err)

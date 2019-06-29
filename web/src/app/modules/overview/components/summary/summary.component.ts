@@ -3,8 +3,10 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { SummaryItem, SummaryView } from 'src/app/models/content';
+import { Action, SummaryItem, SummaryView } from 'src/app/models/content';
 import { ViewUtil } from 'src/app/util/view';
+import { FormGroup } from '@angular/forms';
+import { ActionService } from '../../services/action/action.service';
 
 @Component({
   selector: 'app-view-summary',
@@ -16,9 +18,13 @@ export class SummaryComponent implements OnChanges {
   title: string;
   isLoading = false;
 
+  currentAction: Action;
+
+  constructor(private actionService: ActionService) {}
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {
-      const view = changes.view.currentValue;
+      const view: SummaryView = changes.view.currentValue;
       const vu = new ViewUtil(view);
       this.title = vu.titleAsText();
     }
@@ -30,5 +36,30 @@ export class SummaryComponent implements OnChanges {
 
   onPortLoad(isLoading: boolean) {
     this.isLoading = isLoading;
+  }
+
+  setAction(action: Action) {
+    this.currentAction = action;
+  }
+
+  onActionSubmit(formGroup: FormGroup) {
+    if (formGroup && formGroup.value) {
+      this.actionService.perform(formGroup.value).subscribe();
+      this.currentAction = undefined;
+    }
+  }
+
+  onActionCancel() {
+    this.currentAction = undefined;
+  }
+
+  shouldShowFooter(): boolean {
+    if (this.view && this.view.config.actions) {
+      if (!this.currentAction && this.view.config.actions.length > 0) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

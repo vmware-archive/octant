@@ -172,9 +172,28 @@ export interface SummaryItem {
   content: View;
 }
 
+export interface ActionField {
+  configuration: any;
+  label: string;
+  name: string;
+  type: string;
+  value: any;
+}
+
+export interface ActionForm {
+  fields: ActionField[];
+}
+
+export interface Action {
+  name: string;
+  title: string;
+  form: ActionForm;
+}
+
 export interface SummaryView extends View {
   config: {
     sections: SummaryItem[];
+    actions: Action[];
   };
 }
 

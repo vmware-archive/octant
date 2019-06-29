@@ -15,12 +15,14 @@ import (
 	authorizationv1 "k8s.io/api/authorization/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/informers"
 	kcache "k8s.io/client-go/tools/cache"
+	kretry "k8s.io/client-go/util/retry"
 
 	"github.com/vmware/octant/internal/cluster"
 	"github.com/vmware/octant/internal/log"
@@ -403,4 +405,40 @@ func (dc *DynamicCache) OnUpdate() <-chan store.Store {
 
 func (dc *DynamicCache) RegisterOnUpdate(fn store.UpdateFn) {
 	panic("this should not be used")
+}
+
+func (dc *DynamicCache) Update(ctx context.Context, key store.Key, updater func(*unstructured.Unstructured) error) error {
+	if updater == nil {
+		return errors.New("can't update object")
+	}
+
+	err := kretry.RetryOnConflict(kretry.DefaultRetry, func() error {
+		object, err := dc.Get(ctx, key)
+		if err != nil {
+			return err
+		}
+
+		gvk := object.GroupVersionKind()
+
+		gvr, err := dc.client.Resource(gvk.GroupKind())
+		if err != nil {
+			return err
+		}
+
+		dynamicClient, err := dc.client.DynamicClient()
+		if err != nil {
+			return err
+		}
+
+		if err := updater(object); err != nil {
+			return errors.Wrap(err, "unable to update object")
+		}
+
+		client := dynamicClient.Resource(gvr).Namespace(object.GetNamespace())
+
+		_, err = client.Update(object, metav1.UpdateOptions{})
+		return err
+	})
+
+	return err
 }

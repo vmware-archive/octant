@@ -22,10 +22,10 @@ import (
 
 	apiFake "github.com/vmware/octant/internal/api/fake"
 	clusterFake "github.com/vmware/octant/internal/cluster/fake"
-	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
 	moduleFake "github.com/vmware/octant/internal/module/fake"
+	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -170,8 +170,10 @@ func TestAPI_routes(t *testing.T) {
 			clusterClient.EXPECT().NamespaceClient().Return(mocks.namespace, nil).AnyTimes()
 			clusterClient.EXPECT().InfoClient().Return(mocks.info, nil).AnyTimes()
 
+			actionDispatcher := apiFake.NewMockActionDispatcher(controller)
+
 			ctx := context.Background()
-			srv := New(ctx, "/", clusterClient, manager, log.NopLogger())
+			srv := New(ctx, "/", clusterClient, manager, actionDispatcher, log.NopLogger())
 
 			err := srv.RegisterModule(m)
 			require.NoError(t, err)

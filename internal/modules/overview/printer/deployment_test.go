@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/utils/pointer"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -34,7 +35,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 	tpo := newTestPrinterOptions(controller)
 	printOptions := tpo.ToOptions()
 
-	labels := map[string]string{
+	objectLabels := map[string]string{
 		"foo": "bar",
 	}
 
@@ -51,7 +52,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 			CreationTimestamp: metav1.Time{
 				Time: now,
 			},
-			Labels: labels,
+			Labels: objectLabels,
 		},
 		Status: appsv1.DeploymentStatus{
 			Replicas:            3,
@@ -100,7 +101,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 	expected := component.NewTable("Deployments", cols)
 	expected.Add(component.TableRow{
 		"Name":       component.NewLink("", "deployment", "/path"),
-		"Labels":     component.NewLabels(labels),
+		"Labels":     component.NewLabels(objectLabels),
 		"Age":        component.NewTimestamp(now),
 		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "my_app")}),
 		"Status":     component.NewText("2/3"),
@@ -118,7 +119,7 @@ func Test_deploymentConfiguration(t *testing.T) {
 		expected   *component.Summary
 	}{
 		{
-			name:       "rolling update",
+			name:       "deployment",
 			deployment: validDeployment,
 			expected: component.NewSummary("Configuration", []component.SummarySection{
 				{
@@ -162,6 +163,8 @@ func Test_deploymentConfiguration(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			dc := NewDeploymentConfiguration(tc.deployment)
+			dc.actionGenerators = []actionGeneratorFunction{}
+
 			summary, err := dc.Create()
 			if tc.isErr {
 				require.Error(t, err)
@@ -169,7 +172,7 @@ func Test_deploymentConfiguration(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			assert.Equal(t, tc.expected, summary)
+			assertComponentEqual(t, tc.expected, summary)
 		})
 	}
 }
@@ -306,4 +309,34 @@ func Test_deploymentPods(t *testing.T) {
 	})
 
 	assertComponentEqual(t, expected, got)
+}
+
+func Test_editDeploymentAction(t *testing.T) {
+	deployment := testutil.CreateDeployment("deployment")
+	deployment.Spec.Replicas = pointer.Int32Ptr(3)
+
+	actions := editDeploymentAction(deployment)
+	assert.Len(t, actions, 1)
+
+	got := actions[0]
+
+	gvk := deployment.GroupVersionKind()
+
+	expected := component.Action{
+		Name:  "Edit",
+		Title: "Deployment Editor",
+		Form: component.Form{
+			Fields: []component.FormField{
+				component.NewFormFieldNumber("Replicas", "replicas", "3"),
+				component.NewFormFieldHidden("group", gvk.Group),
+				component.NewFormFieldHidden("version", gvk.Version),
+				component.NewFormFieldHidden("kind", gvk.Kind),
+				component.NewFormFieldHidden("name", deployment.Name),
+				component.NewFormFieldHidden("namespace", deployment.Namespace),
+				component.NewFormFieldHidden("action", "deployment/configuration"),
+			},
+		},
+	}
+
+	assert.Equal(t, expected, got)
 }

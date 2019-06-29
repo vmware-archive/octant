@@ -93,15 +93,19 @@ func DeploymentHandler(ctx context.Context, deployment *appsv1.Deployment, optio
 	return o.ToComponent(ctx, options)
 }
 
+type actionGeneratorFunction func(*appsv1.Deployment) []component.Action
+
 // DeploymentConfiguration generates deployment configuration.
 type DeploymentConfiguration struct {
-	deployment *appsv1.Deployment
+	deployment       *appsv1.Deployment
+	actionGenerators []actionGeneratorFunction
 }
 
 // NewDeploymentConfiguration creates an instance of DeploymentConfiguration.
 func NewDeploymentConfiguration(d *appsv1.Deployment) *DeploymentConfiguration {
 	return &DeploymentConfiguration{
-		deployment: d,
+		deployment:       d,
+		actionGenerators: []actionGeneratorFunction{editDeploymentAction},
 	}
 }
 
@@ -187,6 +191,13 @@ func (dc *DeploymentConfiguration) Create() (*component.Summary, error) {
 
 	summary := component.NewSummary("Configuration", sections...)
 
+	for _, generator := range dc.actionGenerators {
+		actions := generator(dc.deployment)
+		for _, action := range actions {
+			summary.AddAction(action)
+		}
+	}
+
 	return summary, nil
 }
 
@@ -269,4 +280,35 @@ func deploymentPods(ctx context.Context, deployment *appsv1.Deployment, options 
 
 	options.DisableLabels = true
 	return PodListHandler(ctx, podList, options)
+}
+
+func editDeploymentAction(deployment *appsv1.Deployment) []component.Action {
+	replicas := deployment.Spec.Replicas
+	if replicas == nil {
+		return []component.Action{}
+	}
+
+	gvk := deployment.GroupVersionKind()
+	group := gvk.Group
+	version := gvk.Version
+	kind := gvk.Kind
+
+	action := component.Action{
+		Name:  "Edit",
+		Title: "Deployment Editor",
+		Form: component.Form{
+			Fields: []component.FormField{
+				component.NewFormFieldNumber("Replicas", "replicas", fmt.Sprintf("%d", *replicas)),
+				component.NewFormFieldHidden("group", group),
+				component.NewFormFieldHidden("version", version),
+				component.NewFormFieldHidden("kind", kind),
+				component.NewFormFieldHidden("name", deployment.Name),
+				component.NewFormFieldHidden("namespace", deployment.Namespace),
+				component.NewFormFieldHidden("action", "deployment/configuration"),
+			},
+		},
+	}
+
+	return []component.Action{action}
+
 }

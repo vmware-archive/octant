@@ -1,14 +1,19 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ContentResponse, View } from 'src/app/models/content';
 import { ContentStreamService } from 'src/app/services/content-stream/content-stream.service';
 import { titleAsText } from 'src/app/util/view';
 
 import { IconService } from './services/icon.service';
-
 
 @Component({
   selector: 'app-overview',

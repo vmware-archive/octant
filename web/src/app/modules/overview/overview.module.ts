@@ -1,10 +1,9 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ClarityModule } from '@clr/angular';
 import json from 'highlight.js/lib/languages/json';
@@ -14,12 +13,18 @@ import { HighlightModule } from 'ngx-highlightjs';
 import { AnnotationsComponent } from './components/annotations/annotations.component';
 import { ContainersComponent } from './components/containers/containers.component';
 import { ContentSwitcherComponent } from './components/content-switcher/content-switcher.component';
+import { ContextSelectorComponent } from './components/context-selector/context-selector.component';
 import { DatagridComponent } from './components/datagrid/datagrid.component';
-import { ExpressionSelectorComponent } from './components/expression-selector/expression-selector.component';
 import { ErrorComponent } from './components/error/error.component';
+import { ExpressionSelectorComponent } from './components/expression-selector/expression-selector.component';
 import { FiltersComponent } from './components/filters/filters.component';
 import { FlexlayoutComponent } from './components/flexlayout/flexlayout.component';
+import { FormComponent } from './components/form/form.component';
 import { GraphvizComponent } from './components/graphviz/graphviz.component';
+import { HeptagonGridRowComponent } from './components/heptagon-grid-row/heptagon-grid-row.component';
+import { HeptagonGridComponent } from './components/heptagon-grid/heptagon-grid.component';
+import { HeptagonLabelComponent } from './components/heptagon-label/heptagon-label.component';
+import { HeptagonComponent } from './components/heptagon/heptagon.component';
 import { LabelSelectorComponent } from './components/label-selector/label-selector.component';
 import { LabelsComponent } from './components/labels/labels.component';
 import { LinkComponent } from './components/link/link.component';
@@ -40,11 +45,6 @@ import { TextComponent } from './components/text/text.component';
 import { TimestampComponent } from './components/timestamp/timestamp.component';
 import { YamlComponent } from './components/yaml/yaml.component';
 import { OverviewComponent } from './overview.component';
-import { HeptagonGridComponent } from './components/heptagon-grid/heptagon-grid.component';
-import { HeptagonGridRowComponent } from './components/heptagon-grid-row/heptagon-grid-row.component';
-import { HeptagonComponent } from './components/heptagon/heptagon.component';
-import { HeptagonLabelComponent } from './components/heptagon-label/heptagon-label.component';
-import { ContextSelectorComponent } from './components/context-selector/context-selector.component';
 import { DefaultPipe } from './pipes/default.pipe';
 
 export function hljsLanguages() {
@@ -88,6 +88,7 @@ export function hljsLanguages() {
     HeptagonLabelComponent,
     ContextSelectorComponent,
     DefaultPipe,
+    FormComponent,
   ],
   imports: [
     CommonModule,
@@ -97,6 +98,7 @@ export function hljsLanguages() {
       languages: hljsLanguages,
     }),
     RouterModule,
+    ReactiveFormsModule,
   ],
   exports: [ContextSelectorComponent, DefaultPipe],
 })

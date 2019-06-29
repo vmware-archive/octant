@@ -24,7 +24,9 @@ func TestManager(t *testing.T) {
 	defer controller.Finish()
 	clusterClient := clusterfake.NewMockClientInterface(controller)
 
-	manager, err := module.NewManager(clusterClient, "default", log.NopLogger())
+	actionRegistrar := fake.NewMockActionRegistrar(controller)
+
+	manager, err := module.NewManager(clusterClient, "default", actionRegistrar, log.NopLogger())
 	require.NoError(t, err)
 
 	modules := manager.Modules()
@@ -36,7 +38,7 @@ func TestManager(t *testing.T) {
 	m.EXPECT().Stop()
 	m.EXPECT().SetNamespace("other").Return(nil)
 
-	manager.Register(m)
+	require.NoError(t, manager.Register(m))
 	require.NoError(t, manager.Load())
 
 	modules = manager.Modules()
@@ -73,9 +75,11 @@ func TestManager_ObjectPath(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
-			clusterClient := clusterfake.NewMockClientInterface(controller)
 
-			manager, err := module.NewManager(clusterClient, "default", log.NopLogger())
+			clusterClient := clusterfake.NewMockClientInterface(controller)
+			actionRegistrar := fake.NewMockActionRegistrar(controller)
+
+			manager, err := module.NewManager(clusterClient, "default", actionRegistrar, log.NopLogger())
 			require.NoError(t, err)
 
 			modules := manager.Modules()
@@ -89,11 +93,11 @@ func TestManager_ObjectPath(t *testing.T) {
 			}
 			m.EXPECT().SupportedGroupVersionKind().Return(supportedGVK)
 			m.EXPECT().
-				GroupVersionKindPath("namespace", "group/version",  "kind", "name").
+				GroupVersionKindPath("namespace", "group/version", "kind", "name").
 				Return("/path", nil).
 				AnyTimes()
 
-			manager.Register(m)
+			require.NoError(t, manager.Register(m))
 			require.NoError(t, manager.Load())
 
 			got, err := manager.ObjectPath("namespace", tc.apiVersion, tc.kind, "name")

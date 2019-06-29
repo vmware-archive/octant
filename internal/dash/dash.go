@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vmware/octant/internal/action"
 	"github.com/vmware/octant/internal/componentcache"
 	"github.com/vmware/octant/internal/objectstore"
 
@@ -34,8 +35,8 @@ import (
 	"github.com/vmware/octant/internal/modules/localcontent"
 	"github.com/vmware/octant/internal/modules/overview"
 	"github.com/vmware/octant/internal/portforward"
-	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/plugin"
+	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/web"
 
 	"github.com/pkg/errors"
@@ -115,6 +116,8 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return errors.Wrap(err, "initializing plugin manager")
 	}
 
+	actionManger := action.NewManager(logger)
+
 	mo := moduleOptions{
 		clusterClient:  clusterClient,
 		crdWatcher:     crdWatcher,
@@ -124,6 +127,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		logger:         logger,
 		pluginManager:  pluginManager,
 		portForwarder:  portForwarder,
+		actionManager:  actionManger,
 		kubeConfigPath: options.KubeConfig,
 		initialContext: options.Context,
 	}
@@ -138,7 +142,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 	}
 
 	// Initialize the API
-	ah := api.New(ctx, apiPathPrefix, clusterClient, moduleManager, logger)
+	ah := api.New(ctx, apiPathPrefix, clusterClient, moduleManager, actionManger, logger)
 	for _, m := range moduleManager.Modules() {
 		if err := ah.RegisterModule(m); err != nil {
 			return errors.Wrapf(err, "registering module: %v", m.Name())
@@ -202,11 +206,12 @@ type moduleOptions struct {
 	portForwarder  portforward.PortForwarder
 	kubeConfigPath string
 	initialContext string
+	actionManager  *action.Manager
 }
 
 // initModuleManager initializes the moduleManager (and currently the modules themselves)
 func initModuleManager(ctx context.Context, options moduleOptions) (*module.Manager, error) {
-	moduleManager, err := module.NewManager(options.clusterClient, options.namespace, options.logger)
+	moduleManager, err := module.NewManager(options.clusterClient, options.namespace, options.actionManager, options.logger)
 	if err != nil {
 		return nil, errors.Wrap(err, "create module manager")
 	}
