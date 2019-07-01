@@ -1,50 +1,50 @@
 release:
   draft: true
   prerelease: true
-before:
-  hooks:
-  - make web-build
 project_name: octant
 builds:
-- main: ./cmd/octant/main.go
-  binary: octant
-  env:
-    - CGO_ENABLED=0
-  goos:
-    - windows
-    - darwin
-    - linux
-  goarch:
-    - amd64
-  ldflags: -X "main.buildTime={{.Date}}" -X "main.gitCommit={{.Commit}}" -X "main.version={{.Version}}"
-nfpm:
-  formats:
-    - deb
-    - rpm
-  vendor: "heptio.com"
-  homepage: ""
-  description: ""
-  license: "Heptio Proprietary"
-  name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}-{{.Arch}}"
-  replacements:
-    darwin: macOS
-    linux: Linux
-    windows: Windows
-    amd64: 64bit
-archive:
-  wrap_in_directory: true
-  format: tar.gz
-  format_overrides:
-    - goos: windows
-      format: zip
-  name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}-{{.Arch}}"
-  replacements:
-    darwin: macOS
-    linux: Linux
-    windows: Windows
-    amd64: 64bit
-  files:
-    - README.md
+  -
+    main: ./cmd/octant/main.go
+    binary: octant
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+    ldflags: -X "main.buildTime={{.Date}}" -X "main.gitCommit={{.Commit}}" -X "main.version={{.Version}}"
+nfpms:
+  -
+    formats:
+      - deb
+      - rpm
+    vendor: "VMware"
+    homepage: ""
+    description: "Web-based Kubernetes dashboard for developers who want to augment their kubectl experience"
+    license: "Apache 2.0"
+    name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}-{{.Arch}}"
+    replacements:
+      darwin: macOS
+      linux: Linux
+      windows: Windows
+      amd64: 64bit
+archives:
+  -
+    wrap_in_directory: true
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}-{{.Arch}}"
+    replacements:
+      darwin: macOS
+      linux: Linux
+      windows: Windows
+      amd64: 64bit
+    files:
+      - README.md
 checksum:
   name_template: 'checksums.txt'
 snapshot:

@@ -1,0 +1,38 @@
+workspace:
+  base: /go
+  path: src/github.com/vmware/octant
+
+pipeline:
+
+  frontend:
+    image: sfoo/node-chrome:0.0.1
+    group: testing
+    commands:
+      - cd web
+      - npm ci
+      - npm run-script build
+      - npm run test:headless
+
+  backend:
+    image: golang:1.12
+    group: testing
+    commands:
+      - make go-install
+      - make test
+      - go generate ./web
+      - make vet
+
+  build:
+    image: golang:1.12
+    environment:
+      - CGO_ENABLED=0
+    commands:
+      - make octant-dev
+
+  release:
+    when:
+      event:
+        - tag
+    image: goreleaser/goreleaser:v0.110-cgo
+    commands:
+      - /bin/bash ci/drone-deploy.sh

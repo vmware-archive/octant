@@ -48,16 +48,25 @@ go-install:
 	$(GOINSTALL) ./vendor/github.com/golang/mock/mockgen
 	$(GOINSTALL) ./vendor/github.com/golang/protobuf/protoc-gen-go
 
-# Remove all generated fakes
+# Remove all generated go files
 .PHONY: clean
 clean:
+	@rm -rf ./internal/octant/fake
+	@rm -rf ./internal/kubeconfig/fake
+	@rm -rf ./internal/link/fake
+	@rm -rf ./internal/event/fake
+	@rm -rf ./internal/config/fake
+	@rm -rf ./internal/api/fake
 	@rm -rf ./internal/portforward/fake
 	@rm -rf ./internal/objectstore/fake
 	@rm -rf ./internal/queryer/fake
 	@rm -rf ./internal/cluster/fake
-	@rm -rf ./internal/overview/printer/fake
+	@rm -rf ./internal/module/fake
+	@rm -rf ./internal/modules/overview/printer/fake
+	@rm -rf ./pkg/store/fake
 	@rm -rf ./pkg/plugin/fake
 	@rm -rf ./pkg/plugin/api/fake
+	@rm ./internal/icon/rice-box.go
 
 web-deps:
 	@cd web; npm ci
