@@ -7,9 +7,16 @@ package component
 
 import "encoding/json"
 
+type Action struct {
+	Name  string `json:"name"`
+	Title string `json:"title"`
+	Form  Form   `json:"form"`
+}
+
 // SummaryConfig is the contents of a Summary
 type SummaryConfig struct {
 	Sections []SummarySection `json:"sections"`
+	Actions  []Action         `json:"actions,omitempty"`
 }
 
 // SummarySection is a section within a summary
@@ -76,6 +83,10 @@ func NewSummary(title string, sections ...SummarySection) *Summary {
 // GetMetadata accesses the components metadata. Implements Component.
 func (t *Summary) GetMetadata() Metadata {
 	return t.Metadata
+}
+
+func (t *Summary) AddAction(action Action) {
+	t.Config.Actions = append(t.Config.Actions, action)
 }
 
 // Add adds additional items to the tail of the summary.

@@ -58,8 +58,6 @@ export class KubeContextService {
       requestedContext: name,
     };
 
-    console.log('updating?', url);
-
     return this.http.post(url, payload);
   }
 }

@@ -11,11 +11,21 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"github.com/vmware/octant/internal/action"
 	"github.com/vmware/octant/internal/cluster"
 	"github.com/vmware/octant/internal/log"
 )
 
 //go:generate mockgen -destination=./fake/mock_manager.go -package=fake github.com/vmware/octant/internal/module ManagerInterface
+//go:generate mockgen -destination=./fake/mock_action_registrar.go -package=fake github.com/vmware/octant/internal/module ActionRegistrar
+
+type ActionReceiver interface {
+	ActionPaths() map[string]action.DispatcherFunc
+}
+
+type ActionRegistrar interface {
+	Register(actionPath string, actionFunc action.DispatcherFunc) error
+}
 
 // ManagerInterface is an interface for managing module lifecycle.
 type ManagerInterface interface {
@@ -31,9 +41,10 @@ type ManagerInterface interface {
 
 // Manager manages module lifecycle.
 type Manager struct {
-	clusterClient cluster.ClientInterface
-	namespace     string
-	logger        log.Logger
+	clusterClient   cluster.ClientInterface
+	namespace       string
+	actionRegistrar ActionRegistrar
+	logger          log.Logger
 
 	registeredModules []Module
 
@@ -43,19 +54,31 @@ type Manager struct {
 var _ ManagerInterface = (*Manager)(nil)
 
 // NewManager creates an instance of Manager.
-func NewManager(clusterClient cluster.ClientInterface, namespace string, logger log.Logger) (*Manager, error) {
+func NewManager(clusterClient cluster.ClientInterface, namespace string, actionRegistrar ActionRegistrar, logger log.Logger) (*Manager, error) {
 	manager := &Manager{
-		clusterClient: clusterClient,
-		namespace:     namespace,
-		logger:        logger,
+		clusterClient:   clusterClient,
+		namespace:       namespace,
+		actionRegistrar: actionRegistrar,
+		logger:          logger.With("component", "module-manager"),
 	}
 
 	return manager, nil
 }
 
 // Register register a module with the manager.
-func (m *Manager) Register(mod Module) {
+func (m *Manager) Register(mod Module) error {
 	m.registeredModules = append(m.registeredModules, mod)
+
+	if receiver, ok := mod.(ActionReceiver); ok {
+		for actionPath, actionFunc := range receiver.ActionPaths() {
+			m.logger.With("actionPath", actionPath, "module-name", mod.Name()).Infof("registering action")
+			if err := m.actionRegistrar.Register(actionPath, actionFunc); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 // Load loads modules.

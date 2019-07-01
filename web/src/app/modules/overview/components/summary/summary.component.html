@@ -1,54 +1,77 @@
-<div class="card">
-  <div class="progress loop" *ngIf="isLoading"><progress></progress></div>
-  <div class="card-block">
-    <h3 class="card-title">{{ title }}</h3>
-    <table class="table table-vertical table-noborder">
-      <tbody>
-        <tr *ngFor="let item of view?.config.sections; trackBy: identifyItem">
-          <th>{{ item.header }}</th>
-          <td [ngSwitch]="item.content.metadata.type">
-            <ng-container *ngSwitchCase="'annotations'">
-              <app-view-annotations [view]="item.content"></app-view-annotations>
+<ng-container *ngTemplateOutlet="currentAction ? action : content">
+</ng-container>
+
+
+<ng-template #action>
+    <app-form
+            [form]="currentAction.form"
+            [title]="currentAction.title"
+            (submit)="onActionSubmit($event)"
+            (cancel)="onActionCancel()">
+    </app-form>
+</ng-template>
+
+<ng-template #content>
+    <div class="card">
+        <div class="progress loop" *ngIf="isLoading">
+            <progress></progress>
+        </div>
+        <div class="card-block">
+            <h3 class="card-title">{{ title }}</h3>
+            <table class="table table-vertical table-noborder">
+                <tbody>
+                <tr *ngFor="let item of view?.config.sections; trackBy: identifyItem">
+                    <th>{{ item.header }}</th>
+                    <td [ngSwitch]="item.content.metadata.type">
+                        <ng-container *ngSwitchCase="'annotations'">
+                            <app-view-annotations [view]="item.content"></app-view-annotations>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'labels'">
+                            <app-view-labels [view]="item.content"></app-view-labels>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'link'">
+                            <app-view-link [view]="item.content"></app-view-link>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'selectors'">
+                            <app-view-selectors [view]="item.content"></app-view-selectors>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'text'">
+                            <app-view-text [view]="item.content"></app-view-text>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'timestamp'">
+                            <app-view-timestamp [view]="item.content"></app-view-timestamp>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'table'">
+                            <app-view-table [view]="item.content"></app-view-table>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'ports'">
+                            <app-ports [view]="item.content" (portLoad)="onPortLoad($event)"></app-ports>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'list'">
+                            <app-view-list [listView]="item.content"></app-view-list>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'loading'">
+                            <app-view-loading [view]="item.content"></app-view-loading>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'error'">
+                            <app-view-error [view]="item.content"></app-view-error>
+                        </ng-container>
+                        <div class="alert alert-danger static" *ngSwitchDefault>
+                          <span class="alert-icon-wrapper">
+                            <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+                          </span>
+                            <span class="alert-text"> {{ item.content.metadata.type }} not implemented </span>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer" *ngIf="shouldShowFooter()">
+            <ng-container *ngFor="let action of view.config.actions">
+                <button class="btn btn-sm btn-link" (click)="setAction(action)">{{action.name}}</button>
             </ng-container>
-            <ng-container *ngSwitchCase="'labels'">
-              <app-view-labels [view]="item.content"></app-view-labels>
-            </ng-container>
-            <ng-container *ngSwitchCase="'link'">
-              <app-view-link [view]="item.content"></app-view-link>
-            </ng-container>
-            <ng-container *ngSwitchCase="'selectors'">
-              <app-view-selectors [view]="item.content"></app-view-selectors>
-            </ng-container>
-            <ng-container *ngSwitchCase="'text'">
-              <app-view-text [view]="item.content"></app-view-text>
-            </ng-container>
-            <ng-container *ngSwitchCase="'timestamp'">
-              <app-view-timestamp [view]="item.content"></app-view-timestamp>
-            </ng-container>
-            <ng-container *ngSwitchCase="'table'">
-              <app-view-table [view]="item.content"></app-view-table>
-            </ng-container>
-            <ng-container *ngSwitchCase="'ports'">
-              <app-ports [view]="item.content" (portLoad)="onPortLoad($event)"></app-ports>
-            </ng-container>
-            <ng-container *ngSwitchCase="'list'">
-              <app-view-list [listView]="item.content"></app-view-list>
-            </ng-container>
-            <ng-container *ngSwitchCase="'loading'">
-              <app-view-loading [view]="item.content"></app-view-loading>
-            </ng-container>
-            <ng-container *ngSwitchCase="'error'">
-              <app-view-error [view]="item.content"></app-view-error>
-            </ng-container>
-            <div class="alert alert-danger static" *ngSwitchDefault>
-              <span class="alert-icon-wrapper">
-                <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
-              </span>
-              <span class="alert-text"> {{ item.content.metadata.type }} not implemented </span>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+        </div>
+    </div>
+
+</ng-template>

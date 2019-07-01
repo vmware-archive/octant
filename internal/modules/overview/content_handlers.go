@@ -11,8 +11,6 @@ import (
 	"k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/util/duration"
 )
 
-
-
 // translateTimestamp returns the elapsed time since timestamp in
 // human-readable approximation.
 func translateTimestamp(timestamp metav1.Time, c clock.Clock) string {

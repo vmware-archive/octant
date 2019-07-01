@@ -16,13 +16,14 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
+	"github.com/vmware/octant/internal/action"
 	"github.com/vmware/octant/internal/api"
-	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/describer"
 	"github.com/vmware/octant/internal/icon"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
+	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -39,11 +40,13 @@ type Overview struct {
 	generator   *realGenerator
 	dashConfig  config.Dash
 	contextName string
+	logger      log.Logger
 
 	mu sync.Mutex
 }
 
 var _ module.Module = (*Overview)(nil)
+var _ module.ActionReceiver = (*Overview)(nil)
 
 // New creates an instance of Overview.
 func New(ctx context.Context, options Options) (*Overview, error) {
@@ -57,6 +60,7 @@ func New(ctx context.Context, options Options) (*Overview, error) {
 
 	co := &Overview{
 		dashConfig: options.DashConfig,
+		logger:     options.DashConfig.Logger().With("module", "overview"),
 	}
 
 	if err := co.bootstrap(ctx); err != nil {
@@ -301,4 +305,19 @@ func (co *Overview) portForwardHandler() http.HandlerFunc {
 			)
 		}
 	}
+}
+
+func (co *Overview) ActionPaths() map[string]action.DispatcherFunc {
+	configurationEditor := NewConfigurationEditor(co.logger, co.dashConfig.ObjectStore())
+
+	return map[string]action.DispatcherFunc{
+		configurationEditor.ActionName(): configurationEditor.Handle,
+	}
+}
+
+func roundToInt(val float64) int64 {
+	if val < 0 {
+		return int64(val - 0.5)
+	}
+	return int64(val + 0.5)
 }

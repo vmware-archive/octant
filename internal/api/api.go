@@ -15,10 +15,10 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/vmware/octant/internal/cluster"
-	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/mime"
 	"github.com/vmware/octant/internal/module"
+	"github.com/vmware/octant/internal/octant"
 )
 
 //go:generate mockgen -destination=./fake/mock_cluster_client.go -package=fake github.com/vmware/octant/internal/api ClusterClient
@@ -84,11 +84,12 @@ type ClusterClient interface {
 
 // API is the API for the dashboard client
 type API struct {
-	ctx           context.Context
-	clusterClient ClusterClient
-	moduleManager module.ManagerInterface
-	prefix        string
-	logger        log.Logger
+	ctx              context.Context
+	clusterClient    ClusterClient
+	moduleManager    module.ManagerInterface
+	actionDispatcher ActionDispatcher
+	prefix           string
+	logger           log.Logger
 
 	modulePaths map[string]module.Module
 	modules     []module.Module
@@ -97,14 +98,15 @@ type API struct {
 var _ Service = (*API)(nil)
 
 // New creates an instance of API.
-func New(ctx context.Context, prefix string, clusterClient ClusterClient, moduleManager module.ManagerInterface, logger log.Logger) *API {
+func New(ctx context.Context, prefix string, clusterClient ClusterClient, moduleManager module.ManagerInterface, actionDispatcher ActionDispatcher, logger log.Logger) *API {
 	return &API{
-		ctx:           ctx,
-		prefix:        prefix,
-		clusterClient: clusterClient,
-		moduleManager: moduleManager,
-		modulePaths:   make(map[string]module.Module),
-		logger:        logger,
+		ctx:              ctx,
+		prefix:           prefix,
+		clusterClient:    clusterClient,
+		moduleManager:    moduleManager,
+		actionDispatcher: actionDispatcher,
+		modulePaths:      make(map[string]module.Module),
+		logger:           logger,
 	}
 }
 
@@ -141,6 +143,9 @@ func (a *API) Handler(ctx context.Context) (*mux.Router, error) {
 
 	infoService := newClusterInfo(infoClient, a.logger)
 	s.Handle("/cluster-info", infoService)
+
+	actionService := newAction(a.logger, a.actionDispatcher)
+	s.Handle("/action", actionService)
 
 	// Register content routes
 	contentService := &contentHandler{

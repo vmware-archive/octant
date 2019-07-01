@@ -3,7 +3,7 @@
     "type": "summary",
     "title": [
       {
-        "config": { "value": "mysummary" },
+        "config": { "value": "my summary" },
         "metadata": { "type": "text" }
       }
     ]

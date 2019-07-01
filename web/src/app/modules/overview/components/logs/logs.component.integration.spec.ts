@@ -4,7 +4,13 @@
 import { HttpClient } from '@angular/common/http';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { DebugElement } from '@angular/core';
-import { async, ComponentFixture, discardPeriodicTasks, fakeAsync, TestBed } from '@angular/core/testing';
+import {
+  async,
+  ComponentFixture,
+  discardPeriodicTasks,
+  fakeAsync,
+  TestBed,
+} from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import _ from 'lodash';
 import { LogEntry, LogsView } from 'src/app/models/content';

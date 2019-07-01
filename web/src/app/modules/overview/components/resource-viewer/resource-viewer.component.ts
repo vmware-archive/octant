@@ -14,13 +14,13 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import * as d3 from 'd3';
-import {Edge} from 'dagre';
+import { Edge } from 'dagre';
 import * as dagreD3 from 'dagre-d3';
 import _ from 'lodash';
-import {Node, ResourceViewerView} from 'src/app/models/content';
-import {ResourceNode} from 'src/app/models/resource-node';
+import { Node, ResourceViewerView } from 'src/app/models/content';
+import { ResourceNode } from 'src/app/models/resource-node';
 
-import {DagreService} from '../../services/dagre/dagre.service';
+import { DagreService } from '../../services/dagre/dagre.service';
 
 @Component({
   selector: 'app-view-resource-viewer',
@@ -29,7 +29,6 @@ import {DagreService} from '../../services/dagre/dagre.service';
   encapsulation: ViewEncapsulation.None,
 })
 export class ResourceViewerComponent implements OnChanges, AfterViewChecked {
-
   @Input() view: ResourceViewerView;
   currentView: ResourceViewerView;
   selected: string;
@@ -38,14 +37,15 @@ export class ResourceViewerComponent implements OnChanges, AfterViewChecked {
   private runUpdate = false;
   private hasDrawn = false;
 
-  constructor(private dagreService: DagreService) {
-  }
+  constructor(private dagreService: DagreService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-
     this.currentView = changes.view.currentValue as ResourceViewerView;
 
-    const isEqual = _.isEqual(changes.view.currentValue, changes.view.previousValue);
+    const isEqual = _.isEqual(
+      changes.view.currentValue,
+      changes.view.previousValue
+    );
 
     if (changes.view.isFirstChange()) {
       this.select(this.currentView.config.selected);
@@ -76,7 +76,7 @@ export class ResourceViewerComponent implements OnChanges, AfterViewChecked {
     if (adjacencyList) {
       for (const [node, nodeEdges] of Object.entries(adjacencyList)) {
         edges.push(
-          ...nodeEdges.map((e) => [
+          ...nodeEdges.map(e => [
             node,
             e.node,
             {
@@ -123,7 +123,7 @@ export class ResourceViewerComponent implements OnChanges, AfterViewChecked {
         node.rx = node.ry = 4;
       });
 
-      this.edges().forEach((edge) => g.setEdge(edge[0], edge[1], edge[2]));
+      this.edges().forEach(edge => g.setEdge(edge[0], edge[1], edge[2]));
 
       this.dagreService.render(this.viewer, g);
 
@@ -139,9 +139,11 @@ export class ResourceViewerComponent implements OnChanges, AfterViewChecked {
         });
       }
     } catch (error) {
-      console.log(`render resource viewer failed ${error}`, this.currentView.config);
+      console.log(
+        `render resource viewer failed ${error}`,
+        this.currentView.config
+      );
     }
-
   }
 
   private onClick(id: string) {

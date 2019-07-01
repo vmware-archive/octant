@@ -17,6 +17,7 @@ import (
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	dynamicfake "k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/vmware/octant/internal/cluster"
@@ -316,4 +317,80 @@ func Test_DynamicCache_HasAccess(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDynamicCache_Update(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	pod := testutil.ToUnstructured(t, testutil.CreatePod("pod"))
+
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	client := clusterfake.NewMockClientInterface(controller)
+	informerFactory := clusterfake.NewMockDynamicSharedInformerFactory(controller)
+	sharedIndexInformer := clusterfake.NewMockSharedIndexInformer(controller)
+	informer := clusterfake.NewMockGenericInformer(controller)
+	kubernetesClient := clusterfake.NewMockKubernetesInterface(controller)
+	authClient := clusterfake.NewMockAuthorizationV1Interface(controller)
+	accessClient := clusterfake.NewMockSelfSubjectAccessReviewInterface(controller)
+	namespaceClient := clusterfake.NewMockNamespaceInterface(controller)
+
+	informer.EXPECT().Informer().Return(sharedIndexInformer)
+	sharedIndexInformer.EXPECT().HasSynced().Return(true)
+
+	podGVR := schema.GroupVersionResource{
+		Version:  "v1",
+		Resource: "pods",
+	}
+	informerFactory.EXPECT().ForResource(gomock.Eq(podGVR)).Return(informer)
+
+	podGK := schema.GroupKind{
+		Kind: "Pod",
+	}
+	// CheckAccess and currentInformer
+	client.EXPECT().Resource(gomock.Eq(podGK)).Return(podGVR, nil).AnyTimes()
+
+	client.EXPECT().KubernetesClient().Return(kubernetesClient, nil)
+	kubernetesClient.EXPECT().AuthorizationV1().Return(authClient)
+
+	client.EXPECT().NamespaceClient().Return(namespaceClient, nil).AnyTimes()
+	namespaces := []string{"test", ""}
+	namespaceClient.EXPECT().Names().Return(namespaces, nil).AnyTimes()
+
+	expectNamespaceAccess(accessClient, authClient, len(namespaces))
+
+	informerFactory.EXPECT().Start(gomock.Eq(ctx.Done()))
+
+	l := &fakeLister{getObject: pod}
+	informer.EXPECT().Lister().Return(l)
+
+	factoryFunc := func(c *DynamicCache) {
+		c.initFactoryFunc = func(cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
+			return informerFactory, nil
+		}
+	}
+
+	scheme := runtime.NewScheme()
+
+	dc := dynamicfake.NewSimpleDynamicClient(scheme, pod)
+
+	client.EXPECT().DynamicClient().Return(dc, nil)
+
+	c, err := NewDynamicCache(client, ctx.Done(), factoryFunc)
+	require.NoError(t, err)
+
+	key, err := store.KeyFromObject(pod)
+	require.NoError(t, err)
+
+	err = c.Update(ctx, key, func(*unstructured.Unstructured) error {
+		return nil
+	})
+	require.NoError(t, err)
+
+	assert.Len(t, dc.Actions(), 1)
+
+	action := dc.Actions()[0]
+	assert.Equal(t, "update", action.GetVerb())
 }

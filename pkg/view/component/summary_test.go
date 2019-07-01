@@ -25,7 +25,7 @@ func Test_Summary_Marshal(t *testing.T) {
 		{
 			name: "general",
 			input: &Summary{
-				base: newBase(typeSummary, TitleFromString("mysummary")),
+				base: newBase(typeSummary, TitleFromString("my summary")),
 				Config: SummaryConfig{
 					Sections: []SummarySection{
 						{
@@ -68,7 +68,7 @@ func Test_Summary_Marshal(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			actual, err := json.Marshal(tc.input)
-			isErr := (err != nil)
+			isErr := err != nil
 			if isErr != tc.isErr {
 				t.Fatalf("Unexepected error: %v", err)
 			}

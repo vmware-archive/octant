@@ -9,11 +9,10 @@ import (
 	"context"
 	"sync"
 
-	"k8s.io/apimachinery/pkg/labels"
-
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	kcache "k8s.io/client-go/tools/cache"
@@ -476,4 +475,9 @@ func (w *Watch) UpdateClusterClient(ctx context.Context, client cluster.ClientIn
 
 func (w *Watch) RegisterOnUpdate(fn store.UpdateFn) {
 	w.updateFns = append(w.updateFns, fn)
+}
+
+// Update defers the update to the backend store.
+func (w *Watch) Update(ctx context.Context, key store.Key, updater func(*unstructured.Unstructured) error) error {
+	return w.backendObjectStore.Update(ctx, key, updater)
 }

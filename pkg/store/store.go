@@ -34,6 +34,7 @@ type Store interface {
 	HasAccess(Key, string) error
 	UpdateClusterClient(ctx context.Context, client cluster.ClientInterface) error
 	RegisterOnUpdate(fn UpdateFn)
+	Update(ctx context.Context, key Key, updater func(*unstructured.Unstructured) error) error
 }
 
 // Key is a key for the object store.
@@ -127,4 +128,3 @@ func GetObjectAs(ctx context.Context, o Store, key Key, as interface{}) error {
 
 	return nil
 }
-
