@@ -13,25 +13,25 @@ import (
 )
 
 func TestLoadIcon(t *testing.T) {
-	tests := []struct{
-		name string
+	tests := []struct {
+		name     string
 		iconName string
-		isErr bool
-	} {
+		isErr    bool
+	}{
 		{
-			name: "icon exists",
+			name:     "icon exists",
 			iconName: OverviewSecret,
-			isErr: false,
+			isErr:    false,
 		},
 		{
-			name: "icon does not exist",
+			name:     "icon does not exist",
 			iconName: "invalid",
-			isErr: true,
+			isErr:    true,
 		},
 	}
 
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T){
+		t.Run(test.name, func(t *testing.T) {
 			got, err := LoadIcon(test.iconName)
 			if test.isErr {
 				require.Error(t, err)

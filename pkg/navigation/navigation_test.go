@@ -3,7 +3,7 @@ Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package octant_test
+package navigation
 
 import (
 	"fmt"
@@ -13,15 +13,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/vmware/octant/internal/icon"
-	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/pkg/icon"
 )
 
 func Test_NewNavigation(t *testing.T) {
 	navPath := "/navPath"
 	title := "title"
 
-	nav, err := octant.NewNavigation(title, navPath)
+	nav, err := New(title, navPath)
 	require.NoError(t, err)
 
 	assert.Equal(t, navPath, nav.Path)
@@ -29,14 +28,14 @@ func Test_NewNavigation(t *testing.T) {
 }
 
 func TestNavigationEntriesHelper(t *testing.T) {
-	neh := octant.NavigationEntriesHelper{}
+	neh := NavigationEntriesHelper{}
 
 	neh.Add("title", "suffix", icon.OverviewService)
 
 	list, err := neh.Generate("/prefix")
 	require.NoError(t, err)
 
-	expected := octant.Navigation{
+	expected := Navigation{
 		Title:    "title",
 		Path:     path.Join("/prefix", "suffix"),
 		IconName: fmt.Sprintf("internal:%s", icon.OverviewService),

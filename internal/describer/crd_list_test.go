@@ -15,9 +15,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	configFake "github.com/vmware/octant/internal/config/fake"
-	"github.com/vmware/octant/internal/icon"
 	"github.com/vmware/octant/internal/link"
 	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/icon"
 	"github.com/vmware/octant/pkg/store"
 	storefake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/pkg/view/component"

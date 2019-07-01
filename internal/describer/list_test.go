@@ -18,9 +18,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	configFake "github.com/vmware/octant/internal/config/fake"
-	printerfake "github.com/vmware/octant/internal/modules/overview/printer/fake"
+	printerFake "github.com/vmware/octant/internal/modules/overview/printer/fake"
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/plugin"
+	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -43,12 +44,14 @@ func TestListDescriber(t *testing.T) {
 	namespace := "default"
 
 	dashConfig := configFake.NewMockDash(controller)
-	pluginManager := plugin.NewManager(nil)
+	moduleRegistrar := pluginFake.NewMockModuleRegistrar(controller)
+
+	pluginManager := plugin.NewManager(nil, moduleRegistrar)
 	dashConfig.EXPECT().PluginManager().Return(pluginManager)
 
 	podListTable := createPodTable(*pod)
 
-	objectPrinter := printerfake.NewMockPrinter(controller)
+	objectPrinter := printerFake.NewMockPrinter(controller)
 	podList := &corev1.PodList{Items: []corev1.Pod{*pod}}
 	objectPrinter.EXPECT().Print(gomock.Any(), podList, pluginManager).Return(podListTable, nil)
 

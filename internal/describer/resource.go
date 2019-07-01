@@ -11,7 +11,7 @@ import (
 	"path"
 	"reflect"
 
-	"github.com/vmware/octant/internal/icon"
+	"github.com/vmware/octant/pkg/icon"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )

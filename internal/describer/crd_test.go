@@ -17,14 +17,14 @@ import (
 
 	"github.com/vmware/octant/internal/config"
 	configFake "github.com/vmware/octant/internal/config/fake"
-	"github.com/vmware/octant/internal/icon"
 	linkFake "github.com/vmware/octant/internal/link/fake"
 	"github.com/vmware/octant/internal/modules/overview/printer"
 	"github.com/vmware/octant/internal/queryer"
 	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/icon"
+	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
 	"github.com/vmware/octant/pkg/store"
 	storefake "github.com/vmware/octant/pkg/store/fake"
-	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
 	"github.com/vmware/octant/pkg/view/component"
 )
 

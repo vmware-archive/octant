@@ -30,6 +30,7 @@ type ActionRegistrar interface {
 // ManagerInterface is an interface for managing module lifecycle.
 type ManagerInterface interface {
 	Modules() []Module
+	Register(mod Module) error
 	SetNamespace(namespace string)
 	GetNamespace() string
 	UpdateContext(ctx context.Context, contextName string) error
@@ -78,18 +79,11 @@ func (m *Manager) Register(mod Module) error {
 		}
 	}
 
-	return nil
-}
-
-// Load loads modules.
-func (m *Manager) Load() error {
-	for _, module := range m.registeredModules {
-		if err := module.Start(); err != nil {
-			return errors.Wrapf(err, "%s module failed to start", module.Name())
-		}
+	if err := mod.Start(); err != nil {
+		return errors.Wrapf(err, "%s module failed to start", mod.Name())
 	}
 
-	m.loadedModules = m.registeredModules
+	m.loadedModules = append(m.loadedModules, mod)
 
 	return nil
 }

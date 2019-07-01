@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package plugin
 
 //go:generate mockgen -destination=./fake/mock_manager.go -package=fake github.com/vmware/octant/pkg/plugin ManagerInterface
+//go:generate mockgen -destination=./fake/mock_module_registrar.go -package=fake github.com/vmware/octant/pkg/plugin ModuleRegistrar
 
 import (
 	"context"
@@ -19,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/portforward"
 	"github.com/vmware/octant/pkg/plugin/api"
 	"github.com/vmware/octant/pkg/view/component"
@@ -65,8 +67,8 @@ type Client interface {
 
 // ManagerStore is the data store for Manager.
 type ManagerStore interface {
-	Store(name string, client Client, metadata Metadata) error
-	GetMetadata(name string) (Metadata, error)
+	Store(name string, client Client, metadata *Metadata) error
+	GetMetadata(name string) (*Metadata, error)
 	GetService(name string) (Service, error)
 	Clients() map[string]Client
 	ClientNames() []string
@@ -89,13 +91,16 @@ func NewDefaultStore() *DefaultStore {
 }
 
 // Store stores information for a plugin.
-func (s *DefaultStore) Store(name string, client Client, metadata Metadata) error {
+func (s *DefaultStore) Store(name string, client Client, metadata *Metadata) error {
+	if metadata == nil {
+		return errors.New("metadata is nil")
+	}
 	if _, ok := s.clients[name]; ok {
 		return errors.Errorf("plugin %q is already stored", name)
 	}
 
 	s.clients[name] = client
-	s.metadata[name] = metadata
+	s.metadata[name] = *metadata
 
 	return nil
 }
@@ -126,13 +131,13 @@ func (s *DefaultStore) GetService(name string) (Service, error) {
 }
 
 // GetMetadata gets the metadata for a plugin.
-func (s *DefaultStore) GetMetadata(name string) (Metadata, error) {
+func (s *DefaultStore) GetMetadata(name string) (*Metadata, error) {
 	metadata, ok := s.metadata[name]
 	if !ok {
-		return Metadata{}, errors.Errorf("plugin %q doesn't have metadata", name)
+		return nil, errors.Errorf("plugin %q doesn't have metadata", name)
 	}
 
-	return metadata, nil
+	return &metadata, nil
 }
 
 // Clients returns all the clients in the store.
@@ -169,14 +174,19 @@ type ManagerInterface interface {
 	ObjectStatus(object runtime.Object) (*ObjectStatusResponse, error)
 }
 
+type ModuleRegistrar interface {
+	Register(mod module.Module) error
+}
+
 // ManagerOption is an option for configuring Manager.
 type ManagerOption func(*Manager)
 
 // Manager manages plugins
 type Manager struct {
-	PortForwarder portforward.PortForwarder
-	API           api.API
-	ClientFactory ClientFactory
+	PortForwarder   portforward.PortForwarder
+	API             api.API
+	ClientFactory   ClientFactory
+	ModuleRegistrar ModuleRegistrar
 
 	Runners Runners
 
@@ -189,12 +199,13 @@ type Manager struct {
 var _ ManagerInterface = (*Manager)(nil)
 
 // NewManager creates an instance of Manager.
-func NewManager(apiService api.API, options ...ManagerOption) *Manager {
+func NewManager(apiService api.API, moduleRegistrar ModuleRegistrar, options ...ManagerOption) *Manager {
 	m := &Manager{
-		store:         NewDefaultStore(),
-		ClientFactory: NewDefaultClientFactory(),
-		Runners:       newDefaultRunners(),
-		API:           apiService,
+		store:           NewDefaultStore(),
+		ClientFactory:   NewDefaultClientFactory(),
+		Runners:         newDefaultRunners(),
+		API:             apiService,
+		ModuleRegistrar: moduleRegistrar,
 	}
 
 	for _, option := range options {
@@ -274,17 +285,17 @@ func (m *Manager) Start(ctx context.Context) error {
 			return errors.Wrapf(err, "dispensing plugin for %q", c.name)
 		}
 
-		p, ok := raw.(Service)
+		service, ok := raw.(Service)
 		if !ok {
 			return errors.Errorf("unknown type for plugin %q: %T", c.name, raw)
 		}
 
-		metadata, err := p.Register(m.API.Addr())
+		metadata, err := service.Register(m.API.Addr())
 		if err != nil {
 			return errors.Wrapf(err, "register plugin %q", c.name)
 		}
 
-		if err := m.store.Store(c.name, client, metadata); err != nil {
+		if err := m.store.Store(c.name, client, &metadata); err != nil {
 			return errors.Wrapf(err, "storing plugin")
 		}
 
@@ -292,6 +303,25 @@ func (m *Manager) Start(ctx context.Context) error {
 			"cmd", c.cmd,
 			"metadata", metadata,
 		).Infof("registered plugin %q", metadata.Name)
+
+		if metadata.Capabilities.IsModule {
+			service, ok := raw.(ModuleService)
+			if !ok {
+				return errors.New("plugin is a not a module")
+			}
+
+			pluginLogger.Infof("plugin supports navigation")
+
+			mp, err := NewModuleProxy(c.name, &metadata, service)
+			if err != nil {
+				return errors.Wrap(err, "creating module proxy")
+			}
+
+			if err := m.ModuleRegistrar.Register(mp); err != nil {
+				return errors.Wrapf(err, "register module %s", metadata.Name)
+			}
+		}
+
 	}
 
 	return nil

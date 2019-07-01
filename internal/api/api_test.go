@@ -25,7 +25,7 @@ import (
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
 	moduleFake "github.com/vmware/octant/internal/module/fake"
-	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -55,7 +55,7 @@ func TestAPI_routes(t *testing.T) {
 			expectedCode: http.StatusOK,
 		},
 		{
-			path:         "/navigation",
+			path:         "/navigationHandler",
 			method:       http.MethodGet,
 			expectedCode: http.StatusOK,
 		},
@@ -154,13 +154,13 @@ func TestAPI_routes(t *testing.T) {
 				Handlers(gomock.Any()).Return(make(map[string]http.Handler))
 			m.EXPECT().
 				Navigation(gomock.Any(), gomock.Any(), gomock.Any()).
-				DoAndReturn(func(ctx context.Context, namespace, prefix string) ([]octant.Navigation, error) {
-					nav := octant.Navigation{
+				DoAndReturn(func(ctx context.Context, namespace, prefix string) ([]navigation.Navigation, error) {
+					nav := navigation.Navigation{
 						Path:  prefix,
 						Title: "module",
 					}
 
-					return []octant.Navigation{nav}, nil
+					return []navigation.Navigation{nav}, nil
 				}).
 				AnyTimes()
 

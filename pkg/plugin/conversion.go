@@ -8,9 +8,11 @@ package plugin
 import (
 	"encoding/json"
 
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/plugin/dashboard"
 	"github.com/vmware/octant/pkg/view/component"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func convertToCapabilities(in *dashboard.RegisterResponse_Capabilities) Capabilities {
@@ -19,11 +21,12 @@ func convertToCapabilities(in *dashboard.RegisterResponse_Capabilities) Capabili
 	}
 
 	c := Capabilities{
-		SupportsPrinterStatus: convertToGroupVersionKindList(in.SupportsPrinterConfig),
+		SupportsPrinterStatus: convertToGroupVersionKindList(in.SupportsPrinterStatus),
 		SupportsPrinterConfig: convertToGroupVersionKindList(in.SupportsPrinterConfig),
-		SupportsPrinterItems:  convertToGroupVersionKindList(in.SupportsPrinterConfig),
-		SupportsObjectStatus:  convertToGroupVersionKindList(in.SupportsPrinterConfig),
-		SupportsTab:           convertToGroupVersionKindList(in.SupportsPrinterConfig),
+		SupportsPrinterItems:  convertToGroupVersionKindList(in.SupportsPrinterItems),
+		SupportsObjectStatus:  convertToGroupVersionKindList(in.SupportsObjectStatus),
+		SupportsTab:           convertToGroupVersionKindList(in.SupportsTab),
+		IsModule:              in.IsModule,
 	}
 
 	return c
@@ -36,6 +39,7 @@ func convertFromCapabilities(in Capabilities) dashboard.RegisterResponse_Capabil
 		SupportsPrinterItems:  convertFromGroupVersionKindList(in.SupportsPrinterItems),
 		SupportsObjectStatus:  convertFromGroupVersionKindList(in.SupportsObjectStatus),
 		SupportsTab:           convertFromGroupVersionKindList(in.SupportsTab),
+		IsModule:              in.IsModule,
 	}
 
 	return c
@@ -43,6 +47,7 @@ func convertFromCapabilities(in Capabilities) dashboard.RegisterResponse_Capabil
 
 func convertToGroupVersionKindList(in []*dashboard.RegisterResponse_GroupVersionKind) []schema.GroupVersionKind {
 	var list []schema.GroupVersionKind
+
 	for i := range in {
 		list = append(list, convertToGroupVersionKind(*in[i]))
 	}
@@ -74,6 +79,42 @@ func convertFromGroupVersionKind(in schema.GroupVersionKind) dashboard.RegisterR
 		Version: in.Version,
 		Kind:    in.Kind,
 	}
+}
+
+func convertToNavigation(in *dashboard.NavigationResponse_Navigation) navigation.Navigation {
+	if in == nil {
+		return navigation.Navigation{}
+	}
+
+	out := navigation.Navigation{
+		Title:      in.Title,
+		Path:       in.Path,
+		IconName:   in.IconName,
+		IconSource: in.IconSource,
+	}
+
+	for _, child := range in.Children {
+		converted := convertToNavigation(child)
+		out.Children = append(out.Children, converted)
+	}
+
+	return out
+}
+
+func convertFromNavigation(in navigation.Navigation) dashboard.NavigationResponse_Navigation {
+	out := dashboard.NavigationResponse_Navigation{
+		Title:      in.Title,
+		Path:       in.Path,
+		IconName:   in.IconName,
+		IconSource: in.IconSource,
+	}
+
+	for _, child := range in.Children {
+		converted := convertFromNavigation(child)
+		out.Children = append(out.Children, &converted)
+	}
+
+	return out
 }
 
 func convertToSummarySections(in []*dashboard.PrintResponse_SummaryItem) ([]component.SummarySection, error) {

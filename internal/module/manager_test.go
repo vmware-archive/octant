@@ -39,7 +39,6 @@ func TestManager(t *testing.T) {
 	m.EXPECT().SetNamespace("other").Return(nil)
 
 	require.NoError(t, manager.Register(m))
-	require.NoError(t, manager.Load())
 
 	modules = manager.Modules()
 	require.NoError(t, err)
@@ -98,7 +97,6 @@ func TestManager_ObjectPath(t *testing.T) {
 				AnyTimes()
 
 			require.NoError(t, manager.Register(m))
-			require.NoError(t, manager.Load())
 
 			got, err := manager.ObjectPath("namespace", tc.apiVersion, tc.kind, "name")
 

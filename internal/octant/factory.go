@@ -14,11 +14,12 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/store"
 )
 
 // EntriesFunc is a function that can create navigation entries.
-type EntriesFunc func(ctx context.Context, prefix, namespace string, objectStore store.Store) ([]Navigation, error)
+type EntriesFunc func(ctx context.Context, prefix, namespace string, objectStore store.Store) ([]navigation.Navigation, error)
 
 // NavigationEntries help construct navigation entries.
 type NavigationEntries struct {
@@ -59,11 +60,11 @@ func (nf *NavigationFactory) Root() string {
 }
 
 // Generate returns navigation entries.
-func (nf *NavigationFactory) Generate(ctx context.Context, title string, iconName, iconSource string) (*Navigation, error) {
-	n := &Navigation{
+func (nf *NavigationFactory) Generate(ctx context.Context, title string, iconName, iconSource string) (*navigation.Navigation, error) {
+	n := &navigation.Navigation{
 		Title:    title,
 		Path:     nf.rootPath,
-		Children: []Navigation{},
+		Children: []navigation.Navigation{},
 	}
 
 	if iconName != "" {
@@ -73,7 +74,6 @@ func (nf *NavigationFactory) Generate(ctx context.Context, title string, iconNam
 			n.IconSource = iconSource
 		}
 	}
-
 
 	var mu sync.Mutex
 	var g errgroup.Group
@@ -105,8 +105,8 @@ func (nf *NavigationFactory) pathFor(elements ...string) string {
 	return path.Join(append([]string{nf.rootPath}, elements...)...)
 }
 
-func (nf *NavigationFactory) genNode(ctx context.Context, name string, childFn EntriesFunc) (*Navigation, error) {
-	node, err := NewNavigation(name, nf.pathFor(nf.entries.Lookup[name]))
+func (nf *NavigationFactory) genNode(ctx context.Context, name string, childFn EntriesFunc) (*navigation.Navigation, error) {
+	node, err := navigation.New(name, nf.pathFor(nf.entries.Lookup[name]))
 	if err != nil {
 		return nil, err
 	}

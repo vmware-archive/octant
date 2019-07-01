@@ -3,7 +3,7 @@ Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package octant
+package navigation
 
 import (
 	"context"
@@ -18,15 +18,15 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware/octant/internal/icon"
+	"github.com/vmware/octant/pkg/icon"
 	"github.com/vmware/octant/pkg/store"
 )
 
-// NavigationOption is an option for configuring navigation.
-type NavigationOption func(*Navigation) error
+// Option is an option for configuring navigation.
+type Option func(*Navigation) error
 
 // SetNavigationIcon sets the icon for the navigation entry.
-func SetNavigationIcon(name string) NavigationOption {
+func SetNavigationIcon(name string) Option {
 	return func(n *Navigation) error {
 		if name == "" {
 			return nil
@@ -53,8 +53,8 @@ type Navigation struct {
 	IconSource string       `json:"iconSource,omitempty"`
 }
 
-// NewNavigation creates a Navigation.
-func NewNavigation(title, path string, options ...NavigationOption) (*Navigation, error) {
+// New creates a Navigation.
+func New(title, path string, options ...Option) (*Navigation, error) {
 	navigation := &Navigation{Title: title, Path: path}
 
 	for _, option := range options {
@@ -89,7 +89,7 @@ func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store
 		}
 
 		if len(objects) > 0 {
-			navigation, err := NewNavigation(name, path.Join(prefix, name), SetNavigationIcon(icon.CustomResourceDefinition))
+			navigation, err := New(name, path.Join(prefix, name), SetNavigationIcon(icon.CustomResourceDefinition))
 			if err != nil {
 				return nil, err
 			}
@@ -208,7 +208,7 @@ func (neh *NavigationEntriesHelper) Generate(prefix string) ([]Navigation, error
 	var navigations []Navigation
 
 	for _, nc := range neh.navConfigs {
-		navigation, err := NewNavigation(nc.title, path.Join(prefix, nc.suffix), SetNavigationIcon(nc.iconName))
+		navigation, err := New(nc.title, path.Join(prefix, nc.suffix), SetNavigationIcon(nc.iconName))
 		if err != nil {
 			return nil, err
 		}

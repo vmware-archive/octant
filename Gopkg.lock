@@ -132,7 +132,7 @@
   revision = "98178306b791e0b8ce16c5e1277c4669d981c799"
 
 [[projects]]
-  digest = "1:a2ecb56e5053d942aafc86738915fb94c9131bac848c543b8b6764365fd69080"
+  digest = "1:c06028bbc52478d997bbc08facb0c315aabc2295094d7bf8833756aa9aa25504"
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
@@ -143,8 +143,8 @@
     "ptypes/wrappers",
   ]
   pruneopts = "T"
-  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
-  version = "v1.2.0"
+  revision = "b5d812f8a3706043e23a9cd5babf2e5423744d30"
+  version = "v1.3.1"
 
 [[projects]]
   branch = "master"
@@ -1013,6 +1013,8 @@
     "golang.org/x/net/context",
     "golang.org/x/sync/errgroup",
     "google.golang.org/grpc",
+    "google.golang.org/grpc/codes",
+    "google.golang.org/grpc/status",
     "k8s.io/api/apps/v1",
     "k8s.io/api/authorization/v1",
     "k8s.io/api/batch/v1",
@@ -1091,6 +1093,7 @@
     "k8s.io/client-go/tools/clientcmd/api/v1",
     "k8s.io/client-go/transport/spdy",
     "k8s.io/client-go/util/jsonpath",
+    "k8s.io/client-go/util/retry",
     "k8s.io/kubernetes/pkg/apis/apps",
     "k8s.io/kubernetes/pkg/apis/batch",
     "k8s.io/kubernetes/pkg/apis/core",

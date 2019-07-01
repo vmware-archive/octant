@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -35,7 +36,7 @@ type Module interface {
 	// ContentPath will be used to construct content paths.
 	ContentPath() string
 	// Navigation returns navigation entries for this module.
-	Navigation(ctx context.Context, namespace, root string) ([]octant.Navigation, error)
+	Navigation(ctx context.Context, namespace, root string) ([]navigation.Navigation, error)
 	// SetNamespace is called when the current namespace changes.
 	SetNamespace(namespace string) error
 	// Start starts the module.

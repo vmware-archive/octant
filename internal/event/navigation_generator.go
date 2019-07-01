@@ -11,12 +11,13 @@ import (
 	"path"
 	"time"
 
-	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/module"
+	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/pkg/navigation"
 )
 
 type navigationResponse struct {
-	Sections []octant.Navigation `json:"sections,omitempty"`
+	Sections []navigation.Navigation `json:"sections,omitempty"`
 }
 
 // NavigationGenerator generates navigation events.
@@ -77,8 +78,8 @@ func newAPINavSections(modules []module.Module) *apiNavSections {
 	}
 }
 
-func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]octant.Navigation, error) {
-	var sections []octant.Navigation
+func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]navigation.Navigation, error) {
+	var sections []navigation.Navigation
 
 	for _, m := range ans.modules {
 		contentPath := path.Join("/content", m.ContentPath())

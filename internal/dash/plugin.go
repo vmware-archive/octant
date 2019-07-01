@@ -6,16 +6,16 @@ SPDX-License-Identifier: Apache-2.0
 package dash
 
 import (
-	"context"
+	"github.com/pkg/errors"
 
-	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/portforward"
 	"github.com/vmware/octant/pkg/plugin"
 	"github.com/vmware/octant/pkg/plugin/api"
-	"github.com/pkg/errors"
+	"github.com/vmware/octant/pkg/store"
 )
 
-func initPlugin(ctx context.Context, portForwarder portforward.PortForwarder, appObjectStore store.Store) (*plugin.Manager, error) {
+func initPlugin(portForwarder portforward.PortForwarder, appObjectStore store.Store, moduleManager module.ManagerInterface) (*plugin.Manager, error) {
 	service := &api.GRPCService{
 		ObjectStore:   appObjectStore,
 		PortForwarder: portForwarder,
@@ -26,7 +26,7 @@ func initPlugin(ctx context.Context, portForwarder portforward.PortForwarder, ap
 		return nil, errors.Wrap(err, "create dashboard api")
 	}
 
-	m := plugin.NewManager(apiService)
+	m := plugin.NewManager(apiService, moduleManager)
 
 	pluginList, err := plugin.AvailablePlugins(plugin.DefaultConfig)
 	if err != nil {
@@ -38,10 +38,6 @@ func initPlugin(ctx context.Context, portForwarder portforward.PortForwarder, ap
 			return nil, errors.Wrapf(err, "initialize plugin %q", pluginPath)
 		}
 
-	}
-
-	if err := m.Start(ctx); err != nil {
-		return nil, errors.Wrap(err, "start plugin manager")
 	}
 
 	return m, nil
