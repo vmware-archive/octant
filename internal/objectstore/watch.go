@@ -11,6 +11,7 @@ import (
 
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -43,6 +44,7 @@ type Watch struct {
 	backendObjectStore store.Store
 	gvkLock            sync.Mutex
 	objectLock         sync.RWMutex
+	factoryMu          sync.RWMutex
 
 	onClientUpdate chan store.Store
 	updateFns      []store.UpdateFn
@@ -53,6 +55,30 @@ var _ store.Store = (*Watch)(nil)
 func initWatchBackend(w *Watch) (store.Store, error) {
 	backendObjectStore, err := NewDynamicCache(w.client, w.stopCh, func(d *DynamicCache) {
 		d.initFactoryFunc = func(client cluster.ClientInterface, namespace string) (dynamicinformer.DynamicSharedInformerFactory, error) {
+			w.factoryMu.RLock()
+			factory, ok := w.factories[namespace]
+			w.factoryMu.RUnlock()
+
+			if !ok {
+				if err := w.HasAccess(store.Key{Namespace: metav1.NamespaceAll}, "watch"); err != nil {
+					factory, err = w.initFactoryFunc(w.client, namespace)
+					if err != nil {
+						return nil, err
+					}
+				} else {
+					w.factoryMu.RLock()
+					factory, ok = w.factories[""]
+					w.factoryMu.RUnlock()
+					if !ok {
+						return nil, errors.New("no default DynamicInformerFactory found")
+					}
+				}
+			}
+
+			w.factoryMu.Lock()
+			w.factories[namespace] = factory
+			w.factoryMu.Unlock()
+
 			return w.factories[namespace], nil
 		}
 	})
@@ -115,14 +141,6 @@ func (w *Watch) bootstrap(ctx context.Context, forceBackendInit bool) error {
 	namespaces = append(namespaces, "")
 
 	for _, namespace := range namespaces {
-		factory, err := w.initFactoryFunc(w.client, namespace)
-		if err != nil {
-			return errors.Wrap(err, "initialize dynamic shared informer factory")
-		}
-
-		if _, ok := w.factories[namespace]; !ok {
-			w.factories[namespace] = factory
-		}
 		if _, ok := w.watchedGVKs[namespace]; !ok {
 			w.watchedGVKs[namespace] = make(map[schema.GroupVersionKind]bool)
 		}
@@ -132,6 +150,14 @@ func (w *Watch) bootstrap(ctx context.Context, forceBackendInit bool) error {
 		if _, ok := w.handlers[namespace]; !ok {
 			w.handlers[namespace] = make(map[schema.GroupVersionKind]watchEventHandler)
 		}
+	}
+
+	if _, ok := w.factories[""]; !ok {
+		factory, err := w.initFactoryFunc(w.client, "")
+		if err != nil {
+			return errors.Wrap(err, "initialize dynamic shared informer factory")
+		}
+		w.factories[""] = factory
 	}
 
 	if w.backendObjectStore == nil || forceBackendInit {
@@ -353,10 +379,29 @@ func (w *Watch) createEventHandler(key store.Key, updateCh, deleteCh chan watchE
 		return errors.Wrap(err, "client resource")
 	}
 
+	w.factoryMu.RLock()
 	factory, ok := w.factories[key.Namespace]
+	w.factoryMu.RUnlock()
+
 	if !ok {
-		return errors.Errorf("no informer factory found for %s", key.Namespace)
+		if err := w.HasAccess(store.Key{Namespace: metav1.NamespaceAll}, "watch"); err != nil {
+			factory, err = w.initFactoryFunc(w.client, key.Namespace)
+			if err != nil {
+				return err
+			}
+		} else {
+			w.factoryMu.RLock()
+			factory, ok = w.factories[""]
+			w.factoryMu.RUnlock()
+			if !ok {
+				return errors.New("no default DynamicInformerFactory found")
+			}
+		}
 	}
+
+	w.factoryMu.Lock()
+	w.factories[key.Namespace] = factory
+	w.factoryMu.Unlock()
 
 	informer, err := currentInformer(gvr, factory, w.stopCh)
 	if err != nil {
