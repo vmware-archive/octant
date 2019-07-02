@@ -6,11 +6,12 @@ SPDX-License-Identifier: Apache-2.0
 package plugin
 
 import (
-	"github.com/vmware/octant/pkg/view/component"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 // Runners is an interface that manager can call to get runners for a
@@ -175,7 +176,6 @@ func TabRunner(store ManagerStore, ch chan<- component.Tab) DefaultRunner {
 
 	return runner
 }
-
 
 // ObjectStatusRunner is a runner for object status.
 func ObjectStatusRunner(store ManagerStore, ch chan<- ObjectStatusResponse) DefaultRunner {

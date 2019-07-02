@@ -9,12 +9,14 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/vmware/octant/pkg/plugin/dashboard"
-	"github.com/vmware/octant/pkg/view/component"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/vmware/octant/pkg/navigation"
+	"github.com/vmware/octant/pkg/plugin/dashboard"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 // GRPCClient is the dashboard GRPC client.
@@ -54,6 +56,58 @@ func (c *GRPCClient) run(fn func() error) error {
 	go c.broker.AcceptAndServe(brokerID, serverFunc)
 
 	return fn()
+}
+
+// Content returns content from a plugin.
+func (c *GRPCClient) Content(contentPath string) (component.ContentResponse, error) {
+	var contentResponse component.ContentResponse
+
+	err := c.run(func() error {
+		req := &dashboard.ContentRequest{
+			Path: contentPath,
+		}
+
+		resp, err := c.client.Content(context.Background(), req)
+		if err != nil {
+			return errors.Wrap(err, "grpc client content")
+		}
+
+		if err := json.Unmarshal(resp.ContentResponse, &contentResponse); err != nil {
+			return errors.Wrap(err, "unmarshal content response")
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return component.ContentResponse{}, err
+	}
+
+	return contentResponse, nil
+}
+
+// Navigation returns navigation entries from a plugin.
+func (c *GRPCClient) Navigation() (navigation.Navigation, error) {
+	var entries navigation.Navigation
+
+	err := c.run(func() error {
+		req := &dashboard.NavigationRequest{}
+
+		resp, err := c.client.Navigation(context.Background(), req)
+		if err != nil {
+			return errors.Wrap(err, "grpc client response")
+		}
+
+		entries = convertToNavigation(resp.Navigation)
+
+		return nil
+	})
+
+	if err != nil {
+		return navigation.Navigation{}, err
+	}
+
+	return entries, nil
 }
 
 // Register register a plugin.
@@ -103,13 +157,13 @@ func (c *GRPCClient) ObjectStatus(object runtime.Object) (ObjectStatusResponse, 
 			return errors.Wrap(err, "grpc client object status")
 		}
 
-		var objectstatus component.PodSummary
-		if err := json.Unmarshal(resp.ObjectStatus, &objectstatus); err != nil {
+		var objectStatus component.PodSummary
+		if err := json.Unmarshal(resp.ObjectStatus, &objectStatus); err != nil {
 			return errors.Wrap(err, "convert object status")
 		}
 
 		osr = ObjectStatusResponse{
-			ObjectStatus: objectstatus,
+			ObjectStatus: objectStatus,
 		}
 
 		return nil
@@ -210,7 +264,7 @@ func (c *GRPCClient) PrintTab(object runtime.Object) (*component.Tab, error) {
 
 		layout, ok := c.(*component.FlexLayout)
 		if !ok {
-			return errors.Errorf("expected to be flexlayout was: %T", c)
+			return errors.Errorf("expected to be flex layout was: %T", c)
 		}
 
 		tab.Name = resp.Name
@@ -234,6 +288,49 @@ type GRPCServer struct {
 }
 
 var _ dashboard.PluginServer = (*GRPCServer)(nil)
+
+// Content returns content from a plugin.
+func (s *GRPCServer) Content(ctx context.Context, req *dashboard.ContentRequest) (*dashboard.ContentResponse, error) {
+	service, ok := s.Impl.(ModuleService)
+	if !ok {
+		return nil, errors.New("plugin is not a module")
+	}
+
+	contentResponse, err := service.Content(req.Path)
+	if err != nil {
+		return nil, err
+	}
+
+	contentResponseBytes, err := json.Marshal(&contentResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dashboard.ContentResponse{
+		ContentResponse: contentResponseBytes,
+	}, nil
+
+}
+
+// Navigation returns navigation entries from a plugin.
+func (s *GRPCServer) Navigation(context.Context, *dashboard.NavigationRequest) (*dashboard.NavigationResponse, error) {
+	service, ok := s.Impl.(ModuleService)
+	if !ok {
+		return nil, errors.New("plugin is not a module")
+	}
+
+	entry, err := service.Navigation()
+	if err != nil {
+		return nil, err
+	}
+
+	converted := convertFromNavigation(entry)
+
+	return &dashboard.NavigationResponse{
+		Navigation: &converted,
+	}, nil
+
+}
 
 // Register register a plugin.
 func (s *GRPCServer) Register(ctx context.Context, registerRequest *dashboard.RegisterRequest) (*dashboard.RegisterResponse, error) {
@@ -353,7 +450,7 @@ func (s *GRPCServer) WatchAdd(context.Context, *dashboard.WatchRequest) (*dashbo
 	panic("not implemented")
 }
 
-// WatchUpdate is caleld when a watched GVK has an object updated.
+// WatchUpdate is called when a watched GVK has an object updated.
 func (s *GRPCServer) WatchUpdate(context.Context, *dashboard.WatchRequest) (*dashboard.Empty, error) {
 	panic("not implemented")
 }

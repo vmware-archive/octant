@@ -1,0 +1,8 @@
+Add module support to plugins
+
+With this change, plugins can act as a modules (e.g, serve
+content, provide navigation) if they specify they are a module
+in their capabilities and implement the required API (i.e
+Content, Navigation)
+
+

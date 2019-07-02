@@ -12,43 +12,43 @@ import (
 	"github.com/gorilla/mux"
 	"go.opencensus.io/trace"
 
-	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/pkg/navigation"
 )
 
 type navSections interface {
-	Sections(ctx context.Context, namespace string) ([]octant.Navigation, error)
+	Sections(ctx context.Context, namespace string) ([]navigation.Navigation, error)
 }
 
 type navigationResponse struct {
-	Sections []octant.Navigation `json:"sections,omitempty"`
+	Sections []navigation.Navigation `json:"sections,omitempty"`
 }
 
-type navigation struct {
+type navigationHandler struct {
 	navSections navSections
 	logger      log.Logger
 }
 
-var _ http.Handler = (*navigation)(nil)
+var _ http.Handler = (*navigationHandler)(nil)
 
-func newNavigation(ns navSections, logger log.Logger) *navigation {
+func newNavigationHandler(ns navSections, logger log.Logger) *navigationHandler {
 	if logger == nil {
 		logger = log.NopLogger()
 	}
 
-	return &navigation{
+	return &navigationHandler{
 		navSections: ns,
 		logger:      logger,
 	}
 }
 
-func (n *navigation) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx, span := trace.StartSpan(r.Context(), "api:navigation")
+func (n *navigationHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx, span := trace.StartSpan(r.Context(), "api:navigationHandler")
 	defer span.End()
 
 	if n.navSections == nil {
 		RespondWithError(w, http.StatusInternalServerError,
-			"unable to generate navigation sections", n.logger)
+			"unable to generate navigationHandler sections", n.logger)
 		return
 	}
 
@@ -59,12 +59,12 @@ func (n *navigation) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		namespace = "default"
 	}
 
-	n.logger.Debugf("navigation for namespace %s", namespace)
+	n.logger.Debugf("navigationHandler for namespace %s", namespace)
 
 	ns, err := n.navSections.Sections(ctx, namespace)
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError,
-			"unable to generate navigation sections", n.logger)
+			"unable to generate navigationHandler sections", n.logger)
 		return
 	}
 

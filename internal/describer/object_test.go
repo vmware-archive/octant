@@ -17,9 +17,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	configFake "github.com/vmware/octant/internal/config/fake"
-	printerfake "github.com/vmware/octant/internal/modules/overview/printer/fake"
+	printerFake "github.com/vmware/octant/internal/modules/overview/printer/fake"
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/plugin"
+	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -40,10 +41,12 @@ func TestObjectDescriber(t *testing.T) {
 	require.NoError(t, err)
 
 	dashConfig := configFake.NewMockDash(controller)
-	pluginManager := plugin.NewManager(nil)
+	moduleRegistrar := pluginFake.NewMockModuleRegistrar(controller)
+
+	pluginManager := plugin.NewManager(nil, moduleRegistrar)
 	dashConfig.EXPECT().PluginManager().Return(pluginManager).AnyTimes()
 
-	objectPrinter := printerfake.NewMockPrinter(controller)
+	objectPrinter := printerFake.NewMockPrinter(controller)
 
 	podSummary := component.NewText("summary")
 	objectPrinter.EXPECT().Print(gomock.Any(), pod, pluginManager).Return(podSummary, nil)

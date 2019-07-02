@@ -36,10 +36,14 @@ func (s *stub) Register(apiAddress string) (plugin.Metadata, error) {
 			SupportsPrinterItems:  []schema.GroupVersionKind{podGVK},
 			SupportsObjectStatus:  []schema.GroupVersionKind{podGVK},
 			SupportsTab:           []schema.GroupVersionKind{podGVK},
+			IsModule:              false,
 		},
 	}, nil
 }
 ```
+
+Plugins can also act as Octant modules. To enable module support, set `IsModule` to true. When acting as modules, plugins can provide
+content and navigation entries.
 
 ## Summary
 
@@ -101,4 +105,49 @@ A port forward requires a request containing the namespace, pod name, and port n
 	}
 
 	defer p.apiClient.CancelPortForward(ctx, pfResponse.ID)
+```
+
+## Navigation
+
+If a plugin is configured as a module, it can supply navigation entries. These navigation entries will displayed with the application's
+navigation.
+
+```go
+func (p *modulePlugin) Navigation() (navigation.Navigation, error) {
+	return navigation.Navigation{
+		Title: "Module Plugin",
+		Path:  path.Join("/content", "module-plugin", "/"),
+		Children: []navigation.Navigation{
+			{
+				Title:    "Nested Once",
+				Path:     path.Join("/content", "module-plugin", "nested-once"),
+				IconName: "folder",
+				Children: []navigation.Navigation{
+					{
+						Title:    "Nested Twice",
+						Path:     path.Join("/content", "module-plugin", "nested-once", "nested-twice"),
+						IconName: "folder",
+					},
+				},
+			},
+		},
+		IconName: "cloud",
+	}, nil
+
+}
+```
+
+## Content
+
+If a plugin is configured as a module, it can serve content. The content consists of Octant components. wrapped in a `ContentResponse`.
+The function will receive the currently requested content path and can display content based on that path. 
+
+```go
+func (p *modulePlugin) Content(contentPath string) (component.ContentResponse, error) {
+	return component.ContentResponse{
+		Components: []component.Component{
+			component.NewText(fmt.Sprintf("hello from plugin: path %s", contentPath)),
+		},
+	}, nil
+}
 ```

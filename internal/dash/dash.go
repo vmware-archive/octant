@@ -111,29 +111,49 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return errors.Wrap(err, "initializing port forwarder")
 	}
 
-	pluginManager, err := initPlugin(ctx, portForwarder, appObjectStore)
+	actionManger := action.NewManager(logger)
+
+	mo := moduleOptions{
+		clusterClient: clusterClient,
+		namespace:     options.Namespace,
+		logger:        logger,
+		actionManager: actionManger,
+	}
+	moduleManager, err := initModuleManager(mo)
+	if err != nil {
+		return errors.Wrap(err, "init module manager")
+	}
+
+	pluginManager, err := initPlugin(portForwarder, appObjectStore, moduleManager)
 	if err != nil {
 		return errors.Wrap(err, "initializing plugin manager")
 	}
 
-	actionManger := action.NewManager(logger)
+	dashConfig := config.NewLiveConfig(
+		clusterClient,
+		crdWatcher,
+		options.KubeConfig,
+		logger,
+		moduleManager,
+		appObjectStore,
+		componentCache,
+		pluginManager,
+		portForwarder,
+		options.Context)
 
-	mo := moduleOptions{
-		clusterClient:  clusterClient,
-		crdWatcher:     crdWatcher,
-		objectStore:    appObjectStore,
-		componentCache: componentCache,
-		namespace:      options.Namespace,
-		logger:         logger,
-		pluginManager:  pluginManager,
-		portForwarder:  portForwarder,
-		actionManager:  actionManger,
-		kubeConfigPath: options.KubeConfig,
-		initialContext: options.Context,
-	}
-	moduleManager, err := initModuleManager(ctx, mo)
+	moduleList, err := initModules(ctx, dashConfig, options.Namespace)
 	if err != nil {
-		return errors.Wrap(err, "init module manager")
+		return errors.Wrap(err, "initializing modules")
+	}
+
+	for _, mod := range moduleList {
+		if err := moduleManager.Register(mod); err != nil {
+			return errors.Wrapf(err, "loading module %s", mod.Name())
+		}
+	}
+
+	if err := pluginManager.Start(ctx); err != nil {
+		return errors.Wrapf(err, "start plugin manager")
 	}
 
 	listener, err := buildListener()
@@ -209,62 +229,52 @@ type moduleOptions struct {
 	actionManager  *action.Manager
 }
 
-// initModuleManager initializes the moduleManager (and currently the modules themselves)
-func initModuleManager(ctx context.Context, options moduleOptions) (*module.Manager, error) {
-	moduleManager, err := module.NewManager(options.clusterClient, options.namespace, options.actionManager, options.logger)
-	if err != nil {
-		return nil, errors.Wrap(err, "create module manager")
-	}
-
-	c := config.NewLiveConfig(
-		options.clusterClient,
-		options.crdWatcher,
-		options.kubeConfigPath,
-		options.logger,
-		moduleManager,
-		options.objectStore,
-		options.componentCache,
-		options.pluginManager,
-		options.portForwarder,
-		options.initialContext,
-	)
+func initModules(ctx context.Context, dashConfig config.Dash, namespace string) ([]module.Module, error) {
+	var list []module.Module
 
 	overviewOptions := overview.Options{
-		Namespace:  options.namespace,
-		DashConfig: c,
+		Namespace:  namespace,
+		DashConfig: dashConfig,
 	}
 	overviewModule, err := overview.New(ctx, overviewOptions)
 	if err != nil {
 		return nil, errors.Wrap(err, "create overview module")
 	}
 
-	moduleManager.Register(overviewModule)
+	list = append(list, overviewModule)
 
 	clusterOverviewOptions := clusteroverview.Options{
-		DashConfig: c,
+		DashConfig: dashConfig,
 	}
 	clusterOverviewModule, err := clusteroverview.New(ctx, clusterOverviewOptions)
 	if err != nil {
 		return nil, errors.Wrap(err, "create cluster overview module")
 	}
 
-	moduleManager.Register(clusterOverviewModule)
+	list = append(list, clusterOverviewModule)
 
 	configurationOptions := configuration.Options{
-		DashConfig:     c,
-		KubeConfigPath: options.kubeConfigPath,
+		DashConfig:     dashConfig,
+		KubeConfigPath: dashConfig.KubeConfigPath(),
 	}
 	configurationModule := configuration.New(ctx, configurationOptions)
-	moduleManager.Register(configurationModule)
+
+	list = append(list, configurationModule)
 
 	localContentPath := os.Getenv("OCTANT_LOCAL_CONTENT")
 	if localContentPath != "" {
 		localContentModule := localcontent.New(localContentPath)
-		moduleManager.Register(localContentModule)
+		list = append(list, localContentModule)
 	}
 
-	if err = moduleManager.Load(); err != nil {
-		return nil, errors.Wrap(err, "modules load")
+	return list, nil
+}
+
+// initModuleManager initializes the moduleManager (and currently the modules themselves)
+func initModuleManager(options moduleOptions) (*module.Manager, error) {
+	moduleManager, err := module.NewManager(options.clusterClient, options.namespace, options.actionManager, options.logger)
+	if err != nil {
+		return nil, errors.Wrap(err, "create module manager")
 	}
 
 	return moduleManager, nil

@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package plugin
 
 import (
+	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/view/component"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -28,6 +29,8 @@ type Capabilities struct {
 	SupportsObjectStatus []schema.GroupVersionKind
 	// SupportsTab are the GVKs the plugin will create an additional tab for.
 	SupportsTab []schema.GroupVersionKind
+	// IsModule is true this plugin is a module.
+	IsModule bool
 }
 
 // HasPrinterSupport returns true if this plugin supports the supplied GVK.
@@ -67,12 +70,22 @@ type Metadata struct {
 	Capabilities Capabilities
 }
 
-// Service is the interface that is exposed as a plugin.
+// Service is the interface that is exposed as a plugin. The plugin is required to implement this
+// interface.
 type Service interface {
 	Register(dashboardAPIAddress string) (Metadata, error)
 	Print(object runtime.Object) (PrintResponse, error)
 	PrintTab(object runtime.Object) (*component.Tab, error)
 	ObjectStatus(object runtime.Object) (ObjectStatusResponse, error)
+}
+
+// ModuleService is the interface that is exposed as a plugin as a module. The plugin is required to implement this
+// interface.
+type ModuleService interface {
+	Service
+
+	Navigation() (navigation.Navigation, error)
+	Content(contentPath string) (component.ContentResponse, error)
 }
 
 func includesGVK(gvk schema.GroupVersionKind, list []schema.GroupVersionKind) bool {

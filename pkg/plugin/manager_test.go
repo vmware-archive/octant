@@ -17,7 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware/octant/internal/testutil"
-	dashplugin "github.com/vmware/octant/pkg/plugin"
+	dashPlugin "github.com/vmware/octant/pkg/plugin"
 	"github.com/vmware/octant/pkg/plugin/api"
 	"github.com/vmware/octant/pkg/plugin/fake"
 	"github.com/vmware/octant/pkg/view/component"
@@ -29,9 +29,9 @@ func TestDefaultStore(t *testing.T) {
 
 	name := "name"
 	client := newFakePluginClient(name, controller)
-	metadata := dashplugin.Metadata{Name: name}
+	metadata := &dashPlugin.Metadata{Name: name}
 
-	s := dashplugin.NewDefaultStore()
+	s := dashPlugin.NewDefaultStore()
 	err := s.Store(name, client, metadata)
 	require.NoError(t, err)
 
@@ -53,28 +53,29 @@ func TestManager(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	var options []dashplugin.ManagerOption
+	var options []dashPlugin.ManagerOption
 
 	store := fake.NewMockManagerStore(controller)
 	clientFactory := fake.NewMockClientFactory(controller)
+	moduleRegistrar := fake.NewMockModuleRegistrar(controller)
 
 	name := "plugin1"
 
 	client := newFakePluginClient(name, controller)
 	clientFactory.EXPECT().Init(gomock.Any(), gomock.Eq(name)).Return(client)
 
-	metadata := dashplugin.Metadata{
+	metadata := &dashPlugin.Metadata{
 		Name: name,
 	}
 	store.EXPECT().Store(gomock.Eq(name), gomock.Eq(client), gomock.Eq(metadata))
-	store.EXPECT().Clients().Return(map[string]dashplugin.Client{name: client})
+	store.EXPECT().Clients().Return(map[string]dashPlugin.Client{name: client})
 
-	options = append(options, func(m *dashplugin.Manager) {
+	options = append(options, func(m *dashPlugin.Manager) {
 		m.ClientFactory = clientFactory
 	})
 
 	apiService := &stubAPIService{}
-	manager := dashplugin.NewManager(apiService, options...)
+	manager := dashPlugin.NewManager(apiService, moduleRegistrar, options...)
 
 	manager.SetStore(store)
 
@@ -94,20 +95,21 @@ func TestManager_Print(t *testing.T) {
 
 	pod := testutil.CreatePod("pod")
 
-	var options []dashplugin.ManagerOption
+	var options []dashPlugin.ManagerOption
 
 	store := fake.NewMockManagerStore(controller)
+	moduleRegistrar := fake.NewMockModuleRegistrar(controller)
 
 	store.EXPECT().ClientNames().Return([]string{"plugin1", "plugin2"})
 
-	ch := make(chan dashplugin.PrintResponse)
-	printRunner := dashplugin.DefaultRunner{
+	ch := make(chan dashPlugin.PrintResponse)
+	printRunner := dashPlugin.DefaultRunner{
 		RunFunc: func(name string, gvk schema.GroupVersionKind, object runtime.Object) error {
 			if name == "plugin1" {
-				resp1 := dashplugin.PrintResponse{
+				resp1 := dashPlugin.PrintResponse{
 					Config: []component.SummarySection{{Header: "resp1"}},
 				}
-				resp2 := dashplugin.PrintResponse{
+				resp2 := dashPlugin.PrintResponse{
 					Config: []component.SummarySection{{Header: "resp2"}},
 				}
 				ch <- resp1
@@ -122,18 +124,18 @@ func TestManager_Print(t *testing.T) {
 	runners.EXPECT().
 		Print(gomock.Eq(store)).Return(printRunner, ch)
 
-	options = append(options, func(m *dashplugin.Manager) {
+	options = append(options, func(m *dashPlugin.Manager) {
 		m.Runners = runners
 	})
 
 	apiService := &stubAPIService{}
-	manager := dashplugin.NewManager(apiService, options...)
+	manager := dashPlugin.NewManager(apiService, moduleRegistrar, options...)
 	manager.SetStore(store)
 
 	got, err := manager.Print(pod)
 	require.NoError(t, err)
 
-	expected := &dashplugin.PrintResponse{
+	expected := &dashPlugin.PrintResponse{
 		Config: []component.SummarySection{
 			{Header: "resp1"},
 			{Header: "resp2"},
@@ -148,14 +150,15 @@ func TestManager_Tabs(t *testing.T) {
 
 	pod := testutil.CreatePod("pod")
 
-	var options []dashplugin.ManagerOption
+	var options []dashPlugin.ManagerOption
 
 	store := fake.NewMockManagerStore(controller)
+	moduleRegistrar := fake.NewMockModuleRegistrar(controller)
 
 	store.EXPECT().ClientNames().Return([]string{"plugin1", "plugin2"})
 
 	ch := make(chan component.Tab)
-	tabRunner := dashplugin.DefaultRunner{
+	tabRunner := dashPlugin.DefaultRunner{
 		RunFunc: func(name string, gvk schema.GroupVersionKind, object runtime.Object) error {
 			ch <- component.Tab{Name: name}
 
@@ -167,12 +170,12 @@ func TestManager_Tabs(t *testing.T) {
 	runners.EXPECT().
 		Tab(gomock.Eq(store)).Return(tabRunner, ch)
 
-	options = append(options, func(m *dashplugin.Manager) {
+	options = append(options, func(m *dashPlugin.Manager) {
 		m.Runners = runners
 	})
 
 	apiService := &stubAPIService{}
-	manager := dashplugin.NewManager(apiService, options...)
+	manager := dashPlugin.NewManager(apiService, moduleRegistrar, options...)
 	manager.SetStore(store)
 
 	got, err := manager.Tabs(pod)
@@ -195,11 +198,11 @@ type fakePluginClient struct {
 	name           string
 }
 
-var _ dashplugin.Client = (*fakePluginClient)(nil)
+var _ dashPlugin.Client = (*fakePluginClient)(nil)
 
 func newFakePluginClient(name string, controller *gomock.Controller) *fakePluginClient {
 	service := fake.NewMockService(controller)
-	metadata := dashplugin.Metadata{
+	metadata := dashPlugin.Metadata{
 		Name: name,
 	}
 	service.EXPECT().Register(gomock.Eq("localhost:54321")).Return(metadata, nil).AnyTimes()

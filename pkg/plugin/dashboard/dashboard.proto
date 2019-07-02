@@ -3,6 +3,28 @@ package dashboard;
 
 message Empty {}
 
+message ContentRequest {
+    string path = 1;
+}
+
+message ContentResponse {
+    bytes content_response = 1;
+}
+
+message NavigationRequest {}
+
+message NavigationResponse {
+    message Navigation {
+        string title = 1;
+        string path = 2;
+        repeated Navigation children = 3;
+        string icon_name = 4;
+        string icon_source = 5;
+    }
+
+    Navigation navigation = 1;
+}
+
 message RegisterRequest {
     string dashboardAPIAddress = 1;
 }
@@ -19,6 +41,7 @@ message RegisterResponse {
         repeated GroupVersionKind supportsPrinterItems = 3;
         repeated GroupVersionKind supportsObjectStatus = 4;
         repeated GroupVersionKind supportsTab = 5;
+        bool isModule = 6;
     }
 
     string pluginName = 1;
@@ -56,6 +79,8 @@ message WatchRequest {
 }
 
 service Plugin {
+    rpc Content(ContentRequest) returns (ContentResponse);
+    rpc Navigation(NavigationRequest) returns (NavigationResponse);
     rpc Register(RegisterRequest) returns (RegisterResponse);
     rpc Print(ObjectRequest) returns (PrintResponse);
     rpc ObjectStatus(ObjectRequest) returns (ObjectStatusResponse);

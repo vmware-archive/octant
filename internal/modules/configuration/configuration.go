@@ -17,10 +17,11 @@ import (
 	"github.com/vmware/octant/internal/api"
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/describer"
-	"github.com/vmware/octant/internal/icon"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/pkg/icon"
+	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -101,13 +102,13 @@ func (c *Configuration) ContentPath() string {
 	return c.Name()
 }
 
-func (c *Configuration) Navigation(ctx context.Context, namespace, root string) ([]octant.Navigation, error) {
-	return []octant.Navigation{
+func (c *Configuration) Navigation(ctx context.Context, namespace, root string) ([]navigation.Navigation, error) {
+	return []navigation.Navigation{
 		{
 			Title:    "Configuration",
 			Path:     path.Join("/content", c.ContentPath(), "/"),
 			IconName: icon.Configuration,
-			Children: []octant.Navigation{
+			Children: []navigation.Navigation{
 				{
 					Title:    "Plugins",
 					Path:     path.Join("/content", c.ContentPath(), "plugins"),

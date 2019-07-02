@@ -20,16 +20,15 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/module"
+	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
 type LocalContent struct {
 	root string
 }
-
-
 
 var _ module.Module = (*LocalContent)(nil)
 
@@ -145,14 +144,14 @@ func (l *LocalContent) walk(fn walkFn) error {
 	return nil
 }
 
-func (l *LocalContent) Navigation(ctx context.Context, namespace, root string) ([]octant.Navigation, error) {
+func (l *LocalContent) Navigation(ctx context.Context, namespace, root string) ([]navigation.Navigation, error) {
 	if !strings.HasSuffix(root, "/") {
 		root = fmt.Sprintf("%s/", root)
 	}
-	nav := octant.Navigation{
+	nav := navigation.Navigation{
 		Title:    "Local Content",
 		Path:     root,
-		Children: []octant.Navigation{},
+		Children: []navigation.Navigation{},
 	}
 
 	err := l.walk(func(name, base string, content component.ContentResponse) error {
@@ -161,7 +160,7 @@ func (l *LocalContent) Navigation(ctx context.Context, namespace, root string) (
 			return errors.Wrap(err, "convert title to text")
 		}
 
-		nav.Children = append(nav.Children, octant.Navigation{
+		nav.Children = append(nav.Children, navigation.Navigation{
 			Title: title,
 			Path:  path.Join(root, base),
 		})
@@ -173,7 +172,7 @@ func (l *LocalContent) Navigation(ctx context.Context, namespace, root string) (
 		return nil, err
 	}
 
-	return []octant.Navigation{nav}, nil
+	return []navigation.Navigation{nav}, nil
 }
 
 func (l *LocalContent) titleToText(title []component.TitleComponent) (string, error) {
@@ -228,7 +227,6 @@ func (l *LocalContent) RemoveCRD(ctx context.Context, crd *unstructured.Unstruct
 func (l *LocalContent) Generators() []octant.Generator {
 	return []octant.Generator{}
 }
-
 
 func (l *LocalContent) SetContext(ctx context.Context, contextName string) error {
 	return nil

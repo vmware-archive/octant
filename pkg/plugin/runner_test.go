@@ -89,7 +89,7 @@ func Test_PrintRunner(t *testing.T) {
 	object := testutil.CreateDeployment("deployment")
 	clientNames := []string{"plugin1", "plugin2"}
 
-	plugin1Metadata := plugin.Metadata{
+	plugin1Metadata := &plugin.Metadata{
 		Capabilities: plugin.Capabilities{
 			SupportsPrinterConfig: []schema.GroupVersionKind{gvk.DeploymentGVK},
 		},
@@ -97,7 +97,7 @@ func Test_PrintRunner(t *testing.T) {
 	store.EXPECT().
 		GetMetadata(gomock.Eq("plugin1")).Return(plugin1Metadata, nil)
 
-	plugin2Metadata := plugin.Metadata{}
+	plugin2Metadata := &plugin.Metadata{}
 	store.EXPECT().
 		GetMetadata(gomock.Eq("plugin2")).Return(plugin2Metadata, nil)
 
@@ -138,7 +138,7 @@ func Test_TabRunner(t *testing.T) {
 	object := testutil.CreateDeployment("deployment")
 	clientNames := []string{"plugin1", "plugin2"}
 
-	plugin1Metadata := plugin.Metadata{
+	plugin1Metadata := &plugin.Metadata{
 		Capabilities: plugin.Capabilities{
 			SupportsTab: []schema.GroupVersionKind{gvk.DeploymentGVK},
 		},
@@ -146,7 +146,7 @@ func Test_TabRunner(t *testing.T) {
 	store.EXPECT().
 		GetMetadata(gomock.Eq("plugin1")).Return(plugin1Metadata, nil)
 
-	plugin2Metadata := plugin.Metadata{}
+	plugin2Metadata := &plugin.Metadata{}
 	store.EXPECT().
 		GetMetadata(gomock.Eq("plugin2")).Return(plugin2Metadata, nil)
 

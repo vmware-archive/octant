@@ -14,9 +14,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/module/fake"
+	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/pkg/navigation"
 )
 
 func TestNavigationGenerator_Event(t *testing.T) {
@@ -28,13 +29,13 @@ func TestNavigationGenerator_Event(t *testing.T) {
 		ContentPath().Return("/module").AnyTimes()
 	mod.EXPECT().
 		Navigation(gomock.Any(), gomock.Any(), gomock.Any()).
-		DoAndReturn(func(ctx context.Context, namespace, prefix string) ([]octant.Navigation, error) {
-			nav := octant.Navigation{
+		DoAndReturn(func(ctx context.Context, namespace, prefix string) ([]navigation.Navigation, error) {
+			nav := navigation.Navigation{
 				Path:  prefix,
 				Title: "module",
 			}
 
-			return []octant.Navigation{nav}, nil
+			return []navigation.Navigation{nav}, nil
 		}).
 		AnyTimes()
 
@@ -47,7 +48,7 @@ func TestNavigationGenerator_Event(t *testing.T) {
 	require.NoError(t, err)
 
 	expectedResponse := navigationResponse{
-		Sections: []octant.Navigation{
+		Sections: []navigation.Navigation{
 			{
 				Path:  "/content/module",
 				Title: "module",

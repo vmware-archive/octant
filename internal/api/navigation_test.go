@@ -12,8 +12,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/log"
+	navigation2 "github.com/vmware/octant/pkg/navigation"
+
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,7 +22,7 @@ import (
 
 func Test_navigation_handler(t *testing.T) {
 	validSections := &fakeNavSections{
-		sections: []octant.Navigation{
+		sections: []navigation2.Navigation{
 			{},
 		},
 	}
@@ -34,25 +35,25 @@ func Test_navigation_handler(t *testing.T) {
 
 	cases := []struct {
 		name       string
-		nav        *navigation
+		nav        *navigationHandler
 		statusCode int
 		body       []byte
 	}{
 
 		{
 			name:       "in general",
-			nav:        newNavigation(validSections, logger),
+			nav:        newNavigationHandler(validSections, logger),
 			statusCode: http.StatusOK,
 			body:       []byte("{\"sections\":[{}]}\n"),
 		},
 		{
 			name:       "no section generator",
-			nav:        newNavigation(nil, logger),
+			nav:        newNavigationHandler(nil, logger),
 			statusCode: http.StatusInternalServerError,
 		},
 		{
 			name:       "section generate error",
-			nav:        newNavigation(invalidSections, logger),
+			nav:        newNavigationHandler(invalidSections, logger),
 			statusCode: http.StatusInternalServerError,
 		},
 	}
@@ -79,10 +80,10 @@ func Test_navigation_handler(t *testing.T) {
 }
 
 type fakeNavSections struct {
-	sections    []octant.Navigation
+	sections    []navigation2.Navigation
 	sectionsErr error
 }
 
-func (ns *fakeNavSections) Sections(ctx context.Context, namespace string) ([]octant.Navigation, error) {
+func (ns *fakeNavSections) Sections(ctx context.Context, namespace string) ([]navigation2.Navigation, error) {
 	return ns.sections, ns.sectionsErr
 }

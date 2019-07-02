@@ -15,9 +15,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/modules/localcontent"
+	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/view/component"
 
 	"github.com/stretchr/testify/assert"
@@ -88,11 +88,11 @@ func Test_LocalContent_Navigation(t *testing.T) {
 		nav, err := lc.Navigation(ctx, "", "/root")
 		require.NoError(t, err)
 
-		expectedNav := []octant.Navigation{
+		expectedNav := []navigation.Navigation{
 			{
 				Title: "Local Content",
 				Path:  "/root/",
-				Children: []octant.Navigation{
+				Children: []navigation.Navigation{
 					{
 						Title: "Sample content",
 						Path:  "/root/table",

@@ -1,37 +1,44 @@
 <clr-tree-node
-  class="section"
-  *ngFor="let section of navigation.sections; trackBy: identifyNavigationItem"
-  [clrExpanded]="true">
-  <a
-    [routerLink]="section.path"
-    routerLinkActive="active"
-    [routerLinkActiveOptions]="{exact: true}"
-    class="clr-treenode-link section">
-    <clr-icon [attr.shape]="section.iconName | default:'home'"></clr-icon>
-    {{ section.title }}
-  </a>
-
-  <clr-tree-node
-    *ngFor="let category of section.children; trackBy: identifyNavigationItem"
-    [clrExpanded]="true">
+        class="section"
+        *ngFor="let section of navigation.sections; trackBy: identifyNavigationItem"
+        [clrExpanded]="true">
     <a
-      [routerLink]="category.path"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{exact: true}"
-      class="clr-treenode-link category">
-      <clr-icon [attr.shape]="itemIcon(category) | default:'folder'"></clr-icon>
-      {{ category.title }}
+            [routerLink]="section.path"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{exact: true}"
+            class="clr-treenode-link section">
+        <span>
+        <clr-icon [attr.shape]="section.iconName | default:'home'"></clr-icon>
+            {{ section.title }}
+        </span>
     </a>
 
     <clr-tree-node
-     *ngFor="let entry of category.children; trackBy: identifyNavigationItem">
-      <a
-        [routerLink]="entry.path"
-        routerLinkActive="active"
-        class="clr-treenode-link item">
-        <clr-icon [attr.shape]="itemIcon(entry) | default:'folder'"></clr-icon>
-        {{ entry.title }}
-      </a>
+            *ngFor="let category of section.children; trackBy: identifyNavigationItem"
+            [clrExpanded]="true">
+        <a
+                [routerLink]="category.path"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{exact: true}"
+                class="clr-treenode-link category">
+      <span>
+      <clr-icon [attr.shape]="itemIcon(category) | default:'folder'"></clr-icon>
+          {{ category.title }}
+      </span>
+
+        </a>
+
+        <clr-tree-node
+                *ngFor="let entry of category.children; trackBy: identifyNavigationItem">
+            <a
+                    [routerLink]="entry.path"
+                    routerLinkActive="active"
+                    class="clr-treenode-link item">
+                <clr-icon [attr.shape]="itemIcon(entry) | default:'folder'"></clr-icon>
+                <span>
+                    {{ entry.title }}
+                </span>
+            </a>
+        </clr-tree-node>
     </clr-tree-node>
-  </clr-tree-node>
 </clr-tree-node>

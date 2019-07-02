@@ -16,13 +16,14 @@ import (
 	"github.com/vmware/octant/internal/api"
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/describer"
-	"github.com/vmware/octant/internal/icon"
 	"github.com/vmware/octant/internal/link"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/modules/overview/printer"
 	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/queryer"
+	"github.com/vmware/octant/pkg/icon"
+	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -174,14 +175,14 @@ func (co *ClusterOverview) ContentPath() string {
 	return fmt.Sprintf("/%s", co.Name())
 }
 
-func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, root string) ([]octant.Navigation, error) {
+func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, root string) ([]navigation.Navigation, error) {
 	navigationEntries := octant.NavigationEntries{
 		Lookup: map[string]string{
 			"Custom Resources": "custom-resources",
 			"RBAC":             "rbac",
 		},
 		EntriesFuncs: map[string]octant.EntriesFunc{
-			"Custom Resources": octant.CRDEntries,
+			"Custom Resources": navigation.CRDEntries,
 			"RBAC":             rbacEntries,
 		},
 		Order: []string{
@@ -199,7 +200,7 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 		return nil, err
 	}
 
-	return []octant.Navigation{
+	return []navigation.Navigation{
 		*entries,
 	}, nil
 }
@@ -220,8 +221,8 @@ func (co *ClusterOverview) Generators() []octant.Generator {
 	return []octant.Generator{}
 }
 
-func rbacEntries(_ context.Context, prefix, _ string, _ store.Store) ([]octant.Navigation, error) {
-	neh := octant.NavigationEntriesHelper{}
+func rbacEntries(_ context.Context, prefix, _ string, _ store.Store) ([]navigation.Navigation, error) {
+	neh := navigation.NavigationEntriesHelper{}
 	neh.Add("Cluster Roles", "cluster-roles", icon.ClusterOverviewClusterRole)
 	neh.Add("Cluster Role Bindings", "cluster-role-bindings", icon.ClusterOverviewClusterRoleBinding)
 

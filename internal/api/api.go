@@ -18,7 +18,7 @@ import (
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/mime"
 	"github.com/vmware/octant/internal/module"
-	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/pkg/navigation"
 )
 
 //go:generate mockgen -destination=./fake/mock_cluster_client.go -package=fake github.com/vmware/octant/internal/api ClusterClient
@@ -132,10 +132,10 @@ func (a *API) Handler(ctx context.Context) (*mux.Router, error) {
 
 	ans := newAPINavSections(a.modules)
 
-	navigationService := newNavigation(ans, a.logger)
+	navigationService := newNavigationHandler(ans, a.logger)
 	// Support no namespace (default) or specifying namespace in path
-	s.Handle("/navigation", navigationService).Methods(http.MethodGet)
-	s.Handle("/navigation/namespace/{namespace}", navigationService).Methods(http.MethodGet)
+	s.Handle("/navigationHandler", navigationService).Methods(http.MethodGet)
+	s.Handle("/navigationHandler/namespace/{namespace}", navigationService).Methods(http.MethodGet)
 
 	namespaceUpdateService := newNamespace(a.moduleManager, a.logger)
 	s.HandleFunc("/namespace", namespaceUpdateService.update).Methods(http.MethodPost)
@@ -188,8 +188,8 @@ func newAPINavSections(modules []module.Module) *apiNavSections {
 	}
 }
 
-func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]octant.Navigation, error) {
-	var sections []octant.Navigation
+func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]navigation.Navigation, error) {
+	var sections []navigation.Navigation
 
 	for _, m := range ans.modules {
 		contentPath := path.Join("/content", m.ContentPath())

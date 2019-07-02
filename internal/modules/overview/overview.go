@@ -20,10 +20,11 @@ import (
 	"github.com/vmware/octant/internal/api"
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/describer"
-	"github.com/vmware/octant/internal/icon"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/pkg/icon"
+	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -159,14 +160,14 @@ func (co *Overview) ContentPath() string {
 }
 
 // Navigation returns navigation entries for overview.
-func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]octant.Navigation, error) {
+func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]navigation.Navigation, error) {
 	navigationEntries := octant.NavigationEntries{
 		Lookup: navPathLookup,
 		EntriesFuncs: map[string]octant.EntriesFunc{
 			"Workloads":                    workloadEntries,
 			"Discovery and Load Balancing": discoAndLBEntries,
 			"Config and Storage":           configAndStorageEntries,
-			"Custom Resources":             octant.CRDEntries,
+			"Custom Resources":             navigation.CRDEntries,
 			"RBAC":                         rbacEntries,
 			"Events":                       nil,
 		},
@@ -189,7 +190,7 @@ func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]o
 		return nil, err
 	}
 
-	return []octant.Navigation{
+	return []navigation.Navigation{
 		*entries,
 	}, nil
 }

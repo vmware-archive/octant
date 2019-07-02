@@ -12,14 +12,15 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/plugin"
 	"github.com/vmware/octant/pkg/plugin/dashboard"
 	"github.com/vmware/octant/pkg/plugin/fake"
 	"github.com/vmware/octant/pkg/view/component"
 	"github.com/vmware/octant/pkg/view/flexlayout"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -50,7 +51,8 @@ func testWithGRPCClient(t *testing.T, fn func(*grpcClientMocks)) {
 }
 
 type grpcServerMocks struct {
-	service *fake.MockService
+	service       *fake.MockService
+	moduleService *fake.MockModuleService
 }
 
 func (m *grpcServerMocks) genServer() *plugin.GRPCServer {
@@ -59,15 +61,74 @@ func (m *grpcServerMocks) genServer() *plugin.GRPCServer {
 	}
 }
 
+func (m *grpcServerMocks) genModuleServer() *plugin.GRPCServer {
+	return &plugin.GRPCServer{
+		Impl: m.moduleService,
+	}
+}
+
 func testWithGRPCServer(t *testing.T, fn func(*grpcServerMocks)) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	mocks := grpcServerMocks{
-		service: fake.NewMockService(controller),
+		service:       fake.NewMockService(controller),
+		moduleService: fake.NewMockModuleService(controller),
 	}
 
 	fn(&mocks)
+}
+
+func Test_GRPCClient_Content(t *testing.T) {
+	testWithGRPCClient(t, func(mocks *grpcClientMocks) {
+		req := &dashboard.ContentRequest{
+			Path: "/",
+		}
+
+		contentResponse := component.NewContentResponse(component.TitleFromString("title"))
+		contentResponseBytes, err := json.Marshal(&contentResponse)
+		require.NoError(t, err)
+
+		resp := &dashboard.ContentResponse{
+			ContentResponse: contentResponseBytes,
+		}
+
+		mocks.protoClient.EXPECT().
+			Content(gomock.Any(), req).
+			Return(resp, nil)
+
+		client := mocks.genClient()
+		got, err := client.Content("/")
+		require.NoError(t, err)
+
+		assert.Equal(t, *contentResponse, got)
+	})
+}
+
+func Test_GRPCClient_Navigation(t *testing.T) {
+	testWithGRPCClient(t, func(mocks *grpcClientMocks) {
+		req := &dashboard.NavigationRequest{}
+
+		resp := &dashboard.NavigationResponse{
+			Navigation: &dashboard.NavigationResponse_Navigation{
+				Title: "title",
+			},
+		}
+
+		mocks.protoClient.EXPECT().
+			Navigation(gomock.Any(), req).
+			Return(resp, nil)
+
+		client := mocks.genClient()
+		got, err := client.Navigation()
+		require.NoError(t, err)
+
+		expected := navigation.Navigation{
+			Title: "title",
+		}
+
+		assert.Equal(t, expected, got)
+	})
 }
 
 func Test_GRPCClient_Register(t *testing.T) {
@@ -238,6 +299,52 @@ func Test_GRPCClient_ObjectStatus(t *testing.T) {
 
 		expected := plugin.ObjectStatusResponse{
 			ObjectStatus: status,
+		}
+
+		assert.Equal(t, expected, got)
+	})
+}
+
+func Test_GRPCServer_Content(t *testing.T) {
+	testWithGRPCServer(t, func(mocks *grpcServerMocks) {
+		server := mocks.genModuleServer()
+
+		contentResponse := component.NewContentResponse(component.TitleFromString("title"))
+
+		mocks.moduleService.EXPECT().
+			Content("/").
+			Return(*contentResponse, nil)
+
+		ctx := context.Background()
+		got, err := server.Content(ctx, &dashboard.ContentRequest{Path: "/"})
+		require.NoError(t, err)
+
+		contentResponseBytes, err := json.Marshal(contentResponse)
+
+		expected := &dashboard.ContentResponse{
+			ContentResponse: contentResponseBytes,
+		}
+
+		assert.Equal(t, expected, got)
+	})
+}
+
+func Test_GRPCServer_Navigation(t *testing.T) {
+	testWithGRPCServer(t, func(mocks *grpcServerMocks) {
+		server := mocks.genModuleServer()
+
+		mocks.moduleService.EXPECT().
+			Navigation().
+			Return(navigation.Navigation{Title: "title"}, nil)
+
+		ctx := context.Background()
+		got, err := server.Navigation(ctx, &dashboard.NavigationRequest{})
+		require.NoError(t, err)
+
+		expected := &dashboard.NavigationResponse{
+			Navigation: &dashboard.NavigationResponse_Navigation{
+				Title: "title",
+			},
 		}
 
 		assert.Equal(t, expected, got)
