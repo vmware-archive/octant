@@ -81,8 +81,9 @@ type DynamicCache struct {
 	seenGVKs        map[string]map[schema.GroupVersionKind]bool
 	access          accessMap
 
-	mu       sync.Mutex
-	accessMu sync.RWMutex
+	mu        sync.Mutex
+	accessMu  sync.RWMutex
+	factoryMu sync.RWMutex
 }
 
 var _ store.Store = (*DynamicCache)(nil)
@@ -105,27 +106,15 @@ func NewDynamicCache(client cluster.ClientInterface, stopCh <-chan struct{}, opt
 		c.access = make(accessMap)
 	}
 
-	namespaceClient, err := client.NamespaceClient()
-	if err != nil {
-		return nil, errors.Wrap(err, "client namespace")
-	}
-
-	namespaces, err := namespaceClient.Names()
-	if err != nil {
-		namespaces = []string{namespaceClient.InitialNamespace()}
-	}
-
-	namespaces = append(namespaces, "")
-
 	factories := make(map[string]dynamicinformer.DynamicSharedInformerFactory)
-	for _, namespace := range namespaces {
-		factory, err := c.initFactoryFunc(client, namespace)
-		if err != nil {
-			return nil, errors.Wrap(err, "initialize dynamic shared informer factory")
-		}
-		factories[namespace] = factory
-		c.seenGVKs[namespace] = make(map[schema.GroupVersionKind]bool)
+	factory, err := c.initFactoryFunc(client, "")
+	if err != nil {
+		return nil, errors.Wrap(err, "initialize dynamic shared informer factory")
 	}
+
+	factories[""] = factory
+	c.seenGVKs[""] = make(map[schema.GroupVersionKind]bool)
+
 	c.factories = factories
 	return c, nil
 }
@@ -215,12 +204,28 @@ func (dc *DynamicCache) currentInformer(key store.Key) (informers.GenericInforme
 		return nil, errors.Wrap(err, "client resource")
 	}
 
+	dc.factoryMu.RLock()
 	factory, ok := dc.factories[key.Namespace]
+	dc.factoryMu.RUnlock()
+
 	if !ok {
-		factory, err = dc.initFactoryFunc(dc.client, key.Name)
-		if err != nil {
-			return nil, err
+		if err := dc.HasAccess(store.Key{Namespace: metav1.NamespaceAll}, "watch"); err != nil {
+			factory, err = dc.initFactoryFunc(dc.client, key.Namespace)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			dc.factoryMu.RLock()
+			factory, ok = dc.factories[""]
+			dc.factoryMu.RUnlock()
+			if !ok {
+				return nil, errors.New("no default DynamicInformerFactory found")
+			}
 		}
+
+		dc.factoryMu.Lock()
+		dc.factories[key.Namespace] = factory
+		dc.factoryMu.Unlock()
 	}
 
 	informer, err := currentInformer(gvr, factory, dc.stopCh)

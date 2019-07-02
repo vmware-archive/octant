@@ -89,6 +89,7 @@ func Test_WatchList_not_cached(t *testing.T) {
 	}
 
 	mocks.backendObjectStore.EXPECT().HasAccess(gomock.Any(), "list").Return(nil)
+	mocks.backendObjectStore.EXPECT().HasAccess(gomock.Any(), "watch").Return(nil)
 	mocks.backendObjectStore.EXPECT().List(gomock.Any(), gomock.Eq(listKey)).Return(objects, nil)
 
 	nsKey := store.Key{APIVersion: "v1", Kind: "Namespace"}
@@ -308,6 +309,7 @@ func Test_WatchGet_not_stored(t *testing.T) {
 	require.NoError(t, err)
 
 	mocks.backendObjectStore.EXPECT().HasAccess(gomock.Any(), "get").Return(nil)
+	mocks.backendObjectStore.EXPECT().HasAccess(gomock.Any(), "watch").Return(nil)
 	got, err := watch.Get(ctx, getKey)
 	require.NoError(t, err)
 
