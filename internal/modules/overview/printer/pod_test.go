@@ -104,7 +104,7 @@ func Test_PodListHandler(t *testing.T) {
 		"Node":     component.NewText("node"),
 	})
 
-	assertComponentEqual(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 var (
@@ -204,7 +204,7 @@ func Test_PodConfiguration(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			assertComponentEqual(t, tc.expected, summary)
+			component.AssertEqual(t, tc.expected, summary)
 		})
 	}
 }

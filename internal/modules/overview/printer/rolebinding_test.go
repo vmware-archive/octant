@@ -54,7 +54,7 @@ func Test_RoleBindingListHandler(t *testing.T) {
 		"Role name": component.NewLink("", "pod-reader", "/role"),
 	})
 
-	assertComponentEqual(t, expected, observed)
+	component.AssertEqual(t, expected, observed)
 }
 
 func Test_printRoleBindingSubjects(t *testing.T) {
@@ -109,7 +109,7 @@ func Test_printRoleBindingSubjects(t *testing.T) {
 				component.NewTableCols("Kind", "Name", "Namespace"),
 				[]component.TableRow{tc.expected})
 
-			assertComponentEqual(t, expected, observed)
+			component.AssertEqual(t, expected, observed)
 		})
 	}
 }
@@ -137,5 +137,5 @@ func Test_printRoleBindingConfig(t *testing.T) {
 
 	expected := component.NewSummary("Configuration", sections...)
 
-	assertComponentEqual(t, expected, observed)
+	component.AssertEqual(t, expected, observed)
 }

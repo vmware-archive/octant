@@ -72,7 +72,7 @@ func Test_CronJobListHandler(t *testing.T) {
 		"Age":      component.NewTimestamp(now),
 	})
 
-	assertComponentEqual(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func TestCronJobConfiguration(t *testing.T) {

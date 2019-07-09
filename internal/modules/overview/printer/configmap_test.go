@@ -60,7 +60,7 @@ func Test_ConfigMapListHandler(t *testing.T) {
 		"Age":    component.NewTimestamp(now),
 	})
 
-	assertComponentEqual(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_describeConfigMapConfiguration(t *testing.T) {

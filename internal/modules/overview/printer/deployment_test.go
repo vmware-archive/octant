@@ -172,7 +172,7 @@ func Test_deploymentConfiguration(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			assertComponentEqual(t, tc.expected, summary)
+			component.AssertEqual(t, tc.expected, summary)
 		})
 	}
 }
@@ -308,7 +308,7 @@ func Test_deploymentPods(t *testing.T) {
 		},
 	})
 
-	assertComponentEqual(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_editDeploymentAction(t *testing.T) {
