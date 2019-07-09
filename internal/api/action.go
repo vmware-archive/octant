@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/vmware/octant/internal/action"
 	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/pkg/action"
 )
 
 //go:generate mockgen -source=action.go -destination=./fake/mock_action_dispatcher.go -package=fake github.com/vmware/octant/internal/api ActionDispatcher

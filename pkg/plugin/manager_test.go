@@ -32,7 +32,7 @@ func TestDefaultStore(t *testing.T) {
 	metadata := &dashPlugin.Metadata{Name: name}
 
 	s := dashPlugin.NewDefaultStore()
-	err := s.Store(name, client, metadata)
+	err := s.Store(name, client, metadata, "cmd")
 	require.NoError(t, err)
 
 	gotMetadata, err := s.GetMetadata(name)
@@ -58,6 +58,7 @@ func TestManager(t *testing.T) {
 	store := fake.NewMockManagerStore(controller)
 	clientFactory := fake.NewMockClientFactory(controller)
 	moduleRegistrar := fake.NewMockModuleRegistrar(controller)
+	actionRegistrar := fake.NewMockActionRegistrar(controller)
 
 	name := "plugin1"
 
@@ -67,7 +68,7 @@ func TestManager(t *testing.T) {
 	metadata := &dashPlugin.Metadata{
 		Name: name,
 	}
-	store.EXPECT().Store(gomock.Eq(name), gomock.Eq(client), gomock.Eq(metadata))
+	store.EXPECT().Store(gomock.Eq(name), gomock.Eq(client), gomock.Eq(metadata), name)
 	store.EXPECT().Clients().Return(map[string]dashPlugin.Client{name: client})
 
 	options = append(options, func(m *dashPlugin.Manager) {
@@ -75,7 +76,7 @@ func TestManager(t *testing.T) {
 	})
 
 	apiService := &stubAPIService{}
-	manager := dashPlugin.NewManager(apiService, moduleRegistrar, options...)
+	manager := dashPlugin.NewManager(apiService, moduleRegistrar, actionRegistrar, options...)
 
 	manager.SetStore(store)
 
@@ -99,6 +100,7 @@ func TestManager_Print(t *testing.T) {
 
 	store := fake.NewMockManagerStore(controller)
 	moduleRegistrar := fake.NewMockModuleRegistrar(controller)
+	actionRegistrar := fake.NewMockActionRegistrar(controller)
 
 	store.EXPECT().ClientNames().Return([]string{"plugin1", "plugin2"})
 
@@ -129,7 +131,7 @@ func TestManager_Print(t *testing.T) {
 	})
 
 	apiService := &stubAPIService{}
-	manager := dashPlugin.NewManager(apiService, moduleRegistrar, options...)
+	manager := dashPlugin.NewManager(apiService, moduleRegistrar, actionRegistrar, options...)
 	manager.SetStore(store)
 
 	got, err := manager.Print(pod)
@@ -154,6 +156,7 @@ func TestManager_Tabs(t *testing.T) {
 
 	store := fake.NewMockManagerStore(controller)
 	moduleRegistrar := fake.NewMockModuleRegistrar(controller)
+	actionRegistrar := fake.NewMockActionRegistrar(controller)
 
 	store.EXPECT().ClientNames().Return([]string{"plugin1", "plugin2"})
 
@@ -175,7 +178,7 @@ func TestManager_Tabs(t *testing.T) {
 	})
 
 	apiService := &stubAPIService{}
-	manager := dashPlugin.NewManager(apiService, moduleRegistrar, options...)
+	manager := dashPlugin.NewManager(apiService, moduleRegistrar, actionRegistrar, options...)
 	manager.SetStore(store)
 
 	got, err := manager.Tabs(pod)

@@ -4,9 +4,9 @@
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { TableRow, TableView } from 'src/app/models/content';
-import { ViewUtil } from 'src/app/util/view';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import trackByIndex from 'src/app/util/trackBy/trackByIndex';
+import { ViewService } from '../../services/view/view.service';
 
 @Component({
   selector: 'app-view-table',
@@ -22,14 +22,13 @@ export class TableComponent implements OnChanges {
   trackByIdentity = trackByIdentity;
   trackByIndex = trackByIndex;
 
-  constructor() {}
+  constructor(private viewService: ViewService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view) {
       const current = changes.view.currentValue;
-      const vu = new ViewUtil(current);
-      this.title = vu.titleAsText();
-      this.columns = current.config.columns.map((column) => column.name);
+      this.title = this.viewService.viewTitleAsText(current);
+      this.columns = current.config.columns.map(column => column.name);
       this.rows = current.config.rows;
       this.placeholder = current.config.emptyContent;
     }

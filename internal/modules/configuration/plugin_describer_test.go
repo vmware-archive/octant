@@ -7,6 +7,7 @@ package configuration
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -35,7 +36,7 @@ func TestPluginDescriber(t *testing.T) {
 
 	store := dashPlugin.NewDefaultStore()
 	client := newFakePluginClient(name, controller)
-	require.NoError(t, store.Store(name, client, metadata))
+	require.NoError(t, store.Store(name, client, metadata, "cmd"))
 
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 	pluginManager.EXPECT().Store().Return(store).AnyTimes()
@@ -53,13 +54,17 @@ func TestPluginDescriber(t *testing.T) {
 	cResponse, err := p.Describe(ctx, "/plugins", namespace, options)
 	require.NoError(t, err)
 
+	capabilities := dashPlugin.Capabilities{}
+	capabilitiesData, err := json.Marshal(capabilities)
+	require.NoError(t, err)
+
 	list := component.NewList("Plugins", nil)
 	tableCols := component.NewTableCols("Name", "Description", "Capabilities")
 	table := component.NewTable("Plugins", tableCols)
 	table.Add(component.TableRow{
 		"Name":        component.NewText(name),
 		"Description": component.NewText("this is a test"),
-		"Capability":  component.NewText("{\"SupportsPrinterConfig\":null,\"SupportsPrinterStatus\":null,\"SupportsPrinterItems\":null,\"SupportsObjectStatus\":null,\"SupportsTab\":null,\"IsModule\":false}"),
+		"Capability":  component.NewText(string(capabilitiesData)),
 	})
 
 	list.Add(table)

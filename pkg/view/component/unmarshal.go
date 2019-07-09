@@ -11,11 +11,21 @@ import (
 	"github.com/pkg/errors"
 )
 
-func unmarshal(to TypedObject) (interface{}, error) {
-	var o interface{}
+func unmarshal(to TypedObject) (Component, error) {
+	var o Component
 	var err error
 
 	switch to.Metadata.Type {
+	case typeCard:
+		t := &Card{base: base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal card config")
+		o = t
+	case typeCardList:
+		t := &CardList{base: base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal cardList config")
+		o = t
 	case typeContainers:
 		t := &Containers{base: base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),

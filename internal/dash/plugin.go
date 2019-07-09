@@ -9,24 +9,18 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/vmware/octant/internal/module"
-	"github.com/vmware/octant/internal/portforward"
+	"github.com/vmware/octant/pkg/action"
 	"github.com/vmware/octant/pkg/plugin"
 	"github.com/vmware/octant/pkg/plugin/api"
-	"github.com/vmware/octant/pkg/store"
 )
 
-func initPlugin(portForwarder portforward.PortForwarder, appObjectStore store.Store, moduleManager module.ManagerInterface) (*plugin.Manager, error) {
-	service := &api.GRPCService{
-		ObjectStore:   appObjectStore,
-		PortForwarder: portForwarder,
-	}
-
+func initPlugin(moduleManager module.ManagerInterface, actionManager *action.Manager, service api.Service) (*plugin.Manager, error) {
 	apiService, err := api.New(service)
 	if err != nil {
 		return nil, errors.Wrap(err, "create dashboard api")
 	}
 
-	m := plugin.NewManager(apiService, moduleManager)
+	m := plugin.NewManager(apiService, moduleManager, actionManager)
 
 	pluginList, err := plugin.AvailablePlugins(plugin.DefaultConfig)
 	if err != nil {

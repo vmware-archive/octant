@@ -1,0 +1,39 @@
+<ng-container *ngTemplateOutlet="currentAction ? action : content"></ng-container>
+
+<ng-template #action>
+    <app-form
+            [form]="currentAction.form"
+            [title]="currentAction.title"
+            (submit)="onActionSubmit($event)"
+            (cancel)="onActionCancel()">
+    </app-form>
+</ng-template>
+
+<ng-template #content>
+    <div class="card">
+        <div class="card-block">
+            <ng-container *ngIf="view.config.alert">
+                <div class="alert alert-{{view.config.alert.type}} alert-sm">
+                    <div class="alert-item static">
+                        <span class="alert-text">
+                            {{ view.config.alert.message }}
+                        </span>
+                    </div>
+                </div>
+            </ng-container>
+            <h4 class="card-title">{{ title }}</h4>
+
+            <div [ngSwitch]="body.metadata.type" class="card-text">
+                <ng-container *ngSwitchCase="'text'">
+                    <app-view-text [view]="body"></app-view-text>
+                </ng-container>
+            </div>
+        </div>
+
+        <div class="card-footer" *ngIf="view.config.actions?.length > 0">
+            <ng-container *ngFor="let action of view.config.actions">
+                <button class="btn btn-sm btn-link" (click)="setAction(action)">{{action.name}}</button>
+            </ng-container>
+        </div>
+    </div>
+</ng-template>

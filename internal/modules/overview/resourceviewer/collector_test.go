@@ -7,7 +7,6 @@ package resourceviewer
 
 import (
 	"context"
-	"encoding/json"
 	"net/url"
 	"testing"
 
@@ -15,7 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -25,10 +23,10 @@ import (
 	configFake "github.com/vmware/octant/internal/config/fake"
 	"github.com/vmware/octant/internal/conversion"
 	linkFake "github.com/vmware/octant/internal/link/fake"
-	storefake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/plugin"
 	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
+	storefake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -211,29 +209,14 @@ func Test_Collector(t *testing.T) {
 
 	expected.Select("deployment")
 
-	assertComponentEqual(t, expected, got)
+	component.AssertEqual(t, expected, got)
 
 	got, err = c.Component("pod")
 	require.NoError(t, err)
 
 	expected.Select("pods-apps/v1-ReplicaSet-replicaSet1")
 
-	assertComponentEqual(t, expected, got)
-}
-
-func assertComponentEqual(t *testing.T, expected, got component.Component) {
-	transformer := func(in component.Component) string {
-		b, err := json.MarshalIndent(in, "  ", "  ")
-		require.NoError(t, err)
-
-		return string(b)
-
-	}
-
-	expectedString := transformer(expected)
-	gotString := transformer(got)
-
-	assert.Equal(t, expectedString, gotString)
+	component.AssertEqual(t, expected, got)
 }
 
 func setOwner(t *testing.T, object metav1.Object, owner runtime.Object) {

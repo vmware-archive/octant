@@ -14,11 +14,3 @@ type NotFoundError struct {
 func (e *NotFoundError) Error() string {
 	return fmt.Sprintf("action path %q not found", e.Path)
 }
-
-type PreviouslyConfiguredError struct {
-	Path string
-}
-
-func (e *PreviouslyConfiguredError) Error() string {
-	return fmt.Sprintf("action with path %q was previously configured", e.Path)
-}

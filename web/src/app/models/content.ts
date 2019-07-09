@@ -14,8 +14,8 @@ export interface Content {
 
 export interface Metadata {
   type: string;
-  title: View[];
-  accessor: string;
+  title?: View[];
+  accessor?: string;
 }
 
 export interface View {
@@ -25,6 +25,25 @@ export interface View {
 export interface AnnotationsView extends View {
   config: {
     annotations: { [key: string]: string };
+  };
+}
+
+export interface Alert {
+  type: string;
+  message: string;
+}
+
+export interface CardView extends View {
+  config: {
+    body: View;
+    actions: Action[];
+    alert?: Alert;
+  };
+}
+
+export interface CardListView extends View {
+  config: {
+    cards: CardView[];
   };
 }
 

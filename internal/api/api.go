@@ -43,6 +43,7 @@ func serveAsJSON(w http.ResponseWriter, v interface{}, logger log.Logger) {
 type Service interface {
 	RegisterModule(module.Module) error
 	Handler(ctx context.Context) (*mux.Router, error)
+	ForceUpdate() error
 }
 
 type errorMessage struct {
@@ -91,8 +92,9 @@ type API struct {
 	prefix           string
 	logger           log.Logger
 
-	modulePaths map[string]module.Module
-	modules     []module.Module
+	modulePaths   map[string]module.Module
+	modules       []module.Module
+	forceUpdateCh chan bool
 }
 
 var _ Service = (*API)(nil)
@@ -107,7 +109,13 @@ func New(ctx context.Context, prefix string, clusterClient ClusterClient, module
 		actionDispatcher: actionDispatcher,
 		modulePaths:      make(map[string]module.Module),
 		logger:           logger,
+		forceUpdateCh:    make(chan bool, 1),
 	}
+}
+
+func (a *API) ForceUpdate() error {
+	a.forceUpdateCh <- true
+	return nil
 }
 
 // Handler returns a HTTP handler for the service.
@@ -149,11 +157,12 @@ func (a *API) Handler(ctx context.Context) (*mux.Router, error) {
 
 	// Register content routes
 	contentService := &contentHandler{
-		nsClient:    nsClient,
-		modulePaths: a.modulePaths,
-		modules:     a.modules,
-		logger:      a.logger,
-		prefix:      a.prefix,
+		nsClient:      nsClient,
+		modulePaths:   a.modulePaths,
+		modules:       a.modules,
+		logger:        a.logger,
+		prefix:        a.prefix,
+		forceUpdateCh: a.forceUpdateCh,
 	}
 
 	if err := contentService.RegisterRoutes(ctx, s); err != nil {

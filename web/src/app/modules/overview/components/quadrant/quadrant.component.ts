@@ -4,7 +4,7 @@
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { QuadrantValue, QuadrantView } from 'src/app/models/content';
-import { titleAsText } from 'src/app/util/view';
+import { ViewService } from '../../services/view/view.service';
 
 const emptyQuadrantValue = { value: '', label: '' };
 
@@ -22,12 +22,12 @@ export class QuadrantComponent implements OnChanges {
   sw: QuadrantValue = emptyQuadrantValue;
   se: QuadrantValue = emptyQuadrantValue;
 
-  constructor() {}
+  constructor(private viewService: ViewService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {
       const view = changes.view.currentValue as QuadrantView;
-      this.title = titleAsText(view.metadata.title);
+      this.title = this.viewService.viewTitleAsText(view);
       this.nw = view.config.nw;
       this.ne = view.config.ne;
       this.sw = view.config.sw;

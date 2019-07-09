@@ -6,10 +6,12 @@ SPDX-License-Identifier: Apache-2.0
 package plugin
 
 import (
-	"github.com/vmware/octant/pkg/navigation"
-	"github.com/vmware/octant/pkg/view/component"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware/octant/pkg/navigation"
+	"github.com/vmware/octant/pkg/view/component"
 )
 
 var (
@@ -31,6 +33,8 @@ type Capabilities struct {
 	SupportsTab []schema.GroupVersionKind
 	// IsModule is true this plugin is a module.
 	IsModule bool
+	// ActionNames is a list of action names this plugin handles
+	ActionNames []string
 }
 
 // HasPrinterSupport returns true if this plugin supports the supplied GVK.
@@ -77,6 +81,7 @@ type Service interface {
 	Print(object runtime.Object) (PrintResponse, error)
 	PrintTab(object runtime.Object) (*component.Tab, error)
 	ObjectStatus(object runtime.Object) (ObjectStatusResponse, error)
+	HandleAction(payload action.Payload) error
 }
 
 // ModuleService is the interface that is exposed as a plugin as a module. The plugin is required to implement this

@@ -1,10 +1,16 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { View } from 'src/app/models/content';
-import { ViewUtil } from 'src/app/util/view';
+import { ViewService } from '../../services/view/view.service';
 
 interface Tab {
   name: string;
@@ -25,7 +31,11 @@ export class TabsComponent implements OnChanges, OnInit {
   tabs: Tab[] = [];
   activeTab: string;
 
-  constructor(private router: Router, private activatedRoute: ActivatedRoute) {}
+  constructor(
+    private router: Router,
+    private activatedRoute: ActivatedRoute,
+    private viewService: ViewService
+  ) {}
 
   ngOnInit() {
     const { queryParams } = this.activatedRoute.snapshot;
@@ -38,8 +48,7 @@ export class TabsComponent implements OnChanges, OnInit {
     if (changes.views.currentValue) {
       const views = changes.views.currentValue as View[];
       this.tabs = views.map(view => {
-        const vu = new ViewUtil(view);
-        const title = vu.titleAsText();
+        const title = this.viewService.viewTitleAsText(view);
         return {
           name: title,
           view,

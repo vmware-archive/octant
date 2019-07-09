@@ -18,10 +18,10 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/vmware/octant/internal/cluster"
-	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/event"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
+	"github.com/vmware/octant/internal/octant"
 )
 
 type contentHandler struct {
@@ -32,6 +32,7 @@ type contentHandler struct {
 	nsClient    cluster.NamespaceInterface
 
 	previousNamespace string
+	forceUpdateCh     <-chan bool
 }
 
 func (h *contentHandler) RegisterRoutes(ctx context.Context, router *mux.Router) error {
@@ -53,10 +54,10 @@ func (h *contentHandler) registerModuleRoute(ctx context.Context, router module.
 
 	ns := parent.PathPrefix("/namespace/{namespace}").Subrouter()
 
-	for path, handler := range m.Handlers(ctx) {
+	for handlerPath, handler := range m.Handlers(ctx) {
 		// Namespace is optional, so register two alternatives
-		ns.Handle(path, handler)
-		parent.Handle(path, handler)
+		ns.Handle(handlerPath, handler)
+		parent.Handle(handlerPath, handler)
 	}
 
 	// Namespace is optional, so register two alternatives
@@ -160,7 +161,7 @@ func (h *contentHandler) handlePoll(ctx context.Context, poll, requestPath, name
 		w: w,
 	}
 
-	if err := event.Stream(ctx, streamer, eventGenerators, requestPath, contentPath); err != nil {
+	if err := event.Stream(ctx, streamer, h.forceUpdateCh, eventGenerators, requestPath, contentPath); err != nil {
 		h.logger.WithErr(err).Errorf("stream error")
 	}
 

@@ -7,6 +7,8 @@ package component
 
 const (
 	typeAnnotations        = "annotations"
+	typeCard               = "card"
+	typeCardList           = "cardList"
 	typeContainers         = "containers"
 	typeError              = "error"
 	typeExpressionSelector = "expressionSelector"

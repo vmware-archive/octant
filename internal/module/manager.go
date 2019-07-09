@@ -11,9 +11,9 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware/octant/internal/action"
 	"github.com/vmware/octant/internal/cluster"
 	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/pkg/action"
 )
 
 //go:generate mockgen -destination=./fake/mock_manager.go -package=fake github.com/vmware/octant/internal/module ManagerInterface

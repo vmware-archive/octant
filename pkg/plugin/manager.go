@@ -7,6 +7,7 @@ package plugin
 
 //go:generate mockgen -destination=./fake/mock_manager.go -package=fake github.com/vmware/octant/pkg/plugin ManagerInterface
 //go:generate mockgen -destination=./fake/mock_module_registrar.go -package=fake github.com/vmware/octant/pkg/plugin ModuleRegistrar
+//go:generate mockgen -destination=./fake/mock_action_registrar.go -package=fake github.com/vmware/octant/pkg/plugin ActionRegistrar
 
 import (
 	"context"
@@ -14,6 +15,7 @@ import (
 	"path/filepath"
 	"sort"
 	"sync"
+	"time"
 
 	"github.com/hashicorp/go-plugin"
 	"github.com/pkg/errors"
@@ -22,6 +24,7 @@ import (
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/portforward"
+	"github.com/vmware/octant/pkg/action"
 	"github.com/vmware/octant/pkg/plugin/api"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -67,9 +70,10 @@ type Client interface {
 
 // ManagerStore is the data store for Manager.
 type ManagerStore interface {
-	Store(name string, client Client, metadata *Metadata) error
+	Store(name string, client Client, metadata *Metadata, cmd string) error
 	GetMetadata(name string) (*Metadata, error)
 	GetService(name string) (Service, error)
+	GetCommand(name string) (string, error)
 	Clients() map[string]Client
 	ClientNames() []string
 }
@@ -78,6 +82,7 @@ type ManagerStore interface {
 type DefaultStore struct {
 	clients  map[string]Client
 	metadata map[string]Metadata
+	commands map[string]string
 }
 
 var _ ManagerStore = (*DefaultStore)(nil)
@@ -87,20 +92,19 @@ func NewDefaultStore() *DefaultStore {
 	return &DefaultStore{
 		clients:  make(map[string]Client),
 		metadata: make(map[string]Metadata),
+		commands: make(map[string]string),
 	}
 }
 
 // Store stores information for a plugin.
-func (s *DefaultStore) Store(name string, client Client, metadata *Metadata) error {
+func (s *DefaultStore) Store(name string, client Client, metadata *Metadata, cmd string) error {
 	if metadata == nil {
 		return errors.New("metadata is nil")
-	}
-	if _, ok := s.clients[name]; ok {
-		return errors.Errorf("plugin %q is already stored", name)
 	}
 
 	s.clients[name] = client
 	s.metadata[name] = *metadata
+	s.commands[name] = cmd
 
 	return nil
 }
@@ -140,6 +144,16 @@ func (s *DefaultStore) GetMetadata(name string) (*Metadata, error) {
 	return &metadata, nil
 }
 
+// GetCommand gets the command for a plugin.
+func (s *DefaultStore) GetCommand(name string) (string, error) {
+	cmd, ok := s.commands[name]
+	if !ok {
+		return "", errors.Errorf("plugin %q doesn't have command", name)
+	}
+
+	return cmd, nil
+}
+
 // Clients returns all the clients in the store.
 func (s *DefaultStore) Clients() map[string]Client {
 	return s.clients
@@ -174,8 +188,16 @@ type ManagerInterface interface {
 	ObjectStatus(object runtime.Object) (*ObjectStatusResponse, error)
 }
 
+// ModuleRegistrar is a module registrar.
 type ModuleRegistrar interface {
+	// Register registers a module.
 	Register(mod module.Module) error
+}
+
+// ActionRegistrar is an action registrar.
+type ActionRegistrar interface {
+	// Register registers an action.
+	Register(actionPath string, actionFunc action.DispatcherFunc) error
 }
 
 // ManagerOption is an option for configuring Manager.
@@ -187,6 +209,7 @@ type Manager struct {
 	API             api.API
 	ClientFactory   ClientFactory
 	ModuleRegistrar ModuleRegistrar
+	ActionRegistrar ActionRegistrar
 
 	Runners Runners
 
@@ -199,13 +222,14 @@ type Manager struct {
 var _ ManagerInterface = (*Manager)(nil)
 
 // NewManager creates an instance of Manager.
-func NewManager(apiService api.API, moduleRegistrar ModuleRegistrar, options ...ManagerOption) *Manager {
+func NewManager(apiService api.API, moduleRegistrar ModuleRegistrar, actionRegistrar ActionRegistrar, options ...ManagerOption) *Manager {
 	m := &Manager{
 		store:           NewDefaultStore(),
 		ClientFactory:   NewDefaultClientFactory(),
 		Runners:         newDefaultRunners(),
 		API:             apiService,
 		ModuleRegistrar: moduleRegistrar,
+		ActionRegistrar: actionRegistrar,
 	}
 
 	for _, option := range options {
@@ -271,57 +295,123 @@ func (m *Manager) Start(ctx context.Context) error {
 	for i := range m.configs {
 		c := m.configs[i]
 
-		pluginLogger := logger.With("plugin-name", c.name)
-
-		client := m.ClientFactory.Init(ctx, c.cmd)
-
-		rpcClient, err := client.Client()
-		if err != nil {
-			return errors.Wrapf(err, "get rpc client for %q", c.name)
+		if err := m.start(ctx, c); err != nil {
+			return err
 		}
+	}
 
-		raw, err := rpcClient.Dispense("plugin")
-		if err != nil {
-			return errors.Wrapf(err, "dispensing plugin for %q", c.name)
+	go m.watchPlugins(ctx)
+
+	return nil
+}
+
+func (m *Manager) watchPlugins(ctx context.Context) {
+	logger := log.From(ctx)
+
+	timer := time.NewTimer(5 * time.Second)
+	running := true
+
+	for running {
+		select {
+		case <-ctx.Done():
+			logger.Infof("shutting down plugin watcher")
+			running = false
+			break
+		case <-timer.C:
+			for clientName, client := range m.store.Clients() {
+				rpcClient, err := client.Client()
+				if err != nil {
+					logger.WithErr(err).Errorf("retrieve plugin client for ping")
+				}
+
+				if err := rpcClient.Ping(); err != nil {
+					logger.With("plugin-name", clientName).Infof("restarting plugin")
+
+					cmd, err := m.store.GetCommand(clientName)
+					if err != nil {
+						logger.WithErr(err).Errorf("unable to find command for plugin")
+						continue
+					}
+
+					c := config{
+						name: clientName,
+						cmd:  cmd,
+					}
+
+					if err := m.start(ctx, c); err != nil {
+						logger.WithErr(err).Errorf("unable to restart plugin")
+						continue
+					}
+				}
+			}
+
+			timer.Reset(5 * time.Second)
 		}
+	}
 
-		service, ok := raw.(Service)
+}
+
+func (m *Manager) start(ctx context.Context, c config) error {
+	client := m.ClientFactory.Init(ctx, c.cmd)
+
+	rpcClient, err := client.Client()
+	if err != nil {
+		return errors.Wrapf(err, "get rpc client for %q", c.name)
+	}
+
+	pluginLogger := log.From(ctx).With("plugin-name", c.name)
+
+	raw, err := rpcClient.Dispense("plugin")
+	if err != nil {
+		return errors.Wrapf(err, "dispensing plugin for %q", c.name)
+	}
+
+	service, ok := raw.(Service)
+	if !ok {
+		return errors.Errorf("unknown type for plugin %q: %T", c.name, raw)
+	}
+
+	metadata, err := service.Register(m.API.Addr())
+	if err != nil {
+		return errors.Wrapf(err, "register plugin %q", c.name)
+	}
+
+	if err := m.store.Store(c.name, client, &metadata, c.cmd); err != nil {
+		return errors.Wrapf(err, "storing plugin")
+	}
+
+	for _, actionName := range metadata.Capabilities.ActionNames {
+		pluginLogger.With("action-path", actionName).Infof("registering plugin action")
+		err := m.ActionRegistrar.Register(actionName, func(ctx context.Context, payload action.Payload) error {
+			return service.HandleAction(payload)
+		})
+
+		if err != nil {
+			return errors.Wrap(err, "configuring plugin action")
+		}
+	}
+
+	pluginLogger.With(
+		"cmd", c.cmd,
+		"metadata", metadata,
+	).Infof("registered plugin %q", metadata.Name)
+
+	if metadata.Capabilities.IsModule {
+		service, ok := raw.(ModuleService)
 		if !ok {
-			return errors.Errorf("unknown type for plugin %q: %T", c.name, raw)
+			return errors.New("plugin is a not a module")
 		}
 
-		metadata, err := service.Register(m.API.Addr())
+		pluginLogger.Infof("plugin supports navigation")
+
+		mp, err := NewModuleProxy(c.name, &metadata, service)
 		if err != nil {
-			return errors.Wrapf(err, "register plugin %q", c.name)
+			return errors.Wrap(err, "creating module proxy")
 		}
 
-		if err := m.store.Store(c.name, client, &metadata); err != nil {
-			return errors.Wrapf(err, "storing plugin")
+		if err := m.ModuleRegistrar.Register(mp); err != nil {
+			return errors.Wrapf(err, "register module %s", metadata.Name)
 		}
-
-		pluginLogger.With(
-			"cmd", c.cmd,
-			"metadata", metadata,
-		).Infof("registered plugin %q", metadata.Name)
-
-		if metadata.Capabilities.IsModule {
-			service, ok := raw.(ModuleService)
-			if !ok {
-				return errors.New("plugin is a not a module")
-			}
-
-			pluginLogger.Infof("plugin supports navigation")
-
-			mp, err := NewModuleProxy(c.name, &metadata, service)
-			if err != nil {
-				return errors.Wrap(err, "creating module proxy")
-			}
-
-			if err := m.ModuleRegistrar.Register(mp); err != nil {
-				return errors.Wrapf(err, "register module %s", metadata.Name)
-			}
-		}
-
 	}
 
 	return nil

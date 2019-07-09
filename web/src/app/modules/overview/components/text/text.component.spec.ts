@@ -1,35 +1,63 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-
+import { Component } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { OverviewModule } from '../../overview.module';
+import { TextView } from '../../../../models/content';
 import { TextComponent } from './text.component';
 
+@Component({
+  template: '<app-view-text [view]="view"></app-view-text>',
+})
+class TestWrapperComponent {
+  view: TextView;
+}
+
 describe('TextComponent', () => {
-  let component: TextComponent;
-  let fixture: ComponentFixture<TextComponent>;
+  describe('handle changes', () => {
+    let component: TestWrapperComponent;
+    let fixture: ComponentFixture<TestWrapperComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      imports: [OverviewModule],
-    }).compileComponents();
-  }));
+    beforeEach(async(() => {
+      TestBed.configureTestingModule({
+        declarations: [TestWrapperComponent, TextComponent],
+      }).compileComponents();
+    }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(TextComponent);
-    component = fixture.componentInstance;
+    beforeEach(() => {
+      fixture = TestBed.createComponent(TestWrapperComponent);
+      component = fixture.componentInstance;
+    });
 
-    component.view = {
-      config: { value: 'text' },
-      metadata: { type: 'text', title: [], accessor: 'accessor' },
-    };
+    it('should show text', () => {
+      const element: HTMLDivElement = fixture.nativeElement;
+      component.view = {
+        config: { value: '*text*' },
+        metadata: { type: 'text', title: [], accessor: 'accessor' },
+      };
+      fixture.detectChanges();
 
-    fixture.detectChanges();
-  });
+      expect(element.querySelector('app-view-text div')).toBeNull();
+      expect(element.querySelector('app-view-text').innerHTML).toContain(
+        '*text*'
+      );
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+    it('should show markdown text', () => {
+      const element: HTMLDivElement = fixture.nativeElement;
+      component.view = {
+        config: { value: '*text*', isMarkdown: true },
+        metadata: { type: 'text', title: [], accessor: 'accessor' },
+      };
+      fixture.detectChanges();
+
+      expect(
+        element.querySelector('app-view-text div').hasAttribute('markdown')
+      ).toBeTruthy();
+      expect(element.querySelector('app-view-text').innerHTML).toContain(
+        '*text*'
+      );
+    });
   });
 });

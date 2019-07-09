@@ -49,6 +49,26 @@ func (p Payload) String(key string) (string, error) {
 	return s, nil
 }
 
+// StringSlice returns a string slice from the payload.
+func (p Payload) StringSlice(key string) ([]string, error) {
+	sli, ok := p[key].([]interface{})
+	if !ok {
+		return nil, errors.Errorf("payload does not contain %q", key)
+	}
+
+	var list []string
+	for i := range sli {
+		s, ok := sli[i].(string)
+		if !ok {
+			return nil, errors.New("could not convert slice entry to string")
+		}
+
+		list = append(list, s)
+	}
+
+	return list, nil
+}
+
 // Float64 returns a float64 from the payload.
 func (p Payload) Float64(key string) (float64, error) {
 	switch v := p[key].(type) {

@@ -37,19 +37,19 @@ func NewMarkdownText(s string) *Text {
 	return t
 }
 
-// EnableMarkdown enables markdown support for this component.
+// IsMarkdown returns if this component is markdown.
+func (t *Text) IsMarkdown() bool {
+	return t.Config.IsMarkdown
+}
+
+// EnableMarkdown enables markdown for this text component.
 func (t *Text) EnableMarkdown() {
 	t.Config.IsMarkdown = true
 }
 
-// DisableMarkdown disables markdown support for this component.
+// DisableMarkdown disables markdown for this text component.
 func (t *Text) DisableMarkdown() {
 	t.Config.IsMarkdown = false
-}
-
-// IsMarkdown returns true if this component's text is in markdown format.
-func (t *Text) IsMarkdown() bool {
-	return t.Config.IsMarkdown
 }
 
 // SupportsTitle denotes this is a TextComponent.

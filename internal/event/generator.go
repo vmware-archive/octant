@@ -15,8 +15,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/octant"
 )
 
 //go:generate mockgen -destination=./fake/mock_streamer.go -package=fake github.com/vmware/octant/internal/event Streamer
@@ -30,7 +30,7 @@ type Streamer interface {
 	Stream(ctx context.Context, ch <-chan octant.Event)
 }
 
-func Stream(ctx context.Context, streamer Streamer, generators []octant.Generator, requestPath, contentPath string) error {
+func Stream(ctx context.Context, streamer Streamer, forceCh <-chan bool, generators []octant.Generator, requestPath, contentPath string) error {
 	if streamer == nil {
 		return errors.New("unable to stream because streamer is nil")
 	}
@@ -51,7 +51,7 @@ func Stream(ctx context.Context, streamer Streamer, generators []octant.Generato
 	for _, generator := range generators {
 		wg.Add(1)
 		go func(g octant.Generator) {
-			runGenerator(ctx, eventCh, g, requestPath, contentPath)
+			runGenerator(ctx, eventCh, forceCh, g, requestPath, contentPath)
 			wg.Done()
 		}(generator)
 	}
@@ -65,7 +65,7 @@ func Stream(ctx context.Context, streamer Streamer, generators []octant.Generato
 	return nil
 }
 
-func runGenerator(ctx context.Context, ch chan<- octant.Event, generator octant.Generator, requestPath, contentPath string) {
+func runGenerator(ctx context.Context, ch chan<- octant.Event, forceCh <-chan bool, generator octant.Generator, requestPath, contentPath string) {
 	logger := log.From(ctx)
 
 	timer := time.NewTimer(0)
@@ -80,6 +80,9 @@ func runGenerator(ctx context.Context, ch chan<- octant.Event, generator octant.
 			logger.
 				With("generator", generator.Name()).
 				Debugf("generator shutting down")
+		case <-forceCh:
+			logger.Debugf("forcing frontend to regenerate")
+			timer.Reset(0)
 		case <-timer.C:
 			now := time.Now()
 

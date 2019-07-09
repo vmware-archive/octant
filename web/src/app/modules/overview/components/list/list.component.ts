@@ -3,9 +3,9 @@
 //
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ListView, View } from 'src/app/models/content';
-import { titleAsText, ViewUtil } from 'src/app/util/view';
 
 import { IconService } from '../../services/icon.service';
+import { ViewService } from '../../services/view/view.service';
 
 @Component({
   selector: 'app-view-list',
@@ -18,18 +18,19 @@ export class ListComponent implements OnChanges {
 
   iconName: string;
 
-  constructor(private iconService: IconService) {}
+  constructor(
+    private iconService: IconService,
+    private viewService: ViewService
+  ) {}
 
   identifyItem(index: number, item: View): string {
-    return titleAsText(item.metadata.title);
+    return this.viewService.titleAsText(item.metadata.title);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.listView) {
       const current = changes.listView.currentValue;
-      const vu = new ViewUtil(current);
-      this.title = vu.titleAsText();
-
+      this.title = this.viewService.viewTitleAsText(current);
       this.iconName = this.iconService.load(current.config);
     }
   }

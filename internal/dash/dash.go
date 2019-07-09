@@ -16,33 +16,31 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vmware/octant/internal/action"
-	"github.com/vmware/octant/internal/componentcache"
-	"github.com/vmware/octant/internal/objectstore"
-
-	"github.com/vmware/octant/internal/config"
-	"github.com/vmware/octant/internal/describer"
-	"github.com/vmware/octant/internal/modules/clusteroverview"
-	"github.com/vmware/octant/internal/modules/configuration"
-
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-
-	"github.com/vmware/octant/internal/api"
-	"github.com/vmware/octant/internal/cluster"
-	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/internal/module"
-	"github.com/vmware/octant/internal/modules/localcontent"
-	"github.com/vmware/octant/internal/modules/overview"
-	"github.com/vmware/octant/internal/portforward"
-	"github.com/vmware/octant/pkg/plugin"
-	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/web"
-
 	"github.com/pkg/errors"
 	"github.com/skratchdot/open-golang/open"
 	"go.opencensus.io/exporter/jaeger"
 	"go.opencensus.io/trace"
+
+	"github.com/vmware/octant/internal/api"
+	"github.com/vmware/octant/internal/cluster"
+	"github.com/vmware/octant/internal/componentcache"
+	"github.com/vmware/octant/internal/config"
+	"github.com/vmware/octant/internal/describer"
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/module"
+	"github.com/vmware/octant/internal/modules/clusteroverview"
+	"github.com/vmware/octant/internal/modules/configuration"
+	"github.com/vmware/octant/internal/modules/localcontent"
+	"github.com/vmware/octant/internal/modules/overview"
+	"github.com/vmware/octant/internal/objectstore"
+	"github.com/vmware/octant/internal/portforward"
+	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware/octant/pkg/plugin"
+	pluginAPI "github.com/vmware/octant/pkg/plugin/api"
+	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware/octant/web"
 )
 
 const (
@@ -124,7 +122,15 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return errors.Wrap(err, "init module manager")
 	}
 
-	pluginManager, err := initPlugin(portForwarder, appObjectStore, moduleManager)
+	frontendProxy := pluginAPI.FrontendProxy{}
+
+	pluginDashboardService := &pluginAPI.GRPCService{
+		ObjectStore:   appObjectStore,
+		PortForwarder: portForwarder,
+		FrontendProxy: frontendProxy,
+	}
+
+	pluginManager, err := initPlugin(moduleManager, actionManger, pluginDashboardService)
 	if err != nil {
 		return errors.Wrap(err, "initializing plugin manager")
 	}
@@ -162,14 +168,16 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 	}
 
 	// Initialize the API
-	ah := api.New(ctx, apiPathPrefix, clusterClient, moduleManager, actionManger, logger)
+	apiService := api.New(ctx, apiPathPrefix, clusterClient, moduleManager, actionManger, logger)
 	for _, m := range moduleManager.Modules() {
-		if err := ah.RegisterModule(m); err != nil {
+		if err := apiService.RegisterModule(m); err != nil {
 			return errors.Wrapf(err, "registering module: %v", m.Name())
 		}
 	}
 
-	d, err := newDash(listener, options.Namespace, options.FrontendURL, ah, logger)
+	frontendProxy.FrontendUpdateController = apiService
+
+	d, err := newDash(listener, options.Namespace, options.FrontendURL, apiService, logger)
 	if err != nil {
 		return errors.Wrap(err, "failed to create dash instance")
 	}

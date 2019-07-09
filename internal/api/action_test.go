@@ -16,10 +16,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/vmware/octant/internal/action"
 	"github.com/vmware/octant/internal/api/fake"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/mime"
+	"github.com/vmware/octant/pkg/action"
 )
 
 func Test_action(t *testing.T) {
