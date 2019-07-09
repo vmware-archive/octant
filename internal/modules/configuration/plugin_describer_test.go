@@ -11,7 +11,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/go-plugin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	configFake "github.com/vmware/octant/internal/config/fake"
@@ -65,11 +64,8 @@ func TestPluginDescriber(t *testing.T) {
 
 	list.Add(table)
 
-	expected := component.ContentResponse{
-		Components: []component.Component{list},
-	}
-
-	assert.Equal(t, expected, cResponse)
+	require.Len(t, cResponse.Components, 1)
+	component.AssertEqual(t, list, cResponse.Components[0])
 }
 
 func newFakePluginClient(name string, controller *gomock.Controller) *fakePluginClient {

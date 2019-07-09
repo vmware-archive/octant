@@ -187,7 +187,7 @@ func Test_printIngressConfig(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			assertComponentEqual(t, tc.expected, got)
+			component.AssertEqual(t, tc.expected, got)
 		})
 	}
 }
@@ -272,7 +272,7 @@ func Test_printIngressHosts(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			assertComponentEqual(t, tc.expected, got)
+			component.AssertEqual(t, tc.expected, got)
 		})
 	}
 }

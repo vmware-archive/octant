@@ -49,7 +49,7 @@ func Test_ClusterRoleListHandler(t *testing.T) {
 		"Age":  component.NewTimestamp(now),
 	})
 
-	assertComponentEqual(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_printClusterRoleConfig(t *testing.T) {
@@ -65,7 +65,7 @@ func Test_printClusterRoleConfig(t *testing.T) {
 	sections.AddText("Name", clusterRole.Name)
 	expected := component.NewSummary("Configuration", sections...)
 
-	assertComponentEqual(t, expected, observed)
+	component.AssertEqual(t, expected, observed)
 }
 
 func Test_printClusterRolePolicyRule(t *testing.T) {

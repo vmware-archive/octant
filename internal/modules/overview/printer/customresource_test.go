@@ -57,7 +57,7 @@ func Test_CustomResourceListHandler(t *testing.T) {
 			},
 		})
 
-	assertComponentEqual(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_CustomResourceListHandler_custom_columns(t *testing.T) {
@@ -99,7 +99,7 @@ func Test_CustomResourceListHandler_custom_columns(t *testing.T) {
 			},
 		})
 
-	assertComponentEqual(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_printCustomResourceConfig(t *testing.T) {

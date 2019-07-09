@@ -19,9 +19,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/plugin"
 	"github.com/vmware/octant/pkg/store"
 	storefake "github.com/vmware/octant/pkg/store/fake"
-	"github.com/vmware/octant/pkg/plugin"
 	"github.com/vmware/octant/pkg/view/component"
 	"github.com/vmware/octant/pkg/view/flexlayout"
 )
@@ -113,7 +113,7 @@ func Test_serviceAccountHandler(t *testing.T) {
 
 	expected := fl.ToComponent("Summary")
 
-	assertComponentEqual(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_printServiceAccountConfig(t *testing.T) {
@@ -171,7 +171,7 @@ func Test_printServiceAccountConfig(t *testing.T) {
 
 	expected := component.NewSummary("Configuration", sections...)
 
-	assertComponentEqual(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_serviceAccountPolicyRules(t *testing.T) {

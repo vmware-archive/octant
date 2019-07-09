@@ -295,7 +295,7 @@ func Test_ContainerConfiguration(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			assertComponentEqual(t, tc.expected, summary)
+			component.AssertEqual(t, tc.expected, summary)
 		})
 	}
 }

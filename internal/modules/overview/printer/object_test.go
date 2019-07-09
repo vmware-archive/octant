@@ -256,7 +256,7 @@ func Test_Object_ToComponent(t *testing.T) {
 			expected := component.NewFlexLayout("Summary")
 			expected.AddSections(tc.sections...)
 
-			assertComponentEqual(t, expected, got)
+			component.AssertEqual(t, expected, got)
 		})
 	}
 

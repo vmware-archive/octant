@@ -61,7 +61,7 @@ func Test_ClusterRoleBindingListHandler(t *testing.T) {
 		"Role name": component.NewLink("", "role-name", "/cluster-role-path"),
 	})
 
-	assertComponentEqual(t, expected, observed)
+	component.AssertEqual(t, expected, observed)
 }
 
 func Test_printClusterRoleBindingSubjects(t *testing.T) {
@@ -91,7 +91,7 @@ func Test_printClusterRoleBindingSubjects(t *testing.T) {
 
 	expected.Add(row)
 
-	assertComponentEqual(t, expected, observed)
+	component.AssertEqual(t, expected, observed)
 }
 
 func Test_printClusterRoleBindingConfig(t *testing.T) {
@@ -117,5 +117,5 @@ func Test_printClusterRoleBindingConfig(t *testing.T) {
 
 	expected := component.NewSummary("Configuration", sections...)
 
-	assertComponentEqual(t, expected, observed)
+	component.AssertEqual(t, expected, observed)
 }

@@ -6,19 +6,14 @@ SPDX-License-Identifier: Apache-2.0
 package printer
 
 import (
-	"encoding/json"
-	"testing"
-
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	configFake "github.com/vmware/octant/internal/config/fake"
 	linkFake "github.com/vmware/octant/internal/link/fake"
-	objectStoreFake "github.com/vmware/octant/pkg/store/fake"
 	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
+	objectStoreFake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -75,14 +70,4 @@ func (o *testPrinterOptions) PathForGVK(namespace, apiVersion, kind, name, text,
 func (o *testPrinterOptions) PathForOwner(parent runtime.Object, ownerReference *metav1.OwnerReference, ref string) {
 	l := component.NewLink("", ownerReference.Name, ref)
 	o.link.EXPECT().ForOwner(parent, ownerReference).Return(l, nil)
-}
-
-func assertComponentEqual(t *testing.T, expected, got component.Component) {
-	a, err := json.Marshal(expected)
-	require.NoError(t, err)
-
-	b, err := json.Marshal(got)
-	require.NoError(t, err)
-
-	assert.JSONEq(t, string(a), string(b))
 }

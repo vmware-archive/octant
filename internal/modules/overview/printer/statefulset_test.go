@@ -93,7 +93,7 @@ func Test_StatefulSetListHandler(t *testing.T) {
 		"Selector": component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
 	})
 
-	assertComponentEqual(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_StatefulSetStatus(t *testing.T) {

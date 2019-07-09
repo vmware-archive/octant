@@ -106,7 +106,7 @@ func Test_EventListHandler(t *testing.T) {
 		},
 	})
 
-	assertComponentEqual(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_ReplicasetEvents(t *testing.T) {
