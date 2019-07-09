@@ -19,6 +19,7 @@ import { NavigationComponent } from './components/navigation/navigation.componen
 import { NotifierComponent } from './components/notifier/notifier.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { OverviewModule } from './modules/overview/overview.module';
+import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
 
 @Injectable()
 export class UnstripTrailingSlashLocation extends Location {
@@ -46,6 +47,20 @@ export class UnstripTrailingSlashLocation extends Location {
     AppRoutingModule,
     OverviewModule,
     NgSelectModule,
+    MarkdownModule.forRoot({
+      markedOptions: {
+        provide: MarkedOptions,
+        useValue: {
+          gfm: true,
+          tables: true,
+          breaks: true,
+          pedantic: false,
+          sanitize: false,
+          smartLists: true,
+          smartypants: false,
+        },
+      },
+    }),
   ],
   providers: [
     {

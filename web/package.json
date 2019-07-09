@@ -42,6 +42,7 @@
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
     "ngx-highlightjs": "^3.0.3",
+    "ngx-markdown": "^8.0.2",
     "rxjs": "~6.3.3",
     "tslib": "^1.9.0",
     "zone.js": "~0.8.26"

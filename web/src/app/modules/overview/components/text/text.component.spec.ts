@@ -20,6 +20,12 @@ describe('TextComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(TextComponent);
     component = fixture.componentInstance;
+
+    component.view = {
+      config: { value: 'text' },
+      metadata: { type: 'text', title: [], accessor: 'accessor' },
+    };
+
     fixture.detectChanges();
   });
 

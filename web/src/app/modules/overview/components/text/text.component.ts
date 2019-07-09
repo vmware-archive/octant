@@ -20,7 +20,9 @@ export class TextComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {
       const view = changes.view.currentValue as TextView;
-      this.value = view.config.value;
+      if (view) {
+        this.value = view.config.value;
+      }
     }
   }
 }

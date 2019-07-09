@@ -10,7 +10,20 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestText_Markdown(t *testing.T) {
+	text := NewMarkdownText("**bold**")
+	require.True(t, text.IsMarkdown())
+	require.True(t, text.Config.IsMarkdown)
+
+	text.DisableMarkdown()
+	require.False(t, text.IsMarkdown())
+
+	text.EnableMarkdown()
+	require.True(t, text.IsMarkdown())
+}
 
 func Test_Text_Marshal(t *testing.T) {
 	tests := []struct {
@@ -90,7 +103,7 @@ func Test_Text_String(t *testing.T) {
 }
 
 func Test_Text_LessThan(t *testing.T) {
-	cases := []struct{
+	cases := []struct {
 		name     string
 		text     Text
 		other    Component
@@ -117,7 +130,7 @@ func Test_Text_LessThan(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T){
+		t.Run(tc.name, func(t *testing.T) {
 			got := tc.text.LessThan(tc.other)
 			assert.Equal(t, tc.expected, got)
 		})

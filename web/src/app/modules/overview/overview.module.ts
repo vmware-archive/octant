@@ -46,6 +46,7 @@ import { TimestampComponent } from './components/timestamp/timestamp.component';
 import { YamlComponent } from './components/yaml/yaml.component';
 import { OverviewComponent } from './overview.component';
 import { DefaultPipe } from './pipes/default.pipe';
+import { MarkdownModule } from 'ngx-markdown';
 
 export function hljsLanguages() {
   return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
@@ -99,6 +100,7 @@ export function hljsLanguages() {
     }),
     RouterModule,
     ReactiveFormsModule,
+    MarkdownModule.forChild(),
   ],
   exports: [ContextSelectorComponent, DefaultPipe],
 })
