@@ -350,37 +350,6 @@ func Equal(t TestingT, expected, actual interface{}, msgAndArgs ...interface{}) 
 
 }
 
-// Same asserts that two pointers reference the same object.
-//
-//    assert.Same(t, ptr1, ptr2)
-//
-// Both arguments must be pointer variables. Pointer variable sameness is
-// determined based on the equality of both type and value.
-func Same(t TestingT, expected, actual interface{}, msgAndArgs ...interface{}) bool {
-	if h, ok := t.(tHelper); ok {
-		h.Helper()
-	}
-
-	expectedPtr, actualPtr := reflect.ValueOf(expected), reflect.ValueOf(actual)
-	if expectedPtr.Kind() != reflect.Ptr || actualPtr.Kind() != reflect.Ptr {
-		return Fail(t, "Invalid operation: both arguments must be pointers", msgAndArgs...)
-	}
-
-	expectedType, actualType := reflect.TypeOf(expected), reflect.TypeOf(actual)
-	if expectedType != actualType {
-		return Fail(t, fmt.Sprintf("Pointer expected to be of type %v, but was %v",
-			expectedType, actualType), msgAndArgs...)
-	}
-
-	if expected != actual {
-		return Fail(t, fmt.Sprintf("Not same: \n"+
-			"expected: %p %#v\n"+
-			"actual  : %p %#v", expected, expected, actual, actual), msgAndArgs...)
-	}
-
-	return true
-}
-
 // formatUnequalValues takes two values of arbitrary types and returns string
 // representations appropriate to be presented to the user.
 //
@@ -660,7 +629,7 @@ func NotEqual(t TestingT, expected, actual interface{}, msgAndArgs ...interface{
 func includeElement(list interface{}, element interface{}) (ok, found bool) {
 
 	listValue := reflect.ValueOf(list)
-	listKind := reflect.TypeOf(list).Kind()
+	elementValue := reflect.ValueOf(element)
 	defer func() {
 		if e := recover(); e != nil {
 			ok = false
@@ -668,12 +637,11 @@ func includeElement(list interface{}, element interface{}) (ok, found bool) {
 		}
 	}()
 
-	if listKind == reflect.String {
-		elementValue := reflect.ValueOf(element)
+	if reflect.TypeOf(list).Kind() == reflect.String {
 		return true, strings.Contains(listValue.String(), elementValue.String())
 	}
 
-	if listKind == reflect.Map {
+	if reflect.TypeOf(list).Kind() == reflect.Map {
 		mapKeys := listValue.MapKeys()
 		for i := 0; i < len(mapKeys); i++ {
 			if ObjectsAreEqual(mapKeys[i].Interface(), element) {
