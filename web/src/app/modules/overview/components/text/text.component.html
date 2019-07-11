@@ -1,1 +1,9 @@
+<ng-container *ngIf="!view.config.isMarkdown; else markdown">
 {{ value }}
+</ng-container>
+
+<ng-template #markdown>
+    <div markdown ngPreserveWhitespaces>
+        {{ value }}
+    </div>
+</ng-template>

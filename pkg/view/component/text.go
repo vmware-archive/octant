@@ -7,7 +7,7 @@ package component
 
 import "encoding/json"
 
-// Text is a component for freetext
+// Text is a component for text
 type Text struct {
 	base
 	Config TextConfig `json:"config"`
@@ -15,7 +15,8 @@ type Text struct {
 
 // TextConfig is the contents of Text
 type TextConfig struct {
-	Text string `json:"value"`
+	Text       string `json:"value"`
+	IsMarkdown bool   `json:"isMarkdown,omitempty"`
 }
 
 // NewText creates a text component
@@ -26,6 +27,29 @@ func NewText(s string) *Text {
 			Text: s,
 		},
 	}
+}
+
+// NewMarkdownText creates a text component styled with markdown.
+func NewMarkdownText(s string) *Text {
+	t := NewText(s)
+	t.Config.IsMarkdown = true
+
+	return t
+}
+
+// EnableMarkdown enables markdown support for this component.
+func (t *Text) EnableMarkdown() {
+	t.Config.IsMarkdown = true
+}
+
+// DisableMarkdown disables markdown support for this component.
+func (t *Text) DisableMarkdown() {
+	t.Config.IsMarkdown = false
+}
+
+// IsMarkdown returns true if this component's text is in markdown format.
+func (t *Text) IsMarkdown() bool {
+	return t.Config.IsMarkdown
 }
 
 // SupportsTitle denotes this is a TextComponent.
