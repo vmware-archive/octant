@@ -44,9 +44,6 @@ func testWithGRPCClient(t *testing.T, fn func(*grpcClientMocks)) {
 		protoClient: fake.NewMockPluginClient(controller),
 	}
 
-	mocks.broker.EXPECT().NextId().Return(uint32(1))
-	mocks.broker.EXPECT().AcceptAndServe(gomock.Eq(uint32(1)), gomock.Any()).AnyTimes()
-
 	fn(&mocks)
 }
 
