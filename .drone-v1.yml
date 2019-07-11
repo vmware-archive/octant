@@ -16,6 +16,9 @@ steps:
       - npm run test:headless
   - name: backend
     image: golang:1.12
+    environment:
+      GOFLAG: -mod=vendor
+      GO111MODULE: on
     commands:
       - make go-install
       - make test

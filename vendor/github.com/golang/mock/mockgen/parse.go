@@ -17,7 +17,6 @@ package main
 // This file contains the model construction by parsing source files.
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"go/ast"
@@ -31,7 +30,6 @@ import (
 	"strings"
 
 	"github.com/golang/mock/mockgen/model"
-	"golang.org/x/tools/go/packages"
 )
 
 var (
@@ -41,25 +39,16 @@ var (
 
 // TODO: simplify error reporting
 
-func parseFile(source string) (*model.Package, error) {
+func ParseFile(source string) (*model.Package, error) {
 	srcDir, err := filepath.Abs(filepath.Dir(source))
 	if err != nil {
 		return nil, fmt.Errorf("failed getting source directory: %v", err)
 	}
 
-	cfg := &packages.Config{Mode: packages.LoadSyntax, Tests: true}
-	pkgs, err := packages.Load(cfg, "file="+source)
-	if err != nil {
-		return nil, err
-	}
-	if packages.PrintErrors(pkgs) > 0 || len(pkgs) == 0 {
-		return nil, errors.New("loading package failed")
-	}
-
-	packageImport := pkgs[0].PkgPath
-
-	// It is illegal to import a _test package.
-	packageImport = strings.TrimSuffix(packageImport, "_test")
+	var packageImport string
+	if p, err := build.ImportDir(srcDir, 0); err == nil {
+		packageImport = p.ImportPath
+	} // TODO: should we fail if this returns an error?
 
 	fs := token.NewFileSet()
 	file, err := parser.ParseFile(fs, source, nil, 0)
@@ -397,10 +386,10 @@ func (p *fileParser) parseType(pkg string, typ ast.Expr) (model.Type, error) {
 			}
 			// assume type in this package
 			return &model.NamedType{Package: pkg, Type: v.Name}, nil
+		} else {
+			// assume predeclared type
+			return model.PredeclaredType(v.Name), nil
 		}
-
-		// assume predeclared type
-		return model.PredeclaredType(v.Name), nil
 	case *ast.InterfaceType:
 		if v.Methods != nil && len(v.Methods.List) > 0 {
 			return nil, p.errorf(v.Pos(), "can't handle non-empty unnamed interface types")

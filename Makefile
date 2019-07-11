@@ -41,12 +41,12 @@ generate:
 	@go generate -v ./pkg/store ./pkg/plugin/api/proto ./pkg/plugin/dashboard ./pkg/plugin/api ./pkg/plugin ./internal/...
 
 go-install:
-	$(GOINSTALL) ./vendor/github.com/GeertJohan/go.rice
-	$(GOINSTALL) ./vendor/github.com/GeertJohan/go.rice/rice
-	$(GOINSTALL) ./vendor/github.com/asticode/go-astilectron-bundler/...
-	$(GOINSTALL) ./vendor/github.com/golang/mock/gomock
-	$(GOINSTALL) ./vendor/github.com/golang/mock/mockgen
-	$(GOINSTALL) ./vendor/github.com/golang/protobuf/protoc-gen-go
+	@env GO111MODULE=on $(GOINSTALL) github.com/GeertJohan/go.rice
+	@env GO111MODULE=on $(GOINSTALL) github.com/GeertJohan/go.rice/rice
+	@env GO111MODULE=on $(GOINSTALL) github.com/asticode/go-astilectron-bundler
+	@env GO111MODULE=on $(GOINSTALL) github.com/golang/mock/gomock
+	@env GO111MODULE=on $(GOINSTALL) github.com/golang/mock/mockgen
+	@env GO111MODULE=on $(GOINSTALL) github.com/golang/protobuf/protoc-gen-go
 
 # Remove all generated go files
 .PHONY: clean

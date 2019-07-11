@@ -96,6 +96,8 @@ func Skip(self TProtocol, fieldType TType, maxDepth int) (err error) {
 	}
 
 	switch fieldType {
+	case STOP:
+		return
 	case BOOL:
 		_, err = self.ReadBool()
 		return

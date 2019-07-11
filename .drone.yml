@@ -16,6 +16,9 @@ pipeline:
   backend:
     image: golang:1.12
     group: testing
+    environment:
+    - GOFLAG=-mod=vendor
+    - GO111MODULE=on
     commands:
       - make go-install
       - make test

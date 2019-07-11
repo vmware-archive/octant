@@ -67,7 +67,7 @@ aix_ppc)
 	;;
 aix_ppc64)
 	mkerrors="$mkerrors -maix64"
-	mksyscall="./mksyscall_aix_ppc64.pl -aix"
+	mksyscall="go run mksyscall_aix_ppc64.go -aix"
 	mktypes="GOARCH=$GOARCH go tool cgo -godefs"
 	;;
 darwin_386)
@@ -170,7 +170,7 @@ openbsd_arm)
 	mktypes="GOARCH=$GOARCH go tool cgo -godefs -- -fsigned-char"
 	;;
 solaris_amd64)
-	mksyscall="./mksyscall_solaris.pl"
+	mksyscall="go run mksyscall_solaris.go"
 	mkerrors="$mkerrors -m64"
 	mksysnum=
 	mktypes="GOARCH=$GOARCH go tool cgo -godefs"

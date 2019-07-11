@@ -32,7 +32,10 @@ const (
 // for references to _ParseContext see tsimplejson_protocol.go
 
 // JSON protocol implementation for thrift.
-// Utilizes Simple JSON protocol
+//
+// This protocol produces/consumes a simple output format
+// suitable for parsing by scripting languages.  It should not be
+// confused with the full-featured TJSONProtocol.
 //
 type TJSONProtocol struct {
 	*TSimpleJSONProtocol
