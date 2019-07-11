@@ -9,9 +9,15 @@ github.com/Azure/go-autorest/autorest/azure
 github.com/Azure/go-autorest/logger
 github.com/Azure/go-autorest/version
 github.com/Azure/go-autorest/autorest/date
+# github.com/GeertJohan/go.incremental v1.0.0
+github.com/GeertJohan/go.incremental
 # github.com/GeertJohan/go.rice v0.0.0-20181229193832-0af3f3b09a0a
 github.com/GeertJohan/go.rice
+github.com/GeertJohan/go.rice/rice
 github.com/GeertJohan/go.rice/embedded
+# github.com/akavel/rsrc v0.8.0
+github.com/akavel/rsrc/binutil
+github.com/akavel/rsrc/coff
 # github.com/daaku/go.zipexe v0.0.0-20150329023125-a5fe2436ffcb
 github.com/daaku/go.zipexe
 # github.com/davecgh/go-spew v1.1.1
@@ -28,13 +34,21 @@ github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
 # github.com/golang/mock v1.2.0
 github.com/golang/mock/gomock
+github.com/golang/mock/mockgen
+github.com/golang/mock/mockgen/model
 # github.com/golang/protobuf v1.3.1
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes/wrappers
+github.com/golang/protobuf/protoc-gen-go
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes
+github.com/golang/protobuf/protoc-gen-go/generator
+github.com/golang/protobuf/protoc-gen-go/grpc
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
+github.com/golang/protobuf/protoc-gen-go/descriptor
+github.com/golang/protobuf/protoc-gen-go/generator/internal/remap
+github.com/golang/protobuf/protoc-gen-go/plugin
 # github.com/google/btree v1.0.0
 github.com/google/btree
 # github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf
@@ -68,6 +82,8 @@ github.com/hashicorp/yamux
 github.com/imdario/mergo
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
+# github.com/jessevdk/go-flags v1.4.0
+github.com/jessevdk/go-flags
 # github.com/json-iterator/go v1.1.5
 github.com/json-iterator/go
 # github.com/mitchellh/go-testing-interface v1.0.0
@@ -76,6 +92,8 @@ github.com/mitchellh/go-testing-interface
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742
 github.com/modern-go/reflect2
+# github.com/nkovacs/streamquote v1.0.0
+github.com/nkovacs/streamquote
 # github.com/oklog/run v1.0.0
 github.com/oklog/run
 # github.com/peterbourgon/diskv v2.0.1+incompatible
@@ -96,6 +114,10 @@ github.com/spf13/pflag
 # github.com/stretchr/testify v1.3.0
 github.com/stretchr/testify/require
 github.com/stretchr/testify/assert
+# github.com/valyala/bytebufferpool v1.0.0
+github.com/valyala/bytebufferpool
+# github.com/valyala/fasttemplate v1.0.1
+github.com/valyala/fasttemplate
 # go.opencensus.io v0.19.1
 go.opencensus.io/trace
 go.opencensus.io/exporter/jaeger
@@ -333,6 +355,7 @@ k8s.io/client-go/util/retry
 k8s.io/client-go/transport/spdy
 k8s.io/client-go/tools/clientcmd/api/latest
 k8s.io/client-go/dynamic/dynamiclister
+k8s.io/client-go/dynamic/dynamicinformer
 k8s.io/client-go/util/flowcontrol
 k8s.io/client-go/pkg/version
 k8s.io/client-go/plugin/pkg/client/auth/exec

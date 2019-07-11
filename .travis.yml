@@ -1,6 +1,9 @@
 language: go
 go:
   - "1.12"
+env:
+  - GOFLAG=-mod=vendor
+  - GO111MODULE=on
 
 # Secure environment variables causes choco install to hang indefinitely: https://travis-ci.community/t/choco-install-hangs-forever/307
 matrix:
@@ -45,5 +48,3 @@ before_script:
   - make go-install
 script:
 - $TRAVIS_BUILD_DIR/hacks/test-runner.sh
-# choco install scripts points to private GH repo but windows cannot have secure env
-# - if [[ $TRAVIS_OS_NAME == 'windows' ]]; then ./ci/travis-choco.sh; fi
