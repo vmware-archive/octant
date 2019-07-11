@@ -21,6 +21,14 @@ message GetResponse {
     bytes object = 1;
 }
 
+message UpdateRequest {
+    bytes object = 1;
+}
+
+message UpdateResponse {
+
+}
+
 message PortForwardRequest {
     string namespace = 1;
     string podName = 2;
@@ -40,6 +48,8 @@ message CancelPortForwardRequest {
 service Dashboard {
     rpc List(KeyRequest) returns (ListResponse);
     rpc Get(KeyRequest) returns (GetResponse);
+    rpc Update(UpdateRequest) returns (UpdateResponse);
     rpc PortForward(PortForwardRequest) returns (PortForwardResponse);
     rpc CancelPortForward(CancelPortForwardRequest) returns (Empty);
+    rpc ForceFrontendUpdate(Empty) returns(Empty);
 }

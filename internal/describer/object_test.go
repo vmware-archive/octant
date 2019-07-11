@@ -42,8 +42,9 @@ func TestObjectDescriber(t *testing.T) {
 
 	dashConfig := configFake.NewMockDash(controller)
 	moduleRegistrar := pluginFake.NewMockModuleRegistrar(controller)
+	actionRegistrar := pluginFake.NewMockActionRegistrar(controller)
 
-	pluginManager := plugin.NewManager(nil, moduleRegistrar)
+	pluginManager := plugin.NewManager(nil, moduleRegistrar, actionRegistrar)
 	dashConfig.EXPECT().PluginManager().Return(pluginManager).AnyTimes()
 
 	objectPrinter := printerFake.NewMockPrinter(controller)

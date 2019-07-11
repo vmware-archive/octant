@@ -1,7 +1,6 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { TextView } from 'src/app/models/content';
 
@@ -15,14 +14,15 @@ export class TextComponent implements OnChanges {
 
   value: string;
 
+  isMarkdown: boolean;
+
   constructor() {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {
       const view = changes.view.currentValue as TextView;
-      if (view) {
-        this.value = view.config.value;
-      }
+      this.value = view.config.value;
+      this.isMarkdown = view.config.isMarkdown;
     }
   }
 }

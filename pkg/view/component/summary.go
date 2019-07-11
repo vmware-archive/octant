@@ -7,12 +7,6 @@ package component
 
 import "encoding/json"
 
-type Action struct {
-	Name  string `json:"name"`
-	Title string `json:"title"`
-	Form  Form   `json:"form"`
-}
-
 // SummaryConfig is the contents of a Summary
 type SummaryConfig struct {
 	Sections []SummarySection `json:"sections"`
@@ -104,6 +98,6 @@ type summaryMarshal Summary
 // MarshalJSON implements json.Marshaler
 func (t *Summary) MarshalJSON() ([]byte, error) {
 	m := summaryMarshal(*t)
-	m.Metadata.Type = "summary"
+	m.Metadata.Type = typeSummary
 	return json.Marshal(&m)
 }

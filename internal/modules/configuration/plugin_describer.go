@@ -31,10 +31,13 @@ func (d *PluginListDescriber) Describe(ctx context.Context, prefix, namespace st
 	for _, n := range pluginStore.ClientNames() {
 		metadata, err := pluginStore.GetMetadata(n)
 		if err != nil {
-			return component.ContentResponse{}, errors.New("metadata is nil")
+			return describer.EmptyContentResponse, errors.New("metadata is nil")
 		}
 
-		capability, _ := json.Marshal(metadata.Capabilities)
+		capability, err := json.Marshal(metadata.Capabilities)
+		if err != nil {
+			return describer.EmptyContentResponse, err
+		}
 
 		row := component.TableRow{
 			"Name":        component.NewText(metadata.Name),
@@ -43,6 +46,8 @@ func (d *PluginListDescriber) Describe(ctx context.Context, prefix, namespace st
 		}
 		tbl.Add(row)
 	}
+
+	tbl.Sort("Name", false)
 
 	return component.ContentResponse{
 		Components: []component.Component{list},

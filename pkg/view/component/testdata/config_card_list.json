@@ -1,0 +1,50 @@
+{
+  "cards": [
+    {
+      "metadata": {
+        "title": [
+          {
+            "metadata": {
+              "type": "text"
+            },
+            "config": {
+              "value": "card title"
+            }
+          }
+        ],
+        "type": "card"
+      },
+      "config": {
+        "body": {
+          "metadata": {
+            "type": "text"
+          },
+          "config": {
+            "value": "text value"
+          }
+        },
+        "actions": [
+          {
+            "name": "Edit",
+            "title": "Edit",
+            "form": {
+              "fields": [
+                {
+                  "configuration": {},
+                  "label": "Revision",
+                  "name": "revision",
+                  "type": "text",
+                  "value": "12345"
+                }
+              ]
+            }
+          }
+        ],
+        "alert": {
+          "type": "warning",
+          "message": "warning"
+        }
+      }
+    }
+  ]
+}

@@ -11,6 +11,14 @@ message ContentResponse {
     bytes content_response = 1;
 }
 
+message HandleActionRequest {
+    bytes payload = 1;
+}
+
+message HandleActionResponse {
+
+}
+
 message NavigationRequest {}
 
 message NavigationResponse {
@@ -42,6 +50,7 @@ message RegisterResponse {
         repeated GroupVersionKind supportsObjectStatus = 4;
         repeated GroupVersionKind supportsTab = 5;
         bool isModule = 6;
+        repeated string action_names = 7;
     }
 
     string pluginName = 1;
@@ -80,6 +89,7 @@ message WatchRequest {
 
 service Plugin {
     rpc Content(ContentRequest) returns (ContentResponse);
+    rpc HandleAction(HandleActionRequest) returns (HandleActionResponse);
     rpc Navigation(NavigationRequest) returns (NavigationResponse);
     rpc Register(RegisterRequest) returns (RegisterResponse);
     rpc Print(ObjectRequest) returns (PrintResponse);

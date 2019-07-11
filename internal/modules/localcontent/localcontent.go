@@ -208,7 +208,7 @@ func (l *LocalContent) Handlers(ctx context.Context) map[string]http.Handler {
 }
 
 func (l *LocalContent) SupportedGroupVersionKind() []schema.GroupVersionKind {
-	panic("implement me")
+	return []schema.GroupVersionKind{}
 }
 
 func (l *LocalContent) GroupVersionKindPath(namespace, apiVersion, kind, name string) (string, error) {

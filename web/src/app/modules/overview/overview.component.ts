@@ -11,9 +11,9 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { ContentResponse, View } from 'src/app/models/content';
 import { ContentStreamService } from 'src/app/services/content-stream/content-stream.service';
-import { titleAsText } from 'src/app/util/view';
 
 import { IconService } from './services/icon.service';
+import { ViewService } from './services/view/view.service';
 
 @Component({
   selector: 'app-overview',
@@ -35,7 +35,8 @@ export class OverviewComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private contentStreamService: ContentStreamService,
-    private iconService: IconService
+    private iconService: IconService,
+    private viewService: ViewService
   ) {}
 
   ngOnInit() {
@@ -63,7 +64,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
     this.hasTabs = views.length > 1;
     if (this.hasTabs) {
       this.views = views;
-      this.title = titleAsText(contentResponse.content.title);
+      this.title = this.viewService.titleAsText(contentResponse.content.title);
     } else if (views.length === 1) {
       this.singleView = views[0];
     }

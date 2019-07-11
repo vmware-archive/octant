@@ -8,26 +8,26 @@ package api_test
 import (
 	"context"
 	"net"
+	"testing"
 	"time"
 
-	"testing"
-
 	"github.com/golang/mock/gomock"
-	"github.com/vmware/octant/internal/gvk"
-	storefake "github.com/vmware/octant/pkg/store/fake"
-	"github.com/vmware/octant/internal/portforward"
-	pffake "github.com/vmware/octant/internal/portforward/fake"
-	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/pkg/plugin/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
+	"github.com/vmware/octant/internal/gvk"
+	"github.com/vmware/octant/internal/portforward"
+	portForwardFake "github.com/vmware/octant/internal/portforward/fake"
+	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/plugin/api"
+	"github.com/vmware/octant/pkg/store"
+	storeFake "github.com/vmware/octant/pkg/store/fake"
 )
 
 type apiMocks struct {
-	objectstore *storefake.MockStore
-	pf          *pffake.MockPortForwarder
+	objectStore *storeFake.MockStore
+	pf          *portForwardFake.MockPortForwarder
 }
 
 func TestAPI(t *testing.T) {
@@ -68,7 +68,7 @@ func TestAPI(t *testing.T) {
 		{
 			name: "list",
 			initFunc: func(t *testing.T, mocks *apiMocks) {
-				mocks.objectstore.EXPECT().
+				mocks.objectStore.EXPECT().
 					List(gomock.Any(), gomock.Eq(listKey)).Return(objects, nil)
 			},
 			doFunc: func(t *testing.T, client *api.Client) {
@@ -86,7 +86,7 @@ func TestAPI(t *testing.T) {
 		{
 			name: "get",
 			initFunc: func(t *testing.T, mocks *apiMocks) {
-				mocks.objectstore.EXPECT().
+				mocks.objectStore.EXPECT().
 					Get(gomock.Any(), gomock.Eq(getKey)).Return(object, nil)
 			},
 			doFunc: func(t *testing.T, client *api.Client) {
@@ -175,10 +175,10 @@ func TestAPI(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			appObjectStore := storefake.NewMockStore(controller)
-			pf := pffake.NewMockPortForwarder(controller)
+			appObjectStore := storeFake.NewMockStore(controller)
+			pf := portForwardFake.NewMockPortForwarder(controller)
 			tc.initFunc(t, &apiMocks{
-				objectstore: appObjectStore,
+				objectStore: appObjectStore,
 				pf:          pf})
 
 			service := &api.GRPCService{

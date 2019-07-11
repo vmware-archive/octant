@@ -12,9 +12,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
+	eventFake "github.com/vmware/octant/internal/event/fake"
 	"github.com/vmware/octant/internal/octant"
 	octantFake "github.com/vmware/octant/internal/octant/fake"
-	eventFake "github.com/vmware/octant/internal/event/fake"
 )
 
 func TestStream(t *testing.T) {
@@ -47,7 +47,9 @@ func TestStream(t *testing.T) {
 		})
 
 	go func() {
-		err := Stream(ctx, streamer, []octant.Generator{generator}, "/request-path", "/content-path")
+		forceCh := make(chan bool, 1)
+		defer close(forceCh)
+		err := Stream(ctx, streamer, forceCh, []octant.Generator{generator}, "/request-path", "/content-path")
 		require.NoError(t, err)
 	}()
 

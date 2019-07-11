@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,8 +19,40 @@ func Test_unmarshal(t *testing.T) {
 		name       string
 		configFile string
 		objectType string
-		expected   interface{}
+		expected   Component
 	}{
+		{
+			name:       "cardList",
+			configFile: "config_card_list.json",
+			objectType: typeCardList,
+			expected: &CardList{
+				Config: CardListConfig{
+					Cards: []Card{
+						{
+							base: newBase(typeCard, TitleFromString("card title")),
+							Config: CardConfig{
+								Body: NewText("text value"),
+								Actions: []Action{
+									{
+										Name:  "Edit",
+										Title: "Edit",
+										Form: Form{
+											Fields: []FormField{
+												NewFormFieldText("Revision", "revision", "12345"),
+											},
+										},
+									},
+								},
+								Alert: &Alert{
+									Type:    AlertTypeWarning,
+									Message: "warning",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 		{
 			name:       "containers",
 			configFile: "config_containers.json",
@@ -318,8 +349,7 @@ func Test_unmarshal(t *testing.T) {
 			got, err := unmarshal(to)
 			require.NoError(t, err)
 
-			assert.Equal(t, tc.expected, got)
+			AssertEqual(t, tc.expected, got)
 		})
 	}
-
 }

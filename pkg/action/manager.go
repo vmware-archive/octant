@@ -32,10 +32,6 @@ func NewManager(logger log.Logger) *Manager {
 
 // Register registers a dispatcher function to an action path.
 func (m *Manager) Register(actionPath string, actionFunc DispatcherFunc) error {
-	if _, ok := m.dispatches[actionPath]; ok {
-		return &PreviouslyConfiguredError{Path: actionPath}
-	}
-
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -49,6 +45,7 @@ func (m *Manager) Dispatch(ctx context.Context, actionPath string, payload Paylo
 	f, ok := m.dispatches[actionPath]
 	if !ok {
 		return &NotFoundError{Path: actionPath}
+
 	}
 
 	return f(ctx, payload)

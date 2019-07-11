@@ -9,8 +9,11 @@ import { ClarityModule } from '@clr/angular';
 import json from 'highlight.js/lib/languages/json';
 import yaml from 'highlight.js/lib/languages/yaml';
 import { HighlightModule } from 'ngx-highlightjs';
+import { MarkdownModule } from 'ngx-markdown';
 
 import { AnnotationsComponent } from './components/annotations/annotations.component';
+import { CardListComponent } from './components/card-list/card-list.component';
+import { CardComponent } from './components/card/card.component';
 import { ContainersComponent } from './components/containers/containers.component';
 import { ContentSwitcherComponent } from './components/content-switcher/content-switcher.component';
 import { ContextSelectorComponent } from './components/context-selector/context-selector.component';
@@ -46,7 +49,6 @@ import { TimestampComponent } from './components/timestamp/timestamp.component';
 import { YamlComponent } from './components/yaml/yaml.component';
 import { OverviewComponent } from './overview.component';
 import { DefaultPipe } from './pipes/default.pipe';
-import { MarkdownModule } from 'ngx-markdown';
 
 export function hljsLanguages() {
   return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
@@ -90,6 +92,8 @@ export function hljsLanguages() {
     ContextSelectorComponent,
     DefaultPipe,
     FormComponent,
+    CardListComponent,
+    CardComponent,
   ],
   imports: [
     CommonModule,
@@ -98,6 +102,7 @@ export function hljsLanguages() {
     HighlightModule.forRoot({
       languages: hljsLanguages,
     }),
+    MarkdownModule.forChild(),
     RouterModule,
     ReactiveFormsModule,
     MarkdownModule.forChild(),

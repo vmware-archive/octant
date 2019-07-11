@@ -12,8 +12,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 
-	"github.com/vmware/octant/internal/action"
 	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/pkg/action"
 	"github.com/vmware/octant/pkg/store"
 )
 

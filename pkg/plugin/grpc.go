@@ -11,9 +11,11 @@ import (
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware/octant/pkg/action"
 	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/plugin/dashboard"
 	"github.com/vmware/octant/pkg/view/component"
@@ -84,6 +86,32 @@ func (c *GRPCClient) Content(contentPath string) (component.ContentResponse, err
 	}
 
 	return contentResponse, nil
+}
+
+// HandleAction runs an action on a plugin.
+func (c *GRPCClient) HandleAction(payload action.Payload) error {
+	err := c.run(func() error {
+		data, err := json.Marshal(&payload)
+		if err != nil {
+			return err
+		}
+
+		req := &dashboard.HandleActionRequest{
+			Payload: data,
+		}
+
+		_, err = c.client.HandleAction(context.Background(), req)
+		if err != nil {
+			if s, isStatus := status.FromError(err); isStatus {
+				return errors.Errorf("grpc error: %s", s.Message())
+			}
+			return err
+		}
+
+		return nil
+	})
+
+	return err
 }
 
 // Navigation returns navigation entries from a plugin.
@@ -309,7 +337,20 @@ func (s *GRPCServer) Content(ctx context.Context, req *dashboard.ContentRequest)
 	return &dashboard.ContentResponse{
 		ContentResponse: contentResponseBytes,
 	}, nil
+}
 
+// HandleAction runs an action in a plugin.
+func (s *GRPCServer) HandleAction(ctx context.Context, handleActionRequest *dashboard.HandleActionRequest) (*dashboard.HandleActionResponse, error) {
+	var payload action.Payload
+	if err := json.Unmarshal(handleActionRequest.Payload, &payload); err != nil {
+		return nil, err
+	}
+
+	if err := s.Impl.HandleAction(payload); err != nil {
+		return nil, err
+	}
+
+	return &dashboard.HandleActionResponse{}, nil
 }
 
 // Navigation returns navigation entries from a plugin.

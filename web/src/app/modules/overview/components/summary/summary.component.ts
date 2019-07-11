@@ -4,9 +4,9 @@
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Action, SummaryItem, SummaryView } from 'src/app/models/content';
-import { ViewUtil } from 'src/app/util/view';
 import { FormGroup } from '@angular/forms';
 import { ActionService } from '../../services/action/action.service';
+import { ViewService } from '../../services/view/view.service';
 
 @Component({
   selector: 'app-view-summary',
@@ -20,13 +20,15 @@ export class SummaryComponent implements OnChanges {
 
   currentAction: Action;
 
-  constructor(private actionService: ActionService) {}
+  constructor(
+    private actionService: ActionService,
+    private viewService: ViewService
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {
       const view: SummaryView = changes.view.currentValue;
-      const vu = new ViewUtil(view);
-      this.title = vu.titleAsText();
+      this.title = this.viewService.viewTitleAsText(view);
     }
   }
 

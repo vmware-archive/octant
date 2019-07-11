@@ -27,6 +27,7 @@ func convertToCapabilities(in *dashboard.RegisterResponse_Capabilities) Capabili
 		SupportsObjectStatus:  convertToGroupVersionKindList(in.SupportsObjectStatus),
 		SupportsTab:           convertToGroupVersionKindList(in.SupportsTab),
 		IsModule:              in.IsModule,
+		ActionNames:           in.ActionNames,
 	}
 
 	return c
@@ -40,6 +41,7 @@ func convertFromCapabilities(in Capabilities) dashboard.RegisterResponse_Capabil
 		SupportsObjectStatus:  convertFromGroupVersionKindList(in.SupportsObjectStatus),
 		SupportsTab:           convertFromGroupVersionKindList(in.SupportsTab),
 		IsModule:              in.IsModule,
+		ActionNames:           in.ActionNames,
 	}
 
 	return c
