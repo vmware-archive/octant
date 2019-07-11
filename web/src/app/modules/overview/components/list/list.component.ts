@@ -23,9 +23,9 @@ export class ListComponent implements OnChanges {
     private viewService: ViewService
   ) {}
 
-  identifyItem(index: number, item: View): string {
+  identifyItem = (index: number, item: View): string => {
     return this.viewService.titleAsText(item.metadata.title);
-  }
+  };
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.listView) {
