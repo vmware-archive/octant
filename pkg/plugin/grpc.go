@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 
 	"github.com/pkg/errors"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -41,21 +40,6 @@ func (c *GRPCClient) run(fn func() error) error {
 	if fn == nil {
 		return errors.New("client function is nil")
 	}
-
-	var s *grpc.Server
-	defer func() {
-		if s != nil {
-			s.Stop()
-		}
-	}()
-
-	serverFunc := func(options []grpc.ServerOption) *grpc.Server {
-		s = grpc.NewServer(options...)
-		return s
-	}
-
-	brokerID := c.broker.NextId()
-	go c.broker.AcceptAndServe(brokerID, serverFunc)
 
 	return fn()
 }
