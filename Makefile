@@ -38,7 +38,7 @@ octant-docker:
 
 generate:
 	@echo "-> $@"
-	@go generate -v ./pkg/store ./pkg/plugin/api/proto ./pkg/plugin/dashboard ./pkg/plugin/api ./pkg/plugin ./internal/...
+	@go generate -v ./pkg/... ./internal/...
 
 go-install:
 	@env GO111MODULE=on $(GOINSTALL) github.com/GeertJohan/go.rice

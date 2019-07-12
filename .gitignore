@@ -35,6 +35,7 @@ internal/portforward/fake
 /pkg/store/fake
 /pkg/plugin/fake
 /pkg/plugin/api/fake
+/pkg/plugin/service/fake
 
 
 # electron bundling

@@ -9,7 +9,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -17,102 +16,46 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware/octant/pkg/plugin"
-	"github.com/vmware/octant/pkg/plugin/api"
+	"github.com/vmware/octant/pkg/plugin/service"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 	"github.com/vmware/octant/pkg/view/flexlayout"
 )
 
-type stub struct {
-	apiClient api.Service
-	mu        sync.Mutex
+func init() {
+	// Remove the prefix from the go logger since Octant will print logs with timestamps.
+	log.SetPrefix("")
 }
 
-var _ plugin.Service = (*stub)(nil)
-
-func (s *stub) Register(apiAddress string) (plugin.Metadata, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	client, err := api.NewClient(apiAddress)
-	if err != nil {
-		return plugin.Metadata{}, errors.Wrap(err, "create api client")
-	}
-
-	s.apiClient = client
-
+func main() {
+	// This plugin is interested in Pods
 	podGVK := schema.GroupVersionKind{Version: "v1", Kind: "Pod"}
 
-	log.Println("the dashboard plugin api is at", apiAddress)
-
-	return plugin.Metadata{
-		Name:        "plugin-name",
-		Description: "a description",
-		Capabilities: plugin.Capabilities{
-			SupportsPrinterConfig: []schema.GroupVersionKind{podGVK},
-			SupportsPrinterStatus: []schema.GroupVersionKind{podGVK},
-			SupportsPrinterItems:  []schema.GroupVersionKind{podGVK},
-			SupportsObjectStatus:  []schema.GroupVersionKind{podGVK},
-			SupportsTab:           []schema.GroupVersionKind{podGVK},
-		},
-	}, nil
-}
-
-func (s *stub) Print(object runtime.Object) (plugin.PrintResponse, error) {
-	if object == nil {
-		return plugin.PrintResponse{}, errors.Errorf("object is nil")
+	// Tell Octant to call this plugin when printing configuration or tabs for Pods
+	capabilities := &plugin.Capabilities{
+		SupportsPrinterConfig: []schema.GroupVersionKind{podGVK},
+		SupportsTab:           []schema.GroupVersionKind{podGVK},
 	}
 
-	ctx := context.Background()
-	key, err := store.KeyFromObject(object)
+	// Set up what should happen when Octant calls this plugin.
+	handlers := service.HandlerFuncs{
+		Print:    handlePrint,
+		PrintTab: handleTab,
+	}
+
+	// Use the plugin service helper to register this plugin.
+	p, err := service.Register("plugin-name", "a description", capabilities, handlers)
 	if err != nil {
-		return plugin.PrintResponse{}, err
-	}
-	u, err := s.apiClient.Get(ctx, key)
-	if err != nil {
-		return plugin.PrintResponse{}, err
+		log.Fatal(err)
 	}
 
-	log.Printf("loaded object from objectstore: %v", u)
-
-	msg := fmt.Sprintf("update from plugin at %s", time.Now().Format(time.RFC3339))
-
-	return plugin.PrintResponse{
-		Config: []component.SummarySection{
-			{Header: "from-plugin", Content: component.NewText(msg)},
-		},
-		Status: []component.SummarySection{
-			{Header: "from-plugin", Content: component.NewText(msg)},
-		},
-		Items: []component.FlexLayoutItem{
-			{
-				Width: component.WidthHalf,
-				View:  component.NewText("item 1 from plugin"),
-			},
-			{
-				Width: component.WidthFull,
-				View:  component.NewText("item 2 from plugin"),
-			},
-		},
-	}, nil
+	// The plugin can log and the log messages will show up in Octant.
+	log.Printf("octant-sample-plugin is starting")
+	p.Serve()
 }
 
-func (s *stub) ObjectStatus(object runtime.Object) (plugin.ObjectStatusResponse, error) {
-	if object == nil {
-		return plugin.ObjectStatusResponse{}, errors.New("object is nil")
-	}
-
-	status := component.PodSummary{
-		Status:  component.NodeStatusError,
-		Details: []component.Component{component.NewText(fmt.Sprintf("Timestamp: %s", time.Now().Format(time.RFC850)))},
-	}
-
-	return plugin.ObjectStatusResponse{
-		ObjectStatus: status,
-	}, nil
-}
-
-func (s *stub) PrintTab(object runtime.Object) (*component.Tab, error) {
+// handleTab is called when Octant wants to print a tab for an object.
+func handleTab(dashboardClient service.Dashboard, object runtime.Object) (*component.Tab, error) {
 	if object == nil {
 		return nil, errors.New("object is nil")
 	}
@@ -132,7 +75,39 @@ func (s *stub) PrintTab(object runtime.Object) (*component.Tab, error) {
 	return &tab, nil
 }
 
-func main() {
-	log.Print("plugin is starting")
-	plugin.Serve(&stub{})
+// handlePrint is called when Octant wants to print an object.
+func handlePrint(dashboardClient service.Dashboard, object runtime.Object) (plugin.PrintResponse, error) {
+	if object == nil {
+		return plugin.PrintResponse{}, errors.Errorf("object is nil")
+	}
+
+	ctx := context.Background()
+	key, err := store.KeyFromObject(object)
+	if err != nil {
+		return plugin.PrintResponse{}, err
+	}
+	u, err := dashboardClient.Get(ctx, key)
+	if err != nil {
+		return plugin.PrintResponse{}, err
+	}
+
+	podCard := component.NewCard(fmt.Sprintf("Extra Outout for %s", u.GetName()))
+	podCard.SetBody(component.NewMarkdownText("This output was generated from _octant-sample-plugin_"))
+
+	msg := fmt.Sprintf("update from plugin at %s", time.Now().Format(time.RFC3339))
+
+	return plugin.PrintResponse{
+		Config: []component.SummarySection{
+			{Header: "from-plugin", Content: component.NewText(msg)},
+		},
+		Status: []component.SummarySection{
+			{Header: "from-plugin", Content: component.NewText(msg)},
+		},
+		Items: []component.FlexLayoutItem{
+			{
+				Width: component.WidthHalf,
+				View:  podCard,
+			},
+		},
+	}, nil
 }

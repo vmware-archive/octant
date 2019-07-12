@@ -10,10 +10,8 @@ linters-settings:
   goconst:
     min-len: 2
     min-occurrences: 2
-  lll:
-    line-length: 140
   goimports:
-    local-prefixes: github.com/golangci/golangci-lint
+    local-prefixes: github.com/vmware/octant
   gocritic:
     enabled-tags:
       - performance
@@ -29,3 +27,4 @@ linters:
     - maligned
     - prealloc
     - gochecknoglobals
+    - lll

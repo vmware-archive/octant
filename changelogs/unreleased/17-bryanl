@@ -1,0 +1,4 @@
+Create plugin helper service
+
+The plugin helper service provides a method for plugin authors to initialize
+and implement their plugins.

@@ -13,7 +13,7 @@ export class CardListComponent {
 
   constructor(private viewService: ViewService) {}
 
-  identifyCard(index: number, item: CardView): string {
+  identifyCard = (index: number, item: CardView): string => {
     return [index, this.viewService.viewTitleAsText(item)].join(',');
-  }
+  };
 }
