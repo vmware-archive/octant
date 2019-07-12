@@ -1,0 +1,3 @@
+Convert resource viewer to cytoscape JS
+
+This changes moves resource viewer to cytoscape with the dagre plugin. This change simplifies the drawing of the resource viewer graphs and is compatible with firefox, chrome, and safari. On Chrome, there is an issue with passive events and print defaults, but it is harmless.

@@ -3,24 +3,26 @@
 //
 
 import {
-  AfterViewChecked,
+  AfterViewInit,
   Component,
   ElementRef,
-  HostListener,
   Input,
   OnChanges,
   SimpleChanges,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import * as d3 from 'd3';
-import { Edge } from 'dagre';
-import * as dagreD3 from 'dagre-d3';
 import _ from 'lodash';
 import { Node, ResourceViewerView } from 'src/app/models/content';
-import { ResourceNode } from 'src/app/models/resource-node';
+import { ElementsDefinition, Stylesheet } from 'cytoscape';
 
-import { DagreService } from '../../services/dagre/dagre.service';
+const statusColorCodes = {
+  ok: '#60b515',
+  warning: '#f57600',
+  error: '#e12200',
+};
+
+const edgeColorCode = '#003d79';
 
 @Component({
   selector: 'app-view-resource-viewer',
@@ -28,130 +30,155 @@ import { DagreService } from '../../services/dagre/dagre.service';
   styleUrls: ['./resource-viewer.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class ResourceViewerComponent implements OnChanges, AfterViewChecked {
+export class ResourceViewerComponent implements OnChanges, AfterViewInit {
   @Input() view: ResourceViewerView;
+
   currentView: ResourceViewerView;
   selected: string;
   selectedNode: Node;
-  @ViewChild('viewer') private viewer: ElementRef;
-  private runUpdate = false;
-  private hasDrawn = false;
 
-  constructor(private dagreService: DagreService) {}
+  layout = {
+    name: 'dagre',
+    padding: 30,
+    rankDir: 'TB',
+    directed: true,
+    animate: false,
+  };
+
+  zoom = {
+    min: 0.5,
+    max: 2.0,
+  };
+
+  style: Stylesheet[] = [
+    {
+      selector: 'node',
+      css: {
+        shape: 'rectangle',
+        width: 'label',
+        height: 'label',
+        content: 'data(name)',
+        'background-color': 'data(colorCode)',
+        color: '#fff',
+        'font-size': '12px',
+        'text-wrap': 'wrap',
+        'text-valign': 'center',
+        'text-justification': 'left',
+        padding: '10px',
+      },
+    },
+
+    {
+      selector: 'node:selected',
+      css: {
+        'curve-style': 'bezier',
+        'line-color': 'data(colorCode)',
+        'source-arrow-color': 'data(colorCode)',
+        'target-arrow-color': 'data(colorCode)',
+        'border-width': '1px',
+        'border-color': '#313131',
+        'border-style': 'solid',
+      },
+    },
+
+    {
+      selector: 'edge',
+      css: {
+        'curve-style': 'bezier',
+        opacity: 0.666,
+        width: 'mapData(strength, 70, 100, 1, 3)',
+        'line-color': 'data(colorCode)',
+        'source-arrow-color': 'data(colorCode)',
+        'target-arrow-color': 'data(colorCode)',
+      },
+    },
+  ];
+
+  graphData: ElementsDefinition;
+
+  private afterFirstChange: boolean;
+
+  constructor() {}
+
+  ngAfterViewInit(): void {
+    if (this.afterFirstChange) {
+      this.graphData = this.generateGraphData();
+    }
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.currentView = changes.view.currentValue as ResourceViewerView;
-
     const isEqual = _.isEqual(
       changes.view.currentValue,
       changes.view.previousValue
     );
 
-    if (changes.view.isFirstChange()) {
+    if (changes.view.isFirstChange() || !isEqual) {
+      this.currentView = changes.view.currentValue as ResourceViewerView;
       this.select(this.currentView.config.selected);
-      this.runUpdate = true;
-    } else if (!isEqual) {
-      this.select(this.selected);
-      this.runUpdate = true;
-    } else if (!this.hasDrawn) {
-      this.runUpdate = true;
+      this.graphData = this.generateGraphData();
+      this.afterFirstChange = true;
     }
   }
 
-  ngAfterViewChecked(): void {
-    this.updateGraph();
+  nodeChange(event) {
+    this.select(event.id);
   }
 
-  @HostListener('window:resize') onResize() {
-    if (this.viewer) {
-      this.runUpdate = true;
-      this.updateGraph();
+  generateGraphData() {
+    return {
+      nodes: this.nodes(),
+      edges: this.edges(),
+    };
+  }
+
+  private nodes() {
+    if (!this.currentView || !this.currentView.config.nodes) {
+      return [];
     }
+
+    const nodes = Object.entries(this.currentView.config.nodes).map(
+      ([name, details]) => {
+        const colorCode =
+          statusColorCodes[details.status] || statusColorCodes.error;
+
+        return {
+          data: {
+            id: name,
+            name: `${details.name}\n${details.apiVersion} ${details.kind}`,
+            weight: 100,
+            colorCode,
+          },
+        };
+      }
+    );
+
+    return Array.prototype.concat(...nodes);
   }
 
-  edges(): Array<Edge> {
-    const adjacencyList = this.currentView.config.edges;
-    const edges: Array<Edge> = [];
+  private edges() {
+    if (!this.currentView || !this.currentView.config.edges) {
+      return [];
+    }
 
-    if (adjacencyList) {
-      for (const [node, nodeEdges] of Object.entries(adjacencyList)) {
-        edges.push(
-          ...nodeEdges.map(e => [
-            node,
-            e.node,
-            {
-              arrowhead: 'undirected',
-              lineCurve: d3.curveBasis,
+    const edges = Object.entries(this.currentView.config.edges).map(
+      ([parent, maps]) => {
+        return maps.map(edge => {
+          return {
+            data: {
+              source: parent,
+              target: edge.node,
+              colorCode: edgeColorCode,
+              strength: 10,
             },
-          ])
-        );
-      }
-    }
-
-    return edges;
-  }
-
-  nodes() {
-    const objects = this.currentView.config.nodes;
-
-    const nodes: { [key: string]: dagreD3.Label } = {};
-
-    if (objects) {
-      for (const [id, object] of Object.entries(objects)) {
-        const isSelected = id === this.selected;
-        nodes[id] = new ResourceNode(id, object, isSelected).toDescriptor();
-      }
-    }
-
-    return nodes;
-  }
-
-  private updateGraph() {
-    if (!this.runUpdate || !this.currentView.config.nodes) {
-      return;
-    }
-
-    try {
-      const g = new dagreD3.graphlib.Graph().setGraph({});
-
-      for (const [id, label] of Object.entries(this.nodes())) {
-        g.setNode(id, label);
-      }
-
-      g.nodes().forEach((v: any) => {
-        const node = g.node(v);
-        node.rx = node.ry = 4;
-      });
-
-      this.edges().forEach(edge => g.setEdge(edge[0], edge[1], edge[2]));
-
-      this.dagreService.render(this.viewer, g);
-
-      const svg = d3.select('.viewer svg');
-      const nodes = svg.selectAll('g.node');
-
-      if (nodes.nodes().length > 0) {
-        this.runUpdate = false;
-        this.hasDrawn = true;
-
-        nodes.on('click', (id: string) => {
-          this.onClick(id);
+          };
         });
       }
-    } catch (error) {
-      console.log(
-        `render resource viewer failed ${error}`,
-        this.currentView.config
-      );
-    }
-  }
+    );
 
-  private onClick(id: string) {
-    this.select(id);
+    return Array.prototype.concat(...edges);
   }
 
   private select(id: string) {
-    this.runUpdate = true;
     this.selected = id;
 
     const nodes = this.currentView.config.nodes;
