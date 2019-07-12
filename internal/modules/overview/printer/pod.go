@@ -87,6 +87,8 @@ func PodListHandler(_ context.Context, list *corev1.PodList, opts Options) (comp
 		tbl.Add(row)
 	}
 
+	tbl.Sort("Name", false)
+
 	return tbl, nil
 }
 

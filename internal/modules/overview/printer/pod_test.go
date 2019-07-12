@@ -107,6 +107,54 @@ func Test_PodListHandler(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
+func TestPodListHandler_sorted(t *testing.T) {
+	pod1 := testutil.CreatePod("pod1")
+	pod2 := testutil.CreatePod("pod2")
+
+	list := &corev1.PodList{
+		Items: []corev1.Pod{
+			*pod2,
+			*pod1,
+		},
+	}
+
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	tpo := newTestPrinterOptions(controller)
+	printOptions := tpo.ToOptions()
+
+	tpo.PathForObject(pod1, pod1.Name, "/pod1")
+	tpo.PathForObject(pod2, pod2.Name, "/pod2")
+
+	ctx := context.Background()
+	got, err := PodListHandler(ctx, list, printOptions)
+	require.NoError(t, err)
+
+	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Restarts", "Node", "Age")
+	expected := component.NewTable("Pods", cols)
+	expected.Add(component.TableRow{
+		"Name":     component.NewLink("", "pod1", "/pod1"),
+		"Labels":   component.NewLabels(make(map[string]string)),
+		"Ready":    component.NewText("0/0"),
+		"Phase":    component.NewText(""),
+		"Restarts": component.NewText("0"),
+		"Age":      component.NewTimestamp(pod1.CreationTimestamp.Time),
+		"Node":     component.NewText(""),
+	})
+	expected.Add(component.TableRow{
+		"Name":     component.NewLink("", "pod2", "/pod2"),
+		"Labels":   component.NewLabels(make(map[string]string)),
+		"Ready":    component.NewText("0/0"),
+		"Phase":    component.NewText(""),
+		"Restarts": component.NewText("0"),
+		"Age":      component.NewTimestamp(pod1.CreationTimestamp.Time),
+		"Node":     component.NewText(""),
+	})
+
+	component.AssertEqual(t, expected, got)
+}
+
 var (
 	now      = time.Unix(1547211430, 0)
 	validPod = &corev1.Pod{
