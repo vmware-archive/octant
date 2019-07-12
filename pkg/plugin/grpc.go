@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/status"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -133,7 +134,8 @@ func (c *GRPCClient) Register(dashboardAPIAddress string) (Metadata, error) {
 
 		resp, err := c.client.Register(context.Background(), registerRequest)
 		if err != nil {
-			return errors.Wrap(err, "grpc client register")
+			spew.Dump(err)
+			return errors.WithMessage(err, "unable to call register function")
 		}
 
 		capabilities := convertToCapabilities(resp.Capabilities)

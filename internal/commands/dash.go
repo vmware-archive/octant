@@ -7,7 +7,7 @@ package commands
 
 import (
 	"context"
-	"fmt"
+	golog "log"
 	"os"
 	"os/signal"
 
@@ -40,10 +40,15 @@ func newOctantCmd() *cobra.Command {
 
 			z, err := newZapLogger(verboseLevel)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "failed to initialize logger: %v\n", err)
+				golog.Printf("failed to initialize logger: %v", err)
 				os.Exit(1)
 			}
-			defer z.Sync()
+			defer func() {
+				if zErr := z.Sync(); zErr != nil {
+					golog.Printf("unable to sync logger: %v", zErr)
+				}
+			}()
+
 			logger := log.Wrap(z.Sugar())
 
 			sigCh := make(chan os.Signal, 1)
