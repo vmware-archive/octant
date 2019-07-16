@@ -27,7 +27,7 @@ test: generate
 .PHONY: vet
 vet:
 	@echo "-> $@"
-	@env go vet  ./internal/... ./pkg/...
+	@env go vet ./internal/... ./pkg/...
 
 octant-dev:
 	@mkdir -p ./build
@@ -43,7 +43,6 @@ generate:
 go-install:
 	@env GO111MODULE=on $(GOINSTALL) github.com/GeertJohan/go.rice
 	@env GO111MODULE=on $(GOINSTALL) github.com/GeertJohan/go.rice/rice
-	@env GO111MODULE=on $(GOINSTALL) github.com/asticode/go-astilectron-bundler
 	@env GO111MODULE=on $(GOINSTALL) github.com/golang/mock/gomock
 	@env GO111MODULE=on $(GOINSTALL) github.com/golang/mock/mockgen
 	@env GO111MODULE=on $(GOINSTALL) github.com/golang/protobuf/protoc-gen-go

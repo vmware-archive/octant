@@ -40,10 +40,10 @@ github.com/golang/mock/mockgen/model
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes/wrappers
 github.com/golang/protobuf/protoc-gen-go
-github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/protoc-gen-go/generator
 github.com/golang/protobuf/protoc-gen-go/grpc
+github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
 github.com/golang/protobuf/protoc-gen-go/descriptor
@@ -185,8 +185,8 @@ google.golang.org/appengine/internal/remote_api
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.19.0
 google.golang.org/grpc
-google.golang.org/grpc/codes
 google.golang.org/grpc/status
+google.golang.org/grpc/codes
 google.golang.org/grpc/credentials
 google.golang.org/grpc/health
 google.golang.org/grpc/health/grpc_health_v1
@@ -223,12 +223,12 @@ gopkg.in/inf.v0
 gopkg.in/yaml.v2
 # k8s.io/api v0.0.0-20181213150558-05914d821849
 k8s.io/api/core/v1
-k8s.io/api/authorization/v1
 k8s.io/api/rbac/v1
 k8s.io/api/apps/v1
 k8s.io/api/batch/v1
 k8s.io/api/batch/v1beta1
 k8s.io/api/extensions/v1beta1
+k8s.io/api/authorization/v1
 k8s.io/api/admissionregistration/v1alpha1
 k8s.io/api/admissionregistration/v1beta1
 k8s.io/api/apps/v1beta1
@@ -265,17 +265,16 @@ k8s.io/apimachinery/pkg/api/meta
 k8s.io/apimachinery/pkg/apis/meta/v1
 k8s.io/apimachinery/pkg/runtime/serializer
 k8s.io/apimachinery/pkg/apis/meta/v1/unstructured
-k8s.io/apimachinery/pkg/types
-k8s.io/apimachinery/pkg/version
-k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/pkg/util/yaml
 k8s.io/apimachinery/pkg/util/clock
 k8s.io/apimachinery/pkg/util/intstr
+k8s.io/apimachinery/pkg/types
 k8s.io/apimachinery/pkg/api/equality
 k8s.io/apimachinery/pkg/util/sets
 k8s.io/apimachinery/pkg/api/errors
 k8s.io/apimachinery/pkg/api/resource
 k8s.io/apimachinery/pkg/runtime/serializer/json
+k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/pkg/util/httpstream
 k8s.io/apimachinery/pkg/util/runtime
 k8s.io/apimachinery/pkg/conversion
@@ -290,6 +289,7 @@ k8s.io/apimachinery/pkg/fields
 k8s.io/apimachinery/pkg/runtime/serializer/protobuf
 k8s.io/apimachinery/pkg/runtime/serializer/recognizer
 k8s.io/apimachinery/pkg/runtime/serializer/versioning
+k8s.io/apimachinery/pkg/version
 k8s.io/apimachinery/pkg/runtime/serializer/streaming
 k8s.io/apimachinery/pkg/util/net
 k8s.io/apimachinery/pkg/util/cache
@@ -315,7 +315,15 @@ k8s.io/client-go/plugin/pkg/client/auth/oidc
 k8s.io/client-go/rest
 k8s.io/client-go/restmapper
 k8s.io/client-go/tools/clientcmd
+k8s.io/client-go/tools/cache
+k8s.io/client-go/tools/clientcmd/api/v1
+k8s.io/client-go/util/jsonpath
 k8s.io/client-go/informers
+k8s.io/client-go/util/retry
+k8s.io/client-go/transport/spdy
+k8s.io/client-go/tools/clientcmd/api/latest
+k8s.io/client-go/dynamic/dynamiclister
+k8s.io/client-go/dynamic/dynamicinformer
 k8s.io/client-go/kubernetes/typed/admissionregistration/v1alpha1
 k8s.io/client-go/kubernetes/typed/admissionregistration/v1beta1
 k8s.io/client-go/kubernetes/typed/apps/v1
@@ -348,14 +356,6 @@ k8s.io/client-go/kubernetes/typed/settings/v1alpha1
 k8s.io/client-go/kubernetes/typed/storage/v1
 k8s.io/client-go/kubernetes/typed/storage/v1alpha1
 k8s.io/client-go/kubernetes/typed/storage/v1beta1
-k8s.io/client-go/tools/cache
-k8s.io/client-go/tools/clientcmd/api/v1
-k8s.io/client-go/util/jsonpath
-k8s.io/client-go/util/retry
-k8s.io/client-go/transport/spdy
-k8s.io/client-go/tools/clientcmd/api/latest
-k8s.io/client-go/dynamic/dynamiclister
-k8s.io/client-go/dynamic/dynamicinformer
 k8s.io/client-go/util/flowcontrol
 k8s.io/client-go/pkg/version
 k8s.io/client-go/plugin/pkg/client/auth/exec
@@ -367,6 +367,9 @@ k8s.io/client-go/util/cert
 k8s.io/client-go/tools/auth
 k8s.io/client-go/util/homedir
 k8s.io/client-go/dynamic/fake
+k8s.io/client-go/tools/pager
+k8s.io/client-go/util/buffer
+k8s.io/client-go/third_party/forked/golang/template
 k8s.io/client-go/informers/admissionregistration
 k8s.io/client-go/informers/apps
 k8s.io/client-go/informers/auditregistration
@@ -385,9 +388,6 @@ k8s.io/client-go/informers/scheduling
 k8s.io/client-go/informers/settings
 k8s.io/client-go/informers/storage
 k8s.io/client-go/tools/reference
-k8s.io/client-go/tools/pager
-k8s.io/client-go/util/buffer
-k8s.io/client-go/third_party/forked/golang/template
 k8s.io/client-go/util/integer
 k8s.io/client-go/pkg/apis/clientauthentication
 k8s.io/client-go/pkg/apis/clientauthentication/v1alpha1
