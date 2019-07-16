@@ -150,12 +150,18 @@ func (d *Object) PathFilters() []PathFilter {
 
 func (d *Object) addSummaryTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options Options) error {
 	vc, err := options.Printer.Print(ctx, object, options.PluginManager())
-	if err != nil {
-		return errors.Wrap(err, "printing object")
-	}
-
 	if vc == nil {
 		return errors.Wrap(err, "unable to print a nil object")
+	}
+
+	if err != nil {
+		errComponent := component.NewError(component.TitleFromString("Summary"), err)
+		cr.Add(errComponent)
+
+		logger := log.From(ctx)
+		logger.Errorf("printing object: %s", err)
+
+		return nil
 	}
 
 	vc.SetAccessor("summary")
@@ -182,20 +188,34 @@ func (d *Object) addResourceViewerTab(ctx context.Context, object runtime.Object
 
 func (d *Object) addYAMLViewerTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options Options) error {
 	yvComponent, err := yamlviewer.ToComponent(object)
+
 	if err != nil {
-		return errors.Wrap(err, "converting object to YAML")
+		errComponent := component.NewError(component.TitleFromString("YAML"), err)
+		cr.Add(errComponent)
+
+		logger := log.From(ctx)
+		logger.Errorf("converting object to YAML: %s", err)
+
+		return nil
 	}
+
 	yvComponent.SetAccessor("yaml")
 	cr.Add(yvComponent)
-
 	return nil
+
 }
 
 func (d *Object) addLogsTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options Options) error {
 	if isPod(object) {
 		logsComponent, err := logviewer.ToComponent(object)
 		if err != nil {
-			return errors.Wrap(err, "retrieving logs for pod")
+			errComponent := component.NewError(component.TitleFromString("Logs"), err)
+			cr.Add(errComponent)
+
+			logger := log.From(ctx)
+			logger.Errorf("retrieving logs for pod: %s", err)
+
+			return nil
 		}
 
 		logsComponent.SetAccessor("logs")
