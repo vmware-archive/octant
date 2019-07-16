@@ -66,7 +66,7 @@ clean:
 	@rm -rf ./pkg/store/fake
 	@rm -rf ./pkg/plugin/fake
 	@rm -rf ./pkg/plugin/api/fake
-	@rm ./internal/icon/rice-box.go
+	@rm ./pkg/icon/rice-box.go
 
 web-deps:
 	@cd web; npm ci
