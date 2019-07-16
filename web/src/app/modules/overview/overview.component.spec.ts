@@ -20,7 +20,10 @@ describe('OverviewComponent', () => {
   let fixture: ComponentFixture<OverviewComponent>;
 
   beforeEach(async(() => {
-    const routerSpy = jasmine.createSpyObj('Router', ['navigateByUrl', 'navigate']);
+    const routerSpy = jasmine.createSpyObj('Router', [
+      'navigateByUrl',
+      'navigate',
+    ]);
     TestBed.configureTestingModule({
       imports: [OverviewModule],
       providers: [

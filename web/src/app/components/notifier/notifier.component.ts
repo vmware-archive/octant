@@ -3,14 +3,17 @@
 //
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { NotifierService, NotifierSignalType } from 'src/app/services/notifier/notifier.service';
+import {
+  NotifierService,
+  NotifierSignalType,
+} from 'src/app/services/notifier/notifier.service';
 import { Subscription } from 'rxjs';
 import _ from 'lodash';
 
 @Component({
   selector: 'app-notifier',
   templateUrl: './notifier.component.html',
-  styleUrls: ['./notifier.component.scss']
+  styleUrls: ['./notifier.component.scss'],
 })
 export class NotifierComponent implements OnInit, OnDestroy {
   private signalSubscription: Subscription;
@@ -18,19 +21,29 @@ export class NotifierComponent implements OnInit, OnDestroy {
   error: string;
   warning: string;
 
-  constructor(private notifierService: NotifierService) { }
+  constructor(private notifierService: NotifierService) {}
 
   ngOnInit() {
-    this.signalSubscription = this.notifierService.globalSignalsStream.subscribe((currentSignals) => {
-      const lastLoadingSignal = _.findLast(currentSignals, { type: NotifierSignalType.LOADING });
-      this.loading = lastLoadingSignal ? true : false;
+    this.signalSubscription = this.notifierService.globalSignalsStream.subscribe(
+      currentSignals => {
+        const lastLoadingSignal = _.findLast(currentSignals, {
+          type: NotifierSignalType.LOADING,
+        });
+        this.loading = lastLoadingSignal ? true : false;
 
-      const lastWarningSignal = _.findLast(currentSignals, { type: NotifierSignalType.WARNING });
-      this.warning = lastWarningSignal ? lastWarningSignal.data as string : '';
+        const lastWarningSignal = _.findLast(currentSignals, {
+          type: NotifierSignalType.WARNING,
+        });
+        this.warning = lastWarningSignal
+          ? (lastWarningSignal.data as string)
+          : '';
 
-      const lastErrorSignal = _.findLast(currentSignals, { type: NotifierSignalType.ERROR });
-      this.error = lastErrorSignal ? lastErrorSignal.data as string : '';
-    });
+        const lastErrorSignal = _.findLast(currentSignals, {
+          type: NotifierSignalType.ERROR,
+        });
+        this.error = lastErrorSignal ? (lastErrorSignal.data as string) : '';
+      }
+    );
   }
 
   onWarningClose() {

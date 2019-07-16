@@ -9,7 +9,10 @@ export class EventSourceStub {
   eventListenerQueue: Array<[string, (message: MessageEvent) => void]> = [];
   eventMessageQueue: Array<[string, string]> = [];
 
-  addEventListener(eventName: string, cb: (message: MessageEvent) => void): void {
+  addEventListener(
+    eventName: string,
+    cb: (message: MessageEvent) => void
+  ): void {
     this.eventListenerQueue.push([eventName, cb]);
   }
 
@@ -23,15 +26,18 @@ export class EventSourceStub {
   }
 
   flush(): void {
-    _.remove(this.eventMessageQueue, ([messageEventName, data]): boolean => {
-      const message = new MessageEvent(messageEventName, { data });
-      _.forEach(this.eventListenerQueue, ([listenerEventName, cb]) => {
-        if (messageEventName === listenerEventName) {
-          cb(message);
-        }
-      });
-      return true;
-    });
+    _.remove(
+      this.eventMessageQueue,
+      ([messageEventName, data]): boolean => {
+        const message = new MessageEvent(messageEventName, { data });
+        _.forEach(this.eventListenerQueue, ([listenerEventName, cb]) => {
+          if (messageEventName === listenerEventName) {
+            cb(message);
+          }
+        });
+        return true;
+      }
+    );
   }
 }
 

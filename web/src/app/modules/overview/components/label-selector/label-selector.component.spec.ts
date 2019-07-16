@@ -12,9 +12,8 @@ describe('LabelSelectorComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ LabelSelectorComponent ]
-    })
-    .compileComponents();
+      declarations: [LabelSelectorComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

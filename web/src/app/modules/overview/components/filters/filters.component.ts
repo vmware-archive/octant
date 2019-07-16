@@ -4,7 +4,10 @@
 
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { Filter, LabelFilterService } from 'src/app/services/label-filter/label-filter.service';
+import {
+  Filter,
+  LabelFilterService,
+} from 'src/app/services/label-filter/label-filter.service';
 
 @Component({
   selector: 'app-filters',
@@ -21,9 +24,11 @@ export class FiltersComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.labelFilter.filters.subscribe((filters) => {
+    this.labelFilter.filters.subscribe(filters => {
       this.filters = filters;
-      const filterParams = filters.map((filter) => encodeURIComponent(`${filter.key}:${filter.value}`));
+      const filterParams = filters.map(filter =>
+        encodeURIComponent(`${filter.key}:${filter.value}`)
+      );
       const queryParams: Params = {
         filter: filterParams,
       };

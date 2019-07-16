@@ -20,7 +20,7 @@ export class LabelFilterService {
   private activatedRoute: ActivatedRoute;
 
   constructor(private router: Router) {
-    this.router.events.subscribe((event) => {
+    this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         this.activatedRoute = this.router.routerState.root;
         const params = _.map(this.filters.getValue(), this.encodeFilter);
@@ -33,7 +33,7 @@ export class LabelFilterService {
       }
     });
 
-    this.router.routerState.root.queryParamMap.subscribe((paramMap) => {
+    this.router.routerState.root.queryParamMap.subscribe(paramMap => {
       if (_.includes(paramMap.keys, 'filter')) {
         const filtersRaw = paramMap.getAll('filter');
         const filters = _.map(filtersRaw, this.decodeFilter);
@@ -53,7 +53,7 @@ export class LabelFilterService {
 
   remove(filter: Filter): void {
     const current = this.filters.getValue();
-    _.remove(current, (f) => _.isEqual(filter, f));
+    _.remove(current, f => _.isEqual(filter, f));
     this.publish(current);
   }
 

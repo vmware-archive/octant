@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { convertToParamMap, ParamMap, Params, UrlSegment } from '@angular/router';
+import {
+  convertToParamMap,
+  ParamMap,
+  Params,
+  UrlSegment,
+} from '@angular/router';
 import { ReplaySubject } from 'rxjs';
 
 /**
@@ -10,7 +15,6 @@ import { ReplaySubject } from 'rxjs';
  * Use the `setParamMap()` method to add the next `paramMap` value.
  */
 export class ActivatedRouteStub {
-
   constructor(initialParams?: Params) {
     this.setParamMap(initialParams);
   }

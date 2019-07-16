@@ -12,9 +12,8 @@ describe('PortForwardComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PortForwardComponent ]
-    })
-    .compileComponents();
+      declarations: [PortForwardComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

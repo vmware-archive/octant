@@ -12,9 +12,8 @@ describe('ExpressionSelectorComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ExpressionSelectorComponent ]
-    })
-    .compileComponents();
+      declarations: [ExpressionSelectorComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

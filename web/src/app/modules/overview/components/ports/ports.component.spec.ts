@@ -12,9 +12,8 @@ describe('PortsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PortsComponent ]
-    })
-    .compileComponents();
+      declarations: [PortsComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

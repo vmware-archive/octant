@@ -12,14 +12,21 @@ import { PageNotFoundComponent } from './components/page-not-found/page-not-foun
 export const appRoutes: Routes = [
   { path: 'content', children: [{ path: '**', component: OverviewComponent }] },
   // TODO: we shouldn't assume that the default namespace is valid
-  { path: '', redirectTo: '/content/overview/namespace/default/', pathMatch: 'full' },
+  {
+    path: '',
+    redirectTo: '/content/overview/namespace/default/',
+    pathMatch: 'full',
+  },
   { path: '**', component: PageNotFoundComponent },
 ];
 
 @NgModule({
   declarations: [],
-  imports: [RouterModule.forRoot(appRoutes, {
-    useHash: true,
-  }), CommonModule],
+  imports: [
+    RouterModule.forRoot(appRoutes, {
+      useHash: true,
+    }),
+    CommonModule,
+  ],
 })
 export class AppRoutingModule {}

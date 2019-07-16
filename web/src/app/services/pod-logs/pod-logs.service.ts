@@ -18,7 +18,7 @@ export class PodLogsStreamer {
     private namespace: string,
     private pod: string,
     private container: string,
-    private http: HttpClient,
+    private http: HttpClient
   ) {}
 
   private poll() {
@@ -51,20 +51,13 @@ export class PodLogsStreamer {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PodLogsService {
-  constructor(
-    private http: HttpClient
-  ) { }
+  constructor(private http: HttpClient) {}
 
   public createStream(namespace, pod, container: string): PodLogsStreamer {
-    const pls = new PodLogsStreamer(
-      namespace,
-      pod,
-      container,
-      this.http,
-    );
+    const pls = new PodLogsStreamer(namespace, pod, container, this.http);
     pls.start();
     return pls;
   }

@@ -4,10 +4,13 @@
 
 export function notifierServiceStubFactory() {
   return {
-    notifierSessionStub: jasmine.createSpyObj(['removeAllSignals', 'pushSignal']),
+    notifierSessionStub: jasmine.createSpyObj([
+      'removeAllSignals',
+      'pushSignal',
+    ]),
     createSession() {
       return this.notifierSessionStub;
-    }
+    },
   };
 }
 

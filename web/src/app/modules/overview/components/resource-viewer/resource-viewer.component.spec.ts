@@ -12,9 +12,8 @@ describe('ResourceViewerComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ OverviewModule ],
-    })
-    .compileComponents();
+      imports: [OverviewModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

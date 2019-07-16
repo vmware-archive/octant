@@ -2,12 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import {Injectable} from '@angular/core';
-import {NavigationEnd, PRIMARY_OUTLET, Router} from '@angular/router';
-import {BehaviorSubject} from 'rxjs';
+import { Injectable } from '@angular/core';
+import { NavigationEnd, PRIMARY_OUTLET, Router } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 import _ from 'lodash';
-import {ContentStreamService} from '../content-stream/content-stream.service';
-import {NotifierService, NotifierSession, NotifierSignalType} from '../notifier/notifier.service';
+import { ContentStreamService } from '../content-stream/content-stream.service';
+import {
+  NotifierService,
+  NotifierSession,
+  NotifierSignalType,
+} from '../notifier/notifier.service';
 
 @Injectable({
   providedIn: 'root',
@@ -17,14 +21,18 @@ export class NamespaceService {
   current = new BehaviorSubject<string>('default');
   list = new BehaviorSubject<string[]>([]);
 
-  constructor(private router: Router, private contentStreamService: ContentStreamService, notifierService: NotifierService) {
+  constructor(
+    private router: Router,
+    private contentStreamService: ContentStreamService,
+    notifierService: NotifierService
+  ) {
     this.notifierSession = notifierService.createSession();
 
     this.contentStreamService.namespaces.subscribe((namespaces: string[]) => {
       this.list.next(namespaces);
     });
 
-    this.router.events.subscribe((event) => {
+    this.router.events.subscribe(event => {
       if (!(event instanceof NavigationEnd)) {
         return;
       }
@@ -37,7 +45,10 @@ export class NamespaceService {
     const namespace = this.getNamespaceFromUrlPath(this.router.url);
 
     if (namespace && !this.isNamespaceValid(namespace)) {
-      this.notifierSession.pushSignal(NotifierSignalType.ERROR, 'The current set namespace is not valid');
+      this.notifierSession.pushSignal(
+        NotifierSignalType.ERROR,
+        'The current set namespace is not valid'
+      );
       return;
     }
 

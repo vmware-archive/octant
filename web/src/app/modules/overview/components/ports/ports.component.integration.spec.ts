@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import {
+  async,
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 import { PortsComponent } from './ports.component';
 import { PortForwardService } from 'src/app/services/port-forward/port-forward.service';
 import { HttpClient } from '@angular/common/http';
@@ -13,7 +19,10 @@ import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 import getAPIBase from 'src/app/services/common/getAPIBase';
 import { notifierServiceStubFactory } from 'src/app/testing/notifier-service.stub';
-import { NotifierService, NotifierSignalType } from 'src/app/services/notifier/notifier.service';
+import {
+  NotifierService,
+  NotifierSignalType,
+} from 'src/app/services/notifier/notifier.service';
 
 const API_BASE = getAPIBase();
 
@@ -24,7 +33,9 @@ function createTestPortsView(ports: Port[]): PortsView {
   };
 }
 
-function createTestPort(state: Partial<{ port: number, isForwardable: boolean, isForwarded: boolean }>): Port {
+function createTestPort(
+  state: Partial<{ port: number; isForwardable: boolean; isForwarded: boolean }>
+): Port {
   return {
     metadata: { type: 'port', title: [], accessor: '' },
     config: {
@@ -34,9 +45,12 @@ function createTestPort(state: Partial<{ port: number, isForwardable: boolean, i
       name: 'cartservice-pod',
       port: 8080,
       protocol: 'TCP',
-      state: _.assign({
-        id: _.uniqueId('portforward-'),
-      }, state),
+      state: _.assign(
+        {
+          id: _.uniqueId('portforward-'),
+        },
+        state
+      ),
     },
   };
 }
@@ -50,11 +64,9 @@ describe('PortForwardComponent <-> PortForwardService', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [
-        PortsComponent
-      ],
+      declarations: [PortsComponent],
       providers: [
-        { provide: NotifierService, useFactory: notifierServiceStubFactory }
+        { provide: NotifierService, useFactory: notifierServiceStubFactory },
       ],
     }).compileComponents();
   }));
@@ -79,26 +91,34 @@ describe('PortForwardComponent <-> PortForwardService', () => {
     component.view = testPortsView;
     fixture.detectChanges();
 
-    const forwardedLinkDebugElements: DebugElement[] = fixture.debugElement.queryAll(By.css('.open-pf'));
+    const forwardedLinkDebugElements: DebugElement[] = fixture.debugElement.queryAll(
+      By.css('.open-pf')
+    );
     expect(forwardedLinkDebugElements.length).toBe(1);
-    expect((forwardedLinkDebugElements[0].nativeElement as HTMLAnchorElement).textContent).toMatch(/localhost:12345/i);
+    expect(
+      (forwardedLinkDebugElements[0].nativeElement as HTMLAnchorElement)
+        .textContent
+    ).toMatch(/localhost:12345/i);
 
-    const forwardableDebugElements: DebugElement[] = fixture.debugElement.queryAll(By.css('.start-pf'));
+    const forwardableDebugElements: DebugElement[] = fixture.debugElement.queryAll(
+      By.css('.start-pf')
+    );
     expect(forwardableDebugElements.length).toBe(1);
   });
 
   it('starts portforwarding on btn click', () => {
-    const testPorts: Port[] = [
-      createTestPort({ isForwardable: true }),
-    ];
+    const testPorts: Port[] = [createTestPort({ isForwardable: true })];
     const testPortsView = createTestPortsView(testPorts);
     component.view = testPortsView;
     fixture.detectChanges();
 
-    const forwardableDebugElements: DebugElement[] = fixture.debugElement.queryAll(By.css('.start-pf'));
+    const forwardableDebugElements: DebugElement[] = fixture.debugElement.queryAll(
+      By.css('.start-pf')
+    );
     expect(forwardableDebugElements.length).toBe(1);
 
-    const startForwardButtonNativeElement: HTMLButtonElement = forwardableDebugElements[0].nativeElement;
+    const startForwardButtonNativeElement: HTMLButtonElement =
+      forwardableDebugElements[0].nativeElement;
     startForwardButtonNativeElement.dispatchEvent(new Event('click'));
 
     const req = httpTestingController.expectOne(
@@ -117,13 +137,19 @@ describe('PortForwardComponent <-> PortForwardService', () => {
     component.view = testPortsView;
     fixture.detectChanges();
 
-    const forwardedLinkDebugElements: DebugElement[] = fixture.debugElement.queryAll(By.css('.remove-pf'));
+    const forwardedLinkDebugElements: DebugElement[] = fixture.debugElement.queryAll(
+      By.css('.remove-pf')
+    );
     expect(forwardedLinkDebugElements.length).toBe(1);
 
-    forwardedLinkDebugElements[0].nativeElement.dispatchEvent(new Event('click'));
+    forwardedLinkDebugElements[0].nativeElement.dispatchEvent(
+      new Event('click')
+    );
 
     const req = httpTestingController.expectOne(
-      `${API_BASE}/api/v1/content/overview/port-forwards/${testPort.config.state.id}`
+      `${API_BASE}/api/v1/content/overview/port-forwards/${
+        testPort.config.state.id
+      }`
     );
     expect(req.request.method).toBe('DELETE');
 
@@ -140,23 +166,42 @@ describe('PortForwardComponent <-> PortForwardService', () => {
     component.view = testPortsView;
     fixture.detectChanges();
 
-    let portDebugElements: DebugElement[] = fixture.debugElement.queryAll(By.css('.port'));
+    let portDebugElements: DebugElement[] = fixture.debugElement.queryAll(
+      By.css('.port')
+    );
     expect(portDebugElements.length).toBe(3);
-    expect(portDebugElements[0].query(By.css('.port-text')).nativeElement.textContent).toMatch(/8080\/TCP/);
+    expect(
+      portDebugElements[0].query(By.css('.port-text')).nativeElement.textContent
+    ).toMatch(/8080\/TCP/);
     expect(portDebugElements[0].query(By.css('.start-pf'))).toBeTruthy();
     expect(portDebugElements[1].query(By.css('.start-pf'))).toBeTruthy();
     expect(portDebugElements[2].query(By.css('.remove-pf'))).toBeTruthy();
 
-    _.assign(testPortsView.config.ports[0].config.state, { isForwardable: false, isForwarded: true, port: 44444 });
-    _.assign(testPortsView.config.ports[1].config.state, { isForwardable: false, isForwarded: true, port: 56789 });
-    _.assign(testPortsView.config.ports[2].config.state, { isForwardable: true, isForwarded: false });
+    _.assign(testPortsView.config.ports[0].config.state, {
+      isForwardable: false,
+      isForwarded: true,
+      port: 44444,
+    });
+    _.assign(testPortsView.config.ports[1].config.state, {
+      isForwardable: false,
+      isForwarded: true,
+      port: 56789,
+    });
+    _.assign(testPortsView.config.ports[2].config.state, {
+      isForwardable: true,
+      isForwarded: false,
+    });
     fixture.detectChanges();
 
     portDebugElements = fixture.debugElement.queryAll(By.css('.port'));
     expect(portDebugElements.length).toBe(3);
-    expect(portDebugElements[0].query(By.css('.open-pf')).nativeElement.textContent).toMatch(/localhost:44444/i);
+    expect(
+      portDebugElements[0].query(By.css('.open-pf')).nativeElement.textContent
+    ).toMatch(/localhost:44444/i);
     expect(portDebugElements[0].query(By.css('.remove-pf'))).toBeTruthy();
-    expect(portDebugElements[1].query(By.css('.open-pf')).nativeElement.textContent).toMatch(/localhost:56789/i);
+    expect(
+      portDebugElements[1].query(By.css('.open-pf')).nativeElement.textContent
+    ).toMatch(/localhost:56789/i);
     expect(portDebugElements[2].query(By.css('.start-pf'))).toBeTruthy();
   });
 
@@ -164,17 +209,18 @@ describe('PortForwardComponent <-> PortForwardService', () => {
     const notifierService = TestBed.get(NotifierService);
     const { notifierSessionStub } = notifierService;
 
-    const testPorts: Port[] = [
-      createTestPort({ isForwardable: true }),
-    ];
+    const testPorts: Port[] = [createTestPort({ isForwardable: true })];
     const testPortsView = createTestPortsView(testPorts);
     component.view = testPortsView;
     fixture.detectChanges();
 
-    const forwardableDebugElements: DebugElement[] = fixture.debugElement.queryAll(By.css('.start-pf'));
+    const forwardableDebugElements: DebugElement[] = fixture.debugElement.queryAll(
+      By.css('.start-pf')
+    );
     expect(forwardableDebugElements.length).toBe(1);
 
-    const startForwardButtonNativeElement: HTMLButtonElement = forwardableDebugElements[0].nativeElement;
+    const startForwardButtonNativeElement: HTMLButtonElement =
+      forwardableDebugElements[0].nativeElement;
     startForwardButtonNativeElement.dispatchEvent(new Event('click'));
 
     const req = httpTestingController.expectOne(
@@ -184,8 +230,12 @@ describe('PortForwardComponent <-> PortForwardService', () => {
 
     req.flush({}, { status: 500, statusText: 'Error' });
 
-    expect((notifierSessionStub.pushSignal as jasmine.Spy).calls.count()).toBe(1);
-    expect((notifierSessionStub.pushSignal as jasmine.Spy).calls.first().args[0]).toBe(NotifierSignalType.ERROR);
+    expect((notifierSessionStub.pushSignal as jasmine.Spy).calls.count()).toBe(
+      1
+    );
+    expect(
+      (notifierSessionStub.pushSignal as jasmine.Spy).calls.first().args[0]
+    ).toBe(NotifierSignalType.ERROR);
 
     httpTestingController.verify();
   });

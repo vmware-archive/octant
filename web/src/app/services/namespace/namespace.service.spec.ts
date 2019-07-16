@@ -4,7 +4,10 @@
 
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { NamespaceService } from './namespace.service';
-import { NotifierService, NotifierSignalType } from '../notifier/notifier.service';
+import {
+  NotifierService,
+  NotifierSignalType,
+} from '../notifier/notifier.service';
 import { ContentStreamService } from '../content-stream/content-stream.service';
 import _ from 'lodash';
 import { Router } from '@angular/router';
@@ -23,17 +26,20 @@ describe('NamespaceService', () => {
     };
 
     const notifierServiceStub = {
-      notifierSessionStub: jasmine.createSpyObj(['removeAllSignals', 'pushSignal']),
+      notifierSessionStub: jasmine.createSpyObj([
+        'removeAllSignals',
+        'pushSignal',
+      ]),
       createSession() {
         return this.notifierSessionStub;
-      }
+      },
     };
 
     TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule.withRoutes(
-          [{ path: 'content/overview/namespace/:namespaceID', children: [] }]
-        ),
+        RouterTestingModule.withRoutes([
+          { path: 'content/overview/namespace/:namespaceID', children: [] },
+        ]),
       ],
       providers: [
         NamespaceService,
@@ -84,7 +90,9 @@ describe('NamespaceService', () => {
       tick();
       expect(notifierSession.removeAllSignals.calls.count()).toBe(1);
       expect(notifierSession.pushSignal.calls.count()).toBe(1);
-      expect(notifierSession.pushSignal.calls.first().args[0]).toEqual(NotifierSignalType.ERROR);
+      expect(notifierSession.pushSignal.calls.first().args[0]).toEqual(
+        NotifierSignalType.ERROR
+      );
     });
   }));
 });

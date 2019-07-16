@@ -9,7 +9,7 @@ import {
   EventEmitter,
   Input,
   OnInit,
-  Output
+  Output,
 } from '@angular/core';
 
 import { PodStatus } from '../../models/pod-status';
@@ -22,7 +22,7 @@ import { Router } from '@angular/router';
   template: `
     <svg:path [attr.d]="path()" [ngClass]="style()" (click)="navigate()" />
   `,
-  styleUrls: ['./heptagon.component.scss']
+  styleUrls: ['./heptagon.component.scss'],
 })
 export class HeptagonComponent implements OnInit, AfterViewInit {
   @Input()
@@ -80,7 +80,7 @@ export class HeptagonComponent implements OnInit, AfterViewInit {
         const radian = ((Math.PI / 180) * 360) / 14;
         const vector: Vector = {
           angle: (360 / 7) * index + 360 / 28,
-          magnitude: (this.edgeLength * 0.5) / Math.sin(radian)
+          magnitude: (this.edgeLength * 0.5) / Math.sin(radian),
         };
 
         if (this.isFlipped) {

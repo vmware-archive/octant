@@ -12,9 +12,8 @@ describe('ContainersComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ContainersComponent ]
-    })
-    .compileComponents();
+      declarations: [ContainersComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

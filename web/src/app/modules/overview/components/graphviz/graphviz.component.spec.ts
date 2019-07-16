@@ -12,9 +12,8 @@ describe('GraphvizComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ GraphvizComponent ]
-    })
-    .compileComponents();
+      declarations: [GraphvizComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -10,10 +10,10 @@ import getAPIBase from '../common/getAPIBase';
 const API_BASE = getAPIBase();
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PortForwardService {
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   public create(port: Port) {
     return this.http.post(`${API_BASE}/api/v1/content/overview/port-forwards`, {
@@ -26,6 +26,10 @@ export class PortForwardService {
   }
 
   public remove(port: Port) {
-    return this.http.delete(`${API_BASE}/api/v1/content/overview/port-forwards/${port.config.state.id}`);
+    return this.http.delete(
+      `${API_BASE}/api/v1/content/overview/port-forwards/${
+        port.config.state.id
+      }`
+    );
   }
 }
