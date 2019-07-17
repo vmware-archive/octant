@@ -14,11 +14,11 @@ export interface HoverStatus {
 }
 
 @Component({
-  selector: '[heptagon-grid-row]',
+  selector: '[app-heptagon-grid-row]',
   template: `
     <svg:g
       *ngFor="let status of statuses; let i = index; trackBy: trackByFn"
-      heptagon
+      app-heptagon
       [id]="name(status)"
       class="row"
       [status]="status"

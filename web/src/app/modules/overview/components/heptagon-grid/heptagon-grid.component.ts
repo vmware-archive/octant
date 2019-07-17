@@ -14,7 +14,7 @@ import { HoverStatus } from '../heptagon-grid-row/heptagon-grid-row.component';
   template: `
     <svg [attr.viewBox]="viewBox()">
       <svg:g
-        heptagon-grid-row
+        app-heptagon-grid-row
         *ngFor="let row of rows(); let i = index; trackBy: trackByFn"
         class="grid-row"
         [statuses]="row"

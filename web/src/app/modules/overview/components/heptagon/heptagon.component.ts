@@ -18,7 +18,7 @@ import { Vector } from '../../models/vector';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: '[heptagon]',
+  selector: '[app-heptagon]',
   template: `
     <svg:path [attr.d]="path()" [ngClass]="style()" (click)="navigate()" />
   `,
