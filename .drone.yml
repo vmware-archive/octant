@@ -17,7 +17,7 @@ pipeline:
     image: golang:1.12
     group: testing
     environment:
-    - GOFLAG=-mod=vendor
+    - GOFLAGS=-mod=vendor
     - GO111MODULE=on
     commands:
       - make go-install
@@ -37,5 +37,6 @@ pipeline:
       event:
         - tag
     image: goreleaser/goreleaser:v0.110-cgo
+    secrets: [ github_token ]
     commands:
       - /bin/bash ci/drone-deploy.sh
