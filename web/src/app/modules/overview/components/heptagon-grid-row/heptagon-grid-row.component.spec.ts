@@ -4,7 +4,10 @@
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { HeptagonGridRowComponent, HoverStatus } from './heptagon-grid-row.component';
+import {
+  HeptagonGridRowComponent,
+  HoverStatus,
+} from './heptagon-grid-row.component';
 import { HeptagonComponent } from '../heptagon/heptagon.component';
 
 describe('HeptagonGridRowComponent', () => {
@@ -13,9 +16,8 @@ describe('HeptagonGridRowComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ HeptagonGridRowComponent, HeptagonComponent ]
-    })
-    .compileComponents();
+      declarations: [HeptagonGridRowComponent, HeptagonComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -23,8 +25,8 @@ describe('HeptagonGridRowComponent', () => {
     component = fixture.componentInstance;
 
     component.statuses = [
-      {name: 'pod-1', status: 'ok' },
-      {name: 'pod-2', status: 'ok' },
+      { name: 'pod-1', status: 'ok' },
+      { name: 'pod-2', status: 'ok' },
     ];
     component.edgeLength = 7;
     component.row = 1;
@@ -38,7 +40,7 @@ describe('HeptagonGridRowComponent', () => {
 
   it('should report when a heptagon is hovered', () => {
     let got: HoverStatus;
-    component.hoverState.subscribe((status: HoverStatus) => got = status);
+    component.hoverState.subscribe((status: HoverStatus) => (got = status));
 
     component.updateHover(true, 1);
 

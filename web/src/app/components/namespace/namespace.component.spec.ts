@@ -12,12 +12,8 @@ describe('NamespaceComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [
-        NgSelectModule,
-      ],
-      declarations: [
-        NamespaceComponent,
-      ],
+      imports: [NgSelectModule],
+      declarations: [NamespaceComponent],
     }).compileComponents();
   }));
 

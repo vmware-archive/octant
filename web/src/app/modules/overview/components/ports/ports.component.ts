@@ -2,16 +2,28 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input, OnChanges, SimpleChanges, Output, EventEmitter, OnDestroy } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  Output,
+  EventEmitter,
+  OnDestroy,
+} from '@angular/core';
 import _ from 'lodash';
 import { Port, PortsView } from 'src/app/models/content';
-import { NotifierService, NotifierSession, NotifierSignalType } from 'src/app/services/notifier/notifier.service';
+import {
+  NotifierService,
+  NotifierSession,
+  NotifierSignalType,
+} from 'src/app/services/notifier/notifier.service';
 import { PortForwardService } from 'src/app/services/port-forward/port-forward.service';
 
 @Component({
   selector: 'app-ports',
   templateUrl: './ports.component.html',
-  styleUrls: ['./ports.component.scss']
+  styleUrls: ['./ports.component.scss'],
 })
 export class PortsComponent implements OnChanges, OnDestroy {
   private notifierSession: NotifierSession;
@@ -23,7 +35,7 @@ export class PortsComponent implements OnChanges, OnDestroy {
 
   constructor(
     private portForwardService: PortForwardService,
-    notifierService: NotifierService,
+    notifierService: NotifierService
   ) {
     this.notifierSession = notifierService.createSession();
   }
@@ -60,24 +72,36 @@ export class PortsComponent implements OnChanges, OnDestroy {
     this.portLoad.emit(true);
     this.submittedPFCreation = port.config.name;
 
-    this.portForwardService.create(port).subscribe(() => {
-      // TODO: handle success
-    }, () => {
-      this.notifierSession.pushSignal(NotifierSignalType.ERROR, 'There was an issue starting your port-forward');
-      this.portLoad.emit(false);
-    });
+    this.portForwardService.create(port).subscribe(
+      () => {
+        // TODO: handle success
+      },
+      () => {
+        this.notifierSession.pushSignal(
+          NotifierSignalType.ERROR,
+          'There was an issue starting your port-forward'
+        );
+        this.portLoad.emit(false);
+      }
+    );
   }
 
   removePortForward(port: Port) {
     this.portLoad.emit(true);
     this.submittedPFRemoval = port.config.name;
 
-    this.portForwardService.remove(port).subscribe(() => {
-      // TODO: handle success
-    }, () => {
-      this.notifierSession.pushSignal(NotifierSignalType.ERROR, 'There was an issue removing your port-forward');
-      this.portLoad.emit(false);
-    });
+    this.portForwardService.remove(port).subscribe(
+      () => {
+        // TODO: handle success
+      },
+      () => {
+        this.notifierSession.pushSignal(
+          NotifierSignalType.ERROR,
+          'There was an issue removing your port-forward'
+        );
+        this.portLoad.emit(false);
+      }
+    );
   }
 
   openPortForward(port: Port) {

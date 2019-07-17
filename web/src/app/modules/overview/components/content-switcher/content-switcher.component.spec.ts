@@ -14,8 +14,7 @@ describe('ContentSwitcherComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [OverviewModule],
-    })
-    .compileComponents();
+    }).compileComponents();
   }));
 
   beforeEach(() => {

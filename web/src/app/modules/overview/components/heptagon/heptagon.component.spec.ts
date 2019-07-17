@@ -13,9 +13,8 @@ describe('HeptagonComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [HeptagonComponent]
-    })
-      .compileComponents();
+      declarations: [HeptagonComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

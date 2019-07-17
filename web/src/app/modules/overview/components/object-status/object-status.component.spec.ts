@@ -13,11 +13,8 @@ describe('ObjectStatusComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [
-        OverviewModule,
-      ]
-    })
-    .compileComponents();
+      imports: [OverviewModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

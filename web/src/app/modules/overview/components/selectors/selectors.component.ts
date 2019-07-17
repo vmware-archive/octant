@@ -3,7 +3,11 @@
 //
 
 import { Component, Input } from '@angular/core';
-import { ExpressionSelectorView, LabelSelectorView, SelectorsView } from 'src/app/models/content';
+import {
+  ExpressionSelectorView,
+  LabelSelectorView,
+  SelectorsView,
+} from 'src/app/models/content';
 
 @Component({
   selector: 'app-view-selectors',
@@ -13,14 +17,19 @@ import { ExpressionSelectorView, LabelSelectorView, SelectorsView } from 'src/ap
 export class SelectorsComponent {
   @Input() view: SelectorsView;
 
-  identifyItem(index: number, item: ExpressionSelectorView | LabelSelectorView): string {
+  identifyItem(
+    index: number,
+    item: ExpressionSelectorView | LabelSelectorView
+  ): string {
     const { key } = item.config;
     const labelSelector = item as LabelSelectorView;
     const expressionSelector = item as ExpressionSelectorView;
     if (labelSelector.config.value) {
       return `${key}-${labelSelector.config.value}`;
     } else if (expressionSelector.config.values) {
-      return `${key}-${expressionSelector.config.operator}-${expressionSelector.config.values.join(',')}`;
+      return `${key}-${
+        expressionSelector.config.operator
+      }-${expressionSelector.config.values.join(',')}`;
     }
   }
 }

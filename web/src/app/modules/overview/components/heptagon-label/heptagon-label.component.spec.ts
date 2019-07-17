@@ -18,9 +18,7 @@ describe('HeptagonLabelComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [HeptagonLabelComponent],
-      providers: [
-        { provide: ElementRef, useClass: MockElementRef }
-      ]
+      providers: [{ provide: ElementRef, useClass: MockElementRef }],
     }).compileComponents();
   }));
 
@@ -31,7 +29,7 @@ describe('HeptagonLabelComponent', () => {
     component.height = 20;
     component.status = {
       status: 'ok',
-      name: 'pod-name'
+      name: 'pod-name',
     };
     component.name = 'name';
     fixture.detectChanges();

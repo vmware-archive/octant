@@ -3,12 +3,13 @@
  */
 
 .app-logs {
-  .log-actions, .container-select {
+  .log-actions,
+  .container-select {
     margin-bottom: 20px;
   }
 
   .container-logs {
-    border: 1px solid #CCC;
+    border: 1px solid #ccc;
     border-radius: 4px;
     background-color: black;
 
@@ -30,12 +31,12 @@
       &-timestamp {
         min-width: 280px;
         width: 280px;
-        color: #A9B6BE;
+        color: #a9b6be;
       }
 
       &-message {
         flex: 1;
-        color: #FAFAFA;
+        color: #fafafa;
         word-wrap: break-word;
         min-width: 100px;
       }

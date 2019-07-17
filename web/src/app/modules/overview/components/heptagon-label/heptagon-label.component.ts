@@ -2,7 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, ElementRef, Input, ViewChild, AfterViewInit, ChangeDetectorRef, AfterViewChecked, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Input,
+  ViewChild,
+  AfterViewInit,
+  ChangeDetectorRef,
+  AfterViewChecked,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { PodStatus } from '../../models/pod-status';
 import { Point } from '../../models/point';
 
@@ -23,10 +32,12 @@ import { Point } from '../../models/point';
       [attr.dx]="textPaddingX()"
       [attr.dy]="textPaddingY()"
       text-anchor="left"
-    >{{ status.name }}</svg:text>
+    >
+      {{ status.name }}
+    </svg:text>
   `,
   styleUrls: ['./heptagon-label.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeptagonLabelComponent implements AfterViewChecked {
   @ViewChild('container')
@@ -53,7 +64,7 @@ export class HeptagonLabelComponent implements AfterViewChecked {
   @Input()
   name: string;
 
-  constructor(private cd: ChangeDetectorRef) { }
+  constructor(private cd: ChangeDetectorRef) {}
 
   ngAfterViewChecked(): void {
     this.cd.detectChanges();
@@ -90,7 +101,7 @@ export class HeptagonLabelComponent implements AfterViewChecked {
   fontSize() {
     const el = this.labelText.nativeElement;
     const style = window.getComputedStyle(el, null);
-    const fontSizeRaw =  style.getPropertyValue('font-size');
+    const fontSizeRaw = style.getPropertyValue('font-size');
     return parseFloat(fontSizeRaw);
   }
 

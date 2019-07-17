@@ -14,7 +14,10 @@ $border: 1px solid rgba(173, 187, 196, 0.3);
     grid-template-columns: 1fr 1fr;
     padding: 14px 20px;
 
-    .quadrant-ne, .quadrant-nw, .quadrant-se, .quadrant-sw {
+    .quadrant-ne,
+    .quadrant-nw,
+    .quadrant-se,
+    .quadrant-sw {
       padding: 15% 20%;
     }
 
@@ -48,10 +51,3 @@ $border: 1px solid rgba(173, 187, 196, 0.3);
     }
   }
 }
-
-
-
-
-
-
-

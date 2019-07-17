@@ -37,6 +37,8 @@ export class ResourceNode {
   }
 
   subTitle(): string {
-    return `<div class="resource-type">${this.object.apiVersion} ${this.object.kind}</div>`;
+    return `<div class="resource-type">${this.object.apiVersion} ${
+      this.object.kind
+    }</div>`;
   }
 }

@@ -12,7 +12,7 @@ export class ActionService {
     const url = [getAPIBase(), 'api/v1/action'].join('/');
 
     const payload = {
-      update: update,
+      update,
     };
 
     return this.http.post(url, payload);

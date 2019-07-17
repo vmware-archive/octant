@@ -10,7 +10,7 @@ import { PodStatus } from '../../models/pod-status';
 
 @Component({
   selector: 'app-heptagon-grid',
-  template: ``
+  template: ``,
 })
 class TestGridComponent {
   @Input()
@@ -29,9 +29,8 @@ describe('PodStatusComponent', () => {
       declarations: [PodStatusComponent, TestGridComponent],
       providers: [
         { provide: HeptagonGridComponent, useClass: TestGridComponent },
-      ]
-    })
-      .compileComponents();
+      ],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

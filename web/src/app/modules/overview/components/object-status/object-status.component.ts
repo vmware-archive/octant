@@ -14,7 +14,7 @@ import { Node } from 'src/app/models/content';
 export class ObjectStatusComponent {
   @Input() node: Node;
 
-  constructor() { }
+  constructor() {}
 
   indicatorClass() {
     if (!this.node) {
@@ -22,7 +22,8 @@ export class ObjectStatusComponent {
     }
 
     return [
-      'progress', 'top',
+      'progress',
+      'top',
       this.node.status === 'ok' ? 'success' : 'danger',
     ];
   }

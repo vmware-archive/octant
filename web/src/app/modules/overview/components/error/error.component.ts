@@ -15,7 +15,7 @@ export class ErrorComponent implements OnChanges {
 
   source: string;
 
-  constructor() { }
+  constructor() {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {

@@ -25,7 +25,6 @@ describe('Point', () => {
       const got = point.project(vector);
       expect(got.x).toBeCloseTo(expected.x);
       expect(got.y).toBeCloseTo(expected.y);
-
     });
   });
 });

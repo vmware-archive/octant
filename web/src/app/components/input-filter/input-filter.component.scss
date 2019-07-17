@@ -31,11 +31,11 @@
   }
 
   &-tags {
-    background: #FFF;
+    background: #fff;
     border: 1px solid #ccc;
-    border-bottom-left-radius: .125rem;
-    border-bottom-right-radius: .125rem;
-    box-shadow: 0 1px 0.125rem rgba(115,115,115,.25);
+    border-bottom-left-radius: 0.125rem;
+    border-bottom-right-radius: 0.125rem;
+    box-shadow: 0 1px 0.125rem rgba(115, 115, 115, 0.25);
     padding: 8px 8px 4px 8px;
 
     .input-filter-empty {

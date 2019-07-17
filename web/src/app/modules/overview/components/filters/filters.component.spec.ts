@@ -5,7 +5,10 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { Filter, LabelFilterService } from 'src/app/services/label-filter/label-filter.service';
+import {
+  Filter,
+  LabelFilterService,
+} from 'src/app/services/label-filter/label-filter.service';
 import { ActivatedRouteStub } from 'src/app/testing/activated-route-stub';
 import { FormsModule } from '@angular/forms';
 import { OverviewModule } from '../../overview.module';
@@ -29,10 +32,7 @@ describe('FiltersComponent', () => {
     };
 
     TestBed.configureTestingModule({
-      imports: [
-        OverviewModule,
-        FormsModule,
-      ],
+      imports: [OverviewModule, FormsModule],
       providers: [
         { provide: Router, useValue: mockRouter },
         { provide: ActivatedRoute, useValue: activatedRouteStub },

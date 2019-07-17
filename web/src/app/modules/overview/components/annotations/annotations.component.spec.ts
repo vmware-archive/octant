@@ -12,9 +12,8 @@ describe('AnnotationsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ AnnotationsComponent ]
-    })
-    .compileComponents();
+      declarations: [AnnotationsComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

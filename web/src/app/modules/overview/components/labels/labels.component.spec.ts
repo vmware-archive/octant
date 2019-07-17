@@ -12,9 +12,8 @@ describe('LabelsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ LabelsComponent ]
-    })
-    .compileComponents();
+      declarations: [LabelsComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
