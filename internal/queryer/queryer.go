@@ -22,7 +22,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kLabels "k8s.io/apimachinery/pkg/labels"
-	kruntime "k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -38,25 +39,107 @@ import (
 //go:generate mockgen -source=../../vendor/k8s.io/client-go/discovery/discovery_client.go -imports=openapi_v2=github.com/googleapis/gnostic/OpenAPIv2 -destination=./fake/mock_discovery.go -package=fake k8s.io/client-go/discovery DiscoveryInterface
 
 type Queryer interface {
-	Children(ctx context.Context, object metav1.Object) ([]kruntime.Object, error)
+	Children(ctx context.Context, object metav1.Object) ([]runtime.Object, error)
 	Events(ctx context.Context, object metav1.Object) ([]*corev1.Event, error)
 	IngressesForService(ctx context.Context, service *corev1.Service) ([]*extv1beta1.Ingress, error)
-	OwnerReference(ctx context.Context, namespace string, ownerReference metav1.OwnerReference) (kruntime.Object, error)
+	OwnerReference(ctx context.Context, namespace string, ownerReference metav1.OwnerReference) (runtime.Object, error)
 	PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error)
 	ServicesForIngress(ctx context.Context, ingress *extv1beta1.Ingress) ([]*corev1.Service, error)
 	ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Service, error)
 	ServiceAccountForPod(ctx context.Context, pod *corev1.Pod) (*corev1.ServiceAccount, error)
 }
 
+type childrenCache struct {
+	children map[types.UID][]runtime.Object
+	mu       sync.RWMutex
+}
+
+func initChildrenCache() *childrenCache {
+	return &childrenCache{
+		children: make(map[types.UID][]runtime.Object),
+	}
+}
+
+func (c *childrenCache) get(key types.UID) ([]runtime.Object, bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	v, ok := c.children[key]
+	return v, ok
+}
+
+func (c *childrenCache) set(key types.UID, value []runtime.Object) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.children[key] = value
+}
+
+type ownerCache struct {
+	owner map[store.Key]runtime.Object
+	mu    sync.Mutex
+}
+
+func initOwnerCache() *ownerCache {
+	return &ownerCache{
+		owner: make(map[store.Key]runtime.Object),
+	}
+}
+
+func (c *ownerCache) set(key store.Key, value runtime.Object) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if value == nil {
+		return
+	}
+
+	c.owner[key] = value
+}
+
+func (c *ownerCache) get(key store.Key) (runtime.Object, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	v, ok := c.owner[key]
+	return v, ok
+}
+
+type podsForServicesCache struct {
+	podsForServices map[types.UID][]*corev1.Pod
+	mu              sync.Mutex
+}
+
+func initPodsForServicesCache() *podsForServicesCache {
+	return &podsForServicesCache{
+		podsForServices: make(map[types.UID][]*corev1.Pod),
+	}
+}
+
+func (c *podsForServicesCache) set(key types.UID, value []*corev1.Pod) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.podsForServices[key] = value
+}
+
+func (c *podsForServicesCache) get(key types.UID) ([]*corev1.Pod, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	v, ok := c.podsForServices[key]
+	return v, ok
+}
+
 type ObjectStoreQueryer struct {
 	objectStore     store.Store
 	discoveryClient discovery.DiscoveryInterface
 
-	children        map[types.UID][]kruntime.Object
-	podsForServices map[types.UID][]*corev1.Pod
-	owner           map[store.Key]kruntime.Object
+	children        *childrenCache
+	podsForServices *podsForServicesCache
+	owner           *ownerCache
 
-	mu sync.Mutex
+	// mu sync.Mutex
 }
 
 var _ Queryer = (*ObjectStoreQueryer)(nil)
@@ -66,16 +149,13 @@ func New(o store.Store, discoveryClient discovery.DiscoveryInterface) *ObjectSto
 		objectStore:     o,
 		discoveryClient: discoveryClient,
 
-		children:        make(map[types.UID][]kruntime.Object),
-		podsForServices: make(map[types.UID][]*corev1.Pod),
-		owner:           make(map[store.Key]kruntime.Object),
+		children:        initChildrenCache(),
+		podsForServices: initPodsForServicesCache(),
+		owner:           initOwnerCache(),
 	}
 }
 
-func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner metav1.Object) ([]kruntime.Object, error) {
-	osq.mu.Lock()
-	defer osq.mu.Unlock()
-
+func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner metav1.Object) ([]runtime.Object, error) {
 	if owner == nil {
 		return nil, errors.New("owner is nil")
 	}
@@ -83,28 +163,32 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner metav1.Object
 	ctx, span := trace.StartSpan(ctx, "queryer:Children")
 	defer span.End()
 
-	stored, ok := osq.children[owner.GetUID()]
+	stored, ok := osq.children.get(owner.GetUID())
 
 	if ok {
 		return stored, nil
 	}
 
-	var children []kruntime.Object
+	var children []runtime.Object
 
-	ch := make(chan kruntime.Object)
+	ch := make(chan runtime.Object)
+	childrenProcessed := make(chan bool, 1)
 	go func() {
 		for child := range ch {
+			if child == nil {
+				continue
+			}
 			children = append(children, child)
 		}
+		childrenProcessed <- true
 	}()
 
-	resourceLists, err := osq.discoveryClient.ServerResources()
+	resourceLists, err := osq.discoveryClient.ServerPreferredResources()
 	if err != nil {
 		return nil, err
 	}
 
 	var g errgroup.Group
-	var mu sync.Mutex
 
 	for resourceListIndex := range resourceLists {
 		resourceList := resourceLists[resourceListIndex]
@@ -118,14 +202,24 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner metav1.Object
 				continue
 			}
 
+			gv, err := schema.ParseGroupVersion(resourceList.GroupVersion)
+			if err != nil {
+				return nil, err
+			}
+
+			if gv.Group == "apps" && apiResource.Kind == "ReplicaSet" {
+				// skip looking for apps/* ReplicaSet because extensions/v1beta1 ReplicaSet
+				// is Octant's current default.
+				continue
+			}
+
 			key := store.Key{
 				Namespace:  owner.GetNamespace(),
 				APIVersion: resourceList.GroupVersion,
 				Kind:       apiResource.Kind,
 			}
 
-			if !dashstrings.Contains("watch", apiResource.Verbs) ||
-				!dashstrings.Contains("list", apiResource.Verbs) {
+			if osq.canList(apiResource) {
 				continue
 			}
 
@@ -136,11 +230,9 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner metav1.Object
 				}
 
 				for _, object := range objects {
-					mu.Lock()
 					if metav1.IsControlledBy(object, owner) {
-						children = append(children, object)
+						ch <- object
 					}
-					mu.Unlock()
 				}
 
 				return nil
@@ -153,10 +245,17 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner metav1.Object
 	}
 
 	close(ch)
+	<-childrenProcessed
+	close(childrenProcessed)
 
-	osq.children[owner.GetUID()] = children
+	osq.children.set(owner.GetUID(), children)
 
 	return children, nil
+}
+
+func (osq *ObjectStoreQueryer) canList(apiResource metav1.APIResource) bool {
+	return !dashstrings.Contains("watch", apiResource.Verbs) ||
+		!dashstrings.Contains("list", apiResource.Verbs)
 }
 
 func (osq *ObjectStoreQueryer) Events(ctx context.Context, object metav1.Object) ([]*corev1.Event, error) {
@@ -164,7 +263,7 @@ func (osq *ObjectStoreQueryer) Events(ctx context.Context, object metav1.Object)
 		return nil, errors.New("object is nil")
 	}
 
-	m, err := kruntime.DefaultUnstructuredConverter.ToUnstructured(object)
+	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(object)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +284,7 @@ func (osq *ObjectStoreQueryer) Events(ctx context.Context, object metav1.Object)
 	var events []*corev1.Event
 	for _, unstructuredEvent := range allEvents {
 		event := &corev1.Event{}
-		err := kruntime.DefaultUnstructuredConverter.FromUnstructured(unstructuredEvent.Object, event)
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(unstructuredEvent.Object, event)
 		if err != nil {
 			return nil, err
 		}
@@ -221,7 +320,7 @@ func (osq *ObjectStoreQueryer) IngressesForService(ctx context.Context, service 
 
 	for _, u := range ul {
 		ingress := &v1beta1.Ingress{}
-		err := kruntime.DefaultUnstructuredConverter.FromUnstructured(u.Object, ingress)
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, ingress)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured ingress")
 		}
@@ -260,10 +359,7 @@ func (osq *ObjectStoreQueryer) listIngressBackends(ingress v1beta1.Ingress) []ex
 	return backends
 }
 
-func (osq *ObjectStoreQueryer) OwnerReference(ctx context.Context, namespace string, ownerReference metav1.OwnerReference) (kruntime.Object, error) {
-	osq.mu.Lock()
-	defer osq.mu.Unlock()
-
+func (osq *ObjectStoreQueryer) OwnerReference(ctx context.Context, namespace string, ownerReference metav1.OwnerReference) (runtime.Object, error) {
 	key := store.Key{
 		Namespace:  namespace,
 		APIVersion: ownerReference.APIVersion,
@@ -271,30 +367,27 @@ func (osq *ObjectStoreQueryer) OwnerReference(ctx context.Context, namespace str
 		Name:       ownerReference.Name,
 	}
 
-	object, ok := osq.owner[key]
+	object, ok := osq.owner.get(key)
 	if ok {
 		return object, nil
 	}
 
 	owner, err := osq.objectStore.Get(ctx, key)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "get owner from store")
 	}
 
-	osq.owner[key] = owner
+	osq.owner.set(key, owner)
 
 	return owner, nil
 }
 
 func (osq *ObjectStoreQueryer) PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error) {
-	osq.mu.Lock()
-	defer osq.mu.Unlock()
-
 	if service == nil {
 		return nil, errors.New("nil service")
 	}
 
-	stored, ok := osq.podsForServices[service.UID]
+	stored, ok := osq.podsForServices.get(service.UID)
 	if ok {
 		return stored, nil
 	}
@@ -314,7 +407,7 @@ func (osq *ObjectStoreQueryer) PodsForService(ctx context.Context, service *core
 		return nil, errors.Wrapf(err, "fetching pods for service: %v", service.Name)
 	}
 
-	osq.podsForServices[service.UID] = pods
+	osq.podsForServices.set(service.UID, pods)
 
 	return pods, nil
 }
@@ -329,7 +422,7 @@ func (osq *ObjectStoreQueryer) loadPods(ctx context.Context, key store.Key, labe
 
 	for _, object := range objects {
 		pod := &corev1.Pod{}
-		if err := scheme.Scheme.Convert(object, pod, kruntime.InternalGroupVersioner); err != nil {
+		if err := scheme.Scheme.Convert(object, pod, runtime.InternalGroupVersioner); err != nil {
 			return nil, err
 		}
 
@@ -378,7 +471,7 @@ func (osq *ObjectStoreQueryer) ServicesForIngress(ctx context.Context, ingress *
 		}
 
 		svc := &corev1.Service{}
-		err = kruntime.DefaultUnstructuredConverter.FromUnstructured(u.Object, svc)
+		err = runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, svc)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured service")
 		}
@@ -407,7 +500,7 @@ func (osq *ObjectStoreQueryer) ServicesForPod(ctx context.Context, pod *corev1.P
 	}
 	for _, u := range ul {
 		svc := &corev1.Service{}
-		err := kruntime.DefaultUnstructuredConverter.FromUnstructured(u.Object, svc)
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, svc)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured service")
 		}
@@ -454,7 +547,7 @@ func (osq *ObjectStoreQueryer) ServiceAccountForPod(ctx context.Context, pod *co
 	}
 
 	serviceAccount := &corev1.ServiceAccount{}
-	if err := kruntime.DefaultUnstructuredConverter.FromUnstructured(u.Object, serviceAccount); err != nil {
+	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, serviceAccount); err != nil {
 		return nil, errors.WithMessage(err, "converting unstructured object to service account")
 	}
 
@@ -466,7 +559,7 @@ func (osq *ObjectStoreQueryer) ServiceAccountForPod(ctx context.Context, pod *co
 
 }
 
-func (osq *ObjectStoreQueryer) getSelector(object kruntime.Object) (*metav1.LabelSelector, error) {
+func (osq *ObjectStoreQueryer) getSelector(object runtime.Object) (*metav1.LabelSelector, error) {
 	switch t := object.(type) {
 	case *appsv1.DaemonSet:
 		return t.Spec.Selector, nil

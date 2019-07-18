@@ -154,7 +154,7 @@ func (c *crd) PathFilters() []PathFilter {
 }
 
 func createCRDResourceViewer(ctx context.Context, object *unstructured.Unstructured, dashConfig config.Dash, q queryer.Queryer) (component.Component, error) {
-	rv, err := resourceviewer.New(dashConfig, resourceviewer.WithDefaultQueryer(q))
+	rv, err := resourceviewer.New(dashConfig, resourceviewer.WithDefaultQueryer(dashConfig, q))
 	if err != nil {
 		return nil, err
 	}

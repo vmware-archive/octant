@@ -12,11 +12,13 @@ import (
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware/octant/internal/componentcache"
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/modules/overview/objectvisitor"
 	"github.com/vmware/octant/internal/queryer"
+	"github.com/vmware/octant/internal/util/kubernetes"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -25,9 +27,9 @@ import (
 type ViewerOpt func(*ResourceViewer) error
 
 // WithDefaultQueryer configures ResourceViewer with the default visitor.
-func WithDefaultQueryer(q queryer.Queryer) ViewerOpt {
+func WithDefaultQueryer(dashConfig config.Dash, q queryer.Queryer) ViewerOpt {
 	return func(rv *ResourceViewer) error {
-		visitor, err := objectvisitor.NewDefaultVisitor(q, rv.factoryFunc())
+		visitor, err := objectvisitor.NewDefaultVisitor(dashConfig, q)
 		if err != nil {
 			return err
 		}
@@ -40,19 +42,13 @@ func WithDefaultQueryer(q queryer.Queryer) ViewerOpt {
 // ResourceViewer visits an object and creates a view component.
 type ResourceViewer struct {
 	dashConfig config.Dash
-	collector  *Collector
 	visitor    objectvisitor.Visitor
 }
 
 // New creates an instance of ResourceViewer.
 func New(dashConfig config.Dash, opts ...ViewerOpt) (*ResourceViewer, error) {
-	collector, err := NewCollector(dashConfig)
-	if err != nil {
-		return nil, errors.Wrap(err, "create collector")
-	}
 	rv := &ResourceViewer{
 		dashConfig: dashConfig,
-		collector:  collector,
 	}
 
 	for _, opt := range opts {
@@ -70,15 +66,17 @@ func New(dashConfig config.Dash, opts ...ViewerOpt) (*ResourceViewer, error) {
 
 // Visit visits an object and creates a view component.
 
-func (rv *ResourceViewer) Visit(ctx context.Context, object objectvisitor.ClusterObject) (component.Component, error) {
-
-	rv.collector.Reset()
-
-	ctx, span := trace.StartSpan(ctx, "resourceviewer")
+func (rv *ResourceViewer) Visit(ctx context.Context, object runtime.Object) (*component.ResourceViewer, error) {
+	ctx, span := trace.StartSpan(ctx, "resourceViewer")
 	defer span.End()
 
-	if err := rv.visitor.Visit(ctx, object); err != nil {
-		return nil, err
+	handler, err := NewHandler(rv.dashConfig)
+	if err != nil {
+		return nil, errors.Wrap(err, "Create handler")
+	}
+
+	if err := rv.visitor.Visit(ctx, object, handler); err != nil {
+		return nil, errors.Wrapf(err, "error unable to visit object %s", kubernetes.PrintObject(object))
 	}
 
 	accessor := meta.NewAccessor()
@@ -87,17 +85,11 @@ func (rv *ResourceViewer) Visit(ctx context.Context, object objectvisitor.Cluste
 		return nil, err
 	}
 
-	return rv.collector.Component(string(uid))
+	return GenerateComponent(ctx, handler, uid)
 }
 
-func (rv *ResourceViewer) factoryFunc() objectvisitor.ObjectHandlerFactory {
-	return func(object objectvisitor.ClusterObject) (objectvisitor.ObjectHandler, error) {
-		return rv.collector, nil
-	}
-}
-
-// CachedResourceViewer returns a RV component from the componentcache and starts a new visit.
-func CachedResourceViewer(ctx context.Context, object objectvisitor.ClusterObject, dashConfig config.Dash, q queryer.Queryer) componentcache.UpdateFn {
+// CachedResourceViewer returns a RV component from the component cache and starts a new visit.
+func CachedResourceViewer(object runtime.Object, dashConfig config.Dash, q queryer.Queryer) componentcache.UpdateFn {
 	return func(ctx context.Context, cacheChan chan componentcache.Event) (string, error) {
 		var event componentcache.Event
 		event.Name = "Resource Viewer"
@@ -118,7 +110,7 @@ func CachedResourceViewer(ctx context.Context, object objectvisitor.ClusterObjec
 			componentCache.Add(sKey, loading)
 		}
 
-		rv, err := New(dashConfig, WithDefaultQueryer(q))
+		rv, err := New(dashConfig, WithDefaultQueryer(dashConfig, q))
 		if err != nil {
 			return sKey, err
 		}

@@ -120,7 +120,7 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 	}
 
 	crdWatcher := co.dashConfig.CRDWatcher()
-	if err := co.dashConfig.ObjectStore().HasAccess(key, "watch"); err == nil {
+	if err := co.dashConfig.ObjectStore().HasAccess(ctx, key, "watch"); err == nil {
 		watchConfig := &config.CRDWatchConfig{
 			Add: func(_ *describer.PathMatcher, sectionDescriber *describer.CRDSection) config.ObjectHandler {
 				return func(ctx context.Context, object *unstructured.Unstructured) {

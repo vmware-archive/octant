@@ -89,16 +89,9 @@ func runGenerator(ctx context.Context, ch chan<- octant.Event, forceCh <-chan bo
 			event, err := generator.Event(ctx)
 			if err != nil {
 				if nfe, ok := err.(notFound); ok && nfe.NotFound() {
-					logger.With(
-						"path", contentPath,
-						"requestPath", requestPath,
-					).Errorf("content not found")
-					isRunning = false
-
-					ch <- octant.Event{
-						Type: octant.EventTypeObjectNotFound,
-						Data: []byte(notFoundRedirectPath(requestPath)),
-					}
+					isRunning, ch = handleNotFound(logger, contentPath, requestPath, isRunning, ch)
+					break
+				} else if err == errNotReady {
 					break
 				}
 
@@ -133,6 +126,19 @@ func runGenerator(ctx context.Context, ch chan<- octant.Event, forceCh <-chan bo
 			}
 		}
 	}
+}
+
+func handleNotFound(logger log.Logger, contentPath string, requestPath string, isRunning bool, ch chan<- octant.Event) (bool, chan<- octant.Event) {
+	logger.With(
+		"path", contentPath,
+		"requestPath", requestPath,
+	).Errorf("content not found")
+	isRunning = false
+	ch <- octant.Event{
+		Type: octant.EventTypeObjectNotFound,
+		Data: []byte(notFoundRedirectPath(requestPath)),
+	}
+	return isRunning, ch
 }
 
 func notFoundRedirectPath(requestPath string) string {

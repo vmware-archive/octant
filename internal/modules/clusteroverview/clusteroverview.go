@@ -74,7 +74,7 @@ func New(ctx context.Context, options Options) (*ClusterOverview, error) {
 	objectStore := options.DashConfig.ObjectStore()
 
 	crdWatcher := options.DashConfig.CRDWatcher()
-	if err := objectStore.HasAccess(key, "watch"); err == nil {
+	if err := objectStore.HasAccess(ctx, key, "watch"); err == nil {
 		watchConfig := &config.CRDWatchConfig{
 			Add: func(_ *describer.PathMatcher, sectionDescriber *describer.CRDSection) config.ObjectHandler {
 				return func(ctx context.Context, object *unstructured.Unstructured) {

@@ -163,10 +163,18 @@ func CreateReplicationController(name string) *corev1.ReplicationController {
 	}
 }
 
-// CreateReplicaSet creates a replica set
-func CreateReplicaSet(name string) *appsv1.ReplicaSet {
+// CreateAppReplicaSet creates a replica set
+func CreateAppReplicaSet(name string) *appsv1.ReplicaSet {
 	return &appsv1.ReplicaSet{
-		TypeMeta:   genTypeMeta(gvk.ReplicaSetGVK),
+		TypeMeta:   genTypeMeta(gvk.AppReplicaSetGVK),
+		ObjectMeta: genObjectMeta(name, true),
+	}
+}
+
+// CreateExtReplicaSet creates a replica set
+func CreateExtReplicaSet(name string) *extv1beta1.ReplicaSet {
+	return &extv1beta1.ReplicaSet{
+		TypeMeta:   genTypeMeta(gvk.ExtReplicaSet),
 		ObjectMeta: genObjectMeta(name, true),
 	}
 }

@@ -108,7 +108,7 @@ func CustomResourceDefinitionNames(ctx context.Context, o store.Store) ([]string
 		Kind:       "CustomResourceDefinition",
 	}
 
-	if err := o.HasAccess(key, "list"); err != nil {
+	if err := o.HasAccess(ctx, key, "list"); err != nil {
 		return []string{}, nil
 	}
 
@@ -173,7 +173,7 @@ func ListCustomResources(
 		Selector:   selector,
 	}
 
-	if err := o.HasAccess(key, "list"); err != nil {
+	if err := o.HasAccess(ctx, key, "list"); err != nil {
 		return []*unstructured.Unstructured{}, nil
 	}
 

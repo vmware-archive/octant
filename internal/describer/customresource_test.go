@@ -7,7 +7,6 @@ package describer
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -38,7 +37,7 @@ func Test_customResourceDefinitionNames(t *testing.T) {
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
-	o.EXPECT().HasAccess(gomock.Any(), "list").Return(nil)
+	o.EXPECT().HasAccess(gomock.Any(), gomock.Any(), "list").Return(nil)
 	o.EXPECT().List(gomock.Any(), gomock.Eq(crdKey)).Return(crdList, nil)
 
 	ctx := context.Background()
@@ -71,15 +70,4 @@ func Test_customResourceDefinition(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, crd1, got)
-}
-
-func assertJSONEqual(t *testing.T, expected, actual interface{}) {
-	aData, err := json.Marshal(expected)
-	require.NoError(t, err)
-
-	bData, err := json.Marshal(actual)
-	require.NoError(t, err)
-
-	assert.JSONEq(t, string(aData), string(bData))
-
 }

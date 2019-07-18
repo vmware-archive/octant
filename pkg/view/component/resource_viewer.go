@@ -125,7 +125,7 @@ func (rv *ResourceViewer) GetMetadata() Metadata {
 
 func (rv *ResourceViewer) Validate() error {
 	for nodeID, edges := range rv.Config.Edges {
-		if _, ok := rv.Config.Nodes[nodeID]; ! ok {
+		if _, ok := rv.Config.Nodes[nodeID]; !ok {
 			var nodes []string
 			for node := range rv.Config.Nodes {
 				nodes = append(nodes, node)

@@ -9,120 +9,102 @@ import (
 	"context"
 	"sync"
 
-	"go.opencensus.io/trace"
-	"golang.org/x/sync/errgroup"
-
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	extv1beta1 "k8s.io/api/extensions/v1beta1"
+	"go.opencensus.io/trace"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/vmware/octant/internal/gvk"
+	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/queryer"
 )
 
-// ClusterObject is a cluster object.
-// NOTE: this might not be the most succinct description.
-type ClusterObject interface {
-	runtime.Object
-}
+//go:generate mockgen -destination=./fake/mock_object_handler.go -package=fake -self_package github.com/vmware/octant/internal/modules/overview/objectvisitor/fake github.com/vmware/octant/internal/modules/overview/objectvisitor ObjectHandler
+//go:generate mockgen -destination=./fake/mock_default_typed_visitor.go -package=fake github.com/vmware/octant/internal/modules/overview/objectvisitor DefaultTypedVisitor
+//go:generate mockgen -destination=./fake/mock_typed_visitor.go -package=fake github.com/vmware/octant/internal/modules/overview/objectvisitor TypedVisitor
+//go:generate mockgen -destination=./fake/mock_visitor.go -package=fake github.com/vmware/octant/internal/modules/overview/objectvisitor Visitor
 
 // ObjectHandler performs actions on an object. Can be used to augment
 // visitor actions with extra functionality.
 type ObjectHandler interface {
-	AddChild(parent ClusterObject, children ...ClusterObject) error
-	Process(ctx context.Context, object ClusterObject) error
+	AddEdge(v1, v2 runtime.Object) error
+	Process(ctx context.Context, object runtime.Object) error
+}
+
+// DefaultTypedVisitor is the default typed visitors.
+type DefaultTypedVisitor interface {
+	Visit(ctx context.Context, object runtime.Object, handler ObjectHandler, visitor Visitor) error
+}
+
+// TypedVisitor is a typed visitor for a specific gvk.
+type TypedVisitor interface {
+	DefaultTypedVisitor
+	Supports() schema.GroupVersionKind
 }
 
 // Visitor is a visitor for cluster objects. It will visit an object and all of
 // its ancestors and descendants.
 type Visitor interface {
-	Visit(ctx context.Context, object ClusterObject) error
+	Visit(ctx context.Context, object runtime.Object, handler ObjectHandler) error
 }
 
-// ObjectHandlerFactory creates ObjectHandler given a ClusterObject.
-type ObjectHandlerFactory func(ClusterObject) (ObjectHandler, error)
+// DefaultVisitorOption is an option for configuring DefaultVisitor.
+type DefaultVisitorOption func(*DefaultVisitor)
 
-// DefaultFactoryGenerator generates ObjectHandlerFactory based on GVK.
-type DefaultFactoryGenerator struct {
-	m map[schema.GroupVersionKind]ObjectHandlerFactory
-}
-
-// NewDefaultFactoryGenerator creates an instance of NewDefaultFactoryGenerator.
-func NewDefaultFactoryGenerator() *DefaultFactoryGenerator {
-	return &DefaultFactoryGenerator{
-		m: make(map[schema.GroupVersionKind]ObjectHandlerFactory),
+// SetDefaultHandler sets the default typed visitor for objects.
+func SetDefaultHandler(dtv DefaultTypedVisitor) DefaultVisitorOption {
+	return func(dv *DefaultVisitor) {
+		dv.defaultHandler = dtv
 	}
 }
 
-// Register registers an ObjectHandlerFactory for a GVK.
-func (dfg *DefaultFactoryGenerator) Register(gvk schema.GroupVersionKind, fn ObjectHandlerFactory) error {
-	if _, ok := dfg.m[gvk]; ok {
-		return errors.Errorf("%s has already been registered", gvk)
-	}
-
-	dfg.m[gvk] = fn
-
-	return nil
-}
-
-// FactoryFunc creates an ObjectHandlerFactory for a GVK.
-func (dfg *DefaultFactoryGenerator) FactoryFunc() ObjectHandlerFactory {
-	return func(object ClusterObject) (ObjectHandler, error) {
-		if object == nil {
-			return nil, errors.New("unable to find factory for nil object")
-		}
-
-		objectKind := object.GetObjectKind()
-		if objectKind == nil {
-			return nil, errors.New("object kind is nil")
-		}
-
-		gvk := objectKind.GroupVersionKind()
-		factory, ok := dfg.m[gvk]
-		if !ok {
-			return nil, errors.Errorf("%s was not registered",
-				gvk)
-		}
-
-		return factory(object)
+// SetTypedVisitors sets additional typed visitor for objects based on gvk.
+func SetTypedVisitors(list []TypedVisitor) DefaultVisitorOption {
+	return func(dv *DefaultVisitor) {
+		dv.typedVisitors = list
 	}
 }
 
 // DefaultVisitor is the default implementation of Visitor.
 type DefaultVisitor struct {
-	queryer        queryer.Queryer
-	handlerFactory ObjectHandlerFactory
-	visited        map[types.UID]bool
-	visitedMu      sync.Mutex
+	queryer   queryer.Queryer
+	visited   map[types.UID]bool
+	visitedMu sync.Mutex
+
+	typedVisitors  []TypedVisitor
+	defaultHandler DefaultTypedVisitor
 }
 
 var _ Visitor = (*DefaultVisitor)(nil)
 
 // NewDefaultVisitor creates an instance of DefaultVisitor.
-func NewDefaultVisitor(q queryer.Queryer, factory ObjectHandlerFactory) (*DefaultVisitor, error) {
-	if factory == nil {
-		return nil, errors.Errorf("factory was nil")
+func NewDefaultVisitor(dashConfig config.Dash, q queryer.Queryer, options ...DefaultVisitorOption) (*DefaultVisitor, error) {
+	dv := &DefaultVisitor{
+		queryer: q,
+		visited: make(map[types.UID]bool),
+		typedVisitors: []TypedVisitor{
+			NewIngress(q),
+			NewPod(q),
+			NewService(q),
+		},
+		defaultHandler: NewObject(dashConfig, q),
 	}
 
-	return &DefaultVisitor{
-		queryer:        q,
-		handlerFactory: factory,
-		visited:        make(map[types.UID]bool),
-	}, nil
+	for _, option := range options {
+		option(dv)
+	}
+
+	return dv, nil
 }
 
 // hasVisited returns true if this object has already been visited. If the
 // object has not been visited, it returns false, and sets the object
 // visit status to true.
 func (dv *DefaultVisitor) hasVisited(object runtime.Object) (bool, error) {
-	// TODO: find root cause, object should not be nil at this point in the execution path.
 	if object == nil {
-		return true, nil
+		return false, errors.Errorf("unable to check if nil object has been visited")
 	}
 
 	dv.visitedMu.Lock()
@@ -143,10 +125,14 @@ func (dv *DefaultVisitor) hasVisited(object runtime.Object) (bool, error) {
 	return false, nil
 }
 
-// Visit visits a ClusterObject.
-func (dv *DefaultVisitor) Visit(ctx context.Context, object ClusterObject) error {
+// Visit visits a runtime.Object.
+func (dv *DefaultVisitor) Visit(ctx context.Context, object runtime.Object, handler ObjectHandler) error {
 	if object == nil {
 		return errors.New("trying to visit a nil object")
+	}
+
+	if handler == nil {
+		return errors.New("handler is nil")
 	}
 
 	objectCopy := object.DeepCopyObject()
@@ -154,190 +140,17 @@ func (dv *DefaultVisitor) Visit(ctx context.Context, object ClusterObject) error
 	if err != nil {
 		return errors.Wrapf(err, "check for visit object")
 	}
+
 	if hasVisited {
 		return nil
 	}
 
-	// Create a handler factory for this object. This allows the visitor's caller to
-	// interact with the ancestors and descendants of the object.
-	o, err := dv.handlerFactory(objectCopy)
-	if err != nil {
-		return err
-	}
-
-	return dv.visitObject(ctx, objectCopy, o)
-}
-
-// visitIngress visits an ingress' service backends.
-func (dv *DefaultVisitor) visitIngress(ctx context.Context, ingress *extv1beta1.Ingress) ([]ClusterObject, error) {
-	ctx, span := trace.StartSpan(ctx, "visitIngress")
-	defer span.End()
-
-	services, err := dv.queryer.ServicesForIngress(ctx, ingress)
-	if err != nil {
-		return nil, err
-	}
-
-	var children []ClusterObject
-
-	for _, service := range services {
-		if err := dv.Visit(ctx, service); err != nil {
-			return nil, err
-		}
-
-		children = append(children, service)
-	}
-
-	return children, nil
-}
-
-// visitPod visits a pod's services.
-func (dv *DefaultVisitor) visitPod(ctx context.Context, pod *corev1.Pod) ([]ClusterObject, error) {
-	ctx, span := trace.StartSpan(ctx, "visitPod")
-	defer span.End()
-
-	services, err := dv.queryer.ServicesForPod(ctx, pod)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, service := range services {
-		if err := dv.Visit(ctx, service); err != nil {
-			return nil, err
-		}
-	}
-
-	var list []ClusterObject
-
-	if pod.Spec.ServiceAccountName != "" {
-		serviceAccount, err := dv.queryer.ServiceAccountForPod(ctx, pod)
-		if err != nil {
-			return nil, err
-		}
-
-		if serviceAccount != nil {
-			if err := dv.Visit(ctx, serviceAccount); err != nil {
-				return nil, err
-			}
-
-			list = append(list, serviceAccount)
-		}
-	}
-
-	return list, nil
-}
-
-// visitService visits a service's ingresses and pods.
-func (dv *DefaultVisitor) visitService(ctx context.Context, service *corev1.Service) ([]ClusterObject, error) {
-	ctx, span := trace.StartSpan(ctx, "visitService")
-	defer span.End()
-
-	pods, err := dv.queryer.PodsForService(ctx, service)
-	if err != nil {
-		return nil, err
-	}
-
-	var children []ClusterObject
-
-	for _, pod := range pods {
-		if err := dv.Visit(ctx, pod); err != nil {
-			return nil, err
-		}
-
-		children = append(children, pod)
-	}
-
-	ingresses, err := dv.queryer.IngressesForService(ctx, service)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, ingress := range ingresses {
-		if err := dv.Visit(ctx, ingress); err != nil {
-			return nil, err
-		}
-	}
-
-	return children, nil
-}
-
-// handleObject attempts to visit parents and children of the object.
-func (dv *DefaultVisitor) handleObject(ctx context.Context, object ClusterObject, visitorObject ObjectHandler) error {
-	ctx, span := trace.StartSpan(ctx, "handleObject")
-	defer span.End()
-
-	if object == nil {
-		return errors.New("trying to visit a nil object")
-	}
-
-	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(object)
-	if err != nil {
-		return err
-	}
-
-	u := &unstructured.Unstructured{Object: m}
-
-	span.Annotate([]trace.Attribute{
-		trace.StringAttribute("apiVersion", u.GetAPIVersion()),
-		trace.StringAttribute("kind", u.GetKind()),
-		trace.StringAttribute("name", u.GetName()),
-		trace.StringAttribute("namespace", u.GetNamespace()),
-	}, "handling object")
-
-	var g errgroup.Group
-
-	for _, ownerReference := range u.GetOwnerReferences() {
-		g.Go(func() error {
-			o, err := dv.queryer.OwnerReference(ctx, u.GetNamespace(), ownerReference)
-			if err != nil {
-				return err
-			}
-
-			owner := o.(ClusterObject)
-
-			if object == nil {
-				return nil
-			}
-
-			if err := dv.Visit(ctx, owner); err != nil {
-				return err
-			}
-
-			return nil
-		})
-	}
-
-	children, err := dv.queryer.Children(ctx, u)
-	if err != nil {
-		return err
-	}
-
-	for i := range children {
-		index := i
-		g.Go(func() error {
-			o := children[index].(ClusterObject)
-			if err := dv.Visit(ctx, o); err != nil {
-				return err
-			}
-
-			if err := visitorObject.AddChild(object, o); err != nil {
-				return errors.Wrap(err, "add child")
-			}
-
-			return nil
-		})
-	}
-
-	if err := g.Wait(); err != nil {
-		return err
-	}
-
-	return visitorObject.Process(ctx, object)
+	return dv.visitObject(ctx, objectCopy, handler)
 }
 
 // visitObject visits an object. If the object is a service, ingress, or pod, it
 // also runs custom visitor code for them.
-func (dv *DefaultVisitor) visitObject(ctx context.Context, object ClusterObject, visitorObject ObjectHandler) error {
+func (dv *DefaultVisitor) visitObject(ctx context.Context, object runtime.Object, handler ObjectHandler) error {
 	ctx, span := trace.StartSpan(ctx, "visitObject")
 	defer span.End()
 
@@ -357,52 +170,26 @@ func (dv *DefaultVisitor) visitObject(ctx context.Context, object ClusterObject,
 
 	objectGVK := schema.FromAPIVersionAndKind(apiVersion, kind)
 
-	switch objectGVK {
-	case gvk.IngressGVK:
-		ingress := &extv1beta1.Ingress{}
-		if err := dv.convertToType(u, ingress); err != nil {
-			return err
-		}
-		children, err := dv.visitIngress(ctx, ingress)
-		if err != nil {
-			return err
-		}
+	tvMap := make(map[schema.GroupVersionKind]TypedVisitor)
+	for _, typedVisitor := range dv.typedVisitors {
+		tvMap[typedVisitor.Supports()] = typedVisitor
+	}
 
-		if err := visitorObject.AddChild(object, children...); err != nil {
-			return err
-		}
-	case gvk.PodGVK:
-		pod := &corev1.Pod{}
-		if err := dv.convertToType(u, pod); err != nil {
-			return err
-		}
-		children, err := dv.visitPod(ctx, pod)
-		if err != nil {
-			return err
-		}
-
-		if err := visitorObject.AddChild(object, children...); err != nil {
-			return err
-		}
-	case gvk.ServiceGVK:
-		service := &corev1.Service{}
-		if err := dv.convertToType(u, service); err != nil {
-			return err
-		}
-		children, err := dv.visitService(ctx, service)
-		if err != nil {
-			return err
-		}
-
-		if err := visitorObject.AddChild(object, children...); err != nil {
+	tv, ok := tvMap[objectGVK]
+	if ok {
+		if err := tv.Visit(ctx, u, handler, dv); err != nil {
 			return err
 		}
 	}
 
-	return dv.handleObject(ctx, object, visitorObject)
+	return dv.defaultHandler.Visit(ctx, u, handler, dv)
 }
 
-func (dv *DefaultVisitor) convertToType(object runtime.Object, objectType interface{}) error {
+func convertToType(object runtime.Object, objectType interface{}) error {
+	if object == nil {
+		return errors.New("can't convert a nil object")
+	}
+
 	u, ok := object.(*unstructured.Unstructured)
 	if !ok {
 		return errors.Errorf("object is not an unstructured (%T)", object)

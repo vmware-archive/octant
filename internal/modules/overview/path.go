@@ -16,12 +16,13 @@ import (
 
 var (
 	supportedGVKs = []schema.GroupVersionKind{
+		gvk.AppReplicaSetGVK,
 		gvk.CronJobGVK,
 		gvk.DaemonSetGVK,
 		gvk.DeploymentGVK,
+		gvk.ExtReplicaSet,
 		gvk.JobGVK,
 		gvk.PodGVK,
-		gvk.ReplicaSetGVK,
 		gvk.ReplicationControllerGVK,
 		gvk.StatefulSetGVK,
 		gvk.IngressGVK,

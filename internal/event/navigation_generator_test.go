@@ -25,6 +25,7 @@ func TestNavigationGenerator_Event(t *testing.T) {
 	defer controller.Finish()
 
 	mod := fake.NewMockModule(controller)
+	mod.EXPECT().Name().Return("module").AnyTimes()
 	mod.EXPECT().
 		ContentPath().Return("/module").AnyTimes()
 	mod.EXPECT().
