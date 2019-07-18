@@ -1,11 +1,13 @@
-# :eight_pointed_black_star: Octant <!-- Future Logo -->
+# Octant <!-- Future Logo -->
 
 > A web-based, highly extensible platform for developers to better understand the complexity of Kubernetes clusters.
 
-| [Features](#triangular_ruler-featuress) | [Usage](#hammer_and_wrench-usage) | [Installation](#minidisc-installationn) | [Getting Started](#open_file_folder-getting-started) | [Plugins](#electric_plug-plugins) | [Discussion](#mega-discussion) | [Contributing](#shipit-contributing) | [License](#page_facing_up-license) |
+| [Features](#features) | [Usage](#usage) | [Installation](#installationn) | [Getting Started](#getting-started) | [Plugins](#plugins) | [Discussion](#discussion) | [Contributing](#contributing) | [License](#license) |
 |---|---|---|---|---|---|---|---|
 
-## :triangular_ruler: Features
+Octant is a tool for developers to understand how applications run on a Kubernetes cluster. It aims to be part of the developer's toolkit for gaining insight and approaching complexity found in Kubernetes. Octant offers a combination of introspective tooling, cluster navigation, and object management along with a plugin system to further extend its capabilities.
+
+## Features
 
 * **Resource Viewer**
 
@@ -35,33 +37,38 @@
 
    Highly extensible plugin system for users to provide additional functionality through gRPC. Plugin authors can add components on top of existing views.
 
-## :hammer_and_wrench: Usage
+## Usage
 
 ![Octant demo](docs/octant-demo.gif)
 
-## :minidisc: Installation
+## Installation
 
 <!-- TODO: brew and choco install -->
+### Linux
 
-### Download a Prebuilt Binary
+1. Download the `.deb` or `.rpm` from the [releases page](https://github.com/vmware/octant/releases).
+
+2. Install with either `dpkg -i` or `rpm -i` respectively.
+
+### Download a Pre-built Binary
 
 1. Open the [releases page](https://github.com/vmware/octant/releases) from a browser and download the latest tarball.
 
 2. Extract the tarball:
 
     ```sh
-    $ tar -xzvf ~/Downloads/octant_0.3.0_Linux-64bit.tar.gz
-    octant_0.3.0_Linux-64bit/README.md
-    octant_0.3.0_Linux-64bit/octant
+    $ tar -xzvf ~/Downloads/octant_0.4.0_Linux-64bit.tar.gz
+    octant_0.4.0_Linux-64bit/README.md
+    octant_0.4.0_Linux-64bit/octant
     ```
 
 3. Verify it runs:
 
     ```sh
-    $ ./octant_0.3.0_Linux-64bit/octant version
+    $ ./octant_0.4.0_Linux-64bit/octant version
     ```
 
-## :open_file_folder: Getting Started
+## Getting Started
 
 Before starting Octant, make sure you have access to a healthy cluster. If kubectl is installed, test using `kubectl cluster-info`.
 
@@ -69,45 +76,17 @@ Start running Octant:
 
 `$ octant`
 
-### Environment Variables
+For configuring Octant, setting up a development environment, or running tests, refer to the documentation [here](docs/getting-started.md).
 
-Octant is configurable through environment variables defined at runtime.
-
-* `KUBECONFIG` - set to non-empty location if you want to set KUBECONFIG with an environment variable.
-* `OCTANT_DISABLE_OPEN_BROWSER` - set to a non-empty value if you don't the browser launched when the dashboard start up.
-* `OCTANT_LISTENER_ADDR` - set to address you want dashboard service to start on. (e.g. `localhost:8080`)
-* `OCTANT_VERBOSE_CACHE` - set to a non-empty value to view cache actions
-* `OCTANT_LOCAL_CONTENT` - set to a directory and dash will serve content responses from here. An example directory lives in `examples/content`
-* `OCTANT_PLUGIN_PATH` - add a plugin directory or multiple directories separated by `:`. Plugins will load by default from `$HOME/.config/vmdash/plugins`
-
-**Note:** If using [fish shell](https://fishshell.com), tilde expansion may not occur when using `env` to set environment variables.
-
-### Setting Up a Development Environment
-
-* Go 1.11
-* npm 6.4.1 or higher
-* [yarn](https://yarnpkg.com)
-* [rice](https://github.com/GeertJohan/go.rice) - packaging web assets into a binary
-* [mockgen](https://github.com/golang/gomock) - generating go files used for testing
-* [protoc](https://github.com/golang/protobuf) - generate go code compatible with gRPC
-
-These build tools can be installed via Makefile with `make go-install`.
-
-A development binary can be built by `make octant-dev`.
-
-For UI changes, see the [README](web) located in `web/`.
-
-If Docker and [Drone](docs/drone.md) is installed, tests and build steps can run in a containerized environment.
-
-## :electric_plug: Plugins
+## Plugins
 
 Plugins are a core part of Octant in the Kubernetes ecosystem. A plugin can read objects and allows users to add components to Octant's views.
 
-An example plugin can be found in [`cmd/pluginstub`](cmd/pluginstub) and installed to the default plugin path with `make install-test-plugin`. This creates a `vmdash` directory in `$HOME/.config` where Octant will look for plugin binaries by default.
+An example plugin can be found in [`cmd/pluginstub`](cmd/pluginstub) and installed to the default plugin path with `make install-test-plugin`.
 
 Documentation for plugin components can be found in [`docs/plugins`](docs/plugins).
 
-## :mega: Discussion
+## Discussion
 
 Feature requests, bug reports, and enhancements are welcome. Contributors, maintainers, and users are encouraged to collaborate through these communication channels:
 
@@ -115,14 +94,14 @@ Feature requests, bug reports, and enhancements are welcome. Contributors, maint
  - [Google group](https://groups.google.com/forum/#!forum/octant-dashboard/)
  - [Github issues](https://github.com/vmware/octant/issues)
 
-## :shipit: Contributing
+## Contributing
 
 New contributors will need to sign a contributor license agreement before code changes can be merged. Follow the instructions given by `vmwclabot` after opening a pull request.
 
 Pull requests should also include a changelog with the naming convention described [here](CONTRIBUTING.md).
 
-See our [roadmap]() for tentative features in a 1.0 release.
+See our [roadmap](ROADMAP.md) for tentative features in a 1.0 release.
 
-## :page_facing_up: License
+## License
 
 Octant is available under the [Apache License, Version 2.0](LICENSE)

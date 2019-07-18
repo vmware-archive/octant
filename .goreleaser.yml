@@ -1,6 +1,6 @@
 release:
   draft: true
-  prerelease: true
+  prerelease: auto
 project_name: octant
 builds:
   -
@@ -21,8 +21,9 @@ nfpms:
       - deb
       - rpm
     vendor: "VMware"
-    homepage: ""
-    description: "Web-based Kubernetes dashboard for developers who want to augment their kubectl experience"
+    homepage: "https://github.com/vmware/octant"
+    maintainer: Octant Maintainers <octant-dashboard@googlegroups.com>
+    description: "A web-based, highly extensible platform for developers to better understand the complexity of Kubernetes clusters"
     license: "Apache 2.0"
     name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}-{{.Arch}}"
     replacements:

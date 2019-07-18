@@ -15,5 +15,5 @@ if [ ! -z "$DRONE_TAG" ]; then
         exit 1
     fi
 
-    goreleaser --skip-publish --rm-dist
+    goreleaser --rm-dist
 fi
