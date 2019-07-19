@@ -8,6 +8,7 @@ package plugin
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 
@@ -15,7 +16,7 @@ import (
 	"github.com/spf13/afero"
 )
 
-const configDir = "vmdash"
+const configDir = "octant"
 
 // Config is configuration for the plugin manager.
 type Config interface {
@@ -51,6 +52,10 @@ func (c *defaultConfig) PluginDirs() ([]string, error) {
 
 	defaultDir := filepath.Join(home, ".config", configDir, "plugins")
 
+	if runtime.GOOS == "windows" || os.Getenv("XDG_CONFIG_HOME") != "" {
+		defaultDir = filepath.Join(home, configDir, "plugins")
+	}
+
 	if path := os.Getenv("OCTANT_PLUGIN_PATH"); path != "" {
 		path = strings.Trim(path, string(filepath.ListSeparator))
 		return append(filepath.SplitList(path), defaultDir), nil
@@ -62,7 +67,18 @@ func (c *defaultConfig) PluginDirs() ([]string, error) {
 func (c *defaultConfig) Home() string {
 	if c.homeFn == nil {
 		c.homeFn = func() string {
-			// TODO: make me work in windows
+			switch runtime.GOOS {
+			case "windows":
+				return os.Getenv("LOCALAPPDATA")
+
+			case "darwin":
+				return os.Getenv("HOME")
+
+			default: // Unix
+				if dir := os.Getenv("XDG_CONFIG_HOME"); dir != "" {
+					return dir
+				}
+			}
 			return os.Getenv("HOME")
 		}
 	}

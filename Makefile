@@ -13,6 +13,15 @@ GOINSTALL=$(GOCMD) install
 
 VERSION ?= v0.3.0
 
+ifdef XDG_CONFIG_HOME
+	OCTANT_PLUGINSTUB_DIR ?= ${XDG_CONFIG_HOME}/octant/plugins
+# Determine in on windows
+else ifeq ($(OS),Windows_NT) 
+	OCTANT_PLUGINSTUB_DIR ?= ${LOCALAPPDATA}/octant/plugins
+else
+	OCTANT_PLUGINSTUB_DIR ?= ${HOME}/.config/octant/plugins
+endif
+
 .PHONY: version
 version:
 	@echo $(VERSION)
@@ -105,8 +114,9 @@ ci-quick:
 	make octant-dev
 
 install-test-plugin:
-	mkdir -p ~/.config/vmdash/plugins
-	go build -o ~/.config/vmdash/plugins/pluginstub github.com/vmware/octant/cmd/pluginstub
+	@echo $(OCTANT_PLUGINSTUB_DIR)
+	mkdir -p $(OCTANT_PLUGINSTUB_DIR)
+	go build -o $(OCTANT_PLUGINSTUB_DIR)/pluginstub github.com/vmware/octant/cmd/pluginstub
 
 .PHONY:
 build-deps:
