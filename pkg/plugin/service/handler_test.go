@@ -13,6 +13,7 @@ import (
 	"github.com/vmware/octant/internal/gvk"
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/plugin"
 	"github.com/vmware/octant/pkg/plugin/service/fake"
 	"github.com/vmware/octant/pkg/view/component"
@@ -263,5 +264,99 @@ func TestHandler_HandleAction_using_supplied_function(t *testing.T) {
 
 	err := h.HandleAction(payload)
 	assert.NoError(t, err)
+	assert.True(t, ran)
+}
+
+func TestHandler_Navigation_default(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	dashboardClient := fake.NewMockDashboard(controller)
+
+	h := Handler{
+		dashboardClient: dashboardClient,
+	}
+
+	got, err := h.Navigation()
+	require.NoError(t, err)
+
+	expected := navigation.Navigation{}
+
+	require.Equal(t, expected, got)
+}
+
+func TestHandler_Navigation_using_supplied_function(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	dashboardClient := fake.NewMockDashboard(controller)
+
+	ran := false
+
+	h := Handler{
+		dashboardClient: dashboardClient,
+		HandlerFuncs: HandlerFuncs{
+			Navigation: func(gotClient Dashboard) (navigation.Navigation, error) {
+				ran = true
+				assert.Equal(t, dashboardClient, gotClient)
+				return navigation.Navigation{}, nil
+			},
+		},
+	}
+
+	got, err := h.Navigation()
+	require.NoError(t, err)
+
+	expected := navigation.Navigation{}
+	assert.Equal(t, expected, got)
+	assert.True(t, ran)
+}
+
+func TestHandler_Content_default(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	dashboardClient := fake.NewMockDashboard(controller)
+
+	h := Handler{
+		dashboardClient: dashboardClient,
+	}
+
+	contentPath := "/test-path-default"
+
+	got, err := h.Content(contentPath)
+	require.NoError(t, err)
+
+	expected := component.ContentResponse{}
+
+	require.Equal(t, expected, got)
+}
+
+func TestHandler_Content_using_supplied_function(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	dashboardClient := fake.NewMockDashboard(controller)
+
+	ran := false
+	contentPath := "/test-path"
+
+	h := Handler{
+		dashboardClient: dashboardClient,
+		HandlerFuncs: HandlerFuncs{
+			Content: func(gotDashboard Dashboard, gotPath string) (component.ContentResponse, error) {
+				ran = true
+				assert.Equal(t, contentPath, gotPath)
+				assert.Equal(t, dashboardClient, gotDashboard)
+				return component.ContentResponse{}, nil
+			},
+		},
+	}
+
+	got, err := h.Content(contentPath)
+	require.NoError(t, err)
+
+	expected := component.ContentResponse{}
+	assert.Equal(t, expected, got)
 	assert.True(t, ran)
 }

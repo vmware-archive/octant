@@ -7,6 +7,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/plugin"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -89,4 +90,21 @@ func (p *Handler) HandleAction(payload action.Payload) error {
 	}
 
 	return p.HandlerFuncs.HandleAction(p.dashboardClient, payload)
+}
+
+// Navigation creates navigation.
+func (p *Handler) Navigation() (navigation.Navigation, error) {
+	if p.HandlerFuncs.Navigation == nil {
+		return navigation.Navigation{}, nil
+	}
+	return p.HandlerFuncs.Navigation(p.dashboardClient)
+}
+
+// Content creates content for a given content path.
+func (p *Handler) Content(contentPath string) (component.ContentResponse, error) {
+	if p.HandlerFuncs.Content == nil {
+		return component.ContentResponse{}, nil
+	}
+
+	return p.HandlerFuncs.Content(p.dashboardClient, contentPath)
 }
