@@ -4,6 +4,10 @@ workspace:
 
 pipeline:
 
+  clone:
+    image: plugins/git
+    tags: true
+
   frontend:
     image: sfoo/node-chrome:0.0.1
     group: testing
