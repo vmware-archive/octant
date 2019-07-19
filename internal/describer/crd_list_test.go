@@ -40,7 +40,7 @@ func Test_crdListDescriber(t *testing.T) {
 		Name:       crd.Name,
 	}
 
-	o.EXPECT().HasAccess(gomock.Any(), "list").Return(nil)
+	o.EXPECT().HasAccess(gomock.Any(), gomock.Any(), "list").Return(nil)
 	o.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
 
 	crKey := store.Key{
@@ -79,5 +79,5 @@ func Test_crdListDescriber(t *testing.T) {
 	list.SetIcon(iconName, iconSource)
 	expected.Add(list)
 
-	assertJSONEqual(t, expected, got)
+	testutil.AssertJSONEqual(t, expected, got)
 }

@@ -9,7 +9,10 @@ import (
 	"context"
 	"encoding/json"
 	"path"
+	"sync"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/octant"
@@ -81,14 +84,33 @@ func newAPINavSections(modules []module.Module) *apiNavSections {
 func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]navigation.Navigation, error) {
 	var sections []navigation.Navigation
 
-	for _, m := range ans.modules {
-		contentPath := path.Join("/content", m.ContentPath())
-		navList, err := m.Navigation(ctx, namespace, contentPath)
-		if err != nil {
-			return nil, err
-		}
+	lookup := make(map[string][]navigation.Navigation)
+	var mu sync.Mutex
 
-		sections = append(sections, navList...)
+	var g errgroup.Group
+
+	for i := range ans.modules {
+		m := ans.modules[i]
+		g.Go(func() error {
+			contentPath := path.Join("/content", m.ContentPath())
+			navList, err := m.Navigation(ctx, namespace, contentPath)
+			if err != nil {
+				return err
+			}
+
+			mu.Lock()
+			defer mu.Unlock()
+			lookup[m.Name()] = navList
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
+	for _, m := range ans.modules {
+		sections = append(sections, lookup[m.Name()]...)
 	}
 
 	return sections, nil

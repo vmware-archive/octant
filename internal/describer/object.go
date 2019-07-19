@@ -172,8 +172,7 @@ func (d *Object) addSummaryTab(ctx context.Context, object runtime.Object, cr *c
 
 func (d *Object) addResourceViewerTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options Options) error {
 	if !d.disableResourceViewer {
-
-		cacheFn := resourceviewer.CachedResourceViewer(ctx, object, options.Dash, options.Queryer)
+		cacheFn := resourceviewer.CachedResourceViewer(object, options.Dash, options.Queryer)
 		resourceViewerComponent, err := options.Dash.ComponentCache().Update(ctx, cacheFn)
 		if err != nil {
 			return errors.Wrap(err, "retrieve resource viewer from component cache")

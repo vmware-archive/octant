@@ -105,7 +105,7 @@ func ListCustomResources(
 		Selector:   selector,
 	}
 
-	if err := o.HasAccess(key, "list"); err != nil {
+	if err := o.HasAccess(ctx, key, "list"); err != nil {
 		return []*unstructured.Unstructured{}, nil
 	}
 

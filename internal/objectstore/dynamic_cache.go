@@ -7,7 +7,6 @@ package objectstore
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -36,7 +35,11 @@ const (
 	defaultInformerResync = time.Second * 180
 )
 
-func initDynamicSharedInformerFactory(client cluster.ClientInterface, namespace string) (dynamicinformer.DynamicSharedInformerFactory, error) {
+var (
+	ErrShouldShutDown = errors.New("controller should shut down")
+)
+
+func initDynamicSharedInformerFactory(ctx context.Context, client cluster.ClientInterface, namespace string) (dynamicinformer.DynamicSharedInformerFactory, error) {
 	dynamicClient, err := client.DynamicClient()
 	if err != nil {
 		return nil, err
@@ -74,16 +77,12 @@ type DynamicCacheOpt func(*DynamicCache)
 
 // DynamicCache is a cache based on the dynamic shared informer factory.
 type DynamicCache struct {
-	initFactoryFunc func(cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error)
-	factories       map[string]dynamicinformer.DynamicSharedInformerFactory
+	initFactoryFunc func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error)
+	factories       *factoriesCache
 	client          cluster.ClientInterface
 	stopCh          <-chan struct{}
-	seenGVKs        map[string]map[schema.GroupVersionKind]bool
-	access          accessMap
-
-	mu        sync.Mutex
-	accessMu  sync.RWMutex
-	factoryMu sync.RWMutex
+	seenGVKs        *seenGVKsCache
+	access          *accessCache
 }
 
 var _ store.Store = (*DynamicCache)(nil)
@@ -95,7 +94,7 @@ func NewDynamicCache(client cluster.ClientInterface, stopCh <-chan struct{}, opt
 		initFactoryFunc: initDynamicSharedInformerFactory,
 		client:          client,
 		stopCh:          stopCh,
-		seenGVKs:        make(map[string]map[schema.GroupVersionKind]bool),
+		seenGVKs:        initSeenGVKsCache(),
 	}
 
 	for _, option := range options {
@@ -103,17 +102,16 @@ func NewDynamicCache(client cluster.ClientInterface, stopCh <-chan struct{}, opt
 	}
 
 	if c.access == nil {
-		c.access = make(accessMap)
+		c.access = initAccessCache()
 	}
 
-	factories := make(map[string]dynamicinformer.DynamicSharedInformerFactory)
-	factory, err := c.initFactoryFunc(client, "")
+	factories := initFactoriesCache()
+	factory, err := c.initFactoryFunc(context.Background(), client, "")
 	if err != nil {
 		return nil, errors.Wrap(err, "initialize dynamic shared informer factory")
 	}
 
-	factories[""] = factory
-	c.seenGVKs[""] = make(map[schema.GroupVersionKind]bool)
+	factories.set("", factory)
 
 	c.factories = factories
 	return c, nil
@@ -141,16 +139,19 @@ func (dc *DynamicCache) fetchAccess(key accessKey, verb string) (bool, error) {
 		},
 	}
 
-	rresponse, err := authClient.SelfSubjectAccessReviews().Create(sar)
+	review, err := authClient.SelfSubjectAccessReviews().Create(sar)
 	if err != nil {
 		return false, errors.Wrap(err, "client auth")
 	}
-	return rresponse.Status.Allowed, nil
+	return review.Status.Allowed, nil
 }
 
 // HasAccess returns an error if the current user does not have access to perform the verb action
 // for the given key.
-func (dc *DynamicCache) HasAccess(key store.Key, verb string) error {
+func (dc *DynamicCache) HasAccess(ctx context.Context, key store.Key, verb string) error {
+	_, span := trace.StartSpan(ctx, "dynamicCacheHasAccess")
+	defer span.End()
+
 	gvk := key.GroupVersionKind()
 
 	if gvk.GroupKind().Empty() {
@@ -169,21 +170,18 @@ func (dc *DynamicCache) HasAccess(key store.Key, verb string) error {
 		Verb:      verb,
 	}
 
-	dc.accessMu.RLock()
-	access, ok := dc.access[aKey]
-	dc.accessMu.RUnlock()
+	access, ok := dc.access.get(aKey)
 
 	if !ok {
+		span.Annotate([]trace.Attribute{}, "fetch access start")
 		val, err := dc.fetchAccess(aKey, verb)
 		if err != nil {
 			return errors.Wrapf(err, "fetch access: %+v", aKey)
 		}
 
-		dc.accessMu.Lock()
-		dc.access[aKey] = val
-		dc.accessMu.Unlock()
-
+		dc.access.set(aKey, val)
 		access = val
+		span.Annotate([]trace.Attribute{}, "fetch access finish")
 	}
 
 	if !access {
@@ -193,7 +191,7 @@ func (dc *DynamicCache) HasAccess(key store.Key, verb string) error {
 	return nil
 }
 
-func (dc *DynamicCache) currentInformer(key store.Key) (informers.GenericInformer, error) {
+func (dc *DynamicCache) currentInformer(ctx context.Context, key store.Key) (informers.GenericInformer, error) {
 	if dc.client == nil {
 		return nil, errors.New("cluster client is nil")
 	}
@@ -204,28 +202,21 @@ func (dc *DynamicCache) currentInformer(key store.Key) (informers.GenericInforme
 		return nil, errors.Wrap(err, "client resource")
 	}
 
-	dc.factoryMu.RLock()
-	factory, ok := dc.factories[key.Namespace]
-	dc.factoryMu.RUnlock()
-
+	factory, ok := dc.factories.get(key.Namespace)
 	if !ok {
-		if err := dc.HasAccess(store.Key{Namespace: metav1.NamespaceAll}, "watch"); err != nil {
-			factory, err = dc.initFactoryFunc(dc.client, key.Namespace)
+		if err := dc.HasAccess(ctx, store.Key{Namespace: metav1.NamespaceAll}, "watch"); err != nil {
+			factory, err = dc.initFactoryFunc(ctx, dc.client, key.Namespace)
 			if err != nil {
 				return nil, err
 			}
 		} else {
-			dc.factoryMu.RLock()
-			factory, ok = dc.factories[""]
-			dc.factoryMu.RUnlock()
+			factory, ok = dc.factories.get("")
 			if !ok {
 				return nil, errors.New("no default DynamicInformerFactory found")
 			}
 		}
 
-		dc.factoryMu.Lock()
-		dc.factories[key.Namespace] = factory
-		dc.factoryMu.Unlock()
+		dc.factories.set(key.Namespace, factory)
 	}
 
 	informer, err := currentInformer(gvr, factory, dc.stopCh)
@@ -233,22 +224,11 @@ func (dc *DynamicCache) currentInformer(key store.Key) (informers.GenericInforme
 		return nil, err
 	}
 
-	dc.mu.Lock()
-	defer dc.mu.Unlock()
-
-	if _, ok := dc.seenGVKs[key.Namespace][gvk]; ok {
+	if dc.seenGVKs.hasSeen(key.Namespace, gvk) {
 		return informer, nil
 	}
 
-	ctx := context.Background()
-	if !kcache.WaitForCacheSync(ctx.Done(), informer.Informer().HasSynced) {
-		return nil, errors.New("shutting down")
-	}
-
-	if _, ok := dc.seenGVKs[key.Namespace]; !ok {
-		dc.seenGVKs[key.Namespace] = make(map[schema.GroupVersionKind]bool)
-	}
-	dc.seenGVKs[key.Namespace][gvk] = true
+	dc.seenGVKs.setSeen(key.Namespace, gvk, true)
 
 	return informer, nil
 }
@@ -258,7 +238,7 @@ func (dc *DynamicCache) List(ctx context.Context, key store.Key) ([]*unstructure
 	_, span := trace.StartSpan(ctx, "dynamicCacheList")
 	defer span.End()
 
-	if err := dc.HasAccess(key, "list"); err != nil {
+	if err := dc.HasAccess(ctx, key, "list"); err != nil {
 		return nil, errors.Wrapf(err, "list access forbidden to %+v", key)
 	}
 
@@ -268,7 +248,7 @@ func (dc *DynamicCache) List(ctx context.Context, key store.Key) ([]*unstructure
 		trace.StringAttribute("kind", key.Kind),
 	}, "list key")
 
-	informer, err := dc.currentInformer(key)
+	informer, err := dc.currentInformer(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "retrieving informer for %+v", key)
 	}
@@ -311,7 +291,7 @@ func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.U
 	_, span := trace.StartSpan(ctx, "dynamicCacheList")
 	defer span.End()
 
-	if err := dc.HasAccess(key, "get"); err != nil {
+	if err := dc.HasAccess(ctx, key, "get"); err != nil {
 		return nil, errors.Wrapf(err, "get access forbidden to %+v", key)
 	}
 
@@ -322,7 +302,7 @@ func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.U
 		trace.StringAttribute("name", key.Name),
 	}, "get key")
 
-	informer, err := dc.currentInformer(key)
+	informer, err := dc.currentInformer(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "retrieving informer for %v", key)
 	}
@@ -385,12 +365,12 @@ func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.U
 // supplied handler.
 func (dc *DynamicCache) Watch(ctx context.Context, key store.Key, handler kcache.ResourceEventHandler) error {
 	logger := log.From(ctx)
-	if err := dc.HasAccess(key, "watch"); err != nil {
+	if err := dc.HasAccess(ctx, key, "watch"); err != nil {
 		logger.Errorf("check access failed: %v, access forbidden to %+v", key)
 		return nil
 	}
 
-	informer, err := dc.currentInformer(key)
+	informer, err := dc.currentInformer(ctx, key)
 	if err != nil {
 		return errors.Wrapf(err, "retrieving informer for %s", key)
 	}

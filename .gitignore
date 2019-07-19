@@ -31,6 +31,7 @@ internal/module/fake
 internal/queryer/fake
 internal/modules/overview/printer/fake
 internal/modules/overview/resourceviewer/fake
+internal/modules/overview/objectvisitor/fake
 internal/portforward/fake
 /pkg/store/fake
 /pkg/plugin/fake

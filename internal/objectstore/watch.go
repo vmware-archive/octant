@@ -7,7 +7,6 @@ package objectstore
 
 import (
 	"context"
-	"sync"
 
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
@@ -15,7 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
 	kcache "k8s.io/client-go/tools/cache"
 
 	"github.com/vmware/octant/internal/cluster"
@@ -31,20 +29,17 @@ type WatchOpt func(*Watch)
 // by default. Since the cache knows about all cluster updates, a majority of operations for listing
 // and getting objects can happen in local memory instead of requiring a network request.
 type Watch struct {
-	initFactoryFunc func(cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error)
+	initFactoryFunc func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error)
 	initBackendFunc func(watch *Watch) (store.Store, error)
 	client          cluster.ClientInterface
 	stopCh          <-chan struct{}
 	cancelFunc      context.CancelFunc
-	factories       map[string]dynamicinformer.DynamicSharedInformerFactory
-	watchedGVKs     map[string]map[schema.GroupVersionKind]bool
-	cachedObjects   map[string]map[schema.GroupVersionKind]map[types.UID]*unstructured.Unstructured
+	factories       *factoriesCache
+	watchedGVKs     *watchedGVKsCache
+	cachedObjects   *cachedObjectsCache
 	handlers        map[string]map[schema.GroupVersionKind]watchEventHandler
 
 	backendObjectStore store.Store
-	gvkLock            sync.Mutex
-	objectLock         sync.RWMutex
-	factoryMu          sync.RWMutex
 
 	onClientUpdate chan store.Store
 	updateFns      []store.UpdateFn
@@ -54,32 +49,26 @@ var _ store.Store = (*Watch)(nil)
 
 func initWatchBackend(w *Watch) (store.Store, error) {
 	backendObjectStore, err := NewDynamicCache(w.client, w.stopCh, func(d *DynamicCache) {
-		d.initFactoryFunc = func(client cluster.ClientInterface, namespace string) (dynamicinformer.DynamicSharedInformerFactory, error) {
-			w.factoryMu.RLock()
-			factory, ok := w.factories[namespace]
-			w.factoryMu.RUnlock()
+		d.initFactoryFunc = func(ctx context.Context, client cluster.ClientInterface, namespace string) (dynamicinformer.DynamicSharedInformerFactory, error) {
+			factory, ok := w.factories.get(namespace)
 
 			if !ok {
-				if err := w.HasAccess(store.Key{Namespace: metav1.NamespaceAll}, "watch"); err != nil {
-					factory, err = w.initFactoryFunc(w.client, namespace)
+				if err := w.HasAccess(ctx, store.Key{Namespace: metav1.NamespaceAll}, "watch"); err != nil {
+					factory, err = w.initFactoryFunc(ctx, w.client, namespace)
 					if err != nil {
 						return nil, err
 					}
 				} else {
-					w.factoryMu.RLock()
-					factory, ok = w.factories[""]
-					w.factoryMu.RUnlock()
+					factory, ok = w.factories.get("")
 					if !ok {
 						return nil, errors.New("no default DynamicInformerFactory found")
 					}
 				}
 			}
 
-			w.factoryMu.Lock()
-			w.factories[namespace] = factory
-			w.factoryMu.Unlock()
+			w.factories.set(namespace, factory)
 
-			return w.factories[namespace], nil
+			return factory, nil
 		}
 	})
 	if err != nil {
@@ -96,9 +85,9 @@ func NewWatch(ctx context.Context, client cluster.ClientInterface, options ...Wa
 		initFactoryFunc: initDynamicSharedInformerFactory,
 		initBackendFunc: initWatchBackend,
 		client:          client,
-		factories:       make(map[string]dynamicinformer.DynamicSharedInformerFactory),
-		watchedGVKs:     make(map[string]map[schema.GroupVersionKind]bool),
-		cachedObjects:   make(map[string]map[schema.GroupVersionKind]map[types.UID]*unstructured.Unstructured),
+		factories:       initFactoriesCache(),
+		watchedGVKs:     initWatchedGVKsCache(),
+		cachedObjects:   initCachedObjectsCache(),
 		handlers:        make(map[string]map[schema.GroupVersionKind]watchEventHandler),
 		onClientUpdate:  make(chan store.Store, 10),
 	}
@@ -119,9 +108,9 @@ func (w *Watch) bootstrap(ctx context.Context, forceBackendInit bool) error {
 	logger.With("backend-init", forceBackendInit).Debugf("bootstrapping")
 
 	if forceBackendInit {
-		w.factories = make(map[string]dynamicinformer.DynamicSharedInformerFactory)
-		w.watchedGVKs = make(map[string]map[schema.GroupVersionKind]bool)
-		w.cachedObjects = make(map[string]map[schema.GroupVersionKind]map[types.UID]*unstructured.Unstructured)
+		w.factories = initFactoriesCache()
+		w.watchedGVKs = initWatchedGVKsCache()
+		w.cachedObjects = initCachedObjectsCache()
 		w.handlers = make(map[string]map[schema.GroupVersionKind]watchEventHandler)
 	}
 
@@ -129,35 +118,12 @@ func (w *Watch) bootstrap(ctx context.Context, forceBackendInit bool) error {
 	w.cancelFunc = cancel
 	w.stopCh = ctx.Done()
 
-	namespaceClient, err := w.client.NamespaceClient()
-	if err != nil {
-		return errors.Wrap(err, "client namespace")
-	}
-
-	namespaces, err := namespaceClient.Names()
-	if err != nil {
-		namespaces = []string{namespaceClient.InitialNamespace()}
-	}
-	namespaces = append(namespaces, "")
-
-	for _, namespace := range namespaces {
-		if _, ok := w.watchedGVKs[namespace]; !ok {
-			w.watchedGVKs[namespace] = make(map[schema.GroupVersionKind]bool)
-		}
-		if _, ok := w.cachedObjects[namespace]; !ok {
-			w.cachedObjects[namespace] = make(map[schema.GroupVersionKind]map[types.UID]*unstructured.Unstructured)
-		}
-		if _, ok := w.handlers[namespace]; !ok {
-			w.handlers[namespace] = make(map[schema.GroupVersionKind]watchEventHandler)
-		}
-	}
-
-	if _, ok := w.factories[""]; !ok {
-		factory, err := w.initFactoryFunc(w.client, "")
+	if _, ok := w.factories.get(""); !ok {
+		factory, err := w.initFactoryFunc(ctx, w.client, "")
 		if err != nil {
 			return errors.Wrap(err, "initialize dynamic shared informer factory")
 		}
-		w.factories[""] = factory
+		w.factories.set("", factory)
 	}
 
 	if w.backendObjectStore == nil || forceBackendInit {
@@ -182,8 +148,8 @@ func (w *Watch) bootstrap(ctx context.Context, forceBackendInit bool) error {
 }
 
 // HasAccess access to objects using a key
-func (w *Watch) HasAccess(key store.Key, verb string) error {
-	return w.backendObjectStore.HasAccess(key, verb)
+func (w *Watch) HasAccess(ctx context.Context, key store.Key, verb string) error {
+	return w.backendObjectStore.HasAccess(ctx, key, verb)
 }
 
 // List lists objects using a key.
@@ -197,7 +163,7 @@ func (w *Watch) List(ctx context.Context, key store.Key) ([]*unstructured.Unstru
 
 	// TODO: find out why this doesn't work with watch.
 	logger := log.From(ctx)
-	if err := w.backendObjectStore.HasAccess(key, "list"); err != nil {
+	if err := w.backendObjectStore.HasAccess(ctx, key, "list"); err != nil {
 		logger.Errorf("check access failed: %v", err)
 		return []*unstructured.Unstructured{}, nil
 	}
@@ -211,9 +177,8 @@ func (w *Watch) List(ctx context.Context, key store.Key) ([]*unstructured.Unstru
 			selector = key.Selector.AsSelector()
 		}
 
-		w.objectLock.RLock()
-		defer w.objectLock.RUnlock()
-		cachedObjects := w.cachedObjects[key.Namespace][gvk]
+		cachedObjects := w.cachedObjects.list(key.Namespace, gvk)
+
 		for _, object := range cachedObjects {
 			if key.Namespace == object.GetNamespace() {
 				objectLabels := labels.Set(object.GetLabels())
@@ -236,17 +201,11 @@ func (w *Watch) List(ctx context.Context, key store.Key) ([]*unstructured.Unstru
 		return nil, err
 	}
 
-	w.objectLock.Lock()
-	if _, ok := w.cachedObjects[key.Namespace]; !ok {
-		w.cachedObjects[key.Namespace] = make(map[schema.GroupVersionKind]map[types.UID]*unstructured.Unstructured)
-	}
-	w.cachedObjects[key.Namespace][gvk] = make(map[types.UID]*unstructured.Unstructured)
 	for _, object := range objects {
-		w.cachedObjects[key.Namespace][gvk][object.GetUID()] = object
+		w.cachedObjects.update(key.Namespace, gvk, object)
 	}
-	w.objectLock.Unlock()
 
-	if err := w.createEventHandler(key, updateCh, deleteCh); err != nil {
+	if err := w.createEventHandler(ctx, key, updateCh, deleteCh); err != nil {
 		return nil, errors.Wrap(err, "create event handler")
 	}
 
@@ -265,7 +224,7 @@ func (w *Watch) Get(ctx context.Context, key store.Key) (*unstructured.Unstructu
 	}
 
 	logger := log.From(ctx)
-	if err := w.backendObjectStore.HasAccess(key, "get"); err != nil {
+	if err := w.backendObjectStore.HasAccess(ctx, key, "get"); err != nil {
 		logger.Errorf("check access failed: %v", err)
 		u := unstructured.Unstructured{}
 		return &u, nil
@@ -274,9 +233,8 @@ func (w *Watch) Get(ctx context.Context, key store.Key) (*unstructured.Unstructu
 	gvk := key.GroupVersionKind()
 
 	if w.isKeyCached(key) {
-		w.objectLock.RLock()
-		defer w.objectLock.RUnlock()
-		cachedObjects := w.cachedObjects[key.Namespace][gvk]
+		cachedObjects := w.cachedObjects.list(key.Namespace, gvk)
+
 		for _, object := range cachedObjects {
 			if key.Namespace == object.GetNamespace() &&
 				key.Name == object.GetName() {
@@ -298,12 +256,9 @@ func (w *Watch) Get(ctx context.Context, key store.Key) (*unstructured.Unstructu
 		return nil, err
 	}
 
-	w.objectLock.Lock()
-	w.cachedObjects[key.Namespace][gvk] = make(map[types.UID]*unstructured.Unstructured)
-	w.cachedObjects[key.Namespace][gvk][object.GetUID()] = object
-	w.objectLock.Unlock()
+	w.cachedObjects.update(key.Namespace, gvk, object)
 
-	if err := w.createEventHandler(key, updateCh, deleteCh); err != nil {
+	if err := w.createEventHandler(ctx, key, updateCh, deleteCh); err != nil {
 		return nil, errors.Wrap(err, "create event handler")
 	}
 
@@ -321,13 +276,7 @@ func (w *Watch) Watch(ctx context.Context, key store.Key, handler kcache.Resourc
 }
 
 func (w *Watch) isKeyCached(key store.Key) bool {
-	w.gvkLock.Lock()
-	defer w.gvkLock.Unlock()
-
-	gvk := key.GroupVersionKind()
-
-	_, ok := w.watchedGVKs[key.Namespace][gvk]
-	return ok
+	return w.watchedGVKs.isWatched(key.Namespace, key.GroupVersionKind())
 }
 
 func (w *Watch) handleUpdates(key store.Key, updateCh, deleteCh chan watchEvent) {
@@ -340,18 +289,14 @@ func (w *Watch) handleUpdates(key store.Key, updateCh, deleteCh chan watchEvent)
 		case <-w.stopCh:
 			done = true
 		case event := <-updateCh:
-			w.objectLock.Lock()
-			w.cachedObjects[key.Namespace][event.gvk][event.object.GetUID()] = event.object
-			w.objectLock.Unlock()
+			w.cachedObjects.update(key.Namespace, event.gvk, event.object)
 		case event := <-deleteCh:
-			w.objectLock.Lock()
-			delete(w.cachedObjects[key.Namespace][event.gvk], event.object.GetUID())
-			w.objectLock.Unlock()
+			w.cachedObjects.delete(key.Namespace, event.gvk, event.object)
 		}
 	}
 }
 
-func (w *Watch) createEventHandler(key store.Key, updateCh, deleteCh chan watchEvent) error {
+func (w *Watch) createEventHandler(ctx context.Context, key store.Key, updateCh, deleteCh chan watchEvent) error {
 	handler := &watchEventHandler{
 		gvk: key.GroupVersionKind(),
 		updateFunc: func(event watchEvent) {
@@ -379,29 +324,23 @@ func (w *Watch) createEventHandler(key store.Key, updateCh, deleteCh chan watchE
 		return errors.Wrap(err, "client resource")
 	}
 
-	w.factoryMu.RLock()
-	factory, ok := w.factories[key.Namespace]
-	w.factoryMu.RUnlock()
+	factory, ok := w.factories.get(key.Namespace)
 
 	if !ok {
-		if err := w.HasAccess(store.Key{Namespace: metav1.NamespaceAll}, "watch"); err != nil {
-			factory, err = w.initFactoryFunc(w.client, key.Namespace)
+		if err := w.HasAccess(ctx, store.Key{Namespace: metav1.NamespaceAll}, "watch"); err != nil {
+			factory, err = w.initFactoryFunc(ctx, w.client, key.Namespace)
 			if err != nil {
 				return err
 			}
 		} else {
-			w.factoryMu.RLock()
-			factory, ok = w.factories[""]
-			w.factoryMu.RUnlock()
+			factory, ok = w.factories.get("")
 			if !ok {
 				return errors.New("no default DynamicInformerFactory found")
 			}
 		}
 	}
 
-	w.factoryMu.Lock()
-	w.factories[key.Namespace] = factory
-	w.factoryMu.Unlock()
+	w.factories.set(key.Namespace, factory)
 
 	informer, err := currentInformer(gvr, factory, w.stopCh)
 	if err != nil {
@@ -414,12 +353,7 @@ func (w *Watch) createEventHandler(key store.Key, updateCh, deleteCh chan watchE
 }
 
 func (w *Watch) flagGVKWatched(key store.Key, gvk schema.GroupVersionKind) {
-	w.gvkLock.Lock()
-	defer w.gvkLock.Unlock()
-	if _, ok := w.watchedGVKs[key.Namespace]; !ok {
-		w.watchedGVKs[key.Namespace] = make(map[schema.GroupVersionKind]bool)
-	}
-	w.watchedGVKs[key.Namespace][gvk] = true
+	w.watchedGVKs.setWatched(key.Namespace, gvk)
 }
 
 type watchEvent struct {
@@ -472,14 +406,14 @@ func (h *nsUpdateHandler) OnAdd(obj interface{}) {
 	}
 
 	if object, ok := obj.(*unstructured.Unstructured); ok && object.GroupVersionKind().String() == nsGVK.String() {
-		factory, err := h.watch.initFactoryFunc(h.watch.client, object.GetName())
+		factory, err := h.watch.initFactoryFunc(context.Background(), h.watch.client, object.GetName())
 		if err != nil {
 			h.logger.WithErr(err).Errorf("create namespace factory")
 			return
 		}
 
 		h.logger.With("namespace", object.GetName()).Debugf("adding factory for namespace")
-		h.watch.factories[object.GetName()] = factory
+		h.watch.factories.set(object.GetName(), factory)
 	}
 }
 
@@ -492,7 +426,7 @@ func (h *nsUpdateHandler) OnDelete(obj interface{}) {
 	}
 
 	if object, ok := obj.(*unstructured.Unstructured); ok && object.GroupVersionKind().String() == nsGVK.String() {
-		delete(h.watch.factories, object.GetName())
+		h.watch.factories.delete(object.GetName())
 		h.logger.With("namespace", object.GetName()).Debugf("removed factory for namespace")
 	}
 }

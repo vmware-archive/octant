@@ -72,15 +72,11 @@ func Test_DynamicCache_List(t *testing.T) {
 
 	client := clusterfake.NewMockClientInterface(controller)
 	informerFactory := clusterfake.NewMockDynamicSharedInformerFactory(controller)
-	sharedIndexInformer := clusterfake.NewMockSharedIndexInformer(controller)
 	informer := clusterfake.NewMockGenericInformer(controller)
 	kubernetesClient := clusterfake.NewMockKubernetesInterface(controller)
 	authClient := clusterfake.NewMockAuthorizationV1Interface(controller)
 	accessClient := clusterfake.NewMockSelfSubjectAccessReviewInterface(controller)
 	namespaceClient := clusterfake.NewMockNamespaceInterface(controller)
-
-	informer.EXPECT().Informer().Return(sharedIndexInformer)
-	sharedIndexInformer.EXPECT().HasSynced().Return(true)
 
 	pod := testutil.CreatePod("pod")
 	objects := []runtime.Object{pod}
@@ -112,7 +108,7 @@ func Test_DynamicCache_List(t *testing.T) {
 	informer.EXPECT().Lister().Return(l)
 
 	factoryFunc := func(c *DynamicCache) {
-		c.initFactoryFunc = func(cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
+		c.initFactoryFunc = func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
 			return informerFactory, nil
 		}
 	}
@@ -146,14 +142,10 @@ func Test_DynamicCache_Get(t *testing.T) {
 	client := clusterfake.NewMockClientInterface(controller)
 	informerFactory := clusterfake.NewMockDynamicSharedInformerFactory(controller)
 	informer := clusterfake.NewMockGenericInformer(controller)
-	sharedIndexInformer := clusterfake.NewMockSharedIndexInformer(controller)
 	kubernetesClient := clusterfake.NewMockKubernetesInterface(controller)
 	authClient := clusterfake.NewMockAuthorizationV1Interface(controller)
 	accessClient := clusterfake.NewMockSelfSubjectAccessReviewInterface(controller)
 	namespaceClient := clusterfake.NewMockNamespaceInterface(controller)
-
-	informer.EXPECT().Informer().Return(sharedIndexInformer)
-	sharedIndexInformer.EXPECT().HasSynced().Return(true)
 
 	pod := testutil.CreatePod("pod")
 
@@ -184,7 +176,7 @@ func Test_DynamicCache_Get(t *testing.T) {
 	informer.EXPECT().Lister().Return(l)
 
 	factoryFunc := func(c *DynamicCache) {
-		c.initFactoryFunc = func(cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
+		c.initFactoryFunc = func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
 			return informerFactory, nil
 		}
 	}
@@ -223,7 +215,7 @@ func Test_DynamicCache_HasAccess(t *testing.T) {
 	namespaceClient.EXPECT().Names().Return(namespaces, nil).MaxTimes(3)
 
 	factoryFunc := func(c *DynamicCache) {
-		c.initFactoryFunc = func(cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
+		c.initFactoryFunc = func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
 			return informerFactory, nil
 		}
 	}
@@ -243,15 +235,15 @@ func Test_DynamicCache_HasAccess(t *testing.T) {
 				Kind:       "Pod",
 			},
 			accessFunc: func(c *DynamicCache) {
-				access := make(accessMap)
+				ac := initAccessCache()
 				aKey := accessKey{
 					Namespace: "",
 					Group:     "apps",
 					Resource:  "pods",
 					Verb:      "get",
 				}
-				access[aKey] = true
-				c.access = access
+				ac.access[aKey] = true
+				c.access = ac
 			},
 			expectErr: false,
 		},
@@ -263,15 +255,15 @@ func Test_DynamicCache_HasAccess(t *testing.T) {
 				Kind:       "CustomResourceDefinition",
 			},
 			accessFunc: func(c *DynamicCache) {
-				access := make(accessMap)
+				ac := initAccessCache()
 				aKey := accessKey{
 					Namespace: "",
 					Group:     "apiextensions.k8s.io",
 					Resource:  "customresourcedefinitions",
 					Verb:      "get",
 				}
-				access[aKey] = true
-				c.access = access
+				ac.access[aKey] = true
+				c.access = ac
 			},
 			expectErr: false,
 		},
@@ -283,23 +275,25 @@ func Test_DynamicCache_HasAccess(t *testing.T) {
 				Kind:       "CustomResourceDefinition",
 			},
 			accessFunc: func(c *DynamicCache) {
-				access := make(accessMap)
+				ac := initAccessCache()
 				aKey := accessKey{
 					Namespace: "",
 					Group:     "apiextensions.k8s.io",
 					Resource:  "customresourcedefinitions",
 					Verb:      "get",
 				}
-				access[aKey] = false
-				c.access = access
+				ac.access[aKey] = false
+				c.access = ac
 			},
 			expectErr: true,
 		},
 	}
 
-	for _, ts := range scenarios {
+	for i := range scenarios {
+		ts := scenarios[i]
 		t.Run(ts.name, func(t *testing.T) {
-			c, err := NewDynamicCache(client, ctx.Done(), factoryFunc, ts.accessFunc)
+			fn := ts.accessFunc
+			c, err := NewDynamicCache(client, ctx.Done(), factoryFunc, fn)
 			require.NoError(t, err)
 
 			gvk := ts.key.GroupVersionKind()
@@ -311,9 +305,9 @@ func Test_DynamicCache_HasAccess(t *testing.T) {
 			client.EXPECT().Resource(gomock.Eq(gvk.GroupKind())).Return(podGVR, nil)
 
 			if ts.expectErr {
-				require.Error(t, c.HasAccess(ts.key, "get"))
+				require.Error(t, c.HasAccess(ctx, ts.key, "get"))
 			} else {
-				require.NoError(t, c.HasAccess(ts.key, "get"))
+				require.NoError(t, c.HasAccess(ctx, ts.key, "get"))
 			}
 		})
 	}
@@ -330,15 +324,11 @@ func TestDynamicCache_Update(t *testing.T) {
 
 	client := clusterfake.NewMockClientInterface(controller)
 	informerFactory := clusterfake.NewMockDynamicSharedInformerFactory(controller)
-	sharedIndexInformer := clusterfake.NewMockSharedIndexInformer(controller)
 	informer := clusterfake.NewMockGenericInformer(controller)
 	kubernetesClient := clusterfake.NewMockKubernetesInterface(controller)
 	authClient := clusterfake.NewMockAuthorizationV1Interface(controller)
 	accessClient := clusterfake.NewMockSelfSubjectAccessReviewInterface(controller)
 	namespaceClient := clusterfake.NewMockNamespaceInterface(controller)
-
-	informer.EXPECT().Informer().Return(sharedIndexInformer)
-	sharedIndexInformer.EXPECT().HasSynced().Return(true)
 
 	podGVR := schema.GroupVersionResource{
 		Version:  "v1",
@@ -367,7 +357,7 @@ func TestDynamicCache_Update(t *testing.T) {
 	informer.EXPECT().Lister().Return(l)
 
 	factoryFunc := func(c *DynamicCache) {
-		c.initFactoryFunc = func(cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
+		c.initFactoryFunc = func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
 			return informerFactory, nil
 		}
 	}

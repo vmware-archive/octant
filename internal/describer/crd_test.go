@@ -113,5 +113,5 @@ func Test_crd(t *testing.T) {
 	yView.SetAccessor("yaml")
 	expected.Add(yView)
 
-	assertJSONEqual(t, expected, got)
+	testutil.AssertJSONEqual(t, expected, got)
 }
