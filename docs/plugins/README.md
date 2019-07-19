@@ -3,6 +3,7 @@
 ## Run locally
 
  * Requires Hugo extended version 0.48 or above
+ * Download pre-built binary for Hugo: https://github.com/gohugoio/hugo/releases/
 
 Run `hugo server` then visit `localhost:1313` in the browser.
 

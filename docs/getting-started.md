@@ -9,7 +9,7 @@ Octant is configurable through environment variables defined at runtime.
 * `OCTANT_LISTENER_ADDR` - set to address you want dashboard service to start on. (e.g. `localhost:8080`)
 * `OCTANT_VERBOSE_CACHE` - set to a non-empty value to view cache actions
 * `OCTANT_LOCAL_CONTENT` - set to a directory and dash will serve content responses from here. An example directory lives in `examples/content`
-* `OCTANT_PLUGIN_PATH` - add a plugin directory or multiple directories separated by `:`. Plugins will load by default from `$HOME/.config/vmdash/plugins`
+* `OCTANT_PLUGIN_PATH` - add a plugin directory or multiple directories separated by `:`. Plugins will load by default from `$HOME/.config/octant/plugins`
 
 **Note:** If using [fish shell](https://fishshell.com), tilde expansion may not occur when using `env` to set environment variables.
 

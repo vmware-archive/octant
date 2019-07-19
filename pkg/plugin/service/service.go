@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/plugin"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -91,4 +92,6 @@ type HandlerFuncs struct {
 	PrintTab     func(dashboardClient Dashboard, object runtime.Object) (*component.Tab, error)
 	ObjectStatus func(dashboardClient Dashboard, object runtime.Object) (plugin.ObjectStatusResponse, error)
 	HandleAction func(dashboardClient Dashboard, payload action.Payload) error
+	Navigation   func(dashboardClient Dashboard) (navigation.Navigation, error)
+	Content      func(dashboardClient Dashboard, contentPath string) (component.ContentResponse, error)
 }

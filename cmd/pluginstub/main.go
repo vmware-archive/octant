@@ -9,18 +9,23 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"path"
 	"time"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/plugin"
 	"github.com/vmware/octant/pkg/plugin/service"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 	"github.com/vmware/octant/pkg/view/flexlayout"
 )
+
+var pluginName = "plugin-name"
+var pluginPath = path.Join("content", pluginName)
 
 func init() {
 	// Remove the prefix from the go logger since Octant will print logs with timestamps.
@@ -35,16 +40,19 @@ func main() {
 	capabilities := &plugin.Capabilities{
 		SupportsPrinterConfig: []schema.GroupVersionKind{podGVK},
 		SupportsTab:           []schema.GroupVersionKind{podGVK},
+		IsModule:              true,
 	}
 
 	// Set up what should happen when Octant calls this plugin.
 	handlers := service.HandlerFuncs{
-		Print:    handlePrint,
-		PrintTab: handleTab,
+		Print:      handlePrint,
+		PrintTab:   handleTab,
+		Navigation: handleNavigation,
+		Content:    handleContent,
 	}
 
 	// Use the plugin service helper to register this plugin.
-	p, err := service.Register("plugin-name", "a description", capabilities, handlers)
+	p, err := service.Register(pluginName, "a description", capabilities, handlers)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -108,6 +116,37 @@ func handlePrint(dashboardClient service.Dashboard, object runtime.Object) (plug
 				Width: component.WidthHalf,
 				View:  podCard,
 			},
+		},
+	}, nil
+}
+
+func handleNavigation(dashboardClient service.Dashboard) (navigation.Navigation, error) {
+	return navigation.Navigation{
+		Title: "Module Plugin",
+		Path:  pluginPath,
+		Children: []navigation.Navigation{
+			{
+				Title:    "Nested Once",
+				Path:     path.Join(pluginPath, "nested-once"),
+				IconName: "folder",
+				Children: []navigation.Navigation{
+					{
+						Title:    "Nested Twice",
+						Path:     path.Join(pluginPath, "nested-once", "nested-twice"),
+						IconName: "folder",
+					},
+				},
+			},
+		},
+		IconName: "cloud",
+	}, nil
+
+}
+
+func handleContent(dashboardClient service.Dashboard, contentPath string) (component.ContentResponse, error) {
+	return component.ContentResponse{
+		Components: []component.Component{
+			component.NewText(fmt.Sprintf("hello from plugin: path %s", contentPath)),
 		},
 	}, nil
 }
