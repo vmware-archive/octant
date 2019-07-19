@@ -1,4 +1,0 @@
-Add card component
-
-Adds support for a card component with actions. Consumers of the card
-component can use actions to create forms associated with the cards.
