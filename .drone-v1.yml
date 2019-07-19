@@ -6,6 +6,10 @@ workspace:
   path: src/github.com/vmware/octant
 
 steps:
+  - name: fetch
+    image: docker:git
+    commands:
+      - git fetch --tags
   - name: frontend
     image: circleci/node:10.15.3-browsers
     user: node
