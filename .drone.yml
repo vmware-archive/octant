@@ -10,6 +10,9 @@ steps:
     image: docker:git
     commands:
       - git fetch --tags
+    when:
+      event:
+      - tag
   - name: frontend
     image: sfoo/node-chrome:0.0.1
     commands:

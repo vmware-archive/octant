@@ -1,5 +1,9 @@
 # Octant <!-- Future Logo -->
 
+[![Build Status](https://cloud.drone.io/api/badges/vmware/octant/status.svg)](https://cloud.drone.io/vmware/octant)
+![GitHub release](https://img.shields.io/github/release/vmware/octant.svg)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 > A web-based, highly extensible platform for developers to better understand the complexity of Kubernetes clusters.
 
 | [Features](#features) | [Usage](#usage) | [Installation](#installation) | [Getting Started](#getting-started) | [Plugins](#plugins) | [Discussion](#discussion) | [Contributing](#contributing) | [License](#license) |
