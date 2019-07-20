@@ -1,3 +1,4 @@
+---
 kind: pipeline
 name: default
 
@@ -53,3 +54,8 @@ steps:
       - /bin/bash ci/drone-deploy.sh
     depends_on:
     - build
+---
+kind: signature
+hmac: d12ab7e7c46cbea63d6dd35ee01da089c277b948fcdaa60d78a97049bd80d579
+
+...
