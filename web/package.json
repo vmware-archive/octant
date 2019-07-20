@@ -44,7 +44,7 @@
     "default-passive-events": "^1.0.10",
     "graphlib-dot": "^0.6.2",
     "highlight.js": "^9.15.6",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.13",
     "moment": "^2.24.0",
     "ngx-highlightjs": "^3.0.3",
     "ngx-markdown": "^8.0.2",
