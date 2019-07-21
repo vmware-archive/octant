@@ -60,7 +60,7 @@ func (p *Pod) Visit(ctx context.Context, object runtime.Object, handler ObjectHa
 						kubernetes.PrintObject(pod), kubernetes.PrintObject(service))
 				}
 
-				return handler.AddEdge(object, service)
+				return handler.AddEdge(ctx, object, service)
 			})
 		}
 
@@ -78,7 +78,7 @@ func (p *Pod) Visit(ctx context.Context, object runtime.Object, handler ObjectHa
 					return errors.Wrapf(err, "pod %s visit service account %s",
 						kubernetes.PrintObject(pod), kubernetes.PrintObject(serviceAccount))
 				}
-				return handler.AddEdge(object, serviceAccount)
+				return handler.AddEdge(ctx, object, serviceAccount)
 			}
 		}
 

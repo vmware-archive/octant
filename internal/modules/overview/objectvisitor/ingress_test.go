@@ -30,7 +30,7 @@ func TestIngress_Visit(t *testing.T) {
 
 	handler := fake.NewMockObjectHandler(controller)
 	handler.EXPECT().
-		AddEdge(u, service).
+		AddEdge(gomock.Any(), u, service).
 		Return(nil)
 	handler.EXPECT().
 		Process(gomock.Any(), object).Return(nil)

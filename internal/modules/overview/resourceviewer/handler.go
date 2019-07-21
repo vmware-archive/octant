@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strings"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -19,6 +20,7 @@ import (
 	"github.com/vmware/octant/internal/link"
 	"github.com/vmware/octant/internal/modules/overview/objectstatus"
 	"github.com/vmware/octant/internal/modules/overview/objectvisitor"
+	"github.com/vmware/octant/internal/util/kubernetes"
 	"github.com/vmware/octant/pkg/plugin"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
@@ -36,14 +38,58 @@ func SetHandlerObjectStatus(objectStatus ObjectStatus) HandlerOption {
 	}
 }
 
+type nodesStorage map[types.UID]runtime.Object
+
+type adjListStorage map[string]map[string]runtime.Object
+
+func (als adjListStorage) hasKey(uid string) bool {
+	for k := range als {
+		if k == uid {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (als adjListStorage) hasEdgeForKey(keyUID, edgeUID string) bool {
+	edges, ok := als[keyUID]
+	if !ok {
+		return false
+	}
+
+	_, ok = edges[edgeUID]
+	return ok
+}
+
+func (als adjListStorage) isEdge(uid string) bool {
+	for k := range als {
+		for edgeUID := range als[k] {
+			if uid == edgeUID {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func (als adjListStorage) addEdgeForKey(uid, edgeUID string, object runtime.Object) {
+	if _, ok := als[uid]; !ok {
+		als[uid] = make(map[string]runtime.Object)
+	}
+
+	als[uid][edgeUID] = object
+}
+
 // Handler is a visitor handler.
 type Handler struct {
 	objectStore   store.Store
 	link          link.Interface
 	pluginPrinter plugin.ManagerInterface
 
-	adjList map[types.UID][]runtime.Object
-	nodes   map[types.UID]runtime.Object
+	nodes   nodesStorage
+	adjList adjListStorage
 
 	mu           sync.Mutex
 	objectStatus ObjectStatus
@@ -62,8 +108,8 @@ func NewHandler(dashConfig config.Dash, options ...HandlerOption) (*Handler, err
 		objectStore:   dashConfig.ObjectStore(),
 		link:          l,
 		pluginPrinter: dashConfig.PluginManager(),
-		adjList:       make(map[types.UID][]runtime.Object),
-		nodes:         make(map[types.UID]runtime.Object),
+		adjList:       adjListStorage{},
+		nodes:         nodesStorage{},
 		objectStatus:  NewHandlerObjectStatus(dashConfig.ObjectStore(), dashConfig.PluginManager()),
 	}
 
@@ -75,23 +121,49 @@ func NewHandler(dashConfig config.Dash, options ...HandlerOption) (*Handler, err
 }
 
 // AddEdge adds edges to the graph.
-func (h *Handler) AddEdge(v1, v2 runtime.Object) error {
+func (h *Handler) AddEdge(ctx context.Context, v1, v2 runtime.Object) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	v1Accessor, err := meta.Accessor(v1)
+	v1Name, err := edgeName(v1)
 	if err != nil {
-		return err
+		if isSkippedNode(err) {
+			return nil
+		}
 	}
-	v1UID := v1Accessor.GetUID()
 
-	h.nodes[v1UID] = v1
+	v2Name, err := edgeName(v2)
+	if err != nil {
+		if isSkippedNode(err) {
+			return nil
+		}
+	}
 
-	cur := h.adjList[v1UID]
-	cur = append(cur, v2)
-	h.adjList[v1UID] = cur
+	// is v1 a key in the adjacency list?
+	if h.adjList.hasKey(v1Name) {
+		if !h.adjList.hasEdgeForKey(v2Name, v1Name) {
+			// add v2 to v1
+			h.adjList.addEdgeForKey(v1Name, v2Name, v2)
+		}
+	} else {
+		// is v2 a key in the adjacency list?
+		if h.adjList.hasKey(v2Name) {
+			// add v1 to v2
+			h.adjList.addEdgeForKey(v2Name, v1Name, v1)
+		} else {
+			// add v2 to v1
+			h.adjList.addEdgeForKey(v1Name, v2Name, v2)
+		}
+	}
+
+	h.addNode(v1Name, v1)
+	h.addNode(v2Name, v2)
 
 	return nil
+}
+
+func (h *Handler) addNode(name string, object runtime.Object) {
+	h.nodes[types.UID(name)] = object
 }
 
 // Process adds nodes to the dependency graph.
@@ -110,127 +182,25 @@ func (h *Handler) Process(ctx context.Context, object runtime.Object) error {
 	return nil
 }
 
-// AdjacencyList creates an adjacency list from the handler.
 func (h *Handler) AdjacencyList() (*component.AdjList, error) {
-	h.mu.Lock()
-	defer h.mu.Unlock()
+	list := component.AdjList{}
 
-	adjList := component.AdjList{}
+	for k, v := range h.adjList {
+		for edgeName := range v {
 
-	podGroupEdges := make(map[string]map[string]component.Edge)
-
-	// iterate over our internal list to build an exportable version.
-	for parentUID, connections := range h.adjList {
-		parent := h.nodes[parentUID]
-
-		inGroup, err := isPodInGroup(parent)
-		if err != nil {
-			return nil, err
-		}
-
-		// if this node is a pod group, track the edges, so they can be added at the
-		// the end.
-		if inGroup {
-			name, err := podGroupName(parent)
-			if err != nil {
-				return nil, err
-			}
-
-			for i := range connections {
-				child := connections[i]
-
-				edges, ok := podGroupEdges[name]
-				if !ok {
-					edges = make(map[string]component.Edge)
-				}
-
-				childAccessor, err := meta.Accessor(child)
-				if err != nil {
-					return nil, err
-				}
-
-				isParent, err := isObjectParent(parent, child)
-				if err != nil {
-					return nil, err
-				}
-
-				if isParent {
-					continue
-				}
-
-				id := string(childAccessor.GetUID())
-				edges[id] = component.Edge{
-					Node: id,
-					Type: component.EdgeTypeExplicit,
-				}
-
-				podGroupEdges[name] = edges
-			}
-
-			continue
-		}
-
-		edgeMap := make(map[string]component.Edge)
-
-		for i := range connections {
-			child := connections[i]
-
-			inGroup, err := isPodInGroup(parent)
-			if err != nil {
-				return nil, err
-			}
-
-			if inGroup {
-				name, err := podGroupName(parent)
-				if err != nil {
-					return nil, err
-				}
-
-				edge := component.Edge{
-					Node: name,
-					Type: component.EdgeTypeExplicit,
-				}
-
-				edgeMap[name] = edge
-				continue
-			}
-
-			isParent, err := isObjectParent(parent, child)
-			if err != nil {
-				return nil, err
-			}
-
-			if isParent {
-				continue
-			}
-
-			name, err := edgeName(child)
-			if err != nil {
-				if isSkippedNode(err) {
-					continue
-				}
-				return nil, err
-			}
-
-			edge := component.Edge{
-				Node: name,
+			list[k] = append(list[k], component.Edge{
+				Node: edgeName,
 				Type: component.EdgeTypeExplicit,
-			}
-
-			key := string(parentUID)
-			adjList[key] = append(adjList[key], edge)
+			})
 		}
+
+		// sort the edges by node to make them easier to compare
+		sort.Slice(list[k], func(i, j int) bool {
+			return list[k][i].Node < list[k][j].Node
+		})
 	}
 
-	for key, m := range podGroupEdges {
-		for _, edge := range m {
-			adjList[key] = append(adjList[key], edge)
-		}
-	}
-
-	adjList = deDupEdges(adjList)
-
-	return &adjList, nil
+	return &list, nil
 }
 
 // Nodes generates nodes from the handler.
@@ -457,9 +427,17 @@ func (e skipNode) Error() string {
 }
 
 func checkReplicaCount(object runtime.Object) error {
-	u, ok := object.(*unstructured.Unstructured)
-	if !ok {
-		return errors.Errorf("expected unstructured object; got %T", object)
+	if object == nil {
+		return errors.Errorf("unable to check for replica count in nil object")
+	}
+
+	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(object)
+	if err != nil {
+		return err
+	}
+
+	u := unstructured.Unstructured{
+		Object: m,
 	}
 
 	i, ok, err := unstructured.NestedInt64(u.Object, "spec", "replicas")
@@ -523,4 +501,27 @@ func deDupEdges(adjList component.AdjList) component.AdjList {
 	}
 
 	return list
+}
+
+func (h *Handler) summarizeNodeList() string {
+	var sb strings.Builder
+
+	header := "nodes"
+	fmt.Fprintf(&sb, "%s\n%s\n", header, strings.Repeat("=", len(header)))
+
+	var uids []string
+
+	for uid := range h.nodes {
+		uids = append(uids, string(uid))
+	}
+
+	sort.Strings(uids)
+
+	for _, uid := range uids {
+		fmt.Fprintf(&sb, "%s: %s\n", uid, kubernetes.PrintObject(h.nodes[types.UID(uid)]))
+	}
+
+	sb.WriteString("===== end ====\n")
+
+	return sb.String()
 }

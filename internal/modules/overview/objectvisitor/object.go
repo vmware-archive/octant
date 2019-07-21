@@ -105,7 +105,7 @@ func (o *Object) Visit(ctx context.Context, object runtime.Object, handler Objec
 					kubernetes.PrintObject(unstructuredObject))
 			}
 
-			return handler.AddEdge(unstructuredObject, owner)
+			return handler.AddEdge(ctx, unstructuredObject, owner)
 		})
 	}
 
@@ -123,7 +123,7 @@ func (o *Object) Visit(ctx context.Context, object runtime.Object, handler Objec
 					kubernetes.PrintObject(unstructuredObject))
 			}
 
-			return handler.AddEdge(object, child)
+			return handler.AddEdge(ctx, object, child)
 		})
 	}
 
