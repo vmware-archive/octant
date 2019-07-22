@@ -1,3 +1,4 @@
+---
 kind: pipeline
 name: default
 
@@ -10,6 +11,9 @@ steps:
     image: docker:git
     commands:
       - git fetch --tags
+    when:
+      event:
+      - tag
   - name: frontend
     image: sfoo/node-chrome:0.0.1
     commands:
@@ -45,8 +49,13 @@ steps:
     when:
       event:
         - tag
-    image: goreleaser/goreleaser:v0.110-cgo
+    image: goreleaser/goreleaser:v0.113-cgo
     commands:
       - /bin/bash ci/drone-deploy.sh
     depends_on:
     - build
+---
+kind: signature
+hmac: d12ab7e7c46cbea63d6dd35ee01da089c277b948fcdaa60d78a97049bd80d579
+
+...
