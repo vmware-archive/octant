@@ -7,6 +7,8 @@ package commands
 
 import (
 	"context"
+	"flag"
+	"fmt"
 	golog "log"
 	"os"
 	"os/signal"
@@ -15,6 +17,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog"
 
 	"github.com/vmware/octant/internal/dash"
 	"github.com/vmware/octant/internal/log"
@@ -27,6 +30,7 @@ func newOctantCmd() *cobra.Command {
 	var verboseLevel int
 	var enableOpenCensus bool
 	var initialContext string
+	var klogVerbosity int
 
 	octantCmd := &cobra.Command{
 		Use:   "octant",
@@ -67,6 +71,15 @@ func newOctantCmd() *cobra.Command {
 					Context:          initialContext,
 				}
 
+				if klogVerbosity > 0 {
+					klog.InitFlags(nil)
+					verbosityOpt := fmt.Sprintf("-v=%d", klogVerbosity)
+					if err := flag.CommandLine.Parse([]string{verbosityOpt, "-logtostderr=true"}); err != nil {
+						logger.WithErr(err).Errorf("unable to parse klog flags")
+					}
+
+				}
+
 				if err := dash.Run(ctx, logger, shutdownCh, options); err != nil {
 					logger.WithErr(err).Errorf("dashboard failed")
 					os.Exit(1)
@@ -90,9 +103,10 @@ func newOctantCmd() *cobra.Command {
 
 	octantCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "initial namespace")
 	octantCmd.Flags().StringVar(&uiURL, "ui-url", "", "dashboard url")
-	octantCmd.Flags().CountVarP(&verboseLevel, "verbose", "v", "verbosity level")
+	octantCmd.Flags().CountVarP(&verboseLevel, "verbosity", "v", "verbosity level")
 	octantCmd.Flags().BoolVarP(&enableOpenCensus, "enable-opencensus", "c", false, "enable open census")
 	octantCmd.Flags().StringVarP(&initialContext, "context", "", "", "initial context")
+	octantCmd.Flags().IntVarP(&klogVerbosity, "klog-verbosity", "", 0, "initial context")
 
 	kubeConfig = clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
 
