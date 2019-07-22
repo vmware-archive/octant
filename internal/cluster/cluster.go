@@ -264,6 +264,8 @@ func FromKubeConfig(ctx context.Context, kubeconfig, contextName string) (*Clust
 		return nil, err
 	}
 
+	config = withConfigDefaults(config)
+
 	return newCluster(ctx, cc, config)
 }
 
@@ -271,6 +273,8 @@ func FromKubeConfig(ctx context.Context, kubeconfig, contextName string) (*Clust
 // See core_client.go#setConfigDefaults
 func withConfigDefaults(inConfig *rest.Config) *rest.Config {
 	config := rest.CopyConfig(inConfig)
+	config.QPS = 30
+	config.Burst = 100
 	config.APIPath = "/api"
 	if config.GroupVersion == nil || config.GroupVersion.Group != scheme.Scheme.PrioritizedVersionsForGroup("")[0].Group {
 		gv := scheme.Scheme.PrioritizedVersionsForGroup("")[0]
