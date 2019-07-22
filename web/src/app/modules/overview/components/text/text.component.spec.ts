@@ -52,11 +52,33 @@ describe('TextComponent', () => {
       };
       fixture.detectChanges();
 
-      expect(
-        element.querySelector('app-view-text div').hasAttribute('markdown')
-      ).toBeTruthy();
+      expect(element.querySelector('app-view-text markdown')).toBeDefined();
       expect(element.querySelector('app-view-text').innerHTML).toContain(
         '*text*'
+      );
+    });
+
+    it('should render new markdown text after value has changed', () => {
+      component.view = {
+        config: { value: '*text*', isMarkdown: true },
+        metadata: { type: 'text', title: [], accessor: 'accessor' },
+      };
+      fixture.detectChanges();
+
+      let element: HTMLElement = fixture.nativeElement;
+      expect(element.querySelector('app-view-text div').innerHTML).toEqual(
+        '<p><em>text</em></p>\n'
+      );
+
+      component.view = {
+        config: { value: '# header', isMarkdown: true },
+        metadata: { type: 'text', title: [], accessor: 'accessor' },
+      };
+      fixture.detectChanges();
+
+      element = fixture.nativeElement;
+      expect(element.querySelector('app-view-text div').innerHTML).toEqual(
+        '<h1 id="header">header</h1>\n'
       );
     });
   });
