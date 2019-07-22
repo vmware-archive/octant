@@ -63,7 +63,7 @@ type RESTInterface interface {
 // Cluster is a client for cluster operations
 type Cluster struct {
 	clientConfig clientcmd.ClientConfig
-	restClient   *rest.Config
+	restConfig   *rest.Config
 	logger       log.Logger
 
 	kubernetesClient kubernetes.Interface
@@ -116,7 +116,7 @@ func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restCl
 
 	c := &Cluster{
 		clientConfig:     clientConfig,
-		restClient:       restClient,
+		restConfig:       restClient,
 		kubernetesClient: kubernetesClient,
 		dynamicClient:    dynamicClient,
 		discoveryClient:  discoveryClient,
@@ -225,13 +225,13 @@ func (c *Cluster) InfoClient() (InfoInterface, error) {
 
 // RESTClient returns a RESTClient for the cluster.
 func (c *Cluster) RESTClient() (rest.Interface, error) {
-	config := withConfigDefaults(c.restClient)
+	config := withConfigDefaults(c.restConfig)
 	return rest.RESTClientFor(config)
 }
 
 // RESTConfig returns configuration for communicating with the cluster.
 func (c *Cluster) RESTConfig() *rest.Config {
-	return c.restClient
+	return c.restConfig
 }
 
 // Version returns a ServerVersion for the cluster.
@@ -264,6 +264,8 @@ func FromKubeConfig(ctx context.Context, kubeconfig, contextName string) (*Clust
 		return nil, err
 	}
 
+	config = withConfigDefaults(config)
+
 	return newCluster(ctx, cc, config)
 }
 
@@ -271,6 +273,8 @@ func FromKubeConfig(ctx context.Context, kubeconfig, contextName string) (*Clust
 // See core_client.go#setConfigDefaults
 func withConfigDefaults(inConfig *rest.Config) *rest.Config {
 	config := rest.CopyConfig(inConfig)
+	config.QPS = 30
+	config.Burst = 100
 	config.APIPath = "/api"
 	if config.GroupVersion == nil || config.GroupVersion.Group != scheme.Scheme.PrioritizedVersionsForGroup("")[0].Group {
 		gv := scheme.Scheme.PrioritizedVersionsForGroup("")[0]
