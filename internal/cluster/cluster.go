@@ -63,7 +63,7 @@ type RESTInterface interface {
 // Cluster is a client for cluster operations
 type Cluster struct {
 	clientConfig clientcmd.ClientConfig
-	restClient   *rest.Config
+	restConfig   *rest.Config
 	logger       log.Logger
 
 	kubernetesClient kubernetes.Interface
@@ -116,7 +116,7 @@ func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restCl
 
 	c := &Cluster{
 		clientConfig:     clientConfig,
-		restClient:       restClient,
+		restConfig:       restClient,
 		kubernetesClient: kubernetesClient,
 		dynamicClient:    dynamicClient,
 		discoveryClient:  discoveryClient,
@@ -225,13 +225,13 @@ func (c *Cluster) InfoClient() (InfoInterface, error) {
 
 // RESTClient returns a RESTClient for the cluster.
 func (c *Cluster) RESTClient() (rest.Interface, error) {
-	config := withConfigDefaults(c.restClient)
+	config := withConfigDefaults(c.restConfig)
 	return rest.RESTClientFor(config)
 }
 
 // RESTConfig returns configuration for communicating with the cluster.
 func (c *Cluster) RESTConfig() *rest.Config {
-	return c.restClient
+	return c.restConfig
 }
 
 // Version returns a ServerVersion for the cluster.
