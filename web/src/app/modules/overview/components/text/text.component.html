@@ -1,9 +1,7 @@
 <ng-container *ngIf="!isMarkdown; else markdown">
-{{ value }}
+    {{ value }}
 </ng-container>
 
 <ng-template #markdown>
-    <div markdown ngPreserveWhitespaces>
-        {{ value }}
-    </div>
+    <div markdown ngPreserveWhitespaces [data]="value"></div>
 </ng-template>
