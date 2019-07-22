@@ -122,7 +122,7 @@ func handlePrint(dashboardClient service.Dashboard, object runtime.Object) (plug
 
 func handleNavigation(dashboardClient service.Dashboard) (navigation.Navigation, error) {
 	return navigation.Navigation{
-		Title: "Module Plugin",
+		Title: "Sample Plugin",
 		Path:  pluginPath,
 		Children: []navigation.Navigation{
 			{

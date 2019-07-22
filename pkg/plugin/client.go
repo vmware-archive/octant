@@ -22,19 +22,19 @@ var (
 // Capabilities are plugin capabilities.
 type Capabilities struct {
 	// SupportsPrinterConfig are the GVKs the plugin will print configuration for.
-	SupportsPrinterConfig []schema.GroupVersionKind
+	SupportsPrinterConfig []schema.GroupVersionKind `json:",omitempty"`
 	// SupportsPrinterStatus are the GVKs the plugin will print status for.
-	SupportsPrinterStatus []schema.GroupVersionKind
+	SupportsPrinterStatus []schema.GroupVersionKind `json:",omitempty"`
 	// SupportsPrinterItems are the GVKs the plugin will print additional items for.
-	SupportsPrinterItems []schema.GroupVersionKind
+	SupportsPrinterItems []schema.GroupVersionKind `json:",omitempty"`
 	// SupportsObjectStatus are the GVKs the plugin will generate object status for.
-	SupportsObjectStatus []schema.GroupVersionKind
+	SupportsObjectStatus []schema.GroupVersionKind `json:",omitempty"`
 	// SupportsTab are the GVKs the plugin will create an additional tab for.
-	SupportsTab []schema.GroupVersionKind
+	SupportsTab []schema.GroupVersionKind `json:",omitempty"`
 	// IsModule is true this plugin is a module.
-	IsModule bool
+	IsModule bool `json:",omitempty"`
 	// ActionNames is a list of action names this plugin handles
-	ActionNames []string
+	ActionNames []string `json:",omitempty"`
 }
 
 // HasPrinterSupport returns true if this plugin supports the supplied GVK.
