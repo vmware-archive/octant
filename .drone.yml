@@ -49,7 +49,7 @@ steps:
     when:
       event:
         - tag
-    image: goreleaser/goreleaser:v0.110-cgo
+    image: goreleaser/goreleaser:v0.113-cgo
     commands:
       - /bin/bash ci/drone-deploy.sh
     depends_on:
