@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Do not remove this test for UTF-8: if “Ω” doesn’t appear as greek uppercase omega letter enclosed in quotation marks, you should use an editor that supports UTF-8, not this one. -->
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>octant</id>
+    <version>0.5.1</version>
+    <owners>VMware</owners>
+    <title>Octant</title>
+    <authors>Bryan Liles, see https://github.com/vmware/octant/graphs/contributors</authors>
+    <projectUrl>https://github.com/vmware/octant</projectUrl>
+    <packageSourceUrl>https://github.com/vmware/octant/blob/master/choco</packageSourceUrl>
+    <!-- TODO:
+    <iconUrl></iconUrl>
+    -->
+    <licenseUrl>https://github.com/vmware/octant/blob/master/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectSourceUrl>https://github.com/vmware/octant</projectSourceUrl>
+    <docsUrl>https://github.com/vmware/octant/tree/master/docs</docsUrl>
+    <mailingListUrl>https://groups.google.com/group/project-octant</mailingListUrl>
+    <bugTrackerUrl>https://github.com/vmware/octant/issues</bugTrackerUrl>
+    <tags>octant kubernetes kubectl heptio dashboard pod</tags>
+    <summary>A web-based, highly extensible platform for developers to better understand the complexity of Kubernetes clusters.
+</summary>
+<description><![CDATA[Octant is a tool for developers to understand how applications run on a Kubernetes cluster. It aims to be part of the developer's toolkit for gaining insight and approaching complexity found in Kubernetes. Octant offers a combination of introspective tooling, cluster navigation, and object management along with a plugin system to further extend its capabilities.
+
+## Features
+
+#### Resource Viewer
+
+Graphically visualizate relationships between objects in a Kubernetes cluster. The status of individual objects are represented by color to show workload performance.
+
+#### Summary View
+
+Consolidated status and configuration information in a single page aggregated from output typically found using multiple kubectl commands.
+
+#### Port Forward
+
+Forward a local port to a running pod with a single button for debugging applications and even port forward multiple pods across namespaces.
+ 
+#### Log Stream
+
+View log streams of pod and container activity for troubleshooting or monitoring without holding multiple terminals open.
+
+#### Label Filter
+
+Organize workloads with label filtering for inspecting clusters with a high volume of objects in a namespace.
+
+#### Cluster Navigation
+
+Easily change between namespaces or contexts across different clusters. Multiple kubeconfig files are also supported.
+
+#### Plugin System
+
+Highly extensible plugin system for users to provide additional functionality through gRPC. Plugin authors can add components on top of existing views.]]></description>
+    <releaseNotes>Release notes are available at https://github.com/vmware/octant/releases</releaseNotes>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>
