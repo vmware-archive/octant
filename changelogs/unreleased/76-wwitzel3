@@ -1,0 +1,1 @@
+fix an issue where a bad CRD would prevent the UI from loading
