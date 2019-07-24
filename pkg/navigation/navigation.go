@@ -18,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/pkg/icon"
 	"github.com/vmware/octant/pkg/store"
 )
@@ -119,11 +120,14 @@ func CustomResourceDefinitionNames(ctx context.Context, o store.Store) ([]string
 
 	var list []string
 
+	logger := log.From(ctx)
+
 	for _, object := range rawList {
 		crd := &apiextv1beta1.CustomResourceDefinition{}
 
 		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, crd); err != nil {
-			return nil, errors.Wrap(err, "crd conversion failed")
+			logger.Errorf("%v", errors.Wrapf(errors.Wrapf(err, "crd conversion failed"), object.GetName()))
+			continue
 		}
 
 		list = append(list, crd.Name)
