@@ -7,11 +7,13 @@ import { NavigationEnd, PRIMARY_OUTLET, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import _ from 'lodash';
 import { ContentStreamService } from '../content-stream/content-stream.service';
+import { NavigationChild } from '../../models/navigation';
 import {
   NotifierService,
   NotifierSession,
   NotifierSignalType,
 } from '../notifier/notifier.service';
+import { includesArray } from '../../util/includesArray';
 
 @Injectable({
   providedIn: 'root',
@@ -82,8 +84,73 @@ export class NamespaceService {
     }
   }
 
+  private getPathArray(url: string): string[] {
+    if (!url || url === '/') {
+      return [];
+    }
+    const urlTree = this.router.parseUrl(url);
+    return _.filter(
+      _.map(urlTree.root.children[PRIMARY_OUTLET].segments, 'path')
+    );
+  }
+
+  // When a user decides to switch namespaces, they expect to be able to
+  // switch to the new namespace while still looking at the same resource.
+  // Because our navigation is dynamic, this function traverses our navigation
+  // options to match against the correct one.
+  // See: issue #73
+  private getNewRoute(namespace: string): string[] {
+    const basePath = ['/content', 'overview', 'namespace'];
+    const currentURLPath = this.getPathArray(this.router.url);
+
+    // If the user is not on a namespace-scoped page but they switch
+    // namespaces, take them to the namespace's overview page
+    if (currentURLPath[2] !== 'namespace') {
+      return [...basePath, namespace];
+    }
+
+    let routeCandidate = basePath;
+    const navigation = this.contentStreamService.navigation.getValue();
+
+    navigationSectionLoop: for (const navigationSection of navigation.sections as NavigationChild[]) {
+      const sectionPath = this.getPathArray(navigationSection.path);
+
+      if (!includesArray(currentURLPath, sectionPath)) {
+        continue;
+      }
+
+      let pointer = navigationSection;
+      while (pointer && pointer.children) {
+        const { children } = pointer;
+        pointer = null;
+
+        navigationChildLoop: for (const child of children as NavigationChild[]) {
+          const pathArr = this.getPathArray(child.path);
+
+          if (includesArray(currentURLPath, pathArr)) {
+            routeCandidate = pathArr;
+            // We're not guaranteed that namespace-scoped CRDs will exist
+            // outside the current namespace so we move the user to the
+            // CRD list view
+            if (child.title !== 'Custom Resources') {
+              pointer = child;
+            }
+            break navigationChildLoop;
+          }
+        }
+      }
+
+      break navigationSectionLoop;
+    }
+
+    // Set to new namespace
+    routeCandidate[3] = namespace;
+    return routeCandidate;
+  }
+
   setNamespace(namespace: string) {
     this.current.next(namespace);
-    this.router.navigate(['/content', 'overview', 'namespace', namespace]);
+    const newRoute = this.getNewRoute(namespace);
+    this.router.navigate(newRoute);
   }
 }
