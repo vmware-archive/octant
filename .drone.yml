@@ -31,17 +31,16 @@ steps:
       - make test
       - go generate ./web
       - make vet
-    depends_on:
-    - frontend
+  - name: test
+    image: alpine
+    depends_on: [ frontend, backend ]
   - name: build
     image: golang:1.12
     environment:
       CGO_ENABLED: 0
     commands:
       - make octant-dev
-    depends_on:
-    - frontend
-    - backend
+    depends_on: [ test ]
   - name: release
     environment:
       GITHUB_TOKEN:
@@ -56,6 +55,6 @@ steps:
     - build
 ---
 kind: signature
-hmac: 30673da9e45f23c5c51fc2452485dff690a9c00f22a90c2ea034004916fa4b87
+hmac: 76c03e3a3dac35cdcc26cbb198c44ea396d8db08ad4fa78f4bacf769ba19a976
 
 ...
