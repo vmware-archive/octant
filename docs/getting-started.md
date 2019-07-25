@@ -19,7 +19,7 @@ Octant is configurable through environment variables defined at runtime.
 * [node 10.15.0 or above](https://nodejs.org/en/)
 * [npm 6.4.1 or above](https://www.npmjs.com/get-npm)
 * [rice](https://github.com/GeertJohan/go.rice) - packaging web assets into a binary
-* [mockgen](https://github.com/golang/gomock) - generating go files used for testing
+* [mockgen](https://github.com/golang/mock) - generating go files used for testing
 * [protoc](https://github.com/golang/protobuf) - generate go code compatible with gRPC
 
 These build tools can be installed via Makefile with `make go-install`.
