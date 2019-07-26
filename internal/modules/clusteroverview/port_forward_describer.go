@@ -7,7 +7,6 @@ package clusteroverview
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/vmware/octant/internal/describer"
 	"github.com/vmware/octant/internal/portforward"
@@ -42,8 +41,8 @@ func (d *PortForwardListDescriber) Describe(ctx context.Context, prefix, namespa
 
 		pfRow := component.TableRow{
 			"Name":      nameLink,
-			"Namespace": component.NewText(namespace),
-			"Ports":     describePortForwardPorts(pf),
+			"Namespace": component.NewText(t.Namespace),
+			"Ports":     component.NewPorts(describePortForwardPorts(pf)),
 			"Age":       component.NewTimestamp(pf.CreatedAt),
 		}
 		tbl.Add(pfRow)
@@ -59,17 +58,24 @@ func (d *PortForwardListDescriber) PathFilters() []describer.PathFilter {
 	return []describer.PathFilter{*filter}
 }
 
-func describePortForwardPorts(pf portforward.State) component.Component {
-	lst := component.NewList("", nil)
+func describePortForwardPorts(pf portforward.State) []component.Port {
+	var list []component.Port
+	apiVersion, kind := pf.Target.GVK.ToAPIVersionAndKind()
+	pfs := component.PortForwardState{}
 
 	for _, p := range pf.Ports {
-		portStr := fmt.Sprintf("%d -> %d", p.Local, p.Remote)
-		item := component.NewPortForwardDeleter(
-			portStr,
-			pf.ID,
-			component.NewPortForwardPorts(p.Local, p.Remote),
-		)
-		lst.Add(item)
+		pfs.ID = pf.ID
+		pfs.Port = int(p.Local)
+		pfs.IsForwarded = true
+
+		port := component.NewPort(
+			pf.Target.Namespace,
+			apiVersion,
+			kind,
+			pf.Target.Name,
+			int(p.Remote),
+			string("TCP"), pfs)
+		list = append(list, *port)
 	}
-	return lst
+	return list
 }
