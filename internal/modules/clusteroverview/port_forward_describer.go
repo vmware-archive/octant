@@ -28,22 +28,23 @@ func (d *PortForwardListDescriber) Describe(ctx context.Context, prefix, namespa
 
 	list := component.NewList("Port Forwards", nil)
 
-	tblCols := component.NewTableCols("Name", "Ports", "Age")
+	tblCols := component.NewTableCols("Name", "Namespace", "Ports", "Age")
 	tbl := component.NewTable("Port Forwards", tblCols)
 	list.Add(tbl)
 
 	for _, pf := range portForwarder.List() {
 		t := &pf.Target
 		apiVersion, kind := t.GVK.ToAPIVersionAndKind()
-		nameLink ,err := options.Link.ForGVK(t.Namespace, apiVersion, kind, t.Name, t.Name)
+		nameLink, err := options.Link.ForGVK(t.Namespace, apiVersion, kind, t.Name, t.Name)
 		if err != nil {
 			return describer.EmptyContentResponse, err
 		}
 
 		pfRow := component.TableRow{
-			"Name":  nameLink,
-			"Ports": describePortForwardPorts(pf),
-			"Age":   component.NewTimestamp(pf.CreatedAt),
+			"Name":      nameLink,
+			"Namespace": component.NewText(namespace),
+			"Ports":     describePortForwardPorts(pf),
+			"Age":       component.NewTimestamp(pf.CreatedAt),
 		}
 		tbl.Add(pfRow)
 	}
