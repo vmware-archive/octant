@@ -74,7 +74,7 @@ func describePortForwardPorts(pf portforward.State) []component.Port {
 			kind,
 			pf.Target.Name,
 			int(p.Remote),
-			string("TCP"), pfs)
+			"TCP", pfs)
 		list = append(list, *port)
 	}
 	return list
