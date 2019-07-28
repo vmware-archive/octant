@@ -17,6 +17,7 @@ import (
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic/dynamicinformer"
 	dynamicfake "k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/tools/cache"
 
@@ -24,7 +25,6 @@ import (
 	clusterfake "github.com/vmware/octant/internal/cluster/fake"
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 )
 
 type fakeLister struct {

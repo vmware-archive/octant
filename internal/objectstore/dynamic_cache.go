@@ -19,6 +19,7 @@ import (
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/informers"
 	kcache "k8s.io/client-go/tools/cache"
 	kretry "k8s.io/client-go/util/retry"
@@ -27,7 +28,6 @@ import (
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/util/retry"
 	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 )
 
 const (

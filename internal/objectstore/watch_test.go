@@ -16,13 +16,13 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic/dynamicinformer"
 
 	"github.com/vmware/octant/internal/cluster"
 	clusterfake "github.com/vmware/octant/internal/cluster/fake"
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/store"
 	objectStoreFake "github.com/vmware/octant/pkg/store/fake"
-	"github.com/vmware/octant/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 )
 
 const testNamespace = "test"

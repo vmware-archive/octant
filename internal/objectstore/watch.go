@@ -14,12 +14,12 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic/dynamicinformer"
 	kcache "k8s.io/client-go/tools/cache"
 
 	"github.com/vmware/octant/internal/cluster"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/third_party/k8s.io/client-go/dynamic/dynamicinformer"
 )
 
 // WatchOpt is an option for configuration Watch.
