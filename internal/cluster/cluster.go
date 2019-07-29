@@ -18,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/discovery/cached/disk"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -102,7 +103,7 @@ func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restCl
 
 	logger.With("dir", dir).Debugf("created temp directory")
 
-	cachedDiscoveryClient, err := discovery.NewCachedDiscoveryClientForConfig(
+	cachedDiscoveryClient, err := disk.NewCachedDiscoveryClientForConfig(
 		restClient,
 		dir,
 		dir,
