@@ -16,13 +16,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Default create a portforward instance.
+// Default create a port forward instance.
 func Default(ctx context.Context, client cluster.ClientInterface, objectStore store.Store) (PortForwarder, error) {
 	logger := log.From(ctx)
 	restClient, err := client.RESTClient()
 	if err != nil {
 		return nil, errors.Wrap(err, "fetching RESTClient")
 	}
+
+	go func() {
+
+	}()
+
 	pfOpts := ServiceOptions{
 		RESTClient:  restClient,
 		Config:      client.RESTConfig(),

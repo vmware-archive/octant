@@ -56,7 +56,7 @@ func (i *Ingress) Visit(ctx context.Context, object runtime.Object, handler Obje
 				return errors.Wrapf(err, "ingress %s visit service %s",
 					kubernetes.PrintObject(ingress), kubernetes.PrintObject(service))
 			}
-			return handler.AddEdge(object, service)
+			return handler.AddEdge(ctx, object, service)
 		})
 
 	}

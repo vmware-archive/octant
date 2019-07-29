@@ -29,7 +29,7 @@ import (
 // ObjectHandler performs actions on an object. Can be used to augment
 // visitor actions with extra functionality.
 type ObjectHandler interface {
-	AddEdge(v1, v2 runtime.Object) error
+	AddEdge(ctx context.Context, v1, v2 runtime.Object) error
 	Process(ctx context.Context, object runtime.Object) error
 }
 

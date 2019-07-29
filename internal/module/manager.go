@@ -147,7 +147,8 @@ func (m *Manager) ObjectPath(namespace, apiVersion, kind, name string) (string, 
 
 	owner, ok := objectPaths[gvk]
 	if !ok {
-		return "", errors.Errorf("no module claimed ownership of %s", gvk.String())
+		return "", nil
+		// return "", errors.Errorf("no module claimed ownership of %s", gvk.String())
 	}
 
 	return owner.GroupVersionKindPath(namespace, apiVersion, kind, name)

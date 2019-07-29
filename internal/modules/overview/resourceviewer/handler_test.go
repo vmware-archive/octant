@@ -27,21 +27,17 @@ func TestHandler(t *testing.T) {
 
 	deployment := testutil.CreateDeployment("deployment")
 	deployment.SetOwnerReferences(testutil.ToOwnerReferences(t, cr))
-	deployment.UID = "1"
 
 	replicaSet1 := testutil.CreateAppReplicaSet("replica-set-1")
 	replicaSet1.SetOwnerReferences(testutil.ToOwnerReferences(t, deployment))
 	replicaSet1.Spec.Replicas = pointer.Int32Ptr(1)
-	replicaSet1.UID = "2"
 
 	replicaSet2 := testutil.CreateAppReplicaSet("replica-set-2")
 	replicaSet2.SetOwnerReferences(testutil.ToOwnerReferences(t, deployment))
-	replicaSet2.UID = "3"
 
 	replicaSet3 := testutil.CreateExtReplicaSet("replica-set-3")
 	replicaSet3.SetOwnerReferences(testutil.ToOwnerReferences(t, deployment))
 	replicaSet3.Spec.Replicas = pointer.Int32Ptr(1)
-	replicaSet3.UID = "4"
 
 	serviceAccount := testutil.CreateServiceAccount("service-account")
 
@@ -80,30 +76,28 @@ func TestHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	ctx := context.Background()
-	mockRelation := func(a, b runtime.Object) {
-		require.NoError(t, handler.AddEdge(testutil.ToUnstructured(t, a), testutil.ToUnstructured(t, b)))
-		require.NoError(t, handler.AddEdge(testutil.ToUnstructured(t, b), testutil.ToUnstructured(t, a)))
-		require.NoError(t, handler.Process(ctx, testutil.ToUnstructured(t, a)))
-		require.NoError(t, handler.Process(ctx, testutil.ToUnstructured(t, b)))
+	mockRelations := func(a runtime.Object, objects ...runtime.Object) {
+		for _, b := range objects {
+			require.NoError(t, handler.AddEdge(ctx, a, b))
+			require.NoError(t, handler.AddEdge(ctx, b, a))
+			require.NoError(t, handler.Process(ctx, b))
+		}
+		require.NoError(t, handler.Process(ctx, a))
 	}
 
-	mockRelation(cr, deployment)
-	mockRelation(deployment, replicaSet1)
-	mockRelation(deployment, replicaSet2)
-	mockRelation(deployment, replicaSet3)
-	mockRelation(replicaSet1, pod1)
-	mockRelation(replicaSet1, pod2)
-	mockRelation(replicaSet3, pod4)
-	mockRelation(service1, pod1)
-	mockRelation(service1, pod2)
-	mockRelation(service1, pod4)
+	mockRelations(cr, deployment)
+	mockRelations(deployment, replicaSet1, replicaSet2, replicaSet3)
+	mockRelations(replicaSet1, pod1, pod2)
+	mockRelations(replicaSet3, pod4)
+	mockRelations(service1, pod1, pod2)
+	mockRelations(service1, pod4)
 
 	require.NoError(t, handler.Process(ctx, pod3))
-	require.NoError(t, handler.AddEdge(testutil.ToUnstructured(t, pod1), testutil.ToUnstructured(t, serviceAccount)))
-	require.NoError(t, handler.AddEdge(testutil.ToUnstructured(t, pod2), testutil.ToUnstructured(t, serviceAccount)))
-	require.NoError(t, handler.AddEdge(testutil.ToUnstructured(t, pod3), testutil.ToUnstructured(t, serviceAccount)))
-	require.NoError(t, handler.AddEdge(testutil.ToUnstructured(t, pod4), testutil.ToUnstructured(t, serviceAccount)))
-	require.NoError(t, handler.Process(ctx, testutil.ToUnstructured(t, serviceAccount)))
+	require.NoError(t, handler.AddEdge(ctx, pod1, serviceAccount))
+	require.NoError(t, handler.AddEdge(ctx, pod2, serviceAccount))
+	require.NoError(t, handler.AddEdge(ctx, pod3, serviceAccount))
+	require.NoError(t, handler.AddEdge(ctx, pod4, serviceAccount))
+	require.NoError(t, handler.Process(ctx, serviceAccount))
 
 	mockLinkPath(t, dashConfig, cr)
 	mockLinkPath(t, dashConfig, deployment)
@@ -124,15 +118,24 @@ func TestHandler(t *testing.T) {
 			{Node: string(replicaSet1.UID), Type: component.EdgeTypeExplicit},
 			{Node: string(replicaSet3.UID), Type: component.EdgeTypeExplicit},
 		},
-		string(replicaSet3.UID): {
-			{Node: fmt.Sprintf("%s pods", replicaSet3.Name), Type: component.EdgeTypeExplicit},
+		fmt.Sprintf("%s pods", replicaSet1.Name): {
+			{Node: string(serviceAccount.UID), Type: component.EdgeTypeExplicit},
 		},
 		fmt.Sprintf("%s pods", replicaSet3.Name): {
 			{Node: string(serviceAccount.UID), Type: component.EdgeTypeExplicit},
-			{Node: string(service1.UID), Type: component.EdgeTypeExplicit},
+		},
+		string(pod3.UID): {
+			{Node: string(serviceAccount.UID), Type: component.EdgeTypeExplicit},
+		},
+		string(replicaSet1.UID): {
+			{Node: fmt.Sprintf("%s pods", replicaSet1.Name), Type: component.EdgeTypeExplicit},
+		},
+		string(replicaSet3.UID): {
+			{Node: fmt.Sprintf("%s pods", replicaSet3.Name), Type: component.EdgeTypeExplicit},
 		},
 		string(service1.UID): {
 			{Node: fmt.Sprintf("%s pods", replicaSet1.Name), Type: component.EdgeTypeExplicit},
+			{Node: fmt.Sprintf("%s pods", replicaSet3.Name), Type: component.EdgeTypeExplicit},
 		},
 	}
 
@@ -312,24 +315,13 @@ func Test_isObjectParent(t *testing.T) {
 	}
 }
 
-func Test_deDupEdges(t *testing.T) {
-	list := component.AdjList{
-		"pod group":       []component.Edge{{Node: "service-account"}, {Node: "service"}, {Node: "replica-set"}},
-		"service-account": []component.Edge{{Node: "pod group"}},
-		"replica-set":     []component.Edge{{Node: "pod group"}, {Node: "deployment"}},
-		"service":         []component.Edge{{Node: "pod group"}},
-		"deployment":      []component.Edge{{Node: "replica-set"}},
-	}
+func Test_adjListStorage(t *testing.T) {
+	als := &adjListStorage{}
 
-	got := deDupEdges(list)
-
-	expected := component.AdjList{
-		"pod group":   []component.Edge{{Node: "replica-set"}, {Node: "service"}, {Node: "service-account"}},
-		"replica-set": []component.Edge{{Node: "deployment"}},
-	}
-
-	assert.Equal(t, expected, got)
-
+	assert.False(t, als.hasEdgeForKey("1", "2"))
+	als.addEdgeForKey("1", "2", nil)
+	assert.True(t, als.hasEdgeForKey("1", "2"))
+	assert.True(t, als.hasKey("1"))
 }
 
 func mockLinkPath(t *testing.T, dashConfig *configFake.MockDash, object runtime.Object) {

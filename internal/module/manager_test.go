@@ -66,7 +66,7 @@ func TestManager_ObjectPath(t *testing.T) {
 			name:       "does not exist",
 			apiVersion: "v1",
 			kind:       "kind",
-			isErr:      true,
+			expected:   "",
 		},
 	}
 

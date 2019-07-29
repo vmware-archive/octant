@@ -63,3 +63,5 @@ require (
 	k8s.io/kubernetes v1.13.2
 	k8s.io/utils v0.0.0-20190221042446-c2654d5206da
 )
+
+replace k8s.io/client-go => k8s.io/client-go v0.0.0-20190620085101-78d2af792bab

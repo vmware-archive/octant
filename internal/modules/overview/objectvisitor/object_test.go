@@ -58,8 +58,8 @@ func TestObject_Visit(t *testing.T) {
 		Return([]runtime.Object{pod}, nil)
 
 	handler := fake.NewMockObjectHandler(controller)
-	handler.EXPECT().AddEdge(u, pod).Return(nil)
-	handler.EXPECT().AddEdge(u, deployment).Return(nil)
+	handler.EXPECT().AddEdge(gomock.Any(), u, pod).Return(nil)
+	handler.EXPECT().AddEdge(gomock.Any(), u, deployment).Return(nil)
 	handler.EXPECT().Process(gomock.Any(), u).Return(nil)
 
 	var visited []runtime.Object

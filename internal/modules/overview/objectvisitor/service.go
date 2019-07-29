@@ -57,7 +57,7 @@ func (s *Service) Visit(ctx context.Context, object runtime.Object, handler Obje
 					kubernetes.PrintObject(service), kubernetes.PrintObject(pod))
 			})
 
-			if err := handler.AddEdge(object, pod); err != nil {
+			if err := handler.AddEdge(ctx, object, pod); err != nil {
 				return err
 			}
 		}
@@ -79,7 +79,7 @@ func (s *Service) Visit(ctx context.Context, object runtime.Object, handler Obje
 						kubernetes.PrintObject(service), kubernetes.PrintObject(ingress))
 				}
 
-				return handler.AddEdge(object, ingress)
+				return handler.AddEdge(ctx, object, ingress)
 			})
 		}
 
