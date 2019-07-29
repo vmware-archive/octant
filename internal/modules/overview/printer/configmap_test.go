@@ -8,7 +8,6 @@ package printer
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -31,14 +30,14 @@ func Test_ConfigMapListHandler(t *testing.T) {
 		"foo": "bar",
 	}
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	configMap := testutil.CreateConfigMap("configMap")
 	configMap.Data = map[string]string{
 		"key1": "value1",
 		"key2": "value2",
 	}
-	configMap.CreationTimestamp = metav1.Time{Time: now}
+	configMap.CreationTimestamp = *testutil.CreateTimestamp()
 	configMap.Labels = labels
 
 	tpo.PathForObject(configMap, configMap.Name, "/configMap")
@@ -72,7 +71,7 @@ func Test_describeConfigMapConfiguration(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "env-config",
 			CreationTimestamp: metav1.Time{
-				Time: time.Unix(1548377609, 0),
+				Time: testutil.Time(),
 			},
 		},
 		Data: map[string]string{
@@ -92,7 +91,7 @@ func Test_describeConfigMapConfiguration(t *testing.T) {
 			expected: component.NewSummary("Configuration", []component.SummarySection{
 				{
 					Header:  "Age",
-					Content: component.NewTimestamp(time.Unix(1548377609, 0)),
+					Content: component.NewTimestamp(testutil.Time()),
 				},
 			}...),
 		},

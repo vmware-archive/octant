@@ -8,7 +8,6 @@ package printer
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -30,37 +29,13 @@ func Test_ReplicationControllerListHandler(t *testing.T) {
 	tpo := newTestPrinterOptions(controller)
 	printOptions := tpo.ToOptions()
 
-	tpo.PathForObject(validReplicationController, validReplicationController.Name, "/rc")
-
-	ctx := context.Background()
-	got, err := ReplicationControllerListHandler(ctx, validReplicationControllerList, printOptions)
-	require.NoError(t, err)
-
-	containers := component.NewContainers()
-	containers.Add("nginx", "nginx:1.15")
-
-	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
-	expected := component.NewTable("ReplicationControllers", cols)
-	expected.Add(component.TableRow{
-		"Name":       component.NewLink("", "rc-test", "/rc"),
-		"Labels":     component.NewLabels(validReplicationControllerLabels),
-		"Status":     component.NewText("0/3"),
-		"Age":        component.NewTimestamp(validReplicationControllerCreationTime),
-		"Containers": containers,
-		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
-	})
-
-	assert.Equal(t, expected, got)
-}
-
-var (
-	validReplicationControllerLabels = map[string]string{
+	validReplicationControllerLabels := map[string]string{
 		"foo": "bar",
 	}
 
-	validReplicationControllerCreationTime = time.Unix(1547211430, 0)
+	validReplicationControllerCreationTime := testutil.Time()
 
-	validReplicationController = &corev1.ReplicationController{
+	validReplicationController := &corev1.ReplicationController{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
 			Kind:       "ReplicationController",
@@ -94,12 +69,34 @@ var (
 		},
 	}
 
-	validReplicationControllerList = &corev1.ReplicationControllerList{
+	validReplicationControllerList := &corev1.ReplicationControllerList{
 		Items: []corev1.ReplicationController{
 			*validReplicationController,
 		},
 	}
-)
+
+	tpo.PathForObject(validReplicationController, validReplicationController.Name, "/rc")
+
+	ctx := context.Background()
+	got, err := ReplicationControllerListHandler(ctx, validReplicationControllerList, printOptions)
+	require.NoError(t, err)
+
+	containers := component.NewContainers()
+	containers.Add("nginx", "nginx:1.15")
+
+	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
+	expected := component.NewTable("ReplicationControllers", cols)
+	expected.Add(component.TableRow{
+		"Name":       component.NewLink("", "rc-test", "/rc"),
+		"Labels":     component.NewLabels(validReplicationControllerLabels),
+		"Status":     component.NewText("0/3"),
+		"Age":        component.NewTimestamp(validReplicationControllerCreationTime),
+		"Containers": containers,
+		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
+	})
+
+	assert.Equal(t, expected, got)
+}
 
 func TestReplicationControllerStatus(t *testing.T) {
 	controller := gomock.NewController(t)

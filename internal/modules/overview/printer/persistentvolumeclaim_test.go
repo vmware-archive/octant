@@ -8,7 +8,6 @@ package printer
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -33,8 +32,7 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 		"foo": "bar",
 	}
 
-	now := time.Unix(1547211430, 0)
-
+	now := testutil.Time()
 	object := testutil.CreatePersistentVolumeClaim("pvc")
 	object.CreationTimestamp = metav1.Time{Time: now}
 	object.Labels = labels
@@ -70,7 +68,7 @@ func Test_printPersistentVolumeClaimConfig(t *testing.T) {
 		"foo": "bar",
 	}
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	object := testutil.CreatePersistentVolumeClaim("pvc")
 	object.CreationTimestamp = metav1.Time{Time: now}

@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -76,4 +77,9 @@ func ToOwnerReferences(t *testing.T, object runtime.Object) []metav1.OwnerRefere
 			Controller: pointer.BoolPtr(true),
 		},
 	}
+}
+
+//Time generates a test time
+func Time() time.Time {
+	return time.Unix(1547211430, 0)
 }

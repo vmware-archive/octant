@@ -8,7 +8,6 @@ package printer
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -37,7 +36,7 @@ func Test_ServiceAccountListHandler(t *testing.T) {
 		"foo": "bar",
 	}
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	object := testutil.CreateServiceAccount("sa")
 	object.CreationTimestamp = metav1.Time{Time: now}
@@ -73,7 +72,7 @@ func Test_serviceAccountHandler(t *testing.T) {
 	tpo := newTestPrinterOptions(controller)
 	printOptions := tpo.ToOptions()
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 	object := testutil.CreateServiceAccount("sa")
 	object.CreationTimestamp = metav1.Time{Time: now}
 
@@ -123,7 +122,7 @@ func Test_printServiceAccountConfig(t *testing.T) {
 	tpo := newTestPrinterOptions(controller)
 	printOptions := tpo.ToOptions()
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	object := testutil.CreateServiceAccount("sa")
 	object.CreationTimestamp = metav1.Time{Time: now}

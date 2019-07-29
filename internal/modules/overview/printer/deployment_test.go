@@ -8,9 +8,9 @@ package printer
 import (
 	"context"
 	"testing"
-	"time"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
 
 	"github.com/golang/mock/gomock"
@@ -20,7 +20,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/vmware/octant/internal/conversion"
 	"github.com/vmware/octant/internal/testutil"
@@ -39,7 +38,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 		"foo": "bar",
 	}
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	object := &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -112,6 +111,46 @@ func Test_DeploymentListHandler(t *testing.T) {
 }
 
 func Test_deploymentConfiguration(t *testing.T) {
+	var rhl int32 = 5
+	validDeployment := testutil.CreateDeployment("deployment")
+	validDeployment.Spec = appsv1.DeploymentSpec{
+		Replicas:             conversion.PtrInt32(3),
+		RevisionHistoryLimit: &rhl,
+		Selector: &metav1.LabelSelector{
+			MatchLabels: map[string]string{
+				"app": "my_app",
+			},
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      "key",
+					Operator: "In",
+					Values:   []string{"value1", "value2"},
+				},
+			},
+		},
+		Strategy: appsv1.DeploymentStrategy{
+			Type: appsv1.RollingUpdateDeploymentStrategyType,
+			RollingUpdate: &appsv1.RollingUpdateDeployment{
+				MaxSurge:       &intstr.IntOrString{Type: intstr.String, StrVal: "25%"},
+				MaxUnavailable: &intstr.IntOrString{Type: intstr.String, StrVal: "25%"},
+			},
+		},
+		Template: corev1.PodTemplateSpec{
+			Spec: corev1.PodSpec{
+				Containers: []corev1.Container{
+					{
+						Name:  "nginx",
+						Image: "nginx:1.15",
+					},
+					{
+						Name:  "kuard",
+						Image: "gcr.io/kuar-demo/kuard-amd64:1",
+					},
+				},
+			},
+		},
+	}
+
 	cases := []struct {
 		name       string
 		deployment *appsv1.Deployment
@@ -177,67 +216,6 @@ func Test_deploymentConfiguration(t *testing.T) {
 	}
 }
 
-var (
-	rhl             int32 = 5
-	validDeployment       = &appsv1.Deployment{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "apps/v1",
-			Kind:       "Deployment",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "deployment",
-			CreationTimestamp: metav1.Time{
-				Time: time.Unix(1548377609, 0),
-			},
-			Labels: map[string]string{
-				"app": "app",
-			},
-		},
-		Status: appsv1.DeploymentStatus{
-			Replicas:            3,
-			AvailableReplicas:   2,
-			UnavailableReplicas: 1,
-		},
-		Spec: appsv1.DeploymentSpec{
-			Replicas:             conversion.PtrInt32(3),
-			RevisionHistoryLimit: &rhl,
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					"app": "my_app",
-				},
-				MatchExpressions: []metav1.LabelSelectorRequirement{
-					{
-						Key:      "key",
-						Operator: "In",
-						Values:   []string{"value1", "value2"},
-					},
-				},
-			},
-			Strategy: appsv1.DeploymentStrategy{
-				Type: appsv1.RollingUpdateDeploymentStrategyType,
-				RollingUpdate: &appsv1.RollingUpdateDeployment{
-					MaxSurge:       &intstr.IntOrString{Type: intstr.String, StrVal: "25%"},
-					MaxUnavailable: &intstr.IntOrString{Type: intstr.String, StrVal: "25%"},
-				},
-			},
-			Template: corev1.PodTemplateSpec{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:  "nginx",
-							Image: "nginx:1.15",
-						},
-						{
-							Name:  "kuard",
-							Image: "gcr.io/kuar-demo/kuard-amd64:1",
-						},
-					},
-				},
-			},
-		},
-	}
-)
-
 func TestDeploymentStatus(t *testing.T) {
 	d := &appsv1.Deployment{
 		Status: appsv1.DeploymentStatus{
@@ -275,7 +253,7 @@ func Test_deploymentPods(t *testing.T) {
 	deployment := testutil.CreateDeployment("deployment")
 	deployment.Spec.Template.ObjectMeta.Labels = podLabels
 
-	now := time.Unix(1559734098, 0)
+	now := testutil.Time()
 	pod := testutil.CreatePod("pod")
 	pod.ObjectMeta.CreationTimestamp = metav1.Time{Time: now}
 

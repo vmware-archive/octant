@@ -15,9 +15,12 @@ import (
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware/octant/internal/conversion"
 	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/plugin"
+	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -28,11 +31,11 @@ func Test_PodListHandler(t *testing.T) {
 	tpo := newTestPrinterOptions(controller)
 	printOptions := tpo.ToOptions()
 
+	now := testutil.Time()
+
 	labels := map[string]string{
 		"app": "testing",
 	}
-
-	now := time.Unix(1547211430, 0)
 
 	pod := &corev1.Pod{
 		TypeMeta: metav1.TypeMeta{
@@ -45,7 +48,9 @@ func Test_PodListHandler(t *testing.T) {
 			CreationTimestamp: metav1.Time{
 				Time: now,
 			},
-			Labels: labels,
+			Labels: map[string]string{
+				"app": "testing",
+			},
 		},
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{
@@ -89,9 +94,6 @@ func Test_PodListHandler(t *testing.T) {
 	got, err := PodListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
-	containers := component.NewContainers()
-	containers.Add("nginx", "nginx:1.15")
-
 	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", cols)
 	expected.Add(component.TableRow{
@@ -103,6 +105,155 @@ func Test_PodListHandler(t *testing.T) {
 		"Age":      component.NewTimestamp(now),
 		"Node":     component.NewText("node"),
 	})
+
+	component.AssertEqual(t, expected, got)
+}
+
+func Test_PodHandler(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	now := testutil.Time()
+
+	tpo := newTestPrinterOptions(controller)
+	printOptions := tpo.ToOptions()
+
+	labels := map[string]string{
+		"app": "testing",
+	}
+
+	sidecar := testutil.CreatePod("pod")
+	sidecar.ObjectMeta.CreationTimestamp = *testutil.CreateTimestamp()
+	sidecar.ObjectMeta.Labels = labels
+	sidecar.Spec.Containers = []corev1.Container{
+		{
+			Name:  "nginx",
+			Image: "nginx:1.15",
+		},
+		{
+			Name:  "kuard",
+			Image: "gcr.io/kuar-demo/kuard-amd64:1",
+		},
+	}
+
+	tpo.PathForObject(sidecar, sidecar.Name, "/pod")
+
+	serviceAccountLink := component.NewLink("", "serviceAccount", "/service-account")
+	tpo.link.EXPECT().
+		ForGVK(gomock.Any(), "v1", "ServiceAccount", gomock.Any(), gomock.Any()).
+		Return(serviceAccountLink, nil).
+		AnyTimes()
+
+	printResponse := &plugin.PrintResponse{}
+	tpo.pluginManager.EXPECT().
+		Print(gomock.Any()).Return(printResponse, nil)
+
+	key := store.Key{
+		Namespace:  "namespace",
+		APIVersion: "v1",
+		Kind:       "Event",
+	}
+	eventList := []*unstructured.Unstructured{}
+	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(eventList, nil)
+
+	ctx := context.Background()
+	got, err := PodHandler(ctx, sidecar, printOptions)
+	require.NoError(t, err)
+
+	configSection := component.SummarySections{
+		{Header: "Service Account", Content: component.NewLink("", "serviceAccount", "/service-account")},
+	}
+	configSummary := component.NewSummary("Configuration", configSection...)
+
+	statusSections := component.SummarySections{
+		{Header: "QoS", Content: component.NewText("")},
+		{Header: "Phase", Content: component.NewText("")},
+		{Header: "Pod IP", Content: component.NewText("")},
+		{Header: "Host IP", Content: component.NewText("")},
+	}
+	statusSummary := component.NewSummary("Status", statusSections...)
+
+	metadataSections := component.SummarySections{
+		{Header: "Age", Content: component.NewTimestamp(now)},
+		{Header: "Labels", Content: component.NewLabels(labels)},
+	}
+	metadataSummary := component.NewSummary("Metadata", metadataSections...)
+
+	conditionsCols := component.NewTableCols("Type", "Last Transition Time", "Message", "Reason")
+	conditionTable := component.NewTable("Pod Conditions", conditionsCols)
+
+	container1Sections := component.SummarySections{
+		{Header: "Image", Content: component.NewText("nginx:1.15")},
+	}
+	container1Summary := component.NewSummary("Container nginx", container1Sections...)
+
+	container2Sections := component.SummarySections{
+		{
+			Header:  "Image",
+			Content: component.NewText("gcr.io/kuar-demo/kuard-amd64:1"),
+		},
+	}
+	container2Summary := component.NewSummary("Container kuard", container2Sections...)
+
+	volumeCols := component.NewTableCols("Name", "Kind", "Description")
+	volumeTable := component.NewTable("Volumes", volumeCols)
+
+	taintCols := component.NewTableCols("Description")
+	taintTable := component.NewTable("Taints and Tolerations", taintCols)
+
+	affinityCols := component.NewTableCols("Type", "Description")
+	affinityTable := component.NewTable("Affinities and Anti-Affinities", affinityCols)
+
+	expected := component.NewFlexLayout("Summary")
+	expected.AddSections(
+		component.FlexLayoutSection{
+			{
+				Width: component.WidthHalf,
+				View:  configSummary,
+			},
+			{
+				Width: component.WidthHalf,
+				View:  statusSummary,
+			},
+		},
+		component.FlexLayoutSection{
+			{
+				Width: component.WidthFull,
+				View:  metadataSummary,
+			},
+		},
+		component.FlexLayoutSection{
+			{
+				Width: component.WidthFull,
+				View:  conditionTable,
+			},
+		},
+		component.FlexLayoutSection{},
+		component.FlexLayoutSection{
+			{
+				Width: component.WidthHalf,
+				View:  container1Summary,
+			},
+			{
+				Width: component.WidthHalf,
+				View:  container2Summary,
+			},
+		},
+		component.FlexLayoutSection{
+			{
+				Width: component.WidthHalf,
+				View:  volumeTable,
+			},
+			{
+				Width: component.WidthHalf,
+				View:  taintTable,
+			},
+			{
+				Width: component.WidthHalf,
+				View:  affinityTable,
+			},
+		},
+	)
 
 	component.AssertEqual(t, expected, got)
 }
@@ -155,9 +306,9 @@ func TestPodListHandler_sorted(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
-var (
-	now      = time.Unix(1547211430, 0)
-	validPod = &corev1.Pod{
+func Test_PodConfiguration(t *testing.T) {
+	now := testutil.Time()
+	validPod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "pod",
 			Namespace: "default",
@@ -191,9 +342,7 @@ var (
 			QOSClass:          "Guaranteed",
 		},
 	}
-)
 
-func Test_PodConfiguration(t *testing.T) {
 	cases := []struct {
 		name     string
 		pod      *corev1.Pod

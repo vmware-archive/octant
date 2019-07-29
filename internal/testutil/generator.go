@@ -312,6 +312,12 @@ func CreateRoleBinding(roleBindingName, roleName string, subjects []rbacv1.Subje
 	}
 }
 
+func CreateTimestamp() *metav1.Time {
+	return &metav1.Time{
+		Time: Time(),
+	}
+}
+
 func genTypeMeta(gvk schema.GroupVersionKind) metav1.TypeMeta {
 	apiVersion, kind := gvk.ToAPIVersionAndKind()
 	return metav1.TypeMeta{

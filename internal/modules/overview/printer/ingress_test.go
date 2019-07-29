@@ -8,7 +8,6 @@ package printer
 import (
 	"context"
 	"testing"
-	"time"
 
 	"k8s.io/apimachinery/pkg/util/intstr"
 
@@ -27,7 +26,7 @@ func Test_IngressListHandler(t *testing.T) {
 		"foo": "bar",
 	}
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	object := testutil.CreateIngress("ingress")
 	object.CreationTimestamp = metav1.Time{Time: now}
@@ -124,7 +123,7 @@ func Test_printIngressConfig(t *testing.T) {
 		"foo": "bar",
 	}
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	object := testutil.CreateIngress("ingress")
 	object.CreationTimestamp = metav1.Time{Time: now}

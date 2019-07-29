@@ -8,7 +8,6 @@ package printer
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +26,7 @@ func Test_RoleListHandler(t *testing.T) {
 	tpo := newTestPrinterOptions(controller)
 	printOptions := tpo.ToOptions()
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	role := testutil.CreateRole("pod-reader")
 	role.CreationTimestamp = metav1.Time{Time: now}
@@ -54,7 +53,7 @@ func Test_RoleListHandler(t *testing.T) {
 }
 
 func Test_printRoleConfig(t *testing.T) {
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	role := testutil.CreateRole("pod-reader")
 	role.CreationTimestamp = metav1.Time{Time: now}
@@ -70,7 +69,7 @@ func Test_printRoleConfig(t *testing.T) {
 }
 
 func Test_printRolePolicyRules(t *testing.T) {
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	role := testutil.CreateRole("pod-reader")
 	role.CreationTimestamp = metav1.Time{Time: now}

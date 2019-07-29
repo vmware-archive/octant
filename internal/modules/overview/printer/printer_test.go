@@ -9,7 +9,6 @@ import (
 	"context"
 	"encoding/json"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
@@ -19,6 +18,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/plugin/fake"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -207,7 +207,7 @@ func Test_DefaultPrinter(t *testing.T) {
 		"foo": "bar",
 	}
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	object := &appsv1.DeploymentList{
 		Items: []appsv1.Deployment{
