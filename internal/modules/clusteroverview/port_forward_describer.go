@@ -7,7 +7,6 @@ package clusteroverview
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/vmware/octant/internal/describer"
 	"github.com/vmware/octant/internal/portforward"
@@ -28,22 +27,23 @@ func (d *PortForwardListDescriber) Describe(ctx context.Context, prefix, namespa
 
 	list := component.NewList("Port Forwards", nil)
 
-	tblCols := component.NewTableCols("Name", "Ports", "Age")
+	tblCols := component.NewTableCols("Name", "Namespace", "Ports", "Age")
 	tbl := component.NewTable("Port Forwards", tblCols)
 	list.Add(tbl)
 
 	for _, pf := range portForwarder.List() {
 		t := &pf.Target
 		apiVersion, kind := t.GVK.ToAPIVersionAndKind()
-		nameLink ,err := options.Link.ForGVK(t.Namespace, apiVersion, kind, t.Name, t.Name)
+		nameLink, err := options.Link.ForGVK(t.Namespace, apiVersion, kind, t.Name, t.Name)
 		if err != nil {
 			return describer.EmptyContentResponse, err
 		}
 
 		pfRow := component.TableRow{
-			"Name":  nameLink,
-			"Ports": describePortForwardPorts(pf),
-			"Age":   component.NewTimestamp(pf.CreatedAt),
+			"Name":      nameLink,
+			"Namespace": component.NewText(t.Namespace),
+			"Ports":     component.NewPorts(describePortForwardPorts(pf)),
+			"Age":       component.NewTimestamp(pf.CreatedAt),
 		}
 		tbl.Add(pfRow)
 	}
@@ -58,17 +58,24 @@ func (d *PortForwardListDescriber) PathFilters() []describer.PathFilter {
 	return []describer.PathFilter{*filter}
 }
 
-func describePortForwardPorts(pf portforward.State) component.Component {
-	lst := component.NewList("", nil)
+func describePortForwardPorts(pf portforward.State) []component.Port {
+	var list []component.Port
+	apiVersion, kind := pf.Target.GVK.ToAPIVersionAndKind()
+	pfs := component.PortForwardState{}
 
 	for _, p := range pf.Ports {
-		portStr := fmt.Sprintf("%d -> %d", p.Local, p.Remote)
-		item := component.NewPortForwardDeleter(
-			portStr,
-			pf.ID,
-			component.NewPortForwardPorts(p.Local, p.Remote),
-		)
-		lst.Add(item)
+		pfs.ID = pf.ID
+		pfs.Port = int(p.Local)
+		pfs.IsForwarded = true
+
+		port := component.NewPort(
+			pf.Target.Namespace,
+			apiVersion,
+			kind,
+			pf.Target.Name,
+			int(p.Remote),
+			"TCP", pfs)
+		list = append(list, *port)
 	}
-	return lst
+	return list
 }
