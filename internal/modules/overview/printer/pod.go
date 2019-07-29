@@ -124,6 +124,7 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.C
 
 	var initContainerItems []ItemDescriptor
 	for _, container := range pod.Spec.InitContainers {
+		container := container
 		cc := NewContainerConfiguration(pod, &container, portForwarder, true, opts)
 		initContainerItems = append(initContainerItems, ItemDescriptor{
 			Width: component.WidthHalf,
@@ -137,8 +138,9 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.C
 
 	var containerItems []ItemDescriptor
 	for _, container := range pod.Spec.Containers {
+		container := container
 		cc := NewContainerConfiguration(pod, &container, portForwarder, false, opts)
-		containerItems = append(initContainerItems, ItemDescriptor{
+		containerItems = append(containerItems, ItemDescriptor{
 			Width: component.WidthHalf,
 			Func: func() (component.Component, error) {
 				return cc.Create()

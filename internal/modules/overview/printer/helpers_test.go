@@ -12,6 +12,7 @@ import (
 
 	configFake "github.com/vmware/octant/internal/config/fake"
 	linkFake "github.com/vmware/octant/internal/link/fake"
+	portForwardFake "github.com/vmware/octant/internal/portforward/fake"
 	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
 	objectStoreFake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/pkg/view/component"
@@ -34,9 +35,12 @@ func newTestPrinterOptions(controller *gomock.Controller) *testPrinterOptions {
 
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 
+	portForwarder := portForwardFake.NewMockPortForwarder(controller)
+
 	dashConfig := configFake.NewMockDash(controller)
 	dashConfig.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
 	dashConfig.EXPECT().PluginManager().Return(pluginManager).AnyTimes()
+	dashConfig.EXPECT().PortForwarder().Return(portForwarder).AnyTimes()
 
 	tpo := &testPrinterOptions{
 		dashConfig:    dashConfig,
