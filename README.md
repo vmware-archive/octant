@@ -58,15 +58,15 @@ Octant is a tool for developers to understand how applications run on a Kubernet
 2. Extract the tarball:
 
     ```sh
-    $ tar -xzvf ~/Downloads/octant_0.4.0_Linux-64bit.tar.gz
-    octant_0.4.0_Linux-64bit/README.md
-    octant_0.4.0_Linux-64bit/octant
+    $ tar -xzvf ~/Downloads/octant_0.4.1_Linux-64bit.tar.gz
+    octant_0.4.1_Linux-64bit/README.md
+    octant_0.4.1_Linux-64bit/octant
     ```
 
 3. Verify it runs:
 
     ```sh
-    $ ./octant_0.4.0_Linux-64bit/octant version
+    $ ./octant_0.4.1_Linux-64bit/octant version
     ```
 
 ## Getting Started
