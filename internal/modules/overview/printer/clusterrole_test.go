@@ -8,7 +8,6 @@ package printer
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -22,7 +21,7 @@ import (
 
 func Test_ClusterRoleListHandler(t *testing.T) {
 	object := testutil.CreateClusterRole("aggregate-cron-tabs-edit")
-	object.CreationTimestamp = metav1.Time{Time: now}
+	object.CreationTimestamp = *testutil.CreateTimestamp()
 
 	list := &rbacv1.ClusterRoleList{
 		Items: []rbacv1.ClusterRole{*object},
@@ -36,7 +35,7 @@ func Test_ClusterRoleListHandler(t *testing.T) {
 
 	tpo.PathForObject(object, object.Name, "/path")
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	ctx := context.Background()
 	got, err := ClusterRoleListHandler(ctx, list, printOptions)
@@ -53,7 +52,7 @@ func Test_ClusterRoleListHandler(t *testing.T) {
 }
 
 func Test_printClusterRoleConfig(t *testing.T) {
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	clusterRole := testutil.CreateClusterRole("aggregate-cron-tabs-edit")
 	clusterRole.CreationTimestamp = metav1.Time{Time: now}
@@ -69,7 +68,7 @@ func Test_printClusterRoleConfig(t *testing.T) {
 }
 
 func Test_printClusterRolePolicyRule(t *testing.T) {
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	clusterRole := testutil.CreateClusterRole("aggregate-cron-tabs-edit")
 	clusterRole.CreationTimestamp = metav1.Time{Time: now}

@@ -8,7 +8,6 @@ package printer
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -16,6 +15,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -30,7 +30,7 @@ func Test_SecretListHandler(t *testing.T) {
 		"foo": "bar",
 	}
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	object := &corev1.SecretList{
 		Items: []corev1.Secret{

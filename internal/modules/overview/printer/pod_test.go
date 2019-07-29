@@ -24,37 +24,6 @@ import (
 	"github.com/vmware/octant/pkg/view/component"
 )
 
-var (
-	testLabels = map[string]string{"app": "testing"}
-	testPod    = &corev1.Pod{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "Pod",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "pod",
-			Namespace: "default",
-			CreationTimestamp: metav1.Time{
-				Time: now,
-			},
-			Labels: testLabels,
-		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:  "nginx",
-					Image: "nginx:1.15",
-				},
-				{
-					Name:  "kuard",
-					Image: "gcr.io/kuar-demo/kuard-amd64:1",
-				},
-			},
-			NodeName: "node",
-		},
-	}
-)
-
 func Test_PodListHandler(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
@@ -62,7 +31,11 @@ func Test_PodListHandler(t *testing.T) {
 	tpo := newTestPrinterOptions(controller)
 	printOptions := tpo.ToOptions()
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
+
+	labels := map[string]string{
+		"app": "testing",
+	}
 
 	pod := &corev1.Pod{
 		TypeMeta: metav1.TypeMeta{
@@ -121,14 +94,11 @@ func Test_PodListHandler(t *testing.T) {
 	got, err := PodListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
-	containers := component.NewContainers()
-	containers.Add("nginx", "nginx:1.15")
-
 	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", cols)
 	expected.Add(component.TableRow{
 		"Name":     component.NewLink("", "pod", "/pod"),
-		"Labels":   component.NewLabels(testLabels),
+		"Labels":   component.NewLabels(labels),
 		"Ready":    component.NewText("1/2"),
 		"Phase":    component.NewText("Pending"),
 		"Restarts": component.NewText("0"),
@@ -143,12 +113,30 @@ func Test_PodHandler(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	tpo := newTestPrinterOptions(controller)
 	printOptions := tpo.ToOptions()
 
-	tpo.PathForObject(testPod, testPod.Name, "/pod")
+	labels := map[string]string{
+		"app": "testing",
+	}
+
+	sidecar := testutil.CreatePod("pod")
+	sidecar.ObjectMeta.CreationTimestamp = *testutil.CreateTimestamp()
+	sidecar.ObjectMeta.Labels = labels
+	sidecar.Spec.Containers = []corev1.Container{
+		{
+			Name:  "nginx",
+			Image: "nginx:1.15",
+		},
+		{
+			Name:  "kuard",
+			Image: "gcr.io/kuar-demo/kuard-amd64:1",
+		},
+	}
+
+	tpo.PathForObject(sidecar, sidecar.Name, "/pod")
 
 	serviceAccountLink := component.NewLink("", "serviceAccount", "/service-account")
 	tpo.link.EXPECT().
@@ -161,7 +149,7 @@ func Test_PodHandler(t *testing.T) {
 		Print(gomock.Any()).Return(printResponse, nil)
 
 	key := store.Key{
-		Namespace:  "default",
+		Namespace:  "namespace",
 		APIVersion: "v1",
 		Kind:       "Event",
 	}
@@ -169,7 +157,7 @@ func Test_PodHandler(t *testing.T) {
 	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(eventList, nil)
 
 	ctx := context.Background()
-	got, err := PodHandler(ctx, testPod, printOptions)
+	got, err := PodHandler(ctx, sidecar, printOptions)
 	require.NoError(t, err)
 
 	configSection := component.SummarySections{
@@ -187,7 +175,7 @@ func Test_PodHandler(t *testing.T) {
 
 	metadataSections := component.SummarySections{
 		{Header: "Age", Content: component.NewTimestamp(now)},
-		{Header: "Labels", Content: component.NewLabels(testLabels)},
+		{Header: "Labels", Content: component.NewLabels(labels)},
 	}
 	metadataSummary := component.NewSummary("Metadata", metadataSections...)
 
@@ -318,9 +306,9 @@ func TestPodListHandler_sorted(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
-var (
-	now      = time.Unix(1547211430, 0)
-	validPod = &corev1.Pod{
+func Test_PodConfiguration(t *testing.T) {
+	now := testutil.Time()
+	validPod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "pod",
 			Namespace: "default",
@@ -354,9 +342,7 @@ var (
 			QOSClass:          "Guaranteed",
 		},
 	}
-)
 
-func Test_PodConfiguration(t *testing.T) {
 	cases := []struct {
 		name     string
 		pod      *corev1.Pod

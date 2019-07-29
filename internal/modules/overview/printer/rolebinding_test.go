@@ -8,13 +8,11 @@ package printer
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 
 	"github.com/stretchr/testify/require"
 	rbacv1 "k8s.io/api/rbac/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/view/component"
@@ -27,11 +25,11 @@ func Test_RoleBindingListHandler(t *testing.T) {
 	tpo := newTestPrinterOptions(controller)
 	printOptions := tpo.ToOptions()
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	subject := testutil.CreateRoleBindingSubject("User", "test@test.com", "namespace")
 	roleBinding := testutil.CreateRoleBinding("read-pods", "pod-reader", []rbacv1.Subject{*subject})
-	roleBinding.CreationTimestamp = metav1.Time{Time: now}
+	roleBinding.CreationTimestamp = *testutil.CreateTimestamp()
 	roleBindingList := &rbacv1.RoleBindingList{
 		Items: []rbacv1.RoleBinding{
 			*roleBinding,

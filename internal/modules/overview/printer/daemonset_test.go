@@ -8,7 +8,6 @@ package printer
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -31,7 +30,7 @@ func Test_DaemonSetListHandler(t *testing.T) {
 		"foo": "bar",
 	}
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	object := testutil.CreateDaemonSet("ds")
 	object.CreationTimestamp = metav1.Time{Time: now}
@@ -69,7 +68,7 @@ func Test_printDaemonSetConfig(t *testing.T) {
 		"foo": "bar",
 	}
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	object := testutil.CreateDaemonSet("ds")
 	object.CreationTimestamp = metav1.Time{Time: now}

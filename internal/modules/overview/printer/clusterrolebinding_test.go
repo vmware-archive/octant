@@ -8,7 +8,6 @@ package printer
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -26,7 +25,7 @@ func Test_ClusterRoleBindingListHandler(t *testing.T) {
 	tpo := newTestPrinterOptions(controller)
 	printOptions := tpo.ToOptions()
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	subjects := []rbacv1.Subject{
 		{
@@ -65,7 +64,7 @@ func Test_ClusterRoleBindingListHandler(t *testing.T) {
 }
 
 func Test_printClusterRoleBindingSubjects(t *testing.T) {
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	subjects := []rbacv1.Subject{
 		{

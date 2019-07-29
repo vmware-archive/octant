@@ -8,13 +8,11 @@ package describer
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	configFake "github.com/vmware/octant/internal/config/fake"
@@ -33,9 +31,7 @@ func TestListDescriber(t *testing.T) {
 	thePath := "/"
 
 	pod := testutil.CreatePod("pod")
-	pod.CreationTimestamp = metav1.Time{
-		Time: time.Unix(1547472896, 0),
-	}
+	pod.CreationTimestamp = *testutil.CreateTimestamp()
 
 	key, err := store.KeyFromObject(pod)
 	require.NoError(t, err)

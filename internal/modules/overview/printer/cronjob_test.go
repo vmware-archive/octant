@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/vmware/octant/internal/conversion"
+	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/view/component"
 
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
@@ -32,7 +33,7 @@ func Test_CronJobListHandler(t *testing.T) {
 		"app": "myapp",
 	}
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	cronJob := &batchv1beta1.CronJob{
 		TypeMeta: metav1.TypeMeta{

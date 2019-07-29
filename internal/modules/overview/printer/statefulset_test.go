@@ -8,7 +8,6 @@ package printer
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -35,7 +34,7 @@ func Test_StatefulSetListHandler(t *testing.T) {
 		"foo": "bar",
 	}
 
-	now := time.Unix(1547211430, 0)
+	now := testutil.Time()
 
 	statefulSet := &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
