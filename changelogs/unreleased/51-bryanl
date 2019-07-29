@@ -1,4 +1,0 @@
-Tune rate limiter
-
-* Tune rate limiter for client-go's rest client
-* rename item referred to as restClient to restConfig (as it's a config and not a client)
