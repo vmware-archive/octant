@@ -8,6 +8,7 @@ package printer
 import (
 	"context"
 	"testing"
+	"time"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -216,27 +217,95 @@ func Test_deploymentConfiguration(t *testing.T) {
 	}
 }
 
-func TestDeploymentStatus(t *testing.T) {
-	d := &appsv1.Deployment{
+func Test_deploymentStatus(t *testing.T) {
+	deployment := &appsv1.Deployment{
 		Status: appsv1.DeploymentStatus{
 			UpdatedReplicas:     1,
 			Replicas:            2,
 			UnavailableReplicas: 3,
 			AvailableReplicas:   4,
+			ReadyReplicas:       5,
 		},
 	}
 
-	ds := NewDeploymentStatus(d)
-	got, err := ds.Create()
+	got, err := deploymentStatus(deployment)
 	require.NoError(t, err)
 
-	expected := component.NewQuadrant("Status")
-	require.NoError(t, expected.Set(component.QuadNW, "Updated", "1"))
-	require.NoError(t, expected.Set(component.QuadNE, "Total", "2"))
-	require.NoError(t, expected.Set(component.QuadSW, "Unavailable", "3"))
-	require.NoError(t, expected.Set(component.QuadSE, "Available", "4"))
+	expected := component.NewSummary("Status", []component.SummarySection{
+		{
+			Header:  "Available Replicas",
+			Content: component.NewText("4"),
+		},
+		{
+			Header:  "Ready Replicas",
+			Content: component.NewText("5"),
+		},
+		{
+			Header:  "Total Replicas",
+			Content: component.NewText("2"),
+		},
+		{
+			Header:  "Unavailable Replicas",
+			Content: component.NewText("3"),
+		},
+		{
+			Header:  "Updated Replicas",
+			Content: component.NewText("1"),
+		},
+	}...)
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
+}
+
+func Test_deploymentConditions(t *testing.T) {
+	now := time.Now()
+
+	deployment := &appsv1.Deployment{
+		Status: appsv1.DeploymentStatus{
+			Conditions: []appsv1.DeploymentCondition{
+				{
+					Type:               "type1",
+					Status:             "status1",
+					LastUpdateTime:     metav1.Time{Time: now},
+					LastTransitionTime: metav1.Time{Time: now},
+					Reason:             "reason1",
+					Message:            "message1",
+				},
+				{
+					Type:               "type2",
+					Status:             "status2",
+					LastUpdateTime:     metav1.Time{Time: now},
+					LastTransitionTime: metav1.Time{Time: now},
+					Reason:             "reason2",
+					Message:            "message2",
+				},
+			},
+		},
+	}
+
+	got, err := deploymentConditions(deployment)
+	require.NoError(t, err)
+
+	expected := component.NewTableWithRows("Conditions", deploymentConditionColumns, []component.TableRow{
+		{
+			"Type":            component.NewText("type1"),
+			"Reason":          component.NewText("reason1"),
+			"Status":          component.NewText("status1"),
+			"Message":         component.NewText("message1"),
+			"Last Update":     component.NewTimestamp(now),
+			"Last Transition": component.NewTimestamp(now),
+		},
+		{
+			"Type":            component.NewText("type2"),
+			"Reason":          component.NewText("reason2"),
+			"Status":          component.NewText("status2"),
+			"Message":         component.NewText("message2"),
+			"Last Update":     component.NewTimestamp(now),
+			"Last Transition": component.NewTimestamp(now),
+		},
+	})
+
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_deploymentPods(t *testing.T) {
