@@ -19,6 +19,10 @@ import (
 	"github.com/vmware/octant/pkg/view/component"
 )
 
+var (
+	deploymentConditionColumns = component.NewTableCols("Type", "Reason", "Status", "Message", "Last Update", "Last Transition")
+)
+
 // DeploymentListHandler is a printFunc that lists deployments
 func DeploymentListHandler(_ context.Context, list *appsv1.DeploymentList, opts Options) (component.Component, error) {
 	if list == nil {
@@ -66,13 +70,13 @@ func DeploymentHandler(ctx context.Context, deployment *appsv1.Deployment, optio
 		return nil, err
 	}
 
-	deploySummaryGen := NewDeploymentStatus(deployment)
-	statusSummary, err := deploySummaryGen.Create()
+	status, err := deploymentStatus(deployment)
 	if err != nil {
 		return nil, err
 	}
 
 	o.RegisterConfig(configSummary)
+	o.RegisterSummary(status)
 	o.RegisterItems([]ItemDescriptor{
 		{
 			Func: func() (component.Component, error) {
@@ -81,16 +85,74 @@ func DeploymentHandler(ctx context.Context, deployment *appsv1.Deployment, optio
 			Width: component.WidthFull,
 		},
 		{
-			Width: component.WidthQuarter,
-			Func: func() (component.Component, error) {
-				return statusSummary, nil
+			Func: func() (i component.Component, e error) {
+				return deploymentConditions(deployment)
 			},
+			Width: component.WidthFull,
 		},
 	}...)
 	o.EnablePodTemplate(deployment.Spec.Template)
 	o.EnableEvents()
 
 	return o.ToComponent(ctx, options)
+}
+
+func deploymentStatus(deployment *appsv1.Deployment) (*component.Summary, error) {
+	if deployment == nil {
+		return nil, errors.New("unable to generate status from a nil deployment")
+	}
+
+	status := deployment.Status
+
+	summary := component.NewSummary("Status", []component.SummarySection{
+		{
+			Header:  "Available Replicas",
+			Content: component.NewText(fmt.Sprintf("%d", status.AvailableReplicas)),
+		},
+		{
+			Header:  "Ready Replicas",
+			Content: component.NewText(fmt.Sprintf("%d", status.ReadyReplicas)),
+		},
+		{
+			Header:  "Total Replicas",
+			Content: component.NewText(fmt.Sprintf("%d", status.Replicas)),
+		},
+		{
+			Header:  "Unavailable Replicas",
+			Content: component.NewText(fmt.Sprintf("%d", status.UnavailableReplicas)),
+		},
+		{
+			Header:  "Updated Replicas",
+			Content: component.NewText(fmt.Sprintf("%d", status.UpdatedReplicas)),
+		},
+	}...)
+
+	return summary, nil
+}
+
+func deploymentConditions(deployment *appsv1.Deployment) (component.Component, error) {
+	if deployment == nil {
+		return nil, errors.New("unable to generate conditions from a nil deployment")
+	}
+
+	table := component.NewTable("Conditions", deploymentConditionColumns)
+
+	for _, condition := range deployment.Status.Conditions {
+		row := component.TableRow{
+			"Type":            component.NewText(string(condition.Type)),
+			"Reason":          component.NewText(condition.Reason),
+			"Status":          component.NewText(string(condition.Status)),
+			"Message":         component.NewText(condition.Message),
+			"Last Update":     component.NewTimestamp(condition.LastUpdateTime.Time),
+			"Last Transition": component.NewTimestamp(condition.LastTransitionTime.Time),
+		}
+
+		table.Add(row)
+	}
+
+	table.Sort("Type", false)
+
+	return table, nil
 }
 
 type actionGeneratorFunction func(*appsv1.Deployment) []component.Action
@@ -199,43 +261,6 @@ func (dc *DeploymentConfiguration) Create() (*component.Summary, error) {
 	}
 
 	return summary, nil
-}
-
-// DeploymentStatus generates deployment status.
-type DeploymentStatus struct {
-	deployment *appsv1.Deployment
-}
-
-// NewDeploymentStatus creates an instance of DeploymentStatus.
-func NewDeploymentStatus(d *appsv1.Deployment) *DeploymentStatus {
-	return &DeploymentStatus{
-		deployment: d,
-	}
-}
-
-// Create generates a deployment status quadrant.
-func (ds *DeploymentStatus) Create() (*component.Quadrant, error) {
-	if ds.deployment == nil {
-		return nil, errors.New("deployment is nil")
-	}
-
-	status := ds.deployment.Status
-
-	quadrant := component.NewQuadrant("Status")
-	if err := quadrant.Set(component.QuadNW, "Updated", fmt.Sprintf("%d", status.UpdatedReplicas)); err != nil {
-		return nil, errors.New("unable to set quadrant nw")
-	}
-	if err := quadrant.Set(component.QuadNE, "Total", fmt.Sprintf("%d", status.Replicas)); err != nil {
-		return nil, errors.New("unable to set quadrant ne")
-	}
-	if err := quadrant.Set(component.QuadSW, "Unavailable", fmt.Sprintf("%d", status.UnavailableReplicas)); err != nil {
-		return nil, errors.New("unable to set quadrant sw")
-	}
-	if err := quadrant.Set(component.QuadSE, "Available", fmt.Sprintf("%d", status.AvailableReplicas)); err != nil {
-		return nil, errors.New("unable to set quadrant se")
-	}
-
-	return quadrant, nil
 }
 
 func deploymentPods(ctx context.Context, deployment *appsv1.Deployment, options Options) (component.Component, error) {
