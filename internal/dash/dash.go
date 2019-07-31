@@ -209,8 +209,8 @@ func initObjectStore(ctx context.Context, client cluster.ClientInterface) (store
 	if client == nil {
 		return nil, errors.New("nil cluster client")
 	}
-
-	appObjectStore, err := objectstore.NewWatch(ctx, client)
+	
+	appObjectStore, err := objectstore.NewDynamicCache(client, ctx.Done())
 
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating object store for app")

@@ -8,6 +8,7 @@ package objectstore
 import (
 	"context"
 	"time"
+	"sync"
 
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
@@ -83,6 +84,8 @@ type DynamicCache struct {
 	stopCh          <-chan struct{}
 	seenGVKs        *seenGVKsCache
 	access          *accessCache
+	updateFns       []store.UpdateFn
+	updateMu        sync.Mutex
 }
 
 var _ store.Store = (*DynamicCache)(nil)
@@ -381,15 +384,22 @@ func (dc *DynamicCache) Watch(ctx context.Context, key store.Key, handler kcache
 
 // UpdateClusterClient updates the cluster client.
 func (dc *DynamicCache) UpdateClusterClient(ctx context.Context, client cluster.ClientInterface) error {
-	panic("this should not be used")
-}
+	logger := log.From(ctx)
+	logger.Debugf("updating its cluster client")
 
-func (dc *DynamicCache) OnUpdate() <-chan store.Store {
-	panic("this should not be used")
+	dc.updateMu.Lock()
+	dc.client = client
+	dc.updateMu.Unlock()
+
+	for _, fn := range dc.updateFns {
+		fn(dc)
+	}
+
+	return nil
 }
 
 func (dc *DynamicCache) RegisterOnUpdate(fn store.UpdateFn) {
-	panic("this should not be used")
+	dc.updateFns = append(dc.updateFns, fn)
 }
 
 func (dc *DynamicCache) Update(ctx context.Context, key store.Key, updater func(*unstructured.Unstructured) error) error {
