@@ -23,17 +23,17 @@ func TestCapabilities_HasPrinterSupport(t *testing.T) {
 	}{
 		{
 			name: "with printer support",
-			in:   gvk.PodGVK,
+			in:   gvk.Pod,
 			capabilities: Capabilities{
-				SupportsPrinterConfig: []schema.GroupVersionKind{gvk.PodGVK},
+				SupportsPrinterConfig: []schema.GroupVersionKind{gvk.Pod},
 			},
 			hasSupport: true,
 		},
 		{
 			name: "with out printer support",
-			in:   gvk.DeploymentGVK,
+			in:   gvk.Deployment,
 			capabilities: Capabilities{
-				SupportsPrinterConfig: []schema.GroupVersionKind{gvk.PodGVK},
+				SupportsPrinterConfig: []schema.GroupVersionKind{gvk.Pod},
 			},
 			hasSupport: false,
 		},
@@ -55,17 +55,17 @@ func TestCapabilities_HasTabSupport(t *testing.T) {
 	}{
 		{
 			name: "with tab support",
-			in:   gvk.PodGVK,
+			in:   gvk.Pod,
 			capabilities: Capabilities{
-				SupportsTab: []schema.GroupVersionKind{gvk.PodGVK},
+				SupportsTab: []schema.GroupVersionKind{gvk.Pod},
 			},
 			hasSupport: true,
 		},
 		{
 			name: "with out tab support",
-			in:   gvk.DeploymentGVK,
+			in:   gvk.Deployment,
 			capabilities: Capabilities{
-				SupportsTab: []schema.GroupVersionKind{gvk.PodGVK},
+				SupportsTab: []schema.GroupVersionKind{gvk.Pod},
 			},
 			hasSupport: false,
 		},

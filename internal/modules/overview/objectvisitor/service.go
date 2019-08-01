@@ -29,7 +29,7 @@ func NewService(q queryer.Queryer) *Service {
 
 // Supports returns the gvk this typed visitor supports.
 func (Service) Supports() schema.GroupVersionKind {
-	return gvk.ServiceGVK
+	return gvk.Service
 }
 
 // Visit visits a service. It looks for associated pods and ingresses.

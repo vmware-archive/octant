@@ -31,7 +31,7 @@ const DefaultNamespace = "namespace"
 // CreateClusterRoleBinding creates a cluster role binding
 func CreateClusterRoleBinding(name, roleName string, subjects []rbacv1.Subject) *rbacv1.ClusterRoleBinding {
 	return &rbacv1.ClusterRoleBinding{
-		TypeMeta:   genTypeMeta(gvk.ClusterRoleBindingGVK),
+		TypeMeta:   genTypeMeta(gvk.ClusterRoleBinding),
 		ObjectMeta: genObjectMeta(name, false),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "Role",
@@ -45,7 +45,7 @@ func CreateClusterRoleBinding(name, roleName string, subjects []rbacv1.Subject) 
 // CreateConfigMap creates a config map.
 func CreateConfigMap(name string) *corev1.ConfigMap {
 	return &corev1.ConfigMap{
-		TypeMeta:   genTypeMeta(gvk.ConfigMapGVK),
+		TypeMeta:   genTypeMeta(gvk.ConfigMap),
 		ObjectMeta: genObjectMeta(name, true),
 	}
 }
@@ -53,7 +53,7 @@ func CreateConfigMap(name string) *corev1.ConfigMap {
 // CreateCRD creates a CRD
 func CreateCRD(name string) *apiextv1beta1.CustomResourceDefinition {
 	return &apiextv1beta1.CustomResourceDefinition{
-		TypeMeta:   genTypeMeta(gvk.CustomResourceDefinitionGVK),
+		TypeMeta:   genTypeMeta(gvk.CustomResourceDefinition),
 		ObjectMeta: genObjectMeta(name, true),
 	}
 }
@@ -80,7 +80,7 @@ func CreateCustomResource(name string) *unstructured.Unstructured {
 
 func CreateCronJob(name string) *batchv1beta1.CronJob {
 	return &batchv1beta1.CronJob{
-		TypeMeta:   genTypeMeta(gvk.CronJobGVK),
+		TypeMeta:   genTypeMeta(gvk.CronJob),
 		ObjectMeta: genObjectMeta(name, true),
 	}
 }
@@ -90,7 +90,7 @@ func CreateDaemonSet(name string) *appsv1.DaemonSet {
 	maxUnavailable := intstr.FromInt(1)
 
 	return &appsv1.DaemonSet{
-		TypeMeta:   genTypeMeta(gvk.DaemonSetGVK),
+		TypeMeta:   genTypeMeta(gvk.DaemonSet),
 		ObjectMeta: genObjectMeta(name, true),
 		Spec: appsv1.DaemonSetSpec{
 			RevisionHistoryLimit: conversion.PtrInt32(10),
@@ -113,7 +113,7 @@ func CreateDaemonSet(name string) *appsv1.DaemonSet {
 // CreateDeployment creates a deployment
 func CreateDeployment(name string) *appsv1.Deployment {
 	return &appsv1.Deployment{
-		TypeMeta:   genTypeMeta(gvk.DeploymentGVK),
+		TypeMeta:   genTypeMeta(gvk.Deployment),
 		ObjectMeta: genObjectMeta(name, true),
 	}
 }
@@ -129,7 +129,7 @@ func CreateEvent(name string) *corev1.Event {
 // CreateIngress creates an ingress
 func CreateIngress(name string) *extv1beta1.Ingress {
 	return &extv1beta1.Ingress{
-		TypeMeta:   genTypeMeta(gvk.IngressGVK),
+		TypeMeta:   genTypeMeta(gvk.Ingress),
 		ObjectMeta: genObjectMeta(name, true),
 		Spec: extv1beta1.IngressSpec{
 			Backend: &extv1beta1.IngressBackend{
@@ -142,7 +142,7 @@ func CreateIngress(name string) *extv1beta1.Ingress {
 
 func CreateJob(name string) *batchv1.Job {
 	return &batchv1.Job{
-		TypeMeta:   genTypeMeta(gvk.JobGVK),
+		TypeMeta:   genTypeMeta(gvk.Job),
 		ObjectMeta: genObjectMeta(name, true),
 	}
 }
@@ -150,7 +150,7 @@ func CreateJob(name string) *batchv1.Job {
 // CreatePod creates a pod
 func CreatePod(name string) *corev1.Pod {
 	return &corev1.Pod{
-		TypeMeta:   genTypeMeta(gvk.PodGVK),
+		TypeMeta:   genTypeMeta(gvk.Pod),
 		ObjectMeta: genObjectMeta(name, true),
 	}
 }
@@ -158,7 +158,7 @@ func CreatePod(name string) *corev1.Pod {
 // CreateReplicationController creates a replication controller
 func CreateReplicationController(name string) *corev1.ReplicationController {
 	return &corev1.ReplicationController{
-		TypeMeta:   genTypeMeta(gvk.ReplicationControllerGVK),
+		TypeMeta:   genTypeMeta(gvk.ReplicationController),
 		ObjectMeta: genObjectMeta(name, true),
 	}
 }
@@ -166,7 +166,7 @@ func CreateReplicationController(name string) *corev1.ReplicationController {
 // CreateAppReplicaSet creates a replica set
 func CreateAppReplicaSet(name string) *appsv1.ReplicaSet {
 	return &appsv1.ReplicaSet{
-		TypeMeta:   genTypeMeta(gvk.AppReplicaSetGVK),
+		TypeMeta:   genTypeMeta(gvk.AppReplicaSet),
 		ObjectMeta: genObjectMeta(name, true),
 	}
 }
@@ -182,7 +182,7 @@ func CreateExtReplicaSet(name string) *extv1beta1.ReplicaSet {
 // CreateSecret creates a secret
 func CreateSecret(name string) *corev1.Secret {
 	return &corev1.Secret{
-		TypeMeta:   genTypeMeta(gvk.SecretGVK),
+		TypeMeta:   genTypeMeta(gvk.Secret),
 		ObjectMeta: genObjectMeta(name, true),
 	}
 }
@@ -190,7 +190,7 @@ func CreateSecret(name string) *corev1.Secret {
 // CreateService creates a service
 func CreateService(name string) *corev1.Service {
 	return &corev1.Service{
-		TypeMeta:   genTypeMeta(gvk.ServiceGVK),
+		TypeMeta:   genTypeMeta(gvk.Service),
 		ObjectMeta: genObjectMeta(name, true),
 	}
 }
@@ -198,7 +198,7 @@ func CreateService(name string) *corev1.Service {
 // CreateServiceAccount creates a service account
 func CreateServiceAccount(name string) *corev1.ServiceAccount {
 	return &corev1.ServiceAccount{
-		TypeMeta:   genTypeMeta(gvk.ServiceAccountGVK),
+		TypeMeta:   genTypeMeta(gvk.ServiceAccount),
 		ObjectMeta: genObjectMeta(name, true),
 	}
 }
@@ -206,7 +206,7 @@ func CreateServiceAccount(name string) *corev1.ServiceAccount {
 // CreateStatefulSet creates a stateful set
 func CreateStatefulSet(name string) *appsv1.StatefulSet {
 	return &appsv1.StatefulSet{
-		TypeMeta:   genTypeMeta(gvk.StatefulSetGVK),
+		TypeMeta:   genTypeMeta(gvk.StatefulSet),
 		ObjectMeta: genObjectMeta(name, true),
 	}
 }
@@ -217,7 +217,7 @@ func CreatePersistentVolumeClaim(name string) *corev1.PersistentVolumeClaim {
 	file := corev1.PersistentVolumeFilesystem
 
 	return &corev1.PersistentVolumeClaim{
-		TypeMeta:   genTypeMeta(gvk.PersistentVolumeClaimGVK),
+		TypeMeta:   genTypeMeta(gvk.PersistentVolumeClaim),
 		ObjectMeta: genObjectMeta(name, true),
 		Spec: corev1.PersistentVolumeClaimSpec{
 			VolumeName:       "task-pv-volume",
@@ -244,7 +244,7 @@ func CreatePersistentVolumeClaim(name string) *corev1.PersistentVolumeClaim {
 // CreateRole creates a role.
 func CreateRole(name string) *rbacv1.Role {
 	return &rbacv1.Role{
-		TypeMeta:   genTypeMeta(gvk.RoleGVK),
+		TypeMeta:   genTypeMeta(gvk.Role),
 		ObjectMeta: genObjectMeta(name, true),
 		Rules: []rbacv1.PolicyRule{
 			{
@@ -267,7 +267,7 @@ func CreateRole(name string) *rbacv1.Role {
 // CreateClusterRole creates a cluster role.
 func CreateClusterRole(name string) *rbacv1.ClusterRole {
 	return &rbacv1.ClusterRole{
-		TypeMeta:   genTypeMeta(gvk.ClusterRoleGVK),
+		TypeMeta:   genTypeMeta(gvk.ClusterRole),
 		ObjectMeta: genObjectMeta(name, false),
 		Rules: []rbacv1.PolicyRule{
 			{
@@ -301,7 +301,7 @@ func CreateRoleBindingSubject(kind, name, namespace string) *rbacv1.Subject {
 
 func CreateRoleBinding(roleBindingName, roleName string, subjects []rbacv1.Subject) *rbacv1.RoleBinding {
 	return &rbacv1.RoleBinding{
-		TypeMeta:   genTypeMeta(gvk.RoleBindingGVK),
+		TypeMeta:   genTypeMeta(gvk.RoleBinding),
 		ObjectMeta: genObjectMeta(roleBindingName, true),
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "Role",

@@ -31,7 +31,7 @@ func NewPod(q queryer.Queryer) *Pod {
 
 // Support returns the gvk this typed visitor supports.
 func (p *Pod) Supports() schema.GroupVersionKind {
-	return gvk.PodGVK
+	return gvk.Pod
 }
 
 // Visit visits a pod. It looks for service accounts and services.

@@ -16,8 +16,8 @@ import (
 
 var (
 	supportedGVKs = []schema.GroupVersionKind{
-		gvk.ClusterRoleBindingGVK,
-		gvk.ClusterRoleGVK,
+		gvk.ClusterRoleBinding,
+		gvk.ClusterRole,
 	}
 )
 

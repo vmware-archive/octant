@@ -64,7 +64,7 @@ func Test_accessCache(t *testing.T) {
 
 func Test_seenGVKsCache(t *testing.T) {
 	c := initSeenGVKsCache()
-	c.setSeen("test", gvk.PodGVK, true)
+	c.setSeen("test", gvk.Pod, true)
 
 	tests := []struct {
 		name      string
@@ -75,19 +75,19 @@ func Test_seenGVKsCache(t *testing.T) {
 		{
 			name:      "gvk that has been seen",
 			namespace: "test",
-			gvk:       gvk.PodGVK,
+			gvk:       gvk.Pod,
 			expected:  true,
 		},
 		{
 			name:      "namespace that has not been seen",
 			namespace: "other",
-			gvk:       gvk.PodGVK,
+			gvk:       gvk.Pod,
 			expected:  false,
 		},
 		{
 			name:      "gvk that has not been seen",
 			namespace: "test",
-			gvk:       gvk.DeploymentGVK,
+			gvk:       gvk.Deployment,
 			expected:  false,
 		},
 	}
@@ -107,29 +107,29 @@ func Test_cachedObjectsCache(t *testing.T) {
 
 	pod := testutil.ToUnstructured(t, testutil.CreatePod("pod"))
 
-	c.update("test", gvk.PodGVK, pod)
+	c.update("test", gvk.Pod, pod)
 
-	items := c.list("test", gvk.PodGVK)
+	items := c.list("test", gvk.Pod)
 	require.Equal(t, []*unstructured.Unstructured{pod}, items)
 
-	items = c.list("test", gvk.DeploymentGVK)
+	items = c.list("test", gvk.Deployment)
 	require.Empty(t, items)
 
-	items = c.list("other", gvk.PodGVK)
+	items = c.list("other", gvk.Pod)
 	require.Empty(t, items)
 
-	c.delete("test", gvk.PodGVK, pod)
+	c.delete("test", gvk.Pod, pod)
 
-	items = c.list("test", gvk.PodGVK)
+	items = c.list("test", gvk.Pod)
 	require.Empty(t, items)
 }
 
 func Test_watchedGVKsCache(t *testing.T) {
 	c := initWatchedGVKsCache()
 
-	c.setWatched("test", gvk.PodGVK)
-	assert.True(t, c.isWatched("test", gvk.PodGVK))
-	assert.False(t, c.isWatched("test", gvk.DeploymentGVK))
-	assert.False(t, c.isWatched("other", gvk.PodGVK))
+	c.setWatched("test", gvk.Pod)
+	assert.True(t, c.isWatched("test", gvk.Pod))
+	assert.False(t, c.isWatched("test", gvk.Deployment))
+	assert.False(t, c.isWatched("other", gvk.Pod))
 
 }

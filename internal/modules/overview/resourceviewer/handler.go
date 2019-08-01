@@ -348,7 +348,7 @@ func isObjectPod(object runtime.Object) bool {
 	}
 
 	objectGVK := object.GetObjectKind().GroupVersionKind()
-	podGVK := gvk.PodGVK
+	podGVK := gvk.Pod
 
 	return podGVK.String() == objectGVK.String()
 }
