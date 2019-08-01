@@ -29,7 +29,7 @@ func NewIngress(q queryer.Queryer) *Ingress {
 
 // Supports returns the gvk this typed visitor supports.
 func (i *Ingress) Supports() schema.GroupVersionKind {
-	return gvk.IngressGVK
+	return gvk.Ingress
 }
 
 // Visit visits an ingress. It looks for associated ingresses.

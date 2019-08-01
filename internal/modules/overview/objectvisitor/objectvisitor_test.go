@@ -38,7 +38,7 @@ func TestDefaultVisitor_Visit_use_typed_visitor(t *testing.T) {
 		Visit(gomock.Any(), unstructuredPod, handler, gomock.Any()).Return(nil)
 
 	tv := ovFake.NewMockTypedVisitor(controller)
-	tv.EXPECT().Supports().Return(gvk.PodGVK).AnyTimes()
+	tv.EXPECT().Supports().Return(gvk.Pod).AnyTimes()
 	tv.EXPECT().
 		Visit(gomock.Any(), unstructuredPod, handler, gomock.Any())
 	tvList := []objectvisitor.TypedVisitor{tv}

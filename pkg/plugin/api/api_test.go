@@ -113,7 +113,7 @@ func TestAPI(t *testing.T) {
 
 				mocks.pf.EXPECT().
 					Create(
-						gomock.Any(), gvk.PodGVK, "pod", "default", uint16(8080)).
+						gomock.Any(), gvk.Pod, "pod", "default", uint16(8080)).
 					Return(resp, nil)
 			},
 			doFunc: func(t *testing.T, client *api.Client) {
@@ -153,7 +153,7 @@ func TestAPI(t *testing.T) {
 
 				mocks.pf.EXPECT().
 					Create(
-						gomock.Any(), gvk.PodGVK, "pod", "default", uint16(8080)).
+						gomock.Any(), gvk.Pod, "pod", "default", uint16(8080)).
 					Return(resp, nil)
 			},
 			doFunc: func(t *testing.T, client *api.Client) {

@@ -91,7 +91,7 @@ func Test_PrintRunner(t *testing.T) {
 
 	plugin1Metadata := &plugin.Metadata{
 		Capabilities: plugin.Capabilities{
-			SupportsPrinterConfig: []schema.GroupVersionKind{gvk.DeploymentGVK},
+			SupportsPrinterConfig: []schema.GroupVersionKind{gvk.Deployment},
 		},
 	}
 	store.EXPECT().
@@ -140,7 +140,7 @@ func Test_TabRunner(t *testing.T) {
 
 	plugin1Metadata := &plugin.Metadata{
 		Capabilities: plugin.Capabilities{
-			SupportsTab: []schema.GroupVersionKind{gvk.DeploymentGVK},
+			SupportsTab: []schema.GroupVersionKind{gvk.Deployment},
 		},
 	}
 	store.EXPECT().

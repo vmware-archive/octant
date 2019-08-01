@@ -29,7 +29,7 @@ func TestHandler_Register(t *testing.T) {
 	}
 
 	capabilities := &plugin.Capabilities{
-		SupportsPrinterConfig: []schema.GroupVersionKind{gvk.PodGVK},
+		SupportsPrinterConfig: []schema.GroupVersionKind{gvk.Pod},
 	}
 
 	h := Handler{
@@ -60,7 +60,7 @@ func TestHandler_Register_with_dashboard_factory_failure(t *testing.T) {
 	}
 
 	capabilities := &plugin.Capabilities{
-		SupportsPrinterConfig: []schema.GroupVersionKind{gvk.PodGVK},
+		SupportsPrinterConfig: []schema.GroupVersionKind{gvk.Pod},
 	}
 
 	h := Handler{

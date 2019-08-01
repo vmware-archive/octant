@@ -95,7 +95,7 @@ func (s *GRPCService) Update(ctx context.Context, object *unstructured.Unstructu
 func (s *GRPCService) PortForward(ctx context.Context, req PortForwardRequest) (PortForwardResponse, error) {
 	pfResponse, err := s.PortForwarder.Create(
 		ctx,
-		gvk.PodGVK,
+		gvk.Pod,
 		req.PodName,
 		req.Namespace,
 		req.Port)
