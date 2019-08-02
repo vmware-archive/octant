@@ -7,14 +7,27 @@ import { BehaviorSubject } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import getAPIBase from '../../../../services/common/getAPIBase';
 import {
+  Streamer,
   ContentStreamService,
   ContextDescription,
 } from '../../../../services/content-stream/content-stream.service';
+
+export interface KubeContextResponse {
+  contexts: ContextDescription[];
+  currentContext: string;
+}
+
+const emptyKubeContext: KubeContextResponse = {
+  contexts: [],
+  currentContext: '',
+};
+
 
 @Injectable({
   providedIn: 'root',
 })
 export class KubeContextService {
+  private behavior = new BehaviorSubject<KubeContextResponse>(emptyKubeContext);
   private contextsSource: BehaviorSubject<
     ContextDescription[]
   > = new BehaviorSubject<ContextDescription[]>([]);
@@ -25,13 +38,24 @@ export class KubeContextService {
 
   constructor(
     private http: HttpClient,
-    private contentStream: ContentStreamService
+    private contentStreamService: ContentStreamService
   ) {
-    contentStream.kubeContext.subscribe(update => {
+    let streamer: Streamer = {
+      behavior: this.behavior,
+      handler: this.handleEvent,
+    };
+    this.contentStreamService.registerStreamer('kubeContext', streamer)
+
+    contentStreamService.streamer('kubeContext').subscribe(update => {
       this.contextsSource.next(update.contexts);
       this.selectedSource.next(update.currentContext);
     });
   }
+
+  private handleEvent = (message: MessageEvent) => {
+    const data = JSON.parse(message.data) as KubeContextResponse;
+    this.behavior.next(data);
+  };
 
   select(context: ContextDescription) {
     this.selectedSource.next(context.name);

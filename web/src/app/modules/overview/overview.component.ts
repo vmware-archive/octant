@@ -10,10 +10,17 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ContentResponse, View } from 'src/app/models/content';
-import { ContentStreamService } from 'src/app/services/content-stream/content-stream.service';
-
+import { Streamer, ContentStreamService } from 'src/app/services/content-stream/content-stream.service';
 import { IconService } from './services/icon.service';
 import { ViewService } from './services/view/view.service';
+import { BehaviorSubject } from 'rxjs';
+
+const emptyContentResponse: ContentResponse = {
+  content: {
+    viewComponents: [],
+    title: [],
+  },
+};
 
 @Component({
   selector: 'app-overview',
@@ -21,6 +28,8 @@ import { ViewService } from './services/view/view.service';
   styleUrls: ['./overview.component.scss'],
 })
 export class OverviewComponent implements OnInit, OnDestroy {
+  behavior = new BehaviorSubject<ContentResponse>(emptyContentResponse);
+
   private previousUrl = '';
 
   @ViewChild('scrollTarget') scrollTarget: ElementRef;
@@ -37,7 +46,13 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private contentStreamService: ContentStreamService,
     private iconService: IconService,
     private viewService: ViewService
-  ) {}
+  ) {
+    let streamer: Streamer = {
+      behavior: this.behavior,
+      handler: this.handleEvent,
+    };
+    this.contentStreamService.registerStreamer('content', streamer)
+  }
 
   ngOnInit() {
     this.route.url.subscribe(url => {
@@ -48,11 +63,17 @@ export class OverviewComponent implements OnInit, OnDestroy {
         this.views = null;
         this.previousUrl = currentPath;
         this.contentStreamService.openStream(currentPath);
-        this.contentStreamService.content.subscribe(this.setContent);
+        this.contentStreamService.streamer('content').subscribe(this.setContent);
         this.scrollTarget.nativeElement.scrollTop = 0;
       }
     });
   }
+
+  private handleEvent = (message: MessageEvent) => {
+    const data = JSON.parse(message.data) as ContentResponse;
+    this.behavior.next(data);
+    this.contentStreamService.removeAllSignals();
+  };
 
   private setContent = (contentResponse: ContentResponse) => {
     const views = contentResponse.content.viewComponents;

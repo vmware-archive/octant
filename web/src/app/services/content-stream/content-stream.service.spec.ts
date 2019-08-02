@@ -99,11 +99,11 @@ describe('ContentStreamService', () => {
     );
     eventSourceStub.flush();
 
-    expect(contentStreamService.content.getValue()).toEqual(
+    expect(contentStreamService.streamer('content').getValue()).toEqual(
       emptyContentResponse
     );
-    expect(contentStreamService.navigation.getValue()).toEqual(emptyNavigation);
-    expect(contentStreamService.namespaces.getValue()).toEqual([]);
+    expect(contentStreamService.streamer('navigation').getValue()).toEqual(emptyNavigation);
+    expect(contentStreamService.streamer('namespaces').getValue()).toEqual([]);
 
     const testContentResponse: ContentResponse = {
       content: {
@@ -125,11 +125,11 @@ describe('ContentStreamService', () => {
     );
     eventSourceStub.flush();
 
-    expect(contentStreamService.content.getValue()).toEqual(
+    expect(contentStreamService.streamer('content').getValue()).toEqual(
       testContentResponse
     );
-    expect(contentStreamService.navigation.getValue()).toEqual(emptyNavigation);
-    expect(contentStreamService.namespaces.getValue()).toEqual([
+    expect(contentStreamService.streamer('navigation').getValue()).toEqual(emptyNavigation);
+    expect(contentStreamService.streamer('namespaces').getValue()).toEqual([
       'namespaceA',
       'namespaceB',
     ]);

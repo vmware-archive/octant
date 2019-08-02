@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
 import { NavigationEnd, PRIMARY_OUTLET, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import _ from 'lodash';
-import { ContentStreamService } from '../content-stream/content-stream.service';
+import { Streamer, ContentStreamService } from '../content-stream/content-stream.service';
 import { NavigationChild } from '../../models/navigation';
 import {
   NotifierService,
@@ -14,6 +14,7 @@ import {
   NotifierSignalType,
 } from '../notifier/notifier.service';
 import { includesArray } from '../../util/includesArray';
+import { Namespaces } from '../../models/namespace';
 
 @Injectable({
   providedIn: 'root',
@@ -22,6 +23,7 @@ export class NamespaceService {
   private notifierSession: NotifierSession;
   current = new BehaviorSubject<string>('default');
   list = new BehaviorSubject<string[]>([]);
+  behavior = new BehaviorSubject<string[]>([]);
 
   constructor(
     private router: Router,
@@ -30,7 +32,14 @@ export class NamespaceService {
   ) {
     this.notifierSession = notifierService.createSession();
 
-    this.contentStreamService.namespaces.subscribe((namespaces: string[]) => {
+    let streamer: Streamer = {
+      behavior: this.behavior,
+      handler: this.handleEvent,
+    };
+    this.contentStreamService.registerStreamer('namespaces', streamer)
+
+
+    this.behavior.subscribe((namespaces: string[]) => {
       this.list.next(namespaces);
     });
 
@@ -41,6 +50,11 @@ export class NamespaceService {
       this.handleUrlPathChange();
     });
   }
+
+  private handleEvent = (message: MessageEvent) => {
+    const data = JSON.parse(message.data) as Namespaces;
+    this.behavior.next(data.namespaces);
+  };
 
   private handleUrlPathChange() {
     this.notifierSession.removeAllSignals();
@@ -110,7 +124,7 @@ export class NamespaceService {
     }
 
     let routeCandidate = basePath;
-    const navigation = this.contentStreamService.navigation.getValue();
+    const navigation = this.contentStreamService.streamer('navigation').getValue();
 
     navigationSectionLoop: for (const navigationSection of navigation.sections as NavigationChild[]) {
       const sectionPath = this.getPathArray(navigationSection.path);
