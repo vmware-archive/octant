@@ -7,8 +7,9 @@ package objectstore
 
 import (
 	"context"
-	"time"
+	"os"
 	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
@@ -44,9 +45,6 @@ func initDynamicSharedInformerFactory(ctx context.Context, client cluster.Client
 	dynamicClient, err := client.DynamicClient()
 	if err != nil {
 		return nil, err
-	}
-	if namespace == "" {
-		return dynamicinformer.NewDynamicSharedInformerFactory(dynamicClient, defaultInformerResync), nil
 	}
 	return dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicClient, defaultInformerResync, namespace, nil), nil
 }
@@ -86,18 +84,20 @@ type DynamicCache struct {
 	access          *accessCache
 	updateFns       []store.UpdateFn
 	updateMu        sync.Mutex
+
+	useDynamicClient bool
 }
 
 var _ store.Store = (*DynamicCache)(nil)
 
 // NewDynamicCache creates an instance of DynamicCache.
-func NewDynamicCache(client cluster.ClientInterface, stopCh <-chan struct{}, options ...DynamicCacheOpt) (*DynamicCache, error) {
-
+func NewDynamicCache(ctx context.Context, client cluster.ClientInterface, options ...DynamicCacheOpt) (*DynamicCache, error) {
 	c := &DynamicCache{
-		initFactoryFunc: initDynamicSharedInformerFactory,
-		client:          client,
-		stopCh:          stopCh,
-		seenGVKs:        initSeenGVKsCache(),
+		initFactoryFunc:  initDynamicSharedInformerFactory,
+		client:           client,
+		stopCh:           ctx.Done(),
+		seenGVKs:         initSeenGVKsCache(),
+		useDynamicClient: os.Getenv("OCTANT_USE_DYNAMIC_CLIENT") == "1",
 	}
 
 	for _, option := range options {
@@ -106,6 +106,11 @@ func NewDynamicCache(client cluster.ClientInterface, stopCh <-chan struct{}, opt
 
 	if c.access == nil {
 		c.access = initAccessCache()
+	}
+
+	logger := log.From(ctx).With("component", "DynamicCache")
+	if c.useDynamicClient {
+		logger.Debugf("using dynamic client instead of informer")
 	}
 
 	factories := initFactoriesCache()
@@ -238,7 +243,7 @@ func (dc *DynamicCache) currentInformer(ctx context.Context, key store.Key) (inf
 
 // List lists objects.
 func (dc *DynamicCache) List(ctx context.Context, key store.Key) ([]*unstructured.Unstructured, error) {
-	_, span := trace.StartSpan(ctx, "dynamicCacheList")
+	ctx, span := trace.StartSpan(ctx, "dynamicCache:list")
 	defer span.End()
 
 	if err := dc.HasAccess(ctx, key, "list"); err != nil {
@@ -250,6 +255,17 @@ func (dc *DynamicCache) List(ctx context.Context, key store.Key) ([]*unstructure
 		trace.StringAttribute("apiVersion", key.APIVersion),
 		trace.StringAttribute("kind", key.Kind),
 	}, "list key")
+
+	if dc.useDynamicClient {
+		return dc.listFromDynamicClient(ctx, key)
+	}
+
+	return dc.listFromInformer(ctx, key)
+}
+
+func (dc *DynamicCache) listFromInformer(ctx context.Context, key store.Key) ([]*unstructured.Unstructured, error) {
+	ctx, span := trace.StartSpan(ctx, "dynamicCache:list:informer")
+	defer span.End()
 
 	informer, err := dc.currentInformer(ctx, key)
 	if err != nil {
@@ -285,13 +301,56 @@ func (dc *DynamicCache) List(ctx context.Context, key store.Key) ([]*unstructure
 	return list, nil
 }
 
+func (dc *DynamicCache) listFromDynamicClient(ctx context.Context, key store.Key) ([]*unstructured.Unstructured, error) {
+	ctx, span := trace.StartSpan(ctx, "dynamicCache:list:informer")
+	defer span.End()
+
+	var selector = kLabels.Everything()
+	if key.Selector != nil {
+		selector = key.Selector.AsSelector()
+	}
+
+	dynamicClient, err := dc.client.DynamicClient()
+	if err != nil {
+		return nil, err
+	}
+
+	gvr, err := dc.client.Resource(key.GroupVersionKind().GroupKind())
+	if err != nil {
+		return nil, err
+	}
+
+	listOptions := metav1.ListOptions{
+		LabelSelector: selector.String(),
+	}
+	list := &unstructured.UnstructuredList{}
+	if key.Namespace == "" {
+		list, err = dynamicClient.Resource(gvr).List(listOptions)
+	} else {
+		list, err = dynamicClient.Resource(gvr).Namespace(key.Namespace).List(listOptions)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	var newList []*unstructured.Unstructured
+	if list != nil {
+		for i := range list.Items {
+			object := list.Items[i]
+			newList = append(newList, &object)
+		}
+	}
+
+	return newList, nil
+}
+
 type getter interface {
 	Get(string) (kruntime.Object, error)
 }
 
 // Get retrieves a single object.
 func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, error) {
-	_, span := trace.StartSpan(ctx, "dynamicCacheList")
+	ctx, span := trace.StartSpan(ctx, "dynamicCacheGet")
 	defer span.End()
 
 	if err := dc.HasAccess(ctx, key, "get"); err != nil {
@@ -304,6 +363,17 @@ func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.U
 		trace.StringAttribute("kind", key.Kind),
 		trace.StringAttribute("name", key.Name),
 	}, "get key")
+
+	if dc.useDynamicClient {
+		return dc.getFromDynamicClient(ctx, key)
+	}
+
+	return dc.getFromInformer(ctx, key)
+}
+
+func (dc *DynamicCache) getFromInformer(ctx context.Context, key store.Key) (*unstructured.Unstructured, error) {
+	ctx, span := trace.StartSpan(ctx, "dynamicCache:get:informer")
+	defer span.End()
 
 	informer, err := dc.currentInformer(ctx, key)
 	if err != nil {
@@ -362,6 +432,26 @@ func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.U
 		return nil, errors.Wrapf(err, "converting %T to unstructured", object)
 	}
 	return &unstructured.Unstructured{Object: u}, nil
+}
+
+func (dc *DynamicCache) getFromDynamicClient(ctx context.Context, key store.Key) (*unstructured.Unstructured, error) {
+	ctx, span := trace.StartSpan(ctx, "dynamicCache:get:dynamicClient")
+	defer span.End()
+
+	dynamicClient, err := dc.client.DynamicClient()
+	if err != nil {
+		return nil, err
+	}
+
+	gvr, err := dc.client.Resource(key.GroupVersionKind().GroupKind())
+	if err != nil {
+		return nil, err
+	}
+
+	if key.Namespace == "" {
+		return dynamicClient.Resource(gvr).Get(key.Name, metav1.GetOptions{})
+	}
+	return dynamicClient.Resource(gvr).Namespace(key.Namespace).Get(key.Name, metav1.GetOptions{})
 }
 
 // Watch watches the cluster for an event and performs actions with the

@@ -62,6 +62,7 @@ func (cc *componentCache) Start(ctx context.Context) {
 	go func() {
 		for range ticker.C {
 			if !shouldRun {
+				ticker.Stop()
 				break
 			}
 			shouldRun = worker(ctx, cc, cc.ch)
