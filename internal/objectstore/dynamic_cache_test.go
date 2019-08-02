@@ -113,7 +113,7 @@ func Test_DynamicCache_List(t *testing.T) {
 		}
 	}
 
-	c, err := NewDynamicCache(client, ctx.Done(), factoryFunc)
+	c, err := NewDynamicCache(ctx, client, factoryFunc)
 	require.NoError(t, err)
 
 	key := store.Key{
@@ -181,7 +181,7 @@ func Test_DynamicCache_Get(t *testing.T) {
 		}
 	}
 
-	c, err := NewDynamicCache(client, ctx.Done(), factoryFunc)
+	c, err := NewDynamicCache(ctx, client, factoryFunc)
 	require.NoError(t, err)
 
 	key := store.Key{
@@ -293,7 +293,7 @@ func Test_DynamicCache_HasAccess(t *testing.T) {
 		ts := scenarios[i]
 		t.Run(ts.name, func(t *testing.T) {
 			fn := ts.accessFunc
-			c, err := NewDynamicCache(client, ctx.Done(), factoryFunc, fn)
+			c, err := NewDynamicCache(ctx, client, factoryFunc, fn)
 			require.NoError(t, err)
 
 			gvk := ts.key.GroupVersionKind()
@@ -368,7 +368,7 @@ func TestDynamicCache_Update(t *testing.T) {
 
 	client.EXPECT().DynamicClient().Return(dc, nil)
 
-	c, err := NewDynamicCache(client, ctx.Done(), factoryFunc)
+	c, err := NewDynamicCache(ctx, client, factoryFunc)
 	require.NoError(t, err)
 
 	key, err := store.KeyFromObject(pod)
