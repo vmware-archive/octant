@@ -14,14 +14,14 @@ import (
 	"github.com/stretchr/testify/require"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
+	"github.com/vmware/octant/internal/cluster"
 	clusterFake "github.com/vmware/octant/internal/cluster/fake"
-	componentCacheFake "github.com/vmware/octant/internal/componentcache/fake"
 	"github.com/vmware/octant/internal/log"
 	moduleFake "github.com/vmware/octant/internal/module/fake"
 	portForwardFake "github.com/vmware/octant/internal/portforward/fake"
 	"github.com/vmware/octant/internal/testutil"
-	objectStoreFake "github.com/vmware/octant/pkg/store/fake"
 	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
+	objectStoreFake "github.com/vmware/octant/pkg/store/fake"
 )
 
 func TestCRDWatchConfig_CanPerform(t *testing.T) {
@@ -80,7 +80,6 @@ func TestLiveConfig(t *testing.T) {
 		Return("/pod", nil)
 
 	objectStore := objectStoreFake.NewMockStore(controller)
-	componentCache := componentCacheFake.NewMockComponentCache(controller)
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 	portForwarder := portForwardFake.NewMockPortForwarder(controller)
 	kubeConfigPath := "/path"
@@ -89,15 +88,15 @@ func TestLiveConfig(t *testing.T) {
 		RegisterOnUpdate(gomock.Any())
 
 	contextName := "context-name"
+	restConfigOptions := cluster.RESTConfigOptions{}
 
-	config := NewLiveConfig(clusterClient, crdWatcher, kubeConfigPath, logger, moduleManager, objectStore, componentCache, pluginManager, portForwarder, contextName)
+	config := NewLiveConfig(clusterClient, crdWatcher, kubeConfigPath, logger, moduleManager, objectStore, pluginManager, portForwarder, contextName, restConfigOptions)
 
 	assert.NoError(t, config.Validate())
 	assert.Equal(t, clusterClient, config.ClusterClient())
 	assert.Equal(t, crdWatcher, config.CRDWatcher())
 	assert.Equal(t, logger, config.Logger())
 	assert.Equal(t, objectStore, config.ObjectStore())
-	assert.Equal(t, componentCache, config.ComponentCache())
 	assert.Equal(t, pluginManager, config.PluginManager())
 	assert.Equal(t, portForwarder, config.PortForwarder())
 

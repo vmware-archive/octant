@@ -49,7 +49,8 @@ func DeploymentListHandler(_ context.Context, list *appsv1.DeploymentList, opts 
 		row["Age"] = component.NewTimestamp(ts)
 
 		containers := component.NewContainers()
-		for _, c := range d.Spec.Template.Spec.Containers {
+		for i := range d.Spec.Template.Spec.Containers {
+			c := d.Spec.Template.Spec.Containers[i]
 			containers.Add(c.Name, c.Image)
 		}
 		row["Containers"] = containers
@@ -289,14 +290,15 @@ func deploymentPods(ctx context.Context, deployment *appsv1.Deployment, options 
 	}
 
 	podList := &corev1.PodList{}
-	for _, u := range list {
+	for i := range list.Items {
+
 		pod := &corev1.Pod{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, pod)
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[i].Object, pod)
 		if err != nil {
 			return nil, err
 		}
 
-		if err := copyObjectMeta(pod, u); err != nil {
+		if err := copyObjectMeta(pod, &list.Items[i]); err != nil {
 			return nil, errors.Wrap(err, "copy object metadata")
 		}
 

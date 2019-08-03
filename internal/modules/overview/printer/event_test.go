@@ -109,7 +109,7 @@ func Test_EventListHandler(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
-func Test_ReplicasetEvents(t *testing.T) {
+func Test_ReplicaSetEvents(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
@@ -320,7 +320,8 @@ func Test_eventsForObject(t *testing.T) {
 		Kind:       "Event",
 	}
 
-	eventList := []*unstructured.Unstructured{
+	events := &unstructured.UnstructuredList{}
+	events.Items = append(events.Items, []unstructured.Unstructured{
 		{
 			Object: map[string]interface{}{
 				"involvedObject": map[string]interface{}{
@@ -343,9 +344,9 @@ func Test_eventsForObject(t *testing.T) {
 				"message": "pod2",
 			},
 		},
-	}
+	}...)
 
-	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(eventList, nil)
+	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(events, nil)
 
 	ctx := context.Background()
 	got, err := eventsForObject(ctx, object, o)

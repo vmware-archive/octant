@@ -127,13 +127,13 @@ func printPersistentVolumeClaimStatus(persistentVolumeClaim *corev1.PersistentVo
 		return nil, errors.New("persistentvolumeclaim is nil")
 	}
 
-	var sections component.SummarySections
+	sections := component.SummarySections{}
 
-	if storageStatus := persistentVolumeClaim.Status.Phase; &storageStatus != nil {
-		sections.AddText("Claim Status", string(storageStatus))
+	if persistentVolumeClaim.Status.Phase != "" {
+		sections.AddText("Claim Status", string(persistentVolumeClaim.Status.Phase))
 	}
 
-	if requestedStorage := persistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage]; &requestedStorage != nil {
+	if requestedStorage, ok := persistentVolumeClaim.Spec.Resources.Requests[corev1.ResourceStorage]; ok {
 		sections.AddText("Storage Requested", requestedStorage.String())
 	}
 
@@ -146,7 +146,7 @@ func printPersistentVolumeClaimStatus(persistentVolumeClaim *corev1.PersistentVo
 			})
 		}
 
-		if availableStorage := persistentVolumeClaim.Status.Capacity[corev1.ResourceStorage]; &availableStorage != nil {
+		if availableStorage, ok := persistentVolumeClaim.Status.Capacity[corev1.ResourceStorage]; ok {
 			sections.AddText("Total Volume Capacity", availableStorage.String())
 		}
 	}

@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 
 	configFake "github.com/vmware/octant/internal/config/fake"
@@ -28,7 +28,7 @@ type stubbedVisitor struct{ visitErr error }
 
 var _ objectvisitor.Visitor = (*stubbedVisitor)(nil)
 
-func (v *stubbedVisitor) Visit(ctx context.Context, object runtime.Object, handler objectvisitor.ObjectHandler) error {
+func (v *stubbedVisitor) Visit(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool) error {
 	return v.visitErr
 }
 

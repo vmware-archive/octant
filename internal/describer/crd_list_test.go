@@ -49,11 +49,11 @@ func Test_crdListDescriber(t *testing.T) {
 		Kind:       "Name",
 	}
 
-	var objects []*unstructured.Unstructured
+	objects := &unstructured.UnstructuredList{}
 	o.EXPECT().List(gomock.Any(), gomock.Eq(crKey)).Return(objects, nil)
 
 	listPrinter := func(cld *crdList) {
-		cld.printer = func(name string, crd *apiextv1beta1.CustomResourceDefinition, objects []*unstructured.Unstructured, linkGenerator link.Interface) (component.Component, error) {
+		cld.printer = func(name string, crd *apiextv1beta1.CustomResourceDefinition, objects *unstructured.UnstructuredList, linkGenerator link.Interface) (component.Component, error) {
 			return component.NewText("crd list"), nil
 		}
 	}

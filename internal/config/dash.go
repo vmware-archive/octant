@@ -8,7 +8,6 @@ package config
 import (
 	"context"
 
-	"github.com/vmware/octant/internal/componentcache"
 	"github.com/vmware/octant/pkg/store"
 
 	"github.com/pkg/errors"
@@ -73,8 +72,6 @@ type Dash interface {
 
 	ObjectStore() store.Store
 
-	ComponentCache() componentcache.ComponentCache
-
 	Logger() log.Logger
 
 	PluginManager() plugin.ManagerInterface
@@ -97,11 +94,11 @@ type Live struct {
 	logger             log.Logger
 	moduleManager      module.ManagerInterface
 	objectStore        store.Store
-	componentCache     componentcache.ComponentCache
 	pluginManager      plugin.ManagerInterface
 	portForwarder      portforward.PortForwarder
 	kubeConfigPath     string
 	currentContextName string
+	restConfigOptions  cluster.RESTConfigOptions
 }
 
 var _ Dash = (*Live)(nil)
@@ -114,10 +111,10 @@ func NewLiveConfig(
 	logger log.Logger,
 	moduleManager module.ManagerInterface,
 	objectStore store.Store,
-	componentCache componentcache.ComponentCache,
 	pluginManager plugin.ManagerInterface,
 	portForwarder portforward.PortForwarder,
 	currentContextName string,
+	restConfigOptions cluster.RESTConfigOptions,
 ) *Live {
 	l := &Live{
 		clusterClient:      clusterClient,
@@ -126,10 +123,10 @@ func NewLiveConfig(
 		logger:             logger,
 		moduleManager:      moduleManager,
 		objectStore:        objectStore,
-		componentCache:     componentCache,
 		pluginManager:      pluginManager,
 		portForwarder:      portForwarder,
 		currentContextName: currentContextName,
+		restConfigOptions:  restConfigOptions,
 	}
 	objectStore.RegisterOnUpdate(func(store store.Store) {
 		l.objectStore = store
@@ -158,11 +155,6 @@ func (l *Live) ObjectStore() store.Store {
 	return l.objectStore
 }
 
-// ComponentCache returns an component cache.
-func (l *Live) ComponentCache() componentcache.ComponentCache {
-	return l.componentCache
-}
-
 // KubeConfigPath returns the kube config path.
 func (l *Live) KubeConfigPath() string {
 	return l.kubeConfigPath
@@ -185,7 +177,7 @@ func (l *Live) PortForwarder() portforward.PortForwarder {
 
 // UseContext switches context name.
 func (l *Live) UseContext(ctx context.Context, contextName string) error {
-	client, err := cluster.FromKubeConfig(ctx, l.kubeConfigPath, contextName)
+	client, err := cluster.FromKubeConfig(ctx, l.kubeConfigPath, contextName, l.restConfigOptions)
 	if err != nil {
 		return err
 	}

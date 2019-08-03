@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
 
@@ -337,7 +336,7 @@ func Test_deploymentPods(t *testing.T) {
 	}
 	tpo.objectStore.EXPECT().
 		List(gomock.Any(), key).
-		Return([]*unstructured.Unstructured{testutil.ToUnstructured(t, pod)}, nil)
+		Return(testutil.ToUnstructuredList(t, pod), nil)
 
 	ctx := context.Background()
 

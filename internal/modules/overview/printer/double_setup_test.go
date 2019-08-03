@@ -23,10 +23,10 @@ import (
 func mockObjectsEvents(t *testing.T, appObjectStore *storefake.MockStore, namespace string, events ...corev1.Event) {
 	require.NotNil(t, appObjectStore)
 
-	var objects []*unstructured.Unstructured
+	objects := &unstructured.UnstructuredList{}
 
 	for _, event := range events {
-		objects = append(objects, testutil.ToUnstructured(t, &event))
+		objects.Items = append(objects.Items, *testutil.ToUnstructured(t, &event))
 	}
 
 	key := store.Key{

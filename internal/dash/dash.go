@@ -25,7 +25,6 @@ import (
 
 	"github.com/vmware/octant/internal/api"
 	"github.com/vmware/octant/internal/cluster"
-	"github.com/vmware/octant/internal/componentcache"
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/describer"
 	"github.com/vmware/octant/internal/log"
@@ -54,6 +53,8 @@ type Options struct {
 	Namespace        string
 	FrontendURL      string
 	Context          string
+	ClientQPS        float32
+	ClientBurst      int
 }
 
 // Run runs the dashboard.
@@ -65,7 +66,11 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 	}
 
 	logger.Debugf("Loading configuration: %v", options.KubeConfig)
-	clusterClient, err := cluster.FromKubeConfig(ctx, options.KubeConfig, options.Context)
+	restConfigOptions := cluster.RESTConfigOptions{
+		QPS:   options.ClientQPS,
+		Burst: options.ClientBurst,
+	}
+	clusterClient, err := cluster.FromKubeConfig(ctx, options.KubeConfig, options.Context, restConfigOptions)
 	if err != nil {
 		return errors.Wrap(err, "failed to init cluster client")
 	}
@@ -94,11 +99,6 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return errors.Wrap(err, "initializing store")
 	}
 
-	componentCache, err := componentcache.NewComponentCache(ctx)
-	if err != nil {
-		return errors.Wrap(err, "initializing component cache")
-	}
-
 	crdWatcher, err := describer.NewDefaultCRDWatcher(ctx, appObjectStore)
 	if err != nil {
 		return errors.Wrap(err, "initializing CRD watcher")
@@ -111,7 +111,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 
 	actionManger := action.NewManager(logger)
 
-	mo := moduleOptions{
+	mo := &moduleOptions{
 		clusterClient: clusterClient,
 		namespace:     options.Namespace,
 		logger:        logger,
@@ -142,10 +142,10 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		logger,
 		moduleManager,
 		appObjectStore,
-		componentCache,
 		pluginManager,
 		portForwarder,
-		options.Context)
+		options.Context,
+		restConfigOptions)
 
 	moduleList, err := initModules(ctx, dashConfig, options.Namespace)
 	if err != nil {
@@ -226,14 +226,11 @@ func initPortForwarder(ctx context.Context, client cluster.ClientInterface, appO
 type moduleOptions struct {
 	clusterClient  *cluster.Cluster
 	crdWatcher     config.CRDWatcher
-	objectStore    store.Store
-	componentCache componentcache.ComponentCache
 	namespace      string
 	logger         log.Logger
 	pluginManager  *plugin.Manager
 	portForwarder  portforward.PortForwarder
 	kubeConfigPath string
-	initialContext string
 	actionManager  *action.Manager
 }
 
@@ -279,7 +276,7 @@ func initModules(ctx context.Context, dashConfig config.Dash, namespace string) 
 }
 
 // initModuleManager initializes the moduleManager (and currently the modules themselves)
-func initModuleManager(options moduleOptions) (*module.Manager, error) {
+func initModuleManager(options *moduleOptions) (*module.Manager, error) {
 	moduleManager, err := module.NewManager(options.clusterClient, options.namespace, options.actionManager, options.logger)
 	if err != nil {
 		return nil, errors.Wrap(err, "create module manager")

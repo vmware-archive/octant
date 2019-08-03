@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/utils/pointer"
 
@@ -24,36 +25,47 @@ import (
 
 func TestHandler(t *testing.T) {
 	cr := testutil.CreateClusterRole("cluster-role")
+	crUnstructured := testutil.ToUnstructured(t, cr)
 
 	deployment := testutil.CreateDeployment("deployment")
 	deployment.SetOwnerReferences(testutil.ToOwnerReferences(t, cr))
+	deploymentUnstructured := testutil.ToUnstructured(t, deployment)
 
 	replicaSet1 := testutil.CreateAppReplicaSet("replica-set-1")
-	replicaSet1.SetOwnerReferences(testutil.ToOwnerReferences(t, deployment))
 	replicaSet1.Spec.Replicas = pointer.Int32Ptr(1)
+	replicaSet1.SetOwnerReferences(testutil.ToOwnerReferences(t, deployment))
+	replicaSet1Unstructured := testutil.ToUnstructured(t, replicaSet1)
 
 	replicaSet2 := testutil.CreateAppReplicaSet("replica-set-2")
 	replicaSet2.SetOwnerReferences(testutil.ToOwnerReferences(t, deployment))
+	replicaSet2Unstructured := testutil.ToUnstructured(t, replicaSet2)
 
 	replicaSet3 := testutil.CreateExtReplicaSet("replica-set-3")
 	replicaSet3.SetOwnerReferences(testutil.ToOwnerReferences(t, deployment))
 	replicaSet3.Spec.Replicas = pointer.Int32Ptr(1)
+	replicaSet3Unstructured := testutil.ToUnstructured(t, replicaSet3)
 
 	serviceAccount := testutil.CreateServiceAccount("service-account")
+	serviceAccountUnstructured := testutil.ToUnstructured(t, serviceAccount)
 
 	pod1 := testutil.CreatePod("pod-1")
 	pod1.Spec.ServiceAccountName = serviceAccount.Name
 	pod1.SetOwnerReferences(testutil.ToOwnerReferences(t, replicaSet1))
+	pod1Unstructured := testutil.ToUnstructured(t, pod1)
 	pod2 := testutil.CreatePod("pod-2")
 	pod2.Spec.ServiceAccountName = serviceAccount.Name
 	pod2.SetOwnerReferences(testutil.ToOwnerReferences(t, replicaSet1))
+	pod2Unstructured := testutil.ToUnstructured(t, pod2)
 	pod3 := testutil.CreatePod("pod-3")
 	pod3.Spec.ServiceAccountName = serviceAccount.Name
+	pod3Unstructured := testutil.ToUnstructured(t, pod3)
 	pod4 := testutil.CreatePod("pod-4")
 	pod4.Spec.ServiceAccountName = serviceAccount.Name
 	pod4.SetOwnerReferences(testutil.ToOwnerReferences(t, replicaSet3))
+	pod4Unstructured := testutil.ToUnstructured(t, pod4)
 
 	service1 := testutil.CreateService("service1")
+	service1Unstructured := testutil.ToUnstructured(t, service1)
 
 	controller := gomock.NewController(t)
 	defer controller.Finish()
@@ -76,7 +88,7 @@ func TestHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	ctx := context.Background()
-	mockRelations := func(a runtime.Object, objects ...runtime.Object) {
+	mockRelations := func(a *unstructured.Unstructured, objects ...*unstructured.Unstructured) {
 		for _, b := range objects {
 			require.NoError(t, handler.AddEdge(ctx, a, b))
 			require.NoError(t, handler.AddEdge(ctx, b, a))
@@ -85,19 +97,19 @@ func TestHandler(t *testing.T) {
 		require.NoError(t, handler.Process(ctx, a))
 	}
 
-	mockRelations(cr, deployment)
-	mockRelations(deployment, replicaSet1, replicaSet2, replicaSet3)
-	mockRelations(replicaSet1, pod1, pod2)
-	mockRelations(replicaSet3, pod4)
-	mockRelations(service1, pod1, pod2)
-	mockRelations(service1, pod4)
+	mockRelations(crUnstructured, deploymentUnstructured)
+	mockRelations(deploymentUnstructured, replicaSet1Unstructured, replicaSet2Unstructured, replicaSet3Unstructured)
+	mockRelations(replicaSet1Unstructured, pod1Unstructured, pod2Unstructured)
+	mockRelations(replicaSet3Unstructured, pod4Unstructured)
+	mockRelations(service1Unstructured, pod1Unstructured, pod2Unstructured)
+	mockRelations(service1Unstructured, pod4Unstructured)
 
-	require.NoError(t, handler.Process(ctx, pod3))
-	require.NoError(t, handler.AddEdge(ctx, pod1, serviceAccount))
-	require.NoError(t, handler.AddEdge(ctx, pod2, serviceAccount))
-	require.NoError(t, handler.AddEdge(ctx, pod3, serviceAccount))
-	require.NoError(t, handler.AddEdge(ctx, pod4, serviceAccount))
-	require.NoError(t, handler.Process(ctx, serviceAccount))
+	require.NoError(t, handler.Process(ctx, pod3Unstructured))
+	require.NoError(t, handler.AddEdge(ctx, pod1Unstructured, serviceAccountUnstructured))
+	require.NoError(t, handler.AddEdge(ctx, pod2Unstructured, serviceAccountUnstructured))
+	require.NoError(t, handler.AddEdge(ctx, pod3Unstructured, serviceAccountUnstructured))
+	require.NoError(t, handler.AddEdge(ctx, pod4Unstructured, serviceAccountUnstructured))
+	require.NoError(t, handler.Process(ctx, serviceAccountUnstructured))
 
 	mockLinkPath(t, dashConfig, cr)
 	mockLinkPath(t, dashConfig, deployment)
@@ -260,7 +272,9 @@ func Test_edgeName(t *testing.T) {
 	for i := range tests {
 		test := tests[i]
 		t.Run(test.name, func(t *testing.T) {
-			got, err := edgeName(test.object)
+			object := testutil.ToUnstructured(t, test.object)
+
+			got, err := edgeName(object)
 			if test.isErr {
 				require.Error(t, err)
 				return

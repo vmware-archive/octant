@@ -180,14 +180,14 @@ func serviceAccountTokens(ctx context.Context, serviceAccount corev1.ServiceAcco
 
 	var tokens []string
 
-	for _, u := range secretList {
+	for i := range secretList.Items {
 		secret := &corev1.Secret{}
 
-		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, secret); err != nil {
+		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(secretList.Items[i].Object, secret); err != nil {
 			return nil, errors.Wrap(err, "convert unstructured secret to structured")
 		}
 
-		if err := copyObjectMeta(secret, u); err != nil {
+		if err := copyObjectMeta(secret, &secretList.Items[i]); err != nil {
 			return nil, errors.Wrap(err, "copy object metadata to secret")
 		}
 
@@ -297,9 +297,9 @@ func (s *serviceAccountPolicyRules) listRoleBindings() ([]rbacv1.RoleRef, error)
 
 	var list []rbacv1.RoleRef
 
-	for _, object := range objects {
+	for i := range objects.Items {
 		roleBinding := &rbacv1.RoleBinding{}
-		if err := scheme.Scheme.Convert(object, roleBinding, nil); err != nil {
+		if err := scheme.Scheme.Convert(&objects.Items[i], roleBinding, nil); err != nil {
 			return nil, err
 		}
 
@@ -324,9 +324,9 @@ func (s *serviceAccountPolicyRules) listClusterRoleBindings() ([]rbacv1.RoleRef,
 
 	var list []rbacv1.RoleRef
 
-	for _, object := range objects {
+	for _, object := range objects.Items {
 		roleBinding := &rbacv1.RoleBinding{}
-		if err := scheme.Scheme.Convert(object, roleBinding, nil); err != nil {
+		if err := scheme.Scheme.Convert(&object, roleBinding, nil); err != nil {
 			return nil, err
 		}
 

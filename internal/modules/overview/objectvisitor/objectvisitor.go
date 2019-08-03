@@ -29,13 +29,13 @@ import (
 // ObjectHandler performs actions on an object. Can be used to augment
 // visitor actions with extra functionality.
 type ObjectHandler interface {
-	AddEdge(ctx context.Context, v1, v2 runtime.Object) error
-	Process(ctx context.Context, object runtime.Object) error
+	AddEdge(ctx context.Context, v1, v2 *unstructured.Unstructured) error
+	Process(ctx context.Context, object *unstructured.Unstructured) error
 }
 
 // DefaultTypedVisitor is the default typed visitors.
 type DefaultTypedVisitor interface {
-	Visit(ctx context.Context, object runtime.Object, handler ObjectHandler, visitor Visitor) error
+	Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool) error
 }
 
 // TypedVisitor is a typed visitor for a specific gvk.
@@ -47,7 +47,7 @@ type TypedVisitor interface {
 // Visitor is a visitor for cluster objects. It will visit an object and all of
 // its ancestors and descendants.
 type Visitor interface {
-	Visit(ctx context.Context, object runtime.Object, handler ObjectHandler) error
+	Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitDescendants bool) error
 }
 
 // DefaultVisitorOption is an option for configuring DefaultVisitor.
@@ -77,6 +77,7 @@ type DefaultVisitor struct {
 	defaultHandler DefaultTypedVisitor
 }
 
+var _ Visitor = (*DefaultVisitor)(nil)
 var _ Visitor = (*DefaultVisitor)(nil)
 
 // NewDefaultVisitor creates an instance of DefaultVisitor.
@@ -126,7 +127,7 @@ func (dv *DefaultVisitor) hasVisited(object runtime.Object) (bool, error) {
 }
 
 // Visit visits a runtime.Object.
-func (dv *DefaultVisitor) Visit(ctx context.Context, object runtime.Object, handler ObjectHandler) error {
+func (dv *DefaultVisitor) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitDescendants bool) error {
 	if object == nil {
 		return errors.New("trying to visit a nil object")
 	}
@@ -135,8 +136,7 @@ func (dv *DefaultVisitor) Visit(ctx context.Context, object runtime.Object, hand
 		return errors.New("handler is nil")
 	}
 
-	objectCopy := object.DeepCopyObject()
-	hasVisited, err := dv.hasVisited(objectCopy)
+	hasVisited, err := dv.hasVisited(object)
 	if err != nil {
 		return errors.Wrapf(err, "check for visit object")
 	}
@@ -145,12 +145,12 @@ func (dv *DefaultVisitor) Visit(ctx context.Context, object runtime.Object, hand
 		return nil
 	}
 
-	return dv.visitObject(ctx, objectCopy, handler)
+	return dv.visitObject(ctx, object, handler, visitDescendants)
 }
 
 // visitObject visits an object. If the object is a service, ingress, or pod, it
 // also runs custom visitor code for them.
-func (dv *DefaultVisitor) visitObject(ctx context.Context, object runtime.Object, handler ObjectHandler) error {
+func (dv *DefaultVisitor) visitObject(ctx context.Context, object runtime.Object, handler ObjectHandler, visitDescendants bool) error {
 	ctx, span := trace.StartSpan(ctx, "visitObject")
 	defer span.End()
 
@@ -177,23 +177,18 @@ func (dv *DefaultVisitor) visitObject(ctx context.Context, object runtime.Object
 
 	tv, ok := tvMap[objectGVK]
 	if ok {
-		if err := tv.Visit(ctx, u, handler, dv); err != nil {
+		if err := tv.Visit(ctx, u, handler, dv, visitDescendants); err != nil {
 			return err
 		}
 	}
 
-	return dv.defaultHandler.Visit(ctx, u, handler, dv)
+	return dv.defaultHandler.Visit(ctx, u, handler, dv, visitDescendants)
 }
 
-func convertToType(object runtime.Object, objectType interface{}) error {
+func convertToType(object *unstructured.Unstructured, objectType interface{}) error {
 	if object == nil {
 		return errors.New("can't convert a nil object")
 	}
 
-	u, ok := object.(*unstructured.Unstructured)
-	if !ok {
-		return errors.Errorf("object is not an unstructured (%T)", object)
-	}
-
-	return runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, objectType)
+	return runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, objectType)
 }

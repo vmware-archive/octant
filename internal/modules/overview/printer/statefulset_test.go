@@ -133,10 +133,9 @@ func Test_StatefulSetStatus(t *testing.T) {
 		},
 	}
 
-	var podList []*unstructured.Unstructured
+	podList := &unstructured.UnstructuredList{}
 	for _, p := range pods.Items {
-		u := testutil.ToUnstructured(t, &p)
-		podList = append(podList, u)
+		podList.Items = append(podList.Items, *testutil.ToUnstructured(t, &p))
 	}
 
 	key := store.Key{

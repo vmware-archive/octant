@@ -13,7 +13,6 @@ import (
 	kLabels "k8s.io/apimachinery/pkg/labels"
 
 	"github.com/vmware/octant/internal/api"
-	"github.com/vmware/octant/internal/componentcache"
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/describer"
 	"github.com/vmware/octant/internal/link"
@@ -23,10 +22,9 @@ import (
 )
 
 type realGenerator struct {
-	pathMatcher    *describer.PathMatcher
-	componentCache componentcache.ComponentCache
-	printer        printer.Printer
-	dashConfig     config.Dash
+	pathMatcher *describer.PathMatcher
+	printer     printer.Printer
+	dashConfig  config.Dash
 }
 
 // GeneratorOptions are additional options to pass a generator

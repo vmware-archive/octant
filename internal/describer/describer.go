@@ -41,7 +41,7 @@ func (f *ObjectLoaderFactory) LoadObject(ctx context.Context, namespace string, 
 	return LoadObject(ctx, f.dashConfig.ObjectStore(), namespace, fields, objectStoreKey)
 }
 
-func (f *ObjectLoaderFactory) LoadObjects(ctx context.Context, namespace string, fields map[string]string, objectStoreKeys []store.Key) ([]*unstructured.Unstructured, error) {
+func (f *ObjectLoaderFactory) LoadObjects(ctx context.Context, namespace string, fields map[string]string, objectStoreKeys []store.Key) (*unstructured.UnstructuredList, error) {
 	return LoadObjects(ctx, f.dashConfig.ObjectStore(), namespace, fields, objectStoreKeys)
 }
 
@@ -62,8 +62,8 @@ func LoadObject(ctx context.Context, objectStore store.Store, namespace string, 
 }
 
 // loadObjects loads objects from the object store sorted by their name.
-func LoadObjects(ctx context.Context, objectStore store.Store, namespace string, fields map[string]string, objectStoreKeys []store.Key) ([]*unstructured.Unstructured, error) {
-	var objects []*unstructured.Unstructured
+func LoadObjects(ctx context.Context, objectStore store.Store, namespace string, fields map[string]string, objectStoreKeys []store.Key) (*unstructured.UnstructuredList, error) {
+	list := &unstructured.UnstructuredList{}
 
 	for _, objectStoreKey := range objectStoreKeys {
 		objectStoreKey.Namespace = namespace
@@ -77,15 +77,15 @@ func LoadObjects(ctx context.Context, objectStore store.Store, namespace string,
 			return nil, err
 		}
 
-		objects = append(objects, storedObjects...)
+		list.Items = append(list.Items, storedObjects.Items...)
 	}
 
-	sort.SliceStable(objects, func(i, j int) bool {
-		a, b := objects[i], objects[j]
+	sort.SliceStable(list.Items, func(i, j int) bool {
+		a, b := list.Items[i], list.Items[j]
 		return a.GetName() < b.GetName()
 	})
 
-	return objects, nil
+	return list, nil
 }
 
 // LoaderFunc loads an object from the object store.
@@ -101,7 +101,7 @@ type Options struct {
 	LabelSet *kLabels.Set
 	Link     link.Interface
 
-	LoadObjects func(ctx context.Context, namespace string, fields map[string]string, objectStoreKeys []store.Key) ([]*unstructured.Unstructured, error)
+	LoadObjects func(ctx context.Context, namespace string, fields map[string]string, objectStoreKeys []store.Key) (*unstructured.UnstructuredList, error)
 	LoadObject  func(ctx context.Context, namespace string, fields map[string]string, objectStoreKey store.Key) (*unstructured.Unstructured, error)
 }
 

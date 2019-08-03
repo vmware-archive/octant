@@ -7,6 +7,7 @@ import (
 	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -35,7 +36,7 @@ func (p *Pod) Supports() schema.GroupVersionKind {
 }
 
 // Visit visits a pod. It looks for service accounts and services.
-func (p *Pod) Visit(ctx context.Context, object runtime.Object, handler ObjectHandler, visitor Visitor) error {
+func (p *Pod) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool) error {
 	ctx, span := trace.StartSpan(ctx, "visitPod")
 	defer span.End()
 
@@ -55,12 +56,17 @@ func (p *Pod) Visit(ctx context.Context, object runtime.Object, handler ObjectHa
 		for i := range services {
 			service := services[i]
 			g.Go(func() error {
-				if err := visitor.Visit(ctx, service, handler); err != nil {
+				m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(service)
+				if err != nil {
+					return err
+				}
+				u := &unstructured.Unstructured{Object: m}
+				if err := visitor.Visit(ctx, u, handler, true); err != nil {
 					return errors.Wrapf(err, "pod %s visit service %s",
 						kubernetes.PrintObject(pod), kubernetes.PrintObject(service))
 				}
 
-				return handler.AddEdge(ctx, object, service)
+				return handler.AddEdge(ctx, object, u)
 			})
 		}
 
@@ -73,21 +79,23 @@ func (p *Pod) Visit(ctx context.Context, object runtime.Object, handler ObjectHa
 				return err
 			}
 
+			m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(serviceAccount)
+			if err != nil {
+				return err
+			}
+			u := &unstructured.Unstructured{Object: m}
+
 			if serviceAccount != nil {
-				if err := visitor.Visit(ctx, serviceAccount, handler); err != nil {
+				if err := visitor.Visit(ctx, u, handler, true); err != nil {
 					return errors.Wrapf(err, "pod %s visit service account %s",
 						kubernetes.PrintObject(pod), kubernetes.PrintObject(serviceAccount))
 				}
-				return handler.AddEdge(ctx, object, serviceAccount)
+				return handler.AddEdge(ctx, object, u)
 			}
 		}
 
 		return nil
 	})
 
-	if err := g.Wait(); err != nil {
-		return err
-	}
-
-	return handler.Process(ctx, object)
+	return g.Wait()
 }

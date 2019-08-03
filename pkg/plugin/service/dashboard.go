@@ -14,7 +14,7 @@ import (
 // Dashboard is the client a plugin can use to interact with Octant.
 type Dashboard interface {
 	Close() error
-	List(ctx context.Context, key store.Key) ([]*unstructured.Unstructured, error)
+	List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error)
 	Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, error)
 	Update(ctx context.Context, object *unstructured.Unstructured) error
 	PortForward(ctx context.Context, req api.PortForwardRequest) (api.PortForwardResponse, error)

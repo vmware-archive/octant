@@ -7,6 +7,7 @@ import (
 	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -33,7 +34,7 @@ func (Service) Supports() schema.GroupVersionKind {
 }
 
 // Visit visits a service. It looks for associated pods and ingresses.
-func (s *Service) Visit(ctx context.Context, object runtime.Object, handler ObjectHandler, visitor Visitor) error {
+func (s *Service) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool) error {
 	ctx, span := trace.StartSpan(ctx, "visitService")
 	defer span.End()
 
@@ -53,13 +54,18 @@ func (s *Service) Visit(ctx context.Context, object runtime.Object, handler Obje
 		for i := range pods {
 			pod := pods[i]
 			g.Go(func() error {
-				return errors.Wrapf(visitor.Visit(ctx, pod, handler), "services %s visit pod %s",
-					kubernetes.PrintObject(service), kubernetes.PrintObject(pod))
+				m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(pod)
+				if err != nil {
+					return err
+				}
+				u := &unstructured.Unstructured{Object: m}
+				if err := visitor.Visit(ctx, u, handler, true); err != nil {
+					return err
+				}
+
+				return handler.AddEdge(ctx, object, u)
 			})
 
-			if err := handler.AddEdge(ctx, object, pod); err != nil {
-				return err
-			}
 		}
 
 		return nil
@@ -74,21 +80,22 @@ func (s *Service) Visit(ctx context.Context, object runtime.Object, handler Obje
 		for i := range ingresses {
 			ingress := ingresses[i]
 			g.Go(func() error {
-				if err := visitor.Visit(ctx, ingress, handler); err != nil {
+				m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(ingress)
+				if err != nil {
+					return err
+				}
+				u := &unstructured.Unstructured{Object: m}
+				if err := visitor.Visit(ctx, u, handler, true); err != nil {
 					return errors.Wrapf(err, "service %s visit ingress %s",
 						kubernetes.PrintObject(service), kubernetes.PrintObject(ingress))
 				}
 
-				return handler.AddEdge(ctx, object, ingress)
+				return handler.AddEdge(ctx, object, u)
 			})
 		}
 
 		return nil
 	})
 
-	if err := g.Wait(); err != nil {
-		return err
-	}
-
-	return handler.Process(ctx, object)
+	return g.Wait()
 }

@@ -71,26 +71,24 @@ func New(title, path string, options ...Option) (*Navigation, error) {
 func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store.Store) ([]Navigation, error) {
 	var list []Navigation
 
-	crdNames, err := CustomResourceDefinitionNames(ctx, objectStore)
+	crds, err := CustomResourceDefinitions(ctx, objectStore)
 	if err != nil {
-		return nil, errors.Wrap(err, "retrieving CRD names")
+		return nil, errors.Wrap(err, "retrieving CRDs")
 	}
 
-	sort.Strings(crdNames)
+	sort.Slice(crds, func(i, j int) bool {
+		return crds[i].Name < crds[j].Name
+	})
 
-	for _, name := range crdNames {
-		crd, err := CustomResourceDefinition(ctx, name, objectStore)
-		if err != nil {
-			return nil, errors.Wrapf(err, "load %q custom resource definition", name)
-		}
+	for i := range crds {
 
-		objects, err := ListCustomResources(ctx, crd, namespace, objectStore, nil)
+		objects, err := ListCustomResources(ctx, crds[i], namespace, objectStore, nil)
 		if err != nil {
 			return nil, err
 		}
 
-		if len(objects) > 0 {
-			navigation, err := New(name, path.Join(prefix, name), SetNavigationIcon(icon.CustomResourceDefinition))
+		if len(objects.Items) > 0 {
+			navigation, err := New(crds[i].Name, path.Join(prefix, crds[i].Name), SetNavigationIcon(icon.CustomResourceDefinition))
 			if err != nil {
 				return nil, err
 			}
@@ -102,15 +100,14 @@ func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store
 	return list, nil
 }
 
-// CustomResourceDefinitionNames returns the available custom resource definition names.
-func CustomResourceDefinitionNames(ctx context.Context, o store.Store) ([]string, error) {
+func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1beta1.CustomResourceDefinition, error) {
 	key := store.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
 
 	if err := o.HasAccess(ctx, key, "list"); err != nil {
-		return []string{}, nil
+		return nil, nil
 	}
 
 	rawList, err := o.List(ctx, key)
@@ -118,19 +115,17 @@ func CustomResourceDefinitionNames(ctx context.Context, o store.Store) ([]string
 		return nil, errors.Wrap(err, "listing CRDs")
 	}
 
-	var list []string
-
 	logger := log.From(ctx)
 
-	for _, object := range rawList {
+	list := make([]*apiextv1beta1.CustomResourceDefinition, len(rawList.Items))
+	for i := range rawList.Items {
 		crd := &apiextv1beta1.CustomResourceDefinition{}
 
-		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, crd); err != nil {
-			logger.Errorf("%v", errors.Wrapf(errors.Wrapf(err, "crd conversion failed"), object.GetName()))
+		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(rawList.Items[i].Object, crd); err != nil {
+			logger.Errorf("%v", errors.Wrapf(errors.Wrapf(err, "crd conversion failed"), rawList.Items[i].GetName()))
 			continue
 		}
-
-		list = append(list, crd.Name)
+		list[i] = crd
 	}
 
 	return list, nil
@@ -158,7 +153,7 @@ func ListCustomResources(
 	crd *apiextv1beta1.CustomResourceDefinition,
 	namespace string,
 	o store.Store,
-	selector *labels.Set) ([]*unstructured.Unstructured, error) {
+	selector *labels.Set) (*unstructured.UnstructuredList, error) {
 	if crd == nil {
 		return nil, errors.New("crd is nil")
 	}
@@ -178,7 +173,7 @@ func ListCustomResources(
 	}
 
 	if err := o.HasAccess(ctx, key, "list"); err != nil {
-		return []*unstructured.Unstructured{}, nil
+		return nil, nil
 	}
 
 	objects, err := o.List(ctx, key)

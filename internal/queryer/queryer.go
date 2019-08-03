@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -31,7 +32,9 @@ import (
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/core"
 
+	"github.com/vmware/octant/internal/gvk"
 	dashstrings "github.com/vmware/octant/internal/util/strings"
+	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/store"
 )
 
@@ -39,10 +42,10 @@ import (
 //go:generate mockgen -source=../../vendor/k8s.io/client-go/discovery/discovery_client.go -imports=openapi_v2=github.com/googleapis/gnostic/OpenAPIv2 -destination=./fake/mock_discovery.go -package=fake k8s.io/client-go/discovery DiscoveryInterface
 
 type Queryer interface {
-	Children(ctx context.Context, object metav1.Object) ([]runtime.Object, error)
+	Children(ctx context.Context, object *unstructured.Unstructured) (*unstructured.UnstructuredList, error)
 	Events(ctx context.Context, object metav1.Object) ([]*corev1.Event, error)
 	IngressesForService(ctx context.Context, service *corev1.Service) ([]*extv1beta1.Ingress, error)
-	OwnerReference(ctx context.Context, namespace string, ownerReference metav1.OwnerReference) (runtime.Object, error)
+	OwnerReference(ctx context.Context, object *unstructured.Unstructured) (bool, *unstructured.Unstructured, error)
 	PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error)
 	ServicesForIngress(ctx context.Context, ingress *extv1beta1.Ingress) ([]*corev1.Service, error)
 	ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Service, error)
@@ -50,17 +53,17 @@ type Queryer interface {
 }
 
 type childrenCache struct {
-	children map[types.UID][]runtime.Object
+	children map[types.UID]*unstructured.UnstructuredList
 	mu       sync.RWMutex
 }
 
 func initChildrenCache() *childrenCache {
 	return &childrenCache{
-		children: make(map[types.UID][]runtime.Object),
+		children: make(map[types.UID]*unstructured.UnstructuredList),
 	}
 }
 
-func (c *childrenCache) get(key types.UID) ([]runtime.Object, bool) {
+func (c *childrenCache) get(key types.UID) (*unstructured.UnstructuredList, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -68,7 +71,7 @@ func (c *childrenCache) get(key types.UID) ([]runtime.Object, bool) {
 	return v, ok
 }
 
-func (c *childrenCache) set(key types.UID, value []runtime.Object) {
+func (c *childrenCache) set(key types.UID, value *unstructured.UnstructuredList) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -76,17 +79,17 @@ func (c *childrenCache) set(key types.UID, value []runtime.Object) {
 }
 
 type ownerCache struct {
-	owner map[store.Key]runtime.Object
+	owner map[store.Key]*unstructured.Unstructured
 	mu    sync.Mutex
 }
 
 func initOwnerCache() *ownerCache {
 	return &ownerCache{
-		owner: make(map[store.Key]runtime.Object),
+		owner: make(map[store.Key]*unstructured.Unstructured),
 	}
 }
 
-func (c *ownerCache) set(key store.Key, value runtime.Object) {
+func (c *ownerCache) set(key store.Key, value *unstructured.Unstructured) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -97,7 +100,7 @@ func (c *ownerCache) set(key store.Key, value runtime.Object) {
 	c.owner[key] = value
 }
 
-func (c *ownerCache) get(key store.Key) (runtime.Object, bool) {
+func (c *ownerCache) get(key store.Key) (*unstructured.Unstructured, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -155,7 +158,7 @@ func New(o store.Store, discoveryClient discovery.DiscoveryInterface) *ObjectSto
 	}
 }
 
-func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner metav1.Object) ([]runtime.Object, error) {
+func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner *unstructured.Unstructured) (*unstructured.UnstructuredList, error) {
 	if owner == nil {
 		return nil, errors.New("owner is nil")
 	}
@@ -169,19 +172,35 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner metav1.Object
 		return stored, nil
 	}
 
-	var children []runtime.Object
+	out := &unstructured.UnstructuredList{}
 
-	ch := make(chan runtime.Object)
+	ch := make(chan *unstructured.Unstructured)
 	childrenProcessed := make(chan bool, 1)
 	go func() {
 		for child := range ch {
 			if child == nil {
 				continue
 			}
-			children = append(children, child)
+			out.Items = append(out.Items, *child)
 		}
 		childrenProcessed <- true
 	}()
+
+	list := append(allowed[:0:0], allowed...)
+
+	crds, err := navigation.CustomResourceDefinitions(ctx, osq.objectStore)
+	if err == nil {
+		for _, crd := range crds {
+			for _, version := range crd.Spec.Versions {
+				list = append(list, schema.GroupVersionKind{
+					Group:   crd.Spec.Group,
+					Version: version.Name,
+					Kind:    crd.Spec.Names.Kind,
+				})
+
+			}
+		}
+	}
 
 	resourceLists, err := osq.discoveryClient.ServerPreferredResources()
 	if err != nil {
@@ -189,6 +208,8 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner metav1.Object
 	}
 
 	var g errgroup.Group
+
+	sem := semaphore.NewWeighted(5)
 
 	for resourceListIndex := range resourceLists {
 		resourceList := resourceLists[resourceListIndex]
@@ -207,9 +228,16 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner metav1.Object
 				return nil, err
 			}
 
-			if gv.Group == "apps" && apiResource.Kind == "ReplicaSet" {
-				// skip looking for apps/* ReplicaSet because extensions/v1beta1 ReplicaSet
-				// is Octant's current default.
+			found := false
+			for i := range list {
+				if list[i].Group == gv.Group &&
+					list[i].Version == gv.Version &&
+					list[i].Kind == apiResource.Kind {
+					found = true
+				}
+			}
+
+			if !found {
 				continue
 			}
 
@@ -224,14 +252,18 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner metav1.Object
 			}
 
 			g.Go(func() error {
+				if err := sem.Acquire(ctx, 1); err != nil {
+					return err
+				}
+				defer sem.Release(1)
 				objects, err := osq.objectStore.List(ctx, key)
 				if err != nil {
 					return errors.Wrapf(err, "unable to retrieve %+v", key)
 				}
 
-				for _, object := range objects {
-					if metav1.IsControlledBy(object, owner) {
-						ch <- object
+				for i := range objects.Items {
+					if metav1.IsControlledBy(&objects.Items[i], owner) {
+						ch <- &objects.Items[i]
 					}
 				}
 
@@ -241,16 +273,35 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner metav1.Object
 	}
 
 	if err := g.Wait(); err != nil {
-		return nil, errors.Wrap(err, "find children")
+		if err != context.Canceled {
+			return nil, errors.Wrap(err, "find children")
+		}
 	}
 
 	close(ch)
 	<-childrenProcessed
 	close(childrenProcessed)
 
-	osq.children.set(owner.GetUID(), children)
+	osq.children.set(owner.GetUID(), out)
 
-	return children, nil
+	return out, nil
+}
+
+var allowed = []schema.GroupVersionKind{
+	gvk.CronJob,
+	gvk.DaemonSet,
+	gvk.Deployment,
+	gvk.Pod,
+	gvk.Job,
+	gvk.ExtReplicaSet,
+	gvk.ReplicationController,
+	gvk.StatefulSet,
+	gvk.Ingress,
+	gvk.Service,
+	gvk.ConfigMap,
+	gvk.PersistentVolumeClaim,
+	gvk.Secret,
+	gvk.ServiceAccount,
 }
 
 func (osq *ObjectStoreQueryer) canList(apiResource metav1.APIResource) bool {
@@ -282,7 +333,7 @@ func (osq *ObjectStoreQueryer) Events(ctx context.Context, object metav1.Object)
 	}
 
 	var events []*corev1.Event
-	for _, unstructuredEvent := range allEvents {
+	for _, unstructuredEvent := range allEvents.Items {
 		event := &corev1.Event{}
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(unstructuredEvent.Object, event)
 		if err != nil {
@@ -318,13 +369,13 @@ func (osq *ObjectStoreQueryer) IngressesForService(ctx context.Context, service 
 
 	var results []*v1beta1.Ingress
 
-	for _, u := range ul {
+	for i := range ul.Items {
 		ingress := &v1beta1.Ingress{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, ingress)
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(ul.Items[i].Object, ingress)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured ingress")
 		}
-		if err = copyObjectMeta(ingress, u); err != nil {
+		if err = copyObjectMeta(ingress, &ul.Items[i]); err != nil {
 			return nil, errors.Wrap(err, "copying object metadata")
 		}
 		backends := osq.listIngressBackends(*ingress)
@@ -359,27 +410,67 @@ func (osq *ObjectStoreQueryer) listIngressBackends(ingress v1beta1.Ingress) []ex
 	return backends
 }
 
-func (osq *ObjectStoreQueryer) OwnerReference(ctx context.Context, namespace string, ownerReference metav1.OwnerReference) (runtime.Object, error) {
-	key := store.Key{
-		Namespace:  namespace,
-		APIVersion: ownerReference.APIVersion,
-		Kind:       ownerReference.Kind,
-		Name:       ownerReference.Name,
+func (osq *ObjectStoreQueryer) OwnerReference(ctx context.Context, object *unstructured.Unstructured) (bool, *unstructured.Unstructured, error) {
+	if object == nil {
+		return false, nil, errors.New("can't find owner for nil object")
 	}
 
-	object, ok := osq.owner.get(key)
-	if ok {
-		return object, nil
+	ownerReferences := object.GetOwnerReferences()
+	switch len(ownerReferences) {
+	case 0:
+		return false, nil, nil
+	case 1:
+		ownerReference := ownerReferences[0]
+
+		resourceList, err := osq.discoveryClient.ServerResourcesForGroupVersion(ownerReference.APIVersion)
+		if err != nil {
+			return false, nil, err
+		}
+		if resourceList == nil {
+			return false, nil, errors.Errorf("did not expect resource list for %s to be nil", ownerReference.APIVersion)
+		}
+
+		found := false
+		isNamespaced := false
+		for _, apiResource := range resourceList.APIResources {
+			if apiResource.Kind == ownerReference.Kind {
+				isNamespaced = apiResource.Namespaced
+				found = true
+			}
+		}
+
+		if !found {
+			return false, nil, errors.Errorf("unable to find owner references %v", ownerReference)
+		}
+
+		namespace := ""
+		if isNamespaced {
+			namespace = object.GetNamespace()
+		}
+
+		key := store.Key{
+			Namespace:  namespace,
+			APIVersion: ownerReference.APIVersion,
+			Kind:       ownerReference.Kind,
+			Name:       ownerReference.Name,
+		}
+
+		object, ok := osq.owner.get(key)
+		if ok {
+			return true, object, nil
+		}
+
+		owner, err := osq.objectStore.Get(ctx, key)
+		if err != nil {
+			return false, nil, errors.Wrap(err, "get owner from store")
+		}
+
+		osq.owner.set(key, owner)
+
+		return true, owner, nil
+	default:
+		return false, nil, errors.New("unable to handle more than one owner reference")
 	}
-
-	owner, err := osq.objectStore.Get(ctx, key)
-	if err != nil {
-		return nil, errors.Wrap(err, "get owner from store")
-	}
-
-	osq.owner.set(key, owner)
-
-	return owner, nil
 }
 
 func (osq *ObjectStoreQueryer) PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error) {
@@ -420,13 +511,13 @@ func (osq *ObjectStoreQueryer) loadPods(ctx context.Context, key store.Key, labe
 
 	var list []*corev1.Pod
 
-	for _, object := range objects {
+	for i := range objects.Items {
 		pod := &corev1.Pod{}
-		if err := scheme.Scheme.Convert(object, pod, runtime.InternalGroupVersioner); err != nil {
+		if err := scheme.Scheme.Convert(&objects.Items[i], pod, runtime.InternalGroupVersioner); err != nil {
 			return nil, err
 		}
 
-		if err := copyObjectMeta(pod, object); err != nil {
+		if err := copyObjectMeta(pod, &objects.Items[i]); err != nil {
 			return nil, err
 		}
 
@@ -498,13 +589,13 @@ func (osq *ObjectStoreQueryer) ServicesForPod(ctx context.Context, pod *corev1.P
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving services")
 	}
-	for _, u := range ul {
+	for i := range ul.Items {
 		svc := &corev1.Service{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, svc)
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(ul.Items[i].Object, svc)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured service")
 		}
-		if err = copyObjectMeta(svc, u); err != nil {
+		if err = copyObjectMeta(svc, &ul.Items[i]); err != nil {
 			return nil, errors.Wrap(err, "copying object metadata")
 		}
 		labelSelector, err := osq.getSelector(svc)

@@ -78,7 +78,7 @@ func (c *Client) Close() error {
 }
 
 // List lists objects in the dashboard's object store.
-func (c *Client) List(ctx context.Context, key store.Key) ([]*unstructured.Unstructured, error) {
+func (c *Client) List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error) {
 	client := c.DashboardConnection.Client()
 
 	keyRequest, err := convertFromKey(key)

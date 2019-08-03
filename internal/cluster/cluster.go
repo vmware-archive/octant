@@ -226,8 +226,7 @@ func (c *Cluster) InfoClient() (InfoInterface, error) {
 
 // RESTClient returns a RESTClient for the cluster.
 func (c *Cluster) RESTClient() (rest.Interface, error) {
-	config := withConfigDefaults(c.restConfig)
-	return rest.RESTClientFor(config)
+	return rest.RESTClientFor(c.restConfig)
 }
 
 // RESTConfig returns configuration for communicating with the cluster.
@@ -248,11 +247,11 @@ func (c *Cluster) Version() (string, error) {
 	return fmt.Sprint(serverVersion), nil
 }
 
-// FromKubeConfig creates a Cluster from a kubeconfig.
-func FromKubeConfig(ctx context.Context, kubeconfig, contextName string) (*Cluster, error) {
+// FromKubeConfig creates a Cluster from a kubeConfig.
+func FromKubeConfig(ctx context.Context, kubeConfig, contextName string, options RESTConfigOptions) (*Cluster, error) {
 	rules := clientcmd.NewDefaultClientConfigLoadingRules()
-	if kubeconfig != "" {
-		rules.ExplicitPath = kubeconfig
+	if kubeConfig != "" {
+		rules.ExplicitPath = kubeConfig
 	}
 
 	overrides := &clientcmd.ConfigOverrides{}
@@ -265,17 +264,21 @@ func FromKubeConfig(ctx context.Context, kubeconfig, contextName string) (*Clust
 		return nil, err
 	}
 
-	config = withConfigDefaults(config)
+	logger := log.From(ctx)
+	logger.With("client-qps", options.QPS, "client-burst", options.Burst).
+		Debugf("initializing REST client configuration")
+
+	config = withConfigDefaults(config, options)
 
 	return newCluster(ctx, cc, config)
 }
 
 // withConfigDefaults returns an extended rest.Config object with additional defaults applied
 // See core_client.go#setConfigDefaults
-func withConfigDefaults(inConfig *rest.Config) *rest.Config {
+func withConfigDefaults(inConfig *rest.Config, options RESTConfigOptions) *rest.Config {
 	config := rest.CopyConfig(inConfig)
-	config.QPS = 30
-	config.Burst = 100
+	config.QPS = options.QPS
+	config.Burst = options.Burst
 	config.APIPath = "/api"
 	if config.GroupVersion == nil || config.GroupVersion.Group != scheme.Scheme.PrioritizedVersionsForGroup("")[0].Group {
 		gv := scheme.Scheme.PrioritizedVersionsForGroup("")[0]
@@ -285,4 +288,9 @@ func withConfigDefaults(inConfig *rest.Config) *rest.Config {
 	config.NegotiatedSerializer = serializer.NegotiatedSerializerWrapper(runtime.SerializerInfo{Serializer: codec})
 
 	return config
+}
+
+type RESTConfigOptions struct {
+	QPS   float32
+	Burst int
 }

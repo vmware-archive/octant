@@ -314,13 +314,13 @@ func loadPods(ctx context.Context, key store.Key, o store.Store, labelSelector *
 
 	var list []*corev1.Pod
 
-	for _, object := range objects {
+	for i := range objects.Items {
 		pod := &corev1.Pod{}
-		if err := scheme.Scheme.Convert(object, pod, runtime.InternalGroupVersioner); err != nil {
+		if err := scheme.Scheme.Convert(&objects.Items[i], pod, runtime.InternalGroupVersioner); err != nil {
 			return nil, err
 		}
 
-		if err := copyObjectMeta(pod, object); err != nil {
+		if err := copyObjectMeta(pod, &objects.Items[i]); err != nil {
 			return nil, err
 		}
 
@@ -439,14 +439,14 @@ func createPodListView(ctx context.Context, object runtime.Object, options Optio
 		return nil, errors.Wrapf(err, "list all objects for key %+v", key)
 	}
 
-	for _, u := range list {
+	for i := range list.Items {
 		pod := &corev1.Pod{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, pod)
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[i].Object, pod)
 		if err != nil {
 			return nil, err
 		}
 
-		if err := copyObjectMeta(pod, u); err != nil {
+		if err := copyObjectMeta(pod, &list.Items[i]); err != nil {
 			return nil, errors.Wrap(err, "copy object metadata")
 		}
 

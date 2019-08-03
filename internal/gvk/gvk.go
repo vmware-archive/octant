@@ -18,6 +18,7 @@ var (
 	CustomResourceDefinition = schema.GroupVersionKind{Group: "apiextensions.k8s.io", Version: "v1beta1", Kind: "CustomResourceDefinition"}
 	DaemonSet                = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "DaemonSet"}
 	Deployment               = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "Deployment"}
+	ExtDeployment            = schema.GroupVersionKind{Group: "extensions", Version: "v1beta1", Kind: "Deployment"}
 	ExtReplicaSet            = schema.GroupVersionKind{Group: "extensions", Version: "v1beta1", Kind: "ReplicaSet"}
 	Event                    = schema.GroupVersionKind{Version: "v1", Kind: "Event"}
 	Ingress                  = schema.GroupVersionKind{Group: "extensions", Version: "v1beta1", Kind: "Ingress"}
