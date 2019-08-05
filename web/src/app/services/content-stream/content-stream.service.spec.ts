@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { TestBed } from '@angular/core/testing';
+import { TestBed, ComponentFixture, inject } from '@angular/core/testing';
 import { ContentStreamService } from './content-stream.service';
 import { BehaviorSubject } from 'rxjs';
 import { EventSourceStub, EventSourceService } from './event-source.service';
@@ -18,6 +18,12 @@ import getAPIBase from '../common/getAPIBase';
 import { ContentResponse } from '../../models/content';
 import { Navigation } from '../../models/navigation';
 import { notifierServiceStubFactory } from '../../testing/notifier-service.stub';
+import { OverviewComponent } from '../../modules/overview/overview.component';
+import { OverviewModule } from '../../modules/overview/overview.module';
+import { NamespaceService } from '../namespace/namespace.service';
+import { NamespaceComponent } from 'src/app/components/namespace/namespace.component';
+import { AppModule } from 'src/app/app.module';
+import { NavigationComponent } from 'src/app/components/navigation/navigation.component';
 
 const emptyContentResponse: ContentResponse = {
   content: {
@@ -38,7 +44,10 @@ describe('ContentStreamService', () => {
   };
   let labelFilterService;
   let notifierService;
-
+  let overviewFixture: ComponentFixture<OverviewComponent>;
+  let namespaceFixture: ComponentFixture<NamespaceComponent>;
+  let navigationFixture: ComponentFixture<NavigationComponent>;
+  
   beforeEach(() => {
     const labelFilterStub: Partial<LabelFilterService> = {
       filters: new BehaviorSubject<Filter[]>([]),
@@ -54,17 +63,29 @@ describe('ContentStreamService', () => {
     };
 
     TestBed.configureTestingModule({
+      imports: [
+        OverviewModule,
+        AppModule
+      ],
       providers: [
         { provide: LabelFilterService, useValue: labelFilterStub },
         { provide: NotifierService, useFactory: notifierServiceStubFactory },
         { provide: EventSourceService, useValue: eventSourceServiceStub },
+        NamespaceService,
       ],
-    });
+    }).compileComponents();
 
     contentStreamService = TestBed.get(ContentStreamService);
     eventSourceService = TestBed.get(EventSourceService);
     labelFilterService = TestBed.get(LabelFilterService);
     notifierService = TestBed.get(NotifierService);
+
+    overviewFixture = TestBed.createComponent(OverviewComponent);
+    overviewFixture.detectChanges();
+    namespaceFixture = TestBed.createComponent(NamespaceComponent);
+    namespaceFixture.detectChanges();
+    navigationFixture = TestBed.createComponent(NavigationComponent);
+    navigationFixture.detectChanges();
   });
 
   it('should create', () => {
@@ -74,7 +95,7 @@ describe('ContentStreamService', () => {
   it('should stream content after setting valid path w/o filters', () => {
     const { eventSourceStubs } = eventSourceService;
     const { notifierSessionStub } = notifierService;
-
+    
     contentStreamService.openStream('namespace/default/overview');
 
     expect(notifierSessionStub.pushSignal.calls.count()).toBe(1);
@@ -93,17 +114,12 @@ describe('ContentStreamService', () => {
       JSON.stringify(emptyContentResponse)
     );
     eventSourceStub.queueMessage('navigation', JSON.stringify(emptyNavigation));
-    eventSourceStub.queueMessage(
-      'namespaces',
-      JSON.stringify({ namespaces: [] })
-    );
+    eventSourceStub.queueMessage('namespaces', JSON.stringify({ namespaces: [] }));
     eventSourceStub.flush();
 
-    expect(contentStreamService.content.getValue()).toEqual(
-      emptyContentResponse
-    );
-    expect(contentStreamService.navigation.getValue()).toEqual(emptyNavigation);
-    expect(contentStreamService.namespaces.getValue()).toEqual([]);
+    expect(contentStreamService.streamer('content').getValue()).toEqual(emptyContentResponse);
+    expect(contentStreamService.streamer('navigation').getValue()).toEqual(emptyNavigation);
+    expect(contentStreamService.streamer('namespaces').getValue()).toEqual([]);
 
     const testContentResponse: ContentResponse = {
       content: {
@@ -125,11 +141,9 @@ describe('ContentStreamService', () => {
     );
     eventSourceStub.flush();
 
-    expect(contentStreamService.content.getValue()).toEqual(
-      testContentResponse
-    );
-    expect(contentStreamService.navigation.getValue()).toEqual(emptyNavigation);
-    expect(contentStreamService.namespaces.getValue()).toEqual([
+    expect(contentStreamService.streamer('content').getValue()).toEqual(testContentResponse);
+    expect(contentStreamService.streamer('navigation').getValue()).toEqual(emptyNavigation);
+    expect(contentStreamService.streamer('namespaces').getValue()).toEqual([
       'namespaceA',
       'namespaceB',
     ]);

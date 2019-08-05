@@ -8,7 +8,7 @@ import {
   NotifierService,
   NotifierSignalType,
 } from '../notifier/notifier.service';
-import { ContentStreamService } from '../content-stream/content-stream.service';
+import { Streamer, ContentStreamService } from '../content-stream/content-stream.service';
 import _ from 'lodash';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -23,6 +23,7 @@ describe('NamespaceService', () => {
   beforeEach(() => {
     const contentStreamServiceStub = {
       namespaces: new BehaviorSubject<string[]>([]),
+      registerStreamer: (name: string, handler: Streamer) => {},
     };
 
     const notifierServiceStub = {

@@ -4,7 +4,7 @@
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ContentStreamService } from 'src/app/services/content-stream/content-stream.service';
+import { Streamer, ContentStreamService } from 'src/app/services/content-stream/content-stream.service';
 import { ActivatedRouteStub } from 'src/app/testing/activated-route-stub';
 
 import { OverviewModule } from './overview.module';
@@ -12,6 +12,7 @@ import { OverviewComponent } from './overview.component';
 
 const contentStreamServiceStub: Partial<ContentStreamService> = {
   closeStream: () => {},
+  registerStreamer: (name: string, handler: Streamer) => {},
 };
 const activatedRouteStub = new ActivatedRouteStub();
 

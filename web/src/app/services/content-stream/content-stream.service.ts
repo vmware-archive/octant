@@ -7,8 +7,7 @@ import { Location } from '@angular/common';
 import { BehaviorSubject } from 'rxjs';
 import getAPIBase from '../common/getAPIBase';
 import { ContentResponse } from '../../models/content';
-import { Namespaces } from '../../models/namespace';
-import { Navigation } from '../../models/navigation';
+
 import {
   Filter,
   LabelFilterService,
@@ -21,46 +20,28 @@ import {
 import { EventSourceService } from './event-source.service';
 import _ from 'lodash';
 
-export interface ContextDescription {
-  name: string;
+export interface Streamer {
+  handler: EventListenerOrEventListenerObject;
+  behavior: BehaviorSubject<any>;
 }
 
-export interface KubeContextResponse {
-  contexts: ContextDescription[];
-  currentContext: string;
+export interface ContextDescription {
+  name: string;
 }
 
 const pollEvery = 5;
 const API_BASE = getAPIBase();
 
-const emptyContentResponse: ContentResponse = {
-  content: {
-    viewComponents: [],
-    title: [],
-  },
-};
-
-const emptyNavigation: Navigation = {
-  sections: [],
-};
-
-const emptyKubeContext: KubeContextResponse = {
-  contexts: [],
-  currentContext: '',
-};
 
 @Injectable({
   providedIn: 'root',
 })
 export class ContentStreamService {
-  content = new BehaviorSubject<ContentResponse>(emptyContentResponse);
-  namespaces = new BehaviorSubject<string[]>([]);
-  navigation = new BehaviorSubject<Navigation>(emptyNavigation);
-  kubeContext = new BehaviorSubject<KubeContextResponse>(emptyKubeContext);
 
   private eventSource: EventSource;
   private notifierSession: NotifierSession;
   private currentPath: string;
+  private streamers = new Map<string, Streamer>();
 
   constructor(
     private notifierService: NotifierService,
@@ -80,15 +61,25 @@ export class ContentStreamService {
       eventSourceUrl
     );
     this.notifierSession.pushSignal(NotifierSignalType.LOADING, true);
-    this.eventSource.addEventListener('content', this.handleContentEvent);
-    this.eventSource.addEventListener('navigation', this.handleNavigationEvent);
-    this.eventSource.addEventListener('namespaces', this.handleNamespaceEvent);
     this.eventSource.addEventListener('error', this.handleErrorEvent);
-    this.eventSource.addEventListener(
-      'objectNotFound',
-      this.handleObjectNotFoundEvent
-    );
-    this.eventSource.addEventListener('kubeConfig', this.handleKubeConfigEvent);
+    this.eventSource.addEventListener('objectNotFound', this.handleObjectNotFoundEvent);
+
+    let eventSource = this.eventSource;
+    this.streamers.forEach(function(value, key) {
+      eventSource.addEventListener(key, value.handler);
+    });
+  }
+
+  streamer(name: string): BehaviorSubject<any> {
+    return this.streamers.get(name).behavior;
+  }
+
+  registerStreamer(name: string, streamer: Streamer) {
+    this.streamers.set(name, streamer);
+  }
+
+  removeAllSignals() {
+    this.notifierSession.removeAllSignals();
   }
 
   closeStream() {
@@ -97,24 +88,8 @@ export class ContentStreamService {
       this.eventSource = null;
     }
     this.currentPath = null;
-    this.notifierSession.removeAllSignals();
+    this.removeAllSignals();
   }
-
-  private handleContentEvent = (message: MessageEvent) => {
-    const data = JSON.parse(message.data) as ContentResponse;
-    this.content.next(data);
-    this.notifierSession.removeAllSignals();
-  };
-
-  private handleNavigationEvent = (message: MessageEvent) => {
-    const data = JSON.parse(message.data);
-    this.navigation.next(data);
-  };
-
-  private handleNamespaceEvent = (message: MessageEvent) => {
-    const data = JSON.parse(message.data) as Namespaces;
-    this.namespaces.next(data.namespaces);
-  };
 
   private handleObjectNotFoundEvent = (message: MessageEvent) => {
     const redirectPath = message.data as string;
@@ -125,11 +100,6 @@ export class ContentStreamService {
       NotifierSignalType.WARNING,
       'Kubernetes object was deleted from the cluster.'
     );
-  };
-
-  private handleKubeConfigEvent = (message: MessageEvent) => {
-    const data = JSON.parse(message.data) as KubeContextResponse;
-    this.kubeContext.next(data);
   };
 
   private handleErrorEvent = () => {
