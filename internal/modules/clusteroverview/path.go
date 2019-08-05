@@ -18,6 +18,7 @@ var (
 	supportedGVKs = []schema.GroupVersionKind{
 		gvk.ClusterRoleBinding,
 		gvk.ClusterRole,
+		gvk.Node,
 	}
 )
 
@@ -35,6 +36,8 @@ func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 		p = "/rbac/cluster-roles"
 	case apiVersion == rbacAPIVersion && kind == "ClusterRoleBinding":
 		p = "/rbac/cluster-role-bindings"
+	case apiVersion == "v1" && kind == "Node":
+		p = "/nodes"
 	default:
 		return "", errors.Errorf("unknown object %s %s", apiVersion, kind)
 	}

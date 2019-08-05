@@ -31,6 +31,8 @@ func AddHandlers(p Handler) error {
 		IngressHandler,
 		JobListHandler,
 		JobHandler,
+		NodeHandler,
+		NodeListHandler,
 		ReplicaSetHandler,
 		ReplicaSetListHandler,
 		ReplicationControllerHandler,

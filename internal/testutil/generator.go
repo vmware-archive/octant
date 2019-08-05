@@ -147,6 +147,13 @@ func CreateJob(name string) *batchv1.Job {
 	}
 }
 
+func CreateNode(name string) *corev1.Node {
+	return &corev1.Node{
+		TypeMeta:   genTypeMeta(gvk.Node),
+		ObjectMeta: genObjectMeta(name, false),
+	}
+}
+
 // CreatePod creates a pod
 func CreatePod(name string) *corev1.Pod {
 	return &corev1.Pod{

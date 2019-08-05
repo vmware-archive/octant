@@ -180,16 +180,19 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 		Lookup: map[string]string{
 			"Custom Resources": "custom-resources",
 			"RBAC":             "rbac",
+			"Nodes":            "nodes",
 			"Port Forwards":    "port-forward",
 		},
 		EntriesFuncs: map[string]octant.EntriesFunc{
 			"Custom Resources": navigation.CRDEntries,
 			"RBAC":             rbacEntries,
+			"Nodes":            nil,
 			"Port Forwards":    nil,
 		},
 		Order: []string{
 			"Custom Resources",
 			"RBAC",
+			"Nodes",
 			"Port Forwards",
 		},
 	}
