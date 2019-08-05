@@ -1,7 +1,0 @@
-Reduce memory usage and allocations for object visitor 
-
-* creates an allow list to reduce the number of objects that need to be checked when building the resource viewer
-* changes the store API List function to return an unstructured list.
-* bumps rest client's QPS
-* stop using the cached resource viewer. the process should be quick enough to not have to rely on a cached version
-* prefer unstructured objects in more places. this removes a few unnecessary conversions
