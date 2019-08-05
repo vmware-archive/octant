@@ -2,6 +2,8 @@
 web/node_modules
 build
 dist
+docs
+examples
 .vscode
 examples
 web/rice-box.go
@@ -11,10 +13,19 @@ configs
 
 
 # generated fakes
-/internal/cache/fake
+/internal/octant/fake
+/internal/kubeconfig/fake
+/internal/link/fake
+/internal/event/fake
+/internal/config/fake
+/internal/api/fake
+/internal/portforward/fake
+/internal/objectstore/fake
 /internal/queryer/fake
 /internal/cluster/fake
-/internal/overview/printer/fake
+/internal/module/fake
+/internal/modules/overview/printer/fake
+/pkg/store/fake
 /pkg/plugin/fake
 /pkg/plugin/api/fake
 
@@ -24,4 +35,3 @@ configs
 /vendor/electron*
 /vendor/status.json
 /output
-/cmd/octant
