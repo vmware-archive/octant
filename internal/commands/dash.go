@@ -110,7 +110,7 @@ func newOctantCmd() *cobra.Command {
 
 	kubeConfig = clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
 
-	octantCmd.Flags().StringVar(&kubeConfig, "kubeConfig", kubeConfig, "absolute path to kubeConfig file")
+	octantCmd.Flags().StringVar(&kubeConfig, "kubeconfig", kubeConfig, "absolute path to kubeConfig file")
 
 	return octantCmd
 }
