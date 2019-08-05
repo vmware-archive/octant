@@ -1,0 +1,350 @@
+/*
+Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0
+*/
+
+package printer
+
+import (
+	"context"
+	"fmt"
+	"strings"
+
+	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
+
+	"github.com/vmware/octant/pkg/view/component"
+)
+
+const (
+	// labelNodeRolePrefix is a label prefix for node roles
+	// It's copied over to here until it's merged in core: https://github.com/kubernetes/kubernetes/pull/39112
+	labelNodeRolePrefix = "node-role.kubernetes.io/"
+
+	// nodeLabelRole specifies the role of a node
+	nodeLabelRole = "kubernetes.io/role"
+)
+
+var (
+	nodeListColumns = component.NewTableCols("Name", "Labels", "Status", "Roles", "Age", "Version")
+)
+
+func NodeListHandler(ctx context.Context, list *corev1.NodeList, options Options) (component.Component, error) {
+	if list == nil {
+		return nil, errors.New("node list is nil")
+	}
+
+	table := component.NewTable("Nodes", nodeListColumns)
+
+	for _, node := range list.Items {
+		row := component.TableRow{}
+		nameLink, err := options.Link.ForObject(&node, node.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		row["Name"] = nameLink
+		row["Labels"] = component.NewLabels(node.Labels)
+		row["Status"] = component.NewText(nodeStatusMessage(node))
+		row["Roles"] = component.NewText(nodeRoles(node))
+		row["Age"] = component.NewTimestamp(node.CreationTimestamp.Time)
+		row["Version"] = component.NewText(node.Status.NodeInfo.KubeletVersion)
+
+		table.Add(row)
+	}
+
+	return table, nil
+}
+
+func NodeHandler(ctx context.Context, node *corev1.Node, options Options) (component.Component, error) {
+	o := NewObject(node)
+
+	config, err := nodeConfig(node)
+	if err != nil {
+		return nil, err
+	}
+	o.RegisterConfig(config)
+
+	o.RegisterItems([]ItemDescriptor{
+		{
+			Func: func() (component.Component, error) {
+				return nodeAddresses(node)
+			},
+			Width: component.WidthHalf,
+		},
+		{
+			Func: func() (component.Component, error) {
+				return nodeResources(node)
+			},
+			Width: component.WidthHalf,
+		},
+		{
+			Func: func() (component.Component, error) {
+				return nodeConditions(node)
+			},
+			Width: component.WidthFull,
+		},
+		{
+			Func: func() (component.Component, error) {
+				return nodeImages(node)
+			},
+			Width: component.WidthFull,
+		},
+	}...)
+
+	return o.ToComponent(ctx, options)
+}
+
+type nodeResource struct {
+	CPU              string
+	Memory           string
+	EphemeralStorage string
+	Pods             string
+}
+
+func parseResourceList(resourceList corev1.ResourceList) nodeResource {
+	nr := nodeResource{}
+
+	if cpu := resourceList.Cpu(); cpu != nil {
+		nr.CPU = cpu.String()
+	}
+
+	if memory := resourceList.Memory(); memory != nil {
+		nr.Memory = memory.String()
+	}
+
+	if ephemeralStorage := resourceList.StorageEphemeral(); ephemeralStorage != nil {
+		nr.EphemeralStorage = ephemeralStorage.String()
+	}
+
+	if pods := resourceList.Pods(); pods != nil {
+		nr.Pods = pods.String()
+	}
+
+	return nr
+}
+
+var (
+	nodeResourcesColumns = component.NewTableCols("Key", "Capacity", "Allocatable")
+)
+
+func nodeResources(node *corev1.Node) (component.Component, error) {
+	if node == nil {
+		return nil, errors.New("nil nodes don't have resources")
+	}
+
+	table := component.NewTable("Resources", nodeResourcesColumns)
+
+	allocatable := parseResourceList(node.Status.Allocatable)
+	capacity := parseResourceList(node.Status.Capacity)
+
+	table.Add([]component.TableRow{
+		{
+			"Key":         component.NewText("CPU"),
+			"Capacity":    component.NewText(capacity.CPU),
+			"Allocatable": component.NewText(allocatable.CPU),
+		},
+		{
+			"Key":         component.NewText("Memory"),
+			"Capacity":    component.NewText(capacity.Memory),
+			"Allocatable": component.NewText(allocatable.Memory),
+		},
+		{
+			"Key":         component.NewText("Ephemeral Storage"),
+			"Capacity":    component.NewText(capacity.EphemeralStorage),
+			"Allocatable": component.NewText(allocatable.EphemeralStorage),
+		},
+		{
+			"Key":         component.NewText("Pods"),
+			"Capacity":    component.NewText(capacity.Pods),
+			"Allocatable": component.NewText(allocatable.Pods),
+		},
+	}...)
+
+	return table, nil
+}
+
+var (
+	nodeAddressesColumns = component.NewTableCols("Type", "Address")
+)
+
+func nodeAddresses(node *corev1.Node) (component.Component, error) {
+	table := component.NewTable("Addresses", nodeAddressesColumns)
+
+	for _, address := range node.Status.Addresses {
+		row := component.TableRow{}
+		row["Type"] = component.NewText(string(address.Type))
+		row["Address"] = component.NewText(address.Address)
+
+		table.Add(row)
+	}
+
+	return table, nil
+}
+
+func nodeStatusMessage(node corev1.Node) string {
+	conditionMap := make(map[corev1.NodeConditionType]*corev1.NodeCondition)
+	NodeAllConditions := []corev1.NodeConditionType{corev1.NodeReady}
+	for i := range node.Status.Conditions {
+		cond := node.Status.Conditions[i]
+		conditionMap[cond.Type] = &cond
+	}
+	var status []string
+	for _, validCondition := range NodeAllConditions {
+		if condition, ok := conditionMap[validCondition]; ok {
+			if condition.Status == corev1.ConditionTrue {
+				status = append(status, string(condition.Type))
+			} else {
+				status = append(status, "Not"+string(condition.Type))
+			}
+		}
+	}
+	if len(status) == 0 {
+		status = append(status, "Unknown")
+	}
+	if node.Spec.Unschedulable {
+		status = append(status, "SchedulingDisabled")
+	}
+
+	return strings.Join(status, ",")
+}
+func nodeRoles(node corev1.Node) string {
+	roles := strings.Join(findNodeRoles(node), ",")
+	if roles == "" {
+		return "<none>"
+	}
+
+	return roles
+}
+
+// findNodeRoles returns the roles of a given node.
+// The roles are determined by looking for:
+// * a node-role.kubernetes.io/<role>="" label
+// * a kubernetes.io/role="<role>" label
+func findNodeRoles(node corev1.Node) []string {
+	roles := sets.NewString()
+	for k, v := range node.Labels {
+		switch {
+		case strings.HasPrefix(k, labelNodeRolePrefix):
+			if role := strings.TrimPrefix(k, labelNodeRolePrefix); len(role) > 0 {
+				roles.Insert(role)
+			}
+
+		case k == nodeLabelRole && v != "":
+			roles.Insert(v)
+		}
+	}
+	return roles.List()
+}
+
+func nodeConfig(node *corev1.Node) (*component.Summary, error) {
+	if node == nil {
+		return nil, errors.New("cannot generate status for nil node")
+	}
+
+	nodeInfo := node.Status.NodeInfo
+
+	summary := component.NewSummary("Status", []component.SummarySection{
+		{
+			Header:  "Architecture",
+			Content: component.NewText(nodeInfo.Architecture),
+		},
+		{
+			Header:  "Boot ID",
+			Content: component.NewText(nodeInfo.BootID),
+		},
+		{
+			Header:  "Container Runtime Version",
+			Content: component.NewText(nodeInfo.ContainerRuntimeVersion),
+		},
+		{
+			Header:  "Kernel Version",
+			Content: component.NewText(nodeInfo.KernelVersion),
+		},
+		{
+			Header:  "KubeProxy Version",
+			Content: component.NewText(nodeInfo.KubeProxyVersion),
+		},
+		{
+			Header:  "Kubelet Version",
+			Content: component.NewText(nodeInfo.KubeletVersion),
+		},
+		{
+			Header:  "Machine ID",
+			Content: component.NewText(nodeInfo.MachineID),
+		},
+		{
+			Header:  "Operating System",
+			Content: component.NewText(nodeInfo.OperatingSystem),
+		},
+		{
+			Header:  "OS Image",
+			Content: component.NewText(nodeInfo.OSImage),
+		},
+		{
+			Header:  "Pod CIDR",
+			Content: component.NewText(node.Spec.PodCIDR),
+		},
+		{
+			Header:  "System UUID",
+			Content: component.NewText(nodeInfo.SystemUUID),
+		},
+	}...)
+
+	return summary, nil
+}
+
+var (
+	nodeConditionsColumns = component.NewTableCols("Type", "Reason", "Status", "Message", "Last Heartbeat", "Last Transition")
+)
+
+func nodeConditions(node *corev1.Node) (component.Component, error) {
+	if node == nil {
+		return nil, errors.New("cannot generate conditions for nil node")
+	}
+
+	table := component.NewTable("Conditions", nodeConditionsColumns)
+
+	for _, condition := range node.Status.Conditions {
+		row := component.TableRow{
+			"Type":            component.NewText(string(condition.Type)),
+			"Reason":          component.NewText(condition.Reason),
+			"Status":          component.NewText(string(condition.Status)),
+			"Message":         component.NewText(condition.Message),
+			"Last Heartbeat":  component.NewTimestamp(condition.LastHeartbeatTime.Time),
+			"Last Transition": component.NewTimestamp(condition.LastTransitionTime.Time),
+		}
+
+		table.Add(row)
+	}
+
+	table.Sort("Type", false)
+
+	return table, nil
+}
+
+var (
+	nodeImagesColumns = component.NewTableCols("Names", "Size")
+)
+
+func nodeImages(node *corev1.Node) (component.Component, error) {
+	if node == nil {
+		return nil, errors.New("cannot generate images for nil node")
+	}
+
+	table := component.NewTable("Images", nodeImagesColumns)
+
+	for _, containerImage := range node.Status.Images {
+		row := component.TableRow{
+			"Names": component.NewMarkdownText(strings.Join(containerImage.Names, "\n")),
+			"Size":  component.NewText(fmt.Sprintf("%d", containerImage.SizeBytes)),
+		}
+
+		table.Add(row)
+	}
+
+	table.Sort("Names", false)
+
+	return table, nil
+}

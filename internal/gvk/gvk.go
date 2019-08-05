@@ -23,6 +23,7 @@ var (
 	Event                    = schema.GroupVersionKind{Version: "v1", Kind: "Event"}
 	Ingress                  = schema.GroupVersionKind{Group: "extensions", Version: "v1beta1", Kind: "Ingress"}
 	Job                      = schema.GroupVersionKind{Group: "batch", Version: "v1", Kind: "Job"}
+	Node                     = schema.GroupVersionKind{Version: "v1", Kind: "Node"}
 	ServiceAccount           = schema.GroupVersionKind{Version: "v1", Kind: "ServiceAccount"}
 	Secret                   = schema.GroupVersionKind{Version: "v1", Kind: "Secret"}
 	Service                  = schema.GroupVersionKind{Version: "v1", Kind: "Service"}

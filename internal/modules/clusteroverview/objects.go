@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package clusteroverview
 
 import (
+	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 
 	"github.com/vmware/octant/internal/describer"
@@ -46,6 +47,17 @@ var (
 		rbacClusterRoleBindings,
 	)
 
+	nodesDescriber = describer.NewResource(describer.ResourceOptions{
+		Path:                  "/nodes",
+		ObjectStoreKey:        store.Key{APIVersion: "v1", Kind: "Node"},
+		ListType:              &v1.NodeList{},
+		ObjectType:            &v1.Node{},
+		Titles:                describer.ResourceTitle{List: "Nodes", Object: "Node"},
+		DisableResourceViewer: true,
+		ClusterWide:           true,
+		IconName:              icon.ClusterOverviewNode,
+	})
+
 	portForwardDescriber = NewPortForwardListDescriber()
 
 	rootDescriber = describer.NewSection(
@@ -53,6 +65,7 @@ var (
 		"Cluster Overview",
 		customResourcesDescriber,
 		rbacDescriber,
+		nodesDescriber,
 		portForwardDescriber,
 	)
 )

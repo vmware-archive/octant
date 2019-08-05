@@ -18,6 +18,7 @@ const (
 	ClusterOverview                   = "objects"
 	ClusterOverviewClusterRole        = "c-role"
 	ClusterOverviewClusterRoleBinding = "crb"
+	ClusterOverviewNode               = "node"
 
 	Configuration       = "cog"
 	ConfigurationPlugin = "plugin"
@@ -58,7 +59,7 @@ func LoadIcon(name string) (string, error) {
 	}
 
 	defer func() {
-		cErr := f.Close();
+		cErr := f.Close()
 		if cErr != nil && err == nil {
 			err = cErr
 		}
