@@ -71,7 +71,7 @@ export class ContentStreamService {
   }
 
   streamer(name: string): BehaviorSubject<any> {
-    return this.streamers.get(name).behavior
+    return this.streamers.get(name).behavior;
   }
 
   registerStreamer(name: string, streamer: Streamer) {
