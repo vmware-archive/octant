@@ -1,14 +1,22 @@
 <div class="card">
-  <div class="card-block">
-    <h3 class="card-title">{{ title }}</h3>
-    <clr-datagrid>
-      <clr-dg-placeholder *ngIf="placeholder?.length > 0">{{ placeholder }}</clr-dg-placeholder>
-      <clr-dg-column *ngFor="let item of columns; trackBy: identifyColumn">{{ item }}</clr-dg-column>
-      <clr-dg-row *ngFor="let row of rows; trackBy: identifyRow">
-        <clr-dg-cell *ngFor="let column of columns; trackBy: identifyColumn">
-          <app-content-switcher [view]="row[column]"></app-content-switcher>
-        </clr-dg-cell>
-      </clr-dg-row>
-    </clr-datagrid>
-  </div>
+    <div class="card-block">
+        <h3 class="card-title">{{ title }}</h3>
+        <clr-datagrid>
+            <clr-dg-placeholder *ngIf="placeholder?.length > 0">{{ placeholder }}</clr-dg-placeholder>
+            <clr-dg-column *ngFor="let item of columns; trackBy: identifyColumn">{{ item }}</clr-dg-column>
+            <clr-dg-row *clrDgItems="let row of rows">
+                <clr-dg-cell *ngFor="let column of columns; trackBy: identifyColumn">
+                    <app-content-switcher [view]="row[column]"></app-content-switcher>
+                </clr-dg-cell>
+            </clr-dg-row>
+
+            <clr-dg-footer>
+                <clr-dg-pagination #pagination [clrDgPageSize]="10">
+                    <clr-dg-page-size [clrPageSizeOptions]="[10,20,50,100]">Items per page</clr-dg-page-size>
+                    {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+                    of {{pagination.totalItems}} items
+                </clr-dg-pagination>
+            </clr-dg-footer>
+        </clr-datagrid>
+    </div>
 </div>
