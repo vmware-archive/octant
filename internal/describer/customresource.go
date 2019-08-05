@@ -38,7 +38,7 @@ func CustomResourceDefinitionNames(ctx context.Context, o store.Store) ([]string
 
 	logger := log.From(ctx)
 
-	for _, object := range rawList {
+	for _, object := range rawList.Items {
 		crd := &apiextv1beta1.CustomResourceDefinition{}
 
 		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, crd); err != nil {

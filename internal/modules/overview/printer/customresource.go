@@ -26,7 +26,7 @@ import (
 func CustomResourceListHandler(
 	crdName string,
 	crd *apiextv1beta1.CustomResourceDefinition,
-	list []*unstructured.Unstructured,
+	list *unstructured.UnstructuredList,
 	linkGenerator link.Interface) (component.Component, error) {
 
 	hasCustomColumns := len(crd.Spec.AdditionalPrinterColumns) > 0
@@ -37,15 +37,15 @@ func CustomResourceListHandler(
 	return printGenericCRDTable(crdName, list, linkGenerator)
 }
 
-func printGenericCRDTable(crdName string, list []*unstructured.Unstructured, linkGenerator link.Interface) (component.Component, error) {
+func printGenericCRDTable(crdName string, list *unstructured.UnstructuredList, linkGenerator link.Interface) (component.Component, error) {
 	cols := component.NewTableCols("Name", "Labels", "Age")
 	table := component.NewTable(crdName, cols)
 
-	for i := range list {
-		cr := list[i]
+	for i := range list.Items {
+		cr := list.Items[i]
 		row := component.TableRow{}
 
-		name, err := linkGenerator.ForObject(cr, cr.GetName())
+		name, err := linkGenerator.ForObject(&cr, cr.GetName())
 		if err != nil {
 			return nil, err
 		}
@@ -65,7 +65,7 @@ func printGenericCRDTable(crdName string, list []*unstructured.Unstructured, lin
 func printCustomCRDListTable(
 	crdName string,
 	crd *apiextv1beta1.CustomResourceDefinition,
-	list []*unstructured.Unstructured,
+	list *unstructured.UnstructuredList,
 	linkGenerator link.Interface) (component.Component, error) {
 
 	table := component.NewTable(crdName, component.NewTableCols("Name", "Labels"))
@@ -79,11 +79,11 @@ func printCustomCRDListTable(
 
 	table.AddColumn("Age")
 
-	for i := range list {
-		cr := list[i]
+	for i := range list.Items {
+		cr := list.Items[i]
 		row := component.TableRow{}
 
-		name, err := linkGenerator.ForObject(cr, cr.GetName())
+		name, err := linkGenerator.ForObject(&cr, cr.GetName())
 		if err != nil {
 			return nil, err
 		}

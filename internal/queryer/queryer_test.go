@@ -20,6 +20,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	queryerFake "github.com/vmware/octant/internal/queryer/fake"
@@ -29,9 +30,9 @@ import (
 )
 
 func TestCacheQueryer_Children(t *testing.T) {
-	deployment := testutil.CreateDeployment("deployment")
+	deployment := testutil.ToUnstructured(t, testutil.CreateDeployment("deployment"))
 
-	rs := testutil.CreateExtReplicaSet("rs")
+	rs := testutil.ToUnstructured(t, testutil.CreateExtReplicaSet("rs"))
 	rs.SetOwnerReferences(testutil.ToOwnerReferences(t, deployment))
 
 	resourceLists := []*metav1.APIResourceList{
@@ -84,9 +85,9 @@ func TestCacheQueryer_Children(t *testing.T) {
 
 	cases := []struct {
 		name     string
-		owner    metav1.Object
+		owner    *unstructured.Unstructured
 		setup    func(t *testing.T, c *storeFake.MockStore, disco *queryerFake.MockDiscoveryInterface)
-		expected func(t *testing.T) []runtime.Object
+		expected func(t *testing.T) *unstructured.UnstructuredList
 		isErr    bool
 	}{
 		{
@@ -106,8 +107,8 @@ func TestCacheQueryer_Children(t *testing.T) {
 					Return(resourceLists, nil)
 
 			},
-			expected: func(t *testing.T) []runtime.Object {
-				return []runtime.Object{testutil.ToUnstructured(t, rs)}
+			expected: func(t *testing.T) *unstructured.UnstructuredList {
+				return testutil.ToUnstructuredList(t, rs)
 			},
 		},
 		{
@@ -153,6 +154,13 @@ func TestCacheQueryer_Children(t *testing.T) {
 
 			o := storeFake.NewMockStore(controller)
 			discovery := queryerFake.NewMockDiscoveryInterface(controller)
+
+			o.EXPECT().HasAccess(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			crdKey := store.Key{
+				APIVersion: "apiextensions.k8s.io/v1beta1",
+				Kind:       "CustomResourceDefinition",
+			}
+			o.EXPECT().List(gomock.Any(), crdKey).Return(&unstructured.UnstructuredList{}, nil).AnyTimes()
 
 			if tc.setup != nil {
 				tc.setup(t, o, discovery)
@@ -376,16 +384,9 @@ func TestCacheQueryer_IngressesForService(t *testing.T) {
 }
 
 func TestCacheQueryer_OwnerReference(t *testing.T) {
-	ownerReference := metav1.OwnerReference{
-		APIVersion: "apps/v1",
-		Kind:       "Deployment",
-		Name:       "deployment",
-	}
-
-	deployment := &appsv1.Deployment{
-		TypeMeta:   metav1.TypeMeta{APIVersion: "apps/v1", Kind: "Deployment"},
-		ObjectMeta: metav1.ObjectMeta{Name: "deployment", Namespace: "default"},
-	}
+	deployment := testutil.ToUnstructured(t, testutil.CreateDeployment("deployment"))
+	replicaSet := testutil.ToUnstructured(t, testutil.CreateAppReplicaSet("replica-set"))
+	replicaSet.SetOwnerReferences(testutil.ToOwnerReferences(t, deployment))
 
 	cases := []struct {
 		name     string
@@ -397,14 +398,14 @@ func TestCacheQueryer_OwnerReference(t *testing.T) {
 			name: "in general",
 			setup: func(t *testing.T, o *storeFake.MockStore) {
 				key := store.Key{
-					Namespace:  "default",
+					Namespace:  deployment.GetNamespace(),
 					APIVersion: "apps/v1",
 					Kind:       "Deployment",
 					Name:       "deployment",
 				}
 				o.EXPECT().
 					Get(gomock.Any(), gomock.Eq(key)).
-					Return(testutil.ToUnstructured(t, deployment), nil)
+					Return(deployment, nil)
 			},
 			expected: func(t *testing.T) runtime.Object {
 				return testutil.ToUnstructured(t, deployment)
@@ -414,7 +415,7 @@ func TestCacheQueryer_OwnerReference(t *testing.T) {
 			name: "object store get failure",
 			setup: func(t *testing.T, o *storeFake.MockStore) {
 				key := store.Key{
-					Namespace:  "default",
+					Namespace:  deployment.GetNamespace(),
 					APIVersion: "apps/v1",
 					Kind:       "Deployment",
 					Name:       "deployment",
@@ -435,6 +436,12 @@ func TestCacheQueryer_OwnerReference(t *testing.T) {
 			o := storeFake.NewMockStore(controller)
 			discovery := queryerFake.NewMockDiscoveryInterface(controller)
 
+			discovery.EXPECT().
+				ServerResourcesForGroupVersion("apps/v1").
+				Return(&metav1.APIResourceList{
+					APIResources: []metav1.APIResource{{Kind: "Deployment", Namespaced: true}},
+				}, nil)
+
 			if tc.setup != nil {
 				tc.setup(t, o)
 			}
@@ -442,11 +449,12 @@ func TestCacheQueryer_OwnerReference(t *testing.T) {
 			oq := New(o, discovery)
 
 			ctx := context.Background()
-			got, err := oq.OwnerReference(ctx, "default", ownerReference)
+			found, got, err := oq.OwnerReference(ctx, replicaSet)
 			if tc.isErr {
 				require.Error(t, err)
 				return
 			}
+			require.True(t, found)
 			require.NoError(t, err)
 
 			assert.Equal(t, tc.expected(t), got)

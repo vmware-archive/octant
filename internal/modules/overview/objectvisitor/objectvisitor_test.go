@@ -35,12 +35,12 @@ func TestDefaultVisitor_Visit_use_typed_visitor(t *testing.T) {
 
 	defaultHandler := ovFake.NewMockDefaultTypedVisitor(controller)
 	defaultHandler.EXPECT().
-		Visit(gomock.Any(), unstructuredPod, handler, gomock.Any()).Return(nil)
+		Visit(gomock.Any(), unstructuredPod, handler, gomock.Any(), true).Return(nil)
 
 	tv := ovFake.NewMockTypedVisitor(controller)
 	tv.EXPECT().Supports().Return(gvk.Pod).AnyTimes()
 	tv.EXPECT().
-		Visit(gomock.Any(), unstructuredPod, handler, gomock.Any())
+		Visit(gomock.Any(), unstructuredPod, handler, gomock.Any(), true)
 	tvList := []objectvisitor.TypedVisitor{tv}
 
 	dv, err := objectvisitor.NewDefaultVisitor(dashConfig, q,
@@ -49,6 +49,6 @@ func TestDefaultVisitor_Visit_use_typed_visitor(t *testing.T) {
 	require.NoError(t, err)
 
 	ctx := context.Background()
-	err = dv.Visit(ctx, pod, handler)
+	err = dv.Visit(ctx, testutil.ToUnstructured(t, pod), handler, true)
 	require.NoError(t, err)
 }

@@ -71,7 +71,7 @@ func (d *List) Describe(ctx context.Context, prefix, namespace string, options O
 		namespace = ""
 	}
 
-	objects, err := options.LoadObjects(ctx, namespace, options.Fields, []store.Key{key})
+	objectList, err := options.LoadObjects(ctx, namespace, options.Fields, []store.Key{key})
 	if err != nil {
 		return EmptyContentResponse, err
 	}
@@ -85,13 +85,13 @@ func (d *List) Describe(ctx context.Context, prefix, namespace string, options O
 	f := reflect.Indirect(v).FieldByName("Items")
 
 	// Convert unstructured objects to typed runtime objects
-	for _, object := range objects {
+	for i := range objectList.Items {
 		item := d.objectType()
-		if err := scheme.Scheme.Convert(object, item, nil); err != nil {
+		if err := scheme.Scheme.Convert(&objectList.Items[i], item, nil); err != nil {
 			return EmptyContentResponse, err
 		}
 
-		if err := copyObjectMeta(item, object); err != nil {
+		if err := copyObjectMeta(item, &objectList.Items[i]); err != nil {
 			return EmptyContentResponse, err
 		}
 

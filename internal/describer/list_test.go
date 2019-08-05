@@ -55,7 +55,7 @@ func TestListDescriber(t *testing.T) {
 	options := Options{
 		Dash:    dashConfig,
 		Printer: objectPrinter,
-		LoadObjects: func(ctx context.Context, namespace string, fields map[string]string, objectStoreKeys []store.Key) ([]*unstructured.Unstructured, error) {
+		LoadObjects: func(ctx context.Context, namespace string, fields map[string]string, objectStoreKeys []store.Key) (*unstructured.UnstructuredList, error) {
 			return testutil.ToUnstructuredList(t, pod), nil
 		},
 	}

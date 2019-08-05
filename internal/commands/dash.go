@@ -31,6 +31,8 @@ func newOctantCmd() *cobra.Command {
 	var enableOpenCensus bool
 	var initialContext string
 	var klogVerbosity int
+	var clientQPS float32
+	var clientBurst int
 
 	octantCmd := &cobra.Command{
 		Use:   "octant",
@@ -69,6 +71,8 @@ func newOctantCmd() *cobra.Command {
 					Namespace:        namespace,
 					FrontendURL:      uiURL,
 					Context:          initialContext,
+					ClientQPS:        clientQPS,
+					ClientBurst:      clientBurst,
 				}
 
 				if klogVerbosity > 0 {
@@ -107,6 +111,8 @@ func newOctantCmd() *cobra.Command {
 	octantCmd.Flags().BoolVarP(&enableOpenCensus, "enable-opencensus", "c", false, "enable open census")
 	octantCmd.Flags().StringVarP(&initialContext, "context", "", "", "initial context")
 	octantCmd.Flags().IntVarP(&klogVerbosity, "klog-verbosity", "", 0, "initial context")
+	octantCmd.Flags().Float32VarP(&clientQPS, "client-qps", "", 200, "maximum QPS for client")
+	octantCmd.Flags().IntVarP(&clientBurst, "client-burst", "", 400, "maximum burst for client throttle")
 
 	kubeConfig = clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
 

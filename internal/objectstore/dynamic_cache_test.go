@@ -79,7 +79,7 @@ func Test_DynamicCache_List(t *testing.T) {
 	namespaceClient := clusterfake.NewMockNamespaceInterface(controller)
 
 	pod := testutil.CreatePod("pod")
-	objects := []runtime.Object{pod}
+	objects := []runtime.Object{testutil.ToUnstructured(t, pod)}
 
 	podGVR := schema.GroupVersionResource{
 		Version:  "v1",
@@ -125,10 +125,7 @@ func Test_DynamicCache_List(t *testing.T) {
 	got, err := c.List(ctx, key)
 	require.NoError(t, err)
 
-	expected := []*unstructured.Unstructured{
-		testutil.ToUnstructured(t, pod),
-	}
-
+	expected := testutil.ToUnstructuredList(t, pod)
 	assert.Equal(t, expected, got)
 }
 
@@ -172,7 +169,7 @@ func Test_DynamicCache_Get(t *testing.T) {
 
 	informerFactory.EXPECT().Start(gomock.Eq(ctx.Done()))
 
-	l := &fakeLister{getObject: pod}
+	l := &fakeLister{getObject: testutil.ToUnstructured(t, pod)}
 	informer.EXPECT().Lister().Return(l)
 
 	factoryFunc := func(c *DynamicCache) {

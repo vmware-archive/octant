@@ -244,7 +244,7 @@ func eventsForObject(ctx context.Context, object runtime.Object, o store.Store) 
 
 	eventList := &corev1.EventList{}
 
-	for _, unstructuredEvent := range list {
+	for _, unstructuredEvent := range list.Items {
 		event := &corev1.Event{}
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(unstructuredEvent.Object, event)
 		if err != nil {

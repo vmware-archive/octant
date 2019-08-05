@@ -12,7 +12,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/store"
@@ -28,10 +27,7 @@ func Test_customResourceDefinitionNames(t *testing.T) {
 	crd1 := testutil.CreateCRD("crd1.example.com")
 	crd2 := testutil.CreateCRD("crd2.example.com")
 
-	crdList := []*unstructured.Unstructured{
-		testutil.ToUnstructured(t, crd1),
-		testutil.ToUnstructured(t, crd2),
-	}
+	crdList := testutil.ToUnstructuredList(t, crd1, crd2)
 
 	crdKey := store.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",

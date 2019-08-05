@@ -148,13 +148,13 @@ func Test_PodHandler(t *testing.T) {
 	tpo.pluginManager.EXPECT().
 		Print(gomock.Any()).Return(printResponse, nil)
 
-	key := store.Key{
+	eventKey := store.Key{
 		Namespace:  "namespace",
 		APIVersion: "v1",
 		Kind:       "Event",
 	}
-	eventList := []*unstructured.Unstructured{}
-	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(eventList, nil)
+	eventList := &unstructured.UnstructuredList{}
+	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(eventKey)).Return(eventList, nil)
 
 	ctx := context.Background()
 	got, err := PodHandler(ctx, sidecar, printOptions)

@@ -14,7 +14,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware/octant/internal/gvk"
 	"github.com/vmware/octant/internal/portforward"
@@ -37,9 +36,9 @@ func TestAPI(t *testing.T) {
 		Kind:       "Deployment",
 	}
 
-	objects := []*unstructured.Unstructured{
-		testutil.ToUnstructured(t, testutil.CreateDeployment("deployment")),
-	}
+	objects := testutil.ToUnstructuredList(t,
+		testutil.CreateDeployment("deployment"),
+	)
 
 	getKey := store.Key{
 		Namespace:  "default",

@@ -33,7 +33,7 @@ type PortForwardResponse struct {
 
 // Service is the dashboard service.
 type Service interface {
-	List(ctx context.Context, key store.Key) ([]*unstructured.Unstructured, error)
+	List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error)
 	Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, error)
 	PortForward(ctx context.Context, req PortForwardRequest) (PortForwardResponse, error)
 	CancelPortForward(ctx context.Context, id string)
@@ -70,7 +70,7 @@ type GRPCService struct {
 var _ Service = (*GRPCService)(nil)
 
 // List lists objects.
-func (s *GRPCService) List(ctx context.Context, key store.Key) ([]*unstructured.Unstructured, error) {
+func (s *GRPCService) List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error) {
 	return s.ObjectStore.List(ctx, key)
 }
 

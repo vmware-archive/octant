@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware/octant/internal/modules/overview/objectvisitor"
 	"github.com/vmware/octant/internal/modules/overview/objectvisitor/fake"
@@ -35,20 +35,18 @@ func TestService_Visit(t *testing.T) {
 
 	handler := fake.NewMockObjectHandler(controller)
 	handler.EXPECT().
-		AddEdge(gomock.Any(), u, ingress).
+		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, ingress)).
 		Return(nil)
 	handler.EXPECT().
-		AddEdge(gomock.Any(), u, pod).
+		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, pod)).
 		Return(nil)
-	handler.EXPECT().
-		Process(gomock.Any(), u).Return(nil)
 
-	var visited []runtime.Object
+	var visited []unstructured.Unstructured
 	visitor := fake.NewMockVisitor(controller)
 	visitor.EXPECT().
-		Visit(gomock.Any(), gomock.Any(), handler).
-		DoAndReturn(func(ctx context.Context, object runtime.Object, handler objectvisitor.ObjectHandler) error {
-			visited = append(visited, object)
+		Visit(gomock.Any(), gomock.Any(), handler, true).
+		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool) error {
+			visited = append(visited, *object)
 			return nil
 		}).
 		AnyTimes()
@@ -57,10 +55,10 @@ func TestService_Visit(t *testing.T) {
 
 	ctx := context.Background()
 
-	err := service.Visit(ctx, u, handler, visitor)
+	err := service.Visit(ctx, u, handler, visitor, true)
 
 	sortObjectsByName(t, visited)
-	expected := []runtime.Object{ingress, pod}
-	assert.Equal(t, expected, visited)
+	expected := testutil.ToUnstructuredList(t, ingress, pod)
+	assert.Equal(t, expected.Items, visited)
 	assert.NoError(t, err)
 }

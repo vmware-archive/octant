@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware/octant/internal/modules/overview/objectvisitor"
 	"github.com/vmware/octant/internal/modules/overview/objectvisitor/fake"
@@ -30,28 +30,26 @@ func TestIngress_Visit(t *testing.T) {
 
 	handler := fake.NewMockObjectHandler(controller)
 	handler.EXPECT().
-		AddEdge(gomock.Any(), u, service).
+		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, service)).
 		Return(nil)
-	handler.EXPECT().
-		Process(gomock.Any(), object).Return(nil)
 
-	var visited []runtime.Object
+	var visited []unstructured.Unstructured
 	visitor := fake.NewMockVisitor(controller)
 	visitor.EXPECT().
-		Visit(gomock.Any(), gomock.Any(), handler).
-		DoAndReturn(func(ctx context.Context, object runtime.Object, handler objectvisitor.ObjectHandler) error {
-			visited = append(visited, object)
+		Visit(gomock.Any(), gomock.Any(), handler, true).
+		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool) error {
+			visited = append(visited, *object)
 			return nil
 		})
 
 	ingress := objectvisitor.NewIngress(q)
 
 	ctx := context.Background()
-	err := ingress.Visit(ctx, u, handler, visitor)
+	err := ingress.Visit(ctx, u, handler, visitor, true)
 
 	sortObjectsByName(t, visited)
 
-	expected := []runtime.Object{service}
-	assert.Equal(t, expected, visited)
+	expected := testutil.ToUnstructuredList(t, service)
+	assert.Equal(t, expected.Items, visited)
 	assert.NoError(t, err)
 }

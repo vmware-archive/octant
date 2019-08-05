@@ -38,9 +38,9 @@ func SetHandlerObjectStatus(objectStatus ObjectStatus) HandlerOption {
 	}
 }
 
-type nodesStorage map[types.UID]runtime.Object
+type nodesStorage map[types.UID]*unstructured.Unstructured
 
-type adjListStorage map[string]map[string]runtime.Object
+type adjListStorage map[string]map[string]*unstructured.Unstructured
 
 func (als adjListStorage) hasKey(uid string) bool {
 	for k := range als {
@@ -74,9 +74,9 @@ func (als adjListStorage) isEdge(uid string) bool {
 	return false
 }
 
-func (als adjListStorage) addEdgeForKey(uid, edgeUID string, object runtime.Object) {
+func (als adjListStorage) addEdgeForKey(uid, edgeUID string, object *unstructured.Unstructured) {
 	if _, ok := als[uid]; !ok {
-		als[uid] = make(map[string]runtime.Object)
+		als[uid] = make(map[string]*unstructured.Unstructured)
 	}
 
 	als[uid][edgeUID] = object
@@ -121,53 +121,55 @@ func NewHandler(dashConfig config.Dash, options ...HandlerOption) (*Handler, err
 }
 
 // AddEdge adds edges to the graph.
-func (h *Handler) AddEdge(ctx context.Context, v1, v2 runtime.Object) error {
+func (h *Handler) AddEdge(ctx context.Context, from, to *unstructured.Unstructured) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	v1Name, err := edgeName(v1)
+	fromName, err := edgeName(from)
 	if err != nil {
 		if isSkippedNode(err) {
 			return nil
 		}
+		return errors.Wrap(err, "could not generate from edge")
 	}
 
-	v2Name, err := edgeName(v2)
+	toName, err := edgeName(to)
 	if err != nil {
 		if isSkippedNode(err) {
 			return nil
 		}
+		return errors.Wrap(err, "could not generate to edge")
 	}
 
-	// is v1 a key in the adjacency list?
-	if h.adjList.hasKey(v1Name) {
-		if !h.adjList.hasEdgeForKey(v2Name, v1Name) {
-			// add v2 to v1
-			h.adjList.addEdgeForKey(v1Name, v2Name, v2)
+	// is from a key in the adjacency list?
+	if h.adjList.hasKey(fromName) {
+		if !h.adjList.hasEdgeForKey(toName, fromName) {
+			// add to to from
+			h.adjList.addEdgeForKey(fromName, toName, to)
 		}
 	} else {
-		// is v2 a key in the adjacency list?
-		if h.adjList.hasKey(v2Name) {
-			// add v1 to v2
-			h.adjList.addEdgeForKey(v2Name, v1Name, v1)
+		// is to a key in the adjacency list?
+		if h.adjList.hasKey(toName) {
+			// add from to to
+			h.adjList.addEdgeForKey(toName, fromName, from)
 		} else {
-			// add v2 to v1
-			h.adjList.addEdgeForKey(v1Name, v2Name, v2)
+			// add to to from
+			h.adjList.addEdgeForKey(fromName, toName, to)
 		}
 	}
 
-	h.addNode(v1Name, v1)
-	h.addNode(v2Name, v2)
+	h.addNode(fromName, from)
+	h.addNode(toName, to)
 
 	return nil
 }
 
-func (h *Handler) addNode(name string, object runtime.Object) {
+func (h *Handler) addNode(name string, object *unstructured.Unstructured) {
 	h.nodes[types.UID(name)] = object
 }
 
 // Process adds nodes to the dependency graph.
-func (h *Handler) Process(ctx context.Context, object runtime.Object) error {
+func (h *Handler) Process(ctx context.Context, object *unstructured.Unstructured) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
@@ -210,7 +212,7 @@ func (h *Handler) Nodes(ctx context.Context) (component.Nodes, error) {
 
 	nodes := component.Nodes{}
 
-	var podsInAGroup []runtime.Object
+	var podsInAGroup []unstructured.Unstructured
 
 	for uid, node := range h.nodes {
 
@@ -220,7 +222,7 @@ func (h *Handler) Nodes(ctx context.Context) (component.Nodes, error) {
 		}
 
 		if ok {
-			podsInAGroup = append(podsInAGroup, node)
+			podsInAGroup = append(podsInAGroup, *node)
 			continue
 		}
 
@@ -260,10 +262,10 @@ func (h *Handler) Nodes(ctx context.Context) (component.Nodes, error) {
 	return nodes, nil
 }
 
-func (h *Handler) buildPodGroups(podsInAGroup []runtime.Object) (map[string][]runtime.Object, error) {
-	nameMap := make(map[string][]runtime.Object)
+func (h *Handler) buildPodGroups(podsInAGroup []unstructured.Unstructured) (map[string][]unstructured.Unstructured, error) {
+	nameMap := make(map[string][]unstructured.Unstructured)
 	for _, object := range podsInAGroup {
-		name, err := podGroupName(object)
+		name, err := podGroupName(&object)
 		if err != nil {
 			return nil, err
 		}
@@ -273,7 +275,7 @@ func (h *Handler) buildPodGroups(podsInAGroup []runtime.Object) (map[string][]ru
 	return nameMap, nil
 }
 
-func edgeName(object runtime.Object) (string, error) {
+func edgeName(object *unstructured.Unstructured) (string, error) {
 	if object == nil {
 		return "", errors.New("can't build edge name for nil object")
 	}
@@ -307,7 +309,7 @@ func edgeName(object runtime.Object) (string, error) {
 	return string(accessor.GetUID()), nil
 }
 
-func isPodInGroup(object runtime.Object) (bool, error) {
+func isPodInGroup(object *unstructured.Unstructured) (bool, error) {
 	if !isObjectPod(object) {
 		return false, nil
 	}
@@ -320,7 +322,7 @@ func isPodInGroup(object runtime.Object) (bool, error) {
 	return len(pod.OwnerReferences) > 0, nil
 }
 
-func convertObjectToPod(object runtime.Object) (*corev1.Pod, error) {
+func convertObjectToPod(object *unstructured.Unstructured) (*corev1.Pod, error) {
 	pod := &corev1.Pod{}
 	if err := scheme.Scheme.Convert(object, pod, 0); err != nil {
 		return nil, err
@@ -328,7 +330,7 @@ func convertObjectToPod(object runtime.Object) (*corev1.Pod, error) {
 	return pod, nil
 }
 
-func podGroupName(object runtime.Object) (string, error) {
+func podGroupName(object *unstructured.Unstructured) (string, error) {
 	pod, err := convertObjectToPod(object)
 	if err != nil {
 		return "", err
@@ -342,12 +344,18 @@ func podGroupName(object runtime.Object) (string, error) {
 	return fmt.Sprintf("%s pods", ownerReference.Name), nil
 }
 
-func isObjectPod(object runtime.Object) bool {
+func isObjectPod(object *unstructured.Unstructured) bool {
 	if object == nil {
 		return false
 	}
 
-	objectGVK := object.GetObjectKind().GroupVersionKind()
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	objectGVK := object.GroupVersionKind()
 	podGVK := gvk.Pod
 
 	return podGVK.String() == objectGVK.String()
@@ -426,21 +434,12 @@ func (e skipNode) Error() string {
 	return "skip node"
 }
 
-func checkReplicaCount(object runtime.Object) error {
+func checkReplicaCount(object *unstructured.Unstructured) error {
 	if object == nil {
 		return errors.Errorf("unable to check for replica count in nil object")
 	}
 
-	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(object)
-	if err != nil {
-		return err
-	}
-
-	u := unstructured.Unstructured{
-		Object: m,
-	}
-
-	i, ok, err := unstructured.NestedInt64(u.Object, "spec", "replicas")
+	i, ok, err := unstructured.NestedInt64(object.Object, "spec", "replicas")
 	if err != nil {
 		return err
 	}
@@ -452,55 +451,15 @@ func checkReplicaCount(object runtime.Object) error {
 	return nil
 }
 
-func isObjectReplicaSet(object runtime.Object) (bool, error) {
+func isObjectReplicaSet(object *unstructured.Unstructured) (bool, error) {
 	if object == nil {
 		return false, errors.New("can't check if nil object is a replica set")
 	}
 
-	groupVersionKind := object.GetObjectKind().GroupVersionKind()
+	groupVersionKind := object.GroupVersionKind()
 
 	return (groupVersionKind.Group == "apps" || groupVersionKind.Group == "extensions") &&
 		groupVersionKind.Kind == "ReplicaSet", nil
-}
-
-func deDupEdges(adjList component.AdjList) component.AdjList {
-	list := component.AdjList{}
-
-	lookup := make(map[string]string)
-	edgeTypeLookup := make(map[string]component.EdgeType)
-
-	var keys []string
-	for k := range adjList {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	for _, k := range keys {
-		v := adjList[k]
-		for _, edge := range v {
-			edgeTypeLookup[edge.Node] = edge.Type
-
-			if lookup[k] == edge.Node {
-				continue
-			}
-
-			lookup[edge.Node] = k
-		}
-	}
-
-	for k, v := range lookup {
-		list[v] = append(list[v], component.Edge{Node: k, Type: edgeTypeLookup[k]})
-	}
-
-	for k := range list {
-		cur := list[k]
-		sort.Slice(cur, func(i, j int) bool {
-			return cur[i].Node < cur[j].Node
-		})
-		list[k] = cur
-	}
-
-	return list
 }
 
 func (h *Handler) summarizeNodeList() string {

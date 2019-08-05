@@ -3,7 +3,7 @@ package resourceviewer
 import (
 	"context"
 
-	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -12,19 +12,19 @@ type podGroupNode struct {
 	objectStatus ObjectStatus
 }
 
-func (pgn *podGroupNode) Create(ctx context.Context, podGroupName string, objects []runtime.Object) (*component.Node, error) {
+func (pgn *podGroupNode) Create(ctx context.Context, podGroupName string, objects []unstructured.Unstructured) (*component.Node, error) {
 	podStatus := component.NewPodStatus()
 
 	for _, object := range objects {
-		if !isObjectPod(object) {
+		if !isObjectPod(&object) {
 			continue
 		}
-		pod, err := convertObjectToPod(object)
+		pod, err := convertObjectToPod(&object)
 		if err != nil {
 			return nil, err
 		}
 
-		status, err := pgn.objectStatus.Status(ctx, object)
+		status, err := pgn.objectStatus.Status(ctx, &object)
 		if err != nil {
 			return nil, err
 		}

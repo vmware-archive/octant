@@ -15,7 +15,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/plugin"
@@ -145,7 +144,7 @@ func Test_printServiceAccountConfig(t *testing.T) {
 	tpo.PathForGVK(object.Namespace, "v1", "Secret", "secret", "secret", "/secret")
 
 	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).
-		Return([]*unstructured.Unstructured{testutil.ToUnstructured(t, secret)}, nil)
+		Return(testutil.ToUnstructuredList(t, testutil.ToUnstructured(t, secret)), nil)
 
 	ctx := context.Background()
 	got, err := printServiceAccountConfig(ctx, *object, printOptions)

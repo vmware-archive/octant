@@ -8,11 +8,12 @@ package api
 import (
 	"encoding/json"
 
-	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/pkg/plugin/api/proto"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
+
+	"github.com/vmware/octant/pkg/plugin/api/proto"
+	"github.com/vmware/octant/pkg/store"
 )
 
 func convertFromKey(in store.Key) (*proto.KeyRequest, error) {
@@ -52,11 +53,11 @@ func convertToKey(in *proto.KeyRequest) (store.Key, error) {
 	return key, nil
 }
 
-func convertFromObjects(in []*unstructured.Unstructured) ([][]byte, error) {
+func convertFromObjects(in *unstructured.UnstructuredList) ([][]byte, error) {
 	var out [][]byte
 
-	for _, object := range in {
-		data, err := convertFromObject(object)
+	for _, object := range in.Items {
+		data, err := convertFromObject(&object)
 		if err != nil {
 			return nil, err
 		}
@@ -71,19 +72,18 @@ func convertFromObject(in *unstructured.Unstructured) ([]byte, error) {
 	return json.Marshal(in)
 }
 
-func convertToObjects(in [][]byte) ([]*unstructured.Unstructured, error) {
-	var out []*unstructured.Unstructured
+func convertToObjects(in [][]byte) (*unstructured.UnstructuredList, error) {
+	list := &unstructured.UnstructuredList{}
 
 	for _, data := range in {
 		object, err := convertToObject(data)
 		if err != nil {
 			return nil, err
 		}
-
-		out = append(out, object)
+		list.Items = append(list.Items, *object)
 	}
 
-	return out, nil
+	return list, nil
 }
 
 func convertToObject(in []byte) (*unstructured.Unstructured, error) {

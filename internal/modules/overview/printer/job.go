@@ -178,14 +178,14 @@ func createJobListView(ctx context.Context, object runtime.Object, options Optio
 		return nil, errors.Wrapf(err, "list all objects for key %+v", key)
 	}
 
-	for _, u := range list {
+	for i := range list.Items {
 		job := &batchv1.Job{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, job)
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[i].Object, job)
 		if err != nil {
 			return nil, err
 		}
 
-		if err := copyObjectMeta(job, u); err != nil {
+		if err := copyObjectMeta(job, &list.Items[i]); err != nil {
 			return nil, errors.Wrap(err, "copy object metadata")
 		}
 

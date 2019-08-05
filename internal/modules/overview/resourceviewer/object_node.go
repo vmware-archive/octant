@@ -6,6 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware/octant/internal/link"
@@ -19,7 +20,7 @@ type objectNode struct {
 	objectStatus  ObjectStatus
 }
 
-func (o *objectNode) Create(ctx context.Context, object runtime.Object) (*component.Node, error) {
+func (o *objectNode) Create(ctx context.Context, object *unstructured.Unstructured) (*component.Node, error) {
 	if object == nil {
 		return nil, errors.New("object is nil")
 	}
@@ -29,8 +30,8 @@ func (o *objectNode) Create(ctx context.Context, object runtime.Object) (*compon
 		return nil, err
 	}
 
-	groupVersionKind := object.GetObjectKind().GroupVersionKind()
-	apiVersion, kind := groupVersionKind.ToAPIVersionAndKind()
+	apiVersion := object.GetAPIVersion()
+	kind := object.GetKind()
 
 	isReplicaSet, err := isObjectReplicaSet(object)
 	if err != nil {

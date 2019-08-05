@@ -43,7 +43,8 @@ func Test_dash_Run(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
+	for i := range cases {
+		tc := cases[i]
 		t.Run(tc.name, func(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
@@ -137,7 +138,8 @@ func Test_dash_routes(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
+	for i := range cases {
+		tc := cases[i]
 		name := fmt.Sprintf("GET: %s", tc.path)
 		t.Run(name, func(t *testing.T) {
 			controller := gomock.NewController(t)

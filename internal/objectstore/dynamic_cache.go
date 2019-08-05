@@ -8,14 +8,15 @@ package objectstore
 import (
 	"context"
 	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	authorizationv1 "k8s.io/api/authorization/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kLabels "k8s.io/apimachinery/pkg/labels"
@@ -122,7 +123,27 @@ func NewDynamicCache(ctx context.Context, client cluster.ClientInterface, option
 	factories.set("", factory)
 
 	c.factories = factories
+
+	go c.initStatusCheck(ctx.Done(), logger)
+
 	return c, nil
+}
+
+func (dc *DynamicCache) initStatusCheck(stopCh <-chan struct{}, logger log.Logger) {
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGUSR2)
+
+	done := false
+	for !done {
+		select {
+		case <-stopCh:
+			done = true
+		case <-sigCh:
+			logger.With("factory-count", len(dc.factories.factories)).Debugf("dynamic cache status")
+		}
+	}
+
+	logger.Debugf("dynamic cache status exiting")
 }
 
 type lister interface {
@@ -242,7 +263,7 @@ func (dc *DynamicCache) currentInformer(ctx context.Context, key store.Key) (inf
 }
 
 // List lists objects.
-func (dc *DynamicCache) List(ctx context.Context, key store.Key) ([]*unstructured.Unstructured, error) {
+func (dc *DynamicCache) List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error) {
 	ctx, span := trace.StartSpan(ctx, "dynamicCache:list")
 	defer span.End()
 
@@ -263,7 +284,7 @@ func (dc *DynamicCache) List(ctx context.Context, key store.Key) ([]*unstructure
 	return dc.listFromInformer(ctx, key)
 }
 
-func (dc *DynamicCache) listFromInformer(ctx context.Context, key store.Key) ([]*unstructured.Unstructured, error) {
+func (dc *DynamicCache) listFromInformer(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error) {
 	ctx, span := trace.StartSpan(ctx, "dynamicCache:list:informer")
 	defer span.End()
 
@@ -289,20 +310,16 @@ func (dc *DynamicCache) listFromInformer(ctx context.Context, key store.Key) ([]
 		return nil, errors.Wrapf(err, "listing %v", key)
 	}
 
-	list := make([]*unstructured.Unstructured, len(objects))
-	for i, obj := range objects {
-		u, err := kruntime.DefaultUnstructuredConverter.ToUnstructured(obj)
-		if err != nil {
-			return nil, errors.Wrapf(err, "converting %T to unstructured", obj)
-		}
-		list[i] = &unstructured.Unstructured{Object: u}
+	list := &unstructured.UnstructuredList{}
+	for i := range objects {
+		list.Items = append(list.Items, *objects[i].(*unstructured.Unstructured))
 	}
 
 	return list, nil
 }
 
-func (dc *DynamicCache) listFromDynamicClient(ctx context.Context, key store.Key) ([]*unstructured.Unstructured, error) {
-	ctx, span := trace.StartSpan(ctx, "dynamicCache:list:informer")
+func (dc *DynamicCache) listFromDynamicClient(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error) {
+	_, span := trace.StartSpan(ctx, "dynamicCache:list:informer")
 	defer span.End()
 
 	var selector = kLabels.Everything()
@@ -323,25 +340,11 @@ func (dc *DynamicCache) listFromDynamicClient(ctx context.Context, key store.Key
 	listOptions := metav1.ListOptions{
 		LabelSelector: selector.String(),
 	}
-	list := &unstructured.UnstructuredList{}
 	if key.Namespace == "" {
-		list, err = dynamicClient.Resource(gvr).List(listOptions)
-	} else {
-		list, err = dynamicClient.Resource(gvr).Namespace(key.Namespace).List(listOptions)
-	}
-	if err != nil {
-		return nil, err
+		return dynamicClient.Resource(gvr).List(listOptions)
 	}
 
-	var newList []*unstructured.Unstructured
-	if list != nil {
-		for i := range list.Items {
-			object := list.Items[i]
-			newList = append(newList, &object)
-		}
-	}
-
-	return newList, nil
+	return dynamicClient.Resource(gvr).Namespace(key.Namespace).List(listOptions)
 }
 
 type getter interface {
@@ -413,29 +416,11 @@ func (dc *DynamicCache) getFromInformer(ctx context.Context, key store.Key) (*un
 		return nil, err
 	}
 
-	// Verify the selector matches if provided
-	if key.Selector != nil {
-		accessor := meta.NewAccessor()
-		m, err := accessor.Labels(object)
-		if err != nil {
-			return nil, errors.New("retrieving labels")
-		}
-		labels := kLabels.Set(m)
-		selector := key.Selector.AsSelector()
-		if !selector.Matches(labels) {
-			return nil, errors.New("object found but filtered by selector")
-		}
-	}
-
-	u, err := kruntime.DefaultUnstructuredConverter.ToUnstructured(object)
-	if err != nil {
-		return nil, errors.Wrapf(err, "converting %T to unstructured", object)
-	}
-	return &unstructured.Unstructured{Object: u}, nil
+	return object.(*unstructured.Unstructured), nil
 }
 
 func (dc *DynamicCache) getFromDynamicClient(ctx context.Context, key store.Key) (*unstructured.Unstructured, error) {
-	ctx, span := trace.StartSpan(ctx, "dynamicCache:get:dynamicClient")
+	_, span := trace.StartSpan(ctx, "dynamicCache:get:dynamicClient")
 	defer span.End()
 
 	dynamicClient, err := dc.client.DynamicClient()

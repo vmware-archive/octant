@@ -25,7 +25,7 @@ import (
 type crdListPrinter func(
 	crdName string,
 	crd *apiextv1beta1.CustomResourceDefinition,
-	objects []*unstructured.Unstructured,
+	objects *unstructured.UnstructuredList,
 	linkGenerator link.Interface) (component.Component, error)
 
 type crdListDescriptionOption func(*crdList)
@@ -86,7 +86,7 @@ func ListCustomResources(
 	crd *apiextv1beta1.CustomResourceDefinition,
 	namespace string,
 	o store.Store,
-	selector *labels.Set) ([]*unstructured.Unstructured, error) {
+	selector *labels.Set) (*unstructured.UnstructuredList, error) {
 	if crd == nil {
 		return nil, errors.New("crd is nil")
 	}
@@ -106,7 +106,7 @@ func ListCustomResources(
 	}
 
 	if err := o.HasAccess(ctx, key, "list"); err != nil {
-		return []*unstructured.Unstructured{}, nil
+		return nil, nil
 	}
 
 	objects, err := o.List(ctx, key)

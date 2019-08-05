@@ -19,8 +19,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/clock"
 
 	"github.com/vmware/octant/internal/describer"
-	storefake "github.com/vmware/octant/pkg/store/fake"
+	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/store"
+	storeFake "github.com/vmware/octant/pkg/store/fake"
 )
 
 func createObject(name string) *unstructured.Unstructured {
@@ -34,26 +35,24 @@ func createObject(name string) *unstructured.Unstructured {
 }
 
 func Test_loadObjects(t *testing.T) {
-	sampleObjects := []*unstructured.Unstructured{
+	sampleObjects := testutil.ToUnstructuredList(t,
 		createObject("omega"),
+		createObject("alpha"))
+	sortedSampleObjects := testutil.ToUnstructuredList(t,
 		createObject("alpha"),
-	}
-	sortedSampleObjects := []*unstructured.Unstructured{
-		createObject("alpha"),
-		createObject("omega"),
-	}
+		createObject("omega"))
 
 	cases := []struct {
 		name     string
-		init     func(*testing.T, *storefake.MockStore)
+		init     func(*testing.T, *storeFake.MockStore)
 		fields   map[string]string
 		keys     []store.Key
-		expected []*unstructured.Unstructured
+		expected *unstructured.UnstructuredList
 		isErr    bool
 	}{
 		{
 			name: "without name",
-			init: func(t *testing.T, o *storefake.MockStore) {
+			init: func(t *testing.T, o *storeFake.MockStore) {
 				key := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
@@ -69,7 +68,7 @@ func Test_loadObjects(t *testing.T) {
 		},
 		{
 			name: "name",
-			init: func(t *testing.T, o *storefake.MockStore) {
+			init: func(t *testing.T, o *storeFake.MockStore) {
 				key := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
@@ -78,15 +77,16 @@ func Test_loadObjects(t *testing.T) {
 
 				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(key)).
-					Return([]*unstructured.Unstructured{}, nil)
+					Return(&unstructured.UnstructuredList{}, nil)
 
 			},
-			fields: map[string]string{"name": "name"},
-			keys:   []store.Key{{APIVersion: "v1", Kind: "kind"}},
+			fields:   map[string]string{"name": "name"},
+			keys:     []store.Key{{APIVersion: "v1", Kind: "kind"}},
+			expected: &unstructured.UnstructuredList{},
 		},
 		{
 			name: "cache retrieve error",
-			init: func(t *testing.T, o *storefake.MockStore) {
+			init: func(t *testing.T, o *storeFake.MockStore) {
 				key := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
@@ -107,7 +107,7 @@ func Test_loadObjects(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			o := storefake.NewMockStore(controller)
+			o := storeFake.NewMockStore(controller)
 			tc.init(t, o)
 
 			namespace := "default"

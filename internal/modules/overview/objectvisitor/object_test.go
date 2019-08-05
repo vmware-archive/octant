@@ -2,14 +2,15 @@ package objectvisitor_test
 
 import (
 	"context"
+	"sync"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	clusterFake "github.com/vmware/octant/internal/cluster/fake"
 	configFake "github.com/vmware/octant/internal/config/fake"
 	"github.com/vmware/octant/internal/modules/overview/objectvisitor"
 	"github.com/vmware/octant/internal/modules/overview/objectvisitor/fake"
@@ -29,57 +30,44 @@ func TestObject_Visit(t *testing.T) {
 		},
 	}
 
-	discoveryClient := clusterFake.NewMockDiscoveryInterface(controller)
-	discoveryClient.EXPECT().
-		ServerResourcesForGroupVersion("apps/v1").Return(resourceList, nil)
-
-	clusterClient := clusterFake.NewMockClientInterface(controller)
-	clusterClient.EXPECT().DiscoveryClient().Return(discoveryClient, nil)
-
 	dashConfig := configFake.NewMockDash(controller)
-	dashConfig.EXPECT().ClusterClient().Return(clusterClient)
 
-	deployment := testutil.CreateDeployment("deployment")
-
-	replicaSet := testutil.CreateAppReplicaSet("replica-set")
-	replicaSet.SetOwnerReferences(testutil.ToOwnerReferences(t, deployment))
-
-	pod := testutil.CreatePod("pod")
-	pod.SetOwnerReferences(testutil.ToOwnerReferences(t, replicaSet))
-
-	u := testutil.ToUnstructured(t, replicaSet)
+	deployment := testutil.ToUnstructured(t, testutil.CreateDeployment("deployment"))
+	replicaSet := testutil.ToUnstructured(t, testutil.CreateAppReplicaSet("replica-set"))
+	pod := testutil.ToUnstructured(t, testutil.CreatePod("pod"))
 
 	q := queryerFake.NewMockQueryer(controller)
 	q.EXPECT().
-		OwnerReference(gomock.Any(), deployment.Namespace, replicaSet.OwnerReferences[0]).
-		Return(deployment, nil)
+		OwnerReference(gomock.Any(), replicaSet).
+		Return(true, deployment, nil)
 	q.EXPECT().
-		Children(gomock.Any(), u).
-		Return([]runtime.Object{pod}, nil)
+		Children(gomock.Any(), replicaSet).Return(testutil.ToUnstructuredList(t, pod), nil)
 
 	handler := fake.NewMockObjectHandler(controller)
-	handler.EXPECT().AddEdge(gomock.Any(), u, pod).Return(nil)
-	handler.EXPECT().AddEdge(gomock.Any(), u, deployment).Return(nil)
-	handler.EXPECT().Process(gomock.Any(), u).Return(nil)
+	handler.EXPECT().AddEdge(gomock.Any(), replicaSet, pod).Return(nil)
+	handler.EXPECT().AddEdge(gomock.Any(), replicaSet, deployment).Return(nil)
+	handler.EXPECT().Process(gomock.Any(), replicaSet).Return(nil)
 
-	var visited []runtime.Object
+	var visited []unstructured.Unstructured
+	var mu sync.Mutex
 	visitor := fake.NewMockVisitor(controller)
 	visitor.EXPECT().
-		Visit(gomock.Any(), gomock.Any(), handler).
-		DoAndReturn(func(ctx context.Context, object runtime.Object, handler objectvisitor.ObjectHandler) error {
-			visited = append(visited, object)
+		Visit(gomock.Any(), gomock.Any(), handler, gomock.Any()).
+		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool) error {
+			mu.Lock()
+			defer mu.Unlock()
+			visited = append(visited, *object)
 			return nil
 		}).
-		AnyTimes()
+		Times(2)
 
 	object := objectvisitor.NewObject(dashConfig, q)
 
 	ctx := context.Background()
-	err := object.Visit(ctx, u, handler, visitor)
+	err := object.Visit(ctx, replicaSet, handler, visitor, true)
+	require.NoError(t, err)
 
 	sortObjectsByName(t, visited)
-
-	expected := []runtime.Object{deployment, pod}
-	assert.Equal(t, expected, visited)
-	assert.NoError(t, err)
+	expected := testutil.ToUnstructuredList(t, deployment, pod)
+	assert.Equal(t, expected.Items, visited)
 }

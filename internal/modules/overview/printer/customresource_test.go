@@ -40,9 +40,7 @@ func Test_CustomResourceListHandler(t *testing.T) {
 	labels := map[string]string{"foo": "bar"}
 	resource.SetLabels(labels)
 
-	list := []*unstructured.Unstructured{
-		resource,
-	}
+	list := testutil.ToUnstructuredList(t, resource)
 	got, err := CustomResourceListHandler(crd.Name, crd, list, tpo.link)
 	require.NoError(t, err)
 
@@ -77,9 +75,7 @@ func Test_CustomResourceListHandler_custom_columns(t *testing.T) {
 	labels := map[string]string{"foo": "bar"}
 	resource.SetLabels(labels)
 
-	list := []*unstructured.Unstructured{
-		resource,
-	}
+	list := testutil.ToUnstructuredList(t, resource)
 
 	got, err := CustomResourceListHandler(crd.Name, crd, list, tpo.link)
 	require.NoError(t, err)

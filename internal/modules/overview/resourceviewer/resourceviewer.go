@@ -7,19 +7,19 @@ package resourceviewer
 
 import (
 	"context"
-	"fmt"
+	"time"
 
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/vmware/octant/internal/componentcache"
 	"github.com/vmware/octant/internal/config"
+	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/modules/overview/objectvisitor"
 	"github.com/vmware/octant/internal/queryer"
 	"github.com/vmware/octant/internal/util/kubernetes"
-	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -70,58 +70,32 @@ func (rv *ResourceViewer) Visit(ctx context.Context, object runtime.Object) (*co
 	ctx, span := trace.StartSpan(ctx, "resourceViewer")
 	defer span.End()
 
+	accessor, err := meta.Accessor(object)
+	if err != nil {
+		return nil, err
+	}
+
+	logger := log.From(ctx).With("object", kubernetes.PrintObject(object))
+	logger.Debugf("starting resource viewer visit")
+
+	now := time.Now()
+	defer logger.With("elapsed", time.Since(now)).Debugf("ending resource viewer visit")
+
 	handler, err := NewHandler(rv.dashConfig)
 	if err != nil {
 		return nil, errors.Wrap(err, "Create handler")
 	}
 
-	if err := rv.visitor.Visit(ctx, object, handler); err != nil {
-		return nil, errors.Wrapf(err, "error unable to visit object %s", kubernetes.PrintObject(object))
-	}
-
-	accessor := meta.NewAccessor()
-	uid, err := accessor.UID(object)
+	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(object)
 	if err != nil {
 		return nil, err
 	}
 
-	return GenerateComponent(ctx, handler, uid)
-}
+	u := &unstructured.Unstructured{Object: m}
 
-// CachedResourceViewer returns a RV component from the component cache and starts a new visit.
-func CachedResourceViewer(object runtime.Object, dashConfig config.Dash, q queryer.Queryer) componentcache.UpdateFn {
-	return func(ctx context.Context, cacheChan chan componentcache.Event) (string, error) {
-		var event componentcache.Event
-		event.Name = "Resource Viewer"
-
-		copyObject := object.DeepCopyObject()
-
-		key, err := store.KeyFromObject(copyObject)
-		if err != nil {
-			return "", err
-		}
-		sKey := fmt.Sprintf("%s-%s", "resourceviewer", key.String())
-		event.Key = sKey
-
-		componentCache := dashConfig.ComponentCache()
-		if _, ok := componentCache.Get(sKey); !ok {
-			title := component.Title(component.NewText("Resource Viewer"))
-			loading := component.NewLoading(title, "Resource Viewer")
-			componentCache.Add(sKey, loading)
-		}
-
-		rv, err := New(dashConfig, WithDefaultQueryer(dashConfig, q))
-		if err != nil {
-			return sKey, err
-		}
-
-		go func() {
-			c, err := rv.Visit(ctx, copyObject)
-			event.Err = err
-			event.Component = c
-			cacheChan <- event
-		}()
-
-		return sKey, nil
+	if err := rv.visitor.Visit(ctx, u, handler, true); err != nil {
+		return nil, errors.Wrapf(err, "error unable to visit object %s", kubernetes.PrintObject(object))
 	}
+
+	return GenerateComponent(ctx, handler, accessor.GetUID())
 }

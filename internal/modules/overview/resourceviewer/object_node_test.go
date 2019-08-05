@@ -19,8 +19,8 @@ func Test_objectNode(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	deployment := testutil.CreateDeployment("deployment")
-	deploymentLink := component.NewLink("", deployment.Name, "/deployment")
+	deployment := testutil.ToUnstructured(t, testutil.CreateDeployment("deployment"))
+	deploymentLink := component.NewLink("", deployment.GetName(), "/deployment")
 
 	l := linkFake.NewMockInterface(controller)
 	l.EXPECT().
@@ -45,9 +45,9 @@ func Test_objectNode(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := &component.Node{
-		Name:       deployment.Name,
-		APIVersion: deployment.APIVersion,
-		Kind:       deployment.Kind,
+		Name:       deployment.GetName(),
+		APIVersion: deployment.GetAPIVersion(),
+		Kind:       deployment.GetKind(),
 		Status:     component.NodeStatusOK,
 		Path:       deploymentLink,
 	}
