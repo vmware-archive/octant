@@ -92,7 +92,7 @@ Documentation for plugin components can be found in [`docs/plugins`](docs/plugin
 Feature requests, bug reports, and enhancements are welcome. Contributors, maintainers, and users are encouraged to collaborate through these communication channels:
 
  - [Twitter](https://twitter.com/projectoctant)
- - [Google group](https://groups.google.com/forum/#!forum/octant-dashboard/)
+ - [Google group](https://groups.google.com/forum/#!forum/project-octant/)
  - [Github issues](https://github.com/vmware/octant/issues)
 
 ## Contributing
