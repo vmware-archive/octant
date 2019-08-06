@@ -6,7 +6,6 @@ import { Injectable } from '@angular/core';
 import { Location } from '@angular/common';
 import { BehaviorSubject } from 'rxjs';
 import getAPIBase from '../common/getAPIBase';
-import { ContentResponse } from '../../models/content';
 
 import {
   Filter,
@@ -23,10 +22,6 @@ import _ from 'lodash';
 export interface Streamer {
   handler: EventListenerOrEventListenerObject;
   behavior: BehaviorSubject<any>;
-}
-
-export interface ContextDescription {
-  name: string;
 }
 
 const pollEvery = 5;

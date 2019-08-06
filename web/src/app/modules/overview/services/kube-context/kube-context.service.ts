@@ -9,8 +9,11 @@ import getAPIBase from '../../../../services/common/getAPIBase';
 import {
   Streamer,
   ContentStreamService,
-  ContextDescription,
 } from '../../../../services/content-stream/content-stream.service';
+
+export interface ContextDescription {
+  name: string;
+}
 
 export interface KubeContextResponse {
   contexts: ContextDescription[];
@@ -44,9 +47,9 @@ export class KubeContextService {
       behavior: this.behavior,
       handler: this.handleEvent,
     };
-    this.contentStreamService.registerStreamer('kubeContext', streamer)
+    this.contentStreamService.registerStreamer('kubeConfig', streamer)
 
-    contentStreamService.streamer('kubeContext').subscribe(update => {
+    contentStreamService.streamer('kubeConfig').subscribe(update => {
       this.contextsSource.next(update.contexts);
       this.selectedSource.next(update.currentContext);
     });
