@@ -22,6 +22,7 @@ import { OverviewComponent } from '../../modules/overview/overview.component';
 import { OverviewModule } from '../../modules/overview/overview.module';
 import { NamespaceService } from '../namespace/namespace.service';
 import { NamespaceComponent } from 'src/app/components/namespace/namespace.component';
+import { KubeContextResponse, KubeContextService } from '../../modules/overview/services/kube-context/kube-context.service';
 import { AppModule } from 'src/app/app.module';
 import { NavigationComponent } from 'src/app/components/navigation/navigation.component';
 
@@ -36,9 +37,15 @@ const emptyNavigation: Navigation = {
   sections: [],
 };
 
+const emptyKubeContext: KubeContextResponse = {
+  contexts: [],
+  currentContext: '',
+};
+
 describe('ContentStreamService', () => {
   const API_BASE = getAPIBase();
   let contentStreamService: ContentStreamService;
+  let contextService: KubeContextService;
   let eventSourceService: {
     eventSourceStubs: Array<{ url: string; eventSourceStub: EventSourceStub }>;
   };
@@ -72,10 +79,12 @@ describe('ContentStreamService', () => {
         { provide: NotifierService, useFactory: notifierServiceStubFactory },
         { provide: EventSourceService, useValue: eventSourceServiceStub },
         NamespaceService,
+        KubeContextService
       ],
     }).compileComponents();
 
     contentStreamService = TestBed.get(ContentStreamService);
+    contextService = TestBed.get(KubeContextService);
     eventSourceService = TestBed.get(EventSourceService);
     labelFilterService = TestBed.get(LabelFilterService);
     notifierService = TestBed.get(NotifierService);
@@ -120,6 +129,7 @@ describe('ContentStreamService', () => {
     expect(contentStreamService.streamer('content').getValue()).toEqual(emptyContentResponse);
     expect(contentStreamService.streamer('navigation').getValue()).toEqual(emptyNavigation);
     expect(contentStreamService.streamer('namespaces').getValue()).toEqual([]);
+    expect(contentStreamService.streamer('kubeConfig').getValue()).toEqual(emptyKubeContext);
 
     const testContentResponse: ContentResponse = {
       content: {
