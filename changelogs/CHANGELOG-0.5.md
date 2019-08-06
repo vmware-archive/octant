@@ -1,4 +1,14 @@
+ - [v0.5.1](#v051)
  - [v0.5.0](#v050)
+
+## v0.5.1
+#### 2019-08-06
+
+### Download
+ - https://github.com/vmware/octant/releases/tag/v0.5.1
+
+### Bug fixes
+ - Fixed bug with context switcher stream registration (#110, @wwitzel3)
 
 ## v0.5.0
 #### 2019-08-05
