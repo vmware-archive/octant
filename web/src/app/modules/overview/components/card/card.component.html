@@ -2,10 +2,11 @@
 
 <ng-template #action>
     <app-form
-            [form]="currentAction.form"
-            [title]="currentAction.title"
-            (submit)="onActionSubmit($event)"
-            (cancel)="onActionCancel()">
+        #appForm
+        [form]="currentAction.form"
+        [title]="currentAction.title"
+        (submit)="onActionSubmit($event)"
+        (cancel)="onActionCancel()">
     </app-form>
 </ng-template>
 
