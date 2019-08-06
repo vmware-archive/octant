@@ -350,7 +350,7 @@ func Test_deploymentPods(t *testing.T) {
 			"Ready":    component.NewText("0/0"),
 			"Restarts": component.NewText("0"),
 			"Phase":    component.NewText(""),
-			"Node":     component.NewText(""),
+			"Node":     component.NewText("<not scheduled>"),
 		},
 	})
 
