@@ -6,15 +6,15 @@
 
 2. Pull the change then run `make release`
 
-3. A new build will be triggered then a draft of the artifacts will be available for review in Github Releases.
+3. A new build will be triggered then a draft of the artifacts will be available for review in GitHub Releases.
 
 ### Encrypt a token
 
 1. Download the Travis CLI ruby gem: `gem install travis`
 
-2. Login with your Github account: `travis login --pro`.
+2. Login with your GitHub account: `travis login --pro`.
 
-3. Generate the token through the heptibot Github account. Navigate to the project root and encrypt the token: `travis encrypt GITHUB_TOKEN="..." --add`. The token can only be decrypted by Travis CI, not the encrypter or owners of the repository.
+3. Generate the token through the heptibot GitHub account. Navigate to the project root and encrypt the token: `travis encrypt GITHUB_TOKEN="..." --add`. The token can only be decrypted by Travis CI, not the encrypter or owners of the repository.
 
 4. Commit the changes to `.travis.yml` and push.
 
@@ -22,7 +22,7 @@
 
 What you'll need:
 
- - a Github token with repo scope enabled
+ - a GitHub token with repo scope enabled
  - an installation of rpmbuild
  - an installation of [goreleaser](https://goreleaser.com)
 
