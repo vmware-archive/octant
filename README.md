@@ -83,7 +83,7 @@ For configuring Octant, setting up a development environment, or running tests, 
 
 Plugins are a core part of Octant in the Kubernetes ecosystem. A plugin can read objects and allows users to add components to Octant's views.
 
-An example plugin can be found in [`cmd/pluginstub`](cmd/pluginstub) and installed to the default plugin path with `make install-test-plugin`.
+An example plugin can be found in [`cmd/octant-sample-plugin`](cmd/octant-sample-plugin) and installed to the default plugin path with `make install-test-plugin`.
 
 Documentation for plugin components can be found in [`docs/plugins`](docs/plugins).
 
