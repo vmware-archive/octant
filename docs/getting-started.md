@@ -26,6 +26,6 @@ These build tools can be installed via Makefile with `make go-install`.
 
 A development binary can be built by `make octant-dev`.
 
-For UI changes, see the [README](web/README.md) located in `web/`.
+For UI changes, see the [README](/web/README.md) located in `web/`.
 
-If Docker and [Drone](docs/drone.md) are installed, tests and build steps can run in a containerized environment.
+If Docker and [Drone](/docs/drone.md) are installed, tests and build steps can run in a containerized environment.
