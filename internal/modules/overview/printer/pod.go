@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 
+	"github.com/vmware/octant/internal/link"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -43,14 +44,14 @@ func PodListHandler(_ context.Context, list *corev1.PodList, opts Options) (comp
 
 	tbl := component.NewTable("Pods", cols)
 
-	for _, p := range list.Items {
-		if p.Status.Phase == corev1.PodSucceeded {
+	for i := range list.Items {
+		if list.Items[i].Status.Phase == corev1.PodSucceeded {
 			// skip succeeded pods
 			continue
 		}
 
 		row := component.TableRow{}
-		nameLink, err := opts.Link.ForObject(&p, p.Name)
+		nameLink, err := opts.Link.ForObject(&list.Items[i], list.Items[i].Name)
 		if err != nil {
 			return nil, err
 		}
@@ -58,30 +59,35 @@ func PodListHandler(_ context.Context, list *corev1.PodList, opts Options) (comp
 		row["Name"] = nameLink
 
 		if !opts.DisableLabels {
-			row["Labels"] = component.NewLabels(p.Labels)
+			row["Labels"] = component.NewLabels(list.Items[i].Labels)
 		}
 
 		readyCounter := 0
-		for _, c := range p.Status.ContainerStatuses {
+		for _, c := range list.Items[i].Status.ContainerStatuses {
 			if c.Ready {
 				readyCounter++
 			}
 		}
-		ready := fmt.Sprintf("%d/%d", readyCounter, len(p.Spec.Containers))
+		ready := fmt.Sprintf("%d/%d", readyCounter, len(list.Items[i].Spec.Containers))
 		row["Ready"] = component.NewText(ready)
 
-		row["Phase"] = component.NewText(string(p.Status.Phase))
+		row["Phase"] = component.NewText(string(list.Items[i].Status.Phase))
 
 		restartCounter := 0
-		for _, c := range p.Status.ContainerStatuses {
+		for _, c := range list.Items[i].Status.ContainerStatuses {
 			restartCounter += int(c.RestartCount)
 		}
 		restarts := fmt.Sprintf("%d", restartCounter)
 		row["Restarts"] = component.NewText(restarts)
 
-		row["Node"] = component.NewText(p.Spec.NodeName)
+		nodeComponent, err := podNode(&list.Items[i], opts.Link)
+		if err != nil {
+			return nil, err
+		}
 
-		ts := p.CreationTimestamp.Time
+		row["Node"] = nodeComponent
+
+		ts := list.Items[i].CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
 
 		tbl.Add(row)
@@ -90,6 +96,14 @@ func PodListHandler(_ context.Context, list *corev1.PodList, opts Options) (comp
 	tbl.Sort("Name", false)
 
 	return tbl, nil
+}
+
+func podNode(pod *corev1.Pod, linkGenerator link.Interface) (component.Component, error) {
+	if nodeName := pod.Spec.NodeName; nodeName != "" {
+		return linkGenerator.ForGVK("", "v1", "Node", pod.Spec.NodeName, pod.Spec.NodeName)
+	}
+
+	return component.NewText("<not scheduled>"), nil
 }
 
 // PodHandler is a printFunc that prints Pods
@@ -271,6 +285,12 @@ func (p *PodConfiguration) Create(options Options) (*component.Summary, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	nodeLink, err := podNode(p.pod, options.Link)
+	if err != nil {
+		return nil, err
+	}
+	sections.Add("Node", nodeLink)
 
 	sections = append(sections, component.SummarySection{
 		Header:  "Service Account",

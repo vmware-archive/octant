@@ -29,6 +29,10 @@ func Test_PodListHandler(t *testing.T) {
 	defer controller.Finish()
 
 	tpo := newTestPrinterOptions(controller)
+	nodeLink := component.NewLink("", "node", "/node")
+	tpo.link.EXPECT().
+		ForGVK("", "v1", "Node", "node", "node").
+		Return(nodeLink, nil)
 	printOptions := tpo.ToOptions()
 
 	now := testutil.Time()
@@ -37,49 +41,34 @@ func Test_PodListHandler(t *testing.T) {
 		"app": "testing",
 	}
 
-	pod := &corev1.Pod{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "Pod",
+	pod := testutil.CreatePod("pod")
+	pod.CreationTimestamp = metav1.Time{Time: now}
+	pod.Labels = labels
+	pod.Spec.Containers = []corev1.Container{
+		{
+			Name:  "nginx",
+			Image: "nginx:1.15",
 		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "pod",
-			Namespace: "default",
-			CreationTimestamp: metav1.Time{
-				Time: now,
-			},
-			Labels: map[string]string{
-				"app": "testing",
-			},
+		{
+			Name:  "kuard",
+			Image: "gcr.io/kuar-demo/kuard-amd64:1",
 		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:  "nginx",
-					Image: "nginx:1.15",
-				},
-				{
-					Name:  "kuard",
-					Image: "gcr.io/kuar-demo/kuard-amd64:1",
-				},
+	}
+	pod.Spec.NodeName = "node"
+	pod.Status = corev1.PodStatus{
+		Phase: "Pending",
+		ContainerStatuses: []corev1.ContainerStatus{
+			{
+				Name:         "nginx",
+				Image:        "nginx:1.15",
+				RestartCount: 0,
+				Ready:        true,
 			},
-			NodeName: "node",
-		},
-		Status: corev1.PodStatus{
-			Phase: "Pending",
-			ContainerStatuses: []corev1.ContainerStatus{
-				{
-					Name:         "nginx",
-					Image:        "nginx:1.15",
-					RestartCount: 0,
-					Ready:        true,
-				},
-				{
-					Name:         "kuard",
-					Image:        "gcr.io/kuar-demo/kuard-amd64:1",
-					RestartCount: 0,
-					Ready:        false,
-				},
+			{
+				Name:         "kuard",
+				Image:        "gcr.io/kuar-demo/kuard-amd64:1",
+				RestartCount: 0,
+				Ready:        false,
 			},
 		},
 	}
@@ -103,7 +92,7 @@ func Test_PodListHandler(t *testing.T) {
 		"Phase":    component.NewText("Pending"),
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(now),
-		"Node":     component.NewText("node"),
+		"Node":     nodeLink,
 	})
 
 	component.AssertEqual(t, expected, got)
@@ -161,6 +150,7 @@ func Test_PodHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	configSection := component.SummarySections{
+		{Header: "Node", Content: component.NewText("<not scheduled>")},
 		{Header: "Service Account", Content: component.NewLink("", "serviceAccount", "/service-account")},
 	}
 	configSummary := component.NewSummary("Configuration", configSection...)
@@ -291,7 +281,7 @@ func TestPodListHandler_sorted(t *testing.T) {
 		"Phase":    component.NewText(""),
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(pod1.CreationTimestamp.Time),
-		"Node":     component.NewText(""),
+		"Node":     component.NewText("<not scheduled>"),
 	})
 	expected.Add(component.TableRow{
 		"Name":     component.NewLink("", "pod2", "/pod2"),
@@ -300,7 +290,7 @@ func TestPodListHandler_sorted(t *testing.T) {
 		"Phase":    component.NewText(""),
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(pod1.CreationTimestamp.Time),
-		"Node":     component.NewText(""),
+		"Node":     component.NewText("<not scheduled>"),
 	})
 
 	component.AssertEqual(t, expected, got)
@@ -329,6 +319,7 @@ func Test_PodConfiguration(t *testing.T) {
 			DeletionGracePeriodSeconds: conversion.PtrInt64(30),
 		},
 		Spec: corev1.PodSpec{
+			NodeName:           "node",
 			Priority:           conversion.PtrInt32(1000000),
 			PriorityClassName:  "high-priority",
 			ServiceAccountName: "default",
@@ -342,6 +333,8 @@ func Test_PodConfiguration(t *testing.T) {
 			QOSClass:          "Guaranteed",
 		},
 	}
+
+	nodeLink := component.NewLink("", "node", "/node")
 
 	cases := []struct {
 		name     string
@@ -362,6 +355,10 @@ func Test_PodConfiguration(t *testing.T) {
 					Content: component.NewText("high-priority"),
 				},
 				{
+					Header:  "Node",
+					Content: nodeLink,
+				},
+				{
 					Header:  "Service Account",
 					Content: component.NewLink("", "serviceAccount", "/service-account"),
 				},
@@ -380,6 +377,10 @@ func Test_PodConfiguration(t *testing.T) {
 			defer controller.Finish()
 
 			tpo := newTestPrinterOptions(controller)
+			tpo.link.EXPECT().
+				ForGVK("", "v1", "Node", "node", "node").
+				Return(nodeLink, nil).AnyTimes()
+
 			printOptions := tpo.ToOptions()
 
 			if tc.pod != nil {
