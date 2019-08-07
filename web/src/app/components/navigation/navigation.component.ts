@@ -3,7 +3,10 @@
 //
 import { Component, Input } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { Streamer, ContentStreamService } from '../../services/content-stream/content-stream.service';
+import {
+  Streamer,
+  ContentStreamService,
+} from '../../services/content-stream/content-stream.service';
 import { Navigation, NavigationChild } from '../../models/navigation';
 import { IconService } from '../../modules/overview/services/icon.service';
 
@@ -23,13 +26,16 @@ export class NavigationComponent {
     sections: [],
   };
 
-  constructor(private iconService: IconService, private contentStreamService: ContentStreamService) {
+  constructor(
+    private iconService: IconService,
+    private contentStreamService: ContentStreamService
+  ) {
     let streamer: Streamer = {
       behavior: this.behavior,
       handler: this.handleEvent,
     };
 
-    this.contentStreamService.registerStreamer('navigation', streamer)
+    this.contentStreamService.registerStreamer('navigation', streamer);
   }
 
   identifyNavigationItem(index: number, item: NavigationChild): string {

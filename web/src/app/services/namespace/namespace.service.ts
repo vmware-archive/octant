@@ -6,7 +6,10 @@ import { Injectable } from '@angular/core';
 import { NavigationEnd, PRIMARY_OUTLET, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import _ from 'lodash';
-import { Streamer, ContentStreamService } from '../content-stream/content-stream.service';
+import {
+  Streamer,
+  ContentStreamService,
+} from '../content-stream/content-stream.service';
 import { NavigationChild } from '../../models/navigation';
 import {
   NotifierService,
@@ -36,8 +39,7 @@ export class NamespaceService {
       behavior: this.behavior,
       handler: this.handleEvent,
     };
-    this.contentStreamService.registerStreamer('namespaces', streamer)
-
+    this.contentStreamService.registerStreamer('namespaces', streamer);
 
     this.behavior.subscribe((namespaces: string[]) => {
       this.list.next(namespaces);
@@ -124,7 +126,9 @@ export class NamespaceService {
     }
 
     let routeCandidate = basePath;
-    const navigation = this.contentStreamService.streamer('navigation').getValue();
+    const navigation = this.contentStreamService
+      .streamer('navigation')
+      .getValue();
 
     navigationSectionLoop: for (const navigationSection of navigation.sections as NavigationChild[]) {
       const sectionPath = this.getPathArray(navigationSection.path);

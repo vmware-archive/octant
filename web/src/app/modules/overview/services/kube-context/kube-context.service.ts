@@ -25,7 +25,6 @@ const emptyKubeContext: KubeContextResponse = {
   currentContext: '',
 };
 
-
 @Injectable({
   providedIn: 'root',
 })
@@ -47,7 +46,7 @@ export class KubeContextService {
       behavior: this.behavior,
       handler: this.handleEvent,
     };
-    this.contentStreamService.registerStreamer('kubeConfig', streamer)
+    this.contentStreamService.registerStreamer('kubeConfig', streamer);
 
     contentStreamService.streamer('kubeConfig').subscribe(update => {
       this.contextsSource.next(update.contexts);

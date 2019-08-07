@@ -3,7 +3,10 @@
 //
 
 import { Component, OnInit } from '@angular/core';
-import { KubeContextService, ContextDescription } from '../../services/kube-context/kube-context.service';
+import {
+  KubeContextService,
+  ContextDescription,
+} from '../../services/kube-context/kube-context.service';
 
 @Component({
   selector: 'app-context-selector',

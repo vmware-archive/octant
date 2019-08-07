@@ -27,12 +27,10 @@ export interface Streamer {
 const pollEvery = 5;
 const API_BASE = getAPIBase();
 
-
 @Injectable({
   providedIn: 'root',
 })
 export class ContentStreamService {
-
   private eventSource: EventSource;
   private notifierSession: NotifierSession;
   private currentPath: string;
@@ -57,7 +55,10 @@ export class ContentStreamService {
     );
     this.notifierSession.pushSignal(NotifierSignalType.LOADING, true);
     this.eventSource.addEventListener('error', this.handleErrorEvent);
-    this.eventSource.addEventListener('objectNotFound', this.handleObjectNotFoundEvent);
+    this.eventSource.addEventListener(
+      'objectNotFound',
+      this.handleObjectNotFoundEvent
+    );
 
     let eventSource = this.eventSource;
     this.streamers.forEach(function(value, key) {

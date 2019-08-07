@@ -19,8 +19,10 @@ export class AppComponent implements OnInit {
   constructor(private contentStreamService: ContentStreamService) {}
 
   ngOnInit(): void {
-    this.contentStreamService.streamer('navigation').subscribe((navigation: Navigation) => {
-      this.navigation = navigation;
-    });
+    this.contentStreamService
+      .streamer('navigation')
+      .subscribe((navigation: Navigation) => {
+        this.navigation = navigation;
+      });
   }
 }

@@ -10,7 +10,10 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ContentResponse, View } from 'src/app/models/content';
-import { Streamer, ContentStreamService } from 'src/app/services/content-stream/content-stream.service';
+import {
+  Streamer,
+  ContentStreamService,
+} from 'src/app/services/content-stream/content-stream.service';
 import { IconService } from './services/icon.service';
 import { ViewService } from './services/view/view.service';
 import { BehaviorSubject } from 'rxjs';
@@ -51,7 +54,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
       behavior: this.behavior,
       handler: this.handleEvent,
     };
-    this.contentStreamService.registerStreamer('content', streamer)
+    this.contentStreamService.registerStreamer('content', streamer);
   }
 
   ngOnInit() {
@@ -63,7 +66,9 @@ export class OverviewComponent implements OnInit, OnDestroy {
         this.views = null;
         this.previousUrl = currentPath;
         this.contentStreamService.openStream(currentPath);
-        this.contentStreamService.streamer('content').subscribe(this.setContent);
+        this.contentStreamService
+          .streamer('content')
+          .subscribe(this.setContent);
         this.scrollTarget.nativeElement.scrollTop = 0;
       }
     });

@@ -1,4 +1,10 @@
-import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 import { Action, CardView, View } from '../../../../models/content';
 import { FormGroup } from '@angular/forms';
 import { ActionService } from '../../services/action/action.service';

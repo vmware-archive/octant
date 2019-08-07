@@ -22,7 +22,10 @@ import { OverviewComponent } from '../../modules/overview/overview.component';
 import { OverviewModule } from '../../modules/overview/overview.module';
 import { NamespaceService } from '../namespace/namespace.service';
 import { NamespaceComponent } from 'src/app/components/namespace/namespace.component';
-import { KubeContextResponse, KubeContextService } from '../../modules/overview/services/kube-context/kube-context.service';
+import {
+  KubeContextResponse,
+  KubeContextService,
+} from '../../modules/overview/services/kube-context/kube-context.service';
 import { AppModule } from 'src/app/app.module';
 import { NavigationComponent } from 'src/app/components/navigation/navigation.component';
 
@@ -54,7 +57,7 @@ describe('ContentStreamService', () => {
   let overviewFixture: ComponentFixture<OverviewComponent>;
   let namespaceFixture: ComponentFixture<NamespaceComponent>;
   let navigationFixture: ComponentFixture<NavigationComponent>;
-  
+
   beforeEach(() => {
     const labelFilterStub: Partial<LabelFilterService> = {
       filters: new BehaviorSubject<Filter[]>([]),
@@ -70,16 +73,13 @@ describe('ContentStreamService', () => {
     };
 
     TestBed.configureTestingModule({
-      imports: [
-        OverviewModule,
-        AppModule
-      ],
+      imports: [OverviewModule, AppModule],
       providers: [
         { provide: LabelFilterService, useValue: labelFilterStub },
         { provide: NotifierService, useFactory: notifierServiceStubFactory },
         { provide: EventSourceService, useValue: eventSourceServiceStub },
         NamespaceService,
-        KubeContextService
+        KubeContextService,
       ],
     }).compileComponents();
 
@@ -104,7 +104,7 @@ describe('ContentStreamService', () => {
   it('should stream content after setting valid path w/o filters', () => {
     const { eventSourceStubs } = eventSourceService;
     const { notifierSessionStub } = notifierService;
-    
+
     contentStreamService.openStream('namespace/default/overview');
 
     expect(notifierSessionStub.pushSignal.calls.count()).toBe(1);
@@ -123,13 +123,22 @@ describe('ContentStreamService', () => {
       JSON.stringify(emptyContentResponse)
     );
     eventSourceStub.queueMessage('navigation', JSON.stringify(emptyNavigation));
-    eventSourceStub.queueMessage('namespaces', JSON.stringify({ namespaces: [] }));
+    eventSourceStub.queueMessage(
+      'namespaces',
+      JSON.stringify({ namespaces: [] })
+    );
     eventSourceStub.flush();
 
-    expect(contentStreamService.streamer('content').getValue()).toEqual(emptyContentResponse);
-    expect(contentStreamService.streamer('navigation').getValue()).toEqual(emptyNavigation);
+    expect(contentStreamService.streamer('content').getValue()).toEqual(
+      emptyContentResponse
+    );
+    expect(contentStreamService.streamer('navigation').getValue()).toEqual(
+      emptyNavigation
+    );
     expect(contentStreamService.streamer('namespaces').getValue()).toEqual([]);
-    expect(contentStreamService.streamer('kubeConfig').getValue()).toEqual(emptyKubeContext);
+    expect(contentStreamService.streamer('kubeConfig').getValue()).toEqual(
+      emptyKubeContext
+    );
 
     const testContentResponse: ContentResponse = {
       content: {
@@ -151,8 +160,12 @@ describe('ContentStreamService', () => {
     );
     eventSourceStub.flush();
 
-    expect(contentStreamService.streamer('content').getValue()).toEqual(testContentResponse);
-    expect(contentStreamService.streamer('navigation').getValue()).toEqual(emptyNavigation);
+    expect(contentStreamService.streamer('content').getValue()).toEqual(
+      testContentResponse
+    );
+    expect(contentStreamService.streamer('navigation').getValue()).toEqual(
+      emptyNavigation
+    );
     expect(contentStreamService.streamer('namespaces').getValue()).toEqual([
       'namespaceA',
       'namespaceB',
