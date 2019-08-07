@@ -1,4 +1,10 @@
-import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import {
+  async,
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 
 import { CardComponent } from './card.component';
 import { OverviewModule } from '../../overview.module';
@@ -18,16 +24,16 @@ describe('CardComponent', () => {
     name: 'actionName',
     title: 'actionTitle',
     form: {
-      fields: []
-    }
-  }
+      fields: [],
+    },
+  };
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [OverviewModule, ReactiveFormsModule],
       providers: [
         { provide: FormBuilder, useValue: formBuilder },
-        { provide: ViewService, useValue: viewServiceStub }
+        { provide: ViewService, useValue: viewServiceStub },
       ],
     }).compileComponents();
   }));
@@ -75,8 +81,8 @@ describe('CardComponent', () => {
 
   it('should submit action', () => {
     const formGroup: FormGroup = formBuilder.group({
-      formGroupExample: 'justForTest'
-    })
+      formGroupExample: 'justForTest',
+    });
 
     component.onActionSubmit(formGroup);
     expect(component.currentAction).toBeUndefined();
@@ -103,8 +109,8 @@ describe('CardComponent', () => {
     };
 
     component.ngOnChanges({
-      view: new SimpleChange(null, component.view, false)
-    })
+      view: new SimpleChange(null, component.view, false),
+    });
     fixture.detectChanges();
 
     expect(component.title).toBe('Just a title');
@@ -112,7 +118,7 @@ describe('CardComponent', () => {
   });
 
   it('should call "onActionCancel" method when cancelling the form', fakeAsync(() => {
-    spyOn(component, 'onActionCancel')
+    spyOn(component, 'onActionCancel');
     fixture.detectChanges();
     component.appForm.onFormCancel();
     tick();
