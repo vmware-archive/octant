@@ -117,7 +117,7 @@ func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1b
 
 	logger := log.From(ctx)
 
-	list := make([]*apiextv1beta1.CustomResourceDefinition, len(rawList.Items))
+	list := []*apiextv1beta1.CustomResourceDefinition{}
 	for i := range rawList.Items {
 		crd := &apiextv1beta1.CustomResourceDefinition{}
 
@@ -125,7 +125,7 @@ func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1b
 			logger.Errorf("%v", errors.Wrapf(errors.Wrapf(err, "crd conversion failed"), rawList.Items[i].GetName()))
 			continue
 		}
-		list[i] = crd
+		list = append(list, crd)
 	}
 
 	return list, nil
