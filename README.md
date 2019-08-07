@@ -93,7 +93,7 @@ Feature requests, bug reports, and enhancements are welcome. Contributors, maint
 
  - [Twitter](https://twitter.com/projectoctant)
  - [Google group](https://groups.google.com/forum/#!forum/project-octant/)
- - [Github issues](https://github.com/vmware/octant/issues)
+ - [GitHub issues](https://github.com/vmware/octant/issues)
 
 ## Contributing
 
