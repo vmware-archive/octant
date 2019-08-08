@@ -45,13 +45,13 @@ Octant is a tool for developers to understand how applications run on a Kubernet
 ## Installation
 
 <!-- TODO: brew and choco install -->
-### Linux
+### Package (Linux only)
 
 1. Download the `.deb` or `.rpm` from the [releases page](https://github.com/vmware/octant/releases).
 
 2. Install with either `dpkg -i` or `rpm -i` respectively.
 
-### Download a Pre-built Binary
+### Download a Pre-built Binary (Linux, macOS, Windows)
 
 1. Open the [releases page](https://github.com/vmware/octant/releases) from a browser and download the latest tarball.
 
