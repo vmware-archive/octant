@@ -24,7 +24,7 @@ func Serve(service Service) {
 	plugin.Serve(&plugin.ServeConfig{
 		HandshakeConfig: Handshake,
 		Plugins: plugin.PluginSet{
-			PluginName: &ServicePlugin{Impl: service},
+			Name: &ServicePlugin{Impl: service},
 		},
 		GRPCServer: plugin.DefaultGRPCServer,
 	})

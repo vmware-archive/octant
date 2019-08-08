@@ -49,7 +49,7 @@ func (ModuleProxy) Handlers(ctx context.Context) map[string]http.Handler {
 
 // Content returns content from the plugin. Plugins are expected to handle paths appropriately.
 func (m *ModuleProxy) Content(ctx context.Context, contentPath, prefix, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
-	return m.Service.Content(contentPath)
+	return m.Service.Content(ctx, contentPath)
 }
 
 func (m *ModuleProxy) ContentPath() string {
@@ -58,7 +58,7 @@ func (m *ModuleProxy) ContentPath() string {
 
 // Navigation returns navigation from the plugin.
 func (m *ModuleProxy) Navigation(ctx context.Context, namespace, root string) ([]navigation.Navigation, error) {
-	topLevel, err := m.Service.Navigation()
+	topLevel, err := m.Service.Navigation(ctx)
 	if err != nil {
 		return nil, err
 	}

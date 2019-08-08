@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -24,6 +25,7 @@ type Handler struct {
 
 	dashboardFactory func(dashboardAPIAddress string) (Dashboard, error)
 	dashboardClient  Dashboard
+	router           *Router
 }
 
 var _ plugin.Service = (*Handler)(nil)
@@ -38,7 +40,7 @@ func (p *Handler) Validate() error {
 }
 
 // Register registers a plugin with Octant.
-func (p *Handler) Register(dashboardAPIAddress string) (plugin.Metadata, error) {
+func (p *Handler) Register(ctx context.Context, dashboardAPIAddress string) (plugin.Metadata, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -57,54 +59,91 @@ func (p *Handler) Register(dashboardAPIAddress string) (plugin.Metadata, error) 
 }
 
 // Print prints components for an object.
-func (p *Handler) Print(object runtime.Object) (plugin.PrintResponse, error) {
+func (p *Handler) Print(ctx context.Context, object runtime.Object) (plugin.PrintResponse, error) {
 	if p.HandlerFuncs.Print == nil {
 		return plugin.PrintResponse{}, nil
 	}
 
-	return p.HandlerFuncs.Print(p.dashboardClient, object)
+	request := &PrintRequest{
+		baseRequest:     newBaseRequest(ctx, p.name),
+		DashboardClient: p.dashboardClient,
+		Object:          object,
+	}
+
+	return p.HandlerFuncs.Print(request)
 }
 
 // PrintTab prints a tab for an object.
-func (p *Handler) PrintTab(object runtime.Object) (*component.Tab, error) {
+func (p *Handler) PrintTab(ctx context.Context, object runtime.Object) (plugin.TabResponse, error) {
 	if p.HandlerFuncs.PrintTab == nil {
-		return &component.Tab{}, nil
+		return plugin.TabResponse{}, nil
 	}
 
-	return p.HandlerFuncs.PrintTab(p.dashboardClient, object)
+	request := &PrintRequest{
+		baseRequest:     newBaseRequest(ctx, p.name),
+		DashboardClient: p.dashboardClient,
+		Object:          object,
+	}
+
+	return p.HandlerFuncs.PrintTab(request)
 }
 
 // ObjectStatus creates status for an object.
-func (p *Handler) ObjectStatus(object runtime.Object) (plugin.ObjectStatusResponse, error) {
+func (p *Handler) ObjectStatus(ctx context.Context, object runtime.Object) (plugin.ObjectStatusResponse, error) {
 	if p.HandlerFuncs.ObjectStatus == nil {
 		return plugin.ObjectStatusResponse{}, nil
 	}
 
-	return p.HandlerFuncs.ObjectStatus(p.dashboardClient, object)
+	request := &PrintRequest{
+		baseRequest:     newBaseRequest(ctx, p.name),
+		DashboardClient: p.dashboardClient,
+		Object:          object,
+	}
+
+	return p.HandlerFuncs.ObjectStatus(request)
 }
 
 // HandleAction handles actions given a payload.
-func (p *Handler) HandleAction(payload action.Payload) error {
+func (p *Handler) HandleAction(ctx context.Context, payload action.Payload) error {
 	if p.HandlerFuncs.HandleAction == nil {
 		return nil
 	}
 
-	return p.HandlerFuncs.HandleAction(p.dashboardClient, payload)
+	request := &ActionRequest{
+		baseRequest:     newBaseRequest(ctx, p.name),
+		DashboardClient: p.dashboardClient,
+		Payload:         payload,
+	}
+
+	return p.HandlerFuncs.HandleAction(request)
 }
 
 // Navigation creates navigation.
-func (p *Handler) Navigation() (navigation.Navigation, error) {
+func (p *Handler) Navigation(ctx context.Context) (navigation.Navigation, error) {
 	if p.HandlerFuncs.Navigation == nil {
 		return navigation.Navigation{}, nil
 	}
-	return p.HandlerFuncs.Navigation(p.dashboardClient)
+
+	request := &NavigationRequest{
+		baseRequest:     newBaseRequest(ctx, p.name),
+		DashboardClient: p.dashboardClient,
+	}
+
+	return p.HandlerFuncs.Navigation(request)
 }
 
 // Content creates content for a given content path.
-func (p *Handler) Content(contentPath string) (component.ContentResponse, error) {
-	if p.HandlerFuncs.Content == nil {
+func (p *Handler) Content(ctx context.Context, contentPath string) (component.ContentResponse, error) {
+	handlerFunc, ok := p.router.Match(contentPath)
+	if !ok {
 		return component.ContentResponse{}, nil
 	}
 
-	return p.HandlerFuncs.Content(p.dashboardClient, contentPath)
+	request := &Request{
+		baseRequest:     newBaseRequest(ctx, p.name),
+		dashboardClient: p.dashboardClient,
+		Path:            contentPath,
+	}
+
+	return handlerFunc(request)
 }

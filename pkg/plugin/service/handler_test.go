@@ -1,13 +1,13 @@
 package service
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware/octant/internal/gvk"
@@ -16,7 +16,6 @@ import (
 	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/plugin"
 	"github.com/vmware/octant/pkg/plugin/service/fake"
-	"github.com/vmware/octant/pkg/view/component"
 )
 
 func TestHandler_Register(t *testing.T) {
@@ -39,7 +38,8 @@ func TestHandler_Register(t *testing.T) {
 		dashboardFactory: factory,
 	}
 
-	got, err := h.Register("address")
+	ctx := context.Background()
+	got, err := h.Register(ctx, "address")
 	require.NoError(t, err)
 
 	expected := plugin.Metadata{
@@ -70,7 +70,8 @@ func TestHandler_Register_with_dashboard_factory_failure(t *testing.T) {
 		dashboardFactory: factory,
 	}
 
-	_, err := h.Register("address")
+	ctx := context.Background()
+	_, err := h.Register(ctx, "address")
 	require.Error(t, err)
 }
 
@@ -86,7 +87,8 @@ func TestHandler_Print_default(t *testing.T) {
 
 	pod := testutil.CreatePod("pod")
 
-	got, err := h.Print(pod)
+	ctx := context.Background()
+	got, err := h.Print(ctx, pod)
 	require.NoError(t, err)
 
 	expected := plugin.PrintResponse{}
@@ -105,17 +107,18 @@ func TestHandler_Print_using_supplied_function(t *testing.T) {
 	ran := false
 	h := Handler{
 		HandlerFuncs: HandlerFuncs{
-			Print: func(gotClient Dashboard, gotObject runtime.Object) (response plugin.PrintResponse, e error) {
+			Print: func(r *PrintRequest) (response plugin.PrintResponse, e error) {
 				ran = true
-				assert.Equal(t, dashboardClient, gotClient)
-				assert.Equal(t, pod, gotObject)
+				assert.Equal(t, dashboardClient, r.DashboardClient)
+				assert.Equal(t, pod, r.Object)
 				return plugin.PrintResponse{}, nil
 			},
 		},
 		dashboardClient: dashboardClient,
 	}
 
-	got, err := h.Print(pod)
+	ctx := context.Background()
+	got, err := h.Print(ctx, pod)
 	require.NoError(t, err)
 
 	expected := plugin.PrintResponse{}
@@ -136,10 +139,11 @@ func TestHandler_PrintTab_default(t *testing.T) {
 
 	pod := testutil.CreatePod("pod")
 
-	got, err := h.PrintTab(pod)
+	ctx := context.Background()
+	got, err := h.PrintTab(ctx, pod)
 	require.NoError(t, err)
 
-	expected := &component.Tab{}
+	expected := plugin.TabResponse{}
 
 	require.Equal(t, expected, got)
 }
@@ -157,19 +161,20 @@ func TestHandler_PrintTab_using_supplied_function(t *testing.T) {
 	h := Handler{
 		dashboardClient: dashboardClient,
 		HandlerFuncs: HandlerFuncs{
-			PrintTab: func(gotClient Dashboard, gotObject runtime.Object) (tab *component.Tab, e error) {
+			PrintTab: func(r *PrintRequest) (plugin.TabResponse, error) {
 				ran = true
-				assert.Equal(t, dashboardClient, gotClient)
-				assert.Equal(t, pod, gotObject)
-				return &component.Tab{}, nil
+				assert.Equal(t, dashboardClient, r.DashboardClient)
+				assert.Equal(t, pod, r.Object)
+				return plugin.TabResponse{}, nil
 			},
 		},
 	}
 
-	got, err := h.PrintTab(pod)
+	ctx := context.Background()
+	got, err := h.PrintTab(ctx, pod)
 	require.NoError(t, err)
 
-	expected := &component.Tab{}
+	expected := plugin.TabResponse{}
 	assert.Equal(t, expected, got)
 	assert.True(t, ran)
 }
@@ -186,7 +191,8 @@ func TestHandler_ObjectStatus_default(t *testing.T) {
 
 	pod := testutil.CreatePod("pod")
 
-	got, err := h.ObjectStatus(pod)
+	ctx := context.Background()
+	got, err := h.ObjectStatus(ctx, pod)
 	require.NoError(t, err)
 
 	expected := plugin.ObjectStatusResponse{}
@@ -206,16 +212,17 @@ func TestHandler_ObjectStatus_using_supplied_function(t *testing.T) {
 	h := Handler{
 		dashboardClient: dashboardClient,
 		HandlerFuncs: HandlerFuncs{
-			ObjectStatus: func(gotClient Dashboard, gotObject runtime.Object) (response plugin.ObjectStatusResponse, e error) {
+			ObjectStatus: func(r *PrintRequest) (response plugin.ObjectStatusResponse, e error) {
 				ran = true
-				assert.Equal(t, dashboardClient, gotClient)
-				assert.Equal(t, pod, gotObject)
+				assert.Equal(t, dashboardClient, r.DashboardClient)
+				assert.Equal(t, pod, r.Object)
 				return plugin.ObjectStatusResponse{}, nil
 			},
 		},
 	}
 
-	got, err := h.ObjectStatus(pod)
+	ctx := context.Background()
+	got, err := h.ObjectStatus(ctx, pod)
 	require.NoError(t, err)
 
 	expected := plugin.ObjectStatusResponse{}
@@ -235,7 +242,8 @@ func TestHandler_HandleAction_default(t *testing.T) {
 
 	payload := action.Payload{"foo": "bar"}
 
-	err := h.HandleAction(payload)
+	ctx := context.Background()
+	err := h.HandleAction(ctx, payload)
 	require.NoError(t, err)
 }
 
@@ -252,17 +260,18 @@ func TestHandler_HandleAction_using_supplied_function(t *testing.T) {
 	h := Handler{
 		dashboardClient: dashboardClient,
 		HandlerFuncs: HandlerFuncs{
-			HandleAction: func(gotClient Dashboard, gotPayload action.Payload) error {
+			HandleAction: func(r *ActionRequest) error {
 				ran = true
-				assert.Equal(t, dashboardClient, gotClient)
-				assert.Equal(t, payload, gotPayload)
+				assert.Equal(t, dashboardClient, r.DashboardClient)
+				assert.Equal(t, payload, r.Payload)
 
 				return nil
 			},
 		},
 	}
 
-	err := h.HandleAction(payload)
+	ctx := context.Background()
+	err := h.HandleAction(ctx, payload)
 	assert.NoError(t, err)
 	assert.True(t, ran)
 }
@@ -277,7 +286,8 @@ func TestHandler_Navigation_default(t *testing.T) {
 		dashboardClient: dashboardClient,
 	}
 
-	got, err := h.Navigation()
+	ctx := context.Background()
+	got, err := h.Navigation(ctx)
 	require.NoError(t, err)
 
 	expected := navigation.Navigation{}
@@ -296,67 +306,19 @@ func TestHandler_Navigation_using_supplied_function(t *testing.T) {
 	h := Handler{
 		dashboardClient: dashboardClient,
 		HandlerFuncs: HandlerFuncs{
-			Navigation: func(gotClient Dashboard) (navigation.Navigation, error) {
+			Navigation: func(r *NavigationRequest) (navigation.Navigation, error) {
 				ran = true
-				assert.Equal(t, dashboardClient, gotClient)
+				assert.Equal(t, dashboardClient, r.DashboardClient)
 				return navigation.Navigation{}, nil
 			},
 		},
 	}
 
-	got, err := h.Navigation()
+	ctx := context.Background()
+	got, err := h.Navigation(ctx)
 	require.NoError(t, err)
 
 	expected := navigation.Navigation{}
-	assert.Equal(t, expected, got)
-	assert.True(t, ran)
-}
-
-func TestHandler_Content_default(t *testing.T) {
-	controller := gomock.NewController(t)
-	defer controller.Finish()
-
-	dashboardClient := fake.NewMockDashboard(controller)
-
-	h := Handler{
-		dashboardClient: dashboardClient,
-	}
-
-	contentPath := "/test-path-default"
-
-	got, err := h.Content(contentPath)
-	require.NoError(t, err)
-
-	expected := component.ContentResponse{}
-
-	require.Equal(t, expected, got)
-}
-
-func TestHandler_Content_using_supplied_function(t *testing.T) {
-	controller := gomock.NewController(t)
-	defer controller.Finish()
-
-	dashboardClient := fake.NewMockDashboard(controller)
-
-	ran := false
-	contentPath := "/test-path"
-
-	h := Handler{
-		dashboardClient: dashboardClient,
-		HandlerFuncs: HandlerFuncs{
-			Content: func(gotDashboard Dashboard, gotPath string) (component.ContentResponse, error) {
-				ran = true
-				assert.Equal(t, contentPath, gotPath)
-				assert.Equal(t, dashboardClient, gotDashboard)
-				return component.ContentResponse{}, nil
-			},
-		},
-	}
-
-	got, err := h.Content(contentPath)
-	require.NoError(t, err)
-
-	expected := component.ContentResponse{}
 	assert.Equal(t, expected, got)
 	assert.True(t, ran)
 }

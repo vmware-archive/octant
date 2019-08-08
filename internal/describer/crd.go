@@ -134,7 +134,7 @@ func (c *crd) Describe(ctx context.Context, prefix, namespace string, options Op
 	cr.Add(yvComponent)
 
 	pluginPrinter := options.PluginManager()
-	tabs, err := pluginPrinter.Tabs(object)
+	tabs, err := pluginPrinter.Tabs(ctx, object)
 	if err != nil {
 		return EmptyContentResponse, errors.Wrap(err, "getting tabs from plugins")
 	}
