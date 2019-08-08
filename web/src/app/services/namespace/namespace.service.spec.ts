@@ -32,6 +32,7 @@ describe('NamespaceService', () => {
     const contentStreamServiceStub = {
       namespaces: new BehaviorSubject<string[]>([]),
       registerStreamer: (name: string, handler: Streamer) => {},
+      streamer: () => new BehaviorSubject(emptyNavigation),
       navigation: new BehaviorSubject<Navigation>(emptyNavigation)
     };
 
@@ -83,6 +84,7 @@ describe('NamespaceService', () => {
     ngZone.run(() => {
       service = TestBed.get(NamespaceService);
       router = TestBed.get(Router);
+
       service.setNamespace('default');
       tick();
       expect(service.current.getValue()).toBe('default');
