@@ -77,6 +77,8 @@ Start running Octant:
 
 `$ octant`
 
+Octant should immediately launch your default web browser to an available high level port on 127.0.0.1. (i.e. http://127.0.0.1:51234)
+
 For configuring Octant, setting up a development environment, or running tests, refer to the documentation [here](docs/getting-started.md).
 
 ## Plugins
