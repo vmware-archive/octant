@@ -17,6 +17,7 @@ import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NgZone } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { Navigation } from 'src/app/models/navigation';
 
 describe('NamespaceService', () => {
   let service: NamespaceService;
@@ -24,9 +25,15 @@ describe('NamespaceService', () => {
   let ngZone: NgZone;
 
   beforeEach(() => {
+    const emptyNavigation: Navigation = {
+      sections: [],
+    };
+
     const contentStreamServiceStub = {
       namespaces: new BehaviorSubject<string[]>([]),
       registerStreamer: (name: string, handler: Streamer) => {},
+      streamer: () => new BehaviorSubject(emptyNavigation),
+      navigation: new BehaviorSubject<Navigation>(emptyNavigation)
     };
 
     const notifierServiceStub = {
@@ -70,6 +77,23 @@ describe('NamespaceService', () => {
       tick();
       expect(service.current.getValue()).toBe('default');
       expect(router.url).toBe('/content/overview/namespace/default');
+    });
+  }));
+
+  it('should set namespace to not default and still change route', fakeAsync(() => {
+    ngZone.run(() => {
+      service = TestBed.get(NamespaceService);
+      router = TestBed.get(Router);
+
+      service.setNamespace('default');
+      tick();
+      expect(service.current.getValue()).toBe('default');
+      expect(router.url).toBe('/content/overview/namespace/default');
+
+      service.setNamespace('kube-public');
+      tick();
+      expect(service.current.getValue()).toBe('kube-public');
+      expect(router.url).toBe('/content/overview/namespace/kube-public');
     });
   }));
 
