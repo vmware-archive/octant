@@ -19,7 +19,7 @@ import (
 )
 
 // EntriesFunc is a function that can create navigation entries.
-type EntriesFunc func(ctx context.Context, prefix, namespace string, objectStore store.Store) ([]navigation.Navigation, error)
+type EntriesFunc func(ctx context.Context, prefix, namespace string, objectStore store.Store, wantsClusterScoped bool) ([]navigation.Navigation, error)
 
 // NavigationEntries help construct navigation entries.
 type NavigationEntries struct {
@@ -60,7 +60,7 @@ func (nf *NavigationFactory) Root() string {
 }
 
 // Generate returns navigation entries.
-func (nf *NavigationFactory) Generate(ctx context.Context, title string, iconName, iconSource string) (*navigation.Navigation, error) {
+func (nf *NavigationFactory) Generate(ctx context.Context, title string, iconName, iconSource string, wantsClusterScoped bool) (*navigation.Navigation, error) {
 	n := &navigation.Navigation{
 		Title:    title,
 		Path:     nf.rootPath,
@@ -80,7 +80,7 @@ func (nf *NavigationFactory) Generate(ctx context.Context, title string, iconNam
 
 	for _, name := range nf.entries.Order {
 		g.Go(func() error {
-			children, err := nf.genNode(ctx, name, nf.entries.EntriesFuncs[name])
+			children, err := nf.genNode(ctx, name, nf.entries.EntriesFuncs[name], wantsClusterScoped)
 			if err != nil {
 				return errors.Wrapf(err, "generate entries for %s", name)
 			}
@@ -105,14 +105,14 @@ func (nf *NavigationFactory) pathFor(elements ...string) string {
 	return path.Join(append([]string{nf.rootPath}, elements...)...)
 }
 
-func (nf *NavigationFactory) genNode(ctx context.Context, name string, childFn EntriesFunc) (*navigation.Navigation, error) {
+func (nf *NavigationFactory) genNode(ctx context.Context, name string, childFn EntriesFunc, wantsClusterScoped bool) (*navigation.Navigation, error) {
 	node, err := navigation.New(name, nf.pathFor(nf.entries.Lookup[name]))
 	if err != nil {
 		return nil, err
 	}
 
 	if childFn != nil {
-		children, err := childFn(ctx, node.Path, nf.namespace, nf.objectStore)
+		children, err := childFn(ctx, node.Path, nf.namespace, nf.objectStore, wantsClusterScoped)
 		if err != nil {
 			return nil, err
 		}

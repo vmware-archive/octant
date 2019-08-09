@@ -55,8 +55,8 @@ type Navigation struct {
 }
 
 // New creates a Navigation.
-func New(title, path string, options ...Option) (*Navigation, error) {
-	navigation := &Navigation{Title: title, Path: path}
+func New(title, navigationPath string, options ...Option) (*Navigation, error) {
+	navigation := &Navigation{Title: title, Path: navigationPath}
 
 	for _, option := range options {
 		if err := option(navigation); err != nil {
@@ -68,7 +68,7 @@ func New(title, path string, options ...Option) (*Navigation, error) {
 }
 
 // CRDEntries generates navigation entries for CRDs.
-func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store.Store) ([]Navigation, error) {
+func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, wantsClusterScoped bool) ([]Navigation, error) {
 	var list []Navigation
 
 	crds, err := CustomResourceDefinitions(ctx, objectStore)
@@ -81,6 +81,11 @@ func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store
 	})
 
 	for i := range crds {
+		if wantsClusterScoped && crds[i].Spec.Scope != apiextv1beta1.ClusterScoped {
+			continue
+		} else if !wantsClusterScoped && crds[i].Spec.Scope != apiextv1beta1.NamespaceScoped {
+			continue
+		}
 
 		objects, err := ListCustomResources(ctx, crds[i], namespace, objectStore, nil)
 		if err != nil {
@@ -104,10 +109,6 @@ func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1b
 	key := store.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
-	}
-
-	if err := o.HasAccess(ctx, key, "list"); err != nil {
-		return nil, nil
 	}
 
 	rawList, err := o.List(ctx, key)
@@ -169,14 +170,13 @@ func ListCustomResources(
 	apiVersion, kind := gvk.ToAPIVersionAndKind()
 
 	key := store.Key{
-		Namespace:  namespace,
 		APIVersion: apiVersion,
 		Kind:       kind,
 		Selector:   selector,
 	}
 
-	if err := o.HasAccess(ctx, key, "list"); err != nil {
-		return nil, nil
+	if crd.Spec.Scope == apiextv1beta1.NamespaceScoped {
+		key.Namespace = namespace
 	}
 
 	objects, err := o.List(ctx, key)
@@ -193,20 +193,20 @@ type navConfig struct {
 	iconName string
 }
 
-// NavigationEntriesHelper generates navigation entries.
-type NavigationEntriesHelper struct {
+// EntriesHelper generates navigation entries.
+type EntriesHelper struct {
 	navConfigs []navConfig
 }
 
 // Add adds an entry.
-func (neh *NavigationEntriesHelper) Add(title, suffix, iconName string) {
+func (neh *EntriesHelper) Add(title, suffix, iconName string) {
 	neh.navConfigs = append(neh.navConfigs, navConfig{
 		title: title, suffix: suffix, iconName: iconName,
 	})
 }
 
 // Generate generates navigation entries.
-func (neh *NavigationEntriesHelper) Generate(prefix string) ([]Navigation, error) {
+func (neh *EntriesHelper) Generate(prefix string) ([]Navigation, error) {
 	var navigations []Navigation
 
 	for _, nc := range neh.navConfigs {
