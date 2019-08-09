@@ -7,8 +7,7 @@ package kubeconfig
 
 import (
 	"github.com/spf13/afero"
-	"k8s.io/apimachinery/pkg/util/yaml"
-	clientcmdapiv1 "k8s.io/client-go/tools/clientcmd/api/v1"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 //go:generate mockgen -destination=./fake/mock_loader.go -package=fake github.com/vmware/octant/internal/kubeconfig Loader
@@ -54,31 +53,24 @@ func NewFSLoader(options ...FSLoaderOpt) *FSLoader {
 
 // Load loads a kube config contexts from a file.
 func (l *FSLoader) Load(filename string) (*KubeConfig, error) {
-	var rawConfig *clientcmdapiv1.Config
-
-	f, err := l.AppFS.Open(filename)
+	data, err := afero.ReadFile(l.AppFS, filename)
 	if err != nil {
 		return nil, err
 	}
 
-	defer func() {
-		if cErr := f.Close(); cErr != nil && err == nil {
-			err = cErr
-		}
-	}()
-
-	if err := yaml.NewYAMLToJSONDecoder(f).Decode(&rawConfig); err != nil {
+	config, err := clientcmd.Load(data)
+	if err != nil {
 		return nil, err
 	}
 
 	var list []Context
 
-	for _, kubeContext := range rawConfig.Contexts {
-		list = append(list, Context{Name: kubeContext.Name})
+	for name := range config.Contexts {
+		list = append(list, Context{Name: name})
 	}
 
 	return &KubeConfig{
 		Contexts:       list,
-		CurrentContext: rawConfig.CurrentContext,
+		CurrentContext: config.CurrentContext,
 	}, nil
 }
