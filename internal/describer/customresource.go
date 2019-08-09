@@ -12,7 +12,6 @@ import (
 	"github.com/pkg/errors"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
@@ -36,17 +35,8 @@ func CustomResourceDefinitionNames(ctx context.Context, o store.Store) ([]string
 
 	var list []string
 
-	logger := log.From(ctx)
-
 	for _, object := range rawList.Items {
-		crd := &apiextv1beta1.CustomResourceDefinition{}
-
-		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, crd); err != nil {
-			logger.Errorf("%v", errors.Wrapf(errors.Wrapf(err, "crd conversion failed"), object.GetName()))
-			continue
-		}
-
-		list = append(list, crd.Name)
+		list = append(list, object.GetName())
 	}
 
 	return list, nil
@@ -61,7 +51,7 @@ func CustomResourceDefinition(ctx context.Context, name string, o store.Store) (
 
 	crd := &apiextv1beta1.CustomResourceDefinition{}
 	if err := store.GetAs(ctx, o, key, crd); err != nil {
-		return nil, errors.Wrap(err, "get CRD from object store")
+		return nil, errors.Wrap(err, "get object as custom resource definition from store")
 	}
 
 	return crd, nil
