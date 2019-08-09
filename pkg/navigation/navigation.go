@@ -15,12 +15,12 @@ import (
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/pkg/icon"
 	"github.com/vmware/octant/pkg/store"
+	octantunstructured "github.com/vmware/octant/thirdparty/unstructured"
 )
 
 // Option is an option for configuring navigation.
@@ -117,12 +117,15 @@ func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1b
 
 	logger := log.From(ctx)
 
-	list := []*apiextv1beta1.CustomResourceDefinition{}
+	var list []*apiextv1beta1.CustomResourceDefinition
 	for i := range rawList.Items {
 		crd := &apiextv1beta1.CustomResourceDefinition{}
 
-		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(rawList.Items[i].Object, crd); err != nil {
-			logger.Errorf("%v", errors.Wrapf(errors.Wrapf(err, "crd conversion failed"), rawList.Items[i].GetName()))
+		// NOTE: (bryanl) vendored converter can't convert from int64 to float64. Watching
+		// https://github.com/kubernetes-sigs/yaml/pull/14 to see when it gets pulled into
+		// a release so Octant can switch back.
+		if err := octantunstructured.DefaultUnstructuredConverter.FromUnstructured(rawList.Items[i].Object, crd); err != nil {
+			logger.Errorf("%v", errors.Wrapf(errors.Wrapf(err, "converting unstructured object to custom resource definition"), rawList.Items[i].GetName()))
 			continue
 		}
 		list = append(list, crd)
