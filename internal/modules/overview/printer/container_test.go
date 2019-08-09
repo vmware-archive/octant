@@ -27,103 +27,109 @@ import (
 	"github.com/vmware/octant/pkg/view/component"
 )
 
-var (
-	propagation    = corev1.MountPropagationHostToContainer
-	validContainer = &corev1.Container{
-		Name:  "nginx",
-		Image: "nginx:1.15",
-		Ports: []corev1.ContainerPort{
-			{
-				Name:     "http",
-				HostPort: 80,
-				Protocol: corev1.ProtocolTCP,
-			},
-			{
-				Name:     "metrics",
-				HostPort: 8080,
-				Protocol: corev1.ProtocolTCP,
-			},
-			{
-				Name:          "tls",
-				ContainerPort: 443,
-				Protocol:      corev1.ProtocolTCP,
-			},
-			{
-				Name:          "dtls",
-				ContainerPort: 443,
-				Protocol:      corev1.ProtocolUDP,
-			},
-		},
-		Command: []string{"/usr/bin/nginx"},
-		Args:    []string{"-v", "-p", "80"},
-
-		VolumeMounts: []corev1.VolumeMount{
-			{
-				Name:      "config",
-				ReadOnly:  true,
-				MountPath: "/etc/nginx",
-			},
-			{
-				Name:             "data",
-				MountPath:        "/var/www",
-				SubPath:          "/content",
-				MountPropagation: &propagation,
-			},
-		},
-		Env: []corev1.EnvVar{
-			{
-				Name:  "tier",
-				Value: "prod",
-			},
-			{
-				Name: "fieldref",
-				ValueFrom: &corev1.EnvVarSource{
-					FieldRef: &corev1.ObjectFieldSelector{APIVersion: "v1", FieldPath: "metadata.name"},
-				},
-			},
-			{
-				Name: "resourcefieldref",
-				ValueFrom: &corev1.EnvVarSource{
-					ResourceFieldRef: &corev1.ResourceFieldSelector{
-						Resource: "requests.cpu",
-					},
-				},
-			},
-			{
-				Name: "configmapref",
-				ValueFrom: &corev1.EnvVarSource{
-					ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
-						LocalObjectReference: corev1.LocalObjectReference{Name: "myconfig"},
-						Key:                  "somekey",
-					},
-				},
-			},
-			{
-				Name: "secretref",
-				ValueFrom: &corev1.EnvVarSource{
-					SecretKeyRef: &corev1.SecretKeySelector{
-						LocalObjectReference: corev1.LocalObjectReference{Name: "mysecret"},
-						Key:                  "somesecretkey",
-					},
-				},
-			},
-		},
-		EnvFrom: []corev1.EnvFromSource{
-			{
-				ConfigMapRef: &corev1.ConfigMapEnvSource{
-					LocalObjectReference: corev1.LocalObjectReference{Name: "fromconfig"},
-				},
-			},
-			{
-				SecretRef: &corev1.SecretEnvSource{
-					LocalObjectReference: corev1.LocalObjectReference{Name: "fromsecret"},
-				},
-			},
-		},
-	}
-)
-
 func Test_ContainerConfiguration(t *testing.T) {
+	var (
+		propagation    = corev1.MountPropagationHostToContainer
+		validContainer = &corev1.Container{
+			Name:  "nginx",
+			Image: "nginx:1.15",
+			Ports: []corev1.ContainerPort{
+				{
+					Name:     "http",
+					HostPort: 80,
+					Protocol: corev1.ProtocolTCP,
+				},
+				{
+					Name:     "metrics",
+					HostPort: 8080,
+					Protocol: corev1.ProtocolTCP,
+				},
+				{
+					Name:          "tls",
+					ContainerPort: 443,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
+					Name:          "dtls",
+					ContainerPort: 443,
+					Protocol:      corev1.ProtocolUDP,
+				},
+			},
+			Command: []string{"/usr/bin/nginx"},
+			Args:    []string{"-v", "-p", "80"},
+
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      "config",
+					ReadOnly:  true,
+					MountPath: "/etc/nginx",
+				},
+				{
+					Name:             "data",
+					MountPath:        "/var/www",
+					SubPath:          "/content",
+					MountPropagation: &propagation,
+				},
+			},
+			Env: []corev1.EnvVar{
+				{
+					Name:  "tier",
+					Value: "prod",
+				},
+				{
+					Name: "fieldref",
+					ValueFrom: &corev1.EnvVarSource{
+						FieldRef: &corev1.ObjectFieldSelector{APIVersion: "v1", FieldPath: "metadata.name"},
+					},
+				},
+				{
+					Name: "resourcefieldref",
+					ValueFrom: &corev1.EnvVarSource{
+						ResourceFieldRef: &corev1.ResourceFieldSelector{
+							Resource: "requests.cpu",
+						},
+					},
+				},
+				{
+					Name: "configmapref",
+					ValueFrom: &corev1.EnvVarSource{
+						ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+							LocalObjectReference: corev1.LocalObjectReference{Name: "myconfig"},
+							Key:                  "somekey",
+						},
+					},
+				},
+				{
+					Name: "secretref",
+					ValueFrom: &corev1.EnvVarSource{
+						SecretKeyRef: &corev1.SecretKeySelector{
+							LocalObjectReference: corev1.LocalObjectReference{Name: "mysecret"},
+							Key:                  "somesecretkey",
+						},
+					},
+				},
+			},
+			EnvFrom: []corev1.EnvFromSource{
+				{
+					ConfigMapRef: &corev1.ConfigMapEnvSource{
+						LocalObjectReference: corev1.LocalObjectReference{Name: "fromconfig"},
+					},
+				},
+				{
+					SecretRef: &corev1.SecretEnvSource{
+						LocalObjectReference: corev1.LocalObjectReference{Name: "fromsecret"},
+					},
+				},
+			},
+		}
+		validInitContainer = &corev1.Container{
+			Name:    "busybox",
+			Image:   "busybox:1.28",
+			Command: []string{"sh"},
+			Args:    []string{"-c", "until nslookup mydb; do echo waiting for mydb; sleep 2; done;"},
+		}
+	)
+
 	now := time.Now()
 
 	envTable := component.NewTable("Environment",
@@ -182,6 +188,7 @@ func Test_ContainerConfiguration(t *testing.T) {
 		name      string
 		container *corev1.Container
 		isErr     bool
+		isInit    bool
 		expected  *component.Summary
 	}{
 		{
@@ -238,6 +245,25 @@ func Test_ContainerConfiguration(t *testing.T) {
 			}...),
 		},
 		{
+			name:      "init containers",
+			container: validInitContainer,
+			isInit:    true,
+			expected: component.NewSummary("Init Container busybox", []component.SummarySection{
+				{
+					Header:  "Image",
+					Content: component.NewText("busybox:1.28"),
+				},
+				{
+					Header:  "Command",
+					Content: component.NewText("['sh']"),
+				},
+				{
+					Header:  "Args",
+					Content: component.NewText("['-c', 'until nslookup mydb; do echo waiting for mydb; sleep 2; done;']"),
+				},
+			}...),
+		},
+		{
 			name:      "container is nil",
 			container: nil,
 			isErr:     true,
@@ -287,7 +313,7 @@ func Test_ContainerConfiguration(t *testing.T) {
 				},
 			}
 
-			cc := NewContainerConfiguration(parentPod, tc.container, pf, false, printOptions)
+			cc := NewContainerConfiguration(parentPod, tc.container, pf, tc.isInit, printOptions)
 			summary, err := cc.Create()
 			if tc.isErr {
 				require.Error(t, err)

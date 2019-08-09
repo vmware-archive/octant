@@ -105,7 +105,7 @@ func podTemplateContainers(fl *flexlayout.FlexLayout, options podTemplateLayoutO
 	containerSection := fl.AddSection()
 
 	for _, container := range options.containers {
-		containerConfig := NewContainerConfiguration(options.parent, &container, portForwarder, false, options.printOptions)
+		containerConfig := NewContainerConfiguration(options.parent, &container, portForwarder, options.isInit, options.printOptions)
 		summary, err := containerConfig.Create()
 		if err != nil {
 			return err
