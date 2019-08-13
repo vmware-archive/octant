@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 package plugin
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -53,11 +55,11 @@ func (dr *defaultRunners) ObjectStatus(store ManagerStore) (DefaultRunner, chan 
 
 // DefaultRunner runs a function against all plugins
 type DefaultRunner struct {
-	RunFunc func(name string, gvk schema.GroupVersionKind, object runtime.Object) error
+	RunFunc func(ctx context.Context, name string, gvk schema.GroupVersionKind, object runtime.Object) error
 }
 
 // Run runs the runner for an object with the provided clients.
-func (pr *DefaultRunner) Run(object runtime.Object, clientNames []string) error {
+func (pr *DefaultRunner) Run(ctx context.Context, object runtime.Object, clientNames []string) error {
 	if err := pr.validate(object); err != nil {
 		return errors.Wrap(err, "plugin runner validate")
 	}
@@ -69,7 +71,7 @@ func (pr *DefaultRunner) Run(object runtime.Object, clientNames []string) error 
 	for _, name := range clientNames {
 		fn := func(name string) func() error {
 			return func() error {
-				if err := pr.RunFunc(name, gvk, object); err != nil {
+				if err := pr.RunFunc(ctx, name, gvk, object); err != nil {
 					return errors.Wrap(err, "running")
 				}
 
@@ -102,7 +104,7 @@ func (pr *DefaultRunner) validate(object runtime.Object) error {
 // PrintRunner is a runner for printing.
 func PrintRunner(store ManagerStore, ch chan<- PrintResponse) DefaultRunner {
 	return DefaultRunner{
-		RunFunc: func(name string, gvk schema.GroupVersionKind, object runtime.Object) error {
+		RunFunc: func(ctx context.Context, name string, gvk schema.GroupVersionKind, object runtime.Object) error {
 			metadata, err := store.GetMetadata(name)
 			if err != nil {
 				return err
@@ -112,7 +114,7 @@ func PrintRunner(store ManagerStore, ch chan<- PrintResponse) DefaultRunner {
 				return nil
 			}
 
-			resp, err := printObject(store, name, object)
+			resp, err := printObject(ctx, store, name, object)
 			if err != nil {
 				return err
 			}
@@ -123,7 +125,7 @@ func PrintRunner(store ManagerStore, ch chan<- PrintResponse) DefaultRunner {
 	}
 }
 
-func printObject(store ManagerStore, pluginName string, object runtime.Object) (PrintResponse, error) {
+func printObject(ctx context.Context, store ManagerStore, pluginName string, object runtime.Object) (PrintResponse, error) {
 	if store == nil {
 		return PrintResponse{}, errors.New("store is nil")
 	}
@@ -133,7 +135,7 @@ func printObject(store ManagerStore, pluginName string, object runtime.Object) (
 		return PrintResponse{}, err
 	}
 
-	resp, err := service.Print(object)
+	resp, err := service.Print(ctx, object)
 	if err != nil {
 		return PrintResponse{}, errors.Wrapf(err, "print object with plugin %q", pluginName)
 	}
@@ -144,7 +146,7 @@ func printObject(store ManagerStore, pluginName string, object runtime.Object) (
 // TabRunner is a runner for tabs.
 func TabRunner(store ManagerStore, ch chan<- component.Tab) DefaultRunner {
 	runner := DefaultRunner{
-		RunFunc: func(name string, gvk schema.GroupVersionKind, object runtime.Object) error {
+		RunFunc: func(ctx context.Context, name string, gvk schema.GroupVersionKind, object runtime.Object) error {
 			if store == nil {
 				return errors.New("store is nil")
 			}
@@ -163,12 +165,12 @@ func TabRunner(store ManagerStore, ch chan<- component.Tab) DefaultRunner {
 				return err
 			}
 
-			tab, err := service.PrintTab(object)
+			tabResponse, err := service.PrintTab(ctx, object)
 			if err != nil {
-				return errors.Wrapf(err, "printing tab for plugin %q", name)
+				return errors.Wrapf(err, "printing tabResponse for plugin %q", name)
 			}
 
-			ch <- *tab
+			ch <- *tabResponse.Tab
 
 			return nil
 		},
@@ -180,7 +182,7 @@ func TabRunner(store ManagerStore, ch chan<- component.Tab) DefaultRunner {
 // ObjectStatusRunner is a runner for object status.
 func ObjectStatusRunner(store ManagerStore, ch chan<- ObjectStatusResponse) DefaultRunner {
 	return DefaultRunner{
-		RunFunc: func(name string, gvk schema.GroupVersionKind, object runtime.Object) error {
+		RunFunc: func(ctx context.Context, name string, gvk schema.GroupVersionKind, object runtime.Object) error {
 			metadata, err := store.GetMetadata(name)
 			if err != nil {
 				return err
@@ -195,7 +197,7 @@ func ObjectStatusRunner(store ManagerStore, ch chan<- ObjectStatusResponse) Defa
 				return err
 			}
 
-			resp, err := service.ObjectStatus(object)
+			resp, err := service.ObjectStatus(ctx, object)
 			if err != nil {
 				return errors.Wrapf(err, "print object status with plugin %q", name)
 			}

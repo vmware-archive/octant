@@ -65,6 +65,8 @@ func Test_ServiceAccountListHandler(t *testing.T) {
 }
 
 func Test_serviceAccountHandler(t *testing.T) {
+	ctx := context.Background()
+
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
@@ -78,9 +80,7 @@ func Test_serviceAccountHandler(t *testing.T) {
 	mockObjectsEvents(t, tpo.objectStore, object.Namespace)
 
 	serviceAccountPrintResponse := &plugin.PrintResponse{}
-	tpo.pluginManager.EXPECT().Print(object).Return(serviceAccountPrintResponse, nil)
-
-	ctx := context.Background()
+	tpo.pluginManager.EXPECT().Print(ctx, object).Return(serviceAccountPrintResponse, nil)
 
 	h, err := newServiceAccountHandler(ctx, object, printOptions)
 	require.NoError(t, err)

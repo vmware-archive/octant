@@ -29,6 +29,8 @@ import (
 )
 
 func Test_crd(t *testing.T) {
+	ctx := context.Background()
+
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
@@ -65,7 +67,7 @@ func Test_crd(t *testing.T) {
 	dashConfig.EXPECT().PluginManager().Return(pluginManager)
 
 	var tabs []component.Tab
-	pluginManager.EXPECT().Tabs(object).Return(tabs, nil)
+	pluginManager.EXPECT().Tabs(gomock.Any(), object).Return(tabs, nil)
 
 	crPrinter := func(cd *crd) {
 		cd.summaryPrinter = func(ctx context.Context, crd *apiextv1beta1.CustomResourceDefinition, object *unstructured.Unstructured, options printer.Options) (component.Component, error) {
@@ -87,8 +89,6 @@ func Test_crd(t *testing.T) {
 		Dash: dashConfig,
 		Link: linkGenerator,
 	}
-
-	ctx := context.Background()
 
 	got, err := c.Describe(ctx, "prefix", "default", options)
 	require.NoError(t, err)

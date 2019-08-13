@@ -63,7 +63,7 @@ func NewFlexLayout(title string) *FlexLayout {
 	}
 }
 
-// GetMetdata returns the metadata for the flex layout view.
+// GetMetadata returns the metadata for the flex layout view.
 func (fl *FlexLayout) GetMetadata() Metadata {
 	return fl.Metadata
 }
@@ -86,4 +86,12 @@ func (fl *FlexLayout) MarshalJSON() ([]byte, error) {
 type Tab struct {
 	Name     string
 	Contents FlexLayout
+}
+
+// NewTabWithContents creates a tab with contents.
+func NewTabWithContents(flexLayout FlexLayout) *Tab {
+	return &Tab{
+		Name:     "",
+		Contents: flexLayout,
+	}
 }

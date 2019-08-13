@@ -135,7 +135,7 @@ func Test_PodHandler(t *testing.T) {
 
 	printResponse := &plugin.PrintResponse{}
 	tpo.pluginManager.EXPECT().
-		Print(gomock.Any()).Return(printResponse, nil)
+		Print(gomock.Any(), gomock.Any()).Return(printResponse, nil)
 
 	eventKey := store.Key{
 		Namespace:  "namespace",

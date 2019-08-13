@@ -28,6 +28,7 @@ type GRPCClient struct {
 }
 
 var _ Service = (*GRPCClient)(nil)
+var _ ModuleService = (*GRPCClient)(nil)
 
 // NewGRPCClient creates an instance of GRPCClient.
 func NewGRPCClient(broker Broker, client dashboard.PluginClient) *GRPCClient {
@@ -46,7 +47,7 @@ func (c *GRPCClient) run(fn func() error) error {
 }
 
 // Content returns content from a plugin.
-func (c *GRPCClient) Content(contentPath string) (component.ContentResponse, error) {
+func (c *GRPCClient) Content(ctx context.Context, contentPath string) (component.ContentResponse, error) {
 	var contentResponse component.ContentResponse
 
 	err := c.run(func() error {
@@ -54,7 +55,7 @@ func (c *GRPCClient) Content(contentPath string) (component.ContentResponse, err
 			Path: contentPath,
 		}
 
-		resp, err := c.client.Content(context.Background(), req)
+		resp, err := c.client.Content(ctx, req)
 		if err != nil {
 			return errors.Wrap(err, "grpc client content")
 		}
@@ -74,7 +75,7 @@ func (c *GRPCClient) Content(contentPath string) (component.ContentResponse, err
 }
 
 // HandleAction runs an action on a plugin.
-func (c *GRPCClient) HandleAction(payload action.Payload) error {
+func (c *GRPCClient) HandleAction(ctx context.Context, payload action.Payload) error {
 	err := c.run(func() error {
 		data, err := json.Marshal(&payload)
 		if err != nil {
@@ -85,7 +86,7 @@ func (c *GRPCClient) HandleAction(payload action.Payload) error {
 			Payload: data,
 		}
 
-		_, err = c.client.HandleAction(context.Background(), req)
+		_, err = c.client.HandleAction(ctx, req)
 		if err != nil {
 			if s, isStatus := status.FromError(err); isStatus {
 				return errors.Errorf("grpc error: %s", s.Message())
@@ -100,13 +101,13 @@ func (c *GRPCClient) HandleAction(payload action.Payload) error {
 }
 
 // Navigation returns navigation entries from a plugin.
-func (c *GRPCClient) Navigation() (navigation.Navigation, error) {
+func (c *GRPCClient) Navigation(ctx context.Context) (navigation.Navigation, error) {
 	var entries navigation.Navigation
 
 	err := c.run(func() error {
 		req := &dashboard.NavigationRequest{}
 
-		resp, err := c.client.Navigation(context.Background(), req)
+		resp, err := c.client.Navigation(ctx, req)
 		if err != nil {
 			return errors.Wrap(err, "grpc client response")
 		}
@@ -124,7 +125,7 @@ func (c *GRPCClient) Navigation() (navigation.Navigation, error) {
 }
 
 // Register register a plugin.
-func (c *GRPCClient) Register(dashboardAPIAddress string) (Metadata, error) {
+func (c *GRPCClient) Register(ctx context.Context, dashboardAPIAddress string) (Metadata, error) {
 	var m Metadata
 
 	err := c.run(func() error {
@@ -132,7 +133,7 @@ func (c *GRPCClient) Register(dashboardAPIAddress string) (Metadata, error) {
 			DashboardAPIAddress: dashboardAPIAddress,
 		}
 
-		resp, err := c.client.Register(context.Background(), registerRequest)
+		resp, err := c.client.Register(ctx, registerRequest)
 		if err != nil {
 			spew.Dump(err)
 			return errors.WithMessage(err, "unable to call register function")
@@ -157,7 +158,7 @@ func (c *GRPCClient) Register(dashboardAPIAddress string) (Metadata, error) {
 }
 
 // ObjectStatus gets an object status
-func (c *GRPCClient) ObjectStatus(object runtime.Object) (ObjectStatusResponse, error) {
+func (c *GRPCClient) ObjectStatus(ctx context.Context, object runtime.Object) (ObjectStatusResponse, error) {
 	var osr ObjectStatusResponse
 
 	err := c.run(func() error {
@@ -166,7 +167,7 @@ func (c *GRPCClient) ObjectStatus(object runtime.Object) (ObjectStatusResponse, 
 			return err
 		}
 
-		resp, err := c.client.ObjectStatus(context.Background(), in)
+		resp, err := c.client.ObjectStatus(ctx, in)
 		if err != nil {
 			return errors.Wrap(err, "grpc client object status")
 		}
@@ -191,7 +192,7 @@ func (c *GRPCClient) ObjectStatus(object runtime.Object) (ObjectStatusResponse, 
 }
 
 // Print prints an object.
-func (c *GRPCClient) Print(object runtime.Object) (PrintResponse, error) {
+func (c *GRPCClient) Print(ctx context.Context, object runtime.Object) (PrintResponse, error) {
 	var pr PrintResponse
 
 	err := c.run(func() error {
@@ -200,7 +201,7 @@ func (c *GRPCClient) Print(object runtime.Object) (PrintResponse, error) {
 			return err
 		}
 
-		resp, err := c.client.Print(context.Background(), in)
+		resp, err := c.client.Print(ctx, in)
 		if err != nil {
 			return errors.Wrap(err, "grpc client print")
 		}
@@ -212,19 +213,19 @@ func (c *GRPCClient) Print(object runtime.Object) (PrintResponse, error) {
 			}
 		}
 
-		config, err := convertToSummarySections(resp.Config)
+		configSection, err := convertToSummarySections(resp.Config)
 		if err != nil {
 			return errors.Wrap(err, "convert config sections")
 		}
 
-		status, err := convertToSummarySections(resp.Status)
+		summarySection, err := convertToSummarySections(resp.Status)
 		if err != nil {
-			return errors.Wrap(err, "convert status sections")
+			return errors.Wrap(err, "convert summary sections")
 		}
 
 		pr = PrintResponse{
-			Config: config,
-			Status: status,
+			Config: configSection,
+			Status: summarySection,
 			Items:  items,
 		}
 
@@ -252,7 +253,7 @@ func createObjectRequest(object runtime.Object) (*dashboard.ObjectRequest, error
 }
 
 // PrintTab creates a tab for an object.
-func (c *GRPCClient) PrintTab(object runtime.Object) (*component.Tab, error) {
+func (c *GRPCClient) PrintTab(ctx context.Context, object runtime.Object) (TabResponse, error) {
 	var tab component.Tab
 
 	err := c.run(func() error {
@@ -261,7 +262,7 @@ func (c *GRPCClient) PrintTab(object runtime.Object) (*component.Tab, error) {
 			return err
 		}
 
-		resp, err := c.client.PrintTab(context.Background(), in)
+		resp, err := c.client.PrintTab(ctx, in)
 		if err != nil {
 			return errors.Wrap(err, "grpc client print tab")
 		}
@@ -288,10 +289,10 @@ func (c *GRPCClient) PrintTab(object runtime.Object) (*component.Tab, error) {
 	})
 
 	if err != nil {
-		return nil, err
+		return TabResponse{}, err
 	}
 
-	return &tab, nil
+	return TabResponse{Tab: &tab}, nil
 }
 
 // GRPCServer is the grpc server the dashboard will use to communicate with the
@@ -307,10 +308,10 @@ var _ dashboard.PluginServer = (*GRPCServer)(nil)
 func (s *GRPCServer) Content(ctx context.Context, req *dashboard.ContentRequest) (*dashboard.ContentResponse, error) {
 	service, ok := s.Impl.(ModuleService)
 	if !ok {
-		return nil, errors.New("plugin is not a module")
+		return nil, errors.Errorf("plugin is not a module, it's a %T", s.Impl)
 	}
 
-	contentResponse, err := service.Content(req.Path)
+	contentResponse, err := service.Content(ctx, req.Path)
 	if err != nil {
 		return nil, err
 	}
@@ -332,7 +333,7 @@ func (s *GRPCServer) HandleAction(ctx context.Context, handleActionRequest *dash
 		return nil, err
 	}
 
-	if err := s.Impl.HandleAction(payload); err != nil {
+	if err := s.Impl.HandleAction(ctx, payload); err != nil {
 		return nil, err
 	}
 
@@ -340,13 +341,13 @@ func (s *GRPCServer) HandleAction(ctx context.Context, handleActionRequest *dash
 }
 
 // Navigation returns navigation entries from a plugin.
-func (s *GRPCServer) Navigation(context.Context, *dashboard.NavigationRequest) (*dashboard.NavigationResponse, error) {
+func (s *GRPCServer) Navigation(ctx context.Context, req *dashboard.NavigationRequest) (*dashboard.NavigationResponse, error) {
 	service, ok := s.Impl.(ModuleService)
 	if !ok {
-		return nil, errors.New("plugin is not a module")
+		return nil, errors.Errorf("plugin is not a module, it's a %T", s.Impl)
 	}
 
-	entry, err := service.Navigation()
+	entry, err := service.Navigation(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -361,7 +362,7 @@ func (s *GRPCServer) Navigation(context.Context, *dashboard.NavigationRequest) (
 
 // Register register a plugin.
 func (s *GRPCServer) Register(ctx context.Context, registerRequest *dashboard.RegisterRequest) (*dashboard.RegisterResponse, error) {
-	m, err := s.Impl.Register(registerRequest.DashboardAPIAddress)
+	m, err := s.Impl.Register(ctx, registerRequest.DashboardAPIAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -382,7 +383,7 @@ func (s *GRPCServer) Print(ctx context.Context, objectRequest *dashboard.ObjectR
 		return nil, err
 	}
 
-	pr, err := s.Impl.Print(u)
+	pr, err := s.Impl.Print(ctx, u)
 	if err != nil {
 		return nil, errors.Wrap(err, "grpc server print")
 	}
@@ -392,19 +393,19 @@ func (s *GRPCServer) Print(ctx context.Context, objectRequest *dashboard.ObjectR
 		return nil, err
 	}
 
-	config, err := convertFromSummarySections(pr.Config)
+	configSection, err := convertFromSummarySections(pr.Config)
 	if err != nil {
 		return nil, err
 	}
 
-	status, err := convertFromSummarySections(pr.Status)
+	statusSection, err := convertFromSummarySections(pr.Status)
 	if err != nil {
 		return nil, err
 	}
 
 	out := &dashboard.PrintResponse{
-		Config: config,
-		Status: status,
+		Config: configSection,
+		Status: statusSection,
 		Items:  itemBytes,
 	}
 
@@ -418,7 +419,7 @@ func (s *GRPCServer) ObjectStatus(ctx context.Context, objectRequest *dashboard.
 		return nil, err
 	}
 
-	osr, err := s.Impl.ObjectStatus(u)
+	osr, err := s.Impl.ObjectStatus(ctx, u)
 	if err != nil {
 		return nil, errors.Wrap(err, "grpc server object status")
 	}
@@ -454,18 +455,22 @@ func (s *GRPCServer) PrintTab(ctx context.Context, objectRequest *dashboard.Obje
 		return nil, err
 	}
 
-	tab, err := s.Impl.PrintTab(u)
+	tabResponse, err := s.Impl.PrintTab(ctx, u)
 	if err != nil {
 		return nil, errors.Wrap(err, "grpc server print tab")
 	}
 
-	layoutBytes, err := json.Marshal(tab.Contents)
+	if tabResponse.Tab == nil {
+		return nil, errors.New("tab is nil")
+	}
+
+	layoutBytes, err := json.Marshal(tabResponse.Tab.Contents)
 	if err != nil {
 		return nil, err
 	}
 
 	out := &dashboard.PrintTabResponse{
-		Name:   tab.Name,
+		Name:   tabResponse.Tab.Name,
 		Layout: layoutBytes,
 	}
 

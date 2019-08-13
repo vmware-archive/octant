@@ -176,16 +176,16 @@ type config struct {
 // ManagerInterface is an interface which represent a plugin manager.
 type ManagerInterface interface {
 	// Print prints an object.
-	Print(object runtime.Object) (*PrintResponse, error)
+	Print(ctx context.Context, object runtime.Object) (*PrintResponse, error)
 
 	// Tabs retrieves tabs for an object.
-	Tabs(object runtime.Object) ([]component.Tab, error)
+	Tabs(ctx context.Context, object runtime.Object) ([]component.Tab, error)
 
 	// Store returns the manager's storage.
 	Store() ManagerStore
 
 	// ObjectStatus returns the object status
-	ObjectStatus(object runtime.Object) (*ObjectStatusResponse, error)
+	ObjectStatus(ctx context.Context, object runtime.Object) (*ObjectStatusResponse, error)
 }
 
 // ModuleRegistrar is a module registrar.
@@ -371,7 +371,7 @@ func (m *Manager) start(ctx context.Context, c config) error {
 		return errors.Errorf("unknown type for plugin %q: %T", c.name, raw)
 	}
 
-	metadata, err := service.Register(m.API.Addr())
+	metadata, err := service.Register(ctx, m.API.Addr())
 	if err != nil {
 		return errors.Wrapf(err, "register plugin %q", c.name)
 	}
@@ -383,7 +383,7 @@ func (m *Manager) start(ctx context.Context, c config) error {
 	for _, actionName := range metadata.Capabilities.ActionNames {
 		pluginLogger.With("action-path", actionName).Infof("registering plugin action")
 		err := m.ActionRegistrar.Register(actionName, func(ctx context.Context, payload action.Payload) error {
-			return service.HandleAction(payload)
+			return service.HandleAction(ctx, payload)
 		})
 
 		if err != nil {
@@ -399,7 +399,7 @@ func (m *Manager) start(ctx context.Context, c config) error {
 	if metadata.Capabilities.IsModule {
 		service, ok := raw.(ModuleService)
 		if !ok {
-			return errors.New("plugin is a not a module")
+			return errors.Errorf("plugin type %T is a not a module", raw)
 		}
 
 		pluginLogger.Infof("plugin supports navigation")
@@ -432,7 +432,7 @@ func (m *Manager) Stop(ctx context.Context) {
 
 // Print prints an object with plugins which are configured to print the objects's
 // GVK.
-func (m *Manager) Print(object runtime.Object) (*PrintResponse, error) {
+func (m *Manager) Print(ctx context.Context, object runtime.Object) (*PrintResponse, error) {
 	if m.Runners == nil {
 		return nil, errors.New("runners is nil")
 	}
@@ -452,7 +452,7 @@ func (m *Manager) Print(object runtime.Object) (*PrintResponse, error) {
 		done <- true
 	}()
 
-	if err := runner.Run(object, m.store.ClientNames()); err != nil {
+	if err := runner.Run(ctx, object, m.store.ClientNames()); err != nil {
 		return nil, err
 	}
 	close(ch)
@@ -462,7 +462,7 @@ func (m *Manager) Print(object runtime.Object) (*PrintResponse, error) {
 }
 
 // Tabs queries plugins for tabs for an object.
-func (m *Manager) Tabs(object runtime.Object) ([]component.Tab, error) {
+func (m *Manager) Tabs(ctx context.Context, object runtime.Object) ([]component.Tab, error) {
 	if m.Runners == nil {
 		return nil, errors.New("runners is nil")
 	}
@@ -480,7 +480,7 @@ func (m *Manager) Tabs(object runtime.Object) ([]component.Tab, error) {
 		done <- true
 	}()
 
-	if err := runner.Run(object, m.store.ClientNames()); err != nil {
+	if err := runner.Run(ctx, object, m.store.ClientNames()); err != nil {
 		return nil, err
 	}
 
@@ -495,7 +495,7 @@ func (m *Manager) Tabs(object runtime.Object) ([]component.Tab, error) {
 }
 
 // ObjectStatus updates the object status of an object configured from a plugin
-func (m *Manager) ObjectStatus(object runtime.Object) (*ObjectStatusResponse, error) {
+func (m *Manager) ObjectStatus(ctx context.Context, object runtime.Object) (*ObjectStatusResponse, error) {
 	if m.Runners == nil {
 		return nil, errors.New("runners is nil")
 	}
@@ -513,7 +513,7 @@ func (m *Manager) ObjectStatus(object runtime.Object) (*ObjectStatusResponse, er
 		done <- true
 	}()
 
-	if err := runner.Run(object, m.store.ClientNames()); err != nil {
+	if err := runner.Run(ctx, object, m.store.ClientNames()); err != nil {
 		return nil, err
 	}
 	close(ch)

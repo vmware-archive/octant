@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 package plugin
 
 import (
+	"context"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -16,7 +18,7 @@ import (
 
 var (
 	// PluginName is the name of the dashboard plugin.
-	PluginName = "plugin"
+	Name = "plugin"
 )
 
 // Capabilities are plugin capabilities.
@@ -61,6 +63,13 @@ type PrintResponse struct {
 	Items []component.FlexLayoutItem
 }
 
+// TabResponse is a tab printer response from the plugin. The
+// dashboard will use this to create an additional tab for
+// an object.
+type TabResponse struct {
+	Tab *component.Tab
+}
+
 // ObjectStatusResponse is an object status response from plugin.
 type ObjectStatusResponse struct {
 	// ObjectStatus is status of an object.
@@ -77,11 +86,11 @@ type Metadata struct {
 // Service is the interface that is exposed as a plugin. The plugin is required to implement this
 // interface.
 type Service interface {
-	Register(dashboardAPIAddress string) (Metadata, error)
-	Print(object runtime.Object) (PrintResponse, error)
-	PrintTab(object runtime.Object) (*component.Tab, error)
-	ObjectStatus(object runtime.Object) (ObjectStatusResponse, error)
-	HandleAction(payload action.Payload) error
+	Register(ctx context.Context, dashboardAPIAddress string) (Metadata, error)
+	Print(ctx context.Context, object runtime.Object) (PrintResponse, error)
+	PrintTab(ctx context.Context, object runtime.Object) (TabResponse, error)
+	ObjectStatus(ctx context.Context, object runtime.Object) (ObjectStatusResponse, error)
+	HandleAction(ctx context.Context, payload action.Payload) error
 }
 
 // ModuleService is the interface that is exposed as a plugin as a module. The plugin is required to implement this
@@ -89,8 +98,8 @@ type Service interface {
 type ModuleService interface {
 	Service
 
-	Navigation() (navigation.Navigation, error)
-	Content(contentPath string) (component.ContentResponse, error)
+	Navigation(ctx context.Context) (navigation.Navigation, error)
+	Content(ctx context.Context, contentPath string) (component.ContentResponse, error)
 }
 
 func includesGVK(gvk schema.GroupVersionKind, list []schema.GroupVersionKind) bool {
