@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package kubeconfig
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -40,5 +41,5 @@ func TestFSLoader_Load(t *testing.T) {
 		CurrentContext: "dev-frontend",
 	}
 
-	assert.Equal(t, expected, kc)
+	assert.Equal(t, fmt.Sprint(*expected), fmt.Sprint(*kc))
 }
