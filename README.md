@@ -44,29 +44,52 @@ Octant is a tool for developers to understand how applications run on a Kubernet
 
 ## Installation
 
-<!-- TODO: brew and choco install -->
 ### Package (Linux only)
 
 1. Download the `.deb` or `.rpm` from the [releases page](https://github.com/vmware/octant/releases).
 
 2. Install with either `dpkg -i` or `rpm -i` respectively.
 
+###  Windows
+
+#### Chocolatey
+
+1. Install using chocolatey with the following one-liner:
+
+   ```sh
+   choco install octant --confirm
+   ```
+
+#### Scoop
+
+1. Add the [extras](https://github.com/lukesampson/scoop-extras) bucket.
+
+   ```sh
+   scoop bucket add extras
+   ```
+
+ 2. Install using scoop.
+
+   ```sh
+   scoop install octant
+   ```
+
 ### Download a Pre-built Binary (Linux, macOS, Windows)
 
-1. Open the [releases page](https://github.com/vmware/octant/releases) from a browser and download the latest tarball.
+1. Open the [releases page](https://github.com/vmware/octant/releases) from a browser and download the latest tarball or zip file.
 
-2. Extract the tarball:
+2. Extract the tarball or zip where `X.Y` is the release version:
 
     ```sh
-    $ tar -xzvf ~/Downloads/octant_0.4.1_Linux-64bit.tar.gz
-    octant_0.4.1_Linux-64bit/README.md
-    octant_0.4.1_Linux-64bit/octant
+    $ tar -xzvf ~/Downloads/octant_0.X.Y_Linux-64bit.tar.gz
+    octant_0.X.Y_Linux-64bit/README.md
+    octant_0.X.Y_Linux-64bit/octant
     ```
 
 3. Verify it runs:
 
     ```sh
-    $ ./octant_0.4.1_Linux-64bit/octant version
+    $ ./octant_0.X.Y_Linux-64bit/octant version
     ```
 
 ## Getting Started
@@ -96,6 +119,7 @@ Documentation for plugin components can be found in [`docs/plugins`](docs/plugin
 
 Feature requests, bug reports, and enhancements are welcome. Contributors, maintainers, and users are encouraged to collaborate through these communication channels:
 
+ - [Kubernetes Slack](http://slack.k8s.io/) in the [#octant](https://kubernetes.slack.com/messages/CM37M9FCG) channel
  - [Twitter](https://twitter.com/projectoctant)
  - [Google group](https://groups.google.com/forum/#!forum/project-octant/)
  - [GitHub issues](https://github.com/vmware/octant/issues)
