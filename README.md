@@ -1,4 +1,4 @@
-# Octant <!-- Future Logo -->
+![Logo][octant-logo]
 
 [![Build Status](https://cloud.drone.io/api/badges/vmware/octant/status.svg)](https://cloud.drone.io/vmware/octant)
 ![GitHub release](https://img.shields.io/github/release/vmware/octant.svg)
@@ -135,3 +135,5 @@ See our [roadmap](ROADMAP.md) for tentative features in a 1.0 release.
 ## License
 
 Octant is available under the [Apache License, Version 2.0](LICENSE)
+
+[octant-logo]: /docs/octant-logo.png
