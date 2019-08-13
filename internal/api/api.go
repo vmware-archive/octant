@@ -8,7 +8,10 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"net"
 	"net/http"
+	"os"
 	"path"
 
 	"github.com/gorilla/mux"
@@ -24,13 +27,37 @@ import (
 //go:generate mockgen -destination=./fake/mock_cluster_client.go -package=fake github.com/vmware/octant/internal/api ClusterClient
 //go:generate mockgen -destination=./fake/mock_service.go -package=fake github.com/vmware/octant/internal/api Service
 
-var (
-	// acceptedHosts are the hosts this api will answer for.
-	acceptedHosts = []string{
+const (
+	// ListenerAddrKey is the enviroment variable for the Octant listener address.
+	ListenerAddrKey = "OCTANT_LISTENER_ADDR"
+	// PathPrefix is a string for the api path prefix.
+	PathPrefix          = "/api/v1"
+	defaultListenerAddr = "127.0.0.1:0"
+)
+
+func acceptedHosts() []string {
+	hosts := []string{
 		"localhost",
 		"127.0.0.1",
 	}
-)
+	listenerAddr := ListenerAddr()
+	host, _, err := net.SplitHostPort(listenerAddr)
+	if err != nil {
+		panic(fmt.Sprintf("Unable to parse OCTANT_LISTENER_ADDR: %s", listenerAddr))
+	}
+
+	hosts = append(hosts, host)
+	return hosts
+}
+
+// ListenerAddr returns the default listener address if OCTANT_LISTENER_ADDR is not set.
+func ListenerAddr() string {
+	listenerAddr := defaultListenerAddr
+	if customListenerAddr := os.Getenv(ListenerAddrKey); customListenerAddr != "" {
+		listenerAddr = customListenerAddr
+	}
+	return listenerAddr
+}
 
 func serveAsJSON(w http.ResponseWriter, v interface{}, logger log.Logger) {
 	w.Header().Set("Content-Type", mime.JSONContentType)
@@ -121,7 +148,7 @@ func (a *API) ForceUpdate() error {
 // Handler returns a HTTP handler for the service.
 func (a *API) Handler(ctx context.Context) (*mux.Router, error) {
 	router := mux.NewRouter()
-	router.Use(rebindHandler(acceptedHosts))
+	router.Use(rebindHandler(acceptedHosts()))
 
 	s := router.PathPrefix(a.prefix).Subrouter()
 
