@@ -81,7 +81,7 @@ func Test_dash_Run(t *testing.T) {
 
 			manager := modulefake.NewMockManagerInterface(controller)
 
-			service := api.New(ctx, apiPathPrefix, clusterClient, manager, actionDispactor, log.NopLogger())
+			service := api.New(ctx, api.PathPrefix, clusterClient, manager, actionDispactor, log.NopLogger())
 			d, err := newDash(listener, namespace, uiURL, service, log.NopLogger())
 			require.NoError(t, err)
 
@@ -165,7 +165,7 @@ func Test_dash_routes(t *testing.T) {
 			actionDispatcher := apiFake.NewMockActionDispatcher(controller)
 
 			ctx := context.Background()
-			service := api.New(ctx, apiPathPrefix, clusterClient, manager, actionDispatcher, log.NopLogger())
+			service := api.New(ctx, api.PathPrefix, clusterClient, manager, actionDispatcher, log.NopLogger())
 
 			d, err := newDash(listener, namespace, uiURL, service, log.NopLogger())
 			require.NoError(t, err)

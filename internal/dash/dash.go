@@ -42,11 +42,6 @@ import (
 	"github.com/vmware/octant/web"
 )
 
-const (
-	apiPathPrefix       = "/api/v1"
-	defaultListenerAddr = "127.0.0.1:0"
-)
-
 type Options struct {
 	EnableOpenCensus bool
 	KubeConfig       string
@@ -168,7 +163,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 	}
 
 	// Initialize the API
-	apiService := api.New(ctx, apiPathPrefix, clusterClient, moduleManager, actionManger, logger)
+	apiService := api.New(ctx, api.PathPrefix, clusterClient, moduleManager, actionManger, logger)
 	for _, m := range moduleManager.Modules() {
 		if err := apiService.RegisterModule(m); err != nil {
 			return errors.Wrapf(err, "registering module: %v", m.Name())
@@ -286,11 +281,7 @@ func initModuleManager(options *moduleOptions) (*module.Manager, error) {
 }
 
 func buildListener() (net.Listener, error) {
-	listenerAddr := defaultListenerAddr
-	if customListenerAddr := os.Getenv("OCTANT_LISTENER_ADDR"); customListenerAddr != "" {
-		listenerAddr = customListenerAddr
-	}
-
+	listenerAddr := api.ListenerAddr()
 	return net.Listen("tcp", listenerAddr)
 }
 
@@ -361,7 +352,7 @@ func (d *dash) handler(ctx context.Context) (http.Handler, error) {
 		return nil, err
 	}
 
-	router.PathPrefix(apiPathPrefix).Handler(apiHandler)
+	router.PathPrefix(api.PathPrefix).Handler(apiHandler)
 	router.PathPrefix("/").Handler(handler)
 
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
