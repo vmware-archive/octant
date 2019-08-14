@@ -114,7 +114,10 @@ func newOctantCmd() *cobra.Command {
 	octantCmd.Flags().Float32VarP(&clientQPS, "client-qps", "", 200, "maximum QPS for client")
 	octantCmd.Flags().IntVarP(&clientBurst, "client-burst", "", 400, "maximum burst for client throttle")
 
-	kubeConfig = clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
+	kubeConfig = os.Getenv("KUBECONFIG")
+	if kubeConfig == "" {
+		kubeConfig = clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
+	}
 
 	octantCmd.Flags().StringVar(&kubeConfig, "kubeconfig", kubeConfig, "absolute path to kubeConfig file")
 
