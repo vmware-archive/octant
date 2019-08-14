@@ -24,7 +24,17 @@
             "tsConfig": "src/tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "clr-ui-dark.min.css",
+                "input": "node_modules/@clr/ui",
+                "output": "assets/css"
+              },
+              {
+                "glob": "clr-ui.min.css",
+                "input": "node_modules/@clr/ui",
+                "output": "assets/css"
+              }
             ],
             "styles": [
               "node_modules/@clr/icons/clr-icons.min.css",

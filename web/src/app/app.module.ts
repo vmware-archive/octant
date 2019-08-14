@@ -3,7 +3,7 @@
 //
 import { Location } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { Injectable, NgModule, NgZone } from '@angular/core';
+import { Injectable, NgModule, NgZone, APP_INITIALIZER } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -20,6 +20,26 @@ import { NotifierComponent } from './components/notifier/notifier.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { OverviewModule } from './modules/overview/overview.module';
 import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
+import { VmwThemeToolsModule, VmwClarityThemeService, VmwClarityThemeConfig } from '@vmw/ngx-utils';
+
+export const preloader = (themeService: VmwClarityThemeService) => {
+  const config: VmwClarityThemeConfig = {
+    clarityDarkPath: '/assets/css/clr-ui-dark.min.css',
+    clarityLightPath: '/assets/css/clr-ui.min.css',
+    cookieName: 'clarity-theme',
+    darkBodyClasses: ['dark'],
+    cookieDomain: 'vmware.com'
+  };
+
+  return () => {
+    return new Promise((resolve, reject) => {
+      themeService.initialize(config)
+        .then(() => {
+          resolve()
+        })
+    })
+  }
+}
 
 @Injectable()
 export class UnstripTrailingSlashLocation extends Location {
@@ -47,6 +67,7 @@ export class UnstripTrailingSlashLocation extends Location {
     AppRoutingModule,
     OverviewModule,
     NgSelectModule,
+    VmwThemeToolsModule,
     MarkdownModule.forRoot({
       markedOptions: {
         provide: MarkedOptions,
@@ -63,6 +84,13 @@ export class UnstripTrailingSlashLocation extends Location {
     }),
   ],
   providers: [
+    VmwClarityThemeService,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: preloader,
+      deps: [VmwClarityThemeService],
+      multi: true
+    },
     {
       provide: Location,
       useClass: UnstripTrailingSlashLocation,

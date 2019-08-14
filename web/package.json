@@ -32,6 +32,8 @@
     "@clr/ui": "^2.2.0",
     "@ng-select/ng-select": "^2.20.0",
     "@types/cytoscape": "^3.8.2",
+    "@vmw/ngx-components": "^7.5.9",
+    "@vmw/ngx-utils": "^7.1.0",
     "@webcomponents/custom-elements": "^1.0.0",
     "core-js": "^2.5.4",
     "cytoscape": "^3.10.0",
