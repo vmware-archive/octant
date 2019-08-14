@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/pkg/errors"
@@ -27,6 +28,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/util/strings"
 
 	// auth plugins
 	_ "k8s.io/client-go/plugin/pkg/client/auth/azure"
@@ -249,9 +251,10 @@ func (c *Cluster) Version() (string, error) {
 
 // FromKubeConfig creates a Cluster from a kubeConfig.
 func FromKubeConfig(ctx context.Context, kubeConfig, contextName string, options RESTConfigOptions) (*Cluster, error) {
-	rules := clientcmd.NewDefaultClientConfigLoadingRules()
-	if kubeConfig != "" {
-		rules.ExplicitPath = kubeConfig
+	chain := strings.Deduplicate(filepath.SplitList(kubeConfig))
+
+	rules := &clientcmd.ClientConfigLoadingRules{
+		Precedence: chain,
 	}
 
 	overrides := &clientcmd.ConfigOverrides{}

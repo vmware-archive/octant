@@ -6,8 +6,12 @@ SPDX-License-Identifier: Apache-2.0
 package kubeconfig
 
 import (
-	"github.com/spf13/afero"
+	"path/filepath"
+	"sort"
+
 	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/vmware/octant/internal/util/strings"
 )
 
 //go:generate mockgen -destination=./fake/mock_loader.go -package=fake github.com/vmware/octant/internal/kubeconfig Loader
@@ -33,16 +37,13 @@ type FSLoaderOpt func(loader *FSLoader)
 
 // FSLoader loads kube configs from the file system.
 type FSLoader struct {
-	AppFS afero.Fs
 }
 
 var _ Loader = (*FSLoader)(nil)
 
 // NewFSLoader creates an instance of FSLoader.
 func NewFSLoader(options ...FSLoaderOpt) *FSLoader {
-	l := &FSLoader{
-		AppFS: afero.NewOsFs(),
-	}
+	l := &FSLoader{}
 
 	for _, option := range options {
 		option(l)
@@ -51,14 +52,15 @@ func NewFSLoader(options ...FSLoaderOpt) *FSLoader {
 	return l
 }
 
-// Load loads a kube config contexts from a file.
-func (l *FSLoader) Load(filename string) (*KubeConfig, error) {
-	data, err := afero.ReadFile(l.AppFS, filename)
-	if err != nil {
-		return nil, err
+// Load loads a kube config contexts from a list of files.
+func (l *FSLoader) Load(fileList string) (*KubeConfig, error) {
+	chain := strings.Deduplicate(filepath.SplitList(fileList))
+
+	loadingRules := &clientcmd.ClientConfigLoadingRules{
+		Precedence: chain,
 	}
 
-	config, err := clientcmd.Load(data)
+	config, err := loadingRules.Load()
 	if err != nil {
 		return nil, err
 	}
@@ -68,6 +70,10 @@ func (l *FSLoader) Load(filename string) (*KubeConfig, error) {
 	for name := range config.Contexts {
 		list = append(list, Context{Name: name})
 	}
+
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].Name < list[j].Name
+	})
 
 	return &KubeConfig{
 		Contexts:       list,
