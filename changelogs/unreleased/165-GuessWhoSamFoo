@@ -1,0 +1,1 @@
+Fixed intial set namespace flag by respecting initial URL routing.

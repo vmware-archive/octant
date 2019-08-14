@@ -5,3 +5,7 @@
 export interface Namespaces {
   namespaces: string[];
 }
+
+export interface Namespace {
+  namespace: string;
+}
