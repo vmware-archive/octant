@@ -33,7 +33,7 @@ describe('NamespaceService', () => {
       namespaces: new BehaviorSubject<string[]>([]),
       registerStreamer: (name: string, handler: Streamer) => {},
       streamer: () => new BehaviorSubject(emptyNavigation),
-      navigation: new BehaviorSubject<Navigation>(emptyNavigation)
+      navigation: new BehaviorSubject<Navigation>(emptyNavigation),
     };
 
     const notifierServiceStub = {

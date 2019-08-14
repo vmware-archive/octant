@@ -67,7 +67,7 @@ func Test_Object_ToComponent(t *testing.T) {
 	mockNoPlugins := func(pluginPrinter *fake.MockManagerInterface) {
 		printResponse := &plugin.PrintResponse{}
 		pluginPrinter.EXPECT().
-			Print(gomock.Any()).Return(printResponse, nil)
+			Print(gomock.Any(), gomock.Any()).Return(printResponse, nil)
 	}
 
 	cases := []struct {
@@ -104,7 +104,7 @@ func Test_Object_ToComponent(t *testing.T) {
 				}
 
 				options.PluginPrinter.EXPECT().
-					Print(gomock.Any()).Return(&printResponse, nil)
+					Print(gomock.Any(), gomock.Any()).Return(&printResponse, nil)
 			},
 			sections: []component.FlexLayoutSection{
 				{

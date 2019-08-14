@@ -3,6 +3,7 @@
 //
 
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { NavigationEnd, PRIMARY_OUTLET, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import _ from 'lodash';
@@ -18,6 +19,7 @@ import {
 } from '../notifier/notifier.service';
 import { includesArray } from '../../util/includesArray';
 import { Namespaces } from '../../models/namespace';
+import getAPIBase from '../common/getAPIBase';
 
 @Injectable({
   providedIn: 'root',
@@ -30,6 +32,7 @@ export class NamespaceService {
 
   constructor(
     private router: Router,
+    private http: HttpClient,
     private contentStreamService: ContentStreamService,
     notifierService: NotifierService
   ) {
@@ -74,6 +77,14 @@ export class NamespaceService {
     if (currentNS !== namespace) {
       this.current.next(namespace);
     }
+  }
+
+  public getInitialNamespace() {
+    const url = [
+        getAPIBase(),
+        'api/v1/namespace'
+    ].join('/');
+    return this.http.get(url)
   }
 
   private isNamespaceValid(namespaceToCheck: string): boolean {

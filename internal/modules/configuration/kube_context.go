@@ -9,16 +9,17 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/pkg/errors"
 
 	"github.com/vmware/octant/internal/api"
-	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/event"
 	"github.com/vmware/octant/internal/kubeconfig"
 	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/octant"
 )
 
 // kubeContextsResponse is a response for current kube contexts.
@@ -114,6 +115,10 @@ func (g *kubeContextGenerator) Event(ctx context.Context) (octant.Event, error) 
 		CurrentContext: currentContext,
 		Contexts:       kubeConfig.Contexts,
 	}
+
+	sort.Slice(resp.Contexts, func(i, j int) bool {
+		return resp.Contexts[i].Name < resp.Contexts[j].Name
+	})
 
 	data, err := json.Marshal(&resp)
 	if err != nil {

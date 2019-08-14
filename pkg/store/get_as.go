@@ -12,23 +12,26 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
+
+	octantunstructured "github.com/vmware/octant/thirdparty/unstructured"
 )
 
 // GetAs gets an object from the object store by key.
 func GetAs(ctx context.Context, o Store, key Key, as interface{}) error {
 	u, err := o.Get(ctx, key)
 	if err != nil {
-		return errors.Wrap(err, "get object from objectstore")
+		return errors.Wrap(err, "get object from object store")
 	}
 
 	if u == nil {
 		return nil
 	}
 
-	err = runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, as)
-	if err != nil {
-		return err
+	// NOTE: (bryanl) vendored converter can't convert from int64 to float64. Watching
+	// https://github.com/kubernetes-sigs/yaml/pull/14 to see when it gets pulled into
+	// a release so Octant can switch back.
+	if err := octantunstructured.DefaultUnstructuredConverter.FromUnstructured(u.Object, as); err != nil {
+		return errors.Wrap(err, "unable to convert object to unstructured")
 	}
 
 	if err := copyObjectMeta(as, u); err != nil {

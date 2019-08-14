@@ -10,6 +10,7 @@ require (
 	github.com/elazarl/goproxy v0.0.0-20190703090003-6125c262ffb0 // indirect
 	github.com/elazarl/goproxy/ext v0.0.0-20190703090003-6125c262ffb0 // indirect
 	github.com/evanphx/json-patch v4.1.0+incompatible // indirect
+	github.com/gobwas/glob v0.2.3
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6 // indirect
 	github.com/golang/mock v1.3.1
@@ -23,7 +24,7 @@ require (
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/hashicorp/go-hclog v0.8.0
 	github.com/hashicorp/go-plugin v0.0.0-20190220160451-3f118e8ee104
-	github.com/hashicorp/golang-lru v0.5.1
+	github.com/hashicorp/golang-lru v0.5.1 // indirect
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
 	github.com/imdario/mergo v0.3.6 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect

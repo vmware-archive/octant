@@ -129,7 +129,7 @@ func (d *Object) Describe(ctx context.Context, prefix, namespace string, options
 		logger.With("tab-object", object).Errorf("unable to generate all tabs for object")
 	}
 
-	tabs, err := options.PluginManager().Tabs(object)
+	tabs, err := options.PluginManager().Tabs(ctx, object)
 	if err != nil {
 		return EmptyContentResponse, errors.Wrap(err, "getting tabs from plugins")
 	}

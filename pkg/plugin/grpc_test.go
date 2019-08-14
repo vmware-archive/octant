@@ -14,6 +14,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/plugin"
@@ -21,9 +25,6 @@ import (
 	"github.com/vmware/octant/pkg/plugin/fake"
 	"github.com/vmware/octant/pkg/view/component"
 	"github.com/vmware/octant/pkg/view/flexlayout"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type grpcClientMocks struct {
@@ -95,7 +96,8 @@ func Test_GRPCClient_Content(t *testing.T) {
 			Return(resp, nil)
 
 		client := mocks.genClient()
-		got, err := client.Content("/")
+		ctx := context.Background()
+		got, err := client.Content(ctx, "/")
 		require.NoError(t, err)
 
 		assert.Equal(t, *contentResponse, got)
@@ -117,7 +119,8 @@ func Test_GRPCClient_Navigation(t *testing.T) {
 			Return(resp, nil)
 
 		client := mocks.genClient()
-		got, err := client.Navigation()
+		ctx := context.Background()
+		got, err := client.Navigation(ctx)
 		require.NoError(t, err)
 
 		expected := navigation.Navigation{
@@ -148,7 +151,8 @@ func Test_GRPCClient_Register(t *testing.T) {
 
 		client := mocks.genClient()
 		apiAddress := "localhost:54321"
-		got, err := client.Register(apiAddress)
+		ctx := context.Background()
+		got, err := client.Register(ctx, apiAddress)
 		require.NoError(t, err)
 
 		outGVKs := []schema.GroupVersionKind{{Version: "v1", Kind: "Pod"}}
@@ -199,7 +203,8 @@ func Test_GRPCClient_Print(t *testing.T) {
 		mocks.protoClient.EXPECT().Print(gomock.Any(), gomock.Eq(objectRequest)).Return(printResponse, nil)
 
 		client := mocks.genClient()
-		got, err := client.Print(object)
+		ctx := context.Background()
+		got, err := client.Print(ctx, object)
 		require.NoError(t, err)
 
 		expected := plugin.PrintResponse{
@@ -243,7 +248,8 @@ func Test_GRPCClient_PrintTab(t *testing.T) {
 			Return(tabResponse, nil)
 
 		client := mocks.genClient()
-		got, err := client.PrintTab(object)
+		ctx := context.Background()
+		got, err := client.PrintTab(ctx, object)
 		require.NoError(t, err)
 
 		expectedLayout := component.NewFlexLayout("component title")
@@ -254,9 +260,11 @@ func Test_GRPCClient_PrintTab(t *testing.T) {
 					View:  component.NewText("text")},
 			},
 		)
-		expected := &component.Tab{
-			Name:     "tab name",
-			Contents: *expectedLayout,
+		expected := plugin.TabResponse{
+			Tab: &component.Tab{
+				Name:     "tab name",
+				Contents: *expectedLayout,
+			},
 		}
 
 		assert.Equal(t, expected, got)
@@ -291,7 +299,8 @@ func Test_GRPCClient_ObjectStatus(t *testing.T) {
 		mocks.protoClient.EXPECT().ObjectStatus(gomock.Any(), gomock.Eq(objectRequest)).Return(objectStatusResponse, nil)
 
 		client := mocks.genClient()
-		got, err := client.ObjectStatus(object)
+		ctx := context.Background()
+		got, err := client.ObjectStatus(ctx, object)
 		require.NoError(t, err)
 
 		expected := plugin.ObjectStatusResponse{
@@ -309,7 +318,7 @@ func Test_GRPCServer_Content(t *testing.T) {
 		contentResponse := component.NewContentResponse(component.TitleFromString("title"))
 
 		mocks.moduleService.EXPECT().
-			Content("/").
+			Content(gomock.Any(), "/").
 			Return(*contentResponse, nil)
 
 		ctx := context.Background()
@@ -331,7 +340,7 @@ func Test_GRPCServer_Navigation(t *testing.T) {
 		server := mocks.genModuleServer()
 
 		mocks.moduleService.EXPECT().
-			Navigation().
+			Navigation(gomock.Any()).
 			Return(navigation.Navigation{Title: "title"}, nil)
 
 		ctx := context.Background()
@@ -366,7 +375,7 @@ func Test_GRPCServer_Register(t *testing.T) {
 
 		apiAddress := "localhost:54321"
 
-		mocks.service.EXPECT().Register(gomock.Eq(apiAddress)).Return(metadata, nil)
+		mocks.service.EXPECT().Register(gomock.Any(), gomock.Eq(apiAddress)).Return(metadata, nil)
 
 		server := mocks.genServer()
 
@@ -416,7 +425,7 @@ func Test_GRPCServer_Print(t *testing.T) {
 		require.NoError(t, err)
 		u := &unstructured.Unstructured{Object: m}
 
-		mocks.service.EXPECT().Print(gomock.Eq(u)).Return(pr, nil)
+		mocks.service.EXPECT().Print(gomock.Any(), gomock.Eq(u)).Return(pr, nil)
 
 		objectData, err := json.Marshal(object)
 		require.NoError(t, err)
@@ -466,7 +475,7 @@ func Test_GRPCServer_ObjectStatus(t *testing.T) {
 		require.NoError(t, err)
 		u := &unstructured.Unstructured{Object: m}
 
-		mocks.service.EXPECT().ObjectStatus(gomock.Eq(u)).Return(osr, nil)
+		mocks.service.EXPECT().ObjectStatus(gomock.Any(), gomock.Eq(u)).Return(osr, nil)
 
 		objectData, err := json.Marshal(object)
 		require.NoError(t, err)

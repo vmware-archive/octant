@@ -39,7 +39,7 @@ func TestModuleProxy_ContentPath(t *testing.T) {
 
 	response := component.ContentResponse{}
 	service.EXPECT().
-		Content("/path").
+		Content(gomock.Any(), "/path").
 		Return(response, nil)
 
 	metadata := &plugin.Metadata{
@@ -64,7 +64,7 @@ func TestModuleProxy_Navigation(t *testing.T) {
 
 	nav := navigation.Navigation{}
 	service.EXPECT().
-		Navigation().
+		Navigation(gomock.Any()).
 		Return(nav, nil)
 
 	metadata := &plugin.Metadata{

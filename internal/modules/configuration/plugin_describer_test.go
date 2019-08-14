@@ -78,7 +78,7 @@ func newFakePluginClient(name string, controller *gomock.Controller) *fakePlugin
 	metadata := dashPlugin.Metadata{
 		Name: name,
 	}
-	service.EXPECT().Register(gomock.Eq("localhost:54321")).Return(metadata, nil).AnyTimes()
+	service.EXPECT().Register(gomock.Any(), gomock.Eq("localhost:54321")).Return(metadata, nil).AnyTimes()
 
 	clientProtocol := fake.NewMockClientProtocol(controller)
 	clientProtocol.EXPECT().Dispense("plugin").Return(service, nil).AnyTimes()

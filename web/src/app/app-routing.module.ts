@@ -8,13 +8,16 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { OverviewComponent } from './modules/overview/overview.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
+import { NamespaceResolver } from 'src/app/services/namespace/namespace-resolver.service';
 
 export const appRoutes: Routes = [
   { path: 'content', children: [{ path: '**', component: OverviewComponent }] },
-  // TODO: we shouldn't assume that the default namespace is valid
   {
     path: '',
-    redirectTo: '/content/overview/namespace/default/',
+    component: OverviewComponent,
+    resolve: {
+      namespace: NamespaceResolver
+    },
     pathMatch: 'full',
   },
   { path: '**', component: PageNotFoundComponent },
@@ -27,6 +30,9 @@ export const appRoutes: Routes = [
       useHash: true,
     }),
     CommonModule,
+  ],
+  providers: [
+    NamespaceResolver
   ],
 })
 export class AppRoutingModule {}

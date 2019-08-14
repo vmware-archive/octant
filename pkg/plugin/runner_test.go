@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package plugin_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -26,7 +27,7 @@ func TestDefaultRunner(t *testing.T) {
 	counter := 0
 
 	pr := plugin.DefaultRunner{
-		RunFunc: func(name string, gvk schema.GroupVersionKind, object runtime.Object) error {
+		RunFunc: func(ctx context.Context, name string, gvk schema.GroupVersionKind, object runtime.Object) error {
 			counter++
 			return nil
 		},
@@ -36,7 +37,8 @@ func TestDefaultRunner(t *testing.T) {
 
 	clientNames := []string{"plugin1", "plugin2"}
 
-	err := pr.Run(object, clientNames)
+	ctx := context.Background()
+	err := pr.Run(ctx, object, clientNames)
 	require.NoError(t, err)
 
 	assert.Equal(t, 2, counter)
@@ -44,14 +46,15 @@ func TestDefaultRunner(t *testing.T) {
 
 func TestDefaultRunner_object_is_nil(t *testing.T) {
 	pr := plugin.DefaultRunner{
-		RunFunc: func(name string, gvk schema.GroupVersionKind, object runtime.Object) error {
+		RunFunc: func(ctx context.Context, name string, gvk schema.GroupVersionKind, object runtime.Object) error {
 			return nil
 		},
 	}
 
 	clientNames := []string{"plugin1", "plugin2"}
 
-	err := pr.Run(nil, clientNames)
+	ctx := context.Background()
+	err := pr.Run(ctx, nil, clientNames)
 	require.Error(t, err)
 }
 
@@ -61,13 +64,14 @@ func TestDefaultRunner_run_func_is_nil(t *testing.T) {
 	object := testutil.CreateDeployment("deployment")
 	clientNames := []string{"plugin1", "plugin2"}
 
-	err := pr.Run(object, clientNames)
+	ctx := context.Background()
+	err := pr.Run(ctx, object, clientNames)
 	require.Error(t, err)
 }
 
 func TestDefaultRunner_run_func_returns_error(t *testing.T) {
 	pr := plugin.DefaultRunner{
-		RunFunc: func(name string, gvk schema.GroupVersionKind, object runtime.Object) error {
+		RunFunc: func(ctx context.Context, name string, gvk schema.GroupVersionKind, object runtime.Object) error {
 			return errors.Errorf("error")
 		},
 	}
@@ -75,7 +79,8 @@ func TestDefaultRunner_run_func_returns_error(t *testing.T) {
 	object := testutil.CreateDeployment("deployment")
 	clientNames := []string{"plugin1", "plugin2"}
 
-	err := pr.Run(object, clientNames)
+	ctx := context.Background()
+	err := pr.Run(ctx, object, clientNames)
 	require.Error(t, err)
 }
 
@@ -107,7 +112,7 @@ func Test_PrintRunner(t *testing.T) {
 	pr := plugin.PrintResponse{}
 
 	service.EXPECT().
-		Print(gomock.Eq(object)).Return(pr, nil)
+		Print(gomock.Any(), gomock.Eq(object)).Return(pr, nil)
 
 	ch := make(chan plugin.PrintResponse)
 	defer close(ch)
@@ -125,7 +130,8 @@ func Test_PrintRunner(t *testing.T) {
 		<-done
 	}()
 
-	require.NoError(t, runner.Run(object, clientNames))
+	ctx := context.Background()
+	require.NoError(t, runner.Run(ctx, object, clientNames))
 }
 
 func Test_TabRunner(t *testing.T) {
@@ -153,10 +159,13 @@ func Test_TabRunner(t *testing.T) {
 	store.EXPECT().
 		GetService(gomock.Eq("plugin1")).Return(service, nil)
 
+	tabResponse := plugin.TabResponse{
+		Tab: &component.Tab{},
+	}
 	tab := component.Tab{}
 
 	service.EXPECT().
-		PrintTab(gomock.Eq(object)).Return(&tab, nil)
+		PrintTab(gomock.Any(), gomock.Eq(object)).Return(tabResponse, nil)
 
 	ch := make(chan component.Tab)
 	defer close(ch)
@@ -174,5 +183,6 @@ func Test_TabRunner(t *testing.T) {
 		<-done
 	}()
 
-	require.NoError(t, runner.Run(object, clientNames))
+	ctx := context.Background()
+	require.NoError(t, runner.Run(ctx, object, clientNames))
 }

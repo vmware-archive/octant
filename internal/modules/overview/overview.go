@@ -185,7 +185,7 @@ func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]n
 
 	nf := octant.NewNavigationFactory(namespace, root, objectStore, navigationEntries)
 
-	entries, err := nf.Generate(ctx, "Overview", icon.Overview, "")
+	entries, err := nf.Generate(ctx, "Overview", icon.Overview, "", false)
 	if err != nil {
 		return nil, err
 	}

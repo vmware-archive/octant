@@ -16,7 +16,7 @@ import (
 
 var (
 	pluginMap = map[string]plugin.Plugin{
-		PluginName: &ServicePlugin{},
+		Name: &ServicePlugin{},
 	}
 )
 

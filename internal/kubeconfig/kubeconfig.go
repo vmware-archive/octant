@@ -6,9 +6,12 @@ SPDX-License-Identifier: Apache-2.0
 package kubeconfig
 
 import (
-	"github.com/spf13/afero"
-	"k8s.io/apimachinery/pkg/util/yaml"
-	clientcmdapiv1 "k8s.io/client-go/tools/clientcmd/api/v1"
+	"path/filepath"
+	"sort"
+
+	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/vmware/octant/internal/util/strings"
 )
 
 //go:generate mockgen -destination=./fake/mock_loader.go -package=fake github.com/vmware/octant/internal/kubeconfig Loader
@@ -34,16 +37,13 @@ type FSLoaderOpt func(loader *FSLoader)
 
 // FSLoader loads kube configs from the file system.
 type FSLoader struct {
-	AppFS afero.Fs
 }
 
 var _ Loader = (*FSLoader)(nil)
 
 // NewFSLoader creates an instance of FSLoader.
 func NewFSLoader(options ...FSLoaderOpt) *FSLoader {
-	l := &FSLoader{
-		AppFS: afero.NewOsFs(),
-	}
+	l := &FSLoader{}
 
 	for _, option := range options {
 		option(l)
@@ -52,33 +52,31 @@ func NewFSLoader(options ...FSLoaderOpt) *FSLoader {
 	return l
 }
 
-// Load loads a kube config contexts from a file.
-func (l *FSLoader) Load(filename string) (*KubeConfig, error) {
-	var rawConfig *clientcmdapiv1.Config
+// Load loads a kube config contexts from a list of files.
+func (l *FSLoader) Load(fileList string) (*KubeConfig, error) {
+	chain := strings.Deduplicate(filepath.SplitList(fileList))
 
-	f, err := l.AppFS.Open(filename)
-	if err != nil {
-		return nil, err
+	loadingRules := &clientcmd.ClientConfigLoadingRules{
+		Precedence: chain,
 	}
 
-	defer func() {
-		if cErr := f.Close(); cErr != nil && err == nil {
-			err = cErr
-		}
-	}()
-
-	if err := yaml.NewYAMLToJSONDecoder(f).Decode(&rawConfig); err != nil {
+	config, err := loadingRules.Load()
+	if err != nil {
 		return nil, err
 	}
 
 	var list []Context
 
-	for _, kubeContext := range rawConfig.Contexts {
-		list = append(list, Context{Name: kubeContext.Name})
+	for name := range config.Contexts {
+		list = append(list, Context{Name: name})
 	}
+
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].Name < list[j].Name
+	})
 
 	return &KubeConfig{
 		Contexts:       list,
-		CurrentContext: rawConfig.CurrentContext,
+		CurrentContext: config.CurrentContext,
 	}, nil
 }

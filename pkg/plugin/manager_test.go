@@ -106,7 +106,7 @@ func TestManager_Print(t *testing.T) {
 
 	ch := make(chan dashPlugin.PrintResponse)
 	printRunner := dashPlugin.DefaultRunner{
-		RunFunc: func(name string, gvk schema.GroupVersionKind, object runtime.Object) error {
+		RunFunc: func(ctx context.Context, name string, gvk schema.GroupVersionKind, object runtime.Object) error {
 			if name == "plugin1" {
 				resp1 := dashPlugin.PrintResponse{
 					Config: []component.SummarySection{{Header: "resp1"}},
@@ -134,7 +134,8 @@ func TestManager_Print(t *testing.T) {
 	manager := dashPlugin.NewManager(apiService, moduleRegistrar, actionRegistrar, options...)
 	manager.SetStore(store)
 
-	got, err := manager.Print(pod)
+	ctx := context.Background()
+	got, err := manager.Print(ctx, pod)
 	require.NoError(t, err)
 
 	expected := &dashPlugin.PrintResponse{
@@ -162,7 +163,7 @@ func TestManager_Tabs(t *testing.T) {
 
 	ch := make(chan component.Tab)
 	tabRunner := dashPlugin.DefaultRunner{
-		RunFunc: func(name string, gvk schema.GroupVersionKind, object runtime.Object) error {
+		RunFunc: func(ctx context.Context, name string, gvk schema.GroupVersionKind, object runtime.Object) error {
 			ch <- component.Tab{Name: name}
 
 			return nil
@@ -181,7 +182,8 @@ func TestManager_Tabs(t *testing.T) {
 	manager := dashPlugin.NewManager(apiService, moduleRegistrar, actionRegistrar, options...)
 	manager.SetStore(store)
 
-	got, err := manager.Tabs(pod)
+	ctx := context.Background()
+	got, err := manager.Tabs(ctx, pod)
 	require.NoError(t, err)
 
 	expected := []component.Tab{
@@ -208,7 +210,7 @@ func newFakePluginClient(name string, controller *gomock.Controller) *fakePlugin
 	metadata := dashPlugin.Metadata{
 		Name: name,
 	}
-	service.EXPECT().Register(gomock.Eq("localhost:54321")).Return(metadata, nil).AnyTimes()
+	service.EXPECT().Register(gomock.Any(), gomock.Eq("localhost:54321")).Return(metadata, nil).AnyTimes()
 
 	clientProtocol := fake.NewMockClientProtocol(controller)
 	clientProtocol.EXPECT().Dispense("plugin").Return(service, nil).AnyTimes()

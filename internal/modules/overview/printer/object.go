@@ -192,7 +192,7 @@ func (o *Object) ToComponent(ctx context.Context, options Options) (component.Co
 		return nil, errors.New("plugin printer is nil")
 	}
 
-	pr, err := pluginPrinter.Print(o.object)
+	pr, err := pluginPrinter.Print(ctx, o.object)
 	if err != nil {
 		return nil, errors.Wrap(err, "plugin manager")
 	}

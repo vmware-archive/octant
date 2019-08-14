@@ -117,7 +117,7 @@ ci-quick:
 install-test-plugin:
 	@echo $(OCTANT_PLUGINSTUB_DIR)
 	mkdir -p $(OCTANT_PLUGINSTUB_DIR)
-	go build -o $(OCTANT_PLUGINSTUB_DIR)/pluginstub github.com/vmware/octant/cmd/pluginstub
+	go build -o $(OCTANT_PLUGINSTUB_DIR)/octant-sample-plugin github.com/vmware/octant/cmd/octant-sample-plugin
 
 .PHONY:
 build-deps:

@@ -24,8 +24,8 @@ var (
 	}
 )
 
-func workloadEntries(_ context.Context, prefix, _ string, _ store.Store) ([]navigation.Navigation, error) {
-	neh := navigation.NavigationEntriesHelper{}
+func workloadEntries(_ context.Context, prefix, _ string, _ store.Store, _ bool) ([]navigation.Navigation, error) {
+	neh := navigation.EntriesHelper{}
 	neh.Add("Cron Jobs", "cron-jobs", icon.OverviewCronJob)
 	neh.Add("Daemon Sets", "daemon-sets", icon.OverviewDaemonSet)
 	neh.Add("Deployments", "deployments", icon.OverviewDeployment)
@@ -38,16 +38,16 @@ func workloadEntries(_ context.Context, prefix, _ string, _ store.Store) ([]navi
 	return neh.Generate(prefix)
 }
 
-func discoAndLBEntries(_ context.Context, prefix, _ string, _ store.Store) ([]navigation.Navigation, error) {
-	neh := navigation.NavigationEntriesHelper{}
+func discoAndLBEntries(_ context.Context, prefix, _ string, _ store.Store, _ bool) ([]navigation.Navigation, error) {
+	neh := navigation.EntriesHelper{}
 	neh.Add("Ingresses", "ingresses", icon.OverviewIngress)
 	neh.Add("Services", "services", icon.OverviewService)
 
 	return neh.Generate(prefix)
 }
 
-func configAndStorageEntries(_ context.Context, prefix, _ string, _ store.Store) ([]navigation.Navigation, error) {
-	neh := navigation.NavigationEntriesHelper{}
+func configAndStorageEntries(_ context.Context, prefix, _ string, _ store.Store, _ bool) ([]navigation.Navigation, error) {
+	neh := navigation.EntriesHelper{}
 	neh.Add("Config Maps", "config-maps", icon.OverviewConfigMap)
 	neh.Add("Persistent Volume Claims", "persistent-volume-claims", icon.OverviewPersistentVolumeClaim)
 	neh.Add("Secrets", "secrets", icon.OverviewSecret)
@@ -56,8 +56,8 @@ func configAndStorageEntries(_ context.Context, prefix, _ string, _ store.Store)
 	return neh.Generate(prefix)
 }
 
-func rbacEntries(_ context.Context, prefix, _ string, _ store.Store) ([]navigation.Navigation, error) {
-	neh := navigation.NavigationEntriesHelper{}
+func rbacEntries(_ context.Context, prefix, _ string, _ store.Store, _ bool) ([]navigation.Navigation, error) {
+	neh := navigation.EntriesHelper{}
 
 	neh.Add("Roles", "roles", icon.OverviewRole)
 	neh.Add("Role Bindings", "role-bindings", icon.OverviewRoleBinding)

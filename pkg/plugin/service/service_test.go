@@ -65,10 +65,8 @@ func TestNewPlugin(t *testing.T) {
 	for i := range tests {
 		test := tests[i]
 		t.Run(test.name, func(t *testing.T) {
-			handlers := HandlerFuncs{}
-
 			args := test.args
-			_, err := Register(args.name, args.description, args.capabilities, handlers)
+			_, err := Register(args.name, args.description, args.capabilities)
 			if test.isErr {
 				require.Error(t, err)
 				return
@@ -80,15 +78,13 @@ func TestNewPlugin(t *testing.T) {
 }
 
 func TestNewPlugin_multiple_errors(t *testing.T) {
-	handlers := HandlerFuncs{}
-	_, err := Register("", "", nil, handlers)
+	_, err := Register("", "", nil)
 	require.Error(t, err)
 	require.Equal(t, "validation errors: requires name, requires description, requires capabilities", err.Error())
 }
 
 func TestPlugin_Serve(t *testing.T) {
 	capabilities := &plugin.Capabilities{}
-	handlers := HandlerFuncs{}
 
 	ran := false
 
@@ -98,7 +94,7 @@ func TestPlugin_Serve(t *testing.T) {
 		}
 	}
 
-	p, err := Register("name", "description", capabilities, handlers, serveOpt)
+	p, err := Register("name", "description", capabilities, serveOpt)
 	require.NoError(t, err)
 
 	p.Serve()

@@ -32,10 +32,18 @@ func TestContains(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
+	for i := range cases {
+		tc := cases[i]
 		t.Run(tc.name, func(t *testing.T) {
 			got := Contains(tc.s, tc.sl)
 			assert.Equal(t, tc.expected, got)
 		})
 	}
+}
+
+func TestDeduplicate(t *testing.T) {
+	input := []string{"a", "a", "b", "c", "c"}
+	got := Deduplicate(input)
+	expected := []string{"a", "b", "c"}
+	assert.Equal(t, expected, got)
 }

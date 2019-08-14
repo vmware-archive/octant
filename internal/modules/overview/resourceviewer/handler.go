@@ -405,7 +405,7 @@ func (h *HandlerObjectStatus) Status(ctx context.Context, object runtime.Object)
 		return nil, err
 	}
 
-	pluginStatus, err := h.pluginManager.ObjectStatus(object)
+	pluginStatus, err := h.pluginManager.ObjectStatus(ctx, object)
 	if err != nil {
 		return nil, err
 	}

@@ -6,14 +6,11 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
-	"path"
 	"time"
 
 	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware/octant/pkg/navigation"
@@ -25,14 +22,12 @@ import (
 )
 
 var pluginName = "plugin-name"
-var pluginPath = path.Join("content", pluginName)
 
-func init() {
+// This is a sample plugin showing the features of Octant's plugin API.
+func main() {
 	// Remove the prefix from the go logger since Octant will print logs with timestamps.
 	log.SetPrefix("")
-}
 
-func main() {
 	// This plugin is interested in Pods
 	podGVK := schema.GroupVersionKind{Version: "v1", Kind: "Pod"}
 
@@ -44,15 +39,14 @@ func main() {
 	}
 
 	// Set up what should happen when Octant calls this plugin.
-	handlers := service.HandlerFuncs{
-		Print:      handlePrint,
-		PrintTab:   handleTab,
-		Navigation: handleNavigation,
-		Content:    handleContent,
+	options := []service.PluginOption{
+		service.WithPrinter(handlePrint),
+		service.WithTabPrinter(handleTab),
+		service.WithNavigation(handleNavigation, initRoutes),
 	}
 
 	// Use the plugin service helper to register this plugin.
-	p, err := service.Register(pluginName, "a description", capabilities, handlers)
+	p, err := service.Register(pluginName, "a description", capabilities, options...)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,47 +57,69 @@ func main() {
 }
 
 // handleTab is called when Octant wants to print a tab for an object.
-func handleTab(dashboardClient service.Dashboard, object runtime.Object) (*component.Tab, error) {
-	if object == nil {
-		return nil, errors.New("object is nil")
+func handleTab(request *service.PrintRequest) (plugin.TabResponse, error) {
+	if request.Object == nil {
+		return plugin.TabResponse{}, errors.New("object is nil")
 	}
 
+	// Octant uses flex layouts to display information. It's a flexible
+	// grid. A flex layout is composed of multiple section. Each section
+	// can contain multiple components. Components are displayed given
+	// a width. In the case below, the width is half of the visible space.
+	// Create sections to separate your components as each section will
+	// start a new row.
 	layout := flexlayout.New()
 	section := layout.AddSection()
-	err := section.Add(component.NewText("content from a plugin"), component.WidthHalf)
+
+	// Octant contain's a library of components that can be used to display content.
+	// This example uses markdown text.
+	contents := component.NewMarkdownText("content from a *plugin*")
+
+	err := section.Add(contents, component.WidthHalf)
 	if err != nil {
-		return nil, err
+		return plugin.TabResponse{}, err
 	}
 
-	tab := component.Tab{
-		Name:     "PluginStub",
-		Contents: *layout.ToComponent("Plugin"),
-	}
+	// In this example, this plugin will tell Octant to create a new
+	// tab when showing pods. This tab's name will be "Extra Pod Details".
+	tab := component.NewTabWithContents(*layout.ToComponent("Extra Pod Details"))
 
-	return &tab, nil
+	return plugin.TabResponse{Tab: tab}, nil
 }
 
 // handlePrint is called when Octant wants to print an object.
-func handlePrint(dashboardClient service.Dashboard, object runtime.Object) (plugin.PrintResponse, error) {
-	if object == nil {
+func handlePrint(request *service.PrintRequest) (plugin.PrintResponse, error) {
+	if request.Object == nil {
 		return plugin.PrintResponse{}, errors.Errorf("object is nil")
 	}
 
-	ctx := context.Background()
-	key, err := store.KeyFromObject(object)
+	// load an object from the cluster and use that object to create a response.
+
+	// Octant has a helper function to generate a key from an object. The key
+	// is used to find the object in the cluster.
+	key, err := store.KeyFromObject(request.Object)
 	if err != nil {
 		return plugin.PrintResponse{}, err
 	}
-	u, err := dashboardClient.Get(ctx, key)
+	u, err := request.DashboardClient.Get(request.Context(), key)
 	if err != nil {
 		return plugin.PrintResponse{}, err
 	}
 
-	podCard := component.NewCard(fmt.Sprintf("Extra Outout for %s", u.GetName()))
+	// Octant has a component library that can be used to build content for a plugin.
+	// In this case, the plugin is creating a card.
+	podCard := component.NewCard(fmt.Sprintf("Extra Output for %s", u.GetName()))
 	podCard.SetBody(component.NewMarkdownText("This output was generated from _octant-sample-plugin_"))
 
 	msg := fmt.Sprintf("update from plugin at %s", time.Now().Format(time.RFC3339))
 
+	// When printing an object, you can create multiple types of content. In this
+	// example, the plugin is:
+	//
+	// * adding a field to the configuration section for this object.
+	// * adding a field to the status section for this object.
+	// * create a new piece of content that will be embedded in the
+	//   summary section for the component.
 	return plugin.PrintResponse{
 		Config: []component.SummarySection{
 			{Header: "from-plugin", Content: component.NewText(msg)},
@@ -120,19 +136,23 @@ func handlePrint(dashboardClient service.Dashboard, object runtime.Object) (plug
 	}, nil
 }
 
-func handleNavigation(dashboardClient service.Dashboard) (navigation.Navigation, error) {
+// handlePrint creates a navigation tree for this plugin. Navigation is dynamic and will
+// be called frequently from Octant. Navigation is a tree of `Navigation` structs.
+// The plugin can use whatever paths it likes since these paths can be namespaced to the
+// the plugin.
+func handleNavigation(request *service.NavigationRequest) (navigation.Navigation, error) {
 	return navigation.Navigation{
 		Title: "Sample Plugin",
-		Path:  pluginPath,
+		Path:  request.GeneratePath(),
 		Children: []navigation.Navigation{
 			{
 				Title:    "Nested Once",
-				Path:     path.Join(pluginPath, "nested-once"),
+				Path:     request.GeneratePath("nested-once"),
 				IconName: "folder",
 				Children: []navigation.Navigation{
 					{
 						Title:    "Nested Twice",
-						Path:     path.Join(pluginPath, "nested-once", "nested-twice"),
+						Path:     request.GeneratePath("nested-once", "nested-twice"),
 						IconName: "folder",
 					},
 				},
@@ -140,13 +160,30 @@ func handleNavigation(dashboardClient service.Dashboard) (navigation.Navigation,
 		},
 		IconName: "cloud",
 	}, nil
-
 }
 
-func handleContent(dashboardClient service.Dashboard, contentPath string) (component.ContentResponse, error) {
-	return component.ContentResponse{
-		Components: []component.Component{
-			component.NewText(fmt.Sprintf("hello from plugin: path %s", contentPath)),
-		},
-	}, nil
+// initRoutes routes for this plugin. In this example, there is a global catch all route
+// that will return the content for every single path.
+func initRoutes(router *service.Router) {
+	gen := func(name, accessor, requestPath string) component.Component {
+		cardBody := component.NewText(fmt.Sprintf("hello from plugin: path %s", requestPath))
+		card := component.NewCard(fmt.Sprintf("My Card - %s", name))
+		card.SetBody(cardBody)
+		cardList := component.NewCardList(name)
+		cardList.AddCard(*card)
+		cardList.SetAccessor(accessor)
+
+		return cardList
+	}
+
+	router.HandleFunc("/*", func(request *service.Request) (component.ContentResponse, error) {
+		// For each page, generate two tabs with a some content.
+		component1 := gen("Tab 1", "tab1", request.Path)
+		component2 := gen("Tab 2", "tab2", request.Path)
+
+		contentResponse := component.NewContentResponse(component.TitleFromString("Example"))
+		contentResponse.Add(component1, component2)
+
+		return *contentResponse, nil
+	})
 }

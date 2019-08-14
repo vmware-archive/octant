@@ -201,7 +201,7 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 
 	nf := octant.NewNavigationFactory("", root, objectStore, navigationEntries)
 
-	entries, err := nf.Generate(ctx, "Cluster Overview", icon.ClusterOverview, "")
+	entries, err := nf.Generate(ctx, "Cluster Overview", icon.ClusterOverview, "", true)
 	if err != nil {
 		return nil, err
 	}
@@ -227,8 +227,8 @@ func (co *ClusterOverview) Generators() []octant.Generator {
 	return []octant.Generator{}
 }
 
-func rbacEntries(_ context.Context, prefix, _ string, _ store.Store) ([]navigation.Navigation, error) {
-	neh := navigation.NavigationEntriesHelper{}
+func rbacEntries(_ context.Context, prefix, _ string, _ store.Store, _ bool) ([]navigation.Navigation, error) {
+	neh := navigation.EntriesHelper{}
 	neh.Add("Cluster Roles", "cluster-roles", icon.ClusterOverviewClusterRole)
 	neh.Add("Cluster Role Bindings", "cluster-role-bindings", icon.ClusterOverviewClusterRoleBinding)
 

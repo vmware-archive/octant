@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -19,6 +20,8 @@ func Test_rebindHandler(t *testing.T) {
 		name         string
 		host         string
 		expectedCode int
+		listenerKey  string
+		listenerAddr string
 	}{
 		{
 			name:         "in general",
@@ -34,16 +37,26 @@ func Test_rebindHandler(t *testing.T) {
 			host:         ":::::::::",
 			expectedCode: http.StatusBadRequest,
 		},
+		{
+			name:         "custom host",
+			host:         "0.0.0.0",
+			expectedCode: http.StatusOK,
+			listenerKey:  "OCTANT_LISTENER_ADDR",
+			listenerAddr: "0.0.0.0:0000",
+		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-
+			if tc.listenerKey != "" {
+				os.Setenv(tc.listenerKey, tc.listenerAddr)
+				defer os.Unsetenv(tc.listenerKey)
+			}
 			fake := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprint(w, "response")
 			})
 
-			wrapped := rebindHandler(acceptedHosts)(fake)
+			wrapped := rebindHandler(acceptedHosts())(fake)
 
 			ts := httptest.NewServer(wrapped)
 			defer ts.Close()
