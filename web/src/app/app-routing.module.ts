@@ -16,7 +16,7 @@ export const appRoutes: Routes = [
     path: '',
     component: OverviewComponent,
     resolve: {
-      namespace: NamespaceResolver
+      namespace: NamespaceResolver,
     },
     pathMatch: 'full',
   },
@@ -31,8 +31,6 @@ export const appRoutes: Routes = [
     }),
     CommonModule,
   ],
-  providers: [
-    NamespaceResolver
-  ],
+  providers: [NamespaceResolver],
 })
 export class AppRoutingModule {}
