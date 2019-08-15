@@ -80,11 +80,8 @@ export class NamespaceService {
   }
 
   public getInitialNamespace() {
-    const url = [
-        getAPIBase(),
-        'api/v1/namespace'
-    ].join('/');
-    return this.http.get(url)
+    const url = [getAPIBase(), 'api/v1/namespace'].join('/');
+    return this.http.get(url);
   }
 
   private isNamespaceValid(namespaceToCheck: string): boolean {

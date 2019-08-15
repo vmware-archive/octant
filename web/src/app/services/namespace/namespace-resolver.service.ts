@@ -5,21 +5,23 @@ import { NamespaceService } from 'src/app/services/namespace/namespace.service';
 import { Namespace } from 'src/app/models/namespace';
 
 @Injectable({
-   providedIn: 'root'
+  providedIn: 'root',
 })
 export class NamespaceResolver implements Resolve<Namespace> {
   namespaces: string[];
   initialNamespace: string;
-  url = '/content/overview/namespace/'
+  url = '/content/overview/namespace/';
 
   constructor(
     private namespaceService: NamespaceService,
-    private router: Router,
+    private router: Router
   ) {
-    this.namespaceService.getInitialNamespace().subscribe((initial: Namespace) => {
-      this.initialNamespace = initial.namespace;
-      this.router.navigate([this.url + this.initialNamespace]);
-    });
+    this.namespaceService
+      .getInitialNamespace()
+      .subscribe((initial: Namespace) => {
+        this.initialNamespace = initial.namespace;
+        this.router.navigate([this.url + this.initialNamespace]);
+      });
   }
 
   resolve(): Observable<any> {
