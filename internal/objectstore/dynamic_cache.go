@@ -15,11 +15,11 @@ import (
 	"go.opencensus.io/trace"
 	authorizationv1 "k8s.io/api/authorization/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/informers"
 	kcache "k8s.io/client-go/tools/cache"
@@ -36,30 +36,12 @@ const (
 	defaultInformerResync = time.Second * 180
 )
 
-var (
-	ErrShouldShutDown = errors.New("controller should shut down")
-)
-
 func initDynamicSharedInformerFactory(ctx context.Context, client cluster.ClientInterface, namespace string) (dynamicinformer.DynamicSharedInformerFactory, error) {
 	dynamicClient, err := client.DynamicClient()
 	if err != nil {
 		return nil, err
 	}
 	return dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicClient, defaultInformerResync, namespace, nil), nil
-}
-
-func currentInformer(
-	gvr schema.GroupVersionResource,
-	factory dynamicinformer.DynamicSharedInformerFactory,
-	stopCh <-chan struct{}) (informers.GenericInformer, error) {
-	if factory == nil {
-		return nil, errors.New("dynamic shared informer factory is nil")
-	}
-
-	informer := factory.ForResource(gvr)
-	factory.Start(stopCh)
-
-	return informer, nil
 }
 
 type accessKey struct {
@@ -108,21 +90,20 @@ func NewDynamicCache(ctx context.Context, client cluster.ClientInterface, option
 	}
 
 	logger := log.From(ctx).With("component", "DynamicCache")
+
+	c.factories = initFactoriesCache()
+	go initStatusCheck(ctx.Done(), logger, c.factories)
+
 	if c.useDynamicClient {
 		logger.Debugf("using dynamic client instead of informer")
 	}
 
-	factories := initFactoriesCache()
 	factory, err := c.initFactoryFunc(context.Background(), client, "")
 	if err != nil {
 		return nil, errors.Wrap(err, "initialize dynamic shared informer factory")
 	}
 
-	factories.set("", factory)
-
-	c.factories = factories
-
-	go initStatusCheck(ctx.Done(), logger, c.factories)
+	c.factories.set("", factory)
 
 	return c, nil
 }
@@ -229,10 +210,8 @@ func (dc *DynamicCache) currentInformer(ctx context.Context, key store.Key) (inf
 		dc.factories.set(key.Namespace, factory)
 	}
 
-	informer, err := currentInformer(gvr, factory, dc.stopCh)
-	if err != nil {
-		return nil, err
-	}
+	informer := factory.ForResource(gvr)
+	factory.Start(dc.stopCh)
 
 	if dc.seenGVKs.hasSeen(key.Namespace, gvk) {
 		return informer, nil
@@ -249,6 +228,9 @@ func (dc *DynamicCache) List(ctx context.Context, key store.Key) (*unstructured.
 	defer span.End()
 
 	if err := dc.HasAccess(ctx, key, "list"); err != nil {
+		if meta.IsNoMatchError(err) {
+			return &unstructured.UnstructuredList{}, nil
+		}
 		return nil, errors.Wrapf(err, "list access forbidden to %+v", key)
 	}
 
@@ -445,6 +427,7 @@ func (dc *DynamicCache) UpdateClusterClient(ctx context.Context, client cluster.
 
 	dc.updateMu.Lock()
 	dc.client = client
+	dc.factories.reset()
 	dc.updateMu.Unlock()
 
 	for _, fn := range dc.updateFns {

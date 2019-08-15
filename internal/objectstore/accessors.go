@@ -38,6 +38,15 @@ func (c *factoriesCache) get(key string) (dynamicinformer.DynamicSharedInformerF
 	return v, ok
 }
 
+func (c *factoriesCache) reset() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	for name := range c.factories {
+		delete(c.factories, name)
+	}
+}
+
 func (c *factoriesCache) delete(key string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()

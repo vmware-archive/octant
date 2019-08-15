@@ -10,6 +10,7 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -88,4 +89,19 @@ func (csd *CRDSection) PathFilters() []PathFilter {
 	return []PathFilter{
 		*NewPathFilter(csd.path, csd),
 	}
+}
+
+func (csd *CRDSection) Reset(ctx context.Context) error {
+	csd.mu.Lock()
+	defer csd.mu.Unlock()
+
+	logger := log.From(ctx)
+
+	for name := range csd.describers {
+		logger.With("describer-name", name, "crd-section-path", csd.path).
+			Debugf("removing crd from section")
+		delete(csd.describers, name)
+	}
+
+	return nil
 }

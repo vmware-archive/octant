@@ -19,6 +19,8 @@ import (
 type PluginListDescriber struct {
 }
 
+var _ describer.Describer = (*PluginListDescriber)(nil)
+
 // Describe describes a list of plugins
 func (d *PluginListDescriber) Describe(ctx context.Context, prefix, namespace string, options describer.Options) (component.ContentResponse, error) {
 	pluginStore := options.PluginManager().Store()
@@ -57,6 +59,10 @@ func (d *PluginListDescriber) Describe(ctx context.Context, prefix, namespace st
 func (d *PluginListDescriber) PathFilters() []describer.PathFilter {
 	filter := describer.NewPathFilter("/plugins", d)
 	return []describer.PathFilter{*filter}
+}
+
+func (d *PluginListDescriber) Reset(ctx context.Context) error {
+	return nil
 }
 
 func NewPluginListDescriber() *PluginListDescriber {

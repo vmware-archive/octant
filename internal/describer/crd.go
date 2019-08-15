@@ -32,6 +32,8 @@ type yamlPrinter func(runtime.Object) (*component.YAML, error)
 type crdOption func(*crd)
 
 type crd struct {
+	base
+
 	path                  string
 	name                  string
 	summaryPrinter        crdPrinter

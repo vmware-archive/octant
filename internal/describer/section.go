@@ -8,6 +8,8 @@ package describer
 import (
 	"context"
 
+	"github.com/pkg/errors"
+
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -17,6 +19,8 @@ type Section struct {
 	title      string
 	describers []Describer
 }
+
+var _ Describer = (*Section)(nil)
 
 // NewSection creates a Section.
 func NewSection(p, title string, describers ...Describer) *Section {
@@ -68,4 +72,14 @@ func (d *Section) PathFilters() []PathFilter {
 	}
 
 	return PathFilters
+}
+
+func (d *Section) Reset(ctx context.Context) error {
+	for i := range d.describers {
+		if err := d.describers[i].Reset(ctx); err != nil {
+			return errors.Wrapf(err, "reset describer in section %s", d.path)
+		}
+	}
+
+	return nil
 }

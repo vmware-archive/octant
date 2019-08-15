@@ -50,4 +50,19 @@ func Test_crdSectionDescriber(t *testing.T) {
 	}
 
 	assert.Equal(t, expect2, view2)
+
+	csd.Add("d1", d1)
+	require.NoError(t, csd.Reset(ctx))
+
+	view3, err := csd.Describe(ctx, "/prefix", "default", Options{})
+	require.NoError(t, err)
+
+	expected3 := component.ContentResponse{
+		Title: component.TitleFromString("title"),
+		Components: []component.Component{
+			component.NewList("Custom Resources", nil),
+		},
+	}
+
+	assert.Equal(t, expected3, view3)
 }
