@@ -23,7 +23,7 @@ func ClusterRoleListHandler(_ context.Context, list *rbacv1.ClusterRoleList, opt
 	}
 
 	cols := component.NewTableCols("Name", "Age")
-	tbl := component.NewTable("Cluster Roles", cols)
+	tbl := component.NewTable("Cluster Roles", "We couldn't find any cluster roles!", cols)
 
 	for _, clusterRole := range list.Items {
 		row := component.TableRow{}
@@ -118,7 +118,7 @@ func printPolicyRules(rules []rbacv1.PolicyRule) (*component.Table, error) {
 	})
 
 	cols := component.NewTableCols("Resources", "Non-Resource URLs", "Resource Names", "Verbs")
-	tbl := component.NewTable("Policy Rules", cols)
+	tbl := component.NewTable("Policy Rules", "There are no policy rules!", cols)
 
 	for _, r := range rules {
 		row := component.TableRow{}

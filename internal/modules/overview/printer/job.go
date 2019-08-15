@@ -29,7 +29,7 @@ func JobListHandler(_ context.Context, list *batchv1.JobList, opts Options) (com
 		return nil, errors.New("job list is nil")
 	}
 
-	table := component.NewTable("Jobs", JobCols)
+	table := component.NewTable("Jobs", "We couldn't find any jobs!", JobCols)
 
 	for _, job := range list.Items {
 		row := component.TableRow{}
@@ -121,7 +121,7 @@ func createJobStatus(job batchv1.Job) (*component.Summary, error) {
 func createJobConditions(conditions []batchv1.JobCondition) (*component.Table, error) {
 	cols := component.NewTableCols("Type", "Last Probe", "Last Transition",
 		"Status", "Message", "Reason")
-	table := component.NewTable("Conditions", cols)
+	table := component.NewTable("Conditions", "There are no job conditions!", cols)
 
 	for _, condition := range conditions {
 		row := component.TableRow{}

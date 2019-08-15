@@ -92,7 +92,7 @@ func Test_ReplicaSetListHandler(t *testing.T) {
 	containers.Add("kuard", "gcr.io/kuar-demo/kuard-amd64:1")
 
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
-	expected := component.NewTable("ReplicaSets", cols)
+	expected := component.NewTable("ReplicaSets", "We couldn't find any replica sets!", cols)
 	expected.Add(component.TableRow{
 		"Name":       component.NewLink("", "replicaset-test", "/replica-set"),
 		"Labels":     component.NewLabels(labels),
@@ -102,7 +102,7 @@ func Test_ReplicaSetListHandler(t *testing.T) {
 		"Containers": containers,
 	})
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func TestReplicaSetConfiguration(t *testing.T) {

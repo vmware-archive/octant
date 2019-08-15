@@ -33,7 +33,7 @@ func EventListHandler(ctx context.Context, list *corev1.EventList, opts Options)
 
 	cols := component.NewTableCols("Kind", "Message", "Reason", "Type",
 		"First Seen", "Last Seen")
-	table := component.NewTable("Events", cols)
+	table := component.NewTable("Events", "We couldn't find any events!", cols)
 
 	for _, event := range list.Items {
 		row := component.TableRow{}
@@ -154,7 +154,7 @@ func PrintEvents(list *corev1.EventList, opts Options) (component.Component, err
 		return nil, errors.New("nil list")
 	}
 
-	table := component.NewTable("Events", objectEventCols)
+	table := component.NewTable("Events", "There are no events!", objectEventCols)
 
 	for _, event := range list.Items {
 		row := component.TableRow{}

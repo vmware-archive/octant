@@ -26,7 +26,8 @@ type affinityDescriber struct {
 func (ad *affinityDescriber) Create() (*component.Table, error) {
 
 	cols := component.NewTableCols("Type", "Description")
-	table := component.NewTable("Affinities and Anti-Affinities", cols)
+	table := component.NewTable("Affinities and Anti-Affinities",
+		"There are no affinities or anti-affinities!", cols)
 
 	if affinity := ad.podSpec.Affinity; affinity != nil {
 		for _, nodeAffinity := range ad.nodeAffinity(*affinity) {

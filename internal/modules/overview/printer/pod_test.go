@@ -84,7 +84,7 @@ func Test_PodListHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Restarts", "Node", "Age")
-	expected := component.NewTable("Pods", cols)
+	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name":     component.NewLink("", "pod", "/pod"),
 		"Labels":   component.NewLabels(labels),
@@ -170,7 +170,7 @@ func Test_PodHandler(t *testing.T) {
 	metadataSummary := component.NewSummary("Metadata", metadataSections...)
 
 	conditionsCols := component.NewTableCols("Type", "Last Transition Time", "Message", "Reason")
-	conditionTable := component.NewTable("Pod Conditions", conditionsCols)
+	conditionTable := component.NewTable("Pod Conditions", "There are no pod conditions!", conditionsCols)
 
 	container1Sections := component.SummarySections{
 		{Header: "Image", Content: component.NewText("nginx:1.15")},
@@ -186,13 +186,13 @@ func Test_PodHandler(t *testing.T) {
 	container2Summary := component.NewSummary("Container kuard", container2Sections...)
 
 	volumeCols := component.NewTableCols("Name", "Kind", "Description")
-	volumeTable := component.NewTable("Volumes", volumeCols)
+	volumeTable := component.NewTable("Volumes", "There are no volumes!", volumeCols)
 
 	taintCols := component.NewTableCols("Description")
-	taintTable := component.NewTable("Taints and Tolerations", taintCols)
+	taintTable := component.NewTable("Taints and Tolerations", "There are no taints or tolerations!", taintCols)
 
 	affinityCols := component.NewTableCols("Type", "Description")
-	affinityTable := component.NewTable("Affinities and Anti-Affinities", affinityCols)
+	affinityTable := component.NewTable("Affinities and Anti-Affinities", "There are no affinities or anti-affinities!", affinityCols)
 
 	expected := component.NewFlexLayout("Summary")
 	expected.AddSections(
@@ -273,7 +273,7 @@ func TestPodListHandler_sorted(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Restarts", "Node", "Age")
-	expected := component.NewTable("Pods", cols)
+	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name":     component.NewLink("", "pod1", "/pod1"),
 		"Labels":   component.NewLabels(make(map[string]string)),
@@ -445,7 +445,7 @@ func Test_createPodConditionsView(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Type", "Last Transition Time", "Message", "Reason")
-	expected := component.NewTable("Pod Conditions", cols)
+	expected := component.NewTable("Pod Conditions", "There are no pod conditions!", cols)
 	expected.Add([]component.TableRow{
 		{
 			"Type":                 component.NewText("Initialized"),
@@ -455,7 +455,7 @@ func Test_createPodConditionsView(t *testing.T) {
 		},
 	}...)
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func createPodWithPhase(name string, podLabels map[string]string, phase corev1.PodPhase, owner *metav1.OwnerReference) *corev1.Pod {

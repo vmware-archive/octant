@@ -25,7 +25,7 @@ func ServiceListHandler(_ context.Context, list *corev1.ServiceList, options Opt
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Type", "Cluster IP", "External IP", "Target Ports", "Age", "Selector")
-	tbl := component.NewTable("Services", cols)
+	tbl := component.NewTable("Services", "We couldn't find any services!", cols)
 
 	for _, s := range list.Items {
 		row := component.TableRow{}
@@ -215,7 +215,7 @@ func serviceEndpoints(ctx context.Context, options Options, service *corev1.Serv
 	}
 
 	cols := component.NewTableCols("Target", "IP", "Node Name")
-	table := component.NewTable("Endpoints", cols)
+	table := component.NewTable("Endpoints", "There are no endpoints!", cols)
 
 	endpoints := &corev1.Endpoints{}
 	if err := scheme.Scheme.Convert(object, endpoints, 0); err != nil {

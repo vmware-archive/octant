@@ -47,7 +47,7 @@ func (c emptyComponent) MarshalJSON() ([]byte, error) {
 
 func createPodTable(pods ...corev1.Pod) *component.Table {
 	tableCols := component.NewTableCols("Name", "Labels", "Age")
-	table := component.NewTable("/v1, Kind=PodList", tableCols)
+	table := component.NewTable("/v1, Kind=PodList", "placeholder", tableCols)
 	for _, pod := range pods {
 		table.Add(component.TableRow{
 			"Age":    component.NewTimestamp(pod.CreationTimestamp.Time),

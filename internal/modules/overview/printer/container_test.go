@@ -132,7 +132,7 @@ func Test_ContainerConfiguration(t *testing.T) {
 
 	now := time.Now()
 
-	envTable := component.NewTable("Environment",
+	envTable := component.NewTable("Environment", "There are no defined environment variables!",
 		component.NewTableCols("Name", "Value", "Source"))
 	envTable.Add(
 		component.TableRow{
@@ -169,7 +169,7 @@ func Test_ContainerConfiguration(t *testing.T) {
 		},
 	)
 
-	volTable := component.NewTable("Volume Mounts",
+	volTable := component.NewTable("Volume Mounts", "There are no volume mounts!",
 		component.NewTableCols("Name", "Mount Path", "Propagation"))
 	volTable.Add(
 		component.TableRow{

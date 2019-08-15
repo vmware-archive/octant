@@ -60,7 +60,7 @@ func TestPluginDescriber(t *testing.T) {
 
 	list := component.NewList("Plugins", nil)
 	tableCols := component.NewTableCols("Name", "Description", "Capabilities")
-	table := component.NewTable("Plugins", tableCols)
+	table := component.NewTable("Plugins", "There are no plugins!", tableCols)
 	table.Add(component.TableRow{
 		"Name":        component.NewText(name),
 		"Description": component.NewText("this is a test"),

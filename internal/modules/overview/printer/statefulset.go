@@ -22,7 +22,7 @@ func StatefulSetListHandler(_ context.Context, list *appsv1.StatefulSetList, opt
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Desired", "Current", "Age", "Selector")
-	tbl := component.NewTable("StatefulSets", cols)
+	tbl := component.NewTable("StatefulSets", "We couldn't find any stateful sets!", cols)
 
 	for _, statefulSet := range list.Items {
 		row := component.TableRow{}

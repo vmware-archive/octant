@@ -46,7 +46,7 @@ const (
 // printVolumes prints volumes as a table.
 func printVolumes(volumes []corev1.Volume) (component.Component, error) {
 	cols := component.NewTableCols("Name", "Kind", "Description")
-	table := component.NewTable("Volumes", cols)
+	table := component.NewTable("Volumes", "There are no volumes!", cols)
 
 	for _, volume := range volumes {
 		row := component.TableRow{}

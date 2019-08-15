@@ -24,7 +24,7 @@ func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opt
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Schedule", "Age")
-	tbl := component.NewTable("CronJobs", cols)
+	tbl := component.NewTable("CronJobs", "We couldn't find any cron jobs!", cols)
 
 	for _, c := range list.Items {
 		row := component.TableRow{}

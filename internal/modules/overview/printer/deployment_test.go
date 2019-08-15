@@ -97,7 +97,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 	containers.Add("kuard", "gcr.io/kuar-demo/kuard-amd64:1")
 
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
-	expected := component.NewTable("Deployments", cols)
+	expected := component.NewTable("Deployments", "We couldn't find any deployments!", cols)
 	expected.Add(component.TableRow{
 		"Name":       component.NewLink("", "deployment", "/path"),
 		"Labels":     component.NewLabels(objectLabels),
@@ -107,7 +107,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 		"Containers": containers,
 	})
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_deploymentConfiguration(t *testing.T) {
@@ -285,7 +285,7 @@ func Test_deploymentConditions(t *testing.T) {
 	got, err := deploymentConditions(deployment)
 	require.NoError(t, err)
 
-	expected := component.NewTableWithRows("Conditions", deploymentConditionColumns, []component.TableRow{
+	expected := component.NewTableWithRows("Conditions", "There are no deployment conditions!", deploymentConditionColumns, []component.TableRow{
 		{
 			"Type":            component.NewText("type1"),
 			"Reason":          component.NewText("reason1"),
@@ -343,7 +343,7 @@ func Test_deploymentPods(t *testing.T) {
 	got, err := deploymentPods(ctx, deployment, printOptions)
 	require.NoError(t, err)
 
-	expected := component.NewTableWithRows("Pods", podColsWithOutLabels, []component.TableRow{
+	expected := component.NewTableWithRows("Pods", "We couldn't find any pods!", podColsWithOutLabels, []component.TableRow{
 		{
 			"Name":     component.NewLink("", pod.Name, "/pod"),
 			"Age":      component.NewTimestamp(now),

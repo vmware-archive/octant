@@ -25,7 +25,8 @@ func ServiceAccountListHandler(_ context.Context, list *corev1.ServiceAccountLis
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Secrets", "Age")
-	table := component.NewTable("Service Accounts", cols)
+	table := component.NewTable("Service Accounts",
+		"We couldn't find any service accounts!", cols)
 
 	for _, serviceAccount := range list.Items {
 		row := component.TableRow{}

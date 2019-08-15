@@ -35,7 +35,7 @@ func NodeListHandler(ctx context.Context, list *corev1.NodeList, options Options
 		return nil, errors.New("node list is nil")
 	}
 
-	table := component.NewTable("Nodes", nodeListColumns)
+	table := component.NewTable("Nodes", "We couldn't find any nodes!", nodeListColumns)
 
 	for _, node := range list.Items {
 		row := component.TableRow{}
@@ -134,7 +134,7 @@ func nodeResources(node *corev1.Node) (component.Component, error) {
 		return nil, errors.New("nil nodes don't have resources")
 	}
 
-	table := component.NewTable("Resources", nodeResourcesColumns)
+	table := component.NewTable("Resources", "There are no resources!", nodeResourcesColumns)
 
 	allocatable := parseResourceList(node.Status.Allocatable)
 	capacity := parseResourceList(node.Status.Capacity)
@@ -170,7 +170,7 @@ var (
 )
 
 func nodeAddresses(node *corev1.Node) (component.Component, error) {
-	table := component.NewTable("Addresses", nodeAddressesColumns)
+	table := component.NewTable("Addresses", "There are no addresses!", nodeAddressesColumns)
 
 	for _, address := range node.Status.Addresses {
 		row := component.TableRow{}
@@ -304,7 +304,7 @@ func nodeConditions(node *corev1.Node) (component.Component, error) {
 		return nil, errors.New("cannot generate conditions for nil node")
 	}
 
-	table := component.NewTable("Conditions", nodeConditionsColumns)
+	table := component.NewTable("Conditions", "There are no node conditions!", nodeConditionsColumns)
 
 	for _, condition := range node.Status.Conditions {
 		row := component.TableRow{
@@ -333,7 +333,7 @@ func nodeImages(node *corev1.Node) (component.Component, error) {
 		return nil, errors.New("cannot generate images for nil node")
 	}
 
-	table := component.NewTable("Images", nodeImagesColumns)
+	table := component.NewTable("Images", "There are no images!", nodeImagesColumns)
 
 	for _, containerImage := range node.Status.Images {
 		row := component.TableRow{

@@ -51,7 +51,7 @@ func Test_ClusterRoleBindingListHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Age", "Role kind", "Role name")
-	expected := component.NewTable("Cluster Role Bindings", cols)
+	expected := component.NewTable("Cluster Role Bindings", "We couldn't find any cluster role bindings!", cols)
 	expected.Add(component.TableRow{
 		"Name":      component.NewLink("", clusterRoleBinding.Name, "/cluster-role-binding-path"),
 		"Labels":    component.NewLabels(labels),
@@ -81,7 +81,7 @@ func Test_printClusterRoleBindingSubjects(t *testing.T) {
 	require.NoError(t, err)
 
 	columns := component.NewTableCols("Kind", "Name", "Namespace")
-	expected := component.NewTable("Subjects", columns)
+	expected := component.NewTable("Subjects", "There are no subjects!", columns)
 
 	row := component.TableRow{}
 	row["Kind"] = component.NewText("User")

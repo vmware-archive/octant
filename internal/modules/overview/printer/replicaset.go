@@ -25,7 +25,7 @@ func ReplicaSetListHandler(ctx context.Context, list *appsv1.ReplicaSetList, opt
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
-	tbl := component.NewTable("ReplicaSets", cols)
+	tbl := component.NewTable("ReplicaSets", "We couldn't find any replica sets!", cols)
 
 	for _, rs := range list.Items {
 		row := component.TableRow{}

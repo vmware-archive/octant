@@ -24,7 +24,8 @@ func ReplicationControllerListHandler(ctx context.Context, list *corev1.Replicat
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
-	tbl := component.NewTable("ReplicationControllers", cols)
+	tbl := component.NewTable("ReplicationControllers",
+		"We couldn't find any replication controllers!", cols)
 
 	for _, rc := range list.Items {
 		row := component.TableRow{}

@@ -8,7 +8,6 @@ package printer
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -19,6 +18,7 @@ import (
 func affinityTable(affinityType, description string) *component.Table {
 	return component.NewTableWithRows(
 		"Affinities and Anti-Affinities",
+		"There are no affinities or anti-affinities!",
 		component.NewTableCols("Type", "Description"),
 		[]component.TableRow{
 			{
@@ -384,7 +384,7 @@ func Test_affinityDescriber_Create(t *testing.T) {
 
 			require.NoError(t, err)
 
-			assert.Equal(t, tc.expected, got)
+			component.AssertEqual(t, tc.expected, got)
 		})
 	}
 }

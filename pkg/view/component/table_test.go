@@ -115,12 +115,12 @@ func Test_Table_isEmpty(t *testing.T) {
 	}{
 		{
 			name:    "empty",
-			table:   NewTable("my table", NewTableCols("col1")),
+			table:   NewTable("my table", "placeholder", NewTableCols("col1")),
 			isEmpty: true,
 		},
 		{
 			name: "not empty",
-			table: NewTableWithRows("my table", NewTableCols("col1"), []TableRow{
+			table: NewTableWithRows("my table", "placeholder", NewTableCols("col1"), []TableRow{
 				{"col1": NewText("cell1")},
 			}),
 			isEmpty: false,
@@ -135,7 +135,7 @@ func Test_Table_isEmpty(t *testing.T) {
 }
 
 func Test_Table_AddColumn(t *testing.T) {
-	table := NewTable("table", NewTableCols("a"))
+	table := NewTable("table", "placeholder", NewTableCols("a"))
 	table.AddColumn("b")
 	expected := NewTableCols("a", "b")
 
@@ -181,9 +181,9 @@ func Test_Table_Sort(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			table := NewTableWithRows("table", NewTableCols("a"), tc.rows)
+			table := NewTableWithRows("table", "placeholder", NewTableCols("a"), tc.rows)
 			table.Sort("a", tc.reverse)
-			expected := NewTableWithRows("table", NewTableCols("a"), tc.expected)
+			expected := NewTableWithRows("table", "placeholder", NewTableCols("a"), tc.expected)
 
 			assert.Equal(t, expected, table)
 		})

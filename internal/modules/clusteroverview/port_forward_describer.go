@@ -30,7 +30,7 @@ func (d *PortForwardListDescriber) Describe(ctx context.Context, prefix, namespa
 	list := component.NewList("Port Forwards", nil)
 
 	tblCols := component.NewTableCols("Name", "Namespace", "Ports", "Age")
-	tbl := component.NewTable("Port Forwards", tblCols)
+	tbl := component.NewTable("Port Forwards", "There are no port forwards!", tblCols)
 	list.Add(tbl)
 
 	for _, pf := range portForwarder.List() {

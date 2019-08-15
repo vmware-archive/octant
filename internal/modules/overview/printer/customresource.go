@@ -39,7 +39,7 @@ func CustomResourceListHandler(
 
 func printGenericCRDTable(crdName string, list *unstructured.UnstructuredList, linkGenerator link.Interface) (component.Component, error) {
 	cols := component.NewTableCols("Name", "Labels", "Age")
-	table := component.NewTable(crdName, cols)
+	table := component.NewTable(crdName, "We couldn't find any custom resources!", cols)
 
 	for i := range list.Items {
 		cr := list.Items[i]
@@ -68,7 +68,7 @@ func printCustomCRDListTable(
 	list *unstructured.UnstructuredList,
 	linkGenerator link.Interface) (component.Component, error) {
 
-	table := component.NewTable(crdName, component.NewTableCols("Name", "Labels"))
+	table := component.NewTable(crdName, "We couldn't find any custom resources!", component.NewTableCols("Name", "Labels"))
 	for _, column := range crd.Spec.AdditionalPrinterColumns {
 		name := column.Name
 		if dashstrings.Contains(column.Name, []string{"Name", "Labels", "Age"}) {

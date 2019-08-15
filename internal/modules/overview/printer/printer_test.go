@@ -228,14 +228,14 @@ func Test_DefaultPrinter(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Age")
-	expected := component.NewTable("/v1, Kind=DeploymentList", cols)
+	expected := component.NewTable("/v1, Kind=DeploymentList", "We couldn't find any objects!", cols)
 	expected.Add(component.TableRow{
 		"Name":   component.NewText("deployment"),
 		"Labels": component.NewLabels(labels),
 		"Age":    component.NewTimestamp(now),
 	})
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_DefaultPrinter_invalid_object(t *testing.T) {

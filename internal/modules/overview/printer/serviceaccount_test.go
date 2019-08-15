@@ -53,7 +53,7 @@ func Test_ServiceAccountListHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Secrets", "Age")
-	expected := component.NewTable("Service Accounts", cols)
+	expected := component.NewTable("Service Accounts", "We couldn't find any service accounts!", cols)
 	expected.Add(component.TableRow{
 		"Name":    component.NewLink("", object.Name, "/path"),
 		"Labels":  component.NewLabels(labels),
@@ -61,7 +61,7 @@ func Test_ServiceAccountListHandler(t *testing.T) {
 		"Age":     component.NewTimestamp(now),
 	})
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_serviceAccountHandler(t *testing.T) {
@@ -92,7 +92,7 @@ func Test_serviceAccountHandler(t *testing.T) {
 		return summaryConfig, nil
 	}
 
-	policyTable := component.NewTable("policyTable", component.NewTableCols("col1"))
+	policyTable := component.NewTable("policyTable", "", component.NewTableCols("col1"))
 	h.policyRulesFunc = func(ctx context.Context, serviceAccount corev1.ServiceAccount, appObjectStore store.Store) (*component.Table, error) {
 		return policyTable, nil
 	}
