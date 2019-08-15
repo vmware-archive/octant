@@ -86,6 +86,10 @@ func (co *Overview) SetContext(ctx context.Context, contextName string) error {
 }
 
 func (co *Overview) bootstrap(ctx context.Context) error {
+	if err := rootDescriber.Reset(ctx); err != nil {
+		return err
+	}
+
 	pathMatcher := describer.NewPathMatcher("overview")
 	for _, pf := range rootDescriber.PathFilters() {
 		pathMatcher.Register(ctx, pf)

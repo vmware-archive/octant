@@ -31,6 +31,8 @@ type crdListPrinter func(
 type crdListDescriptionOption func(*crdList)
 
 type crdList struct {
+	base
+
 	name    string
 	path    string
 	printer crdListPrinter
