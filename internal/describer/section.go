@@ -35,16 +35,16 @@ func NewSection(p, title string, describers ...Describer) *Section {
 func (d *Section) Describe(ctx context.Context, prefix, namespace string, options Options) (component.ContentResponse, error) {
 	list := component.NewList(d.title, nil)
 
-	for _, child := range d.describers {
-		cResponse, err := child.Describe(ctx, prefix, namespace, options)
+	for describerIndex := range d.describers {
+		cResponse, err := d.describers[describerIndex].Describe(ctx, prefix, namespace, options)
 		if err != nil {
 			return EmptyContentResponse, err
 		}
 
-		for _, vc := range cResponse.Components {
-			if nestedList, ok := vc.(*component.List); ok {
-				for i := range nestedList.Config.Items {
-					item := nestedList.Config.Items[i]
+		for componentIndex := range cResponse.Components {
+			if nestedList, ok := cResponse.Components[componentIndex].(*component.List); ok {
+				for itemIndex := range nestedList.Config.Items {
+					item := nestedList.Config.Items[itemIndex]
 					if !item.IsEmpty() {
 						list.Add(item)
 					}
