@@ -10,6 +10,7 @@ describe('Octant Integration Tests', () => {
 
   it('has kubeconfig context', () => {
     cy.viewport(1440, 900)
+    cy.wait(2000)
     cy.get('[class=dropdown]').click()
 
     cy

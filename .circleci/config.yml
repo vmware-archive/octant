@@ -40,6 +40,6 @@ jobs:
         name: Cypress
         command: |
           cd web && npm install
-          ./node_modules/.bin/cypress run 
+          ./node_modules/.bin/cypress run --record --key $CYPRESS_RECORD_KEY --group $CIRCLE_JOB
         environment:
           CYPRESS_baseUrl: http://localhost:7777

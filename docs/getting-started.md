@@ -29,3 +29,16 @@ A development binary can be built by `make octant-dev`.
 For UI changes, see the [README](/web/README.md) located in `web/`.
 
 If Docker and [Drone](/docs/drone.md) are installed, tests and build steps can run in a containerized environment.
+
+## e2e Testing
+
+Cypress will load the dashboard from port 7777. Navigate to `web/` then install the Cypress binary `npm install cypress --save-dev`.
+
+Run the test from the command line with the option of specifying a browser or electron:
+
+`$(npm bin)/cypress run -b chrome`
+
+Starts the interactive launcher to load tests in `/cypress`.
+
+`$(npm bin)/cypress open`
+

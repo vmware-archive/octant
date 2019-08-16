@@ -17,8 +17,6 @@ rice-box.go
 
 /build
 /dist
-/cypress/videos
-/cypress/screenshots
 
 # generated fakes
 internal/api/fake
