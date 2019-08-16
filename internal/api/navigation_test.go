@@ -44,7 +44,7 @@ func Test_navigation_handler(t *testing.T) {
 			name:       "in general",
 			nav:        newNavigationHandler(validSections, logger),
 			statusCode: http.StatusOK,
-			body:       []byte("{\"sections\":[{}]}\n"),
+			body:       []byte("{\"sections\":[{\"isLoading\":false}]}\n"),
 		},
 		{
 			name:       "no section generator",

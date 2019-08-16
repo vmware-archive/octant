@@ -221,6 +221,7 @@ export interface TableView extends View {
     columns: TableColumn[];
     rows: TableRow[];
     emptyContent: string;
+    loading: boolean;
   };
 }
 

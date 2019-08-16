@@ -19,6 +19,7 @@ type TableConfig struct {
 	Columns      []TableCol `json:"columns"`
 	Rows         []TableRow `json:"rows"`
 	EmptyContent string     `json:"emptyContent"`
+	Loading      bool       `json:"loading"`
 }
 
 // TableCol describes a column from a table. Accessor is the key this
@@ -172,4 +173,12 @@ func (t *Table) MarshalJSON() ([]byte, error) {
 
 	m.Metadata.Type = typeTable
 	return json.Marshal(&m)
+}
+
+func (t *Table) SetIsLoading(isLoading bool) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	t.Config.Loading = isLoading
+
 }

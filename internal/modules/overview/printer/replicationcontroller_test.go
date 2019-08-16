@@ -145,7 +145,7 @@ func TestReplicationControllerStatus(t *testing.T) {
 		Kind:       "Pod",
 	}
 
-	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, nil)
+	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, false, nil)
 	rcs := NewReplicationControllerStatus(replicationController)
 	ctx := context.Background()
 	got, err := rcs.Create(ctx, o)

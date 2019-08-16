@@ -231,7 +231,7 @@ func TestReplicaSetStatus(t *testing.T) {
 		Kind:       "Pod",
 	}
 
-	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, nil).AnyTimes()
+	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, false, nil).AnyTimes()
 
 	ctx := context.Background()
 	rsc := NewReplicaSetStatus(rs)

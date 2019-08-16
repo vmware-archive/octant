@@ -144,7 +144,7 @@ func Test_printServiceAccountConfig(t *testing.T) {
 	tpo.PathForGVK(object.Namespace, "v1", "Secret", "secret", "secret", "/secret")
 
 	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).
-		Return(testutil.ToUnstructuredList(t, testutil.ToUnstructured(t, secret)), nil)
+		Return(testutil.ToUnstructuredList(t, testutil.ToUnstructured(t, secret)), false, nil)
 
 	ctx := context.Background()
 	got, err := printServiceAccountConfig(ctx, *object, printOptions)
@@ -202,7 +202,7 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 
 	appObjectStore.EXPECT().
 		List(gomock.Any(), roleBindingKey).
-		Return(roleBindingObjects, nil)
+		Return(roleBindingObjects, false, nil)
 
 	clusterRoleBindingKey := store.Key{
 		APIVersion: "rbac.authorization.k8s.io/v1",
@@ -223,7 +223,7 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 
 	appObjectStore.EXPECT().
 		List(gomock.Any(), clusterRoleBindingKey).
-		Return(clusterRoleBindingObjects, nil)
+		Return(clusterRoleBindingObjects, false, nil)
 
 	role1Key, err := store.KeyFromObject(role1)
 	require.NoError(t, err)

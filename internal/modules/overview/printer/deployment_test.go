@@ -336,7 +336,7 @@ func Test_deploymentPods(t *testing.T) {
 	}
 	tpo.objectStore.EXPECT().
 		List(gomock.Any(), key).
-		Return(testutil.ToUnstructuredList(t, pod), nil)
+		Return(testutil.ToUnstructuredList(t, pod), false, nil)
 
 	ctx := context.Background()
 

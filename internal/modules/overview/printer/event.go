@@ -237,7 +237,7 @@ func eventsForObject(ctx context.Context, object runtime.Object, o store.Store) 
 		Kind:       "Event",
 	}
 
-	list, err := o.List(ctx, key)
+	list, _, err := o.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "list events for object")
 	}

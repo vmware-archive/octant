@@ -7,6 +7,7 @@ export interface NavigationChild {
   children?: NavigationChild[];
   iconName: string;
   iconSource: string;
+  isLoading: boolean;
 }
 
 export interface Navigation {

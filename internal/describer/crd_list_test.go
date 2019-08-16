@@ -40,7 +40,6 @@ func Test_crdListDescriber(t *testing.T) {
 		Name:       crd.Name,
 	}
 
-	o.EXPECT().HasAccess(gomock.Any(), gomock.Any(), "list").Return(nil)
 	o.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
 
 	crKey := store.Key{
@@ -50,10 +49,10 @@ func Test_crdListDescriber(t *testing.T) {
 	}
 
 	objects := &unstructured.UnstructuredList{}
-	o.EXPECT().List(gomock.Any(), gomock.Eq(crKey)).Return(objects, nil)
+	o.EXPECT().List(gomock.Any(), gomock.Eq(crKey)).Return(objects, false, nil)
 
 	listPrinter := func(cld *crdList) {
-		cld.printer = func(name string, crd *apiextv1beta1.CustomResourceDefinition, objects *unstructured.UnstructuredList, linkGenerator link.Interface) (component.Component, error) {
+		cld.printer = func(name string, crd *apiextv1beta1.CustomResourceDefinition, objects *unstructured.UnstructuredList, linkGenerator link.Interface, loading bool) (component.Component, error) {
 			return component.NewText("crd list"), nil
 		}
 	}

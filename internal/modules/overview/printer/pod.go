@@ -327,7 +327,7 @@ func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelec
 }
 
 func loadPods(ctx context.Context, key store.Key, o store.Store, labelSelector *metav1.LabelSelector) ([]*corev1.Pod, error) {
-	objects, err := o.List(ctx, key)
+	objects, _, err := o.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -454,7 +454,7 @@ func createPodListView(ctx context.Context, object runtime.Object, options Optio
 		Kind:       "Pod",
 	}
 
-	list, err := objectStore.List(ctx, key)
+	list, _, err := objectStore.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "list all objects for key %+v", key)
 	}

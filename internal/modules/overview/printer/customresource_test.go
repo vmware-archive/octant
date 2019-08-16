@@ -41,7 +41,7 @@ func Test_CustomResourceListHandler(t *testing.T) {
 	resource.SetLabels(labels)
 
 	list := testutil.ToUnstructuredList(t, resource)
-	got, err := CustomResourceListHandler(crd.Name, crd, list, tpo.link)
+	got, err := CustomResourceListHandler(crd.Name, crd, list, tpo.link, true)
 	require.NoError(t, err)
 
 	expected := component.NewTableWithRows(
@@ -54,6 +54,7 @@ func Test_CustomResourceListHandler(t *testing.T) {
 				"Labels": component.NewLabels(labels),
 			},
 		})
+	expected.SetIsLoading(true)
 
 	component.AssertEqual(t, expected, got)
 }
@@ -77,7 +78,7 @@ func Test_CustomResourceListHandler_custom_columns(t *testing.T) {
 
 	list := testutil.ToUnstructuredList(t, resource)
 
-	got, err := CustomResourceListHandler(crd.Name, crd, list, tpo.link)
+	got, err := CustomResourceListHandler(crd.Name, crd, list, tpo.link, false)
 	require.NoError(t, err)
 
 	expected := component.NewTableWithRows(

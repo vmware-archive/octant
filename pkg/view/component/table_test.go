@@ -56,11 +56,11 @@ func Test_Table_Marshal(t *testing.T) {
 				base: newBase(typeTable, TitleFromString("my table")),
 				Config: TableConfig{
 					Columns: []TableCol{
-						TableCol{Name: "Name", Accessor: "Name"},
-						TableCol{Name: "Description", Accessor: "Description"},
+						{Name: "Name", Accessor: "Name"},
+						{Name: "Description", Accessor: "Description"},
 					},
 					Rows: []TableRow{
-						TableRow{
+						{
 							"Name": &Text{
 								Config: TextConfig{
 									Text: "First",
@@ -72,7 +72,7 @@ func Test_Table_Marshal(t *testing.T) {
 								},
 							},
 						},
-						TableRow{
+						{
 							"Name": &Text{
 								Config: TextConfig{
 									Text: "Last",
@@ -86,6 +86,7 @@ func Test_Table_Marshal(t *testing.T) {
 						},
 					},
 					EmptyContent: "",
+					Loading:      false,
 				},
 			},
 			expectedPath: "table.json",
@@ -95,7 +96,7 @@ func Test_Table_Marshal(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			actual, err := json.Marshal(tc.input)
-			isErr := (err != nil)
+			isErr := err != nil
 			if isErr != tc.isErr {
 				t.Fatalf("Unexpected error: %v", err)
 			}

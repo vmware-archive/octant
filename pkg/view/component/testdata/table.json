@@ -57,6 +57,7 @@
         }
       }
     ],
-    "emptyContent": ""
+    "emptyContent": "",
+    "loading": false
   }
 }

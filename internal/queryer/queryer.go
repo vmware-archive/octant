@@ -188,7 +188,7 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner *unstructured
 
 	list := append(allowed[:0:0], allowed...)
 
-	crds, err := navigation.CustomResourceDefinitions(ctx, osq.objectStore)
+	crds, _, err := navigation.CustomResourceDefinitions(ctx, osq.objectStore)
 	if err == nil {
 		for _, crd := range crds {
 			for _, version := range crd.Spec.Versions {
@@ -256,7 +256,7 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner *unstructured
 					return err
 				}
 				defer sem.Release(1)
-				objects, err := osq.objectStore.List(ctx, key)
+				objects, _, err := osq.objectStore.List(ctx, key)
 				if err != nil {
 					return errors.Wrapf(err, "unable to retrieve %+v", key)
 				}
@@ -327,7 +327,7 @@ func (osq *ObjectStoreQueryer) Events(ctx context.Context, object metav1.Object)
 		Kind:       "Event",
 	}
 
-	allEvents, err := osq.objectStore.List(ctx, key)
+	allEvents, _, err := osq.objectStore.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -362,7 +362,7 @@ func (osq *ObjectStoreQueryer) IngressesForService(ctx context.Context, service 
 		APIVersion: "extensions/v1beta1",
 		Kind:       "Ingress",
 	}
-	ul, err := osq.objectStore.List(ctx, key)
+	ul, _, err := osq.objectStore.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving ingresses")
 	}
@@ -504,7 +504,7 @@ func (osq *ObjectStoreQueryer) PodsForService(ctx context.Context, service *core
 }
 
 func (osq *ObjectStoreQueryer) loadPods(ctx context.Context, key store.Key, labelSelector *metav1.LabelSelector) ([]*corev1.Pod, error) {
-	objects, err := osq.objectStore.List(ctx, key)
+	objects, _, err := osq.objectStore.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -585,7 +585,7 @@ func (osq *ObjectStoreQueryer) ServicesForPod(ctx context.Context, pod *corev1.P
 		APIVersion: "v1",
 		Kind:       "Service",
 	}
-	ul, err := osq.objectStore.List(ctx, key)
+	ul, _, err := osq.objectStore.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving services")
 	}

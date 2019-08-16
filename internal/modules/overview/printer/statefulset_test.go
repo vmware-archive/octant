@@ -144,7 +144,7 @@ func Test_StatefulSetStatus(t *testing.T) {
 		Kind:       "Pod",
 	}
 
-	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, nil)
+	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, false, nil)
 
 	stsc := NewStatefulSetStatus(sts)
 	ctx := context.Background()

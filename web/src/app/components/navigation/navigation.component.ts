@@ -30,7 +30,7 @@ export class NavigationComponent {
     private iconService: IconService,
     private contentStreamService: ContentStreamService
   ) {
-    let streamer: Streamer = {
+    const streamer: Streamer = {
       behavior: this.behavior,
       handler: this.handleEvent,
     };

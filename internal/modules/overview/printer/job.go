@@ -173,7 +173,7 @@ func createJobListView(ctx context.Context, object runtime.Object, options Optio
 		Kind:       "Job",
 	}
 
-	list, err := objectStore.List(ctx, key)
+	list, _, err := objectStore.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "list all objects for key %+v", key)
 	}

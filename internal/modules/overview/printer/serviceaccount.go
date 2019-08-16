@@ -174,7 +174,7 @@ func serviceAccountTokens(ctx context.Context, serviceAccount corev1.ServiceAcco
 		APIVersion: "v1",
 		Kind:       "Secret",
 	}
-	secretList, err := o.List(ctx, key)
+	secretList, _, err := o.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "find secrets for service account")
 	}
@@ -291,7 +291,7 @@ func (s *serviceAccountPolicyRules) listRoleBindings() ([]rbacv1.RoleRef, error)
 		Kind:       "RoleBinding",
 	}
 
-	objects, err := s.appObjectStore.List(s.ctx, roleBindingKey)
+	objects, _, err := s.appObjectStore.List(s.ctx, roleBindingKey)
 	if err != nil {
 		return nil, err
 	}
@@ -318,7 +318,7 @@ func (s *serviceAccountPolicyRules) listClusterRoleBindings() ([]rbacv1.RoleRef,
 		Kind:       "ClusterRoleBinding",
 	}
 
-	objects, err := s.appObjectStore.List(s.ctx, roleBindingKey)
+	objects, _, err := s.appObjectStore.List(s.ctx, roleBindingKey)
 	if err != nil {
 		return nil, err
 	}

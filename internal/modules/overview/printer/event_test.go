@@ -346,7 +346,7 @@ func Test_eventsForObject(t *testing.T) {
 		},
 	}...)
 
-	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(events, nil)
+	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(events, false, nil)
 
 	ctx := context.Background()
 	got, err := eventsForObject(ctx, object, o)

@@ -60,7 +60,7 @@ func Test_loadObjects(t *testing.T) {
 
 				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(key)).
-					Return(sampleObjects, nil)
+					Return(sampleObjects, false, nil)
 			},
 			fields:   map[string]string{},
 			keys:     []store.Key{{APIVersion: "v1", Kind: "kind"}},
@@ -77,7 +77,7 @@ func Test_loadObjects(t *testing.T) {
 
 				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(key)).
-					Return(&unstructured.UnstructuredList{}, nil)
+					Return(&unstructured.UnstructuredList{}, false, nil)
 
 			},
 			fields:   map[string]string{"name": "name"},
@@ -94,7 +94,7 @@ func Test_loadObjects(t *testing.T) {
 
 				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(key)).
-					Return(nil, errors.New("error"))
+					Return(nil, false, errors.New("error"))
 			},
 			fields: map[string]string{},
 			keys:   []store.Key{{APIVersion: "v1", Kind: "kind"}},

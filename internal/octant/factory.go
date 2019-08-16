@@ -19,7 +19,7 @@ import (
 )
 
 // EntriesFunc is a function that can create navigation entries.
-type EntriesFunc func(ctx context.Context, prefix, namespace string, objectStore store.Store, wantsClusterScoped bool) ([]navigation.Navigation, error)
+type EntriesFunc func(ctx context.Context, prefix, namespace string, objectStore store.Store, wantsClusterScoped bool) ([]navigation.Navigation, bool, error)
 
 // NavigationEntries help construct navigation entries.
 type NavigationEntries struct {
@@ -112,11 +112,12 @@ func (nf *NavigationFactory) genNode(ctx context.Context, name string, childFn E
 	}
 
 	if childFn != nil {
-		children, err := childFn(ctx, node.Path, nf.namespace, nf.objectStore, wantsClusterScoped)
+		children, loading, err := childFn(ctx, node.Path, nf.namespace, nf.objectStore, wantsClusterScoped)
 		if err != nil {
 			return nil, err
 		}
 		node.Children = children
+		node.Loading = loading
 	}
 
 	return node, nil

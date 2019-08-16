@@ -28,13 +28,14 @@ type UpdateFn func(store Store)
 
 // Store stores Kubernetes objects.
 type Store interface {
-	List(ctx context.Context, key Key) (*unstructured.UnstructuredList, error)
+	List(ctx context.Context, key Key) (list *unstructured.UnstructuredList, loading bool, err error)
 	Get(ctx context.Context, key Key) (*unstructured.Unstructured, error)
 	Watch(ctx context.Context, key Key, handler cache.ResourceEventHandler) error
 	HasAccess(context.Context, Key, string) error
 	UpdateClusterClient(ctx context.Context, client cluster.ClientInterface) error
 	RegisterOnUpdate(fn UpdateFn)
 	Update(ctx context.Context, key Key, updater func(*unstructured.Unstructured) error) error
+	IsLoading(ctx context.Context, key Key) bool
 }
 
 // Key is a key for the object store.
@@ -51,17 +52,17 @@ func (k Key) String() string {
 
 	sb.WriteString("CacheKey[")
 	if k.Namespace != "" {
-		sb.WriteString(fmt.Sprintf("Namespace=%q, ", k.Namespace))
+		sb.WriteString(fmt.Sprintf("Namespace='%s', ", k.Namespace))
 	}
-	sb.WriteString(fmt.Sprintf("APIVersion=%q, ", k.APIVersion))
-	sb.WriteString(fmt.Sprintf("Kind=%q", k.Kind))
+	sb.WriteString(fmt.Sprintf("APIVersion='%s', ", k.APIVersion))
+	sb.WriteString(fmt.Sprintf("Kind='%s'", k.Kind))
 
 	if k.Name != "" {
-		sb.WriteString(fmt.Sprintf(", Name=%q", k.Name))
+		sb.WriteString(fmt.Sprintf(", Name='%s'", k.Name))
 	}
 
-	if k.Selector != nil {
-		sb.WriteString(fmt.Sprintf(", Selector=%q", k.Selector.String()))
+	if k.Selector != nil && k.Selector.String() != "" {
+		sb.WriteString(fmt.Sprintf(", Selector='%s'", k.Selector.String()))
 	}
 
 	sb.WriteString("]")

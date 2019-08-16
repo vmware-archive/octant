@@ -1,12 +1,13 @@
 <clr-tree-node
-        class="section"
         *ngFor="let section of navigation.sections; trackBy: identifyNavigationItem"
-        [clrExpanded]="true">
+        [clrExpanded]="true"
+        [clrLoading]="section.isLoading"
+        class="section">
     <a
-            [routerLink]="section.path"
-            routerLinkActive="active"
             [routerLinkActiveOptions]="{exact: true}"
-            class="clr-treenode-link section">
+            [routerLink]="section.path"
+            class="clr-treenode-link section"
+            routerLinkActive="active">
         <span>
         <clr-icon [attr.shape]="section.iconName | default:'home'"></clr-icon>
             {{ section.title }}
@@ -15,12 +16,13 @@
 
     <clr-tree-node
             *ngFor="let category of section.children; trackBy: identifyNavigationItem"
-            [clrExpanded]="true">
+            [clrExpanded]="true"
+            [clrLoading]="category.isLoading">
         <a
-                [routerLink]="category.path"
-                routerLinkActive="active"
                 [routerLinkActiveOptions]="{exact: true}"
-                class="clr-treenode-link category">
+                [routerLink]="category.path"
+                class="clr-treenode-link category"
+                routerLinkActive="active">
       <span>
       <clr-icon [attr.shape]="itemIcon(category) | default:'folder'"></clr-icon>
           {{ category.title }}
@@ -29,11 +31,12 @@
         </a>
 
         <clr-tree-node
-                *ngFor="let entry of category.children; trackBy: identifyNavigationItem">
+                *ngFor="let entry of category.children; trackBy: identifyNavigationItem"
+                [clrLoading]="entry.isLoading">
             <a
                     [routerLink]="entry.path"
-                    routerLinkActive="active"
-                    class="clr-treenode-link item">
+                    class="clr-treenode-link item"
+                    routerLinkActive="active">
                 <clr-icon [attr.shape]="itemIcon(entry) | default:'folder'"></clr-icon>
                 <span>
                     {{ entry.title }}

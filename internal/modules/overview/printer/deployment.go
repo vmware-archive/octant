@@ -284,7 +284,7 @@ func deploymentPods(ctx context.Context, deployment *appsv1.Deployment, options 
 		Selector:   &selector,
 	}
 
-	list, err := objectStore.List(ctx, key)
+	list, _, err := objectStore.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "list all objects for key %s", key)
 	}
