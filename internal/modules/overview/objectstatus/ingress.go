@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
+	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -82,7 +83,13 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 		service := &corev1.Service{}
 
 		if err := store.GetAs(ctx, o, key, service); err != nil {
-			return ObjectStatus{}, errors.Wrap(err, "get service from objectstore")
+			realErr := errors.Cause(err)
+			if apiErrors.IsNotFound(realErr) {
+				status.SetError()
+				status.AddDetailf("service %q does not exist", key.Name)
+				continue
+			}
+			return ObjectStatus{}, errors.Wrap(err, "get service from object store")
 		}
 
 		if service.Name == "" {

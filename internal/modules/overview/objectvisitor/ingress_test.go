@@ -53,3 +53,28 @@ func TestIngress_Visit(t *testing.T) {
 	assert.Equal(t, expected.Items, visited)
 	assert.NoError(t, err)
 }
+
+func TestIngress_Visit_invalid_service_name(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	object := testutil.CreateIngress("ingress")
+	u := testutil.ToUnstructured(t, object)
+
+	q := queryerFake.NewMockQueryer(controller)
+	q.EXPECT().
+		ServicesForIngress(gomock.Any(), object).
+		Return([]*corev1.Service{}, nil)
+
+	handler := fake.NewMockObjectHandler(controller)
+
+	visitor := fake.NewMockVisitor(controller)
+
+	ingress := objectvisitor.NewIngress(q)
+
+	ctx := context.Background()
+	err := ingress.Visit(ctx, u, handler, visitor, true)
+
+	assert.NoError(t, err)
+
+}
