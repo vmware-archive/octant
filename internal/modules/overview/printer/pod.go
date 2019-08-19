@@ -45,8 +45,10 @@ func PodListHandler(_ context.Context, list *corev1.PodList, opts Options) (comp
 	tbl := component.NewTable("Pods", cols)
 
 	for i := range list.Items {
-		if list.Items[i].Status.Phase == corev1.PodSucceeded {
-			// skip succeeded pods
+		if list.Items[i].Status.Phase == corev1.PodSucceeded &&
+			!opts.DisableLabels &&
+			!hasOwnerReference(list.Items[i].OwnerReferences, "Job") {
+			// skip succeeded pods if called from handler and not created from job
 			continue
 		}
 
@@ -537,4 +539,13 @@ func createPodConditionsView(pod *corev1.Pod) (component.Component, error) {
 	}
 
 	return table, nil
+}
+
+func hasOwnerReference(ownerReferences []metav1.OwnerReference, kind string) bool {
+	for _, ownerReference := range ownerReferences {
+		if ownerReference.Kind == kind {
+			return true
+		}
+	}
+	return false
 }
