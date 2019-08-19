@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,7 +41,7 @@ func Test_ClusterRoleListHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Age")
-	expected := component.NewTable("Cluster Roles", cols)
+	expected := component.NewTable("Cluster Roles", "We couldn't find any cluster roles!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", object.Name, "/path"),
 		"Age":  component.NewTimestamp(now),
@@ -77,7 +76,7 @@ func Test_printClusterRolePolicyRule(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Resources", "Non-Resource URLs", "Resource Names", "Verbs")
-	expected := component.NewTable("Policy Rules", cols)
+	expected := component.NewTable("Policy Rules", "There are no policy rules!", cols)
 
 	row := component.TableRow{}
 	row["Resources"] = component.NewText("crontabs.stable.example.com")
@@ -87,5 +86,5 @@ func Test_printClusterRolePolicyRule(t *testing.T) {
 
 	expected.Add(row)
 
-	assert.Equal(t, expected, observed)
+	component.AssertEqual(t, expected, observed)
 }

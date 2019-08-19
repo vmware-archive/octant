@@ -21,7 +21,7 @@ func RoleBindingListHandler(ctx context.Context, roleBindingList *rbacv1.RoleBin
 	}
 
 	columns := component.NewTableCols("Name", "Age", "Role kind", "Role name")
-	table := component.NewTable("Role Bindings", columns)
+	table := component.NewTable("Role Bindings", "We couldn't find any role bindings!", columns)
 
 	for _, roleBinding := range roleBindingList.Items {
 		row := component.TableRow{}
@@ -107,7 +107,7 @@ func printRoleBindingSubjects(ctx context.Context, roleBinding *rbacv1.RoleBindi
 	}
 
 	columns := component.NewTableCols("Kind", "Name", "Namespace")
-	table := component.NewTable("Subjects", columns)
+	table := component.NewTable("Subjects", "There are no subjects!", columns)
 
 	for _, subject := range roleBinding.Subjects {
 		row := component.TableRow{}

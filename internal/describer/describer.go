@@ -72,7 +72,7 @@ func LoadObjects(ctx context.Context, objectStore store.Store, namespace string,
 			objectStoreKey.Name = name
 		}
 
-		storedObjects, err := objectStore.List(ctx, objectStoreKey)
+		storedObjects, _, err := objectStore.List(ctx, objectStoreKey)
 		if err != nil {
 			return nil, err
 		}

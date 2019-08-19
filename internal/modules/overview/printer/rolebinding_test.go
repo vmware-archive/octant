@@ -44,7 +44,7 @@ func Test_RoleBindingListHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Age", "Role kind", "Role name")
-	expected := component.NewTable("Role Bindings", cols)
+	expected := component.NewTable("Role Bindings", "We couldn't find any role bindings!", cols)
 	expected.Add(component.TableRow{
 		"Name":      component.NewLink("", roleBinding.Name, "/role-binding"),
 		"Age":       component.NewTimestamp(now),
@@ -103,7 +103,7 @@ func Test_printRoleBindingSubjects(t *testing.T) {
 			observed, err := printRoleBindingSubjects(ctx, roleBinding, printOptions)
 			require.NoError(t, err)
 
-			expected := component.NewTableWithRows("Subjects",
+			expected := component.NewTableWithRows("Subjects", "There are no subjects!",
 				component.NewTableCols("Kind", "Name", "Namespace"),
 				[]component.TableRow{tc.expected})
 

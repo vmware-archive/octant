@@ -42,7 +42,7 @@ func PodListHandler(_ context.Context, list *corev1.PodList, opts Options) (comp
 		cols = podColsWithOutLabels
 	}
 
-	tbl := component.NewTable("Pods", cols)
+	table := component.NewTable("Pods", "We couldn't find any pods!", cols)
 
 	for i := range list.Items {
 		if list.Items[i].Status.Phase == corev1.PodSucceeded {
@@ -90,12 +90,12 @@ func PodListHandler(_ context.Context, list *corev1.PodList, opts Options) (comp
 		ts := list.Items[i].CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
 
-		tbl.Add(row)
+		table.Add(row)
 	}
 
-	tbl.Sort("Name", false)
+	table.Sort("Name", false)
 
-	return tbl, nil
+	return table, nil
 }
 
 func podNode(pod *corev1.Pod, linkGenerator link.Interface) (component.Component, error) {
@@ -327,7 +327,7 @@ func listPods(ctx context.Context, namespace string, selector *metav1.LabelSelec
 }
 
 func loadPods(ctx context.Context, key store.Key, o store.Store, labelSelector *metav1.LabelSelector) ([]*corev1.Pod, error) {
-	objects, err := o.List(ctx, key)
+	objects, _, err := o.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -454,7 +454,7 @@ func createPodListView(ctx context.Context, object runtime.Object, options Optio
 		Kind:       "Pod",
 	}
 
-	list, err := objectStore.List(ctx, key)
+	list, _, err := objectStore.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "list all objects for key %+v", key)
 	}
@@ -523,7 +523,7 @@ func createPodConditionsView(pod *corev1.Pod) (component.Component, error) {
 	}
 
 	cols := component.NewTableCols("Type", "Last Transition Time", "Message", "Reason")
-	table := component.NewTable("Pod Conditions", cols)
+	table := component.NewTable("Pod Conditions", "There are no pod conditions!", cols)
 
 	for _, condition := range pod.Status.Conditions {
 		row := component.TableRow{}

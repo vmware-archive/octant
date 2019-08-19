@@ -36,7 +36,7 @@ func TestNodeListHandler(t *testing.T) {
 	got, err := NodeListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 
-	expected := component.NewTableWithRows("Nodes", nodeListColumns, []component.TableRow{
+	expected := component.NewTableWithRows("Nodes", "We couldn't find any nodes!", nodeListColumns, []component.TableRow{
 		{
 			"Age":     component.NewTimestamp(node.CreationTimestamp.Time),
 			"Name":    component.NewLink("", "node-1", "/node"),
@@ -66,7 +66,7 @@ func Test_nodeAddresses(t *testing.T) {
 	got, err := nodeAddresses(node)
 	require.NoError(t, err)
 
-	expected := component.NewTableWithRows("Addresses", nodeAddressesColumns, []component.TableRow{
+	expected := component.NewTableWithRows("Addresses", "There are no addresses!", nodeAddressesColumns, []component.TableRow{
 		{
 			"Type":    component.NewText("Hostname"),
 			"Address": component.NewText("host.local"),
@@ -102,7 +102,7 @@ func Test_nodeResources(t *testing.T) {
 	got, err := nodeResources(node)
 	require.NoError(t, err)
 
-	expected := component.NewTableWithRows("Resources", nodeResourcesColumns, []component.TableRow{
+	expected := component.NewTableWithRows("Resources", "There are no resources!", nodeResourcesColumns, []component.TableRow{
 		{
 			"Key":         component.NewText("CPU"),
 			"Capacity":    component.NewText("1"),
@@ -145,7 +145,7 @@ func Test_nodeConditions(t *testing.T) {
 	got, err := nodeConditions(node)
 	require.NoError(t, err)
 
-	expected := component.NewTableWithRows("Conditions", nodeConditionsColumns, []component.TableRow{
+	expected := component.NewTableWithRows("Conditions", "There are no node conditions!", nodeConditionsColumns, []component.TableRow{
 		{
 			"Type":            component.NewText("type"),
 			"Reason":          component.NewText("reason"),
@@ -176,7 +176,7 @@ func Test_nodeImages(t *testing.T) {
 	got, err := nodeImages(node)
 	require.NoError(t, err)
 
-	expected := component.NewTableWithRows("Images", nodeImagesColumns, []component.TableRow{
+	expected := component.NewTableWithRows("Images", "There are no images!", nodeImagesColumns, []component.TableRow{
 		{
 			"Names": component.NewMarkdownText("a"),
 			"Size":  component.NewText("10"),

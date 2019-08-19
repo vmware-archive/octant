@@ -51,7 +51,7 @@ func Test_ConfigMapListHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Data", "Age")
-	expected := component.NewTable("ConfigMaps", cols)
+	expected := component.NewTable("ConfigMaps", "We couldn't find any config maps!", cols)
 	expected.Add(component.TableRow{
 		"Name":   component.NewLink("", configMap.Name, "/configMap"),
 		"Labels": component.NewLabels(labels),
@@ -81,13 +81,13 @@ func Test_describeConfigMapConfiguration(t *testing.T) {
 
 	cases := []struct {
 		name      string
-		configmap *corev1.ConfigMap
+		configMap *corev1.ConfigMap
 		isErr     bool
 		expected  *component.Summary
 	}{
 		{
 			name:      "configmap",
-			configmap: validConfigMap,
+			configMap: validConfigMap,
 			expected: component.NewSummary("Configuration", []component.SummarySection{
 				{
 					Header:  "Age",
@@ -97,14 +97,14 @@ func Test_describeConfigMapConfiguration(t *testing.T) {
 		},
 		{
 			name:      "configmap is nil",
-			configmap: nil,
+			configMap: nil,
 			isErr:     true,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			summary, err := describeConfigMapConfig(tc.configmap)
+			summary, err := describeConfigMapConfig(tc.configMap)
 			if tc.isErr {
 				require.Error(t, err)
 				return

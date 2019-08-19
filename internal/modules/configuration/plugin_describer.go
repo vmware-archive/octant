@@ -27,7 +27,7 @@ func (d *PluginListDescriber) Describe(ctx context.Context, prefix, namespace st
 
 	list := component.NewList("Plugins", nil)
 	tableCols := component.NewTableCols("Name", "Description", "Capabilities")
-	tbl := component.NewTable("Plugins", tableCols)
+	tbl := component.NewTable("Plugins", "There are no plugins!", tableCols)
 	list.Add(tbl)
 
 	for _, n := range pluginStore.ClientNames() {

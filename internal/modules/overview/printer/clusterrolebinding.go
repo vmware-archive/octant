@@ -21,7 +21,7 @@ func ClusterRoleBindingListHandler(_ context.Context, clusterRoleBindingList *rb
 	}
 
 	columns := component.NewTableCols("Name", "Labels", "Age", "Role kind", "Role name")
-	table := component.NewTable("Cluster Role Bindings", columns)
+	table := component.NewTable("Cluster Role Bindings", "We couldn't find any cluster role bindings!", columns)
 
 	for _, roleBinding := range clusterRoleBindingList.Items {
 		row := component.TableRow{}
@@ -108,7 +108,7 @@ func printClusterRoleBindingSubjects(roleBinding *rbacv1.ClusterRoleBinding) (co
 	}
 
 	columns := component.NewTableCols("Kind", "Name", "Namespace")
-	table := component.NewTable("Subjects", columns)
+	table := component.NewTable("Subjects", "There are no subjects!", columns)
 
 	for _, subject := range roleBinding.Subjects {
 		row := component.TableRow{}

@@ -34,7 +34,7 @@ func Test_customResourceDefinitionNames(t *testing.T) {
 		Kind:       "CustomResourceDefinition",
 	}
 	o.EXPECT().HasAccess(gomock.Any(), gomock.Any(), "list").Return(nil)
-	o.EXPECT().List(gomock.Any(), gomock.Eq(crdKey)).Return(crdList, nil)
+	o.EXPECT().List(gomock.Any(), gomock.Eq(crdKey)).Return(crdList, false, nil)
 
 	ctx := context.Background()
 	got, err := CustomResourceDefinitionNames(ctx, o)

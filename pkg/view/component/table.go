@@ -19,6 +19,7 @@ type TableConfig struct {
 	Columns      []TableCol `json:"columns"`
 	Rows         []TableRow `json:"rows"`
 	EmptyContent string     `json:"emptyContent"`
+	Loading      bool       `json:"loading"`
 }
 
 // TableCol describes a column from a table. Accessor is the key this
@@ -61,18 +62,19 @@ type Table struct {
 }
 
 // NewTable creates a table component
-func NewTable(title string, cols []TableCol) *Table {
+func NewTable(title, placeholder string, cols []TableCol) *Table {
 	return &Table{
 		base: newBase(typeTable, TitleFromString(title)),
 		Config: TableConfig{
-			Columns: cols,
+			Columns:      cols,
+			EmptyContent: placeholder,
 		},
 	}
 }
 
 // NewTableWithRows creates a table with rows.
-func NewTableWithRows(title string, cols []TableCol, rows []TableRow) *Table {
-	table := NewTable(title, cols)
+func NewTableWithRows(title, placeholder string, cols []TableCol, rows []TableRow) *Table {
+	table := NewTable(title, placeholder, cols)
 	table.Add(rows...)
 	return table
 }
@@ -96,6 +98,10 @@ func NewTableCols(keys ...string) []TableCol {
 // IsEmpty returns true if there is one or more rows.
 func (t *Table) IsEmpty() bool {
 	return len(t.Config.Rows) < 1
+}
+
+func (t *Table) SetPlaceholder(placeholder string) {
+	t.Config.EmptyContent = placeholder
 }
 
 func (t *Table) Sort(name string, reverse bool) {
@@ -167,4 +173,12 @@ func (t *Table) MarshalJSON() ([]byte, error) {
 
 	m.Metadata.Type = typeTable
 	return json.Marshal(&m)
+}
+
+func (t *Table) SetIsLoading(isLoading bool) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	t.Config.Loading = isLoading
+
 }

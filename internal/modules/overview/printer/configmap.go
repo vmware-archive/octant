@@ -25,7 +25,7 @@ func ConfigMapListHandler(_ context.Context, list *corev1.ConfigMapList, opts Op
 
 	// Data column
 	cols := component.NewTableCols("Name", "Labels", "Data", "Age")
-	tbl := component.NewTable("ConfigMaps", cols)
+	tbl := component.NewTable("ConfigMaps", "We couldn't find any config maps!", cols)
 
 	for _, c := range list.Items {
 		row := component.TableRow{}
@@ -109,7 +109,7 @@ func describeConfigMapData(cm *corev1.ConfigMap) (*component.Table, error) {
 	}
 
 	cols := component.NewTableCols("Key", "Value")
-	tbl := component.NewTable("Data", cols)
+	tbl := component.NewTable("Data", "No data has been configured for this config map!", cols)
 
 	rows, err := describeConfigMapDataRows(cm)
 	if err != nil {

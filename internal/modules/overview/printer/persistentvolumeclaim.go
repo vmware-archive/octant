@@ -23,7 +23,8 @@ func PersistentVolumeClaimListHandler(ctx context.Context, list *corev1.Persiste
 	}
 
 	cols := component.NewTableCols("Name", "Status", "Volume", "Capacity", "Access Modes", "Storage Class", "Age")
-	tbl := component.NewTable("Persistent Volume Claims", cols)
+	tbl := component.NewTable("Persistent Volume Claims",
+		"We couldn't find any persistent volume claims!", cols)
 
 	for _, persistentVolumeClaim := range list.Items {
 		row := component.TableRow{}

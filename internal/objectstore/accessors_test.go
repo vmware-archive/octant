@@ -5,15 +5,27 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware/octant/internal/cluster/fake"
 	"github.com/vmware/octant/internal/gvk"
-	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/store"
 )
+
+func Test_informerSynced(t *testing.T) {
+	c := initInformerSynced()
+	key := store.Key{APIVersion: "apiVersion"}
+	otherKey := store.Key{APIVersion: "apiVersion2"}
+	require.True(t, c.hasSynced(key))
+
+	c.setSynced(key, true)
+	require.True(t, c.hasSynced(key))
+	require.True(t, c.hasSynced(otherKey))
+
+	c.setSynced(key, false)
+	require.False(t, c.hasSynced(key))
+}
 
 func Test_factoriesCache(t *testing.T) {
 	const namespaceName = "test"
@@ -100,36 +112,4 @@ func Test_seenGVKsCache(t *testing.T) {
 			require.Equal(t, test.expected, got)
 		})
 	}
-}
-
-func Test_cachedObjectsCache(t *testing.T) {
-	c := initCachedObjectsCache()
-
-	pod := testutil.ToUnstructured(t, testutil.CreatePod("pod"))
-
-	c.update("test", gvk.Pod, pod)
-
-	items := c.list("test", gvk.Pod)
-	require.Equal(t, []*unstructured.Unstructured{pod}, items)
-
-	items = c.list("test", gvk.Deployment)
-	require.Empty(t, items)
-
-	items = c.list("other", gvk.Pod)
-	require.Empty(t, items)
-
-	c.delete("test", gvk.Pod, pod)
-
-	items = c.list("test", gvk.Pod)
-	require.Empty(t, items)
-}
-
-func Test_watchedGVKsCache(t *testing.T) {
-	c := initWatchedGVKsCache()
-
-	c.setWatched("test", gvk.Pod)
-	assert.True(t, c.isWatched("test", gvk.Pod))
-	assert.False(t, c.isWatched("test", gvk.Deployment))
-	assert.False(t, c.isWatched("other", gvk.Pod))
-
 }

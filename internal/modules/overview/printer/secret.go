@@ -26,7 +26,7 @@ func SecretListHandler(ctx context.Context, list *corev1.SecretList, options Opt
 		return nil, errors.New("list of secrets is nil")
 	}
 
-	table := component.NewTable("Secrets", secretTableCols)
+	table := component.NewTable("Secrets", "We couldn't find any secrets!", secretTableCols)
 
 	for _, secret := range list.Items {
 		row := component.TableRow{}
@@ -86,7 +86,7 @@ func secretConfiguration(secret corev1.Secret) (*component.Summary, error) {
 }
 
 func secretData(secret corev1.Secret) (*component.Table, error) {
-	table := component.NewTable("Data", secretDataCols)
+	table := component.NewTable("Data", "This secret has no data!", secretDataCols)
 
 	for key := range secret.Data {
 		row := component.TableRow{}

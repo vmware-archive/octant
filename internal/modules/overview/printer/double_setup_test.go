@@ -37,7 +37,7 @@ func mockObjectsEvents(t *testing.T, appObjectStore *storefake.MockStore, namesp
 
 	appObjectStore.EXPECT().
 		List(gomock.Any(), key).
-		Return(objects, nil).
+		Return(objects, false, nil).
 		AnyTimes()
 }
 

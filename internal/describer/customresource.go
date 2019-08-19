@@ -18,6 +18,7 @@ import (
 	"github.com/vmware/octant/pkg/store"
 )
 
+// TODO: delete me
 func CustomResourceDefinitionNames(ctx context.Context, o store.Store) ([]string, error) {
 	key := store.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
@@ -28,7 +29,7 @@ func CustomResourceDefinitionNames(ctx context.Context, o store.Store) ([]string
 		return []string{}, nil
 	}
 
-	rawList, err := o.List(ctx, key)
+	rawList, _, err := o.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "listing CRDs")
 	}

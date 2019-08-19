@@ -10,7 +10,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/vmware/octant/internal/conversion"
@@ -19,7 +18,7 @@ import (
 
 func tolerationTable(descriptions ...string) *component.Table {
 	table := component.NewTableWithRows(
-		"Taints and Tolerations",
+		"Taints and Tolerations", "There are no taints or tolerations!",
 		component.NewTableCols("Description"),
 		[]component.TableRow{})
 
@@ -156,7 +155,7 @@ func Test_TolerationDescriber_Create(t *testing.T) {
 
 			require.NoError(t, err)
 
-			assert.Equal(t, tc.expected, got)
+			component.AssertEqual(t, tc.expected, got)
 		})
 	}
 }

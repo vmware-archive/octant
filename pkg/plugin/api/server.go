@@ -71,7 +71,9 @@ var _ Service = (*GRPCService)(nil)
 
 // List lists objects.
 func (s *GRPCService) List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error) {
-	return s.ObjectStore.List(ctx, key)
+	// TODO: support hasSynced
+	list, _, err := s.ObjectStore.List(ctx, key)
+	return list, err
 }
 
 // Get retrieves an object.

@@ -12,7 +12,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -56,7 +55,7 @@ func Test_IngressListHandler(t *testing.T) {
 		{
 			name: "in general",
 			list: list,
-			expected: component.NewTableWithRows("Ingresses", cols,
+			expected: component.NewTableWithRows("Ingresses", "We couldn't find any ingresses!", cols,
 				[]component.TableRow{
 					{
 						"Name":    component.NewLink("", "ingress", "/ingress"),
@@ -71,7 +70,7 @@ func Test_IngressListHandler(t *testing.T) {
 		{
 			name: "with TLS",
 			list: tlsList,
-			expected: component.NewTableWithRows("Ingresses", cols,
+			expected: component.NewTableWithRows("Ingresses", "We couldn't find any ingresses!", cols,
 				[]component.TableRow{
 					{
 						"Name":    component.NewLink("", "ingress", "/ingress"),
@@ -111,7 +110,7 @@ func Test_IngressListHandler(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			assert.Equal(t, tc.expected, got)
+			component.AssertEqual(t, tc.expected, got)
 
 		})
 	}
@@ -226,7 +225,7 @@ func Test_printIngressHosts(t *testing.T) {
 		{
 			name:   "in general",
 			object: object,
-			expected: component.NewTableWithRows("Rules", cols, []component.TableRow{
+			expected: component.NewTableWithRows("Rules", "There are no rules defined!", cols, []component.TableRow{
 				{
 					"Backends": component.NewLink("", "service", "/service"),
 					"Host":     component.NewText("*"),
@@ -237,7 +236,7 @@ func Test_printIngressHosts(t *testing.T) {
 		{
 			name:   "with rules",
 			object: objectWithRules,
-			expected: component.NewTableWithRows("Rules", cols, []component.TableRow{
+			expected: component.NewTableWithRows("Rules", "There are no rules defined!", cols, []component.TableRow{
 				{
 					"Backends": component.NewLink("", "service", "/service"),
 					"Host":     component.NewText("*"),

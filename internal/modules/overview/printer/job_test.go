@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	batchv1 "k8s.io/api/batch/v1"
 
@@ -59,7 +58,7 @@ func Test_JobListHandler(t *testing.T) {
 	got, err := JobListHandler(ctx, validJobList, printOptions)
 	require.NoError(t, err)
 
-	expected := component.NewTable("Jobs", JobCols)
+	expected := component.NewTable("Jobs", "We couldn't find any jobs!", JobCols)
 	expected.Add(component.TableRow{
 		"Name":        component.NewLink("", "job", "/job"),
 		"Labels":      component.NewLabels(validJobLabels),
@@ -68,5 +67,5 @@ func Test_JobListHandler(t *testing.T) {
 		"Age":         component.NewTimestamp(validJobCreationTime),
 	})
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }

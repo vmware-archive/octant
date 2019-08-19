@@ -68,7 +68,7 @@ func TestAPI(t *testing.T) {
 			name: "list",
 			initFunc: func(t *testing.T, mocks *apiMocks) {
 				mocks.objectStore.EXPECT().
-					List(gomock.Any(), gomock.Eq(listKey)).Return(objects, nil)
+					List(gomock.Any(), gomock.Eq(listKey)).Return(objects, false, nil)
 			},
 			doFunc: func(t *testing.T, client *api.Client) {
 				clientCtx, cancel := context.WithTimeout(context.Background(), 1*time.Second)

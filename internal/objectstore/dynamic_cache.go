@@ -34,6 +34,9 @@ import (
 const (
 	// defaultMutableResync is the resync period for informers.
 	defaultInformerResync = time.Second * 180
+
+	// initialInformerSyncTimeout
+	initialInformerSyncTimeout = time.Second * 10
 )
 
 func initDynamicSharedInformerFactory(ctx context.Context, client cluster.ClientInterface, namespace string) (dynamicinformer.DynamicSharedInformerFactory, error) {
@@ -59,6 +62,7 @@ type DynamicCacheOpt func(*DynamicCache)
 type DynamicCache struct {
 	initFactoryFunc func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error)
 	factories       *factoriesCache
+	informerSynced  *informerSynced
 	client          cluster.ClientInterface
 	stopCh          <-chan struct{}
 	seenGVKs        *seenGVKsCache
@@ -78,6 +82,7 @@ func NewDynamicCache(ctx context.Context, client cluster.ClientInterface, option
 		client:           client,
 		stopCh:           ctx.Done(),
 		seenGVKs:         initSeenGVKsCache(),
+		informerSynced:   initInformerSynced(),
 		useDynamicClient: os.Getenv("OCTANT_USE_DYNAMIC_CLIENT") == "1",
 	}
 
@@ -213,6 +218,10 @@ func (dc *DynamicCache) currentInformer(ctx context.Context, key store.Key) (inf
 	informer := factory.ForResource(gvr)
 	factory.Start(dc.stopCh)
 
+	dc.updateMu.Lock()
+	dc.checkKeySynced(ctx, dc.stopCh, informer, key)
+	dc.updateMu.Unlock()
+
 	if dc.seenGVKs.hasSeen(key.Namespace, gvk) {
 		return informer, nil
 	}
@@ -222,16 +231,46 @@ func (dc *DynamicCache) currentInformer(ctx context.Context, key store.Key) (inf
 	return informer, nil
 }
 
+func (dc *DynamicCache) checkKeySynced(ctx context.Context, stopCh <-chan struct{}, informer informers.GenericInformer, key store.Key) {
+	if dc.seenGVKs.hasSeen(key.Namespace, key.GroupVersionKind()) ||
+		(dc.informerSynced.hasSeen(key) && dc.informerSynced.hasSynced(key)) {
+		return
+	}
+
+	logger := log.From(ctx).With("key", key)
+	now := time.Now()
+	done := make(chan bool, 1)
+
+	go func() {
+
+		kcache.WaitForCacheSync(stopCh, informer.Informer().HasSynced)
+		dc.informerSynced.setSynced(key, true)
+		logger.With("elapsed", time.Since(now)).
+			Debugf("informer cache has synced")
+		done <- true
+	}()
+
+	go func() {
+		timer := time.NewTimer(initialInformerSyncTimeout)
+		select {
+		case <-timer.C:
+			logger.Debugf("cache has taken more than %s seconds to sync", initialInformerSyncTimeout)
+		case <-done:
+			timer.Stop()
+		}
+	}()
+}
+
 // List lists objects.
-func (dc *DynamicCache) List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error) {
+func (dc *DynamicCache) List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, bool, error) {
 	ctx, span := trace.StartSpan(ctx, "dynamicCache:list")
 	defer span.End()
 
 	if err := dc.HasAccess(ctx, key, "list"); err != nil {
 		if meta.IsNoMatchError(err) {
-			return &unstructured.UnstructuredList{}, nil
+			return &unstructured.UnstructuredList{}, false, nil
 		}
-		return nil, errors.Wrapf(err, "list access forbidden to %+v", key)
+		return nil, false, errors.Wrapf(err, "list access forbidden to %+v", key)
 	}
 
 	span.Annotate([]trace.Attribute{
@@ -241,19 +280,20 @@ func (dc *DynamicCache) List(ctx context.Context, key store.Key) (*unstructured.
 	}, "list key")
 
 	if dc.useDynamicClient {
-		return dc.listFromDynamicClient(ctx, key)
+		list, err := dc.listFromDynamicClient(ctx, key)
+		return list, true, err
 	}
 
 	return dc.listFromInformer(ctx, key)
 }
 
-func (dc *DynamicCache) listFromInformer(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error) {
+func (dc *DynamicCache) listFromInformer(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, bool, error) {
 	ctx, span := trace.StartSpan(ctx, "dynamicCache:list:informer")
 	defer span.End()
 
 	informer, err := dc.currentInformer(ctx, key)
 	if err != nil {
-		return nil, errors.Wrapf(err, "retrieving informer for %+v", key)
+		return nil, false, errors.Wrapf(err, "retrieving informer for %+v", key)
 	}
 
 	var l lister
@@ -270,7 +310,7 @@ func (dc *DynamicCache) listFromInformer(ctx context.Context, key store.Key) (*u
 
 	objects, err := l.List(selector)
 	if err != nil {
-		return nil, errors.Wrapf(err, "listing %v", key)
+		return nil, false, errors.Wrapf(err, "listing %v", key)
 	}
 
 	list := &unstructured.UnstructuredList{}
@@ -278,7 +318,7 @@ func (dc *DynamicCache) listFromInformer(ctx context.Context, key store.Key) (*u
 		list.Items = append(list.Items, *objects[i].(*unstructured.Unstructured))
 	}
 
-	return list, nil
+	return list, !dc.informerSynced.hasSynced(key), nil
 }
 
 func (dc *DynamicCache) listFromDynamicClient(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error) {
@@ -475,4 +515,8 @@ func (dc *DynamicCache) Update(ctx context.Context, key store.Key, updater func(
 	})
 
 	return err
+}
+
+func (dc *DynamicCache) IsLoading(ctx context.Context, key store.Key) bool {
+	return !dc.informerSynced.hasSynced(key)
 }

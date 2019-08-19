@@ -21,7 +21,7 @@ func RoleListHandler(_ context.Context, roleList *rbacv1.RoleList, options Optio
 	}
 
 	columns := component.NewTableCols("Name", "Age")
-	table := component.NewTable("Roles", columns)
+	table := component.NewTable("Roles", "We couldn't find any roles!", columns)
 
 	for _, role := range roleList.Items {
 		row := component.TableRow{}
@@ -90,7 +90,7 @@ func printRolePolicyRules(role *rbacv1.Role) (*component.Table, error) {
 	})
 
 	cols := component.NewTableCols("Resources", "Non-Resource URLs", "Resource Names", "Verbs")
-	tbl := component.NewTable("PolicyRules", cols)
+	tbl := component.NewTable("PolicyRules", "There are no policy rules!", cols)
 
 	for _, r := range rules {
 		row := component.TableRow{}

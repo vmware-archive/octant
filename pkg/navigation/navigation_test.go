@@ -38,7 +38,7 @@ func Test_NewNavigation(t *testing.T) {
 func TestEntriesHelper(t *testing.T) {
 	neh := EntriesHelper{}
 
-	neh.Add("title", "suffix", icon.OverviewService)
+	neh.Add("title", "suffix", icon.OverviewService, false)
 
 	list, err := neh.Generate("/prefix")
 	require.NoError(t, err)
@@ -71,7 +71,7 @@ func TestCRDEntries_namespace_scoped(t *testing.T) {
 	}
 	objectStore.EXPECT().
 		List(gomock.Any(), crdKey).
-		Return(crds, nil).
+		Return(crds, false, nil).
 		AnyTimes()
 
 	clusterCR := createCR("testing", "v1", "ClusterScoped", "cluster-scoped")
@@ -86,7 +86,7 @@ func TestCRDEntries_namespace_scoped(t *testing.T) {
 	}
 	objectStore.EXPECT().
 		List(gomock.Any(), crNamespaceKey).
-		Return(namespaceCRs, nil).
+		Return(namespaceCRs, false, nil).
 		AnyTimes()
 	crClusterKey := store.Key{
 		APIVersion: "testing/v1",
@@ -94,12 +94,12 @@ func TestCRDEntries_namespace_scoped(t *testing.T) {
 	}
 	objectStore.EXPECT().
 		List(gomock.Any(), crClusterKey).
-		Return(clusterCRs, nil).
+		Return(clusterCRs, false, nil).
 		AnyTimes()
 
 	ctx := context.Background()
 
-	namespaceGot, err := CRDEntries(ctx, "/prefix", "default", objectStore, false)
+	namespaceGot, _, err := CRDEntries(ctx, "/prefix", "default", objectStore, false)
 	require.NoError(t, err)
 
 	namespaceExpected := []Navigation{
@@ -108,7 +108,7 @@ func TestCRDEntries_namespace_scoped(t *testing.T) {
 
 	assert.Equal(t, namespaceExpected, namespaceGot)
 
-	clusterGot, err := CRDEntries(ctx, "/prefix", "default", objectStore, true)
+	clusterGot, _, err := CRDEntries(ctx, "/prefix", "default", objectStore, true)
 	require.NoError(t, err)
 
 	clusterExpected := []Navigation{

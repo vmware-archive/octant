@@ -24,7 +24,7 @@ func IngressListHandler(_ context.Context, list *extv1beta1.IngressList, options
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Hosts", "Address", "Ports", "Age")
-	table := component.NewTable("Ingresses", cols)
+	table := component.NewTable("Ingresses", "We couldn't find any ingresses!", cols)
 
 	for _, ingress := range list.Items {
 		ports := "80"
@@ -103,7 +103,7 @@ func printRulesForIngress(ingress *extv1beta1.Ingress, options Options) (compone
 	}
 
 	cols := component.NewTableCols("Host", "Path", "Backends")
-	table := component.NewTable("Rules", cols)
+	table := component.NewTable("Rules", "There are no rules defined!", cols)
 
 	ruleCount := 0
 	for _, rule := range ingress.Spec.Rules {

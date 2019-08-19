@@ -12,7 +12,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -422,10 +421,10 @@ func Test_printVolumes(t *testing.T) {
 			got, err := printVolumes([]corev1.Volume{tc.volume})
 			require.NoError(t, err)
 
-			expected := component.NewTableWithRows("Volumes",
+			expected := component.NewTableWithRows("Volumes", "There are no volumes!",
 				component.NewTableCols("Name", "Kind", "Description"),
 				[]component.TableRow{tc.expected})
-			assert.Equal(t, expected, got)
+			component.AssertEqual(t, expected, got)
 		})
 	}
 }

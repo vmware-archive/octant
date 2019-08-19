@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -61,7 +60,7 @@ func Test_SecretListHandler(t *testing.T) {
 	got, err := SecretListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
-	expected := component.NewTable("Secrets", secretTableCols)
+	expected := component.NewTable("Secrets", "We couldn't find any secrets!", secretTableCols)
 	expected.Add(component.TableRow{
 		"Name":   component.NewLink("", "secret", "/secret"),
 		"Labels": component.NewLabels(labels),
@@ -70,5 +69,5 @@ func Test_SecretListHandler(t *testing.T) {
 		"Age":    component.NewTimestamp(now),
 	})
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }

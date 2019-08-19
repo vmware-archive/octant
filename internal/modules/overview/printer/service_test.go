@@ -84,7 +84,7 @@ func Test_ServiceListHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Type", "Cluster IP", "External IP", "Target Ports", "Age", "Selector")
-	expected := component.NewTable("Services", cols)
+	expected := component.NewTable("Services", "We couldn't find any services!", cols)
 	expected.Add(component.TableRow{
 		"Name":         component.NewLink("", "service", "/service"),
 		"Labels":       component.NewLabels(labels),
@@ -96,7 +96,7 @@ func Test_ServiceListHandler(t *testing.T) {
 		"Selector":     component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
 	})
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_describeServiceConfiguration(t *testing.T) {
@@ -149,7 +149,7 @@ func Test_describeServiceConfiguration(t *testing.T) {
 	}
 
 	expected := component.NewSummary("Configuration", sections...)
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_serviceSummary(t *testing.T) {
@@ -185,7 +185,7 @@ func Test_serviceSummary(t *testing.T) {
 	}
 
 	expected := component.NewSummary("Status", sections...)
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_serviceEndpoints(t *testing.T) {
@@ -238,14 +238,14 @@ func Test_serviceEndpoints(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Target", "IP", "Node Name")
-	expected := component.NewTable("Endpoints", cols)
+	expected := component.NewTable("Endpoints", "There are no endpoints!", cols)
 	expected.Add(component.TableRow{
 		"Target":    component.NewLink("", "pod", "/pod"),
 		"IP":        component.NewText("10.1.1.1"),
 		"Node Name": component.NewText("node"),
 	})
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_describeTargetPort(t *testing.T) {

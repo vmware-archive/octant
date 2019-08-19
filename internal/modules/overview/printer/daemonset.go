@@ -23,7 +23,7 @@ func DaemonSetListHandler(_ context.Context, list *appsv1.DaemonSetList, opts Op
 
 	cols := component.NewTableCols("Name", "Labels", "Desired", "Current", "Ready",
 		"Up-To-Date", "Age", "Node Selector")
-	table := component.NewTable("Daemon Sets", cols)
+	table := component.NewTable("Daemon Sets", "We couldn't find any daemon sets!", cols)
 
 	for _, daemonSet := range list.Items {
 		row := component.TableRow{}
@@ -80,7 +80,7 @@ func printDaemonSetConfig(daemonSet *appsv1.DaemonSet) (*component.Summary, erro
 		return nil, errors.New("daemon set is nil")
 	}
 
-	var sections component.SummarySections
+	sections := component.SummarySections{}
 
 	rollingUpdate := daemonSet.Spec.UpdateStrategy.RollingUpdate
 	if rollingUpdate != nil {
@@ -112,7 +112,7 @@ func printDaemonSetStatus(daemonSet *appsv1.DaemonSet) (*component.Summary, erro
 		return nil, errors.New("daemon set is nil")
 	}
 
-	var sections component.SummarySections
+	sections := component.SummarySections{}
 
 	status := daemonSet.Status
 	sections.AddText("Current Number Scheduled", fmt.Sprint(status.CurrentNumberScheduled))
