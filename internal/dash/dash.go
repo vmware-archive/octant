@@ -159,7 +159,8 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 
 	listener, err := buildListener()
 	if err != nil {
-		return errors.Wrap(err, "failed to create net listener")
+		err = errors.Wrap(err, "failed to create net listener")
+		return errors.Wrap(err, "use OCTANT_LISTENER_ADDR to set host:port")
 	}
 
 	// Initialize the API
@@ -282,7 +283,12 @@ func initModuleManager(options *moduleOptions) (*module.Manager, error) {
 
 func buildListener() (net.Listener, error) {
 	listenerAddr := api.ListenerAddr()
-	return net.Listen("tcp", listenerAddr)
+	conn, err := net.DialTimeout("tcp", listenerAddr, time.Millisecond*500)
+	if err != nil {
+		return net.Listen("tcp", listenerAddr)
+	}
+	conn.Close()
+	return nil, errors.New(fmt.Sprintf("tcp %s: dial: already in use", listenerAddr))
 }
 
 type dash struct {

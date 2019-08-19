@@ -28,11 +28,11 @@ import (
 //go:generate mockgen -destination=./fake/mock_service.go -package=fake github.com/vmware/octant/internal/api Service
 
 const (
-	// ListenerAddrKey is the enviroment variable for the Octant listener address.
+	// ListenerAddrKey is the environment variable for the Octant listener address.
 	ListenerAddrKey = "OCTANT_LISTENER_ADDR"
 	// PathPrefix is a string for the api path prefix.
 	PathPrefix          = "/api/v1"
-	defaultListenerAddr = "127.0.0.1:0"
+	defaultListenerAddr = "127.0.0.1:7777"
 )
 
 func acceptedHosts() []string {
