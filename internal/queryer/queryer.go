@@ -19,6 +19,7 @@ import (
 	"k8s.io/api/extensions/v1beta1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
+	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -554,6 +555,10 @@ func (osq *ObjectStoreQueryer) ServicesForIngress(ctx context.Context, ingress *
 		}
 		u, err := osq.objectStore.Get(ctx, key)
 		if err != nil {
+			realErr := errors.Cause(err)
+			if apiErrors.IsNotFound(realErr) {
+				continue
+			}
 			return nil, errors.Wrapf(err, "retrieving service backend: %v", backend)
 		}
 

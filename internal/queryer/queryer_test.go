@@ -19,6 +19,7 @@ import (
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
+	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -564,6 +565,32 @@ func TestCacheQueryer_PodsForService(t *testing.T) {
 			assert.Equal(t, tc.expected, got)
 		})
 	}
+}
+
+func TestCacheQueryer_ServicesForIngress_service_not_found(t *testing.T) {
+	ingress := testutil.CreateIngress("ingress")
+	ingress.Spec.Backend = &extv1beta1.IngressBackend{
+		ServiceName: "not-found",
+	}
+
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	o := storeFake.NewMockStore(controller)
+	o.EXPECT().
+		Get(gomock.Any(), gomock.Any()).
+		Return(nil, &apiErrors.StatusError{ErrStatus: metav1.Status{
+			Reason: metav1.StatusReasonNotFound,
+		}})
+
+	discovery := queryerFake.NewMockDiscoveryInterface(controller)
+
+	oq := New(o, discovery)
+
+	ctx := context.Background()
+	services, err := oq.ServicesForIngress(ctx, ingress)
+	require.NoError(t, err)
+	require.Empty(t, services)
 }
 
 func TestCacheQueryer_ServicesForIngress(t *testing.T) {
