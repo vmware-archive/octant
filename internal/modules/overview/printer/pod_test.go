@@ -98,6 +98,65 @@ func Test_PodListHandler(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
+func Test_PodListHandlerNoLabel(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	tpo := newTestPrinterOptions(controller)
+	nodeLink := component.NewLink("", "node", "/node")
+	tpo.link.EXPECT().
+		ForGVK("", "v1", "Node", "node", "node").
+		Return(nodeLink, nil)
+	printOptions := tpo.ToOptions()
+
+	printOptions.DisableLabels = true
+	now := testutil.Time()
+
+	pod := testutil.CreatePod("pi-7xpxr")
+	pod.CreationTimestamp = metav1.Time{Time: now}
+	pod.Spec.Containers = []corev1.Container{
+		{
+			Name:  "pi",
+			Image: "perl",
+		},
+	}
+	pod.Spec.NodeName = "node"
+	pod.Status = corev1.PodStatus{
+		Phase: "Succeeded",
+		ContainerStatuses: []corev1.ContainerStatus{
+			{
+				Name:         "pi",
+				Image:        "perl",
+				RestartCount: 0,
+				Ready:        false,
+			},
+		},
+	}
+
+	object := &corev1.PodList{
+		Items: []corev1.Pod{*pod},
+	}
+
+	tpo.PathForObject(pod, pod.Name, "/pi-7xpxr")
+
+	ctx := context.Background()
+	got, err := PodListHandler(ctx, object, printOptions)
+	require.NoError(t, err)
+
+	cols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
+	expected := component.NewTable("Pods", cols)
+	expected.Add(component.TableRow{
+		"Name":     component.NewLink("", "pi-7xpxr", "/pi-7xpxr"),
+		"Ready":    component.NewText("0/1"),
+		"Phase":    component.NewText("Succeeded"),
+		"Restarts": component.NewText("0"),
+		"Age":      component.NewTimestamp(now),
+		"Node":     nodeLink,
+	})
+
+	component.AssertEqual(t, expected, got)
+}
+
 func Test_PodHandler(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
