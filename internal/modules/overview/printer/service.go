@@ -38,7 +38,7 @@ func ServiceListHandler(_ context.Context, list *corev1.ServiceList, options Opt
 		row["Labels"] = component.NewLabels(s.Labels)
 		row["Type"] = component.NewText(string(s.Spec.Type))
 		row["Cluster IP"] = component.NewText(s.Spec.ClusterIP)
-		row["External IP"] = component.NewText(strings.Join(s.Spec.ExternalIPs, ","))
+		row["External IP"] = component.NewText(describeExternalIPs(s))
 		row["Target Ports"] = printServicePorts(s.Spec.Ports)
 
 		ts := s.CreationTimestamp.Time
@@ -165,10 +165,10 @@ func serviceSummary(service *corev1.Service) (*component.Summary, error) {
 		Content: component.NewText(service.Spec.ClusterIP),
 	})
 
-	if externalIPs := service.Spec.ExternalIPs; len(externalIPs) > 0 {
+	if externalIPs := describeExternalIPs(*service); len(externalIPs) > 0 {
 		sections = append(sections, component.SummarySection{
 			Header:  "External IPs",
-			Content: component.NewText(strings.Join(externalIPs, ", ")),
+			Content: component.NewText(externalIPs),
 		})
 	}
 
@@ -284,4 +284,27 @@ func describePort(port corev1.ServicePort) string {
 	}
 
 	return sb.String()
+}
+
+func describeExternalIPs(service corev1.Service) string {
+	externalIPs := make([]string, 0, len(service.Status.LoadBalancer.Ingress))
+
+	if len(service.Spec.ExternalIPs) > 0 {
+		return strings.Join(service.Spec.ExternalIPs, ", ")
+	}
+
+	for _, ingress := range service.Status.LoadBalancer.Ingress {
+		if ingress.Hostname != "" {
+			externalIPs = append(externalIPs, ingress.Hostname)
+		}
+		if ingress.IP != "" {
+			externalIPs = append(externalIPs, ingress.IP)
+		}
+	}
+
+	// TODO: Display if pending
+	if len(externalIPs) == 0 {
+		return "<none>"
+	}
+	return strings.Join(externalIPs, ", ")
 }

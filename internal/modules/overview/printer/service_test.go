@@ -90,7 +90,7 @@ func Test_ServiceListHandler(t *testing.T) {
 		"Labels":       component.NewLabels(labels),
 		"Type":         component.NewText("ClusterIP"),
 		"Cluster IP":   component.NewText("1.2.3.4"),
-		"External IP":  component.NewText("8.8.8.8,8.8.4.4"),
+		"External IP":  component.NewText("8.8.8.8, 8.8.4.4"),
 		"Target Ports": component.NewText("8181/TCP, 8888/UDP"),
 		"Age":          component.NewTimestamp(now),
 		"Selector":     component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
@@ -153,39 +153,88 @@ func Test_describeServiceConfiguration(t *testing.T) {
 }
 
 func Test_serviceSummary(t *testing.T) {
-	service := &corev1.Service{
-		Spec: corev1.ServiceSpec{
-			ClusterIP:      "10.5.5.5",
-			ExternalIPs:    []string{"10.20.1.5", "10.21.1.6"},
-			ExternalName:   "my-service",
-			LoadBalancerIP: "10.100.1.32",
+	cases := []struct {
+		name     string
+		service  *corev1.Service
+		sections []component.SummarySection
+	}{
+		{
+			name: "from spec",
+			service: &corev1.Service{
+				Spec: corev1.ServiceSpec{
+					ClusterIP:      "10.5.5.5",
+					ExternalIPs:    []string{"10.20.1.5", "10.21.1.6"},
+					ExternalName:   "my-service",
+					LoadBalancerIP: "10.100.1.32",
+				},
+			},
+			sections: []component.SummarySection{
+				{
+					Header:  "Cluster IP",
+					Content: component.NewText("10.5.5.5"),
+				},
+				{
+					Header:  "External IPs",
+					Content: component.NewText("10.20.1.5, 10.21.1.6"),
+				},
+				{
+					Header:  "Load Balancer IP",
+					Content: component.NewText("10.100.1.32"),
+				},
+				{
+					Header:  "External Name",
+					Content: component.NewText("my-service"),
+				},
+			},
+		},
+		{
+			name: "from ingress",
+			service: &corev1.Service{
+				Spec: corev1.ServiceSpec{
+					ClusterIP:      "10.5.5.5",
+					ExternalName:   "my-service",
+					LoadBalancerIP: "10.100.1.32",
+				},
+				Status: corev1.ServiceStatus{
+					LoadBalancer: corev1.LoadBalancerStatus{
+						Ingress: []corev1.LoadBalancerIngress{
+							{
+								Hostname: "example.com",
+							},
+						},
+					},
+				},
+			},
+			sections: []component.SummarySection{
+				{
+					Header:  "Cluster IP",
+					Content: component.NewText("10.5.5.5"),
+				},
+				{
+					Header:  "External IPs",
+					Content: component.NewText("example.com"),
+				},
+				{
+					Header:  "Load Balancer IP",
+					Content: component.NewText("10.100.1.32"),
+				},
+				{
+					Header:  "External Name",
+					Content: component.NewText("my-service"),
+				},
+			},
 		},
 	}
 
-	got, err := serviceSummary(service)
-	require.NoError(t, err)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := serviceSummary(tc.service)
+			require.NoError(t, err)
 
-	sections := []component.SummarySection{
-		{
-			Header:  "Cluster IP",
-			Content: component.NewText("10.5.5.5"),
-		},
-		{
-			Header:  "External IPs",
-			Content: component.NewText("10.20.1.5, 10.21.1.6"),
-		},
-		{
-			Header:  "Load Balancer IP",
-			Content: component.NewText("10.100.1.32"),
-		},
-		{
-			Header:  "External Name",
-			Content: component.NewText("my-service"),
-		},
+			expected := component.NewSummary("Status", tc.sections...)
+			component.AssertEqual(t, expected, got)
+		})
 	}
-
-	expected := component.NewSummary("Status", sections...)
-	component.AssertEqual(t, expected, got)
 }
 
 func Test_serviceEndpoints(t *testing.T) {
