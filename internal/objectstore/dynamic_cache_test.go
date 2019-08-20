@@ -19,6 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	dynamicfake "k8s.io/client-go/dynamic/fake"
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/vmware/octant/internal/cluster"
@@ -107,12 +108,12 @@ func Test_DynamicCache_List(t *testing.T) {
 	l := &fakeLister{listObjects: objects}
 	genericInformer.EXPECT().Lister().Return(l)
 
-	sharedInformer := clusterfake.NewMockSharedIndexInformer(controller)
-	genericInformer.EXPECT().Informer().Return(sharedInformer)
-
 	factoryFunc := func(c *DynamicCache) {
 		c.initFactoryFunc = func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
 			return informerFactory, nil
+		}
+		c.waitForSyncFunc = func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, <-chan struct{}, chan bool) {
+			return
 		}
 	}
 
@@ -156,9 +157,6 @@ func Test_DynamicCache_Get(t *testing.T) {
 	}
 	informerFactory.EXPECT().ForResource(gomock.Eq(podGVR)).Return(genericInformer)
 
-	sharedInformer := clusterfake.NewMockSharedIndexInformer(controller)
-	genericInformer.EXPECT().Informer().Return(sharedInformer)
-
 	podGK := schema.GroupKind{
 		Kind: "Pod",
 	}
@@ -182,6 +180,9 @@ func Test_DynamicCache_Get(t *testing.T) {
 	factoryFunc := func(c *DynamicCache) {
 		c.initFactoryFunc = func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
 			return informerFactory, nil
+		}
+		c.waitForSyncFunc = func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, <-chan struct{}, chan bool) {
+			return
 		}
 	}
 
@@ -360,12 +361,12 @@ func TestDynamicCache_Update(t *testing.T) {
 	l := &fakeLister{getObject: pod}
 	genericInformer.EXPECT().Lister().Return(l)
 
-	sharedInformer := clusterfake.NewMockSharedIndexInformer(controller)
-	genericInformer.EXPECT().Informer().Return(sharedInformer)
-
 	factoryFunc := func(c *DynamicCache) {
 		c.initFactoryFunc = func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
 			return informerFactory, nil
+		}
+		c.waitForSyncFunc = func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, <-chan struct{}, chan bool) {
+			return
 		}
 	}
 

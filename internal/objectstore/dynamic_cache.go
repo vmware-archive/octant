@@ -70,7 +70,31 @@ type DynamicCache struct {
 	updateFns       []store.UpdateFn
 	updateMu        sync.Mutex
 
+	timeoutFunc     func(context.Context, store.Key, chan bool)
+	waitForSyncFunc func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, <-chan struct{}, chan bool)
+
 	useDynamicClient bool
+}
+
+func timeout(ctx context.Context, key store.Key, done chan bool) {
+	logger := log.From(ctx).With("key", key)
+	timer := time.NewTimer(initialInformerSyncTimeout)
+	select {
+	case <-timer.C:
+		logger.Debugf("cache has taken more than %s seconds to sync", initialInformerSyncTimeout)
+	case <-done:
+		timer.Stop()
+	}
+}
+
+func waitForSync(ctx context.Context, key store.Key, dc *DynamicCache, informer informers.GenericInformer, stopCh <-chan struct{}, done chan bool) {
+	now := time.Now()
+	logger := log.From(ctx).With("key", key)
+	kcache.WaitForCacheSync(stopCh, informer.Informer().HasSynced)
+	dc.informerSynced.setSynced(key, true)
+	logger.With("elapsed", time.Since(now)).
+		Debugf("informer cache has synced")
+	done <- true
 }
 
 var _ store.Store = (*DynamicCache)(nil)
@@ -79,6 +103,8 @@ var _ store.Store = (*DynamicCache)(nil)
 func NewDynamicCache(ctx context.Context, client cluster.ClientInterface, options ...DynamicCacheOpt) (*DynamicCache, error) {
 	c := &DynamicCache{
 		initFactoryFunc:  initDynamicSharedInformerFactory,
+		timeoutFunc:      timeout,
+		waitForSyncFunc:  waitForSync,
 		client:           client,
 		stopCh:           ctx.Done(),
 		seenGVKs:         initSeenGVKsCache(),
@@ -237,28 +263,9 @@ func (dc *DynamicCache) checkKeySynced(ctx context.Context, stopCh <-chan struct
 		return
 	}
 
-	logger := log.From(ctx).With("key", key)
-	now := time.Now()
 	done := make(chan bool, 1)
-
-	go func() {
-
-		kcache.WaitForCacheSync(stopCh, informer.Informer().HasSynced)
-		dc.informerSynced.setSynced(key, true)
-		logger.With("elapsed", time.Since(now)).
-			Debugf("informer cache has synced")
-		done <- true
-	}()
-
-	go func() {
-		timer := time.NewTimer(initialInformerSyncTimeout)
-		select {
-		case <-timer.C:
-			logger.Debugf("cache has taken more than %s seconds to sync", initialInformerSyncTimeout)
-		case <-done:
-			timer.Stop()
-		}
-	}()
+	go dc.waitForSyncFunc(ctx, key, dc, informer, stopCh, done)
+	go dc.timeoutFunc(ctx, key, done)
 }
 
 // List lists objects.
