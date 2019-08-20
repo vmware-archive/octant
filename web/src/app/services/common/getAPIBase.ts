@@ -9,5 +9,5 @@ export default function getAPIBase(): string {
   if (environment.production) {
     return window.location.origin;
   }
-  return 'http://localhost:3001';
+  return 'http://localhost:7777';
 }
