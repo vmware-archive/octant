@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -30,6 +31,7 @@ import (
 const (
 	// ListenerAddrKey is the environment variable for the Octant listener address.
 	ListenerAddrKey = "OCTANT_LISTENER_ADDR"
+	AcceptedHostsKey = "OCTANT_ACCEPTED_HOSTS"
 	// PathPrefix is a string for the api path prefix.
 	PathPrefix          = "/api/v1"
 	defaultListenerAddr = "127.0.0.1:7777"
@@ -40,6 +42,11 @@ func acceptedHosts() []string {
 		"localhost",
 		"127.0.0.1",
 	}
+	if customHosts := os.Getenv(AcceptedHostsKey); customHosts != "" {
+		allowedHosts := strings.Split(customHosts, ",")
+		hosts = append(hosts, allowedHosts...)
+	}
+	
 	listenerAddr := ListenerAddr()
 	host, _, err := net.SplitHostPort(listenerAddr)
 	if err != nil {
