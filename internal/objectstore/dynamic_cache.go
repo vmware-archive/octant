@@ -70,13 +70,13 @@ type DynamicCache struct {
 	updateFns       []store.UpdateFn
 	updateMu        sync.Mutex
 
-	timeoutFunc     func(context.Context, store.Key, chan bool)
+	syncTimeoutFunc func(context.Context, store.Key, chan bool)
 	waitForSyncFunc func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, <-chan struct{}, chan bool)
 
 	useDynamicClient bool
 }
 
-func timeout(ctx context.Context, key store.Key, done chan bool) {
+func syncTimeout(ctx context.Context, key store.Key, done chan bool) {
 	logger := log.From(ctx).With("key", key)
 	timer := time.NewTimer(initialInformerSyncTimeout)
 	select {
@@ -103,7 +103,7 @@ var _ store.Store = (*DynamicCache)(nil)
 func NewDynamicCache(ctx context.Context, client cluster.ClientInterface, options ...DynamicCacheOpt) (*DynamicCache, error) {
 	c := &DynamicCache{
 		initFactoryFunc:  initDynamicSharedInformerFactory,
-		timeoutFunc:      timeout,
+		syncTimeoutFunc:  syncTimeout,
 		waitForSyncFunc:  waitForSync,
 		client:           client,
 		stopCh:           ctx.Done(),
@@ -265,7 +265,7 @@ func (dc *DynamicCache) checkKeySynced(ctx context.Context, stopCh <-chan struct
 
 	done := make(chan bool, 1)
 	go dc.waitForSyncFunc(ctx, key, dc, informer, stopCh, done)
-	go dc.timeoutFunc(ctx, key, done)
+	go dc.syncTimeoutFunc(ctx, key, done)
 }
 
 // List lists objects.
