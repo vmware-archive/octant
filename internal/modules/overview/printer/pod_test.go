@@ -144,7 +144,7 @@ func Test_PodListHandlerNoLabel(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
-	expected := component.NewTable("Pods", cols)
+	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name":     component.NewLink("", "pi-7xpxr", "/pi-7xpxr"),
 		"Ready":    component.NewText("0/1"),
