@@ -14,6 +14,15 @@ import (
 	dashstrings "github.com/vmware/octant/internal/util/strings"
 )
 
+// shouldAllowHost returns true if the incoming request.Host shuold be allowed
+// to access the API otherwise false.
+func shouldAllowHost(host string, acceptedHosts []string) bool {
+	if dashstrings.Contains("0.0.0.0", acceptedHosts) {
+		return true
+	}
+	return dashstrings.Contains(host, acceptedHosts)
+}
+
 // rebindHandler is a middleware that will only accept the supplied hosts
 func rebindHandler(acceptedHosts []string) mux.MiddlewareFunc {
 	return func(h http.Handler) http.Handler {
@@ -31,7 +40,7 @@ func rebindHandler(acceptedHosts []string) mux.MiddlewareFunc {
 				return
 			}
 
-			if !dashstrings.Contains(host, acceptedHosts) {
+			if !shouldAllowHost(host, acceptedHosts) {
 				http.Error(w, "forbidden", http.StatusForbidden)
 				return
 			}
