@@ -100,7 +100,7 @@ Start running Octant:
 
 `$ octant`
 
-Octant should immediately launch your default web browser to an available high level port on 127.0.0.1. (i.e. http://127.0.0.1:51234)
+Octant should immediately launch your default web browser on `127.0.0.1:7777`.
 
 Or to run it on a specific host and fixed port:
 `$ OCTANT_LISTENER_ADDR=0.0.0.0:8900 octant`
