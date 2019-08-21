@@ -7,6 +7,7 @@ package api
 
 import (
 	"fmt"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -56,7 +57,7 @@ func Test_rebindHandler(t *testing.T) {
 				fmt.Fprint(w, "response")
 			})
 
-			wrapped := rebindHandler(acceptedHosts())(fake)
+			wrapped := rebindHandler(context.TODO(), acceptedHosts())(fake)
 
 			ts := httptest.NewServer(wrapped)
 			defer ts.Close()
