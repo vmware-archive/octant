@@ -30,7 +30,7 @@ import (
 
 const (
 	// ListenerAddrKey is the environment variable for the Octant listener address.
-	ListenerAddrKey = "OCTANT_LISTENER_ADDR"
+	ListenerAddrKey  = "OCTANT_LISTENER_ADDR"
 	AcceptedHostsKey = "OCTANT_ACCEPTED_HOSTS"
 	// PathPrefix is a string for the api path prefix.
 	PathPrefix          = "/api/v1"
@@ -46,7 +46,7 @@ func acceptedHosts() []string {
 		allowedHosts := strings.Split(customHosts, ",")
 		hosts = append(hosts, allowedHosts...)
 	}
-	
+
 	listenerAddr := ListenerAddr()
 	host, _, err := net.SplitHostPort(listenerAddr)
 	if err != nil {
@@ -155,7 +155,7 @@ func (a *API) ForceUpdate() error {
 // Handler returns a HTTP handler for the service.
 func (a *API) Handler(ctx context.Context) (*mux.Router, error) {
 	router := mux.NewRouter()
-	router.Use(rebindHandler(acceptedHosts()))
+	router.Use(rebindHandler(ctx, acceptedHosts()))
 
 	s := router.PathPrefix(a.prefix).Subrouter()
 
