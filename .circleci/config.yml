@@ -14,18 +14,18 @@ jobs:
     - run:
         name: Cluster
         command: |
-          wget -O kind https://github.com/kubernetes-sigs/kind/releases/download/v0.4.0/kind-linux-amd64
+          wget -O kind https://github.com/kubernetes-sigs/kind/releases/download/v0.5.0/kind-linux-amd64
           chmod +x ./kind
-          ./kind create cluster
-          echo 'export KUBECONFIG=$(./kind get kubeconfig-path)' >> $BASH_ENV
+          sudo mv ./kind /usr/local/bin
+          kind create cluster
+          echo 'export KUBECONFIG=$(kind get kubeconfig-path)' >> $BASH_ENV
     - run:
         name: Kubectl
         command: |
           source $BASH_ENV
           wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/v1.15.0/bin/linux/amd64/kubectl
           chmod +x ./kubectl
-          ./kubectl apply -f examples/resources/crd-crontab.yaml
-          ./kubectl apply -f examples/resources/crd-crontab-resource.yaml
+          sudo mv ./kubectl /usr/local/bin
     - run:
         name: Octant
         command: |
@@ -39,6 +39,7 @@ jobs:
     - run:
         name: Cypress
         command: |
+          source $BASH_ENV
           cd web && npm install
           ./node_modules/.bin/cypress run --record --key $CYPRESS_RECORD_KEY --group $CIRCLE_JOB
         environment:

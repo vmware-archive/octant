@@ -24,6 +24,7 @@ ENV GOFLAGS=-mod=vendor GO111MODULE=on
 
 RUN make go-install
 RUN go generate ./web
+RUN make generate
 RUN make octant-dev
 
 # ------------------------------------------------------------------------------

@@ -31,7 +31,7 @@ var (
 
 // PortForwarder allows querying active port-forwards
 type PortForwarder interface {
-	List() []State
+	List(ctx context.Context) []State
 	Get(id string) (State, bool)
 	Create(ctx context.Context, gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (CreateResponse, error)
 	Find(namespace string, gvk schema.GroupVersionKind, name string) (State, error)
@@ -393,12 +393,17 @@ func (s *Service) updatePorts(id string, ports []ForwardedPort) error {
 }
 
 // List lists port forwards
-func (s *Service) List() []State {
+func (s *Service) List(ctx context.Context) []State {
 	s.state.Lock()
 	defer s.state.Unlock()
 
 	result := make([]State, 0, len(s.state.portForwards))
-	for _, pf := range s.state.portForwards {
+	for i, pf := range s.state.portForwards {
+		targetPod := &pf.Pod
+		if _, err := s.verifyPod(ctx, targetPod.Namespace, targetPod.Name); err != nil {
+			delete(s.state.portForwards, i)
+			continue
+		}
 		result = append(result, pf.Clone())
 	}
 
