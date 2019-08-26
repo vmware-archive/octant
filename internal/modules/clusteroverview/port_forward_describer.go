@@ -33,7 +33,7 @@ func (d *PortForwardListDescriber) Describe(ctx context.Context, prefix, namespa
 	tbl := component.NewTable("Port Forwards", "There are no port forwards!", tblCols)
 	list.Add(tbl)
 
-	for _, pf := range portForwarder.List() {
+	for _, pf := range portForwarder.List(ctx) {
 		t := &pf.Target
 		apiVersion, kind := t.GVK.ToAPIVersionAndKind()
 		nameLink, err := options.Link.ForGVK(t.Namespace, apiVersion, kind, t.Name, t.Name)
