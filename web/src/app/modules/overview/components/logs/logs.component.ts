@@ -11,7 +11,7 @@ import {
   OnInit,
   ViewChild,
   IterableDiffers,
-  IterableDiffer
+  IterableDiffer,
 } from '@angular/core';
 import { LogsView, LogEntry } from 'src/app/models/content';
 import {
@@ -27,7 +27,7 @@ import {
 export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
   private logStream: PodLogsStreamer;
   scrollToBottom = false;
-  
+
   private containerLogsDiffer: IterableDiffer<LogEntry>;
   @Input() view: LogsView;
   @ViewChild('scrollTarget') scrollTarget: ElementRef;
@@ -42,7 +42,9 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
   ) {}
 
   ngOnInit() {
-    this.containerLogsDiffer = this.iterableDiffers.find(this.containerLogs).create();
+    this.containerLogsDiffer = this.iterableDiffers
+      .find(this.containerLogs)
+      .create();
     if (this.view) {
       if (
         this.view.config.containers &&

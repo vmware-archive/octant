@@ -13,15 +13,15 @@ import { LogEntry } from 'src/app/models/content';
  */
 const addLogsToList = (currentLogList: LogEntry[]): LogEntry[] => {
   const logList = [...currentLogList];
-  for(let i = 1; i <= 15; i++) {
+  for (let i = 1; i <= 15; i++) {
     logList.push({
       timestamp: '2019-08-19T12:07:00.1222053Z',
-      message: 'Just for test'
-    })
+      message: 'Just for test',
+    });
   }
 
   return logList;
-}
+};
 
 describe('LogsComponent', () => {
   let component: LogsComponent;
@@ -50,11 +50,15 @@ describe('LogsComponent', () => {
     component.containerLogs = addLogsToList([]);
     fixture.detectChanges();
     expect(component.containerLogs.length).toBe(15);
-    expect(nativeElement.scrollTop).toEqual(nativeElement.scrollHeight - nativeElement.offsetHeight);
+    expect(nativeElement.scrollTop).toEqual(
+      nativeElement.scrollHeight - nativeElement.offsetHeight
+    );
 
-    component.containerLogs = addLogsToList(component.containerLogs)
+    component.containerLogs = addLogsToList(component.containerLogs);
     fixture.detectChanges();
     expect(component.containerLogs.length).toBe(30);
-    expect(nativeElement.scrollTop).toEqual(nativeElement.scrollHeight - nativeElement.offsetHeight);
+    expect(nativeElement.scrollTop).toEqual(
+      nativeElement.scrollHeight - nativeElement.offsetHeight
+    );
   });
 });
