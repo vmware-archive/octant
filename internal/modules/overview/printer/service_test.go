@@ -274,7 +274,7 @@ func Test_serviceEndpoints(t *testing.T) {
 	key := store.Key{Namespace: "default", APIVersion: "v1", Kind: "Endpoints", Name: "service"}
 	tpo.objectStore.EXPECT().
 		Get(gomock.Any(), gomock.Eq(key)).
-		Return(toUnstructured(t, endpoints), nil)
+		Return(toUnstructured(t, endpoints), true, nil)
 
 	podLink := component.NewLink("", "pod", "/pod")
 	tpo.link.EXPECT().

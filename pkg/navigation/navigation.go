@@ -152,22 +152,6 @@ func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1b
 	return list, hasSynced, nil
 }
 
-// CustomResourceDefinition retrieves a CRD.
-func CustomResourceDefinition(ctx context.Context, name string, o store.Store) (*apiextv1beta1.CustomResourceDefinition, error) {
-	key := store.Key{
-		APIVersion: "apiextensions.k8s.io/v1beta1",
-		Kind:       "CustomResourceDefinition",
-		Name:       name,
-	}
-
-	crd := &apiextv1beta1.CustomResourceDefinition{}
-	if err := store.GetObjectAs(ctx, o, key, crd); err != nil {
-		return nil, errors.Wrap(err, "get CRD from object store")
-	}
-
-	return crd, nil
-}
-
 // ListCustomResources lists all custom resources given a CRD.
 func ListCustomResources(
 	ctx context.Context,

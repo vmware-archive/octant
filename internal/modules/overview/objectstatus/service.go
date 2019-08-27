@@ -37,8 +37,16 @@ func service(ctx context.Context, object runtime.Object, o store.Store) (ObjectS
 
 	endpoints := &corev1.Endpoints{}
 
-	if err := store.GetAs(ctx, o, key, endpoints); err != nil {
+	found, err := store.GetAs(ctx, o, key, endpoints)
+	if err != nil {
 		return ObjectStatus{}, errors.Wrapf(err, "get endpoints for service %s", service.Name)
+	}
+
+	if !found {
+		return ObjectStatus{
+			nodeStatus: component.NodeStatusWarning,
+			Details:    []component.Component{component.NewText("Service has no endpoints")},
+		}, nil
 	}
 
 	addressCount := 0
@@ -50,7 +58,7 @@ func service(ctx context.Context, object runtime.Object, o store.Store) (ObjectS
 	if addressCount == 0 {
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusWarning,
-			Details:    []component.Component{component.NewText("Service has no endpoints")},
+			Details:    []component.Component{component.NewText("Service has no endpoint addresses")},
 		}, nil
 	}
 

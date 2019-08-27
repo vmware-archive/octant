@@ -209,9 +209,12 @@ func serviceEndpoints(ctx context.Context, options Options, service *corev1.Serv
 		Name:       service.Name,
 	}
 
-	object, err := o.Get(ctx, key)
+	object, found, err := o.Get(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "get endpoints for service %s", service.Name)
+	}
+	if !found {
+		return nil, errors.Errorf("no endpoints for service %s", service.Name)
 	}
 
 	cols := component.NewTableCols("Target", "IP", "Node Name")

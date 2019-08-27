@@ -12,7 +12,6 @@ import (
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
-	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -82,14 +81,15 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 
 		service := &corev1.Service{}
 
-		if err := store.GetAs(ctx, o, key, service); err != nil {
-			realErr := errors.Cause(err)
-			if apiErrors.IsNotFound(realErr) {
-				status.SetError()
-				status.AddDetailf("service %q does not exist", key.Name)
-				continue
-			}
+		found, err := store.GetAs(ctx, o, key, service)
+		if err != nil {
 			return ObjectStatus{}, errors.Wrap(err, "get service from object store")
+		}
+
+		if !found {
+			status.SetError()
+			status.AddDetailf("Backend refers to service %q which doesn't exist", key.Name)
+			continue
 		}
 
 		if service.Name == "" {
@@ -135,13 +135,14 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 			Name:       tls.SecretName,
 		}
 
-		secret, err := is.objectstore.Get(ctx, key)
+		_, found, err := is.objectstore.Get(ctx, key)
 		if err != nil {
-			// assume an error means the secret couldn't be accessed
-			break
+			status.SetError()
+			status.AddDetailf("Unable to load Secret %q: %s", tls.SecretName, err)
+			continue
 		}
 
-		if secret == nil {
+		if !found {
 			status.SetError()
 			status.AddDetailf("Secret %q does not exist", tls.SecretName)
 		}

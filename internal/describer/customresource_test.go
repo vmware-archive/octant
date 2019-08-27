@@ -18,33 +18,6 @@ import (
 	storefake "github.com/vmware/octant/pkg/store/fake"
 )
 
-func Test_customResourceDefinitionNames(t *testing.T) {
-	controller := gomock.NewController(t)
-	defer controller.Finish()
-
-	o := storefake.NewMockStore(controller)
-
-	crd1 := testutil.CreateCRD("crd1.example.com")
-	crd2 := testutil.CreateCRD("crd2.example.com")
-
-	crdList := testutil.ToUnstructuredList(t, crd1, crd2)
-
-	crdKey := store.Key{
-		APIVersion: "apiextensions.k8s.io/v1beta1",
-		Kind:       "CustomResourceDefinition",
-	}
-	o.EXPECT().HasAccess(gomock.Any(), gomock.Any(), "list").Return(nil)
-	o.EXPECT().List(gomock.Any(), gomock.Eq(crdKey)).Return(crdList, false, nil)
-
-	ctx := context.Background()
-	got, err := CustomResourceDefinitionNames(ctx, o)
-	require.NoError(t, err)
-
-	expected := []string{"crd1.example.com", "crd2.example.com"}
-
-	assert.Equal(t, expected, got)
-}
-
 func Test_customResourceDefinition(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
@@ -58,7 +31,7 @@ func Test_customResourceDefinition(t *testing.T) {
 		Kind:       "CustomResourceDefinition",
 		Name:       "crd1.example.com",
 	}
-	o.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd1), nil)
+	o.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd1), true, nil)
 
 	name := "crd1.example.com"
 	ctx := context.Background()

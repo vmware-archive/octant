@@ -100,25 +100,25 @@ func (c *Client) List(ctx context.Context, key store.Key) (*unstructured.Unstruc
 }
 
 // Get retrieves an object from the dashboard's objectStore.
-func (c *Client) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, error) {
+func (c *Client) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, bool, error) {
 	client := c.DashboardConnection.Client()
 
 	keyRequest, err := convertFromKey(key)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	resp, err := client.Get(ctx, keyRequest)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
-	object, err := convertToObject(resp.Object)
+	object, found, err := convertToObject(resp.Object)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
-	return object, nil
+	return object, found, nil
 }
 
 // Update updates an object in the store.

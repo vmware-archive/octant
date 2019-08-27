@@ -196,8 +196,9 @@ func Test_DynamicCache_Get(t *testing.T) {
 		Name:       "pod",
 	}
 
-	got, err := c.Get(ctx, key)
+	got, found, err := c.Get(ctx, key)
 	require.NoError(t, err)
+	require.True(t, found)
 
 	expected := testutil.ToUnstructured(t, pod)
 

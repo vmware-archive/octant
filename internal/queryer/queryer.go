@@ -19,7 +19,6 @@ import (
 	"k8s.io/api/extensions/v1beta1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
-	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -461,9 +460,13 @@ func (osq *ObjectStoreQueryer) OwnerReference(ctx context.Context, object *unstr
 			return true, object, nil
 		}
 
-		owner, err := osq.objectStore.Get(ctx, key)
+		owner, found, err := osq.objectStore.Get(ctx, key)
 		if err != nil {
 			return false, nil, errors.Wrap(err, "get owner from store")
+		}
+
+		if !found {
+			return false, nil, errors.Errorf("owner %s not found", key)
 		}
 
 		osq.owner.set(key, owner)
@@ -553,16 +556,12 @@ func (osq *ObjectStoreQueryer) ServicesForIngress(ctx context.Context, ingress *
 			Kind:       "Service",
 			Name:       backend.ServiceName,
 		}
-		u, err := osq.objectStore.Get(ctx, key)
+		u, found, err := osq.objectStore.Get(ctx, key)
 		if err != nil {
-			realErr := errors.Cause(err)
-			if apiErrors.IsNotFound(realErr) {
-				continue
-			}
 			return nil, errors.Wrapf(err, "retrieving service backend: %v", backend)
 		}
 
-		if u == nil {
+		if !found {
 			continue
 		}
 
@@ -636,10 +635,15 @@ func (osq *ObjectStoreQueryer) ServiceAccountForPod(ctx context.Context, pod *co
 		Name:       pod.Spec.ServiceAccountName,
 	}
 
-	u, err := osq.objectStore.Get(ctx, key)
+	u, found, err := osq.objectStore.Get(ctx, key)
 	if err != nil {
 		return nil, errors.WithMessagef(err, "retrieve service account %q from namespace %q",
-			key.Namespace, key.Namespace)
+			key.Name, key.Namespace)
+	}
+
+	if !found {
+		return nil, errors.Errorf("service account %q from namespace %q does not exist",
+			key.Name, key.Namespace)
 	}
 
 	serviceAccount := &corev1.ServiceAccount{}
