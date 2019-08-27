@@ -1,0 +1,21 @@
+# Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: example-host-ingress
+spec:
+  rules:
+  - host: www.mycompany.com
+    http:
+      paths:
+      - backend:
+          serviceName: www-service
+          servicePort: 80
+  - host: shop.mycompany.com
+    http:
+      paths:
+      - backend:
+          serviceName: shop-service
+          servicePort: 80
