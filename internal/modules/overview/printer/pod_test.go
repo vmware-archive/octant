@@ -14,13 +14,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware/octant/internal/conversion"
 	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/plugin"
-	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -153,156 +151,6 @@ func Test_PodListHandlerNoLabel(t *testing.T) {
 		"Age":      component.NewTimestamp(now),
 		"Node":     nodeLink,
 	})
-
-	component.AssertEqual(t, expected, got)
-}
-
-func Test_PodHandler(t *testing.T) {
-	controller := gomock.NewController(t)
-	defer controller.Finish()
-
-	now := testutil.Time()
-
-	tpo := newTestPrinterOptions(controller)
-	printOptions := tpo.ToOptions()
-
-	labels := map[string]string{
-		"app": "testing",
-	}
-
-	sidecar := testutil.CreatePod("pod")
-	sidecar.ObjectMeta.CreationTimestamp = *testutil.CreateTimestamp()
-	sidecar.ObjectMeta.Labels = labels
-	sidecar.Spec.Containers = []corev1.Container{
-		{
-			Name:  "nginx",
-			Image: "nginx:1.15",
-		},
-		{
-			Name:  "kuard",
-			Image: "gcr.io/kuar-demo/kuard-amd64:1",
-		},
-	}
-
-	tpo.PathForObject(sidecar, sidecar.Name, "/pod")
-
-	serviceAccountLink := component.NewLink("", "serviceAccount", "/service-account")
-	tpo.link.EXPECT().
-		ForGVK(gomock.Any(), "v1", "ServiceAccount", gomock.Any(), gomock.Any()).
-		Return(serviceAccountLink, nil).
-		AnyTimes()
-
-	printResponse := &plugin.PrintResponse{}
-	tpo.pluginManager.EXPECT().
-		Print(gomock.Any(), gomock.Any()).Return(printResponse, nil)
-
-	eventKey := store.Key{
-		Namespace:  "namespace",
-		APIVersion: "v1",
-		Kind:       "Event",
-	}
-	eventList := &unstructured.UnstructuredList{}
-	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(eventKey)).Return(eventList, false, nil)
-
-	ctx := context.Background()
-	got, err := PodHandler(ctx, sidecar, printOptions)
-	require.NoError(t, err)
-
-	configSection := component.SummarySections{
-		{Header: "Node", Content: component.NewText("<not scheduled>")},
-		{Header: "Service Account", Content: component.NewLink("", "serviceAccount", "/service-account")},
-	}
-	configSummary := component.NewSummary("Configuration", configSection...)
-
-	statusSections := component.SummarySections{
-		{Header: "QoS", Content: component.NewText("")},
-		{Header: "Phase", Content: component.NewText("")},
-		{Header: "Pod IP", Content: component.NewText("")},
-		{Header: "Host IP", Content: component.NewText("")},
-	}
-	statusSummary := component.NewSummary("Status", statusSections...)
-
-	metadataSections := component.SummarySections{
-		{Header: "Age", Content: component.NewTimestamp(now)},
-		{Header: "Labels", Content: component.NewLabels(labels)},
-	}
-	metadataSummary := component.NewSummary("Metadata", metadataSections...)
-
-	conditionsCols := component.NewTableCols("Type", "Last Transition Time", "Message", "Reason")
-	conditionTable := component.NewTable("Pod Conditions", "There are no pod conditions!", conditionsCols)
-
-	container1Sections := component.SummarySections{
-		{Header: "Image", Content: component.NewText("nginx:1.15")},
-	}
-	container1Summary := component.NewSummary("Container nginx", container1Sections...)
-
-	container2Sections := component.SummarySections{
-		{
-			Header:  "Image",
-			Content: component.NewText("gcr.io/kuar-demo/kuard-amd64:1"),
-		},
-	}
-	container2Summary := component.NewSummary("Container kuard", container2Sections...)
-
-	volumeCols := component.NewTableCols("Name", "Kind", "Description")
-	volumeTable := component.NewTable("Volumes", "There are no volumes!", volumeCols)
-
-	taintCols := component.NewTableCols("Description")
-	taintTable := component.NewTable("Taints and Tolerations", "There are no taints or tolerations!", taintCols)
-
-	affinityCols := component.NewTableCols("Type", "Description")
-	affinityTable := component.NewTable("Affinities and Anti-Affinities", "There are no affinities or anti-affinities!", affinityCols)
-
-	expected := component.NewFlexLayout("Summary")
-	expected.AddSections(
-		component.FlexLayoutSection{
-			{
-				Width: component.WidthHalf,
-				View:  configSummary,
-			},
-			{
-				Width: component.WidthHalf,
-				View:  statusSummary,
-			},
-		},
-		component.FlexLayoutSection{
-			{
-				Width: component.WidthFull,
-				View:  metadataSummary,
-			},
-		},
-		component.FlexLayoutSection{
-			{
-				Width: component.WidthFull,
-				View:  conditionTable,
-			},
-		},
-		component.FlexLayoutSection{},
-		component.FlexLayoutSection{
-			{
-				Width: component.WidthHalf,
-				View:  container1Summary,
-			},
-			{
-				Width: component.WidthHalf,
-				View:  container2Summary,
-			},
-		},
-		component.FlexLayoutSection{
-			{
-				Width: component.WidthHalf,
-				View:  volumeTable,
-			},
-			{
-				Width: component.WidthHalf,
-				View:  taintTable,
-			},
-			{
-				Width: component.WidthHalf,
-				View:  affinityTable,
-			},
-		},
-	)
 
 	component.AssertEqual(t, expected, got)
 }
@@ -527,4 +375,37 @@ func createPodWithPhase(name string, podLabels map[string]string, phase corev1.P
 		pod.SetOwnerReferences([]metav1.OwnerReference{*owner})
 	}
 	return pod
+}
+
+func Test_printPodResources(t *testing.T) {
+	pod := testutil.CreatePod("pod")
+	pod.Spec.Containers = []corev1.Container{
+		{
+			Name: "container-a",
+			Resources: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceMemory: resource.MustParse("1Mi"),
+					corev1.ResourceCPU:    resource.MustParse("2Mi"),
+				},
+				Limits: corev1.ResourceList{
+					corev1.ResourceMemory: resource.MustParse("3Mi"),
+					corev1.ResourceCPU:    resource.MustParse("4Mi"),
+				},
+			},
+		},
+	}
+
+	got, err := printPodResources(pod.Spec)
+	require.NoError(t, err)
+
+	expected := component.NewTable("Resources", "Pod has no resource needs", podResourceCols)
+	expected.Add(component.TableRow{
+		"Container":       component.NewText("container-a"),
+		"Request: Memory": component.NewText("1Mi"),
+		"Request: CPU":    component.NewText("2Mi"),
+		"Limit: Memory":   component.NewText("3Mi"),
+		"Limit: CPU":      component.NewText("4Mi"),
+	})
+
+	assert.Equal(t, expected, got)
 }

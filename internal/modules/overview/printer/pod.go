@@ -29,6 +29,7 @@ import (
 var (
 	podColsWithLabels    = component.NewTableCols("Name", "Labels", "Ready", "Phase", "Restarts", "Node", "Age")
 	podColsWithOutLabels = component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
+	podResourceCols      = component.NewTableCols("Container", "Request: Memory", "Request: CPU", "Limit: Memory", "Limit: CPU")
 )
 
 // PodListHandler is a printFunc that prints pods
@@ -111,81 +112,31 @@ func podNode(pod *corev1.Pod, linkGenerator link.Interface) (component.Component
 // PodHandler is a printFunc that prints Pods
 func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.Component, error) {
 	o := NewObject(pod)
-
-	portForwarder := opts.DashConfig.PortForwarder()
-
-	podConfigGen := NewPodConfiguration(pod)
-	configSummary, err := podConfigGen.Create(opts)
-	if err != nil {
-		return nil, err
-	}
-
-	statusSummary, err := createPodSummaryStatus(pod)
-	if err != nil {
-		return nil, err
-	}
-
-	o.RegisterConfig(configSummary)
-	o.RegisterSummary(statusSummary)
 	o.EnableEvents()
 
-	conditionDescription := ItemDescriptor{
-		Width: component.WidthFull,
-		Func: func() (component.Component, error) {
-			return createPodConditionsView(pod)
-		},
+	ph, err := newPodHandler(pod, o)
+	if err != nil {
+		return nil, err
 	}
 
-	o.RegisterItems(conditionDescription)
-
-	var initContainerItems []ItemDescriptor
-	for i := range pod.Spec.InitContainers {
-		container := pod.Spec.InitContainers[i]
-		cc := NewContainerConfiguration(pod, &container, portForwarder, true, opts)
-		initContainerItems = append(initContainerItems, ItemDescriptor{
-			Width: component.WidthHalf,
-			Func: func() (component.Component, error) {
-				return cc.Create()
-			},
-		})
+	if err := ph.Config(opts); err != nil {
+		return nil, errors.Wrap(err, "print pod configuration")
 	}
-
-	o.RegisterItems(initContainerItems...)
-
-	var containerItems []ItemDescriptor
-	for i := range pod.Spec.Containers {
-		container := pod.Spec.Containers[i]
-		cc := NewContainerConfiguration(pod, &container, portForwarder, false, opts)
-		containerItems = append(containerItems, ItemDescriptor{
-			Width: component.WidthHalf,
-			Func: func() (component.Component, error) {
-				return cc.Create()
-			},
-		})
+	if err := ph.Status(opts); err != nil {
+		return nil, errors.Wrap(err, "print pod status")
 	}
-
-	o.RegisterItems(containerItems...)
-
-	o.RegisterItems([]ItemDescriptor{
-		{
-			Width: component.WidthHalf,
-			Func: func() (component.Component, error) {
-				return printVolumes(pod.Spec.Volumes)
-			},
-		},
-		{
-			Width: component.WidthHalf,
-			Func: func() (component.Component, error) {
-				return printTolerations(pod.Spec)
-			},
-		},
-		{
-			Width: component.WidthHalf,
-			Func: func() (component.Component, error) {
-				return printAffinity(pod.Spec)
-			},
-		},
-	}...)
+	if err := ph.Conditions(opts); err != nil {
+		return nil, errors.Wrap(err, "print pod conditions")
+	}
+	if err := ph.InitContainers(opts); err != nil {
+		return nil, errors.Wrap(err, "print pod init containers")
+	}
+	if err := ph.Containers(opts); err != nil {
+		return nil, errors.Wrap(err, "print pod containers")
+	}
+	if err := ph.Additional(opts); err != nil {
+		return nil, errors.Wrap(err, "print pod additional items")
+	}
 
 	return o.ToComponent(ctx, opts)
 }
@@ -519,7 +470,7 @@ func createMountedPodListView(ctx context.Context, namespace string, persistentV
 	return PodListHandler(ctx, mountedPodList, options)
 }
 
-func createPodConditionsView(pod *corev1.Pod) (component.Component, error) {
+func createPodConditionsView(pod *corev1.Pod) (*component.Table, error) {
 	if pod == nil {
 		return nil, errors.New("pod is nil")
 	}
@@ -548,4 +499,202 @@ func hasOwnerReference(ownerReferences []metav1.OwnerReference, kind string) boo
 		}
 	}
 	return false
+}
+
+func printPodResources(podSpec corev1.PodSpec) (*component.Table, error) {
+	table := component.NewTable("Resources", "Pod has no resource needs", podResourceCols)
+
+	// for each container in the spec, there will be requests and limits
+	// for memory and cpu
+
+	for _, container := range podSpec.Containers {
+		memoryRequest := ""
+		if q := container.Resources.Requests.Memory(); q != nil {
+			memoryRequest = q.String()
+		}
+		cpuRequest := ""
+		if q := container.Resources.Requests.Cpu(); q != nil {
+			cpuRequest = q.String()
+		}
+		memoryLimit := ""
+		if q := container.Resources.Limits.Memory(); q != nil {
+			memoryLimit = q.String()
+		}
+		cpuLimit := ""
+		if q := container.Resources.Limits.Cpu(); q != nil {
+			cpuLimit = q.String()
+		}
+
+		row := component.TableRow{
+			"Container":       component.NewText(container.Name),
+			"Request: Memory": component.NewText(memoryRequest),
+			"Request: CPU":    component.NewText(cpuRequest),
+			"Limit: Memory":   component.NewText(memoryLimit),
+			"Limit: CPU":      component.NewText(cpuLimit),
+		}
+		table.Add(row)
+	}
+
+	return table, nil
+}
+
+type podObject interface {
+	Config(options Options) error
+	Status(options Options) error
+	Conditions(options Options) error
+	InitContainers(options Options) error
+	Containers(options Options) error
+	Additional(options Options) error
+}
+
+type podHandler struct {
+	pod             *corev1.Pod
+	configFunc      func(*corev1.Pod, Options) (*component.Summary, error)
+	summaryFunc     func(*corev1.Pod, Options) (*component.Summary, error)
+	conditionsFunc  func(*corev1.Pod, Options) (*component.Table, error)
+	containerFunc   func(pod *corev1.Pod, container *corev1.Container, isInit bool, options Options) (*component.Summary, error)
+	additionalFuncs []func(*corev1.Pod, Options) ObjectPrinterFunc
+	object          *Object
+}
+
+var _ podObject = (*podHandler)(nil)
+
+var defaultPodHandlerAdditionalItems = []func(*corev1.Pod, Options) ObjectPrinterFunc{
+	func(pod *corev1.Pod, options Options) ObjectPrinterFunc {
+		return func() (component.Component, error) {
+			return printPodResources(pod.Spec)
+		}
+	},
+	func(pod *corev1.Pod, options Options) ObjectPrinterFunc {
+		return func() (component.Component, error) {
+			return printVolumes(pod.Spec.Volumes)
+		}
+	},
+	func(pod *corev1.Pod, options Options) ObjectPrinterFunc {
+		return func() (component.Component, error) {
+			return printTolerations(pod.Spec)
+		}
+	},
+	func(pod *corev1.Pod, options Options) ObjectPrinterFunc {
+		return func() (component.Component, error) {
+			return printAffinity(pod.Spec)
+		}
+	},
+}
+
+func newPodHandler(pod *corev1.Pod, object *Object) (*podHandler, error) {
+	if pod == nil {
+		return nil, errors.New("can't print a nil pod")
+	}
+
+	if object == nil {
+		return nil, errors.New("can't print pod using a nil object printer")
+	}
+
+	ph := &podHandler{
+		pod:             pod,
+		configFunc:      defaultPodConfig,
+		summaryFunc:     defaultPodSummary,
+		conditionsFunc:  defaultPodConditions,
+		containerFunc:   defaultPodContainers,
+		additionalFuncs: defaultPodHandlerAdditionalItems,
+		object:          object,
+	}
+
+	return ph, nil
+}
+
+func (p *podHandler) Config(options Options) error {
+	out, err := p.configFunc(p.pod, options)
+	if err != nil {
+		return err
+	}
+	p.object.RegisterConfig(out)
+	return nil
+}
+
+func defaultPodConfig(pod *corev1.Pod, options Options) (*component.Summary, error) {
+	creator := NewPodConfiguration(pod)
+	return creator.Create(options)
+}
+
+func (p *podHandler) Status(options Options) error {
+	out, err := p.summaryFunc(p.pod, options)
+	if err != nil {
+		return err
+	}
+
+	p.object.RegisterSummary(out)
+	return nil
+}
+
+func defaultPodSummary(pod *corev1.Pod, options Options) (*component.Summary, error) {
+	return createPodSummaryStatus(pod)
+}
+
+func (p *podHandler) Conditions(options Options) error {
+	if p.pod == nil {
+		return errors.New("can't display conditions for nil pod")
+	}
+
+	p.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return p.conditionsFunc(p.pod, options)
+		},
+	})
+
+	return nil
+}
+
+func defaultPodConditions(pod *corev1.Pod, options Options) (*component.Table, error) {
+	return createPodConditionsView(pod)
+}
+
+func (p *podHandler) InitContainers(options Options) error {
+	return p.containers(p.pod.Spec.InitContainers, true, options)
+}
+
+func (p *podHandler) containers(containers []corev1.Container, isInit bool, options Options) error {
+	var itemDescriptors []ItemDescriptor
+
+	for i := range containers {
+		container := containers[i]
+
+		itemDescriptors = append(itemDescriptors, ItemDescriptor{
+			Width: component.WidthHalf,
+			Func: func() (component.Component, error) {
+				return p.containerFunc(p.pod, &container, isInit, options)
+			},
+		})
+	}
+
+	p.object.RegisterItems(itemDescriptors...)
+
+	return nil
+}
+
+func (p *podHandler) Containers(options Options) error {
+	return p.containers(p.pod.Spec.Containers, false, options)
+}
+
+func defaultPodContainers(pod *corev1.Pod, container *corev1.Container, isInit bool, options Options) (*component.Summary, error) {
+	portForwarder := options.DashConfig.PortForwarder()
+	creator := NewContainerConfiguration(pod, container, portForwarder, isInit, options)
+	return creator.Create()
+}
+
+func (p *podHandler) Additional(options Options) error {
+	var itemDescriptors []ItemDescriptor
+
+	for i := range p.additionalFuncs {
+		itemDescriptors = append(itemDescriptors, ItemDescriptor{
+			Width: component.WidthHalf,
+			Func:  p.additionalFuncs[i](p.pod, options),
+		})
+	}
+
+	p.object.RegisterItems(itemDescriptors...)
+
+	return nil
 }
