@@ -230,7 +230,12 @@ func CRDAPIVersions(crd *unstructured.Unstructured) ([]schema.GroupVersion, erro
 
 	versions, ok := spec["versions"].([]interface{})
 	if !ok {
-		return nil, errors.New("crd spec did not have versions")
+		versionName, ok := spec["version"].(string)
+		if !ok {
+			return nil, errors.New("crd spec did not have versions")
+		}
+		list = append(list, schema.GroupVersion{Group: crdName, Version: versionName})
+		return list, nil
 	}
 
 	for _, rawVersion := range versions {
@@ -277,7 +282,20 @@ func crdSupportsGVK(crd *unstructured.Unstructured, gvk schema.GroupVersionKind)
 
 	rawVersions, ok := spec["versions"].([]interface{})
 	if !ok {
-		return false, errors.New("crd spec did not have versions")
+		versionName, ok := spec["version"].(string)
+		if !ok {
+			return false, errors.New("crd spec did not have versions")
+		}
+		current := schema.GroupVersionKind{
+			Group:   group,
+			Kind:    kind,
+			Version: versionName,
+		}
+		if current.String() == gvk.String() {
+			return true, nil
+		} else {
+			return false, nil
+		}
 	}
 
 	for _, rawVersion := range rawVersions {
