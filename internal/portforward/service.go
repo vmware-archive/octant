@@ -405,7 +405,7 @@ func (s *Service) List(ctx context.Context) []State {
 	result := make([]State, 0, len(s.state.portForwards))
 	for i, pf := range s.state.portForwards {
 		targetPod := &pf.Pod
-		if _, err := s.verifyPod(ctx, targetPod.Namespace, targetPod.Name); err != nil {
+		if verified, err := s.verifyPod(ctx, targetPod.Namespace, targetPod.Name); !verified || err != nil {
 			delete(s.state.portForwards, i)
 			continue
 		}

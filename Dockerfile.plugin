@@ -1,0 +1,16 @@
+# Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+FROM golang:1.12 as builder
+ADD . /var/workspace
+WORKDIR /var/workspace
+ENV GOFLAGS=-mod=vendor GO111MODULE=on
+RUN go build -o /var/workspace/plugin github.com/vmware/octant/cmd/octant-sample-plugin
+
+# ------------------------------------------------------------------------------
+# Running container
+# ------------------------------------------------------------------------------
+FROM photon:3.0
+
+COPY --from=builder /var/workspace/plugin /octant-sample-plugin
+RUN chmod +x /octant-sample-plugin
