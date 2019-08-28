@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
+	"github.com/vmware/octant/internal/api"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/modules/overview/logviewer"
 	"github.com/vmware/octant/internal/modules/overview/resourceviewer"
@@ -81,7 +82,7 @@ func (d *Object) Describe(ctx context.Context, prefix, namespace string, options
 
 	object, err := options.LoadObject(ctx, namespace, options.Fields, d.objectStoreKey)
 	if err != nil {
-		return EmptyContentResponse, errors.Wrapf(err, "loading object with %s", d.objectStoreKey.String())
+		return EmptyContentResponse, api.NewNotFoundError(d.path)
 	} else if object == nil {
 		return EmptyContentResponse, errors.Errorf("unable to load object %s", d.objectStoreKey)
 	}

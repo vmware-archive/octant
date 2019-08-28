@@ -18,6 +18,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/vmware/octant/internal/cluster"
+	"github.com/vmware/octant/pkg/action"
 )
 
 //go:generate mockgen  -destination=./fake/mock_store.go -package=fake github.com/vmware/octant/pkg/store Store
@@ -29,6 +30,7 @@ type UpdateFn func(store Store)
 type Store interface {
 	List(ctx context.Context, key Key) (list *unstructured.UnstructuredList, loading bool, err error)
 	Get(ctx context.Context, key Key) (object *unstructured.Unstructured, found bool, err error)
+	Delete(ctx context.Context, key Key) error
 	Watch(ctx context.Context, key Key, handler cache.ResourceEventHandler) error
 	HasAccess(context.Context, Key, string) error
 	UpdateClusterClient(ctx context.Context, client cluster.ClientInterface) error
@@ -72,6 +74,45 @@ func (k Key) String() string {
 // GroupVersionKind converts the Key to a GroupVersionKind.
 func (k Key) GroupVersionKind() schema.GroupVersionKind {
 	return schema.FromAPIVersionAndKind(k.APIVersion, k.Kind)
+}
+
+// ToActionPayload converts the Key to a payload.
+func (k Key) ToActionPayload() action.Payload {
+	return action.Payload{
+		"namespace":  k.Namespace,
+		"apiVersion": k.APIVersion,
+		"kind":       k.Kind,
+		"name":       k.Name,
+	}
+}
+
+// KeyFromPayload converts a payload into a Key.
+func KeyFromPayload(payload action.Payload) (Key, error) {
+	namespace, err := payload.String("namespace")
+	if err != nil {
+		return Key{}, err
+	}
+	apiVersion, err := payload.String("apiVersion")
+	if err != nil {
+		return Key{}, err
+	}
+	kind, err := payload.String("kind")
+	if err != nil {
+		return Key{}, err
+	}
+	name, err := payload.String("name")
+	if err != nil {
+		return Key{}, err
+	}
+
+	key := Key{
+		Namespace:  namespace,
+		APIVersion: apiVersion,
+		Kind:       kind,
+		Name:       name,
+	}
+
+	return key, nil
 }
 
 // KeyFromObject creates a key from a runtime object.

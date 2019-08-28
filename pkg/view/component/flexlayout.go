@@ -47,7 +47,8 @@ type FlexLayoutSection []FlexLayoutItem
 
 // FlexLayoutConfig is configuration for the flex layout view.
 type FlexLayoutConfig struct {
-	Sections []FlexLayoutSection `json:"sections,omitempty"`
+	Sections    []FlexLayoutSection `json:"sections,omitempty"`
+	ButtonGroup *ButtonGroup        `json:"buttonGroup,omitempty"`
 }
 
 // FlexLayout is a flex layout view.
@@ -60,6 +61,9 @@ type FlexLayout struct {
 func NewFlexLayout(title string) *FlexLayout {
 	return &FlexLayout{
 		base: newBase(typeFlexLayout, TitleFromString(title)),
+		Config: FlexLayoutConfig{
+			ButtonGroup: NewButtonGroup(),
+		},
 	}
 }
 
@@ -80,6 +84,10 @@ func (fl *FlexLayout) MarshalJSON() ([]byte, error) {
 	x := flexLayoutMarshal(*fl)
 	x.Metadata.Type = typeFlexLayout
 	return json.Marshal(&x)
+}
+
+func (fl *FlexLayout) SetButtonGroup(group *ButtonGroup) {
+	fl.Config.ButtonGroup = group
 }
 
 // Tab represents a tab. A tab is a flex layout with a name.

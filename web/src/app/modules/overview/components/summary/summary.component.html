@@ -18,6 +18,9 @@
         </div>
         <div class="card-block">
             <h3 class="card-title">{{ title }}</h3>
+
+            <app-alert *ngIf="view?.config.alert" [alert]="view.config.alert"></app-alert>
+
             <table class="table table-vertical table-noborder">
                 <tbody>
                 <tr *ngFor="let item of view?.config.sections; trackBy: identifyItem">

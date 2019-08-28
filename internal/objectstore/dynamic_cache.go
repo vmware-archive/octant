@@ -481,6 +481,39 @@ func (dc *DynamicCache) Watch(ctx context.Context, key store.Key, handler kcache
 	return nil
 }
 
+// Delete deletes an object from the cluster using a key.
+func (dc *DynamicCache) Delete(ctx context.Context, key store.Key) error {
+	_, span := trace.StartSpan(ctx, "dynamicCache:delete")
+	defer span.End()
+
+	if err := dc.HasAccess(ctx, key, "watch"); err != nil {
+		logger := log.From(ctx)
+		logger.Errorf("check access failed: %v, access forbidden to %+v", key)
+		return nil
+	}
+
+	dynamicClient, err := dc.client.DynamicClient()
+	if err != nil {
+		return err
+	}
+
+	gvr, err := dc.client.Resource(key.GroupVersionKind().GroupKind())
+	if err != nil {
+		return err
+	}
+
+	deletePolicy := metav1.DeletePropagationForeground
+	deleteOptions := &metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	}
+
+	if key.Namespace == "" {
+		return dynamicClient.Resource(gvr).Delete(key.Name, deleteOptions)
+	}
+
+	return dynamicClient.Resource(gvr).Namespace(key.Namespace).Delete(key.Name, deleteOptions)
+}
+
 // UpdateClusterClient updates the cluster client.
 func (dc *DynamicCache) UpdateClusterClient(ctx context.Context, client cluster.ClientInterface) error {
 	logger := log.From(ctx)

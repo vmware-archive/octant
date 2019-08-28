@@ -20,6 +20,7 @@ import (
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	dynamicfake "k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/informers"
+	testing2 "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/vmware/octant/internal/cluster"
@@ -392,4 +393,79 @@ func TestDynamicCache_Update(t *testing.T) {
 
 	action := dc.Actions()[0]
 	assert.Equal(t, "update", action.GetVerb())
+}
+
+func TestDynamicCache_Delete(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	pod := testutil.ToUnstructured(t, testutil.CreatePod("pod"))
+
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	client := clusterfake.NewMockClientInterface(controller)
+	informerFactory := clusterfake.NewMockDynamicSharedInformerFactory(controller)
+	kubernetesClient := clusterfake.NewMockKubernetesInterface(controller)
+	authClient := clusterfake.NewMockAuthorizationV1Interface(controller)
+	accessClient := clusterfake.NewMockSelfSubjectAccessReviewInterface(controller)
+	namespaceClient := clusterfake.NewMockNamespaceInterface(controller)
+
+	podGVR := schema.GroupVersionResource{
+		Version:  "v1",
+		Resource: "pods",
+	}
+
+	podGK := schema.GroupKind{
+		Kind: "Pod",
+	}
+	// CheckAccess and currentInformer
+	client.EXPECT().Resource(gomock.Eq(podGK)).Return(podGVR, nil).AnyTimes()
+
+	client.EXPECT().KubernetesClient().Return(kubernetesClient, nil)
+	kubernetesClient.EXPECT().AuthorizationV1().Return(authClient)
+
+	client.EXPECT().NamespaceClient().Return(namespaceClient, nil).AnyTimes()
+	namespaces := []string{"test", ""}
+	namespaceClient.EXPECT().Names().Return(namespaces, nil).AnyTimes()
+
+	expectNamespaceAccess(accessClient, authClient, len(namespaces))
+
+	factoryFunc := func(c *DynamicCache) {
+		c.initFactoryFunc = func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
+			return informerFactory, nil
+		}
+		c.waitForSyncFunc = func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, <-chan struct{}, chan bool) {
+			return
+		}
+	}
+
+	scheme := runtime.NewScheme()
+
+	dc := dynamicfake.NewSimpleDynamicClient(scheme, pod)
+
+	client.EXPECT().DynamicClient().Return(dc, nil)
+
+	c, err := NewDynamicCache(ctx, client, factoryFunc)
+	require.NoError(t, err)
+
+	key, err := store.KeyFromObject(pod)
+	require.NoError(t, err)
+
+	err = c.Delete(ctx, key)
+	require.NoError(t, err)
+
+	assert.Len(t, dc.Actions(), 1)
+
+	expected := testing2.DeleteActionImpl{
+		ActionImpl: testing2.ActionImpl{
+			Namespace: pod.GetNamespace(),
+			Verb:      "delete",
+			Resource:  podGVR,
+		},
+		Name: pod.GetName(),
+	}
+
+	got := dc.Actions()[0]
+	assert.Equal(t, expected, got)
 }

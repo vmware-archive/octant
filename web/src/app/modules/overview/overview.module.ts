@@ -50,6 +50,8 @@ import { TimestampComponent } from './components/timestamp/timestamp.component';
 import { YamlComponent } from './components/yaml/yaml.component';
 import { OverviewComponent } from './overview.component';
 import { DefaultPipe } from './pipes/default.pipe';
+import { ButtonGroupComponent } from './components/button-group/button-group.component';
+import { AlertComponent } from './components/alert/alert.component';
 
 export function hljsLanguages() {
   return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
@@ -96,6 +98,8 @@ export function hljsLanguages() {
     CardListComponent,
     CardComponent,
     CytoscapeComponent,
+    ButtonGroupComponent,
+    AlertComponent,
   ],
   imports: [
     CommonModule,

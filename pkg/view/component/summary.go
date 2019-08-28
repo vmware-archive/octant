@@ -11,6 +11,7 @@ import "encoding/json"
 type SummaryConfig struct {
 	Sections []SummarySection `json:"sections"`
 	Actions  []Action         `json:"actions,omitempty"`
+	Alert    *Alert           `json:"alert,omitempty"`
 }
 
 // SummarySection is a section within a summary
@@ -86,6 +87,11 @@ func (t *Summary) AddAction(action Action) {
 // Add adds additional items to the tail of the summary.
 func (t *Summary) Add(sections ...SummarySection) {
 	t.Config.Sections = append(t.Config.Sections, sections...)
+}
+
+// SetAlert sets an alert for the summary.
+func (t *Summary) SetAlert(alert Alert) {
+	t.Config.Alert = &alert
 }
 
 // Sections returns sections for the summary.

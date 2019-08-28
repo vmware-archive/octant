@@ -295,7 +295,7 @@ func Test_EventHandler(t *testing.T) {
 		},
 	}...)
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_eventsForObject(t *testing.T) {
