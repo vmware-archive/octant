@@ -90,8 +90,13 @@ type Tab struct {
 
 // NewTabWithContents creates a tab with contents.
 func NewTabWithContents(flexLayout FlexLayout) *Tab {
+	name, err := TitleFromTitleComponent(flexLayout.Title)
+	if err != nil {
+		name = ""
+	}
+
 	return &Tab{
-		Name:     "",
+		Name:     name,
 		Contents: flexLayout,
 	}
 }

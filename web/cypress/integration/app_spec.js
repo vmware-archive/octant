@@ -53,4 +53,17 @@ describe('Octant Integration Tests', () => {
 
     cy.contains(/Stop port forward/).should('not.exist')
   })
+
+  it('check plugin tab', () => {
+    cy.contains(/^nginx-deployment-[a-z0-9]+-[a-z0-9]+/).click()
+    cy
+    .get('[class=nav]')
+    .find('button')
+    .should('have.length', 5)
+    .last()
+    .contains('Extra Pod Details')
+
+    cy.contains(/Extra Pod Details/).click()
+    cy.url().should('include', '?&tabView=Extra%20Pod%20Details')
+  })
 })

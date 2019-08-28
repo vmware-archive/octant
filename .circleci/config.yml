@@ -12,6 +12,12 @@ jobs:
           docker build -t octant-image .
           docker run --name octant-builder octant-image
     - run:
+        name: Build plugin
+        command: |
+          docker build -f Dockerfile.plugin -t octant-plugin .
+          docker run --name octant-sample-plugin octant-plugin
+        background: true
+    - run:
         name: Cluster
         command: |
           wget -O kind https://github.com/kubernetes-sigs/kind/releases/download/v0.5.0/kind-linux-amd64
@@ -29,10 +35,13 @@ jobs:
     - run:
         name: Octant
         command: |
+          mkdir plugin_path
           docker cp octant-builder:/octant .
+          docker cp octant-sample-plugin:/octant-sample-plugin ./plugin_path
           ./octant version
           ./octant
         environment:
+          OCTANT_PLUGIN_PATH: ./plugin_path
           OCTANT_DISABLE_OPEN_BROWSER: 1
           OCTANT_LISTENER_ADDR: localhost:7777
         background: true

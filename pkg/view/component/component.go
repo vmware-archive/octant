@@ -174,7 +174,15 @@ func Title(components ...TitleComponent) []TitleComponent {
 	return components
 }
 
-// TitleFromString is a convenience methods for create a title from a string.
+// TitleFromString is a convenience method for create a title from a string.
 func TitleFromString(s string) []TitleComponent {
 	return Title(NewText(s))
+}
+
+// TitleFromTitleComponent gets a title from a TitleComponent
+func TitleFromTitleComponent(tc []TitleComponent) (string, error) {
+	if len(tc) != 1 {
+		return "", errors.New("exactly one title component can be converted")
+	}
+	return tc[0].String(), nil
 }
