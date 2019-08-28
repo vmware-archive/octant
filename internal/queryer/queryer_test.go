@@ -19,7 +19,6 @@ import (
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
-	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -406,7 +405,7 @@ func TestCacheQueryer_OwnerReference(t *testing.T) {
 				}
 				o.EXPECT().
 					Get(gomock.Any(), gomock.Eq(key)).
-					Return(deployment, nil)
+					Return(deployment, true, nil)
 			},
 			expected: func(t *testing.T) runtime.Object {
 				return testutil.ToUnstructured(t, deployment)
@@ -423,7 +422,7 @@ func TestCacheQueryer_OwnerReference(t *testing.T) {
 				}
 				o.EXPECT().
 					Get(gomock.Any(), gomock.Eq(key)).
-					Return(nil, errors.New("failed"))
+					Return(nil, false, errors.New("failed"))
 			},
 			isErr: true,
 		},
@@ -579,9 +578,7 @@ func TestCacheQueryer_ServicesForIngress_service_not_found(t *testing.T) {
 	o := storeFake.NewMockStore(controller)
 	o.EXPECT().
 		Get(gomock.Any(), gomock.Any()).
-		Return(nil, &apiErrors.StatusError{ErrStatus: metav1.Status{
-			Reason: metav1.StatusReasonNotFound,
-		}})
+		Return(nil, false, nil)
 
 	discovery := queryerFake.NewMockDiscoveryInterface(controller)
 
@@ -670,7 +667,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 				}
 				o.EXPECT().
 					Get(gomock.Any(), gomock.Eq(key)).
-					Return(testutil.ToUnstructured(t, service1), nil)
+					Return(testutil.ToUnstructured(t, service1), true, nil)
 			},
 			expected: []string{"service1"},
 		},
@@ -686,7 +683,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 				}
 				o.EXPECT().
 					Get(gomock.Any(), gomock.Eq(key1)).
-					Return(testutil.ToUnstructured(t, service1), nil)
+					Return(testutil.ToUnstructured(t, service1), true, nil)
 				key2 := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
@@ -695,7 +692,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 				}
 				o.EXPECT().
 					Get(gomock.Any(), gomock.Eq(key2)).
-					Return(testutil.ToUnstructured(t, service2), nil)
+					Return(testutil.ToUnstructured(t, service2), true, nil)
 			},
 			expected: []string{"service1", "service2"},
 		},
@@ -716,7 +713,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 				}
 				c.EXPECT().
 					Get(gomock.Any(), gomock.Eq(key)).
-					Return(nil, errors.New("failed"))
+					Return(nil, false, errors.New("failed"))
 			},
 			isErr: true,
 		},
@@ -880,7 +877,7 @@ func TestObjectStoreQueryer_ServiceAccountForPod(t *testing.T) {
 	require.NoError(t, err)
 	o.EXPECT().
 		Get(gomock.Any(), key).
-		Return(testutil.ToUnstructured(t, serviceAccount), nil)
+		Return(testutil.ToUnstructured(t, serviceAccount), true, nil)
 
 	discovery := queryerFake.NewMockDiscoveryInterface(controller)
 

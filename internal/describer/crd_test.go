@@ -50,7 +50,7 @@ func Test_crd(t *testing.T) {
 		Name:       crdObject.Name,
 	}
 
-	objectStore.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crdObject), nil)
+	objectStore.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crdObject), true, nil)
 
 	crKey := store.Key{
 		Namespace:  "default",
@@ -59,7 +59,7 @@ func Test_crd(t *testing.T) {
 	}
 
 	object := testutil.CreateCustomResource("cr")
-	objectStore.EXPECT().Get(gomock.Any(), gomock.Eq(crKey)).Return(object, nil)
+	objectStore.EXPECT().Get(gomock.Any(), gomock.Eq(crKey)).Return(object, true, nil)
 
 	linkGenerator := linkFake.NewMockInterface(controller)
 

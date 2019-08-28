@@ -101,9 +101,14 @@ func handlePrint(request *service.PrintRequest) (plugin.PrintResponse, error) {
 	if err != nil {
 		return plugin.PrintResponse{}, err
 	}
-	u, err := request.DashboardClient.Get(request.Context(), key)
+	u, found, err := request.DashboardClient.Get(request.Context(), key)
 	if err != nil {
 		return plugin.PrintResponse{}, err
+	}
+
+	// The plugin can check if the object it requested exists.
+	if !found {
+		return plugin.PrintResponse{}, errors.New("object doesn't exist")
 	}
 
 	// Octant has a component library that can be used to build content for a plugin.

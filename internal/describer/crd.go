@@ -82,12 +82,12 @@ func (c *crd) Describe(ctx context.Context, prefix, namespace string, options Op
 		Name:       options.Fields["name"],
 	}
 
-	object, err := objectStore.Get(ctx, key)
+	object, found, err := objectStore.Get(ctx, key)
 	if err != nil {
 		return EmptyContentResponse, err
 	}
 
-	if object == nil {
+	if !found {
 		return EmptyContentResponse, err
 	}
 

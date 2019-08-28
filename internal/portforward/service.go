@@ -210,9 +210,14 @@ func (s *Service) verifyPod(ctx context.Context, namespace, name string) (bool, 
 		Name:       name,
 	}
 	var pod corev1.Pod
-	if err := store.GetAs(ctx, o, key, &pod); err != nil {
+	found, err := store.GetAs(ctx, o, key, &pod)
+	if err != nil {
 		return false, err
 	}
+	if !found {
+		return false, nil
+	}
+
 	if pod.Name == "" {
 		return false, errors.New("pod not found")
 	}

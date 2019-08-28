@@ -362,12 +362,12 @@ type getter interface {
 }
 
 // Get retrieves a single object.
-func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, error) {
+func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, bool, error) {
 	ctx, span := trace.StartSpan(ctx, "dynamicCacheGet")
 	defer span.End()
 
 	if err := dc.HasAccess(ctx, key, "get"); err != nil {
-		return nil, errors.Wrapf(err, "get access forbidden to %+v", key)
+		return nil, false, errors.Wrapf(err, "get access forbidden to %+v", key)
 	}
 
 	span.Annotate([]trace.Attribute{
@@ -377,11 +377,25 @@ func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.U
 		trace.StringAttribute("name", key.Name),
 	}, "get key")
 
+	var object *unstructured.Unstructured
+	var err error
+
 	if dc.useDynamicClient {
-		return dc.getFromDynamicClient(ctx, key)
+		object, err = dc.getFromDynamicClient(ctx, key)
+	} else {
+		object, err = dc.getFromInformer(ctx, key)
 	}
 
-	return dc.getFromInformer(ctx, key)
+	if err != nil {
+		if kerrors.IsNotFound(err) {
+			return nil, false, nil
+		}
+
+		return nil, false, err
+	}
+
+	return object, true, nil
+
 }
 
 func (dc *DynamicCache) getFromInformer(ctx context.Context, key store.Key) (*unstructured.Unstructured, error) {
@@ -494,9 +508,13 @@ func (dc *DynamicCache) Update(ctx context.Context, key store.Key, updater func(
 	}
 
 	err := kretry.RetryOnConflict(kretry.DefaultRetry, func() error {
-		object, err := dc.Get(ctx, key)
+		object, found, err := dc.Get(ctx, key)
 		if err != nil {
 			return err
+		}
+
+		if !found {
+			return errors.Errorf("object not found")
 		}
 
 		gvk := object.GroupVersionKind()

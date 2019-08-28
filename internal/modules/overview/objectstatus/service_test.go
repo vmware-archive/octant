@@ -15,9 +15,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	storefake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/store"
+	storefake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -41,7 +41,7 @@ func Test_service(t *testing.T) {
 				endpoints := testutil.LoadObjectFromFile(t, "endpoints_ok.yaml")
 
 				o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).
-					Return(testutil.ToUnstructured(t, endpoints), nil)
+					Return(testutil.ToUnstructured(t, endpoints), true, nil)
 
 				objectFile := "service_ok.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
@@ -65,7 +65,7 @@ func Test_service(t *testing.T) {
 				endpoints := testutil.LoadObjectFromFile(t, "endpoints_no_subsets.yaml")
 
 				o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).
-					Return(testutil.ToUnstructured(t, endpoints), nil)
+					Return(testutil.ToUnstructured(t, endpoints), true, nil)
 
 				objectFile := "service_ok.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
@@ -73,7 +73,7 @@ func Test_service(t *testing.T) {
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusWarning,
-				Details:    []component.Component{component.NewText("Service has no endpoints")},
+				Details:    []component.Component{component.NewText("Service has no endpoint addresses")},
 			},
 		},
 		{

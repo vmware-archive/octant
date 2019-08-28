@@ -230,14 +230,14 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 
 	appObjectStore.EXPECT().
 		Get(gomock.Any(), role1Key).
-		Return(testutil.ToUnstructured(t, role1), nil)
+		Return(testutil.ToUnstructured(t, role1), true, nil)
 
 	role2Key, err := store.KeyFromObject(role2)
 	require.NoError(t, err)
 
 	appObjectStore.EXPECT().
 		Get(gomock.Any(), role2Key).
-		Return(testutil.ToUnstructured(t, role2), nil)
+		Return(testutil.ToUnstructured(t, role2), true, nil)
 
 	ctx := context.Background()
 

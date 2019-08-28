@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -29,7 +28,7 @@ type UpdateFn func(store Store)
 // Store stores Kubernetes objects.
 type Store interface {
 	List(ctx context.Context, key Key) (list *unstructured.UnstructuredList, loading bool, err error)
-	Get(ctx context.Context, key Key) (*unstructured.Unstructured, error)
+	Get(ctx context.Context, key Key) (object *unstructured.Unstructured, found bool, err error)
 	Watch(ctx context.Context, key Key, handler cache.ResourceEventHandler) error
 	HasAccess(context.Context, Key, string) error
 	UpdateClusterClient(ctx context.Context, client cluster.ClientInterface) error
@@ -105,27 +104,4 @@ func KeyFromObject(object runtime.Object) (Key, error) {
 		Kind:       kind,
 		Name:       name,
 	}, nil
-}
-
-// GetObjectAs gets an object from the object store by key.
-func GetObjectAs(ctx context.Context, o Store, key Key, as interface{}) error {
-	u, err := o.Get(ctx, key)
-	if err != nil {
-		return errors.Wrap(err, "get object from object store")
-	}
-
-	if u == nil {
-		return nil
-	}
-
-	err = runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, as)
-	if err != nil {
-		return err
-	}
-
-	if err := copyObjectMeta(as, u); err != nil {
-		return errors.Wrap(err, "copy object metadata")
-	}
-
-	return nil
 }

@@ -40,7 +40,7 @@ func Test_crdListDescriber(t *testing.T) {
 		Name:       crd.Name,
 	}
 
-	o.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), nil)
+	o.EXPECT().Get(gomock.Any(), gomock.Eq(crdKey)).Return(testutil.ToUnstructured(t, crd), true, nil)
 
 	crKey := store.Key{
 		Namespace:  "default",
