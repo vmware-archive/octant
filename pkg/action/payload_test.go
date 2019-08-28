@@ -13,6 +13,20 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+func TestCreatePayload(t *testing.T) {
+	action := "action"
+
+	fields := map[string]interface{}{"foo": "bar"}
+	got := CreatePayload(action, fields)
+
+	expected := Payload{
+		"action": action,
+		"foo":    "bar",
+	}
+
+	assert.Equal(t, expected, got)
+}
+
 func TestPayload_GroupVersionKind(t *testing.T) {
 	payload := Payload{
 		"group":   "group",

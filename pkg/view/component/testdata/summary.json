@@ -9,6 +9,10 @@
     ]
   },
   "config": {
+    "alert": {
+      "message": "info",
+      "type": "info"
+    },
     "sections": [
       {
         "header": "Containers",

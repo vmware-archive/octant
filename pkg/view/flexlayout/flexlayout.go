@@ -6,24 +6,34 @@ SPDX-License-Identifier: Apache-2.0
 package flexlayout
 
 import (
+	"github.com/vmware/octant/pkg/action"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
 // FlexLayout is a flex layout manager.
 type FlexLayout struct {
-	sections []*Section
+	sections    []*Section
+	buttonGroup *component.ButtonGroup
 }
 
 // New creates an instance of FlexLayout.
 func New() *FlexLayout {
-	return &FlexLayout{}
+	return &FlexLayout{
+		buttonGroup: component.NewButtonGroup(),
+	}
 }
 
-// AddSection adds a new section to the grid layout.
+// AddSection adds a new section to the flex layout.
 func (fl *FlexLayout) AddSection() *Section {
 	section := NewSection()
 	fl.sections = append(fl.sections, section)
 	return section
+}
+
+// AddButton adds a button the button group for a flex layout.
+func (fl *FlexLayout) AddButton(name string, payload action.Payload, buttonOptions ...component.ButtonOption) {
+	button := component.NewButton(name, payload, buttonOptions...)
+	fl.buttonGroup.AddButton(button)
 }
 
 // ToComponent converts the FlexLayout to a FlexLayout.
@@ -51,6 +61,7 @@ func (fl *FlexLayout) ToComponent(title string) *component.FlexLayout {
 
 	view := component.NewFlexLayout(title)
 	view.AddSections(sections...)
+	view.SetButtonGroup(fl.buttonGroup)
 
 	return view
 }

@@ -22,6 +22,8 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/vmware/octant/internal/link"
+	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/pkg/action"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -114,6 +116,10 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.C
 	o := NewObject(pod)
 	o.EnableEvents()
 
+	if err := setupPodActions(pod, o); err != nil {
+		return nil, err
+	}
+
 	ph, err := newPodHandler(pod, o)
 	if err != nil {
 		return nil, err
@@ -146,14 +152,18 @@ func createPodSummaryStatus(pod *corev1.Pod) (*component.Summary, error) {
 		return nil, errors.New("pod is nil")
 	}
 
+	summary := component.NewSummary("Status")
+
 	sections := component.SummarySections{}
 
 	sections.AddText("QoS", string(pod.Status.QOSClass))
 
 	if pod.DeletionTimestamp != nil {
+		summary.SetAlert(component.NewAlert(component.AlertTypeError, "Pod is being deleted"))
+
 		sections = append(sections, component.SummarySection{
 			Header:  "Status: Terminating",
-			Content: component.NewTimestamp(pod.DeletionTimestamp.Time),
+			Content: component.NewText(pod.DeletionTimestamp.String()),
 		})
 		if pod.DeletionGracePeriodSeconds != nil {
 			sections.AddText("Termination Grace Period", fmt.Sprintf("%ds", *pod.DeletionGracePeriodSeconds))
@@ -176,7 +186,8 @@ func createPodSummaryStatus(pod *corev1.Pod) (*component.Summary, error) {
 		sections.AddText("NominatedNodeName", pod.Status.NominatedNodeName)
 	}
 
-	summary := component.NewSummary("Status", sections...)
+	summary.Add(sections...)
+
 	return summary, nil
 }
 
@@ -697,4 +708,24 @@ func (p *podHandler) Additional(options Options) error {
 	p.object.RegisterItems(itemDescriptors...)
 
 	return nil
+}
+
+func setupPodActions(pod *corev1.Pod, object ObjectInterface) error {
+	if pod.DeletionTimestamp == nil {
+		key, err := store.KeyFromObject(pod)
+		if err != nil {
+			return err
+		}
+
+		object.AddButton("Delete", action.CreatePayload(octant.ActionDeleteObject,
+			key.ToActionPayload()), deletePodConfirmation(pod))
+	}
+
+	return nil
+}
+
+func deletePodConfirmation(pod *corev1.Pod) component.ButtonOption {
+	confirmationTitle := "Delete pod"
+	confirmationBody := fmt.Sprintf("Are you sure you want to delete pod **%s**? This action is permanent and cannot be recovered.", pod.Name)
+	return component.WithButtonConfirmation(confirmationTitle, confirmationBody)
 }

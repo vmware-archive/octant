@@ -69,9 +69,27 @@ export interface FlexLayoutItem {
   view: View;
 }
 
+export interface Confirmation {
+  title: string;
+  body: string;
+}
+
+export interface Button {
+  payload: {};
+  name: string;
+  confirmation?: Confirmation;
+}
+
+export interface ButtonGroupView extends View {
+  config: {
+    buttons: Button[];
+  };
+}
+
 export interface FlexLayoutView extends View {
   config: {
     sections: FlexLayoutItem[][];
+    buttonGroup: ButtonGroupView;
   };
 }
 
@@ -213,6 +231,7 @@ export interface SummaryView extends View {
   config: {
     sections: SummaryItem[];
     actions: Action[];
+    alert?: Alert;
   };
 }
 

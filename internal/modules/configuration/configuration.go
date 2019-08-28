@@ -20,6 +20,7 @@ import (
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/pkg/action"
 	"github.com/vmware/octant/pkg/icon"
 	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/view/component"
@@ -38,6 +39,7 @@ type Configuration struct {
 }
 
 var _ module.Module = (*Configuration)(nil)
+var _ module.ActionReceiver = (*Configuration)(nil)
 
 func New(ctx context.Context, options Options) *Configuration {
 	pm := describer.NewPathMatcher("configuration")
@@ -150,5 +152,13 @@ func (c Configuration) RemoveCRD(ctx context.Context, crd *unstructured.Unstruct
 func (c Configuration) Generators() []octant.Generator {
 	return []octant.Generator{
 		c.kubeContextGenerator,
+	}
+}
+
+func (c *Configuration) ActionPaths() map[string]action.DispatcherFunc {
+	objectDeleter := NewObjectDeleter(c.DashConfig.Logger(), c.DashConfig.ObjectStore())
+
+	return map[string]action.DispatcherFunc{
+		objectDeleter.ActionName(): objectDeleter.Handle,
 	}
 }

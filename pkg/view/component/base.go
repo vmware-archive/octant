@@ -7,6 +7,7 @@ package component
 
 const (
 	typeAnnotations        = "annotations"
+	typeButtonGroup        = "buttonGroup"
 	typeCard               = "card"
 	typeCardList           = "cardList"
 	typeContainers         = "containers"
