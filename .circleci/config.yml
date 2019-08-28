@@ -16,7 +16,6 @@ jobs:
         command: |
           docker build -f Dockerfile.plugin -t octant-plugin .
           docker run --name octant-sample-plugin octant-plugin
-        background: true
     - run:
         name: Cluster
         command: |
