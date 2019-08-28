@@ -57,6 +57,6 @@ There are 3 commands that can help keep PRs tested and linted properly:
 
 ## Building production
 
-To build a production version of the UI, you can run `npm run build` yourself which will build the productinized assets to `dist/`.
+To build a production version of the UI, you can run `npm run build` yourself which will build the productionized assets to `dist/`.
 
 To build a full production binary (including the backend server), you can run `make ci` from the root directory.
