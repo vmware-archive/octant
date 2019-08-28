@@ -42,15 +42,15 @@ describe('Octant Integration Tests', () => {
     .get('[class=port-actions]')
     .should('have.length', 1)
     .first()
-    .contains('Remove')
+    .contains('Stop port forward')
 
     cy.contains(/Port Forwards/).click()
 
-    cy.contains(/Remove/).should('be.visible')
+    cy.contains(/Stop port forward/).should('be.visible')
     cy.exec('kubectl delete pod -l app=nginx-deployment')
     .its('stdout')
     .should('contain', 'deleted')
 
-    cy.contains(/Remove/).should('not.exist')
+    cy.contains(/Stop port forward/).should('not.exist')
   })
 })
