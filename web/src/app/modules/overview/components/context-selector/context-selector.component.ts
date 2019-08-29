@@ -36,4 +36,8 @@ export class ContextSelectorComponent implements OnInit {
   selectContext(context: ContextDescription) {
     this.kubeContext.select(context);
   }
+
+  trackByFn(index, item) {
+    return index;
+  }
 }

@@ -62,4 +62,8 @@ export class FormComponent implements OnInit {
   fieldChoices(field: ActionField) {
     return field.configuration.choices as Choice[];
   }
+
+  trackByFn(index, item) {
+    return index;
+  }
 }

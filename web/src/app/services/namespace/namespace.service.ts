@@ -38,7 +38,7 @@ export class NamespaceService {
   ) {
     this.notifierSession = notifierService.createSession();
 
-    let streamer: Streamer = {
+    const streamer: Streamer = {
       behavior: this.behavior,
       handler: this.handleEvent,
     };
