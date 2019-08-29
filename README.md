@@ -74,6 +74,16 @@ Octant is a tool for developers to understand how applications run on a Kubernet
    scoop install octant
    ```
 
+### macOS
+
+#### Homebrew
+
+1. Install using Homebrew with the following one-liner:
+
+   ```sh
+   brew install octant
+   ```
+
 ### Download a Pre-built Binary (Linux, macOS, Windows)
 
 1. Open the [releases page](https://github.com/vmware/octant/releases) from a browser and download the latest tarball or zip file.
