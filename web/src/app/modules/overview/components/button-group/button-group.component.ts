@@ -38,6 +38,10 @@ export class ButtonGroupComponent implements OnInit {
     this.doAction(payload);
   }
 
+  trackByFn(index, item) {
+    return index;
+  }
+
   private doAction(payload: {}) {
     this.actionService.perform(payload).subscribe();
   }

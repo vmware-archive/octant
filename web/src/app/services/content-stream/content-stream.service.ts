@@ -60,8 +60,8 @@ export class ContentStreamService {
       this.handleObjectNotFoundEvent
     );
 
-    let eventSource = this.eventSource;
-    this.streamers.forEach(function(value, key) {
+    const eventSource = this.eventSource;
+    this.streamers.forEach((value, key) => {
       eventSource.addEventListener(key, value.handler);
     });
   }

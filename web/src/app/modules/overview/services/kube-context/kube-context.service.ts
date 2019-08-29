@@ -42,7 +42,7 @@ export class KubeContextService {
     private http: HttpClient,
     private contentStreamService: ContentStreamService
   ) {
-    let streamer: Streamer = {
+    const streamer: Streamer = {
       behavior: this.behavior,
       handler: this.handleEvent,
     };

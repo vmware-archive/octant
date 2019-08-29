@@ -32,7 +32,7 @@
         </div>
 
         <div class="card-footer" *ngIf="view.config.actions?.length > 0">
-            <ng-container *ngFor="let action of view.config.actions">
+            <ng-container *ngFor="let action of view.config.actions;trackBy: trackByFn">
                 <button class="btn btn-sm btn-link" (click)="setAction(action)">{{action.name}}</button>
             </ng-container>
         </div>

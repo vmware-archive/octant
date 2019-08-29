@@ -11,7 +11,7 @@
     <clr-dropdown-menu *clrIfOpen [clrPosition]="'bottom-right'">
       <label class="dropdown-header">Contexts</label>
 
-      <ng-container *ngFor="let context of contexts">
+      <ng-container *ngFor="let context of contexts;trackBy: trackByFn">
         <button
           type="button"
           [ngClass]="contextClass(context)"
