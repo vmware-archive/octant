@@ -18,3 +18,11 @@ type Alert struct {
 	Type    AlertType `json:"type"`
 	Message string    `json:"message"`
 }
+
+// NewAlert creates an instance of Alert.
+func NewAlert(alertType AlertType, message string) Alert {
+	return Alert{
+		Type:    alertType,
+		Message: message,
+	}
+}

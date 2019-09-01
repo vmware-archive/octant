@@ -1,0 +1,54 @@
+version: 2
+jobs:
+  build:
+    machine:
+      enabled: true
+      docker_layer_caching: true 
+    steps:
+    - checkout
+    - run:
+        name: Build
+        command: |
+          docker build -t octant-image .
+          docker run --name octant-builder octant-image
+    - run:
+        name: Build plugin
+        command: |
+          docker build -f Dockerfile.plugin -t octant-plugin .
+          docker run --name octant-sample-plugin octant-plugin
+    - run:
+        name: Cluster
+        command: |
+          wget -O kind https://github.com/kubernetes-sigs/kind/releases/download/v0.5.0/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin
+          kind create cluster
+          echo 'export KUBECONFIG=$(kind get kubeconfig-path)' >> $BASH_ENV
+    - run:
+        name: Kubectl
+        command: |
+          source $BASH_ENV
+          wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/v1.15.0/bin/linux/amd64/kubectl
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin
+    - run:
+        name: Octant
+        command: |
+          mkdir plugin_path
+          docker cp octant-builder:/octant .
+          docker cp octant-sample-plugin:/octant-sample-plugin ./plugin_path
+          ./octant version
+          ./octant
+        environment:
+          OCTANT_PLUGIN_PATH: ./plugin_path
+          OCTANT_DISABLE_OPEN_BROWSER: 1
+          OCTANT_LISTENER_ADDR: localhost:7777
+        background: true
+    - run:
+        name: Cypress
+        command: |
+          source $BASH_ENV
+          cd web && npm install
+          ./node_modules/.bin/cypress run --record --key $CYPRESS_RECORD_KEY --group $CIRCLE_JOB
+        environment:
+          CYPRESS_baseUrl: http://localhost:7777

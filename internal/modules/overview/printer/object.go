@@ -13,9 +13,17 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware/octant/pkg/action"
 	"github.com/vmware/octant/pkg/view/component"
 	"github.com/vmware/octant/pkg/view/flexlayout"
 )
+
+//go:generate mockgen -source=object.go -destination=./fake/mock_object_interface.go -package=fake github.com/vmware/octant/internal/modules/overview/printer ObjectInterface
+
+// ObjectInterface is an interface for printing an object.
+type ObjectInterface interface {
+	AddButton(name string, payload action.Payload, buttonOptions ...component.ButtonOption)
+}
 
 func defaultMetadataGen(object runtime.Object, fl *flexlayout.FlexLayout, options Options) error {
 	metadata, err := NewMetadata(object, options.Link)
@@ -253,4 +261,8 @@ func (o *Object) ToComponent(ctx context.Context, options Options) (component.Co
 	}
 
 	return o.flexLayout.ToComponent("Summary"), nil
+}
+
+func (o *Object) AddButton(name string, payload action.Payload, buttonOptions ...component.ButtonOption) {
+	o.flexLayout.AddButton(name, payload, buttonOptions...)
 }

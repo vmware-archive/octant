@@ -14,12 +14,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware/octant/internal/conversion"
+	"github.com/vmware/octant/internal/modules/overview/printer/fake"
+	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/plugin"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -84,7 +85,7 @@ func Test_PodListHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Restarts", "Node", "Age")
-	expected := component.NewTable("Pods", cols)
+	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name":     component.NewLink("", "pod", "/pod"),
 		"Labels":   component.NewLabels(labels),
@@ -98,152 +99,61 @@ func Test_PodListHandler(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
-func Test_PodHandler(t *testing.T) {
+func Test_PodListHandlerNoLabel(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	now := testutil.Time()
-
 	tpo := newTestPrinterOptions(controller)
+	nodeLink := component.NewLink("", "node", "/node")
+	tpo.link.EXPECT().
+		ForGVK("", "v1", "Node", "node", "node").
+		Return(nodeLink, nil)
 	printOptions := tpo.ToOptions()
 
-	labels := map[string]string{
-		"app": "testing",
-	}
+	printOptions.DisableLabels = true
+	now := testutil.Time()
 
-	sidecar := testutil.CreatePod("pod")
-	sidecar.ObjectMeta.CreationTimestamp = *testutil.CreateTimestamp()
-	sidecar.ObjectMeta.Labels = labels
-	sidecar.Spec.Containers = []corev1.Container{
+	pod := testutil.CreatePod("pi-7xpxr")
+	pod.CreationTimestamp = metav1.Time{Time: now}
+	pod.Spec.Containers = []corev1.Container{
 		{
-			Name:  "nginx",
-			Image: "nginx:1.15",
-		},
-		{
-			Name:  "kuard",
-			Image: "gcr.io/kuar-demo/kuard-amd64:1",
+			Name:  "pi",
+			Image: "perl",
 		},
 	}
-
-	tpo.PathForObject(sidecar, sidecar.Name, "/pod")
-
-	serviceAccountLink := component.NewLink("", "serviceAccount", "/service-account")
-	tpo.link.EXPECT().
-		ForGVK(gomock.Any(), "v1", "ServiceAccount", gomock.Any(), gomock.Any()).
-		Return(serviceAccountLink, nil).
-		AnyTimes()
-
-	printResponse := &plugin.PrintResponse{}
-	tpo.pluginManager.EXPECT().
-		Print(gomock.Any(), gomock.Any()).Return(printResponse, nil)
-
-	eventKey := store.Key{
-		Namespace:  "namespace",
-		APIVersion: "v1",
-		Kind:       "Event",
+	pod.Spec.NodeName = "node"
+	pod.Status = corev1.PodStatus{
+		Phase: "Succeeded",
+		ContainerStatuses: []corev1.ContainerStatus{
+			{
+				Name:         "pi",
+				Image:        "perl",
+				RestartCount: 0,
+				Ready:        false,
+			},
+		},
 	}
-	eventList := &unstructured.UnstructuredList{}
-	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(eventKey)).Return(eventList, nil)
+
+	object := &corev1.PodList{
+		Items: []corev1.Pod{*pod},
+	}
+
+	tpo.PathForObject(pod, pod.Name, "/pi-7xpxr")
 
 	ctx := context.Background()
-	got, err := PodHandler(ctx, sidecar, printOptions)
+	got, err := PodListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
-	configSection := component.SummarySections{
-		{Header: "Node", Content: component.NewText("<not scheduled>")},
-		{Header: "Service Account", Content: component.NewLink("", "serviceAccount", "/service-account")},
-	}
-	configSummary := component.NewSummary("Configuration", configSection...)
-
-	statusSections := component.SummarySections{
-		{Header: "QoS", Content: component.NewText("")},
-		{Header: "Phase", Content: component.NewText("")},
-		{Header: "Pod IP", Content: component.NewText("")},
-		{Header: "Host IP", Content: component.NewText("")},
-	}
-	statusSummary := component.NewSummary("Status", statusSections...)
-
-	metadataSections := component.SummarySections{
-		{Header: "Age", Content: component.NewTimestamp(now)},
-		{Header: "Labels", Content: component.NewLabels(labels)},
-	}
-	metadataSummary := component.NewSummary("Metadata", metadataSections...)
-
-	conditionsCols := component.NewTableCols("Type", "Last Transition Time", "Message", "Reason")
-	conditionTable := component.NewTable("Pod Conditions", conditionsCols)
-
-	container1Sections := component.SummarySections{
-		{Header: "Image", Content: component.NewText("nginx:1.15")},
-	}
-	container1Summary := component.NewSummary("Container nginx", container1Sections...)
-
-	container2Sections := component.SummarySections{
-		{
-			Header:  "Image",
-			Content: component.NewText("gcr.io/kuar-demo/kuard-amd64:1"),
-		},
-	}
-	container2Summary := component.NewSummary("Container kuard", container2Sections...)
-
-	volumeCols := component.NewTableCols("Name", "Kind", "Description")
-	volumeTable := component.NewTable("Volumes", volumeCols)
-
-	taintCols := component.NewTableCols("Description")
-	taintTable := component.NewTable("Taints and Tolerations", taintCols)
-
-	affinityCols := component.NewTableCols("Type", "Description")
-	affinityTable := component.NewTable("Affinities and Anti-Affinities", affinityCols)
-
-	expected := component.NewFlexLayout("Summary")
-	expected.AddSections(
-		component.FlexLayoutSection{
-			{
-				Width: component.WidthHalf,
-				View:  configSummary,
-			},
-			{
-				Width: component.WidthHalf,
-				View:  statusSummary,
-			},
-		},
-		component.FlexLayoutSection{
-			{
-				Width: component.WidthFull,
-				View:  metadataSummary,
-			},
-		},
-		component.FlexLayoutSection{
-			{
-				Width: component.WidthFull,
-				View:  conditionTable,
-			},
-		},
-		component.FlexLayoutSection{},
-		component.FlexLayoutSection{
-			{
-				Width: component.WidthHalf,
-				View:  container1Summary,
-			},
-			{
-				Width: component.WidthHalf,
-				View:  container2Summary,
-			},
-		},
-		component.FlexLayoutSection{
-			{
-				Width: component.WidthHalf,
-				View:  volumeTable,
-			},
-			{
-				Width: component.WidthHalf,
-				View:  taintTable,
-			},
-			{
-				Width: component.WidthHalf,
-				View:  affinityTable,
-			},
-		},
-	)
+	cols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
+	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
+	expected.Add(component.TableRow{
+		"Name":     component.NewLink("", "pi-7xpxr", "/pi-7xpxr"),
+		"Ready":    component.NewText("0/1"),
+		"Phase":    component.NewText("Succeeded"),
+		"Restarts": component.NewText("0"),
+		"Age":      component.NewTimestamp(now),
+		"Node":     nodeLink,
+	})
 
 	component.AssertEqual(t, expected, got)
 }
@@ -273,7 +183,7 @@ func TestPodListHandler_sorted(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Restarts", "Node", "Age")
-	expected := component.NewTable("Pods", cols)
+	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name":     component.NewLink("", "pod1", "/pod1"),
 		"Labels":   component.NewLabels(make(map[string]string)),
@@ -445,7 +355,7 @@ func Test_createPodConditionsView(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Type", "Last Transition Time", "Message", "Reason")
-	expected := component.NewTable("Pod Conditions", cols)
+	expected := component.NewTable("Pod Conditions", "There are no pod conditions!", cols)
 	expected.Add([]component.TableRow{
 		{
 			"Type":                 component.NewText("Initialized"),
@@ -455,7 +365,7 @@ func Test_createPodConditionsView(t *testing.T) {
 		},
 	}...)
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func createPodWithPhase(name string, podLabels map[string]string, phase corev1.PodPhase, owner *metav1.OwnerReference) *corev1.Pod {
@@ -468,4 +378,72 @@ func createPodWithPhase(name string, podLabels map[string]string, phase corev1.P
 		pod.SetOwnerReferences([]metav1.OwnerReference{*owner})
 	}
 	return pod
+}
+
+func Test_printPodResources(t *testing.T) {
+	pod := testutil.CreatePod("pod")
+	pod.Spec.Containers = []corev1.Container{
+		{
+			Name: "container-a",
+			Resources: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceMemory: resource.MustParse("1Mi"),
+					corev1.ResourceCPU:    resource.MustParse("2Mi"),
+				},
+				Limits: corev1.ResourceList{
+					corev1.ResourceMemory: resource.MustParse("3Mi"),
+					corev1.ResourceCPU:    resource.MustParse("4Mi"),
+				},
+			},
+		},
+	}
+
+	got, err := printPodResources(pod.Spec)
+	require.NoError(t, err)
+
+	expected := component.NewTable("Resources", "Pod has no resource needs", podResourceCols)
+	expected.Add(component.TableRow{
+		"Container":       component.NewText("container-a"),
+		"Request: Memory": component.NewText("1Mi"),
+		"Request: CPU":    component.NewText("2Mi"),
+		"Limit: Memory":   component.NewText("3Mi"),
+		"Limit: CPU":      component.NewText("4Mi"),
+	})
+
+	assert.Equal(t, expected, got)
+}
+
+func Test_setupPodActions(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	objectInterface := fake.NewMockObjectInterface(controller)
+
+	pod := testutil.CreatePod("pod")
+	key, err := store.KeyFromObject(pod)
+	require.NoError(t, err)
+	payload := key.ToActionPayload()
+	payload["action"] = octant.ActionDeleteObject
+	objectInterface.EXPECT().
+		AddButton("Delete", payload, gomock.Any())
+
+	err = setupPodActions(pod, objectInterface)
+	require.NoError(t, err)
+}
+
+func Test_deletePodConfirmation(t *testing.T) {
+	pod := testutil.CreatePod("pod")
+	option := deletePodConfirmation(pod)
+
+	button := component.Button{}
+	option(&button)
+
+	expected := component.Button{
+		Confirmation: &component.Confirmation{
+			Title: "Delete pod",
+			Body:  "Are you sure you want to delete pod **pod**? This action is permanent and cannot be recovered.",
+		},
+	}
+
+	assert.Equal(t, expected, button)
 }

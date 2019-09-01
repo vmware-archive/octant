@@ -82,7 +82,7 @@ func Test_StatefulSetListHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Desired", "Current", "Age", "Selector")
-	expected := component.NewTable("StatefulSets", cols)
+	expected := component.NewTable("StatefulSets", "We couldn't find any stateful sets!", cols)
 	expected.Add(component.TableRow{
 		"Name":     component.NewLink("", "web", "/path"),
 		"Labels":   component.NewLabels(labels),
@@ -144,7 +144,7 @@ func Test_StatefulSetStatus(t *testing.T) {
 		Kind:       "Pod",
 	}
 
-	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, nil)
+	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, false, nil)
 
 	stsc := NewStatefulSetStatus(sts)
 	ctx := context.Background()

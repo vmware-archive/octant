@@ -132,7 +132,7 @@ func handleNotFound(logger log.Logger, contentPath string, requestPath string, i
 	logger.With(
 		"path", contentPath,
 		"requestPath", requestPath,
-	).Errorf("content not found")
+	).Infof("content not found")
 	isRunning = false
 	ch <- octant.Event{
 		Type: octant.EventTypeObjectNotFound,

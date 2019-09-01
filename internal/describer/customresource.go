@@ -18,30 +18,6 @@ import (
 	"github.com/vmware/octant/pkg/store"
 )
 
-func CustomResourceDefinitionNames(ctx context.Context, o store.Store) ([]string, error) {
-	key := store.Key{
-		APIVersion: "apiextensions.k8s.io/v1beta1",
-		Kind:       "CustomResourceDefinition",
-	}
-
-	if err := o.HasAccess(ctx, key, "list"); err != nil {
-		return []string{}, nil
-	}
-
-	rawList, err := o.List(ctx, key)
-	if err != nil {
-		return nil, errors.Wrap(err, "listing CRDs")
-	}
-
-	var list []string
-
-	for _, object := range rawList.Items {
-		list = append(list, object.GetName())
-	}
-
-	return list, nil
-}
-
 func CustomResourceDefinition(ctx context.Context, name string, o store.Store) (*apiextv1beta1.CustomResourceDefinition, error) {
 	key := store.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
@@ -50,8 +26,12 @@ func CustomResourceDefinition(ctx context.Context, name string, o store.Store) (
 	}
 
 	crd := &apiextv1beta1.CustomResourceDefinition{}
-	if err := store.GetAs(ctx, o, key, crd); err != nil {
+	found, err := store.GetAs(ctx, o, key, crd)
+	if err != nil {
 		return nil, errors.Wrap(err, "get object as custom resource definition from store")
+	}
+	if !found {
+		return nil, errors.Errorf("custom resource definition was not found")
 	}
 
 	return crd, nil

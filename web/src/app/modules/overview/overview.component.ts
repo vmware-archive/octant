@@ -50,7 +50,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private iconService: IconService,
     private viewService: ViewService
   ) {
-    let streamer: Streamer = {
+    const streamer: Streamer = {
       behavior: this.behavior,
       handler: this.handleEvent,
     };

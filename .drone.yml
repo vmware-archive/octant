@@ -15,11 +15,12 @@ steps:
       event:
       - tag
   - name: frontend
-    image: sfoo/node-chrome:0.0.1
+    image: sfoo/node-chrome:0.0.2
     commands:
       - cd web
       - npm ci
       - npm run-script build
+      - npm run lint
       - npm run test:headless
   - name: backend
     image: golang:1.12

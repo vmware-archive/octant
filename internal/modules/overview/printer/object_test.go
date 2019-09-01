@@ -14,6 +14,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware/octant/pkg/action"
 	"github.com/vmware/octant/pkg/plugin/fake"
 
 	"github.com/vmware/octant/internal/testutil"
@@ -32,6 +33,13 @@ func Test_Object_ToComponent(t *testing.T) {
 
 	defaultConfig := component.NewSummary("Configuration",
 		component.SummarySection{Header: "local"})
+
+	defaultConfigSection := component.FlexLayoutSection{
+		{
+			Width: component.WidthHalf,
+			View:  defaultConfig,
+		},
+	}
 
 	metadataSection := component.FlexLayoutSection{
 		{
@@ -64,7 +72,7 @@ func Test_Object_ToComponent(t *testing.T) {
 		}
 	}
 
-	mockNoPlugins := func(pluginPrinter *fake.MockManagerInterface) {
+	stubPlugins := func(pluginPrinter *fake.MockManagerInterface) {
 		printResponse := &plugin.PrintResponse{}
 		pluginPrinter.EXPECT().
 			Print(gomock.Any(), gomock.Any()).Return(printResponse, nil)
@@ -75,21 +83,17 @@ func Test_Object_ToComponent(t *testing.T) {
 		object   runtime.Object
 		initFunc func(*Object, *initOptions)
 		sections []component.FlexLayoutSection
+		buttons  []component.Button
 		isErr    bool
 	}{
 		{
 			name:   "in general",
 			object: deployment,
 			initFunc: func(o *Object, options *initOptions) {
-				mockNoPlugins(options.PluginPrinter)
+				stubPlugins(options.PluginPrinter)
 			},
 			sections: []component.FlexLayoutSection{
-				{
-					{
-						Width: component.WidthHalf,
-						View:  defaultConfig,
-					},
-				},
+				defaultConfigSection,
 				metadataSection,
 			},
 		},
@@ -125,15 +129,10 @@ func Test_Object_ToComponent(t *testing.T) {
 			object: deployment,
 			initFunc: func(o *Object, options *initOptions) {
 				o.EnablePodTemplate(deployment.Spec.Template)
-				mockNoPlugins(options.PluginPrinter)
+				stubPlugins(options.PluginPrinter)
 			},
 			sections: []component.FlexLayoutSection{
-				{
-					{
-						Width: component.WidthHalf,
-						View:  defaultConfig,
-					},
-				},
+				defaultConfigSection,
 				metadataSection,
 				{
 					{
@@ -148,15 +147,10 @@ func Test_Object_ToComponent(t *testing.T) {
 			object: deployment,
 			initFunc: func(o *Object, options *initOptions) {
 				o.EnableEvents()
-				mockNoPlugins(options.PluginPrinter)
+				stubPlugins(options.PluginPrinter)
 			},
 			sections: []component.FlexLayoutSection{
-				{
-					{
-						Width: component.WidthHalf,
-						View:  defaultConfig,
-					},
-				},
+				defaultConfigSection,
 				metadataSection,
 				{
 					{
@@ -167,10 +161,25 @@ func Test_Object_ToComponent(t *testing.T) {
 			},
 		},
 		{
+			name:   "add button",
+			object: deployment,
+			initFunc: func(object *Object, options *initOptions) {
+				stubPlugins(options.PluginPrinter)
+				object.AddButton("button name", action.Payload{})
+			},
+			buttons: []component.Button{
+				component.NewButton("button name", action.Payload{}),
+			},
+			sections: []component.FlexLayoutSection{
+				defaultConfigSection,
+				metadataSection,
+			},
+		},
+		{
 			name:   "register items",
 			object: deployment,
 			initFunc: func(o *Object, options *initOptions) {
-				mockNoPlugins(options.PluginPrinter)
+				stubPlugins(options.PluginPrinter)
 				o.RegisterItems([]ItemDescriptor{
 					{
 						Func: func() (component.Component, error) {
@@ -193,12 +202,7 @@ func Test_Object_ToComponent(t *testing.T) {
 				})
 			},
 			sections: []component.FlexLayoutSection{
-				{
-					{
-						Width: component.WidthHalf,
-						View:  defaultConfig,
-					},
-				},
+				defaultConfigSection,
 				metadataSection,
 				{
 					{
@@ -255,6 +259,13 @@ func Test_Object_ToComponent(t *testing.T) {
 
 			expected := component.NewFlexLayout("Summary")
 			expected.AddSections(tc.sections...)
+			if len(tc.buttons) > 0 {
+				buttonGroup := component.NewButtonGroup()
+				for _, button := range tc.buttons {
+					buttonGroup.AddButton(button)
+				}
+				expected.SetButtonGroup(buttonGroup)
+			}
 
 			component.AssertEqual(t, expected, got)
 		})

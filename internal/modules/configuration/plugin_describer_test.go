@@ -7,15 +7,16 @@ package configuration
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/go-plugin"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	configFake "github.com/vmware/octant/internal/config/fake"
 	"github.com/vmware/octant/internal/describer"
+	"github.com/vmware/octant/internal/gvk"
 	dashPlugin "github.com/vmware/octant/pkg/plugin"
 	"github.com/vmware/octant/pkg/plugin/fake"
 	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
@@ -29,9 +30,17 @@ func TestPluginDescriber(t *testing.T) {
 	name := "plugin-test"
 	namespace := "default"
 	metadata := &dashPlugin.Metadata{
-		Name:         name,
-		Description:  "this is a test",
-		Capabilities: dashPlugin.Capabilities{},
+		Name:        name,
+		Description: "this is a test",
+		Capabilities: dashPlugin.Capabilities{
+			SupportsPrinterConfig: []schema.GroupVersionKind{gvk.Pod},
+			SupportsPrinterStatus: []schema.GroupVersionKind{gvk.Pod},
+			SupportsPrinterItems:  []schema.GroupVersionKind{gvk.Pod},
+			SupportsObjectStatus:  []schema.GroupVersionKind{gvk.Pod},
+			SupportsTab:           []schema.GroupVersionKind{gvk.Pod},
+			IsModule:              true,
+			ActionNames:           []string{"action"},
+		},
 	}
 
 	store := dashPlugin.NewDefaultStore()
@@ -54,17 +63,15 @@ func TestPluginDescriber(t *testing.T) {
 	cResponse, err := p.Describe(ctx, "/plugins", namespace, options)
 	require.NoError(t, err)
 
-	capabilities := dashPlugin.Capabilities{}
-	capabilitiesData, err := json.Marshal(capabilities)
-	require.NoError(t, err)
+	capabilitiesData := "[Module], [Actions: action], [Object Status: v1 Pod], [Printer Config: v1 Pod], [Printer Items: v1 Pod], [Printer Status: v1 Pod], [Tab: v1 Pod]"
 
 	list := component.NewList("Plugins", nil)
 	tableCols := component.NewTableCols("Name", "Description", "Capabilities")
-	table := component.NewTable("Plugins", tableCols)
+	table := component.NewTable("Plugins", "There are no plugins!", tableCols)
 	table.Add(component.TableRow{
-		"Name":        component.NewText(name),
-		"Description": component.NewText("this is a test"),
-		"Capability":  component.NewText(string(capabilitiesData)),
+		"Name":         component.NewText(name),
+		"Description":  component.NewText("this is a test"),
+		"Capabilities": component.NewText(string(capabilitiesData)),
 	})
 
 	list.Add(table)

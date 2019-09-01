@@ -85,7 +85,7 @@ func Test_ReplicationControllerListHandler(t *testing.T) {
 	containers.Add("nginx", "nginx:1.15")
 
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
-	expected := component.NewTable("ReplicationControllers", cols)
+	expected := component.NewTable("ReplicationControllers", "We couldn't find any replication controllers!", cols)
 	expected.Add(component.TableRow{
 		"Name":       component.NewLink("", "rc-test", "/rc"),
 		"Labels":     component.NewLabels(validReplicationControllerLabels),
@@ -95,7 +95,7 @@ func Test_ReplicationControllerListHandler(t *testing.T) {
 		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
 	})
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func TestReplicationControllerStatus(t *testing.T) {
@@ -145,7 +145,7 @@ func TestReplicationControllerStatus(t *testing.T) {
 		Kind:       "Pod",
 	}
 
-	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, nil)
+	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, false, nil)
 	rcs := NewReplicationControllerStatus(replicationController)
 	ctx := context.Background()
 	got, err := rcs.Create(ctx, o)

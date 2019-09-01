@@ -81,8 +81,15 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 
 		service := &corev1.Service{}
 
-		if err := store.GetAs(ctx, o, key, service); err != nil {
-			return ObjectStatus{}, errors.Wrap(err, "get service from objectstore")
+		found, err := store.GetAs(ctx, o, key, service)
+		if err != nil {
+			return ObjectStatus{}, errors.Wrap(err, "get service from object store")
+		}
+
+		if !found {
+			status.SetError()
+			status.AddDetailf("Backend refers to service %q which doesn't exist", key.Name)
+			continue
 		}
 
 		if service.Name == "" {
@@ -128,13 +135,14 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 			Name:       tls.SecretName,
 		}
 
-		secret, err := is.objectstore.Get(ctx, key)
+		_, found, err := is.objectstore.Get(ctx, key)
 		if err != nil {
-			// assume an error means the secret couldn't be accessed
-			break
+			status.SetError()
+			status.AddDetailf("Unable to load Secret %q: %s", tls.SecretName, err)
+			continue
 		}
 
-		if secret == nil {
+		if !found {
 			status.SetError()
 			status.AddDetailf("Secret %q does not exist", tls.SecretName)
 		}

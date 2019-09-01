@@ -29,7 +29,7 @@ type tolerationDescriber struct {
 
 func (td *tolerationDescriber) Create() (*component.Table, error) {
 	cols := component.NewTableCols("Description")
-	table := component.NewTable("Taints and Tolerations", cols)
+	table := component.NewTable("Taints and Tolerations", "There are no taints or tolerations!", cols)
 
 	for _, toleration := range td.podSpec.Tolerations {
 		msg, err := td.describe(toleration)

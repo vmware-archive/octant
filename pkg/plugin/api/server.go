@@ -34,7 +34,7 @@ type PortForwardResponse struct {
 // Service is the dashboard service.
 type Service interface {
 	List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error)
-	Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, error)
+	Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, bool, error)
 	PortForward(ctx context.Context, req PortForwardRequest) (PortForwardResponse, error)
 	CancelPortForward(ctx context.Context, id string)
 	Update(ctx context.Context, object *unstructured.Unstructured) error
@@ -71,11 +71,13 @@ var _ Service = (*GRPCService)(nil)
 
 // List lists objects.
 func (s *GRPCService) List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error) {
-	return s.ObjectStore.List(ctx, key)
+	// TODO: support hasSynced
+	list, _, err := s.ObjectStore.List(ctx, key)
+	return list, err
 }
 
 // Get retrieves an object.
-func (s *GRPCService) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, error) {
+func (s *GRPCService) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, bool, error) {
 	return s.ObjectStore.Get(ctx, key)
 }
 
@@ -157,18 +159,23 @@ func (c *grpcServer) Get(ctx context.Context, in *proto.KeyRequest) (*proto.GetR
 		return nil, err
 	}
 
-	object, err := c.service.Get(ctx, key)
+	object, found, err := c.service.Get(ctx, key)
 	if err != nil {
 		return nil, err
 	}
 
-	encodedObject, err := convertFromObject(object)
-	if err != nil {
-		return nil, err
-	}
+	var out *proto.GetResponse
 
-	out := &proto.GetResponse{
-		Object: encodedObject,
+	if found {
+		encodedObject, err := convertFromObject(object)
+		if err != nil {
+			return nil, err
+		}
+
+		out = &proto.GetResponse{
+			Object: encodedObject,
+		}
+
 	}
 
 	return out, nil
@@ -176,9 +183,13 @@ func (c *grpcServer) Get(ctx context.Context, in *proto.KeyRequest) (*proto.GetR
 
 // Update updates an object.
 func (c *grpcServer) Update(ctx context.Context, in *proto.UpdateRequest) (*proto.UpdateResponse, error) {
-	object, err := convertToObject(in.Object)
+	object, found, err := convertToObject(in.Object)
 	if err != nil {
 		return nil, err
+	}
+
+	if !found {
+		return &proto.UpdateResponse{}, errors.Errorf("can't update an object that doesn't exist")
 	}
 
 	if err := c.service.Update(ctx, object); err != nil {

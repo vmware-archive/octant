@@ -264,7 +264,7 @@ func describeContainerEnv(parent runtime.Object, c *corev1.Container, options Op
 	}
 
 	cols := component.NewTableCols("Name", "Value", "Source")
-	tbl := component.NewTable("Environment", cols)
+	tbl := component.NewTable("Environment", "There are no defined environment variables!", cols)
 
 	envRows, err := describeEnvRows(ns, c.Env, options)
 	if err != nil {
@@ -379,7 +379,7 @@ func printVolumeMountPath(mnt corev1.VolumeMount) string {
 
 func describeVolumeMounts(c *corev1.Container) *component.Table {
 	cols := component.NewTableCols("Name", "Mount Path", "Propagation")
-	tbl := component.NewTable("Volume Mounts", cols)
+	tbl := component.NewTable("Volume Mounts", "There are no volume mounts!", cols)
 
 	for _, m := range c.VolumeMounts {
 		row := component.TableRow{}

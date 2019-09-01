@@ -48,7 +48,7 @@ func Test_DaemonSetListHandler(t *testing.T) {
 
 	cols := component.NewTableCols("Name", "Labels", "Desired", "Current", "Ready",
 		"Up-To-Date", "Age", "Node Selector")
-	expected := component.NewTable("Daemon Sets", cols)
+	expected := component.NewTable("Daemon Sets", "We couldn't find any daemon sets!", cols)
 	expected.Add(component.TableRow{
 		"Name":          component.NewLink("", object.Name, "/path"),
 		"Labels":        component.NewLabels(labels),
@@ -60,7 +60,7 @@ func Test_DaemonSetListHandler(t *testing.T) {
 		"Node Selector": component.NewSelectors(nil),
 	})
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_printDaemonSetConfig(t *testing.T) {
@@ -81,7 +81,7 @@ func Test_printDaemonSetConfig(t *testing.T) {
 	got, err := printDaemonSetConfig(object)
 	require.NoError(t, err)
 
-	var sections component.SummarySections
+	sections := component.SummarySections{}
 	sections.AddText("Update Strategy", "Max Unavailable 1")
 	sections.AddText("Revision History Limit", "10")
 	sections.Add("Selectors", printSelectorMap(labels))
@@ -98,7 +98,7 @@ func Test_printDaemonSetSummary(t *testing.T) {
 	got, err := printDaemonSetStatus(object)
 	require.NoError(t, err)
 
-	var sections component.SummarySections
+	sections := component.SummarySections{}
 	sections.AddText("Current Number Scheduled", "1")
 	sections.AddText("Desired Number Scheduled", "1")
 	sections.AddText("Number Available", "1")

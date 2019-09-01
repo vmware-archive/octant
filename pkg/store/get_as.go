@@ -16,29 +16,30 @@ import (
 	octantunstructured "github.com/vmware/octant/thirdparty/unstructured"
 )
 
-// GetAs gets an object from the object store by key.
-func GetAs(ctx context.Context, o Store, key Key, as interface{}) error {
-	u, err := o.Get(ctx, key)
+// GetAs gets an object from the object store by key. If the object is not found,
+// return false and a nil error.
+func GetAs(ctx context.Context, o Store, key Key, as interface{}) (bool, error) {
+	u, found, err := o.Get(ctx, key)
 	if err != nil {
-		return errors.Wrap(err, "get object from object store")
+		return false, errors.Wrap(err, "get object from object store")
 	}
 
-	if u == nil {
-		return nil
+	if !found {
+		return false, nil
 	}
 
 	// NOTE: (bryanl) vendored converter can't convert from int64 to float64. Watching
 	// https://github.com/kubernetes-sigs/yaml/pull/14 to see when it gets pulled into
 	// a release so Octant can switch back.
 	if err := octantunstructured.DefaultUnstructuredConverter.FromUnstructured(u.Object, as); err != nil {
-		return errors.Wrap(err, "unable to convert object to unstructured")
+		return false, errors.Wrap(err, "unable to convert object to unstructured")
 	}
 
 	if err := copyObjectMeta(as, u); err != nil {
-		return errors.Wrap(err, "copy object metadata")
+		return false, errors.Wrap(err, "copy object metadata")
 	}
 
-	return nil
+	return true, nil
 }
 
 // TODO: see if all the other versions of this function could be replaced

@@ -8,8 +8,9 @@ FROM node:10.15.3 as base
 
 ADD web/ /web
 WORKDIR /web
+ENV CYPRESS_INSTALL_BINARY=0
 
-RUN npm ci && npm run-script build
+RUN npm ci --prefer-offline && npm run-script build
 
 # ------------------------------------------------------------------------------
 # Install go tools and build binary
@@ -23,6 +24,7 @@ ENV GOFLAGS=-mod=vendor GO111MODULE=on
 
 RUN make go-install
 RUN go generate ./web
+RUN make generate
 RUN make octant-dev
 
 # ------------------------------------------------------------------------------

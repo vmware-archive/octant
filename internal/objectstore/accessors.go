@@ -3,11 +3,56 @@ package objectstore
 import (
 	"sync"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic/dynamicinformer"
+
+	"github.com/vmware/octant/pkg/store"
 )
+
+type informerSynced struct {
+	status map[string]bool
+
+	mu sync.RWMutex
+}
+
+func initInformerSynced() *informerSynced {
+	return &informerSynced{
+		status: make(map[string]bool),
+	}
+}
+
+func (c *informerSynced) setSynced(key store.Key, value bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.status[key.String()] = value
+}
+
+func (c *informerSynced) hasSynced(key store.Key) bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	v, ok := c.status[key.String()]
+	if !ok {
+		return true
+	}
+
+	return v
+}
+
+func (c *informerSynced) hasSeen(key store.Key) bool {
+	_, ok := c.status[key.String()]
+	return ok
+}
+
+func (c *informerSynced) reset() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	for key := range c.status {
+		delete(c.status, key)
+	}
+}
 
 // TODO: investigate sync.Map
 
@@ -36,6 +81,15 @@ func (c *factoriesCache) get(key string) (dynamicinformer.DynamicSharedInformerF
 
 	v, ok := c.factories[key]
 	return v, ok
+}
+
+func (c *factoriesCache) reset() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	for name := range c.factories {
+		delete(c.factories, name)
+	}
 }
 
 func (c *factoriesCache) delete(key string) {
@@ -112,117 +166,4 @@ func (c *seenGVKsCache) hasSeen(key string, groupVersionKind schema.GroupVersion
 	}
 
 	return seen
-}
-
-type cachedObjectsCache struct {
-	cachedObjects map[string]map[schema.GroupVersionKind]map[types.UID]*unstructured.Unstructured
-	mu            sync.RWMutex
-}
-
-func initCachedObjectsCache() *cachedObjectsCache {
-	return &cachedObjectsCache{
-		cachedObjects: make(map[string]map[schema.GroupVersionKind]map[types.UID]*unstructured.Unstructured),
-	}
-}
-
-func (c *cachedObjectsCache) list(key string, groupVersionKind schema.GroupVersionKind) []*unstructured.Unstructured {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
-	var list []*unstructured.Unstructured
-
-	gvkList, ok := c.cachedObjects[key]
-	if !ok {
-		return list
-	}
-
-	objectMap, ok := gvkList[groupVersionKind]
-	if !ok {
-		return list
-	}
-
-	for _, object := range objectMap {
-		list = append(list, object)
-	}
-
-	return list
-}
-
-func (c *cachedObjectsCache) update(ns string, groupVersionKind schema.GroupVersionKind, object *unstructured.Unstructured) {
-	if object == nil {
-		return
-	}
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	cur, ok := c.cachedObjects[ns]
-	if !ok {
-		cur = make(map[schema.GroupVersionKind]map[types.UID]*unstructured.Unstructured)
-	}
-
-	curGVK, ok := cur[groupVersionKind]
-	if !ok {
-		curGVK = make(map[types.UID]*unstructured.Unstructured)
-	}
-
-	curGVK[object.GetUID()] = object
-	cur[groupVersionKind] = curGVK
-	c.cachedObjects[ns] = cur
-}
-
-func (c *cachedObjectsCache) delete(ns string, groupVersionKind schema.GroupVersionKind, object *unstructured.Unstructured) {
-	if object == nil {
-		return
-	}
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	cur, ok := c.cachedObjects[ns]
-	if !ok {
-		return
-	}
-
-	curGVK, ok := cur[groupVersionKind]
-	if !ok {
-		return
-	}
-
-	delete(curGVK, object.GetUID())
-	cur[groupVersionKind] = curGVK
-	c.cachedObjects[ns] = cur
-}
-
-type watchedGVKsCache struct {
-	watchedGVKs map[string]map[schema.GroupVersionKind]bool
-	mu          sync.RWMutex
-}
-
-func initWatchedGVKsCache() *watchedGVKsCache {
-	return &watchedGVKsCache{
-		watchedGVKs: make(map[string]map[schema.GroupVersionKind]bool),
-	}
-}
-
-func (c *watchedGVKsCache) isWatched(key string, groupVersionKind schema.GroupVersionKind) bool {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
-	gvkMap, ok := c.watchedGVKs[key]
-	if !ok {
-		return false
-	}
-	return gvkMap[groupVersionKind]
-}
-
-func (c *watchedGVKsCache) setWatched(key string, groupVersionKind schema.GroupVersionKind) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	cur, ok := c.watchedGVKs[key]
-	if !ok {
-		cur = make(map[schema.GroupVersionKind]bool)
-	}
-
-	cur[groupVersionKind] = true
-	c.watchedGVKs[key] = cur
 }

@@ -53,9 +53,12 @@ func LoadObject(ctx context.Context, objectStore store.Store, namespace string, 
 		objectStoreKey.Name = name
 	}
 
-	object, err := objectStore.Get(ctx, objectStoreKey)
+	object, found, err := objectStore.Get(ctx, objectStoreKey)
 	if err != nil {
 		return nil, err
+	}
+	if !found {
+		return nil, errors.Errorf("object was not found")
 	}
 
 	return object, nil
@@ -72,7 +75,7 @@ func LoadObjects(ctx context.Context, objectStore store.Store, namespace string,
 			objectStoreKey.Name = name
 		}
 
-		storedObjects, err := objectStore.List(ctx, objectStoreKey)
+		storedObjects, _, err := objectStore.List(ctx, objectStoreKey)
 		if err != nil {
 			return nil, err
 		}
@@ -109,9 +112,24 @@ type Options struct {
 type Describer interface {
 	Describe(ctx context.Context, prefix, namespace string, options Options) (component.ContentResponse, error)
 	PathFilters() []PathFilter
+	Reset(ctx context.Context) error
 }
 
 type base struct{}
+
+func (b base) Describe(ctx context.Context, prefix, namespace string, options Options) (component.ContentResponse, error) {
+	return EmptyContentResponse, nil
+}
+
+func (b base) PathFilters() []PathFilter {
+	return nil
+}
+
+func (b base) Reset(ctx context.Context) error {
+	return nil
+}
+
+var _ Describer = (*base)(nil)
 
 func newBaseDescriber() *base {
 	return &base{}

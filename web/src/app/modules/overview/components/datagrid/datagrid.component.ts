@@ -24,6 +24,7 @@ export class DatagridComponent implements OnChanges {
 
   identifyRow = trackByIndex;
   identifyColumn = trackByIdentity;
+  loading: boolean;
 
   constructor(private viewService: ViewService) {}
 
@@ -36,6 +37,7 @@ export class DatagridComponent implements OnChanges {
       this.rows = current.config.rows;
       this.placeholder = current.config.emptyContent;
       this.lastUpdated = new Date();
+      this.loading = current.config.loading;
     }
   }
 }

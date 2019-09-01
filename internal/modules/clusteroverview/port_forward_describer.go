@@ -21,6 +21,8 @@ func NewPortForwardListDescriber() *PortForwardListDescriber {
 	return &PortForwardListDescriber{}
 }
 
+var _ describer.Describer = (*PortForwardListDescriber)(nil)
+
 // Describe describes a list of port forwards as content
 func (d *PortForwardListDescriber) Describe(ctx context.Context, prefix, namespace string, options describer.Options) (component.ContentResponse, error) {
 	portForwarder := options.PortForwarder()
@@ -28,10 +30,10 @@ func (d *PortForwardListDescriber) Describe(ctx context.Context, prefix, namespa
 	list := component.NewList("Port Forwards", nil)
 
 	tblCols := component.NewTableCols("Name", "Namespace", "Ports", "Age")
-	tbl := component.NewTable("Port Forwards", tblCols)
+	tbl := component.NewTable("Port Forwards", "There are no port forwards!", tblCols)
 	list.Add(tbl)
 
-	for _, pf := range portForwarder.List() {
+	for _, pf := range portForwarder.List(ctx) {
 		t := &pf.Target
 		apiVersion, kind := t.GVK.ToAPIVersionAndKind()
 		nameLink, err := options.Link.ForGVK(t.Namespace, apiVersion, kind, t.Name, t.Name)
@@ -56,6 +58,10 @@ func (d *PortForwardListDescriber) Describe(ctx context.Context, prefix, namespa
 func (d *PortForwardListDescriber) PathFilters() []describer.PathFilter {
 	filter := describer.NewPathFilter("/port-forward", d)
 	return []describer.PathFilter{*filter}
+}
+
+func (d *PortForwardListDescriber) Reset(ctx context.Context) error {
+	return nil
 }
 
 func describePortForwardPorts(pf portforward.State) []component.Port {

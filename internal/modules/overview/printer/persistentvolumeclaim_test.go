@@ -49,7 +49,7 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 
 	cols := component.NewTableCols("Name", "Status", "Volume", "Capacity", "Access Modes",
 		"Storage Class", "Age")
-	expected := component.NewTable("Persistent Volume Claims", cols)
+	expected := component.NewTable("Persistent Volume Claims", "We couldn't find any persistent volume claims!", cols)
 	expected.Add(component.TableRow{
 		"Name":          component.NewLink("", object.Name, "/pvc"),
 		"Status":        component.NewText("Bound"),
@@ -60,7 +60,7 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 		"Age":           component.NewTimestamp(now),
 	})
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_printPersistentVolumeClaimConfig(t *testing.T) {

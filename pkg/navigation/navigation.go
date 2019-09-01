@@ -20,7 +20,7 @@ import (
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/pkg/icon"
 	"github.com/vmware/octant/pkg/store"
-	octantunstructured "github.com/vmware/octant/thirdparty/unstructured"
+	octantUnstructured "github.com/vmware/octant/thirdparty/unstructured"
 )
 
 // Option is an option for configuring navigation.
@@ -45,6 +45,14 @@ func SetNavigationIcon(name string) Option {
 	}
 }
 
+// SetLoading sets the loading status for the navigation entry.
+func SetLoading(isLoading bool) Option {
+	return func(navigation *Navigation) error {
+		navigation.Loading = isLoading
+		return nil
+	}
+}
+
 // Navigation is a set of navigation entries.
 type Navigation struct {
 	Title      string       `json:"title,omitempty"`
@@ -52,6 +60,7 @@ type Navigation struct {
 	Children   []Navigation `json:"children,omitempty"`
 	IconName   string       `json:"iconName,omitempty"`
 	IconSource string       `json:"iconSource,omitempty"`
+	Loading    bool         `json:"isLoading"`
 }
 
 // New creates a Navigation.
@@ -68,12 +77,14 @@ func New(title, navigationPath string, options ...Option) (*Navigation, error) {
 }
 
 // CRDEntries generates navigation entries for CRDs.
-func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, wantsClusterScoped bool) ([]Navigation, error) {
+func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, wantsClusterScoped bool) ([]Navigation, bool, error) {
 	var list []Navigation
 
-	crds, err := CustomResourceDefinitions(ctx, objectStore)
+	loading := false
+
+	crds, _, err := CustomResourceDefinitions(ctx, objectStore)
 	if err != nil {
-		return nil, errors.Wrap(err, "retrieving CRDs")
+		return nil, false, errors.Wrap(err, "retrieving CRDs")
 	}
 
 	sort.Slice(crds, func(i, j int) bool {
@@ -87,33 +98,39 @@ func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store
 			continue
 		}
 
-		objects, err := ListCustomResources(ctx, crds[i], namespace, objectStore, nil)
+		objects, isLoading, err := ListCustomResources(ctx, crds[i], namespace, objectStore, nil)
 		if err != nil {
-			return nil, err
+			return nil, false, err
+		}
+
+		if isLoading {
+			loading = true
 		}
 
 		if len(objects.Items) > 0 {
-			navigation, err := New(crds[i].Name, path.Join(prefix, crds[i].Name), SetNavigationIcon(icon.CustomResourceDefinition))
+			navigation, err := New(crds[i].Name, path.Join(prefix, crds[i].Name),
+				SetNavigationIcon(icon.CustomResourceDefinition),
+				SetLoading(isLoading))
 			if err != nil {
-				return nil, err
+				return nil, false, err
 			}
 
 			list = append(list, *navigation)
 		}
 	}
 
-	return list, nil
+	return list, loading, nil
 }
 
-func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1beta1.CustomResourceDefinition, error) {
+func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1beta1.CustomResourceDefinition, bool, error) {
 	key := store.Key{
 		APIVersion: "apiextensions.k8s.io/v1beta1",
 		Kind:       "CustomResourceDefinition",
 	}
 
-	rawList, err := o.List(ctx, key)
+	rawList, hasSynced, err := o.List(ctx, key)
 	if err != nil {
-		return nil, errors.Wrap(err, "listing CRDs")
+		return nil, false, errors.Wrap(err, "listing CRDs")
 	}
 
 	logger := log.From(ctx)
@@ -125,30 +142,14 @@ func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1b
 		// NOTE: (bryanl) vendored converter can't convert from int64 to float64. Watching
 		// https://github.com/kubernetes-sigs/yaml/pull/14 to see when it gets pulled into
 		// a release so Octant can switch back.
-		if err := octantunstructured.DefaultUnstructuredConverter.FromUnstructured(rawList.Items[i].Object, crd); err != nil {
+		if err := octantUnstructured.DefaultUnstructuredConverter.FromUnstructured(rawList.Items[i].Object, crd); err != nil {
 			logger.Errorf("%v", errors.Wrapf(errors.Wrapf(err, "converting unstructured object to custom resource definition"), rawList.Items[i].GetName()))
 			continue
 		}
 		list = append(list, crd)
 	}
 
-	return list, nil
-}
-
-// CustomResourceDefinition retrieves a CRD.
-func CustomResourceDefinition(ctx context.Context, name string, o store.Store) (*apiextv1beta1.CustomResourceDefinition, error) {
-	key := store.Key{
-		APIVersion: "apiextensions.k8s.io/v1beta1",
-		Kind:       "CustomResourceDefinition",
-		Name:       name,
-	}
-
-	crd := &apiextv1beta1.CustomResourceDefinition{}
-	if err := store.GetObjectAs(ctx, o, key, crd); err != nil {
-		return nil, errors.Wrap(err, "get CRD from object store")
-	}
-
-	return crd, nil
+	return list, hasSynced, nil
 }
 
 // ListCustomResources lists all custom resources given a CRD.
@@ -157,9 +158,9 @@ func ListCustomResources(
 	crd *apiextv1beta1.CustomResourceDefinition,
 	namespace string,
 	o store.Store,
-	selector *labels.Set) (*unstructured.UnstructuredList, error) {
+	selector *labels.Set) (*unstructured.UnstructuredList, bool, error) {
 	if crd == nil {
-		return nil, errors.New("crd is nil")
+		return nil, false, errors.New("crd is nil")
 	}
 	gvk := schema.GroupVersionKind{
 		Group:   crd.Spec.Group,
@@ -179,18 +180,19 @@ func ListCustomResources(
 		key.Namespace = namespace
 	}
 
-	objects, err := o.List(ctx, key)
+	objects, hasSynced, err := o.List(ctx, key)
 	if err != nil {
-		return nil, errors.Wrapf(err, "listing custom resources for %q", crd.Name)
+		return nil, false, errors.Wrapf(err, "listing custom resources for %q", crd.Name)
 	}
 
-	return objects, nil
+	return objects, hasSynced, nil
 }
 
 type navConfig struct {
-	title    string
-	suffix   string
-	iconName string
+	title     string
+	suffix    string
+	iconName  string
+	isLoading bool
 }
 
 // EntriesHelper generates navigation entries.
@@ -199,9 +201,9 @@ type EntriesHelper struct {
 }
 
 // Add adds an entry.
-func (neh *EntriesHelper) Add(title, suffix, iconName string) {
+func (neh *EntriesHelper) Add(title, suffix, iconName string, isLoading bool) {
 	neh.navConfigs = append(neh.navConfigs, navConfig{
-		title: title, suffix: suffix, iconName: iconName,
+		title: title, suffix: suffix, iconName: iconName, isLoading: isLoading,
 	})
 }
 
@@ -210,7 +212,9 @@ func (neh *EntriesHelper) Generate(prefix string) ([]Navigation, error) {
 	var navigations []Navigation
 
 	for _, nc := range neh.navConfigs {
-		navigation, err := New(nc.title, path.Join(prefix, nc.suffix), SetNavigationIcon(nc.iconName))
+		navigation, err := New(nc.title, path.Join(prefix, nc.suffix),
+			SetNavigationIcon(nc.iconName),
+			SetLoading(nc.isLoading))
 		if err != nil {
 			return nil, err
 		}

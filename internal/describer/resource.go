@@ -37,6 +37,8 @@ type ResourceOptions struct {
 }
 
 type Resource struct {
+	base
+
 	ResourceOptions
 }
 

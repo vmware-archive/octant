@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -19,6 +18,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/vmware/octant/internal/cluster"
+	"github.com/vmware/octant/pkg/action"
 )
 
 //go:generate mockgen  -destination=./fake/mock_store.go -package=fake github.com/vmware/octant/pkg/store Store
@@ -28,13 +28,15 @@ type UpdateFn func(store Store)
 
 // Store stores Kubernetes objects.
 type Store interface {
-	List(ctx context.Context, key Key) (*unstructured.UnstructuredList, error)
-	Get(ctx context.Context, key Key) (*unstructured.Unstructured, error)
+	List(ctx context.Context, key Key) (list *unstructured.UnstructuredList, loading bool, err error)
+	Get(ctx context.Context, key Key) (object *unstructured.Unstructured, found bool, err error)
+	Delete(ctx context.Context, key Key) error
 	Watch(ctx context.Context, key Key, handler cache.ResourceEventHandler) error
 	HasAccess(context.Context, Key, string) error
 	UpdateClusterClient(ctx context.Context, client cluster.ClientInterface) error
 	RegisterOnUpdate(fn UpdateFn)
 	Update(ctx context.Context, key Key, updater func(*unstructured.Unstructured) error) error
+	IsLoading(ctx context.Context, key Key) bool
 }
 
 // Key is a key for the object store.
@@ -51,17 +53,17 @@ func (k Key) String() string {
 
 	sb.WriteString("CacheKey[")
 	if k.Namespace != "" {
-		sb.WriteString(fmt.Sprintf("Namespace=%q, ", k.Namespace))
+		sb.WriteString(fmt.Sprintf("Namespace='%s', ", k.Namespace))
 	}
-	sb.WriteString(fmt.Sprintf("APIVersion=%q, ", k.APIVersion))
-	sb.WriteString(fmt.Sprintf("Kind=%q", k.Kind))
+	sb.WriteString(fmt.Sprintf("APIVersion='%s', ", k.APIVersion))
+	sb.WriteString(fmt.Sprintf("Kind='%s'", k.Kind))
 
 	if k.Name != "" {
-		sb.WriteString(fmt.Sprintf(", Name=%q", k.Name))
+		sb.WriteString(fmt.Sprintf(", Name='%s'", k.Name))
 	}
 
-	if k.Selector != nil {
-		sb.WriteString(fmt.Sprintf(", Selector=%q", k.Selector.String()))
+	if k.Selector != nil && k.Selector.String() != "" {
+		sb.WriteString(fmt.Sprintf(", Selector='%s'", k.Selector.String()))
 	}
 
 	sb.WriteString("]")
@@ -72,6 +74,45 @@ func (k Key) String() string {
 // GroupVersionKind converts the Key to a GroupVersionKind.
 func (k Key) GroupVersionKind() schema.GroupVersionKind {
 	return schema.FromAPIVersionAndKind(k.APIVersion, k.Kind)
+}
+
+// ToActionPayload converts the Key to a payload.
+func (k Key) ToActionPayload() action.Payload {
+	return action.Payload{
+		"namespace":  k.Namespace,
+		"apiVersion": k.APIVersion,
+		"kind":       k.Kind,
+		"name":       k.Name,
+	}
+}
+
+// KeyFromPayload converts a payload into a Key.
+func KeyFromPayload(payload action.Payload) (Key, error) {
+	namespace, err := payload.String("namespace")
+	if err != nil {
+		return Key{}, err
+	}
+	apiVersion, err := payload.String("apiVersion")
+	if err != nil {
+		return Key{}, err
+	}
+	kind, err := payload.String("kind")
+	if err != nil {
+		return Key{}, err
+	}
+	name, err := payload.String("name")
+	if err != nil {
+		return Key{}, err
+	}
+
+	key := Key{
+		Namespace:  namespace,
+		APIVersion: apiVersion,
+		Kind:       kind,
+		Name:       name,
+	}
+
+	return key, nil
 }
 
 // KeyFromObject creates a key from a runtime object.
@@ -104,27 +145,4 @@ func KeyFromObject(object runtime.Object) (Key, error) {
 		Kind:       kind,
 		Name:       name,
 	}, nil
-}
-
-// GetObjectAs gets an object from the object store by key.
-func GetObjectAs(ctx context.Context, o Store, key Key, as interface{}) error {
-	u, err := o.Get(ctx, key)
-	if err != nil {
-		return errors.Wrap(err, "get object from object store")
-	}
-
-	if u == nil {
-		return nil
-	}
-
-	err = runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, as)
-	if err != nil {
-		return err
-	}
-
-	if err := copyObjectMeta(as, u); err != nil {
-		return errors.Wrap(err, "copy object metadata")
-	}
-
-	return nil
 }

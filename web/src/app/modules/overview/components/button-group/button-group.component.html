@@ -1,0 +1,19 @@
+<clr-button-group *ngIf="view?.config.buttons" class="btn-primary">
+    <clr-button *ngFor="let button of view.config.buttons;trackBy: trackByFn"
+                class="btn-danger-outline btn-sm"
+            (click)="onClick(button.payload, button.confirmation)">
+
+        {{ button.name }}
+    </clr-button>
+</clr-button-group>
+
+<clr-modal [(clrModalOpen)]="isModalOpen">
+    <h3 class="modal-title">{{modalTitle}}</h3>
+    <div class="modal-body">
+        <div markdown ngPreserveWhitespaces [data]="modalBody"></div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="cancelModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="acceptModal()">OK</button>
+    </div>
+</clr-modal>

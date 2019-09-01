@@ -30,7 +30,7 @@ func DeploymentListHandler(_ context.Context, list *appsv1.DeploymentList, opts 
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
-	tbl := component.NewTable("Deployments", cols)
+	tbl := component.NewTable("Deployments", "We couldn't find any deployments!", cols)
 
 	for _, d := range list.Items {
 		row := component.TableRow{}
@@ -136,7 +136,7 @@ func deploymentConditions(deployment *appsv1.Deployment) (component.Component, e
 		return nil, errors.New("unable to generate conditions from a nil deployment")
 	}
 
-	table := component.NewTable("Conditions", deploymentConditionColumns)
+	table := component.NewTable("Conditions", "There are no deployment conditions!", deploymentConditionColumns)
 
 	for _, condition := range deployment.Status.Conditions {
 		row := component.TableRow{
@@ -284,7 +284,7 @@ func deploymentPods(ctx context.Context, deployment *appsv1.Deployment, options 
 		Selector:   &selector,
 	}
 
-	list, err := objectStore.List(ctx, key)
+	list, _, err := objectStore.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "list all objects for key %s", key)
 	}

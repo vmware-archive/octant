@@ -65,7 +65,7 @@ func Test_CronJobListHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Schedule", "Age")
-	expected := component.NewTable("CronJobs", cols)
+	expected := component.NewTable("CronJobs", "We couldn't find any cron jobs!", cols)
 	expected.Add(component.TableRow{
 		"Name":     component.NewLink("", "cron", "/cron"),
 		"Labels":   component.NewLabels(labels),

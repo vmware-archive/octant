@@ -11,7 +11,7 @@ GOCMD=go
 GOBUILD=$(GOCMD) build
 GOINSTALL=$(GOCMD) install
 
-VERSION ?= v0.5.1
+VERSION ?= v0.6.0
 
 ifdef XDG_CONFIG_HOME
 	OCTANT_PLUGINSTUB_DIR ?= ${XDG_CONFIG_HOME}/octant/plugins
@@ -88,10 +88,10 @@ web-test: web-deps
 	@cd web; npm run test:headless
 
 ui-server:
-	OCTANT_DISABLE_OPEN_BROWSER=false OCTANT_LISTENER_ADDR=localhost:3001 $(GOCMD) run ./cmd/octant/main.go $(OCTANT_FLAGS)
+	OCTANT_DISABLE_OPEN_BROWSER=1 OCTANT_LISTENER_ADDR=localhost:7777 $(GOCMD) run ./cmd/octant/main.go $(OCTANT_FLAGS)
 
 ui-client:
-	@cd web; API_BASE=http://localhost:3001 npm run start
+	@cd web; API_BASE=http://localhost:7777 npm run start
 
 gen-electron:
 	@GOCACHE=${HOME}/cache/go-build astilectron-bundler -v -c configs/electron/bundler.json

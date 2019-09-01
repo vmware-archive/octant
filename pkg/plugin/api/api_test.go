@@ -68,7 +68,7 @@ func TestAPI(t *testing.T) {
 			name: "list",
 			initFunc: func(t *testing.T, mocks *apiMocks) {
 				mocks.objectStore.EXPECT().
-					List(gomock.Any(), gomock.Eq(listKey)).Return(objects, nil)
+					List(gomock.Any(), gomock.Eq(listKey)).Return(objects, false, nil)
 			},
 			doFunc: func(t *testing.T, client *api.Client) {
 				clientCtx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
@@ -86,14 +86,15 @@ func TestAPI(t *testing.T) {
 			name: "get",
 			initFunc: func(t *testing.T, mocks *apiMocks) {
 				mocks.objectStore.EXPECT().
-					Get(gomock.Any(), gomock.Eq(getKey)).Return(object, nil)
+					Get(gomock.Any(), gomock.Eq(getKey)).Return(object, true, nil)
 			},
 			doFunc: func(t *testing.T, client *api.Client) {
 				clientCtx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 				defer cancel()
 
-				got, err := client.Get(clientCtx, getKey)
+				got, found, err := client.Get(clientCtx, getKey)
 				require.NoError(t, err)
+				require.True(t, found)
 
 				expected := object
 

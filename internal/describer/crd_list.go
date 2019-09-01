@@ -26,11 +26,14 @@ type crdListPrinter func(
 	crdName string,
 	crd *apiextv1beta1.CustomResourceDefinition,
 	objects *unstructured.UnstructuredList,
-	linkGenerator link.Interface) (component.Component, error)
+	linkGenerator link.Interface,
+	isLoading bool) (component.Component, error)
 
 type crdListDescriptionOption func(*crdList)
 
 type crdList struct {
+	base
+
 	name    string
 	path    string
 	printer crdListPrinter
@@ -59,12 +62,12 @@ func (cld *crdList) Describe(ctx context.Context, prefix, namespace string, opti
 		return EmptyContentResponse, err
 	}
 
-	objects, err := ListCustomResources(ctx, crd, namespace, objectStore, options.LabelSet)
+	objects, isLoading, err := ListCustomResources(ctx, crd, namespace, objectStore, options.LabelSet)
 	if err != nil {
 		return EmptyContentResponse, err
 	}
 
-	table, err := cld.printer(cld.name, crd, objects, options.Link)
+	table, err := cld.printer(cld.name, crd, objects, options.Link, isLoading)
 	if err != nil {
 		return EmptyContentResponse, err
 	}
@@ -86,9 +89,9 @@ func ListCustomResources(
 	crd *apiextv1beta1.CustomResourceDefinition,
 	namespace string,
 	o store.Store,
-	selector *labels.Set) (*unstructured.UnstructuredList, error) {
+	selector *labels.Set) (*unstructured.UnstructuredList, bool, error) {
 	if crd == nil {
-		return nil, errors.New("crd is nil")
+		return nil, false, errors.New("crd is nil")
 	}
 	gvk := schema.GroupVersionKind{
 		Group:   crd.Spec.Group,
@@ -105,16 +108,12 @@ func ListCustomResources(
 		Selector:   selector,
 	}
 
-	if err := o.HasAccess(ctx, key, "list"); err != nil {
-		return nil, nil
-	}
-
-	objects, err := o.List(ctx, key)
+	objects, isLoading, err := o.List(ctx, key)
 	if err != nil {
-		return nil, errors.Wrapf(err, "listing custom resources for %q", crd.Name)
+		return nil, false, errors.Wrapf(err, "listing custom resources for %q", crd.Name)
 	}
 
-	return objects, nil
+	return objects, isLoading, nil
 }
 
 func (cld *crdList) PathFilters() []PathFilter {

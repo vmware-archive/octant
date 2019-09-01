@@ -10,6 +10,8 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
+  IterableDiffers,
+  IterableDiffer,
 } from '@angular/core';
 import { LogsView, LogEntry } from 'src/app/models/content';
 import {
@@ -24,8 +26,9 @@ import {
 })
 export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
   private logStream: PodLogsStreamer;
-  private scrollToBottom = false;
+  scrollToBottom = false;
 
+  private containerLogsDiffer: IterableDiffer<LogEntry>;
   @Input() view: LogsView;
   @ViewChild('scrollTarget') scrollTarget: ElementRef;
   containerLogs: LogEntry[] = [];
@@ -33,9 +36,15 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
   selectedContainer = '';
   shouldDisplayTimestamp = true;
 
-  constructor(private podLogsService: PodLogsService) {}
+  constructor(
+    private podLogsService: PodLogsService,
+    private iterableDiffers: IterableDiffers
+  ) {}
 
   ngOnInit() {
+    this.containerLogsDiffer = this.iterableDiffers
+      .find(this.containerLogs)
+      .create();
     if (this.view) {
       if (
         this.view.config.containers &&
@@ -99,7 +108,8 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   ngAfterViewChecked() {
-    if (this.scrollToBottom) {
+    const change = this.containerLogsDiffer.diff(this.containerLogs);
+    if (change && this.scrollToBottom) {
       const { nativeElement } = this.scrollTarget;
       nativeElement.scrollTop = nativeElement.scrollHeight;
     }

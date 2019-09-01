@@ -15,6 +15,19 @@ import (
 // Payload is an action payload.
 type Payload map[string]interface{}
 
+// CreatePayload creates a payload with an action name and fields.
+func CreatePayload(actionName string, fields map[string]interface{}) Payload {
+	payload := Payload{
+		"action": actionName,
+	}
+
+	for k, v := range fields {
+		payload[k] = v
+	}
+
+	return payload
+}
+
 // GroupVersionKind extracts a GroupVersionKind from a payload.
 func (p Payload) GroupVersionKind() (schema.GroupVersionKind, error) {
 	group, err := p.String("group")

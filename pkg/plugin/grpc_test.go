@@ -267,7 +267,7 @@ func Test_GRPCClient_PrintTab(t *testing.T) {
 			},
 		}
 
-		assert.Equal(t, expected, got)
+		testutil.AssertJSONEqual(t, expected, got)
 	})
 }
 

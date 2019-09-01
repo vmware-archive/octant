@@ -53,7 +53,7 @@ func Test_ServiceAccountListHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Labels", "Secrets", "Age")
-	expected := component.NewTable("Service Accounts", cols)
+	expected := component.NewTable("Service Accounts", "We couldn't find any service accounts!", cols)
 	expected.Add(component.TableRow{
 		"Name":    component.NewLink("", object.Name, "/path"),
 		"Labels":  component.NewLabels(labels),
@@ -61,7 +61,7 @@ func Test_ServiceAccountListHandler(t *testing.T) {
 		"Age":     component.NewTimestamp(now),
 	})
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_serviceAccountHandler(t *testing.T) {
@@ -92,7 +92,7 @@ func Test_serviceAccountHandler(t *testing.T) {
 		return summaryConfig, nil
 	}
 
-	policyTable := component.NewTable("policyTable", component.NewTableCols("col1"))
+	policyTable := component.NewTable("policyTable", "", component.NewTableCols("col1"))
 	h.policyRulesFunc = func(ctx context.Context, serviceAccount corev1.ServiceAccount, appObjectStore store.Store) (*component.Table, error) {
 		return policyTable, nil
 	}
@@ -144,7 +144,7 @@ func Test_printServiceAccountConfig(t *testing.T) {
 	tpo.PathForGVK(object.Namespace, "v1", "Secret", "secret", "secret", "/secret")
 
 	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).
-		Return(testutil.ToUnstructuredList(t, testutil.ToUnstructured(t, secret)), nil)
+		Return(testutil.ToUnstructuredList(t, testutil.ToUnstructured(t, secret)), false, nil)
 
 	ctx := context.Background()
 	got, err := printServiceAccountConfig(ctx, *object, printOptions)
@@ -202,7 +202,7 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 
 	appObjectStore.EXPECT().
 		List(gomock.Any(), roleBindingKey).
-		Return(roleBindingObjects, nil)
+		Return(roleBindingObjects, false, nil)
 
 	clusterRoleBindingKey := store.Key{
 		APIVersion: "rbac.authorization.k8s.io/v1",
@@ -223,21 +223,21 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 
 	appObjectStore.EXPECT().
 		List(gomock.Any(), clusterRoleBindingKey).
-		Return(clusterRoleBindingObjects, nil)
+		Return(clusterRoleBindingObjects, false, nil)
 
 	role1Key, err := store.KeyFromObject(role1)
 	require.NoError(t, err)
 
 	appObjectStore.EXPECT().
 		Get(gomock.Any(), role1Key).
-		Return(testutil.ToUnstructured(t, role1), nil)
+		Return(testutil.ToUnstructured(t, role1), true, nil)
 
 	role2Key, err := store.KeyFromObject(role2)
 	require.NoError(t, err)
 
 	appObjectStore.EXPECT().
 		Get(gomock.Any(), role2Key).
-		Return(testutil.ToUnstructured(t, role2), nil)
+		Return(testutil.ToUnstructured(t, role2), true, nil)
 
 	ctx := context.Background()
 

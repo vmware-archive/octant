@@ -8,6 +8,8 @@ package describer
 import (
 	"context"
 
+	"github.com/pkg/errors"
+
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -17,6 +19,8 @@ type Section struct {
 	title      string
 	describers []Describer
 }
+
+var _ Describer = (*Section)(nil)
 
 // NewSection creates a Section.
 func NewSection(p, title string, describers ...Describer) *Section {
@@ -31,16 +35,16 @@ func NewSection(p, title string, describers ...Describer) *Section {
 func (d *Section) Describe(ctx context.Context, prefix, namespace string, options Options) (component.ContentResponse, error) {
 	list := component.NewList(d.title, nil)
 
-	for _, child := range d.describers {
-		cResponse, err := child.Describe(ctx, prefix, namespace, options)
+	for describerIndex := range d.describers {
+		cResponse, err := d.describers[describerIndex].Describe(ctx, prefix, namespace, options)
 		if err != nil {
 			return EmptyContentResponse, err
 		}
 
-		for _, vc := range cResponse.Components {
-			if nestedList, ok := vc.(*component.List); ok {
-				for i := range nestedList.Config.Items {
-					item := nestedList.Config.Items[i]
+		for componentIndex := range cResponse.Components {
+			if nestedList, ok := cResponse.Components[componentIndex].(*component.List); ok {
+				for itemIndex := range nestedList.Config.Items {
+					item := nestedList.Config.Items[itemIndex]
 					if !item.IsEmpty() {
 						list.Add(item)
 					}
@@ -68,4 +72,14 @@ func (d *Section) PathFilters() []PathFilter {
 	}
 
 	return PathFilters
+}
+
+func (d *Section) Reset(ctx context.Context) error {
+	for i := range d.describers {
+		if err := d.describers[i].Reset(ctx); err != nil {
+			return errors.Wrapf(err, "reset describer in section %s", d.path)
+		}
+	}
+
+	return nil
 }

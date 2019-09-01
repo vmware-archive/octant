@@ -166,7 +166,7 @@ func DefaultPrintFunc(_ context.Context, object runtime.Object, _ Options) (comp
 	gvk := schema.FromAPIVersionAndKind(desc[0], desc[1])
 	title = gvk.String()
 
-	table := component.NewTable(title, cols)
+	table := component.NewTable(title, "We couldn't find any objects!", cols)
 
 	items := m["items"].([]interface{})
 

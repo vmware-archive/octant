@@ -25,7 +25,8 @@ func ServiceAccountListHandler(_ context.Context, list *corev1.ServiceAccountLis
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Secrets", "Age")
-	table := component.NewTable("Service Accounts", cols)
+	table := component.NewTable("Service Accounts",
+		"We couldn't find any service accounts!", cols)
 
 	for _, serviceAccount := range list.Items {
 		row := component.TableRow{}
@@ -173,7 +174,7 @@ func serviceAccountTokens(ctx context.Context, serviceAccount corev1.ServiceAcco
 		APIVersion: "v1",
 		Kind:       "Secret",
 	}
-	secretList, err := o.List(ctx, key)
+	secretList, _, err := o.List(ctx, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "find secrets for service account")
 	}
@@ -248,9 +249,13 @@ func (s *serviceAccountPolicyRules) run() (*component.Table, error) {
 		}
 		switch kind := roleRef.Kind; kind {
 		case "ClusterRole":
-			object, err := s.appObjectStore.Get(s.ctx, key)
+			object, found, err := s.appObjectStore.Get(s.ctx, key)
 			if err != nil {
 				return nil, err
+			}
+
+			if !found {
+				return nil, errors.Errorf("unable to find %s", key)
 			}
 
 			clusterRole := &rbacv1.ClusterRole{}
@@ -263,9 +268,13 @@ func (s *serviceAccountPolicyRules) run() (*component.Table, error) {
 		case "Role":
 			key.Namespace = s.serviceAccount.Namespace
 
-			object, err := s.appObjectStore.Get(s.ctx, key)
+			object, found, err := s.appObjectStore.Get(s.ctx, key)
 			if err != nil {
 				return nil, err
+			}
+
+			if !found {
+				return nil, errors.Errorf("unable to find %s", key)
 			}
 
 			role := &rbacv1.Role{}
@@ -290,7 +299,7 @@ func (s *serviceAccountPolicyRules) listRoleBindings() ([]rbacv1.RoleRef, error)
 		Kind:       "RoleBinding",
 	}
 
-	objects, err := s.appObjectStore.List(s.ctx, roleBindingKey)
+	objects, _, err := s.appObjectStore.List(s.ctx, roleBindingKey)
 	if err != nil {
 		return nil, err
 	}
@@ -317,7 +326,7 @@ func (s *serviceAccountPolicyRules) listClusterRoleBindings() ([]rbacv1.RoleRef,
 		Kind:       "ClusterRoleBinding",
 	}
 
-	objects, err := s.appObjectStore.List(s.ctx, roleBindingKey)
+	objects, _, err := s.appObjectStore.List(s.ctx, roleBindingKey)
 	if err != nil {
 		return nil, err
 	}

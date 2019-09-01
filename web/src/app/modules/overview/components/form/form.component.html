@@ -7,7 +7,7 @@
                     <ng-container *ngSwitchCase="'checkbox'">
                         <clr-checkbox-container>
                             <label [for]="field.name">{{field.label}}</label>
-                            <clr-checkbox-wrapper *ngFor="let opt of fieldChoices(field)">
+                            <clr-checkbox-wrapper *ngFor="let opt of fieldChoices(field);trackBy: trackByFn">
                                 <input type="checkbox" clrCheckbox [formControlName]="field.name" [value]="opt.value"
                                        [checked]="opt.checked"/>
                                 <label>{{opt.label}}</label>

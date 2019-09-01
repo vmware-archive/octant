@@ -74,6 +74,16 @@ Octant is a tool for developers to understand how applications run on a Kubernet
    scoop install octant
    ```
 
+### macOS
+
+#### Homebrew
+
+1. Install using Homebrew with the following one-liner:
+
+   ```sh
+   brew install octant
+   ```
+
 ### Download a Pre-built Binary (Linux, macOS, Windows)
 
 1. Open the [releases page](https://github.com/vmware/octant/releases) from a browser and download the latest tarball or zip file.
@@ -100,7 +110,7 @@ Start running Octant:
 
 `$ octant`
 
-Octant should immediately launch your default web browser to an available high level port on 127.0.0.1. (i.e. http://127.0.0.1:51234)
+Octant should immediately launch your default web browser on `127.0.0.1:7777`.
 
 Or to run it on a specific host and fixed port:
 `$ OCTANT_LISTENER_ADDR=0.0.0.0:8900 octant`

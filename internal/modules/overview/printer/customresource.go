@@ -17,7 +17,7 @@ import (
 	"k8s.io/client-go/util/jsonpath"
 
 	"github.com/vmware/octant/internal/link"
-	dashstrings "github.com/vmware/octant/internal/util/strings"
+	octantStrings "github.com/vmware/octant/internal/util/strings"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -27,19 +27,20 @@ func CustomResourceListHandler(
 	crdName string,
 	crd *apiextv1beta1.CustomResourceDefinition,
 	list *unstructured.UnstructuredList,
-	linkGenerator link.Interface) (component.Component, error) {
+	linkGenerator link.Interface,
+	isLoading bool) (component.Component, error) {
 
 	hasCustomColumns := len(crd.Spec.AdditionalPrinterColumns) > 0
 	if hasCustomColumns {
-		return printCustomCRDListTable(crdName, crd, list, linkGenerator)
+		return printCustomCRDListTable(crdName, crd, list, linkGenerator, isLoading)
 	}
 
-	return printGenericCRDTable(crdName, list, linkGenerator)
+	return printGenericCRDTable(crdName, list, linkGenerator, isLoading)
 }
 
-func printGenericCRDTable(crdName string, list *unstructured.UnstructuredList, linkGenerator link.Interface) (component.Component, error) {
+func printGenericCRDTable(crdName string, list *unstructured.UnstructuredList, linkGenerator link.Interface, isLoading bool) (component.Component, error) {
 	cols := component.NewTableCols("Name", "Labels", "Age")
-	table := component.NewTable(crdName, cols)
+	table := component.NewTable(crdName, "We couldn't find any custom resources!", cols)
 
 	for i := range list.Items {
 		cr := list.Items[i]
@@ -57,6 +58,7 @@ func printGenericCRDTable(crdName string, list *unstructured.UnstructuredList, l
 		table.Add(row)
 	}
 
+	table.SetIsLoading(isLoading)
 	table.Sort("Name", false)
 
 	return table, nil
@@ -66,12 +68,13 @@ func printCustomCRDListTable(
 	crdName string,
 	crd *apiextv1beta1.CustomResourceDefinition,
 	list *unstructured.UnstructuredList,
-	linkGenerator link.Interface) (component.Component, error) {
+	linkGenerator link.Interface,
+	isLoading bool) (component.Component, error) {
 
-	table := component.NewTable(crdName, component.NewTableCols("Name", "Labels"))
+	table := component.NewTable(crdName, "We couldn't find any custom resources!", component.NewTableCols("Name", "Labels"))
 	for _, column := range crd.Spec.AdditionalPrinterColumns {
 		name := column.Name
-		if dashstrings.Contains(column.Name, []string{"Name", "Labels", "Age"}) {
+		if octantStrings.Contains(column.Name, []string{"Name", "Labels", "Age"}) {
 			name = fmt.Sprintf("Resource %s", column.Name)
 		}
 		table.AddColumn(name)
@@ -112,6 +115,7 @@ func printCustomCRDListTable(
 		table.Add(row)
 	}
 
+	table.SetIsLoading(isLoading)
 	table.Sort("Name", false)
 
 	return table, nil
@@ -180,7 +184,7 @@ func printCustomResourceConfig(u *unstructured.Unstructured, crd *apiextv1beta1.
 		return summary, nil
 	}
 
-	var sections component.SummarySections
+	sections := component.SummarySections{}
 
 	for _, column := range crd.Spec.AdditionalPrinterColumns {
 		if strings.HasPrefix(column.JSONPath, ".spec") {
@@ -212,7 +216,7 @@ func printCustomResourceStatus(u *unstructured.Unstructured, crd *apiextv1beta1.
 		return summary, nil
 	}
 
-	var sections component.SummarySections
+	sections := component.SummarySections{}
 
 	for _, column := range crd.Spec.AdditionalPrinterColumns {
 		if strings.HasPrefix(column.JSONPath, ".status") {

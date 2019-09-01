@@ -15,11 +15,11 @@ import (
 	"go.opencensus.io/trace"
 	authorizationv1 "k8s.io/api/authorization/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/informers"
 	kcache "k8s.io/client-go/tools/cache"
@@ -34,10 +34,9 @@ import (
 const (
 	// defaultMutableResync is the resync period for informers.
 	defaultInformerResync = time.Second * 180
-)
 
-var (
-	ErrShouldShutDown = errors.New("controller should shut down")
+	// initialInformerSyncTimeout
+	initialInformerSyncTimeout = time.Second * 10
 )
 
 func initDynamicSharedInformerFactory(ctx context.Context, client cluster.ClientInterface, namespace string) (dynamicinformer.DynamicSharedInformerFactory, error) {
@@ -46,20 +45,6 @@ func initDynamicSharedInformerFactory(ctx context.Context, client cluster.Client
 		return nil, err
 	}
 	return dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicClient, defaultInformerResync, namespace, nil), nil
-}
-
-func currentInformer(
-	gvr schema.GroupVersionResource,
-	factory dynamicinformer.DynamicSharedInformerFactory,
-	stopCh <-chan struct{}) (informers.GenericInformer, error) {
-	if factory == nil {
-		return nil, errors.New("dynamic shared informer factory is nil")
-	}
-
-	informer := factory.ForResource(gvr)
-	factory.Start(stopCh)
-
-	return informer, nil
 }
 
 type accessKey struct {
@@ -77,6 +62,7 @@ type DynamicCacheOpt func(*DynamicCache)
 type DynamicCache struct {
 	initFactoryFunc func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error)
 	factories       *factoriesCache
+	informerSynced  *informerSynced
 	client          cluster.ClientInterface
 	stopCh          <-chan struct{}
 	seenGVKs        *seenGVKsCache
@@ -84,7 +70,31 @@ type DynamicCache struct {
 	updateFns       []store.UpdateFn
 	updateMu        sync.Mutex
 
+	syncTimeoutFunc func(context.Context, store.Key, chan bool)
+	waitForSyncFunc func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, <-chan struct{}, chan bool)
+
 	useDynamicClient bool
+}
+
+func syncTimeout(ctx context.Context, key store.Key, done chan bool) {
+	logger := log.From(ctx).With("key", key)
+	timer := time.NewTimer(initialInformerSyncTimeout)
+	select {
+	case <-timer.C:
+		logger.Debugf("cache has taken more than %s seconds to sync", initialInformerSyncTimeout)
+	case <-done:
+		timer.Stop()
+	}
+}
+
+func waitForSync(ctx context.Context, key store.Key, dc *DynamicCache, informer informers.GenericInformer, stopCh <-chan struct{}, done chan bool) {
+	now := time.Now()
+	logger := log.From(ctx).With("key", key)
+	kcache.WaitForCacheSync(stopCh, informer.Informer().HasSynced)
+	dc.informerSynced.setSynced(key, true)
+	logger.With("elapsed", time.Since(now)).
+		Debugf("informer cache has synced")
+	done <- true
 }
 
 var _ store.Store = (*DynamicCache)(nil)
@@ -93,9 +103,12 @@ var _ store.Store = (*DynamicCache)(nil)
 func NewDynamicCache(ctx context.Context, client cluster.ClientInterface, options ...DynamicCacheOpt) (*DynamicCache, error) {
 	c := &DynamicCache{
 		initFactoryFunc:  initDynamicSharedInformerFactory,
+		syncTimeoutFunc:  syncTimeout,
+		waitForSyncFunc:  waitForSync,
 		client:           client,
 		stopCh:           ctx.Done(),
 		seenGVKs:         initSeenGVKsCache(),
+		informerSynced:   initInformerSynced(),
 		useDynamicClient: os.Getenv("OCTANT_USE_DYNAMIC_CLIENT") == "1",
 	}
 
@@ -108,21 +121,20 @@ func NewDynamicCache(ctx context.Context, client cluster.ClientInterface, option
 	}
 
 	logger := log.From(ctx).With("component", "DynamicCache")
+
+	c.factories = initFactoriesCache()
+	go initStatusCheck(ctx.Done(), logger, c.factories)
+
 	if c.useDynamicClient {
 		logger.Debugf("using dynamic client instead of informer")
 	}
 
-	factories := initFactoriesCache()
 	factory, err := c.initFactoryFunc(context.Background(), client, "")
 	if err != nil {
 		return nil, errors.Wrap(err, "initialize dynamic shared informer factory")
 	}
 
-	factories.set("", factory)
-
-	c.factories = factories
-
-	go initStatusCheck(ctx.Done(), logger, c.factories)
+	c.factories.set("", factory)
 
 	return c, nil
 }
@@ -229,10 +241,12 @@ func (dc *DynamicCache) currentInformer(ctx context.Context, key store.Key) (inf
 		dc.factories.set(key.Namespace, factory)
 	}
 
-	informer, err := currentInformer(gvr, factory, dc.stopCh)
-	if err != nil {
-		return nil, err
-	}
+	informer := factory.ForResource(gvr)
+	factory.Start(dc.stopCh)
+
+	dc.updateMu.Lock()
+	dc.checkKeySynced(ctx, dc.stopCh, informer, key)
+	dc.updateMu.Unlock()
 
 	if dc.seenGVKs.hasSeen(key.Namespace, gvk) {
 		return informer, nil
@@ -243,13 +257,27 @@ func (dc *DynamicCache) currentInformer(ctx context.Context, key store.Key) (inf
 	return informer, nil
 }
 
+func (dc *DynamicCache) checkKeySynced(ctx context.Context, stopCh <-chan struct{}, informer informers.GenericInformer, key store.Key) {
+	if dc.seenGVKs.hasSeen(key.Namespace, key.GroupVersionKind()) ||
+		(dc.informerSynced.hasSeen(key) && dc.informerSynced.hasSynced(key)) {
+		return
+	}
+
+	done := make(chan bool, 1)
+	go dc.waitForSyncFunc(ctx, key, dc, informer, stopCh, done)
+	go dc.syncTimeoutFunc(ctx, key, done)
+}
+
 // List lists objects.
-func (dc *DynamicCache) List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error) {
+func (dc *DynamicCache) List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, bool, error) {
 	ctx, span := trace.StartSpan(ctx, "dynamicCache:list")
 	defer span.End()
 
 	if err := dc.HasAccess(ctx, key, "list"); err != nil {
-		return nil, errors.Wrapf(err, "list access forbidden to %+v", key)
+		if meta.IsNoMatchError(err) {
+			return &unstructured.UnstructuredList{}, false, nil
+		}
+		return nil, false, errors.Wrapf(err, "list access forbidden to %+v", key)
 	}
 
 	span.Annotate([]trace.Attribute{
@@ -259,19 +287,20 @@ func (dc *DynamicCache) List(ctx context.Context, key store.Key) (*unstructured.
 	}, "list key")
 
 	if dc.useDynamicClient {
-		return dc.listFromDynamicClient(ctx, key)
+		list, err := dc.listFromDynamicClient(ctx, key)
+		return list, true, err
 	}
 
 	return dc.listFromInformer(ctx, key)
 }
 
-func (dc *DynamicCache) listFromInformer(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error) {
+func (dc *DynamicCache) listFromInformer(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, bool, error) {
 	ctx, span := trace.StartSpan(ctx, "dynamicCache:list:informer")
 	defer span.End()
 
 	informer, err := dc.currentInformer(ctx, key)
 	if err != nil {
-		return nil, errors.Wrapf(err, "retrieving informer for %+v", key)
+		return nil, false, errors.Wrapf(err, "retrieving informer for %+v", key)
 	}
 
 	var l lister
@@ -288,7 +317,7 @@ func (dc *DynamicCache) listFromInformer(ctx context.Context, key store.Key) (*u
 
 	objects, err := l.List(selector)
 	if err != nil {
-		return nil, errors.Wrapf(err, "listing %v", key)
+		return nil, false, errors.Wrapf(err, "listing %v", key)
 	}
 
 	list := &unstructured.UnstructuredList{}
@@ -296,7 +325,7 @@ func (dc *DynamicCache) listFromInformer(ctx context.Context, key store.Key) (*u
 		list.Items = append(list.Items, *objects[i].(*unstructured.Unstructured))
 	}
 
-	return list, nil
+	return list, !dc.informerSynced.hasSynced(key), nil
 }
 
 func (dc *DynamicCache) listFromDynamicClient(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error) {
@@ -333,12 +362,12 @@ type getter interface {
 }
 
 // Get retrieves a single object.
-func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, error) {
+func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, bool, error) {
 	ctx, span := trace.StartSpan(ctx, "dynamicCacheGet")
 	defer span.End()
 
 	if err := dc.HasAccess(ctx, key, "get"); err != nil {
-		return nil, errors.Wrapf(err, "get access forbidden to %+v", key)
+		return nil, false, errors.Wrapf(err, "get access forbidden to %+v", key)
 	}
 
 	span.Annotate([]trace.Attribute{
@@ -348,11 +377,25 @@ func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.U
 		trace.StringAttribute("name", key.Name),
 	}, "get key")
 
+	var object *unstructured.Unstructured
+	var err error
+
 	if dc.useDynamicClient {
-		return dc.getFromDynamicClient(ctx, key)
+		object, err = dc.getFromDynamicClient(ctx, key)
+	} else {
+		object, err = dc.getFromInformer(ctx, key)
 	}
 
-	return dc.getFromInformer(ctx, key)
+	if err != nil {
+		if kerrors.IsNotFound(err) {
+			return nil, false, nil
+		}
+
+		return nil, false, err
+	}
+
+	return object, true, nil
+
 }
 
 func (dc *DynamicCache) getFromInformer(ctx context.Context, key store.Key) (*unstructured.Unstructured, error) {
@@ -438,6 +481,39 @@ func (dc *DynamicCache) Watch(ctx context.Context, key store.Key, handler kcache
 	return nil
 }
 
+// Delete deletes an object from the cluster using a key.
+func (dc *DynamicCache) Delete(ctx context.Context, key store.Key) error {
+	_, span := trace.StartSpan(ctx, "dynamicCache:delete")
+	defer span.End()
+
+	if err := dc.HasAccess(ctx, key, "watch"); err != nil {
+		logger := log.From(ctx)
+		logger.Errorf("check access failed: %v, access forbidden to %+v", key)
+		return nil
+	}
+
+	dynamicClient, err := dc.client.DynamicClient()
+	if err != nil {
+		return err
+	}
+
+	gvr, err := dc.client.Resource(key.GroupVersionKind().GroupKind())
+	if err != nil {
+		return err
+	}
+
+	deletePolicy := metav1.DeletePropagationForeground
+	deleteOptions := &metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	}
+
+	if key.Namespace == "" {
+		return dynamicClient.Resource(gvr).Delete(key.Name, deleteOptions)
+	}
+
+	return dynamicClient.Resource(gvr).Namespace(key.Namespace).Delete(key.Name, deleteOptions)
+}
+
 // UpdateClusterClient updates the cluster client.
 func (dc *DynamicCache) UpdateClusterClient(ctx context.Context, client cluster.ClientInterface) error {
 	logger := log.From(ctx)
@@ -445,6 +521,7 @@ func (dc *DynamicCache) UpdateClusterClient(ctx context.Context, client cluster.
 
 	dc.updateMu.Lock()
 	dc.client = client
+	dc.factories.reset()
 	dc.updateMu.Unlock()
 
 	for _, fn := range dc.updateFns {
@@ -464,9 +541,13 @@ func (dc *DynamicCache) Update(ctx context.Context, key store.Key, updater func(
 	}
 
 	err := kretry.RetryOnConflict(kretry.DefaultRetry, func() error {
-		object, err := dc.Get(ctx, key)
+		object, found, err := dc.Get(ctx, key)
 		if err != nil {
 			return err
+		}
+
+		if !found {
+			return errors.Errorf("object not found")
 		}
 
 		gvk := object.GroupVersionKind()
@@ -492,4 +573,8 @@ func (dc *DynamicCache) Update(ctx context.Context, key store.Key, updater func(
 	})
 
 	return err
+}
+
+func (dc *DynamicCache) IsLoading(ctx context.Context, key store.Key) bool {
+	return !dc.informerSynced.hasSynced(key)
 }

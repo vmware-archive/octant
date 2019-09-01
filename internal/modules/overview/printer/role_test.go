@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,13 +42,13 @@ func Test_RoleListHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Name", "Age")
-	expected := component.NewTable("Roles", cols)
+	expected := component.NewTable("Roles", "We couldn't find any roles!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", role.Name, "/role"),
 		"Age":  component.NewTimestamp(role.CreationTimestamp.Time),
 	})
 
-	assert.Equal(t, expected, observed)
+	component.AssertEqual(t, expected, observed)
 }
 
 func Test_printRoleConfig(t *testing.T) {
@@ -65,7 +64,7 @@ func Test_printRoleConfig(t *testing.T) {
 	sections.AddText("Name", role.Name)
 	expected := component.NewSummary("Configuration", sections...)
 
-	assert.Equal(t, expected, observed)
+	component.AssertEqual(t, expected, observed)
 }
 
 func Test_printRolePolicyRules(t *testing.T) {
@@ -78,7 +77,7 @@ func Test_printRolePolicyRules(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Resources", "Non-Resource URLs", "Resource Names", "Verbs")
-	expected := component.NewTable("PolicyRules", cols)
+	expected := component.NewTable("PolicyRules", "There are no policy rules!", cols)
 
 	row := component.TableRow{}
 	row["Resources"] = component.NewText("pods")
@@ -88,5 +87,5 @@ func Test_printRolePolicyRules(t *testing.T) {
 
 	expected.Add(row)
 
-	assert.Equal(t, expected, observed)
+	component.AssertEqual(t, expected, observed)
 }

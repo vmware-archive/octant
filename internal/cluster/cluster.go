@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -155,41 +154,12 @@ func (c *Cluster) ResourceExists(gvr schema.GroupVersionResource) bool {
 }
 
 func (c *Cluster) Resource(gk schema.GroupKind) (schema.GroupVersionResource, error) {
-	restConfig, err := c.clientConfig.ClientConfig()
+	restMapping, err := c.restMapper.RESTMapping(gk)
 	if err != nil {
-		return schema.GroupVersionResource{}, errors.Wrap(err, "get rest config")
+		return schema.GroupVersionResource{}, err
 	}
 
-	retries := 0
-	resetRestMapper := false
-
-	for retries < 5 {
-		restMapping, err := c.restMapper.RESTMapping(gk)
-		if err != nil {
-			if meta.IsNoMatchError(err) {
-				if !resetRestMapper {
-					c.restMapper.Reset()
-					resetRestMapper = true
-					continue
-				}
-
-				retries++
-				c.logger.
-					WithErr(err).
-					With("group-kind", gk.String()).
-					Errorf("Having trouble retrieving the REST mapping from your cluster at %s. Retrying.....", restConfig.Host)
-				time.Sleep(5 * time.Second)
-
-				continue
-			}
-			return schema.GroupVersionResource{}, errors.Wrap(err, "unable to retrieve rest mapping")
-		}
-		return restMapping.Resource, nil
-	}
-	c.logger.
-		With("group-kind", gk.String()).
-		Errorf("Unable to retrieve the REST mapping from your cluster at %s. Full error details below.", restConfig.Host)
-	return schema.GroupVersionResource{}, errors.New("unable to retrieve rest mapping")
+	return restMapping.Resource, nil
 }
 
 // KubernetesClient returns a Kubernetes client.

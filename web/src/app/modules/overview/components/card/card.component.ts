@@ -57,4 +57,8 @@ export class CardComponent implements OnChanges {
   setAction(action: Action) {
     this.currentAction = action;
   }
+
+  trackByFn(index, item) {
+    return index;
+  }
 }

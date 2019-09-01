@@ -59,7 +59,7 @@ func (l *LocalContent) list() (component.ContentResponse, error) {
 	var out component.ContentResponse
 
 	cols := component.NewTableCols("Title", "File")
-	table := component.NewTable("Local Components", cols)
+	table := component.NewTable("Local Components", "We couldn't find any local content!", cols)
 
 	err := l.walk(func(name, base string, content component.ContentResponse) error {
 		title, err := l.titleToText(content.Title)

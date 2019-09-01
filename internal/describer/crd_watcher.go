@@ -38,7 +38,7 @@ func NewDefaultCRDWatcher(ctx context.Context, objectStore store.Store) (*Defaul
 		objectStore: objectStore,
 	}
 
-	objectStore.RegisterOnUpdate(func(newObjectStore store.Store){
+	objectStore.RegisterOnUpdate(func(newObjectStore store.Store) {
 		cw.mu.Lock()
 		defer cw.mu.Unlock()
 

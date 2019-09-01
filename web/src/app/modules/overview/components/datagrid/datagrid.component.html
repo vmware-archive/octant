@@ -16,6 +16,12 @@
                     {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
                     of {{pagination.totalItems}} items
                 </clr-dg-pagination>
+
+                <ng-container *ngIf="loading">
+                    <span class="spinner spinner-inline" style="margin-right: 10px">
+                        Loading...
+                    </span>
+                </ng-container>
             </clr-dg-footer>
         </clr-datagrid>
     </div>

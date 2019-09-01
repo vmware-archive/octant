@@ -87,7 +87,7 @@ func Test_EventListHandler(t *testing.T) {
 
 	cols := component.NewTableCols("Kind", "Message", "Reason", "Type",
 		"First Seen", "Last Seen")
-	expected := component.NewTableWithRows("Events", cols, []component.TableRow{
+	expected := component.NewTableWithRows("Events", "We couldn't find any events!", cols, []component.TableRow{
 		{
 			"Kind":       component.NewLink("", "d1 (1234)", "/content/overview/namespace/default/workloads/deployments/d1"),
 			"Message":    component.NewLink("", "message", "/event2"),
@@ -177,7 +177,7 @@ func Test_ReplicaSetEvents(t *testing.T) {
 	got, err := PrintEvents(object, printOptions)
 	require.NoError(t, err)
 
-	expected := component.NewTable("Events", objectEventCols)
+	expected := component.NewTable("Events", "There are no events!", objectEventCols)
 
 	expected.Add(component.TableRow{
 		"Message":    component.NewText("Created pod: frontend-97k6z"),
@@ -209,7 +209,7 @@ func Test_ReplicaSetEvents(t *testing.T) {
 		"Count":      component.NewText("1"),
 	})
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_EventHandler(t *testing.T) {
@@ -295,7 +295,7 @@ func Test_EventHandler(t *testing.T) {
 		},
 	}...)
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_eventsForObject(t *testing.T) {
@@ -346,7 +346,7 @@ func Test_eventsForObject(t *testing.T) {
 		},
 	}...)
 
-	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(events, nil)
+	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(events, false, nil)
 
 	ctx := context.Background()
 	got, err := eventsForObject(ctx, object, o)
