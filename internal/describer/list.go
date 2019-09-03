@@ -10,6 +10,7 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -70,6 +71,8 @@ func (d *List) Describe(ctx context.Context, prefix, namespace string, options O
 	if d.isClusterWide {
 		namespace = ""
 	}
+
+	var objectList *unstructured.UnstructuredList
 
 	objectList, err := options.LoadObjects(ctx, namespace, options.Fields, []store.Key{key})
 	if err != nil {

@@ -128,14 +128,15 @@ func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1b
 		Kind:       "CustomResourceDefinition",
 	}
 
+	logger := log.From(ctx)
+	var list []*apiextv1beta1.CustomResourceDefinition
+
 	rawList, hasSynced, err := o.List(ctx, key)
 	if err != nil {
-		return nil, false, errors.Wrap(err, "listing CRDs")
+		logger.WithErr(err).Warnf("error listing CRDs")
+		return list, false, nil
 	}
 
-	logger := log.From(ctx)
-
-	var list []*apiextv1beta1.CustomResourceDefinition
 	for i := range rawList.Items {
 		crd := &apiextv1beta1.CustomResourceDefinition{}
 
