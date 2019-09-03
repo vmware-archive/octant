@@ -57,23 +57,6 @@ func Test_factoriesCache(t *testing.T) {
 	require.False(t, isFound)
 }
 
-func Test_accessCache(t *testing.T) {
-	c := initAccessCache()
-
-	key := accessKey{
-		Namespace: "test",
-		Group:     "group",
-		Resource:  "resource",
-		Verb:      "list",
-	}
-
-	c.set(key, true)
-
-	got, isFound := c.get(key)
-	require.True(t, isFound)
-	require.True(t, got)
-}
-
 func Test_seenGVKsCache(t *testing.T) {
 	c := initSeenGVKsCache()
 	c.setSeen("test", gvk.Pod, true)

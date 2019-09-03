@@ -99,33 +99,6 @@ func (c *factoriesCache) delete(key string) {
 	delete(c.factories, key)
 }
 
-type accessCache struct {
-	access accessMap
-
-	mu sync.RWMutex
-}
-
-func initAccessCache() *accessCache {
-	return &accessCache{
-		access: accessMap{},
-	}
-}
-
-func (c *accessCache) set(key accessKey, value bool) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	c.access[key] = value
-}
-
-func (c *accessCache) get(key accessKey) (v, ok bool) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
-	v, ok = c.access[key]
-	return v, ok
-}
-
 type seenGVKsCache struct {
 	seenGVKs map[string]map[schema.GroupVersionKind]bool
 

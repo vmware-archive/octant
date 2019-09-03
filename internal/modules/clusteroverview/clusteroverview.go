@@ -67,38 +67,29 @@ func New(ctx context.Context, options Options) (*ClusterOverview, error) {
 		Options:     options,
 	}
 
-	key := store.Key{
-		APIVersion: "apiextensions.k8s.io/v1beta1",
-		Kind:       "CustomResourceDefinition",
+	crdWatcher := options.DashConfig.CRDWatcher()
+	watchConfig := &config.CRDWatchConfig{
+		Add: func(_ *describer.PathMatcher, sectionDescriber *describer.CRDSection) config.ObjectHandler {
+			return func(ctx context.Context, object *unstructured.Unstructured) {
+				if object == nil {
+					return
+				}
+				describer.AddCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
+			}
+		}(pathMatcher, customResourcesDescriber),
+		Delete: func(_ *describer.PathMatcher, csd *describer.CRDSection) config.ObjectHandler {
+			return func(ctx context.Context, object *unstructured.Unstructured) {
+				if object == nil {
+					return
+				}
+				describer.DeleteCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
+			}
+		}(pathMatcher, customResourcesDescriber),
+		IsNamespaced: false,
 	}
 
-	objectStore := options.DashConfig.ObjectStore()
-
-	crdWatcher := options.DashConfig.CRDWatcher()
-	if err := objectStore.HasAccess(ctx, key, "watch"); err == nil {
-		watchConfig := &config.CRDWatchConfig{
-			Add: func(_ *describer.PathMatcher, sectionDescriber *describer.CRDSection) config.ObjectHandler {
-				return func(ctx context.Context, object *unstructured.Unstructured) {
-					if object == nil {
-						return
-					}
-					describer.AddCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
-				}
-			}(pathMatcher, customResourcesDescriber),
-			Delete: func(_ *describer.PathMatcher, csd *describer.CRDSection) config.ObjectHandler {
-				return func(ctx context.Context, object *unstructured.Unstructured) {
-					if object == nil {
-						return
-					}
-					describer.DeleteCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
-				}
-			}(pathMatcher, customResourcesDescriber),
-			IsNamespaced: false,
-		}
-
-		if err := crdWatcher.Watch(ctx, watchConfig); err != nil {
-			return nil, errors.Wrap(err, "create namespaced CRD watcher for overview")
-		}
+	if err := crdWatcher.Watch(ctx, watchConfig); err != nil {
+		return nil, errors.Wrap(err, "create namespaced CRD watcher for overview")
 	}
 
 	return co, nil

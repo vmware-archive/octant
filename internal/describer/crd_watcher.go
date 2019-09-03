@@ -16,6 +16,7 @@ import (
 
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/objectstore"
 	"github.com/vmware/octant/pkg/store"
 )
 
@@ -77,7 +78,13 @@ func (cw *DefaultCRDWatcher) Watch(ctx context.Context, watchConfig *config.CRDW
 		handler.DeleteFunc = performWatch(ctx, watchConfig.CanPerform, watchConfig.Delete)
 	}
 
-	if err := cw.objectStore.Watch(ctx, crdKey, handler); err != nil {
+	err := cw.objectStore.Watch(ctx, crdKey, handler)
+	if err != nil {
+		if err, ok := err.(*objectstore.AccessError); ok {
+			logger := log.From(ctx)
+			logger.Warnf("%s", err)
+			return nil
+		}
 		return errors.WithMessage(err, "crd watcher has failed")
 	}
 

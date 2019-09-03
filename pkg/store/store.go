@@ -32,7 +32,6 @@ type Store interface {
 	Get(ctx context.Context, key Key) (object *unstructured.Unstructured, found bool, err error)
 	Delete(ctx context.Context, key Key) error
 	Watch(ctx context.Context, key Key, handler cache.ResourceEventHandler) error
-	HasAccess(context.Context, Key, string) error
 	UpdateClusterClient(ctx context.Context, client cluster.ClientInterface) error
 	RegisterOnUpdate(fn UpdateFn)
 	Update(ctx context.Context, key Key, updater func(*unstructured.Unstructured) error) error

@@ -118,36 +118,30 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 	co.ObjectPath = objectPath
 	co.generator = g
 
-	key := store.Key{
-		APIVersion: "apiextensions.k8s.io/v1beta1",
-		Kind:       "CustomResourceDefinition",
+	crdWatcher := co.dashConfig.CRDWatcher()
+
+	watchConfig := &config.CRDWatchConfig{
+		Add: func(_ *describer.PathMatcher, sectionDescriber *describer.CRDSection) config.ObjectHandler {
+			return func(ctx context.Context, object *unstructured.Unstructured) {
+				if object == nil {
+					return
+				}
+				describer.AddCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
+			}
+		}(pathMatcher, customResourcesDescriber),
+		Delete: func(_ *describer.PathMatcher, csd *describer.CRDSection) config.ObjectHandler {
+			return func(ctx context.Context, object *unstructured.Unstructured) {
+				if object == nil {
+					return
+				}
+				describer.DeleteCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
+			}
+		}(pathMatcher, customResourcesDescriber),
+		IsNamespaced: true,
 	}
 
-	crdWatcher := co.dashConfig.CRDWatcher()
-	if err := co.dashConfig.ObjectStore().HasAccess(ctx, key, "watch"); err == nil {
-		watchConfig := &config.CRDWatchConfig{
-			Add: func(_ *describer.PathMatcher, sectionDescriber *describer.CRDSection) config.ObjectHandler {
-				return func(ctx context.Context, object *unstructured.Unstructured) {
-					if object == nil {
-						return
-					}
-					describer.AddCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
-				}
-			}(pathMatcher, customResourcesDescriber),
-			Delete: func(_ *describer.PathMatcher, csd *describer.CRDSection) config.ObjectHandler {
-				return func(ctx context.Context, object *unstructured.Unstructured) {
-					if object == nil {
-						return
-					}
-					describer.DeleteCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
-				}
-			}(pathMatcher, customResourcesDescriber),
-			IsNamespaced: true,
-		}
-
-		if err := crdWatcher.Watch(ctx, watchConfig); err != nil {
-			return errors.Wrap(err, "create namespaced CRD watcher for overview")
-		}
+	if err := crdWatcher.Watch(ctx, watchConfig); err != nil {
+		return errors.Wrap(err, "create namespaced CRD watcher for overview")
 	}
 
 	return nil
