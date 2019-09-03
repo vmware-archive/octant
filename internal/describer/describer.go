@@ -18,7 +18,6 @@ import (
 
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/link"
-	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/modules/overview/printer"
 	"github.com/vmware/octant/internal/queryer"
 	"github.com/vmware/octant/pkg/store"
@@ -78,10 +77,7 @@ func LoadObjects(ctx context.Context, objectStore store.Store, namespace string,
 
 		storedObjects, _, err := objectStore.List(ctx, objectStoreKey)
 		if err != nil {
-			logger := log.From(ctx)
-			logger.WithErr(err).Warnf("error loading objects")
-			list := &unstructured.UnstructuredList{}
-			return list, nil
+			return nil, err
 		}
 
 		list.Items = append(list.Items, storedObjects.Items...)
