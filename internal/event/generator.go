@@ -100,7 +100,7 @@ func runGenerator(ctx context.Context, ch chan<- octant.Event, forceCh <-chan bo
 				// a circuit breaker or some other pattern could be employed here.
 				logger.
 					WithErr(err).
-					Errorf("event generator error")
+					Warnf("event generator error")
 
 			} else {
 				previous, ok := eventCache[event.Type]
