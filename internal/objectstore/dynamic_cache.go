@@ -13,7 +13,6 @@ import (
 
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
-	authorizationv1 "k8s.io/api/authorization/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -47,16 +46,15 @@ func initDynamicSharedInformerFactory(ctx context.Context, client cluster.Client
 	return dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicClient, defaultInformerResync, namespace, nil), nil
 }
 
-type accessKey struct {
-	Namespace string
-	Group     string
-	Resource  string
-	Verb      string
-}
-type accessMap map[accessKey]bool
-
 // DynamicCacheOpt is an option for configuration DynamicCache.
 type DynamicCacheOpt func(*DynamicCache)
+
+// Access sets the Resource Access cache for a DynamicCache.
+func Access(resourceAccess ResourceAccess) DynamicCacheOpt {
+	return func(dc *DynamicCache) {
+		dc.setResourceAccess(resourceAccess)
+	}
+}
 
 // DynamicCache is a cache based on the dynamic shared informer factory.
 type DynamicCache struct {
@@ -66,7 +64,7 @@ type DynamicCache struct {
 	client          cluster.ClientInterface
 	stopCh          <-chan struct{}
 	seenGVKs        *seenGVKsCache
-	access          *accessCache
+	access          ResourceAccess
 	updateFns       []store.UpdateFn
 	updateMu        sync.Mutex
 
@@ -116,10 +114,6 @@ func NewDynamicCache(ctx context.Context, client cluster.ClientInterface, option
 		option(c)
 	}
 
-	if c.access == nil {
-		c.access = initAccessCache()
-	}
-
 	logger := log.From(ctx).With("component", "DynamicCache")
 
 	c.factories = initFactoriesCache()
@@ -143,74 +137,8 @@ type lister interface {
 	List(selector kLabels.Selector) ([]kruntime.Object, error)
 }
 
-func (dc *DynamicCache) fetchAccess(key accessKey, verb string) (bool, error) {
-	k8sClient, err := dc.client.KubernetesClient()
-	if err != nil {
-		return false, errors.Wrap(err, "client kubernetes")
-	}
-
-	authClient := k8sClient.AuthorizationV1()
-	sar := &authorizationv1.SelfSubjectAccessReview{
-		Spec: authorizationv1.SelfSubjectAccessReviewSpec{
-			ResourceAttributes: &authorizationv1.ResourceAttributes{
-				Namespace: key.Namespace,
-				Group:     key.Group,
-				Resource:  key.Resource,
-				Verb:      verb,
-			},
-		},
-	}
-
-	review, err := authClient.SelfSubjectAccessReviews().Create(sar)
-	if err != nil {
-		return false, errors.Wrap(err, "client auth")
-	}
-	return review.Status.Allowed, nil
-}
-
-// HasAccess returns an error if the current user does not have access to perform the verb action
-// for the given key.
-func (dc *DynamicCache) HasAccess(ctx context.Context, key store.Key, verb string) error {
-	_, span := trace.StartSpan(ctx, "dynamicCacheHasAccess")
-	defer span.End()
-
-	gvk := key.GroupVersionKind()
-
-	if gvk.GroupKind().Empty() {
-		return errors.Errorf("unable to check access for key %s", key.String())
-	}
-
-	gvr, err := dc.client.Resource(gvk.GroupKind())
-	if err != nil {
-		return errors.Wrap(err, "client resource")
-	}
-
-	aKey := accessKey{
-		Namespace: key.Namespace,
-		Group:     gvr.Group,
-		Resource:  gvr.Resource,
-		Verb:      verb,
-	}
-
-	access, ok := dc.access.get(aKey)
-
-	if !ok {
-		span.Annotate([]trace.Attribute{}, "fetch access start")
-		val, err := dc.fetchAccess(aKey, verb)
-		if err != nil {
-			return errors.Wrapf(err, "fetch access: %+v", aKey)
-		}
-
-		dc.access.set(aKey, val)
-		access = val
-		span.Annotate([]trace.Attribute{}, "fetch access finish")
-	}
-
-	if !access {
-		return errors.Errorf("denied %+v", aKey)
-	}
-
-	return nil
+func (dc *DynamicCache) setResourceAccess(resourceAccess ResourceAccess) {
+	dc.access = resourceAccess
 }
 
 func (dc *DynamicCache) currentInformer(ctx context.Context, key store.Key) (informers.GenericInformer, error) {
@@ -226,7 +154,7 @@ func (dc *DynamicCache) currentInformer(ctx context.Context, key store.Key) (inf
 
 	factory, ok := dc.factories.get(key.Namespace)
 	if !ok {
-		if err := dc.HasAccess(ctx, store.Key{Namespace: metav1.NamespaceAll}, "watch"); err != nil {
+		if err := dc.access.HasAccess(ctx, store.Key{Namespace: metav1.NamespaceAll}, "watch"); err != nil {
 			factory, err = dc.initFactoryFunc(ctx, dc.client, key.Namespace)
 			if err != nil {
 				return nil, err
@@ -273,7 +201,7 @@ func (dc *DynamicCache) List(ctx context.Context, key store.Key) (*unstructured.
 	ctx, span := trace.StartSpan(ctx, "dynamicCache:list")
 	defer span.End()
 
-	if err := dc.HasAccess(ctx, key, "list"); err != nil {
+	if err := dc.access.HasAccess(ctx, key, "list"); err != nil {
 		if meta.IsNoMatchError(err) {
 			return &unstructured.UnstructuredList{}, false, nil
 		}
@@ -366,7 +294,7 @@ func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.U
 	ctx, span := trace.StartSpan(ctx, "dynamicCacheGet")
 	defer span.End()
 
-	if err := dc.HasAccess(ctx, key, "get"); err != nil {
+	if err := dc.access.HasAccess(ctx, key, "get"); err != nil {
 		return nil, false, errors.Wrapf(err, "get access forbidden to %+v", key)
 	}
 
@@ -466,10 +394,8 @@ func (dc *DynamicCache) getFromDynamicClient(ctx context.Context, key store.Key)
 // Watch watches the cluster for an event and performs actions with the
 // supplied handler.
 func (dc *DynamicCache) Watch(ctx context.Context, key store.Key, handler kcache.ResourceEventHandler) error {
-	logger := log.From(ctx)
-	if err := dc.HasAccess(ctx, key, "watch"); err != nil {
-		logger.Errorf("check access failed: %v, access forbidden to %+v", key)
-		return nil
+	if err := dc.access.HasAccess(ctx, key, "watch"); err != nil {
+		return err
 	}
 
 	informer, err := dc.currentInformer(ctx, key)
@@ -486,7 +412,7 @@ func (dc *DynamicCache) Delete(ctx context.Context, key store.Key) error {
 	_, span := trace.StartSpan(ctx, "dynamicCache:delete")
 	defer span.End()
 
-	if err := dc.HasAccess(ctx, key, "watch"); err != nil {
+	if err := dc.access.HasAccess(ctx, key, "watch"); err != nil {
 		logger := log.From(ctx)
 		logger.Errorf("check access failed: %v, access forbidden to %+v", key)
 		return nil
@@ -523,6 +449,7 @@ func (dc *DynamicCache) UpdateClusterClient(ctx context.Context, client cluster.
 	dc.client = client
 	dc.factories.reset()
 	dc.updateMu.Unlock()
+	dc.access.Reset()
 
 	for _, fn := range dc.updateFns {
 		fn(dc)
