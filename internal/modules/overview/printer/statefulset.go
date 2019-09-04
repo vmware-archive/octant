@@ -11,7 +11,11 @@ import (
 
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 
+	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -54,34 +58,24 @@ func StatefulSetListHandler(_ context.Context, list *appsv1.StatefulSetList, opt
 // StatefulSetHandler is a printFunc that prints a StatefulSet
 func StatefulSetHandler(ctx context.Context, statefulSet *appsv1.StatefulSet, options Options) (component.Component, error) {
 	o := NewObject(statefulSet)
+	o.EnableEvents()
 
-	statefulSetConfigGen := NewStatefulSetConfiguration(statefulSet)
-	configSummary, err := statefulSetConfigGen.Create()
+	sh, err := newStatufulSetHander(statefulSet, o)
 	if err != nil {
 		return nil, err
 	}
 
-	statefulSetSummaryGen := NewStatefulSetStatus(statefulSet)
+	if err := sh.Config(options); err != nil {
+		return nil, errors.Wrap(err, "print statefulset configuration")
+	}
 
-	o.RegisterConfig(configSummary)
+	if err := sh.Status(ctx, options); err != nil {
+		return nil, errors.Wrap(err, "print statefulset status")
+	}
 
-	o.RegisterItems(ItemDescriptor{
-		Width: component.WidthQuarter,
-		Func: func() (component.Component, error) {
-			return statefulSetSummaryGen.Create(ctx, options)
-		},
-	})
-
-	o.EnablePodTemplate(statefulSet.Spec.Template)
-
-	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.Component, error) {
-			return createPodListView(ctx, statefulSet, options)
-		},
-		Width: component.WidthFull,
-	})
-
-	o.EnableEvents()
+	if err := sh.Pods(ctx, statefulSet, options); err != nil {
+		return nil, errors.Wrap(err, "print statefulset pods")
+	}
 
 	return o.ToComponent(ctx, options)
 }
@@ -99,7 +93,7 @@ func NewStatefulSetConfiguration(statefulSet *appsv1.StatefulSet) *StatefulSetCo
 }
 
 // Create generates a statefulset configuration summary
-func (sc *StatefulSetConfiguration) Create() (*component.Summary, error) {
+func (sc *StatefulSetConfiguration) Create(options Options) (*component.Summary, error) {
 	if sc == nil || sc.statefulset == nil {
 		return nil, errors.New("statefulset is nil")
 	}
@@ -150,29 +144,35 @@ func (sc *StatefulSetConfiguration) Create() (*component.Summary, error) {
 
 // StatefulSetStatus generates a statefulset status
 type StatefulSetStatus struct {
-	statefulset *appsv1.StatefulSet
+	context     context.Context
+	namespace   string
+	selector    *metav1.LabelSelector
+	uid         types.UID
+	objectStore store.Store
 }
 
 // NewStatefulSetStatus creates an instance of StatefulSetStatus
-func NewStatefulSetStatus(statefulSet *appsv1.StatefulSet) *StatefulSetStatus {
+func NewStatefulSetStatus(ctx context.Context, statefulSet *appsv1.StatefulSet, options Options) *StatefulSetStatus {
+	if err := options.DashConfig.Validate(); err != nil {
+		return nil
+	}
+
 	return &StatefulSetStatus{
-		statefulset: statefulSet,
+		context:     ctx,
+		namespace:   statefulSet.ObjectMeta.Namespace,
+		selector:    statefulSet.Spec.Selector,
+		uid:         statefulSet.GetUID(),
+		objectStore: options.DashConfig.ObjectStore(),
 	}
 }
 
 // Create generates a statefulset status quadrant
-func (statefulSet *StatefulSetStatus) Create(ctx context.Context, options Options) (*component.Quadrant, error) {
-	if statefulSet.statefulset == nil {
+func (statefulSetStatus *StatefulSetStatus) Create() (*component.Quadrant, error) {
+	if statefulSetStatus == nil {
 		return nil, errors.New("statefulset is nil")
 	}
 
-	if err := options.DashConfig.Validate(); err != nil {
-		return nil, err
-	}
-
-	o := options.DashConfig.ObjectStore()
-
-	pods, err := listPods(ctx, statefulSet.statefulset.ObjectMeta.Namespace, statefulSet.statefulset.Spec.Selector, statefulSet.statefulset.GetUID(), o)
+	pods, err := listPods(statefulSetStatus.context, statefulSetStatus.namespace, statefulSetStatus.selector, statefulSetStatus.uid, statefulSetStatus.objectStore)
 	if err != nil {
 		return nil, errors.Wrap(err, "list pods")
 	}
@@ -194,4 +194,86 @@ func (statefulSet *StatefulSetStatus) Create(ctx context.Context, options Option
 	}
 
 	return quadrant, nil
+}
+
+type statefulSetObject interface {
+	Config(options Options) error
+	Status(ctx context.Context, options Options) error
+}
+
+type statefulSetHandler struct {
+	statefulSet *appsv1.StatefulSet
+	configFunc  func(*appsv1.StatefulSet, Options) (*component.Summary, error)
+	statusFunc  func(context.Context, *appsv1.StatefulSet, Options) (*component.Quadrant, error)
+	podFunc     func(context.Context, runtime.Object, Options) (component.Component, error)
+	object      *Object
+}
+
+var _ statefulSetObject = (*statefulSetHandler)(nil)
+
+func newStatufulSetHander(statefulSet *appsv1.StatefulSet, object *Object) (*statefulSetHandler, error) {
+	if statefulSet == nil {
+		return nil, errors.New("can't print a nil statefulset")
+	}
+
+	if object == nil {
+		return nil, errors.New("can't print statefulset using a nil object printer")
+	}
+
+	sh := &statefulSetHandler{
+		statefulSet: statefulSet,
+		configFunc:  defaultStatefulSetConfig,
+		statusFunc:  defaultStatefulSetStatus,
+		podFunc:     defaultStatefulSetPods,
+		object:      object,
+	}
+
+	return sh, nil
+}
+
+func (s *statefulSetHandler) Config(options Options) error {
+	out, err := s.configFunc(s.statefulSet, options)
+	if err != nil {
+		return err
+	}
+	s.object.RegisterConfig(out)
+	return nil
+}
+
+func defaultStatefulSetConfig(statefulSet *appsv1.StatefulSet, options Options) (*component.Summary, error) {
+	return NewStatefulSetConfiguration(statefulSet).Create(options)
+}
+
+func (s *statefulSetHandler) Status(ctx context.Context, options Options) error {
+	if s.statefulSet == nil {
+		return errors.New("can't display status for nil statefulset")
+	}
+
+	s.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthQuarter,
+		Func: func() (component.Component, error) {
+			return s.statusFunc(ctx, s.statefulSet, options)
+		},
+	})
+	return nil
+}
+
+func defaultStatefulSetStatus(ctx context.Context, statefulSet *appsv1.StatefulSet, options Options) (*component.Quadrant, error) {
+	return NewStatefulSetStatus(ctx, statefulSet, options).Create()
+}
+
+func (s *statefulSetHandler) Pods(ctx context.Context, object runtime.Object, options Options) error {
+	s.object.EnablePodTemplate(s.statefulSet.Spec.Template)
+
+	s.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return s.podFunc(ctx, object, options)
+		},
+	})
+	return nil
+}
+
+func defaultStatefulSetPods(ctx context.Context, object runtime.Object, options Options) (component.Component, error) {
+	return createPodListView(ctx, object, options)
 }
