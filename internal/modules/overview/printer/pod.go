@@ -112,7 +112,7 @@ func podNode(pod *corev1.Pod, linkGenerator link.Interface) (component.Component
 }
 
 // PodHandler is a printFunc that prints Pods
-func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.Component, error) {
+func PodHandler(ctx context.Context, pod *corev1.Pod, options Options) (component.Component, error) {
 	o := NewObject(pod)
 	o.EnableEvents()
 
@@ -125,26 +125,26 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, opts Options) (component.C
 		return nil, err
 	}
 
-	if err := ph.Config(opts); err != nil {
+	if err := ph.Config(options); err != nil {
 		return nil, errors.Wrap(err, "print pod configuration")
 	}
-	if err := ph.Status(opts); err != nil {
+	if err := ph.Status(options); err != nil {
 		return nil, errors.Wrap(err, "print pod status")
 	}
-	if err := ph.Conditions(opts); err != nil {
+	if err := ph.Conditions(options); err != nil {
 		return nil, errors.Wrap(err, "print pod conditions")
 	}
-	if err := ph.InitContainers(opts); err != nil {
+	if err := ph.InitContainers(options); err != nil {
 		return nil, errors.Wrap(err, "print pod init containers")
 	}
-	if err := ph.Containers(opts); err != nil {
+	if err := ph.Containers(options); err != nil {
 		return nil, errors.Wrap(err, "print pod containers")
 	}
-	if err := ph.Additional(opts); err != nil {
+	if err := ph.Additional(options); err != nil {
 		return nil, errors.Wrap(err, "print pod additional items")
 	}
 
-	return o.ToComponent(ctx, opts)
+	return o.ToComponent(ctx, options)
 }
 
 func createPodSummaryStatus(pod *corev1.Pod) (*component.Summary, error) {
