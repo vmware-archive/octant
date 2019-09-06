@@ -199,6 +199,7 @@ func (statefulSetStatus *StatefulSetStatus) Create() (*component.Quadrant, error
 type statefulSetObject interface {
 	Config(options Options) error
 	Status(ctx context.Context, options Options) error
+	Pods(ctx context.Context, object runtime.Object, options Options) error
 }
 
 type statefulSetHandler struct {

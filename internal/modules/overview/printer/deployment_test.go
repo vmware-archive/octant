@@ -19,7 +19,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/vmware/octant/internal/conversion"
 	"github.com/vmware/octant/internal/testutil"
@@ -216,140 +215,132 @@ func Test_deploymentConfiguration(t *testing.T) {
 	}
 }
 
-func Test_deploymentStatus(t *testing.T) {
-	deployment := &appsv1.Deployment{
-		Status: appsv1.DeploymentStatus{
-			UpdatedReplicas:     1,
-			Replicas:            2,
-			UnavailableReplicas: 3,
-			AvailableReplicas:   4,
-			ReadyReplicas:       5,
+func Test_createDeploymentSummaryStatus(t *testing.T) {
+	deployment := testutil.CreateDeployment("deployment")
+	deployment.Status.AvailableReplicas = 1
+	deployment.Status.ReadyReplicas = 2
+	deployment.Status.Replicas = 3
+	deployment.Status.UnavailableReplicas = 4
+	deployment.Status.UpdatedReplicas = 5
+
+	got, err := createDeploymentSummaryStatus(deployment)
+	require.NoError(t, err)
+
+	sections := component.SummarySections{
+		{Header: "Available Replicas", Content: component.NewText("1")},
+		{Header: "Ready Replicas", Content: component.NewText("2")},
+		{Header: "Total Replicas", Content: component.NewText("3")},
+		{Header: "Unavailable Replicas", Content: component.NewText("4")},
+		{Header: "Updated Replicas", Content: component.NewText("5")},
+	}
+	expected := component.NewSummary("Status", sections...)
+
+	assert.Equal(t, expected, got)
+}
+
+func Test_createDeploymentConditionsView(t *testing.T) {
+	now := metav1.Time{Time: time.Now()}
+
+	deployment := testutil.CreateDeployment("deployment")
+	deployment.Status.Conditions = []appsv1.DeploymentCondition{
+		{
+			Type:               appsv1.DeploymentAvailable,
+			Reason:             "reason",
+			Status:             corev1.ConditionTrue,
+			Message:            "message",
+			LastUpdateTime:     now,
+			LastTransitionTime: now,
 		},
 	}
 
-	got, err := deploymentStatus(deployment)
+	got, err := createDeploymentConditionsView(deployment)
 	require.NoError(t, err)
 
-	expected := component.NewSummary("Status", []component.SummarySection{
+	cols := component.NewTableCols("Type", "Reason", "Status", "Message", "Last Update", "Last Transition")
+	expected := component.NewTable("Conditions", "There are no deployment conditions!", cols)
+	expected.Add([]component.TableRow{
 		{
-			Header:  "Available Replicas",
-			Content: component.NewText("4"),
-		},
-		{
-			Header:  "Ready Replicas",
-			Content: component.NewText("5"),
-		},
-		{
-			Header:  "Total Replicas",
-			Content: component.NewText("2"),
-		},
-		{
-			Header:  "Unavailable Replicas",
-			Content: component.NewText("3"),
-		},
-		{
-			Header:  "Updated Replicas",
-			Content: component.NewText("1"),
+			"Type":            component.NewText("Available"),
+			"Reason":          component.NewText("reason"),
+			"Status":          component.NewText("True"),
+			"Message":         component.NewText("message"),
+			"Last Update":     component.NewTimestamp(now.Time),
+			"Last Transition": component.NewTimestamp(now.Time),
 		},
 	}...)
 
 	component.AssertEqual(t, expected, got)
 }
-
-func Test_deploymentConditions(t *testing.T) {
-	now := time.Now()
-
-	deployment := &appsv1.Deployment{
-		Status: appsv1.DeploymentStatus{
-			Conditions: []appsv1.DeploymentCondition{
-				{
-					Type:               "type1",
-					Status:             "status1",
-					LastUpdateTime:     metav1.Time{Time: now},
-					LastTransitionTime: metav1.Time{Time: now},
-					Reason:             "reason1",
-					Message:            "message1",
-				},
-				{
-					Type:               "type2",
-					Status:             "status2",
-					LastUpdateTime:     metav1.Time{Time: now},
-					LastTransitionTime: metav1.Time{Time: now},
-					Reason:             "reason2",
-					Message:            "message2",
-				},
-			},
-		},
-	}
-
-	got, err := deploymentConditions(deployment)
-	require.NoError(t, err)
-
-	expected := component.NewTableWithRows("Conditions", "There are no deployment conditions!", deploymentConditionColumns, []component.TableRow{
-		{
-			"Type":            component.NewText("type1"),
-			"Reason":          component.NewText("reason1"),
-			"Status":          component.NewText("status1"),
-			"Message":         component.NewText("message1"),
-			"Last Update":     component.NewTimestamp(now),
-			"Last Transition": component.NewTimestamp(now),
-		},
-		{
-			"Type":            component.NewText("type2"),
-			"Reason":          component.NewText("reason2"),
-			"Status":          component.NewText("status2"),
-			"Message":         component.NewText("message2"),
-			"Last Update":     component.NewTimestamp(now),
-			"Last Transition": component.NewTimestamp(now),
-		},
-	})
-
-	component.AssertEqual(t, expected, got)
-}
-
-func Test_deploymentPods(t *testing.T) {
+func Test_DeploymentPods(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
 	tpo := newTestPrinterOptions(controller)
 	printOptions := tpo.ToOptions()
 
-	podLabels := map[string]string{
-		"foo": "bar",
-	}
+	var replicas int32 = 3
 
 	deployment := testutil.CreateDeployment("deployment")
-	deployment.Spec.Template.ObjectMeta.Labels = podLabels
+
+	replicaSet := testutil.CreateAppReplicaSet("replicaset")
+	replicaSet.Spec.Replicas = &replicas
+	replicaSet.SetOwnerReferences(testutil.ToOwnerReferences(t, deployment))
 
 	now := testutil.Time()
 	pod := testutil.CreatePod("pod")
+	pod.SetOwnerReferences(testutil.ToOwnerReferences(t, replicaSet))
 	pod.ObjectMeta.CreationTimestamp = metav1.Time{Time: now}
+	pod.Status.Phase = corev1.PodRunning
+	pod.Spec.Containers = []corev1.Container{
+		{
+			Name:  "nginx",
+			Image: "nginx:1.15",
+		},
+	}
+	pod.Status.ContainerStatuses = []corev1.ContainerStatus{
+		{
+			Name:         "nginx",
+			Image:        "nginx:1.15",
+			RestartCount: 0,
+			Ready:        true,
+		},
+	}
 
 	tpo.PathForObject(pod, pod.Name, "/pod")
 
-	selector := labels.Set(podLabels)
-	key := store.Key{
+	podKey := store.Key{
 		Namespace:  "namespace",
 		APIVersion: "v1",
 		Kind:       "Pod",
-		Selector:   &selector,
 	}
-	tpo.objectStore.EXPECT().
-		List(gomock.Any(), key).
+
+	replicaSetKey := store.Key{
+		Namespace:  "namespace",
+		APIVersion: "apps/v1",
+		Kind:       "ReplicaSet",
+	}
+
+	tpo.objectStore.EXPECT().List(gomock.Any(), replicaSetKey).
+		Return(testutil.ToUnstructuredList(t, replicaSet), false, nil)
+
+	tpo.objectStore.EXPECT().List(gomock.Any(), podKey).
 		Return(testutil.ToUnstructuredList(t, pod), false, nil)
 
 	ctx := context.Background()
 
-	got, err := deploymentPods(ctx, deployment, printOptions)
+	replicaSets, err := listReplicaSetsAsObjects(ctx, deployment, printOptions)
+	require.NoError(t, err)
+
+	got, err := createRollingPodListView(ctx, replicaSets, printOptions)
 	require.NoError(t, err)
 
 	expected := component.NewTableWithRows("Pods", "We couldn't find any pods!", podColsWithOutLabels, []component.TableRow{
 		{
 			"Name":     component.NewLink("", pod.Name, "/pod"),
 			"Age":      component.NewTimestamp(now),
-			"Ready":    component.NewText("0/0"),
+			"Ready":    component.NewText("1/1"),
 			"Restarts": component.NewText("0"),
-			"Phase":    component.NewText(""),
+			"Phase":    component.NewText("Running"),
 			"Node":     component.NewText("<not scheduled>"),
 		},
 	})
