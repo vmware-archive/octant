@@ -71,7 +71,7 @@ func TestObjectDescriber(t *testing.T) {
 		{name: "summary", tabFunc: d.addSummaryTab},
 	}
 
-	cResponse, err := d.Describe(ctx, "/path", pod.Namespace, options)
+	cResponse, err := d.Describe(ctx, pod.Namespace, options)
 	require.NoError(t, err)
 
 	summary := component.NewText("summary")

@@ -12,6 +12,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+// EmptyContentResponse is an empty content response.
+var EmptyContentResponse = ContentResponse{}
+
 // ContentResponse is a a content response. It contains a
 // title and one or more components.
 type ContentResponse struct {

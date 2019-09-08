@@ -7,7 +7,6 @@ package event
 
 import (
 	"context"
-	"encoding/json"
 	"path"
 	"sync"
 	"time"
@@ -20,7 +19,8 @@ import (
 )
 
 type navigationResponse struct {
-	Sections []navigation.Navigation `json:"sections,omitempty"`
+	Sections    []navigation.Navigation `json:"sections"`
+	DefaultPath string                  `json:"defaultPath"`
 }
 
 // NavigationGenerator generates navigation events.
@@ -33,6 +33,9 @@ type NavigationGenerator struct {
 
 	// RunEvery is how often the event generator should be run.
 	RunEvery time.Duration
+
+	// DefaultPath is Octant's default path.
+	DefaultPath string
 }
 
 var _ octant.Generator = (*NavigationGenerator)(nil)
@@ -47,17 +50,13 @@ func (g *NavigationGenerator) Event(ctx context.Context) (octant.Event, error) {
 	}
 
 	nr := navigationResponse{
-		Sections: ns,
-	}
-
-	data, err := json.Marshal(nr)
-	if err != nil {
-		return octant.Event{}, err
+		Sections:    ns,
+		DefaultPath: g.DefaultPath,
 	}
 
 	return octant.Event{
 		Type: octant.EventTypeNavigation,
-		Data: data,
+		Data: nr,
 	}, nil
 }
 

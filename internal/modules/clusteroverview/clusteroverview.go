@@ -8,7 +8,6 @@ package clusteroverview
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -18,11 +17,11 @@ import (
 	"github.com/vmware/octant/internal/describer"
 	"github.com/vmware/octant/internal/link"
 	"github.com/vmware/octant/internal/loading"
-	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/modules/overview/printer"
 	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/queryer"
+	"github.com/vmware/octant/pkg/action"
 	"github.com/vmware/octant/pkg/icon"
 	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/store"
@@ -100,26 +99,43 @@ func (co *ClusterOverview) Name() string {
 	return "cluster-overview"
 }
 
-func (co *ClusterOverview) Handlers(ctx context.Context) map[string]http.Handler {
-	logger := log.From(ctx)
+func (co *ClusterOverview) ClientRequestHandlers() []octant.ClientRequestHandler {
+	return []octant.ClientRequestHandler{
+		// TODO: move to overview
+		{
+			RequestType: "startPortForward",
+			Handler: func(state octant.State, payload action.Payload) error {
+				req, err := portForwardRequestFromPayload(payload)
+				if err != nil {
+					return errors.Wrap(err, "convert payload to port forward request")
+				}
 
-	pfHandler, err := newPortForwardsHandler(logger, co.DashConfig.PortForwarder())
-	if err != nil {
-		panic(fmt.Sprintf("unable to create port forwards handler: %v", err))
-	}
+				_, err = co.DashConfig.PortForwarder().Create(context.TODO(), req.gvk(), req.Name, req.Namespace, req.Port)
+				return err
+			},
+		},
+		{
+			RequestType: "stopPortForward",
+			Handler: func(state octant.State, payload action.Payload) error {
+				id, err := payload.String("id")
+				if err != nil {
+					return errors.Wrap(err, "get port forward id from payload")
+				}
 
-	return map[string]http.Handler{
-		"/port-forwards": pfHandler,
+				co.DashConfig.PortForwarder().StopForwarder(id)
+				return nil
+			},
+		},
 	}
 }
 
-func (co *ClusterOverview) Content(ctx context.Context, contentPath string, prefix string, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
+func (co *ClusterOverview) Content(ctx context.Context, contentPath string, opts module.ContentOptions) (component.ContentResponse, error) {
 	pf, err := co.pathMatcher.Find(contentPath)
 	if err != nil {
 		if err == describer.ErrPathNotFound {
-			return describer.EmptyContentResponse, api.NewNotFoundError(contentPath)
+			return component.EmptyContentResponse, api.NewNotFoundError(contentPath)
 		}
-		return describer.EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 
 	clusterClient := co.DashConfig.ClusterClient()
@@ -127,19 +143,19 @@ func (co *ClusterOverview) Content(ctx context.Context, contentPath string, pref
 
 	discoveryInterface, err := clusterClient.DiscoveryClient()
 	if err != nil {
-		return describer.EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 
 	q := queryer.New(objectStore, discoveryInterface)
 
 	p := printer.NewResource(co.DashConfig)
 	if err := printer.AddHandlers(p); err != nil {
-		return describer.EmptyContentResponse, errors.Wrap(err, "add print handlers")
+		return component.EmptyContentResponse, errors.Wrap(err, "add print handlers")
 	}
 
 	linkGenerator, err := link.NewFromDashConfig(co.DashConfig)
 	if err != nil {
-		return describer.EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 
 	loaderFactory := describer.NewObjectLoaderFactory(co.DashConfig)
@@ -156,16 +172,16 @@ func (co *ClusterOverview) Content(ctx context.Context, contentPath string, pref
 		LoadObject:  loaderFactory.LoadObject,
 	}
 
-	cResponse, err := pf.Describer.Describe(ctx, prefix, "", options)
+	cResponse, err := pf.Describer.Describe(ctx, "", options)
 	if err != nil {
-		return describer.EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 
 	return cResponse, nil
 }
 
 func (co *ClusterOverview) ContentPath() string {
-	return fmt.Sprintf("/%s", co.Name())
+	return fmt.Sprintf("%s", co.Name())
 }
 
 func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, root string) ([]navigation.Navigation, error) {

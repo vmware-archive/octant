@@ -7,7 +7,6 @@ package event
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -56,12 +55,9 @@ func TestNavigationGenerator_Event(t *testing.T) {
 			},
 		},
 	}
-	expectedData, err := json.Marshal(&expectedResponse)
-	require.NoError(t, err)
 
 	assert.Equal(t, octant.EventTypeNavigation, event.Type)
-	assert.JSONEq(t, string(expectedData), string(event.Data))
-	assert.Equal(t, expectedData, event.Data)
+	assert.Equal(t, expectedResponse, event.Data)
 }
 
 func TestNavigationGenerator_ScheduleDelay(t *testing.T) {

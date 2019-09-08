@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -46,7 +45,11 @@ func (l *LocalContent) Name() string {
 	return "local"
 }
 
-func (l *LocalContent) Content(ctx context.Context, contentPath string, prefix string, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
+func (l *LocalContent) ClientRequestHandlers() []octant.ClientRequestHandler {
+	return nil
+}
+
+func (l *LocalContent) Content(ctx context.Context, contentPath string, opts module.ContentOptions) (component.ContentResponse, error) {
 	if contentPath == "/" || contentPath == "" {
 		return l.list()
 	}
@@ -89,7 +92,7 @@ func (l *LocalContent) list() (component.ContentResponse, error) {
 }
 
 func (l *LocalContent) ContentPath() string {
-	return fmt.Sprintf("/%s", l.Name())
+	return fmt.Sprintf("%s", l.Name())
 }
 
 func (l *LocalContent) content(name string) (component.ContentResponse, error) {
@@ -201,10 +204,6 @@ func (l *LocalContent) Start() error {
 }
 
 func (l *LocalContent) Stop() {
-}
-
-func (l *LocalContent) Handlers(ctx context.Context) map[string]http.Handler {
-	return make(map[string]http.Handler)
 }
 
 func (l *LocalContent) SupportedGroupVersionKind() []schema.GroupVersionKind {

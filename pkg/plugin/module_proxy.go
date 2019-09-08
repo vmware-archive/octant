@@ -2,8 +2,6 @@ package plugin
 
 import (
 	"context"
-	"net/http"
-	"path"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -43,17 +41,17 @@ func (m *ModuleProxy) Name() string {
 	return m.Metadata.Name
 }
 
-func (ModuleProxy) Handlers(ctx context.Context) map[string]http.Handler {
-	return map[string]http.Handler{}
+func (m *ModuleProxy) ClientRequestHandlers() []octant.ClientRequestHandler {
+	return nil
 }
 
 // Content returns content from the plugin. Plugins are expected to handle paths appropriately.
-func (m *ModuleProxy) Content(ctx context.Context, contentPath, prefix, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
+func (m *ModuleProxy) Content(ctx context.Context, contentPath string, opts module.ContentOptions) (component.ContentResponse, error) {
 	return m.Service.Content(ctx, contentPath)
 }
 
 func (m *ModuleProxy) ContentPath() string {
-	return path.Join("/", m.Name())
+	return m.Name()
 }
 
 // Navigation returns navigation from the plugin.

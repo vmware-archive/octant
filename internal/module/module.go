@@ -7,7 +7,6 @@ package module
 
 import (
 	"context"
-	"net/http"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -29,10 +28,10 @@ type ContentOptions struct {
 type Module interface {
 	// Name is the name of the module.
 	Name() string
-	// Handlers are additional handlers for the module
-	Handlers(ctx context.Context) map[string]http.Handler
+	// ClientRequestHandlers are handlers for handling client requests.
+	ClientRequestHandlers() []octant.ClientRequestHandler
 	// Content generates content for a path.
-	Content(ctx context.Context, contentPath, prefix, namespace string, opts ContentOptions) (component.ContentResponse, error)
+	Content(ctx context.Context, contentPath string, opts ContentOptions) (component.ContentResponse, error)
 	// ContentPath will be used to construct content paths.
 	ContentPath() string
 	// Navigation returns navigation entries for this module.

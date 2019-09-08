@@ -84,7 +84,7 @@ func TestSectionDescriber(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
-			got, err := tc.d.Describe(ctx, "/prefix", namespace, options)
+			got, err := tc.d.Describe(ctx, namespace, options)
 			require.NoError(t, err)
 
 			assert.Equal(t, tc.expected, got)

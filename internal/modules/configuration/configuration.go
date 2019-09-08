@@ -7,7 +7,6 @@ package configuration
 
 import (
 	"context"
-	"net/http"
 	"path"
 
 	"github.com/pkg/errors"
@@ -17,7 +16,7 @@ import (
 	"github.com/vmware/octant/internal/api"
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/describer"
-	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/event"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/pkg/action"
@@ -35,7 +34,7 @@ type Configuration struct {
 	Options
 
 	pathMatcher          *describer.PathMatcher
-	kubeContextGenerator *kubeContextGenerator
+	kubeContextGenerator *event.ContextsGenerator
 }
 
 var _ module.Module = (*Configuration)(nil)
@@ -50,7 +49,7 @@ func New(ctx context.Context, options Options) *Configuration {
 	return &Configuration{
 		Options:              options,
 		pathMatcher:          pm,
-		kubeContextGenerator: newKubeContextGenerator(options.DashConfig),
+		kubeContextGenerator: event.NewContextsGenerator(options.DashConfig),
 	}
 }
 
@@ -58,32 +57,21 @@ func (Configuration) Name() string {
 	return "configuration"
 }
 
-func (c *Configuration) Handlers(ctx context.Context) map[string]http.Handler {
-	logger := log.From(ctx)
-
-	update := &updateCurrentContextHandler{
-		logger: logger,
-		contextUpdateFunc: func(name string) error {
-			return c.DashConfig.UseContext(ctx, name)
-		},
-	}
-
-	return map[string]http.Handler{
-		"/kube-contexts": update,
-	}
+func (c Configuration) ClientRequestHandlers() []octant.ClientRequestHandler {
+	return nil
 }
 
 func (c *Configuration) SetContext(ctx context.Context, contextName string) error {
 	return nil
 }
 
-func (c *Configuration) Content(ctx context.Context, contentPath, prefix, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
+func (c *Configuration) Content(ctx context.Context, contentPath string, opts module.ContentOptions) (component.ContentResponse, error) {
 	pf, err := c.pathMatcher.Find(contentPath)
 	if err != nil {
 		if err == describer.ErrPathNotFound {
-			return describer.EmptyContentResponse, api.NewNotFoundError(contentPath)
+			return component.EmptyContentResponse, api.NewNotFoundError(contentPath)
 		}
-		return describer.EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 
 	options := describer.Options{
@@ -92,9 +80,9 @@ func (c *Configuration) Content(ctx context.Context, contentPath, prefix, namesp
 		Dash:     c.DashConfig,
 	}
 
-	cResponse, err := pf.Describer.Describe(ctx, prefix, namespace, options)
+	cResponse, err := pf.Describer.Describe(ctx, "", options)
 	if err != nil {
-		return describer.EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 
 	return cResponse, nil

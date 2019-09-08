@@ -46,7 +46,7 @@ func (csd *CRDSection) Remove(name string) {
 	delete(csd.describers, name)
 }
 
-func (csd *CRDSection) Describe(ctx context.Context, prefix, namespace string, options Options) (component.ContentResponse, error) {
+func (csd *CRDSection) Describe(ctx context.Context, namespace string, options Options) (component.ContentResponse, error) {
 	csd.mu.Lock()
 	defer csd.mu.Unlock()
 
@@ -60,9 +60,9 @@ func (csd *CRDSection) Describe(ctx context.Context, prefix, namespace string, o
 	list := component.NewList("Custom Resources", nil)
 
 	for _, name := range names {
-		resp, err := csd.describers[name].Describe(ctx, prefix, namespace, options)
+		resp, err := csd.describers[name].Describe(ctx, namespace, options)
 		if err != nil {
-			return EmptyContentResponse, err
+			return component.EmptyContentResponse, err
 		}
 
 		for i := range resp.Components {

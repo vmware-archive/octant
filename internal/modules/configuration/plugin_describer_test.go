@@ -60,7 +60,7 @@ func TestPluginDescriber(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	cResponse, err := p.Describe(ctx, "/plugins", namespace, options)
+	cResponse, err := p.Describe(ctx, namespace, options)
 	require.NoError(t, err)
 
 	capabilitiesData := "[Module], [Actions: action], [Object Status: v1 Pod], [Printer Config: v1 Pod], [Printer Items: v1 Pod], [Printer Status: v1 Pod], [Tab: v1 Pod]"
@@ -71,7 +71,7 @@ func TestPluginDescriber(t *testing.T) {
 	table.Add(component.TableRow{
 		"Name":         component.NewText(name),
 		"Description":  component.NewText("this is a test"),
-		"Capabilities": component.NewText(string(capabilitiesData)),
+		"Capabilities": component.NewText(capabilitiesData),
 	})
 
 	list.Add(table)

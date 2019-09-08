@@ -7,12 +7,14 @@ package module
 
 import (
 	"context"
+	"strings"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware/octant/internal/cluster"
 	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/pkg/action"
 )
 
@@ -35,9 +37,11 @@ type ManagerInterface interface {
 	GetNamespace() string
 	UpdateContext(ctx context.Context, contextName string) error
 
+	ModuleForContentPath(contentPath string) (Module, bool)
+
+	ClientRequestHandlers() []octant.ClientRequestHandler
+
 	ObjectPath(namespace, apiVersion, kind, name string) (string, error)
-	RegisterObjectPath(Module, schema.GroupVersionKind)
-	DeregisterObjectPath(schema.GroupVersionKind)
 }
 
 // Manager manages module lifecycle.
@@ -148,16 +152,28 @@ func (m *Manager) ObjectPath(namespace, apiVersion, kind, name string) (string, 
 	owner, ok := objectPaths[gvk]
 	if !ok {
 		return "", nil
-		// return "", errors.Errorf("no module claimed ownership of %s", gvk.String())
 	}
 
 	return owner.GroupVersionKindPath(namespace, apiVersion, kind, name)
 }
 
-func (m *Manager) RegisterObjectPath(mod Module, gvk schema.GroupVersionKind) {
-	//m.objectPaths[gvk] = mod
+func (m *Manager) ModuleForContentPath(contentPath string) (Module, bool) {
+	for _, m := range m.Modules() {
+		if strings.HasPrefix(contentPath, m.ContentPath()) {
+			return m, true
+		}
+	}
+
+	return nil, false
 }
 
-func (m *Manager) DeregisterObjectPath(gvk schema.GroupVersionKind) {
-	//delete(m.objectPaths, gvk)
+// ClientRequestHandlers returns client request handlers for all modules.
+func (m *Manager) ClientRequestHandlers() []octant.ClientRequestHandler {
+	var list []octant.ClientRequestHandler
+
+	for _, m := range m.loadedModules {
+		list = append(list, m.ClientRequestHandlers()...)
+	}
+
+	return list
 }

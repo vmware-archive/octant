@@ -7,7 +7,6 @@ package event
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -36,19 +35,16 @@ func TestNamespacesGenerator_Event(t *testing.T) {
 	event, err := g.Event(ctx)
 	require.NoError(t, err)
 
-	expectedResponse := namespacesResponse{
+	expectedResponse := &namespacesResponse{
 		Namespaces: []string{"ns1", "ns2"},
 	}
-	expectedData, err := json.Marshal(&expectedResponse)
-	require.NoError(t, err)
 
 	assert.Equal(t, octant.EventTypeNamespaces, event.Type)
-	assert.Equal(t, expectedData, event.Data)
+	assert.Equal(t, expectedResponse, event.Data)
 }
 
 func TestNamespacesGenerator_ScheduleDelay(t *testing.T) {
-	g := NamespacesGenerator{
-	}
+	g := NamespacesGenerator{}
 
 	assert.Equal(t, DefaultScheduleDelay, g.ScheduleDelay())
 }

@@ -77,24 +77,24 @@ type tabFuncDescriptor struct {
 }
 
 // Describe describes an object.
-func (d *Object) Describe(ctx context.Context, prefix, namespace string, options Options) (component.ContentResponse, error) {
+func (d *Object) Describe(ctx context.Context, namespace string, options Options) (component.ContentResponse, error) {
 	logger := log.From(ctx)
 
 	object, err := options.LoadObject(ctx, namespace, options.Fields, d.objectStoreKey)
 	if err != nil {
-		return EmptyContentResponse, api.NewNotFoundError(d.path)
+		return component.EmptyContentResponse, api.NewNotFoundError(d.path)
 	} else if object == nil {
-		return EmptyContentResponse, errors.Errorf("unable to load object %s", d.objectStoreKey)
+		return component.EmptyContentResponse, errors.Errorf("unable to load object %s", d.objectStoreKey)
 	}
 
 	item := d.objectType()
 
 	if err := scheme.Scheme.Convert(object, item, nil); err != nil {
-		return EmptyContentResponse, errors.Wrapf(err, "converting dynamic object to a type")
+		return component.EmptyContentResponse, errors.Wrapf(err, "converting dynamic object to a type")
 	}
 
 	if err := copyObjectMeta(item, object); err != nil {
-		return EmptyContentResponse, errors.Wrap(err, "copying object metadata")
+		return component.EmptyContentResponse, errors.Wrap(err, "copying object metadata")
 	}
 
 	accessor := meta.NewAccessor()
@@ -111,7 +111,7 @@ func (d *Object) Describe(ctx context.Context, prefix, namespace string, options
 
 	currentObject, ok := item.(runtime.Object)
 	if !ok {
-		return EmptyContentResponse, errors.Errorf("expected item to be a runtime object. It was a %T",
+		return component.EmptyContentResponse, errors.Errorf("expected item to be a runtime object. It was a %T",
 			item)
 	}
 
@@ -132,7 +132,7 @@ func (d *Object) Describe(ctx context.Context, prefix, namespace string, options
 
 	tabs, err := options.PluginManager().Tabs(ctx, object)
 	if err != nil {
-		return EmptyContentResponse, errors.Wrap(err, "getting tabs from plugins")
+		return component.EmptyContentResponse, errors.Wrap(err, "getting tabs from plugins")
 	}
 
 	for _, tab := range tabs {

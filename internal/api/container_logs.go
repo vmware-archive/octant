@@ -3,7 +3,7 @@ Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package overview
+package api
 
 import (
 	"context"
@@ -16,10 +16,20 @@ import (
 
 	"github.com/vmware/octant/internal/cluster"
 	"github.com/vmware/octant/internal/log"
-	container2 "github.com/vmware/octant/internal/modules/overview/container"
+	"github.com/vmware/octant/internal/modules/overview/container"
 )
 
+type logEntry struct {
+	Timestamp time.Time `json:"timestamp,omitempty"`
+	Message   string    `json:"message,omitempty"`
+}
+
+type logResponse struct {
+	Entries []logEntry `json:"entries,omitempty"`
+}
+
 func containerLogsHandler(ctx context.Context, clusterClient cluster.ClientInterface) http.HandlerFunc {
+	logger := log.From(ctx)
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -30,7 +40,7 @@ func containerLogsHandler(ctx context.Context, clusterClient cluster.ClientInter
 
 		kubeClient, err := clusterClient.KubernetesClient()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			RespondWithError(w, http.StatusInternalServerError, err.Error(), logger)
 			return
 		}
 
@@ -54,9 +64,9 @@ func containerLogsHandler(ctx context.Context, clusterClient cluster.ClientInter
 			done <- true
 		}()
 
-		err = container2.Logs(r.Context(), kubeClient, namespace, podName, containerName, lines)
+		err = container.Logs(r.Context(), kubeClient, namespace, podName, containerName, lines)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			RespondWithError(w, http.StatusInternalServerError, err.Error(), logger)
 			return
 		}
 

@@ -24,9 +24,6 @@ import (
 	"github.com/vmware/octant/pkg/view/component"
 )
 
-// EmptyContentResponse is an empty content response.
-var EmptyContentResponse = component.ContentResponse{}
-
 type ObjectLoaderFactory struct {
 	dashConfig config.Dash
 }
@@ -110,15 +107,15 @@ type Options struct {
 
 // Describer creates content.
 type Describer interface {
-	Describe(ctx context.Context, prefix, namespace string, options Options) (component.ContentResponse, error)
+	Describe(ctx context.Context, namespace string, options Options) (component.ContentResponse, error)
 	PathFilters() []PathFilter
 	Reset(ctx context.Context) error
 }
 
 type base struct{}
 
-func (b base) Describe(ctx context.Context, prefix, namespace string, options Options) (component.ContentResponse, error) {
-	return EmptyContentResponse, nil
+func (b base) Describe(ctx context.Context, namespace string, options Options) (component.ContentResponse, error) {
+	return component.EmptyContentResponse, nil
 }
 
 func (b base) PathFilters() []PathFilter {
