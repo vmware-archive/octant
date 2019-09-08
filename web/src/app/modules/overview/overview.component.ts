@@ -14,6 +14,7 @@ import { IconService } from './services/icon.service';
 import { ViewService } from './services/view/view.service';
 import { BehaviorSubject } from 'rxjs';
 import { ContentService } from './services/content/content.service';
+import { WebsocketService } from './services/websocket/websocket.service';
 
 const emptyContentResponse: ContentResponse = {
   content: {
@@ -46,7 +47,8 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private iconService: IconService,
     private viewService: ViewService,
-    private contentService: ContentService
+    private contentService: ContentService,
+    private websocketService: WebsocketService
   ) {
     this.contentService.current.subscribe(contentResponse => {
       this.setContent(contentResponse);
@@ -58,12 +60,22 @@ export class OverviewComponent implements OnInit, OnDestroy {
     this.route.queryParams.subscribe(queryParams =>
       this.contentService.setQueryParams(queryParams)
     );
+
+    this.websocketService.reconnected.subscribe(_ => {
+      // when reconnecting, ensure the backend knows our path
+      this.route.url.subscribe(this.handlePathChange(true)).unsubscribe();
+      this.route.queryParams
+        .subscribe(queryParams =>
+          this.contentService.setQueryParams(queryParams)
+        )
+        .unsubscribe();
+    });
   }
 
-  private handlePathChange() {
+  private handlePathChange(force = false) {
     return url => {
       const currentPath = url.map(u => u.path).join('/') || this.defaultPath;
-      if (currentPath !== this.previousUrl) {
+      if (currentPath !== this.previousUrl || force) {
         this.resetView();
         this.previousUrl = currentPath;
         this.contentService.setContentPath(currentPath);
@@ -73,10 +85,10 @@ export class OverviewComponent implements OnInit, OnDestroy {
   }
 
   private resetView() {
-    this.hasReceivedContent = false;
     this.title = null;
     this.singleView = null;
     this.views = null;
+    this.hasReceivedContent = false;
   }
 
   private setContent = (contentResponse: ContentResponse) => {
@@ -100,5 +112,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
     this.iconName = this.iconService.load(contentResponse.content);
   };
 
-  ngOnDestroy() {}
+  ngOnDestroy() {
+    this.resetView();
+  }
 }

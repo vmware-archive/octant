@@ -4,20 +4,21 @@
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  Streamer,
-  ContentStreamService,
-} from 'src/app/services/content-stream/content-stream.service';
 import { ActivatedRouteStub } from 'src/app/testing/activated-route-stub';
 
 import { OverviewModule } from './overview.module';
 import { OverviewComponent } from './overview.component';
+import { BehaviorSubject } from 'rxjs';
+import { ContentResponse } from '../../models/content';
+import { ContentService } from './services/content/content.service';
+import { IconService } from './services/icon.service';
 
-const contentStreamServiceStub: Partial<ContentStreamService> = {
-  closeStream: () => {},
-  registerStreamer: (name: string, handler: Streamer) => {},
-};
-const activatedRouteStub = new ActivatedRouteStub();
+class ContentServiceMock {
+  current = new BehaviorSubject<ContentResponse>({
+    content: { viewComponents: [], title: [] },
+  });
+  defaultPath = new BehaviorSubject<string>('/path');
+}
 
 describe('OverviewComponent', () => {
   let component: OverviewComponent;
@@ -31,9 +32,10 @@ describe('OverviewComponent', () => {
     TestBed.configureTestingModule({
       imports: [OverviewModule],
       providers: [
-        { provide: ActivatedRoute, useValue: activatedRouteStub },
-        { provide: ContentStreamService, useValue: contentStreamServiceStub },
+        { provide: ActivatedRoute, useValue: new ActivatedRouteStub({}) },
         { provide: Router, useValue: routerSpy },
+        { provide: ContentService, useClass: ContentServiceMock },
+        IconService,
       ],
     }).compileComponents();
   }));

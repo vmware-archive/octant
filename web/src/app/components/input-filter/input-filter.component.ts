@@ -49,9 +49,8 @@ export class InputFilterComponent implements OnInit {
   }
 
   get placeholderText(): string {
-    const len = this.filters.length;
-    if (len > 0) {
-      return `Filter by labels (${len} applied)`;
+    if (this.filters && this.filters.length > 0) {
+      return `Filter by labels (${this.filters.length} applied)`;
     } else {
       return 'Filter by labels';
     }
@@ -69,6 +68,7 @@ export class InputFilterComponent implements OnInit {
   }
 
   clearAllFilters() {
-    this.labelFilterService.clearAll();
+    this.labelFilterService.clear();
+    this.showTagList = false;
   }
 }

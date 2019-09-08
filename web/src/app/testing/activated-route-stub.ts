@@ -28,6 +28,9 @@ export class ActivatedRouteStub {
   private urlSubject = new ReplaySubject<UrlSegment[]>();
   readonly url = this.urlSubject.asObservable();
 
+  private queryParamsSubject = new ReplaySubject<Params>();
+  readonly queryParams = this.queryParamsSubject.asObservable();
+
   /** Set the paramMap observable's next value */
   setParamMap(params?: Params) {
     this.subject.next(convertToParamMap(params));

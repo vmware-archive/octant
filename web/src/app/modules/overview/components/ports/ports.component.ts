@@ -72,36 +72,14 @@ export class PortsComponent implements OnChanges, OnDestroy {
     this.portLoad.emit(true);
     this.submittedPFCreation = port.config.name;
 
-    this.portForwardService.create(port).subscribe(
-      () => {
-        // TODO: handle success
-      },
-      () => {
-        this.notifierSession.pushSignal(
-          NotifierSignalType.ERROR,
-          'There was an issue starting your port-forward'
-        );
-        this.portLoad.emit(false);
-      }
-    );
+    this.portForwardService.create(port);
   }
 
   removePortForward(port: Port) {
     this.portLoad.emit(true);
     this.submittedPFRemoval = port.config.name;
 
-    this.portForwardService.remove(port).subscribe(
-      () => {
-        // TODO: handle success
-      },
-      () => {
-        this.notifierSession.pushSignal(
-          NotifierSignalType.ERROR,
-          'There was an issue removing your port-forward'
-        );
-        this.portLoad.emit(false);
-      }
-    );
+    this.portForwardService.remove(port.config.state.id);
   }
 
   openPortForward(port: Port) {

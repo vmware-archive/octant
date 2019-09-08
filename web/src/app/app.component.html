@@ -1,32 +1,32 @@
 <div class="main-container">
-  <div class="notifier">
-    <app-notifier></app-notifier>
-  </div>
-  <header class="header header-6">
-    <div class="branding">
-      <a [routerLink]="['/']">
-        <clr-icon shape="vm-bug"></clr-icon>
-        <span class="title">Octant</span>
-      </a>
+    <div class="notifier">
+        <app-notifier></app-notifier>
     </div>
-    <div class="header-nav">
-      <div class="namespace-switcher">
-        <app-namespace></app-namespace>
-      </div>
-      <div class="input-filter">
-        <app-input-filter></app-input-filter>
-      </div>
+    <header class="header header-6">
+        <div class="branding">
+            <a [routerLink]="['/']">
+                <clr-icon shape="vm-bug"></clr-icon>
+                <span class="title">Octant</span>
+            </a>
+        </div>
+        <div class="header-nav">
+            <div class="namespace-switcher">
+                <app-namespace></app-namespace>
+            </div>
+            <div class="input-filter">
+                <app-input-filter></app-input-filter>
+            </div>
+        </div>
+        <div class="header-actions">
+            <app-context-selector></app-context-selector>
+        </div>
+    </header>
+    <div class="content-container">
+        <div class="navigation">
+            <app-navigation></app-navigation>
+        </div>
+        <div class="content-area">
+            <router-outlet></router-outlet>
+        </div>
     </div>
-    <div class="header-actions">
-      <app-context-selector></app-context-selector>
-    </div>
-  </header>
-  <div class="content-container">
-    <div class="navigation">
-      <app-navigation [navigation]="navigation"></app-navigation>
-    </div>
-    <div class="content-area">
-      <router-outlet></router-outlet>
-    </div>
-  </div>
 </div>

@@ -4,12 +4,9 @@
 
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
-import getAPIBase from '../../../../services/common/getAPIBase';
-import {
-  Streamer,
-  ContentStreamService,
-} from '../../../../services/content-stream/content-stream.service';
+import { WebsocketService } from '../websocket/websocket.service';
+
+export const KubeContextMessage = 'kubeConfig';
 
 export interface ContextDescription {
   name: string;
@@ -29,61 +26,36 @@ const emptyKubeContext: KubeContextResponse = {
   providedIn: 'root',
 })
 export class KubeContextService {
-  private behavior = new BehaviorSubject<KubeContextResponse>(emptyKubeContext);
   private contextsSource: BehaviorSubject<
     ContextDescription[]
   > = new BehaviorSubject<ContextDescription[]>([]);
 
-  private selectedSource: BehaviorSubject<string> = new BehaviorSubject<string>(
-    ''
-  );
+  private selectedSource = new BehaviorSubject<string>('');
 
-  constructor(
-    private http: HttpClient,
-    private contentStreamService: ContentStreamService
-  ) {
-    const streamer: Streamer = {
-      behavior: this.behavior,
-      handler: this.handleEvent,
-    };
-    this.contentStreamService.registerStreamer('kubeConfig', streamer);
-
-    contentStreamService.streamer('kubeConfig').subscribe(update => {
+  constructor(private websocketService: WebsocketService) {
+    websocketService.registerHandler(KubeContextMessage, data => {
+      const update = data as KubeContextResponse;
       this.contextsSource.next(update.contexts);
       this.selectedSource.next(update.currentContext);
     });
   }
 
-  private handleEvent = (message: MessageEvent) => {
-    const data = JSON.parse(message.data) as KubeContextResponse;
-    this.behavior.next(data);
-  };
-
   select(context: ContextDescription) {
     this.selectedSource.next(context.name);
-
-    this.updateContext(context.name).subscribe();
+    this.updateContext(context.name);
   }
 
   selected() {
-    return this.selectedSource.asObservable();
+    return this.selectedSource;
   }
 
   contexts() {
-    return this.contextsSource.asObservable();
+    return this.contextsSource;
   }
 
   private updateContext(name: string) {
-    const url = [
-      getAPIBase(),
-      'api/v1/content/configuration',
-      'kube-contexts',
-    ].join('/');
-
-    const payload = {
+    this.websocketService.sendMessage('setContext', {
       requestedContext: name,
-    };
-
-    return this.http.post(url, payload);
+    });
   }
 }

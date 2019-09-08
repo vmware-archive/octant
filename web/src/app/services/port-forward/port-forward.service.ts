@@ -6,30 +6,28 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Port } from 'src/app/models/content';
 import getAPIBase from '../common/getAPIBase';
-
-const API_BASE = getAPIBase();
+import { WebsocketService } from '../../modules/overview/services/websocket/websocket.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PortForwardService {
-  constructor(private http: HttpClient) {}
+  constructor(private websocketService: WebsocketService) {}
 
   public create(port: Port) {
-    return this.http.post(`${API_BASE}/api/v1/content/overview/port-forwards`, {
-      apiVersion: port.config.apiVersion,
-      kind: port.config.kind,
-      name: port.config.name,
-      namespace: port.config.namespace,
-      port: port.config.port,
+    const config = port.config;
+    this.websocketService.sendMessage('startPortForward', {
+      apiVersion: config.apiVersion,
+      kind: config.kind,
+      name: config.name,
+      namespace: config.namespace,
+      port: config.port,
     });
   }
 
-  public remove(port: Port) {
-    return this.http.delete(
-      `${API_BASE}/api/v1/content/overview/port-forwards/${
-        port.config.state.id
-      }`
-    );
+  public remove(id: string) {
+    this.websocketService.sendMessage('stopPortForward', {
+      id,
+    });
   }
 }
