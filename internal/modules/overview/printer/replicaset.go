@@ -13,6 +13,8 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
@@ -56,36 +58,26 @@ func ReplicaSetListHandler(ctx context.Context, list *appsv1.ReplicaSetList, opt
 }
 
 // ReplicaSetHandler is a printFunc that prints a ReplicaSets.
-func ReplicaSetHandler(ctx context.Context, rs *appsv1.ReplicaSet, options Options) (component.Component, error) {
-	o := NewObject(rs)
+func ReplicaSetHandler(ctx context.Context, replicaSet *appsv1.ReplicaSet, options Options) (component.Component, error) {
+	o := NewObject(replicaSet)
+	o.EnableEvents()
 
-	objectStore := options.DashConfig.ObjectStore()
-
-	replicaSetConfigGen := NewReplicaSetConfiguration(rs)
-	configSummary, err := replicaSetConfigGen.Create(options)
+	rsh, err := newReplicaSetHander(replicaSet, o)
 	if err != nil {
 		return nil, err
 	}
 
-	replicaSetStatusGen := NewReplicaSetStatus(rs)
+	if err := rsh.Config(options); err != nil {
+		return nil, errors.Wrap(err, "print replicaset configuration")
+	}
 
-	o.RegisterConfig(configSummary)
-	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.Component, error) {
-			return replicaSetStatusGen.Create(ctx, objectStore)
-		},
-		Width: component.WidthQuarter,
-	})
-	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.Component, error) {
-			return createPodListView(ctx, rs, options)
-		},
-		Width: component.WidthFull,
-	})
+	if err := rsh.Status(ctx, options); err != nil {
+		return nil, errors.Wrap(err, "print replicaset status")
+	}
 
-	o.EnablePodTemplate(rs.Spec.Template)
-
-	o.EnableEvents()
+	if err := rsh.Pods(ctx, replicaSet, options); err != nil {
+		return nil, errors.Wrap(err, "print replicaset pods")
+	}
 
 	return o.ToComponent(ctx, options)
 }
@@ -141,22 +133,34 @@ func (rc *ReplicaSetConfiguration) Create(options Options) (*component.Summary, 
 
 // ReplicaSetStatus generates a replicaset status
 type ReplicaSetStatus struct {
-	replicaset *appsv1.ReplicaSet
+	context     context.Context
+	namespace   string
+	selector    *metav1.LabelSelector
+	uid         types.UID
+	objectStore store.Store
 }
 
 // NewReplicaSetStatus creates an instance of ReplicaSetStatus
-func NewReplicaSetStatus(rs *appsv1.ReplicaSet) *ReplicaSetStatus {
+func NewReplicaSetStatus(ctx context.Context, replicaSet *appsv1.ReplicaSet, options Options) *ReplicaSetStatus {
+	if err := options.DashConfig.Validate(); err != nil {
+		return nil
+	}
 	return &ReplicaSetStatus{
-		replicaset: rs,
+		context:     ctx,
+		namespace:   replicaSet.ObjectMeta.Namespace,
+		selector:    replicaSet.Spec.Selector,
+		uid:         replicaSet.GetUID(),
+		objectStore: options.DashConfig.ObjectStore(),
 	}
 }
 
 // Create generates a replicaset status quadrant
-func (rs *ReplicaSetStatus) Create(ctx context.Context, o store.Store) (*component.Quadrant, error) {
-	if rs == nil || rs.replicaset == nil {
+func (replicaSetStatus *ReplicaSetStatus) Create() (*component.Quadrant, error) {
+	if replicaSetStatus == nil {
 		return nil, errors.New("replicaset is nil")
 	}
-	pods, err := listPods(ctx, rs.replicaset.Namespace, rs.replicaset.Spec.Selector, rs.replicaset.GetUID(), o)
+
+	pods, err := listPods(replicaSetStatus.context, replicaSetStatus.namespace, replicaSetStatus.selector, replicaSetStatus.uid, replicaSetStatus.objectStore)
 	if err != nil {
 		return nil, err
 	}
@@ -178,4 +182,88 @@ func (rs *ReplicaSetStatus) Create(ctx context.Context, o store.Store) (*compone
 	}
 
 	return quadrant, nil
+}
+
+type replicaSetObject interface {
+	Config(options Options) error
+	Status(ctx context.Context, options Options) error
+	Pods(ctx context.Context, object runtime.Object, options Options) error
+}
+
+type replicaSetHandler struct {
+	replicaSet *appsv1.ReplicaSet
+	configFunc func(*appsv1.ReplicaSet, Options) (*component.Summary, error)
+	statusFunc func(context.Context, *appsv1.ReplicaSet, Options) (*component.Quadrant, error)
+	podFunc    func(context.Context, runtime.Object, Options) (component.Component, error)
+	object     *Object
+}
+
+var _ replicaSetObject = (*replicaSetHandler)(nil)
+
+func newReplicaSetHander(replicaSet *appsv1.ReplicaSet, object *Object) (*replicaSetHandler, error) {
+	if replicaSet == nil {
+		return nil, errors.New("can't print a nil replicaset")
+	}
+
+	if object == nil {
+		return nil, errors.New("can't print a replicaset using a nil object printer")
+	}
+
+	rh := &replicaSetHandler{
+		replicaSet: replicaSet,
+		configFunc: defaultReplicaSetConfig,
+		statusFunc: defaultReplicaSetStatus,
+		podFunc:    defaultReplicaSetPods,
+		object:     object,
+	}
+
+	return rh, nil
+}
+
+func (r *replicaSetHandler) Config(options Options) error {
+	out, err := r.configFunc(r.replicaSet, options)
+	if err != nil {
+		return err
+	}
+	r.object.RegisterConfig(out)
+	return nil
+}
+
+func defaultReplicaSetConfig(replicaSet *appsv1.ReplicaSet, options Options) (*component.Summary, error) {
+	return NewReplicaSetConfiguration(replicaSet).Create(options)
+}
+
+func (r *replicaSetHandler) Status(ctx context.Context, options Options) error {
+	if r.replicaSet == nil {
+		return errors.New("can't display status for nil replicaset")
+	}
+
+	r.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthQuarter,
+		Func: func() (component.Component, error) {
+			return r.statusFunc(ctx, r.replicaSet, options)
+		},
+	})
+
+	return nil
+}
+
+func defaultReplicaSetStatus(ctx context.Context, replicaSet *appsv1.ReplicaSet, options Options) (*component.Quadrant, error) {
+	return NewReplicaSetStatus(ctx, replicaSet, options).Create()
+}
+
+func (r *replicaSetHandler) Pods(ctx context.Context, object runtime.Object, options Options) error {
+	r.object.EnablePodTemplate(r.replicaSet.Spec.Template)
+
+	r.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return r.podFunc(ctx, object, options)
+		},
+	})
+	return nil
+}
+
+func defaultReplicaSetPods(ctx context.Context, object runtime.Object, options Options) (component.Component, error) {
+	return createPodListView(ctx, object, options)
 }

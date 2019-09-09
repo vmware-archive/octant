@@ -11,8 +11,7 @@ import (
 
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware/octant/pkg/store"
@@ -64,41 +63,30 @@ func DeploymentListHandler(_ context.Context, list *appsv1.DeploymentList, opts 
 // DeploymentHandler is a printFunc that prints a Deployments.
 func DeploymentHandler(ctx context.Context, deployment *appsv1.Deployment, options Options) (component.Component, error) {
 	o := NewObject(deployment)
-
-	deployConfigGen := NewDeploymentConfiguration(deployment)
-	configSummary, err := deployConfigGen.Create()
-	if err != nil {
-		return nil, err
-	}
-
-	status, err := deploymentStatus(deployment)
-	if err != nil {
-		return nil, err
-	}
-
-	o.RegisterConfig(configSummary)
-	o.RegisterSummary(status)
-	o.RegisterItems([]ItemDescriptor{
-		{
-			Func: func() (component.Component, error) {
-				return deploymentPods(ctx, deployment, options)
-			},
-			Width: component.WidthFull,
-		},
-		{
-			Func: func() (i component.Component, e error) {
-				return deploymentConditions(deployment)
-			},
-			Width: component.WidthFull,
-		},
-	}...)
-	o.EnablePodTemplate(deployment.Spec.Template)
 	o.EnableEvents()
+
+	dh, err := newDeploymentHandler(deployment, o)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := dh.Config(); err != nil {
+		return nil, errors.Wrap(err, "print deployment configuration")
+	}
+	if err := dh.Status(); err != nil {
+		return nil, errors.Wrap(err, "print deployment status")
+	}
+	if err := dh.Pods(ctx, deployment, options); err != nil {
+		return nil, errors.Wrap(err, "print deployment pods")
+	}
+	if err := dh.Conditions(); err != nil {
+		return nil, errors.Wrap(err, "print deployment conditions")
+	}
 
 	return o.ToComponent(ctx, options)
 }
 
-func deploymentStatus(deployment *appsv1.Deployment) (*component.Summary, error) {
+func createDeploymentSummaryStatus(deployment *appsv1.Deployment) (*component.Summary, error) {
 	if deployment == nil {
 		return nil, errors.New("unable to generate status from a nil deployment")
 	}
@@ -131,7 +119,7 @@ func deploymentStatus(deployment *appsv1.Deployment) (*component.Summary, error)
 	return summary, nil
 }
 
-func deploymentConditions(deployment *appsv1.Deployment) (component.Component, error) {
+func createDeploymentConditionsView(deployment *appsv1.Deployment) (*component.Table, error) {
 	if deployment == nil {
 		return nil, errors.New("unable to generate conditions from a nil deployment")
 	}
@@ -264,51 +252,6 @@ func (dc *DeploymentConfiguration) Create() (*component.Summary, error) {
 	return summary, nil
 }
 
-func deploymentPods(ctx context.Context, deployment *appsv1.Deployment, options Options) (component.Component, error) {
-	if deployment == nil {
-		return nil, errors.New("deployment is nil")
-	}
-
-	objectStore := options.DashConfig.ObjectStore()
-
-	if objectStore == nil {
-		return nil, errors.New("objectStore is nil")
-	}
-
-	selector := labels.Set(deployment.Spec.Template.ObjectMeta.Labels)
-
-	key := store.Key{
-		Namespace:  deployment.Namespace,
-		APIVersion: "v1",
-		Kind:       "Pod",
-		Selector:   &selector,
-	}
-
-	list, _, err := objectStore.List(ctx, key)
-	if err != nil {
-		return nil, errors.Wrapf(err, "list all objects for key %s", key)
-	}
-
-	podList := &corev1.PodList{}
-	for i := range list.Items {
-
-		pod := &corev1.Pod{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[i].Object, pod)
-		if err != nil {
-			return nil, err
-		}
-
-		if err := copyObjectMeta(pod, &list.Items[i]); err != nil {
-			return nil, errors.Wrap(err, "copy object metadata")
-		}
-
-		podList.Items = append(podList.Items, *pod)
-	}
-
-	options.DisableLabels = true
-	return PodListHandler(ctx, podList, options)
-}
-
 func editDeploymentAction(deployment *appsv1.Deployment) []component.Action {
 	replicas := deployment.Spec.Replicas
 	if replicas == nil {
@@ -337,5 +280,182 @@ func editDeploymentAction(deployment *appsv1.Deployment) []component.Action {
 	}
 
 	return []component.Action{action}
+}
 
+type deploymentObject interface {
+	Config() error
+	Status() error
+	Pods(ctx context.Context, object runtime.Object, options Options) error
+	Conditions() error
+}
+
+type deploymentHander struct {
+	deployment     *appsv1.Deployment
+	configFunc     func(*appsv1.Deployment) (*component.Summary, error)
+	summaryFunc    func(*appsv1.Deployment) (*component.Summary, error)
+	podFunc        func(context.Context, []runtime.Object, Options) (component.Component, error)
+	conditionsFunc func(*appsv1.Deployment) (*component.Table, error)
+	object         *Object
+}
+
+var _ deploymentObject = (*deploymentHander)(nil)
+
+func newDeploymentHandler(deployment *appsv1.Deployment, object *Object) (*deploymentHander, error) {
+	if deployment == nil {
+		return nil, errors.New("can't print a nil deployment")
+	}
+
+	if object == nil {
+		return nil, errors.New("can't print deployment using a nil object printer")
+	}
+
+	dh := &deploymentHander{
+		deployment:     deployment,
+		configFunc:     defaultDeploymentConfig,
+		summaryFunc:    defaultDeploymentSummary,
+		podFunc:        defaultDeploymentPods,
+		conditionsFunc: defaultDeploymentConditions,
+		object:         object,
+	}
+
+	return dh, nil
+}
+
+func (d *deploymentHander) Config() error {
+	out, err := d.configFunc(d.deployment)
+	if err != nil {
+		return err
+	}
+
+	d.object.RegisterConfig(out)
+	return nil
+}
+
+func defaultDeploymentConfig(deployment *appsv1.Deployment) (*component.Summary, error) {
+	return NewDeploymentConfiguration(deployment).Create()
+}
+
+func (d *deploymentHander) Status() error {
+	out, err := d.summaryFunc(d.deployment)
+	if err != nil {
+		return err
+	}
+
+	d.object.RegisterSummary(out)
+	return nil
+}
+
+func defaultDeploymentSummary(deployment *appsv1.Deployment) (*component.Summary, error) {
+	return createDeploymentSummaryStatus(deployment)
+}
+
+func (d *deploymentHander) Conditions() error {
+	if d.deployment == nil {
+		return errors.New("can't display conditions for nil deployment")
+	}
+
+	d.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return d.conditionsFunc(d.deployment)
+		},
+	})
+
+	return nil
+}
+
+func defaultDeploymentConditions(deployment *appsv1.Deployment) (*component.Table, error) {
+	return createDeploymentConditionsView(deployment)
+}
+
+func (d *deploymentHander) Pods(ctx context.Context, object runtime.Object, options Options) error {
+	d.object.EnablePodTemplate(d.deployment.Spec.Template)
+
+	replicaSets, err := listReplicaSetsAsObjects(ctx, d.deployment, options)
+	if replicaSets == nil || err != nil {
+		return err
+	}
+
+	objectList := make([]runtime.Object, len(replicaSets))
+	for i := range replicaSets {
+		objectList[i] = replicaSets[i]
+	}
+
+	d.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return d.podFunc(ctx, objectList, options)
+		},
+	})
+
+	return nil
+}
+
+func defaultDeploymentPods(ctx context.Context, objects []runtime.Object, options Options) (component.Component, error) {
+	return createRollingPodListView(ctx, objects, options)
+}
+
+func listReplicaSetsAsObjects(ctx context.Context, object runtime.Object, options Options) ([]runtime.Object, error) {
+	objectStore := options.DashConfig.ObjectStore()
+	var replicaSetList []*appsv1.ReplicaSet
+
+	accessor := meta.NewAccessor()
+
+	namespace, err := accessor.Namespace(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "get namespace for object")
+	}
+
+	apiVersion, err := accessor.APIVersion(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "Get apiVersion for object")
+	}
+
+	kind, err := accessor.Kind(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "get kind for object")
+	}
+
+	name, err := accessor.Name(object)
+	if err != nil {
+		return nil, errors.Wrap(err, "get name for object")
+	}
+
+	key := store.Key{
+		Namespace:  namespace,
+		APIVersion: "apps/v1",
+		Kind:       "ReplicaSet",
+	}
+
+	list, _, err := objectStore.List(ctx, key)
+	if err != nil {
+		return nil, errors.Wrapf(err, "list all objects for key %+v", key)
+	}
+
+	for i := range list.Items {
+		replicaSet := &appsv1.ReplicaSet{}
+
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[i].Object, replicaSet)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, ownerReference := range replicaSet.OwnerReferences {
+			if ownerReference.APIVersion == apiVersion &&
+				ownerReference.Kind == kind &&
+				ownerReference.Name == name {
+				if *(replicaSet.Spec.Replicas) == 0 {
+					continue
+				}
+				replicaSetList = append(replicaSetList, replicaSet)
+			}
+		}
+	}
+
+	objectList := make([]runtime.Object, len(replicaSetList))
+	for i := range replicaSetList {
+		objectList[i] = replicaSetList[i]
+	}
+
+	return objectList, nil
 }

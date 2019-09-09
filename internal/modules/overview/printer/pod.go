@@ -446,6 +446,71 @@ func createPodListView(ctx context.Context, object runtime.Object, options Optio
 	return PodListHandler(ctx, podList, options)
 }
 
+func createRollingPodListView(ctx context.Context, objects []runtime.Object, options Options) (component.Component, error) {
+	options.DisableLabels = true
+
+	podList := &corev1.PodList{}
+
+	objectStore := options.DashConfig.ObjectStore()
+
+	accessor := meta.NewAccessor()
+
+	for _, object := range objects {
+		namespace, err := accessor.Namespace(object)
+		if err != nil {
+			return nil, errors.Wrap(err, "get namespace for object")
+		}
+
+		apiVersion, err := accessor.APIVersion(object)
+		if err != nil {
+			return nil, errors.Wrap(err, "Get apiVersion for object")
+		}
+
+		kind, err := accessor.Kind(object)
+		if err != nil {
+			return nil, errors.Wrap(err, "get kind for object")
+		}
+
+		name, err := accessor.Name(object)
+		if err != nil {
+			return nil, errors.Wrap(err, "get name for object")
+		}
+
+		key := store.Key{
+			Namespace:  namespace,
+			APIVersion: "v1",
+			Kind:       "Pod",
+		}
+
+		list, _, err := objectStore.List(ctx, key)
+		if err != nil {
+			return nil, errors.Wrapf(err, "list all objects for key %+v", key)
+		}
+
+		for i := range list.Items {
+			pod := &corev1.Pod{}
+			err := runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[i].Object, pod)
+			if err != nil {
+				return nil, err
+			}
+
+			if err := copyObjectMeta(pod, &list.Items[i]); err != nil {
+				return nil, errors.Wrap(err, "copy object metadata")
+			}
+
+			for _, ownerReference := range pod.OwnerReferences {
+				if ownerReference.APIVersion == apiVersion &&
+					ownerReference.Kind == kind &&
+					ownerReference.Name == name {
+					podList.Items = append(podList.Items, *pod)
+				}
+			}
+		}
+	}
+
+	return PodListHandler(ctx, podList, options)
+}
+
 func createMountedPodListView(ctx context.Context, namespace string, persistentVolumeClaimName string, options Options) (component.Component, error) {
 	key := store.Key{
 		Namespace:  namespace,
