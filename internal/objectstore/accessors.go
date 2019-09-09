@@ -54,8 +54,6 @@ func (c *informerSynced) reset() {
 	}
 }
 
-// TODO: investigate sync.Map
-
 type factoriesCache struct {
 	factories map[string]dynamicinformer.DynamicSharedInformerFactory
 
@@ -139,4 +137,13 @@ func (c *seenGVKsCache) hasSeen(key string, groupVersionKind schema.GroupVersion
 	}
 
 	return seen
+}
+
+func (c *seenGVKsCache) reset() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	for k := range c.seenGVKs {
+		delete(c.seenGVKs, k)
+	}
 }

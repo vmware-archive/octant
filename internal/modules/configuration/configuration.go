@@ -148,6 +148,10 @@ func (c Configuration) RemoveCRD(ctx context.Context, crd *unstructured.Unstruct
 	return nil
 }
 
+func (c Configuration) ResetCRDs(ctx context.Context) error {
+	return nil
+}
+
 // Generators allow modules to send events to the frontend.
 func (c Configuration) Generators() []octant.Generator {
 	return []octant.Generator{

@@ -62,4 +62,7 @@ type Module interface {
 
 	// RemoveCRD removes a CRD this module was responsible for.
 	RemoveCRD(ctx context.Context, crd *unstructured.Unstructured) error
+
+	// ResetCRDs removes all CRDs this module is responsible for.
+	ResetCRDs(ctx context.Context) error
 }

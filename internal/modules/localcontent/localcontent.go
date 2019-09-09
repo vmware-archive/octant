@@ -216,11 +216,15 @@ func (l *LocalContent) GroupVersionKindPath(namespace, apiVersion, kind, name st
 }
 
 func (l *LocalContent) AddCRD(ctx context.Context, crd *unstructured.Unstructured) error {
-	return errors.Errorf("unable to add crd %s", crd.GetName())
+	return nil
 }
 
 func (l *LocalContent) RemoveCRD(ctx context.Context, crd *unstructured.Unstructured) error {
-	return errors.Errorf("unable to remove crd %s", crd.GetName())
+	return nil
+}
+
+func (l *LocalContent) ResetCRDs(ctx context.Context) error {
+	return nil
 }
 
 // Generators allow modules to send events to the frontend.

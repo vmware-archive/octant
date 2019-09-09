@@ -111,3 +111,8 @@ func (ModuleProxy) AddCRD(ctx context.Context, crd *unstructured.Unstructured) e
 func (ModuleProxy) RemoveCRD(ctx context.Context, crd *unstructured.Unstructured) error {
 	return nil
 }
+
+// ResetCRDs is a no-op
+func (ModuleProxy) ResetCRDs(ctx context.Context) error {
+	return nil
+}

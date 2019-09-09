@@ -448,6 +448,8 @@ func (dc *DynamicCache) UpdateClusterClient(ctx context.Context, client cluster.
 	dc.updateMu.Lock()
 	dc.client = client
 	dc.factories.reset()
+	dc.seenGVKs.reset()
+	dc.informerSynced.reset()
 	dc.updateMu.Unlock()
 	dc.access.Reset()
 
@@ -458,6 +460,8 @@ func (dc *DynamicCache) UpdateClusterClient(ctx context.Context, client cluster.
 	return nil
 }
 
+// RegisterOnUpdate registers a function that will be called when the store updates it's client.
+// TODO: investigate if this needed since object store isn't replaced, it's client is.
 func (dc *DynamicCache) RegisterOnUpdate(fn store.UpdateFn) {
 	dc.updateFns = append(dc.updateFns, fn)
 }

@@ -121,6 +121,18 @@ func (op *ObjectPath) RemoveCRD(ctx context.Context, crd *unstructured.Unstructu
 	return nil
 }
 
+// ResetCRDs deletes all the CRD paths ObjectPath is tracking.
+func (op *ObjectPath) ResetCRDs(ctx context.Context) error {
+	op.mu.Lock()
+	defer op.mu.Unlock()
+
+	for k := range op.crds {
+		delete(op.crds, k)
+	}
+
+	return nil
+}
+
 // SupportedGroupVersionKind returns a slice of GVKs this object path can handle.
 func (op *ObjectPath) SupportedGroupVersionKind() []schema.GroupVersionKind {
 	op.mu.Lock()
