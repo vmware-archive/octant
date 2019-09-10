@@ -17,14 +17,14 @@ import (
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/dynamic/dynamicinformer"
-	dynamicfake "k8s.io/client-go/dynamic/fake"
+	dynamicFake "k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/informers"
 	testing2 "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/vmware/octant/internal/cluster"
-	clusterfake "github.com/vmware/octant/internal/cluster/fake"
+	clusterFake "github.com/vmware/octant/internal/cluster/fake"
+	"github.com/vmware/octant/internal/objectstore/fake"
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/store"
 )
@@ -52,8 +52,8 @@ func (l fakeLister) ByNamespace(namespace string) cache.GenericNamespaceLister {
 }
 
 func expectNamespaceAccess(
-	accessClient *clusterfake.MockSelfSubjectAccessReviewInterface,
-	authClient *clusterfake.MockAuthorizationV1Interface,
+	accessClient *clusterFake.MockSelfSubjectAccessReviewInterface,
+	authClient *clusterFake.MockAuthorizationV1Interface,
 	namespaceCount int,
 ) {
 	authClient.EXPECT().SelfSubjectAccessReviews().Return(accessClient).MaxTimes(namespaceCount)
@@ -72,13 +72,13 @@ func Test_DynamicCache_List(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	client := clusterfake.NewMockClientInterface(controller)
-	informerFactory := clusterfake.NewMockDynamicSharedInformerFactory(controller)
-	genericInformer := clusterfake.NewMockGenericInformer(controller)
-	kubernetesClient := clusterfake.NewMockKubernetesInterface(controller)
-	authClient := clusterfake.NewMockAuthorizationV1Interface(controller)
-	accessClient := clusterfake.NewMockSelfSubjectAccessReviewInterface(controller)
-	namespaceClient := clusterfake.NewMockNamespaceInterface(controller)
+	client := clusterFake.NewMockClientInterface(controller)
+	informerFactory := fake.NewMockInformerFactory(controller)
+	genericInformer := clusterFake.NewMockGenericInformer(controller)
+	kubernetesClient := clusterFake.NewMockKubernetesInterface(controller)
+	authClient := clusterFake.NewMockAuthorizationV1Interface(controller)
+	accessClient := clusterFake.NewMockSelfSubjectAccessReviewInterface(controller)
+	namespaceClient := clusterFake.NewMockNamespaceInterface(controller)
 
 	pod := testutil.CreatePod("pod")
 	objects := []runtime.Object{testutil.ToUnstructured(t, pod)}
@@ -104,16 +104,15 @@ func Test_DynamicCache_List(t *testing.T) {
 
 	expectNamespaceAccess(accessClient, authClient, len(namespaces))
 
-	informerFactory.EXPECT().Start(gomock.Eq(ctx.Done()))
-
 	l := &fakeLister{listObjects: objects}
 	genericInformer.EXPECT().Lister().Return(l)
 
 	factoryFunc := func(c *DynamicCache) {
-		c.initFactoryFunc = func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
+		c.initFactoryFunc = func(i context.Context, clientInterface cluster.ClientInterface, s string) (factory InformerFactory, e error) {
 			return informerFactory, nil
+
 		}
-		c.waitForSyncFunc = func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, <-chan struct{}, chan bool) {
+		c.waitForSyncFunc = func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, chan bool) {
 			return
 		}
 	}
@@ -144,13 +143,13 @@ func Test_DynamicCache_Get(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	client := clusterfake.NewMockClientInterface(controller)
-	informerFactory := clusterfake.NewMockDynamicSharedInformerFactory(controller)
-	genericInformer := clusterfake.NewMockGenericInformer(controller)
-	kubernetesClient := clusterfake.NewMockKubernetesInterface(controller)
-	authClient := clusterfake.NewMockAuthorizationV1Interface(controller)
-	accessClient := clusterfake.NewMockSelfSubjectAccessReviewInterface(controller)
-	namespaceClient := clusterfake.NewMockNamespaceInterface(controller)
+	client := clusterFake.NewMockClientInterface(controller)
+	informerFactory := fake.NewMockInformerFactory(controller)
+	genericInformer := clusterFake.NewMockGenericInformer(controller)
+	kubernetesClient := clusterFake.NewMockKubernetesInterface(controller)
+	authClient := clusterFake.NewMockAuthorizationV1Interface(controller)
+	accessClient := clusterFake.NewMockSelfSubjectAccessReviewInterface(controller)
+	namespaceClient := clusterFake.NewMockNamespaceInterface(controller)
 
 	pod := testutil.CreatePod("pod")
 
@@ -175,20 +174,18 @@ func Test_DynamicCache_Get(t *testing.T) {
 
 	expectNamespaceAccess(accessClient, authClient, len(namespaces))
 
-	informerFactory.EXPECT().Start(gomock.Eq(ctx.Done()))
-
 	l := &fakeLister{getObject: testutil.ToUnstructured(t, pod)}
 	genericInformer.EXPECT().Lister().Return(l)
 
 	factoryFunc := func(c *DynamicCache) {
-		c.initFactoryFunc = func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
+		c.initFactoryFunc = func(i context.Context, clientInterface cluster.ClientInterface, s string) (factory InformerFactory, e error) {
 			return informerFactory, nil
+
 		}
-		c.waitForSyncFunc = func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, <-chan struct{}, chan bool) {
+		c.waitForSyncFunc = func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, chan bool) {
 			return
 		}
 	}
-
 	resourceAccess := NewResourceAccess(client)
 	c, err := NewDynamicCache(ctx, client, factoryFunc, Access(resourceAccess))
 	require.NoError(t, err)
@@ -218,13 +215,13 @@ func TestDynamicCache_Update(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	client := clusterfake.NewMockClientInterface(controller)
-	informerFactory := clusterfake.NewMockDynamicSharedInformerFactory(controller)
-	genericInformer := clusterfake.NewMockGenericInformer(controller)
-	kubernetesClient := clusterfake.NewMockKubernetesInterface(controller)
-	authClient := clusterfake.NewMockAuthorizationV1Interface(controller)
-	accessClient := clusterfake.NewMockSelfSubjectAccessReviewInterface(controller)
-	namespaceClient := clusterfake.NewMockNamespaceInterface(controller)
+	client := clusterFake.NewMockClientInterface(controller)
+	informerFactory := fake.NewMockInformerFactory(controller)
+	genericInformer := clusterFake.NewMockGenericInformer(controller)
+	kubernetesClient := clusterFake.NewMockKubernetesInterface(controller)
+	authClient := clusterFake.NewMockAuthorizationV1Interface(controller)
+	accessClient := clusterFake.NewMockSelfSubjectAccessReviewInterface(controller)
+	namespaceClient := clusterFake.NewMockNamespaceInterface(controller)
 
 	podGVR := schema.GroupVersionResource{
 		Version:  "v1",
@@ -247,23 +244,21 @@ func TestDynamicCache_Update(t *testing.T) {
 
 	expectNamespaceAccess(accessClient, authClient, len(namespaces))
 
-	informerFactory.EXPECT().Start(gomock.Eq(ctx.Done()))
-
 	l := &fakeLister{getObject: pod}
 	genericInformer.EXPECT().Lister().Return(l)
 
 	factoryFunc := func(c *DynamicCache) {
-		c.initFactoryFunc = func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
+		c.initFactoryFunc = func(i context.Context, clientInterface cluster.ClientInterface, s string) (factory InformerFactory, e error) {
 			return informerFactory, nil
+
 		}
-		c.waitForSyncFunc = func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, <-chan struct{}, chan bool) {
+		c.waitForSyncFunc = func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, chan bool) {
 			return
 		}
 	}
-
 	scheme := runtime.NewScheme()
 
-	dc := dynamicfake.NewSimpleDynamicClient(scheme, pod)
+	dc := dynamicFake.NewSimpleDynamicClient(scheme, pod)
 
 	client.EXPECT().DynamicClient().Return(dc, nil)
 
@@ -294,12 +289,12 @@ func TestDynamicCache_Delete(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	client := clusterfake.NewMockClientInterface(controller)
-	informerFactory := clusterfake.NewMockDynamicSharedInformerFactory(controller)
-	kubernetesClient := clusterfake.NewMockKubernetesInterface(controller)
-	authClient := clusterfake.NewMockAuthorizationV1Interface(controller)
-	accessClient := clusterfake.NewMockSelfSubjectAccessReviewInterface(controller)
-	namespaceClient := clusterfake.NewMockNamespaceInterface(controller)
+	client := clusterFake.NewMockClientInterface(controller)
+	informerFactory := fake.NewMockInformerFactory(controller)
+	kubernetesClient := clusterFake.NewMockKubernetesInterface(controller)
+	authClient := clusterFake.NewMockAuthorizationV1Interface(controller)
+	accessClient := clusterFake.NewMockSelfSubjectAccessReviewInterface(controller)
+	namespaceClient := clusterFake.NewMockNamespaceInterface(controller)
 
 	podGVR := schema.GroupVersionResource{
 		Version:  "v1",
@@ -322,17 +317,18 @@ func TestDynamicCache_Delete(t *testing.T) {
 	expectNamespaceAccess(accessClient, authClient, len(namespaces))
 
 	factoryFunc := func(c *DynamicCache) {
-		c.initFactoryFunc = func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error) {
+		c.initFactoryFunc = func(i context.Context, clientInterface cluster.ClientInterface, s string) (factory InformerFactory, e error) {
 			return informerFactory, nil
+
 		}
-		c.waitForSyncFunc = func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, <-chan struct{}, chan bool) {
+		c.waitForSyncFunc = func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, chan bool) {
 			return
 		}
 	}
 
 	scheme := runtime.NewScheme()
 
-	dc := dynamicfake.NewSimpleDynamicClient(scheme, pod)
+	dc := dynamicFake.NewSimpleDynamicClient(scheme, pod)
 
 	client.EXPECT().DynamicClient().Return(dc, nil)
 
@@ -359,4 +355,60 @@ func TestDynamicCache_Delete(t *testing.T) {
 
 	got := dc.Actions()[0]
 	assert.Equal(t, expected, got)
+}
+
+func TestDynamicCache_Unwatch(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	client := clusterFake.NewMockClientInterface(controller)
+	informerFactory := fake.NewMockInformerFactory(controller)
+	authClient := clusterFake.NewMockAuthorizationV1Interface(controller)
+	accessClient := clusterFake.NewMockSelfSubjectAccessReviewInterface(controller)
+	namespaceClient := clusterFake.NewMockNamespaceInterface(controller)
+
+	podGVR := schema.GroupVersionResource{
+		Version:  "v1",
+		Resource: "pods",
+	}
+
+	podGK := schema.GroupKind{
+		Kind: "Pod",
+	}
+	// CheckAccess and currentInformer
+	client.EXPECT().Resource(gomock.Eq(podGK)).Return(podGVR, nil).AnyTimes()
+
+	client.EXPECT().NamespaceClient().Return(namespaceClient, nil).AnyTimes()
+	namespaces := []string{"test", ""}
+	namespaceClient.EXPECT().Names().Return(namespaces, nil).AnyTimes()
+
+	expectNamespaceAccess(accessClient, authClient, len(namespaces))
+
+	informerFactory.EXPECT().Delete(schema.GroupVersionResource{
+		Version:  "v1",
+		Resource: "pods",
+	})
+
+	factoryFunc := func(c *DynamicCache) {
+		c.initFactoryFunc = func(i context.Context, clientInterface cluster.ClientInterface, s string) (factory InformerFactory, e error) {
+			return informerFactory, nil
+
+		}
+		c.waitForSyncFunc = func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, chan bool) {
+			return
+		}
+	}
+
+	resourceAccess := NewResourceAccess(client)
+	c, err := NewDynamicCache(ctx, client, factoryFunc, Access(resourceAccess))
+	require.NoError(t, err)
+
+	err = c.Unwatch(ctx, schema.GroupVersionKind{
+		Version: "v1",
+		Kind:    "Pod",
+	})
+	require.NoError(t, err)
 }

@@ -120,6 +120,7 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 
 	crdWatcher := co.dashConfig.CRDWatcher()
 
+	objectStore := co.dashConfig.ObjectStore()
 	watchConfig := &config.CRDWatchConfig{
 		Add: func(_ *describer.PathMatcher, sectionDescriber *describer.CRDSection) config.ObjectHandler {
 			return func(ctx context.Context, object *unstructured.Unstructured) {
@@ -134,7 +135,7 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 				if object == nil {
 					return
 				}
-				describer.DeleteCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
+				describer.DeleteCRD(ctx, object, pathMatcher, customResourcesDescriber, co, objectStore)
 			}
 		}(pathMatcher, customResourcesDescriber),
 		IsNamespaced: true,

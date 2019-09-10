@@ -50,12 +50,35 @@ func CreateConfigMap(name string) *corev1.ConfigMap {
 	}
 }
 
+// CRDOption is an option for configuring CreateCRD.
+type CRDOption func(definition *apiextv1beta1.CustomResourceDefinition)
+
+// WithGenericCRD creates a crd with group/kind and one version
+func WithGenericCRD() CRDOption {
+	return func(crd *apiextv1beta1.CustomResourceDefinition) {
+		crd.Spec.Group = "group"
+		crd.Spec.Versions = []apiextv1beta1.CustomResourceDefinitionVersion{
+			{
+				Name:   "v1",
+				Served: true,
+			},
+		}
+		crd.Spec.Names.Kind = "kind"
+	}
+}
+
 // CreateCRD creates a CRD
-func CreateCRD(name string) *apiextv1beta1.CustomResourceDefinition {
-	return &apiextv1beta1.CustomResourceDefinition{
+func CreateCRD(name string, options ...CRDOption) *apiextv1beta1.CustomResourceDefinition {
+	crd := &apiextv1beta1.CustomResourceDefinition{
 		TypeMeta:   genTypeMeta(gvk.CustomResourceDefinition),
 		ObjectMeta: genObjectMeta(name, true),
 	}
+
+	for _, option := range options {
+		option(crd)
+	}
+
+	return crd
 }
 
 // CreateCustomResource creates a custom resource.

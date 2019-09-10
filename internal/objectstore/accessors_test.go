@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -43,7 +44,7 @@ func Test_factoriesCache(t *testing.T) {
 	c := initFactoriesCache()
 
 	ctx := context.Background()
-	factory, err := initDynamicSharedInformerFactory(ctx, client, namespaceName)
+	factory, err := initInformerFactory(ctx, client, namespaceName)
 	require.NoError(t, err)
 
 	c.set(namespaceName, factory)
@@ -95,4 +96,29 @@ func Test_seenGVKsCache(t *testing.T) {
 			require.Equal(t, test.expected, got)
 		})
 	}
+}
+
+func Test_informerContextCache(t *testing.T) {
+	c := initInformerContextCache()
+
+	gvr1 := schema.GroupVersionResource{
+		Group:    "group",
+		Version:  "version",
+		Resource: "resource1",
+	}
+	gvr2 := schema.GroupVersionResource{
+		Group:    "group",
+		Version:  "version",
+		Resource: "resource2",
+	}
+	_ = c.addChild(gvr1)
+	assert.Len(t, c.cache, 1)
+	_ = c.addChild(gvr1)
+	assert.Len(t, c.cache, 1)
+	_ = c.addChild(gvr2)
+	assert.Len(t, c.cache, 2)
+	c.delete(gvr1)
+	assert.Len(t, c.cache, 1)
+	c.reset()
+	assert.Len(t, c.cache, 0)
 }

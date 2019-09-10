@@ -15,6 +15,7 @@ import (
 
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
+	"github.com/vmware/octant/internal/util/kubernetes"
 	"github.com/vmware/octant/pkg/store"
 )
 
@@ -40,8 +41,8 @@ func CustomResourceDefinition(ctx context.Context, name string, o store.Store) (
 func AddCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatcher, crdSection *CRDSection, m module.Module) {
 	name := crd.GetName()
 
-	logger := log.From(ctx)
-	logger.With("crd-name", name, "module", m.Name()).Debugf("adding CRD")
+	logger := log.From(ctx).With("crd-name", name, "module", m.Name())
+	logger.Debugf("adding CRD")
 
 	cld := newCRDList(name, crdListPath(name))
 
@@ -57,15 +58,15 @@ func AddCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatcher
 	}
 
 	if err := m.AddCRD(ctx, crd); err != nil {
-		logger.With("err", err).Errorf("unable to add CRD")
+		logger.WithErr(err).Errorf("unable to add CRD")
 	}
 }
 
-func DeleteCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatcher, crdSection *CRDSection, m module.Module) {
+func DeleteCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatcher, crdSection *CRDSection, m module.Module, s store.Store) {
 	name := crd.GetName()
 
-	logger := log.From(ctx)
-	logger.With("crd-name", name).Debugf("deleting CRD")
+	logger := log.From(ctx).With("crd-name", name, "module", m.Name())
+	logger.Debugf("deleting CRD")
 
 	pm.Deregister(ctx, crdListPath(name))
 	pm.Deregister(ctx, crdObjectPath(name))
@@ -73,8 +74,20 @@ func DeleteCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatc
 	crdSection.Remove(name)
 
 	if err := m.RemoveCRD(ctx, crd); err != nil {
-		logger.With("err", err).Errorf("unable to remove CRD")
+		logger.WithErr(err).Errorf("unable to remove CRD")
 	}
+
+	list, err := kubernetes.CRDResources(crd)
+	if err != nil {
+		logger.WithErr(err).Errorf("unable to get group/version/kinds for CRD")
+
+	}
+
+	if err := s.Unwatch(ctx, list...); err != nil {
+		logger.WithErr(err).Errorf("unable to unwatch CRD")
+		return
+	}
+
 }
 
 func crdListPath(name string) string {
