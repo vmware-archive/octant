@@ -196,6 +196,12 @@ func (l *Live) UseContext(ctx context.Context, contextName string) error {
 	l.currentContextName = contextName
 	l.Logger().With("new-kube-context", contextName).Infof("updated kube config context")
 
+	for _, m := range l.moduleManager.Modules() {
+		if err := m.ResetCRDs(ctx); err != nil {
+			return errors.Wrapf(err, "unable to reset CRDs for module %s", m.Name())
+		}
+	}
+
 	return nil
 }
 
