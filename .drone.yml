@@ -23,7 +23,7 @@ steps:
       - npm run lint
       - npm run test:headless
   - name: backend
-    image: golang:1.12
+    image: golang:1.13
     environment:
       GOFLAGS: -mod=vendor
       GO111MODULE: on
@@ -35,7 +35,7 @@ steps:
     depends_on:
     - frontend
   - name: build
-    image: golang:1.12
+    image: golang:1.13
     environment:
       CGO_ENABLED: 0
     commands:
@@ -57,6 +57,6 @@ steps:
     - build
 ---
 kind: signature
-hmac: 30673da9e45f23c5c51fc2452485dff690a9c00f22a90c2ea034004916fa4b87
+hmac: 58b44a6cf2de776daa8198c0590a36ec2f4a8f6f3b5be4e6e1b3878a6d87c521
 
 ...

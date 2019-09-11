@@ -16,7 +16,7 @@ Octant is configurable through environment variables defined at runtime.
 
 ## Setting Up a Development Environment
 
-* [Go 1.12 or above](https://golang.org/dl/)
+* [Go 1.13 or above](https://golang.org/dl/)
 * [node 10.15.0 or above](https://nodejs.org/en/)
 * [npm 6.4.1 or above](https://www.npmjs.com/get-npm)
 * [rice](https://github.com/GeertJohan/go.rice) - packaging web assets into a binary

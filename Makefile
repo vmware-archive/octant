@@ -47,6 +47,7 @@ octant-docker:
 
 generate:
 	@echo "-> $@"
+	@find pkg internal -name fake -type d | xargs rm -rf
 	@go generate -v ./pkg/... ./internal/...
 
 go-install:
