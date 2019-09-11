@@ -15,7 +15,7 @@ import (
 	"github.com/vmware/octant/pkg/action"
 )
 
-//go:generate mockgen -source=action.go -destination=./fake/mock_action_dispatcher.go -package=fake github.com/vmware/octant/internal/api ActionDispatcher
+//go:generate mockgen -destination=./fake/mock_action_dispatcher.go -package=fake github.com/vmware/octant/internal/api ActionDispatcher
 
 type ActionDispatcher interface {
 	Dispatch(ctx context.Context, actionName string, payload action.Payload) error

@@ -21,7 +21,7 @@ import (
 	"github.com/vmware/octant/pkg/plugin"
 )
 
-//go:generate mockgen -source=dash.go -destination=./fake/mock_dash.go -package=fake github.com/vmware/octant/internal/config Dash
+//go:generate mockgen -destination=./fake/mock_dash.go -package=fake github.com/vmware/octant/internal/config Dash
 
 // CRDWatcher watches for CRDs.
 type CRDWatcher interface {

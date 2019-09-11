@@ -9,7 +9,7 @@ import (
 	"github.com/vmware/octant/pkg/store"
 )
 
-//go:generate mockgen -source=dashboard.go -destination=./fake/mock_dashboard.go -package=fake github.com/vmware/octant/pkg/plugin/service Dashboard
+//go:generate mockgen -destination=./fake/mock_dashboard.go -package=fake github.com/vmware/octant/pkg/plugin/service Dashboard
 
 // Dashboard is the client a plugin can use to interact with Octant.
 type Dashboard interface {

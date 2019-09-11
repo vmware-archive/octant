@@ -16,8 +16,8 @@ import (
 	"github.com/vmware/octant/pkg/store"
 )
 
-//go:generate mockgen -source=proto/dashboard.pb.go -destination=./fake/mock_dashboard_client.go -package=fake github.com/vmware/octant/pkg/plugin/api/proto DashboardClient
-//go:generate mockgen -source=client.go -destination=./fake/mock_dashboard_connection.go -package=fake github.com/vmware/octant/pkg/plugin/api DashboardConnection
+//go:generate mockgen -destination=./fake/mock_dashboard_client.go -package=fake github.com/vmware/octant/pkg/plugin/api/proto DashboardClient
+//go:generate mockgen -destination=./fake/mock_dashboard_connection.go -package=fake github.com/vmware/octant/pkg/plugin/api DashboardConnection
 
 type DashboardConnection interface {
 	Close() error

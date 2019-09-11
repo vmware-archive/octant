@@ -15,7 +15,7 @@ RUN npm ci --prefer-offline && npm run-script build
 # ------------------------------------------------------------------------------
 # Install go tools and build binary
 # ------------------------------------------------------------------------------
-FROM golang:1.12 as builder
+FROM golang:1.13 as builder
 
 WORKDIR /workspace
 ADD . /workspace

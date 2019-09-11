@@ -1,7 +1,7 @@
 # Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-FROM golang:1.12 as builder
+FROM golang:1.13 as builder
 ADD . /var/workspace
 WORKDIR /var/workspace
 ENV GOFLAGS=-mod=vendor GO111MODULE=on
