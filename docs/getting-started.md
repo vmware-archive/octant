@@ -14,6 +14,34 @@ Octant is configurable through environment variables defined at runtime.
 
 **Note:** If using [fish shell](https://fishshell.com), tilde expansion may not occur when using `env` to set environment variables.
 
+## Command Line Flags
+
+Octant is configurable through command line flags set at runtime. You can see all of the available options by
+running `octant --help`.
+
+        --client-burst int     maximum burst for client throttle (default 400)
+        --client-qps float32   maximum QPS for client (default 200)
+        --context string       initial context
+    -c, --enable-opencensus    enable open census
+    -h, --help                 help for octant
+        --klog-verbosity int   klog verbosity level
+        --kubeconfig string    absolute path to kubeConfig file (default "~/.kube/config")
+    -n, --namespace string     initial namespace
+        --ui-url string        dashboard url
+
+The verbosity has a special type that is used to parse the flag, which means it can be provided
+shorthand by just addind more `v` to equal the level count or with an explicit equal sign.
+
+    -v[vv], --verbosity=count      verbosity level
+
+For example
+
+    $ octant -vvv
+
+Is equal to
+
+    $ octant --verbosity=3
+
 ## Setting Up a Development Environment
 
 * [Go 1.13 or above](https://golang.org/dl/)
