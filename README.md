@@ -136,9 +136,9 @@ Feature requests, bug reports, and enhancements are welcome. Contributors, maint
 
 ## Contributing
 
-New contributors will need to sign a contributor license agreement before code changes can be merged. Follow the instructions given by `vmwclabot` after opening a pull request.
+New contributors will need to sign a CLA (contributor license agreement). We also ask that a changelog entry is included with your pull request. Details are described in our [contributing](CONTRIBUTING.md) documentation.
 
-Pull requests should also include a changelog with the naming convention described [here](CONTRIBUTING.md).
+See our [hacking](HACKING.md) guide for getting your development environment setup.
 
 See our [roadmap](ROADMAP.md) for tentative features in a 1.0 release.
 

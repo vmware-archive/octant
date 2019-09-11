@@ -1,5 +1,9 @@
 # Contributing
 
+## CLA
+
+New contributors will need to sign a contributor license agreement before code changes can be merged. Follow the instructions given by `vmwclabot` after opening a pull request.
+
 ## CHANGELOG 
 
 Authors are expected to include a changelog file with their pull requests. The changelog file
