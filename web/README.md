@@ -23,6 +23,8 @@ To install just the UI dependencies from the root directory, we have the Makefil
 
 You can also run `npm install` yourself, but this will only work if you are within the `web/` directory.
 
+Additionally, run `make web-build` to generate web assets.
+
 ### Running development mode
 
 Once you have the necessary dependencies installed, you can start the backend and the frontend server with the following Make command:
