@@ -25,7 +25,7 @@ func Test_crdSectionDescriber(t *testing.T) {
 
 	ctx := context.Background()
 
-	view1, err := csd.Describe(ctx, "/prefix", "default", Options{})
+	view1, err := csd.Describe(ctx, "default", Options{})
 	require.NoError(t, err)
 
 	expect1 := component.ContentResponse{
@@ -39,7 +39,7 @@ func Test_crdSectionDescriber(t *testing.T) {
 
 	csd.Remove("d1")
 
-	view2, err := csd.Describe(ctx, "/prefix", "default", Options{})
+	view2, err := csd.Describe(ctx, "default", Options{})
 	require.NoError(t, err)
 
 	expect2 := component.ContentResponse{
@@ -54,7 +54,7 @@ func Test_crdSectionDescriber(t *testing.T) {
 	csd.Add("d1", d1)
 	require.NoError(t, csd.Reset(ctx))
 
-	view3, err := csd.Describe(ctx, "/prefix", "default", Options{})
+	view3, err := csd.Describe(ctx, "default", Options{})
 	require.NoError(t, err)
 
 	expected3 := component.ContentResponse{

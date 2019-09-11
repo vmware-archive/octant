@@ -50,6 +50,7 @@
     "ngx-markdown": "^8.1.0",
     "rxjs": "~6.3.3",
     "tslib": "^1.9.0",
+    "ws": "^7.1.2",
     "zone.js": "~0.8.26"
   },
   "devDependencies": {
@@ -63,6 +64,7 @@
     "@types/jasminewd2": "~2.0.3",
     "@types/lodash": "^4.14.123",
     "@types/node": "~8.9.4",
+    "@types/ws": "^6.0.3",
     "codelyzer": "^4.5.0",
     "cypress": "^3.4.1",
     "jasmine-core": "~2.99.1",

@@ -128,6 +128,10 @@ func (dv *DefaultVisitor) hasVisited(object runtime.Object) (bool, error) {
 
 // Visit visits a runtime.Object.
 func (dv *DefaultVisitor) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitDescendants bool) error {
+	if ctx.Err() != nil {
+		return nil
+	}
+
 	if object == nil {
 		return errors.New("trying to visit a nil object")
 	}

@@ -51,14 +51,14 @@ func newGenerator(pm *describer.PathMatcher, dashConfig config.Dash) (*realGener
 	}, nil
 }
 
-func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace string, opts GeneratorOptions) (component.ContentResponse, error) {
+func (g *realGenerator) Generate(ctx context.Context, contentPath string, opts GeneratorOptions) (component.ContentResponse, error) {
 	ctx, span := trace.StartSpan(ctx, "Generate")
 	defer span.End()
 
-	pf, err := g.pathMatcher.Find(path)
+	pf, err := g.pathMatcher.Find(contentPath)
 	if err != nil {
 		if err == describer.ErrPathNotFound {
-			return emptyContentResponse, api.NewNotFoundError(path)
+			return emptyContentResponse, api.NewNotFoundError(contentPath)
 		}
 		return emptyContentResponse, err
 	}
@@ -77,7 +77,14 @@ func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace st
 
 	loaderFactory := describer.NewObjectLoaderFactory(g.dashConfig)
 
-	fields := pf.Fields(path)
+	// NOTE: with the websocket switch over, the namespace
+	// will be wrong. Fetch it out of the path.
+	fields := pf.Fields(contentPath)
+	namespace := ""
+	if n, ok := fields["namespace"]; ok {
+		namespace = n
+	}
+
 	options := describer.Options{
 		Queryer:  q,
 		Fields:   fields,
@@ -90,7 +97,7 @@ func (g *realGenerator) Generate(ctx context.Context, path, prefix, namespace st
 		LoadObject:  loaderFactory.LoadObject,
 	}
 
-	cResponse, err := pf.Describer.Describe(ctx, prefix, namespace, options)
+	cResponse, err := pf.Describer.Describe(ctx, namespace, options)
 	if err != nil {
 		return emptyContentResponse, err
 	}

@@ -87,7 +87,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 			g, err := newGenerator(pathMatcher, dashConfig)
 			require.NoError(t, err)
 
-			cResponse, err := g.Generate(ctx, tc.path, "/prefix", "default", GeneratorOptions{})
+			cResponse, err := g.Generate(ctx, tc.path, GeneratorOptions{})
 			if tc.isErr {
 				require.Error(t, err)
 				return

@@ -38,6 +38,11 @@ type CRDWatchConfig struct {
 	IsNamespaced bool
 }
 
+type Context struct {
+	Name             string
+	DefaultNamespace string
+}
+
 // CanPerform returns true if config can perform actions on an object.
 func (c *CRDWatchConfig) CanPerform(u *unstructured.Unstructured) bool {
 	spec, ok := u.Object["spec"].(map[string]interface{})
@@ -84,7 +89,11 @@ type Dash interface {
 
 	ContextName() string
 
+	DefaultNamespace() string
+
 	Validate() error
+
+	ModuleManager() module.ManagerInterface
 }
 
 // Live is a live version of dash config.
@@ -210,6 +219,11 @@ func (l *Live) ContextName() string {
 	return l.currentContextName
 }
 
+// DefaultNamespace returns the default namespace for the current cluster..
+func (l *Live) DefaultNamespace() string {
+	return l.ClusterClient().DefaultNamespace()
+}
+
 // Validate validates the configuration and returns an error if there is an issue.
 func (l *Live) Validate() error {
 	if l.clusterClient == nil {
@@ -241,4 +255,8 @@ func (l *Live) Validate() error {
 	}
 
 	return nil
+}
+
+func (l *Live) ModuleManager() module.ManagerInterface {
+	return l.moduleManager
 }

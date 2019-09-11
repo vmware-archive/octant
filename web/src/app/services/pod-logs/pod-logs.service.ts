@@ -41,9 +41,9 @@ export class PodLogsStreamer {
   private logsUrl(): string {
     return [
       API_BASE,
-      'api/v1/content/overview',
-      `namespace/${this.namespace}`,
+      'api/v1',
       'logs',
+      `namespace/${this.namespace}`,
       `pod/${this.pod}`,
       `container/${this.container}`,
     ].join('/');

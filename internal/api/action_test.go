@@ -3,7 +3,7 @@ Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package api
+package api_test
 
 import (
 	"bytes"
@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/vmware/octant/internal/api"
 	"github.com/vmware/octant/internal/api/fake"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/mime"
@@ -33,14 +34,14 @@ func Test_action(t *testing.T) {
 
 	logger := log.NopLogger()
 
-	handler := newAction(logger, actionDispatcher)
+	handler := api.NewActionHandler(logger, actionDispatcher)
 
 	ts := httptest.NewServer(handler)
 	defer ts.Close()
 
 	client := ts.Client()
 
-	req := updateRequest{
+	req := api.UpdateRequest{
 		Update: payload,
 	}
 	data, err := json.Marshal(&req)

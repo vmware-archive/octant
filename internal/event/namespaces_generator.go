@@ -7,7 +7,6 @@ package event
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"github.com/pkg/errors"
@@ -41,14 +40,10 @@ func (g *NamespacesGenerator) Event(ctx context.Context) (octant.Event, error) {
 	}
 
 	nr := &namespacesResponse{Namespaces: names}
-	data, err := json.Marshal(nr)
-	if err != nil {
-		return octant.Event{}, errors.New("unable to marshal namespaces")
-	}
 
 	return octant.Event{
 		Type: octant.EventTypeNamespaces,
-		Data: data,
+		Data: nr,
 	}, nil
 }
 

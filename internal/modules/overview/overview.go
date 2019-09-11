@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
-	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -153,9 +152,13 @@ func (co *Overview) Name() string {
 	return "overview"
 }
 
+func (co *Overview) ClientRequestHandlers() []octant.ClientRequestHandler {
+	return nil
+}
+
 // ContentPath returns the content path for overview.
 func (co *Overview) ContentPath() string {
-	return fmt.Sprintf("/%s", co.Name())
+	return co.Name()
 }
 
 // Navigation returns navigation entries for overview.
@@ -216,30 +219,12 @@ func (co *Overview) Stop() {
 }
 
 // Content serves content for overview.
-func (co *Overview) Content(ctx context.Context, contentPath, prefix, namespace string, opts module.ContentOptions) (component.ContentResponse, error) {
+func (co *Overview) Content(ctx context.Context, contentPath string, opts module.ContentOptions) (component.ContentResponse, error) {
 	ctx = log.WithLoggerContext(ctx, co.dashConfig.Logger())
 	genOpts := GeneratorOptions{
 		LabelSet: opts.LabelSet,
 	}
-	return co.generator.Generate(ctx, contentPath, prefix, namespace, genOpts)
-}
-
-type logEntry struct {
-	Timestamp time.Time `json:"timestamp,omitempty"`
-	Message   string    `json:"message,omitempty"`
-}
-
-type logResponse struct {
-	Entries []logEntry `json:"entries,omitempty"`
-}
-
-// Handlers are extra handlers for overview
-func (co *Overview) Handlers(ctx context.Context) map[string]http.Handler {
-	return map[string]http.Handler{
-		"/logs/pod/{pod}/container/{container}": containerLogsHandler(ctx, co.dashConfig.ClusterClient()),
-		"/port-forwards":                        co.portForwardsHandler(),
-		"/port-forwards/{id}":                   co.portForwardHandler(),
-	}
+	return co.generator.Generate(ctx, contentPath, genOpts)
 }
 
 func (co *Overview) portForwardsHandler() http.HandlerFunc {

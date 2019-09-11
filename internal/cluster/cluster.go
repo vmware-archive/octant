@@ -45,6 +45,7 @@ import (
 
 // ClientInterface is a client for cluster operations.
 type ClientInterface interface {
+	DefaultNamespace() string
 	ResourceExists(schema.GroupVersionResource) bool
 	Resource(schema.GroupKind) (schema.GroupVersionResource, error)
 	KubernetesClient() (kubernetes.Interface, error)
@@ -74,11 +75,13 @@ type Cluster struct {
 	restMapper *restmapper.DeferredDiscoveryRESTMapper
 
 	closeFn context.CancelFunc
+
+	defaultNamespace string
 }
 
 var _ ClientInterface = (*Cluster)(nil)
 
-func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restClient *rest.Config) (*Cluster, error) {
+func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restClient *rest.Config, defaultNamespace string) (*Cluster, error) {
 	logger := log.From(ctx).With("component", "cluster client")
 
 	kubernetesClient, err := kubernetes.NewForConfig(restClient)
@@ -123,6 +126,7 @@ func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restCl
 		discoveryClient:  discoveryClient,
 		restMapper:       restMapper,
 		logger:           log.From(ctx),
+		defaultNamespace: defaultNamespace,
 	}
 
 	ctx, cancel := context.WithCancel(ctx)
@@ -144,6 +148,10 @@ func (c *Cluster) Close() {
 	if c.closeFn != nil {
 		c.closeFn()
 	}
+}
+
+func (c *Cluster) DefaultNamespace() string {
+	return c.defaultNamespace
 }
 
 func (c *Cluster) ResourceExists(gvr schema.GroupVersionResource) bool {
@@ -236,13 +244,18 @@ func FromKubeConfig(ctx context.Context, kubeConfig, contextName string, options
 		return nil, err
 	}
 
+	defaultNamespace, _, err := cc.Namespace()
+	if err != nil {
+		return nil, err
+	}
+
 	logger := log.From(ctx)
 	logger.With("client-qps", options.QPS, "client-burst", options.Burst).
 		Debugf("initializing REST client configuration")
 
 	config = withConfigDefaults(config, options)
 
-	return newCluster(ctx, cc, config)
+	return newCluster(ctx, cc, config, defaultNamespace)
 }
 
 // withConfigDefaults returns an extended rest.Config object with additional defaults applied

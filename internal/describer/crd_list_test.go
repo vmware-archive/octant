@@ -67,7 +67,7 @@ func Test_crdListDescriber(t *testing.T) {
 
 	ctx := context.Background()
 
-	got, err := cld.Describe(ctx, "prefix", "default", options)
+	got, err := cld.Describe(ctx, "default", options)
 	require.NoError(t, err)
 
 	expected := *component.NewContentResponse(nil)

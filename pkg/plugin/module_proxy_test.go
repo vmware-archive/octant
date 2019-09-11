@@ -50,7 +50,7 @@ func TestModuleProxy_ContentPath(t *testing.T) {
 	require.NoError(t, err)
 
 	ctx := context.Background()
-	got, err := moduleProxy.Content(ctx, "/path", "", "", module.ContentOptions{})
+	got, err := moduleProxy.Content(ctx, "/path", module.ContentOptions{})
 	require.NoError(t, err)
 
 	assert.Equal(t, response, got)

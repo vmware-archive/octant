@@ -55,21 +55,21 @@ func newCRDList(name, path string, options ...crdListDescriptionOption) *crdList
 	return d
 }
 
-func (cld *crdList) Describe(ctx context.Context, prefix, namespace string, options Options) (component.ContentResponse, error) {
+func (cld *crdList) Describe(ctx context.Context, namespace string, options Options) (component.ContentResponse, error) {
 	objectStore := options.ObjectStore()
 	crd, err := CustomResourceDefinition(ctx, cld.name, objectStore)
 	if err != nil {
-		return EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 
 	objects, isLoading, err := ListCustomResources(ctx, crd, namespace, objectStore, options.LabelSet)
 	if err != nil {
-		return EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 
 	table, err := cld.printer(cld.name, crd, objects, options.Link, isLoading)
 	if err != nil {
-		return EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 
 	list := component.NewList(fmt.Sprintf("Custom Resources / %s", cld.name), []component.Component{

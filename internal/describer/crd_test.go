@@ -90,7 +90,7 @@ func Test_crd(t *testing.T) {
 		Link: linkGenerator,
 	}
 
-	got, err := c.Describe(ctx, "prefix", "default", options)
+	got, err := c.Describe(ctx, "default", options)
 	require.NoError(t, err)
 
 	expected := *component.NewContentResponse([]component.TitleComponent{

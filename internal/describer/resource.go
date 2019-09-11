@@ -48,8 +48,8 @@ func NewResource(options ResourceOptions) *Resource {
 	}
 }
 
-func (r *Resource) Describe(ctx context.Context, prefix, namespace string, options Options) (component.ContentResponse, error) {
-	return r.List().Describe(ctx, prefix, namespace, options)
+func (r *Resource) Describe(ctx context.Context, namespace string, options Options) (component.ContentResponse, error) {
+	return r.List().Describe(ctx, namespace, options)
 }
 
 func (r *Resource) List() *List {

@@ -40,9 +40,9 @@ func (pm *PathMatcher) Register(ctx context.Context, pf PathFilter) {
 
 	logger.With(
 		"name", pm.name,
-		"path", pf.path,
+		"path", pf.filterPath,
 	).Debugf("register path")
-	pm.filters[pf.path] = pf
+	pm.filters[pf.filterPath] = pf
 }
 
 func (pm *PathMatcher) Deregister(ctx context.Context, paths ...string) {

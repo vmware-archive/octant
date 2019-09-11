@@ -19,16 +19,18 @@ export class NamespaceComponent implements OnInit {
   constructor(private namespaceService: NamespaceService) {}
 
   ngOnInit() {
-    this.namespaceService.current.subscribe((namespace: string) => {
+    this.namespaceService.activeNamespace.subscribe((namespace: string) => {
       this.currentNamespace = namespace;
       if (!this.currentNamespace) {
         this.currentNamespace = '<Cluster Scoped>';
       }
     });
 
-    this.namespaceService.list.subscribe((namespaces: string[]) => {
-      this.namespaces = namespaces;
-    });
+    this.namespaceService.availableNamespaces.subscribe(
+      (namespaces: string[]) => {
+        this.namespaces = namespaces;
+      }
+    );
   }
 
   selectNamespace(namespace: string) {

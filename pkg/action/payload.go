@@ -6,9 +6,11 @@ SPDX-License-Identifier: Apache-2.0
 package action
 
 import (
+	"math"
 	"strconv"
 
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -50,6 +52,24 @@ func (p Payload) GroupVersionKind() (schema.GroupVersionKind, error) {
 		Version: version,
 		Kind:    kind,
 	}, nil
+}
+
+// Uint16 returns a uint16 from the payload.
+func (p Payload) Uint16(key string) (uint16, error) {
+	i, found, err := unstructured.NestedFloat64(p, key)
+	if err != nil {
+		return 0, err
+	}
+
+	if !found {
+		return 0, errors.Errorf("payload does not contain %q", key)
+	}
+
+	if i > math.MaxUint16 || i < 0 {
+		return 0, errors.Errorf("value %v is not a valid uint16", i)
+	}
+
+	return uint16(i), nil
 }
 
 // String returns a string from the payload.

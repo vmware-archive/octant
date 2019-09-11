@@ -24,7 +24,7 @@ type PluginListDescriber struct {
 var _ describer.Describer = (*PluginListDescriber)(nil)
 
 // Describe describes a list of plugins
-func (d *PluginListDescriber) Describe(ctx context.Context, prefix, namespace string, options describer.Options) (component.ContentResponse, error) {
+func (d *PluginListDescriber) Describe(ctx context.Context, namespace string, options describer.Options) (component.ContentResponse, error) {
 	pluginStore := options.PluginManager().Store()
 
 	list := component.NewList("Plugins", nil)
@@ -35,7 +35,7 @@ func (d *PluginListDescriber) Describe(ctx context.Context, prefix, namespace st
 	for _, n := range pluginStore.ClientNames() {
 		metadata, err := pluginStore.GetMetadata(n)
 		if err != nil {
-			return describer.EmptyContentResponse, errors.New("metadata is nil")
+			return component.EmptyContentResponse, errors.New("metadata is nil")
 		}
 
 		var summaryItems []string

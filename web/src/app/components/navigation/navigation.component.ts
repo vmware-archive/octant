@@ -1,17 +1,15 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { Component, Input } from '@angular/core';
+import { Component } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import {
-  Streamer,
-  ContentStreamService,
-} from '../../services/content-stream/content-stream.service';
 import { Navigation, NavigationChild } from '../../models/navigation';
 import { IconService } from '../../modules/overview/services/icon.service';
+import { NavigationService } from '../../modules/overview/services/navigation/navigation.service';
 
 const emptyNavigation: Navigation = {
   sections: [],
+  defaultPath: '',
 };
 
 @Component({
@@ -22,20 +20,15 @@ const emptyNavigation: Navigation = {
 export class NavigationComponent {
   behavior = new BehaviorSubject<Navigation>(emptyNavigation);
 
-  @Input() navigation: Navigation = {
-    sections: [],
-  };
+  navigation = emptyNavigation;
 
   constructor(
     private iconService: IconService,
-    private contentStreamService: ContentStreamService
+    private navigationService: NavigationService
   ) {
-    const streamer: Streamer = {
-      behavior: this.behavior,
-      handler: this.handleEvent,
-    };
-
-    this.contentStreamService.registerStreamer('navigation', streamer);
+    this.navigationService.current.subscribe(
+      navigation => (this.navigation = navigation)
+    );
   }
 
   identifyNavigationItem(index: number, item: NavigationChild): string {

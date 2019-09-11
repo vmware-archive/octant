@@ -24,7 +24,7 @@ func NewPortForwardListDescriber() *PortForwardListDescriber {
 var _ describer.Describer = (*PortForwardListDescriber)(nil)
 
 // Describe describes a list of port forwards as content
-func (d *PortForwardListDescriber) Describe(ctx context.Context, prefix, namespace string, options describer.Options) (component.ContentResponse, error) {
+func (d *PortForwardListDescriber) Describe(ctx context.Context, namespace string, options describer.Options) (component.ContentResponse, error) {
 	portForwarder := options.PortForwarder()
 
 	list := component.NewList("Port Forwards", nil)
@@ -38,7 +38,7 @@ func (d *PortForwardListDescriber) Describe(ctx context.Context, prefix, namespa
 		apiVersion, kind := t.GVK.ToAPIVersionAndKind()
 		nameLink, err := options.Link.ForGVK(t.Namespace, apiVersion, kind, t.Name, t.Name)
 		if err != nil {
-			return describer.EmptyContentResponse, err
+			return component.EmptyContentResponse, err
 		}
 
 		pfRow := component.TableRow{

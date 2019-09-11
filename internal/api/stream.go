@@ -6,13 +6,9 @@ SPDX-License-Identifier: Apache-2.0
 package api
 
 import (
-	"context"
 	"fmt"
-	"net/http"
 	"path"
 	"strings"
-
-	"github.com/vmware/octant/internal/octant"
 )
 
 // NotFoundError is a not found error.
@@ -35,45 +31,10 @@ func (e *NotFoundError) NotFound() bool { return true }
 
 // Error returns the error string.
 func (e *NotFoundError) Error() string {
-	return "Not found"
-}
-
-type eventSourceStreamer struct {
-	w http.ResponseWriter
-}
-
-func (s *eventSourceStreamer) Stream(ctx context.Context, ch <-chan octant.Event) {
-	flusher, ok := s.w.(http.Flusher)
-	if !ok {
-		http.Error(s.w, "server sent events are unsupported", http.StatusInternalServerError)
-		return
-	}
-
-	s.w.Header().Set("Content-Type", "text/event-stream")
-	s.w.Header().Set("Cache-Control", "no-cache")
-	s.w.Header().Set("Connection", "keep-alive")
-	s.w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	isStreaming := true
-
-	for isStreaming {
-		select {
-		case <-ctx.Done():
-			isStreaming = false
-		case e := <-ch:
-			if e.Type != "" {
-				_, _ = fmt.Fprintf(s.w, "event: %s\n", e.Type)
-			}
-			_, _ = fmt.Fprintf(s.w, "data: %s\n\n", string(e.Data))
-			flusher.Flush()
-		}
-	}
+	return fmt.Sprintf("Not found: %s", e.path)
 }
 
 func notFoundRedirectPath(requestPath string) string {
 	parts := strings.Split(requestPath, "/")
-	if len(parts) < 5 {
-		return ""
-	}
-	return path.Join(append([]string{"/"}, parts[3:len(parts)-2]...)...)
+	return path.Join(append([]string{}, parts[0:len(parts)-2]...)...)
 }

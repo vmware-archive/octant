@@ -12,4 +12,5 @@ export interface NavigationChild {
 
 export interface Navigation {
   sections: NavigationChild[];
+  defaultPath: string;
 }

@@ -32,13 +32,13 @@ func NewSection(p, title string, describers ...Describer) *Section {
 }
 
 // Describe generates content.
-func (d *Section) Describe(ctx context.Context, prefix, namespace string, options Options) (component.ContentResponse, error) {
+func (d *Section) Describe(ctx context.Context, namespace string, options Options) (component.ContentResponse, error) {
 	list := component.NewList(d.title, nil)
 
 	for describerIndex := range d.describers {
-		cResponse, err := d.describers[describerIndex].Describe(ctx, prefix, namespace, options)
+		cResponse, err := d.describers[describerIndex].Describe(ctx, namespace, options)
 		if err != nil {
-			return EmptyContentResponse, err
+			return component.EmptyContentResponse, err
 		}
 
 		for componentIndex := range cResponse.Components {

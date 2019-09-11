@@ -12,18 +12,19 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/pkg/errors"
 	"github.com/vmware/octant/internal/api"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/mime"
 	"github.com/vmware/octant/internal/portforward"
-	"github.com/pkg/errors"
+	"github.com/vmware/octant/pkg/action"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type portForwardCreateRequest struct {
 	APIVersion string `json:"apiVersion,omitempty"`
 	Kind       string `json:"kind,omitempty"`
-	Type       string `json:"type,omitempty"`
 	Name       string `json:"name,omitempty"`
 	Namespace  string `json:"namespace,omitempty"`
 	Port       uint16 `json:"port,omitempty"`
@@ -51,6 +52,47 @@ func (req *portForwardCreateRequest) Validate() error {
 
 func (req *portForwardCreateRequest) gvk() schema.GroupVersionKind {
 	return schema.FromAPIVersionAndKind(req.APIVersion, req.Kind)
+}
+
+func portForwardRequestFromPayload(payload action.Payload) (*portForwardCreateRequest, error) {
+	apiVersion, err := payload.String("apiVersion")
+	if err != nil {
+		return nil, err
+	}
+
+	kind, err := payload.String("kind")
+	if err != nil {
+		return nil, err
+	}
+
+	name, err := payload.String("name")
+	if err != nil {
+		return nil, err
+	}
+
+	namespace, err := payload.String("namespace")
+	if err != nil {
+		return nil, err
+	}
+
+	port, err := payload.Uint16("port")
+	if err != nil {
+		return nil, err
+	}
+
+	req := &portForwardCreateRequest{
+		APIVersion: apiVersion,
+		Kind:       kind,
+		Name:       name,
+		Namespace:  namespace,
+		Port:       port,
+	}
+
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 type portForwardError struct {

@@ -10,13 +10,11 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ContentResponse, View } from 'src/app/models/content';
-import {
-  Streamer,
-  ContentStreamService,
-} from 'src/app/services/content-stream/content-stream.service';
 import { IconService } from './services/icon.service';
 import { ViewService } from './services/view/view.service';
 import { BehaviorSubject } from 'rxjs';
+import { ContentService } from './services/content/content.service';
+import { WebsocketService } from './services/websocket/websocket.service';
 
 const emptyContentResponse: ContentResponse = {
   content: {
@@ -43,47 +41,61 @@ export class OverviewComponent implements OnInit, OnDestroy {
   views: View[] = null;
   singleView: View = null;
   private iconName: string;
+  private defaultPath: string;
 
   constructor(
     private route: ActivatedRoute,
-    private contentStreamService: ContentStreamService,
     private iconService: IconService,
-    private viewService: ViewService
+    private viewService: ViewService,
+    private contentService: ContentService,
+    private websocketService: WebsocketService
   ) {
-    const streamer: Streamer = {
-      behavior: this.behavior,
-      handler: this.handleEvent,
-    };
-    this.contentStreamService.registerStreamer('content', streamer);
-  }
-
-  ngOnInit() {
-    this.route.url.subscribe(url => {
-      const currentPath = url.map(u => u.path).join('/');
-      if (currentPath !== this.previousUrl) {
-        this.title = null;
-        this.singleView = null;
-        this.views = null;
-        this.previousUrl = currentPath;
-        this.contentStreamService.openStream(currentPath);
-        this.contentStreamService
-          .streamer('content')
-          .subscribe(this.setContent);
-        this.scrollTarget.nativeElement.scrollTop = 0;
-      }
+    this.contentService.current.subscribe(contentResponse => {
+      this.setContent(contentResponse);
     });
   }
 
-  private handleEvent = (message: MessageEvent) => {
-    const data = JSON.parse(message.data) as ContentResponse;
-    this.behavior.next(data);
-    this.contentStreamService.removeAllSignals();
-  };
+  ngOnInit() {
+    this.route.url.subscribe(this.handlePathChange());
+    this.route.queryParams.subscribe(queryParams =>
+      this.contentService.setQueryParams(queryParams)
+    );
+
+    this.websocketService.reconnected.subscribe(_ => {
+      // when reconnecting, ensure the backend knows our path
+      this.route.url.subscribe(this.handlePathChange(true)).unsubscribe();
+      this.route.queryParams
+        .subscribe(queryParams =>
+          this.contentService.setQueryParams(queryParams)
+        )
+        .unsubscribe();
+    });
+  }
+
+  private handlePathChange(force = false) {
+    return url => {
+      const currentPath = url.map(u => u.path).join('/') || this.defaultPath;
+      if (currentPath !== this.previousUrl || force) {
+        this.resetView();
+        this.previousUrl = currentPath;
+        this.contentService.setContentPath(currentPath);
+        this.scrollTarget.nativeElement.scrollTop = 0;
+      }
+    };
+  }
+
+  private resetView() {
+    this.title = null;
+    this.singleView = null;
+    this.views = null;
+    this.hasReceivedContent = false;
+  }
 
   private setContent = (contentResponse: ContentResponse) => {
     const views = contentResponse.content.viewComponents;
-    if (views.length === 0) {
+    if (!views || views.length === 0) {
       this.hasReceivedContent = false;
+      // TODO: show a loading screen here
       return;
     }
 
@@ -92,15 +104,15 @@ export class OverviewComponent implements OnInit, OnDestroy {
       this.views = views;
       this.title = this.viewService.titleAsText(contentResponse.content.title);
     } else if (views.length === 1) {
+      this.views = null;
       this.singleView = views[0];
     }
 
     this.hasReceivedContent = true;
-
     this.iconName = this.iconService.load(contentResponse.content);
   };
 
   ngOnDestroy() {
-    this.contentStreamService.closeStream();
+    this.resetView();
   }
 }

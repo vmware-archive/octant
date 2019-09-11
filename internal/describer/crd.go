@@ -59,11 +59,11 @@ func newCRD(name, path string, options ...crdOption) *crd {
 	return d
 }
 
-func (c *crd) Describe(ctx context.Context, prefix, namespace string, options Options) (component.ContentResponse, error) {
+func (c *crd) Describe(ctx context.Context, namespace string, options Options) (component.ContentResponse, error) {
 	objectStore := options.ObjectStore()
 	crd, err := CustomResourceDefinition(ctx, c.name, objectStore)
 	if err != nil {
-		return EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 
 	// TODO: crd.Spec.Version is incorrect. Use crd.Spec.Version instead.
@@ -84,11 +84,11 @@ func (c *crd) Describe(ctx context.Context, prefix, namespace string, options Op
 
 	object, found, err := objectStore.Get(ctx, key)
 	if err != nil {
-		return EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 
 	if !found {
-		return EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 
 	title := component.Title(
@@ -103,7 +103,7 @@ func (c *crd) Describe(ctx context.Context, prefix, namespace string, options Op
 
 	linkGenerator, err := link.NewFromDashConfig(options)
 	if err != nil {
-		return EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 
 	printOptions := printer.Options{
@@ -113,7 +113,7 @@ func (c *crd) Describe(ctx context.Context, prefix, namespace string, options Op
 
 	summary, err := c.summaryPrinter(ctx, crd, object, printOptions)
 	if err != nil {
-		return EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 	summary.SetAccessor("summary")
 
@@ -121,7 +121,7 @@ func (c *crd) Describe(ctx context.Context, prefix, namespace string, options Op
 
 	resourceViewerComponent, err := c.resourceViewerPrinter(ctx, object, options, options.Queryer)
 	if err != nil {
-		return EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 
 	resourceViewerComponent.SetAccessor("resourceViewer")
@@ -129,7 +129,7 @@ func (c *crd) Describe(ctx context.Context, prefix, namespace string, options Op
 
 	yvComponent, err := c.yamlPrinter(object)
 	if err != nil {
-		return EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 
 	yvComponent.SetAccessor("yaml")
@@ -138,7 +138,7 @@ func (c *crd) Describe(ctx context.Context, prefix, namespace string, options Op
 	pluginPrinter := options.PluginManager()
 	tabs, err := pluginPrinter.Tabs(ctx, object)
 	if err != nil {
-		return EmptyContentResponse, errors.Wrap(err, "getting tabs from plugins")
+		return component.EmptyContentResponse, errors.Wrap(err, "getting tabs from plugins")
 	}
 
 	for _, tab := range tabs {

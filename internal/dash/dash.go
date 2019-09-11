@@ -164,13 +164,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 	}
 
 	// Initialize the API
-	apiService := api.New(ctx, api.PathPrefix, clusterClient, moduleManager, actionManger, logger)
-	for _, m := range moduleManager.Modules() {
-		if err := apiService.RegisterModule(m); err != nil {
-			return errors.Wrapf(err, "registering module: %v", m.Name())
-		}
-	}
-
+	apiService := api.New(ctx, api.PathPrefix, actionManger, dashConfig)
 	frontendProxy.FrontendUpdateController = apiService
 
 	d, err := newDash(listener, options.Namespace, options.FrontendURL, apiService, logger)

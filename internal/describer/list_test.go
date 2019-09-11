@@ -71,7 +71,7 @@ func TestListDescriber(t *testing.T) {
 		IconSource:    "icon-source",
 	}
 	d := NewList(listConfig)
-	cResponse, err := d.Describe(ctx, "/path", namespace, options)
+	cResponse, err := d.Describe(ctx, namespace, options)
 	require.NoError(t, err)
 
 	list := component.NewList("list", nil)

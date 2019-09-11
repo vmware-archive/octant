@@ -60,9 +60,9 @@ func NewList(c ListConfig) *List {
 }
 
 // Describe creates content.
-func (d *List) Describe(ctx context.Context, prefix, namespace string, options Options) (component.ContentResponse, error) {
+func (d *List) Describe(ctx context.Context, namespace string, options Options) (component.ContentResponse, error) {
 	if options.Printer == nil {
-		return EmptyContentResponse, errors.New("object list Describer requires a printer")
+		return component.EmptyContentResponse, errors.New("object list Describer requires a printer")
 	}
 
 	// Pass through selector if provided to filter objects
@@ -92,11 +92,11 @@ func (d *List) Describe(ctx context.Context, prefix, namespace string, options O
 	for i := range objectList.Items {
 		item := d.objectType()
 		if err := scheme.Scheme.Convert(&objectList.Items[i], item, nil); err != nil {
-			return EmptyContentResponse, err
+			return component.EmptyContentResponse, err
 		}
 
 		if err := copyObjectMeta(item, &objectList.Items[i]); err != nil {
-			return EmptyContentResponse, err
+			return component.EmptyContentResponse, err
 		}
 
 		newSlice := reflect.Append(f, reflect.ValueOf(item).Elem())
@@ -105,13 +105,13 @@ func (d *List) Describe(ctx context.Context, prefix, namespace string, options O
 
 	listObject, ok := listType.(runtime.Object)
 	if !ok {
-		return EmptyContentResponse, errors.Errorf("expected list to be a runtime object. It was a %T",
+		return component.EmptyContentResponse, errors.Errorf("expected list to be a runtime object. It was a %T",
 			listType)
 	}
 
 	viewComponent, err := options.Printer.Print(ctx, listObject, options.PluginManager())
 	if err != nil {
-		return EmptyContentResponse, err
+		return component.EmptyContentResponse, err
 	}
 
 	if viewComponent != nil {

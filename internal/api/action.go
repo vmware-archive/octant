@@ -17,30 +17,35 @@ import (
 
 //go:generate mockgen -destination=./fake/mock_action_dispatcher.go -package=fake github.com/vmware/octant/internal/api ActionDispatcher
 
+// ActionDispatcher dispatches actions.
 type ActionDispatcher interface {
 	Dispatch(ctx context.Context, actionName string, payload action.Payload) error
 }
 
-type updateRequest struct {
+// UpdateRequest is an update request. It contains the action payload.
+type UpdateRequest struct {
 	Update action.Payload `json:"update"`
 }
 
-type actionHandler struct {
+// ActionHandler is a handler that responds to action messages.
+type ActionHandler struct {
 	logger           log.Logger
 	actionDispatcher ActionDispatcher
 }
 
-var _ http.Handler = (*actionHandler)(nil)
+var _ http.Handler = (*ActionHandler)(nil)
 
-func newAction(logger log.Logger, actionDispatcher ActionDispatcher) *actionHandler {
-	return &actionHandler{
+// NewActionHandler creates an instance of ActionHandler.
+func NewActionHandler(logger log.Logger, actionDispatcher ActionDispatcher) *ActionHandler {
+	return &ActionHandler{
 		logger:           logger,
 		actionDispatcher: actionDispatcher,
 	}
 }
 
-func (a *actionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var req updateRequest
+// ServeHTTP serves the handler.
+func (a *ActionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var req UpdateRequest
 
 	defer func() {
 		if cErr := r.Body.Close(); cErr != nil {
