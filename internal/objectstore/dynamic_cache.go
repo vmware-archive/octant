@@ -19,7 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/dynamic/dynamicinformer"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/informers"
 	kcache "k8s.io/client-go/tools/cache"
 	kretry "k8s.io/client-go/util/retry"
@@ -38,12 +38,12 @@ const (
 	initialInformerSyncTimeout = time.Second * 10
 )
 
-func initDynamicSharedInformerFactory(ctx context.Context, client cluster.ClientInterface, namespace string) (dynamicinformer.DynamicSharedInformerFactory, error) {
+func initInformerFactory(ctx context.Context, client cluster.ClientInterface, namespace string) (InformerFactory, error) {
 	dynamicClient, err := client.DynamicClient()
 	if err != nil {
 		return nil, err
 	}
-	return dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicClient, defaultInformerResync, namespace, nil), nil
+	return newInformerFactory(ctx.Done(), dynamicClient, defaultInformerResync, namespace), nil
 }
 
 // DynamicCacheOpt is an option for configuration DynamicCache.
@@ -58,18 +58,17 @@ func Access(resourceAccess ResourceAccess) DynamicCacheOpt {
 
 // DynamicCache is a cache based on the dynamic shared informer factory.
 type DynamicCache struct {
-	initFactoryFunc func(context.Context, cluster.ClientInterface, string) (dynamicinformer.DynamicSharedInformerFactory, error)
+	initFactoryFunc func(context.Context, cluster.ClientInterface, string) (InformerFactory, error)
 	factories       *factoriesCache
 	informerSynced  *informerSynced
 	client          cluster.ClientInterface
-	stopCh          <-chan struct{}
 	seenGVKs        *seenGVKsCache
 	access          ResourceAccess
 	updateFns       []store.UpdateFn
 	updateMu        sync.Mutex
 
 	syncTimeoutFunc func(context.Context, store.Key, chan bool)
-	waitForSyncFunc func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, <-chan struct{}, chan bool)
+	waitForSyncFunc func(context.Context, store.Key, *DynamicCache, informers.GenericInformer, chan bool)
 
 	useDynamicClient bool
 }
@@ -85,13 +84,16 @@ func syncTimeout(ctx context.Context, key store.Key, done chan bool) {
 	}
 }
 
-func waitForSync(ctx context.Context, key store.Key, dc *DynamicCache, informer informers.GenericInformer, stopCh <-chan struct{}, done chan bool) {
+func waitForSync(ctx context.Context, key store.Key, dc *DynamicCache, informer informers.GenericInformer, done chan bool) {
 	now := time.Now()
 	logger := log.From(ctx).With("key", key)
-	kcache.WaitForCacheSync(stopCh, informer.Informer().HasSynced)
-	dc.informerSynced.setSynced(key, true)
+	msg := "informer cache has synced"
+	if !kcache.WaitForCacheSync(ctx.Done(), informer.Informer().HasSynced) {
+		msg = "informer cache has not synced successfully (should shut down?)"
+	}
 	logger.With("elapsed", time.Since(now)).
-		Debugf("informer cache has synced")
+		Debugf(msg)
+	dc.informerSynced.setSynced(key, true)
 	done <- true
 }
 
@@ -100,11 +102,10 @@ var _ store.Store = (*DynamicCache)(nil)
 // NewDynamicCache creates an instance of DynamicCache.
 func NewDynamicCache(ctx context.Context, client cluster.ClientInterface, options ...DynamicCacheOpt) (*DynamicCache, error) {
 	c := &DynamicCache{
-		initFactoryFunc:  initDynamicSharedInformerFactory,
+		initFactoryFunc:  initInformerFactory,
 		syncTimeoutFunc:  syncTimeout,
 		waitForSyncFunc:  waitForSync,
 		client:           client,
-		stopCh:           ctx.Done(),
 		seenGVKs:         initSeenGVKsCache(),
 		informerSynced:   initInformerSynced(),
 		useDynamicClient: os.Getenv("OCTANT_USE_DYNAMIC_CLIENT") == "1",
@@ -170,10 +171,9 @@ func (dc *DynamicCache) currentInformer(ctx context.Context, key store.Key) (inf
 	}
 
 	informer := factory.ForResource(gvr)
-	factory.Start(dc.stopCh)
 
 	dc.updateMu.Lock()
-	dc.checkKeySynced(ctx, dc.stopCh, informer, key)
+	dc.checkKeySynced(ctx, informer, key)
 	dc.updateMu.Unlock()
 
 	if dc.seenGVKs.hasSeen(key.Namespace, gvk) {
@@ -185,14 +185,14 @@ func (dc *DynamicCache) currentInformer(ctx context.Context, key store.Key) (inf
 	return informer, nil
 }
 
-func (dc *DynamicCache) checkKeySynced(ctx context.Context, stopCh <-chan struct{}, informer informers.GenericInformer, key store.Key) {
+func (dc *DynamicCache) checkKeySynced(ctx context.Context, informer informers.GenericInformer, key store.Key) {
 	if dc.seenGVKs.hasSeen(key.Namespace, key.GroupVersionKind()) ||
 		(dc.informerSynced.hasSeen(key) && dc.informerSynced.hasSynced(key)) {
 		return
 	}
 
 	done := make(chan bool, 1)
-	go dc.waitForSyncFunc(ctx, key, dc, informer, stopCh, done)
+	go dc.waitForSyncFunc(ctx, key, dc, informer, done)
 	go dc.syncTimeoutFunc(ctx, key, done)
 }
 
@@ -407,6 +407,25 @@ func (dc *DynamicCache) Watch(ctx context.Context, key store.Key, handler kcache
 	return nil
 }
 
+// Unwatch un-watches a key by stopping it's informer.
+func (dc *DynamicCache) Unwatch(ctx context.Context, groupVersionKinds ...schema.GroupVersionKind) error {
+	for _, namespace := range dc.factories.keys() {
+		factory, ok := dc.factories.get(namespace)
+		if ok {
+			for _, groupVersionKind := range groupVersionKinds {
+				gvr, err := dc.client.Resource(groupVersionKind.GroupKind())
+				if err != nil {
+					return errors.Wrap(err, "get resource for key")
+				}
+				factory.Delete(gvr)
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // Delete deletes an object from the cluster using a key.
 func (dc *DynamicCache) Delete(ctx context.Context, key store.Key) error {
 	_, span := trace.StartSpan(ctx, "dynamicCache:delete")
@@ -450,8 +469,8 @@ func (dc *DynamicCache) UpdateClusterClient(ctx context.Context, client cluster.
 	dc.factories.reset()
 	dc.seenGVKs.reset()
 	dc.informerSynced.reset()
-	dc.updateMu.Unlock()
 	dc.access.Reset()
+	dc.updateMu.Unlock()
 
 	for _, fn := range dc.updateFns {
 		fn(dc)

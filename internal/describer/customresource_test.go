@@ -15,14 +15,14 @@ import (
 
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/store"
-	storefake "github.com/vmware/octant/pkg/store/fake"
+	storeFake "github.com/vmware/octant/pkg/store/fake"
 )
 
 func Test_customResourceDefinition(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	o := storefake.NewMockStore(controller)
+	o := storeFake.NewMockStore(controller)
 
 	crd1 := testutil.CreateCRD("crd1.example.com")
 

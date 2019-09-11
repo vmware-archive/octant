@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/dynamic/dynamicinformer"
 
 	"github.com/vmware/octant/pkg/store"
 )
@@ -55,25 +54,37 @@ func (c *informerSynced) reset() {
 }
 
 type factoriesCache struct {
-	factories map[string]dynamicinformer.DynamicSharedInformerFactory
+	factories map[string]InformerFactory
 
 	mu sync.RWMutex
 }
 
 func initFactoriesCache() *factoriesCache {
 	return &factoriesCache{
-		factories: make(map[string]dynamicinformer.DynamicSharedInformerFactory),
+		factories: make(map[string]InformerFactory),
 	}
 }
 
-func (c *factoriesCache) set(key string, value dynamicinformer.DynamicSharedInformerFactory) {
+func (c *factoriesCache) set(key string, value InformerFactory) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	c.factories[key] = value
 }
 
-func (c *factoriesCache) get(key string) (dynamicinformer.DynamicSharedInformerFactory, bool) {
+func (c *factoriesCache) keys() []string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	var list []string
+	for k := range c.factories {
+		list = append(list, k)
+	}
+
+	return list
+}
+
+func (c *factoriesCache) get(key string) (InformerFactory, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -145,5 +156,46 @@ func (c *seenGVKsCache) reset() {
 
 	for k := range c.seenGVKs {
 		delete(c.seenGVKs, k)
+	}
+}
+
+type informerContextCache struct {
+	cache map[schema.GroupVersionResource]chan struct{}
+
+	mu sync.Mutex
+}
+
+func initInformerContextCache() *informerContextCache {
+	return &informerContextCache{
+		cache: make(map[schema.GroupVersionResource]chan struct{}),
+	}
+}
+
+func (c *informerContextCache) addChild(key schema.GroupVersionResource) <-chan struct{} {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	ch := make(chan struct{}, 1)
+	c.cache[key] = ch
+	return ch
+}
+
+func (c *informerContextCache) delete(key schema.GroupVersionResource) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if stopCh, ok := c.cache[key]; ok {
+		close(stopCh)
+		delete(c.cache, key)
+	}
+}
+
+func (c *informerContextCache) reset() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	for k, stopCh := range c.cache {
+		close(stopCh)
+		delete(c.cache, k)
 	}
 }

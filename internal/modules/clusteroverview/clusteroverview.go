@@ -68,6 +68,7 @@ func New(ctx context.Context, options Options) (*ClusterOverview, error) {
 	}
 
 	crdWatcher := options.DashConfig.CRDWatcher()
+	objectStore := co.DashConfig.ObjectStore()
 	watchConfig := &config.CRDWatchConfig{
 		Add: func(_ *describer.PathMatcher, sectionDescriber *describer.CRDSection) config.ObjectHandler {
 			return func(ctx context.Context, object *unstructured.Unstructured) {
@@ -82,7 +83,7 @@ func New(ctx context.Context, options Options) (*ClusterOverview, error) {
 				if object == nil {
 					return
 				}
-				describer.DeleteCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
+				describer.DeleteCRD(ctx, object, pathMatcher, customResourcesDescriber, co, objectStore)
 			}
 		}(pathMatcher, customResourcesDescriber),
 		IsNamespaced: false,
