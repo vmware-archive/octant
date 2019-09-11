@@ -110,7 +110,7 @@ func newOctantCmd() *cobra.Command {
 	octantCmd.Flags().CountVarP(&verboseLevel, "verbosity", "v", "verbosity level")
 	octantCmd.Flags().BoolVarP(&enableOpenCensus, "enable-opencensus", "c", false, "enable open census")
 	octantCmd.Flags().StringVarP(&initialContext, "context", "", "", "initial context")
-	octantCmd.Flags().IntVarP(&klogVerbosity, "klog-verbosity", "", 0, "initial context")
+	octantCmd.Flags().IntVarP(&klogVerbosity, "klog-verbosity", "", 0, "klog verbosity level")
 	octantCmd.Flags().Float32VarP(&clientQPS, "client-qps", "", 200, "maximum QPS for client")
 	octantCmd.Flags().IntVarP(&clientBurst, "client-burst", "", 400, "maximum burst for client throttle")
 
