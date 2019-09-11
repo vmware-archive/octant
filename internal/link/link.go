@@ -16,7 +16,7 @@ import (
 	"github.com/vmware/octant/pkg/view/component"
 )
 
-//go:generate mockgen -source=link.go -destination=./fake/mock_link.go -package=fake github.com/vmware/octant/internal/overview/link
+//go:generate mockgen -destination=./fake/mock_link.go -package=fake github.com/vmware/octant/internal/link Interface,Config
 
 type objectPathFn func(namespace, apiVersion, kind, name string) (string, error)
 

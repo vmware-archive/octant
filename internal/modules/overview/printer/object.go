@@ -18,7 +18,7 @@ import (
 	"github.com/vmware/octant/pkg/view/flexlayout"
 )
 
-//go:generate mockgen -source=object.go -destination=./fake/mock_object_interface.go -package=fake github.com/vmware/octant/internal/modules/overview/printer ObjectInterface
+//go:generate mockgen -destination=./fake/mock_object_interface.go -package=fake github.com/vmware/octant/internal/modules/overview/printer ObjectInterface
 
 // ObjectInterface is an interface for printing an object.
 type ObjectInterface interface {
