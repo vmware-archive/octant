@@ -1,10 +1,18 @@
 describe('Octant Integration Tests', () => {
+    var namespace = 'octant-cypress-' +  random_string()
+    var startingContext = ''
+
     before(function() {
-        cy.exec('kubectl create namespace octant-cypress')
-        cy.exec('kubectl config set-context octant-temporary --namespace octant-cypress \
-        --cluster $(kubectl config get-contexts $CURRENT_CONTEXT | tail -1 | awk \'{print $3}\') \
-        --user $(kubectl config get-contexts $CURRENT_CONTEXT | tail -1 | awk \'{print $4}\')', { env: { CURRENT_CONTEXT: Cypress.env('CURRENT_CONTEXT' )} })
-        cy.exec('kubectl config use-context octant-temporary')
+        cy.exec('kubectl config current-context').then((result) => {
+            startingContext = result.stdout
+        })
+
+        cy.exec('kubectl create namespace ' + namespace)
+        cy.exec('kubectl config set-context $CYPRESS_CONTEXT --namespace ' + namespace +
+        ' --cluster $(kubectl config get-contexts ' + startingContext + ' | tail -1 | awk \'{print $3}\') \
+        --user $(kubectl config get-contexts ' + startingContext + ' | tail -1 | awk \'{print $4}\')',
+         { env: { CYPRESS_CONTEXT: Cypress.env('CYPRESS_CONTEXT')} })
+        cy.exec('kubectl config use-context $CYPRESS_CONTEXT', { env: { CYPRESS_CONTEXT: Cypress.env('CYPRESS_CONTEXT')} })
     })
 
     it('loads page', () => {
@@ -33,7 +41,7 @@ describe('Octant Integration Tests', () => {
     it('create and delete port forward', () => {
         // Find first nginx pod in overview
         cy
-            .exec('kubectl apply -f ../examples/resources/deployment.yaml --namespace octant-cypress')
+            .exec('kubectl apply -f ../examples/resources/deployment.yaml --namespace ' + namespace)
             .its('stdout')
             .should('contains', 'nginx-deployment')
     
@@ -51,7 +59,7 @@ describe('Octant Integration Tests', () => {
         cy.contains(/Port Forwards/).click()
     
         cy.contains(/Stop port forward/).should('be.visible')
-        cy.exec('kubectl delete pod -l app=nginx-deployment --namespace octant-cypress')
+        cy.exec('kubectl delete pod -l app=nginx-deployment --namespace ' + namespace)
             .its('stdout')
             .should('contain', 'deleted')
     
@@ -76,8 +84,17 @@ describe('Octant Integration Tests', () => {
     })
 
     it('cleanup context and namespace', () => {
-        cy.exec('kubectl config use-context $CURRENT_CONTEXT', { env: { CURRENT_CONTEXT: Cypress.env('CURRENT_CONTEXT' )} })
-        cy.exec('kubectl delete namespace octant-cypress')
-        cy.exec('kubectl config delete-context octant-temporary')
-      })
+        cy.exec('kubectl config use-context ' + startingContext)
+        cy.exec('kubectl delete namespace '  + namespace)
+        cy.exec('kubectl config delete-context $CYPRESS_CONTEXT', { env: { CYPRESS_CONTEXT: Cypress.env('CYPRESS_CONTEXT')} })
+    })
+
+    function random_string() {
+        var text = "";
+        var chars = "abcdefghijklmnopqrstuvwxyz123456789";
+        for (var i = 0; i < 6; i++)
+          text += chars.charAt(Math.floor(Math.random() * chars.length));
+
+        return text;
+      }
 })
