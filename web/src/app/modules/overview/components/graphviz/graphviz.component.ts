@@ -10,9 +10,9 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import * as dot from 'graphlib-dot';
+
 import { GraphvizView } from 'src/app/models/content';
-import { DagreService } from '../../services/dagre/dagre.service';
+import { D3GraphvizService } from '../../services/d3/d3graphviz.service';
 
 @Component({
   selector: 'app-view-graphviz',
@@ -26,13 +26,12 @@ export class GraphvizComponent implements AfterViewChecked {
   @ViewChild('viewer') private viewer: ElementRef;
   @Input() view: GraphvizView;
 
-  constructor(private dagreService: DagreService) {}
+  constructor(private d3GraphvizService: D3GraphvizService) {}
 
   ngAfterViewChecked() {
     if (this.view) {
       const current = this.view.config.dot;
-      const g = dot.read(current);
-      this.dagreService.render(this.viewer, g);
+      this.d3GraphvizService.render(this.viewer, current);
     }
   }
 }
