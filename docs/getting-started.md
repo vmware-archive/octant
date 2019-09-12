@@ -30,7 +30,7 @@ running `octant --help`.
         --ui-url string        dashboard url
 
 The verbosity has a special type that is used to parse the flag, which means it can be provided
-shorthand by just addind more `v` to equal the level count or with an explicit equal sign.
+shorthand by just adding more `v` to equal the level count or with an explicit equal sign.
 
     -v[vv], --verbosity=count      verbosity level
 

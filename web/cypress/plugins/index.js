@@ -14,4 +14,9 @@
 module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
+  var cp = require("child_process");
+  cp.exec("kubectl config curren-context", function (err, stdout, stderr) {
+    config.env.CURRENT_CONTEXT = stdout
+  })
+  return config
 }

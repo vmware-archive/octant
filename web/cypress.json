@@ -3,5 +3,8 @@
   "projectId": "9oqomg",
   "viewportHeight": 900,
   "viewportWidth": 1440,
-  "defaultCommandTimeout": 12000
+  "defaultCommandTimeout": 12000,
+  "env": {
+    "CYPRESS_CONTEXT": "octant-temporary"
+  }
 }
