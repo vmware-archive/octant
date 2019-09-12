@@ -43,16 +43,15 @@ func newOctantCmd() *cobra.Command {
 			defer cancel()
 
 			// TODO enable support for klog
-
 			z, err := newZapLogger(verboseLevel)
 			if err != nil {
 				golog.Printf("failed to initialize logger: %v", err)
 				os.Exit(1)
 			}
 			defer func() {
-				if zErr := z.Sync(); zErr != nil {
-					golog.Printf("unable to sync logger: %v", zErr)
-				}
+				// this fails, but it should be safe to ignore according
+				// to https://github.com/uber-go/zap/issues/328
+				_ = z.Sync()
 			}()
 
 			logger := log.Wrap(z.Sugar())
