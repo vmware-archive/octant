@@ -10,18 +10,14 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/plugin"
 	"github.com/vmware/octant/pkg/store"
-	storefake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/pkg/view/component"
-	"github.com/vmware/octant/pkg/view/flexlayout"
 )
 
 func Test_ServiceAccountListHandler(t *testing.T) {
@@ -64,121 +60,97 @@ func Test_ServiceAccountListHandler(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
-func Test_serviceAccountHandler(t *testing.T) {
-	ctx := context.Background()
-
-	controller := gomock.NewController(t)
-	defer controller.Finish()
-
-	tpo := newTestPrinterOptions(controller)
-	printOptions := tpo.ToOptions()
-
-	now := testutil.Time()
-	object := testutil.CreateServiceAccount("sa")
-	object.CreationTimestamp = metav1.Time{Time: now}
-
-	mockObjectsEvents(t, tpo.objectStore, object.Namespace)
-
-	serviceAccountPrintResponse := &plugin.PrintResponse{}
-	tpo.pluginManager.EXPECT().Print(ctx, object).Return(serviceAccountPrintResponse, nil)
-
-	h, err := newServiceAccountHandler(ctx, object, printOptions)
-	require.NoError(t, err)
-
-	summaryConfig := component.NewSummary("config", component.SummarySection{
-		Header: "foo", Content: component.NewText("bar")})
-
-	h.configFunc = func(ctx context.Context, serviceAccount corev1.ServiceAccount, options Options) (*component.Summary, error) {
-		return summaryConfig, nil
-	}
-
-	policyTable := component.NewTable("policyTable", "", component.NewTableCols("col1"))
-	h.policyRulesFunc = func(ctx context.Context, serviceAccount corev1.ServiceAccount, appObjectStore store.Store) (*component.Table, error) {
-		return policyTable, nil
-	}
-
-	got, err := h.run()
-	require.NoError(t, err)
-
-	fl := flexlayout.New()
-	summarySection := fl.AddSection()
-	require.NoError(t, summarySection.Add(summaryConfig, component.WidthHalf))
-
-	stubMetadataForObject(t, object, fl)
-
-	policyRulesSection := fl.AddSection()
-	require.NoError(t, policyRulesSection.Add(policyTable, component.WidthFull))
-
-	expected := fl.ToComponent("Summary")
-
-	component.AssertEqual(t, expected, got)
-}
-
-func Test_printServiceAccountConfig(t *testing.T) {
-	controller := gomock.NewController(t)
-	defer controller.Finish()
-
-	tpo := newTestPrinterOptions(controller)
-	printOptions := tpo.ToOptions()
-
-	now := testutil.Time()
-
-	object := testutil.CreateServiceAccount("sa")
-	object.CreationTimestamp = metav1.Time{Time: now}
-	object.Secrets = []corev1.ObjectReference{{Name: "secret"}}
-	object.ImagePullSecrets = []corev1.LocalObjectReference{{Name: "secret"}}
-
-	key := store.Key{
-		Namespace:  object.Namespace,
-		APIVersion: "v1",
-		Kind:       "Secret",
-	}
+func Test_ServiceAccountConfiguration(t *testing.T) {
+	serviceAccount := testutil.CreateServiceAccount("sa")
+	serviceAccount.CreationTimestamp = metav1.Time{Time: testutil.Time()}
+	serviceAccount.Secrets = []corev1.ObjectReference{{Name: "secret"}}
+	serviceAccount.ImagePullSecrets = []corev1.LocalObjectReference{{Name: "secret"}}
 
 	secret := testutil.CreateSecret("secret")
 	secret.Type = corev1.SecretTypeServiceAccountToken
 	secret.Annotations = map[string]string{
-		corev1.ServiceAccountNameKey: object.Name,
-		corev1.ServiceAccountUIDKey:  string(object.UID),
+		corev1.ServiceAccountNameKey: serviceAccount.Name,
+		corev1.ServiceAccountUIDKey:  string(serviceAccount.UID),
 	}
 
-	tpo.PathForGVK(object.Namespace, "v1", "Secret", "secret", "secret", "/secret")
+	key := store.Key{
+		Namespace:  serviceAccount.Namespace,
+		APIVersion: "v1",
+		Kind:       "Secret",
+	}
 
-	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).
-		Return(testutil.ToUnstructuredList(t, testutil.ToUnstructured(t, secret)), false, nil)
+	cases := []struct {
+		name           string
+		namespace      string
+		serviceaccount *corev1.ServiceAccount
+		secret         *corev1.Secret
+		isErr          bool
+		expected       *component.Summary
+	}{
+		{
+			name:           "serviceaccount",
+			namespace:      serviceAccount.Namespace,
+			serviceaccount: serviceAccount,
+			expected: component.NewSummary("Configuration", []component.SummarySection{
+				{
+					Header: "Image Pull Secrets",
+					Content: component.NewList("", []component.Component{
+						component.NewLink("", "secret", "/secret"),
+					}),
+				},
+				{
+					Header: "Mountable Secrets",
+					Content: component.NewList("", []component.Component{
+						component.NewLink("", "secret", "/secret"),
+					}),
+				},
+				{
+					Header: "Tokens",
+					Content: component.NewList("", []component.Component{
+						component.NewLink("", "secret", "/secret"),
+					}),
+				},
+			}...),
+		},
+		{
+			name:           "serviceaccount is nil",
+			serviceaccount: nil,
+			isErr:          true,
+		},
+	}
 
-	ctx := context.Background()
-	got, err := printServiceAccountConfig(ctx, *object, printOptions)
-	require.NoError(t, err)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
 
-	sections := component.SummarySections{}
+			ctx := context.Background()
+			tpo := newTestPrinterOptions(controller)
 
-	pullSecretsList := component.NewList("", []component.Component{
-		component.NewLink("", "secret", "/secret"),
-	})
-	sections.Add("Image Pull Secrets", pullSecretsList)
+			if !tc.isErr {
+				tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).
+					Return(testutil.ToUnstructuredList(t, testutil.ToUnstructured(t, secret)), false, nil)
+			}
 
-	mountSecretsList := component.NewList("", []component.Component{
-		component.NewLink("", "secret", "/secret"),
-	})
-	sections.Add("Mountable Secrets", mountSecretsList)
+			printOptions := tpo.ToOptions()
 
-	tokenSecretsList := component.NewList("", []component.Component{
-		component.NewLink("", "secret", "/secret"),
-	})
-	sections.Add("Tokens", tokenSecretsList)
+			tpo.PathForGVK(tc.namespace, "v1", "Secret", "secret", "secret", "/secret")
 
-	expected := component.NewSummary("Configuration", sections...)
+			sac := NewServiceAccountConfiguration(ctx, tc.serviceaccount, printOptions)
+			summary, err := sac.Create(printOptions)
+			if tc.isErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
 
-	component.AssertEqual(t, expected, got)
+			component.AssertEqual(t, tc.expected, summary)
+		})
+	}
 }
 
-func Test_serviceAccountPolicyRules(t *testing.T) {
-	controller := gomock.NewController(t)
-	defer controller.Finish()
-
+func Test_ServiceAccountPolicyRules(t *testing.T) {
 	serviceAccount := testutil.CreateServiceAccount("sa")
-
-	appObjectStore := storefake.NewMockStore(controller)
 
 	roleBindingKey := store.Key{
 		Namespace:  serviceAccount.Namespace,
@@ -200,10 +172,6 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 	roleBinding := testutil.CreateRoleBinding("rb1", role1.Name, subjects1)
 	roleBindingObjects := testutil.ToUnstructuredList(t, roleBinding)
 
-	appObjectStore.EXPECT().
-		List(gomock.Any(), roleBindingKey).
-		Return(roleBindingObjects, false, nil)
-
 	clusterRoleBindingKey := store.Key{
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "ClusterRoleBinding",
@@ -221,40 +189,56 @@ func Test_serviceAccountPolicyRules(t *testing.T) {
 	clusterRoleBinding.RoleRef.Kind = "ClusterRole"
 	clusterRoleBindingObjects := testutil.ToUnstructuredList(t, clusterRoleBinding)
 
-	appObjectStore.EXPECT().
-		List(gomock.Any(), clusterRoleBindingKey).
-		Return(clusterRoleBindingObjects, false, nil)
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	ctx := context.Background()
+
+	tpo := newTestPrinterOptions(controller)
+	printOptions := tpo.ToOptions()
 
 	role1Key, err := store.KeyFromObject(role1)
 	require.NoError(t, err)
 
-	appObjectStore.EXPECT().
-		Get(gomock.Any(), role1Key).
-		Return(testutil.ToUnstructured(t, role1), true, nil)
-
 	role2Key, err := store.KeyFromObject(role2)
 	require.NoError(t, err)
 
-	appObjectStore.EXPECT().
+	tpo.objectStore.EXPECT().
+		List(gomock.Any(), roleBindingKey).
+		Return(roleBindingObjects, false, nil)
+
+	tpo.objectStore.EXPECT().
+		List(gomock.Any(), clusterRoleBindingKey).
+		Return(clusterRoleBindingObjects, false, nil)
+
+	tpo.objectStore.EXPECT().
+		Get(gomock.Any(), role1Key).
+		Return(testutil.ToUnstructured(t, role1), true, nil)
+
+	tpo.objectStore.EXPECT().
 		Get(gomock.Any(), role2Key).
 		Return(testutil.ToUnstructured(t, role2), true, nil)
 
-	ctx := context.Background()
-
-	s := newServiceAccountPolicyRules(ctx, *serviceAccount, appObjectStore)
-
-	var policyRules []rbacv1.PolicyRule
-	s.printPolicyRulesFunc = func(rules []rbacv1.PolicyRule) (*component.Table, error) {
-		policyRules = rules
-		return nil, nil
-	}
-
-	_, err = s.run()
+	saph := NewServiceAccountPolicyRules(ctx, serviceAccount, printOptions)
+	got, err := saph.Create()
 	require.NoError(t, err)
 
-	var expected []rbacv1.PolicyRule
-	expected = append(expected, role1.Rules...)
-	expected = append(expected, role2.Rules...)
+	cols := component.NewTableCols("Resources", "Non-Resource URLs", "Resource Names", "Verbs")
+	expected := component.NewTable("Policy Rules", "There are no policy rules!", cols)
+	expected.Add([]component.TableRow{
+		{
+			"Resources":         component.NewText("crontabs.stable.example.com"),
+			"Non-Resource URLs": component.NewText(""),
+			"Resource Names":    component.NewText(""),
+			"Verbs":             component.NewText("['get', 'list', 'watch', 'create', 'update', 'patch', 'delete']"),
+		},
+		{
+			"Resources":         component.NewText("pods"),
+			"Non-Resource URLs": component.NewText(""),
+			"Resource Names":    component.NewText(""),
+			"Verbs":             component.NewText("['get', 'watch', 'list']"),
+		},
+	}...)
 
-	assert.Equal(t, expected, policyRules)
+	component.AssertEqual(t, expected, got)
 }
