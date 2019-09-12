@@ -15,21 +15,21 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	storefake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/internal/testutil"
+	storeFake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
 func Test_deploymentAppsV1(t *testing.T) {
 	cases := []struct {
 		name     string
-		init     func(*testing.T, *storefake.MockStore) runtime.Object
+		init     func(*testing.T, *storeFake.MockStore) runtime.Object
 		expected ObjectStatus
 		isErr    bool
 	}{
 		{
 			name: "in general",
-			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+			init: func(t *testing.T, o *storeFake.MockStore) runtime.Object {
 				objectFile := "deployment_ok.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
@@ -41,7 +41,7 @@ func Test_deploymentAppsV1(t *testing.T) {
 		},
 		{
 			name: "no replicas",
-			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+			init: func(t *testing.T, o *storeFake.MockStore) runtime.Object {
 				objectFile := "deployment_no_replicas.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
@@ -53,7 +53,7 @@ func Test_deploymentAppsV1(t *testing.T) {
 		},
 		{
 			name: "not available",
-			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+			init: func(t *testing.T, o *storeFake.MockStore) runtime.Object {
 				objectFile := "deployment_not_available.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
@@ -65,14 +65,14 @@ func Test_deploymentAppsV1(t *testing.T) {
 		},
 		{
 			name: "object is nil",
-			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+			init: func(t *testing.T, o *storeFake.MockStore) runtime.Object {
 				return nil
 			},
 			isErr: true,
 		},
 		{
 			name: "object is not a daemon set",
-			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+			init: func(t *testing.T, o *storeFake.MockStore) runtime.Object {
 				return &unstructured.Unstructured{}
 			},
 			isErr: true,
@@ -84,7 +84,7 @@ func Test_deploymentAppsV1(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
-			o := storefake.NewMockStore(controller)
+			o := storeFake.NewMockStore(controller)
 
 			object := tc.init(t, o)
 

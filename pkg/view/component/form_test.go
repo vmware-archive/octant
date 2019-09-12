@@ -6,6 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/vmware/octant/internal/testutil"
 )
 
 func TestFormFieldCheckBox_UnmarshalJSON(t *testing.T) {
@@ -185,6 +187,25 @@ func TestForm_UnmarshalJSON(t *testing.T) {
 
 		})
 	}
+}
+
+func TestCreateFormForObject(t *testing.T) {
+	object := testutil.CreatePod("pod")
+	got, err := CreateFormForObject("action", object,
+		NewFormFieldNumber("number", "name", "0"))
+	require.NoError(t, err)
+
+	expected := Form{
+		Fields: []FormField{
+			NewFormFieldNumber("number", "name", "0"),
+			NewFormFieldHidden("apiVersion", object.APIVersion),
+			NewFormFieldHidden("kind", object.Kind),
+			NewFormFieldHidden("name", object.Name),
+			NewFormFieldHidden("namespace", object.Namespace),
+			NewFormFieldHidden("action", "action"),
+		},
+	}
+	require.Equal(t, expected, got)
 }
 
 func assertFormFieldEqual(t *testing.T, expected, got FormField) {

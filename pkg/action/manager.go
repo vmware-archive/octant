@@ -15,6 +15,27 @@ import (
 // DispatcherFunc is a function that will be dispatched to handle a payload.
 type DispatcherFunc func(ctx context.Context, payload Payload) error
 
+// Dispatcher handles actions.
+type Dispatcher interface {
+	ActionName() string
+	Handle(ctx context.Context, payload Payload) error
+}
+
+// Dispatchers is a slice of Dispatcher.
+type Dispatchers []Dispatcher
+
+// ToActionPaths converts Dispatchers to a map.
+func (d Dispatchers) ToActionPaths() map[string]DispatcherFunc {
+	m := make(map[string]DispatcherFunc)
+
+	for i := range d {
+		m[d[i].ActionName()] = d[i].Handle
+	}
+
+	return m
+}
+
+// Manager manages actions.
 type Manager struct {
 	logger     log.Logger
 	dispatches map[string]DispatcherFunc

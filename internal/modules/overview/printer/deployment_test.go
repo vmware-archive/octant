@@ -352,12 +352,13 @@ func Test_editDeploymentAction(t *testing.T) {
 	deployment := testutil.CreateDeployment("deployment")
 	deployment.Spec.Replicas = pointer.Int32Ptr(3)
 
-	actions := editDeploymentAction(deployment)
+	actions, err := editDeploymentAction(deployment)
+	require.NoError(t, err)
 	assert.Len(t, actions, 1)
 
 	got := actions[0]
 
-	gvk := deployment.GroupVersionKind()
+	apiVersion, kind := deployment.GroupVersionKind().ToAPIVersionAndKind()
 
 	expected := component.Action{
 		Name:  "Edit",
@@ -365,9 +366,8 @@ func Test_editDeploymentAction(t *testing.T) {
 		Form: component.Form{
 			Fields: []component.FormField{
 				component.NewFormFieldNumber("Replicas", "replicas", "3"),
-				component.NewFormFieldHidden("group", gvk.Group),
-				component.NewFormFieldHidden("version", gvk.Version),
-				component.NewFormFieldHidden("kind", gvk.Kind),
+				component.NewFormFieldHidden("apiVersion", apiVersion),
+				component.NewFormFieldHidden("kind", kind),
 				component.NewFormFieldHidden("name", deployment.Name),
 				component.NewFormFieldHidden("namespace", deployment.Namespace),
 				component.NewFormFieldHidden("action", "deployment/configuration"),

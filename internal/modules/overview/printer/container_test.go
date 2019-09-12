@@ -413,3 +413,25 @@ func Test_findContainerStatus(t *testing.T) {
 		})
 	}
 }
+
+func Test_editContainerAction(t *testing.T) {
+	deployment := testutil.CreateDeployment("deployment", testutil.WithGenericDeployment())
+	container := deployment.Spec.Template.Spec.Containers[0]
+
+	got, err := editContainerAction(deployment, &container)
+	require.NoError(t, err)
+
+	form, err := component.CreateFormForObject("overview/containerEditor", deployment,
+		component.NewFormFieldText("Image", "containerImage", container.Image),
+		component.NewFormFieldHidden("containersPath", `["spec","template","spec","containers"]`),
+		component.NewFormFieldHidden("containerName", container.Name),
+	)
+	require.NoError(t, err)
+
+	expected := component.Action{
+		Name:  "Edit",
+		Title: "Container container-name Editor",
+		Form:  form,
+	}
+	require.Equal(t, expected, got)
+}

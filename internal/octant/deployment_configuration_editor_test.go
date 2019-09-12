@@ -1,9 +1,9 @@
 /*
-Copyright (c) 2019 VMware, Inc. All Rights Reserved.
-SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-package overview
+package octant
 
 import (
 	"context"
@@ -22,7 +22,7 @@ import (
 	"github.com/vmware/octant/pkg/store/fake"
 )
 
-func TestConfigurationEditor(t *testing.T) {
+func TestDeploymentConfigurationEditor(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
@@ -45,18 +45,17 @@ func TestConfigurationEditor(t *testing.T) {
 			return nil
 		})
 
-	configurationEditor := NewConfigurationEditor(logger, objectStore)
-	assert.Equal(t, configurationEditorAction, configurationEditor.ActionName())
+	configurationEditor := NewDeploymentConfigurationEditor(logger, objectStore)
+	assert.Equal(t, "deployment/configuration", configurationEditor.ActionName())
 
 	ctx := context.Background()
 
 	payload := action.Payload{
-		"group":     "apps",
-		"version":   "v1",
-		"kind":      "Deployment",
-		"namespace": "default",
-		"name":      "deployment",
-		"replicas":  "5",
+		"apiVersion": "apps/v1",
+		"kind":       "Deployment",
+		"namespace":  "default",
+		"name":       "deployment",
+		"replicas":   "5",
 	}
 
 	require.NoError(t, configurationEditor.Handle(ctx, payload))

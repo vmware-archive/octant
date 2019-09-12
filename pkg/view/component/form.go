@@ -9,6 +9,8 @@ import (
 	"encoding/json"
 
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 const (
@@ -573,4 +575,27 @@ func (f *Form) UnmarshalJSON(data []byte) error {
 	}
 
 	return nil
+}
+
+// CreateFormForObject creates a form for an object with additional fields.
+func CreateFormForObject(actionName string, object runtime.Object, fields ...FormField) (Form, error) {
+	if object == nil {
+		return Form{}, errors.New("object is nil")
+	}
+
+	apiVersion, kind := object.GetObjectKind().GroupVersionKind().ToAPIVersionAndKind()
+	accessor, err := meta.Accessor(object)
+	if err != nil {
+		return Form{}, err
+	}
+
+	fields = append(fields,
+		NewFormFieldHidden("apiVersion", apiVersion),
+		NewFormFieldHidden("kind", kind),
+		NewFormFieldHidden("name", accessor.GetName()),
+		NewFormFieldHidden("namespace", accessor.GetNamespace()),
+		NewFormFieldHidden("action", actionName),
+	)
+
+	return Form{Fields: fields}, nil
 }

@@ -1,0 +1,108 @@
+/*
+ * Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package octant
+
+import (
+	"context"
+	"encoding/json"
+
+	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware/octant/pkg/store"
+)
+
+// ContainerEditor edits containers.
+type ContainerEditor struct {
+	store store.Store
+}
+
+// NewContainerEditor creates an instance of ContainerEditor.
+func NewContainerEditor(objectStore store.Store) *ContainerEditor {
+	editor := &ContainerEditor{
+		store: objectStore,
+	}
+
+	return editor
+}
+
+// ActionName returns name of this action.
+func (e *ContainerEditor) ActionName() string {
+	return "overview/containerEditor"
+}
+
+// Handle edits a container. Supported edits:
+//   * image
+func (e *ContainerEditor) Handle(ctx context.Context, payload action.Payload) error {
+	logger := log.From(ctx).With("actionName", e.ActionName())
+	logger.With("payload", payload).Infof("received action payload")
+
+	key, err := store.KeyFromPayload(payload)
+	if err != nil {
+		return err
+	}
+
+	containersPathData, err := payload.String("containersPath")
+	if err != nil {
+		return err
+	}
+
+	var containersPath []string
+	if err := json.Unmarshal([]byte(containersPathData), &containersPath); err != nil {
+		return err
+	}
+
+	containerName, err := payload.String("containerName")
+	if err != nil {
+		return err
+	}
+
+	containerImage, err := payload.String("containerImage")
+	if err != nil {
+		return err
+	}
+
+	fn := updateContainer(containersPath, logger, containerName, containerImage)
+
+	return e.store.Update(ctx, key, fn)
+}
+
+func updateContainer(containersPath []string, logger log.Logger, containerName string, containerImage string) func(object *unstructured.Unstructured) error {
+	return func(object *unstructured.Unstructured) error {
+		containersRaw, found, err := unstructured.NestedSlice(object.Object, containersPath...)
+		if err != nil {
+			return err
+		}
+
+		if !found {
+			logger.Warnf("unable to find containers within object")
+			return nil
+		}
+
+		var updatedContainers []interface{}
+
+		for _, containerRaw := range containersRaw {
+			container, ok := containerRaw.(map[string]interface{})
+			if !ok {
+				return errors.New("unable to parse containers format")
+			}
+			name, found, err := unstructured.NestedString(container, "name")
+			if err != nil {
+				return errors.Wrap(err, "looking for container name")
+			}
+
+			if found && name == containerName {
+				container["image"] = containerImage
+			}
+
+			updatedContainers = append(updatedContainers, container)
+		}
+
+		return unstructured.SetNestedSlice(object.Object, updatedContainers, containersPath...)
+	}
+}
