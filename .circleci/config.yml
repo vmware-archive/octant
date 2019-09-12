@@ -49,6 +49,6 @@ jobs:
         command: |
           source $BASH_ENV
           cd web && npm install
-          ./node_modules/.bin/cypress run --record --key $CYPRESS_RECORD_KEY --group $CIRCLE_JOB
+          ./node_modules/.bin/cypress run --env CURRENT_CONTEXT=$(kubectl config current-context) --record --key $CYPRESS_RECORD_KEY --group $CIRCLE_JOB
         environment:
           CYPRESS_baseUrl: http://localhost:7777
