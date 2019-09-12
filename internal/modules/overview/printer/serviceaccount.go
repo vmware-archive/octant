@@ -19,6 +19,7 @@ import (
 	"github.com/vmware/octant/pkg/view/component"
 )
 
+// ServiceAccountListHandler is a printFunc that prints service accounts
 func ServiceAccountListHandler(_ context.Context, list *corev1.ServiceAccountList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("service account list is nil")
@@ -46,67 +47,87 @@ func ServiceAccountListHandler(_ context.Context, list *corev1.ServiceAccountLis
 	return table, nil
 }
 
-func ServiceAccountHandler(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) (component.Component, error) {
-	h, err := newServiceAccountHandler(ctx, serviceAccount, options)
-	if err != nil {
-		return nil, err
-	}
-
-	return h.run()
+type serviceAccountObject interface {
+	Config(ctx context.Context, options Options) error
+	PolicyRules(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) error
 }
 
 type serviceAccountHandler struct {
-	ctx            context.Context
-	serviceAccount corev1.ServiceAccount
-	options        Options
-
-	configFunc      func(ctx context.Context, serviceAccount corev1.ServiceAccount, options Options) (*component.Summary, error)
-	policyRulesFunc func(ctx context.Context, serviceAccount corev1.ServiceAccount, appObjectStore store.Store) (*component.Table, error)
+	serviceAccount  *corev1.ServiceAccount
+	configFunc      func(context.Context, *corev1.ServiceAccount, Options) (*component.Summary, error)
+	policyRulesFunc func(context.Context, *corev1.ServiceAccount, Options) (*component.Table, error)
+	object          *Object
 }
 
-func newServiceAccountHandler(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) (*serviceAccountHandler, error) {
+var _serviceAccountObject = (*serviceAccountHandler)(nil)
+
+func newServiceAccountHandler(serviceAccount *corev1.ServiceAccount, object *Object) (*serviceAccountHandler, error) {
 	if serviceAccount == nil {
-		return nil, errors.New("service account is nil")
+		return nil, errors.New("can't print a nil service account")
 	}
 
-	return &serviceAccountHandler{
-		ctx:            ctx,
-		serviceAccount: *serviceAccount,
-		options:        options,
-		configFunc:     printServiceAccountConfig,
-		policyRulesFunc: func(ctx context.Context, serviceAccount corev1.ServiceAccount, appObjectStore store.Store) (*component.Table, error) {
-			s := newServiceAccountPolicyRules(ctx, serviceAccount, appObjectStore)
-			return s.run()
-		},
-	}, nil
+	if object == nil {
+		return nil, errors.New("can't print service account using a nil object printer")
+	}
+
+	s := &serviceAccountHandler{
+		serviceAccount:  serviceAccount,
+		configFunc:      defaultServiceAccountConfig,
+		policyRulesFunc: defaultServiceAccountPolicyRules,
+		object:          object,
+	}
+	return s, nil
 }
 
-func (h *serviceAccountHandler) run() (component.Component, error) {
-	o := NewObject(&h.serviceAccount)
+func (s *serviceAccountHandler) Config(ctx context.Context, options Options) error {
+	out, err := s.configFunc(ctx, s.serviceAccount, options)
+	if err != nil {
+		return err
+	}
+	s.object.RegisterConfig(out)
+	return nil
+}
 
-	objectStore := h.options.DashConfig.ObjectStore()
+// ServiceAccountHandler is a printFunc that prints ServiceAccounts
+func ServiceAccountHandler(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) (component.Component, error) {
+	o := NewObject(serviceAccount)
+	o.EnableEvents()
 
-	configSummary, err := h.configFunc(h.ctx, h.serviceAccount, h.options)
+	s, err := newServiceAccountHandler(serviceAccount, o)
 	if err != nil {
 		return nil, err
 	}
 
-	o.RegisterConfig(configSummary)
+	if err := s.Config(ctx, options); err != nil {
+		return nil, errors.Wrap(err, "print service account configuration")
+	}
 
-	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.Component, error) {
-			return h.policyRulesFunc(h.ctx, h.serviceAccount, objectStore)
-		},
-		Width: component.WidthFull,
-	})
-
-	o.EnableEvents()
-
-	return o.ToComponent(h.ctx, h.options)
+	return o.ToComponent(ctx, options)
 }
 
-func printServiceAccountConfig(ctx context.Context, serviceAccount corev1.ServiceAccount, options Options) (*component.Summary, error) {
-	objectStore := options.DashConfig.ObjectStore()
+// ServiceAccountConfiguration generates a service account configuration
+type ServiceAccountConfiguration struct {
+	context        context.Context
+	serviceAccount *corev1.ServiceAccount
+	objectStore    store.Store
+}
+
+// NewServiceAccountConfiguration creates an instance of ServiceAccountConfiguration
+func NewServiceAccountConfiguration(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) *ServiceAccountConfiguration {
+	return &ServiceAccountConfiguration{
+		context:        ctx,
+		serviceAccount: serviceAccount,
+		objectStore:    options.DashConfig.ObjectStore(),
+	}
+}
+
+// Create creates a service account configuration summary
+func (s *ServiceAccountConfiguration) Create(options Options) (*component.Summary, error) {
+	if s == nil || s.serviceAccount == nil {
+		return nil, errors.New("service account is nil")
+	}
+
+	serviceAccount := s.serviceAccount
 
 	sections := component.SummarySections{}
 
@@ -138,7 +159,7 @@ func printServiceAccountConfig(ctx context.Context, serviceAccount corev1.Servic
 		sections.Add("Mountable Secrets", view)
 	}
 
-	tokens, err := serviceAccountTokens(ctx, serviceAccount, objectStore)
+	tokens, err := serviceAccountTokens(s.context, *serviceAccount, s.objectStore)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "get tokens for service account")
@@ -205,24 +226,34 @@ func serviceAccountTokens(ctx context.Context, serviceAccount corev1.ServiceAcco
 	return tokens, nil
 }
 
-type serviceAccountPolicyRules struct {
-	ctx            context.Context
-	serviceAccount corev1.ServiceAccount
-	appObjectStore store.Store
-
-	printPolicyRulesFunc func([]rbacv1.PolicyRule) (*component.Table, error)
+// ServiceAccountPolicyRules generates a service account policy rule
+type ServiceAccountPolicyRules struct {
+	context     context.Context
+	namespace   string
+	name        string
+	objectStore store.Store
 }
 
-func newServiceAccountPolicyRules(ctx context.Context, serviceAccount corev1.ServiceAccount, appObjectStore store.Store) *serviceAccountPolicyRules {
-	return &serviceAccountPolicyRules{
-		ctx:                  ctx,
-		serviceAccount:       serviceAccount,
-		appObjectStore:       appObjectStore,
-		printPolicyRulesFunc: printPolicyRules,
+// NewServiceAccountPolicyRules creates an instance of ServiceAccountPolicyRules
+func NewServiceAccountPolicyRules(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) *ServiceAccountPolicyRules {
+	if err := options.DashConfig.Validate(); err != nil {
+		return nil
+	}
+
+	return &ServiceAccountPolicyRules{
+		context:     ctx,
+		namespace:   serviceAccount.Namespace,
+		name:        serviceAccount.Name,
+		objectStore: options.DashConfig.ObjectStore(),
 	}
 }
 
-func (s *serviceAccountPolicyRules) run() (*component.Table, error) {
+// Create generates a service account policy rule table
+func (s *ServiceAccountPolicyRules) Create() (*component.Table, error) {
+	if s.namespace == "" || s.name == "" {
+		return nil, errors.New("serviceaccount is nil")
+	}
+
 	var roleRefs []rbacv1.RoleRef
 
 	roleBindingRoleRefs, err := s.listRoleBindings()
@@ -249,7 +280,7 @@ func (s *serviceAccountPolicyRules) run() (*component.Table, error) {
 		}
 		switch kind := roleRef.Kind; kind {
 		case "ClusterRole":
-			object, found, err := s.appObjectStore.Get(s.ctx, key)
+			object, found, err := s.objectStore.Get(s.context, key)
 			if err != nil {
 				return nil, err
 			}
@@ -266,9 +297,9 @@ func (s *serviceAccountPolicyRules) run() (*component.Table, error) {
 			policyRules = append(policyRules, clusterRole.Rules...)
 
 		case "Role":
-			key.Namespace = s.serviceAccount.Namespace
+			key.Namespace = s.namespace
 
-			object, found, err := s.appObjectStore.Get(s.ctx, key)
+			object, found, err := s.objectStore.Get(s.context, key)
 			if err != nil {
 				return nil, err
 			}
@@ -289,17 +320,17 @@ func (s *serviceAccountPolicyRules) run() (*component.Table, error) {
 		}
 	}
 
-	return s.printPolicyRulesFunc(policyRules)
+	return printPolicyRules(policyRules)
 }
 
-func (s *serviceAccountPolicyRules) listRoleBindings() ([]rbacv1.RoleRef, error) {
+func (s *ServiceAccountPolicyRules) listRoleBindings() ([]rbacv1.RoleRef, error) {
 	roleBindingKey := store.Key{
-		Namespace:  s.serviceAccount.Namespace,
+		Namespace:  s.namespace,
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "RoleBinding",
 	}
 
-	objects, _, err := s.appObjectStore.List(s.ctx, roleBindingKey)
+	objects, _, err := s.objectStore.List(s.context, roleBindingKey)
 	if err != nil {
 		return nil, err
 	}
@@ -320,13 +351,13 @@ func (s *serviceAccountPolicyRules) listRoleBindings() ([]rbacv1.RoleRef, error)
 	return list, nil
 }
 
-func (s *serviceAccountPolicyRules) listClusterRoleBindings() ([]rbacv1.RoleRef, error) {
+func (s *ServiceAccountPolicyRules) listClusterRoleBindings() ([]rbacv1.RoleRef, error) {
 	roleBindingKey := store.Key{
 		APIVersion: "rbac.authorization.k8s.io/v1",
 		Kind:       "ClusterRoleBinding",
 	}
 
-	objects, _, err := s.appObjectStore.List(s.ctx, roleBindingKey)
+	objects, _, err := s.objectStore.List(s.context, roleBindingKey)
 	if err != nil {
 		return nil, err
 	}
@@ -347,7 +378,7 @@ func (s *serviceAccountPolicyRules) listClusterRoleBindings() ([]rbacv1.RoleRef,
 	return list, nil
 }
 
-func (s *serviceAccountPolicyRules) isMatchSubjects(subjects []rbacv1.Subject) bool {
+func (s *ServiceAccountPolicyRules) isMatchSubjects(subjects []rbacv1.Subject) bool {
 	subjectMatched := false
 	for _, subject := range subjects {
 		if s.isSubject(subject) {
@@ -359,13 +390,12 @@ func (s *serviceAccountPolicyRules) isMatchSubjects(subjects []rbacv1.Subject) b
 	return subjectMatched
 }
 
-func (s *serviceAccountPolicyRules) isSubject(subject rbacv1.Subject) bool {
-	namespace := s.serviceAccount.Namespace
-	inNamespace := fmt.Sprintf("system:serviceaccounts:%s", namespace)
+func (s *ServiceAccountPolicyRules) isSubject(subject rbacv1.Subject) bool {
+	inNamespace := fmt.Sprintf("system:serviceaccounts:%s", s.namespace)
 
 	apiGroup := "rbac.authorization.k8s.io"
 
-	if subject.Kind == "ServiceAccount" && subject.Name == s.serviceAccount.Name {
+	if subject.Kind == "ServiceAccount" && subject.Name == s.name {
 		return true
 	} else if subject.Kind == "Group" && subject.Name == inNamespace && subject.APIGroup == apiGroup {
 		return true
@@ -374,4 +404,23 @@ func (s *serviceAccountPolicyRules) isSubject(subject rbacv1.Subject) bool {
 	}
 
 	return false
+}
+
+func defaultServiceAccountConfig(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) (*component.Summary, error) {
+	return NewServiceAccountConfiguration(ctx, serviceAccount, options).Create(options)
+}
+
+func (s *serviceAccountHandler) PolicyRules(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) error {
+	s.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return s.policyRulesFunc(ctx, serviceAccount, options)
+		},
+	})
+
+	return nil
+}
+
+func defaultServiceAccountPolicyRules(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) (*component.Table, error) {
+	return NewServiceAccountPolicyRules(ctx, serviceAccount, options).Create()
 }
