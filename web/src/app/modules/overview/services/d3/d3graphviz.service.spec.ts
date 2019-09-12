@@ -4,13 +4,13 @@
 
 import { TestBed } from '@angular/core/testing';
 
-import { DagreService } from './dagre.service';
+import { D3GraphvizService } from './d3graphviz.service';
 
 describe('DagreService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: DagreService = TestBed.get(DagreService);
+    const service: D3GraphvizService = TestBed.get(D3GraphvizService);
     expect(service).toBeTruthy();
   });
 });
