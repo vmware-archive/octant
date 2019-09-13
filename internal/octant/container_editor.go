@@ -22,6 +22,8 @@ type ContainerEditor struct {
 	store store.Store
 }
 
+var _ action.Dispatcher = (*ContainerEditor)(nil)
+
 // NewContainerEditor creates an instance of ContainerEditor.
 func NewContainerEditor(objectStore store.Store) *ContainerEditor {
 	editor := &ContainerEditor{

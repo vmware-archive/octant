@@ -43,7 +43,7 @@ export class ButtonGroupComponent implements OnInit {
   }
 
   private doAction(payload: {}) {
-    this.actionService.perform(payload).subscribe();
+    this.actionService.perform(payload);
   }
 
   private activateModal(payload: {}, confirmation: Confirmation) {

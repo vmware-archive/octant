@@ -19,6 +19,16 @@ import (
 	octantFake "github.com/vmware/octant/internal/octant/fake"
 )
 
+func TestContextManager_Handlers(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	dashConfig := configFake.NewMockDash(controller)
+
+	manager := api.NewContextManager(dashConfig)
+	AssertHandlers(t, manager, []string{api.RequestSetContext})
+}
+
 func TestContext_GenerateContexts(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()

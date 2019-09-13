@@ -7,11 +7,9 @@ package api_test
 
 import (
 	"context"
-	"sort"
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/vmware/octant/internal/api"
@@ -33,22 +31,11 @@ func TestContentManager_Handlers(t *testing.T) {
 	logger := log.NopLogger()
 
 	manager := api.NewContentManager(moduleManager, logger)
-
-	handlers := manager.Handlers()
-	var got []string
-	for _, h := range handlers {
-		got = append(got, h.RequestType)
-	}
-	sort.Strings(got)
-
-	expected := []string{
+	AssertHandlers(t, manager, []string{
 		api.RequestSetContentPath,
 		api.RequestSetNamespace,
 		api.RequestSetQueryParams,
-	}
-	sort.Strings(expected)
-
-	assert.Equal(t, expected, got)
+	})
 }
 
 func TestContentManager_GenerateContent(t *testing.T) {

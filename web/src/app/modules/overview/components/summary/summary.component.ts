@@ -46,7 +46,7 @@ export class SummaryComponent implements OnChanges {
 
   onActionSubmit(formGroup: FormGroup) {
     if (formGroup && formGroup.value) {
-      this.actionService.perform(formGroup.value).subscribe();
+      this.actionService.perform(formGroup.value);
       this.currentAction = undefined;
     }
   }
