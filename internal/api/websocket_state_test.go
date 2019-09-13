@@ -7,6 +7,7 @@ package api_test
 
 import (
 	"context"
+	"sort"
 	"testing"
 	"time"
 
@@ -284,12 +285,13 @@ func TestWebsocketState_AddFilter(t *testing.T) {
 }
 
 type websocketStateMocks struct {
-	controller    *gomock.Controller
-	module        *moduleFake.MockModule
-	moduleManager *moduleFake.MockManagerInterface
-	dashConfig    *configFake.MockDash
-	wsClient      *fake.MockOctantClient
-	stateManager  *fake.MockStateManager
+	controller       *gomock.Controller
+	module           *moduleFake.MockModule
+	moduleManager    *moduleFake.MockManagerInterface
+	dashConfig       *configFake.MockDash
+	wsClient         *fake.MockOctantClient
+	stateManager     *fake.MockStateManager
+	actionDispatcher *fake.MockActionDispatcher
 }
 
 func newWebsocketStateMocks(t *testing.T, namespace string) *websocketStateMocks {
@@ -303,14 +305,16 @@ func newWebsocketStateMocks(t *testing.T, namespace string) *websocketStateMocks
 	dashConfig.EXPECT().Logger().Return(log.NopLogger()).AnyTimes()
 	octantClient := fake.NewMockOctantClient(controller)
 	stateManager := fake.NewMockStateManager(controller)
+	actionDispatcher := fake.NewMockActionDispatcher(controller)
 
 	return &websocketStateMocks{
-		controller:    controller,
-		module:        m,
-		moduleManager: moduleManager,
-		dashConfig:    dashConfig,
-		wsClient:      octantClient,
-		stateManager:  stateManager,
+		controller:       controller,
+		module:           m,
+		moduleManager:    moduleManager,
+		dashConfig:       dashConfig,
+		wsClient:         octantClient,
+		stateManager:     stateManager,
+		actionDispatcher: actionDispatcher,
 	}
 }
 
@@ -325,6 +329,18 @@ func (w *websocketStateMocks) finish() {
 }
 
 func (w *websocketStateMocks) factory() *api.WebsocketState {
-	return api.NewWebsocketState(w.dashConfig, w.wsClient, w.options()...)
+	return api.NewWebsocketState(w.dashConfig, w.actionDispatcher, w.wsClient, w.options()...)
 
+}
+
+func AssertHandlers(t *testing.T, manager api.StateManager, expected []string) {
+	handlers := manager.Handlers()
+	var got []string
+	for _, h := range handlers {
+		got = append(got, h.RequestType)
+	}
+	sort.Strings(got)
+	sort.Strings(expected)
+
+	assert.Equal(t, expected, got)
 }

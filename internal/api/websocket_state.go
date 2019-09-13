@@ -27,6 +27,7 @@ var (
 	reContentPathNamespace = regexp.MustCompile(`^/namespace/(?P<namespace>[^/]+)/?`)
 )
 
+// StateManager manages states for WebsocketState.
 type StateManager interface {
 	Handlers() []octant.ClientRequestHandler
 	Start(ctx context.Context, state octant.State, s OctantClient)
@@ -41,9 +42,11 @@ func defaultStateManagers(clientID string, dashConfig config.Dash) []StateManage
 		NewNavigationManager(dashConfig.ModuleManager()),
 		NewNamespacesManager(dashConfig.ClusterClient()),
 		NewContextManager(dashConfig),
+		NewActionRequestManager(),
 	}
 }
 
+// OctantClient is an OctantClient.
 type OctantClient interface {
 	Send(event octant.Event)
 	ID() string
@@ -75,14 +78,17 @@ func (s *atomicString) set(v string) {
 	s.s = v
 }
 
+// WebsocketStateOption is an option for configuring WebsocketState.
 type WebsocketStateOption func(w *WebsocketState)
 
+// WebsocketStateManagers configures WebsocketState's state managers.
 func WebsocketStateManagers(managers []StateManager) WebsocketStateOption {
 	return func(w *WebsocketState) {
 		w.managers = managers
 	}
 }
 
+// WebsocketState manages state for a websocket client.
 type WebsocketState struct {
 	dashConfig         config.Dash
 	wsClient           OctantClient
@@ -92,13 +98,15 @@ type WebsocketState struct {
 	contentPathUpdates map[string]octant.ContentPathUpdateFunc
 	namespaceUpdates   map[string]octant.NamespaceUpdateFunc
 
-	mu       sync.RWMutex
-	managers []StateManager
+	mu               sync.RWMutex
+	managers         []StateManager
+	actionDispatcher ActionDispatcher
 }
 
 var _ octant.State = (*WebsocketState)(nil)
 
-func NewWebsocketState(dashConfig config.Dash, wsClient OctantClient, options ...WebsocketStateOption) *WebsocketState {
+// NewWebsocketState creates an instance of WebsocketState.
+func NewWebsocketState(dashConfig config.Dash, actionDispatcher ActionDispatcher, wsClient OctantClient, options ...WebsocketStateOption) *WebsocketState {
 	defaultNamespace := dashConfig.DefaultNamespace()
 	defaultContentPath := path.Join("/content", "overview", "namespace", defaultNamespace)
 
@@ -110,6 +118,7 @@ func NewWebsocketState(dashConfig config.Dash, wsClient OctantClient, options ..
 		namespace:          newStringValue(defaultNamespace),
 		contentPath:        newStringValue(defaultContentPath),
 		filters:            make([]octant.Filter, 0),
+		actionDispatcher:   actionDispatcher,
 	}
 
 	for _, option := range options {
@@ -123,12 +132,14 @@ func NewWebsocketState(dashConfig config.Dash, wsClient OctantClient, options ..
 	return w
 }
 
+// Start starts WebsocketState by starting all associated StateManagers.
 func (c *WebsocketState) Start(ctx context.Context) {
 	for i := range c.managers {
 		go c.managers[i].Start(ctx, c, c.wsClient)
 	}
 }
 
+// Handlers returns all the handlers for WebsocketState.
 func (c *WebsocketState) Handlers() []octant.ClientRequestHandler {
 	var handlers []octant.ClientRequestHandler
 
@@ -139,6 +150,12 @@ func (c *WebsocketState) Handlers() []octant.ClientRequestHandler {
 	return handlers
 }
 
+// Dispatch dispatches a message.
+func (c *WebsocketState) Dispatch(ctx context.Context, actionName string, payload action.Payload) error {
+	return c.actionDispatcher.Dispatch(ctx, c, actionName, payload)
+}
+
+// SetContentPath sets the content path.
 func (c *WebsocketState) SetContentPath(contentPath string) {
 	if c.contentPath.get() == contentPath {
 		return
@@ -179,10 +196,12 @@ func (c *WebsocketState) SetContentPath(contentPath string) {
 
 }
 
+// GetContentPath returns the content path.
 func (c *WebsocketState) GetContentPath() string {
 	return c.contentPath.get()
 }
 
+// OnContentPathUpdate registers a function that will be called when the content path changes.
 func (c *WebsocketState) OnContentPathUpdate(fn octant.ContentPathUpdateFunc) octant.UpdateCancelFunc {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -199,6 +218,7 @@ func (c *WebsocketState) OnContentPathUpdate(fn octant.ContentPathUpdateFunc) oc
 	return cancelFunc
 }
 
+// SetNamespace sets the namespace.
 func (c *WebsocketState) SetNamespace(namespace string) {
 	cur := c.namespace.get()
 	if namespace == cur {
@@ -222,10 +242,12 @@ func (c *WebsocketState) SetNamespace(namespace string) {
 	c.wsClient.Send(CreateNamespaceUpdate(namespace))
 }
 
+// GetNamespace gets the namespace.
 func (c *WebsocketState) GetNamespace() string {
 	return c.namespace.get()
 }
 
+// OnNamespaceUpdate registers a function that will be run when the namespace changes.
 func (c *WebsocketState) OnNamespaceUpdate(fn octant.NamespaceUpdateFunc) octant.UpdateCancelFunc {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -242,6 +264,7 @@ func (c *WebsocketState) OnNamespaceUpdate(fn octant.NamespaceUpdateFunc) octant
 	return cancelFunc
 }
 
+// AddFilter adds a content filter.
 func (c *WebsocketState) AddFilter(filter octant.Filter) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -256,6 +279,7 @@ func (c *WebsocketState) AddFilter(filter octant.Filter) {
 	c.updateContentPath()
 }
 
+// RemoveFilter removes a content filter.
 func (c *WebsocketState) RemoveFilter(filter octant.Filter) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -273,6 +297,7 @@ func (c *WebsocketState) RemoveFilter(filter octant.Filter) {
 	c.updateContentPath()
 }
 
+// GetFilters returns all filters.
 func (c *WebsocketState) GetFilters() []octant.Filter {
 	filters := make([]octant.Filter, len(c.filters))
 	copy(filters, c.filters)
@@ -292,6 +317,7 @@ func (c *WebsocketState) SetFilters(filters []octant.Filter) {
 	c.updateContentPath()
 }
 
+// SetContext sets the Kubernetes context.
 func (c *WebsocketState) SetContext(requestedContext string) {
 	if err := c.dashConfig.UseContext(context.TODO(), requestedContext); err != nil {
 		c.dashConfig.Logger().WithErr(err).Errorf("update context")
@@ -317,6 +343,11 @@ func (c *WebsocketState) updateContentPath() {
 
 }
 
+// SendAlert sends an alert to the websocket client.
+func (c *WebsocketState) SendAlert(alert action.Alert) {
+	c.wsClient.Send(CreateAlertUpdate(alert))
+}
+
 func updateContentPathNamespace(in, namespace string) string {
 	parts := strings.Split(in, "/")
 	if in == "" {
@@ -330,6 +361,7 @@ func updateContentPathNamespace(in, namespace string) string {
 	return in
 }
 
+// CreateFiltersUpdate creates a filters update event.
 func CreateFiltersUpdate(filters []octant.Filter) octant.Event {
 	if filters == nil {
 		filters = make([]octant.Filter, 0)
@@ -339,6 +371,7 @@ func CreateFiltersUpdate(filters []octant.Filter) octant.Event {
 	})
 }
 
+// CreateContentPathUpdate creates a content path update event.
 func CreateContentPathUpdate(contentPath string, queryParams map[string][]string) octant.Event {
 	if queryParams == nil {
 		queryParams = make(map[string][]string)
@@ -350,8 +383,18 @@ func CreateContentPathUpdate(contentPath string, queryParams map[string][]string
 	})
 }
 
+// CreateNamespaceUpdate creates a namespace update event.
 func CreateNamespaceUpdate(namespace string) octant.Event {
 	return CreateEvent(octant.EventTypeNamespace, action.Payload{
 		"namespace": namespace,
+	})
+}
+
+// CreateAlertUpdate creates an alert update event.
+func CreateAlertUpdate(alert action.Alert) octant.Event {
+	return CreateEvent(octant.EventTypeAlert, action.Payload{
+		"type":       alert.Type,
+		"message":    alert.Message,
+		"expiration": alert.Expiration,
 	})
 }

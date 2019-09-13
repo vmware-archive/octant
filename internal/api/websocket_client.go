@@ -54,7 +54,7 @@ type WebsocketClient struct {
 var _ OctantClient = (*WebsocketClient)(nil)
 
 // NewWebsocketClient creates an instance of WebsocketClient.
-func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, dashConfig config.Dash, id uuid.UUID) *WebsocketClient {
+func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, dashConfig config.Dash, actionDispatcher ActionDispatcher, id uuid.UUID) *WebsocketClient {
 	logger := dashConfig.Logger().With("component", "websocket-client", "client-id", id.String())
 
 	ctx, cancel := context.WithCancel(ctx)
@@ -70,7 +70,7 @@ func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, dashConfig co
 		handlers:   make(map[string][]octant.ClientRequestHandler),
 	}
 
-	state := NewWebsocketState(dashConfig, client)
+	state := NewWebsocketState(dashConfig, actionDispatcher, client)
 	go state.Start(ctx)
 
 	client.state = state

@@ -1,20 +1,15 @@
 import { Injectable } from '@angular/core';
 import getAPIBase from '../../../../services/common/getAPIBase';
 import { HttpClient } from '@angular/common/http';
+import { WebsocketService } from '../websocket/websocket.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ActionService {
-  constructor(private http: HttpClient) {}
+  constructor(private websocketService: WebsocketService) {}
 
   perform(update: any) {
-    const url = [getAPIBase(), 'api/v1/action'].join('/');
-
-    const payload = {
-      update,
-    };
-
-    return this.http.post(url, payload);
+    this.websocketService.sendMessage('performAction', update);
   }
 }

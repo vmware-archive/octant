@@ -36,19 +36,21 @@ type WebsocketClientManager struct {
 	register chan *clientMeta
 
 	// unregister unregisters request from clients.
-	unregister chan *WebsocketClient
-	ctx        context.Context
+	unregister       chan *WebsocketClient
+	ctx              context.Context
+	actionDispatcher ActionDispatcher
 }
 
 var _ ClientManager = (*WebsocketClientManager)(nil)
 
 // NewWebsocketClientManager creates an instance of WebsocketClientManager.
-func NewWebsocketClientManager(ctx context.Context) *WebsocketClientManager {
+func NewWebsocketClientManager(ctx context.Context, dispatcher ActionDispatcher) *WebsocketClientManager {
 	return &WebsocketClientManager{
-		ctx:        ctx,
-		clients:    make(map[*WebsocketClient]context.CancelFunc),
-		register:   make(chan *clientMeta),
-		unregister: make(chan *WebsocketClient),
+		ctx:              ctx,
+		clients:          make(map[*WebsocketClient]context.CancelFunc),
+		register:         make(chan *clientMeta),
+		unregister:       make(chan *WebsocketClient),
+		actionDispatcher: dispatcher,
 	}
 }
 
@@ -83,7 +85,7 @@ func (m *WebsocketClientManager) ClientFromRequest(dashConfig config.Dash, w htt
 	}
 
 	ctx, cancel := context.WithCancel(m.ctx)
-	client := NewWebsocketClient(ctx, conn, dashConfig, clientID)
+	client := NewWebsocketClient(ctx, conn, dashConfig, m.actionDispatcher, clientID)
 	m.register <- &clientMeta{
 		cancelFunc: func() {
 			cancel()

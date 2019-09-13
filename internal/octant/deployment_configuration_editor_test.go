@@ -18,6 +18,7 @@ import (
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/action"
+	actionFake "github.com/vmware/octant/pkg/action/fake"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/store/fake"
 )
@@ -32,6 +33,7 @@ func TestDeploymentConfigurationEditor(t *testing.T) {
 	deployment.Namespace = "default"
 
 	objectStore := fake.NewMockStore(controller)
+	alerter := actionFake.NewMockAlerter(controller)
 
 	key, err := store.KeyFromObject(deployment)
 	require.NoError(t, err)
@@ -43,6 +45,14 @@ func TestDeploymentConfigurationEditor(t *testing.T) {
 		Update(gomock.Any(), key, gomock.Any()).
 		DoAndReturn(func(ctx context.Context, key store.Key, fn func(object *unstructured.Unstructured) error) error {
 			return nil
+		})
+
+	alerter.EXPECT().
+		SendAlert(gomock.Any()).
+		DoAndReturn(func(alert action.Alert) {
+			assert.Equal(t, action.AlertTypeInfo, alert.Type)
+			assert.Equal(t, `Updated Deployment "deployment"`, alert.Message)
+			assert.NotNil(t, alert.Expiration)
 		})
 
 	configurationEditor := NewDeploymentConfigurationEditor(logger, objectStore)
@@ -58,6 +68,6 @@ func TestDeploymentConfigurationEditor(t *testing.T) {
 		"replicas":   "5",
 	}
 
-	require.NoError(t, configurationEditor.Handle(ctx, payload))
+	require.NoError(t, configurationEditor.Handle(ctx, alerter, payload))
 
 }

@@ -8,6 +8,7 @@ package octant
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -21,6 +22,8 @@ import (
 type ContainerEditor struct {
 	store store.Store
 }
+
+var _ action.Dispatcher = (*ContainerEditor)(nil)
 
 // NewContainerEditor creates an instance of ContainerEditor.
 func NewContainerEditor(objectStore store.Store) *ContainerEditor {
@@ -38,7 +41,7 @@ func (e *ContainerEditor) ActionName() string {
 
 // Handle edits a container. Supported edits:
 //   * image
-func (e *ContainerEditor) Handle(ctx context.Context, payload action.Payload) error {
+func (e *ContainerEditor) Handle(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
 	logger := log.From(ctx).With("actionName", e.ActionName())
 	logger.With("payload", payload).Infof("received action payload")
 
@@ -69,7 +72,18 @@ func (e *ContainerEditor) Handle(ctx context.Context, payload action.Payload) er
 
 	fn := updateContainer(containersPath, logger, containerName, containerImage)
 
-	return e.store.Update(ctx, key, fn)
+	message := fmt.Sprintf("Container %q was updated", containerName)
+	alertType := action.AlertTypeInfo
+	if err := e.store.Update(ctx, key, fn); err != nil {
+		message = fmt.Sprintf("Unable to update container %q: %s", containerName, err)
+		alertType = action.AlertTypeWarning
+		logger := log.From(ctx)
+		logger.WithErr(err).Errorf("update container")
+	}
+	alert := action.CreateAlert(alertType, message, action.DefaultAlertExpiration)
+
+	alerter.SendAlert(alert)
+	return nil
 }
 
 func updateContainer(containersPath []string, logger log.Logger, containerName string, containerImage string) func(object *unstructured.Unstructured) error {

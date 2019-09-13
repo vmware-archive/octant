@@ -1,12 +1,45 @@
 import { TestBed } from '@angular/core/testing';
 
 import { ActionService } from './action.service';
+import { WebsocketService } from '../websocket/websocket.service';
+import { WebsocketServiceMock } from '../websocket/mock';
 
 describe('ActionService', () => {
-  beforeEach(() => TestBed.configureTestingModule({}));
+  let service: ActionService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        ActionService,
+        {
+          provide: WebsocketService,
+          useClass: WebsocketServiceMock,
+        },
+      ],
+    });
+
+    service = TestBed.get(ActionService);
+  });
 
   it('should be created', () => {
-    const service: ActionService = TestBed.get(ActionService);
     expect(service).toBeTruthy();
+  });
+
+  describe('performAction', () => {
+    let websocketService: WebsocketService;
+
+    beforeEach(() => {
+      websocketService = TestBed.get(WebsocketService);
+      spyOn(websocketService, 'sendMessage');
+    });
+
+    it('sends a performAction message to the server', () => {
+      const update = { foo: 'bar' };
+      service.perform(update);
+      expect(websocketService.sendMessage).toHaveBeenCalledWith(
+        'performAction',
+        update
+      );
+    });
   });
 });

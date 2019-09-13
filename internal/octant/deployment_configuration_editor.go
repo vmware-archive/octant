@@ -7,6 +7,7 @@ package octant
 
 import (
 	"context"
+	"fmt"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -20,6 +21,8 @@ type DeploymentConfigurationEditor struct {
 	logger log.Logger
 	store  store.Store
 }
+
+var _ action.Dispatcher = (*DeploymentConfigurationEditor)(nil)
 
 // NewDeploymentConfigurationEditor edits a deployment.
 func NewDeploymentConfigurationEditor(logger log.Logger, objectStore store.Store) *DeploymentConfigurationEditor {
@@ -36,7 +39,7 @@ func (e *DeploymentConfigurationEditor) ActionName() string {
 
 // Handle edits a deployment. Supported edits:
 //   * replicas
-func (e *DeploymentConfigurationEditor) Handle(ctx context.Context, payload action.Payload) error {
+func (e *DeploymentConfigurationEditor) Handle(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
 	e.logger.
 		With("payload", payload, "actionName", e.ActionName()).
 		Infof("received action payload")
@@ -52,11 +55,25 @@ func (e *DeploymentConfigurationEditor) Handle(ctx context.Context, payload acti
 		return err
 	}
 
+	name, err := payload.String("name")
+	if err != nil {
+		return err
+	}
+
 	fn := func(object *unstructured.Unstructured) error {
 		return unstructured.SetNestedField(object.Object, replicaCount, "spec", "replicas")
 	}
 
-	return e.store.Update(ctx, key, fn)
+	alertType := action.AlertTypeInfo
+	message := fmt.Sprintf("Updated Deployment %q", name)
+	if err := e.store.Update(ctx, key, fn); err != nil {
+		alertType = action.AlertTypeWarning
+		message = fmt.Sprintf("Unable to update Deployment %q: %s", name, err)
+	}
+	alert := action.CreateAlert(alertType, message, action.DefaultAlertExpiration)
+	alerter.SendAlert(alert)
+
+	return nil
 }
 
 func roundToInt(val float64) int64 {

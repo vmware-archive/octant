@@ -4,7 +4,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { Observable, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
 import {
   NotifierService,
   NotifierSession,
@@ -28,6 +28,12 @@ export interface BackendService {
   triggerHandler(name: string, payload: {});
 }
 
+interface Alert {
+  type: NotifierSignalType;
+  message: string;
+  expiration?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -37,11 +43,24 @@ export class WebsocketService implements BackendService {
   reconnected = new Subject<Event>();
 
   private notifierSession: NotifierSession;
-  private errorSignalID: string;
   private subject: WebSocketSubject<unknown>;
+  private connectSignalID = new BehaviorSubject<string>('');
 
   constructor(notifierService: NotifierService) {
     this.notifierSession = notifierService.createSession();
+
+    this.registerHandler('alert', data => {
+      const alert = data as Alert;
+      const id = this.notifierSession.pushSignal(alert.type, alert.message);
+      if (alert.expiration) {
+        const expiration = new Date(alert.expiration);
+        const diff = expiration.getTime() - Date.now();
+
+        setTimeout(() => {
+          this.notifierSession.removeSignal(id);
+        }, diff);
+      }
+    });
   }
 
   registerHandler(name: string, handler: (data: {}) => void): () => void {
@@ -62,13 +81,11 @@ export class WebsocketService implements BackendService {
         retryWhen(errors =>
           errors.pipe(
             tap(_ => {
-              const signalID = this.notifierSession.pushSignal(
+              const id = this.notifierSession.pushSignal(
                 NotifierSignalType.ERROR,
                 'Lost connection to Octant service. Retrying...'
               );
-              if (this.errorSignalID === '') {
-                this.errorSignalID = signalID;
-              }
+              this.connectSignalID.next(id);
             }),
             delay(1000)
           )
@@ -76,7 +93,15 @@ export class WebsocketService implements BackendService {
       )
       .subscribe(
         data => {
-          this.notifierSession.removeAllSignals();
+          this.connectSignalID
+            .subscribe(id => {
+              if (id !== '') {
+                this.notifierSession.removeAllSignals();
+                this.connectSignalID.next('');
+              }
+            })
+            .unsubscribe();
+
           this.parseWebsocketMessage(data);
         },
         err => console.error(err)

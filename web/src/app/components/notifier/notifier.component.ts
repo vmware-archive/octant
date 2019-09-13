@@ -20,6 +20,7 @@ export class NotifierComponent implements OnInit, OnDestroy {
   loading = false;
   error: string;
   warning: string;
+  info: string;
 
   constructor(private notifierService: NotifierService) {}
 
@@ -29,7 +30,7 @@ export class NotifierComponent implements OnInit, OnDestroy {
         const lastLoadingSignal = _.findLast(currentSignals, {
           type: NotifierSignalType.LOADING,
         });
-        this.loading = lastLoadingSignal ? true : false;
+        this.loading = !!lastLoadingSignal;
 
         const lastWarningSignal = _.findLast(currentSignals, {
           type: NotifierSignalType.WARNING,
@@ -42,6 +43,11 @@ export class NotifierComponent implements OnInit, OnDestroy {
           type: NotifierSignalType.ERROR,
         });
         this.error = lastErrorSignal ? (lastErrorSignal.data as string) : '';
+
+        const lastInfoSignal = _.findLast(currentSignals, {
+          type: NotifierSignalType.INFO,
+        });
+        this.info = lastInfoSignal ? (lastInfoSignal.data as string) : '';
       }
     );
   }

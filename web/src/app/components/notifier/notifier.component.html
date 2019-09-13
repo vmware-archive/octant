@@ -18,7 +18,7 @@
 </ng-container>
 
 <ng-container *ngIf="!loading && warning">
-  <clr-alert [clrAlertType]="'warning'" (clrAlertClosedChange)="onWarningClose()" [clrAlertIcon]="'info-circle'" [clrAlertAppLevel]="true">
+  <clr-alert [clrAlertType]="'warning'" (clrAlertClosedChange)="onWarningClose()" [clrAlertIcon]="'exclamation-triangle'" [clrAlertAppLevel]="true">
     <clr-alert-item>
       <span class="alert-text">
         {{warning}}
@@ -26,3 +26,14 @@
     </clr-alert-item>
   </clr-alert>
 </ng-container>
+
+<ng-container *ngIf="!loading && info">
+  <clr-alert [clrAlertType]="'info'" [clrAlertIcon]="'info-circle'" [clrAlertAppLevel]="true">
+    <clr-alert-item>
+      <span class="alert-text">
+        {{info}}
+      </span>
+    </clr-alert-item>
+  </clr-alert>
+</ng-container>
+

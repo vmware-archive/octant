@@ -5,6 +5,12 @@
 
 package octant
 
+import (
+	"context"
+
+	"github.com/vmware/octant/pkg/action"
+)
+
 //go:generate mockgen -destination=./fake/mock_state.go -package=fake github.com/vmware/octant/internal/octant State
 
 // UpdateCancelFunc cancels the update.
@@ -37,6 +43,10 @@ type State interface {
 	SetFilters(filters []Filter)
 	// SetContext sets the current context.
 	SetContext(requestedContext string)
+	// Dispatch dispatches a payload for an action.
+	Dispatch(ctx context.Context, actionName string, payload action.Payload) error
+	// SendAlert sends an alert.
+	SendAlert(alert action.Alert)
 }
 
 // ContentPathUpdateFunc is a function that is called when content path is updated.

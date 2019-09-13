@@ -16,6 +16,10 @@ import (
 	"github.com/vmware/octant/pkg/action"
 )
 
+const (
+	RequestSetContext = "setContext"
+)
+
 // ContextManagerOption is an option for configuring ContextManager.
 type ContextManagerOption func(manager *ContextManager)
 
@@ -65,7 +69,7 @@ func NewContextManager(dashConfig config.Dash, options ...ContextManagerOption) 
 func (c *ContextManager) Handlers() []octant.ClientRequestHandler {
 	return []octant.ClientRequestHandler{
 		{
-			RequestType: "setContext",
+			RequestType: RequestSetContext,
 			Handler:     c.SetContext,
 		},
 	}
