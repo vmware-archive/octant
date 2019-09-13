@@ -15,5 +15,5 @@ import (
 
 // ActionDispatcher dispatches actions.
 type ActionDispatcher interface {
-	Dispatch(ctx context.Context, actionName string, payload action.Payload) error
+	Dispatch(ctx context.Context, alerter action.Alerter, actionName string, payload action.Payload) error
 }

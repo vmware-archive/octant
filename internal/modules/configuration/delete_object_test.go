@@ -5,20 +5,23 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/action"
+	actionFake "github.com/vmware/octant/pkg/action/fake"
 	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/pkg/store/fake"
+	storeFake "github.com/vmware/octant/pkg/store/fake"
 )
 
 func TestObjectDeleter_ActionName(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	objectStore := fake.NewMockStore(controller)
+	objectStore := storeFake.NewMockStore(controller)
 
 	logger := log.NopLogger()
 
@@ -30,7 +33,8 @@ func TestObjectDeleter_Handle(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	objectStore := fake.NewMockStore(controller)
+	objectStore := storeFake.NewMockStore(controller)
+	alerter := actionFake.NewMockAlerter(controller)
 
 	pod := testutil.CreatePod("pod")
 	key, err := store.KeyFromObject(pod)
@@ -40,12 +44,20 @@ func TestObjectDeleter_Handle(t *testing.T) {
 		Delete(gomock.Any(), key).
 		Return(nil)
 
+	alerter.EXPECT().
+		SendAlert(gomock.Any()).
+		DoAndReturn(func(alert action.Alert) {
+			assert.Equal(t, action.AlertTypeInfo, alert.Type)
+			assert.Equal(t, `Deleted Pod "pod"`, alert.Message)
+			assert.NotNil(t, alert.Expiration)
+		})
+
 	logger := log.NopLogger()
 
 	d := NewObjectDeleter(logger, objectStore)
 
 	ctx := context.Background()
 
-	err = d.Handle(ctx, key.ToActionPayload())
+	err = d.Handle(ctx, alerter, key.ToActionPayload())
 	require.NoError(t, err)
 }

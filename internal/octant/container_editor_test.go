@@ -10,12 +10,14 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/action"
+	actionFake "github.com/vmware/octant/pkg/action/fake"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/store/fake"
 )
@@ -25,6 +27,8 @@ func TestNewContainerEditor(t *testing.T) {
 	defer controller.Finish()
 
 	objectStore := fake.NewMockStore(controller)
+
+	alerter := actionFake.NewMockAlerter(controller)
 
 	key := store.Key{
 		Namespace:  "default",
@@ -36,6 +40,14 @@ func TestNewContainerEditor(t *testing.T) {
 	objectStore.EXPECT().
 		Update(gomock.Any(), key, gomock.Any()).
 		Return(nil)
+
+	alerter.EXPECT().
+		SendAlert(gomock.Any()).
+		DoAndReturn(func(alert action.Alert) {
+			assert.Equal(t, action.AlertTypeInfo, alert.Type)
+			assert.Equal(t, `Container "nginx" was updated`, alert.Message)
+			assert.NotNil(t, alert.Expiration)
+		})
 
 	editor := NewContainerEditor(objectStore)
 
@@ -51,7 +63,7 @@ func TestNewContainerEditor(t *testing.T) {
 		"containerImage": "nginx:stable",
 	})
 
-	require.NoError(t, editor.Handle(ctx, payload))
+	require.NoError(t, editor.Handle(ctx, alerter, payload))
 }
 
 func Test_updateContainer(t *testing.T) {

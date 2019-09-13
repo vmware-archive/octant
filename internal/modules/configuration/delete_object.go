@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/octant"
@@ -25,7 +26,7 @@ func (d *ObjectDeleter) ActionName() string {
 	return octant.ActionDeleteObject
 }
 
-func (d *ObjectDeleter) Handle(ctx context.Context, payload action.Payload) error {
+func (d *ObjectDeleter) Handle(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
 	d.logger.With("payload", payload).Debugf("deleting object")
 
 	key, err := store.KeyFromPayload(payload)
@@ -33,5 +34,14 @@ func (d *ObjectDeleter) Handle(ctx context.Context, payload action.Payload) erro
 		return err
 	}
 
-	return d.store.Delete(ctx, key)
+	alertType := action.AlertTypeInfo
+	message := fmt.Sprintf("Deleted %s %q", key.Kind, key.Name)
+	if err := d.store.Delete(ctx, key); err != nil {
+		alertType = action.AlertTypeWarning
+		message = fmt.Sprintf("Unable to deleted %s %q: %s", key.Kind, key.Name, err)
+	}
+	alert := action.CreateAlert(alertType, message, action.DefaultAlertExpiration)
+	alerter.SendAlert(alert)
+
+	return nil
 }

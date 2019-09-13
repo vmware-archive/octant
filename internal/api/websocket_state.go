@@ -152,7 +152,7 @@ func (c *WebsocketState) Handlers() []octant.ClientRequestHandler {
 
 // Dispatch dispatches a message.
 func (c *WebsocketState) Dispatch(ctx context.Context, actionName string, payload action.Payload) error {
-	return c.actionDispatcher.Dispatch(ctx, actionName, payload)
+	return c.actionDispatcher.Dispatch(ctx, c, actionName, payload)
 }
 
 // SetContentPath sets the content path.
@@ -343,6 +343,11 @@ func (c *WebsocketState) updateContentPath() {
 
 }
 
+// SendAlert sends an alert to the websocket client.
+func (c *WebsocketState) SendAlert(alert action.Alert) {
+	c.wsClient.Send(CreateAlertUpdate(alert))
+}
+
 func updateContentPathNamespace(in, namespace string) string {
 	parts := strings.Split(in, "/")
 	if in == "" {
@@ -382,5 +387,14 @@ func CreateContentPathUpdate(contentPath string, queryParams map[string][]string
 func CreateNamespaceUpdate(namespace string) octant.Event {
 	return CreateEvent(octant.EventTypeNamespace, action.Payload{
 		"namespace": namespace,
+	})
+}
+
+// CreateAlertUpdate creates an alert update event.
+func CreateAlertUpdate(alert action.Alert) octant.Event {
+	return CreateEvent(octant.EventTypeAlert, action.Payload{
+		"type":       alert.Type,
+		"message":    alert.Message,
+		"expiration": alert.Expiration,
 	})
 }

@@ -10,6 +10,7 @@ export enum NotifierSignalType {
   LOADING = 'LOADING',
   ERROR = 'ERROR',
   WARNING = 'WARNING',
+  INFO = 'INFO',
 }
 
 export interface NotifierSignal {
