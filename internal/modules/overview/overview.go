@@ -292,17 +292,12 @@ func (co *Overview) portForwardHandler() http.HandlerFunc {
 	}
 }
 
+// ActionPaths contain the actions this module is responsible for.
 func (co *Overview) ActionPaths() map[string]action.DispatcherFunc {
-	configurationEditor := NewConfigurationEditor(co.logger, co.dashConfig.ObjectStore())
-
-	return map[string]action.DispatcherFunc{
-		configurationEditor.ActionName(): configurationEditor.Handle,
+	dispatchers := action.Dispatchers{
+		octant.NewDeploymentConfigurationEditor(co.logger, co.dashConfig.ObjectStore()),
+		octant.NewContainerEditor(co.dashConfig.ObjectStore()),
 	}
-}
 
-func roundToInt(val float64) int64 {
-	if val < 0 {
-		return int64(val - 0.5)
-	}
-	return int64(val + 0.5)
+	return dispatchers.ToActionPaths()
 }

@@ -88,7 +88,7 @@ func (k Key) ToActionPayload() action.Payload {
 
 // KeyFromPayload converts a payload into a Key.
 func KeyFromPayload(payload action.Payload) (Key, error) {
-	namespace, err := payload.String("namespace")
+	namespace, err := payload.OptionalString("namespace")
 	if err != nil {
 		return Key{}, err
 	}

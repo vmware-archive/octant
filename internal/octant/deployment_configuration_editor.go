@@ -1,0 +1,67 @@
+/*
+ * Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package octant
+
+import (
+	"context"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
+	"github.com/vmware/octant/internal/log"
+	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware/octant/pkg/store"
+)
+
+// DeploymentConfigurationEditor edits a deployment's configuration.
+type DeploymentConfigurationEditor struct {
+	logger log.Logger
+	store  store.Store
+}
+
+// NewDeploymentConfigurationEditor edits a deployment.
+func NewDeploymentConfigurationEditor(logger log.Logger, objectStore store.Store) *DeploymentConfigurationEditor {
+	return &DeploymentConfigurationEditor{
+		logger: logger,
+		store:  objectStore,
+	}
+}
+
+// ActionName returns the action name for this editor.
+func (e *DeploymentConfigurationEditor) ActionName() string {
+	return "deployment/configuration"
+}
+
+// Handle edits a deployment. Supported edits:
+//   * replicas
+func (e *DeploymentConfigurationEditor) Handle(ctx context.Context, payload action.Payload) error {
+	e.logger.
+		With("payload", payload, "actionName", e.ActionName()).
+		Infof("received action payload")
+
+	replicaCountFloat, err := payload.Float64("replicas")
+	if err != nil {
+		return err
+	}
+	replicaCount := roundToInt(replicaCountFloat)
+
+	key, err := store.KeyFromPayload(payload)
+	if err != nil {
+		return err
+	}
+
+	fn := func(object *unstructured.Unstructured) error {
+		return unstructured.SetNestedField(object.Object, replicaCount, "spec", "replicas")
+	}
+
+	return e.store.Update(ctx, key, fn)
+}
+
+func roundToInt(val float64) int64 {
+	if val < 0 {
+		return int64(val - 0.5)
+	}
+	return int64(val + 0.5)
+}

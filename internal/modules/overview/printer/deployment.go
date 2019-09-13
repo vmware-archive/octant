@@ -144,7 +144,7 @@ func createDeploymentConditionsView(deployment *appsv1.Deployment) (*component.T
 	return table, nil
 }
 
-type actionGeneratorFunction func(*appsv1.Deployment) []component.Action
+type actionGeneratorFunction func(*appsv1.Deployment) ([]component.Action, error)
 
 // DeploymentConfiguration generates deployment configuration.
 type DeploymentConfiguration struct {
@@ -243,7 +243,10 @@ func (dc *DeploymentConfiguration) Create() (*component.Summary, error) {
 	summary := component.NewSummary("Configuration", sections...)
 
 	for _, generator := range dc.actionGenerators {
-		actions := generator(dc.deployment)
+		actions, err := generator(dc.deployment)
+		if err != nil {
+			return nil, errors.Wrap(err, "generate deployment actions")
+		}
 		for _, action := range actions {
 			summary.AddAction(action)
 		}
@@ -252,34 +255,26 @@ func (dc *DeploymentConfiguration) Create() (*component.Summary, error) {
 	return summary, nil
 }
 
-func editDeploymentAction(deployment *appsv1.Deployment) []component.Action {
+func editDeploymentAction(deployment *appsv1.Deployment) ([]component.Action, error) {
 	replicas := deployment.Spec.Replicas
 	if replicas == nil {
-		return []component.Action{}
+		return []component.Action{}, nil
 	}
 
-	gvk := deployment.GroupVersionKind()
-	group := gvk.Group
-	version := gvk.Version
-	kind := gvk.Kind
+	form, err := component.CreateFormForObject("deployment/configuration", deployment,
+		component.NewFormFieldNumber("Replicas", "replicas", fmt.Sprintf("%d", *replicas)),
+	)
+	if err != nil {
+		return nil, err
+	}
 
 	action := component.Action{
 		Name:  "Edit",
 		Title: "Deployment Editor",
-		Form: component.Form{
-			Fields: []component.FormField{
-				component.NewFormFieldNumber("Replicas", "replicas", fmt.Sprintf("%d", *replicas)),
-				component.NewFormFieldHidden("group", group),
-				component.NewFormFieldHidden("version", version),
-				component.NewFormFieldHidden("kind", kind),
-				component.NewFormFieldHidden("name", deployment.Name),
-				component.NewFormFieldHidden("namespace", deployment.Namespace),
-				component.NewFormFieldHidden("action", "deployment/configuration"),
-			},
-		},
+		Form:  form,
 	}
 
-	return []component.Action{action}
+	return []component.Action{action}, nil
 }
 
 type deploymentObject interface {
@@ -289,7 +284,7 @@ type deploymentObject interface {
 	Conditions() error
 }
 
-type deploymentHander struct {
+type deploymentHandler struct {
 	deployment     *appsv1.Deployment
 	configFunc     func(*appsv1.Deployment) (*component.Summary, error)
 	summaryFunc    func(*appsv1.Deployment) (*component.Summary, error)
@@ -298,9 +293,9 @@ type deploymentHander struct {
 	object         *Object
 }
 
-var _ deploymentObject = (*deploymentHander)(nil)
+var _ deploymentObject = (*deploymentHandler)(nil)
 
-func newDeploymentHandler(deployment *appsv1.Deployment, object *Object) (*deploymentHander, error) {
+func newDeploymentHandler(deployment *appsv1.Deployment, object *Object) (*deploymentHandler, error) {
 	if deployment == nil {
 		return nil, errors.New("can't print a nil deployment")
 	}
@@ -309,7 +304,7 @@ func newDeploymentHandler(deployment *appsv1.Deployment, object *Object) (*deplo
 		return nil, errors.New("can't print deployment using a nil object printer")
 	}
 
-	dh := &deploymentHander{
+	dh := &deploymentHandler{
 		deployment:     deployment,
 		configFunc:     defaultDeploymentConfig,
 		summaryFunc:    defaultDeploymentSummary,
@@ -321,7 +316,7 @@ func newDeploymentHandler(deployment *appsv1.Deployment, object *Object) (*deplo
 	return dh, nil
 }
 
-func (d *deploymentHander) Config() error {
+func (d *deploymentHandler) Config() error {
 	out, err := d.configFunc(d.deployment)
 	if err != nil {
 		return err
@@ -335,7 +330,7 @@ func defaultDeploymentConfig(deployment *appsv1.Deployment) (*component.Summary,
 	return NewDeploymentConfiguration(deployment).Create()
 }
 
-func (d *deploymentHander) Status() error {
+func (d *deploymentHandler) Status() error {
 	out, err := d.summaryFunc(d.deployment)
 	if err != nil {
 		return err
@@ -349,7 +344,7 @@ func defaultDeploymentSummary(deployment *appsv1.Deployment) (*component.Summary
 	return createDeploymentSummaryStatus(deployment)
 }
 
-func (d *deploymentHander) Conditions() error {
+func (d *deploymentHandler) Conditions() error {
 	if d.deployment == nil {
 		return errors.New("can't display conditions for nil deployment")
 	}
@@ -368,7 +363,7 @@ func defaultDeploymentConditions(deployment *appsv1.Deployment) (*component.Tabl
 	return createDeploymentConditionsView(deployment)
 }
 
-func (d *deploymentHander) Pods(ctx context.Context, object runtime.Object, options Options) error {
+func (d *deploymentHandler) Pods(ctx context.Context, object runtime.Object, options Options) error {
 	d.object.EnablePodTemplate(d.deployment.Spec.Template)
 
 	replicaSets, err := listReplicaSetsAsObjects(ctx, d.deployment, options)

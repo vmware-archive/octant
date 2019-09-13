@@ -82,6 +82,17 @@ func (p Payload) String(key string) (string, error) {
 	return s, nil
 }
 
+// OptionalString returns a string from the payload. If the string
+// does not exist, it returns an empty string.
+func (p Payload) OptionalString(key string) (string, error) {
+	s, _, err := unstructured.NestedString(p, key)
+	if err != nil {
+		return "", err
+	}
+
+	return s, nil
+}
+
 // StringSlice returns a string slice from the payload.
 func (p Payload) StringSlice(key string) ([]string, error) {
 	sli, ok := p[key].([]interface{})

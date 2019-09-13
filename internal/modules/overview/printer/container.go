@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package printer
 
 import (
+	"encoding/json"
 	"fmt"
 	"path"
 	"strings"
@@ -65,6 +66,8 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 		sections.Add("Container Ports", component.NewPorts(containerPorts))
 	}
 
+	var actions []component.Action
+
 	if pod, ok := cc.parent.(*corev1.Pod); ok {
 		status, err := findContainerStatus(pod, cc.container.Name, cc.isInit)
 		if err == nil {
@@ -80,6 +83,13 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 				return nil, errors.Wrapf(err, "get container status for %q", cc.container.Name)
 			}
 		}
+	} else {
+		editAction, err := editContainerAction(cc.parent, c)
+		if err != nil {
+			return nil, errors.Wrap(err, "create container edit action")
+		}
+
+		actions = append(actions, editAction)
 	}
 
 	envTbl, err := describeContainerEnv(cc.parent, c, cc.options)
@@ -110,6 +120,11 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 	}
 
 	summary := component.NewSummary(fmt.Sprintf("%s %s", title, c.Name), sections...)
+
+	for _, action := range actions {
+		summary.AddAction(action)
+	}
+
 	return summary, nil
 }
 
@@ -396,4 +411,64 @@ func describeVolumeMounts(c *corev1.Container) *component.Table {
 	}
 
 	return tbl
+}
+
+func editContainerAction(owner runtime.Object, container *corev1.Container) (component.Action, error) {
+	if container == nil {
+		return component.Action{}, errors.New("container is nil")
+	}
+
+	containersPath, err := containersPathForObject(owner)
+	if err != nil {
+		return component.Action{}, err
+	}
+
+	containersPathData, err := json.Marshal(containersPath)
+	if err != nil {
+		return component.Action{}, err
+	}
+
+	form, err := component.CreateFormForObject("overview/containerEditor", owner,
+		component.NewFormFieldText("Image", "containerImage", container.Image),
+		component.NewFormFieldHidden("containersPath", string(containersPathData)),
+		component.NewFormFieldHidden("containerName", container.Name),
+	)
+	if err != nil {
+		return component.Action{}, err
+	}
+
+	action := component.Action{
+		Name:  "Edit",
+		Title: fmt.Sprintf("Container %s Editor", container.Name),
+		Form:  form,
+	}
+
+	return action, nil
+}
+
+func containersPathForObject(object runtime.Object) ([]string, error) {
+	if object == nil {
+		return nil, errors.New("object is nil")
+	}
+
+	g := object.GetObjectKind().GroupVersionKind()
+
+	switch {
+	case g.Group == "batch" && g.Kind == "CronJob":
+		return []string{"spec", "jobTemplate", "spec", "template", "containers"}, nil
+	case g.Group == "batch" && g.Kind == "Job":
+		return []string{"spec", "template", "containers"}, nil
+	case g.Group == "apps" && g.Kind == "DaemonSet":
+		return []string{"spec", "template", "spec", "containers"}, nil
+	case g.Group == "apps" && g.Kind == "Deployment":
+		return []string{"spec", "template", "spec", "containers"}, nil
+	case g.Group == "apps" && g.Kind == "ReplicaSet":
+		return []string{"spec", "template", "spec", "containers"}, nil
+	case g.Group == "" && g.Kind == "ReplicationController":
+		return []string{"spec", "template", "spec", "containers"}, nil
+	case g.Group == "apps" && g.Kind == "StatefulSet":
+		return []string{"spec", "template", "spec", "containers"}, nil
+	default:
+		return nil, errors.Errorf("unable to find containers location for %s", g)
+	}
 }

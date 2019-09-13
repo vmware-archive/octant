@@ -133,12 +133,32 @@ func CreateDaemonSet(name string) *appsv1.DaemonSet {
 	}
 }
 
+// DeploymentOption is an option for configuration CreateDeployment.
+type DeploymentOption func(d *appsv1.Deployment)
+
+func WithGenericDeployment() DeploymentOption {
+	return func(d *appsv1.Deployment) {
+		d.Spec.Template.Spec.Containers = []corev1.Container{
+			{
+				Name:  "container-name",
+				Image: "image",
+			},
+		}
+	}
+}
+
 // CreateDeployment creates a deployment
-func CreateDeployment(name string) *appsv1.Deployment {
-	return &appsv1.Deployment{
+func CreateDeployment(name string, options ...DeploymentOption) *appsv1.Deployment {
+	d := &appsv1.Deployment{
 		TypeMeta:   genTypeMeta(gvk.Deployment),
 		ObjectMeta: genObjectMeta(name, true),
 	}
+
+	for _, option := range options {
+		option(d)
+	}
+
+	return d
 }
 
 // CreateEvent creates a event
