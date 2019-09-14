@@ -40,7 +40,7 @@ func defaultStateManagers(clientID string, dashConfig config.Dash) []StateManage
 		NewContentManager(dashConfig.ModuleManager(), logger),
 		NewFilterManager(),
 		NewNavigationManager(dashConfig.ModuleManager()),
-		NewNamespacesManager(dashConfig.ClusterClient()),
+		NewNamespacesManager(dashConfig),
 		NewContextManager(dashConfig),
 		NewActionRequestManager(),
 	}
@@ -101,6 +101,9 @@ type WebsocketState struct {
 	mu               sync.RWMutex
 	managers         []StateManager
 	actionDispatcher ActionDispatcher
+
+	startCtx           context.Context
+	managersCancelFunc context.CancelFunc
 }
 
 var _ octant.State = (*WebsocketState)(nil)

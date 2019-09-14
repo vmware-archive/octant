@@ -76,6 +76,10 @@ var _ StateManager = (*ContentManager)(nil)
 // Start starts the manager.
 func (cm *ContentManager) Start(ctx context.Context, state octant.State, s OctantClient) {
 	updateContentPathCh := make(chan struct{}, 1)
+	defer func() {
+		close(updateContentPathCh)
+	}()
+
 	updateCancel := state.OnContentPathUpdate(func(_ string) {
 		updateContentPathCh <- struct{}{}
 	})
