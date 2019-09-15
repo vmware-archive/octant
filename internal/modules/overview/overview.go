@@ -40,7 +40,10 @@ type Overview struct {
 	generator   *realGenerator
 	dashConfig  config.Dash
 	contextName string
+	pathMatcher *describer.PathMatcher
 	logger      log.Logger
+
+	watchedCRDs []*unstructured.Unstructured
 
 	mu sync.Mutex
 }
@@ -80,7 +83,16 @@ func New(ctx context.Context, options Options) (*Overview, error) {
 }
 
 func (co *Overview) SetContext(ctx context.Context, contextName string) error {
+	co.mu.Lock()
+	defer co.mu.Unlock()
+
 	co.contextName = contextName
+	for i := range co.watchedCRDs {
+		describer.DeleteCRD(ctx, co.watchedCRDs[i], co.pathMatcher, customResourcesDescriber, co, co.dashConfig.ObjectStore())
+	}
+
+	co.watchedCRDs = []*unstructured.Unstructured{}
+
 	return nil
 }
 
@@ -120,21 +132,37 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 	crdWatcher := co.dashConfig.CRDWatcher()
 
 	objectStore := co.dashConfig.ObjectStore()
+
 	watchConfig := &config.CRDWatchConfig{
 		Add: func(_ *describer.PathMatcher, sectionDescriber *describer.CRDSection) config.ObjectHandler {
 			return func(ctx context.Context, object *unstructured.Unstructured) {
+				co.mu.Lock()
+				defer co.mu.Unlock()
+
 				if object == nil {
 					return
 				}
 				describer.AddCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
+				co.watchedCRDs = append(co.watchedCRDs, object)
 			}
 		}(pathMatcher, customResourcesDescriber),
 		Delete: func(_ *describer.PathMatcher, csd *describer.CRDSection) config.ObjectHandler {
 			return func(ctx context.Context, object *unstructured.Unstructured) {
+				co.mu.Lock()
+				defer co.mu.Unlock()
+
 				if object == nil {
 					return
 				}
 				describer.DeleteCRD(ctx, object, pathMatcher, customResourcesDescriber, co, objectStore)
+				var list []*unstructured.Unstructured
+				for i := range co.watchedCRDs {
+					if co.watchedCRDs[i].GetUID() == object.GetUID() {
+						continue
+					}
+					list = append(list, co.watchedCRDs[i])
+				}
+				co.watchedCRDs = list
 			}
 		}(pathMatcher, customResourcesDescriber),
 		IsNamespaced: true,
@@ -143,6 +171,8 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 	if err := crdWatcher.Watch(ctx, watchConfig); err != nil {
 		return errors.Wrap(err, "create namespaced CRD watcher for overview")
 	}
+
+	co.pathMatcher = pathMatcher
 
 	return nil
 }

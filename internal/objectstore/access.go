@@ -73,18 +73,30 @@ type ResourceAccess interface {
 	Reset()
 	Get(AccessKey) (bool, bool)
 	Set(AccessKey, bool)
+	UpdateClient(client cluster.ClientInterface)
 }
 
 type resourceAccess struct {
 	client cluster.ClientInterface
 	cache  *accessCache
+
+	mu sync.RWMutex
 }
+
+var _ ResourceAccess = (*resourceAccess)(nil)
 
 func NewResourceAccess(client cluster.ClientInterface) ResourceAccess {
 	return &resourceAccess{
 		client: client,
 		cache:  newAccessCache(),
 	}
+}
+
+func (r *resourceAccess) UpdateClient(client cluster.ClientInterface) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.client = client
 }
 
 // Reset resets the resource access cache.
@@ -135,6 +147,9 @@ func (r *resourceAccess) HasAccess(ctx context.Context, key store.Key, verb stri
 }
 
 func (r *resourceAccess) keyToAccessKey(key store.Key, verb string) (AccessKey, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
 	gvk := key.GroupVersionKind()
 
 	if gvk.GroupKind().Empty() {
@@ -156,6 +171,9 @@ func (r *resourceAccess) keyToAccessKey(key store.Key, verb string) (AccessKey, 
 }
 
 func (r *resourceAccess) fetchAccess(key AccessKey, verb string) (bool, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	k8sClient, err := r.client.KubernetesClient()
 	if err != nil {
 		return false, errors.Wrap(err, "client kubernetes")

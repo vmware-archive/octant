@@ -93,7 +93,10 @@ func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFu
 		for {
 			contentResponse, rerun, err := cm.contentGenerateFunc(ctx, state)
 			if err != nil {
-				cm.logger.WithErr(err).Errorf("generate content")
+				cm.logger.
+					WithErr(err).
+					With("contentPath", state.GetContentPath()).
+					Errorf("generate content")
 				return false
 			}
 

@@ -7,26 +7,67 @@ package api
 
 import (
 	"context"
+	"fmt"
+	"path"
 	"sync"
-	"time"
+
+	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/vmware/octant/internal/event"
+	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/pkg/navigation"
 )
+
+// NavigationManagerConfig is configuration of NavigationManager.
+type NavigationManagerConfig interface {
+	ModuleManager() module.ManagerInterface
+}
+
+// NavigationManagerConfig is an option for configuration NavigationManager.
+type NavigationManagerOption func(n *NavigationManager)
+
+// NavigationGeneratorFunc is a function that generates a navigation tree.
+type NavigationGeneratorFunc func(ctx context.Context, state octant.State, config NavigationManagerConfig) ([]navigation.Navigation, error)
+
+// WithNavigationGenerator configures the navigation generator function.
+func WithNavigationGenerator(fn NavigationGeneratorFunc) NavigationManagerOption {
+	return func(n *NavigationManager) {
+		n.navigationGeneratorFunc = fn
+	}
+}
+
+// WithNavigationGeneratorPoller configures the poller.
+func WithNavigationGeneratorPoller(poller Poller) NavigationManagerOption {
+	return func(n *NavigationManager) {
+		n.poller = poller
+	}
+}
 
 // NavigationManager manages the navigation tree.
 type NavigationManager struct {
-	moduleManager module.ManagerInterface
+	config                  NavigationManagerConfig
+	navigationGeneratorFunc NavigationGeneratorFunc
+	poller                  Poller
 }
 
 var _ StateManager = (*NavigationManager)(nil)
 
 // NewNavigationManager creates an instance of NavigationManager.
-func NewNavigationManager(moduleManager module.ManagerInterface) *NavigationManager {
-	return &NavigationManager{
-		moduleManager: moduleManager,
+func NewNavigationManager(config NavigationManagerConfig, options ...NavigationManagerOption) *NavigationManager {
+	n := &NavigationManager{
+		config:                  config,
+		poller:                  NewInterruptiblePoller(),
+		navigationGeneratorFunc: NavigationGenerator,
 	}
+
+	for _, option := range options {
+		option(n)
+	}
+
+	return n
 }
 
 // Handlers returns nil.
@@ -36,63 +77,87 @@ func (n NavigationManager) Handlers() []octant.ClientRequestHandler {
 
 // Start starts the manager. It periodically generates navigation updates.
 func (n *NavigationManager) Start(ctx context.Context, state octant.State, s OctantClient) {
-	mu := sync.Mutex{}
-	updateNamespaceCh := make(chan struct{}, 1)
-	updateCancel := state.OnNamespaceUpdate(func(_ string) {
-		mu.Lock()
-		defer mu.Unlock()
-		updateNamespaceCh <- struct{}{}
-	})
-	defer updateCancel()
+	ch := make(chan struct{}, 1)
+	defer func() {
+		close(ch)
+	}()
 
-	var generateCtx context.Context
-	var cancel context.CancelFunc
-
-	timer := time.NewTimer(0)
-	done := false
-	for !done {
-		select {
-		case <-ctx.Done():
-			done = true
-			break
-		case <-updateNamespaceCh:
-			if cancel != nil {
-				cancel()
-				cancel = nil
-			}
-			timer.Reset(0)
-		case <-timer.C:
-			go func() {
-				generateCtx, cancel = context.WithCancel(ctx)
-				defer func() {
-					if cancel != nil {
-						cancel()
-						cancel = nil
-					}
-				}()
-
-				generator := n.initGenerator(state)
-				ev, err := generator.Event(generateCtx)
-				if err != nil {
-					// do something with this error?
-					return
-				}
-
-				if ctx.Err() == nil {
-					s.Send(ev)
-					timer.Reset(generator.ScheduleDelay())
-				}
-			}()
-		}
-	}
-
-	timer.Stop()
+	n.poller.Run(ctx, ch, n.runUpdate(state, s), event.DefaultScheduleDelay)
 }
 
-func (n *NavigationManager) initGenerator(state octant.State) *event.NavigationGenerator {
-	return &event.NavigationGenerator{
-		Modules:     n.moduleManager.Modules(),
-		Namespace:   state.GetNamespace(),
-		DefaultPath: state.GetContentPath(),
+func (n *NavigationManager) runUpdate(state octant.State, client OctantClient) PollerFunc {
+	return func(ctx context.Context) bool {
+		logger := log.From(ctx)
+
+		entries, err := n.navigationGeneratorFunc(ctx, state, n.config)
+		if err != nil {
+			logger.WithErr(err).Errorf("load namespaces")
+			return false
+		}
+
+		if ctx.Err() == nil {
+			client.Send(CreateNavigationEvent(entries, state.GetContentPath()))
+		}
+
+		return false
+	}
+}
+
+// NavigationGenerator generates a navigation tree given a set of modules and a namespace.
+func NavigationGenerator(ctx context.Context, state octant.State, config NavigationManagerConfig) ([]navigation.Navigation, error) {
+	if state == nil {
+		return nil, errors.New("state is nil")
+	}
+
+	if config == nil {
+		return nil, errors.New("navigation config is nil")
+	}
+
+	modules := config.ModuleManager().Modules()
+	namespace := state.GetNamespace()
+
+	var sections []navigation.Navigation
+
+	lookup := make(map[string][]navigation.Navigation)
+	var mu sync.Mutex
+
+	var g errgroup.Group
+
+	for i := range modules {
+		m := modules[i]
+		g.Go(func() error {
+			contentPath := path.Join("/content", m.ContentPath())
+			navList, err := m.Navigation(ctx, namespace, contentPath)
+			if err != nil {
+				fmt.Printf("err in navigation: %s", err)
+				return err
+			}
+
+			mu.Lock()
+			defer mu.Unlock()
+			lookup[m.Name()] = navList
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
+	for _, m := range modules {
+		sections = append(sections, lookup[m.Name()]...)
+	}
+
+	return sections, nil
+}
+
+// CreateNavigationEvent creates a namespaces event.
+func CreateNavigationEvent(sections []navigation.Navigation, defaultPath string) octant.Event {
+	return octant.Event{
+		Type: octant.EventTypeNavigation,
+		Data: map[string]interface{}{
+			"sections":    sections,
+			"defaultPath": defaultPath,
+		},
 	}
 }
