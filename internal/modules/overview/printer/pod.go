@@ -22,8 +22,6 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/vmware/octant/internal/link"
-	"github.com/vmware/octant/internal/octant"
-	"github.com/vmware/octant/pkg/action"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -109,10 +107,6 @@ func podNode(pod *corev1.Pod, linkGenerator link.Interface) (component.Component
 func PodHandler(ctx context.Context, pod *corev1.Pod, options Options) (component.Component, error) {
 	o := NewObject(pod)
 	o.EnableEvents()
-
-	if err := setupPodActions(pod, o); err != nil {
-		return nil, err
-	}
 
 	ph, err := newPodHandler(pod, o)
 	if err != nil {
@@ -767,26 +761,6 @@ func (p *podHandler) Additional(options Options) error {
 	p.object.RegisterItems(itemDescriptors...)
 
 	return nil
-}
-
-func setupPodActions(pod *corev1.Pod, object ObjectInterface) error {
-	if pod.DeletionTimestamp == nil {
-		key, err := store.KeyFromObject(pod)
-		if err != nil {
-			return err
-		}
-
-		object.AddButton("Delete", action.CreatePayload(octant.ActionDeleteObject,
-			key.ToActionPayload()), deletePodConfirmation(pod))
-	}
-
-	return nil
-}
-
-func deletePodConfirmation(pod *corev1.Pod) component.ButtonOption {
-	confirmationTitle := "Delete pod"
-	confirmationBody := fmt.Sprintf("Are you sure you want to delete pod **%s**? This action is permanent and cannot be recovered.", pod.Name)
-	return component.WithButtonConfirmation(confirmationTitle, confirmationBody)
 }
 
 func addPodTableFilters(table *component.Table) {

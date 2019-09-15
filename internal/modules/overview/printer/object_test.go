@@ -10,12 +10,15 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/pkg/action"
 	"github.com/vmware/octant/pkg/plugin/fake"
+	"github.com/vmware/octant/pkg/store"
 
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/plugin"
@@ -259,16 +262,44 @@ func Test_Object_ToComponent(t *testing.T) {
 
 			expected := component.NewFlexLayout("Summary")
 			expected.AddSections(tc.sections...)
+			buttonGroup := component.NewButtonGroup()
 			if len(tc.buttons) > 0 {
-				buttonGroup := component.NewButtonGroup()
 				for _, button := range tc.buttons {
 					buttonGroup.AddButton(button)
 				}
-				expected.SetButtonGroup(buttonGroup)
 			}
+
+			key, err := store.KeyFromObject(deployment)
+			require.NoError(t, err)
+
+			buttonGroup.AddButton(
+				component.NewButton("Delete",
+					action.CreatePayload(octant.ActionDeleteObject, key.ToActionPayload()),
+					component.WithButtonConfirmation(
+						"Delete Deployment",
+						"Are you sure you want to delete *Deployment* **deployment**? This action is permanent and cannot be recovered.",
+					)))
+			expected.SetButtonGroup(buttonGroup)
 
 			component.AssertEqual(t, expected, got)
 		})
 	}
+}
 
+func Test_deleteObjectConfirmation(t *testing.T) {
+	pod := testutil.CreatePod("pod")
+	option, err := deleteObjectConfirmation(pod)
+	require.NoError(t, err)
+
+	button := component.Button{}
+	option(&button)
+
+	expected := component.Button{
+		Confirmation: &component.Confirmation{
+			Title: "Delete Pod",
+			Body:  "Are you sure you want to delete *Pod* **pod**? This action is permanent and cannot be recovered.",
+		},
+	}
+
+	assert.Equal(t, expected, button)
 }
