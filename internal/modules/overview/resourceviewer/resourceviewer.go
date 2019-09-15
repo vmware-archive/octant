@@ -79,7 +79,9 @@ func (rv *ResourceViewer) Visit(ctx context.Context, object runtime.Object) (*co
 	logger.Debugf("starting resource viewer visit")
 
 	now := time.Now()
-	defer logger.With("elapsed", time.Since(now)).Debugf("ending resource viewer visit")
+	defer func() {
+		logger.With("elapsed", time.Since(now)).Debugf("ending resource viewer visit")
+	}()
 
 	handler, err := NewHandler(rv.dashConfig)
 	if err != nil {

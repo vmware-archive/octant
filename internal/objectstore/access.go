@@ -11,10 +11,11 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
-	"github.com/vmware/octant/internal/cluster"
-	"github.com/vmware/octant/pkg/store"
 	"go.opencensus.io/trace"
 	authorizationv1 "k8s.io/api/authorization/v1"
+
+	"github.com/vmware/octant/internal/cluster"
+	"github.com/vmware/octant/pkg/store"
 )
 
 type AccessError struct {

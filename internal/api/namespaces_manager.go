@@ -6,7 +6,9 @@
 package api
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 
 	"github.com/pkg/errors"
 
@@ -81,6 +83,8 @@ func (n *NamespacesManager) Start(ctx context.Context, state octant.State, s Oct
 }
 
 func (n *NamespacesManager) runUpdate(state octant.State, client OctantClient) PollerFunc {
+	var previous []byte
+
 	return func(ctx context.Context) bool {
 		logger := log.From(ctx)
 
@@ -91,7 +95,16 @@ func (n *NamespacesManager) runUpdate(state octant.State, client OctantClient) P
 		}
 
 		if ctx.Err() == nil {
-			client.Send(CreateNamespacesEvent(namespaces))
+			cur, err := json.Marshal(namespaces)
+			if err != nil {
+				logger.WithErr(err).Errorf("unable to marshal namespaces")
+				return false
+			}
+
+			if bytes.Compare(previous, cur) != 0 {
+				previous = cur
+				client.Send(CreateNamespacesEvent(namespaces))
+			}
 		}
 
 		return false

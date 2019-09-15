@@ -7,7 +7,6 @@ package objectstore
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
@@ -26,7 +25,6 @@ import (
 
 	"github.com/vmware/octant/internal/cluster"
 	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/internal/util/retry"
 	"github.com/vmware/octant/pkg/store"
 )
 
@@ -320,7 +318,6 @@ func (dc *DynamicCache) getFromInformer(ctx context.Context, key store.Key) (*un
 	}
 
 	if !hasSynced {
-		fmt.Println("has synced", hasSynced)
 		return dc.getFromDynamicClient(ctx, key)
 	}
 
@@ -331,32 +328,10 @@ func (dc *DynamicCache) getFromInformer(ctx context.Context, key store.Key) (*un
 		g = informer.Lister().ByNamespace(key.Namespace)
 	}
 
-	var retryCount int64
-
-	var object kruntime.Object
-	retryErr := retry.Retry(3, time.Second, func() error {
-		object, err = g.Get(key.Name)
-		if err != nil {
-			if !kerrors.IsNotFound(err) {
-				retryCount++
-				return retry.Stop(errors.Wrap(err, "lister Get"))
-			}
-			return err
-		}
-
-		return nil
-	})
-
-	if retryCount > 0 {
-		span.Annotate([]trace.Attribute{
-			trace.Int64Attribute("retryCount", retryCount),
-		}, "get retried")
-	}
-
-	if retryErr != nil {
+	object, err := g.Get(key.Name)
+	if err != nil {
 		return nil, err
 	}
-
 	return object.(*unstructured.Unstructured), nil
 }
 
