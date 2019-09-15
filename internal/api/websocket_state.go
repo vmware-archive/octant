@@ -327,6 +327,8 @@ func (c *WebsocketState) SetContext(requestedContext string) {
 		c.dashConfig.Logger().WithErr(err).Errorf("update context")
 	}
 
+	c.SetNamespace(c.dashConfig.DefaultNamespace())
+
 	for _, fn := range c.contentPathUpdates {
 		fn(c.GetContentPath())
 	}

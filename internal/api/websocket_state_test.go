@@ -139,7 +139,6 @@ func TestWebsocketState_SetContentPath(t *testing.T) {
 			test.verify(t, s)
 		})
 	}
-
 }
 
 func TestWebsocketState_OnContentPathUpdate(t *testing.T) {
