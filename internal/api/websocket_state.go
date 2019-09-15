@@ -7,6 +7,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"path"
 	"regexp"
 	"sort"
@@ -325,6 +326,16 @@ func (c *WebsocketState) SetContext(requestedContext string) {
 	if err := c.dashConfig.UseContext(context.TODO(), requestedContext); err != nil {
 		c.dashConfig.Logger().WithErr(err).Errorf("update context")
 	}
+
+	for _, fn := range c.contentPathUpdates {
+		fn(c.GetContentPath())
+	}
+
+	c.wsClient.Send(CreateAlertUpdate(action.CreateAlert(
+		action.AlertTypeInfo,
+		fmt.Sprintf("Changing context to %s", requestedContext),
+		action.DefaultAlertExpiration,
+	)))
 }
 
 func (c *WebsocketState) updateContentPath() {
