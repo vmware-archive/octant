@@ -242,7 +242,17 @@ export interface TableView extends View {
     rows: TableRow[];
     emptyContent: string;
     loading: boolean;
+    filters: TableFilters;
   };
+}
+
+export interface TableFilters {
+  [key: string]: TableFilter;
+}
+
+export interface TableFilter {
+  values: string[];
+  selected: string[];
 }
 
 export interface TableRow {

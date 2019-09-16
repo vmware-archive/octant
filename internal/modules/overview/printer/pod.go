@@ -46,15 +46,9 @@ func PodListHandler(_ context.Context, list *corev1.PodList, opts Options) (comp
 	}
 
 	table := component.NewTable("Pods", "We couldn't find any pods!", cols)
+	addPodTableFilters(table)
 
 	for i := range list.Items {
-		if list.Items[i].Status.Phase == corev1.PodSucceeded &&
-			!opts.DisableLabels &&
-			!hasOwnerReference(list.Items[i].OwnerReferences, "Job") {
-			// skip succeeded pods if called from handler and not created from job
-			continue
-		}
-
 		row := component.TableRow{}
 		nameLink, err := opts.Link.ForObject(&list.Items[i], list.Items[i].Name)
 		if err != nil {
@@ -793,4 +787,11 @@ func deletePodConfirmation(pod *corev1.Pod) component.ButtonOption {
 	confirmationTitle := "Delete pod"
 	confirmationBody := fmt.Sprintf("Are you sure you want to delete pod **%s**? This action is permanent and cannot be recovered.", pod.Name)
 	return component.WithButtonConfirmation(confirmationTitle, confirmationBody)
+}
+
+func addPodTableFilters(table *component.Table) {
+	table.AddFilter("Phase", component.TableFilter{
+		Values:   []string{"Pending", "Running", "Succeeded", "Failed", "Unknown"},
+		Selected: []string{"Pending", "Running"},
+	})
 }

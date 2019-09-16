@@ -344,6 +344,7 @@ func Test_DeploymentPods(t *testing.T) {
 			"Node":     component.NewText("<not scheduled>"),
 		},
 	})
+	addPodTableFilters(expected)
 
 	component.AssertEqual(t, expected, got)
 }

@@ -9,6 +9,7 @@
     ]
   },
   "config": {
+    "filters": {},
     "columns": [
       {
         "name": "Name",

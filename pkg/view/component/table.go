@@ -14,12 +14,19 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
+// TableFilter describer a text filter for a table.
+type TableFilter struct {
+	Values   []string `json:"values"`
+	Selected []string `json:"selected"`
+}
+
 // TableConfig is the contents of a Table
 type TableConfig struct {
-	Columns      []TableCol `json:"columns"`
-	Rows         []TableRow `json:"rows"`
-	EmptyContent string     `json:"emptyContent"`
-	Loading      bool       `json:"loading"`
+	Columns      []TableCol             `json:"columns"`
+	Rows         []TableRow             `json:"rows"`
+	EmptyContent string                 `json:"emptyContent"`
+	Loading      bool                   `json:"loading"`
+	Filters      map[string]TableFilter `json:"filters"`
 }
 
 // TableCol describes a column from a table. Accessor is the key this
@@ -68,6 +75,7 @@ func NewTable(title, placeholder string, cols []TableCol) *Table {
 		Config: TableConfig{
 			Columns:      cols,
 			EmptyContent: placeholder,
+			Filters:      make(map[string]TableFilter),
 		},
 	}
 }
@@ -147,6 +155,15 @@ func (t *Table) AddColumn(name string) {
 		Name:     name,
 		Accessor: name,
 	})
+}
+
+// AddFilter adds a filter to the table. Each column can only have a
+// single filter.
+func (t *Table) AddFilter(columnName string, filter TableFilter) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	t.Config.Filters[columnName] = filter
 }
 
 // Columns returns the table columns.

@@ -55,6 +55,7 @@ func Test_Table_Marshal(t *testing.T) {
 			input: &Table{
 				base: newBase(typeTable, TitleFromString("my table")),
 				Config: TableConfig{
+					Filters: map[string]TableFilter{},
 					Columns: []TableCol{
 						{Name: "Name", Accessor: "Name"},
 						{Name: "Description", Accessor: "Description"},
@@ -189,4 +190,17 @@ func Test_Table_Sort(t *testing.T) {
 			assert.Equal(t, expected, table)
 		})
 	}
+}
+
+func TestTable_AddFilter(t *testing.T) {
+	table := NewTable("table", "placeholder", NewTableCols("a"))
+	filter := TableFilter{
+		Values:   []string{"foo", "bar"},
+		Selected: []string{"foo"},
+	}
+	table.AddFilter("a", filter)
+
+	expected := map[string]TableFilter{"a": filter}
+
+	assert.Equal(t, expected, table.Config.Filters)
 }

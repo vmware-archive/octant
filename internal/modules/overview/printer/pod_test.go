@@ -95,6 +95,7 @@ func Test_PodListHandler(t *testing.T) {
 		"Age":      component.NewTimestamp(now),
 		"Node":     nodeLink,
 	})
+	addPodTableFilters(expected)
 
 	component.AssertEqual(t, expected, got)
 }
@@ -154,6 +155,7 @@ func Test_PodListHandlerNoLabel(t *testing.T) {
 		"Age":      component.NewTimestamp(now),
 		"Node":     nodeLink,
 	})
+	addPodTableFilters(expected)
 
 	component.AssertEqual(t, expected, got)
 }
@@ -202,6 +204,7 @@ func TestPodListHandler_sorted(t *testing.T) {
 		"Age":      component.NewTimestamp(pod1.CreationTimestamp.Time),
 		"Node":     component.NewText("<not scheduled>"),
 	})
+	addPodTableFilters(expected)
 
 	component.AssertEqual(t, expected, got)
 }

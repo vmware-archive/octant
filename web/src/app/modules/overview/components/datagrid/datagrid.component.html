@@ -2,8 +2,23 @@
     <div class="card-block">
         <h3 class="card-title">{{ title }}</h3>
         <clr-datagrid>
-            <clr-dg-placeholder *ngIf="placeholder?.length > 0">{{ placeholder }}</clr-dg-placeholder>
-            <clr-dg-column *ngFor="let item of columns; trackBy: identifyColumn">{{ item }}</clr-dg-column>
+            <clr-dg-placeholder>
+                <ng-container *ngIf="placeholder?.length >0; else emptyPlaceholder">
+                    {{placeholder}}
+                </ng-container>
+                <ng-template #emptyPlaceholder>
+                    All content has been filtered out.
+                </ng-template>
+                {{ placeholder }}</clr-dg-placeholder>
+            <clr-dg-column *ngFor="let columnName of columns; trackBy: identifyColumn">
+                {{ columnName }}
+                <clr-dg-filter *ngIf="hasFilter(columnName)">
+                    <app-content-filter
+                            [column]="columnName"
+                            [filter]="filters[columnName]"
+                    ></app-content-filter>
+                </clr-dg-filter>
+            </clr-dg-column>
             <clr-dg-row *clrDgItems="let row of rows">
                 <clr-dg-cell *ngFor="let column of columns; trackBy: identifyColumn">
                     <app-content-switcher [view]="row[column]"></app-content-switcher>

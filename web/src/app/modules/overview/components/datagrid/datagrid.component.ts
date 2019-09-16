@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { TableRow, TableView } from 'src/app/models/content';
+import { TableFilters, TableRow, TableView } from 'src/app/models/content';
 import trackByIndex from 'src/app/util/trackBy/trackByIndex';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { ViewService } from '../../services/view/view.service';
@@ -21,6 +21,7 @@ export class DatagridComponent implements OnChanges {
   title: string;
   placeholder: string;
   lastUpdated: Date;
+  filters: TableFilters;
 
   identifyRow = trackByIndex;
   identifyColumn = trackByIdentity;
@@ -38,6 +39,11 @@ export class DatagridComponent implements OnChanges {
       this.placeholder = current.config.emptyContent;
       this.lastUpdated = new Date();
       this.loading = current.config.loading;
+      this.filters = current.config.filters;
     }
+  }
+
+  hasFilter(columnName: string): boolean {
+    return !!this.view.config.filters[columnName];
   }
 }

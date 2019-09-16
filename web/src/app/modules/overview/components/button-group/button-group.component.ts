@@ -20,7 +20,6 @@ export class ButtonGroupComponent implements OnInit {
   ngOnInit() {}
 
   onClick(payload: {}, confirmation?: Confirmation) {
-    console.log({ payload, confirmation });
     if (confirmation) {
       this.activateModal(payload, confirmation);
     } else {
