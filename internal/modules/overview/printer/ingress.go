@@ -18,6 +18,7 @@ import (
 	"github.com/vmware/octant/pkg/view/component"
 )
 
+// IngressListHandler is a printFunc that prints ingresses
 func IngressListHandler(_ context.Context, list *extv1beta1.IngressList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("ingress list is nil")
@@ -51,32 +52,34 @@ func IngressListHandler(_ context.Context, list *extv1beta1.IngressList, options
 	return table, nil
 }
 
+// IngressHandler is a printFunc that prints an Ingress
 func IngressHandler(ctx context.Context, ingress *extv1beta1.Ingress, options Options) (component.Component, error) {
 	o := NewObject(ingress)
+	o.EnableEvents()
 
-	configSummary, err := printIngressConfig(ingress, options)
+	ih, err := newIngressHandler(ingress, o)
 	if err != nil {
 		return nil, err
 	}
 
-	o.RegisterConfig(configSummary)
+	if err := ih.Config(options); err != nil {
+		return nil, errors.Wrap(err, "print ingress configuration")
+	}
 
-	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.Component, error) {
-			return printRulesForIngress(ingress, options)
-		},
-		Width: component.WidthFull,
-	})
-
-	o.EnableEvents()
+	if err := ih.Rules(options); err != nil {
+		return nil, errors.Wrap(err, "print ingress rules")
+	}
 
 	return o.ToComponent(ctx, options)
 }
 
-func printIngressConfig(ingress *extv1beta1.Ingress, options Options) (*component.Summary, error) {
-	if ingress == nil {
+// Create creates an ingress configuration summary
+func (i *IngressConfiguration) Create(options Options) (*component.Summary, error) {
+	if i.ingress == nil {
 		return nil, errors.New("ingress is nil")
 	}
+
+	ingress := i.ingress
 
 	sections := component.SummarySections{}
 
@@ -97,7 +100,7 @@ func printIngressConfig(ingress *extv1beta1.Ingress, options Options) (*componen
 	return summary, nil
 }
 
-func printRulesForIngress(ingress *extv1beta1.Ingress, options Options) (component.Component, error) {
+func createIngressRulesView(ingress *extv1beta1.Ingress, options Options) (*component.Table, error) {
 	if ingress == nil {
 		return nil, errors.New("ingress is nil")
 	}
@@ -195,4 +198,80 @@ func loadBalancerStatusStringer(s corev1.LoadBalancerStatus) string {
 
 	r := strings.Join(result.List(), ",")
 	return r
+}
+
+// IngressConfiguration generates an ingress configuration
+type IngressConfiguration struct {
+	ingress *extv1beta1.Ingress
+}
+
+// NewIngressConfiguration creates an instance of Ingressconfiguration
+func NewIngressConfiguration(ingress *extv1beta1.Ingress) *IngressConfiguration {
+	return &IngressConfiguration{
+		ingress: ingress,
+	}
+}
+
+type ingressObject interface {
+	Config(options Options) error
+	Rules(options Options) error
+}
+type ingressHandler struct {
+	ingress    *extv1beta1.Ingress
+	configFunc func(*extv1beta1.Ingress, Options) (*component.Summary, error)
+	rulesFunc  func(*extv1beta1.Ingress, Options) (*component.Table, error)
+	object     *Object
+}
+
+var _ ingressObject = (*ingressHandler)(nil)
+
+func newIngressHandler(ingress *extv1beta1.Ingress, object *Object) (*ingressHandler, error) {
+	if ingress == nil {
+		return nil, errors.New("can't print a nil ingress")
+	}
+
+	if object == nil {
+		return nil, errors.New("can't print pod using a nil object")
+	}
+
+	ih := &ingressHandler{
+		ingress:    ingress,
+		configFunc: defaultIngressConfig,
+		rulesFunc:  defaultIngressRules,
+		object:     object,
+	}
+
+	return ih, nil
+}
+
+func (i *ingressHandler) Config(options Options) error {
+	out, err := i.configFunc(i.ingress, options)
+	if err != nil {
+		return err
+	}
+	i.object.RegisterConfig(out)
+	return nil
+}
+
+func defaultIngressConfig(ingress *extv1beta1.Ingress, options Options) (*component.Summary, error) {
+	return NewIngressConfiguration(ingress).Create(options)
+}
+
+func (i *ingressHandler) Rules(options Options) error {
+	if i.ingress == nil {
+		return errors.New("can't print rules for nil ingress")
+	}
+
+	i.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return i.rulesFunc(i.ingress, options)
+		},
+	})
+
+	return nil
+}
+
+func defaultIngressRules(ingress *extv1beta1.Ingress, options Options) (*component.Table, error) {
+	return createIngressRulesView(ingress, options)
 }

@@ -117,31 +117,31 @@ func Test_IngressListHandler(t *testing.T) {
 
 }
 
-func Test_printIngressConfig(t *testing.T) {
+func Test_IngressConfiguration(t *testing.T) {
 	labels := map[string]string{
 		"foo": "bar",
 	}
 
 	now := testutil.Time()
 
-	object := testutil.CreateIngress("ingress")
-	object.CreationTimestamp = metav1.Time{Time: now}
-	object.Labels = labels
+	ingress := testutil.CreateIngress("ingress")
+	ingress.CreationTimestamp = metav1.Time{Time: now}
+	ingress.Labels = labels
 
-	objectNoBackend := testutil.CreateIngress("ingress")
-	objectNoBackend.CreationTimestamp = metav1.Time{Time: now}
-	objectNoBackend.Labels = labels
-	objectNoBackend.Spec.Backend = nil
+	ingressNoBackend := testutil.CreateIngress("ingress")
+	ingressNoBackend.CreationTimestamp = metav1.Time{Time: now}
+	ingressNoBackend.Labels = labels
+	ingressNoBackend.Spec.Backend = nil
 
 	cases := []struct {
 		name     string
-		object   *extv1beta1.Ingress
+		ingress  *extv1beta1.Ingress
 		expected component.Component
 		isErr    bool
 	}{
 		{
-			name:   "in general",
-			object: object,
+			name:    "in general",
+			ingress: ingress,
 			expected: component.NewSummary("Configuration", []component.SummarySection{
 				{
 					Header:  "Default Backend",
@@ -150,8 +150,8 @@ func Test_printIngressConfig(t *testing.T) {
 			}...),
 		},
 		{
-			name:   "no default backend",
-			object: objectNoBackend,
+			name:    "no default backend",
+			ingress: ingressNoBackend,
 			expected: component.NewSummary("Configuration", []component.SummarySection{
 				{
 					Header:  "Default Backend",
@@ -160,9 +160,9 @@ func Test_printIngressConfig(t *testing.T) {
 			}...),
 		},
 		{
-			name:   "nil ingress",
-			object: nil,
-			isErr:  true,
+			name:    "nil ingress",
+			ingress: nil,
+			isErr:   true,
 		},
 	}
 
@@ -174,27 +174,29 @@ func Test_printIngressConfig(t *testing.T) {
 			tpo := newTestPrinterOptions(controller)
 			printOptions := tpo.ToOptions()
 
-			if tc.object != nil {
+			if tc.ingress != nil {
 				stubIngressBackendLinks(tpo)
 			}
 
-			got, err := printIngressConfig(tc.object, printOptions)
+			ic := NewIngressConfiguration(tc.ingress)
+
+			summary, err := ic.Create(printOptions)
 			if tc.isErr {
 				require.Error(t, err)
 				return
 			}
 			require.NoError(t, err)
 
-			component.AssertEqual(t, tc.expected, got)
+			component.AssertEqual(t, tc.expected, summary)
 		})
 	}
 }
 
-func Test_printIngressHosts(t *testing.T) {
-	object := testutil.CreateIngress("ingress")
+func Test_createIngressRules(t *testing.T) {
+	ingress := testutil.CreateIngress("ingress")
 
-	objectWithRules := testutil.CreateIngress("ingress")
-	objectWithRules.Spec.Rules = []extv1beta1.IngressRule{
+	ingressWithRules := testutil.CreateIngress("ingress")
+	ingressWithRules.Spec.Rules = []extv1beta1.IngressRule{
 		{
 
 			Host: "",
@@ -218,13 +220,13 @@ func Test_printIngressHosts(t *testing.T) {
 
 	cases := []struct {
 		name     string
-		object   *extv1beta1.Ingress
-		expected component.Component
+		ingress  *extv1beta1.Ingress
+		expected *component.Table
 		isErr    bool
 	}{
 		{
-			name:   "in general",
-			object: object,
+			name:    "in general",
+			ingress: ingress,
 			expected: component.NewTableWithRows("Rules", "There are no rules defined!", cols, []component.TableRow{
 				{
 					"Backends": component.NewLink("", "service", "/service"),
@@ -234,8 +236,8 @@ func Test_printIngressHosts(t *testing.T) {
 			}),
 		},
 		{
-			name:   "with rules",
-			object: objectWithRules,
+			name:    "with rules",
+			ingress: ingressWithRules,
 			expected: component.NewTableWithRows("Rules", "There are no rules defined!", cols, []component.TableRow{
 				{
 					"Backends": component.NewLink("", "service", "/service"),
@@ -245,9 +247,9 @@ func Test_printIngressHosts(t *testing.T) {
 			}),
 		},
 		{
-			name:   "nil ingress",
-			object: nil,
-			isErr:  true,
+			name:    "nil ingress",
+			ingress: nil,
+			isErr:   true,
 		},
 	}
 
@@ -259,11 +261,11 @@ func Test_printIngressHosts(t *testing.T) {
 			tpo := newTestPrinterOptions(controller)
 			printOptions := tpo.ToOptions()
 
-			if tc.object != nil {
+			if tc.ingress != nil {
 				stubIngressBackendLinks(tpo)
 			}
 
-			got, err := printRulesForIngress(tc.object, printOptions)
+			got, err := createIngressRulesView(tc.ingress, printOptions)
 			if tc.isErr {
 				require.Error(t, err)
 				return
