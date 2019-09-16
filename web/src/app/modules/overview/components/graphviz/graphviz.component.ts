@@ -23,7 +23,7 @@ import { D3GraphvizService } from '../../services/d3/d3graphviz.service';
   encapsulation: ViewEncapsulation.None,
 })
 export class GraphvizComponent implements AfterViewChecked {
-  @ViewChild('viewer') private viewer: ElementRef;
+  @ViewChild('viewer', { static: true }) private viewer: ElementRef;
   @Input() view: GraphvizView;
 
   constructor(private d3GraphvizService: D3GraphvizService) {}

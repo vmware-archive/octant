@@ -40,10 +40,10 @@ import { Point } from '../../models/point';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeptagonLabelComponent implements AfterViewChecked {
-  @ViewChild('container')
+  @ViewChild('container', { static: true })
   container: ElementRef;
 
-  @ViewChild('label')
+  @ViewChild('label', { static: true })
   labelText: ElementRef;
 
   @Input()

@@ -30,7 +30,7 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   private containerLogsDiffer: IterableDiffer<LogEntry>;
   @Input() view: LogsView;
-  @ViewChild('scrollTarget') scrollTarget: ElementRef;
+  @ViewChild('scrollTarget', { static: true }) scrollTarget: ElementRef;
   containerLogs: LogEntry[] = [];
 
   selectedContainer = '';

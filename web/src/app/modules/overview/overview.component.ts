@@ -33,7 +33,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
   private previousUrl = '';
 
-  @ViewChild('scrollTarget') scrollTarget: ElementRef;
+  @ViewChild('scrollTarget', { static: true }) scrollTarget: ElementRef;
 
   hasTabs = false;
   hasReceivedContent = false;
