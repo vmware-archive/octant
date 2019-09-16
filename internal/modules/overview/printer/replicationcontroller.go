@@ -12,6 +12,8 @@ import (
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
@@ -60,57 +62,47 @@ func ReplicationControllerListHandler(ctx context.Context, list *corev1.Replicat
 // ReplicationControllerHandler is a printFunc that prints a ReplicationController
 func ReplicationControllerHandler(ctx context.Context, rc *corev1.ReplicationController, options Options) (component.Component, error) {
 	o := NewObject(rc)
+	o.EnableEvents()
 
-	objectStore := options.DashConfig.ObjectStore()
-
-	rcConfigGen := NewReplicationControllerConfiguration(rc)
-	configSummary, err := rcConfigGen.Create(options)
+	rch, err := newReplicationControllerHandler(rc, o)
 	if err != nil {
 		return nil, err
 	}
-	o.RegisterConfig(configSummary)
 
-	rcSummaryGen := NewReplicationControllerStatus(rc)
-	o.RegisterItems(ItemDescriptor{
-		Width: component.WidthQuarter,
-		Func: func() (component.Component, error) {
-			return rcSummaryGen.Create(ctx, objectStore)
-		},
-	})
+	if err := rch.Config(options); err != nil {
+		return nil, errors.Wrap(err, "print replicationcontroller configuration")
+	}
 
-	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.Component, error) {
-			return createPodListView(ctx, rc, options)
-		},
-		Width: component.WidthFull,
-	})
+	if err := rch.Status(ctx, options); err != nil {
+		return nil, errors.Wrap(err, "print replicationcontroller status")
+	}
 
-	o.EnablePodTemplate(*rc.Spec.Template)
-
-	o.EnableEvents()
+	if err := rch.Pods(ctx, rc, options); err != nil {
+		return nil, errors.Wrap(err, "print replicationcontroller pods")
+	}
 
 	return o.ToComponent(ctx, options)
 }
 
 // ReplicationControllerConfiguration generates a replicationcontroller configuration
 type ReplicationControllerConfiguration struct {
-	replicationcontroller *corev1.ReplicationController
+	replicationController *corev1.ReplicationController
 }
 
 // NewReplicationControllerConfiguration creates an instance of ReplicationControllerConfiguration
 func NewReplicationControllerConfiguration(rc *corev1.ReplicationController) *ReplicationControllerConfiguration {
 	return &ReplicationControllerConfiguration{
-		replicationcontroller: rc,
+		replicationController: rc,
 	}
 }
 
 // Create generates a replicationcontroller configuration summary
 func (rcc *ReplicationControllerConfiguration) Create(options Options) (*component.Summary, error) {
-	if rcc == nil || rcc.replicationcontroller == nil {
+	if rcc == nil || rcc.replicationController == nil {
 		return nil, errors.New("replicationcontroller is nil")
 	}
 
-	replicationController := rcc.replicationcontroller
+	replicationController := rcc.replicationController
 
 	sections := component.SummarySections{}
 
@@ -143,27 +135,35 @@ func (rcc *ReplicationControllerConfiguration) Create(options Options) (*compone
 
 // ReplicationControllerStatus generates a replication controller status
 type ReplicationControllerStatus struct {
-	replicationcontroller *corev1.ReplicationController
+	context     context.Context
+	namespace   string
+	selector    map[string]string
+	uid         types.UID
+	objectStore store.Store
 }
 
 // NewReplicationControllerStatus creates an instance of ReplicationControllerStatus
-func NewReplicationControllerStatus(replicationController *corev1.ReplicationController) *ReplicationControllerStatus {
+func NewReplicationControllerStatus(ctx context.Context, replicationController *corev1.ReplicationController, options Options) *ReplicationControllerStatus {
 	return &ReplicationControllerStatus{
-		replicationcontroller: replicationController,
+		context:     ctx,
+		namespace:   replicationController.ObjectMeta.Namespace,
+		selector:    replicationController.Spec.Selector,
+		uid:         replicationController.GetUID(),
+		objectStore: options.DashConfig.ObjectStore(),
 	}
 }
 
 // Create generates a replicaset status quadrant
-func (replicationController *ReplicationControllerStatus) Create(ctx context.Context, o store.Store) (*component.Quadrant, error) {
-	if replicationController.replicationcontroller == nil {
+func (rcs *ReplicationControllerStatus) Create() (*component.Quadrant, error) {
+	if rcs == nil {
 		return nil, errors.New("replicationcontroller is nil")
 	}
 
 	selectors := metav1.LabelSelector{
-		MatchLabels: replicationController.replicationcontroller.Spec.Selector,
+		MatchLabels: rcs.selector,
 	}
 
-	pods, err := listPods(ctx, replicationController.replicationcontroller.Namespace, &selectors, replicationController.replicationcontroller.GetUID(), o)
+	pods, err := listPods(rcs.context, rcs.namespace, &selectors, rcs.uid, rcs.objectStore)
 	if err != nil {
 		return nil, err
 	}
@@ -185,4 +185,89 @@ func (replicationController *ReplicationControllerStatus) Create(ctx context.Con
 	}
 
 	return quadrant, nil
+}
+
+type replicationControllerObject interface {
+	Config(options Options) error
+	Status(ctx context.Context, options Options) error
+	Pods(ctx context.Context, object runtime.Object, options Options) error
+}
+
+type replicationControllerHandler struct {
+	replicationController *corev1.ReplicationController
+	configFunc            func(*corev1.ReplicationController, Options) (*component.Summary, error)
+	statusFunc            func(context.Context, *corev1.ReplicationController, Options) (*component.Quadrant, error)
+	podFunc               func(context.Context, runtime.Object, Options) (component.Component, error)
+	object                *Object
+}
+
+var _ replicationControllerObject = (*replicaSetHandler)(nil)
+
+func newReplicationControllerHandler(replicationController *corev1.ReplicationController, object *Object) (*replicationControllerHandler, error) {
+	if replicationController == nil {
+		return nil, errors.New("can't print a nil replicationcontroller")
+	}
+
+	if object == nil {
+		return nil, errors.New("can't print a replicationcontroller using a nil object printer")
+	}
+
+	rch := &replicationControllerHandler{
+		replicationController: replicationController,
+		configFunc:            defaultReplicationControllerConfig,
+		statusFunc:            defaultReplicationControllerStatus,
+		podFunc:               defaultReplicationControllerPods,
+		object:                object,
+	}
+
+	return rch, nil
+}
+
+func (r *replicationControllerHandler) Config(options Options) error {
+	out, err := r.configFunc(r.replicationController, options)
+	if err != nil {
+		return err
+	}
+	r.object.RegisterConfig(out)
+	return nil
+}
+
+func defaultReplicationControllerConfig(replicationController *corev1.ReplicationController, options Options) (*component.Summary, error) {
+	return NewReplicationControllerConfiguration(replicationController).Create(options)
+}
+
+func (r *replicationControllerHandler) Status(ctx context.Context, options Options) error {
+	if r.replicationController == nil {
+		return errors.New("can't display status for nil replicationcontroller")
+	}
+
+	r.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthQuarter,
+		Func: func() (component.Component, error) {
+			return r.statusFunc(ctx, r.replicationController, options)
+		},
+	})
+
+	return nil
+}
+
+func defaultReplicationControllerStatus(ctx context.Context, replicationController *corev1.ReplicationController, options Options) (*component.Quadrant, error) {
+	return NewReplicationControllerStatus(ctx, replicationController, options).Create()
+}
+
+func (r *replicationControllerHandler) Pods(ctx context.Context, object runtime.Object, options Options) error {
+	r.object.EnablePodTemplate(*r.replicationController.Spec.Template)
+
+	r.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return r.podFunc(ctx, object, options)
+		},
+	})
+
+	return nil
+}
+
+func defaultReplicationControllerPods(ctx context.Context, object runtime.Object, options Options) (component.Component, error) {
+	return createPodListView(ctx, object, options)
 }
