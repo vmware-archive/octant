@@ -50,6 +50,7 @@ type Options struct {
 	Context          string
 	ClientQPS        float32
 	ClientBurst      int
+	UserAgent        string
 }
 
 // Run runs the dashboard.
@@ -62,8 +63,9 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 
 	logger.Debugf("Loading configuration: %v", options.KubeConfig)
 	restConfigOptions := cluster.RESTConfigOptions{
-		QPS:   options.ClientQPS,
-		Burst: options.ClientBurst,
+		QPS:       options.ClientQPS,
+		Burst:     options.ClientBurst,
+		UserAgent: options.UserAgent,
 	}
 	clusterClient, err := cluster.FromKubeConfig(ctx, options.KubeConfig, options.Context, restConfigOptions)
 	if err != nil {

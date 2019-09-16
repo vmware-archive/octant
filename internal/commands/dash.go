@@ -23,7 +23,7 @@ import (
 	"github.com/vmware/octant/internal/log"
 )
 
-func newOctantCmd() *cobra.Command {
+func newOctantCmd(version string) *cobra.Command {
 	var namespace string
 	var uiURL string
 	var kubeConfig string
@@ -72,6 +72,7 @@ func newOctantCmd() *cobra.Command {
 					Context:          initialContext,
 					ClientQPS:        clientQPS,
 					ClientBurst:      clientBurst,
+					UserAgent:        fmt.Sprintf("octant/%s", version),
 				}
 
 				if klogVerbosity > 0 {
