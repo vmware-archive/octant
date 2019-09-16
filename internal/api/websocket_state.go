@@ -7,6 +7,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"path"
 	"regexp"
 	"sort"
@@ -39,8 +40,8 @@ func defaultStateManagers(clientID string, dashConfig config.Dash) []StateManage
 	return []StateManager{
 		NewContentManager(dashConfig.ModuleManager(), logger),
 		NewFilterManager(),
-		NewNavigationManager(dashConfig.ModuleManager()),
-		NewNamespacesManager(dashConfig.ClusterClient()),
+		NewNavigationManager(dashConfig),
+		NewNamespacesManager(dashConfig),
 		NewContextManager(dashConfig),
 		NewActionRequestManager(),
 	}
@@ -101,6 +102,9 @@ type WebsocketState struct {
 	mu               sync.RWMutex
 	managers         []StateManager
 	actionDispatcher ActionDispatcher
+
+	startCtx           context.Context
+	managersCancelFunc context.CancelFunc
 }
 
 var _ octant.State = (*WebsocketState)(nil)
@@ -322,6 +326,18 @@ func (c *WebsocketState) SetContext(requestedContext string) {
 	if err := c.dashConfig.UseContext(context.TODO(), requestedContext); err != nil {
 		c.dashConfig.Logger().WithErr(err).Errorf("update context")
 	}
+
+	c.SetNamespace(c.dashConfig.DefaultNamespace())
+
+	for _, fn := range c.contentPathUpdates {
+		fn(c.GetContentPath())
+	}
+
+	c.wsClient.Send(CreateAlertUpdate(action.CreateAlert(
+		action.AlertTypeInfo,
+		fmt.Sprintf("Changing context to %s", requestedContext),
+		action.DefaultAlertExpiration,
+	)))
 }
 
 func (c *WebsocketState) updateContentPath() {

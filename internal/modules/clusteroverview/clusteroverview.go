@@ -8,6 +8,7 @@ package clusteroverview
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -39,6 +40,9 @@ type ClusterOverview struct {
 	Options
 
 	pathMatcher *describer.PathMatcher
+	watchedCRDs []*unstructured.Unstructured
+
+	mu sync.Mutex
 }
 
 var _ module.Module = (*ClusterOverview)(nil)
@@ -71,18 +75,33 @@ func New(ctx context.Context, options Options) (*ClusterOverview, error) {
 	watchConfig := &config.CRDWatchConfig{
 		Add: func(_ *describer.PathMatcher, sectionDescriber *describer.CRDSection) config.ObjectHandler {
 			return func(ctx context.Context, object *unstructured.Unstructured) {
+				co.mu.Lock()
+				defer co.mu.Unlock()
+
 				if object == nil {
 					return
 				}
 				describer.AddCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
+				co.watchedCRDs = append(co.watchedCRDs, object)
 			}
 		}(pathMatcher, customResourcesDescriber),
 		Delete: func(_ *describer.PathMatcher, csd *describer.CRDSection) config.ObjectHandler {
 			return func(ctx context.Context, object *unstructured.Unstructured) {
+				co.mu.Lock()
+				defer co.mu.Unlock()
+
 				if object == nil {
 					return
 				}
 				describer.DeleteCRD(ctx, object, pathMatcher, customResourcesDescriber, co, objectStore)
+				var list []*unstructured.Unstructured
+				for i := range co.watchedCRDs {
+					if co.watchedCRDs[i].GetUID() == object.GetUID() {
+						continue
+					}
+					list = append(list, co.watchedCRDs[i])
+				}
+				co.watchedCRDs = list
 			}
 		}(pathMatcher, customResourcesDescriber),
 		IsNamespaced: false,
@@ -252,5 +271,13 @@ func rbacEntries(ctx context.Context, prefix, namespace string, objectStore stor
 }
 
 func (co *ClusterOverview) SetContext(ctx context.Context, contextName string) error {
+	co.mu.Lock()
+	defer co.mu.Unlock()
+
+	for i := range co.watchedCRDs {
+		describer.DeleteCRD(ctx, co.watchedCRDs[i], co.pathMatcher, customResourcesDescriber, co, co.DashConfig.ObjectStore())
+	}
+
+	co.watchedCRDs = []*unstructured.Unstructured{}
 	return nil
 }

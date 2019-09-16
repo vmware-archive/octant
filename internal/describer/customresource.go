@@ -29,10 +29,10 @@ func CustomResourceDefinition(ctx context.Context, name string, o store.Store) (
 	crd := &apiextv1beta1.CustomResourceDefinition{}
 	found, err := store.GetAs(ctx, o, key, crd)
 	if err != nil {
-		return nil, errors.Wrap(err, "get object as custom resource definition from store")
+		return nil, errors.Wrapf(err, "get object as custom resource definition %q from store", name)
 	}
 	if !found {
-		return nil, errors.Errorf("custom resource definition was not found")
+		return nil, errors.Errorf("custom resource definition %q was not found", name)
 	}
 
 	return crd, nil
@@ -87,7 +87,6 @@ func DeleteCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatc
 		logger.WithErr(err).Errorf("unable to unwatch CRD")
 		return
 	}
-
 }
 
 func crdListPath(name string) string {

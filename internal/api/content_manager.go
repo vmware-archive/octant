@@ -76,6 +76,10 @@ var _ StateManager = (*ContentManager)(nil)
 // Start starts the manager.
 func (cm *ContentManager) Start(ctx context.Context, state octant.State, s OctantClient) {
 	updateContentPathCh := make(chan struct{}, 1)
+	defer func() {
+		close(updateContentPathCh)
+	}()
+
 	updateCancel := state.OnContentPathUpdate(func(_ string) {
 		updateContentPathCh <- struct{}{}
 	})
@@ -89,7 +93,10 @@ func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFu
 		for {
 			contentResponse, rerun, err := cm.contentGenerateFunc(ctx, state)
 			if err != nil {
-				cm.logger.WithErr(err).Errorf("generate content")
+				cm.logger.
+					WithErr(err).
+					With("contentPath", state.GetContentPath()).
+					Errorf("generate content")
 				return false
 			}
 

@@ -42,7 +42,7 @@ type sugaredLogWrapper struct {
 }
 
 func (s *sugaredLogWrapper) WithErr(err error) Logger {
-	return &sugaredLogWrapper{s.SugaredLogger.With("err", err)}
+	return &sugaredLogWrapper{s.SugaredLogger.With("err", err.Error())}
 }
 
 func (s *sugaredLogWrapper) With(args ...interface{}) Logger {

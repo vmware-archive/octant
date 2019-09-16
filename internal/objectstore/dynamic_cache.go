@@ -459,6 +459,7 @@ func (dc *DynamicCache) UpdateClusterClient(ctx context.Context, client cluster.
 	dc.seenGVKs.reset()
 	dc.informerSynced.reset()
 	dc.access.Reset()
+	dc.access.UpdateClient(client)
 	dc.updateMu.Unlock()
 
 	for _, fn := range dc.updateFns {
