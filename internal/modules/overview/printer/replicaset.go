@@ -62,7 +62,7 @@ func ReplicaSetHandler(ctx context.Context, replicaSet *appsv1.ReplicaSet, optio
 	o := NewObject(replicaSet)
 	o.EnableEvents()
 
-	rsh, err := newReplicaSetHander(replicaSet, o)
+	rsh, err := newReplicaSetHandler(replicaSet, o)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +200,7 @@ type replicaSetHandler struct {
 
 var _ replicaSetObject = (*replicaSetHandler)(nil)
 
-func newReplicaSetHander(replicaSet *appsv1.ReplicaSet, object *Object) (*replicaSetHandler, error) {
+func newReplicaSetHandler(replicaSet *appsv1.ReplicaSet, object *Object) (*replicaSetHandler, error) {
 	if replicaSet == nil {
 		return nil, errors.New("can't print a nil replicaset")
 	}
