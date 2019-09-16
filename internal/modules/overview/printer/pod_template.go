@@ -104,14 +104,20 @@ func podTemplateContainers(fl *flexlayout.FlexLayout, options podTemplateLayoutO
 
 	containerSection := fl.AddSection()
 
-	for _, container := range options.containers {
+	width := component.WidthHalf
+
+	for index, container := range options.containers {
 		containerConfig := NewContainerConfiguration(options.parent, &container, portForwarder, options.isInit, options.printOptions)
 		summary, err := containerConfig.Create()
 		if err != nil {
 			return err
 		}
 
-		if err := containerSection.Add(summary, component.WidthHalf); err != nil {
+		if len(options.containers) % 2  != 0 && len(options.containers) == index + 1  {
+			width = component.WidthFull
+		}
+
+		if err := containerSection.Add(summary, width); err != nil {
 			return errors.Wrap(err, "add container")
 		}
 	}
