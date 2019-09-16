@@ -18,10 +18,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/vmware/octant/internal/conversion"
-	"github.com/vmware/octant/internal/modules/overview/printer/fake"
-	"github.com/vmware/octant/internal/octant"
 	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -414,39 +411,4 @@ func Test_printPodResources(t *testing.T) {
 	})
 
 	assert.Equal(t, expected, got)
-}
-
-func Test_setupPodActions(t *testing.T) {
-	controller := gomock.NewController(t)
-	defer controller.Finish()
-
-	objectInterface := fake.NewMockObjectInterface(controller)
-
-	pod := testutil.CreatePod("pod")
-	key, err := store.KeyFromObject(pod)
-	require.NoError(t, err)
-	payload := key.ToActionPayload()
-	payload["action"] = octant.ActionDeleteObject
-	objectInterface.EXPECT().
-		AddButton("Delete", payload, gomock.Any())
-
-	err = setupPodActions(pod, objectInterface)
-	require.NoError(t, err)
-}
-
-func Test_deletePodConfirmation(t *testing.T) {
-	pod := testutil.CreatePod("pod")
-	option := deletePodConfirmation(pod)
-
-	button := component.Button{}
-	option(&button)
-
-	expected := component.Button{
-		Confirmation: &component.Confirmation{
-			Title: "Delete pod",
-			Body:  "Are you sure you want to delete pod **pod**? This action is permanent and cannot be recovered.",
-		},
-	}
-
-	assert.Equal(t, expected, button)
 }
