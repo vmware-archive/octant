@@ -50,30 +50,43 @@ func SecretListHandler(ctx context.Context, list *corev1.SecretList, options Opt
 
 // SecretHandler is a printFunc for printing a secret summary.
 func SecretHandler(ctx context.Context, secret *corev1.Secret, options Options) (component.Component, error) {
-	if secret == nil {
-		return nil, errors.New("secret is nil")
-	}
-
 	o := NewObject(secret)
 
-	configSummary, err := secretConfiguration(*secret)
+	sh, err := newSecretHandler(secret, o)
 	if err != nil {
 		return nil, err
 	}
 
-	o.RegisterConfig(configSummary)
+	if err := sh.Config(options); err != nil {
+		return nil, errors.Wrap(err, "print secret configuration")
+	}
 
-	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.Component, error) {
-			return secretData(*secret)
-		},
-		Width: component.WidthFull,
-	})
+	if err := sh.Data(options); err != nil {
+		return nil, errors.Wrap(err, "print secret data")
+	}
 
 	return o.ToComponent(ctx, options)
 }
 
-func secretConfiguration(secret corev1.Secret) (*component.Summary, error) {
+// SecretConfiguration generates a secret configuration
+type SecretConfiguration struct {
+	secret *corev1.Secret
+}
+
+// NewSecretConfiguration creates an instance of SecretConfiguration
+func NewSecretConfiguration(secret *corev1.Secret) *SecretConfiguration {
+	return &SecretConfiguration{
+		secret: secret,
+	}
+}
+
+// Create creates a secret configuration summary
+func (s *SecretConfiguration) Create(options Options) (*component.Summary, error) {
+	if s.secret == nil {
+		return nil, errors.New("secret is nil")
+	}
+	secret := s.secret
+
 	var sections []component.SummarySection
 
 	sections = append(sections, component.SummarySection{
@@ -85,7 +98,7 @@ func secretConfiguration(secret corev1.Secret) (*component.Summary, error) {
 	return summary, nil
 }
 
-func secretData(secret corev1.Secret) (*component.Table, error) {
+func describeSecretData(secret corev1.Secret) (*component.Table, error) {
 	table := component.NewTable("Data", "This secret has no data!", secretDataCols)
 
 	for key := range secret.Data {
@@ -96,4 +109,66 @@ func secretData(secret corev1.Secret) (*component.Table, error) {
 	}
 
 	return table, nil
+}
+
+type secretObject interface {
+	Config(options Options) error
+	Data(options Options) error
+}
+
+type secretHandler struct {
+	secret     *corev1.Secret
+	configFunc func(*corev1.Secret, Options) (*component.Summary, error)
+	dataFunc   func(*corev1.Secret, Options) (*component.Table, error)
+	object     *Object
+}
+
+func newSecretHandler(secret *corev1.Secret, object *Object) (*secretHandler, error) {
+	if secret == nil {
+		return nil, errors.New("can't print a nil secret")
+	}
+
+	if object == nil {
+		return nil, errors.New("can't print secret using a nil object printer")
+	}
+
+	sh := &secretHandler{
+		secret:     secret,
+		configFunc: defaultSecretConfig,
+		dataFunc:   defaultSecretData,
+		object:     object,
+	}
+
+	return sh, nil
+}
+
+func (s *secretHandler) Config(options Options) error {
+	out, err := s.configFunc(s.secret, options)
+	if err != nil {
+		return err
+	}
+	s.object.RegisterConfig(out)
+	return nil
+}
+
+func defaultSecretConfig(secret *corev1.Secret, options Options) (*component.Summary, error) {
+	return NewSecretConfiguration(secret).Create(options)
+}
+
+func (s *secretHandler) Data(options Options) error {
+	if s.secret == nil {
+		return errors.New("can't display data for nil secret")
+	}
+
+	s.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return s.dataFunc(s.secret, options)
+		},
+	})
+	return nil
+}
+
+func defaultSecretData(secret *corev1.Secret, options Options) (*component.Table, error) {
+	return describeSecretData(*secret)
 }
