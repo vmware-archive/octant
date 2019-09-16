@@ -52,6 +52,7 @@ import { OverviewComponent } from './overview.component';
 import { DefaultPipe } from './pipes/default.pipe';
 import { ButtonGroupComponent } from './components/button-group/button-group.component';
 import { AlertComponent } from './components/alert/alert.component';
+import { ContentFilterComponent } from './components/content-filter/content-filter.component';
 
 export function hljsLanguages() {
   return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
@@ -100,6 +101,7 @@ export function hljsLanguages() {
     CytoscapeComponent,
     ButtonGroupComponent,
     AlertComponent,
+    ContentFilterComponent,
   ],
   imports: [
     CommonModule,

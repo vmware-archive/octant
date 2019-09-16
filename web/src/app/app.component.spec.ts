@@ -21,12 +21,14 @@ import {
   WebsocketService,
 } from './modules/overview/services/websocket/websocket.service';
 import { WebsocketServiceMock } from './modules/overview/services/websocket/mock';
+import { ClarityIcons } from '@clr/icons';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       providers: [
         { provide: WebsocketService, useClass: WebsocketServiceMock },
+        { provide: window, useValue: ClarityIcons },
       ],
       imports: [
         RouterTestingModule,

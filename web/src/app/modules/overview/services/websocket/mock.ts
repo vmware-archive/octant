@@ -21,7 +21,6 @@ export class WebsocketServiceMock implements BackendService {
   }
 
   registerHandler(name: string, handler: HandlerFunc) {
-    console.log(`register handler ${name}`);
     this.handlers[name] = handler;
   }
 

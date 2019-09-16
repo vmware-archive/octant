@@ -320,6 +320,7 @@ func Test_ReplicaSetPods(t *testing.T) {
 		"Node":     nodeLink,
 		"Age":      component.NewTimestamp(now),
 	})
+	addPodTableFilters(expected)
 
 	component.AssertEqual(t, expected, got)
 }
