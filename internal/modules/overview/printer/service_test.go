@@ -99,27 +99,8 @@ func Test_ServiceListHandler(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
-func Test_describeServiceConfiguration(t *testing.T) {
-	controller := gomock.NewController(t)
-	defer controller.Finish()
-
-	tpo := newTestPrinterOptions(controller)
-	printOptions := tpo.ToOptions()
-
-	podKey := store.Key{
-		Namespace:  "default",
-		APIVersion: "v1",
-		Kind:       "Pod",
-	}
-
-	pods := testutil.ToUnstructuredList(t, testutil.CreatePod("pod"))
-
-	tpo.objectStore.EXPECT().
-		List(gomock.Any(), podKey).
-		Return(pods, false, nil).AnyTimes()
-
-	ctx := context.Background()
-	service := &corev1.Service{
+func Test_ServiceConfiguration(t *testing.T) {
+	validService := &corev1.Service{
 		Spec: corev1.ServiceSpec{
 			ExternalTrafficPolicy:    corev1.ServiceExternalTrafficPolicyTypeCluster,
 			HealthCheckNodePort:      31311,
@@ -132,51 +113,93 @@ func Test_describeServiceConfiguration(t *testing.T) {
 			Type:            corev1.ServiceTypeClusterIP,
 		},
 	}
-	service.Namespace = "default"
+	validService.Namespace = "default"
 
-	got, err := serviceConfiguration(ctx, service, printOptions)
-	require.NoError(t, err)
-
-	sections := []component.SummarySection{
+	cases := []struct {
+		name     string
+		service  *corev1.Service
+		isErr    bool
+		expected *component.Summary
+	}{
 		{
-			Header:  "Selectors",
-			Content: component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "app1")}),
+			name:    "general",
+			service: validService,
+			expected: component.NewSummary("Configuration", []component.SummarySection{
+				{
+					Header:  "Selectors",
+					Content: component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "app1")}),
+				},
+				{
+					Header:  "Type",
+					Content: component.NewText("ClusterIP"),
+				},
+				{
+					Header:  "Ports",
+					Content: component.NewText("http 8080/TCP"),
+				},
+				{
+					Header:  "Session Affinity",
+					Content: component.NewText("None"),
+				},
+				{
+					Header:  "External Traffic Policy",
+					Content: component.NewText("Cluster"),
+				},
+				{
+					Header:  "Health Check Node Port",
+					Content: component.NewText("31311"),
+				},
+				{
+					Header:  "Load Balancer Source Ranges",
+					Content: component.NewText("range1, range2"),
+				},
+			}...),
 		},
 		{
-			Header:  "Type",
-			Content: component.NewText("ClusterIP"),
-		},
-		{
-			Header:  "Ports",
-			Content: component.NewText("http 8080/TCP"),
-		},
-		{
-			Header:  "Session Affinity",
-			Content: component.NewText("None"),
-		},
-		{
-			Header:  "External Traffic Policy",
-			Content: component.NewText("Cluster"),
-		},
-		{
-			Header:  "Health Check Node Port",
-			Content: component.NewText("31311"),
-		},
-		{
-			Header:  "Load Balancer Source Ranges",
-			Content: component.NewText("range1, range2"),
+			name:    "service is nil",
+			service: nil,
+			isErr:   true,
 		},
 	}
+	for _, tc := range cases {
+		controller := gomock.NewController(t)
+		defer controller.Finish()
 
-	expected := component.NewSummary("Configuration", sections...)
-	editAction, err := editServiceAction(ctx, service, printOptions)
-	require.NoError(t, err)
-	expected.AddAction(editAction)
+		tpo := newTestPrinterOptions(controller)
+		printOptions := tpo.ToOptions()
 
-	component.AssertEqual(t, expected, got)
+		ctx := context.Background()
+
+		podKey := store.Key{
+			Namespace:  "default",
+			APIVersion: "v1",
+			Kind:       "Pod",
+		}
+
+		pods := testutil.ToUnstructuredList(t, testutil.CreatePod("pod"))
+
+		tpo.objectStore.EXPECT().
+			List(gomock.Any(), podKey).
+			Return(pods, false, nil).AnyTimes()
+
+		sc := NewServiceConfiguration(tc.service)
+
+		summary, err := sc.Create(ctx, printOptions)
+		if tc.isErr {
+			require.Error(t, err)
+			return
+		}
+		require.NoError(t, err)
+
+		editAction, err := editServiceAction(ctx, tc.service, printOptions)
+		require.NoError(t, err)
+		tc.expected.AddAction(editAction)
+
+		component.AssertEqual(t, tc.expected, summary)
+	}
 }
 
-func Test_serviceSummary(t *testing.T) {
+func Test_createServiceSummaryStatus(t *testing.T) {
 	cases := []struct {
 		name     string
 		service  *corev1.Service
@@ -252,7 +275,7 @@ func Test_serviceSummary(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := serviceSummary(tc.service)
+			got, err := createServiceSummaryStatus(tc.service)
 			require.NoError(t, err)
 
 			expected := component.NewSummary("Status", tc.sections...)
@@ -261,7 +284,7 @@ func Test_serviceSummary(t *testing.T) {
 	}
 }
 
-func Test_serviceEndpoints(t *testing.T) {
+func Test_createServiceEndpointsView(t *testing.T) {
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
@@ -307,7 +330,7 @@ func Test_serviceEndpoints(t *testing.T) {
 		AnyTimes()
 
 	ctx := context.Background()
-	got, err := serviceEndpoints(ctx, printOptions, service)
+	got, err := createServiceEndpointsView(ctx, service, printOptions)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Target", "IP", "Node Name")
