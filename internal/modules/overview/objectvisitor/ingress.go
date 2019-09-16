@@ -8,7 +8,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware/octant/internal/gvk"
@@ -33,7 +32,7 @@ func (i *Ingress) Supports() schema.GroupVersionKind {
 	return gvk.Ingress
 }
 
-// Visit visits an ingress. It looks for associated ingresses.
+// Visit visits an ingress. It looks for associated services.
 func (i *Ingress) Visit(ctx context.Context, object *unstructured.Unstructured, handler ObjectHandler, visitor Visitor, visitDescendants bool) error {
 	ctx, span := trace.StartSpan(ctx, "visitIngress")
 	defer span.End()
@@ -50,20 +49,14 @@ func (i *Ingress) Visit(ctx context.Context, object *unstructured.Unstructured, 
 
 	var g errgroup.Group
 
-	for i := range services {
-		service := services[i]
+	for i := range services.Items {
+		service := &services.Items[i]
 		g.Go(func() error {
-			m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(service)
-			if err != nil {
-				return err
-			}
-			u := &unstructured.Unstructured{Object: m}
-
-			if err := visitor.Visit(ctx, u, handler, true); err != nil {
+			if err := visitor.Visit(ctx, service, handler, true); err != nil {
 				return errors.Wrapf(err, "ingress %s visit service %s",
-					kubernetes.PrintObject(ingress), kubernetes.PrintObject(u))
+					kubernetes.PrintObject(ingress), kubernetes.PrintObject(service))
 			}
-			return handler.AddEdge(ctx, object, u)
+			return handler.AddEdge(ctx, object, service)
 		})
 
 	}

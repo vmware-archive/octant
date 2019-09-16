@@ -19,6 +19,7 @@ import (
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -741,8 +742,10 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 			require.NoError(t, err)
 
 			var got []string
-			for _, service := range services {
-				got = append(got, service.Name)
+			for _, service := range services.Items {
+				accessor, err := meta.Accessor(&service)
+				require.NoError(t, err)
+				got = append(got, accessor.GetName())
 			}
 			sort.Strings(got)
 			sort.Strings(tc.expected)

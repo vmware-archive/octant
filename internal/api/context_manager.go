@@ -6,7 +6,9 @@
 package api
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 
 	"github.com/pkg/errors"
 
@@ -91,6 +93,8 @@ func (c *ContextManager) Start(ctx context.Context, state octant.State, s Octant
 }
 
 func (c *ContextManager) runUpdate(state octant.State, s OctantClient) PollerFunc {
+	var previous []byte
+
 	logger := c.dashConfig.Logger()
 	return func(ctx context.Context) bool {
 		ev, err := c.contextGenerateFunc(ctx, state)
@@ -99,7 +103,16 @@ func (c *ContextManager) runUpdate(state octant.State, s OctantClient) PollerFun
 		}
 
 		if ctx.Err() == nil {
-			s.Send(ev)
+			cur, err := json.Marshal(ev)
+			if err != nil {
+				logger.WithErr(err).Errorf("unable to marshal context")
+				return false
+			}
+
+			if bytes.Compare(previous, cur) != 0 {
+				previous = cur
+				s.Send(ev)
+			}
 		}
 
 		return false

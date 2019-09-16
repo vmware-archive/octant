@@ -47,7 +47,7 @@ type Queryer interface {
 	IngressesForService(ctx context.Context, service *corev1.Service) ([]*extv1beta1.Ingress, error)
 	OwnerReference(ctx context.Context, object *unstructured.Unstructured) (bool, *unstructured.Unstructured, error)
 	PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error)
-	ServicesForIngress(ctx context.Context, ingress *extv1beta1.Ingress) ([]*corev1.Service, error)
+	ServicesForIngress(ctx context.Context, ingress *extv1beta1.Ingress) (*unstructured.UnstructuredList, error)
 	ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Service, error)
 	ServiceAccountForPod(ctx context.Context, pod *corev1.Pod) (*corev1.ServiceAccount, error)
 }
@@ -542,13 +542,13 @@ func (osq *ObjectStoreQueryer) loadPods(ctx context.Context, key store.Key, labe
 	return list, nil
 }
 
-func (osq *ObjectStoreQueryer) ServicesForIngress(ctx context.Context, ingress *extv1beta1.Ingress) ([]*corev1.Service, error) {
+func (osq *ObjectStoreQueryer) ServicesForIngress(ctx context.Context, ingress *extv1beta1.Ingress) (*unstructured.UnstructuredList, error) {
 	if ingress == nil {
 		return nil, errors.New("ingress is nil")
 	}
 
 	backends := osq.listIngressBackends(*ingress)
-	var services []*corev1.Service
+	list := &unstructured.UnstructuredList{}
 	for _, backend := range backends {
 		key := store.Key{
 			Namespace:  ingress.Namespace,
@@ -565,17 +565,9 @@ func (osq *ObjectStoreQueryer) ServicesForIngress(ctx context.Context, ingress *
 			continue
 		}
 
-		svc := &corev1.Service{}
-		err = runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, svc)
-		if err != nil {
-			return nil, errors.Wrap(err, "converting unstructured service")
-		}
-		if err := copyObjectMeta(svc, u); err != nil {
-			return nil, errors.Wrap(err, "copying object metadata")
-		}
-		services = append(services, svc)
+		list.Items = append(list.Items, *u)
 	}
-	return services, nil
+	return list, nil
 }
 
 func (osq *ObjectStoreQueryer) ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Service, error) {

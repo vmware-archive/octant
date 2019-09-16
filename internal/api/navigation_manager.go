@@ -6,7 +6,9 @@
 package api
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"path"
 	"sync"
@@ -86,6 +88,8 @@ func (n *NavigationManager) Start(ctx context.Context, state octant.State, s Oct
 }
 
 func (n *NavigationManager) runUpdate(state octant.State, client OctantClient) PollerFunc {
+	var previous []byte
+
 	return func(ctx context.Context) bool {
 		logger := log.From(ctx)
 
@@ -96,7 +100,17 @@ func (n *NavigationManager) runUpdate(state octant.State, client OctantClient) P
 		}
 
 		if ctx.Err() == nil {
-			client.Send(CreateNavigationEvent(entries, state.GetContentPath()))
+			cur, err := json.Marshal(entries)
+			if err != nil {
+				logger.WithErr(err).Errorf("unable to marshal navigation entries")
+				return false
+			}
+
+			if bytes.Compare(previous, cur) != 0 {
+				previous = cur
+				client.Send(CreateNavigationEvent(entries, state.GetContentPath()))
+			}
+
 		}
 
 		return false

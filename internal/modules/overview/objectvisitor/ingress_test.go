@@ -6,7 +6,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware/octant/internal/modules/overview/objectvisitor"
@@ -26,7 +25,7 @@ func TestIngress_Visit(t *testing.T) {
 	service := testutil.CreateService("service")
 	q.EXPECT().
 		ServicesForIngress(gomock.Any(), object).
-		Return([]*corev1.Service{service}, nil)
+		Return(testutil.ToUnstructuredList(t, service), nil)
 
 	handler := fake.NewMockObjectHandler(controller)
 	handler.EXPECT().
@@ -64,7 +63,7 @@ func TestIngress_Visit_invalid_service_name(t *testing.T) {
 	q := queryerFake.NewMockQueryer(controller)
 	q.EXPECT().
 		ServicesForIngress(gomock.Any(), object).
-		Return([]*corev1.Service{}, nil)
+		Return(testutil.ToUnstructuredList(t), nil)
 
 	handler := fake.NewMockObjectHandler(controller)
 
