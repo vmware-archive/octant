@@ -42,7 +42,7 @@ func (e *DeploymentConfigurationEditor) ActionName() string {
 func (e *DeploymentConfigurationEditor) Handle(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
 	e.logger.
 		With("payload", payload, "actionName", e.ActionName()).
-		Infof("received action payload")
+		Debugf("received action payload")
 
 	replicaCountFloat, err := payload.Float64("replicas")
 	if err != nil {

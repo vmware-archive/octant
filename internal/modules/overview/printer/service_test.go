@@ -100,6 +100,25 @@ func Test_ServiceListHandler(t *testing.T) {
 }
 
 func Test_describeServiceConfiguration(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	tpo := newTestPrinterOptions(controller)
+	printOptions := tpo.ToOptions()
+
+	podKey := store.Key{
+		Namespace:  "default",
+		APIVersion: "v1",
+		Kind:       "Pod",
+	}
+
+	pods := testutil.ToUnstructuredList(t, testutil.CreatePod("pod"))
+
+	tpo.objectStore.EXPECT().
+		List(gomock.Any(), podKey).
+		Return(pods, false, nil).AnyTimes()
+
+	ctx := context.Background()
 	service := &corev1.Service{
 		Spec: corev1.ServiceSpec{
 			ExternalTrafficPolicy:    corev1.ServiceExternalTrafficPolicyTypeCluster,
@@ -113,8 +132,9 @@ func Test_describeServiceConfiguration(t *testing.T) {
 			Type:            corev1.ServiceTypeClusterIP,
 		},
 	}
+	service.Namespace = "default"
 
-	got, err := serviceConfiguration(service)
+	got, err := serviceConfiguration(ctx, service, printOptions)
 	require.NoError(t, err)
 
 	sections := []component.SummarySection{
@@ -149,6 +169,10 @@ func Test_describeServiceConfiguration(t *testing.T) {
 	}
 
 	expected := component.NewSummary("Configuration", sections...)
+	editAction, err := editServiceAction(ctx, service, printOptions)
+	require.NoError(t, err)
+	expected.AddAction(editAction)
+
 	component.AssertEqual(t, expected, got)
 }
 
