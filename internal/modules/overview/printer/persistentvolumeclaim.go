@@ -63,34 +63,46 @@ func PersistentVolumeClaimListHandler(ctx context.Context, list *corev1.Persiste
 // PersistentVolumeClaimHandler is a printFunc that prints a PersistentVolumeClaim
 func PersistentVolumeClaimHandler(ctx context.Context, persistentVolumeClaim *corev1.PersistentVolumeClaim, options Options) (component.Component, error) {
 	o := NewObject(persistentVolumeClaim)
-
-	configSummary, err := printPersistentVolumeClaimConfig(persistentVolumeClaim)
-	if err != nil {
-		return nil, err
-	}
-
-	statusSummary, err := printPersistentVolumeClaimStatus(persistentVolumeClaim)
-	if err != nil {
-		return nil, err
-	}
-
-	o.RegisterConfig(configSummary)
-	o.RegisterSummary(statusSummary)
-	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.Component, error) {
-			return createMountedPodListView(ctx, persistentVolumeClaim.Namespace, persistentVolumeClaim.Name, options)
-		},
-		Width: component.WidthFull,
-	})
 	o.EnableEvents()
 
+	ph, err := newPersistentVolumeClaimHandler(persistentVolumeClaim, o)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := ph.Config(options); err != nil {
+		return nil, errors.Wrap(err, "print persistentvolumeclaim configuration")
+	}
+
+	if err := ph.Status(options); err != nil {
+		return nil, errors.Wrap(err, "print persistentvolumeclaim status")
+	}
+
+	if err := ph.MountedPodList(ctx, options); err != nil {
+		return nil, errors.Wrap(err, "print peristentvolumeclaim mounted pod list")
+	}
 	return o.ToComponent(ctx, options)
 }
 
-func printPersistentVolumeClaimConfig(persistentVolumeClaim *corev1.PersistentVolumeClaim) (*component.Summary, error) {
-	if persistentVolumeClaim == nil {
+// PersistentVolumeClaimConfiguration generates a persistenvolumeclaim configuration
+type PersistentVolumeClaimConfiguration struct {
+	persistentVolumeClaim *corev1.PersistentVolumeClaim
+}
+
+// NewPersistentVolumeClaimConfiguration creates an instance of PersistentVolumeClaimConfiguration
+func NewPersistentVolumeClaimConfiguration(pvc *corev1.PersistentVolumeClaim) *PersistentVolumeClaimConfiguration {
+	return &PersistentVolumeClaimConfiguration{
+		persistentVolumeClaim: pvc,
+	}
+}
+
+// Create creates a persistentvolumeclaim configuration summary
+func (p *PersistentVolumeClaimConfiguration) Create(options Options) (*component.Summary, error) {
+	if p == nil || p.persistentVolumeClaim == nil {
 		return nil, errors.New("persistentvolumeclaim is nil")
 	}
+
+	persistentVolumeClaim := p.persistentVolumeClaim
 
 	var sections component.SummarySections
 
@@ -123,7 +135,7 @@ func printPersistentVolumeClaimConfig(persistentVolumeClaim *corev1.PersistentVo
 	return summary, nil
 }
 
-func printPersistentVolumeClaimStatus(persistentVolumeClaim *corev1.PersistentVolumeClaim) (*component.Summary, error) {
+func createPersistentVolumeClaimStatusView(persistentVolumeClaim *corev1.PersistentVolumeClaim) (*component.Summary, error) {
 	if persistentVolumeClaim == nil {
 		return nil, errors.New("persistentvolumeclaim is nil")
 	}
@@ -203,4 +215,83 @@ func removeDuplicateAccessModes(modes []corev1.PersistentVolumeAccessMode) []cor
 		}
 	}
 	return accessModes
+}
+
+type persistentVolumeClaimObject interface {
+	Config(options Options) error
+	Status(options Options) error
+	MountedPodList(ctx context.Context, options Options) error
+}
+
+type persistentVolumeClaimHandler struct {
+	persistentVolumeClaim *corev1.PersistentVolumeClaim
+	configFunc            func(*corev1.PersistentVolumeClaim, Options) (*component.Summary, error)
+	statusFunc            func(*corev1.PersistentVolumeClaim, Options) (*component.Summary, error)
+	mountedPodListFunc    func(context.Context, string, string, Options) (component.Component, error)
+	object                *Object
+}
+
+var _ persistentVolumeClaimObject = (*persistentVolumeClaimHandler)(nil)
+
+func newPersistentVolumeClaimHandler(pvc *corev1.PersistentVolumeClaim, object *Object) (*persistentVolumeClaimHandler, error) {
+	if pvc == nil {
+		return nil, errors.New("can't print a nil persistentvolumeclaim")
+	}
+
+	if object == nil {
+		return nil, errors.New("can't print persistentvolume claim using a nil object printer")
+	}
+
+	ph := &persistentVolumeClaimHandler{
+		persistentVolumeClaim: pvc,
+		configFunc:            defaultPersistentVolumeClaimConfig,
+		statusFunc:            defaultPersistentVolumClaimStatus,
+		mountedPodListFunc:    defaultPersistentVolumeMountedPodList,
+		object:                object,
+	}
+	return ph, nil
+}
+
+func (p *persistentVolumeClaimHandler) Config(options Options) error {
+	out, err := p.configFunc(p.persistentVolumeClaim, options)
+	if err != nil {
+		return err
+	}
+	p.object.RegisterConfig(out)
+	return nil
+}
+
+func defaultPersistentVolumeClaimConfig(pvc *corev1.PersistentVolumeClaim, options Options) (*component.Summary, error) {
+	return NewPersistentVolumeClaimConfiguration(pvc).Create(options)
+}
+
+func (p *persistentVolumeClaimHandler) Status(options Options) error {
+	out, err := p.statusFunc(p.persistentVolumeClaim, options)
+	if err != nil {
+		return err
+	}
+	p.object.RegisterSummary(out)
+	return nil
+}
+
+func defaultPersistentVolumClaimStatus(pvc *corev1.PersistentVolumeClaim, options Options) (*component.Summary, error) {
+	return createPersistentVolumeClaimStatusView(pvc)
+}
+
+func (p *persistentVolumeClaimHandler) MountedPodList(ctx context.Context, options Options) error {
+	if p.persistentVolumeClaim == nil {
+		return errors.New("can't display mounted pod list for nil persistentvolumeclaim")
+	}
+
+	p.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return p.mountedPodListFunc(ctx, p.persistentVolumeClaim.Namespace, p.persistentVolumeClaim.Name, options)
+		},
+	})
+	return nil
+}
+
+func defaultPersistentVolumeMountedPodList(ctx context.Context, namespace string, name string, options Options) (component.Component, error) {
+	return createMountedPodListView(ctx, namespace, name, options)
 }

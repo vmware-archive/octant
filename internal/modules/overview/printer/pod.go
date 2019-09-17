@@ -305,7 +305,7 @@ func loadPods(ctx context.Context, key store.Key, o store.Store, labelSelector *
 			return nil, err
 		}
 
-		if selector == nil || isEqualSelector(labelSelector, podSelector) || selector.Matches(kLabels.Set(pod.Labels)) {
+		if selector == kLabels.Nothing() || isEqualSelector(labelSelector, podSelector) || selector.Matches(kLabels.Set(pod.Labels)) {
 			list = append(list, pod)
 		}
 	}
@@ -500,6 +500,8 @@ func createRollingPodListView(ctx context.Context, objects []runtime.Object, opt
 }
 
 func createMountedPodListView(ctx context.Context, namespace string, persistentVolumeClaimName string, options Options) (component.Component, error) {
+	options.DisableLabels = true
+
 	key := store.Key{
 		Namespace:  namespace,
 		APIVersion: "v1",

@@ -12,13 +12,13 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 func Test_PersistentVolumeListHandler(t *testing.T) {
@@ -63,40 +63,88 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
-func Test_printPersistentVolumeClaimConfig(t *testing.T) {
+func Test_PersistentVolumeClaimConfiguration(t *testing.T) {
 	labels := map[string]string{
 		"foo": "bar",
 	}
 
 	now := testutil.Time()
 
-	object := testutil.CreatePersistentVolumeClaim("pvc")
-	object.CreationTimestamp = metav1.Time{Time: now}
-	object.Finalizers = []string{"kubernetes.io/pvc-protection"}
-	object.Labels = labels
-	object.Spec.Selector = &metav1.LabelSelector{
+	pvc := testutil.CreatePersistentVolumeClaim("pvc")
+	pvc.CreationTimestamp = metav1.Time{Time: now}
+	pvc.Finalizers = []string{"kubernetes.io/pvc-protection"}
+	pvc.Labels = labels
+	pvc.Spec.Selector = &metav1.LabelSelector{
 		MatchLabels: labels,
 	}
 
-	got, err := printPersistentVolumeClaimConfig(object)
-	require.NoError(t, err)
+	cases := []struct {
+		name                  string
+		persistentVolumeClaim *corev1.PersistentVolumeClaim
+		isErr                 bool
+		expected              *component.Summary
+	}{
+		{
+			name:                  "general",
+			persistentVolumeClaim: pvc,
+			expected: component.NewSummary("Configuration", []component.SummarySection{
+				{
+					Header:  "Volume Mode",
+					Content: component.NewText("Filesystem"),
+				},
+				{
+					Header:  "Access Modes",
+					Content: component.NewText("RWO"),
+				},
+				{
+					Header:  "Finalizers",
+					Content: component.NewText("[kubernetes.io/pvc-protection]"),
+				},
+				{
+					Header:  "Storage Class Name",
+					Content: component.NewText("manual"),
+				},
+				{
+					Header:  "Labels",
+					Content: component.NewLabels(labels),
+				},
+				{
+					Header:  "Selectors",
+					Content: printSelectorMap(labels),
+				},
+			}...),
+		},
+		{
+			name:                  "pvc is nil",
+			persistentVolumeClaim: nil,
+			isErr:                 true,
+		},
+	}
 
-	sections := component.SummarySections{}
-	sections.AddText("Volume Mode", "Filesystem")
-	sections.AddText("Access Modes", "RWO")
-	sections.AddText("Finalizers", "[kubernetes.io/pvc-protection]")
-	sections.AddText("Storage Class Name", "manual")
-	sections.Add("Labels", component.NewLabels(labels))
-	sections.Add("Selectors", printSelectorMap(labels))
-	expected := component.NewSummary("Configuration", sections...)
+	for _, tc := range cases {
+		controller := gomock.NewController(t)
+		defer controller.Finish()
 
-	assert.Equal(t, expected, got)
+		tpo := newTestPrinterOptions(controller)
+		printOptions := tpo.ToOptions()
+
+		pc := NewPersistentVolumeClaimConfiguration(tc.persistentVolumeClaim)
+
+		summary, err := pc.Create(printOptions)
+		if tc.isErr {
+			require.Error(t, err)
+			return
+		}
+		require.NoError(t, err)
+
+		component.AssertEqual(t, tc.expected, summary)
+	}
 }
 
-func Test_printPersistentVolumeClaimStatus(t *testing.T) {
+func Test_createPersistentVolumeClaimStatusView(t *testing.T) {
 	object := testutil.CreatePersistentVolumeClaim("pvc")
 
-	got, err := printPersistentVolumeClaimStatus(object)
+	got, err := createPersistentVolumeClaimStatusView(object)
 	require.NoError(t, err)
 
 	sections := component.SummarySections{}
@@ -106,5 +154,92 @@ func Test_printPersistentVolumeClaimStatus(t *testing.T) {
 	sections.AddText("Total Volume Capacity", "10Gi")
 	expected := component.NewSummary("Status", sections...)
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
+}
+
+func Test_PersistentVolumeClaimMountedPodsList(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	tpo := newTestPrinterOptions(controller)
+
+	ctx := context.Background()
+
+	now := testutil.Time()
+
+	nodeLink := component.NewLink("", "node", "/node")
+	tpo.link.EXPECT().
+		ForGVK("", "v1", "Node", "node", "node").
+		Return(nodeLink, nil).AnyTimes()
+
+	pvc := testutil.CreatePersistentVolumeClaim("mysql-pv-claim")
+
+	pod := testutil.CreatePod("wordpress-mysql-67565bd57-8fzbh")
+	pod.CreationTimestamp = metav1.Time{Time: now}
+	pod.Spec.Containers = []corev1.Container{
+		{
+			Name:  "mysql",
+			Image: "mysql:5.6",
+		},
+	}
+	pod.Spec.NodeName = "node"
+	pod.Status = corev1.PodStatus{
+		Phase: "Running",
+		ContainerStatuses: []corev1.ContainerStatus{
+			{
+				Name:         "mysql",
+				Image:        "mysql:5.6",
+				RestartCount: 0,
+				Ready:        true,
+			},
+		},
+	}
+	pod.Spec.Volumes = []corev1.Volume{
+		{
+			Name: "mysql-persistent-storage",
+			VolumeSource: corev1.VolumeSource{
+				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+					ClaimName: "mysql-pv-claim",
+				},
+			},
+		},
+	}
+
+	pods := &corev1.PodList{
+		Items: []corev1.Pod{*pod},
+	}
+
+	tpo.PathForObject(pod, pod.Name, "/pod")
+
+	podList := &unstructured.UnstructuredList{}
+	for _, p := range pods.Items {
+		podList.Items = append(podList.Items, *testutil.ToUnstructured(t, &p))
+	}
+	key := store.Key{
+		Namespace:  "namespace",
+		APIVersion: "v1",
+		Kind:       "Pod",
+	}
+
+	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, false, nil)
+
+	printOptions := tpo.ToOptions()
+	printOptions.DisableLabels = false
+
+	got, err := createMountedPodListView(ctx, pvc.Namespace, pvc.Name, printOptions)
+	require.NoError(t, err)
+
+	cols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
+	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
+	expected.Add(component.TableRow{
+		"Name":     component.NewLink("", "wordpress-mysql-67565bd57-8fzbh", "/pod"),
+		"Ready":    component.NewText("1/1"),
+		"Phase":    component.NewText("Running"),
+		"Restarts": component.NewText("0"),
+		"Node":     nodeLink,
+		"Age":      component.NewTimestamp(now),
+	})
+	addPodTableFilters(expected)
+
+	component.AssertEqual(t, expected, got)
 }
