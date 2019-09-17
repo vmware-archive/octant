@@ -50,41 +50,71 @@ func Test_ClusterRoleListHandler(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
-func Test_printClusterRoleConfig(t *testing.T) {
-	now := testutil.Time()
-
+func Test_ClusterRoleConfiguration(t *testing.T) {
 	clusterRole := testutil.CreateClusterRole("aggregate-cron-tabs-edit")
-	clusterRole.CreationTimestamp = metav1.Time{Time: now}
 
-	observed, err := printClusterRoleConfig(clusterRole)
-	require.NoError(t, err)
+	cases := []struct {
+		name        string
+		clusterRole *rbacv1.ClusterRole
+		isErr       bool
+		expected    *component.Summary
+	}{
+		{
+			name:        "general",
+			clusterRole: clusterRole,
+			expected: component.NewSummary("Configuration", []component.SummarySection{
+				{
+					Header:  "Name",
+					Content: component.NewText("aggregate-cron-tabs-edit"),
+				},
+			}...),
+		},
+		{
+			name:        "clusterrole is nil",
+			clusterRole: nil,
+			isErr:       true,
+		},
+	}
 
-	sections := component.SummarySections{}
-	sections.AddText("Name", clusterRole.Name)
-	expected := component.NewSummary("Configuration", sections...)
+	for _, tc := range cases {
+		controller := gomock.NewController(t)
+		defer controller.Finish()
 
-	component.AssertEqual(t, expected, observed)
+		tpo := newTestPrinterOptions(controller)
+		printOptions := tpo.ToOptions()
+
+		cc := NewClusterRoleConfiguration(tc.clusterRole)
+
+		summary, err := cc.Create(printOptions)
+		if tc.isErr {
+			require.Error(t, err)
+			return
+		}
+		require.NoError(t, err)
+
+		component.AssertEqual(t, tc.expected, summary)
+	}
 }
 
-func Test_printClusterRolePolicyRule(t *testing.T) {
+func Test_createClusterRolePolicyRulesView(t *testing.T) {
 	now := testutil.Time()
 
 	clusterRole := testutil.CreateClusterRole("aggregate-cron-tabs-edit")
 	clusterRole.CreationTimestamp = metav1.Time{Time: now}
 
-	observed, err := printClusterRolePolicyRules(clusterRole)
+	observed, err := createClusterRolePolicyRulesView(clusterRole)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Resources", "Non-Resource URLs", "Resource Names", "Verbs")
 	expected := component.NewTable("Policy Rules", "There are no policy rules!", cols)
-
-	row := component.TableRow{}
-	row["Resources"] = component.NewText("crontabs.stable.example.com")
-	row["Non-Resource URLs"] = component.NewText("")
-	row["Resource Names"] = component.NewText("")
-	row["Verbs"] = component.NewText("['get', 'list', 'watch', 'create', 'update', 'patch', 'delete']")
-
-	expected.Add(row)
+	expected.Add([]component.TableRow{
+		{
+			"Resources":         component.NewText("crontabs.stable.example.com"),
+			"Non-Resource URLs": component.NewText(""),
+			"Resource Names":    component.NewText(""),
+			"Verbs":             component.NewText("['get', 'list', 'watch', 'create', 'update', 'patch', 'delete']"),
+		},
+	}...)
 
 	component.AssertEqual(t, expected, observed)
 }

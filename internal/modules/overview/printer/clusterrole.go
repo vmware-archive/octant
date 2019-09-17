@@ -46,31 +46,43 @@ func ClusterRoleListHandler(_ context.Context, list *rbacv1.ClusterRoleList, opt
 func ClusterRoleHandler(ctx context.Context, clusterRole *rbacv1.ClusterRole, options Options) (component.Component, error) {
 	o := NewObject(clusterRole)
 
-	summary, err := printClusterRoleConfig(clusterRole)
+	ch, err := newClusterRoleHandler(clusterRole, o)
 	if err != nil {
 		return nil, err
 	}
 
-	o.RegisterConfig(summary)
+	if err := ch.Config(options); err != nil {
+		return nil, errors.Wrap(err, "print clusterrole configuration")
+	}
 
-	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.Component, error) {
-			return printClusterRolePolicyRules(clusterRole)
-		},
-		Width: component.WidthFull,
-	})
+	if err := ch.PolicyRules(options); err != nil {
+		return nil, errors.Wrap(err, "print clusterrole policy rules")
+	}
 
 	return o.ToComponent(ctx, options)
 }
 
-func printClusterRoleConfig(clusterRole *rbacv1.ClusterRole) (*component.Summary, error) {
-	if clusterRole == nil {
-		return nil, errors.New("cluster role is nil")
+// ClusterRoleConfiguration generates a clusterrole configuration
+type ClusterRoleConfiguration struct {
+	clusterRole *rbacv1.ClusterRole
+}
+
+// NewClusterRoleConfiguration creates an instance of ClusterRoleConfiguration
+func NewClusterRoleConfiguration(clusterRole *rbacv1.ClusterRole) *ClusterRoleConfiguration {
+	return &ClusterRoleConfiguration{
+		clusterRole: clusterRole,
+	}
+}
+
+// Create creates a clusterrole configuration summary
+func (c *ClusterRoleConfiguration) Create(options Options) (*component.Summary, error) {
+	if c == nil || c.clusterRole == nil {
+		return nil, errors.New("clusterrole is nil")
 	}
 
 	var sections component.SummarySections
 
-	if clusterRoleAggregation := clusterRole.AggregationRule; clusterRoleAggregation != nil {
+	if clusterRoleAggregation := c.clusterRole.AggregationRule; clusterRoleAggregation != nil {
 		if clusterRoleSelectors := clusterRoleAggregation.ClusterRoleSelectors; clusterRoleSelectors != nil {
 			var selectors []component.Selector
 
@@ -88,13 +100,13 @@ func printClusterRoleConfig(clusterRole *rbacv1.ClusterRole) (*component.Summary
 		}
 	}
 
-	sections.AddText("Name", clusterRole.Name)
+	sections.AddText("Name", c.clusterRole.Name)
 	summary := component.NewSummary("Configuration", sections...)
 
 	return summary, nil
 }
 
-func printClusterRolePolicyRules(clusterRole *rbacv1.ClusterRole) (*component.Table, error) {
+func createClusterRolePolicyRulesView(clusterRole *rbacv1.ClusterRole) (*component.Table, error) {
 	if clusterRole == nil {
 		return nil, errors.New("cluster role is nil")
 	}
@@ -131,4 +143,68 @@ func printPolicyRules(rules []rbacv1.PolicyRule) (*component.Table, error) {
 	}
 
 	return tbl, nil
+}
+
+type clusterRoleObject interface {
+	Config(options Options) error
+	PolicyRules(options Options) error
+}
+
+type clusterRoleHandler struct {
+	clusterRole     *rbacv1.ClusterRole
+	configFunc      func(*rbacv1.ClusterRole, Options) (*component.Summary, error)
+	policyRulesFunc func(*rbacv1.ClusterRole, Options) (*component.Table, error)
+	object          *Object
+}
+
+var _ clusterRoleObject = (*clusterRoleHandler)(nil)
+
+func newClusterRoleHandler(clusterRole *rbacv1.ClusterRole, object *Object) (*clusterRoleHandler, error) {
+	if clusterRole == nil {
+		return nil, errors.New("can't print a nil clusterrole")
+	}
+
+	if object == nil {
+		return nil, errors.New("can't print a clusterrole using an nil object printer")
+	}
+
+	ch := &clusterRoleHandler{
+		clusterRole:     clusterRole,
+		configFunc:      defaultClusterRoleConfig,
+		policyRulesFunc: defaultClusterRolePolicyRules,
+		object:          object,
+	}
+	return ch, nil
+}
+
+func (c *clusterRoleHandler) Config(options Options) error {
+	out, err := c.configFunc(c.clusterRole, options)
+	if err != nil {
+		return err
+	}
+	c.object.RegisterConfig(out)
+	return nil
+}
+
+func defaultClusterRoleConfig(clusterRole *rbacv1.ClusterRole, options Options) (*component.Summary, error) {
+	return NewClusterRoleConfiguration(clusterRole).Create(options)
+}
+
+func (c *clusterRoleHandler) PolicyRules(options Options) error {
+	if c.clusterRole == nil {
+		return errors.New("can't display policy rules for nil clusterrole")
+	}
+
+	c.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return c.policyRulesFunc(c.clusterRole, options)
+		},
+	})
+
+	return nil
+}
+
+func defaultClusterRolePolicyRules(clusterRole *rbacv1.ClusterRole, options Options) (*component.Table, error) {
+	return createClusterRolePolicyRulesView(clusterRole)
 }

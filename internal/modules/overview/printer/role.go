@@ -105,7 +105,7 @@ func createRolePolicyRulesView(role *rbacv1.Role) (*component.Table, error) {
 	})
 
 	cols := component.NewTableCols("Resources", "Non-Resource URLs", "Resource Names", "Verbs")
-	tbl := component.NewTable("PolicyRules", "There are no policy rules!", cols)
+	tbl := component.NewTable("Policy Rules", "There are no policy rules!", cols)
 
 	for _, r := range rules {
 		row := component.TableRow{}

@@ -113,7 +113,7 @@ func Test_createRolePolicyRulesView(t *testing.T) {
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Resources", "Non-Resource URLs", "Resource Names", "Verbs")
-	expected := component.NewTable("PolicyRules", "There are no policy rules!", cols)
+	expected := component.NewTable("Policy Rules", "There are no policy rules!", cols)
 	expected.Add([]component.TableRow{
 		{
 			"Resources":         component.NewText(""),
