@@ -327,6 +327,7 @@ func (co *Overview) ActionPaths() map[string]action.DispatcherFunc {
 	dispatchers := action.Dispatchers{
 		octant.NewDeploymentConfigurationEditor(co.logger, co.dashConfig.ObjectStore()),
 		octant.NewContainerEditor(co.dashConfig.ObjectStore()),
+		octant.NewServiceConfigurationEditor(co.dashConfig.ObjectStore()),
 	}
 
 	return dispatchers.ToActionPaths()

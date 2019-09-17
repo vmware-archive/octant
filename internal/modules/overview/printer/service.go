@@ -55,7 +55,7 @@ func ServiceListHandler(_ context.Context, list *corev1.ServiceList, options Opt
 func ServiceHandler(ctx context.Context, service *corev1.Service, options Options) (component.Component, error) {
 	o := NewObject(service)
 
-	configSummary, err := serviceConfiguration(service)
+	configSummary, err := serviceConfiguration(ctx, service, options)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func printServicePorts(ports []corev1.ServicePort) component.Component {
 	return component.NewText(strings.Join(out, ", "))
 }
 
-func serviceConfiguration(service *corev1.Service) (*component.Summary, error) {
+func serviceConfiguration(ctx context.Context, service *corev1.Service, options Options) (*component.Summary, error) {
 	if service == nil {
 		return nil, errors.New("service is nil")
 	}
@@ -150,7 +150,95 @@ func serviceConfiguration(service *corev1.Service) (*component.Summary, error) {
 
 	summary := component.NewSummary("Configuration", sections...)
 
+	configEditor, err := editServiceAction(ctx, service, options)
+	if err != nil {
+		return nil, err
+	}
+	summary.AddAction(configEditor)
+
 	return summary, nil
+}
+
+var (
+	selectorKeyPrefixSkipList = []string{
+		"pod-template-hash",
+	}
+)
+
+func editServiceAction(ctx context.Context, service *corev1.Service, options Options) (component.Action, error) {
+	if service == nil {
+		return component.Action{}, errors.New("service is nil")
+	}
+
+	var choices []component.InputChoice
+	seenSelectors := make(map[string]bool)
+
+	// add current selectors to list
+	for k, v := range service.Spec.Selector {
+		value := fmt.Sprintf("%s:%s", k, v)
+		choice := component.InputChoice{
+			Label:   value,
+			Value:   value,
+			Checked: true,
+		}
+		choices = append(choices, choice)
+		seenSelectors[value] = true
+	}
+
+	// find other possible selectors
+	objectStore := options.DashConfig.ObjectStore()
+	key := store.Key{
+		Namespace:  service.Namespace,
+		APIVersion: "v1",
+		Kind:       "Pod",
+	}
+
+	podList, _, err := objectStore.List(ctx, key)
+	if err != nil {
+		return component.Action{}, err
+	}
+
+	for _, item := range podList.Items {
+		for k, v := range item.GetLabels() {
+			value := fmt.Sprintf("%s:%s", k, v)
+			if _, ok := seenSelectors[value]; ok {
+				continue
+			}
+
+			skipped := false
+			for i := range selectorKeyPrefixSkipList {
+				if strings.HasPrefix(value, selectorKeyPrefixSkipList[i]) {
+					skipped = true
+				}
+			}
+
+			if skipped {
+				continue
+			}
+
+			choice := component.InputChoice{
+				Label:   value,
+				Value:   value,
+				Checked: false,
+			}
+			choices = append(choices, choice)
+			seenSelectors[value] = true
+		}
+	}
+
+	form, err := component.CreateFormForObject("overview/serviceEditor", service,
+		component.NewFormFieldSelect("Selectors", "selectors", choices, true))
+	if err != nil {
+		return component.Action{}, err
+	}
+
+	action := component.Action{
+		Name:  "Edit",
+		Title: "Service Editor",
+		Form:  form,
+	}
+
+	return action, nil
 }
 
 func serviceSummary(service *corev1.Service) (*component.Summary, error) {
