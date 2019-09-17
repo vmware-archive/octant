@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng build --prod",
+    "build": "node --max-old-space-size=8000 ./node_modules/@angular/cli/bin/ng build --prod",
     "test": "ng test --browsers=ChromeDebug",
     "test:headless": "ng test --watch=false --browsers=ChromeHeadless",
     "lint": "ng lint",
