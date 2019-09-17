@@ -15,6 +15,7 @@ import (
 	"github.com/vmware/octant/pkg/view/component"
 )
 
+// ClusterRoleBindingListHandler is a printFunc that prints ClusterRoldBindings
 func ClusterRoleBindingListHandler(_ context.Context, clusterRoleBindingList *rbacv1.ClusterRoleBindingList, options Options) (component.Component, error) {
 	if clusterRoleBindingList == nil {
 		return nil, errors.New("cluster role binding list is nil")
@@ -50,48 +51,61 @@ func ClusterRoleBindingListHandler(_ context.Context, clusterRoleBindingList *rb
 	return table, nil
 }
 
-func roleLinkFromClusterRoleBinding(roleBinding *rbacv1.ClusterRoleBinding, options Options) (*component.Link, error) {
-	roleRef := roleBinding.RoleRef
+func roleLinkFromClusterRoleBinding(clusterRoleBinding *rbacv1.ClusterRoleBinding, options Options) (*component.Link, error) {
+	roleRef := clusterRoleBinding.RoleRef
 
 	namespace := ""
 	if roleRef.Kind == "Role" {
-		namespace = roleBinding.Namespace
+		namespace = clusterRoleBinding.Namespace
 	}
 
 	apiVersion := fmt.Sprintf("%s/%s", roleRef.APIGroup, "v1")
 	return options.Link.ForGVK(namespace, apiVersion, roleRef.Kind, roleRef.Name, roleRef.Name)
 }
 
-func ClusterRoleBindingHandler(ctx context.Context, roleBinding *rbacv1.ClusterRoleBinding, options Options) (component.Component, error) {
-	o := NewObject(roleBinding)
+// ClusterRoleBindingHandler is a printFunc that prints a ClusterRoleBinding
+func ClusterRoleBindingHandler(ctx context.Context, clusterRoleBinding *rbacv1.ClusterRoleBinding, options Options) (component.Component, error) {
+	o := NewObject(clusterRoleBinding)
 
-	summary, err := printClusterRoleBindingConfig(roleBinding, options)
+	ch, err := newClusterRoleBindingHandler(clusterRoleBinding, o)
 	if err != nil {
 		return nil, err
 	}
 
-	o.RegisterConfig(summary)
+	if err := ch.Config(ctx, options); err != nil {
+		return nil, errors.Wrap(err, "print clusterrolebinding configuration")
+	}
 
-	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.Component, error) {
-			return printClusterRoleBindingSubjects(roleBinding)
-		},
-		Width: component.WidthFull,
-	})
+	if err := ch.Subjects(ctx, options); err != nil {
+		return nil, errors.Wrap(err, "print clusterrolebinding subjects")
+	}
 
 	return o.ToComponent(ctx, options)
 }
 
-func printClusterRoleBindingConfig(roleBinding *rbacv1.ClusterRoleBinding, options Options) (*component.Summary, error) {
-	if roleBinding == nil {
-		return nil, errors.New("role binding is nil")
+// ClusterRoleBindingConfiguration generates a clusterrolebinding configuration
+type ClusterRoleBindingConfiguration struct {
+	clusterRoleBinding *rbacv1.ClusterRoleBinding
+}
+
+// NewClusterRoleBindingConfiguration creates an instance of ClusterRoleBindingConfiguration
+func NewClusterRoleBindingConfiguration(clusterRoleBinding *rbacv1.ClusterRoleBinding) *ClusterRoleBindingConfiguration {
+	return &ClusterRoleBindingConfiguration{
+		clusterRoleBinding: clusterRoleBinding,
+	}
+}
+
+// Create creates a clusterrolebinding configuration summary
+func (c *ClusterRoleBindingConfiguration) Create(ctx context.Context, options Options) (*component.Summary, error) {
+	if c == nil || c.clusterRoleBinding == nil {
+		return nil, errors.New("clusterrolebinding is nil")
 	}
 
 	sections := component.SummarySections{}
 
-	sections.AddText("Role kind", roleBinding.RoleRef.Kind)
+	sections.AddText("Role kind", c.clusterRoleBinding.RoleRef.Kind)
 
-	roleName, err := roleLinkFromClusterRoleBinding(roleBinding, options)
+	roleName, err := roleLinkFromClusterRoleBinding(c.clusterRoleBinding, options)
 	if err != nil {
 		return nil, err
 	}
@@ -102,15 +116,15 @@ func printClusterRoleBindingConfig(roleBinding *rbacv1.ClusterRoleBinding, optio
 	return summary, nil
 }
 
-func printClusterRoleBindingSubjects(roleBinding *rbacv1.ClusterRoleBinding) (component.Component, error) {
-	if roleBinding == nil {
-		return nil, errors.New("role binding is nil")
+func createClusterRoleBindingSubjectsView(clusterRoleBinding *rbacv1.ClusterRoleBinding) (component.Component, error) {
+	if clusterRoleBinding == nil {
+		return nil, errors.New("cluster role binding is nil")
 	}
 
 	columns := component.NewTableCols("Kind", "Name", "Namespace")
 	table := component.NewTable("Subjects", "There are no subjects!", columns)
 
-	for _, subject := range roleBinding.Subjects {
+	for _, subject := range clusterRoleBinding.Subjects {
 		row := component.TableRow{}
 		row["Kind"] = component.NewText(subject.Kind)
 		row["Name"] = component.NewText(subject.Name)
@@ -120,4 +134,68 @@ func printClusterRoleBindingSubjects(roleBinding *rbacv1.ClusterRoleBinding) (co
 	}
 
 	return table, nil
+}
+
+type clusterRoleBindingObject interface {
+	Config(ctx context.Context, options Options) error
+	Subjects(ctx context.Context, options Options) error
+}
+
+type clusterRoleBindingHandler struct {
+	clusterRoleBinding *rbacv1.ClusterRoleBinding
+	configFunc         func(context.Context, *rbacv1.ClusterRoleBinding, Options) (*component.Summary, error)
+	subjectsFunc       func(context.Context, *rbacv1.ClusterRoleBinding, Options) (component.Component, error)
+	object             *Object
+}
+
+var _ clusterRoleBindingObject = (*clusterRoleBindingHandler)(nil)
+
+func newClusterRoleBindingHandler(clusterRoleBinding *rbacv1.ClusterRoleBinding, object *Object) (*clusterRoleBindingHandler, error) {
+	if clusterRoleBinding == nil {
+		return nil, errors.New("can't print a nil rolebinding")
+	}
+
+	if object == nil {
+		return nil, errors.New("can't print rolebinding using a nil object printer")
+	}
+
+	ch := &clusterRoleBindingHandler{
+		clusterRoleBinding: clusterRoleBinding,
+		configFunc:         defaultClusterRoleBindingConfig,
+		subjectsFunc:       defaultClusterRoleBindingSubjects,
+		object:             object,
+	}
+
+	return ch, nil
+}
+
+func (c *clusterRoleBindingHandler) Config(ctx context.Context, options Options) error {
+	out, err := c.configFunc(ctx, c.clusterRoleBinding, options)
+	if err != nil {
+		return err
+	}
+	c.object.RegisterConfig(out)
+	return nil
+}
+
+func defaultClusterRoleBindingConfig(ctx context.Context, clusterRoleBinding *rbacv1.ClusterRoleBinding, options Options) (*component.Summary, error) {
+	return NewClusterRoleBindingConfiguration(clusterRoleBinding).Create(ctx, options)
+}
+
+func (c *clusterRoleBindingHandler) Subjects(ctx context.Context, options Options) error {
+	if c.clusterRoleBinding == nil {
+		return errors.New("can't display subjects for nil rolebinding")
+	}
+
+	c.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return c.subjectsFunc(ctx, c.clusterRoleBinding, options)
+		},
+	})
+	return nil
+}
+
+func defaultClusterRoleBindingSubjects(ctx context.Context, clusterRoleBinding *rbacv1.ClusterRoleBinding, options Options) (component.Component, error) {
+	return createClusterRoleBindingSubjectsView(clusterRoleBinding)
 }
