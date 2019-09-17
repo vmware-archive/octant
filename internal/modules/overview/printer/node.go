@@ -30,6 +30,7 @@ var (
 	nodeListColumns = component.NewTableCols("Name", "Labels", "Status", "Roles", "Age", "Version")
 )
 
+// NodeListHandler is a printFunc that prints nodes
 func NodeListHandler(ctx context.Context, list *corev1.NodeList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("node list is nil")
@@ -57,42 +58,30 @@ func NodeListHandler(ctx context.Context, list *corev1.NodeList, options Options
 	return table, nil
 }
 
+// NodeHandler is a printFunc that prints nodes
 func NodeHandler(ctx context.Context, node *corev1.Node, options Options) (component.Component, error) {
 	o := NewObject(node)
 
-	config, err := nodeConfig(node)
+	nh, err := newNodeHandler(node, o)
 	if err != nil {
 		return nil, err
 	}
-	o.RegisterConfig(config)
 
-	o.RegisterItems([]ItemDescriptor{
-		{
-			Func: func() (component.Component, error) {
-				return nodeAddresses(node)
-			},
-			Width: component.WidthHalf,
-		},
-		{
-			Func: func() (component.Component, error) {
-				return nodeResources(node)
-			},
-			Width: component.WidthHalf,
-		},
-		{
-			Func: func() (component.Component, error) {
-				return nodeConditions(node)
-			},
-			Width: component.WidthFull,
-		},
-		{
-			Func: func() (component.Component, error) {
-				return nodeImages(node)
-			},
-			Width: component.WidthFull,
-		},
-	}...)
-
+	if err := nh.Config(options); err != nil {
+		return nil, errors.Wrap(err, "print node configuration")
+	}
+	if err := nh.Addresses(options); err != nil {
+		return nil, errors.Wrap(err, "print node addresses")
+	}
+	if err := nh.Resources(options); err != nil {
+		return nil, errors.Wrap(err, "print node resources")
+	}
+	if err := nh.Conditions(options); err != nil {
+		return nil, errors.Wrap(err, "print node conditions")
+	}
+	if err := nh.Images(options); err != nil {
+		return nil, errors.Wrap(err, "print node images")
+	}
 	return o.ToComponent(ctx, options)
 }
 
@@ -129,7 +118,7 @@ var (
 	nodeResourcesColumns = component.NewTableCols("Key", "Capacity", "Allocatable")
 )
 
-func nodeResources(node *corev1.Node) (component.Component, error) {
+func createNodeResourcesView(node *corev1.Node) (*component.Table, error) {
 	if node == nil {
 		return nil, errors.New("nil nodes don't have resources")
 	}
@@ -169,7 +158,7 @@ var (
 	nodeAddressesColumns = component.NewTableCols("Type", "Address")
 )
 
-func nodeAddresses(node *corev1.Node) (component.Component, error) {
+func createNodeAddressesView(node *corev1.Node) (*component.Table, error) {
 	table := component.NewTable("Addresses", "There are no addresses!", nodeAddressesColumns)
 
 	for _, address := range node.Status.Addresses {
@@ -238,12 +227,24 @@ func findNodeRoles(node corev1.Node) []string {
 	return roles.List()
 }
 
-func nodeConfig(node *corev1.Node) (*component.Summary, error) {
-	if node == nil {
+// NodeConfiguration generates a node configuration
+type NodeConfiguration struct {
+	node *corev1.Node
+}
+
+// NewNodeConfiguration creates an instance of NodeConfiguration
+func NewNodeConfiguration(node *corev1.Node) *NodeConfiguration {
+	return &NodeConfiguration{
+		node: node,
+	}
+}
+
+// Create creates a node configuration summary
+func (n *NodeConfiguration) Create(options Options) (*component.Summary, error) {
+	if n == nil || n.node == nil {
 		return nil, errors.New("cannot generate status for nil node")
 	}
-
-	nodeInfo := node.Status.NodeInfo
+	nodeInfo := n.node.Status.NodeInfo
 
 	summary := component.NewSummary("Status", []component.SummarySection{
 		{
@@ -284,7 +285,7 @@ func nodeConfig(node *corev1.Node) (*component.Summary, error) {
 		},
 		{
 			Header:  "Pod CIDR",
-			Content: component.NewText(node.Spec.PodCIDR),
+			Content: component.NewText(n.node.Spec.PodCIDR),
 		},
 		{
 			Header:  "System UUID",
@@ -299,7 +300,7 @@ var (
 	nodeConditionsColumns = component.NewTableCols("Type", "Reason", "Status", "Message", "Last Heartbeat", "Last Transition")
 )
 
-func nodeConditions(node *corev1.Node) (component.Component, error) {
+func createNodeConditionsView(node *corev1.Node) (*component.Table, error) {
 	if node == nil {
 		return nil, errors.New("cannot generate conditions for nil node")
 	}
@@ -328,7 +329,7 @@ var (
 	nodeImagesColumns = component.NewTableCols("Names", "Size")
 )
 
-func nodeImages(node *corev1.Node) (component.Component, error) {
+func createNodeImagesView(node *corev1.Node) (*component.Table, error) {
 	if node == nil {
 		return nil, errors.New("cannot generate images for nil node")
 	}
@@ -347,4 +348,130 @@ func nodeImages(node *corev1.Node) (component.Component, error) {
 	table.Sort("Names", false)
 
 	return table, nil
+}
+
+type nodeObject interface {
+	Config(options Options) error
+	Addresses(options Options) error
+	Resources(options Options) error
+	Conditions(options Options) error
+	Images(options Options) error
+}
+
+type nodeHandler struct {
+	node           *corev1.Node
+	configFunc     func(*corev1.Node, Options) (*component.Summary, error)
+	addressesFunc  func(*corev1.Node, Options) (*component.Table, error)
+	resourcesFunc  func(*corev1.Node, Options) (*component.Table, error)
+	conditionsFunc func(*corev1.Node, Options) (*component.Table, error)
+	imagesFunc     func(*corev1.Node, Options) (*component.Table, error)
+	object         *Object
+}
+
+var _ nodeObject = (*nodeHandler)(nil)
+
+func newNodeHandler(node *corev1.Node, object *Object) (*nodeHandler, error) {
+	if node == nil {
+		return nil, errors.New("can't print a nil node")
+	}
+
+	if object == nil {
+		return nil, errors.New("can't print node using a nil object printer")
+	}
+
+	nh := &nodeHandler{
+		node:           node,
+		configFunc:     defaultNodeConfig,
+		addressesFunc:  defaultNodeAddresses,
+		resourcesFunc:  defaultNodeResources,
+		conditionsFunc: defaultNodeConditions,
+		imagesFunc:     defaultNodeImages,
+		object:         object,
+	}
+	return nh, nil
+}
+
+func (n *nodeHandler) Config(options Options) error {
+	out, err := n.configFunc(n.node, options)
+	if err != nil {
+		return err
+	}
+	n.object.RegisterConfig(out)
+	return nil
+}
+
+func defaultNodeConfig(node *corev1.Node, options Options) (*component.Summary, error) {
+	return NewNodeConfiguration(node).Create(options)
+}
+
+func (n *nodeHandler) Addresses(options Options) error {
+	if n.node == nil {
+		return errors.New("can't display addresses for nil node")
+	}
+
+	n.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthHalf,
+		Func: func() (component.Component, error) {
+			return n.addressesFunc(n.node, options)
+		},
+	})
+	return nil
+}
+
+func defaultNodeAddresses(node *corev1.Node, options Options) (*component.Table, error) {
+	return createNodeAddressesView(node)
+}
+
+func (n *nodeHandler) Resources(options Options) error {
+	if n.node == nil {
+		return errors.New("can't display resources for nil node")
+	}
+
+	n.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthHalf,
+		Func: func() (component.Component, error) {
+			return n.resourcesFunc(n.node, options)
+		},
+	})
+	return nil
+}
+
+func defaultNodeResources(node *corev1.Node, options Options) (*component.Table, error) {
+	return createNodeResourcesView(node)
+}
+
+func (n *nodeHandler) Conditions(options Options) error {
+	if n.node == nil {
+		return errors.New("can't display resources for nil node")
+	}
+
+	n.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return n.conditionsFunc(n.node, options)
+		},
+	})
+	return nil
+}
+
+func defaultNodeConditions(node *corev1.Node, options Options) (*component.Table, error) {
+	return createNodeConditionsView(node)
+}
+
+func (n *nodeHandler) Images(options Options) error {
+	if n.node == nil {
+		return errors.New("can't display resources for nil node")
+	}
+
+	n.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return n.imagesFunc(n.node, options)
+		},
+	})
+	return nil
+}
+
+func defaultNodeImages(node *corev1.Node, options Options) (*component.Table, error) {
+	return createNodeImagesView(node)
 }

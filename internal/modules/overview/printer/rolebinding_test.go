@@ -55,7 +55,63 @@ func Test_RoleBindingListHandler(t *testing.T) {
 	component.AssertEqual(t, expected, observed)
 }
 
-func Test_printRoleBindingSubjects(t *testing.T) {
+func Test_RoleBindingConfiguration(t *testing.T) {
+	subject := testutil.CreateRoleBindingSubject("User", "test@test.com", "namespace")
+	roleBinding := testutil.CreateRoleBinding("read-pods", "pod-reader", []rbacv1.Subject{*subject})
+
+	cases := []struct {
+		name        string
+		roleBinding *rbacv1.RoleBinding
+		isErr       bool
+		expected    *component.Summary
+	}{
+		{
+			name:        "general",
+			roleBinding: roleBinding,
+			expected: component.NewSummary("Configuration", []component.SummarySection{
+				{
+					Header:  "Role kind",
+					Content: component.NewText("Role"),
+				},
+				{
+					Header:  "Role name",
+					Content: component.NewLink("", "pod-reader", "/role"),
+				},
+			}...),
+		},
+		{
+			name:        "rolebinding is nil",
+			roleBinding: nil,
+			isErr:       true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			tpo := newTestPrinterOptions(controller)
+			printOptions := tpo.ToOptions()
+
+			tpo.PathForGVK("namespace", rbacAPIVersion, "Role", "pod-reader", "pod-reader", "/role")
+
+			ctx := context.Background()
+
+			rc := NewRoleBindingConfiguration(tc.roleBinding)
+
+			summary, err := rc.Create(ctx, printOptions)
+			if tc.isErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			component.AssertEqual(t, tc.expected, summary)
+		})
+	}
+}
+
+func Test_createRoleBindingSubjectsView(t *testing.T) {
 	cases := []struct {
 		name     string
 		subject  *rbacv1.Subject
@@ -100,7 +156,7 @@ func Test_printRoleBindingSubjects(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			observed, err := printRoleBindingSubjects(ctx, roleBinding, printOptions)
+			observed, err := createRoleBindingSubjectsView(ctx, roleBinding, printOptions)
 			require.NoError(t, err)
 
 			expected := component.NewTableWithRows("Subjects", "There are no subjects!",
@@ -110,30 +166,4 @@ func Test_printRoleBindingSubjects(t *testing.T) {
 			component.AssertEqual(t, expected, observed)
 		})
 	}
-}
-
-func Test_printRoleBindingConfig(t *testing.T) {
-	controller := gomock.NewController(t)
-	defer controller.Finish()
-
-	tpo := newTestPrinterOptions(controller)
-	printOptions := tpo.ToOptions()
-
-	subject := testutil.CreateRoleBindingSubject("User", "test@test.com", "namespace")
-	roleBinding := testutil.CreateRoleBinding("read-pods", "pod-reader", []rbacv1.Subject{*subject})
-
-	tpo.PathForGVK("namespace", rbacAPIVersion, "Role", "pod-reader", "pod-reader", "/role")
-
-	ctx := context.Background()
-	observed, err := printRoleBindingConfig(ctx, roleBinding, printOptions)
-	require.NoError(t, err)
-
-	sections := component.SummarySections{}
-
-	sections.AddText("Role kind", "Role")
-	sections.Add("Role name", component.NewLink("", "pod-reader", "/role"))
-
-	expected := component.NewSummary("Configuration", sections...)
-
-	component.AssertEqual(t, expected, observed)
 }

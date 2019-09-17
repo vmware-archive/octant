@@ -12,6 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/vmware/octant/pkg/store"
@@ -54,28 +55,24 @@ func ServiceListHandler(_ context.Context, list *corev1.ServiceList, options Opt
 // ServiceHandler is a printFunc that prints a Services.
 func ServiceHandler(ctx context.Context, service *corev1.Service, options Options) (component.Component, error) {
 	o := NewObject(service)
-
-	configSummary, err := serviceConfiguration(ctx, service, options)
-	if err != nil {
-		return nil, err
-	}
-
-	serviceSummary, err := serviceSummary(service)
-	if err != nil {
-		return nil, err
-	}
-
-	o.RegisterConfig(configSummary)
-	o.RegisterSummary(serviceSummary)
-
-	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.Component, error) {
-			return serviceEndpoints(ctx, options, service)
-		},
-		Width: component.WidthFull,
-	})
-
 	o.EnableEvents()
+
+	sh, err := newServiceHandler(service, o)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := sh.Config(ctx, options); err != nil {
+		return nil, errors.Wrap(err, "print service configuration")
+	}
+
+	if err := sh.Status(options); err != nil {
+		return nil, errors.Wrap(err, "print service status")
+	}
+
+	if err := sh.Endpoints(ctx, service, options); err != nil {
+		return nil, errors.Wrap(err, "print service endpoints")
+	}
 
 	return o.ToComponent(ctx, options)
 }
@@ -89,10 +86,24 @@ func printServicePorts(ports []corev1.ServicePort) component.Component {
 	return component.NewText(strings.Join(out, ", "))
 }
 
-func serviceConfiguration(ctx context.Context, service *corev1.Service, options Options) (*component.Summary, error) {
-	if service == nil {
+// ServiceConfiguration generates a service configuration
+type ServiceConfiguration struct {
+	service *corev1.Service
+}
+
+// NewServiceConfiguration creates an instance of ServiceConfiguration
+func NewServiceConfiguration(service *corev1.Service) *ServiceConfiguration {
+	return &ServiceConfiguration{
+		service: service,
+	}
+}
+
+// Create generates a service configuration summary
+func (sc *ServiceConfiguration) Create(ctx context.Context, options Options) (*component.Summary, error) {
+	if sc == nil || sc.service == nil {
 		return nil, errors.New("service is nil")
 	}
+	service := sc.service
 
 	var sections component.SummarySections
 
@@ -241,7 +252,7 @@ func editServiceAction(ctx context.Context, service *corev1.Service, options Opt
 	return action, nil
 }
 
-func serviceSummary(service *corev1.Service) (*component.Summary, error) {
+func createServiceSummaryStatus(service *corev1.Service) (*component.Summary, error) {
 	if service == nil {
 		return nil, errors.New("service is nil")
 	}
@@ -279,7 +290,7 @@ func serviceSummary(service *corev1.Service) (*component.Summary, error) {
 	return summary, nil
 }
 
-func serviceEndpoints(ctx context.Context, options Options, service *corev1.Service) (*component.Table, error) {
+func createServiceEndpointsView(ctx context.Context, service *corev1.Service, options Options) (*component.Table, error) {
 	o := options.DashConfig.ObjectStore()
 
 	if o == nil {
@@ -398,4 +409,81 @@ func describeExternalIPs(service corev1.Service) string {
 		return "<none>"
 	}
 	return strings.Join(externalIPs, ", ")
+}
+
+type serviceObject interface {
+	Config(ctx context.Context, options Options) error
+	Status(options Options) error
+	Endpoints(ctx context.Context, object runtime.Object, options Options) error
+}
+
+type serviceHandler struct {
+	service       *corev1.Service
+	configFunc    func(context.Context, *corev1.Service, Options) (*component.Summary, error)
+	statusFunc    func(*corev1.Service, Options) (*component.Summary, error)
+	endpointsFunc func(context.Context, *corev1.Service, Options) (*component.Table, error)
+	object        *Object
+}
+
+func newServiceHandler(service *corev1.Service, object *Object) (*serviceHandler, error) {
+	if service == nil {
+		return nil, errors.New("can't print an nil service")
+	}
+
+	if object == nil {
+		return nil, errors.New("can't print service using an nil object printer")
+	}
+
+	sh := &serviceHandler{
+		service:       service,
+		configFunc:    defaultServiceConfig,
+		statusFunc:    defaultServiceStatus,
+		endpointsFunc: defaultServiceEndpoints,
+		object:        object,
+	}
+	return sh, nil
+}
+
+func (s *serviceHandler) Config(ctx context.Context, options Options) error {
+	out, err := s.configFunc(ctx, s.service, options)
+	if err != nil {
+		return err
+	}
+	s.object.RegisterConfig(out)
+	return nil
+}
+
+func defaultServiceConfig(ctx context.Context, service *corev1.Service, options Options) (*component.Summary, error) {
+	return NewServiceConfiguration(service).Create(ctx, options)
+}
+
+func (s *serviceHandler) Status(options Options) error {
+	out, err := s.statusFunc(s.service, options)
+	if err != nil {
+		return err
+	}
+	s.object.RegisterSummary(out)
+	return nil
+}
+
+func defaultServiceStatus(service *corev1.Service, options Options) (*component.Summary, error) {
+	return createServiceSummaryStatus(service)
+}
+
+func (s *serviceHandler) Endpoints(ctx context.Context, service *corev1.Service, options Options) error {
+	if s.service == nil {
+		return errors.New("can't display endpoints for nil service")
+	}
+
+	s.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return s.endpointsFunc(ctx, s.service, options)
+		},
+	})
+	return nil
+}
+
+func defaultServiceEndpoints(ctx context.Context, service *corev1.Service, options Options) (*component.Table, error) {
+	return createServiceEndpointsView(ctx, service, options)
 }

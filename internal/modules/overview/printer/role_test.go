@@ -51,41 +51,77 @@ func Test_RoleListHandler(t *testing.T) {
 	component.AssertEqual(t, expected, observed)
 }
 
-func Test_printRoleConfig(t *testing.T) {
-	now := testutil.Time()
+func Test_RoleConfiguration(t *testing.T) {
+	role := testutil.CreateRole("role")
 
-	role := testutil.CreateRole("pod-reader")
-	role.CreationTimestamp = metav1.Time{Time: now}
+	cases := []struct {
+		name     string
+		role     *rbacv1.Role
+		isErr    bool
+		expected *component.Summary
+	}{
+		{
+			name: "general",
+			role: role,
+			expected: component.NewSummary("Configuration", []component.SummarySection{
+				{
+					Header:  "Name",
+					Content: component.NewText("role"),
+				},
+			}...),
+		},
+		{
+			name:  "role is nil",
+			role:  nil,
+			isErr: true,
+		},
+	}
 
-	observed, err := printRoleConfig(role)
-	require.NoError(t, err)
+	for _, tc := range cases {
+		controller := gomock.NewController(t)
+		defer controller.Finish()
 
-	sections := component.SummarySections{}
-	sections.AddText("Name", role.Name)
-	expected := component.NewSummary("Configuration", sections...)
+		tpo := newTestPrinterOptions(controller)
+		printOptions := tpo.ToOptions()
 
-	component.AssertEqual(t, expected, observed)
+		rc := NewRoleConfiguration(tc.role)
+
+		summary, err := rc.Create(printOptions)
+		if tc.isErr {
+			require.Error(t, err)
+			return
+		}
+		require.NoError(t, err)
+
+		component.AssertEqual(t, tc.expected, summary)
+	}
 }
 
-func Test_printRolePolicyRules(t *testing.T) {
-	now := testutil.Time()
+func Test_createRolePolicyRulesView(t *testing.T) {
+	role := testutil.CreateRole("role")
+	// TODO: (GuessWhoSamFoo) Test more complex rules
+	role.Rules = []rbacv1.PolicyRule{
+		{
+			Resources:       []string{""},
+			NonResourceURLs: []string{"/healthz"},
+			ResourceNames:   []string{""},
+			Verbs:           []string{"update"},
+		},
+	}
 
-	role := testutil.CreateRole("pod-reader")
-	role.CreationTimestamp = metav1.Time{Time: now}
-
-	observed, err := printRolePolicyRules(role)
+	got, err := createRolePolicyRulesView(role)
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Resources", "Non-Resource URLs", "Resource Names", "Verbs")
-	expected := component.NewTable("PolicyRules", "There are no policy rules!", cols)
+	expected := component.NewTable("Policy Rules", "There are no policy rules!", cols)
+	expected.Add([]component.TableRow{
+		{
+			"Resources":         component.NewText(""),
+			"Non-Resource URLs": component.NewText("['/healthz']"),
+			"Resource Names":    component.NewText(""),
+			"Verbs":             component.NewText("['update']"),
+		},
+	}...)
 
-	row := component.TableRow{}
-	row["Resources"] = component.NewText("pods")
-	row["Non-Resource URLs"] = component.NewText("")
-	row["Resource Names"] = component.NewText("")
-	row["Verbs"] = component.NewText("['get', 'watch', 'list']")
-
-	expected.Add(row)
-
-	component.AssertEqual(t, expected, observed)
+	component.AssertEqual(t, expected, got)
 }

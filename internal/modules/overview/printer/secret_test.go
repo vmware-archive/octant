@@ -71,3 +71,69 @@ func Test_SecretListHandler(t *testing.T) {
 
 	component.AssertEqual(t, expected, got)
 }
+
+func Test_SecretConfig(t *testing.T) {
+	secret := testutil.CreateSecret("secret")
+	secret.Type = corev1.SecretTypeOpaque
+
+	cases := []struct {
+		name     string
+		secret   *corev1.Secret
+		isErr    bool
+		expected *component.Summary
+	}{
+		{
+			name:   "general",
+			secret: secret,
+			expected: component.NewSummary("Configuration", []component.SummarySection{
+				{
+					Header:  "Type",
+					Content: component.NewText("Opaque"),
+				},
+			}...)},
+		{
+			name:   "secret is nil",
+			secret: nil,
+			isErr:  true,
+		},
+	}
+
+	for _, tc := range cases {
+		controller := gomock.NewController(t)
+		defer controller.Finish()
+
+		tpo := newTestPrinterOptions(controller)
+		printOptions := tpo.ToOptions()
+
+		sc := NewSecretConfiguration(tc.secret)
+
+		summary, err := sc.Create(printOptions)
+		if tc.isErr {
+			require.Error(t, err)
+			return
+		}
+		require.NoError(t, err)
+
+		component.AssertEqual(t, tc.expected, summary)
+	}
+}
+
+func Test_describeSecretData(t *testing.T) {
+	secret := testutil.CreateSecret("secret")
+	secret.Data = map[string][]byte{
+		"foo": []byte{0, 1, 2, 3},
+	}
+
+	got, err := describeSecretData(*secret)
+	require.NoError(t, err)
+
+	cols := component.NewTableCols("Key")
+	expected := component.NewTable("Data", "This secret has no data!", cols)
+	expected.Add([]component.TableRow{
+		{
+			"Key": component.NewText("foo"),
+		},
+	}...)
+
+	component.AssertEqual(t, expected, got)
+}

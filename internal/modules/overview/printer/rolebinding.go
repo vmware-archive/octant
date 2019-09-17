@@ -15,6 +15,7 @@ import (
 	"github.com/vmware/octant/pkg/view/component"
 )
 
+// RoleBindingListHandler is a printFunc that prints RoleBindings
 func RoleBindingListHandler(ctx context.Context, roleBindingList *rbacv1.RoleBindingList, opts Options) (component.Component, error) {
 	if roleBindingList == nil {
 		return nil, errors.New("role binding list is nil")
@@ -62,35 +63,62 @@ func roleLinkFromRoleBinding(ctx context.Context, roleBinding *rbacv1.RoleBindin
 	return roleLink, nil
 }
 
-func RoleBindingHandler(ctx context.Context, roleBinding *rbacv1.RoleBinding, opts Options) (component.Component, error) {
+// RoleBindingHandler is a printfunc that prints a RoleBinding
+func RoleBindingHandler(ctx context.Context, roleBinding *rbacv1.RoleBinding, options Options) (component.Component, error) {
 	o := NewObject(roleBinding)
 
-	configSummary, err := printRoleBindingConfig(ctx, roleBinding, opts)
+	rh, err := newRoleBindingHandler(roleBinding, o)
 	if err != nil {
 		return nil, err
 	}
 
-	o.RegisterConfig(configSummary)
+	if err := rh.Config(ctx, options); err != nil {
+		return nil, errors.Wrap(err, "print rolebinding configuration")
+	}
 
-	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.Component, error) {
-			return printRoleBindingSubjects(ctx, roleBinding, opts)
-		},
-		Width: component.WidthFull,
-	})
+	if err := rh.Subjects(ctx, options); err != nil {
+		return nil, errors.Wrap(err, "print rolebinding subjects")
+	}
 
-	return o.ToComponent(ctx, opts)
+	// configSummary, err := printRoleBindingConfig(ctx, roleBinding, opts)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// o.RegisterConfig(configSummary)
+
+	// o.RegisterItems(ItemDescriptor{
+	// 	Func: func() (component.Component, error) {
+	// 		return printRoleBindingSubjects(ctx, roleBinding, opts)
+	// 	},
+	// 	Width: component.WidthFull,
+	// })
+
+	return o.ToComponent(ctx, options)
 }
 
-func printRoleBindingConfig(ctx context.Context, roleBinding *rbacv1.RoleBinding, options Options) (*component.Summary, error) {
-	if roleBinding == nil {
+// RoleBindingConfiguration generates a rolebinding configuration
+type RoleBindingConfiguration struct {
+	roleBinding *rbacv1.RoleBinding
+}
+
+// NewRoleBindingConfiguration creates an instance of RoleBindingConfiguration
+func NewRoleBindingConfiguration(roleBinding *rbacv1.RoleBinding) *RoleBindingConfiguration {
+	return &RoleBindingConfiguration{
+		roleBinding: roleBinding,
+	}
+}
+
+// Create creates a rolebinding configuration summary
+func (r *RoleBindingConfiguration) Create(ctx context.Context, options Options) (*component.Summary, error) {
+	if r == nil || r.roleBinding == nil {
 		return nil, errors.New("role binding is nil")
 	}
 
 	sections := component.SummarySections{}
 
-	sections.AddText("Role kind", roleBinding.RoleRef.Kind)
-	roleName, err := roleLinkFromRoleBinding(ctx, roleBinding, options)
+	sections.AddText("Role kind", r.roleBinding.RoleRef.Kind)
+	roleName, err := roleLinkFromRoleBinding(ctx, r.roleBinding, options)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +129,7 @@ func printRoleBindingConfig(ctx context.Context, roleBinding *rbacv1.RoleBinding
 	return summary, nil
 }
 
-func printRoleBindingSubjects(ctx context.Context, roleBinding *rbacv1.RoleBinding, options Options) (component.Component, error) {
+func createRoleBindingSubjectsView(ctx context.Context, roleBinding *rbacv1.RoleBinding, options Options) (component.Component, error) {
 	if roleBinding == nil {
 		return nil, errors.New("role binding is nil")
 	}
@@ -138,4 +166,68 @@ func serviceAccountLinkFromSubjects(_ context.Context, subject *rbacv1.Subject, 
 	}
 
 	return options.Link.ForGVK(namespace, "v1", subject.Kind, subject.Name, subject.Name)
+}
+
+type roleBindingObject interface {
+	Config(ctx context.Context, options Options) error
+	Subjects(ctx context.Context, options Options) error
+}
+
+type roleBindingHandler struct {
+	roleBinding  *rbacv1.RoleBinding
+	configFunc   func(context.Context, *rbacv1.RoleBinding, Options) (*component.Summary, error)
+	subjectsFunc func(context.Context, *rbacv1.RoleBinding, Options) (component.Component, error)
+	object       *Object
+}
+
+var _ roleBindingObject = (*roleBindingHandler)(nil)
+
+func newRoleBindingHandler(roleBinding *rbacv1.RoleBinding, object *Object) (*roleBindingHandler, error) {
+	if roleBinding == nil {
+		return nil, errors.New("can't print a nil rolebinding")
+	}
+
+	if object == nil {
+		return nil, errors.New("can't print rolebinding using a nil object printer")
+	}
+
+	rh := &roleBindingHandler{
+		roleBinding:  roleBinding,
+		configFunc:   defaultRoleBindingConfig,
+		subjectsFunc: defaultRoleBindingSubjects,
+		object:       object,
+	}
+
+	return rh, nil
+}
+
+func (r *roleBindingHandler) Config(ctx context.Context, options Options) error {
+	out, err := r.configFunc(ctx, r.roleBinding, options)
+	if err != nil {
+		return err
+	}
+	r.object.RegisterConfig(out)
+	return nil
+}
+
+func defaultRoleBindingConfig(ctx context.Context, roleBinding *rbacv1.RoleBinding, options Options) (*component.Summary, error) {
+	return NewRoleBindingConfiguration(roleBinding).Create(ctx, options)
+}
+
+func (r *roleBindingHandler) Subjects(ctx context.Context, options Options) error {
+	if r.roleBinding == nil {
+		return errors.New("can't display subjects for nil rolebinding")
+	}
+
+	r.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return r.subjectsFunc(ctx, r.roleBinding, options)
+		},
+	})
+	return nil
+}
+
+func defaultRoleBindingSubjects(ctx context.Context, roleBinding *rbacv1.RoleBinding, options Options) (component.Component, error) {
+	return createRoleBindingSubjectsView(ctx, roleBinding, options)
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/vmware/octant/pkg/view/component"
 
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // CronJobListHandler is a printFunc that lists cronjobs
@@ -50,26 +51,24 @@ func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opt
 }
 
 // CronJobHandler is a printFunc that prints a CronJob
-func CronJobHandler(ctx context.Context, c *batchv1beta1.CronJob, opts Options) (component.Component, error) {
-	o := NewObject(c)
+func CronJobHandler(ctx context.Context, cronJob *batchv1beta1.CronJob, options Options) (component.Component, error) {
+	o := NewObject(cronJob)
+	o.EnableEvents()
 
-	cronjobConfigGen := NewCronJobConfiguration(c)
-	summary, err := cronjobConfigGen.Create()
+	ch, err := newCronJobHandler(cronJob, o)
 	if err != nil {
 		return nil, err
 	}
 
-	o.RegisterConfig(summary)
-	o.EnableJobTemplate(c.Spec.JobTemplate)
-	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.Component, error) {
-			return createJobListView(ctx, c, opts)
-		},
-		Width: component.WidthFull,
-	})
-	o.EnableEvents()
+	if err := ch.Config(options); err != nil {
+		return nil, errors.Wrap(err, "print cronjob configuration")
+	}
 
-	return o.ToComponent(ctx, opts)
+	if err := ch.Jobs(ctx, cronJob, options); err != nil {
+		return nil, errors.Wrap(err, "print cronjob job list")
+	}
+
+	return o.ToComponent(ctx, options)
 }
 
 // CronJobConfiguration generates cronjob configuration
@@ -129,4 +128,65 @@ func (cc *CronJobConfiguration) Create() (*component.Summary, error) {
 	summary := component.NewSummary("Configuration", sections...)
 
 	return summary, nil
+}
+
+type cronJobObject interface {
+	Config(options Options) error
+	Jobs(ctx context.Context, object runtime.Object, options Options) error
+}
+
+type cronJobHandler struct {
+	cronJob    *batchv1beta1.CronJob
+	configFunc func(*batchv1beta1.CronJob, Options) (*component.Summary, error)
+	jobFunc    func(context.Context, runtime.Object, Options) (component.Component, error)
+	object     *Object
+}
+
+var _ cronJobObject = (*cronJobHandler)(nil)
+
+func newCronJobHandler(cronJob *batchv1beta1.CronJob, object *Object) (*cronJobHandler, error) {
+	if cronJob == nil {
+		return nil, errors.New("can't print a nil cronjob")
+	}
+
+	if object == nil {
+		return nil, errors.New("can't print cronjob using a nil object printer")
+	}
+
+	ch := &cronJobHandler{
+		cronJob:    cronJob,
+		configFunc: defaultCronJobConfig,
+		jobFunc:    defaultCronJobJobs,
+		object:     object,
+	}
+	return ch, nil
+}
+
+func (c *cronJobHandler) Config(options Options) error {
+	out, err := c.configFunc(c.cronJob, options)
+	if err != nil {
+		return err
+	}
+	c.object.RegisterConfig(out)
+	return nil
+}
+
+func defaultCronJobConfig(cronJob *batchv1beta1.CronJob, options Options) (*component.Summary, error) {
+	return NewCronJobConfiguration(cronJob).Create()
+}
+
+func (c *cronJobHandler) Jobs(ctx context.Context, object runtime.Object, options Options) error {
+	c.object.EnableJobTemplate(c.cronJob.Spec.JobTemplate)
+
+	c.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return c.jobFunc(ctx, object, options)
+		},
+	})
+	return nil
+}
+
+func defaultCronJobJobs(ctx context.Context, object runtime.Object, options Options) (component.Component, error) {
+	return createJobListView(ctx, object, options)
 }

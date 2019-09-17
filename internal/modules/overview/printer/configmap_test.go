@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -62,7 +61,7 @@ func Test_ConfigMapListHandler(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
-func Test_describeConfigMapConfiguration(t *testing.T) {
+func Test_ConfigMapConfiguration(t *testing.T) {
 	var validConfigMap = &corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
@@ -104,14 +103,43 @@ func Test_describeConfigMapConfiguration(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			summary, err := describeConfigMapConfig(tc.configMap)
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			tpo := newTestPrinterOptions(controller)
+			printOptions := tpo.ToOptions()
+
+			cc := NewConfigMapConfiguration(tc.configMap)
+
+			summary, err := cc.Create(printOptions)
 			if tc.isErr {
 				require.Error(t, err)
 				return
 			}
 			require.NoError(t, err)
 
-			assert.Equal(t, tc.expected, summary)
+			component.AssertEqual(t, tc.expected, summary)
 		})
 	}
+}
+
+func Test_describeConfigMapData(t *testing.T) {
+	configMap := testutil.CreateConfigMap("configmap")
+	configMap.Data = map[string]string{
+		"foo": "bar",
+	}
+
+	got, err := describeConfigMapData(configMap)
+	require.NoError(t, err)
+
+	cols := component.NewTableCols("Key", "Value")
+	expected := component.NewTable("Data", "No data has been configured for this config map!", cols)
+	expected.Add([]component.TableRow{
+		{
+			"Key":   component.NewText("foo"),
+			"Value": component.NewText("bar"),
+		},
+	}...)
+
+	component.AssertEqual(t, expected, got)
 }

@@ -13,9 +13,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -63,49 +66,165 @@ func Test_DaemonSetListHandler(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
-func Test_printDaemonSetConfig(t *testing.T) {
+func Test_DaemonSetConfiguration(t *testing.T) {
 	labels := map[string]string{
 		"foo": "bar",
 	}
 
 	now := testutil.Time()
 
-	object := testutil.CreateDaemonSet("ds")
-	object.CreationTimestamp = metav1.Time{Time: now}
-	object.Labels = labels
-	object.Spec.Selector = &metav1.LabelSelector{
+	ds := testutil.CreateDaemonSet("ds")
+	ds.CreationTimestamp = metav1.Time{Time: now}
+	ds.Labels = labels
+	ds.Spec.Selector = &metav1.LabelSelector{
 		MatchLabels: labels,
 	}
-	object.Spec.Template.Spec.NodeSelector = labels
+	ds.Spec.Template.Spec.NodeSelector = labels
 
-	got, err := printDaemonSetConfig(object)
+	cases := []struct {
+		name      string
+		daemonSet *appsv1.DaemonSet
+		isErr     bool
+		expected  *component.Summary
+	}{
+		{
+			name:      "daemonset",
+			daemonSet: ds,
+			expected: component.NewSummary("Configuration", []component.SummarySection{
+				{
+					Header:  "Update Strategy",
+					Content: component.NewText("Max Unavailable 1"),
+				},
+				{
+					Header:  "Revision History Limit",
+					Content: component.NewText("10"),
+				},
+				{
+					Header:  "Selectors",
+					Content: printSelectorMap(labels),
+				},
+				{
+					Header:  "Node Selectors",
+					Content: printSelectorMap(labels),
+				},
+			}...),
+		},
+		{
+			name:      "daemonset is nil",
+			daemonSet: nil,
+			isErr:     true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			dc := NewDaemonSetConfiguration(tc.daemonSet)
+
+			summary, err := dc.Create()
+			if tc.isErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			component.AssertEqual(t, tc.expected, summary)
+		})
+	}
+}
+
+func Test_createDaemonSetSummaryStatus(t *testing.T) {
+	ds := testutil.CreateDaemonSet("ds")
+
+	got, err := createDaemonSetSummaryStatus(ds)
 	require.NoError(t, err)
 
-	sections := component.SummarySections{}
-	sections.AddText("Update Strategy", "Max Unavailable 1")
-	sections.AddText("Revision History Limit", "10")
-	sections.Add("Selectors", printSelectorMap(labels))
-	sections.Add("Node Selectors", printSelectorMap(labels))
-	expected := component.NewSummary("Configuration", sections...)
+	sections := component.SummarySections{
+		{Header: "Current Number Scheduled", Content: component.NewText("1")},
+		{Header: "Desired Number Scheduled", Content: component.NewText("1")},
+		{Header: "Number Available", Content: component.NewText("1")},
+		{Header: "Number Mis-scheduled", Content: component.NewText("0")},
+		{Header: "Number Ready", Content: component.NewText("1")},
+		{Header: "Updated Number Scheduled", Content: component.NewText("1")},
+	}
+	expected := component.NewSummary("Status", sections...)
 
 	assert.Equal(t, expected, got)
 }
 
-func Test_printDaemonSetSummary(t *testing.T) {
+func Test_DaemonSetPods(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
 
-	object := testutil.CreateDaemonSet("ds")
+	tpo := newTestPrinterOptions(controller)
 
-	got, err := printDaemonSetStatus(object)
+	ctx := context.Background()
+
+	now := testutil.Time()
+
+	nodeLink := component.NewLink("", "node", "/node")
+	tpo.link.EXPECT().
+		ForGVK("", "v1", "Node", "node", "node").
+		Return(nodeLink, nil).AnyTimes()
+
+	daemonSet := testutil.CreateDaemonSet("daemonset")
+
+	pod := testutil.CreatePod("fluentd-elasticsearch-dvskv")
+	pod.SetOwnerReferences(testutil.ToOwnerReferences(t, daemonSet))
+	pod.CreationTimestamp = metav1.Time{Time: now}
+	pod.Spec.Containers = []corev1.Container{
+		{
+			Name:  "fluentd-elasticsearch",
+			Image: "fluentd:1.7",
+		},
+	}
+	pod.Spec.NodeName = "node"
+	pod.Status = corev1.PodStatus{
+		Phase: "Pending",
+		ContainerStatuses: []corev1.ContainerStatus{
+			{
+				Name:         "fluentd-elasticsearch",
+				Image:        "fluentd:1.7",
+				RestartCount: 0,
+				Ready:        false,
+			},
+		},
+	}
+
+	pods := &corev1.PodList{
+		Items: []corev1.Pod{*pod},
+	}
+
+	tpo.PathForObject(pod, pod.Name, "/pod")
+
+	podList := &unstructured.UnstructuredList{}
+	for _, p := range pods.Items {
+		podList.Items = append(podList.Items, *testutil.ToUnstructured(t, &p))
+	}
+	key := store.Key{
+		Namespace:  "namespace",
+		APIVersion: "v1",
+		Kind:       "Pod",
+	}
+
+	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, false, nil)
+
+	printOptions := tpo.ToOptions()
+	printOptions.DisableLabels = false
+
+	got, err := createPodListView(ctx, daemonSet, printOptions)
 	require.NoError(t, err)
 
-	sections := component.SummarySections{}
-	sections.AddText("Current Number Scheduled", "1")
-	sections.AddText("Desired Number Scheduled", "1")
-	sections.AddText("Number Available", "1")
-	sections.AddText("Number Mis-scheduled", "0")
-	sections.AddText("Number Ready", "1")
-	sections.AddText("Updated Number Scheduled", "1")
-	expected := component.NewSummary("Status", sections...)
+	cols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
+	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
+	expected.Add(component.TableRow{
+		"Name":     component.NewLink("", "fluentd-elasticsearch-dvskv", "/pod"),
+		"Ready":    component.NewText("0/1"),
+		"Phase":    component.NewText("Pending"),
+		"Restarts": component.NewText("0"),
+		"Node":     nodeLink,
+		"Age":      component.NewTimestamp(now),
+	})
+	addPodTableFilters(expected)
 
-	assert.Equal(t, expected, got)
+	component.AssertEqual(t, expected, got)
 }

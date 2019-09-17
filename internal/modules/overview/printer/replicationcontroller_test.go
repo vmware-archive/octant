@@ -18,7 +18,6 @@ import (
 
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/store"
-	storefake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -98,11 +97,71 @@ func Test_ReplicationControllerListHandler(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
+func Test_ReplicationControllerConfiguration(t *testing.T) {
+	var replicas int32 = 3
+
+	rc := testutil.CreateReplicationController("rc")
+	rc.Spec.Replicas = &replicas
+	rc.Status = corev1.ReplicationControllerStatus{
+		ReadyReplicas: 3,
+		Replicas:      3,
+	}
+
+	cases := []struct {
+		name                  string
+		replicationController *corev1.ReplicationController
+		isErr                 bool
+		expected              *component.Summary
+	}{
+		{
+			name:                  "replicationcontroller",
+			replicationController: rc,
+			expected: component.NewSummary("Configuration", []component.SummarySection{
+				{
+					Header:  "Replica Status",
+					Content: component.NewText("Current 3 / Desired 3"),
+				},
+				{
+					Header:  "Replicas",
+					Content: component.NewText("3"),
+				},
+			}...),
+		},
+		{
+			name:                  "replicationcontroller is nil",
+			replicationController: nil,
+			isErr:                 true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			tpo := newTestPrinterOptions(controller)
+			printOptions := tpo.ToOptions()
+
+			rcc := NewReplicationControllerConfiguration(tc.replicationController)
+
+			summary, err := rcc.Create(printOptions)
+			if tc.isErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			component.AssertEqual(t, tc.expected, summary)
+		})
+	}
+}
+
 func TestReplicationControllerStatus(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	o := storefake.NewMockStore(controller)
+	tpo := newTestPrinterOptions(controller)
+	printOptions := tpo.ToOptions()
 
 	replicationController := testutil.CreateReplicationController("rc")
 	replicationController.Labels = map[string]string{
@@ -145,10 +204,11 @@ func TestReplicationControllerStatus(t *testing.T) {
 		Kind:       "Pod",
 	}
 
-	o.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, false, nil)
-	rcs := NewReplicationControllerStatus(replicationController)
+	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, false, nil)
+
 	ctx := context.Background()
-	got, err := rcs.Create(ctx, o)
+	rcs := NewReplicationControllerStatus(ctx, replicationController, printOptions)
+	got, err := rcs.Create()
 	require.NoError(t, err)
 
 	expected := component.NewQuadrant("Status")
@@ -158,4 +218,82 @@ func TestReplicationControllerStatus(t *testing.T) {
 	require.NoError(t, expected.Set(component.QuadSE, "Failed", "0"))
 
 	assert.Equal(t, expected, got)
+}
+
+func Test_ReplicationControllerPods(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	tpo := newTestPrinterOptions(controller)
+
+	ctx := context.Background()
+
+	now := testutil.Time()
+
+	nodeLink := component.NewLink("", "node", "/node")
+	tpo.link.EXPECT().
+		ForGVK("", "v1", "Node", "node", "node").
+		Return(nodeLink, nil).AnyTimes()
+
+	rc := testutil.CreateReplicationController("replicationcontroller")
+
+	pod := testutil.CreatePod("nginx-hv4qs")
+	pod.SetOwnerReferences(testutil.ToOwnerReferences(t, rc))
+	pod.CreationTimestamp = metav1.Time{Time: now}
+	pod.Spec.Containers = []corev1.Container{
+		{
+			Name:  "nginx",
+			Image: "nginx:1.15",
+		},
+	}
+	pod.Spec.NodeName = "node"
+	pod.Status = corev1.PodStatus{
+		Phase: "Pending",
+		ContainerStatuses: []corev1.ContainerStatus{
+			{
+				Name:         "nginx",
+				Image:        "nginx:1.15",
+				RestartCount: 0,
+				Ready:        false,
+			},
+		},
+	}
+
+	pods := &corev1.PodList{
+		Items: []corev1.Pod{*pod},
+	}
+
+	tpo.PathForObject(pod, pod.Name, "/pod")
+
+	podList := &unstructured.UnstructuredList{}
+	for _, p := range pods.Items {
+		podList.Items = append(podList.Items, *testutil.ToUnstructured(t, &p))
+	}
+	key := store.Key{
+		Namespace:  "namespace",
+		APIVersion: "v1",
+		Kind:       "Pod",
+	}
+
+	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(podList, false, nil)
+
+	printOptions := tpo.ToOptions()
+	printOptions.DisableLabels = false
+
+	got, err := createPodListView(ctx, rc, printOptions)
+	require.NoError(t, err)
+
+	cols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
+	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
+	expected.Add(component.TableRow{
+		"Name":     component.NewLink("", "nginx-hv4qs", "/pod"),
+		"Ready":    component.NewText("0/1"),
+		"Phase":    component.NewText("Pending"),
+		"Restarts": component.NewText("0"),
+		"Node":     nodeLink,
+		"Age":      component.NewTimestamp(now),
+	})
+	addPodTableFilters(expected)
+
+	component.AssertEqual(t, expected, got)
 }

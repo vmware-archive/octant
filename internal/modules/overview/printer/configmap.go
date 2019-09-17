@@ -55,19 +55,18 @@ func ConfigMapListHandler(_ context.Context, list *corev1.ConfigMapList, opts Op
 func ConfigMapHandler(ctx context.Context, cm *corev1.ConfigMap, options Options) (component.Component, error) {
 	o := NewObject(cm)
 
-	summary, err := describeConfigMapConfig(cm)
+	ch, err := newConfigMapHandler(cm, o)
 	if err != nil {
 		return nil, err
 	}
 
-	o.RegisterConfig(summary)
+	if err := ch.Config(options); err != nil {
+		return nil, errors.Wrap(err, "print configmap configuration")
+	}
 
-	o.RegisterItems(ItemDescriptor{
-		Func: func() (component.Component, error) {
-			return describeConfigMapData(cm)
-		},
-		Width: component.WidthFull,
-	})
+	if err := ch.Data(options); err != nil {
+		return nil, errors.Wrap(err, "print configmap data")
+	}
 
 	return o.ToComponent(ctx, options)
 }
@@ -85,14 +84,15 @@ func NewConfigMapConfiguration(cm *corev1.ConfigMap) *ConfigMapConfiguration {
 }
 
 // Create a configmap configuration summary
-func describeConfigMapConfig(cm *corev1.ConfigMap) (*component.Summary, error) {
-	if cm == nil {
+func (c *ConfigMapConfiguration) Create(options Options) (*component.Summary, error) {
+	if c.configmap == nil {
 		return nil, errors.New("config map is nil")
 	}
+	configMap := c.configmap
 
 	sections := component.SummarySections{}
 
-	creationTimestamp := cm.CreationTimestamp.Time
+	creationTimestamp := configMap.CreationTimestamp.Time
 	sections = append(sections, component.SummarySection{
 		Header:  "Age",
 		Content: component.NewTimestamp(creationTimestamp),
@@ -148,4 +148,69 @@ func describeConfigMapDataRows(cm *corev1.ConfigMap) ([]component.TableRow, erro
 	}
 
 	return rows, nil
+}
+
+type configMapObject interface {
+	Config(options Options) error
+	Data(option Options) error
+}
+
+type configMapHandler struct {
+	configMap  *corev1.ConfigMap
+	configFunc func(*corev1.ConfigMap, Options) (*component.Summary, error)
+	dataFunc   func(*corev1.ConfigMap, Options) (*component.Table, error)
+	object     *Object
+}
+
+var _ configMapObject = (*configMapHandler)(nil)
+
+func newConfigMapHandler(configMap *corev1.ConfigMap, object *Object) (*configMapHandler, error) {
+	if configMap == nil {
+		return nil, errors.New("can't print a nil configmap")
+	}
+
+	if object == nil {
+		return nil, errors.New("can't print configmap using a nil object printer")
+	}
+
+	ch := &configMapHandler{
+		configMap:  configMap,
+		configFunc: defaultConfigMapConfig,
+		dataFunc:   defaultConfigMapData,
+		object:     object,
+	}
+
+	return ch, nil
+}
+
+func (c *configMapHandler) Config(options Options) error {
+	out, err := c.configFunc(c.configMap, options)
+	if err != nil {
+		return err
+	}
+	c.object.RegisterConfig(out)
+	return nil
+}
+
+func defaultConfigMapConfig(configMap *corev1.ConfigMap, options Options) (*component.Summary, error) {
+	return NewConfigMapConfiguration(configMap).Create(options)
+}
+
+func (c *configMapHandler) Data(options Options) error {
+	if c.configMap == nil {
+		return errors.New("can't display data for nil configmap")
+	}
+
+	c.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return c.dataFunc(c.configMap, options)
+		},
+	})
+
+	return nil
+}
+
+func defaultConfigMapData(configMap *corev1.ConfigMap, options Options) (*component.Table, error) {
+	return describeConfigMapData(configMap)
 }

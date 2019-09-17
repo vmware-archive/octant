@@ -11,15 +11,17 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/vmware/octant/internal/conversion"
 	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 
+	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 func Test_CronJobListHandler(t *testing.T) {
@@ -76,7 +78,7 @@ func Test_CronJobListHandler(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
-func TestCronJobConfiguration(t *testing.T) {
+func Test_CronJobConfiguration(t *testing.T) {
 
 	now := time.Unix(1550075244, 0)
 	lastScheduled := time.Unix(1550075184, 0)
@@ -162,7 +164,66 @@ func TestCronJobConfiguration(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			assert.Equal(t, tc.expected, summary)
+			component.AssertEqual(t, tc.expected, summary)
 		})
 	}
+}
+
+func Test_createJobListView(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	tpo := newTestPrinterOptions(controller)
+
+	ctx := context.Background()
+	now := testutil.Time()
+	labels := map[string]string{
+		"foo": "bar",
+	}
+
+	cronJob := testutil.CreateCronJob("cronjob")
+	job := testutil.CreateJob("job")
+
+	job.SetOwnerReferences(testutil.ToOwnerReferences(t, cronJob))
+	job.CreationTimestamp = metav1.Time{Time: now}
+	job.Labels = labels
+	job.Spec = batchv1.JobSpec{
+		Completions: conversion.PtrInt32(1),
+	}
+	job.Status.Succeeded = 1
+
+	jobs := &batchv1.JobList{
+		Items: []batchv1.Job{*job},
+	}
+
+	tpo.PathForObject(job, job.Name, "/job")
+
+	jobList := &unstructured.UnstructuredList{}
+	for _, j := range jobs.Items {
+		jobList.Items = append(jobList.Items, *testutil.ToUnstructured(t, &j))
+	}
+	key := store.Key{
+		Namespace:  job.Namespace,
+		APIVersion: "batch/v1beta1",
+		Kind:       "Job",
+	}
+
+	tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).Return(jobList, false, nil)
+
+	printOptions := tpo.ToOptions()
+
+	got, err := createJobListView(ctx, cronJob, printOptions)
+	require.NoError(t, err)
+
+	cols := component.NewTableCols("Name", "Labels", "Completions", "Successful", "Age")
+	expected := component.NewTable("Jobs", "We couldn't find any jobs!", cols)
+	expected.Add(component.TableRow{
+		"Name":        component.NewLink("", "job", "/job"),
+		"Labels":      component.NewLabels(labels),
+		"Completions": component.NewText("1"),
+		"Successful":  component.NewText("1"),
+		"Age":         component.NewTimestamp(now),
+	})
+
+	component.AssertEqual(t, expected, got)
 }
