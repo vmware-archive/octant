@@ -71,7 +71,7 @@
             </table>
         </div>
         <div class="card-footer" *ngIf="shouldShowFooter()">
-            <ng-container *ngFor="let action of view.config.actions">
+            <ng-container *ngFor="let action of view.config.actions; trackBy: identifyItem">
                 <button class="btn btn-sm btn-link" (click)="setAction(action)">{{action.name}}</button>
             </ng-container>
         </div>

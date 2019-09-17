@@ -64,7 +64,7 @@ export class ResourceViewerComponent implements OnChanges, AfterViewInit {
         'padding-left': '10px',
         'padding-right': '10px',
         'padding-top': '10px',
-        'padding-bottom': '10px'
+        'padding-bottom': '10px',
       },
     },
 
