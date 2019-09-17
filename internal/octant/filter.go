@@ -23,3 +23,8 @@ func (f *Filter) ToQueryParam() string {
 func (f *Filter) IsEqual(other Filter) bool {
 	return f.Key == other.Key && f.Value == other.Value
 }
+
+// String converts the filter to a string.
+func (f *Filter) String() string {
+	return f.ToQueryParam()
+}

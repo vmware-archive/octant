@@ -38,9 +38,9 @@ export class TabsComponent implements OnChanges, OnInit {
   ) {}
 
   ngOnInit() {
-    const { queryParams } = this.activatedRoute.snapshot;
-    if (queryParams.tabView) {
-      this.activeTab = queryParams.tabView;
+    const { fragment } = this.activatedRoute.snapshot;
+    if (fragment) {
+      this.activeTab = fragment;
     }
   }
 
@@ -58,6 +58,7 @@ export class TabsComponent implements OnChanges, OnInit {
 
       if (!this.activeTab) {
         this.activeTab = this.tabs[0].accessor;
+        this.setMarker(this.activeTab);
       }
     }
   }
@@ -71,11 +72,14 @@ export class TabsComponent implements OnChanges, OnInit {
       return;
     }
     this.activeTab = tabAccessor;
+    this.setMarker(tabAccessor);
+  }
+
+  private setMarker(tabAccessor: string) {
     this.router.navigate([], {
       relativeTo: this.activatedRoute,
       replaceUrl: true,
-      queryParams: { tabView: tabAccessor },
-      queryParamsHandling: 'merge',
+      fragment: tabAccessor,
     });
   }
 }

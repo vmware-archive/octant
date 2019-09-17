@@ -56,7 +56,7 @@ var _ StateManager = (*NamespacesManager)(nil)
 func NewNamespacesManager(config NamespaceManagerConfig, options ...NamespacesManagerOption) *NamespacesManager {
 	n := &NamespacesManager{
 		config:                  config,
-		poller:                  NewInterruptiblePoller(),
+		poller:                  NewInterruptiblePoller("namespaces"),
 		namespacesGeneratorFunc: NamespacesGenerator,
 	}
 

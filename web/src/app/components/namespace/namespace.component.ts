@@ -13,7 +13,7 @@ import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 })
 export class NamespaceComponent implements OnInit {
   namespaces: string[];
-  currentNamespace: string;
+  currentNamespace = '';
   trackByIdentity = trackByIdentity;
 
   constructor(private namespaceService: NamespaceService) {}
@@ -21,9 +21,6 @@ export class NamespaceComponent implements OnInit {
   ngOnInit() {
     this.namespaceService.activeNamespace.subscribe((namespace: string) => {
       this.currentNamespace = namespace;
-      if (!this.currentNamespace) {
-        this.currentNamespace = '<Cluster Scoped>';
-      }
     });
 
     this.namespaceService.availableNamespaces.subscribe(

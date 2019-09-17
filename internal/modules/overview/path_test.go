@@ -17,7 +17,7 @@ func Test_crdPath(t *testing.T) {
 	got, err := crdPath("default", "crdName", "name")
 	require.NoError(t, err)
 
-	expected := path.Join("/content", "overview", "namespace", "default", "custom-resources", "crdName", "name")
+	expected := path.Join("/overview", "namespace", "default", "custom-resources", "crdName", "name")
 	assert.Equal(t, expected, got)
 }
 
@@ -37,7 +37,7 @@ func Test_gvk_path(t *testing.T) {
 			apiVersion: "v1",
 			kind:       "Pod",
 			objectName: "pod",
-			expected:   path.Join("/content", "overview", "namespace", "default", "workloads", "pods", "pod"),
+			expected:   path.Join("/overview", "namespace", "default", "workloads", "pods", "pod"),
 		},
 		{
 			name:       "no namespace",

@@ -9,7 +9,7 @@
                 <ng-template #emptyPlaceholder>
                     All content has been filtered out.
                 </ng-template>
-                {{ placeholder }}</clr-dg-placeholder>
+            </clr-dg-placeholder>
             <clr-dg-column *ngFor="let columnName of columns; trackBy: identifyColumn">
                 {{ columnName }}
                 <clr-dg-filter *ngIf="hasFilter(columnName)">

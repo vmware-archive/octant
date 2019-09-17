@@ -34,7 +34,6 @@ func TestContentManager_Handlers(t *testing.T) {
 	AssertHandlers(t, manager, []string{
 		api.RequestSetContentPath,
 		api.RequestSetNamespace,
-		api.RequestSetQueryParams,
 	})
 }
 
@@ -42,8 +41,14 @@ func TestContentManager_GenerateContent(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
+	params := map[string][]string{}
+
 	moduleManager := moduleFake.NewMockManagerInterface(controller)
 	state := octantFake.NewMockState(controller)
+
+	state.EXPECT().GetContentPath().Return("/path")
+	state.EXPECT().GetNamespace().Return("default")
+	state.EXPECT().GetQueryParams().Return(params)
 	state.EXPECT().OnContentPathUpdate(gomock.Any()).DoAndReturn(func(fn octant.ContentPathUpdateFunc) octant.UpdateCancelFunc {
 		fn("foo")
 		return func() {}
@@ -53,7 +58,7 @@ func TestContentManager_GenerateContent(t *testing.T) {
 	contentResponse := component.ContentResponse{
 		IconName: "fake",
 	}
-	contentEvent := api.CreateContentEvent(contentResponse)
+	contentEvent := api.CreateContentEvent(contentResponse, "default", "/path", params)
 	octantClient.EXPECT().Send(contentEvent).AnyTimes()
 
 	logger := log.NopLogger()

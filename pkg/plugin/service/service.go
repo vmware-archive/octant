@@ -146,7 +146,7 @@ func (r *baseRequest) Context() context.Context {
 }
 
 func (r *baseRequest) GeneratePath(pathParts ...string) string {
-	return path.Join(append([]string{"content", r.pluginName}, pathParts...)...)
+	return path.Join(append([]string{r.pluginName}, pathParts...)...)
 }
 
 // PrintRequest is a request for printing.

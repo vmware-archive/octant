@@ -55,7 +55,7 @@ var _ StateManager = (*ContextManager)(nil)
 func NewContextManager(dashConfig config.Dash, options ...ContextManagerOption) *ContextManager {
 	cm := &ContextManager{
 		dashConfig: dashConfig,
-		poller:     NewInterruptiblePoller(),
+		poller:     NewInterruptiblePoller("context"),
 	}
 
 	cm.contextGenerateFunc = cm.generateContexts

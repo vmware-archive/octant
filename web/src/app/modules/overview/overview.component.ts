@@ -2,19 +2,23 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import {
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Params, Router, UrlSegment } from '@angular/router';
 import { ContentResponse, View } from 'src/app/models/content';
 import { IconService } from './services/icon.service';
 import { ViewService } from './services/view/view.service';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 import { ContentService } from './services/content/content.service';
 import { WebsocketService } from './services/websocket/websocket.service';
+import { KubeContextService } from './services/kube-context/kube-context.service';
+import { take } from 'rxjs/operators';
+import _ from 'lodash';
 
 const emptyContentResponse: ContentResponse = {
   content: {
@@ -23,32 +27,40 @@ const emptyContentResponse: ContentResponse = {
   },
 };
 
+interface LocationCallbackOptions {
+  segments: UrlSegment[];
+  params: Params;
+  currentContext: string;
+  fragment: string;
+}
+
 @Component({
   selector: 'app-overview',
   templateUrl: './overview.component.html',
   styleUrls: ['./overview.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Default,
 })
 export class OverviewComponent implements OnInit, OnDestroy {
   behavior = new BehaviorSubject<ContentResponse>(emptyContentResponse);
-
-  private previousUrl = '';
-
   @ViewChild('scrollTarget') scrollTarget: ElementRef;
-
   hasTabs = false;
   hasReceivedContent = false;
   title: string = null;
   views: View[] = null;
   singleView: View = null;
+  private previousUrl = '';
   private iconName: string;
   private defaultPath: string;
+  private previousParams: Params;
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private iconService: IconService,
     private viewService: ViewService,
     private contentService: ContentService,
-    private websocketService: WebsocketService
+    private websocketService: WebsocketService,
+    private kubeContextService: KubeContextService
   ) {
     this.contentService.current.subscribe(contentResponse => {
       this.setContent(contentResponse);
@@ -56,32 +68,67 @@ export class OverviewComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.route.url.subscribe(this.handlePathChange());
-    this.route.queryParams.subscribe(queryParams =>
-      this.contentService.setQueryParams(queryParams)
-    );
+    this.withCurrentLocation(options => {
+      this.handlePathChange(options.segments, options.params, false);
+    });
 
-    this.websocketService.reconnected.subscribe(_ => {
-      // when reconnecting, ensure the backend knows our path
-      this.route.url.subscribe(this.handlePathChange(true)).unsubscribe();
-      this.route.queryParams
-        .subscribe(queryParams =>
-          this.contentService.setQueryParams(queryParams)
-        )
-        .unsubscribe();
+    this.websocketService.reconnected.subscribe(() => {
+      this.withCurrentLocation(options => {
+        this.handlePathChange(options.segments, options.params, true);
+        this.kubeContextService.select({ name: options.currentContext });
+      }, true);
     });
   }
 
-  private handlePathChange(force = false) {
-    return url => {
-      const currentPath = url.map(u => u.path).join('/') || this.defaultPath;
-      if (currentPath !== this.previousUrl || force) {
-        this.resetView();
-        this.previousUrl = currentPath;
-        this.contentService.setContentPath(currentPath);
-        this.scrollTarget.nativeElement.scrollTop = 0;
+  ngOnDestroy() {
+    this.resetView();
+  }
+
+  private withCurrentLocation(
+    callback: (options: LocationCallbackOptions) => void,
+    takeOne = false
+  ) {
+    let observable = combineLatest(
+      this.route.url,
+      this.route.queryParams,
+      this.route.fragment,
+      this.kubeContextService.selected()
+    );
+
+    if (takeOne) {
+      observable = observable.pipe(take(1));
+    }
+
+    observable.subscribe(([segments, params, fragment, currentContext]) => {
+      if (currentContext !== '') {
+        callback({
+          segments,
+          params,
+          fragment,
+          currentContext,
+        });
       }
-    };
+    });
+  }
+
+  private handlePathChange(
+    segments: UrlSegment[],
+    queryParams: Params,
+    force: boolean
+  ) {
+    const urlPath = segments.map(u => u.path).join('/');
+    const currentPath = urlPath || this.defaultPath;
+    if (
+      force ||
+      currentPath !== this.previousUrl ||
+      !_.isEqual(queryParams, this.previousParams)
+    ) {
+      this.resetView();
+      this.previousUrl = currentPath;
+      this.previousParams = queryParams;
+      this.contentService.setContentPath(currentPath, queryParams);
+      this.scrollTarget.nativeElement.scrollTop = 0;
+    }
   }
 
   private resetView() {
@@ -111,8 +158,4 @@ export class OverviewComponent implements OnInit, OnDestroy {
     this.hasReceivedContent = true;
     this.iconName = this.iconService.load(contentResponse.content);
   };
-
-  ngOnDestroy() {
-    this.resetView();
-  }
 }

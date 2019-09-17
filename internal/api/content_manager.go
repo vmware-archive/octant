@@ -23,7 +23,6 @@ import (
 const (
 	RequestSetContentPath = "setContentPath"
 	RequestSetNamespace   = "setNamespace"
-	RequestSetQueryParams = "setQueryParams"
 )
 
 // ContentManagerOption is an option for configuring ContentManager.
@@ -53,14 +52,16 @@ type ContentManager struct {
 	logger              log.Logger
 	contentGenerateFunc ContentGenerateFunc
 	poller              Poller
+	updateContentCh     chan struct{}
 }
 
 // NewContentManager creates an instance of ContentManager.
 func NewContentManager(moduleManager module.ManagerInterface, logger log.Logger, options ...ContentManagerOption) *ContentManager {
 	cm := &ContentManager{
-		moduleManager: moduleManager,
-		logger:        logger,
-		poller:        NewInterruptiblePoller(),
+		moduleManager:   moduleManager,
+		logger:          logger,
+		poller:          NewInterruptiblePoller("content"),
+		updateContentCh: make(chan struct{}, 1),
 	}
 	cm.contentGenerateFunc = cm.generateContent
 
@@ -75,38 +76,32 @@ var _ StateManager = (*ContentManager)(nil)
 
 // Start starts the manager.
 func (cm *ContentManager) Start(ctx context.Context, state octant.State, s OctantClient) {
-	updateContentPathCh := make(chan struct{}, 1)
 	defer func() {
-		close(updateContentPathCh)
+		close(cm.updateContentCh)
 	}()
 
-	updateCancel := state.OnContentPathUpdate(func(_ string) {
-		updateContentPathCh <- struct{}{}
+	updateCancel := state.OnContentPathUpdate(func(contentPath string) {
+		cm.updateContentCh <- struct{}{}
 	})
 	defer updateCancel()
 
-	cm.poller.Run(ctx, updateContentPathCh, cm.runUpdate(state, s), event.DefaultScheduleDelay)
+	cm.poller.Run(ctx, cm.updateContentCh, cm.runUpdate(state, s), event.DefaultScheduleDelay)
 }
 
 func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFunc {
 	return func(ctx context.Context) bool {
-		for {
-			contentResponse, rerun, err := cm.contentGenerateFunc(ctx, state)
-			if err != nil {
-				cm.logger.
-					WithErr(err).
-					With("contentPath", state.GetContentPath()).
-					Errorf("generate content")
-				return false
-			}
+		contentPath := state.GetContentPath()
+		if contentPath == "" {
+			return false
+		}
 
-			if ctx.Err() == nil {
-				s.Send(CreateContentEvent(contentResponse))
-			}
+		contentResponse, _, err := cm.contentGenerateFunc(ctx, state)
+		if err != nil {
+			return false
+		}
 
-			if !rerun {
-				break
-			}
+		if ctx.Err() == nil {
+			s.Send(CreateContentEvent(contentResponse, state.GetNamespace(), contentPath, state.GetQueryParams()))
 		}
 
 		return false
@@ -115,38 +110,33 @@ func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFu
 
 func (cm *ContentManager) generateContent(ctx context.Context, state octant.State) (component.ContentResponse, bool, error) {
 	contentPath := state.GetContentPath()
-	if contentPath != "" {
-		logger := cm.logger.With("contentPath", contentPath)
+	logger := cm.logger.With("contentPath", contentPath)
 
-		now := time.Now()
+	now := time.Now()
+	defer func() {
+		logger.With("elapsed", time.Since(now)).Debugf("generating content")
+	}()
 
-		contentPath = strings.TrimPrefix(contentPath, "/content/")
-		m, ok := cm.moduleManager.ModuleForContentPath(contentPath)
-		if !ok {
-			return component.EmptyContentResponse, false, errors.Errorf("unable to find module for content path %q", contentPath)
+	m, ok := cm.moduleManager.ModuleForContentPath(contentPath)
+	if !ok {
+		return component.EmptyContentResponse, false, errors.Errorf("unable to find module for content path %q", contentPath)
+	}
+	modulePath := strings.TrimPrefix(contentPath, m.Name())
+	options := module.ContentOptions{
+		LabelSet: FiltersToLabelSet(state.GetFilters()),
+	}
+	contentResponse, err := m.Content(ctx, modulePath, options)
+	if err != nil {
+		if nfe, ok := err.(notFound); ok && nfe.NotFound() {
+			logger.Debugf("path not found, redirecting to parent")
+			state.SetContentPath(notFoundRedirectPath(contentPath))
+			return component.EmptyContentResponse, true, nil
+		} else {
+			return component.EmptyContentResponse, false, errors.Wrap(err, "generate content")
 		}
-		modulePath := strings.TrimPrefix(contentPath, m.Name())
-		options := module.ContentOptions{
-			LabelSet: FiltersToLabelSet(state.GetFilters()),
-		}
-		contentResponse, err := m.Content(ctx, modulePath, options)
-		if err != nil {
-			if nfe, ok := err.(notFound); ok && nfe.NotFound() {
-				logger.Debugf("path not found, redirecting to parent")
-				state.SetContentPath(notFoundRedirectPath(contentPath))
-				return component.EmptyContentResponse, true, nil
-			} else {
-				return component.EmptyContentResponse, false, errors.Wrap(err, "generate content")
-			}
-		}
-
-		logger.With(
-			"elapsed", time.Since(now),
-		).Debugf("generate content")
-		return contentResponse, false, nil
 	}
 
-	return component.EmptyContentResponse, false, nil
+	return contentResponse, false, nil
 }
 
 // Handlers returns a slice of client request handlers.
@@ -159,10 +149,6 @@ func (cm *ContentManager) Handlers() []octant.ClientRequestHandler {
 		{
 			RequestType: RequestSetNamespace,
 			Handler:     cm.SetNamespace,
-		},
-		{
-			RequestType: RequestSetQueryParams,
-			Handler:     cm.SetQueryParams,
 		},
 	}
 }
@@ -199,6 +185,10 @@ func (cm *ContentManager) SetContentPath(state octant.State, payload action.Payl
 	if err != nil {
 		return errors.Wrap(err, "extract contentPath from payload")
 	}
+	if err := cm.SetQueryParams(state, payload); err != nil {
+		return errors.Wrap(err, "extract query params from payload")
+	}
+
 	state.SetContentPath(contentPath)
 	return nil
 }
@@ -209,9 +199,14 @@ type notFound interface {
 }
 
 // CreateContentEvent creates a content event.
-func CreateContentEvent(contentResponse component.ContentResponse) octant.Event {
+func CreateContentEvent(contentResponse component.ContentResponse, namespace, contentPath string, queryParams map[string][]string) octant.Event {
 	return octant.Event{
 		Type: octant.EventTypeContent,
-		Data: contentResponse,
+		Data: map[string]interface{}{
+			"content":     contentResponse,
+			"namespace":   namespace,
+			"contentPath": contentPath,
+			"queryParams": queryParams,
+		},
 	}
 }

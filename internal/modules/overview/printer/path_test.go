@@ -28,7 +28,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Name:       "cj1",
 				Namespace:  "default",
 			},
-			expected: "/content/overview/namespace/default/workloads/cron-jobs/cj1",
+			expected: "/overview/namespace/default/workloads/cron-jobs/cj1",
 		},
 		{
 			name: "cron job",
@@ -37,7 +37,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "CronJob",
 				Name:       "cj1",
 			},
-			expected: "/content/overview/workloads/cron-jobs/cj1",
+			expected: "/overview/workloads/cron-jobs/cj1",
 		},
 		{
 			name: "daemon set",
@@ -46,7 +46,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "DaemonSet",
 				Name:       "ds1",
 			},
-			expected: "/content/overview/workloads/daemon-sets/ds1",
+			expected: "/overview/workloads/daemon-sets/ds1",
 		},
 		{
 			name: "deployment",
@@ -55,7 +55,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "Deployment",
 				Name:       "d1",
 			},
-			expected: "/content/overview/workloads/deployments/d1",
+			expected: "/overview/workloads/deployments/d1",
 		},
 		{
 			name: "job",
@@ -64,7 +64,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "Job",
 				Name:       "j1",
 			},
-			expected: "/content/overview/workloads/jobs/j1",
+			expected: "/overview/workloads/jobs/j1",
 		},
 		{
 			name: "pod",
@@ -73,7 +73,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "Pod",
 				Name:       "p1",
 			},
-			expected: "/content/overview/workloads/pods/p1",
+			expected: "/overview/workloads/pods/p1",
 		},
 		{
 			name: "replica set",
@@ -82,7 +82,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "ReplicaSet",
 				Name:       "rs1",
 			},
-			expected: "/content/overview/workloads/replica-sets/rs1",
+			expected: "/overview/workloads/replica-sets/rs1",
 		},
 		{
 			name: "replication controller",
@@ -91,7 +91,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "ReplicationController",
 				Name:       "rc1",
 			},
-			expected: "/content/overview/workloads/replication-controllers/rc1",
+			expected: "/overview/workloads/replication-controllers/rc1",
 		},
 		{
 			name: "stateful set",
@@ -100,7 +100,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "StatefulSet",
 				Name:       "ss1",
 			},
-			expected: "/content/overview/workloads/stateful-sets/ss1",
+			expected: "/overview/workloads/stateful-sets/ss1",
 		},
 		{
 			name: "ingress",
@@ -109,7 +109,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "Ingress",
 				Name:       "i1",
 			},
-			expected: "/content/overview/discovery-and-load-balancing/ingresses/i1",
+			expected: "/overview/discovery-and-load-balancing/ingresses/i1",
 		},
 		{
 			name: "service",
@@ -118,7 +118,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "Service",
 				Name:       "s1",
 			},
-			expected: "/content/overview/discovery-and-load-balancing/services/s1",
+			expected: "/overview/discovery-and-load-balancing/services/s1",
 		},
 		{
 			name: "config map",
@@ -127,7 +127,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "ConfigMap",
 				Name:       "cm1",
 			},
-			expected: "/content/overview/config-and-storage/config-maps/cm1",
+			expected: "/overview/config-and-storage/config-maps/cm1",
 		},
 		{
 			name: "persistent volume claim",
@@ -136,7 +136,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "PersistentVolumeClaim",
 				Name:       "pvc1",
 			},
-			expected: "/content/overview/config-and-storage/persistent-volume-claims/pvc1",
+			expected: "/overview/config-and-storage/persistent-volume-claims/pvc1",
 		},
 		{
 			name: "secret",
@@ -145,7 +145,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "Secret",
 				Name:       "s1",
 			},
-			expected: "/content/overview/config-and-storage/secrets/s1",
+			expected: "/overview/config-and-storage/secrets/s1",
 		},
 		{
 			name: "service account",
@@ -154,7 +154,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "ServiceAccount",
 				Name:       "sa1",
 			},
-			expected: "/content/overview/config-and-storage/service-accounts/sa1",
+			expected: "/overview/config-and-storage/service-accounts/sa1",
 		},
 		{
 			name: "role",
@@ -163,7 +163,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "Role",
 				Name:       "r1",
 			},
-			expected: "/content/overview/rbac/roles/r1",
+			expected: "/overview/rbac/roles/r1",
 		},
 		{
 			name: "role binding",
@@ -172,7 +172,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "RoleBinding",
 				Name:       "rb1",
 			},
-			expected: "/content/overview/rbac/role-bindings/rb1",
+			expected: "/overview/rbac/role-bindings/rb1",
 		},
 		{
 			name: "event",
@@ -181,7 +181,7 @@ func TestObjectReferencePath(t *testing.T) {
 				Kind:       "Event",
 				Name:       "e1",
 			},
-			expected: "/content/overview/events/e1",
+			expected: "/overview/events/e1",
 		},
 		{
 			name: "invalid",
