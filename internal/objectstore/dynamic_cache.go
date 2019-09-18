@@ -85,6 +85,7 @@ func waitForSync(ctx context.Context, key store.Key, dc *DynamicCache, informer 
 	logger := log.From(ctx).With("key", key)
 	msg := "informer cache has synced"
 	kcache.WaitForCacheSync(ctx.Done(), informer.Informer().HasSynced)
+	<-time.After(100 * time.Millisecond)
 	logger.With("elapsed", time.Since(now)).
 		Debugf(msg)
 	dc.informerSynced.setSynced(key, true)
@@ -161,20 +162,16 @@ func (dc *DynamicCache) currentInformer(ctx context.Context, key store.Key) (inf
 
 	informer := factory.ForResource(gvr)
 
-	dc.updateMu.Lock()
 	dc.checkKeySynced(ctx, informer, key)
-	dc.updateMu.Unlock()
-
-	if dc.seenGVKs.hasSeen(key.Namespace, gvk) {
-		return informer, dc.informerSynced.hasSynced(key), nil
-	}
-
 	dc.seenGVKs.setSeen(key.Namespace, gvk, true)
 
 	return informer, dc.informerSynced.hasSynced(key), nil
 }
 
 func (dc *DynamicCache) checkKeySynced(ctx context.Context, informer informers.GenericInformer, key store.Key) {
+	dc.updateMu.Lock()
+	defer dc.updateMu.Unlock()
+
 	if dc.seenGVKs.hasSeen(key.Namespace, key.GroupVersionKind()) ||
 		(dc.informerSynced.hasSeen(key) && dc.informerSynced.hasSynced(key)) {
 		return

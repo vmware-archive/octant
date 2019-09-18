@@ -5,6 +5,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { WebsocketService } from '../websocket/websocket.service';
+import { take } from 'rxjs/operators';
 
 export const KubeContextMessage = 'kubeConfig';
 
@@ -29,7 +30,6 @@ export class KubeContextService {
   private contextsSource: BehaviorSubject<
     ContextDescription[]
   > = new BehaviorSubject<ContextDescription[]>([]);
-
   private selectedSource = new BehaviorSubject<string>('');
 
   constructor(private websocketService: WebsocketService) {
@@ -41,8 +41,12 @@ export class KubeContextService {
   }
 
   select(context: ContextDescription) {
-    this.selectedSource.next(context.name);
-    this.updateContext(context.name);
+    this.selectedSource.pipe(take(1)).subscribe(current => {
+      if (current !== context.name) {
+        this.selectedSource.next(context.name);
+        this.updateContext(context.name);
+      }
+    });
   }
 
   selected() {

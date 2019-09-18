@@ -53,9 +53,9 @@ func ObjectReferencePath(or corev1.ObjectReference) (string, error) {
 
 	var objectPath string
 	if or.Namespace != "" {
-		objectPath = path.Join("/content/overview/namespace", or.Namespace, section, or.Name)
+		objectPath = path.Join("/overview/namespace", or.Namespace, section, or.Name)
 	} else {
-		objectPath = path.Join("/content/overview", section, or.Name)
+		objectPath = path.Join("/overview", section, or.Name)
 	}
 	return objectPath, nil
 }

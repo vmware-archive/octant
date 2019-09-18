@@ -308,16 +308,16 @@ func createServiceEndpointsView(ctx context.Context, service *corev1.Service, op
 		Name:       service.Name,
 	}
 
+	cols := component.NewTableCols("Target", "IP", "Node Name")
+	table := component.NewTable("Endpoints", "There are no endpoints!", cols)
+
 	object, found, err := o.Get(ctx, key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "get endpoints for service %s", service.Name)
 	}
 	if !found {
-		return nil, errors.Errorf("no endpoints for service %s", service.Name)
+		return table, nil
 	}
-
-	cols := component.NewTableCols("Target", "IP", "Node Name")
-	table := component.NewTable("Endpoints", "There are no endpoints!", cols)
 
 	endpoints := &corev1.Endpoints{}
 	if err := scheme.Scheme.Convert(object, endpoints, 0); err != nil {

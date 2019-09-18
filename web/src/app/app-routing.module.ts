@@ -7,21 +7,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { OverviewComponent } from './modules/overview/overview.component';
-import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
-import { NamespaceResolver } from 'src/app/services/namespace/namespace-resolver.service';
 
-export const appRoutes: Routes = [
-  { path: 'content', children: [{ path: '**', component: OverviewComponent }] },
-  {
-    path: '',
-    component: OverviewComponent,
-    resolve: {
-      namespace: NamespaceResolver,
-    },
-    pathMatch: 'full',
-  },
-  { path: '**', component: PageNotFoundComponent },
-];
+export const appRoutes: Routes = [{ path: '**', component: OverviewComponent }];
 
 @NgModule({
   declarations: [],
@@ -31,6 +18,5 @@ export const appRoutes: Routes = [
     }),
     CommonModule,
   ],
-  providers: [NamespaceResolver],
 })
 export class AppRoutingModule {}

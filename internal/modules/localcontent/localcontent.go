@@ -71,7 +71,7 @@ func (l *LocalContent) list() (component.ContentResponse, error) {
 		}
 
 		table.Add(component.TableRow{
-			"Title": component.NewLink("", title, path.Join("/content/local", base)),
+			"Title": component.NewLink("", title, path.Join("/local", base)),
 			"File":  component.NewText(name),
 		})
 

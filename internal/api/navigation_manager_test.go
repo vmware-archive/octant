@@ -64,7 +64,7 @@ func TestNavigationGenerator(t *testing.T) {
 				m.EXPECT().ContentPath().Return("/module")
 				m.EXPECT().Name().Return("module").AnyTimes()
 				m.EXPECT().
-					Navigation(gomock.Any(), "default", "/content/module").
+					Navigation(gomock.Any(), "default", "/module").
 					Return([]navigation.Navigation{
 						{Title: "module"},
 					}, nil)

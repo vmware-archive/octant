@@ -25,7 +25,7 @@ var (
 const rbacAPIVersion = "rbac.authorization.k8s.io/v1"
 
 func crdPath(namespace, crdName, name string) (string, error) {
-	return path.Join("/content/cluster-overview/custom-resources", crdName, name), nil
+	return path.Join("/cluster-overview/custom-resources", crdName, name), nil
 }
 
 func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
@@ -42,5 +42,5 @@ func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 		return "", errors.Errorf("unknown object %s %s", apiVersion, kind)
 	}
 
-	return path.Join("/content/cluster-overview", p, name), nil
+	return path.Join("/cluster-overview", p, name), nil
 }

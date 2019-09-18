@@ -6,9 +6,8 @@
 import { TestBed } from '@angular/core/testing';
 
 import {
-  ContentPathUpdate,
-  ContentPathUpdateMessage,
   ContentService,
+  ContentUpdate,
   ContentUpdateMessage,
 } from './content.service';
 import { WebsocketServiceMock } from '../websocket/mock';
@@ -16,8 +15,7 @@ import {
   BackendService,
   WebsocketService,
 } from '../websocket/websocket.service';
-import { Content } from '../../../../models/content';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   Filter,
   LabelFilterService,
@@ -53,7 +51,12 @@ describe('ContentService', () => {
   });
 
   describe('content update', () => {
-    const update: Content = { title: [], viewComponents: [] };
+    const update: ContentUpdate = {
+      content: { title: [], viewComponents: [] },
+      namespace: 'default',
+      contentPath: '/path',
+      queryParams: {},
+    };
 
     beforeEach(() => {
       const backendService = TestBed.get(WebsocketService);
@@ -62,54 +65,8 @@ describe('ContentService', () => {
 
     it('triggers a content change', () => {
       service.current.subscribe(current =>
-        expect(current).toEqual({ content: update })
+        expect(current).toEqual({ content: update.content })
       );
-    });
-  });
-
-  describe('content path update', () => {
-    let backendService: BackendService;
-
-    beforeEach(() => {
-      backendService = TestBed.get(WebsocketService);
-    });
-
-    describe('without query params', () => {
-      const update: ContentPathUpdate = {
-        contentPath: 'path',
-        queryParams: {},
-      };
-
-      beforeEach(() => {
-        backendService.triggerHandler(ContentPathUpdateMessage, update);
-      });
-
-      it('triggers a content change', () => {
-        expect(mockRouter.navigate).toHaveBeenCalledWith(['content', 'path'], {
-          queryParams: {},
-        });
-      });
-    });
-
-    describe('with query params', () => {
-      const update: ContentPathUpdate = {
-        contentPath: 'path',
-        queryParams: {
-          foo: ['bar'],
-        },
-      };
-
-      beforeEach(() => {
-        backendService.triggerHandler(ContentPathUpdateMessage, update);
-      });
-
-      it('triggers a content change', () => {
-        expect(mockRouter.navigate).toHaveBeenCalledWith(['content', 'path'], {
-          queryParams: {
-            foo: ['bar'],
-          },
-        });
-      });
     });
   });
 
@@ -138,12 +95,12 @@ describe('ContentService', () => {
     });
 
     it('sends a setContentPath message to the server', () => {
-      service.setContentPath('path');
+      service.setContentPath('path', {});
       expect(backendService.sendMessage).toHaveBeenCalledWith(
         'setContentPath',
         {
           contentPath: 'path',
-          filters: [],
+          params: {},
         }
       );
     });
@@ -156,34 +113,15 @@ describe('ContentService', () => {
       });
 
       it('sends a setContentPath message to the server', () => {
-        service.setContentPath('path');
+        service.setContentPath('path', { filters });
         expect(backendService.sendMessage).toHaveBeenCalledWith(
           'setContentPath',
           {
             contentPath: 'path',
-            filters,
+            params: { filters },
           }
         );
       });
-    });
-  });
-
-  describe('set query params', () => {
-    let backendService: BackendService;
-
-    beforeEach(() => {
-      backendService = TestBed.get(WebsocketService);
-      spyOn(backendService, 'sendMessage');
-    });
-
-    it('sends a setQueryParams message to the server', () => {
-      service.setQueryParams({ foo: 'bar' });
-      expect(backendService.sendMessage).toHaveBeenCalledWith(
-        'setQueryParams',
-        {
-          params: { foo: 'bar' },
-        }
-      );
     });
   });
 });

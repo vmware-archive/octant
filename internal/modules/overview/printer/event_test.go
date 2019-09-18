@@ -89,7 +89,7 @@ func Test_EventListHandler(t *testing.T) {
 		"First Seen", "Last Seen")
 	expected := component.NewTableWithRows("Events", "We couldn't find any events!", cols, []component.TableRow{
 		{
-			"Kind":       component.NewLink("", "d1 (1234)", "/content/overview/namespace/default/workloads/deployments/d1"),
+			"Kind":       component.NewLink("", "d1 (1234)", "/overview/namespace/default/workloads/deployments/d1"),
 			"Message":    component.NewLink("", "message", "/event2"),
 			"Reason":     component.NewText("Reason"),
 			"Type":       component.NewText("Type"),
@@ -97,7 +97,7 @@ func Test_EventListHandler(t *testing.T) {
 			"Last Seen":  component.NewTimestamp(time.Unix(1548424420, 0)),
 		},
 		{
-			"Kind":       component.NewLink("", "d2 (1234)", "/content/overview/namespace/default/workloads/deployments/d2"),
+			"Kind":       component.NewLink("", "d2 (1234)", "/overview/namespace/default/workloads/deployments/d2"),
 			"Message":    component.NewLink("", "message", "/event1"),
 			"Reason":     component.NewText("Reason"),
 			"Type":       component.NewText("Type"),
@@ -271,7 +271,7 @@ func Test_EventHandler(t *testing.T) {
 		},
 		{
 			Header:  "Involved Object",
-			Content: component.NewLink("", "d1", "/content/overview/workloads/deployments/d1"),
+			Content: component.NewLink("", "d1", "/overview/workloads/deployments/d1"),
 		},
 		{
 			Header:  "Type",

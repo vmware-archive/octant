@@ -10,7 +10,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"path"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -61,7 +60,7 @@ var _ StateManager = (*NavigationManager)(nil)
 func NewNavigationManager(config NavigationManagerConfig, options ...NavigationManagerOption) *NavigationManager {
 	n := &NavigationManager{
 		config:                  config,
-		poller:                  NewInterruptiblePoller(),
+		poller:                  NewInterruptiblePoller("navigation"),
 		navigationGeneratorFunc: NavigationGenerator,
 	}
 
@@ -140,7 +139,7 @@ func NavigationGenerator(ctx context.Context, state octant.State, config Navigat
 	for i := range modules {
 		m := modules[i]
 		g.Go(func() error {
-			contentPath := path.Join("/content", m.ContentPath())
+			contentPath := m.ContentPath()
 			navList, err := m.Navigation(ctx, namespace, contentPath)
 			if err != nil {
 				fmt.Printf("err in navigation: %s", err)
