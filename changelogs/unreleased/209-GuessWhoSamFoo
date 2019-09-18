@@ -1,1 +1,0 @@
-Fixed bug where port forward states were active after pod is deleted
