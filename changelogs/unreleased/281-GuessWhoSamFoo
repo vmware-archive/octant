@@ -1,1 +1,0 @@
-Fixed bug where mounted pods of persistent volume claims were not displayed
