@@ -61,3 +61,5 @@ require (
 )
 
 replace k8s.io/client-go => k8s.io/client-go v0.0.0-20190620085101-78d2af792bab
+
+replace git.apache.org/thrift.git => github.com/apache/thrift v0.12.0
