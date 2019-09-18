@@ -76,7 +76,7 @@ export class WebsocketService implements BackendService {
   }
 
   open() {
-    this.createWebSocket('ws://localhost:7777/api/v1/stream')
+    this.createWebSocket()
       .pipe(
         retryWhen(errors =>
           errors.pipe(
@@ -112,7 +112,21 @@ export class WebsocketService implements BackendService {
     this.subject.unsubscribe();
   }
 
-  private createWebSocket = uri => {
+  private websocketURI() {
+    const loc = window.location;
+    let newURI = '';
+    if (loc.protocol === 'https:') {
+      newURI = 'wss:';
+    } else {
+      newURI = 'ws:';
+    }
+    newURI += '//' + loc.host;
+    newURI += loc.pathname + 'api/v1/stream';
+    return newURI;
+  }
+
+  private createWebSocket() {
+    const uri = this.websocketURI();
     return Observable.create(observer => {
       try {
         const subject = webSocket({
@@ -139,7 +153,7 @@ export class WebsocketService implements BackendService {
         observer.error(error);
       }
     });
-  };
+  }
 
   sendMessage(messageType: string, payload: {}) {
     if (this.subject) {
