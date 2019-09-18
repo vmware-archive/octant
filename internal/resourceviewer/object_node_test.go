@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	linkFake "github.com/vmware/octant/internal/link/fake"
-	"github.com/vmware/octant/internal/modules/overview/objectstatus"
-	"github.com/vmware/octant/internal/modules/overview/resourceviewer/fake"
+	"github.com/vmware/octant/internal/objectstatus"
+	"github.com/vmware/octant/internal/resourceviewer/fake"
 	"github.com/vmware/octant/internal/testutil"
 	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
 	"github.com/vmware/octant/pkg/view/component"

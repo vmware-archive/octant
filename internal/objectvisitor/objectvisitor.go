@@ -21,10 +21,10 @@ import (
 	"github.com/vmware/octant/internal/queryer"
 )
 
-//go:generate mockgen -destination=./fake/mock_object_handler.go -package=fake -self_package github.com/vmware/octant/internal/modules/overview/objectvisitor/fake github.com/vmware/octant/internal/modules/overview/objectvisitor ObjectHandler
-//go:generate mockgen -destination=./fake/mock_default_typed_visitor.go -package=fake github.com/vmware/octant/internal/modules/overview/objectvisitor DefaultTypedVisitor
-//go:generate mockgen -destination=./fake/mock_typed_visitor.go -package=fake github.com/vmware/octant/internal/modules/overview/objectvisitor TypedVisitor
-//go:generate mockgen -destination=./fake/mock_visitor.go -package=fake github.com/vmware/octant/internal/modules/overview/objectvisitor Visitor
+//go:generate mockgen -destination=./fake/mock_object_handler.go -package=fake -self_package github.com/vmware/octant/internal/objectvisitor/fake github.com/vmware/octant/internal/objectvisitor ObjectHandler
+//go:generate mockgen -destination=./fake/mock_default_typed_visitor.go -package=fake github.com/vmware/octant/internal/objectvisitor DefaultTypedVisitor
+//go:generate mockgen -destination=./fake/mock_typed_visitor.go -package=fake github.com/vmware/octant/internal/objectvisitor TypedVisitor
+//go:generate mockgen -destination=./fake/mock_visitor.go -package=fake github.com/vmware/octant/internal/objectvisitor Visitor
 
 // ObjectHandler performs actions on an object. Can be used to augment
 // visitor actions with extra functionality.

@@ -17,7 +17,7 @@ import (
 
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/internal/modules/overview/objectvisitor"
+	"github.com/vmware/octant/internal/objectvisitor"
 	"github.com/vmware/octant/internal/queryer"
 	"github.com/vmware/octant/internal/util/kubernetes"
 	"github.com/vmware/octant/pkg/view/component"

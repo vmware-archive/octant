@@ -14,8 +14,8 @@ import (
 
 	configFake "github.com/vmware/octant/internal/config/fake"
 	"github.com/vmware/octant/internal/gvk"
-	"github.com/vmware/octant/internal/modules/overview/objectvisitor"
-	ovFake "github.com/vmware/octant/internal/modules/overview/objectvisitor/fake"
+	"github.com/vmware/octant/internal/objectvisitor"
+	ovFake "github.com/vmware/octant/internal/objectvisitor/fake"
 	queryerFake "github.com/vmware/octant/internal/queryer/fake"
 	"github.com/vmware/octant/internal/testutil"
 )

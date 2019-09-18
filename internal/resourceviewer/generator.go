@@ -8,7 +8,7 @@ import (
 	"github.com/vmware/octant/pkg/view/component"
 )
 
-//go:generate mockgen -destination=./fake/mock_details.go -package=fake github.com/vmware/octant/internal/modules/overview/resourceviewer Details
+//go:generate mockgen -destination=./fake/mock_details.go -package=fake github.com/vmware/octant/internal/resourceviewer Details
 
 // Details generates details for resource viewer.
 type Details interface {

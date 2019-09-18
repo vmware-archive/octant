@@ -12,8 +12,8 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	configFake "github.com/vmware/octant/internal/config/fake"
-	"github.com/vmware/octant/internal/modules/overview/objectvisitor"
-	"github.com/vmware/octant/internal/modules/overview/objectvisitor/fake"
+	"github.com/vmware/octant/internal/objectvisitor"
+	"github.com/vmware/octant/internal/objectvisitor/fake"
 	queryerFake "github.com/vmware/octant/internal/queryer/fake"
 	"github.com/vmware/octant/internal/testutil"
 )

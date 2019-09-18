@@ -16,7 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	configFake "github.com/vmware/octant/internal/config/fake"
-	printerFake "github.com/vmware/octant/internal/modules/overview/printer/fake"
+	printerFake "github.com/vmware/octant/internal/printer/fake"
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/plugin"
 	pluginFake "github.com/vmware/octant/pkg/plugin/fake"

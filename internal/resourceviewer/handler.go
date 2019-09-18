@@ -18,15 +18,15 @@ import (
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/gvk"
 	"github.com/vmware/octant/internal/link"
-	"github.com/vmware/octant/internal/modules/overview/objectstatus"
-	"github.com/vmware/octant/internal/modules/overview/objectvisitor"
+	"github.com/vmware/octant/internal/objectstatus"
+	"github.com/vmware/octant/internal/objectvisitor"
 	"github.com/vmware/octant/internal/util/kubernetes"
 	"github.com/vmware/octant/pkg/plugin"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
-//go:generate mockgen -destination=./fake/mock_object_status.go -package=fake github.com/vmware/octant/internal/modules/overview/resourceviewer ObjectStatus
+//go:generate mockgen -destination=./fake/mock_object_status.go -package=fake github.com/vmware/octant/internal/resourceviewer ObjectStatus
 
 // HandlerOption is an option for configuring Handler.
 type HandlerOption func(h *Handler)

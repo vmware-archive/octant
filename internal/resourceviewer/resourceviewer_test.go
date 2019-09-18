@@ -19,7 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	configFake "github.com/vmware/octant/internal/config/fake"
-	"github.com/vmware/octant/internal/modules/overview/objectvisitor"
+	"github.com/vmware/octant/internal/objectvisitor"
 	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
 	storeFake "github.com/vmware/octant/pkg/store/fake"
 )
