@@ -42,7 +42,6 @@ interface LocationCallbackOptions {
 })
 export class OverviewComponent implements OnInit, OnDestroy {
   behavior = new BehaviorSubject<ContentResponse>(emptyContentResponse);
-  private previousUrl = '';
   @ViewChild('scrollTarget', { static: true }) scrollTarget: ElementRef;
   hasTabs = false;
   hasReceivedContent = false;
