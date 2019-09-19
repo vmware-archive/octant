@@ -59,7 +59,7 @@ describe('Octant Integration Tests', () => {
         cy.contains(/Port Forwards/).click()
     
         cy.contains(/Stop port forward/).should('be.visible')
-        cy.exec('kubectl delete pod -l app=nginx-deployment --namespace ' + namespace)
+        cy.exec('kubectl delete pod -l app.kubernetes.io/name=nginx,app.kubernetes.io/instance=sample,app.kubernetes.io/version=v1 --namespace ' + namespace)
             .its('stdout')
             .should('contain', 'deleted')
     

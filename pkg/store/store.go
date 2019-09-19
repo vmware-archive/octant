@@ -146,3 +146,13 @@ func KeyFromObject(object runtime.Object) (Key, error) {
 		Name:       name,
 	}, nil
 }
+
+// KeyFromGroupVersionKind creates a key from a group version kind.
+func KeyFromGroupVersionKind(groupVersionKind schema.GroupVersionKind) Key {
+	apiVersion, kind := groupVersionKind.ToAPIVersionAndKind()
+
+	return Key{
+		APIVersion: apiVersion,
+		Kind:       kind,
+	}
+}

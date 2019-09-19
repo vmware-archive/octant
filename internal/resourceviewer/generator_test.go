@@ -51,6 +51,7 @@ func TestGenerateComponent(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := component.NewResourceViewer("Resource Viewer")
+	expected.SetAccessor("resourceViewer")
 	for name, node := range nodes {
 		expected.AddNode(name, node)
 	}

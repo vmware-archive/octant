@@ -19,6 +19,7 @@ type Details interface {
 // GenerateComponent generates a resource viewer component given details.
 func GenerateComponent(ctx context.Context, details Details, selected types.UID) (*component.ResourceViewer, error) {
 	rv := component.NewResourceViewer("Resource Viewer")
+	rv.SetAccessor("resourceViewer")
 
 	nodes, err := details.Nodes(ctx)
 	if err != nil {

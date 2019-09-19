@@ -161,5 +161,14 @@ func createCRDResourceViewer(ctx context.Context, object *unstructured.Unstructu
 		return nil, err
 	}
 
-	return rv.Visit(ctx, object)
+	handler, err := resourceviewer.NewHandler(dashConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := rv.Visit(ctx, object, handler); err != nil {
+		return nil, err
+	}
+
+	return resourceviewer.GenerateComponent(ctx, handler, "")
 }

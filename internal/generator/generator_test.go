@@ -1,9 +1,9 @@
 /*
-Copyright (c) 2019 VMware, Inc. All Rights Reserved.
-SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-package overview
+package generator
 
 import (
 	"context"
@@ -84,10 +84,10 @@ func Test_realGenerator_Generate(t *testing.T) {
 				pathMatcher.Register(ctx, pf)
 			}
 
-			g, err := newGenerator(pathMatcher, dashConfig)
+			g, err := NewGenerator(pathMatcher, dashConfig)
 			require.NoError(t, err)
 
-			cResponse, err := g.Generate(ctx, tc.path, GeneratorOptions{})
+			cResponse, err := g.Generate(ctx, tc.path, Options{})
 			if tc.isErr {
 				require.Error(t, err)
 				return

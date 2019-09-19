@@ -16,6 +16,7 @@ import (
 	"github.com/vmware/octant/internal/api"
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/describer"
+	"github.com/vmware/octant/internal/gvk"
 	"github.com/vmware/octant/internal/link"
 	"github.com/vmware/octant/internal/loading"
 	"github.com/vmware/octant/internal/module"
@@ -258,9 +259,9 @@ func (co *ClusterOverview) Generators() []octant.Generator {
 func rbacEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, _ bool) ([]navigation.Navigation, bool, error) {
 	neh := navigation.EntriesHelper{}
 	neh.Add("Cluster Roles", "cluster-roles", icon.ClusterOverviewClusterRole,
-		loading.IsObjectLoading(ctx, namespace, rbacClusterRoles, objectStore))
+		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.ClusterRole), objectStore))
 	neh.Add("Cluster Role Bindings", "cluster-role-bindings", icon.ClusterOverviewClusterRoleBinding,
-		loading.IsObjectLoading(ctx, namespace, rbacClusterRoleBindings, objectStore))
+		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.ClusterRoleBinding), objectStore))
 
 	children, err := neh.Generate(prefix)
 	if err != nil {

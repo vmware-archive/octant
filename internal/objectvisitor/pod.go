@@ -40,6 +40,10 @@ func (p *Pod) Visit(ctx context.Context, object *unstructured.Unstructured, hand
 	ctx, span := trace.StartSpan(ctx, "visitPod")
 	defer span.End()
 
+	if p.queryer == nil {
+		return errors.New("queryer is nil")
+	}
+
 	pod := &corev1.Pod{}
 	if err := convertToType(object, pod); err != nil {
 		return err

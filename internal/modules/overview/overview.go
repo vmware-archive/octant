@@ -18,6 +18,7 @@ import (
 	"github.com/vmware/octant/internal/api"
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/describer"
+	"github.com/vmware/octant/internal/generator"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/octant"
@@ -37,7 +38,7 @@ type Options struct {
 type Overview struct {
 	*octant.ObjectPath
 
-	generator   *realGenerator
+	generator   generator.Interface
 	dashConfig  config.Dash
 	contextName string
 	pathMatcher *describer.PathMatcher
@@ -86,6 +87,7 @@ func (co *Overview) SetContext(ctx context.Context, contextName string) error {
 	co.mu.Lock()
 	defer co.mu.Unlock()
 
+	customResourcesDescriber := describer.NamespacedCRD()
 	co.contextName = contextName
 	for i := range co.watchedCRDs {
 		describer.DeleteCRD(ctx, co.watchedCRDs[i], co.pathMatcher, customResourcesDescriber, co, co.dashConfig.ObjectStore())
@@ -97,6 +99,8 @@ func (co *Overview) SetContext(ctx context.Context, contextName string) error {
 }
 
 func (co *Overview) bootstrap(ctx context.Context) error {
+	rootDescriber := describer.NamespacedOverview()
+
 	if err := rootDescriber.Reset(ctx); err != nil {
 		return err
 	}
@@ -106,11 +110,7 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 		pathMatcher.Register(ctx, pf)
 	}
 
-	for _, pf := range eventsDescriber.PathFilters() {
-		pathMatcher.Register(ctx, pf)
-	}
-
-	g, err := newGenerator(pathMatcher, co.dashConfig)
+	g, err := generator.NewGenerator(pathMatcher, co.dashConfig)
 	if err != nil {
 		return errors.Wrap(err, "create overview generator")
 	}
@@ -132,6 +132,8 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 	crdWatcher := co.dashConfig.CRDWatcher()
 
 	objectStore := co.dashConfig.ObjectStore()
+
+	customResourcesDescriber := describer.NamespacedCRD()
 
 	watchConfig := &config.CRDWatchConfig{
 		Add: func(_ *describer.PathMatcher, sectionDescriber *describer.CRDSection) config.ObjectHandler {
@@ -251,7 +253,7 @@ func (co *Overview) Stop() {
 // Content serves content for overview.
 func (co *Overview) Content(ctx context.Context, contentPath string, opts module.ContentOptions) (component.ContentResponse, error) {
 	ctx = log.WithLoggerContext(ctx, co.dashConfig.Logger())
-	genOpts := GeneratorOptions{
+	genOpts := generator.Options{
 		LabelSet: opts.LabelSet,
 	}
 	return co.generator.Generate(ctx, contentPath, genOpts)

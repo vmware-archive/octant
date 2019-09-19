@@ -6,29 +6,39 @@ kind: Service
 metadata:
   name: nginx-deployment
   labels:
-    project: octant
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/instance: sample
+    app.kubernetes.io/version: v1
 spec:
   ports:
     - port: 80
       name: web
   selector:
-    app: nginx-deployment
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/instance: sample
+    app.kubernetes.io/version: v1
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-deployment
   labels:
-    project: octant
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/instance: sample
+    app.kubernetes.io/version: v1
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: nginx-deployment
+      app.kubernetes.io/name: nginx
+      app.kubernetes.io/instance: sample
+      app.kubernetes.io/version: v1
   template:
     metadata:
       labels:
-        app: nginx-deployment
+        app.kubernetes.io/name: nginx
+        app.kubernetes.io/instance: sample
+        app.kubernetes.io/version: v1
     spec:
       containers:
         - name: nginx
