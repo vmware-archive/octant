@@ -12,7 +12,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"path"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -21,7 +20,6 @@ import (
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/mime"
 	"github.com/vmware/octant/internal/module"
-	"github.com/vmware/octant/pkg/navigation"
 )
 
 //go:generate mockgen -destination=./fake/mock_service.go -package=fake github.com/vmware/octant/internal/api Service
@@ -163,30 +161,4 @@ func (a *API) Handler(ctx context.Context) (*mux.Router, error) {
 	})
 
 	return router, nil
-}
-
-type apiNavSections struct {
-	modules []module.Module
-}
-
-func newAPINavSections(modules []module.Module) *apiNavSections {
-	return &apiNavSections{
-		modules: modules,
-	}
-}
-
-func (ans *apiNavSections) Sections(ctx context.Context, namespace string) ([]navigation.Navigation, error) {
-	var sections []navigation.Navigation
-
-	for _, m := range ans.modules {
-		contentPath := path.Join("/content", m.ContentPath())
-		navList, err := m.Navigation(ctx, namespace, contentPath)
-		if err != nil {
-			return nil, err
-		}
-
-		sections = append(sections, navList...)
-	}
-
-	return sections, nil
 }

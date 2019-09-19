@@ -4,8 +4,6 @@
 
 import { inject, TestBed } from '@angular/core/testing';
 import { NamespaceService } from './namespace.service';
-import { Router } from '@angular/router';
-import { NgZone } from '@angular/core';
 import {
   BackendService,
   WebsocketService,
@@ -39,16 +37,6 @@ describe('NamespaceService', () => {
             namespace: 'other',
           }
         );
-      }
-    ));
-  });
-
-  describe('namespace update', () => {
-    it('triggers the current subject', inject(
-      [NamespaceService, WebsocketService],
-      (svc: NamespaceService, backendService: BackendService) => {
-        backendService.triggerHandler('namespace', { namespace: 'other' });
-        svc.activeNamespace.subscribe(current => expect(current).toBe('other'));
       }
     ));
   });

@@ -16,7 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware/octant/internal/link"
-	"github.com/vmware/octant/internal/modules/overview/printer"
+	"github.com/vmware/octant/internal/printer"
 	"github.com/vmware/octant/pkg/icon"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"

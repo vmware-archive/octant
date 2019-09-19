@@ -18,7 +18,7 @@ import (
 	"github.com/vmware/octant/internal/config"
 	configFake "github.com/vmware/octant/internal/config/fake"
 	linkFake "github.com/vmware/octant/internal/link/fake"
-	"github.com/vmware/octant/internal/modules/overview/printer"
+	"github.com/vmware/octant/internal/printer"
 	"github.com/vmware/octant/internal/queryer"
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/icon"

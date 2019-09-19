@@ -24,8 +24,7 @@ var (
 				return false
 			}
 
-			// only accept connections from localhost
-			return host == "127.0.0.1"
+			return shouldAllowHost(host, acceptedHosts())
 		},
 	}
 )

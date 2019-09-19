@@ -1,4 +1,11 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import { ClrDatagridFilter, ClrDatagridFilterInterface } from '@clr/angular';
 import { Subject } from 'rxjs';
 import { TableFilter, TableRow, TextView } from '../../../../models/content';
@@ -18,12 +25,16 @@ export class ContentFilterComponent
   checkboxes: { [key: string]: boolean } = {};
   trackByIdentity = trackByIdentity;
 
-  constructor(private filterContainer: ClrDatagridFilter) {
+  constructor(
+    private filterContainer: ClrDatagridFilter,
+    private cd: ChangeDetectorRef
+  ) {
     filterContainer.setFilter(this);
   }
 
   ngOnInit(): void {
     this.filter.selected.forEach(value => (this.checkboxes[value] = true));
+    this.cd.detectChanges();
   }
 
   accepts(row: TableRow): boolean {

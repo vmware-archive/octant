@@ -11,7 +11,7 @@ GOCMD=go
 GOBUILD=$(GOCMD) build
 GOINSTALL=$(GOCMD) install
 
-VERSION ?= v0.6.0
+VERSION ?= v0.7.0
 
 ifdef XDG_CONFIG_HOME
 	OCTANT_PLUGINSTUB_DIR ?= ${XDG_CONFIG_HOME}/octant/plugins
@@ -60,22 +60,7 @@ go-install:
 # Remove all generated go files
 .PHONY: clean
 clean:
-	@rm -rf ./internal/octant/fake
-	@rm -rf ./internal/kubeconfig/fake
-	@rm -rf ./internal/link/fake
-	@rm -rf ./internal/event/fake
-	@rm -rf ./internal/config/fake
-	@rm -rf ./internal/api/fake
-	@rm -rf ./internal/portforward/fake
-	@rm -rf ./internal/objectstore/fake
-	@rm -rf ./internal/queryer/fake
-	@rm -rf ./internal/cluster/fake
-	@rm -rf ./internal/module/fake
-	@rm -rf ./internal/modules/overview/printer/fake
-	@rm -rf ./pkg/store/fake
-	@rm -rf ./pkg/plugin/fake
-	@rm -rf ./pkg/plugin/api/fake
-	@rm -rf ./pkg/plugin/service/fake
+	@find pkg internal -name fake -type d | xargs rm -rf
 	@rm ./pkg/icon/rice-box.go
 
 web-deps:

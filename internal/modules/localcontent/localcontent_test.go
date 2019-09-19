@@ -46,7 +46,7 @@ func Test_LocalContent_Content_root(t *testing.T) {
 
 			expectedRows := []component.TableRow{
 				{
-					"Title": component.NewLink("", "Sample content", "/content/local/table"),
+					"Title": component.NewLink("", "Sample content", "/local/table"),
 					"File":  component.NewText("table.json"),
 				},
 			}

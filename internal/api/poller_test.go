@@ -16,7 +16,7 @@ import (
 func TestInterruptiblePoller_Run(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	ip := NewInterruptiblePoller()
+	ip := NewInterruptiblePoller("poller")
 
 	resetDuration := 10 * time.Millisecond
 	ch := make(chan struct{}, 1)

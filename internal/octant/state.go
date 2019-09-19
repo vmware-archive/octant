@@ -25,6 +25,8 @@ type State interface {
 	// OnNamespaceUpdate registers a function to be called with the content path
 	// is changed.
 	OnContentPathUpdate(fn ContentPathUpdateFunc) UpdateCancelFunc
+	// GetQueryParams returns the query params.
+	GetQueryParams() map[string][]string
 	// SetNamespace sets the namespace.
 	SetNamespace(namespace string)
 	// GetNamespace returns the namespace.

@@ -21,7 +21,6 @@ import (
 	"github.com/vmware/octant/internal/log"
 	moduleFake "github.com/vmware/octant/internal/module/fake"
 	"github.com/vmware/octant/internal/octant"
-	"github.com/vmware/octant/pkg/action"
 )
 
 func TestWebsocketState_Start(t *testing.T) {
@@ -60,14 +59,6 @@ func TestWebsocketState_SetContentPath(t *testing.T) {
 				mocks.moduleManager.EXPECT().
 					ModuleForContentPath(contentPath).
 					Return(mocks.module, true)
-
-				mocks.wsClient.EXPECT().
-					Send(api.CreateEvent("filters", action.Payload{"filters": []octant.Filter{}}))
-				mocks.wsClient.EXPECT().
-					Send(api.CreateEvent(octant.EventTypeContentPath, action.Payload{
-						"contentPath": contentPath,
-						"queryParams": map[string][]string{},
-					}))
 			},
 			verify: func(t *testing.T, s *api.WebsocketState) {
 				contentPath := "overview/namespace/default"
@@ -84,14 +75,6 @@ func TestWebsocketState_SetContentPath(t *testing.T) {
 				mocks.moduleManager.EXPECT().
 					ModuleForContentPath(contentPath).
 					Return(mocks.module, true)
-
-				mocks.wsClient.EXPECT().
-					Send(api.CreateEvent("filters", action.Payload{"filters": []octant.Filter{}}))
-				mocks.wsClient.EXPECT().
-					Send(api.CreateEvent(octant.EventTypeContentPath, action.Payload{
-						"contentPath": contentPath,
-						"queryParams": map[string][]string{},
-					}))
 			},
 			verify: func(t *testing.T, s *api.WebsocketState) {
 				contentPath := "overview/foo"
@@ -108,14 +91,6 @@ func TestWebsocketState_SetContentPath(t *testing.T) {
 				mocks.moduleManager.EXPECT().
 					ModuleForContentPath(contentPath).
 					Return(mocks.module, true)
-
-				mocks.wsClient.EXPECT().
-					Send(api.CreateFiltersUpdate(nil))
-				mocks.wsClient.EXPECT().
-					Send(api.CreateContentPathUpdate(contentPath, nil))
-				mocks.wsClient.EXPECT().
-					Send(api.CreateNamespaceUpdate("kube-system"))
-
 			},
 			verify: func(t *testing.T, s *api.WebsocketState) {
 				contentPath := "overview/namespace/kube-system"
@@ -202,7 +177,6 @@ func TestWebsocketState_SetNamespace(t *testing.T) {
 			initialNamespace: "default",
 			newNamespace:     "other",
 			setup: func(mocks *websocketStateMocks) {
-				mocks.wsClient.EXPECT().Send(api.CreateNamespaceUpdate("other"))
 			},
 		},
 	}
@@ -264,11 +238,6 @@ func TestWebsocketState_AddFilter(t *testing.T) {
 	mocks := newWebsocketStateMocks(t, "default")
 	defer mocks.finish()
 	s := mocks.factory()
-
-	mocks.wsClient.EXPECT().Send(api.CreateFiltersUpdate([]octant.Filter{{Key: "key", Value: "value"}}))
-	mocks.wsClient.EXPECT().Send(api.CreateContentPathUpdate(s.GetContentPath(), map[string][]string{
-		"filters": {"key:value"},
-	}))
 
 	s.AddFilter(octant.Filter{
 		Key:   "key",

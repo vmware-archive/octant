@@ -34,7 +34,7 @@ func TestFilterManager_Handlers(t *testing.T) {
 	expected := []string{
 		api.RequestClearFilters,
 		api.RequestAddFilter,
-		api.RequestRemoveFilters,
+		api.RequestRemoveFilter,
 	}
 	sort.Strings(expected)
 
@@ -47,6 +47,7 @@ func TestFilterManager_AddFilter(t *testing.T) {
 
 	state := octantFake.NewMockState(controller)
 	state.EXPECT().AddFilter(octant.Filter{Key: "foo", Value: "bar"})
+	state.EXPECT().SendAlert(gomock.Any())
 
 	manager := api.NewFilterManager()
 
@@ -66,6 +67,7 @@ func TestFilterManager_ClearFilters(t *testing.T) {
 
 	state := octantFake.NewMockState(controller)
 	state.EXPECT().SetFilters([]octant.Filter{})
+	state.EXPECT().SendAlert(gomock.Any())
 
 	manager := api.NewFilterManager()
 
@@ -79,6 +81,7 @@ func TestFilterManager_RemoveFilter(t *testing.T) {
 
 	state := octantFake.NewMockState(controller)
 	state.EXPECT().RemoveFilter(octant.Filter{Key: "foo", Value: "bar"})
+	state.EXPECT().SendAlert(gomock.Any())
 
 	manager := api.NewFilterManager()
 
@@ -89,7 +92,7 @@ func TestFilterManager_RemoveFilter(t *testing.T) {
 		},
 	}
 
-	require.NoError(t, manager.RemoveFilters(state, payload))
+	require.NoError(t, manager.RemoveFilter(state, payload))
 }
 
 func TestFilterFromPayload(t *testing.T) {

@@ -16,8 +16,8 @@ import (
 	"github.com/vmware/octant/internal/api"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/modules/overview/logviewer"
-	"github.com/vmware/octant/internal/modules/overview/resourceviewer"
 	"github.com/vmware/octant/internal/modules/overview/yamlviewer"
+	"github.com/vmware/octant/internal/resourceviewer"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -119,10 +119,11 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 	for _, tfd := range d.tabFuncDescriptors {
 		if err := tfd.tabFunc(ctx, currentObject, cr, options); err != nil {
 			hasTabError = true
-			logger.With(
-				"err", err,
-				"tab-name", tfd.name,
-			).Errorf("generating object Describer tab")
+			logger.
+				WithErr(err).
+				With(
+					"tab-name", tfd.name,
+				).Errorf("generating object Describer tab")
 		}
 	}
 

@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { NotifierService, NotifierSession } from '../notifier/notifier.service';
 import { WebsocketService } from '../../modules/overview/services/websocket/websocket.service';
+import { take } from 'rxjs/operators';
 
 interface UpdateNamespaceMessage {
   namespace: string;
@@ -21,7 +22,7 @@ export interface UpdateNamespacesMessage {
   providedIn: 'root',
 })
 export class NamespaceService {
-  activeNamespace = new BehaviorSubject<string>('default');
+  activeNamespace = new BehaviorSubject<string>('');
   availableNamespaces = new BehaviorSubject<string[]>([]);
 
   constructor(
@@ -29,11 +30,6 @@ export class NamespaceService {
     private http: HttpClient,
     private websocketService: WebsocketService
   ) {
-    websocketService.registerHandler('namespace', data => {
-      const update = data as UpdateNamespaceMessage;
-      this.activeNamespace.next(update.namespace);
-    });
-
     websocketService.registerHandler('namespaces', data => {
       const update = data as UpdateNamespacesMessage;
       this.availableNamespaces.next(update.namespaces);
@@ -45,6 +41,10 @@ export class NamespaceService {
   }
 
   setNamespace(namespace: string) {
-    this.activeNamespace.next(namespace);
+    this.activeNamespace.pipe(take(1)).subscribe(cur => {
+      if (cur !== namespace) {
+        this.activeNamespace.next(namespace);
+      }
+    });
   }
 }

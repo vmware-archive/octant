@@ -7,6 +7,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -18,9 +19,9 @@ import (
 )
 
 const (
-	RequestAddFilter     = "addFilter"
-	RequestClearFilters  = "clearFilters"
-	RequestRemoveFilters = "removeFilters"
+	RequestAddFilter    = "addFilter"
+	RequestClearFilters = "clearFilters"
+	RequestRemoveFilter = "removeFilter"
 )
 
 // FilterManager manages filters.
@@ -50,8 +51,8 @@ func (fm *FilterManager) Handlers() []octant.ClientRequestHandler {
 			Handler:     fm.ClearFilters,
 		},
 		{
-			RequestType: RequestRemoveFilters,
-			Handler:     fm.RemoveFilters,
+			RequestType: RequestRemoveFilter,
+			Handler:     fm.RemoveFilter,
 		},
 	}
 }
@@ -60,20 +61,27 @@ func (fm *FilterManager) Handlers() []octant.ClientRequestHandler {
 func (fm *FilterManager) AddFilter(state octant.State, payload action.Payload) error {
 	if filter, ok := FilterFromPayload(payload); ok {
 		state.AddFilter(filter)
+		message := fmt.Sprintf("Added filter for label %s", filter.String())
+		state.SendAlert(action.CreateAlert(action.AlertTypeInfo, message, action.DefaultAlertExpiration))
 	}
+
 	return nil
 }
 
 // ClearFilters clears all filters.
 func (fm *FilterManager) ClearFilters(state octant.State, payload action.Payload) error {
 	state.SetFilters([]octant.Filter{})
+	message := "Cleared filters"
+	state.SendAlert(action.CreateAlert(action.AlertTypeInfo, message, action.DefaultAlertExpiration))
 	return nil
 }
 
 // RemoveFilters removes a filter.
-func (fm *FilterManager) RemoveFilters(state octant.State, payload action.Payload) error {
+func (fm *FilterManager) RemoveFilter(state octant.State, payload action.Payload) error {
 	if filter, ok := FilterFromPayload(payload); ok {
 		state.RemoveFilter(filter)
+		message := fmt.Sprintf("Removed filter for label %s", filter.String())
+		state.SendAlert(action.CreateAlert(action.AlertTypeInfo, message, action.DefaultAlertExpiration))
 	}
 	return nil
 }
