@@ -15,67 +15,64 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	storefake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/internal/testutil"
+	storefake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
-func Test_pod(t *testing.T) {
+func Test_daemonSet(t *testing.T) {
 	cases := []struct {
 		name     string
-		init     func(*testing.T) runtime.Object
+		init     func(*testing.T, *storefake.MockStore) runtime.Object
 		expected ObjectStatus
 		isErr    bool
 	}{
 		{
 			name: "in general",
-			init: func(t *testing.T) runtime.Object {
-				objectFile := "pod_ok.yaml"
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+				objectFile := "daemonset_ok.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
+
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusOK,
-				Details: []component.Component{
-					component.NewText(""),
-				},
+				Details:    []component.Component{component.NewText("Daemon Set is OK")},
 			},
 		},
 		{
-			name: "pod is in unknown state",
-			init: func(t *testing.T) runtime.Object {
-				objectFile := "pod_unknown.yaml"
+			name: "misscheduled",
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+				objectFile := "daemonset_misscheduled.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
-			},
-			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusError,
-				Details: []component.Component{
-					component.NewText(""),
-				},
-			},
-		},
-		{
-			name: "pod is pending",
-			init: func(t *testing.T) runtime.Object {
-				objectFile := "pod_pending.yaml"
-				return testutil.LoadObjectFromFile(t, objectFile)
+
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusWarning,
-				Details: []component.Component{
-					component.NewText(""),
-				},
+				Details:    []component.Component{component.NewText("Daemon Set pods are running on nodes that aren't supposed to run Daemon Set pods")},
+			},
+		},
+		{
+			name: "not ready",
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+				objectFile := "daemonset_not_ready.yaml"
+				return testutil.LoadObjectFromFile(t, objectFile)
+
+			},
+			expected: ObjectStatus{
+				nodeStatus: component.NodeStatusWarning,
+				Details:    []component.Component{component.NewText("Daemon Set pods are not ready")},
 			},
 		},
 		{
 			name: "object is nil",
-			init: func(t *testing.T) runtime.Object {
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				return nil
 			},
 			isErr: true,
 		},
 		{
-			name: "object is not a pod",
-			init: func(t *testing.T) runtime.Object {
+			name: "object is not a daemon set",
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				return &unstructured.Unstructured{}
 			},
 			isErr: true,
@@ -89,10 +86,10 @@ func Test_pod(t *testing.T) {
 
 			o := storefake.NewMockStore(controller)
 
-			object := tc.init(t)
+			object := tc.init(t, o)
 
 			ctx := context.Background()
-			status, err := pod(ctx, object, o)
+			status, err := daemonSet(ctx, object, o)
 			if tc.isErr {
 				require.Error(t, err)
 				return

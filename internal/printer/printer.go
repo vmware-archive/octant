@@ -23,7 +23,7 @@ import (
 	"github.com/vmware/octant/pkg/view/component"
 )
 
-//go:generate mockgen -destination=./fake/mock_printer.go -package=fake github.com/vmware/octant/internal/modules/overview/printer Printer
+//go:generate mockgen -destination=./fake/mock_printer.go -package=fake github.com/vmware/octant/internal/printer Printer
 
 // Options provides options to a print handler
 type Options struct {

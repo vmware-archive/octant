@@ -15,9 +15,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/store"
 	storefake "github.com/vmware/octant/pkg/store/fake"
-	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/view/component"
 )
 

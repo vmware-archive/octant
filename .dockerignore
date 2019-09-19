@@ -24,7 +24,7 @@ configs
 /internal/queryer/fake
 /internal/cluster/fake
 /internal/module/fake
-/internal/modules/overview/printer/fake
+/internal/printer/fake
 /pkg/store/fake
 /pkg/plugin/fake
 /pkg/plugin/api/fake

@@ -29,9 +29,9 @@ internal/kubeconfig/fake
 internal/link/fake
 internal/module/fake
 internal/queryer/fake
-internal/modules/overview/printer/fake
-internal/modules/overview/resourceviewer/fake
-internal/modules/overview/objectvisitor/fake
+internal/printer/fake
+internal/resourceviewer/fake
+internal/objectvisitor/fake
 internal/portforward/fake
 internal/objectstore/fake
 /pkg/action/fake

@@ -15,8 +15,8 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	storefake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/internal/testutil"
+	storefake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/pkg/view/component"
 )
 

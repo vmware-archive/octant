@@ -15,12 +15,12 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	storefake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/internal/testutil"
+	storefake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
-func Test_daemonSet(t *testing.T) {
+func Test_statefulSet(t *testing.T) {
 	cases := []struct {
 		name     string
 		init     func(*testing.T, *storefake.MockStore) runtime.Object
@@ -30,37 +30,25 @@ func Test_daemonSet(t *testing.T) {
 		{
 			name: "in general",
 			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
-				objectFile := "daemonset_ok.yaml"
+				objectFile := "statefulset_ok.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusOK,
-				Details:    []component.Component{component.NewText("Daemon Set is OK")},
-			},
-		},
-		{
-			name: "misscheduled",
-			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
-				objectFile := "daemonset_misscheduled.yaml"
-				return testutil.LoadObjectFromFile(t, objectFile)
-
-			},
-			expected: ObjectStatus{
-				nodeStatus: component.NodeStatusWarning,
-				Details:    []component.Component{component.NewText("Daemon Set pods are running on nodes that aren't supposed to run Daemon Set pods")},
+				Details:    []component.Component{component.NewText("Stateful Set is OK")},
 			},
 		},
 		{
 			name: "not ready",
 			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
-				objectFile := "daemonset_not_ready.yaml"
+				objectFile := "statefulset_not_ready.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusWarning,
-				Details:    []component.Component{component.NewText("Daemon Set pods are not ready")},
+				Details:    []component.Component{component.NewText("Stateful Set pods are not ready")},
 			},
 		},
 		{
@@ -71,7 +59,7 @@ func Test_daemonSet(t *testing.T) {
 			isErr: true,
 		},
 		{
-			name: "object is not a daemon set",
+			name: "object is not a replication controller",
 			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				return &unstructured.Unstructured{}
 			},
@@ -89,7 +77,7 @@ func Test_daemonSet(t *testing.T) {
 			object := tc.init(t, o)
 
 			ctx := context.Background()
-			status, err := daemonSet(ctx, object, o)
+			status, err := statefulSet(ctx, object, o)
 			if tc.isErr {
 				require.Error(t, err)
 				return

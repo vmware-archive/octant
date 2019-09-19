@@ -15,12 +15,12 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	storefake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/internal/testutil"
+	storefake "github.com/vmware/octant/pkg/store/fake"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
-func Test_statefulSet(t *testing.T) {
+func Test_replicationController(t *testing.T) {
 	cases := []struct {
 		name     string
 		init     func(*testing.T, *storefake.MockStore) runtime.Object
@@ -30,25 +30,25 @@ func Test_statefulSet(t *testing.T) {
 		{
 			name: "in general",
 			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
-				objectFile := "statefulset_ok.yaml"
+				objectFile := "replicationcontroller_ok.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusOK,
-				Details:    []component.Component{component.NewText("Stateful Set is OK")},
+				Details:    []component.Component{component.NewText("Replication Controller is OK")},
 			},
 		},
 		{
 			name: "not ready",
 			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
-				objectFile := "statefulset_not_ready.yaml"
+				objectFile := "replicationcontroller_not_ready.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
 
 			},
 			expected: ObjectStatus{
 				nodeStatus: component.NodeStatusWarning,
-				Details:    []component.Component{component.NewText("Stateful Set pods are not ready")},
+				Details:    []component.Component{component.NewText("Replication Controller pods are not ready")},
 			},
 		},
 		{
@@ -77,7 +77,7 @@ func Test_statefulSet(t *testing.T) {
 			object := tc.init(t, o)
 
 			ctx := context.Background()
-			status, err := statefulSet(ctx, object, o)
+			status, err := replicationController(ctx, object, o)
 			if tc.isErr {
 				require.Error(t, err)
 				return

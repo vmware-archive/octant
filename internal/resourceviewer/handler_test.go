@@ -15,8 +15,8 @@ import (
 	"k8s.io/utils/pointer"
 
 	configFake "github.com/vmware/octant/internal/config/fake"
-	"github.com/vmware/octant/internal/modules/overview/objectstatus"
-	"github.com/vmware/octant/internal/modules/overview/resourceviewer/fake"
+	"github.com/vmware/octant/internal/objectstatus"
+	"github.com/vmware/octant/internal/resourceviewer/fake"
 	"github.com/vmware/octant/internal/testutil"
 	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
 	storeFake "github.com/vmware/octant/pkg/store/fake"
