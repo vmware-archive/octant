@@ -9,8 +9,13 @@ jobs:
     - run:
         name: Build
         command: |
-          docker build -t octant-image .
+          docker build --build-arg NODE_VERSION=$(cat .nvmrc | cut -c 2-) -t octant-image .
           docker run --name octant-builder octant-image
+    - run:
+        name: Setup nvm
+        command: |
+          echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+          echo ' [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
     - run:
         name: Build plugin
         command: |
@@ -48,6 +53,8 @@ jobs:
         name: Cypress
         command: |
           source $BASH_ENV
+          nvm install $(cat .nvmrc)
+          nvm use
           cd web && npm install
           ./node_modules/.bin/cypress run --record --key $CYPRESS_RECORD_KEY --group $CIRCLE_JOB
         environment:

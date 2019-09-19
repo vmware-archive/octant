@@ -4,7 +4,9 @@
 # ------------------------------------------------------------------------------
 # Build web assets
 # ------------------------------------------------------------------------------
-FROM node:10.15.3 as base
+ARG NODE_VERSION
+
+FROM node:$NODE_VERSION as base
 
 ADD web/ /web
 WORKDIR /web
