@@ -16,11 +16,11 @@ import (
 	"strings"
 	"time"
 
+	"contrib.go.opencensus.io/exporter/jaeger"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"github.com/skratchdot/open-golang/open"
-	"go.opencensus.io/exporter/jaeger"
 	"go.opencensus.io/trace"
 
 	"github.com/vmware/octant/internal/api"
@@ -394,11 +394,9 @@ func (d *dash) uiProxy() (*httputil.ReverseProxy, error) {
 
 func enableOpenCensus() error {
 	agentEndpointURI := "localhost:6831"
-	collectorEndpointURI := "http://localhost:14268/api/traces"
 
 	je, err := jaeger.NewExporter(jaeger.Options{
-		AgentEndpoint:     agentEndpointURI,
-		CollectorEndpoint: collectorEndpointURI,
+		AgentEndpoint: agentEndpointURI,
 		Process: jaeger.Process{
 			ServiceName: "octant",
 		},
