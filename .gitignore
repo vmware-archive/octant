@@ -17,6 +17,7 @@ rice-box.go
 
 /build
 /dist
+/node_modules
 
 # generated fakes
 internal/api/fake

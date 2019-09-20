@@ -5,11 +5,9 @@
 import {
   AfterViewInit,
   Component,
-  ElementRef,
   Input,
   OnChanges,
   SimpleChanges,
-  ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import _ from 'lodash';
@@ -60,11 +58,13 @@ export class ResourceViewerComponent implements OnChanges, AfterViewInit {
         content: 'data(name)',
         'background-color': 'data(colorCode)',
         color: '#fff',
-        'font-size': '12px',
+        'font-size': 12,
         'text-wrap': 'wrap',
         'text-valign': 'center',
-        'text-justification': 'left',
-        padding: '10px',
+        'padding-left': '10px',
+        'padding-right': '10px',
+        'padding-top': '10px',
+        'padding-bottom': '10px',
       },
     },
 
@@ -75,7 +75,7 @@ export class ResourceViewerComponent implements OnChanges, AfterViewInit {
         'line-color': 'data(colorCode)',
         'source-arrow-color': 'data(colorCode)',
         'target-arrow-color': 'data(colorCode)',
-        'border-width': '1px',
+        'border-width': 1,
         'border-color': '#313131',
         'border-style': 'solid',
       },

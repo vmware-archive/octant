@@ -35,7 +35,7 @@ cytoscape.use(dagre);
   ],
 })
 export class CytoscapeComponent implements OnChanges {
-  @ViewChild('cy') private cy: ElementRef;
+  @ViewChild('cy', { static: true }) private cy: ElementRef;
   @Input() public elements: any;
   @Input() public style: Stylesheet[];
   @Input() public layout: any;

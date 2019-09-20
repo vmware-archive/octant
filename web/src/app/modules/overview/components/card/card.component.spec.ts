@@ -9,8 +9,7 @@ import {
 import { CardComponent } from './card.component';
 import { OverviewModule } from '../../overview.module';
 import { CardView, TextView, Action } from '../../../../models/content';
-import { FormGroup } from '@angular/forms/src/model';
-import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { SimpleChange } from '@angular/core';
 import { ViewService } from '../../services/view/view.service';
 import { viewServiceStub } from 'src/app/testing/view-service.stub';

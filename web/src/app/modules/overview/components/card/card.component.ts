@@ -20,7 +20,7 @@ export class CardComponent implements OnChanges {
   @Input()
   view: CardView;
 
-  @ViewChild('appForm') appForm: FormComponent;
+  @ViewChild('appForm', { static: false }) appForm: FormComponent;
 
   title: string;
 

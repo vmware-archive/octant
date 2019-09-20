@@ -19,7 +19,7 @@ import { IconService } from './modules/overview/services/icon.service';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit, OnDestroy {
-  @ViewChild('scrollTarget') scrollTarget: ElementRef;
+  @ViewChild('scrollTarget', { static: false }) scrollTarget: ElementRef;
   navigation: Navigation;
   previousUrl: string;
 

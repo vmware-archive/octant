@@ -17,7 +17,7 @@
                     <ng-container *ngSwitchCase="'radio'">
                         <clr-radio-container>
                             <label [for]="field.name">{{field.label}}</label>
-                            <clr-radio-wrapper *ngFor="let opt of fieldChoices(field)">
+                            <clr-radio-wrapper *ngFor="let opt of fieldChoices(field); trackBy: trackByFn">
                                 <input type="radio" clrRadio [formControlName]="field.name" [value]="opt.value"/>
                                 <label>{{opt.label}}</label>
                             </clr-radio-wrapper>
@@ -45,7 +45,7 @@
                         <clr-select-container>
                             <label [for]="field.name">{{field.label}}</label>
                             <select clrSelect [formControlName]="field.name" [multiple]="field.configuration.multiple">
-                                <option *ngFor="let opt of fieldChoices(field)" [value]="opt.value">
+                                <option *ngFor="let opt of fieldChoices(field); trackBy: trackByFn" [value]="opt.value">
                                     {{opt.label}}
                                 </option>
                             </select>
