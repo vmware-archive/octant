@@ -181,7 +181,7 @@ func initRoutes(router *service.Router) {
 		return cardList
 	}
 
-	router.HandleFunc("/*", func(request *service.Request) (component.ContentResponse, error) {
+	router.HandleFunc("*", func(request *service.Request) (component.ContentResponse, error) {
 		// For each page, generate two tabs with a some content.
 		component1 := gen("Tab 1", "tab1", request.Path)
 		component2 := gen("Tab 2", "tab2", request.Path)
