@@ -19,7 +19,7 @@ More specifically:
 
 </details>
 
-## Q: How do I install Octant?
+## Q: How do I install or Update Octant?
 <details><summary> Answer: </summary>
 
 ## Installation
@@ -82,6 +82,12 @@ More specifically:
     ```sh
     $ ./octant_0.X.Y_Linux-64bit/octant version
     ```
+
+### Upgrading
+
+The process of upgrading Octant will depend on how you installed it. Generally, you can use Update or Upgrade functions of the package manager you used to install Octant. (e.g. brew upgrade octant)
+
+If you downloaded a pre-built binary, you could download the new version and replace the old one manually.
 
 </details>
 
