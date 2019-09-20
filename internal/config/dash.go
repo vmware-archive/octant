@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware/octant/internal/cluster"
+	"github.com/vmware/octant/internal/cluster/client"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/portforward"
@@ -94,27 +95,30 @@ type Dash interface {
 	Validate() error
 
 	ModuleManager() module.ManagerInterface
+
+	// ClusterClientManager()
 }
 
 // Live is a live version of dash config.
 type Live struct {
-	clusterClient      cluster.ClientInterface
-	crdWatcher         CRDWatcher
-	logger             log.Logger
-	moduleManager      module.ManagerInterface
-	objectStore        store.Store
-	pluginManager      plugin.ManagerInterface
-	portForwarder      portforward.PortForwarder
-	kubeConfigPath     string
-	currentContextName string
-	restConfigOptions  cluster.RESTConfigOptions
+	clusterClient        cluster.ClientInterface // clusterClientManager
+	clusterClientManager client.ClusterClientManager
+	crdWatcher           CRDWatcher
+	logger               log.Logger
+	moduleManager        module.ManagerInterface
+	objectStore          store.Store
+	pluginManager        plugin.ManagerInterface
+	portForwarder        portforward.PortForwarder
+	kubeConfigPath       string
+	currentContextName   string // remove .. replace with CurrentContext() method ..
+	restConfigOptions    cluster.RESTConfigOptions
 }
 
 var _ Dash = (*Live)(nil)
 
 // NewLiveConfig creates an instance of Live.
 func NewLiveConfig(
-	clusterClient cluster.ClientInterface,
+	clusterClientManger client.ClusterClientManager,
 	crdWatcher CRDWatcher,
 	kubeConfigPath string,
 	logger log.Logger,
@@ -122,11 +126,10 @@ func NewLiveConfig(
 	objectStore store.Store,
 	pluginManager plugin.ManagerInterface,
 	portForwarder portforward.PortForwarder,
-	currentContextName string,
+	currentContextName string, // remove
 	restConfigOptions cluster.RESTConfigOptions,
 ) *Live {
 	l := &Live{
-		clusterClient:      clusterClient,
 		crdWatcher:         crdWatcher,
 		kubeConfigPath:     kubeConfigPath,
 		logger:             logger,
@@ -134,9 +137,12 @@ func NewLiveConfig(
 		objectStore:        objectStore,
 		pluginManager:      pluginManager,
 		portForwarder:      portForwarder,
-		currentContextName: currentContextName,
+		currentContextName: currentContextName, // remove
 		restConfigOptions:  restConfigOptions,
 	}
+	clusterClient, _ := clusterClientManger.Get(context.TODO(), currentContextName)
+	l.clusterClient = clusterClient
+
 	objectStore.RegisterOnUpdate(func(store store.Store) {
 		l.objectStore = store
 	})
