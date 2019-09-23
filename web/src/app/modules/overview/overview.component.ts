@@ -13,19 +13,12 @@ import { ActivatedRoute, Params, Router, UrlSegment } from '@angular/router';
 import { ContentResponse, View } from 'src/app/models/content';
 import { IconService } from './services/icon.service';
 import { ViewService } from './services/view/view.service';
-import { BehaviorSubject, combineLatest } from 'rxjs';
+import { combineLatest } from 'rxjs';
 import { ContentService } from './services/content/content.service';
 import { WebsocketService } from './services/websocket/websocket.service';
 import { KubeContextService } from './services/kube-context/kube-context.service';
 import { take } from 'rxjs/operators';
 import _ from 'lodash';
-
-const emptyContentResponse: ContentResponse = {
-  content: {
-    viewComponents: [],
-    title: [],
-  },
-};
 
 interface LocationCallbackOptions {
   segments: UrlSegment[];
@@ -41,7 +34,6 @@ interface LocationCallbackOptions {
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class OverviewComponent implements OnInit, OnDestroy {
-  behavior = new BehaviorSubject<ContentResponse>(emptyContentResponse);
   @ViewChild('scrollTarget', { static: true }) scrollTarget: ElementRef;
   hasTabs = false;
   hasReceivedContent = false;

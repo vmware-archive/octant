@@ -30,7 +30,7 @@ type ContentManagerOption func(manager *ContentManager)
 
 // ContentGenerateFunc is a function that generates content. It returns `rerun=true`
 // if the action should be be immediately rerun.
-type ContentGenerateFunc func(ctx context.Context, state octant.State) (component.ContentResponse, bool, error)
+type ContentGenerateFunc func(ctx context.Context, state octant.State) (component.ContentResponse, error)
 
 // WithContentGenerator configures the content generate function.
 func WithContentGenerator(fn ContentGenerateFunc) ContentManagerOption {
@@ -95,7 +95,7 @@ func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFu
 			return false
 		}
 
-		contentResponse, _, err := cm.contentGenerateFunc(ctx, state)
+		contentResponse, err := cm.contentGenerateFunc(ctx, state)
 		if err != nil {
 			return false
 		}
@@ -108,7 +108,7 @@ func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFu
 	}
 }
 
-func (cm *ContentManager) generateContent(ctx context.Context, state octant.State) (component.ContentResponse, bool, error) {
+func (cm *ContentManager) generateContent(ctx context.Context, state octant.State) (component.ContentResponse, error) {
 	contentPath := state.GetContentPath()
 	logger := cm.logger.With("contentPath", contentPath)
 
@@ -119,7 +119,7 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 
 	m, ok := cm.moduleManager.ModuleForContentPath(contentPath)
 	if !ok {
-		return component.EmptyContentResponse, false, errors.Errorf("unable to find module for content path %q", contentPath)
+		return component.EmptyContentResponse, errors.Errorf("unable to find module for content path %q", contentPath)
 	}
 	modulePath := strings.TrimPrefix(contentPath, m.Name())
 	options := module.ContentOptions{
@@ -130,13 +130,13 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 		if nfe, ok := err.(notFound); ok && nfe.NotFound() {
 			logger.Debugf("path not found, redirecting to parent")
 			state.SetContentPath(notFoundRedirectPath(contentPath))
-			return component.EmptyContentResponse, true, nil
+			return component.EmptyContentResponse, nil
 		} else {
-			return component.EmptyContentResponse, false, errors.Wrap(err, "generate content")
+			return component.EmptyContentResponse, errors.Wrap(err, "generate content")
 		}
 	}
 
-	return contentResponse, false, nil
+	return contentResponse, nil
 }
 
 // Handlers returns a slice of client request handlers.

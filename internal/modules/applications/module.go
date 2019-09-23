@@ -19,6 +19,7 @@ import (
 	"github.com/vmware/octant/internal/generator"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware/octant/pkg/icon"
 	"github.com/vmware/octant/pkg/navigation"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -89,16 +90,18 @@ func (m *Module) Navigation(ctx context.Context, namespace, root string) ([]navi
 	}
 
 	rootNav := navigation.Navigation{
-		Title: "Applications",
-		Path:  rootPath,
+		Title:    "Applications",
+		Path:     rootPath,
+		IconName: icon.Applications,
 	}
 
 	for _, application := range applications {
 		childPath := path.Join(rootPath, application.Name, application.Instance, application.Version)
 
 		rootNav.Children = append(rootNav.Children, navigation.Navigation{
-			Title: application.Title(),
-			Path:  childPath,
+			Title:    application.Title(),
+			Path:     childPath,
+			IconName: icon.ApplicationsApplication,
 		})
 	}
 

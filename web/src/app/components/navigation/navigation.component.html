@@ -1,47 +1,66 @@
-<clr-tree-node
-        *ngFor="let section of navigation.sections; trackBy: identifyNavigationItem"
-        [clrExpanded]="true"
-        [clrLoading]="section.isLoading"
-        class="section">
-    <a
-            [routerLinkActiveOptions]="{exact: true}"
-            [routerLink]="section.path"
-            class="clr-treenode-link section"
-            routerLinkActive="active">
-        <span>
-        <clr-icon [attr.shape]="section.iconName | default:'home'"></clr-icon>
-            {{ section.title }}
-        </span>
-    </a>
+<clr-tabs>
+    <clr-tab *ngFor="let section of navigation.sections; trackBy: identifyNavigationItem">
+        <button clrTabLink (click)="clickTab(section.title)">
+            <clr-tooltip>
+                <clr-icon [attr.shape]="section.iconName | default:'home'" clrTooltipTrigger></clr-icon>
+                <clr-tooltip-content *clrIfOpen clrPosition="bottom-right">
+                    {{ section.title }}
+                </clr-tooltip-content>
+            </clr-tooltip>
+        </button>
 
-    <clr-tree-node
-            *ngFor="let category of section.children; trackBy: identifyNavigationItem"
-            [clrExpanded]="true"
-            [clrLoading]="category.isLoading">
-        <a
-                [routerLinkActiveOptions]="{exact: true}"
-                [routerLink]="category.path"
-                class="clr-treenode-link category"
-                routerLinkActive="active">
-      <span>
-      <clr-icon [attr.shape]="itemIcon(category) | default:'folder'"></clr-icon>
-          {{ category.title }}
-      </span>
+        <ng-template [clrIfActive]="activeTab === section.title">
+            <clr-tab-content>
+                <clr-vertical-nav [clrVerticalNavCollapsible]="false">
+                    <a
+                            [routerLinkActiveOptions]="{exact: true}"
+                            [routerLink]="section.path"
+                            clrVerticalNavLink
+                            routerLinkActive="active">
+                        <clr-icon [attr.shape]="itemIcon(section) | default:'folder'"
+                                  clrVerticalNavIcon></clr-icon>
+                        {{section.title}}
+                    </a>
+                    <div class="nav-divider"></div>
 
-        </a>
+                    <ng-container
+                            *ngFor="let category of section.children; let i = index; trackBy: identifyNavigationItem">
+                        <ng-container *ngIf="category.children?.length > 0; then withChildren; else withoutChildren">
+                        </ng-container>
 
-        <clr-tree-node
-                *ngFor="let entry of category.children; trackBy: identifyNavigationItem"
-                [clrLoading]="entry.isLoading">
-            <a
-                    [routerLink]="entry.path"
-                    class="clr-treenode-link item"
-                    routerLinkActive="active">
-                <clr-icon [attr.shape]="itemIcon(entry) | default:'folder'"></clr-icon>
-                <span>
-                    {{ entry.title }}
-                </span>
-            </a>
-        </clr-tree-node>
-    </clr-tree-node>
-</clr-tree-node>
+                        <ng-template #withChildren>
+                            <div *ngIf="i > 0" class="nav-divider"></div>
+                            <clr-vertical-nav-group [clrVerticalNavGroupExpanded]="true" routerLinkActive="active">
+                                <clr-icon [attr.shape]="itemIcon(category) | default:'folder'"
+                                          clrVerticalNavIcon>
+                                </clr-icon>
+                                {{category.title}}
+                                <clr-vertical-nav-group-children>
+                                    <a *ngFor="let entry of category.children; trackBy: identifyNavigationItem"
+                                       [routerLink]="entry.path"
+                                       clrVerticalNavLink routerLinkActive="active">
+                            <span>
+                                <clr-icon [attr.shape]="itemIcon(entry) | default:'folder'"
+                                          clrVerticalNavIcon>
+                                </clr-icon>
+                                {{entry.title}}
+                            </span>
+                                    </a>
+                                </clr-vertical-nav-group-children>
+                            </clr-vertical-nav-group>
+                        </ng-template>
+
+                        <ng-template #withoutChildren>
+                            <a [routerLink]="category.path" clrVerticalNavLink routerLinkActive="active">
+                                <clr-icon [attr.shape]="itemIcon(category) | default:'folder'"
+                                          clrVerticalNavIcon></clr-icon>
+                                {{category.title}}
+                            </a>
+                        </ng-template>
+                    </ng-container>
+                </clr-vertical-nav>
+            </clr-tab-content>
+        </ng-template>
+    </clr-tab>
+</clr-tabs>
+

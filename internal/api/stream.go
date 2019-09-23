@@ -36,5 +36,12 @@ func (e *NotFoundError) Error() string {
 
 func notFoundRedirectPath(requestPath string) string {
 	parts := strings.Split(requestPath, "/")
-	return path.Join(append([]string{}, parts[0:len(parts)-2]...)...)
+	if strings.HasSuffix(requestPath, "/") {
+		parts = parts[:len(parts)-1]
+	}
+
+	if len(parts) > 1 {
+		parts = parts[0 : len(parts)-1]
+	}
+	return path.Join(parts...)
 }

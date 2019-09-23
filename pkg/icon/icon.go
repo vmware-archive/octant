@@ -15,7 +15,10 @@ import (
 //go:generate rice embed-go
 
 const (
-	ClusterOverview                   = "objects"
+	Applications            = "applications"
+	ApplicationsApplication = "application"
+
+	ClusterOverview                   = "cluster"
 	ClusterOverviewClusterRole        = "c-role"
 	ClusterOverviewClusterRoleBinding = "crb"
 	ClusterOverviewNode               = "node"
@@ -25,7 +28,7 @@ const (
 
 	CustomResourceDefinition = "crd"
 
-	Overview                      = "objects"
+	Overview                      = "dashboard"
 	OverviewConfigMap             = "cm"
 	OverviewCronJob               = "cronjob"
 	OverviewDaemonSet             = "ds"

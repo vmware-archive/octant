@@ -65,8 +65,8 @@ func TestContentManager_GenerateContent(t *testing.T) {
 
 	poller := api.NewSingleRunPoller()
 
-	contentGenerator := func(ctx context.Context, state octant.State) (component.ContentResponse, bool, error) {
-		return contentResponse, false, nil
+	contentGenerator := func(ctx context.Context, state octant.State) (component.ContentResponse, error) {
+		return contentResponse, nil
 	}
 	manager := api.NewContentManager(moduleManager, logger,
 		api.WithContentGenerator(contentGenerator),

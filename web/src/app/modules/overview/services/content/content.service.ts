@@ -48,13 +48,11 @@ export class ContentService {
       namespaceService.setNamespace(response.namespace);
 
       if (response.contentPath) {
-        if (this.previousContentPath.length > 0) {
-          if (response.contentPath !== this.previousContentPath) {
-            const segments = response.contentPath.split('/');
-            this.router.navigate(segments, {
-              queryParams: response.queryParams,
-            });
-          }
+        if (response.contentPath !== this.previousContentPath) {
+          const segments = response.contentPath.split('/');
+          this.router.navigate(segments, {
+            queryParams: response.queryParams,
+          });
         }
 
         this.previousContentPath = response.contentPath;

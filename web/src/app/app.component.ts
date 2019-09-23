@@ -21,7 +21,6 @@ import { IconService } from './modules/overview/services/icon.service';
 export class AppComponent implements OnInit, OnDestroy {
   @ViewChild('scrollTarget', { static: false }) scrollTarget: ElementRef;
   navigation: Navigation;
-  previousUrl: string;
 
   constructor(
     private websocketService: WebsocketService,
