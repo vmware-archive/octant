@@ -180,7 +180,16 @@ func (d *Object) addResourceViewerTab(ctx context.Context, object runtime.Object
 			return err
 		}
 
-		resourceViewerComponent, err := rv.Visit(ctx, object)
+		handler, err := resourceviewer.NewHandler(options.Dash)
+		if err != nil {
+			return err
+		}
+
+		if err := rv.Visit(ctx, object, handler); err != nil {
+			return err
+		}
+
+		resourceViewerComponent, err := resourceviewer.GenerateComponent(ctx, handler, "")
 		if err != nil {
 			return err
 		}

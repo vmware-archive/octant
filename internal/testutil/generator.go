@@ -197,12 +197,21 @@ func CreateNode(name string) *corev1.Node {
 	}
 }
 
+// PodOption is an option for configuring CreatePod.
+type PodOption func(*corev1.Pod)
+
 // CreatePod creates a pod
-func CreatePod(name string) *corev1.Pod {
-	return &corev1.Pod{
+func CreatePod(name string, options ...PodOption) *corev1.Pod {
+	pod := &corev1.Pod{
 		TypeMeta:   genTypeMeta(gvk.Pod),
 		ObjectMeta: genObjectMeta(name, true),
 	}
+
+	for _, option := range options {
+		option(pod)
+	}
+
+	return pod
 }
 
 // CreateReplicationController creates a replication controller

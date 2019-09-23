@@ -82,3 +82,12 @@ func TestKeyFromPayload(t *testing.T) {
 	}
 	assert.Equal(t, expected, got)
 }
+
+func TestKeyFromGroupVersionKind(t *testing.T) {
+	actual := KeyFromGroupVersionKind(gvk.Pod)
+	expected := Key{
+		APIVersion: "v1",
+		Kind:       "Pod",
+	}
+	require.Equal(t, expected, actual)
+}

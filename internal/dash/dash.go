@@ -29,6 +29,7 @@ import (
 	"github.com/vmware/octant/internal/describer"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
+	"github.com/vmware/octant/internal/modules/applications"
 	"github.com/vmware/octant/internal/modules/clusteroverview"
 	"github.com/vmware/octant/internal/modules/configuration"
 	"github.com/vmware/octant/internal/modules/localcontent"
@@ -227,6 +228,14 @@ type moduleOptions struct {
 
 func initModules(ctx context.Context, dashConfig config.Dash, namespace string) ([]module.Module, error) {
 	var list []module.Module
+
+	if os.Getenv("OCTANT_ENABLE_APPLICATIONS") != "" {
+		applicationsOptions := applications.Options{
+			DashConfig: dashConfig,
+		}
+		applicationsModule := applications.New(ctx, applicationsOptions)
+		list = append(list, applicationsModule)
+	}
 
 	overviewOptions := overview.Options{
 		Namespace:  namespace,

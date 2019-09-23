@@ -69,7 +69,12 @@ func Test_ResourceViewer(t *testing.T) {
 
 	ctx := context.Background()
 
-	vc, err := rv.Visit(ctx, deployment)
+	handler, err := NewHandler(dashConfig)
+	require.NoError(t, err)
+
+	require.NoError(t, rv.Visit(ctx, deployment, handler))
+
+	vc, err := GenerateComponent(ctx, handler, "")
 	require.NoError(t, err)
 	assert.NotNil(t, vc)
 }
@@ -99,6 +104,9 @@ func Test_ResourceViewer_visitor_fails(t *testing.T) {
 
 	ctx := context.Background()
 
-	_, err = rv.Visit(ctx, deployment)
+	handler, err := NewHandler(dashConfig)
+	require.NoError(t, err)
+
+	err = rv.Visit(ctx, deployment, handler)
 	require.Error(t, err)
 }

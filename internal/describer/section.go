@@ -33,12 +33,26 @@ func NewSection(p, title string, describers ...Describer) *Section {
 
 // Describe generates content.
 func (d *Section) Describe(ctx context.Context, namespace string, options Options) (component.ContentResponse, error) {
+	list, err := d.Component(ctx, namespace, options)
+	if err != nil {
+		return component.EmptyContentResponse, err
+	}
+
+	cr := component.ContentResponse{
+		Components: []component.Component{list},
+		Title:      component.Title(component.NewText(d.title)),
+	}
+
+	return cr, nil
+}
+
+func (d *Section) Component(ctx context.Context, namespace string, options Options) (*component.List, error) {
 	list := component.NewList(d.title, nil)
 
 	for describerIndex := range d.describers {
 		cResponse, err := d.describers[describerIndex].Describe(ctx, namespace, options)
 		if err != nil {
-			return component.EmptyContentResponse, err
+			return nil, err
 		}
 
 		for componentIndex := range cResponse.Components {
@@ -53,12 +67,7 @@ func (d *Section) Describe(ctx context.Context, namespace string, options Option
 		}
 	}
 
-	cr := component.ContentResponse{
-		Components: []component.Component{list},
-		Title:      component.Title(component.NewText(d.title)),
-	}
-
-	return cr, nil
+	return list, nil
 }
 
 // PathFilters returns path filters for the section.
