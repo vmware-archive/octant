@@ -318,11 +318,16 @@ func (c *WebsocketState) SetFilters(filters []octant.Filter) {
 
 // SetContext sets the Kubernetes context.
 func (c *WebsocketState) SetContext(requestedContext string) {
+	client, err := c.dashConfig.ClusterClientManager().Get(context.TODO(), requestedContext)
+	if err != nil {
+		c.dashConfig.Logger().WithErr(err).Errorf("getting cluster client")
+	}
+
 	if err := c.dashConfig.UseContext(context.TODO(), requestedContext); err != nil {
 		c.dashConfig.Logger().WithErr(err).Errorf("update context")
 	}
 
-	c.SetNamespace(c.dashConfig.DefaultNamespace())
+	c.SetNamespace(client.DefaultNamespace())
 
 	for _, fn := range c.contentPathUpdates {
 		fn(c.GetContentPath())

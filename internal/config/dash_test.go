@@ -15,6 +15,7 @@ import (
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
 	"github.com/vmware/octant/internal/cluster"
+	clusterClientFake "github.com/vmware/octant/internal/cluster/client/fake"
 	clusterFake "github.com/vmware/octant/internal/cluster/fake"
 	"github.com/vmware/octant/internal/log"
 	moduleFake "github.com/vmware/octant/internal/module/fake"
@@ -72,6 +73,9 @@ func TestLiveConfig(t *testing.T) {
 	logger := log.NopLogger()
 
 	clusterClient := clusterFake.NewMockClientInterface(controller)
+	clusterClientManager := clusterClientFake.NewMockClusterClientManager(controller)
+	clusterClientManager.EXPECT().Get(gomock.Any(), "context-name").Return(clusterClient, nil)
+
 	crdWatcher := stubCRDWatcher{}
 
 	moduleManager := moduleFake.NewMockManagerInterface(controller)
@@ -90,10 +94,10 @@ func TestLiveConfig(t *testing.T) {
 	contextName := "context-name"
 	restConfigOptions := cluster.RESTConfigOptions{}
 
-	config := NewLiveConfig(clusterClient, crdWatcher, kubeConfigPath, logger, moduleManager, objectStore, pluginManager, portForwarder, contextName, restConfigOptions)
+	config := NewLiveConfig(clusterClientManager, crdWatcher, kubeConfigPath, logger, moduleManager, objectStore, pluginManager, portForwarder, contextName, restConfigOptions)
 
 	assert.NoError(t, config.Validate())
-	assert.Equal(t, clusterClient, config.ClusterClient())
+	assert.Equal(t, clusterClientManager, config.ClusterClientManager())
 	assert.Equal(t, crdWatcher, config.CRDWatcher())
 	assert.Equal(t, logger, config.Logger())
 	assert.Equal(t, objectStore, config.ObjectStore())

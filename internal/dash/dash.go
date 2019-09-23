@@ -132,12 +132,13 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return errors.Wrap(err, "initializing plugin manager")
 	}
 
-	clusterClientMangager, err := client.NewClusterClientManager(ctx, options.KubeConfig, restConfigOptions)
+	clusterClientManager, err := client.NewClusterClientManager(ctx, options.KubeConfig, restConfigOptions)
 	if err != nil {
 		return errors.Wrap(err, "initializing cluster client manager")
 	}
+
 	dashConfig := config.NewLiveConfig(
-		clusterClientMangager,
+		clusterClientManager,
 		crdWatcher,
 		options.KubeConfig,
 		logger,

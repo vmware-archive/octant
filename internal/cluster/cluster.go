@@ -226,19 +226,25 @@ func (c *Cluster) Version() (string, error) {
 	return fmt.Sprint(serverVersion), nil
 }
 
-// FromKubeConfig creates a Cluster from a kubeConfig.
-func FromKubeConfig(ctx context.Context, kubeConfig, contextName string, options RESTConfigOptions) (*Cluster, error) {
+func ClientConfigFromKubeConfig(kubeConfig string, overrides *clientcmd.ConfigOverrides) clientcmd.ClientConfig {
 	chain := strings.Deduplicate(filepath.SplitList(kubeConfig))
-
 	rules := &clientcmd.ClientConfigLoadingRules{
 		Precedence: chain,
 	}
+	if overrides == nil {
+		overrides = &clientcmd.ConfigOverrides{}
+	}
+	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides)
+}
 
+// FromKubeConfig creates a Cluster from a kubeConfig.
+func FromKubeConfig(ctx context.Context, kubeConfig, contextName string, options RESTConfigOptions) (*Cluster, error) {
 	overrides := &clientcmd.ConfigOverrides{}
 	if contextName != "" {
 		overrides.CurrentContext = contextName
 	}
-	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides)
+	cc := ClientConfigFromKubeConfig(kubeConfig, overrides)
+
 	config, err := cc.ClientConfig()
 	if err != nil {
 		return nil, err

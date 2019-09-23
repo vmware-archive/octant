@@ -74,6 +74,8 @@ type Dash interface {
 
 	ClusterClient() cluster.ClientInterface
 
+	ClusterClientManager() client.ClusterClientManager
+
 	CRDWatcher() CRDWatcher
 
 	ObjectStore() store.Store
@@ -95,8 +97,6 @@ type Dash interface {
 	Validate() error
 
 	ModuleManager() module.ManagerInterface
-
-	// ClusterClientManager()
 }
 
 // Live is a live version of dash config.
@@ -110,7 +110,7 @@ type Live struct {
 	pluginManager        plugin.ManagerInterface
 	portForwarder        portforward.PortForwarder
 	kubeConfigPath       string
-	currentContextName   string // remove .. replace with CurrentContext() method ..
+	currentContextName   string
 	restConfigOptions    cluster.RESTConfigOptions
 }
 
@@ -118,7 +118,7 @@ var _ Dash = (*Live)(nil)
 
 // NewLiveConfig creates an instance of Live.
 func NewLiveConfig(
-	clusterClientManger client.ClusterClientManager,
+	clusterClientManager client.ClusterClientManager,
 	crdWatcher CRDWatcher,
 	kubeConfigPath string,
 	logger log.Logger,
@@ -126,21 +126,26 @@ func NewLiveConfig(
 	objectStore store.Store,
 	pluginManager plugin.ManagerInterface,
 	portForwarder portforward.PortForwarder,
-	currentContextName string, // remove
+	currentContextName string,
 	restConfigOptions cluster.RESTConfigOptions,
 ) *Live {
 	l := &Live{
-		crdWatcher:         crdWatcher,
-		kubeConfigPath:     kubeConfigPath,
-		logger:             logger,
-		moduleManager:      moduleManager,
-		objectStore:        objectStore,
-		pluginManager:      pluginManager,
-		portForwarder:      portForwarder,
-		currentContextName: currentContextName, // remove
-		restConfigOptions:  restConfigOptions,
+		crdWatcher:           crdWatcher,
+		clusterClientManager: clusterClientManager,
+		kubeConfigPath:       kubeConfigPath,
+		logger:               logger,
+		moduleManager:        moduleManager,
+		objectStore:          objectStore,
+		pluginManager:        pluginManager,
+		portForwarder:        portForwarder,
+		currentContextName:   currentContextName,
+		restConfigOptions:    restConfigOptions,
 	}
-	clusterClient, _ := clusterClientManger.Get(context.TODO(), currentContextName)
+	clusterClient, err := l.clusterClientManager.Get(context.TODO(), currentContextName)
+	if err != nil {
+		logger.WithErr(err).Errorf("unable to get clusterClient for context: %s", currentContextName)
+	}
+
 	l.clusterClient = clusterClient
 
 	objectStore.RegisterOnUpdate(func(store store.Store) {
@@ -155,9 +160,19 @@ func (l *Live) ObjectPath(namespace, apiVersion, kind, name string) (string, err
 	return l.moduleManager.ObjectPath(namespace, apiVersion, kind, name)
 }
 
+// ClusterClientManager returns a cluster client manager.
+func (l *Live) ClusterClientManager() client.ClusterClientManager {
+	return l.clusterClientManager
+}
+
 // ClusterClient returns a cluster client.
 func (l *Live) ClusterClient() cluster.ClientInterface {
-	return l.clusterClient
+	clusterClient, err := l.clusterClientManager.Get(context.TODO(), l.currentContextName)
+	if err != nil {
+		l.Logger().WithErr(errors.Wrapf(err, "unable to get client for context")).Errorf("Unable to get client for context")
+		return nil
+	}
+	return clusterClient
 }
 
 // CRDWatcher returns a CRD watcher.
@@ -192,15 +207,11 @@ func (l *Live) PortForwarder() portforward.PortForwarder {
 
 // UseContext switches context name. This process should have synchronously.
 func (l *Live) UseContext(ctx context.Context, contextName string) error {
-	client, err := cluster.FromKubeConfig(ctx, l.kubeConfigPath, contextName, l.restConfigOptions)
-	if err != nil {
-		return err
-	}
+	l.clusterClientManager.SetDefault(ctx, contextName)
+	l.currentContextName = contextName
+	clusterClient := l.ClusterClient()
 
-	l.ClusterClient().Close()
-	l.clusterClient = client
-
-	if err := l.objectStore.UpdateClusterClient(ctx, client); err != nil {
+	if err := l.objectStore.UpdateClusterClient(ctx, clusterClient); err != nil {
 		return err
 	}
 
@@ -208,7 +219,6 @@ func (l *Live) UseContext(ctx context.Context, contextName string) error {
 		return err
 	}
 
-	l.currentContextName = contextName
 	l.Logger().With("new-kube-context", contextName).Infof("updated kube config context")
 
 	for _, m := range l.moduleManager.Modules() {
