@@ -21,6 +21,7 @@ var (
 	ExtDeployment            = schema.GroupVersionKind{Group: "extensions", Version: "v1beta1", Kind: "Deployment"}
 	ExtReplicaSet            = schema.GroupVersionKind{Group: "extensions", Version: "v1beta1", Kind: "ReplicaSet"}
 	Event                    = schema.GroupVersionKind{Version: "v1", Kind: "Event"}
+	HorizontalPodAutoscaler  = schema.GroupVersionKind{Group: "autoscaling", Version: "v2beta2", Kind: "HorizontalPodAutoscaler"}
 	Ingress                  = schema.GroupVersionKind{Group: "extensions", Version: "v1beta1", Kind: "Ingress"}
 	Job                      = schema.GroupVersionKind{Group: "batch", Version: "v1", Kind: "Job"}
 	Node                     = schema.GroupVersionKind{Version: "v1", Kind: "Node"}

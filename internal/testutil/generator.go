@@ -7,6 +7,7 @@ package testutil
 
 import (
 	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -169,6 +170,14 @@ func CreateEvent(name string) *corev1.Event {
 	}
 }
 
+// CreateHorizontalPodAutoscaler creates a horizontal pod autoscaler
+func CreateHorizontalPodAutoscaler(name string) *v2beta2.HorizontalPodAutoscaler {
+	return &v2beta2.HorizontalPodAutoscaler{
+		TypeMeta:   genTypeMeta(gvk.HorizontalPodAutoscaler),
+		ObjectMeta: genObjectMeta(name, true),
+	}
+}
+
 // CreateIngress creates an ingress
 func CreateIngress(name string) *extv1beta1.Ingress {
 	return &extv1beta1.Ingress{
@@ -183,6 +192,7 @@ func CreateIngress(name string) *extv1beta1.Ingress {
 	}
 }
 
+// CreateJob creates a job
 func CreateJob(name string) *batchv1.Job {
 	return &batchv1.Job{
 		TypeMeta:   genTypeMeta(gvk.Job),
@@ -190,6 +200,7 @@ func CreateJob(name string) *batchv1.Job {
 	}
 }
 
+// CreateNode creates a node
 func CreateNode(name string) *corev1.Node {
 	return &corev1.Node{
 		TypeMeta:   genTypeMeta(gvk.Node),

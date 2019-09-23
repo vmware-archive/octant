@@ -56,6 +56,8 @@ func workloadEntries(ctx context.Context, prefix, namespace string, objectStore 
 
 func discoAndLBEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, _ bool) ([]navigation.Navigation, bool, error) {
 	neh := navigation.EntriesHelper{}
+	neh.Add("Horizontal Pod Autoscalers", "horizontal-pod-autoscalers", icon.OverviewHorizontalPodAutoscaler,
+		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.HorizontalPodAutoscaler), objectStore))
 	neh.Add("Ingresses", "ingresses", icon.OverviewIngress,
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.Ingress), objectStore))
 	neh.Add("Services", "services", icon.OverviewService,

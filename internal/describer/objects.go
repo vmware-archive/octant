@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/api/autoscaling/v2beta2"
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -136,6 +137,15 @@ func initNamespacedOverview() *Section {
 		workloadsStatefulSets,
 	)
 
+	dlbHorizontalPodAutoscalers := NewResource(ResourceOptions{
+		Path:           "/discovery-and-load-balancing/horizontal-pod-autoscalers",
+		ObjectStoreKey: store.Key{APIVersion: "autoscaling/v2beta2", Kind: "HorizontalPodAutoscaler"},
+		ListType:       &v2beta2.HorizontalPodAutoscalerList{},
+		ObjectType:     &v2beta2.HorizontalPodAutoscaler{},
+		Titles:         ResourceTitle{List: "Discovery & Load Balancing / Horizontal Pod Autoscaler", Object: "Horizontal Pod Autoscaler"},
+		IconName:       icon.OverviewHorizontalPodAutoscaler,
+	})
+
 	dlbIngresses := NewResource(ResourceOptions{
 		Path:           "/discovery-and-load-balancing/ingresses",
 		ObjectStoreKey: store.Key{APIVersion: "extensions/v1beta1", Kind: "Ingress"},
@@ -157,6 +167,7 @@ func initNamespacedOverview() *Section {
 	discoveryAndLoadBalancingDescriber := NewSection(
 		"/discovery-and-load-balancing",
 		"Discovery and Load Balancing",
+		dlbHorizontalPodAutoscalers,
 		dlbIngresses,
 		dlbServices,
 	)

@@ -25,6 +25,7 @@ var (
 		gvk.Pod,
 		gvk.ReplicationController,
 		gvk.StatefulSet,
+		gvk.HorizontalPodAutoscaler,
 		gvk.Ingress,
 		gvk.Service,
 		gvk.ConfigMap,
@@ -79,6 +80,8 @@ func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 		p = "/config-and-storage/persistent-volume-claims"
 	case apiVersion == "v1" && kind == "ServiceAccount":
 		p = "/config-and-storage/service-accounts"
+	case (apiVersion == "autoscaling/v1" || apiVersion == "autoscaling/v2beta2") && kind == "HorizontalPodAutoscaler":
+		p = "/discovery-and-load-balancing/horizontal-pod-autoscalers"
 	case apiVersion == "extensions/v1beta1" && kind == "Ingress":
 		p = "/discovery-and-load-balancing/ingresses"
 	case apiVersion == "v1" && kind == "Service":
