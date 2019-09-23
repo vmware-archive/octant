@@ -351,9 +351,24 @@ func (d *dash) Run(ctx context.Context) error {
 
 // handler configures primary http routes
 func (d *dash) handler(ctx context.Context) (http.Handler, error) {
-	handler, err := d.uiHandler()
-	if err != nil {
-		return nil, err
+	var frontendHandler http.Handler
+	frontendPath := os.Getenv("OCTANT_PROXY_FRONTEND")
+	if frontendPath == "" {
+		d.logger.Infof("Using embedded Octant frontend")
+		// use embedded assets
+		handler, err := d.uiHandler()
+		if err != nil {
+			return nil, err
+		}
+		frontendHandler = handler
+	} else {
+		d.logger.With("proxy-path", frontendPath).Infof("Creating reverse proxy to Octant frontend")
+		// use reverse proxy
+		proxyURL, err := url.Parse(frontendPath)
+		if err != nil {
+			return nil, err
+		}
+		frontendHandler = httputil.NewSingleHostReverseProxy(proxyURL)
 	}
 
 	router := mux.NewRouter()
@@ -363,7 +378,8 @@ func (d *dash) handler(ctx context.Context) (http.Handler, error) {
 	}
 
 	router.PathPrefix(api.PathPrefix).Handler(apiHandler)
-	router.PathPrefix("/").Handler(handler)
+
+	router.PathPrefix("/").Handler(frontendHandler)
 
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
 	allowedHeaders := handlers.AllowedHeaders([]string{"Accept", "Accept-Language", "Content-Language", "Origin", "Content-Type"})

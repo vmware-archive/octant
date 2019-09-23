@@ -37,6 +37,10 @@ Octant in a single step. The Octant makefile provides `make ui-server` which is 
 alias for the frontend, this does not listen for changes and does require you to stop the command and re-run it after
 saving your changes.
 
+If working on the frontend, you may want to set up a reverse proxy to the Angular services running on `http://localhost:4200`.
+To set this up, set `OCTANT_PROXY_FRONTEND` environment variable with the location of the frontend.
+(e.g. http://localhost:4200).
+
 ## Before Your Pull Request
 
 When you are ready to create your pull request, we recommend running `make ci`.
