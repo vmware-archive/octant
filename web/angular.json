@@ -67,7 +67,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "dash-frontend:build"
+            "browserTarget": "dash-frontend:build",
+            "disableHostCheck": true
           },
           "configurations": {
             "production": {
