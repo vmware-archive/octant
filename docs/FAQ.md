@@ -2,42 +2,24 @@
 
 ## Q: How is Octant different from the _"official"_ Kubernetes Dashboard?
 
-<details><summary> Answer: </summary> 
-
 Kubernetes Dashboard is described as a **_"general purpose_**, web-based UI for Kubernetes clusters.", whereas **Octant** is designed to be a _"tool for **developers** to understand how applications run on a Kubernetes cluster."_ 
 
 Octant provides more detail, is more extensible, uses newer technology, and is under more active development.
 
 More specifically:
 - Octant does not run in a cluster (by default). Instead, it runs locally on your workstation and uses your kubeconfig files
-<<<<<<< HEAD
 - Octant has a **resource viewer** which links related objects to better describe their relationship within the cluster
 - Octant supports Custom Resource Definitions (CRDs)
 - The dashboard functionality of Octant is _not_ the #1 priority. The tool was created to help give users of Kubernetes more information  in an easier fashion than _kubectl get_ or _kubectl describe_
 - Octant can be extended with plugins 
     - Plugin docs here: [docs/plugins](https://github.com/vmware/octant/tree/master/docs/plugins)
-- Octant is being very actively developed, with [major releases only weeks apart.](https://github.com/vmware/octant/releases)
+- Octant is being very actively developed, with [major releases happening rapidly](https://github.com/vmware/octant/releases)
 - Octant is based on newer web technologies. The Kubernetes dashboard is based on "AngularJS" which has been superseded by "Angular". 
 
-</details>
-
 ## Q: How do I install or Update Octant?
-=======
-- Octant has a resource viewer which links related objects to better describe their relationship within the cluster
-- Octant supports Custom Resource Definitions (CRDs)
-- The dashboard functionality of Octant is _not_ the #1 priority. The tool was created to help give users of Kubernetes more information  in an easier fashion than _kubectl get_ or _kubectl describe_
-- Octant can be extended with plugins <link to plugin guide>
-- Octant is being actively developed
-- Octant is based on newer web technologies. The Kubernetes dashboard is based on AngularJS that has been superseded by Angular. 
 
-</details>
-
-## Q: How do I install Octant?
->>>>>>> Add FAQ
-<details><summary> Answer: </summary>
-
-## Installation
-
+### Installation:
+Octant can be installed as a package using a variety of package managers, as a pre-built binary, or by building from source.
 
 ### Package (Linux only)
 
@@ -97,21 +79,20 @@ More specifically:
     $ ./octant_0.X.Y_Linux-64bit/octant version
     ```
 
-<<<<<<< HEAD
+### Building from Source
+
+Octant can be built from source with the 'Quick Start' instructions found here: [https://github.com/vmware/octant/blob/master/HACKING.md](https://github.com/vmware/octant/blob/master/HACKING.md)
+
 ### Upgrading
 
 The process of upgrading Octant will depend on how you installed it. Generally, you can use Update or Upgrade functions of the package manager you used to install Octant. (e.g. brew upgrade octant)
 
 If you downloaded a pre-built binary, you could download the new version and replace the old one manually.
 
-=======
->>>>>>> Add FAQ
-</details>
+If you built from source, you would pull the latest from the remote origin (master or the specific release branch), and re-run the *make* build command (e.g. make ci-quick)
 
 ## Q: How can I contribute to Octant?
-<details><summary> Answer: </summary>
 
-<<<<<<< HEAD
 Octant is a community-driven project, and as such welcomes new contributors from the community. 
 
 Ways you can contribute with a Pull Request:
@@ -125,26 +106,19 @@ Ways you can contribute with a Pull Request:
     - A sample plugin is available [here](https://github.com/vmware/octant/blob/master/cmd/octant-sample-plugin)
     - A list of community plugins for Octant will be assembled soon
 
-=======
->>>>>>> Add FAQ
-New contributors will need to sign a CLA (contributor license agreement). We also ask that a changelog entry is included with your pull request. Details are described in our [contributing](CONTRIBUTING.md) documentation.
+New contributors will need to sign a CLA (contributor license agreement). We also ask that a changelog entry is included with your pull request. Details are described in our [contributing](https://github.com/vmware/octant/blob/master/CONTRIBUTING.md) documentation.
 
-See our [hacking](../HACKING.md) guide for getting your development environment setup.
+See our [hacking](https://github.com/vmware/octant/blob/master/HACKING.md) guide for getting your development environment setup.
 
 See our [roadmap](../ROADMAP.md) for tentative features in a 1.0 release.
 
-<<<<<<< HEAD
-**Ways to contribute without a Pull Request?**
+**Ways to contribute without a Pull Request**
+
 - Share the love on social media with the hashtag #octant
 - Participate in Octant community meetings
-- 
-
-
-</details>
+- Use Octant and [file issues](https://github.com/vmware/octant/issues ) 
 
 ## Q: Is Octant stable?
-
-<details><summary> Answer: </summary>
 
 Octant is under active development, but each release is considered stable. 
 
@@ -154,71 +128,32 @@ Release information can be found here:
 Open Issues can be found here: 
 - [Open Issues](https://github.com/vmware/octant/issues)
 
-</details>
-
 ## Q: Why doesn't Octant support Feature X?
-
-<details><summary> Answer: </summary>
 
 Octant is a community driven project with contributions from volunteers around the world. 
 
 If a feature you want is not already on our [Roadmap](https://github.com/vmware/octant/blob/master/ROADMAP.md), please feel free to [file an issue](https://github.com/vmware/octant/issues/new) and request it, or submit a Pull Request with your feature to be reviewed and [merged](https://github.com/vmware/octant/blob/master/CONTRIBUTING.md).
-=======
-</details>
-
-## Q: Why doesn't Octant support -feature X-?
-
-<details><summary> Answer: </summary>
-
-Octant is a community driven project with contributions from volunteers around the world.
->>>>>>> Add FAQ
-
-</details>
 
 ## Q: When will Octant get Feature X?
 
-<details><summary> Answer: </summary>
-
 See our [roadmap](../ROADMAP.md) for tentative features in a 1.0 release.
 
-</details>
-
-<<<<<<< HEAD
 ## Q: What are the system requirements to run Octant?
-
-<details><summary> Answer: </summary>
 
 Octant supports running on macOS, Windows and Linux using either [pre-built binaries](https://github.com/vmware/octant/releases) or [building directly from source.](https://github.com/vmware/octant/blob/master/HACKING.md)
 
 Octant requires an active KUBECONFIG (i.e. kubectl configured and working).
 
 Octant does not reqiure special permissions within your cluster because it uses your local kubeconfig information.
-=======
-## Q: What are the requirements to run Octant?
-
-<details><summary> Answer: </summary>
-
-...
->>>>>>> Add FAQ
-
-</details>
 
 ## Q: How can I configure Octant to run in my Cluster?
 
-<details><summary> Answer: </summary>
-
 While Octant is designed to run on a developers desktop or laptop, it is possible to configure Octant to run inside a Kubernetes Cluster. Instructions are located here: https://github.com/vmware/octant/tree/master/examples/in-cluster
 
-</details>
-
-<<<<<<< HEAD
 ## Q: Where can I get help with Octant?
-
-<details><summary>Answer: </summary>
 
 The best way to get help is to file an issue on GitHub:
 - https://github.com/vmware/octant/issues 
-
 
 You can also reach out in our communities:
 
@@ -230,15 +165,8 @@ You can also reach out in our communities:
 - In Google Groups
     - https://groups.google.com/forum/#!forum/project-octant/
 
-</details>
-
-=======
->>>>>>> Add FAQ
 ## Q: Where is the Octant community?
 
-<details><summary> Answer: </summary>
-
-<<<<<<< HEAD
 We welcome community engagement in the following places:
 
 - On Slack 
@@ -249,15 +177,3 @@ We welcome community engagement in the following places:
 - In Google Groups
     - https://groups.google.com/forum/#!forum/project-octant/
 
-
-</details>
-
-
-
-
-=======
-Community info...
-
-</details>
-
->>>>>>> Add FAQ
