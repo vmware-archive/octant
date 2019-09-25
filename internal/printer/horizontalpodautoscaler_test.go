@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/view/component"
-	"k8s.io/api/autoscaling/v2beta2"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -29,8 +29,9 @@ func Test_HorizontalPodAutoscalerListHandler(t *testing.T) {
 	}
 
 	now := testutil.Time()
+	var minReplicas int32 = 1
 
-	object := &v2beta2.HorizontalPodAutoscaler{
+	object := &autoscalingv1.HorizontalPodAutoscaler{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "autoscaling/v1",
 			Kind:       "HorizontalPodAutoscaler",
@@ -43,25 +44,35 @@ func Test_HorizontalPodAutoscalerListHandler(t *testing.T) {
 			},
 			Labels: objectLabels,
 		},
+		Spec: autoscalingv1.HorizontalPodAutoscalerSpec{
+			MinReplicas: &minReplicas,
+			MaxReplicas: 10,
+		},
+		Status: autoscalingv1.HorizontalPodAutoscalerStatus{
+			CurrentReplicas: 2,
+		},
 	}
 
 	tpo.PathForObject(object, object.Name, "/path")
 
-	list := &v2beta2.HorizontalPodAutoscalerList{
-		Items: []v2beta2.HorizontalPodAutoscaler{*object},
+	list := &autoscalingv1.HorizontalPodAutoscalerList{
+		Items: []autoscalingv1.HorizontalPodAutoscaler{*object},
 	}
 
 	ctx := context.Background()
 	got, err := HorizontalPodAutoscalerListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 
-	cols := component.NewTableCols("Name", "Labels", "Targets", "Age")
+	cols := component.NewTableCols("Name", "Labels", "Targets", "Minimum Pods", "Maximum Pods", "Replicas", "Age")
 	expected := component.NewTable("Horizontal Pod Autoscalers", "We couldn't find any horizontal pod autoscalers", cols)
 	expected.Add(component.TableRow{
-		"Name":    component.NewLink("", "horizontalpodautoscaler", "/path"),
-		"Labels":  component.NewLabels(objectLabels),
-		"Targets": component.NewText("placeholder"),
-		"Age":     component.NewTimestamp(now),
+		"Name":         component.NewLink("", "horizontalpodautoscaler", "/path"),
+		"Labels":       component.NewLabels(objectLabels),
+		"Targets":      component.NewText("placeholder"),
+		"Minimum Pods": component.NewText("1"),
+		"Maximum Pods": component.NewText("10"),
+		"Replicas":     component.NewText("2"),
+		"Age":          component.NewTimestamp(now),
 	})
 
 	component.AssertEqual(t, expected, got)
@@ -74,7 +85,7 @@ func Test_HorizontalPodAutoscalerConfiguration(t *testing.T) {
 	hpa.Spec.MaxReplicas = 10
 
 	deployment := testutil.CreateDeployment("deployment")
-	hpa.Spec.ScaleTargetRef = v2beta2.CrossVersionObjectReference{
+	hpa.Spec.ScaleTargetRef = autoscalingv1.CrossVersionObjectReference{
 		Kind:       deployment.Kind,
 		APIVersion: deployment.APIVersion,
 		Name:       deployment.Name,
@@ -82,7 +93,7 @@ func Test_HorizontalPodAutoscalerConfiguration(t *testing.T) {
 
 	cases := []struct {
 		name                    string
-		horizontalPodAutoscaler *v2beta2.HorizontalPodAutoscaler
+		horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler
 		expected                component.Component
 		isErr                   bool
 	}{

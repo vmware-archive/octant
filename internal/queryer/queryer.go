@@ -14,6 +14,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
@@ -46,6 +47,7 @@ type Queryer interface {
 	Events(ctx context.Context, object metav1.Object) ([]*corev1.Event, error)
 	IngressesForService(ctx context.Context, service *corev1.Service) ([]*extv1beta1.Ingress, error)
 	OwnerReference(ctx context.Context, object *unstructured.Unstructured) (bool, *unstructured.Unstructured, error)
+	ScaleTarget(ctx context.Context, hpa *autoscalingv1.HorizontalPodAutoscaler) (map[string]interface{}, error)
 	PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error)
 	ServicesForIngress(ctx context.Context, ingress *extv1beta1.Ingress) (*unstructured.UnstructuredList, error)
 	ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Service, error)
@@ -296,6 +298,7 @@ var allowed = []schema.GroupVersionKind{
 	gvk.ExtReplicaSet,
 	gvk.ReplicationController,
 	gvk.StatefulSet,
+	gvk.HorizontalPodAutoscaler,
 	gvk.Ingress,
 	gvk.Service,
 	gvk.ConfigMap,
@@ -475,6 +478,66 @@ func (osq *ObjectStoreQueryer) OwnerReference(ctx context.Context, object *unstr
 	default:
 		return false, nil, errors.New("unable to handle more than one owner reference")
 	}
+}
+
+func (osq *ObjectStoreQueryer) ScaleTarget(ctx context.Context, hpa *autoscalingv1.HorizontalPodAutoscaler) (map[string]interface{}, error) {
+	if hpa == nil {
+		return nil, errors.New("can't find scale target for nil hpa")
+	}
+
+	key := store.Key{
+		Namespace:  hpa.Namespace,
+		APIVersion: hpa.Spec.ScaleTargetRef.APIVersion,
+		Kind:       hpa.Spec.ScaleTargetRef.Kind,
+		Name:       hpa.Spec.ScaleTargetRef.Name,
+	}
+
+	u, found, err := osq.objectStore.Get(ctx, key)
+	if err != nil {
+		return nil, errors.WithMessagef(err, "retrieve scale target %q from namespace %q", key.Name, key.Namespace)
+	}
+
+	if !found {
+		return nil, errors.Errorf("scale target %q from namespace %q does not exist", key.Name, key.Namespace)
+	}
+
+	switch key.Kind {
+	case "Deployment":
+		deployment := &appsv1.Deployment{}
+		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, deployment); err != nil {
+			return nil, errors.WithMessage(err, "converting unstructured object to deployment")
+		}
+
+		object, err := runtime.DefaultUnstructuredConverter.ToUnstructured(deployment)
+		if err != nil {
+			return nil, err
+		}
+		return object, nil
+	case "ReplicaSet":
+		replicaSet := &appsv1.ReplicaSet{}
+		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, replicaSet); err != nil {
+			return nil, errors.WithMessage(err, "converting unstructured object to replica set")
+		}
+
+		object, err := runtime.DefaultUnstructuredConverter.ToUnstructured(replicaSet)
+		if err != nil {
+			return nil, err
+		}
+		return object, nil
+	case "ReplicationController":
+		replicationController := &corev1.ReplicationController{}
+		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, replicationController); err != nil {
+			return nil, errors.WithMessage(err, "converting unstructured object to replication controller")
+		}
+
+		object, err := runtime.DefaultUnstructuredConverter.ToUnstructured(replicationController)
+		if err != nil {
+			return nil, err
+		}
+		return object, nil
+	}
+
+	return nil, errors.Wrap(err, "invalid scale target")
 }
 
 func (osq *ObjectStoreQueryer) PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error) {

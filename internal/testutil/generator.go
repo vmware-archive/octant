@@ -7,7 +7,7 @@ package testutil
 
 import (
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/api/autoscaling/v2beta2"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -171,8 +171,8 @@ func CreateEvent(name string) *corev1.Event {
 }
 
 // CreateHorizontalPodAutoscaler creates a horizontal pod autoscaler
-func CreateHorizontalPodAutoscaler(name string) *v2beta2.HorizontalPodAutoscaler {
-	return &v2beta2.HorizontalPodAutoscaler{
+func CreateHorizontalPodAutoscaler(name string) *autoscalingv1.HorizontalPodAutoscaler {
+	return &autoscalingv1.HorizontalPodAutoscaler{
 		TypeMeta:   genTypeMeta(gvk.HorizontalPodAutoscaler),
 		ObjectMeta: genObjectMeta(name, true),
 	}
