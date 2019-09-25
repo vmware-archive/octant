@@ -128,6 +128,12 @@ Release information can be found here:
 Open Issues can be found here: 
 - [Open Issues](https://github.com/vmware/octant/issues)
 
+## Q: Can Octant connect to multiple clusters at the same time?
+
+No.
+
+Octant can only connect to a single cluster at a time, but for convenience provides a context switcher that allows you to select the current context without the need to restart.
+
 ## Q: Why doesn't Octant support Feature X?
 
 Octant is a community driven project with contributions from volunteers around the world. 
