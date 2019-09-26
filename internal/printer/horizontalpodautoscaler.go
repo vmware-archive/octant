@@ -441,6 +441,16 @@ func convertToAutoscaling(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAu
 	return convertedHPA, nil
 }
 
+// convertToV1 converts an the internal type to v1
+func convertToV1(horizontalPodAutoscaler *autoscaling.HorizontalPodAutoscaler) (*autoscalingv1.HorizontalPodAutoscaler, error) {
+	convertedHPA := &autoscalingv1.HorizontalPodAutoscaler{}
+	hpa := horizontalPodAutoscaler.DeepCopy()
+	if err := autoscalingapiv1.Convert_autoscaling_HorizontalPodAutoscaler_To_v1_HorizontalPodAutoscaler(hpa, convertedHPA, nil); err != nil {
+		return nil, err
+	}
+	return convertedHPA, nil
+}
+
 func getMetricsOverview(metricSpec []autoscaling.MetricSpec, metricStatus []autoscaling.MetricStatus) (string, error) {
 	var targets = make(map[string]string)
 	var currents = make(map[string]string)
