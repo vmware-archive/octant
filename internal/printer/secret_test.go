@@ -121,7 +121,8 @@ func Test_SecretConfig(t *testing.T) {
 func Test_describeSecretData(t *testing.T) {
 	secret := testutil.CreateSecret("secret")
 	secret.Data = map[string][]byte{
-		"foo": []byte{0, 1, 2, 3},
+		"foo": {0, 1, 2, 3},
+		"bar": {0, 1, 2, 3},
 	}
 
 	got, err := describeSecretData(*secret)
@@ -130,9 +131,8 @@ func Test_describeSecretData(t *testing.T) {
 	cols := component.NewTableCols("Key")
 	expected := component.NewTable("Data", "This secret has no data!", cols)
 	expected.Add([]component.TableRow{
-		{
-			"Key": component.NewText("foo"),
-		},
+		{"Key": component.NewText("bar")},
+		{"Key": component.NewText("foo")},
 	}...)
 
 	component.AssertEqual(t, expected, got)

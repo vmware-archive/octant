@@ -127,6 +127,7 @@ func Test_describeConfigMapData(t *testing.T) {
 	configMap := testutil.CreateConfigMap("configmap")
 	configMap.Data = map[string]string{
 		"foo": "bar",
+		"bar": "foo",
 	}
 
 	got, err := describeConfigMapData(configMap)
@@ -135,10 +136,8 @@ func Test_describeConfigMapData(t *testing.T) {
 	cols := component.NewTableCols("Key", "Value")
 	expected := component.NewTable("Data", "No data has been configured for this config map!", cols)
 	expected.Add([]component.TableRow{
-		{
-			"Key":   component.NewText("foo"),
-			"Value": component.NewText("bar"),
-		},
+		{"Key": component.NewText("bar"), "Value": component.NewText("foo")},
+		{"Key": component.NewText("foo"), "Value": component.NewText("bar")},
 	}...)
 
 	component.AssertEqual(t, expected, got)
