@@ -108,6 +108,8 @@ func describeSecretData(secret corev1.Secret) (*component.Table, error) {
 		table.Add(row)
 	}
 
+	table.Sort("Key", false)
+
 	return table, nil
 }
 

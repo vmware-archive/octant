@@ -102,24 +102,26 @@ func (c *ConfigMapConfiguration) Create(options Options) (*component.Summary, er
 	return summary, nil
 }
 
-// describeDataTable returns a table containing configmap data
+// describeDataTable returns a table containing config map data
 func describeConfigMapData(cm *corev1.ConfigMap) (*component.Table, error) {
 	if cm == nil {
 		return nil, errors.New("config map is nil")
 	}
 
 	cols := component.NewTableCols("Key", "Value")
-	tbl := component.NewTable("Data", "No data has been configured for this config map!", cols)
+	table := component.NewTable("Data", "No data has been configured for this config map!", cols)
 
 	rows, err := describeConfigMapDataRows(cm)
 	if err != nil {
 		return nil, err
 	}
 	for _, row := range rows {
-		tbl.Add(row)
+		table.Add(row)
 	}
 
-	return tbl, nil
+	table.Sort("Key", false)
+
+	return table, nil
 }
 
 // describeDataRows prints key value pairs from data
