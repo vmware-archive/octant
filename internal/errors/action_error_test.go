@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package errors
 
 import (
@@ -8,12 +13,12 @@ import (
 	"github.com/vmware/octant/pkg/action"
 )
 
-func TestNewInternalError(t *testing.T) {
+func TestNewActionError(t *testing.T) {
 	requestType := "errorList"
 	payload := action.Payload{}
 	err := fmt.Errorf("setNamespace error")
 
-	intErr := NewInternalError(requestType, payload, err)
+	intErr := NewActionError(requestType, payload, err)
 	assert.Equal(t, payload, intErr.Payload())
 	assert.Equal(t, requestType, intErr.RequestType())
 	assert.Equal(t, fmt.Sprintf("%s: %s", requestType, err), intErr.Error())
