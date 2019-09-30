@@ -17,7 +17,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware/octant/internal/config"
+	internalErr "github.com/vmware/octant/internal/errors"
 	"github.com/vmware/octant/internal/link"
+	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/printer"
 	"github.com/vmware/octant/internal/queryer"
 	"github.com/vmware/octant/pkg/store"
@@ -35,15 +37,15 @@ func NewObjectLoaderFactory(dashConfig config.Dash) *ObjectLoaderFactory {
 }
 
 func (f *ObjectLoaderFactory) LoadObject(ctx context.Context, namespace string, fields map[string]string, objectStoreKey store.Key) (*unstructured.Unstructured, error) {
-	return LoadObject(ctx, f.dashConfig.ObjectStore(), namespace, fields, objectStoreKey)
+	return LoadObject(ctx, f.dashConfig.ObjectStore(), f.dashConfig.ErrorStore(), namespace, fields, objectStoreKey)
 }
 
 func (f *ObjectLoaderFactory) LoadObjects(ctx context.Context, namespace string, fields map[string]string, objectStoreKeys []store.Key) (*unstructured.UnstructuredList, error) {
-	return LoadObjects(ctx, f.dashConfig.ObjectStore(), namespace, fields, objectStoreKeys)
+	return LoadObjects(ctx, f.dashConfig.ObjectStore(), f.dashConfig.ErrorStore(), namespace, fields, objectStoreKeys)
 }
 
 // loadObject loads a single object from the object store.
-func LoadObject(ctx context.Context, objectStore store.Store, namespace string, fields map[string]string, objectStoreKey store.Key) (*unstructured.Unstructured, error) {
+func LoadObject(ctx context.Context, objectStore store.Store, errorStore internalErr.ErrorStore, namespace string, fields map[string]string, objectStoreKey store.Key) (*unstructured.Unstructured, error) {
 	objectStoreKey.Namespace = namespace
 
 	if name, ok := fields["name"]; ok && name != "" {
@@ -52,6 +54,15 @@ func LoadObject(ctx context.Context, objectStore store.Store, namespace string, 
 
 	object, found, err := objectStore.Get(ctx, objectStoreKey)
 	if err != nil {
+		aErr, ok := err.(*internalErr.AccessError)
+		if ok {
+			found := errorStore.Add(aErr)
+			if !found {
+				logger := log.From(ctx)
+				logger.WithErr(aErr).Errorf("loadObject")
+			}
+			return &unstructured.Unstructured{}, nil
+		}
 		return nil, err
 	}
 	if !found {
@@ -62,7 +73,7 @@ func LoadObject(ctx context.Context, objectStore store.Store, namespace string, 
 }
 
 // loadObjects loads objects from the object store sorted by their name.
-func LoadObjects(ctx context.Context, objectStore store.Store, namespace string, fields map[string]string, objectStoreKeys []store.Key) (*unstructured.UnstructuredList, error) {
+func LoadObjects(ctx context.Context, objectStore store.Store, errorStore internalErr.ErrorStore, namespace string, fields map[string]string, objectStoreKeys []store.Key) (*unstructured.UnstructuredList, error) {
 	list := &unstructured.UnstructuredList{}
 
 	for _, objectStoreKey := range objectStoreKeys {
@@ -74,6 +85,15 @@ func LoadObjects(ctx context.Context, objectStore store.Store, namespace string,
 
 		storedObjects, _, err := objectStore.List(ctx, objectStoreKey)
 		if err != nil {
+			aErr, ok := err.(*internalErr.AccessError)
+			if ok {
+				found := errorStore.Add(aErr)
+				if !found {
+					logger := log.From(ctx)
+					logger.WithErr(aErr).Errorf("load object")
+				}
+				return &unstructured.UnstructuredList{}, nil
+			}
 			return nil, err
 		}
 
