@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware/octant/internal/cluster"
+	internalErr "github.com/vmware/octant/internal/errors"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/portforward"
@@ -77,6 +78,8 @@ type Dash interface {
 
 	ObjectStore() store.Store
 
+	ErrorStore() internalErr.ErrorStore
+
 	Logger() log.Logger
 
 	PluginManager() plugin.ManagerInterface
@@ -103,6 +106,7 @@ type Live struct {
 	logger             log.Logger
 	moduleManager      module.ManagerInterface
 	objectStore        store.Store
+	errorStore         internalErr.ErrorStore
 	pluginManager      plugin.ManagerInterface
 	portForwarder      portforward.PortForwarder
 	kubeConfigPath     string
@@ -120,6 +124,7 @@ func NewLiveConfig(
 	logger log.Logger,
 	moduleManager module.ManagerInterface,
 	objectStore store.Store,
+	errorStore internalErr.ErrorStore,
 	pluginManager plugin.ManagerInterface,
 	portForwarder portforward.PortForwarder,
 	currentContextName string,
@@ -132,6 +137,7 @@ func NewLiveConfig(
 		logger:             logger,
 		moduleManager:      moduleManager,
 		objectStore:        objectStore,
+		errorStore:         errorStore,
 		pluginManager:      pluginManager,
 		portForwarder:      portForwarder,
 		currentContextName: currentContextName,
@@ -162,6 +168,11 @@ func (l *Live) CRDWatcher() CRDWatcher {
 // Store returns an object store.
 func (l *Live) ObjectStore() store.Store {
 	return l.objectStore
+}
+
+// ErrorStore returns an error store.
+func (l *Live) ErrorStore() internalErr.ErrorStore {
+	return l.errorStore
 }
 
 // KubeConfigPath returns the kube config path.

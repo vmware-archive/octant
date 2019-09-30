@@ -27,6 +27,7 @@ import (
 	"github.com/vmware/octant/internal/cluster"
 	"github.com/vmware/octant/internal/config"
 	"github.com/vmware/octant/internal/describer"
+	internalErr "github.com/vmware/octant/internal/errors"
 	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/internal/module"
 	"github.com/vmware/octant/internal/modules/applications"
@@ -95,7 +96,12 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return errors.Wrap(err, "initializing store")
 	}
 
-	crdWatcher, err := describer.NewDefaultCRDWatcher(ctx, appObjectStore)
+	errorStore, err := internalErr.NewErrorStore()
+	if err != nil {
+		return errors.Wrap(err, "initializing error store")
+	}
+
+	crdWatcher, err := describer.NewDefaultCRDWatcher(ctx, appObjectStore, errorStore)
 	if err != nil {
 		return errors.Wrap(err, "initializing CRD watcher")
 	}
@@ -138,6 +144,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		logger,
 		moduleManager,
 		appObjectStore,
+		errorStore,
 		pluginManager,
 		portForwarder,
 		options.Context,

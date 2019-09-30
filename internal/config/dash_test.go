@@ -16,6 +16,7 @@ import (
 
 	"github.com/vmware/octant/internal/cluster"
 	clusterFake "github.com/vmware/octant/internal/cluster/fake"
+	internalErr "github.com/vmware/octant/internal/errors"
 	"github.com/vmware/octant/internal/log"
 	moduleFake "github.com/vmware/octant/internal/module/fake"
 	portForwardFake "github.com/vmware/octant/internal/portforward/fake"
@@ -80,6 +81,8 @@ func TestLiveConfig(t *testing.T) {
 		Return("/pod", nil)
 
 	objectStore := objectStoreFake.NewMockStore(controller)
+	errorStore, err := internalErr.NewErrorStore()
+	assert.NoError(t, err)
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 	portForwarder := portForwardFake.NewMockPortForwarder(controller)
 	kubeConfigPath := "/path"
@@ -90,7 +93,7 @@ func TestLiveConfig(t *testing.T) {
 	contextName := "context-name"
 	restConfigOptions := cluster.RESTConfigOptions{}
 
-	config := NewLiveConfig(clusterClient, crdWatcher, kubeConfigPath, logger, moduleManager, objectStore, pluginManager, portForwarder, contextName, restConfigOptions)
+	config := NewLiveConfig(clusterClient, crdWatcher, kubeConfigPath, logger, moduleManager, objectStore, errorStore, pluginManager, portForwarder, contextName, restConfigOptions)
 
 	assert.NoError(t, config.Validate())
 	assert.Equal(t, clusterClient, config.ClusterClient())
