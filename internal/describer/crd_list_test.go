@@ -59,7 +59,6 @@ func Test_crdListDescriber(t *testing.T) {
 
 	dashConfig := configFake.NewMockDash(controller)
 	dashConfig.EXPECT().ObjectStore().Return(o).AnyTimes()
-	dashConfig.EXPECT().ErrorStore().Return(o).AnyTImes()
 
 	options := Options{
 		Dash: dashConfig,
