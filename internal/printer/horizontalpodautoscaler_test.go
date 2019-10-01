@@ -13,6 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -110,7 +111,7 @@ func Test_HorizontalPodAutoscalerConfiguration(t *testing.T) {
 			horizontalPodAutoscaler: hpa,
 			expected: component.NewSummary("Configuration", []component.SummarySection{
 				{
-					Header:  "Reference",
+					Header:  "Scale target",
 					Content: component.NewLink("", "deployment", "/deployment"),
 				},
 				{
@@ -135,6 +136,8 @@ func Test_HorizontalPodAutoscalerConfiguration(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
+			ctx := context.Background()
+
 			tpo := newTestPrinterOptions(controller)
 			printOptions := tpo.ToOptions()
 
@@ -146,7 +149,17 @@ func Test_HorizontalPodAutoscalerConfiguration(t *testing.T) {
 				Return(scaleTarget, nil).
 				AnyTimes()
 
-			summary, err := hc.Create(printOptions)
+			if tc.horizontalPodAutoscaler != nil {
+				key := store.Key{
+					APIVersion: deployment.APIVersion,
+					Kind:       deployment.Kind,
+					Name:       deployment.Name,
+					Namespace:  deployment.Namespace,
+				}
+				tpo.objectStore.EXPECT().Get(ctx, gomock.Eq(key)).Return(testutil.ToUnstructured(t, deployment), true, nil)
+			}
+
+			summary, err := hc.Create(ctx, printOptions)
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -180,6 +193,10 @@ func Test_createHorizontalPodAutoscalerSummaryStatus(t *testing.T) {
 			name:                    "in general",
 			horizontalPodAutoscaler: hpa,
 			expected: component.NewSummary("Status", []component.SummarySection{
+				{
+					Header:  "Targets",
+					Content: component.NewText("3/80%"),
+				},
 				{
 					Header:  "Observed Generation",
 					Content: component.NewText("1"),

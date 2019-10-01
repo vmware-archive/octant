@@ -9,8 +9,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"github.com/pkg/errors"
 	"github.com/vmware/octant/internal/gvk"
 	"github.com/vmware/octant/internal/queryer"
+	"github.com/vmware/octant/internal/util/kubernetes"
 )
 
 // HorizontalPodAutoscaler is a typed visitor for services.
@@ -48,14 +50,17 @@ func (s *HorizontalPodAutoscaler) Visit(ctx context.Context, object *unstructure
 			return err
 		}
 
-		g.Go(func() error {
-			u := &unstructured.Unstructured{Object: target}
-			if err := visitor.Visit(ctx, u, handler, true); err != nil {
-				return err
-			}
+		if target != nil {
+			g.Go(func() error {
+				u := &unstructured.Unstructured{Object: target}
+				if err := visitor.Visit(ctx, u, handler, true); err != nil {
+					return errors.Wrapf(err, "horizontal pod scaler %s visit scale target",
+						kubernetes.PrintObject(hpa))
+				}
 
-			return handler.AddEdge(ctx, object, u)
-		})
+				return handler.AddEdge(ctx, object, u)
+			})
+		}
 
 		return nil
 	})

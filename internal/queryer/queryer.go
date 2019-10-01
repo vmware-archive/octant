@@ -497,44 +497,42 @@ func (osq *ObjectStoreQueryer) ScaleTarget(ctx context.Context, hpa *autoscaling
 		return nil, errors.WithMessagef(err, "retrieve scale target %q from namespace %q", key.Name, key.Namespace)
 	}
 
-	if !found {
-		return nil, errors.Errorf("scale target %q from namespace %q does not exist", key.Name, key.Namespace)
-	}
+	if found {
+		switch key.Kind {
+		case "Deployment":
+			deployment := &appsv1.Deployment{}
+			if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, deployment); err != nil {
+				return nil, errors.WithMessage(err, "converting unstructured object to deployment")
+			}
 
-	switch key.Kind {
-	case "Deployment":
-		deployment := &appsv1.Deployment{}
-		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, deployment); err != nil {
-			return nil, errors.WithMessage(err, "converting unstructured object to deployment")
-		}
+			object, err := runtime.DefaultUnstructuredConverter.ToUnstructured(deployment)
+			if err != nil {
+				return nil, err
+			}
+			return object, nil
+		case "ReplicaSet":
+			replicaSet := &appsv1.ReplicaSet{}
+			if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, replicaSet); err != nil {
+				return nil, errors.WithMessage(err, "converting unstructured object to replica set")
+			}
 
-		object, err := runtime.DefaultUnstructuredConverter.ToUnstructured(deployment)
-		if err != nil {
-			return nil, err
-		}
-		return object, nil
-	case "ReplicaSet":
-		replicaSet := &appsv1.ReplicaSet{}
-		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, replicaSet); err != nil {
-			return nil, errors.WithMessage(err, "converting unstructured object to replica set")
-		}
+			object, err := runtime.DefaultUnstructuredConverter.ToUnstructured(replicaSet)
+			if err != nil {
+				return nil, err
+			}
+			return object, nil
+		case "ReplicationController":
+			replicationController := &corev1.ReplicationController{}
+			if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, replicationController); err != nil {
+				return nil, errors.WithMessage(err, "converting unstructured object to replication controller")
+			}
 
-		object, err := runtime.DefaultUnstructuredConverter.ToUnstructured(replicaSet)
-		if err != nil {
-			return nil, err
+			object, err := runtime.DefaultUnstructuredConverter.ToUnstructured(replicationController)
+			if err != nil {
+				return nil, err
+			}
+			return object, nil
 		}
-		return object, nil
-	case "ReplicationController":
-		replicationController := &corev1.ReplicationController{}
-		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, replicationController); err != nil {
-			return nil, errors.WithMessage(err, "converting unstructured object to replication controller")
-		}
-
-		object, err := runtime.DefaultUnstructuredConverter.ToUnstructured(replicationController)
-		if err != nil {
-			return nil, err
-		}
-		return object, nil
 	}
 
 	return nil, errors.Wrap(err, "invalid scale target")

@@ -19,6 +19,7 @@ import (
 	autoscalingapiv1 "k8s.io/kubernetes/pkg/apis/autoscaling/v1"
 	"k8s.io/kubernetes/pkg/apis/core"
 
+	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
 
@@ -44,7 +45,7 @@ func HorizontalPodAutoscalerListHandler(_ context.Context, list *autoscalingv1.H
 			return nil, errors.Wrap(err, "can't convert hpa")
 		}
 
-		aggregatedMetricTargets, err := getMetricsOverview(convertedHPA.Spec.Metrics, convertedHPA.Status.CurrentMetrics)
+		aggregatedMetricTargets, err := getCombinedMetrics(convertedHPA.Spec.Metrics, convertedHPA.Status.CurrentMetrics)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't combine metrics")
 		}
@@ -72,7 +73,7 @@ func HorizontalPodAutoscalerHandler(ctx context.Context, horizontalPodAutoscaler
 		return nil, err
 	}
 
-	if err := hh.Config(options); err != nil {
+	if err := hh.Config(ctx, options); err != nil {
 		return nil, errors.Wrap(err, "print horizontalpodautoscaler configuration")
 	}
 
@@ -96,11 +97,23 @@ func createHorizontalPodAutoscalerSummaryStatus(horizontalPodAutoscaler *autosca
 		return nil, errors.New("unable to generate status for a nil horizontalpodautoscaler")
 	}
 
+	convertedHPA, err := convertToAutoscaling(horizontalPodAutoscaler)
+	if err != nil {
+		return nil, errors.Wrap(err, "can't convert hpa")
+	}
+
+	aggregatedMetricTargets, err := getCombinedMetrics(convertedHPA.Spec.Metrics, convertedHPA.Status.CurrentMetrics)
+	if err != nil {
+		return nil, errors.Wrap(err, "can't combine metrics")
+	}
+
 	status := horizontalPodAutoscaler.Status
 
 	summary := component.NewSummary("Status")
 
 	sections := component.SummarySections{}
+
+	sections.AddText("Targets", aggregatedMetricTargets)
 
 	if status.ObservedGeneration != nil {
 		sections = append(sections, component.SummarySection{
@@ -260,7 +273,7 @@ func NewHorizontalPodAutoscalerConfiguration(hpa *autoscalingv1.HorizontalPodAut
 }
 
 type horizontalPodAutoscalerObject interface {
-	Config(options Options) error
+	Config(ctx context.Context, options Options) error
 	Status() error
 	Metrics(ctx context.Context, options Options) error
 	Conditions() error
@@ -268,7 +281,7 @@ type horizontalPodAutoscalerObject interface {
 
 type horizontalPodAutoscalerHandler struct {
 	horizontalPodAutoScaler *autoscalingv1.HorizontalPodAutoscaler
-	configFunc              func(*autoscalingv1.HorizontalPodAutoscaler, Options) (*component.Summary, error)
+	configFunc              func(context.Context, *autoscalingv1.HorizontalPodAutoscaler, Options) (*component.Summary, error)
 	statusFunc              func(*autoscalingv1.HorizontalPodAutoscaler) (*component.Summary, error)
 	metricsFunc             func(context.Context, *autoscaling.MetricStatus, Options) (*component.Summary, error)
 	conditionsFunc          func(*autoscalingv1.HorizontalPodAutoscaler) (*component.Table, error)
@@ -276,7 +289,7 @@ type horizontalPodAutoscalerHandler struct {
 }
 
 // Create creates a horizontalpodautoscaler configuration sumamry
-func (hc *HorizontalPodAutoscalerConfiguration) Create(options Options) (*component.Summary, error) {
+func (hc *HorizontalPodAutoscalerConfiguration) Create(ctx context.Context, options Options) (*component.Summary, error) {
 	if hc.horizontalPodAutoscaler == nil {
 		return nil, errors.New("horizontalpodautoscaler is nil")
 	}
@@ -285,13 +298,13 @@ func (hc *HorizontalPodAutoscalerConfiguration) Create(options Options) (*compon
 
 	sections := component.SummarySections{}
 
-	scaleTarget, err := forScaleTarget(hpa, &hpa.Spec.ScaleTargetRef, options)
+	scaleTarget, err := forScaleTarget(ctx, hpa, &hpa.Spec.ScaleTargetRef, options)
 	if err != nil {
 		return nil, err
 	}
 
 	sections = append(sections, component.SummarySection{
-		Header:  "Reference",
+		Header:  "Scale target",
 		Content: scaleTarget,
 	})
 
@@ -327,8 +340,8 @@ func newHorizontalPodAutoscalerHandler(horizontalPodAutoscaler *autoscalingv1.Ho
 	return hh, nil
 }
 
-func (h *horizontalPodAutoscalerHandler) Config(options Options) error {
-	out, err := h.configFunc(h.horizontalPodAutoScaler, options)
+func (h *horizontalPodAutoscalerHandler) Config(ctx context.Context, options Options) error {
+	out, err := h.configFunc(ctx, h.horizontalPodAutoScaler, options)
 	if err != nil {
 		return err
 	}
@@ -337,8 +350,8 @@ func (h *horizontalPodAutoscalerHandler) Config(options Options) error {
 	return nil
 }
 
-func defaultHorizontalPodAutoscalerConfig(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler, options Options) (*component.Summary, error) {
-	return NewHorizontalPodAutoscalerConfiguration(horizontalPodAutoscaler).Create(options)
+func defaultHorizontalPodAutoscalerConfig(ctx context.Context, horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler, options Options) (*component.Summary, error) {
+	return NewHorizontalPodAutoscalerConfiguration(horizontalPodAutoscaler).Create(ctx, options)
 }
 
 func (h *horizontalPodAutoscalerHandler) Status() error {
@@ -411,7 +424,7 @@ func defaultHorizontalPodAutoscalerConditions(horizontalPodAutoscaler *autoscali
 }
 
 // forScaleTarget returns a scale target for a cross version object reference
-func forScaleTarget(object runtime.Object, scaleTarget *autoscalingv1.CrossVersionObjectReference, options Options) (*component.Link, error) {
+func forScaleTarget(ctx context.Context, object runtime.Object, scaleTarget *autoscalingv1.CrossVersionObjectReference, options Options) (*component.Link, error) {
 	if scaleTarget == nil || object == nil {
 		return component.NewLink("", "none", ""), nil
 	}
@@ -419,6 +432,19 @@ func forScaleTarget(object runtime.Object, scaleTarget *autoscalingv1.CrossVersi
 	accessor := meta.NewAccessor()
 	ns, err := accessor.Namespace(object)
 	if err != nil {
+		return component.NewLink("", "none", ""), nil
+	}
+
+	key := store.Key{
+		Namespace:  ns,
+		APIVersion: scaleTarget.APIVersion,
+		Kind:       scaleTarget.Kind,
+		Name:       scaleTarget.Name,
+	}
+
+	objectStore := options.DashConfig.ObjectStore()
+	_, found, err := objectStore.Get(ctx, key)
+	if err != nil || !found {
 		return component.NewLink("", "none", ""), nil
 	}
 
@@ -451,7 +477,7 @@ func convertToV1(horizontalPodAutoscaler *autoscaling.HorizontalPodAutoscaler) (
 	return convertedHPA, nil
 }
 
-func getMetricsOverview(metricSpec []autoscaling.MetricSpec, metricStatus []autoscaling.MetricStatus) (string, error) {
+func getCombinedMetrics(metricSpec []autoscaling.MetricSpec, metricStatus []autoscaling.MetricStatus) (string, error) {
 	var targets = make(map[string]string)
 	var currents = make(map[string]string)
 

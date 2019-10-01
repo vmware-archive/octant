@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
@@ -890,6 +891,38 @@ func TestObjectStoreQueryer_ServiceAccountForPod(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, serviceAccount, got)
+}
+
+func TestObjectStoreQueryer_ScaleTarget(t *testing.T) {
+	deployment := testutil.CreateDeployment("deployment")
+
+	hpa := testutil.CreateHorizontalPodAutoscaler("hpa")
+	hpa.Spec.ScaleTargetRef = autoscalingv1.CrossVersionObjectReference{
+		APIVersion: deployment.APIVersion,
+		Kind:       deployment.Kind,
+		Name:       deployment.Name,
+	}
+
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	o := storeFake.NewMockStore(controller)
+	key, err := store.KeyFromObject(deployment)
+	require.NoError(t, err)
+	o.EXPECT().
+		Get(gomock.Any(), key).
+		Return(testutil.ToUnstructured(t, deployment), true, nil)
+
+	discovery := queryerFake.NewMockDiscoveryInterface(controller)
+
+	q := New(o, discovery)
+
+	ctx := context.Background()
+	got, err := q.ScaleTarget(ctx, hpa)
+	require.NoError(t, err)
+
+	u := testutil.ToUnstructured(t, deployment)
+	require.Equal(t, u.Object, got)
 }
 
 func TestCacheQueryer_getSelector(t *testing.T) {
