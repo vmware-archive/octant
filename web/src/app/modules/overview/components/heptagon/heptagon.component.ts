@@ -12,6 +12,7 @@ import {
   Output,
 } from '@angular/core';
 
+import { NamespaceService } from 'src/app/services/namespace/namespace.service';
 import { PodStatus } from '../../models/pod-status';
 import { Point } from '../../models/point';
 import { Vector } from '../../models/vector';
@@ -40,9 +41,19 @@ export class HeptagonComponent implements OnInit, AfterViewInit {
   @Output()
   hovered = new EventEmitter<boolean>();
 
-  constructor(private elementRef: ElementRef, private router: Router) {}
+  currentNamespace = '';
 
-  ngOnInit() {}
+  constructor(
+    private elementRef: ElementRef,
+    private router: Router,
+    private namespaceService: NamespaceService
+  ) {}
+
+  ngOnInit() {
+    this.namespaceService.activeNamespace.subscribe((namespace: string) => {
+      this.currentNamespace = namespace;
+    });
+  }
 
   ngAfterViewInit(): void {
     const el = this.elementRef.nativeElement;
@@ -104,10 +115,9 @@ export class HeptagonComponent implements OnInit, AfterViewInit {
 
   navigate() {
     this.router.navigate([
-      '/content',
       'overview',
       'namespace',
-      'default',
+      this.currentNamespace,
       'workloads',
       'pods',
       this.status.name,
