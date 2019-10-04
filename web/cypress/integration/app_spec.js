@@ -71,6 +71,7 @@ describe('Octant Integration Tests', () => {
     })
 
     it('check plugin tab', () => {
+        cy.get('[href="#/overview/namespace/' + namespace + '/workloads/pods"]').click()
         cy.contains(/^nginx-deployment-[a-z0-9]+-[a-z0-9]+/).click()
         cy
             .get('[class=nav]')
@@ -81,6 +82,18 @@ describe('Octant Integration Tests', () => {
     
         cy.contains(/Extra Pod Details/).click()
         cy.contains('content')
+    })
+
+    it('check resource viewer', () => {
+        cy.contains(/Resource Viewer/).click()
+        // Check canvas is drawn
+        cy.get('[data-id="layer0-selectbox"]').invoke('width').should('be.greaterThan', 0)
+        cy.get('[data-id="layer2-node"]').click(400, 320, {force: true})
+
+        cy.get('app-heptagon-grid svg g:first').children().should('have.length', 3)
+        cy.get('app-heptagon-grid svg g:first').children().last().click()
+
+        cy.contains(/Container nginx/)
     })
 
     it('cleanup context and namespace', () => {
