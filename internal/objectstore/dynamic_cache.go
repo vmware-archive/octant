@@ -191,7 +191,7 @@ func (dc *DynamicCache) List(ctx context.Context, key store.Key) (*unstructured.
 		if meta.IsNoMatchError(err) {
 			return &unstructured.UnstructuredList{}, false, nil
 		}
-		return nil, false, errors.Wrapf(err, "list access forbidden to %+v", key)
+		return nil, false, err
 	}
 
 	span.Annotate([]trace.Attribute{
@@ -281,7 +281,7 @@ func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.U
 	defer span.End()
 
 	if err := dc.access.HasAccess(ctx, key, "get"); err != nil {
-		return nil, false, errors.Wrapf(err, "get access forbidden to %+v", key)
+		return nil, false, err
 	}
 
 	span.Annotate([]trace.Attribute{
@@ -392,10 +392,8 @@ func (dc *DynamicCache) Delete(ctx context.Context, key store.Key) error {
 	_, span := trace.StartSpan(ctx, "dynamicCache:delete")
 	defer span.End()
 
-	if err := dc.access.HasAccess(ctx, key, "watch"); err != nil {
-		logger := log.From(ctx)
-		logger.Errorf("check access failed: %v, access forbidden to %+v", key)
-		return nil
+	if err := dc.access.HasAccess(ctx, key, "delete"); err != nil {
+		return err
 	}
 
 	dynamicClient, err := dc.client.DynamicClient()

@@ -19,6 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/clock"
 
 	"github.com/vmware/octant/internal/describer"
+	internalErr "github.com/vmware/octant/internal/errors"
 	"github.com/vmware/octant/internal/testutil"
 	"github.com/vmware/octant/pkg/store"
 	storeFake "github.com/vmware/octant/pkg/store/fake"
@@ -110,10 +111,13 @@ func Test_loadObjects(t *testing.T) {
 			o := storeFake.NewMockStore(controller)
 			tc.init(t, o)
 
+			errorStore, err := internalErr.NewErrorStore()
+			require.NoError(t, err)
+
 			namespace := "default"
 
 			ctx := context.Background()
-			got, err := describer.LoadObjects(ctx, o, namespace, tc.fields, tc.keys)
+			got, err := describer.LoadObjects(ctx, o, errorStore, namespace, tc.fields, tc.keys)
 			if tc.isErr {
 				require.Error(t, err)
 				return

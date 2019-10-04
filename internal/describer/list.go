@@ -10,11 +10,9 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/vmware/octant/internal/log"
 	"github.com/vmware/octant/pkg/store"
 	"github.com/vmware/octant/pkg/view/component"
 )
@@ -75,9 +73,7 @@ func (d *List) Describe(ctx context.Context, namespace string, options Options) 
 
 	objectList, err := options.LoadObjects(ctx, namespace, options.Fields, []store.Key{key})
 	if err != nil {
-		logger := log.From(ctx)
-		logger.WithErr(err).Warnf("error loading objects")
-		objectList = &unstructured.UnstructuredList{}
+		return component.EmptyContentResponse, err
 	}
 
 	list := component.NewList(d.title, nil)

@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package errors
 
 import (
@@ -22,8 +27,10 @@ func TestNewError(t *testing.T) {
 	payload := action.Payload{}
 	err = fmt.Errorf("setNavigation error")
 
-	intErr := errStore.NewError(requestType, payload, err)
-	_, found := errStore.Get(intErr.id)
+	intErr := NewActionError(requestType, payload, err)
+	errStore.Add(intErr)
+
+	_, found := errStore.Get(intErr.ID())
 	assert.True(t, found)
 }
 
@@ -35,19 +42,19 @@ func TestErrorStore_Accessors(t *testing.T) {
 	payload := action.Payload{}
 	err = fmt.Errorf("setNamespace error")
 
-	i := NewInternalError(requestType, payload, err)
-	_, found := errStore.Get(i.id)
+	i := NewActionError(requestType, payload, err)
+	_, found := errStore.Get(i.ID())
 	assert.False(t, found)
 
 	errStore.Add(i)
 
-	e, found := errStore.Get(i.id)
+	e, found := errStore.Get(i.ID())
 	assert.True(t, found)
-	assert.Equal(t, i.id, e.id)
+	assert.Equal(t, i.ID(), e.ID())
 
 	l := errStore.List()
 	assert.Len(t, l, 1)
-	assert.Equal(t, i.id, l[0].id)
+	assert.Equal(t, i.ID(), l[0].ID())
 }
 
 func TestErrorStore_ListOrder(t *testing.T) {
@@ -58,11 +65,14 @@ func TestErrorStore_ListOrder(t *testing.T) {
 	payload := action.Payload{}
 	err = fmt.Errorf("setContext error")
 
-	older := errStore.NewError(requestType, payload, err)
-	newer := errStore.NewError(requestType, payload, err)
+	older := NewActionError(requestType, payload, err)
+	newer := NewGenericError(err)
+
+	errStore.Add(newer)
+	errStore.Add(older)
 
 	l := errStore.List()
 	assert.Len(t, l, 2)
-	assert.Equal(t, older.id, l[1].id)
-	assert.Equal(t, newer.id, l[0].id)
+	assert.Equal(t, older.ID(), l[1].ID())
+	assert.Equal(t, newer.ID(), l[0].ID())
 }

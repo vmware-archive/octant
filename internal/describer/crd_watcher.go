@@ -15,28 +15,31 @@ import (
 	kcache "k8s.io/client-go/tools/cache"
 
 	"github.com/vmware/octant/internal/config"
+	internalErr "github.com/vmware/octant/internal/errors"
 	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/internal/objectstore"
 	"github.com/vmware/octant/pkg/store"
 )
 
 // DefaultCRDWatcher is the default CRD watcher.
 type DefaultCRDWatcher struct {
 	objectStore store.Store
+	errorStore  internalErr.ErrorStore
 
-	mu sync.Mutex
+	accessError sync.Once
+	mu          sync.Mutex
 }
 
 var _ config.CRDWatcher = (*DefaultCRDWatcher)(nil)
 
 // NewDefaultCRDWatcher creates an instance of DefaultCRDWatcher.
-func NewDefaultCRDWatcher(ctx context.Context, objectStore store.Store) (*DefaultCRDWatcher, error) {
+func NewDefaultCRDWatcher(ctx context.Context, objectStore store.Store, errorStore internalErr.ErrorStore) (*DefaultCRDWatcher, error) {
 	if objectStore == nil {
 		return nil, errors.New("object store is nil")
 	}
 
 	cw := &DefaultCRDWatcher{
 		objectStore: objectStore,
+		errorStore:  errorStore,
 	}
 
 	objectStore.RegisterOnUpdate(func(newObjectStore store.Store) {
@@ -80,9 +83,14 @@ func (cw *DefaultCRDWatcher) Watch(ctx context.Context, watchConfig *config.CRDW
 
 	err := cw.objectStore.Watch(ctx, crdKey, handler)
 	if err != nil {
-		if err, ok := err.(*objectstore.AccessError); ok {
-			logger := log.From(ctx)
-			logger.Warnf("%s", err)
+		aErr, ok := err.(*internalErr.AccessError)
+		if ok {
+			found := cw.errorStore.Add(aErr)
+			// Log if we have not seen this access error before.
+			if !found {
+				logger := log.From(ctx)
+				logger.WithErr(aErr).Errorf("access denied")
+			}
 			return nil
 		}
 		return errors.WithMessage(err, "crd watcher has failed")

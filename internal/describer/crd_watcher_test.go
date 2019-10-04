@@ -17,13 +17,14 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/vmware/octant/internal/config"
+	internalErr "github.com/vmware/octant/internal/errors"
 	"github.com/vmware/octant/pkg/store"
 	objectStoreFake "github.com/vmware/octant/pkg/store/fake"
 )
 
 func TestNewDefaultCRDWatcher_requires_object_store(t *testing.T) {
 	ctx := context.Background()
-	_, err := NewDefaultCRDWatcher(ctx, nil)
+	_, err := NewDefaultCRDWatcher(ctx, nil, nil)
 	require.Error(t, err)
 }
 
@@ -43,8 +44,10 @@ func TestDefaultCRDWatcher_Watch(t *testing.T) {
 		})
 	objectStore.EXPECT().
 		RegisterOnUpdate(gomock.Any())
+	errorStore, err := internalErr.NewErrorStore()
+	require.NoError(t, err)
 
-	watcher, err := NewDefaultCRDWatcher(ctx, objectStore)
+	watcher, err := NewDefaultCRDWatcher(ctx, objectStore, errorStore)
 	require.NoError(t, err)
 
 	watchConfig := &config.CRDWatchConfig{
@@ -71,8 +74,10 @@ func TestDefaultCRDWatcher_Watch_failure(t *testing.T) {
 		})
 	objectStore.EXPECT().
 		RegisterOnUpdate(gomock.Any())
-
-	watcher, err := NewDefaultCRDWatcher(ctx, objectStore)
+	errorStore, err := internalErr.NewErrorStore()
+	require.NoError(t, err)
+	
+	watcher, err := NewDefaultCRDWatcher(ctx, objectStore, errorStore)
 	require.NoError(t, err)
 
 	watchConfig := &config.CRDWatchConfig{
