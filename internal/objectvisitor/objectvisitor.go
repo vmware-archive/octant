@@ -89,6 +89,7 @@ func NewDefaultVisitor(dashConfig config.Dash, q queryer.Queryer, options ...Def
 			NewIngress(q),
 			NewPod(q),
 			NewService(q),
+			NewHorizontalPodAutoscaler(q),
 		},
 		defaultHandler: NewObject(dashConfig, q),
 	}

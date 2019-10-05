@@ -165,7 +165,7 @@ func (l *Live) CRDWatcher() CRDWatcher {
 	return l.crdWatcher
 }
 
-// Store returns an object store.
+// ObjectStore returns an object store.
 func (l *Live) ObjectStore() store.Store {
 	return l.objectStore
 }
