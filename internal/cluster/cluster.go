@@ -272,10 +272,15 @@ func withConfigDefaults(inConfig *rest.Config, options RESTConfigOptions) *rest.
 	codec := runtime.NoopEncoder{Decoder: scheme.Codecs.UniversalDecoder()}
 	config.NegotiatedSerializer = serializer.NegotiatedSerializerWrapper(runtime.SerializerInfo{Serializer: codec})
 
+	if options.UserAgent != "" {
+		config.UserAgent = options.UserAgent
+	}
+
 	return config
 }
 
 type RESTConfigOptions struct {
-	QPS   float32
-	Burst int
+	QPS       float32
+	Burst     int
+	UserAgent string
 }
