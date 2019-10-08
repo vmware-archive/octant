@@ -69,7 +69,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		Burst:     options.ClientBurst,
 		UserAgent: options.UserAgent,
 	}
-	clusterClient, err := cluster.FromKubeConfig(ctx, options.KubeConfig, options.Context, restConfigOptions)
+	clusterClient, err := cluster.FromKubeConfig(ctx, options.KubeConfig, options.Context, options.Namespace, restConfigOptions)
 	if err != nil {
 		return errors.Wrap(err, "failed to init cluster client")
 	}

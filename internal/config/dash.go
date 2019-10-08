@@ -197,7 +197,8 @@ func (l *Live) PortForwarder() portforward.PortForwarder {
 
 // UseContext switches context name. This process should have synchronously.
 func (l *Live) UseContext(ctx context.Context, contextName string) error {
-	client, err := cluster.FromKubeConfig(ctx, l.kubeConfigPath, contextName, l.restConfigOptions)
+	// TODO: (GuessWhoSamFoo) FromKubeConfig needs a refactor. Initial ns is not needed when changing contexts
+	client, err := cluster.FromKubeConfig(ctx, l.kubeConfigPath, contextName, "", l.restConfigOptions)
 	if err != nil {
 		return err
 	}
