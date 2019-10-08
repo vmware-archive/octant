@@ -227,7 +227,7 @@ func (c *Cluster) Version() (string, error) {
 }
 
 // FromKubeConfig creates a Cluster from a kubeConfig.
-func FromKubeConfig(ctx context.Context, kubeConfig, contextName string, options RESTConfigOptions) (*Cluster, error) {
+func FromKubeConfig(ctx context.Context, kubeConfig, contextName string, initialNamespace string, options RESTConfigOptions) (*Cluster, error) {
 	chain := strings.Deduplicate(filepath.SplitList(kubeConfig))
 
 	rules := &clientcmd.ClientConfigLoadingRules{
@@ -244,9 +244,15 @@ func FromKubeConfig(ctx context.Context, kubeConfig, contextName string, options
 		return nil, err
 	}
 
-	defaultNamespace, _, err := cc.Namespace()
-	if err != nil {
-		return nil, err
+	var defaultNamespace string
+
+	if initialNamespace == "" {
+		defaultNamespace, _, err = cc.Namespace()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		defaultNamespace = initialNamespace
 	}
 
 	logger := log.From(ctx)

@@ -62,7 +62,7 @@ export class NamespaceService {
 
   validateNamespace(namespaces: string[]) {
     this.activeNamespace.pipe(take(1)).subscribe(cur => {
-      if (!namespaces.includes(cur)) {
+      if (!namespaces.includes(cur) && cur !== '') {
         this.notifierSession.pushSignal(
           NotifierSignalType.WARNING,
           'Namespace does not exist.'
