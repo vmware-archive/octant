@@ -207,18 +207,21 @@ func (co *ClusterOverview) ContentPath() string {
 func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, root string) ([]navigation.Navigation, error) {
 	navigationEntries := octant.NavigationEntries{
 		Lookup: map[string]string{
+			"Namespaces":       "namespaces",
 			"Custom Resources": "custom-resources",
 			"RBAC":             "rbac",
 			"Nodes":            "nodes",
 			"Port Forwards":    "port-forward",
 		},
 		EntriesFuncs: map[string]octant.EntriesFunc{
+			"Namespaces":       nil,
 			"Custom Resources": navigation.CRDEntries,
 			"RBAC":             rbacEntries,
 			"Nodes":            nil,
 			"Port Forwards":    nil,
 		},
 		Order: []string{
+			"Namespaces",
 			"Custom Resources",
 			"RBAC",
 			"Nodes",
