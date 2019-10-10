@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, HostListener, ElementRef, OnInit } from '@angular/core';
+import { Component, HostListener, ElementRef, OnInit, OnDestroy } from '@angular/core';
+import { untilDestroyed } from 'ngx-take-until-destroy';
 import {
   Filter,
   LabelFilterService,
@@ -13,7 +14,7 @@ import {
   templateUrl: './input-filter.component.html',
   styleUrls: ['./input-filter.component.scss'],
 })
-export class InputFilterComponent implements OnInit {
+export class InputFilterComponent implements OnInit, OnDestroy {
   inputValue = '';
   showTagList = false;
   filters: Filter[] = [];
@@ -24,10 +25,14 @@ export class InputFilterComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.labelFilterService.filters.subscribe(filters => {
-      this.filters = filters;
-    });
+    this.labelFilterService.filters
+      .pipe(untilDestroyed(this))
+      .subscribe(filters => {
+        this.filters = filters;
+      });
   }
+
+  ngOnDestroy() {}
 
   @HostListener('document:click', ['$event'])
   outsideClick(event) {

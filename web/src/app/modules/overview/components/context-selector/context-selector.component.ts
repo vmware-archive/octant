@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { untilDestroyed } from 'ngx-take-until-destroy';
 import {
   KubeContextService,
   ContextDescription,
@@ -13,7 +14,7 @@ import {
   templateUrl: './context-selector.component.html',
   styleUrls: ['./context-selector.component.scss'],
 })
-export class ContextSelectorComponent implements OnInit {
+export class ContextSelectorComponent implements OnInit, OnDestroy {
   contexts: ContextDescription[];
   selected: string;
 
@@ -22,11 +23,15 @@ export class ContextSelectorComponent implements OnInit {
   ngOnInit() {
     this.kubeContext
       .contexts()
+      .pipe(untilDestroyed(this))
       .subscribe(contexts => (this.contexts = contexts));
     this.kubeContext
       .selected()
+      .pipe(untilDestroyed(this))
       .subscribe(selected => (this.selected = selected));
   }
+
+  ngOnDestroy() {}
 
   contextClass(context: ContextDescription) {
     const active = this.selected === context.name ? ['active'] : [];

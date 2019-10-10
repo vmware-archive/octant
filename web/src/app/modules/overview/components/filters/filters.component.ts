@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
+import { untilDestroyed } from 'ngx-take-until-destroy';
 import {
   Filter,
   LabelFilterService,
@@ -14,7 +15,7 @@ import {
   templateUrl: './filters.component.html',
   styleUrls: ['./filters.component.scss'],
 })
-export class FiltersComponent implements OnInit {
+export class FiltersComponent implements OnInit, OnDestroy {
   filters: Filter[];
 
   constructor(
@@ -24,7 +25,7 @@ export class FiltersComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.labelFilter.filters.subscribe(filters => {
+    this.labelFilter.filters.pipe(untilDestroyed(this)).subscribe(filters => {
       this.filters = filters;
       const filterParams = filters.map(filter =>
         encodeURIComponent(`${filter.key}:${filter.value}`)
@@ -40,6 +41,8 @@ export class FiltersComponent implements OnInit {
       });
     });
   }
+
+  ngOnDestroy() {}
 
   identifyFilter(index: number, item: Filter): string {
     return `${item.key}-${item.value}`;
