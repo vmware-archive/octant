@@ -58,11 +58,23 @@ var (
 		IconName:              icon.ClusterOverviewNode,
 	})
 
+	namespacesDescriber = describer.NewResource(describer.ResourceOptions{
+		Path:                  "/namespaces",
+		ObjectStoreKey:        store.Key{APIVersion: "v1", Kind: "Namespace"},
+		ListType:              &v1.NamespaceList{},
+		ObjectType:            &v1.Namespace{},
+		Titles:                describer.ResourceTitle{List: "Namespaces", Object: "Namespace"},
+		DisableResourceViewer: true,
+		ClusterWide:           true,
+		IconName:              icon.ClusterOverviewNamespace,
+	})
+
 	portForwardDescriber = NewPortForwardListDescriber()
 
 	rootDescriber = describer.NewSection(
 		"/",
 		"Cluster Overview",
+		namespacesDescriber,
 		customResourcesDescriber,
 		rbacDescriber,
 		nodesDescriber,
