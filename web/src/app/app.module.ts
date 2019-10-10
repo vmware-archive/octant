@@ -3,7 +3,7 @@
 //
 import { Location } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { Injectable, NgModule, NgZone, APP_INITIALIZER } from '@angular/core';
+import { Injectable, NgModule, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
