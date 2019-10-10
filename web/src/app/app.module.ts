@@ -20,26 +20,7 @@ import { NotifierComponent } from './components/notifier/notifier.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { OverviewModule } from './modules/overview/overview.module';
 import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
-import { VmwThemeToolsModule, VmwClarityThemeService, VmwClarityThemeConfig } from '@vmw/ngx-utils';
-
-export const preloader = (themeService: VmwClarityThemeService) => {
-  const config: VmwClarityThemeConfig = {
-    clarityDarkPath: '/assets/css/clr-ui-dark.min.css',
-    clarityLightPath: '/assets/css/clr-ui.min.css',
-    cookieName: 'clarity-theme',
-    darkBodyClasses: ['dark'],
-    cookieDomain: 'vmware.com'
-  };
-
-  return () => {
-    return new Promise((resolve, reject) => {
-      themeService.initialize(config)
-        .then(() => {
-          resolve()
-        })
-    })
-  }
-}
+import { ThemeSwitchButtonComponent } from './modules/overview/components/theme-switch/theme-switch-button.component';
 
 @Injectable()
 export class UnstripTrailingSlashLocation extends Location {
@@ -56,6 +37,7 @@ export class UnstripTrailingSlashLocation extends Location {
     InputFilterComponent,
     NotifierComponent,
     NavigationComponent,
+    ThemeSwitchButtonComponent,
   ],
   imports: [
     BrowserModule,
@@ -67,7 +49,6 @@ export class UnstripTrailingSlashLocation extends Location {
     AppRoutingModule,
     OverviewModule,
     NgSelectModule,
-    VmwThemeToolsModule,
     MarkdownModule.forRoot({
       markedOptions: {
         provide: MarkedOptions,
@@ -84,13 +65,6 @@ export class UnstripTrailingSlashLocation extends Location {
     }),
   ],
   providers: [
-    VmwClarityThemeService,
-    {
-      provide: APP_INITIALIZER,
-      useFactory: preloader,
-      deps: [VmwClarityThemeService],
-      multi: true
-    },
     {
       provide: Location,
       useClass: UnstripTrailingSlashLocation,
