@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, HostListener, ElementRef, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  ElementRef,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import { untilDestroyed } from 'ngx-take-until-destroy';
 import {
   Filter,
