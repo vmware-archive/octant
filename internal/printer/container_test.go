@@ -200,6 +200,10 @@ func Test_ContainerConfiguration(t *testing.T) {
 					Content: component.NewText("nginx:1.15"),
 				},
 				{
+					Header:  "Image ID",
+					Content: component.NewText("nginx-image-id"),
+				},
+				{
 					Header:  "Host Ports",
 					Content: component.NewText("80/TCP, 8080/TCP"),
 				},
@@ -254,6 +258,10 @@ func Test_ContainerConfiguration(t *testing.T) {
 					Content: component.NewText("busybox:1.28"),
 				},
 				{
+					Header:  "Image ID",
+					Content: component.NewText("busybox-image-id"),
+				},
+				{
 					Header:  "Command",
 					Content: component.NewText("['sh']"),
 				},
@@ -292,9 +300,16 @@ func Test_ContainerConfiguration(t *testing.T) {
 			parentPod := testutil.CreatePod("pod")
 			parentPod.Namespace = "namespace"
 			parentPod.Status = corev1.PodStatus{
+				InitContainerStatuses: []corev1.ContainerStatus{
+					{
+						Name:    "busybox",
+						ImageID: "busybox-image-id",
+					},
+				},
 				ContainerStatuses: []corev1.ContainerStatus{
 					{
 						Name:         "nginx",
+						ImageID:      "nginx-image-id",
 						Ready:        true,
 						RestartCount: 2,
 						State: corev1.ContainerState{
