@@ -328,7 +328,6 @@ func printNamespaceResourceLimits(limits *corev1.LimitRangeList) (*component.Tab
 
 	for i := range limits.Items {
 		limit := limits.Items[i]
-		fmt.Print(fmt.Sprintf("%+v", limit))
 		for _, item := range limit.Spec.Limits {
 			sortKey, row, created := createResourceLimitCPURow(item)
 			if created {
