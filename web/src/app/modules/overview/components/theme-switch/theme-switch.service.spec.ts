@@ -20,17 +20,27 @@ describe('ThemeService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should load light theme file correctly', inject([DOCUMENT], (document: Document) => {
-    service.loadCSS('assets/css/clr-ui.min.css');
+  it('should load light theme file correctly', inject(
+    [DOCUMENT],
+    (document: Document) => {
+      service.loadCSS('assets/css/clr-ui.min.css');
 
-    let themeLink = document.getElementById('client-theme') as HTMLLinkElement;
-    expect(themeLink.href).toContain('assets/css/clr-ui.min.css');
-  }));
+      const themeLink = document.getElementById(
+        'client-theme'
+      ) as HTMLLinkElement;
+      expect(themeLink.href).toContain('assets/css/clr-ui.min.css');
+    }
+  ));
 
-  it('should load dark theme file correctly', inject([DOCUMENT], (document: Document) => {
-    service.loadCSS('assets/css/clr-ui-dark.min.css');
+  it('should load dark theme file correctly', inject(
+    [DOCUMENT],
+    (document: Document) => {
+      service.loadCSS('assets/css/clr-ui-dark.min.css');
 
-    let themeLink = document.getElementById('client-theme') as HTMLLinkElement;
-    expect(themeLink.href).toContain('assets/css/clr-ui-dark.min.css');
-  }));
+      const themeLink = document.getElementById(
+        'client-theme'
+      ) as HTMLLinkElement;
+      expect(themeLink.href).toContain('assets/css/clr-ui-dark.min.css');
+    }
+  ));
 });
