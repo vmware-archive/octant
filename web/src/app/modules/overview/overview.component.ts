@@ -14,6 +14,7 @@ import { ContentResponse, View } from 'src/app/models/content';
 import { IconService } from './services/icon.service';
 import { ViewService } from './services/view/view.service';
 import { BehaviorSubject, combineLatest } from 'rxjs';
+import { untilDestroyed } from 'ngx-take-until-destroy';
 import { ContentService } from './services/content/content.service';
 import { WebsocketService } from './services/websocket/websocket.service';
 import { KubeContextService } from './services/kube-context/kube-context.service';
@@ -61,13 +62,15 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private contentService: ContentService,
     private websocketService: WebsocketService,
     private kubeContextService: KubeContextService
-  ) {
-    this.contentService.current.subscribe(contentResponse => {
-      this.setContent(contentResponse);
-    });
-  }
+  ) {}
 
   ngOnInit() {
+    this.contentService.current
+      .pipe(untilDestroyed(this))
+      .subscribe(contentResponse => {
+        this.setContent(contentResponse);
+      });
+
     this.withCurrentLocation(options => {
       this.handlePathChange(options.segments, options.params, false);
     });

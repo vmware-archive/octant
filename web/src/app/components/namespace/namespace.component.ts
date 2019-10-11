@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { untilDestroyed } from 'ngx-take-until-destroy';
 import { NamespaceService } from 'src/app/services/namespace/namespace.service';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 
@@ -11,7 +12,7 @@ import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
   templateUrl: './namespace.component.html',
   styleUrls: ['./namespace.component.scss'],
 })
-export class NamespaceComponent implements OnInit {
+export class NamespaceComponent implements OnInit, OnDestroy {
   namespaces: string[];
   currentNamespace = '';
   trackByIdentity = trackByIdentity;
@@ -19,16 +20,20 @@ export class NamespaceComponent implements OnInit {
   constructor(private namespaceService: NamespaceService) {}
 
   ngOnInit() {
-    this.namespaceService.activeNamespace.subscribe((namespace: string) => {
-      this.currentNamespace = namespace;
-    });
+    this.namespaceService.activeNamespace
+      .pipe(untilDestroyed(this))
+      .subscribe((namespace: string) => {
+        this.currentNamespace = namespace;
+      });
 
-    this.namespaceService.availableNamespaces.subscribe(
-      (namespaces: string[]) => {
+    this.namespaceService.availableNamespaces
+      .pipe(untilDestroyed(this))
+      .subscribe((namespaces: string[]) => {
         this.namespaces = namespaces;
-      }
-    );
+      });
   }
+
+  ngOnDestroy() {}
 
   selectNamespace(namespace: string) {
     this.namespaceService.setNamespace(namespace);

@@ -14,6 +14,7 @@ import {
   IterableDiffer,
 } from '@angular/core';
 import { LogsView, LogEntry } from 'src/app/models/content';
+import { untilDestroyed } from 'ngx-take-until-destroy';
 import {
   PodLogsService,
   PodLogsStreamer,
@@ -80,9 +81,11 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
         pod,
         container
       );
-      this.logStream.logEntries.subscribe((entries: LogEntry[]) => {
-        this.containerLogs = entries;
-      });
+      this.logStream.logEntries
+        .pipe(untilDestroyed(this))
+        .subscribe((entries: LogEntry[]) => {
+          this.containerLogs = entries;
+        });
     }
   }
 
