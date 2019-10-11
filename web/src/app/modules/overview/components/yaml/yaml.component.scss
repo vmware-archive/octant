@@ -5,4 +5,47 @@
 .yaml-window > pre {
   min-height: 20vh;
   max-height: calc(100vh - 230px);
+
+  & > code.hljs ::ng-deep {
+    // Yaml viewer color variables for Dark Theme.
+    :host-context(body.dark) {
+      --background-color:  #0f171c;
+      --attr-color: white;
+      --string-color: #f96a9f;
+      --bullet-color: #f96a9f;
+      --number-color: #25c0af;
+      --literal-color: #25c0af;
+    }
+
+    // Use library's default color scheme for Light Theme.
+    :host-context(body) {
+      --background-color: #f8f8f8;
+      --attr-color: #565656;
+      --string-color: #d14;
+      --bullet-color: #d14;
+      --number-color: #008080;
+      --literal-color: #008080;
+    }
+
+    color: var(--attr-color);
+    background-color: var(--background-color);
+
+    span {
+      &.hljs-attr {
+        color: var(--attr-color);
+      }
+      &.hljs-string {
+        color: var(--string-color);
+      }
+      &.hljs-number {
+        color: var(--number-color);
+      }
+      &.hljs-literal {
+        color: var(--literal-color);
+      }
+      &.hljs-bullet {
+        color: var(--bullet-color);
+      }
+    }
+  }
 }
