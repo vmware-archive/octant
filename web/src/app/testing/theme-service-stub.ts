@@ -4,5 +4,5 @@
 import { ThemeService } from '../modules/overview/components/theme-switch/theme-switch.service';
 
 export const themeServiceStub: Partial<ThemeService> = {
-  loadCSS: () => void(0),
+  loadCSS: () => void 0,
 };

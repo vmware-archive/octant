@@ -47,7 +47,7 @@ describe('AppComponent', () => {
         NavigationComponent,
         ContextSelectorComponent,
         DefaultPipe,
-        ThemeSwitchButtonComponent
+        ThemeSwitchButtonComponent,
       ],
     }).compileComponents();
   }));

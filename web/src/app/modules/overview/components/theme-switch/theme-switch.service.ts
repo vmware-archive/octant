@@ -8,11 +8,13 @@ import { DOCUMENT } from '@angular/common';
   providedIn: 'root',
 })
 export class ThemeService {
-  constructor(@Inject(DOCUMENT) private document: Document) { }
+  constructor(@Inject(DOCUMENT) private document: Document) {}
 
   loadCSS(route: string) {
     const head = this.document.getElementsByTagName('head')[0];
-    let themeLink = this.document.getElementById('client-theme') as HTMLLinkElement;
+    const themeLink = this.document.getElementById(
+      'client-theme'
+    ) as HTMLLinkElement;
 
     if (themeLink) {
       themeLink.href = route;
@@ -25,4 +27,4 @@ export class ThemeService {
       head.appendChild(style);
     }
   }
-} 
+}

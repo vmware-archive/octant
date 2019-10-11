@@ -4,37 +4,45 @@
 import { Component, OnInit, Renderer2 } from '@angular/core';
 import { ThemeService } from './theme-switch.service';
 
-type Theme = 'light' | 'dark'
+type Theme = 'light' | 'dark';
 
 @Component({
   selector: 'app-theme-switch-button',
   templateUrl: './theme-switch-button.component.html',
   styleUrls: ['./theme-switch-button.component.scss'],
-  providers: [ThemeService]
+  providers: [ThemeService],
 })
 export class ThemeSwitchButtonComponent implements OnInit {
   theme: Theme;
 
   constructor(
     private themeService: ThemeService,
-    private renderer: Renderer2,
-  ) { }
+    private renderer: Renderer2
+  ) {}
 
   ngOnInit() {
-    this.theme = localStorage.getItem('theme') as Theme || 'light';
+    this.theme = (localStorage.getItem('theme') as Theme) || 'light';
     this.loadTheme();
   }
 
   isLightThemeEnabled(): boolean {
-    return this.theme === 'light'
+    return this.theme === 'light';
   }
 
   loadTheme() {
     this.themeService.loadCSS(
-      this.isLightThemeEnabled() ? 'assets/css/clr-ui.min.css' : 'assets/css/clr-ui-dark.min.css'
+      this.isLightThemeEnabled()
+        ? 'assets/css/clr-ui.min.css'
+        : 'assets/css/clr-ui-dark.min.css'
     );
-    this.renderer.removeClass(document.body, this.isLightThemeEnabled() ? 'dark' : 'light');
-    this.renderer.addClass(document.body, this.isLightThemeEnabled() ? 'light' : 'dark');
+    this.renderer.removeClass(
+      document.body,
+      this.isLightThemeEnabled() ? 'dark' : 'light'
+    );
+    this.renderer.addClass(
+      document.body,
+      this.isLightThemeEnabled() ? 'light' : 'dark'
+    );
   }
 
   switchTheme() {

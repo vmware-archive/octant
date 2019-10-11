@@ -14,7 +14,7 @@ describe('ThemeSwitchButtonComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ThemeSwitchButtonComponent],
-      providers: [{ provide: ThemeService, useValue: themeServiceStub }]
+      providers: [{ provide: ThemeService, useValue: themeServiceStub }],
     }).compileComponents();
   }));
 
@@ -68,8 +68,9 @@ describe('ThemeSwitchButtonComponent', () => {
   it('should render the right button', () => {
     component.theme = 'light';
     fixture.detectChanges();
-    const switchButton = fixture.debugElement.query(By.css('#switchButton')).nativeElement;
-    
+    const switchButton = fixture.debugElement.query(By.css('#switchButton'))
+      .nativeElement;
+
     expect(switchButton.innerHTML).toContain('dark');
   });
 });
