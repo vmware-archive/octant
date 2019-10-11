@@ -5,5 +5,5 @@
 @import 'src/styles.scss';
 
 .selector--label {
-  @include pill($selector-color);
+  @include pill(var(--selector-color));
 }

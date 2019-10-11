@@ -12,7 +12,7 @@
 
   .view-label {
     position: relative;
-    @include pill($label-color);
+    @include pill(var(--label-color));
   }
 }
 
