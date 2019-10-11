@@ -50,9 +50,26 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 	}
 	c := cc.container
 
+	var containerStatus *corev1.ContainerStatus
+	if pod, ok := cc.parent.(*corev1.Pod); ok {
+		var err error
+		containerStatus, err = findContainerStatus(pod, cc.container.Name, cc.isInit)
+		if err != nil {
+			switch err.(type) {
+			case *containerNotFoundError:
+			// no op
+			default:
+				return nil, errors.Wrapf(err, "get container status for %q", cc.container.Name)
+			}
+		}
+	}
+
 	sections := component.SummarySections{}
 
 	sections.AddText("Image", c.Image)
+	if containerStatus != nil {
+		sections.AddText("Image ID", containerStatus.ImageID)
+	}
 
 	hostPorts := describeContainerHostPorts(c.Ports)
 	if hostPorts != "" {
@@ -68,28 +85,27 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 
 	var actions []component.Action
 
-	if pod, ok := cc.parent.(*corev1.Pod); ok {
-		status, err := findContainerStatus(pod, cc.container.Name, cc.isInit)
-		if err == nil {
-			sections.AddText("Last State", printContainerState(status.LastTerminationState))
-			sections.AddText("Current State", printContainerState(status.State))
-			sections.AddText("Ready", fmt.Sprintf("%t", status.Ready))
-			sections.AddText("Restart Count", fmt.Sprintf("%d", status.RestartCount))
-		} else {
-			switch err.(type) {
-			case *containerNotFoundError:
-				// no op
-			default:
-				return nil, errors.Wrapf(err, "get container status for %q", cc.container.Name)
-			}
+	if containerStatus != nil && !cc.isInit {
+		lastState, found := printContainerState(containerStatus.LastTerminationState)
+		if found {
+			sections.AddText("Last State", lastState)
 		}
-	} else {
-		editAction, err := editContainerAction(cc.parent, c)
-		if err != nil {
-			return nil, errors.Wrap(err, "create container edit action")
+		currentState, found := printContainerState(containerStatus.State)
+		if found {
+			sections.AddText("Current State", currentState)
 		}
 
-		actions = append(actions, editAction)
+		sections.AddText("Ready", fmt.Sprintf("%t", containerStatus.Ready))
+		sections.AddText("Restart Count", fmt.Sprintf("%d", containerStatus.RestartCount))
+	} else {
+		if !cc.isInit {
+			editAction, err := editContainerAction(cc.parent, c)
+			if err != nil {
+				return nil, errors.Wrap(err, "create container edit action")
+			}
+
+			actions = append(actions, editAction)
+		}
 	}
 
 	envTbl, err := describeContainerEnv(cc.parent, c, cc.options)
@@ -128,20 +144,20 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 	return summary, nil
 }
 
-func printContainerState(state corev1.ContainerState) string {
+func printContainerState(state corev1.ContainerState) (string, bool) {
 	switch {
 	case state.Running != nil:
-		return fmt.Sprintf("started at %s", state.Running.StartedAt)
+		return fmt.Sprintf("started at %s", state.Running.StartedAt), true
 	case state.Waiting != nil:
-		return fmt.Sprintf("waiting: %s", state.Waiting.Message)
+		return fmt.Sprintf("waiting: %s", state.Waiting.Message), true
 	case state.Terminated != nil:
 		return fmt.Sprintf("terminated with %d at %s: %s",
 			state.Terminated.ExitCode,
 			state.Terminated.FinishedAt,
-			state.Terminated.Reason)
+			state.Terminated.Reason), true
 	}
 
-	return "indeterminate"
+	return "indeterminate", false
 }
 
 type containerStatus interface {
