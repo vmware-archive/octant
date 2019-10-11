@@ -31,14 +31,13 @@ func NamespaceListHandler(_ context.Context, list *corev1.NamespaceList, options
 
 	table := component.NewTable("Namespaces", "We couldn't find any namespaces!", namespaceListCols)
 
-	for _, ns := range list.Items {
+	for i := range list.Items {
 		row := component.TableRow{}
-		p := path.Join("/cluster-overview/namespaces", ns.Name)
-		row["Name"] = component.NewLink("", ns.Name, p)
-		row["Labels"] = component.NewLabels(ns.Labels)
-		row["Status"] = component.NewText(namespaceStatus(ns))
-		row["Age"] = component.NewTimestamp(ns.CreationTimestamp.Time)
-
+		p := path.Join("/cluster-overview/namespaces", list.Items[i].Name)
+		row["Name"] = component.NewLink("", list.Items[i].Name, p)
+		row["Labels"] = component.NewLabels(list.Items[i].Labels)
+		row["Status"] = component.NewText(string(list.Items[i].Status.Phase))
+		row["Age"] = component.NewTimestamp(list.Items[i].CreationTimestamp.Time)
 		table.Add(row)
 	}
 
@@ -63,10 +62,6 @@ func NamespaceHandler(ctx context.Context, namespace *corev1.Namespace, options 
 		return nil, errors.Wrap(err, "print namespace resource quotas")
 	}
 	return o.ToComponent(ctx, options)
-}
-
-func namespaceStatus(namespace corev1.Namespace) string {
-	return fmt.Sprintf("%s", namespace.Status.Phase)
 }
 
 type namespaceObject interface {
@@ -154,7 +149,7 @@ func (n *NamespaceStatus) Create(options Options) (*component.Summary, error) {
 	summary := component.NewSummary("Status", []component.SummarySection{
 		{
 			Header:  "Phase",
-			Content: component.NewText(fmt.Sprintf("%s", n.namespace.Status.Phase)),
+			Content: component.NewText(string(n.namespace.Status.Phase)),
 		},
 	}...)
 
@@ -180,42 +175,50 @@ func (n *NamespaceResourceQuotas) Create(ctx context.Context, options Options) (
 	if n == nil || n.namespace == nil {
 		return nil, errors.New("cannot generate resources for nil node")
 	}
-	return printNamespaceResourceQuotas(ctx, n.namespace, options)
-}
-
-func printNamespaceResourceQuotas(ctx context.Context, namespace *corev1.Namespace, options Options) (*component.FlexLayout, error) {
 	objectStore := options.DashConfig.ObjectStore()
 	key := store.Key{
-		Namespace:  namespace.Name,
+		Namespace:  n.namespace.Name,
 		APIVersion: "v1",
 		Kind:       "ResourceQuota",
 	}
-
 	list, _, err := objectStore.List(ctx, key)
-	items := make(map[string]component.FlexLayoutItem, len(list.Items))
+	if err != nil {
+		return nil, err
+	}
+	quotas := []corev1.ResourceQuota{}
 	for i := range list.Items {
-		rq := &corev1.ResourceQuota{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[i].Object, rq)
+		quota := corev1.ResourceQuota{}
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[i].Object, &quota)
 		if err != nil {
 			return nil, err
 		}
-
-		table := component.NewTable(rq.Name, "There are no resource quotas", namespaceResourceQuotasCols)
-		quotas := paresResourceQuotas(rq)
-		for _, resource := range resourceQuotaKeys(rq) {
-			row := component.TableRow{}
-			row["Resource"] = component.NewText(resource)
-			row["Used"] = component.NewText(quotas["used"][resource])
-			row["Limit"] = component.NewText(quotas["hard"][resource])
-			table.Add(row)
-		}
-		table.Sort("Resource", false)
-		items[rq.Name] = component.FlexLayoutItem{Width: component.WidthHalf, View: table}
+		quotas = append(quotas, quota)
 	}
+
+	items := printNamespaceResourceQuotas(quotas)
 
 	fl := component.NewFlexLayout("Resource Quotas")
 	fl.AddSections(createSortedResourceQuotaSections("Resource Quotas", items))
-	return fl, err
+
+	return fl, nil
+}
+
+func printNamespaceResourceQuotas(quotas []corev1.ResourceQuota) map[string]component.FlexLayoutItem {
+	items := make(map[string]component.FlexLayoutItem, len(quotas))
+	for i := range quotas {
+		table := component.NewTable(quotas[i].Name, "There are no resource quotas", namespaceResourceQuotasCols)
+		q := paresResourceQuotas(&quotas[i])
+		for _, resource := range resourceQuotaKeys(&quotas[i]) {
+			row := component.TableRow{}
+			row["Resource"] = component.NewText(resource)
+			row["Used"] = component.NewText(q["used"][resource])
+			row["Limit"] = component.NewText(q["hard"][resource])
+			table.Add(row)
+		}
+		table.Sort("Resource", false)
+		items[quotas[i].Name] = component.FlexLayoutItem{Width: component.WidthHalf, View: table}
+	}
+	return items
 }
 
 func createSortedResourceQuotaSections(title string, sectionMap map[string]component.FlexLayoutItem) []component.FlexLayoutItem {
@@ -251,7 +254,7 @@ func createTitleItem(title string, labels map[string]string) component.FlexLayou
 
 func resourceQuotaKeys(rq *corev1.ResourceQuota) []string {
 	var keys []string
-	for name, _ := range rq.Spec.Hard {
+	for name := range rq.Spec.Hard {
 		keys = append(keys, name.String())
 	}
 	sort.Strings(keys)
@@ -293,30 +296,41 @@ func (n *NamespaceResourceLimits) Create(ctx context.Context, options Options) (
 	if n == nil || n.namespace == nil {
 		return nil, errors.New("cannot generate resources for nil namespace")
 	}
-	return printNamespaceResourceLimits(ctx, n.namespace, options)
-}
 
-func printNamespaceResourceLimits(ctx context.Context, namespace *corev1.Namespace, options Options) (*component.Table, error) {
 	objectStore := options.DashConfig.ObjectStore()
 	key := store.Key{
-		Namespace:  namespace.Name,
+		Namespace:  n.namespace.Name,
 		APIVersion: "v1",
 		Kind:       "LimitRange",
 	}
+	list, _, err := objectStore.List(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+
+	limits := corev1.LimitRangeList{}
+	for i := range list.Items {
+		limit := corev1.LimitRange{}
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[i].Object, &limit)
+		if err != nil {
+			return nil, err
+		}
+		limits.Items = append(limits.Items, limit)
+	}
+
+	return printNamespaceResourceLimits(&limits)
+}
+
+func printNamespaceResourceLimits(limits *corev1.LimitRangeList) (*component.Table, error) {
 
 	table := component.NewTable("Resource Limits", "There are no resource limits", namespaceResourceLimitsCols)
 	rows := map[string]component.TableRow{}
 
-	list, _, err := objectStore.List(ctx, key)
-	for i := range list.Items {
-		lr := &corev1.LimitRange{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[i].Object, lr)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, item := range lr.Spec.Limits {
-			sortKey, row, created := createResourceLimitCpuRow(item)
+	for i := range limits.Items {
+		limit := limits.Items[i]
+		fmt.Print(fmt.Sprintf("%+v", limit))
+		for _, item := range limit.Spec.Limits {
+			sortKey, row, created := createResourceLimitCPURow(item)
 			if created {
 				rows[sortKey] = row
 			}
@@ -329,7 +343,7 @@ func printNamespaceResourceLimits(ctx context.Context, namespace *corev1.Namespa
 	}
 
 	addResourceLimitRowsSorted(table, rows)
-	return table, err
+	return table, nil
 }
 
 func addResourceLimitRowsSorted(table *component.Table, rows map[string]component.TableRow) {
@@ -343,18 +357,18 @@ func addResourceLimitRowsSorted(table *component.Table, rows map[string]componen
 	}
 }
 
-func createResourceLimitCpuRow(item corev1.LimitRangeItem) (sortKey string, row component.TableRow, created bool) {
+func createResourceLimitCPURow(item corev1.LimitRangeItem) (sortKey string, row component.TableRow, created bool) {
 	if !item.Max.Cpu().IsZero() || !item.Min.Cpu().IsZero() || !item.Default.Cpu().IsZero() {
-		limitType := fmt.Sprintf("%s", item.Type)
-		minCpu := item.Min.Cpu().String()
-		maxCpu := item.Max.Cpu().String()
-		sortKey := fmt.Sprintf("%s-%s-%s", minCpu, maxCpu, limitType)
+		limitType := string(item.Type)
+		minCPU := item.Min.Cpu().String()
+		maxCPU := item.Max.Cpu().String()
+		sortKey := fmt.Sprintf("%s-%s-%s-%s", "cpu", minCPU, maxCPU, limitType)
 
 		row := component.TableRow{}
 		row["Type"] = component.NewText(limitType)
 		row["Resource"] = component.NewText("cpu")
-		row["Min"] = component.NewText(minCpu)
-		row["Max"] = component.NewText(maxCpu)
+		row["Min"] = component.NewText(minCPU)
+		row["Max"] = component.NewText(maxCPU)
 		row["Default Request"] = component.NewText(item.DefaultRequest.Cpu().String())
 		row["Default Limit"] = component.NewText(item.Default.Cpu().String())
 		row["Limit/Request Ratio"] = component.NewText(item.MaxLimitRequestRatio.Cpu().String())
@@ -365,10 +379,10 @@ func createResourceLimitCpuRow(item corev1.LimitRangeItem) (sortKey string, row 
 
 func createResourceLimitMemoryRow(item corev1.LimitRangeItem) (sortKey string, row component.TableRow, created bool) {
 	if !item.Max.Memory().IsZero() || !item.Min.Memory().IsZero() || !item.Default.Memory().IsZero() {
-		limitType := fmt.Sprintf("%s", item.Type)
+		limitType := string(item.Type)
 		minMem := item.Min.Memory().String()
 		maxMem := item.Max.Memory().String()
-		sortKey := fmt.Sprintf("%s-%s-%s", minMem, maxMem, limitType)
+		sortKey := fmt.Sprintf("%s-%s-%s-%s", "memory", minMem, maxMem, limitType)
 
 		row := component.TableRow{}
 		row["Type"] = component.NewText(limitType)
