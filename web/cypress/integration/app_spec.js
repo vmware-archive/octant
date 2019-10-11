@@ -28,6 +28,9 @@ describe('Octant Integration Tests', () => {
         cy
             .contains('octant-cypress')
             .click()
+        cy
+            .location('hash')
+            .should('include', '/' + namespace)
     })
 
     it('has kubeconfig context', () => {

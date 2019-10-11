@@ -8,4 +8,4 @@ package event
 import "time"
 
 // DefaultScheduleDelay is the default schedule delay
-const DefaultScheduleDelay = 5 * time.Second
+const DefaultScheduleDelay = 1 * time.Second
