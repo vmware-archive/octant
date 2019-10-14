@@ -18,6 +18,7 @@ const (
 	ClusterOverview                   = "objects"
 	ClusterOverviewClusterRole        = "c-role"
 	ClusterOverviewClusterRoleBinding = "crb"
+	ClusterOverviewNamespace          = "ns"
 	ClusterOverviewNode               = "node"
 
 	Configuration       = "cog"

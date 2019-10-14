@@ -200,6 +200,14 @@ func CreateJob(name string) *batchv1.Job {
 	}
 }
 
+// CreateNode creates a namespace
+func CreateNamespace(name string) *corev1.Namespace {
+	return &corev1.Namespace{
+		TypeMeta:   genTypeMeta(gvk.Namespace),
+		ObjectMeta: genObjectMeta(name, false),
+	}
+}
+
 // CreateNode creates a node
 func CreateNode(name string) *corev1.Node {
 	return &corev1.Node{
