@@ -2,5 +2,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-$label-color: #0065ab;
-$selector-color: #00968b;
+// Color variables for Light Theme.
+:host-context(body) {
+  --label-color: #0065ab;
+  --selector-color: #00968b;
+}
+
+// Color variables for Dark Theme.
+:host-context(body.dark) {
+  --label-color: #49afd9;
+  --selector-color: #00968b;
+}

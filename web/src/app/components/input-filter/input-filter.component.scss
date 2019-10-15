@@ -5,6 +5,22 @@
 @import 'src/styles.scss';
 
 .input-filter {
+  // Dropdown's color variables for Light Theme.
+  :host-context(body) {
+    --tags-bg-color: white;
+    --tags-border-color: #ccc;
+    --tags-font-color: black;
+    --filterTag-link-color: #0079b8;
+  }
+  
+  // Dropdown's color variables for Dark Theme.
+  :host-context(body.dark) {
+    --tags-bg-color: #23353d;
+    --tags-border-color: black;
+    --tags-font-color: #adbbc4;
+    --filterTag-link-color: #49afd9;
+  }
+
   &-control {
     position: relative;
 
@@ -31,15 +47,15 @@
   }
 
   &-tags {
-    background: #fff;
-    border: 1px solid #ccc;
+    background: var(--tags-bg-color);
+    border: 1px solid var(--tags-border-color);
     border-bottom-left-radius: 0.125rem;
     border-bottom-right-radius: 0.125rem;
-    box-shadow: 0 1px 0.125rem rgba(115, 115, 115, 0.25);
+    box-shadow: 0 1px 0.125rem rgba(0, 0, 0, 0.5);
     padding: 8px 8px 4px 8px;
 
     .input-filter-empty {
-      color: #485969;
+      color: var(--tags-font-color);
       font-size: 12px;
     }
 
@@ -49,7 +65,7 @@
       flex-wrap: wrap;
 
       .input-filter-tag {
-        @include pill($label-color);
+        @include pill(var(--label-color));
         text-align: center;
         margin: 0 4px 4px 0;
         padding: 0 8px;
@@ -74,7 +90,7 @@
       text-align: center;
       padding-right: 4px;
       font-size: 12px;
-      color: #0079b8;
+      color: var(--filterTag-link-color);
       cursor: pointer;
 
       &:hover {
