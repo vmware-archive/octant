@@ -1,6 +1,6 @@
 ---
 kind: pipeline
-name: default
+name: octant
 
 workspace:
   base: /go
@@ -11,9 +11,6 @@ steps:
     image: docker:git
     commands:
       - git fetch --tags
-    when:
-      event:
-      - tag
   - name: frontend
     image: sfoo/node-chrome:0.0.2
     commands:
@@ -43,7 +40,47 @@ steps:
     depends_on:
     - frontend
     - backend
-  - name: release
+
+---
+kind: pipeline
+name: nightly
+
+workspace:
+  base: /go
+  path: src/github.com/vmware/octant
+
+steps:
+  - name: fetch
+    image: docker:git
+    commands:
+      - git fetch --tags
+  - name: releaser
+    environment:
+      GOOGLE_APPLICATION_JSON:
+        from_secret: google_application_json
+    trigger:
+      event:
+      - cron
+      cron:
+      - nightly
+    image: goreleaser/goreleaser:v0.119-cgo
+    commands:
+      - echo "$GOOGLE_APPLICATION_JSON" | base64 -d > /tmp/gs.json
+      - GOOGLE_APPLICATION_CREDENTIALS=/tmp/gs.json goreleaser -f .goreleaser-nightly.yml --rm-dist --skip-validate
+
+depends_on:
+  - octant
+
+---
+kind: pipeline
+name: release
+
+workspace:
+  base: /go
+  path: src/github.com/vmware/octant
+
+steps:
+  - name: releaser
     environment:
       GITHUB_TOKEN:
         from_secret: github_token
@@ -52,9 +89,11 @@ steps:
         - tag
     image: goreleaser/goreleaser:v0.113-cgo
     commands:
-      - /bin/bash ci/drone-deploy.sh
-    depends_on:
-    - build
+      - ci/drone-deploy.sh
+
+depends_on:
+  - octant
+
 ---
 kind: signature
 hmac: 58b44a6cf2de776daa8198c0590a36ec2f4a8f6f3b5be4e6e1b3878a6d87c521

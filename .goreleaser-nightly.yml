@@ -1,0 +1,57 @@
+release:
+  disable: true
+project_name: octant
+builds:
+  -
+    main: ./cmd/octant/main.go
+    binary: octant
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+    ldflags: -X "main.buildTime={{.Date}}" -X "main.gitCommit={{.Commit}}"
+nfpms:
+  -
+    formats:
+      - deb
+      - rpm
+    vendor: "VMware"
+    homepage: "https://github.com/vmware/octant"
+    maintainer: Octant Maintainers <project-octant@googlegroups.com>
+    description: "A web-based, highly extensible platform for developers to better understand the complexity of Kubernetes clusters"
+    license: "Apache 2.0"
+    name_template: "{{.ProjectName}}_{{.Date}}_{{.Os}}-{{.Arch}}"
+    replacements:
+      darwin: macOS
+      linux: Linux
+      windows: Windows
+      amd64: 64bit
+archives:
+  -
+    wrap_in_directory: true
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: "{{.ProjectName}}_{{.Date}}_{{.Os}}-{{.Arch}}"
+    replacements:
+      darwin: macOS
+      linux: Linux
+      windows: Windows
+      amd64: 64bit
+    files:
+      - LICENSE
+      - README.md
+
+snapshot:
+  name_template: 'nightly'
+
+blobs:
+  -
+    provider: gs
+    bucket: octant-nightlies
+    folder: "builds/nightlies/{{.Date}}"
