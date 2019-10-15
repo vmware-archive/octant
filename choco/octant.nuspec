@@ -3,22 +3,22 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>octant</id>
-    <version>0.6.0</version>
+    <version>0.8.0</version>
     <owners>VMware</owners>
     <title>Octant</title>
-    <authors>Bryan Liles, see https://github.com/vmware/octant/graphs/contributors</authors>
-    <projectUrl>https://github.com/vmware/octant</projectUrl>
-    <packageSourceUrl>https://github.com/vmware/octant/blob/master/choco</packageSourceUrl>
+    <authors>Bryan Liles, see https://github.com/vmware-tanzu/octant/graphs/contributors</authors>
+    <projectUrl>https://github.com/vmware-tanzu/octant</projectUrl>
+    <packageSourceUrl>https://github.com/vmware-tanzu/octant/blob/master/choco</packageSourceUrl>
     <!-- TODO:
     <iconUrl></iconUrl>
     -->
-    <licenseUrl>https://github.com/vmware/octant/blob/master/LICENSE</licenseUrl>
+    <licenseUrl>https://github.com/vmware-tanzu/octant/blob/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <projectSourceUrl>https://github.com/vmware/octant</projectSourceUrl>
-    <docsUrl>https://github.com/vmware/octant/tree/master/docs</docsUrl>
+    <projectSourceUrl>https://github.com/vmware-tanzu/octant</projectSourceUrl>
+    <docsUrl>https://github.com/vmware-tanzu/octant/tree/master/docs</docsUrl>
     <mailingListUrl>https://groups.google.com/group/project-octant</mailingListUrl>
-    <bugTrackerUrl>https://github.com/vmware/octant/issues</bugTrackerUrl>
-    <tags>octant kubernetes kubectl heptio dashboard pod</tags>
+    <bugTrackerUrl>https://github.com/vmware-tanzu/octant/issues</bugTrackerUrl>
+    <tags>octant kubernetes kubectl heptio dashboard pod tanzu</tags>
     <summary>A web-based, highly extensible platform for developers to better understand the complexity of Kubernetes clusters.
 </summary>
 <description><![CDATA[Octant is a tool for developers to understand how applications run on a Kubernetes cluster. It aims to be part of the developer's toolkit for gaining insight and approaching complexity found in Kubernetes. Octant offers a combination of introspective tooling, cluster navigation, and object management along with a plugin system to further extend its capabilities.
@@ -52,7 +52,7 @@ Easily change between namespaces or contexts across different clusters. Multiple
 #### Plugin System
 
 Highly extensible plugin system for users to provide additional functionality through gRPC. Plugin authors can add components on top of existing views.]]></description>
-    <releaseNotes>Release notes are available at https://github.com/vmware/octant/releases</releaseNotes>
+    <releaseNotes>Release notes are available at https://github.com/vmware-tanzu/octant/releases</releaseNotes>
   </metadata>
   <files>
     <file src="tools\**" target="tools" />
