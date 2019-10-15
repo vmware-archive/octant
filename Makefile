@@ -11,7 +11,7 @@ GOCMD=go
 GOBUILD=$(GOCMD) build
 GOINSTALL=$(GOCMD) install
 
-VERSION ?= v0.7.0
+VERSION ?= v0.8.0
 
 ifdef XDG_CONFIG_HOME
 	OCTANT_PLUGINSTUB_DIR ?= ${XDG_CONFIG_HOME}/octant/plugins
