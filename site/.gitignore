@@ -1,0 +1,15 @@
+site/.vagrant
+.DS_Store
+site/.sass-cache
+site/_ignore
+site/node_modules
+site/_site
+site/.jekyll
+site/.jekyll-metadata
+site/.bundle
+site/.vscode
+
+*.log
+*.js.map
+*.css.map
+site/.ruby-version
