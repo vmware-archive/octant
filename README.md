@@ -1,6 +1,6 @@
 ![Logo][octant-logo]
 
-[![Build Status](https://cloud.drone.io/api/badges/vmware/octant/status.svg)](https://cloud.drone.io/vmware/octant)
+[![Build Status](https://cloud.drone.io/api/badges/vmware-tanzu/octant/status.svg)](https://cloud.drone.io/vmware-tanzu/octant)
 ![GitHub release](https://img.shields.io/github/release/vmware/octant.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
