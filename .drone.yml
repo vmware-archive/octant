@@ -45,6 +45,9 @@ steps:
 kind: pipeline
 name: nightly
 
+trigger:
+  cron: [ nightly ]
+
 workspace:
   base: /go
   path: src/github.com/vmware/octant
@@ -58,11 +61,6 @@ steps:
     environment:
       GOOGLE_APPLICATION_JSON:
         from_secret: google_application_json
-    trigger:
-      event:
-      - cron
-      cron:
-      - nightly
     image: goreleaser/goreleaser:v0.119-cgo
     commands:
       - echo "$GOOGLE_APPLICATION_JSON" | base64 -d > /tmp/gs.json
@@ -75,6 +73,10 @@ depends_on:
 kind: pipeline
 name: release
 
+trigger:
+  event:
+  - tag
+
 workspace:
   base: /go
   path: src/github.com/vmware/octant
@@ -84,9 +86,6 @@ steps:
     environment:
       GITHUB_TOKEN:
         from_secret: github_token
-    when:
-      event:
-        - tag
     image: goreleaser/goreleaser:v0.113-cgo
     commands:
       - ci/drone-deploy.sh
@@ -96,6 +95,6 @@ depends_on:
 
 ---
 kind: signature
-hmac: 58b44a6cf2de776daa8198c0590a36ec2f4a8f6f3b5be4e6e1b3878a6d87c521
+hmac: fc3c8c31897d98fc7b9eed31a5bf5bda0f3f8c9096b6b7636b669a931c474c05
 
 ...
