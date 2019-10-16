@@ -32,6 +32,7 @@ func newOctantCmd(version string) *cobra.Command {
 	var initialContext string
 	var klogVerbosity int
 	var clientQPS float32
+	var openBrowser bool
 	var clientBurst int
 
 	octantCmd := &cobra.Command{
@@ -72,6 +73,7 @@ func newOctantCmd(version string) *cobra.Command {
 					Context:          initialContext,
 					ClientQPS:        clientQPS,
 					ClientBurst:      clientBurst,
+					OpenBrowser:      openBrowser,
 					UserAgent:        fmt.Sprintf("octant/%s", version),
 				}
 
@@ -113,6 +115,7 @@ func newOctantCmd(version string) *cobra.Command {
 	octantCmd.Flags().IntVarP(&klogVerbosity, "klog-verbosity", "", 0, "klog verbosity level")
 	octantCmd.Flags().Float32VarP(&clientQPS, "client-qps", "", 200, "maximum QPS for client")
 	octantCmd.Flags().IntVarP(&clientBurst, "client-burst", "", 400, "maximum burst for client throttle")
+	octantCmd.Flags().BoolVar(&openBrowser, "open-browser", true, "define if a web browser should be opend")
 
 	kubeConfig = os.Getenv("KUBECONFIG")
 	if kubeConfig == "" {

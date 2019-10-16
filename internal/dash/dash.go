@@ -53,6 +53,7 @@ type Options struct {
 	ClientQPS        float32
 	ClientBurst      int
 	UserAgent        string
+	OpenBrowser      bool
 }
 
 // Run runs the dashboard.
@@ -177,7 +178,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 	apiService := api.New(ctx, api.PathPrefix, actionManger, dashConfig)
 	frontendProxy.FrontendUpdateController = apiService
 
-	d, err := newDash(listener, options.Namespace, options.FrontendURL, apiService, logger)
+	d, err := newDash(listener, options.Namespace, options.FrontendURL, apiService, logger, options.OpenBrowser)
 	if err != nil {
 		return errors.Wrap(err, "failed to create dash instance")
 	}
@@ -314,13 +315,13 @@ type dash struct {
 	logger          log.Logger
 }
 
-func newDash(listener net.Listener, namespace, uiURL string, apiHandler api.Service, logger log.Logger) (*dash, error) {
+func newDash(listener net.Listener, namespace, uiURL string, apiHandler api.Service, logger log.Logger, openBrowser bool) (*dash, error) {
 	return &dash{
 		listener:        listener,
 		namespace:       namespace,
 		uiURL:           uiURL,
 		defaultHandler:  web.Handler,
-		willOpenBrowser: true,
+		willOpenBrowser: openBrowser,
 		apiHandler:      apiHandler,
 		logger:          logger,
 	}, nil
