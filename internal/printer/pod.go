@@ -21,9 +21,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/vmware/octant/internal/link"
-	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/internal/link"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 var (
@@ -338,7 +338,6 @@ func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
 	object.SetDeletionGracePeriodSeconds(from.GetDeletionGracePeriodSeconds())
 	object.SetLabels(from.GetLabels())
 	object.SetAnnotations(from.GetAnnotations())
-	object.SetInitializers(from.GetInitializers())
 	object.SetOwnerReferences(from.GetOwnerReferences())
 	object.SetClusterName(from.GetClusterName())
 	object.SetFinalizers(from.GetFinalizers())

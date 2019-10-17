@@ -16,14 +16,14 @@ import (
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/vmware/octant/internal/config"
-	internalErr "github.com/vmware/octant/internal/errors"
-	"github.com/vmware/octant/internal/link"
-	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/internal/printer"
-	"github.com/vmware/octant/internal/queryer"
-	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/internal/config"
+	internalErr "github.com/vmware-tanzu/octant/internal/errors"
+	"github.com/vmware-tanzu/octant/internal/link"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/printer"
+	"github.com/vmware-tanzu/octant/internal/queryer"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 type ObjectLoaderFactory struct {
@@ -177,7 +177,6 @@ func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
 	object.SetDeletionGracePeriodSeconds(from.GetDeletionGracePeriodSeconds())
 	object.SetLabels(from.GetLabels())
 	object.SetAnnotations(from.GetAnnotations())
-	object.SetInitializers(from.GetInitializers())
 	object.SetOwnerReferences(from.GetOwnerReferences())
 	object.SetClusterName(from.GetClusterName())
 	object.SetFinalizers(from.GetFinalizers())
