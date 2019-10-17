@@ -20,7 +20,7 @@ nfpms:
       - deb
       - rpm
     vendor: "VMware"
-    homepage: "https://github.com/vmware/octant"
+    homepage: "https://github.com/vmware-tanzu/octant"
     maintainer: Octant Maintainers <project-octant@googlegroups.com>
     description: "A web-based, highly extensible platform for developers to better understand the complexity of Kubernetes clusters"
     license: "Apache 2.0"
@@ -49,7 +49,8 @@ archives:
 
 snapshot:
   name_template: 'nightly'
-
+checksum:
+  name_template: 'checksums.txt'
 blobs:
   -
     provider: gs

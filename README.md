@@ -102,6 +102,15 @@ Octant is a tool for developers to understand how applications run on a Kubernet
     $ ./octant_0.X.Y_Linux-64bit/octant version
     ```
 
+## Nightly Builds
+
+Nightly builds of Octant are available for download.
+
+Please note that nightly builds maybe less stable than our tagged releases and are intended to allow early access to
+preview upcoming features and for plugin authors who want access to the latest plugin APIs.
+
+[Browse nightly builds](https://console.cloud.google.com/storage/browser/octant-nightlies)
+
 ## Getting Started
 
 Before starting Octant, make sure you have access to a healthy cluster. If kubectl is installed, test using `kubectl cluster-info`.
