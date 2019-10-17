@@ -12,8 +12,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/vmware/octant/internal/conversion"
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/internal/conversion"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 func tolerationTable(descriptions ...string) *component.Table {

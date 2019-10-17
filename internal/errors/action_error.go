@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
 type ActionError struct {

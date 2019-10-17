@@ -13,12 +13,12 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware/octant/pkg/navigation"
-	"github.com/vmware/octant/pkg/plugin"
-	"github.com/vmware/octant/pkg/plugin/service"
-	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/pkg/view/component"
-	"github.com/vmware/octant/pkg/view/flexlayout"
+	"github.com/vmware-tanzu/octant/pkg/navigation"
+	"github.com/vmware-tanzu/octant/pkg/plugin"
+	"github.com/vmware-tanzu/octant/pkg/plugin/service"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/pkg/view/flexlayout"
 )
 
 var pluginName = "plugin-name"

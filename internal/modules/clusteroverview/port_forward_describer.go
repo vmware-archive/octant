@@ -8,9 +8,9 @@ package clusteroverview
 import (
 	"context"
 
-	"github.com/vmware/octant/internal/describer"
-	"github.com/vmware/octant/internal/portforward"
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/internal/describer"
+	"github.com/vmware-tanzu/octant/internal/portforward"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // PortForwardListDescriber describes a list of port-forwards

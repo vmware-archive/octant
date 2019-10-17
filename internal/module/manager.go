@@ -12,14 +12,14 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware/octant/internal/cluster"
-	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/internal/octant"
-	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/internal/cluster"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
-//go:generate mockgen -destination=./fake/mock_manager.go -package=fake github.com/vmware/octant/internal/module ManagerInterface
-//go:generate mockgen -destination=./fake/mock_action_registrar.go -package=fake github.com/vmware/octant/internal/module ActionRegistrar
+//go:generate mockgen -destination=./fake/mock_manager.go -package=fake github.com/vmware-tanzu/octant/internal/module ManagerInterface
+//go:generate mockgen -destination=./fake/mock_action_registrar.go -package=fake github.com/vmware-tanzu/octant/internal/module ActionRegistrar
 
 type ActionReceiver interface {
 	ActionPaths() map[string]action.DispatcherFunc

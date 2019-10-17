@@ -6,11 +6,11 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-//go:generate mockgen -destination=./fake/mock_summarizer.go -package=fake github.com/vmware/octant/internal/modules/applications Summarizer
+//go:generate mockgen -destination=./fake/mock_summarizer.go -package=fake github.com/vmware-tanzu/octant/internal/modules/applications Summarizer
 
 var (
 	applicationListColumns = component.NewTableCols("Name", "Instance", "Version", "State", "Pods")

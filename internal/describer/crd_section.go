@@ -10,8 +10,8 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 type CRDSection struct {

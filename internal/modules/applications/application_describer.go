@@ -11,14 +11,14 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware/octant/internal/config"
-	"github.com/vmware/octant/internal/describer"
-	"github.com/vmware/octant/internal/gvk"
-	"github.com/vmware/octant/internal/printer"
-	"github.com/vmware/octant/internal/queryer"
-	"github.com/vmware/octant/internal/resourceviewer"
-	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/internal/config"
+	"github.com/vmware-tanzu/octant/internal/describer"
+	"github.com/vmware-tanzu/octant/internal/gvk"
+	"github.com/vmware-tanzu/octant/internal/printer"
+	"github.com/vmware-tanzu/octant/internal/queryer"
+	"github.com/vmware-tanzu/octant/internal/resourceviewer"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 var allowed = []schema.GroupVersionKind{

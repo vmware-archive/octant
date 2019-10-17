@@ -11,11 +11,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	configFake "github.com/vmware/octant/internal/config/fake"
-	"github.com/vmware/octant/internal/objectvisitor"
-	"github.com/vmware/octant/internal/objectvisitor/fake"
-	queryerFake "github.com/vmware/octant/internal/queryer/fake"
-	"github.com/vmware/octant/internal/testutil"
+	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	"github.com/vmware-tanzu/octant/internal/objectvisitor"
+	"github.com/vmware-tanzu/octant/internal/objectvisitor/fake"
+	queryerFake "github.com/vmware-tanzu/octant/internal/queryer/fake"
+	"github.com/vmware-tanzu/octant/internal/testutil"
 )
 
 func TestObject_Visit(t *testing.T) {

@@ -5,9 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 
 package plugin
 
-//go:generate mockgen -destination=./fake/mock_manager.go -package=fake github.com/vmware/octant/pkg/plugin ManagerInterface
-//go:generate mockgen -destination=./fake/mock_module_registrar.go -package=fake github.com/vmware/octant/pkg/plugin ModuleRegistrar
-//go:generate mockgen -destination=./fake/mock_action_registrar.go -package=fake github.com/vmware/octant/pkg/plugin ActionRegistrar
+//go:generate mockgen -destination=./fake/mock_manager.go -package=fake github.com/vmware-tanzu/octant/pkg/plugin ManagerInterface
+//go:generate mockgen -destination=./fake/mock_module_registrar.go -package=fake github.com/vmware-tanzu/octant/pkg/plugin ModuleRegistrar
+//go:generate mockgen -destination=./fake/mock_action_registrar.go -package=fake github.com/vmware-tanzu/octant/pkg/plugin ActionRegistrar
 
 import (
 	"context"
@@ -21,12 +21,12 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/internal/module"
-	"github.com/vmware/octant/internal/portforward"
-	"github.com/vmware/octant/pkg/action"
-	"github.com/vmware/octant/pkg/plugin/api"
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/module"
+	"github.com/vmware-tanzu/octant/internal/portforward"
+	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/plugin/api"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // ClientFactory is a factory for creating clients.

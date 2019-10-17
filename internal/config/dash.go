@@ -8,21 +8,21 @@ package config
 import (
 	"context"
 
-	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/store"
 
 	"github.com/pkg/errors"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/vmware/octant/internal/cluster"
-	internalErr "github.com/vmware/octant/internal/errors"
-	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/internal/module"
-	"github.com/vmware/octant/internal/portforward"
-	"github.com/vmware/octant/pkg/plugin"
+	"github.com/vmware-tanzu/octant/internal/cluster"
+	internalErr "github.com/vmware-tanzu/octant/internal/errors"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/module"
+	"github.com/vmware-tanzu/octant/internal/portforward"
+	"github.com/vmware-tanzu/octant/pkg/plugin"
 )
 
-//go:generate mockgen -destination=./fake/mock_dash.go -package=fake github.com/vmware/octant/internal/config Dash
+//go:generate mockgen -destination=./fake/mock_dash.go -package=fake github.com/vmware-tanzu/octant/internal/config Dash
 
 // CRDWatcher watches for CRDs.
 type CRDWatcher interface {

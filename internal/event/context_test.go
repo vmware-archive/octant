@@ -13,10 +13,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	dashConfigFake "github.com/vmware/octant/internal/config/fake"
-	"github.com/vmware/octant/internal/kubeconfig"
-	"github.com/vmware/octant/internal/kubeconfig/fake"
-	"github.com/vmware/octant/internal/octant"
+	dashConfigFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	"github.com/vmware-tanzu/octant/internal/kubeconfig"
+	"github.com/vmware-tanzu/octant/internal/kubeconfig/fake"
+	"github.com/vmware-tanzu/octant/internal/octant"
 )
 
 func Test_kubeContextGenerator(t *testing.T) {

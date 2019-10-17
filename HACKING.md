@@ -11,7 +11,7 @@
 
 ## Quick Start
 
-    git clone git@github.com:vmware/octant.git
+    git clone git@github.com:vmware-tanzu/octant.git
     cd octant
     make go-install  # install Go dependencies.
     make ci-quick    # build UI, generate UI files, and create octant binary.

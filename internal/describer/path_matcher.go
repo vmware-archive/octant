@@ -11,7 +11,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/vmware/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/log"
 )
 
 var (

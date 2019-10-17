@@ -14,15 +14,15 @@ import (
 	"github.com/stretchr/testify/require"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
-	"github.com/vmware/octant/internal/cluster"
-	clusterFake "github.com/vmware/octant/internal/cluster/fake"
-	internalErr "github.com/vmware/octant/internal/errors"
-	"github.com/vmware/octant/internal/log"
-	moduleFake "github.com/vmware/octant/internal/module/fake"
-	portForwardFake "github.com/vmware/octant/internal/portforward/fake"
-	"github.com/vmware/octant/internal/testutil"
-	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
-	objectStoreFake "github.com/vmware/octant/pkg/store/fake"
+	"github.com/vmware-tanzu/octant/internal/cluster"
+	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
+	internalErr "github.com/vmware-tanzu/octant/internal/errors"
+	"github.com/vmware-tanzu/octant/internal/log"
+	moduleFake "github.com/vmware-tanzu/octant/internal/module/fake"
+	portForwardFake "github.com/vmware-tanzu/octant/internal/portforward/fake"
+	"github.com/vmware-tanzu/octant/internal/testutil"
+	pluginFake "github.com/vmware-tanzu/octant/pkg/plugin/fake"
+	objectStoreFake "github.com/vmware-tanzu/octant/pkg/store/fake"
 )
 
 func TestCRDWatchConfig_CanPerform(t *testing.T) {

@@ -53,7 +53,7 @@ will pass in the name and description for the plugin.
 
 ## Example
 
-Octant ships with an [example plugin](https://github.com/vmware/octant/blob/master/cmd/octant-sample-plugin/main.go).
+Octant ships with an [example plugin](https://github.com/vmware-tanzu/octant/blob/master/cmd/octant-sample-plugin/main.go).
 
 # More About Capabilities
 

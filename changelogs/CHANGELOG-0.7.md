@@ -4,7 +4,7 @@
 #### 2019-09-18
 
 ### Download
- - https://github.com/vmware/octant/releases/tag/v0.7.0
+ - https://github.com/vmware-tanzu/octant/releases/tag/v0.7.0
 
 ### Highlights
  - Replaced event streams with websockets (#239, @bryanl)

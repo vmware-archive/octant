@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 func TestNewAccessError(t *testing.T) {

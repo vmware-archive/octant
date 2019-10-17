@@ -25,10 +25,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	queryerFake "github.com/vmware/octant/internal/queryer/fake"
-	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/store"
-	storeFake "github.com/vmware/octant/pkg/store/fake"
+	queryerFake "github.com/vmware-tanzu/octant/internal/queryer/fake"
+	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	storeFake "github.com/vmware-tanzu/octant/pkg/store/fake"
 )
 
 func TestCacheQueryer_Children(t *testing.T) {

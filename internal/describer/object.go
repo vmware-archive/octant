@@ -13,13 +13,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/vmware/octant/internal/api"
-	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/internal/modules/overview/logviewer"
-	"github.com/vmware/octant/internal/modules/overview/yamlviewer"
-	"github.com/vmware/octant/internal/resourceviewer"
-	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/internal/api"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/modules/overview/logviewer"
+	"github.com/vmware-tanzu/octant/internal/modules/overview/yamlviewer"
+	"github.com/vmware-tanzu/octant/internal/resourceviewer"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 type ObjectConfig struct {

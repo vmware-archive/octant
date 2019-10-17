@@ -8,8 +8,8 @@ package api
 import (
 	"context"
 
-	"github.com/vmware/octant/internal/octant"
-	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
 const (

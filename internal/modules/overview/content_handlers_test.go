@@ -18,11 +18,11 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/clock"
 
-	"github.com/vmware/octant/internal/describer"
-	internalErr "github.com/vmware/octant/internal/errors"
-	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/store"
-	storeFake "github.com/vmware/octant/pkg/store/fake"
+	"github.com/vmware-tanzu/octant/internal/describer"
+	internalErr "github.com/vmware-tanzu/octant/internal/errors"
+	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	storeFake "github.com/vmware-tanzu/octant/pkg/store/fake"
 )
 
 func createObject(name string) *unstructured.Unstructured {

@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 	rbacv1 "k8s.io/api/rbac/v1"
 
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // RoleBindingListHandler is a printFunc that prints RoleBindings

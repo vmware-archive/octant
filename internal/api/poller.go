@@ -12,7 +12,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/vmware/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/log"
 )
 
 const (

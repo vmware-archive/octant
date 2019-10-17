@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/internal/testutil"
 )
 
 func Test_sortedDescriptorList(t *testing.T) {

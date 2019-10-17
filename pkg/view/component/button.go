@@ -3,7 +3,7 @@ package component
 import (
 	"encoding/json"
 
-	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
 // Confirmation is configuration for a confirmation dialog.

@@ -5,7 +5,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 type informerSynced struct {

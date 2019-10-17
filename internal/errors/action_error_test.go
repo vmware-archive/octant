@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
 func TestNewActionError(t *testing.T) {

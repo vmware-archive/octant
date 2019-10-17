@@ -15,10 +15,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/vmware/octant/internal/api"
-	"github.com/vmware/octant/internal/octant"
-	octantFake "github.com/vmware/octant/internal/octant/fake"
-	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/internal/api"
+	"github.com/vmware-tanzu/octant/internal/octant"
+	octantFake "github.com/vmware-tanzu/octant/internal/octant/fake"
+	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
 func TestFilterManager_Handlers(t *testing.T) {

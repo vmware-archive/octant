@@ -4,7 +4,7 @@
 #### 2019-10-14
 
 ### Download
- - https://github.com/vmware/octant/releases/tag/v0.8.0
+ - https://github.com/vmware-tanzu/octant/releases/tag/v0.8.0
 
 ### Highlights
  - Dark theme and theme switch implementation (#36, @nfarruggiagl)

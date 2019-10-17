@@ -12,11 +12,11 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	configFake "github.com/vmware/octant/internal/config/fake"
-	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/pkg/store/fake"
-	"github.com/vmware/octant/pkg/view/component"
+	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/store/fake"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 func Test_summarizer(t *testing.T) {

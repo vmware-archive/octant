@@ -22,8 +22,8 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 
-	"github.com/vmware/octant/internal/conversion"
-	"github.com/vmware/octant/internal/gvk"
+	"github.com/vmware-tanzu/octant/internal/conversion"
+	"github.com/vmware-tanzu/octant/internal/gvk"
 )
 
 // DefaultNamespace is the namespace that objects will belong to.

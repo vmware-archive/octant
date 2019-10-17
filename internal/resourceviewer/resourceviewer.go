@@ -14,11 +14,11 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/vmware/octant/internal/config"
-	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/internal/objectvisitor"
-	"github.com/vmware/octant/internal/queryer"
-	"github.com/vmware/octant/internal/util/kubernetes"
+	"github.com/vmware-tanzu/octant/internal/config"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/objectvisitor"
+	"github.com/vmware-tanzu/octant/internal/queryer"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 )
 
 const (

@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/vmware/octant/pkg/action"
-	"github.com/vmware/octant/pkg/view/component"
-	"github.com/vmware/octant/pkg/view/flexlayout"
+	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/pkg/view/flexlayout"
 )
 
 func TestFlexLayout(t *testing.T) {

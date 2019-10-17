@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/vmware/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/log"
 )
 
 func initStatusCheck(stopCh <-chan struct{}, logger log.Logger, factories *factoriesCache) {

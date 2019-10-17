@@ -12,11 +12,11 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	configFake "github.com/vmware/octant/internal/config/fake"
-	"github.com/vmware/octant/internal/describer"
-	"github.com/vmware/octant/internal/modules/applications"
-	"github.com/vmware/octant/internal/modules/applications/fake"
-	"github.com/vmware/octant/pkg/view/component"
+	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	"github.com/vmware-tanzu/octant/internal/describer"
+	"github.com/vmware-tanzu/octant/internal/modules/applications"
+	"github.com/vmware-tanzu/octant/internal/modules/applications/fake"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 func Test_homeDescriber_Describe(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/internal/testutil"
 )
 
 func Test_CRDResources(t *testing.T) {

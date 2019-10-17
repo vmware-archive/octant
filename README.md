@@ -1,7 +1,7 @@
 ![Logo][octant-logo]
 
 [![Build Status](https://cloud.drone.io/api/badges/vmware-tanzu/octant/status.svg)](https://cloud.drone.io/vmware-tanzu/octant)
-![GitHub release](https://img.shields.io/github/release/vmware/octant.svg)
+![GitHub release](https://img.shields.io/github/release/vmware-tanzu/octant.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 > A web-based, highly extensible platform for developers to better understand the complexity of Kubernetes clusters.
@@ -46,7 +46,7 @@ Octant is a tool for developers to understand how applications run on a Kubernet
 
 ### Package (Linux only)
 
-1. Download the `.deb` or `.rpm` from the [releases page](https://github.com/vmware/octant/releases).
+1. Download the `.deb` or `.rpm` from the [releases page](https://github.com/vmware-tanzu/octant/releases).
 
 2. Install with either `dpkg -i` or `rpm -i` respectively.
 
@@ -86,7 +86,7 @@ Octant is a tool for developers to understand how applications run on a Kubernet
 
 ### Download a Pre-built Binary (Linux, macOS, Windows)
 
-1. Open the [releases page](https://github.com/vmware/octant/releases) from a browser and download the latest tarball or zip file.
+1. Open the [releases page](https://github.com/vmware-tanzu/octant/releases) from a browser and download the latest tarball or zip file.
 
 2. Extract the tarball or zip where `X.Y` is the release version:
 
@@ -132,7 +132,7 @@ Feature requests, bug reports, and enhancements are welcome. Contributors, maint
  - [Kubernetes Slack](http://slack.k8s.io/) in the [#octant](https://kubernetes.slack.com/messages/CM37M9FCG) channel
  - [Twitter](https://twitter.com/projectoctant)
  - [Google group](https://groups.google.com/forum/#!forum/project-octant/)
- - [GitHub issues](https://github.com/vmware/octant/issues)
+ - [GitHub issues](https://github.com/vmware-tanzu/octant/issues)
 
 ## Contributing
 

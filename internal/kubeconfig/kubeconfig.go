@@ -11,10 +11,10 @@ import (
 
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/vmware/octant/internal/util/strings"
+	"github.com/vmware-tanzu/octant/internal/util/strings"
 )
 
-//go:generate mockgen -destination=./fake/mock_loader.go -package=fake github.com/vmware/octant/internal/kubeconfig Loader
+//go:generate mockgen -destination=./fake/mock_loader.go -package=fake github.com/vmware-tanzu/octant/internal/kubeconfig Loader
 
 // KubeConfig describes a kube config for dash.
 type KubeConfig struct {

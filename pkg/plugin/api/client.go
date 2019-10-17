@@ -11,13 +11,13 @@ import (
 	"google.golang.org/grpc"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/pkg/plugin/api/proto"
-	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
-//go:generate mockgen -destination=./fake/mock_dashboard_client.go -package=fake github.com/vmware/octant/pkg/plugin/api/proto DashboardClient
-//go:generate mockgen -destination=./fake/mock_dashboard_connection.go -package=fake github.com/vmware/octant/pkg/plugin/api DashboardConnection
+//go:generate mockgen -destination=./fake/mock_dashboard_client.go -package=fake github.com/vmware-tanzu/octant/pkg/plugin/api/proto DashboardClient
+//go:generate mockgen -destination=./fake/mock_dashboard_connection.go -package=fake github.com/vmware-tanzu/octant/pkg/plugin/api DashboardConnection
 
 type DashboardConnection interface {
 	Close() error

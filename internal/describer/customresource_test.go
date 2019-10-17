@@ -13,9 +13,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/store"
-	storeFake "github.com/vmware/octant/pkg/store/fake"
+	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	storeFake "github.com/vmware-tanzu/octant/pkg/store/fake"
 )
 
 func Test_customResourceDefinition(t *testing.T) {

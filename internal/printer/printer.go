@@ -11,19 +11,19 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/vmware/octant/internal/config"
-	"github.com/vmware/octant/internal/link"
-	"github.com/vmware/octant/pkg/plugin"
+	"github.com/vmware-tanzu/octant/internal/config"
+	"github.com/vmware-tanzu/octant/internal/link"
+	"github.com/vmware-tanzu/octant/pkg/plugin"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-//go:generate mockgen -destination=./fake/mock_printer.go -package=fake github.com/vmware/octant/internal/printer Printer
+//go:generate mockgen -destination=./fake/mock_printer.go -package=fake github.com/vmware-tanzu/octant/internal/printer Printer
 
 // Options provides options to a print handler
 type Options struct {

@@ -15,14 +15,14 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/vmware/octant/internal/octant"
-	"github.com/vmware/octant/pkg/action"
-	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/pkg/view/component"
-	"github.com/vmware/octant/pkg/view/flexlayout"
+	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/pkg/view/flexlayout"
 )
 
-//go:generate mockgen -destination=./fake/mock_object_interface.go -package=fake github.com/vmware/octant/internal/printer ObjectInterface
+//go:generate mockgen -destination=./fake/mock_object_interface.go -package=fake github.com/vmware-tanzu/octant/internal/printer ObjectInterface
 
 // ObjectInterface is an interface for printing an object.
 type ObjectInterface interface {

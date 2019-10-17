@@ -15,17 +15,17 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/vmware/octant/internal/config"
-	configFake "github.com/vmware/octant/internal/config/fake"
-	linkFake "github.com/vmware/octant/internal/link/fake"
-	"github.com/vmware/octant/internal/printer"
-	"github.com/vmware/octant/internal/queryer"
-	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/icon"
-	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
-	"github.com/vmware/octant/pkg/store"
-	storefake "github.com/vmware/octant/pkg/store/fake"
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/internal/config"
+	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	linkFake "github.com/vmware-tanzu/octant/internal/link/fake"
+	"github.com/vmware-tanzu/octant/internal/printer"
+	"github.com/vmware-tanzu/octant/internal/queryer"
+	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/icon"
+	pluginFake "github.com/vmware-tanzu/octant/pkg/plugin/fake"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	storefake "github.com/vmware-tanzu/octant/pkg/store/fake"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 func Test_crd(t *testing.T) {

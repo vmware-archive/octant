@@ -14,8 +14,8 @@ import (
 	"github.com/stretchr/testify/require"
 	rbacv1 "k8s.io/api/rbac/v1"
 
-	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 func Test_RoleBindingListHandler(t *testing.T) {

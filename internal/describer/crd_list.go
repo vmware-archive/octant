@@ -15,11 +15,11 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware/octant/internal/link"
-	"github.com/vmware/octant/internal/printer"
-	"github.com/vmware/octant/pkg/icon"
-	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/internal/link"
+	"github.com/vmware-tanzu/octant/internal/printer"
+	"github.com/vmware-tanzu/octant/pkg/icon"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 type crdListPrinter func(

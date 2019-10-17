@@ -8,11 +8,11 @@ package overview
 import (
 	"context"
 
-	"github.com/vmware/octant/internal/gvk"
-	"github.com/vmware/octant/internal/loading"
-	"github.com/vmware/octant/pkg/icon"
-	"github.com/vmware/octant/pkg/navigation"
-	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/internal/gvk"
+	"github.com/vmware-tanzu/octant/internal/loading"
+	"github.com/vmware-tanzu/octant/pkg/icon"
+	"github.com/vmware-tanzu/octant/pkg/navigation"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 var (
