@@ -4,6 +4,7 @@ describe('Deployment', () => {
   });
 
   it('port forward nginx deployment', () => {
+    // TODO (GuessWhoSamFoo) Start octant with temp context to avoid passing namespaces
     cy.exec(
       `kubectl config view --minify --output 'jsonpath={..namespace}'`
     ).then(result => {
