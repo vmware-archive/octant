@@ -23,3 +23,44 @@
 //
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
+
+var namespace = 'octant-cypress-';
+var startingContext = '';
+
+before(() => {
+  cy.exec('kubectl config current-context').then(result => {
+    startingContext = result.stdout;
+  });
+
+  var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  for (var i = 0; i < 6; i++)
+    namespace += chars.charAt(Math.floor(Math.random() * chars.length));
+
+  cy.log('Creating namespace ' + namespace);
+  cy.exec('kubectl create namespace ' + namespace);
+
+  cy.exec(
+    'kubectl config set-context $CYPRESS_CONTEXT --namespace ' +
+      namespace +
+      ' --cluster $(kubectl config get-contexts ' +
+      startingContext +
+      " | tail -1 | awk '{print $3}') \
+    --user $(kubectl config get-contexts " +
+      startingContext +
+      " | tail -1 | awk '{print $4}')",
+    { env: { CYPRESS_CONTEXT: Cypress.env('CYPRESS_CONTEXT') } }
+  );
+  // Octant is expected to start before cypress in ci
+  // Setting context here allows spec to get a namespace
+  cy.exec('kubectl config use-context $CYPRESS_CONTEXT', {
+    env: { CYPRESS_CONTEXT: Cypress.env('CYPRESS_CONTEXT') },
+  });
+});
+
+after(() => {
+  cy.exec('kubectl config use-context ' + startingContext);
+  cy.exec('kubectl delete namespace ' + namespace);
+  cy.exec('kubectl config delete-context $CYPRESS_CONTEXT', {
+    env: { CYPRESS_CONTEXT: Cypress.env('CYPRESS_CONTEXT') },
+  });
+});
