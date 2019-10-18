@@ -10,9 +10,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware/octant/internal/gvk"
-	"github.com/vmware/octant/internal/queryer"
-	"github.com/vmware/octant/internal/util/kubernetes"
+	"github.com/vmware-tanzu/octant/internal/gvk"
+	"github.com/vmware-tanzu/octant/internal/queryer"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 )
 
 // Ingress is a typed visitor for ingress objects.

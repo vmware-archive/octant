@@ -8,7 +8,7 @@ package describer
 import (
 	"context"
 
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 type StubDescriber struct {

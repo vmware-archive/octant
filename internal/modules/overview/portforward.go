@@ -14,10 +14,10 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware/octant/internal/api"
-	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/internal/mime"
-	"github.com/vmware/octant/internal/portforward"
+	"github.com/vmware-tanzu/octant/internal/api"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/mime"
+	"github.com/vmware-tanzu/octant/internal/portforward"
 )
 
 type portForwardCreateRequest struct {

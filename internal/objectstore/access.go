@@ -14,9 +14,9 @@ import (
 	"go.opencensus.io/trace"
 	authorizationv1 "k8s.io/api/authorization/v1"
 
-	"github.com/vmware/octant/internal/cluster"
-	internalErr "github.com/vmware/octant/internal/errors"
-	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/internal/cluster"
+	internalErr "github.com/vmware-tanzu/octant/internal/errors"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 type AccessError struct {

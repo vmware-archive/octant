@@ -16,9 +16,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/util/jsonpath"
 
-	"github.com/vmware/octant/internal/link"
-	octantStrings "github.com/vmware/octant/internal/util/strings"
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/internal/link"
+	octantStrings "github.com/vmware-tanzu/octant/internal/util/strings"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // CustomResourceListHandler prints a list of custom resources with

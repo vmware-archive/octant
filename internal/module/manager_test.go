@@ -13,10 +13,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	clusterfake "github.com/vmware/octant/internal/cluster/fake"
-	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/internal/module"
-	"github.com/vmware/octant/internal/module/fake"
+	clusterfake "github.com/vmware-tanzu/octant/internal/cluster/fake"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/module"
+	"github.com/vmware-tanzu/octant/internal/module/fake"
 )
 
 func TestManager(t *testing.T) {

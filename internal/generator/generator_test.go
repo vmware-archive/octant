@@ -14,11 +14,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	clusterFake "github.com/vmware/octant/internal/cluster/fake"
-	configFake "github.com/vmware/octant/internal/config/fake"
-	"github.com/vmware/octant/internal/describer"
-	objectStoreFake "github.com/vmware/octant/pkg/store/fake"
-	"github.com/vmware/octant/pkg/view/component"
+	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
+	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	"github.com/vmware-tanzu/octant/internal/describer"
+	objectStoreFake "github.com/vmware-tanzu/octant/pkg/store/fake"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 func Test_realGenerator_Generate(t *testing.T) {

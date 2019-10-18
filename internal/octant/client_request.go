@@ -6,7 +6,7 @@
 package octant
 
 import (
-	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
 // ClientRequestHandler is a client request.

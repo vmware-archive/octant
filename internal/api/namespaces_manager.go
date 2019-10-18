@@ -12,10 +12,10 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/vmware/octant/internal/cluster"
-	"github.com/vmware/octant/internal/event"
-	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/internal/cluster"
+	"github.com/vmware-tanzu/octant/internal/event"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/octant"
 )
 
 // NamespaceManagerConfig is configuration for NamespacesManager.

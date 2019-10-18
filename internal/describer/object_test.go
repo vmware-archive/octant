@@ -14,13 +14,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	configFake "github.com/vmware/octant/internal/config/fake"
-	printerFake "github.com/vmware/octant/internal/printer/fake"
-	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/plugin"
-	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
-	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/pkg/view/component"
+	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	printerFake "github.com/vmware-tanzu/octant/internal/printer/fake"
+	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/plugin"
+	pluginFake "github.com/vmware-tanzu/octant/pkg/plugin/fake"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 func TestObjectDescriber(t *testing.T) {

@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vmware/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/log"
 )
 
-//go:generate mockgen -destination=./fake/mock_alert.go -package=fake github.com/vmware/octant/pkg/action Alerter
+//go:generate mockgen -destination=./fake/mock_alert.go -package=fake github.com/vmware-tanzu/octant/pkg/action Alerter
 
 const (
 	// DefaultAlertExpiration is the default expiration for alerts.

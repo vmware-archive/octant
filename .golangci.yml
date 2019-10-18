@@ -11,7 +11,7 @@ linters-settings:
     min-len: 2
     min-occurrences: 2
   goimports:
-    local-prefixes: github.com/vmware/octant
+    local-prefixes: github.com/vmware-tanzu/octant
   gocritic:
     enabled-tags:
       - performance

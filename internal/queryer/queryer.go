@@ -33,13 +33,13 @@ import (
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/core"
 
-	"github.com/vmware/octant/internal/gvk"
-	dashstrings "github.com/vmware/octant/internal/util/strings"
-	"github.com/vmware/octant/pkg/navigation"
-	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/internal/gvk"
+	dashstrings "github.com/vmware-tanzu/octant/internal/util/strings"
+	"github.com/vmware-tanzu/octant/pkg/navigation"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
-//go:generate mockgen -destination=./fake/mock_queryer.go -package=fake github.com/vmware/octant/internal/queryer Queryer
+//go:generate mockgen -destination=./fake/mock_queryer.go -package=fake github.com/vmware-tanzu/octant/internal/queryer Queryer
 //go:generate mockgen -source=../../vendor/k8s.io/client-go/discovery/discovery_client.go -imports=openapi_v2=github.com/googleapis/gnostic/OpenAPIv2 -destination=./fake/mock_discovery.go -package=fake k8s.io/client-go/discovery DiscoveryInterface
 
 type Queryer interface {
@@ -786,7 +786,6 @@ func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
 	object.SetDeletionGracePeriodSeconds(from.GetDeletionGracePeriodSeconds())
 	object.SetLabels(from.GetLabels())
 	object.SetAnnotations(from.GetAnnotations())
-	object.SetInitializers(from.GetInitializers())
 	object.SetOwnerReferences(from.GetOwnerReferences())
 	object.SetClusterName(from.GetClusterName())
 	object.SetFinalizers(from.GetFinalizers())

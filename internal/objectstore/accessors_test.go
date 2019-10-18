@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware/octant/internal/cluster/fake"
-	"github.com/vmware/octant/internal/gvk"
-	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/internal/cluster/fake"
+	"github.com/vmware-tanzu/octant/internal/gvk"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 func Test_informerSynced(t *testing.T) {

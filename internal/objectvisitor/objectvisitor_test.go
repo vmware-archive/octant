@@ -12,12 +12,12 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	configFake "github.com/vmware/octant/internal/config/fake"
-	"github.com/vmware/octant/internal/gvk"
-	"github.com/vmware/octant/internal/objectvisitor"
-	ovFake "github.com/vmware/octant/internal/objectvisitor/fake"
-	queryerFake "github.com/vmware/octant/internal/queryer/fake"
-	"github.com/vmware/octant/internal/testutil"
+	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	"github.com/vmware-tanzu/octant/internal/gvk"
+	"github.com/vmware-tanzu/octant/internal/objectvisitor"
+	ovFake "github.com/vmware-tanzu/octant/internal/objectvisitor/fake"
+	queryerFake "github.com/vmware-tanzu/octant/internal/queryer/fake"
+	"github.com/vmware-tanzu/octant/internal/testutil"
 )
 
 func TestDefaultVisitor_Visit_use_typed_visitor(t *testing.T) {

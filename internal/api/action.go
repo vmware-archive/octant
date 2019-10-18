@@ -8,10 +8,10 @@ package api
 import (
 	"context"
 
-	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
-//go:generate mockgen -destination=./fake/mock_action_dispatcher.go -package=fake github.com/vmware/octant/internal/api ActionDispatcher
+//go:generate mockgen -destination=./fake/mock_action_dispatcher.go -package=fake github.com/vmware-tanzu/octant/internal/api ActionDispatcher
 
 // ActionDispatcher dispatches actions.
 type ActionDispatcher interface {

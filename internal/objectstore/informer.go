@@ -11,7 +11,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-//go:generate mockgen -destination=./fake/mock_informer_factory.go -package=fake github.com/vmware/octant/internal/objectstore InformerFactory
+//go:generate mockgen -destination=./fake/mock_informer_factory.go -package=fake github.com/vmware-tanzu/octant/internal/objectstore InformerFactory
 
 // InformerFactory creates informers.
 type InformerFactory interface {

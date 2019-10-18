@@ -13,7 +13,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/vmware/octant/internal/portforward"
+	"github.com/vmware-tanzu/octant/internal/portforward"
 
 	"github.com/golang/mock/gomock"
 
@@ -22,9 +22,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	pffake "github.com/vmware/octant/internal/portforward/fake"
-	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/view/component"
+	pffake "github.com/vmware-tanzu/octant/internal/portforward/fake"
+	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 func Test_ContainerConfiguration(t *testing.T) {

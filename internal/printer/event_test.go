@@ -17,9 +17,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/vmware/octant/pkg/store"
-	storefake "github.com/vmware/octant/pkg/store/fake"
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	storefake "github.com/vmware-tanzu/octant/pkg/store/fake"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 func Test_EventListHandler(t *testing.T) {

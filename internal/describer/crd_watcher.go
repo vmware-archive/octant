@@ -14,10 +14,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kcache "k8s.io/client-go/tools/cache"
 
-	"github.com/vmware/octant/internal/config"
-	internalErr "github.com/vmware/octant/internal/errors"
-	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/internal/config"
+	internalErr "github.com/vmware-tanzu/octant/internal/errors"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 // DefaultCRDWatcher is the default CRD watcher.

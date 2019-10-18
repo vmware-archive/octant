@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	"github.com/vmware/octant/internal/log"
-	dashstrings "github.com/vmware/octant/internal/util/strings"
+	"github.com/vmware-tanzu/octant/internal/log"
+	dashstrings "github.com/vmware-tanzu/octant/internal/util/strings"
 )
 
 // shouldAllowHost returns true if the incoming request.Host shuold be allowed

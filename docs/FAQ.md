@@ -12,8 +12,8 @@ More specifically:
 - Octant supports Custom Resource Definitions (CRDs)
 - The dashboard functionality of Octant is _not_ the #1 priority. The tool was created to help give users of Kubernetes more information  in an easier fashion than _kubectl get_ or _kubectl describe_
 - Octant can be extended with plugins 
-    - Plugin docs here: [docs/plugins](https://github.com/vmware/octant/tree/master/docs/plugins)
-- Octant is being very actively developed, with [major releases happening rapidly](https://github.com/vmware/octant/releases)
+    - Plugin docs here: [docs/plugins](https://github.com/vmware-tanzu/octant/tree/master/docs/plugins)
+- Octant is being very actively developed, with [major releases happening rapidly](https://github.com/vmware-tanzu/octant/releases)
 - Octant is based on newer web technologies. The Kubernetes dashboard is based on "AngularJS" which has been superseded by "Angular". 
 
 ## Q: How do I install or Update Octant?
@@ -23,7 +23,7 @@ Octant can be installed as a package using a variety of package managers, as a p
 
 ### Package (Linux only)
 
-1. Download the `.deb` or `.rpm` from the [releases page](https://github.com/vmware/octant/releases).
+1. Download the `.deb` or `.rpm` from the [releases page](https://github.com/vmware-tanzu/octant/releases).
 
 2. Install with either `dpkg -i` or `rpm -i` respectively.
 
@@ -63,7 +63,7 @@ Octant can be installed as a package using a variety of package managers, as a p
 
 ### Download a Pre-built Binary (Linux, macOS, Windows)
 
-1. Open the [releases page](https://github.com/vmware/octant/releases) from a browser and download the latest tarball or zip file.
+1. Open the [releases page](https://github.com/vmware-tanzu/octant/releases) from a browser and download the latest tarball or zip file.
 
 2. Extract the tarball or zip where `X.Y` is the release version:
 
@@ -81,7 +81,7 @@ Octant can be installed as a package using a variety of package managers, as a p
 
 ### Building from Source
 
-Octant can be built from source with the 'Quick Start' instructions found here: [https://github.com/vmware/octant/blob/master/HACKING.md](https://github.com/vmware/octant/blob/master/HACKING.md)
+Octant can be built from source with the 'Quick Start' instructions found here: [https://github.com/vmware-tanzu/octant/blob/master/HACKING.md](https://github.com/vmware-tanzu/octant/blob/master/HACKING.md)
 
 ### Upgrading
 
@@ -100,15 +100,15 @@ Ways you can contribute with a Pull Request:
     - See something wrong or missing from our docs? 
     - Do you have a unique use-case not documented?
 - Octant core
-    - Octant is written mostly in Golang and Angular. Our hacking guide can be found [here](https://github.com/vmware/octant/blob/master/HACKING.md)
+    - Octant is written mostly in Golang and Angular. Our hacking guide can be found [here](https://github.com/vmware-tanzu/octant/blob/master/HACKING.md)
 - Plugins
     - Octant has a very extensible plugin model designed to let contributors add functionality. A plugin can read objects, and allows users to add components to Octant's views.  
-    - A sample plugin is available [here](https://github.com/vmware/octant/blob/master/cmd/octant-sample-plugin)
+    - A sample plugin is available [here](https://github.com/vmware-tanzu/octant/blob/master/cmd/octant-sample-plugin)
     - A list of community plugins for Octant will be assembled soon
 
-New contributors will need to sign a CLA (contributor license agreement). We also ask that a changelog entry is included with your pull request. Details are described in our [contributing](https://github.com/vmware/octant/blob/master/CONTRIBUTING.md) documentation.
+New contributors will need to sign a CLA (contributor license agreement). We also ask that a changelog entry is included with your pull request. Details are described in our [contributing](https://github.com/vmware-tanzu/octant/blob/master/CONTRIBUTING.md) documentation.
 
-See our [hacking](https://github.com/vmware/octant/blob/master/HACKING.md) guide for getting your development environment setup.
+See our [hacking](https://github.com/vmware-tanzu/octant/blob/master/HACKING.md) guide for getting your development environment setup.
 
 See our [roadmap](../ROADMAP.md) for tentative features in a 1.0 release.
 
@@ -116,17 +116,17 @@ See our [roadmap](../ROADMAP.md) for tentative features in a 1.0 release.
 
 - Share the love on social media with the hashtag #octant
 - Participate in Octant community meetings
-- Use Octant and [file issues](https://github.com/vmware/octant/issues ) 
+- Use Octant and [file issues](https://github.com/vmware-tanzu/octant/issues ) 
 
 ## Q: Is Octant stable?
 
 Octant is under active development, but each release is considered stable. 
 
 Release information can be found here:
-- [Releases](https://github.com/vmware/octant/releases)
+- [Releases](https://github.com/vmware-tanzu/octant/releases)
 
 Open Issues can be found here: 
-- [Open Issues](https://github.com/vmware/octant/issues)
+- [Open Issues](https://github.com/vmware-tanzu/octant/issues)
 
 ## Q: Can Octant connect to multiple clusters at the same time?
 
@@ -138,7 +138,7 @@ Octant can only connect to a single cluster at a time, but for convenience provi
 
 Octant is a community driven project with contributions from volunteers around the world. 
 
-If a feature you want is not already on our [Roadmap](https://github.com/vmware/octant/blob/master/ROADMAP.md), please feel free to [file an issue](https://github.com/vmware/octant/issues/new) and request it, or submit a Pull Request with your feature to be reviewed and [merged](https://github.com/vmware/octant/blob/master/CONTRIBUTING.md).
+If a feature you want is not already on our [Roadmap](https://github.com/vmware-tanzu/octant/blob/master/ROADMAP.md), please feel free to [file an issue](https://github.com/vmware-tanzu/octant/issues/new) and request it, or submit a Pull Request with your feature to be reviewed and [merged](https://github.com/vmware-tanzu/octant/blob/master/CONTRIBUTING.md).
 
 ## Q: When will Octant get Feature X?
 
@@ -146,7 +146,7 @@ See our [roadmap](../ROADMAP.md) for tentative features in a 1.0 release.
 
 ## Q: What are the system requirements to run Octant?
 
-Octant supports running on macOS, Windows and Linux using either [pre-built binaries](https://github.com/vmware/octant/releases) or [building directly from source.](https://github.com/vmware/octant/blob/master/HACKING.md)
+Octant supports running on macOS, Windows and Linux using either [pre-built binaries](https://github.com/vmware-tanzu/octant/releases) or [building directly from source.](https://github.com/vmware-tanzu/octant/blob/master/HACKING.md)
 
 Octant requires an active KUBECONFIG (i.e. kubectl configured and working).
 
@@ -154,12 +154,12 @@ Octant does not reqiure special permissions within your cluster because it uses 
 
 ## Q: How can I configure Octant to run in my Cluster?
 
-While Octant is designed to run on a developers desktop or laptop, it is possible to configure Octant to run inside a Kubernetes Cluster. Instructions are located here: https://github.com/vmware/octant/tree/master/examples/in-cluster
+While Octant is designed to run on a developers desktop or laptop, it is possible to configure Octant to run inside a Kubernetes Cluster. Instructions are located here: https://github.com/vmware-tanzu/octant/tree/master/examples/in-cluster
 
 ## Q: Where can I get help with Octant?
 
 The best way to get help is to file an issue on GitHub:
-- https://github.com/vmware/octant/issues 
+- https://github.com/vmware-tanzu/octant/issues 
 
 You can also reach out in our communities:
 

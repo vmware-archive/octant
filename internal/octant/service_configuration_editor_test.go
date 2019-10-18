@@ -14,11 +14,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/action"
-	actionFake "github.com/vmware/octant/pkg/action/fake"
-	"github.com/vmware/octant/pkg/store"
-	"github.com/vmware/octant/pkg/store/fake"
+	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/action"
+	actionFake "github.com/vmware-tanzu/octant/pkg/action/fake"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/store/fake"
 )
 
 func TestServiceConfigurationEditor(t *testing.T) {

@@ -13,10 +13,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-//go:generate mockgen -destination=./fake/mock_link.go -package=fake github.com/vmware/octant/internal/link Interface,Config
+//go:generate mockgen -destination=./fake/mock_link.go -package=fake github.com/vmware-tanzu/octant/internal/link Interface,Config
 
 type objectPathFn func(namespace, apiVersion, kind, name string) (string, error)
 

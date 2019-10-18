@@ -5,7 +5,7 @@
 #### 2019-07-29
 
 ### Download
- - https://github.com/vmware/octant/releases/tag/v0.4.1
+ - https://github.com/vmware-tanzu/octant/releases/tag/v0.4.1
 
 ### Changes
   * Upgrade to client-go 1.12 and k8s api 1.15 (#77, @wwitzel3)
@@ -22,7 +22,7 @@
 #### 2019-07-19
 
 ### Download
-- https://github.com/vmware/octant/releases/tag/v0.4.0
+- https://github.com/vmware-tanzu/octant/releases/tag/v0.4.0
 
 ### Highlights
 - Plugin helper service to provide a method for plugin authors to initialize and implement plugins.

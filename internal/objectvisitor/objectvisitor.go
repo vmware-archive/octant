@@ -17,14 +17,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/vmware/octant/internal/config"
-	"github.com/vmware/octant/internal/queryer"
+	"github.com/vmware-tanzu/octant/internal/config"
+	"github.com/vmware-tanzu/octant/internal/queryer"
 )
 
-//go:generate mockgen -destination=./fake/mock_object_handler.go -package=fake -self_package github.com/vmware/octant/internal/objectvisitor/fake github.com/vmware/octant/internal/objectvisitor ObjectHandler
-//go:generate mockgen -destination=./fake/mock_default_typed_visitor.go -package=fake github.com/vmware/octant/internal/objectvisitor DefaultTypedVisitor
-//go:generate mockgen -destination=./fake/mock_typed_visitor.go -package=fake github.com/vmware/octant/internal/objectvisitor TypedVisitor
-//go:generate mockgen -destination=./fake/mock_visitor.go -package=fake github.com/vmware/octant/internal/objectvisitor Visitor
+//go:generate mockgen -destination=./fake/mock_object_handler.go -package=fake -self_package github.com/vmware-tanzu/octant/internal/objectvisitor/fake github.com/vmware-tanzu/octant/internal/objectvisitor ObjectHandler
+//go:generate mockgen -destination=./fake/mock_default_typed_visitor.go -package=fake github.com/vmware-tanzu/octant/internal/objectvisitor DefaultTypedVisitor
+//go:generate mockgen -destination=./fake/mock_typed_visitor.go -package=fake github.com/vmware-tanzu/octant/internal/objectvisitor TypedVisitor
+//go:generate mockgen -destination=./fake/mock_visitor.go -package=fake github.com/vmware-tanzu/octant/internal/objectvisitor Visitor
 
 // ObjectHandler performs actions on an object. Can be used to augment
 // visitor actions with extra functionality.

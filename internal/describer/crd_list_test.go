@@ -14,13 +14,13 @@ import (
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	configFake "github.com/vmware/octant/internal/config/fake"
-	"github.com/vmware/octant/internal/link"
-	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/icon"
-	"github.com/vmware/octant/pkg/store"
-	storefake "github.com/vmware/octant/pkg/store/fake"
-	"github.com/vmware/octant/pkg/view/component"
+	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	"github.com/vmware-tanzu/octant/internal/link"
+	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/icon"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	storefake "github.com/vmware-tanzu/octant/pkg/store/fake"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 func Test_crdListDescriber(t *testing.T) {

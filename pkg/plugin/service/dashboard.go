@@ -5,11 +5,11 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/vmware/octant/pkg/plugin/api"
-	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/plugin/api"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
-//go:generate mockgen -destination=./fake/mock_dashboard.go -package=fake github.com/vmware/octant/pkg/plugin/service Dashboard
+//go:generate mockgen -destination=./fake/mock_dashboard.go -package=fake github.com/vmware-tanzu/octant/pkg/plugin/service Dashboard
 
 // Dashboard is the client a plugin can use to interact with Octant.
 type Dashboard interface {

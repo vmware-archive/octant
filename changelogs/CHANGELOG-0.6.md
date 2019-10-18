@@ -4,7 +4,7 @@
 #### 2019-08-20
 
 ### Download
- - https://github.com/vmware/octant/releases/tag/v0.6.0
+ - https://github.com/vmware-tanzu/octant/releases/tag/v0.6.0
 
 ### Highlights
 - Fixed cases where CRDs were causing errors from an int64 to float64 conversion

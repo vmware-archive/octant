@@ -20,15 +20,15 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/vmware/octant/internal/api"
-	apiFake "github.com/vmware/octant/internal/api/fake"
-	clusterFake "github.com/vmware/octant/internal/cluster/fake"
-	configFake "github.com/vmware/octant/internal/config/fake"
-	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/internal/module"
-	moduleFake "github.com/vmware/octant/internal/module/fake"
-	"github.com/vmware/octant/pkg/navigation"
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/internal/api"
+	apiFake "github.com/vmware-tanzu/octant/internal/api/fake"
+	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
+	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/module"
+	moduleFake "github.com/vmware-tanzu/octant/internal/module/fake"
+	"github.com/vmware-tanzu/octant/pkg/navigation"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 func TestAPI_routes(t *testing.T) {

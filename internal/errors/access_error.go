@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 type AccessError struct {

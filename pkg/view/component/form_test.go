@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/internal/testutil"
 )
 
 func TestFormFieldCheckBox_UnmarshalJSON(t *testing.T) {

@@ -18,10 +18,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 
-	configFake "github.com/vmware/octant/internal/config/fake"
-	"github.com/vmware/octant/internal/objectvisitor"
-	pluginFake "github.com/vmware/octant/pkg/plugin/fake"
-	storeFake "github.com/vmware/octant/pkg/store/fake"
+	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	"github.com/vmware-tanzu/octant/internal/objectvisitor"
+	pluginFake "github.com/vmware-tanzu/octant/pkg/plugin/fake"
+	storeFake "github.com/vmware-tanzu/octant/pkg/store/fake"
 )
 
 type stubbedVisitor struct{ visitErr error }

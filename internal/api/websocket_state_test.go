@@ -15,12 +15,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/vmware/octant/internal/api"
-	"github.com/vmware/octant/internal/api/fake"
-	configFake "github.com/vmware/octant/internal/config/fake"
-	"github.com/vmware/octant/internal/log"
-	moduleFake "github.com/vmware/octant/internal/module/fake"
-	"github.com/vmware/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/internal/api"
+	"github.com/vmware-tanzu/octant/internal/api/fake"
+	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	"github.com/vmware-tanzu/octant/internal/log"
+	moduleFake "github.com/vmware-tanzu/octant/internal/module/fake"
+	"github.com/vmware-tanzu/octant/internal/octant"
 )
 
 func TestWebsocketState_Start(t *testing.T) {

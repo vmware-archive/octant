@@ -13,7 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	octantunstructured "github.com/vmware/octant/thirdparty/unstructured"
+	octantunstructured "github.com/vmware-tanzu/octant/thirdparty/unstructured"
 )
 
 // GetAs gets an object from the object store by key. If the object is not found,
@@ -68,7 +68,6 @@ func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
 	object.SetDeletionGracePeriodSeconds(from.GetDeletionGracePeriodSeconds())
 	object.SetLabels(from.GetLabels())
 	object.SetAnnotations(from.GetAnnotations())
-	object.SetInitializers(from.GetInitializers())
 	object.SetOwnerReferences(from.GetOwnerReferences())
 	object.SetClusterName(from.GetClusterName())
 	object.SetFinalizers(from.GetFinalizers())

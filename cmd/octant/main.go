@@ -9,7 +9,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/vmware/octant/internal/commands"
+	"github.com/vmware-tanzu/octant/internal/commands"
 )
 
 // Default variables overridden by ldflags

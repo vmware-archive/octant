@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware/octant/internal/gvk"
+	"github.com/vmware-tanzu/octant/internal/gvk"
 )
 
 func TestCapabilities_HasPrinterSupport(t *testing.T) {

@@ -8,10 +8,10 @@ package octant
 import (
 	"context"
 
-	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
-//go:generate mockgen -destination=./fake/mock_state.go -package=fake github.com/vmware/octant/internal/octant State
+//go:generate mockgen -destination=./fake/mock_state.go -package=fake github.com/vmware-tanzu/octant/internal/octant State
 
 // UpdateCancelFunc cancels the update.
 type UpdateCancelFunc func()

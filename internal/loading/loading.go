@@ -3,7 +3,7 @@ package loading
 import (
 	"context"
 
-	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 // IsObjectLoading returns true if objects described by a key are loading.

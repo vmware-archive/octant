@@ -13,11 +13,11 @@ import (
 	"net/http"
 
 	"github.com/pkg/errors"
-	"github.com/vmware/octant/internal/api"
-	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/internal/mime"
-	"github.com/vmware/octant/internal/portforward"
-	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/internal/api"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/mime"
+	"github.com/vmware-tanzu/octant/internal/portforward"
+	"github.com/vmware-tanzu/octant/pkg/action"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )

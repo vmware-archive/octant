@@ -23,11 +23,11 @@ import (
 	clientGoTesting "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/vmware/octant/internal/cluster"
-	clusterFake "github.com/vmware/octant/internal/cluster/fake"
-	"github.com/vmware/octant/internal/objectstore/fake"
-	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/internal/cluster"
+	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
+	"github.com/vmware-tanzu/octant/internal/objectstore/fake"
+	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 var (

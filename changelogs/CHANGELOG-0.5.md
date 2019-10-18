@@ -5,7 +5,7 @@
 #### 2019-08-06
 
 ### Download
- - https://github.com/vmware/octant/releases/tag/v0.5.1
+ - https://github.com/vmware-tanzu/octant/releases/tag/v0.5.1
 
 ### Bug fixes
  - Fixed bug with context switcher stream registration (#110, @wwitzel3)
@@ -14,7 +14,7 @@
 #### 2019-08-05
 
 ### Download
- - https://github.com/vmware/octant/releases/tag/v0.5.0
+ - https://github.com/vmware-tanzu/octant/releases/tag/v0.5.0
 
 ### Highlights
 - Significantly reduced memory usage and faster performance

@@ -8,10 +8,10 @@ package dash
 import (
 	"github.com/pkg/errors"
 
-	"github.com/vmware/octant/internal/module"
-	"github.com/vmware/octant/pkg/action"
-	"github.com/vmware/octant/pkg/plugin"
-	"github.com/vmware/octant/pkg/plugin/api"
+	"github.com/vmware-tanzu/octant/internal/module"
+	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/plugin"
+	"github.com/vmware-tanzu/octant/pkg/plugin/api"
 )
 
 func initPlugin(moduleManager module.ManagerInterface, actionManager *action.Manager, service api.Service) (*plugin.Manager, error) {

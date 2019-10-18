@@ -16,10 +16,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/vmware/octant/internal/config"
-	internalErr "github.com/vmware/octant/internal/errors"
-	"github.com/vmware/octant/pkg/store"
-	objectStoreFake "github.com/vmware/octant/pkg/store/fake"
+	"github.com/vmware-tanzu/octant/internal/config"
+	internalErr "github.com/vmware-tanzu/octant/internal/errors"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	objectStoreFake "github.com/vmware-tanzu/octant/pkg/store/fake"
 )
 
 func TestNewDefaultCRDWatcher_requires_object_store(t *testing.T) {

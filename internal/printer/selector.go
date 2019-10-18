@@ -8,7 +8,7 @@ package printer
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 func printSelector(selector *metav1.LabelSelector) *component.Selectors {

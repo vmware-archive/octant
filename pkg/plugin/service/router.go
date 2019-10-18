@@ -3,7 +3,7 @@ package service
 import (
 	"github.com/gobwas/glob"
 
-	"github.com/vmware/octant/pkg/view/component"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // HandleFunc is a function that generates a content response.

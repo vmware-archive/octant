@@ -4,7 +4,7 @@ name: octant
 
 workspace:
   base: /go
-  path: src/github.com/vmware/octant
+  path: src/github.com/vmware-tanzu/octant
 
 steps:
   - name: fetch
@@ -50,7 +50,7 @@ trigger:
 
 workspace:
   base: /go
-  path: src/github.com/vmware/octant
+  path: src/github.com/vmware-tanzu/octant
 
 steps:
   - name: releaser
@@ -75,7 +75,7 @@ trigger:
 
 workspace:
   base: /go
-  path: src/github.com/vmware/octant
+  path: src/github.com/vmware-tanzu/octant
 
 steps:
   - name: releaser

@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vmware/octant/internal/log"
-	"github.com/vmware/octant/internal/octant"
-	"github.com/vmware/octant/pkg/action"
-	"github.com/vmware/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 type ObjectDeleter struct {

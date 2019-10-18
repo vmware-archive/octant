@@ -12,14 +12,14 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/vmware/octant/internal/api"
-	"github.com/vmware/octant/internal/api/fake"
-	configFake "github.com/vmware/octant/internal/config/fake"
-	"github.com/vmware/octant/internal/module"
-	moduleFake "github.com/vmware/octant/internal/module/fake"
-	"github.com/vmware/octant/internal/octant"
-	octantFake "github.com/vmware/octant/internal/octant/fake"
-	"github.com/vmware/octant/pkg/navigation"
+	"github.com/vmware-tanzu/octant/internal/api"
+	"github.com/vmware-tanzu/octant/internal/api/fake"
+	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	"github.com/vmware-tanzu/octant/internal/module"
+	moduleFake "github.com/vmware-tanzu/octant/internal/module/fake"
+	"github.com/vmware-tanzu/octant/internal/octant"
+	octantFake "github.com/vmware-tanzu/octant/internal/octant/fake"
+	"github.com/vmware-tanzu/octant/pkg/navigation"
 )
 
 func TestNavigationManager_GenerateNavigation(t *testing.T) {

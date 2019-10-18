@@ -8,10 +8,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/vmware/octant/internal/testutil"
-	"github.com/vmware/octant/pkg/plugin/api"
-	"github.com/vmware/octant/pkg/plugin/api/fake"
-	"github.com/vmware/octant/pkg/plugin/api/proto"
+	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/plugin/api"
+	"github.com/vmware-tanzu/octant/pkg/plugin/api/fake"
+	"github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
 )
 
 func TestClient_Update(t *testing.T) {

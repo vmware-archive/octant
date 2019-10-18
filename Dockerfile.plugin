@@ -5,7 +5,7 @@ FROM golang:1.13 as builder
 ADD . /var/workspace
 WORKDIR /var/workspace
 ENV GOFLAGS=-mod=vendor GO111MODULE=on
-RUN go build -o /var/workspace/plugin github.com/vmware/octant/cmd/octant-sample-plugin
+RUN go build -o /var/workspace/plugin github.com/vmware-tanzu/octant/cmd/octant-sample-plugin
 
 # ------------------------------------------------------------------------------
 # Running container

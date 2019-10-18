@@ -11,10 +11,10 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/vmware/octant/internal/config"
+	"github.com/vmware-tanzu/octant/internal/config"
 )
 
-//go:generate mockgen -destination=./fake/mock_client_manager.go -package=fake github.com/vmware/octant/internal/api ClientManager
+//go:generate mockgen -destination=./fake/mock_client_manager.go -package=fake github.com/vmware-tanzu/octant/internal/api ClientManager
 
 // ClientManager is an interface for managing clients.
 type ClientManager interface {

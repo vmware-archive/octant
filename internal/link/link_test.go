@@ -15,8 +15,8 @@ import (
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/vmware/octant/internal/link/fake"
-	"github.com/vmware/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/internal/link/fake"
+	"github.com/vmware-tanzu/octant/internal/testutil"
 )
 
 func TestLink_ForObject(t *testing.T) {

@@ -17,11 +17,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/vmware/octant/internal/cluster"
-	"github.com/vmware/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/internal/cluster"
+	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
-//go:generate mockgen  -destination=./fake/mock_store.go -package=fake github.com/vmware/octant/pkg/store Store
+//go:generate mockgen  -destination=./fake/mock_store.go -package=fake github.com/vmware-tanzu/octant/pkg/store Store
 
 // UpdateFn is a function that is called when
 type UpdateFn func(store Store)
