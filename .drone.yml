@@ -53,6 +53,10 @@ workspace:
   path: src/github.com/vmware-tanzu/octant
 
 steps:
+  - name: fetch
+    image: docker:git
+    commands:
+      - git fetch --tags
   - name: releaser
     environment:
       GOOGLE_APPLICATION_JSON:
