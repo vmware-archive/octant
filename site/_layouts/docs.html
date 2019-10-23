@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include head-docs.html %}
+{% if page.version != "master" %}
+  <!-- Block google from indexing versioned docs -->
+  <meta name="robots" content="noindex">
+{% endif %}
+{% if page.name != "README.md" %}
+  <title>{{ site.title }} Docs - {{page.title}}</title>
+{% endif %}
+{% if page.name == "README.md" %}
+  <title>{{ site.title }} Docs - Overview</title>
+{% endif %}
+
+<body id="docs">
+  <div class="container-fluid site-outer-container">
+    <div class="site-container">
+      {% include site-header.html %}
+      <div class="post-single-hero post-single-hero-short bg-color-{{ site.hero.background-color }}">
+        <div class="section">
+            <div class="section-content">
+              <h1>Documentation</h1>
+            </div>
+        </div>
+      </div>
+        <div class="section section-card pt-4 pb-0">
+          <div class="container container-max">
+            <div class="row">
+              <div class="col-md-3 toc">
+              {% include versions.html %}
+              {% include nav.html %}
+              </div>
+              <div class="col-md-8">
+              {% include version-warning.html %}
+              <div class="documentation-container">
+                {{ content }}
+              </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% include footer.html %}
+    </div>
+  </div>
+</body>
+
+</html>

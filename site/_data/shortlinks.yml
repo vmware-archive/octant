@@ -1,0 +1,12 @@
+- title: Getting Started
+  key: getting-started
+  destination: getting-started
+- Title: Build with Drone
+  key: drone
+  destination: drone
+- Title: Release
+  key: release
+  destination: release
+- Title: Plugins
+  key: plugins
+  destination: Plugins
