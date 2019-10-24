@@ -121,8 +121,9 @@ func (m *Metadata) SetTitleText(parts ...string) {
 
 func (m *Metadata) UnmarshalJSON(data []byte) error {
 	x := struct {
-		Type  string        `json:"type,omitempty"`
-		Title []TypedObject `json:"title,omitempty"`
+		Type     string        `json:"type,omitempty"`
+		Title    []TypedObject `json:"title,omitempty"`
+		Accessor string        `json:"accessor,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
@@ -130,11 +131,12 @@ func (m *Metadata) UnmarshalJSON(data []byte) error {
 	}
 
 	m.Type = x.Type
+	m.Accessor = x.Accessor
 
 	for _, title := range x.Title {
 		vc, err := title.ToComponent()
 		if err != nil {
-			return errors.Wrap(err, "unmarshaling title")
+			return errors.Wrap(err, "unmarshal-ing title")
 		}
 
 		tvc, ok := vc.(TitleComponent)

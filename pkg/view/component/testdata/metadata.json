@@ -1,0 +1,14 @@
+{
+  "type": "type",
+  "title": [
+    {
+      "metadata": {
+        "type": "text"
+      },
+      "config": {
+        "value": "title"
+      }
+    }
+  ],
+  "accessor": "accessor"
+}
