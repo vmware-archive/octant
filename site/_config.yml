@@ -3,16 +3,16 @@ title: Octant
 email:
 author: Octant Authors
 description: Validate your Kubernetes configuration
-url: https://github.com/vmware/octant
+#url: https://octant.dev
 logo: octant-logo.png
 twitter:
   username: projectoctant
   card: summary
 vm_logo: vm-logo.png
-gh_repo: https://github.com/vmware/octant
+gh_repo: https://github.com/vmware-tanzu/octant
 markdown: redcarpet
 hero:
-  background-color: darkest-blue
+  background-color: med-blue
 footer:
   title: Getting Started
   content: To help you get started, see the documentation.
@@ -24,16 +24,16 @@ footer:
 footer_social_links:
   Twitter:
     fa_icon: fab fa-twitter
-    url: https://github.com/vmware/octant
+    url: https://twitter.com/projectoctant
   Slack:
     fa_icon: fab fa-slack
-    url: https://kubernetes.slack.com/messages/CM37M9FCG
+    url: https://kubernetes.slack.com/app_redirect?channel=CM37M9FCG
   RSS:
     fa_icon: fa fa-rss
     url: feed.xml
   GitHub:
     fa_icon: fab fa-github
-    url: https://github.com/vmware/octant
+    url: https://github.com/vmware-tanzu/octant
 
 defaults:
   - scope:
@@ -50,7 +50,7 @@ defaults:
       path: docs/master
     values:
       version: master
-      gh: https://github.com/vmware/octant/tree/master
+      gh: https://github.com/vmware-tanzu/octant/tree/master
       layout: "docs"
 
 page_gen:
