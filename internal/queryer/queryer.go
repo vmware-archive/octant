@@ -52,6 +52,8 @@ type Queryer interface {
 	ServicesForIngress(ctx context.Context, ingress *extv1beta1.Ingress) (*unstructured.UnstructuredList, error)
 	ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Service, error)
 	ServiceAccountForPod(ctx context.Context, pod *corev1.Pod) (*corev1.ServiceAccount, error)
+	ConfigMapsForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.ConfigMap, error)
+	SecretsForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Secret, error)
 }
 
 type childrenCache struct {
@@ -710,6 +712,103 @@ func (osq *ObjectStoreQueryer) ServiceAccountForPod(ctx context.Context, pod *co
 
 	return serviceAccount, nil
 
+}
+
+func (osq *ObjectStoreQueryer) ConfigMapsForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.ConfigMap, error) {
+	if pod == nil {
+		return nil, errors.New("pod is nil")
+	}
+
+	var configMaps []*corev1.ConfigMap
+	key := store.Key{
+		Namespace:  pod.Namespace,
+		APIVersion: "v1",
+		Kind:       "ConfigMap",
+	}
+	ul, _, err := osq.objectStore.List(ctx, key)
+	if err != nil {
+		return nil, errors.Wrap(err, "retrieving configmaps")
+	}
+
+	for i := range ul.Items {
+		configMap := &corev1.ConfigMap{}
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(ul.Items[i].Object, configMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "converting unstructured configmap")
+		}
+		if err = copyObjectMeta(configMap, &ul.Items[i]); err != nil {
+			return nil, errors.Wrap(err, "copying object metadata")
+		}
+
+		for _, c := range pod.Spec.Containers {
+			for _, e := range c.Env {
+				ref := e.ValueFrom.ConfigMapKeyRef
+				if ref.Name == configMap.Name {
+					configMaps = append(configMaps, configMap)
+				}
+			}
+
+			for _, e := range c.EnvFrom {
+				ref := e.ConfigMapRef
+				if ref.Name == configMap.Name {
+					configMaps = append(configMaps, configMap)
+				}
+			}
+		}
+	}
+
+	return configMaps, nil
+}
+
+func (osq *ObjectStoreQueryer) SecretsForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Secret, error) {
+	if pod == nil {
+		return nil, errors.New("pod is nil")
+	}
+
+	var secrets []*corev1.Secret
+	key := store.Key{
+		Namespace:  pod.Namespace,
+		APIVersion: "v1",
+		Kind:       "Secret",
+	}
+	ul, _, err := osq.objectStore.List(ctx, key)
+	if err != nil {
+		return nil, errors.Wrap(err, "retrieving secrets")
+	}
+
+	for i := range ul.Items {
+		secret := &corev1.Secret{}
+		err := runtime.DefaultUnstructuredConverter.FromUnstructured(ul.Items[i].Object, secret)
+		if err != nil {
+			return nil, errors.Wrap(err, "converting unstructured secret")
+		}
+		if err = copyObjectMeta(secret, &ul.Items[i]); err != nil {
+			return nil, errors.Wrap(err, "copying object metadata")
+		}
+
+		for _, v := range pod.Spec.Volumes {
+			if v.Secret != nil && v.Secret.SecretName == secret.Name {
+				secrets = append(secrets, secret)
+			}
+		}
+		for _, c := range pod.Spec.Containers {
+			for _, e := range c.Env {
+				ref := e.ValueFrom.SecretKeyRef
+				if ref.Name == secret.Name {
+					secrets = append(secrets, secret)
+				}
+			}
+
+			for _, e := range c.EnvFrom {
+				ref := e.SecretRef
+				if ref.Name == secret.Name {
+					secrets = append(secrets, secret)
+				}
+			}
+		}
+	}
+
+	return secrets, nil
 }
 
 func (osq *ObjectStoreQueryer) getSelector(object runtime.Object) (*metav1.LabelSelector, error) {

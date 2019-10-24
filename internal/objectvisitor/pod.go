@@ -101,5 +101,47 @@ func (p *Pod) Visit(ctx context.Context, object *unstructured.Unstructured, hand
 		return nil
 	})
 
+	g.Go(func() error {
+		configMaps, err := p.queryer.ConfigMapsForPod(ctx, pod)
+		if err != nil {
+			return err
+		}
+
+		for i := range configMaps {
+			configMap := configMaps[i]
+			g.Go(func() error {
+				m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(configMap)
+				if err != nil {
+					return err
+				}
+				u := &unstructured.Unstructured{Object: m}
+				return handler.AddEdge(ctx, object, u)
+			})
+		}
+
+		return nil
+	})
+
+	g.Go(func() error {
+		secrets, err := p.queryer.SecretsForPod(ctx, pod)
+		if err != nil {
+			return err
+		}
+
+		for i := range secrets {
+			secret := secrets[i]
+			g.Go(func() error {
+				m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(secret)
+				if err != nil {
+					return err
+				}
+				u := &unstructured.Unstructured{Object: m}
+				return handler.AddEdge(ctx, object, u)
+			})
+		}
+
+		return nil
+	})
+
 	return g.Wait()
 }
