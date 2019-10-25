@@ -11,15 +11,13 @@ tags: ['Brian Liles']
 ---
 In a perfect world, you would deploy applications to clusters and nothing else would be a problem. In the Kubernetes world, it isn’t that simple yet. Because Kubernetes workloads are composed of multiple objects, even simple actions can be complex. This complexity is why we created and open sourced [Octant](https://github.com/vmware/octant), a developer-centric web interface for Kubernetes that lets you inspect a Kubernetes cluster on which applications reside. [Check out Octant on GitHub](https://github.com/vmware/octant).
 
-[![Watch a Demo](http://img.youtube.com/vi/jUuZxgjyPPc/0.jpg)](https://www.youtube.com/watch?v=jUuZxgjyPPc)
-
+{% youtube jUuZxgjyPPc %}
 
 To help a developer better understand the state of the application running inside the cluster, Octant’s dashboard allows you to navigate through your namespaces and the objects they contain. It lets you visualize the relativity of objects and resources. Unlike the Kubernetes Dashboard, Octant runs locally on your workstation and uses your Kubernetes credentials to access the cluster, an approach that avoids a whole class of security concerns.
 
 **There are myriad dashboard projects for Kubernetes. What new features does Octant bring to the table?**
 
 ![alt text](/img/posts/2019/08/12/screenshot-1.png)
-
 
 ## Visualizing workloads
 
@@ -32,7 +30,6 @@ With a complete view of an object and all its related objects, you can more accu
 There isn’t one true way to manage a Kubernetes cluster. There are entire ecosystems of tools for creating and managing objects, providing observability, and working with continuous integration and delivery tools. With Octant, you can integrate those ecosystems into one convenient browser-based user interface. Octant provides a plugin system that allows you to add information to your cluster views. You can embed usage graphs to pods, add information to Ingresses, and highlight objects that have recently been updated through continuous delivery. Plugins let you integrate information about objects where it is most useful.
 
 ![alt text](/img/posts/2019/08/12/screenshot-2.png)
-
 
 ## Octant
 
@@ -53,7 +50,6 @@ Provide a visual interface to managing Kubernetes that complements and extends e
 Make it easy for developers to understand how their workloads are performing in a cluster.
 Create an extensible tool that provides a common integration point for the multitude of tools Kubernetes developers use to get software to production.
 
-
 ## Get involved
 
 The nature of Octant as a project requires input from the community to find its place within the Kubernetes ecosystem. From code contributions and documentation to sharing your usage in the field, there are many ways to get involved. Feel free to ask questions via the [distribution list](http://groups.google.com/forum/#!forum/project-octant), [Slack](https://kubernetes.slack.com/messages/CM37M9FCG), or try out the [latest release on GitHub](https://github.com/vmware/octant/releases/latest)!
@@ -63,7 +59,7 @@ The nature of Octant as a project requires input from the community to find its 
 * Try writing a plugin
 * Share how your team plans to use Octant
 
-
 ## Join the Octant community
 * Get updates on Twitter ([@projectoctant](https://twitter.com/projectoctant))
 * Chat with us on Slack (#[octant](https://kubernetes.slack.com/messages/CM37M9FCG) on Kubernetes Slack)
+* Join the [Octant Community Meetings](/community)
