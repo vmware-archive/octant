@@ -72,7 +72,7 @@ describe('Deployment', () => {
       cy.get('[data-id="layer0-selectbox"]')
         .invoke('width')
         .should('be.greaterThan', 0);
-      cy.get('[data-id="layer2-node"]').click(400, 320, { force: true });
+      cy.get('[data-id="layer2-node"]').click(370, 360, { force: true });
 
       cy.get('app-heptagon-grid svg g:first')
         .children()

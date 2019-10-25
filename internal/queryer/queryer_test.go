@@ -893,6 +893,138 @@ func TestObjectStoreQueryer_ServiceAccountForPod(t *testing.T) {
 	require.Equal(t, serviceAccount, got)
 }
 
+func TestObjectStoreQueryer_ConfigMapsForPod(t *testing.T) {
+	configMapKeyRef := testutil.CreateConfigMap("configmap1")
+	configMapEnv := testutil.CreateConfigMap("configmap2")
+
+	pod := testutil.CreatePod("pod")
+	pod.Spec.Containers = []corev1.Container{
+		{
+			EnvFrom: []corev1.EnvFromSource{
+				{
+					ConfigMapRef: &corev1.ConfigMapEnvSource{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: "configmap2",
+						},
+					},
+				},
+			},
+			Env: []corev1.EnvVar{
+				{
+					ValueFrom: &corev1.EnvVarSource{
+						ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+							LocalObjectReference: corev1.LocalObjectReference{
+								Name: "configmap1",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	o := storeFake.NewMockStore(controller)
+	key := store.Key{
+		Namespace:  "namespace",
+		APIVersion: "v1",
+		Kind:       "ConfigMap",
+	}
+
+	discovery := queryerFake.NewMockDiscoveryInterface(controller)
+
+	q := New(o, discovery)
+
+	ctx := context.Background()
+
+	o.EXPECT().
+		List(gomock.Any(), gomock.Eq(key)).
+		Return(testutil.ToUnstructuredList(t, configMapKeyRef, configMapEnv), false, nil)
+	configMaps, err := q.ConfigMapsForPod(ctx, pod)
+	require.NoError(t, err)
+
+	var got []string
+	for _, configmap := range configMaps {
+		got = append(got, configmap.Name)
+	}
+	sort.Strings(got)
+
+	assert.Equal(t, []string([]string{configMapKeyRef.Name, configMapEnv.Name}), got)
+}
+
+func TestObjectStoreQueryer_SecretsForPod(t *testing.T) {
+	secretInVolume := testutil.CreateSecret("secret1")
+	secretEnv := testutil.CreateSecret("secret2")
+	secretEnvFrom := testutil.CreateSecret("secret3")
+
+	pod := testutil.CreatePod("pod")
+	pod.Spec.Containers = []corev1.Container{
+		{
+			EnvFrom: []corev1.EnvFromSource{
+				{
+					SecretRef: &corev1.SecretEnvSource{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: "secret3",
+						},
+					},
+				},
+			},
+			Env: []corev1.EnvVar{
+				{
+					ValueFrom: &corev1.EnvVarSource{
+						SecretKeyRef: &corev1.SecretKeySelector{
+							LocalObjectReference: corev1.LocalObjectReference{
+								Name: "secret2",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	pod.Spec.Volumes = []corev1.Volume{
+		{
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: "secret1",
+				},
+			},
+		},
+	}
+
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	o := storeFake.NewMockStore(controller)
+	key := store.Key{
+		Namespace:  "namespace",
+		APIVersion: "v1",
+		Kind:       "Secret",
+	}
+
+	discovery := queryerFake.NewMockDiscoveryInterface(controller)
+
+	q := New(o, discovery)
+
+	ctx := context.Background()
+
+	o.EXPECT().
+		List(gomock.Any(), gomock.Eq(key)).
+		Return(testutil.ToUnstructuredList(t, secretInVolume, secretEnv, secretEnvFrom), false, nil)
+	secrets, err := q.SecretsForPod(ctx, pod)
+	require.NoError(t, err)
+
+	var got []string
+	for _, secret := range secrets {
+		got = append(got, secret.Name)
+	}
+	sort.Strings(got)
+
+	assert.Equal(t, []string([]string{secretInVolume.Name, secretEnv.Name, secretEnvFrom.Name}), got)
+}
+
 func TestObjectStoreQueryer_ScaleTarget(t *testing.T) {
 	deployment := testutil.CreateDeployment("deployment")
 
