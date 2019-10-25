@@ -1,18 +1,14 @@
----
-weight: 100
----
-
 # Reference
 
 View component | Description | Example
 ---------------|-------------|---------
-[component.Text](/docs/reference/#component-text) | Displays a string | ![newtext](newtext.png)
-[component.Timestamp](/docs/reference#component-timestamp) | Displays Unix time in a human-readable form. Hover to see full datetime. | ![timestamp](timestamp.png)
-[component.Table](/docs/reference#component-table) | Create a table with rows and columns | ![table](table.png)
-[component.Summary](/docs/reference#component-summary) | Create a summary containing a header and content | ![summary](summary.png)
-[component.Link](/docs/reference#component-link) | Create a link to an object | ![link](link.png)
-[component.Quadrant](/docs/reference#component-quadrant) | Create a quadrant consisting of fours strings and a title. | ![quadrant](quadrant.png)
-[component.Labels](/docs/reference#component-labels) | Create a label from a key-value pair of strings. | ![labels](labels.png)
+[component.Text](#component-text) | Displays a string | ![newtext](newtext.png)
+[component.Timestamp](#component-timestamp) | Displays Unix time in a human-readable form. Hover to see full datetime. | ![timestamp](timestamp.png)
+[component.Table](#component-table) | Create a table with rows and columns | ![table](table.png)
+[component.Summary](#component-summary) | Create a summary containing a header and content | ![summary](summary.png)
+[component.Link](#component-link) | Create a link to an object | ![link](link.png)
+[component.Quadrant](#component-quadrant) | Create a quadrant consisting of fours strings and a title. | ![quadrant](quadrant.png)
+[component.Labels](#component-labels) | Create a label from a key-value pair of strings. | ![labels](labels.png)
 
 ## JSON Response Reference
 
@@ -54,7 +50,6 @@ component.NewTimestamp(time.Unix(1559734098, 0))
 ```
 
 ### component.Table
-
 
 ```go
 tableCols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")

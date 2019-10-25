@@ -1,7 +1,3 @@
----
-weight: 10
----
-
 # Get Started
 
 ## Build an example plugin
@@ -10,7 +6,7 @@ An example plugin can be found within the developer dashboard repo.
 
 Install the plugin using:
 
-```
+```sh
 make install-test-plugin
 ```
 
@@ -53,4 +49,3 @@ This pod has both a Configuration and Status.
 ### Items
 
 A plugin with support for `PrinterItems` allow adding a `FlexLayoutItem` consisting of a width and a view component.
-

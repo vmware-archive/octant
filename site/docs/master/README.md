@@ -21,7 +21,7 @@ Octant is a tool for developers to understand how applications run on a Kubernet
 * **Port Forward**
 
     Forward a local port to a running pod with a single button for debugging applications and even port forward multiple pods across namespaces.
- 
+
 * **Log Stream**
 
     View log streams of pod and container activity for troubleshooting or monitoring without holding multiple terminals open.
@@ -34,7 +34,7 @@ Octant is a tool for developers to understand how applications run on a Kubernet
 
    Easily change between namespaces or contexts across different clusters. Multiple kubeconfig files are also supported.
 
- * **Plugin System**
+* **Plugin System**
 
    Highly extensible plugin system for users to provide additional functionality through gRPC. Plugin authors can add components on top of existing views.
 
@@ -50,29 +50,29 @@ Octant is a tool for developers to understand how applications run on a Kubernet
 
 2. Install with either `dpkg -i` or `rpm -i` respectively.
 
-###  Windows
+### Windows
 
 #### Chocolatey
 
 1. Install using chocolatey with the following one-liner:
 
-   ```sh
-   choco install octant --confirm
-   ```
+    ```sh
+    choco install octant --confirm
+    ```
 
 #### Scoop
 
 1. Add the [extras](https://github.com/lukesampson/scoop-extras) bucket.
 
-   ```sh
-   scoop bucket add extras
-   ```
+    ```sh
+    scoop bucket add extras
+    ```
 
- 2. Install using scoop.
+2. Install using scoop.
 
-   ```sh
-   scoop install octant
-   ```
+    ```sh
+    scoop install octant
+    ```
 
 ### macOS
 
@@ -80,9 +80,9 @@ Octant is a tool for developers to understand how applications run on a Kubernet
 
 1. Install using Homebrew with the following one-liner:
 
-   ```sh
-   brew install octant
-   ```
+    ```sh
+    brew install octant
+    ```
 
 ### Download a Pre-built Binary (Linux, macOS, Windows)
 
@@ -111,12 +111,17 @@ Before starting Octant, make sure you have access to a healthy cluster. If kubec
 
 Start running Octant:
 
-`$ octant`
+```sh
+octant
+```
 
 Octant should immediately launch your default web browser on `127.0.0.1:7777`.
 
 Or to run it on a specific host and fixed port:
-`$ OCTANT_LISTENER_ADDR=0.0.0.0:8900 octant`
+
+```sh
+OCTANT_LISTENER_ADDR=0.0.0.0:8900 octant
+```
 
 For configuring Octant, setting up a development environment, or running tests, refer to the documentation [here](getting-started).
 
@@ -132,18 +137,18 @@ Documentation for plugin components can be found in [`plugins`](plugins).
 
 Feature requests, bug reports, and enhancements are welcome. Contributors, maintainers, and users are encouraged to collaborate through these communication channels:
 
- - [Kubernetes Slack](http://slack.k8s.io/) in the [#octant](https://kubernetes.slack.com/app_redirect?channel=CM37M9FCG) channel
- - [Twitter](https://twitter.com/projectoctant)
- - [Google group](https://groups.google.com/forum/#!forum/project-octant/)
- - [GitHub issues](https://github.com/vmware-tanzu/octant/issues)
+* [Kubernetes Slack](http://slack.k8s.io/) in the [#octant](https://kubernetes.slack.com/app_redirect?channel=CM37M9FCG) channel
+* [Twitter](https://twitter.com/projectoctant)
+* [Google group](https://groups.google.com/forum/#!forum/project-octant/)
+* [GitHub issues](https://github.com/vmware-tanzu/octant/issues)
 
 ## Contributing
 
 New contributors will need to sign a CLA (contributor license agreement). We also ask that a changelog entry is included with your pull request. Details are described in our [contributing]({{ site.gh_repo }}/blob/master/CONTRIBUTING.md) documentation.
 
-See our [hacking]({{ site.gh_repo }}/blob/master/HACKING.md) guide for getting your development environment setup.
+See our [hacking](hacking.md) guide for getting your development environment setup.
 
-See our [roadmap]({{ site.gh_repo }}/blob/master/ROADMAP.md) for tentative features in a 1.0 release.
+See our [roadmap](roadmap.md) for tentative features in a 1.0 release.
 
 ## License
 

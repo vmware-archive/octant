@@ -19,28 +19,36 @@ Octant is configurable through environment variables defined at runtime.
 Octant is configurable through command line flags set at runtime. You can see all of the available options by
 running `octant --help`.
 
-        --client-burst int     maximum burst for client throttle (default 400)
-        --client-qps float32   maximum QPS for client (default 200)
-        --context string       initial context
-    -c, --enable-opencensus    enable open census
-    -h, --help                 help for octant
-        --klog-verbosity int   klog verbosity level
-        --kubeconfig string    absolute path to kubeConfig file (default "~/.kube/config")
-    -n, --namespace string     initial namespace
-        --ui-url string        dashboard url
+```sh
+    --client-burst int     maximum burst for client throttle (default 400)
+    --client-qps float32   maximum QPS for client (default 200)
+    --context string       initial context
+-c, --enable-opencensus    enable open census
+-h, --help                 help for octant
+    --klog-verbosity int   klog verbosity level
+    --kubeconfig string    absolute path to kubeConfig file (default "~/.kube/config")
+-n, --namespace string     initial namespace
+    --ui-url string        dashboard url
+```
 
 The verbosity has a special type that is used to parse the flag, which means it can be provided
 shorthand by just adding more `v` to equal the level count or with an explicit equal sign.
 
-    -v[vv], --verbosity=count      verbosity level
+```sh
+-v[vv], --verbosity=count      verbosity level
+```
 
 For example
 
-    $ octant -vvv
+```sh
+octant -vvv
+```
 
 Is equal to
 
-    $ octant --verbosity=3
+```sh
+octant --verbosity=3
+```
 
 ## Setting Up a Development Environment
 
@@ -61,13 +69,20 @@ If Docker and [Drone](/docs/drone) are installed, tests and build steps can run 
 
 ## e2e Testing
 
-Cypress will load the dashboard from port 7777. Navigate to `web/` then install the Cypress binary `npm install cypress --save-dev`.
+Cypress will load the dashboard from port 7777. Navigate to `web/` then install the Cypress binary with:
+
+```sh
+npm install cypress --save-dev
+```
 
 Run the test from the command line with the option of specifying a browser or electron:
 
-`$(npm bin)/cypress run -b chrome`
+```sh
+$(npm bin)/cypress run -b chrome
+```
 
 Starts the interactive launcher to load tests in `/cypress`.
 
-`$(npm bin)/cypress open`
-
+```sh
+$(npm bin)/cypress open
+```
