@@ -1,7 +1,3 @@
----
-weight: 90
----
-
 # Debugging
 
 Plugins run as an independent process from the dashboard. A panic within a plugin should not crash a running dashboard.
@@ -12,7 +8,7 @@ More detailed logging can be used to debug by passing the verbose flag, `-v`, wh
 
 When starting the dashboard, the logs will show a list of registered plugins and their capabilities. If the plugin is not shown as registered in the logs, check the plugin binary is located in the correct plugin path. Make sure the correct GVK is used along with the relevant Capabilities enabled.
 
-```
+```sh
 INFO    plugin/manager.go:286   registered plugin "plugin-name" {"plugin-name": "pluginstub", "cmd": "/home/sfoo/.config/octant/plugins/pluginstub", "metadata": {"Name":"plugin-name","Description":"a description","Capabilities":{"SupportsPrinterConfig":[{"Group":"","Version":"v1","Kind":"Pod"}],"SupportsPrinterStatus":[{"Group":"","Version":"v1","Kind":"Pod"}],"SupportsPrinterItems":[{"Group":"","Version":"v1","Kind":"Pod"}],"SupportsObjectStatus":[{"Group":"","Version":"v1","Kind":"Pod"}],"SupportsTab":[{"Group":"","Version":"v1","Kind":"Pod"}]}}}
 ```
 

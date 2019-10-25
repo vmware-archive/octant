@@ -1,7 +1,3 @@
----
-weight: 50
----
-
 # Writing Plugins
 
 When you want to extend Octant to do something that is not part of the core functionality you will need to write a plugin. Writing an Octant plugin consists of three main parts. Defining the capabilities, creating handlers, and finally registering and serving the plugin.
@@ -13,10 +9,10 @@ Using `plugin.Capabilities` you can define your desired list of capabilites usin
 When `plugin.Metadata.IsModule` to true plugins can provide content and navigation entries.
 
 ```go
-	capabilities := &plugin.Capabilities{
-		SupportsTab:           []schema.GroupVersionKind{podGVK},
-		IsModule:              False,
-	}
+capabilities := &plugin.Capabilities{
+	SupportsTab:           []schema.GroupVersionKind{podGVK},
+	IsModule:              False,
+}
 ```
 
 The above defines a non-module plugin that will generate a new tab for Pod objects.
@@ -26,13 +22,13 @@ The above defines a non-module plugin that will generate a new tab for Pod objec
 Using `service.HandlerFuncs` you will assign handler functions for each of the capabilities for your plugin.
 
 ```go
-	func handleTab(dashboardClient service.Dashboard, object runtime.Object) (*component.Tab, error) {
-		// ...
-	}
+func handleTab(dashboardClient service.Dashboard, object runtime.Object) (*component.Tab, error) {
+	// ...
+}
 
-	handlers := service.HandlerFuncs{
-		PrintTab: handleTab,
-	}
+handlers := service.HandlerFuncs{
+	PrintTab: handleTab,
+}
 ```
 
 ## Register and Serve
@@ -41,13 +37,13 @@ Registering and serving your plugin is the final step to get your plugin communi
 will pass in the name and description for the plugin.
 
 ```go
-	p, err := service.Register("plugin-name", "a description", capabilities, handlers)
-	if err != nil {
-		log.Fatal(err)
-	}
+p, err := service.Register("plugin-name", "a description", capabilities, handlers)
+if err != nil {
+	log.Fatal(err)
+}
 
-	log.Printf("octant-sample-plugin is starting")
-	p.Serve()
+log.Printf("octant-sample-plugin is starting")
+p.Serve()
 ```
 
 
@@ -55,19 +51,19 @@ will pass in the name and description for the plugin.
 
 Octant ships with an [example plugin](https://github.com/vmware/octant/blob/master/cmd/octant-sample-plugin/main.go).
 
-# More About Capabilities
+## More About Capabilities
 
 Octant provides a well defined set of capabilites for plugins to implement these include:
 
- * Print support; printing config, status, and items to the overview summary for an object.
- * Tab support; creating a new tab in the overview for an object.
- * Object status; adding object status to a given object.
- * Actions; defining customs actions that route to the plugin.
+* Print support; printing config, status, and items to the overview summary for an object.
+* Tab support; creating a new tab in the overview for an object.
+* Object status; adding object status to a given object.
+* Actions; defining customs actions that route to the plugin.
 
 For plugins that as configured as modules the capabilities also include:
 
- * Navigation support; adding entries to the navigation section.
- * Content support; creating content to display on a given path.
+* Navigation support; adding entries to the navigation section.
+* Content support; creating content to display on a given path.
 
 ## Print
 
@@ -188,6 +184,8 @@ func handleContent(dashboardClient service.Dashboard, contentPath string) (compo
 
 Currently Octant creates a non-configurable base path for your plugin that is derived from the name of the plugin.
 
-    /content/plugin-name
+```sh
+/content/plugin-name
+```
 
 You can create nested paths that route to your module using that base path. Pluings should handle nested paths in the `Content` function and dispatch the responses accordingly.

@@ -11,18 +11,22 @@
 
 ## Quick Start
 
-    git clone git@github.com:vmware-tanzu/octant.git
-    cd octant
-    make go-install  # install Go dependencies.
-    make ci-quick    # build UI, generate UI files, and create octant binary.
-    ./build/octant   # run the Octant binary you just built
+```sh
+git clone git@github.com:vmware-tanzu/octant.git
+cd octant
+make go-install  # install Go dependencies.
+make ci-quick    # build UI, generate UI files, and create octant binary.
+./build/octant   # run the Octant binary you just built
+```
 
 ## Testing
 
 We generally require tests be added for all but the most trivial of changes. You can run govet and the tests using the commands below:
 
-    make vet
-    make test
+```sh
+make vet
+make test
+```
 
 ## Frontend
 
@@ -37,9 +41,9 @@ Octant in a single step. The Octant makefile provides `make ui-server` which is 
 alias for the frontend, this does not listen for changes and does require you to stop the command and re-run it after
 saving your changes.
 
-If working on the frontend, you may want to set up a reverse proxy to the Angular services running on `http://localhost:4200`.
+If working on the frontend, you may want to set up a reverse proxy to the Angular services running on `localhost:4200`.
 To set this up, set `OCTANT_PROXY_FRONTEND` environment variable with the location of the frontend.
-(e.g. http://localhost:4200).
+(e.g. `http://localhost:4200`).
 
 ## Before Your Pull Request
 
