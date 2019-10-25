@@ -138,7 +138,7 @@ Documentation for plugin components can be found in [`docs/plugins`](docs/plugin
 
 Feature requests, bug reports, and enhancements are welcome. Contributors, maintainers, and users are encouraged to collaborate through these communication channels:
 
- - [Kubernetes Slack](http://slack.k8s.io/) in the [#octant](https://kubernetes.slack.com/messages/CM37M9FCG) channel
+ - [Kubernetes Slack](http://slack.k8s.io/) in the [#octant](https://kubernetes.slack.com/app_redirect?channel=CM37M9FCG) channel
  - [Twitter](https://twitter.com/projectoctant)
  - [Google group](https://groups.google.com/forum/#!forum/project-octant/)
  - [GitHub issues](https://github.com/vmware-tanzu/octant/issues)

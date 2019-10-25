@@ -1,7 +1,7 @@
 ![Logo][octant-logo]
 
-[![Build Status](https://cloud.drone.io/api/badges/vmware/octant/status.svg)](https://cloud.drone.io/vmware/octant)
-![GitHub release](https://img.shields.io/github/release/vmware/octant.svg)
+[![Build Status](https://cloud.drone.io/api/badges/vmware-tanzu/octant/status.svg)](https://cloud.drone.io/vmware-tanzu/octant)
+![GitHub release](https://img.shields.io/github/release/vmware-tanzu/octant.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 > A web-based, highly extensible platform for developers to better understand the complexity of Kubernetes clusters.
@@ -100,6 +100,9 @@ Octant is a tool for developers to understand how applications run on a Kubernet
 
     ```sh
     $ ./octant_0.X.Y_Linux-64bit/octant version
+    Version:  0.X.Y
+    Git commit:  e37e7f6c6c797ef215fdbeedb91c709c88193522
+    Built:  2019-10-15T01:24:21Z
     ```
 
 ## Getting Started
@@ -129,10 +132,10 @@ Documentation for plugin components can be found in [`plugins`](plugins).
 
 Feature requests, bug reports, and enhancements are welcome. Contributors, maintainers, and users are encouraged to collaborate through these communication channels:
 
- - [Kubernetes Slack](http://slack.k8s.io/) in the [#octant](https://kubernetes.slack.com/messages/CM37M9FCG) channel
+ - [Kubernetes Slack](http://slack.k8s.io/) in the [#octant](https://kubernetes.slack.com/app_redirect?channel=CM37M9FCG) channel
  - [Twitter](https://twitter.com/projectoctant)
  - [Google group](https://groups.google.com/forum/#!forum/project-octant/)
- - [GitHub issues](https://github.com/vmware/octant/issues)
+ - [GitHub issues](https://github.com/vmware-tanzu/octant/issues)
 
 ## Contributing
 

@@ -10,3 +10,9 @@
 - Title: Plugins
   key: plugins
   destination: Plugins
+- Title: Roadmap
+  key: roadmap
+  destination: Roadmap
+- Title: Developer Notes
+  key: hacking
+  destination: Hacking
