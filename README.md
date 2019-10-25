@@ -155,4 +155,4 @@ See our [roadmap](ROADMAP.md) for tentative features in a 1.0 release.
 
 Octant is available under the [Apache License, Version 2.0](LICENSE)
 
-[octant-logo]: /docs/octant-logo.png
+[octant-logo]: /site/docs/master/octant-logo.png
