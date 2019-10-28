@@ -6,7 +6,7 @@ id: community
 ---
 Do you want to help build Octant?
 
-If you’re a newcomer, check out the “[Good first issue](https://github.com/vmware/octant/labels/good%20first%20issue)” label in the Octant repository.
+If you’re a newcomer, check out the “[Good first issue](https://github.com/vmware-tanzu/octant/labels/good%20first%20issue)” label in the Octant repository.
 
 You can follow the work we do, see our milestones, and examine our backlog on our [ZenHub board](https://app.zenhub.com/workspaces/octant-5ba2bc534b5806bc2be8fa8d/board).
 
