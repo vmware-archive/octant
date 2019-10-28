@@ -124,7 +124,7 @@ Octant should immediately launch your default web browser on `127.0.0.1:7777`.
 Or to run it on a specific host and fixed port:
 `$ OCTANT_LISTENER_ADDR=0.0.0.0:8900 octant`
 
-For configuring Octant, setting up a development environment, or running tests, refer to the documentation [here](docs/getting-started.md).
+For configuring Octant, setting up a development environment, or running tests, refer to the documentation [here](site/docs/master/getting-started.md).
 
 ## Plugins
 
