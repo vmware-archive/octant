@@ -9,9 +9,18 @@ More detailed logging can be used to debug by passing the verbose flag, `-v`, wh
 When starting the dashboard, the logs will show a list of registered plugins and their capabilities. If the plugin is not shown as registered in the logs, check the plugin binary is located in the correct plugin path. Make sure the correct GVK is used along with the relevant Capabilities enabled.
 
 ```sh
-INFO    plugin/manager.go:286   registered plugin "plugin-name" {"plugin-name": "pluginstub", "cmd": "/home/sfoo/.config/octant/plugins/pluginstub", "metadata": {"Name":"plugin-name","Description":"a description","Capabilities":{"SupportsPrinterConfig":[{"Group":"","Version":"v1","Kind":"Pod"}],"SupportsPrinterStatus":[{"Group":"","Version":"v1","Kind":"Pod"}],"SupportsPrinterItems":[{"Group":"","Version":"v1","Kind":"Pod"}],"SupportsObjectStatus":[{"Group":"","Version":"v1","Kind":"Pod"}],"SupportsTab":[{"Group":"","Version":"v1","Kind":"Pod"}]}}}
+2019-10-28T09:32:41.015-0700    INFO    plugin/manager.go:397   registered plugin "plugin-name" {"plugin-name": "octant-sample-plugin", "cmd": "/home/sfoo/.config/octant/plugins/octant-sample-plugin", "metadata": {"Name":"plugin-name","Description":"a description","Capabilities":{"SupportsPrinterConfig":[{"Group":"","Version":"v1","Kind":"Pod"}],"SupportsTab":[{"Group":"","Version":"v1","Kind":"Pod"}],"IsModule":true}}}
+2019-10-28T09:32:41.016-0700    INFO    plugin/manager.go:405   plugin supports navigation      {"plugin-name": "octant-sample-plugin"}
 ```
 
 ## How to determine if port forward is working?
 
 The UI provides a table of all active port forwarding with links to the running pod. Once a port forward is active, a URL will be available next to the container port.
+
+## How can Octant be deployed through a proxy?
+
+Set the environment variables `OCTANT_LISTENER_ADDR` and `OCTANT_ACCEPTED_HOSTS` to configure Octant to accept requests from a different address or host.
+
+## What RBAC permissions are needed to view a Kubernetes object?
+
+Make sure the correct Role Binding is given to the user specified in your kubeconfig. Octant is looking to provide functionality to show whether a user has permissions to access an object in the future.
