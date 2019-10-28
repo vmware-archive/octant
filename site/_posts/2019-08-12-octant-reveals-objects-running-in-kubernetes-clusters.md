@@ -9,7 +9,7 @@ categories: ['kubernetes']
 # Tag should match author to drive author pages
 tags: ['Brian Liles']
 ---
-In a perfect world, you would deploy applications to clusters and nothing else would be a problem. In the Kubernetes world, it isn’t that simple yet. Because Kubernetes workloads are composed of multiple objects, even simple actions can be complex. This complexity is why we created and open sourced [Octant](https://github.com/vmware/octant), a developer-centric web interface for Kubernetes that lets you inspect a Kubernetes cluster on which applications reside. [Check out Octant on GitHub](https://github.com/vmware/octant).
+In a perfect world, you would deploy applications to clusters and nothing else would be a problem. In the Kubernetes world, it isn’t that simple yet. Because Kubernetes workloads are composed of multiple objects, even simple actions can be complex. This complexity is why we created and open sourced [Octant](https://github.com/vmware-tanzu/octant), a developer-centric web interface for Kubernetes that lets you inspect a Kubernetes cluster on which applications reside. [Check out Octant on GitHub](https://github.com/vmware-tanzu/octant).
 
 {% youtube jUuZxgjyPPc %}
 
@@ -52,9 +52,9 @@ Create an extensible tool that provides a common integration point for the multi
 
 ## Get involved
 
-The nature of Octant as a project requires input from the community to find its place within the Kubernetes ecosystem. From code contributions and documentation to sharing your usage in the field, there are many ways to get involved. Feel free to ask questions via the [distribution list](http://groups.google.com/forum/#!forum/project-octant), [Slack](https://kubernetes.slack.com/messages/CM37M9FCG), or try out the [latest release on GitHub](https://github.com/vmware/octant/releases/latest)!
+The nature of Octant as a project requires input from the community to find its place within the Kubernetes ecosystem. From code contributions and documentation to sharing your usage in the field, there are many ways to get involved. Feel free to ask questions via the [distribution list](http://groups.google.com/forum/#!forum/project-octant), [Slack](https://kubernetes.slack.com/messages/CM37M9FCG), or try out the [latest release on GitHub](https://github.com/vmware-tanzu/octant/releases/latest)!
 
-* [Easy first issues](https://github.com/vmware/octant/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) tag
+* [Easy first issues](https://github.com/vmware-tanzu/octant/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) tag
 * Propose or request new features
 * Try writing a plugin
 * Share how your team plans to use Octant
