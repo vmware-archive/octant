@@ -786,16 +786,20 @@ func (osq *ObjectStoreQueryer) SecretsForPod(ctx context.Context, pod *corev1.Po
 			return nil, errors.Wrap(err, "copying object metadata")
 		}
 
-		for _, v := range pod.Spec.Volumes {
+		for vi := range pod.Spec.Volumes {
+			v := &pod.Spec.Volumes[vi]
 			if v.Secret != nil && v.Secret.SecretName == secret.Name {
 				secrets = append(secrets, secret)
 			}
 		}
-		for _, c := range pod.Spec.Containers {
+		for ci := range pod.Spec.Containers {
+			c := &pod.Spec.Containers[ci]
 			for _, e := range c.Env {
-				ref := e.ValueFrom.SecretKeyRef
-				if ref.Name == secret.Name {
-					secrets = append(secrets, secret)
+				if e.ValueFrom != nil {
+					ref := e.ValueFrom.SecretKeyRef
+					if ref.Name == secret.Name {
+						secrets = append(secrets, secret)
+					}
 				}
 			}
 

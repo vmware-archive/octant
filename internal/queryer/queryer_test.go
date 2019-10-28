@@ -973,6 +973,10 @@ func TestObjectStoreQueryer_SecretsForPod(t *testing.T) {
 			},
 			Env: []corev1.EnvVar{
 				{
+					Name:  "TEST_SECRET_FOR_POD",
+					Value: "test_secret_for_pod_value",
+				},
+				{
 					ValueFrom: &corev1.EnvVarSource{
 						SecretKeyRef: &corev1.SecretKeySelector{
 							LocalObjectReference: corev1.LocalObjectReference{
