@@ -45,14 +45,15 @@ import (
 )
 
 type Options struct {
-	EnableOpenCensus bool
-	KubeConfig       string
-	Namespace        string
-	FrontendURL      string
-	Context          string
-	ClientQPS        float32
-	ClientBurst      int
-	UserAgent        string
+	EnableOpenCensus       bool
+	DisableClusterOverview bool
+	KubeConfig             string
+	Namespace              string
+	FrontendURL            string
+	Context                string
+	ClientQPS              float32
+	ClientBurst            int
+	UserAgent              string
 }
 
 // Run runs the dashboard.
@@ -152,7 +153,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		options.Context,
 		restConfigOptions)
 
-	moduleList, err := initModules(ctx, dashConfig, options.Namespace)
+	moduleList, err := initModules(ctx, dashConfig, options.Namespace, options)
 	if err != nil {
 		return errors.Wrap(err, "initializing modules")
 	}
@@ -235,7 +236,7 @@ type moduleOptions struct {
 	actionManager  *action.Manager
 }
 
-func initModules(ctx context.Context, dashConfig config.Dash, namespace string) ([]module.Module, error) {
+func initModules(ctx context.Context, dashConfig config.Dash, namespace string, options Options) ([]module.Module, error) {
 	var list []module.Module
 
 	if os.Getenv("OCTANT_ENABLE_APPLICATIONS") != "" {
@@ -257,15 +258,17 @@ func initModules(ctx context.Context, dashConfig config.Dash, namespace string) 
 
 	list = append(list, overviewModule)
 
-	clusterOverviewOptions := clusteroverview.Options{
-		DashConfig: dashConfig,
-	}
-	clusterOverviewModule, err := clusteroverview.New(ctx, clusterOverviewOptions)
-	if err != nil {
-		return nil, errors.Wrap(err, "create cluster overview module")
-	}
+	if !options.DisableClusterOverview {
+		clusterOverviewOptions := clusteroverview.Options{
+			DashConfig: dashConfig,
+		}
+		clusterOverviewModule, err := clusteroverview.New(ctx, clusterOverviewOptions)
+		if err != nil {
+			return nil, errors.Wrap(err, "create cluster overview module")
+		}
 
-	list = append(list, clusterOverviewModule)
+		list = append(list, clusterOverviewModule)
+	}
 
 	configurationOptions := configuration.Options{
 		DashConfig:     dashConfig,

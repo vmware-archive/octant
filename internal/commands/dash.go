@@ -33,6 +33,7 @@ func newOctantCmd(version string) *cobra.Command {
 	var klogVerbosity int
 	var clientQPS float32
 	var clientBurst int
+	var disableClusterOverview bool
 
 	octantCmd := &cobra.Command{
 		Use:   "octant",
@@ -65,14 +66,15 @@ func newOctantCmd(version string) *cobra.Command {
 
 			go func() {
 				options := dash.Options{
-					EnableOpenCensus: enableOpenCensus,
-					KubeConfig:       kubeConfig,
-					Namespace:        namespace,
-					FrontendURL:      uiURL,
-					Context:          initialContext,
-					ClientQPS:        clientQPS,
-					ClientBurst:      clientBurst,
-					UserAgent:        fmt.Sprintf("octant/%s", version),
+					DisableClusterOverview: disableClusterOverview,
+					EnableOpenCensus:       enableOpenCensus,
+					KubeConfig:             kubeConfig,
+					Namespace:              namespace,
+					FrontendURL:            uiURL,
+					Context:                initialContext,
+					ClientQPS:              clientQPS,
+					ClientBurst:            clientBurst,
+					UserAgent:              fmt.Sprintf("octant/%s", version),
 				}
 
 				if klogVerbosity > 0 {
@@ -113,6 +115,7 @@ func newOctantCmd(version string) *cobra.Command {
 	octantCmd.Flags().IntVarP(&klogVerbosity, "klog-verbosity", "", 0, "klog verbosity level")
 	octantCmd.Flags().Float32VarP(&clientQPS, "client-qps", "", 200, "maximum QPS for client")
 	octantCmd.Flags().IntVarP(&clientBurst, "client-burst", "", 400, "maximum burst for client throttle")
+	octantCmd.Flags().BoolVarP(&disableClusterOverview, "disable-cluster-overview", "", false, "disable cluster overview")
 
 	kubeConfig = os.Getenv("KUBECONFIG")
 	if kubeConfig == "" {
