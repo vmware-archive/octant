@@ -1,9 +1,10 @@
 package web
 
 import (
+	"mime"
 	"net/http"
 
-	"github.com/GeertJohan/go.rice"
+	rice "github.com/GeertJohan/go.rice"
 )
 
 //go:generate rice embed-go
@@ -11,6 +12,11 @@ import (
 // Handler create a http handler for the web content.
 func Handler() (http.Handler, error) {
 	box, err := rice.FindBox("dist/dash-frontend")
+	if err != nil {
+		return nil, err
+	}
+
+	err = mime.AddExtensionType(".js", "application/javascript")
 	if err != nil {
 		return nil, err
 	}
