@@ -970,11 +970,25 @@ func TestObjectStoreQueryer_SecretsForPod(t *testing.T) {
 						},
 					},
 				},
+				{
+					ConfigMapRef: &corev1.ConfigMapEnvSource{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: "Not a secret",
+						},
+					},
+				},
 			},
 			Env: []corev1.EnvVar{
 				{
 					Name:  "TEST_SECRET_FOR_POD",
 					Value: "test_secret_for_pod_value",
+				},
+				{
+					ValueFrom: &corev1.EnvVarSource{
+						ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+							Key: "Not a secret",
+						},
+					},
 				},
 				{
 					ValueFrom: &corev1.EnvVarSource{
