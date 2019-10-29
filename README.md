@@ -40,7 +40,7 @@ Octant is a tool for developers to understand how applications run on a Kubernet
 
 ## Usage
 
-![Octant demo](docs/octant-demo.gif)
+![Octant demo](site/docs/master/octant-demo.gif)
 
 ## Installation
 
