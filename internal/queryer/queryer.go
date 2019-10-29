@@ -795,7 +795,7 @@ func (osq *ObjectStoreQueryer) SecretsForPod(ctx context.Context, pod *corev1.Po
 		for ci := range pod.Spec.Containers {
 			c := &pod.Spec.Containers[ci]
 			for _, e := range c.Env {
-				if e.ValueFrom != nil {
+				if e.ValueFrom != nil && e.ValueFrom.SecretKeyRef != nil {
 					ref := e.ValueFrom.SecretKeyRef
 					if ref.Name == secret.Name {
 						secrets = append(secrets, secret)
@@ -804,9 +804,11 @@ func (osq *ObjectStoreQueryer) SecretsForPod(ctx context.Context, pod *corev1.Po
 			}
 
 			for _, e := range c.EnvFrom {
-				ref := e.SecretRef
-				if ref.Name == secret.Name {
-					secrets = append(secrets, secret)
+				if e.SecretRef != nil {
+					ref := e.SecretRef
+					if ref.Name == secret.Name {
+						secrets = append(secrets, secret)
+					}
 				}
 			}
 		}
