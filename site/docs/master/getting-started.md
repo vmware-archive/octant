@@ -2,14 +2,13 @@
 
 ## Environment Variables
 
-Octant is configurable through environment variables defined at runtime, here are some of the notable variables:
+Octant is configurable through environment variables defined at runtime here are some of the notable variables:
 
 * `KUBECONFIG` - set to non-empty location if you want to set KUBECONFIG with an environment variable.
-* `OCTANT_DISABLE_OPEN_BROWSER` - set to a non-empty value if you don't the browser launched when the dashboard start up.
-* `OCTANT_DISABLE_CLUSTER_OVERVIEW` - set to a non-empty value if you do not want the cluster overview module to load.
+* `OCTANT_DISABLE_OPEN_BROWSER` - set to a true value if you do not want the browser launched when the dashboard starts up.
+* `OCTANT_DISABLE_CLUSTER_OVERVIEW` - set to a true value if you do not want the cluster overview module to load.
 * `OCTANT_LISTENER_ADDR` - set to address you want dashboard service to start on. (e.g. `localhost:8080`)
 * `OCTANT_ACCEPTED_HOSTS` - set to comma-separated string of hosts to be accepted. (e.g. `demo.octant.example.com,awesome.octant.zr`)
-* `OCTANT_VERBOSE_CACHE` - set to a non-empty value to view cache actions
 * `OCTANT_LOCAL_CONTENT` - set to a directory and dash will serve content responses from here. An example directory lives in `examples/content`
 * `OCTANT_PLUGIN_PATH` - add a plugin directory or multiple directories separated by `:`. Plugins will load by default from `$HOME/.config/octant/plugins`
 
@@ -17,11 +16,17 @@ Octant is configurable through environment variables defined at runtime, here ar
 
 ### Flags as Variables
 
-All command-line flags can also be passed as environment variables by using all UPPERCASE, replacing the `-` with `_` and prefixing them with `OCTANT_`. Some examples:
+All command-line flags can also be passed as environment variables by using all UPPERCASE, replacing the `-` with `_` and prefixing them with `OCTANT_`.
+When using CLI flags that enable/disable a feature the following values are considered true and false:
+
+  * **True** - "1", "t", "T", "true", "TRUE", "True"
+  * **False** - "0", "f", "F", "false", "FALSE", "False"
+
+Some examples:
 
  * `--namespace=default` becomes `OCTANT_NAMESPACE=default`
  * `--enable-opencensus` becomes `OCTANT_ENABLE_OPENCENSUS=1`
- * `--disable-cluster-overview` becomes `OCTANT_DISABLE_CLUSTER_OVERVIEW=1`
+ * `--disable-cluster-overview` becomes `OCTANT_DISABLE_CLUSTER_OVERVIEW=true`
 
 ## Command Line Flags
 
@@ -35,12 +40,12 @@ Flags:
       --client-qps float32            maximum QPS for client (default 200)
       --context string                initial context
       --disable-cluster-overview      disable cluster overview
-      --disable-open-browser string   disable automatic launching of the browser
-      --enable-applications string    feature flag for applications
+      --disable-open-browser          disable automatic launching of the browser
+      --enable-feature-applications   enable applications feature
   -c, --enable-opencensus             enable open census
   -h, --help                          help for octant
       --klog-verbosity int            klog verbosity level
-      --kubeconfig string             absolute path to kubeConfig file (default "~/.kube/config")
+      --kubeconfig string             absolute path to kubeConfig file (default "/home/wwitzel3/.kube/kind-config-octant")
       --listener-addr string          listener address for the octant frontend
       --local-content string          local content path
   -n, --namespace string              initial namespace

@@ -184,7 +184,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return errors.Wrap(err, "failed to create dash instance")
 	}
 
-	if viper.GetString("disable-open-browser") != "" {
+	if viper.GetBool("disable-open-browser") {
 		d.willOpenBrowser = false
 	}
 
@@ -240,7 +240,7 @@ type moduleOptions struct {
 func initModules(ctx context.Context, dashConfig config.Dash, namespace string, options Options) ([]module.Module, error) {
 	var list []module.Module
 
-	if viper.GetString("enable-applications") != "" {
+	if viper.GetBool("enable-feature-applications") {
 		applicationsOptions := applications.Options{
 			DashConfig: dashConfig,
 		}

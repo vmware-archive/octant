@@ -67,6 +67,8 @@ func newOctantCmd(version string) *cobra.Command {
 				os.Exit(1)
 			}
 
+			logger.Debugf("disable-open-browser: %s", viper.Get("disable-open-browser"))
+
 			go func() {
 				options := dash.Options{
 					DisableClusterOverview: viper.GetBool("disable-cluster-overview"),
@@ -116,21 +118,21 @@ func newOctantCmd(version string) *cobra.Command {
 	octantCmd.Flags().StringP("namespace", "n", "", "initial namespace")
 	octantCmd.Flags().String("ui-url", "", "dashboard url")
 	octantCmd.Flags().CountVarP(&verboseLevel, "verbosity", "v", "verbosity level")
-	octantCmd.Flags().BoolP("enable-opencensus", "c", false, "enable open census")
 	octantCmd.Flags().StringP("context", "", "", "initial context")
 	octantCmd.Flags().IntP("klog-verbosity", "", 0, "klog verbosity level")
 	octantCmd.Flags().Float32P("client-qps", "", 200, "maximum QPS for client")
 	octantCmd.Flags().IntP("client-burst", "", 400, "maximum burst for client throttle")
-	octantCmd.Flags().BoolP("disable-cluster-overview", "", false, "disable cluster overview")
 
 	octantCmd.Flags().StringP("plugin-path", "", "", "plugin path")
 	octantCmd.Flags().StringP("local-content", "", "", "local content path")
 	octantCmd.Flags().StringP("listener-addr", "", "", "listener address for the octant frontend")
 	octantCmd.Flags().StringP("accepted-hosts", "", "", "accepted hosts list")
-
 	octantCmd.Flags().StringP("proxy-frontend", "", "", "url to send frontend request to, useful for development")
-	octantCmd.Flags().StringP("disable-open-browser", "", "", "disable automatic launching of the browser")
-	octantCmd.Flags().StringP("enable-applications", "", "", "feature flag for applications")
+
+	octantCmd.Flags().BoolP("enable-opencensus", "c", false, "enable open census")
+	octantCmd.Flags().BoolP("enable-feature-applications", "", false, "enable applications feature")
+	octantCmd.Flags().BoolP("disable-cluster-overview", "", false, "disable cluster overview")
+	octantCmd.Flags().BoolP("disable-open-browser", "", false, "disable automatic launching of the browser")
 
 	kubeConfig = viper.GetString("kubeconfig")
 	if kubeConfig == "" {
