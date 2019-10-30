@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package printer
 
 import (
+	"context"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -38,14 +39,14 @@ func TestPodTemplateHeader(t *testing.T) {
 }
 
 func stubPodTemplateSection(name string) podTemplateFunc {
-	return func(fl *flexlayout.FlexLayout, options podTemplateLayoutOptions) error {
+	return func(ctx context.Context, fl *flexlayout.FlexLayout, options podTemplateLayoutOptions) error {
 		section := fl.AddSection()
 		return section.Add(component.NewText(name), component.WidthFull)
 	}
 }
 
 func stubPodTemplateSectionWithError() podTemplateFunc {
-	return func(fl *flexlayout.FlexLayout, options podTemplateLayoutOptions) error {
+	return func(ctx context.Context, fl *flexlayout.FlexLayout, options podTemplateLayoutOptions) error {
 		return errors.Errorf("failed")
 	}
 }
@@ -159,7 +160,8 @@ func TestPodTemplate_AddToFlexLayout(t *testing.T) {
 
 			options := Options{}
 
-			err := pt.AddToFlexLayout(tc.flexlayout, options)
+			ctx := context.Background()
+			err := pt.AddToFlexLayout(ctx, tc.flexlayout, options)
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -186,7 +188,8 @@ func Test_podTemplateHeader(t *testing.T) {
 		},
 	}
 
-	require.NoError(t, podTemplateHeader(fl, options))
+	ctx := context.Background()
+	require.NoError(t, podTemplateHeader(ctx, fl, options))
 
 	got := fl.ToComponent("Foo")
 

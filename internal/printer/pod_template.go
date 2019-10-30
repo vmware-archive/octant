@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 package printer
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -22,7 +24,7 @@ type podTemplateLayoutOptions struct {
 	printOptions    Options
 }
 
-type podTemplateFunc func(fl *flexlayout.FlexLayout, options podTemplateLayoutOptions) error
+type podTemplateFunc func(ctx context.Context, fl *flexlayout.FlexLayout, options podTemplateLayoutOptions) error
 
 type PodTemplate struct {
 	parent          runtime.Object
@@ -45,7 +47,7 @@ func NewPodTemplate(parent runtime.Object, podTemplateSpec corev1.PodTemplateSpe
 	}
 }
 
-func (pt *PodTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout, options Options) error {
+func (pt *PodTemplate) AddToFlexLayout(ctx context.Context, fl *flexlayout.FlexLayout, options Options) error {
 	if fl == nil {
 		return errors.New("flex layout is nil")
 	}
@@ -56,7 +58,7 @@ func (pt *PodTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout, options Option
 		printOptions:    options,
 	}
 
-	if err := pt.podTemplateHeaderFunc(fl, baseOptions); err != nil {
+	if err := pt.podTemplateHeaderFunc(ctx, fl, baseOptions); err != nil {
 		return errors.Wrap(err, "pod template header")
 	}
 
@@ -64,7 +66,7 @@ func (pt *PodTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout, options Option
 	initContainerOptions.containers = pt.podTemplateSpec.Spec.InitContainers
 	initContainerOptions.isInit = true
 
-	if err := pt.podTemplateInitContainersFunc(fl, initContainerOptions); err != nil {
+	if err := pt.podTemplateInitContainersFunc(ctx, fl, initContainerOptions); err != nil {
 		return errors.Wrap(err, "pod template init containers")
 	}
 
@@ -72,18 +74,18 @@ func (pt *PodTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout, options Option
 	containerOptions.containers = pt.podTemplateSpec.Spec.Containers
 	containerOptions.isInit = false
 
-	if err := pt.podTemplateContainersFunc(fl, containerOptions); err != nil {
+	if err := pt.podTemplateContainersFunc(ctx, fl, containerOptions); err != nil {
 		return errors.Wrap(err, "pod template containers")
 	}
 
-	if err := pt.podTemplatePodConfigurationFunc(fl, baseOptions); err != nil {
+	if err := pt.podTemplatePodConfigurationFunc(ctx, fl, baseOptions); err != nil {
 		return errors.Wrap(err, "pod template pod configuration")
 	}
 
 	return nil
 }
 
-func podTemplateHeader(fl *flexlayout.FlexLayout, options podTemplateLayoutOptions) error {
+func podTemplateHeader(ctx context.Context, fl *flexlayout.FlexLayout, options podTemplateLayoutOptions) error {
 	headerSection := fl.AddSection()
 	podTemplateHeader := NewPodTemplateHeader(options.podTemplateSpec.ObjectMeta.Labels)
 	headerLabels := podTemplateHeader.Create()
@@ -95,7 +97,7 @@ func podTemplateHeader(fl *flexlayout.FlexLayout, options podTemplateLayoutOptio
 	return nil
 }
 
-func podTemplateContainers(fl *flexlayout.FlexLayout, options podTemplateLayoutOptions) error {
+func podTemplateContainers(ctx context.Context, fl *flexlayout.FlexLayout, options podTemplateLayoutOptions) error {
 	if len(options.containers) < 1 {
 		return nil
 	}
@@ -107,13 +109,13 @@ func podTemplateContainers(fl *flexlayout.FlexLayout, options podTemplateLayoutO
 	width := component.WidthHalf
 
 	for index, container := range options.containers {
-		containerConfig := NewContainerConfiguration(options.parent, &container, portForwarder, options.isInit, options.printOptions)
+		containerConfig := NewContainerConfiguration(ctx, options.parent, &container, portForwarder, options.isInit, options.printOptions)
 		summary, err := containerConfig.Create()
 		if err != nil {
 			return err
 		}
 
-		if len(options.containers) % 2  != 0 && len(options.containers) == index + 1  {
+		if len(options.containers)%2 != 0 && len(options.containers) == index+1 {
 			width = component.WidthFull
 		}
 
@@ -125,7 +127,7 @@ func podTemplateContainers(fl *flexlayout.FlexLayout, options podTemplateLayoutO
 	return nil
 }
 
-func podTemplatePodConfiguration(fl *flexlayout.FlexLayout, options podTemplateLayoutOptions) error {
+func podTemplatePodConfiguration(ctx context.Context, fl *flexlayout.FlexLayout, options podTemplateLayoutOptions) error {
 	podSection := fl.AddSection()
 
 	volumeTable, err := printVolumes(options.podTemplateSpec.Spec.Volumes)

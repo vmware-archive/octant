@@ -122,10 +122,10 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, options Options) (componen
 	if err := ph.Conditions(options); err != nil {
 		return nil, errors.Wrap(err, "print pod conditions")
 	}
-	if err := ph.InitContainers(options); err != nil {
+	if err := ph.InitContainers(ctx, options); err != nil {
 		return nil, errors.Wrap(err, "print pod init containers")
 	}
-	if err := ph.Containers(options); err != nil {
+	if err := ph.Containers(ctx, options); err != nil {
 		return nil, errors.Wrap(err, "print pod containers")
 	}
 	if err := ph.Additional(options); err != nil {
@@ -607,8 +607,8 @@ type podObject interface {
 	Config(options Options) error
 	Status(options Options) error
 	Conditions(options Options) error
-	InitContainers(options Options) error
-	Containers(options Options) error
+	InitContainers(ctx context.Context, options Options) error
+	Containers(ctx context.Context, options Options) error
 	Additional(options Options) error
 }
 
@@ -617,7 +617,7 @@ type podHandler struct {
 	configFunc      func(*corev1.Pod, Options) (*component.Summary, error)
 	summaryFunc     func(*corev1.Pod, Options) (*component.Summary, error)
 	conditionsFunc  func(*corev1.Pod, Options) (*component.Table, error)
-	containerFunc   func(pod *corev1.Pod, container *corev1.Container, isInit bool, options Options) (*component.Summary, error)
+	containerFunc   func(ctx context.Context, pod *corev1.Pod, container *corev1.Container, isInit bool, options Options) (*component.Summary, error)
 	additionalFuncs []func(*corev1.Pod, Options) ObjectPrinterFunc
 	object          *Object
 }
@@ -716,11 +716,11 @@ func defaultPodConditions(pod *corev1.Pod, options Options) (*component.Table, e
 	return createPodConditionsView(pod)
 }
 
-func (p *podHandler) InitContainers(options Options) error {
-	return p.containers(p.pod.Spec.InitContainers, true, options)
+func (p *podHandler) InitContainers(ctx context.Context, options Options) error {
+	return p.containers(ctx, p.pod.Spec.InitContainers, true, options)
 }
 
-func (p *podHandler) containers(containers []corev1.Container, isInit bool, options Options) error {
+func (p *podHandler) containers(ctx context.Context, containers []corev1.Container, isInit bool, options Options) error {
 	var itemDescriptors []ItemDescriptor
 
 	for i := range containers {
@@ -729,7 +729,7 @@ func (p *podHandler) containers(containers []corev1.Container, isInit bool, opti
 		itemDescriptors = append(itemDescriptors, ItemDescriptor{
 			Width: component.WidthHalf,
 			Func: func() (component.Component, error) {
-				return p.containerFunc(p.pod, &container, isInit, options)
+				return p.containerFunc(ctx, p.pod, &container, isInit, options)
 			},
 		})
 	}
@@ -739,13 +739,13 @@ func (p *podHandler) containers(containers []corev1.Container, isInit bool, opti
 	return nil
 }
 
-func (p *podHandler) Containers(options Options) error {
-	return p.containers(p.pod.Spec.Containers, false, options)
+func (p *podHandler) Containers(ctx context.Context, options Options) error {
+	return p.containers(ctx, p.pod.Spec.Containers, false, options)
 }
 
-func defaultPodContainers(pod *corev1.Pod, container *corev1.Container, isInit bool, options Options) (*component.Summary, error) {
+func defaultPodContainers(ctx context.Context, pod *corev1.Pod, container *corev1.Container, isInit bool, options Options) (*component.Summary, error) {
 	portForwarder := options.DashConfig.PortForwarder()
-	creator := NewContainerConfiguration(pod, container, portForwarder, isInit, options)
+	creator := NewContainerConfiguration(ctx, pod, container, portForwarder, isInit, options)
 	return creator.Create()
 }
 

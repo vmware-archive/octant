@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package printer
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"testing"
@@ -24,6 +25,7 @@ import (
 
 	pffake "github.com/vmware-tanzu/octant/internal/portforward/fake"
 	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -286,6 +288,9 @@ func Test_ContainerConfiguration(t *testing.T) {
 			tpo := newTestPrinterOptions(controller)
 			printOptions := tpo.ToOptions()
 
+			ctx := context.Background()
+			configMap := testutil.CreateConfigMap("myconfig")
+
 			pf := pffake.NewMockPortForwarder(controller)
 			gvk := schema.GroupVersionKind{Version: "v1", Kind: "Pod"}
 
@@ -328,7 +333,17 @@ func Test_ContainerConfiguration(t *testing.T) {
 				},
 			}
 
-			cc := NewContainerConfiguration(parentPod, tc.container, pf, tc.isInit, printOptions)
+			if tc.container != nil {
+				key := store.Key{
+					Kind:       configMap.Kind,
+					APIVersion: configMap.APIVersion,
+					Name:       configMap.Name,
+					Namespace:  configMap.Namespace,
+				}
+				tpo.objectStore.EXPECT().Get(ctx, gomock.Eq(key)).Return(testutil.ToUnstructured(t, configMap), true, nil).AnyTimes()
+			}
+
+			cc := NewContainerConfiguration(ctx, parentPod, tc.container, pf, tc.isInit, printOptions)
 			summary, err := cc.Create()
 			if tc.isErr {
 				require.Error(t, err)

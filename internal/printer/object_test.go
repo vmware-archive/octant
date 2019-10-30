@@ -60,7 +60,7 @@ func Test_Object_ToComponent(t *testing.T) {
 	}
 
 	fnPodTemplate := func(o *Object) {
-		o.PodTemplateGen = func(_ runtime.Object, _ corev1.PodTemplateSpec, fl *flexlayout.FlexLayout, options Options) error {
+		o.PodTemplateGen = func(_ context.Context, _ runtime.Object, _ corev1.PodTemplateSpec, fl *flexlayout.FlexLayout, options Options) error {
 			section := fl.AddSection()
 			require.NoError(t, section.Add(component.NewText("pod template"), 12))
 			return nil
