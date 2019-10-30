@@ -14,6 +14,8 @@ builds:
       - linux
     goarch:
       - amd64
+      - arm
+      - arm64
     ldflags: -X "main.buildTime={{.Date}}" -X "main.gitCommit={{.Commit}}" -X "main.version={{.Version}}"
 nfpms:
   -
@@ -31,6 +33,8 @@ nfpms:
       linux: Linux
       windows: Windows
       amd64: 64bit
+      arm: ARM
+      arm64: ARM64
 archives:
   -
     wrap_in_directory: true
