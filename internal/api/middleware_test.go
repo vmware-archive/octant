@@ -6,13 +6,13 @@ SPDX-License-Identifier: Apache-2.0
 package api
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 )
 
@@ -42,7 +42,7 @@ func Test_rebindHandler(t *testing.T) {
 			name:         "custom host",
 			host:         "0.0.0.0",
 			expectedCode: http.StatusOK,
-			listenerKey:  "OCTANT_LISTENER_ADDR",
+			listenerKey:  "listener-addr",
 			listenerAddr: "0.0.0.0:0000",
 		},
 	}
@@ -50,8 +50,8 @@ func Test_rebindHandler(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.listenerKey != "" {
-				os.Setenv(tc.listenerKey, tc.listenerAddr)
-				defer os.Unsetenv(tc.listenerKey)
+				viper.Set(tc.listenerKey, tc.listenerAddr)
+				defer viper.Set(tc.listenerKey, "")
 			}
 			fake := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprint(w, "response")
