@@ -14,7 +14,17 @@
 ```sh
 git clone git@github.com:vmware-tanzu/octant.git
 cd octant
+
+# Manually install required Go tools as listed above, by following these instructions:
+# - https://github.com/GeertJohan/go.rice#installation and
+#   `export PATH="$PATH:${GOPATH}/bin"`
+# - https://github.com/golang/mock#installation
+# - https://github.com/golang/protobuf#installation
+
 make go-install  # install Go dependencies.
+make web-deps    # install npm dependencies (one-time step, calls `npm ci`;
+                 # alternatively use `(cd web && npm install)` to avoid
+                 # redownloading all modules)
 make ci-quick    # build UI, generate UI files, and create octant binary.
 ./build/octant   # run the Octant binary you just built
 ```
