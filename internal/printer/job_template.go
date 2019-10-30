@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 package printer
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -16,12 +18,14 @@ import (
 
 type JobTemplate struct {
 	parent          runtime.Object
+	context         context.Context
 	jobTemplateSpec batchv1beta1.JobTemplateSpec
 }
 
-func NewJobTemplate(parent runtime.Object, jobTemplateSpec batchv1beta1.JobTemplateSpec) *JobTemplate {
+func NewJobTemplate(ctx context.Context, parent runtime.Object, jobTemplateSpec batchv1beta1.JobTemplateSpec) *JobTemplate {
 	return &JobTemplate{
 		parent:          parent,
+		context:         ctx,
 		jobTemplateSpec: jobTemplateSpec,
 	}
 }
@@ -47,7 +51,7 @@ func (jt *JobTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout, options Option
 	containerSection := fl.AddSection()
 
 	for _, container := range jt.jobTemplateSpec.Spec.Template.Spec.Containers {
-		containerConfig := NewContainerConfiguration(jt.parent, &container, portForwarder, false, options)
+		containerConfig := NewContainerConfiguration(jt.context, jt.parent, &container, portForwarder, false, options)
 		summary, err := containerConfig.Create()
 		if err != nil {
 			return err

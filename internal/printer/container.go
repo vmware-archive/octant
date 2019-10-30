@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package printer
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"path"
@@ -20,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -30,16 +32,18 @@ type ContainerConfiguration struct {
 	portForwardService portforward.PortForwarder
 	isInit             bool
 	options            Options
+	context            context.Context
 }
 
 // NewContainerConfiguration creates an instance of ContainerConfiguration.
-func NewContainerConfiguration(parent runtime.Object, c *corev1.Container, pfs portforward.PortForwarder, isInit bool, options Options) *ContainerConfiguration {
+func NewContainerConfiguration(ctx context.Context, parent runtime.Object, c *corev1.Container, pfs portforward.PortForwarder, isInit bool, options Options) *ContainerConfiguration {
 	return &ContainerConfiguration{
 		parent:             parent,
 		container:          c,
 		isInit:             isInit,
 		portForwardService: pfs,
 		options:            options,
+		context:            ctx,
 	}
 }
 
@@ -108,7 +112,7 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 		}
 	}
 
-	envTbl, err := describeContainerEnv(cc.parent, c, cc.options)
+	envTbl, err := describeContainerEnv(cc.context, cc.parent, c, cc.options)
 	if err != nil {
 		return nil, errors.Wrap(err, "describing environment")
 	}
@@ -280,7 +284,7 @@ func describeContainerHostPorts(cPorts []corev1.ContainerPort) string {
 }
 
 // describeContainerEnv returns a table describing a container environment
-func describeContainerEnv(parent runtime.Object, c *corev1.Container, options Options) (*component.Table, error) {
+func describeContainerEnv(ctx context.Context, parent runtime.Object, c *corev1.Container, options Options) (*component.Table, error) {
 	if c == nil {
 		return nil, errors.New("container is nil")
 	}
@@ -297,7 +301,7 @@ func describeContainerEnv(parent runtime.Object, c *corev1.Container, options Op
 	cols := component.NewTableCols("Name", "Value", "Source")
 	tbl := component.NewTable("Environment", "There are no defined environment variables!", cols)
 
-	envRows, err := describeEnvRows(ns, c.Env, options)
+	envRows, err := describeEnvRows(ctx, ns, c.Env, options)
 	if err != nil {
 		return nil, err
 	}
@@ -312,7 +316,7 @@ func describeContainerEnv(parent runtime.Object, c *corev1.Container, options Op
 
 // describeEnvRows renders container environment variables as table rows.
 // Expected columns: Name, Value, Source
-func describeEnvRows(namespace string, vars []corev1.EnvVar, options Options) ([]component.TableRow, error) {
+func describeEnvRows(ctx context.Context, namespace string, vars []corev1.EnvVar, options Options) ([]component.TableRow, error) {
 	rows := make([]component.TableRow, 0)
 	for _, e := range vars {
 		row := component.TableRow{}
@@ -322,7 +326,7 @@ func describeEnvRows(namespace string, vars []corev1.EnvVar, options Options) ([
 		row["Source"] = component.NewText("")
 
 		row["Name"] = component.NewText(e.Name)
-		row["Value"] = component.NewText(e.Value) // TODO should we resolve values when source is a reference (valueFrom)?
+		row["Value"] = component.NewText(e.Value)
 		if e.Value != "" || e.ValueFrom == nil {
 			continue
 		}
@@ -349,6 +353,33 @@ func describeEnvRows(namespace string, vars []corev1.EnvVar, options Options) ([
 			if err != nil {
 				return nil, err
 			}
+
+			objectStore := options.DashConfig.ObjectStore()
+
+			key := store.Key{
+				Name:       ref.Name,
+				Namespace:  namespace,
+				APIVersion: "v1",
+				Kind:       "ConfigMap",
+			}
+
+			u, found, err := objectStore.Get(ctx, key)
+			if err != nil {
+				return nil, err
+			}
+
+			if !found {
+				return nil, errors.Errorf("configmap %q from %q not found",
+					ref.Name, namespace)
+			}
+
+			configMap := &corev1.ConfigMap{}
+			if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, configMap); err != nil {
+				return nil, err
+			}
+
+			row["Value"] = component.NewText(configMap.Data[ref.Key])
+
 			row["Source"] = source
 		}
 	}
