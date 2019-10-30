@@ -14,6 +14,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
+	"github.com/spf13/viper"
 )
 
 const configDir = "octant"
@@ -52,11 +53,11 @@ func (c *defaultConfig) PluginDirs() ([]string, error) {
 
 	defaultDir := filepath.Join(home, ".config", configDir, "plugins")
 
-	if runtime.GOOS == "windows" || os.Getenv("XDG_CONFIG_HOME") != "" {
+	if runtime.GOOS == "windows" || viper.GetString("xdg-config-home") != "" {
 		defaultDir = filepath.Join(home, configDir, "plugins")
 	}
 
-	if path := os.Getenv("OCTANT_PLUGIN_PATH"); path != "" {
+	if path := viper.GetString("plugin-path"); path != "" {
 		path = strings.Trim(path, string(filepath.ListSeparator))
 		return append(filepath.SplitList(path), defaultDir), nil
 	}
@@ -69,17 +70,17 @@ func (c *defaultConfig) Home() string {
 		c.homeFn = func() string {
 			switch runtime.GOOS {
 			case "windows":
-				return os.Getenv("LOCALAPPDATA")
+				return viper.GetString("local-app-data")
 
 			case "darwin":
-				return os.Getenv("HOME")
+				return viper.GetString("home")
 
 			default: // Unix
-				if dir := os.Getenv("XDG_CONFIG_HOME"); dir != "" {
+				if dir := viper.GetString("xdg-config-home"); dir != "" {
 					return dir
 				}
 			}
-			return os.Getenv("HOME")
+			return viper.GetString("home")
 		}
 	}
 

@@ -11,10 +11,10 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/spf13/viper"
 
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/log"
@@ -26,8 +26,8 @@ import (
 
 const (
 	// ListenerAddrKey is the environment variable for the Octant listener address.
-	ListenerAddrKey  = "OCTANT_LISTENER_ADDR"
-	AcceptedHostsKey = "OCTANT_ACCEPTED_HOSTS"
+	ListenerAddrKey  = "listener-addr"
+	AcceptedHostsKey = "accepted-hosts"
 	// PathPrefix is a string for the api path prefix.
 	PathPrefix          = "/api/v1"
 	defaultListenerAddr = "127.0.0.1:7777"
@@ -38,7 +38,7 @@ func acceptedHosts() []string {
 		"localhost",
 		"127.0.0.1",
 	}
-	if customHosts := os.Getenv(AcceptedHostsKey); customHosts != "" {
+	if customHosts := viper.GetString(AcceptedHostsKey); customHosts != "" {
 		allowedHosts := strings.Split(customHosts, ",")
 		hosts = append(hosts, allowedHosts...)
 	}
@@ -56,7 +56,7 @@ func acceptedHosts() []string {
 // ListenerAddr returns the default listener address if OCTANT_LISTENER_ADDR is not set.
 func ListenerAddr() string {
 	listenerAddr := defaultListenerAddr
-	if customListenerAddr := os.Getenv(ListenerAddrKey); customListenerAddr != "" {
+	if customListenerAddr := viper.GetString(ListenerAddrKey); customListenerAddr != "" {
 		listenerAddr = customListenerAddr
 	}
 	return listenerAddr
