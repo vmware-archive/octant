@@ -8,30 +8,38 @@ package plugin
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/spf13/afero"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_AvailablePlugins(t *testing.T) {
+	replacer := strings.NewReplacer("-", "_")
+	viper.SetEnvKeyReplacer(replacer)
+	viper.SetEnvPrefix("OCTANT")
+	viper.AutomaticEnv()
+
 	tests := []struct {
 		homePath string
-		envVar   string
+		key      string
 	}{
 		{
 			homePath: filepath.Join("/home", "user"),
-			envVar:   "OCTANT_PLUGIN_PATH",
+			key:      "plugin-path",
 		},
 		{
 			homePath: filepath.Join("/home", "xdg_config_path"),
-			envVar:   "XDG_CONFIG_HOME",
+			key:      "xdg-config-home",
 		},
 	}
 
 	for _, test := range tests {
-		defer os.Unsetenv(test.envVar)
+		viper.Set(test.key, test.homePath)
+
 		fs := afero.NewMemMapFs()
 
 		c := &defaultConfig{
@@ -41,18 +49,18 @@ func Test_AvailablePlugins(t *testing.T) {
 			},
 		}
 
-		switch test.envVar {
-		case "OCTANT_PLUGIN_PATH":
+		switch test.key {
+		case "plugin-path":
 			customPath := "/example/test"
 			envPaths := customPath + ":/another/one"
-			os.Setenv(test.envVar, envPaths)
+			viper.Set(test.key, envPaths)
 
 			configPath := filepath.Join(test.homePath, ".config", configDir, "plugins")
 
 			err := fs.MkdirAll(configPath, 0700)
 			require.NoError(t, err, "unable to create test home directory")
 
-			if os.Getenv(test.envVar) != "" {
+			if viper.GetString(test.key) != "" {
 				for _, path := range filepath.SplitList(envPaths) {
 					err := fs.MkdirAll(path, 0700)
 					require.NoError(t, err, "unable to create directory from environment variable")
@@ -81,12 +89,8 @@ func Test_AvailablePlugins(t *testing.T) {
 
 			assert.Equal(t, expected, got)
 
-		case "XDG_CONFIG_HOME":
-			xdgPath := "/home/xdg_config_path"
-			os.Setenv(test.envVar, xdgPath)
-
+		case "xdg-config-home":
 			configPath := filepath.Join(test.homePath, configDir, "plugins")
-
 			err := fs.MkdirAll(configPath, 0700)
 			require.NoError(t, err, "unable to create test home directory")
 
