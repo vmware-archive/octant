@@ -6,7 +6,6 @@ require (
 	contrib.go.opencensus.io/exporter/jaeger v0.1.0
 	github.com/GeertJohan/go.rice v1.0.0
 	github.com/davecgh/go-spew v1.1.1
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
 	github.com/elazarl/goproxy v0.0.0-20190703090003-6125c262ffb0 // indirect
@@ -14,7 +13,6 @@ require (
 	github.com/gobwas/glob v0.2.3
 	github.com/golang/mock v1.3.1
 	github.com/golang/protobuf v1.3.1
-	github.com/google/btree v1.0.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/googleapis/gnostic v0.2.0
 	github.com/gorilla/handlers v1.4.0
@@ -34,14 +32,12 @@ require (
 	github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.3
+	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.3.0
 	go.opencensus.io v0.22.1
-	go.uber.org/atomic v1.3.2 // indirect
-	go.uber.org/multierr v1.1.0 // indirect
-	go.uber.org/zap v1.9.1
+	go.uber.org/zap v1.10.0
 	golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8 // indirect
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
-	golang.org/x/time v0.0.0-20181108054448-85acf8d2951c // indirect
 	golang.org/x/tools v0.0.0-20190614205625-5aca471b1d59 // indirect
 	google.golang.org/genproto v0.0.0-20190502173448-54afdca5d873 // indirect
 	google.golang.org/grpc v1.23.0
