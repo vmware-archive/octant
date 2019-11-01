@@ -740,18 +740,23 @@ func (osq *ObjectStoreQueryer) ConfigMapsForPod(ctx context.Context, pod *corev1
 			return nil, errors.Wrap(err, "copying object metadata")
 		}
 
-		for _, c := range pod.Spec.Containers {
+		for ci := range pod.Spec.Containers {
+			c := &pod.Spec.Containers[ci]
 			for _, e := range c.Env {
-				ref := e.ValueFrom.ConfigMapKeyRef
-				if ref.Name == configMap.Name {
-					configMaps = append(configMaps, configMap)
+				if e.ValueFrom != nil && e.ValueFrom.ConfigMapKeyRef != nil {
+					ref := e.ValueFrom.ConfigMapKeyRef
+					if ref.Name == configMap.Name {
+						configMaps = append(configMaps, configMap)
+					}
 				}
 			}
 
 			for _, e := range c.EnvFrom {
-				ref := e.ConfigMapRef
-				if ref.Name == configMap.Name {
-					configMaps = append(configMaps, configMap)
+				if e.ConfigMapRef != nil {
+					ref := e.ConfigMapRef
+					if ref.Name == configMap.Name {
+						configMaps = append(configMaps, configMap)
+					}
 				}
 			}
 		}
