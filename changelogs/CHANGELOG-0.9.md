@@ -1,4 +1,14 @@
- - [v0.9.0](#v090)
+- [v0.9.1](#v091)
+- [v0.9.0](#v090)
+
+## v0.9.1
+#### 2019-11-01
+
+### Download
+ - https://github.com/vmware/octant/releases/tag/v0.9.0
+
+### Bug Fixes
+ - Fix panic with queryer ConfigMapsForPod method. (#400, @wwitzel3)
 
 ## v0.9.0
 #### 2019-10-30
