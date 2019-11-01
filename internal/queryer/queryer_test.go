@@ -911,6 +911,10 @@ func TestObjectStoreQueryer_ConfigMapsForPod(t *testing.T) {
 			},
 			Env: []corev1.EnvVar{
 				{
+					Name:  "configmap3",
+					Value: "configmap3_value",
+				},
+				{
 					ValueFrom: &corev1.EnvVarSource{
 						ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
 							LocalObjectReference: corev1.LocalObjectReference{
