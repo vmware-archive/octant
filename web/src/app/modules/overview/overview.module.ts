@@ -53,6 +53,8 @@ import { DefaultPipe } from './pipes/default.pipe';
 import { ButtonGroupComponent } from './components/button-group/button-group.component';
 import { AlertComponent } from './components/alert/alert.component';
 import { ContentFilterComponent } from './components/content-filter/content-filter.component';
+import { NgTerminalModule } from 'ng-terminal';
+import { TerminalComponent } from 'src/app/components/terminal/terminal.component';
 
 export function hljsLanguages() {
   return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
@@ -102,6 +104,7 @@ export function hljsLanguages() {
     ButtonGroupComponent,
     AlertComponent,
     ContentFilterComponent,
+    TerminalComponent,
   ],
   imports: [
     CommonModule,
@@ -114,6 +117,7 @@ export function hljsLanguages() {
     RouterModule,
     ReactiveFormsModule,
     MarkdownModule.forChild(),
+    NgTerminalModule,
   ],
   exports: [ContextSelectorComponent, DefaultPipe],
 })

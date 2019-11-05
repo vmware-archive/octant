@@ -46,6 +46,7 @@
     "highlight.js": "^9.15.6",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
+    "ng-terminal": "^2.2.1",
     "ngx-highlightjs": "^3.0.3",
     "ngx-markdown": "^8.1.0",
     "ngx-take-until-destroy": "^5.4.0",

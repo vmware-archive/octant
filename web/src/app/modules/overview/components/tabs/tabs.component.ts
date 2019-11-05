@@ -16,6 +16,7 @@ interface Tab {
   name: string;
   view: View;
   accessor: string;
+  isClosable?: boolean;
 }
 
 @Component({
@@ -73,6 +74,16 @@ export class TabsComponent implements OnChanges, OnInit {
     }
     this.activeTab = tabAccessor;
     this.setMarker(tabAccessor);
+  }
+
+  closeTab(tabAccessor: string) {
+    const tabIndex = this.tabs.findIndex(tab => tab.accessor === tabAccessor);
+    if (tabIndex > -1) {
+      this.tabs = [
+        ...this.tabs.slice(0, tabIndex),
+        ...this.tabs.slice(tabIndex + 1),
+      ];
+    }
   }
 
   private setMarker(tabAccessor: string) {
