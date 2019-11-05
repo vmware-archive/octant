@@ -26,7 +26,6 @@ import (
 )
 
 func newOctantCmd(version string) *cobra.Command {
-	var kubeConfig string
 	var verboseLevel int
 
 	octantCmd := &cobra.Command{
@@ -69,11 +68,15 @@ func newOctantCmd(version string) *cobra.Command {
 
 			logger.Debugf("disable-open-browser: %s", viper.Get("disable-open-browser"))
 
+			if viper.GetString("kubeconfig") == "" {
+				viper.Set("kubeconfig", clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename())
+			}
+
 			go func() {
 				options := dash.Options{
 					DisableClusterOverview: viper.GetBool("disable-cluster-overview"),
 					EnableOpenCensus:       viper.GetBool("enable-opencensus"),
-					KubeConfig:             kubeConfig,
+					KubeConfig:             viper.GetString("kubeconfig"),
 					Namespace:              viper.GetString("namespace"),
 					FrontendURL:            viper.GetString("ui-url"),
 					Context:                viper.GetString("context"),
@@ -134,12 +137,7 @@ func newOctantCmd(version string) *cobra.Command {
 	octantCmd.Flags().BoolP("disable-cluster-overview", "", false, "disable cluster overview")
 	octantCmd.Flags().BoolP("disable-open-browser", "", false, "disable automatic launching of the browser")
 
-	kubeConfig = viper.GetString("kubeconfig")
-	if kubeConfig == "" {
-		kubeConfig = clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
-	}
-
-	octantCmd.Flags().StringVar(&kubeConfig, "kubeconfig", kubeConfig, "absolute path to kubeConfig file")
+	octantCmd.Flags().String("kubeconfig", "", "absolute path to kubeConfig file")
 
 	return octantCmd
 }
