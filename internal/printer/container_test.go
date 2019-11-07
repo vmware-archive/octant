@@ -47,8 +47,8 @@ func Test_ContainerConfiguration(t *testing.T) {
 					Protocol: corev1.ProtocolTCP,
 				},
 				{
-					Name:          "tls",
-					ContainerPort: 443,
+					Name:          "application",
+					ContainerPort: 8443,
 					Protocol:      corev1.ProtocolTCP,
 				},
 				{
@@ -212,7 +212,7 @@ func Test_ContainerConfiguration(t *testing.T) {
 				{
 					Header: "Container Ports",
 					Content: component.NewPorts([]component.Port{
-						*component.NewPort("namespace", "v1", "Pod", "pod", 443, "TCP", component.PortForwardState{IsForwardable: true, IsForwarded: true}),
+						*component.NewPort("namespace", "v1", "Pod", "pod", 8443, "TCP", component.PortForwardState{IsForwardable: true, IsForwarded: true}),
 						*component.NewPort("namespace", "v1", "Pod", "pod", 443, "UDP", component.PortForwardState{IsForwardable: false, IsForwarded: false}),
 					}),
 				},
@@ -294,8 +294,27 @@ func Test_ContainerConfiguration(t *testing.T) {
 			pf := pffake.NewMockPortForwarder(controller)
 			gvk := schema.GroupVersionKind{Version: "v1", Kind: "Pod"}
 
-			state := portforward.State{}
-			pf.EXPECT().Find("namespace", gomock.Eq(gvk), "pod").Return(state, nil).AnyTimes()
+			states := []portforward.State{
+				{
+					CreatedAt: testutil.Time(),
+					Ports: []portforward.ForwardedPort{
+						{
+							Local:  uint16(45275),
+							Remote: uint16(8443),
+						},
+					},
+					Pod: portforward.Target{
+						GVK:       gvk,
+						Namespace: "namespace",
+						Name:      "pod",
+					},
+				},
+			}
+
+			state := createPortForwardState("stateid", "namespace", "pod", gvk)
+
+			pf.EXPECT().Find("namespace", gomock.Eq(gvk), "pod").Return(states, nil).AnyTimes()
+			pf.EXPECT().Get(gomock.Any()).Return(state, true).AnyTimes()
 
 			tpo.PathForGVK("namespace", "v1", "Secret", "mysecret", "mysecret:somesecretkey", "/secret")
 			tpo.PathForGVK("namespace", "v1", "ConfigMap", "myconfig", "myconfig:somekey", "/configMap")
@@ -464,4 +483,20 @@ func Test_editContainerAction(t *testing.T) {
 		Form:  form,
 	}
 	require.Equal(t, expected, got)
+}
+
+func createPortForwardState(id, namespace, targetName string, gvk schema.GroupVersionKind) portforward.State {
+	return portforward.State{
+		ID:        id,
+		CreatedAt: testutil.Time(),
+		Pod: portforward.Target{
+			GVK:       gvk,
+			Namespace: namespace,
+			Name:      targetName,
+		},
+		Target: portforward.Target{
+			GVK:       gvk,
+			Namespace: namespace,
+			Name:      targetName,
+		}}
 }

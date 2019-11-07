@@ -79,7 +79,7 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 	if hostPorts != "" {
 		sections.AddText("Host Ports", hostPorts)
 	}
-	containerPorts, err := describeContainerPorts(cc.parent, c.Ports, cc.portForwardService)
+	containerPorts, err := describeContainerPorts(cc.context, cc.parent, c.Ports, cc.portForwardService)
 	if err != nil {
 		return nil, errors.Wrap(err, "describe container ports")
 	}
@@ -210,6 +210,7 @@ type notFound interface {
 }
 
 func describeContainerPorts(
+	ctx context.Context,
 	parent runtime.Object,
 	cPorts []corev1.ContainerPort,
 	portForwardService portforward.PortForwarder) ([]component.Port, error) {
@@ -233,29 +234,43 @@ func describeContainerPorts(
 		}
 	}
 
+	states, err := portForwardService.Find(namespace, gvk, name)
+	if err != nil {
+		if _, ok := err.(notFound); !ok {
+			return nil, errors.Wrap(err, "query port forward service for pod")
+		}
+	}
+
+	pfLookup := make(map[int32]string, len(states))
 	for _, cPort := range cPorts {
+		for _, state := range states {
+			for _, forwarded := range state.Ports {
+				if int(forwarded.Remote) == int(cPort.ContainerPort) {
+					pfLookup[cPort.ContainerPort] = state.ID
+				}
+			}
+		}
+
 		if cPort.ContainerPort == 0 {
 			continue
 		}
 		pfs := component.PortForwardState{}
-
 		var port *component.Port
-		if isPod && cPort.Protocol == "TCP" {
+
+		if isPod && cPort.Protocol == corev1.ProtocolTCP {
 			pfs.IsForwardable = true
-			state, err := portForwardService.Find(namespace, gvk, name)
-			if err != nil {
-				if _, ok := err.(notFound); !ok {
-					return nil, errors.Wrap(err, "query port forward service for pod")
+		}
+
+		if id, ok := pfLookup[cPort.ContainerPort]; ok {
+			if state, found := portForwardService.Get(id); found {
+				for _, forwarded := range state.Ports {
+					pfs.Port = int(forwarded.Local)
 				}
 			} else {
-				pfs.ID = state.ID
-				for _, forwarded := range state.Ports {
-					if int(forwarded.Remote) == int(cPort.ContainerPort) {
-						pfs.Port = int(forwarded.Local)
-					}
-				}
-				pfs.IsForwarded = true
+				return nil, errors.Wrap(err, "id not found for port forward")
 			}
+			pfs.ID = id
+			pfs.IsForwarded = true
 		}
 
 		apiVersion, kind := gvk.ToAPIVersionAndKind()

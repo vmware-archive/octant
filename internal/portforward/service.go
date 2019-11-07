@@ -34,7 +34,7 @@ type PortForwarder interface {
 	List(ctx context.Context) []State
 	Get(id string) (State, bool)
 	Create(ctx context.Context, gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (CreateResponse, error)
-	Find(namespace string, gvk schema.GroupVersionKind, name string) (State, error)
+	Find(namespace string, gvk schema.GroupVersionKind, name string) ([]State, error)
 	Stop()
 	StopForwarder(id string)
 }
@@ -103,7 +103,7 @@ type States struct {
 	portForwards map[string]State
 }
 
-// PortForwardSvcOptions contains all the options for running a port-forward service
+// ServiceOptions contains all the options for running a port-forward service
 type ServiceOptions struct {
 	RESTClient    rest.Interface
 	Config        *restclient.Config
@@ -498,20 +498,22 @@ func (e *notFound) NotFound() bool {
 	return true
 }
 
-func (s *Service) Find(namespace string, gvk schema.GroupVersionKind, name string) (State, error) {
+func (s *Service) Find(namespace string, gvk schema.GroupVersionKind, name string) ([]State, error) {
 	s.state.Lock()
 	defer s.state.Unlock()
+
+	result := make([]State, 0, len(s.state.portForwards))
 
 	for _, state := range s.state.portForwards {
 		target := state.Target
 		if target.GVK.String() == gvk.String() &&
 			namespace == target.Namespace &&
 			name == target.Name {
-			return state, nil
+			result = append(result, state)
 		}
 	}
 
-	return State{}, &notFound{}
+	return result, &notFound{}
 }
 
 // newForwardRequest constructs a port forwarding request based on the provided parameters
