@@ -23,16 +23,67 @@ spec:
       serviceAccountName: {{ template "octant.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: create-kubeconfig
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/bash
+            - -c
+          args:
+            - |
+              server=https://kubernetes.default:443
+
+              ca=$(base64 -w 0 < /var/run/secrets/kubernetes.io/serviceaccount/ca.crt)
+              token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+              namespace=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
+
+              cat <<EOF > /kube/config
+              apiVersion: v1
+              kind: Config
+              clusters:
+              - name: default-cluster
+                cluster:
+                  certificate-authority-data: ${ca}
+                  server: ${server}
+              contexts:
+              - name: default-context
+                context:
+                  cluster: default-cluster
+                  namespace: default
+                  user: default-user
+              current-context: default-context
+              users:
+              - name: default-user
+                user:
+                  token: ${token}
+              EOF
+          volumeMounts:
+            - name: kube
+              mountPath: /kube
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /octant
+          args:
+            - -v
+            - --disable-open-browser
+            - --kubeconfig
+            - /kube/config
+          env:
+            - name: OCTANT_LISTENER_ADDR
+              value: 0.0.0.0:8080
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 8080
               protocol: TCP
+          volumeMounts:
+            - name: kube
+              mountPath: /kube
           livenessProbe:
             httpGet:
               path: /
@@ -43,6 +94,8 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: kube
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

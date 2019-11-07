@@ -48,9 +48,5 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Create the name of the service account to use
 */}}
 {{- define "octant.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create -}}
     {{ default (include "octant.fullname" .) .Values.serviceAccount.name }}
-{{- else -}}
-    {{ default "default" .Values.serviceAccount.name }}
-{{- end -}}
 {{- end -}}
