@@ -95,6 +95,8 @@ func runCmd(command string, env map[string]string, args ...string) {
 func newCmd(command string, env map[string]string, args ...string) *exec.Cmd {
 	cmd := exec.Command(command, args...)
 	cmd.Env = os.Environ()
+	// Setting Stdout here complains about it already being set?
+	// cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	for k, v := range env {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", k, v))
@@ -143,6 +145,7 @@ func vet() {
 
 func webDeps() {
 	cmd := newCmd("npm", nil, "ci")
+	cmd.Stdout = os.Stdout
 	cmd.Dir = "./web"
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("web-deps: %s", err)
@@ -151,6 +154,7 @@ func webDeps() {
 
 func webTest() {
 	cmd := newCmd("npm", nil, "run", "build")
+	cmd.Stdout = os.Stdout
 	cmd.Dir = "./web"
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("web-test: %s", err)
@@ -159,10 +163,7 @@ func webTest() {
 }
 
 func webBuild() {
-	cmd := newCmd("npm", nil, "run", "test:headless")
-	if err := cmd.Run(); err != nil {
-		log.Fatalf("web-build: %s", err)
-	}
+	runCmd("npm", nil, "run", "test:headless")
 }
 
 func serve() {
@@ -170,6 +171,7 @@ func serve() {
 
 	uiVars := map[string]string{"API_BASE": "http://localhost:7777"}
 	uiCmd := newCmd("npm", uiVars, "run", "start")
+	uiCmd.Stdout = os.Stdout
 	uiCmd.Dir = "./web"
 	if err := uiCmd.Start(); err != nil {
 		log.Fatalf("uiCmd: start: %s", err)
@@ -189,6 +191,7 @@ func serve() {
 		"OCTANT_PROXY_FRONTEND":       "http://localhost:4200",
 	}
 	serverCmd := newCmd("go", serverVars, "run", "./cmd/octant/main.go")
+	serverCmd.Stdout = os.Stdout
 	if err := serverCmd.Start(); err != nil {
 		log.Fatalf("serveCmd: start: %s", err)
 	}
