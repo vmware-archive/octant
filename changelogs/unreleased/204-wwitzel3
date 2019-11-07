@@ -1,0 +1,1 @@
+allow embedding Octant by moving internal/dash => pkg/dash

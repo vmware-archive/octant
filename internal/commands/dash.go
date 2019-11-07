@@ -21,8 +21,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog"
 
-	"github.com/vmware-tanzu/octant/internal/dash"
 	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/pkg/dash"
 )
 
 func newOctantCmd(version string) *cobra.Command {
