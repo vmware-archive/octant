@@ -7,7 +7,7 @@ An example plugin can be found within the developer dashboard repo.
 Install the plugin using:
 
 ```sh
-make install-test-plugin
+go run build.go install-test-plugin
 ```
 
 Alternatively, build the go binary using `go build` then move the binary to the install path described below.

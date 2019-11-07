@@ -4,11 +4,11 @@ Drone Cloud is used along with goreleaser for releases. This document is used to
 
 ### Update version
 
-The version is tracked by a Makefile though `make version`. Update this to the next version then commit the changes.
+The version is tracked by a build.go file though `go run build.go version`. Update this to the next version then commit the changes.
 
 ### Generate Changelogs
 
-Each pull request should have a changelog entry in `/changelogs/unreleased`. Run `make changelogs` to condense each change into a single console output. Update for formatting and editing as needed.
+Each pull request should have a changelog entry in `/changelogs/unreleased`. Run `bash hacks/changelogs` to condense each change into a single console output. Update for formatting and editing as needed.
 
 Follow the console output and remove old changelog entries. Then create the new changlog file in the format `CHANGELOG-X.Y.md`.
 
@@ -18,10 +18,8 @@ Finally, add the new changelog file under `CHANGELOG.md`.
 
 Once the above steps are completed, a user with write access to the repository will need to tag a commit then push the tag.
 
-```sh
-VERSION=$(make version)
-git tag -a $VERSION -m "$VERSION release"
-git push origin $VERSION
+```go
+go run build.go release
 ```
 
 The release pipeline will trigger. If there are no errors, goreleaser will draft a release.

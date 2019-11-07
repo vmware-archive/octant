@@ -5,7 +5,7 @@ set -e
 BASE_URL="https://api.github.com/repos/vmware-tanzu/octant/releases"
 GITHUB_URL="https://github.com/vmware-tanzu/octant/releases"
 
-semver=$(make version)
+semver=$(go run build.go version)
 version=$(echo $semver | cut -c2-)
 
 echo "Latest version is ${semver}" >&2

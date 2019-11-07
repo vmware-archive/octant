@@ -25,10 +25,10 @@ steps:
       GOFLAGS: -mod=vendor
       GO111MODULE: on
     commands:
-      - make go-install
-      - make test
+      - go run build.go go-install
+      - go run build.go test
       - go generate ./web
-      - make vet
+      - go run build.go vet
     depends_on:
     - frontend
   - name: build
@@ -36,7 +36,7 @@ steps:
     environment:
       CGO_ENABLED: 0
     commands:
-      - make octant-dev
+      - go run build.go build
     depends_on:
     - frontend
     - backend

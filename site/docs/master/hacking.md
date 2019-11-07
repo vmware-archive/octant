@@ -21,12 +21,12 @@ cd octant
 # - https://github.com/golang/mock#installation
 # - https://github.com/golang/protobuf#installation
 
-make go-install  # install Go dependencies.
-make web-deps    # install npm dependencies (one-time step, calls `npm ci`;
-                 # alternatively use `(cd web && npm install)` to avoid
-                 # redownloading all modules)
-make ci-quick    # build UI, generate UI files, and create octant binary.
-./build/octant   # run the Octant binary you just built
+go run build.go go-install  # install Go dependencies.
+go run build.go web-deps    # install npm dependencies (one-time step, calls `npm ci`;
+                            # alternatively use `(cd web && npm install)` to avoid
+                            # redownloading all modules)
+go run build.go ci-quick    # build UI, generate UI files, and create octant binary.
+./build/octant              # run the Octant binary you just built
 ```
 
 ## Testing
@@ -34,26 +34,21 @@ make ci-quick    # build UI, generate UI files, and create octant binary.
 We generally require tests be added for all but the most trivial of changes. You can run govet and the tests using the commands below:
 
 ```sh
-make vet
-make test
+go run build.go vet
+go run build.go test
 ```
 
-## Frontend
+## Developing
 
-When making changes to the frontend it can be helpful to have those changes trigger rebuilding the UI.
-The Octant makefile provides `make ui-client` which is an alias for `npm run start` and will listen for changes and rebuild the UI.
-By default this will launch on `http://localhost:4200`.
+When making changes to the frontend it can be helpful to have those changes trigger rebuilding the UI. Octant provides a short cut
+using:
 
-## Backend
+    go run build.go serve
 
-When you are making changes to the backend you can take advantage of Go's fast compile time to build and run
-Octant in a single step. The Octant makefile provides `make ui-server` which is an alias for `go run`. Unlike the
-alias for the frontend, this does not listen for changes and does require you to stop the command and re-run it after
-saving your changes.
+The `serve` command starts two processes. The first is an alias for `npm run start` and will listen for changes and rebuild the UI.
+The UI server will launch on `http://localhost:4200`.
 
-If working on the frontend, you may want to set up a reverse proxy to the Angular services running on `localhost:4200`.
-To set this up, set `OCTANT_PROXY_FRONTEND` environment variable with the location of the frontend.
-(e.g. `http://localhost:4200`).
+The second, is an alias for `go run ./cmd/octant/main.go` but with useful environment variables already set, `OCTANT_PROXY_FRONTEND` which will reverse proxy to the Angular service and `OCTANT_DISABLE_OPEN_BROWSER` which prevents Octant from attempting to start the default system browser. The Octant server will launch on `http://localhost:7777`.
 
 ## Before Your Pull Request
 
