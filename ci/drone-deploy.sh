@@ -8,9 +8,9 @@ if [ -z "$DRONE" ]; then
 fi
 
 if [ ! -z "$DRONE_TAG" ]; then
-	if [ "$(make version)" != "$DRONE_TAG" ]; then
+	if [ "$(go run build.go version)" != "$DRONE_TAG" ]; then
         echo "octant version does not match tagged version!" >&2
-        echo "octant version is $(make version)" >&2
+        echo "octant version is $(go run build.go version)" >&2
         echo "tag is $DRONE_TAG" >&2
         exit 1
     fi

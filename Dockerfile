@@ -24,10 +24,10 @@ ADD . /workspace
 COPY --from=base /web ./web
 ENV GOFLAGS=-mod=vendor GO111MODULE=on
 
-RUN make go-install
+RUN go run build.go go-install
 RUN go generate ./web
-RUN make generate
-RUN make octant-dev
+RUN go run build.go generate
+RUN go run build.go build
 
 # ------------------------------------------------------------------------------
 # Running container

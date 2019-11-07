@@ -27,14 +27,14 @@ should_build() {
 }
 
 if [[ $TRAVIS_BRANCH == 'master' ]]; then
-    make ci
+    go run build.go ci
 else
   should_build
   if [[ $BUILD_FRONTEND == 0 ]]; then
       # Backend tests only
-      make test vet octant-dev
+      go run build.go test vet build
   else
-    make web-test web-build
+    go run build.go web
   fi
 fi
 

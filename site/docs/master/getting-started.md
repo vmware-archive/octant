@@ -83,9 +83,9 @@ octant --verbosity=3
 * [mockgen](https://github.com/golang/mock) - generating go files used for testing
 * [protoc](https://github.com/golang/protobuf) - generate go code compatible with gRPC
 
-These build tools can be installed via Makefile with `make go-install`.
+These build tools can be installed via Makefile with `go run build.go go-install`.
 
-A development binary can be built by `make octant-dev`.
+A development binary can be built by `go run build.go build`.
 
 For UI changes, see the [README]({{ site.gh_repo }}/tree/master/web) located in `web/`.
 
