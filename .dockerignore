@@ -10,6 +10,7 @@ web/rice-box.go
 choco
 ci
 configs
+charts
 
 
 # generated fakes
