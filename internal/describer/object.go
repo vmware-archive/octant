@@ -18,6 +18,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/modules/overview/logviewer"
 	"github.com/vmware-tanzu/octant/internal/modules/overview/yamlviewer"
 	"github.com/vmware-tanzu/octant/internal/resourceviewer"
+	"github.com/vmware-tanzu/octant/internal/terminal"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -64,6 +65,7 @@ func NewObject(c ObjectConfig) *Object {
 		{name: "resource viewer", tabFunc: o.addResourceViewerTab},
 		{name: "yaml", tabFunc: o.addYAMLViewerTab},
 		{name: "logs", tabFunc: o.addLogsTab},
+		{name: "terminal", tabFunc: o.addTerminalTab},
 	}
 
 	return o
@@ -235,6 +237,26 @@ func (d *Object) addLogsTab(ctx context.Context, object runtime.Object, cr *comp
 
 		logsComponent.SetAccessor("logs")
 		cr.Add(logsComponent)
+	}
+
+	return nil
+}
+
+func (d *Object) addTerminalTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options Options) error {
+	if isPod(object) {
+		terminalComponent, err := terminal.GenerateComponent(ctx, options.Dash.TerminalManager(), object)
+		if err != nil {
+			errComponent := component.NewError(component.TitleFromString("Terminals"), err)
+			cr.Add(errComponent)
+
+			logger := log.From(ctx)
+			logger.Errorf("retrieving terminals for pod: %s", err)
+
+			return nil
+		}
+
+		terminalComponent.SetAccessor("terminal")
+		cr.Add(terminalComponent)
 	}
 
 	return nil

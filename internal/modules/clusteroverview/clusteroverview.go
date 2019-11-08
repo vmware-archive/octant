@@ -212,6 +212,7 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 			"RBAC":             "rbac",
 			"Nodes":            "nodes",
 			"Port Forwards":    "port-forward",
+			"Terminals":        "terminal",
 		},
 		EntriesFuncs: map[string]octant.EntriesFunc{
 			"Namespaces":       nil,
@@ -219,6 +220,7 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 			"RBAC":             rbacEntries,
 			"Nodes":            nil,
 			"Port Forwards":    nil,
+			"Terminals":        nil,
 		},
 		Order: []string{
 			"Namespaces",
@@ -226,6 +228,7 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 			"RBAC",
 			"Nodes",
 			"Port Forwards",
+			"Terminals",
 		},
 	}
 
