@@ -124,7 +124,7 @@ Octant should immediately launch your default web browser on `127.0.0.1:7777`.
 Or to run it on a specific host and fixed port:
 `$ OCTANT_LISTENER_ADDR=0.0.0.0:8900 octant`
 
-For configuring Octant, setting up a development environment, or running tests, refer to the documentation [here](site/docs/master/getting-started.md).
+For configuring Octant, setting up a development environment, or running tests, refer to the [documentation](https://octant.dev/docs/master).
 
 ## Plugins
 
@@ -132,7 +132,7 @@ Plugins are a core part of Octant in the Kubernetes ecosystem. A plugin can read
 
 An example plugin can be found in [`cmd/octant-sample-plugin`](cmd/octant-sample-plugin) and installed to the default plugin path with `make install-test-plugin`.
 
-Documentation for plugin components can be found in [`docs/plugins`](docs/plugins).
+Documentation for plugin components can be found in the [Plugins section](https://octant.dev/docs/master/plugins/) of the documentation.
 
 ## Discussion
 
