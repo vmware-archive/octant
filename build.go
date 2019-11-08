@@ -153,17 +153,22 @@ func webDeps() {
 }
 
 func webTest() {
-	cmd := newCmd("npm", nil, "run", "build")
+	cmd := newCmd("npm", nil, "run", "test:headless")
 	cmd.Stdout = os.Stdout
 	cmd.Dir = "./web"
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("web-test: %s", err)
 	}
-	runCmd("go", nil, "generate", "./web")
 }
 
 func webBuild() {
-	runCmd("npm", nil, "run", "test:headless")
+	cmd := newCmd("npm", nil, "run", "build")
+	cmd.Stdout = os.Stdout
+	cmd.Dir = "./web"
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("web-build: %s", err)
+	}
+	runCmd("go", nil, "generate", "./web")
 }
 
 func serve() {
