@@ -131,7 +131,7 @@ func generate() {
 
 func build() {
 	newpath := filepath.Join(".", "build")
-	os.MkdirAll(newpath, os.ModeDir)
+	os.MkdirAll(newpath, 0755)
 	runCmd("go", nil, "build", "-o", "build/octant", GO_FLAGS, "-v", "./cmd/octant")
 }
 
@@ -215,7 +215,7 @@ func serve() {
 func installTestPlugin() {
 	dir := pluginDir()
 	log.Printf("Plugin path: %s", dir)
-	os.MkdirAll(dir, os.ModeDir)
+	os.MkdirAll(dir, 0755)
 	pluginFile := fmt.Sprintf("%s/octant-sample-plugin", dir)
 	runCmd("go", nil, "build", "-o", pluginFile, "github.com/vmware-tanzu/octant/cmd/octant-sample-plugin")
 }
