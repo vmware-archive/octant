@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -156,6 +157,24 @@ func PrintEvents(list *corev1.EventList, opts Options) (component.Component, err
 
 	table := component.NewTable("Events", "There are no events!", objectEventCols)
 
+	sortFailed := false
+	sort.SliceStable(list.Items, func(i, j int) bool {
+		a, err := strconv.Atoi(list.Items[i].ResourceVersion)
+		if err != nil {
+			sortFailed = true
+		}
+		b, err := strconv.Atoi(list.Items[j].ResourceVersion)
+		if err != nil {
+			sortFailed = true
+		}
+
+		return b < a
+	})
+
+	if sortFailed {
+		return nil, fmt.Errorf("detected invalid event resource version")
+	}
+
 	for _, event := range list.Items {
 		row := component.TableRow{}
 
@@ -268,6 +287,10 @@ func eventsForObject(ctx context.Context, object runtime.Object, o store.Store) 
 	sort.SliceStable(eventList.Items, func(i, j int) bool {
 		a := eventList.Items[i]
 		b := eventList.Items[j]
+
+		if b.LastTimestamp.After(a.LastTimestamp.Time) {
+			return true
+		}
 
 		return a.LastTimestamp.After(b.LastTimestamp.Time)
 	})

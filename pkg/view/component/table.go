@@ -116,7 +116,7 @@ func (t *Table) Sort(name string, reverse bool) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	sort.Slice(t.Rows(), func(i, j int) bool {
+	sort.SliceStable(t.Rows(), func(i, j int) bool {
 		a, ok := t.Config.Rows[i][name]
 		if !ok {
 			spew.Dump(fmt.Sprintf("%s:%d/%d", name, i, j), t.Config.Rows)
