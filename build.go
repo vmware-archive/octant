@@ -64,6 +64,8 @@ func main() {
 			test()
 		case "build":
 			build()
+		case "run-dev":
+			runDev()
 		case "go-install":
 			goInstall()
 		case "serve":
@@ -93,7 +95,12 @@ func runCmd(command string, env map[string]string, args ...string) {
 }
 
 func newCmd(command string, env map[string]string, args ...string) *exec.Cmd {
-	cmd := exec.Command(command, args...)
+	realCommand, err := exec.LookPath(command)
+	if err != nil {
+		log.Fatalf("unable to find command '%s'", command)
+	}
+
+	cmd := exec.Command(realCommand, args...)
 	cmd.Env = os.Environ()
 	// Setting Stdout here complains about it already being set?
 	// cmd.Stdout = os.Stdout
@@ -133,6 +140,10 @@ func build() {
 	newpath := filepath.Join(".", "build")
 	os.MkdirAll(newpath, 0755)
 	runCmd("go", nil, "build", "-o", "build/octant", GO_FLAGS, "-v", "./cmd/octant")
+}
+
+func runDev() {
+	runCmd("build/octant", nil, "--enable-feature-applications=true")
 }
 
 func test() {

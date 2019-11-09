@@ -33,8 +33,9 @@ func Test_EventListHandler(t *testing.T) {
 		Items: []corev1.Event{
 			{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "event-2",
-					Namespace: "default",
+					Name:            "event-2",
+					Namespace:       "default",
+					ResourceVersion: "1",
 				},
 				TypeMeta: metav1.TypeMeta{
 					APIVersion: "v1",
@@ -55,8 +56,9 @@ func Test_EventListHandler(t *testing.T) {
 			},
 			{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "event-1",
-					Namespace: "default",
+					Name:            "event-1",
+					Namespace:       "default",
+					ResourceVersion: "2",
 				},
 				TypeMeta: metav1.TypeMeta{
 					APIVersion: "v1",
@@ -126,6 +128,7 @@ func Test_ReplicaSetEvents(t *testing.T) {
 					CreationTimestamp: metav1.Time{
 						Time: now,
 					},
+					ResourceVersion: "3",
 				},
 				Count:  1,
 				Type:   corev1.EventTypeNormal,
@@ -143,6 +146,7 @@ func Test_ReplicaSetEvents(t *testing.T) {
 					CreationTimestamp: metav1.Time{
 						Time: now,
 					},
+					ResourceVersion: "2",
 				},
 				Count:  1,
 				Type:   corev1.EventTypeNormal,
@@ -160,6 +164,7 @@ func Test_ReplicaSetEvents(t *testing.T) {
 					CreationTimestamp: metav1.Time{
 						Time: now,
 					},
+					ResourceVersion: "1",
 				},
 				Count:  1,
 				Type:   corev1.EventTypeNormal,
