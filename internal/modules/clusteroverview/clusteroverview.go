@@ -146,6 +146,18 @@ func (co *ClusterOverview) ClientRequestHandlers() []octant.ClientRequestHandler
 				return nil
 			},
 		},
+		{
+			RequestType: "createTerminal",
+			Handler: func(state octant.State, payload action.Payload) error {
+				req, err := terminalRequestFromPayload(payload)
+				if err != nil {
+					return errors.Wrap(err, "convert payload to terminal request")
+				}
+
+				_, err = co.DashConfig.TerminalManager().Create(context.TODO(), req.gvk(), req.Name, req.Namespace, req.Container, req.Command)
+				return err
+			},
+		},
 	}
 }
 

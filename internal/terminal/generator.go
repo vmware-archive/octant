@@ -13,7 +13,7 @@ import (
 )
 
 // GenerateComponent generates the Terminal components from the given details.
-func GenerateComponent(ctx context.Context, tm TerminalManager, object runtime.Object) (component.Component, error) {
+func GenerateComponent(ctx context.Context, tm Manager, object runtime.Object) (component.Component, error) {
 	terminals := component.NewFlexLayout("Terminals")
 	return terminals, nil
 }

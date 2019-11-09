@@ -87,7 +87,7 @@ type Dash interface {
 
 	PortForwarder() portforward.PortForwarder
 
-	TerminalManager() terminal.TerminalManager
+	TerminalManager() terminal.Manager
 
 	KubeConfigPath() string
 
@@ -112,7 +112,7 @@ type Live struct {
 	errorStore         internalErr.ErrorStore
 	pluginManager      plugin.ManagerInterface
 	portForwarder      portforward.PortForwarder
-	terminalManager    terminal.TerminalManager
+	terminalManager    terminal.Manager
 	kubeConfigPath     string
 	currentContextName string
 	restConfigOptions  cluster.RESTConfigOptions
@@ -131,7 +131,7 @@ func NewLiveConfig(
 	errorStore internalErr.ErrorStore,
 	pluginManager plugin.ManagerInterface,
 	portForwarder portforward.PortForwarder,
-	terminalManager terminal.TerminalManager,
+	terminalManager terminal.Manager,
 	currentContextName string,
 	restConfigOptions cluster.RESTConfigOptions,
 ) *Live {
@@ -202,7 +202,7 @@ func (l *Live) PortForwarder() portforward.PortForwarder {
 }
 
 // TerminalManager returns a terminal manager interface.
-func (l *Live) TerminalManager() terminal.TerminalManager {
+func (l *Live) TerminalManager() terminal.Manager {
 	return l.terminalManager
 }
 

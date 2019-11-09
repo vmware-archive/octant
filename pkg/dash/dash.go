@@ -116,7 +116,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return errors.Wrap(err, "initializing port forwarder")
 	}
 
-	terminalManager, err := terminal.NewTerminalManager(ctx)
+	terminalManager, err := terminal.NewTerminalManager(ctx, clusterClient, appObjectStore)
 	if err != nil {
 		return errors.Wrap(err, "initializing terminal manager")
 	}

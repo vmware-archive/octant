@@ -9,10 +9,12 @@ import (
 	"context"
 	"io"
 	"time"
+
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// Terminal defines the interface to a single terminal.
-type Terminal interface {
+// Instance defines the interface to a single exec instance.
+type Instance interface {
 	ID(ctx context.Context) string
 	Exec(ctx context.Context) error
 	Stream(ctx context.Context) (io.ReadCloser, error)
@@ -20,10 +22,10 @@ type Terminal interface {
 	CreatedAt(ctx context.Context) time.Time
 }
 
-// TerminalManager defines the interface for querying terminals.
-type TerminalManager interface {
-	List(ctx context.Context) []Terminal
-	Get(ctx context.Context, ID string) (Terminal, bool)
-	Create(ctx context.Context) Terminal
+// Manager defines the interface for querying terminal instance.
+type Manager interface {
+	List(ctx context.Context) []Instance
+	Get(ctx context.Context, ID string) (Instance, bool)
+	Create(ctx context.Context, gvk schema.GroupVersionKind, name string, namespace string, container string, command string) (Instance, error)
 	StopAll(ctx context.Context) error
 }
