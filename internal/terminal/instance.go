@@ -19,49 +19,40 @@ import (
 //go:generate mockgen -source=terminal.go -destination=./fake/mock_interface.go -package=fake github.com/vmware-tanzu/octant/internal/terminal Terminal
 
 type instance struct {
-	id        uuid.UUID `json:"id"`
-	createdAt time.Time `json:"createdAt"`
+	id        uuid.UUID
+	createdAt time.Time
 	stdout    io.ReadWriter
 	stderr    io.ReadWriter
 	stdin     io.Reader
 
+	container  string
+	command    string
 	scrollback []string
 }
 
 var _ Instance = (*instance)(nil)
 
 // NewTerminal creates a concrete Terminal
-func NewTerminalInstance(ctx context.Context) Instance {
+func NewTerminalInstance(ctx context.Context, container, command string) Instance {
 	t := &instance{
 		id:        uuid.New(),
 		createdAt: time.Now(),
 		stdout:    &bytes.Buffer{},
 		stderr:    &bytes.Buffer{},
 		stdin:     nil,
+		container: container,
+		command:   command,
 	}
-	t.stream(ctx)
 
 	return t
 }
 
-func (t *instance) ID(ctx context.Context) string {
-	return t.id.String()
-}
-
-func (t *instance) Exec(ctx context.Context) error {
-	return nil
-}
-
-func (t *instance) Scrollback(ctx context.Context) []string {
-	return t.scrollback
-}
-
-func (t *instance) stream(ctx context.Context) {
-	logger := log.From(ctx)
-
+func (t *instance) Stream(ctx context.Context, logger log.Logger) {
+	logger.Debugf("starting exec stream for %s", t.id.String())
 	scanner := bufio.NewScanner(t.stdout)
 	go func() {
 		for ctx.Err() == nil && scanner.Scan() {
+			logger.Debugf("appending scrollback for %s", t.id.String())
 			t.scrollback = append(t.scrollback, scanner.Text())
 		}
 		if scanner.Err() != nil {
@@ -71,14 +62,15 @@ func (t *instance) stream(ctx context.Context) {
 	}()
 }
 
-func (t *instance) Stop(ctx context.Context) error {
-	return nil
+func (t *instance) Stop(ctx context.Context) {
+
 }
 
-func (t *instance) CreatedAt(ctx context.Context) time.Time {
-	return t.createdAt
-}
-
-func (t *instance) Stdin() io.Reader  { return t.stdin }
-func (t *instance) Stdout() io.Writer { return t.stdout }
-func (t *instance) Stderr() io.Writer { return t.stderr }
+func (t *instance) Scrollback() []string { return t.scrollback }
+func (t *instance) ID() string           { return t.id.String() }
+func (t *instance) Container() string    { return t.container }
+func (t *instance) Command() string      { return t.command }
+func (t *instance) CreatedAt() time.Time { return t.createdAt }
+func (t *instance) Stdin() io.Reader     { return t.stdin }
+func (t *instance) Stdout() io.Writer    { return t.stdout }
+func (t *instance) Stderr() io.Writer    { return t.stderr }

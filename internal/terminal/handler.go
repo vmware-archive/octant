@@ -20,8 +20,8 @@ type terminalOutput struct {
 	Scrollback []string `json:"scrollback,omitempty"`
 }
 
-func Handler(ctx context.Context, tm Manager) http.HandlerFunc {
-	logger := log.From(ctx)
+func Handler(ctx context.Context, logger log.Logger, tm Manager) http.HandlerFunc {
+	logger.Debugf("terminal handler")
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -34,11 +34,10 @@ func Handler(ctx context.Context, tm Manager) http.HandlerFunc {
 		}
 
 		output := terminalOutput{
-			Scrollback: t.Scrollback(ctx),
+			Scrollback: t.Scrollback(),
 		}
 
 		if err := json.NewEncoder(w).Encode(&output); err != nil {
-			logger := log.From(ctx)
 			logger.With("err", err.Error()).Errorf("unable to encode log entries")
 		}
 	}

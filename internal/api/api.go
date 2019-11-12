@@ -151,7 +151,7 @@ func (a *API) Handler(ctx context.Context) (*mux.Router, error) {
 	s := router.PathPrefix(a.prefix).Subrouter()
 
 	s.HandleFunc("/logs/namespace/{namespace}/pod/{pod}/container/{container}", containerLogsHandler(ctx, a.dashConfig.ClusterClient()))
-	s.HandleFunc("/terminals/namespace/{namespace}/pod/{pod}/container/{container}/{uuid}", terminal.Handler(ctx, a.dashConfig.TerminalManager()))
+	s.HandleFunc("/terminals/namespace/{namespace}/pod/{pod}/container/{container}/{uuid}", terminal.Handler(ctx, a.logger, a.dashConfig.TerminalManager()))
 
 	manager := NewWebsocketClientManager(ctx, a.actionDispatcher)
 	go manager.Run(ctx)

@@ -68,8 +68,8 @@ func (w *Writer) String() string {
 func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key, container string, command string) (Instance, error) {
 	logger.Debugf("create")
 
-	t := NewTerminalInstance(ctx)
-	tm.instances[t.ID(ctx)] = t
+	t := NewTerminalInstance(ctx, container, command)
+	tm.instances[t.ID()] = t
 
 	pod, ok, err := tm.objectStore.Get(ctx, key)
 	if err != nil {
@@ -118,6 +118,7 @@ func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key,
 		return nil, err
 	}
 
+	t.Stream(ctx, logger)
 	return t, nil
 }
 
@@ -127,7 +128,7 @@ func (tm *manager) Get(ctx context.Context, id string) (Instance, bool) {
 }
 
 func (tm *manager) List(ctx context.Context) []Instance {
-	instances := make([]Instance, len(tm.instances))
+	instances := make([]Instance, 0, len(tm.instances))
 	for _, instance := range tm.instances {
 		instances = append(instances, instance)
 	}

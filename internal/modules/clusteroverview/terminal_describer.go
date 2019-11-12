@@ -28,17 +28,16 @@ func (d *TerminalListDescriber) Describe(ctx context.Context, namespace string, 
 
 	list := component.NewList("Terminals", nil)
 
-	tblCols := component.NewTableCols("Name", "Namespace", "Pod", "Container", "Age")
+	tblCols := component.NewTableCols("Container", "Command", "ID", "Age")
 	tbl := component.NewTable("Terminals", "There are no terminals!", tblCols)
 	list.Add(tbl)
 
 	for _, t := range tm.List(ctx) {
 		tRow := component.TableRow{
-			"Name":      component.NewText(t.ID(ctx)),
-			"Namespace": component.NewText(""),
-			"Pod":       component.NewText(""),
-			"Container": component.NewText(""),
-			"Age":       component.NewTimestamp(t.CreatedAt(ctx)),
+			"Container": component.NewText(t.Container()),
+			"Command":   component.NewText(t.Command()),
+			"ID":        component.NewText(t.ID()),
+			"Age":       component.NewTimestamp(t.CreatedAt()),
 		}
 		tbl.Add(tRow)
 	}

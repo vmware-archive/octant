@@ -16,11 +16,14 @@ import (
 
 // Instance defines the interface to a single exec instance.
 type Instance interface {
-	ID(ctx context.Context) string
-	Exec(ctx context.Context) error
-	Scrollback(ctx context.Context) []string
-	Stop(ctx context.Context) error
-	CreatedAt(ctx context.Context) time.Time
+	ID() string
+	Container() string
+	Command() string
+	Scrollback() []string
+
+	Stream(ctx context.Context, logger log.Logger)
+	Stop(ctx context.Context)
+	CreatedAt() time.Time
 
 	Stdin() io.Reader
 	Stdout() io.Writer
