@@ -25,6 +25,8 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
+type containerActionFunc func(runtime.Object, *corev1.Container) (component.Action, error)
+
 // ContainerConfiguration generates container configuration.
 type ContainerConfiguration struct {
 	parent             runtime.Object
@@ -33,10 +35,12 @@ type ContainerConfiguration struct {
 	isInit             bool
 	options            Options
 	context            context.Context
+	actionGenerators   []containerActionFunc
 }
 
 // NewContainerConfiguration creates an instance of ContainerConfiguration.
 func NewContainerConfiguration(ctx context.Context, parent runtime.Object, c *corev1.Container, pfs portforward.PortForwarder, isInit bool, options Options) *ContainerConfiguration {
+	actionGenerators := []containerActionFunc{}
 	return &ContainerConfiguration{
 		parent:             parent,
 		container:          c,
@@ -44,6 +48,7 @@ func NewContainerConfiguration(ctx context.Context, parent runtime.Object, c *co
 		portForwardService: pfs,
 		options:            options,
 		context:            ctx,
+		actionGenerators:   actionGenerators,
 	}
 }
 
@@ -66,6 +71,7 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 				return nil, errors.Wrapf(err, "get container status for %q", cc.container.Name)
 			}
 		}
+		cc.actionGenerators = append(cc.actionGenerators, terminalCommandExecAction)
 	}
 
 	sections := component.SummarySections{}
@@ -87,8 +93,6 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 		sections.Add("Container Ports", component.NewPorts(containerPorts))
 	}
 
-	var actions []component.Action
-
 	if containerStatus != nil && !cc.isInit {
 		lastState, found := printContainerState(containerStatus.LastTerminationState)
 		if found {
@@ -103,12 +107,7 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 		sections.AddText("Restart Count", fmt.Sprintf("%d", containerStatus.RestartCount))
 	} else {
 		if !cc.isInit {
-			editAction, err := editContainerAction(cc.parent, c)
-			if err != nil {
-				return nil, errors.Wrap(err, "create container edit action")
-			}
-
-			actions = append(actions, editAction)
+			cc.actionGenerators = append(cc.actionGenerators, editContainerAction)
 		}
 	}
 
@@ -141,7 +140,11 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 
 	summary := component.NewSummary(fmt.Sprintf("%s %s", title, c.Name), sections...)
 
-	for _, action := range actions {
+	for _, actionFunc := range cc.actionGenerators {
+		action, err := actionFunc(cc.parent, c)
+		if err != nil {
+			return nil, errors.Wrap(err, "loading actions")
+		}
 		summary.AddAction(action)
 	}
 
@@ -505,6 +508,23 @@ func editContainerAction(owner runtime.Object, container *corev1.Container) (com
 		Form:  form,
 	}
 
+	return action, nil
+}
+
+func terminalCommandExecAction(owner runtime.Object, container *corev1.Container) (component.Action, error) {
+	form, err := component.CreateFormForObject("overview/commandExec", owner,
+		component.NewFormFieldHidden("containerName", container.Name),
+		component.NewFormFieldText("Command", "containerCommand", "/bin/bash"),
+		component.NewFormFieldCheckBox("TTY", "tty", []component.InputChoice{component.InputChoice{"TTY", "tty", true}}),
+	)
+	if err != nil {
+		return component.Action{}, err
+	}
+	action := component.Action{
+		Name:  "Execute Command",
+		Title: fmt.Sprintf("Execute %s Command", container.Name),
+		Form:  form,
+	}
 	return action, nil
 }
 
