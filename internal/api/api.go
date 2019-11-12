@@ -20,6 +20,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/mime"
 	"github.com/vmware-tanzu/octant/internal/module"
+	"github.com/vmware-tanzu/octant/internal/terminal"
 )
 
 //go:generate mockgen -destination=./fake/mock_service.go -package=fake github.com/vmware-tanzu/octant/internal/api Service
@@ -150,6 +151,7 @@ func (a *API) Handler(ctx context.Context) (*mux.Router, error) {
 	s := router.PathPrefix(a.prefix).Subrouter()
 
 	s.HandleFunc("/logs/namespace/{namespace}/pod/{pod}/container/{container}", containerLogsHandler(ctx, a.dashConfig.ClusterClient()))
+	s.HandleFunc("/terminals/namespace/{namespace}/pod/{pod}/container/{container}/{uuid}", terminal.Handler(ctx, a.dashConfig.TerminalManager()))
 
 	manager := NewWebsocketClientManager(ctx, a.actionDispatcher)
 	go manager.Run(ctx)

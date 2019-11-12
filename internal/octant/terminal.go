@@ -47,7 +47,19 @@ func (t *TerminalCommandExec) Handle(ctx context.Context, alerter action.Alerter
 		return errors.Wrap(err, "handle terminal exec")
 	}
 	t.logger.Debugf("%s", request)
-	// terminal, err := t.terminalManager.Create(ctx context.Context, gvk schema.GroupVersionKind, name string, namespace string, container string, command string)
+
+	key, err := store.KeyFromPayload(payload)
+	if err != nil {
+		return err
+	}
+	t.logger.Debugf("%s", key)
+
+	_, err = t.terminalManager.Create(ctx, t.logger, key, request.container, request.command)
+	if err != nil {
+		t.logger.Errorf("%s", err)
+		return errors.Wrap(err, "terminal manager create")
+	}
+
 	return nil
 }
 

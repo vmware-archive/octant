@@ -7,12 +7,19 @@ package terminal
 
 import (
 	"context"
+	"fmt"
+	"strings"
+	"unicode"
+
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/pkg/errors"
 	"github.com/vmware-tanzu/octant/internal/cluster"
+	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/store"
-	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/remotecommand"
 )
 
 //go:generate mockgen -source=manager.go -destination=./fake/mock_interface.go -package=fake github.com/vmware-tanzu/octant/internal/terminal TerminalManager
@@ -42,9 +49,75 @@ func NewTerminalManager(ctx context.Context, client cluster.ClientInterface, obj
 	return tm, nil
 }
 
-func (tm *manager) Create(ctx context.Context, gvk schema.GroupVersionKind, name string, namespace string, container string, command string) (Instance, error) {
+type Writer struct {
+	Str []string
+}
+
+func (w *Writer) Write(p []byte) (n int, err error) {
+	str := string(p)
+	if len(str) > 0 {
+		w.Str = append(w.Str, str)
+	}
+	return len(str), nil
+}
+
+func (w *Writer) String() string {
+	return fmt.Sprintf("%s", w.Str)
+}
+
+func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key, container string, command string) (Instance, error) {
+	logger.Debugf("create")
+
 	t := NewTerminalInstance(ctx)
 	tm.instances[t.ID(ctx)] = t
+
+	pod, ok, err := tm.objectStore.Get(ctx, key)
+	if err != nil {
+		logger.Errorf("objectStore: %s", err)
+		return nil, err
+	}
+	if !ok {
+		return nil, errors.New("pod not found")
+	}
+
+	logger.Debugf("prePOST")
+	req := tm.restClient.Post().
+		Resource("pods").
+		Name(pod.GetName()).
+		Namespace(pod.GetNamespace()).
+		SubResource("exec")
+
+	req.VersionedParams(&corev1.PodExecOptions{
+		Container: container,
+		Command:   parseCommand(command),
+		Stdin:     t.Stdin() != nil,
+		Stdout:    t.Stdout() != nil,
+		Stderr:    t.Stderr() != nil,
+		TTY:       false,
+	}, scheme.ParameterCodec)
+
+	rc, err := remotecommand.NewSPDYExecutor(tm.config, "POST", req.URL())
+	if err != nil {
+		logger.Errorf("executor: %s", err)
+		return nil, err
+	}
+
+	logger.Debugf("postPOST")
+
+	opts := remotecommand.StreamOptions{
+		Stdin:  t.Stdin(),
+		Stdout: t.Stdout(),
+		Stderr: t.Stderr(),
+		Tty:    false,
+		//TerminalSizeQueue: remotecommand.TerminalSizeQueue,
+	}
+
+	err = rc.Stream(opts)
+	if err != nil {
+		logger.Errorf("streaming: %s", err)
+		return nil, err
+	}
+
 	return t, nil
 }
 
@@ -66,4 +139,24 @@ func (tm *manager) StopAll(ctx context.Context) error {
 		instance.Stop(ctx)
 	}
 	return nil
+}
+
+func parseCommand(command string) []string {
+	lastQuote := rune(0)
+	f := func(c rune) bool {
+		switch {
+		case c == lastQuote:
+			lastQuote = rune(0)
+			return false
+		case lastQuote != rune(0):
+			return false
+		case unicode.In(c, unicode.Quotation_Mark):
+			lastQuote = c
+			return false
+		default:
+			return unicode.IsSpace(c)
+
+		}
+	}
+	return strings.FieldsFunc(command, f)
 }
