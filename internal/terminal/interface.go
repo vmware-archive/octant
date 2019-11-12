@@ -17,6 +17,7 @@ import (
 // Instance defines the interface to a single exec instance.
 type Instance interface {
 	ID() string
+	Key() store.Key
 	Container() string
 	Command() string
 	Scrollback() []string

@@ -22,6 +22,7 @@ const (
 	typeList               = "list"
 	typeLoading            = "loading"
 	typeLogs               = "logs"
+	typeTerminal           = "terminal"
 	typePodStatus          = "podStatus"
 	typePort               = "port"
 	typePorts              = "ports"

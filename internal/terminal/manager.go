@@ -7,7 +7,6 @@ package terminal
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"unicode"
 
@@ -49,26 +48,10 @@ func NewTerminalManager(ctx context.Context, client cluster.ClientInterface, obj
 	return tm, nil
 }
 
-type Writer struct {
-	Str []string
-}
-
-func (w *Writer) Write(p []byte) (n int, err error) {
-	str := string(p)
-	if len(str) > 0 {
-		w.Str = append(w.Str, str)
-	}
-	return len(str), nil
-}
-
-func (w *Writer) String() string {
-	return fmt.Sprintf("%s", w.Str)
-}
-
 func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key, container string, command string) (Instance, error) {
 	logger.Debugf("create")
 
-	t := NewTerminalInstance(ctx, container, command)
+	t := NewTerminalInstance(ctx, key, container, command)
 	tm.instances[t.ID()] = t
 
 	pod, ok, err := tm.objectStore.Get(ctx, key)

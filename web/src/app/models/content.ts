@@ -300,6 +300,19 @@ export interface LogResponse {
   entries: LogEntry[];
 }
 
+export interface TerminalOutput {
+  scrollback: string[];
+}
+
+export interface TerminalView extends View {
+  config: {
+    namespace: string;
+    name: string;
+    container: string;
+    uuid: string;
+  };
+}
+
 export interface Port extends View {
   config: {
     namespace: string;

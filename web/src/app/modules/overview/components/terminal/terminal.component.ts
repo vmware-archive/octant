@@ -1,14 +1,20 @@
 // Copyright (c) 2019 the Octant contributors. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { Component, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, Input } from '@angular/core';
 import { NgTerminal } from 'ng-terminal';
+import {
+  TerminalOutputStreamer,
+  TerminalOutputService,
+} from 'src/app/services/terminals/terminals.service';
+import { TerminalView } from 'src/app/models/content';
 
 @Component({
   selector: 'app-terminal',
   templateUrl: './terminal.component.html',
 })
 export class TerminalComponent implements AfterViewInit {
+  @Input() view: TerminalView;
   @ViewChild('terminal', { static: true }) child: NgTerminal;
 
   ngAfterViewInit() {
