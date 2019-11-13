@@ -56,10 +56,10 @@ export class TerminalComponent implements AfterViewInit {
         uuid
       );
       this.terminalStream.scrollback.subscribe((scrollback: string) => {
-        this.child.write(scrollback);
+        this.child.write(atob(scrollback));
       });
       this.terminalStream.line.subscribe((line: string) => {
-        this.child.write(line);
+        this.child.write(atob(line));
       });
     }
   }

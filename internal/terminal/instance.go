@@ -29,8 +29,7 @@ type instance struct {
 
 	container  string
 	command    string
-	scrollback []byte
-	line       []byte
+	scrollback bytes.Buffer
 
 	stdoutPiper *io.PipeReader
 	stdoutPipew *io.PipeWriter
@@ -60,7 +59,9 @@ func (t *instance) Stream(ctx context.Context, logger log.Logger) {
 
 	go func() {
 		defer t.stdoutPipew.Close()
-		io.Copy(t.stdoutPipew, t.stdout)
+		if _, err := io.Copy(t.stdoutPipew, t.stdout); err != nil {
+			logger.Errorf("%v", err)
+		}
 	}()
 }
 
@@ -68,7 +69,6 @@ func (t *instance) Read(ctx context.Context, logger log.Logger) ([]byte, error) 
 	if t.stdoutPiper == nil {
 		return nil, errors.New("stdout is nil, call Stream before Read")
 	}
-
 	buf := make([]byte, 256)
 	n, err := t.stdoutPiper.Read(buf)
 	if err != nil {
@@ -77,19 +77,23 @@ func (t *instance) Read(ctx context.Context, logger log.Logger) ([]byte, error) 
 			if string(line) == "" {
 				return nil, nil
 			}
-			t.scrollback = append(t.scrollback, line...)
+			if _, err := t.scrollback.Write(line); err != nil {
+				return nil, err
+			}
 			return line, nil
 		}
 		return nil, err
 	}
-
-	t.scrollback = append(t.scrollback, buf[:n]...)
-	return buf[:n], nil
+	b := buf[:n]
+	if _, err := t.scrollback.Write(b); err != nil {
+		return nil, err
+	}
+	return b, nil
 }
 
 func (t *instance) Stop(ctx context.Context) {}
 func (t *instance) Key() store.Key           { return t.key }
-func (t *instance) Scrollback() []byte       { return t.scrollback }
+func (t *instance) Scrollback() []byte       { return t.scrollback.Bytes() }
 func (t *instance) ID() string               { return t.id.String() }
 func (t *instance) Container() string        { return t.container }
 func (t *instance) Command() string          { return t.command }

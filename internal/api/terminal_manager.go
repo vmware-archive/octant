@@ -28,8 +28,8 @@ type terminalStateManager struct {
 }
 
 type terminalOutput struct {
-	Scrollback string `json:"scrollback,omitempty"`
-	Line       string `json:"line,omitempty"`
+	Scrollback []byte `json:"scrollback,omitempty"`
+	Line       []byte `json:"line,omitempty"`
 	New        bool   `json:"new,omitempty"`
 }
 
@@ -94,10 +94,10 @@ func (s *terminalStateManager) runUpdate(state octant.State, client OctantClient
 
 			key := t.Key()
 			eventType := octant.EventType(fmt.Sprintf("terminals/namespace/%s/pod/%s/container/%s/%s", key.Namespace, key.Name, t.Container(), t.ID()))
-			data := terminalOutput{Line: string(line)}
+			data := terminalOutput{Line: line}
 
 			if ok && sendScrollback {
-				data.Scrollback = string(t.Scrollback())
+				data.Scrollback = t.Scrollback()
 				s.setSendScrollback(t.ID(), false)
 			}
 			terminalEvent := octant.Event{
