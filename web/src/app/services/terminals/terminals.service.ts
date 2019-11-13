@@ -11,7 +11,9 @@ import getAPIBase from '../common/getAPIBase';
 const API_BASE = getAPIBase();
 
 export class TerminalOutputStreamer {
-  public scrollback: BehaviorSubject<string>;
+  public scrollback: BehaviorSubject<string[]>;
+  public line: BehaviorSubject<string>;
+
   private intervalID: number;
 
   constructor(
@@ -24,16 +26,16 @@ export class TerminalOutputStreamer {
 
   private poll() {
     this.http.get(this.terminalUrl()).subscribe((res: TerminalOutput) => {
-      res.scrollback.forEach(line => {
-        this.scrollback.next(line);
-      });
+      this.scrollback.next(res.scrollback);
+      this.line.next(res.line);
     });
   }
 
   public start(): void {
-    this.scrollback = new BehaviorSubject('');
+    this.scrollback = new BehaviorSubject([]);
+    this.line = new BehaviorSubject('');
     this.poll();
-    this.intervalID = window.setInterval(() => this.poll(), 1000);
+    this.intervalID = window.setInterval(() => this.poll(), 500);
   }
 
   public close(): void {

@@ -21,6 +21,7 @@ type Instance interface {
 	Container() string
 	Command() string
 	Scrollback() []string
+	Line() string
 
 	Stream(ctx context.Context, logger log.Logger)
 	Stop(ctx context.Context)

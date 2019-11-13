@@ -30,6 +30,7 @@ type instance struct {
 	container  string
 	command    string
 	scrollback []string
+	line       string
 }
 
 var _ Instance = (*instance)(nil)
@@ -54,9 +55,16 @@ func (t *instance) Stream(ctx context.Context, logger log.Logger) {
 	logger.Debugf("starting exec stream for %s", t.id.String())
 	scanner := bufio.NewScanner(t.stdout)
 	go func() {
+		addScrollback := false
 		for ctx.Err() == nil && scanner.Scan() {
 			logger.Debugf("appending scrollback for %s", t.id.String())
-			t.scrollback = append(t.scrollback, scanner.Text())
+			if addScrollback {
+				t.scrollback = append(t.scrollback, t.line)
+			}
+			t.line = scanner.Text()
+			if len(t.scrollback) == 0 {
+				addScrollback = true
+			}
 		}
 		if scanner.Err() != nil {
 			logger.With("TerminalInstance").Errorf("%s", scanner.Err())
@@ -71,6 +79,7 @@ func (t *instance) Stop(ctx context.Context) {
 
 func (t *instance) Key() store.Key       { return t.key }
 func (t *instance) Scrollback() []string { return t.scrollback }
+func (t *instance) Line() string         { return t.line }
 func (t *instance) ID() string           { return t.id.String() }
 func (t *instance) Container() string    { return t.container }
 func (t *instance) Command() string      { return t.command }

@@ -8,6 +8,8 @@ import {
   TerminalOutputService,
 } from 'src/app/services/terminals/terminals.service';
 import { BehaviorSubject } from 'rxjs';
+import { take } from 'rxjs/operators';
+
 import { TerminalView, TerminalOutput } from 'src/app/models/content';
 
 @Component({
@@ -21,10 +23,6 @@ export class TerminalComponent implements AfterViewInit {
   scrollback: BehaviorSubject<string>;
 
   constructor(private terminalService: TerminalOutputService) {}
-
-  ngOnInit() {
-    this.initStream();
-  }
 
   ngAfterViewInit() {
     this.child.keyEventInput.subscribe(e => {
@@ -42,6 +40,8 @@ export class TerminalComponent implements AfterViewInit {
         this.child.write(e.key);
       }
     });
+
+    this.initStream();
   }
 
   initStream() {
@@ -57,7 +57,16 @@ export class TerminalComponent implements AfterViewInit {
         container,
         uuid
       );
-      this.scrollback = this.terminalStream.scrollback;
+      this.terminalStream.scrollback
+        .pipe(take(1))
+        .subscribe((scrollback: string[]) => {
+          scrollback.forEach(line => {
+            this.child.write(line);
+          });
+        });
+      this.terminalStream.line.subscribe((line: string) => {
+        this.child.write(line);
+      });
     }
   }
 }

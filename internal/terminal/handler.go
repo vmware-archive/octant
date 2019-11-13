@@ -18,6 +18,7 @@ import (
 
 type terminalOutput struct {
 	Scrollback []string `json:"scrollback,omitempty"`
+	Line       string   `json:"line,omitempty"`
 }
 
 func Handler(ctx context.Context, logger log.Logger, tm Manager) http.HandlerFunc {
@@ -35,6 +36,7 @@ func Handler(ctx context.Context, logger log.Logger, tm Manager) http.HandlerFun
 
 		output := terminalOutput{
 			Scrollback: t.Scrollback(),
+			Line:       t.Line(),
 		}
 
 		if err := json.NewEncoder(w).Encode(&output); err != nil {
