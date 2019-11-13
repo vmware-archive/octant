@@ -7,15 +7,24 @@ import {
   TerminalOutputStreamer,
   TerminalOutputService,
 } from 'src/app/services/terminals/terminals.service';
-import { TerminalView } from 'src/app/models/content';
+import { BehaviorSubject } from 'rxjs';
+import { TerminalView, TerminalOutput } from 'src/app/models/content';
 
 @Component({
   selector: 'app-terminal',
   templateUrl: './terminal.component.html',
 })
 export class TerminalComponent implements AfterViewInit {
+  private terminalStream: TerminalOutputStreamer;
   @Input() view: TerminalView;
   @ViewChild('terminal', { static: true }) child: NgTerminal;
+  scrollback: BehaviorSubject<string>;
+
+  constructor(private terminalService: TerminalOutputService) {}
+
+  ngOnInit() {
+    this.initStream();
+  }
 
   ngAfterViewInit() {
     this.child.keyEventInput.subscribe(e => {
@@ -33,5 +42,22 @@ export class TerminalComponent implements AfterViewInit {
         this.child.write(e.key);
       }
     });
+  }
+
+  initStream() {
+    const namespace = this.view.config.namespace;
+    const name = this.view.config.name;
+    const container = this.view.config.container;
+    const uuid = this.view.config.uuid;
+
+    if (namespace && name && container && uuid) {
+      this.terminalStream = this.terminalService.createStream(
+        namespace,
+        name,
+        container,
+        uuid
+      );
+      this.scrollback = this.terminalStream.scrollback;
+    }
   }
 }
