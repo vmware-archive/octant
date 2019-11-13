@@ -20,10 +20,10 @@ type Instance interface {
 	Key() store.Key
 	Container() string
 	Command() string
-	Scrollback() []string
-	Line() string
-
+	Scrollback() []byte
 	Stream(ctx context.Context, logger log.Logger)
+	Read(ctx context.Context, logger log.Logger) ([]byte, error)
+
 	Stop(ctx context.Context)
 	CreatedAt() time.Time
 

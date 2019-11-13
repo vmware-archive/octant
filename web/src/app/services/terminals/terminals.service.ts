@@ -3,50 +3,36 @@
 //
 
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
 import { TerminalOutput } from 'src/app/models/content';
-import getAPIBase from '../common/getAPIBase';
-
-const API_BASE = getAPIBase();
+import { WebsocketService } from 'src/app/modules/overview/services/websocket/websocket.service';
 
 export class TerminalOutputStreamer {
-  public scrollback: BehaviorSubject<string[]>;
   public line: BehaviorSubject<string>;
-
-  private intervalID: number;
+  public scrollback: BehaviorSubject<string>;
 
   constructor(
     private namespace: string,
     private pod: string,
     private container: string,
     private uuid: string,
-    private http: HttpClient
-  ) {}
-
-  private poll() {
-    this.http.get(this.terminalUrl()).subscribe((res: TerminalOutput) => {
-      this.scrollback.next(res.scrollback);
-      this.line.next(res.line);
+    private wss: WebsocketService
+  ) {
+    this.wss.sendMessage('sendTerminalScrollback', {
+      terminalID: this.uuid,
     });
-  }
 
-  public start(): void {
-    this.scrollback = new BehaviorSubject([]);
     this.line = new BehaviorSubject('');
-    this.poll();
-    this.intervalID = window.setInterval(() => this.poll(), 500);
-  }
-
-  public close(): void {
-    this.scrollback.unsubscribe();
-    clearInterval(this.intervalID);
+    this.scrollback = new BehaviorSubject('');
+    this.wss.registerHandler(this.terminalUrl(), data => {
+      const update = data as TerminalOutput;
+      this.line.next(update.line);
+      this.scrollback.next(update.scrollback);
+    });
   }
 
   private terminalUrl(): string {
     return [
-      API_BASE,
-      'api/v1',
       'terminals',
       `namespace/${this.namespace}`,
       `pod/${this.pod}`,
@@ -60,7 +46,7 @@ export class TerminalOutputStreamer {
   providedIn: 'root',
 })
 export class TerminalOutputService {
-  constructor(private http: HttpClient) {}
+  constructor(private websocketService: WebsocketService) {}
 
   public createStream(
     namespace,
@@ -68,14 +54,13 @@ export class TerminalOutputService {
     container,
     uuid: string
   ): TerminalOutputStreamer {
-    const pls = new TerminalOutputStreamer(
+    const tos = new TerminalOutputStreamer(
       namespace,
       pod,
       container,
       uuid,
-      this.http
+      this.websocketService
     );
-    pls.start();
-    return pls;
+    return tos;
   }
 }

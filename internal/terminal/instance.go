@@ -6,13 +6,13 @@ SPDX-License-Identifier: Apache-2.0
 package terminal
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"io"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
@@ -29,8 +29,11 @@ type instance struct {
 
 	container  string
 	command    string
-	scrollback []string
-	line       string
+	scrollback []byte
+	line       []byte
+
+	stdoutPiper *io.PipeReader
+	stdoutPipew *io.PipeWriter
 }
 
 var _ Instance = (*instance)(nil)
@@ -53,37 +56,44 @@ func NewTerminalInstance(ctx context.Context, key store.Key, container, command 
 
 func (t *instance) Stream(ctx context.Context, logger log.Logger) {
 	logger.Debugf("starting exec stream for %s", t.id.String())
-	scanner := bufio.NewScanner(t.stdout)
+	t.stdoutPiper, t.stdoutPipew = io.Pipe()
+
 	go func() {
-		addScrollback := false
-		for ctx.Err() == nil && scanner.Scan() {
-			logger.Debugf("appending scrollback for %s", t.id.String())
-			if addScrollback {
-				t.scrollback = append(t.scrollback, t.line)
-			}
-			t.line = scanner.Text()
-			if len(t.scrollback) == 0 {
-				addScrollback = true
-			}
-		}
-		if scanner.Err() != nil {
-			logger.With("TerminalInstance").Errorf("%s", scanner.Err())
-			t.Stop(ctx)
-		}
+		defer t.stdoutPipew.Close()
+		io.Copy(t.stdoutPipew, t.stdout)
 	}()
 }
 
-func (t *instance) Stop(ctx context.Context) {
+func (t *instance) Read(ctx context.Context, logger log.Logger) ([]byte, error) {
+	if t.stdoutPiper == nil {
+		return nil, errors.New("stdout is nil, call Stream before Read")
+	}
 
+	buf := make([]byte, 256)
+	n, err := t.stdoutPiper.Read(buf)
+	if err != nil {
+		if err == io.EOF {
+			line := buf[:n]
+			if string(line) == "" {
+				return nil, nil
+			}
+			t.scrollback = append(t.scrollback, line...)
+			return line, nil
+		}
+		return nil, err
+	}
+
+	t.scrollback = append(t.scrollback, buf[:n]...)
+	return buf[:n], nil
 }
 
-func (t *instance) Key() store.Key       { return t.key }
-func (t *instance) Scrollback() []string { return t.scrollback }
-func (t *instance) Line() string         { return t.line }
-func (t *instance) ID() string           { return t.id.String() }
-func (t *instance) Container() string    { return t.container }
-func (t *instance) Command() string      { return t.command }
-func (t *instance) CreatedAt() time.Time { return t.createdAt }
-func (t *instance) Stdin() io.Reader     { return t.stdin }
-func (t *instance) Stdout() io.Writer    { return t.stdout }
-func (t *instance) Stderr() io.Writer    { return t.stderr }
+func (t *instance) Stop(ctx context.Context) {}
+func (t *instance) Key() store.Key           { return t.key }
+func (t *instance) Scrollback() []byte       { return t.scrollback }
+func (t *instance) ID() string               { return t.id.String() }
+func (t *instance) Container() string        { return t.container }
+func (t *instance) Command() string          { return t.command }
+func (t *instance) CreatedAt() time.Time     { return t.createdAt }
+func (t *instance) Stdin() io.Reader         { return t.stdin }
+func (t *instance) Stdout() io.Writer        { return t.stdout }
+func (t *instance) Stderr() io.Writer        { return t.stderr }

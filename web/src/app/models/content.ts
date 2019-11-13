@@ -301,7 +301,7 @@ export interface LogResponse {
 }
 
 export interface TerminalOutput {
-  scrollback: string[];
+  scrollback: string;
   line: string;
 }
 
