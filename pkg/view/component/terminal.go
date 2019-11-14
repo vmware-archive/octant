@@ -43,8 +43,8 @@ func NewTerminal(namespace, name string, details []TerminalDetails) *Terminal {
 }
 
 // GetMetadata accesses the components metadata. Implements Component.
-func (l *Terminal) GetMetadata() Metadata {
-	return l.Metadata
+func (t *Terminal) GetMetadata() Metadata {
+	return t.Metadata
 }
 
 type terminalMarshall Terminal

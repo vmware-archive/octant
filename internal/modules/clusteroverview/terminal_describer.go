@@ -33,8 +33,15 @@ func (d *TerminalListDescriber) Describe(ctx context.Context, namespace string, 
 	list.Add(tbl)
 
 	for _, t := range tm.List(ctx) {
+		nameLink, err := options.Link.ForGVK(t.Key().Namespace, t.Key().APIVersion, t.Key().Kind, t.Key().Name, t.Key().Name)
+		if err != nil {
+			return component.EmptyContentResponse, err
+		}
+
+		nameLink.Config.Text = t.Container()
+
 		tRow := component.TableRow{
-			"Container": component.NewText(t.Container()),
+			"Container": nameLink,
 			"Command":   component.NewText(t.Command()),
 			"ID":        component.NewText(t.ID()),
 			"Age":       component.NewTimestamp(t.CreatedAt()),

@@ -7,6 +7,7 @@ package terminal
 
 import (
 	"context"
+	"sort"
 	"strings"
 	"unicode"
 
@@ -117,6 +118,11 @@ func (tm *manager) List(ctx context.Context) []Instance {
 	for _, instance := range tm.instances {
 		instances = append(instances, instance)
 	}
+
+	sort.Slice(instances, func(i, j int) bool {
+		return instances[i].CreatedAt().Before(instances[j].CreatedAt())
+	})
+
 	return instances
 }
 
