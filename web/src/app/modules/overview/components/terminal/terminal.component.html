@@ -1,1 +1,11 @@
-<ng-terminal #terminal></ng-terminal>
+<div class="app-terminal">
+<clr-select-container class="terminal-select">
+    <label>Choose a terminal:</label>
+    <select [compareWith]="compareFn" clrSelect name="options" [(ngModel)]="selectedTerminal" (change)="onTerminalChange()">
+      <option *ngFor="let terminal of view?.config.terminals" [ngValue]="terminal">{{terminal.container}} ( {{terminal.uuid}} )</option>
+    </select>
+  </clr-select-container>
+  <div class="container-logs">
+    <ng-terminal #terminal></ng-terminal>
+  </div>
+</div>
