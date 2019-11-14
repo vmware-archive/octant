@@ -8,14 +8,21 @@ package component
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
+
+type TerminalDetails struct {
+	Container string    `json:"container"`
+	Command   string    `json:"command"`
+	UUID      string    `json:"uuid"`
+	CreatedAt time.Time `json:"createdAt"`
+}
 
 // TerminalConfig holds a terminal config.
 type TerminalConfig struct {
-	Namespace string `json:"namespace"`
-	Name      string `json:"name"`
-	Container string `json:"container"`
-	UUID      string `json:"uuid"`
+	Namespace string            `json:"namespace"`
+	Name      string            `json:"name"`
+	Terminals []TerminalDetails `json:"terminals"`
 }
 
 type Terminal struct {
@@ -24,14 +31,13 @@ type Terminal struct {
 }
 
 // NewTerminal creates a terminal component.
-func NewTerminal(namespace, name, container, command, uuid string) *Terminal {
+func NewTerminal(namespace, name string, details []TerminalDetails) *Terminal {
 	return &Terminal{
-		base: newBase(typeTerminal, TitleFromString(fmt.Sprintf("%s / %s", container, command))),
+		base: newBase(typeTerminal, TitleFromString(fmt.Sprintf("%s / %s", namespace, name))),
 		Config: TerminalConfig{
 			Namespace: namespace,
 			Name:      name,
-			Container: container,
-			UUID:      uuid,
+			Terminals: details,
 		},
 	}
 }

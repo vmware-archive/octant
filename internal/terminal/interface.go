@@ -21,8 +21,10 @@ type Instance interface {
 	Container() string
 	Command() string
 	Scrollback() []byte
-	Stream(ctx context.Context, logger log.Logger)
-	Read(ctx context.Context, logger log.Logger) ([]byte, error)
+
+	Read(ctx context.Context) ([]byte, error)
+	Exec(ctx context.Context, command string) error
+	Resize(ctx context.Context, rows, cols uint16)
 
 	Stop(ctx context.Context)
 	CreatedAt() time.Time
@@ -36,6 +38,6 @@ type Instance interface {
 type Manager interface {
 	List(ctx context.Context) []Instance
 	Get(ctx context.Context, ID string) (Instance, bool)
-	Create(ctx context.Context, logger log.Logger, key store.Key, container string, command string) (Instance, error)
+	Create(ctx context.Context, logger log.Logger, key store.Key, container string, command string, tty bool) (Instance, error)
 	StopAll(ctx context.Context) error
 }

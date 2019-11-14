@@ -48,10 +48,10 @@ func NewTerminalManager(ctx context.Context, client cluster.ClientInterface, obj
 	return tm, nil
 }
 
-func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key, container string, command string) (Instance, error) {
+func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key, container, command string, tty bool) (Instance, error) {
 	logger.Debugf("create")
 
-	t := NewTerminalInstance(ctx, key, container, command)
+	t := NewTerminalInstance(ctx, logger, key, container, command, tty)
 	tm.instances[t.ID()] = t
 
 	pod, ok, err := tm.objectStore.Get(ctx, key)
@@ -76,12 +76,12 @@ func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key,
 		Stdin:     t.Stdin() != nil,
 		Stdout:    t.Stdout() != nil,
 		Stderr:    t.Stderr() != nil,
-		TTY:       false,
+		TTY:       tty,
 	}, scheme.ParameterCodec)
 
 	rc, err := remotecommand.NewSPDYExecutor(tm.config, "POST", req.URL())
 	if err != nil {
-		logger.Errorf("executor: %s", err)
+		logger.Errorf("executor: %+v", err)
 		return nil, err
 	}
 
@@ -91,17 +91,19 @@ func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key,
 		Stdin:  t.Stdin(),
 		Stdout: t.Stdout(),
 		Stderr: t.Stderr(),
-		Tty:    false,
+		Tty:    tty,
 		//TerminalSizeQueue: remotecommand.TerminalSizeQueue,
 	}
 
-	err = rc.Stream(opts)
-	if err != nil {
-		logger.Errorf("streaming: %s", err)
-		return nil, err
-	}
+	go func() {
+		logger.Debugf("running stream command")
+		err = rc.Stream(opts)
+		if err != nil {
+			logger.Errorf("streaming: %+v", err)
+		}
+		logger.Debugf("no error from stream command")
+	}()
 
-	t.Stream(ctx, logger)
 	return t, nil
 }
 

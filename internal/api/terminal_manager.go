@@ -17,12 +17,19 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
-const RequestTerminalScrollback = "sendTerminalScrollback"
+const (
+	RequestTerminalScrollback = "sendTerminalScrollback"
+	RequestTerminalCommand    = "sendTerminalCommand"
+	RequestTerminalResize     = "sendTerminalResize"
+)
 
 type terminalStateManager struct {
 	config         config.Dash
 	poller         Poller
 	sendScrollback map[string]bool
+
+	commands map[string][]string
+	resize   map[string][]uint16
 
 	mu sync.Mutex
 }
@@ -30,16 +37,16 @@ type terminalStateManager struct {
 type terminalOutput struct {
 	Scrollback []byte `json:"scrollback,omitempty"`
 	Line       []byte `json:"line,omitempty"`
-	New        bool   `json:"new,omitempty"`
 }
 
 var _ StateManager = (*terminalStateManager)(nil)
 
-func NewTerminalStateManager(config config.Dash) *terminalStateManager {
+func NewTerminalStateManager(cfg config.Dash) *terminalStateManager {
 	return &terminalStateManager{
-		config:         config,
+		config:         cfg,
 		poller:         NewInterruptiblePoller("terminal"),
 		sendScrollback: map[string]bool{},
+		resize:         map[string][]uint16{},
 	}
 }
 
@@ -50,16 +57,71 @@ func (c *terminalStateManager) Handlers() []octant.ClientRequestHandler {
 			RequestType: RequestTerminalScrollback,
 			Handler:     c.SendTerminalScrollback,
 		},
+		{
+			RequestType: RequestTerminalCommand,
+			Handler:     c.SendTerminalCommand,
+		},
+		{
+			RequestType: RequestTerminalResize,
+			Handler:     c.SendTerminalResize,
+		},
 	}
 }
 
-// SetContext sets the current context.
-func (c *terminalStateManager) SendTerminalScrollback(state octant.State, payload action.Payload) error {
+func (c *terminalStateManager) SendTerminalResize(state octant.State, payload action.Payload) error {
 	terminalID, err := payload.String("terminalID")
 	if err != nil {
 		return errors.Wrap(err, "extract terminal ID from payload")
 	}
-	c.setSendScrollback(terminalID, true)
+
+	rows, err := payload.Uint16("rows")
+	if err != nil {
+		return errors.Wrap(err, "extract rows from payload")
+	}
+
+	cols, err := payload.Uint16("cols")
+	if err != nil {
+		return errors.Wrap(err, "extract cols from payload")
+	}
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.resize[terminalID] = []uint16{rows, cols}
+	return nil
+}
+
+func (c *terminalStateManager) SendTerminalCommand(state octant.State, payload action.Payload) error {
+	terminalID, err := payload.String("terminalID")
+	if err != nil {
+		return errors.Wrap(err, "extract terminal ID from payload")
+	}
+
+	command, err := payload.String("command")
+	if err != nil {
+		return errors.Wrap(err, "extract command from payload")
+	}
+
+	c.appendCommand(terminalID, command)
+	return nil
+}
+
+func (s *terminalStateManager) appendCommand(id, command string) {
+	s.mu.Lock()
+	_, ok := s.commands[id]
+	if !ok {
+		s.commands = map[string][]string{id: []string{command}}
+	} else {
+		s.commands[id] = append(s.commands[id], command)
+	}
+	s.mu.Unlock()
+}
+
+func (s *terminalStateManager) SendTerminalScrollback(state octant.State, payload action.Payload) error {
+	terminalID, err := payload.String("terminalID")
+	if err != nil {
+		return errors.Wrap(err, "extract terminal ID from payload")
+	}
+	s.setSendScrollback(terminalID, true)
 	return nil
 }
 
@@ -81,14 +143,30 @@ func (s *terminalStateManager) runUpdate(state octant.State, client OctantClient
 	return func(ctx context.Context) bool {
 		tm := s.config.TerminalManager()
 		for _, t := range tm.List(ctx) {
-			line, err := t.Read(ctx, s.config.Logger())
+			line, err := t.Read(ctx)
 			if err != nil {
 				//TODO: report error directly to Terminal
 				s.config.Logger().Errorf("%s", err)
 			}
 
+			size, ok := s.resize[t.ID()]
+			if ok {
+				t.Resize(ctx, size[0], size[1])
+				s.mu.Lock()
+				delete(s.resize, t.ID())
+				s.mu.Unlock()
+			}
+
 			sendScrollback, ok := s.sendScrollback[t.ID()]
 			if line == nil && (!ok || !sendScrollback) {
+				commands, ok := s.commands[t.ID()]
+				if ok && len(commands) != 0 {
+					var command string
+					s.mu.Lock()
+					command, s.commands[t.ID()] = commands[len(commands)-1], commands[:len(commands)-1]
+					s.mu.Unlock()
+					t.Exec(ctx, command)
+				}
 				return false
 			}
 

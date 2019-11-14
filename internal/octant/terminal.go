@@ -54,7 +54,7 @@ func (t *TerminalCommandExec) Handle(ctx context.Context, alerter action.Alerter
 	}
 	t.logger.Debugf("%s", key)
 
-	_, err = t.terminalManager.Create(ctx, t.logger, key, request.container, request.command)
+	_, err = t.terminalManager.Create(ctx, t.logger, key, request.container, request.command, request.tty)
 	if err != nil {
 		t.logger.Errorf("%s", err)
 		return errors.Wrap(err, "terminal manager create")
@@ -89,6 +89,8 @@ func terminalExecFromPayload(payload action.Payload) (*terminalExecRequest, erro
 	if err != nil {
 		return nil, err
 	}
+
+	t.tty = true
 
 	return t, nil
 }

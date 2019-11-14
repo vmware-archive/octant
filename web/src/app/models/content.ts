@@ -305,12 +305,17 @@ export interface TerminalOutput {
   line: string;
 }
 
+export interface TerminalDetail {
+  container: string;
+  command: string;
+  uuid: string;
+}
+
 export interface TerminalView extends View {
   config: {
     namespace: string;
     name: string;
-    container: string;
-    uuid: string;
+    terminals: TerminalDetail[];
   };
 }
 

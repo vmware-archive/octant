@@ -7,6 +7,7 @@ package terminal
 
 import (
 	"context"
+	"sort"
 
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
@@ -22,19 +23,29 @@ func GenerateComponent(ctx context.Context, tm Manager, object runtime.Object) (
 		return nil, err
 	}
 
+	details := []component.TerminalDetails{}
+
 	for _, t := range tm.List(ctx) {
 		if t.Key() == key {
-			// Create terminal
-			terminal := component.FlexLayoutSection{
-				{
-					Width: component.WidthFull,
-					View:  component.NewTerminal(key.Namespace, key.Name, t.Container(), t.Command(), t.ID()),
-				},
-			}
-
-			// consider extending FlexLayout with AddTabs
-			terminals.AddSections(terminal)
+			details = append(details, component.TerminalDetails{
+				Container: t.Container(),
+				Command:   t.Command(),
+				UUID:      t.ID(),
+				CreatedAt: t.CreatedAt(),
+			})
 		}
 	}
+
+	sort.Slice(details, func(i, j int) bool {
+		return details[i].CreatedAt.After(details[j].CreatedAt)
+	})
+
+	terminal := component.FlexLayoutSection{
+		{
+			Width: component.WidthFull,
+			View:  component.NewTerminal(key.Namespace, key.Name, details),
+		},
+	}
+	terminals.AddSections(terminal)
 	return terminals, nil
 }
