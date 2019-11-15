@@ -71,26 +71,21 @@ type terminalExecRequest struct {
 
 func terminalExecFromPayload(payload action.Payload) (*terminalExecRequest, error) {
 	var err error
-	t := &terminalExecRequest{tty: true}
+	t := &terminalExecRequest{tty: false}
 
 	t.container, err = payload.String("containerName")
 	if err != nil {
 		return nil, err
 	}
 
-	/*
-		t.tty, err = payload.String("tty")
-		if err != nil {
-			return nil, err
-		}
-	*/
+	if _, err := payload.Bool("tty"); err != nil {
+		t.tty = true
+	}
 
 	t.command, err = payload.String("containerCommand")
 	if err != nil {
 		return nil, err
 	}
-
-	t.tty = true
 
 	return t, nil
 }

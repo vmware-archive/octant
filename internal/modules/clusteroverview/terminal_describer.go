@@ -40,6 +40,9 @@ func (d *TerminalListDescriber) Describe(ctx context.Context, namespace string, 
 
 		nameLink.Config.Text = t.Container()
 
+		// TODO: Link directly to the terminal
+		nameLink.Config.Ref = nameLink.Config.Ref
+
 		tRow := component.TableRow{
 			"Container": nameLink,
 			"Command":   component.NewText(t.Command()),
