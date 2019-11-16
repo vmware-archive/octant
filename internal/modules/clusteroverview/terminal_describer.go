@@ -42,9 +42,6 @@ func (d *TerminalListDescriber) Describe(ctx context.Context, namespace string, 
 
 		nameLink.Config.Text = t.Container()
 
-		// TODO: Link directly to the terminal
-		nameLink.Config.Ref = nameLink.Config.Ref
-
 		buttonGroup := component.NewButtonGroup()
 		buttonGroup.AddButton(
 			component.NewButton("Delete",
