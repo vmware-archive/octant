@@ -191,11 +191,34 @@ func Test_ContainerConfiguration(t *testing.T) {
 		container *corev1.Container
 		isErr     bool
 		isInit    bool
+		action    component.Action
 		expected  *component.Summary
 	}{
 		{
 			name:      "in general",
 			container: validContainer,
+			action: component.Action{
+				Name:  "Execute Command",
+				Title: "Execute nginx Command",
+				Form: component.Form{
+					Fields: []component.FormField{
+						component.NewFormFieldHidden("containerName", "nginx"),
+						component.NewFormFieldText("Command", "containerCommand", "/bin/bash"),
+						component.NewFormFieldCheckBox("TTY", "tty", []component.InputChoice{
+							{
+								Label:   "TTY",
+								Value:   "tty",
+								Checked: true,
+							},
+						}),
+						component.NewFormFieldHidden("apiVersion", "v1"),
+						component.NewFormFieldHidden("kind", "Pod"),
+						component.NewFormFieldHidden("name", "pod"),
+						component.NewFormFieldHidden("namespace", "namespace"),
+						component.NewFormFieldHidden("action", "overview/commandExec"),
+					},
+				},
+			},
 			expected: component.NewSummary("Container nginx", []component.SummarySection{
 				{
 					Header:  "Image",
@@ -254,6 +277,28 @@ func Test_ContainerConfiguration(t *testing.T) {
 			name:      "init containers",
 			container: validInitContainer,
 			isInit:    true,
+			action: component.Action{
+				Name:  "Execute Command",
+				Title: "Execute busybox Command",
+				Form: component.Form{
+					Fields: []component.FormField{
+						component.NewFormFieldHidden("containerName", "busybox"),
+						component.NewFormFieldText("Command", "containerCommand", "/bin/bash"),
+						component.NewFormFieldCheckBox("TTY", "tty", []component.InputChoice{
+							{
+								Label:   "TTY",
+								Value:   "tty",
+								Checked: true,
+							},
+						}),
+						component.NewFormFieldHidden("apiVersion", "v1"),
+						component.NewFormFieldHidden("kind", "Pod"),
+						component.NewFormFieldHidden("name", "pod"),
+						component.NewFormFieldHidden("namespace", "namespace"),
+						component.NewFormFieldHidden("action", "overview/commandExec"),
+					},
+				},
+			},
 			expected: component.NewSummary("Init Container busybox", []component.SummarySection{
 				{
 					Header:  "Image",
@@ -369,6 +414,8 @@ func Test_ContainerConfiguration(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
+
+			tc.expected.AddAction(tc.action)
 
 			component.AssertEqual(t, tc.expected, summary)
 		})
