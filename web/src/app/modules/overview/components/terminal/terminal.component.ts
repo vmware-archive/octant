@@ -14,6 +14,7 @@ import {
   TerminalOutputStreamer,
   TerminalOutputService,
 } from 'src/app/services/terminals/terminals.service';
+import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { TerminalView, TerminalDetail } from 'src/app/models/content';
 import { WebsocketService } from '../../services/websocket/websocket.service';
 
@@ -23,9 +24,10 @@ import { WebsocketService } from '../../services/websocket/websocket.service';
 })
 export class TerminalComponent implements OnInit, OnDestroy, AfterViewInit {
   private terminalStream: TerminalOutputStreamer;
-  private selectedTerminal: TerminalDetail;
+  selectedTerminal: TerminalDetail;
   @Input() view: TerminalView;
   @ViewChild('terminal', { static: true }) child: NgTerminal;
+  trackByIdentity = trackByIdentity;
 
   constructor(
     private terminalService: TerminalOutputService,
@@ -49,8 +51,10 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.initSize();
-    this.initStream();
+    if (this.selectedTerminal && this.view) {
+      this.initSize();
+      this.initStream();
+    }
     this.enableResize();
 
     this.child.keyEventInput.subscribe(e => {

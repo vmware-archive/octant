@@ -19,7 +19,7 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-//go:generate mockgen -source=terminal.go -destination=./fake/mock_interface.go -package=fake github.com/vmware-tanzu/octant/internal/terminal Terminal
+//go:generate mockgen -source=instance.go -destination=./fake/mock_terminal.go -package=fake github.com/vmware-tanzu/octant/internal/terminal Terminal
 
 type pty struct {
 	io.Reader
