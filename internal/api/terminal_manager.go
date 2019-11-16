@@ -31,8 +31,9 @@ type terminalStateManager struct {
 }
 
 type terminalOutput struct {
-	Scrollback []byte `json:"scrollback,omitempty"`
-	Line       []byte `json:"line,omitempty"`
+	Scrollback  []byte `json:"scrollback,omitempty"`
+	Line        []byte `json:"line,omitempty"`
+	ExitMessage []byte `json:"exitMessage,omitempty"`
 }
 
 var _ StateManager = (*terminalStateManager)(nil)
@@ -150,6 +151,10 @@ func (s *terminalStateManager) runUpdate(state octant.State, client OctantClient
 
 			if ok && sendScrollback.(bool) {
 				data.Scrollback = t.Scrollback()
+				msg := t.ExitMessage()
+				if msg != "" {
+					data.Scrollback = append(data.Scrollback, []byte("\n"+msg)...)
+				}
 				s.setSendScrollback(t.ID(), false)
 			}
 			terminalEvent := octant.Event{

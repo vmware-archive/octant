@@ -34,6 +34,8 @@ type Instance interface {
 	Resize(cols, rows uint16)
 
 	Stop()
+	SetExitMessage(string)
+	ExitMessage() string
 	CreatedAt() time.Time
 
 	Stdin() io.Reader
@@ -42,6 +44,7 @@ type Instance interface {
 }
 
 type pty struct {
+	ctx context.Context
 	io.Reader
 	io.Writer
 	remotecommand.TerminalSizeQueue
@@ -62,9 +65,17 @@ func (p *pty) Write(b []byte) (int, error) {
 
 func (p *pty) Read(b []byte) (int, error) {
 	select {
+	case <-p.ctx.Done():
+		return 0, io.ErrClosedPipe
 	case key := <-p.keystroke:
 		return copy(b, key), nil
 	default:
+		if p.ctx.Err() != nil {
+			if p.ctx.Err() == context.Canceled {
+				return 0, io.ErrClosedPipe
+			}
+			return 0, io.ErrUnexpectedEOF
+		}
 		return 0, nil
 	}
 }
@@ -91,9 +102,10 @@ type instance struct {
 	key       store.Key
 	createdAt time.Time
 
-	container  string
-	command    string
-	scrollback bytes.Buffer
+	container   string
+	command     string
+	exitMessage string
+	scrollback  bytes.Buffer
 
 	pty *pty
 	tty bool
@@ -108,6 +120,7 @@ func NewTerminalInstance(ctx context.Context, logger log.Logger, key store.Key, 
 	ctx, cancelFn := context.WithCancel(ctx)
 
 	termPty := &pty{
+		ctx:       ctx,
 		logger:    logger,
 		out:       &bytes.Buffer{},
 		keystroke: make(chan []byte, 25),
@@ -168,15 +181,17 @@ func (t *instance) Exec(key []byte) error {
 	return nil
 }
 
-func (t *instance) Stop()                { t.cancelFn() }
-func (t *instance) Key() store.Key       { return t.key }
-func (t *instance) Scrollback() []byte   { return t.scrollback.Bytes() }
-func (t *instance) ID() string           { return t.id.String() }
-func (t *instance) Container() string    { return t.container }
-func (t *instance) Command() string      { return t.command }
-func (t *instance) CreatedAt() time.Time { return t.createdAt }
-func (t *instance) Stdin() io.Reader     { return t.pty }
-func (t *instance) Stdout() io.Writer    { return t.pty }
+func (t *instance) SetExitMessage(m string) { t.exitMessage = m }
+func (t *instance) ExitMessage() string     { return t.exitMessage }
+func (t *instance) Stop()                   { t.cancelFn() }
+func (t *instance) Key() store.Key          { return t.key }
+func (t *instance) Scrollback() []byte      { return t.scrollback.Bytes() }
+func (t *instance) ID() string              { return t.id.String() }
+func (t *instance) Container() string       { return t.container }
+func (t *instance) Command() string         { return t.command }
+func (t *instance) CreatedAt() time.Time    { return t.createdAt }
+func (t *instance) Stdin() io.Reader        { return t.pty }
+func (t *instance) Stdout() io.Writer       { return t.pty }
 func (t *instance) Stderr() io.Writer {
 	if t.tty {
 		return nil

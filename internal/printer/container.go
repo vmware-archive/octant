@@ -514,8 +514,8 @@ func editContainerAction(owner runtime.Object, container *corev1.Container) (com
 func terminalCommandExecAction(owner runtime.Object, container *corev1.Container) (component.Action, error) {
 	form, err := component.CreateFormForObject("overview/commandExec", owner,
 		component.NewFormFieldHidden("containerName", container.Name),
-		component.NewFormFieldText("Command", "containerCommand", "/bin/bash"),
-		component.NewFormFieldCheckBox("TTY", "tty", []component.InputChoice{component.InputChoice{"TTY", "tty", true}}),
+		component.NewFormFieldText("Command", "containerCommand", ""),
+		component.NewFormFieldCheckBox("TTY", "tty", []component.InputChoice{component.InputChoice{"TTY", "tty", false}}),
 	)
 	if err != nil {
 		return component.Action{}, err

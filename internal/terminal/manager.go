@@ -7,6 +7,7 @@ package terminal
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"strings"
 	"sync"
@@ -109,9 +110,9 @@ func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key,
 		logger.Debugf("running stream command")
 		err = rc.Stream(opts)
 		if err != nil {
+			t.SetExitMessage(fmt.Sprintf("%s", err))
 			logger.Errorf("streaming: %+v", err)
 		}
-		logger.Debugf("no error from stream command")
 	}()
 
 	return t, nil
@@ -138,7 +139,11 @@ func (tm *manager) List() []Instance {
 }
 
 func (tm *manager) Delete(id string) {
-	tm.instances.Delete(id)
+	t, ok := tm.Get(id)
+	if ok {
+		t.Stop()
+		tm.instances.Delete(id)
+	}
 }
 
 func (tm *manager) StopAll() error {
