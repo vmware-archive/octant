@@ -19,9 +19,6 @@ rice-box.go
 /dist
 /node_modules
 
-# generated fakes
-/**/fake/**
-
 # electron bundling
 /output
 
@@ -29,3 +26,5 @@ rice-box.go
 .idea
 
 /tmp
+
+gomock_reflect_*
