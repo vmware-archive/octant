@@ -25,7 +25,7 @@ func GenerateComponent(ctx context.Context, tm Manager, object runtime.Object) (
 
 	details := []component.TerminalDetails{}
 
-	for _, t := range tm.List(ctx) {
+	for _, t := range tm.List() {
 		if t.Key() == key {
 			details = append(details, component.TerminalDetails{
 				Container: t.Container(),

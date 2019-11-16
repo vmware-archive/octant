@@ -59,7 +59,7 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewInit {
 
       this.wss.sendMessage('sendTerminalCommand', {
         terminalID: this.selectedTerminal.uuid,
-        command: e.key,
+        key: e.key,
       });
 
       if (ev.keyCode === 8) {

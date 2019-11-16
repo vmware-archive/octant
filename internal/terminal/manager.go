@@ -108,7 +108,7 @@ func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key,
 	return t, nil
 }
 
-func (tm *manager) Get(ctx context.Context, id string) (Instance, bool) {
+func (tm *manager) Get(id string) (Instance, bool) {
 	v, ok := tm.instances.Load(id)
 	if !ok {
 		return nil, ok
@@ -116,7 +116,7 @@ func (tm *manager) Get(ctx context.Context, id string) (Instance, bool) {
 	return v.(Instance), ok
 }
 
-func (tm *manager) List(ctx context.Context) []Instance {
+func (tm *manager) List() []Instance {
 	instances := []Instance{}
 	tm.instances.Range(func(k interface{}, v interface{}) bool {
 		instances = append(instances, v.(Instance))
@@ -132,9 +132,9 @@ func (tm *manager) Delete(id string) {
 	tm.instances.Delete(id)
 }
 
-func (tm *manager) StopAll(ctx context.Context) error {
+func (tm *manager) StopAll() error {
 	tm.instances.Range(func(k interface{}, v interface{}) bool {
-		v.(Instance).Stop(ctx)
+		v.(Instance).Stop()
 		return true
 	})
 	return nil

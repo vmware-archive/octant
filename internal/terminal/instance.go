@@ -26,8 +26,10 @@ type pty struct {
 	io.Writer
 	remotecommand.TerminalSizeQueue
 
-	logger   log.Logger
-	commands []string
+	logger    log.Logger
+	commands  []string
+	keystroke chan []byte
+	resize    chan []uint16
 
 	out        io.ReadWriter
 	rows, cols uint16
@@ -39,40 +41,22 @@ func (p *pty) Write(b []byte) (int, error) {
 }
 
 func (p *pty) Read(b []byte) (int, error) {
-	c, ok := p.pop()
-	if !ok {
+	select {
+	case key := <-p.keystroke:
+		return copy(b, key), nil
+	default:
 		return 0, nil
 	}
-	return copy(b, c), nil
 }
 
 func (p *pty) Next() *remotecommand.TerminalSize {
-	return &remotecommand.TerminalSize{Width: p.cols, Height: p.rows}
-}
-
-func (p *pty) resize(rows, cols uint16) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	p.rows = rows
-	p.cols = cols
-}
-
-func (p *pty) push(command string) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	p.commands = append(p.commands, command)
-}
-
-func (p *pty) pop() ([]byte, bool) {
-	var command string
-	if len(p.commands) > 0 {
-		p.mu.Lock()
-		defer p.mu.Unlock()
-		command, p.commands = p.commands[len(p.commands)-1], p.commands[:len(p.commands)-1]
-		return []byte(command), true
+	select {
+	case size := <-p.resize:
+		p.cols, p.rows = size[0], size[1]
+		return &remotecommand.TerminalSize{Width: p.cols, Height: p.rows}
+	default:
+		return &remotecommand.TerminalSize{Width: p.cols, Height: p.rows}
 	}
-	return []byte{}, false
 }
 
 func (p *pty) stdout() io.Reader {
@@ -80,6 +64,9 @@ func (p *pty) stdout() io.Reader {
 }
 
 type instance struct {
+	ctx      context.Context
+	cancelFn context.CancelFunc
+
 	id        uuid.UUID
 	key       store.Key
 	createdAt time.Time
@@ -96,27 +83,38 @@ type instance struct {
 
 var _ Instance = (*instance)(nil)
 
-// NewTerminal creates a concrete Terminal
+// NewTerminalInstance creates a concrete Terminal
 func NewTerminalInstance(ctx context.Context, logger log.Logger, key store.Key, container, command string, tty bool) Instance {
+	ctx, cancelFn := context.WithCancel(ctx)
+
+	termPty := &pty{
+		logger:    logger,
+		out:       &bytes.Buffer{},
+		keystroke: make(chan []byte, 25),
+		resize:    make(chan []uint16, 1),
+	}
+
 	t := &instance{
+		ctx:       ctx,
+		cancelFn:  cancelFn,
 		id:        uuid.New(),
 		key:       key,
 		createdAt: time.Now(),
 		container: container,
 		command:   command,
-		pty:       &pty{logger: logger, out: &bytes.Buffer{}},
+		pty:       termPty,
 		tty:       tty,
 		logger:    logger,
 	}
-
 	return t
 }
 
-func (t *instance) Resize(ctx context.Context, cols, rows uint16) {
-	t.pty.resize(rows, cols)
+func (t *instance) Resize(cols, rows uint16) {
+	//TODO figure out why sending terminal size breaks stream.
+	//t.pty.resize <- []uint16{cols, rows}
 }
 
-func (t *instance) Read(ctx context.Context) ([]byte, error) {
+func (t *instance) Read() ([]byte, error) {
 	if t.pty == nil {
 		return nil, nil
 	}
@@ -142,23 +140,23 @@ func (t *instance) Read(ctx context.Context) ([]byte, error) {
 	return b, nil
 }
 
-func (t *instance) Exec(ctx context.Context, command string) error {
+func (t *instance) Exec(key []byte) error {
 	if t.pty == nil {
 		return errors.New("can not execute command, no stdin")
 	}
-	t.pty.push(command)
+	t.pty.keystroke <- key
 	return nil
 }
 
-func (t *instance) Stop(ctx context.Context) {}
-func (t *instance) Key() store.Key           { return t.key }
-func (t *instance) Scrollback() []byte       { return t.scrollback.Bytes() }
-func (t *instance) ID() string               { return t.id.String() }
-func (t *instance) Container() string        { return t.container }
-func (t *instance) Command() string          { return t.command }
-func (t *instance) CreatedAt() time.Time     { return t.createdAt }
-func (t *instance) Stdin() io.Reader         { return t.pty }
-func (t *instance) Stdout() io.Writer        { return t.pty }
+func (t *instance) Stop()                { t.cancelFn() }
+func (t *instance) Key() store.Key       { return t.key }
+func (t *instance) Scrollback() []byte   { return t.scrollback.Bytes() }
+func (t *instance) ID() string           { return t.id.String() }
+func (t *instance) Container() string    { return t.container }
+func (t *instance) Command() string      { return t.command }
+func (t *instance) CreatedAt() time.Time { return t.createdAt }
+func (t *instance) Stdin() io.Reader     { return t.pty }
+func (t *instance) Stdout() io.Writer    { return t.pty }
 func (t *instance) Stderr() io.Writer {
 	if t.tty {
 		return nil

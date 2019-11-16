@@ -32,7 +32,7 @@ func (d *TerminalListDescriber) Describe(ctx context.Context, namespace string, 
 	tbl := component.NewTable("Terminals", "There are no terminals!", tblCols)
 	list.Add(tbl)
 
-	for _, t := range tm.List(ctx) {
+	for _, t := range tm.List() {
 		nameLink, err := options.Link.ForGVK(t.Key().Namespace, t.Key().APIVersion, t.Key().Kind, t.Key().Name, t.Key().Name)
 		if err != nil {
 			return component.EmptyContentResponse, err

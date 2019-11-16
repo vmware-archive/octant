@@ -28,8 +28,6 @@ type terminalStateManager struct {
 	poller Poller
 
 	sendScrollback sync.Map
-	commands       sync.Map
-	resize         sync.Map
 }
 
 type terminalOutput struct {
@@ -81,7 +79,13 @@ func (s *terminalStateManager) SendTerminalResize(state octant.State, payload ac
 		return errors.Wrap(err, "extract cols from payload")
 	}
 
-	s.resize.Store(terminalID, []uint16{cols, rows})
+	tm := s.config.TerminalManager()
+	t, ok := tm.Get(terminalID)
+	if !ok {
+		return errors.New(fmt.Sprintf("terminal %s not found", terminalID))
+	}
+
+	t.Resize(cols, rows)
 	return nil
 }
 
@@ -91,25 +95,17 @@ func (s *terminalStateManager) SendTerminalCommand(state octant.State, payload a
 		return errors.Wrap(err, "extract terminal ID from payload")
 	}
 
-	command, err := payload.String("command")
+	key, err := payload.String("key")
 	if err != nil {
-		return errors.Wrap(err, "extract command from payload")
+		return errors.Wrap(err, "extract key from payload")
 	}
 
-	s.appendCommand(terminalID, command)
-	return nil
-}
-
-func (s *terminalStateManager) appendCommand(id, command string) {
-	var cmds []string
-	commands, ok := s.commands.Load(id)
+	tm := s.config.TerminalManager()
+	t, ok := tm.Get(terminalID)
 	if !ok {
-		cmds = []string{command}
-	} else {
-		cmds = commands.([]string)
-		cmds = append(cmds, command)
+		return errors.New(fmt.Sprintf("terminal %s not found", terminalID))
 	}
-	s.commands.Store(id, cmds)
+	return t.Exec([]byte(key))
 }
 
 func (s *terminalStateManager) SendTerminalScrollback(state octant.State, payload action.Payload) error {
@@ -136,32 +132,15 @@ func (s *terminalStateManager) Start(ctx context.Context, state octant.State, cl
 func (s *terminalStateManager) runUpdate(state octant.State, client OctantClient) PollerFunc {
 	return func(ctx context.Context) bool {
 		tm := s.config.TerminalManager()
-		for _, t := range tm.List(ctx) {
-			line, err := t.Read(ctx)
+		for _, t := range tm.List() {
+			line, err := t.Read()
 			if err != nil {
 				//TODO: report error directly to Terminal
 				s.config.Logger().Errorf("%s", err)
 			}
 
-			size, ok := s.resize.Load(t.ID())
-			if ok {
-				val := size.([]uint16)
-				s.resize.Delete(t.ID())
-				t.Resize(ctx, val[0], val[1])
-			}
-
 			sendScrollback, ok := s.sendScrollback.Load(t.ID())
 			if line == nil && (!ok || !sendScrollback.(bool)) {
-				commands, ok := s.commands.Load(t.ID())
-				if ok {
-					cmds := commands.([]string)
-					if len(cmds) != 0 {
-						var command string
-						command = cmds[len(cmds)-1]
-						s.commands.Store(t.ID(), cmds[:len(cmds)-1])
-						t.Exec(ctx, command)
-					}
-				}
 				return false
 			}
 
