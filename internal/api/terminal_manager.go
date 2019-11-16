@@ -24,14 +24,12 @@ const (
 )
 
 type terminalStateManager struct {
-	config         config.Dash
-	poller         Poller
-	sendScrollback map[string]bool
+	config config.Dash
+	poller Poller
 
-	commands map[string][]string
-	resize   map[string][]uint16
-
-	mu sync.Mutex
+	sendScrollback sync.Map
+	commands       sync.Map
+	resize         sync.Map
 }
 
 type terminalOutput struct {
@@ -41,34 +39,33 @@ type terminalOutput struct {
 
 var _ StateManager = (*terminalStateManager)(nil)
 
-func NewTerminalStateManager(cfg config.Dash) *terminalStateManager {
+// NewTerminalStateManager returns a terminal state manager.
+func NewTerminalStateManager(cfg config.Dash) StateManager {
 	return &terminalStateManager{
-		config:         cfg,
-		poller:         NewInterruptiblePoller("terminal"),
-		sendScrollback: map[string]bool{},
-		resize:         map[string][]uint16{},
+		config: cfg,
+		poller: NewInterruptiblePoller("terminal"),
 	}
 }
 
 // Handlers returns a slice of handlers.
-func (c *terminalStateManager) Handlers() []octant.ClientRequestHandler {
+func (s *terminalStateManager) Handlers() []octant.ClientRequestHandler {
 	return []octant.ClientRequestHandler{
 		{
 			RequestType: RequestTerminalScrollback,
-			Handler:     c.SendTerminalScrollback,
+			Handler:     s.SendTerminalScrollback,
 		},
 		{
 			RequestType: RequestTerminalCommand,
-			Handler:     c.SendTerminalCommand,
+			Handler:     s.SendTerminalCommand,
 		},
 		{
 			RequestType: RequestTerminalResize,
-			Handler:     c.SendTerminalResize,
+			Handler:     s.SendTerminalResize,
 		},
 	}
 }
 
-func (c *terminalStateManager) SendTerminalResize(state octant.State, payload action.Payload) error {
+func (s *terminalStateManager) SendTerminalResize(state octant.State, payload action.Payload) error {
 	terminalID, err := payload.String("terminalID")
 	if err != nil {
 		return errors.Wrap(err, "extract terminal ID from payload")
@@ -84,13 +81,11 @@ func (c *terminalStateManager) SendTerminalResize(state octant.State, payload ac
 		return errors.Wrap(err, "extract cols from payload")
 	}
 
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.resize[terminalID] = []uint16{rows, cols}
+	s.resize.Store(terminalID, []uint16{cols, rows})
 	return nil
 }
 
-func (c *terminalStateManager) SendTerminalCommand(state octant.State, payload action.Payload) error {
+func (s *terminalStateManager) SendTerminalCommand(state octant.State, payload action.Payload) error {
 	terminalID, err := payload.String("terminalID")
 	if err != nil {
 		return errors.Wrap(err, "extract terminal ID from payload")
@@ -101,19 +96,20 @@ func (c *terminalStateManager) SendTerminalCommand(state octant.State, payload a
 		return errors.Wrap(err, "extract command from payload")
 	}
 
-	c.appendCommand(terminalID, command)
+	s.appendCommand(terminalID, command)
 	return nil
 }
 
 func (s *terminalStateManager) appendCommand(id, command string) {
-	s.mu.Lock()
-	_, ok := s.commands[id]
+	var cmds []string
+	commands, ok := s.commands.Load(id)
 	if !ok {
-		s.commands = map[string][]string{id: []string{command}}
+		cmds = []string{command}
 	} else {
-		s.commands[id] = append(s.commands[id], command)
+		cmds = commands.([]string)
+		cmds = append(cmds, command)
 	}
-	s.mu.Unlock()
+	s.commands.Store(id, cmds)
 }
 
 func (s *terminalStateManager) SendTerminalScrollback(state octant.State, payload action.Payload) error {
@@ -126,9 +122,7 @@ func (s *terminalStateManager) SendTerminalScrollback(state octant.State, payloa
 }
 
 func (s *terminalStateManager) setSendScrollback(id string, v bool) {
-	s.mu.Lock()
-	s.sendScrollback[id] = v
-	s.mu.Unlock()
+	s.sendScrollback.Store(id, v)
 }
 
 func (s *terminalStateManager) Start(ctx context.Context, state octant.State, client OctantClient) {
@@ -149,23 +143,24 @@ func (s *terminalStateManager) runUpdate(state octant.State, client OctantClient
 				s.config.Logger().Errorf("%s", err)
 			}
 
-			size, ok := s.resize[t.ID()]
+			size, ok := s.resize.Load(t.ID())
 			if ok {
-				t.Resize(ctx, size[0], size[1])
-				s.mu.Lock()
-				delete(s.resize, t.ID())
-				s.mu.Unlock()
+				val := size.([]uint16)
+				s.resize.Delete(t.ID())
+				t.Resize(ctx, val[0], val[1])
 			}
 
-			sendScrollback, ok := s.sendScrollback[t.ID()]
-			if line == nil && (!ok || !sendScrollback) {
-				commands, ok := s.commands[t.ID()]
-				if ok && len(commands) != 0 {
-					var command string
-					s.mu.Lock()
-					command, s.commands[t.ID()] = commands[len(commands)-1], commands[:len(commands)-1]
-					s.mu.Unlock()
-					t.Exec(ctx, command)
+			sendScrollback, ok := s.sendScrollback.Load(t.ID())
+			if line == nil && (!ok || !sendScrollback.(bool)) {
+				commands, ok := s.commands.Load(t.ID())
+				if ok {
+					cmds := commands.([]string)
+					if len(cmds) != 0 {
+						var command string
+						command = cmds[len(cmds)-1]
+						s.commands.Store(t.ID(), cmds[:len(cmds)-1])
+						t.Exec(ctx, command)
+					}
 				}
 				return false
 			}
@@ -174,7 +169,7 @@ func (s *terminalStateManager) runUpdate(state octant.State, client OctantClient
 			eventType := octant.EventType(fmt.Sprintf("terminals/namespace/%s/pod/%s/container/%s/%s", key.Namespace, key.Name, t.Container(), t.ID()))
 			data := terminalOutput{Line: line}
 
-			if ok && sendScrollback {
+			if ok && sendScrollback.(bool) {
 				data.Scrollback = t.Scrollback()
 				s.setSendScrollback(t.ID(), false)
 			}

@@ -9,6 +9,7 @@ import (
 	"context"
 	"sort"
 	"strings"
+	"sync"
 	"unicode"
 
 	corev1 "k8s.io/api/core/v1"
@@ -28,7 +29,7 @@ type manager struct {
 	restClient  rest.Interface
 	config      *rest.Config
 	objectStore store.Store
-	instances   map[string]Instance
+	instances   sync.Map
 }
 
 var _ Manager = (*manager)(nil)
@@ -44,7 +45,6 @@ func NewTerminalManager(ctx context.Context, client cluster.ClientInterface, obj
 		restClient:  restClient,
 		config:      client.RESTConfig(),
 		objectStore: objectStore,
-		instances:   map[string]Instance{},
 	}
 	return tm, nil
 }
@@ -53,7 +53,7 @@ func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key,
 	logger.Debugf("create")
 
 	t := NewTerminalInstance(ctx, logger, key, container, command, tty)
-	tm.instances[t.ID()] = t
+	tm.instances.Store(t.ID(), t)
 
 	pod, ok, err := tm.objectStore.Get(ctx, key)
 	if err != nil {
@@ -109,27 +109,34 @@ func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key,
 }
 
 func (tm *manager) Get(ctx context.Context, id string) (Instance, bool) {
-	v, ok := tm.instances[id]
-	return v, ok
+	v, ok := tm.instances.Load(id)
+	if !ok {
+		return nil, ok
+	}
+	return v.(Instance), ok
 }
 
 func (tm *manager) List(ctx context.Context) []Instance {
-	instances := make([]Instance, 0, len(tm.instances))
-	for _, instance := range tm.instances {
-		instances = append(instances, instance)
-	}
-
+	instances := []Instance{}
+	tm.instances.Range(func(k interface{}, v interface{}) bool {
+		instances = append(instances, v.(Instance))
+		return true
+	})
 	sort.Slice(instances, func(i, j int) bool {
 		return instances[i].CreatedAt().Before(instances[j].CreatedAt())
 	})
-
 	return instances
 }
 
+func (tm *manager) Delete(id string) {
+	tm.instances.Delete(id)
+}
+
 func (tm *manager) StopAll(ctx context.Context) error {
-	for _, instance := range tm.instances {
-		instance.Stop(ctx)
-	}
+	tm.instances.Range(func(k interface{}, v interface{}) bool {
+		v.(Instance).Stop(ctx)
+		return true
+	})
 	return nil
 }
 

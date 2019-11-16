@@ -112,7 +112,7 @@ func NewTerminalInstance(ctx context.Context, logger log.Logger, key store.Key, 
 	return t
 }
 
-func (t *instance) Resize(ctx context.Context, rows, cols uint16) {
+func (t *instance) Resize(ctx context.Context, cols, rows uint16) {
 	t.pty.resize(rows, cols)
 }
 

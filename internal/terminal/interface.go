@@ -24,7 +24,7 @@ type Instance interface {
 
 	Read(ctx context.Context) ([]byte, error)
 	Exec(ctx context.Context, command string) error
-	Resize(ctx context.Context, rows, cols uint16)
+	Resize(ctx context.Context, cols, rows uint16)
 
 	Stop(ctx context.Context)
 	CreatedAt() time.Time
@@ -38,6 +38,7 @@ type Instance interface {
 type Manager interface {
 	List(ctx context.Context) []Instance
 	Get(ctx context.Context, ID string) (Instance, bool)
+	Delete(id string)
 	Create(ctx context.Context, logger log.Logger, key store.Key, container string, command string, tty bool) (Instance, error)
 	StopAll(ctx context.Context) error
 }

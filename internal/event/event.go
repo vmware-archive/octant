@@ -10,4 +10,5 @@ import "time"
 // DefaultScheduleDelay is the default schedule delay
 const DefaultScheduleDelay = 1 * time.Second
 
-const TerminalStreamDelay = 250 * time.Millisecond
+// TerminalStreamDelay is the terminal stream delay
+const TerminalStreamDelay = 50 * time.Millisecond

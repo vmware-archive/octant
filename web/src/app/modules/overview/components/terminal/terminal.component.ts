@@ -53,27 +53,20 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewInit {
     this.initStream();
     this.enableResize();
 
-    let command = '';
     this.child.keyEventInput.subscribe(e => {
       const ev = e.domEvent;
       const printable = !ev.altKey && !ev.ctrlKey && !ev.metaKey;
 
-      if (ev.keyCode === 13) {
-        command += '\n';
-        this.wss.sendMessage('sendTerminalCommand', {
-          terminalID: this.selectedTerminal.uuid,
-          command,
-        });
-        console.log('sending command ' + command);
-        command = '';
-      } else if (ev.keyCode === 8) {
+      this.wss.sendMessage('sendTerminalCommand', {
+        terminalID: this.selectedTerminal.uuid,
+        command: e.key,
+      });
+
+      if (ev.keyCode === 8) {
         // Do not delete the prompt
         if (this.child.underlying.buffer.cursorX > 78) {
           this.child.write('\b \b');
         }
-      } else if (printable) {
-        command += e.key;
-        this.child.write(e.key);
       }
     });
   }
