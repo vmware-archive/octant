@@ -19,7 +19,27 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-//go:generate mockgen -source=instance.go -destination=./fake/mock_terminal.go -package=fake github.com/vmware-tanzu/octant/internal/terminal Terminal
+//go:generate mockgen -source=instance.go -destination=./fake/mock_instance.go -package=fake github.com/vmware-tanzu/octant/internal/terminal Instance
+
+// Instance defines the interface to a single exec instance.
+type Instance interface {
+	ID() string
+	Key() store.Key
+	Container() string
+	Command() string
+	Scrollback() []byte
+
+	Read() ([]byte, error)
+	Exec(key []byte) error
+	Resize(cols, rows uint16)
+
+	Stop()
+	CreatedAt() time.Time
+
+	Stdin() io.Reader
+	Stdout() io.Writer
+	Stderr() io.Writer
+}
 
 type pty struct {
 	io.Reader

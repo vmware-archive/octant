@@ -25,6 +25,15 @@ import (
 
 //go:generate mockgen -source=manager.go -destination=./fake/mock_interface.go -package=fake github.com/vmware-tanzu/octant/internal/terminal TerminalManager
 
+// Manager defines the interface for querying terminal instance.
+type Manager interface {
+	List() []Instance
+	Get(ID string) (Instance, bool)
+	Delete(id string)
+	Create(ctx context.Context, logger log.Logger, key store.Key, container string, command string, tty bool) (Instance, error)
+	StopAll() error
+}
+
 type manager struct {
 	restClient  rest.Interface
 	config      *rest.Config
