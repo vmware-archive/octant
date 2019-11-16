@@ -33,7 +33,7 @@ func NewTerminalDelete(logger log.Logger, objectStore store.Store, terminalManag
 }
 
 func (t *terminalDelete) ActionName() string {
-	return "overview/terminalDelete"
+	return "overview/deleteTerminal"
 }
 
 func (t *terminalDelete) Handle(ctx context.Context, alerter action.Alerter, payload action.Payload) error {

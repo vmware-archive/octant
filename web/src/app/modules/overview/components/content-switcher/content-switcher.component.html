@@ -3,6 +3,9 @@
     <ng-container *ngSwitchCase="'annotations'">
       <app-view-annotations [view]="view"></app-view-annotations>
     </ng-container>
+    <ng-container *ngSwitchCase="'buttonGroup'">
+      <app-button-group [view]="view"></app-button-group>
+    </ng-container>
     <ng-container *ngSwitchCase="'card'">
       <app-view-card [view]="view"></app-view-card>
     </ng-container>
