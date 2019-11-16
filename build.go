@@ -125,7 +125,6 @@ func goInstall() {
 }
 
 func clean() {
-	removeFakes()
 	if err := os.Remove("pkg/icon/rice-box.go"); err != nil {
 		log.Fatalf("clean: %s", err)
 	}
