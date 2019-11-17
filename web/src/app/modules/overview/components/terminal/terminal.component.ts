@@ -65,13 +65,6 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewInit {
         terminalID: this.selectedTerminal.uuid,
         key: e.key,
       });
-
-      if (ev.keyCode === 8) {
-        // Do not delete the prompt
-        if (this.child.underlying.buffer.cursorX > 78) {
-          this.child.write('\b \b');
-        }
-      }
     });
   }
 

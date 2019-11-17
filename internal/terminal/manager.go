@@ -60,21 +60,17 @@ func NewTerminalManager(ctx context.Context, client cluster.ClientInterface, obj
 }
 
 func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key, container, command string, tty bool) (Instance, error) {
-	logger.Debugf("create")
-
 	t := NewTerminalInstance(ctx, logger, key, container, command, tty)
 	tm.instances.Store(t.ID(), t)
 
 	pod, ok, err := tm.objectStore.Get(ctx, key)
 	if err != nil {
-		logger.Errorf("objectStore: %s", err)
 		return nil, err
 	}
 	if !ok {
 		return nil, errors.New("pod not found")
 	}
 
-	logger.Debugf("prePOST")
 	req := tm.restClient.Post().
 		Resource("pods").
 		Name(pod.GetName()).
@@ -92,11 +88,9 @@ func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key,
 
 	rc, err := remotecommand.NewSPDYExecutor(tm.config, "POST", req.URL())
 	if err != nil {
-		logger.Errorf("executor: %+v", err)
+		t.SetExitMessage(fmt.Sprintf("%v", err))
 		return nil, err
 	}
-
-	logger.Debugf("postPOST")
 
 	opts := remotecommand.StreamOptions{
 		Stdin:  t.Stdin(),
@@ -113,6 +107,7 @@ func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key,
 			t.SetExitMessage(fmt.Sprintf("%s", err))
 			logger.Errorf("streaming: %+v", err)
 		}
+		logger.Debugf("stopping stream command")
 	}()
 
 	return t, nil

@@ -136,13 +136,14 @@ func (s *terminalStateManager) runUpdate(state octant.State, client OctantClient
 		for _, t := range tm.List() {
 			line, err := t.Read()
 			if err != nil {
-				//TODO: report error directly to Terminal
-				s.config.Logger().Errorf("%s", err)
+				t.SetExitMessage(fmt.Sprintf("%v\n", err))
+				t.Stop()
+				continue
 			}
 
 			sendScrollback, ok := s.sendScrollback.Load(t.ID())
 			if line == nil && (!ok || !sendScrollback.(bool)) {
-				return false
+				continue
 			}
 
 			key := t.Key()
@@ -157,6 +158,7 @@ func (s *terminalStateManager) runUpdate(state octant.State, client OctantClient
 				}
 				s.setSendScrollback(t.ID(), false)
 			}
+
 			terminalEvent := octant.Event{
 				Type: eventType,
 				Data: data,

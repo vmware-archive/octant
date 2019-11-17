@@ -181,17 +181,19 @@ func (t *instance) Exec(key []byte) error {
 	return nil
 }
 
-func (t *instance) SetExitMessage(m string) { t.exitMessage = m }
-func (t *instance) ExitMessage() string     { return t.exitMessage }
-func (t *instance) Stop()                   { t.cancelFn() }
-func (t *instance) Key() store.Key          { return t.key }
-func (t *instance) Scrollback() []byte      { return t.scrollback.Bytes() }
-func (t *instance) ID() string              { return t.id.String() }
-func (t *instance) Container() string       { return t.container }
-func (t *instance) Command() string         { return t.command }
-func (t *instance) CreatedAt() time.Time    { return t.createdAt }
-func (t *instance) Stdin() io.Reader        { return t.pty }
-func (t *instance) Stdout() io.Writer       { return t.pty }
+func (t *instance) SetExitMessage(m string) {
+	t.exitMessage = m
+}
+func (t *instance) ExitMessage() string  { return t.exitMessage }
+func (t *instance) Stop()                { t.cancelFn() }
+func (t *instance) Key() store.Key       { return t.key }
+func (t *instance) Scrollback() []byte   { return t.scrollback.Bytes() }
+func (t *instance) ID() string           { return t.id.String() }
+func (t *instance) Container() string    { return t.container }
+func (t *instance) Command() string      { return t.command }
+func (t *instance) CreatedAt() time.Time { return t.createdAt }
+func (t *instance) Stdin() io.Reader     { return t.pty }
+func (t *instance) Stdout() io.Writer    { return t.pty }
 func (t *instance) Stderr() io.Writer {
 	if t.tty {
 		return nil
