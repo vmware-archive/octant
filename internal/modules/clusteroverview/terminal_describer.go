@@ -31,7 +31,7 @@ func (d *TerminalListDescriber) Describe(ctx context.Context, namespace string, 
 
 	list := component.NewList("Terminals", nil)
 
-	tblCols := component.NewTableCols("Container", "Command", "TTY", "ID", "Age", "")
+	tblCols := component.NewTableCols("Container", "Command", "TTY", "Active", "ID", "Age", "")
 	tbl := component.NewTable("Terminals", "There are no terminals!", tblCols)
 	list.Add(tbl)
 
@@ -56,6 +56,7 @@ func (d *TerminalListDescriber) Describe(ctx context.Context, namespace string, 
 			"Container": nameLink,
 			"Command":   component.NewText(t.Command()),
 			"TTY":       component.NewText(strconv.FormatBool(t.TTY())),
+			"Active":    component.NewText(strconv.FormatBool(t.Active())),
 			"ID":        component.NewText(t.ID()),
 			"Age":       component.NewTimestamp(t.CreatedAt()),
 			"":          buttonGroup,
