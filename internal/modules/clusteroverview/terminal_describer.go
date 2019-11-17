@@ -8,6 +8,7 @@ package clusteroverview
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/vmware-tanzu/octant/internal/describer"
 	"github.com/vmware-tanzu/octant/pkg/action"
@@ -30,7 +31,7 @@ func (d *TerminalListDescriber) Describe(ctx context.Context, namespace string, 
 
 	list := component.NewList("Terminals", nil)
 
-	tblCols := component.NewTableCols("Container", "Command", "ID", "Age", "")
+	tblCols := component.NewTableCols("Container", "Command", "TTY", "ID", "Age", "")
 	tbl := component.NewTable("Terminals", "There are no terminals!", tblCols)
 	list.Add(tbl)
 
@@ -54,6 +55,7 @@ func (d *TerminalListDescriber) Describe(ctx context.Context, namespace string, 
 		tRow := component.TableRow{
 			"Container": nameLink,
 			"Command":   component.NewText(t.Command()),
+			"TTY":       component.NewText(strconv.FormatBool(t.TTY())),
 			"ID":        component.NewText(t.ID()),
 			"Age":       component.NewTimestamp(t.CreatedAt()),
 			"":          buttonGroup,

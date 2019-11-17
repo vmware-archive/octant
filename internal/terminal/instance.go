@@ -27,6 +27,7 @@ type Instance interface {
 	Key() store.Key
 	Container() string
 	Command() string
+	TTY() bool
 	Scrollback() []byte
 
 	Read() ([]byte, error)
@@ -191,6 +192,7 @@ func (t *instance) Scrollback() []byte   { return t.scrollback.Bytes() }
 func (t *instance) ID() string           { return t.id.String() }
 func (t *instance) Container() string    { return t.container }
 func (t *instance) Command() string      { return t.command }
+func (t *instance) TTY() bool            { return t.tty }
 func (t *instance) CreatedAt() time.Time { return t.createdAt }
 func (t *instance) Stdin() io.Reader     { return t.pty }
 func (t *instance) Stdout() io.Writer    { return t.pty }

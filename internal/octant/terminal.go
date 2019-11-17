@@ -78,8 +78,9 @@ func terminalExecFromPayload(payload action.Payload) (*terminalExecRequest, erro
 		return nil, err
 	}
 
-	if _, err := payload.Bool("tty"); err != nil {
-		t.tty = true
+	t.tty, err = payload.Bool("tty")
+	if err != nil {
+		return nil, err
 	}
 
 	t.command, err = payload.String("containerCommand")
