@@ -58,9 +58,6 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewInit {
     this.enableResize();
 
     this.child.keyEventInput.subscribe(e => {
-      const ev = e.domEvent;
-      const printable = !ev.altKey && !ev.ctrlKey && !ev.metaKey;
-
       this.wss.sendMessage('sendTerminalCommand', {
         terminalID: this.selectedTerminal.uuid,
         key: e.key,
@@ -75,6 +72,7 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewInit {
       this.terminalStream = null;
     }
     this.child.underlying.clear();
+    this.child.underlying.reset();
     this.initStream();
   }
 
