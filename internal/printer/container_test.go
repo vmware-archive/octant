@@ -203,12 +203,12 @@ func Test_ContainerConfiguration(t *testing.T) {
 				Form: component.Form{
 					Fields: []component.FormField{
 						component.NewFormFieldHidden("containerName", "nginx"),
-						component.NewFormFieldText("Command", "containerCommand", "/bin/bash"),
+						component.NewFormFieldText("Command", "containerCommand", ""),
 						component.NewFormFieldCheckBox("TTY", "tty", []component.InputChoice{
 							{
 								Label:   "TTY",
 								Value:   "tty",
-								Checked: true,
+								Checked: false,
 							},
 						}),
 						component.NewFormFieldHidden("apiVersion", "v1"),
@@ -283,12 +283,12 @@ func Test_ContainerConfiguration(t *testing.T) {
 				Form: component.Form{
 					Fields: []component.FormField{
 						component.NewFormFieldHidden("containerName", "busybox"),
-						component.NewFormFieldText("Command", "containerCommand", "/bin/bash"),
+						component.NewFormFieldText("Command", "containerCommand", ""),
 						component.NewFormFieldCheckBox("TTY", "tty", []component.InputChoice{
 							{
 								Label:   "TTY",
 								Value:   "tty",
-								Checked: true,
+								Checked: false,
 							},
 						}),
 						component.NewFormFieldHidden("apiVersion", "v1"),
