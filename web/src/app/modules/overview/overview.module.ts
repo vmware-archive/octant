@@ -50,11 +50,13 @@ import { TimestampComponent } from './components/timestamp/timestamp.component';
 import { YamlComponent } from './components/yaml/yaml.component';
 import { OverviewComponent } from './overview.component';
 import { DefaultPipe } from './pipes/default.pipe';
+import { SafePipe } from './pipes/safe.pipe';
 import { ButtonGroupComponent } from './components/button-group/button-group.component';
 import { AlertComponent } from './components/alert/alert.component';
 import { ContentFilterComponent } from './components/content-filter/content-filter.component';
 import { NgTerminalModule } from 'ng-terminal';
 import { TerminalComponent } from 'src/app/components/terminal/terminal.component';
+import { IFrameComponent } from './components/iframe/iframe.component';
 
 export function hljsLanguages() {
   return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
@@ -70,6 +72,7 @@ export function hljsLanguages() {
     FiltersComponent,
     FlexlayoutComponent,
     GraphvizComponent,
+    IFrameComponent,
     LabelSelectorComponent,
     LabelsComponent,
     LoadingComponent,
@@ -97,6 +100,7 @@ export function hljsLanguages() {
     HeptagonLabelComponent,
     ContextSelectorComponent,
     DefaultPipe,
+    SafePipe,
     FormComponent,
     CardListComponent,
     CardComponent,
@@ -119,6 +123,6 @@ export function hljsLanguages() {
     MarkdownModule.forChild(),
     NgTerminalModule,
   ],
-  exports: [ContextSelectorComponent, DefaultPipe],
+  exports: [ContextSelectorComponent, DefaultPipe, SafePipe],
 })
 export class OverviewModule {}

@@ -334,3 +334,10 @@ export interface ErrorView extends View {
     data: string;
   };
 }
+
+export interface IFrameView extends View {
+  config: {
+    url: string;
+    title: string;
+  };
+}

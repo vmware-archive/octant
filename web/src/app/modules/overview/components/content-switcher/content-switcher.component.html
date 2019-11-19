@@ -33,6 +33,9 @@
     <ng-container *ngSwitchCase="'error'">
       <app-view-error [view]="view"></app-view-error>
     </ng-container>
+    <ng-container *ngSwitchCase="'iframe'">
+      <app-iframe [view]="view"></app-iframe>
+    </ng-container>
     <ng-container *ngSwitchCase="'link'">
       <app-view-link [view]="view"></app-view-link>
     </ng-container>
