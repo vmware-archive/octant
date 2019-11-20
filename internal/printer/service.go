@@ -25,7 +25,7 @@ func ServiceListHandler(_ context.Context, list *corev1.ServiceList, options Opt
 		return nil, errors.New("nil list")
 	}
 
-	cols := component.NewTableCols("Name", "Labels", "Type", "Cluster IP", "External IP", "Target Ports", "Age", "Selector")
+	cols := component.NewTableCols("Name", "Labels", "Type", "Cluster IP", "External IP", "Ports", "Age", "Selector")
 	tbl := component.NewTable("Services", "We couldn't find any services!", cols)
 
 	for _, s := range list.Items {
@@ -40,7 +40,7 @@ func ServiceListHandler(_ context.Context, list *corev1.ServiceList, options Opt
 		row["Type"] = component.NewText(string(s.Spec.Type))
 		row["Cluster IP"] = component.NewText(s.Spec.ClusterIP)
 		row["External IP"] = component.NewText(describeExternalIPs(s))
-		row["Target Ports"] = printServicePorts(s.Spec.Ports)
+		row["Ports"] = printServicePorts(s.Spec.Ports)
 
 		ts := s.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
@@ -80,7 +80,7 @@ func ServiceHandler(ctx context.Context, service *corev1.Service, options Option
 func printServicePorts(ports []corev1.ServicePort) component.Component {
 	out := make([]string, len(ports))
 	for i, port := range ports {
-		out[i] = describeTargetPort(port)
+		out[i] = describePortShort(port)
 	}
 
 	return component.NewText(strings.Join(out, ", "))
@@ -354,11 +354,7 @@ func createServiceEndpointsView(ctx context.Context, service *corev1.Service, op
 	return table, nil
 }
 
-func describeTargetPort(port corev1.ServicePort) string {
-	if targetPort := port.TargetPort.String(); targetPort != "0" {
-		return fmt.Sprintf("%s/%s", targetPort, port.Protocol)
-	}
-
+func describePortShort(port corev1.ServicePort) string {
 	return fmt.Sprintf("%d/%s", port.Port, port.Protocol)
 }
 

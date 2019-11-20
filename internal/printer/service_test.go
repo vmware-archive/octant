@@ -83,17 +83,17 @@ func Test_ServiceListHandler(t *testing.T) {
 	got, err := ServiceListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
-	cols := component.NewTableCols("Name", "Labels", "Type", "Cluster IP", "External IP", "Target Ports", "Age", "Selector")
+	cols := component.NewTableCols("Name", "Labels", "Type", "Cluster IP", "External IP", "Ports", "Age", "Selector")
 	expected := component.NewTable("Services", "We couldn't find any services!", cols)
 	expected.Add(component.TableRow{
-		"Name":         component.NewLink("", "service", "/service"),
-		"Labels":       component.NewLabels(labels),
-		"Type":         component.NewText("ClusterIP"),
-		"Cluster IP":   component.NewText("1.2.3.4"),
-		"External IP":  component.NewText("8.8.8.8, 8.8.4.4"),
-		"Target Ports": component.NewText("8181/TCP, 8888/UDP"),
-		"Age":          component.NewTimestamp(now),
-		"Selector":     component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
+		"Name":        component.NewLink("", "service", "/service"),
+		"Labels":      component.NewLabels(labels),
+		"Type":        component.NewText("ClusterIP"),
+		"Cluster IP":  component.NewText("1.2.3.4"),
+		"External IP": component.NewText("8.8.8.8, 8.8.4.4"),
+		"Ports":       component.NewText("8000/TCP, 8888/UDP"),
+		"Age":         component.NewTimestamp(now),
+		"Selector":    component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
 	})
 
 	component.AssertEqual(t, expected, got)
@@ -344,13 +344,14 @@ func Test_createServiceEndpointsView(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
-func Test_describeTargetPort(t *testing.T) {
+func Test_describePortShort(t *testing.T) {
 	port := corev1.ServicePort{
-		Port:     8080,
-		Protocol: corev1.ProtocolTCP,
+		Port:       8080,
+		TargetPort: intstr.FromInt(80),
+		Protocol:   corev1.ProtocolTCP,
 	}
 
-	got := describeTargetPort(port)
+	got := describePortShort(port)
 	expected := "8080/TCP"
 	assert.Equal(t, expected, got)
 }
