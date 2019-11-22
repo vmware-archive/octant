@@ -30,8 +30,8 @@ type Instance interface {
 	TTY() bool
 	Scrollback() []byte
 
-	Read() ([]byte, error)
-	Exec(key []byte) error
+	Read(size int) ([]byte, error)
+	Write(key []byte) error
 	Resize(cols, rows uint16)
 
 	Stop()
@@ -152,11 +152,14 @@ func (t *instance) Resize(cols, rows uint16) {
 	//t.pty.resize <- []uint16{cols, rows}
 }
 
-func (t *instance) Read() ([]byte, error) {
+// Read attempts to read from the stdout bytes.Buffer. As a side-effect
+// of calling Read any data that is read is also appended to the internal
+// scollback buffer that can be retrived by calling Scrollback.
+func (t *instance) Read(size int) ([]byte, error) {
 	if t.pty == nil {
 		return nil, nil
 	}
-	buf := make([]byte, 4096)
+	buf := make([]byte, size)
 	n, err := t.pty.stdout().Read(buf)
 	if err != nil {
 		if err == io.EOF {
@@ -178,7 +181,9 @@ func (t *instance) Read() ([]byte, error) {
 	return b, nil
 }
 
-func (t *instance) Exec(key []byte) error {
+// Write sends the passed in key to the stdin of the instance.
+// If the instance is not a TTY, Write will return an error.
+func (t *instance) Write(key []byte) error {
 	if t.pty == nil {
 		return errors.New("can not execute command, no stdin")
 	}
@@ -186,17 +191,43 @@ func (t *instance) Exec(key []byte) error {
 	return nil
 }
 
+// SetExitMessage sets tne exit message for the terminal instance.
 func (t *instance) SetExitMessage(m string) { t.exitMessage = m }
-func (t *instance) ExitMessage() string     { return t.exitMessage }
-func (t *instance) Active() bool            { return t.ctx.Err() == nil }
-func (t *instance) Stop()                   { t.pty.cancelFn() }
-func (t *instance) Key() store.Key          { return t.key }
-func (t *instance) Scrollback() []byte      { return t.scrollback.Bytes() }
-func (t *instance) ID() string              { return t.id.String() }
-func (t *instance) Container() string       { return t.container }
-func (t *instance) Command() string         { return t.command }
-func (t *instance) TTY() bool               { return t.tty }
-func (t *instance) CreatedAt() time.Time    { return t.createdAt }
+
+// ExitMessage returns the exit message for the terminal instance.
+func (t *instance) ExitMessage() string { return t.exitMessage }
+
+// Active returns if the terminal is currenly active. Active terminals
+// are non-TTY commands that are still streaming output OR tty terminals
+// that have not been exited.
+func (t *instance) Active() bool { return t.ctx.Err() == nil }
+
+// Stop stops the terminal from attempting to read/write to stdout/in streams.
+// Calling stop will also cause the PTY to return an io.ErrClosedPipe from the PTY
+// Read command.
+func (t *instance) Stop() { t.pty.cancelFn() }
+
+// Key returns the store.Key for the Pod that this terminal is associated with.
+func (t *instance) Key() store.Key { return t.key }
+
+// Scrollback returns the scrollback buffer for the terminal instance. Scrollback buffer
+// is populated by calling Read.
+func (t *instance) Scrollback() []byte { return t.scrollback.Bytes() }
+
+// ID returns the ID for the termianl. This is a UUID returned as a string.
+func (t *instance) ID() string { return t.id.String() }
+
+// Container returns the container name that the terminal is associated with.
+func (t *instance) Container() string { return t.container }
+
+// Command returns the command that was used to stat this terminal.
+func (t *instance) Command() string { return t.command }
+
+// TTY returns a boolean if this terminal was started as a TTY.
+func (t *instance) TTY() bool { return t.tty }
+
+// CreatedAt returns the date/time this terminal was created.
+func (t *instance) CreatedAt() time.Time { return t.createdAt }
 
 func (t *instance) Stdin() io.Reader  { return t.pty }
 func (t *instance) Stdout() io.Writer { return t.pty }

@@ -18,6 +18,7 @@ import (
 )
 
 const (
+	readBufferSize            = 4096
 	RequestTerminalScrollback = "sendTerminalScrollback"
 	RequestTerminalCommand    = "sendTerminalCommand"
 	RequestTerminalResize     = "sendTerminalResize"
@@ -106,7 +107,7 @@ func (s *terminalStateManager) SendTerminalCommand(state octant.State, payload a
 	if !ok {
 		return errors.New(fmt.Sprintf("terminal %s not found", terminalID))
 	}
-	return t.Exec([]byte(key))
+	return t.Write([]byte(key))
 }
 
 func (s *terminalStateManager) SendTerminalScrollback(state octant.State, payload action.Payload) error {
@@ -134,7 +135,7 @@ func (s *terminalStateManager) runUpdate(state octant.State, client OctantClient
 	return func(ctx context.Context) bool {
 		tm := s.config.TerminalManager()
 		for _, t := range tm.List() {
-			line, err := t.Read()
+			line, err := t.Read(readBufferSize)
 			if err != nil {
 				t.SetExitMessage(fmt.Sprintf("%v\n", err))
 				t.Stop()

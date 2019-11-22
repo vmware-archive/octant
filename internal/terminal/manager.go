@@ -45,7 +45,7 @@ type manager struct {
 var _ Manager = (*manager)(nil)
 
 // NewTerminalManager creates a concrete TerminalMananger
-func NewTerminalManager(ctx context.Context, client cluster.ClientInterface, objectStore store.Store) (*manager, error) {
+func NewTerminalManager(ctx context.Context, client cluster.ClientInterface, objectStore store.Store) (Manager, error) {
 	restClient, err := client.RESTClient()
 	if err != nil {
 		return nil, errors.Wrap(err, "fetching RESTClient")
