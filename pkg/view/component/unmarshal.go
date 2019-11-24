@@ -46,6 +46,11 @@ func unmarshal(to TypedObject) (Component, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal graphviz config")
 		o = t
+	case typeIFrame:
+		t := &IFrame{base: base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal iframe config")
+		o = t
 	case typeLabels:
 		t := &Labels{base: base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
