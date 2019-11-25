@@ -57,6 +57,8 @@ import { ContentFilterComponent } from './components/content-filter/content-filt
 import { NgTerminalModule } from 'ng-terminal';
 import { TerminalComponent } from 'src/app/components/terminal/terminal.component';
 import { IFrameComponent } from './components/iframe/iframe.component';
+import { SliderViewComponent } from './components/slider-view/slider-view.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 export function hljsLanguages() {
   return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
@@ -109,8 +111,10 @@ export function hljsLanguages() {
     AlertComponent,
     ContentFilterComponent,
     TerminalComponent,
+    SliderViewComponent,
   ],
   imports: [
+    BrowserAnimationsModule,
     CommonModule,
     ClarityModule,
     FormsModule,
