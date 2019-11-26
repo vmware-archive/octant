@@ -11,7 +11,7 @@ tags: ['Bryan Liles']
 ---
 In a perfect world, you would deploy applications to clusters and nothing else would be a problem. In the Kubernetes world, it isn’t that simple yet. Because Kubernetes workloads are composed of multiple objects, even simple actions can be complex. This complexity is why we created and open sourced [Octant](https://github.com/vmware-tanzu/octant), a developer-centric web interface for Kubernetes that lets you inspect a Kubernetes cluster on which applications reside. [Check out Octant on GitHub](https://github.com/vmware-tanzu/octant).
 
-{% youtube jUuZxgjyPPc %}
+{% youtube jUuZxgjyPPc "octant demo" %}
 
 To help a developer better understand the state of the application running inside the cluster, Octant’s dashboard allows you to navigate through your namespaces and the objects they contain. It lets you visualize the relativity of objects and resources. Unlike the Kubernetes Dashboard, Octant runs locally on your workstation and uses your Kubernetes credentials to access the cluster, an approach that avoids a whole class of security concerns.
 
