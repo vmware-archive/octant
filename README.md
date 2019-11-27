@@ -121,10 +121,9 @@ Start running Octant:
 
 Octant should immediately launch your default web browser on `127.0.0.1:7777`.
 
-Or to run it on a specific host and fixed port:
-`$ OCTANT_LISTENER_ADDR=0.0.0.0:8900 octant`
+Octant uses the default web browser on the system to act as the UI client. In the future Octant will ship with a UI.
 
-For configuring Octant, setting up a development environment, or running tests, refer to the [documentation](https://octant.dev/docs/master).
+For setting extra configuration such as what kubeconfig or context to use at startup, refer to the [documentation](https://octant.dev/docs/master).
 
 ## Plugins
 

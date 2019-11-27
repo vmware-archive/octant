@@ -118,26 +118,26 @@ func newOctantCmd(version string) *cobra.Command {
 
 	// All flags can also be environment variables by adding the OCTANT_ prefix
 	// and replacing - with _. Example: OCTANT_DISABLE_CLUSTER_OVERVIEW
-	octantCmd.Flags().StringP("namespace", "n", "", "initial namespace")
-	octantCmd.Flags().String("ui-url", "", "dashboard url")
-	octantCmd.Flags().CountVarP(&verboseLevel, "verbosity", "v", "verbosity level")
+	octantCmd.Flags().SortFlags = false
+
 	octantCmd.Flags().StringP("context", "", "", "initial context")
-	octantCmd.Flags().IntP("klog-verbosity", "", 0, "klog verbosity level")
-	octantCmd.Flags().Float32P("client-qps", "", 200, "maximum QPS for client")
-	octantCmd.Flags().IntP("client-burst", "", 400, "maximum burst for client throttle")
-
-	octantCmd.Flags().StringP("plugin-path", "", "", "plugin path")
-	octantCmd.Flags().StringP("local-content", "", "", "local content path")
-	octantCmd.Flags().StringP("listener-addr", "", "", "listener address for the octant frontend")
-	octantCmd.Flags().StringP("accepted-hosts", "", "", "accepted hosts list")
-	octantCmd.Flags().StringP("proxy-frontend", "", "", "url to send frontend request to, useful for development")
-
-	octantCmd.Flags().BoolP("enable-opencensus", "c", false, "enable open census")
-	octantCmd.Flags().BoolP("enable-feature-applications", "", false, "enable applications feature")
 	octantCmd.Flags().BoolP("disable-cluster-overview", "", false, "disable cluster overview")
-	octantCmd.Flags().BoolP("disable-open-browser", "", false, "disable automatic launching of the browser")
-
+	octantCmd.Flags().BoolP("enable-feature-applications", "", false, "enable applications feature")
 	octantCmd.Flags().String("kubeconfig", "", "absolute path to kubeConfig file")
+	octantCmd.Flags().StringP("namespace", "n", "", "initial namespace")
+	octantCmd.Flags().StringP("plugin-path", "", "", "plugin path")
+	octantCmd.Flags().CountVarP(&verboseLevel, "verbosity", "v", "verbosity level")
+
+	octantCmd.Flags().StringP("accepted-hosts", "", "", "accepted hosts list [DEV]")
+	octantCmd.Flags().Float32P("client-qps", "", 200, "maximum QPS for client [DEV]")
+	octantCmd.Flags().IntP("client-burst", "", 400, "maximum burst for client throttle [DEV]")
+	octantCmd.Flags().BoolP("disable-open-browser", "", false, "disable automatic launching of the browser [DEV]")
+	octantCmd.Flags().BoolP("enable-opencensus", "c", false, "enable open census [DEV]")
+	octantCmd.Flags().IntP("klog-verbosity", "", 0, "klog verbosity level [DEV]")
+	octantCmd.Flags().StringP("listener-addr", "", "", "listener address for the octant frontend [DEV]")
+	octantCmd.Flags().StringP("local-content", "", "", "local content path [DEV]")
+	octantCmd.Flags().StringP("proxy-frontend", "", "", "url to send frontend request to [DEV]")
+	octantCmd.Flags().String("ui-url", "", "dashboard url [DEV]")
 
 	return octantCmd
 }
