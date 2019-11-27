@@ -68,7 +68,7 @@ Octant is a tool for developers to understand how applications run on a Kubernet
    scoop bucket add extras
    ```
 
- 2. Install using scoop.
+2. Install using scoop.
 
    ```sh
    scoop install octant
