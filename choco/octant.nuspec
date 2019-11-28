@@ -19,7 +19,7 @@
     <mailingListUrl>https://groups.google.com/group/project-octant</mailingListUrl>
     <bugTrackerUrl>https://github.com/vmware-tanzu/octant/issues</bugTrackerUrl>
     <tags>octant kubernetes kubectl heptio dashboard pod tanzu</tags>
-    <summary>A web-based, highly extensible platform for developers to better understand the complexity of Kubernetes clusters.
+    <summary>A highly extensible platform for developers to better understand the complexity of Kubernetes clusters.
 </summary>
 <description><![CDATA[Octant is a tool for developers to understand how applications run on a Kubernetes cluster. It aims to be part of the developer's toolkit for gaining insight and approaching complexity found in Kubernetes. Octant offers a combination of introspective tooling, cluster navigation, and object management along with a plugin system to further extend its capabilities.
 

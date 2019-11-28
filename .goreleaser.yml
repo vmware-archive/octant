@@ -25,7 +25,7 @@ nfpms:
     vendor: "VMware"
     homepage: "https://github.com/vmware-tanzu/octant"
     maintainer: Octant Maintainers <project-octant@googlegroups.com>
-    description: "A web-based, highly extensible platform for developers to better understand the complexity of Kubernetes clusters"
+    description: "A highly extensible platform for developers to better understand the complexity of Kubernetes clusters"
     license: "Apache 2.0"
     name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}-{{.Arch}}"
     replacements:

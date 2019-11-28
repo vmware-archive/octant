@@ -9,6 +9,44 @@
 * [mockgen](https://github.com/golang/mock) - generating go files used for testing
 * [protoc](https://github.com/golang/protobuf) - generate go code compatible with gRPC
 
+These build tools can be installed via Makefile with `go run build.go go-install`.
+
+A development binary can be built by `go run build.go build`.
+
+For UI changes, see the [README]({{ site.gh_repo }}/tree/master/web) located in `web/`.
+
+If Docker and [Drone](/docs/drone) are installed, tests and build steps can run in a containerized environment.
+
+### Developer Variables
+
+These variables are for aiding in the development of Octant. They should not be needed for normal operation of Octant. These variables are subject to change and/or removal at anytime and will not follow a deprecation process.
+
+* `OCTANT_DISABLE_OPEN_BROWSER` - set to a true value if you do not want the browser launched when the dashboard starts up.
+* `OCTANT_DISABLE_CLUSTER_OVERVIEW` - set to a true value if you do not want the cluster overview module to load.
+* `OCTANT_LISTENER_ADDR` - set to address you want dashboard service to start on. (e.g. `localhost:8080`)
+* `OCTANT_ACCEPTED_HOSTS` - set to comma-separated string of hosts to be accepted. (e.g. `demo.octant.example.com,awesome.octant.zr`)
+* `OCTANT_LOCAL_CONTENT` - set to a directory and dash will serve content responses from here. An example directory lives in `examples/content`
+
+## e2e Testing
+
+Cypress will load the dashboard from port 7777. Navigate to `web/` then install the Cypress binary with:
+
+```sh
+npm install cypress --save-dev
+```
+
+Run the test from the command line with the option of specifying a browser or electron:
+
+```sh
+$(npm bin)/cypress run -b chrome
+```
+
+Starts the interactive launcher to load tests in `/cypress`.
+
+```sh
+$(npm bin)/cypress open
+```
+
 ## Quick Start
 
 ```sh

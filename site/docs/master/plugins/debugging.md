@@ -17,9 +17,6 @@ When starting the dashboard, the logs will show a list of registered plugins and
 
 The UI provides a table of all active port forwarding with links to the running pod. Once a port forward is active, a URL will be available next to the container port.
 
-## How can Octant be deployed through a proxy?
-
-Set the environment variables `OCTANT_LISTENER_ADDR` and `OCTANT_ACCEPTED_HOSTS` to configure Octant to accept requests from a different address or host.
 
 ## What RBAC permissions are needed to view a Kubernetes object?
 
