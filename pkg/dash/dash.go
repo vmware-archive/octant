@@ -266,6 +266,12 @@ func initModules(ctx context.Context, dashConfig config.Dash, namespace string, 
 
 	list = append(list, overviewModule)
 
+	paneOptions := pane.Options{}
+	paneModule, err := pane.New()
+	if err != nil {
+		return nil, errors.Wrap(err, "create pane")
+	}
+
 	if !options.DisableClusterOverview {
 		clusterOverviewOptions := clusteroverview.Options{
 			DashConfig: dashConfig,

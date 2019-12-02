@@ -20,9 +20,9 @@ type TerminalDetails struct {
 
 // TerminalConfig holds a terminal config.
 type TerminalConfig struct {
-	Namespace string            `json:"namespace"`
-	Name      string            `json:"name"`
-	Terminals []TerminalDetails `json:"terminals"`
+	Namespace string          `json:"namespace"`
+	Name      string          `json:"name"`
+	Details   TerminalDetails `json:"terminal"`
 }
 
 type Terminal struct {
@@ -31,13 +31,13 @@ type Terminal struct {
 }
 
 // NewTerminal creates a terminal component.
-func NewTerminal(namespace, name string, details []TerminalDetails) *Terminal {
+func NewTerminal(namespace, name string, details TerminalDetails) *Terminal {
 	return &Terminal{
 		base: newBase(typeTerminal, TitleFromString(fmt.Sprintf("%s / %s", namespace, name))),
 		Config: TerminalConfig{
 			Namespace: namespace,
 			Name:      name,
-			Terminals: details,
+			Details:   details,
 		},
 	}
 }
