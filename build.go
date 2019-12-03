@@ -138,7 +138,12 @@ func generate() {
 func build() {
 	newpath := filepath.Join(".", "build")
 	os.MkdirAll(newpath, 0755)
-	runCmd("go", nil, "build", "-o", "build/octant", GO_FLAGS, "-v", "./cmd/octant")
+
+	artifact := "octant"
+	if runtime.GOOS == "windows" {
+		artifact = "octant.exe"
+	}
+	runCmd("go", nil, "build", "-o", "build/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
 }
 
 func runDev() {
