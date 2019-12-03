@@ -27,14 +27,16 @@ func NewPaneDescriber(dashConfig config.Dash) *PaneDescriber {
 }
 
 func (p *PaneDescriber) Describe(ctx context.Context, namespace string, options describer.Options) (component.ContentResponse, error) {
-	pane, err := p.paneFactory(ctx, namespace, options)
-	if err != nil {
-		return component.EmptyContentResponse, err
-	}
+	// pane, err := p.paneFactory(ctx, namespace, options)
+	// if err != nil {
+	// 	return component.EmptyContentResponse, err
+	// }
 
 	resp := component.ContentResponse{
-		Title:      nil,
-		Components: pane,
+		Title: nil,
+		Components: []component.Component{
+			component.NewFlexLayout("testing"),
+		},
 	}
 
 	return resp, nil
@@ -68,7 +70,15 @@ func paneFactory(ctx context.Context, namespace string, options describer.Option
 }
 
 func (p *PaneDescriber) PathFilters() []describer.PathFilter {
-	return nil
+	PathFilters := []describer.PathFilter{
+		*describer.NewPathFilter("/", p),
+	}
+
+	// for _, child := range p.describers {
+	// 	PathFilters = append(PathFilters, child.PathFilters()...)
+	// }
+
+	return PathFilters
 }
 
 func (p *PaneDescriber) Reset(ctx context.Context) error {
