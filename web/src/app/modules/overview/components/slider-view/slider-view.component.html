@@ -6,6 +6,18 @@ SPDX-License-Identifier: Apache-2.0 -->
         <clr-icon shape="angle" [class]="animationState"></clr-icon>
     </a>
     <div class="status-view--content">
-        <ng-content></ng-content>
+        <clr-tabs *ngIf="view.config.tabs">
+            <clr-tab *ngFor="let tab of view.config.tabs; trackBy: identifyTab">
+                <button clrTabLink class="tab-button" (click)="clickTab(tab.accessor)">
+                    {{ tab.name }}
+                    <clr-icon shape="times" *ngIf="tab.isClosable" (click)="closeTab(tab.accessor)"></clr-icon>
+                </button>
+                <ng-template [clrIfActive]="activeTab === tab.accessor">
+                    <clr-tab-content>
+                        <app-content-switcher [view]="tab"></app-content-switcher>
+                    </clr-tab-content>
+                </ng-template>
+            </clr-tab>
+        </clr-tabs>
     </div>
 </div>

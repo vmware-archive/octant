@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { View, ExtensionView } from 'src/app/models/content';
 import { SlideInOutAnimation } from './slide-in-out.animation';
 
 @Component({
@@ -13,6 +14,8 @@ import { SlideInOutAnimation } from './slide-in-out.animation';
   animations: [SlideInOutAnimation],
 })
 export class SliderViewComponent {
+  @Input() view: ExtensionView;
+
   animationState = 'out';
 
   slide() {

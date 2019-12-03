@@ -7,6 +7,7 @@ export interface ContentResponse {
 }
 
 export interface Content {
+  extensionComponent: ExtensionView;
   viewComponents: View[];
   title: View[];
   iconName?: string;
@@ -358,5 +359,11 @@ export interface IFrameView extends View {
   config: {
     url: string;
     title: string;
+  };
+}
+
+export interface ExtensionView extends View {
+  config: {
+    tabs: View[];
   };
 }

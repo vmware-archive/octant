@@ -13,6 +13,7 @@ const (
 	typeContainers         = "containers"
 	typeError              = "error"
 	typeExpressionSelector = "expressionSelector"
+	typeExtension          = "extension"
 	typeFlexLayout         = "flexlayout"
 	typeGraphviz           = "graphviz"
 	typeIFrame             = "iframe"

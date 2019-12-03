@@ -19,7 +19,7 @@ export interface ContentUpdate {
 }
 
 const emptyContentResponse: ContentResponse = {
-  content: { viewComponents: [], title: [] },
+  content: { extensionComponent: null, viewComponents: [], title: [] },
 };
 
 @Injectable({

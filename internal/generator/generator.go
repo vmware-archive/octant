@@ -109,5 +109,10 @@ func (g *Generator) Generate(ctx context.Context, contentPath string, opts Optio
 		return component.EmptyContentResponse, err
 	}
 
+	extension := component.NewExtension()
+	extension.AddTab(component.NewFlexLayout("testing"))
+	extension.SetAccessor("testing")
+	cResponse.SetExtension(extension)
+
 	return cResponse, nil
 }
