@@ -105,8 +105,12 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 		return err
 	}
 
+	overviewExtDescriber := NewExtDescriber()
+	rootDescriber.Add(overviewExtDescriber)
+
 	pathMatcher := describer.NewPathMatcher("overview")
 	for _, pf := range rootDescriber.PathFilters() {
+		co.logger.Debugf("path: %s", pf.String())
 		pathMatcher.Register(ctx, pf)
 	}
 

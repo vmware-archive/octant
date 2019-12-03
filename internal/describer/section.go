@@ -31,6 +31,10 @@ func NewSection(p, title string, describers ...Describer) *Section {
 	}
 }
 
+func (d *Section) Add(describer Describer) {
+	d.describers = append(d.describers, describer)
+}
+
 // Describe generates content.
 func (d *Section) Describe(ctx context.Context, namespace string, options Options) (component.ContentResponse, error) {
 	list, err := d.Component(ctx, namespace, options)

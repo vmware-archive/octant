@@ -36,7 +36,6 @@ import (
 	"github.com/vmware-tanzu/octant/internal/modules/configuration"
 	"github.com/vmware-tanzu/octant/internal/modules/localcontent"
 	"github.com/vmware-tanzu/octant/internal/modules/overview"
-	"github.com/vmware-tanzu/octant/internal/modules/pane"
 	"github.com/vmware-tanzu/octant/internal/objectstore"
 	"github.com/vmware-tanzu/octant/internal/portforward"
 	"github.com/vmware-tanzu/octant/internal/terminal"
@@ -266,14 +265,6 @@ func initModules(ctx context.Context, dashConfig config.Dash, namespace string, 
 	}
 
 	list = append(list, overviewModule)
-
-	// TODO: Rename to overviewExt
-	paneOptions := pane.Options{
-		DashConfig: dashConfig,
-	}
-	paneModule := pane.New(ctx, paneOptions)
-
-	list = append(list, paneModule)
 
 	if !options.DisableClusterOverview {
 		clusterOverviewOptions := clusteroverview.Options{
