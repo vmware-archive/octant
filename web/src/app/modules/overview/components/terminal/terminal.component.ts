@@ -22,9 +22,8 @@ import { WebsocketService } from '../../services/websocket/websocket.service';
   selector: 'app-terminal',
   templateUrl: './terminal.component.html',
 })
-export class TerminalComponent implements OnInit, OnDestroy, AfterViewInit {
+export class TerminalComponent implements OnDestroy, AfterViewInit {
   private terminalStream: TerminalOutputStreamer;
-  selectedTerminal: TerminalDetail;
   @Input() view: TerminalView;
   @ViewChild('terminal', { static: true }) child: NgTerminal;
   trackByIdentity = trackByIdentity;
@@ -38,10 +37,6 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewInit {
     return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
-  ngOnInit() {
-    this.initSelectedTerminal();
-  }
-
   ngOnDestroy(): void {
     if (this.terminalStream) {
       this.terminalStream.scrollback.unsubscribe();
@@ -51,7 +46,7 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    if (this.selectedTerminal && this.view) {
+    if (this.view) {
       this.initSize();
       this.initStream();
     }
@@ -59,7 +54,7 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.child.keyEventInput.subscribe(e => {
       this.wss.sendMessage('sendTerminalCommand', {
-        terminalID: this.selectedTerminal.uuid,
+        terminalID: this.view.config.terminal.uuid,
         key: e.key,
       });
     });
@@ -76,20 +71,12 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewInit {
     this.initStream();
   }
 
-  initSelectedTerminal() {
-    if (this.view) {
-      if (this.view.config.terminals && this.view.config.terminals.length > 0) {
-        this.selectedTerminal = this.view.config.terminals[0];
-      }
-    }
-  }
-
   enableResize() {
     let timeOut = null;
     const resizeDebounce = (e: { cols: number; rows: number }) => {
       const resize = () => {
         this.wss.sendMessage('sendTerminalResize', {
-          terminalID: this.selectedTerminal.uuid,
+          terminalID: this.view.config.terminal.uuid,
           rows: e.rows,
           cols: e.cols,
         });
@@ -105,7 +92,7 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewInit {
 
   initSize() {
     this.wss.sendMessage('sendTerminalResize', {
-      terminalID: this.selectedTerminal.uuid,
+      terminalID: this.view.config.terminal.uuid,
       rows: this.child.underlying.rows,
       cols: this.child.underlying.cols,
     });
@@ -114,18 +101,14 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewInit {
   initStream() {
     const namespace = this.view.config.namespace;
     const name = this.view.config.name;
+    const terminal = this.view.config.terminal;
 
-    if (
-      namespace &&
-      name &&
-      this.selectedTerminal.container &&
-      this.selectedTerminal.uuid
-    ) {
+    if (namespace && name && terminal.container && terminal.uuid) {
       this.terminalStream = this.terminalService.createStream(
         namespace,
         name,
-        this.selectedTerminal.container,
-        this.selectedTerminal.uuid
+        terminal.container,
+        terminal.uuid
       );
       this.terminalStream.scrollback.subscribe((scrollback: string) => {
         if (scrollback && scrollback.length !== 0) {

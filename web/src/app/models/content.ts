@@ -316,7 +316,7 @@ export interface TerminalView extends View {
   config: {
     namespace: string;
     name: string;
-    terminals: TerminalDetail[];
+    terminal: TerminalDetail;
   };
 }
 
