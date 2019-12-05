@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0 -->
     <clr-icon shape="angle" [class]="animationState"></clr-icon>
   </a>
   <div class="status-view--content">
-    <app-object-tabs [views]="view.config.tabs"></app-object-tabs>
+    <ng-container *ngIf="view?.config.tabs">
+      <app-object-tabs [views]="view.config.tabs"></app-object-tabs>
+    </ng-container>
   </div>
 </div>

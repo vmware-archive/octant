@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ClarityModule } from '@clr/angular';
@@ -128,5 +128,6 @@ export function hljsLanguages() {
     NgTerminalModule,
   ],
   exports: [ContextSelectorComponent, DefaultPipe, SafePipe],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class OverviewModule {}

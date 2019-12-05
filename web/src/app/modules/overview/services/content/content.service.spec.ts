@@ -52,7 +52,7 @@ describe('ContentService', () => {
 
   describe('content update', () => {
     const update: ContentUpdate = {
-      content: { title: [], viewComponents: [] },
+      content: { extensionComponent: null, title: [], viewComponents: [] },
       namespace: 'default',
       contentPath: '/path',
       queryParams: {},

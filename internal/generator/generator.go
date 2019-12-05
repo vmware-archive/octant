@@ -110,7 +110,27 @@ func (g *Generator) Generate(ctx context.Context, contentPath string, opts Optio
 	}
 
 	extension := component.NewExtension()
-	extension.AddTab(component.NewFlexLayout("Terminals"))
+
+	terminals := options.TerminalManager().List()
+	tfl := component.NewFlexLayout("Terminals")
+
+	for _, t := range terminals {
+		details := component.TerminalDetails{
+			Container: t.Container(),
+			Command:   t.Command(),
+			UUID:      t.ID(),
+			CreatedAt: t.CreatedAt(),
+		}
+
+		tfl.AddSections([]component.FlexLayoutItem{
+			{
+				Width: component.WidthFull,
+				View:  component.NewTerminal(namespace, t.Command(), details),
+			},
+		})
+	}
+
+	extension.AddTab(tfl)
 	extension.SetAccessor("Terminals")
 	cResponse.SetExtension(extension)
 

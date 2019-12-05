@@ -15,7 +15,7 @@ import { IconService } from './services/icon.service';
 
 class ContentServiceMock {
   current = new BehaviorSubject<ContentResponse>({
-    content: { viewComponents: [], title: [] },
+    content: { extensionComponent: null, viewComponents: [], title: [] },
   });
   defaultPath = new BehaviorSubject<string>('/path');
 }
