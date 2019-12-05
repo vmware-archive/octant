@@ -110,8 +110,8 @@ func (g *Generator) Generate(ctx context.Context, contentPath string, opts Optio
 	}
 
 	extension := component.NewExtension()
-	extension.AddTab(component.NewFlexLayout("testing"))
-	extension.SetAccessor("testing")
+	extension.AddTab(component.NewFlexLayout("Terminals"))
+	extension.SetAccessor("Terminals")
 	cResponse.SetExtension(extension)
 
 	return cResponse, nil
