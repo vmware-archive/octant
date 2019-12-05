@@ -37,32 +37,32 @@ func (m *MockManager) EXPECT() *MockManagerMockRecorder {
 }
 
 // List mocks base method
-func (m *MockManager) List() []terminal.Instance {
+func (m *MockManager) List(namespace string) []terminal.Instance {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List")
+	ret := m.ctrl.Call(m, "List", namespace)
 	ret0, _ := ret[0].([]terminal.Instance)
 	return ret0
 }
 
 // List indicates an expected call of List
-func (mr *MockManagerMockRecorder) List() *gomock.Call {
+func (mr *MockManagerMockRecorder) List(namespace interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockManager)(nil).List))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockManager)(nil).List), namespace)
 }
 
 // Get mocks base method
-func (m *MockManager) Get(ID string) (terminal.Instance, bool) {
+func (m *MockManager) Get(id string) (terminal.Instance, bool) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ID)
+	ret := m.ctrl.Call(m, "Get", id)
 	ret0, _ := ret[0].(terminal.Instance)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get
-func (mr *MockManagerMockRecorder) Get(ID interface{}) *gomock.Call {
+func (mr *MockManagerMockRecorder) Get(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockManager)(nil).Get), ID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockManager)(nil).Get), id)
 }
 
 // Delete mocks base method

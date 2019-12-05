@@ -16,8 +16,6 @@ import (
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	"github.com/vmware-tanzu/octant/internal/describer"
-	"github.com/vmware-tanzu/octant/internal/terminal"
-	terminalFake "github.com/vmware-tanzu/octant/internal/terminal/fake"
 	objectStoreFake "github.com/vmware-tanzu/octant/pkg/store/fake"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -26,7 +24,6 @@ func Test_realGenerator_Generate(t *testing.T) {
 	textOther := component.NewText("other")
 	textFoo := component.NewText("foo")
 	textSub := component.NewText("sub")
-	extension := component.NewExtension()
 
 	describers := []describer.Describer{
 		describer.NewStubDescriber("/other", textOther),
@@ -49,8 +46,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 			name: "dynamic content",
 			path: "/foo",
 			expected: component.ContentResponse{
-				Components:         []component.Component{textFoo},
-				ExtensionComponent: extension,
+				Components: []component.Component{textFoo},
 			},
 		},
 		{
@@ -62,8 +58,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 			name: "sub path",
 			path: "/sub/foo",
 			expected: component.ContentResponse{
-				Components:         []component.Component{textSub},
-				ExtensionComponent: extension,
+				Components: []component.Component{textSub},
 			},
 		},
 	}
@@ -83,14 +78,6 @@ func Test_realGenerator_Generate(t *testing.T) {
 
 			objectStore := objectStoreFake.NewMockStore(controller)
 			dashConfig.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
-
-			terminalManager := terminalFake.NewMockManager(controller)
-			dashConfig.EXPECT().TerminalManager().Return(terminalManager).AnyTimes()
-
-			if !tc.isErr {
-				terminalList := []terminal.Instance{}
-				terminalManager.EXPECT().List().Return(terminalList).AnyTimes()
-			}
 
 			ctx := context.Background()
 			pathMatcher := describer.NewPathMatcher("module")

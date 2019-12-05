@@ -1,11 +1,11 @@
 <!-- Copyright (c) 2019 the Octant contributors. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0 -->
 
-<div class="status-view" [@SlideInOutAnimation]="animationState">
+<div class="status-view" mwlResizable [ngStyle]="style" [enableGhostResize]="true" [resizeEdges]="{bottom: false, right: false, top: true, left: false}" [@SlideInOutAnimation]="animationState" (resizeEnd)="onResizeTop($event)">
   <a class="status-view--trigger" (click)="slide()">
     <clr-icon shape="angle" [class]="animationState"></clr-icon>
   </a>
-  <div class="status-view--content">
+  <div class="status-view--content" mwlResizeHandle [resizeEdges]="{ top: true }">
     <ng-container *ngIf="view?.config.tabs">
       <app-object-tabs [views]="view.config.tabs"></app-object-tabs>
     </ng-container>

@@ -17,9 +17,7 @@ $tabsHeight: 2rem;
   flex-direction: column;
   align-items: flex-end;
   opacity: 1;
-
-  //background-color: #0d151b;
-
+  
   // TODO: delete this. host-context isn't used in all browsers
   // Status's color variables for Light Theme.
   :host-context(body) {

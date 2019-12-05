@@ -33,6 +33,7 @@
     "@ng-select/ng-select": "^2.20.0",
     "@types/cytoscape": "^3.8.2",
     "@webcomponents/custom-elements": "^1.0.0",
+    "angular-resizable-element": "^3.2.6",
     "core-js": "^2.5.4",
     "cytoscape": "^3.10.0",
     "cytoscape-dagre": "^2.2.2",

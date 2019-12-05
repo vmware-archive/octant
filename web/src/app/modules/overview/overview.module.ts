@@ -10,6 +10,7 @@ import json from 'highlight.js/lib/languages/json';
 import yaml from 'highlight.js/lib/languages/yaml';
 import { HighlightModule } from 'ngx-highlightjs';
 import { MarkdownModule } from 'ngx-markdown';
+import { ResizableModule } from 'angular-resizable-element';
 
 import { AnnotationsComponent } from './components/annotations/annotations.component';
 import { CardListComponent } from './components/card-list/card-list.component';
@@ -126,6 +127,7 @@ export function hljsLanguages() {
     ReactiveFormsModule,
     MarkdownModule.forChild(),
     NgTerminalModule,
+    ResizableModule,
   ],
   exports: [ContextSelectorComponent, DefaultPipe, SafePipe],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
