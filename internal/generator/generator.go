@@ -37,7 +37,8 @@ var _ Interface = (*Generator)(nil)
 
 // Options are additional options to pass a Generator
 type Options struct {
-	LabelSet *kLabels.Set
+	LabelSet               *kLabels.Set
+	ExtensionDescriberFunc func(path, namespace string, options describer.Options) (*component.Extension, error)
 }
 
 // NewGenerator creates a Generator.
@@ -109,30 +110,13 @@ func (g *Generator) Generate(ctx context.Context, contentPath string, opts Optio
 		return component.EmptyContentResponse, err
 	}
 
-	extension := component.NewExtension()
-	terminals := options.TerminalManager().List()
-
-	for _, t := range terminals {
-		tfl := component.NewFlexLayout(t.Command())
-		tfl.SetAccessor(t.ID())
-
-		details := component.TerminalDetails{
-			Container: t.Container(),
-			Command:   t.Command(),
-			UUID:      t.ID(),
-			CreatedAt: t.CreatedAt(),
+	if opts.ExtensionDescriberFunc != nil {
+		extensionContent, err := opts.ExtensionDescriberFunc(contentPath, namespace, options)
+		if err != nil {
+			return component.EmptyContentResponse, err
 		}
-
-		tfl.AddSections([]component.FlexLayoutItem{
-			{
-				Width: component.WidthFull,
-				View:  component.NewTerminal(namespace, t.Key().Name, details),
-			},
-		})
-		extension.AddTab(tfl)
+		cResponse.SetExtension(extensionContent)
 	}
-
-	cResponse.SetExtension(extension)
 
 	return cResponse, nil
 }

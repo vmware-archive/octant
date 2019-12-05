@@ -134,7 +134,7 @@ func (s *terminalStateManager) Start(ctx context.Context, state octant.State, cl
 func (s *terminalStateManager) runUpdate(state octant.State, client OctantClient) PollerFunc {
 	return func(ctx context.Context) bool {
 		tm := s.config.TerminalManager()
-		for _, t := range tm.List() {
+		for _, t := range tm.List(state.GetNamespace()) {
 			line, err := t.Read(readBufferSize)
 			if err != nil {
 				t.SetExitMessage(fmt.Sprintf("%v\n", err))

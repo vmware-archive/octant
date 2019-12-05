@@ -28,8 +28,8 @@ import (
 
 // Manager defines the interface for querying terminal instance.
 type Manager interface {
-	List() []Instance
-	Get(ID string) (Instance, bool)
+	List(namespace string) []Instance
+	Get(id string) (Instance, bool)
 	Delete(id string)
 	Create(ctx context.Context, logger log.Logger, key store.Key, container string, command string, tty bool) (Instance, error)
 	StopAll() error
@@ -122,10 +122,16 @@ func (tm *manager) Get(id string) (Instance, bool) {
 	return v.(Instance), ok
 }
 
-func (tm *manager) List() []Instance {
+func (tm *manager) List(namespace string) []Instance {
 	instances := []Instance{}
 	tm.instances.Range(func(k interface{}, v interface{}) bool {
-		instances = append(instances, v.(Instance))
+		instance := v.(Instance)
+		if namespace == "" {
+			instances = append(instances, instance)
+
+		} else if instance.Key().Namespace == namespace {
+			instances = append(instances, instance)
+		}
 		return true
 	})
 	sort.Slice(instances, func(i, j int) bool {
