@@ -26,14 +26,16 @@ export class SliderViewComponent {
   }
 
   onResizeTop(event: ResizeEvent): void {
-    this.style = {
-      position: 'fixed',
-      top: `${event.rectangle.top}px`,
-      height: `${event.rectangle.height}px`,
-    };
+    if (this.animationState === 'in') {
+      this.style = {
+        top: `${event.rectangle.top}px`,
+        height: `${event.rectangle.height}px`,
+        cursor: `ns-resize`,
+      };
 
-    if (this.style !== {}) {
-      this.animationState = 'in';
+      if (this.style !== {}) {
+        this.animationState = 'in';
+      }
     }
   }
 }
