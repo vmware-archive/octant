@@ -79,7 +79,7 @@ func ToOwnerReferences(t *testing.T, object runtime.Object) []metav1.OwnerRefere
 	}
 }
 
-//Time generates a test time
+// Time generates a test time
 func Time() time.Time {
 	return time.Unix(1547211430, 0)
 }

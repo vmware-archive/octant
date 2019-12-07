@@ -1,0 +1,68 @@
+/*!
+ * Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+$base-stroke-width: 1px;
+$thick-stroke-width: $base-stroke-width * 2.5;
+
+
+.donut-ring {
+  stroke: #d2d3d4;
+  stroke-width: $base-stroke-width;
+}
+
+.donut-segment {
+  stroke-width: $base-stroke-width;
+
+  &.ok {
+    stroke: #60b515;
+  }
+  &.warning {
+    stroke: #f57600;
+    stroke-width: $thick-stroke-width;
+  }
+  &.error {
+    stroke: #e12200;
+    stroke-width: $thick-stroke-width;
+  }
+}
+
+.chart-text {
+  font: 16px/1em "Metropolis", Arial, sans-serif;
+  fill: #fff;
+  -moz-transform: translateY(0.25em);
+  -ms-transform: translateY(0.25em);
+  -webkit-transform: translateY(0.25em);
+  transform: translateY(0.25em);
+
+  :host-context(body) {
+    --text-color: #575757;
+  }
+  :host-context(body.dark) {
+    --text-color: #acbac3;
+  }
+
+  .chart-number {
+    font-size: 0.6em;
+    fill: var(--text-color);
+    line-height: 1;
+    text-anchor: middle;
+    -moz-transform: translateY(-0.25em);
+    -ms-transform: translateY(-0.25em);
+    -webkit-transform: translateY(-0.25em);
+    transform: translateY(-0.25em);
+  }
+
+  .chart-label {
+    font-size: 0.2em;
+    fill: var(--text-color);
+    text-transform: uppercase;
+    text-anchor: middle;
+    -moz-transform: translateY(0.7em);
+    -ms-transform: translateY(0.7em);
+    -webkit-transform: translateY(0.7em);
+    transform: translateY(0.7em);
+  }
+}
+

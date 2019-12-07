@@ -8,6 +8,8 @@ package testutil
 import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	batchv1 "k8s.io/api/batch/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -18,9 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-
-	batchv1 "k8s.io/api/batch/v1"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
+	metricsv1beta1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 
 	"github.com/vmware-tanzu/octant/internal/conversion"
 	"github.com/vmware-tanzu/octant/internal/gvk"
@@ -231,6 +231,21 @@ func CreatePod(name string, options ...PodOption) *corev1.Pod {
 	}
 
 	return pod
+}
+
+type PodMetricOption func(metrics *metricsv1beta1.PodMetrics)
+
+func CreatePodMetrics(name string, options ...PodMetricOption) *metricsv1beta1.PodMetrics {
+	m := &metricsv1beta1.PodMetrics{
+		TypeMeta:   genTypeMeta(gvk.PodMetrics),
+		ObjectMeta: genObjectMeta(name, true),
+	}
+
+	for _, option := range options {
+		option(m)
+	}
+
+	return m
 }
 
 // CreateReplicationController creates a replication controller

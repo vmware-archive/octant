@@ -113,7 +113,7 @@ func handlePrint(request *service.PrintRequest) (plugin.PrintResponse, error) {
 
 	// Octant has a component library that can be used to build content for a plugin.
 	// In this case, the plugin is creating a card.
-	podCard := component.NewCard(fmt.Sprintf("Extra Output for %s", u.GetName()))
+	podCard := component.NewCard(component.TitleFromString(fmt.Sprintf("Extra Output for %s", u.GetName())))
 	podCard.SetBody(component.NewMarkdownText("This output was generated from _octant-sample-plugin_"))
 
 	msg := fmt.Sprintf("update from plugin at %s", time.Now().Format(time.RFC3339))
@@ -172,7 +172,7 @@ func handleNavigation(request *service.NavigationRequest) (navigation.Navigation
 func initRoutes(router *service.Router) {
 	gen := func(name, accessor, requestPath string) component.Component {
 		cardBody := component.NewText(fmt.Sprintf("hello from plugin: path %s", requestPath))
-		card := component.NewCard(fmt.Sprintf("My Card - %s", name))
+		card := component.NewCard(component.TitleFromString(fmt.Sprintf("My Card - %s", name)))
 		card.SetBody(cardBody)
 		cardList := component.NewCardList(name)
 		cardList.AddCard(*card)

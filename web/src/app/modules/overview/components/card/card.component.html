@@ -25,9 +25,7 @@
             <h4 class="card-title">{{ title }}</h4>
 
             <div [ngSwitch]="body.metadata.type" class="card-text">
-                <ng-container *ngSwitchCase="'text'">
-                    <app-view-text [view]="body"></app-view-text>
-                </ng-container>
+                <app-content-switcher [view]="body"></app-content-switcher>
             </div>
         </div>
 

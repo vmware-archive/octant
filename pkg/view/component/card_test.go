@@ -5,7 +5,7 @@ import (
 )
 
 func TestCard_SetAlert(t *testing.T) {
-	card := NewCard("card")
+	card := NewCard(TitleFromString("card"))
 
 	alert := Alert{
 		Type:    AlertTypeError,
@@ -14,14 +14,14 @@ func TestCard_SetAlert(t *testing.T) {
 
 	card.SetAlert(alert)
 
-	expected := NewCard("card")
+	expected := NewCard(TitleFromString("card"))
 	expected.Config.Alert = &alert
 
 	AssertEqual(t, expected, card)
 }
 
 func TestCard_AddAction(t *testing.T) {
-	card := NewCard("card")
+	card := NewCard(TitleFromString("card"))
 
 	action := Action{
 		Name:  "action",
@@ -31,27 +31,27 @@ func TestCard_AddAction(t *testing.T) {
 
 	card.AddAction(action)
 
-	expected := NewCard("card")
+	expected := NewCard(TitleFromString("card"))
 	expected.Config.Actions = []Action{action}
 
 	AssertEqual(t, expected, card)
 }
 
 func TestCard_SetBody(t *testing.T) {
-	card := NewCard("card")
+	card := NewCard(TitleFromString("card"))
 
 	body := NewText("body")
 
 	card.SetBody(body)
 
-	expected := NewCard("card")
+	expected := NewCard(TitleFromString("card"))
 	expected.Config.Body = body
 
 	AssertEqual(t, expected, card)
 }
 
 func TestCardList_AddCard(t *testing.T) {
-	card := NewCard("card")
+	card := NewCard(TitleFromString("card"))
 
 	cardList := NewCardList("list")
 	cardList.AddCard(*card)

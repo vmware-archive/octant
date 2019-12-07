@@ -36,6 +36,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/modules/configuration"
 	"github.com/vmware-tanzu/octant/internal/modules/localcontent"
 	"github.com/vmware-tanzu/octant/internal/modules/overview"
+	"github.com/vmware-tanzu/octant/internal/modules/workloads"
 	"github.com/vmware-tanzu/octant/internal/objectstore"
 	"github.com/vmware-tanzu/octant/internal/portforward"
 	"github.com/vmware-tanzu/octant/pkg/action"
@@ -239,6 +240,16 @@ type moduleOptions struct {
 
 func initModules(ctx context.Context, dashConfig config.Dash, namespace string, options Options) ([]module.Module, error) {
 	var list []module.Module
+
+	podViewOptions := workloads.Options{
+		DashConfig: dashConfig,
+	}
+	workloadModule, err := workloads.New(ctx, podViewOptions)
+	if err != nil {
+		return nil, fmt.Errorf("initialize workload module: %w", err)
+	}
+
+	list = append(list, workloadModule)
 
 	if viper.GetBool("enable-feature-applications") {
 		applicationsOptions := applications.Options{
