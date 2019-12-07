@@ -36,9 +36,7 @@ require (
 	github.com/stretchr/testify v1.3.0
 	go.opencensus.io v0.22.1
 	go.uber.org/zap v1.10.0
-	golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8 // indirect
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
-	golang.org/x/tools v0.0.0-20190614205625-5aca471b1d59 // indirect
 	google.golang.org/genproto v0.0.0-20190502173448-54afdca5d873 // indirect
 	google.golang.org/grpc v1.23.0
 	gopkg.in/inf.v0 v0.9.1 // indirect
@@ -48,6 +46,7 @@ require (
 	k8s.io/client-go v0.0.0-20191016230210-14c42cd304d9
 	k8s.io/klog v1.0.0
 	k8s.io/kubernetes v1.14.0
+	k8s.io/metrics v0.0.0-20191016113814-3b1a734dba6e
 	k8s.io/utils v0.0.0-20191010214722-8d271d903fe4
 )
 
