@@ -18,11 +18,17 @@ export class SliderViewComponent {
   @Input() view: ExtensionView;
 
   style: object = {};
+  contentStyle: object = {};
   animationState = 'out';
+  contentHeight: number;
 
   slide() {
     this.animationState = this.animationState === 'out' ? 'in' : 'out';
     this.style = {};
+
+    if (this.contentHeight) {
+      Object.assign(this.style, { height: `${this.contentHeight}px` });
+    }
   }
 
   onResizeTop(event: ResizeEvent): void {
@@ -33,9 +39,10 @@ export class SliderViewComponent {
         cursor: `ns-resize`,
       };
 
-      if (this.style !== {}) {
-        this.animationState = 'in';
-      }
+      this.contentStyle = {
+        height: `${event.rectangle.height}px`,
+      };
+      this.contentHeight = event.rectangle.height;
     }
   }
 }
