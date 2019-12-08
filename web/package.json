@@ -51,6 +51,7 @@
     "ngx-markdown": "^8.1.0",
     "ngx-take-until-destroy": "^5.4.0",
     "rxjs": "~6.5.3",
+    "serialize-javascript": ">=2.1.1",
     "tslib": "^1.9.0",
     "ws": "^7.1.2",
     "zone.js": "~0.9.1"
