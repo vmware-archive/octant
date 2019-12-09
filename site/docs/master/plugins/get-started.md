@@ -49,3 +49,14 @@ This pod has both a Configuration and Status.
 ### Items
 
 A plugin with support for `PrinterItems` allow adding a `FlexLayoutItem` consisting of a width and a view component.
+
+## Uninstall
+
+Plugins can be removed by deleting the plugin binary from `~/.config/octant/plugins`. An example of deleting a plugin is shown below 
+where `octant-sample-plugin` is the plugin that will uninstalled:
+
+```
+rm ~/.config/octant/plugins/octant-sample-plugin
+```
+
+After deleting the plugin binary and restarting Octant, you should no longer see the plugin available as part of the Octant dashboard. 
