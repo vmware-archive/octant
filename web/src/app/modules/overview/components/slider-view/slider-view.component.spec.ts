@@ -7,6 +7,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SliderViewComponent } from './slider-view.component';
+import { OverviewModule } from '../../overview.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('SliderViewComponent', () => {
@@ -15,8 +16,7 @@ describe('SliderViewComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [SliderViewComponent],
-      imports: [BrowserAnimationsModule],
+      imports: [BrowserAnimationsModule, OverviewModule],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
   }));

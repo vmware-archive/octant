@@ -130,6 +130,5 @@ export function hljsLanguages() {
     ResizableModule,
   ],
   exports: [ContextSelectorComponent, DefaultPipe, SafePipe],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class OverviewModule {}
