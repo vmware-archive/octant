@@ -1,10 +1,10 @@
 # Writing Plugins
 
-When you want to extend Octant to do something that is not part of the core functionality you will need to write a plugin. Writing an Octant plugin consists of three main parts. Defining the capabilities, creating handlers, and finally registering and serving the plugin.
+When you want to extend Octant to do something that is not part of the core functionality you will need to write a plugin. Writing an Octant plugin consists of three main parts: defining the capabilities, creating handlers, and registering and serving the plugin.
 
 ## Capabilities
 
-Using `plugin.Capabilities` you can define your desired list of capabilites using GVKs. Octant provides a set of well defined capabilites for plugins. These capabilites directly map to Octant renderers and allows your plugin to inject its own components in to the view.
+Using `plugin.Capabilities` you can define your desired list of capabilites using GVKs. Octant provides a set of well defined capabilites for plugins. These capabilites directly map to Octant renderers and allow your plugin to inject its own components in to the view.
 
 When `plugin.Metadata.IsModule` to true plugins can provide content and navigation entries.
 
@@ -53,12 +53,12 @@ Octant ships with an [example plugin](https://github.com/vmware-tanzu/octant/blo
 
 ## More About Capabilities
 
-Octant provides a well defined set of capabilites for plugins to implement these include:
+Octant provides a well defined set of capabilites for plugins to implement. These include:
 
-* Print support; printing config, status, and items to the overview summary for an object.
-* Tab support; creating a new tab in the overview for an object.
-* Object status; adding object status to a given object.
-* Actions; defining customs actions that route to the plugin.
+* Print support: printing config, status, and items to the overview summary for an object.
+* Tab support: creating a new tab in the overview for an object.
+* Object status: adding object status to a given object.
+* Actions: defining custom actions that route to the plugin.
 
 For plugins that as configured as modules the capabilities also include:
 
@@ -90,7 +90,7 @@ func handlePrint(dashboardClient service.Dashboard, object runtime.Object) (*plu
 
 ## Tab
 
-Adding a new tab via plugin requires a new flexlayout then Tab component. The Name is used in the URL query param, and Contents defines the tab name within the dashboard.
+Adding a new tab via a plugin requires a new flexlayout then Tab component. The Name is used in the URL query param, and Contents defines the tab name within the dashboard.
 
 ```go
 func handleTab(dashboardClient service.Dashboard, object runtime.Object) (*component.Tab, error) {
@@ -134,7 +134,7 @@ func handleObjectStatus(dashboardClient service.Dashboard, object runtime.Object
 
 ## Navigation
 
-Plugins configured as modules can supply navigation entries. These navigation entries will displayed with the application's
+Plugins configured as modules can supply navigation entries. These navigation entries will be displayed with the application's
 navigation.
 
 ```go
@@ -167,7 +167,7 @@ func handleNavigation(dashboardClient service.Dashboard) (navigation.Navigation,
 
 ## Content
 
-Plugins configured as modules can serve content. The content consists of Octant components. wrapped in a `ContentResponse`.
+Plugins configured as modules can serve content. The content consists of Octant components wrapped in a `ContentResponse`.
 The function will receive the currently requested content path and can display content based on that path. 
 
 ```go
@@ -188,4 +188,4 @@ Currently Octant creates a non-configurable base path for your plugin that is de
 /content/plugin-name
 ```
 
-You can create nested paths that route to your module using that base path. Pluings should handle nested paths in the `Content` function and dispatch the responses accordingly.
+You can create nested paths that route to your module using that base path. Plugins should handle nested paths in the `Content` function and dispatch the responses accordingly.
