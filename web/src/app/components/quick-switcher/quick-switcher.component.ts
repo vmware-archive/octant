@@ -87,7 +87,7 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
 
       // TODO(abrand): Hack for focusing on input. Need to figure this out.
       const el = this.el;
-      setTimeout(function() {
+      setTimeout(() => {
         el.nativeElement.querySelector('.filter-input').focus();
       }, 250);
     }

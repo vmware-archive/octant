@@ -23,6 +23,7 @@ import {
 import { WebsocketServiceMock } from './modules/overview/services/websocket/mock';
 import { ClarityIcons } from '@clr/icons';
 import { ThemeSwitchButtonComponent } from './modules/overview/components/theme-switch/theme-switch-button.component';
+import { QuickSwitcherComponent } from './components/quick-switcher/quick-switcher.component';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
@@ -48,6 +49,7 @@ describe('AppComponent', () => {
         ContextSelectorComponent,
         DefaultPipe,
         ThemeSwitchButtonComponent,
+        QuickSwitcherComponent
       ],
     }).compileComponents();
   }));
