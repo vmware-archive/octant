@@ -16,6 +16,7 @@ type TerminalDetails struct {
 	Command   string    `json:"command"`
 	UUID      string    `json:"uuid"`
 	CreatedAt time.Time `json:"createdAt"`
+	Active    bool      `json:"active"`
 }
 
 // TerminalConfig holds a terminal config.

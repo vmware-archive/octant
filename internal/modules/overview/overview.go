@@ -273,6 +273,7 @@ func (co *Overview) extensionDescriber(path, namespace string, options describer
 			Command:   t.Command(),
 			UUID:      t.ID(),
 			CreatedAt: t.CreatedAt(),
+			Active:    t.Active(),
 		}
 
 		tfl.AddSections([]component.FlexLayoutItem{

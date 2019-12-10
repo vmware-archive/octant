@@ -20,6 +20,7 @@ import { WebsocketService } from '../../services/websocket/websocket.service';
 
 @Component({
   selector: 'app-terminal',
+  styleUrls: ['./terminal.component.scss'],
   templateUrl: './terminal.component.html',
 })
 export class TerminalComponent implements OnDestroy, AfterViewInit {
@@ -31,7 +32,8 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
   constructor(
     private terminalService: TerminalOutputService,
     private wss: WebsocketService
-  ) {}
+  ) {
+}
 
   compareFn(c1: TerminalDetail, c2: TerminalDetail): boolean {
     return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
@@ -115,11 +117,13 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
           this.child.write(atob(scrollback).replace(/\n/g, '\n\r'));
         }
       });
-      this.terminalStream.line.subscribe((line: string) => {
-        if (line && line.length !== 0) {
-          this.child.write(atob(line).replace(/\n/g, '\n\r'));
-        }
-      });
+      if (terminal.active) {
+        this.terminalStream.line.subscribe((line: string) => {
+          if (line && line.length !== 0) {
+            this.child.write(atob(line).replace(/\n/g, '\n\r'));
+          }
+        });
+      }
     }
   }
 }

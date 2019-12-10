@@ -310,6 +310,7 @@ export interface TerminalDetail {
   container: string;
   command: string;
   uuid: string;
+  active: boolean;
 }
 
 export interface TerminalView extends View {

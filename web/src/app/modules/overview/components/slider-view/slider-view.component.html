@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0 -->
   <a class="status-view--trigger" (click)="slide()">
     <clr-icon shape="angle" [class]="animationState"></clr-icon>
   </a>
-  <div class="status-view--content" mwlResizeHandle [ngStyle]="contentStyle" [resizeEdges]="{ top: true }">
+  <div class="status-view--content" [ngStyle]="contentStyle">
     <ng-container *ngIf="view?.config.tabs">
       <app-object-tabs [views]="view.config.tabs"></app-object-tabs>
     </ng-container>
