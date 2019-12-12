@@ -87,14 +87,28 @@ export class TabsComponent implements OnChanges, OnInit {
         const payload = this.payloads[tabIndex];
         this.wss.sendMessage('performAction', payload);
       }
+
       this.tabs = [
         ...this.tabs.slice(0, tabIndex),
         ...this.tabs.slice(tabIndex + 1),
       ];
+
+      if (this.tabs.length > 0) {
+        if (tabIndex === this.tabs.length) {
+          this.activeTab = this.tabs[tabIndex - 1].accessor;
+        } else {
+          this.activeTab = this.tabs[tabIndex].accessor;
+        }
+        this.setMarker(this.activeTab);
+      }
     }
   }
 
   private setMarker(tabAccessor: string) {
+    // TODO: Manage active tab state in backend
+    if (!this.iconName) {
+      return;
+    }
     this.router.navigate([], {
       relativeTo: this.activatedRoute,
       replaceUrl: true,
