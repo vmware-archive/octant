@@ -1,0 +1,7 @@
+apiVersion: "stable.example.com/v2"
+kind: Version
+metadata:
+  name: my-version
+spec:
+  cronSpec: "* * * * */9"
+  replicas: 1

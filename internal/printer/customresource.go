@@ -21,6 +21,56 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
+func getAdditionalPrinterColumnsForList(
+	crd *apiextv1beta1.CustomResourceDefinition,
+	list *unstructured.UnstructuredList) (cols []apiextv1beta1.CustomResourceColumnDefinition) {
+
+	if len(list.Items) == 0 {
+		return
+	}
+
+	apiVersion := list.Items[0].GetAPIVersion()
+
+	// Require that all items in the list be of the same api version,
+	// since different versions may have different additionalPrinterColumns
+	for _, cr := range list.Items {
+		if cr.GetAPIVersion() != apiVersion {
+			return
+		}
+	}
+
+	return getAdditionalPrinterColumns(crd, apiVersion)
+}
+
+func getAdditionalPrinterColumns(
+	crd *apiextv1beta1.CustomResourceDefinition,
+	apiVersion string) (cols []apiextv1beta1.CustomResourceColumnDefinition) {
+
+	if len(crd.Spec.AdditionalPrinterColumns) > 0 {
+		return crd.Spec.AdditionalPrinterColumns
+	}
+
+	if len(crd.Spec.Versions) > 0 {
+
+		// The apiVersion is in the format: "group/version".  Extract the version
+		splits := strings.Split(apiVersion, "/")
+		if len(splits) < 2 {
+			return
+		}
+
+		version := splits[1]
+
+		// Find the corresponding version-specific columns in the CRD
+		for _, ver := range crd.Spec.Versions {
+			if version == ver.Name {
+				return ver.AdditionalPrinterColumns
+			}
+		}
+	}
+
+	return
+}
+
 // CustomResourceListHandler prints a list of custom resources with
 // optional custom columns.
 func CustomResourceListHandler(
@@ -30,9 +80,9 @@ func CustomResourceListHandler(
 	linkGenerator link.Interface,
 	isLoading bool) (component.Component, error) {
 
-	hasCustomColumns := len(crd.Spec.AdditionalPrinterColumns) > 0
-	if hasCustomColumns {
-		return printCustomCRDListTable(crdName, crd, list, linkGenerator, isLoading)
+	extraColumns := getAdditionalPrinterColumnsForList(crd, list)
+	if len(extraColumns) > 0 {
+		return printCustomCRDListTable(crdName, crd, list, linkGenerator, extraColumns, isLoading)
 	}
 
 	return printGenericCRDTable(crdName, list, linkGenerator, isLoading)
@@ -69,10 +119,11 @@ func printCustomCRDListTable(
 	crd *apiextv1beta1.CustomResourceDefinition,
 	list *unstructured.UnstructuredList,
 	linkGenerator link.Interface,
+	additionalCols []apiextv1beta1.CustomResourceColumnDefinition,
 	isLoading bool) (component.Component, error) {
 
 	table := component.NewTable(crdName, "We couldn't find any custom resources!", component.NewTableCols("Name", "Labels"))
-	for _, column := range crd.Spec.AdditionalPrinterColumns {
+	for _, column := range additionalCols {
 		name := column.Name
 		if octantStrings.Contains(column.Name, []string{"Name", "Labels", "Age"}) {
 			name = fmt.Sprintf("Resource %s", column.Name)
@@ -95,7 +146,7 @@ func printCustomCRDListTable(
 		row["Labels"] = component.NewLabels(cr.GetLabels())
 		row["Age"] = component.NewTimestamp(cr.GetCreationTimestamp().Time)
 
-		for _, column := range crd.Spec.AdditionalPrinterColumns {
+		for _, column := range additionalCols {
 			s, err := printCustomColumn(cr.Object, column)
 			if err != nil {
 				return nil, errors.Wrapf(err, "print custom column %q in CRD %q",
@@ -180,13 +231,14 @@ func printCustomResourceConfig(u *unstructured.Unstructured, crd *apiextv1beta1.
 
 	summary := component.NewSummary("Configuration")
 
-	if len(crd.Spec.AdditionalPrinterColumns) < 1 {
+	additionalCols := getAdditionalPrinterColumns(crd, u.GetAPIVersion())
+	if len(additionalCols) < 1 {
 		return summary, nil
 	}
 
 	sections := component.SummarySections{}
 
-	for _, column := range crd.Spec.AdditionalPrinterColumns {
+	for _, column := range additionalCols {
 		if strings.HasPrefix(column.JSONPath, ".spec") {
 			s, err := printCustomColumn(u.Object, column)
 			if err != nil {
@@ -212,13 +264,14 @@ func printCustomResourceStatus(u *unstructured.Unstructured, crd *apiextv1beta1.
 
 	summary := component.NewSummary("Status")
 
-	if len(crd.Spec.AdditionalPrinterColumns) < 1 {
+	additionalCols := getAdditionalPrinterColumns(crd, u.GetAPIVersion())
+	if len(additionalCols) < 1 {
 		return summary, nil
 	}
 
 	sections := component.SummarySections{}
 
-	for _, column := range crd.Spec.AdditionalPrinterColumns {
+	for _, column := range additionalCols {
 		if strings.HasPrefix(column.JSONPath, ".status") {
 			s, err := printCustomColumn(u.Object, column)
 			if err != nil {

@@ -99,6 +99,46 @@ func Test_CustomResourceListHandler_custom_columns(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
+func Test_CustomResourceListHandler_versioned_custom_columns(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	tpo := newTestPrinterOptions(controller)
+
+	crd := loadCRDFromFile(t, "crd-versioned-cols.yaml")
+	resource := loadCRFromFile(t, "cr-versioned-cols.yaml")
+
+	assert.Equal(t, "stable.example.com/v2", resource.GetAPIVersion())
+
+	now := time.Now()
+	resource.SetCreationTimestamp(metav1.Time{Time: now})
+
+	tpo.PathForObject(resource, resource.GetName(), "/my-version")
+
+	labels := map[string]string{"foo": "bar"}
+	resource.SetLabels(labels)
+
+	list := testutil.ToUnstructuredList(t, resource)
+
+	got, err := CustomResourceListHandler(crd.Name, crd, list, tpo.link, false)
+	require.NoError(t, err)
+
+	expected := component.NewTableWithRows(
+		"versions.stable.example.com", "We couldn't find any custom resources!",
+		component.NewTableCols("Name", "Labels", "Spec", "Count", "Age"),
+		[]component.TableRow{
+			{
+				"Name":   component.NewLink("", resource.GetName(), "/my-version"),
+				"Labels": component.NewLabels(labels),
+				"Spec":   component.NewText("* * * * */9"),
+				"Count":  component.NewText("1"),
+				"Age":    component.NewTimestamp(now),
+			},
+		})
+
+	component.AssertEqual(t, expected, got)
+}
+
 func Test_printCustomResourceConfig(t *testing.T) {
 	cases := []struct {
 		name     string
