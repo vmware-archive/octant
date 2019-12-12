@@ -32,8 +32,7 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
   constructor(
     private terminalService: TerminalOutputService,
     private wss: WebsocketService
-  ) {
-}
+  ) {}
 
   compareFn(c1: TerminalDetail, c2: TerminalDetail): boolean {
     return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;

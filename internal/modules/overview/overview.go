@@ -282,7 +282,13 @@ func (co *Overview) extensionDescriber(path, namespace string, options describer
 				View:  component.NewTerminal(t.Key().Namespace, t.Key().Name, details),
 			},
 		})
-		extension.AddTab(tfl)
+
+		extensionTab := component.ExtensionTab{
+			Tab:          tfl,
+			ClosePayload: action.CreatePayload("overview/deleteTerminal", action.Payload{"terminalID": t.ID()}),
+		}
+
+		extension.AddTab(extensionTab)
 	}
 	return extension, nil
 }

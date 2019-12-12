@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 -->
   </a>
   <div class="status-view--content" [ngStyle]="contentStyle">
     <ng-container *ngIf="view?.config.tabs">
-      <app-object-tabs [views]="view.config.tabs"></app-object-tabs>
+      <app-object-tabs [views]="tabs" [payloads]="payloads" [closable]=true></app-object-tabs>
     </ng-container>
   </div>
 </div>
@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0 -->
   </a>
   <div class="status-view--content">
     <ng-container *ngIf="view?.config.tabs">
-      <app-object-tabs [views]="view.config.tabs"></app-object-tabs>
+      <app-object-tabs [views]="tabs" [payloads]="payloads" [closable]=true></app-object-tabs>
     </ng-container>
   </div>
 </div>

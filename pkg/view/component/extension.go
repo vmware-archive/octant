@@ -2,34 +2,38 @@ package component
 
 import (
 	"encoding/json"
+
+	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
-type ExtensionConfig struct {
-	Tabs []Component `json:"tabs"`
+type ExtensionTab struct {
+	Tab          Component      `json:"tab"`
+	ClosePayload action.Payload `json:"payload,omitempty"`
 }
 
-func (e *ExtensionConfig) UnmarshalJSON(data []byte) error {
+func (e *ExtensionTab) UnmarshalJSON(data []byte) error {
 	x := struct {
-		Tabs []TypedObject `json:"tabs"`
+		Tab          TypedObject            `json:"tab"`
+		ClosePayload map[string]interface{} `json:"payload,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
 		return err
 	}
 
-	var tabs []Component
-
-	for _, t := range x.Tabs {
-		tab, err := t.ToComponent()
-		if err != nil {
-			return err
-		}
-		tabs = append(tabs, tab)
+	tab, err := x.Tab.ToComponent()
+	if err != nil {
+		return err
 	}
 
-	e.Tabs = tabs
+	e.Tab = tab
+	e.ClosePayload = x.ClosePayload
 
 	return nil
+}
+
+type ExtensionConfig struct {
+	Tabs []ExtensionTab `json:"tabs"`
 }
 
 type Extension struct {
@@ -44,7 +48,7 @@ func NewExtension() *Extension {
 	}
 }
 
-func (e *Extension) AddTab(tab Component) {
+func (e *Extension) AddTab(tab ExtensionTab) {
 	e.Config.Tabs = append(e.Config.Tabs, tab)
 }
 

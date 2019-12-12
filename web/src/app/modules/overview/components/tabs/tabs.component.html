@@ -8,7 +8,7 @@
     <clr-tab *ngFor="let tab of tabs; trackBy: identifyTab">
         <button clrTabLink class="tab-button" (click)="clickTab(tab.accessor)">
             {{ tab.name }}
-            <clr-icon shape="times" *ngIf="tab.isClosable" (click)="closeTab(tab.accessor)"></clr-icon>
+            <clr-icon shape="times" *ngIf="closable" (click)="closeTab(tab.accessor)"></clr-icon>
         </button>
         <ng-template [clrIfActive]="activeTab === tab.accessor">
             <clr-tab-content>

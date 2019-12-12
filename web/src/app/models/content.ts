@@ -363,8 +363,13 @@ export interface IFrameView extends View {
   };
 }
 
+export interface ExtensionTab {
+  tab: View;
+  payload: { [key: string]: string };
+}
+
 export interface ExtensionView extends View {
   config: {
-    tabs: View[];
+    tabs: ExtensionTab[];
   };
 }
