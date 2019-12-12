@@ -1,0 +1,30 @@
+<clr-modal 
+  class="quick-switcher-modal" 
+  [(clrModalOpen)]="opened"
+  [clrModalStaticBackdrop]="false"
+  [clrModalSkipAnimation]="true"
+  (keyup.enter)="onEnter()" 
+  (keyup)='onKeyUp($event)' 
+  (keydown)='onKeyDown($event)'>
+  
+  <div class="modal-body">
+    <input class="filter-input" 
+      clrInput 
+      placeholder="Let's go somewhere" 
+      name="input" 
+      [(ngModel)]="input" 
+      (ngModelChange)="onInputChange($event)" 
+      />
+    <table class="table table-noborder destinations">
+      <tbody>
+        <tr 
+          *ngFor="let destination of filteredDestinations; trackBy: identifyDestinationItem; index as index"
+          (mouseover)="activeIndex = index" 
+          (click)="onEnter($event)"
+          [class.destination-active]="index == activeIndex" >
+          <td >{{ destination.title }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</clr-modal>

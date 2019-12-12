@@ -16,6 +16,7 @@ import { AppComponent } from './app.component';
 import { InputFilterComponent } from './components/input-filter/input-filter.component';
 import { NamespaceComponent } from './components/namespace/namespace.component';
 import { NavigationComponent } from './components/navigation/navigation.component';
+import { QuickSwitcherComponent } from './components/quick-switcher/quick-switcher.component';
 import { NotifierComponent } from './components/notifier/notifier.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { OverviewModule } from './modules/overview/overview.module';
@@ -37,6 +38,7 @@ export class UnstripTrailingSlashLocation extends Location {
     InputFilterComponent,
     NotifierComponent,
     NavigationComponent,
+    QuickSwitcherComponent,
     ThemeSwitchButtonComponent,
   ],
   imports: [

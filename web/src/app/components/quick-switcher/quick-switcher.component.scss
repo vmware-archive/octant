@@ -1,0 +1,56 @@
+/* Copyright (c) 2019 the Octant contributors. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+.quick-switcher-modal {
+
+    // Color variables for Light Theme.
+    :host-context(body) {
+        --destinationActive-color: #000;
+        --destinationActive-bg-color: #d8e3e9;
+    }
+
+    // Color variables for Dark Theme.
+    :host-context(body.dark) {
+        --destinationActive-color: #fff;
+        --destinationActive-bg-color:  #324f62;
+    }
+
+    .filter-input {
+        padding: 1rem 0.5rem;
+    }
+
+    td {
+        padding-left: 11px !important;
+    }
+
+    .destinations td {
+        text-align: left;
+    }
+
+    ::ng-deep .clr-input, ::ng-deep .clr-control-container {
+        width: 100%;
+    }
+
+    ::ng-deep .modal-dialog {
+        position: fixed;
+        top: 4rem;
+    }
+
+    ::ng-deep .modal-header {
+        display: none;
+    }
+
+    ::ng-deep .modal-body, ::ng-deep .modal-content {
+        padding: 0;
+    }
+
+    .destination-active {
+        background-color: var(--destinationActive-bg-color);
+        color: var(--destinationActive-color);
+    }
+
+    .destination-active:hover {
+        cursor: pointer;
+    }
+}
