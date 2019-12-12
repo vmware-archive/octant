@@ -49,7 +49,7 @@ describe('AppComponent', () => {
         ContextSelectorComponent,
         DefaultPipe,
         ThemeSwitchButtonComponent,
-        QuickSwitcherComponent
+        QuickSwitcherComponent,
       ],
     }).compileComponents();
   }));
