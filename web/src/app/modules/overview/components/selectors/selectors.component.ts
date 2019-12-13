@@ -7,6 +7,7 @@ import {
   ExpressionSelectorView,
   LabelSelectorView,
   SelectorsView,
+  View,
 } from 'src/app/models/content';
 
 @Component({
@@ -15,7 +16,14 @@ import {
   styleUrls: ['./selectors.component.scss'],
 })
 export class SelectorsComponent {
-  @Input() view: SelectorsView;
+  v: SelectorsView;
+
+  @Input() set view(v: View) {
+    this.v = v as SelectorsView;
+  }
+  get view() {
+    return this.v;
+  }
 
   identifyItem(
     index: number,

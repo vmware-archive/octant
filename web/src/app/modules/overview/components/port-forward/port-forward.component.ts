@@ -3,7 +3,7 @@
 //
 
 import { Component, Input } from '@angular/core';
-import { PortForwardView } from 'src/app/models/content';
+import { PortForwardView, View } from 'src/app/models/content';
 
 @Component({
   selector: 'app-view-port-forward',
@@ -11,5 +11,12 @@ import { PortForwardView } from 'src/app/models/content';
   styleUrls: ['./port-forward.component.scss'],
 })
 export class PortForwardComponent {
-  @Input() view: PortForwardView;
+  private v: PortForwardView;
+
+  @Input() set view(v: View) {
+    this.v = v as PortForwardView;
+  }
+  get view() {
+    return this.v;
+  }
 }

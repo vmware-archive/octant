@@ -1,5 +1,5 @@
-import { Component, OnChanges, Input, SimpleChanges } from '@angular/core';
-import { IFrameView } from 'src/app/models/content';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { IFrameView, View } from 'src/app/models/content';
 
 @Component({
   selector: 'app-iframe',
@@ -7,7 +7,14 @@ import { IFrameView } from 'src/app/models/content';
   styleUrls: ['./iframe.component.scss'],
 })
 export class IFrameComponent implements OnChanges {
-  @Input() view: IFrameView;
+  private v: IFrameView;
+
+  @Input() set view(v: View) {
+    this.v = v as IFrameView;
+  }
+  get view() {
+    return this.v;
+  }
 
   url: string;
   title: string;

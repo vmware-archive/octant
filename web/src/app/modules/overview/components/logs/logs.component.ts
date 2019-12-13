@@ -7,13 +7,13 @@ import {
   Component,
   ElementRef,
   Input,
+  IterableDiffer,
+  IterableDiffers,
   OnDestroy,
   OnInit,
   ViewChild,
-  IterableDiffers,
-  IterableDiffer,
 } from '@angular/core';
-import { LogsView, LogEntry } from 'src/app/models/content';
+import { LogEntry, LogsView, View } from 'src/app/models/content';
 import { untilDestroyed } from 'ngx-take-until-destroy';
 import {
   PodLogsService,
@@ -26,11 +26,19 @@ import {
   styleUrls: ['./logs.component.scss'],
 })
 export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
+  v: LogsView;
+
+  @Input() set view(v: View) {
+    this.v = v as LogsView;
+  }
+  get view() {
+    return this.v;
+  }
+
   private logStream: PodLogsStreamer;
   scrollToBottom = false;
 
   private containerLogsDiffer: IterableDiffer<LogEntry>;
-  @Input() view: LogsView;
   @ViewChild('scrollTarget', { static: true }) scrollTarget: ElementRef;
   containerLogs: LogEntry[] = [];
 
@@ -46,12 +54,9 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.containerLogsDiffer = this.iterableDiffers
       .find(this.containerLogs)
       .create();
-    if (this.view) {
-      if (
-        this.view.config.containers &&
-        this.view.config.containers.length > 0
-      ) {
-        this.selectedContainer = this.view.config.containers[0];
+    if (this.v) {
+      if (this.v.config.containers && this.v.config.containers.length > 0) {
+        this.selectedContainer = this.v.config.containers[0];
       }
       this.startStream();
     }
@@ -72,8 +77,8 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   startStream() {
-    const namespace = this.view.config.namespace;
-    const pod = this.view.config.name;
+    const namespace = this.v.config.namespace;
+    const pod = this.v.config.name;
     const container = this.selectedContainer;
     if (namespace && pod && container) {
       this.logStream = this.podLogsService.createStream(

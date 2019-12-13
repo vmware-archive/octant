@@ -93,7 +93,7 @@ describe('CardComponent', () => {
   });
 
   it('should save title & body correctly', () => {
-    component.view = {
+    const view: CardView = {
       config: {
         actions: [],
         body: {
@@ -107,13 +107,15 @@ describe('CardComponent', () => {
       metadata: undefined,
     };
 
+    component.view = view;
+
     component.ngOnChanges({
       view: new SimpleChange(null, component.view, false),
     });
     fixture.detectChanges();
 
     expect(component.title).toBe('Just a title');
-    expect(component.body).toBe(component.view.config.body);
+    expect(component.body).toBe(view.config.body);
   });
 
   it('should call "onActionCancel" method when cancelling the form', fakeAsync(() => {

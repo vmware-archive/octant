@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { LabelSelectorView } from 'src/app/models/content';
+import { LabelSelectorView, View } from 'src/app/models/content';
 
 @Component({
   selector: 'app-view-label-selector',
@@ -11,8 +11,14 @@ import { LabelSelectorView } from 'src/app/models/content';
   styleUrls: ['./label-selector.component.scss'],
 })
 export class LabelSelectorComponent implements OnChanges {
-  @Input() view: LabelSelectorView;
+  private v: LabelSelectorView;
 
+  @Input() set view(v: View) {
+    this.v = v as LabelSelectorView;
+  }
+  get view() {
+    return this.v;
+  }
   key: string;
   value: string;
 

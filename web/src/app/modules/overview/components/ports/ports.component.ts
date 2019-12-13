@@ -4,24 +4,23 @@
 
 import {
   Component,
+  EventEmitter,
   Input,
   OnChanges,
-  SimpleChanges,
-  Output,
-  EventEmitter,
   OnDestroy,
+  Output,
+  SimpleChanges,
 } from '@angular/core';
 import _ from 'lodash';
-import { Port, PortsView } from 'src/app/models/content';
+import { Port, PortsView, View } from 'src/app/models/content';
 import {
   NotifierService,
   NotifierSession,
-  NotifierSignalType,
 } from 'src/app/services/notifier/notifier.service';
 import { PortForwardService } from 'src/app/services/port-forward/port-forward.service';
 
 @Component({
-  selector: 'app-ports',
+  selector: 'app-view-ports',
   templateUrl: './ports.component.html',
   styleUrls: ['./ports.component.scss'],
 })
@@ -30,7 +29,15 @@ export class PortsComponent implements OnChanges, OnDestroy {
   private submittedPFCreation: string;
   private submittedPFRemoval: string;
 
-  @Input() view: PortsView;
+  v: PortsView;
+
+  @Input() set view(v: View) {
+    this.v = v as PortsView;
+  }
+  get view() {
+    return this.v;
+  }
+
   @Output() portLoad: EventEmitter<boolean> = new EventEmitter(true);
 
   constructor(

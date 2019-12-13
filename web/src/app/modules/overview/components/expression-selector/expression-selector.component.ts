@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { ExpressionSelectorView } from 'src/app/models/content';
+import { ExpressionSelectorView, View } from 'src/app/models/content';
 
 @Component({
   selector: 'app-view-expression-selector',
@@ -11,7 +11,14 @@ import { ExpressionSelectorView } from 'src/app/models/content';
   styleUrls: ['./expression-selector.component.scss'],
 })
 export class ExpressionSelectorComponent implements OnChanges {
-  @Input() view: ExpressionSelectorView;
+  private v: ExpressionSelectorView;
+
+  @Input() set view(v: View) {
+    this.v = v as ExpressionSelectorView;
+  }
+  get view() {
+    return this.v;
+  }
 
   key: string;
   operator: string;

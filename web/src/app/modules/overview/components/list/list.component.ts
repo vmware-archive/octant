@@ -13,7 +13,14 @@ import { ViewService } from '../../services/view/view.service';
   styleUrls: ['./list.component.scss'],
 })
 export class ListComponent implements OnChanges {
-  @Input() listView: ListView;
+  v: ListView;
+
+  @Input() set view(v: View) {
+    this.v = v as ListView;
+  }
+  get view() {
+    return this.v;
+  }
   title: string;
 
   iconName: string;

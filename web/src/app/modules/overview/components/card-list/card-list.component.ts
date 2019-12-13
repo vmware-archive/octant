@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { CardListView, CardView } from '../../../../models/content';
+import { CardListView, CardView, View } from '../../../../models/content';
 import { ViewService } from '../../services/view/view.service';
 
 @Component({
@@ -8,8 +8,14 @@ import { ViewService } from '../../services/view/view.service';
   styleUrls: ['./card-list.component.scss'],
 })
 export class CardListComponent {
-  @Input()
-  view: CardListView;
+  v: CardListView;
+
+  @Input() set view(v: View) {
+    this.v = v as CardListView;
+  }
+  get view() {
+    return this.v;
+  }
 
   constructor(private viewService: ViewService) {}
 

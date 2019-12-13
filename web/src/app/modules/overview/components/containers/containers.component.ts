@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { ContainerDef, ContainersView } from 'src/app/models/content';
+import { ContainerDef, ContainersView, View } from 'src/app/models/content';
 
 @Component({
   selector: 'app-view-containers',
@@ -11,7 +11,15 @@ import { ContainerDef, ContainersView } from 'src/app/models/content';
   styleUrls: ['./containers.component.scss'],
 })
 export class ContainersComponent implements OnChanges {
-  @Input() view: ContainersView;
+  private v: ContainersView;
+
+  @Input() set view(v: View) {
+    this.v = v as ContainersView;
+  }
+  get view() {
+    return this.v;
+  }
+
   containers: ContainerDef[];
 
   constructor() {}

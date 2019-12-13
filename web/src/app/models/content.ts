@@ -59,7 +59,7 @@ export interface ContainersView extends View {
   };
 }
 
-export interface GraphvizView {
+export interface GraphvizView extends View {
   config: {
     dot: string;
   };

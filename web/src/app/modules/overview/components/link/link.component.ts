@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { LinkView } from 'src/app/models/content';
+import { LinkView, View } from 'src/app/models/content';
 
 const isUrlAbsolute = url => url.indexOf('://') > 0 || url.indexOf('//') === 0;
 
@@ -13,7 +13,14 @@ const isUrlAbsolute = url => url.indexOf('://') > 0 || url.indexOf('//') === 0;
   styleUrls: ['./link.component.scss'],
 })
 export class LinkComponent implements OnChanges {
-  @Input() view: LinkView;
+  private v: LinkView;
+
+  @Input() set view(v: View) {
+    this.v = v as LinkView;
+  }
+  get view() {
+    return this.v;
+  }
 
   ref: string;
   value: string;

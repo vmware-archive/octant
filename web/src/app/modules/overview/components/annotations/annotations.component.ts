@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { AnnotationsView } from 'src/app/models/content';
+import { AnnotationsView, View } from 'src/app/models/content';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 
 @Component({
@@ -12,7 +12,16 @@ import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
   styleUrls: ['./annotations.component.scss'],
 })
 export class AnnotationsComponent implements OnChanges {
-  @Input() view: AnnotationsView;
+  private v: AnnotationsView;
+
+  @Input() set view(v: View) {
+    this.v = v as AnnotationsView;
+  }
+
+  get view() {
+    return this.v;
+  }
+
   annotations: { [key: string]: string };
   annotationKeys: string[];
   trackByIdentity = trackByIdentity;

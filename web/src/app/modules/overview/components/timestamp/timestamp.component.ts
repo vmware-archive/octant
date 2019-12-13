@@ -4,7 +4,7 @@
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import moment from 'moment';
-import { TimestampView } from 'src/app/models/content';
+import { TimestampView, View } from 'src/app/models/content';
 
 @Component({
   selector: 'app-view-timestamp',
@@ -12,7 +12,14 @@ import { TimestampView } from 'src/app/models/content';
   styleUrls: ['./timestamp.component.scss'],
 })
 export class TimestampComponent implements OnChanges {
-  @Input() view: TimestampView;
+  private v: TimestampView;
+
+  @Input() set view(v: View) {
+    this.v = v as TimestampView;
+  }
+  get view() {
+    return this.v;
+  }
 
   humanReadable: string;
   age: string;

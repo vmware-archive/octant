@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { QuadrantValue, QuadrantView } from 'src/app/models/content';
+import { QuadrantValue, QuadrantView, View } from 'src/app/models/content';
 import { ViewService } from '../../services/view/view.service';
 
 const emptyQuadrantValue = { value: '', label: '' };
@@ -14,7 +14,14 @@ const emptyQuadrantValue = { value: '', label: '' };
   styleUrls: ['./quadrant.component.scss'],
 })
 export class QuadrantComponent implements OnChanges {
-  @Input() view: QuadrantView;
+  private v: QuadrantView;
+
+  @Input() set view(v: View) {
+    this.v = v as QuadrantView;
+  }
+  get view() {
+    return this.v;
+  }
 
   title: string;
   nw: QuadrantValue = emptyQuadrantValue;

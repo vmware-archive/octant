@@ -17,8 +17,15 @@ import { FormComponent } from '../form/form.component';
   styleUrls: ['./card.component.scss'],
 })
 export class CardComponent implements OnChanges {
-  @Input()
-  view: CardView;
+  private v: CardView;
+
+  @Input() set view(v: View) {
+    this.v = v as CardView;
+  }
+
+  get view() {
+    return this.v;
+  }
 
   @ViewChild('appForm', { static: false }) appForm: FormComponent;
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { TextView } from 'src/app/models/content';
+import { TextView, View } from 'src/app/models/content';
 
 @Component({
   selector: 'app-view-text',
@@ -10,7 +10,15 @@ import { TextView } from 'src/app/models/content';
   styleUrls: ['./text.component.scss'],
 })
 export class TextComponent implements OnChanges {
-  @Input() view: TextView;
+  private v: TextView;
+
+  @Input() set view(v: View) {
+    this.v = v as TextView;
+  }
+
+  get view() {
+    return this.v;
+  }
 
   value: string;
 

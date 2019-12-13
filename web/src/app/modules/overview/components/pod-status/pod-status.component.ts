@@ -11,7 +11,7 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { PodStatusView } from '../../../../models/content';
+import { PodStatusView, View } from '../../../../models/content';
 import { PodStatus } from '../../models/pod-status';
 
 @Component({
@@ -23,7 +23,14 @@ import { PodStatus } from '../../models/pod-status';
 export class PodStatusComponent implements OnChanges {
   @ViewChild('container', { static: false }) private container: ElementRef;
 
-  @Input() view: PodStatusView;
+  private v: PodStatusView;
+
+  @Input() set view(v: View) {
+    this.v = v as PodStatusView;
+  }
+  get view() {
+    return this.v;
+  }
 
   edgeLength = 7;
 
@@ -34,7 +41,7 @@ export class PodStatusComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     const pods = changes.view.currentValue.config.pods;
 
-    const statuses = Object.keys(pods)
+    this.podStatuses = Object.keys(pods)
       .sort()
       .map(
         (podName: string): PodStatus => {
@@ -44,7 +51,5 @@ export class PodStatusComponent implements OnChanges {
           };
         }
       );
-
-    this.podStatuses = statuses;
   }
 }
