@@ -52,13 +52,15 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
       this.initStream();
     }
     this.enableResize();
+  }
 
-    this.child.keyEventInput.subscribe(e => {
+  onKeyEvent(e: KeyboardEvent): void {
+    if (this.view.config.terminal.active === true) {
       this.wss.sendMessage('sendTerminalCommand', {
         terminalID: this.view.config.terminal.uuid,
         key: e.key,
       });
-    });
+    }
   }
 
   onTerminalChange(): void {

@@ -36,6 +36,8 @@ export class SliderViewComponent implements OnChanges {
           this.tabs.push(tab.tab);
           this.payloads.push(tab.payload);
         });
+      } else {
+        this.animationState = 'out';
       }
     }
   }
