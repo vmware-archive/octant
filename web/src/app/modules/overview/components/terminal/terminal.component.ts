@@ -8,8 +8,11 @@ import {
   OnDestroy,
   AfterViewInit,
   Input,
+  ElementRef,
+  ViewEncapsulation,
 } from '@angular/core';
-import { NgTerminal } from 'ng-terminal';
+import { Terminal } from 'xterm';
+import { FitAddon } from 'xterm-addon-fit';
 import {
   TerminalOutputStreamer,
   TerminalOutputService,
@@ -19,14 +22,18 @@ import { TerminalView, TerminalDetail } from 'src/app/models/content';
 import { WebsocketService } from '../../services/websocket/websocket.service';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
   selector: 'app-terminal',
   styleUrls: ['./terminal.component.scss'],
   templateUrl: './terminal.component.html',
 })
 export class TerminalComponent implements OnDestroy, AfterViewInit {
   private terminalStream: TerminalOutputStreamer;
+  private term: Terminal;
+  private fitAddon: FitAddon;
+
   @Input() view: TerminalView;
-  @ViewChild('terminal', { static: true }) child: NgTerminal;
+  @ViewChild('terminal', { static: true }) terminalDiv: ElementRef;
   trackByIdentity = trackByIdentity;
 
   constructor(
@@ -46,32 +53,30 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
     }
   }
 
+  onClick() {
+    this.term.focus();
+    this.fitAddon.fit();
+  }
+
   ngAfterViewInit() {
     if (this.view) {
+      this.term = new Terminal({ logLevel: 'info' });
       this.initSize();
       this.initStream();
-    }
-    this.enableResize();
-  }
-
-  onKeyEvent(e: KeyboardEvent): void {
-    if (this.view.config.terminal.active === true) {
-      this.wss.sendMessage('sendTerminalCommand', {
-        terminalID: this.view.config.terminal.uuid,
-        key: e.key,
+      this.enableResize();
+      this.term.onData(data => {
+        if (this.view.config.terminal.active === true) {
+          this.wss.sendMessage('sendTerminalCommand', {
+            terminalID: this.view.config.terminal.uuid,
+            key: data,
+          });
+        }
       });
+      this.fitAddon = new FitAddon();
+      this.term.loadAddon(this.fitAddon);
+      this.term.open(this.terminalDiv.nativeElement);
+      this.term.focus();
     }
-  }
-
-  onTerminalChange(): void {
-    if (this.terminalStream) {
-      this.terminalStream.scrollback.unsubscribe();
-      this.terminalStream.line.unsubscribe();
-      this.terminalStream = null;
-    }
-    this.child.underlying.clear();
-    this.child.underlying.reset();
-    this.initStream();
   }
 
   enableResize() {
@@ -90,14 +95,14 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
       }
       timeOut = setTimeout(resize, 1000);
     };
-    this.child.underlying.onResize(resizeDebounce);
+    this.term.onResize(resizeDebounce);
   }
 
   initSize() {
     this.wss.sendMessage('sendTerminalResize', {
       terminalID: this.view.config.terminal.uuid,
-      rows: this.child.underlying.rows,
-      cols: this.child.underlying.cols,
+      rows: this.term.rows,
+      cols: this.term.cols,
     });
   }
 
@@ -115,13 +120,13 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
       );
       this.terminalStream.scrollback.subscribe((scrollback: string) => {
         if (scrollback && scrollback.length !== 0) {
-          this.child.write(atob(scrollback).replace(/\n/g, '\n\r'));
+          this.term.write(atob(scrollback).replace(/\n/g, '\n\r'));
         }
       });
       if (terminal.active) {
         this.terminalStream.line.subscribe((line: string) => {
           if (line && line.length !== 0) {
-            this.child.write(atob(line).replace(/\n/g, '\n\r'));
+            this.term.write(atob(line).replace(/\n/g, '\n\r'));
           }
         });
       }
