@@ -2,6 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardListComponent } from './card-list.component';
 import { OverviewModule } from '../../overview.module';
+import { CardListView } from '../../../../models/content';
 
 describe('CardListComponent', () => {
   let component: CardListComponent;
@@ -17,7 +18,12 @@ describe('CardListComponent', () => {
     fixture = TestBed.createComponent(CardListComponent);
     component = fixture.componentInstance;
 
-    component.view = { config: { cards: [] }, metadata: undefined };
+    const view: CardListView = {
+      config: { cards: [] },
+      metadata: { type: 'cardsList' },
+    };
+
+    component.view = view;
 
     fixture.detectChanges();
   });

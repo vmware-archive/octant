@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { YAMLView } from 'src/app/models/content';
+import { View, YAMLView } from 'src/app/models/content';
 
 @Component({
   selector: 'app-view-yaml',
@@ -11,7 +11,14 @@ import { YAMLView } from 'src/app/models/content';
   styleUrls: ['./yaml.component.scss'],
 })
 export class YamlComponent implements OnChanges {
-  @Input() view: YAMLView;
+  private v: YAMLView;
+
+  @Input() set view(v: View) {
+    this.v = v as YAMLView;
+  }
+  get view() {
+    return this.v;
+  }
 
   source: string;
 

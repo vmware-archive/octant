@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { ErrorView } from 'src/app/models/content';
+import { ErrorView, View } from 'src/app/models/content';
 
 @Component({
   selector: 'app-view-error',
@@ -11,7 +11,14 @@ import { ErrorView } from 'src/app/models/content';
   styleUrls: ['./error.component.scss'],
 })
 export class ErrorComponent implements OnChanges {
-  @Input() view: ErrorView;
+  private v: ErrorView;
+
+  @Input() set view(v: View) {
+    this.v = v as ErrorView;
+  }
+  get view() {
+    return this.v;
+  }
 
   source: string;
 

@@ -3,7 +3,12 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { TableFilters, TableRow, TableView } from 'src/app/models/content';
+import {
+  TableFilters,
+  TableRow,
+  TableView,
+  View,
+} from 'src/app/models/content';
 import trackByIndex from 'src/app/util/trackBy/trackByIndex';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { ViewService } from '../../services/view/view.service';
@@ -14,7 +19,14 @@ import { ViewService } from '../../services/view/view.service';
   styleUrls: ['./datagrid.component.scss'],
 })
 export class DatagridComponent implements OnChanges {
-  @Input() view: TableView;
+  private v: TableView;
+
+  @Input() set view(v: View) {
+    this.v = v as TableView;
+  }
+  get view() {
+    return this.v;
+  }
 
   columns: string[];
   rows: TableRow[];
@@ -44,6 +56,6 @@ export class DatagridComponent implements OnChanges {
   }
 
   hasFilter(columnName: string): boolean {
-    return !!this.view.config.filters[columnName];
+    return !!this.v.config.filters[columnName];
   }
 }

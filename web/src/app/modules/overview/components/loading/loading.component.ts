@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { LoadingView } from 'src/app/models/content';
+import { LoadingView, View } from 'src/app/models/content';
 
 @Component({
   selector: 'app-view-loading',
@@ -11,7 +11,14 @@ import { LoadingView } from 'src/app/models/content';
   styleUrls: ['./loading.component.scss'],
 })
 export class LoadingComponent implements OnChanges {
-  @Input() view: LoadingView;
+  private v: LoadingView;
+
+  @Input() set view(v: View) {
+    this.v = v as LoadingView;
+  }
+  get view() {
+    return this.v;
+  }
 
   value: string;
 

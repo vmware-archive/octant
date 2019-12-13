@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { Action, SummaryItem, SummaryView } from 'src/app/models/content';
+import { Action, SummaryItem, SummaryView, View } from 'src/app/models/content';
 import { FormGroup } from '@angular/forms';
 import { ActionService } from '../../services/action/action.service';
 import { ViewService } from '../../services/view/view.service';
@@ -14,7 +14,15 @@ import { ViewService } from '../../services/view/view.service';
   styleUrls: ['./summary.component.scss'],
 })
 export class SummaryComponent implements OnChanges {
-  @Input() view: SummaryView;
+  private v: SummaryView;
+
+  @Input() set view(v: View) {
+    this.v = v as SummaryView;
+  }
+  get view() {
+    return this.v;
+  }
+
   title: string;
   isLoading = false;
 
@@ -56,8 +64,8 @@ export class SummaryComponent implements OnChanges {
   }
 
   shouldShowFooter(): boolean {
-    if (this.view && this.view.config.actions) {
-      if (!this.currentAction && this.view.config.actions.length > 0) {
+    if (this.v && this.v.config.actions) {
+      if (!this.currentAction && this.v.config.actions.length > 0) {
         return true;
       }
     }

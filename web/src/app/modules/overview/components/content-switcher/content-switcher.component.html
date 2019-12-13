@@ -40,13 +40,19 @@
       <app-view-link [view]="view"></app-view-link>
     </ng-container>
     <ng-container *ngSwitchCase="'list'">
-      <app-view-list [listView]="view"></app-view-list>
+      <app-view-list [view]="view"></app-view-list>
+    </ng-container>
+    <ng-container *ngSwitchCase="'logs'">
+      <app-logs [view]="view"></app-logs>
     </ng-container>
     <ng-container *ngSwitchCase="'podStatus'">
       <app-pod-status [view]="view"></app-pod-status>
     </ng-container>
     <ng-container *ngSwitchCase="'portforward'">
       <app-view-port-forward [view]="view"></app-view-port-forward>
+    </ng-container>
+    <ng-container *ngSwitchCase="'ports'">
+      <app-view-ports [view]="view"></app-view-ports>
     </ng-container>
     <ng-container *ngSwitchCase="'quadrant'">
       <app-view-quadrant [view]="view"></app-view-quadrant>
@@ -71,12 +77,6 @@
     </ng-container>
     <ng-container *ngSwitchCase="'yaml'">
       <app-view-yaml [view]="view"></app-view-yaml>
-    </ng-container>
-    <ng-container *ngSwitchCase="'logs'">
-      <app-logs [view]="view"></app-logs>
-    </ng-container>
-    <ng-container *ngSwitchCase="'ports'">
-      <app-ports [view]="view"></app-ports>
     </ng-container>
     <div class="alert alert-danger static" *ngSwitchDefault>
       <span class="alert-icon-wrapper">

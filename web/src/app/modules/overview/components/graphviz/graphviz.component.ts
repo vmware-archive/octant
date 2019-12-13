@@ -11,7 +11,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-import { GraphvizView } from 'src/app/models/content';
+import { CardListView, GraphvizView, View } from 'src/app/models/content';
 import { D3GraphvizService } from '../../services/d3/d3graphviz.service';
 
 @Component({
@@ -24,13 +24,21 @@ import { D3GraphvizService } from '../../services/d3/d3graphviz.service';
 })
 export class GraphvizComponent implements AfterViewChecked {
   @ViewChild('viewer', { static: true }) private viewer: ElementRef;
-  @Input() view: GraphvizView;
+
+  private v: GraphvizView;
+
+  @Input() set view(v: View) {
+    this.v = v as GraphvizView;
+  }
+  get view() {
+    return this.v;
+  }
 
   constructor(private d3GraphvizService: D3GraphvizService) {}
 
   ngAfterViewChecked() {
     if (this.view) {
-      const current = this.view.config.dot;
+      const current = this.v.config.dot;
       this.d3GraphvizService.render(this.viewer, current);
     }
   }

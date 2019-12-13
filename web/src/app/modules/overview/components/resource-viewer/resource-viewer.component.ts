@@ -11,7 +11,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import _ from 'lodash';
-import { Node, ResourceViewerView } from 'src/app/models/content';
+import { Node, ResourceViewerView, View } from 'src/app/models/content';
 import { ElementsDefinition, Stylesheet } from 'cytoscape';
 
 const statusColorCodes = {
@@ -29,7 +29,14 @@ const edgeColorCode = '#003d79';
   encapsulation: ViewEncapsulation.None,
 })
 export class ResourceViewerComponent implements OnChanges, AfterViewInit {
-  @Input() view: ResourceViewerView;
+  private v: ResourceViewerView;
+
+  @Input() set view(v: View) {
+    this.v = v as ResourceViewerView;
+  }
+  get view() {
+    return this.v;
+  }
 
   currentView: ResourceViewerView;
   selected: string;

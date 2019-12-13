@@ -3,7 +3,12 @@
 //
 
 import { Component, Input } from '@angular/core';
-import { FlexLayoutView } from 'src/app/models/content';
+import {
+  ButtonGroupView,
+  FlexLayoutItem,
+  FlexLayoutView,
+  View,
+} from 'src/app/models/content';
 import trackByIndex from 'src/app/util/trackBy/trackByIndex';
 
 @Component({
@@ -12,6 +17,21 @@ import trackByIndex from 'src/app/util/trackBy/trackByIndex';
   styleUrls: ['./flexlayout.component.scss'],
 })
 export class FlexlayoutComponent {
-  @Input() view: FlexLayoutView;
+  v: FlexLayoutView;
+
+  @Input() set view(v: View) {
+    this.v = v as FlexLayoutView;
+    this.buttonGroup = this.v.config.buttonGroup;
+    this.sections = this.v.config.sections;
+  }
+
+  get view() {
+    return this.v;
+  }
+
+  buttonGroup: ButtonGroupView;
+
+  sections: FlexLayoutItem[][];
+
   identifySection = trackByIndex;
 }

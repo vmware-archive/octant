@@ -19,11 +19,11 @@
         <div class="card-block">
             <h3 class="card-title">{{ title }}</h3>
 
-            <app-alert *ngIf="view?.config.alert" [alert]="view.config.alert"></app-alert>
+            <app-alert *ngIf="v?.config.alert" [alert]="v.config.alert"></app-alert>
 
             <table class="table table-vertical table-noborder">
                 <tbody>
-                <tr *ngFor="let item of view?.config.sections; trackBy: identifyItem">
+                <tr *ngFor="let item of v?.config.sections; trackBy: identifyItem">
                     <th>{{ item.header }}</th>
                     <td [ngSwitch]="item.content.metadata.type">
                         <ng-container *ngSwitchCase="'annotations'">
@@ -48,10 +48,10 @@
                             <app-view-table [view]="item.content"></app-view-table>
                         </ng-container>
                         <ng-container *ngSwitchCase="'ports'">
-                            <app-ports [view]="item.content" (portLoad)="onPortLoad($event)"></app-ports>
+                            <app-view-ports [view]="item.content" (portLoad)="onPortLoad($event)"></app-view-ports>
                         </ng-container>
                         <ng-container *ngSwitchCase="'list'">
-                            <app-view-list [listView]="item.content"></app-view-list>
+                            <app-view-list [view]="item.content"></app-view-list>
                         </ng-container>
                         <ng-container *ngSwitchCase="'loading'">
                             <app-view-loading [view]="item.content"></app-view-loading>
@@ -71,7 +71,7 @@
             </table>
         </div>
         <div class="card-footer" *ngIf="shouldShowFooter()">
-            <ng-container *ngFor="let action of view.config.actions; trackBy: identifyItem">
+            <ng-container *ngFor="let action of v?.config.actions; trackBy: identifyItem">
                 <button class="btn btn-sm btn-link" (click)="setAction(action)">{{action.name}}</button>
             </ng-container>
         </div>
