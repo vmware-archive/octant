@@ -83,6 +83,7 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
       this.term.loadAddon(this.fitAddon);
       this.term.open(this.terminalDiv.nativeElement);
       this.term.focus();
+      this.fitAddon.fit();
     }
   }
 
