@@ -93,12 +93,12 @@ export class OverviewComponent implements OnInit, OnDestroy {
     callback: (options: LocationCallbackOptions) => void,
     takeOne = false
   ) {
-    let observable = combineLatest(
+    let observable = combineLatest([
       this.route.url,
       this.route.queryParams,
       this.route.fragment,
-      this.kubeContextService.selected()
-    );
+      this.kubeContextService.selected(),
+    ]);
 
     if (takeOne) {
       observable = observable.pipe(take(1));
