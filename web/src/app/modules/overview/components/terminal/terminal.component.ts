@@ -60,7 +60,14 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
 
   ngAfterViewInit() {
     if (this.view) {
-      this.term = new Terminal({ logLevel: 'info' });
+      const disableStdin = this.view.config.terminal.active ? false : true;
+      const logLevel = 'info';
+
+      this.term = new Terminal({
+        logLevel,
+        disableStdin,
+      });
+
       this.initSize();
       this.initStream();
       this.enableResize();
@@ -94,6 +101,7 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
         clearTimeout(timeOut);
       }
       timeOut = setTimeout(resize, 1000);
+      this.fitAddon.fit();
     };
     this.term.onResize(resizeDebounce);
   }
