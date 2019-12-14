@@ -8,6 +8,7 @@ import { ExtensionView, View } from 'src/app/models/content';
 import { SlideInOutAnimation } from './slide-in-out.animation';
 import { ResizeEvent } from 'angular-resizable-element';
 import { OnChanges, SimpleChanges } from '@angular/core';
+import { SliderService } from 'src/app/services/slider/slider.service';
 
 @Component({
   selector: 'app-slider-view',
@@ -25,6 +26,8 @@ export class SliderViewComponent implements OnChanges {
 
   tabs: View[] = [];
   payloads: { [key: string]: string }[] = [];
+
+  constructor(private sliderService: SliderService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {
@@ -44,10 +47,18 @@ export class SliderViewComponent implements OnChanges {
 
   slide() {
     this.animationState = this.animationState === 'out' ? 'in' : 'out';
-    this.style = {};
 
     if (this.contentHeight) {
       Object.assign(this.style, { height: `${this.contentHeight}px` });
+      this.sliderService.setHeight(this.contentHeight);
+    }
+
+    if (this.animationState === 'out') {
+      // Approximate conversion from 1.5rem
+      this.sliderService.setHeight(35);
+    } else {
+      // Approximate conversion from 12rem
+      this.sliderService.setHeight(288);
     }
   }
 
@@ -63,6 +74,7 @@ export class SliderViewComponent implements OnChanges {
         height: `${event.rectangle.height}px`,
       };
       this.contentHeight = event.rectangle.height;
+      this.sliderService.setHeight(this.contentHeight);
     }
   }
 }
