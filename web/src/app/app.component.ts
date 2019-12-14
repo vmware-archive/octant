@@ -13,6 +13,7 @@ import { Navigation } from './models/navigation';
 import { WebsocketService } from './modules/overview/services/websocket/websocket.service';
 import { IconService } from './modules/overview/services/icon.service';
 import { SliderService } from './services/slider/slider.service';
+import { Router, NavigationStart } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -28,7 +29,8 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     private websocketService: WebsocketService,
     private iconService: IconService,
-    private sliderService: SliderService
+    private sliderService: SliderService,
+    private router: Router
   ) {
     iconService.load({
       iconName: 'octant-logo',
@@ -37,6 +39,11 @@ export class AppComponent implements OnInit, OnDestroy {
     });
     this.sliderService.setHeight$.subscribe((data: number) => {
       Object.assign(this.style, { marginBottom: `${data}px` });
+    });
+    router.events.subscribe(data => {
+      if (data instanceof NavigationStart) {
+        this.style = {};
+      }
     });
   }
 
