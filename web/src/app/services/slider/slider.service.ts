@@ -10,6 +10,8 @@ import { Subject, Observable } from 'rxjs';
 })
 export class SliderService {
   setHeight$: Observable<any>;
+  resetDefault$: Observable<any>;
+  resetExpandedDefault$: Observable<any>;
   private height = new Subject<number>();
 
   constructor() {
@@ -18,5 +20,15 @@ export class SliderService {
 
   setHeight(height: number) {
     this.height.next(height);
+  }
+
+  resetDefault() {
+    // Approximate conversion from 1.5rem
+    this.height.next(36);
+  }
+
+  resetExpandedDefault() {
+    // Approximate conversion from 12rem
+    this.height.next(288);
   }
 }

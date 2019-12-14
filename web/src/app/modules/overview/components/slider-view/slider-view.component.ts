@@ -41,6 +41,7 @@ export class SliderViewComponent implements OnChanges {
         });
       } else {
         this.animationState = 'out';
+        this.sliderService.resetDefault();
       }
     }
   }
@@ -54,11 +55,10 @@ export class SliderViewComponent implements OnChanges {
     }
 
     if (this.animationState === 'out') {
-      // Approximate conversion from 1.5rem
-      this.sliderService.setHeight(35);
+      this.sliderService.resetDefault();
     } else {
       // Approximate conversion from 12rem
-      this.sliderService.setHeight(288);
+      this.sliderService.resetExpandedDefault();
     }
   }
 
