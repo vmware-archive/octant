@@ -132,7 +132,7 @@ func NewTerminalInstance(ctx context.Context, logger log.Logger, key store.Key, 
 		logger:    logger,
 		out:       &bytes.Buffer{},
 		keystroke: make(chan []byte, 25),
-		resize:    make(chan []uint16, 1),
+		resize:    make(chan []uint16),
 		size:      &remotecommand.TerminalSize{},
 	}
 
@@ -152,7 +152,8 @@ func NewTerminalInstance(ctx context.Context, logger log.Logger, key store.Key, 
 }
 
 func (t *instance) Resize(cols, rows uint16) {
-	t.pty.resize <- []uint16{cols, rows}
+	// TODO: fix this, currently when uncommented interactive terminals do not work.
+	// t.pty.resize <- []uint16{cols, rows}
 }
 
 // Read attempts to read from the stdout bytes.Buffer. As a side-effect
