@@ -87,7 +87,9 @@ func (s *terminalStateManager) SendTerminalResize(state octant.State, payload ac
 		return errors.New(fmt.Sprintf("terminal %s not found", terminalID))
 	}
 
-	t.Resize(cols, rows)
+	if t.Active() {
+		t.Resize(cols, rows)
+	}
 	return nil
 }
 

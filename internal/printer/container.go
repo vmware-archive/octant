@@ -515,11 +515,6 @@ func terminalCommandExecAction(owner runtime.Object, container *corev1.Container
 	form, err := component.CreateFormForObject("overview/commandExec", owner,
 		component.NewFormFieldHidden("containerName", container.Name),
 		component.NewFormFieldText("Command", "containerCommand", ""),
-		component.NewFormFieldCheckBox("TTY", "tty", []component.InputChoice{
-			component.InputChoice{
-				Label:   "TTY",
-				Value:   "tty",
-				Checked: false}}),
 	)
 	if err != nil {
 		return component.Action{}, err

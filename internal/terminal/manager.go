@@ -93,11 +93,11 @@ func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key,
 	}
 
 	opts := remotecommand.StreamOptions{
-		Stdin:  t.Stdin(),
-		Stdout: t.Stdout(),
-		Stderr: t.Stderr(),
-		Tty:    tty,
-		//TerminalSizeQueue: remotecommand.TerminalSizeQueue,
+		Stdin:             t.Stdin(),
+		Stdout:            t.Stdout(),
+		Stderr:            t.Stderr(),
+		Tty:               tty,
+		TerminalSizeQueue: t.SizeQueue(),
 	}
 
 	go func() {

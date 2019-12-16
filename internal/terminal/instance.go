@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -43,6 +42,7 @@ type Instance interface {
 	Stdin() io.Reader
 	Stdout() io.Writer
 	Stderr() io.Writer
+	SizeQueue() remotecommand.TerminalSizeQueue
 }
 
 type pty struct {
@@ -54,13 +54,11 @@ type pty struct {
 	remotecommand.TerminalSizeQueue
 
 	logger    log.Logger
-	commands  []string
 	keystroke chan []byte
 	resize    chan []uint16
 
-	out        io.ReadWriter
-	rows, cols uint16
-	mu         sync.Mutex
+	out  io.ReadWriter
+	size *remotecommand.TerminalSize
 }
 
 func (p *pty) Write(b []byte) (int, error) {
@@ -71,28 +69,32 @@ func (p *pty) Read(b []byte) (int, error) {
 	select {
 	case <-p.ctx.Done():
 		p.cancelFn()
-		return 0, io.ErrClosedPipe
-	case key := <-p.keystroke:
-		return copy(b, key), nil
-	default:
+
 		if p.ctx.Err() != nil {
 			if p.ctx.Err() == context.Canceled {
 				return 0, io.ErrClosedPipe
 			}
-			p.cancelFn()
+
 			return 0, io.ErrUnexpectedEOF
 		}
+
+		return 0, io.ErrClosedPipe
+	case key := <-p.keystroke:
+		return copy(b, key), nil
+	default:
 		return 0, nil
 	}
 }
 
 func (p *pty) Next() *remotecommand.TerminalSize {
 	select {
+	case <-p.ctx.Done():
+		return nil
 	case size := <-p.resize:
-		p.cols, p.rows = size[0], size[1]
-		return &remotecommand.TerminalSize{Width: p.cols, Height: p.rows}
+		p.size.Width, p.size.Height = size[0], size[1]
+		return p.size
 	default:
-		return &remotecommand.TerminalSize{Width: p.cols, Height: p.rows}
+		return p.size
 	}
 }
 
@@ -131,6 +133,7 @@ func NewTerminalInstance(ctx context.Context, logger log.Logger, key store.Key, 
 		out:       &bytes.Buffer{},
 		keystroke: make(chan []byte, 25),
 		resize:    make(chan []uint16, 1),
+		size:      &remotecommand.TerminalSize{},
 	}
 
 	t := &instance{
@@ -144,22 +147,24 @@ func NewTerminalInstance(ctx context.Context, logger log.Logger, key store.Key, 
 		tty:       tty,
 		logger:    logger,
 	}
+
 	return t
 }
 
 func (t *instance) Resize(cols, rows uint16) {
-	//TODO figure out why sending terminal size breaks stream.
-	//t.pty.resize <- []uint16{cols, rows}
+	t.pty.resize <- []uint16{cols, rows}
 }
 
 // Read attempts to read from the stdout bytes.Buffer. As a side-effect
 // of calling Read any data that is read is also appended to the internal
-// scollback buffer that can be retrived by calling Scrollback.
+// scollback buffer that can be retrieved by calling Scrollback.
 func (t *instance) Read(size int) ([]byte, error) {
 	if t.pty == nil {
 		return nil, nil
 	}
+
 	buf := make([]byte, size)
+
 	n, err := t.pty.stdout().Read(buf)
 	if err != nil {
 		if err == io.EOF {
@@ -167,17 +172,23 @@ func (t *instance) Read(size int) ([]byte, error) {
 			if string(line) == "" {
 				return nil, nil
 			}
+
 			if _, err := t.scrollback.Write(line); err != nil {
 				return nil, err
 			}
+
 			return line, nil
 		}
+
 		return nil, err
 	}
+
 	b := buf[:n]
+
 	if _, err := t.scrollback.Write(b); err != nil {
 		return nil, err
 	}
+
 	return b, nil
 }
 
@@ -188,6 +199,7 @@ func (t *instance) Write(key []byte) error {
 		return errors.New("can not execute command, no stdin")
 	}
 	t.pty.keystroke <- key
+
 	return nil
 }
 
@@ -197,7 +209,7 @@ func (t *instance) SetExitMessage(m string) { t.exitMessage = m }
 // ExitMessage returns the exit message for the terminal instance.
 func (t *instance) ExitMessage() string { return t.exitMessage }
 
-// Active returns if the terminal is currenly active. Active terminals
+// Active returns if the terminal is currently active. Active terminals
 // are non-TTY commands that are still streaming output OR tty terminals
 // that have not been exited.
 func (t *instance) Active() bool { return t.ctx.Err() == nil }
@@ -229,11 +241,13 @@ func (t *instance) TTY() bool { return t.tty }
 // CreatedAt returns the date/time this terminal was created.
 func (t *instance) CreatedAt() time.Time { return t.createdAt }
 
-func (t *instance) Stdin() io.Reader  { return t.pty }
-func (t *instance) Stdout() io.Writer { return t.pty }
+func (t *instance) SizeQueue() remotecommand.TerminalSizeQueue { return t.pty }
+func (t *instance) Stdin() io.Reader                           { return t.pty }
+func (t *instance) Stdout() io.Writer                          { return t.pty }
 func (t *instance) Stderr() io.Writer {
 	if t.tty {
 		return nil
 	}
+
 	return t.pty
 }

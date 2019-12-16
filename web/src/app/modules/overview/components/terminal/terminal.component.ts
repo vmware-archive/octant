@@ -10,6 +10,8 @@ import {
   Input,
   ElementRef,
   ViewEncapsulation,
+  HostBinding,
+  HostListener,
 } from '@angular/core';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
@@ -31,10 +33,14 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
   private terminalStream: TerminalOutputStreamer;
   private term: Terminal;
   private fitAddon: FitAddon;
+  trackByIdentity = trackByIdentity;
 
   @Input() view: TerminalView;
   @ViewChild('terminal', { static: true }) terminalDiv: ElementRef;
-  trackByIdentity = trackByIdentity;
+  @HostListener('click') onClick() {
+    this.term.focus();
+    this.fitAddon.fit();
+  }
 
   constructor(
     private terminalService: TerminalOutputService,
@@ -51,11 +57,6 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
       this.terminalStream.line.unsubscribe();
       this.terminalStream = null;
     }
-  }
-
-  onClick() {
-    this.term.focus();
-    this.fitAddon.fit();
   }
 
   ngAfterViewInit() {
@@ -91,11 +92,13 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
     let timeOut = null;
     const resizeDebounce = (e: { cols: number; rows: number }) => {
       const resize = () => {
-        this.wss.sendMessage('sendTerminalResize', {
-          terminalID: this.view.config.terminal.uuid,
-          rows: e.rows,
-          cols: e.cols,
-        });
+        if (this.view.config.terminal.active === true) {
+          this.wss.sendMessage('sendTerminalResize', {
+            terminalID: this.view.config.terminal.uuid,
+            rows: e.rows,
+            cols: e.cols,
+          });
+        }
       };
 
       if (timeOut != null) {
@@ -108,11 +111,13 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
   }
 
   initSize() {
-    this.wss.sendMessage('sendTerminalResize', {
-      terminalID: this.view.config.terminal.uuid,
-      rows: this.term.rows,
-      cols: this.term.cols,
-    });
+    if (this.view.config.terminal.active) {
+      this.wss.sendMessage('sendTerminalResize', {
+        terminalID: this.view.config.terminal.uuid,
+        rows: this.term.rows,
+        cols: this.term.cols,
+      });
+    }
   }
 
   initStream() {
