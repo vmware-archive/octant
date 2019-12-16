@@ -7,6 +7,7 @@ export interface ContentResponse {
 }
 
 export interface Content {
+  extensionComponent: ExtensionView;
   viewComponents: View[];
   title: View[];
   iconName?: string;
@@ -300,6 +301,26 @@ export interface LogResponse {
   entries: LogEntry[];
 }
 
+export interface TerminalOutput {
+  scrollback: string;
+  line: string;
+}
+
+export interface TerminalDetail {
+  container: string;
+  command: string;
+  uuid: string;
+  active: boolean;
+}
+
+export interface TerminalView extends View {
+  config: {
+    namespace: string;
+    name: string;
+    terminal: TerminalDetail;
+  };
+}
+
 export interface Port extends View {
   config: {
     namespace: string;
@@ -339,5 +360,16 @@ export interface IFrameView extends View {
   config: {
     url: string;
     title: string;
+  };
+}
+
+export interface ExtensionTab {
+  tab: View;
+  payload: { [key: string]: string };
+}
+
+export interface ExtensionView extends View {
+  config: {
+    tabs: ExtensionTab[];
   };
 }

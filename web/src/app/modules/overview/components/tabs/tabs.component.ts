@@ -11,6 +11,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { View } from 'src/app/models/content';
 import { ViewService } from '../../services/view/view.service';
+import { WebsocketService } from '../../services/websocket/websocket.service';
 
 interface Tab {
   name: string;
@@ -27,7 +28,9 @@ interface Tab {
 export class TabsComponent implements OnChanges, OnInit {
   @Input() title: string;
   @Input() views: View[];
+  @Input() payloads: [{ [key: string]: string }];
   @Input() iconName: string;
+  @Input() closable: boolean;
 
   tabs: Tab[] = [];
   activeTab: string;
@@ -35,7 +38,8 @@ export class TabsComponent implements OnChanges, OnInit {
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private viewService: ViewService
+    private viewService: ViewService,
+    private wss: WebsocketService
   ) {}
 
   ngOnInit() {
@@ -79,14 +83,32 @@ export class TabsComponent implements OnChanges, OnInit {
   closeTab(tabAccessor: string) {
     const tabIndex = this.tabs.findIndex(tab => tab.accessor === tabAccessor);
     if (tabIndex > -1) {
+      if (this.payloads[tabIndex]) {
+        const payload = this.payloads[tabIndex];
+        this.wss.sendMessage('performAction', payload);
+      }
+
       this.tabs = [
         ...this.tabs.slice(0, tabIndex),
         ...this.tabs.slice(tabIndex + 1),
       ];
+
+      if (this.tabs.length > 0) {
+        if (tabIndex === this.tabs.length) {
+          this.activeTab = this.tabs[tabIndex - 1].accessor;
+        } else {
+          this.activeTab = this.tabs[tabIndex].accessor;
+        }
+        this.setMarker(this.activeTab);
+      }
     }
   }
 
   private setMarker(tabAccessor: string) {
+    // TODO: Manage active tab state in backend
+    if (!this.iconName) {
+      return;
+    }
     this.router.navigate([], {
       relativeTo: this.activatedRoute,
       replaceUrl: true,

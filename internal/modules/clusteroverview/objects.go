@@ -70,6 +70,7 @@ var (
 	})
 
 	portForwardDescriber = NewPortForwardListDescriber()
+	terminalDescriber    = NewTerminalListDescriber()
 
 	rootDescriber = describer.NewSection(
 		"/",
@@ -79,5 +80,6 @@ var (
 		rbacDescriber,
 		nodesDescriber,
 		portForwardDescriber,
+		terminalDescriber,
 	)
 )

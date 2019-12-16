@@ -82,6 +82,32 @@ func (p Payload) String(key string) (string, error) {
 	return s, nil
 }
 
+// Bool returns a string from the payload.
+func (p Payload) Bool(key string) (bool, error) {
+	i, ok := p[key]
+	if !ok {
+		return false, errors.Errorf("payload does not contain %q", key)
+	}
+
+	if i == nil {
+		return false, nil
+	}
+
+	s, ok := i.(bool)
+	if !ok {
+		sl, err := p.StringSlice(key)
+		if err != nil {
+			return false, err
+		}
+		if len(sl) != 0 {
+			return true, nil
+		}
+		return false, errors.Errorf("payload does not contain %q", key)
+	}
+
+	return s, nil
+}
+
 // OptionalString returns a string from the payload. If the string
 // does not exist, it returns an empty string.
 func (p Payload) OptionalString(key string) (string, error) {

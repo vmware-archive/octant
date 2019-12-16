@@ -1,0 +1,9 @@
+@import "xterm/css/xterm.css";
+
+.app-terminal {
+  top: 40px;
+  left: 2px;
+  height: calc(100% - 1.5rem);
+  width: calc(100% - 2.5px);
+  position: absolute;
+}

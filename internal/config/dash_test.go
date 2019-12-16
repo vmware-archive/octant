@@ -20,6 +20,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/log"
 	moduleFake "github.com/vmware-tanzu/octant/internal/module/fake"
 	portForwardFake "github.com/vmware-tanzu/octant/internal/portforward/fake"
+	terminalFake "github.com/vmware-tanzu/octant/internal/terminal/fake"
 	"github.com/vmware-tanzu/octant/internal/testutil"
 	pluginFake "github.com/vmware-tanzu/octant/pkg/plugin/fake"
 	objectStoreFake "github.com/vmware-tanzu/octant/pkg/store/fake"
@@ -85,6 +86,7 @@ func TestLiveConfig(t *testing.T) {
 	assert.NoError(t, err)
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 	portForwarder := portForwardFake.NewMockPortForwarder(controller)
+	terminalManager := terminalFake.NewMockManager(controller)
 	kubeConfigPath := "/path"
 
 	objectStore.EXPECT().
@@ -93,7 +95,9 @@ func TestLiveConfig(t *testing.T) {
 	contextName := "context-name"
 	restConfigOptions := cluster.RESTConfigOptions{}
 
-	config := NewLiveConfig(clusterClient, crdWatcher, kubeConfigPath, logger, moduleManager, objectStore, errorStore, pluginManager, portForwarder, contextName, restConfigOptions)
+	config := NewLiveConfig(clusterClient, crdWatcher, kubeConfigPath, logger, moduleManager, objectStore,
+		errorStore, pluginManager, portForwarder,
+		terminalManager, contextName, restConfigOptions)
 
 	assert.NoError(t, config.Validate())
 	assert.Equal(t, clusterClient, config.ClusterClient())
