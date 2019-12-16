@@ -35,8 +35,8 @@ export class ListComponent implements OnChanges {
   };
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view) {
-      const current = changes.view.currentValue;
+    if (changes.listView) {
+      const current = changes.listView.currentValue;
       this.title = this.viewService.viewTitleAsText(current);
       this.iconName = this.iconService.load(current.config);
     }

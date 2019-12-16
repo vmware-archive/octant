@@ -4,7 +4,6 @@
 import {
   Component,
   ViewChild,
-  OnInit,
   OnDestroy,
   AfterViewInit,
   Input,
@@ -20,6 +19,7 @@ import {
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { TerminalView, TerminalDetail } from 'src/app/models/content';
 import { WebsocketService } from '../../services/websocket/websocket.service';
+import { SliderService } from 'src/app/services/slider/slider.service';
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -38,6 +38,7 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
 
   constructor(
     private terminalService: TerminalOutputService,
+    private sliderService: SliderService,
     private wss: WebsocketService
   ) {}
 
@@ -51,11 +52,6 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
       this.terminalStream.line.unsubscribe();
       this.terminalStream = null;
     }
-  }
-
-  onClick() {
-    this.term.focus();
-    this.fitAddon.fit();
   }
 
   ngAfterViewInit() {
@@ -83,7 +79,11 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
       this.term.loadAddon(this.fitAddon);
       this.term.open(this.terminalDiv.nativeElement);
       this.term.focus();
-      this.fitAddon.fit();
+      this.sliderService.setHeight$.subscribe(() => {
+        setTimeout(() => {
+          this.fitAddon.fit();
+        }, 0);
+      });
     }
   }
 
