@@ -59,6 +59,8 @@ import { TerminalComponent } from 'src/app/components/terminal/terminal.componen
 import { IFrameComponent } from './components/iframe/iframe.component';
 import { SliderViewComponent } from './components/slider-view/slider-view.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { DonutChartComponent } from './components/donut-chart/donut-chart.component';
+import { SingleStatComponent } from './components/single-stat/single-stat.component';
 
 export function hljsLanguages() {
   return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
@@ -112,6 +114,8 @@ export function hljsLanguages() {
     ContentFilterComponent,
     TerminalComponent,
     SliderViewComponent,
+    DonutChartComponent,
+    SingleStatComponent,
   ],
   imports: [
     BrowserAnimationsModule,

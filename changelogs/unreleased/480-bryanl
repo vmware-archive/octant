@@ -1,0 +1,2 @@
+Create workload module. This commit creates a new octant module, "workload".  Workload shows status for pods in a namespaced grouped by owner. If the cluster supports the pod metrics API, it will also include CPU and memory metrics for the group of pods.
+

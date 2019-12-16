@@ -12,6 +12,9 @@
     <ng-container *ngSwitchCase="'containers'">
       <app-view-containers [view]="view"></app-view-containers>
     </ng-container>
+    <ng-container *ngSwitchCase="'donutChart'">
+        <app-view-donut-chart [view]="view"></app-view-donut-chart>
+    </ng-container>
     <ng-container *ngSwitchCase="'expressionSelector'">
       <app-view-expression-selector [view]="view"></app-view-expression-selector>
     </ng-container>
@@ -62,6 +65,9 @@
     </ng-container>
     <ng-container *ngSwitchCase="'selectors'">
       <app-view-selectors [view]="view"></app-view-selectors>
+    </ng-container>
+    <ng-container *ngSwitchCase="'singleStat'">
+      <app-single-stat [view]="view"></app-single-stat>
     </ng-container>
     <ng-container *ngSwitchCase="'summary'">
       <app-view-summary [view]="view"></app-view-summary>

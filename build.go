@@ -60,7 +60,6 @@ func main() {
 		case "vet":
 			vet()
 		case "test":
-			generate()
 			test()
 		case "build":
 			build()
@@ -147,7 +146,7 @@ func build() {
 }
 
 func runDev() {
-	runCmd("build/octant", nil, "--enable-feature-applications=true")
+	runCmd("build/octant", nil)
 }
 
 func test() {

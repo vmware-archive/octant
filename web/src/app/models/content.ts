@@ -59,6 +59,18 @@ export interface ContainersView extends View {
   };
 }
 
+export interface DonutChartLabels {
+  plural: string;
+  singular: string;
+}
+
+export interface DonutChartView extends View {
+  config: {
+    segments: DonutSegment[];
+    labels: DonutChartLabels;
+  };
+}
+
 export interface GraphvizView extends View {
   config: {
     dot: string;
@@ -126,6 +138,16 @@ export interface LabelSelectorView extends View {
   config: {
     key: string;
     value: string;
+  };
+}
+
+export interface SingleStatView extends View {
+  config: {
+    title: string;
+    value: {
+      text: string;
+      color: string;
+    };
   };
 }
 
@@ -277,6 +299,48 @@ export interface TimestampView extends View {
   };
 }
 
+export interface DonutSegment {
+  count: number;
+  status: string;
+}
+
+export interface Series {
+  name: string;
+  value: number;
+  label: string;
+  color: string;
+}
+
+export interface BulletBand {
+  min: number;
+  max: number;
+  color: string;
+  label: string;
+}
+
+export interface Resource {
+  bands: BulletBand[];
+  measure: number;
+  measureLabel: string;
+  label: string;
+}
+
+export interface WorkloadView extends View {
+  config: {
+    name: string;
+    iconName: string;
+    segments: DonutSegment[];
+    memory: Resource;
+    cpu: Resource;
+  };
+}
+
+export interface WorkloadListView extends View {
+  config: {
+    workloads: WorkloadView;
+  };
+}
+
 export interface YAMLView extends View {
   config: {
     data: string;
@@ -339,5 +403,14 @@ export interface IFrameView extends View {
   config: {
     url: string;
     title: string;
+  };
+}
+
+export interface VerticalBulletChartView extends View {
+  config: {
+    bands: BulletBand[];
+    measure: number;
+    measureLabel: string;
+    label: string;
   };
 }

@@ -8,12 +8,14 @@ package component
 import "encoding/json"
 
 const (
+	// WidthFull is a full width section.
+	WidthFull int = 24
 	// WidthQuarter is a quarter width section.
 	WidthQuarter int = 6
 	// WidthHalf is a half width section.
 	WidthHalf int = 12
-	// WidthFull is a full width section.
-	WidthFull int = 24
+	// WidthThird is a third width section.
+	WidthThird int = 8
 )
 
 // FlexLayoutItem is an item in a flex layout.
@@ -67,10 +69,7 @@ func NewFlexLayout(title string) *FlexLayout {
 	}
 }
 
-// GetMetadata returns the metadata for the flex layout view.
-func (fl *FlexLayout) GetMetadata() Metadata {
-	return fl.Metadata
-}
+var _ Component = (*FlexLayout)(nil)
 
 // AddSections adds one or more sections to the flex layout.
 func (fl *FlexLayout) AddSections(sections ...FlexLayoutSection) {

@@ -48,9 +48,9 @@ type Card struct {
 }
 
 // NewCard creates a card component.
-func NewCard(title string) *Card {
+func NewCard(title []TitleComponent) *Card {
 	return &Card{
-		base: newBase(typeCard, TitleFromString(title)),
+		base: newBase(typeCard, title),
 	}
 }
 

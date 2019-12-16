@@ -1,0 +1,31 @@
+/*!
+ * Copyright (c) 2019 VMware, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+.singleStat {
+  height: 100%;
+  width: 100%;
+
+  :host-context(body) {
+    --text-color: #575757;
+  }
+
+  :host-context(body.dark) {
+    --text-color: #acbac3;
+  }
+}
+
+.singleStat-title{
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--text-color);
+}
+
+.singleStat-body{
+  text-align: center;
+  font-size: 22px;
+  transform: translateY(75%);
+  font-weight: bold;
+}
