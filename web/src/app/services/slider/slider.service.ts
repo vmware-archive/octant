@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Injectable } from '@angular/core';
+import { Injectable, EventEmitter, Output } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 
 @Injectable({
@@ -12,6 +12,8 @@ export class SliderService {
   setHeight$: Observable<any>;
   resetDefault$: Observable<any>;
   resetExpandedDefault$: Observable<any>;
+  @Output() resizedSliderEvent = new EventEmitter<any>();
+
   private height = new Subject<number>();
 
   constructor() {

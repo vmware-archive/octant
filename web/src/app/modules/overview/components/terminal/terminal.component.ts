@@ -22,6 +22,7 @@ import {
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { TerminalView, TerminalDetail } from 'src/app/models/content';
 import { WebsocketService } from '../../services/websocket/websocket.service';
+import { SliderService } from 'src/app/services/slider/slider.service';
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -44,7 +45,8 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
 
   constructor(
     private terminalService: TerminalOutputService,
-    private wss: WebsocketService
+    private wss: WebsocketService,
+    private sliderService: SliderService
   ) {}
 
   compareFn(c1: TerminalDetail, c2: TerminalDetail): boolean {
@@ -85,6 +87,13 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
       this.term.open(this.terminalDiv.nativeElement);
       this.term.focus();
       this.fitAddon.fit();
+
+      this.sliderService.resizedSliderEvent.subscribe(() => {
+        this.term.focus();
+        setTimeout(() => {
+          this.fitAddon.fit();
+        }, 0);
+      });
     }
   }
 

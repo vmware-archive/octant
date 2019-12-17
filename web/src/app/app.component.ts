@@ -39,6 +39,9 @@ export class AppComponent implements OnInit, OnDestroy {
     });
     this.sliderService.setHeight$.subscribe((data: number) => {
       Object.assign(this.style, { marginBottom: `${data}px` });
+      setTimeout(() => {
+        this.sliderService.resizedSliderEvent.emit(true);
+      }, 0);
     });
     router.events.subscribe(data => {
       if (data instanceof NavigationStart) {
