@@ -7,10 +7,14 @@ package describer
 
 import (
 	"context"
+	"path"
 	"sort"
 	"sync"
 
+	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -57,28 +61,64 @@ func (csd *CRDSection) Describe(ctx context.Context, namespace string, options O
 
 	sort.Strings(names)
 
-	list := component.NewList("Custom Resources", nil)
+	tableCols := component.NewTableCols("Name", "Labels", "Age")
+	table := component.NewTable("Custom Resources", "", tableCols)
 
 	for _, name := range names {
-		resp, err := csd.describers[name].Describe(ctx, namespace, options)
-		if err != nil {
-			return component.EmptyContentResponse, err
-		}
-
-		for i := range resp.Components {
-			if nestedList, ok := resp.Components[i].(*component.List); ok {
-				for i := range nestedList.Config.Items {
-					item := nestedList.Config.Items[i]
-					if !item.IsEmpty() {
-						list.Add(item)
-					}
-				}
+		switch d := csd.describers[name].(type) {
+		case *crdList:
+			key := store.KeyFromGroupVersionKind(gvk.CustomResourceDefinition)
+			key.Name = d.name
+			crd, _, err := options.ObjectStore().Get(ctx, key)
+			if err != nil {
+				return component.EmptyContentResponse, err
 			}
+
+			crdObject, err := octant.NewCustomResourceDefinition(crd)
+			if err != nil {
+				return component.EmptyContentResponse, err
+			}
+
+			versions, err := crdObject.Versions()
+			if err != nil {
+				return component.EmptyContentResponse, err
+			}
+
+			count := 0
+			for _, version := range versions {
+				crGVK, err := gvk.CustomResource(crd, version)
+				if err != nil {
+					return component.EmptyContentResponse, err
+				}
+				key2 := store.KeyFromGroupVersionKind(crGVK)
+				key2.Namespace = namespace
+				list, _, err := options.ObjectStore().List(ctx, key2)
+				if err != nil {
+					return component.EmptyContentResponse, err
+				}
+				count += len(list.Items)
+			}
+
+			if count > 0 {
+				row := component.TableRow{}
+
+				ref := path.Join("/overview/namespace", namespace, "custom-resources", crd.GetName())
+				if namespace == "" {
+					ref = path.Join("/cluster-overview/custom-resources", crd.GetName())
+				}
+
+				row["Name"] = component.NewLink("", crd.GetName(), ref)
+				row["Labels"] = component.NewLabels(crd.GetLabels())
+				row["Age"] = component.NewTimestamp(crd.GetCreationTimestamp().Time)
+
+				table.Add(row)
+			}
+
 		}
 	}
 
 	cr := component.ContentResponse{
-		Components: []component.Component{list},
+		Components: []component.Component{table},
 		Title:      component.TitleFromString(csd.title),
 	}
 

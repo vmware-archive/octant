@@ -6,19 +6,15 @@ SPDX-License-Identifier: Apache-2.0
 package printer
 
 import (
-	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/util/yaml"
 
+	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/internal/testutil"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -29,8 +25,8 @@ func Test_CustomResourceListHandler(t *testing.T) {
 
 	tpo := newTestPrinterOptions(controller)
 
-	crd := loadCRDFromFile(t, "crd.yaml")
-	resource := loadCRFromFile(t, "crd-resource.yaml")
+	crd := testutil.LoadUnstructuredFromFile(t, "crd.yaml")
+	resource := testutil.LoadUnstructuredFromFile(t, "crd-resource.yaml")
 
 	now := time.Now()
 	resource.SetCreationTimestamp(metav1.Time{Time: now})
@@ -41,11 +37,11 @@ func Test_CustomResourceListHandler(t *testing.T) {
 	resource.SetLabels(labels)
 
 	list := testutil.ToUnstructuredList(t, resource)
-	got, err := CustomResourceListHandler(crd.Name, crd, list, tpo.link, true)
+	got, err := CustomResourceListHandler(crd, list, "v1", tpo.link)
 	require.NoError(t, err)
 
 	expected := component.NewTableWithRows(
-		"crontabs.stable.example.com", "We couldn't find any custom resources!",
+		"crontabs.stable.example.com/v1", "We couldn't find any custom resources!",
 		component.NewTableCols("Name", "Labels", "Age"),
 		[]component.TableRow{
 			{
@@ -54,7 +50,6 @@ func Test_CustomResourceListHandler(t *testing.T) {
 				"Labels": component.NewLabels(labels),
 			},
 		})
-	expected.SetIsLoading(true)
 
 	component.AssertEqual(t, expected, got)
 }
@@ -65,8 +60,8 @@ func Test_CustomResourceListHandler_custom_columns(t *testing.T) {
 
 	tpo := newTestPrinterOptions(controller)
 
-	crd := loadCRDFromFile(t, "crd-additional-columns.yaml")
-	resource := loadCRFromFile(t, "crd-resource.yaml")
+	crd := testutil.LoadUnstructuredFromFile(t, "crd-additional-columns.yaml")
+	resource := testutil.LoadUnstructuredFromFile(t, "crd-resource.yaml")
 
 	now := time.Now()
 	resource.SetCreationTimestamp(metav1.Time{Time: now})
@@ -78,11 +73,11 @@ func Test_CustomResourceListHandler_custom_columns(t *testing.T) {
 
 	list := testutil.ToUnstructuredList(t, resource)
 
-	got, err := CustomResourceListHandler(crd.Name, crd, list, tpo.link, false)
+	got, err := CustomResourceListHandler(crd, list, "v1", tpo.link)
 	require.NoError(t, err)
 
 	expected := component.NewTableWithRows(
-		"crontabs.stable.example.com", "We couldn't find any custom resources!",
+		"crontabs.stable.example.com/v1", "We couldn't find any custom resources!",
 		component.NewTableCols("Name", "Labels", "Spec", "Replicas", "Errors", "Resource Age", "Age"),
 		[]component.TableRow{
 			{
@@ -99,13 +94,17 @@ func Test_CustomResourceListHandler_custom_columns(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
+func TestCustomResourceHandler(t *testing.T) {
+
+}
+
 func Test_printCustomResourceConfig(t *testing.T) {
 	cases := []struct {
 		name     string
 		crd      string
 		cr       string
 		expected component.Component
-		isErr    bool
+		wantErr  bool
 	}{
 		{
 			name: "with additional columns",
@@ -132,8 +131,8 @@ func Test_printCustomResourceConfig(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			crd := loadCRDFromFile(t, tc.crd)
-			resource := loadCRFromFile(t, tc.cr)
+			crd := testutil.LoadUnstructuredFromFile(t, tc.crd)
+			resource := testutil.LoadUnstructuredFromFile(t, tc.cr)
 
 			now := time.Now()
 			resource.SetCreationTimestamp(metav1.Time{Time: now})
@@ -141,13 +140,8 @@ func Test_printCustomResourceConfig(t *testing.T) {
 			labels := map[string]string{"foo": "bar"}
 			resource.SetLabels(labels)
 
-			got, err := printCustomResourceConfig(resource, crd)
-			if tc.isErr {
-				require.Error(t, err)
-				return
-			}
-
-			require.NoError(t, err)
+			got, err := printCustomResourceConfig(crd, resource)
+			testutil.RequireErrorOrNot(t, tc.wantErr, err)
 
 			assert.Equal(t, tc.expected, got)
 		})
@@ -160,7 +154,7 @@ func Test_printCustomResourceStatus(t *testing.T) {
 		crd      string
 		cr       string
 		expected component.Component
-		isErr    bool
+		wantErr  bool
 	}{
 		{
 			name: "with additional columns",
@@ -183,8 +177,8 @@ func Test_printCustomResourceStatus(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			crd := loadCRDFromFile(t, tc.crd)
-			resource := loadCRFromFile(t, tc.cr)
+			crd := testutil.LoadUnstructuredFromFile(t, tc.crd)
+			resource := testutil.LoadUnstructuredFromFile(t, tc.cr)
 
 			now := time.Now()
 			resource.SetCreationTimestamp(metav1.Time{Time: now})
@@ -192,13 +186,8 @@ func Test_printCustomResourceStatus(t *testing.T) {
 			labels := map[string]string{"foo": "bar"}
 			resource.SetLabels(labels)
 
-			got, err := printCustomResourceStatus(resource, crd)
-			if tc.isErr {
-				require.Error(t, err)
-				return
-			}
-
-			require.NoError(t, err)
+			got, err := printCustomResourceStatus(crd, resource)
+			testutil.RequireErrorOrNot(t, tc.wantErr, err)
 
 			assert.Equal(t, tc.expected, got)
 		})
@@ -211,7 +200,7 @@ func Test_printCustomColumn(t *testing.T) {
 		objectPath string
 		jsonPath   string
 		expected   string
-		isErr      bool
+		wantErr    bool
 	}{
 		{
 			name:       "simple",
@@ -229,7 +218,7 @@ func Test_printCustomColumn(t *testing.T) {
 			name:       "invalid json path",
 			objectPath: "certificate.yaml",
 			jsonPath:   ".status.conditions[?(@.type==\"Ready\"].status",
-			isErr:      true,
+			wantErr:    true,
 		},
 		{
 			name:       "execute error: not found",
@@ -241,45 +230,18 @@ func Test_printCustomColumn(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			resource := loadCRFromFile(t, tc.objectPath)
+			resource := testutil.LoadUnstructuredFromFile(t, tc.objectPath)
 
-			def := apiextv1beta1.CustomResourceColumnDefinition{
+			def := octant.CustomResourceDefinitionPrinterColumn{
 				Name:     "name",
 				JSONPath: tc.jsonPath,
 			}
 
 			got, err := printCustomColumn(resource.Object, def)
-			if tc.isErr {
-				require.Error(t, err)
-				return
-			}
-
-			require.NoError(t, err)
+			testutil.RequireErrorOrNot(t, tc.wantErr, err)
 
 			assert.Equal(t, tc.expected, got)
 		})
 	}
 
-}
-
-func loadCRDFromFile(t *testing.T, filename string) *apiextv1beta1.CustomResourceDefinition {
-	crd := testutil.CreateCRD("crd")
-	testutil.LoadTypedObjectFromFile(t, filename, crd)
-
-	return crd
-}
-
-func loadCRFromFile(t *testing.T, filename string) *unstructured.Unstructured {
-	file, err := os.Open(filepath.Join("testdata", filename))
-	require.NoError(t, err)
-
-	decoder := yaml.NewYAMLOrJSONDecoder(file, 1024)
-	var m map[string]interface{}
-	require.NoError(t, decoder.Decode(&m))
-
-	resource := &unstructured.Unstructured{
-		Object: m,
-	}
-
-	return resource
 }

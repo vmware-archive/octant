@@ -75,11 +75,6 @@ func NewSummary(title string, sections ...SummarySection) *Summary {
 	}
 }
 
-// GetMetadata accesses the components metadata. Implements Component.
-func (t *Summary) GetMetadata() Metadata {
-	return t.Metadata
-}
-
 func (t *Summary) AddAction(action Action) {
 	t.Config.Actions = append(t.Config.Actions, action)
 }
@@ -87,6 +82,14 @@ func (t *Summary) AddAction(action Action) {
 // Add adds additional items to the tail of the summary.
 func (t *Summary) Add(sections ...SummarySection) {
 	t.Config.Sections = append(t.Config.Sections, sections...)
+}
+
+// AddSection adds a section to the tail of a summary.
+func (t *Summary) AddSection(header string, content Component) {
+	t.Add(SummarySection{
+		Header:  header,
+		Content: content,
+	})
 }
 
 // SetAlert sets an alert for the summary.

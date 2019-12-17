@@ -7,32 +7,25 @@ package describer
 
 import (
 	"context"
+	"fmt"
 	"path"
 
-	"github.com/pkg/errors"
-	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
+	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/module"
 	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
-func CustomResourceDefinition(ctx context.Context, name string, o store.Store) (*apiextv1beta1.CustomResourceDefinition, error) {
-	key := store.Key{
-		APIVersion: "apiextensions.k8s.io/v1beta1",
-		Kind:       "CustomResourceDefinition",
-		Name:       name,
-	}
+func CustomResourceDefinition(ctx context.Context, name string, o store.Store) (*unstructured.Unstructured, error) {
+	key := store.KeyFromGroupVersionKind(gvk.CustomResourceDefinition)
+	key.Name = name
 
-	crd := &apiextv1beta1.CustomResourceDefinition{}
-	found, err := store.GetAs(ctx, o, key, crd)
+	crd, _, err := o.Get(ctx, key)
 	if err != nil {
-		return nil, errors.Wrapf(err, "get object as custom resource definition %q from store", name)
-	}
-	if !found {
-		return nil, errors.Errorf("custom resource definition %q was not found", name)
+		return nil, fmt.Errorf("get %s: %w", key, err)
 	}
 
 	return crd, nil
@@ -46,6 +39,7 @@ func AddCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatcher
 
 	cld := newCRDList(name, crdListPath(name))
 
+	// TODO: this should add a list of custom resource definitions
 	crdSection.Add(name, cld)
 
 	for _, pf := range cld.PathFilters() {

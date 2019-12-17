@@ -136,7 +136,7 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 	customResourcesDescriber := describer.NamespacedCRD()
 
 	watchConfig := &config.CRDWatchConfig{
-		Add: func(_ *describer.PathMatcher, sectionDescriber *describer.CRDSection) config.ObjectHandler {
+		Add: func(pathMatcher *describer.PathMatcher, sectionDescriber *describer.CRDSection) config.ObjectHandler {
 			return func(ctx context.Context, object *unstructured.Unstructured) {
 				co.mu.Lock()
 				defer co.mu.Unlock()
@@ -148,7 +148,7 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 				co.watchedCRDs = append(co.watchedCRDs, object)
 			}
 		}(pathMatcher, customResourcesDescriber),
-		Delete: func(_ *describer.PathMatcher, csd *describer.CRDSection) config.ObjectHandler {
+		Delete: func(pathMatcher *describer.PathMatcher, csd *describer.CRDSection) config.ObjectHandler {
 			return func(ctx context.Context, object *unstructured.Unstructured) {
 				co.mu.Lock()
 				defer co.mu.Unlock()

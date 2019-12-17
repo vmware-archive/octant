@@ -7,16 +7,17 @@ package describer
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
-	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware-tanzu/octant/internal/config"
+	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/internal/link"
 	"github.com/vmware-tanzu/octant/internal/modules/overview/yamlviewer"
+	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/internal/printer"
 	"github.com/vmware-tanzu/octant/internal/queryer"
 	"github.com/vmware-tanzu/octant/internal/resourceviewer"
@@ -25,7 +26,7 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-type crdPrinter func(ctx context.Context, crd *apiextv1beta1.CustomResourceDefinition, object *unstructured.Unstructured, options printer.Options) (component.Component, error)
+type crdPrinter func(ctx context.Context, crd, object *unstructured.Unstructured, options printer.Options) (component.Component, error)
 type resourceViewerPrinter func(ctx context.Context, object *unstructured.Unstructured, dashConfig config.Dash, q queryer.Queryer) (component.Component, error)
 type yamlPrinter func(runtime.Object) (*component.YAML, error)
 
@@ -66,14 +67,24 @@ func (c *crd) Describe(ctx context.Context, namespace string, options Options) (
 		return component.EmptyContentResponse, err
 	}
 
-	// TODO: crd.Spec.Version is incorrect. Use crd.Spec.Version instead.
-	gvk := schema.GroupVersionKind{
-		Group:   crd.Spec.Group,
-		Version: crd.Spec.Version,
-		Kind:    crd.Spec.Names.Kind,
+	octantCRD, err := octant.NewCustomResourceDefinition(crd)
+	if err != nil {
+		return component.EmptyContentResponse, err
 	}
 
-	apiVersion, kind := gvk.ToAPIVersionAndKind()
+	crdVersions, err := octantCRD.Versions()
+	if err != nil {
+		return component.EmptyContentResponse, fmt.Errorf("get versions for crd %s: %w", crd.GetName(), err)
+	} else if len(crdVersions) == 0 {
+		return component.EmptyContentResponse, fmt.Errorf("crd %s has no no versions", crd.GetName())
+	}
+
+	crGVK, err := gvk.CustomResource(crd, crdVersions[0])
+	if err != nil {
+		return component.EmptyContentResponse, fmt.Errorf("get gvk for custom resource")
+	}
+
+	apiVersion, kind := crGVK.ToAPIVersionAndKind()
 
 	key := store.Key{
 		Namespace:  namespace,
@@ -93,7 +104,7 @@ func (c *crd) Describe(ctx context.Context, namespace string, options Options) (
 
 	title := component.Title(
 		component.NewText("Custom Resources"),
-		component.NewText(crd.Name),
+		component.NewText(crd.GetName()),
 		component.NewText(object.GetName()))
 
 	iconName, iconSource := loadIcon(icon.CustomResourceDefinition)
