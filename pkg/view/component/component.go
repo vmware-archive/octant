@@ -18,10 +18,11 @@ var EmptyContentResponse = ContentResponse{}
 // ContentResponse is a a content response. It contains a
 // title and one or more components.
 type ContentResponse struct {
-	Title      []TitleComponent `json:"title,omitempty"`
-	Components []Component      `json:"viewComponents"`
-	IconName   string           `json:"iconName,omitempty"`
-	IconSource string           `json:"iconSource,omitempty"`
+	Title              []TitleComponent `json:"title,omitempty"`
+	Components         []Component      `json:"viewComponents"`
+	ExtensionComponent Component        `json:"extensionComponent,omitempty"`
+	IconName           string           `json:"iconName,omitempty"`
+	IconSource         string           `json:"iconSource,omitempty"`
 }
 
 // NewContentResponse creates an instance of ContentResponse.
@@ -34,6 +35,11 @@ func NewContentResponse(title []TitleComponent) *ContentResponse {
 // Add adds zero or more components to a content response.
 func (c *ContentResponse) Add(components ...Component) {
 	c.Components = append(c.Components, components...)
+}
+
+// SetExtension adds zero or more components to an extension content response.
+func (c *ContentResponse) SetExtension(component *Extension) {
+	c.ExtensionComponent = component
 }
 
 // UnmarshalJSON unmarshals a content response from JSON.

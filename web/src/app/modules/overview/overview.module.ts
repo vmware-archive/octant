@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ClarityModule } from '@clr/angular';
@@ -10,6 +10,7 @@ import json from 'highlight.js/lib/languages/json';
 import yaml from 'highlight.js/lib/languages/yaml';
 import { HighlightModule } from 'ngx-highlightjs';
 import { MarkdownModule } from 'ngx-markdown';
+import { ResizableModule } from 'angular-resizable-element';
 
 import { AnnotationsComponent } from './components/annotations/annotations.component';
 import { CardListComponent } from './components/card-list/card-list.component';
@@ -131,7 +132,7 @@ export function hljsLanguages() {
     RouterModule,
     ReactiveFormsModule,
     MarkdownModule.forChild(),
-    NgTerminalModule,
+    ResizableModule,
   ],
   exports: [ContextSelectorComponent, DefaultPipe, SafePipe],
 })

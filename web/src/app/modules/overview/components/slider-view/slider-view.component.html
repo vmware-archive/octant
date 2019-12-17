@@ -1,11 +1,23 @@
 <!-- Copyright (c) 2019 the Octant contributors. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0 -->
 
-<div class="status-view" [@SlideInOutAnimation]="animationState">
-    <a class="status-view--trigger" (click)="slide()">
-        <clr-icon shape="angle" [class]="animationState"></clr-icon>
-    </a>
-    <div class="status-view--content">
-        <ng-content></ng-content>
-    </div>
+<div class="status-view" *ngIf="animationState === 'in'" mwlResizable [ngStyle]="style" [resizeCursors]="{topOrBottom: 'ns-resize'}" [enableGhostResize]="true" [resizeEdges]="{top: true}" [@SlideInOutAnimation]="animationState" (resizeEnd)="onResizeTop($event)" (window:resize)="onResize($event)">
+  <a class="status-view--trigger" (click)="slide()">
+    <clr-icon shape="angle" [class]="animationState"></clr-icon>
+  </a>
+  <div class="status-view--content" [ngStyle]="contentStyle">
+    <ng-container *ngIf="view?.config.tabs">
+      <app-object-tabs [views]="tabs" [payloads]="payloads" [closable]=true></app-object-tabs>
+    </ng-container>
+  </div>
+</div>
+<div class="status-view" *ngIf="animationState == 'out'" [@SlideInOutAnimation]="animationState">
+  <a class="status-view--trigger" (click)="slide()">
+    <clr-icon shape="angle" [class]="animationState"></clr-icon>
+  </a>
+  <div class="status-view--content">
+    <ng-container *ngIf="view?.config.tabs">
+      <app-object-tabs [views]="tabs" [payloads]="payloads" [closable]=true></app-object-tabs>
+    </ng-container>
+  </div>
 </div>

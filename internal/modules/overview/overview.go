@@ -254,9 +254,43 @@ func (co *Overview) Stop() {
 func (co *Overview) Content(ctx context.Context, contentPath string, opts module.ContentOptions) (component.ContentResponse, error) {
 	ctx = log.WithLoggerContext(ctx, co.dashConfig.Logger())
 	genOpts := generator.Options{
-		LabelSet: opts.LabelSet,
+		LabelSet:               opts.LabelSet,
+		ExtensionDescriberFunc: co.extensionDescriber,
 	}
 	return co.generator.Generate(ctx, contentPath, genOpts)
+}
+
+func (co *Overview) extensionDescriber(path, namespace string, options describer.Options) (*component.Extension, error) {
+	extension := component.NewExtension()
+	terminals := options.TerminalManager().List(namespace)
+
+	for _, t := range terminals {
+		tfl := component.NewFlexLayout(t.Command())
+		tfl.SetAccessor(t.ID())
+
+		details := component.TerminalDetails{
+			Container: t.Container(),
+			Command:   t.Command(),
+			UUID:      t.ID(),
+			CreatedAt: t.CreatedAt(),
+			Active:    t.Active(),
+		}
+
+		tfl.AddSections([]component.FlexLayoutItem{
+			{
+				Width: component.WidthFull,
+				View:  component.NewTerminal(t.Key().Namespace, t.Key().Name, details),
+			},
+		})
+
+		extensionTab := component.ExtensionTab{
+			Tab:          tfl,
+			ClosePayload: action.CreatePayload("overview/deleteTerminal", action.Payload{"terminalID": t.ID()}),
+		}
+
+		extension.AddTab(extensionTab)
+	}
+	return extension, nil
 }
 
 func (co *Overview) portForwardsHandler() http.HandlerFunc {

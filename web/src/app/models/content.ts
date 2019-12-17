@@ -7,6 +7,7 @@ export interface ContentResponse {
 }
 
 export interface Content {
+  extensionComponent: ExtensionView;
   viewComponents: View[];
   title: View[];
   iconName?: string;
@@ -432,5 +433,16 @@ export interface VerticalBulletChartView extends View {
     measure: number;
     measureLabel: string;
     label: string;
+  };
+}
+
+export interface ExtensionTab {
+  tab: View;
+  payload: { [key: string]: string };
+}
+
+export interface ExtensionView extends View {
+  config: {
+    tabs: ExtensionTab[];
   };
 }
