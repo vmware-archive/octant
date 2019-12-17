@@ -127,7 +127,7 @@ export class WebsocketService implements BackendService {
 
   private createWebSocket() {
     const uri = this.websocketURI();
-    return Observable.create(observer => {
+    return new Observable(observer => {
       try {
         const subject = webSocket({
           url: uri,
@@ -135,13 +135,11 @@ export class WebsocketService implements BackendService {
           openObserver: this.reconnected,
         });
 
-        const subscription = subject
-          .asObservable()
-          .subscribe(
-            data => observer.next(data),
-            error => observer.error(error),
-            () => observer.complete()
-          );
+        const subscription = subject.asObservable().subscribe(
+          data => observer.next(data),
+          error => observer.error(error),
+          () => observer.complete()
+        );
 
         this.subject = subject;
         return () => {

@@ -3,7 +3,6 @@
 //
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TerminalComponent } from './terminal.component';
-import { NgTerminalModule } from 'ng-terminal';
 
 describe('TerminalComponent', () => {
   let component: TerminalComponent;
@@ -11,7 +10,6 @@ describe('TerminalComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [NgTerminalModule],
       declarations: [TerminalComponent],
     }).compileComponents();
   }));

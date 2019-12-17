@@ -44,6 +44,7 @@ func defaultStateManagers(clientID string, dashConfig config.Dash) []StateManage
 		NewNamespacesManager(dashConfig),
 		NewContextManager(dashConfig),
 		NewActionRequestManager(),
+		NewTerminalStateManager(dashConfig),
 	}
 }
 

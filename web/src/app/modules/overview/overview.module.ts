@@ -54,8 +54,7 @@ import { SafePipe } from './pipes/safe.pipe';
 import { ButtonGroupComponent } from './components/button-group/button-group.component';
 import { AlertComponent } from './components/alert/alert.component';
 import { ContentFilterComponent } from './components/content-filter/content-filter.component';
-import { NgTerminalModule } from 'ng-terminal';
-import { TerminalComponent } from 'src/app/components/terminal/terminal.component';
+import { TerminalComponent } from './components/terminal/terminal.component';
 import { IFrameComponent } from './components/iframe/iframe.component';
 import { SliderViewComponent } from './components/slider-view/slider-view.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -63,7 +62,10 @@ import { DonutChartComponent } from './components/donut-chart/donut-chart.compon
 import { SingleStatComponent } from './components/single-stat/single-stat.component';
 
 export function hljsLanguages() {
-  return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
+  return [
+    { name: 'yaml', func: yaml },
+    { name: 'json', func: json },
+  ];
 }
 
 @NgModule({

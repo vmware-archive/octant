@@ -364,6 +364,26 @@ export interface LogResponse {
   entries: LogEntry[];
 }
 
+export interface TerminalOutput {
+  scrollback: string;
+  line: string;
+}
+
+export interface TerminalDetail {
+  container: string;
+  command: string;
+  uuid: string;
+  active: boolean;
+}
+
+export interface TerminalView extends View {
+  config: {
+    namespace: string;
+    name: string;
+    terminal: TerminalDetail;
+  };
+}
+
 export interface Port extends View {
   config: {
     namespace: string;

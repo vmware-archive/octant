@@ -330,6 +330,8 @@ func (co *Overview) ActionPaths() map[string]action.DispatcherFunc {
 		octant.NewDeploymentConfigurationEditor(co.logger, co.dashConfig.ObjectStore()),
 		octant.NewContainerEditor(co.dashConfig.ObjectStore()),
 		octant.NewServiceConfigurationEditor(co.dashConfig.ObjectStore()),
+		octant.NewTerminalCommandExec(co.logger, co.dashConfig.ObjectStore(), co.dashConfig.TerminalManager()),
+		octant.NewTerminalDelete(co.logger, co.dashConfig.ObjectStore(), co.dashConfig.TerminalManager()),
 	}
 
 	return dispatchers.ToActionPaths()
