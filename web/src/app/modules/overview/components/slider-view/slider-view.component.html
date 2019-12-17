@@ -1,7 +1,7 @@
 <!-- Copyright (c) 2019 the Octant contributors. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0 -->
 
-<div class="status-view" *ngIf="animationState === 'in'" mwlResizable [ngStyle]="style" [resizeCursors]="{topOrBottom: 'ns-resize'}" [enableGhostResize]="true" [resizeEdges]="{top: true}" [@SlideInOutAnimation]="animationState" (resizeEnd)="onResizeTop($event)">
+<div class="status-view" *ngIf="animationState === 'in'" mwlResizable [ngStyle]="style" [resizeCursors]="{topOrBottom: 'ns-resize'}" [enableGhostResize]="true" [resizeEdges]="{top: true}" [@SlideInOutAnimation]="animationState" (resizeEnd)="onResizeTop($event)" (window:resize)="onResize($event)">
   <a class="status-view--trigger" (click)="slide()">
     <clr-icon shape="angle" [class]="animationState"></clr-icon>
   </a>

@@ -77,4 +77,8 @@ export class SliderViewComponent implements OnChanges {
       this.sliderService.setHeight(this.contentHeight);
     }
   }
+
+  onResize(event) {
+    Object.assign(this.style, { top: `inherit` });
+  }
 }
