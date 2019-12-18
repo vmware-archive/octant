@@ -6,6 +6,9 @@ SPDX-License-Identifier: Apache-2.0
 package gvk
 
 import (
+	"fmt"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -37,3 +40,33 @@ var (
 	RoleBinding              = schema.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "RoleBinding"}
 	Role                     = schema.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "Role"}
 )
+
+// CustomResource generates a `schema.GroupVersionKind` for a custom resource given a version.
+func CustomResource(crd *unstructured.Unstructured, version string) (schema.GroupVersionKind, error) {
+	if crd == nil {
+		return schema.GroupVersionKind{}, fmt.Errorf("custom resource definition is nil")
+	}
+
+	crdGroup := crd.GroupVersionKind().Group
+	crdKind := crd.GroupVersionKind().Kind
+
+	if crdGroup != CustomResourceDefinition.Group || crdKind != CustomResourceDefinition.Kind {
+		return schema.GroupVersionKind{}, fmt.Errorf("input was not a crd {group: %q, kind: %q}", crdGroup, crdKind)
+	}
+
+	group, _, err := unstructured.NestedString(crd.Object, "spec", "group")
+	if err != nil {
+		return schema.GroupVersionKind{}, fmt.Errorf("get crd group: %w", err)
+	}
+
+	kind, _, err := unstructured.NestedString(crd.Object, "spec", "names", "kind")
+	if err != nil {
+		return schema.GroupVersionKind{}, fmt.Errorf("get crd kind: %w", err)
+	}
+
+	return schema.GroupVersionKind{
+		Group:   group,
+		Version: version,
+		Kind:    kind,
+	}, nil
+}

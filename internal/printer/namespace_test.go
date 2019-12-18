@@ -7,7 +7,6 @@ package printer
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -194,7 +193,6 @@ func Test_createResourceLimitCPURow(t *testing.T) {
 		Min:  corev1.ResourceList{corev1.ResourceCPU: min},
 		Max:  corev1.ResourceList{corev1.ResourceCPU: max},
 	}
-	fmt.Printf("%t", cpu.Min.Cpu().IsZero())
 	_, _, created := createResourceLimitCPURow(cpu)
 	require.True(t, created)
 

@@ -1,0 +1,42 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: crontabs.stable.example.com
+spec:
+  group: stable.example.com
+  scope: Namespaced
+  names:
+    plural: crontabs
+    singular: crontab
+    kind: CronTab
+    shortNames:
+      - ct
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                cronSpec:
+                  type: string
+                image:
+                  type: string
+                replicas:
+                  type: integer
+      additionalPrinterColumns:
+        - name: Spec
+          type: string
+          description: The cron spec defining the interval a CronJob is run
+          jsonPath: .spec.cronSpec
+        - name: Replicas
+          type: integer
+          description: The number of jobs launched by the CronJob
+          jsonPath: .spec.replicas
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
