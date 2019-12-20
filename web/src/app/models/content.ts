@@ -356,7 +356,7 @@ export interface LogsView extends View {
 }
 
 export interface LogEntry {
-  timestamp: string; // TODO: should be Date
+  timestamp: string;
   message: string;
 }
 

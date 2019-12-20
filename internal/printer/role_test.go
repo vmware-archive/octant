@@ -99,7 +99,7 @@ func Test_RoleConfiguration(t *testing.T) {
 
 func Test_createRolePolicyRulesView(t *testing.T) {
 	role := testutil.CreateRole("role")
-	// TODO: (GuessWhoSamFoo) Test more complex rules
+	// TODO: (GuessWhoSamFoo) Test more complex rules (GH#499)
 	role.Rules = []rbacv1.PolicyRule{
 		{
 			Resources:       []string{""},

@@ -352,7 +352,7 @@ func (d *dash) Run(ctx context.Context) error {
 	go func() {
 		if err = server.Serve(d.listener); err != nil && err != http.ErrServerClosed {
 			d.logger.Errorf("http server: %v", err)
-			os.Exit(1) // TODO graceful shutdown for other goroutines
+			os.Exit(1) // TODO graceful shutdown for other goroutines (GH#494)
 		}
 	}()
 

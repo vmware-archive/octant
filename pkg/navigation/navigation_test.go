@@ -137,7 +137,7 @@ func createCRD(name, kind string, isClusterScoped bool) *apiextv1beta1.CustomRes
 	crd.Spec.Names = apiextv1beta1.CustomResourceDefinitionNames{
 		Kind: kind,
 	}
-	// TODO fix this because Version is deprecated
+	// TODO fix this because Version is deprecated (GH#501)
 	crd.Spec.Version = "v1"
 	crd.Spec.Versions = []apiextv1beta1.CustomResourceDefinitionVersion{
 		{

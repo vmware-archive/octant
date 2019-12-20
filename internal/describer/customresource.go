@@ -39,7 +39,7 @@ func AddCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatcher
 
 	cld := newCRDList(name, crdListPath(name))
 
-	// TODO: this should add a list of custom resource definitions
+	// TODO: this should add a list of custom resource definitions (GH#509)
 	crdSection.Add(name, cld)
 
 	for _, pf := range cld.PathFilters() {

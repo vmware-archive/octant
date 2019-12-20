@@ -47,7 +47,7 @@ func PersistentVolumeClaimListHandler(ctx context.Context, list *corev1.Persiste
 		row["Name"] = nameLink
 
 		row["Status"] = component.NewText(string(persistentVolumeClaim.Status.Phase))
-		// TODO: Link to volume
+		// TODO: Link to volume (GH#503)
 		row["Volume"] = component.NewText(persistentVolumeClaim.Spec.VolumeName)
 		row["Capacity"] = component.NewText(capacity)
 		row["Access Modes"] = component.NewText(accessModes)
@@ -154,7 +154,7 @@ func createPersistentVolumeClaimStatusView(persistentVolumeClaim *corev1.Persist
 		if boundVolume := persistentVolumeClaim.Spec.VolumeName; boundVolume != "" {
 			sections = append(sections, component.SummarySection{
 				Header: "Bound Volume",
-				// TODO: Link to volume
+				// TODO: Link to volume (GH#503)
 				Content: component.NewText(boundVolume),
 			})
 		}

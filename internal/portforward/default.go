@@ -10,7 +10,6 @@ import (
 	"os"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
-	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/store"
 
 	"github.com/pkg/errors"
@@ -18,15 +17,10 @@ import (
 
 // Default create a port forward instance.
 func Default(ctx context.Context, client cluster.ClientInterface, objectStore store.Store) (PortForwarder, error) {
-	logger := log.From(ctx)
 	restClient, err := client.RESTClient()
 	if err != nil {
 		return nil, errors.Wrap(err, "fetching RESTClient")
 	}
-
-	go func() {
-
-	}()
 
 	pfOpts := ServiceOptions{
 		RESTClient:  restClient,
@@ -41,8 +35,7 @@ func Default(ctx context.Context, client cluster.ClientInterface, objectStore st
 		},
 	}
 
-	// FIXME: logger is in context
-	svc := New(ctx, pfOpts, logger)
+	svc := New(ctx, pfOpts)
 
 	return svc, nil
 }

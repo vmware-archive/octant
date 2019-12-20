@@ -86,7 +86,8 @@ func localPortsHandler(fw *portforward.PortForwarder, opts Options) {
 			case <-opts.ReadyChannel:
 				ports, err := fw.GetPorts()
 				if err != nil {
-					return // TODO
+					// TODO: alert user (GH#497)
+					return
 				}
 				fp := make([]ForwardedPort, len(ports))
 				for i := range ports {

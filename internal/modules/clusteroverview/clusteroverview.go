@@ -121,7 +121,7 @@ func (co *ClusterOverview) Name() string {
 
 func (co *ClusterOverview) ClientRequestHandlers() []octant.ClientRequestHandler {
 	return []octant.ClientRequestHandler{
-		// TODO: move to overview
+		// TODO: move to overview (GH#495)
 		{
 			RequestType: "startPortForward",
 			Handler: func(state octant.State, payload action.Payload) error {

@@ -145,7 +145,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
     const views = contentResponse.content.viewComponents;
     if (!views || views.length === 0) {
       this.hasReceivedContent = false;
-      // TODO: show a loading screen here
+      // TODO: show a loading screen here (#506)
       return;
     }
 

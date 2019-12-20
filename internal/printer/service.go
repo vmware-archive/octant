@@ -400,7 +400,7 @@ func describeExternalIPs(service corev1.Service) string {
 		}
 	}
 
-	// TODO: Display if pending
+	// TODO: Display if pending (GH#502)
 	if len(externalIPs) == 0 {
 		return "<none>"
 	}

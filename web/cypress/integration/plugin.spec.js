@@ -4,7 +4,7 @@ describe('Plugin', () => {
   });
 
   it('click plugin tab', () => {
-    // TODO (GuessWhoSamFoo) Start octant with the temp context to avoid passing namespaces
+    // TODO (GuessWhoSamFoo) Start octant with the temp context to avoid passing namespaces (GH#362)
     cy.exec(
       `kubectl config view --minify --output 'jsonpath={..namespace}'`
     ).then(result => {

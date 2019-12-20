@@ -47,7 +47,7 @@ func (a *ActionRequestManager) PerformAction(state octant.State, payload action.
 
 	actionName, err := payload.String("action")
 	if err != nil {
-		// TODO: alert the user this action doesn't exist
+		// TODO: alert the user this action doesn't exist (GH#493)
 		return nil
 	}
 
