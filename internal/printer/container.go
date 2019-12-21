@@ -404,7 +404,6 @@ func describeEnvRows(ctx context.Context, namespace string, vars []corev1.EnvVar
 
 // describeEnvFromRows renders container environmentFrom references as table rows.
 // Expected columns: Name, Value, Source
-// TODO: Consider expanding variables from referenced config map / secret
 func describeEnvFromRows(namespace string, vars []corev1.EnvFromSource, options Options) ([]component.TableRow, error) {
 	rows := make([]component.TableRow, 0)
 	for _, e := range vars {

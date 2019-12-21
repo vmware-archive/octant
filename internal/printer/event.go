@@ -271,7 +271,6 @@ func eventsForObject(ctx context.Context, object runtime.Object, o store.Store) 
 		}
 
 		involvedObject := event.InvolvedObject
-		// TODO: Events are
 		if involvedObject.APIVersion == "autoscaling/v2beta2" || involvedObject.APIVersion == "autoscaling/v2beta1" {
 			involvedObject.APIVersion = "autoscaling/v1"
 		}

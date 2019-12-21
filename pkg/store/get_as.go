@@ -42,7 +42,7 @@ func GetAs(ctx context.Context, o Store, key Key, as interface{}) (bool, error) 
 	return true, nil
 }
 
-// TODO: see if all the other versions of this function could be replaced
+// TODO: see if all the other versions of this function could be replaced (GH#500)
 func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
 	object, ok := to.(metav1.Object)
 	if !ok {

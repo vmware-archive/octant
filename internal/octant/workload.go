@@ -171,7 +171,7 @@ func objectOwner(ctx context.Context, objectStore store.Store, object *unstructu
 	}
 
 	if !found {
-		// TODO: does this need a better error?
+		// TODO: does this need a better error? (GH#510)
 		return nil, fmt.Errorf("unable to find %s: %w", ownerRefKey, err)
 	}
 

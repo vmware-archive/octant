@@ -85,7 +85,7 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
       this.resetModal();
       this.opened = true;
 
-      // TODO(abrand): Hack for focusing on input. Need to figure this out.
+      // TODO(abrand): Hack for focusing on input. Need to figure this out. (GH#508)
       const el = this.el;
       setTimeout(() => {
         el.nativeElement.querySelector('.filter-input').focus();

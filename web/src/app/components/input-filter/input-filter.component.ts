@@ -74,7 +74,7 @@ export class InputFilterComponent implements OnInit, OnDestroy {
       this.inputValue = '';
       this.showTagList = true;
     } else {
-      // TODO: user input value not a valid filter;
+      // TODO: user input value not a valid filter (GH#505);
     }
   }
 

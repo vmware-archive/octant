@@ -53,11 +53,6 @@ export class NotifierComponent implements OnInit, OnDestroy {
       });
   }
 
-  onWarningClose() {
-    this.warning = '';
-    // TODO: remove warning from signals queue?
-  }
-
   ngOnDestroy(): void {
     if (this.signalSubscription) {
       this.signalSubscription.unsubscribe();

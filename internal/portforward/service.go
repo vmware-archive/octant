@@ -46,7 +46,7 @@ type PortForwardPortSpec struct {
 }
 
 // PortForwardSpec describes a port forward.
-// TODO Merge with PortForwardState
+// TODO Merge with PortForwardState (GH#498)
 type PortForwardSpec struct {
 	ID        string                `json:"id"`
 	Status    string                `json:"status"`
@@ -81,6 +81,7 @@ type State struct {
 	Pod       Target
 
 	cancel context.CancelFunc
+	ctx    context.Context
 }
 
 // Clone clones a port forward state.
@@ -92,6 +93,7 @@ func (pf *State) Clone() State {
 		Target:    pf.Target,
 		Pod:       pf.Pod,
 		cancel:    pf.cancel,
+		ctx:       pf.ctx,
 	}
 	copy(pfCpy.Ports, pf.Ports)
 	return pfCpy
@@ -129,10 +131,10 @@ type Service struct {
 var _ PortForwarder = (*Service)(nil)
 
 // New creates an instance of Service.
-func New(ctx context.Context, opts ServiceOptions, logger log.Logger) *Service {
+func New(ctx context.Context, opts ServiceOptions) *Service {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Service{
-		logger:   logger,
+		logger:   log.From(ctx),
 		opts:     opts,
 		notifyCh: make(chan forwarderEvent, 32),
 		ctx:      ctx,
@@ -145,7 +147,7 @@ func New(ctx context.Context, opts ServiceOptions, logger log.Logger) *Service {
 
 // Stop stops all forwarders. The portForwardService is invalid after calling stop.
 func (s *Service) Stop() {
-	// TODO wait on goroutines to complete after calling cancel.
+	// TODO wait on goroutines to complete after calling cancel. (GH#494)
 	if s.cancel != nil {
 		s.cancel()
 	}
@@ -264,7 +266,6 @@ func (s *Service) createForwarder(r CreateRequest) (string, error) {
 	// Spawns goroutine to update state as ports become available
 	portsChannel, portsReady := s.localPortsHandler(ctx, forwarderID)
 
-	// TODO resolve request gvk/name to pod name
 	o := &s.opts
 	opts := Options{
 		Config:        o.Config,
@@ -287,13 +288,13 @@ func (s *Service) createForwarder(r CreateRequest) (string, error) {
 			Namespace: r.Namespace,
 			Name:      r.Name,
 		},
-		// TODO Target and Pod may be different
 		Pod: Target{
 			GVK:       gvk,
 			Namespace: r.Namespace,
 			Name:      r.Name,
 		},
 		cancel: cancel,
+		ctx:    ctx,
 	}
 
 	s.state.Lock()
@@ -480,9 +481,10 @@ func (s *Service) StopForwarder(id string) {
 		return
 	}
 	if pf.cancel != nil {
-		// TODO wait for goroutine to exit
 		pf.cancel()
+		<-pf.ctx.Done() // Wait for PortForward context to finish.
 	}
+
 	delete(s.state.portForwards, id)
 }
 

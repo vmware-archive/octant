@@ -39,7 +39,6 @@ func newOctantCmd(version string) *cobra.Command {
 			// Count flags don't work correctly when accessed directly from viper so we must use CountVarP and set the result.
 			viper.Set("verbosity", verboseLevel)
 
-			// TODO enable support for klog
 			z, err := newZapLogger(viper.GetInt("verbosity"))
 			if err != nil {
 				golog.Printf("failed to initialize logger: %v", err)
@@ -107,7 +106,7 @@ func newOctantCmd(version string) *cobra.Command {
 			case <-sigCh:
 				logger.Debugf("Shutting dashboard down due to interrupt")
 				cancel()
-				// TODO implement graceful shutdown semantics
+				// TODO implement graceful shutdown semantics (GH#494)
 
 				<-shutdownCh
 			case <-runCh:
