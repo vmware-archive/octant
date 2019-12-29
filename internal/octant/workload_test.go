@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	metricsv1beta1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
@@ -66,6 +67,17 @@ func TestClusterWorkloadLoader(t *testing.T) {
 		corev1.ResourceMemory: resource.MustParse("3Mi"),
 	}
 
+	pod3 := testutil.ToUnstructured(t, testutil.CreatePod("pod-3", func(pod *corev1.Pod) {
+		pod.OwnerReferences = []metav1.OwnerReference{
+			{
+				APIVersion: "apps/v1",
+				Kind:       "ReplicaSet",
+				Name:       "missing",
+				UID:        "12345",
+			},
+		}
+	}))
+
 	objectStore := storeFake.NewMockStore(controller)
 	objectStore.EXPECT().
 		List(gomock.Any(), store.Key{
@@ -84,6 +96,25 @@ func TestClusterWorkloadLoader(t *testing.T) {
 			Name:       "rs-1",
 		}).
 		Return(replicaSet, true, nil).
+		AnyTimes()
+
+	noOwnerObjectStore := storeFake.NewMockStore(controller)
+	noOwnerObjectStore.EXPECT().
+		List(gomock.Any(), store.Key{
+			Namespace:  "namespace",
+			APIVersion: "v1",
+			Kind:       "Pod",
+		}).
+		Return(testutil.ToUnstructuredList(t, pod3), true, nil).
+		AnyTimes()
+	noOwnerObjectStore.EXPECT().
+		Get(gomock.Any(), store.Key{
+			Namespace:  "namespace",
+			APIVersion: "apps/v1",
+			Kind:       "ReplicaSet",
+			Name:       "missing",
+		}).
+		Return(nil, false, nil).
 		AnyTimes()
 
 	cases := []struct {
@@ -151,6 +182,26 @@ func TestClusterWorkloadLoader(t *testing.T) {
 						component.NodeStatusOK: {
 							{
 								Pod:          pod2,
+								ResourceList: corev1.ResourceList{},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:            "pod with missing owner",
+			objectStore:     noOwnerObjectStore,
+			podMetricLoader: podMetricsLoader(controller, pm, false, false),
+			namespace:       "namespace",
+			expected: []octant.Workload{
+				{
+					Name:     "pod-3",
+					IconName: "application",
+					SegmentCounter: map[component.NodeStatus][]octant.PodWithMetric{
+						component.NodeStatusOK: {
+							{
+								Pod:          pod3,
 								ResourceList: corev1.ResourceList{},
 							},
 						},
