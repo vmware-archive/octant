@@ -39,9 +39,10 @@ func CustomResourceDefinitionHandler(ctx context.Context, crd *unstructured.Unst
 		return nil, err
 	}
 
-	for _, version := range versions {
+	for i := range versions {
 		object.RegisterItems(ItemDescriptor{
 			Func: func() (c component.Component, err error) {
+				version := versions[i]
 				crGVK, err := gvk.CustomResource(crd, version)
 				if err != nil {
 					return nil, err
