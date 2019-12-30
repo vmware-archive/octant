@@ -53,7 +53,7 @@ A plugin with support for `PrinterItems` allow adding a `FlexLayoutItem` consist
 ## Uninstall
 
 Plugins can be removed by deleting the plugin binary from `~/.config/octant/plugins`. An example of deleting a plugin is shown below 
-where `octant-sample-plugin` is the plugin that will uninstalled:
+where `octant-sample-plugin` is the plugin that will be uninstalled:
 
 ```
 rm ~/.config/octant/plugins/octant-sample-plugin
