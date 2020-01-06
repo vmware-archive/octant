@@ -79,7 +79,7 @@ func PersistentVolumeClaimHandler(ctx context.Context, persistentVolumeClaim *co
 	}
 
 	if err := ph.MountedPodList(ctx, options); err != nil {
-		return nil, errors.Wrap(err, "print peristentvolumeclaim mounted pod list")
+		return nil, errors.Wrap(err, "print persistentvolumeclaim mounted pod list")
 	}
 	return o.ToComponent(ctx, options)
 }
