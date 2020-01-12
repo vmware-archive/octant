@@ -9,6 +9,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	golog "log"
 	"os"
 	"os/signal"
@@ -91,7 +92,9 @@ func newOctantCmd(version string) *cobra.Command {
 					if err := flag.CommandLine.Parse([]string{verbosityOpt, "-logtostderr=true"}); err != nil {
 						logger.WithErr(err).Errorf("unable to parse klog flags")
 					}
-
+				} else {
+					// klog's output is not helpful to Octant, so send it to the ether.
+					klog.SetOutput(ioutil.Discard)
 				}
 
 				if err := dash.Run(ctx, logger, shutdownCh, options); err != nil {
