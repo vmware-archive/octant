@@ -26,8 +26,6 @@ import (
 )
 
 func newOctantCmd(version string) *cobra.Command {
-	var verboseLevel int
-
 	octantCmd := &cobra.Command{
 		Use:   "octant",
 		Short: "octant kubernetes dashboard",
@@ -36,10 +34,17 @@ func newOctantCmd(version string) *cobra.Command {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			// Count flags don't work correctly when accessed directly from viper so we must use CountVarP and set the result.
-			viper.Set("verbosity", verboseLevel)
+			if err := bindViper(cmd); err != nil {
+				golog.Printf("unable to bind flags: %v", err)
+				os.Exit(1)
+			}
 
-			z, err := newZapLogger(viper.GetInt("verbosity"))
+			logLevel := 0
+			if viper.GetBool("verbose") {
+				logLevel = 1
+			}
+
+			z, err := newZapLogger(logLevel)
 			if err != nil {
 				golog.Printf("failed to initialize logger: %v", err)
 				os.Exit(1)
@@ -58,12 +63,6 @@ func newOctantCmd(version string) *cobra.Command {
 			runCh := make(chan bool, 1)
 
 			shutdownCh := make(chan bool, 1)
-
-			err = bindViper(cmd)
-			if err != nil {
-				logger.WithErr(err).Errorf("unable to bind flags")
-				os.Exit(1)
-			}
 
 			logger.Debugf("disable-open-browser: %s", viper.Get("disable-open-browser"))
 
@@ -84,15 +83,27 @@ func newOctantCmd(version string) *cobra.Command {
 					UserAgent:              fmt.Sprintf("octant/%s", version),
 				}
 
-				klogVerbosity := viper.GetInt("klog-verbosity")
-				if klogVerbosity > 0 {
-					klog.InitFlags(nil)
-					verbosityOpt := fmt.Sprintf("-v=%d", klogVerbosity)
-					if err := flag.CommandLine.Parse([]string{verbosityOpt, "-logtostderr=true"}); err != nil {
-						logger.WithErr(err).Errorf("unable to parse klog flags")
-					}
+				klogVerbosity := viper.GetString("klog-verbosity")
+				var klogOpts []string
 
+				klogFlagSet := flag.NewFlagSet("klog", flag.ContinueOnError)
+				if klogVerbosity == "" {
+					// klog's output is not helpful to Octant, so send it to the ether.
+					klogOpts = append(klogOpts,
+						fmt.Sprintf("-logtostderr=false"),
+						fmt.Sprintf("-alsologtostderr=false"),
+					)
+				} else {
+					klogOpts = append(klogOpts,
+						fmt.Sprintf("-v=%s", klogVerbosity),
+						fmt.Sprintf("-logtostderr=true"),
+						fmt.Sprintf("-alsologtostderr=true"),
+					)
 				}
+
+				klog.InitFlags(klogFlagSet)
+
+				_ = klogFlagSet.Parse(klogOpts)
 
 				if err := dash.Run(ctx, logger, shutdownCh, options); err != nil {
 					logger.WithErr(err).Errorf("dashboard failed")
@@ -125,7 +136,7 @@ func newOctantCmd(version string) *cobra.Command {
 	octantCmd.Flags().String("kubeconfig", "", "absolute path to kubeConfig file")
 	octantCmd.Flags().StringP("namespace", "n", "", "initial namespace")
 	octantCmd.Flags().StringP("plugin-path", "", "", "plugin path")
-	octantCmd.Flags().CountVarP(&verboseLevel, "verbosity", "v", "verbosity level")
+	octantCmd.Flags().BoolP("verbose", "v", false, "turn on debug logging")
 
 	octantCmd.Flags().StringP("accepted-hosts", "", "", "accepted hosts list [DEV]")
 	octantCmd.Flags().Float32P("client-qps", "", 200, "maximum QPS for client [DEV]")
