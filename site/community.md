@@ -14,5 +14,6 @@ You can follow the work we do, see our milestones, and examine our backlog on ou
 * Join our Kubernetes Slack channel and talk to us and other community members: [#octant](https://kubernetes.slack.com/app_redirect?channel=CM37M9FCG)
 * Join our [Google Group](http://groups.google.com/forum/#!forum/project-octant) to get updates on the project and invitations to community meetings.
 * Join the Octant community meetings:
-  * Every 2nd Tuesday at 18:00 UTC - [Zoom link](https://VMware.zoom.us/j/627117615)
+  * Every Wednesday at 1PM ET / 10AM PT - [Zoom link](https://VMware.zoom.us/j/627117615)
   * See previous community meetings, demos, and more on our [YouTube Playlist](https://www.youtube.com/playlist?list=PL7bmigfV0EqQ55lLisHHy2n1MDuRZasrR)
+  * [Meeting notes](https://hackmd.io/CzaPxtmXT_SW8nEpdwvGzw)
