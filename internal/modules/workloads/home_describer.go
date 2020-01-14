@@ -52,7 +52,7 @@ func (h *HomeDescriber) Describe(ctx context.Context, namespace string, options 
 
 	cards, fullMetrics, err := collector.Collect(ctx, namespace)
 	if err != nil {
-		return component.EmptyContentResponse, fmt.Errorf("collect workload cards")
+		return component.EmptyContentResponse, fmt.Errorf("collect workload cards: %w", err)
 	}
 
 	cardWidth := component.WidthHalf
