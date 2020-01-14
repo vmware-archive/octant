@@ -48,6 +48,7 @@ type ClientInterface interface {
 	DefaultNamespace() string
 	ResourceExists(schema.GroupVersionResource) bool
 	Resource(schema.GroupKind) (schema.GroupVersionResource, error)
+	ResetMapper()
 	KubernetesClient() (kubernetes.Interface, error)
 	DynamicClient() (dynamic.Interface, error)
 	DiscoveryClient() (discovery.DiscoveryInterface, error)
@@ -167,6 +168,10 @@ func (c *Cluster) Resource(gk schema.GroupKind) (schema.GroupVersionResource, er
 	}
 
 	return restMapping.Resource, nil
+}
+
+func (c *Cluster) ResetMapper() {
+	c.restMapper.Reset()
 }
 
 // KubernetesClient returns a Kubernetes client.

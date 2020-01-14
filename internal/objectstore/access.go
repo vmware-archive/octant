@@ -160,7 +160,7 @@ func (r *resourceAccess) keyToAccessKey(key store.Key, verb string) (AccessKey, 
 
 	gvr, err := r.client.Resource(gvk.GroupKind())
 	if err != nil {
-		return AccessKey{}, errors.Wrap(err, "client resource")
+		return AccessKey{}, fmt.Errorf("unable to get resource for group kind %s: %w", gvk.GroupKind(), err)
 	}
 
 	aKey := AccessKey{

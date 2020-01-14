@@ -163,30 +163,41 @@ func ListCustomResources(
 	if crd == nil {
 		return nil, false, errors.New("crd is nil")
 	}
-	gvk := schema.GroupVersionKind{
-		Group:   crd.Spec.Group,
-		Version: crd.Spec.Version,
-		Kind:    crd.Spec.Names.Kind,
+
+	list := new(unstructured.UnstructuredList)
+
+	for _, version := range crd.Spec.Versions {
+		if !version.Served {
+			continue
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   crd.Spec.Group,
+			Version: version.Name,
+			Kind:    crd.Spec.Names.Kind,
+		}
+
+		apiVersion, kind := gvk.ToAPIVersionAndKind()
+
+		key := store.Key{
+			APIVersion: apiVersion,
+			Kind:       kind,
+			Selector:   selector,
+		}
+
+		if crd.Spec.Scope == apiextv1beta1.NamespaceScoped {
+			key.Namespace = namespace
+		}
+
+		objects, _, err := o.List(ctx, key)
+		if err != nil {
+			return nil, false, errors.Wrapf(err, "listing custom resources for %q", crd.Name)
+		}
+
+		list.Items = append(list.Items, objects.Items...)
 	}
 
-	apiVersion, kind := gvk.ToAPIVersionAndKind()
-
-	key := store.Key{
-		APIVersion: apiVersion,
-		Kind:       kind,
-		Selector:   selector,
-	}
-
-	if crd.Spec.Scope == apiextv1beta1.NamespaceScoped {
-		key.Namespace = namespace
-	}
-
-	objects, hasSynced, err := o.List(ctx, key)
-	if err != nil {
-		return nil, false, errors.Wrapf(err, "listing custom resources for %q", crd.Name)
-	}
-
-	return objects, hasSynced, nil
+	return list, false, nil
 }
 
 type navConfig struct {
