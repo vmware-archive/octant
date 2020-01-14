@@ -35,7 +35,7 @@ func (m *MockInformerFactory) EXPECT() *MockInformerFactoryMockRecorder {
 }
 
 // Delete mocks base method
-func (m *MockInformerFactory) Delete(arg0 schema.GroupVersionResource) {
+func (m *MockInformerFactory) Delete(arg0 schema.GroupVersionKind) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", arg0)
 }
@@ -47,11 +47,12 @@ func (mr *MockInformerFactoryMockRecorder) Delete(arg0 interface{}) *gomock.Call
 }
 
 // ForResource mocks base method
-func (m *MockInformerFactory) ForResource(arg0 schema.GroupVersionResource) informers.GenericInformer {
+func (m *MockInformerFactory) ForResource(arg0 schema.GroupVersionKind) (informers.GenericInformer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ForResource", arg0)
 	ret0, _ := ret[0].(informers.GenericInformer)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ForResource indicates an expected call of ForResource
@@ -61,10 +62,10 @@ func (mr *MockInformerFactoryMockRecorder) ForResource(arg0 interface{}) *gomock
 }
 
 // WaitForCacheSync mocks base method
-func (m *MockInformerFactory) WaitForCacheSync(arg0 <-chan struct{}) map[schema.GroupVersionResource]bool {
+func (m *MockInformerFactory) WaitForCacheSync(arg0 <-chan struct{}) map[schema.GroupVersionKind]bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WaitForCacheSync", arg0)
-	ret0, _ := ret[0].(map[schema.GroupVersionResource]bool)
+	ret0, _ := ret[0].(map[schema.GroupVersionKind]bool)
 	return ret0
 }
 

@@ -7,6 +7,7 @@ package objectstore
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -37,11 +38,7 @@ const (
 )
 
 func initInformerFactory(ctx context.Context, client cluster.ClientInterface, namespace string) (InformerFactory, error) {
-	dynamicClient, err := client.DynamicClient()
-	if err != nil {
-		return nil, err
-	}
-	return newInformerFactory(ctx.Done(), dynamicClient, defaultInformerResync, namespace), nil
+	return newInformerFactory(ctx.Done(), client, defaultInformerResync, namespace), nil
 }
 
 // DynamicCacheOpt is an option for configuration DynamicCache.
@@ -138,17 +135,12 @@ func (dc *DynamicCache) currentInformer(ctx context.Context, key store.Key) (inf
 	}
 
 	gvk := key.GroupVersionKind()
-	gvr, err := dc.client.Resource(gvk.GroupKind())
-	if err != nil {
-		return nil, false, errors.Wrap(err, "client resource")
-	}
-
 	factory, ok := dc.factories.get(key.Namespace)
 	if !ok {
 		if err := dc.access.HasAccess(ctx, store.Key{Namespace: metav1.NamespaceAll}, "watch"); err != nil {
 			factory, err = dc.initFactoryFunc(ctx, dc.client, key.Namespace)
 			if err != nil {
-				return nil, false, err
+				return nil, false, fmt.Errorf("check access watch all namespaces: %w", err)
 			}
 		} else {
 			factory, ok = dc.factories.get("")
@@ -160,7 +152,10 @@ func (dc *DynamicCache) currentInformer(ctx context.Context, key store.Key) (inf
 		dc.factories.set(key.Namespace, factory)
 	}
 
-	informer := factory.ForResource(gvr)
+	informer, err := factory.ForResource(gvk)
+	if err != nil {
+		return nil, false, fmt.Errorf("find informer for %s: %w", gvk, err)
+	}
 
 	dc.checkKeySynced(ctx, informer, key)
 	dc.seenGVKs.setSeen(key.Namespace, gvk, true)
@@ -191,7 +186,7 @@ func (dc *DynamicCache) List(ctx context.Context, key store.Key) (*unstructured.
 		if meta.IsNoMatchError(err) {
 			return &unstructured.UnstructuredList{}, false, nil
 		}
-		return nil, false, err
+		return nil, false, fmt.Errorf("check access to list %s: %w", key, err)
 	}
 
 	span.Annotate([]trace.Attribute{
@@ -281,7 +276,7 @@ func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.U
 	defer span.End()
 
 	if err := dc.access.HasAccess(ctx, key, "get"); err != nil {
-		return nil, false, err
+		return nil, false, fmt.Errorf("check access for get to %s: %w", key, err)
 	}
 
 	span.Annotate([]trace.Attribute{
@@ -356,7 +351,7 @@ func (dc *DynamicCache) getFromDynamicClient(ctx context.Context, key store.Key)
 // supplied handler.
 func (dc *DynamicCache) Watch(ctx context.Context, key store.Key, handler kcache.ResourceEventHandler) error {
 	if err := dc.access.HasAccess(ctx, key, "watch"); err != nil {
-		return err
+		return fmt.Errorf("check access to watch %s: %w", key, err)
 	}
 
 	informer, _, err := dc.currentInformer(ctx, key)
@@ -374,14 +369,9 @@ func (dc *DynamicCache) Unwatch(ctx context.Context, groupVersionKinds ...schema
 		factory, ok := dc.factories.get(namespace)
 		if ok {
 			for _, groupVersionKind := range groupVersionKinds {
-				gvr, err := dc.client.Resource(groupVersionKind.GroupKind())
-				if err != nil {
-					return errors.Wrap(err, "get resource for key")
-				}
-				factory.Delete(gvr)
+				factory.Delete(groupVersionKind)
 			}
 		}
-
 	}
 
 	return nil
@@ -393,7 +383,7 @@ func (dc *DynamicCache) Delete(ctx context.Context, key store.Key) error {
 	defer span.End()
 
 	if err := dc.access.HasAccess(ctx, key, "delete"); err != nil {
-		return err
+		return fmt.Errorf("check access to delete %s: %w", key, err)
 	}
 
 	dynamicClient, err := dc.client.DynamicClient()

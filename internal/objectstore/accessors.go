@@ -160,18 +160,18 @@ func (c *seenGVKsCache) reset() {
 }
 
 type informerContextCache struct {
-	cache map[schema.GroupVersionResource]chan struct{}
+	cache map[schema.GroupVersionKind]chan struct{}
 
 	mu sync.Mutex
 }
 
 func initInformerContextCache() *informerContextCache {
 	return &informerContextCache{
-		cache: make(map[schema.GroupVersionResource]chan struct{}),
+		cache: make(map[schema.GroupVersionKind]chan struct{}),
 	}
 }
 
-func (c *informerContextCache) addChild(key schema.GroupVersionResource) <-chan struct{} {
+func (c *informerContextCache) addChild(key schema.GroupVersionKind) chan struct{} {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -180,7 +180,7 @@ func (c *informerContextCache) addChild(key schema.GroupVersionResource) <-chan 
 	return ch
 }
 
-func (c *informerContextCache) delete(key schema.GroupVersionResource) {
+func (c *informerContextCache) delete(key schema.GroupVersionKind) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

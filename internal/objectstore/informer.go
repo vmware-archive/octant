@@ -1,32 +1,34 @@
 package objectstore
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
+
+	"github.com/vmware-tanzu/octant/internal/cluster"
 )
 
 //go:generate mockgen -destination=./fake/mock_informer_factory.go -package=fake github.com/vmware-tanzu/octant/internal/objectstore InformerFactory
 
 // InformerFactory creates informers.
 type InformerFactory interface {
-	ForResource(gvr schema.GroupVersionResource) informers.GenericInformer
-	Delete(gvr schema.GroupVersionResource)
-	WaitForCacheSync(stopCh <-chan struct{}) map[schema.GroupVersionResource]bool
+	ForResource(gvr schema.GroupVersionKind) (informers.GenericInformer, error)
+	Delete(gvr schema.GroupVersionKind)
+	WaitForCacheSync(stopCh <-chan struct{}) map[schema.GroupVersionKind]bool
 }
 
 type informerFactory struct {
-	client        dynamic.Interface
+	client        cluster.ClientInterface
 	defaultResync time.Duration
 	namespace     string
 
 	lock                 sync.Mutex
-	informers            map[schema.GroupVersionResource]informers.GenericInformer
+	informers            map[schema.GroupVersionKind]informers.GenericInformer
 	tweakListOptions     dynamicinformer.TweakListOptionsFunc
 	stopCh               <-chan struct{}
 	informerContextCache *informerContextCache
@@ -34,65 +36,80 @@ type informerFactory struct {
 
 var _ InformerFactory = (*informerFactory)(nil)
 
-func newInformerFactory(stopCh <-chan struct{}, client dynamic.Interface, defaultResync time.Duration, namespace string) *informerFactory {
+func newInformerFactory(stopCh <-chan struct{}, client cluster.ClientInterface, defaultResync time.Duration, namespace string) *informerFactory {
 	return &informerFactory{
 		stopCh:               stopCh,
 		client:               client,
 		defaultResync:        defaultResync,
 		namespace:            namespace,
-		informers:            map[schema.GroupVersionResource]informers.GenericInformer{},
+		informers:            make(map[schema.GroupVersionKind]informers.GenericInformer),
 		informerContextCache: initInformerContextCache(),
 	}
 }
 
 // ForResource creates an informer and starts it given a group/version/resource.
-func (f *informerFactory) ForResource(gvr schema.GroupVersionResource) informers.GenericInformer {
+func (f *informerFactory) ForResource(groupVersionKind schema.GroupVersionKind) (informers.GenericInformer, error) {
 	f.lock.Lock()
 	defer f.lock.Unlock()
 
-	key := gvr
-	informer, exists := f.informers[key]
+	informer, exists := f.informers[groupVersionKind]
 	if exists && informer != nil {
-		return informer
+		return informer, nil
 	}
 
-	informer = dynamicinformer.NewFilteredDynamicInformer(f.client, gvr, f.namespace, f.defaultResync, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
-	f.informers[key] = informer
+	stopCh := f.informerContextCache.addChild(groupVersionKind)
 
-	stopCh := f.informerContextCache.addChild(gvr)
-	go informer.Informer().Run(stopCh)
+	gvr, err := f.client.Resource(groupVersionKind.GroupKind())
+	if err != nil {
+		return nil, fmt.Errorf("unable to find group version resource for group kind %s: %w",
+			groupVersionKind.GroupKind(), err)
+	}
 
-	return informer
+	dynamicClient, err := f.client.DynamicClient()
+	if err != nil {
+		return nil, fmt.Errorf("get dynamic client: %w", err)
+	}
+
+	genericInformer := dynamicinformer.NewFilteredDynamicInformer(
+		dynamicClient,
+		gvr,
+		f.namespace,
+		f.defaultResync,
+		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+		f.tweakListOptions)
+	f.informers[groupVersionKind] = genericInformer
+
+	go genericInformer.Informer().Run(stopCh)
+
+	return genericInformer, nil
 }
 
 // Delete deletes an informer given a a group/version/resource.
-func (f *informerFactory) Delete(gvr schema.GroupVersionResource) {
+func (f *informerFactory) Delete(groupVersionKind schema.GroupVersionKind) {
 	f.lock.Lock()
 	defer f.lock.Unlock()
 
-	if _, ok := f.informers[gvr]; ok {
-		f.informerContextCache.delete(gvr)
-		delete(f.informers, gvr)
-		f.informers[gvr] = nil
-	}
+	f.informerContextCache.delete(groupVersionKind)
+	delete(f.informers, groupVersionKind)
+	f.informers[groupVersionKind] = nil
 }
 
 // WaitForCacheSync waits for all started informers' cache were synced.
-func (f *informerFactory) WaitForCacheSync(stopCh <-chan struct{}) map[schema.GroupVersionResource]bool {
-	list := func() map[schema.GroupVersionResource]cache.SharedIndexInformer {
+func (f *informerFactory) WaitForCacheSync(stopCh <-chan struct{}) map[schema.GroupVersionKind]bool {
+	list := func() map[schema.GroupVersionKind]cache.SharedIndexInformer {
 		f.lock.Lock()
 		defer f.lock.Unlock()
 
-		shared := map[schema.GroupVersionResource]cache.SharedIndexInformer{}
+		shared := map[schema.GroupVersionKind]cache.SharedIndexInformer{}
 		for informerType, informer := range f.informers {
 			shared[informerType] = informer.Informer()
 		}
 		return shared
 	}()
 
-	res := map[schema.GroupVersionResource]bool{}
-	for informType, informer := range list {
-		res[informType] = cache.WaitForCacheSync(stopCh, informer.HasSynced)
+	res := map[schema.GroupVersionKind]bool{}
+	for informerType, informer := range list {
+		res[informerType] = cache.WaitForCacheSync(stopCh, informer.HasSynced)
 	}
 	return res
 }

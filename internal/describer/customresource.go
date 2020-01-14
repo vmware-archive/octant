@@ -15,7 +15,6 @@ import (
 	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/module"
-	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
@@ -56,7 +55,7 @@ func AddCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatcher
 	}
 }
 
-func DeleteCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatcher, crdSection *CRDSection, m module.Module, s store.Store) {
+func DeleteCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatcher, crdSection *CRDSection, m module.Module) {
 	name := crd.GetName()
 
 	logger := log.From(ctx).With("crd-name", name, "module", m.Name())
@@ -71,16 +70,6 @@ func DeleteCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatc
 		logger.WithErr(err).Errorf("unable to remove CRD")
 	}
 
-	list, err := kubernetes.CRDResources(crd)
-	if err != nil {
-		logger.WithErr(err).Errorf("unable to get group/version/kinds for CRD")
-
-	}
-
-	if err := s.Unwatch(ctx, list...); err != nil {
-		logger.WithErr(err).Errorf("unable to unwatch CRD")
-		return
-	}
 }
 
 func crdListPath(name string) string {
