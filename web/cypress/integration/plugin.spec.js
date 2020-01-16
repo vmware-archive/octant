@@ -20,7 +20,7 @@ describe('Plugin', () => {
 
       cy.get('[class=nav]')
         .find('button')
-        .should('have.length', 5)
+        .should('have.length', 6)
         .last()
         .contains('Extra Pod Details')
         .click();
