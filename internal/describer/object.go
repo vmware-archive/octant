@@ -7,8 +7,8 @@ package describer
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -17,6 +17,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/modules/overview/logviewer"
 	"github.com/vmware-tanzu/octant/internal/modules/overview/yamlviewer"
+	"github.com/vmware-tanzu/octant/internal/printer"
 	"github.com/vmware-tanzu/octant/internal/resourceviewer"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
@@ -61,6 +62,7 @@ func NewObject(c ObjectConfig) *Object {
 
 	o.tabFuncDescriptors = []tabFuncDescriptor{
 		{name: "summary", tabFunc: o.addSummaryTab},
+		{name: "metadata", tabFunc: o.addMetadataTab},
 		{name: "resource viewer", tabFunc: o.addResourceViewerTab},
 		{name: "yaml", tabFunc: o.addYAMLViewerTab},
 		{name: "logs", tabFunc: o.addLogsTab},
@@ -84,17 +86,17 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 	if err != nil {
 		return component.EmptyContentResponse, api.NewNotFoundError(d.path)
 	} else if object == nil {
-		return component.EmptyContentResponse, errors.Errorf("unable to load object %s", d.objectStoreKey)
+		return component.EmptyContentResponse, fmt.Errorf("unable to load object %s", d.objectStoreKey)
 	}
 
 	item := d.objectType()
 
 	if err := scheme.Scheme.Convert(object, item, nil); err != nil {
-		return component.EmptyContentResponse, errors.Wrapf(err, "converting dynamic object to a type")
+		return component.EmptyContentResponse, fmt.Errorf("converting dynamic object to a type: %w", err)
 	}
 
 	if err := copyObjectMeta(item, object); err != nil {
-		return component.EmptyContentResponse, errors.Wrap(err, "copying object metadata")
+		return component.EmptyContentResponse, fmt.Errorf("copying object metadata: %w", err)
 	}
 
 	accessor := meta.NewAccessor()
@@ -111,7 +113,7 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 
 	currentObject, ok := item.(runtime.Object)
 	if !ok {
-		return component.EmptyContentResponse, errors.Errorf("expected item to be a runtime object. It was a %T",
+		return component.EmptyContentResponse, fmt.Errorf("expected item to be a runtime object. It was a %T",
 			item)
 	}
 
@@ -133,7 +135,7 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 
 	tabs, err := options.PluginManager().Tabs(ctx, object)
 	if err != nil {
-		return component.EmptyContentResponse, errors.Wrap(err, "getting tabs from plugins")
+		return component.EmptyContentResponse, fmt.Errorf("getting tabs from plugins: %w", err)
 	}
 
 	for _, tab := range tabs {
@@ -153,7 +155,7 @@ func (d *Object) PathFilters() []PathFilter {
 func (d *Object) addSummaryTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options Options) error {
 	vc, err := options.Printer.Print(ctx, object, options.PluginManager())
 	if vc == nil {
-		return errors.Wrap(err, "unable to print a nil object")
+		return fmt.Errorf("unable to print a nil object: %w", err)
 	}
 
 	if err != nil {
@@ -201,7 +203,26 @@ func (d *Object) addResourceViewerTab(ctx context.Context, object runtime.Object
 	return nil
 }
 
-func (d *Object) addYAMLViewerTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options Options) error {
+func (d *Object) addMetadataTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options Options) error {
+	logger := log.From(ctx)
+
+	metadataComponent, err := printer.MetadataHandler(object, options.Link)
+	if err != nil {
+		errComponent := component.NewError(component.TitleFromString("Metadata"), err)
+		cr.Add(errComponent)
+
+		logger.WithErr(err).Errorf("create metadata component")
+
+		return nil
+	}
+
+	metadataComponent.SetAccessor("metadata")
+	cr.Add(metadataComponent)
+
+	return nil
+}
+
+func (d *Object) addYAMLViewerTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, _ Options) error {
 	yvComponent, err := yamlviewer.ToComponent(object)
 
 	if err != nil {
@@ -217,10 +238,9 @@ func (d *Object) addYAMLViewerTab(ctx context.Context, object runtime.Object, cr
 	yvComponent.SetAccessor("yaml")
 	cr.Add(yvComponent)
 	return nil
-
 }
 
-func (d *Object) addLogsTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options Options) error {
+func (d *Object) addLogsTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, _ Options) error {
 	if isPod(object) {
 		logsComponent, err := logviewer.ToComponent(object)
 		if err != nil {

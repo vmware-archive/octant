@@ -70,6 +70,13 @@ func (cld *crdList) Describe(ctx context.Context, namespace string, options Opti
 	contentResponse := component.NewContentResponse(title)
 	contentResponse.Add(view)
 
+	metadata, err := printer.MetadataHandler(crd, options.Link)
+	if err != nil {
+		return component.EmptyContentResponse, err
+	}
+	metadata.SetAccessor("metadata")
+	contentResponse.Add(metadata)
+
 	yamlView, err := yamlviewer.ToComponent(crd)
 	if err != nil {
 		return component.EmptyContentResponse, err
