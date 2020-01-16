@@ -44,21 +44,6 @@ func Test_Object_ToComponent(t *testing.T) {
 		},
 	}
 
-	metadataSection := component.FlexLayoutSection{
-		{
-			Width: component.WidthHalf,
-			View:  component.NewText("metadata"),
-		},
-	}
-
-	fnMetadata := func(o *Object) {
-		o.MetadataGen = func(object runtime.Object, fl *flexlayout.FlexLayout, options Options) error {
-			section := fl.AddSection()
-			require.NoError(t, section.Add(component.NewText("metadata"), 12))
-			return nil
-		}
-	}
-
 	fnPodTemplate := func(o *Object) {
 		o.PodTemplateGen = func(_ context.Context, _ runtime.Object, _ corev1.PodTemplateSpec, fl *flexlayout.FlexLayout, options Options) error {
 			section := fl.AddSection()
@@ -97,7 +82,6 @@ func Test_Object_ToComponent(t *testing.T) {
 			},
 			sections: []component.FlexLayoutSection{
 				defaultConfigSection,
-				metadataSection,
 			},
 		},
 		{
@@ -124,7 +108,6 @@ func Test_Object_ToComponent(t *testing.T) {
 							}...),
 					},
 				},
-				metadataSection,
 			},
 		},
 		{
@@ -136,7 +119,6 @@ func Test_Object_ToComponent(t *testing.T) {
 			},
 			sections: []component.FlexLayoutSection{
 				defaultConfigSection,
-				metadataSection,
 				{
 					{
 						Width: component.WidthHalf,
@@ -154,7 +136,6 @@ func Test_Object_ToComponent(t *testing.T) {
 			},
 			sections: []component.FlexLayoutSection{
 				defaultConfigSection,
-				metadataSection,
 				{
 					{
 						Width: component.WidthHalf,
@@ -175,7 +156,6 @@ func Test_Object_ToComponent(t *testing.T) {
 			},
 			sections: []component.FlexLayoutSection{
 				defaultConfigSection,
-				metadataSection,
 			},
 		},
 		{
@@ -206,7 +186,6 @@ func Test_Object_ToComponent(t *testing.T) {
 			},
 			sections: []component.FlexLayoutSection{
 				defaultConfigSection,
-				metadataSection,
 				{
 					{
 						Width: component.WidthHalf,
@@ -240,7 +219,7 @@ func Test_Object_ToComponent(t *testing.T) {
 			tpo := newTestPrinterOptions(controller)
 			printOptions := tpo.ToOptions()
 
-			o := NewObject(tc.object, fnMetadata, fnPodTemplate, fnEvent)
+			o := NewObject(tc.object, fnPodTemplate, fnEvent)
 
 			o.RegisterConfig(defaultConfig)
 

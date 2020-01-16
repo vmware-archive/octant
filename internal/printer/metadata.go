@@ -6,27 +6,54 @@ SPDX-License-Identifier: Apache-2.0
 package printer
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	link2 "github.com/vmware-tanzu/octant/internal/link"
+	"github.com/vmware-tanzu/octant/internal/link"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 	"github.com/vmware-tanzu/octant/pkg/view/flexlayout"
 )
 
-type Metadata struct {
-	object runtime.Object
-	link   link2.Interface
+//  MetadataHandler converts object metadata to a flex layout containing object metadata.
+func MetadataHandler(object runtime.Object, linkGenerator link.Interface) (*component.FlexLayout, error) {
+	if object == nil {
+		return nil, fmt.Errorf("can't create metadata view for nil object")
+	}
+
+	if linkGenerator == nil {
+		return nil, fmt.Errorf("link generator is required")
+	}
+
+	layout := flexlayout.New()
+
+	metadata, err := NewMetadata(object, linkGenerator)
+	if err != nil {
+		return nil, fmt.Errorf("create metadata generator: %v", err)
+	}
+
+	if err := metadata.AddToFlexLayout(layout); err != nil {
+		return nil, fmt.Errorf("add metadata to layout: %w", err)
+	}
+
+	return layout.ToComponent("Metadata"), nil
 }
 
-func NewMetadata(object runtime.Object, l link2.Interface) (*Metadata, error) {
+// Metadata represents object metadata.
+type Metadata struct {
+	object runtime.Object
+	link   link.Interface
+}
+
+// NewMetadata creates an instance of Metadata.
+func NewMetadata(object runtime.Object, l link.Interface) (*Metadata, error) {
 	if object == nil {
-		return nil, errors.New("object is nil")
+		return nil, fmt.Errorf("object is nil")
 	}
 
 	if l == nil {
-		return nil, errors.New("link generator is nil")
+		return nil, fmt.Errorf("link generator is nil")
 	}
 
 	return &Metadata{
@@ -35,20 +62,21 @@ func NewMetadata(object runtime.Object, l link2.Interface) (*Metadata, error) {
 	}, nil
 }
 
+// AddToFlexLayout adds metadata to a flex layout.
 func (m *Metadata) AddToFlexLayout(fl *flexlayout.FlexLayout) error {
 	if fl == nil {
-		return errors.New("flex layout is nil")
+		return fmt.Errorf("flex layout is nil")
 	}
 
 	section := fl.AddSection()
 
 	summary, err := m.createSummary()
 	if err != nil {
-		return errors.Wrap(err, "create summary")
+		return fmt.Errorf("create summary: %w", err)
 	}
 
 	if err := section.Add(summary, component.WidthFull); err != nil {
-		return errors.Wrap(err, "add summary to layout")
+		return fmt.Errorf("add summary to layout: %w", err)
 	}
 
 	return nil
@@ -59,7 +87,7 @@ func (m *Metadata) createSummary() (*component.Summary, error) {
 
 	object, ok := m.object.(metav1.Object)
 	if !ok {
-		return nil, errors.New("object is a meta v1 object")
+		return nil, fmt.Errorf("object is a meta v1 object")
 	}
 
 	sections.Add("Age", component.NewTimestamp(object.GetCreationTimestamp().Time))

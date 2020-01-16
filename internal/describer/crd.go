@@ -27,6 +27,7 @@ import (
 )
 
 type crdPrinter func(ctx context.Context, crd, object *unstructured.Unstructured, options printer.Options) (component.Component, error)
+type metadataPrinter func(runtime.Object, link.Interface) (*component.FlexLayout, error)
 type resourceViewerPrinter func(ctx context.Context, object *unstructured.Unstructured, dashConfig config.Dash, q queryer.Queryer) (component.Component, error)
 type yamlPrinter func(runtime.Object) (*component.YAML, error)
 
@@ -38,6 +39,7 @@ type crd struct {
 	path                  string
 	name                  string
 	summaryPrinter        crdPrinter
+	metadataPrinter       metadataPrinter
 	resourceViewerPrinter resourceViewerPrinter
 	yamlPrinter           yamlPrinter
 }
@@ -49,6 +51,7 @@ func newCRD(name, path string, options ...crdOption) *crd {
 		path:                  path,
 		name:                  name,
 		summaryPrinter:        printer.CustomResourceHandler,
+		metadataPrinter:       printer.MetadataHandler,
 		resourceViewerPrinter: createCRDResourceViewer,
 		yamlPrinter:           yamlviewer.ToComponent,
 	}
@@ -129,6 +132,13 @@ func (c *crd) Describe(ctx context.Context, namespace string, options Options) (
 	summary.SetAccessor("summary")
 
 	cr.Add(summary)
+
+	metadata, err := c.metadataPrinter(object, linkGenerator)
+	if err != nil {
+		return component.EmptyContentResponse, err
+	}
+	metadata.SetAccessor("metadata")
+	cr.Add(metadata)
 
 	resourceViewerComponent, err := c.resourceViewerPrinter(ctx, object, options, options.Queryer)
 	if err != nil {

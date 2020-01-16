@@ -9,7 +9,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pkg/errors"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -29,23 +28,10 @@ type ObjectInterface interface {
 	AddButton(name string, payload action.Payload, buttonOptions ...component.ButtonOption)
 }
 
-func defaultMetadataGen(object runtime.Object, fl *flexlayout.FlexLayout, options Options) error {
-	metadata, err := NewMetadata(object, options.Link)
-	if err != nil {
-		return errors.Wrap(err, "create metadata generator")
-	}
-
-	if err := metadata.AddToFlexLayout(fl); err != nil {
-		return errors.Wrap(err, "add metadata to layout")
-	}
-
-	return nil
-}
-
 func defaultPodTemplateGen(ctx context.Context, object runtime.Object, template corev1.PodTemplateSpec, fl *flexlayout.FlexLayout, options Options) error {
 	podTemplate := NewPodTemplate(object, template)
 	if err := podTemplate.AddToFlexLayout(ctx, fl, options); err != nil {
-		return errors.Wrap(err, "add pod template to layout")
+		return fmt.Errorf("add pod template to layout: %w", err)
 	}
 
 	return nil
@@ -54,7 +40,7 @@ func defaultPodTemplateGen(ctx context.Context, object runtime.Object, template 
 func defaultJobTemplateGen(ctx context.Context, object runtime.Object, template batchv1beta1.JobTemplateSpec, fl *flexlayout.FlexLayout, options Options) error {
 	podTemplate := NewJobTemplate(ctx, object, template)
 	if err := podTemplate.AddToFlexLayout(fl, options); err != nil {
-		return errors.Wrap(err, "add job template to layout")
+		return fmt.Errorf("add job template to layout: %w", err)
 	}
 
 	return nil
@@ -62,7 +48,7 @@ func defaultJobTemplateGen(ctx context.Context, object runtime.Object, template 
 
 func defaultEventsGen(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout, options Options) error {
 	if err := createEventsForObject(ctx, fl, object, options); err != nil {
-		return errors.Wrap(err, "add events to layout")
+		return fmt.Errorf("add events to layout: %w", err)
 	}
 
 	return nil
@@ -109,7 +95,6 @@ type Object struct {
 
 	flexLayout *flexlayout.FlexLayout
 
-	MetadataGen    func(runtime.Object, *flexlayout.FlexLayout, Options) error
 	PodTemplateGen func(context.Context, runtime.Object, corev1.PodTemplateSpec, *flexlayout.FlexLayout, Options) error
 	JobTemplateGen func(context.Context, runtime.Object, batchv1beta1.JobTemplateSpec, *flexlayout.FlexLayout, Options) error
 	EventsGen      func(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout, options Options) error
@@ -121,7 +106,6 @@ func NewObject(object runtime.Object, options ...ObjectOpts) *Object {
 		object:     object,
 		flexLayout: flexlayout.New(),
 
-		MetadataGen:    defaultMetadataGen,
 		PodTemplateGen: defaultPodTemplateGen,
 		JobTemplateGen: defaultJobTemplateGen,
 		EventsGen:      defaultEventsGen,
@@ -169,7 +153,7 @@ func (o *Object) RegisterItems(items ...ItemDescriptor) {
 
 func (o *Object) summaryComponent(title string, summary *component.Summary, section *flexlayout.Section, additional ...component.SummarySection) error {
 	if section == nil {
-		return errors.Errorf("section is nil")
+		return fmt.Errorf("section is nil")
 	}
 
 	if summary == nil {
@@ -185,7 +169,7 @@ func (o *Object) summaryComponent(title string, summary *component.Summary, sect
 	}
 
 	if err := section.Add(summary, component.WidthHalf); err != nil {
-		return errors.Wrapf(err, "add component to %q layout", title)
+		return fmt.Errorf("add component to %q layout: %w", title, err)
 	}
 
 	return nil
@@ -193,7 +177,7 @@ func (o *Object) summaryComponent(title string, summary *component.Summary, sect
 
 func deleteObjectConfirmation(object runtime.Object) (component.ButtonOption, error) {
 	if object == nil {
-		return nil, errors.New("object is nil")
+		return nil, fmt.Errorf("object is nil")
 	}
 	_, kind := object.GetObjectKind().GroupVersionKind().ToAPIVersionAndKind()
 
@@ -210,7 +194,7 @@ func deleteObjectConfirmation(object runtime.Object) (component.ButtonOption, er
 // ToComponent converts Object to a view.
 func (o *Object) ToComponent(ctx context.Context, options Options) (component.Component, error) {
 	if o.object == nil {
-		return nil, errors.New("object is nil")
+		return nil, fmt.Errorf("object is nil")
 	}
 
 	accessor, err := meta.Accessor(o.object)
@@ -226,7 +210,7 @@ func (o *Object) ToComponent(ctx context.Context, options Options) (component.Co
 
 		confirmation, err := deleteObjectConfirmation(o.object)
 		if err != nil {
-			return nil, errors.Wrap(err, "create delete confirmation")
+			return nil, fmt.Errorf("create delete confirmation: %w", err)
 		}
 
 		o.AddButton("Delete", action.CreatePayload(octant.ActionDeleteObject,
@@ -237,24 +221,20 @@ func (o *Object) ToComponent(ctx context.Context, options Options) (component.Co
 
 	pluginPrinter := options.DashConfig.PluginManager()
 	if pluginPrinter == nil {
-		return nil, errors.New("plugin printer is nil")
+		return nil, fmt.Errorf("plugin printer is nil")
 	}
 
 	pr, err := pluginPrinter.Print(ctx, o.object)
 	if err != nil {
-		return nil, errors.Wrap(err, "plugin manager")
+		return nil, fmt.Errorf("plugin manager: %w", err)
 	}
 
 	if err := o.summaryComponent("Configuration", o.config, summarySection, pr.Config...); err != nil {
-		return nil, errors.Wrap(err, "generate configuration component")
+		return nil, fmt.Errorf("generate configuration component: %w", err)
 	}
 
 	if err := o.summaryComponent("Status", o.summary, summarySection, pr.Status...); err != nil {
-		return nil, errors.Wrap(err, "generate summary component")
-	}
-
-	if err := o.MetadataGen(o.object, o.flexLayout, options); err != nil {
-		return nil, errors.Wrap(err, "generate metadata")
+		return nil, fmt.Errorf("generate summary component: %w", err)
 	}
 
 	for _, items := range o.itemsLists {
@@ -263,11 +243,11 @@ func (o *Object) ToComponent(ctx context.Context, options Options) (component.Co
 		for _, item := range items {
 			vc, err := item.Func()
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to create item view")
+				return nil, fmt.Errorf("failed to create item view: %w", err)
 			}
 
 			if err := section.Add(vc, item.Width); err != nil {
-				return nil, errors.Wrap(err, "unable to add item to layout section in object printer")
+				return nil, fmt.Errorf("unable to add item to layout section in object printer: %w", err)
 			}
 		}
 	}
@@ -277,26 +257,26 @@ func (o *Object) ToComponent(ctx context.Context, options Options) (component.Co
 
 		for _, item := range pr.Items {
 			if err := section.Add(item.View, item.Width); err != nil {
-				return nil, errors.Wrap(err, "unable to add plugin item to layout section in object printer")
+				return nil, fmt.Errorf("unable to add plugin item to layout section in object printer: %w", err)
 			}
 		}
 	}
 
 	if o.isPodTemplateEnabled {
 		if err := o.PodTemplateGen(ctx, o.object, o.podTemplateOptions.template, o.flexLayout, options); err != nil {
-			return nil, errors.Wrap(err, "generate pod template")
+			return nil, fmt.Errorf("generate pod template: %w", err)
 		}
 	}
 
 	if o.isJobTemplateEnabled {
 		if err := o.JobTemplateGen(ctx, o.object, o.jobTemplateOptions.template, o.flexLayout, options); err != nil {
-			return nil, errors.Wrap(err, "generate job template")
+			return nil, fmt.Errorf("generate job template: %w", err)
 		}
 	}
 
 	if o.isEventsEnabled {
 		if err := o.EventsGen(ctx, o.object, o.flexLayout, options); err != nil {
-			return nil, errors.Wrap(err, "add events to layout")
+			return nil, fmt.Errorf("add events to layout: %w", err)
 		}
 	}
 
