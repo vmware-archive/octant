@@ -38,12 +38,12 @@ var (
 	}
 )
 
-func crdPath(namespace, crdName, name string) (string, error) {
+func crdPath(namespace, crdName, version, name string) (string, error) {
 	if namespace == "" {
 		return "", errors.Errorf("unable to create CRD path for %s due to missing namespace", crdName)
 	}
 
-	return path.Join("/overview/namespace", namespace, "custom-resources", crdName, name), nil
+	return path.Join("/overview/namespace", namespace, "custom-resources", crdName, version, name), nil
 }
 
 func gvkPath(namespace, apiVersion, kind, name string) (string, error) {

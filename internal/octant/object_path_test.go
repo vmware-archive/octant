@@ -30,7 +30,7 @@ func TestObjectPathConfig_Validate(t *testing.T) {
 			pathLookupFunc: func(string, string, string, string) (string, error) {
 				return "/path", nil
 			},
-			crdPathGenFunc: func(string, string, string) (string, error) {
+			crdPathGenFunc: func(string, string, string, string) (string, error) {
 				return "/path", nil
 			},
 		},
@@ -62,7 +62,7 @@ func TestObjectPath(t *testing.T) {
 		PathLookupFunc: func(string, string, string, string) (string, error) {
 			return "/path", nil
 		},
-		CRDPathGenFunc: func(string, string, string) (string, error) {
+		CRDPathGenFunc: func(string, string, string, string) (string, error) {
 			return "/crd-path", nil
 		},
 	}

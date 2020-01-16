@@ -108,6 +108,7 @@ func (c *crd) Describe(ctx context.Context, namespace string, options Options) (
 	title := component.Title(
 		component.NewText("Custom Resources"),
 		component.NewText(crd.GetName()),
+		component.NewText(object.GroupVersionKind().Version),
 		component.NewText(object.GetName()))
 
 	iconName, iconSource := loadIcon(icon.CustomResourceDefinition)

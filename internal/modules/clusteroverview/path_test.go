@@ -14,10 +14,10 @@ import (
 )
 
 func Test_crdPath(t *testing.T) {
-	got, err := crdPath("namespace", "crdName", "name")
+	got, err := crdPath("namespace", "crdName", "version", "name")
 	require.NoError(t, err)
 
-	expected := path.Join("/cluster-overview", "custom-resources", "crdName", "name")
+	expected := path.Join("/cluster-overview", "custom-resources", "crdName", "version", "name")
 	assert.Equal(t, expected, got)
 }
 
