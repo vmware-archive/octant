@@ -23,7 +23,6 @@ import (
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/internal/printer"
 	"github.com/vmware-tanzu/octant/internal/queryer"
-	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/icon"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -120,33 +119,7 @@ func (co *ClusterOverview) Name() string {
 }
 
 func (co *ClusterOverview) ClientRequestHandlers() []octant.ClientRequestHandler {
-	return []octant.ClientRequestHandler{
-		// TODO: move to overview (GH#495)
-		{
-			RequestType: "startPortForward",
-			Handler: func(state octant.State, payload action.Payload) error {
-				req, err := portForwardRequestFromPayload(payload)
-				if err != nil {
-					return errors.Wrap(err, "convert payload to port forward request")
-				}
-
-				_, err = co.DashConfig.PortForwarder().Create(context.TODO(), req.gvk(), req.Name, req.Namespace, req.Port)
-				return err
-			},
-		},
-		{
-			RequestType: "stopPortForward",
-			Handler: func(state octant.State, payload action.Payload) error {
-				id, err := payload.String("id")
-				if err != nil {
-					return errors.Wrap(err, "get port forward id from payload")
-				}
-
-				co.DashConfig.PortForwarder().StopForwarder(id)
-				return nil
-			},
-		},
-	}
+	return nil
 }
 
 func (co *ClusterOverview) Content(ctx context.Context, contentPath string, opts module.ContentOptions) (component.ContentResponse, error) {

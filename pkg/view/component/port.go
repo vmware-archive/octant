@@ -5,7 +5,11 @@ SPDX-License-Identifier: Apache-2.0
 
 package component
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/vmware-tanzu/octant/pkg/action"
+)
 
 type PortForwardState struct {
 	IsForwardable bool   `json:"isForwardable,omitempty"`
@@ -22,13 +26,10 @@ type Port struct {
 
 // PortConfig is the contents of Port
 type PortConfig struct {
-	Namespace  string           `json:"namespace,omitempty"`
-	APIVersion string           `json:"apiVersion,omitempty"`
-	Kind       string           `json:"kind,omitempty"`
-	Name       string           `json:"name,omitempty"`
-	Port       int              `json:"port,omitempty"`
-	Protocol   string           `json:"protocol,omitempty"`
-	State      PortForwardState `json:"state,omitempty"`
+	Port     int              `json:"port,omitempty"`
+	Protocol string           `json:"protocol,omitempty"`
+	State    PortForwardState `json:"state,omitempty"`
+	Button   *ButtonGroup     `json:"buttonGroup,omitempty"`
 }
 
 // NewPort creates a port component
@@ -36,13 +37,10 @@ func NewPort(namespace, apiVersion, kind, name string, port int, protocol string
 	return &Port{
 		base: newBase(typePort, nil),
 		Config: PortConfig{
-			Namespace:  namespace,
-			APIVersion: apiVersion,
-			Kind:       kind,
-			Name:       name,
-			Port:       port,
-			Protocol:   protocol,
-			State:      pfs,
+			Port:     port,
+			Protocol: protocol,
+			State:    pfs,
+			Button:   describeButton(namespace, apiVersion, kind, name, port, pfs),
 		},
 	}
 }
@@ -89,4 +87,34 @@ func (t *Ports) MarshalJSON() ([]byte, error) {
 	m := portsMarshal(*t)
 	m.Metadata.Type = typePorts
 	return json.Marshal(&m)
+}
+
+func describeButton(namespace, apiVersion, kind, name string, port int, pfs PortForwardState) *ButtonGroup {
+	buttonGroup := NewButtonGroup()
+	var buttonText, actionName string
+	var payload action.Payload
+
+	if pfs.IsForwarded {
+		buttonText = "Stop port forward"
+		actionName = "overview/stopPortForward"
+		payload = action.Payload{
+			"id": pfs.ID,
+		}
+	} else {
+		buttonText = "Start port forward"
+		actionName = "overview/startPortForward"
+		payload = action.Payload{
+			"apiVersion": apiVersion,
+			"kind":       kind,
+			"name":       name,
+			"namespace":  namespace,
+			"port":       port,
+		}
+	}
+
+	buttonGroup.AddButton(
+		NewButton(buttonText, action.CreatePayload(actionName, payload)),
+	)
+
+	return buttonGroup
 }

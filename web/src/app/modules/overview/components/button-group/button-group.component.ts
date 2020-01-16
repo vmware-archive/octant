@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
 import { ButtonGroupView, Confirmation } from '../../../../models/content';
 import { ActionService } from '../../services/action/action.service';
 
@@ -8,21 +8,42 @@ import { ActionService } from '../../services/action/action.service';
   styleUrls: ['./button-group.component.scss'],
 })
 export class ButtonGroupComponent implements OnInit {
-  @Input() view: ButtonGroupView;
+  v: ButtonGroupView;
+
+  @Input() set view(v: ButtonGroupView) {
+    this.v = v as ButtonGroupView;
+  }
+  get view() {
+    return this.v;
+  }
+
+  @Output() buttonLoad: EventEmitter<boolean> = new EventEmitter(true);
 
   isModalOpen = false;
   modalTitle = '';
   modalBody = '';
   payload = {};
+  class = '';
 
   constructor(private actionService: ActionService) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    if (this.view) {
+      this.view.config.buttons.forEach(button => {
+        if (button.confirmation) {
+          this.class = 'btn-danger-outline btn-sm';
+        } else {
+          this.class = 'btn-outline btm-sm';
+        }
+      });
+    }
+  }
 
   onClick(payload: {}, confirmation?: Confirmation) {
     if (confirmation) {
       this.activateModal(payload, confirmation);
     } else {
+      this.buttonLoad.emit(true);
       this.doAction(payload);
     }
   }
