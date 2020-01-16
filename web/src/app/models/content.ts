@@ -366,10 +366,6 @@ export interface LogResponse {
 
 export interface Port extends View {
   config: {
-    namespace: string;
-    apiVersion: string;
-    kind: string;
-    name: string;
     port: number;
     protocol: string;
     state: Partial<{
@@ -378,6 +374,7 @@ export interface Port extends View {
       isForwardable: boolean;
       port: number;
     }>;
+    buttonGroup: ButtonGroupView;
   };
 }
 

@@ -274,14 +274,7 @@ func describeContainerPorts(
 		}
 
 		apiVersion, kind := gvk.ToAPIVersionAndKind()
-
-		port = component.NewPort(
-			namespace,
-			apiVersion,
-			kind,
-			name,
-			int(cPort.ContainerPort),
-			string(cPort.Protocol), pfs)
+		port = component.NewPort(namespace, apiVersion, kind, name, int(cPort.ContainerPort), string(cPort.Protocol), pfs)
 		list = append(list, *port)
 	}
 	return list, nil
