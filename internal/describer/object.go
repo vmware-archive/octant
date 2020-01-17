@@ -8,6 +8,7 @@ package describer
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -61,11 +62,11 @@ func NewObject(c ObjectConfig) *Object {
 	}
 
 	o.tabFuncDescriptors = []tabFuncDescriptor{
-		{name: "summary", tabFunc: o.addSummaryTab},
-		{name: "metadata", tabFunc: o.addMetadataTab},
-		{name: "resource viewer", tabFunc: o.addResourceViewerTab},
-		{name: "yaml", tabFunc: o.addYAMLViewerTab},
-		{name: "logs", tabFunc: o.addLogsTab},
+		{name: "Summary", tabFunc: o.addSummaryTab},
+		{name: "Metadata", tabFunc: o.addMetadataTab},
+		{name: "Resource Viewer", tabFunc: o.addResourceViewerTab},
+		{name: "YAML", tabFunc: o.addYAMLViewerTab},
+		{name: "Logs", tabFunc: o.addLogsTab},
 	}
 
 	return o
@@ -86,17 +87,23 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 	if err != nil {
 		return component.EmptyContentResponse, api.NewNotFoundError(d.path)
 	} else if object == nil {
-		return component.EmptyContentResponse, fmt.Errorf("unable to load object %s", d.objectStoreKey)
+		cr := component.NewContentResponse(component.TitleFromString("LoadObject Error"))
+		addErrorTab(ctx, "Error", fmt.Errorf("unable to load object %s", d.objectStoreKey), cr)
+		return *cr, nil
 	}
 
 	item := d.objectType()
 
 	if err := scheme.Scheme.Convert(object, item, nil); err != nil {
-		return component.EmptyContentResponse, fmt.Errorf("converting dynamic object to a type: %w", err)
+		cr := component.NewContentResponse(component.TitleFromString("Converting Dynamic Object Error"))
+		addErrorTab(ctx, "Error", fmt.Errorf("converting dynamic object to a type: %w", err), cr)
+		return *cr, nil
 	}
 
 	if err := copyObjectMeta(item, object); err != nil {
-		return component.EmptyContentResponse, fmt.Errorf("copying object metadata: %w", err)
+		cr := component.NewContentResponse(component.TitleFromString("Copying Object Metadata Error"))
+		addErrorTab(ctx, "Error", fmt.Errorf("copying object metadata: %w", err), cr)
+		return *cr, nil
 	}
 
 	accessor := meta.NewAccessor()
@@ -113,8 +120,8 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 
 	currentObject, ok := item.(runtime.Object)
 	if !ok {
-		return component.EmptyContentResponse, fmt.Errorf("expected item to be a runtime object. It was a %T",
-			item)
+		addErrorTab(ctx, "Error", fmt.Errorf("expected item to be a runtime object. It was a %T", item), cr)
+		return *cr, nil
 	}
 
 	hasTabError := false
@@ -126,16 +133,18 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 				With(
 					"tab-name", tfd.name,
 				).Errorf("generating object Describer tab")
+			addErrorTab(ctx, tfd.name, err, cr)
 		}
 	}
 
 	if hasTabError {
-		logger.With("tab-object", object).Errorf("unable to generate all tabs for object")
+		logger.With("tab-object", object).Errorf("generated tabs with errors")
 	}
 
 	tabs, err := options.PluginManager().Tabs(ctx, object)
 	if err != nil {
-		return component.EmptyContentResponse, fmt.Errorf("getting tabs from plugins: %w", err)
+		addErrorTab(ctx, "Plugin Error", fmt.Errorf("getting tabs from plugins: %w", err), cr)
+		return *cr, nil
 	}
 
 	for _, tab := range tabs {
@@ -144,6 +153,16 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 	}
 
 	return *cr, nil
+}
+
+func addErrorTab(ctx context.Context, name string, err error, cr *component.ContentResponse) {
+	errComponent := component.NewError(component.TitleFromString(name), err)
+
+	accessor := name
+	strings.ReplaceAll(name, " ", "")
+
+	errComponent.SetAccessor(accessor)
+	cr.Add(errComponent)
 }
 
 func (d *Object) PathFilters() []PathFilter {
@@ -159,13 +178,7 @@ func (d *Object) addSummaryTab(ctx context.Context, object runtime.Object, cr *c
 	}
 
 	if err != nil {
-		errComponent := component.NewError(component.TitleFromString("Summary"), err)
-		cr.Add(errComponent)
-
-		logger := log.From(ctx)
-		logger.Errorf("printing object: %s", err)
-
-		return nil
+		return err
 	}
 
 	vc.SetAccessor("summary")
@@ -204,16 +217,9 @@ func (d *Object) addResourceViewerTab(ctx context.Context, object runtime.Object
 }
 
 func (d *Object) addMetadataTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options Options) error {
-	logger := log.From(ctx)
-
 	metadataComponent, err := printer.MetadataHandler(object, options.Link)
 	if err != nil {
-		errComponent := component.NewError(component.TitleFromString("Metadata"), err)
-		cr.Add(errComponent)
-
-		logger.WithErr(err).Errorf("create metadata component")
-
-		return nil
+		return err
 	}
 
 	metadataComponent.SetAccessor("metadata")
@@ -224,15 +230,8 @@ func (d *Object) addMetadataTab(ctx context.Context, object runtime.Object, cr *
 
 func (d *Object) addYAMLViewerTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, _ Options) error {
 	yvComponent, err := yamlviewer.ToComponent(object)
-
 	if err != nil {
-		errComponent := component.NewError(component.TitleFromString("YAML"), err)
-		cr.Add(errComponent)
-
-		logger := log.From(ctx)
-		logger.Errorf("converting object to YAML: %s", err)
-
-		return nil
+		return err
 	}
 
 	yvComponent.SetAccessor("yaml")
@@ -244,13 +243,7 @@ func (d *Object) addLogsTab(ctx context.Context, object runtime.Object, cr *comp
 	if isPod(object) {
 		logsComponent, err := logviewer.ToComponent(object)
 		if err != nil {
-			errComponent := component.NewError(component.TitleFromString("Logs"), err)
-			cr.Add(errComponent)
-
-			logger := log.From(ctx)
-			logger.Errorf("retrieving logs for pod: %s", err)
-
-			return nil
+			return err
 		}
 
 		logsComponent.SetAccessor("logs")
