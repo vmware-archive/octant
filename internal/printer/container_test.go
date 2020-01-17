@@ -138,9 +138,9 @@ func Test_ContainerConfiguration(t *testing.T) {
 		component.NewTableCols("Name", "Value", "Source"))
 	envTable.Add(
 		component.TableRow{
-			"Name":   component.NewText("tier"),
-			"Value":  component.NewText("prod"),
-			"Source": component.NewText(""),
+			"Name":   component.NewText("configmapref"),
+			"Value":  component.NewText(""),
+			"Source": component.NewLink("", "myconfig:somekey", "/configMap"),
 		},
 		component.TableRow{
 			"Name":   component.NewText("fieldref"),
@@ -153,14 +153,14 @@ func Test_ContainerConfiguration(t *testing.T) {
 			"Source": component.NewText("requests.cpu"),
 		},
 		component.TableRow{
-			"Name":   component.NewText("configmapref"),
-			"Value":  component.NewText(""),
-			"Source": component.NewLink("", "myconfig:somekey", "/configMap"),
-		},
-		component.TableRow{
 			"Name":   component.NewText("secretref"),
 			"Value":  component.NewText(""),
 			"Source": component.NewLink("", "mysecret:somesecretkey", "/secret"),
+		},
+		component.TableRow{
+			"Name":   component.NewText("tier"),
+			"Value":  component.NewText("prod"),
+			"Source": component.NewText(""),
 		},
 		// EnvFromSource
 		component.TableRow{

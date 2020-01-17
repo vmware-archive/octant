@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
+	"sort"
 	"strings"
 
 	"github.com/vmware-tanzu/octant/internal/portforward"
@@ -326,6 +327,9 @@ func describeContainerEnv(ctx context.Context, parent runtime.Object, c *corev1.
 // Expected columns: Name, Value, Source
 func describeEnvRows(ctx context.Context, namespace string, vars []corev1.EnvVar, options Options) ([]component.TableRow, error) {
 	rows := make([]component.TableRow, 0)
+
+	sort.Slice(vars, func(i, j int) bool { return vars[i].Name < vars[j].Name })
+
 	for _, e := range vars {
 		row := component.TableRow{}
 		rows = append(rows, row)
@@ -376,19 +380,18 @@ func describeEnvRows(ctx context.Context, namespace string, vars []corev1.EnvVar
 				return nil, err
 			}
 
-			if !found {
-				return nil, errors.Errorf("configmap %q from %q not found",
-					ref.Name, namespace)
+			if found {
+				configMap := &corev1.ConfigMap{}
+				if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, configMap); err != nil {
+					return nil, err
+				}
+
+				row["Value"] = component.NewText(configMap.Data[ref.Key])
+				row["Source"] = source
+			} else {
+				row["Value"] = component.NewText("<none>")
+				row["Source"] = component.NewText(fmt.Sprintf("%s:%s", ref.Name, ref.Key))
 			}
-
-			configMap := &corev1.ConfigMap{}
-			if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, configMap); err != nil {
-				return nil, err
-			}
-
-			row["Value"] = component.NewText(configMap.Data[ref.Key])
-
-			row["Source"] = source
 		}
 	}
 
