@@ -8,6 +8,8 @@ package clusteroverview
 import (
 	"context"
 
+	corev1 "k8s.io/api/core/v1"
+
 	"github.com/vmware-tanzu/octant/internal/describer"
 	"github.com/vmware-tanzu/octant/internal/portforward"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
@@ -74,13 +76,7 @@ func describePortForwardPorts(pf portforward.State) []component.Port {
 		pfs.Port = int(p.Local)
 		pfs.IsForwarded = true
 
-		port := component.NewPort(
-			pf.Target.Namespace,
-			apiVersion,
-			kind,
-			pf.Target.Name,
-			int(p.Remote),
-			"TCP", pfs)
+		port := component.NewPort(pf.Target.Namespace, apiVersion, kind, pf.Target.Name, int(p.Remote), string(corev1.ProtocolTCP), pfs)
 		list = append(list, *port)
 	}
 	return list

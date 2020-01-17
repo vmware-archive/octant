@@ -1,23 +1,16 @@
 <div class="ports">
-  <div class="port" *ngFor="let port of v?.config.ports; trackBy: identifyPort">
+  <div class="port" *ngFor="let port of v?.config.ports; trackBy: trackByFn">
     <div class="port-text">
       {{port.config.port}}/{{port.config.protocol}}
     </div>
     <div class="port-actions">
-      <ng-container *ngIf="port.config.state?.isForwarded else notRunning">
-        <a class="open-pf" (click)="openPortForward(port)">
+      <ng-container *ngIf="port.config.state?.isForwarded ">
+        <a class="open-pf" href="http://localhost:{{port.config.state.port}}" target="_blank">
           <clr-icon shape="link"></clr-icon>
           http://localhost:{{port.config.state.port}}
         </a>
-        <button class="btn btn-small remove-pf" (click)="removePortForward(port)">
-          Stop port forward
-        </button>
       </ng-container>
-      <ng-template #notRunning>
-        <button *ngIf="port.config.state?.isForwardable" class="btn btn-small start-pf" (click)="startPortForward(port)">
-          Start port forward
-        </button>
-      </ng-template>
+      <app-button-group [view]="port.config.buttonGroup" (click)="load($event)"></app-button-group>
     </div>
   </div>
 </div>

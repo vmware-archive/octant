@@ -30,8 +30,10 @@ describe('Deployment', () => {
 
       cy.contains('Running').should('be.visible')
       cy.contains(/Start port forward/)
-        .click()
-        .should('not.exist');
+        .click();
+
+      cy.get('a[class="open-pf ng-star-inserted"')
+        .contains('localhost');
 
       cy.get('[class=port-actions]')
         .should('have.length', 1)

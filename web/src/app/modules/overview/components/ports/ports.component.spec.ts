@@ -5,6 +5,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PortsComponent } from './ports.component';
+import { ButtonGroupComponent } from '../button-group/button-group.component';
 
 describe('PortsComponent', () => {
   let component: PortsComponent;
@@ -12,7 +13,7 @@ describe('PortsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [PortsComponent],
+      declarations: [PortsComponent, ButtonGroupComponent],
     }).compileComponents();
   }));
 
