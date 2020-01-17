@@ -81,6 +81,18 @@ func (mr *MockClientInterfaceMockRecorder) Resource(arg0 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Resource", reflect.TypeOf((*MockClientInterface)(nil).Resource), arg0)
 }
 
+// ResetMapper mocks base method
+func (m *MockClientInterface) ResetMapper() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "ResetMapper")
+}
+
+// ResetMapper indicates an expected call of ResetMapper
+func (mr *MockClientInterfaceMockRecorder) ResetMapper() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResetMapper", reflect.TypeOf((*MockClientInterface)(nil).ResetMapper))
+}
+
 // KubernetesClient mocks base method
 func (m *MockClientInterface) KubernetesClient() (kubernetes.Interface, error) {
 	m.ctrl.T.Helper()

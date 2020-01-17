@@ -106,9 +106,13 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return errors.Wrap(err, "initializing error store")
 	}
 
-	crdWatcher, err := describer.NewDefaultCRDWatcher(ctx, appObjectStore, errorStore)
+	crdWatcher, err := describer.NewDefaultCRDWatcher(ctx, clusterClient, appObjectStore, errorStore)
 	if err != nil {
 		return errors.Wrap(err, "initializing CRD watcher")
+	}
+
+	if err := crdWatcher.Watch(ctx); err != nil {
+		return fmt.Errorf("unable to start CRD watcher")
 	}
 
 	portForwarder, err := initPortForwarder(ctx, clusterClient, appObjectStore)

@@ -90,7 +90,7 @@ func (co *Overview) SetContext(ctx context.Context, contextName string) error {
 	customResourcesDescriber := describer.NamespacedCRD()
 	co.contextName = contextName
 	for i := range co.watchedCRDs {
-		describer.DeleteCRD(ctx, co.watchedCRDs[i], co.pathMatcher, customResourcesDescriber, co, co.dashConfig.ObjectStore())
+		describer.DeleteCRD(ctx, co.watchedCRDs[i], co.pathMatcher, customResourcesDescriber, co)
 	}
 
 	co.watchedCRDs = []*unstructured.Unstructured{}
@@ -131,8 +131,6 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 
 	crdWatcher := co.dashConfig.CRDWatcher()
 
-	objectStore := co.dashConfig.ObjectStore()
-
 	customResourcesDescriber := describer.NamespacedCRD()
 
 	watchConfig := &config.CRDWatchConfig{
@@ -156,7 +154,7 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 				if object == nil {
 					return
 				}
-				describer.DeleteCRD(ctx, object, pathMatcher, customResourcesDescriber, co, objectStore)
+				describer.DeleteCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
 				var list []*unstructured.Unstructured
 				for i := range co.watchedCRDs {
 					if co.watchedCRDs[i].GetUID() == object.GetUID() {
@@ -170,7 +168,7 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 		IsNamespaced: true,
 	}
 
-	if err := crdWatcher.Watch(ctx, watchConfig); err != nil {
+	if err := crdWatcher.AddConfig(watchConfig); err != nil {
 		return errors.Wrap(err, "create namespaced CRD watcher for overview")
 	}
 

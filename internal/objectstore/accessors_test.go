@@ -34,12 +34,7 @@ func Test_factoriesCache(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	dynamicClient := fake.NewMockDynamicInterface(controller)
-
 	client := fake.NewMockClientInterface(controller)
-	client.EXPECT().
-		DynamicClient().
-		Return(dynamicClient, nil)
 
 	c := initFactoriesCache()
 
@@ -101,23 +96,23 @@ func Test_seenGVKsCache(t *testing.T) {
 func Test_informerContextCache(t *testing.T) {
 	c := initInformerContextCache()
 
-	gvr1 := schema.GroupVersionResource{
-		Group:    "group",
-		Version:  "version",
-		Resource: "resource1",
+	groupVersionKind1 := schema.GroupVersionKind{
+		Group:   "group",
+		Version: "version",
+		Kind:    "resource1",
 	}
-	gvr2 := schema.GroupVersionResource{
-		Group:    "group",
-		Version:  "version",
-		Resource: "resource2",
+	groupVersionKind2 := schema.GroupVersionKind{
+		Group:   "group",
+		Version: "version",
+		Kind:    "resource2",
 	}
-	_ = c.addChild(gvr1)
+	_ = c.addChild(groupVersionKind1)
 	assert.Len(t, c.cache, 1)
-	_ = c.addChild(gvr1)
+	_ = c.addChild(groupVersionKind1)
 	assert.Len(t, c.cache, 1)
-	_ = c.addChild(gvr2)
+	_ = c.addChild(groupVersionKind2)
 	assert.Len(t, c.cache, 2)
-	c.delete(gvr1)
+	c.delete(groupVersionKind1)
 	assert.Len(t, c.cache, 1)
 	c.reset()
 	assert.Len(t, c.cache, 0)

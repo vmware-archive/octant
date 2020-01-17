@@ -112,6 +112,10 @@ type stubCRDWatcher struct{}
 
 var _ CRDWatcher = (*stubCRDWatcher)(nil)
 
-func (stubCRDWatcher) Watch(_ context.Context, config *CRDWatchConfig) error {
+func (w stubCRDWatcher) AddConfig(config *CRDWatchConfig) error {
+	return nil
+}
+
+func (stubCRDWatcher) Watch(_ context.Context) error {
 	return nil
 }

@@ -110,7 +110,8 @@ func (op *ObjectPath) RemoveCRD(ctx context.Context, crd *unstructured.Unstructu
 	defer op.mu.Unlock()
 
 	if crd == nil {
-		return errors.New("unable to remove nil crd")
+		// nothing to do if crd is nil
+		return nil
 	}
 
 	delete(op.crds, crd.GetName())

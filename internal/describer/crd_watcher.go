@@ -10,20 +10,26 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kcache "k8s.io/client-go/tools/cache"
 
+	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/config"
 	internalErr "github.com/vmware-tanzu/octant/internal/errors"
 	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 // DefaultCRDWatcher is the default CRD watcher.
 type DefaultCRDWatcher struct {
-	objectStore store.Store
-	errorStore  internalErr.ErrorStore
+	objectStore   store.Store
+	clusterClient cluster.ClientInterface
+	errorStore    internalErr.ErrorStore
+
+	watchConfigs map[string]*config.CRDWatchConfig
 
 	accessError sync.Once
 	mu          sync.Mutex
@@ -32,14 +38,16 @@ type DefaultCRDWatcher struct {
 var _ config.CRDWatcher = (*DefaultCRDWatcher)(nil)
 
 // NewDefaultCRDWatcher creates an instance of DefaultCRDWatcher.
-func NewDefaultCRDWatcher(ctx context.Context, objectStore store.Store, errorStore internalErr.ErrorStore) (*DefaultCRDWatcher, error) {
+func NewDefaultCRDWatcher(ctx context.Context, clusterClient cluster.ClientInterface, objectStore store.Store, errorStore internalErr.ErrorStore) (*DefaultCRDWatcher, error) {
 	if objectStore == nil {
 		return nil, errors.New("object store is nil")
 	}
 
 	cw := &DefaultCRDWatcher{
-		objectStore: objectStore,
-		errorStore:  errorStore,
+		objectStore:   objectStore,
+		clusterClient: clusterClient,
+		errorStore:    errorStore,
+		watchConfigs:  make(map[string]*config.CRDWatchConfig),
 	}
 
 	objectStore.RegisterOnUpdate(func(newObjectStore store.Store) {
@@ -63,22 +71,66 @@ var (
 )
 
 // Watch watches for CRDs given a configuration.
-func (cw *DefaultCRDWatcher) Watch(ctx context.Context, watchConfig *config.CRDWatchConfig) error {
-	if watchConfig == nil {
-		return errors.New("watch config is nil")
-	}
+func (cw *DefaultCRDWatcher) Watch(ctx context.Context) error {
+	logger := log.From(ctx)
 
-	cw.mu.Lock()
-	defer cw.mu.Unlock()
+	handler := &kcache.ResourceEventHandlerFuncs{
+		AddFunc: func(object interface{}) {
+			cw.mu.Lock()
+			defer cw.mu.Unlock()
 
-	handler := &kcache.ResourceEventHandlerFuncs{}
+			logger := logger.With("crdwatcher", "add")
 
-	if watchConfig.Add != nil {
-		handler.AddFunc = performWatch(ctx, watchConfig.CanPerform, watchConfig.Add)
-	}
+			u, ok := object.(*unstructured.Unstructured)
+			if !ok {
+				logger.
+					With("object-type", fmt.Sprintf("%T", object)).
+					Warnf("crd watcher received a non dynamic object")
+				return
+			}
 
-	if watchConfig.Delete != nil {
-		handler.DeleteFunc = performWatch(ctx, watchConfig.CanPerform, watchConfig.Delete)
+			cw.clusterClient.ResetMapper()
+
+			for _, watchConfig := range cw.watchConfigs {
+				if watchConfig.CanPerform(u) {
+					watchConfig.Add(ctx, u)
+				}
+			}
+		},
+		DeleteFunc: func(object interface{}) {
+			cw.mu.Lock()
+			defer cw.mu.Unlock()
+
+			logger := logger.With("crdwatcher", "delete")
+
+			u, ok := object.(*unstructured.Unstructured)
+			if !ok {
+				logger.
+					With("object-type", fmt.Sprintf("%T", object)).
+					Warnf("crd watcher received a non dynamic object")
+				return
+			}
+
+			cw.clusterClient.ResetMapper()
+
+			for _, watchConfig := range cw.watchConfigs {
+				if watchConfig.CanPerform(u) {
+					watchConfig.Delete(ctx, u)
+				}
+			}
+
+			list, err := kubernetes.CRDResources(u)
+			if err != nil {
+				logger.WithErr(err).Errorf("unable to get group/version/kinds for CRD")
+
+			}
+
+			if err := cw.objectStore.Unwatch(ctx, list...); err != nil {
+				logger.WithErr(err).Errorf("unable to unwatch CRD")
+				return
+			}
+
+		},
 	}
 
 	err := cw.objectStore.Watch(ctx, crdKey, handler)
@@ -88,13 +140,27 @@ func (cw *DefaultCRDWatcher) Watch(ctx context.Context, watchConfig *config.CRDW
 			found := cw.errorStore.Add(aErr)
 			// Log if we have not seen this access error before.
 			if !found {
-				logger := log.From(ctx)
 				logger.WithErr(aErr).Errorf("access denied")
 			}
 			return nil
 		}
 		return errors.WithMessage(err, "crd watcher has failed")
 	}
+
+	return nil
+}
+
+// AddConfig adds watch config to the watcher.
+func (cw *DefaultCRDWatcher) AddConfig(watchConfig *config.CRDWatchConfig) error {
+	if watchConfig == nil {
+		return fmt.Errorf("watch config is nil")
+	}
+
+	cw.mu.Lock()
+	defer cw.mu.Unlock()
+
+	id := uuid.New().String()
+	cw.watchConfigs[id] = watchConfig
 
 	return nil
 }

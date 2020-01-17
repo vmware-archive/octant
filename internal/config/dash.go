@@ -26,7 +26,8 @@ import (
 
 // CRDWatcher watches for CRDs.
 type CRDWatcher interface {
-	Watch(ctx context.Context, config *CRDWatchConfig) error
+	Watch(ctx context.Context) error
+	AddConfig(config *CRDWatchConfig) error
 }
 
 // ObjectHandler is a function that is run when a new object is available.
