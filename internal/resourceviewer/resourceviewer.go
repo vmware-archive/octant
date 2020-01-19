@@ -7,6 +7,7 @@ package resourceviewer
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -19,6 +20,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/objectvisitor"
 	"github.com/vmware-tanzu/octant/internal/queryer"
 	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 const (
@@ -45,6 +47,38 @@ func WithDefaultQueryer(dashConfig config.Dash, q queryer.Queryer) ViewerOpt {
 type ResourceViewer struct {
 	dashConfig config.Dash
 	visitor    objectvisitor.Visitor
+}
+
+// Create creates a resource viewer given a list objects.
+func Create(ctx context.Context, dashConfig config.Dash, q queryer.Queryer, objects ...*unstructured.Unstructured) (*component.ResourceViewer, error) {
+	rv, err := New(dashConfig, WithDefaultQueryer(dashConfig, q))
+	if err != nil {
+		return nil, fmt.Errorf("create resource viewer: %w", err)
+	}
+
+	handler, err := NewHandler(dashConfig)
+	if err != nil {
+		return nil, fmt.Errorf("create resource viewer handler: %w", err)
+	}
+
+	for _, object := range objects {
+		if object == nil {
+			continue
+		}
+		if err := rv.Visit(ctx, object, handler); err != nil {
+			return nil, fmt.Errorf("unable to visit %s %s: %w",
+				object.GroupVersionKind(),
+				object.GetName(),
+				err)
+		}
+	}
+
+	c, err := GenerateComponent(ctx, handler, "")
+	if err != nil {
+		return nil, fmt.Errorf("generate resource viewer component: %w", err)
+	}
+
+	return c, nil
 }
 
 // New creates an instance of ResourceViewer.

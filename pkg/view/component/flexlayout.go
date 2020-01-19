@@ -20,8 +20,10 @@ const (
 
 // FlexLayoutItem is an item in a flex layout.
 type FlexLayoutItem struct {
-	Width int       `json:"width,omitempty"`
-	View  Component `json:"view,omitempty"`
+	Width  int       `json:"width,omitempty"`
+	Height string    `json:"height,omitempty"`
+	Margin string    `json:"margin,omitempty"`
+	View   Component `json:"view,omitempty"`
 }
 
 func (fli *FlexLayoutItem) UnmarshalJSON(data []byte) error {

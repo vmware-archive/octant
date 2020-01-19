@@ -1,5 +1,3 @@
-
-
 <div class="clr-row">
     <div class="clr-col-sm-4 clr-offset-sm-8">
         <div style="float: right; margin-top: 1em">
@@ -9,10 +7,13 @@
 </div>
 
 <ng-container *ngIf="v?.config?.sections">
-  <div class="clr-row" *ngFor="let section of sections; trackBy: identifySection">
-    <div class="clr-col-md-{{ item.width / 2 }} content-card-parent" *ngFor="let item of section; trackBy: identifySection">
-      <app-content-switcher [view]="item.view"></app-content-switcher>
+    <div *ngFor="let section of sections; trackBy: identifySection" class="clr-row">
+        <div
+                *ngFor="let item of section; trackBy: identifySection"
+                [ngStyle]="sectionStyle(item)"
+                class="clr-col-md-{{ item.width / 2 }} content-card-parent">
+            <app-content-switcher [view]="item.view"></app-content-switcher>
+        </div>
     </div>
-  </div>
 </ng-container>
 

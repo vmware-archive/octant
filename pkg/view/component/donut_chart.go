@@ -7,6 +7,13 @@ package component
 
 import "encoding/json"
 
+type DonutChartSize int
+
+const (
+	DonutChartSizeSmall  DonutChartSize = 21
+	DonutChartSizeMedium DonutChartSize = 42
+)
+
 type DonutChartLabels struct {
 	Plural   string `json:"plural"`
 	Singular string `json:"singular"`
@@ -20,6 +27,7 @@ type DonutSegment struct {
 type DonutChartConfig struct {
 	Segments []DonutSegment   `json:"segments"`
 	Labels   DonutChartLabels `json:"labels"`
+	Size     DonutChartSize   `json:"size"`
 }
 
 type DonutChart struct {
@@ -48,6 +56,10 @@ func (dc *DonutChart) SetLabels(plural string, singular string) {
 		Plural:   plural,
 		Singular: singular,
 	}
+}
+
+func (dc *DonutChart) SetSize(size DonutChartSize) {
+	dc.Config.Size = size
 }
 
 func (dc *DonutChart) MarshalJSON() ([]byte, error) {

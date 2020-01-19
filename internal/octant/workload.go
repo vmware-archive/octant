@@ -8,6 +8,7 @@ package octant
 import (
 	"context"
 	"fmt"
+	"path"
 	"sort"
 	"sync"
 
@@ -44,6 +45,8 @@ type Workload struct {
 	IconName string
 	// Name is the name of the workload
 	Name string
+	// Owner is the ancestor that ultimately own the workload.
+	Owner *unstructured.Unstructured
 
 	SegmentCounter map[component.NodeStatus][]PodWithMetric
 
@@ -64,7 +67,7 @@ func NewWorkload(name, iconName string) *Workload {
 	return w
 }
 
-func (w *Workload) DonutChart() (*component.DonutChart, error) {
+func (w *Workload) DonutChart(size component.DonutChartSize) (*component.DonutChart, error) {
 	chart := component.NewDonutChart()
 
 	segments := w.donutSegments()
@@ -74,6 +77,7 @@ func (w *Workload) DonutChart() (*component.DonutChart, error) {
 
 	chart.SetSegments(segments)
 	chart.SetLabels("Pods", "Pod")
+	chart.SetSize(size)
 
 	return chart, nil
 }
@@ -84,6 +88,16 @@ func (w *Workload) PodsWithMetrics() []PodWithMetric {
 	for _, podWithMetric := range w.SegmentCounter {
 		list = append(list, podWithMetric...)
 	}
+	return list
+}
+
+func (w *Workload) Pods() *unstructured.UnstructuredList {
+	list := &unstructured.UnstructuredList{}
+
+	for _, pwm := range w.PodsWithMetrics() {
+		list.Items = append(list.Items, *pwm.Pod)
+	}
+
 	return list
 }
 
@@ -235,59 +249,68 @@ func (wc *WorkloadCardCollector) Collect(ctx context.Context, namespace string) 
 
 	for i := range workloads {
 		workload := &workloads[i]
-		summaryChart, err := workload.DonutChart()
+
+		card, supportsMetrics, err := CreateCard(workload, namespace)
 		if err != nil {
-			return nil, false, fmt.Errorf("create workload summary: %w", err)
+			return nil, false, fmt.Errorf("create workload card: %w", err)
 		}
 
-		section := component.FlexLayoutSection{
-			{
-				Width: component.WidthFull,
-				View:  summaryChart,
-			},
-		}
-
-		if workload.PodMetricsEnabled() {
-			memoryStat, err := PodMemoryStat(workload)
-			if err != nil {
-				return nil, false, fmt.Errorf("create workload memory chart: %w", err)
-			}
-
-			cpuStat, err := PodCPUStat(workload)
-			if err != nil {
-				return nil, false, fmt.Errorf("create workload cpu chart: %w", err)
-			}
-
-			section = component.FlexLayoutSection{
-				{
-					Width: component.WidthThird,
-					View:  summaryChart,
-				},
-				{
-					Width: component.WidthThird,
-					View:  memoryStat,
-				},
-				{
-					Width: component.WidthThird,
-					View:  cpuStat,
-				},
-			}
-			section = append(section, []component.FlexLayoutItem{}...)
-		} else {
+		if !supportsMetrics {
 			fullMetrics = false
 		}
-
-		card := component.NewCard(component.TitleFromString(workload.Name))
-
-		layout := component.NewFlexLayout(workload.Name)
-
-		layout.AddSections(section)
-		card.SetBody(layout)
 
 		cards = append(cards, card)
 	}
 
 	return cards, fullMetrics, nil
+}
+
+func CreateCard(workload *Workload, namespace string) (*component.Card, bool, error) {
+	supportsMetrics := true
+
+	workloadSummary, err := CreateWorkloadSummary(workload, component.DonutChartSizeMedium)
+	if err != nil {
+		return nil, false, fmt.Errorf("create workload summary: %w", err)
+	}
+
+	var section component.FlexLayoutSection
+
+	if workloadSummary.MetricsEnabled {
+		section = component.FlexLayoutSection{
+			{
+				Width: component.WidthThird,
+				View:  workloadSummary.Summary,
+			},
+			{
+				Width: component.WidthThird,
+				View:  workloadSummary.Memory,
+			},
+			{
+				Width: component.WidthThird,
+				View:  workloadSummary.CPU,
+			},
+		}
+	} else {
+		section = component.FlexLayoutSection{
+			{
+				Width: component.WidthFull,
+				View:  workloadSummary.Summary,
+			},
+		}
+		supportsMetrics = false
+	}
+
+	cardPath := path.Join("/workloads/namespace", namespace, "detail", workload.Name)
+	cardTitle := component.NewLink("", workload.Name, cardPath)
+
+	card := component.NewCard([]component.TitleComponent{cardTitle})
+
+	layout := component.NewFlexLayout(workload.Name)
+
+	layout.AddSections(section)
+	card.SetBody(layout)
+
+	return card, supportsMetrics, nil
 }
 
 // ClusterWorkloadLoaderOption is option for configuring ClusterWorkloadLoader.
@@ -362,6 +385,7 @@ func (wl *ClusterWorkloadLoader) Load(ctx context.Context, namespace string) ([]
 		}
 
 		workload := workloadTracker[uid]
+		workload.Owner = owner
 
 		resourceList, err := wl.podMetrics(object)
 		if err != nil {
@@ -563,4 +587,47 @@ func summarizePodResources(object *unstructured.Unstructured) (*corev1.ResourceR
 	}
 
 	return &requirements, nil
+}
+
+type WorkloadSummary struct {
+	Summary        component.Component
+	Memory         component.Component
+	CPU            component.Component
+	MetricsEnabled bool
+}
+
+func CreateWorkloadSummary(workload *Workload, summarySize component.DonutChartSize) (WorkloadSummary, error) {
+	if workload == nil {
+		return WorkloadSummary{}, fmt.Errorf("can't create summary for nil workload")
+	}
+
+	summaryChart, err := workload.DonutChart(summarySize)
+	if err != nil {
+		return WorkloadSummary{}, fmt.Errorf("create workload summary component: %w", err)
+	}
+
+	if !workload.PodMetricsEnabled() {
+		return WorkloadSummary{
+			Summary:        summaryChart,
+			MetricsEnabled: false,
+		}, nil
+
+	}
+
+	memoryStat, err := PodMemoryStat(workload)
+	if err != nil {
+		return WorkloadSummary{}, fmt.Errorf("create workload memory component: %w", err)
+	}
+
+	cpuStat, err := PodCPUStat(workload)
+	if err != nil {
+		return WorkloadSummary{}, fmt.Errorf("create workload cpu component: %w", err)
+	}
+
+	return WorkloadSummary{
+		Summary:        summaryChart,
+		Memory:         memoryStat,
+		CPU:            cpuStat,
+		MetricsEnabled: true,
+	}, nil
 }
