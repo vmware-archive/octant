@@ -33,26 +33,37 @@ func NewHomeDescriber(options ...HomeDescriberOption) (*HomeDescriber, error) {
 	return d, nil
 }
 
-// Describe creates a content response for workloads.
-func (h *HomeDescriber) Describe(ctx context.Context, namespace string, options describer.Options) (component.ContentResponse, error) {
+func loadCards(ctx context.Context, namespace string, options describer.Options) ([]*component.Card, bool, error) {
 	pml, err := octant.NewClusterPodMetricsLoader(options.Dash.ClusterClient())
 	if err != nil {
-		return component.EmptyContentResponse, fmt.Errorf("create pod metrics loader")
+		return nil, false, fmt.Errorf("create pod metrics loader")
 	}
 
 	loader, err := octant.NewClusterWorkloadLoader(options.Dash.ObjectStore(), pml)
 	if err != nil {
-		return component.EmptyContentResponse, fmt.Errorf("create workload loader")
+		return nil, false, fmt.Errorf("create workload loader")
 	}
 
 	collector, err := octant.NewWorkloadCardCollector(loader)
 	if err != nil {
-		return component.EmptyContentResponse, fmt.Errorf("create card collector")
+		return nil, false, fmt.Errorf("create card collector")
 	}
 
 	cards, fullMetrics, err := collector.Collect(ctx, namespace)
 	if err != nil {
-		return component.EmptyContentResponse, fmt.Errorf("collect workload cards: %w", err)
+		return nil, false, fmt.Errorf("collect workload cards: %w", err)
+
+	}
+
+	return cards, fullMetrics, nil
+}
+
+// Describe creates a content response for workloads.
+func (h *HomeDescriber) Describe(ctx context.Context, namespace string, options describer.Options) (component.ContentResponse, error) {
+
+	cards, fullMetrics, err := loadCards(ctx, namespace, options)
+	if err != nil {
+		return component.EmptyContentResponse, fmt.Errorf("load cards cards: %w", err)
 	}
 
 	cardWidth := component.WidthHalf

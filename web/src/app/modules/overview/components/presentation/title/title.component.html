@@ -1,0 +1,14 @@
+<ng-container *ngFor="let view of views; let i = index; trackBy: trackBy">
+    <ng-container [ngSwitch]="view.metadata.type">
+        <ng-container *ngSwitchCase="'text'">
+            <app-view-text [view]="view"></app-view-text>
+        </ng-container>
+        <ng-container *ngSwitchCase="'link'">
+            <app-view-link [view]="view"></app-view-link>
+        </ng-container>
+    </ng-container>
+    <span *ngIf="i < views.length - 1">
+        /
+    </span>
+</ng-container>
+

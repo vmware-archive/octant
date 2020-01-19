@@ -22,7 +22,9 @@
                     </div>
                 </div>
             </ng-container>
-            <h4 class="card-title">{{ title }}</h4>
+            <h4 class="card-title">
+                <app-view-title [views]="title"></app-view-title>
+            </h4>
 
             <div [ngSwitch]="body.metadata.type" class="card-text">
                 <app-content-switcher [view]="body"></app-content-switcher>

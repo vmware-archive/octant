@@ -1,10 +1,13 @@
-<div class="overview-component" #scrollTarget>
+<div #scrollTarget class="overview-component">
     <ng-container *ngIf="hasReceivedContent">
         <ng-container *ngIf="hasTabs; then withTabs; else withoutTabs"></ng-container>
         <ng-template #withTabs>
-            <app-object-tabs [views]="views" [title]="title" [iconName]="iconName"></app-object-tabs>
+            <app-object-tabs [iconName]="iconName" [title]="title" [views]="views"></app-object-tabs>
         </ng-template>
         <ng-template #withoutTabs>
+            <div>
+                <app-navigator></app-navigator>
+            </div>
             <app-content-switcher [view]="singleView"></app-content-switcher>
         </ng-template>
     </ng-container>

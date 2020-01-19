@@ -61,6 +61,8 @@ import { SliderViewComponent } from './components/slider-view/slider-view.compon
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DonutChartComponent } from './components/donut-chart/donut-chart.component';
 import { SingleStatComponent } from './components/single-stat/single-stat.component';
+import { TitleComponent } from './components/presentation/title/title.component';
+import { NavigatorComponent } from './components/presentation/navigator/navigator.component';
 
 export function hljsLanguages() {
   return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
@@ -116,6 +118,8 @@ export function hljsLanguages() {
     SliderViewComponent,
     DonutChartComponent,
     SingleStatComponent,
+    TitleComponent,
+    NavigatorComponent,
   ],
   imports: [
     BrowserAnimationsModule,

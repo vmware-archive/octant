@@ -6,8 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 package flexlayout
 
 import (
-	"github.com/vmware-tanzu/octant/pkg/view/component"
 	"github.com/pkg/errors"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 const (

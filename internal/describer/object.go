@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -189,22 +190,14 @@ func (d *Object) addSummaryTab(ctx context.Context, object runtime.Object, cr *c
 
 func (d *Object) addResourceViewerTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options Options) error {
 	if !d.disableResourceViewer {
-
-		rv, err := resourceviewer.New(options.Dash, resourceviewer.WithDefaultQueryer(options.Dash, options.Queryer))
+		m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(object)
 		if err != nil {
-			return err
+			component.NewError(component.TitleFromString("Show resource viewer for object"), err)
 		}
 
-		handler, err := resourceviewer.NewHandler(options.Dash)
-		if err != nil {
-			return err
-		}
+		u := &unstructured.Unstructured{Object: m}
 
-		if err := rv.Visit(ctx, object, handler); err != nil {
-			return err
-		}
-
-		resourceViewerComponent, err := resourceviewer.GenerateComponent(ctx, handler, "")
+		resourceViewerComponent, err := resourceviewer.Create(ctx, options.Dash, options.Queryer, u)
 		if err != nil {
 			return err
 		}

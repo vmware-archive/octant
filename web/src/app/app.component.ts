@@ -12,6 +12,9 @@ import {
 import { Navigation } from './models/navigation';
 import { WebsocketService } from './modules/overview/services/websocket/websocket.service';
 import { IconService } from './modules/overview/services/icon.service';
+import { NavigatorService } from './modules/overview/services/navigator/navigator.service';
+import { filter } from 'rxjs/operators';
+import { NavigationEnd, Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -21,11 +24,12 @@ import { IconService } from './modules/overview/services/icon.service';
 export class AppComponent implements OnInit, OnDestroy {
   @ViewChild('scrollTarget', { static: false }) scrollTarget: ElementRef;
   navigation: Navigation;
-  previousUrl: string;
 
   constructor(
     private websocketService: WebsocketService,
-    private iconService: IconService
+    private iconService: IconService,
+    private router: Router,
+    private navigator: NavigatorService
   ) {
     iconService.load({
       iconName: 'octant-logo',
@@ -36,6 +40,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.websocketService.open();
+
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(({ urlAfterRedirects }: NavigationEnd) =>
+        this.navigator.addHistory(urlAfterRedirects)
+      );
   }
 
   closeSocket() {

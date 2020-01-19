@@ -28,7 +28,7 @@ export class ButtonGroupComponent implements OnInit {
   constructor(private actionService: ActionService) {}
 
   ngOnInit() {
-    if (this.view) {
+    if (this.view && this.view.config.buttons) {
       this.view.config.buttons.forEach(button => {
         if (button.confirmation) {
           this.class = 'btn-danger-outline btn-sm';

@@ -134,6 +134,7 @@ func TestClusterWorkloadLoader(t *testing.T) {
 				{
 					Name:     "pod-1",
 					IconName: "application",
+					Owner:    pod1,
 					SegmentCounter: map[component.NodeStatus][]octant.PodWithMetric{
 						component.NodeStatusOK: {
 							{
@@ -146,6 +147,7 @@ func TestClusterWorkloadLoader(t *testing.T) {
 				{
 					Name:     "rs-1",
 					IconName: "application",
+					Owner:    replicaSet,
 					SegmentCounter: map[component.NodeStatus][]octant.PodWithMetric{
 						component.NodeStatusOK: {
 							{
@@ -166,6 +168,7 @@ func TestClusterWorkloadLoader(t *testing.T) {
 				{
 					Name:     "pod-1",
 					IconName: "application",
+					Owner:    pod1,
 					SegmentCounter: map[component.NodeStatus][]octant.PodWithMetric{
 						component.NodeStatusOK: {
 							{
@@ -178,6 +181,7 @@ func TestClusterWorkloadLoader(t *testing.T) {
 				{
 					Name:     "rs-1",
 					IconName: "application",
+					Owner:    replicaSet,
 					SegmentCounter: map[component.NodeStatus][]octant.PodWithMetric{
 						component.NodeStatusOK: {
 							{
@@ -198,6 +202,7 @@ func TestClusterWorkloadLoader(t *testing.T) {
 				{
 					Name:     "pod-3",
 					IconName: "application",
+					Owner:    pod3,
 					SegmentCounter: map[component.NodeStatus][]octant.PodWithMetric{
 						component.NodeStatusOK: {
 							{
@@ -262,6 +267,7 @@ func TestWorkloadSummaryChart(t *testing.T) {
 			workload: w,
 			expected: &component.DonutChart{
 				Config: component.DonutChartConfig{
+					Size: component.DonutChartSizeMedium,
 					Segments: []component.DonutSegment{
 						{
 							Count:  3,
@@ -287,7 +293,7 @@ func TestWorkloadSummaryChart(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			actual, err := c.workload.DonutChart()
+			actual, err := c.workload.DonutChart(component.DonutChartSizeMedium)
 			if c.isErr {
 				require.Error(t, err)
 				return
