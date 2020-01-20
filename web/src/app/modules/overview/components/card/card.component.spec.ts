@@ -104,7 +104,9 @@ describe('CardComponent', () => {
           },
         },
       },
-      metadata: undefined,
+      metadata: {
+        type: 'card',
+      },
     };
 
     component.view = view;
@@ -114,7 +116,6 @@ describe('CardComponent', () => {
     });
     fixture.detectChanges();
 
-    expect(component.title).toBe('Just a title');
     expect(component.body).toBe(view.config.body);
   });
 

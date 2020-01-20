@@ -28,7 +28,7 @@ export class DonutChartComponent implements OnInit {
   }
 
   @Input() circumference = 100;
-  @Input() height = 42;
+  height = 42;
 
   constructor() {}
 

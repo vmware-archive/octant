@@ -24,6 +24,16 @@ export interface View {
   metadata: Metadata;
 }
 
+export interface TitleMetadata {
+  type: 'text' | 'link';
+  title?: TitleView[];
+  accessor?: string;
+}
+
+export interface TitleView {
+  metadata: TitleMetadata;
+}
+
 export interface AnnotationsView extends View {
   config: {
     annotations: { [key: string]: string };
@@ -69,6 +79,7 @@ export interface DonutChartView extends View {
   config: {
     segments: DonutSegment[];
     labels: DonutChartLabels;
+    size: number;
   };
 }
 
@@ -80,6 +91,7 @@ export interface GraphvizView extends View {
 
 export interface FlexLayoutItem {
   width: number;
+  height: number;
   view: View;
 }
 

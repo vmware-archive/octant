@@ -13,7 +13,7 @@ import { Navigation } from './models/navigation';
 import { WebsocketService } from './modules/overview/services/websocket/websocket.service';
 import { IconService } from './modules/overview/services/icon.service';
 import { SliderService } from './services/slider/slider.service';
-import { Router, NavigationStart } from '@angular/router';
+import { NavigationStart, Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -23,7 +23,6 @@ import { Router, NavigationStart } from '@angular/router';
 export class AppComponent implements OnInit, OnDestroy {
   @ViewChild('scrollTarget', { static: false }) scrollTarget: ElementRef;
   navigation: Navigation;
-  previousUrl: string;
   style: object = {};
 
   constructor(

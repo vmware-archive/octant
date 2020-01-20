@@ -48,6 +48,15 @@ func New(ctx context.Context, options Options) (*Module, error) {
 		pm.Register(ctx, pf)
 	}
 
+	detailDescriber, err := NewDetailDescriber()
+	if err != nil {
+		return nil, fmt.Errorf("create detail describer: %w", err)
+	}
+
+	for _, pf := range detailDescriber.PathFilters() {
+		pm.Register(ctx, pf)
+	}
+
 	m := &Module{
 		Options:     options,
 		pathMatcher: pm,

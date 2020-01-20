@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 )
@@ -146,7 +147,12 @@ func build() {
 }
 
 func runDev() {
-	runCmd("build/octant", nil)
+	env := make(map[string]string)
+	for _, e := range os.Environ() {
+		parts := strings.SplitN(e, "=", 2)
+		env[parts[0]] = parts[1]
+	}
+	runCmd("build/octant", env)
 }
 
 func test() {
