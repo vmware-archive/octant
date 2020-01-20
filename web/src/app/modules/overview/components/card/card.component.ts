@@ -28,7 +28,7 @@ export class CardComponent implements OnChanges {
 
   @ViewChild('appForm', { static: false }) appForm: FormComponent;
 
-  title: View[];
+  title: TitleView[];
 
   body: View;
 

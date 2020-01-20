@@ -19,7 +19,7 @@ import { NavigatorService } from '../../../services/navigator/navigator.service'
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NavigatorComponent implements OnInit {
-  backLink: string;
+  backLink = '';
 
   private index: number;
   private history: string[];

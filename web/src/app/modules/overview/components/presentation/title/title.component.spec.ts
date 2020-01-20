@@ -7,6 +7,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TitleComponent } from './title.component';
+import { TextComponent } from '../../text/text.component';
+import { LinkComponent } from '../../link/link.component';
 
 describe('TitleComponent', () => {
   let component: TitleComponent;
@@ -14,7 +16,7 @@ describe('TitleComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [TitleComponent],
+      declarations: [TitleComponent, TextComponent, LinkComponent],
     }).compileComponents();
   }));
 
