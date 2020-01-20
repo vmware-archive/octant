@@ -18,4 +18,8 @@ export class TitleComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {}
+
+  trackBy(index, item) {
+    return index;
+  }
 }
