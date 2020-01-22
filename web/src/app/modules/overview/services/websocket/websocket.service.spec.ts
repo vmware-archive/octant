@@ -11,14 +11,14 @@ import {
   NotifierSession,
   NotifierSignal,
 } from '../../../../services/notifier/notifier.service';
-import _ from 'lodash';
+import uniqueId from 'lodash/uniqueId';
 import { BehaviorSubject } from 'rxjs';
 
 class NotifierServiceMock {
   private signalsStream: BehaviorSubject<NotifierSignal[]>;
 
   createSession = (): NotifierSession => {
-    return new NotifierSession(this.signalsStream, _.uniqueId('signalSession'));
+    return new NotifierSession(this.signalsStream, uniqueId('signalSession'));
   };
 }
 

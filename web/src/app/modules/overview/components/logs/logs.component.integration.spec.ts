@@ -4,19 +4,14 @@
 import { HttpClient } from '@angular/common/http';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { DebugElement } from '@angular/core';
-import {
-  async,
-  ComponentFixture,
-  discardPeriodicTasks,
-  fakeAsync,
-  TestBed,
-} from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import _ from 'lodash';
+import map from 'lodash/map';
+import range from 'lodash/range';
+import uniqueId from 'lodash/uniqueId';
 import { LogEntry, LogsView } from 'src/app/models/content';
 import getAPIBase from 'src/app/services/common/getAPIBase';
 import { PodLogsService } from 'src/app/services/pod-logs/pod-logs.service';
-
 import { LogsComponent } from './logs.component';
 
 const API_BASE = getAPIBase();
@@ -39,7 +34,7 @@ function createTestLogsView(containers: string[]): LogsView {
 function createRandomLogEntry(): LogEntry {
   return {
     timestamp: '2019-05-06T18:59:06.554540433Z',
-    message: _.uniqueId('message'),
+    message: uniqueId('message'),
   };
 }
 
@@ -134,8 +129,8 @@ describe('LogsComponent <-> PodsLogsService', () => {
 
   it('should continously scroll to new logs if user has already scrolled to the bottom', () => {
     const numberOfEntriesRequiredToScroll = 200;
-    component.containerLogs = _.map(
-      _.range(numberOfEntriesRequiredToScroll),
+    component.containerLogs = map(
+      range(numberOfEntriesRequiredToScroll),
       createRandomLogEntry
     );
     fixture.detectChanges();
@@ -157,8 +152,8 @@ describe('LogsComponent <-> PodsLogsService', () => {
       logWrapperNativeElement.scrollHeight - logWrapperHeight
     );
 
-    const newContainerLogs: LogEntry[] = _.map(
-      _.range(numberOfEntriesRequiredToScroll),
+    const newContainerLogs: LogEntry[] = map(
+      range(numberOfEntriesRequiredToScroll),
       createRandomLogEntry
     );
     component.containerLogs.push(...newContainerLogs);
@@ -175,8 +170,8 @@ describe('LogsComponent <-> PodsLogsService', () => {
 
   it('should keep scroll position even if new logs are coming in and user is not at bottom', () => {
     const numberOfEntriesRequiredToScroll = 200;
-    component.containerLogs = _.map(
-      _.range(numberOfEntriesRequiredToScroll),
+    component.containerLogs = map(
+      range(numberOfEntriesRequiredToScroll),
       createRandomLogEntry
     );
     fixture.detectChanges();
@@ -199,8 +194,8 @@ describe('LogsComponent <-> PodsLogsService', () => {
     logWrapperNativeElement.dispatchEvent(new Event('scroll'));
 
     // add new logs
-    const newContainerLogs: LogEntry[] = _.map(
-      _.range(numberOfEntriesRequiredToScroll),
+    const newContainerLogs: LogEntry[] = map(
+      range(numberOfEntriesRequiredToScroll),
       createRandomLogEntry
     );
     component.containerLogs.push(...newContainerLogs);

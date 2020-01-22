@@ -12,7 +12,6 @@ import {
   SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
-import _ from 'lodash';
 import { PortsView, View } from 'src/app/models/content';
 
 @Component({

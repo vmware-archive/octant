@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnInit } from '@angular/core';
-import _ from 'lodash';
+import chunk from 'lodash/chunk';
 
 import { PodStatus } from '../../models/pod-status';
 import { Point } from '../../models/point';
@@ -67,7 +67,7 @@ export class HeptagonGridComponent implements OnInit {
   }
 
   rows() {
-    return _.chunk(this.podStatuses, this.perRow);
+    return chunk(this.podStatuses, this.perRow);
   }
 
   viewBox() {
