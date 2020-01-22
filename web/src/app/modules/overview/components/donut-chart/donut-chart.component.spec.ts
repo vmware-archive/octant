@@ -31,6 +31,7 @@ describe('DonutChartComponent', () => {
           plural: 'items',
           singular: 'item',
         },
+        size: 25,
       },
     };
     component.view = view;

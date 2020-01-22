@@ -5,10 +5,9 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { Action, CardView, View } from '../../../../models/content';
+import { Action, CardView, TitleView, View } from '../../../../models/content';
 import { FormGroup } from '@angular/forms';
 import { ActionService } from '../../services/action/action.service';
-import { ViewService } from '../../services/view/view.service';
 import { FormComponent } from '../form/form.component';
 
 @Component({
@@ -29,22 +28,19 @@ export class CardComponent implements OnChanges {
 
   @ViewChild('appForm', { static: false }) appForm: FormComponent;
 
-  title: string;
+  title: TitleView[];
 
   body: View;
 
   currentAction: Action;
 
-  constructor(
-    private actionService: ActionService,
-    private viewService: ViewService
-  ) {}
+  constructor(private actionService: ActionService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {
       const view: CardView = changes.view.currentValue;
       if (view) {
-        this.title = this.viewService.viewTitleAsText(view);
+        this.title = view.metadata.title as TitleView[];
         this.body = view.config.body;
       }
     }
@@ -65,7 +61,7 @@ export class CardComponent implements OnChanges {
     this.currentAction = action;
   }
 
-  trackByFn(index, item) {
+  trackByFn(index, _) {
     return index;
   }
 }

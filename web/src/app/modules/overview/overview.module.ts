@@ -61,6 +61,7 @@ import { SliderViewComponent } from './components/slider-view/slider-view.compon
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DonutChartComponent } from './components/donut-chart/donut-chart.component';
 import { SingleStatComponent } from './components/single-stat/single-stat.component';
+import { TitleComponent } from './components/presentation/title/title.component';
 
 export function hljsLanguages() {
   return [
@@ -119,6 +120,7 @@ export function hljsLanguages() {
     SliderViewComponent,
     DonutChartComponent,
     SingleStatComponent,
+    TitleComponent,
   ],
   imports: [
     BrowserAnimationsModule,
