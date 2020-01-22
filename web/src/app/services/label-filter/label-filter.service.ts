@@ -4,8 +4,7 @@
 
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import _ from 'lodash';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { WebsocketService } from '../../modules/overview/services/websocket/websocket.service';
 
 export interface Filter {

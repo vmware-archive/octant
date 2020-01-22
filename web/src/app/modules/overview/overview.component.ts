@@ -19,7 +19,7 @@ import { ContentService } from './services/content/content.service';
 import { WebsocketService } from './services/websocket/websocket.service';
 import { KubeContextService } from './services/kube-context/kube-context.service';
 import { take } from 'rxjs/operators';
-import _ from 'lodash';
+import isEqual from 'lodash/isEqual';
 
 const emptyContentResponse: ContentResponse = {
   content: {
@@ -124,7 +124,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
     if (
       force ||
       currentPath !== this.previousUrl ||
-      !_.isEqual(queryParams, this.previousParams)
+      !isEqual(queryParams, this.previousParams)
     ) {
       this.resetView();
       this.previousUrl = currentPath;

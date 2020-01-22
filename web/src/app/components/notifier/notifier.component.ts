@@ -3,13 +3,13 @@
 //
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import findLast from 'lodash/findLast';
 import { untilDestroyed } from 'ngx-take-until-destroy';
+import { Subscription } from 'rxjs';
 import {
   NotifierService,
   NotifierSignalType,
 } from 'src/app/services/notifier/notifier.service';
-import { Subscription } from 'rxjs';
-import _ from 'lodash';
 
 @Component({
   selector: 'app-notifier',
@@ -29,24 +29,24 @@ export class NotifierComponent implements OnInit, OnDestroy {
     this.signalSubscription = this.notifierService.globalSignalsStream
       .pipe(untilDestroyed(this))
       .subscribe(currentSignals => {
-        const lastLoadingSignal = _.findLast(currentSignals, {
+        const lastLoadingSignal = findLast(currentSignals, {
           type: NotifierSignalType.LOADING,
         });
         this.loading = !!lastLoadingSignal;
 
-        const lastWarningSignal = _.findLast(currentSignals, {
+        const lastWarningSignal = findLast(currentSignals, {
           type: NotifierSignalType.WARNING,
         });
         this.warning = lastWarningSignal
           ? (lastWarningSignal.data as string)
           : '';
 
-        const lastErrorSignal = _.findLast(currentSignals, {
+        const lastErrorSignal = findLast(currentSignals, {
           type: NotifierSignalType.ERROR,
         });
         this.error = lastErrorSignal ? (lastErrorSignal.data as string) : '';
 
-        const lastInfoSignal = _.findLast(currentSignals, {
+        const lastInfoSignal = findLast(currentSignals, {
           type: NotifierSignalType.INFO,
         });
         this.info = lastInfoSignal ? (lastInfoSignal.data as string) : '';

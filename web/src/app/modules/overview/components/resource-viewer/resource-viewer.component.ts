@@ -10,7 +10,7 @@ import {
   SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
-import _ from 'lodash';
+import isEqual from 'lodash/isEqual';
 import { Node, ResourceViewerView, View } from 'src/app/models/content';
 import { ElementsDefinition, Stylesheet } from 'cytoscape';
 
@@ -114,12 +114,12 @@ export class ResourceViewerComponent implements OnChanges, AfterViewInit {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    const isEqual = _.isEqual(
+    const isEquals = isEqual(
       changes.view.currentValue,
       changes.view.previousValue
     );
 
-    if (changes.view.isFirstChange() || !isEqual) {
+    if (changes.view.isFirstChange() || !isEquals) {
       this.currentView = changes.view.currentValue as ResourceViewerView;
       this.select(this.currentView.config.selected);
       this.graphData = this.generateGraphData();

@@ -12,7 +12,6 @@ import {
 import { BehaviorSubject } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
-import _ from 'lodash';
 
 const labelFilterStub: Partial<LabelFilterService> = {
   filters: new BehaviorSubject<Filter[]>([]),

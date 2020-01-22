@@ -3,8 +3,12 @@
 //
 
 import { Injectable } from '@angular/core';
+import findIndex from 'lodash/findIndex';
+import forEach from 'lodash/forEach';
+import pullAt from 'lodash/pullAt';
+import remove from 'lodash/remove';
+import uniqueId from 'lodash/uniqueId';
 import { BehaviorSubject } from 'rxjs';
-import _ from 'lodash';
 
 export enum NotifierSignalType {
   LOADING = 'LOADING',
@@ -32,7 +36,7 @@ export class NotifierSession {
 
   pushSignal(type: NotifierSignalType, data: boolean | string): string {
     const currentSignals = this.globalSignalsStream.getValue();
-    const newSignalID = _.uniqueId(this.uniqueIDPrefix);
+    const newSignalID = uniqueId(this.uniqueIDPrefix);
     const newSignal = {
       id: newSignalID,
       sessionID: this.uniqueIDPrefix,
@@ -45,7 +49,7 @@ export class NotifierSession {
 
   removeSignal(id: string): boolean {
     const currentSignals = this.globalSignalsStream.getValue();
-    const foundSignalIndex = _.findIndex(currentSignals, {
+    const foundSignalIndex = findIndex(currentSignals, {
       id,
       sessionID: this.uniqueIDPrefix,
     });
@@ -54,13 +58,13 @@ export class NotifierSession {
     }
 
     const newSignalList = [...currentSignals];
-    _.pullAt(newSignalList, foundSignalIndex);
+    pullAt(newSignalList, foundSignalIndex);
     this.globalSignalsStream.next(newSignalList);
     return true;
   }
 
   removeSignals(ids: string[]): void {
-    _.forEach(ids, (id: string) => {
+    forEach(ids, (id: string) => {
       if (id) {
         this.removeSignal(id);
       }
@@ -70,7 +74,7 @@ export class NotifierSession {
   removeAllSignals(): void {
     const currentSignals = this.globalSignalsStream.getValue();
     const newSignalList = [...currentSignals];
-    _.remove(newSignalList, { sessionID: this.uniqueIDPrefix });
+    remove(newSignalList, { sessionID: this.uniqueIDPrefix });
     this.globalSignalsStream.next(newSignalList);
   }
 }
@@ -106,7 +110,7 @@ export class NotifierService {
   createSession(): NotifierSession {
     return new NotifierSession(
       this.globalSignalsStream,
-      _.uniqueId('signalSession')
+      uniqueId('signalSession')
     );
   }
 }
