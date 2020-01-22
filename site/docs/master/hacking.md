@@ -9,7 +9,7 @@
 * [mockgen](https://github.com/golang/mock) - generating go files used for testing
 * [protoc](https://github.com/golang/protobuf) - generate go code compatible with gRPC
 
-These build tools can be installed via Makefile with `go run build.go go-install`.
+These build tools can be installed with `go run build.go go-install`.
 
 A development binary can be built by `go run build.go build`.
 
@@ -90,7 +90,7 @@ The second, is an alias for `go run ./cmd/octant/main.go` but with useful enviro
 
 ## Before Your Pull Request
 
-When you are ready to create your pull request, we recommend running `make ci`.
+When you are ready to create your pull request, we recommend running `go run build.go ci`.
 
 This command will run our linting tools and test suite as well as produce a release binary that you can use to do a final
 manual test of your changes.

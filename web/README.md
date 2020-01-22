@@ -17,21 +17,21 @@ Our web UI is built on Node.js 10+ and npm 6+. It was generated with [Angular CL
 
 There are different ways to installing these dependencies:
 
-The most thorough way that verifies that you have the needed dependencies to build/develop both the Octant's UI and go server component is run `make ci` from the root directory. This is the command used to build a final distributable.
+The most thorough way that verifies that you have the needed dependencies to build/develop both the Octant's UI and go server component is run `go run build.go ci` from the root directory. This is the command used to build a final distributable.
 
-To install just the UI dependencies from the root directory, we have the Makefile command `web-deps` for just npm installation.
+To install just the UI dependencies from the root directory, we have the command `go run build.go web-deps` for just npm installation.
 
 You can also run `npm install` yourself, but this will only work if you are within the `web/` directory.
 
-Additionally, run `make web-build` to generate web assets.
+Additionally, run `go run build.go web-build` to generate web assets.
 
 ### Running development mode
 
-Once you have the necessary dependencies installed, you can start the backend and the frontend server with the following Make command:
+Once you have the necessary dependencies installed, you can start the backend and the frontend server with the following command:
 
-    make -j ui-server ui-client
+    go run build.go serve
 
-This will run both server processes in parallel. You can also run each command in different terminals (which would help with debugging through logs) with `make ui-server` and `make ui-client`. This should open up your browser pointing to `[http://localhost:4200/](http://localhost:4200/)`.
+This will run both server processes in parallel.  Point your browser to `[http://localhost:4200/](http://localhost:4200/)` to connect to the frontend server.
 
 ## Directory structure
 
@@ -61,4 +61,4 @@ There are 3 commands that can help keep PRs tested and linted properly:
 
 To build a production version of the UI, you can run `npm run build` yourself which will build the productionized assets to `dist/`.
 
-To build a full production binary (including the backend server), you can run `make ci` from the root directory.
+To build a full production binary (including the backend server), you can run `go run build.go ci` from the root directory.
