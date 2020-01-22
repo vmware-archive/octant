@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "type": "terminal",
+    "title": [
+      {
+        "config": { "value": "default / term-test" },
+        "metadata": { "type": "text" }
+      }
+    ]
+  },
+  "config": {
+    "name": "term-test",
+    "namespace": "default",
+    "terminal": {
+      "active": false,
+      "command": "/bin/bash",
+      "container": "container-id",
+      "createdAt": "0001-01-01T00:00:00Z",
+      "uuid": "0000-0000-0000-0000-0000"
+    }
+  }
+}

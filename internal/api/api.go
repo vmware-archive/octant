@@ -153,6 +153,7 @@ func (a *API) Handler(ctx context.Context) (*mux.Router, error) {
 
 	manager := NewWebsocketClientManager(ctx, a.actionDispatcher)
 	go manager.Run(ctx)
+	go TerminalEventProcessor(ctx, a.dashConfig, manager)
 	s.Handle("/stream", websocketService(manager, a.dashConfig))
 
 	s.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

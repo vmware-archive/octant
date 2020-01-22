@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ClarityModule } from '@clr/angular';
@@ -10,6 +10,7 @@ import json from 'highlight.js/lib/languages/json';
 import yaml from 'highlight.js/lib/languages/yaml';
 import { HighlightModule } from 'ngx-highlightjs';
 import { MarkdownModule } from 'ngx-markdown';
+import { ResizableModule } from 'angular-resizable-element';
 
 import { AnnotationsComponent } from './components/annotations/annotations.component';
 import { CardListComponent } from './components/card-list/card-list.component';
@@ -54,8 +55,7 @@ import { SafePipe } from './pipes/safe.pipe';
 import { ButtonGroupComponent } from './components/button-group/button-group.component';
 import { AlertComponent } from './components/alert/alert.component';
 import { ContentFilterComponent } from './components/content-filter/content-filter.component';
-import { NgTerminalModule } from 'ng-terminal';
-import { TerminalComponent } from 'src/app/components/terminal/terminal.component';
+import { TerminalComponent } from './components/terminal/terminal.component';
 import { IFrameComponent } from './components/iframe/iframe.component';
 import { SliderViewComponent } from './components/slider-view/slider-view.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -63,7 +63,10 @@ import { DonutChartComponent } from './components/donut-chart/donut-chart.compon
 import { SingleStatComponent } from './components/single-stat/single-stat.component';
 
 export function hljsLanguages() {
-  return [{ name: 'yaml', func: yaml }, { name: 'json', func: json }];
+  return [
+    { name: 'yaml', func: yaml },
+    { name: 'json', func: json },
+  ];
 }
 
 @NgModule({
@@ -129,7 +132,7 @@ export function hljsLanguages() {
     RouterModule,
     ReactiveFormsModule,
     MarkdownModule.forChild(),
-    NgTerminalModule,
+    ResizableModule,
   ],
   exports: [ContextSelectorComponent, DefaultPipe, SafePipe],
 })

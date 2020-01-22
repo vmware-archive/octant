@@ -54,10 +54,7 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
   ) {
     // wait a bit before reacting to user input
     this.inputChanged
-      .pipe(
-        debounceTime(150),
-        distinctUntilChanged()
-      )
+      .pipe(debounceTime(150), distinctUntilChanged())
       .subscribe(f => this.updateFilteredDestinations(f));
   }
 

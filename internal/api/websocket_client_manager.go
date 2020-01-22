@@ -19,6 +19,7 @@ import (
 // ClientManager is an interface for managing clients.
 type ClientManager interface {
 	Run(ctx context.Context)
+	Clients() []*WebsocketClient
 	ClientFromRequest(dashConfig config.Dash, w http.ResponseWriter, r *http.Request) (*WebsocketClient, error)
 }
 
@@ -36,7 +37,12 @@ type WebsocketClientManager struct {
 	register chan *clientMeta
 
 	// unregister unregisters request from clients.
-	unregister       chan *WebsocketClient
+	unregister chan *WebsocketClient
+
+	// list populates a client list
+	requestList chan bool
+	recvList    chan []*WebsocketClient
+
 	ctx              context.Context
 	actionDispatcher ActionDispatcher
 }
@@ -50,8 +56,16 @@ func NewWebsocketClientManager(ctx context.Context, dispatcher ActionDispatcher)
 		clients:          make(map[*WebsocketClient]context.CancelFunc),
 		register:         make(chan *clientMeta),
 		unregister:       make(chan *WebsocketClient),
+		requestList:      make(chan bool),
+		recvList:         make(chan []*WebsocketClient),
 		actionDispatcher: dispatcher,
 	}
+}
+
+func (m *WebsocketClientManager) Clients() []*WebsocketClient {
+	m.requestList <- true
+	clients := <-m.recvList
+	return clients
 }
 
 // Run runs the manager. It manages multiple websocket clients.
@@ -68,6 +82,12 @@ func (m *WebsocketClientManager) Run(ctx context.Context) {
 				cancelFunc()
 				delete(m.clients, client)
 			}
+		case <-m.requestList:
+			clients := []*WebsocketClient{}
+			for client := range m.clients {
+				clients = append(clients, client)
+			}
+			m.recvList <- clients
 		}
 	}
 }
@@ -85,7 +105,7 @@ func (m *WebsocketClientManager) ClientFromRequest(dashConfig config.Dash, w htt
 	}
 
 	ctx, cancel := context.WithCancel(m.ctx)
-	client := NewWebsocketClient(ctx, conn, dashConfig, m.actionDispatcher, clientID)
+	client := NewWebsocketClient(ctx, conn, m, dashConfig, m.actionDispatcher, clientID)
 	m.register <- &clientMeta{
 		cancelFunc: func() {
 			cancel()

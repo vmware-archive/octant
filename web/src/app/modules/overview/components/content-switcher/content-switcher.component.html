@@ -3,6 +3,9 @@
     <ng-container *ngSwitchCase="'annotations'">
       <app-view-annotations [view]="view"></app-view-annotations>
     </ng-container>
+    <ng-container *ngSwitchCase="'buttonGroup'">
+      <app-button-group [view]="view"></app-button-group>
+    </ng-container>
     <ng-container *ngSwitchCase="'card'">
       <app-view-card [view]="view"></app-view-card>
     </ng-container>
@@ -83,6 +86,15 @@
     </ng-container>
     <ng-container *ngSwitchCase="'yaml'">
       <app-view-yaml [view]="view"></app-view-yaml>
+    </ng-container>
+    <ng-container *ngSwitchCase="'logs'">
+      <app-logs [view]="view"></app-logs>
+    </ng-container>
+    <ng-container *ngSwitchCase="'ports'">
+      <app-view-ports [view]="view"></app-view-ports>
+    </ng-container>
+    <ng-container *ngSwitchCase="'terminal'">
+      <app-terminal [view]="view"></app-terminal>
     </ng-container>
     <div class="alert alert-danger static" *ngSwitchDefault>
       <span class="alert-icon-wrapper">

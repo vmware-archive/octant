@@ -13,6 +13,7 @@ import (
 	log "github.com/vmware-tanzu/octant/internal/log"
 	module "github.com/vmware-tanzu/octant/internal/module"
 	portforward "github.com/vmware-tanzu/octant/internal/portforward"
+	terminal "github.com/vmware-tanzu/octant/internal/terminal"
 	plugin "github.com/vmware-tanzu/octant/pkg/plugin"
 	store "github.com/vmware-tanzu/octant/pkg/store"
 	reflect "reflect"
@@ -208,6 +209,20 @@ func (m *MockDash) PortForwarder() portforward.PortForwarder {
 func (mr *MockDashMockRecorder) PortForwarder() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PortForwarder", reflect.TypeOf((*MockDash)(nil).PortForwarder))
+}
+
+// TerminalManager mocks base method
+func (m *MockDash) TerminalManager() terminal.Manager {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TerminalManager")
+	ret0, _ := ret[0].(terminal.Manager)
+	return ret0
+}
+
+// TerminalManager indicates an expected call of TerminalManager
+func (mr *MockDashMockRecorder) TerminalManager() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TerminalManager", reflect.TypeOf((*MockDash)(nil).TerminalManager))
 }
 
 // UseContext mocks base method
