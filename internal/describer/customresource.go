@@ -45,14 +45,50 @@ func AddCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatcher
 		pm.Register(ctx, pf)
 	}
 
-	cd := newCRD(name, crdObjectPath(name))
-	for _, pf := range cd.PathFilters() {
-		pm.Register(ctx, pf)
+	// TODO: there could be multiple paths here, so iterate through crd.spec.versions['name']
+
+	versions, err := crdVersions(crd)
+	if err != nil {
+		logger.WithErr(err).Errorf("get crd versions: %w", err)
+		return
+	}
+
+	for _, version := range versions {
+		cd := newCRD(name, crdObjectPath(crd, version))
+		for _, pf := range cd.PathFilters() {
+			pm.Register(ctx, pf)
+		}
 	}
 
 	if err := m.AddCRD(ctx, crd); err != nil {
 		logger.WithErr(err).Errorf("unable to add CRD")
 	}
+}
+
+func crdVersions(crd *unstructured.Unstructured) ([]string, error) {
+	rawVersions, _, err := unstructured.NestedSlice(crd.Object, "spec", "versions")
+	if err != nil {
+		return nil, fmt.Errorf("unable to extract versions from crd: %w", err)
+	}
+
+	var list []string
+
+	for _, rawVersion := range rawVersions {
+		versionDesc, ok := rawVersion.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("crd version descriptor was not an object (it was %T)", rawVersion)
+		}
+		versionName, found, err := unstructured.NestedString(versionDesc, "name")
+		if err != nil {
+			return nil, fmt.Errorf("unable to extract version name from version descriptor: %w", err)
+		}
+
+		if found {
+			list = append(list, versionName)
+		}
+	}
+
+	return list, nil
 }
 
 func DeleteCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatcher, crdSection *CRDSection, m module.Module) {
@@ -62,7 +98,15 @@ func DeleteCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatc
 	logger.Debugf("deleting CRD")
 
 	pm.Deregister(ctx, crdListPath(name))
-	pm.Deregister(ctx, crdObjectPath(name))
+
+	versions, err := crdVersions(crd)
+	if err != nil {
+		logger.WithErr(err).Errorf("get crd versions: %w", err)
+		return
+	}
+	for _, version := range versions {
+		pm.Deregister(ctx, crdObjectPath(crd, version))
+	}
 
 	crdSection.Remove(name)
 
@@ -76,6 +120,6 @@ func crdListPath(name string) string {
 	return path.Join("/custom-resources", name)
 }
 
-func crdObjectPath(name string) string {
-	return path.Join(crdListPath(name), ResourceNameRegex)
+func crdObjectPath(object *unstructured.Unstructured, version string) string {
+	return path.Join(crdListPath(object.GetName()), version, ResourceNameRegex)
 }

@@ -41,7 +41,7 @@ func Test_CustomResourceListHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := component.NewTableWithRows(
-		"crontabs.stable.example.com/v1", "We couldn't find any custom resources!",
+		"crontabs.stable.example.com/v1", "We could not find any crontabs.stable.example.com/v1!",
 		component.NewTableCols("Name", "Labels", "Age"),
 		[]component.TableRow{
 			{
@@ -77,7 +77,7 @@ func Test_CustomResourceListHandler_custom_columns(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := component.NewTableWithRows(
-		"crontabs.stable.example.com/v1", "We couldn't find any custom resources!",
+		"crontabs.stable.example.com/v1", "We could not find any crontabs.stable.example.com/v1!",
 		component.NewTableCols("Name", "Labels", "Spec", "Replicas", "Errors", "Resource Age", "Age"),
 		[]component.TableRow{
 			{

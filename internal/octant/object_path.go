@@ -21,7 +21,7 @@ import (
 )
 
 // CRDPathGenFunc is a function that generates a custom resource path.
-type CRDPathGenFunc func(namespace, crdName, name string) (string, error)
+type CRDPathGenFunc func(namespace, crdName, version, name string) (string, error)
 
 // PathLookupFunc looks up paths for an object.
 type PathLookupFunc func(namespace, apiVersion, kind, name string) (string, error)
@@ -186,8 +186,9 @@ func (op *ObjectPath) GroupVersionKindPath(namespace, apiVersion, kind, name str
 		}
 
 		if dashStrings.Contains(apiVersion, apiVersions) {
-			return op.crdPathGenFunc(namespace, crd.GetName(), name)
+			return op.crdPathGenFunc(namespace, crd.GetName(), g.Version, name)
 		}
+
 	}
 
 	return op.lookupFunc(namespace, apiVersion, kind, name)

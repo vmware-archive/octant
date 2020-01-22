@@ -28,7 +28,8 @@ func CustomResourceListHandler(crdObject *unstructured.Unstructured, resources *
 	}
 
 	tableName := fmt.Sprintf("%s/%s", crdObject.GetName(), version)
-	table := component.NewTable(tableName, "We couldn't find any custom resources!", component.NewTableCols("Name", "Labels"))
+	placeholder := fmt.Sprintf("We could not find any %s!", tableName)
+	table := component.NewTable(tableName, placeholder, component.NewTableCols("Name", "Labels"))
 
 	crd, err := octant.NewCustomResourceDefinition(crdObject)
 	if err != nil {
@@ -54,6 +55,10 @@ func CustomResourceListHandler(crdObject *unstructured.Unstructured, resources *
 
 	for i := range resources.Items {
 		versionName := resources.Items[i].GroupVersionKind().Version
+		if version != versionName {
+			continue
+		}
+
 		version, err := crd.Version(versionName)
 		if err != nil {
 			return nil, fmt.Errorf("get version '%s' from crd '%s': %w", versionName, crdObject.GetName(), err)
