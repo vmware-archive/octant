@@ -19,6 +19,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/module"
 	"github.com/vmware-tanzu/octant/internal/portforward"
+	"github.com/vmware-tanzu/octant/internal/terminal"
 	"github.com/vmware-tanzu/octant/pkg/plugin"
 )
 
@@ -87,6 +88,8 @@ type Dash interface {
 
 	PortForwarder() portforward.PortForwarder
 
+	TerminalManager() terminal.Manager
+
 	KubeConfigPath() string
 
 	UseContext(ctx context.Context, contextName string) error
@@ -110,6 +113,7 @@ type Live struct {
 	errorStore         internalErr.ErrorStore
 	pluginManager      plugin.ManagerInterface
 	portForwarder      portforward.PortForwarder
+	terminalManager    terminal.Manager
 	kubeConfigPath     string
 	currentContextName string
 	restConfigOptions  cluster.RESTConfigOptions
@@ -128,6 +132,7 @@ func NewLiveConfig(
 	errorStore internalErr.ErrorStore,
 	pluginManager plugin.ManagerInterface,
 	portForwarder portforward.PortForwarder,
+	terminalManager terminal.Manager,
 	currentContextName string,
 	restConfigOptions cluster.RESTConfigOptions,
 ) *Live {
@@ -141,6 +146,7 @@ func NewLiveConfig(
 		errorStore:         errorStore,
 		pluginManager:      pluginManager,
 		portForwarder:      portForwarder,
+		terminalManager:    terminalManager,
 		currentContextName: currentContextName,
 		restConfigOptions:  restConfigOptions,
 	}
@@ -194,6 +200,11 @@ func (l *Live) PluginManager() plugin.ManagerInterface {
 // PortForwarder returns a port forwarder.
 func (l *Live) PortForwarder() portforward.PortForwarder {
 	return l.portForwarder
+}
+
+// TerminalManager returns a terminal manager interface.
+func (l *Live) TerminalManager() terminal.Manager {
+	return l.terminalManager
 }
 
 // UseContext switches context name. This process should have synchronously.

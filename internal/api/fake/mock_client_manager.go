@@ -51,6 +51,20 @@ func (mr *MockClientManagerMockRecorder) ClientFromRequest(arg0, arg1, arg2 inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClientFromRequest", reflect.TypeOf((*MockClientManager)(nil).ClientFromRequest), arg0, arg1, arg2)
 }
 
+// Clients mocks base method
+func (m *MockClientManager) Clients() []*api.WebsocketClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clients")
+	ret0, _ := ret[0].([]*api.WebsocketClient)
+	return ret0
+}
+
+// Clients indicates an expected call of Clients
+func (mr *MockClientManagerMockRecorder) Clients() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clients", reflect.TypeOf((*MockClientManager)(nil).Clients))
+}
+
 // Run mocks base method
 func (m *MockClientManager) Run(arg0 context.Context) {
 	m.ctrl.T.Helper()

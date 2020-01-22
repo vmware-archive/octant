@@ -33,6 +33,7 @@ const (
 	typeSingleStat          = "singleStat"
 	typeSummary             = "summary"
 	typeTable               = "table"
+	typeTerminal            = "terminal"
 	typeText                = "text"
 	typeTimestamp           = "timestamp"
 	typeVerticalBulletChart = "verticalBulletChart"

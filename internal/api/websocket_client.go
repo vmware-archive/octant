@@ -44,6 +44,7 @@ type WebsocketClient struct {
 	logger     log.Logger
 	ctx        context.Context
 	cancel     context.CancelFunc
+	manager    *WebsocketClientManager
 
 	isOpen   bool
 	state    octant.State
@@ -54,7 +55,7 @@ type WebsocketClient struct {
 var _ OctantClient = (*WebsocketClient)(nil)
 
 // NewWebsocketClient creates an instance of WebsocketClient.
-func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, dashConfig config.Dash, actionDispatcher ActionDispatcher, id uuid.UUID) *WebsocketClient {
+func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *WebsocketClientManager, dashConfig config.Dash, actionDispatcher ActionDispatcher, id uuid.UUID) *WebsocketClient {
 	logger := dashConfig.Logger().With("component", "websocket-client", "client-id", id.String())
 
 	ctx, cancel := context.WithCancel(ctx)
@@ -65,6 +66,7 @@ func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, dashConfig co
 		conn:       conn,
 		id:         id,
 		send:       make(chan octant.Event),
+		manager:    manager,
 		dashConfig: dashConfig,
 		logger:     logger,
 		handlers:   make(map[string][]octant.ClientRequestHandler),
