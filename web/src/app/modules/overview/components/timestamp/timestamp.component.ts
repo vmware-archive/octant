@@ -3,7 +3,9 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 import { TimestampView, View } from 'src/app/models/content';
 
 @Component({
@@ -24,16 +26,20 @@ export class TimestampComponent implements OnChanges {
   humanReadable: string;
   age: string;
 
-  constructor() {}
+  constructor() {
+    dayjs.extend(utc);
+    dayjs.extend(LocalizedFormat);
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {
       const view = changes.view.currentValue as TimestampView;
 
       const timestamp = view.config.timestamp;
-      this.humanReadable = moment(timestamp * 1000)
-        .utcOffset('+0000')
-        .format('LLLL z');
+      this.humanReadable =
+        dayjs(timestamp * 1000)
+          .utc()
+          .format('LLLL') + ' UTC';
       this.age = this.summarizeTimestamp(timestamp);
     }
   }
