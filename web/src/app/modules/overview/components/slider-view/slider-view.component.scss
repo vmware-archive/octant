@@ -18,17 +18,15 @@ $tabsHeight: 2rem;
   align-items: flex-end;
   opacity: 1;
 
-  //background-color: #0d151b;
-
   // TODO: delete this. host-context isn't used in all browsers
   // Status's color variables for Light Theme.
   :host-context(body) {
-    background-color: white;
+    --slider-background-color: white;
   }
 
   // Status's color variables for Dark Theme.
   :host-context(body.dark) {
-    background-color: #0d151b;
+    --slider-background-color: #0d151b;
   }
 
   &--trigger {
@@ -55,5 +53,7 @@ $tabsHeight: 2rem;
   &--content {
     height: $statusContentHeight;
     width: 100%;
+    background-color: var(--slider-background-color);
+    border-top: 2px solid rgb(215, 215, 215);
   }
 }
