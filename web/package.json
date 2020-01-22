@@ -46,7 +46,6 @@
     "default-passive-events": "^1.0.10",
     "highlight.js": "^9.16.2",
     "lodash": "^4.17.15",
-    "ng-terminal": "^2.2.1",
     "ngx-highlightjs": "^3.0.3",
     "ngx-markdown": "^8.2.1",
     "ngx-take-until-destroy": "^5.4.0",
@@ -59,7 +58,7 @@
     "zone.js": "~0.9.1"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~0.803.22",
+    "@angular-devkit/build-angular": "^0.803.23",
     "@angular/cli": "~8.3.4",
     "@angular/compiler-cli": "~8.2.6",
     "@angular/language-service": "~8.2.6",
