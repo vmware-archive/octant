@@ -10,7 +10,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { ActivatedRoute, Params, Router, UrlSegment } from '@angular/router';
-import { ContentResponse, View } from 'src/app/models/content';
+import { ContentResponse, View, ExtensionView } from 'src/app/models/content';
 import { IconService } from './services/icon.service';
 import { ViewService } from './services/view/view.service';
 import { BehaviorSubject, combineLatest } from 'rxjs';
@@ -23,6 +23,7 @@ import _ from 'lodash';
 
 const emptyContentResponse: ContentResponse = {
   content: {
+    extensionComponent: null,
     viewComponents: [],
     title: [],
   },
@@ -48,6 +49,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
   hasReceivedContent = false;
   title: string = null;
   views: View[] = null;
+  extView: ExtensionView = null;
   singleView: View = null;
   private previousUrl = '';
   private iconName: string;
@@ -91,12 +93,12 @@ export class OverviewComponent implements OnInit, OnDestroy {
     callback: (options: LocationCallbackOptions) => void,
     takeOne = false
   ) {
-    let observable = combineLatest(
+    let observable = combineLatest([
       this.route.url,
       this.route.queryParams,
       this.route.fragment,
-      this.kubeContextService.selected()
-    );
+      this.kubeContextService.selected(),
+    ]);
 
     if (takeOne) {
       observable = observable.pipe(take(1));
@@ -148,6 +150,9 @@ export class OverviewComponent implements OnInit, OnDestroy {
       // TODO: show a loading screen here (#506)
       return;
     }
+
+    const view = contentResponse.content.extensionComponent;
+    this.extView = view;
 
     this.hasTabs = views.length > 1;
     if (this.hasTabs) {

@@ -43,6 +43,8 @@ $navigation-width: 13rem;
   }
 
   .content-container {
+    margin-bottom: 1.5rem;
+
     .navigation {
       border-right: 1px solid var(--navigation-border-color);
       overflow-y: auto;
