@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
@@ -44,9 +43,11 @@ func Test_realGenerator_Generate(t *testing.T) {
 		isErr    bool
 	}{
 		{
-			name:     "dynamic content",
-			path:     "/foo",
-			expected: component.ContentResponse{Components: []component.Component{textFoo}},
+			name: "dynamic content",
+			path: "/foo",
+			expected: component.ContentResponse{
+				Components: []component.Component{textFoo},
+			},
 		},
 		{
 			name:  "invalid path",
@@ -94,7 +95,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			assert.Equal(t, tc.expected, cResponse)
+			component.AssertContentResponseEquals(t, tc.expected, cResponse)
 		})
 	}
 }

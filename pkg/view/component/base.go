@@ -13,6 +13,7 @@ const (
 	typeContainers          = "containers"
 	typeDonutChart          = "donutChart"
 	typeError               = "error"
+	typeExtension           = "extension"
 	typeExpressionSelector  = "expressionSelector"
 	typeFlexLayout          = "flexlayout"
 	typeGraphviz            = "graphviz"
