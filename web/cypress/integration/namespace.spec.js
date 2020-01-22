@@ -15,7 +15,7 @@ describe('Namespace', () => {
   it('namespace dropdown', () => {
     cy.get('input[role="combobox"]').click();
 
-    cy.contains('octant-cypress').click();
+    cy.get('[class="ng-option-label ng-star-inserted"]').contains('octant-cypress').parent().click();
 
     cy.location('hash').should('include', '/' + 'octant-cypress');
   });

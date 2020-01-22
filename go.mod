@@ -36,6 +36,7 @@ require (
 	github.com/stretchr/testify v1.3.0
 	go.opencensus.io v0.22.1
 	go.uber.org/zap v1.10.0
+	golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
 	google.golang.org/genproto v0.0.0-20190502173448-54afdca5d873 // indirect
 	google.golang.org/grpc v1.23.0

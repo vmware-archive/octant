@@ -19,7 +19,7 @@ describe('Deployment', () => {
         '/#/overview/namespace/' + result.stdout + '/workloads/deployments'
       );
 
-      cy.get('span[class="ng-value-label ng-star-inserted"]').contains(result.stdout);
+      cy.get('span[class="ng-value-label ng-star-inserted"]').should('contain', result.stdout);
 
       cy.get('[class="ng-star-inserted"]')
         .contains('nginx-deployment')
@@ -62,7 +62,7 @@ describe('Deployment', () => {
         '/#/overview/namespace/' + result.stdout + '/workloads/deployments'
       );
 
-      cy.get('span[class="ng-value-label ng-star-inserted"]').contains(result.stdout);
+      cy.get('span[class="ng-value-label ng-star-inserted"]').should('contain', result.stdout);
 
       cy.get('[class="ng-star-inserted"]')
         .contains('nginx-deployment')
