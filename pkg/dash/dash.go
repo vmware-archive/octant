@@ -19,7 +19,6 @@ import (
 	"contrib.go.opencensus.io/exporter/jaeger"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/pkg/errors"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/viper"
 	"go.opencensus.io/trace"
@@ -75,19 +74,19 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 	}
 	clusterClient, err := cluster.FromKubeConfig(ctx, options.KubeConfig, options.Context, options.Namespace, restConfigOptions)
 	if err != nil {
-		return errors.Wrap(err, "failed to init cluster client")
+		return fmt.Errorf("failed to init cluster client: %w", err)
 	}
 
 	if options.EnableOpenCensus {
 		if err := enableOpenCensus(); err != nil {
 			logger.Infof("Enabling OpenCensus")
-			return errors.Wrap(err, "enabling open census")
+			return fmt.Errorf("enabling open census: %w", err)
 		}
 	}
 
 	nsClient, err := clusterClient.NamespaceClient()
 	if err != nil {
-		return errors.Wrap(err, "failed to create namespace client")
+		return fmt.Errorf("failed to create namespace client: %w", err)
 	}
 
 	// If not overridden, use initial namespace from current context in KUBECONFIG
@@ -99,31 +98,31 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 
 	appObjectStore, err := initObjectStore(ctx, clusterClient)
 	if err != nil {
-		return errors.Wrap(err, "initializing store")
+		return fmt.Errorf("initializing store: %w", err)
 	}
 
 	errorStore, err := internalErr.NewErrorStore()
 	if err != nil {
-		return errors.Wrap(err, "initializing error store")
+		return fmt.Errorf("initializing error store: %w", err)
 	}
 
 	crdWatcher, err := describer.NewDefaultCRDWatcher(ctx, clusterClient, appObjectStore, errorStore)
 	if err != nil {
-		return errors.Wrap(err, "initializing CRD watcher")
+		return fmt.Errorf("initializing CRD watcher: %w", err)
 	}
 
 	if err := crdWatcher.Watch(ctx); err != nil {
-		return fmt.Errorf("unable to start CRD watcher")
+		return fmt.Errorf("unable to start CRD watcher: %w", err)
 	}
 
 	portForwarder, err := initPortForwarder(ctx, clusterClient, appObjectStore)
 	if err != nil {
-		return errors.Wrap(err, "initializing port forwarder")
+		return fmt.Errorf("initializing port forwarder: %w", err)
 	}
 
 	terminalManager, err := terminal.NewTerminalManager(ctx, clusterClient, appObjectStore)
 	if err != nil {
-		return errors.Wrap(err, "initializing terminal manager")
+		return fmt.Errorf("initializing terminal manager: %w", err)
 	}
 
 	actionManger := action.NewManager(logger)
@@ -136,7 +135,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 	}
 	moduleManager, err := initModuleManager(mo)
 	if err != nil {
-		return errors.Wrap(err, "init module manager")
+		return fmt.Errorf("init module manager: %w", err)
 	}
 
 	frontendProxy := pluginAPI.FrontendProxy{}
@@ -149,7 +148,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 
 	pluginManager, err := initPlugin(moduleManager, actionManger, pluginDashboardService)
 	if err != nil {
-		return errors.Wrap(err, "initializing plugin manager")
+		return fmt.Errorf("initializing plugin manager: %w", err)
 	}
 
 	dashConfig := config.NewLiveConfig(
@@ -168,23 +167,23 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 
 	moduleList, err := initModules(ctx, dashConfig, options.Namespace, options)
 	if err != nil {
-		return errors.Wrap(err, "initializing modules")
+		return fmt.Errorf("initializing modules: %w", err)
 	}
 
 	for _, mod := range moduleList {
 		if err := moduleManager.Register(mod); err != nil {
-			return errors.Wrapf(err, "loading module %s", mod.Name())
+			return fmt.Errorf("loading module %s: %w", mod.Name(), err)
 		}
 	}
 
 	if err := pluginManager.Start(ctx); err != nil {
-		return errors.Wrapf(err, "start plugin manager")
+		return fmt.Errorf("start plugin manager: %w", err)
 	}
 
 	listener, err := buildListener()
 	if err != nil {
-		err = errors.Wrap(err, "failed to create net listener")
-		return errors.Wrap(err, "use OCTANT_LISTENER_ADDR to set host:port")
+		err = fmt.Errorf("failed to create net listener: %w", err)
+		return fmt.Errorf("use OCTANT_LISTENER_ADDR to set host:port: %w", err)
 	}
 
 	// Initialize the API
@@ -193,7 +192,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 
 	d, err := newDash(listener, options.Namespace, options.FrontendURL, apiService, logger)
 	if err != nil {
-		return errors.Wrap(err, "failed to create dash instance")
+		return fmt.Errorf("failed to create dash instance: %w", err)
 	}
 
 	if viper.GetBool("disable-open-browser") {
@@ -221,14 +220,14 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 // initObjectStore initializes the cluster object store interface
 func initObjectStore(ctx context.Context, client cluster.ClientInterface) (store.Store, error) {
 	if client == nil {
-		return nil, errors.New("nil cluster client")
+		return nil, fmt.Errorf("nil cluster client")
 	}
 
 	resourceAccess := objectstore.NewResourceAccess(client)
 	appObjectStore, err := objectstore.NewDynamicCache(ctx, client, objectstore.Access(resourceAccess))
 
 	if err != nil {
-		return nil, errors.Wrapf(err, "creating object store for app")
+		return nil, fmt.Errorf("creating object store for app: %w", err)
 	}
 
 	return appObjectStore, nil
@@ -276,7 +275,7 @@ func initModules(ctx context.Context, dashConfig config.Dash, namespace string, 
 	}
 	overviewModule, err := overview.New(ctx, overviewOptions)
 	if err != nil {
-		return nil, errors.Wrap(err, "create overview module")
+		return nil, fmt.Errorf("create overview module: %w", err)
 	}
 
 	list = append(list, overviewModule)
@@ -287,7 +286,7 @@ func initModules(ctx context.Context, dashConfig config.Dash, namespace string, 
 		}
 		clusterOverviewModule, err := clusteroverview.New(ctx, clusterOverviewOptions)
 		if err != nil {
-			return nil, errors.Wrap(err, "create cluster overview module")
+			return nil, fmt.Errorf("create cluster overview module: %w", err)
 		}
 
 		list = append(list, clusterOverviewModule)
@@ -314,7 +313,7 @@ func initModules(ctx context.Context, dashConfig config.Dash, namespace string, 
 func initModuleManager(options *moduleOptions) (*module.Manager, error) {
 	moduleManager, err := module.NewManager(options.clusterClient, options.namespace, options.actionManager, options.logger)
 	if err != nil {
-		return nil, errors.Wrap(err, "create module manager")
+		return nil, fmt.Errorf("create module manager: %w", err)
 	}
 
 	return moduleManager, nil
@@ -326,8 +325,8 @@ func buildListener() (net.Listener, error) {
 	if err != nil {
 		return net.Listen("tcp", listenerAddr)
 	}
-	conn.Close()
-	return nil, errors.New(fmt.Sprintf("tcp %s: dial: already in use", listenerAddr))
+	_ = conn.Close()
+	return nil, fmt.Errorf("tcp %s: dial: already in use", listenerAddr)
 }
 
 type dash struct {
@@ -463,7 +462,7 @@ func enableOpenCensus() error {
 	})
 
 	if err != nil {
-		return errors.Wrap(err, "failed to create Jaeger exporter")
+		return fmt.Errorf("failed to create Jaeger exporter: %w", err)
 	}
 
 	trace.RegisterExporter(je)
