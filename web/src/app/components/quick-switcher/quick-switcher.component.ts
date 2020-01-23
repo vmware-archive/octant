@@ -78,7 +78,7 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
     if (this.opened) {
       return;
     }
-    if (event.key === 'k' && event.ctrlKey) {
+    if (event.key === 'Enter' && event.ctrlKey) {
       this.resetModal();
       this.opened = true;
 
