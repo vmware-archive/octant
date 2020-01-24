@@ -67,6 +67,7 @@ func TestClusterPodMetricsLoader_Load(t *testing.T) {
 		clusterClient cluster.ClientInterface
 		options       []octant.ClusterPodMetricsLoaderOption
 		want          *unstructured.Unstructured
+		wantFound     bool
 		wantErr       bool
 	}{
 		{
@@ -76,12 +77,28 @@ func TestClusterPodMetricsLoader_Load(t *testing.T) {
 					crud := octantFake.NewMockPodMetricsCRUD(controller)
 					crud.EXPECT().
 						Get("test", "pod").
-						Return(m, nil)
+						Return(m, true, nil)
 					loader.PodMetricsCRUD = crud
 				},
 			},
 			clusterClient: clusterClient,
 			want:          m,
+			wantFound:     true,
+		},
+		{
+			name: "object not found",
+			options: []octant.ClusterPodMetricsLoaderOption{
+				func(loader *octant.ClusterPodMetricsLoader) {
+					crud := octantFake.NewMockPodMetricsCRUD(controller)
+					crud.EXPECT().
+						Get("test", "pod").
+						Return(m, false, nil)
+					loader.PodMetricsCRUD = crud
+				},
+			},
+			clusterClient: clusterClient,
+			want:          m,
+			wantFound:     false,
 		},
 	}
 	for _, tt := range tests {
@@ -89,13 +106,15 @@ func TestClusterPodMetricsLoader_Load(t *testing.T) {
 			pml, err := octant.NewClusterPodMetricsLoader(tt.clusterClient, tt.options...)
 			require.NoError(t, err)
 
-			got, err := pml.Load("test", "pod")
+			got, gotFound, err := pml.Load("test", "pod")
 
 			if tt.wantErr {
 				require.Error(t, err)
+				require.False(t, gotFound)
 				return
 			}
 			require.NoError(t, err)
+			require.Equal(t, tt.wantFound, gotFound)
 			require.Equal(t, tt.want, got)
 		})
 	}

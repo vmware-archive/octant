@@ -429,9 +429,13 @@ func (wl *ClusterWorkloadLoader) podMetrics(pod *unstructured.Unstructured) (*co
 	namespace := pod.GetNamespace()
 	name := pod.GetName()
 
-	object, err := wl.PodMetricsLoader.Load(namespace, name)
+	object, found, err := wl.PodMetricsLoader.Load(namespace, name)
 	if err != nil {
 		return nil, fmt.Errorf("get pod metrics: %w", err)
+	}
+
+	if !found {
+		return nil, &NoPodMetricsErr{}
 	}
 
 	containersRaw, found, err := unstructured.NestedSlice(object.Object, "containers")
