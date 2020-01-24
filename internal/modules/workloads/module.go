@@ -8,7 +8,7 @@ package workloads
 import (
 	"context"
 	"fmt"
-	"path/filepath"
+	"path"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -92,7 +92,7 @@ func (m *Module) ContentPath() string {
 
 // Navigation returns navigation entries for the module.
 func (m *Module) Navigation(ctx context.Context, namespace, root string) ([]navigation.Navigation, error) {
-	rootPath := filepath.Join(m.ContentPath(), "namespace", namespace)
+	rootPath := path.Join(m.ContentPath(), "namespace", namespace)
 
 	rootNav := navigation.Navigation{
 		Title: "Workloads",
