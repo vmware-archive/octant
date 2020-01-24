@@ -44,7 +44,11 @@ func (o *AccessError) Timestamp() time.Time {
 
 // Error returns an error string.
 func (o *AccessError) Error() string {
-	return fmt.Sprintf("%s: %s: %s", o.verb, o.key, o.err)
+	e := fmt.Sprintf("%s: %s", o.verb, o.key)
+	if o.err != nil {
+		e = fmt.Sprintf("%s (error: %s)", e, o.err.Error())
+	}
+	return e
 }
 
 // Key returns the key for the error.

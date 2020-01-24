@@ -7,11 +7,11 @@ package objectstore
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -113,7 +113,7 @@ func NewDynamicCache(ctx context.Context, client cluster.ClientInterface, option
 
 	factory, err := c.initFactoryFunc(context.Background(), client, "")
 	if err != nil {
-		return nil, errors.Wrap(err, "initialize dynamic shared informer factory")
+		return nil, fmt.Errorf("initialize dynamic shared informer factory: %w", err)
 	}
 
 	c.factories.set("", factory)
@@ -204,7 +204,7 @@ func (dc *DynamicCache) listFromInformer(ctx context.Context, key store.Key) (*u
 
 	informer, hasSynced, err := dc.currentInformer(ctx, key)
 	if err != nil {
-		return nil, false, errors.Wrapf(err, "retrieving informer for %+v", key)
+		return nil, false, fmt.Errorf("retrieving informer for %+v: %w", key, err)
 	}
 
 	if !hasSynced {
@@ -226,7 +226,7 @@ func (dc *DynamicCache) listFromInformer(ctx context.Context, key store.Key) (*u
 
 	objects, err := l.List(selector)
 	if err != nil {
-		return nil, false, errors.Wrapf(err, "listing %v", key)
+		return nil, false, fmt.Errorf("listing %v: %w", key, err)
 	}
 
 	list := &unstructured.UnstructuredList{}
@@ -306,7 +306,7 @@ func (dc *DynamicCache) getFromInformer(ctx context.Context, key store.Key) (*un
 
 	informer, hasSynced, err := dc.currentInformer(ctx, key)
 	if err != nil {
-		return nil, errors.Wrapf(err, "retrieving informer for %v", key)
+		return nil, fmt.Errorf("retrieving informer for %v: %w", key, err)
 	}
 
 	if !hasSynced {
@@ -356,7 +356,7 @@ func (dc *DynamicCache) Watch(ctx context.Context, key store.Key, handler kcache
 
 	informer, _, err := dc.currentInformer(ctx, key)
 	if err != nil {
-		return errors.Wrapf(err, "retrieving informer for %s", key)
+		return fmt.Errorf("retrieving informer for %s: %w", key, err)
 	}
 
 	informer.Informer().AddEventHandler(handler)
@@ -447,7 +447,7 @@ func (dc *DynamicCache) Update(ctx context.Context, key store.Key, updater func(
 		}
 
 		if !found {
-			return errors.Errorf("object not found")
+			return errors.New("object not found")
 		}
 
 		gvk := object.GroupVersionKind()
@@ -463,7 +463,7 @@ func (dc *DynamicCache) Update(ctx context.Context, key store.Key, updater func(
 		}
 
 		if err := updater(object); err != nil {
-			return errors.Wrap(err, "unable to update object")
+			return fmt.Errorf("unable to update object: %w", err)
 		}
 
 		client := dynamicClient.Resource(gvr).Namespace(object.GetNamespace())

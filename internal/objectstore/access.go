@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	authorizationv1 "k8s.io/api/authorization/v1"
 
@@ -133,7 +132,7 @@ func (r *resourceAccess) HasAccess(ctx context.Context, key store.Key, verb stri
 		span.Annotate([]trace.Attribute{}, "fetch access start")
 		val, err := r.fetchAccess(aKey, verb)
 		if err != nil {
-			return errors.Wrapf(err, "fetch access: %+v", aKey)
+			return fmt.Errorf("fetch access: %+v: %w", aKey, err)
 		}
 
 		r.cache.set(aKey, val)
@@ -155,7 +154,7 @@ func (r *resourceAccess) keyToAccessKey(key store.Key, verb string) (AccessKey, 
 	gvk := key.GroupVersionKind()
 
 	if gvk.GroupKind().Empty() {
-		return AccessKey{}, errors.Errorf("unable to check access for key %s", key.String())
+		return AccessKey{}, fmt.Errorf("unable to check access for key %s", key.String())
 	}
 
 	gvr, err := r.client.Resource(gvk.GroupKind())
@@ -178,7 +177,7 @@ func (r *resourceAccess) fetchAccess(key AccessKey, verb string) (bool, error) {
 
 	k8sClient, err := r.client.KubernetesClient()
 	if err != nil {
-		return false, errors.Wrap(err, "client kubernetes")
+		return false, fmt.Errorf("client kubernetes: %w", err)
 	}
 
 	authClient := k8sClient.AuthorizationV1()
@@ -195,7 +194,7 @@ func (r *resourceAccess) fetchAccess(key AccessKey, verb string) (bool, error) {
 
 	review, err := authClient.SelfSubjectAccessReviews().Create(sar)
 	if err != nil {
-		return false, errors.Wrap(err, "client auth")
+		return false, fmt.Errorf("client auth: %w", err)
 	}
 	return review.Status.Allowed, nil
 }
