@@ -20,6 +20,10 @@ func Test_notFoundRedirectPath(t *testing.T) {
 			name:     "overview/namespace/default/workloads/deployments/nginx-deployment/",
 			expected: "overview/namespace/default/workloads/deployments",
 		},
+		{
+			name: "workloads%5Cnamespace%5Cdefault",
+			expected: "",
+		},
 	}
 
 	for _, tc := range cases {
