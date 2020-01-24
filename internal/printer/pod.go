@@ -535,18 +535,22 @@ func createMountedPodListView(ctx context.Context, namespace string, persistentV
 	return PodListHandler(ctx, mountedPodList, options)
 }
 
+var (
+	podConditionsColumns = component.NewTableCols("Type", "Status", "Last Transition Time", "Message", "Reason")
+)
+
 func createPodConditionsView(pod *corev1.Pod) (*component.Table, error) {
 	if pod == nil {
 		return nil, errors.New("pod is nil")
 	}
 
-	cols := component.NewTableCols("Type", "Last Transition Time", "Message", "Reason")
-	table := component.NewTable("Pod Conditions", "There are no pod conditions!", cols)
+	table := component.NewTable("Pod Conditions", "There are no pod conditions!", podConditionsColumns)
 
 	for _, condition := range pod.Status.Conditions {
 		row := component.TableRow{}
 
 		row["Type"] = component.NewText(string(condition.Type))
+		row["Status"] = component.NewText(string(condition.Status))
 		row["Last Transition Time"] = component.NewTimestamp(condition.LastTransitionTime.Time)
 		row["Message"] = component.NewText(condition.Message)
 		row["Reason"] = component.NewText(condition.Reason)
