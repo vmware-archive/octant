@@ -1,0 +1,1 @@
+Fix typo on GO111MODULE in build script's goInstall()
