@@ -120,7 +120,7 @@ func goInstall() {
 		"github.com/golang/protobuf/protoc-gen-go",
 	}
 	for _, pkg := range pkgs {
-		runCmd("go", map[string]string{"GO11MODULE": "on"}, "install", pkg)
+		runCmd("go", map[string]string{"GO111MODULE": "on"}, "install", pkg)
 	}
 }
 
