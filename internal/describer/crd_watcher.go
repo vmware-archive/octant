@@ -7,11 +7,11 @@ package describer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kcache "k8s.io/client-go/tools/cache"
 
@@ -31,7 +31,6 @@ type DefaultCRDWatcher struct {
 
 	watchConfigs map[string]*config.CRDWatchConfig
 
-	accessError sync.Once
 	mu          sync.Mutex
 }
 
@@ -135,16 +134,16 @@ func (cw *DefaultCRDWatcher) Watch(ctx context.Context) error {
 
 	err := cw.objectStore.Watch(ctx, crdKey, handler)
 	if err != nil {
-		aErr, ok := err.(*internalErr.AccessError)
-		if ok {
-			found := cw.errorStore.Add(aErr)
+		var e *internalErr.AccessError
+		if errors.As(err, &e) {
+			found := cw.errorStore.Add(e)
 			// Log if we have not seen this access error before.
 			if !found {
-				logger.WithErr(aErr).Errorf("access denied")
+				logger.WithErr(e).Errorf("access denied")
 			}
 			return nil
 		}
-		return errors.WithMessage(err, "crd watcher has failed")
+		return fmt.Errorf("crd watcher has failed: %w", err)
 	}
 
 	return nil
