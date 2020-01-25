@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"sync"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -22,8 +23,8 @@ import (
 
 // PodMetricsCRUD contains CRUD methods for accessing pod metrics.
 type PodMetricsCRUD interface {
-	// Get returns pod metrics for a pod.
-	Get(namespace, name string) (*unstructured.Unstructured, error)
+	// Get returns pod metrics for a pod. If pod is not found, isFound will be false.
+	Get(namespace, name string) (pod *unstructured.Unstructured, isFound bool, err error)
 }
 
 type clusterPodMetricsCRUD struct {
@@ -40,19 +41,23 @@ func newClusterPodMetricsCRUD(clusterClient cluster.ClientInterface) (*clusterPo
 	return &clusterPodMetricsCRUD{clusterClient: clusterClient}, nil
 }
 
-func (c *clusterPodMetricsCRUD) Get(namespace, name string) (*unstructured.Unstructured, error) {
+func (c *clusterPodMetricsCRUD) Get(namespace, name string) (*unstructured.Unstructured, bool, error) {
 	client, err := c.clusterClient.DynamicClient()
 	if err != nil {
-		return nil, fmt.Errorf("get dynamic client: %w", err)
+		return nil, false, fmt.Errorf("get dynamic client: %w", err)
 	}
 
 	options := metav1.GetOptions{}
 	object, err := client.Resource(PodMetricsResource).Namespace(namespace).Get(name, options)
 	if err != nil {
-		return nil, fmt.Errorf("get pod metrics: %w", err)
+		if errors.IsNotFound(err) {
+			return nil, false, nil
+		}
+
+		return nil, false, fmt.Errorf("get pod metrics: %w", err)
 	}
 
-	return object, nil
+	return object, true, nil
 }
 
 type noPodMetricsSupport interface {
@@ -81,8 +86,9 @@ func IsPodMetricsNotSupported(err error) bool {
 
 // PodMetricsLoader loads metrics for a pod.
 type PodMetricsLoader interface {
-	// Load loads metrics for a pod given namespace and a name.
-	Load(namespace, name string) (*unstructured.Unstructured, error)
+	// Load loads metrics for a pod given namespace and a name. It returns false if the
+	// object is not found.
+	Load(namespace, name string) (object *unstructured.Unstructured, isFound bool, err error)
 	// SupportsMetrics returns true if the cluster has metrics support.
 	SupportsMetrics() (bool, error)
 }
@@ -134,7 +140,7 @@ var (
 )
 
 // Load loads metrics for a pod given namespace and a name.
-func (ml *ClusterPodMetricsLoader) Load(namespace, name string) (*unstructured.Unstructured, error) {
+func (ml *ClusterPodMetricsLoader) Load(namespace, name string) (*unstructured.Unstructured, bool, error) {
 	return ml.PodMetricsCRUD.Get(namespace, name)
 }
 

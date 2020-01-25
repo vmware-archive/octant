@@ -1,0 +1,1 @@
+bug fix: don't fail if pod metrics are not available for a pod (they are not available instantly)

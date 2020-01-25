@@ -42,7 +42,7 @@ func podMetricsLoader(controller *gomock.Controller, pm *unstructured.Unstructur
 	if pm != nil {
 		pml.EXPECT().
 			Load("namespace", gomock.Any()).
-			Return(pm, nil).
+			Return(pm, true, nil).
 			AnyTimes()
 	}
 
