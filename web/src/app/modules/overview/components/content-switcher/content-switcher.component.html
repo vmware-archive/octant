@@ -15,6 +15,9 @@
     <ng-container *ngSwitchCase="'containers'">
       <app-view-containers [view]="view"></app-view-containers>
     </ng-container>
+    <ng-container *ngSwitchCase="'codeBlock'">
+      <app-view-code [view]="view"></app-view-code>
+    </ng-container>
     <ng-container *ngSwitchCase="'donutChart'">
         <app-view-donut-chart [view]="view"></app-view-donut-chart>
     </ng-container>

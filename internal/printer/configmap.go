@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -146,7 +147,11 @@ func describeConfigMapDataRows(cm *corev1.ConfigMap) ([]component.TableRow, erro
 
 		row["Key"] = component.NewText(k)
 
-		row["Value"] = component.NewText(data[k])
+		if strings.Contains(data[k], "\n") {
+			row["Value"] = component.NewCodeBlock(data[k])
+		} else {
+			row["Value"] = component.NewText(data[k])
+		}
 	}
 
 	return rows, nil

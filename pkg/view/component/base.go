@@ -10,6 +10,7 @@ const (
 	typeButtonGroup         = "buttonGroup"
 	typeCard                = "card"
 	typeCardList            = "cardList"
+	typeCodeBlock           = "codeBlock"
 	typeContainers          = "containers"
 	typeDonutChart          = "donutChart"
 	typeError               = "error"
