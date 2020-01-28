@@ -3,10 +3,10 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>octant</id>
-    <version>0.9.1</version>
+    <version>0.10.0</version>
     <owners>VMware</owners>
     <title>Octant</title>
-    <authors>Bryan Liles, see https://github.com/vmware-tanzu/octant/graphs/contributors</authors>
+    <authors>VMware Tanzu</authors>
     <projectUrl>https://github.com/vmware-tanzu/octant</projectUrl>
     <packageSourceUrl>https://github.com/vmware-tanzu/octant/blob/master/choco</packageSourceUrl>
     <!-- TODO:
@@ -15,7 +15,7 @@
     <licenseUrl>https://github.com/vmware-tanzu/octant/blob/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <projectSourceUrl>https://github.com/vmware-tanzu/octant</projectSourceUrl>
-    <docsUrl>https://github.com/vmware-tanzu/octant/tree/master/docs</docsUrl>
+    <docsUrl>https://octant.dev/docs</docsUrl>
     <mailingListUrl>https://groups.google.com/group/project-octant</mailingListUrl>
     <bugTrackerUrl>https://github.com/vmware-tanzu/octant/issues</bugTrackerUrl>
     <tags>octant kubernetes kubectl heptio dashboard pod tanzu</tags>
