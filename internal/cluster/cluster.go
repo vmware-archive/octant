@@ -231,9 +231,9 @@ func (c *Cluster) Version() (string, error) {
 	return fmt.Sprint(serverVersion), nil
 }
 
-// FromKubeConfig creates a Cluster from a kubeConfig.
-func FromKubeConfig(ctx context.Context, kubeConfig, contextName string, initialNamespace string, options RESTConfigOptions) (*Cluster, error) {
-	chain := strings.Deduplicate(filepath.SplitList(kubeConfig))
+// FromKubeConfig creates a Cluster from a kubeConfig chain.
+func FromKubeConfig(ctx context.Context, kubeConfigList, contextName string, initialNamespace string, options RESTConfigOptions) (*Cluster, error) {
+	chain := strings.Deduplicate(filepath.SplitList(kubeConfigList))
 
 	rules := &clientcmd.ClientConfigLoadingRules{
 		Precedence: chain,

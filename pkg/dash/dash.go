@@ -161,6 +161,10 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		options.Context,
 		restConfigOptions)
 
+	if err := watchConfigs(ctx, dashConfig, options.KubeConfig); err != nil {
+		return fmt.Errorf("set up config watcher: %w", err)
+	}
+
 	moduleList, err := initModules(ctx, dashConfig, options.Namespace, options)
 	if err != nil {
 		return fmt.Errorf("initializing modules: %w", err)
