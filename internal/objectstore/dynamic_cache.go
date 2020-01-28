@@ -186,6 +186,11 @@ func (dc *DynamicCache) List(ctx context.Context, key store.Key) (*unstructured.
 		if meta.IsNoMatchError(err) {
 			return &unstructured.UnstructuredList{}, false, nil
 		}
+		
+		unwatchErr := dc.Unwatch(ctx, key.GroupVersionKind())
+		if unwatchErr != nil {
+			err = fmt.Errorf("unwatch: %w", unwatchErr)
+		}
 		return nil, false, fmt.Errorf("check access to list %s: %w", key, err)
 	}
 

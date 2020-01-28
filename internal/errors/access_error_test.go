@@ -42,7 +42,7 @@ func TestFormattedAccessError(t *testing.T) {
 	err := fmt.Errorf("access denied")
 
 	intErr := NewAccessError(key, verb, err)
-	newErr := fmt.Errorf("%w", intErr)
+	newErr := fmt.Errorf("some words: %w", intErr)
 
 	var e *AccessError
 	assert.True(t, goerrors.As(newErr, &e))

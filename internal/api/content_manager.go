@@ -7,10 +7,9 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
-
-	"github.com/pkg/errors"
 
 	"github.com/vmware-tanzu/octant/internal/event"
 	"github.com/vmware-tanzu/octant/internal/log"
@@ -89,10 +88,10 @@ func (cm *ContentManager) Start(ctx context.Context, state octant.State, s Octan
 }
 
 func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFunc {
-	return func(ctx context.Context) bool {
+	return func(ctx context.Context) (bool, error) {
 		contentPath := state.GetContentPath()
 		if contentPath == "" {
-			return false
+			return false, nil
 		}
 
 		contentResponse, _, err := cm.contentGenerateFunc(ctx, state)
@@ -101,14 +100,14 @@ func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFu
 				WithErr(err).
 				With("content-path", contentPath).
 				Errorf("generate content")
-			return false
+			return false, err
 		}
 
 		if ctx.Err() == nil {
 			s.Send(CreateContentEvent(contentResponse, state.GetNamespace(), contentPath, state.GetQueryParams()))
 		}
 
-		return false
+		return false, nil
 	}
 }
 
@@ -123,7 +122,7 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 
 	m, ok := cm.moduleManager.ModuleForContentPath(contentPath)
 	if !ok {
-		return component.EmptyContentResponse, false, errors.Errorf("unable to find module for content path %q", contentPath)
+		return component.EmptyContentResponse, false, fmt.Errorf("unable to find module for content path %q", contentPath)
 	}
 	modulePath := strings.TrimPrefix(contentPath, m.Name())
 	options := module.ContentOptions{
@@ -136,7 +135,7 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 			state.SetContentPath(notFoundRedirectPath(contentPath))
 			return component.EmptyContentResponse, true, nil
 		} else {
-			return component.EmptyContentResponse, false, errors.Wrap(err, "generate content")
+			return component.EmptyContentResponse, false, fmt.Errorf("generate content: %w", err)
 		}
 	}
 
@@ -164,7 +163,7 @@ func (cm *ContentManager) SetQueryParams(state octant.State, payload action.Payl
 		if filters, ok := params["filters"]; ok {
 			list, err := FiltersFromQueryParams(filters)
 			if err != nil {
-				return errors.Wrap(err, "extract filters from query params")
+				return fmt.Errorf("extract filters from query params: %w", err)
 			}
 			state.SetFilters(list)
 		}
@@ -177,7 +176,7 @@ func (cm *ContentManager) SetQueryParams(state octant.State, payload action.Payl
 func (cm *ContentManager) SetNamespace(state octant.State, payload action.Payload) error {
 	namespace, err := payload.String("namespace")
 	if err != nil {
-		return errors.Wrap(err, "extract namespace from payload")
+		return fmt.Errorf("extract namespace from payload: %w", err)
 	}
 	state.SetNamespace(namespace)
 	return nil
@@ -187,10 +186,10 @@ func (cm *ContentManager) SetNamespace(state octant.State, payload action.Payloa
 func (cm *ContentManager) SetContentPath(state octant.State, payload action.Payload) error {
 	contentPath, err := payload.String("contentPath")
 	if err != nil {
-		return errors.Wrap(err, "extract contentPath from payload")
+		return fmt.Errorf("extract contentPath from payload: %w", err)
 	}
 	if err := cm.SetQueryParams(state, payload); err != nil {
-		return errors.Wrap(err, "extract query params from payload")
+		return fmt.Errorf("extract query params from payload: %w", err)
 	}
 
 	state.SetContentPath(contentPath)

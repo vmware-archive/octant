@@ -89,20 +89,20 @@ func (n *NavigationManager) Start(ctx context.Context, state octant.State, s Oct
 func (n *NavigationManager) runUpdate(state octant.State, client OctantClient) PollerFunc {
 	var previous []byte
 
-	return func(ctx context.Context) bool {
+	return func(ctx context.Context) (bool, error) {
 		logger := log.From(ctx)
 
 		entries, err := n.navigationGeneratorFunc(ctx, state, n.config)
 		if err != nil {
 			logger.WithErr(err).Errorf("load namespaces")
-			return false
+			return false, err
 		}
 
 		if ctx.Err() == nil {
 			cur, err := json.Marshal(entries)
 			if err != nil {
 				logger.WithErr(err).Errorf("unable to marshal navigation entries")
-				return false
+				return false, err
 			}
 
 			if bytes.Compare(previous, cur) != 0 {
@@ -112,7 +112,7 @@ func (n *NavigationManager) runUpdate(state octant.State, client OctantClient) P
 
 		}
 
-		return false
+		return false, nil
 	}
 }
 

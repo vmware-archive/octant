@@ -85,20 +85,20 @@ func (n *NamespacesManager) Start(ctx context.Context, state octant.State, s Oct
 func (n *NamespacesManager) runUpdate(state octant.State, client OctantClient) PollerFunc {
 	var previous []byte
 
-	return func(ctx context.Context) bool {
+	return func(ctx context.Context) (bool, error) {
 		logger := log.From(ctx)
 
 		namespaces, err := n.namespacesGeneratorFunc(ctx, n.config)
 		if err != nil {
 			logger.WithErr(err).Errorf("load namespaces")
-			return false
+			return false, err
 		}
 
 		if ctx.Err() == nil {
 			cur, err := json.Marshal(namespaces)
 			if err != nil {
 				logger.WithErr(err).Errorf("unable to marshal namespaces")
-				return false
+				return false, err
 			}
 
 			if bytes.Compare(previous, cur) != 0 {
@@ -107,7 +107,7 @@ func (n *NamespacesManager) runUpdate(state octant.State, client OctantClient) P
 			}
 		}
 
-		return false
+		return false, nil
 	}
 }
 

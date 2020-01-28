@@ -12,6 +12,8 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
+const OctantAccessError = "AccessError"
+
 type AccessError struct {
 	id        string
 	key       store.Key
@@ -30,6 +32,11 @@ func NewAccessError(key store.Key, verb string, err error) *AccessError {
 		id:        key.String(),
 		key:       key,
 	}
+}
+
+// Name
+func (o *AccessError) Name() string {
+	return OctantAccessError
 }
 
 // ID returns the error unique ID.

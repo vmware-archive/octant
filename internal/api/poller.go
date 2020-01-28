@@ -7,11 +7,16 @@ package api
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/util/wait"
 
+	oerrors "github.com/vmware-tanzu/octant/internal/errors"
 	"github.com/vmware-tanzu/octant/internal/log"
 )
 
@@ -20,7 +25,7 @@ const (
 )
 
 // PollerFunc is a function run by the poller.
-type PollerFunc func(context.Context) bool
+type PollerFunc func(context.Context) (bool, error)
 
 // Poller is a poller. It runs an action.
 type Poller interface {
@@ -42,16 +47,31 @@ func (a SingleRunPoller) Run(ctx context.Context, ch <-chan struct{}, action Pol
 	action(ctx)
 }
 
+func (a SingleRunPoller) ResetBackoff() {}
+
 // InterruptiblePoller is a poller than runs an action and allows for interrupts.
 type InterruptiblePoller struct {
-	name string
+	name    string
+	backoff wait.Backoff
 }
 
 var _ Poller = (*InterruptiblePoller)(nil)
 
 // NewInterruptiblePoller creates an instance of InterruptiblePoller.
 func NewInterruptiblePoller(name string) *InterruptiblePoller {
-	return &InterruptiblePoller{name: name}
+	ip := &InterruptiblePoller{name: name}
+	ip.resetBackoff()
+	return ip
+}
+
+func (ip *InterruptiblePoller) resetBackoff() {
+	ip.backoff = wait.Backoff{
+		Duration: 1 * time.Second,
+		Factor:   2.0,
+		Jitter:   0.1,
+		Steps:    50,
+		Cap:      10 * time.Minute,
+	}
 }
 
 // Run runs the poller.
@@ -70,10 +90,17 @@ func (ip *InterruptiblePoller) Run(ctx context.Context, ch <-chan struct{}, acti
 			case <-j.ctx.Done():
 				// Job's context was canceled. Nothing else to do here.
 			case <-j.run():
-				if j.ctx.Err() == nil {
-					<-time.After(resetDuration)
-					pollerQueue <- jt.create()
+				backoffDuration := resetDuration
+				if ip.isBackoffError(jt.logger, j.err) {
+					backoffDuration = ip.backoff.Step()
+					jt.logger.Debugf("poller backing off, next run %s)", backoffDuration)
 				}
+				if backoffDuration > resetDuration {
+					<-time.After(backoffDuration)
+				} else {
+					<-time.After(resetDuration)
+				}
+				pollerQueue <- jt.create()
 			}
 		}
 	}
@@ -85,6 +112,7 @@ func (ip *InterruptiblePoller) Run(ctx context.Context, ch <-chan struct{}, acti
 	go func() {
 		for range ch {
 			// Cancel all existing jobs before creating a new job.
+			ip.resetBackoff()
 			jt.clear()
 			pollerQueue <- jt.create()
 		}
@@ -95,23 +123,48 @@ func (ip *InterruptiblePoller) Run(ctx context.Context, ch <-chan struct{}, acti
 	<-ctx.Done()
 }
 
+// isBackoffError checks if the error is one that should result in a backoff for the next call.
+func (ip *InterruptiblePoller) isBackoffError(logger log.Logger, err error) bool {
+	if err == nil {
+		return false
+	}
+
+	if kerrors.IsUnauthorized(err) {
+		return true
+	}
+
+	var ae *oerrors.AccessError
+	if errors.As(err, &ae) {
+		if ae.Name() == oerrors.OctantAccessError {
+			return true
+		}
+	}
+
+	es := err.Error()
+	logger.Debugf("checking error string: %s", es)
+	if strings.Contains(es, "Unauthorized") {
+		return true
+	}
+	ip.resetBackoff()
+	return false
+}
+
 type job struct {
 	id         uuid.UUID
 	ctx        context.Context
 	cancelFunc context.CancelFunc
 	action     PollerFunc
+	err        error
 }
 
 func (j *job) run() <-chan bool {
-	ch := make(chan bool, 1)
-
 	done := make(chan bool, 1)
-
 	go func() {
-		j.action(j.ctx)
+		_, j.err = j.action(j.ctx)
 		done <- true
 	}()
 
+	ch := make(chan bool, 1)
 	go func() {
 		select {
 		case <-j.ctx.Done():

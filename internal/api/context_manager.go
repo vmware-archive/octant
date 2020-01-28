@@ -96,7 +96,7 @@ func (c *ContextManager) runUpdate(state octant.State, s OctantClient) PollerFun
 	var previous []byte
 
 	logger := c.dashConfig.Logger()
-	return func(ctx context.Context) bool {
+	return func(ctx context.Context) (bool, error) {
 		ev, err := c.contextGenerateFunc(ctx, state)
 		if err != nil {
 			logger.WithErr(err).Errorf("generate contexts")
@@ -106,7 +106,7 @@ func (c *ContextManager) runUpdate(state octant.State, s OctantClient) PollerFun
 			cur, err := json.Marshal(ev)
 			if err != nil {
 				logger.WithErr(err).Errorf("unable to marshal context")
-				return false
+				return false, err
 			}
 
 			if bytes.Compare(previous, cur) != 0 {
@@ -115,7 +115,7 @@ func (c *ContextManager) runUpdate(state octant.State, s OctantClient) PollerFun
 			}
 		}
 
-		return false
+		return false, nil
 	}
 }
 
