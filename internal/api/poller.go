@@ -47,8 +47,6 @@ func (a SingleRunPoller) Run(ctx context.Context, ch <-chan struct{}, action Pol
 	action(ctx)
 }
 
-func (a SingleRunPoller) ResetBackoff() {}
-
 // InterruptiblePoller is a poller than runs an action and allows for interrupts.
 type InterruptiblePoller struct {
 	name    string
