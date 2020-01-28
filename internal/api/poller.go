@@ -82,6 +82,7 @@ func (ip *InterruptiblePoller) Run(ctx context.Context, ch <-chan struct{}, acti
 	jt := initJobTracker(ctx, action)
 	defer jt.clear()
 
+	resetCh := make(chan bool, 1)
 	pollerQueue := make(chan job, 10)
 
 	worker := func() {
@@ -95,10 +96,12 @@ func (ip *InterruptiblePoller) Run(ctx context.Context, ch <-chan struct{}, acti
 					backoffDuration = ip.backoff.Step()
 					jt.logger.Debugf("poller backing off, next run %s)", backoffDuration)
 				}
-				if backoffDuration > resetDuration {
-					<-time.After(backoffDuration)
-				} else {
-					<-time.After(resetDuration)
+
+				select {
+				case <-resetCh:
+					break
+				case <-time.After(backoffDuration):
+					break
 				}
 				pollerQueue <- jt.create()
 			}
@@ -115,6 +118,7 @@ func (ip *InterruptiblePoller) Run(ctx context.Context, ch <-chan struct{}, acti
 			ip.resetBackoff()
 			jt.clear()
 			pollerQueue <- jt.create()
+			resetCh <- true
 		}
 	}()
 
