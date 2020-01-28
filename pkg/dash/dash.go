@@ -111,10 +111,6 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return fmt.Errorf("initializing CRD watcher: %w", err)
 	}
 
-	if err := crdWatcher.Watch(ctx); err != nil {
-		return fmt.Errorf("unable to start CRD watcher: %w", err)
-	}
-
 	portForwarder, err := initPortForwarder(ctx, clusterClient, appObjectStore)
 	if err != nil {
 		return fmt.Errorf("initializing port forwarder: %w", err)
@@ -189,6 +185,11 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 	// Initialize the API
 	apiService := api.New(ctx, api.PathPrefix, actionManger, dashConfig)
 	frontendProxy.FrontendUpdateController = apiService
+
+	// Watch for CRDs after modules initialized
+	if err := crdWatcher.Watch(ctx); err != nil {
+		return fmt.Errorf("unable to start CRD watcher: %w", err)
+	}
 
 	d, err := newDash(listener, options.Namespace, options.FrontendURL, apiService, logger)
 	if err != nil {
