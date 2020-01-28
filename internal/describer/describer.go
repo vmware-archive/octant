@@ -93,10 +93,9 @@ func LoadObjects(ctx context.Context, objectStore store.Store, errorStore oerror
 				if ae.Name() == oerrors.OctantAccessError {
 					logger := log.From(ctx)
 					_ = objectStore.Unwatch(ctx, objectStoreKey.GroupVersionKind())
-					logger.Errorf("access denied, unwatching %s", objectStoreKey.GroupVersionKind())
 					found := errorStore.Add(ae)
 					if !found {
-						logger.WithErr(ae).Errorf("load object")
+						logger.WithErr(ae).Errorf("loadObjects")
 					}
 					return &unstructured.UnstructuredList{}, nil
 				}
