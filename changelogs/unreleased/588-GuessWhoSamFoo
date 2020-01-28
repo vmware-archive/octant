@@ -1,0 +1,1 @@
+Fixed CRD watcher race condition
