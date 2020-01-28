@@ -7,9 +7,10 @@ package describer
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"sort"
 
-	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -17,7 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/internal/config"
-	internalErr "github.com/vmware-tanzu/octant/internal/errors"
+	oerrors "github.com/vmware-tanzu/octant/internal/errors"
 	"github.com/vmware-tanzu/octant/internal/link"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/printer"
@@ -45,7 +46,7 @@ func (f *ObjectLoaderFactory) LoadObjects(ctx context.Context, namespace string,
 }
 
 // loadObject loads a single object from the object store.
-func LoadObject(ctx context.Context, objectStore store.Store, errorStore internalErr.ErrorStore, namespace string, fields map[string]string, objectStoreKey store.Key) (*unstructured.Unstructured, error) {
+func LoadObject(ctx context.Context, objectStore store.Store, errorStore oerrors.ErrorStore, namespace string, fields map[string]string, objectStoreKey store.Key) (*unstructured.Unstructured, error) {
 	objectStoreKey.Namespace = namespace
 
 	if name, ok := fields["name"]; ok && name != "" {
@@ -54,26 +55,28 @@ func LoadObject(ctx context.Context, objectStore store.Store, errorStore interna
 
 	object, found, err := objectStore.Get(ctx, objectStoreKey)
 	if err != nil {
-		aErr, ok := err.(*internalErr.AccessError)
-		if ok {
-			found := errorStore.Add(aErr)
-			if !found {
-				logger := log.From(ctx)
-				logger.WithErr(aErr).Errorf("loadObject")
+		var ae *oerrors.AccessError
+		if errors.As(err, &ae) {
+			if ae.Name() == oerrors.OctantAccessError {
+				found := errorStore.Add(ae)
+				if !found {
+					logger := log.From(ctx)
+					logger.WithErr(ae).Errorf("loadObject")
+				}
+				return &unstructured.Unstructured{}, nil
 			}
-			return &unstructured.Unstructured{}, nil
 		}
 		return nil, err
 	}
 	if !found {
-		return nil, errors.Errorf("object was not found")
+		return nil, errors.New("object was not found")
 	}
 
 	return object, nil
 }
 
 // loadObjects loads objects from the object store sorted by their name.
-func LoadObjects(ctx context.Context, objectStore store.Store, errorStore internalErr.ErrorStore, namespace string, fields map[string]string, objectStoreKeys []store.Key) (*unstructured.UnstructuredList, error) {
+func LoadObjects(ctx context.Context, objectStore store.Store, errorStore oerrors.ErrorStore, namespace string, fields map[string]string, objectStoreKeys []store.Key) (*unstructured.UnstructuredList, error) {
 	list := &unstructured.UnstructuredList{}
 
 	for _, objectStoreKey := range objectStoreKeys {
@@ -85,14 +88,18 @@ func LoadObjects(ctx context.Context, objectStore store.Store, errorStore intern
 
 		storedObjects, _, err := objectStore.List(ctx, objectStoreKey)
 		if err != nil {
-			aErr, ok := err.(*internalErr.AccessError)
-			if ok {
-				found := errorStore.Add(aErr)
-				if !found {
+			var ae *oerrors.AccessError
+			if errors.As(err, &ae) {
+				if ae.Name() == oerrors.OctantAccessError {
 					logger := log.From(ctx)
-					logger.WithErr(aErr).Errorf("load object")
+					_ = objectStore.Unwatch(ctx, objectStoreKey.GroupVersionKind())
+					logger.Errorf("access denied, unwatching %s", objectStoreKey.GroupVersionKind())
+					found := errorStore.Add(ae)
+					if !found {
+						logger.WithErr(ae).Errorf("load object")
+					}
+					return &unstructured.UnstructuredList{}, nil
 				}
-				return &unstructured.UnstructuredList{}, nil
 			}
 			return nil, err
 		}
@@ -155,12 +162,12 @@ func newBaseDescriber() *base {
 func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
 	object, ok := to.(metav1.Object)
 	if !ok {
-		return errors.Errorf("%T is not an object", to)
+		return fmt.Errorf("%T is not an object", to)
 	}
 
 	t, err := meta.TypeAccessor(object)
 	if err != nil {
-		return errors.Wrapf(err, "accessing type meta")
+		return fmt.Errorf("accessing type meta: %w", err)
 	}
 	t.SetAPIVersion(from.GetAPIVersion())
 	t.SetKind(from.GetObjectKind().GroupVersionKind().Kind)

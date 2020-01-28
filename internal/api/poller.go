@@ -37,6 +37,14 @@ type SingleRunPoller struct{}
 
 var _ Poller = (*SingleRunPoller)(nil)
 
+var defaultBackoff = wait.Backoff{
+	Duration: 1 * time.Second,
+	Factor:   2.0,
+	Jitter:   0.1,
+	Steps:    50,
+	Cap:      10 * time.Minute,
+}
+
 // NewSingleRunPoller creates an instance of SingleRunPoller.
 func NewSingleRunPoller() *SingleRunPoller {
 	return &SingleRunPoller{}
@@ -57,19 +65,12 @@ var _ Poller = (*InterruptiblePoller)(nil)
 
 // NewInterruptiblePoller creates an instance of InterruptiblePoller.
 func NewInterruptiblePoller(name string) *InterruptiblePoller {
-	ip := &InterruptiblePoller{name: name}
-	ip.resetBackoff()
+	ip := &InterruptiblePoller{name: name, backoff: defaultBackoff}
 	return ip
 }
 
 func (ip *InterruptiblePoller) resetBackoff() {
-	ip.backoff = wait.Backoff{
-		Duration: 1 * time.Second,
-		Factor:   2.0,
-		Jitter:   0.1,
-		Steps:    50,
-		Cap:      10 * time.Minute,
-	}
+	ip.backoff = defaultBackoff
 }
 
 // Run runs the poller.
@@ -97,7 +98,6 @@ func (ip *InterruptiblePoller) Run(ctx context.Context, ch <-chan struct{}, acti
 
 				select {
 				case <-resetCh:
-					break
 				case <-time.After(backoffDuration):
 					break
 				}

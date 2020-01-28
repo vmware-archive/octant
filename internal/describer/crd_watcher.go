@@ -137,6 +137,7 @@ func (cw *DefaultCRDWatcher) Watch(ctx context.Context) error {
 		var e *oerrors.AccessError
 		if errors.As(err, &e) {
 			if e.Name() == oerrors.OctantAccessError {
+				_ = cw.objectStore.Unwatch(ctx, crdKey.GroupVersionKind())
 				found := cw.errorStore.Add(e)
 				// Log if we have not seen this access error before.
 				if !found {
