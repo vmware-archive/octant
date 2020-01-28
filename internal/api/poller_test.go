@@ -23,10 +23,10 @@ func TestInterruptiblePoller_Run(t *testing.T) {
 
 	ready := make(chan bool, 1)
 	ran := false
-	action := func(ctx context.Context) bool {
+	action := func(ctx context.Context) (bool, error) {
 		ready <- true
 		ran = true
-		return false
+		return false, nil
 	}
 
 	exited := make(chan bool, 1)
