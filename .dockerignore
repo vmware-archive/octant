@@ -11,25 +11,6 @@ choco
 ci
 configs
 
-
-# generated fakes
-/internal/octant/fake
-/internal/kubeconfig/fake
-/internal/link/fake
-/internal/event/fake
-/internal/config/fake
-/internal/api/fake
-/internal/portforward/fake
-/internal/objectstore/fake
-/internal/queryer/fake
-/internal/cluster/fake
-/internal/module/fake
-/internal/printer/fake
-/pkg/store/fake
-/pkg/plugin/fake
-/pkg/plugin/api/fake
-
-
 # electron bundling
 /vendor/astilectron*
 /vendor/electron*

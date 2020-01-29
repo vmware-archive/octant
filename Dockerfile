@@ -25,8 +25,8 @@ COPY --from=base /web ./web
 ENV GOFLAGS=-mod=vendor GO111MODULE=on
 
 RUN go run build.go go-install
+RUN go generate ./pkg/icon
 RUN go generate ./web
-RUN go run build.go generate
 RUN go run build.go build
 
 # ------------------------------------------------------------------------------
