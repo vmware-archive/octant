@@ -1,0 +1,30 @@
+name: Integrate
+on:
+  - push
+  - pull_request
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version:
+          - 1.13.x
+        platform: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.platform }}
+    name: Test ${{ matrix.platform }}
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set GOPATH
+        # temporary fix
+        # see https://github.com/actions/setup-go/issues/14
+        run: |
+          echo "##[set-env name=GOPATH;]$(dirname $GITHUB_WORKSPACE)"
+          echo "##[add-path]$(dirname $GITHUB_WORKSPACE)/bin"
+        shell: bash
+      - name: Verify generated code
+        run: ci/check-generated-mocks.sh
+

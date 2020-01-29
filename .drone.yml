@@ -11,13 +11,6 @@ steps:
     image: docker:git
     commands:
       - git fetch --tags
-  - name: mocks
-    image: golang:1.13
-    environment:
-      GOFLAGS: -mod=vendor
-      GO111MODULE: on
-    commands:
-      - ci/check-generated-mocks.sh
   - name: frontend
     image: sfoo/node-chrome:0.0.2
     commands:
