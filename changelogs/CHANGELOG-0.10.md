@@ -1,4 +1,23 @@
-- [v0.10.0](#v010)
+- [v0.10.1](#v0101)
+- [v0.10.0](#v0100)
+
+## v0.10.1
+#### 2020-01-30
+
+### Download
+ - https://github.com/vmware/octant/releases/tag/v0.10.1
+
+### All Changes
+  * Fixed error type assertion for AccessError. (#562, @wwitzel3)
+  * Fixed Workload navigation on Windows (#568, @wwitzel3)
+  * Added status column to pod conditions (#569, @bryanl)
+  * Fixed workload view failure if pod metrics are not available for a pod (#572, @bryanl)
+  * Fixed typo on GO111MODULE in build script's goInstall() (#574, @ilayaperumalg)
+  * Added a backoff strategy for objectstore access (#579, @wwitzel3)
+  * Removed extra pod log view (#585, @bryanl)
+  * Fixed CRD watcher race condition (#588, @GuessWhoSamFoo)
+  * Added cluster client reload when kubeconfig changes (#591, @bryanl)
+  * Disabled CircleCI builds (#603, @bryanl)
 
 ## v0.10.0
 #### 2020-01-22
