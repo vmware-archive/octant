@@ -27,7 +27,7 @@ steps:
     commands:
       - go run build.go go-install
       - go run build.go test
-      - go generate ./web
+      - go generate ./web ./pkg/icon
       - go run build.go vet
     depends_on:
     - frontend
