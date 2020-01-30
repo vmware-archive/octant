@@ -19,7 +19,10 @@ describe('Deployment', () => {
         '/#/overview/namespace/' + result.stdout + '/workloads/deployments'
       );
 
-      cy.get('span[class="ng-value-label ng-star-inserted"]').should('contain', result.stdout);
+      cy.get('span[class="ng-value-label ng-star-inserted"]').should(
+        'contain',
+        result.stdout
+      );
 
       cy.get('[class="ng-star-inserted"]')
         .contains('nginx-deployment')
@@ -28,12 +31,10 @@ describe('Deployment', () => {
 
       cy.location('hash').should('include', '/' + 'pods');
 
-      cy.contains('Running').should('be.visible')
-      cy.contains(/Start port forward/)
-        .click();
+      cy.contains('Running').should('be.visible');
+      cy.contains(/Start port forward/).click();
 
-      cy.get('a[class="open-pf ng-star-inserted"')
-        .contains('localhost');
+      cy.get('a[class="open-pf ng-star-inserted"').contains('localhost');
 
       cy.get('[class=port-actions]')
         .should('have.length', 1)
@@ -62,7 +63,10 @@ describe('Deployment', () => {
         '/#/overview/namespace/' + result.stdout + '/workloads/deployments'
       );
 
-      cy.get('span[class="ng-value-label ng-star-inserted"]').should('contain', result.stdout);
+      cy.get('span[class="ng-value-label ng-star-inserted"]').should(
+        'contain',
+        result.stdout
+      );
 
       cy.get('[class="ng-star-inserted"]')
         .contains('nginx-deployment')
