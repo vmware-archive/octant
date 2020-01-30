@@ -455,3 +455,9 @@ export interface ExtensionView extends View {
     tabs: ExtensionTab[];
   };
 }
+
+export interface CodeView extends View {
+  config: {
+    value: string;
+  };
+}

@@ -18,6 +18,7 @@ import { CardComponent } from './components/card/card.component';
 import { ContainersComponent } from './components/containers/containers.component';
 import { ContentSwitcherComponent } from './components/content-switcher/content-switcher.component';
 import { ContextSelectorComponent } from './components/context-selector/context-selector.component';
+import { CodeComponent } from './components/code/code.component';
 import { CytoscapeComponent } from './components/cytoscape/cytoscape.component';
 import { DatagridComponent } from './components/datagrid/datagrid.component';
 import { ErrorComponent } from './components/error/error.component';
@@ -74,6 +75,7 @@ export function hljsLanguages() {
   declarations: [
     AnnotationsComponent,
     ContainersComponent,
+    CodeComponent,
     DatagridComponent,
     ExpressionSelectorComponent,
     ErrorComponent,
