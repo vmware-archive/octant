@@ -13,6 +13,8 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
+const OctantActionError = "ActionError"
+
 type ActionError struct {
 	id          string
 	timestamp   time.Time
@@ -33,6 +35,10 @@ func NewActionError(requestType string, payload action.Payload, err error) *Acti
 		timestamp:   time.Now(),
 		id:          id.String(),
 	}
+}
+
+func (o *ActionError) Name() string {
+	return OctantActionError
 }
 
 // ID returns the error unique ID.

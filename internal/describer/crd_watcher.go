@@ -17,7 +17,7 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/config"
-	internalErr "github.com/vmware-tanzu/octant/internal/errors"
+	oerrors "github.com/vmware-tanzu/octant/internal/errors"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -27,17 +27,17 @@ import (
 type DefaultCRDWatcher struct {
 	objectStore   store.Store
 	clusterClient cluster.ClientInterface
-	errorStore    internalErr.ErrorStore
+	errorStore    oerrors.ErrorStore
 
 	watchConfigs map[string]*config.CRDWatchConfig
 
-	mu          sync.Mutex
+	mu sync.Mutex
 }
 
 var _ config.CRDWatcher = (*DefaultCRDWatcher)(nil)
 
 // NewDefaultCRDWatcher creates an instance of DefaultCRDWatcher.
-func NewDefaultCRDWatcher(ctx context.Context, clusterClient cluster.ClientInterface, objectStore store.Store, errorStore internalErr.ErrorStore) (*DefaultCRDWatcher, error) {
+func NewDefaultCRDWatcher(ctx context.Context, clusterClient cluster.ClientInterface, objectStore store.Store, errorStore oerrors.ErrorStore) (*DefaultCRDWatcher, error) {
 	if objectStore == nil {
 		return nil, errors.New("object store is nil")
 	}
@@ -134,7 +134,7 @@ func (cw *DefaultCRDWatcher) Watch(ctx context.Context) error {
 
 	err := cw.objectStore.Watch(ctx, crdKey, handler)
 	if err != nil {
-		var e *internalErr.AccessError
+		var e *oerrors.AccessError
 		if errors.As(err, &e) {
 			found := cw.errorStore.Add(e)
 			// Log if we have not seen this access error before.

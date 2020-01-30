@@ -129,11 +129,6 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 	for _, tfd := range d.tabFuncDescriptors {
 		if err := tfd.tabFunc(ctx, currentObject, cr, options); err != nil {
 			hasTabError = true
-			logger.
-				WithErr(err).
-				With(
-					"tab-name", tfd.name,
-				).Errorf("generating object Describer tab")
 			addErrorTab(ctx, tfd.name, err, cr)
 		}
 	}

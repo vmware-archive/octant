@@ -6,11 +6,17 @@
 package errors
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 	"time"
+
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
+
+const OctantAccessError = "AccessError"
 
 type AccessError struct {
 	id        string
@@ -30,6 +36,10 @@ func NewAccessError(key store.Key, verb string, err error) *AccessError {
 		id:        key.String(),
 		key:       key,
 	}
+}
+
+func (o *AccessError) Name() string {
+	return OctantAccessError
 }
 
 // ID returns the error unique ID.
@@ -59,4 +69,28 @@ func (o *AccessError) Key() store.Key {
 // Verb returns the verb for the error.
 func (o *AccessError) Verb() string {
 	return o.verb
+}
+
+func IsBackoffError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	if kerrors.IsUnauthorized(err) {
+		return true
+	}
+
+	var ae *AccessError
+	if errors.As(err, &ae) {
+		if ae.Name() == OctantAccessError {
+			return true
+		}
+	}
+
+	es := err.Error()
+	if strings.Contains(es, "Unauthorized") {
+		return true
+	}
+
+	return false
 }

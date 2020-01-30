@@ -12,4 +12,5 @@ type InternalError interface {
 	ID() string
 	Error() string
 	Timestamp() time.Time
+	Name() string
 }

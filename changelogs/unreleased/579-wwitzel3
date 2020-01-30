@@ -1,0 +1,7 @@
+Implements a backoff strategy for objectstore access.
+
+We have introduced a backoff strategy for the Dynamic Cache. Upon making a
+request that requires some form of access to an object (Get, List, Update, Watch, Delete)
+we check if the client has access to perform that action. If we are denied access
+we create a backoff entry for the GVK the action was requested for. This backoff entry
+will cause further calls to be a NOOP while the backoff is in effect.

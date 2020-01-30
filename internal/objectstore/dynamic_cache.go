@@ -56,6 +56,7 @@ type DynamicCache struct {
 	initFactoryFunc func(context.Context, cluster.ClientInterface, string) (InformerFactory, error)
 	factories       *factoriesCache
 	informerSynced  *informerSynced
+	backoffMap      sync.Map
 	client          cluster.ClientInterface
 	seenGVKs        *seenGVKsCache
 	access          ResourceAccess
@@ -177,14 +178,57 @@ func (dc *DynamicCache) checkKeySynced(ctx context.Context, informer informers.G
 	go dc.syncTimeoutFunc(ctx, key, done)
 }
 
+func (dc *DynamicCache) backoff(ctx context.Context, key store.Key) {
+	newEntry := newBackoffEntry(key, defaultBackoff)
+	actual, _ := dc.backoffMap.LoadOrStore(key.GroupVersionKind(), newEntry)
+	entry := actual.(backoffer)
+	if entry.isWaiting() {
+		return
+	}
+
+	entry.setWaiting(true)
+	dc.backoffMap.Store(key.GroupVersionKind(), entry)
+
+	go func() {
+		logger := log.From(ctx)
+		defer func() {
+			entry.setWaiting(false)
+			dc.backoffMap.Store(key.GroupVersionKind(), entry)
+		}()
+		unwatchErr := dc.Unwatch(ctx, key.GroupVersionKind())
+		if unwatchErr != nil {
+			logger.Errorf("unwatch: %w", unwatchErr)
+		}
+		t := entry.wait()
+		logger.Infof("backing off for %s (%s)", key.GroupVersionKind(), t)
+		<-time.After(t)
+	}()
+}
+
+func (dc *DynamicCache) isBackingOff(ctx context.Context, key store.Key) bool {
+	actual, ok := dc.backoffMap.Load(key.GroupVersionKind())
+	if !ok {
+		return false
+	}
+	entry := actual.(backoffer)
+	return entry.isWaiting()
+}
+
 // List lists objects.
 func (dc *DynamicCache) List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, bool, error) {
 	ctx, span := trace.StartSpan(ctx, "dynamicCache:list")
 	defer span.End()
 
+	if dc.isBackingOff(ctx, key) {
+		return &unstructured.UnstructuredList{}, false, nil
+	}
+
 	if err := dc.access.HasAccess(ctx, key, "list"); err != nil {
 		if meta.IsNoMatchError(err) {
 			return &unstructured.UnstructuredList{}, false, nil
+		}
+		if !dc.isBackingOff(ctx, key) {
+			dc.backoff(ctx, key)
 		}
 		return nil, false, fmt.Errorf("check access to list %s: %w", key, err)
 	}
@@ -275,7 +319,17 @@ func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.U
 	ctx, span := trace.StartSpan(ctx, "dynamicCacheGet")
 	defer span.End()
 
+	if dc.isBackingOff(ctx, key) {
+		return &unstructured.Unstructured{}, false, nil
+	}
+
 	if err := dc.access.HasAccess(ctx, key, "get"); err != nil {
+		if meta.IsNoMatchError(err) {
+			return &unstructured.Unstructured{}, false, nil
+		}
+		if !dc.isBackingOff(ctx, key) {
+			dc.backoff(ctx, key)
+		}
 		return nil, false, fmt.Errorf("check access for get to %s: %w", key, err)
 	}
 
@@ -350,7 +404,17 @@ func (dc *DynamicCache) getFromDynamicClient(ctx context.Context, key store.Key)
 // Watch watches the cluster for an event and performs actions with the
 // supplied handler.
 func (dc *DynamicCache) Watch(ctx context.Context, key store.Key, handler kcache.ResourceEventHandler) error {
+	if dc.isBackingOff(ctx, key) {
+		return nil
+	}
+
 	if err := dc.access.HasAccess(ctx, key, "watch"); err != nil {
+		if meta.IsNoMatchError(err) {
+			return nil
+		}
+		if !dc.isBackingOff(ctx, key) {
+			dc.backoff(ctx, key)
+		}
 		return fmt.Errorf("check access to watch %s: %w", key, err)
 	}
 
@@ -382,7 +446,17 @@ func (dc *DynamicCache) Delete(ctx context.Context, key store.Key) error {
 	_, span := trace.StartSpan(ctx, "dynamicCache:delete")
 	defer span.End()
 
+	if dc.isBackingOff(ctx, key) {
+		return nil
+	}
+
 	if err := dc.access.HasAccess(ctx, key, "delete"); err != nil {
+		if meta.IsNoMatchError(err) {
+			return nil
+		}
+		if !dc.isBackingOff(ctx, key) {
+			dc.backoff(ctx, key)
+		}
 		return fmt.Errorf("check access to delete %s: %w", key, err)
 	}
 
@@ -438,6 +512,20 @@ func (dc *DynamicCache) RegisterOnUpdate(fn store.UpdateFn) {
 func (dc *DynamicCache) Update(ctx context.Context, key store.Key, updater func(*unstructured.Unstructured) error) error {
 	if updater == nil {
 		return errors.New("can't update object")
+	}
+
+	if dc.isBackingOff(ctx, key) {
+		return nil
+	}
+
+	if err := dc.access.HasAccess(ctx, key, "update"); err != nil {
+		if meta.IsNoMatchError(err) {
+			return nil
+		}
+		if !dc.isBackingOff(ctx, key) {
+			dc.backoff(ctx, key)
+		}
+		return fmt.Errorf("check access to update %s: %w", key, err)
 	}
 
 	err := kretry.RetryOnConflict(kretry.DefaultRetry, func() error {
