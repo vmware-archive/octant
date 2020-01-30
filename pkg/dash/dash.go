@@ -7,6 +7,7 @@ package dash
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -27,7 +28,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/describer"
-	internalErr "github.com/vmware-tanzu/octant/internal/errors"
+	oerrors "github.com/vmware-tanzu/octant/internal/errors"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/module"
 	"github.com/vmware-tanzu/octant/internal/modules/applications"
@@ -101,14 +102,21 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return fmt.Errorf("initializing store: %w", err)
 	}
 
-	errorStore, err := internalErr.NewErrorStore()
+	errorStore, err := oerrors.NewErrorStore()
 	if err != nil {
 		return fmt.Errorf("initializing error store: %w", err)
 	}
 
 	crdWatcher, err := describer.NewDefaultCRDWatcher(ctx, clusterClient, appObjectStore, errorStore)
 	if err != nil {
-		return fmt.Errorf("initializing CRD watcher: %w", err)
+		var ae *oerrors.AccessError
+		if errors.As(err, &ae) {
+			if ae.Name() == oerrors.OctantAccessError {
+				logger.Warnf("skipping CRD watcher due to access denied error starting watcher")
+			}
+		} else {
+			return fmt.Errorf("initializing CRD watcher: %w", err)
+		}
 	}
 
 	portForwarder, err := initPortForwarder(ctx, clusterClient, appObjectStore)

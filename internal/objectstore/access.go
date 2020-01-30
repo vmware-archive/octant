@@ -14,7 +14,7 @@ import (
 	authorizationv1 "k8s.io/api/authorization/v1"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
-	internalErr "github.com/vmware-tanzu/octant/internal/errors"
+	oerrors "github.com/vmware-tanzu/octant/internal/errors"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
@@ -141,7 +141,7 @@ func (r *resourceAccess) HasAccess(ctx context.Context, key store.Key, verb stri
 	}
 
 	if !access {
-		return internalErr.NewAccessError(key, verb, err)
+		return oerrors.NewAccessError(key, verb, err)
 	}
 
 	return nil

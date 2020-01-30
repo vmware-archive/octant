@@ -1,0 +1,1 @@
+Implements a backoff strategy for objectstore access.
