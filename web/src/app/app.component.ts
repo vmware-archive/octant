@@ -21,7 +21,7 @@ import { NavigationStart, Router } from '@angular/router';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit, OnDestroy {
-  @ViewChild('scrollTarget', { static: false }) scrollTarget: ElementRef;
+  @ViewChild('scrollTarget') scrollTarget: ElementRef;
   navigation: Navigation;
   style: object = {};
 

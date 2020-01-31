@@ -21,7 +21,7 @@ import { PodStatus } from '../../../../modules/overview/models/pod-status';
   encapsulation: ViewEncapsulation.None,
 })
 export class PodStatusComponent implements OnChanges {
-  @ViewChild('container', { static: false }) private container: ElementRef;
+  @ViewChild('container') private container: ElementRef;
 
   private v: PodStatusView;
 
