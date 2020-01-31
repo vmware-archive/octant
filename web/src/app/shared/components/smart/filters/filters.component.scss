@@ -1,0 +1,25 @@
+/* Copyright (c) 2019 the Octant contributors. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+@import '../../../../../styles';
+
+.filters {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  .filter {
+    position: relative;
+    @include pill(var(--label-color));
+  }
+
+  .filter-remove {
+    font-weight: bold;
+    cursor: pointer;
+
+    &::before {
+      content: ' \D7';
+    }
+  }
+}

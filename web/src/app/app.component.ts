@@ -9,7 +9,7 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { Navigation } from './models/navigation';
+import { Navigation } from './shared/models/navigation';
 import { WebsocketService } from './modules/overview/services/websocket/websocket.service';
 import { IconService } from './modules/overview/services/icon.service';
 import { SliderService } from './services/slider/slider.service';

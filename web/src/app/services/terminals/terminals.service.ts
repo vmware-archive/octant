@@ -4,7 +4,7 @@
 
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { TerminalOutput } from 'src/app/models/content';
+import { TerminalOutput } from 'src/app/shared/models/content';
 import { WebsocketService } from 'src/app/modules/overview/services/websocket/websocket.service';
 
 export class TerminalOutputStreamer {

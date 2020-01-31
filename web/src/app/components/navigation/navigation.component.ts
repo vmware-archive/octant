@@ -3,7 +3,7 @@
 //
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { Navigation, NavigationChild } from '../../models/navigation';
+import { Navigation, NavigationChild } from '../../shared/models/navigation';
 import { IconService } from '../../modules/overview/services/icon.service';
 import { NavigationService } from '../../modules/overview/services/navigation/navigation.service';
 import { untilDestroyed } from 'ngx-take-until-destroy';

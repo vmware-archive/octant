@@ -13,7 +13,7 @@ import { untilDestroyed } from 'ngx-take-until-destroy';
 import {
   Filter,
   LabelFilterService,
-} from '../../services/label-filter/label-filter.service';
+} from '../../shared/services/label-filter/label-filter.service';
 
 @Component({
   selector: 'app-input-filter',

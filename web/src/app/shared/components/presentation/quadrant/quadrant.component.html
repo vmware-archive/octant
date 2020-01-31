@@ -1,0 +1,27 @@
+<div class="card">
+  <div class="card-block">
+    <div class="card-title">
+      <app-view-title [views]="title"></app-view-title>
+    </div>
+    <div class="quadrant">
+      <div class="quadrant-body">
+        <div class="quadrant-ne">
+          <div class="quadrant-value">{{ ne.value }}</div>
+          <div class="quadrant-label">{{ ne.label }}</div>
+        </div>
+        <div class="quadrant-nw">
+          <div class="quadrant-value">{{ nw.value }}</div>
+          <div class="quadrant-label">{{ nw.label }}</div>
+        </div>
+        <div class="quadrant-se">
+          <div class="quadrant-value">{{ se.value }}</div>
+          <div class="quadrant-label">{{ se.label }}</div>
+        </div>
+        <div class="quadrant-sw">
+          <div class="quadrant-value">{{ sw.value }}</div>
+          <div class="quadrant-label">{{ sw.label }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
