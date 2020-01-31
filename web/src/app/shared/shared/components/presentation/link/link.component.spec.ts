@@ -1,23 +1,25 @@
 // Copyright (c) 2019 the Octant contributors. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
+
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
-import { DefaultPipe } from '../../shared/shared/pipes/default/default.pipe';
-import { QuickSwitcherComponent } from './quick-switcher.component';
+import { OverviewModule } from '../../../../../modules/overview/overview.module';
+import { LinkComponent } from './link.component';
 
-describe('QuickSwitcherComponent', () => {
-  let component: QuickSwitcherComponent;
-  let fixture: ComponentFixture<QuickSwitcherComponent>;
+describe('LinkComponent', () => {
+  let component: LinkComponent;
+  let fixture: ComponentFixture<LinkComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [QuickSwitcherComponent, DefaultPipe],
+      imports: [OverviewModule, RouterTestingModule],
     }).compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(QuickSwitcherComponent);
+    fixture = TestBed.createComponent(LinkComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
