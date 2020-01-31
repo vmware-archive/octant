@@ -3,7 +3,7 @@
 //
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DefaultPipe } from '../../modules/overview/pipes/default.pipe';
+import { DefaultPipe } from '../../shared/pipes/default/default.pipe';
 import { QuickSwitcherComponent } from './quick-switcher.component';
 
 describe('QuickSwitcherComponent', () => {

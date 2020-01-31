@@ -6,7 +6,7 @@
 import { Injectable } from '@angular/core';
 import { WebsocketService } from '../websocket/websocket.service';
 import { BehaviorSubject } from 'rxjs';
-import { Navigation } from '../../../../models/navigation';
+import { Navigation } from '../../../../shared/models/navigation';
 import { ContentService } from '../content/content.service';
 
 const emptyNavigation: Navigation = {

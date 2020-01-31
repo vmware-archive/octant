@@ -8,7 +8,7 @@ import { InputFilterComponent } from './input-filter.component';
 import {
   LabelFilterService,
   Filter,
-} from 'src/app/services/label-filter/label-filter.service';
+} from 'src/app/shared/services/label-filter/label-filter.service';
 import { BehaviorSubject } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';

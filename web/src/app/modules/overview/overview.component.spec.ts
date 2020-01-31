@@ -9,7 +9,7 @@ import { ActivatedRouteStub } from 'src/app/testing/activated-route-stub';
 import { OverviewModule } from './overview.module';
 import { OverviewComponent } from './overview.component';
 import { BehaviorSubject } from 'rxjs';
-import { ContentResponse } from '../../models/content';
+import { ContentResponse } from '../../shared/models/content';
 import { ContentService } from './services/content/content.service';
 import { IconService } from './services/icon.service';
 

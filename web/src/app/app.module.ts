@@ -22,6 +22,7 @@ import { PageNotFoundComponent } from './components/page-not-found/page-not-foun
 import { OverviewModule } from './modules/overview/overview.module';
 import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
 import { ThemeSwitchButtonComponent } from './modules/overview/components/theme-switch/theme-switch-button.component';
+import { SharedModule } from './shared/shared.module';
 
 @Injectable()
 export class UnstripTrailingSlashLocation extends Location {
@@ -65,6 +66,7 @@ export class UnstripTrailingSlashLocation extends Location {
         },
       },
     }),
+    SharedModule,
   ],
   providers: [
     {

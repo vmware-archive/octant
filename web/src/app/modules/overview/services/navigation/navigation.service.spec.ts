@@ -11,7 +11,7 @@ import {
   WebsocketService,
 } from '../websocket/websocket.service';
 import { WebsocketServiceMock } from '../websocket/mock';
-import { Navigation } from '../../../../models/navigation';
+import { Navigation } from '../../../../shared/models/navigation';
 import { ContentService } from '../content/content.service';
 
 describe('NavigationService', () => {

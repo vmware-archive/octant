@@ -13,8 +13,8 @@ import { PageNotFoundComponent } from './components/page-not-found/page-not-foun
 import { InputFilterComponent } from './components/input-filter/input-filter.component';
 import { NotifierComponent } from './components/notifier/notifier.component';
 import { NavigationComponent } from './components/navigation/navigation.component';
-import { ContextSelectorComponent } from './modules/overview/components/context-selector/context-selector.component';
-import { DefaultPipe } from './modules/overview/pipes/default.pipe';
+import { ContextSelectorComponent } from './shared/components/smart/context-selector/context-selector.component';
+import { DefaultPipe } from './shared/pipes/default/default.pipe';
 import { NgSelectModule } from '@ng-select/ng-select';
 import {
   BackendService,

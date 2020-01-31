@@ -10,9 +10,12 @@ import {
   ViewChild,
 } from '@angular/core';
 import { ActivatedRoute, Params, Router, UrlSegment } from '@angular/router';
-import { ContentResponse, ExtensionView, View } from 'src/app/models/content';
+import {
+  ContentResponse,
+  ExtensionView,
+  View,
+} from 'src/app/shared/models/content';
 import { IconService } from './services/icon.service';
-import { ViewService } from './services/view/view.service';
 import { combineLatest } from 'rxjs';
 import { untilDestroyed } from 'ngx-take-until-destroy';
 import { ContentService } from './services/content/content.service';
@@ -38,7 +41,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
   @ViewChild('scrollTarget', { static: true }) scrollTarget: ElementRef;
   hasTabs = false;
   hasReceivedContent = false;
-  title: string = null;
+  title: View[] = null;
   views: View[] = null;
   extView: ExtensionView = null;
   singleView: View = null;
@@ -51,7 +54,6 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private iconService: IconService,
-    private viewService: ViewService,
     private contentService: ContentService,
     private websocketService: WebsocketService,
     private kubeContextService: KubeContextService
@@ -147,7 +149,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
     this.hasTabs = views.length > 1;
     if (this.hasTabs) {
       this.views = views;
-      this.title = this.viewService.titleAsText(contentResponse.content.title);
+      this.title = contentResponse.content.title;
     } else if (views.length === 1) {
       this.views = null;
       this.singleView = views[0];

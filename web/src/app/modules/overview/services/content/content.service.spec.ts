@@ -19,7 +19,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import {
   Filter,
   LabelFilterService,
-} from '../../../../services/label-filter/label-filter.service';
+} from '../../../../shared/services/label-filter/label-filter.service';
 
 describe('ContentService', () => {
   let service: ContentService;

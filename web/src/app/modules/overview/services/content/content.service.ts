@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { WebsocketService } from '../websocket/websocket.service';
 import { BehaviorSubject } from 'rxjs';
-import { Content, ContentResponse } from '../../../../models/content';
+import { Content, ContentResponse } from '../../../../shared/models/content';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import {
   Filter,
   LabelFilterService,
-} from '../../../../services/label-filter/label-filter.service';
+} from '../../../../shared/services/label-filter/label-filter.service';
 import { NamespaceService } from '../../../../services/namespace/namespace.service';
 
 export const ContentUpdateMessage = 'content';
