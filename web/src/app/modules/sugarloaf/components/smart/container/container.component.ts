@@ -11,10 +11,10 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { Navigation } from '../../../../../models/navigation';
-import { WebsocketService } from '../../../../overview/services/websocket/websocket.service';
-import { IconService } from '../../../../overview/services/icon.service';
-import { SliderService } from '../../../../../services/slider/slider.service';
+import { Navigation } from '../../../models/navigation';
+import { WebsocketService } from '../../../../shared/services/websocket/websocket.service';
+import { IconService } from '../../../../shared/services/icon/icon.service';
+import { SliderService } from '../../../../shared/slider/slider.service';
 import { NavigationStart, Router } from '@angular/router';
 
 @Component({

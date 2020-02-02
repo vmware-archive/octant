@@ -18,14 +18,18 @@ import {
   RoutesRecognized,
   UrlSegment,
 } from '@angular/router';
-import { ContentResponse, ExtensionView, View } from 'src/app/models/content';
-import { IconService } from '../../../../overview/services/icon.service';
-import { ViewService } from '../../../../overview/services/view/view.service';
+import {
+  ContentResponse,
+  ExtensionView,
+  View,
+} from 'src/app/modules/shared/models/content';
+import { IconService } from '../../../../shared/services/icon/icon.service';
+import { ViewService } from '../../../../shared/services/view/view.service';
 import { combineLatest } from 'rxjs';
 import { untilDestroyed } from 'ngx-take-until-destroy';
-import { ContentService } from '../../../../overview/services/content/content.service';
-import { WebsocketService } from '../../../../overview/services/websocket/websocket.service';
-import { KubeContextService } from '../../../../overview/services/kube-context/kube-context.service';
+import { ContentService } from '../../../../shared/services/content/content.service';
+import { WebsocketService } from '../../../../shared/services/websocket/websocket.service';
+import { KubeContextService } from '../../../../shared/services/kube-context/kube-context.service';
 import { take } from 'rxjs/operators';
 import isEqual from 'lodash/isEqual';
 

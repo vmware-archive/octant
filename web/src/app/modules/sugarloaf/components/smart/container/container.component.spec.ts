@@ -10,22 +10,22 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { ContainerComponent } from './container.component';
-import { NamespaceComponent } from '../../../../../components/namespace/namespace.component';
-import { PageNotFoundComponent } from '../../../../../components/page-not-found/page-not-found.component';
-import { InputFilterComponent } from '../../../../../components/input-filter/input-filter.component';
-import { NotifierComponent } from '../../../../../components/notifier/notifier.component';
-import { NavigationComponent } from '../../../../../components/navigation/navigation.component';
-import { ContextSelectorComponent } from '../../../../../shared/shared/components/smart/context-selector/context-selector.component';
-import { DefaultPipe } from '../../../../../shared/shared/pipes/default/default.pipe';
+import { NamespaceComponent } from '../namespace/namespace.component';
+import { PageNotFoundComponent } from '../page-not-found/page-not-found.component';
+import { InputFilterComponent } from '../input-filter/input-filter.component';
+import { NotifierComponent } from '../notifier/notifier.component';
+import { NavigationComponent } from '../navigation/navigation.component';
+import { ContextSelectorComponent } from '../../../../shared/components/smart/context-selector/context-selector.component';
+import { DefaultPipe } from '../../../../shared/pipes/default/default.pipe';
 import { NgSelectModule } from '@ng-select/ng-select';
 import {
   BackendService,
   WebsocketService,
-} from '../../../../overview/services/websocket/websocket.service';
-import { WebsocketServiceMock } from '../../../../overview/services/websocket/mock';
+} from '../../../../shared/services/websocket/websocket.service';
+import { WebsocketServiceMock } from '../../../../shared/services/websocket/mock';
 import { ClarityIcons } from '@clr/icons';
-import { ThemeSwitchButtonComponent } from '../../../../overview/components/theme-switch/theme-switch-button.component';
-import { QuickSwitcherComponent } from '../../../../../components/quick-switcher/quick-switcher.component';
+import { ThemeSwitchButtonComponent } from '../theme-switch/theme-switch-button.component';
+import { QuickSwitcherComponent } from '../quick-switcher/quick-switcher.component';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {

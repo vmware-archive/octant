@@ -5,11 +5,11 @@ import { Location } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { Injectable, NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { HomeComponent } from './home/home.component';
+import { HomeComponent } from './components/smart/home/home.component';
 import { AppRoutingModule } from './app-routing.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { highlightProvider } from './shared/highlight';
+import { highlightProvider } from './modules/shared/highlight';
 
 @Injectable()
 export class UnstripTrailingSlashLocation extends Location {

@@ -11,9 +11,9 @@ import { ActivatedRouteStub } from 'src/app/testing/activated-route-stub';
 import { OverviewModule } from '../../../../overview/overview.module';
 import { OverviewComponent } from './overview.component';
 import { BehaviorSubject } from 'rxjs';
-import { ContentResponse } from '../../../../../models/content';
-import { ContentService } from '../../../../overview/services/content/content.service';
-import { IconService } from '../../../../overview/services/icon.service';
+import { ContentResponse } from '../../../../shared/models/content';
+import { ContentService } from '../../../../shared/services/content/content.service';
+import { IconService } from '../../../../shared/services/icon/icon.service';
 
 class ContentServiceMock {
   current = new BehaviorSubject<ContentResponse>({

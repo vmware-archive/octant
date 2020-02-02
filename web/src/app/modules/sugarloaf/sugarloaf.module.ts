@@ -1,20 +1,20 @@
-import { Injectable, NgModule, NgZone } from '@angular/core';
+import { Injectable, NgModule } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { ContainerComponent } from './components/smart/container/container.component';
-import { NamespaceComponent } from '../../components/namespace/namespace.component';
-import { PageNotFoundComponent } from '../../components/page-not-found/page-not-found.component';
-import { InputFilterComponent } from '../../components/input-filter/input-filter.component';
-import { NotifierComponent } from '../../components/notifier/notifier.component';
-import { NavigationComponent } from '../../components/navigation/navigation.component';
-import { QuickSwitcherComponent } from '../../components/quick-switcher/quick-switcher.component';
-import { ThemeSwitchButtonComponent } from '../overview/components/theme-switch/theme-switch-button.component';
+import { NamespaceComponent } from './components/smart/namespace/namespace.component';
+import { PageNotFoundComponent } from './components/smart/page-not-found/page-not-found.component';
+import { InputFilterComponent } from './components/smart/input-filter/input-filter.component';
+import { NotifierComponent } from './components/smart/notifier/notifier.component';
+import { NavigationComponent } from './components/smart/navigation/navigation.component';
+import { QuickSwitcherComponent } from './components/smart/quick-switcher/quick-switcher.component';
+import { ThemeSwitchButtonComponent } from './components/smart/theme-switch/theme-switch-button.component';
 import { ClarityModule } from '@clr/angular';
 import { HttpClientModule } from '@angular/common/http';
-import { Router, RouterModule, Routes } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
-import { SharedModule } from '../../shared/shared.module';
+import { SharedModule } from '../shared/shared.module';
 import { OverviewComponent } from './components/smart/overview/overview.component';
 
 const routes: Routes = [
