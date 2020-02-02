@@ -36,7 +36,7 @@ func Test_PodListHandler(t *testing.T) {
 	now := testutil.Time()
 
 	labels := map[string]string{
-		"app": "testing",
+		"home": "testing",
 	}
 
 	pod := testutil.CreatePod("pod")

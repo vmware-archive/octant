@@ -167,7 +167,7 @@ func bindViper(cmd *cobra.Command) error {
 	if err := viper.BindEnv("home", "HOME"); err != nil {
 		return err
 	}
-	if err := viper.BindEnv("local-app-data", "LOCALAPPDATA"); err != nil {
+	if err := viper.BindEnv("local-home-data", "LOCALAPPDATA"); err != nil {
 		return err
 	}
 	if err := viper.BindEnv("kubeconfig", "KUBECONFIG"); err != nil {

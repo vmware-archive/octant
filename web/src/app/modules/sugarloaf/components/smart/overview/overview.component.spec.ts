@@ -1,17 +1,19 @@
-// Copyright (c) 2019 the Octant contributors. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-//
+/*
+ * Copyright (c) 2020 the Octant contributors. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ */
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActivatedRouteStub } from 'src/app/testing/activated-route-stub';
 
-import { OverviewModule } from './overview.module';
+import { OverviewModule } from '../../../../overview/overview.module';
 import { OverviewComponent } from './overview.component';
 import { BehaviorSubject } from 'rxjs';
-import { ContentResponse } from '../../models/content';
-import { ContentService } from './services/content/content.service';
-import { IconService } from './services/icon.service';
+import { ContentResponse } from '../../../../../models/content';
+import { ContentService } from '../../../../overview/services/content/content.service';
+import { IconService } from '../../../../overview/services/icon.service';
 
 class ContentServiceMock {
   current = new BehaviorSubject<ContentResponse>({

@@ -22,7 +22,7 @@ func Test_namespaceClient_Names(t *testing.T) {
 	// merged upstream
 	dc := dynamicfake.NewSimpleDynamicClient(scheme,
 		newUnstructured("v1", "Namespace", "", "default"),
-		newUnstructured("v1", "Namespace", "", "app-1"),
+		newUnstructured("v1", "Namespace", "", "home-1"),
 	)
 
 	nc := newNamespaceClient(dc, "default")
@@ -30,7 +30,7 @@ func Test_namespaceClient_Names(t *testing.T) {
 	got, err := nc.Names()
 	require.NoError(t, err)
 
-	expected := []string{"default", "app-1"}
+	expected := []string{"default", "home-1"}
 	assert.Equal(t, expected, got)
 }
 

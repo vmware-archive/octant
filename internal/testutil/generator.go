@@ -185,7 +185,7 @@ func CreateIngress(name string) *extv1beta1.Ingress {
 		ObjectMeta: genObjectMeta(name, true),
 		Spec: extv1beta1.IngressSpec{
 			Backend: &extv1beta1.IngressBackend{
-				ServiceName: "app",
+				ServiceName: "home",
 				ServicePort: intstr.FromInt(80),
 			},
 		},

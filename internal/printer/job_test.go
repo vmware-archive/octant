@@ -27,7 +27,7 @@ func Test_JobListHandler(t *testing.T) {
 	defer controller.Finish()
 
 	validJobLabels := map[string]string{
-		"app": "testing",
+		"home": "testing",
 	}
 
 	validJobCreationTime := testutil.Time()

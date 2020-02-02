@@ -48,4 +48,12 @@ export class NavigationComponent implements OnInit, OnDestroy {
     const data = JSON.parse(message.data);
     this.behavior.next(data);
   };
+
+  formatPath(path: string): string {
+    if (!path.startsWith('/')) {
+      return '/' + path;
+    }
+
+    return path;
+  }
 }

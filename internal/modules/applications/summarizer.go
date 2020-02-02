@@ -17,9 +17,9 @@ var (
 )
 
 const (
-	appLabelName     = "app.kubernetes.io/name"
-	appLabelInstance = "app.kubernetes.io/instance"
-	appLabelVersion  = "app.kubernetes.io/version"
+	appLabelName     = "home.kubernetes.io/name"
+	appLabelInstance = "home.kubernetes.io/instance"
+	appLabelVersion  = "home.kubernetes.io/version"
 )
 
 // SummarizerConfig is configuration for Summarize.
@@ -29,9 +29,9 @@ type SummarizerConfig interface {
 
 // Summarizer summarizes applications for a namespace. Applications are a group of objects
 // labeled with matching application labels. Application labels are:
-//   * app.kubernetes.io/name
-//   * app.kubernetes.io/instance
-//   * app.kubernetes.io/version
+//   * home.kubernetes.io/name
+//   * home.kubernetes.io/instance
+//   * home.kubernetes.io/version
 type Summarizer interface {
 	// Summarize generates a table summary.
 	Summarize(ctx context.Context, namespace string, config SummarizerConfig) (*component.Table, error)

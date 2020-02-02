@@ -41,7 +41,7 @@ func Test_podBelongsToApplication(t *testing.T) {
 		isErr        bool
 	}{
 		{
-			name: "pod with app labels",
+			name: "pod with home labels",
 			labels: map[string]string{
 				appLabelName:     "name",
 				appLabelInstance: "instance",

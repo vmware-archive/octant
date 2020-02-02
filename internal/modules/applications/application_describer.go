@@ -90,7 +90,7 @@ func (a *ApplicationDescriber) Describe(ctx context.Context, namespace string, o
 }
 
 // PathFilters creates PathFilters for an application. The path for an application
-// is /app-name/app-instance/app-version.
+// is /home-name/home-instance/home-version.
 func (a *ApplicationDescriber) PathFilters() []describer.PathFilter {
 	return []describer.PathFilter{
 		*describer.NewPathFilter("/(?P<name>[^/]*)/(?P<instance>[^/]*)/(?P<version>[^/]*)", a),

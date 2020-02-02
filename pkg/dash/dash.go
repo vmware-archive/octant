@@ -240,7 +240,7 @@ func initObjectStore(ctx context.Context, client cluster.ClientInterface) (store
 	appObjectStore, err := objectstore.NewDynamicCache(ctx, client, objectstore.Access(resourceAccess))
 
 	if err != nil {
-		return nil, fmt.Errorf("creating object store for app: %w", err)
+		return nil, fmt.Errorf("creating object store for home: %w", err)
 	}
 
 	return appObjectStore, nil

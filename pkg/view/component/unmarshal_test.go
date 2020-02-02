@@ -125,7 +125,7 @@ func Test_unmarshal(t *testing.T) {
 						&Labels{
 							Config: LabelsConfig{
 								Labels: map[string]string{
-									"app": "nginx",
+									"home": "nginx",
 								},
 							},
 							base: newBase(typeLabels, nil),
@@ -214,7 +214,7 @@ func Test_unmarshal(t *testing.T) {
 					Selectors: []Selector{
 						&LabelSelector{
 							Config: LabelSelectorConfig{
-								Key:   "app",
+								Key:   "home",
 								Value: "nginx",
 							},
 							base: newBase(typeLabelSelector, nil),

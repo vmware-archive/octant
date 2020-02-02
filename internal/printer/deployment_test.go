@@ -61,7 +61,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 			Replicas: conversion.PtrInt32(3),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": "my_app",
+					"home": "my_app",
 				},
 			},
 			Template: corev1.PodTemplateSpec{
@@ -101,7 +101,7 @@ func Test_DeploymentListHandler(t *testing.T) {
 		"Name":       component.NewLink("", "deployment", "/path"),
 		"Labels":     component.NewLabels(objectLabels),
 		"Age":        component.NewTimestamp(now),
-		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "my_app")}),
+		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("home", "my_app")}),
 		"Status":     component.NewText("2/3"),
 		"Containers": containers,
 	})
@@ -117,7 +117,7 @@ func Test_deploymentConfiguration(t *testing.T) {
 		RevisionHistoryLimit: &rhl,
 		Selector: &metav1.LabelSelector{
 			MatchLabels: map[string]string{
-				"app": "my_app",
+				"home": "my_app",
 			},
 			MatchExpressions: []metav1.LabelSelectorRequirement{
 				{
@@ -173,7 +173,7 @@ func Test_deploymentConfiguration(t *testing.T) {
 					Content: component.NewSelectors(
 						[]component.Selector{
 							component.NewExpressionSelector("key", component.OperatorIn, []string{"value1", "value2"}),
-							component.NewLabelSelector("app", "my_app"),
+							component.NewLabelSelector("home", "my_app"),
 						},
 					),
 				},

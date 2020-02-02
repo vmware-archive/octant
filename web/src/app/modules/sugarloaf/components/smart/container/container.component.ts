@@ -1,6 +1,8 @@
-// Copyright (c) 2019 the Octant contributors. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-//
+/*
+ * Copyright (c) 2020 the Octant contributors. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ */
 
 import {
   Component,
@@ -9,18 +11,18 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { Navigation } from './models/navigation';
-import { WebsocketService } from './modules/overview/services/websocket/websocket.service';
-import { IconService } from './modules/overview/services/icon.service';
-import { SliderService } from './services/slider/slider.service';
+import { Navigation } from '../../../../../models/navigation';
+import { WebsocketService } from '../../../../overview/services/websocket/websocket.service';
+import { IconService } from '../../../../overview/services/icon.service';
+import { SliderService } from '../../../../../services/slider/slider.service';
 import { NavigationStart, Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+  templateUrl: './container.component.html',
+  styleUrls: ['./container.component.scss'],
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class ContainerComponent implements OnInit, OnDestroy {
   @ViewChild('scrollTarget', { static: false }) scrollTarget: ElementRef;
   navigation: Navigation;
   style: object = {};

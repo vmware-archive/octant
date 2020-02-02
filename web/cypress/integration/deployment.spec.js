@@ -45,7 +45,7 @@ describe('Deployment', () => {
 
       cy.contains(/Stop port forward/).should('be.visible');
       cy.exec(
-        'kubectl delete pod -l app.kubernetes.io/name=nginx,app.kubernetes.io/instance=sample,app.kubernetes.io/version=v1 --namespace ' +
+        'kubectl delete pod -l home.kubernetes.io/name=nginx,home.kubernetes.io/instance=sample,home.kubernetes.io/version=v1 --namespace ' +
           result.stdout
       )
         .its('stdout')
@@ -80,10 +80,10 @@ describe('Deployment', () => {
         .should('be.greaterThan', 0);
       cy.get('[data-id="layer2-node"]').click(370, 360, { force: true });
 
-      cy.get('app-heptagon-grid svg g:first')
+      cy.get('home-heptagon-grid svg g:first')
         .children()
         .should('have.length', 3);
-      cy.get('app-heptagon-grid svg g:first')
+      cy.get('home-heptagon-grid svg g:first')
         .children()
         .last()
         .click();

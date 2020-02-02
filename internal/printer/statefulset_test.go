@@ -54,7 +54,7 @@ func Test_StatefulSetListHandler(t *testing.T) {
 		Spec: appsv1.StatefulSetSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": "myapp",
+					"home": "myapp",
 				},
 			},
 			Replicas: conversion.PtrInt32(3),
@@ -89,7 +89,7 @@ func Test_StatefulSetListHandler(t *testing.T) {
 		"Desired":  component.NewText("3"),
 		"Current":  component.NewText("1"),
 		"Age":      component.NewTimestamp(now),
-		"Selector": component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
+		"Selector": component.NewSelectors([]component.Selector{component.NewLabelSelector("home", "myapp")}),
 	})
 
 	component.AssertEqual(t, expected, got)
@@ -103,7 +103,7 @@ func Test_StatefulSetStatus(t *testing.T) {
 	printOptions := tpo.ToOptions()
 
 	labels := map[string]string{
-		"app": "myapp",
+		"home": "myapp",
 	}
 
 	sts := &appsv1.StatefulSet{
@@ -118,7 +118,7 @@ func Test_StatefulSetStatus(t *testing.T) {
 		Spec: appsv1.StatefulSetSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": "myapp",
+					"home": "myapp",
 				},
 			},
 		},
@@ -183,7 +183,7 @@ func Test_StatefulSetConfiguration(t *testing.T) {
 		Spec: appsv1.StatefulSetSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": "myapp",
+					"home": "myapp",
 				},
 			},
 			Replicas: conversion.PtrInt32(3),
@@ -220,7 +220,7 @@ func Test_StatefulSetConfiguration(t *testing.T) {
 				},
 				{
 					Header:  "Selectors",
-					Content: component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
+					Content: component.NewSelectors([]component.Selector{component.NewLabelSelector("home", "myapp")}),
 				},
 				{
 					Header:  "Replicas",
@@ -277,7 +277,7 @@ func Test_StatefulSetPods(t *testing.T) {
 	now := testutil.Time()
 
 	labels := map[string]string{
-		"app": "testing",
+		"home": "testing",
 	}
 
 	statefulSet := testutil.CreateStatefulSet("statefulset")

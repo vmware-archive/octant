@@ -1,29 +1,31 @@
-// Copyright (c) 2019 the Octant contributors. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-//
+/*
+ * Copyright (c) 2020 the Octant contributors. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ */
 
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { async, inject, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
-import { AppComponent } from './app.component';
-import { NamespaceComponent } from './components/namespace/namespace.component';
-import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
-import { InputFilterComponent } from './components/input-filter/input-filter.component';
-import { NotifierComponent } from './components/notifier/notifier.component';
-import { NavigationComponent } from './components/navigation/navigation.component';
-import { ContextSelectorComponent } from './shared/shared/components/smart/context-selector/context-selector.component';
-import { DefaultPipe } from './shared/shared/pipes/default/default.pipe';
+import { ContainerComponent } from './container.component';
+import { NamespaceComponent } from '../../../../../components/namespace/namespace.component';
+import { PageNotFoundComponent } from '../../../../../components/page-not-found/page-not-found.component';
+import { InputFilterComponent } from '../../../../../components/input-filter/input-filter.component';
+import { NotifierComponent } from '../../../../../components/notifier/notifier.component';
+import { NavigationComponent } from '../../../../../components/navigation/navigation.component';
+import { ContextSelectorComponent } from '../../../../../shared/shared/components/smart/context-selector/context-selector.component';
+import { DefaultPipe } from '../../../../../shared/shared/pipes/default/default.pipe';
 import { NgSelectModule } from '@ng-select/ng-select';
 import {
   BackendService,
   WebsocketService,
-} from './modules/overview/services/websocket/websocket.service';
-import { WebsocketServiceMock } from './modules/overview/services/websocket/mock';
+} from '../../../../overview/services/websocket/websocket.service';
+import { WebsocketServiceMock } from '../../../../overview/services/websocket/mock';
 import { ClarityIcons } from '@clr/icons';
-import { ThemeSwitchButtonComponent } from './modules/overview/components/theme-switch/theme-switch-button.component';
-import { QuickSwitcherComponent } from './components/quick-switcher/quick-switcher.component';
+import { ThemeSwitchButtonComponent } from '../../../../overview/components/theme-switch/theme-switch-button.component';
+import { QuickSwitcherComponent } from '../../../../../components/quick-switcher/quick-switcher.component';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
@@ -40,7 +42,7 @@ describe('AppComponent', () => {
         NgSelectModule,
       ],
       declarations: [
-        AppComponent,
+        ContainerComponent,
         NamespaceComponent,
         PageNotFoundComponent,
         InputFilterComponent,
@@ -54,8 +56,8 @@ describe('AppComponent', () => {
     }).compileComponents();
   }));
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+  it('should create the home', () => {
+    const fixture = TestBed.createComponent(ContainerComponent);
     const app = fixture.debugElement.componentInstance;
     expect(app).toBeTruthy();
   });
@@ -64,7 +66,7 @@ describe('AppComponent', () => {
     it('opens a websocket connection', inject(
       [WebsocketService],
       (websocketService: WebsocketServiceMock) => {
-        const fixture = TestBed.createComponent(AppComponent);
+        const fixture = TestBed.createComponent(ContainerComponent);
         fixture.detectChanges();
 
         expect(websocketService.isOpen).toBeTruthy();

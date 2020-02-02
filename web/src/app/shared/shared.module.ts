@@ -30,7 +30,6 @@ import { TableComponent } from './shared/components/presentation/table/table.com
 import { TimestampComponent } from './shared/components/presentation/timestamp/timestamp.component';
 import { LoadingComponent } from './shared/components/presentation/loading/loading.component';
 import { HighlightModule } from 'ngx-highlightjs';
-import { hljsLanguages } from './highlight';
 import { LabelSelectorComponent } from './shared/components/presentation/label-selector/label-selector.component';
 import { CytoscapeComponent } from './shared/components/presentation/cytoscape/cytoscape.component';
 import { SelectorsComponent } from './shared/components/presentation/selectors/selectors.component';
@@ -57,6 +56,7 @@ import { SafePipe } from './shared/pipes/safe/safe.pipe';
 import { DefaultPipe } from './shared/pipes/default/default.pipe';
 import { RouterModule } from '@angular/router';
 import { ResizableModule } from 'angular-resizable-element';
+import { hljsLanguages } from './highlight';
 
 @NgModule({
   declarations: [
@@ -111,7 +111,6 @@ import { ResizableModule } from 'angular-resizable-element';
     YamlComponent,
   ],
   imports: [
-    BrowserAnimationsModule,
     ClarityModule,
     CommonModule,
     FormsModule,
@@ -133,8 +132,10 @@ import { ResizableModule } from 'angular-resizable-element';
     ContainersComponent,
     ContentFilterComponent,
     ContentSwitcherComponent,
+    ContextSelectorComponent,
     CytoscapeComponent,
     DatagridComponent,
+    DefaultPipe,
     DonutChartComponent,
     ErrorComponent,
     ExpressionSelectorComponent,

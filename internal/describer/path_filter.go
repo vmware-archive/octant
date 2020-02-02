@@ -60,7 +60,7 @@ func (pf *PathFilter) Fields(contentPath string) map[string]string {
 
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Println("path filter fields is crashing the app")
+			fmt.Println("path filter fields is crashing the home")
 			spew.Dump(contentPath, pf.filterPath, pf.re.String(), match, names)
 			panic("i'm done")
 		}

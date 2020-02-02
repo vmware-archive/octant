@@ -70,7 +70,7 @@ func (c *defaultConfig) Home() string {
 		c.homeFn = func() string {
 			switch runtime.GOOS {
 			case "windows":
-				return viper.GetString("local-app-data")
+				return viper.GetString("local-home-data")
 
 			case "darwin":
 				return viper.GetString("home")

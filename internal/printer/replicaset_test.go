@@ -58,7 +58,7 @@ func Test_ReplicaSetListHandler(t *testing.T) {
 				Spec: appsv1.ReplicaSetSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app": "myapp",
+							"home": "myapp",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
@@ -96,7 +96,7 @@ func Test_ReplicaSetListHandler(t *testing.T) {
 		"Name":       component.NewLink("", "replicaset-test", "/replica-set"),
 		"Labels":     component.NewLabels(labels),
 		"Age":        component.NewTimestamp(now),
-		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
+		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("home", "myapp")}),
 		"Status":     component.NewText("2/3"),
 		"Containers": containers,
 	})
@@ -196,7 +196,7 @@ func Test_ReplicaSetStatus(t *testing.T) {
 	printOptions := tpo.ToOptions()
 
 	labels := map[string]string{
-		"app": "myapp",
+		"home": "myapp",
 	}
 
 	rs := &appsv1.ReplicaSet{
@@ -207,7 +207,7 @@ func Test_ReplicaSetStatus(t *testing.T) {
 		Spec: appsv1.ReplicaSetSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": "myapp",
+					"home": "myapp",
 				},
 			},
 		},

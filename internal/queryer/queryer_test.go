@@ -469,7 +469,7 @@ func TestCacheQueryer_PodsForService(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{Name: "service", Namespace: "default"},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				"app": "one",
+				"home": "one",
 			},
 		},
 	}
@@ -480,7 +480,7 @@ func TestCacheQueryer_PodsForService(t *testing.T) {
 			Name:      "pod1",
 			Namespace: "default",
 			Labels: map[string]string{
-				"app": "one",
+				"home": "one",
 			},
 		},
 	}
@@ -491,7 +491,7 @@ func TestCacheQueryer_PodsForService(t *testing.T) {
 			Name:      "pod2",
 			Namespace: "default",
 			Labels: map[string]string{
-				"app": "two",
+				"home": "two",
 			},
 		},
 	}
@@ -634,7 +634,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{Name: "service1", Namespace: "default"},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				"app": "one",
+				"home": "one",
 			},
 		},
 	}
@@ -644,7 +644,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{Name: "service2", Namespace: "default"},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				"app": "two",
+				"home": "two",
 			},
 		},
 	}
@@ -762,7 +762,7 @@ func TestCacheQueryer_ServicesForPods(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{Name: "service1", Namespace: "default"},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				"app": "one",
+				"home": "one",
 			},
 		},
 	}
@@ -772,7 +772,7 @@ func TestCacheQueryer_ServicesForPods(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{Name: "service2", Namespace: "default"},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				"app": "two",
+				"home": "two",
 			},
 		},
 	}
@@ -783,7 +783,7 @@ func TestCacheQueryer_ServicesForPods(t *testing.T) {
 			Name:      "pod1",
 			Namespace: "default",
 			Labels: map[string]string{
-				"app": "one",
+				"home": "one",
 			},
 		},
 	}

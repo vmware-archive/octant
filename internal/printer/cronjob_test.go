@@ -32,7 +32,7 @@ func Test_CronJobListHandler(t *testing.T) {
 	printOptions := tpo.ToOptions()
 
 	labels := map[string]string{
-		"app": "myapp",
+		"home": "myapp",
 	}
 
 	now := testutil.Time()

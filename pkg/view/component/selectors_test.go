@@ -30,7 +30,7 @@ func Test_Selectors_Marshal(t *testing.T) {
 					Selectors: []Selector{
 						&LabelSelector{
 							Config: LabelSelectorConfig{
-								Key:   "app",
+								Key:   "home",
 								Value: "nginx",
 							},
 						},

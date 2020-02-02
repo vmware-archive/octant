@@ -1,6 +1,8 @@
-// Copyright (c) 2019 the Octant contributors. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-//
+/*
+ * Copyright (c) 2020 the Octant contributors. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ */
 import {
   ChangeDetectionStrategy,
   Component,
@@ -9,15 +11,21 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { ActivatedRoute, Params, Router, UrlSegment } from '@angular/router';
+import {
+  ActivatedRoute,
+  Params,
+  Router,
+  RoutesRecognized,
+  UrlSegment,
+} from '@angular/router';
 import { ContentResponse, ExtensionView, View } from 'src/app/models/content';
-import { IconService } from './services/icon.service';
-import { ViewService } from './services/view/view.service';
+import { IconService } from '../../../../overview/services/icon.service';
+import { ViewService } from '../../../../overview/services/view/view.service';
 import { combineLatest } from 'rxjs';
 import { untilDestroyed } from 'ngx-take-until-destroy';
-import { ContentService } from './services/content/content.service';
-import { WebsocketService } from './services/websocket/websocket.service';
-import { KubeContextService } from './services/kube-context/kube-context.service';
+import { ContentService } from '../../../../overview/services/content/content.service';
+import { WebsocketService } from '../../../../overview/services/websocket/websocket.service';
+import { KubeContextService } from '../../../../overview/services/kube-context/kube-context.service';
 import { take } from 'rxjs/operators';
 import isEqual from 'lodash/isEqual';
 
@@ -55,56 +63,56 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private contentService: ContentService,
     private websocketService: WebsocketService,
     private kubeContextService: KubeContextService
-  ) {}
+  ) {
+    this.router.events.subscribe(data => {
+      if (data instanceof RoutesRecognized) {
+        console.log(`update`);
+        this.updatePath(data.url);
+      }
+    });
+  }
+
+  updatePath(url: string) {
+    const tree = this.router.parseUrl(url);
+
+    const primary = tree.root.children.primary;
+    let segments = [];
+    if (primary) {
+      segments = primary.segments;
+    }
+    console.log(`primary`, primary);
+
+    this.handlePathChange(segments, tree.queryParams, false);
+  }
 
   ngOnInit() {
+    console.log('initial');
+    this.updatePath(this.router.routerState.snapshot.url);
+
     this.contentService.current
       .pipe(untilDestroyed(this))
       .subscribe(contentResponse => {
         this.setContent(contentResponse);
       });
 
-    this.withCurrentLocation(options => {
-      this.handlePathChange(options.segments, options.params, false);
-    });
+    // this.withCurrentLocation(options => {
+    //   this.handlePathChange(options.segments, options.params, false);
+    // });
 
     this.websocketService.reconnected.subscribe(() => {
-      this.withCurrentLocation(options => {
-        this.handlePathChange(options.segments, options.params, true);
-        this.kubeContextService.select({ name: options.currentContext });
-      }, true);
+      // this.updatePath(this.router.routerState.snapshot.url);
+      // this.kubeContextService.select
+      //   this.kubeContextService.selected().getValue()
+      // );
+      // this.withCurrentLocation(options => {
+      //   this.handlePathChange(options.segments, options.params, true);
+      //   this.kubeContextService.select({ name: options.currentContext });
+      // }, true);
     });
   }
 
   ngOnDestroy() {
     this.resetView();
-  }
-
-  private withCurrentLocation(
-    callback: (options: LocationCallbackOptions) => void,
-    takeOne = false
-  ) {
-    let observable = combineLatest([
-      this.route.url,
-      this.route.queryParams,
-      this.route.fragment,
-      this.kubeContextService.selected(),
-    ]);
-
-    if (takeOne) {
-      observable = observable.pipe(take(1));
-    }
-
-    observable.subscribe(([segments, params, fragment, currentContext]) => {
-      if (currentContext !== '') {
-        callback({
-          segments,
-          params,
-          fragment,
-          currentContext,
-        });
-      }
-    });
   }
 
   private handlePathChange(
@@ -116,12 +124,22 @@ export class OverviewComponent implements OnInit, OnDestroy {
     const currentPath = urlPath || this.defaultPath;
     if (
       force ||
-      currentPath !== this.previousUrl ||
+      (currentPath && currentPath !== this.previousUrl) ||
       !isEqual(queryParams, this.previousParams)
     ) {
-      this.resetView();
+      if (this.previousUrl === currentPath) {
+        return;
+      }
+
       this.previousUrl = currentPath;
       this.previousParams = queryParams;
+      if (!currentPath) {
+        // TODO: figure out why currentPath is undefined
+        return;
+      }
+      console.log(`setting content path to`, { currentPath });
+
+      this.resetView();
       this.contentService.setContentPath(currentPath, queryParams);
       this.scrollTarget.nativeElement.scrollTop = 0;
     }

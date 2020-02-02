@@ -16,7 +16,7 @@ import (
 
 func TestJobTemplateHeader(t *testing.T) {
 	labels := map[string]string{
-		"app": "myapp",
+		"home": "myapp",
 	}
 
 	jth := NewJobTemplateHeader(labels)

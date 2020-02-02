@@ -8,7 +8,7 @@ import { TextView } from '../../../../../models/content';
 import { TextComponent } from './text.component';
 
 @Component({
-  template: '<app-view-text [view]="view"></app-view-text>',
+  template: '<home-view-text [view]="view"></home-view-text>',
 })
 class TestWrapperComponent {
   view: TextView;
@@ -38,8 +38,8 @@ describe('TextComponent', () => {
       };
       fixture.detectChanges();
 
-      expect(element.querySelector('app-view-text div')).toBeNull();
-      expect(element.querySelector('app-view-text').innerHTML).toContain(
+      expect(element.querySelector('home-view-text div')).toBeNull();
+      expect(element.querySelector('home-view-text').innerHTML).toContain(
         '*text*'
       );
     });
@@ -52,8 +52,8 @@ describe('TextComponent', () => {
       };
       fixture.detectChanges();
 
-      expect(element.querySelector('app-view-text markdown')).toBeDefined();
-      expect(element.querySelector('app-view-text').innerHTML).toContain(
+      expect(element.querySelector('home-view-text markdown')).toBeDefined();
+      expect(element.querySelector('home-view-text').innerHTML).toContain(
         '*text*'
       );
     });
@@ -66,7 +66,7 @@ describe('TextComponent', () => {
       fixture.detectChanges();
 
       let element: HTMLElement = fixture.nativeElement;
-      expect(element.querySelector('app-view-text div').innerHTML).toEqual(
+      expect(element.querySelector('home-view-text div').innerHTML).toEqual(
         '<p><em>text</em></p>\n'
       );
 
@@ -77,7 +77,7 @@ describe('TextComponent', () => {
       fixture.detectChanges();
 
       element = fixture.nativeElement;
-      expect(element.querySelector('app-view-text div').innerHTML).toEqual(
+      expect(element.querySelector('home-view-text div').innerHTML).toEqual(
         '<h1 id="header">header</h1>\n'
       );
     });

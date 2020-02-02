@@ -5,7 +5,7 @@
         class="section">
     <a
             [routerLinkActiveOptions]="{exact: true}"
-            [routerLink]="section.path"
+            [routerLink]="formatPath(section.path)"
             class="clr-treenode-link section"
             routerLinkActive="active">
         <span>
@@ -20,7 +20,7 @@
             [clrLoading]="category.isLoading">
         <a
                 [routerLinkActiveOptions]="{exact: true}"
-                [routerLink]="category.path"
+                [routerLink]="formatPath(category.path)"
                 class="clr-treenode-link category"
                 routerLinkActive="active">
       <span>
@@ -34,7 +34,7 @@
                 *ngFor="let entry of category.children; trackBy: identifyNavigationItem"
                 [clrLoading]="entry.isLoading">
             <a
-                    [routerLink]="entry.path"
+                    [routerLink]="formatPath(entry.path)"
                     class="clr-treenode-link item"
                     routerLinkActive="active">
                 <clr-icon [attr.shape]="itemIcon(entry) | default:'folder'"></clr-icon>

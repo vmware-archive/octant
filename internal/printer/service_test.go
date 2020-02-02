@@ -53,7 +53,7 @@ func Test_ServiceListHandler(t *testing.T) {
 				},
 				Spec: corev1.ServiceSpec{
 					Selector: map[string]string{
-						"app": "myapp",
+						"home": "myapp",
 					},
 					Type:        corev1.ServiceTypeClusterIP,
 					ClusterIP:   "1.2.3.4",
@@ -93,7 +93,7 @@ func Test_ServiceListHandler(t *testing.T) {
 		"External IP": component.NewText("8.8.8.8, 8.8.4.4"),
 		"Ports":       component.NewText("8000/TCP, 8888/UDP"),
 		"Age":         component.NewTimestamp(now),
-		"Selector":    component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
+		"Selector":    component.NewSelectors([]component.Selector{component.NewLabelSelector("home", "myapp")}),
 	})
 
 	component.AssertEqual(t, expected, got)
@@ -108,7 +108,7 @@ func Test_ServiceConfiguration(t *testing.T) {
 			Ports: []corev1.ServicePort{
 				{Name: "http", Port: 8080},
 			},
-			Selector:        map[string]string{"app": "app1"},
+			Selector:        map[string]string{"home": "app1"},
 			SessionAffinity: corev1.ServiceAffinityNone,
 			Type:            corev1.ServiceTypeClusterIP,
 		},
@@ -127,7 +127,7 @@ func Test_ServiceConfiguration(t *testing.T) {
 			expected: component.NewSummary("Configuration", []component.SummarySection{
 				{
 					Header:  "Selectors",
-					Content: component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "app1")}),
+					Content: component.NewSelectors([]component.Selector{component.NewLabelSelector("home", "app1")}),
 				},
 				{
 					Header:  "Type",

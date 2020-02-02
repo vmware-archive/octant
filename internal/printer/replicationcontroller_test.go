@@ -53,7 +53,7 @@ func Test_ReplicationControllerListHandler(t *testing.T) {
 		},
 		Spec: corev1.ReplicationControllerSpec{
 			Selector: map[string]string{
-				"app": "myapp",
+				"home": "myapp",
 			},
 			Template: &corev1.PodTemplateSpec{
 				Spec: corev1.PodSpec{
@@ -91,7 +91,7 @@ func Test_ReplicationControllerListHandler(t *testing.T) {
 		"Status":     component.NewText("0/3"),
 		"Age":        component.NewTimestamp(validReplicationControllerCreationTime),
 		"Containers": containers,
-		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
+		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("home", "myapp")}),
 	})
 
 	component.AssertEqual(t, expected, got)

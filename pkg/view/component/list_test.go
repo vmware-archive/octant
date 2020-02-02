@@ -37,7 +37,7 @@ func Test_List_Marshal(t *testing.T) {
 						&Labels{
 							Config: LabelsConfig{
 								Labels: map[string]string{
-									"app": "nginx",
+									"home": "nginx",
 								},
 							},
 						},
