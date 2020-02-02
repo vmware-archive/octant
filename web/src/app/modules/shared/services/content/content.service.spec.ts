@@ -15,7 +15,7 @@ import {
   BackendService,
   WebsocketService,
 } from '../websocket/websocket.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import {
   Filter,
   LabelFilterService,

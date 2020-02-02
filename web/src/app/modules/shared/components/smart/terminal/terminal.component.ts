@@ -2,27 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import {
-  Component,
-  ViewChild,
-  OnInit,
-  OnDestroy,
   AfterViewInit,
-  Input,
+  Component,
   ElementRef,
-  ViewEncapsulation,
-  HostBinding,
   HostListener,
+  Input,
+  OnDestroy,
+  ViewChild,
+  ViewEncapsulation,
 } from '@angular/core';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import {
-  TerminalOutputStreamer,
   TerminalOutputService,
+  TerminalOutputStreamer,
 } from 'src/app/modules/shared/terminals/terminals.service';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import {
-  TerminalView,
   TerminalDetail,
+  TerminalView,
 } from 'src/app/modules/shared/models/content';
 import { WebsocketService } from '../../../services/websocket/websocket.service';
 import { SliderService } from 'src/app/modules/shared/slider/slider.service';

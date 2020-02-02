@@ -1,7 +1,7 @@
 // Copyright (c) 2019 the Octant contributors. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Navigation, NavigationChild } from '../../../models/navigation';
 import { IconService } from '../../../../shared/services/icon/icon.service';

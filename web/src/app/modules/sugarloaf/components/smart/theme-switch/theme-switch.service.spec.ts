@@ -1,7 +1,7 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { TestBed, inject } from '@angular/core/testing';
+import { inject, TestBed } from '@angular/core/testing';
 import { ThemeService } from './theme-switch.service';
 import { DOCUMENT } from '@angular/common';
 

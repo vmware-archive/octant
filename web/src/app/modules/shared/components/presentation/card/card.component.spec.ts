@@ -1,15 +1,15 @@
 import {
   async,
   ComponentFixture,
-  TestBed,
   fakeAsync,
+  TestBed,
   tick,
 } from '@angular/core/testing';
 
 import { CardComponent } from './card.component';
 import { OverviewModule } from '../../../../../modules/overview/overview.module';
-import { CardView, TextView, Action } from '../../../models/content';
-import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
+import { Action, CardView, TextView } from '../../../models/content';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { SimpleChange } from '@angular/core';
 import { ViewService } from '../../../services/view/view.service';
 import { viewServiceStub } from 'src/app/testing/view-service.stub';

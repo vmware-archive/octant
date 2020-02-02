@@ -18,10 +18,7 @@ import { NavigationComponent } from '../navigation/navigation.component';
 import { ContextSelectorComponent } from '../../../../shared/components/smart/context-selector/context-selector.component';
 import { DefaultPipe } from '../../../../shared/pipes/default/default.pipe';
 import { NgSelectModule } from '@ng-select/ng-select';
-import {
-  BackendService,
-  WebsocketService,
-} from '../../../../shared/services/websocket/websocket.service';
+import { WebsocketService } from '../../../../shared/services/websocket/websocket.service';
 import { WebsocketServiceMock } from '../../../../shared/services/websocket/mock';
 import { ClarityIcons } from '@clr/icons';
 import { ThemeSwitchButtonComponent } from '../theme-switch/theme-switch-button.component';

@@ -3,11 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ExtensionView, View } from 'src/app/modules/shared/models/content';
 import { SlideInOutAnimation } from './slide-in-out.animation';
 import { ResizeEvent } from 'angular-resizable-element';
-import { OnChanges, SimpleChanges } from '@angular/core';
 import { SliderService } from 'src/app/modules/shared/slider/slider.service';
 
 @Component({

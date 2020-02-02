@@ -11,11 +11,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-import {
-  CardListView,
-  GraphvizView,
-  View,
-} from 'src/app/modules/shared/models/content';
+import { GraphvizView, View } from 'src/app/modules/shared/models/content';
 import { D3GraphvizService } from '../../../services/d3/d3graphviz.service';
 
 @Component({

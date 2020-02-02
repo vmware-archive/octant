@@ -5,7 +5,7 @@
 
 import { inject, TestBed } from '@angular/core/testing';
 
-import { BackendService, WebsocketService } from './websocket.service';
+import { WebsocketService } from './websocket.service';
 import {
   NotifierService,
   NotifierSession,

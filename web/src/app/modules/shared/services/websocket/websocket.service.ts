@@ -4,7 +4,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import {
   NotifierService,
   NotifierSession,

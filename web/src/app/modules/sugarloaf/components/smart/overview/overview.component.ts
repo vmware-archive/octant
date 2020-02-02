@@ -25,12 +25,10 @@ import {
 } from 'src/app/modules/shared/models/content';
 import { IconService } from '../../../../shared/services/icon/icon.service';
 import { ViewService } from '../../../../shared/services/view/view.service';
-import { combineLatest } from 'rxjs';
 import { untilDestroyed } from 'ngx-take-until-destroy';
 import { ContentService } from '../../../../shared/services/content/content.service';
 import { WebsocketService } from '../../../../shared/services/websocket/websocket.service';
 import { KubeContextService } from '../../../../shared/services/kube-context/kube-context.service';
-import { take } from 'rxjs/operators';
 import isEqual from 'lodash/isEqual';
 
 interface LocationCallbackOptions {

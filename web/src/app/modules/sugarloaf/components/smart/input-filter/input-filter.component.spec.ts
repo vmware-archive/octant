@@ -6,8 +6,8 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { InputFilterComponent } from './input-filter.component';
 import {
-  LabelFilterService,
   Filter,
+  LabelFilterService,
 } from 'src/app/modules/shared/services/label-filter/label-filter.service';
 import { BehaviorSubject } from 'rxjs';
 import { By } from '@angular/platform-browser';

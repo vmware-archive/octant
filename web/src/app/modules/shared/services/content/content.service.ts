@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { WebsocketService } from '../websocket/websocket.service';
 import { BehaviorSubject } from 'rxjs';
 import { Content, ContentResponse } from '../../models/content';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { Params, Router } from '@angular/router';
 import {
   Filter,
   LabelFilterService,

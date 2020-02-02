@@ -4,12 +4,12 @@
  */
 
 import {
-  AnimationTriggerMetadata,
-  trigger,
-  state,
   animate,
-  transition,
+  AnimationTriggerMetadata,
+  state,
   style,
+  transition,
+  trigger,
 } from '@angular/animations';
 
 // This value should match the value used for the Status View styles in 'status.component.scss'
