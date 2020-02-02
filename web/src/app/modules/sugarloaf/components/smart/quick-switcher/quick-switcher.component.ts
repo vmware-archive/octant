@@ -3,17 +3,17 @@
 //
 import {
   Component,
-  OnInit,
-  OnDestroy,
-  HostListener,
   ElementRef,
+  HostListener,
+  OnDestroy,
+  OnInit,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { Navigation, NavigationChild } from '../../../models/navigation';
 import { NavigationService } from '../../../../shared/services/navigation/navigation.service';
 import { untilDestroyed } from 'ngx-take-until-destroy';
-import { distinctUntilChanged, debounceTime } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 const emptyNavigation: Navigation = {
   sections: [],

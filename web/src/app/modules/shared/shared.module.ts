@@ -6,7 +6,6 @@ import { ClarityModule } from '@clr/angular';
 import { TitleComponent } from './components/presentation/title/title.component';
 import { AlertComponent } from './components/presentation/alert/alert.component';
 import { AnnotationsComponent } from './components/presentation/annotations/annotations.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CardComponent } from './components/presentation/card/card.component';
 import { CardListComponent } from './components/presentation/card-list/card-list.component';
 import { CodeComponent } from './components/presentation/code/code.component';

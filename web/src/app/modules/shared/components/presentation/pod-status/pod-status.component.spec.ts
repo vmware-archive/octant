@@ -5,7 +5,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HeptagonGridComponent } from '../heptagon-grid/heptagon-grid.component';
 import { PodStatusComponent } from './pod-status.component';
-import { Input, Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { PodStatus } from '../../../models/pod-status';
 
 @Component({

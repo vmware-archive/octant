@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { untilDestroyed } from 'ngx-take-until-destroy';
 import { NamespaceService } from 'src/app/modules/shared/services/namespace/namespace.service';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';

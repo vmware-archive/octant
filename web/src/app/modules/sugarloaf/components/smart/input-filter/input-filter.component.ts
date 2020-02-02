@@ -4,10 +4,10 @@
 
 import {
   Component,
-  HostListener,
   ElementRef,
-  OnInit,
+  HostListener,
   OnDestroy,
+  OnInit,
 } from '@angular/core';
 import { untilDestroyed } from 'ngx-take-until-destroy';
 import {

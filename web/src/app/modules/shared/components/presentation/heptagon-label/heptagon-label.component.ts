@@ -3,14 +3,13 @@
 //
 
 import {
+  AfterViewChecked,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   Input,
   ViewChild,
-  AfterViewInit,
-  ChangeDetectorRef,
-  AfterViewChecked,
-  ChangeDetectionStrategy,
 } from '@angular/core';
 import { PodStatus } from '../../../models/pod-status';
 import { Point } from '../../../models/point';

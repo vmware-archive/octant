@@ -5,7 +5,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { OverviewModule } from '../../../../../modules/overview/overview.module';
 import { ObjectStatusComponent } from './object-status.component';
-import { ContentSwitcherComponent } from '../content-switcher/content-switcher.component';
 
 describe('ObjectStatusComponent', () => {
   let component: ObjectStatusComponent;

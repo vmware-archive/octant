@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ButtonGroupView, Confirmation } from '../../../models/content';
 import { ActionService } from '../../../services/action/action.service';
 

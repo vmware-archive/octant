@@ -2,11 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-
-import { OverviewComponent } from './modules/sugarloaf/components/smart/overview/overview.component';
 
 export const appRoutes: Routes = [
   {

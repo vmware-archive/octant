@@ -1,11 +1,4 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnChanges,
-  OnInit,
-  SimpleChanges,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { ClrDatagridFilter, ClrDatagridFilterInterface } from '@clr/angular';
 import { Subject } from 'rxjs';
 import { TableFilter, TableRow, TextView } from '../../../models/content';
