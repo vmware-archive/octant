@@ -30,6 +30,7 @@ import { ContentService } from '../../../../shared/services/content/content.serv
 import { WebsocketService } from '../../../../shared/services/websocket/websocket.service';
 import { KubeContextService } from '../../../../shared/services/kube-context/kube-context.service';
 import isEqual from 'lodash/isEqual';
+import { filter, pairwise } from 'rxjs/operators';
 
 interface LocationCallbackOptions {
   segments: UrlSegment[];
@@ -65,14 +66,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private contentService: ContentService,
     private websocketService: WebsocketService,
     private kubeContextService: KubeContextService
-  ) {
-    this.router.events.subscribe(data => {
-      if (data instanceof RoutesRecognized) {
-        console.log(`update`);
-        this.updatePath(data.url);
-      }
-    });
-  }
+  ) {}
 
   updatePath(url: string) {
     const tree = this.router.parseUrl(url);
@@ -82,13 +76,20 @@ export class OverviewComponent implements OnInit, OnDestroy {
     if (primary) {
       segments = primary.segments;
     }
-    console.log(`primary`, primary);
 
     this.handlePathChange(segments, tree.queryParams, false);
   }
 
   ngOnInit() {
-    console.log('initial');
+    this.router.events
+      .pipe(
+        filter(e => e instanceof RoutesRecognized),
+        pairwise()
+      )
+      .subscribe(([_, current]: [RoutesRecognized, RoutesRecognized]) => {
+        this.updatePath(current.url);
+      });
+
     this.updatePath(this.router.routerState.snapshot.url);
 
     this.contentService.current
@@ -133,14 +134,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
         return;
       }
 
-      this.previousUrl = currentPath;
       this.previousParams = queryParams;
-      if (!currentPath) {
-        // TODO: figure out why currentPath is undefined
-        return;
-      }
-      console.log(`setting content path to`, { currentPath });
-
       this.resetView();
       this.contentService.setContentPath(currentPath, queryParams);
       this.scrollTarget.nativeElement.scrollTop = 0;
