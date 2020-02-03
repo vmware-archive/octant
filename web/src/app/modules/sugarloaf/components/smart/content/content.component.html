@@ -1,0 +1,13 @@
+<div #scrollTarget class="content-component">
+    <ng-container *ngIf="hasReceivedContent">
+        <ng-container *ngIf="hasTabs; then withTabs; else withoutTabs"></ng-container>
+        <ng-template #withTabs>
+            <app-object-tabs [iconName]="iconName" [title]="title" [views]="views"></app-object-tabs>
+        </ng-template>
+        <ng-template #withoutTabs>
+            <app-content-switcher [view]="singleView"></app-content-switcher>
+        </ng-template>
+        <app-slider-view [view]="extView"></app-slider-view>
+    </ng-container>
+</div>
+

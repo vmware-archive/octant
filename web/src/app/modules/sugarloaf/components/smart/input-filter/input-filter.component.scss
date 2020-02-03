@@ -1,0 +1,101 @@
+/* Copyright (c) 2019 the Octant contributors. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+@import '../../../../../../styles';
+
+.input-filter {
+  // Dropdown's color variables for Light Theme.
+  :host-context(body) {
+    --tags-bg-color: white;
+    --tags-border-color: #ccc;
+    --tags-font-color: black;
+    --filterTag-link-color: #0079b8;
+  }
+  
+  // Dropdown's color variables for Dark Theme.
+  :host-context(body.dark) {
+    --tags-bg-color: #23353d;
+    --tags-border-color: black;
+    --tags-font-color: #adbbc4;
+    --filterTag-link-color: #49afd9;
+  }
+
+  &-control {
+    position: relative;
+
+    .text-input {
+      color: white;
+      width: 100%;
+      display: block;
+    }
+
+    & ::ng-deep .clr-form-control {
+      margin-top: 0.75rem;
+
+      & .clr-control-container {
+        width: 100%;
+      }
+    }
+
+    & .down-icon {
+      position: absolute;
+      right: 0;
+      top: 4px;
+      cursor: pointer;
+    }
+  }
+
+  &-tags {
+    background: var(--tags-bg-color);
+    border: 1px solid var(--tags-border-color);
+    border-bottom-left-radius: 0.125rem;
+    border-bottom-right-radius: 0.125rem;
+    box-shadow: 0 1px 0.125rem rgba(0, 0, 0, 0.5);
+    padding: 8px 8px 4px 8px;
+
+    .input-filter-empty {
+      color: var(--tags-font-color);
+      font-size: 12px;
+    }
+
+    &-list {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+
+      .input-filter-tag {
+        @include pill(var(--label-color));
+        text-align: center;
+        margin: 0 4px 4px 0;
+        padding: 0 8px;
+        max-width: 100%;
+        display: flex;
+
+        &-text {
+          flex: 1;
+          overflow-y: auto;
+          margin-right: 4px;
+        }
+
+        &-remove {
+          cursor: pointer;
+          height: 23px;
+          width: 12px;
+        }
+      }
+    }
+
+    .clear-all {
+      text-align: center;
+      padding-right: 4px;
+      font-size: 12px;
+      color: var(--filterTag-link-color);
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
