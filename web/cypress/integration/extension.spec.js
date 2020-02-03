@@ -24,15 +24,18 @@ describe('Extension', () => {
         .contains('Execute Command')
         .click();
 
-      cy.get('[class="clr-input ng-untouched ng-pristine ng-valid"]').type('bash{enter}');
+      cy.get('[class="clr-input ng-untouched ng-pristine ng-valid"]').type(
+        'bash{enter}'
+      );
 
-      cy.get('[class="tab-button btn btn-link nav-link active"]').should('contain', ' bash ');
+      cy.get('[class="tab-button btn btn-link nav-link active"]').should(
+        'contain',
+        ' bash '
+      );
 
-      cy.exec(
-        'kubectl delete pod logme --namespace ' + result.stdout
-      )
+      cy.exec('kubectl delete pod logme --namespace ' + result.stdout)
         .its('stdout')
         .should('contain', 'deleted');
     });
   });
-})
+});
