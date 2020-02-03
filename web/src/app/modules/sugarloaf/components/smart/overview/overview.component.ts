@@ -97,21 +97,6 @@ export class OverviewComponent implements OnInit, OnDestroy {
       .subscribe(contentResponse => {
         this.setContent(contentResponse);
       });
-
-    // this.withCurrentLocation(options => {
-    //   this.handlePathChange(options.segments, options.params, false);
-    // });
-
-    this.websocketService.reconnected.subscribe(() => {
-      // this.updatePath(this.router.routerState.snapshot.url);
-      // this.kubeContextService.select
-      //   this.kubeContextService.selected().getValue()
-      // );
-      // this.withCurrentLocation(options => {
-      //   this.handlePathChange(options.segments, options.params, true);
-      //   this.kubeContextService.select({ name: options.currentContext });
-      // }, true);
-    });
   }
 
   ngOnDestroy() {
