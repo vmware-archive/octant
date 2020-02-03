@@ -1,3 +1,9 @@
+/*
+ *  Copyright (c) 2020 the Octant contributors. All Rights Reserved.
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ */
+
 import { Injectable } from '@angular/core';
 import { WebsocketService } from '../websocket/websocket.service';
 import { BehaviorSubject } from 'rxjs';
@@ -69,10 +75,6 @@ export class ContentService {
   setContentPath(contentPath: string, params: Params) {
     if (!contentPath) {
       contentPath = '';
-    }
-
-    if (this.previousContentPath === contentPath) {
-      return;
     }
 
     const payload = { contentPath, params };
