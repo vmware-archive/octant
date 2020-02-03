@@ -7,7 +7,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Params, Router, RouterEvent } from '@angular/router';
 import { ActivatedRouteStub } from 'src/app/testing/activated-route-stub';
-import { OverviewComponent } from './overview.component';
+import { ContentComponent } from './content.component';
 import { BehaviorSubject, ReplaySubject } from 'rxjs';
 import { ContentResponse } from '../../../../shared/models/content';
 import { ContentService } from '../../../../shared/services/content/content.service';
@@ -23,8 +23,8 @@ class ContentServiceMock {
 }
 
 describe('OverviewComponent', () => {
-  let component: OverviewComponent;
-  let fixture: ComponentFixture<OverviewComponent>;
+  let component: ContentComponent;
+  let fixture: ComponentFixture<ContentComponent>;
   let eventSubject: ReplaySubject<RouterEvent>;
   let routerMock;
   let contentSpy;
@@ -63,7 +63,7 @@ describe('OverviewComponent', () => {
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(OverviewComponent);
+    fixture = TestBed.createComponent(ContentComponent);
 
     const debugElement = fixture.debugElement;
     const contentService = debugElement.injector.get(ContentService);

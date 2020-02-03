@@ -71,6 +71,10 @@ export class ContentService {
       contentPath = '';
     }
 
+    if (this.previousContentPath === contentPath) {
+      return;
+    }
+
     const payload = { contentPath, params };
     this.websocketService.sendMessage('setContentPath', payload);
   }

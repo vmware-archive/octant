@@ -41,11 +41,11 @@ interface LocationCallbackOptions {
 
 @Component({
   selector: 'app-overview',
-  templateUrl: './overview.component.html',
-  styleUrls: ['./overview.component.scss'],
+  templateUrl: './content.component.html',
+  styleUrls: ['./content.component.scss'],
   changeDetection: ChangeDetectionStrategy.Default,
 })
-export class OverviewComponent implements OnInit, OnDestroy {
+export class ContentComponent implements OnInit, OnDestroy {
   @ViewChild('scrollTarget', { static: true }) scrollTarget: ElementRef;
   hasTabs = false;
   hasReceivedContent = false;

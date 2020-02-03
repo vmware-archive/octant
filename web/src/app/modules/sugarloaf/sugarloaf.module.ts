@@ -15,13 +15,13 @@ import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
 import { SharedModule } from '../shared/shared.module';
-import { OverviewComponent } from './components/smart/overview/overview.component';
+import { ContentComponent } from './components/smart/content/content.component';
 
 const routes: Routes = [
   {
     path: '',
     component: ContainerComponent,
-    children: [{ path: '**', component: OverviewComponent }],
+    children: [{ path: '**', component: ContentComponent }],
   },
 ];
 
@@ -40,7 +40,7 @@ export class UnstripTrailingSlashLocation extends Location {
     InputFilterComponent,
     NotifierComponent,
     NavigationComponent,
-    OverviewComponent,
+    ContentComponent,
     QuickSwitcherComponent,
     ThemeSwitchButtonComponent,
   ],
