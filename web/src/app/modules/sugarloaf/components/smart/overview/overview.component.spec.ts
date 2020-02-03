@@ -5,38 +5,58 @@
  */
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router, RouterEvent } from '@angular/router';
 import { ActivatedRouteStub } from 'src/app/testing/activated-route-stub';
-
-import { OverviewModule } from '../../../../overview/overview.module';
 import { OverviewComponent } from './overview.component';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, ReplaySubject } from 'rxjs';
 import { ContentResponse } from '../../../../shared/models/content';
 import { ContentService } from '../../../../shared/services/content/content.service';
 import { IconService } from '../../../../shared/services/icon/icon.service';
+import { SugarloafModule } from '../../../sugarloaf.module';
 
 class ContentServiceMock {
   current = new BehaviorSubject<ContentResponse>({
     content: { extensionComponent: null, viewComponents: [], title: [] },
   });
   defaultPath = new BehaviorSubject<string>('/path');
+  setContentPath = (contentPath: string, params: Params) => {};
 }
 
 describe('OverviewComponent', () => {
   let component: OverviewComponent;
   let fixture: ComponentFixture<OverviewComponent>;
+  let eventSubject: ReplaySubject<RouterEvent>;
+  let routerMock;
+  let contentSpy;
 
   beforeEach(async(() => {
-    const routerSpy = jasmine.createSpyObj('Router', [
-      'navigateByUrl',
-      'navigate',
-    ]);
+    eventSubject = new ReplaySubject<RouterEvent>(1);
+    routerMock = {
+      events: eventSubject.asObservable(),
+      routerState: {
+        snapshot: {
+          url: '/',
+        },
+      },
+      parseUrl: (_: string) => {
+        return {
+          root: {
+            children: {
+              primary: {
+                segments: ['foo', 'bar'],
+              },
+            },
+          },
+        };
+      },
+    };
     TestBed.configureTestingModule({
-      imports: [OverviewModule],
+      imports: [SugarloafModule],
       providers: [
         { provide: ActivatedRoute, useValue: new ActivatedRouteStub({}) },
-        { provide: Router, useValue: routerSpy },
+        { provide: Router, useValue: routerMock },
         { provide: ContentService, useClass: ContentServiceMock },
+
         IconService,
       ],
     }).compileComponents();
@@ -44,11 +64,21 @@ describe('OverviewComponent', () => {
 
   beforeEach(() => {
     fixture = TestBed.createComponent(OverviewComponent);
+
+    const debugElement = fixture.debugElement;
+    const contentService = debugElement.injector.get(ContentService);
+    contentSpy = spyOn(contentService, 'setContentPath');
+
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
   it('should create', () => {
+    const event = jasmine.createSpyObj('RoutesRecognized', ['url']);
+    eventSubject.next(event);
+
+    expect(contentSpy).toHaveBeenCalledWith('/', undefined);
+
     expect(component).toBeTruthy();
   });
 });

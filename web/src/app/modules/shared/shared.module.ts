@@ -56,6 +56,7 @@ import { DefaultPipe } from './pipes/default/default.pipe';
 import { RouterModule } from '@angular/router';
 import { ResizableModule } from 'angular-resizable-element';
 import { hljsLanguages } from './highlight';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [

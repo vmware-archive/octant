@@ -3,9 +3,8 @@
 //
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { OverviewModule } from '../../../../../modules/overview/overview.module';
 import { SelectorsComponent } from './selectors.component';
+import { SharedModule } from '../../../shared.module';
 
 describe('SelectorsComponent', () => {
   let component: SelectorsComponent;
@@ -13,7 +12,7 @@ describe('SelectorsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [OverviewModule],
+      imports: [SharedModule],
     }).compileComponents();
   }));
 

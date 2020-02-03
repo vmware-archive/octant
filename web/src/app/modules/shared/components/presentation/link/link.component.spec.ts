@@ -4,9 +4,8 @@
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-
-import { OverviewModule } from '../../../../../modules/overview/overview.module';
 import { LinkComponent } from './link.component';
+import { SharedModule } from '../../../shared.module';
 
 describe('LinkComponent', () => {
   let component: LinkComponent;
@@ -14,7 +13,7 @@ describe('LinkComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [OverviewModule, RouterTestingModule],
+      imports: [SharedModule, RouterTestingModule],
     }).compileComponents();
   }));
 

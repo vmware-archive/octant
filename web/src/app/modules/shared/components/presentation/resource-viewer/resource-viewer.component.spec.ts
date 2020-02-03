@@ -3,8 +3,8 @@
 //
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { OverviewModule } from '../../../../../modules/overview/overview.module';
 import { ResourceViewerComponent } from './resource-viewer.component';
+import { SharedModule } from '../../../shared.module';
 
 describe('ResourceViewerComponent', () => {
   let component: ResourceViewerComponent;
@@ -12,7 +12,7 @@ describe('ResourceViewerComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [OverviewModule],
+      imports: [SharedModule],
     }).compileComponents();
   }));
 

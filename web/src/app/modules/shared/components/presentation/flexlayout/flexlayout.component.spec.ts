@@ -3,9 +3,8 @@
 //
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { OverviewModule } from '../../../../../modules/overview/overview.module';
 import { FlexlayoutComponent } from './flexlayout.component';
+import { SharedModule } from '../../../shared.module';
 
 describe('FlexlayoutComponent', () => {
   let component: FlexlayoutComponent;
@@ -13,7 +12,7 @@ describe('FlexlayoutComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [OverviewModule],
+      imports: [SharedModule],
     }).compileComponents();
   }));
 

@@ -3,8 +3,8 @@
 //
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { OverviewModule } from '../../../../../modules/overview/overview.module';
 import { ObjectStatusComponent } from './object-status.component';
+import { SharedModule } from '../../../shared.module';
 
 describe('ObjectStatusComponent', () => {
   let component: ObjectStatusComponent;
@@ -12,7 +12,7 @@ describe('ObjectStatusComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [OverviewModule],
+      imports: [SharedModule],
     }).compileComponents();
   }));
 

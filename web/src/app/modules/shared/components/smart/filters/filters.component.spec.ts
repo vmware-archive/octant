@@ -11,8 +11,8 @@ import {
 } from 'src/app/modules/shared/services/label-filter/label-filter.service';
 import { ActivatedRouteStub } from 'src/app/testing/activated-route-stub';
 import { FormsModule } from '@angular/forms';
-import { OverviewModule } from '../../../../../modules/overview/overview.module';
 import { FiltersComponent } from './filters.component';
+import { SharedModule } from '../../../shared.module';
 
 const filterSubject = new BehaviorSubject<Filter[]>([]);
 const labelFilterService: Partial<LabelFilterService> = {
@@ -32,7 +32,7 @@ describe('FiltersComponent', () => {
     };
 
     TestBed.configureTestingModule({
-      imports: [OverviewModule, FormsModule],
+      imports: [SharedModule],
       providers: [
         { provide: Router, useValue: mockRouter },
         { provide: ActivatedRoute, useValue: activatedRouteStub },

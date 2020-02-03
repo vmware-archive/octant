@@ -3,9 +3,8 @@
 //
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { OverviewModule } from '../../../../../modules/overview/overview.module';
 import { TableComponent } from './table.component';
+import { SharedModule } from '../../../shared.module';
 
 describe('TableComponent', () => {
   let component: TableComponent;
@@ -13,7 +12,7 @@ describe('TableComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [OverviewModule],
+      imports: [SharedModule],
     }).compileComponents();
   }));
 

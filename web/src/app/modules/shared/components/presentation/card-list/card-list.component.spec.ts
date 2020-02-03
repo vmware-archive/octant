@@ -1,8 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardListComponent } from './card-list.component';
-import { OverviewModule } from '../../../../../modules/overview/overview.module';
 import { CardListView } from '../../../models/content';
+import { SharedModule } from '../../../shared.module';
 
 describe('CardListComponent', () => {
   let component: CardListComponent;
@@ -10,7 +10,7 @@ describe('CardListComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [OverviewModule],
+      imports: [SharedModule],
     }).compileComponents();
   }));
 

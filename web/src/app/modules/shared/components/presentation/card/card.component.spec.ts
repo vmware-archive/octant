@@ -7,12 +7,12 @@ import {
 } from '@angular/core/testing';
 
 import { CardComponent } from './card.component';
-import { OverviewModule } from '../../../../../modules/overview/overview.module';
 import { Action, CardView, TextView } from '../../../models/content';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { SimpleChange } from '@angular/core';
 import { ViewService } from '../../../services/view/view.service';
 import { viewServiceStub } from 'src/app/testing/view-service.stub';
+import { SharedModule } from '../../../shared.module';
 
 describe('CardComponent', () => {
   let component: CardComponent;
@@ -29,7 +29,7 @@ describe('CardComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [OverviewModule, ReactiveFormsModule],
+      imports: [SharedModule],
       providers: [
         { provide: FormBuilder, useValue: formBuilder },
         { provide: ViewService, useValue: viewServiceStub },
