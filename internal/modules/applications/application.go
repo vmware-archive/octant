@@ -8,7 +8,7 @@ package applications
 import (
 	"context"
 	"fmt"
-	"path/filepath"
+	"path"
 	"sort"
 
 	"github.com/pkg/errors"
@@ -71,7 +71,7 @@ func (a *application) Title() string {
 }
 
 func (a *application) Path(prefix, namespace string) string {
-	return filepath.Join("/", prefix, "namespace", namespace, a.Name, a.Instance, a.Version)
+	return path.Join("/", prefix, "namespace", namespace, a.Name, a.Instance, a.Version)
 }
 
 func listApplications(ctx context.Context, objectStore store.Store, namespace string) ([]application, error) {

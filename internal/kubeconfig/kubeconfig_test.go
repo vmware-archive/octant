@@ -36,7 +36,7 @@ func TestFSLoader_Load(t *testing.T) {
 
 	l := NewFSLoader()
 
-	kc, err := l.Load(strings.Join(paths, ":"))
+	kc, err := l.Load(strings.Join(paths, string(os.PathListSeparator)))
 	require.NoError(t, err)
 
 	expected := &KubeConfig{

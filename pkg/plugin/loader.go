@@ -22,7 +22,7 @@ const configDir = "octant"
 // Config is configuration for the plugin manager.
 type Config interface {
 	// PluginDirs returns the location of the plugin directories.
-	PluginDirs() ([]string, error)
+	PluginDirs(string) ([]string, error)
 	// Home returns the user's home directory.
 	Home() string
 	// Fs is the afero filesystem
@@ -32,20 +32,19 @@ type Config interface {
 type defaultConfig struct {
 	fs     afero.Fs
 	homeFn func() string
+	os     string
 }
 
 var (
 	// DefaultConfig is the default plugin manager configuration.
-	DefaultConfig = &defaultConfig{}
+	DefaultConfig = &defaultConfig{os: runtime.GOOS}
 )
 
 var _ Config = (*defaultConfig)(nil)
 
 // PluginDirs returns the plugin directories. Current only works on macOS and Linux
 // and not in a container.
-func (c *defaultConfig) PluginDirs() ([]string, error) {
-	home := c.Home()
-
+func (c *defaultConfig) PluginDirs(home string) ([]string, error) {
 	if home == "" {
 		// home could be blank if running in a container, so bail out...
 		return []string{}, errors.Errorf("running dash in a container is not yet supported: No $HOME env var")
@@ -53,7 +52,7 @@ func (c *defaultConfig) PluginDirs() ([]string, error) {
 
 	defaultDir := filepath.Join(home, ".config", configDir, "plugins")
 
-	if runtime.GOOS == "windows" || viper.GetString("xdg-config-home") != "" {
+	if c.os == "windows" || viper.GetString("xdg-config-home") != "" {
 		defaultDir = filepath.Join(home, configDir, "plugins")
 	}
 
@@ -68,7 +67,7 @@ func (c *defaultConfig) PluginDirs() ([]string, error) {
 func (c *defaultConfig) Home() string {
 	if c.homeFn == nil {
 		c.homeFn = func() string {
-			switch runtime.GOOS {
+			switch c.os {
 			case "windows":
 				return viper.GetString("local-app-data")
 
@@ -101,7 +100,7 @@ func AvailablePlugins(config Config) ([]string, error) {
 		return nil, errors.New("config is nil")
 	}
 
-	dirs, err := config.PluginDirs()
+	dirs, err := config.PluginDirs(config.Home())
 	if err != nil {
 		return nil, errors.Wrap(err, "get plugin directory")
 	}
