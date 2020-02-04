@@ -1,21 +1,22 @@
-name: Integrate
+name: Verify generated code
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+    - master
+    - release-*
+  pull_request:
+    branches:
+    - master
+    - release-*
 jobs:
-  test:
-    strategy:
-      matrix:
-        go-version:
-          - 1.13.x
-        platform: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.platform }}
-    name: Test ${{ matrix.platform }}
+  verify_generated:
+    name: Verify generated code
+    runs-on: ubuntu-latest
     steps:
       - name: Install Go
         uses: actions/setup-go@v1
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: 1.13.x
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Set GOPATH

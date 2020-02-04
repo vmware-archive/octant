@@ -1,0 +1,41 @@
+name: lint
+on:
+  push:
+    branches:
+    - master
+    - release-*
+  pull_request:
+    branches:
+    - master
+    - release-*
+
+jobs:
+  go_linter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v1
+        with:
+          go-version: 1.13.x
+      - uses: actions/checkout@v2
+      - name: Set GOPATH
+        # temporary fix
+        # see https://github.com/actions/setup-go/issues/14
+        run: |
+          echo "##[set-env name=GOPATH;]$(dirname $GITHUB_WORKSPACE)"
+          echo "##[add-path]$(dirname $GITHUB_WORKSPACE)/bin"
+        shell: bash
+      - name: go vet
+        env:
+          GOFLAGS: -mod=vendor
+        run: |
+          go run build.go vet
+  eslint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v1.1.0
+      - uses: actions/checkout@v2
+      - name: eslint
+        run: |
+          cd web
+          npm ci
+          npm run lint

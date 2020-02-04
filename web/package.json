@@ -70,8 +70,6 @@
     "@types/node": "~8.9.4",
     "@types/ws": "^6.0.4",
     "codelyzer": "^5.2.0",
-    "cypress": "^3.7.0",
-    "cypress-plugin-retries": "^1.5.0",
     "dayjs": "^1.8.19",
     "jasmine-core": "~2.99.1",
     "jasmine-spec-reporter": "~4.2.1",
