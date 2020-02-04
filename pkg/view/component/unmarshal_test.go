@@ -22,6 +22,19 @@ func Test_unmarshal(t *testing.T) {
 		expected   Component
 	}{
 		{
+			name:       "annotations",
+			configFile: "config_annotations.json",
+			objectType: typeAnnotations,
+			expected: &Annotations{
+				base: newBase(typeAnnotations, nil),
+				Config: AnnotationsConfig{
+					map[string]string{
+						"foo": "bar",
+					},
+				},
+			},
+		},
+		{
 			name:       "cardList",
 			configFile: "config_card_list.json",
 			objectType: typeCardList,
@@ -133,6 +146,18 @@ func Test_unmarshal(t *testing.T) {
 					},
 				},
 				base: newBase(typeList, nil),
+			},
+		},
+		{
+			name:       "logs",
+			configFile: "config_logs.json",
+			objectType: typeLogs,
+			expected: &Logs{
+				Config: LogsConfig{
+					Namespace:  "test",
+					Name:       "nginx-deployment-7cb4fc6c56-29pbw",
+					Containers: []string{"nginx"},
+				},
 			},
 		},
 		{

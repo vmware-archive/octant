@@ -16,6 +16,11 @@ func unmarshal(to TypedObject) (Component, error) {
 	var err error
 
 	switch to.Metadata.Type {
+	case typeAnnotations:
+		t := &Annotations{base: base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal annotations config")
+		o = t
 	case typeCard:
 		t := &Card{base: base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
@@ -39,7 +44,7 @@ func unmarshal(to TypedObject) (Component, error) {
 	case typeFlexLayout:
 		t := &FlexLayout{base: base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
-			"unmarshal expressionSelector config")
+			"unmarshal flexlayout config")
 		o = t
 	case typeGraphviz:
 		t := &Graphviz{base: base{Metadata: to.Metadata}}
@@ -75,6 +80,11 @@ func unmarshal(to TypedObject) (Component, error) {
 		t := &List{base: base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal list config")
+		o = t
+	case typeLogs:
+		t := &Logs{base: base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal logs config")
 		o = t
 	case typeQuadrant:
 		t := &Quadrant{base: base{Metadata: to.Metadata}}
