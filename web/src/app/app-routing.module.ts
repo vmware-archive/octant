@@ -5,18 +5,20 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
+const denaliModule = () =>
+  import('./modules/denali/denali.module').then(m => m.DenaliModule);
+
+const sugarloafModule = () =>
+  import('./modules/sugarloaf/sugarloaf.module').then(m => m.SugarloafModule);
+
 export const appRoutes: Routes = [
   {
     path: 'denali',
-    loadChildren: () =>
-      import('./modules/denali/denali.module').then(m => m.DenaliModule),
+    loadChildren: denaliModule,
   },
   {
     path: '**',
-    loadChildren: () =>
-      import('./modules/sugarloaf/sugarloaf.module').then(
-        m => m.SugarloafModule
-      ),
+    loadChildren: sugarloafModule,
   },
 ];
 

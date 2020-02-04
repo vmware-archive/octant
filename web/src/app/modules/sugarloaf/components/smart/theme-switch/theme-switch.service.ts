@@ -4,6 +4,31 @@
 import { Inject, Injectable } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 
+export type ThemeType = 'light' | 'dark';
+
+export interface Theme {
+  type: ThemeType;
+  assetPath: string;
+}
+
+/**
+ * Dark theme
+ */
+export const darkTheme: Theme = {
+  type: 'dark',
+  assetPath: 'assets/css/clr-ui-dark.min.css',
+};
+
+/**
+ * Light theme
+ */
+export const lightTheme: Theme = {
+  type: 'light',
+  assetPath: 'assets/css/clr-ui.min.css',
+};
+
+export const defaultTheme = lightTheme;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -26,5 +51,10 @@ export class ThemeService {
 
       head.appendChild(style);
     }
+  }
+
+  currentType() {
+    const themeType = localStorage.getItem('theme') as ThemeType;
+    return themeType || defaultTheme.type;
   }
 }

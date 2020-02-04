@@ -1,6 +1,7 @@
 {
   "name": "dash-frontend",
   "version": "0.0.0",
+  "main": "main.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -9,13 +10,18 @@
     "test:headless": "ng test --watch=false --browsers=ChromeHeadless",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "prettier": "prettier --write \"src/{app,environments,assets}/**/*{.ts,.js,.json,.css,.scss}\""
+    "prettier": "prettier --write \"src/{app,environments,assets}/**/*{.ts,.js,.json,.css,.scss}\"",
+    "electron:serve": "wait-on http-get://localhost:7777 && npm run electron:serve-tsc && electron . --serve",
+    "electron:serve-tsc": "tsc -p tsconfig-serve.json"
   },
   "prettier": {
     "trailingComma": "es5",
     "tabWidth": 2,
     "semi": true,
     "singleQuote": true
+  },
+  "build": {
+    "appId": "com.vmware.tanzu.octant"
   },
   "private": true,
   "dependencies": {
@@ -27,9 +33,9 @@
     "@angular/platform-browser": "^8.2.14",
     "@angular/platform-browser-dynamic": "^8.2.14",
     "@angular/router": "^8.2.14",
-    "@clr/angular": "^2.3.3",
-    "@clr/icons": "^2.3.3",
-    "@clr/ui": "^2.3.3",
+    "@clr/angular": "^2.3.6",
+    "@clr/icons": "^2.3.6",
+    "@clr/ui": "^2.3.6",
     "@ng-select/ng-select": "^2.20.5",
     "@types/cytoscape": "^3.8.6",
     "@webcomponents/custom-elements": "^1.3.1",
@@ -73,6 +79,9 @@
     "cypress": "^3.7.0",
     "cypress-plugin-retries": "^1.5.0",
     "dayjs": "^1.8.19",
+    "electron": "^8.0.0",
+    "electron-builder": "^22.3.2",
+    "electron-reload": "^1.5.0",
     "jasmine-core": "~2.99.1",
     "jasmine-spec-reporter": "~4.2.1",
     "karma": "^4.4.1",
@@ -87,6 +96,7 @@
     "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.1.0",
-    "typescript": "~3.5.3"
+    "typescript": "~3.5.3",
+    "wait-on": "^4.0.0"
   }
 }

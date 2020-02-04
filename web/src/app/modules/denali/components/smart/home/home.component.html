@@ -1,1 +1,21 @@
-<h2>denali home</h2>
+<div class="main-container">
+    <header class="header header-6">
+        <div class="branding">
+            <span class="title">Denali</span>
+        </div>
+    </header>
+    <div class="content-container">
+        <clr-vertical-nav [clrVerticalNavCollapsed]="true" [clrVerticalNavCollapsible]="true">
+            <a clrVerticalNavLink routerLink="workloads/" routerLinkActive="active" title="Workloads">
+                <clr-icon class="is-solid" clrVerticalNavIcon shape="applications"></clr-icon>
+                Workloads
+            </a>
+            <a clrVerticalNavLink routerLink="explorer/" routerLinkActive="active" title="Explorer">
+                <clr-icon class="is-solid" clrVerticalNavIcon shape="dashboard"></clr-icon>
+                Explorer
+            </a>
+        </clr-vertical-nav>
+        <div class="content-area">
+        </div>
+    </div>
+</div>

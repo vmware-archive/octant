@@ -2,9 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import { Component, OnInit, Renderer2 } from '@angular/core';
-import { ThemeService } from './theme-switch.service';
-
-type Theme = 'light' | 'dark';
+import {
+  darkTheme,
+  defaultTheme,
+  lightTheme,
+  Theme,
+  ThemeService,
+  ThemeType,
+} from './theme-switch.service';
 
 @Component({
   selector: 'app-theme-switch-button',
@@ -13,7 +18,7 @@ type Theme = 'light' | 'dark';
   providers: [ThemeService],
 })
 export class ThemeSwitchButtonComponent implements OnInit {
-  theme: Theme;
+  themeType: ThemeType;
 
   constructor(
     private themeService: ThemeService,
@@ -21,36 +26,34 @@ export class ThemeSwitchButtonComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.theme = (localStorage.getItem('theme') as Theme) || 'light';
+    this.themeType = this.themeService.currentType();
     this.loadTheme();
   }
 
   isLightThemeEnabled(): boolean {
-    return this.theme === 'light';
+    // TODO: this should be in the theme service.
+    return this.themeType === 'light';
   }
 
   loadTheme() {
-    this.themeService.loadCSS(
-      this.isLightThemeEnabled()
-        ? 'assets/css/clr-ui.min.css'
-        : 'assets/css/clr-ui-dark.min.css'
+    // TODO: this should be in the theme service.
+    const theme: Theme = this.isLightThemeEnabled() ? lightTheme : darkTheme;
+
+    this.themeService.loadCSS(theme.assetPath);
+
+    [darkTheme, lightTheme].forEach(t =>
+      this.renderer.removeClass(document.body, t.type)
     );
-    this.renderer.removeClass(
-      document.body,
-      this.isLightThemeEnabled() ? 'dark' : 'light'
-    );
-    this.renderer.addClass(
-      document.body,
-      this.isLightThemeEnabled() ? 'light' : 'dark'
-    );
+    this.renderer.addClass(document.body, theme.type);
   }
 
   switchTheme() {
+    // TODO: this should be in the theme service.
     if (this.isLightThemeEnabled()) {
-      this.theme = 'dark';
+      this.themeType = 'dark';
       localStorage.setItem('theme', 'dark');
     } else {
-      this.theme = 'light';
+      this.themeType = 'light';
       localStorage.setItem('theme', 'light');
     }
 
