@@ -1,0 +1,7 @@
+{ 
+    "namespace":"test",
+    "name":"nginx-deployment-7cb4fc6c56-29pbw",
+    "containers":[ 
+       "nginx"
+    ]
+ }
