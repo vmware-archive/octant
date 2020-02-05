@@ -46,9 +46,7 @@ func TestContentManager_GenerateContent(t *testing.T) {
 	moduleManager := moduleFake.NewMockManagerInterface(controller)
 	state := octantFake.NewMockState(controller)
 
-	state.EXPECT().GetContentPath().Return("/path")
-	state.EXPECT().GetNamespace().Return("default")
-	state.EXPECT().GetQueryParams().Return(params)
+	state.EXPECT().GetContentPath().Return("/path").AnyTimes()
 	state.EXPECT().OnContentPathUpdate(gomock.Any()).DoAndReturn(func(fn octant.ContentPathUpdateFunc) octant.UpdateCancelFunc {
 		fn("foo")
 		return func() {}
@@ -65,8 +63,8 @@ func TestContentManager_GenerateContent(t *testing.T) {
 
 	poller := api.NewSingleRunPoller()
 
-	contentGenerator := func(ctx context.Context, state octant.State) (component.ContentResponse, bool, error) {
-		return contentResponse, false, nil
+	contentGenerator := func(ctx context.Context, state octant.State) (api.Content, bool, error) {
+		return api.Content{Response: contentResponse}, false, nil
 	}
 	manager := api.NewContentManager(moduleManager, logger,
 		api.WithContentGenerator(contentGenerator),
