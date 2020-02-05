@@ -31,7 +31,7 @@ describe('ThemeSwitchButtonComponent', () => {
     spyOn(component, 'loadTheme');
     component.ngOnInit();
 
-    expect(component.theme).toBe('light');
+    expect(component.themeType).toBe('light');
     expect(component.loadTheme).toHaveBeenCalled();
   });
 
@@ -40,33 +40,33 @@ describe('ThemeSwitchButtonComponent', () => {
     localStorage.setItem('theme', 'dark');
     component.ngOnInit();
 
-    expect(component.theme).toBe('dark');
+    expect(component.themeType).toBe('dark');
     expect(component.loadTheme).toHaveBeenCalled();
   });
 
   it('should indicate if the light theme is active or not', () => {
-    component.theme = 'light';
+    component.themeType = 'light';
     expect(component.isLightThemeEnabled()).toBe(true);
 
-    component.theme = 'dark';
+    component.themeType = 'dark';
     expect(component.isLightThemeEnabled()).toBe(false);
   });
 
   it('should switch theme', () => {
-    component.theme = 'light';
+    component.themeType = 'light';
     component.switchTheme();
 
-    expect(component.theme).toBe('dark');
+    expect(component.themeType).toBe('dark');
     expect(localStorage.getItem('theme')).toBe('dark');
 
     component.switchTheme();
 
-    expect(component.theme).toBe('light');
+    expect(component.themeType).toBe('light');
     expect(localStorage.getItem('theme')).toBe('light');
   });
 
   it('should render the right button', () => {
-    component.theme = 'light';
+    component.themeType = 'light';
     fixture.detectChanges();
     const switchButton = fixture.debugElement.query(By.css('#switchButton'))
       .nativeElement;
