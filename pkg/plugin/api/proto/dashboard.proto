@@ -45,11 +45,16 @@ message CancelPortForwardRequest {
     string portForwardID = 1;
 }
 
+message NamespacesResponse {
+    repeated string namespaces = 1;
+}
+
 service Dashboard {
     rpc List(KeyRequest) returns (ListResponse);
     rpc Get(KeyRequest) returns (GetResponse);
     rpc Update(UpdateRequest) returns (UpdateResponse);
     rpc PortForward(PortForwardRequest) returns (PortForwardResponse);
     rpc CancelPortForward(CancelPortForwardRequest) returns (Empty);
+    rpc ListNamespaces(Empty) returns (NamespacesResponse);
     rpc ForceFrontendUpdate(Empty) returns(Empty);
 }

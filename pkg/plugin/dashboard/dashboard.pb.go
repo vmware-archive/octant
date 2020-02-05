@@ -8,8 +8,6 @@ import (
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
 	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -1070,41 +1068,6 @@ type PluginServer interface {
 	WatchAdd(context.Context, *WatchRequest) (*Empty, error)
 	WatchUpdate(context.Context, *WatchRequest) (*Empty, error)
 	WatchDelete(context.Context, *WatchRequest) (*Empty, error)
-}
-
-// UnimplementedPluginServer can be embedded to have forward compatible implementations.
-type UnimplementedPluginServer struct {
-}
-
-func (*UnimplementedPluginServer) Content(ctx context.Context, req *ContentRequest) (*ContentResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Content not implemented")
-}
-func (*UnimplementedPluginServer) HandleAction(ctx context.Context, req *HandleActionRequest) (*HandleActionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method HandleAction not implemented")
-}
-func (*UnimplementedPluginServer) Navigation(ctx context.Context, req *NavigationRequest) (*NavigationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Navigation not implemented")
-}
-func (*UnimplementedPluginServer) Register(ctx context.Context, req *RegisterRequest) (*RegisterResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
-}
-func (*UnimplementedPluginServer) Print(ctx context.Context, req *ObjectRequest) (*PrintResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Print not implemented")
-}
-func (*UnimplementedPluginServer) ObjectStatus(ctx context.Context, req *ObjectRequest) (*ObjectStatusResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ObjectStatus not implemented")
-}
-func (*UnimplementedPluginServer) PrintTab(ctx context.Context, req *ObjectRequest) (*PrintTabResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PrintTab not implemented")
-}
-func (*UnimplementedPluginServer) WatchAdd(ctx context.Context, req *WatchRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method WatchAdd not implemented")
-}
-func (*UnimplementedPluginServer) WatchUpdate(ctx context.Context, req *WatchRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method WatchUpdate not implemented")
-}
-func (*UnimplementedPluginServer) WatchDelete(ctx context.Context, req *WatchRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method WatchDelete not implemented")
 }
 
 func RegisterPluginServer(s *grpc.Server, srv PluginServer) {

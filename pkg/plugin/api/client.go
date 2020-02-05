@@ -175,6 +175,20 @@ func (c *Client) CancelPortForward(ctx context.Context, id string) {
 	}
 }
 
+// ListNamespaces lists namespaces.
+func (c *Client) ListNamespaces(ctx context.Context) (NamespacesResponse, error) {
+	client := c.DashboardConnection.Client()
+
+	resp, err := client.ListNamespaces(ctx, &proto.Empty{})
+	if err != nil {
+		return NamespacesResponse{}, err
+	}
+
+	return NamespacesResponse{
+		Namespaces: resp.Namespaces,
+	}, nil
+}
+
 // ForceFrontendUpdate forces the frontend to update itself.
 func (c *Client) ForceFrontendUpdate(ctx context.Context) error {
 	client := c.DashboardConnection.Client()
