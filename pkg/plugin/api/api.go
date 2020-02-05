@@ -10,9 +10,9 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/pkg/errors"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
-	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
 

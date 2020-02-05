@@ -145,9 +145,10 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 	frontendProxy := pluginAPI.FrontendProxy{}
 
 	pluginDashboardService := &pluginAPI.GRPCService{
-		ObjectStore:   appObjectStore,
-		PortForwarder: portForwarder,
-		FrontendProxy: frontendProxy,
+		ObjectStore:        appObjectStore,
+		PortForwarder:      portForwarder,
+		NamespaceInterface: nsClient,
+		FrontendProxy:      frontendProxy,
 	}
 
 	pluginManager, err := initPlugin(moduleManager, actionManger, pluginDashboardService)

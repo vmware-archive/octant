@@ -104,6 +104,10 @@ func (c *GRPCClient) HandleAction(ctx context.Context, payload action.Payload) e
 func (c *GRPCClient) Navigation(ctx context.Context) (navigation.Navigation, error) {
 	var entries navigation.Navigation
 
+	if ctx.Err() == context.Canceled {
+		return navigation.Navigation{}, nil
+	}
+
 	err := c.run(func() error {
 		req := &dashboard.NavigationRequest{}
 

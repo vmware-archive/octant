@@ -19,6 +19,7 @@ type Dashboard interface {
 	Update(ctx context.Context, object *unstructured.Unstructured) error
 	PortForward(ctx context.Context, req api.PortForwardRequest) (api.PortForwardResponse, error)
 	CancelPortForward(ctx context.Context, id string)
+	ListNamespaces(ctx context.Context) (api.NamespacesResponse, error)
 	ForceFrontendUpdate(ctx context.Context) error
 }
 

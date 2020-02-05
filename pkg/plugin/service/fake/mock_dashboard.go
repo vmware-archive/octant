@@ -107,6 +107,21 @@ func (mr *MockDashboardMockRecorder) List(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockDashboard)(nil).List), arg0, arg1)
 }
 
+// ListNamespaces mocks base method
+func (m *MockDashboard) ListNamespaces(arg0 context.Context) (api.NamespacesResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListNamespaces", arg0)
+	ret0, _ := ret[0].(api.NamespacesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListNamespaces indicates an expected call of ListNamespaces
+func (mr *MockDashboardMockRecorder) ListNamespaces(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNamespaces", reflect.TypeOf((*MockDashboard)(nil).ListNamespaces), arg0)
+}
+
 // PortForward mocks base method
 func (m *MockDashboard) PortForward(arg0 context.Context, arg1 api.PortForwardRequest) (api.PortForwardResponse, error) {
 	m.ctrl.T.Helper()

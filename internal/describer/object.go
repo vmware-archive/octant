@@ -128,6 +128,9 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 	hasTabError := false
 	for _, tfd := range d.tabFuncDescriptors {
 		if err := tfd.tabFunc(ctx, currentObject, cr, options); err != nil {
+			if ctx.Err() == context.Canceled {
+				continue
+			}
 			hasTabError = true
 			addErrorTab(ctx, tfd.name, err, cr)
 		}
