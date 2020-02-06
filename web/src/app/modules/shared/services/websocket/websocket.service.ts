@@ -11,7 +11,7 @@ import {
   NotifierSignalType,
 } from '../../notifier/notifier.service';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
-import { delay, retryWhen, tap } from 'rxjs/operators';
+import { delay, retryWhen, take, tap } from 'rxjs/operators';
 
 interface WebsocketPayload {
   type: string;
@@ -38,13 +38,13 @@ interface Alert {
   providedIn: 'root',
 })
 export class WebsocketService implements BackendService {
-  ws: WebSocket;
   handlers: { [key: string]: ({}) => void } = {};
   reconnected = new Subject<Event>();
 
   private notifierSession: NotifierSession;
   private subject: WebSocketSubject<unknown>;
   private connectSignalID = new BehaviorSubject<string>('');
+  private opened = false;
 
   constructor(notifierService: NotifierService) {
     this.notifierSession = notifierService.createSession();
@@ -76,6 +76,9 @@ export class WebsocketService implements BackendService {
   }
 
   open() {
+    if (this.opened) {
+      return;
+    }
     this.createWebSocket()
       .pipe(
         retryWhen(errors =>
@@ -93,22 +96,28 @@ export class WebsocketService implements BackendService {
       )
       .subscribe(
         data => {
-          this.connectSignalID
-            .subscribe(id => {
-              if (id !== '') {
-                this.notifierSession.removeAllSignals();
-                this.connectSignalID.next('');
-              }
-            })
-            .unsubscribe();
+          this.connectSignalID.pipe(take(1)).subscribe(id => {
+            if (id !== '') {
+              this.notifierSession.removeAllSignals();
+              this.connectSignalID.next('');
+            }
+          });
 
           this.parseWebsocketMessage(data);
         },
-        err => console.error(err)
+        err => console.error(err),
+        () => {
+          console.log('web socket is closing');
+        }
       );
+
+    this.opened = true;
   }
 
   close() {
+    if (!this.opened) {
+      this.opened = false;
+    }
     this.subject.unsubscribe();
   }
 

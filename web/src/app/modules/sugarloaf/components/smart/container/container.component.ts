@@ -55,11 +55,5 @@ export class ContainerComponent implements OnInit, OnDestroy {
     this.websocketService.open();
   }
 
-  closeSocket() {
-    this.websocketService.close();
-  }
-
-  ngOnDestroy(): void {
-    this.closeSocket();
-  }
+  ngOnDestroy(): void {}
 }

@@ -57,6 +57,7 @@ var _ OctantClient = (*WebsocketClient)(nil)
 // NewWebsocketClient creates an instance of WebsocketClient.
 func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *WebsocketClientManager, dashConfig config.Dash, actionDispatcher ActionDispatcher, id uuid.UUID) *WebsocketClient {
 	logger := dashConfig.Logger().With("component", "websocket-client", "client-id", id.String())
+	ctx = log.WithLoggerContext(ctx, logger)
 
 	ctx, cancel := context.WithCancel(ctx)
 
@@ -84,6 +85,8 @@ func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *Webs
 		client.RegisterHandler(handler)
 	}
 
+	logger.Debugf("created websocket client")
+
 	return client
 }
 
@@ -95,6 +98,7 @@ func (c *WebsocketClient) ID() string {
 func (c *WebsocketClient) readPump() {
 	defer func() {
 		c.isOpen = false
+		c.logger.Debugf("closing read pump")
 	}()
 
 	go func() {
@@ -180,6 +184,7 @@ func (c *WebsocketClient) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
+		c.logger.Debugf("closing write pump")
 	}()
 
 	done := false

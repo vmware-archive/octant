@@ -31,7 +31,18 @@ type ContentManagerOption func(manager *ContentManager)
 
 // ContentGenerateFunc is a function that generates content. It returns `rerun=true`
 // if the action should be be immediately rerun.
-type ContentGenerateFunc func(ctx context.Context, state octant.State) (component.ContentResponse, bool, error)
+type ContentGenerateFunc func(ctx context.Context, state octant.State) (Content, bool, error)
+
+type Content struct {
+	Response component.ContentResponse
+	Path     string
+}
+
+var (
+	emptyContent = Content{
+		Response: component.EmptyContentResponse,
+	}
+)
 
 // WithContentGenerator configures the content generate function.
 func WithContentGenerator(fn ContentGenerateFunc) ContentManagerOption {
@@ -77,7 +88,11 @@ var _ StateManager = (*ContentManager)(nil)
 
 // Start starts the manager.
 func (cm *ContentManager) Start(ctx context.Context, state octant.State, s OctantClient) {
+	logger := log.From(ctx)
+	logger.Debugf("starting content manager")
+
 	defer func() {
+		logger.Debugf("stopping content manager")
 		close(cm.updateContentCh)
 	}()
 
@@ -96,7 +111,7 @@ func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFu
 			return false
 		}
 
-		contentResponse, _, err := cm.contentGenerateFunc(ctx, state)
+		content, _, err := cm.contentGenerateFunc(ctx, state)
 		if err != nil {
 			var ae *oerrors.AccessError
 			if errors.As(err, &ae) {
@@ -112,14 +127,17 @@ func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFu
 		}
 
 		if ctx.Err() == nil {
-			s.Send(CreateContentEvent(contentResponse, state.GetNamespace(), contentPath, state.GetQueryParams()))
+			if content.Path == state.GetContentPath() {
+				s.Send(CreateContentEvent(content.Response, state.GetNamespace(), contentPath, state.GetQueryParams()))
+			}
+
 		}
 
 		return false
 	}
 }
 
-func (cm *ContentManager) generateContent(ctx context.Context, state octant.State) (component.ContentResponse, bool, error) {
+func (cm *ContentManager) generateContent(ctx context.Context, state octant.State) (Content, bool, error) {
 	contentPath := state.GetContentPath()
 	logger := cm.logger.With("contentPath", contentPath)
 
@@ -130,7 +148,7 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 
 	m, ok := cm.moduleManager.ModuleForContentPath(contentPath)
 	if !ok {
-		return component.EmptyContentResponse, false, fmt.Errorf("unable to find module for content path %q", contentPath)
+		return emptyContent, false, fmt.Errorf("unable to find module for content path %q", contentPath)
 	}
 	modulePath := strings.TrimPrefix(contentPath, m.Name())
 	options := module.ContentOptions{
@@ -141,13 +159,17 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 		if nfe, ok := err.(notFound); ok && nfe.NotFound() {
 			logger.Debugf("path not found, redirecting to parent")
 			state.SetContentPath(notFoundRedirectPath(contentPath))
-			return component.EmptyContentResponse, true, nil
+			return emptyContent, true, nil
 		} else {
-			return component.EmptyContentResponse, false, fmt.Errorf("generate content: %w", err)
+			return emptyContent, false, fmt.Errorf("generate content: %w", err)
 		}
 	}
 
-	return contentResponse, false, nil
+	content := Content{
+		Response: contentResponse,
+		Path:     contentPath,
+	}
+	return content, false, nil
 }
 
 // Handlers returns a slice of client request handlers.
@@ -199,6 +221,8 @@ func (cm *ContentManager) SetContentPath(state octant.State, payload action.Payl
 	if err := cm.SetQueryParams(state, payload); err != nil {
 		return fmt.Errorf("extract query params from payload: %w", err)
 	}
+
+	cm.logger.With("content-path", contentPath).Debugf("setting content path")
 
 	state.SetContentPath(contentPath)
 	return nil

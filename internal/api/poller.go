@@ -7,7 +7,7 @@ package api
 
 import (
 	"context"
-	"sync"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,6 +24,8 @@ type PollerFunc func(context.Context) bool
 
 // Poller is a poller. It runs an action.
 type Poller interface {
+	// Run runs `action` and delays `resetDuration` before starting again. If a message
+	// is sent to `ch`, it will cancel current work and restart `action`.
 	Run(ctx context.Context, ch <-chan struct{}, action PollerFunc, resetDuration time.Duration)
 }
 
@@ -38,7 +40,7 @@ func NewSingleRunPoller() *SingleRunPoller {
 }
 
 // Run runs the poller.
-func (a SingleRunPoller) Run(ctx context.Context, ch <-chan struct{}, action PollerFunc, resetDuration time.Duration) {
+func (a SingleRunPoller) Run(ctx context.Context, _ <-chan struct{}, action PollerFunc, resetDuration time.Duration) {
 	action(ctx)
 }
 
@@ -51,129 +53,45 @@ var _ Poller = (*InterruptiblePoller)(nil)
 
 // NewInterruptiblePoller creates an instance of InterruptiblePoller.
 func NewInterruptiblePoller(name string) *InterruptiblePoller {
-	return &InterruptiblePoller{name: name}
+	return &InterruptiblePoller{
+		name: name,
+	}
 }
 
 // Run runs the poller.
-func (ip *InterruptiblePoller) Run(ctx context.Context, ch <-chan struct{}, action PollerFunc, resetDuration time.Duration) {
-	logger := log.From(ctx).With("poller-name", ip.name)
-	ctx = log.WithLoggerContext(ctx, logger)
+func (a *InterruptiblePoller) Run(ctx context.Context, ch <-chan struct{}, action PollerFunc, resetDuration time.Duration) {
+	logger := log.From(ctx).With(
+		"poller-name", a.name,
+		"poller-instance", uuid.New().String())
+	logger.Debugf("starting poller")
 
-	jt := initJobTracker(ctx, action)
-	defer jt.clear()
+	timer := time.NewTimer(0)
+	done := false
+	for !done {
+		func() {
+			cur, cancel := context.WithCancel(log.WithLoggerContext(ctx, logger))
+			defer cancel()
+			canceled := false
 
-	pollerQueue := make(chan job, 10)
-
-	worker := func() {
-		for j := range pollerQueue {
 			select {
-			case <-j.ctx.Done():
-				// Job's context was canceled. Nothing else to do here.
-			case <-j.run():
-				if j.ctx.Err() == nil {
-					<-time.After(resetDuration)
-					pollerQueue <- jt.create()
-				}
+			case <-ctx.Done():
+				logger.Debugf("poller has been canceled")
+				done = true
+			case <-ch:
+				canceled = true
+				logger.Debugf("poller was interrupted")
+			case <-timer.C:
+				logger.Debugf("poller is running action")
+				now := time.Now()
+				action(cur)
+				logger.With("elapsed", fmt.Sprintf("%s", time.Since(now))).
+					Debugf("poller ran action")
 			}
-		}
-	}
 
-	for i := 0; i < pollerWorkerCount; i++ {
-		go worker()
-	}
+			if !canceled {
+				timer.Reset(resetDuration)
+			}
 
-	go func() {
-		for range ch {
-			// Cancel all existing jobs before creating a new job.
-			jt.clear()
-			pollerQueue <- jt.create()
-		}
-	}()
-
-	pollerQueue <- jt.create()
-
-	<-ctx.Done()
-}
-
-type job struct {
-	id         uuid.UUID
-	ctx        context.Context
-	cancelFunc context.CancelFunc
-	action     PollerFunc
-}
-
-func (j *job) run() <-chan bool {
-	ch := make(chan bool, 1)
-
-	done := make(chan bool, 1)
-
-	go func() {
-		j.action(j.ctx)
-		done <- true
-	}()
-
-	go func() {
-		select {
-		case <-j.ctx.Done():
-			ch <- true
-		case <-done:
-			ch <- true
-		}
-		defer close(ch)
-	}()
-
-	return ch
-}
-
-func createJob(ctx context.Context, action PollerFunc) job {
-	ctx, cancel := context.WithCancel(ctx)
-
-	return job{
-		id:         uuid.New(),
-		cancelFunc: cancel,
-		ctx:        ctx,
-		action:     action,
-	}
-}
-
-func (j *job) cancel() {
-	j.cancelFunc()
-}
-
-type jobTracker struct {
-	jobs   map[uuid.UUID]job
-	action PollerFunc
-	mu     sync.Mutex
-	ctx    context.Context
-	logger log.Logger
-}
-
-func initJobTracker(ctx context.Context, action PollerFunc) *jobTracker {
-	return &jobTracker{
-		ctx:    ctx,
-		action: action,
-		jobs:   make(map[uuid.UUID]job),
-		mu:     sync.Mutex{},
-		logger: log.From(ctx),
-	}
-}
-
-func (jt *jobTracker) create() job {
-	jt.mu.Lock()
-	defer jt.mu.Unlock()
-
-	j := createJob(jt.ctx, jt.action)
-	jt.jobs[j.id] = j
-
-	return j
-}
-
-func (jt *jobTracker) clear() {
-	jt.mu.Lock()
-	defer jt.mu.Unlock()
-
-	for id, j := range jt.jobs {
-		j.cancel()
-		delete(jt.jobs, id)
+		}()
 	}
 }
