@@ -86,6 +86,10 @@ func Test_AvailablePlugins(t *testing.T) {
 			homePath: filepath.Join("/home", "xdg_config_path"),
 			key:      "xdg-config-home",
 		},
+		{
+			homePath: filepath.Join("/windows", "test"),
+			key:      "windows-test",
+		},
 	}
 
 	for _, test := range tests {
@@ -104,6 +108,30 @@ func Test_AvailablePlugins(t *testing.T) {
 		}
 
 		switch test.key {
+		case "windows-test":
+			c.os = "windows"
+			configPath := filepath.Join(test.homePath, configDir, "plugins")
+			err := fs.MkdirAll(configPath, 0700)
+			require.NoError(t, err, "unable to create test home directory")
+
+			stagePlugin := func(t *testing.T, path string, name string, mode os.FileMode) {
+				p := filepath.Join(path, name)
+				err = afero.WriteFile(fs, p, []byte("guts"), mode)
+				require.NoError(t, err)
+			}
+
+			// Non-executable UNIX permissions but OS is Windows
+			stagePlugin(t, configPath, "a-plugin", 0600)
+			stagePlugin(t, configPath, "e-plugin", 0755)
+
+			got, err := AvailablePlugins(c)
+			require.NoError(t, err)
+
+			expected := []string{
+				filepath.Join(configPath, "a-plugin"),
+				filepath.Join(configPath, "e-plugin"),
+			}
+			assert.Equal(t, expected, got)
 		case "plugin-path":
 			c.os = "unix"
 			customPath := filepath.Join("/example", "test")

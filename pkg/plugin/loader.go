@@ -27,6 +27,8 @@ type Config interface {
 	Home() string
 	// Fs is the afero filesystem
 	Fs() afero.Fs
+	// OS is the opertating system
+	OS() string
 }
 
 type defaultConfig struct {
@@ -41,6 +43,11 @@ var (
 )
 
 var _ Config = (*defaultConfig)(nil)
+
+// OS returns the plugin config operating system
+func (c *defaultConfig) OS() string {
+	return c.os
+}
 
 // PluginDirs returns the plugin directories. Current only works on macOS and Linux
 // and not in a container.
@@ -106,7 +113,6 @@ func AvailablePlugins(config Config) ([]string, error) {
 	}
 
 	var list []string
-
 	for _, dir := range dirs {
 		_, err = config.Fs().Stat(dir)
 		if err != nil {
@@ -124,8 +130,8 @@ func AvailablePlugins(config Config) ([]string, error) {
 
 		for _, fi := range fis {
 			mode := fi.Mode()
-
-			if mode|64 == mode {
+			// Windows does not have unix style executable bits.
+			if mode|64 == mode || config.OS() == "windows" {
 				pluginPath := filepath.Join(dir, fi.Name())
 				list = append(list, pluginPath)
 			}
