@@ -64,25 +64,10 @@
       flex-direction: row;
       flex-wrap: wrap;
 
-      .input-filter-tag {
-        @include pill(var(--label-color));
-        text-align: center;
-        margin: 0 4px 4px 0;
-        padding: 0 8px;
-        max-width: 100%;
-        display: flex;
-
-        &-text {
-          flex: 1;
-          overflow-y: auto;
-          margin-right: 4px;
-        }
-
-        &-remove {
-          cursor: pointer;
-          height: 23px;
-          width: 12px;
-        }
+      .input-filter-tag-remove {
+        cursor: pointer;
+        height: 23px;
+        width: 12px;
       }
     }
 

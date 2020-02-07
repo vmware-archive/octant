@@ -84,7 +84,7 @@ describe('InputFilterComponent', () => {
     component.showTagList = true;
     fixture.detectChanges();
     const tagDebugElements: DebugElement[] = fixture.debugElement.queryAll(
-      By.css('.input-filter-tag')
+      By.css('.label-light-blue')
     );
     expect(tagDebugElements.length).toBe(3);
     expect(tagDebugElements[0].nativeElement.textContent).toMatch(
