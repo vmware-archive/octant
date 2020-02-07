@@ -96,12 +96,12 @@ func (c *crd) Describe(ctx context.Context, namespace string, options Options) (
 		Name:       options.Fields["name"],
 	}
 
-	object, found, err := objectStore.Get(ctx, key)
+	object, err := objectStore.Get(ctx, key)
 	if err != nil {
 		return component.EmptyContentResponse, err
 	}
 
-	if !found {
+	if object == nil {
 		return component.EmptyContentResponse, err
 	}
 

@@ -213,11 +213,11 @@ func Test_ServiceAccountPolicyRules(t *testing.T) {
 
 	tpo.objectStore.EXPECT().
 		Get(gomock.Any(), role1Key).
-		Return(testutil.ToUnstructured(t, role1), true, nil)
+		Return(testutil.ToUnstructured(t, role1), nil)
 
 	tpo.objectStore.EXPECT().
 		Get(gomock.Any(), role2Key).
-		Return(testutil.ToUnstructured(t, role2), true, nil)
+		Return(testutil.ToUnstructured(t, role2), nil)
 
 	saph := NewServiceAccountPolicyRules(ctx, serviceAccount, printOptions)
 	got, err := saph.Create()

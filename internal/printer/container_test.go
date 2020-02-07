@@ -390,7 +390,7 @@ func Test_ContainerConfiguration(t *testing.T) {
 					Name:       configMap.Name,
 					Namespace:  configMap.Namespace,
 				}
-				tpo.objectStore.EXPECT().Get(ctx, gomock.Eq(key)).Return(testutil.ToUnstructured(t, configMap), true, nil).AnyTimes()
+				tpo.objectStore.EXPECT().Get(ctx, gomock.Eq(key)).Return(testutil.ToUnstructured(t, configMap), nil).AnyTimes()
 			}
 
 			cc := NewContainerConfiguration(ctx, parentPod, tc.container, pf, tc.isInit, printOptions)

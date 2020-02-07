@@ -44,7 +44,7 @@ func Test_runIngressStatus(t *testing.T) {
 			name: "no matching backends",
 			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				key := store.Key{Namespace: "default", APIVersion: "v1", Kind: "Service", Name: "no-such-service"}
-				o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(nil, false, nil)
+				o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(nil, nil)
 
 				objectFile := "ingress_no_matching_backend.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
@@ -88,7 +88,7 @@ func Test_runIngressStatus(t *testing.T) {
 				mockServiceInCache(t, o, "default", "my-service", "service_my-service.yaml")
 
 				key := store.Key{Namespace: "default", APIVersion: "v1", Kind: "Secret", Name: "no-such-secret"}
-				o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(nil, false, nil)
+				o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(nil, nil)
 
 				objectFile := "ingress_ingress-bad-tls-host.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
@@ -146,7 +146,7 @@ func mockSecretInCache(t *testing.T, o *storefake.MockStore, namespace, name, fi
 		Name:       name,
 	}
 
-	o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(testutil.ToUnstructured(t, secret), true, nil)
+	o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(testutil.ToUnstructured(t, secret), nil)
 
 	return secret
 }
@@ -160,7 +160,7 @@ func mockServiceInCache(t *testing.T, o *storefake.MockStore, namespace, name, f
 		Name:       name,
 	}
 
-	o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(testutil.ToUnstructured(t, secret), true, nil)
+	o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).Return(testutil.ToUnstructured(t, secret), nil)
 
 	return secret
 }

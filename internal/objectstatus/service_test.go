@@ -41,7 +41,7 @@ func Test_service(t *testing.T) {
 				endpoints := testutil.LoadObjectFromFile(t, "endpoints_ok.yaml")
 
 				o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).
-					Return(testutil.ToUnstructured(t, endpoints), true, nil)
+					Return(testutil.ToUnstructured(t, endpoints), nil)
 
 				objectFile := "service_ok.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
@@ -65,7 +65,7 @@ func Test_service(t *testing.T) {
 				endpoints := testutil.LoadObjectFromFile(t, "endpoints_no_subsets.yaml")
 
 				o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).
-					Return(testutil.ToUnstructured(t, endpoints), true, nil)
+					Return(testutil.ToUnstructured(t, endpoints), nil)
 
 				objectFile := "service_ok.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)

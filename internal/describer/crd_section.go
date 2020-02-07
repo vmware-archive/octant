@@ -69,7 +69,7 @@ func (csd *CRDSection) Describe(ctx context.Context, namespace string, options O
 		case *crdList:
 			key := store.KeyFromGroupVersionKind(gvk.CustomResourceDefinition)
 			key.Name = d.name
-			crd, _, err := options.ObjectStore().Get(ctx, key)
+			crd, err := options.ObjectStore().Get(ctx, key)
 			if err != nil {
 				return component.EmptyContentResponse, err
 			}

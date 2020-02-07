@@ -280,12 +280,12 @@ func (s *ServiceAccountPolicyRules) Create() (*component.Table, error) {
 		}
 		switch kind := roleRef.Kind; kind {
 		case "ClusterRole":
-			object, found, err := s.objectStore.Get(s.context, key)
+			object, err := s.objectStore.Get(s.context, key)
 			if err != nil {
 				return nil, err
 			}
 
-			if !found {
+			if object == nil {
 				return nil, errors.Errorf("unable to find %s", key)
 			}
 
@@ -299,12 +299,12 @@ func (s *ServiceAccountPolicyRules) Create() (*component.Table, error) {
 		case "Role":
 			key.Namespace = s.namespace
 
-			object, found, err := s.objectStore.Get(s.context, key)
+			object, err := s.objectStore.Get(s.context, key)
 			if err != nil {
 				return nil, err
 			}
 
-			if !found {
+			if object == nil {
 				return nil, errors.Errorf("unable to find %s", key)
 			}
 

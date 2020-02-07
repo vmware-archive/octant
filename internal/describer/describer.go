@@ -53,7 +53,7 @@ func LoadObject(ctx context.Context, objectStore store.Store, errorStore oerrors
 		objectStoreKey.Name = name
 	}
 
-	object, found, err := objectStore.Get(ctx, objectStoreKey)
+	object, err := objectStore.Get(ctx, objectStoreKey)
 	if err != nil {
 		var ae *oerrors.AccessError
 		if errors.As(err, &ae) {
@@ -68,7 +68,7 @@ func LoadObject(ctx context.Context, objectStore store.Store, errorStore oerrors
 		}
 		return nil, err
 	}
-	if !found {
+	if object == nil {
 		return nil, errors.New("object was not found")
 	}
 

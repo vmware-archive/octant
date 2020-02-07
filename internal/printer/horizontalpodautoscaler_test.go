@@ -156,7 +156,7 @@ func Test_HorizontalPodAutoscalerConfiguration(t *testing.T) {
 					Name:       deployment.Name,
 					Namespace:  deployment.Namespace,
 				}
-				tpo.objectStore.EXPECT().Get(ctx, gomock.Eq(key)).Return(testutil.ToUnstructured(t, deployment), true, nil)
+				tpo.objectStore.EXPECT().Get(ctx, gomock.Eq(key)).Return(testutil.ToUnstructured(t, deployment), nil)
 			}
 
 			summary, err := hc.Create(ctx, printOptions)

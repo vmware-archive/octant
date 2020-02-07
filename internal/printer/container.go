@@ -378,12 +378,12 @@ func describeEnvRows(ctx context.Context, namespace string, vars []corev1.EnvVar
 				Kind:       "ConfigMap",
 			}
 
-			u, found, err := objectStore.Get(ctx, key)
+			u, err := objectStore.Get(ctx, key)
 			if err != nil {
 				return nil, err
 			}
 
-			if found {
+			if u != nil {
 				configMap := &corev1.ConfigMap{}
 				if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, configMap); err != nil {
 					return nil, err

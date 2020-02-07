@@ -96,11 +96,11 @@ func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key,
 	t := NewTerminalInstance(ctx, logger, key, container, command, tm.chanInstance)
 	tm.instances.Store(t.ID(), t)
 
-	pod, ok, err := tm.objectStore.Get(ctx, key)
+	pod, err := tm.objectStore.Get(ctx, key)
 	if err != nil {
 		return nil, err
 	}
-	if !ok {
+	if pod == nil {
 		return nil, errors.New("pod not found")
 	}
 

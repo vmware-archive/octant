@@ -135,14 +135,14 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 			Name:       tls.SecretName,
 		}
 
-		_, found, err := is.objectstore.Get(ctx, key)
+		u, err := is.objectstore.Get(ctx, key)
 		if err != nil {
 			status.SetError()
 			status.AddDetailf("Unable to load Secret %q: %s", tls.SecretName, err)
 			continue
 		}
 
-		if !found {
+		if u == nil {
 			status.SetError()
 			status.AddDetailf("Secret %q does not exist", tls.SecretName)
 		}

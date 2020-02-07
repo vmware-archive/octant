@@ -29,7 +29,7 @@ type UpdateFn func(store Store)
 // Store stores Kubernetes objects.
 type Store interface {
 	List(ctx context.Context, key Key) (list *unstructured.UnstructuredList, loading bool, err error)
-	Get(ctx context.Context, key Key) (object *unstructured.Unstructured, found bool, err error)
+	Get(ctx context.Context, key Key) (object *unstructured.Unstructured, err error)
 	Delete(ctx context.Context, key Key) error
 	Watch(ctx context.Context, key Key, handler cache.ResourceEventHandler) error
 	Unwatch(ctx context.Context, groupVersionKinds ...schema.GroupVersionKind) error

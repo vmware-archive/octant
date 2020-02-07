@@ -53,13 +53,12 @@ func (mr *MockStoreMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // Get mocks base method
-func (m *MockStore) Get(arg0 context.Context, arg1 store.Key) (*unstructured.Unstructured, bool, error) {
+func (m *MockStore) Get(arg0 context.Context, arg1 store.Key) (*unstructured.Unstructured, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].(*unstructured.Unstructured)
-	ret1, _ := ret[1].(bool)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Get indicates an expected call of Get

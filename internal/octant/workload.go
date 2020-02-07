@@ -179,12 +179,12 @@ func objectOwner(ctx context.Context, objectStore store.Store, object *unstructu
 		Name:       ownerReference.Name,
 	}
 
-	owner, found, err := objectStore.Get(ctx, ownerRefKey)
+	owner, err := objectStore.Get(ctx, ownerRefKey)
 	if err != nil {
 		return nil, fmt.Errorf("find object %s: %w", ownerRefKey, err)
 	}
 
-	if !found {
+	if owner == nil {
 		return object, nil
 	}
 

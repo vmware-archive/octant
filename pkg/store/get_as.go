@@ -19,12 +19,12 @@ import (
 // GetAs gets an object from the object store by key. If the object is not found,
 // return false and a nil error.
 func GetAs(ctx context.Context, o Store, key Key, as interface{}) (bool, error) {
-	u, found, err := o.Get(ctx, key)
+	u, err := o.Get(ctx, key)
 	if err != nil {
 		return false, errors.Wrap(err, "get object from object store")
 	}
 
-	if !found {
+	if u == nil {
 		return false, nil
 	}
 
