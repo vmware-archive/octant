@@ -21,16 +21,16 @@ func TestRouter_Match(t *testing.T) {
 	}
 
 	router := NewRouter()
-	router.HandleFunc("/nested1/nested2", func(request *Request) (component.ContentResponse, error) {
+	router.HandleFunc("/nested1/nested2", func(request Request) (component.ContentResponse, error) {
 		return genContentResponse("nested2"), nil
 	})
-	router.HandleFunc("/nested1", func(request *Request) (component.ContentResponse, error) {
+	router.HandleFunc("/nested1", func(request Request) (component.ContentResponse, error) {
 		return genContentResponse("nested1"), nil
 	})
-	router.HandleFunc("/glob*", func(request *Request) (component.ContentResponse, error) {
+	router.HandleFunc("/glob*", func(request Request) (component.ContentResponse, error) {
 		return genContentResponse("glob"), nil
 	})
-	router.HandleFunc("/", func(request *Request) (component.ContentResponse, error) {
+	router.HandleFunc("/", func(request Request) (component.ContentResponse, error) {
 		return genContentResponse("root"), nil
 	})
 
@@ -81,10 +81,10 @@ func TestRouter_Match(t *testing.T) {
 			}
 			require.True(t, ok)
 
-			request := &Request{
+			request := &request{
 				baseRequest:     newBaseRequest(context.Background(), "plugin-name"),
 				dashboardClient: nil,
-				Path:            test.path,
+				path:            test.path,
 			}
 			got, err := handleFunc(request)
 			require.NoError(t, err)

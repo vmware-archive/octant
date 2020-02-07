@@ -139,10 +139,10 @@ func (p *Handler) Content(ctx context.Context, contentPath string) (component.Co
 		return component.ContentResponse{}, nil
 	}
 
-	request := &Request{
+	request := &request{
 		baseRequest:     newBaseRequest(ctx, p.name),
 		dashboardClient: p.dashboardClient,
-		Path:            contentPath,
+		path:            contentPath,
 	}
 
 	return handlerFunc(request)
