@@ -5,7 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 
 package component
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"errors"
+)
 
 const (
 	// WidthFull is a full width section.
@@ -53,6 +56,34 @@ type FlexLayoutSection []FlexLayoutItem
 type FlexLayoutConfig struct {
 	Sections    []FlexLayoutSection `json:"sections,omitempty"`
 	ButtonGroup *ButtonGroup        `json:"buttonGroup,omitempty"`
+}
+
+func (f *FlexLayoutConfig) UnmarshalJSON(data []byte) error {
+	x := struct {
+		Sections    []FlexLayoutSection `json:"sections,omitempty"`
+		ButtonGroup *TypedObject        `json:"buttonGroup,omitempty"`
+	}{}
+
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+
+	if x.ButtonGroup != nil {
+		component, err := x.ButtonGroup.ToComponent()
+		if err != nil {
+			return err
+		}
+
+		buttonGroup, ok := component.(*ButtonGroup)
+		if !ok {
+			return errors.New("item was not a buttonGroup")
+		}
+		f.ButtonGroup = buttonGroup
+	}
+
+	f.Sections = x.Sections
+
+	return nil
 }
 
 // FlexLayout is a flex layout view.

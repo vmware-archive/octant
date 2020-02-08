@@ -7,7 +7,6 @@ package component
 
 import (
 	"encoding/json"
-
 	"github.com/pkg/errors"
 )
 
@@ -20,6 +19,11 @@ func unmarshal(to TypedObject) (Component, error) {
 		t := &Annotations{base: base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal annotations config")
+		o = t
+	case typeButtonGroup:
+		t := &ButtonGroup{base: base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal buttonGroup config")
 		o = t
 	case typeCard:
 		t := &Card{base: base{Metadata: to.Metadata}}

@@ -1,17 +1,27 @@
 {
-  "sections":[
+  "sections": [
     [
       {
-        "width":24,
-        "view":{
-          "metadata":{
-            "type":"text"
+        "width": 24,
+        "view": {
+          "metadata": {
+            "type": "text"
           },
-          "config":{
-            "value":"text"
+          "config": {
+            "value": "text"
           }
         }
       }
     ]
-  ]
+  ],
+  "buttonGroup": {
+    "metadata": {
+      "type": "buttonGroup"
+    },
+    "config": {
+      "buttons": [{
+        "name": "test"
+      }]
+    }
+  }
 }

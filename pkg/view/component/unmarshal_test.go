@@ -94,6 +94,14 @@ func Test_unmarshal(t *testing.T) {
 							},
 						},
 					},
+					ButtonGroup: &ButtonGroup{
+						base: base{},
+						Config: ButtonGroupConfig{
+							Buttons: []Button{{
+								Name: "test",
+							}},
+						},
+					},
 				},
 				base: newBase(typeFlexLayout, nil),
 			},
