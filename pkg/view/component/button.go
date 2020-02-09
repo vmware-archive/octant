@@ -2,7 +2,6 @@ package component
 
 import (
 	"encoding/json"
-
 	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
@@ -18,12 +17,10 @@ type ButtonOption func(button *Button)
 // WithButtonConfirmation configured a button with a confirmation.
 func WithButtonConfirmation(title, body string) ButtonOption {
 	return func(button *Button) {
-		confirmation := Confirmation{
+		button.Confirmation = &Confirmation{
 			Title: title,
 			Body:  body,
 		}
-
-		button.Confirmation = &confirmation
 	}
 }
 
