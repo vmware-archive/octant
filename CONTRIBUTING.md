@@ -1,6 +1,33 @@
 # Contributing
 
-## CHANGELOG 
+## Communication
+
+We prefer asynchronous to synchronous communication when ever possible. This ensures that all interested parties are able
+to find relevant information even when ideas and information are being exchanged across many timezones. When ever
+synchronous communication is happening, we encourage folks to make best efforts to transfer that information to an
+issue if relevant or send it to the project-octant group. This could be as plain text notes or a link to a recording
+or markdown document for example.
+
+* [project-octant](https://groups.google.com/forum/#!forum/project-octant)
+* [#octant Slack](https://kubernetes.slack.com/app_redirect?channel=CM37M9FCG)
+
+### Weekly Community Meeting
+We have a weekly Octant community meeting that is held live (recordings uploaded later). We highly encourage folks
+who are interested in contributing to Octant to attend these meetings. More details on the
+ [Octant community page](https://octant.dev/community/).
+
+## Tools
+
+The Octant project uses GitHub issues and pull requests as the primary method for communicating about what work needs
+to be done, what work is currently being done, who work is assigned to, and the current state of that work.
+With GitHub issues we use the ZenHub tool. ZenHub gives us another layer of metadata on top of GitHub issues that
+allow for visualizing work as being in various states and displaying columns for each state. We highly recommend that
+folks who intend to work on Octant familiarize themselves with ZenHub and GitHub issues.
+
+A very helpful browser extension that will create a ZenHub tab on GitHub for you.
+* [ZenHub Browser Extension](https://zenhub.com/extension)
+
+## CHANGELOG
 
 Authors are expected to include a changelog file with their pull requests. The changelog file
 should be a new file created in the `changelogs/unreleased` folder. The file should follow the
@@ -9,6 +36,21 @@ changelog.
 
     octant/changelogs/unreleased   <- folder
         000-username               <- file
+
+## Proposals
+
+If you wish to add a larger feature or make a major refactor to Octant we encourage folks to write up a proposal document.
+Though our process is not formal, the convention is to create a PR against Octant with your proposal as markdown in the
+proposals folder. Proposal reviews and feedback will happen on the the PR with the proposal.
+
+    octant/proposals       <- folder
+        YYYYMMDD-title.md  <- file
+
+In your proposal it is good to consider and include some of the following:
+* Goals
+* Non-Goals
+* Does this break any public APIs?
+* Does this fix/solve any outstanding issues?
 
 ## DCO Sign off
 
