@@ -1,0 +1,3 @@
+Plugins, service.Request is now an interface. This is a breaking API change.
+  - HandlerFunc now takes this new interface which allows for fakes/mocks during unit testing.
+  - Path proprety is now accessed via Path()

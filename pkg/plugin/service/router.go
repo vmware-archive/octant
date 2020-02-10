@@ -1,30 +1,44 @@
 package service
 
 import (
+	"context"
+
 	"github.com/gobwas/glob"
 
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // HandleFunc is a function that generates a content response.
-type HandleFunc func(request *Request) (component.ContentResponse, error)
+type HandleFunc func(request Request) (component.ContentResponse, error)
+
+type Request interface {
+	Context() context.Context
+	DashboardClient() Dashboard
+	Path() string
+}
+
+var _ Request = (*request)(nil)
 
 // Request represents a path request from Octant. It will always be a
 // GET style request with a path.
-type Request struct {
+type request struct {
 	baseRequest
 
 	dashboardClient Dashboard
 
-	// Path is path that Octant is requesting. It is scoped to the plugin.
-	// i.e. If Octant wants to render /content/plugin/foo, Path will be
-	// `/foo`.
-	Path string
+	path string
 }
 
 // DashboardClient returns a dashboard client for the request.
-func (r *Request) DashboardClient() Dashboard {
+func (r *request) DashboardClient() Dashboard {
 	return r.dashboardClient
+}
+
+// Path is path that Octant is requesting. It is scoped to the plugin.
+// i.e. If Octant wants to render /content/plugin/foo, Path will be
+// `/foo`.
+func (r *request) Path() string {
+	return r.path
 }
 
 type route struct {

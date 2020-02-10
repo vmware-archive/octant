@@ -236,7 +236,11 @@ func installTestPlugin() {
 	dir := pluginDir()
 	log.Printf("Plugin path: %s", dir)
 	os.MkdirAll(dir, 0755)
-	pluginFile := fmt.Sprintf("%s/octant-sample-plugin", dir)
+	filename := "octant-sample-plugin"
+	if runtime.GOOS == "windows" {
+		filename = "octant-sample-plugin.exe"
+	}
+	pluginFile := filepath.Join(dir, filename)
 	runCmd("go", nil, "build", "-o", pluginFile, "github.com/vmware-tanzu/octant/cmd/octant-sample-plugin")
 }
 
