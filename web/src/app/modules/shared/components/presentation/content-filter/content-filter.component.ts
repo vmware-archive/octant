@@ -43,7 +43,7 @@ export class ContentFilterComponent
       return false;
     }
 
-    const view = row.Phase as TextView;
+    const view = row[this.column] as TextView;
     return selected.includes(view.config.value);
   }
 
