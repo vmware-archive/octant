@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { DefaultPipe } from '../../../../shared/pipes/default/default.pipe';
 import { NavigationComponent } from './navigation.component';
+import { NamespaceComponent } from '../namespace/namespace.component';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 describe('NavigationComponent', () => {
   let component: NavigationComponent;
@@ -12,7 +13,8 @@ describe('NavigationComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [NavigationComponent, DefaultPipe],
+      imports: [NgSelectModule],
+      declarations: [NavigationComponent, NamespaceComponent, DefaultPipe],
     }).compileComponents();
   }));
 

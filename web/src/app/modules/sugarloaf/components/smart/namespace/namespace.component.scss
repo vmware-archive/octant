@@ -21,7 +21,13 @@
     --dropdownOption-font-color: #adbbc4;
   }
 
-  width: 250px;
+  margin: 0.5rem 1rem 1rem 1rem;
+
+  .title {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+  }
 
   .namespace-dropdown {
     ::ng-deep {
