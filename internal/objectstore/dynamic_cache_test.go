@@ -19,9 +19,8 @@ func TestDynamicCache_backoff(t *testing.T) {
 	ctx := context.TODO()
 	key := store.Key{APIVersion: gvk.Pod.Version, Kind: gvk.Pod.Kind}
 
-	d.backoff(ctx, key)
+	tD := d.backoff(ctx, key)
 	require.True(t, d.isBackingOff(ctx, key))
-	// Default back starts at 1 second + some jitter so we wait 1.2s.
-	<-time.After(time.Millisecond * 1200)
+	<-time.After(tD + (time.Millisecond * 250))
 	assert.False(t, d.isBackingOff(ctx, key))
 }
