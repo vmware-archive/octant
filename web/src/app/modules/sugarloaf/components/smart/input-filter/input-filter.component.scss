@@ -11,6 +11,7 @@
     --tags-border-color: #ccc;
     --tags-font-color: black;
     --filterTag-link-color: #0079b8;
+    --input-border-color: white;
   }
   
   // Dropdown's color variables for Dark Theme.
@@ -19,6 +20,7 @@
     --tags-border-color: black;
     --tags-font-color: #adbbc4;
     --filterTag-link-color: #49afd9;
+    --input-border-color: #999;
   }
 
   &-control {
@@ -35,6 +37,16 @@
 
       & .clr-control-container {
         width: 100%;
+
+        .clr-input-wrapper .clr-input {
+          border-bottom-color: var(--input-border-color);
+          color: white;
+
+          &::placeholder {
+            color: white;
+            opacity: 1; // Fix for Firefox's placeholder opacity.
+          }
+        }
       }
     }
 

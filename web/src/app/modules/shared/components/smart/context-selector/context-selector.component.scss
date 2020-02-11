@@ -4,13 +4,8 @@
 
 .dropdown > .dropdown-toggle {
   line-height: 2.5rem;
-  color: #fafafa;
-  opacity: 0.65;
+  color: white;
   outline: none;
-
-  &:hover {
-    opacity: 1;
-  }
 }
 
 .dropdown {
