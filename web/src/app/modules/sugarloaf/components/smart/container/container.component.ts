@@ -23,7 +23,7 @@ import { NavigationStart, Router } from '@angular/router';
   styleUrls: ['./container.component.scss'],
 })
 export class ContainerComponent implements OnInit, OnDestroy {
-  @ViewChild('scrollTarget', { static: false }) scrollTarget: ElementRef;
+  @ViewChild('scrollTarget') scrollTarget: ElementRef;
   navigation: Navigation;
   style: object = {};
 
