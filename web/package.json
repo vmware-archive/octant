@@ -34,6 +34,7 @@
     "@angular/platform-browser-dynamic": "^9.0.0",
     "@angular/router": "^9.0.0",
     "@clr/angular": "^3.0.0-next.8",
+    "@clr/core": "^3.0.0-next.8",
     "@clr/icons": "^3.0.0-next.8",
     "@clr/ui": "^3.0.0-next.8",
     "@ng-select/ng-select": "^3.7.2",
