@@ -8,11 +8,11 @@ import { RouterModule, Routes } from '@angular/router';
 export const appRoutes: Routes = [
   {
     path: 'denali',
-    loadChildren: './modules/denali/denali.module#DenaliModule',
+    loadChildren: () => import('./modules/denali/denali.module').then(m => m.DenaliModule),
   },
   {
     path: '**',
-    loadChildren: './modules/sugarloaf/sugarloaf.module#SugarloafModule',
+    loadChildren: () => import('./modules/sugarloaf/sugarloaf.module').then(m => m.SugarloafModule),
   },
 ];
 
