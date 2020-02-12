@@ -370,6 +370,8 @@ func (co *Overview) ActionPaths() map[string]action.DispatcherFunc {
 		octant.NewPortForwardDelete(co.logger, co.dashConfig.ObjectStore(), co.dashConfig.PortForwarder()),
 		octant.NewTerminalCommandExec(co.logger, co.dashConfig.ObjectStore(), co.dashConfig.TerminalManager()),
 		octant.NewTerminalDelete(co.logger, co.dashConfig.ObjectStore(), co.dashConfig.TerminalManager()),
+		octant.NewCordon(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
+		octant.NewUncordon(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
 	}
 
 	return dispatchers.ToActionPaths()
