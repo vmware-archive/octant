@@ -27,6 +27,20 @@ folks who intend to work on Octant familiarize themselves with ZenHub and GitHub
 A very helpful browser extension that will create a ZenHub tab on GitHub for you.
 * [ZenHub Browser Extension](https://zenhub.com/extension)
 
+### ZenHub Lanes
+
+We use the different lanes in ZenHub to help organize our work. Below is some details about what each lane means.
+
+- New issues: new issues that are not triaged yet.
+- Unsorted: unsorted issues have been looked at, given labels, de-duped, and assigned to Epics.
+- Backlog: these issues are sorted and are next up to work on after the Sprint Backlog. (limit 20)
+- Sprint Backlog: issues here are the current items you can pull from to work on. (limit 20)
+- In Progress: issues here are being actively worked on.
+- Review/QA: issues here usually have a PR associated with them and are ready to be reviewed.
+- Done: (unused/skipped)
+- Epics: stores all of the current Epics to keep them from cluttering up the work lanes.
+- Closed: all issues that have been closed.
+
 ## CHANGELOG
 
 Authors are expected to include a changelog file with their pull requests. The changelog file
