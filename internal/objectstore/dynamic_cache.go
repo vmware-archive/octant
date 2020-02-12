@@ -178,16 +178,19 @@ func (dc *DynamicCache) checkKeySynced(ctx context.Context, informer informers.G
 	go dc.syncTimeoutFunc(ctx, key, done)
 }
 
-func (dc *DynamicCache) backoff(ctx context.Context, key store.Key) {
+// backoff returns the Duration of the next backoff. A duration of 0 is returned if
+// backoff is already waiting.
+func (dc *DynamicCache) backoff(ctx context.Context, key store.Key) time.Duration {
 	newEntry := newBackoffEntry(key, defaultBackoff)
 	actual, _ := dc.backoffMap.LoadOrStore(key.GroupVersionKind(), newEntry)
 	entry := actual.(backoffer)
 	if entry.isWaiting() {
-		return
+		return 0
 	}
 
 	entry.setWaiting(true)
 	dc.backoffMap.Store(key.GroupVersionKind(), entry)
+	t := entry.wait()
 
 	go func() {
 		logger := log.From(ctx)
@@ -199,10 +202,11 @@ func (dc *DynamicCache) backoff(ctx context.Context, key store.Key) {
 		if unwatchErr != nil {
 			logger.Errorf("unwatch: %w", unwatchErr)
 		}
-		t := entry.wait()
 		logger.Infof("backing off for %s (%s)", key.GroupVersionKind(), t)
 		<-time.After(t)
 	}()
+
+	return t
 }
 
 func (dc *DynamicCache) isBackingOff(ctx context.Context, key store.Key) bool {

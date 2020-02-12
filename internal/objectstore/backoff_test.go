@@ -21,6 +21,10 @@ func Test_wait(t *testing.T) {
 	key := store.Key{APIVersion: "apiVersion"}
 	entry := newBackoffEntry(key, defaultBackoff)
 	d := entry.wait()
+
 	assert.True(t, d > time.Second)
-	assert.True(t, d < (d + (time.Millisecond * 500)))
+	d = entry.wait()
+	assert.True(t, d > (time.Second * 2))
+	d = entry.wait()
+	assert.True(t, d > (time.Second * 4))
 }
