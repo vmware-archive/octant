@@ -406,7 +406,7 @@ func TestCacheQueryer_OwnerReference(t *testing.T) {
 				}
 				o.EXPECT().
 					Get(gomock.Any(), gomock.Eq(key)).
-					Return(deployment, true, nil)
+					Return(deployment, nil)
 			},
 			expected: func(t *testing.T) runtime.Object {
 				return testutil.ToUnstructured(t, deployment)
@@ -423,7 +423,7 @@ func TestCacheQueryer_OwnerReference(t *testing.T) {
 				}
 				o.EXPECT().
 					Get(gomock.Any(), gomock.Eq(key)).
-					Return(nil, false, errors.New("failed"))
+					Return(nil, errors.New("failed"))
 			},
 			isErr: true,
 		},
@@ -579,7 +579,7 @@ func TestCacheQueryer_ServicesForIngress_service_not_found(t *testing.T) {
 	o := storeFake.NewMockStore(controller)
 	o.EXPECT().
 		Get(gomock.Any(), gomock.Any()).
-		Return(nil, false, nil)
+		Return(nil, nil)
 
 	discovery := queryerFake.NewMockDiscoveryInterface(controller)
 
@@ -668,7 +668,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 				}
 				o.EXPECT().
 					Get(gomock.Any(), gomock.Eq(key)).
-					Return(testutil.ToUnstructured(t, service1), true, nil)
+					Return(testutil.ToUnstructured(t, service1), nil)
 			},
 			expected: []string{"service1"},
 		},
@@ -684,7 +684,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 				}
 				o.EXPECT().
 					Get(gomock.Any(), gomock.Eq(key1)).
-					Return(testutil.ToUnstructured(t, service1), true, nil)
+					Return(testutil.ToUnstructured(t, service1), nil)
 				key2 := store.Key{
 					Namespace:  "default",
 					APIVersion: "v1",
@@ -693,7 +693,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 				}
 				o.EXPECT().
 					Get(gomock.Any(), gomock.Eq(key2)).
-					Return(testutil.ToUnstructured(t, service2), true, nil)
+					Return(testutil.ToUnstructured(t, service2), nil)
 			},
 			expected: []string{"service1", "service2"},
 		},
@@ -714,7 +714,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 				}
 				c.EXPECT().
 					Get(gomock.Any(), gomock.Eq(key)).
-					Return(nil, false, errors.New("failed"))
+					Return(nil, errors.New("failed"))
 			},
 			isErr: true,
 		},
@@ -880,7 +880,7 @@ func TestObjectStoreQueryer_ServiceAccountForPod(t *testing.T) {
 	require.NoError(t, err)
 	o.EXPECT().
 		Get(gomock.Any(), key).
-		Return(testutil.ToUnstructured(t, serviceAccount), true, nil)
+		Return(testutil.ToUnstructured(t, serviceAccount), nil)
 
 	discovery := queryerFake.NewMockDiscoveryInterface(controller)
 
@@ -1065,7 +1065,7 @@ func TestObjectStoreQueryer_ScaleTarget(t *testing.T) {
 	require.NoError(t, err)
 	o.EXPECT().
 		Get(gomock.Any(), key).
-		Return(testutil.ToUnstructured(t, deployment), true, nil)
+		Return(testutil.ToUnstructured(t, deployment), nil)
 
 	discovery := queryerFake.NewMockDiscoveryInterface(controller)
 

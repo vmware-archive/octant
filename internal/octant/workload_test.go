@@ -95,7 +95,7 @@ func TestClusterWorkloadLoader(t *testing.T) {
 			Kind:       "ReplicaSet",
 			Name:       "rs-1",
 		}).
-		Return(replicaSet, true, nil).
+		Return(replicaSet, nil).
 		AnyTimes()
 
 	noOwnerObjectStore := storeFake.NewMockStore(controller)
@@ -114,7 +114,7 @@ func TestClusterWorkloadLoader(t *testing.T) {
 			Kind:       "ReplicaSet",
 			Name:       "missing",
 		}).
-		Return(nil, false, nil).
+		Return(nil, nil).
 		AnyTimes()
 
 	cases := []struct {

@@ -76,11 +76,11 @@ func convertToObjects(in [][]byte) (*unstructured.UnstructuredList, error) {
 	list := &unstructured.UnstructuredList{}
 
 	for _, data := range in {
-		object, found, err := convertToObject(data)
+		object, err := convertToObject(data)
 		if err != nil {
 			return nil, err
 		}
-		if !found {
+		if object == nil {
 			continue
 		}
 		list.Items = append(list.Items, *object)
@@ -89,18 +89,22 @@ func convertToObjects(in [][]byte) (*unstructured.UnstructuredList, error) {
 	return list, nil
 }
 
-func convertToObject(in []byte) (*unstructured.Unstructured, bool, error) {
+func convertToObject(in []byte) (*unstructured.Unstructured, error) {
 	if in == nil {
-		return nil, false, nil
+		return nil, nil
 	}
 
 	object := unstructured.Unstructured{}
 	err := json.Unmarshal(in, &object)
 	if err != nil {
-		return nil, false, err
+		return nil, err
 	}
 
-	return &object, true, nil
+	if object.Object == nil {
+		return nil, nil
+	}
+
+	return &object, nil
 }
 
 func convertToPortForwardRequest(in *proto.PortForwardRequest) (*PortForwardRequest, error) {

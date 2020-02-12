@@ -119,6 +119,9 @@ func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFu
 					return false
 				}
 			}
+			if ctx.Err() == context.Canceled {
+				return false
+			}
 			cm.logger.
 				WithErr(err).
 				With("content-path", contentPath).

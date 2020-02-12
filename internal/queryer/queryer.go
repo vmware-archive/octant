@@ -465,12 +465,12 @@ func (osq *ObjectStoreQueryer) OwnerReference(ctx context.Context, object *unstr
 			return true, object, nil
 		}
 
-		owner, found, err := osq.objectStore.Get(ctx, key)
+		owner, err := osq.objectStore.Get(ctx, key)
 		if err != nil {
 			return false, nil, errors.Wrap(err, "get owner from store")
 		}
 
-		if !found {
+		if owner == nil {
 			return false, nil, errors.Errorf("owner %s not found", key)
 		}
 
@@ -494,12 +494,12 @@ func (osq *ObjectStoreQueryer) ScaleTarget(ctx context.Context, hpa *autoscaling
 		Name:       hpa.Spec.ScaleTargetRef.Name,
 	}
 
-	u, found, err := osq.objectStore.Get(ctx, key)
+	u, err := osq.objectStore.Get(ctx, key)
 	if err != nil {
 		return nil, errors.WithMessagef(err, "retrieve scale target %q from namespace %q", key.Name, key.Namespace)
 	}
 
-	if found {
+	if u != nil {
 		switch key.Kind {
 		case "Deployment":
 			deployment := &appsv1.Deployment{}
@@ -619,12 +619,12 @@ func (osq *ObjectStoreQueryer) ServicesForIngress(ctx context.Context, ingress *
 			Kind:       "Service",
 			Name:       backend.ServiceName,
 		}
-		u, found, err := osq.objectStore.Get(ctx, key)
+		u, err := osq.objectStore.Get(ctx, key)
 		if err != nil {
 			return nil, errors.Wrapf(err, "retrieving service backend: %v", backend)
 		}
 
-		if !found {
+		if u == nil {
 			continue
 		}
 
@@ -690,13 +690,13 @@ func (osq *ObjectStoreQueryer) ServiceAccountForPod(ctx context.Context, pod *co
 		Name:       pod.Spec.ServiceAccountName,
 	}
 
-	u, found, err := osq.objectStore.Get(ctx, key)
+	u, err := osq.objectStore.Get(ctx, key)
 	if err != nil {
 		return nil, errors.WithMessagef(err, "retrieve service account %q from namespace %q",
 			key.Name, key.Namespace)
 	}
 
-	if !found {
+	if u == nil {
 		return nil, errors.Errorf("service account %q from namespace %q does not exist",
 			key.Name, key.Namespace)
 	}

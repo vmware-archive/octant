@@ -443,8 +443,8 @@ func forScaleTarget(ctx context.Context, object runtime.Object, scaleTarget *aut
 	}
 
 	objectStore := options.DashConfig.ObjectStore()
-	_, found, err := objectStore.Get(ctx, key)
-	if err != nil || !found {
+	u, err := objectStore.Get(ctx, key)
+	if err != nil || u == nil {
 		return component.NewLink("", "none", ""), nil
 	}
 

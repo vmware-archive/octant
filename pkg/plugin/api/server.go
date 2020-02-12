@@ -40,7 +40,7 @@ type NamespacesResponse struct {
 // Service is the dashboard service.
 type Service interface {
 	List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error)
-	Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, bool, error)
+	Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, error)
 	PortForward(ctx context.Context, req PortForwardRequest) (PortForwardResponse, error)
 	CancelPortForward(ctx context.Context, id string)
 	ListNamespaces(ctx context.Context) (NamespacesResponse, error)
@@ -85,7 +85,7 @@ func (s *GRPCService) List(ctx context.Context, key store.Key) (*unstructured.Un
 }
 
 // Get retrieves an object.
-func (s *GRPCService) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, bool, error) {
+func (s *GRPCService) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, error) {
 	return s.ObjectStore.Get(ctx, key)
 }
 
@@ -180,14 +180,14 @@ func (c *grpcServer) Get(ctx context.Context, in *proto.KeyRequest) (*proto.GetR
 		return nil, err
 	}
 
-	object, found, err := c.service.Get(ctx, key)
+	object, err := c.service.Get(ctx, key)
 	if err != nil {
 		return nil, err
 	}
 
 	var out *proto.GetResponse
 
-	if found {
+	if object != nil {
 		encodedObject, err := convertFromObject(object)
 		if err != nil {
 			return nil, err
@@ -196,7 +196,8 @@ func (c *grpcServer) Get(ctx context.Context, in *proto.KeyRequest) (*proto.GetR
 		out = &proto.GetResponse{
 			Object: encodedObject,
 		}
-
+	} else {
+		return &proto.GetResponse{}, nil
 	}
 
 	return out, nil
@@ -204,12 +205,12 @@ func (c *grpcServer) Get(ctx context.Context, in *proto.KeyRequest) (*proto.GetR
 
 // Update updates an object.
 func (c *grpcServer) Update(ctx context.Context, in *proto.UpdateRequest) (*proto.UpdateResponse, error) {
-	object, found, err := convertToObject(in.Object)
+	object, err := convertToObject(in.Object)
 	if err != nil {
 		return nil, err
 	}
 
-	if !found {
+	if object == nil {
 		return &proto.UpdateResponse{}, errors.Errorf("can't update an object that doesn't exist")
 	}
 

@@ -22,7 +22,7 @@ func CustomResourceDefinition(ctx context.Context, name string, o store.Store) (
 	key := store.KeyFromGroupVersionKind(gvk.CustomResourceDefinition)
 	key.Name = name
 
-	crd, _, err := o.Get(ctx, key)
+	crd, err := o.Get(ctx, key)
 	if err != nil {
 		return nil, fmt.Errorf("get %s: %w", key, err)
 	}

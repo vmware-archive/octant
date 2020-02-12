@@ -315,22 +315,22 @@ type getter interface {
 }
 
 // Get retrieves a single object.
-func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, bool, error) {
+func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, error) {
 	ctx, span := trace.StartSpan(ctx, "dynamicCacheGet")
 	defer span.End()
 
 	if dc.isBackingOff(ctx, key) {
-		return &unstructured.Unstructured{}, false, nil
+		return &unstructured.Unstructured{}, nil
 	}
 
 	if err := dc.access.HasAccess(ctx, key, "get"); err != nil {
 		if meta.IsNoMatchError(err) {
-			return &unstructured.Unstructured{}, false, nil
+			return &unstructured.Unstructured{}, nil
 		}
 		if !dc.isBackingOff(ctx, key) {
 			dc.backoff(ctx, key)
 		}
-		return nil, false, fmt.Errorf("check access for get to %s: %w", key, err)
+		return nil, fmt.Errorf("check access for get to %s: %w", key, err)
 	}
 
 	span.Annotate([]trace.Attribute{
@@ -341,16 +341,15 @@ func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.U
 	}, "get key")
 
 	object, err := dc.getFromInformer(ctx, key)
-
 	if err != nil {
 		if kerrors.IsNotFound(err) {
-			return nil, false, nil
+			return nil, nil
 		}
 
-		return nil, false, err
+		return nil, err
 	}
 
-	return object, true, nil
+	return object, nil
 
 }
 
@@ -529,12 +528,12 @@ func (dc *DynamicCache) Update(ctx context.Context, key store.Key, updater func(
 	}
 
 	err := kretry.RetryOnConflict(kretry.DefaultRetry, func() error {
-		object, found, err := dc.Get(ctx, key)
+		object, err := dc.Get(ctx, key)
 		if err != nil {
 			return err
 		}
 
-		if !found {
+		if object == nil {
 			return errors.New("object not found")
 		}
 
