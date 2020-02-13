@@ -1,0 +1,1 @@
+Fixed issue where logs stopped working after context-switching 

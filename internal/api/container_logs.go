@@ -14,7 +14,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
+	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/modules/overview/container"
 )
@@ -28,7 +28,7 @@ type logResponse struct {
 	Entries []logEntry `json:"entries,omitempty"`
 }
 
-func containerLogsHandler(ctx context.Context, clusterClient cluster.ClientInterface) http.HandlerFunc {
+func containerLogsHandler(ctx context.Context, dashConfig config.Dash) http.HandlerFunc {
 	logger := log.From(ctx)
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +38,7 @@ func containerLogsHandler(ctx context.Context, clusterClient cluster.ClientInter
 		podName := vars["pod"]
 		namespace := vars["namespace"]
 
-		kubeClient, err := clusterClient.KubernetesClient()
+		kubeClient, err := dashConfig.ClusterClient().KubernetesClient()
 		if err != nil {
 			RespondWithError(w, http.StatusInternalServerError, err.Error(), logger)
 			return
