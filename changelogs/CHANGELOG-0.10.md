@@ -1,5 +1,15 @@
+- [v0.10.2](#v0102)
 - [v0.10.1](#v0101)
 - [v0.10.0](#v0100)
+
+## v0.10.2
+#### 2020-02-14
+
+### Download
+ - https://github.com/vmware/octant/releases/tag/v0.10.2
+
+### All Changes
+  * Fixed origin checking for websocket connections (@wwitzel3)
 
 ## v0.10.1
 #### 2020-01-30
