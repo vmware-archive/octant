@@ -12,7 +12,9 @@ import (
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -44,11 +46,20 @@ func PersistentVolumeClaimListHandler(ctx context.Context, list *corev1.Persiste
 			return nil, err
 		}
 
+		pv, err := getBoundPersistentVolume(ctx, &persistentVolumeClaim, options)
+		if err != nil {
+			return nil, err
+		}
+
+		volumeLink, err := options.Link.ForObject(pv, persistentVolumeClaim.Spec.VolumeName)
+		if err != nil {
+			return nil, err
+		}
+
 		row["Name"] = nameLink
 
 		row["Status"] = component.NewText(string(persistentVolumeClaim.Status.Phase))
-		// TODO: Link to volume (GH#503)
-		row["Volume"] = component.NewText(persistentVolumeClaim.Spec.VolumeName)
+		row["Volume"] = volumeLink
 		row["Capacity"] = component.NewText(capacity)
 		row["Access Modes"] = component.NewText(accessModes)
 		row["Storage Class"] = component.NewText(printPersistentVolumeClaimClass(&persistentVolumeClaim))
@@ -74,7 +85,7 @@ func PersistentVolumeClaimHandler(ctx context.Context, persistentVolumeClaim *co
 		return nil, errors.Wrap(err, "print persistentvolumeclaim configuration")
 	}
 
-	if err := ph.Status(options); err != nil {
+	if err := ph.Status(ctx, options); err != nil {
 		return nil, errors.Wrap(err, "print persistentvolumeclaim status")
 	}
 
@@ -135,7 +146,7 @@ func (p *PersistentVolumeClaimConfiguration) Create(options Options) (*component
 	return summary, nil
 }
 
-func createPersistentVolumeClaimStatusView(persistentVolumeClaim *corev1.PersistentVolumeClaim) (*component.Summary, error) {
+func createPersistentVolumeClaimStatusView(ctx context.Context, persistentVolumeClaim *corev1.PersistentVolumeClaim, options Options) (*component.Summary, error) {
 	if persistentVolumeClaim == nil {
 		return nil, errors.New("persistentvolumeclaim is nil")
 	}
@@ -152,10 +163,18 @@ func createPersistentVolumeClaimStatusView(persistentVolumeClaim *corev1.Persist
 
 	if persistentVolumeClaim.Spec.VolumeName != "" {
 		if boundVolume := persistentVolumeClaim.Spec.VolumeName; boundVolume != "" {
+			pv, err := getBoundPersistentVolume(ctx, persistentVolumeClaim, options)
+			if err != nil {
+				return nil, err
+			}
+
+			volumeLink, err := options.Link.ForObject(pv, persistentVolumeClaim.Spec.VolumeName)
+			if err != nil {
+				return nil, err
+			}
 			sections = append(sections, component.SummarySection{
-				Header: "Bound Volume",
-				// TODO: Link to volume (GH#503)
-				Content: component.NewText(boundVolume),
+				Header:  "Bound Volume",
+				Content: volumeLink,
 			})
 		}
 
@@ -217,16 +236,43 @@ func removeDuplicateAccessModes(modes []corev1.PersistentVolumeAccessMode) []cor
 	return accessModes
 }
 
+func getBoundPersistentVolume(ctx context.Context, pvc *corev1.PersistentVolumeClaim, options Options) (runtime.Object, error) {
+	objectStore := options.DashConfig.ObjectStore()
+	persistentVolume := &corev1.PersistentVolume{}
+
+	key := store.Key{
+		APIVersion: "v1",
+		Kind:       "PersistentVolume",
+		Name:       pvc.Spec.VolumeName,
+	}
+
+	pv, err := objectStore.Get(ctx, key)
+	if err != nil {
+		return nil, errors.Wrapf(err, "get volume for key %+v", key)
+	}
+
+	if pv != nil {
+		isErr := runtime.DefaultUnstructuredConverter.FromUnstructured(pv.Object, persistentVolume)
+		if isErr != nil {
+			return nil, isErr
+		}
+	} else {
+		return nil, errors.New("volume not found")
+	}
+
+	return persistentVolume, nil
+}
+
 type persistentVolumeClaimObject interface {
 	Config(options Options) error
-	Status(options Options) error
+	Status(ctx context.Context, options Options) error
 	MountedPodList(ctx context.Context, options Options) error
 }
 
 type persistentVolumeClaimHandler struct {
 	persistentVolumeClaim *corev1.PersistentVolumeClaim
 	configFunc            func(*corev1.PersistentVolumeClaim, Options) (*component.Summary, error)
-	statusFunc            func(*corev1.PersistentVolumeClaim, Options) (*component.Summary, error)
+	statusFunc            func(context.Context, *corev1.PersistentVolumeClaim, Options) (*component.Summary, error)
 	mountedPodListFunc    func(context.Context, string, string, Options) (component.Component, error)
 	object                *Object
 }
@@ -265,8 +311,8 @@ func defaultPersistentVolumeClaimConfig(pvc *corev1.PersistentVolumeClaim, optio
 	return NewPersistentVolumeClaimConfiguration(pvc).Create(options)
 }
 
-func (p *persistentVolumeClaimHandler) Status(options Options) error {
-	out, err := p.statusFunc(p.persistentVolumeClaim, options)
+func (p *persistentVolumeClaimHandler) Status(ctx context.Context, options Options) error {
+	out, err := p.statusFunc(ctx, p.persistentVolumeClaim, options)
 	if err != nil {
 		return err
 	}
@@ -274,8 +320,8 @@ func (p *persistentVolumeClaimHandler) Status(options Options) error {
 	return nil
 }
 
-func defaultPersistentVolumClaimStatus(pvc *corev1.PersistentVolumeClaim, options Options) (*component.Summary, error) {
-	return createPersistentVolumeClaimStatusView(pvc)
+func defaultPersistentVolumClaimStatus(ctx context.Context, pvc *corev1.PersistentVolumeClaim, options Options) (*component.Summary, error) {
+	return createPersistentVolumeClaimStatusView(ctx, pvc, options)
 }
 
 func (p *persistentVolumeClaimHandler) MountedPodList(ctx context.Context, options Options) error {

@@ -19,6 +19,7 @@ var (
 		gvk.ClusterRoleBinding,
 		gvk.ClusterRole,
 		gvk.Node,
+		gvk.PersistentVolume,
 	}
 )
 
@@ -38,6 +39,8 @@ func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 		p = "/rbac/cluster-role-bindings"
 	case apiVersion == "v1" && kind == "Node":
 		p = "/nodes"
+	case apiVersion == "v1" && kind == "PersistentVolume":
+		p = "/persistent-volumes"
 	default:
 		return "", errors.Errorf("unknown object %s %s", apiVersion, kind)
 	}

@@ -43,6 +43,8 @@ func AddHandlers(p Handler) error {
 		ReplicationControllerListHandler,
 		PodHandler,
 		PodListHandler,
+		PersistentVolumeHandler,
+		PersistentVolumeListHandler,
 		PersistentVolumeClaimHandler,
 		PersistentVolumeClaimListHandler,
 		ServiceAccountListHandler,
