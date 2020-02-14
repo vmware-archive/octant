@@ -104,3 +104,36 @@ func Test_shouldAllowHost(t *testing.T) {
 		})
 	}
 }
+
+func Test_checkSameOrigin(t *testing.T) {
+	cases := []struct {
+		name     string
+		host     string
+		origin   string
+		expected bool
+	}{
+		{
+			name:     "host/origin match",
+			host:     "192.168.1.1:7777",
+			origin:   "http://192.168.1.1:7777",
+			expected: true,
+		},
+		{
+			name:     "host/origin do not match",
+			host:     "192.168.1.1:7777",
+			origin:   "http://127.0.0.1:7777",
+			expected: false,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			r := &http.Request{
+				Host: tc.host,
+				Header: make(http.Header, 1),
+			}
+			r.Header.Set("Origin", tc.origin)
+			require.Equal(t, tc.expected, checkSameOrigin(r))
+		})
+	}
+}
