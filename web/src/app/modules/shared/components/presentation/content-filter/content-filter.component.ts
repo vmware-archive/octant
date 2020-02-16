@@ -48,7 +48,7 @@ export class ContentFilterComponent
   }
 
   isActive(): boolean {
-    return true;
+    return Object.keys(this.checkboxes).length > 0;
   }
 
   onFilterChange(name: string, e: boolean) {
