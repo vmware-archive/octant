@@ -334,6 +334,18 @@ func CreatePersistentVolumeClaim(name string) *corev1.PersistentVolumeClaim {
 	}
 }
 
+// CreatePersistentVolume creates a persistent volume
+func CreatePersistentVolume(name string) *corev1.PersistentVolume {
+	return &corev1.PersistentVolume{
+		TypeMeta:   genTypeMeta(gvk.PersistentVolume),
+		ObjectMeta: genObjectMeta(name, true),
+		Spec:       corev1.PersistentVolumeSpec{},
+		Status: corev1.PersistentVolumeStatus{
+			Phase: corev1.VolumeBound,
+		},
+	}
+}
+
 // CreateRole creates a role.
 func CreateRole(name string) *rbacv1.Role {
 	return &rbacv1.Role{

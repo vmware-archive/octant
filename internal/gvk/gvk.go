@@ -34,6 +34,7 @@ var (
 	Service                  = schema.GroupVersionKind{Version: "v1", Kind: "Service"}
 	Pod                      = schema.GroupVersionKind{Version: "v1", Kind: "Pod"}
 	PodMetrics               = schema.GroupVersionKind{Group: "metrics.k8s.io", Version: "v1beta1", Kind: "PodMetrics"}
+	PersistentVolume         = schema.GroupVersionKind{Version: "v1", Kind: "PersistentVolume"}
 	PersistentVolumeClaim    = schema.GroupVersionKind{Version: "v1", Kind: "PersistentVolumeClaim"}
 	ReplicationController    = schema.GroupVersionKind{Version: "v1", Kind: "ReplicationController"}
 	StatefulSet              = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "StatefulSet"}

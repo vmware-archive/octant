@@ -58,6 +58,16 @@ var (
 		IconName:              icon.ClusterOverviewNode,
 	})
 
+	persistentVolumeDescriber = describer.NewResource(describer.ResourceOptions{
+		Path:           "/persistent-volumes",
+		ObjectStoreKey: store.Key{APIVersion: "v1", Kind: "PersistentVolume"},
+		ListType:       &v1.PersistentVolumeList{},
+		ObjectType:     &v1.PersistentVolume{},
+		Titles:         describer.ResourceTitle{List: "Persistent Volumes", Object: "Persistent Volume"},
+		ClusterWide:    true,
+		IconName:       icon.ClusterOverviewPersistentVolume,
+	})
+
 	namespacesDescriber = describer.NewResource(describer.ResourceOptions{
 		Path:                  "/namespaces",
 		ObjectStoreKey:        store.Key{APIVersion: "v1", Kind: "Namespace"},
@@ -79,6 +89,7 @@ var (
 		customResourcesDescriber,
 		rbacDescriber,
 		nodesDescriber,
+		persistentVolumeDescriber,
 		portForwardDescriber,
 		terminalDescriber,
 	)

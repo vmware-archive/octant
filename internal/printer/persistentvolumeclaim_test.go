@@ -7,6 +7,7 @@ package printer
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -44,6 +45,20 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 	}
 
 	ctx := context.Background()
+
+	pv := testutil.CreatePersistentVolume(object.Spec.VolumeName)
+
+	pvKey := store.Key{
+		APIVersion: "v1",
+		Kind:       "PersistentVolume",
+		Name:       object.Spec.VolumeName,
+	}
+
+	tpo.objectStore.EXPECT().Get(ctx, pvKey).
+		Return(testutil.ToUnstructured(t, pv), nil)
+
+	tpo.PathForObject(pv, pv.GetName(), fmt.Sprintf("/%s", pv.GetName()))
+
 	got, err := PersistentVolumeClaimListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 
@@ -53,7 +68,7 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 	expected.Add(component.TableRow{
 		"Name":          component.NewLink("", object.Name, "/pvc"),
 		"Status":        component.NewText("Bound"),
-		"Volume":        component.NewText("task-pv-volume"),
+		"Volume":        component.NewLink("", pv.GetName(), fmt.Sprintf("/%s", pv.GetName())),
 		"Capacity":      component.NewText("10Gi"),
 		"Access Modes":  component.NewText("RWO"),
 		"Storage Class": component.NewText("manual"),
@@ -142,15 +157,37 @@ func Test_PersistentVolumeClaimConfiguration(t *testing.T) {
 }
 
 func Test_createPersistentVolumeClaimStatusView(t *testing.T) {
+	ctx := context.Background()
 	object := testutil.CreatePersistentVolumeClaim("pvc")
+	controller := gomock.NewController(t)
+	defer controller.Finish()
 
-	got, err := createPersistentVolumeClaimStatusView(object)
+	tpo := newTestPrinterOptions(controller)
+	printOptions := tpo.ToOptions()
+
+	pv := testutil.CreatePersistentVolume(object.Spec.VolumeName)
+
+	pvKey := store.Key{
+		APIVersion: "v1",
+		Kind:       "PersistentVolume",
+		Name:       object.Spec.VolumeName,
+	}
+
+	tpo.objectStore.EXPECT().Get(ctx, pvKey).
+		Return(testutil.ToUnstructured(t, pv), nil)
+
+	tpo.PathForObject(pv, pv.GetName(), fmt.Sprintf("/%s", pv.GetName()))
+
+	got, err := createPersistentVolumeClaimStatusView(ctx, object, printOptions)
 	require.NoError(t, err)
 
 	sections := component.SummarySections{}
 	sections.AddText("Claim Status", "Bound")
 	sections.AddText("Storage Requested", "3Gi")
-	sections.AddText("Bound Volume", "task-pv-volume")
+	sections = append(sections, component.SummarySection{
+		Header:  "Bound Volume",
+		Content: component.NewLink("", pv.GetName(), fmt.Sprintf("/%s", pv.GetName())),
+	})
 	sections.AddText("Total Volume Capacity", "10Gi")
 	expected := component.NewSummary("Status", sections...)
 

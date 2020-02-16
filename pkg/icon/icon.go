@@ -20,6 +20,7 @@ const (
 	ClusterOverviewClusterRoleBinding = "crb"
 	ClusterOverviewNamespace          = "ns"
 	ClusterOverviewNode               = "node"
+	ClusterOverviewPersistentVolume   = "pv"
 
 	Configuration       = "cog"
 	ConfigurationPlugin = "plugin"
