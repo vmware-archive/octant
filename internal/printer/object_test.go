@@ -205,6 +205,36 @@ func Test_Object_ToComponent(t *testing.T) {
 			},
 		},
 		{
+			name:   "register items (skip nil)",
+			object: deployment,
+			initFunc: func(o *Object, options *initOptions) {
+				stubPlugins(options.PluginPrinter)
+				o.RegisterItems([]ItemDescriptor{
+					{
+						Func: func() (component.Component, error) {
+							return nil, nil
+						},
+						Width: component.WidthHalf,
+					},
+					{
+						Func: func() (component.Component, error) {
+							return component.NewText("item1"), nil
+						},
+						Width: component.WidthHalf,
+					},
+				}...)
+			},
+			sections: []component.FlexLayoutSection{
+				defaultConfigSection,
+				{
+					{
+						Width: component.WidthHalf,
+						View:  component.NewText("item1"),
+					},
+				},
+			},
+		},
+		{
 			name:   "nil object",
 			object: nil,
 			isErr:  true,
