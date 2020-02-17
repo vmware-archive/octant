@@ -2,12 +2,40 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+.log-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
 .app-logs {
   .log-actions,
   .container-select {
-    margin-bottom: 20px;
+    margin-top: 10px;
+    margin-bottom: 6px;
   }
+  .clr-filter {
+    display: flex;
 
+    &-buttons {
+      margin-top: 14px;
+      margin-left: 6px;
+    }
+    &-btn {
+      padding-left: 6px;
+      padding-right: 6px;
+      margin-right: 6px;
+      width: 24px;
+      height: 24px;
+      font-size: 14px;
+      line-height: 16px;
+    }
+  }
+  .log-actions {
+    .clr-form-control {
+      margin-top: 0px;
+    }
+  }
   .container-logs {
     border: 1px solid #ccc;
     border-radius: 4px;

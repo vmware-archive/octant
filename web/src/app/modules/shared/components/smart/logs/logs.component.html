@@ -6,22 +6,38 @@
         <option *ngFor="let container of v?.config.containers" value="{{container}}">{{container}}</option>
       </select>
     </clr-select-container>
-    <clr-checkbox-wrapper class="timestamp-toggle">
-      <input type="checkbox" clrCheckbox [checked]="shouldDisplayTimestamp" (click)="toggleTimestampDisplay()"/>
-      <label>Display timestamp</label>
-    </clr-checkbox-wrapper>
+    <div class="clr-filter">
+      <div>
+        <label class="clr-control-label">Filter by:</label>
+        <input clrInput class= "clr-control-container" placeholder="no filter" name="input" [(ngModel)]="filterText"/>
+      </div>
+      <div  class="clr-filter-buttons">
+        <button class="btn btn-icon clr-filter-btn" type="button" (click)="onPreviousHighlight()"><</button>
+        <button class="btn btn-icon clr-filter-btn" type="button" (click)="onNextHighlight()">></button>
+      </div>
+    </div>
+
+    <div>
+      <clr-checkbox-wrapper class="timestamp-toggle">
+        <input type="checkbox" clrCheckbox [checked]="showOnlyFiltered" (click)="toggleShowOnlyFiltered()"/>
+        <label>Show only filtered</label>
+      </clr-checkbox-wrapper>
+      <clr-checkbox-wrapper class="timestamp-toggle">
+        <input type="checkbox" clrCheckbox [checked]="shouldDisplayTimestamp" (click)="toggleTimestampDisplay()"/>
+        <label>Display timestamp</label>
+      </clr-checkbox-wrapper>
+    </div>
   </div>
   <div class="container-logs">
     <div class="container-logs-bg" #scrollTarget (scroll)="onScroll($event)" >
       <ng-container *ngIf="containerLogs?.length < 1">
         No logs
       </ng-container>
-      <div class="container-log code language-bash" *ngFor="let log of containerLogs; trackBy: identifyLog">
-        <div class="container-log-timestamp" *ngIf="shouldDisplayTimestamp">
-          [{{log.timestamp | date:'long' }}]
+      <div class="container-log code language-bash" *ngFor="let log of filterFunction(containerLogs); trackBy: identifyLog">
+        <div class="container-log-timestamp" *ngIf="shouldDisplayTimestamp"
+             [innerHTML]="'['+highlightText(log.timestamp | date:'long')+']'">
         </div>
-        <div class="container-log-message">
-          {{log.message}}
+        <div class="container-log-message" [innerHTML]="highlightText(log.message)">
         </div>
       </div>
     </div>
