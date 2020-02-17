@@ -20,6 +20,7 @@ const emptyNavigation: Navigation = {
 })
 export class NavigationComponent implements OnInit, OnDestroy {
   behavior = new BehaviorSubject<Navigation>(emptyNavigation);
+  collapsed = false;
 
   navigation = emptyNavigation;
 

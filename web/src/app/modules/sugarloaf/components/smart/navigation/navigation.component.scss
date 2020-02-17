@@ -2,18 +2,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-.clr-treenode-link {
-  white-space: nowrap;
-}
+.clr-vertical-nav {
+  height: 100%;
+  background: none;
 
-clr-tree-node.section {
-  margin-bottom: 18px;
-}
+  .namespace-switcher {
+    padding: 0 1rem 1rem 1rem;
+  }
 
-a.section {
-  font-weight: 600;
-}
+  .navigation-items {
+    flex-grow: 1;
+    overflow-y: auto;
+  }
 
-a.category {
-  font-weight: 600;
+  .theme-switcher {
+    padding: 0 1rem 0 0.5rem;
+  }
 }

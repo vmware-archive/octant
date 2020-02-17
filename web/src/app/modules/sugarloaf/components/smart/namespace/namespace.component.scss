@@ -5,7 +5,7 @@
 .app-namespace-selector {
   // Dropdown's color variables for Light Theme.
   :host-context(body) {
-    --dropdownLink-color: #575757;
+    --dropdownLink-color: #0079b8;
     --dropdownPanel-border-color: #ccc;
     --dropdownOptionSelected-bg-color: #dae4ea;
     --dropdownOption-bg-color: white;
@@ -21,12 +21,11 @@
     --dropdownOption-font-color: #adbbc4;
   }
 
-  margin: 0.5rem 1rem 1rem 1rem;
-
   .title {
     display: block;
     margin-bottom: 0.25rem;
-    font-weight: 600;
+    font-weight: 500;
+    font-size: 0.9em;
   }
 
   .namespace-dropdown {
@@ -57,7 +56,6 @@
     }
 
     ::ng-deep .ng-dropdown-panel {
-      box-shadow: 0 1px 0.125rem rgba(0,0,0,.5);
       border-color: var(--dropdownPanel-border-color);
       background-color: var(--dropdownOption-bg-color);
 

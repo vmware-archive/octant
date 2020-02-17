@@ -6,6 +6,7 @@ import { DefaultPipe } from '../../../../shared/pipes/default/default.pipe';
 import { NavigationComponent } from './navigation.component';
 import { NamespaceComponent } from '../namespace/namespace.component';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { ThemeSwitchButtonComponent } from '../theme-switch/theme-switch-button.component';
 
 describe('NavigationComponent', () => {
   let component: NavigationComponent;
@@ -14,7 +15,12 @@ describe('NavigationComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [NgSelectModule],
-      declarations: [NavigationComponent, NamespaceComponent, DefaultPipe],
+      declarations: [
+        NavigationComponent,
+        NamespaceComponent,
+        DefaultPipe,
+        ThemeSwitchButtonComponent,
+      ],
     }).compileComponents();
   }));
 

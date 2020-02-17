@@ -1,53 +1,33 @@
-<div class="namespace-switcher">
-    <app-namespace></app-namespace>
-</div>
+<clr-vertical-nav [clrVerticalNavCollapsible]="true" [(clrVerticalNavCollapsed)]="collapsed">
+    <!-- Namespace selector -->
+    <div class="namespace-switcher" *ngIf="!collapsed">
+        <app-namespace></app-namespace>
+    </div>
 
-<clr-tree>
-  <clr-tree-node
-          *ngFor="let section of navigation.sections; trackBy: identifyNavigationItem"
-          [clrExpanded]="true"
-          [clrLoading]="section.isLoading"
-          class="section">
-      <a
-              [routerLinkActiveOptions]="{exact: true}"
-              [routerLink]="formatPath(section.path)"
-              class="clr-treenode-link section"
-              routerLinkActive="active">
-          <span>
-          <clr-icon [attr.shape]="section.iconName | default:'home'"></clr-icon>
-              {{ section.title }}
-          </span>
-      </a>
+    <!-- Navigation items -->
+    <div class="navigation-items">
+        <clr-vertical-nav-group
+            routerLinkActive="active"
+            *ngFor="let section of navigation.sections; trackBy: identifyNavigationItem"
+        >
+            <clr-icon [attr.shape]="section.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
+            {{ section.title }}
+            <clr-vertical-nav-group-children>
+                <a
+                    clrVerticalNavLink
+                    *ngFor="let category of section.children; trackBy: identifyNavigationItem"
+                    [routerLink]="formatPath(category.path)"
+                   routerLinkActive="active"
+                >
+                   <clr-icon [attr.shape]="itemIcon(category) | default:'folder'"></clr-icon>
+                   {{ category.title }}
+                </a>
+            </clr-vertical-nav-group-children>
+        </clr-vertical-nav-group>
+    </div>
 
-      <clr-tree-node
-              *ngFor="let category of section.children; trackBy: identifyNavigationItem"
-              [clrExpanded]="true"
-              [clrLoading]="category.isLoading">
-          <a
-                  [routerLinkActiveOptions]="{exact: true}"
-                  [routerLink]="formatPath(category.path)"
-                  class="clr-treenode-link category"
-                  routerLinkActive="active">
-        <span>
-        <clr-icon [attr.shape]="itemIcon(category) | default:'folder'"></clr-icon>
-            {{ category.title }}
-        </span>
-
-          </a>
-
-          <clr-tree-node
-                  *ngFor="let entry of category.children; trackBy: identifyNavigationItem"
-                  [clrLoading]="entry.isLoading">
-              <a
-                      [routerLink]="formatPath(entry.path)"
-                      class="clr-treenode-link item"
-                      routerLinkActive="active">
-                  <clr-icon [attr.shape]="itemIcon(entry) | default:'folder'"></clr-icon>
-                  <span>
-                      {{ entry.title }}
-                  </span>
-              </a>
-          </clr-tree-node>
-      </clr-tree-node>
-  </clr-tree-node>
-</clr-tree>
+    <!-- Theme switcher -->
+    <div class="theme-switcher" *ngIf="!collapsed">
+        <app-theme-switch-button></app-theme-switch-button>
+    </div>
+</clr-vertical-nav>

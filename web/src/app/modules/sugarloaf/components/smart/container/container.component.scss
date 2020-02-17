@@ -2,8 +2,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-$navigation-width: 13rem;
-
 .main-container {
     // Navigation's color variables for Light Theme.
     :host-context(body) {
@@ -19,10 +17,6 @@ $navigation-width: 13rem;
 
   .header {
     background: var(--navigation-background-color);
-
-    .branding {
-      min-width: $navigation-width;
-    }
 
     .header-nav {
       padding-left: 1rem;
@@ -52,9 +46,6 @@ $navigation-width: 13rem;
 
     .navigation {
       border-right: 1px solid var(--navigation-border-color);
-      overflow-y: auto;
-      min-width: 2rem;
-      width: $navigation-width;
     }
 
     .content-area {

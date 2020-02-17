@@ -1,5 +1,17 @@
 .switch-button-container {
-  height: 100%;
-  display: flex;
-  align-items: center;
+  :host-context(body) {
+    --font-color: #0079b8;
+  }
+
+  :host-context(body.dark) {
+    --font-color: #49afd9;
+  }
+  
+  button.btn.btn-link.btn-inverse {
+    color: var(--font-color);
+
+    &:active {
+      box-shadow: none;
+    }
+  }
 }
