@@ -292,6 +292,7 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner *unstructured
 }
 
 var allowed = []schema.GroupVersionKind{
+	gvk.AppReplicaSet,
 	gvk.CronJob,
 	gvk.DaemonSet,
 	gvk.Deployment,
