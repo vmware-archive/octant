@@ -44,6 +44,11 @@ describe('LogsComponent <-> PodsLogsService', () => {
   let service: PodLogsService;
   let httpClient: HttpClient;
   let httpTestingController: HttpTestingController;
+  const defaultTestLogs = [
+    { timestamp: '2019-05-06T18:59:06.554540433Z', message: 'messageA' },
+    { timestamp: '2019-05-06T18:59:06.554540433Z', message: 'messageB' },
+    { timestamp: '2019-05-06T18:59:06.554540433Z', message: 'messageC' },
+  ];
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -88,11 +93,7 @@ describe('LogsComponent <-> PodsLogsService', () => {
 
   it('should allow user to toggle displaying timestamps', () => {
     component.shouldDisplayTimestamp = true;
-    component.containerLogs = [
-      { timestamp: '2019-05-06T18:59:06.554540433Z', message: 'messageA' },
-      { timestamp: '2019-05-06T18:59:06.554540433Z', message: 'messageB' },
-      { timestamp: '2019-05-06T18:59:06.554540433Z', message: 'messageC' },
-    ];
+    component.containerLogs = defaultTestLogs;
     fixture.detectChanges();
 
     let logEntriesDebugElement: DebugElement[] = fixture.debugElement.queryAll(
@@ -103,10 +104,10 @@ describe('LogsComponent <-> PodsLogsService', () => {
       /May \d+, 2019(.+)messageA/
     );
     expect(logEntriesDebugElement[1].nativeElement.textContent).toMatch(
-      /May \d+, 2019(.*)+messageB/
+      /May \d+, 2019(.+)messageB/
     );
     expect(logEntriesDebugElement[2].nativeElement.textContent).toMatch(
-      /May \d+, 2019(.*)+messageC/
+      /May \d+, 2019(.+)messageC/
     );
 
     component.shouldDisplayTimestamp = false;
@@ -116,14 +117,14 @@ describe('LogsComponent <-> PodsLogsService', () => {
       By.css('.container-log')
     );
     expect(logEntriesDebugElement.length).toBe(3);
-    expect(logEntriesDebugElement[0].nativeElement.textContent).toMatch(
-      /^\s+messageA\s+$/
+    expect(logEntriesDebugElement[0].nativeElement.textContent).toBe(
+      'messageA'
     );
-    expect(logEntriesDebugElement[1].nativeElement.textContent).toMatch(
-      /^\s+messageB\s+$/
+    expect(logEntriesDebugElement[1].nativeElement.textContent).toBe(
+      'messageB'
     );
-    expect(logEntriesDebugElement[2].nativeElement.textContent).toMatch(
-      /^\s+messageC\s+$/
+    expect(logEntriesDebugElement[2].nativeElement.textContent).toBe(
+      'messageC'
     );
   });
 
@@ -143,7 +144,7 @@ describe('LogsComponent <-> PodsLogsService', () => {
     expect(logWrapperNativeElement.scrollHeight).toBeGreaterThan(
       logWrapperNativeElement.clientHeight
     );
-    expect(logWrapperNativeElement.scrollTop).toBe(0);
+    expect(logWrapperNativeElement.scrollTop).toBeGreaterThan(0);
 
     const logWrapperHeight = logWrapperNativeElement.clientHeight;
     logWrapperNativeElement.scrollTop = logWrapperNativeElement.scrollHeight;
@@ -184,7 +185,7 @@ describe('LogsComponent <-> PodsLogsService', () => {
     expect(logWrapperNativeElement.scrollHeight).toBeGreaterThan(
       logWrapperNativeElement.clientHeight
     );
-    expect(logWrapperNativeElement.scrollTop).toBe(0);
+    expect(logWrapperNativeElement.scrollTop).toBeGreaterThan(0);
 
     // scroll halfway
     const halfwayScrollMark = Math.floor(
@@ -208,7 +209,42 @@ describe('LogsComponent <-> PodsLogsService', () => {
     expect(logWrapperNativeElement.scrollTop).toBe(halfwayScrollMark);
   });
 
+  it('should filer messages based on search string', () => {
+    component.shouldDisplayTimestamp = true;
+    component.containerLogs = defaultTestLogs;
+    component.filterText = 'message';
+    fixture.detectChanges();
+    VerifyElementsExist('.container-log', 3);
+    VerifyElementsExist('.highlight', 3);
+    VerifyElementsExist('.highlight-selected', 1);
+
+    component.filterText = 'messageA';
+    fixture.detectChanges();
+    VerifyElementsExist('.container-log', 3);
+    VerifyElementsExist('.highlight', 1);
+    VerifyElementsExist('.highlight-selected', 1);
+
+    component.showOnlyFiltered = true;
+    fixture.detectChanges();
+    VerifyElementsExist('.container-log', 1);
+    VerifyElementsExist('.highlight', 1);
+    VerifyElementsExist('.highlight-selected', 1);
+
+    component.filterText = '';
+    fixture.detectChanges();
+    VerifyElementsExist('.container-log', 3);
+    VerifyElementsExist('.highlight', 0);
+    VerifyElementsExist('.highlight-selected', 0);
+  });
+
   afterEach(() => {
     httpTestingController.verify();
   });
+
+  function VerifyElementsExist(selector: string, noItems: number) {
+    const element: DebugElement[] = fixture.debugElement.queryAll(
+      By.css(selector)
+    );
+    expect(element.length).toBe(noItems);
+  }
 });
