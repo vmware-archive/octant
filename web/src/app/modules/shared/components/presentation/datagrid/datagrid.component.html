@@ -28,8 +28,10 @@
             <clr-dg-footer>
                 <clr-dg-pagination #pagination [clrDgPageSize]="10">
                     <clr-dg-page-size [clrPageSizeOptions]="[10,20,50,100]">Items per page</clr-dg-page-size>
-                    {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
-                    of {{pagination.totalItems}} items
+                    <ng-container *ngIf="rows?.length > 0">
+                        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+                        of {{pagination.totalItems}} items
+                    </ng-container>
                 </clr-dg-pagination>
 
                 <ng-container *ngIf="loading">
