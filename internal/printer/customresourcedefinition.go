@@ -43,7 +43,7 @@ func CustomResourceDefinitionHandler(ctx context.Context, crd *unstructured.Unst
 		version := versions[i]
 
 		object.RegisterItems(ItemDescriptor{
-			Func: func() (c component.Component, err error) {
+			Func: func() (component.Component, error) {
 				crGVK, err := gvk.CustomResource(crd, version)
 				if err != nil {
 					return nil, err
@@ -57,7 +57,17 @@ func CustomResourceDefinitionHandler(ctx context.Context, crd *unstructured.Unst
 					return nil, err
 				}
 
-				return CustomResourceListHandler(crd, customResources, version, options.Link)
+				view, err := CustomResourceListHandler(crd, customResources, version, options.Link)
+				if err != nil {
+					return nil, err
+				}
+
+				if view.IsEmpty() {
+					// if view is empty, return nil so the object printer will skip it.
+					return nil, nil
+				}
+
+				return view, nil
 			},
 			Width: component.WidthFull,
 		})

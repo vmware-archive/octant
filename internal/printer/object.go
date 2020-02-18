@@ -246,6 +246,11 @@ func (o *Object) ToComponent(ctx context.Context, options Options) (component.Co
 				return nil, fmt.Errorf("failed to create item view: %w", err)
 			}
 
+			if vc == nil {
+				// don't print nil objects
+				continue
+			}
+
 			if err := section.Add(vc, item.Width); err != nil {
 				return nil, fmt.Errorf("unable to add item to layout section in object printer: %w", err)
 			}
