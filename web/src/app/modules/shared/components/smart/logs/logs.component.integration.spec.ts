@@ -144,7 +144,7 @@ describe('LogsComponent <-> PodsLogsService', () => {
     expect(logWrapperNativeElement.scrollHeight).toBeGreaterThan(
       logWrapperNativeElement.clientHeight
     );
-    expect(logWrapperNativeElement.scrollTop).toBe(0);
+    expect(logWrapperNativeElement.scrollTop).toBeGreaterThan(0);
 
     const logWrapperHeight = logWrapperNativeElement.clientHeight;
     logWrapperNativeElement.scrollTop = logWrapperNativeElement.scrollHeight;
@@ -185,7 +185,7 @@ describe('LogsComponent <-> PodsLogsService', () => {
     expect(logWrapperNativeElement.scrollHeight).toBeGreaterThan(
       logWrapperNativeElement.clientHeight
     );
-    expect(logWrapperNativeElement.scrollTop).toBe(0);
+    expect(logWrapperNativeElement.scrollTop).toBeGreaterThan(0);
 
     // scroll halfway
     const halfwayScrollMark = Math.floor(

@@ -46,7 +46,7 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   private logStream: PodLogsStreamer;
-  scrollToBottom = false;
+  scrollToBottom = true;
 
   private containerLogsDiffer: IterableDiffer<LogEntry>;
   @ViewChild('scrollTarget', { static: true }) scrollTarget: ElementRef;
