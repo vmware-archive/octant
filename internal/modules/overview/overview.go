@@ -7,15 +7,11 @@ package overview
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"sync"
 
-	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/describer"
 	"github.com/vmware-tanzu/octant/internal/generator"
@@ -293,71 +289,6 @@ func (co *Overview) extensionDescriber(path, namespace string, options describer
 		extension.AddTab(extensionTab)
 	}
 	return extension, nil
-}
-
-func (co *Overview) portForwardsHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		svc := co.dashConfig.PortForwarder()
-		logger := co.dashConfig.Logger()
-
-		if svc == nil {
-			logger.Errorf("port forward service is nil")
-			http.Error(w, "port forward service is nil", http.StatusInternalServerError)
-			return
-		}
-
-		ctx := log.WithLoggerContext(r.Context(), logger)
-
-		defer func() {
-			if cErr := r.Body.Close(); cErr != nil {
-				logger.With("err", cErr).Errorf("unable to close port forward request body")
-			}
-		}()
-
-		switch r.Method {
-		case http.MethodPost:
-			err := createPortForward(ctx, r.Body, svc, w)
-			handlePortForwardError(w, err, logger)
-		default:
-			api.RespondWithError(
-				w,
-				http.StatusNotFound,
-				fmt.Sprintf("unhandled HTTP method %s", r.Method),
-				logger,
-			)
-		}
-	}
-}
-
-func (co *Overview) portForwardHandler() http.HandlerFunc {
-	logger := co.dashConfig.Logger()
-
-	return func(w http.ResponseWriter, r *http.Request) {
-		svc := co.dashConfig.PortForwarder()
-		if svc == nil {
-			logger.Errorf("port forward service is nil")
-			http.Error(w, "port forward service is nil", http.StatusInternalServerError)
-			return
-		}
-
-		vars := mux.Vars(r)
-		id := vars["id"]
-
-		ctx := log.WithLoggerContext(r.Context(), logger)
-
-		switch r.Method {
-		case http.MethodDelete:
-			err := deletePortForward(ctx, id, co.dashConfig.PortForwarder(), w)
-			handlePortForwardError(w, err, logger)
-		default:
-			api.RespondWithError(
-				w,
-				http.StatusNotFound,
-				fmt.Sprintf("unhandled HTTP method %s", r.Method),
-				logger,
-			)
-		}
-	}
 }
 
 // ActionPaths contain the actions this module is responsible for.
