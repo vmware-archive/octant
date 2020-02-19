@@ -162,7 +162,7 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
     let highlighted = text;
 
     if (this.filterText) {
-      highlighted = text.replace(new RegExp(this.filterText, 'gi'), match => {
+      highlighted = text.replace(new RegExp(this.filterText, 'g'), match => {
         return '<span class="highlight">' + match + '</span>';
       });
     }
@@ -174,14 +174,14 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
       if (this.shouldDisplayTimestamp) {
         return logs.filter(
           log =>
-            log.message.match(new RegExp(this.filterText, 'gi')) ||
+            log.message.match(new RegExp(this.filterText, 'g')) ||
             formatDate(log.timestamp, 'long', 'en-US').match(
-              new RegExp(this.filterText, 'gi')
+              new RegExp(this.filterText, 'g')
             )
         );
       }
       return logs.filter(log =>
-        log.message.match(new RegExp(this.filterText, 'gi'))
+        log.message.match(new RegExp(this.filterText, 'g'))
       );
     }
 

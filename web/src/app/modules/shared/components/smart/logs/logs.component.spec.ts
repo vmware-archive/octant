@@ -5,6 +5,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { LogsComponent } from './logs.component';
 import { LogEntry } from 'src/app/modules/shared/models/content';
+import { By } from '@angular/platform-browser';
+import { DebugElement } from '@angular/core';
 
 /**
  * Adds 15 logs to the provided list.
@@ -60,5 +62,18 @@ describe('LogsComponent', () => {
     expect(nativeElement.scrollTop).toEqual(
       nativeElement.scrollHeight - nativeElement.offsetHeight
     );
+  });
+
+  it('should filter messages based on regex expression', () => {
+    component.filterText = '([A-Z])\\w+';
+    component.shouldDisplayTimestamp = false;
+    component.containerLogs = addLogsToList([]);
+    fixture.detectChanges();
+
+    const selectHighlights: DebugElement[] = fixture.debugElement.queryAll(
+      By.css('.highlight')
+    );
+    expect(selectHighlights.length).toEqual(15);
+    expect(selectHighlights[0].nativeElement.innerText).toEqual('Just');
   });
 });
