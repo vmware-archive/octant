@@ -76,4 +76,47 @@ describe('LogsComponent', () => {
     expect(selectHighlights.length).toEqual(15);
     expect(selectHighlights[0].nativeElement.innerText).toEqual('Just');
   });
+
+  it('forward button should wrap search at bottom', () => {
+    component.containerLogs = [
+      {
+        timestamp: '2019-05-06T18:50:06.554540433Z',
+        message: 'Test log line 1',
+      },
+      {
+        timestamp: '2019-05-06T18:59:06.554540433Z',
+        message: 'Test log line 2',
+      },
+    ];
+    component.filterText = 'Test log';
+    fixture.detectChanges();
+
+    const prevButton = fixture.debugElement.nativeElement.querySelector(
+      '#button-prev'
+    );
+    const nextButton = fixture.debugElement.nativeElement.querySelector(
+      '#button-next'
+    );
+    nextButton.click();
+
+    fixture.whenStable().then(() => {
+      const offsetSecondElement = getSelectedHighlightTop();
+
+      nextButton.click();
+      fixture.detectChanges();
+      expect(getSelectedHighlightTop()).toBeLessThan(offsetSecondElement); // should roll-up to 1st
+
+      prevButton.click();
+      fixture.detectChanges();
+      expect(getSelectedHighlightTop()).toBe(offsetSecondElement); // should come back to 2nd
+    });
+  });
+
+  function getSelectedHighlightTop() {
+    const nextSelectedElement: HTMLDivElement = fixture.debugElement.query(
+      By.css('.highlight-selected')
+    ).nativeElement;
+
+    return nextSelectedElement.offsetTop;
+  }
 });

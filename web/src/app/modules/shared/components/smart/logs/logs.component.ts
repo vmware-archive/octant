@@ -87,17 +87,13 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   toggleTimestampDisplay(): void {
-    this.removeHighlightSelection();
-
     this.shouldDisplayTimestamp = !this.shouldDisplayTimestamp;
-    this.scrollToHighlight(0);
+    this.scrollToHighlight(0, 0);
   }
 
   toggleShowOnlyFiltered(): void {
-    this.removeHighlightSelection();
-
     this.showOnlyFiltered = !this.showOnlyFiltered;
-    this.scrollToHighlight(0);
+    this.scrollToHighlight(0, 0);
   }
 
   startStream() {
@@ -147,7 +143,7 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
     if (this.filterText !== this.oldFilterText) {
       this.oldFilterText = this.filterText;
-      this.scrollToHighlight(0);
+      this.scrollToHighlight(0, 0);
     }
   }
 
@@ -189,21 +185,28 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   onPreviousHighlight(): void {
-    this.scrollToHighlight(-1);
+    if (this.currentSelection > 0) {
+      this.scrollToHighlight(-1);
+    } else {
+      this.scrollToHighlight(0, this.totalHighlights() - 1);
+    }
   }
 
   onNextHighlight(): void {
-    this.scrollToHighlight(1);
+    if (this.getHighlightedElement(this.currentSelection + 1)) {
+      this.scrollToHighlight(1);
+    } else {
+      this.scrollToHighlight(0, 0);
+    }
   }
 
-  scrollToHighlight(scrollBy: number) {
-    if (scrollBy === 0) {
-      this.currentSelection = 0;
+  scrollToHighlight(scrollBy: number, newSelection?: number) {
+    this.removeHighlightSelection();
+    if (newSelection !== undefined) {
+      this.currentSelection = newSelection;
     }
 
     if (this.getHighlightedElement(this.currentSelection + scrollBy)) {
-      this.removeHighlightSelection();
-
       this.currentSelection += scrollBy;
       const nextSelection: HTMLElement = this.getHighlightedElement(
         this.currentSelection
@@ -236,10 +239,10 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
     return document.getElementsByClassName('highlight')[index] as HTMLElement;
   }
 
-  // totalHighlights(): number {
-  //   return document.getElementsByClassName("highlight").length;
-  // }
-  //
+  totalHighlights(): number {
+    return document.getElementsByClassName('highlight').length;
+  }
+
   // isPreviousDisabled(): boolean {
   //   return this.currentSelection === 0;
   // }
