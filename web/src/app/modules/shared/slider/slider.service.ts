@@ -26,6 +26,6 @@ export class SliderService {
 
   resetDefault() {
     // Approximate conversion from 1.5rem
-    this.height.next(36);
+    this.height.next(32);
   }
 }

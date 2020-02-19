@@ -179,29 +179,41 @@ func (co *ClusterOverview) ContentPath() string {
 func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, root string) ([]navigation.Navigation, error) {
 	navigationEntries := octant.NavigationEntries{
 		Lookup: map[string]string{
-			"Namespaces":         "namespaces",
-			"Custom Resources":   "custom-resources",
-			"RBAC":               "rbac",
-			"Nodes":              "nodes",
-			"Persistent Volumes": "persistent-volumes",
-			"Port Forwards":      "port-forward",
-			"Terminals":          "terminal",
+			"Namespaces":       "namespaces",
+			"Custom Resources": "custom-resources",
+			"RBAC":             "rbac",
+			"Nodes":            "nodes",
+			"Storage":          "storage",
+			"Port Forwards":    "port-forward",
+			"Terminals":        "terminal",
 		},
 		EntriesFuncs: map[string]octant.EntriesFunc{
-			"Namespaces":         nil,
-			"Custom Resources":   navigation.CRDEntries,
-			"RBAC":               rbacEntries,
-			"Nodes":              nil,
-			"Persistent Volumes": nil,
-			"Port Forwards":      nil,
-			"Terminals":          nil,
+			"Overview":         nil,
+			"Namespaces":       nil,
+			"Custom Resources": navigation.CRDEntries,
+			"RBAC":             rbacEntries,
+			"Nodes":            nil,
+			"Storage":          storageEntries,
+			"Port Forwards":    nil,
+			"Terminals":        nil,
+		},
+		IconMap: map[string]string{
+			"Overview":         icon.Overview,
+			"Namespaces":       icon.Namespaces,
+			"Custom Resources": icon.CustomResources,
+			"RBAC":             icon.RBAC,
+			"Nodes":            icon.Nodes,
+			"Storage":          icon.ConfigAndStorage,
+			"Port Forwards":    icon.PortForwards,
+			"Terminals":        icon.Terminals,
 		},
 		Order: []string{
+			"Overview",
 			"Namespaces",
 			"Custom Resources",
 			"RBAC",
 			"Nodes",
-			"Persistent Volumes",
+			"Storage",
 			"Port Forwards",
 			"Terminals",
 		},
@@ -211,14 +223,12 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 
 	nf := octant.NewNavigationFactory("", root, objectStore, navigationEntries)
 
-	entries, err := nf.Generate(ctx, "Cluster Overview", icon.ClusterOverview, "", true)
+	entries, err := nf.Generate(ctx, "Cluster", true)
 	if err != nil {
 		return nil, err
 	}
 
-	return []navigation.Navigation{
-		*entries,
-	}, nil
+	return entries, nil
 }
 
 func (co *ClusterOverview) SetNamespace(namespace string) error {
@@ -239,12 +249,27 @@ func (co *ClusterOverview) Generators() []octant.Generator {
 
 func rbacEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, _ bool) ([]navigation.Navigation, bool, error) {
 	neh := navigation.EntriesHelper{}
-	neh.Add("Cluster Roles", "cluster-roles", icon.ClusterOverviewClusterRole,
+	neh.Add("Overview", "", false)
+	neh.Add("Cluster Roles", "cluster-roles",
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.ClusterRole), objectStore))
-	neh.Add("Cluster Role Bindings", "cluster-role-bindings", icon.ClusterOverviewClusterRoleBinding,
+	neh.Add("Cluster Role Bindings", "cluster-role-bindings",
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.ClusterRoleBinding), objectStore))
 
-	children, err := neh.Generate(prefix)
+	children, err := neh.Generate(prefix, namespace, "")
+	if err != nil {
+		return nil, false, err
+	}
+
+	return children, false, nil
+}
+
+func storageEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, _ bool) ([]navigation.Navigation, bool, error) {
+	neh := navigation.EntriesHelper{}
+	neh.Add("Overview", "", false)
+	neh.Add("Persistent Volumes", "persistent-volumes",
+		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.PersistentVolume), objectStore))
+
+	children, err := neh.Generate(prefix, namespace, "")
 	if err != nil {
 		return nil, false, err
 	}

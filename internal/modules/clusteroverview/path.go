@@ -40,7 +40,7 @@ func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 	case apiVersion == "v1" && kind == "Node":
 		p = "/nodes"
 	case apiVersion == "v1" && kind == "PersistentVolume":
-		p = "/persistent-volumes"
+		p = "/storage/persistent-volumes"
 	default:
 		return "", errors.Errorf("unknown object %s %s", apiVersion, kind)
 	}

@@ -5,6 +5,19 @@
 .clr-vertical-nav {
   height: 100%;
   background: none;
+  width: inherit;
+
+  .title {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    font-size: 0.9em;
+    padding: 0 1rem 0 1rem;
+  }
+
+  .nav-divider {
+    border-top: 1px;
+  }
 
   .namespace-switcher {
     padding: 0 1rem 1rem 1rem;

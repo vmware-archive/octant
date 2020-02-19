@@ -21,6 +21,7 @@ const emptyNavigation: Navigation = {
 export class NavigationComponent implements OnInit, OnDestroy {
   behavior = new BehaviorSubject<Navigation>(emptyNavigation);
   collapsed = false;
+  navExpandedState: any;
 
   navigation = emptyNavigation;
 
@@ -33,6 +34,9 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.navigationService.current
       .pipe(untilDestroyed(this))
       .subscribe(navigation => (this.navigation = navigation));
+    this.navigationService.expandedState
+      .pipe(untilDestroyed(this))
+      .subscribe(expanded => (this.navExpandedState = expanded));
   }
 
   ngOnDestroy() {}
@@ -56,5 +60,17 @@ export class NavigationComponent implements OnInit, OnDestroy {
     }
 
     return path;
+  }
+
+  setNavState($event, state: number) {
+    this.navExpandedState[state] = $event;
+    this.navigationService.expandedState.next(this.navExpandedState);
+  }
+
+  shouldExpand(index: number) {
+    if (index.toString() in this.navExpandedState) {
+      return this.navExpandedState[index];
+    }
+    return false;
   }
 }

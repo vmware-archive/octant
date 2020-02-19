@@ -19,6 +19,7 @@ const emptyNavigation: Navigation = {
 })
 export class NavigationService {
   current = new BehaviorSubject<Navigation>(emptyNavigation);
+  public expandedState: BehaviorSubject<any> = new BehaviorSubject<any>({});
 
   constructor(
     private websocketService: WebsocketService,
