@@ -97,18 +97,28 @@ describe('LogsComponent', () => {
     const nextButton = fixture.debugElement.nativeElement.querySelector(
       '#button-next'
     );
+    const badgeElement: HTMLDivElement = fixture.debugElement.query(
+      By.css('.clr-filter-badge')
+    ).nativeElement;
+
+    expect(badgeElement.innerText).toBe('1/2');
     nextButton.click();
 
     fixture.whenStable().then(() => {
       const offsetSecondElement = getSelectedHighlightTop();
 
+      fixture.detectChanges();
+      expect(badgeElement.innerText).toBe('2/2');
+
       nextButton.click();
       fixture.detectChanges();
       expect(getSelectedHighlightTop()).toBeLessThan(offsetSecondElement); // should roll-up to 1st
+      expect(badgeElement.innerText).toBe('1/2');
 
       prevButton.click();
       fixture.detectChanges();
       expect(getSelectedHighlightTop()).toBe(offsetSecondElement); // should come back to 2nd
+      expect(badgeElement.innerText).toBe('2/2');
     });
   });
 
