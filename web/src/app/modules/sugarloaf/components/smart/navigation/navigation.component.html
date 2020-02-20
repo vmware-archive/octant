@@ -13,6 +13,7 @@
             </ng-template>
             <ng-container *ngIf="section.children?.length > 0; else noChild">
                 <clr-vertical-nav-group
+                    *ngIf="!collapsed; else hideExpand"
                     routerLinkActive="active"
                     [clrVerticalNavGroupExpanded]="shouldExpand(i)"
                     (clrVerticalNavGroupExpandedChange)="setNavState($event, i)"
@@ -32,6 +33,12 @@
                         </a>
                     </clr-vertical-nav-group-children>
                 </clr-vertical-nav-group>
+                <ng-template #hideExpand>
+                    <a clrVerticalNavLink (click)="collapsed=false; setNavState($event, i)">
+                        <clr-icon [attr.shape]="section.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
+                        {{ section.title }}
+                    </a>
+                </ng-template>
             </ng-container>
             <ng-template #noChild>
                 <a clrVerticalNavLink
