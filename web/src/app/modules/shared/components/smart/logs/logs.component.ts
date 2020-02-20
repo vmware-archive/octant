@@ -3,6 +3,7 @@
 //
 
 import {
+  AfterContentChecked,
   AfterViewChecked,
   Component,
   ElementRef,
@@ -35,7 +36,8 @@ import { formatDate } from '@angular/common';
   styleUrls: ['./logs.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
+export class LogsComponent
+  implements OnInit, OnDestroy, AfterContentChecked, AfterViewChecked {
   v: LogsView;
 
   @Input() set view(v: View) {
@@ -58,6 +60,7 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
   filterText = '';
   oldFilterText = '';
   currentSelection = 0;
+  totalSelections = 0;
 
   constructor(
     private podLogsService: PodLogsService,
@@ -88,6 +91,7 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   toggleTimestampDisplay(): void {
     this.shouldDisplayTimestamp = !this.shouldDisplayTimestamp;
+    this.updateSelectedCount();
     this.scrollToHighlight(0, 0);
   }
 
@@ -110,6 +114,7 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
         .pipe(untilDestroyed(this))
         .subscribe((entries: LogEntry[]) => {
           this.containerLogs = entries;
+          this.updateSelectedCount();
         });
     }
   }
@@ -118,8 +123,6 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
     return `${item.timestamp}-${item.message}`;
   }
 
-  // Note(marlon): to determine if we should continue tailing
-  // the incoming logs
   onScroll(evt: { target: HTMLDivElement }) {
     const { target } = evt;
     const { clientHeight, scrollHeight, scrollTop, offsetHeight } = target;
@@ -133,6 +136,12 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
       return;
     }
     this.scrollToBottom = true;
+  }
+
+  ngAfterContentChecked() {
+    if (this.filterText !== this.oldFilterText) {
+      this.updateSelectedCount();
+    }
   }
 
   ngAfterViewChecked() {
@@ -188,7 +197,7 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (this.currentSelection > 0) {
       this.scrollToHighlight(-1);
     } else {
-      this.scrollToHighlight(0, this.totalHighlights() - 1);
+      this.scrollToHighlight(0, this.totalSelections - 1);
     }
   }
 
@@ -239,8 +248,22 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
     return document.getElementsByClassName('highlight')[index] as HTMLElement;
   }
 
-  totalHighlights(): number {
-    return document.getElementsByClassName('highlight').length;
+  updateSelectedCount() {
+    let count = 0;
+    if (this.filterText.length > 0) {
+      this.containerLogs.map(log => {
+        count += (log.message.match(new RegExp(this.filterText, 'g')) || [])
+          .length;
+        if (this.shouldDisplayTimestamp) {
+          count += (
+            formatDate(log.timestamp, 'long', 'en-US').match(
+              new RegExp(this.filterText, 'g')
+            ) || []
+          ).length;
+        }
+      });
+    }
+    this.totalSelections = count;
   }
 
   // isPreviousDisabled(): boolean {

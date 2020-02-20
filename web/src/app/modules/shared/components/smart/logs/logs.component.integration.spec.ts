@@ -62,9 +62,9 @@ describe('LogsComponent <-> PodsLogsService', () => {
     fixture = TestBed.createComponent(LogsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-    service = TestBed.get(PodLogsService);
-    httpClient = TestBed.get(HttpClient);
-    httpTestingController = TestBed.get(HttpTestingController);
+    service = TestBed.inject(PodLogsService);
+    httpClient = TestBed.inject(HttpClient);
+    httpTestingController = TestBed.inject(HttpTestingController);
   });
 
   it('should render list of containers to choose from', () => {
