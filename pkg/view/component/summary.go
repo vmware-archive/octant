@@ -5,7 +5,11 @@ SPDX-License-Identifier: Apache-2.0
 
 package component
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/vmware-tanzu/octant/internal/util/strings"
+)
 
 // SummaryConfig is the contents of a Summary
 type SummaryConfig struct {
@@ -79,9 +83,29 @@ func (t *Summary) AddAction(action Action) {
 	t.Config.Actions = append(t.Config.Actions, action)
 }
 
-// Add adds additional items to the tail of the summary.
+// Add adds additional items to the tail of the summary. If section with header name exists, replace it
+// instead of adding an additional item. Adding sections is concurrency safe.
 func (t *Summary) Add(sections ...SummarySection) {
-	t.Config.Sections = append(t.Config.Sections, sections...)
+	names := make(map[string]SummarySection)
+	var order []string
+	for _, existing := range t.Config.Sections {
+		names[existing.Header] = existing
+		order = append(order, existing.Header)
+	}
+
+	for _, section := range sections {
+		names[section.Header] = section
+		if !strings.Contains(section.Header, order) {
+			order = append(order, section.Header)
+		}
+	}
+
+	var update SummarySections
+	for i := range order {
+		update = append(update, names[order[i]])
+	}
+
+	t.Config.Sections = update
 }
 
 // AddSection adds a section to the tail of a summary.
