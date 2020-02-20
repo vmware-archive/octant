@@ -14,6 +14,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -92,7 +93,7 @@ func Test_GRPCClient_Content(t *testing.T) {
 		}
 
 		mocks.protoClient.EXPECT().
-			Content(gomock.Any(), req).
+			Content(gomock.Any(), req, grpc.WaitForReady(true)).
 			Return(resp, nil)
 
 		client := mocks.genClient()
@@ -115,7 +116,7 @@ func Test_GRPCClient_Navigation(t *testing.T) {
 		}
 
 		mocks.protoClient.EXPECT().
-			Navigation(gomock.Any(), req).
+			Navigation(gomock.Any(), req, grpc.WaitForReady(true)).
 			Return(resp, nil)
 
 		client := mocks.genClient()
@@ -147,7 +148,7 @@ func Test_GRPCClient_Register(t *testing.T) {
 			},
 		}
 
-		mocks.protoClient.EXPECT().Register(gomock.Any(), gomock.Any()).Return(resp, nil)
+		mocks.protoClient.EXPECT().Register(gomock.Any(), gomock.Any(), grpc.WaitForReady(true)).Return(resp, nil)
 
 		client := mocks.genClient()
 		apiAddress := "localhost:54321"
@@ -200,7 +201,7 @@ func Test_GRPCClient_Print(t *testing.T) {
 			},
 			Items: itemsData,
 		}
-		mocks.protoClient.EXPECT().Print(gomock.Any(), gomock.Eq(objectRequest)).Return(printResponse, nil)
+		mocks.protoClient.EXPECT().Print(gomock.Any(), gomock.Eq(objectRequest), grpc.WaitForReady(true)).Return(printResponse, nil)
 
 		client := mocks.genClient()
 		ctx := context.Background()
@@ -244,7 +245,7 @@ func Test_GRPCClient_PrintTab(t *testing.T) {
 		}
 
 		mocks.protoClient.EXPECT().
-			PrintTab(gomock.Any(), gomock.Eq(objectRequest)).
+			PrintTab(gomock.Any(), gomock.Eq(objectRequest), grpc.WaitForReady(true)).
 			Return(tabResponse, nil)
 
 		client := mocks.genClient()
@@ -296,7 +297,7 @@ func Test_GRPCClient_ObjectStatus(t *testing.T) {
 			ObjectStatus: statusData,
 		}
 
-		mocks.protoClient.EXPECT().ObjectStatus(gomock.Any(), gomock.Eq(objectRequest)).Return(objectStatusResponse, nil)
+		mocks.protoClient.EXPECT().ObjectStatus(gomock.Any(), gomock.Eq(objectRequest), grpc.WaitForReady(true)).Return(objectStatusResponse, nil)
 
 		client := mocks.genClient()
 		ctx := context.Background()

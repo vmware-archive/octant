@@ -43,7 +43,6 @@ type ClientOption func(c *Client)
 // Client is a dashboard service API client.
 type Client struct {
 	DashboardConnection DashboardConnection
-	// dashboardClientFactory DashboardClientFactory
 }
 
 var _ Service = (*Client)(nil)
