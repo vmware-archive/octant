@@ -115,7 +115,7 @@ func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key,
 		Command:   parseCommand(command),
 		Stdin:     true,
 		Stdout:    true,
-		Stderr:    true,
+		Stderr:    false,
 		TTY:       true,
 	}, scheme.ParameterCodec)
 

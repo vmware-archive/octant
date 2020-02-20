@@ -1,0 +1,1 @@
+Fix bug with Terminal exec not working on Azure Kubernetes Service Virtual Nodes
