@@ -7,6 +7,7 @@ package plugin
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
@@ -72,7 +73,7 @@ func (pr *DefaultRunner) Run(ctx context.Context, object runtime.Object, clientN
 		fn := func(name string) func() error {
 			return func() error {
 				if err := pr.RunFunc(ctx, name, gvk, object); err != nil {
-					return errors.Wrap(err, "running")
+					return fmt.Errorf("running on %s: %w", name, err)
 				}
 
 				return nil

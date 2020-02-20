@@ -1,0 +1,1 @@
+Configure grpc client to wait for server to be ready before sending requests

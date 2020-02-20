@@ -7,13 +7,13 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"net"
 
 	"github.com/pkg/errors"
+	"google.golang.org/grpc"
+
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
-	"google.golang.org/grpc"
 )
 
 // API controlls the dashboard API service.
@@ -59,8 +59,7 @@ func (a *grpcAPI) Start(ctx context.Context) error {
 	logger.Debugf("dashboard plugin api is starting")
 	go func() {
 		if err := s.Serve(a.listener); err != nil {
-			fmt.Println("it broke?", err)
-			logger.Errorf("unable to serve GRPC: %v", err)
+			logger.WithErr(err).Errorf("unable to serve GRPC")
 			return
 		}
 	}()

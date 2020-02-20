@@ -142,8 +142,7 @@ func NavigationGenerator(ctx context.Context, state octant.State, config Navigat
 			contentPath := m.ContentPath()
 			navList, err := m.Navigation(ctx, namespace, contentPath)
 			if err != nil {
-				fmt.Printf("err in navigation: %s", err)
-				return err
+				return fmt.Errorf("unable to generate navigation for module %s: %v", m.Name(), err)
 			}
 
 			mu.Lock()
