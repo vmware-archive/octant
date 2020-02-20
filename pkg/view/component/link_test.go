@@ -71,7 +71,7 @@ func Test_Link_Marshal(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			actual, err := json.Marshal(tc.input)
-			isErr := (err != nil)
+			isErr := err != nil
 			if isErr != tc.isErr {
 				t.Fatalf("Unexpected error: %v", err)
 			}
@@ -87,28 +87,28 @@ func Test_Link_String(t *testing.T) {
 }
 
 func Test_Link_LessThan(t *testing.T) {
-	tests := []struct{
-		name string
-		link Link
-		other Component
+	tests := []struct {
+		name     string
+		link     Link
+		other    Component
 		expected bool
-	}	 {
+	}{
 		{
-			name: "is less",
-			link: *NewLink("", "a", "/a"),
-			other: NewLink("", "b", "/b"),
+			name:     "is less",
+			link:     *NewLink("", "a", "/a"),
+			other:    NewLink("", "b", "/b"),
 			expected: true,
 		},
 		{
-			name: "is not less",
-			link: *NewLink("", "b", "/b"),
-			other: NewLink("", "a", "/a"),
+			name:     "is not less",
+			link:     *NewLink("", "b", "/b"),
+			other:    NewLink("", "a", "/a"),
 			expected: false,
 		},
 		{
-			name: "other is not link",
-			link: *NewLink("", "b", "/b"),
-			other: nil,
+			name:     "other is not link",
+			link:     *NewLink("", "b", "/b"),
+			other:    nil,
 			expected: false,
 		},
 	}

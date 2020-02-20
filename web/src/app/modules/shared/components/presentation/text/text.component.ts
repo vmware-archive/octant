@@ -24,6 +24,8 @@ export class TextComponent implements OnChanges {
 
   isMarkdown: boolean;
 
+  hasStatus = false;
+
   constructor() {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -31,6 +33,10 @@ export class TextComponent implements OnChanges {
       const view = changes.view.currentValue as TextView;
       this.value = view.config.value;
       this.isMarkdown = view.config.isMarkdown;
+
+      if (view.config.status) {
+        this.hasStatus = true;
+      }
     }
   }
 }
