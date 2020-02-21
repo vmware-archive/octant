@@ -37,17 +37,7 @@ func ToComponent(object runtime.Object) (component.Component, error) {
 		return nil, errors.Errorf("can't fetch logs from a %T", object)
 	}
 
-	var containerNames []string
-
-	for _, c := range pod.Spec.InitContainers {
-		containerNames = append(containerNames, c.Name)
-	}
-
-	for _, c := range pod.Spec.Containers {
-		containerNames = append(containerNames, c.Name)
-	}
-
-	logsComponent := component.NewLogs(pod.Namespace, pod.Name, containerNames)
+	logsComponent := component.NewLogs(pod)
 
 	return logsComponent, nil
 }

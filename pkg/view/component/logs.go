@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package component
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	"encoding/json"
 )
 
@@ -20,12 +21,23 @@ type Logs struct {
 	Config LogsConfig `json:"config,omitempty"`
 }
 
-func NewLogs(namespace, name string, containers []string) *Logs {
+func NewLogs(pod *corev1.Pod) *Logs {
+
+	var containerNames []string
+
+	for _, c := range pod.Spec.InitContainers {
+		containerNames = append(containerNames, c.Name)
+	}
+
+	for _, c := range pod.Spec.Containers {
+		containerNames = append(containerNames, c.Name)
+	}
+
 	return &Logs{
 		Config: LogsConfig{
-			Namespace:  namespace,
-			Name:       name,
-			Containers: containers,
+			Namespace:  pod.Namespace,
+			Name:       pod.Name,
+			Containers: containerNames,
 		},
 		base: newBase(typeLogs, TitleFromString("Logs")),
 	}

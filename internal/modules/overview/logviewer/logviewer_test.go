@@ -18,6 +18,34 @@ import (
 )
 
 func Test_ToComponent(t *testing.T) {
+	pod1:=&corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "pod",
+			Namespace: "default",
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{Name: "one"},
+				{Name: "two"},
+			},
+		},
+	}
+	pod2:=&corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "pod",
+			Namespace: "default",
+		},
+		Spec: corev1.PodSpec{
+			InitContainers: []corev1.Container{
+				{Name: "init"},
+			},
+			Containers: []corev1.Container{
+				{Name: "one"},
+				{Name: "two"},
+			},
+		},
+	}
+
 	cases := []struct {
 		name     string
 		object   runtime.Object
@@ -26,38 +54,13 @@ func Test_ToComponent(t *testing.T) {
 	}{
 		{
 			name: "with containers",
-			object: &corev1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "pod",
-					Namespace: "default",
-				},
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{Name: "one"},
-						{Name: "two"},
-					},
-				},
-			},
-			expected: component.NewLogs("default", "pod", []string{"one", "two"}),
+			object: pod1,
+			expected: component.NewLogs(pod1),
 		},
 		{
 			name: "with init containers",
-			object: &corev1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "pod",
-					Namespace: "default",
-				},
-				Spec: corev1.PodSpec{
-					InitContainers: []corev1.Container{
-						{Name: "init"},
-					},
-					Containers: []corev1.Container{
-						{Name: "one"},
-						{Name: "two"},
-					},
-				},
-			},
-			expected: component.NewLogs("default", "pod", []string{"init", "one", "two"}),
+			object: pod2,
+			expected: component.NewLogs(pod2),
 		},
 		{
 			name:   "nil",
