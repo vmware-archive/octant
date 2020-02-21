@@ -7,42 +7,59 @@
     <!-- Navigation items -->
     <div class="navigation-items">
         <ng-container *ngFor="let section of navigation.sections; let i = index; trackBy: identifyNavigationItem">
-            <ng-template [ngIf]="section.module">
+            <ng-container *ngIf="section.children; else standalone">
                 <div class="nav-divider"></div>
-                <span *ngIf="!collapsed" class="title">{{ section.module }}</span>
-            </ng-template>
-            <ng-container *ngIf="section.children?.length > 0; else noChild">
-                <clr-vertical-nav-group
-                    *ngIf="!collapsed; else hideExpand"
-                    routerLinkActive="active"
-                    [clrVerticalNavGroupExpanded]="shouldExpand(i)"
-                    (clrVerticalNavGroupExpandedChange)="setNavState($event, i)"
-                >
-                    <clr-icon [attr.shape]="section.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
-                    {{ section.title }}
-                    <clr-vertical-nav-group-children>
-                        <a
-                            clrVerticalNavLink
-                            *ngFor="let category of section.children; trackBy: identifyNavigationItem"
-                            [routerLink]="formatPath(category.path)"
-                            [routerLinkActiveOptions]="{exact: true}"
-                            routerLinkActive="active"
-                        >
-                        <clr-icon *ngIf="itemIcon(category) as categoryIcon" [attr.shape]="categoryIcon" clrVerticalNavIcon></clr-icon>
-                        {{ category.title }}
-                        </a>
-                    </clr-vertical-nav-group-children>
-                </clr-vertical-nav-group>
-                <ng-template #hideExpand>
-                    <a clrVerticalNavLink (click)="collapsed=false; setNavState($event, i)">
-                        <clr-icon [attr.shape]="section.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
-                        {{ section.title }}
-                    </a>
-                </ng-template>
+                    <details *ngIf="!collapsed; else hideDetails" open>
+                        <summary class="title">{{ section.title }}</summary>
+                        <ng-container *ngFor="let category of section.children; trackBy: identifyNavigationItem">
+                            <ng-container *ngIf="category.children?.length > 0; else noChild">
+                                <clr-vertical-nav-group
+                                    routerLinkActive="active"
+                                    [clrVerticalNavGroupExpanded]="shouldExpand(category.path)"
+                                    (clrVerticalNavGroupExpandedChange)="setNavState($event, category.path)"
+                                >
+                                    <clr-icon [attr.shape]="category.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
+                                    {{ category.title }}
+                                    <clr-vertical-nav-group-children>
+                                        <a
+                                            clrVerticalNavLink
+                                            *ngFor="let entry of category.children; trackBy: identifyNavigationItem"
+                                            [routerLink]="formatPath(entry.path)"
+                                            [routerLinkActiveOptions]="{exact: true}"
+                                            routerLinkActive="active"
+                                        >
+                                        <clr-icon *ngIf="itemIcon(entry) as entryIcon" [attr.shape]="entryIcon" clrVerticalNavIcon></clr-icon>
+                                        {{ entry.title }}
+                                        </a>
+                                    </clr-vertical-nav-group-children>
+                                </clr-vertical-nav-group>
+                            </ng-container>
+                            <ng-template #noChild>
+                                <a clrVerticalNavLink
+                                    [routerLink]="formatPath(category.path)"
+                                    [routerLinkActiveOptions]="{exact: true}"
+                                    routerLinkActive="active"
+                                >
+                                    <clr-icon [attr.shape]="category.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
+                                    {{ category.title }}
+                                </a>
+                            </ng-template>
+                        </ng-container>
+                    </details>
+                    <ng-template #hideDetails>
+                        <ng-container *ngFor="let category of section.children; trackBy: identifyNavigationItem">
+                            <a clrVerticalNavLink
+                                [routerLink]="formatPath(category.path)"
+                                [routerLinkActiveOptions]="category.children?.length > 0 ? {exact: false}: {exact: true}"
+                                routerLinkActive="active"
+                            >
+                                <clr-icon [attr.shape]="category.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
+                            </a>
+                        </ng-container>
+                    </ng-template>
             </ng-container>
-            <ng-template #noChild>
+            <ng-template #standalone>
                 <a clrVerticalNavLink
-                    [routerLinkActiveOptions]="{exact: true}"
                     [routerLink]="formatPath(section.path)"
                     routerLinkActive="active"
                 >

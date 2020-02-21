@@ -58,12 +58,12 @@ export class NavigationComponent implements OnInit, OnDestroy {
     if (!path.startsWith('/')) {
       return '/' + path;
     }
-
+    console.log(path);
     return path;
   }
 
-  setNavState($event, state: number) {
-    this.navExpandedState[state] = $event;
+  setNavState($event, key: string) {
+    this.navExpandedState[key] = $event;
     this.navigationService.expandedState.next(this.navExpandedState);
   }
 

@@ -95,10 +95,15 @@ func (c *Configuration) ContentPath() string {
 func (c *Configuration) Navigation(ctx context.Context, namespace, root string) ([]navigation.Navigation, error) {
 	return []navigation.Navigation{
 		{
-			Module:   "Configuration",
-			Title:    "Plugin",
-			Path:     path.Join(c.ContentPath(), "plugins"),
-			IconName: icon.ConfigurationPlugin,
+			Title: "Configuration",
+			Path:  "",
+			Children: []navigation.Navigation{
+				{
+					Title:    "Plugin",
+					Path:     path.Join(c.ContentPath(), "plugins"),
+					IconName: icon.ConfigurationPlugin,
+				},
+			},
 		},
 	}, nil
 }

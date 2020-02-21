@@ -196,7 +196,7 @@ func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]n
 	navigationEntries := octant.NavigationEntries{
 		Lookup: navPathLookup,
 		EntriesFuncs: map[string]octant.EntriesFunc{
-			"Overview":                     nil,
+			"Dashboard":                    nil,
 			"Workloads":                    workloadEntries,
 			"Discovery and Load Balancing": discoAndLBEntries,
 			"Config and Storage":           configAndStorageEntries,
@@ -205,7 +205,7 @@ func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]n
 			"Events":                       nil,
 		},
 		IconMap: map[string]string{
-			"Overview":                     icon.Overview,
+			"Dashboard":                    icon.Overview,
 			"Workloads":                    icon.Workloads,
 			"Discovery and Load Balancing": icon.DiscoveryAndLoadBalancing,
 			"Config and Storage":           icon.ConfigAndStorage,
@@ -214,7 +214,7 @@ func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]n
 			"Events":                       icon.Events,
 		},
 		Order: []string{
-			"Overview",
+			"Dashboard",
 			"Workloads",
 			"Discovery and Load Balancing",
 			"Config and Storage",
@@ -228,12 +228,14 @@ func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]n
 
 	nf := octant.NewNavigationFactory(namespace, root, objectStore, navigationEntries)
 
-	entries, err := nf.Generate(ctx, "", false)
+	entries, err := nf.Generate(ctx, "Overview", false)
 	if err != nil {
 		return nil, err
 	}
 
-	return entries, nil
+	return []navigation.Navigation{
+		*entries,
+	}, nil
 }
 
 // Generators allow modules to send events to the frontend.

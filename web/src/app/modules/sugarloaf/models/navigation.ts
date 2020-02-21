@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 export interface NavigationChild {
-  module?: string;
   title: string;
   path: string;
   children?: NavigationChild[];

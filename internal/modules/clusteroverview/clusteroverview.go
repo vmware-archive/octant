@@ -188,7 +188,7 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 			"Terminals":        "terminal",
 		},
 		EntriesFuncs: map[string]octant.EntriesFunc{
-			"Overview":         nil,
+			"Dashboard":        nil,
 			"Namespaces":       nil,
 			"Custom Resources": navigation.CRDEntries,
 			"RBAC":             rbacEntries,
@@ -198,7 +198,7 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 			"Terminals":        nil,
 		},
 		IconMap: map[string]string{
-			"Overview":         icon.Overview,
+			"Dashboard":        icon.Overview,
 			"Namespaces":       icon.Namespaces,
 			"Custom Resources": icon.CustomResources,
 			"RBAC":             icon.RBAC,
@@ -208,7 +208,7 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 			"Terminals":        icon.Terminals,
 		},
 		Order: []string{
-			"Overview",
+			"Dashboard",
 			"Namespaces",
 			"Custom Resources",
 			"RBAC",
@@ -228,7 +228,9 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 		return nil, err
 	}
 
-	return entries, nil
+	return []navigation.Navigation{
+		*entries,
+	}, nil
 }
 
 func (co *ClusterOverview) SetNamespace(namespace string) error {
