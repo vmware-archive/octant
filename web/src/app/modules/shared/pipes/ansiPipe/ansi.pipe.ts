@@ -22,8 +22,8 @@ export class AnsiPipe implements PipeTransform {
   public transform(
     value: string
   ): SafeHtml | SafeStyle | SafeScript | SafeUrl | SafeResourceUrl {
-    
-    if (value.includes('\x1B')) {  // ANSI string
+    if (value.includes('\x1B')) {
+      // ANSI string
       return this.sanitizer.bypassSecurityTrustHtml(
         this.ansiUp.ansi_to_html(value)
       );
