@@ -9,11 +9,14 @@
     <div class="clr-filter">
       <div>
         <label class="clr-control-label">Filter by:</label>
-        <input clrInput class= "clr-control-container" placeholder="no filter" name="input" [(ngModel)]="filterText"/>
+        <div class="clr-filter-input">
+          <input clrInput class= "clr-control-container" (keyup.enter)="onNextHighlight()" placeholder="no filter" name="input" [(ngModel)]="filterText"/>
+          <span *ngIf="totalSelections > 0" class="clr-filter-badge badge badge-light-blue">{{currentSelection+1}}/{{totalSelections}}</span>
+        </div>
       </div>
       <div  class="clr-filter-buttons">
-        <button class="btn btn-icon clr-filter-btn" type="button" (click)="onPreviousHighlight()"><</button>
-        <button class="btn btn-icon clr-filter-btn" type="button" (click)="onNextHighlight()">></button>
+        <button id="button-prev" class="btn btn-icon clr-filter-btn" type="button" (click)="onPreviousHighlight()"><</button>
+        <button id="button-next" class="btn btn-icon clr-filter-btn" type="button" (click)="onNextHighlight()">></button>
       </div>
     </div>
 
