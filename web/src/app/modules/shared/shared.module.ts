@@ -56,7 +56,7 @@ import { DefaultPipe } from './pipes/default/default.pipe';
 import { RouterModule } from '@angular/router';
 import { ResizableModule } from 'angular-resizable-element';
 import { hljsLanguages } from './highlight';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { IndicatorComponent } from './components/presentation/indicator/indicator.component';
 
 @NgModule({
   declarations: [
@@ -85,6 +85,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     HeptagonGridRowComponent,
     HeptagonLabelComponent,
     IFrameComponent,
+    IndicatorComponent,
     LabelsComponent,
     LabelSelectorComponent,
     LinkComponent,

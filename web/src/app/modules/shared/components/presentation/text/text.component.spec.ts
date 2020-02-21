@@ -7,6 +7,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TextView } from '../../../models/content';
 import { TextComponent } from './text.component';
 import { SharedModule } from '../../../shared.module';
+import { Status } from '../indicator/indicator.component';
 
 @Component({
   template: '<app-view-text [view]="view"></app-view-text>',
@@ -44,6 +45,43 @@ describe('TextComponent', () => {
       expect(element.querySelector('app-view-text').innerHTML).toContain(
         '*text*'
       );
+    });
+
+    describe('status', () => {
+      let element: HTMLDivElement;
+
+      beforeEach(() => {
+        element = fixture.nativeElement;
+        component.view = {
+          config: { value: 'text' },
+          metadata: { type: 'text', title: [], accessor: 'accessor' },
+        };
+      });
+      describe('with status', () => {
+        beforeEach(() => {
+          component.view.config.status = Status.Ok;
+          fixture.detectChanges();
+        });
+
+        it('has an indicator component', () => {
+          expect(
+            element.querySelector('app-view-text app-indicator')
+          ).not.toBeNull();
+        });
+      });
+
+      describe('without status', () => {
+        beforeEach(() => {
+          component.view.config.status = undefined;
+          fixture.detectChanges();
+        });
+
+        it('does not have an indicator', () => {
+          expect(
+            element.querySelector('app-view-text app-indicator')
+          ).toBeNull();
+        });
+      });
     });
 
     it('should show markdown text', () => {
