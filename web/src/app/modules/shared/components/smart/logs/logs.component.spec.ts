@@ -7,6 +7,7 @@ import { LogsComponent } from './logs.component';
 import { LogEntry } from 'src/app/modules/shared/models/content';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
+import { AnsiPipe } from '../../../pipes/ansiPipe/ansi.pipe';
 
 /**
  * Adds 15 logs to the provided list.
@@ -31,7 +32,7 @@ describe('LogsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [LogsComponent],
+      declarations: [LogsComponent, AnsiPipe],
     }).compileComponents();
   }));
 

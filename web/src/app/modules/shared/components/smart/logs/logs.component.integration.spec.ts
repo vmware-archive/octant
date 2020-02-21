@@ -13,6 +13,7 @@ import { LogEntry, LogsView } from 'src/app/modules/shared/models/content';
 import getAPIBase from 'src/app/modules/shared/services/common/getAPIBase';
 import { PodLogsService } from 'src/app/modules/shared/pod-logs/pod-logs.service';
 import { LogsComponent } from './logs.component';
+import { AnsiPipe } from '../../../pipes/ansiPipe/ansi.pipe';
 
 const API_BASE = getAPIBase();
 
@@ -52,7 +53,7 @@ describe('LogsComponent <-> PodsLogsService', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [LogsComponent],
+      declarations: [LogsComponent, AnsiPipe],
       providers: [PodLogsService],
     }).compileComponents();
   }));

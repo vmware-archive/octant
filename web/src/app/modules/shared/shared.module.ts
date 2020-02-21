@@ -52,11 +52,11 @@ import { HeptagonComponent } from './components/smart/heptagon/heptagon.componen
 import { ContextSelectorComponent } from './components/smart/context-selector/context-selector.component';
 import { SliderViewComponent } from './components/smart/slider-view/slider-view.component';
 import { SafePipe } from './pipes/safe/safe.pipe';
+import { AnsiPipe } from './pipes/ansiPipe/ansi.pipe';
 import { DefaultPipe } from './pipes/default/default.pipe';
 import { RouterModule } from '@angular/router';
 import { ResizableModule } from 'angular-resizable-element';
 import { hljsLanguages } from './highlight';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
@@ -98,6 +98,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     QuadrantComponent,
     ResourceViewerComponent,
     SafePipe,
+    AnsiPipe,
     SelectorsComponent,
     SingleStatComponent,
     SliderViewComponent,
