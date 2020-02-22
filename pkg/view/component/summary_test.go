@@ -15,6 +15,68 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestSummary_Add(t *testing.T) {
+	tc := []struct {
+		name      string
+		summary   *Summary
+		additions SummarySections
+		expected  []SummarySection
+	}{
+		{
+			name:     "empty with no additions",
+			summary:  NewSummary("title"),
+			expected: nil,
+		},
+		{
+			name:    "empty with additions",
+			summary: NewSummary("title"),
+			additions: SummarySections{
+				{Header: "a", Content: NewText("a")},
+			},
+			expected: SummarySections{
+				{Header: "a", Content: NewText("a")},
+			},
+		},
+		{
+			name: "existing with additions",
+			summary: NewSummary("title", SummarySection{
+				Header:  "a",
+				Content: NewText("a"),
+			}),
+			additions: SummarySections{
+				{Header: "b", Content: NewText("b")},
+			},
+			expected: SummarySections{
+				{Header: "a", Content: NewText("a")},
+				{Header: "b", Content: NewText("b")},
+			},
+		},
+		{
+			name: "existing with updates",
+			summary: NewSummary("title", []SummarySection{
+				{Header: "a", Content: NewText("a")},
+				{Header: "b", Content: NewText("b")},
+			}...),
+			additions: SummarySections{
+				{Header: "a", Content: NewText("updated")},
+			},
+			expected: SummarySections{
+				{Header: "a", Content: NewText("updated")},
+				{Header: "b", Content: NewText("b")},
+			},
+		},
+	}
+
+	for _, tt := range tc {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.summary.Add(tt.additions...)
+			got := tt.summary.Sections()
+
+			require.Equal(t, tt.expected, got)
+		})
+	}
+}
+
 func Test_Summary_Marshal(t *testing.T) {
 	tests := []struct {
 		name         string

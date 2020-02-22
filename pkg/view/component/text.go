@@ -7,6 +7,18 @@ package component
 
 import "encoding/json"
 
+// TextStatus is the status of a text component
+type TextStatus int
+
+const (
+	// TextStatusOK
+	TextStatusOK TextStatus = 1
+	// TextStatusWarning
+	TextStatusWarning TextStatus = 2
+	// TextStatusError
+	TextStatusError TextStatus = 3
+)
+
 // Text is a component for text
 type Text struct {
 	base
@@ -15,8 +27,12 @@ type Text struct {
 
 // TextConfig is the contents of Text
 type TextConfig struct {
-	Text       string `json:"value"`
-	IsMarkdown bool   `json:"isMarkdown,omitempty"`
+	// Text is the text that will be displayed.
+	Text string `json:"value"`
+	// IsMarkdown sets if the component has markdown text.
+	IsMarkdown bool `json:"isMarkdown,omitempty"`
+	// Status sets the status of the component.
+	Status TextStatus `json:"status,omitempty"`
 }
 
 // NewText creates a text component
@@ -50,6 +66,11 @@ func (t *Text) EnableMarkdown() {
 // DisableMarkdown disables markdown for this text component.
 func (t *Text) DisableMarkdown() {
 	t.Config.IsMarkdown = false
+}
+
+// SetStatus sets the status of the text component.
+func (t *Text) SetStatus(status TextStatus) {
+	t.Config.Status = status
 }
 
 // SupportsTitle denotes this is a TextComponent.

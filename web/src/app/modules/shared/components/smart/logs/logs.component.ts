@@ -3,6 +3,7 @@
 //
 
 import {
+  AfterContentChecked,
   AfterViewChecked,
   Component,
   ElementRef,
@@ -35,7 +36,8 @@ import { formatDate } from '@angular/common';
   styleUrls: ['./logs.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
+export class LogsComponent
+  implements OnInit, OnDestroy, AfterContentChecked, AfterViewChecked {
   v: LogsView;
 
   @Input() set view(v: View) {
@@ -58,6 +60,7 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
   filterText = '';
   oldFilterText = '';
   currentSelection = 0;
+  totalSelections = 0;
 
   constructor(
     private podLogsService: PodLogsService,
@@ -87,17 +90,14 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   toggleTimestampDisplay(): void {
-    this.removeHighlightSelection();
-
     this.shouldDisplayTimestamp = !this.shouldDisplayTimestamp;
-    this.scrollToHighlight(0);
+    this.updateSelectedCount();
+    this.scrollToHighlight(0, 0);
   }
 
   toggleShowOnlyFiltered(): void {
-    this.removeHighlightSelection();
-
     this.showOnlyFiltered = !this.showOnlyFiltered;
-    this.scrollToHighlight(0);
+    this.scrollToHighlight(0, 0);
   }
 
   startStream() {
@@ -114,6 +114,7 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
         .pipe(untilDestroyed(this))
         .subscribe((entries: LogEntry[]) => {
           this.containerLogs = entries;
+          this.updateSelectedCount();
         });
     }
   }
@@ -122,8 +123,6 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
     return `${item.timestamp}-${item.message}`;
   }
 
-  // Note(marlon): to determine if we should continue tailing
-  // the incoming logs
   onScroll(evt: { target: HTMLDivElement }) {
     const { target } = evt;
     const { clientHeight, scrollHeight, scrollTop, offsetHeight } = target;
@@ -139,6 +138,12 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.scrollToBottom = true;
   }
 
+  ngAfterContentChecked() {
+    if (this.filterText !== this.oldFilterText) {
+      this.updateSelectedCount();
+    }
+  }
+
   ngAfterViewChecked() {
     const change = this.containerLogsDiffer.diff(this.containerLogs);
     if (change && this.scrollToBottom) {
@@ -147,7 +152,7 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
     if (this.filterText !== this.oldFilterText) {
       this.oldFilterText = this.filterText;
-      this.scrollToHighlight(0);
+      this.scrollToHighlight(0, 0);
     }
   }
 
@@ -189,21 +194,28 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   onPreviousHighlight(): void {
-    this.scrollToHighlight(-1);
+    if (this.currentSelection > 0) {
+      this.scrollToHighlight(-1);
+    } else {
+      this.scrollToHighlight(0, this.totalSelections - 1);
+    }
   }
 
   onNextHighlight(): void {
-    this.scrollToHighlight(1);
+    if (this.getHighlightedElement(this.currentSelection + 1)) {
+      this.scrollToHighlight(1);
+    } else {
+      this.scrollToHighlight(0, 0);
+    }
   }
 
-  scrollToHighlight(scrollBy: number) {
-    if (scrollBy === 0) {
-      this.currentSelection = 0;
+  scrollToHighlight(scrollBy: number, newSelection?: number) {
+    this.removeHighlightSelection();
+    if (newSelection !== undefined) {
+      this.currentSelection = newSelection;
     }
 
     if (this.getHighlightedElement(this.currentSelection + scrollBy)) {
-      this.removeHighlightSelection();
-
       this.currentSelection += scrollBy;
       const nextSelection: HTMLElement = this.getHighlightedElement(
         this.currentSelection
@@ -236,10 +248,24 @@ export class LogsComponent implements OnInit, OnDestroy, AfterViewChecked {
     return document.getElementsByClassName('highlight')[index] as HTMLElement;
   }
 
-  // totalHighlights(): number {
-  //   return document.getElementsByClassName("highlight").length;
-  // }
-  //
+  updateSelectedCount() {
+    let count = 0;
+    if (this.filterText.length > 0) {
+      this.containerLogs.map(log => {
+        count += (log.message.match(new RegExp(this.filterText, 'g')) || [])
+          .length;
+        if (this.shouldDisplayTimestamp) {
+          count += (
+            formatDate(log.timestamp, 'long', 'en-US').match(
+              new RegExp(this.filterText, 'g')
+            ) || []
+          ).length;
+        }
+      });
+    }
+    this.totalSelections = count;
+  }
+
   // isPreviousDisabled(): boolean {
   //   return this.currentSelection === 0;
   // }
