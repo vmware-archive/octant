@@ -27,23 +27,16 @@ $navigation-width: 13rem;
     .header-nav {
       padding-left: 1rem;
 
-      .namespace-switcher,
       .input-filter {
         margin-right: 10px;
-      }
-
-      .namespace-switcher {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        margin-right: 20px;
-      }
-
-      .input-filter {
         z-index: 999; // clarity's data-grid beats this
         width: 300px;
       }
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
     }
   }
 
