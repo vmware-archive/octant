@@ -15,6 +15,7 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/conversion"
 	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 
@@ -66,13 +67,25 @@ func Test_CronJobListHandler(t *testing.T) {
 	got, err := CronJobListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
-	cols := component.NewTableCols("Name", "Labels", "Schedule", "Age")
+	buttonGroup := component.NewButtonGroup()
+	buttonGroup.AddButton(
+		component.NewButton("Trigger",
+			action.CreatePayload("overview/cronjob", action.Payload{
+				"namespace":  cronJob.Namespace,
+				"apiVersion": cronJob.APIVersion,
+				"kind":       cronJob.Kind,
+				"name":       cronJob.Name,
+			}),
+		))
+
+	cols := component.NewTableCols("Name", "Labels", "Schedule", "Age", "")
 	expected := component.NewTable("CronJobs", "We couldn't find any cron jobs!", cols)
 	expected.Add(component.TableRow{
 		"Name":     component.NewLink("", "cron", "/cron"),
 		"Labels":   component.NewLabels(labels),
 		"Schedule": component.NewText("*/1 * * * *"),
 		"Age":      component.NewTimestamp(now),
+		"":         buttonGroup,
 	})
 
 	component.AssertEqual(t, expected, got)
