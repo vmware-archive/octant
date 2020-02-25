@@ -47,6 +47,10 @@ func ToComponent(object runtime.Object) (component.Component, error) {
 		containerNames = append(containerNames, c.Name)
 	}
 
+	for _, c := range pod.Spec.EphemeralContainers {
+		containerNames = append(containerNames, c.Name)
+	}
+
 	logsComponent := component.NewLogs(pod.Namespace, pod.Name, containerNames)
 
 	return logsComponent, nil

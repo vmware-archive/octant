@@ -37,8 +37,11 @@
         No logs
       </ng-container>
       <div class="container-log code language-bash" *ngFor="let log of filterFunction(containerLogs); trackBy: identifyLog">
-        <div class="container-log-timestamp" *ngIf="shouldDisplayTimestamp"
+        <div class="container-log-timestamp" *ngIf="shouldDisplayTimestamp && log.timestamp != null"
              [innerHTML]="'['+highlightText(log.timestamp | date:'long')+']' | ansipipe">
+        </div>
+        <div class="container-log-timestamp" *ngIf="shouldDisplayTimestamp && log.timestamp == null"
+             [innerHTML]="'[timestamp unavailable]'">
         </div>
         <div class="container-log-message" [innerHTML]="highlightText(log.message) | ansipipe">
         </div>

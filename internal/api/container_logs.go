@@ -20,7 +20,7 @@ import (
 )
 
 type logEntry struct {
-	Timestamp time.Time `json:"timestamp,omitempty"`
+	Timestamp *time.Time `json:"timestamp,omitempty"`
 	Message   string    `json:"message,omitempty"`
 }
 
@@ -51,14 +51,16 @@ func containerLogsHandler(ctx context.Context, dashConfig config.Dash) http.Hand
 
 		go func() {
 			for line := range lines {
+				entry := logEntry{Message: line}
 				parts := strings.SplitN(line, " ", 2)
 				logTime, err := time.Parse(time.RFC3339, parts[0])
 				if err == nil {
-					entries = append(entries, logEntry{
-						Timestamp: logTime,
+					entry = logEntry{
+						Timestamp: &logTime,
 						Message:   parts[1],
-					})
+					}
 				}
+				entries = append(entries, entry)
 			}
 
 			done <- true
