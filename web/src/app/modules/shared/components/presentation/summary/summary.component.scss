@@ -3,6 +3,16 @@
  */
 
 .card {
+  :host-context(body) {
+    --tableLabel-color: #565656;
+    --tableValue-color: #737373;
+  }
+
+  :host-context(body.dark) {
+    --tableLabel-color: #eaedf0;
+    --tableValue-color: #acbac3;
+  }
+
   .progress.loop {
     height: 5px;
     position: absolute;
@@ -10,9 +20,25 @@
     left: 0;
   }
 
-  .table.table-noborder {
-    th:first-child {
-      padding-left: 0.5rem;
+  .card-title {
+    margin: 0;
+  }
+
+  .left {
+    font-size: 0.65rem;
+    vertical-align: top;
+    padding-top: 4px;
+  }
+
+  .table-noborder {
+    td:first-child {
+      color: var(--tableLabel-color);
+      font-weight: 600;
+      padding-right: 24px;
+      white-space: nowrap;
+    }
+    td:last-child {
+      color: var(--tableValue-color);
     }
   }
 }

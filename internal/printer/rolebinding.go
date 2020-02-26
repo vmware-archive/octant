@@ -80,20 +80,6 @@ func RoleBindingHandler(ctx context.Context, roleBinding *rbacv1.RoleBinding, op
 		return nil, errors.Wrap(err, "print rolebinding subjects")
 	}
 
-	// configSummary, err := printRoleBindingConfig(ctx, roleBinding, opts)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// o.RegisterConfig(configSummary)
-
-	// o.RegisterItems(ItemDescriptor{
-	// 	Func: func() (component.Component, error) {
-	// 		return printRoleBindingSubjects(ctx, roleBinding, opts)
-	// 	},
-	// 	Width: component.WidthFull,
-	// })
-
 	return o.ToComponent(ctx, options)
 }
 

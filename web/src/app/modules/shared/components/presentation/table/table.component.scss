@@ -5,10 +5,20 @@
 .table {
   margin-top: 0;
 
-  &.table-noborder {
-    th:first-child,
-    td:first-child {
-      padding-left: 0.5rem;
-    }
+  :host-context(body) {
+    --tableHeader-color: #fafafa;
+  }
+
+  :host-context(body.dark) {
+    --tableHeader-color: #1b2a32;
+  }
+
+  thead tr td.left {
+    font-weight: 600;
+    background-color:var(--tableHeader-color);
+  }
+
+  .left {
+    padding-left: 6px;
   }
 }
