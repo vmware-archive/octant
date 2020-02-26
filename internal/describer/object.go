@@ -146,9 +146,9 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 		return *cr, nil
 	}
 
-	for _, tab := range tabs {
-		tab.Contents.SetAccessor(tab.Name)
-		cr.Add(&tab.Contents)
+	for i := range tabs {
+		tabs[i].Contents.SetAccessor(tabs[i].Name)
+		cr.Add(&tabs[i].Contents)
 	}
 
 	return *cr, nil
