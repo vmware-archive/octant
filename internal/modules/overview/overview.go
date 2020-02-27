@@ -303,6 +303,7 @@ func (co *Overview) ActionPaths() map[string]action.DispatcherFunc {
 		octant.NewTerminalDelete(co.logger, co.dashConfig.ObjectStore(), co.dashConfig.TerminalManager()),
 		octant.NewCordon(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
 		octant.NewUncordon(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
+		octant.NewCronJobTrigger(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
 	}
 
 	return dispatchers.ToActionPaths()

@@ -12,6 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
@@ -24,7 +25,7 @@ func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opt
 		return nil, errors.New("nil list")
 	}
 
-	cols := component.NewTableCols("Name", "Labels", "Schedule", "Age")
+	cols := component.NewTableCols("Name", "Labels", "Schedule", "Age", "")
 	tbl := component.NewTable("CronJobs", "We couldn't find any cron jobs!", cols)
 
 	for _, c := range list.Items {
@@ -35,6 +36,17 @@ func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opt
 			return nil, err
 		}
 
+		buttonGroup := component.NewButtonGroup()
+		buttonGroup.AddButton(
+			component.NewButton("Trigger",
+				action.CreatePayload("overview/cronjob", action.Payload{
+					"namespace":  c.Namespace,
+					"apiVersion": c.APIVersion,
+					"kind":       c.Kind,
+					"name":       c.Name,
+				}),
+			))
+
 		row["Name"] = nameLink
 
 		row["Labels"] = component.NewLabels(c.Labels)
@@ -43,6 +55,8 @@ func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opt
 
 		ts := c.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
+
+		row[""] = buttonGroup
 
 		tbl.Add(row)
 	}
