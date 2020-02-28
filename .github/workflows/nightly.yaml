@@ -1,0 +1,37 @@
+name: Nightly releases
+on:
+  schedule:
+    - cron:  '0 0 * * *'
+jobs:
+  nightly:
+    name: Nightly builds with goreleaser
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v1.1.0
+      - uses: actions/setup-go@v1
+      - uses: actions/checkout@v2
+      - name: Build node modules
+        run: |
+          cd web
+          npm ci
+          npm run-script build
+        - name: Set GOPATH
+        # temporary fix
+        # see https://github.com/actions/setup-go/issues/14
+        run: |
+          echo "##[set-env name=GOPATH;]$(dirname $GITHUB_WORKSPACE)"
+          echo "##[add-path]$(dirname $GITHUB_WORKSPACE)/bin"
+        shell: bash
+      - name: Go tools
+        env:
+          GOFLAGS: -mod=vendor
+        run: |
+          go run build.go go-install
+          go generate ./web ./pkg/icon
+      - name: Run goreleaser
+        run: |
+          echo "$GOOGLE_APPLICATION_JSON" | base64 -d > /tmp/gs.json
+          GOOGLE_APPLICATION_CREDENTIALS=/tmp/gs.json goreleaser -f .goreleaser-nightly.yml --rm-dist --skip-validate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOOGLE_APPLICATION_JSON: ${{ secrets.GOOGLE_APPLICATION_JSON }}
