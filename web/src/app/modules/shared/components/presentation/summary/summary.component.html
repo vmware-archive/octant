@@ -21,11 +21,11 @@
 
             <app-alert *ngIf="v?.config.alert" [alert]="v.config.alert"></app-alert>
 
-            <table class="table table-vertical table-noborder">
+            <table class="table-noborder">
                 <tbody>
                 <tr *ngFor="let item of v?.config.sections; trackBy: identifyItem">
-                    <th>{{ item.header }}</th>
-                    <td [ngSwitch]="item.content.metadata.type">
+                    <td class="left">{{ item.header }}</td>
+                    <td class="left" [ngSwitch]="item.content.metadata.type">
                         <ng-container *ngSwitchCase="'annotations'">
                             <app-view-annotations [view]="item.content"></app-view-annotations>
                         </ng-container>

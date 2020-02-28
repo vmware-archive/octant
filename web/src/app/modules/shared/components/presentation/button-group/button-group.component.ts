@@ -33,7 +33,7 @@ export class ButtonGroupComponent implements OnInit {
         if (button.confirmation) {
           this.class = 'btn-danger-outline btn-sm';
         } else {
-          this.class = 'btn-outline btm-sm';
+          this.class = 'btn-outline btn-sm';
         }
       });
     }

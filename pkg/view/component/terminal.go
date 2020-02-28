@@ -48,10 +48,10 @@ func (t *Terminal) GetMetadata() Metadata {
 	return t.Metadata
 }
 
-type terminalMarshall Terminal
+type terminalMarshal Terminal
 
 func (t *Terminal) MarshalJSON() ([]byte, error) {
-	m := terminalMarshall(*t)
+	m := terminalMarshal(*t)
 	m.Metadata.Type = typeTerminal
 
 	return json.Marshal(&m)

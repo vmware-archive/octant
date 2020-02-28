@@ -1,12 +1,12 @@
-<table class="table table-compact table-noborder">
+<table class="table table-compact">
   <thead>
     <tr>
-      <td *ngFor="let column of columns; trackBy: trackByIdentity">{{ column }}</td>
+      <td class="left" *ngFor="let column of columns; trackBy: trackByIdentity">{{ column }}</td>
     </tr>
   </thead>
   <tbody>
     <tr *ngFor="let row of rows; trackBy: trackByIndex">
-      <td *ngFor="let column of columns; trackBy: trackByIdentity">
+      <td class="left" *ngFor="let column of columns; trackBy: trackByIdentity">
         <app-content-switcher [view]="row[column]"></app-content-switcher>
       </td>
     </tr>
