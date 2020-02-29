@@ -141,6 +141,12 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: rice-web
+      - name: Change permissions of rice files
+        # Uploading artifact changes file permissions
+        run: |
+          chown -R $(whoami):$(whoami) .
+          mv rice-icon/rice-box.go ./pkg/icon/
+          mv rice-web/rice-box.go ./web/
       - name: Run GoReleaser
         run: |
           goreleaser --rm-dist
