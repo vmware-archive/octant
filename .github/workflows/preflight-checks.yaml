@@ -1,6 +1,8 @@
 name: preflight-checks
 on:
   push:
+    tags:
+    - 'v*'
     branches:
     - master
     - release-*
@@ -14,7 +16,7 @@ jobs:
     strategy:
       matrix:
         go-version:
-          - 1.13.x
+          - 1.14.x
         platform: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
     name: Golang tests on ${{ matrix.platform }}
@@ -36,6 +38,28 @@ jobs:
         run: |
           go run build.go test
 
+  verify_tag:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v1
+        with:
+          go-version: 1.14.x
+      - uses: actions/checkout@v2
+      - name: Set GOPATH
+        # temporary fix
+        # see https://github.com/actions/setup-go/issues/14
+        run: |
+          echo "##[set-env name=GOPATH;]$(dirname $GITHUB_WORKSPACE)"
+          echo "##[add-path]$(dirname $GITHUB_WORKSPACE)/bin"
+        shell: bash
+      - name: Get tag
+        run: echo ::set-env name=GITHUB_TAG::${GITHUB_REF/refs\/tags\//}
+      - name: Verify tag
+        run: |
+          bash ./ci/github-actions-tag-check.sh
+        shell: bash
+
   node_unit_tests:
     strategy:
       matrix:
@@ -56,7 +80,7 @@ jobs:
     strategy:
       matrix:
         go-version:
-          - 1.13.x
+          - 1.14.x
         platform: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
     name: Build on ${{ matrix.platform }}
@@ -89,21 +113,36 @@ jobs:
           GOFLAGS: -mod=vendor
         run: |
           go run build.go build
-      # - name: release
-      #   uses: goreleaser/goreleaser-action@v1
-      #   if: startsWith(github.ref, 'refs/tags/')
-      #   with:
-      #     version: latest
-      #     args: release --rm-dist
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # - name: Upload icons
-      #   uses: actions/upload-artifact@v1
-      #   with:
-      #     name: icons-${{ matrix.platform }}
-      #     path: pkg/icon/rice-box.go
-      # - name: Upload web
-      #   uses: actions/upload-artifact@v1
-      #   with:
-      #     name: web-${{ matrix.platform }}
-      #     path: web/rice-box.go
+      - name: Upload pkg/icon/rice-box.go
+        if: matrix.platform == 'ubuntu-latest'
+        uses: actions/upload-artifact@v1
+        with:
+          name: rice-icon
+          path: pkg/icon/rice-box.go
+      - name: Upload web/rice-box.go
+        if: matrix.platform == 'ubuntu-latest'
+        uses: actions/upload-artifact@v1
+        with:
+          name: rice-web
+          path: web/rice-box.go
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [bundle_assets, verify_tag]
+    runs-on: ubuntu-latest
+    container: goreleaser/goreleaser:v0.127.0-cgo
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download pkg/icon/rice-box.go
+        uses: actions/download-artifact@v1
+        with:
+          name: rice-icon
+      - name: Download web/rice-box.go
+        uses: actions/download-artifact@v1
+        with:
+          name: rice-web
+      - name: Run GoReleaser
+        run: |
+          goreleaser --rm-dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
