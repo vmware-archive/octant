@@ -2,30 +2,36 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-.log-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-
 .app-logs {
-  .log-actions,
-  .container-select {
-    margin-top: 10px;
+  .log-actions {
+    display: flex;
+    margin-top: 16px;
     margin-bottom: 6px;
+  }
+  .clr-control-container {
+    input {
+      width: 240px;
+    }
+  }
+  .container-select{
+    margin-right: 24px;
+    select {
+      width: 194px;
+    }
+  }
+  .clr-select-wrapper {
+    margin-top:  1px;
   }
   .clr-filter {
     display: flex;
 
     &-input {
     }
-    &-badge {
-      float: right;
-      position: relative;
-      margin-right: 2px;
-      margin-top: -19px;
+    &-summary {
+      align-self: flex-end;
       font-size: 11px;
-      height: 18px;
+      line-height: 12px;
+      margin-bottom: 12px;
     }
     &-buttons {
       margin-top: 14px;
@@ -46,13 +52,33 @@
       margin-top: 0px;
     }
   }
+  .log-options-group {
+    display: flex;
+    margin-left: auto;
+    align-self: flex-end;
+
+    .clr-control-label {
+      bottom: 2px;
+    }
+    .toggle-timestamp {
+      margin-right: 0px;
+    }
+  }
   .container-logs {
     border: 1px solid #ccc;
     border-radius: 4px;
-    background-color: black;
+    background-color: var(--clr-color-neutral-100);
+    color: var( --clr-color-on-neutral-100);
+
+    .highlight {
+      color: #0079B8;
+    }
+    .highlight-selected {
+      background: #0079B8;
+      color: #E9ECEF;
+    }
 
     &-bg {
-      color: white;
       padding: 4px 8px;
       min-height: 20vh;
       max-height: calc(100vh - 270px);
@@ -62,21 +88,19 @@
     .container-log {
       font-family: 'Consolas', 'Menlo', monospace;
       font-size: 12px;
-      color: white;
       display: flex;
       flex-direction: row;
 
       &-timestamp {
-        min-width: 294px;
-        width: 294px;
-        color: #a9b6be;
+        min-width: 234px;
+        width: 234px;
       }
 
       &-message {
         flex: 1;
-        color: #fafafa;
         word-wrap: break-word;
         min-width: 100px;
+        font-weight: bold;
       }
     }
   }

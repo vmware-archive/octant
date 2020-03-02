@@ -1,32 +1,32 @@
 <div class="app-logs">
   <div class="log-actions">
     <clr-select-container class="container-select">
-      <label>Choose a container:</label>
+      <label>Container</label>
       <select clrSelect name="options" [value]="selectedContainer" (change)="onContainerChange($event.target.value)">
         <option *ngFor="let container of v?.config.containers" value="{{container}}">{{container}}</option>
       </select>
     </clr-select-container>
     <div class="clr-filter">
       <div>
-        <label class="clr-control-label">Filter by:</label>
+        <label class="clr-control-label">Filter</label>
         <div class="clr-filter-input">
           <input clrInput class= "clr-control-container" (keyup.enter)="onNextHighlight()" placeholder="no filter" name="input" [(ngModel)]="filterText"/>
-          <span *ngIf="totalSelections > 0" class="clr-filter-badge badge badge-light-blue">{{currentSelection+1}}/{{totalSelections}}</span>
         </div>
       </div>
       <div  class="clr-filter-buttons">
         <button id="button-prev" class="btn btn-icon clr-filter-btn" type="button" (click)="onPreviousHighlight()"><</button>
         <button id="button-next" class="btn btn-icon clr-filter-btn" type="button" (click)="onNextHighlight()">></button>
       </div>
+      <div *ngIf="totalSelections > 0" class="clr-filter-summary">{{currentSelection+1}}/{{totalSelections}} items</div>
     </div>
 
-    <div>
-      <clr-checkbox-wrapper class="timestamp-toggle">
-        <input type="checkbox" clrCheckbox [checked]="showOnlyFiltered" (click)="toggleShowOnlyFiltered()"/>
+    <div class="log-options-group">
+      <clr-checkbox-wrapper>
+        <input type="checkbox" clrToggle [checked]="showOnlyFiltered" (click)="toggleShowOnlyFiltered()"/>
         <label>Show only filtered</label>
       </clr-checkbox-wrapper>
-      <clr-checkbox-wrapper class="timestamp-toggle">
-        <input type="checkbox" clrCheckbox [checked]="shouldDisplayTimestamp" (click)="toggleTimestampDisplay()"/>
+      <clr-checkbox-wrapper class="toggle-timestamp">
+        <input type="checkbox" clrToggle [checked]="shouldDisplayTimestamp" (click)="toggleTimestampDisplay()"/>
         <label>Display timestamp</label>
       </clr-checkbox-wrapper>
     </div>
@@ -38,7 +38,7 @@
       </ng-container>
       <div class="container-log code language-bash" *ngFor="let log of filterFunction(containerLogs); trackBy: identifyLog">
         <div class="container-log-timestamp" *ngIf="shouldDisplayTimestamp && log.timestamp != null"
-             [innerHTML]="'['+highlightText(log.timestamp | date:'long')+']' | ansipipe">
+             [innerHTML]="'['+highlightText(log.timestamp | date:timeFormat)+']' | ansipipe">
         </div>
         <div class="container-log-timestamp" *ngIf="shouldDisplayTimestamp && log.timestamp == null"
              [innerHTML]="'[timestamp unavailable]'">

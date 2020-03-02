@@ -29,9 +29,6 @@ import { formatDate } from '@angular/common';
 
 @Component({
   selector: 'app-logs',
-  styles: [
-    '.highlight {color: #ffdf5d} .highlight-selected {background: blue}',
-  ],
   templateUrl: './logs.component.html',
   styleUrls: ['./logs.component.scss'],
   encapsulation: ViewEncapsulation.None,
@@ -61,6 +58,7 @@ export class LogsComponent
   oldFilterText = '';
   currentSelection = 0;
   totalSelections = 0;
+  timeFormat = 'MMM d, y h:mm:ss a z';
 
   constructor(
     private podLogsService: PodLogsService,
@@ -180,7 +178,7 @@ export class LogsComponent
         return logs.filter(
           log =>
             log.message.match(new RegExp(this.filterText, 'g')) ||
-            formatDate(log.timestamp, 'long', 'en-US').match(
+            formatDate(log.timestamp, this.timeFormat, 'en-US').match(
               new RegExp(this.filterText, 'g')
             )
         );
@@ -256,7 +254,7 @@ export class LogsComponent
           .length;
         if (this.shouldDisplayTimestamp) {
           count += (
-            formatDate(log.timestamp, 'long', 'en-US').match(
+            formatDate(log.timestamp, this.timeFormat, 'en-US').match(
               new RegExp(this.filterText, 'g')
             ) || []
           ).length;
