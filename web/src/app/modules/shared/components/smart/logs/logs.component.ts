@@ -29,9 +29,6 @@ import { formatDate } from '@angular/common';
 
 @Component({
   selector: 'app-logs',
-  styles: [
-    '.highlight {color: #ffdf5d} .highlight-selected {background: blue}',
-  ],
   templateUrl: './logs.component.html',
   styleUrls: ['./logs.component.scss'],
   encapsulation: ViewEncapsulation.None,

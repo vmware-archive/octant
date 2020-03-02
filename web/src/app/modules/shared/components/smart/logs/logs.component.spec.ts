@@ -99,27 +99,27 @@ describe('LogsComponent', () => {
       '#button-next'
     );
     const badgeElement: HTMLDivElement = fixture.debugElement.query(
-      By.css('.clr-filter-badge')
+      By.css('.clr-filter-summary')
     ).nativeElement;
 
-    expect(badgeElement.innerText).toBe('1/2');
+    expect(badgeElement.innerText).toBe('1/2 items');
     nextButton.click();
 
     fixture.whenStable().then(() => {
       const offsetSecondElement = getSelectedHighlightTop();
 
       fixture.detectChanges();
-      expect(badgeElement.innerText).toBe('2/2');
+      expect(badgeElement.innerText).toBe('2/2 items');
 
       nextButton.click();
       fixture.detectChanges();
       expect(getSelectedHighlightTop()).toBeLessThan(offsetSecondElement); // should roll-up to 1st
-      expect(badgeElement.innerText).toBe('1/2');
+      expect(badgeElement.innerText).toBe('1/2 items');
 
       prevButton.click();
       fixture.detectChanges();
       expect(getSelectedHighlightTop()).toBe(offsetSecondElement); // should come back to 2nd
-      expect(badgeElement.innerText).toBe('2/2');
+      expect(badgeElement.innerText).toBe('2/2 items');
     });
   });
 
