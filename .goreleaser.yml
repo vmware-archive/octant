@@ -27,7 +27,7 @@ nfpms:
     maintainer: Octant Maintainers <project-octant@googlegroups.com>
     description: "A highly extensible platform for developers to better understand the complexity of Kubernetes clusters"
     license: "Apache 2.0"
-    name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}-{{.Arch}}"
+    file_name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}-{{.Arch}}"
     replacements:
       darwin: macOS
       linux: Linux
