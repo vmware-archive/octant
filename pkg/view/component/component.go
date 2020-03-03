@@ -10,6 +10,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
+	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
 // EmptyContentResponse is an empty content response.
@@ -23,12 +24,14 @@ type ContentResponse struct {
 	ExtensionComponent Component        `json:"extensionComponent,omitempty"`
 	IconName           string           `json:"iconName,omitempty"`
 	IconSource         string           `json:"iconSource,omitempty"`
+	ButtonGroup        *ButtonGroup     `json:"buttonGroup,omitempty"`
 }
 
 // NewContentResponse creates an instance of ContentResponse.
 func NewContentResponse(title []TitleComponent) *ContentResponse {
 	return &ContentResponse{
-		Title: title,
+		Title:       title,
+		ButtonGroup: NewButtonGroup(),
 	}
 }
 
@@ -40,6 +43,12 @@ func (c *ContentResponse) Add(components ...Component) {
 // SetExtension adds zero or more components to an extension content response.
 func (c *ContentResponse) SetExtension(component *Extension) {
 	c.ExtensionComponent = component
+}
+
+// AddButton adds one or more actions to a content response.
+func (c *ContentResponse) AddButton(name string, payload action.Payload, buttonOptions ...ButtonOption) {
+	button := NewButton(name, payload, buttonOptions...)
+	c.ButtonGroup.AddButton(button)
 }
 
 // UnmarshalJSON unmarshals a content response from JSON.

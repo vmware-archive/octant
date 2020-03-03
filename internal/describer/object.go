@@ -19,8 +19,10 @@ import (
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/modules/overview/logviewer"
 	"github.com/vmware-tanzu/octant/internal/modules/overview/yamlviewer"
+	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/internal/printer"
 	"github.com/vmware-tanzu/octant/internal/resourceviewer"
+	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -125,6 +127,26 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 		return *cr, nil
 	}
 
+	objAccessor, err := meta.Accessor(currentObject)
+	if err != nil {
+		return component.EmptyContentResponse, err
+	}
+
+	if objAccessor.GetDeletionTimestamp() == nil {
+		key, err := store.KeyFromObject(currentObject)
+		if err != nil {
+			return component.EmptyContentResponse, err
+		}
+
+		confirmation, err := deleteObjectConfirmation(currentObject)
+		if err != nil {
+			return component.EmptyContentResponse, err
+		}
+
+		cr.AddButton("Delete", action.CreatePayload(octant.ActionDeleteObject,
+			key.ToActionPayload()), confirmation)
+	}
+
 	hasTabError := false
 	for _, tfd := range d.tabFuncDescriptors {
 		if err := tfd.tabFunc(ctx, currentObject, cr, options); err != nil {
@@ -152,6 +174,22 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 	}
 
 	return *cr, nil
+}
+
+func deleteObjectConfirmation(object runtime.Object) (component.ButtonOption, error) {
+	if object == nil {
+		return nil, fmt.Errorf("object is nil")
+	}
+	_, kind := object.GetObjectKind().GroupVersionKind().ToAPIVersionAndKind()
+
+	accessor, err := meta.Accessor(object)
+	if err != nil {
+		return nil, err
+	}
+
+	confirmationTitle := fmt.Sprintf("Delete %s", kind)
+	confirmationBody := fmt.Sprintf("Are you sure you want to delete *%s* **%s**? This action is permanent and cannot be recovered.", kind, accessor.GetName())
+	return component.WithButtonConfirmation(confirmationTitle, confirmationBody), nil
 }
 
 func addErrorTab(ctx context.Context, name string, err error, cr *component.ContentResponse) {

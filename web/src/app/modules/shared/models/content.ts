@@ -12,6 +12,7 @@ export interface Content {
   title: View[];
   iconName?: string;
   iconSource?: string;
+  buttonGroup?: ButtonGroupView;
 }
 
 export interface Metadata {
