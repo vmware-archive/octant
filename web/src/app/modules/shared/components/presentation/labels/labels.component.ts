@@ -28,10 +28,7 @@ export class LabelsComponent implements OnChanges {
   labels: { [key: string]: string };
   trackByIdentity = trackByIdentity;
 
-  constructor(
-    private labelFilter: LabelFilterService,
-    private viewService: ViewService
-  ) {}
+  constructor(private viewService: ViewService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {
@@ -39,11 +36,6 @@ export class LabelsComponent implements OnChanges {
 
       this.title = this.viewService.viewTitleAsText(view);
       this.labels = view.config.labels;
-      this.labelKeys = Object.keys(this.labels);
     }
-  }
-
-  click(key: string, value: string) {
-    this.labelFilter.add({ key, value });
   }
 }

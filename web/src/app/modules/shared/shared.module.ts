@@ -63,6 +63,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MonacoEditorModule } from 'ng-monaco-editor';
 import { FormatPathPipe } from './pipes/formatpath/formatpath.pipe';
 import { RelativePipe } from './pipes/relative/relative.pipe';
+import { OverflowLabelsComponent } from './components/presentation/overflow-labels/overflow-labels.component';
 
 @NgModule({
   declarations: [
@@ -120,6 +121,7 @@ import { RelativePipe } from './pipes/relative/relative.pipe';
     TimestampComponent,
     TitleComponent,
     YamlComponent,
+    OverflowLabelsComponent,
   ],
   imports: [
     ClarityModule,
@@ -188,6 +190,7 @@ import { RelativePipe } from './pipes/relative/relative.pipe';
     TimestampComponent,
     TitleComponent,
     YamlComponent,
+    OverflowLabelsComponent,
   ],
 })
 export class SharedModule {}
