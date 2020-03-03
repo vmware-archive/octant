@@ -11,6 +11,9 @@ log separately.
 
 ## Non-Goals
  - Server-side filtering
+ - Combining logs across multiple pods
+ - Combining logs across workloads
+ - Combining logs across different namespaces
 
 ## Log Streaming
 
@@ -33,7 +36,7 @@ a polling mechanism in the PodLogsStreamer, every 5 second. When a new container
 existing poll is canceled and a new one is created with a request that uses the newly selected container.
 
 ### Suggested implementation
-Add a sentinel value of `AllContainers` to Octant and make this the default choice when requesting logs.
+Change the `containers` parameter to be a variadic parameter, default an empty list to mean all containers.
 
 Add a set of new actions to Octant to handle starting a log stream.
 
@@ -64,6 +67,24 @@ new EventType for log streams.
 Ensure the worker loop respects the given Context and properly cancels streaming when navigating away from the logging
 tab and also ensure we are calling `stream.Close` using a `defer`.
 
+#### Logging Interface
+
+    type LogStreamer interface {
+        // Names returns a map of pod keys and container values for all the
+        // pods and containers that are part of this logging stream.
+        Names() map[string]string
+        // Stream wraps the client-go GetLogs().Stream call for the configured
+        // pods. Stream is resonsible for aggergating the logs for all the
+        // containers.
+        Stream(Context) logCh <-chan logEntry
+        // Close closes all of the streams.
+        Close()
+    }
+    
+LogStreamer will be wrapped with a `StateManager` that will subscribe and unsubscribe websocket clients. The current
+implementation needs no `StateManager` because the endpoint outputs all of the log data for each request allowing
+clients can share the exact same endpoint. The nature of streaming the content does not allow for this same pattern.
+    
 #### Frontend
 Make our log component on the frontend append data from the WebsocketService instead of redrawing
 the component every time. Similar to how we send data for the Terminal component.
