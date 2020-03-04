@@ -1,11 +1,3 @@
-<div class="clr-row">
-    <div class="clr-col-sm-4 clr-offset-sm-8">
-        <div style="float: right; margin-top: 1em">
-            <app-button-group [view]="buttonGroup"></app-button-group>
-        </div>
-    </div>
-</div>
-
 <ng-container *ngIf="v?.config?.sections">
     <div *ngFor="let section of sections; trackBy: identifySection" class="clr-row">
         <div
