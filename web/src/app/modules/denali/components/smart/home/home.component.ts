@@ -3,6 +3,7 @@ import {
   darkTheme,
   ThemeService,
 } from '../../../../sugarloaf/components/smart/theme-switch/theme-switch.service';
+import { MonacoProviderService } from 'ng-monaco-editor';
 
 @Component({
   selector: 'app-root',
@@ -12,7 +13,8 @@ import {
 export class HomeComponent implements OnInit {
   constructor(
     private renderer: Renderer2,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private monacoService: MonacoProviderService
   ) {}
 
   ngOnInit() {
@@ -22,7 +24,7 @@ export class HomeComponent implements OnInit {
   loadTheme() {
     // TODO: enable theme switching or denali
     this.themeService.loadCSS(darkTheme.assetPath);
-
+    this.monacoService.changeTheme('vs-dark');
     this.renderer.addClass(document.body, 'dark');
   }
 }

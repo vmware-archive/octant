@@ -4,6 +4,7 @@
 
 import { Component, Input } from '@angular/core';
 import { View } from 'src/app/modules/shared/models/content';
+import fixPassiveEvents from '../../fixPassiveEvents';
 
 @Component({
   selector: 'app-content-switcher',
@@ -12,5 +13,7 @@ import { View } from 'src/app/modules/shared/models/content';
 })
 export class ContentSwitcherComponent {
   @Input() view: View;
-  constructor() {}
+  constructor() {
+    fixPassiveEvents();
+  }
 }

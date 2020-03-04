@@ -6,6 +6,7 @@ import { ThemeSwitchButtonComponent } from './theme-switch-button.component';
 import { ThemeService } from './theme-switch.service';
 import { themeServiceStub } from 'src/app/testing/theme-service-stub';
 import { By } from '@angular/platform-browser';
+import { MonacoEditorConfig, MonacoProviderService } from 'ng-monaco-editor';
 
 describe('ThemeSwitchButtonComponent', () => {
   let component: ThemeSwitchButtonComponent;
@@ -14,7 +15,11 @@ describe('ThemeSwitchButtonComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ThemeSwitchButtonComponent],
-      providers: [{ provide: ThemeService, useValue: themeServiceStub }],
+      providers: [
+        { provide: ThemeService, useValue: themeServiceStub },
+        MonacoEditorConfig,
+        MonacoProviderService,
+      ],
     }).compileComponents();
   }));
 

@@ -12,7 +12,7 @@ import (
 )
 
 // ToComponent converts an object into a YAML component.
-func ToComponent(object runtime.Object) (*component.YAML, error) {
+func ToComponent(object runtime.Object) (*component.Editor, error) {
 	yv, err := new(object)
 	if err != nil {
 		return nil, errors.Wrap(err, "create YAML viewer")
@@ -38,9 +38,9 @@ func new(object runtime.Object) (*yamlViewer, error) {
 }
 
 // ToComponent converts the YAMLViewer to a component.
-func (yv *yamlViewer) ToComponent() (*component.YAML, error) {
-	y := component.NewYAML(component.TitleFromString("YAML"), "")
-	if err := y.Data(yv.object); err != nil {
+func (yv *yamlViewer) ToComponent() (*component.Editor, error) {
+	y := component.NewEditor(component.TitleFromString("YAML"), "", true)
+	if err := y.SetCodeFromObject(yv.object); err != nil {
 		return nil, errors.Wrap(err, "add YAML data")
 	}
 

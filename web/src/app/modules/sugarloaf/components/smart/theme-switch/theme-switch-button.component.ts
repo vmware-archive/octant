@@ -10,18 +10,20 @@ import {
   ThemeService,
   ThemeType,
 } from './theme-switch.service';
+import { MonacoProviderService } from 'ng-monaco-editor';
 
 @Component({
   selector: 'app-theme-switch-button',
   templateUrl: './theme-switch-button.component.html',
   styleUrls: ['./theme-switch-button.component.scss'],
-  providers: [ThemeService],
+  providers: [ThemeService, MonacoProviderService],
 })
 export class ThemeSwitchButtonComponent implements OnInit {
   themeType: ThemeType;
 
   constructor(
     private themeService: ThemeService,
+    private monacoService: MonacoProviderService,
     private renderer: Renderer2
   ) {}
 
@@ -45,6 +47,11 @@ export class ThemeSwitchButtonComponent implements OnInit {
       this.renderer.removeClass(document.body, t.type)
     );
     this.renderer.addClass(document.body, theme.type);
+    if (this.isLightThemeEnabled()) {
+      this.monacoService.changeTheme('vs');
+    } else {
+      this.monacoService.changeTheme('vs-dark');
+    }
   }
 
   switchTheme() {
@@ -52,9 +59,11 @@ export class ThemeSwitchButtonComponent implements OnInit {
     if (this.isLightThemeEnabled()) {
       this.themeType = 'dark';
       localStorage.setItem('theme', 'dark');
+      this.monacoService.changeTheme('vs-dark');
     } else {
       this.themeType = 'light';
       localStorage.setItem('theme', 'light');
+      this.monacoService.changeTheme('vs');
     }
 
     this.loadTheme();
