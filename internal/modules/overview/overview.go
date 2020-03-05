@@ -90,6 +90,8 @@ func (co *Overview) SetContext(ctx context.Context, contextName string) error {
 	}
 
 	co.watchedCRDs = []*unstructured.Unstructured{}
+	crdWatcher := co.dashConfig.CRDWatcher()
+	crdWatcher.Watch(ctx)
 
 	return nil
 }
