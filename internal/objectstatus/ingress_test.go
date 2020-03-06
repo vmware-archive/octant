@@ -83,6 +83,20 @@ func Test_runIngressStatus(t *testing.T) {
 			},
 		},
 		{
+			name: "wildcard TLS host",
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+				mockServiceInCache(t, o, "default", "my-service", "service_my-service.yaml")
+				mockSecretInCache(t, o, "default", "testsecret-tls", "secret_testsecret-tls.yaml")
+
+				objectFile := "ingress_wildcard_tls_host.yaml"
+				return testutil.LoadObjectFromFile(t, objectFile)
+
+			},
+			expected: ObjectStatus{
+				Details: []component.Component{component.NewText("Ingress is OK")},
+			},
+		},
+		{
 			name: "missing TLS secret",
 			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				mockServiceInCache(t, o, "default", "my-service", "service_my-service.yaml")
