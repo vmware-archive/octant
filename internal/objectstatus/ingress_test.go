@@ -83,6 +83,20 @@ func Test_runIngressStatus(t *testing.T) {
 			},
 		},
 		{
+			name: "wildcard TLS host",
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+				mockServiceInCache(t, o, "default", "my-service", "service_my-service.yaml")
+				mockSecretInCache(t, o, "default", "testsecret-tls", "secret_testsecret-tls.yaml")
+
+				objectFile := "ingress_wildcard_tls_host.yaml"
+				return testutil.LoadObjectFromFile(t, objectFile)
+
+			},
+			expected: ObjectStatus{
+				Details: []component.Component{component.NewText("Ingress is OK")},
+			},
+		},
+		{
 			name: "missing TLS secret",
 			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				mockServiceInCache(t, o, "default", "my-service", "service_my-service.yaml")
@@ -135,6 +149,48 @@ func Test_runIngressStatus(t *testing.T) {
 			assert.Equal(t, tc.expected, status)
 		})
 	}
+}
+
+func Test_hostMatcher(t *testing.T) {
+	cases := []struct {
+		name    string
+		hosts   []string
+		lookups map[string]bool
+	}{
+		{
+			name:  "string",
+			hosts: []string{"example2.com"},
+			lookups: map[string]bool{
+				"example2.com": true,
+				"example1.com": false,
+			},
+		},
+		{
+			name:  "global",
+			hosts: []string{"*.example2.com"},
+			lookups: map[string]bool{
+				"foo.example2.com": true,
+				"bar.example2.com": true,
+				"foo.example1.com": false,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			hm := hostMatcher{}
+
+			for _, host := range tc.hosts {
+				require.NoError(t, hm.AddHost(host))
+			}
+
+			for k, v := range tc.lookups {
+				require.Equal(t, v, hm.Match(k))
+
+			}
+		})
+	}
+
 }
 
 func mockSecretInCache(t *testing.T, o *storefake.MockStore, namespace, name, file string) runtime.Object {
