@@ -3,8 +3,8 @@ on:
   schedule:
     - cron:  '0 0 * * *'
 jobs:
-  nightly:
-    name: Nightly builds with goreleaser
+  nightly-build:
+    name: Build nightly
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-node@v1.1.0
@@ -30,10 +30,42 @@ jobs:
         run: |
           go run build.go go-install
           go generate ./web ./pkg/icon
+      - name: Upload pkg/icon/rice-box.go
+        uses: actions/upload-artifact@v1
+        with:
+          name: rice-icon
+          path: pkg/icon/rice-box.go
+      - name: Upload web/rice-box.go
+        uses: actions/upload-artifact@v1
+        with:
+          name: rice-web
+          path: web/rice-box.go
+
+  push:
+    name: Run goreleaser
+    needs: [nightly-build]
+    runs-on: ubuntu-latest
+    container: goreleaser/goreleaser:v0.128.0-cgo
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download pkg/icon/rice-box.go
+        uses: actions/download-artifact@v1
+        with:
+          name: rice-icon
+      - name: Download web/rice-box.go
+        uses: actions/download-artifact@v1
+        with:
+          name: rice-web
+      - name: Change permissions of rice files
+        # Uploading artifact changes file permissions
+        run: |
+          chown -R $(whoami):$(whoami) .
+          mv rice-icon/rice-box.go ./pkg/icon/
+          mv rice-web/rice-box.go ./web/
       - name: Run goreleaser
         run: |
-          echo "$GOOGLE_APPLICATION_JSON" | base64 -d > /tmp/gs.json
-          GOOGLE_APPLICATION_CREDENTIALS=/tmp/gs.json goreleaser -f .goreleaser-nightly.yml --rm-dist --skip-validate
+          echo ${{ secrets.GOOGLE_APPLICATION_JSON }} | base64 -d > /tmp/gs.json
+          echo "::set-env name=GOOGLE_APPLICATION_CREDENTIALS::/tmp/gs.json"
+          goreleaser -f .goreleaser-nightly.yml --rm-dist --skip-validate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GOOGLE_APPLICATION_JSON: ${{ secrets.GOOGLE_APPLICATION_JSON }}
