@@ -10,7 +10,7 @@
     </clr-dg-placeholder>
     <clr-dg-column *ngFor="let columnName of columns; trackBy: identifyColumn">
         {{ columnName }}
-        <clr-dg-filter *ngIf="hasFilter(columnName)">
+        <clr-dg-filter *ngIf="filters[columnName]">
             <app-content-filter
                     [column]="columnName"
                     [filter]="filters[columnName]"

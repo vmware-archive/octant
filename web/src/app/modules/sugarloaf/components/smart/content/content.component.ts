@@ -119,7 +119,6 @@ export class ContentComponent implements OnInit, OnDestroy {
       this.previousParams = queryParams;
       this.resetView();
       this.contentService.setContentPath(currentPath, queryParams);
-      this.scrollTarget.nativeElement.scrollTop = 0;
     }
   }
 

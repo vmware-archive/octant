@@ -1,5 +1,5 @@
 <clr-tooltip>
-  <span clrTooltipTrigger>{{ age }}</span>
+  <span clrTooltipTrigger>{{ timestamp | relative }}</span>
   <clr-tooltip-content clrPosition="right" clrSize="lg" *clrIfOpen>
     <span>{{ humanReadable }}</span>
   </clr-tooltip-content>
