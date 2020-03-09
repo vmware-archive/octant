@@ -15,9 +15,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware-tanzu/octant/internal/api"
-	"github.com/vmware-tanzu/octant/internal/log"
+	internalLog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/mime"
 	"github.com/vmware-tanzu/octant/internal/portforward"
+	"github.com/vmware-tanzu/octant/pkg/log"
 )
 
 type portForwardCreateRequest struct {
@@ -69,7 +70,7 @@ func createPortForward(ctx context.Context, body io.Reader, pfs portforward.Port
 	if pfs == nil {
 		return errors.New("port forward service is nil")
 	}
-	logger := log.From(ctx)
+	logger := internalLog.From(ctx)
 
 	req := portForwardCreateRequest{}
 	if err := json.NewDecoder(body).Decode(&req); err != nil {

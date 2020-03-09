@@ -13,8 +13,9 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/vmware-tanzu/octant/internal/log"
+	internalLog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
@@ -42,7 +43,7 @@ func (e *ContainerEditor) ActionName() string {
 // Handle edits a container. Supported edits:
 //   * image
 func (e *ContainerEditor) Handle(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
-	logger := log.From(ctx).With("actionName", e.ActionName())
+	logger := internalLog.From(ctx).With("actionName", e.ActionName())
 	logger.With("payload", payload).Infof("received action payload")
 
 	key, err := store.KeyFromPayload(payload)
@@ -77,7 +78,7 @@ func (e *ContainerEditor) Handle(ctx context.Context, alerter action.Alerter, pa
 	if err := e.store.Update(ctx, key, fn); err != nil {
 		message = fmt.Sprintf("Unable to update container %q: %s", containerName, err)
 		alertType = action.AlertTypeWarning
-		logger := log.From(ctx)
+		logger := internalLog.From(ctx)
 		logger.WithErr(err).Errorf("update container")
 	}
 	alert := action.CreateAlert(alertType, message, action.DefaultAlertExpiration)

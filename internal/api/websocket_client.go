@@ -16,9 +16,10 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/vmware-tanzu/octant/internal/config"
-	"github.com/vmware-tanzu/octant/internal/log"
+	internalLog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/log"
 )
 
 const (
@@ -57,7 +58,7 @@ var _ OctantClient = (*WebsocketClient)(nil)
 // NewWebsocketClient creates an instance of WebsocketClient.
 func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *WebsocketClientManager, dashConfig config.Dash, actionDispatcher ActionDispatcher, id uuid.UUID) *WebsocketClient {
 	logger := dashConfig.Logger().With("component", "websocket-client", "client-id", id.String())
-	ctx = log.WithLoggerContext(ctx, logger)
+	ctx = internalLog.WithLoggerContext(ctx, logger)
 
 	ctx, cancel := context.WithCancel(ctx)
 
