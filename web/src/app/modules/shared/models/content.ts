@@ -399,6 +399,14 @@ export interface TerminalView extends View {
   };
 }
 
+export interface EditorView extends View {
+  config: {
+    value: string;
+    language: string;
+    readOnly: boolean;
+  };
+}
+
 export interface Port extends View {
   config: {
     port: number;

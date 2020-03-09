@@ -29,7 +29,7 @@ import (
 type crdPrinter func(ctx context.Context, crd, object *unstructured.Unstructured, options printer.Options) (component.Component, error)
 type metadataPrinter func(runtime.Object, link.Interface) (*component.FlexLayout, error)
 type resourceViewerPrinter func(ctx context.Context, object *unstructured.Unstructured, dashConfig config.Dash, q queryer.Queryer) (component.Component, error)
-type yamlPrinter func(runtime.Object) (*component.YAML, error)
+type yamlPrinter func(runtime.Object) (*component.Editor, error)
 
 type crdOption func(*crd)
 

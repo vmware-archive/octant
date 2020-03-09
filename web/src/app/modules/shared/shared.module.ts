@@ -20,6 +20,7 @@ import { FlexlayoutComponent } from './components/presentation/flexlayout/flexla
 import { SingleStatComponent } from './components/presentation/single-stat/single-stat.component';
 import { QuadrantComponent } from './components/presentation/quadrant/quadrant.component';
 import { IFrameComponent } from './components/presentation/iframe/iframe.component';
+import { EditorComponent } from './components/smart/editor/editor.component';
 import { ErrorComponent } from './components/presentation/error/error.component';
 import { ExpressionSelectorComponent } from './components/presentation/expression-selector/expression-selector.component';
 import { GraphvizComponent } from './components/presentation/graphviz/graphviz.component';
@@ -58,6 +59,8 @@ import { RouterModule } from '@angular/router';
 import { ResizableModule } from 'angular-resizable-element';
 import { hljsLanguages } from './highlight';
 import { IndicatorComponent } from './components/presentation/indicator/indicator.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MonacoEditorModule } from 'ng-monaco-editor';
 
 @NgModule({
   declarations: [
@@ -75,6 +78,7 @@ import { IndicatorComponent } from './components/presentation/indicator/indicato
     DatagridComponent,
     DefaultPipe,
     DonutChartComponent,
+    EditorComponent,
     ErrorComponent,
     ExpressionSelectorComponent,
     FiltersComponent,
@@ -120,6 +124,10 @@ import { IndicatorComponent } from './components/presentation/indicator/indicato
     HighlightModule.forRoot({
       languages: hljsLanguages,
     }),
+    MonacoEditorModule.forRoot({
+      baseUrl: '',
+      defaultOptions: {},
+    }),
     MarkdownModule.forChild(),
     ReactiveFormsModule,
     ResizableModule,
@@ -140,6 +148,7 @@ import { IndicatorComponent } from './components/presentation/indicator/indicato
     DatagridComponent,
     DefaultPipe,
     DonutChartComponent,
+    EditorComponent,
     ErrorComponent,
     ExpressionSelectorComponent,
     FiltersComponent,

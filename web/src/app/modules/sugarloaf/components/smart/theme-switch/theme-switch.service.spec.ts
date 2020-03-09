@@ -4,20 +4,29 @@
 import { inject, TestBed } from '@angular/core/testing';
 import { ThemeService } from './theme-switch.service';
 import { DOCUMENT } from '@angular/common';
+import { MonacoEditorConfig, MonacoProviderService } from 'ng-monaco-editor';
 
 describe('ThemeService', () => {
   let service: ThemeService;
+  let monaco: MonacoProviderService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [ThemeService, Document],
+      providers: [
+        ThemeService,
+        MonacoProviderService,
+        MonacoEditorConfig,
+        Document,
+      ],
     });
 
-    service = TestBed.get(ThemeService);
+    service = TestBed.inject(ThemeService);
+    monaco = TestBed.inject(MonacoProviderService);
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+    expect(monaco).toBeTruthy();
   });
 
   it('should load light theme file correctly', inject(
