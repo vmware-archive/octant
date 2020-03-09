@@ -81,6 +81,18 @@ func Test_unmarshal(t *testing.T) {
 			},
 		},
 		{
+			name:       "editor",
+			configFile: "config_editor.json",
+			objectType: "editor",
+			expected: &Editor{
+				Config: EditorConfig{
+					Value:    "code",
+					ReadOnly: true,
+				},
+				base: newBase(typeEditor, nil),
+			},
+		},
+		{
 			name:       "flexlayout",
 			configFile: "config_flexlayout.json",
 			objectType: "flexlayout",

@@ -7,37 +7,38 @@ package component
 
 import (
 	"encoding/json"
+	"strings"
+
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	k8sJSON "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/tools/clientcmd/api/latest"
-	"strings"
 )
 
-// Code is a component for code
+// Value is a component for code
 type Editor struct {
 	base
 	Config EditorConfig `json:"config"`
 }
 
-// CodeConfig is the contents of Code
+// CodeConfig is the contents of Value
 type EditorConfig struct {
-	Code     string `json:"value"`
+	Value    string `json:"value"`
 	ReadOnly bool   `json:"readOnly"`
 }
 
 // NewCodeBlock creates a code component
-func NewEditor(title []TitleComponent, code string, readOnly bool) *Editor {
+func NewEditor(title []TitleComponent, value string, readOnly bool) *Editor {
 	return &Editor{
 		base: newBase(typeEditor, title),
 		Config: EditorConfig{
-			Code:     code,
+			Value:    value,
 			ReadOnly: readOnly,
 		},
 	}
 }
 
-func (e *Editor) SetCodeFromObject(object runtime.Object) error {
+func (e *Editor) SetValueFromObject(object runtime.Object) error {
 	yamlSerializer := k8sJSON.NewYAMLSerializer(k8sJSON.DefaultMetaFactory, latest.Scheme, latest.Scheme)
 
 	var sb strings.Builder
@@ -48,7 +49,7 @@ func (e *Editor) SetCodeFromObject(object runtime.Object) error {
 		return errors.Wrap(err, "encoding object as YAML")
 	}
 
-	e.Config.Code = sb.String()
+	e.Config.Value = sb.String()
 
 	return nil
 }
@@ -61,8 +62,8 @@ func (e *Editor) GetMetadata() Metadata {
 type editorMarshal Editor
 
 // MarshalJSON implements json.Marshaler
-func (c *Editor) MarshalJSON() ([]byte, error) {
-	m := editorMarshal(*c)
+func (e *Editor) MarshalJSON() ([]byte, error) {
+	m := editorMarshal(*e)
 	m.Metadata.Type = typeEditor
 	return json.Marshal(&m)
 }

@@ -7,6 +7,7 @@ package component
 
 import (
 	"encoding/json"
+
 	"github.com/pkg/errors"
 )
 
@@ -39,6 +40,11 @@ func unmarshal(to TypedObject) (Component, error) {
 		t := &Containers{base: base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal containers config")
+		o = t
+	case typeEditor:
+		t := &Editor{base: base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal editor config")
 		o = t
 	case typeExpressionSelector:
 		t := &ExpressionSelector{base: base{Metadata: to.Metadata}}
