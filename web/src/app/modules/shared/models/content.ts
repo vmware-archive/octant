@@ -395,6 +395,7 @@ export interface TerminalView extends View {
   config: {
     namespace: string;
     name: string;
+    podName: string;
     terminal: TerminalDetail;
   };
 }

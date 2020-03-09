@@ -3,13 +3,14 @@
     "type": "terminal",
     "title": [
       {
-        "config": { "value": "default / term-test" },
+        "config": { "value": "term-test" },
         "metadata": { "type": "text" }
       }
     ]
   },
   "config": {
     "name": "term-test",
+    "podName": "pod-name",
     "namespace": "default",
     "terminal": {
       "active": false,

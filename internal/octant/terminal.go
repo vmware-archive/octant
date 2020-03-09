@@ -7,7 +7,6 @@ package octant
 
 import (
 	"context"
-
 	"github.com/pkg/errors"
 	"github.com/vmware-tanzu/octant/internal/terminal"
 	"github.com/vmware-tanzu/octant/pkg/action"
@@ -54,18 +53,18 @@ func (t *TerminalCommandExec) Handle(ctx context.Context, alerter action.Alerter
 	}
 	t.logger.Debugf("%s", key)
 
-	_, err = t.terminalManager.Create(ctx, t.logger, key, request.container, request.command)
+	_, err = t.terminalManager.Create(ctx, t.logger, key, request.container, request.command, request.sessionID)
 	if err != nil {
 		t.logger.Errorf("%s", err)
 		return errors.Wrap(err, "terminal manager create")
 	}
-
 	return nil
 }
 
 type terminalExecRequest struct {
 	container string
 	command   string
+	sessionID string
 	tty       bool
 }
 
@@ -83,5 +82,9 @@ func terminalExecFromPayload(payload action.Payload) (*terminalExecRequest, erro
 		return nil, err
 	}
 
+	t.sessionID, err = payload.String("sessionID")
+	if err != nil {
+		return nil, err
+	}
 	return t, nil
 }

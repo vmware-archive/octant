@@ -20,6 +20,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/modules/overview/logviewer"
 	"github.com/vmware-tanzu/octant/internal/modules/overview/yamlviewer"
 	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/internal/modules/overview/terminalviewer"
 	"github.com/vmware-tanzu/octant/internal/printer"
 	"github.com/vmware-tanzu/octant/internal/resourceviewer"
 	"github.com/vmware-tanzu/octant/pkg/action"
@@ -70,6 +71,7 @@ func NewObject(c ObjectConfig) *Object {
 		{name: "Resource Viewer", tabFunc: o.addResourceViewerTab},
 		{name: "YAML", tabFunc: o.addYAMLViewerTab},
 		{name: "Logs", tabFunc: o.addLogsTab},
+		{name: "Terminal", tabFunc: o.addTerminalTab},
 	}
 
 	return o
@@ -277,6 +279,22 @@ func (d *Object) addLogsTab(ctx context.Context, object runtime.Object, cr *comp
 
 		logsComponent.SetAccessor("logs")
 		cr.Add(logsComponent)
+	}
+
+	return nil
+}
+
+func (d *Object) addTerminalTab(ctx context.Context, object runtime.Object, cr *component.ContentResponse, options Options) error {
+	if isPod(object) {
+		logger := log.From(ctx)
+
+		terminalComponent, err := terminalviewer.ToComponent(ctx, object, options.TerminalManager(), logger)
+		if err != nil {
+			return err
+		}
+
+		terminalComponent.SetAccessor("terminal")
+		cr.Add(terminalComponent)
 	}
 
 	return nil
