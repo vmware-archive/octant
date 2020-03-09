@@ -437,27 +437,6 @@ func Test_unmarshal(t *testing.T) {
 				base:   newBase(typeTimestamp, nil),
 			},
 		},
-		{
-			name:       "vertical bullet chart",
-			configFile: "config_vertical_bullet_chart.json",
-			objectType: "verticalBulletChart",
-			expected: &VerticalBulletChart{
-				Config: VerticalBulletChartConfig{
-					Bands: []BulletBand{
-						{
-							Min:   0,
-							Max:   100,
-							Color: ChartColorOK,
-							Label: "bandLabel",
-						},
-					},
-					Measure:      1,
-					MeasureLabel: "measureLabel",
-					Label:        "label",
-				},
-				base: newBase(typeVerticalBulletChart, nil),
-			},
-		},
 	}
 
 	for _, tc := range cases {
