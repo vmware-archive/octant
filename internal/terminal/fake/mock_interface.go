@@ -7,8 +7,8 @@ package fake
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	log "github.com/vmware-tanzu/octant/internal/log"
 	terminal "github.com/vmware-tanzu/octant/internal/terminal"
+	log "github.com/vmware-tanzu/octant/pkg/log"
 	store "github.com/vmware-tanzu/octant/pkg/store"
 	reflect "reflect"
 )

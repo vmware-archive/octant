@@ -26,8 +26,9 @@ import (
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/vmware-tanzu/octant/internal/log"
+	internalLog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/util/strings"
+	"github.com/vmware-tanzu/octant/pkg/log"
 
 	// auth plugins
 	_ "k8s.io/client-go/plugin/pkg/client/auth/azure"
@@ -83,7 +84,7 @@ type Cluster struct {
 var _ ClientInterface = (*Cluster)(nil)
 
 func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restClient *rest.Config, defaultNamespace string) (*Cluster, error) {
-	logger := log.From(ctx).With("component", "cluster client")
+	logger := internalLog.From(ctx).With("component", "cluster client")
 
 	kubernetesClient, err := kubernetes.NewForConfig(restClient)
 	if err != nil {
@@ -126,7 +127,7 @@ func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restCl
 		dynamicClient:    dynamicClient,
 		discoveryClient:  discoveryClient,
 		restMapper:       restMapper,
-		logger:           log.From(ctx),
+		logger:           internalLog.From(ctx),
 		defaultNamespace: defaultNamespace,
 	}
 
@@ -260,7 +261,7 @@ func FromKubeConfig(ctx context.Context, kubeConfigList, contextName string, ini
 		defaultNamespace = initialNamespace
 	}
 
-	logger := log.From(ctx)
+	logger := internalLog.From(ctx)
 	logger.With("client-qps", options.QPS, "client-burst", options.Burst).
 		Debugf("initializing REST client configuration")
 

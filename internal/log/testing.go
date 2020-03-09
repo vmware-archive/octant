@@ -5,14 +5,18 @@ SPDX-License-Identifier: Apache-2.0
 
 package log
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/vmware-tanzu/octant/pkg/log"
+)
 
 type testingLogger struct {
 	t *testing.T
 }
 
 // TestLogger returns a logger for tests
-func TestLogger(t *testing.T) Logger {
+func TestLogger(t *testing.T) log.Logger {
 	return &testingLogger{t: t}
 }
 
@@ -28,12 +32,12 @@ func (t *testingLogger) Warnf(format string, args ...interface{}) {
 func (t *testingLogger) Errorf(format string, args ...interface{}) {
 	t.t.Errorf(format, args...)
 }
-func (t *testingLogger) With(args ...interface{}) Logger {
+func (t *testingLogger) With(args ...interface{}) log.Logger {
 	return t
 }
-func(t *testingLogger) WithErr(err error) Logger {
+func(t *testingLogger) WithErr(err error) log.Logger {
 	return t.With("err", err)
 }
-func (t *testingLogger) Named(string) Logger {
+func (t *testingLogger) Named(string) log.Logger {
 	return t
 }

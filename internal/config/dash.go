@@ -16,10 +16,10 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	internalErr "github.com/vmware-tanzu/octant/internal/errors"
-	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/module"
 	"github.com/vmware-tanzu/octant/internal/portforward"
 	"github.com/vmware-tanzu/octant/internal/terminal"
+	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/plugin"
 )
 

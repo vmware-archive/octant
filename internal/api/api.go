@@ -17,9 +17,9 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/vmware-tanzu/octant/internal/config"
-	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/mime"
 	"github.com/vmware-tanzu/octant/internal/module"
+	"github.com/vmware-tanzu/octant/pkg/log"
 )
 
 //go:generate mockgen -destination=./fake/mock_service.go -package=fake github.com/vmware-tanzu/octant/internal/api Service
