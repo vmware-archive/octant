@@ -446,15 +446,6 @@ export interface IFrameView extends View {
   };
 }
 
-export interface VerticalBulletChartView extends View {
-  config: {
-    bands: BulletBand[];
-    measure: number;
-    measureLabel: string;
-    label: string;
-  };
-}
-
 export interface ExtensionTab {
   tab: View;
   payload: { [key: string]: string };

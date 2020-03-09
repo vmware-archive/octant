@@ -1,0 +1,13 @@
+{
+    "segments": [
+        {
+            "count": 1,
+            "status": "ok"
+        }
+    ],
+    "labels": {
+        "plural": "tests",
+        "singular": "test"
+    },
+    "size": 21
+}
