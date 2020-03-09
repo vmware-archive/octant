@@ -8,9 +8,8 @@
     </span>
   </ng-container>
 
-  <clr-signpost>
+  <clr-signpost *ngIf="overflowLabels && overflowLabels.length > 0">
     <span
-      *ngIf="overflowLabels && overflowLabels.length > 0"
       class="badge badge-light-blue"
       clrSignpostTrigger>
       {{ overflowLabels.length }}+
