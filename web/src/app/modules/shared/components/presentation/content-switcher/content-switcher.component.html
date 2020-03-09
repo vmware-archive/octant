@@ -21,6 +21,9 @@
     <ng-container *ngSwitchCase="'donutChart'">
         <app-view-donut-chart [view]="view"></app-view-donut-chart>
     </ng-container>
+    <ng-container *ngSwitchCase="'editor'">
+      <app-view-editor [view]="view"></app-view-editor>
+    </ng-container>
     <ng-container *ngSwitchCase="'expressionSelector'">
       <app-view-expression-selector [view]="view"></app-view-expression-selector>
     </ng-container>
@@ -38,9 +41,6 @@
     </ng-container>
     <ng-container *ngSwitchCase="'loading'">
       <app-view-loading [view]="view"></app-view-loading>
-    </ng-container>
-    <ng-container *ngSwitchCase="'editor'">
-      <app-view-editor [view]="view"></app-view-editor>
     </ng-container>
     <ng-container *ngSwitchCase="'error'">
       <app-view-error [view]="view"></app-view-error>

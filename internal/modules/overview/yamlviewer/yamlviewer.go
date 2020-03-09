@@ -6,8 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 package yamlviewer
 
 import (
-	"github.com/vmware-tanzu/octant/pkg/view/component"
 	"github.com/pkg/errors"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -40,7 +40,7 @@ func new(object runtime.Object) (*yamlViewer, error) {
 // ToComponent converts the YAMLViewer to a component.
 func (yv *yamlViewer) ToComponent() (*component.Editor, error) {
 	y := component.NewEditor(component.TitleFromString("YAML"), "", true)
-	if err := y.SetCodeFromObject(yv.object); err != nil {
+	if err := y.SetValueFromObject(yv.object); err != nil {
 		return nil, errors.Wrap(err, "add YAML data")
 	}
 
