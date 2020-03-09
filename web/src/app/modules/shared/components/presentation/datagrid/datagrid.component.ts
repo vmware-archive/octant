@@ -54,8 +54,4 @@ export class DatagridComponent implements OnChanges {
       this.filters = current.config.filters;
     }
   }
-
-  hasFilter(columnName: string): boolean {
-    return !!this.v.config.filters[columnName];
-  }
 }

@@ -61,6 +61,8 @@ import { hljsLanguages } from './highlight';
 import { IndicatorComponent } from './components/presentation/indicator/indicator.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MonacoEditorModule } from 'ng-monaco-editor';
+import { FormatPathPipe } from './pipes/formatpath/formatpath.pipe';
+import { RelativePipe } from './pipes/relative/relative.pipe';
 
 @NgModule({
   declarations: [
@@ -105,6 +107,8 @@ import { MonacoEditorModule } from 'ng-monaco-editor';
     ResourceViewerComponent,
     SafePipe,
     AnsiPipe,
+    FormatPathPipe,
+    RelativePipe,
     SelectorsComponent,
     SingleStatComponent,
     SliderViewComponent,
@@ -134,6 +138,7 @@ import { MonacoEditorModule } from 'ng-monaco-editor';
     RouterModule,
   ],
   exports: [
+    FormatPathPipe,
     AlertComponent,
     AnnotationsComponent,
     ButtonGroupComponent,
