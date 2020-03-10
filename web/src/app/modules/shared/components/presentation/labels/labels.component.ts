@@ -4,7 +4,6 @@
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { LabelsView, View } from 'src/app/modules/shared/models/content';
-import { LabelFilterService } from 'src/app/modules/shared/services/label-filter/label-filter.service';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { ViewService } from '../../../services/view/view.service';
 

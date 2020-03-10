@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { LabelFilterService } from '../../../services/label-filter/label-filter.service';
 
@@ -15,16 +15,11 @@ interface Labels {
   templateUrl: './overflow-labels.component.html',
   styleUrls: ['./overflow-labels.component.scss'],
 })
-export class OverflowLabelsComponent implements OnInit {
-  @Input() labels: Labels;
+export class OverflowLabelsComponent {
   @Input() numberShownLabels = 2;
-
-  showLabels: Labels[];
-  overflowLabels: Labels[];
-  trackByIdentity = trackByIdentity;
-
-  ngOnInit() {
-    const labelsEntries = Object.entries({ ...this.labels });
+  @Input() set labels(labels: Labels) {
+    this.labelList = labels;
+    const labelsEntries = Object.entries({ ...this.labelList });
 
     if (this.numberShownLabels <= labelsEntries.length) {
       this.showLabels = labelsEntries
@@ -38,6 +33,14 @@ export class OverflowLabelsComponent implements OnInit {
       this.showLabels = labelsEntries.map(label => ({ [label[0]]: label[1] }));
     }
   }
+  get labels(): Labels {
+    return this.labelList;
+  }
+
+  private labelList: Labels;
+  showLabels: Labels[];
+  overflowLabels: Labels[];
+  trackByIdentity = trackByIdentity;
 
   filterLabel(key: string, value: string) {
     this.labelFilter.add({ key, value });
