@@ -4,7 +4,6 @@
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { LabelsView, View } from 'src/app/modules/shared/models/content';
-import { LabelFilterService } from 'src/app/modules/shared/services/label-filter/label-filter.service';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { ViewService } from '../../../services/view/view.service';
 
@@ -28,10 +27,7 @@ export class LabelsComponent implements OnChanges {
   labels: { [key: string]: string };
   trackByIdentity = trackByIdentity;
 
-  constructor(
-    private labelFilter: LabelFilterService,
-    private viewService: ViewService
-  ) {}
+  constructor(private viewService: ViewService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {
@@ -39,11 +35,6 @@ export class LabelsComponent implements OnChanges {
 
       this.title = this.viewService.viewTitleAsText(view);
       this.labels = view.config.labels;
-      this.labelKeys = Object.keys(this.labels);
     }
-  }
-
-  click(key: string, value: string) {
-    this.labelFilter.add({ key, value });
   }
 }

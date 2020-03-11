@@ -2,17 +2,13 @@
   <div class="label-with-title clr-col-md-12">
     <h3>{{ title }}</h3>
     <div class="view-labels">
-      <span *ngFor="let key of labelKeys; trackBy: trackByIdentity" class="label label-light-blue clickable" (click)="click(key, labels[key])">
-        {{ key }}:{{ labels[key] }}
-      </span>
+      <app-overflow-labels *ngIf="labels" [labels]="labels"></app-overflow-labels>
     </div>
   </div>
 </ng-template>
 <ng-template #noTitle>
   <div class="view-labels">
-    <span *ngFor="let key of labelKeys; trackBy: trackByIdentity" class="label label-light-blue clickable" (click)="click(key, labels[key])">
-      {{ key }}:{{ labels[key] }}
-    </span>
+    <app-overflow-labels *ngIf="labels" [labels]="labels"></app-overflow-labels>
   </div>
 </ng-template>
 
