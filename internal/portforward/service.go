@@ -19,7 +19,8 @@ import (
 	"k8s.io/client-go/rest"
 	restclient "k8s.io/client-go/rest"
 
-	"github.com/vmware-tanzu/octant/internal/log"
+	internalLog "github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
@@ -134,7 +135,7 @@ var _ PortForwarder = (*Service)(nil)
 func New(ctx context.Context, opts ServiceOptions) *Service {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Service{
-		logger:   log.From(ctx),
+		logger:   internalLog.From(ctx),
 		opts:     opts,
 		notifyCh: make(chan forwarderEvent, 32),
 		ctx:      ctx,

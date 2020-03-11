@@ -8,5 +8,20 @@
 @import './sass/mixins';
 @import './sass/variables';
 @import '~highlight.js/styles/github.css';
-@import "~@ng-select/ng-select/themes/default.theme.css";
+@import '~@ng-select/ng-select/themes/default.theme.css';
 
+/* Clarity's Datagrid overflow is hidden making impossible to display something 
+ * like a Signpost inside of it. This makes it possible.
+ */ 
+clr-datagrid .datagrid-outer-wrapper {
+  &, .datagrid-inner-wrapper {
+    &, .datagrid {
+      overflow: visible;
+    }
+  }
+}
+
+// Avoid Datagrid's header sticky position.
+.datagrid-table .datagrid-header {
+  position: initial;
+}

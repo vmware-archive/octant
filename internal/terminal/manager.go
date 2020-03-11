@@ -17,7 +17,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/vmware-tanzu/octant/internal/cluster"
-	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"

@@ -15,11 +15,12 @@ import (
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/describer"
 	"github.com/vmware-tanzu/octant/internal/generator"
-	"github.com/vmware-tanzu/octant/internal/log"
+	internalLog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/module"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/icon"
+	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
@@ -67,7 +68,7 @@ func New(ctx context.Context, options Options) (*Overview, error) {
 		return nil, err
 	}
 
-	logger := log.From(ctx).With("module", "overview")
+	logger := internalLog.From(ctx).With("module", "overview")
 
 	co.dashConfig.ObjectStore().RegisterOnUpdate(func(newObjectStore store.Store) {
 		logger.Debugf("object store was updated")
@@ -90,6 +91,8 @@ func (co *Overview) SetContext(ctx context.Context, contextName string) error {
 	}
 
 	co.watchedCRDs = []*unstructured.Unstructured{}
+	crdWatcher := co.dashConfig.CRDWatcher()
+	crdWatcher.Watch(ctx)
 
 	return nil
 }
@@ -246,7 +249,7 @@ func (co *Overview) Stop() {
 
 // Content serves content for overview.
 func (co *Overview) Content(ctx context.Context, contentPath string, opts module.ContentOptions) (component.ContentResponse, error) {
-	ctx = log.WithLoggerContext(ctx, co.dashConfig.Logger())
+	ctx = internalLog.WithLoggerContext(ctx, co.dashConfig.Logger())
 	genOpts := generator.Options{
 		LabelSet:               opts.LabelSet,
 		ExtensionDescriberFunc: co.extensionDescriber,

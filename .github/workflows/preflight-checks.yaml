@@ -130,7 +130,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     needs: [bundle_assets, verify_tag]
     runs-on: ubuntu-latest
-    container: goreleaser/goreleaser:v0.127.0-cgo
+    container: goreleaser/goreleaser:v0.128.0-cgo
     steps:
       - uses: actions/checkout@v2
       - name: Download pkg/icon/rice-box.go

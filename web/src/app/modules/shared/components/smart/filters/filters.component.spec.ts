@@ -42,7 +42,7 @@ describe('FiltersComponent', () => {
   }));
 
   beforeEach(() => {
-    routerSpy = TestBed.get(Router);
+    routerSpy = TestBed.inject(Router);
     fixture = TestBed.createComponent(FiltersComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

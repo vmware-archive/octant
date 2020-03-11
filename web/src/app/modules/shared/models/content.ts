@@ -12,6 +12,7 @@ export interface Content {
   title: View[];
   iconName?: string;
   iconSource?: string;
+  buttonGroup?: ButtonGroupView;
 }
 
 export interface Metadata {
@@ -398,6 +399,14 @@ export interface TerminalView extends View {
   };
 }
 
+export interface EditorView extends View {
+  config: {
+    value: string;
+    language: string;
+    readOnly: boolean;
+  };
+}
+
 export interface Port extends View {
   config: {
     port: number;
@@ -434,15 +443,6 @@ export interface IFrameView extends View {
   config: {
     url: string;
     title: string;
-  };
-}
-
-export interface VerticalBulletChartView extends View {
-  config: {
-    bands: BulletBand[];
-    measure: number;
-    measureLabel: string;
-    label: string;
   };
 }
 

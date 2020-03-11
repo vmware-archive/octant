@@ -7,8 +7,10 @@ package objectstatus
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
+	"github.com/gobwas/glob"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
@@ -36,7 +38,7 @@ func runIngressStatus(ctx context.Context, object runtime.Object, o store.Store)
 
 	is := ingressStatus{
 		ingress:     *ingress,
-		objectstore: o,
+		objectStore: o,
 	}
 	status, err := is.run(ctx)
 	if err != nil {
@@ -52,7 +54,7 @@ func runIngressStatus(ctx context.Context, object runtime.Object, o store.Store)
 
 type ingressStatus struct {
 	ingress     extv1beta1.Ingress
-	objectstore store.Store
+	objectStore store.Store
 }
 
 func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
@@ -60,9 +62,9 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 
 	ingress := is.ingress
 
-	o := is.objectstore
+	o := is.objectStore
 	if o == nil {
-		return status, errors.New("ingress status requires a non nil objectstore")
+		return status, errors.New("ingress status requires a non nil objectStore")
 	}
 
 	backends := is.backends()
@@ -107,17 +109,23 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 		}
 	}
 
-	tlsHosts := is.tlsHostMap()
-	if len(tlsHosts) > 0 {
-		for _, rule := range ingress.Spec.Rules {
-			if rule.Host == "" {
-				continue
+	hm, err := is.createHostMatcher()
+	if err != nil {
+		status.SetError()
+		status.AddDetailf("TLS Hosts: %v", err)
+	} else {
+		if len(hm.globs) > 0 {
+			for _, rule := range ingress.Spec.Rules {
+				if rule.Host == "" {
+					continue
+				}
+
+				if !hm.Match(rule.Host) {
+					status.SetError()
+					status.AddDetailf("No matching TLS host for rule %q", rule.Host)
+				}
 			}
 
-			if ok := tlsHosts[rule.Host]; !ok {
-				status.SetError()
-				status.AddDetailf("No matching TLS host for rule %q", rule.Host)
-			}
 		}
 	}
 
@@ -135,7 +143,7 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 			Name:       tls.SecretName,
 		}
 
-		u, err := is.objectstore.Get(ctx, key)
+		u, err := is.objectStore.Get(ctx, key)
 		if err != nil {
 			status.SetError()
 			status.AddDetailf("Unable to load Secret %q: %s", tls.SecretName, err)
@@ -189,6 +197,45 @@ func (is *ingressStatus) tlsHostMap() map[string]bool {
 	return result
 }
 
+func (is *ingressStatus) createHostMatcher() (*hostMatcher, error) {
+	hm := hostMatcher{}
+
+	for _, tls := range is.ingress.Spec.TLS {
+		for _, host := range tls.Hosts {
+			if err := hm.AddHost(host); err != nil {
+				return nil, fmt.Errorf("parsing TLS host %s: %w", host, err)
+			}
+		}
+	}
+
+	return &hm, nil
+}
+
+type hostMatcher struct {
+	globs []glob.Glob
+}
+
+func (hm *hostMatcher) AddHost(host string) error {
+	g, err := glob.Compile(host)
+	if err != nil {
+		return fmt.Errorf("unable to compile host glob: %w", err)
+	}
+
+	hm.globs = append(hm.globs, g)
+
+	return nil
+}
+
+func (hm hostMatcher) Match(s string) bool {
+	for _, g := range hm.globs {
+		if g.Match(s) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // matchBackendPort returns true if a matching port is founded for the provided backend
 // in the slice of service ports.
 func matchBackendPort(b extv1beta1.IngressBackend, ports []corev1.ServicePort) bool {
@@ -204,7 +251,7 @@ func matchBackendPort(b extv1beta1.IngressBackend, ports []corev1.ServicePort) b
 				return true
 			}
 		case intstr.Int:
-			if int32(b.ServicePort.IntVal) == p.Port {
+			if b.ServicePort.IntVal == p.Port {
 				return true
 			}
 		default:

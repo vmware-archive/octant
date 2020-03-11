@@ -14,10 +14,11 @@ import (
 
 	oerrors "github.com/vmware-tanzu/octant/internal/errors"
 	"github.com/vmware-tanzu/octant/internal/event"
-	"github.com/vmware-tanzu/octant/internal/log"
+	internalLog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/module"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -88,7 +89,7 @@ var _ StateManager = (*ContentManager)(nil)
 
 // Start starts the manager.
 func (cm *ContentManager) Start(ctx context.Context, state octant.State, s OctantClient) {
-	logger := log.From(ctx)
+	logger := internalLog.From(ctx)
 	logger.Debugf("starting content manager")
 
 	defer func() {

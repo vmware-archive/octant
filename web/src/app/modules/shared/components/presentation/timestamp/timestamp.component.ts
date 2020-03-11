@@ -23,8 +23,8 @@ export class TimestampComponent implements OnChanges {
     return this.v;
   }
 
+  timestamp: number;
   humanReadable: string;
-  age: string;
 
   constructor() {
     dayjs.extend(utc);
@@ -35,40 +35,11 @@ export class TimestampComponent implements OnChanges {
     if (changes.view.currentValue) {
       const view = changes.view.currentValue as TimestampView;
 
-      const timestamp = view.config.timestamp;
+      this.timestamp = view.config.timestamp;
       this.humanReadable =
-        dayjs(timestamp * 1000)
+        dayjs(this.timestamp * 1000)
           .utc()
           .format('LLLL') + ' UTC';
-      this.age = this.summarizeTimestamp(timestamp);
-    }
-  }
-
-  /**
-   * summarizeTimestamp converts a timestamp to a relative time from the current time.
-   * If no date is supplied, it will use the current date.
-   *
-   * @param ts timestamp in seconds since epoch
-   * @param base optional date to calculate from
-   */
-  summarizeTimestamp(ts: number, base?: Date): string {
-    let now: Date;
-    if (base) {
-      now = base;
-    } else {
-      now = new Date();
-    }
-
-    const then = now.getTime() / 1000 - ts;
-
-    if (then > 86400) {
-      return `${Math.floor(then / 86400)}d`;
-    } else if (then > 3600) {
-      return `${Math.floor(then / 3600)}h`;
-    } else if (then > 60) {
-      return `${Math.floor(then / 60)}m`;
-    } else {
-      return `${Math.floor(then)}s`;
     }
   }
 }

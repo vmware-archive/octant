@@ -29,7 +29,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/describer"
 	oerrors "github.com/vmware-tanzu/octant/internal/errors"
-	"github.com/vmware-tanzu/octant/internal/log"
+	internalLog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/module"
 	"github.com/vmware-tanzu/octant/internal/modules/applications"
 	"github.com/vmware-tanzu/octant/internal/modules/clusteroverview"
@@ -41,6 +41,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/portforward"
 	"github.com/vmware-tanzu/octant/internal/terminal"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/plugin"
 	pluginAPI "github.com/vmware-tanzu/octant/pkg/plugin/api"
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -61,7 +62,7 @@ type Options struct {
 
 // Run runs the dashboard.
 func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options Options) error {
-	ctx = log.WithLoggerContext(ctx, logger)
+	ctx = internalLog.WithLoggerContext(ctx, logger)
 
 	if options.Context != "" {
 		logger.With("initial-context", options.Context).Infof("Setting initial context from user flags")
@@ -221,7 +222,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 
 	<-ctx.Done()
 
-	shutdownCtx := log.WithLoggerContext(context.Background(), logger)
+	shutdownCtx := internalLog.WithLoggerContext(context.Background(), logger)
 
 	moduleManager.Unload()
 	pluginManager.Stop(shutdownCtx)

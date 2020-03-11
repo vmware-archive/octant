@@ -35,6 +35,11 @@
                 "glob": "clr-ui.min.css",
                 "input": "node_modules/@clr/ui",
                 "output": "assets/css"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/monaco-editor/min/vs",
+                "output": "/lib/vs"
               }
             ],
             "styles": [

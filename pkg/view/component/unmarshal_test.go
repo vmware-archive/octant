@@ -67,6 +67,17 @@ func Test_unmarshal(t *testing.T) {
 			},
 		},
 		{
+			name:       "code",
+			configFile: "config_code.json",
+			objectType: "codeBlock",
+			expected: &Code{
+				Config: CodeConfig{
+					Code: "echo HELLO_WORLD",
+				},
+				base: newBase(typeCodeBlock, nil),
+			},
+		},
+		{
 			name:       "containers",
 			configFile: "config_containers.json",
 			objectType: "containers",
@@ -78,6 +89,50 @@ func Test_unmarshal(t *testing.T) {
 					},
 				},
 				base: newBase(typeContainers, nil),
+			},
+		},
+		{
+			name:       "donutchart",
+			configFile: "config_donutchart.json",
+			objectType: "donutChart",
+			expected: &DonutChart{
+				Config: DonutChartConfig{
+					Segments: []DonutSegment{
+						{
+							Count:  1,
+							Status: "ok",
+						},
+					},
+					Labels: DonutChartLabels{
+						Plural:   "tests",
+						Singular: "test",
+					},
+					Size: DonutChartSizeSmall,
+				},
+				base: newBase(typeDonutChart, nil),
+			},
+		},
+		{
+			name:       "editor",
+			configFile: "config_editor.json",
+			objectType: "editor",
+			expected: &Editor{
+				Config: EditorConfig{
+					Value:    "code",
+					ReadOnly: true,
+				},
+				base: newBase(typeEditor, nil),
+			},
+		},
+		{
+			name:       "error",
+			configFile: "config_error.json",
+			objectType: "error",
+			expected: &Error{
+				Config: ErrorConfig{
+					Data: "error test",
+				},
+				base: newBase(typeError, nil),
 			},
 		},
 		{
@@ -263,6 +318,21 @@ func Test_unmarshal(t *testing.T) {
 					},
 				},
 				base: newBase(typeSelectors, nil),
+			},
+		},
+		{
+			name:       "singleStat",
+			configFile: "config_single_stat.json",
+			objectType: "singleStat",
+			expected: &SingleStat{
+				Config: SingleStateConfig{
+					Title: "testing",
+					Value: SingleStatValue{
+						Text:  "30m",
+						Color: "#60b515",
+					},
+				},
+				base: newBase(typeSingleStat, nil),
 			},
 		},
 		{

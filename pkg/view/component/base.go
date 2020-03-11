@@ -13,6 +13,7 @@ const (
 	typeCodeBlock           = "codeBlock"
 	typeContainers          = "containers"
 	typeDonutChart          = "donutChart"
+	typeEditor              = "editor"
 	typeError               = "error"
 	typeExtension           = "extension"
 	typeExpressionSelector  = "expressionSelector"

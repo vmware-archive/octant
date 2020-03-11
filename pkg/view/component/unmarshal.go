@@ -7,6 +7,7 @@ package component
 
 import (
 	"encoding/json"
+
 	"github.com/pkg/errors"
 )
 
@@ -35,10 +36,30 @@ func unmarshal(to TypedObject) (Component, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal cardList config")
 		o = t
+	case typeCodeBlock:
+		t := &Code{base: base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal code config")
+		o = t
 	case typeContainers:
 		t := &Containers{base: base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal containers config")
+		o = t
+	case typeDonutChart:
+		t := &DonutChart{base: base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal donutChart config")
+		o = t
+	case typeEditor:
+		t := &Editor{base: base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal editor config")
+		o = t
+	case typeError:
+		t := &Error{base: base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal error config")
 		o = t
 	case typeExpressionSelector:
 		t := &ExpressionSelector{base: base{Metadata: to.Metadata}}
@@ -104,6 +125,11 @@ func unmarshal(to TypedObject) (Component, error) {
 		t := &Selectors{base: base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal selectors config")
+		o = t
+	case typeSingleStat:
+		t := &SingleStat{base: base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal singleStat config")
 		o = t
 	case typeSummary:
 		t := &Summary{base: base{Metadata: to.Metadata}}

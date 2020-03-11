@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/pkg/log"
 )
 
 //go:generate mockgen -destination=./fake/mock_alert.go -package=fake github.com/vmware-tanzu/octant/pkg/action Alerter

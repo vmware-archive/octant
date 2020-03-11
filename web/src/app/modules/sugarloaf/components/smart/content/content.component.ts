@@ -22,6 +22,7 @@ import {
   ContentResponse,
   ExtensionView,
   View,
+  ButtonGroupView,
 } from 'src/app/modules/shared/models/content';
 import { IconService } from '../../../../shared/services/icon/icon.service';
 import { ViewService } from '../../../../shared/services/view/view.service';
@@ -45,6 +46,7 @@ export class ContentComponent implements OnInit, OnDestroy {
   views: View[] = null;
   extView: ExtensionView = null;
   singleView: View = null;
+  buttonGroup: ButtonGroupView = null;
   private previousUrl = '';
   private iconName: string;
   private defaultPath: string;
@@ -117,7 +119,6 @@ export class ContentComponent implements OnInit, OnDestroy {
       this.previousParams = queryParams;
       this.resetView();
       this.contentService.setContentPath(currentPath, queryParams);
-      this.scrollTarget.nativeElement.scrollTop = 0;
     }
   }
 
@@ -135,6 +136,7 @@ export class ContentComponent implements OnInit, OnDestroy {
       // TODO: show a loading screen here (#506)
       return;
     }
+    this.buttonGroup = contentResponse.content.buttonGroup;
 
     this.extView = contentResponse.content.extensionComponent;
 

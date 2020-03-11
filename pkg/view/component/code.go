@@ -7,13 +7,13 @@ package component
 
 import "encoding/json"
 
-// Code is a component for code
+// Value is a component for code
 type Code struct {
 	base
 	Config CodeConfig `json:"config"`
 }
 
-// CodeConfig is the contents of Code
+// CodeConfig is the contents of Value
 type CodeConfig struct {
 	Code string `json:"value"`
 }

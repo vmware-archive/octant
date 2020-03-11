@@ -23,7 +23,7 @@ func Test_ToComponent(t *testing.T) {
 	require.NoError(t, err)
 
 	data := "---\nmetadata:\n  creationTimestamp: null\nspec:\n  containers: null\nstatus: {}\n"
-	expected := component.NewYAML(component.TitleFromString("YAML"), data)
+	expected := component.NewEditor(component.TitleFromString("YAML"), data, true)
 
 	assert.Equal(t, expected, got)
 }

@@ -15,8 +15,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	"github.com/vmware-tanzu/octant/internal/octant"
 	printerFake "github.com/vmware-tanzu/octant/internal/printer/fake"
 	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/plugin"
 	pluginFake "github.com/vmware-tanzu/octant/pkg/plugin/fake"
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -77,6 +79,16 @@ func TestObjectDescriber(t *testing.T) {
 	summary := component.NewText("summary")
 	summary.SetAccessor("summary")
 
+	buttonGroup := component.NewButtonGroup()
+
+	buttonGroup.AddButton(
+		component.NewButton("Delete",
+			action.CreatePayload(octant.ActionDeleteObject, key.ToActionPayload()),
+			component.WithButtonConfirmation(
+				"Delete Pod",
+				"Are you sure you want to delete *Pod* **pod**? This action is permanent and cannot be recovered.",
+			)))
+
 	expected := component.ContentResponse{
 		Title:      component.Title(component.NewText("object"), component.NewText("pod")),
 		IconName:   "icon-name",
@@ -84,7 +96,26 @@ func TestObjectDescriber(t *testing.T) {
 		Components: []component.Component{
 			summary,
 		},
+		ButtonGroup: buttonGroup,
 	}
 	assert.Equal(t, expected, cResponse)
 
+}
+
+func Test_deleteObjectConfirmation(t *testing.T) {
+	pod := testutil.CreatePod("pod")
+	option, err := deleteObjectConfirmation(pod)
+	require.NoError(t, err)
+
+	button := component.Button{}
+	option(&button)
+
+	expected := component.Button{
+		Confirmation: &component.Confirmation{
+			Title: "Delete Pod",
+			Body:  "Are you sure you want to delete *Pod* **pod**? This action is permanent and cannot be recovered.",
+		},
+	}
+
+	assert.Equal(t, expected, button)
 }

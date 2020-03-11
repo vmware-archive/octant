@@ -88,6 +88,8 @@ func Test_GRPCClient_Content(t *testing.T) {
 		contentResponseBytes, err := json.Marshal(&contentResponse)
 		require.NoError(t, err)
 
+		contentResponse.ButtonGroup = nil
+
 		resp := &dashboard.ContentResponse{
 			ContentResponse: contentResponseBytes,
 		}

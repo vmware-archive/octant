@@ -11,12 +11,9 @@ import (
 
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/action"
-	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 	"github.com/vmware-tanzu/octant/pkg/view/flexlayout"
 )
@@ -175,46 +172,10 @@ func (o *Object) summaryComponent(title string, summary *component.Summary, sect
 	return nil
 }
 
-func deleteObjectConfirmation(object runtime.Object) (component.ButtonOption, error) {
-	if object == nil {
-		return nil, fmt.Errorf("object is nil")
-	}
-	_, kind := object.GetObjectKind().GroupVersionKind().ToAPIVersionAndKind()
-
-	accessor, err := meta.Accessor(object)
-	if err != nil {
-		return nil, err
-	}
-
-	confirmationTitle := fmt.Sprintf("Delete %s", kind)
-	confirmationBody := fmt.Sprintf("Are you sure you want to delete *%s* **%s**? This action is permanent and cannot be recovered.", kind, accessor.GetName())
-	return component.WithButtonConfirmation(confirmationTitle, confirmationBody), nil
-}
-
 // ToComponent converts Object to a view.
 func (o *Object) ToComponent(ctx context.Context, options Options) (component.Component, error) {
 	if o.object == nil {
 		return nil, fmt.Errorf("object is nil")
-	}
-
-	accessor, err := meta.Accessor(o.object)
-	if err != nil {
-		return nil, err
-	}
-
-	if accessor.GetDeletionTimestamp() == nil {
-		key, err := store.KeyFromObject(o.object)
-		if err != nil {
-			return nil, err
-		}
-
-		confirmation, err := deleteObjectConfirmation(o.object)
-		if err != nil {
-			return nil, fmt.Errorf("create delete confirmation: %w", err)
-		}
-
-		o.AddButton("Delete", action.CreatePayload(octant.ActionDeleteObject,
-			key.ToActionPayload()), confirmation)
 	}
 
 	summarySection := o.flexLayout.AddSection()

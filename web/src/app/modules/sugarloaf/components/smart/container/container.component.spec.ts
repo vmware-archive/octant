@@ -23,6 +23,7 @@ import { WebsocketServiceMock } from '../../../../shared/services/websocket/mock
 import { ClarityIcons } from '@clr/icons';
 import { ThemeSwitchButtonComponent } from '../theme-switch/theme-switch-button.component';
 import { QuickSwitcherComponent } from '../quick-switcher/quick-switcher.component';
+import { MonacoEditorConfig, MonacoProviderService } from 'ng-monaco-editor';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
@@ -30,6 +31,8 @@ describe('AppComponent', () => {
       providers: [
         { provide: WebsocketService, useClass: WebsocketServiceMock },
         { provide: window, useValue: ClarityIcons },
+        MonacoProviderService,
+        MonacoEditorConfig,
       ],
       imports: [
         RouterTestingModule,
