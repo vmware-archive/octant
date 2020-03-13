@@ -47,11 +47,6 @@ export class ThemeSwitchButtonComponent implements OnInit {
       this.renderer.removeClass(document.body, t.type)
     );
     this.renderer.addClass(document.body, theme.type);
-    if (this.isLightThemeEnabled()) {
-      this.monacoService.changeTheme('vs');
-    } else {
-      this.monacoService.changeTheme('vs-dark');
-    }
   }
 
   switchTheme() {

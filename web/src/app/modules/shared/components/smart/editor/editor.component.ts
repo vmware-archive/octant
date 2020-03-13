@@ -5,10 +5,12 @@ SPDX-License-Identifier: Apache-2.0
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { EditorView, View } from 'src/app/modules/shared/models/content';
+import { ThemeService } from '../../../../sugarloaf/components/smart/theme-switch/theme-switch.service';
 
 interface Options {
   readOnly: boolean;
   language: string;
+  theme: string;
 }
 
 @Component({
@@ -30,7 +32,7 @@ export class EditorComponent implements OnChanges {
   value: string;
   options: Options;
 
-  constructor() {
+  constructor(private themeService: ThemeService) {
     this.options = {} as Options;
   }
 
@@ -40,6 +42,8 @@ export class EditorComponent implements OnChanges {
       this.value = view.config.value;
       this.options.readOnly = view.config.readOnly;
       this.options.language = view.config.language;
+      this.options.theme =
+        this.themeService.currentType() === 'dark' ? 'vs-dark' : 'vs';
     }
   }
 }
