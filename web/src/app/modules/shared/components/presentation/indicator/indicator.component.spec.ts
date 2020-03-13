@@ -60,7 +60,6 @@ describe('IndicatorComponent', () => {
     });
 
     it('does not show an indicator', () => {
-      console.log(element);
       expect(element.querySelector('app-indicator div.indicator')).toBeNull();
     });
   });

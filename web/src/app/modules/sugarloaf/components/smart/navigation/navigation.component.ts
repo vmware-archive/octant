@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { Navigation, NavigationChild } from '../../../models/navigation';
 import { IconService } from '../../../../shared/services/icon/icon.service';
 import { NavigationService } from '../../../../shared/services/navigation/navigation.service';
-import { untilDestroyed } from 'ngx-take-until-destroy';
 
 const emptyNavigation: Navigation = {
   sections: [],
@@ -23,18 +22,22 @@ export class NavigationComponent implements OnInit, OnDestroy {
 
   navigation = emptyNavigation;
 
+  private navigationSubscription: Subscription;
+
   constructor(
     private iconService: IconService,
     private navigationService: NavigationService
   ) {}
 
   ngOnInit() {
-    this.navigationService.current
-      .pipe(untilDestroyed(this))
-      .subscribe(navigation => (this.navigation = navigation));
+    this.navigationSubscription = this.navigationService.current.subscribe(
+      navigation => (this.navigation = navigation)
+    );
   }
 
-  ngOnDestroy() {}
+  ngOnDestroy(): void {
+    this.navigationSubscription.unsubscribe();
+  }
 
   identifyNavigationItem(index: number, item: NavigationChild): string {
     return item.title;
@@ -43,9 +46,4 @@ export class NavigationComponent implements OnInit, OnDestroy {
   itemIcon(item: NavigationChild): string {
     return this.iconService.load(item);
   }
-
-  private handleEvent = (message: MessageEvent) => {
-    const data = JSON.parse(message.data);
-    this.behavior.next(data);
-  };
 }

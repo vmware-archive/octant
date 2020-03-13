@@ -4,11 +4,11 @@
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { untilDestroyed } from 'ngx-take-until-destroy';
 import {
   Filter,
   LabelFilterService,
 } from 'src/app/modules/shared/services/label-filter/label-filter.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-filters',
@@ -18,6 +18,8 @@ import {
 export class FiltersComponent implements OnInit, OnDestroy {
   filters: Filter[];
 
+  private labelFilterSubscription: Subscription;
+
   constructor(
     private labelFilter: LabelFilterService,
     private router: Router,
@@ -25,24 +27,28 @@ export class FiltersComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.labelFilter.filters.pipe(untilDestroyed(this)).subscribe(filters => {
-      this.filters = filters;
-      const filterParams = filters.map(filter =>
-        encodeURIComponent(`${filter.key}:${filter.value}`)
-      );
-      const queryParams: Params = {
-        filter: filterParams,
-      };
+    this.labelFilterSubscription = this.labelFilter.filters.subscribe(
+      filters => {
+        this.filters = filters;
+        const filterParams = filters.map(filter =>
+          encodeURIComponent(`${filter.key}:${filter.value}`)
+        );
+        const queryParams: Params = {
+          filter: filterParams,
+        };
 
-      this.router.navigate([], {
-        relativeTo: this.activatedRoute,
-        queryParams,
-        queryParamsHandling: 'merge',
-      });
-    });
+        this.router.navigate([], {
+          relativeTo: this.activatedRoute,
+          queryParams,
+          queryParamsHandling: 'merge',
+        });
+      }
+    );
   }
 
-  ngOnDestroy() {}
+  ngOnDestroy(): void {
+    this.labelFilterSubscription.unsubscribe();
+  }
 
   identifyFilter(index: number, item: Filter): string {
     return `${item.key}-${item.value}`;
