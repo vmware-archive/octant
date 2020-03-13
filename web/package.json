@@ -91,6 +91,7 @@
     "karma-coverage-istanbul-reporter": "^2.1.1",
     "karma-jasmine": "^1.1.2",
     "karma-jasmine-html-reporter": "^0.2.2",
+    "karma-spec-reporter": "0.0.32",
     "prettier": "^1.19.1",
     "prettier-tslint": "^0.4.2",
     "protractor": "~5.4.0",
