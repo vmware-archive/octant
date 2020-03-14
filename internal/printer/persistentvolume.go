@@ -74,7 +74,7 @@ func PersistentVolumeHandler(ctx context.Context, pv *v1.PersistentVolume, optio
 	}
 
 	if err := pvh.Status(ctx, options); err != nil {
-		return nil, errors.Wrap(err, "print persisten volume claims")
+		return nil, errors.Wrap(err, "print persistent volume claims")
 	}
 
 	return obj.ToComponent(ctx, options)

@@ -347,7 +347,11 @@ func (dc *DynamicCache) Get(ctx context.Context, key store.Key) (*unstructured.U
 	object, err := dc.getFromInformer(ctx, key)
 	if err != nil {
 		if kerrors.IsNotFound(err) {
-			return nil, nil
+			object, err := dc.getFromDynamicClient(ctx, key)
+			if err != nil {
+				return nil, err
+			}
+			return object, nil
 		}
 
 		return nil, err
