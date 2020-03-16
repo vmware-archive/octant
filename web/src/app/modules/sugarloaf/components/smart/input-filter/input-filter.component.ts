@@ -63,14 +63,6 @@ export class InputFilterComponent implements OnInit, OnDestroy {
     this.labelFilterService.remove(filter);
   }
 
-  get placeholderText(): string {
-    if (this.filters && this.filters.length > 0) {
-      return `Filter by labels (${this.filters.length} applied)`;
-    } else {
-      return 'Filter by labels';
-    }
-  }
-
   onEnter() {
     const filter = this.labelFilterService.decodeFilter(this.inputValue);
     if (filter) {

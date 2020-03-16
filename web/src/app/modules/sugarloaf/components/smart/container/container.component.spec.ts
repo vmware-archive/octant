@@ -17,6 +17,7 @@ import { NotifierComponent } from '../notifier/notifier.component';
 import { NavigationComponent } from '../navigation/navigation.component';
 import { ContextSelectorComponent } from '../../../../shared/components/smart/context-selector/context-selector.component';
 import { DefaultPipe } from '../../../../shared/pipes/default/default.pipe';
+import { FilterTextPipe } from '../../../pipes/filtertext/filtertext.pipe';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { WebsocketService } from '../../../../shared/services/websocket/websocket.service';
 import { WebsocketServiceMock } from '../../../../shared/services/websocket/mock';
@@ -50,6 +51,7 @@ describe('AppComponent', () => {
         NavigationComponent,
         ContextSelectorComponent,
         DefaultPipe,
+        FilterTextPipe,
         ThemeSwitchButtonComponent,
         QuickSwitcherComponent,
       ],
