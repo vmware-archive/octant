@@ -1,4 +1,15 @@
-import { Pipe, PipeTransform } from '@angular/core';
+/*
+ * Copyright (c) 2020 the Octant contributors. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import {
+  Pipe,
+  PipeTransform,
+  ChangeDetectorRef,
+  OnDestroy,
+  NgZone,
+} from '@angular/core';
 
 @Pipe({
   name: 'relative',
@@ -12,8 +23,15 @@ import { Pipe, PipeTransform } from '@angular/core';
  * @param ts timestamp in seconds since epoch
  * @param base optional date to calculate from
  */
-export class RelativePipe implements PipeTransform {
+export class RelativePipe implements PipeTransform, OnDestroy {
+  private timer: number;
+  constructor(
+    private changeDetectorRef: ChangeDetectorRef,
+    private ngZone: NgZone
+  ) {}
   transform(ts: number, base?: Date): string {
+    this.removeTimer();
+
     let now: Date;
     if (base) {
       now = base;
@@ -23,6 +41,17 @@ export class RelativePipe implements PipeTransform {
 
     const then = now.getTime() / 1000 - ts;
 
+    const updateInterval = this.changeDetectionFrequency(then) * 1000;
+
+    this.timer = this.ngZone.runOutsideAngular(() => {
+      if (typeof window !== 'undefined') {
+        return window.setTimeout(() => {
+          this.ngZone.run(() => this.changeDetectorRef.markForCheck());
+        }, updateInterval);
+      }
+      return null;
+    });
+
     if (then > 86400) {
       return `${Math.floor(then / 86400)}d`;
     } else if (then > 3600) {
@@ -31,6 +60,30 @@ export class RelativePipe implements PipeTransform {
       return `${Math.floor(then / 60)}m`;
     } else {
       return `${Math.floor(then)}s`;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.removeTimer();
+  }
+
+  private removeTimer() {
+    if (this.timer) {
+      window.clearTimeout(this.timer);
+      this.timer = null;
+    }
+  }
+
+  private changeDetectionFrequency(seconds: number) {
+    switch (true) {
+      case seconds < 60:
+        return 2;
+      case seconds < 3600:
+        return 60;
+      case seconds < 86400:
+        return 600;
+      default:
+        return 3600;
     }
   }
 }

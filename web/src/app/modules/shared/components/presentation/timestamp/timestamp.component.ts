@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  SimpleChanges,
+} from '@angular/core';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
@@ -13,7 +19,7 @@ import { TimestampView, View } from 'src/app/modules/shared/models/content';
   templateUrl: './timestamp.component.html',
   styleUrls: ['./timestamp.component.scss'],
 })
-export class TimestampComponent implements OnChanges {
+export class TimestampComponent implements OnChanges, OnDestroy {
   private v: TimestampView;
 
   @Input() set view(v: View) {
@@ -41,5 +47,9 @@ export class TimestampComponent implements OnChanges {
           .utc()
           .format('LLLL') + ' UTC';
     }
+  }
+
+  ngOnDestroy(): void {
+    this.timestamp = null;
   }
 }
