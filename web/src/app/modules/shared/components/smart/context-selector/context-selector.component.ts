@@ -3,11 +3,11 @@
 //
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { untilDestroyed } from 'ngx-take-until-destroy';
 import {
   ContextDescription,
   KubeContextService,
 } from '../../../services/kube-context/kube-context.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-context-selector',
@@ -18,20 +18,22 @@ export class ContextSelectorComponent implements OnInit, OnDestroy {
   contexts: ContextDescription[];
   selected: string;
 
+  private kubeContextSubscription: Subscription;
+
   constructor(private kubeContext: KubeContextService) {}
 
   ngOnInit() {
-    this.kubeContext
+    this.kubeContextSubscription = this.kubeContext
       .contexts()
-      .pipe(untilDestroyed(this))
       .subscribe(contexts => (this.contexts = contexts));
-    this.kubeContext
+    this.kubeContextSubscription = this.kubeContext
       .selected()
-      .pipe(untilDestroyed(this))
       .subscribe(selected => (this.selected = selected));
   }
 
-  ngOnDestroy() {}
+  ngOnDestroy(): void {
+    this.kubeContextSubscription.unsubscribe();
+  }
 
   contextClass(context: ContextDescription) {
     const active = this.selected === context.name ? ['active'] : [];

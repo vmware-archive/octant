@@ -9,10 +9,9 @@ import {
   OnInit,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { Navigation, NavigationChild } from '../../../models/navigation';
 import { NavigationService } from '../../../../shared/services/navigation/navigation.service';
-import { untilDestroyed } from 'ngx-take-until-destroy';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 const emptyNavigation: Navigation = {
@@ -47,6 +46,8 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
 
   activeIndex = 0;
 
+  private navigationSubscription: Subscription;
+
   constructor(
     private navigationService: NavigationService,
     private router: Router,
@@ -59,15 +60,17 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.navigationService.current
-      .pipe(untilDestroyed(this))
-      .subscribe(navigation => {
+    this.navigationSubscription = this.navigationService.current.subscribe(
+      navigation => {
         this.navigation = navigation;
         this.destinations = this.buildDestinations(navigation);
-      });
+      }
+    );
   }
 
-  ngOnDestroy() {}
+  ngOnDestroy(): void {
+    this.navigationSubscription.unsubscribe();
+  }
 
   identifyNavigationItem(index: number, item: NavigationChild): string {
     return item.title;
@@ -122,10 +125,6 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
 
   identifyDestinationItem(_: number, item: Destination): string {
     return item.title;
-  }
-
-  navigateTo(destination: string) {
-    console.log(destination);
   }
 
   onInputChange(input: string) {

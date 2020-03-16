@@ -20,12 +20,12 @@ import {
   LogsView,
   View,
 } from 'src/app/modules/shared/models/content';
-import { untilDestroyed } from 'ngx-take-until-destroy';
 import {
   PodLogsService,
   PodLogsStreamer,
 } from 'src/app/modules/shared/pod-logs/pod-logs.service';
 import { formatDate } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-logs',
@@ -59,6 +59,8 @@ export class LogsComponent
   currentSelection = 0;
   totalSelections = 0;
   timeFormat = 'MMM d, y h:mm:ss a z';
+
+  private logSubscription: Subscription;
 
   constructor(
     private podLogsService: PodLogsService,
@@ -108,12 +110,12 @@ export class LogsComponent
         pod,
         container
       );
-      this.logStream.logEntries
-        .pipe(untilDestroyed(this))
-        .subscribe((entries: LogEntry[]) => {
+      this.logSubscription = this.logStream.logEntries.subscribe(
+        (entries: LogEntry[]) => {
           this.containerLogs = entries;
           this.updateSelectedCount();
-        });
+        }
+      );
     }
   }
 
@@ -158,6 +160,10 @@ export class LogsComponent
     if (this.logStream) {
       this.logStream.close();
       this.logStream = null;
+    }
+
+    if (this.logSubscription) {
+      this.logSubscription.unsubscribe();
     }
   }
 
@@ -263,13 +269,4 @@ export class LogsComponent
     }
     this.totalSelections = count;
   }
-
-  // isPreviousDisabled(): boolean {
-  //   return this.currentSelection === 0;
-  // }
-  //
-  // isNextDisabled(): boolean {
-  //   const total = this.totalHighlights();
-  //   return total === 0 || this.currentSelection >= total - 1;
-  // }
 }
