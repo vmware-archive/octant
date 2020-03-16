@@ -9,11 +9,11 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { untilDestroyed } from 'ngx-take-until-destroy';
 import {
   Filter,
   LabelFilterService,
 } from '../../../../shared/services/label-filter/label-filter.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-input-filter',
@@ -25,20 +25,24 @@ export class InputFilterComponent implements OnInit, OnDestroy {
   showTagList = false;
   filters: Filter[] = [];
 
+  private labelFilterSubscription: Subscription;
+
   constructor(
     private eRef: ElementRef,
     private labelFilterService: LabelFilterService
   ) {}
 
   ngOnInit() {
-    this.labelFilterService.filters
-      .pipe(untilDestroyed(this))
-      .subscribe(filters => {
+    this.labelFilterSubscription = this.labelFilterService.filters.subscribe(
+      filters => {
         this.filters = filters;
-      });
+      }
+    );
   }
 
-  ngOnDestroy() {}
+  ngOnDestroy(): void {
+    this.labelFilterSubscription.unsubscribe();
+  }
 
   @HostListener('document:click', ['$event'])
   outsideClick(event) {

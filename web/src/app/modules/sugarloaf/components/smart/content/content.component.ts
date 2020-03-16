@@ -11,13 +11,7 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import {
-  ActivatedRoute,
-  Params,
-  Router,
-  RoutesRecognized,
-  UrlSegment,
-} from '@angular/router';
+import { Params, Router, UrlSegment } from '@angular/router';
 import {
   ContentResponse,
   ExtensionView,
@@ -26,10 +20,8 @@ import {
 } from 'src/app/modules/shared/models/content';
 import { IconService } from '../../../../shared/services/icon/icon.service';
 import { ViewService } from '../../../../shared/services/view/view.service';
-import { untilDestroyed } from 'ngx-take-until-destroy';
 import { ContentService } from '../../../../shared/services/content/content.service';
 import isEqual from 'lodash/isEqual';
-import { filter, pairwise } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -47,14 +39,13 @@ export class ContentComponent implements OnInit, OnDestroy {
   extView: ExtensionView = null;
   singleView: View = null;
   buttonGroup: ButtonGroupView = null;
+  private contentSubscription: Subscription;
   private previousUrl = '';
   private iconName: string;
   private defaultPath: string;
   private previousParams: Params;
-  private routerListenerSub: Subscription;
 
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
     private iconService: IconService,
     private viewService: ViewService,
@@ -74,30 +65,18 @@ export class ContentComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.routerListenerSub = this.router.events
-      .pipe(
-        filter(e => e instanceof RoutesRecognized),
-        pairwise()
-      )
-      .subscribe(([_, current]: [RoutesRecognized, RoutesRecognized]) => {
-        this.updatePath(current.url);
-      });
-
     this.updatePath(this.router.routerState.snapshot.url);
 
-    this.contentService.current
-      .pipe(untilDestroyed(this))
-      .subscribe(contentResponse => {
+    this.contentSubscription = this.contentService.current.subscribe(
+      contentResponse => {
         this.setContent(contentResponse);
-      });
+      }
+    );
   }
 
   ngOnDestroy() {
     this.resetView();
-
-    if (this.routerListenerSub) {
-      this.routerListenerSub.unsubscribe();
-    }
+    this.contentSubscription.unsubscribe();
   }
 
   private handlePathChange(
@@ -126,7 +105,6 @@ export class ContentComponent implements OnInit, OnDestroy {
     this.title = null;
     this.singleView = null;
     this.views = null;
-    this.hasReceivedContent = false;
   }
 
   private setContent = (contentResponse: ContentResponse) => {

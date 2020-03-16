@@ -59,6 +59,7 @@ describe('AppComponent', () => {
   it('should create the home', () => {
     const fixture = TestBed.createComponent(ContainerComponent);
     const app = fixture.debugElement.componentInstance;
+    fixture.detectChanges();
     expect(app).toBeTruthy();
   });
 

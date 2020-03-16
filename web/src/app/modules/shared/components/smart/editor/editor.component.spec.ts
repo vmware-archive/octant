@@ -9,7 +9,6 @@ import {
   MonacoEditorModule,
   MonacoProviderService,
 } from 'ng-monaco-editor';
-import { SharedModule } from '../../../shared.module';
 
 describe('EditorComponent', () => {
   let component: EditorComponent;
@@ -31,7 +30,6 @@ describe('EditorComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(EditorComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

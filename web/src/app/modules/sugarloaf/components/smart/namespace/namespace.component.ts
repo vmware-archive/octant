@@ -3,9 +3,9 @@
 //
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { untilDestroyed } from 'ngx-take-until-destroy';
 import { NamespaceService } from 'src/app/modules/shared/services/namespace/namespace.service';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-namespace',
@@ -17,23 +17,27 @@ export class NamespaceComponent implements OnInit, OnDestroy {
   currentNamespace = '';
   trackByIdentity = trackByIdentity;
 
+  private namespaceSubscription: Subscription;
+
   constructor(private namespaceService: NamespaceService) {}
 
   ngOnInit() {
-    this.namespaceService.activeNamespace
-      .pipe(untilDestroyed(this))
-      .subscribe((namespace: string) => {
+    this.namespaceSubscription = this.namespaceService.activeNamespace.subscribe(
+      (namespace: string) => {
         this.currentNamespace = namespace;
-      });
+      }
+    );
 
-    this.namespaceService.availableNamespaces
-      .pipe(untilDestroyed(this))
-      .subscribe((namespaces: string[]) => {
+    this.namespaceSubscription = this.namespaceService.availableNamespaces.subscribe(
+      (namespaces: string[]) => {
         this.namespaces = namespaces;
-      });
+      }
+    );
   }
 
-  ngOnDestroy() {}
+  ngOnDestroy(): void {
+    this.namespaceSubscription.unsubscribe();
+  }
 
   selectNamespace(namespace: string) {
     this.namespaceService.setNamespace(namespace);
