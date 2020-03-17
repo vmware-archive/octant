@@ -80,14 +80,37 @@ tab and also ensure we are calling `stream.Close` using a `defer`.
         // Close closes all of the streams.
         Close()
     }
-    
+
 LogStreamer will be wrapped with a `StateManager` that will subscribe and unsubscribe websocket clients. The current
 implementation needs no `StateManager` because the endpoint outputs all of the log data for each request allowing
 clients can share the exact same endpoint. The nature of streaming the content does not allow for this same pattern.
-    
+The `StateManager` will be responsible for broadcasting the log lines out to subscribed clients.
+
 #### Frontend
 Make our log component on the frontend append data from the WebsocketService instead of redrawing
 the component every time. Similar to how we send data for the Terminal component.
 
 Change the frontend component so that the container selector defaults to our all containers value and that selecting
 a container filters log lines by using the container in the log entry config.
+
+### Implementation strategy
+
+Identify and remove the existing logging endpoints and systems. We can use them as a reference for how the Kubernetes
+API calls are made, but we will not be using any of the existing implementation.
+
+Define the new logging interface. This will be the foundation for each of the mentioned goals. All of the components
+created for the logging system will require this new interface.
+
+Stream aggregation will be the concrete implementation of the `Stream()` method from the logging interface. This will
+provide both the aggregation of logs and the tagging of log lines.
+
+Following stream aggregation we would have the concrete implementation of `Names()` from the logging interface. This
+will provide the listing of containers that are contained with in the stream.
+
+Modify the backend Log component to support the new data format.
+
+Now the `StateManager` implementation which is responsible for sub/unsub of websocket clients and message
+broadcasting will be added.
+
+The frontend logging component will be altered to request a new log stream, similar to how Octant request a new Terminal
+session, and subscribe to the stream as well as close the stream when leaving the Pod.
