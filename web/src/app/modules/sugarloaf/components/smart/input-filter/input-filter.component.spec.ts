@@ -12,6 +12,7 @@ import {
 import { BehaviorSubject } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
+import { FilterTextPipe } from '../../../pipes/filtertext/filtertext.pipe';
 
 const labelFilterStub: Partial<LabelFilterService> = {
   filters: new BehaviorSubject<Filter[]>([]),
@@ -24,7 +25,7 @@ describe('InputFilterComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [FormsModule],
-      declarations: [InputFilterComponent],
+      declarations: [InputFilterComponent, FilterTextPipe],
       providers: [{ provide: LabelFilterService, useValue: labelFilterStub }],
     }).compileComponents();
   }));

@@ -35,6 +35,8 @@ export class DatagridComponent implements OnChanges {
   lastUpdated: Date;
   filters: TableFilters;
 
+  private previousView: SimpleChanges;
+
   identifyRow = trackByIndex;
   identifyColumn = trackByIdentity;
   loading: boolean;
@@ -43,15 +45,22 @@ export class DatagridComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view) {
-      this.title = this.viewService.viewTitleAsText(this.view);
+      if (
+        JSON.stringify(this.previousView) !==
+        JSON.stringify(changes.view.currentValue)
+      ) {
+        this.title = this.viewService.viewTitleAsText(this.view);
 
-      const current = changes.view.currentValue;
-      this.columns = current.config.columns.map(column => column.name);
-      this.rows = current.config.rows;
-      this.placeholder = current.config.emptyContent;
-      this.lastUpdated = new Date();
-      this.loading = current.config.loading;
-      this.filters = current.config.filters;
+        const current = changes.view.currentValue;
+        this.columns = current.config.columns.map(column => column.name);
+        this.rows = current.config.rows;
+        this.placeholder = current.config.emptyContent;
+        this.lastUpdated = new Date();
+        this.loading = current.config.loading;
+        this.filters = current.config.filters;
+
+        this.previousView = changes.view.currentValue;
+      }
     }
   }
 }
