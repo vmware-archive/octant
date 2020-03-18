@@ -1,8 +1,9 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, Renderer2 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
+import { MonacoProviderService } from 'ng-monaco-editor';
 
 export type ThemeType = 'light' | 'dark';
 
@@ -33,6 +34,9 @@ export const defaultTheme = lightTheme;
   providedIn: 'root',
 })
 export class ThemeService {
+  private themeType: ThemeType;
+  private currentTheme: Theme;
+
   constructor(@Inject(DOCUMENT) private document: Document) {}
 
   loadCSS(route: string) {
@@ -53,8 +57,42 @@ export class ThemeService {
     }
   }
 
-  currentType() {
-    const themeType = localStorage.getItem('theme') as ThemeType;
-    return themeType || defaultTheme.type;
+  loadTheme(monacoService: MonacoProviderService, renderer: Renderer2): void {
+    this.currentTheme = this.isLightThemeEnabled() ? lightTheme : darkTheme;
+    this.loadCSS(this.currentTheme.assetPath);
+
+    [darkTheme, lightTheme].forEach(t =>
+      renderer.removeClass(document.body, t.type)
+    );
+    renderer.addClass(document.body, this.currentTheme.type);
+    if (this.isLightThemeEnabled()) {
+      monacoService.changeTheme('vs');
+    } else {
+      monacoService.changeTheme('vs-dark');
+    }
+  }
+
+  switchTheme(monacoService: MonacoProviderService, renderer: Renderer2): void {
+    if (this.isLightThemeEnabled()) {
+      this.themeType = 'dark';
+      localStorage.setItem('theme', 'dark');
+      monacoService.changeTheme('vs-dark');
+    } else {
+      this.themeType = 'light';
+      localStorage.setItem('theme', 'light');
+      monacoService.changeTheme('vs');
+    }
+
+    this.loadTheme(monacoService, renderer);
+  }
+
+  currentType(): ThemeType {
+    this.themeType = localStorage.getItem('theme') as ThemeType;
+    return this.themeType || defaultTheme.type;
+  }
+
+  isLightThemeEnabled(): boolean {
+    this.themeType = localStorage.getItem('theme') as ThemeType;
+    return this.themeType === lightTheme.type;
   }
 }

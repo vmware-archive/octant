@@ -32,50 +32,34 @@ describe('ThemeSwitchButtonComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load light theme when component mounts if there is not a stored value', () => {
-    spyOn(component, 'loadTheme');
-    component.ngOnInit();
-
-    expect(component.themeType).toBe('light');
-    expect(component.loadTheme).toHaveBeenCalled();
-  });
-
-  it('should load right theme when component mounts if there is a stored value', () => {
-    spyOn(component, 'loadTheme');
-    localStorage.setItem('theme', 'dark');
-    component.ngOnInit();
-
-    expect(component.themeType).toBe('dark');
-    expect(component.loadTheme).toHaveBeenCalled();
-  });
-
   it('should indicate if the light theme is active or not', () => {
-    component.themeType = 'light';
-    expect(component.isLightThemeEnabled()).toBe(true);
+    component.lightThemeEnabled = true;
+    expect(component.lightThemeEnabled).toBe(true);
 
-    component.themeType = 'dark';
-    expect(component.isLightThemeEnabled()).toBe(false);
+    component.lightThemeEnabled = false;
+    expect(component.lightThemeEnabled).toBe(false);
   });
 
   it('should switch theme', () => {
-    component.themeType = 'light';
+    component.lightThemeEnabled = false;
+    localStorage.setItem('theme', 'dark');
     component.switchTheme();
 
-    expect(component.themeType).toBe('dark');
-    expect(localStorage.getItem('theme')).toBe('dark');
-
-    component.switchTheme();
-
-    expect(component.themeType).toBe('light');
     expect(localStorage.getItem('theme')).toBe('light');
+    expect(component.lightThemeEnabled).toBe(true);
+
+    component.switchTheme();
+
+    expect(localStorage.getItem('theme')).toBe('dark');
+    expect(component.lightThemeEnabled).toBe(false);
   });
 
   it('should render the right button', () => {
-    component.themeType = 'light';
+    component.lightThemeEnabled = true;
     fixture.detectChanges();
     const switchButton = fixture.debugElement.query(By.css('#switchButton'))
       .nativeElement;
 
-    expect(switchButton.innerHTML).toContain('dark');
+    expect(switchButton.innerHTML).toContain('light');
   });
 });
