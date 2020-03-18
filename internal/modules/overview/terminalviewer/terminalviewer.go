@@ -63,7 +63,7 @@ func (tv *terminalViewer) ToComponent() (*component.Terminal, error) {
 
 	container:= ""
 	if len(pod.Spec.Containers) > 0 {
-		container= pod.Spec.Containers[0].Name
+		container= getFirstContainer(pod).Name
 	}
 	t, err := tv.terminalManager.Create(context.Background(), tv.logger, key, container, "/bin/sh", "")
 
@@ -84,6 +84,26 @@ func (tv *terminalViewer) ToComponent() (*component.Terminal, error) {
 	}
 	term := component.NewTerminal(pod.Namespace, "Terminal", pod.Name, details)
 	return term, nil
+}
+
+func getFirstContainer(pod *corev1.Pod) corev1.Container {
+	var selected = pod.Spec.Containers[0]
+
+	for _, c := range pod.Spec.Containers {
+		var isInit = false
+		for _, d := range pod.Spec.InitContainers {
+			if d.Name == c.Name {
+				isInit= true
+				break
+			}
+		}
+		if !isInit {
+			selected = c
+			break
+		}
+	}
+
+	return selected
 }
 
 func getPod(tv *terminalViewer) (*corev1.Pod, error) {

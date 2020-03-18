@@ -99,6 +99,9 @@ func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key,
 		logger.Debugf("Using cashed terminal", t.ID(), t.Active())
 		if !t.Active() {
 			logger.Debugf("Deleting terminal", t.ID())
+			t.ResetScrollback()
+			tm.SetScrollback(t.ID(), true)
+			tm.ForceUpdate(t.ID())
 			tm.Delete(t.ID())
 		}
 		return t, err

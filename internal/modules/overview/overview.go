@@ -252,14 +252,8 @@ func (co *Overview) Content(ctx context.Context, contentPath string, opts module
 	ctx = internalLog.WithLoggerContext(ctx, co.dashConfig.Logger())
 	genOpts := generator.Options{
 		LabelSet:               opts.LabelSet,
-		ExtensionDescriberFunc: co.extensionDescriber,
 	}
 	return co.generator.Generate(ctx, contentPath, genOpts)
-}
-
-func (co *Overview) extensionDescriber(path, namespace string, options describer.Options) (*component.Extension, error) {
-	extension := component.NewExtension()
-	return extension, nil
 }
 
 // ActionPaths contain the actions this module is responsible for.

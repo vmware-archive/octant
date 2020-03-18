@@ -92,7 +92,13 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
       this.term.open(this.terminalDiv.nativeElement);
       this.term.focus();
       this.fitAddon.fit();
+      this.updateTerminalHeight();
     }
+  }
+
+  private updateTerminalHeight() {
+    const roundedModulo = this.terminalDiv.nativeElement.clientHeight % 17;
+    this.terminalDiv.nativeElement.style.height = `calc(100% - ${roundedModulo}px)`;
   }
 
   enableResize() {

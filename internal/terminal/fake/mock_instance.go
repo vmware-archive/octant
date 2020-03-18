@@ -132,6 +132,18 @@ func (mr *MockInstanceMockRecorder) Scrollback() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Scrollback", reflect.TypeOf((*MockInstance)(nil).Scrollback))
 }
 
+// ResetScrollback mocks base method
+func (m *MockInstance) ResetScrollback() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "ResetScrollback")
+}
+
+// ResetScrollback indicates an expected call of ResetScrollback
+func (mr *MockInstanceMockRecorder) ResetScrollback() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResetScrollback", reflect.TypeOf((*MockInstance)(nil).ResetScrollback))
+}
+
 // Read mocks base method
 func (m *MockInstance) Read(size int) ([]byte, error) {
 	m.ctrl.T.Helper()

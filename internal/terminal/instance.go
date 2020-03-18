@@ -30,6 +30,7 @@ type Instance interface {
 	Container() string
 	Command() string
 	Scrollback() []byte
+	ResetScrollback()
 
 	Read(size int) ([]byte, error)
 	Write(key []byte) error
@@ -278,6 +279,9 @@ func (t *instance) Key() store.Key { return t.key }
 // Scrollback returns the scrollback buffer for the terminal instance. Scrollback buffer
 // is populated by calling Read.
 func (t *instance) Scrollback() []byte { return t.scrollback.Bytes() }
+
+// ResetScrollback empties the scrollback buffer
+func (t *instance) ResetScrollback()  { t.scrollback.Reset() }
 
 // ID returns the ID for the terminal. This is a UUID returned as a string.
 func (t *instance) ID() string { return t.id.String() }
