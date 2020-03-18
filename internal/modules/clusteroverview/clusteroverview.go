@@ -185,7 +185,6 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 			"Nodes":              "nodes",
 			"Persistent Volumes": "persistent-volumes",
 			"Port Forwards":      "port-forward",
-			"Terminals":          "terminal",
 		},
 		EntriesFuncs: map[string]octant.EntriesFunc{
 			"Namespaces":         nil,
@@ -194,7 +193,6 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 			"Nodes":              nil,
 			"Persistent Volumes": nil,
 			"Port Forwards":      nil,
-			"Terminals":          nil,
 		},
 		Order: []string{
 			"Namespaces",
@@ -203,7 +201,6 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 			"Nodes",
 			"Persistent Volumes",
 			"Port Forwards",
-			"Terminals",
 		},
 	}
 

@@ -72,7 +72,6 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 				return nil, errors.Wrapf(err, "get container status for %q", cc.container.Name)
 			}
 		}
-		cc.actionGenerators = append(cc.actionGenerators, terminalCommandExecAction)
 	}
 
 	sections := component.SummarySections{}
@@ -503,22 +502,6 @@ func editContainerAction(owner runtime.Object, container *corev1.Container) (com
 		Form:  form,
 	}
 
-	return action, nil
-}
-
-func terminalCommandExecAction(owner runtime.Object, container *corev1.Container) (component.Action, error) {
-	form, err := component.CreateFormForObject("overview/commandExec", owner,
-		component.NewFormFieldHidden("containerName", container.Name),
-		component.NewFormFieldText("Command", "containerCommand", ""),
-	)
-	if err != nil {
-		return component.Action{}, err
-	}
-	action := component.Action{
-		Name:  "Execute Command",
-		Title: fmt.Sprintf("Execute %s Command", container.Name),
-		Form:  form,
-	}
 	return action, nil
 }
 

@@ -13,18 +13,15 @@ import {
 } from '@angular/core';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
+import { v4 as uuidv4 } from 'uuid';
 import {
   TerminalOutputService,
   TerminalOutputStreamer,
 } from 'src/app/modules/shared/terminals/terminals.service';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
-import {
-  TerminalDetail,
-  TerminalView,
-} from 'src/app/modules/shared/models/content';
+import { TerminalView } from 'src/app/modules/shared/models/content';
 import { WebsocketService } from '../../../services/websocket/websocket.service';
-import { SliderService } from 'src/app/modules/shared/slider/slider.service';
-import { Subscription } from 'rxjs';
+import { ActionService } from '../../../services/action/action.service';
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -33,27 +30,22 @@ import { Subscription } from 'rxjs';
   templateUrl: './terminal.component.html',
 })
 export class TerminalComponent implements OnDestroy, AfterViewInit {
+  constructor(
+    private terminalService: TerminalOutputService,
+    private wss: WebsocketService,
+    private actionService: ActionService
+  ) {}
+
+  private static sessionID = uuidv4();
   private terminalStream: TerminalOutputStreamer;
   private term: Terminal;
   private fitAddon: FitAddon;
   trackByIdentity = trackByIdentity;
-  sliderServiceSubscription: Subscription;
-
   @Input() view: TerminalView;
   @ViewChild('terminal', { static: true }) terminalDiv: ElementRef;
   @HostListener('click') onClick() {
     this.term.focus();
     this.fitAddon.fit();
-  }
-
-  constructor(
-    private terminalService: TerminalOutputService,
-    private wss: WebsocketService,
-    private sliderService: SliderService
-  ) {}
-
-  compareFn(c1: TerminalDetail, c2: TerminalDetail): boolean {
-    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   ngOnDestroy(): void {
@@ -62,28 +54,35 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
       this.terminalStream.line.unsubscribe();
       this.terminalStream = null;
     }
-
-    if (this.sliderServiceSubscription) {
-      this.sliderServiceSubscription.unsubscribe();
-    }
   }
 
   ngAfterViewInit() {
     if (this.view) {
-      const disableStdin = this.view.config.terminal.active ? false : true;
       const logLevel = 'info';
-
+      const { podName, namespace, terminal } = this.view.config;
+      const { active, uuid, command, container } = terminal;
+      const disableStdin = !active;
+      const terminalCommand = {
+        containerName: container,
+        containerCommand: command,
+        name: podName,
+        namespace,
+        kind: 'Pod',
+        apiVersion: 'v1',
+        sessionID: TerminalComponent.sessionID,
+        action: 'overview/commandExec',
+      };
+      this.actionService.perform(terminalCommand);
       this.term = new Terminal({
         logLevel,
         disableStdin,
       });
-
       this.initStream();
       this.enableResize();
       this.term.onData(data => {
-        if (this.view.config.terminal.active === true) {
+        if (active) {
           this.wss.sendMessage('sendTerminalCommand', {
-            terminalID: this.view.config.terminal.uuid,
+            terminalID: uuid,
             key: data,
           });
         }
@@ -93,58 +92,54 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
       this.term.open(this.terminalDiv.nativeElement);
       this.term.focus();
       this.fitAddon.fit();
-
-      this.sliderServiceSubscription = this.sliderService.resizedSliderEvent.subscribe(
-        () => {
-          this.term.focus();
-          setTimeout(() => {
-            this.fitAddon.fit();
-          }, 0);
-        }
-      );
+      this.updateTerminalHeight();
     }
+  }
+
+  private updateTerminalHeight() {
+    const roundedModulo = this.terminalDiv.nativeElement.clientHeight % 17;
+    this.terminalDiv.nativeElement.style.height = `calc(100% - ${roundedModulo}px)`;
   }
 
   enableResize() {
     let timeOut = null;
     const resizeDebounce = (e: { cols: number; rows: number }) => {
       const resize = () => {
-        if (this.view.config.terminal.active) {
+        const { active, uuid } = this.view.config.terminal;
+        if (active) {
           this.wss.sendMessage('sendTerminalResize', {
-            terminalID: this.view.config.terminal.uuid,
+            terminalID: uuid,
             rows: e.rows,
             cols: e.cols,
           });
+          this.fitAddon.fit();
         }
       };
 
       if (timeOut != null) {
         clearTimeout(timeOut);
       }
-      timeOut = setTimeout(resize, 1000);
-      this.fitAddon.fit();
+      timeOut = setTimeout(resize, 500);
     };
     this.term.onResize(resizeDebounce);
   }
 
   initStream() {
-    const namespace = this.view.config.namespace;
-    const name = this.view.config.name;
-    const terminal = this.view.config.terminal;
-
-    if (namespace && name && terminal.container && terminal.uuid) {
+    const { namespace, podName, terminal } = this.view.config;
+    const { active, uuid, container } = terminal;
+    if (namespace && podName && container && uuid) {
       this.terminalStream = this.terminalService.createStream(
         namespace,
-        name,
-        terminal.container,
-        terminal.uuid
+        podName,
+        container,
+        uuid
       );
       this.terminalStream.scrollback.subscribe((scrollback: string) => {
         if (scrollback && scrollback.length !== 0) {
           this.term.write(atob(scrollback).replace(/\n/g, '\n\r'));
         }
       });
-      if (terminal.active) {
+      if (active) {
         this.terminalStream.line.subscribe((line: string) => {
           if (line && line.length !== 0) {
             this.term.write(atob(line).replace(/\n/g, '\n\r'));

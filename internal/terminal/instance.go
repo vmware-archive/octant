@@ -24,10 +24,13 @@ import (
 // Instance defines the interface to a single exec instance.
 type Instance interface {
 	ID() string
+	SessionID() string
+	SetSessionID(string)
 	Key() store.Key
 	Container() string
 	Command() string
 	Scrollback() []byte
+	ResetScrollback()
 
 	Read(size int) ([]byte, error)
 	Write(key []byte) error
@@ -67,6 +70,7 @@ var _ PTY = (*pty)(nil)
 
 // Write writes bytes to the "stdout/err" buffer.
 func (p *pty) Write(b []byte) (int, error) {
+	p.logger.Debugf("Starting Terminal Instance Write ", b)
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	defer p.activityFunc()
@@ -76,18 +80,22 @@ func (p *pty) Write(b []byte) (int, error) {
 
 // Read reads bytes from stdin (p.keystroke) and copies them to the stdin buffer.
 func (p *pty) Read(b []byte) (int, error) {
+	p.logger.Debugf("Starting PTY Read ")
 	select {
 	case <-p.ctx.Done():
 		p.cancelFn()
 
 		if p.ctx.Err() != nil {
 			if p.ctx.Err() == context.Canceled {
+				p.logger.Debugf("PTY ErrClosedPipe", p.ctx.Err())
 				return 0, io.ErrClosedPipe
 			}
 
+			p.logger.Debugf("PTY ErrUnexpectedEOF ", p.ctx.Err())
 			return 0, io.ErrUnexpectedEOF
 		}
 
+		p.logger.Debugf("PTY ErrClosedPipe", p.ctx.Err())
 		return 0, io.ErrClosedPipe
 	default:
 		break
@@ -117,6 +125,7 @@ func (p *pty) Next() *remotecommand.TerminalSize {
 		return nil
 	}
 
+	p.logger.Debugf("PTY Next ", size)
 	return &size
 }
 
@@ -132,6 +141,7 @@ type instance struct {
 	ctx context.Context
 
 	id        uuid.UUID
+	sessionID string
 	key       store.Key
 	createdAt time.Time
 
@@ -149,7 +159,7 @@ type instance struct {
 var _ Instance = (*instance)(nil)
 
 // NewTerminalInstance creates a concrete Terminal
-func NewTerminalInstance(ctx context.Context, logger log.Logger, key store.Key, container, command string, activityChan chan Instance) Instance {
+func NewTerminalInstance(ctx context.Context, logger log.Logger, key store.Key, container, command string, activityChan chan Instance, sessionID string) Instance {
 	ctx, cancelFn := context.WithCancel(ctx)
 
 	termPty := &pty{
@@ -170,6 +180,7 @@ func NewTerminalInstance(ctx context.Context, logger log.Logger, key store.Key, 
 		container: container,
 		command:   command,
 		pty:       termPty,
+		sessionID: sessionID,
 		logger:    logger,
 	}
 
@@ -196,10 +207,12 @@ func (t *instance) Read(size int) ([]byte, error) {
 	}
 
 	buf := make([]byte, size)
+	t.pty.logger.Debugf("Starting Terminal Instance Read ")
 
 	n, err := t.pty.ReadStdout(buf)
 	if err != nil {
 		if err == io.EOF {
+			t.pty.logger.Debugf("Terminal Instance Read received EOF", buf[:n])
 			line := buf[:n]
 			if string(line) == "" {
 				return nil, nil
@@ -220,6 +233,7 @@ func (t *instance) Read(size int) ([]byte, error) {
 	if _, err := t.scrollback.Write(b); err != nil {
 		return nil, err
 	}
+	t.pty.logger.Debugf("Terminal Instance Read completed", b)
 
 	return b, nil
 }
@@ -227,6 +241,8 @@ func (t *instance) Read(size int) ([]byte, error) {
 // Write sends the passed in key to the stdin of the instance.
 // If the instance is not a TTY, Write will return an error.
 func (t *instance) Write(key []byte) error {
+	t.pty.logger.Debugf("Terminal Instance Write", key)
+
 	if t.pty == nil {
 		return errors.New("can not execute command, no stdin")
 	}
@@ -245,6 +261,7 @@ func (t *instance) ExitMessage() string { return t.exitMessage }
 func (t *instance) Active() bool {
 	select {
 	case <-t.ctx.Done():
+		t.pty.logger.Debugf("Terminal Instance received ctx.Done, error is:", t.ctx.Err())
 		return false
 	default:
 		return true
@@ -263,8 +280,17 @@ func (t *instance) Key() store.Key { return t.key }
 // is populated by calling Read.
 func (t *instance) Scrollback() []byte { return t.scrollback.Bytes() }
 
-// ID returns the ID for the termianl. This is a UUID returned as a string.
+// ResetScrollback empties the scrollback buffer
+func (t *instance) ResetScrollback()  { t.scrollback.Reset() }
+
+// ID returns the ID for the terminal. This is a UUID returned as a string.
 func (t *instance) ID() string { return t.id.String() }
+
+// SessionID returns the ID for the browser session. This is a pointer to a string representation of UUID.
+func (t *instance) SessionID() string { return t.sessionID }
+
+// ID returns the ID for the terminal browsersession. This is a UUID returned as a string.
+func (t *instance) SetSessionID(id string) { t.sessionID = id }
 
 // Container returns the container name that the terminal is associated with.
 func (t *instance) Container() string { return t.container }

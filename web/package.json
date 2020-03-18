@@ -62,6 +62,7 @@
     "rxjs": "~6.5.3",
     "serialize-javascript": ">=2.1.1",
     "tslib": "^1.10.0",
+    "uuid": "^7.0.2",
     "ws": "^7.2.0",
     "xterm": "^4.3.0",
     "xterm-addon-fit": "^0.3.0",

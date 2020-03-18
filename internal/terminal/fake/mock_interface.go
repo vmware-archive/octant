@@ -78,18 +78,18 @@ func (mr *MockManagerMockRecorder) Delete(id interface{}) *gomock.Call {
 }
 
 // Create mocks base method
-func (m *MockManager) Create(ctx context.Context, logger log.Logger, key store.Key, container, command string) (terminal.Instance, error) {
+func (m *MockManager) Create(ctx context.Context, logger log.Logger, key store.Key, container, command, sessionID string) (terminal.Instance, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, logger, key, container, command)
+	ret := m.ctrl.Call(m, "Create", ctx, logger, key, container, command, sessionID)
 	ret0, _ := ret[0].(terminal.Instance)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create
-func (mr *MockManagerMockRecorder) Create(ctx, logger, key, container, command interface{}) *gomock.Call {
+func (mr *MockManagerMockRecorder) Create(ctx, logger, key, container, command, sessionID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockManager)(nil).Create), ctx, logger, key, container, command)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockManager)(nil).Create), ctx, logger, key, container, command, sessionID)
 }
 
 // Select mocks base method
