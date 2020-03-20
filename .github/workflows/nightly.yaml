@@ -64,8 +64,6 @@ jobs:
           mv rice-web/rice-box.go ./web/
       - name: Run goreleaser
         run: |
-          echo ${{ secrets.GOOGLE_APPLICATION_JSON }} | base64 -d > /tmp/gs.json
-          echo "::set-env name=GOOGLE_APPLICATION_CREDENTIALS::/tmp/gs.json"
-          goreleaser -f .goreleaser-nightly.yml --rm-dist --skip-validate
+          GOOGLE_APPLICATION_CREDENTIALS=<(echo "${{ secrets.GOOGLE_APP_JSON }}") goreleaser -f .goreleaser-nightly.yml --rm-dist --skip-validate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
