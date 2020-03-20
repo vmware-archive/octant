@@ -38,7 +38,6 @@ var _ Interface = (*Generator)(nil)
 // Options are additional options to pass a Generator
 type Options struct {
 	LabelSet               *kLabels.Set
-	ExtensionDescriberFunc func(path, namespace string, options describer.Options) (*component.Extension, error)
 }
 
 // NewGenerator creates a Generator.
@@ -108,14 +107,6 @@ func (g *Generator) Generate(ctx context.Context, contentPath string, opts Optio
 	cResponse, err := pf.Describer.Describe(ctx, namespace, options)
 	if err != nil {
 		return component.EmptyContentResponse, err
-	}
-
-	if opts.ExtensionDescriberFunc != nil {
-		extensionContent, err := opts.ExtensionDescriberFunc(contentPath, namespace, options)
-		if err != nil {
-			return component.EmptyContentResponse, err
-		}
-		cResponse.SetExtension(extensionContent)
 	}
 
 	return cResponse, nil

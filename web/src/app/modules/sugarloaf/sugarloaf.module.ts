@@ -16,6 +16,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
 import { SharedModule } from '../shared/shared.module';
 import { ContentComponent } from './components/smart/content/content.component';
+import { FilterTextPipe } from './pipes/filtertext/filtertext.pipe';
 
 const routes: Routes = [
   {
@@ -43,6 +44,7 @@ export class UnstripTrailingSlashLocation extends Location {
     ContentComponent,
     QuickSwitcherComponent,
     ThemeSwitchButtonComponent,
+    FilterTextPipe,
   ],
   imports: [
     CommonModule,

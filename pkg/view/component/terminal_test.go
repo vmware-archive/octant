@@ -21,7 +21,7 @@ func TestTerminal_Marshal(t *testing.T) {
 		UUID:      "0000-0000-0000-0000-0000",
 		Active:    false,
 	}
-	input := NewTerminal("default", "term-test", details)
+	input := NewTerminal("default", "term-test", "pod-name", details)
 	actual, err := json.Marshal(input)
 	assert.NoError(t, err)
 

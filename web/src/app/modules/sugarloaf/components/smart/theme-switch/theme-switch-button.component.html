@@ -1,6 +1,6 @@
 <div class="switch-button-container">
   <button id="switchButton" class="btn btn-link btn-inverse" (click)="switchTheme()">
-    <clr-icon [attr.shape]="isLightThemeEnabled() ? 'moon' : 'sun'"></clr-icon>
-    {{ isLightThemeEnabled() ? 'dark' : 'light' }}
+    <clr-icon [attr.shape]="lightThemeEnabled ? 'moon' : 'sun'"></clr-icon>
+    {{ lightThemeEnabled ? 'dark' : 'light' }}
   </button>
 </div>

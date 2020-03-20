@@ -14,6 +14,7 @@ import { ViewService } from '../../../services/view/view.service';
 })
 export class LabelsComponent implements OnChanges {
   private v: LabelsView;
+  private previousView: SimpleChanges;
 
   @Input() set view(v: View) {
     this.v = v as LabelsView;
@@ -31,10 +32,17 @@ export class LabelsComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {
-      const view = changes.view.currentValue as LabelsView;
+      if (
+        JSON.stringify(this.previousView) !==
+        JSON.stringify(changes.view.currentValue)
+      ) {
+        const view = changes.view.currentValue as LabelsView;
 
-      this.title = this.viewService.viewTitleAsText(view);
-      this.labels = view.config.labels;
+        this.title = this.viewService.viewTitleAsText(view);
+        this.labels = view.config.labels;
+
+        this.previousView = changes.view.currentValue;
+      }
     }
   }
 }
