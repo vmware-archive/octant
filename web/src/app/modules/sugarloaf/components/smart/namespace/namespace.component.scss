@@ -6,6 +6,7 @@
   // Dropdown's color variables for Light Theme.
   :host-context(body) {
     --dropdownLink-color: #575757;
+    --dropdownLinkActive-color: #49afd9;
     --dropdownPanel-border-color: #ccc;
     --dropdownOptionSelected-bg-color: #dae4ea;
     --dropdownOption-bg-color: white;
@@ -15,6 +16,7 @@
   // Dropdown's color variables for Dark Theme.
   :host-context(body.dark) {
     --dropdownLink-color: #49afd9;
+    --dropdownLinkActive-color: #49afd9;
     --dropdownPanel-border-color: black;
     --dropdownOptionSelected-bg-color: #324f60;
     --dropdownOption-bg-color: #23353d;
@@ -51,8 +53,16 @@
     }
 
     &.ng-select-opened ::ng-deep {
-      .ng-select-container .ng-arrow {
-        border-color: transparent transparent var(--dropdownLink-color);
+      .ng-select-container {
+        border-color: var(--dropdownLinkActive-color);
+      }
+
+      .ng-value {
+        color: var(--dropdownLinkActive-color);
+      }
+
+      .ng-arrow {
+        border-color: transparent transparent var(--dropdownLinkActive-color);
       }
     }
 
