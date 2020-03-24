@@ -57,7 +57,7 @@ export class TimestampComponent implements OnChanges, OnDestroy {
       this.humanReadable =
         dayjs(this.timestamp * 1000)
           .utc()
-          .format('LLLL') + ' UTC';
+          .format('llll') + ' UTC';
     }
   }
 
