@@ -51,15 +51,20 @@ func PersistentVolumeClaimListHandler(ctx context.Context, list *corev1.Persiste
 			return nil, err
 		}
 
-		volumeLink, err := options.Link.ForObject(pv, persistentVolumeClaim.Spec.VolumeName)
-		if err != nil {
-			return nil, err
+		if pv != nil {
+			volumeLink, err := options.Link.ForObject(pv, persistentVolumeClaim.Spec.VolumeName)
+			if err != nil {
+				return nil, err
+			}
+
+			row["Volume"] = volumeLink
+		} else {
+			row["Volume"] = component.NewText(persistentVolumeClaim.Spec.VolumeName)
 		}
 
 		row["Name"] = nameLink
 
 		row["Status"] = component.NewText(string(persistentVolumeClaim.Status.Phase))
-		row["Volume"] = volumeLink
 		row["Capacity"] = component.NewText(capacity)
 		row["Access Modes"] = component.NewText(accessModes)
 		row["Storage Class"] = component.NewText(printPersistentVolumeClaimClass(&persistentVolumeClaim))
@@ -239,6 +244,10 @@ func removeDuplicateAccessModes(modes []corev1.PersistentVolumeAccessMode) []cor
 func getBoundPersistentVolume(ctx context.Context, pvc *corev1.PersistentVolumeClaim, options Options) (runtime.Object, error) {
 	objectStore := options.DashConfig.ObjectStore()
 	persistentVolume := &corev1.PersistentVolume{}
+
+	if pvc.Spec.VolumeName == "" {
+		return nil, nil
+	}
 
 	key := store.Key{
 		APIVersion: "v1",
