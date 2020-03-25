@@ -13,9 +13,11 @@
 
     git clone git@github.com:vmware-tanzu/octant.git
     cd octant
-    go run build.go go-install  # install Go dependencies.
-    go run build.go ci-quick    # build UI, generate UI files, and create octant binary.
-    ./build/octant   # run the Octant binary you just built
+    go run build.go go-install      # install Go dependencies.
+    export NG_CLI_ANALYTICS=false   # if you want to disable Angular CLI analytics or
+    export NG_CLI_ANALYTICS=ci      # if you want to enable Angular CLI analytics
+    go run build.go ci-quick        # build UI, generate UI files, and create octant binary.
+    ./build/octant                  # run the Octant binary you just built
 
 ## Testing
 
