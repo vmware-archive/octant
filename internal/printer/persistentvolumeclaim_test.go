@@ -23,12 +23,6 @@ import (
 )
 
 func Test_PersistentVolumeListHandler(t *testing.T) {
-	controller := gomock.NewController(t)
-	defer controller.Finish()
-
-	tpo := newTestPrinterOptions(controller)
-	printOptions := tpo.ToOptions()
-
 	labels := map[string]string{
 		"foo": "bar",
 	}
@@ -38,13 +32,9 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 	object.CreationTimestamp = metav1.Time{Time: now}
 	object.Labels = labels
 
-	tpo.PathForObject(object, object.Name, "/pvc")
-
 	list := &corev1.PersistentVolumeClaimList{
 		Items: []corev1.PersistentVolumeClaim{*object},
 	}
-
-	ctx := context.Background()
 
 	pv := testutil.CreatePersistentVolume(object.Spec.VolumeName)
 
@@ -54,28 +44,76 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 		Name:       object.Spec.VolumeName,
 	}
 
-	tpo.objectStore.EXPECT().Get(ctx, pvKey).
-		Return(testutil.ToUnstructured(t, pv), nil)
+	cases := []struct {
+		name             string
+		persistentvolume *corev1.PersistentVolume
+		expected         component.TableRow
+	}{
+		{
+			name:             "bounded",
+			persistentvolume: pv,
+			expected: component.TableRow{
+				"Name":          component.NewLink("", object.Name, "/pvc"),
+				"Status":        component.NewText("Bound"),
+				"Volume":        component.NewLink("", pv.GetName(), fmt.Sprintf("/%s", pv.GetName())),
+				"Capacity":      component.NewText("10Gi"),
+				"Access Modes":  component.NewText("RWO"),
+				"Storage Class": component.NewText("manual"),
+				"Age":           component.NewTimestamp(now),
+			},
+		},
+		{
+			name: "unbounded",
+			expected: component.TableRow{
+				"Name":          component.NewLink("", object.Name, "/pvc"),
+				"Status":        component.NewText("Bound"),
+				"Volume":        component.NewText(""),
+				"Capacity":      component.NewText(""),
+				"Access Modes":  component.NewText(""),
+				"Storage Class": component.NewText("manual"),
+				"Age":           component.NewTimestamp(now),
+			},
+		},
+	}
 
-	tpo.PathForObject(pv, pv.GetName(), fmt.Sprintf("/%s", pv.GetName()))
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
 
-	got, err := PersistentVolumeClaimListHandler(ctx, list, printOptions)
-	require.NoError(t, err)
+			tpo := newTestPrinterOptions(controller)
+			printOptions := tpo.ToOptions()
 
-	cols := component.NewTableCols("Name", "Status", "Volume", "Capacity", "Access Modes",
-		"Storage Class", "Age")
-	expected := component.NewTable("Persistent Volume Claims", "We couldn't find any persistent volume claims!", cols)
-	expected.Add(component.TableRow{
-		"Name":          component.NewLink("", object.Name, "/pvc"),
-		"Status":        component.NewText("Bound"),
-		"Volume":        component.NewLink("", pv.GetName(), fmt.Sprintf("/%s", pv.GetName())),
-		"Capacity":      component.NewText("10Gi"),
-		"Access Modes":  component.NewText("RWO"),
-		"Storage Class": component.NewText("manual"),
-		"Age":           component.NewTimestamp(now),
-	})
+			ctx := context.Background()
 
-	component.AssertEqual(t, expected, got)
+			cols := component.NewTableCols("Name", "Status", "Volume", "Capacity", "Access Modes",
+				"Storage Class", "Age")
+
+			table := component.NewTable("Persistent Volume Claims", "We couldn't find any persistent volume claims!", cols)
+
+			tpo.PathForObject(object, object.Name, "/pvc")
+
+			if tc.persistentvolume != nil {
+				tpo.PathForObject(tc.persistentvolume, tc.persistentvolume.GetName(), fmt.Sprintf("/%s", tc.persistentvolume.GetName()))
+
+				tpo.objectStore.EXPECT().Get(ctx, pvKey).
+					Return(testutil.ToUnstructured(t, tc.persistentvolume), nil)
+			} else {
+				object.Spec.VolumeName = ""
+
+				list = &corev1.PersistentVolumeClaimList{
+					Items: []corev1.PersistentVolumeClaim{*object},
+				}
+			}
+
+			got, err := PersistentVolumeClaimListHandler(ctx, list, printOptions)
+			require.NoError(t, err)
+
+			table.Add(tc.expected)
+
+			component.AssertEqual(t, table, got)
+		})
+	}
 }
 
 func Test_PersistentVolumeClaimConfiguration(t *testing.T) {
