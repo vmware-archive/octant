@@ -1,6 +1,6 @@
 <clr-tooltip>
-  <span clrTooltipTrigger>{{ timestamp | relative }}</span>
-  <clr-tooltip-content clrPosition="right" clrSize="lg" *clrIfOpen>
+  <span  #timestampRef clrTooltipTrigger>{{ timestamp | relative }}</span>
+  <clr-tooltip-content [clrPosition]="tooltipPosition" clrSize="md" *clrIfOpen>
     <span>{{ humanReadable }}</span>
   </clr-tooltip-content>
 </clr-tooltip>
