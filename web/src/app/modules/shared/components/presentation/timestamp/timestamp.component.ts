@@ -4,10 +4,12 @@
 
 import {
   Component,
+  ElementRef,
   Input,
   OnChanges,
   OnDestroy,
   SimpleChanges,
+  ViewChild,
 } from '@angular/core';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -22,6 +24,7 @@ import { TimestampView, View } from 'src/app/modules/shared/models/content';
 export class TimestampComponent implements OnChanges, OnDestroy {
   private v: TimestampView;
 
+  @ViewChild('timestampRef', { static: true }) timestampRef: ElementRef;
   @Input() set view(v: View) {
     this.v = v as TimestampView;
   }
@@ -31,10 +34,19 @@ export class TimestampComponent implements OnChanges, OnDestroy {
 
   timestamp: number;
   humanReadable: string;
+  age: string;
 
   constructor() {
     dayjs.extend(utc);
     dayjs.extend(LocalizedFormat);
+  }
+
+  get tooltipPosition(): string {
+    const gutterWidth = 300;
+    const { nativeElement } = this.timestampRef;
+    const timestampLeft = nativeElement.getBoundingClientRect().left;
+
+    return timestampLeft > window.outerWidth - gutterWidth ? 'left' : 'right';
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -45,7 +57,7 @@ export class TimestampComponent implements OnChanges, OnDestroy {
       this.humanReadable =
         dayjs(this.timestamp * 1000)
           .utc()
-          .format('LLLL') + ' UTC';
+          .format('llll') + ' UTC';
     }
   }
 
