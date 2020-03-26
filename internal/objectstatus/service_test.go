@@ -53,6 +53,17 @@ func Test_service(t *testing.T) {
 			},
 		},
 		{
+			name: "externalName",
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+				objectFile := "service_external.yaml"
+				return testutil.LoadObjectFromFile(t, objectFile)
+			},
+			expected: ObjectStatus{
+				nodeStatus: component.NodeStatusOK,
+				Details:    []component.Component{component.NewText("Service is OK")},
+			},
+		},
+		{
 			name: "no endpoint subsets",
 			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				key := store.Key{

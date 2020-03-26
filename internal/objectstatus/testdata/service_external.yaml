@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: mysql
+  namespace: default
+spec:
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  type: ExternalName
+  externalName: host-to-external-mysql.com
