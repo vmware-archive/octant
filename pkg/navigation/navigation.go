@@ -7,6 +7,7 @@ package navigation
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"path"
 	"sort"
@@ -15,7 +16,6 @@ import (
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware-tanzu/octant/internal/log"
@@ -140,8 +140,16 @@ func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1b
 	for i := range rawList.Items {
 		crd := &apiextv1beta1.CustomResourceDefinition{}
 
-		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(rawList.Items[i].Object, crd); err != nil {
-			logger.Errorf("%v", errors.Wrapf(errors.Wrapf(err, "converting unstructured object to custom resource definition"), rawList.Items[i].GetName()))
+		// vendored converter can't convert from int64 to float64
+		// See https://github.com/kubernetes/kubernetes/issues/87675
+		crdObj, err := json.Marshal(rawList.Items[i].UnstructuredContent())
+		if err != nil {
+			logger.Errorf("%v", errors.Wrapf(errors.Wrapf(err, "marshaling unstructured object to custom resource definition"), rawList.Items[i].GetName()))
+			continue
+		}
+
+		if err != json.Unmarshal(crdObj, &crd) {
+			logger.Errorf("%v", errors.Wrapf(errors.Wrapf(err, "unmarshaling unstructured object to custom resource definition"), rawList.Items[i].GetName()))
 			continue
 		}
 		list = append(list, crd)

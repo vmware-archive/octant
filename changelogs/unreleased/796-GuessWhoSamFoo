@@ -1,0 +1,1 @@
+Used json serialization instead of unstructured converter due to upstream int/float conversion failure
