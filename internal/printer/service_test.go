@@ -285,12 +285,7 @@ func Test_createServiceSummaryStatus(t *testing.T) {
 }
 
 func Test_createServiceEndpointsView(t *testing.T) {
-	service := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "default",
-			Name:      "service",
-		},
-	}
+	cols := component.NewTableCols("Target", "IP", "Node Name")
 
 	nodeName := "node"
 	endpoints := &corev1.Endpoints{
@@ -312,36 +307,72 @@ func Test_createServiceEndpointsView(t *testing.T) {
 		},
 	}
 
-	controller := gomock.NewController(t)
-	defer controller.Finish()
+	cases := []struct {
+		name    string
+		service *corev1.Service
+		table   *component.Table
+		rows    component.TableRow
+	}{
+		{
+			name: "endpoint",
+			service: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "default",
+					Name:      "service",
+				},
+			},
+			table: component.NewTable("Endpoints", "There are no endpoints!", cols),
+			rows: component.TableRow{
+				"Target":    component.NewLink("", "pod", "/pod"),
+				"IP":        component.NewText("10.1.1.1"),
+				"Node Name": component.NewText("node"),
+			},
+		},
+		{
+			name: "externalName",
+			service: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "default",
+					Name:      "service",
+				},
+				Spec: corev1.ServiceSpec{
+					ExternalName: "test",
+				},
+			},
+			table: component.NewTable("Endpoints", "There are no endpoints!", cols),
+		},
+	}
 
-	tpo := newTestPrinterOptions(controller)
-	printOptions := tpo.ToOptions()
+	for _, tc := range cases {
+		controller := gomock.NewController(t)
+		defer controller.Finish()
 
-	key := store.Key{Namespace: "default", APIVersion: "v1", Kind: "Endpoints", Name: "service"}
-	tpo.objectStore.EXPECT().
-		Get(gomock.Any(), gomock.Eq(key)).
-		Return(toUnstructured(t, endpoints), nil)
+		tpo := newTestPrinterOptions(controller)
+		printOptions := tpo.ToOptions()
 
-	podLink := component.NewLink("", "pod", "/pod")
-	tpo.link.EXPECT().
-		ForGVK(gomock.Any(), "v1", "Pod", gomock.Any(), gomock.Any()).
-		Return(podLink, nil).
-		AnyTimes()
+		if tc.service.Spec.ExternalName == "" {
+			key := store.Key{Namespace: "default", APIVersion: "v1", Kind: "Endpoints", Name: "service"}
+			tpo.objectStore.EXPECT().
+				Get(gomock.Any(), gomock.Eq(key)).
+				Return(toUnstructured(t, endpoints), nil)
 
-	ctx := context.Background()
-	got, err := createServiceEndpointsView(ctx, service, printOptions)
-	require.NoError(t, err)
+			podLink := component.NewLink("", "pod", "/pod")
+			tpo.link.EXPECT().
+				ForGVK(gomock.Any(), "v1", "Pod", gomock.Any(), gomock.Any()).
+				Return(podLink, nil).
+				AnyTimes()
+		}
 
-	cols := component.NewTableCols("Target", "IP", "Node Name")
-	expected := component.NewTable("Endpoints", "There are no endpoints!", cols)
-	expected.Add(component.TableRow{
-		"Target":    component.NewLink("", "pod", "/pod"),
-		"IP":        component.NewText("10.1.1.1"),
-		"Node Name": component.NewText("node"),
-	})
+		ctx := context.Background()
+		got, err := createServiceEndpointsView(ctx, tc.service, printOptions)
+		require.NoError(t, err)
 
-	component.AssertEqual(t, expected, got)
+		if tc.rows != nil {
+			tc.table.Add(tc.rows)
+		}
+
+		component.AssertEqual(t, tc.table, got)
+	}
 }
 
 func Test_describePortShort(t *testing.T) {
