@@ -64,7 +64,7 @@ jobs:
           mv rice-web/rice-box.go ./web/
       - name: Run goreleaser
         run: |
-          goreleaser -f .goreleaser-nightly.yml --rm-dist --skip-validate
+          goreleaser -f .goreleaser-nightly.yml --rm-dist --skip-validate --snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APP_JSON }}
