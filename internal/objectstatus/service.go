@@ -28,38 +28,40 @@ func service(ctx context.Context, object runtime.Object, o store.Store) (ObjectS
 		return ObjectStatus{}, errors.Wrap(err, "convert object to service")
 	}
 
-	key := store.Key{
-		Namespace:  service.Namespace,
-		APIVersion: "v1",
-		Kind:       "Endpoints",
-		Name:       service.Name,
-	}
+	if service.Spec.ExternalName == "" {
+		key := store.Key{
+			Namespace:  service.Namespace,
+			APIVersion: "v1",
+			Kind:       "Endpoints",
+			Name:       service.Name,
+		}
 
-	endpoints := &corev1.Endpoints{}
+		endpoints := &corev1.Endpoints{}
 
-	found, err := store.GetAs(ctx, o, key, endpoints)
-	if err != nil {
-		return ObjectStatus{}, errors.Wrapf(err, "get endpoints for service %s", service.Name)
-	}
+		found, err := store.GetAs(ctx, o, key, endpoints)
+		if err != nil {
+			return ObjectStatus{}, errors.Wrapf(err, "get endpoints for service %s", service.Name)
+		}
 
-	if !found {
-		return ObjectStatus{
-			nodeStatus: component.NodeStatusWarning,
-			Details:    []component.Component{component.NewText("Service has no endpoints")},
-		}, nil
-	}
+		if !found {
+			return ObjectStatus{
+				nodeStatus: component.NodeStatusWarning,
+				Details:    []component.Component{component.NewText("Service has no endpoints")},
+			}, nil
+		}
 
-	addressCount := 0
+		addressCount := 0
 
-	for _, subset := range endpoints.Subsets {
-		addressCount += len(subset.Addresses)
-	}
+		for _, subset := range endpoints.Subsets {
+			addressCount += len(subset.Addresses)
+		}
 
-	if addressCount == 0 {
-		return ObjectStatus{
-			nodeStatus: component.NodeStatusWarning,
-			Details:    []component.Component{component.NewText("Service has no endpoint addresses")},
-		}, nil
+		if addressCount == 0 {
+			return ObjectStatus{
+				nodeStatus: component.NodeStatusWarning,
+				Details:    []component.Component{component.NewText("Service has no endpoint addresses")},
+			}, nil
+		}
 	}
 
 	return ObjectStatus{
