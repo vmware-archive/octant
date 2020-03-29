@@ -120,6 +120,18 @@ export interface FlexLayoutView extends View {
   };
 }
 
+export interface GridAction {
+  name: string;
+  actionPath: string;
+  payload: {};
+}
+
+export interface GridActionsView extends View {
+  config: {
+    actions: GridAction[];
+  };
+}
+
 export interface LabelsView extends View {
   config: {
     labels: { [key: string]: string };

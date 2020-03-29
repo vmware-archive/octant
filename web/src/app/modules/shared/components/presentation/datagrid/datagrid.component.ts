@@ -4,6 +4,8 @@
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import {
+  GridAction,
+  GridActionsView,
   TableFilters,
   TableRow,
   TableView,
@@ -12,6 +14,7 @@ import {
 import trackByIndex from 'src/app/util/trackBy/trackByIndex';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { ViewService } from '../../../services/view/view.service';
+import { ActionService } from '../../../services/action/action.service';
 
 @Component({
   selector: 'app-view-datagrid',
@@ -29,7 +32,7 @@ export class DatagridComponent implements OnChanges {
   }
 
   columns: string[];
-  rows: TableRow[];
+  rowsWithMetadata: TableRowWithMetadata[];
   title: string;
   placeholder: string;
   lastUpdated: Date;
@@ -41,7 +44,10 @@ export class DatagridComponent implements OnChanges {
   identifyColumn = trackByIdentity;
   loading: boolean;
 
-  constructor(private viewService: ViewService) {}
+  constructor(
+    private viewService: ViewService,
+    private actionService: ActionService
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view) {
@@ -51,9 +57,10 @@ export class DatagridComponent implements OnChanges {
       ) {
         this.title = this.viewService.viewTitleAsText(this.view);
 
-        const current = changes.view.currentValue;
+        const current = changes.view.currentValue as TableView;
         this.columns = current.config.columns.map(column => column.name);
-        this.rows = current.config.rows;
+        this.rowsWithMetadata = this.getRowsWithMetadata(current.config.rows);
+
         this.placeholder = current.config.emptyContent;
         this.lastUpdated = new Date();
         this.loading = current.config.loading;
@@ -63,4 +70,28 @@ export class DatagridComponent implements OnChanges {
       }
     }
   }
+
+  private getRowsWithMetadata(rows: TableRow[]) {
+    return rows.map(row => {
+      let actions: GridAction[] = [];
+
+      if (row.hasOwnProperty('_action')) {
+        actions = (row._action as GridActionsView).config.actions;
+      }
+      return {
+        data: row,
+        actions,
+      };
+    });
+  }
+
+  runAction(actionPath: string, payload: {}) {
+    const update = { ...payload, action: actionPath };
+    this.actionService.perform(update);
+  }
+}
+
+interface TableRowWithMetadata {
+  data: TableRow;
+  actions?: GridAction[];
 }

@@ -12,6 +12,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
 func Test_unmarshal(t *testing.T) {
@@ -159,6 +161,22 @@ func Test_unmarshal(t *testing.T) {
 					},
 				},
 				base: newBase(typeFlexLayout, nil),
+			},
+		},
+		{
+			name:       "grid actions",
+			configFile: "config_grid_actions.json",
+			objectType: typeGridActions,
+			expected: &GridActions{
+				Config: GridActionsConfig{
+					Actions: []GridAction{
+						{
+							Name:       "name",
+							ActionPath: "/path",
+							Payload:    action.Payload{"foo": "bar"},
+						},
+					},
+				},
 			},
 		},
 		{
