@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { InputFilterComponent } from './input-filter.component';
 import {
@@ -22,13 +22,13 @@ describe('InputFilterComponent', () => {
   let component: InputFilterComponent;
   let fixture: ComponentFixture<InputFilterComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [FormsModule],
       declarations: [InputFilterComponent, FilterTextPipe],
       providers: [{ provide: LabelFilterService, useValue: labelFilterStub }],
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(InputFilterComponent);
@@ -63,14 +63,16 @@ describe('InputFilterComponent', () => {
 
   it('should show the user text if there are no filters', () => {
     component.showTagList = true;
-    fixture.detectChanges();
-    const fixtureDebugElement: DebugElement = fixture.debugElement;
-    const userTextDebugElement: DebugElement = fixtureDebugElement.query(
-      By.css('.input-filter-empty')
-    );
-    const userTextNativeElement: HTMLElement =
-      userTextDebugElement.nativeElement;
-    expect(userTextNativeElement.textContent).toMatch(/No current filters/i);
+    fixture.whenStable().then(() => {
+      fixture.detectChanges();
+      const fixtureDebugElement: DebugElement = fixture.debugElement;
+      const userTextDebugElement: DebugElement = fixtureDebugElement.query(
+        By.css('.input-filter-empty')
+      );
+      const userTextNativeElement: HTMLElement =
+        userTextDebugElement.nativeElement;
+      expect(userTextNativeElement.textContent).toMatch(/No current filters/i);
+    });
   });
 
   it('should show the tags if there are filters', () => {
@@ -125,7 +127,7 @@ describe('InputFilterComponent', () => {
     expect(inputElement.placeholder).toMatch(/Filter by labels \(1 applied\)/i);
   });
 
-  it('should be able to enter a tag through the input', async(() => {
+  it('should be able to enter a tag through the input', () => {
     const inputDebugElement: DebugElement = fixture.debugElement.query(
       By.css('.text-input')
     );
@@ -145,11 +147,11 @@ describe('InputFilterComponent', () => {
     expect(component.showTagList).toBe(true);
     expect(component.inputValue).toBe('');
 
-    fixture.detectChanges();
     fixture.whenStable().then(() => {
+      fixture.detectChanges();
       inputNativeElement = fixture.debugElement.query(By.css('.text-input'))
         .nativeElement;
       expect(inputNativeElement.value).toBe('');
     });
-  }));
+  });
 });

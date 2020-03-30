@@ -24,7 +24,7 @@ export default function fixPassiveEvents() {
   ];
 
   const overwriteAddEvent = superMethod => {
-    EventTarget.prototype.addEventListener = function(
+    EventTarget.prototype.addEventListener = function (
       type,
       listener,
       options: any

@@ -45,7 +45,7 @@ describe('IndicatorComponent', () => {
       it(`shows ${name} indicator`, () => {
         expect(
           element
-            .querySelector('app-indicator div.indicator')
+            .querySelector(`app-indicator div.${name}`)
             .classList.contains(name)
         ).toBeTruthy();
       });

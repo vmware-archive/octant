@@ -2,6 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-export default function(index: number, item: any) {
+export default function (index: number, item: any) {
   return item;
 }
