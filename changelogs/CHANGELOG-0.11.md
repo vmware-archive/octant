@@ -1,4 +1,19 @@
+- [v0.11.1](#v0111)
 - [v0.11.0](#v0110)
+
+## v0.11.1
+#### 2020-03-27
+
+### Download
+ - https://github.com/vmware/octant/releases/tag/v0.11.1
+
+### All Changes
+
+  * Moved tooltip for timestamps to left side if not enough space (#779, @mklanjsek)
+  * Add `NG_CLI_ANALYTICS` instructions to HACKING (#792, @dotNomad)
+  * Fixed bug where pending PVCs prevents content from loading (#795, @GuessWhoSamFoo)
+  * Used json serialization instead of unstructured converter due to upstream int/float conversion failure (#796, @GuessWhoSamFoo)
+  * Fix tab errors when service spec uses externalName (#798, @GuessWhoSamFoo)
 
 ## v0.11.0
 #### 2020-03-20
