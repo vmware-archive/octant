@@ -16,9 +16,7 @@ import { D3GraphvizService } from '../../../services/d3/d3graphviz.service';
 
 @Component({
   selector: 'app-view-graphviz',
-  template: `
-    <div class="graphviz" #viewer></div>
-  `,
+  template: ` <div class="graphviz" #viewer></div> `,
   styleUrls: ['./graphviz.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
