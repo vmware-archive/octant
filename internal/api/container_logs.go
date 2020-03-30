@@ -21,7 +21,7 @@ import (
 
 type logEntry struct {
 	Timestamp *time.Time `json:"timestamp,omitempty"`
-	Message   string    `json:"message,omitempty"`
+	Message   string     `json:"message,omitempty"`
 }
 
 type logResponse struct {
@@ -44,15 +44,30 @@ func containerLogsHandler(ctx context.Context, dashConfig config.Dash) http.Hand
 			return
 		}
 
-		lines := make(chan string)
 		done := make(chan bool)
 
 		var entries []logEntry
 
+		logStreamer, err := container.NewLogStreamer(ctx, kubeClient, namespace, podName, containerName)
+		if err != nil {
+			RespondWithError(w, http.StatusInternalServerError, err.Error(), logger)
+			return
+		}
+
+		logCh := make(chan container.LogEntry)
 		go func() {
-			for line := range lines {
-				entry := logEntry{Message: line}
-				parts := strings.SplitN(line, " ", 2)
+			err = logStreamer.Stream(ctx, logCh)
+		}()
+
+		if err != nil {
+			RespondWithError(w, http.StatusInternalServerError, err.Error(), logger)
+			return
+		}
+
+		go func() {
+			for line := range logCh {
+				entry := logEntry{Message: line.Line()}
+				parts := strings.SplitN(line.Line(), " ", 2)
 				logTime, err := time.Parse(time.RFC3339, parts[0])
 				if err == nil {
 					entry = logEntry{
@@ -62,15 +77,8 @@ func containerLogsHandler(ctx context.Context, dashConfig config.Dash) http.Hand
 				}
 				entries = append(entries, entry)
 			}
-
 			done <- true
 		}()
-
-		err = container.Logs(r.Context(), kubeClient, namespace, podName, containerName, lines)
-		if err != nil {
-			RespondWithError(w, http.StatusInternalServerError, err.Error(), logger)
-			return
-		}
 
 		<-done
 
