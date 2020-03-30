@@ -83,6 +83,20 @@ func TestAPI(t *testing.T) {
 			},
 		},
 		{
+			name: "create",
+			initFunc: func(t *testing.T, mocks *apiMocks) {
+				mocks.objectStore.EXPECT().
+					Create(gomock.Any(), gomock.Eq(object)).Return(nil)
+			},
+			doFunc: func(t *testing.T, client *api.Client) {
+				clientCtx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+				defer cancel()
+
+				err := client.Create(clientCtx, object)
+				require.NoError(t, err)
+			},
+		},
+		{
 			name: "get",
 			initFunc: func(t *testing.T, mocks *apiMocks) {
 				mocks.objectStore.EXPECT().

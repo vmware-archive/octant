@@ -37,6 +37,7 @@ type Store interface {
 	RegisterOnUpdate(fn UpdateFn)
 	Update(ctx context.Context, key Key, updater func(*unstructured.Unstructured) error) error
 	IsLoading(ctx context.Context, key Key) bool
+	Create(ctx context.Context, object *unstructured.Unstructured) error
 }
 
 // Key is a key for the object store.
