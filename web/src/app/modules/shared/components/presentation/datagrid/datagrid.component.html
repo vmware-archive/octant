@@ -17,16 +17,21 @@
             ></app-content-filter>
         </clr-dg-filter>
     </clr-dg-column>
-    <clr-dg-row *clrDgItems="let row of rows; trackBy: identifyRow">
+    <clr-dg-row *clrDgItems="let row of rowsWithMetadata; trackBy: identifyRow">
+        <clr-dg-action-overflow *ngIf="row.actions.length > 0">
+            <button *ngFor="let action of row.actions" class="action-item" (click)="runAction(action.actionPath, action.payload)">
+                {{action.name}}
+            </button>
+        </clr-dg-action-overflow>
         <clr-dg-cell *ngFor="let column of columns; trackBy: identifyColumn">
-            <app-content-switcher [view]="row[column]"></app-content-switcher>
+            <app-content-switcher [view]="row.data[column]"></app-content-switcher>
         </clr-dg-cell>
     </clr-dg-row>
 
     <clr-dg-footer>
         <clr-dg-pagination #pagination [clrDgPageSize]="10">
             <clr-dg-page-size [clrPageSizeOptions]="[10,20,50,100]">Items per page</clr-dg-page-size>
-            <ng-container *ngIf="rows?.length > 0">
+            <ng-container *ngIf="rowsWithMetadata?.length > 0">
                 {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
                 of {{pagination.totalItems}} items
             </ng-container>

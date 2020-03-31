@@ -19,6 +19,7 @@ const (
 	typeExpressionSelector  = "expressionSelector"
 	typeFlexLayout          = "flexlayout"
 	typeGraphviz            = "graphviz"
+	typeGridActions         = "gridActions"
 	typeIFrame              = "iframe"
 	typeLabels              = "labels"
 	typeLabelSelector       = "labelSelector"

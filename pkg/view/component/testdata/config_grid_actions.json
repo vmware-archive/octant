@@ -1,0 +1,11 @@
+{
+  "actions": [
+    {
+      "name": "name",
+      "actionPath": "/path",
+      "payload": {
+        "foo": "bar"
+      }
+    }
+  ]
+}
