@@ -144,7 +144,7 @@ Feature requests, bug reports, and enhancements are welcome. Contributors, maint
 
 ## Contributing
 
-New contributors will need to sign a CLA (contributor license agreement). We also ask that a changelog entry is included with your pull request. Details are described in our [contributing](CONTRIBUTING.md) documentation.
+Contributors will need to sign a DCO (Developer Certificate of Origin) with all changes. We also ask that a changelog entry is included with your pull request. Details are described in our [contributing](CONTRIBUTING.md) documentation.
 
 See our [hacking](HACKING.md) guide for getting your development environment setup.
 
