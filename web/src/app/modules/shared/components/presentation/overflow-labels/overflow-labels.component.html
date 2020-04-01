@@ -3,26 +3,28 @@
     <span
       *ngFor="let item of label | keyvalue; trackBy: trackByIdentity"
       class="label label-light-blue clickable"
-      (click)="filterLabel(item.key, item.value)">
+      (click)="filterLabel(item.key, item.value)"
+    >
       {{ item.key }}:{{ item.value }}
     </span>
   </ng-container>
 
   <clr-signpost *ngIf="overflowLabels && overflowLabels.length > 0">
-    <span
-      class="badge badge-light-blue"
-      clrSignpostTrigger>
+    <span class="badge badge-light-blue" clrSignpostTrigger>
       {{ overflowLabels.length }}+
     </span>
     <clr-signpost-content *clrIfOpen>
-      <ng-container *ngFor="let label of overflowLabels; trackBy: trackByIdentity">
+      <ng-container
+        *ngFor="let label of overflowLabels; trackBy: trackByIdentity"
+      >
         <span
           *ngFor="let item of label | keyvalue; trackBy: trackByIdentity"
           class="label label-light-blue clickable"
-          (click)="filterLabel(item.key, item.value)">
+          (click)="filterLabel(item.key, item.value)"
+        >
           {{ item.key }}:{{ item.value }}
         </span>
       </ng-container>
     </clr-signpost-content>
-  </clr-signpost> 
+  </clr-signpost>
 </div>

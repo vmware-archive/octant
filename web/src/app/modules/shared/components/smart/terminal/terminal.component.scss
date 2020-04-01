@@ -1,10 +1,10 @@
-@import "xterm/css/xterm.css";
+@import 'xterm/css/xterm.css';
 
 .app-terminal {
   height: 100%;
   min-height: 20vh;
 
-  border: .05rem solid #ccc;
-  border-radius: .15rem;
-  margin: .6rem 0;
+  border: 0.05rem solid #ccc;
+  border-radius: 0.15rem;
+  margin: 0.6rem 0;
 }

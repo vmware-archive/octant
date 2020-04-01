@@ -1,20 +1,28 @@
 <svg [attr.viewBox]="viewBox()" class="donut" height="100%" width="100%">
-    <circle [attr.cx]="center()" [attr.cy]="center()" [attr.r]="radius()"
-            class="donut-ring"
-            fill="transparent"/>
+  <circle
+    [attr.cx]="center()"
+    [attr.cy]="center()"
+    [attr.r]="radius()"
+    class="donut-ring"
+    fill="transparent"
+  />
 
-    <ng-container *ngFor="let descriptor of descriptors(); trackBy: trackByDescriptor">
-        <circle [attr.cx]="center()"
-                [attr.cy]="center()"
-                [attr.r]="radius()"
-                [attr.stroke-dasharray]="descriptor.array"
-                [attr.stroke-dashoffset]="descriptor.offset"
-                [ngClass]="descriptor.className"
-                fill="transparent"/>
-    </ng-container>
+  <ng-container
+    *ngFor="let descriptor of descriptors(); trackBy: trackByDescriptor"
+  >
+    <circle
+      [attr.cx]="center()"
+      [attr.cy]="center()"
+      [attr.r]="radius()"
+      [attr.stroke-dasharray]="descriptor.array"
+      [attr.stroke-dashoffset]="descriptor.offset"
+      [ngClass]="descriptor.className"
+      fill="transparent"
+    />
+  </ng-container>
 
-    <g class="chart-text">
-        <text x="50%" y="50%" class="chart-number">{{ itemCount() }}</text>
-        <text x="50%" y="50%" class="chart-label">{{ itemLabel() }}</text>
-    </g>
+  <g class="chart-text">
+    <text x="50%" y="50%" class="chart-number">{{ itemCount() }}</text>
+    <text x="50%" y="50%" class="chart-label">{{ itemLabel() }}</text>
+  </g>
 </svg>
