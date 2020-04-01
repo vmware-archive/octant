@@ -71,7 +71,7 @@ func serveAsJSON(w http.ResponseWriter, v interface{}, logger log.Logger) {
 
 // Service is an API service.
 type Service interface {
-	Handler(ctx context.Context) (*mux.Router, error)
+	Handler(ctx context.Context) (http.Handler, error)
 	ForceUpdate() error
 }
 
@@ -143,7 +143,7 @@ func (a *API) ForceUpdate() error {
 }
 
 // Handler returns a HTTP handler for the service.
-func (a *API) Handler(ctx context.Context) (*mux.Router, error) {
+func (a *API) Handler(ctx context.Context) (http.Handler, error) {
 	router := mux.NewRouter()
 	router.Use(rebindHandler(ctx, acceptedHosts()))
 
