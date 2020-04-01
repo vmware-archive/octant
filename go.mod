@@ -13,7 +13,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/gobwas/glob v0.2.3
 	github.com/golang/mock v1.3.1
-	github.com/golang/protobuf v1.3.1
+	github.com/golang/protobuf v1.3.2
 	github.com/google/uuid v1.1.1
 	github.com/googleapis/gnostic v0.2.0
 	github.com/gorilla/handlers v1.4.0
@@ -38,8 +38,7 @@ require (
 	go.opencensus.io v0.22.1
 	go.uber.org/zap v1.10.0
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
-	google.golang.org/genproto v0.0.0-20190502173448-54afdca5d873 // indirect
-	google.golang.org/grpc v1.23.0
+	google.golang.org/grpc v1.27.0
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	k8s.io/api v0.0.0-20191016225839-816a9b7df678
 	k8s.io/apiextensions-apiserver v0.0.0-20181213153335-0fe22c71c476

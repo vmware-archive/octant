@@ -138,6 +138,24 @@ func (c *Client) Update(ctx context.Context, object *unstructured.Unstructured) 
 	return err
 }
 
+func (c *Client) Create(ctx context.Context, object *unstructured.Unstructured) error {
+	client := c.DashboardConnection.Client()
+
+	data, err := convertFromObject(object)
+	if err != nil {
+		return err
+	}
+
+	req := &proto.CreateRequest{
+		Object: data,
+	}
+
+	_, err = client.Create(ctx, req)
+
+	return err
+
+}
+
 // PortForward creates a port forward.
 func (c *Client) PortForward(ctx context.Context, req PortForwardRequest) (PortForwardResponse, error) {
 	client := c.DashboardConnection.Client()

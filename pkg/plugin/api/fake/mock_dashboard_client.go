@@ -55,6 +55,26 @@ func (mr *MockDashboardClientMockRecorder) CancelPortForward(arg0, arg1 interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CancelPortForward", reflect.TypeOf((*MockDashboardClient)(nil).CancelPortForward), varargs...)
 }
 
+// Create mocks base method
+func (m *MockDashboardClient) Create(arg0 context.Context, arg1 *proto.CreateRequest, arg2 ...grpc.CallOption) (*proto.CreateResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Create", varargs...)
+	ret0, _ := ret[0].(*proto.CreateResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create
+func (mr *MockDashboardClientMockRecorder) Create(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockDashboardClient)(nil).Create), varargs...)
+}
+
 // ForceFrontendUpdate mocks base method
 func (m *MockDashboardClient) ForceFrontendUpdate(arg0 context.Context, arg1 *proto.Empty, arg2 ...grpc.CallOption) (*proto.Empty, error) {
 	m.ctrl.T.Helper()

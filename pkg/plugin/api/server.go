@@ -7,6 +7,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -45,6 +46,7 @@ type Service interface {
 	CancelPortForward(ctx context.Context, id string)
 	ListNamespaces(ctx context.Context) (NamespacesResponse, error)
 	Update(ctx context.Context, object *unstructured.Unstructured) error
+	Create(ctx context.Context, object *unstructured.Unstructured) error
 	ForceFrontendUpdate(ctx context.Context) error
 }
 
@@ -99,6 +101,10 @@ func (s *GRPCService) Update(ctx context.Context, object *unstructured.Unstructu
 		u.Object = object.Object
 		return nil
 	})
+}
+
+func (s *GRPCService) Create(ctx context.Context, object *unstructured.Unstructured) error {
+	return s.ObjectStore.Create(ctx, object)
 }
 
 // PortForward creates a port forward.
@@ -219,6 +225,24 @@ func (c *grpcServer) Update(ctx context.Context, in *proto.UpdateRequest) (*prot
 	}
 
 	return &proto.UpdateResponse{}, nil
+}
+
+// Create creates an object in the cluster.
+func (c *grpcServer) Create(ctx context.Context, in *proto.CreateRequest) (*proto.CreateResponse, error) {
+	object, err := convertToObject(in.Object)
+	if err != nil {
+		return nil, err
+	}
+
+	if object == nil {
+		return nil, fmt.Errorf("unable to create a nil object")
+	}
+
+	if err := c.service.Create(ctx, object); err != nil {
+		return nil, err
+	}
+
+	return &proto.CreateResponse{}, nil
 }
 
 // PortForward creates a port forward.

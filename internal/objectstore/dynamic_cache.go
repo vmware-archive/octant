@@ -573,3 +573,49 @@ func (dc *DynamicCache) Update(ctx context.Context, key store.Key, updater func(
 func (dc *DynamicCache) IsLoading(ctx context.Context, key store.Key) bool {
 	return !dc.informerSynced.hasSynced(key)
 }
+
+// Create creates an object in the cluster.
+// Note: test coverage of DynamicCache is slim.
+func (dc *DynamicCache) Create(ctx context.Context, object *unstructured.Unstructured) error {
+	_, span := trace.StartSpan(ctx, "dynamicCache:create")
+	defer span.End()
+
+	key, err := store.KeyFromObject(object)
+	if err != nil {
+		return fmt.Errorf("key from object: %w", err)
+	}
+
+	if dc.isBackingOff(ctx, key) {
+		return nil
+	}
+
+	if err := dc.access.HasAccess(ctx, key, "create"); err != nil {
+		if meta.IsNoMatchError(err) {
+			return nil
+		}
+		if !dc.isBackingOff(ctx, key) {
+			dc.backoff(ctx, key)
+		}
+		return fmt.Errorf("check access to create %s: %w", key, err)
+	}
+
+	dynamicClient, err := dc.client.DynamicClient()
+	if err != nil {
+		return err
+	}
+
+	gvr, err := dc.client.Resource(key.GroupVersionKind().GroupKind())
+	if err != nil {
+		return err
+	}
+
+	createOptions := metav1.CreateOptions{}
+
+	if key.Namespace == "" {
+		_, err := dynamicClient.Resource(gvr).Create(object, createOptions)
+		return err
+	}
+
+	_, err = dynamicClient.Resource(gvr).Namespace(key.Namespace).Create(object, createOptions)
+	return err
+}

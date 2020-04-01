@@ -38,6 +38,20 @@ func (m *MockStore) EXPECT() *MockStoreMockRecorder {
 	return m.recorder
 }
 
+// Create mocks base method
+func (m *MockStore) Create(arg0 context.Context, arg1 *unstructured.Unstructured) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create
+func (mr *MockStoreMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockStore)(nil).Create), arg0, arg1)
+}
+
 // Delete mocks base method
 func (m *MockStore) Delete(arg0 context.Context, arg1 store.Key) error {
 	m.ctrl.T.Helper()
