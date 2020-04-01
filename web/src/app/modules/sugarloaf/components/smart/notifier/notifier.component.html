@@ -1,5 +1,5 @@
 <ng-container *ngIf="loading">
-    <div class="progress loop"><progress></progress></div>
+  <div class="progress loop"><progress></progress></div>
 </ng-container>
 
 <ng-container *ngIf="!loading && error">
@@ -10,7 +10,7 @@
           <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
         </div>
         <div class="alert-text">
-          {{error}}
+          {{ error }}
         </div>
       </div>
     </div>
@@ -18,22 +18,30 @@
 </ng-container>
 
 <ng-container *ngIf="!loading && warning">
-  <clr-alert [clrAlertType]="'warning'" (clrAlertClosedChange)="onWarningClose()" [clrAlertIcon]="'exclamation-triangle'" [clrAlertAppLevel]="true">
+  <clr-alert
+    [clrAlertType]="'warning'"
+    (clrAlertClosedChange)="onWarningClose()"
+    [clrAlertIcon]="'exclamation-triangle'"
+    [clrAlertAppLevel]="true"
+  >
     <clr-alert-item>
       <span class="alert-text">
-        {{warning}}
+        {{ warning }}
       </span>
     </clr-alert-item>
   </clr-alert>
 </ng-container>
 
 <ng-container *ngIf="!loading && info">
-  <clr-alert [clrAlertType]="'info'" [clrAlertIcon]="'info-circle'" [clrAlertAppLevel]="true">
+  <clr-alert
+    [clrAlertType]="'info'"
+    [clrAlertIcon]="'info-circle'"
+    [clrAlertAppLevel]="true"
+  >
     <clr-alert-item>
       <span class="alert-text">
-        {{info}}
+        {{ info }}
       </span>
     </clr-alert-item>
   </clr-alert>
 </ng-container>
-

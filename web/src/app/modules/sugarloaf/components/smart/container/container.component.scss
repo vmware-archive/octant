@@ -5,17 +5,17 @@
 $navigation-width: 13rem;
 
 .main-container {
-    // Navigation's color variables for Light Theme.
-    :host-context(body) {
-      --navigation-border-color: rgb(215, 215, 215);
-      --navigation-background-color: #0079AD;
-    }
-    
-    // Navigation's color variables for Dark Theme.
-    :host-context(body.dark) {
-      --navigation-border-color: #0e161b;
-      --navigation-background-color: #0e161b;
-    }
+  // Navigation's color variables for Light Theme.
+  :host-context(body) {
+    --navigation-border-color: rgb(215, 215, 215);
+    --navigation-background-color: #0079ad;
+  }
+
+  // Navigation's color variables for Dark Theme.
+  :host-context(body.dark) {
+    --navigation-border-color: #0e161b;
+    --navigation-background-color: #0e161b;
+  }
 
   .header {
     background: var(--navigation-background-color);

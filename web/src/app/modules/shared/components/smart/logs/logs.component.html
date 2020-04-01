@@ -2,49 +2,103 @@
   <div class="log-actions">
     <clr-select-container class="container-select">
       <label>Container</label>
-      <select clrSelect name="options" [value]="selectedContainer" (change)="onContainerChange($event.target.value)">
-        <option *ngFor="let container of v?.config.containers" value="{{container}}">{{container}}</option>
+      <select
+        clrSelect
+        name="options"
+        [value]="selectedContainer"
+        (change)="onContainerChange($event.target.value)"
+      >
+        <option
+          *ngFor="let container of v?.config.containers"
+          value="{{ container }}"
+          >{{ container }}</option
+        >
       </select>
     </clr-select-container>
     <div class="clr-filter">
       <div>
         <label class="clr-control-label">Filter</label>
         <div class="clr-filter-input">
-          <input clrInput class= "clr-control-container" (keyup.enter)="onNextHighlight()" placeholder="no filter" name="input" [(ngModel)]="filterText"/>
+          <input
+            clrInput
+            class="clr-control-container"
+            (keyup.enter)="onNextHighlight()"
+            placeholder="no filter"
+            name="input"
+            [(ngModel)]="filterText"
+          />
         </div>
       </div>
-      <div  class="clr-filter-buttons">
-        <button id="button-prev" class="btn btn-icon clr-filter-btn" type="button" (click)="onPreviousHighlight()"><</button>
-        <button id="button-next" class="btn btn-icon clr-filter-btn" type="button" (click)="onNextHighlight()">></button>
+      <div class="clr-filter-buttons">
+        <button
+          id="button-prev"
+          class="btn btn-icon clr-filter-btn"
+          type="button"
+          (click)="onPreviousHighlight()"
+        >
+          <
+        </button>
+        <button
+          id="button-next"
+          class="btn btn-icon clr-filter-btn"
+          type="button"
+          (click)="onNextHighlight()"
+        >
+          >
+        </button>
       </div>
-      <div *ngIf="totalSelections > 0" class="clr-filter-summary">{{currentSelection+1}}/{{totalSelections}} items</div>
+      <div *ngIf="totalSelections > 0" class="clr-filter-summary">
+        {{ currentSelection + 1 }}/{{ totalSelections }} items
+      </div>
     </div>
 
     <div class="log-options-group">
       <clr-checkbox-wrapper>
-        <input type="checkbox" clrToggle [checked]="showOnlyFiltered" (click)="toggleShowOnlyFiltered()"/>
+        <input
+          type="checkbox"
+          clrToggle
+          [checked]="showOnlyFiltered"
+          (click)="toggleShowOnlyFiltered()"
+        />
         <label>Show only filtered</label>
       </clr-checkbox-wrapper>
       <clr-checkbox-wrapper class="toggle-timestamp">
-        <input type="checkbox" clrToggle [checked]="shouldDisplayTimestamp" (click)="toggleTimestampDisplay()"/>
+        <input
+          type="checkbox"
+          clrToggle
+          [checked]="shouldDisplayTimestamp"
+          (click)="toggleTimestampDisplay()"
+        />
         <label>Display timestamp</label>
       </clr-checkbox-wrapper>
     </div>
   </div>
   <div class="container-logs">
-    <div class="container-logs-bg" #scrollTarget (scroll)="onScroll($event)" >
+    <div class="container-logs-bg" #scrollTarget (scroll)="onScroll($event)">
       <ng-container *ngIf="containerLogs?.length < 1">
         No logs
       </ng-container>
-      <div class="container-log code language-bash" *ngFor="let log of filterFunction(containerLogs); trackBy: identifyLog">
-        <div class="container-log-timestamp" *ngIf="shouldDisplayTimestamp && log.timestamp != null"
-             [innerHTML]="'['+highlightText(log.timestamp | date:timeFormat)+']' | ansipipe">
-        </div>
-        <div class="container-log-timestamp" *ngIf="shouldDisplayTimestamp && log.timestamp == null"
-             [innerHTML]="'[timestamp unavailable]'">
-        </div>
-        <div class="container-log-message" [innerHTML]="highlightText(log.message) | ansipipe">
-        </div>
+      <div
+        class="container-log code language-bash"
+        *ngFor="let log of filterFunction(containerLogs); trackBy: identifyLog"
+      >
+        <div
+          class="container-log-timestamp"
+          *ngIf="shouldDisplayTimestamp && log.timestamp != null"
+          [innerHTML]="
+            '[' + highlightText(log.timestamp | date: timeFormat) + ']'
+              | ansipipe
+          "
+        ></div>
+        <div
+          class="container-log-timestamp"
+          *ngIf="shouldDisplayTimestamp && log.timestamp == null"
+          [innerHTML]="'[timestamp unavailable]'"
+        ></div>
+        <div
+          class="container-log-message"
+          [innerHTML]="highlightText(log.message) | ansipipe"
+        ></div>
       </div>
     </div>
   </div>

@@ -3,7 +3,7 @@
  */
 
 body {
-  --statusContainer-bg-color:  #eee;
+  --statusContainer-bg-color: #eee;
 }
 body.dark {
   --statusContainer-bg-color: #0f181c;
@@ -21,7 +21,7 @@ body.dark {
     height: 100vh;
     width: 100%;
     padding: 1rem;
-    background-color: var(--statusContainer-bg-color)
+    background-color: var(--statusContainer-bg-color);
   }
 
   .node {

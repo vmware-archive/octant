@@ -13,14 +13,14 @@
       width: 240px;
     }
   }
-  .container-select{
+  .container-select {
     margin-right: 24px;
     select {
       width: 194px;
     }
   }
   .clr-select-wrapper {
-    margin-top:  1px;
+    margin-top: 1px;
   }
   .clr-filter {
     display: flex;
@@ -68,14 +68,14 @@
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: var(--clr-color-neutral-100);
-    color: var( --clr-color-on-neutral-100);
+    color: var(--clr-color-on-neutral-100);
 
     .highlight {
-      color: #0079B8;
+      color: #0079b8;
     }
     .highlight-selected {
-      background: #0079B8;
-      color: #E9ECEF;
+      background: #0079b8;
+      color: #e9ecef;
     }
 
     &-bg {

@@ -19,13 +19,15 @@
       <app-view-code [view]="view"></app-view-code>
     </ng-container>
     <ng-container *ngSwitchCase="'donutChart'">
-        <app-view-donut-chart [view]="view"></app-view-donut-chart>
+      <app-view-donut-chart [view]="view"></app-view-donut-chart>
     </ng-container>
     <ng-container *ngSwitchCase="'editor'">
       <app-view-editor [view]="view"></app-view-editor>
     </ng-container>
     <ng-container *ngSwitchCase="'expressionSelector'">
-      <app-view-expression-selector [view]="view"></app-view-expression-selector>
+      <app-view-expression-selector
+        [view]="view"
+      ></app-view-expression-selector>
     </ng-container>
     <ng-container *ngSwitchCase="'graphviz'">
       <app-view-graphviz [view]="view"></app-view-graphviz>

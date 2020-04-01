@@ -1,46 +1,52 @@
 <h4>{{ title }}</h4>
 <clr-datagrid>
-    <clr-dg-placeholder>
-        <ng-container *ngIf="placeholder?.length >0; else emptyPlaceholder">
-            {{placeholder}}
-        </ng-container>
-        <ng-template #emptyPlaceholder>
-            All content has been filtered out.
-        </ng-template>
-    </clr-dg-placeholder>
-    <clr-dg-column *ngFor="let columnName of columns; trackBy: identifyColumn">
-        {{ columnName }}
-        <clr-dg-filter *ngIf="filters[columnName]">
-            <app-content-filter
-                    [column]="columnName"
-                    [filter]="filters[columnName]"
-            ></app-content-filter>
-        </clr-dg-filter>
-    </clr-dg-column>
-    <clr-dg-row *clrDgItems="let row of rowsWithMetadata; trackBy: identifyRow">
-        <clr-dg-action-overflow *ngIf="row.actions.length > 0">
-            <button *ngFor="let action of row.actions" class="action-item" (click)="runAction(action.actionPath, action.payload)">
-                {{action.name}}
-            </button>
-        </clr-dg-action-overflow>
-        <clr-dg-cell *ngFor="let column of columns; trackBy: identifyColumn">
-            <app-content-switcher [view]="row.data[column]"></app-content-switcher>
-        </clr-dg-cell>
-    </clr-dg-row>
+  <clr-dg-placeholder>
+    <ng-container *ngIf="placeholder?.length > 0; else emptyPlaceholder">
+      {{ placeholder }}
+    </ng-container>
+    <ng-template #emptyPlaceholder>
+      All content has been filtered out.
+    </ng-template>
+  </clr-dg-placeholder>
+  <clr-dg-column *ngFor="let columnName of columns; trackBy: identifyColumn">
+    {{ columnName }}
+    <clr-dg-filter *ngIf="filters[columnName]">
+      <app-content-filter
+        [column]="columnName"
+        [filter]="filters[columnName]"
+      ></app-content-filter>
+    </clr-dg-filter>
+  </clr-dg-column>
+  <clr-dg-row *clrDgItems="let row of rowsWithMetadata; trackBy: identifyRow">
+    <clr-dg-action-overflow *ngIf="row.actions.length > 0">
+      <button
+        *ngFor="let action of row.actions"
+        class="action-item"
+        (click)="runAction(action.actionPath, action.payload)"
+      >
+        {{ action.name }}
+      </button>
+    </clr-dg-action-overflow>
+    <clr-dg-cell *ngFor="let column of columns; trackBy: identifyColumn">
+      <app-content-switcher [view]="row.data[column]"></app-content-switcher>
+    </clr-dg-cell>
+  </clr-dg-row>
 
-    <clr-dg-footer>
-        <clr-dg-pagination #pagination [clrDgPageSize]="10">
-            <clr-dg-page-size [clrPageSizeOptions]="[10,20,50,100]">Items per page</clr-dg-page-size>
-            <ng-container *ngIf="rowsWithMetadata?.length > 0">
-                {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
-                of {{pagination.totalItems}} items
-            </ng-container>
-        </clr-dg-pagination>
+  <clr-dg-footer>
+    <clr-dg-pagination #pagination [clrDgPageSize]="10">
+      <clr-dg-page-size [clrPageSizeOptions]="[10, 20, 50, 100]"
+        >Items per page</clr-dg-page-size
+      >
+      <ng-container *ngIf="rowsWithMetadata?.length > 0">
+        {{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }} of
+        {{ pagination.totalItems }} items
+      </ng-container>
+    </clr-dg-pagination>
 
-        <ng-container *ngIf="loading">
-            <span class="spinner spinner-inline" style="margin-right: 10px">
-                Loading...
-            </span>
-        </ng-container>
-    </clr-dg-footer>
+    <ng-container *ngIf="loading">
+      <span class="spinner spinner-inline" style="margin-right: 10px;">
+        Loading...
+      </span>
+    </ng-container>
+  </clr-dg-footer>
 </clr-datagrid>

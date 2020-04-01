@@ -1,4 +1,4 @@
-<ng-container *ngIf="selected.length > 0; then contextMenu else noContexts">
+<ng-container *ngIf="selected.length > 0; then contextMenu; else noContexts">
 </ng-container>
 
 <ng-template #contextMenu>
@@ -11,12 +11,13 @@
     <clr-dropdown-menu *clrIfOpen [clrPosition]="'bottom-right'">
       <label class="dropdown-header">Contexts</label>
 
-      <ng-container *ngFor="let context of contexts;trackBy: trackByFn">
+      <ng-container *ngFor="let context of contexts; trackBy: trackByFn">
         <button
           type="button"
           [ngClass]="contextClass(context)"
           clrDropdownItem
-          (click)="selectContext(context)">
+          (click)="selectContext(context)"
+        >
           {{ context.name }}
         </button>
       </ng-container>

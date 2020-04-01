@@ -9,7 +9,7 @@
   & > code.hljs ::ng-deep {
     // Yaml viewer color variables for Dark Theme.
     :host-context(body.dark) {
-      --background-color:  #0f171c;
+      --background-color: #0f171c;
       --attr-color: white;
       --string-color: #f96a9f;
       --bullet-color: #f96a9f;

@@ -6,7 +6,6 @@
 $base-stroke-width: 1px;
 $thick-stroke-width: $base-stroke-width * 2.5;
 
-
 .donut-ring {
   stroke: #d2d3d4;
   stroke-width: $base-stroke-width;
@@ -29,7 +28,7 @@ $thick-stroke-width: $base-stroke-width * 2.5;
 }
 
 .chart-text {
-  font: 16px/1em "Metropolis", Arial, sans-serif;
+  font: 16px/1em 'Metropolis', Arial, sans-serif;
   fill: #fff;
   -moz-transform: translateY(0.25em);
   -ms-transform: translateY(0.25em);
@@ -65,4 +64,3 @@ $thick-stroke-width: $base-stroke-width * 2.5;
     transform: translateY(0.7em);
   }
 }
-

@@ -2,7 +2,10 @@
   <div class="label-with-title clr-col-md-12">
     <h3>{{ title }}</h3>
     <div class="view-labels">
-      <app-overflow-labels *ngIf="labels" [labels]="labels"></app-overflow-labels>
+      <app-overflow-labels
+        *ngIf="labels"
+        [labels]="labels"
+      ></app-overflow-labels>
     </div>
   </div>
 </ng-template>
@@ -11,4 +14,3 @@
     <app-overflow-labels *ngIf="labels" [labels]="labels"></app-overflow-labels>
   </div>
 </ng-template>
-

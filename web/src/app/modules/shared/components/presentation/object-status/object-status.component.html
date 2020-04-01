@@ -5,8 +5,11 @@
     </div>
     <div class="card-block">
       <div class="card-title">
-        <span *ngIf="node && !node.path">{{node.name}}</span>
-        <app-content-switcher *ngIf="node && node.path" [view]="node.path"></app-content-switcher>
+        <span *ngIf="node && !node.path">{{ node.name }}</span>
+        <app-content-switcher
+          *ngIf="node && node.path"
+          [view]="node.path"
+        ></app-content-switcher>
       </div>
       <div *ngIf="node" class="card-text">
         <ul class="node-status">

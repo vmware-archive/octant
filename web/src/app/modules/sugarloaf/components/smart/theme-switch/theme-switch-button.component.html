@@ -1,5 +1,9 @@
 <div class="switch-button-container">
-  <button id="switchButton" class="btn btn-link btn-inverse" (click)="switchTheme()">
+  <button
+    id="switchButton"
+    class="btn btn-link btn-inverse"
+    (click)="switchTheme()"
+  >
     <clr-icon [attr.shape]="lightThemeEnabled ? 'moon' : 'sun'"></clr-icon>
     {{ lightThemeEnabled ? 'dark' : 'light' }}
   </button>
