@@ -12,6 +12,7 @@ import (
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -200,11 +201,19 @@ func CreateJob(name string) *batchv1.Job {
 	}
 }
 
-// CreateNode creates a namespace
+// CreateNamespace creates a namespace
 func CreateNamespace(name string) *corev1.Namespace {
 	return &corev1.Namespace{
 		TypeMeta:   genTypeMeta(gvk.Namespace),
 		ObjectMeta: genObjectMeta(name, false),
+	}
+}
+
+// CreateNetworkPolicy creates a network policy
+func CreateNetworkPolicy(name string) *networkingv1.NetworkPolicy {
+	return &networkingv1.NetworkPolicy{
+		TypeMeta:   genTypeMeta(gvk.Namespace),
+		ObjectMeta: genObjectMeta(name, true),
 	}
 }
 

@@ -29,6 +29,7 @@ var (
 	Job                      = schema.GroupVersionKind{Group: "batch", Version: "v1", Kind: "Job"}
 	Node                     = schema.GroupVersionKind{Version: "v1", Kind: "Node"}
 	Namespace                = schema.GroupVersionKind{Version: "v1", Kind: "Namespace"}
+	NetworkPolicy            = schema.GroupVersionKind{Group: "networking.k8s.io", Version: "v1", Kind: "NetworkPolicy"}
 	ServiceAccount           = schema.GroupVersionKind{Version: "v1", Kind: "ServiceAccount"}
 	Secret                   = schema.GroupVersionKind{Version: "v1", Kind: "Secret"}
 	Service                  = schema.GroupVersionKind{Version: "v1", Kind: "Service"}

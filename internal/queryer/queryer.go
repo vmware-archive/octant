@@ -304,6 +304,7 @@ var allowed = []schema.GroupVersionKind{
 	gvk.HorizontalPodAutoscaler,
 	gvk.Ingress,
 	gvk.Service,
+	gvk.NetworkPolicy,
 	gvk.ConfigMap,
 	gvk.PersistentVolumeClaim,
 	gvk.Secret,

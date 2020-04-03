@@ -28,6 +28,7 @@ var (
 		gvk.HorizontalPodAutoscaler,
 		gvk.Ingress,
 		gvk.Service,
+		gvk.NetworkPolicy,
 		gvk.ConfigMap,
 		gvk.Secret,
 		gvk.PersistentVolumeClaim,
@@ -86,6 +87,8 @@ func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 		p = "/discovery-and-load-balancing/ingresses"
 	case apiVersion == "v1" && kind == "Service":
 		p = "/discovery-and-load-balancing/services"
+	case apiVersion == "networking.k8s.io/v1" && kind == "NetworkPolicy":
+		p = "/discovery-and-load-balancing/network-policies"
 	case apiVersion == "rbac.authorization.k8s.io/v1" && kind == "Role":
 		p = "/rbac/roles"
 	case apiVersion == "rbac.authorization.k8s.io/v1" && kind == "RoleBinding":
