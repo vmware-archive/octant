@@ -55,6 +55,7 @@ func SetLoading(isLoading bool) Option {
 
 // Navigation is a set of navigation entries.
 type Navigation struct {
+	Module     string       `json:"module,omitempty"`
 	Title      string       `json:"title,omitempty"`
 	Path       string       `json:"path,omitempty"`
 	Children   []Navigation `json:"children,omitempty"`
@@ -78,7 +79,13 @@ func New(title, navigationPath string, options ...Option) (*Navigation, error) {
 
 // CRDEntries generates navigation entries for CRDs.
 func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, wantsClusterScoped bool) ([]Navigation, bool, error) {
-	var list []Navigation
+	var list = []Navigation{
+		{
+			Title:   "Overview",
+			Path:    prefix,
+			Loading: false,
+		},
+	}
 
 	loading := false
 
@@ -218,14 +225,14 @@ type EntriesHelper struct {
 }
 
 // Add adds an entry.
-func (neh *EntriesHelper) Add(title, suffix, iconName string, isLoading bool) {
+func (neh *EntriesHelper) Add(title, suffix string, isLoading bool) {
 	neh.navConfigs = append(neh.navConfigs, navConfig{
-		title: title, suffix: suffix, iconName: iconName, isLoading: isLoading,
+		title: title, suffix: suffix, isLoading: isLoading,
 	})
 }
 
 // Generate generates navigation entries.
-func (neh *EntriesHelper) Generate(prefix string) ([]Navigation, error) {
+func (neh *EntriesHelper) Generate(prefix, namespace, name string) ([]Navigation, error) {
 	var navigations []Navigation
 
 	for _, nc := range neh.navConfigs {

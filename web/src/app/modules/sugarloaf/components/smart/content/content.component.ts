@@ -31,7 +31,6 @@ import { Subscription } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class ContentComponent implements OnInit, OnDestroy {
-  @ViewChild('scrollTarget', { static: true }) scrollTarget: ElementRef;
   hasTabs = false;
   hasReceivedContent = false;
   title: string = null;

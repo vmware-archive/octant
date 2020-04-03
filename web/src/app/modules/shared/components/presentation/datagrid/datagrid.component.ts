@@ -59,8 +59,9 @@ export class DatagridComponent implements OnChanges {
 
         const current = changes.view.currentValue as TableView;
         this.columns = current.config.columns.map(column => column.name);
-        this.rowsWithMetadata = this.getRowsWithMetadata(current.config.rows);
-
+        if (current.config.rows) {
+          this.rowsWithMetadata = this.getRowsWithMetadata(current.config.rows);
+        }
         this.placeholder = current.config.emptyContent;
         this.lastUpdated = new Date();
         this.loading = current.config.loading;

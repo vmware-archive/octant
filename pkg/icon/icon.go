@@ -15,6 +15,20 @@ import (
 //go:generate rice embed-go
 
 const (
+	// Names of Clarity icons
+	Applications              = "application"
+	Workloads                 = "applications"
+	Overview                  = "dashboard"
+	DiscoveryAndLoadBalancing = "network-globe"
+	ConfigAndStorage          = "storage"
+	RBAC                      = "assign-user"
+	Events                    = "event"
+
+	Namespaces      = "namespace"
+	CustomResources = "file-group"
+	Nodes           = "nodes"
+	PortForwards    = "router"
+
 	ClusterOverview                   = "objects"
 	ClusterOverviewClusterRole        = "c-role"
 	ClusterOverviewClusterRoleBinding = "crb"
@@ -27,7 +41,6 @@ const (
 
 	CustomResourceDefinition = "crd"
 
-	Overview                        = "objects"
 	OverviewConfigMap               = "cm"
 	OverviewCronJob                 = "cronjob"
 	OverviewDaemonSet               = "ds"
