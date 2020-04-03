@@ -18,3 +18,31 @@
 .clr-vertical-nav .nav-btn {
   display: none;
 }
+
+// Overflow labels & selectors common styles
+.overflow-labels-wrapper,
+.overflow-selectors-wrapper {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+
+  .label.clickable {
+    cursor: pointer;
+  }
+
+  .signpost {
+    // Clarity's Signpost trigger has no padding, so this is to fix badge's padding.
+    .badge.signpost-trigger {
+      padding: 0 0.2rem;
+    }
+  
+    // To avoid horizontal scroll-bar inside of the signpost content body.
+    .signpost-wrap .signpost-content-body {
+      padding: 1rem;
+  
+      .label:not(:last-child) {
+        margin-bottom: 0.2rem;
+      }
+    }
+  }
+}
