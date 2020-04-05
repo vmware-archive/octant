@@ -22,7 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
-func Test_PersistentVolumeListHandler(t *testing.T) {
+func Test_PersistentVolumeClaimListHandler(t *testing.T) {
 	labels := map[string]string{
 		"foo": "bar",
 	}
