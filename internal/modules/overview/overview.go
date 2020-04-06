@@ -195,7 +195,7 @@ func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]n
 	navigationEntries := octant.NavigationEntries{
 		Lookup: navPathLookup,
 		EntriesFuncs: map[string]octant.EntriesFunc{
-			"Overview":                     nil,
+			"Namespace Overview":           nil,
 			"Workloads":                    workloadEntries,
 			"Discovery and Load Balancing": discoAndLBEntries,
 			"Config and Storage":           configAndStorageEntries,
@@ -204,7 +204,7 @@ func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]n
 			"Events":                       nil,
 		},
 		IconMap: map[string]string{
-			"Overview":                     icon.Overview,
+			"Namespace Overview":           icon.Overview,
 			"Workloads":                    icon.Workloads,
 			"Discovery and Load Balancing": icon.DiscoveryAndLoadBalancing,
 			"Config and Storage":           icon.ConfigAndStorage,
@@ -213,7 +213,7 @@ func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]n
 			"Events":                       icon.Events,
 		},
 		Order: []string{
-			"Overview",
+			"Namespace Overview",
 			"Workloads",
 			"Discovery and Load Balancing",
 			"Config and Storage",
@@ -260,7 +260,7 @@ func (co *Overview) Stop() {
 func (co *Overview) Content(ctx context.Context, contentPath string, opts module.ContentOptions) (component.ContentResponse, error) {
 	ctx = internalLog.WithLoggerContext(ctx, co.dashConfig.Logger())
 	genOpts := generator.Options{
-		LabelSet:               opts.LabelSet,
+		LabelSet: opts.LabelSet,
 	}
 	return co.generator.Generate(ctx, contentPath, genOpts)
 }
