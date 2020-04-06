@@ -18,7 +18,9 @@
           </a>
 
           <ng-container *ngIf="shouldExpand(i)">
-            <div class="flyout nav-group-children">
+            <div class="flyout nav-group-children"
+                 (mouseleave)="flyoutIndex= -1; lastSelection= -1"
+            >
               <span class="flyout-header">{{ section.title }}</span>
               <clr-vertical-nav-group-children class="flyout-group">
                 <a

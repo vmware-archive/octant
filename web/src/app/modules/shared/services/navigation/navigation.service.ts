@@ -26,7 +26,7 @@ export class NavigationService {
   );
   public expandedState: BehaviorSubject<any> = new BehaviorSubject<any>({});
   public collapsed: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
-    false
+    true
   );
   activeUrl = new BehaviorSubject<string>('');
 

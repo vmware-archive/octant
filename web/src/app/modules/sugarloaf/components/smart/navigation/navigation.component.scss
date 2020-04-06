@@ -5,11 +5,15 @@
 :host-context(body) {
   --selection-color: var(--clr-color-neutral-400);
   --tooltip-text-color: black;
+  --flyout-background-color: var(--clr-color-neutral-50);
+  --flyout-color: var(--clr-global-font-color);
 }
 
 :host-context(body.dark) {
   --selection-color: #324f62;
   --tooltip-text-color: #EAEDEF;
+  --flyout-background-color: #1b2a32;
+  --flyout-color: #acbac3;
 }
 
 .nav-group.is-expanded .nav-link .nav-text {
@@ -111,8 +115,8 @@
     position: fixed;
     margin-top: -31px;
     margin-left: 48px;
-    background-color: var(--clr-clr-iconglobal-app-background, #1b2a32);
-    color: var(--clr-global-font-color);
+    background-color: var(--flyout-background-color, #1b2a32);
+    color: var(--flyout-color);
     padding: 0px 0px 0px 0px;
   }
 
