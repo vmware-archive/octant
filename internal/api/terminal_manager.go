@@ -20,9 +20,9 @@ import (
 
 const (
 	readBufferSize            = 4096
-	RequestTerminalScrollback = "sendTerminalScrollback"
-	RequestTerminalCommand    = "sendTerminalCommand"
-	RequestTerminalResize     = "sendTerminalResize"
+	RequestTerminalScrollback = "action.octant.dev/sendTerminalScrollback"
+	RequestTerminalCommand    = "action.octant.dev/sendTerminalCommand"
+	RequestTerminalResize     = "action.octant.dev/sendTerminalResize"
 )
 
 type terminalStateManager struct {
@@ -168,7 +168,7 @@ func newEvent(ctx context.Context, t terminal.Instance, sendScrollback bool) (oc
 	}
 
 	key := t.Key()
-	eventType := octant.EventType(fmt.Sprintf("terminals/namespace/%s/pod/%s/container/%s/%s", key.Namespace, key.Name, t.Container(), t.ID()))
+	eventType := octant.NewTerminalEventType(key.Namespace, key.Name, t.Container(), t.ID())
 	data := terminalOutput{Line: line}
 
 	if sendScrollback {

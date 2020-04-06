@@ -18,7 +18,7 @@ export class TerminalOutputStreamer {
     private uuid: string,
     private wss: WebsocketService
   ) {
-    this.wss.sendMessage('sendTerminalScrollback', {
+    this.wss.sendMessage('action.octant.dev/sendTerminalScrollback', {
       terminalID: this.uuid,
     });
 
@@ -33,6 +33,7 @@ export class TerminalOutputStreamer {
 
   private terminalUrl(): string {
     return [
+      'event.octant.dev/',
       'terminals',
       `namespace/${this.namespace}`,
       `pod/${this.pod}`,

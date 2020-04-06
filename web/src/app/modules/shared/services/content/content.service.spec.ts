@@ -97,7 +97,7 @@ describe('ContentService', () => {
     it('sends a setContentPath message to the server', () => {
       service.setContentPath('path', {});
       expect(backendService.sendMessage).toHaveBeenCalledWith(
-        'setContentPath',
+        'action.octant.dev/setContentPath',
         {
           contentPath: 'path',
           params: {},
@@ -115,7 +115,7 @@ describe('ContentService', () => {
       it('sends a setContentPath message to the server', () => {
         service.setContentPath('path', { filters });
         expect(backendService.sendMessage).toHaveBeenCalledWith(
-          'setContentPath',
+          'action.octant.dev/setContentPath',
           {
             contentPath: 'path',
             params: { filters },

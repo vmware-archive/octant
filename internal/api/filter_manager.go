@@ -19,9 +19,9 @@ import (
 )
 
 const (
-	RequestAddFilter    = "addFilter"
-	RequestClearFilters = "clearFilters"
-	RequestRemoveFilter = "removeFilter"
+	RequestAddFilter    = "action.octant.dev/addFilter"
+	RequestClearFilters = "action.octant.dev/clearFilters"
+	RequestRemoveFilter = "action.octant.dev/removeFilter"
 )
 
 // FilterManager manages filters.

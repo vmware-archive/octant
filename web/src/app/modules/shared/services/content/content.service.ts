@@ -15,7 +15,7 @@ import {
 } from '../label-filter/label-filter.service';
 import { NamespaceService } from '../namespace/namespace.service';
 
-export const ContentUpdateMessage = 'content';
+export const ContentUpdateMessage = 'event.octant.dev/content';
 
 export interface ContentUpdate {
   content: Content;
@@ -78,7 +78,10 @@ export class ContentService {
     }
 
     const payload = { contentPath, params };
-    this.websocketService.sendMessage('setContentPath', payload);
+    this.websocketService.sendMessage(
+      'action.octant.dev/setContentPath',
+      payload
+    );
   }
 
   private setContent(content: Content) {

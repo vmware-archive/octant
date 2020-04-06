@@ -35,7 +35,7 @@ export class NavigationService {
     private contentService: ContentService,
     private router: Router
   ) {
-    websocketService.registerHandler('navigation', data => {
+    websocketService.registerHandler('event.octant.dev/navigation', data => {
       const update = data as Navigation;
       this.current.next(update);
 

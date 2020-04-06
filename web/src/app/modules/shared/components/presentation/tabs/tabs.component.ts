@@ -113,7 +113,7 @@ export class TabsComponent implements OnChanges, OnInit {
     if (tabIndex > -1) {
       if (this.payloads[tabIndex]) {
         const payload = this.payloads[tabIndex];
-        this.wss.sendMessage('performAction', payload);
+        this.wss.sendMessage('action.octant.dev/performAction', payload);
       }
 
       this.tabs = [

@@ -37,7 +37,7 @@ func TestContext_GenerateContexts(t *testing.T) {
 	octantClient := fake.NewMockOctantClient(controller)
 
 	ev := octant.Event{
-		Type: "eventType",
+		Type: "event.octant.dev/eventType",
 	}
 	octantClient.EXPECT().Send(ev)
 

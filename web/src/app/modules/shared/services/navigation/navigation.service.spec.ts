@@ -46,7 +46,7 @@ describe('NavigationService', () => {
           defaultPath: 'path',
         };
 
-        backendService.triggerHandler('navigation', update);
+        backendService.triggerHandler('event.octant.dev/navigation', update);
         svc.current.subscribe(current => expect(current).toEqual(update));
         contentService.defaultPath.subscribe(defaultPath =>
           expect(defaultPath).toEqual(update.defaultPath)

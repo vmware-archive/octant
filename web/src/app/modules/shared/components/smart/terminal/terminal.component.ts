@@ -70,7 +70,7 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
         kind: 'Pod',
         apiVersion: 'v1',
         sessionID: TerminalComponent.sessionID,
-        action: 'overview/commandExec',
+        action: 'action.octant.dev/commandExec',
       };
       this.actionService.perform(terminalCommand);
       this.term = new Terminal({
@@ -81,7 +81,7 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
       this.enableResize();
       this.term.onData(data => {
         if (active) {
-          this.wss.sendMessage('sendTerminalCommand', {
+          this.wss.sendMessage('action.octant.dev/sendTerminalCommand', {
             terminalID: uuid,
             key: data,
           });
@@ -107,7 +107,7 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
       const resize = () => {
         const { active, uuid } = this.view.config.terminal;
         if (active) {
-          this.wss.sendMessage('sendTerminalResize', {
+          this.wss.sendMessage('action.octant.dev/sendTerminalResize', {
             terminalID: uuid,
             rows: e.rows,
             cols: e.cols,
