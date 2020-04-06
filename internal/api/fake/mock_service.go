@@ -7,7 +7,7 @@ package fake
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	mux "github.com/gorilla/mux"
+	http "net/http"
 	reflect "reflect"
 )
 
@@ -49,10 +49,10 @@ func (mr *MockServiceMockRecorder) ForceUpdate() *gomock.Call {
 }
 
 // Handler mocks base method
-func (m *MockService) Handler(arg0 context.Context) (*mux.Router, error) {
+func (m *MockService) Handler(arg0 context.Context) (http.Handler, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Handler", arg0)
-	ret0, _ := ret[0].(*mux.Router)
+	ret0, _ := ret[0].(http.Handler)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

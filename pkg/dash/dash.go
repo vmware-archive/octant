@@ -11,15 +11,10 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	"contrib.go.opencensus.io/exporter/jaeger"
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/viper"
 	"go.opencensus.io/trace"
@@ -42,6 +37,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/terminal"
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/log"
+	"github.com/vmware-tanzu/octant/pkg/octant"
 	"github.com/vmware-tanzu/octant/pkg/plugin"
 	pluginAPI "github.com/vmware-tanzu/octant/pkg/plugin/api"
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -367,7 +363,11 @@ func newDash(listener net.Listener, namespace, uiURL string, apiHandler api.Serv
 }
 
 func (d *dash) Run(ctx context.Context) error {
-	handler, err := d.handler(ctx)
+	hf := octant.NewHandlerFactory(
+		octant.BackendHandler(d.apiHandler.Handler),
+		octant.FrontendURL(viper.GetString("proxy-frontend")))
+
+	handler, err := hf.Handler(ctx)
 	if err != nil {
 		return err
 	}
@@ -396,74 +396,6 @@ func (d *dash) Run(ctx context.Context) error {
 	defer shutdownCancel()
 
 	return server.Shutdown(shutdownCtx)
-}
-
-// handler configures primary http routes
-func (d *dash) handler(ctx context.Context) (http.Handler, error) {
-	var frontendHandler http.Handler
-	frontendPath := viper.GetString("proxy-frontend")
-	if frontendPath == "" {
-		d.logger.Infof("Using embedded Octant frontend")
-		// use embedded assets
-		handler, err := d.uiHandler()
-		if err != nil {
-			return nil, err
-		}
-		frontendHandler = handler
-	} else {
-		d.logger.With("proxy-path", frontendPath).Infof("Creating reverse proxy to Octant frontend")
-		// use reverse proxy
-		proxyURL, err := url.Parse(frontendPath)
-		if err != nil {
-			return nil, err
-		}
-		frontendHandler = httputil.NewSingleHostReverseProxy(proxyURL)
-	}
-
-	router := mux.NewRouter()
-	apiHandler, err := d.apiHandler.Handler(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	router.PathPrefix(api.PathPrefix).Handler(apiHandler)
-
-	router.PathPrefix("/").Handler(frontendHandler)
-
-	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
-	allowedHeaders := handlers.AllowedHeaders([]string{"Accept", "Accept-Language", "Content-Language", "Origin", "Content-Type"})
-	allowedMethods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
-
-	return handlers.CORS(allowedOrigins, allowedHeaders, allowedMethods)(router), nil
-}
-
-func (d *dash) uiHandler() (http.Handler, error) {
-	if d.uiURL == "" {
-		return d.defaultHandler()
-	}
-
-	return d.uiProxy()
-}
-
-func (d *dash) uiProxy() (*httputil.ReverseProxy, error) {
-	uiURL := d.uiURL
-
-	if !strings.HasPrefix(uiURL, "http") && !strings.HasPrefix(uiURL, "https") {
-		uiURL = fmt.Sprintf("http://%s", uiURL)
-	}
-	u, err := url.Parse(uiURL)
-	if err != nil {
-		return nil, err
-	}
-
-	if u.Scheme == "" {
-		u.Scheme = "http"
-	}
-
-	d.logger.Infof("Proxying dashboard UI to %s", u.String())
-
-	proxy := httputil.NewSingleHostReverseProxy(u)
-	return proxy, nil
 }
 
 func enableOpenCensus() error {
