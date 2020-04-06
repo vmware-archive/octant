@@ -47,12 +47,12 @@ type Option func(o *options)
 // FrontendURL configures Octant to use a proxy for rendering its frontend.
 func FrontendURL(proxyURL string) Option {
 	return func(o *options) {
-		o.frontendHandler = func(ctx context.Context) (handler http.Handler, err error) {
-			if proxyURL == "" {
-				o.frontendHandler = defaultFrontendHandler
-				return
-			}
+		if proxyURL == "" {
+			o.frontendHandler = defaultFrontendHandler
+			return
+		}
 
+		o.frontendHandler = func(ctx context.Context) (handler http.Handler, err error) {
 			pfh, err := NewProxiedFrontend(ctx, proxyURL)
 			if err != nil {
 				return nil, err
