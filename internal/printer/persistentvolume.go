@@ -10,7 +10,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -18,7 +18,7 @@ import (
 )
 
 // PersistentVolumeListHandler is a printFunc that creates a component to display multiple Persistent Volumes
-func PersistentVolumeListHandler(ctx context.Context, list *v1.PersistentVolumeList, options Options) (component.Component, error) {
+func PersistentVolumeListHandler(ctx context.Context, list *corev1.PersistentVolumeList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -33,7 +33,7 @@ func PersistentVolumeListHandler(ctx context.Context, list *v1.PersistentVolumeL
 			return nil, err
 		}
 
-		storage := pv.Spec.Capacity[v1.ResourceStorage]
+		storage := pv.Spec.Capacity[corev1.ResourceStorage]
 		capacity := storage.String()
 
 		accessModes := getAccessModesAsString(pv.Spec.AccessModes)
@@ -60,7 +60,7 @@ func PersistentVolumeListHandler(ctx context.Context, list *v1.PersistentVolumeL
 }
 
 // PersistentVolumeHandler is a printFunc that creates a component to display a single Persistent Volume
-func PersistentVolumeHandler(ctx context.Context, pv *v1.PersistentVolume, options Options) (component.Component, error) {
+func PersistentVolumeHandler(ctx context.Context, pv *corev1.PersistentVolume, options Options) (component.Component, error) {
 	obj := NewObject(pv)
 	obj.EnableEvents()
 
@@ -81,13 +81,13 @@ func PersistentVolumeHandler(ctx context.Context, pv *v1.PersistentVolume, optio
 }
 
 type persistentVolumeHandler struct {
-	configFunc       func(*v1.PersistentVolume, Options) (*component.Summary, error)
-	statusFunc       func(context.Context, *v1.PersistentVolume, Options) (*component.Summary, error)
-	persistentVolume *v1.PersistentVolume
+	configFunc       func(*corev1.PersistentVolume, Options) (*component.Summary, error)
+	statusFunc       func(context.Context, *corev1.PersistentVolume, Options) (*component.Summary, error)
+	persistentVolume *corev1.PersistentVolume
 	object           *Object
 }
 
-func newPersistentVolumeHandler(pv *v1.PersistentVolume, object *Object) (*persistentVolumeHandler, error) {
+func newPersistentVolumeHandler(pv *corev1.PersistentVolume, object *Object) (*persistentVolumeHandler, error) {
 	if pv == nil {
 		return nil, errors.New("cannot print a nil persistentVolume")
 	}
@@ -123,22 +123,22 @@ func (pvh *persistentVolumeHandler) Status(ctx context.Context, options Options)
 	return nil
 }
 
-func defaultPersistentVolumeConfig(pv *v1.PersistentVolume, options Options) (*component.Summary, error) {
+func defaultPersistentVolumeConfig(pv *corev1.PersistentVolume, options Options) (*component.Summary, error) {
 	return NewPersistentVolumeConfiguration(pv).Create(options)
 }
 
-func defaultPersistentVolumeStatus(ctx context.Context, pv *v1.PersistentVolume, options Options) (*component.Summary, error) {
+func defaultPersistentVolumeStatus(ctx context.Context, pv *corev1.PersistentVolume, options Options) (*component.Summary, error) {
 	return NewPersistentVolumeStatus(pv).Create(ctx, options)
 }
 
 // PersistentVolumeConfiguration is used to create the Persistent Volume's configuration component
 // when displaying a single Persistent Volume
 type PersistentVolumeConfiguration struct {
-	persistentVolume *v1.PersistentVolume
+	persistentVolume *corev1.PersistentVolume
 }
 
 // NewPersistentVolumeConfiguration creates a new PersistentVolumeConfiguration using the supplied Persistent Volume
-func NewPersistentVolumeConfiguration(pv *v1.PersistentVolume) *PersistentVolumeConfiguration {
+func NewPersistentVolumeConfiguration(pv *corev1.PersistentVolume) *PersistentVolumeConfiguration {
 	return &PersistentVolumeConfiguration{
 		persistentVolume: pv,
 	}
@@ -152,7 +152,7 @@ func (pvc *PersistentVolumeConfiguration) Create(options Options) (*component.Su
 	pv := pvc.persistentVolume
 
 	accessModes := getAccessModesAsString(pv.Spec.AccessModes)
-	storage := pv.Spec.Capacity[v1.ResourceStorage]
+	storage := pv.Spec.Capacity[corev1.ResourceStorage]
 	capacity := storage.String()
 
 	var sections component.SummarySections
@@ -160,7 +160,11 @@ func (pvc *PersistentVolumeConfiguration) Create(options Options) (*component.Su
 	sections.AddText("Storage Class", pv.Spec.StorageClassName)
 	sections.AddText("Access Modes", accessModes)
 	sections.AddText("Capacity", capacity)
-	sections.AddText("Host Path", pv.Spec.HostPath.Path)
+
+	sections, err := printPersistentVolumeSource(pv, sections)
+	if err != nil {
+		return nil, err
+	}
 
 	summary := component.NewSummary("Configuration", sections...)
 	return summary, nil
@@ -169,11 +173,11 @@ func (pvc *PersistentVolumeConfiguration) Create(options Options) (*component.Su
 // PersistentVolumeStatus is used to create the Persistent Volume's status component
 // when displaying a single Persistent Volume
 type PersistentVolumeStatus struct {
-	persistentVolume *v1.PersistentVolume
+	persistentVolume *corev1.PersistentVolume
 }
 
 // NewPersistentVolumeStatus creates a new PersistentVolumeStatus using the supplied Persistent Volume
-func NewPersistentVolumeStatus(pv *v1.PersistentVolume) *PersistentVolumeStatus {
+func NewPersistentVolumeStatus(pv *corev1.PersistentVolume) *PersistentVolumeStatus {
 	return &PersistentVolumeStatus{
 		persistentVolume: pv,
 	}
@@ -204,9 +208,9 @@ func (pvs *PersistentVolumeStatus) Create(ctx context.Context, options Options) 
 	return summary, nil
 }
 
-func getBoundPersistentVolumeClaim(ctx context.Context, pv *v1.PersistentVolume, options Options) (*v1.PersistentVolumeClaim, error) {
+func getBoundPersistentVolumeClaim(ctx context.Context, pv *corev1.PersistentVolume, options Options) (*corev1.PersistentVolumeClaim, error) {
 	objectStore := options.DashConfig.ObjectStore()
-	pvc := &v1.PersistentVolumeClaim{}
+	pvc := &corev1.PersistentVolumeClaim{}
 
 	cr := pv.Spec.ClaimRef
 	key := store.Key{
@@ -233,7 +237,7 @@ func getBoundPersistentVolumeClaim(ctx context.Context, pv *v1.PersistentVolume,
 	return pvc, nil
 }
 
-func createBoundPersistentVolumeClaimLink(ctx context.Context, pv *v1.PersistentVolume, options Options) (*component.Link, error) {
+func createBoundPersistentVolumeClaimLink(ctx context.Context, pv *corev1.PersistentVolume, options Options) (*component.Link, error) {
 	pvc, err := getBoundPersistentVolumeClaim(ctx, pv, options)
 	if err != nil {
 		return nil, err
@@ -247,4 +251,56 @@ func createBoundPersistentVolumeClaimLink(ctx context.Context, pv *v1.Persistent
 	}
 
 	return claimLink, nil
+}
+
+func printPersistentVolumeSource(pv *corev1.PersistentVolume, section component.SummarySections) (component.SummarySections, error) {
+	switch {
+	case pv.Spec.PersistentVolumeSource.GCEPersistentDisk != nil:
+		section.AddText("GCE Persistent Disk", describeVolumeSource(pv.Spec.PersistentVolumeSource.GCEPersistentDisk))
+	case pv.Spec.PersistentVolumeSource.AWSElasticBlockStore != nil:
+		section.AddText("AWS Elastic Block Store", describeVolumeSource(pv.Spec.PersistentVolumeSource.AWSElasticBlockStore))
+	case pv.Spec.PersistentVolumeSource.HostPath != nil:
+		section.AddText("Host Path", describeVolumeSource(pv.Spec.PersistentVolumeSource.HostPath))
+	case pv.Spec.PersistentVolumeSource.Glusterfs != nil:
+		section.AddText("GlusterFS", describeVolumeSource(pv.Spec.PersistentVolumeSource.Glusterfs))
+	case pv.Spec.PersistentVolumeSource.NFS != nil:
+		section.AddText("NFS", describeVolumeSource(pv.Spec.PersistentVolumeSource.NFS))
+	case pv.Spec.PersistentVolumeSource.RBD != nil:
+		section.AddText("RBD", describeVolumeSource(pv.Spec.PersistentVolumeSource.RBD))
+	case pv.Spec.PersistentVolumeSource.ISCSI != nil:
+		section.AddText("ISCI", describeVolumeSource(pv.Spec.PersistentVolumeSource.ISCSI))
+	case pv.Spec.PersistentVolumeSource.Cinder != nil:
+		section.AddText("Cinder", describeVolumeSource(pv.Spec.PersistentVolumeSource.Cinder))
+	case pv.Spec.PersistentVolumeSource.CephFS != nil:
+		section.AddText("CephFS", describeVolumeSource(pv.Spec.PersistentVolumeSource.CephFS))
+	case pv.Spec.PersistentVolumeSource.FC != nil:
+		section.AddText("FC", describeVolumeSource(pv.Spec.PersistentVolumeSource.FC))
+	case pv.Spec.PersistentVolumeSource.Flocker != nil:
+		section.AddText("Flocker", describeVolumeSource(pv.Spec.PersistentVolumeSource.Flocker))
+	case pv.Spec.PersistentVolumeSource.FlexVolume != nil:
+		section.AddText("Flex Volume", describeVolumeSource(pv.Spec.PersistentVolumeSource.FlexVolume))
+	case pv.Spec.PersistentVolumeSource.AzureFile != nil:
+		section.AddText("Azure File", describeVolumeSource(pv.Spec.PersistentVolumeSource.AzureFile))
+	case pv.Spec.PersistentVolumeSource.VsphereVolume != nil:
+		section.AddText("Vsphere Volume", describeVolumeSource(pv.Spec.PersistentVolumeSource.VsphereVolume))
+	case pv.Spec.PersistentVolumeSource.Quobyte != nil:
+		section.AddText("Quobyte", describeVolumeSource(pv.Spec.PersistentVolumeSource.Quobyte))
+	case pv.Spec.PersistentVolumeSource.AzureDisk != nil:
+		section.AddText("Azure Disk", describeVolumeSource(pv.Spec.PersistentVolumeSource.AzureDisk))
+	case pv.Spec.PersistentVolumeSource.PhotonPersistentDisk != nil:
+		section.AddText("Photon Persistent Disk", describeVolumeSource(pv.Spec.PersistentVolumeSource.PhotonPersistentDisk))
+	case pv.Spec.PersistentVolumeSource.PortworxVolume != nil:
+		section.AddText("Portworx Volume", describeVolumeSource(pv.Spec.PersistentVolumeSource.PortworxVolume))
+	case pv.Spec.PersistentVolumeSource.ScaleIO != nil:
+		section.AddText("ScaleIO", describeVolumeSource(pv.Spec.PersistentVolumeSource.ScaleIO))
+	case pv.Spec.PersistentVolumeSource.Local != nil:
+		section.AddText("Local", describeVolumeSource(pv.Spec.PersistentVolumeSource.Local))
+	case pv.Spec.PersistentVolumeSource.StorageOS != nil:
+		section.AddText("StorageOS", describeVolumeSource(pv.Spec.PersistentVolumeSource.StorageOS))
+	case pv.Spec.PersistentVolumeSource.CSI != nil:
+		section.AddText("CSI", describeVolumeSource(pv.Spec.PersistentVolumeSource.CSI))
+	default:
+		section.AddText("Persistent Volume Source", "Unknown")
+	}
+	return section, nil
 }
