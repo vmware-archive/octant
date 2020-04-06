@@ -9,5 +9,13 @@
 }
 
 .dropdown {
-  margin: 0 1rem;
+  margin: 0 0.8rem;
+}
+
+.dropdown .dropdown-toggle clr-icon {
+  margin-right: 0.2rem;
+}
+
+.dropdown .dropdown-toggle:not(.btn) {
+  padding: 0 1.0rem 0 0;
 }

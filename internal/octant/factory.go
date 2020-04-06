@@ -25,6 +25,7 @@ type EntriesFunc func(ctx context.Context, prefix, namespace string, objectStore
 type NavigationEntries struct {
 	Lookup       map[string]string
 	EntriesFuncs map[string]EntriesFunc
+	IconMap      map[string]string
 	Order        []string
 }
 
@@ -60,33 +61,30 @@ func (nf *NavigationFactory) Root() string {
 }
 
 // Generate returns navigation entries.
-func (nf *NavigationFactory) Generate(ctx context.Context, title string, iconName, iconSource string, wantsClusterScoped bool) (*navigation.Navigation, error) {
-	n := &navigation.Navigation{
-		Title:    title,
-		Path:     nf.rootPath,
-		Children: []navigation.Navigation{},
-	}
-
-	if iconName != "" {
-		n.IconName = iconName
-
-		if iconSource != "" {
-			n.IconSource = iconSource
-		}
-	}
+func (nf *NavigationFactory) Generate(ctx context.Context, module string, wantsClusterScoped bool) ([]navigation.Navigation, error) {
+	n := []navigation.Navigation{}
 
 	var mu sync.Mutex
 	var g errgroup.Group
 
-	for _, name := range nf.entries.Order {
+	for index, name := range nf.entries.Order {
 		g.Go(func() error {
-			children, err := nf.genNode(ctx, name, nf.entries.EntriesFuncs[name], wantsClusterScoped)
+			child, err := nf.genNode(ctx, name, nf.entries.EntriesFuncs[name], wantsClusterScoped)
 			if err != nil {
 				return errors.Wrapf(err, "generate entries for %s", name)
 			}
 
+			if iconName, ok := nf.entries.IconMap[name]; ok {
+				child.IconName = iconName
+			}
+
+			// Setting module creates a divider in navigation
+			if (module != "") && (index == 0) {
+				child.Module = module
+			}
+
 			mu.Lock()
-			n.Children = append(n.Children, *children)
+			n = append(n, *child)
 			mu.Unlock()
 
 			return nil

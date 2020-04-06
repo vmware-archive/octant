@@ -15,15 +15,14 @@
       </div>
     </div>
     <div class="header-actions">
-      <app-theme-switch-button></app-theme-switch-button>
-      <app-context-selector></app-context-selector>
+      <div class="namespace-switcher header-centered">
+        <app-namespace></app-namespace>
+      </div>
+      <app-context-selector class="header-centered"></app-context-selector>
     </div>
   </header>
   <div class="content-container">
     <div class="navigation">
-      <div class="namespace-switcher">
-        <app-namespace></app-namespace>
-      </div>
       <app-navigation></app-navigation>
     </div>
     <div class="content-area">

@@ -2,92 +2,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-.app-namespace-selector {
-  // Dropdown's color variables for Light Theme.
-  :host-context(body) {
-    --dropdownLink-color: #575757;
-    --dropdownLinkActive-color: #49afd9;
-    --dropdownPanel-border-color: #ccc;
-    --dropdownOptionSelected-bg-color: #dae4ea;
-    --dropdownOption-bg-color: white;
-    --dropdownOption-font-color: black;
-  }
+.dropdown > .dropdown-toggle {
+  line-height: 2.5rem;
+  color: white;
+  outline: none;
+}
 
-  // Dropdown's color variables for Dark Theme.
-  :host-context(body.dark) {
-    --dropdownLink-color: #49afd9;
-    --dropdownLinkActive-color: #49afd9;
-    --dropdownPanel-border-color: black;
-    --dropdownOptionSelected-bg-color: #324f60;
-    --dropdownOption-bg-color: #23353d;
-    --dropdownOption-font-color: #adbbc4;
-  }
+.dropdown {
+  margin: 0 0.8rem;
+}
 
-  margin: 0.5rem 1rem 1rem 1rem;
+.dropdown .dropdown-toggle clr-icon {
+  margin-right: 0.2rem;
+}
 
-  .title {
-    display: block;
-    margin-bottom: 0.25rem;
-    font-weight: 600;
-  }
-
-  .namespace-dropdown {
-    ::ng-deep {
-      .ng-select-container {
-        border-color: var(--dropdownLink-color);
-        background: transparent;
-      }
-
-      .ng-value,
-      .ng-input > input {
-        color: var(--dropdownLink-color);
-      }
-
-      .ng-arrow {
-        border-color: var(--dropdownLink-color) transparent transparent;
-      }
-
-      .ng-input {
-        padding-left: 5px;
-      }
-    }
-
-    &.ng-select-opened ::ng-deep {
-      .ng-select-container {
-        border-color: var(--dropdownLinkActive-color);
-      }
-
-      .ng-value {
-        color: var(--dropdownLinkActive-color);
-      }
-
-      .ng-arrow {
-        border-color: transparent transparent var(--dropdownLinkActive-color);
-      }
-    }
-
-    ::ng-deep .ng-dropdown-panel {
-      box-shadow: 0 1px 0.125rem rgba(0, 0, 0, 0.5);
-      border-color: var(--dropdownPanel-border-color);
-      background-color: var(--dropdownOption-bg-color);
-
-      .ng-dropdown-panel-items .ng-option {
-        background-color: var(--dropdownOption-bg-color);
-        color: var(--dropdownOption-font-color);
-
-        &:hover,
-        &.ng-option-selected {
-          background-color: var(--dropdownOptionSelected-bg-color);
-        }
-      }
-
-      &.ng-select-bottom {
-        border-top-color: var(--dropdownLink-color);
-      }
-
-      &.ng-select-top {
-        border-bottom-color: var(--dropdownLink-color);
-      }
-    }
-  }
+.dropdown .dropdown-toggle:not(.btn) {
+  padding: 0 1.0rem 0 0;
 }

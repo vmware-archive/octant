@@ -2,50 +2,52 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-$navigation-width: 13rem;
-
 .main-container {
   // Navigation's color variables for Light Theme.
   :host-context(body) {
     --navigation-border-color: rgb(215, 215, 215);
-    --navigation-background-color: #0079ad;
+    --navigation-background-color: #0079AD;
   }
 
   // Navigation's color variables for Dark Theme.
   :host-context(body.dark) {
-    --navigation-border-color: #0e161b;
-    --navigation-background-color: #0e161b;
+    --navigation-border-color: #304250;
+    --navigation-background-color: #304250;
+  }
+
+  .header-centered {
+    margin: auto 0;
   }
 
   .header {
     background: var(--navigation-background-color);
 
-    .branding {
-      min-width: $navigation-width;
-    }
-
     .header-nav {
       padding-left: 1rem;
 
+      .namespace-switcher,
       .input-filter {
         margin-right: 10px;
+      }
+
+      .namespace-switcher {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin-right: 20px;
+      }
+
+      .input-filter {
         z-index: 999; // clarity's data-grid beats this
         width: 300px;
       }
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
     }
   }
 
   .content-container {
     .navigation {
       border-right: 1px solid var(--navigation-border-color);
-      overflow-y: auto;
-      min-width: 2rem;
-      width: $navigation-width;
     }
 
     .content-area {

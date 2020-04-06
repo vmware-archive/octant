@@ -18,6 +18,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/generator"
 	"github.com/vmware-tanzu/octant/internal/module"
 	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/pkg/icon"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -95,8 +96,9 @@ func (m *Module) Navigation(ctx context.Context, namespace, root string) ([]navi
 	rootPath := path.Join(m.ContentPath(), "namespace", namespace)
 
 	rootNav := navigation.Navigation{
-		Title: "Workloads",
-		Path:  rootPath,
+		Title:    "Applications",
+		Path:     rootPath,
+		IconName: icon.Applications,
 	}
 
 	return []navigation.Navigation{rootNav}, nil
