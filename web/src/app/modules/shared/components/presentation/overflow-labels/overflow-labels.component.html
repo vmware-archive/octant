@@ -1,13 +1,16 @@
 <div class="labels-wrapper" *ngIf="labels">
-  <ng-container *ngFor="let label of showLabels; trackBy: trackByIdentity">
-    <span
-      *ngFor="let item of label | keyvalue; trackBy: trackByIdentity"
-      class="label label-light-blue clickable"
-      (click)="filterLabel(item.key, item.value)"
-    >
-      {{ item.key }}:{{ item.value }}
-    </span>
-  </ng-container>
+  <div class="labels-container">
+    <ng-container *ngFor="let label of showLabels; trackBy: trackByIdentity">
+        <span
+          *ngFor="let item of label | keyvalue; trackBy: trackByIdentity"
+          class="label label-light-blue clickable"
+          [title]="item.key+':'+item.value"
+          (click)="filterLabel(item.key, item.value)"
+        >
+          {{ item.key }}:{{ item.value }}
+        </span>
+    </ng-container>
+  </div>
 
   <clr-signpost *ngIf="overflowLabels && overflowLabels.length > 0">
     <span class="badge badge-light-blue" clrSignpostTrigger>

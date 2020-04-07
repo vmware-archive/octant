@@ -1,9 +1,27 @@
 /* Copyright (c) 2019 the Octant contributors. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
- 
-.labels-wrapper .label.clickable {
-  cursor: pointer;
+
+.labels-wrapper {
+  display: flex;
+  align-items: center;
+
+  .labels-container {
+    display: grid;
+    grid-auto-flow: column;
+
+    .label {
+      display: inline-block;
+      line-height: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      &.clickable {
+        cursor: pointer;
+      }
+    }
+  }
 }
 
 .signpost {
