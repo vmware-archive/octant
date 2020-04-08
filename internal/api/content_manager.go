@@ -23,8 +23,8 @@ import (
 )
 
 const (
-	RequestSetContentPath = "setContentPath"
-	RequestSetNamespace   = "setNamespace"
+	RequestSetContentPath = "action.octant.dev/setContentPath"
+	RequestSetNamespace   = "action.octant.dev/setNamespace"
 )
 
 // ContentManagerOption is an option for configuring ContentManager.

@@ -377,7 +377,7 @@ func CreateFiltersUpdate(filters []octant.Filter) octant.Event {
 	if filters == nil {
 		filters = make([]octant.Filter, 0)
 	}
-	return CreateEvent("filters", action.Payload{
+	return CreateEvent("event.octant.dev/filters", action.Payload{
 		"filters": filters,
 	})
 }
