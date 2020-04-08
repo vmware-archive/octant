@@ -29,9 +29,12 @@ describe('LabelFilterService', () => {
         const filter = { key: 'foo', value: 'bar' };
         service.add(filter);
 
-        expect(websocketService.sendMessage).toHaveBeenCalledWith('addFilter', {
-          filter,
-        });
+        expect(websocketService.sendMessage).toHaveBeenCalledWith(
+          'action.octant.dev/addFilter',
+          {
+            filter,
+          }
+        );
       }
     ));
   });
@@ -46,7 +49,7 @@ describe('LabelFilterService', () => {
         service.remove(filter);
 
         expect(websocketService.sendMessage).toHaveBeenCalledWith(
-          'removeFilter',
+          'action.octant.dev/removeFilter',
           {
             filter,
           }
@@ -64,7 +67,7 @@ describe('LabelFilterService', () => {
         service.clear();
 
         expect(websocketService.sendMessage).toHaveBeenCalledWith(
-          'clearFilters',
+          'action.octant.dev/clearFilters',
           {}
         );
       }

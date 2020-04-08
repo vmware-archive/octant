@@ -32,7 +32,7 @@ describe('NamespaceService', () => {
         svc.setNamespace('other');
 
         expect(websocketService.sendMessage).toHaveBeenCalledWith(
-          'setNamespace',
+          'action.octant.dev/setNamespace',
           {
             namespace: 'other',
           }
@@ -45,7 +45,7 @@ describe('NamespaceService', () => {
     it('triggers the list subject', inject(
       [NamespaceService, WebsocketService],
       (svc: NamespaceService, backendService: BackendService) => {
-        backendService.triggerHandler('namespaces', {
+        backendService.triggerHandler('event.octant.dev/namespaces', {
           namespaces: ['foo', 'bar'],
         });
         svc.availableNamespaces.subscribe(current =>

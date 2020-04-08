@@ -35,7 +35,7 @@ func NewTerminalCommandExec(logger log.Logger, objectStore store.Store, terminal
 
 // ActionName returns the name of this action.
 func (t *TerminalCommandExec) ActionName() string {
-	return "overview/commandExec"
+	return "action.octant.dev/commandExec"
 }
 
 // Handle executing a command.

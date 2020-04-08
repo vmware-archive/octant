@@ -33,7 +33,7 @@ export class NamespaceService {
     private websocketService: WebsocketService,
     private notifierService: NotifierService
   ) {
-    websocketService.registerHandler('namespaces', data => {
+    websocketService.registerHandler('event.octant.dev/namespaces', data => {
       const update = data as UpdateNamespacesMessage;
       this.availableNamespaces.next(update.namespaces);
 
@@ -41,7 +41,9 @@ export class NamespaceService {
     });
 
     this.activeNamespace.subscribe(namespace => {
-      websocketService.sendMessage('setNamespace', { namespace });
+      websocketService.sendMessage('action.octant.dev/setNamespace', {
+        namespace,
+      });
     });
 
     this.notifierSession = this.notifierService.createSession();

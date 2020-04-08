@@ -26,26 +26,26 @@ export class LabelFilterService {
     private router: Router,
     private websocketService: WebsocketService
   ) {
-    websocketService.registerHandler('filters', data => {
+    websocketService.registerHandler('event.octant.dev/filters', data => {
       const update = data as UpdateFilters;
       this.filters.next(update.filters);
     });
   }
 
   add(filter: Filter): void {
-    this.websocketService.sendMessage('addFilter', {
+    this.websocketService.sendMessage('action.octant.dev/addFilter', {
       filter,
     });
   }
 
   remove(filter: Filter): void {
-    this.websocketService.sendMessage('removeFilter', {
+    this.websocketService.sendMessage('action.octant.dev/removeFilter', {
       filter,
     });
   }
 
   clear(): void {
-    this.websocketService.sendMessage('clearFilters', {});
+    this.websocketService.sendMessage('action.octant.dev/clearFilters', {});
   }
 
   decodeFilter(filterSource: string): Filter | null {

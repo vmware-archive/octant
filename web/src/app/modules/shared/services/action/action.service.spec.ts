@@ -37,7 +37,7 @@ describe('ActionService', () => {
       const update = { foo: 'bar' };
       service.perform(update);
       expect(websocketService.sendMessage).toHaveBeenCalledWith(
-        'performAction',
+        'action.octant.dev/performAction',
         update
       );
     });

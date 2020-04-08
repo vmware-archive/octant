@@ -49,7 +49,7 @@ export class WebsocketService implements BackendService {
   constructor(notifierService: NotifierService) {
     this.notifierSession = notifierService.createSession();
 
-    this.registerHandler('alert', data => {
+    this.registerHandler('event.octant.dev/alert', data => {
       const alert = data as Alert;
       const id = this.notifierSession.pushSignal(alert.type, alert.message);
       if (alert.expiration) {

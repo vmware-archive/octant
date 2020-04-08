@@ -7,7 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 import { WebsocketService } from '../websocket/websocket.service';
 import { take } from 'rxjs/operators';
 
-export const KubeContextMessage = 'kubeConfig';
+export const KubeContextMessage = 'event.octant.dev/kubeConfig';
 
 export interface ContextDescription {
   name: string;
@@ -58,7 +58,7 @@ export class KubeContextService {
   }
 
   private updateContext(name: string) {
-    this.websocketService.sendMessage('setContext', {
+    this.websocketService.sendMessage('action.octant.dev/setContext', {
       requestedContext: name,
     });
   }
