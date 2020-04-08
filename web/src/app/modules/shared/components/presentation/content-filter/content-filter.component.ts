@@ -35,15 +35,15 @@ export class ContentFilterComponent
       .filter(([_, value]) => value)
       .map(([key, _]) => key);
 
-    if (!row[this.column]) {
+    if (!row.data[this.column]) {
       return false;
     }
 
-    if (row[this.column].metadata.type !== 'text') {
+    if (row.data[this.column].metadata.type !== 'text') {
       return false;
     }
 
-    const view = row[this.column] as TextView;
+    const view = row.data[this.column] as TextView;
     return selected.includes(view.config.value);
   }
 
