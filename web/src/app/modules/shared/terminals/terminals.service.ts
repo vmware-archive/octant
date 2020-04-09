@@ -33,7 +33,7 @@ export class TerminalOutputStreamer {
 
   private terminalUrl(): string {
     return [
-      'event.octant.dev/',
+      'event.octant.dev',
       'terminals',
       `namespace/${this.namespace}`,
       `pod/${this.pod}`,
