@@ -53,7 +53,7 @@ func TestNewContainerEditor(t *testing.T) {
 
 	ctx := context.Background()
 
-	payload := action.CreatePayload("overview/containerEditor", map[string]interface{}{
+	payload := action.CreatePayload(ActionOverviewContainerEditor, map[string]interface{}{
 		"apiVersion":     "apps/v1",
 		"kind":           "Deployment",
 		"namespace":      "default",

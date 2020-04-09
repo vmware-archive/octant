@@ -37,7 +37,7 @@ func NewContainerEditor(objectStore store.Store) *ContainerEditor {
 
 // ActionName returns name of this action.
 func (e *ContainerEditor) ActionName() string {
-	return "overview/containerEditor"
+	return "action.octant.dev/containerEditor"
 }
 
 // Handle edits a container. Supported edits:

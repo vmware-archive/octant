@@ -44,7 +44,7 @@ func NewCordon(objectStore store.Store, clusterClient cluster.ClientInterface) *
 
 // ActionName returns the name of this action
 func (c *Cordon) ActionName() string {
-	return "overview/cordon"
+	return "action.octant.dev/cordon"
 }
 
 // Handle executing cordon
@@ -147,7 +147,7 @@ func NewUncordon(objectStore store.Store, clusterClient cluster.ClientInterface)
 
 // ActionName returns the name of this action
 func (u *Uncordon) ActionName() string {
-	return "overview/uncordon"
+	return "action.octant.dev/uncordon"
 }
 
 // Handle executing uncordon

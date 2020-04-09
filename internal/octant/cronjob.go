@@ -42,7 +42,7 @@ func NewCronJobTrigger(objectStore store.Store, clusterClient cluster.ClientInte
 
 // ActionName returns the name of this action
 func (c *CronJobTrigger) ActionName() string {
-	return "overview/cronjob"
+	return "action.octant.dev/cronJob"
 }
 
 // Handle executing cronjob

@@ -54,7 +54,7 @@ func TestServiceConfigurationEditor(t *testing.T) {
 		})
 
 	configurationEditor := NewServiceConfigurationEditor(objectStore)
-	assert.Equal(t, "overview/serviceEditor", configurationEditor.ActionName())
+	assert.Equal(t, ActionOverviewServiceEditor, configurationEditor.ActionName())
 
 	ctx := context.Background()
 

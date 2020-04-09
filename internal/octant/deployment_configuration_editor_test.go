@@ -56,7 +56,7 @@ func TestDeploymentConfigurationEditor(t *testing.T) {
 		})
 
 	configurationEditor := NewDeploymentConfigurationEditor(logger, objectStore)
-	assert.Equal(t, "deployment/configuration", configurationEditor.ActionName())
+	assert.Equal(t, ActionDeploymentConfiguration, configurationEditor.ActionName())
 
 	ctx := context.Background()
 

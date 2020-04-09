@@ -34,7 +34,7 @@ func NewDeploymentConfigurationEditor(logger log.Logger, objectStore store.Store
 
 // ActionName returns the action name for this editor.
 func (e *DeploymentConfigurationEditor) ActionName() string {
-	return "deployment/configuration"
+	return "action.octant.dev/deploymentConfiguration"
 }
 
 // Handle edits a deployment. Supported edits:

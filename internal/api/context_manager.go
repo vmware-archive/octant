@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	RequestSetContext = "setContext"
+	RequestSetContext = "action.octant.dev/setContext"
 )
 
 // ContextManagerOption is an option for configuring ContextManager.

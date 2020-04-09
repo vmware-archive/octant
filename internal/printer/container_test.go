@@ -8,6 +8,7 @@ package printer
 import (
 	"context"
 	"fmt"
+	"github.com/vmware-tanzu/octant/internal/octant"
 	"reflect"
 	"testing"
 	"time"
@@ -471,7 +472,7 @@ func Test_editContainerAction(t *testing.T) {
 	got, err := editContainerAction(deployment, &container)
 	require.NoError(t, err)
 
-	form, err := component.CreateFormForObject("overview/containerEditor", deployment,
+	form, err := component.CreateFormForObject(octant.ActionOverviewContainerEditor, deployment,
 		component.NewFormFieldText("Image", "containerImage", container.Image),
 		component.NewFormFieldHidden("containersPath", `["spec","template","spec","containers"]`),
 		component.NewFormFieldHidden("containerName", container.Name),

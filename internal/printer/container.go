@@ -13,6 +13,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/vmware-tanzu/octant/internal/octant"
+
 	"github.com/vmware-tanzu/octant/internal/portforward"
 
 	"github.com/pkg/errors"
@@ -487,7 +489,7 @@ func editContainerAction(owner runtime.Object, container *corev1.Container) (com
 		return component.Action{}, err
 	}
 
-	form, err := component.CreateFormForObject("overview/containerEditor", owner,
+	form, err := component.CreateFormForObject(octant.ActionOverviewContainerEditor, owner,
 		component.NewFormFieldText("Image", "containerImage", container.Image),
 		component.NewFormFieldHidden("containersPath", string(containersPathData)),
 		component.NewFormFieldHidden("containerName", container.Name),

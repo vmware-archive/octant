@@ -8,6 +8,7 @@ package printer
 import (
 	"context"
 	"fmt"
+	"github.com/vmware-tanzu/octant/internal/octant"
 	"strconv"
 
 	"github.com/pkg/errors"
@@ -39,7 +40,7 @@ func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opt
 		buttonGroup := component.NewButtonGroup()
 		buttonGroup.AddButton(
 			component.NewButton("Trigger",
-				action.CreatePayload("overview/cronjob", action.Payload{
+				action.CreatePayload(octant.ActionOverviewCronjob, action.Payload{
 					"namespace":  c.Namespace,
 					"apiVersion": c.APIVersion,
 					"kind":       c.Kind,
