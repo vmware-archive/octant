@@ -109,7 +109,13 @@ func podTemplateContainers(ctx context.Context, fl *flexlayout.FlexLayout, optio
 	width := component.WidthHalf
 
 	for index, container := range options.containers {
-		containerConfig := NewContainerConfiguration(ctx, options.parent, &container, portForwarder, options.isInit, options.printOptions)
+		containerConfig := NewContainerConfiguration(
+			ctx, options.parent, &container, portForwarder,
+			IsInit(options.isInit),
+			WithPrintOptions(options.printOptions),
+			WithActions(editContainerAction),
+		)
+
 		summary, err := containerConfig.Create()
 		if err != nil {
 			return err

@@ -749,7 +749,7 @@ func (p *podHandler) Containers(ctx context.Context, options Options) error {
 
 func defaultPodContainers(ctx context.Context, pod *corev1.Pod, container *corev1.Container, isInit bool, options Options) (*component.Summary, error) {
 	portForwarder := options.DashConfig.PortForwarder()
-	creator := NewContainerConfiguration(ctx, pod, container, portForwarder, isInit, options)
+	creator := NewContainerConfiguration(ctx, pod, container, portForwarder, IsInit(isInit), WithPrintOptions(options))
 	return creator.Create()
 }
 

@@ -51,7 +51,7 @@ func (jt *JobTemplate) AddToFlexLayout(fl *flexlayout.FlexLayout, options Option
 	containerSection := fl.AddSection()
 
 	for _, container := range jt.jobTemplateSpec.Spec.Template.Spec.Containers {
-		containerConfig := NewContainerConfiguration(jt.context, jt.parent, &container, portForwarder, false, options)
+		containerConfig := NewContainerConfiguration(jt.context, jt.parent, &container, portForwarder, IsInit(false), WithPrintOptions(options))
 		summary, err := containerConfig.Create()
 		if err != nil {
 			return err
