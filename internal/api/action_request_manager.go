@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	RequestPerformAction = "performAction"
+	RequestPerformAction = "action.octant.dev/performAction"
 )
 
 // ActionRequestManager manages action requests. Action requests allow a generic interface

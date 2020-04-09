@@ -8,6 +8,7 @@ package printer
 import (
 	"context"
 	"fmt"
+	"github.com/vmware-tanzu/octant/internal/octant"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -237,7 +238,7 @@ func editServiceAction(ctx context.Context, service *corev1.Service, options Opt
 		}
 	}
 
-	form, err := component.CreateFormForObject("overview/serviceEditor", service,
+	form, err := component.CreateFormForObject(octant.ActionOverviewServiceEditor, service,
 		component.NewFormFieldSelect("Selectors", "selectors", choices, true))
 	if err != nil {
 		return component.Action{}, err

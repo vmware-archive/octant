@@ -7,6 +7,7 @@ package printer
 
 import (
 	"context"
+	"github.com/vmware-tanzu/octant/internal/octant"
 	"testing"
 	"time"
 
@@ -371,7 +372,7 @@ func Test_editDeploymentAction(t *testing.T) {
 				component.NewFormFieldHidden("kind", kind),
 				component.NewFormFieldHidden("name", deployment.Name),
 				component.NewFormFieldHidden("namespace", deployment.Namespace),
-				component.NewFormFieldHidden("action", "deployment/configuration"),
+				component.NewFormFieldHidden("action", octant.ActionDeploymentConfiguration),
 			},
 		},
 	}

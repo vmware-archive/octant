@@ -33,7 +33,7 @@ func NewServiceConfigurationEditor(objectStore store.Store) *ServiceConfiguratio
 
 // ActionName returns the name of this action.
 func (s *ServiceConfigurationEditor) ActionName() string {
-	return "overview/serviceEditor"
+	return "action.octant.dev/serviceEditor"
 }
 
 // Handle edits a service: Supported edits:

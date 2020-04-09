@@ -95,9 +95,9 @@ func Test_Cordon(t *testing.T) {
 			require.NoError(t, err)
 
 			cordon := octant.NewCordon(objectStore, clusterClient)
-			assert.Equal(t, "overview/cordon", cordon.ActionName())
+			assert.Equal(t, octant.ActionOverviewCordon, cordon.ActionName())
 
-			payload := action.CreatePayload("overview/cordon", map[string]interface{}{
+			payload := action.CreatePayload(octant.ActionOverviewCordon, map[string]interface{}{
 				"apiVersion": "v1",
 				"kind":       "Node",
 				"name":       tc.key.Name,
@@ -178,16 +178,16 @@ func Test_Uncordon(t *testing.T) {
 			_, err := fakeClientset.CoreV1().Nodes().Create(node)
 			require.NoError(t, err)
 
-			cordon := octant.NewUncordon(objectStore, clusterClient)
-			assert.Equal(t, "overview/uncordon", cordon.ActionName())
+			uncordon := octant.NewUncordon(objectStore, clusterClient)
+			assert.Equal(t, octant.ActionOverviewUncordon, uncordon.ActionName())
 
-			payload := action.CreatePayload("overview/uncordon", map[string]interface{}{
+			payload := action.CreatePayload(octant.ActionOverviewUncordon, map[string]interface{}{
 				"apiVersion": "v1",
 				"kind":       "Node",
 				"name":       tc.key.Name,
 			})
 
-			require.NoError(t, cordon.Handle(ctx, alerter, payload))
+			require.NoError(t, uncordon.Handle(ctx, alerter, payload))
 		})
 	}
 }

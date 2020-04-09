@@ -8,6 +8,7 @@ package printer
 import (
 	"context"
 	"fmt"
+	"github.com/vmware-tanzu/octant/internal/octant"
 
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
@@ -261,7 +262,7 @@ func editDeploymentAction(deployment *appsv1.Deployment) ([]component.Action, er
 		return []component.Action{}, nil
 	}
 
-	form, err := component.CreateFormForObject("deployment/configuration", deployment,
+	form, err := component.CreateFormForObject(octant.ActionDeploymentConfiguration, deployment,
 		component.NewFormFieldNumber("Replicas", "replicas", fmt.Sprintf("%d", *replicas)),
 	)
 	if err != nil {

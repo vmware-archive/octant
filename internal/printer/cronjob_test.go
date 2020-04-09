@@ -7,6 +7,7 @@ package printer
 
 import (
 	"context"
+	"github.com/vmware-tanzu/octant/internal/octant"
 	"testing"
 	"time"
 
@@ -70,7 +71,7 @@ func Test_CronJobListHandler(t *testing.T) {
 	buttonGroup := component.NewButtonGroup()
 	buttonGroup.AddButton(
 		component.NewButton("Trigger",
-			action.CreatePayload("overview/cronjob", action.Payload{
+			action.CreatePayload(octant.ActionOverviewCronjob, action.Payload{
 				"namespace":  cronJob.Namespace,
 				"apiVersion": cronJob.APIVersion,
 				"kind":       cronJob.Kind,

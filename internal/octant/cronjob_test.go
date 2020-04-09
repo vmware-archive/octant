@@ -76,9 +76,9 @@ func Test_CronJobTrigger(t *testing.T) {
 	require.NoError(t, err)
 
 	trigger := octant.NewCronJobTrigger(objectStore, clusterClient)
-	assert.Equal(t, "overview/cronjob", trigger.ActionName())
+	assert.Equal(t, octant.ActionOverviewCronjob, trigger.ActionName())
 
-	payload := action.CreatePayload("overview/cronjob", map[string]interface{}{
+	payload := action.CreatePayload(octant.ActionOverviewCronjob, map[string]interface{}{
 		"namespace":  key.Namespace,
 		"apiVersion": key.APIVersion,
 		"kind":       key.Kind,
