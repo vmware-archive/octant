@@ -15,6 +15,7 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -241,6 +242,10 @@ func createNetworkPolicySummaryStatus(networkPolicy *networkingv1.NetworkPolicy)
 
 	summary := component.NewSummary("Status", []component.SummarySection{
 		{
+			Header:  "Summary",
+			Content: policyDescriber(networkPolicy),
+		},
+		{
 			Header:  "Allowing ingress traffic",
 			Content: ingressTable,
 		},
@@ -393,14 +398,18 @@ func createNetworkPodListView(ctx context.Context, networkPolicy *networkingv1.N
 					}
 
 					if peer.PodSelector != nil {
-						podSelectorList = append(podSelectorList, peer.NamespaceSelector)
+						podSelectorList = append(podSelectorList, peer.PodSelector)
 					}
 				}
 			}
 		}
 	}
 
-	// Check for matching namespaces
+	// Case with only pod selectors
+	if len(selectorsList) == 0 {
+		keyList = append(keyList, store.Key{Namespace: networkPolicy.Namespace, APIVersion: "v1", Kind: "Pod"})
+	}
+	// Case with namespace and pod selectors
 	for _, selector := range selectorsList {
 		s, err := metav1.LabelSelectorAsMap(selector)
 		if err != nil {
@@ -440,6 +449,85 @@ func createNetworkPodListView(ctx context.Context, networkPolicy *networkingv1.N
 	}
 
 	return PodListHandler(ctx, podList, options)
+}
+
+func policyDescriber(networkPolicy *networkingv1.NetworkPolicy) *component.Text {
+	policyMap := map[*networkingv1.NetworkPolicySpec]string{
+		&networkingv1.NetworkPolicySpec{
+			PodSelector: metav1.LabelSelector{},
+			Ingress: []networkingv1.NetworkPolicyIngressRule{
+				{},
+			},
+		}: "Deny all traffic from all other namespaces",
+	}
+
+	if &networkPolicy.Spec.PodSelector != nil {
+		podSelectorPolicyMap := map[*networkingv1.NetworkPolicySpec]string{
+			&networkingv1.NetworkPolicySpec{
+				PodSelector: networkPolicy.Spec.PodSelector,
+				Ingress:     []networkingv1.NetworkPolicyIngressRule{},
+			}: "Deny all traffic to application",
+			&networkingv1.NetworkPolicySpec{
+				PodSelector: networkPolicy.Spec.PodSelector,
+				Ingress: []networkingv1.NetworkPolicyIngressRule{
+					{},
+				},
+			}: "Allow all traffic to application",
+			&networkingv1.NetworkPolicySpec{
+				PodSelector: networkPolicy.Spec.PodSelector,
+				Ingress: []networkingv1.NetworkPolicyIngressRule{
+					{
+						From: []networkingv1.NetworkPolicyPeer{
+							{
+								NamespaceSelector: &metav1.LabelSelector{},
+							},
+						},
+					},
+				},
+			}: "Allow traffic to application from all namespaces",
+			&networkingv1.NetworkPolicySpec{
+				PodSelector: networkPolicy.Spec.PodSelector,
+				Ingress: []networkingv1.NetworkPolicyIngressRule{
+					{
+						From: []networkingv1.NetworkPolicyPeer{},
+					},
+				},
+				PolicyTypes: []networkingv1.PolicyType{
+					networkingv1.PolicyTypeIngress,
+				},
+			}: "Allow traffic from external clients",
+		}
+
+		for k, v := range podSelectorPolicyMap {
+			policyMap[k] = v
+		}
+
+		if networkPolicy.Spec.Egress != nil {
+			for _, egress := range networkPolicy.Spec.Egress {
+				for _, peer := range egress.To {
+					if peer.NamespaceSelector != nil {
+						denyExternalSpec := &networkingv1.NetworkPolicySpec{
+							PodSelector: networkPolicy.Spec.PodSelector,
+							Egress:      networkPolicy.Spec.Egress,
+							PolicyTypes: []networkingv1.PolicyType{
+								networkingv1.PolicyTypeEgress,
+							},
+						}
+
+						policyMap[denyExternalSpec] = "Deny external egress traffic"
+					}
+				}
+			}
+		}
+	}
+
+	for policySpec, policyDescription := range policyMap {
+		if apiequality.Semantic.DeepEqual(&networkPolicy.Spec, policySpec) {
+			return component.NewText(policyDescription)
+		}
+	}
+
+	return component.NewText("---")
 }
 
 func describeIPBlock(source interface{}) string {

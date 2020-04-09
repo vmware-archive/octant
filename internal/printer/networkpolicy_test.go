@@ -154,6 +154,7 @@ func Test_NetworkPolicySummaryStatus(t *testing.T) {
 	require.NoError(t, err)
 
 	sections := component.SummarySections{
+		{Header: "Summary", Content: component.NewText("Deny all traffic to application")},
 		{Header: "Allowing ingress traffic", Content: ingressTable},
 		{Header: "Allowing egress traffic", Content: egressTable},
 	}
