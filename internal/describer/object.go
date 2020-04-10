@@ -8,6 +8,7 @@ package describer
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -114,7 +115,13 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 	accessor := meta.NewAccessor()
 	objectName, _ := accessor.Name(object)
 
-	title := append([]component.TitleComponent{}, component.NewText(d.baseTitle))
+	kind, _ := accessor.Kind(object)
+
+	nameLink, err := options.Link.ForObject(object, kind)
+	if err != nil {
+		return component.EmptyContentResponse, err
+	}
+	title := append([]component.TitleComponent{}, component.NewLink("", d.baseTitle, filepath.Dir(nameLink.Ref())))
 	if objectName != "" {
 		title = append(title, component.NewText(objectName))
 	}

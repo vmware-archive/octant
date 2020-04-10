@@ -38,7 +38,11 @@ export class ListComponent implements OnChanges {
     if (changes.view) {
       const current = changes.view.currentValue;
       this.title = this.viewService.viewTitleAsText(current);
-      this.iconName = this.iconService.load(current.config);
+      if (this.v.config.items) {
+        this.v.config.items.forEach(item => {
+          item.totalItems = this.v.config.items.length;
+        });
+      }
     }
   }
 }

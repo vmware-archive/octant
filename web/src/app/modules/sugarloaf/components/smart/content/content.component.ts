@@ -6,10 +6,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   OnDestroy,
   OnInit,
-  ViewChild,
 } from '@angular/core';
 import { Params, Router, UrlSegment } from '@angular/router';
 import {
@@ -17,9 +15,10 @@ import {
   ExtensionView,
   View,
   ButtonGroupView,
+  PathItem,
+  LinkView,
 } from 'src/app/modules/shared/models/content';
 import { IconService } from '../../../../shared/services/icon/icon.service';
-import { ViewService } from '../../../../shared/services/view/view.service';
 import { ContentService } from '../../../../shared/services/content/content.service';
 import isEqual from 'lodash/isEqual';
 import { Subscription } from 'rxjs';
@@ -33,7 +32,7 @@ import { Subscription } from 'rxjs';
 export class ContentComponent implements OnInit, OnDestroy {
   hasTabs = false;
   hasReceivedContent = false;
-  title: string = null;
+  title: PathItem[] = null;
   views: View[] = null;
   extView: ExtensionView = null;
   singleView: View = null;
@@ -47,7 +46,6 @@ export class ContentComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private iconService: IconService,
-    private viewService: ViewService,
     private contentService: ContentService
   ) {}
 
@@ -116,11 +114,13 @@ export class ContentComponent implements OnInit, OnDestroy {
     this.buttonGroup = contentResponse.content.buttonGroup;
 
     this.extView = contentResponse.content.extensionComponent;
-
     this.hasTabs = views.length > 1;
     if (this.hasTabs) {
       this.views = views;
-      this.title = this.viewService.titleAsText(contentResponse.content.title);
+      this.title = contentResponse.content.title.map((item: LinkView) => ({
+        title: item.config.value,
+        url: item.config.ref,
+      }));
     } else if (views.length === 1) {
       this.views = null;
       this.singleView = views[0];

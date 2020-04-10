@@ -1,0 +1,12 @@
+/* Copyright (c) 2020 the Octant contributors. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+.breadcrumb {
+  display: flex;
+
+  .separator {
+    margin-right: 0.2rem;
+    transform: rotate(90deg);
+  }
+}

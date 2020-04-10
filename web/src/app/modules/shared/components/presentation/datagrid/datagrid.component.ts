@@ -92,6 +92,13 @@ export class DatagridComponent implements OnChanges {
     const update = { ...payload, action: actionPath };
     this.actionService.perform(update);
   }
+
+  showTitle() {
+    if (this.view) {
+      return this.view.totalItems === undefined || this.view.totalItems > 1;
+    }
+    return true;
+  }
 }
 
 interface TableRowWithMetadata {

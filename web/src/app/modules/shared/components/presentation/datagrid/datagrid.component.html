@@ -1,4 +1,4 @@
-<h4>{{ title }}</h4>
+<h4 *ngIf="showTitle()">{{ title }}</h4>
 <clr-datagrid>
   <clr-dg-placeholder>
     <ng-container *ngIf="placeholder?.length > 0; else emptyPlaceholder">

@@ -7,6 +7,7 @@ package describer
 
 import (
 	"context"
+	"github.com/vmware-tanzu/octant/internal/link"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -50,9 +51,18 @@ func TestObjectDescriber(t *testing.T) {
 	podSummary := component.NewText("summary")
 	objectPrinter.EXPECT().Print(gomock.Any(), pod, pluginManager).Return(podSummary, nil)
 
+	dashConfig.EXPECT().
+		ObjectPath(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return("some-url", nil).
+		AnyTimes()
+
+	lnk, err := link.NewFromDashConfig(dashConfig)
+	require.NoError(t, err)
+
 	options := Options{
 		Dash:    dashConfig,
 		Printer: objectPrinter,
+		Link:       lnk,
 		LoadObject: func(ctx context.Context, namespace string, fields map[string]string, objectStoreKey store.Key) (*unstructured.Unstructured, error) {
 			return testutil.ToUnstructured(t, pod), nil
 		},
@@ -90,7 +100,7 @@ func TestObjectDescriber(t *testing.T) {
 			)))
 
 	expected := component.ContentResponse{
-		Title:      component.Title(component.NewText("object"), component.NewText("pod")),
+		Title:      component.Title(component.NewLink("", "object", "."), component.NewText("pod")),
 		IconName:   "icon-name",
 		IconSource: "icon-source",
 		Components: []component.Component{

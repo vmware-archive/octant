@@ -6,6 +6,7 @@ import { ClarityModule } from '@clr/angular';
 import { TitleComponent } from './components/presentation/title/title.component';
 import { AlertComponent } from './components/presentation/alert/alert.component';
 import { AnnotationsComponent } from './components/presentation/annotations/annotations.component';
+import { BreadcrumbComponent } from './components/presentation/breadcrumb/breadcrumb.component';
 import { CardComponent } from './components/presentation/card/card.component';
 import { CardListComponent } from './components/presentation/card-list/card-list.component';
 import { CodeComponent } from './components/presentation/code/code.component';
@@ -59,7 +60,6 @@ import { RouterModule } from '@angular/router';
 import { ResizableModule } from 'angular-resizable-element';
 import { highlightProvider } from './highlight';
 import { IndicatorComponent } from './components/presentation/indicator/indicator.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MonacoEditorModule } from 'ng-monaco-editor';
 import { FormatPathPipe } from './pipes/formatpath/formatpath.pipe';
 import { RelativePipe } from './pipes/relative/relative.pipe';
@@ -69,6 +69,7 @@ import { OverflowLabelsComponent } from './components/presentation/overflow-labe
   declarations: [
     AlertComponent,
     AnnotationsComponent,
+    BreadcrumbComponent,
     ButtonGroupComponent,
     CardComponent,
     CardListComponent,
@@ -142,6 +143,7 @@ import { OverflowLabelsComponent } from './components/presentation/overflow-labe
     FormatPathPipe,
     AlertComponent,
     AnnotationsComponent,
+    BreadcrumbComponent,
     ButtonGroupComponent,
     CardComponent,
     CardListComponent,

@@ -59,7 +59,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "batch/v1beta1", Kind: "CronJob"},
 		ListType:       &batchv1beta1.CronJobList{},
 		ObjectType:     &batchv1beta1.CronJob{},
-		Titles:         ResourceTitle{List: "Workloads / Cron Jobs", Object: "Cron Job"},
+		Titles:         ResourceTitle{List: "Cron Jobs", Object: "Cron Jobs"},
 		IconName:       icon.OverviewCronJob,
 	})
 
@@ -68,7 +68,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "apps/v1", Kind: "DaemonSet"},
 		ListType:       &appsv1.DaemonSetList{},
 		ObjectType:     &appsv1.DaemonSet{},
-		Titles:         ResourceTitle{List: "Workloads / Daemon Sets", Object: "Daemon Set"},
+		Titles:         ResourceTitle{List: "Daemon Sets", Object: "Daemon Sets"},
 		IconName:       icon.OverviewDaemonSet,
 	})
 
@@ -77,7 +77,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "apps/v1", Kind: "Deployment"},
 		ListType:       &appsv1.DeploymentList{},
 		ObjectType:     &appsv1.Deployment{},
-		Titles:         ResourceTitle{List: "Workloads / Deployments", Object: "Deployment"},
+		Titles:         ResourceTitle{List: "Deployments", Object: "Deployments"},
 		IconName:       icon.OverviewDeployment,
 	})
 
@@ -86,7 +86,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "batch/v1", Kind: "Job"},
 		ListType:       &batchv1.JobList{},
 		ObjectType:     &batchv1.Job{},
-		Titles:         ResourceTitle{List: "Workloads / Jobs", Object: "Job"},
+		Titles:         ResourceTitle{List: "Jobs", Object: "Jobs"},
 		IconName:       icon.OverviewJob,
 	})
 
@@ -95,7 +95,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "v1", Kind: "Pod"},
 		ListType:       &corev1.PodList{},
 		ObjectType:     &corev1.Pod{},
-		Titles:         ResourceTitle{List: "Workloads / Pods", Object: "Pod"},
+		Titles:         ResourceTitle{List: "Pods", Object: "Pods"},
 		IconName:       icon.OverviewPod,
 	})
 
@@ -104,7 +104,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "apps/v1", Kind: "ReplicaSet"},
 		ListType:       &appsv1.ReplicaSetList{},
 		ObjectType:     &appsv1.ReplicaSet{},
-		Titles:         ResourceTitle{List: "Workloads / Replica Sets", Object: "Replica Set"},
+		Titles:         ResourceTitle{List: "Replica Sets", Object: "Replica Sets"},
 		IconName:       icon.OverviewReplicaSet,
 	})
 
@@ -113,7 +113,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "v1", Kind: "ReplicationController"},
 		ListType:       &corev1.ReplicationControllerList{},
 		ObjectType:     &corev1.ReplicationController{},
-		Titles:         ResourceTitle{List: "Workloads / Replication Controllers", Object: "Replication Controller"},
+		Titles:         ResourceTitle{List: "Replication Controllers", Object: "Replication Controllers"},
 		IconName:       icon.OverviewReplicationController,
 	})
 	workloadsStatefulSets := NewResource(ResourceOptions{
@@ -121,7 +121,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "apps/v1", Kind: "StatefulSet"},
 		ListType:       &appsv1.StatefulSetList{},
 		ObjectType:     &appsv1.StatefulSet{},
-		Titles:         ResourceTitle{List: "Workloads / Stateful Sets", Object: "Stateful Set"},
+		Titles:         ResourceTitle{List: "Stateful Sets", Object: "Stateful Sets"},
 		IconName:       icon.OverviewStatefulSet,
 	})
 
@@ -143,7 +143,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "autoscaling/v1", Kind: "HorizontalPodAutoscaler"},
 		ListType:       &autoscalingv1.HorizontalPodAutoscalerList{},
 		ObjectType:     &autoscalingv1.HorizontalPodAutoscaler{},
-		Titles:         ResourceTitle{List: "Discovery & Load Balancing / Horizontal Pod Autoscaler", Object: "Horizontal Pod Autoscaler"},
+		Titles:         ResourceTitle{List: "Horizontal Pod Autoscalers", Object: "Horizontal Pod Autoscalers"},
 		IconName:       icon.OverviewHorizontalPodAutoscaler,
 	})
 
@@ -152,7 +152,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "extensions/v1beta1", Kind: "Ingress"},
 		ListType:       &v1beta1.IngressList{},
 		ObjectType:     &v1beta1.Ingress{},
-		Titles:         ResourceTitle{List: "Discovery & Load Balancing / Ingresses", Object: "Ingress"},
+		Titles:         ResourceTitle{List: "Ingresses", Object: "Ingresses"},
 		IconName:       icon.OverviewIngress,
 	})
 
@@ -161,7 +161,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "v1", Kind: "Service"},
 		ListType:       &corev1.ServiceList{},
 		ObjectType:     &corev1.Service{},
-		Titles:         ResourceTitle{List: "Discovery & Load Balancing / Services", Object: "Service"},
+		Titles:         ResourceTitle{List: " Services", Object: "Services"},
 		IconName:       icon.OverviewService,
 	})
 
@@ -188,7 +188,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "v1", Kind: "ConfigMap"},
 		ListType:       &corev1.ConfigMapList{},
 		ObjectType:     &corev1.ConfigMap{},
-		Titles:         ResourceTitle{List: "Config & Storage / Config Maps", Object: "Config Map"},
+		Titles:         ResourceTitle{List: "Config Maps", Object: "Config Maps"},
 		IconName:       icon.OverviewConfigMap,
 	})
 
@@ -197,7 +197,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "v1", Kind: "PersistentVolumeClaim"},
 		ListType:       &corev1.PersistentVolumeClaimList{},
 		ObjectType:     &corev1.PersistentVolumeClaim{},
-		Titles:         ResourceTitle{List: "Config & Storage / Persistent Volume Claims", Object: "Persistent Volume Claim"},
+		Titles:         ResourceTitle{List: "Persistent Volume Claims", Object: "Persistent Volume Claims"},
 		IconName:       icon.OverviewPersistentVolumeClaim,
 	})
 
@@ -206,7 +206,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "v1", Kind: "Secret"},
 		ListType:       &corev1.SecretList{},
 		ObjectType:     &corev1.Secret{},
-		Titles:         ResourceTitle{List: "Config & Storage / Secrets", Object: "Secret"},
+		Titles:         ResourceTitle{List: "Secrets", Object: "Secrets"},
 		IconName:       icon.OverviewSecret,
 	})
 
@@ -215,7 +215,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "v1", Kind: "ServiceAccount"},
 		ListType:       &corev1.ServiceAccountList{},
 		ObjectType:     &corev1.ServiceAccount{},
-		Titles:         ResourceTitle{List: "Config & Storage / Service Accounts", Object: "Service Account"},
+		Titles:         ResourceTitle{List: "Service Accounts", Object: "Service Accounts"},
 		IconName:       icon.OverviewServiceAccount,
 	})
 
@@ -233,7 +233,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "Role"},
 		ListType:       &rbacv1.RoleList{},
 		ObjectType:     &rbacv1.Role{},
-		Titles:         ResourceTitle{List: "RBAC / Roles", Object: "Role"},
+		Titles:         ResourceTitle{List: "Roles", Object: "Roles"},
 		IconName:       icon.OverviewRole,
 	})
 
@@ -242,7 +242,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "rbac.authorization.k8s.io/v1", Kind: "RoleBinding"},
 		ListType:       &rbacv1.RoleBindingList{},
 		ObjectType:     &rbacv1.RoleBinding{},
-		Titles:         ResourceTitle{List: "RBAC / Role Bindings", Object: "Role Binding"},
+		Titles:         ResourceTitle{List: "Role Bindings", Object: "Role Bindings"},
 		IconName:       icon.OverviewRoleBinding,
 	})
 
@@ -258,7 +258,7 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey:        store.Key{APIVersion: "v1", Kind: "Event"},
 		ListType:              &corev1.EventList{},
 		ObjectType:            &corev1.Event{},
-		Titles:                ResourceTitle{List: "Events", Object: "Event"},
+		Titles:                ResourceTitle{List: "Events", Object: "Events"},
 		DisableResourceViewer: true,
 	})
 
