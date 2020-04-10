@@ -155,7 +155,7 @@ func (tm *manager) Create(ctx context.Context, logger log.Logger, key store.Key,
 		err = rc.Stream(opts)
 		if err != nil {
 			t.SetExitMessage(fmt.Sprintf("%s", err))
-			logger.Errorf("streaming: %+v", err)
+			logger.Debugf("streaming: %+v", err)
 		}
 		t.Stop()
 		logger.Debugf("stopping stream command")
