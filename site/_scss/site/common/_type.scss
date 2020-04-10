@@ -6,6 +6,11 @@ h4,
 h5,
 h6 {
   font-weight: $font-weight-medium;
+
+  a.anchor-link {
+    font-size: 0.55em;
+    vertical-align: middle;
+  }
 }
 
 h1,

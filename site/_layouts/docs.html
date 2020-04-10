@@ -31,7 +31,12 @@
               </div>
               <div class="col-md-8">
               <div class="documentation-container">
-                {% include anchor_headings.html html=content %}
+                {% include anchor_headings.html
+                     html=content
+                     anchorClass="anchor-link"
+                     anchorBody='<i class="fas fa-link"></i><noscript>#</noscript>'
+                     anchorAttrs='aria-label="Link to &quot;%heading%&quot;"'
+                %}
               </div>
               </div>
             </div>
