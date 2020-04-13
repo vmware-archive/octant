@@ -1,6 +1,6 @@
 {% capture headingsWorkspace %}
   {% comment %}
-    Version 1.0.4
+    Version 1.0.6
       https://github.com/allejo/jekyll-anchor-headings
 
     "Be the pull request you wish to see in the world." ~Ben Balter
@@ -13,7 +13,8 @@
 
     Optional Parameters:
       * beforeHeading (bool)   : false  - Set to true if the anchor should be placed _before_ the heading's content
-      * anchorAttrs   (string) :  ''    - Any custom HTML attributes that will be added to the `<a>` tag; you may NOT use `href`, `class` or `title`
+      * anchorAttrs   (string) :  ''    - Any custom HTML attributes that will be added to the `<a>` tag; you may NOT use `href`, `class` or `title`;
+                                          the `%heading%` placeholder is available
       * anchorBody    (string) :  ''    - The content that will be placed inside the anchor; the `%heading%` placeholder is available
       * anchorClass   (string) :  ''    - The class(es) that will be used for each anchor. Separate multiple classes with a space
       * anchorTitle   (string) :  ''    - The `title` attribute that will be used for anchors
@@ -43,11 +44,15 @@
     {% assign nextChar = node | replace: '"', '' | strip | slice: 0, 1 %}
     {% assign headerLevel = nextChar | times: 1 %}
 
-    <!-- If the level is cast to 0, it means it's not a h1-h6 tag, so let's try to fix it -->
+    <!-- If the level is cast to 0, it means it's not a h1-h6 tag, so let's see if we need to fix it -->
     {% if headerLevel == 0 %}
-      {% if nextChar != '<' and nextChar != '' %}
+      <!-- Split up the node based on closing angle brackets and get the first one. -->
+      {% assign firstChunk = node | split: '>' | first %}
+
+      <!-- If the first chunk does NOT contain a '<', that means we've broken another HTML tag that starts with 'h' -->
+      {% unless firstChunk contains '<' %}
         {% capture node %}<h{{ node }}{% endcapture %}
-      {% endif %}
+      {% endunless %}
 
       {% capture edited_headings %}{{ edited_headings }}{{ node }}{% endcapture %}
       {% continue %}
@@ -76,7 +81,7 @@
       {% endif %}
 
       {% if include.anchorAttrs %}
-        {% capture anchor %}{{ anchor }} {{ include.anchorAttrs }}{% endcapture %}
+        {% capture anchor %}{{ anchor }} {{ include.anchorAttrs | replace: '%heading%', header }}{% endcapture %}
       {% endif %}
 
       {% capture anchor %}<a {{ anchor }}>{{ include.anchorBody | replace: '%heading%', header | default: '' }}</a>{% endcapture %}
