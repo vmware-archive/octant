@@ -131,6 +131,8 @@ Plugins are a core part of Octant in the Kubernetes ecosystem. A plugin can read
 
 An example plugin can be found in [`cmd/octant-sample-plugin`](cmd/octant-sample-plugin) and installed to the default plugin path with `go run build.go install-test-plugin`.
 
+Some plugins can be found on GitHub in the [`#octant-plugin`](https://github.com/topics/octant-plugin) topic (tag).
+
 Documentation for plugin components can be found in the [Plugins section](https://octant.dev/docs/master/plugins/) of the documentation.
 
 ## Discussion
