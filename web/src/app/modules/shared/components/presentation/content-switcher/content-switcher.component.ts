@@ -3,7 +3,7 @@
 //
 
 import { Component, Input } from '@angular/core';
-import { View } from 'src/app/modules/shared/models/content';
+import { View } from '../../../../shared/models/content';
 import fixPassiveEvents from '../../fixPassiveEvents';
 
 @Component({

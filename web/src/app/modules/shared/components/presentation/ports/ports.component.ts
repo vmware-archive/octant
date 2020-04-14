@@ -12,7 +12,7 @@ import {
   SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
-import { PortsView, View } from 'src/app/modules/shared/models/content';
+import { PortsView, View } from '../../../../shared/models/content';
 
 @Component({
   selector: 'app-view-ports',

@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { CodeView, View } from 'src/app/modules/shared/models/content';
+import { CodeView, View } from '../../../models/content';
 
 @Component({
   selector: 'app-view-code',

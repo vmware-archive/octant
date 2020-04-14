@@ -12,7 +12,7 @@ import {
   Output,
 } from '@angular/core';
 
-import { NamespaceService } from 'src/app/modules/shared/services/namespace/namespace.service';
+import { NamespaceService } from '../../../../shared/services/namespace/namespace.service';
 import { PodStatus } from '../../../models/pod-status';
 import { Point } from '../../../models/point';
 import { Vector } from '../../../models/vector';

@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { View, YAMLView } from 'src/app/modules/shared/models/content';
+import { View, YAMLView } from '../../../../shared/models/content';
 
 @Component({
   selector: 'app-view-yaml',

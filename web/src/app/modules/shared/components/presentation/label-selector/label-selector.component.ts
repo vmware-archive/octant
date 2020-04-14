@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { LabelSelectorView, View } from 'src/app/modules/shared/models/content';
+import { LabelSelectorView, View } from '../../../../shared/models/content';
 
 @Component({
   selector: 'app-view-label-selector',

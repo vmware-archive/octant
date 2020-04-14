@@ -15,15 +15,11 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import {
-  LogEntry,
-  LogsView,
-  View,
-} from 'src/app/modules/shared/models/content';
+import { LogEntry, LogsView, View } from '../../../../shared/models/content';
 import {
   PodLogsService,
   PodLogsStreamer,
-} from 'src/app/modules/shared/pod-logs/pod-logs.service';
+} from '../../../../shared/pod-logs/pod-logs.service';
 import { formatDate } from '@angular/common';
 import { Subscription } from 'rxjs';
 

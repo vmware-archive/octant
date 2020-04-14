@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { LoadingView, View } from 'src/app/modules/shared/models/content';
+import { LoadingView, View } from '../../../../shared/models/content';
 
 @Component({
   selector: 'app-view-loading',

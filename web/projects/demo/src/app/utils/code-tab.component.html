@@ -1,0 +1,22 @@
+<div class="sample-code">
+  <clr-tabs>
+    <clr-tab>
+      <button clrTabLink>Preview</button>
+      <clr-tab-content *clrIfActive>
+        <app-content-switcher [view]="preview"></app-content-switcher>
+      </clr-tab-content>
+    </clr-tab>
+    <clr-tab>
+      <button clrTabLink>Code</button>
+      <clr-tab-content *clrIfActive>
+        <pre><code>{{ code }}</code></pre>
+      </clr-tab-content>
+    </clr-tab>
+    <clr-tab>
+      <button clrTabLink>JSON</button>
+      <clr-tab-content *clrIfActive>
+        <pre><code>{{ json }}</code></pre>
+      </clr-tab-content>
+    </clr-tab>
+  </clr-tabs>
+</div>

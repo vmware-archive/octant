@@ -17,9 +17,9 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   TerminalOutputService,
   TerminalOutputStreamer,
-} from 'src/app/modules/shared/terminals/terminals.service';
-import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
-import { TerminalView } from 'src/app/modules/shared/models/content';
+} from '../../../../shared/terminals/terminals.service';
+import trackByIdentity from '../../../../../util/trackBy/trackByIdentity';
+import { TerminalView } from '../../../../shared/models/content';
 import { WebsocketService } from '../../../services/websocket/websocket.service';
 import { ActionService } from '../../../services/action/action.service';
 

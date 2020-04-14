@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { LinkView, View } from 'src/app/modules/shared/models/content';
+import { LinkView, View } from '../../../../shared/models/content';
 
 const isUrlAbsolute = url => url.indexOf('://') > 0 || url.indexOf('//') === 0;
 

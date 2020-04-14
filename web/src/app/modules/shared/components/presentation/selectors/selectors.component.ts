@@ -8,7 +8,7 @@ import {
   LabelSelectorView,
   SelectorsView,
   View,
-} from 'src/app/modules/shared/models/content';
+} from '../../../../shared/models/content';
 
 @Component({
   selector: 'app-view-selectors',

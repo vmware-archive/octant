@@ -3,9 +3,9 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { TableRow, TableView } from 'src/app/modules/shared/models/content';
-import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
-import trackByIndex from 'src/app/util/trackBy/trackByIndex';
+import { TableRow, TableView } from '../../../../shared/models/content';
+import trackByIdentity from '../../../../../util/trackBy/trackByIdentity';
+import trackByIndex from '../../../../../util/trackBy/trackByIndex';
 import { ViewService } from '../../../services/view/view.service';
 
 @Component({

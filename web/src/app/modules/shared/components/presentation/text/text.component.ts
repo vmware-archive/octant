@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { TextView, View } from 'src/app/modules/shared/models/content';
+import { TextView, View } from '../../../../shared/models/content';
 
 @Component({
   selector: 'app-view-text',

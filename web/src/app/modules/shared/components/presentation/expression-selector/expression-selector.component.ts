@@ -6,7 +6,7 @@ import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import {
   ExpressionSelectorView,
   View,
-} from 'src/app/modules/shared/models/content';
+} from '../../../../shared/models/content';
 
 @Component({
   selector: 'app-view-expression-selector',

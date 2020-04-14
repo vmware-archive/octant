@@ -4,10 +4,10 @@
  */
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { ExtensionView, View } from 'src/app/modules/shared/models/content';
+import { ExtensionView, View } from '../../../../shared/models/content';
 import { SlideInOutAnimation } from './slide-in-out.animation';
 import { ResizeEvent } from 'angular-resizable-element';
-import { SliderService } from 'src/app/modules/shared/slider/slider.service';
+import { SliderService } from '../../../../shared/slider/slider.service';
 
 @Component({
   selector: 'app-slider-view',

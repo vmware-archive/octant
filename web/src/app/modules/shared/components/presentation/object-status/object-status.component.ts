@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, ViewEncapsulation } from '@angular/core';
-import { Node } from 'src/app/modules/shared/models/content';
+import { Node } from '../../../../shared/models/content';
 
 @Component({
   selector: 'app-view-object-status',

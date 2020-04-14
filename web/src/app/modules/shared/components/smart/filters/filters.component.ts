@@ -7,7 +7,7 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import {
   Filter,
   LabelFilterService,
-} from 'src/app/modules/shared/services/label-filter/label-filter.service';
+} from '../../../../shared/services/label-filter/label-filter.service';
 import { Subscription } from 'rxjs';
 
 @Component({

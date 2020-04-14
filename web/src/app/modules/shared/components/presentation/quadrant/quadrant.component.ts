@@ -7,7 +7,7 @@ import {
   QuadrantValue,
   QuadrantView,
   View,
-} from 'src/app/modules/shared/models/content';
+} from '../../../../shared/models/content';
 import { ViewService } from '../../../services/view/view.service';
 
 const emptyQuadrantValue = { value: '', label: '' };

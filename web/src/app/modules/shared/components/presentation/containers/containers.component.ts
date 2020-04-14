@@ -3,11 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import {
-  ContainerDef,
-  ContainersView,
-  View,
-} from 'src/app/modules/shared/models/content';
+import { ContainerDef, ContainersView, View } from '../../../models/content';
 
 @Component({
   selector: 'app-view-containers',

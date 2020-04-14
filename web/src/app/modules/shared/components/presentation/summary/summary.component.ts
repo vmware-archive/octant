@@ -8,7 +8,7 @@ import {
   SummaryItem,
   SummaryView,
   View,
-} from 'src/app/modules/shared/models/content';
+} from '../../../../shared/models/content';
 import { FormGroup } from '@angular/forms';
 import { ActionService } from '../../../services/action/action.service';
 import { ViewService } from '../../../services/view/view.service';

@@ -3,7 +3,7 @@
 //
 
 import { Component, Input } from '@angular/core';
-import { PortForwardView, View } from 'src/app/modules/shared/models/content';
+import { PortForwardView, View } from '../../../../shared/models/content';
 
 @Component({
   selector: 'app-view-port-forward',

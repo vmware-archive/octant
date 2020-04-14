@@ -6,6 +6,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "node --max-old-space-size=8000 ./node_modules/@angular/cli/bin/ng build --prod --output-hashing=all",
+    "build:docs": "ng build --project=demo",
     "test": "ng test --browsers=ChromeDebug",
     "test:headless": "ng test --watch=false --browsers=ChromeHeadless",
     "lint": "ng lint",

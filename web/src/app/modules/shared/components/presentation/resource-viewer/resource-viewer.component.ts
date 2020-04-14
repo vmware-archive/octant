@@ -15,7 +15,7 @@ import {
   Node,
   ResourceViewerView,
   View,
-} from 'src/app/modules/shared/models/content';
+} from '../../../../shared/models/content';
 import { ElementsDefinition, Stylesheet } from 'cytoscape';
 
 const statusColorCodes = {

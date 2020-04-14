@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
+import trackByIdentity from '../../../../../util/trackBy/trackByIdentity';
 import { LabelFilterService } from '../../../services/label-filter/label-filter.service';
 import { ContentService } from '../../../services/content/content.service';
 import { Subscription } from 'rxjs';

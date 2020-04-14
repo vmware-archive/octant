@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { ErrorView, View } from 'src/app/modules/shared/models/content';
+import { ErrorView, View } from '../../../../shared/models/content';
 
 @Component({
   selector: 'app-view-error',

@@ -2,12 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import {
-  LinkView,
-  ListView,
-  View,
-} from 'src/app/modules/shared/models/content';
-
+import { LinkView, ListView, View } from '../../../../shared/models/content';
 import { IconService } from '../../../services/icon/icon.service';
 import { ViewService } from '../../../services/view/view.service';
 

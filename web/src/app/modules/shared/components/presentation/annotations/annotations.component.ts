@@ -3,8 +3,8 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { AnnotationsView, View } from 'src/app/modules/shared/models/content';
-import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
+import { AnnotationsView, View } from '../../../../shared/models/content';
+import trackByIdentity from '../../../../../util/trackBy/trackByIdentity';
 
 @Component({
   selector: 'app-view-annotations',

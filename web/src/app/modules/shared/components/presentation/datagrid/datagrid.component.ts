@@ -11,9 +11,9 @@ import {
   TableRow,
   TableView,
   View,
-} from 'src/app/modules/shared/models/content';
-import trackByIndex from 'src/app/util/trackBy/trackByIndex';
-import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
+} from '../../../../shared/models/content';
+import trackByIndex from '../../../../../util/trackBy/trackByIndex';
+import trackByIdentity from '../../../../../util/trackBy/trackByIdentity';
 import { ViewService } from '../../../services/view/view.service';
 import { ActionService } from '../../../services/action/action.service';
 

@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { IFrameView, View } from 'src/app/modules/shared/models/content';
+import { IFrameView, View } from '../../../../shared/models/content';
 
 @Component({
   selector: 'app-iframe',

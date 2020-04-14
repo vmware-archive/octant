@@ -8,8 +8,8 @@ import {
   FlexLayoutItem,
   FlexLayoutView,
   View,
-} from 'src/app/modules/shared/models/content';
-import trackByIndex from 'src/app/util/trackBy/trackByIndex';
+} from '../../../../shared/models/content';
+import trackByIndex from '../../../../../util/trackBy/trackByIndex';
 
 @Component({
   selector: 'app-view-flexlayout',

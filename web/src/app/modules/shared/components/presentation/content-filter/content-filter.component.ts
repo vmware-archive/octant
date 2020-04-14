@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { ClrDatagridFilter, ClrDatagridFilterInterface } from '@clr/angular';
 import { Subject } from 'rxjs';
 import { TableFilter, TableRow, TextView } from '../../../models/content';
-import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
+import trackByIdentity from '../../../../../util/trackBy/trackByIdentity';
 
 @Component({
   selector: 'app-content-filter',

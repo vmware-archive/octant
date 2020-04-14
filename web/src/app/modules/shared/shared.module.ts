@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TextComponent } from './components/presentation/text/text.component';
 import { MarkdownModule } from 'ngx-markdown';
@@ -183,8 +183,8 @@ import { OverflowSelectorsComponent } from './components/presentation/overflow-s
     QuadrantComponent,
     ResourceViewerComponent,
     SelectorsComponent,
-    SliderViewComponent,
     SingleStatComponent,
+    SliderViewComponent,
     SummaryComponent,
     TableComponent,
     TabsComponent,
@@ -196,4 +196,11 @@ import { OverflowSelectorsComponent } from './components/presentation/overflow-s
     OverflowLabelsComponent,
   ],
 })
-export class SharedModule {}
+export class SharedModule {
+  public static forRoot(): ModuleWithProviders {
+    return {
+      ngModule: SharedModule,
+      providers: [],
+    };
+  }
+}
