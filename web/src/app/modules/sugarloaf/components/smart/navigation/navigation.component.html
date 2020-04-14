@@ -12,6 +12,9 @@
           <a clrVerticalNavLink
              (click)="openPopup(i)"
              [ngClass]= "{'item-selected' : i == this.lastSelection}"
+             [routerLinkActiveOptions]="{exact: false}"
+             [routerLink]="formatPath(section.path)"
+             routerLinkActive="active"
              (mouseover)="flyoutIndex= i; lastSelection=i"
           >
             <clr-icon [attr.shape]="section.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
@@ -20,19 +23,20 @@
           <ng-container *ngIf="shouldExpand(i)">
             <div class="flyout nav-group-children"
                  (mouseleave)="flyoutIndex= -1; lastSelection= -1"
+                 (document:mouseleave)="flyoutIndex= -1; lastSelection= -1"
             >
               <span class="flyout-header">{{ section.title }}</span>
               <clr-vertical-nav-group-children class="flyout-group">
-                <a
-                  *ngFor="let category of section.children; trackBy: identifyNavigationItem"
-                  [routerLink]="formatPath(category.path)"
-                  [routerLinkActiveOptions]="{exact: true}"
-                  routerLinkActive="active"
-                  class="flyout-item nav-link"
-                  (click)="setNavState(false, i)"
-                >
-                {{ category.title }}
-                </a>
+                <ng-container *ngFor="let category of section.children; trackBy: identifyNavigationItem">
+                  <a [routerLink]="formatPath(category.path)"
+                    [routerLinkActiveOptions]="{exact: true}"
+                    routerLinkActive="active"
+                    class="flyout-item nav-link"
+                    (click)="setNavState(false, i)"
+                  >
+                  {{ category.title }}
+                  </a>
+                </ng-container>
               </clr-vertical-nav-group-children>
             </div>
           </ng-container>
@@ -46,7 +50,7 @@
                    [routerLink]="formatPath(section.path)"
                    routerLinkActive="active"
                    (mouseover)="flyoutIndex= -1; lastSelection= i"
-                   (mouseout)="lastSelection= -1"
+                   (mouseleave)="lastSelection= -1"
                    (click)="closePopups(i)"
                 >
                     <clr-icon [attr.shape]="section.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
@@ -73,24 +77,25 @@
             <clr-icon [attr.shape]="section.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
           {{ section.title }}
             <clr-vertical-nav-group-children>
-              <a
-                clrVerticalNavLink
-                *ngFor="let category of section.children; trackBy: identifyNavigationItem"
-                [routerLink]="formatPath(category.path)"
-                [routerLinkActiveOptions]="{exact: true}"
-                routerLinkActive="active"
-              >
-                <clr-icon *ngIf="itemIcon(category) as categoryIcon" [attr.shape]="categoryIcon" clrVerticalNavIcon></clr-icon>
-              {{ category.title }}
-              </a>
+              <ng-container *ngFor="let category of section.children; trackBy: identifyNavigationItem">
+                <a
+                  clrVerticalNavLink
+                  [routerLink]="formatPath(category.path)"
+                  [routerLinkActiveOptions]="{exact: true}"
+                  routerLinkActive="active"
+                >
+                  <clr-icon *ngIf="itemIcon(category) as categoryIcon" [attr.shape]="categoryIcon" clrVerticalNavIcon></clr-icon>
+                {{ category.title }}
+                </a>
+              </ng-container>
             </clr-vertical-nav-group-children>
           </clr-vertical-nav-group>
         </ng-container>
         <ng-template #noChildExpanded>
           <a clrVerticalNavLink
              (click)="closePopups(i)"
-             [routerLinkActiveOptions]="{exact: true}"
              [routerLink]="formatPath(section.path)"
+             [routerLinkActiveOptions]="{exact: true}"
              routerLinkActive="active"
           >
             <clr-icon [attr.shape]="section.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
