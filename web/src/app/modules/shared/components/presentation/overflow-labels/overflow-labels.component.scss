@@ -5,10 +5,22 @@
 .labels-wrapper {
   display: flex;
   align-items: center;
-  flex-wrap: nowrap;
 
-  .label.clickable {
-    cursor: pointer;
+  .labels-container {
+    display: grid;
+    grid-auto-flow: column;
+
+    .label {
+      display: inline-block;
+      line-height: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      &.clickable {
+        cursor: pointer;
+      }
+    }
   }
 }
 
