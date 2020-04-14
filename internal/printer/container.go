@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/vmware-tanzu/octant/internal/log"
 	"path"
 	"sort"
 	"strings"
@@ -28,7 +29,31 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
+
 type containerActionFunc func(runtime.Object, *corev1.Container) (component.Action, error)
+
+// ContainerConfigurationOption
+type ContainerConfigurationOption func(*ContainerConfiguration)
+
+func IsInit(b bool) ContainerConfigurationOption {
+	return func(cc *ContainerConfiguration) {
+		cc.isInit = b
+	}
+}
+
+func WithPrintOptions(options Options) ContainerConfigurationOption {
+	return func(cc *ContainerConfiguration) {
+		cc.options = options
+	}
+}
+
+func WithActions(actions ...containerActionFunc) ContainerConfigurationOption {
+	return func(cc *ContainerConfiguration) {
+		for _, action := range actions {
+			cc.actionGenerators = append(cc.actionGenerators, action)
+		}
+	}
+}
 
 // ContainerConfiguration generates container configuration.
 type ContainerConfiguration struct {
@@ -42,17 +67,18 @@ type ContainerConfiguration struct {
 }
 
 // NewContainerConfiguration creates an instance of ContainerConfiguration.
-func NewContainerConfiguration(ctx context.Context, parent runtime.Object, c *corev1.Container, pfs portforward.PortForwarder, isInit bool, options Options) *ContainerConfiguration {
-	actionGenerators := []containerActionFunc{}
-	return &ContainerConfiguration{
+func NewContainerConfiguration(ctx context.Context, parent runtime.Object, c *corev1.Container, pfs portforward.PortForwarder, opts ...ContainerConfigurationOption) *ContainerConfiguration {
+	cc := &ContainerConfiguration{
 		parent:             parent,
 		container:          c,
-		isInit:             isInit,
 		portForwardService: pfs,
-		options:            options,
 		context:            ctx,
-		actionGenerators:   actionGenerators,
+		actionGenerators:   []containerActionFunc{},
 	}
+	for _, o := range opts {
+		o(cc)
+	}
+	return cc
 }
 
 // Create creates a deployment configuration summary.
@@ -107,10 +133,6 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 
 		sections.AddText("Ready", fmt.Sprintf("%t", containerStatus.Ready))
 		sections.AddText("Restart Count", fmt.Sprintf("%d", containerStatus.RestartCount))
-	} else {
-		if !cc.isInit {
-			cc.actionGenerators = append(cc.actionGenerators, editContainerAction)
-		}
 	}
 
 	envTbl, err := describeContainerEnv(cc.context, cc.parent, c, cc.options)
@@ -145,7 +167,9 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 	for _, actionFunc := range cc.actionGenerators {
 		action, err := actionFunc(cc.parent, c)
 		if err != nil {
-			return nil, errors.Wrap(err, "loading actions")
+			logger := log.From(cc.context)
+			logger.Errorf("failed loading actions: %w", err)
+			continue
 		}
 		summary.AddAction(action)
 	}
@@ -530,6 +554,6 @@ func containersPathForObject(object runtime.Object) ([]string, error) {
 	case g.Group == "apps" && g.Kind == "StatefulSet":
 		return []string{"spec", "template", "spec", "containers"}, nil
 	default:
-		return nil, errors.Errorf("unable to find containers location for %s", g)
+		return nil, errors.Errorf("unable to find containers location for %+v, %s, %s", g, g.Group, g.Kind)
 	}
 }

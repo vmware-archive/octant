@@ -1,0 +1,1 @@
+Fix bug that prevented Pod summary loading if status was nil/unknown.

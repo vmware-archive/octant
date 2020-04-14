@@ -364,7 +364,7 @@ func Test_ContainerConfiguration(t *testing.T) {
 				tpo.objectStore.EXPECT().Get(ctx, gomock.Eq(key)).Return(testutil.ToUnstructured(t, configMap), nil).AnyTimes()
 			}
 
-			cc := NewContainerConfiguration(ctx, parentPod, tc.container, pf, tc.isInit, printOptions)
+			cc := NewContainerConfiguration(ctx, parentPod, tc.container, pf, IsInit(tc.isInit), WithPrintOptions(printOptions))
 			summary, err := cc.Create()
 			if tc.isErr {
 				require.Error(t, err)
