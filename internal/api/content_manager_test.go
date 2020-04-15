@@ -33,7 +33,7 @@ func TestContentManager_Handlers(t *testing.T) {
 	manager := api.NewContentManager(moduleManager, logger)
 	AssertHandlers(t, manager, []string{
 		api.RequestSetContentPath,
-		api.RequestSetNamespace,
+		action.RequestSetNamespace,
 	})
 }
 
@@ -109,7 +109,6 @@ func TestContentManager_SetNamespace(t *testing.T) {
 
 	state := octantFake.NewMockState(controller)
 	state.EXPECT().SetNamespace("kube-system")
-
 	logger := log.NopLogger()
 
 	manager := api.NewContentManager(moduleManager, logger,
@@ -118,7 +117,7 @@ func TestContentManager_SetNamespace(t *testing.T) {
 	payload := action.Payload{
 		"namespace": "kube-system",
 	}
-
+	state.EXPECT().Dispatch(nil, action.RequestSetNamespace, payload)
 	require.NoError(t, manager.SetNamespace(state, payload))
 }
 
