@@ -96,7 +96,6 @@ export class NavigationService {
     const lastHash = url.lastIndexOf('#');
 
     if (lastHash > 0 && lastHash > lastSlash) {
-      console.log('removed suffix', url, url.substring(0, lastHash));
       return url.substring(0, lastHash);
     }
     return url;
