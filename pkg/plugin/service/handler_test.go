@@ -240,10 +240,11 @@ func TestHandler_HandleAction_default(t *testing.T) {
 		dashboardClient: dashboardClient,
 	}
 
+	actionName := "action.octant.dev/testDefault"
 	payload := action.Payload{"foo": "bar"}
 
 	ctx := context.Background()
-	err := h.HandleAction(ctx, payload)
+	err := h.HandleAction(ctx, actionName, payload)
 	require.NoError(t, err)
 }
 
@@ -253,6 +254,7 @@ func TestHandler_HandleAction_using_supplied_function(t *testing.T) {
 
 	dashboardClient := fake.NewMockDashboard(controller)
 
+	actionName := "action.octant.dev/testAction"
 	payload := action.Payload{"foo": "bar"}
 
 	ran := false
@@ -271,7 +273,7 @@ func TestHandler_HandleAction_using_supplied_function(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	err := h.HandleAction(ctx, payload)
+	err := h.HandleAction(ctx, actionName, payload)
 	assert.NoError(t, err)
 	assert.True(t, ran)
 }

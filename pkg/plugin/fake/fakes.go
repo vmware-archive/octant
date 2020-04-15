@@ -270,17 +270,17 @@ func (mr *MockModuleServiceMockRecorder) Content(arg0, arg1 interface{}) *gomock
 }
 
 // HandleAction mocks base method
-func (m *MockModuleService) HandleAction(arg0 context.Context, arg1 action.Payload) error {
+func (m *MockModuleService) HandleAction(arg0 context.Context, arg1 string, arg2 action.Payload) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "HandleAction", arg0, arg1)
+	ret := m.ctrl.Call(m, "HandleAction", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // HandleAction indicates an expected call of HandleAction
-func (mr *MockModuleServiceMockRecorder) HandleAction(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockModuleServiceMockRecorder) HandleAction(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HandleAction", reflect.TypeOf((*MockModuleService)(nil).HandleAction), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HandleAction", reflect.TypeOf((*MockModuleService)(nil).HandleAction), arg0, arg1, arg2)
 }
 
 // Navigation mocks base method
@@ -382,17 +382,17 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 }
 
 // HandleAction mocks base method
-func (m *MockService) HandleAction(arg0 context.Context, arg1 action.Payload) error {
+func (m *MockService) HandleAction(arg0 context.Context, arg1 string, arg2 action.Payload) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "HandleAction", arg0, arg1)
+	ret := m.ctrl.Call(m, "HandleAction", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // HandleAction indicates an expected call of HandleAction
-func (mr *MockServiceMockRecorder) HandleAction(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockServiceMockRecorder) HandleAction(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HandleAction", reflect.TypeOf((*MockService)(nil).HandleAction), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HandleAction", reflect.TypeOf((*MockService)(nil).HandleAction), arg0, arg1, arg2)
 }
 
 // ObjectStatus mocks base method
