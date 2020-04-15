@@ -65,7 +65,7 @@ jobs:
       - name: Run goreleaser
         run: |
           git fetch --tags
-          git tag -d nightly
+          git tag -d nightly || :
           git tag nightly
           echo "$GOOGLE_APPLICATION_JSON" > /tmp/gs.json
           goreleaser -f .goreleaser-nightly.yml --rm-dist --skip-validate
