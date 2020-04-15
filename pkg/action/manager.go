@@ -120,7 +120,6 @@ func (m *Manager) Register(actionPath string, actionFunc DispatcherFunc) error {
 		af = append(af, actionFunc)
 	}
 
-	m.logger.Infof("REGISTER: %+v\n%+v", actionPath, af)
 	m.dispatches.Store(actionPath, af)
 
 	return nil
@@ -133,6 +132,7 @@ func (m *Manager) Dispatch(ctx context.Context, alerter Alerter, actionPath stri
 		return &NotFoundError{Path: actionPath}
 
 	}
+
 	actionFuncs := val.([]DispatcherFunc)
 	for _, f := range actionFuncs {
 		if err := f(ctx, alerter, payload); err != nil {
