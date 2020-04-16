@@ -11,7 +11,7 @@
         <option
           *ngFor="let container of v?.config.containers"
           value="{{ container }}"
-          >{{ container }}</option
+        > {{ container === '' ? '[all containers]' : container }}</option
         >
       </select>
     </clr-select-container>
@@ -82,6 +82,16 @@
         class="container-log code language-bash"
         *ngFor="let log of filterFunction(containerLogs); trackBy: identifyLog"
       >
+        <div
+          class="container-log-name"
+          *ngIf="shouldDisplayName && log.container != null"
+          [innerHTML]="highlightText(log.container) | ansipipe"
+        ></div>
+        <div
+          class="container-log-name"
+          *ngIf="shouldDisplayName && log.container == null"
+          [innerHTML]="'[container unavailable]'"
+        ></div>
         <div
           class="container-log-timestamp"
           *ngIf="shouldDisplayTimestamp && log.timestamp != null"

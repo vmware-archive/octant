@@ -36,6 +36,7 @@ function createRandomLogEntry(): LogEntry {
   return {
     timestamp: '2019-05-06T18:59:06.554540433Z',
     message: uniqueId('message'),
+    container: 'test-container',
   };
 }
 
@@ -46,9 +47,21 @@ describe('LogsComponent <-> PodsLogsService', () => {
   let httpClient: HttpClient;
   let httpTestingController: HttpTestingController;
   const defaultTestLogs = [
-    { timestamp: '2019-05-06T18:59:06.554540433Z', message: 'messageA' },
-    { timestamp: '2019-05-06T18:59:06.554540433Z', message: 'messageB' },
-    { timestamp: '2019-05-06T18:59:06.554540433Z', message: 'messageC' },
+    {
+      timestamp: '2019-05-06T18:59:06.554540433Z',
+      message: 'messageA',
+      container: 'test-container',
+    },
+    {
+      timestamp: '2019-05-06T18:59:06.554540433Z',
+      message: 'messageB',
+      container: 'test-container',
+    },
+    {
+      timestamp: '2019-05-06T18:59:06.554540433Z',
+      message: 'messageC',
+      container: 'test-container',
+    },
   ];
 
   beforeEach(async(() => {
@@ -119,13 +132,13 @@ describe('LogsComponent <-> PodsLogsService', () => {
     );
     expect(logEntriesDebugElement.length).toBe(3);
     expect(logEntriesDebugElement[0].nativeElement.textContent).toBe(
-      'messageA'
+      'test-containermessageA'
     );
     expect(logEntriesDebugElement[1].nativeElement.textContent).toBe(
-      'messageB'
+      'test-containermessageB'
     );
     expect(logEntriesDebugElement[2].nativeElement.textContent).toBe(
-      'messageC'
+      'test-containermessageC'
     );
   });
 

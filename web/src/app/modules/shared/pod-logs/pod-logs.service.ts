@@ -3,49 +3,59 @@
 //
 
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
-import { LogEntry, LogResponse } from 'src/app/modules/shared/models/content';
+import { LogEntry } from 'src/app/modules/shared/models/content';
 import getAPIBase from '../services/common/getAPIBase';
+import { WebsocketService } from '../services/websocket/websocket.service';
 
 const API_BASE = getAPIBase();
 
 export class PodLogsStreamer {
-  public logEntries: BehaviorSubject<LogEntry[]>;
+  public logEntry: BehaviorSubject<LogEntry>;
   private intervalID: number;
 
   constructor(
     private namespace: string,
     private pod: string,
     private container: string,
-    private http: HttpClient
+    private wss: WebsocketService
   ) {}
 
-  private poll() {
-    this.http.get(this.logsUrl()).subscribe((res: LogResponse) => {
-      this.logEntries.next(res.entries);
+  public start(): void {
+    const emptyEntry = {
+      timestamp: null,
+      message: null,
+      container: null,
+    } as LogEntry;
+
+    this.logEntry = new BehaviorSubject(emptyEntry);
+
+    this.wss.sendMessage('action.octant.dev/podLogs/subscribe', {
+      namespace: this.namespace,
+      podName: this.pod,
+      containerName: this.container,
+    });
+
+    this.wss.registerHandler(this.streamUrl(), data => {
+      const update = data as LogEntry;
+      this.logEntry.next(update);
     });
   }
 
-  public start(): void {
-    this.logEntries = new BehaviorSubject([]);
-    this.poll();
-    this.intervalID = window.setInterval(() => this.poll(), 5000);
-  }
-
   public close(): void {
-    this.logEntries.unsubscribe();
-    clearInterval(this.intervalID);
+    this.wss.sendMessage('action.octant.dev/podLogs/unsubscribe', {
+      namespace: this.namespace,
+      podName: this.pod,
+    });
+    this.logEntry.unsubscribe();
   }
 
-  private logsUrl(): string {
+  private streamUrl(): string {
     return [
-      API_BASE,
-      'api/v1',
-      'logs',
+      'event.octant.dev',
+      'logging',
       `namespace/${this.namespace}`,
       `pod/${this.pod}`,
-      `container/${this.container}`,
     ].join('/');
   }
 }
@@ -54,10 +64,10 @@ export class PodLogsStreamer {
   providedIn: 'root',
 })
 export class PodLogsService {
-  constructor(private http: HttpClient) {}
+  constructor(private wss: WebsocketService) {}
 
   public createStream(namespace, pod, container: string): PodLogsStreamer {
-    const pls = new PodLogsStreamer(namespace, pod, container, this.http);
+    const pls = new PodLogsStreamer(namespace, pod, container, this.wss);
     pls.start();
     return pls;
   }

@@ -8,19 +8,13 @@ package container
 import (
 	"bufio"
 	"context"
-	"errors"
 	"fmt"
+	"github.com/vmware-tanzu/octant/internal/config"
+	"github.com/vmware-tanzu/octant/pkg/store"
 	"io"
-	"time"
-
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-)
-
-var (
-	// durContainerUpWait is the time to wait before checking if a container has started
-	durContainerUpWait = 1 * time.Second
+	"k8s.io/apimachinery/pkg/runtime"
+	"sync"
 )
 
 type logStreamer struct {
@@ -31,94 +25,122 @@ type logStreamer struct {
 
 	ctx      context.Context
 	cancelFn context.CancelFunc
-	client   kubernetes.Interface
+	config config.Dash
+	wg       sync.WaitGroup
 }
 
 var _ LogStreamer = (*logStreamer)(nil)
 
-func NewLogStreamer(ctx context.Context, client kubernetes.Interface, namespace string, podName string, containerNames ...string) (*logStreamer, error) {
+// NewLogStreamer returns an instance of a logStream configured to stream logs for the given namespace/pod/container(s).
+func NewLogStreamer(ctx context.Context, dashConfig config.Dash, key store.Key, containerNames ...string) (*logStreamer, error) {
 	ctx, cancelFn := context.WithCancel(ctx)
 
-	// Remove and replace with a container lookup method if containerNames length is 0.
-	if len(containerNames) == 0 {
-		return nil, errors.New("no container names provided")
+	if shouldFetchContainerNames(containerNames) {
+		// reset containerNames since it contains only empty entries
+		containerNames = []string{}
+
+		object, err := dashConfig.ObjectStore().Get(ctx, key)
+		if err != nil {
+			cancelFn()
+			return nil, fmt.Errorf("getting pod from objectstore: %w", err)
+		}
+
+		var pod corev1.Pod
+		err = runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, &pod)
+
+		if err != nil {
+			cancelFn()
+			return nil, fmt.Errorf("converting unstructured: %w", err)
+		}
+
+		for _, container := range pod.Spec.Containers {
+			containerNames = append(containerNames, container.Name)
+		}
 	}
 
 	return &logStreamer{
-		namespace:  namespace,
-		pod:        podName,
+		namespace:  key.Namespace,
+		pod:        key.Name,
 		containers: containerNames,
-		client:     client,
+		config:     dashConfig,
 		ctx:        ctx,
 		cancelFn:   cancelFn,
 	}, nil
 }
 
+// shouldFetchContainerNames checks if the list of containerNames is empty
+// or if the containerNames contains a singular entry that is equal to empty string
+// and is used to determine if the LogStream should fetch the list of containers to stream logs for.
+func shouldFetchContainerNames(containerNames []string) bool {
+	if len(containerNames) == 0 {
+		return true
+	}
+
+	if len(containerNames) == 1 && containerNames[0] == "" {
+		return true
+	}
+
+	return false
+}
+
+// Names returns a list of container names that the log streamer is streaming logs for.
 func (s *logStreamer) Names() []string {
+	if s.containers == nil {
+		return []string{}
+	}
 	return s.containers
 }
 
-func (s *logStreamer) Stream(ctx context.Context, logCh chan<- LogEntry) error {
-	defer close(logCh)
+// Stream takes a context and a log channel for writing log entries to. Stream
+// will handle closing any open streams and closing the log channel when an error
+// or EOF is encountered.
+func (s *logStreamer) Stream(ctx context.Context, logCh chan<- LogEntry) {
+	for _, container := range s.containers {
+		container := container
+		stream, err := s.containerStream(container)
 
-	for ctx.Err() == nil {
-		hasStarted, err := s.containerHasStarted(s.Names()[0])
 		if err != nil {
-			return fmt.Errorf("check if container has started: %w", err)
+			s.config.Logger().Errorf("unable to stream logs for %s: %w", container, err)
+			continue
 		}
 
-		if hasStarted {
-			break
-		}
-
-		time.Sleep(durContainerUpWait)
+		s.wg.Add(1)
+		go func() {
+			defer s.wg.Done()
+			scanner := bufio.NewScanner(stream)
+			for ctx.Err() == nil && scanner.Scan() {
+				entry := NewLogEntry(container, scanner.Text())
+				logCh <- entry
+			}
+			return
+		}()
 	}
 
-	container := s.containers[0]
-	stream, err := s.containerStream(container)
+	go func() {
+		s.wg.Wait()
+		s.Close(logCh)
+		return
+	}()
 
-	if err != nil {
-		return fmt.Errorf("stream container logs: %w", err)
-	}
-	defer stream.Close()
-
-	scanner := bufio.NewScanner(stream)
-	for ctx.Err() == nil && scanner.Scan() {
-		entry := NewLogEntry(container, scanner.Text())
-		logCh <- entry
-	}
-
-	if scanner.Err() != nil {
-		return fmt.Errorf("scanner error: %w", err)
-	}
-
-	return nil
+	return
 }
 
-func (s *logStreamer) Close() {
+// Close calls the cancel function and closes the stream.
+func (s *logStreamer) Close(logCh chan<- LogEntry) {
+	close(logCh)
 	s.cancelFn()
 }
 
 func (s *logStreamer) containerStream(container string) (io.ReadCloser, error) {
-	return s.client.CoreV1().Pods(s.namespace).GetLogs(s.pod, &corev1.PodLogOptions{
-		Container: container,
-		// Change this to true when we start to actually stream.
-		Follow:     false,
-		Timestamps: true,
-	}).Stream()
-}
-
-func (s *logStreamer) containerHasStarted(container string) (bool, error) {
-	pod, err := s.client.CoreV1().Pods(s.namespace).Get(s.pod, metav1.GetOptions{})
+	client, err := s.config.ClusterClient().KubernetesClient()
 	if err != nil {
-		return false, fmt.Errorf("get pod %s in %s: %w", s.pod, s.namespace, err)
+		return nil, err
 	}
-
-	for _, status := range pod.Status.ContainerStatuses {
-		if status.Name == container && status.State.Waiting == nil {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	request := client.CoreV1().Pods(s.namespace).GetLogs(s.pod, &corev1.PodLogOptions{
+		Container:  container,
+		Follow:     true,
+		Timestamps: true,
+	})
+	request.Context(s.ctx)
+	return request.Stream()
 }
