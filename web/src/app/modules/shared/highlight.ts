@@ -9,17 +9,17 @@ import yaml from 'highlight.js/lib/languages/yaml';
 import { HIGHLIGHT_OPTIONS } from 'ngx-highlightjs';
 
 export function hljsLanguages() {
-  return [
-    { name: 'yaml', func: yaml },
-    { name: 'json', func: json },
-  ];
+  return {
+    json: () => json,
+    yaml: () => yaml,
+  };
 }
 
 export function highlightProvider() {
   return {
     provide: HIGHLIGHT_OPTIONS,
     useValue: {
-      languages: hljsLanguages,
+      languages: hljsLanguages(),
     },
   };
 }
