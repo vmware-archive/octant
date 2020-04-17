@@ -162,6 +162,7 @@ type ActionRequest struct {
 	baseRequest
 
 	DashboardClient Dashboard
+	ActionName      string
 	Payload         action.Payload
 }
 

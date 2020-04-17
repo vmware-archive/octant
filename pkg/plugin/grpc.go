@@ -76,7 +76,7 @@ func (c *GRPCClient) Content(ctx context.Context, contentPath string) (component
 }
 
 // HandleAction runs an action on a plugin.
-func (c *GRPCClient) HandleAction(ctx context.Context, payload action.Payload) error {
+func (c *GRPCClient) HandleAction(ctx context.Context, actionName string, payload action.Payload) error {
 	err := c.run(func() error {
 		data, err := json.Marshal(&payload)
 		if err != nil {
@@ -84,6 +84,7 @@ func (c *GRPCClient) HandleAction(ctx context.Context, payload action.Payload) e
 		}
 
 		req := &dashboard.HandleActionRequest{
+			ActionName: actionName,
 			Payload: data,
 		}
 
@@ -338,7 +339,7 @@ func (s *GRPCServer) HandleAction(ctx context.Context, handleActionRequest *dash
 		return nil, err
 	}
 
-	if err := s.Impl.HandleAction(ctx, payload); err != nil {
+	if err := s.Impl.HandleAction(ctx, handleActionRequest.ActionName, payload); err != nil {
 		return nil, err
 	}
 

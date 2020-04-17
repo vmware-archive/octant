@@ -104,7 +104,7 @@ func (p *Handler) ObjectStatus(ctx context.Context, object runtime.Object) (plug
 }
 
 // HandleAction handles actions given a payload.
-func (p *Handler) HandleAction(ctx context.Context, payload action.Payload) error {
+func (p *Handler) HandleAction(ctx context.Context, actionName string, payload action.Payload) error {
 	if p.HandlerFuncs.HandleAction == nil {
 		return nil
 	}
@@ -112,6 +112,7 @@ func (p *Handler) HandleAction(ctx context.Context, payload action.Payload) erro
 	request := &ActionRequest{
 		baseRequest:     newBaseRequest(ctx, p.name),
 		DashboardClient: p.dashboardClient,
+		ActionName:      actionName,
 		Payload:         payload,
 	}
 

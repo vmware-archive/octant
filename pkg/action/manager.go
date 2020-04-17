@@ -7,6 +7,7 @@ package action
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -90,36 +91,54 @@ func (d Dispatchers) ToActionPaths() map[string]DispatcherFunc {
 // Manager manages actions.
 type Manager struct {
 	logger     log.Logger
-	dispatches map[string]DispatcherFunc
 
-	mu sync.Mutex
+	// key: string, value: []DispatcherFunc
+	dispatches sync.Map
 }
 
 // NewManager creates an instance of Manager.
 func NewManager(logger log.Logger) *Manager {
 	return &Manager{
 		logger:     logger.With("component", "action-manager"),
-		dispatches: make(map[string]DispatcherFunc),
+		dispatches: sync.Map{},
 	}
 }
 
 // Register registers a dispatcher function to an action path.
 func (m *Manager) Register(actionPath string, actionFunc DispatcherFunc) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
+	var af []DispatcherFunc
 
-	m.dispatches[actionPath] = actionFunc
+	val, ok := m.dispatches.Load(actionPath)
+	if !ok {
+		af = make([]DispatcherFunc, 1)
+		af[0] = actionFunc
+	} else {
+		af, ok = val.([]DispatcherFunc)
+		if !ok {
+			return fmt.Errorf("failed to convert value to []DispatcherFunc")
+		}
+		af = append(af, actionFunc)
+	}
+
+	m.dispatches.Store(actionPath, af)
 
 	return nil
 }
 
 // Dispatch dispatches a payload to a path.
 func (m *Manager) Dispatch(ctx context.Context, alerter Alerter, actionPath string, payload Payload) error {
-	f, ok := m.dispatches[actionPath]
+	val, ok := m.dispatches.Load(actionPath)
 	if !ok {
 		return &NotFoundError{Path: actionPath}
 
 	}
 
-	return f(ctx, alerter, payload)
+	actionFuncs := val.([]DispatcherFunc)
+	for _, f := range actionFuncs {
+		if err := f(ctx, alerter, payload); err != nil {
+			m.logger.Errorf("actionFunc returned err: %s", err)
+		}
+	}
+
+	return nil
 }

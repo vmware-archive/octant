@@ -24,7 +24,6 @@ import (
 
 const (
 	RequestSetContentPath = "action.octant.dev/setContentPath"
-	RequestSetNamespace   = "action.octant.dev/setNamespace"
 )
 
 // ContentManagerOption is an option for configuring ContentManager.
@@ -61,6 +60,7 @@ func WithContentGeneratorPoller(poller Poller) ContentManagerOption {
 
 // ContentManager manages content for websockets.
 type ContentManager struct {
+	ctx                 context.Context
 	moduleManager       module.ManagerInterface
 	logger              log.Logger
 	contentGenerateFunc ContentGenerateFunc
@@ -89,6 +89,7 @@ var _ StateManager = (*ContentManager)(nil)
 
 // Start starts the manager.
 func (cm *ContentManager) Start(ctx context.Context, state octant.State, s OctantClient) {
+	cm.ctx = ctx
 	logger := internalLog.From(ctx)
 	logger.Debugf("starting content manager")
 
@@ -184,7 +185,7 @@ func (cm *ContentManager) Handlers() []octant.ClientRequestHandler {
 			Handler:     cm.SetContentPath,
 		},
 		{
-			RequestType: RequestSetNamespace,
+			RequestType: action.RequestSetNamespace,
 			Handler:     cm.SetNamespace,
 		},
 	}
@@ -213,6 +214,7 @@ func (cm *ContentManager) SetNamespace(state octant.State, payload action.Payloa
 		return fmt.Errorf("extract namespace from payload: %w", err)
 	}
 	state.SetNamespace(namespace)
+	state.Dispatch(cm.ctx, action.RequestSetNamespace, payload)
 	return nil
 }
 

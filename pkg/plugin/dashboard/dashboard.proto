@@ -12,7 +12,8 @@ message ContentResponse {
 }
 
 message HandleActionRequest {
-    bytes payload = 1;
+    string action_name = 1;
+    bytes payload = 2;
 }
 
 message HandleActionResponse {
