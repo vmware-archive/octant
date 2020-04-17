@@ -64,6 +64,8 @@ func discoAndLBEntries(ctx context.Context, prefix, namespace string, objectStor
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.Ingress), objectStore))
 	neh.Add("Services", "services",
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.Service), objectStore))
+	neh.Add("Network Policies", "network-policies",
+		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.NetworkPolicy), objectStore))
 
 	children, err := neh.Generate(prefix, namespace, "")
 	if err != nil {

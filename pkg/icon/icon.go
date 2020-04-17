@@ -48,6 +48,7 @@ const (
 	OverviewHorizontalPodAutoscaler = "hpa"
 	OverviewIngress                 = "ing"
 	OverviewJob                     = "job"
+	OverviewNetworkPolicy           = "netpol"
 	OverviewPersistentVolumeClaim   = "pvc"
 	OverviewPod                     = "pod"
 	OverviewReplicaSet              = "rs"

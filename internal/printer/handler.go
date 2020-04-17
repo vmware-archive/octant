@@ -37,6 +37,8 @@ func AddHandlers(p Handler) error {
 		NodeListHandler,
 		NamespaceHandler,
 		NamespaceListHandler,
+		NetworkPolicyHandler,
+		NetworkPolicyListHandler,
 		ReplicaSetHandler,
 		ReplicaSetListHandler,
 		ReplicationControllerHandler,

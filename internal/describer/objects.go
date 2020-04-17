@@ -14,6 +14,7 @@ import (
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 
 	"github.com/vmware-tanzu/octant/pkg/icon"
@@ -164,12 +165,22 @@ func initNamespacedOverview() *Section {
 		IconName:       icon.OverviewService,
 	})
 
+	dlbNetworkPolicies := NewResource(ResourceOptions{
+		Path:           "/discovery-and-load-balancing/network-policies",
+		ObjectStoreKey: store.Key{APIVersion: "networking.k8s.io/v1", Kind: "NetworkPolicy"},
+		ListType:       &networkingv1.NetworkPolicyList{},
+		ObjectType:     &networkingv1.NetworkPolicy{},
+		Titles:         ResourceTitle{List: "Discovery & Load Balancing / Network Policies", Object: "Network Policy"},
+		IconName:       icon.OverviewNetworkPolicy,
+	})
+
 	discoveryAndLoadBalancingDescriber := NewSection(
 		"/discovery-and-load-balancing",
 		"Discovery and Load Balancing",
 		dlbHorizontalPodAutoscalers,
 		dlbIngresses,
 		dlbServices,
+		dlbNetworkPolicies,
 	)
 
 	csConfigMaps := NewResource(ResourceOptions{
