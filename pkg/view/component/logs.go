@@ -20,7 +20,7 @@ type Logs struct {
 	Config LogsConfig `json:"config,omitempty"`
 }
 
-func NewLogs(namespace, name string, containers []string) *Logs {
+func NewLogs(namespace, name string, containers ...string) *Logs {
 	return &Logs{
 		Config: LogsConfig{
 			Namespace:  namespace,

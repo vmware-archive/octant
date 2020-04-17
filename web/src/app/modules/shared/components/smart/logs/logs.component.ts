@@ -53,6 +53,7 @@ export class LogsComponent
 
   selectedContainer = '';
   shouldDisplayTimestamp = true;
+  shouldDisplayName = true;
   showOnlyFiltered = false;
   filterText = '';
   oldFilterText = '';
@@ -86,6 +87,12 @@ export class LogsComponent
       this.logStream.close();
       this.logStream = null;
     }
+    if (this.selectedContainer === '') {
+      this.shouldDisplayName = true;
+    } else {
+      this.shouldDisplayName = false;
+    }
+
     this.startStream();
   }
 
@@ -104,15 +111,18 @@ export class LogsComponent
     const namespace = this.v.config.namespace;
     const pod = this.v.config.name;
     const container = this.selectedContainer;
-    if (namespace && pod && container) {
+    if (namespace && pod) {
       this.logStream = this.podLogsService.createStream(
         namespace,
         pod,
         container
       );
-      this.logSubscription = this.logStream.logEntries.subscribe(
-        (entries: LogEntry[]) => {
-          this.containerLogs = entries;
+      this.logSubscription = this.logStream.logEntry.subscribe(
+        (entry: LogEntry) => {
+          if (entry.message == null) {
+            return;
+          }
+          this.containerLogs.push(entry);
           this.updateSelectedCount();
         }
       );

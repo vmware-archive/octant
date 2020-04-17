@@ -20,6 +20,7 @@ const addLogsToList = (currentLogList: LogEntry[]): LogEntry[] => {
     logList.push({
       timestamp: '2019-08-19T12:07:00.1222053Z',
       message: 'Just for test',
+      container: 'test-container',
     });
   }
 
@@ -83,10 +84,12 @@ describe('LogsComponent', () => {
       {
         timestamp: '2019-05-06T18:50:06.554540433Z',
         message: 'Test log line 1',
+        container: 'test-container',
       },
       {
         timestamp: '2019-05-06T18:59:06.554540433Z',
         message: 'Test log line 2',
+        container: 'test-container',
       },
     ];
     component.filterText = 'Test log';

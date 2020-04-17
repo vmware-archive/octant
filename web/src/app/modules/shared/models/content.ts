@@ -385,6 +385,7 @@ export interface LogsView extends View {
 export interface LogEntry {
   timestamp: string;
   message: string;
+  container: string;
 }
 
 export interface LogResponse {

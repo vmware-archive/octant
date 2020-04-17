@@ -38,7 +38,7 @@ func Test_ToComponent(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewLogs("default", "pod", []string{"one", "two"}),
+			expected: component.NewLogs("default", "pod", []string{"", "one", "two"}...),
 		},
 		{
 			name: "with init containers",
@@ -57,7 +57,7 @@ func Test_ToComponent(t *testing.T) {
 					},
 				},
 			},
-			expected: component.NewLogs("default", "pod", []string{"init", "one", "two"}),
+			expected: component.NewLogs("default", "pod", []string{"", "init", "one", "two"}...),
 		},
 		{
 			name:   "nil",
