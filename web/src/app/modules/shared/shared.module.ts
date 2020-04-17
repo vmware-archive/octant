@@ -57,7 +57,7 @@ import { AnsiPipe } from './pipes/ansiPipe/ansi.pipe';
 import { DefaultPipe } from './pipes/default/default.pipe';
 import { RouterModule } from '@angular/router';
 import { ResizableModule } from 'angular-resizable-element';
-import { hljsLanguages } from './highlight';
+import { highlightProvider } from './highlight';
 import { IndicatorComponent } from './components/presentation/indicator/indicator.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MonacoEditorModule } from 'ng-monaco-editor';
@@ -127,9 +127,7 @@ import { OverflowLabelsComponent } from './components/presentation/overflow-labe
     ClarityModule,
     CommonModule,
     FormsModule,
-    HighlightModule.forRoot({
-      languages: hljsLanguages,
-    }),
+    HighlightModule,
     MonacoEditorModule.forRoot({
       baseUrl: '',
       defaultOptions: {},
@@ -139,6 +137,7 @@ import { OverflowLabelsComponent } from './components/presentation/overflow-labe
     ResizableModule,
     RouterModule,
   ],
+  providers: [highlightProvider()],
   exports: [
     FormatPathPipe,
     AlertComponent,
