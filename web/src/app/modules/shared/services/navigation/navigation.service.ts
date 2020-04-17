@@ -40,12 +40,64 @@ export class NavigationService {
       this.current.next(update);
 
       contentService.defaultPath.next(update.defaultPath);
+      this.updateLastSelection();
     });
 
     router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe((event: RouterEvent) => {
         this.activeUrl.next(event.url);
+        this.updateLastSelection();
       });
+  }
+
+  updateLastSelection() {
+    const targetUrl = this.activeUrl.value;
+    let suggestedIndex = this.indexFromUrl(targetUrl);
+
+    if (suggestedIndex === -1) {
+      suggestedIndex = this.indexFromUrl(
+        targetUrl.substring(0, targetUrl.lastIndexOf('/'))
+      );
+    }
+
+    if (suggestedIndex >= 0 && suggestedIndex !== this.lastSelection.value) {
+      this.lastSelection.next(suggestedIndex);
+    }
+  }
+
+  indexFromUrl(url: string) {
+    const short = url.substring(1);
+    const paths = url.split('/');
+
+    if (paths[1] === 'workloads') {
+      return 0;
+    }
+
+    for (let index = 0; index < this.current.value.sections.length; index++) {
+      const section = this.current.value.sections[index];
+
+      if (section.path === short) {
+        return index;
+      } else if (section.children) {
+        const suggested = section.children.findIndex(
+          child => child.path === short
+        );
+        if (suggested >= 0) {
+          return index;
+        }
+      }
+    }
+    return -1;
+  }
+
+  removeSuffix(url: string) {
+    const lastSlash = url.lastIndexOf('/');
+    const lastHash = url.lastIndexOf('#');
+
+    if (lastHash > 0 && lastHash > lastSlash) {
+      return url.substring(0, lastHash);
+    }
+    return url;
   }
 }

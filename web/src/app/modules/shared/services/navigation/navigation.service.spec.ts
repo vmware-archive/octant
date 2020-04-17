@@ -13,6 +13,8 @@ import {
 import { WebsocketServiceMock } from '../websocket/mock';
 import { Navigation } from '../../../sugarloaf/models/navigation';
 import { ContentService } from '../content/content.service';
+import { NAVIGATION_MOCK_DATA } from './navigation.test.data';
+import { take } from 'rxjs/operators';
 
 describe('NavigationService', () => {
   beforeEach(() =>
@@ -53,5 +55,54 @@ describe('NavigationService', () => {
         );
       }
     ));
+
+    it('verify nav selection is correct after going to new URL', inject(
+      [NavigationService, WebsocketService, ContentService],
+      (svc: NavigationService, backendService: BackendService) => {
+        const currentNavigation: Navigation = {
+          sections: NAVIGATION_MOCK_DATA,
+          defaultPath: '',
+        };
+
+        backendService.triggerHandler(
+          'event.octant.dev/navigation',
+          currentNavigation
+        );
+
+        currentNavigation.sections.map((section, index) => {
+          verifySelection(section.path, svc, index, '');
+
+          if (section.children) {
+            section.children.map(child => {
+              verifySelection(child.path, svc, index, 'child');
+            });
+          }
+        });
+        svc.activeUrl.unsubscribe();
+        svc.lastSelection.unsubscribe();
+      }
+    ));
+
+    function verifySelection(
+      path: string,
+      svc: NavigationService,
+      index: number,
+      descriptor: string
+    ) {
+      svc.activeUrl.next('/' + path);
+      svc.updateLastSelection();
+
+      svc.lastSelection.pipe(take(1)).subscribe(selection => {
+        expect(selection)
+          .withContext(`navigation selected ${descriptor} index ${index}`)
+          .toEqual(index);
+      });
+
+      svc.activeUrl.pipe(take(1)).subscribe(url =>
+        expect(url)
+          .withContext(`url path for ${descriptor} index ${index}`)
+          .toEqual('/' + path)
+      );
+    }
   });
 });
