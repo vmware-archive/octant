@@ -62,6 +62,10 @@ describe('InputFilterComponent', () => {
   });
 
   it('should show the user text if there are no filters', () => {
+    const labelFilterService: LabelFilterService = TestBed.inject(
+      LabelFilterService
+    );
+    labelFilterService.filters.next([]);
     component.showTagList = true;
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -76,7 +80,7 @@ describe('InputFilterComponent', () => {
   });
 
   it('should show the tags if there are filters', () => {
-    const labelFilterService: LabelFilterService = TestBed.get(
+    const labelFilterService: LabelFilterService = TestBed.inject(
       LabelFilterService
     );
     labelFilterService.filters.next([
