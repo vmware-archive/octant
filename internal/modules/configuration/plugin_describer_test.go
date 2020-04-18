@@ -65,7 +65,7 @@ func TestPluginDescriber(t *testing.T) {
 
 	capabilitiesData := "[Module], [Actions: action], [Object Status: v1 Pod], [Printer Config: v1 Pod], [Printer Items: v1 Pod], [Printer Status: v1 Pod], [Tab: v1 Pod]"
 
-	list := component.NewList("Plugins", nil)
+	list := component.NewList(append([]component.TitleComponent{}, component.NewText("Plugins")), nil)
 	tableCols := component.NewTableCols("Name", "Description", "Capabilities")
 	table := component.NewTable("Plugins", "There are no plugins!", tableCols)
 	table.Add(component.TableRow{

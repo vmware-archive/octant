@@ -7,11 +7,10 @@ package describer
 
 import (
 	"context"
-	"reflect"
-
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
+	"reflect"
 
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
@@ -26,6 +25,7 @@ type ListConfig struct {
 	IsClusterWide bool
 	IconName      string
 	IconSource    string
+	RootPath      ResourceLink
 }
 
 // List describes a list of objects.
@@ -40,6 +40,7 @@ type List struct {
 	isClusterWide  bool
 	iconName       string
 	iconSource     string
+	rootPath       ResourceLink
 }
 
 // NewList creates an instance of List.
@@ -54,6 +55,7 @@ func NewList(c ListConfig) *List {
 		isClusterWide:  c.IsClusterWide,
 		iconName:       c.IconName,
 		iconSource:     c.IconSource,
+		rootPath:       c.RootPath,
 	}
 }
 
@@ -76,7 +78,8 @@ func (d *List) Describe(ctx context.Context, namespace string, options Options) 
 		return component.EmptyContentResponse, err
 	}
 
-	list := component.NewList(d.title, nil)
+	title := getBreadcrumb(d.rootPath, d.title, "", namespace)
+	list := component.NewList(title, nil)
 	list.SetIcon(d.iconName, d.iconSource)
 
 	listType := d.listType()

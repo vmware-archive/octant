@@ -29,7 +29,9 @@ var _ describer.Describer = (*PortForwardListDescriber)(nil)
 func (d *PortForwardListDescriber) Describe(ctx context.Context, namespace string, options describer.Options) (component.ContentResponse, error) {
 	portForwarder := options.PortForwarder()
 
-	list := component.NewList("Port Forwards", nil)
+	title := append([]component.TitleComponent{}, component.NewLink("", "Cluster Overview", "/cluster-overview"))
+	title = append(title, component.NewText("Port Forwards"))
+	list := component.NewList(title, nil)
 
 	tblCols := component.NewTableCols("Name", "Namespace", "Ports", "Age")
 	tbl := component.NewTable("Port Forwards", "There are no port forwards!", tblCols)

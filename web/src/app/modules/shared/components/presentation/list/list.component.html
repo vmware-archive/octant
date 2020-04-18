@@ -1,6 +1,5 @@
-<h2>
-  {{ title }}
-</h2>
+<app-breadcrumb [path]="title">
+</app-breadcrumb>
 <ng-container *ngFor="let item of v?.config.items; trackBy: identifyItem">
   <app-content-switcher [view]="item"></app-content-switcher>
 </ng-container>

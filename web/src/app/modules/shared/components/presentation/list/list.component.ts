@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { ListView, View } from 'src/app/modules/shared/models/content';
+import {
+  LinkView,
+  ListView,
+  View,
+} from 'src/app/modules/shared/models/content';
 
 import { IconService } from '../../../services/icon/icon.service';
 import { ViewService } from '../../../services/view/view.service';
@@ -37,7 +41,13 @@ export class ListComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view) {
       const current = changes.view.currentValue;
-      this.title = this.viewService.viewTitleAsText(current);
+      this.title = current.metadata.title
+        ? current.metadata.title.map((item: LinkView) => ({
+            title: item.config.value,
+            url: item.config.ref,
+          }))
+        : '';
+
       if (this.v.config.items) {
         this.v.config.items.forEach(item => {
           item.totalItems = this.v.config.items.length;

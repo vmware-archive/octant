@@ -186,7 +186,7 @@ func generateServiceAccountSecretsList(namespace string, secretNames []string, o
 		}
 		items = append(items, nameLink)
 	}
-	return component.NewList("", items), nil
+	return component.NewList([]component.TitleComponent{}, items), nil
 }
 
 func serviceAccountTokens(ctx context.Context, serviceAccount corev1.ServiceAccount, o store.Store) ([]string, error) {

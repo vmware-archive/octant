@@ -19,9 +19,9 @@ import (
 	"github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/modules/overview/logviewer"
+	"github.com/vmware-tanzu/octant/internal/modules/overview/terminalviewer"
 	"github.com/vmware-tanzu/octant/internal/modules/overview/yamlviewer"
 	"github.com/vmware-tanzu/octant/internal/octant"
-	"github.com/vmware-tanzu/octant/internal/modules/overview/terminalviewer"
 	"github.com/vmware-tanzu/octant/internal/printer"
 	"github.com/vmware-tanzu/octant/internal/resourceviewer"
 	"github.com/vmware-tanzu/octant/pkg/action"
@@ -37,6 +37,7 @@ type ObjectConfig struct {
 	DisableResourceViewer bool
 	IconName              string
 	IconSource            string
+	RootPath              ResourceLink
 }
 
 // Object describes an object.
@@ -51,6 +52,7 @@ type Object struct {
 	tabFuncDescriptors    []tabFuncDescriptor
 	iconName              string
 	iconSource            string
+	rootPath              ResourceLink
 }
 
 // NewObject creates an instance of Object.
@@ -64,6 +66,7 @@ func NewObject(c ObjectConfig) *Object {
 		disableResourceViewer: c.DisableResourceViewer,
 		iconName:              c.IconName,
 		iconSource:            c.IconSource,
+		rootPath:              c.RootPath,
 	}
 
 	o.tabFuncDescriptors = []tabFuncDescriptor{
@@ -121,7 +124,7 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 	if err != nil {
 		return component.EmptyContentResponse, err
 	}
-	title := append([]component.TitleComponent{}, component.NewLink("", d.baseTitle, filepath.Dir(nameLink.Ref())))
+	title := getBreadcrumb(d.rootPath, d.baseTitle, filepath.Dir(nameLink.Ref()), namespace)
 	if objectName != "" {
 		title = append(title, component.NewText(objectName))
 	}

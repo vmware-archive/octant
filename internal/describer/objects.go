@@ -50,6 +50,7 @@ func initNamespacedCRD() *CRDSection {
 	return NewCRDSection(
 		"/custom-resources",
 		"Custom Resources",
+		ResourceLink{Title: "Workloads", Url: "/overview/namespace/($NAMESPACE)/workloads"},
 	)
 }
 
@@ -61,6 +62,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &batchv1beta1.CronJob{},
 		Titles:         ResourceTitle{List: "Cron Jobs", Object: "Cron Jobs"},
 		IconName:       icon.OverviewCronJob,
+		RootPath:       ResourceLink{Title: "Workloads", Url: "/overview/namespace/($NAMESPACE)/workloads"},
 	})
 
 	workloadsDaemonSets := NewResource(ResourceOptions{
@@ -70,6 +72,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &appsv1.DaemonSet{},
 		Titles:         ResourceTitle{List: "Daemon Sets", Object: "Daemon Sets"},
 		IconName:       icon.OverviewDaemonSet,
+		RootPath:       ResourceLink{Title: "Workloads", Url: "/overview/namespace/($NAMESPACE)/workloads"},
 	})
 
 	workloadsDeployments := NewResource(ResourceOptions{
@@ -79,6 +82,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &appsv1.Deployment{},
 		Titles:         ResourceTitle{List: "Deployments", Object: "Deployments"},
 		IconName:       icon.OverviewDeployment,
+		RootPath:       ResourceLink{Title: "Workloads", Url: "/overview/namespace/($NAMESPACE)/workloads"},
 	})
 
 	workloadsJobs := NewResource(ResourceOptions{
@@ -88,6 +92,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &batchv1.Job{},
 		Titles:         ResourceTitle{List: "Jobs", Object: "Jobs"},
 		IconName:       icon.OverviewJob,
+		RootPath:       ResourceLink{Title: "Workloads", Url: "/overview/namespace/($NAMESPACE)/workloads"},
 	})
 
 	workloadsPods := NewResource(ResourceOptions{
@@ -97,6 +102,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &corev1.Pod{},
 		Titles:         ResourceTitle{List: "Pods", Object: "Pods"},
 		IconName:       icon.OverviewPod,
+		RootPath:       ResourceLink{Title: "Workloads", Url: "/overview/namespace/($NAMESPACE)/workloads"},
 	})
 
 	workloadsReplicaSets := NewResource(ResourceOptions{
@@ -106,6 +112,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &appsv1.ReplicaSet{},
 		Titles:         ResourceTitle{List: "Replica Sets", Object: "Replica Sets"},
 		IconName:       icon.OverviewReplicaSet,
+		RootPath:       ResourceLink{Title: "Workloads", Url: "/overview/namespace/($NAMESPACE)/workloads"},
 	})
 
 	workloadsReplicationControllers := NewResource(ResourceOptions{
@@ -115,6 +122,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &corev1.ReplicationController{},
 		Titles:         ResourceTitle{List: "Replication Controllers", Object: "Replication Controllers"},
 		IconName:       icon.OverviewReplicationController,
+		RootPath:       ResourceLink{Title: "Workloads", Url: "/overview/namespace/($NAMESPACE)/workloads"},
 	})
 	workloadsStatefulSets := NewResource(ResourceOptions{
 		Path:           "/workloads/stateful-sets",
@@ -123,6 +131,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &appsv1.StatefulSet{},
 		Titles:         ResourceTitle{List: "Stateful Sets", Object: "Stateful Sets"},
 		IconName:       icon.OverviewStatefulSet,
+		RootPath:       ResourceLink{Title: "Workloads", Url: "/overview/namespace/($NAMESPACE)/workloads"},
 	})
 
 	workloadsDescriber := NewSection(
@@ -145,6 +154,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &autoscalingv1.HorizontalPodAutoscaler{},
 		Titles:         ResourceTitle{List: "Horizontal Pod Autoscalers", Object: "Horizontal Pod Autoscalers"},
 		IconName:       icon.OverviewHorizontalPodAutoscaler,
+		RootPath:       ResourceLink{Title: "Discovery and Load Balancing", Url: "/overview/namespace/($NAMESPACE)/discovery-and-load-balancing"},
 	})
 
 	dlbIngresses := NewResource(ResourceOptions{
@@ -154,6 +164,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &v1beta1.Ingress{},
 		Titles:         ResourceTitle{List: "Ingresses", Object: "Ingresses"},
 		IconName:       icon.OverviewIngress,
+		RootPath:       ResourceLink{Title: "Discovery and Load Balancing", Url: "/overview/namespace/($NAMESPACE)/discovery-and-load-balancing"},
 	})
 
 	dlbServices := NewResource(ResourceOptions{
@@ -163,6 +174,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &corev1.Service{},
 		Titles:         ResourceTitle{List: " Services", Object: "Services"},
 		IconName:       icon.OverviewService,
+		RootPath:       ResourceLink{Title: "Discovery and Load Balancing", Url: "/overview/namespace/($NAMESPACE)/discovery-and-load-balancing"},
 	})
 
 	dlbNetworkPolicies := NewResource(ResourceOptions{
@@ -190,6 +202,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &corev1.ConfigMap{},
 		Titles:         ResourceTitle{List: "Config Maps", Object: "Config Maps"},
 		IconName:       icon.OverviewConfigMap,
+		RootPath:       ResourceLink{Title: "Config and Storage", Url: "/overview/namespace/($NAMESPACE)/config-and-storage"},
 	})
 
 	csPVCs := NewResource(ResourceOptions{
@@ -199,6 +212,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &corev1.PersistentVolumeClaim{},
 		Titles:         ResourceTitle{List: "Persistent Volume Claims", Object: "Persistent Volume Claims"},
 		IconName:       icon.OverviewPersistentVolumeClaim,
+		RootPath:       ResourceLink{Title: "Config and Storage", Url: "/overview/namespace/($NAMESPACE)/config-and-storage"},
 	})
 
 	csSecrets := NewResource(ResourceOptions{
@@ -208,6 +222,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &corev1.Secret{},
 		Titles:         ResourceTitle{List: "Secrets", Object: "Secrets"},
 		IconName:       icon.OverviewSecret,
+		RootPath:       ResourceLink{Title: "Config and Storage", Url: "/overview/namespace/($NAMESPACE)/config-and-storage"},
 	})
 
 	csServiceAccounts := NewResource(ResourceOptions{
@@ -217,6 +232,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &corev1.ServiceAccount{},
 		Titles:         ResourceTitle{List: "Service Accounts", Object: "Service Accounts"},
 		IconName:       icon.OverviewServiceAccount,
+		RootPath:       ResourceLink{Title: "Config and Storage", Url: "/overview/namespace/($NAMESPACE)/config-and-storage"},
 	})
 
 	configAndStorageDescriber := NewSection(
@@ -235,6 +251,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &rbacv1.Role{},
 		Titles:         ResourceTitle{List: "Roles", Object: "Roles"},
 		IconName:       icon.OverviewRole,
+		RootPath:       ResourceLink{Title: "RBAC", Url: "/overview/namespace/($NAMESPACE)/rbac"},
 	})
 
 	rbacRoleBindings := NewResource(ResourceOptions{
@@ -244,6 +261,7 @@ func initNamespacedOverview() *Section {
 		ObjectType:     &rbacv1.RoleBinding{},
 		Titles:         ResourceTitle{List: "Role Bindings", Object: "Role Bindings"},
 		IconName:       icon.OverviewRoleBinding,
+		RootPath:       ResourceLink{Title: "RBAC", Url: "/overview/namespace/($NAMESPACE)/rbac"},
 	})
 
 	rbacDescriber := NewSection(

@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"path"
 	"reflect"
+	"strings"
 
 	"github.com/vmware-tanzu/octant/pkg/icon"
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -25,6 +26,11 @@ type ResourceTitle struct {
 	Object string
 }
 
+type ResourceLink struct {
+	Title   string
+	Url 	string
+}
+
 type ResourceOptions struct {
 	Path                  string
 	ObjectStoreKey        store.Key
@@ -34,6 +40,7 @@ type ResourceOptions struct {
 	DisableResourceViewer bool
 	ClusterWide           bool
 	IconName              string
+	RootPath              ResourceLink
 }
 
 type Resource struct {
@@ -69,6 +76,7 @@ func (r *Resource) List() *List {
 			IsClusterWide: r.ClusterWide,
 			IconName:      iconName,
 			IconSource:    iconSource,
+			RootPath:      r.RootPath,
 		},
 	)
 }
@@ -87,6 +95,7 @@ func (r *Resource) Object() *Object {
 			DisableResourceViewer: r.DisableResourceViewer,
 			IconName:              iconName,
 			IconSource:            iconSource,
+			RootPath:      		   r.RootPath,
 		},
 	)
 }
@@ -98,6 +107,19 @@ func (r *Resource) PathFilters() []PathFilter {
 	}
 
 	return filters
+}
+
+func getBreadcrumb(rootPath ResourceLink, objectTitle string, objectUrl string, namespace string) []component.TitleComponent {
+	var rootUrl = rootPath.Url
+	if strings.Contains(rootPath.Url, "($NAMESPACE)") {
+		rootUrl = strings.Replace(rootPath.Url, "($NAMESPACE)", namespace, 1)
+	}
+	var title []component.TitleComponent
+	if len(rootUrl) > 0 {
+		title = append(title, component.NewLink("", rootPath.Title, rootUrl))
+	}
+	title = append(title, component.NewLink("", objectTitle, objectUrl))
+	return title
 }
 
 func loadIcon(name string) (string, string) {

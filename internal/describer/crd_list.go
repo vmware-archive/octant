@@ -64,7 +64,8 @@ func (cld *crdList) Describe(ctx context.Context, namespace string, options Opti
 	view.SetAccessor("summary")
 
 	title := component.Title(
-		component.NewText("Custom Resources"),
+		component.NewLink("", "Cluster Overview", "/cluster-overview"),
+		component.NewLink("", "Custom Resources", "/cluster-overview/custom-resources"),
 		component.NewText(crd.GetName()))
 
 	contentResponse := component.NewContentResponse(title)

@@ -26,8 +26,8 @@ var _ describer.Describer = (*PluginListDescriber)(nil)
 // Describe describes a list of plugins
 func (d *PluginListDescriber) Describe(ctx context.Context, namespace string, options describer.Options) (component.ContentResponse, error) {
 	pluginStore := options.PluginManager().Store()
-
-	list := component.NewList("Plugins", nil)
+	title := append([]component.TitleComponent{}, component.NewText("Plugins"))
+	list := component.NewList(title, nil)
 	tableCols := component.NewTableCols("Name", "Description", "Capabilities")
 	tbl := component.NewTable("Plugins", "There are no plugins!", tableCols)
 	list.Add(tbl)

@@ -18,6 +18,7 @@ var (
 	customResourcesDescriber = describer.NewCRDSection(
 		"/custom-resources",
 		"Custom Resources",
+		describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	)
 
 	rbacClusterRoles = describer.NewResource(describer.ResourceOptions{
@@ -28,6 +29,7 @@ var (
 		Titles:         describer.ResourceTitle{List: "Cluster Roles", Object: "Cluster Roles"},
 		ClusterWide:    true,
 		IconName:       icon.ClusterOverviewClusterRole,
+		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	})
 
 	rbacClusterRoleBindings = describer.NewResource(describer.ResourceOptions{
@@ -38,6 +40,7 @@ var (
 		Titles:         describer.ResourceTitle{List: "Cluster Role Bindings", Object: "Cluster Role Bindings"},
 		ClusterWide:    true,
 		IconName:       icon.ClusterOverviewClusterRoleBinding,
+		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	})
 
 	rbacDescriber = describer.NewSection(
@@ -56,6 +59,7 @@ var (
 		DisableResourceViewer: true,
 		ClusterWide:           true,
 		IconName:              icon.ClusterOverviewNode,
+		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	})
 
 	storagePersistentVolumeDescriber = describer.NewResource(describer.ResourceOptions{
@@ -66,6 +70,7 @@ var (
 		Titles:         describer.ResourceTitle{List: "Persistent Volumes", Object: "Persistent Volumes"},
 		ClusterWide:    true,
 		IconName:       icon.ClusterOverviewPersistentVolume,
+		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	})
 
 	storageDescriber = describer.NewSection(
@@ -83,6 +88,7 @@ var (
 		DisableResourceViewer: true,
 		ClusterWide:           true,
 		IconName:              icon.ClusterOverviewNamespace,
+		RootPath:       		describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	})
 
 	portForwardDescriber = NewPortForwardListDescriber()

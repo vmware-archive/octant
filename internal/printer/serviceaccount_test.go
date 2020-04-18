@@ -94,19 +94,19 @@ func Test_ServiceAccountConfiguration(t *testing.T) {
 			expected: component.NewSummary("Configuration", []component.SummarySection{
 				{
 					Header: "Image Pull Secrets",
-					Content: component.NewList("", []component.Component{
+					Content: component.NewList([]component.TitleComponent{}, []component.Component{
 						component.NewLink("", "secret", "/secret"),
 					}),
 				},
 				{
 					Header: "Mountable Secrets",
-					Content: component.NewList("", []component.Component{
+					Content: component.NewList([]component.TitleComponent{}, []component.Component{
 						component.NewLink("", "secret", "/secret"),
 					}),
 				},
 				{
 					Header: "Tokens",
-					Content: component.NewList("", []component.Component{
+					Content: component.NewList([]component.TitleComponent{}, []component.Component{
 						component.NewLink("", "secret", "/secret"),
 					}),
 				},

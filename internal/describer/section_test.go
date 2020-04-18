@@ -46,7 +46,7 @@ func TestSectionDescriber(t *testing.T) {
 			expected: component.ContentResponse{
 				Title: component.Title(component.NewText("section")),
 				Components: []component.Component{
-					component.NewList("section", nil),
+					component.NewList(append([]component.TitleComponent{}, component.NewText("section")), nil),
 				},
 			},
 		},
@@ -61,7 +61,7 @@ func TestSectionDescriber(t *testing.T) {
 			expected: component.ContentResponse{
 				Title: component.Title(component.NewText("section")),
 				Components: []component.Component{
-					component.NewList("section", nil),
+					component.NewList(append([]component.TitleComponent{}, component.NewText("section")), nil),
 				},
 			},
 		},
@@ -75,7 +75,7 @@ func TestSectionDescriber(t *testing.T) {
 			expected: component.ContentResponse{
 				Title: component.Title(component.NewText("section")),
 				Components: []component.Component{
-					component.NewList("section", nil),
+					component.NewList(append([]component.TitleComponent{}, component.NewText("section")), nil),
 				},
 			},
 		},

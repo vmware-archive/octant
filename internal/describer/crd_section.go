@@ -22,17 +22,18 @@ type CRDSection struct {
 	describers map[string]Describer
 	path       string
 	title      string
-
+	rootPath   ResourceLink
 	mu sync.Mutex
 }
 
 var _ Describer = (*CRDSection)(nil)
 
-func NewCRDSection(p, title string) *CRDSection {
+func NewCRDSection(p, title string, rootPath ResourceLink) *CRDSection {
 	return &CRDSection{
 		describers: make(map[string]Describer),
 		path:       p,
 		title:      title,
+		rootPath:   rootPath,
 	}
 }
 
@@ -117,12 +118,12 @@ func (csd *CRDSection) Describe(ctx context.Context, namespace string, options O
 		}
 	}
 
-	cr := component.ContentResponse{
-		Components: []component.Component{table},
-		Title:      component.TitleFromString(csd.title),
-	}
-
-	return cr, nil
+	title := getBreadcrumb(csd.rootPath, csd.title, "", namespace)
+	list := component.NewList(title, nil)
+	list.Add(table)
+	return component.ContentResponse{
+		Components: []component.Component{list},
+	}, nil
 }
 
 func (csd *CRDSection) PathFilters() []PathFilter {
