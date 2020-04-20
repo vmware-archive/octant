@@ -194,9 +194,7 @@ export class LogsComponent
         return logs.filter(
           log =>
             log.message.match(new RegExp(this.filterText, 'g')) ||
-            formatDate(log.timestamp, this.timeFormat, 'en-US').match(
-              new RegExp(this.filterText, 'g')
-            )
+            this.filterTimestamp(log)
         );
       }
       return logs.filter(log =>
@@ -269,14 +267,20 @@ export class LogsComponent
         count += (log.message.match(new RegExp(this.filterText, 'g')) || [])
           .length;
         if (this.shouldDisplayTimestamp) {
-          count += (
-            formatDate(log.timestamp, this.timeFormat, 'en-US').match(
-              new RegExp(this.filterText, 'g')
-            ) || []
-          ).length;
+          count += (this.filterTimestamp(log) || []).length;
         }
       });
     }
     this.totalSelections = count;
+  }
+
+  public filterTimestamp(log: LogEntry) {
+    if (!log.timestamp) {
+      return [];
+    }
+    const timestamp = formatDate(log.timestamp, this.timeFormat, 'en-US');
+    return timestamp && timestamp.length > 0
+      ? timestamp.match(new RegExp(this.filterText, 'g'))
+      : [];
   }
 }

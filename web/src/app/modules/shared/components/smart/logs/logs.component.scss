@@ -3,6 +3,8 @@
  */
 
 .app-logs {
+  height: calc(100% - 140px);
+
   .log-actions {
     display: flex;
     margin-top: 16px;
@@ -65,6 +67,7 @@
     }
   }
   .container-logs {
+    height: 100%;
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: var(--clr-color-neutral-100);
