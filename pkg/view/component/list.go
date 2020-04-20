@@ -43,9 +43,9 @@ func (t *ListConfig) UnmarshalJSON(data []byte) error {
 }
 
 // NewList creates a list component
-func NewList(title string, items []Component) *List {
+func NewList(title []TitleComponent, items []Component) *List {
 	return &List{
-		base: newBase(typeList, TitleFromString(title)),
+		base: newBase(typeList, title),
 		Config: ListConfig{
 			Items: items,
 		},

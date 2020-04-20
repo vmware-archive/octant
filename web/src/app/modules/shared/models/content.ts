@@ -6,6 +6,11 @@ export interface ContentResponse {
   content: Content;
 }
 
+export interface PathItem {
+  title: string;
+  url?: string;
+}
+
 export interface Content {
   extensionComponent: ExtensionView;
   viewComponents: View[];
@@ -23,6 +28,7 @@ export interface Metadata {
 
 export interface View {
   metadata: Metadata;
+  totalItems?: number;
 }
 
 export interface TitleMetadata {

@@ -20,6 +20,7 @@ var (
 		gvk.ClusterRole,
 		gvk.Node,
 		gvk.PersistentVolume,
+		gvk.Namespace,
 	}
 )
 
@@ -41,6 +42,8 @@ func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 		p = "/nodes"
 	case apiVersion == "v1" && kind == "PersistentVolume":
 		p = "/storage/persistent-volumes"
+	case apiVersion == "v1" && kind == "Namespace":
+		p = "/namespaces"
 	default:
 		return "", errors.Errorf("unknown object %s %s", apiVersion, kind)
 	}

@@ -1,0 +1,19 @@
+/* Copyright (c) 2020 the Octant contributors. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+.breadcrumb {
+  &-body {
+    display: flex;
+  }
+
+  &-header {
+    margin-top: 0.2rem;
+    line-height: 1.8rem;
+  }
+
+  .separator {
+    margin-right: 0.2rem;
+    transform: rotate(90deg);
+  }
+}

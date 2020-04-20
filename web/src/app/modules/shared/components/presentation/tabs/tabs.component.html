@@ -1,11 +1,7 @@
 <div class="clr-row clr-align-items-center clr-justify-content-between">
   <div class="clr-col-10">
-    <h2>
-      <ng-container *ngIf="iconName">
-        <clr-icon [attr.shape]="iconName" size="24"></clr-icon>
-      </ng-container>
-      {{ title }}
-    </h2>
+    <app-breadcrumb [path]="title">
+    </app-breadcrumb>
   </div>
   <div class="clr-col-2">
     <div class="action-buttons">

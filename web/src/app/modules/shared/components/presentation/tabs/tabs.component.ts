@@ -9,7 +9,11 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { View, ButtonGroupView } from 'src/app/modules/shared/models/content';
+import {
+  View,
+  ButtonGroupView,
+  PathItem,
+} from 'src/app/modules/shared/models/content';
 import { SliderService } from 'src/app/modules/shared/slider/slider.service';
 import { ViewService } from '../../../services/view/view.service';
 import { WebsocketService } from '../../../services/websocket/websocket.service';
@@ -27,7 +31,7 @@ interface Tab {
   styleUrls: ['./tabs.component.scss'],
 })
 export class TabsComponent implements OnChanges, OnInit {
-  @Input() title: string;
+  @Input() title: PathItem[];
   @Input() views: View[];
   @Input() payloads: [{ [key: string]: string }];
   @Input() iconName: string;
