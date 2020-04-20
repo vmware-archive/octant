@@ -21,17 +21,10 @@ jobs:
     runs-on: ${{ matrix.platform }}
     name: Golang tests on ${{ matrix.platform }}
     steps:
-      - uses: actions/setup-go@v1
+      - uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
       - uses: actions/checkout@v2
-      - name: Set GOPATH
-        # temporary fix
-        # see https://github.com/actions/setup-go/issues/14
-        run: |
-          echo "##[set-env name=GOPATH;]$(dirname $GITHUB_WORKSPACE)"
-          echo "##[add-path]$(dirname $GITHUB_WORKSPACE)/bin"
-        shell: bash
       - name: run_go_tests
         env:
           GOFLAGS: -mod=vendor
@@ -42,17 +35,10 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v1
+      - uses: actions/setup-go@v2
         with:
           go-version: 1.14.x
       - uses: actions/checkout@v2
-      - name: Set GOPATH
-        # temporary fix
-        # see https://github.com/actions/setup-go/issues/14
-        run: |
-          echo "##[set-env name=GOPATH;]$(dirname $GITHUB_WORKSPACE)"
-          echo "##[add-path]$(dirname $GITHUB_WORKSPACE)/bin"
-        shell: bash
       - name: Get tag
         run: echo ::set-env name=GITHUB_TAG::${GITHUB_REF/refs\/tags\//}
       - name: Verify tag
@@ -67,7 +53,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     name: Karma tests on ${{ matrix.platform }}
     steps:
-      - uses: actions/setup-node@v1.1.0
+      - uses: actions/setup-node@v1
       - uses: actions/checkout@v2
       - name: run_karma
         run: |
@@ -85,8 +71,8 @@ jobs:
     runs-on: ${{ matrix.platform }}
     name: Build on ${{ matrix.platform }}
     steps:
-      - uses: actions/setup-node@v1.1.0
-      - uses: actions/setup-go@v1
+      - uses: actions/setup-node@v1
+      - uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
       - uses: actions/checkout@v2
@@ -95,12 +81,6 @@ jobs:
           cd web
           npm ci
           npm run-script build
-      - name: Set GOPATH
-        # temporary fix
-        # see https://github.com/actions/setup-go/issues/14
-        run: |
-          echo "##[set-env name=GOPATH;]$(dirname $GITHUB_WORKSPACE)"
-          echo "##[add-path]$(dirname $GITHUB_WORKSPACE)/bin"
         shell: bash
       - name: Go tools
         env:
