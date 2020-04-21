@@ -109,16 +109,18 @@
 
   .flyout {
     display: flex;
-    border: 1px solid var(--navigation-border-color);
+    border-color: var(--navigation-border-color);
+    border-style: solid;
+    border-width: 0px 1px 1px 1px;
     border-radius: 0px 4px 4px 0px;
     flex-direction: column;
     z-index: 502;
     position: fixed;
-    margin-top: -31px;
+    margin-top: -30px;
     margin-left: 48px;
     background-color: var(--flyout-background-color, #1b2a32);
     color: var(--flyout-color);
-    padding: 0px 0px 0px 0px;
+    padding: 0px;
   }
 
   .tooltip-override {

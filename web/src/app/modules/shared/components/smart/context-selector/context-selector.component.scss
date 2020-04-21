@@ -1,6 +1,16 @@
 /* Copyright (c) 2019 the Octant contributors. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+.dropdown-top {
+  max-width: 10rem;
+}
+
+.dropdown-button {
+  max-width: 9rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  padding: 0.15rem 0.4rem 0.15rem 1rem;
+}
 
 .dropdown > .dropdown-toggle {
   line-height: 2.5rem;

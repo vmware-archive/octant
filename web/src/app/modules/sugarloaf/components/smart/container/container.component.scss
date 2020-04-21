@@ -21,6 +21,8 @@
 
   .header {
     background: var(--navigation-background-color);
+    flex-wrap: wrap;
+    height: auto;
 
     .header-nav {
       padding-left: 1rem;
