@@ -42,6 +42,8 @@ export class ContentService {
     return this.filters;
   }
 
+  private lastReceived = '';
+
   constructor(
     private router: Router,
     private websocketService: WebsocketService,
@@ -50,21 +52,18 @@ export class ContentService {
   ) {
     websocketService.registerHandler(ContentUpdateMessage, data => {
       const response = data as ContentUpdate;
+
+      const s = JSON.stringify(data);
+      if (s === this.lastReceived) {
+        return;
+      }
+
+      this.lastReceived = s;
+
       this.setContent(response.content);
       namespaceService.setNamespace(response.namespace);
 
-      if (response.contentPath) {
-        if (this.previousContentPath.length > 0) {
-          if (response.contentPath !== this.previousContentPath) {
-            const segments = response.contentPath.split('/');
-            this.router.navigate(segments, {
-              queryParams: response.queryParams,
-            });
-          }
-        }
-
-        this.previousContentPath = response.contentPath;
-      }
+      this.previousContentPath = response.contentPath;
     });
 
     labelFilterService.filters.subscribe(filters => {
@@ -73,6 +72,10 @@ export class ContentService {
   }
 
   setContentPath(contentPath: string, params: Params) {
+    if (contentPath === this.previousContentPath) {
+      return;
+    }
+
     if (!contentPath) {
       contentPath = '';
     }

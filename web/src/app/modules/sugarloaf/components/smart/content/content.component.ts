@@ -11,12 +11,12 @@ import {
 } from '@angular/core';
 import { Params, Router, UrlSegment } from '@angular/router';
 import {
+  ButtonGroupView,
   ContentResponse,
   ExtensionView,
-  View,
-  ButtonGroupView,
-  PathItem,
   LinkView,
+  PathItem,
+  View,
 } from 'src/app/modules/shared/models/content';
 import { IconService } from '../../../../shared/services/icon/icon.service';
 import { ContentService } from '../../../../shared/services/content/content.service';

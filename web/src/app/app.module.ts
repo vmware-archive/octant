@@ -4,13 +4,14 @@
 import { Location } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { Injectable, NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouteReuseStrategy, RouterModule } from '@angular/router';
 import { HomeComponent } from './components/smart/home/home.component';
 import { AppRoutingModule } from './app-routing.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { highlightProvider } from './modules/shared/highlight';
 import { MonacoEditorModule, MonacoProviderService } from 'ng-monaco-editor';
+import { ComponentReuseStrategy } from './modules/shared/component-reuse.strategy';
 
 @Injectable()
 export class UnstripTrailingSlashLocation extends Location {
@@ -41,6 +42,7 @@ export class UnstripTrailingSlashLocation extends Location {
       useClass: UnstripTrailingSlashLocation,
     },
     highlightProvider(),
+    { provide: RouteReuseStrategy, useClass: ComponentReuseStrategy },
   ],
   bootstrap: [HomeComponent],
 })
