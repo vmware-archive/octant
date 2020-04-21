@@ -10,6 +10,7 @@ import {
   OnDestroy,
   SimpleChanges,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -20,6 +21,7 @@ import { TimestampView, View } from 'src/app/modules/shared/models/content';
   selector: 'app-view-timestamp',
   templateUrl: './timestamp.component.html',
   styleUrls: ['./timestamp.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TimestampComponent implements OnChanges, OnDestroy {
   private v: TimestampView;

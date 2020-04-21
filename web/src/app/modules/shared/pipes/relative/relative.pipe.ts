@@ -77,7 +77,7 @@ export class RelativePipe implements PipeTransform, OnDestroy {
   private changeDetectionFrequency(seconds: number) {
     switch (true) {
       case seconds < 60:
-        return 2;
+        return 1;
       case seconds < 3600:
         return 60;
       case seconds < 86400:
