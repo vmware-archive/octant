@@ -50,7 +50,7 @@ func initNamespacedCRD() *CRDSection {
 	return NewCRDSection(
 		"/custom-resources",
 		"Custom Resources",
-		ResourceLink{Title: "Workloads", Url: "/overview/namespace/($NAMESPACE)/workloads"},
+		ResourceLink{Title: "Overview", Url: "/overview/namespace/($NAMESPACE)"},
 	)
 }
 

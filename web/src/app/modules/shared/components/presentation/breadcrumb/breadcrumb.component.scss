@@ -5,11 +5,16 @@
 .breadcrumb {
   &-body {
     display: flex;
+    flex-wrap: wrap;
   }
 
   &-header {
     margin-top: 0.2rem;
     line-height: 1.8rem;
+  }
+
+  &-span {
+    padding-right: 0.5rem;
   }
 
   .separator {

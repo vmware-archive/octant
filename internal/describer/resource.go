@@ -8,6 +8,7 @@ package describer
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"path"
 	"reflect"
 	"strings"
@@ -120,6 +121,33 @@ func getBreadcrumb(rootPath ResourceLink, objectTitle string, objectUrl string, 
 	}
 	title = append(title, component.NewLink("", objectTitle, objectUrl))
 	return title
+}
+
+func getCrdTitle(namespace string, crd *unstructured.Unstructured, objectName string) []component.TitleComponent {
+	var title []component.TitleComponent
+	if namespace == "" {
+		title= component.Title(component.NewLink("", "Cluster Overview", "/cluster-overview"),
+			component.NewLink("", "Custom Resources", "/cluster-overview/custom-resources"))
+	} else {
+		title = component.Title(component.NewLink("", "Overview", "/overview/namespace/"+namespace),
+			component.NewLink("", "Custom Resources", "/overview/namespace/"+namespace+"/custom-resources"))
+	}
+
+	if objectName == "" {
+		title= append(title, component.NewText(crd.GetName()))
+	} else {
+		title= append(title, component.NewLink("", crd.GetName(), getCrdUrl(namespace, crd)))
+		title= append(title, component.NewText(objectName))
+	}
+	return title
+}
+
+func getCrdUrl(namespace string, crd *unstructured.Unstructured) string {
+	ref := path.Join("/overview/namespace", namespace, "custom-resources", crd.GetName())
+	if namespace == "" {
+		ref = path.Join("/cluster-overview/custom-resources", crd.GetName())
+	}
+	return ref
 }
 
 func loadIcon(name string) (string, string) {
