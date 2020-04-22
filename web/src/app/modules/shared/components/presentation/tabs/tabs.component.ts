@@ -56,6 +56,8 @@ export class TabsComponent implements OnChanges, OnInit {
     const { fragment } = this.activatedRoute.snapshot;
     if (fragment) {
       this.activeTab = fragment;
+    } else {
+      this.activeTab = this.tabs[0]?.accessor;
     }
   }
 
