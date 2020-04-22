@@ -1,3 +1,13 @@
+## v0.12.1
+#### 2020-04-22
+
+### Download
+ - https://github.com/vmware/octant/releases/tag/v0.12.1
+
+### Bug Fixes
+  * Fixed initial active tab to use first tab if url fragment is missing (#868, @GuessWhoSamFoo)
+  * Fixed breadcrumbs for non-CRD types (#869, @mklanjsek)
+
 ## v0.12.0
 #### 2020-04-22
 
