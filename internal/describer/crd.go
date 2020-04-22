@@ -8,7 +8,6 @@ package describer
 import (
 	"context"
 	"fmt"
-
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -104,12 +103,7 @@ func (c *crd) Describe(ctx context.Context, namespace string, options Options) (
 	if object == nil {
 		return component.EmptyContentResponse, err
 	}
-
-	title := component.Title(
-		component.NewText("Custom Resources"),
-		component.NewText(crd.GetName()),
-		component.NewText(object.GroupVersionKind().Version),
-		component.NewText(object.GetName()))
+	title := getCrdTitle(namespace, crd, object.GetName())
 
 	iconName, iconSource := loadIcon(icon.CustomResourceDefinition)
 	cr := component.NewContentResponse(title)

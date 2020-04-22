@@ -7,7 +7,6 @@ package describer
 
 import (
 	"context"
-	"path"
 	"sort"
 	"sync"
 
@@ -103,12 +102,7 @@ func (csd *CRDSection) Describe(ctx context.Context, namespace string, options O
 			if count > 0 {
 				row := component.TableRow{}
 
-				ref := path.Join("/overview/namespace", namespace, "custom-resources", crd.GetName())
-				if namespace == "" {
-					ref = path.Join("/cluster-overview/custom-resources", crd.GetName())
-				}
-
-				row["Name"] = component.NewLink("", crd.GetName(), ref)
+				row["Name"] = component.NewLink("", crd.GetName(), getCrdUrl(namespace, crd))
 				row["Labels"] = component.NewLabels(crd.GetLabels())
 				row["Age"] = component.NewTimestamp(crd.GetCreationTimestamp().Time)
 
