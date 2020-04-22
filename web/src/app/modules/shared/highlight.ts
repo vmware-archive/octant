@@ -4,14 +4,12 @@
  *
  */
 
-import json from 'highlight.js/lib/languages/json';
-import yaml from 'highlight.js/lib/languages/yaml';
 import { HIGHLIGHT_OPTIONS } from 'ngx-highlightjs';
 
 export function hljsLanguages() {
   return {
-    json: () => json,
-    yaml: () => yaml,
+    json: () => import('highlight.js/lib/languages/json'),
+    yaml: () => import('highlight.js/lib/languages/yaml'),
   };
 }
 
