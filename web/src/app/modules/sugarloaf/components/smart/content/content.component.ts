@@ -5,6 +5,7 @@
  */
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   OnDestroy,
   OnInit,
@@ -18,7 +19,6 @@ import {
   PathItem,
   View,
 } from 'src/app/modules/shared/models/content';
-import { IconService } from '../../../../shared/services/icon/icon.service';
 import { ContentService } from '../../../../shared/services/content/content.service';
 import isEqual from 'lodash/isEqual';
 import { Subscription } from 'rxjs';
@@ -27,7 +27,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-overview',
   templateUrl: './content.component.html',
   styleUrls: ['./content.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Default,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContentComponent implements OnInit, OnDestroy {
   hasTabs = false;
@@ -39,14 +39,13 @@ export class ContentComponent implements OnInit, OnDestroy {
   buttonGroup: ButtonGroupView = null;
   private contentSubscription: Subscription;
   private previousUrl = '';
-  private iconName: string;
   private defaultPath: string;
   private previousParams: Params;
 
   constructor(
     private router: Router,
-    private iconService: IconService,
-    private contentService: ContentService
+    private contentService: ContentService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {}
 
   updatePath(url: string) {
@@ -113,7 +112,6 @@ export class ContentComponent implements OnInit, OnDestroy {
     }
     this.buttonGroup = contentResponse.content.buttonGroup;
 
-    this.extView = contentResponse.content.extensionComponent;
     this.hasTabs = views.length > 1;
     if (this.hasTabs) {
       this.views = views;
@@ -127,6 +125,6 @@ export class ContentComponent implements OnInit, OnDestroy {
     }
 
     this.hasReceivedContent = true;
-    this.iconName = this.iconService.load(contentResponse.content);
+    this.changeDetectorRef.detectChanges();
   };
 }

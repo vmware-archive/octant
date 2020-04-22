@@ -26,7 +26,6 @@ import { ErrorComponent } from './components/presentation/error/error.component'
 import { ExpressionSelectorComponent } from './components/presentation/expression-selector/expression-selector.component';
 import { GraphvizComponent } from './components/presentation/graphviz/graphviz.component';
 import { ButtonGroupComponent } from './components/presentation/button-group/button-group.component';
-import { YamlComponent } from './components/presentation/yaml/yaml.component';
 import { TableComponent } from './components/presentation/table/table.component';
 import { TimestampComponent } from './components/presentation/timestamp/timestamp.component';
 import { LoadingComponent } from './components/presentation/loading/loading.component';
@@ -52,7 +51,6 @@ import { PortsComponent } from './components/presentation/ports/ports.component'
 import { FiltersComponent } from './components/smart/filters/filters.component';
 import { HeptagonComponent } from './components/smart/heptagon/heptagon.component';
 import { ContextSelectorComponent } from './components/smart/context-selector/context-selector.component';
-import { SliderViewComponent } from './components/smart/slider-view/slider-view.component';
 import { SafePipe } from './pipes/safe/safe.pipe';
 import { AnsiPipe } from './pipes/ansiPipe/ansi.pipe';
 import { DefaultPipe } from './pipes/default/default.pipe';
@@ -113,7 +111,6 @@ import { OverflowLabelsComponent } from './components/presentation/overflow-labe
     RelativePipe,
     SelectorsComponent,
     SingleStatComponent,
-    SliderViewComponent,
     SummaryComponent,
     TableComponent,
     TabsComponent,
@@ -121,7 +118,6 @@ import { OverflowLabelsComponent } from './components/presentation/overflow-labe
     TextComponent,
     TimestampComponent,
     TitleComponent,
-    YamlComponent,
     OverflowLabelsComponent,
   ],
   imports: [
@@ -181,7 +177,6 @@ import { OverflowLabelsComponent } from './components/presentation/overflow-labe
     QuadrantComponent,
     ResourceViewerComponent,
     SelectorsComponent,
-    SliderViewComponent,
     SingleStatComponent,
     SummaryComponent,
     TableComponent,
@@ -190,7 +185,6 @@ import { OverflowLabelsComponent } from './components/presentation/overflow-labe
     TextComponent,
     TimestampComponent,
     TitleComponent,
-    YamlComponent,
     OverflowLabelsComponent,
   ],
 })

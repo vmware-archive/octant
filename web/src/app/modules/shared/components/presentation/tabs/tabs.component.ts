@@ -14,7 +14,6 @@ import {
   ButtonGroupView,
   PathItem,
 } from 'src/app/modules/shared/models/content';
-import { SliderService } from 'src/app/modules/shared/slider/slider.service';
 import { ViewService } from '../../../services/view/view.service';
 import { WebsocketService } from '../../../services/websocket/websocket.service';
 
@@ -34,7 +33,6 @@ export class TabsComponent implements OnChanges, OnInit {
   @Input() title: PathItem[];
   @Input() views: View[];
   @Input() payloads: [{ [key: string]: string }];
-  @Input() iconName: string;
   @Input() closable: boolean;
   @Input() extView: boolean;
   @Input() buttonGroup: ButtonGroupView;
@@ -48,7 +46,6 @@ export class TabsComponent implements OnChanges, OnInit {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private viewService: ViewService,
-    private sliderService: SliderService,
     private wss: WebsocketService
   ) {}
 
@@ -72,10 +69,6 @@ export class TabsComponent implements OnChanges, OnInit {
       });
 
       if (this.extView && this.tabs.length > 0) {
-        this.sliderService.activeTab.subscribe(index => {
-          this.activeTabIndex = index;
-        });
-
         // Initial load if there are existing tabs
         if (this.activeTabIndex === null) {
           this.activeTabIndex = this.tabs.length - 1;
@@ -89,7 +82,6 @@ export class TabsComponent implements OnChanges, OnInit {
           }
           this.closingTab = false;
         }
-        this.sliderService.activeTab.next(this.activeTabIndex);
         this.activeTab = this.tabs[this.activeTabIndex].accessor;
         this.setMarker(this.activeTab);
       }
@@ -106,10 +98,6 @@ export class TabsComponent implements OnChanges, OnInit {
     }
     this.activeTab = tabAccessor;
     this.setMarker(tabAccessor);
-    if (this.extView) {
-      const tabIndex = this.tabs.findIndex(tab => tab.accessor === tabAccessor);
-      this.sliderService.activeTab.next(tabIndex);
-    }
   }
 
   closeTab(tabAccessor: string) {
@@ -148,23 +136,12 @@ export class TabsComponent implements OnChanges, OnInit {
         default:
         // no-op
       }
-
-      // Closed remaining tab
-      if (this.tabs.length === 0) {
-        this.sliderService.activeTab.next(null);
-        return;
-      }
     }
-    this.sliderService.activeTab.next(this.activeTabIndex);
     this.activeTab = this.tabs[this.activeTabIndex].accessor;
     this.setMarker(this.activeTab);
   }
 
   private setMarker(tabAccessor: string) {
-    // TODO: Manage active tab state in backend
-    if (!this.iconName) {
-      return;
-    }
     this.router.navigate([], {
       relativeTo: this.activatedRoute,
       replaceUrl: true,

@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import {
   GridAction,
   GridActionsView,
@@ -11,15 +17,16 @@ import {
   TableView,
   View,
 } from 'src/app/modules/shared/models/content';
-import trackByIndex from 'src/app/util/trackBy/trackByIndex';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
-import { ViewService } from '../../../services/view/view.service';
+import trackByIndex from 'src/app/util/trackBy/trackByIndex';
 import { ActionService } from '../../../services/action/action.service';
+import { ViewService } from '../../../services/view/view.service';
 
 @Component({
   selector: 'app-view-datagrid',
   templateUrl: './datagrid.component.html',
   styleUrls: ['./datagrid.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DatagridComponent implements OnChanges {
   private v: TableView;

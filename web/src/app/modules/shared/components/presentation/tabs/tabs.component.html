@@ -15,11 +15,6 @@
       <button clrTabLink class="tab-button" (click)="clickTab(tab.accessor)">
         {{ tab.name }}
       </button>
-      <clr-icon
-        shape="times"
-        *ngIf="closable"
-        (click)="closeTab(tab.accessor)"
-      ></clr-icon>
     </div>
     <ng-template [clrIfActive]="activeTab === tab.accessor">
       <clr-tab-content>
