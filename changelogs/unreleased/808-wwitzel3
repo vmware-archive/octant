@@ -1,3 +1,0 @@
-Add ActionName to service.ActionRequest to allow dispatching of Octant events
-
-**PLUGIN API BREAKING CHANGE**
