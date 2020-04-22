@@ -63,6 +63,21 @@ export class ContentService {
       this.setContent(response.content);
       namespaceService.setNamespace(response.namespace);
 
+      if (response.contentPath) {
+        if (this.previousContentPath.length > 0) {
+          if (response.contentPath !== this.previousContentPath) {
+            const segments = response.contentPath.split('/');
+            this.router
+              .navigate(segments, {
+                queryParams: response.queryParams,
+              })
+              .catch(reason =>
+                console.error(`unable to navigate`, { segments, reason })
+              );
+          }
+        }
+      }
+
       this.previousContentPath = response.contentPath;
     });
 

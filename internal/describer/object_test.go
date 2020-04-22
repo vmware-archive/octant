@@ -3,12 +3,17 @@ Copyright (c) 2019 the Octant contributors. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package describer
+package describer_test
 
 import (
 	"context"
-	"github.com/vmware-tanzu/octant/internal/link"
 	"testing"
+
+	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/vmware-tanzu/octant/internal/describer"
+	describerFake "github.com/vmware-tanzu/octant/internal/describer/fake"
+	"github.com/vmware-tanzu/octant/internal/link"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +22,6 @@ import (
 
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	"github.com/vmware-tanzu/octant/internal/octant"
-	printerFake "github.com/vmware-tanzu/octant/internal/printer/fake"
 	"github.com/vmware-tanzu/octant/internal/testutil"
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/plugin"
@@ -46,10 +50,10 @@ func TestObjectDescriber(t *testing.T) {
 	pluginManager := plugin.NewManager(nil, moduleRegistrar, actionRegistrar)
 	dashConfig.EXPECT().PluginManager().Return(pluginManager).AnyTimes()
 
-	objectPrinter := printerFake.NewMockPrinter(controller)
-
 	podSummary := component.NewText("summary")
-	objectPrinter.EXPECT().Print(gomock.Any(), pod, pluginManager).Return(podSummary, nil)
+
+	tg := describerFake.NewMockTabsGenerator(controller)
+	tg.EXPECT().Generate(gomock.Any(), gomock.Any()).Return([]component.Component{podSummary}, nil)
 
 	dashConfig.EXPECT().
 		ObjectPath(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
@@ -59,35 +63,41 @@ func TestObjectDescriber(t *testing.T) {
 	lnk, err := link.NewFromDashConfig(dashConfig)
 	require.NoError(t, err)
 
-	options := Options{
-		Dash:    dashConfig,
-		Printer: objectPrinter,
-		Link:       lnk,
+	options := describer.Options{
+		Dash: dashConfig,
+		Link: lnk,
 		LoadObject: func(ctx context.Context, namespace string, fields map[string]string, objectStoreKey store.Key) (*unstructured.Unstructured, error) {
 			return testutil.ToUnstructured(t, pod), nil
 		},
 	}
 
-	objectConfig := ObjectConfig{
-		Path:                  thePath,
-		BaseTitle:             "object",
-		StoreKey:              key,
-		ObjectType:            podObjectType,
-		DisableResourceViewer: true,
-		IconName:              "icon-name",
-		IconSource:            "icon-source",
+	tabDescriptors := []describer.Tab{
+		{
+			Name: "summary",
+			Factory: func(_ context.Context, _ runtime.Object, _ describer.Options) (component.Component, error) {
+				c := component.NewText("summary")
+				c.SetAccessor("summary")
+				return c, nil
+			},
+		},
 	}
-	d := NewObject(objectConfig)
 
-	d.tabFuncDescriptors = []tabFuncDescriptor{
-		{name: "summary", tabFunc: d.addSummaryTab},
+	objectConfig := describer.ObjectConfig{
+		Path:           thePath,
+		BaseTitle:      "object",
+		StoreKey:       key,
+		ObjectType:     describer.PodObjectType,
+		IconName:       "icon-name",
+		IconSource:     "icon-source",
+		TabsGenerator:  tg,
+		TabDescriptors: tabDescriptors,
 	}
+	d := describer.NewObject(objectConfig)
 
 	cResponse, err := d.Describe(ctx, pod.Namespace, options)
 	require.NoError(t, err)
 
 	summary := component.NewText("summary")
-	summary.SetAccessor("summary")
 
 	buttonGroup := component.NewButtonGroup()
 
@@ -100,7 +110,7 @@ func TestObjectDescriber(t *testing.T) {
 			)))
 
 	expected := component.ContentResponse{
-		Title:      component.Title(component.NewLink("", "object", "."), component.NewText("pod")),
+		Title:      component.Title(component.NewText("object"), component.NewText("pod")),
 		IconName:   "icon-name",
 		IconSource: "icon-source",
 		Components: []component.Component{
@@ -108,13 +118,13 @@ func TestObjectDescriber(t *testing.T) {
 		},
 		ButtonGroup: buttonGroup,
 	}
-	assert.Equal(t, expected, cResponse)
 
+	testutil.AssertJSONEqual(t, &expected, &cResponse)
 }
 
-func Test_deleteObjectConfirmation(t *testing.T) {
+func Test_DeleteObjectConfirmation(t *testing.T) {
 	pod := testutil.CreatePod("pod")
-	option, err := deleteObjectConfirmation(pod)
+	option, err := describer.DeleteObjectConfirmation(pod)
 	require.NoError(t, err)
 
 	button := component.Button{}

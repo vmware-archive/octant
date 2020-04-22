@@ -8,51 +8,42 @@ package describer
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/gvk"
-	"github.com/vmware-tanzu/octant/internal/link"
-	"github.com/vmware-tanzu/octant/internal/modules/overview/yamlviewer"
 	"github.com/vmware-tanzu/octant/internal/octant"
-	"github.com/vmware-tanzu/octant/internal/printer"
-	"github.com/vmware-tanzu/octant/internal/queryer"
-	"github.com/vmware-tanzu/octant/internal/resourceviewer"
 	"github.com/vmware-tanzu/octant/pkg/icon"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-type crdPrinter func(ctx context.Context, crd, object *unstructured.Unstructured, options printer.Options) (component.Component, error)
-type metadataPrinter func(runtime.Object, link.Interface) (*component.FlexLayout, error)
-type resourceViewerPrinter func(ctx context.Context, object *unstructured.Unstructured, dashConfig config.Dash, q queryer.Queryer) (component.Component, error)
-type yamlPrinter func(runtime.Object) (*component.Editor, error)
+func defaultCustomResourceTabs(crdName string) []Tab {
+	return []Tab{
+		{Name: "Summary", Factory: CustomResourceSummaryTab(crdName)},
+		{Name: "Metadata", Factory: MetadataTab},
+		{Name: "Resource Viewer", Factory: ResourceViewerTab},
+		{Name: "YAML", Factory: YAMLViewerTab},
+	}
+}
 
 type crdOption func(*crd)
 
 type crd struct {
 	base
 
-	path                  string
-	name                  string
-	summaryPrinter        crdPrinter
-	metadataPrinter       metadataPrinter
-	resourceViewerPrinter resourceViewerPrinter
-	yamlPrinter           yamlPrinter
+	path               string
+	name               string
+	tabsGenerator      TabsGenerator
+	tabFuncDescriptors []Tab
 }
 
 var _ Describer = (*crd)(nil)
 
 func newCRD(name, path string, options ...crdOption) *crd {
 	d := &crd{
-		path:                  path,
-		name:                  name,
-		summaryPrinter:        printer.CustomResourceHandler,
-		metadataPrinter:       printer.MetadataHandler,
-		resourceViewerPrinter: createCRDResourceViewer,
-		yamlPrinter:           yamlviewer.ToComponent,
+		path:               path,
+		name:               name,
+		tabsGenerator:      NewObjectTabsGenerator(),
+		tabFuncDescriptors: defaultCustomResourceTabs(name),
 	}
 
 	for _, option := range options {
@@ -110,57 +101,18 @@ func (c *crd) Describe(ctx context.Context, namespace string, options Options) (
 	cr.IconName = iconName
 	cr.IconSource = iconSource
 
-	linkGenerator, err := link.NewFromDashConfig(options)
+	generatorConfig := TabsGeneratorConfig{
+		Object:      object,
+		TabsFactory: objectTabsFactory(ctx, object, c.tabFuncDescriptors, options),
+		Options:     options,
+	}
+
+	tabComponents, err := c.tabsGenerator.Generate(ctx, generatorConfig)
 	if err != nil {
-		return component.EmptyContentResponse, err
+		return component.EmptyContentResponse, fmt.Errorf("generate tabs: %w", err)
 	}
 
-	printOptions := printer.Options{
-		DashConfig: options,
-		Link:       linkGenerator,
-	}
-
-	summary, err := c.summaryPrinter(ctx, crd, object, printOptions)
-	if err != nil {
-		return component.EmptyContentResponse, err
-	}
-	summary.SetAccessor("summary")
-
-	cr.Add(summary)
-
-	metadata, err := c.metadataPrinter(object, linkGenerator)
-	if err != nil {
-		return component.EmptyContentResponse, err
-	}
-	metadata.SetAccessor("metadata")
-	cr.Add(metadata)
-
-	resourceViewerComponent, err := c.resourceViewerPrinter(ctx, object, options, options.Queryer)
-	if err != nil {
-		return component.EmptyContentResponse, err
-	}
-
-	resourceViewerComponent.SetAccessor("resourceViewer")
-	cr.Add(resourceViewerComponent)
-
-	yvComponent, err := c.yamlPrinter(object)
-	if err != nil {
-		return component.EmptyContentResponse, err
-	}
-
-	yvComponent.SetAccessor("yaml")
-	cr.Add(yvComponent)
-
-	pluginPrinter := options.PluginManager()
-	tabs, err := pluginPrinter.Tabs(ctx, object)
-	if err != nil {
-		return component.EmptyContentResponse, errors.Wrap(err, "getting tabs from plugins")
-	}
-
-	for _, tab := range tabs {
-		tab.Contents.SetAccessor(tab.Name)
-		cr.Add(&tab.Contents)
-	}
+	cr.Add(tabComponents...)
 
 	return *cr, nil
 }
@@ -169,22 +121,4 @@ func (c *crd) PathFilters() []PathFilter {
 	return []PathFilter{
 		*NewPathFilter(c.path, c),
 	}
-}
-
-func createCRDResourceViewer(ctx context.Context, object *unstructured.Unstructured, dashConfig config.Dash, q queryer.Queryer) (component.Component, error) {
-	rv, err := resourceviewer.New(dashConfig, resourceviewer.WithDefaultQueryer(dashConfig, q))
-	if err != nil {
-		return nil, err
-	}
-
-	handler, err := resourceviewer.NewHandler(dashConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := rv.Visit(ctx, object, handler); err != nil {
-		return nil, err
-	}
-
-	return resourceviewer.GenerateComponent(ctx, handler, "")
 }

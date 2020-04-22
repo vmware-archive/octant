@@ -35,9 +35,14 @@ func NewContentResponse(title []TitleComponent) *ContentResponse {
 	}
 }
 
-// Add adds zero or more components to a content response.
+// Add adds zero or more components to a content response. Nil components
+// will be ignored.
 func (c *ContentResponse) Add(components ...Component) {
-	c.Components = append(c.Components, components...)
+	for i := range components {
+		if components[i] != nil {
+			c.Components = append(c.Components, components[i])
+		}
+	}
 }
 
 // SetExtension adds zero or more components to an extension content response.

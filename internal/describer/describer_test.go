@@ -59,10 +59,10 @@ func createPodTable(pods ...corev1.Pod) *component.Table {
 	return table
 }
 
-func podListType() interface{} {
+func PodListType() interface{} {
 	return &corev1.PodList{}
 }
 
-func podObjectType() interface{} {
+func PodObjectType() interface{} {
 	return &corev1.Pod{}
 }

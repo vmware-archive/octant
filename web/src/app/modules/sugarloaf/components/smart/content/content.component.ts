@@ -22,6 +22,8 @@ import { IconService } from '../../../../shared/services/icon/icon.service';
 import { ContentService } from '../../../../shared/services/content/content.service';
 import isEqual from 'lodash/isEqual';
 import { Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-overview',
@@ -46,7 +48,8 @@ export class ContentComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private iconService: IconService,
-    private contentService: ContentService
+    private contentService: ContentService,
+    private location: Location
   ) {}
 
   updatePath(url: string) {

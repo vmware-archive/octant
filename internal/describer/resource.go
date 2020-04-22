@@ -28,8 +28,8 @@ type ResourceTitle struct {
 }
 
 type ResourceLink struct {
-	Title   string
-	Url 	string
+	Title string
+	Url   string
 }
 
 type ResourceOptions struct {
@@ -93,10 +93,8 @@ func (r *Resource) Object() *Object {
 			ObjectType: func() interface{} {
 				return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
 			},
-			DisableResourceViewer: r.DisableResourceViewer,
-			IconName:              iconName,
-			IconSource:            iconSource,
-			RootPath:      		   r.RootPath,
+			IconName:   iconName,
+			IconSource: iconSource,
 		},
 	)
 }
