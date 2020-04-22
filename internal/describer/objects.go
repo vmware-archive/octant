@@ -182,7 +182,8 @@ func initNamespacedOverview() *Section {
 		ObjectStoreKey: store.Key{APIVersion: "networking.k8s.io/v1", Kind: "NetworkPolicy"},
 		ListType:       &networkingv1.NetworkPolicyList{},
 		ObjectType:     &networkingv1.NetworkPolicy{},
-		Titles:         ResourceTitle{List: "Discovery & Load Balancing / Network Policies", Object: "Network Policy"},
+		Titles:         ResourceTitle{List: "Network Policies", Object: "Network Policy"},
+		RootPath:       ResourceLink{Title: "Discovery and Load Balancing", Url: "/overview/namespace/($NAMESPACE)/discovery-and-load-balancing"},
 		IconName:       icon.OverviewNetworkPolicy,
 	})
 

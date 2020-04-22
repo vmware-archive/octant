@@ -95,6 +95,7 @@ func (r *Resource) Object() *Object {
 			},
 			IconName:   iconName,
 			IconSource: iconSource,
+			RootPath:   r.RootPath,
 		},
 	)
 }
