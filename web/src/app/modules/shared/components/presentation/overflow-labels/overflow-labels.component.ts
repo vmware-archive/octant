@@ -13,6 +13,7 @@ interface Labels {
 @Component({
   selector: 'app-overflow-labels',
   templateUrl: './overflow-labels.component.html',
+  styleUrls: ['./overflow-labels.component.scss'],
 })
 export class OverflowLabelsComponent {
   @Input() numberShownLabels = 2;

@@ -18,6 +18,7 @@ interface Selector {
 @Component({
   selector: 'app-overflow-selectors',
   templateUrl: './overflow-selectors.component.html',
+  styleUrls: ['./overflow-selectors.component.scss'],
 })
 export class OverflowSelectorsComponent {
   @Input() numberShownSelectors = 2;

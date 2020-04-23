@@ -11,7 +11,7 @@ describe('OverflowSelectorsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [OverflowSelectorsComponent]
+      declarations: [OverflowSelectorsComponent],
     }).compileComponents();
   }));
 
@@ -28,33 +28,33 @@ describe('OverflowSelectorsComponent', () => {
     component.selectors = [
       {
         metadata: {
-          type: 'LabelSelector'
+          type: 'LabelSelector',
         },
         config: {
           key: 'keyOne',
           value: 'valueOne',
-        }
+        },
       },
       {
         metadata: {
-          type: 'LabelSelector'
+          type: 'LabelSelector',
         },
         config: {
           key: 'keyTwo',
           value: 'valueTwo',
-        }
+        },
       },
       {
         metadata: {
-          type: 'LabelSelector'
+          type: 'LabelSelector',
         },
         config: {
           key: 'keyThree',
           value: 'valueThree',
-        }
-      }
+        },
+      },
     ];
-    
+
     fixture.detectChanges();
     const renderedSelectors = document.getElementsByClassName('label');
 
@@ -67,14 +67,14 @@ describe('OverflowSelectorsComponent', () => {
     component.selectors = [
       {
         metadata: {
-          type: 'LabelSelector'
+          type: 'LabelSelector',
         },
         config: {
           key: 'keyOne',
           value: 'valueOne',
-        }
-      }
-    ]
+        },
+      },
+    ];
     fixture.detectChanges();
     const renderedSelectors = document.getElementsByClassName('label');
 
