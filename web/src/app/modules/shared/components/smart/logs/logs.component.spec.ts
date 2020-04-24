@@ -75,6 +75,34 @@ describe('LogsComponent', () => {
     const selectHighlights: DebugElement[] = fixture.debugElement.queryAll(
       By.css('.highlight')
     );
+    expect(selectHighlights.length).toEqual(75);
+    expect(selectHighlights[0].nativeElement.innerText).toEqual('test');
+  });
+
+  it('should filter for positive lookahead regex', () => {
+    component.filterText = '(?=Just)';
+    component.shouldDisplayTimestamp = false;
+    component.containerLogs = addLogsToList([]);
+    fixture.detectChanges();
+
+    const selectHighlights: DebugElement[] = fixture.debugElement.queryAll(
+      By.css('.highlight')
+    );
+    expect(selectHighlights.length).toEqual(15);
+    expect(selectHighlights[0].nativeElement.innerText).toEqual(
+      'Just for test'
+    );
+  });
+
+  it('should filter case insensitive', () => {
+    component.filterText = 'JUST';
+    component.shouldDisplayTimestamp = false;
+    component.containerLogs = addLogsToList([]);
+    fixture.detectChanges();
+
+    const selectHighlights: DebugElement[] = fixture.debugElement.queryAll(
+      By.css('.highlight')
+    );
     expect(selectHighlights.length).toEqual(15);
     expect(selectHighlights[0].nativeElement.innerText).toEqual('Just');
   });
