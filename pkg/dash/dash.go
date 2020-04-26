@@ -34,7 +34,6 @@ import (
 	"github.com/vmware-tanzu/octant/internal/modules/workloads"
 	"github.com/vmware-tanzu/octant/internal/objectstore"
 	"github.com/vmware-tanzu/octant/internal/portforward"
-	"github.com/vmware-tanzu/octant/internal/terminal"
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/octant"
@@ -121,11 +120,6 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return fmt.Errorf("initializing port forwarder: %w", err)
 	}
 
-	terminalManager, err := terminal.NewTerminalManager(ctx, clusterClient, appObjectStore)
-	if err != nil {
-		return fmt.Errorf("initializing terminal manager: %w", err)
-	}
-
 	actionManger := action.NewManager(logger)
 
 	mo := &moduleOptions{
@@ -163,7 +157,6 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		errorStore,
 		pluginManager,
 		portForwarder,
-		terminalManager,
 		options.Context,
 		restConfigOptions)
 

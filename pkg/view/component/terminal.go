@@ -13,7 +13,6 @@ import (
 type TerminalDetails struct {
 	Container string    `json:"container"`
 	Command   string    `json:"command"`
-	UUID      string    `json:"uuid"`
 	CreatedAt time.Time `json:"createdAt"`
 	Active    bool      `json:"active"`
 }

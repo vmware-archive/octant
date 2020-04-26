@@ -48,18 +48,17 @@ const (
 
 	// EventTypeTerminalFormat is a string with format specifiers to assist in generating
 	// a terminal event type.
-	EventTypeTerminalFormat string = "event.octant.dev/terminals/namespace/%s/pod/%s/container/%s/%s"
+	EventTypeTerminalFormat string = "event.octant.dev/terminals/namespace/%s/pod/%s/container/%s"
 
 	// EventTypeLoggingFormat is a string with format specifiers to assist in generating
 	// a logging event type.
 	EventTypeLoggingFormat string = "event.octant.dev/logging/namespace/%s/pod/%s"
-
 )
 
 // NewTerminalEventType returns an event type for a specific terminal instance.
 // This is the Event.Type that an Octant client will watch for to read the terminal stream.
-func NewTerminalEventType(namespace, pod, container, terminalID string) EventType {
-	return EventType(fmt.Sprintf(EventTypeTerminalFormat, namespace, pod, container, terminalID))
+func NewTerminalEventType(namespace, pod, container string) EventType {
+	return EventType(fmt.Sprintf(EventTypeTerminalFormat, namespace, pod, container))
 }
 
 // NewLoggingEventType returns an event type for pod logs.
@@ -67,7 +66,6 @@ func NewTerminalEventType(namespace, pod, container, terminalID string) EventTyp
 func NewLoggingEventType(namespace, pod string) EventType {
 	return EventType(fmt.Sprintf(EventTypeLoggingFormat, namespace, pod))
 }
-
 
 // Event is an event for the dash frontend.
 type Event struct {

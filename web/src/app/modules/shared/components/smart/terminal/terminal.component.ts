@@ -36,7 +36,6 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
     private actionService: ActionService
   ) {}
 
-  private static sessionID = uuidv4();
   private terminalStream: TerminalOutputStreamer;
   private term: Terminal;
   private fitAddon: FitAddon;
@@ -60,19 +59,8 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
     if (this.view) {
       const logLevel = 'info';
       const { podName, namespace, terminal } = this.view.config;
-      const { active, uuid, command, container } = terminal;
+      const { active, command, container } = terminal;
       const disableStdin = !active;
-      const terminalCommand = {
-        containerName: container,
-        containerCommand: command,
-        name: podName,
-        namespace,
-        kind: 'Pod',
-        apiVersion: 'v1',
-        sessionID: TerminalComponent.sessionID,
-        action: 'action.octant.dev/commandExec',
-      };
-      this.actionService.perform(terminalCommand);
       this.term = new Terminal({
         logLevel,
         disableStdin,
@@ -82,7 +70,6 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
       this.term.onData(data => {
         if (active) {
           this.wss.sendMessage('action.octant.dev/sendTerminalCommand', {
-            terminalID: uuid,
             key: data,
           });
         }
@@ -105,10 +92,9 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
     let timeOut = null;
     const resizeDebounce = (e: { cols: number; rows: number }) => {
       const resize = () => {
-        const { active, uuid } = this.view.config.terminal;
+        const { active } = this.view.config.terminal;
         if (active) {
           this.wss.sendMessage('action.octant.dev/sendTerminalResize', {
-            terminalID: uuid,
             rows: e.rows,
             cols: e.cols,
           });
@@ -126,13 +112,12 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
 
   initStream() {
     const { namespace, podName, terminal } = this.view.config;
-    const { active, uuid, container } = terminal;
-    if (namespace && podName && container && uuid) {
+    const { active, container } = terminal;
+    if (namespace && podName && container) {
       this.terminalStream = this.terminalService.createStream(
         namespace,
         podName,
-        container,
-        uuid
+        container
       );
       this.terminalStream.scrollback.subscribe((scrollback: string) => {
         if (scrollback && scrollback.length !== 0) {

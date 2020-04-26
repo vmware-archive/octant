@@ -27,8 +27,6 @@ import (
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/module"
 	moduleFake "github.com/vmware-tanzu/octant/internal/module/fake"
-	"github.com/vmware-tanzu/octant/internal/terminal"
-	terminalFake "github.com/vmware-tanzu/octant/internal/terminal/fake"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -61,8 +59,6 @@ func TestAPI_routes(t *testing.T) {
 			dashConfig.EXPECT().Logger().Return(logger).AnyTimes()
 			clusterClient := clusterFake.NewMockClientInterface(controller)
 			dashConfig.EXPECT().ClusterClient().Return(clusterClient).AnyTimes()
-			terminalManager := terminalFake.NewMockManager(controller)
-			dashConfig.EXPECT().TerminalManager().Return(terminalManager).AnyTimes()
 
 			m := moduleFake.NewMockModule(controller)
 			m.EXPECT().
@@ -102,9 +98,6 @@ func TestAPI_routes(t *testing.T) {
 
 			ctx := context.Background()
 			srv := api.New(ctx, "/", actionDispatcher, dashConfig)
-
-			instances := make(chan terminal.Instance)
-			terminalManager.EXPECT().Select(ctx).Return(instances).AnyTimes()
 
 			handler, err := srv.Handler(ctx)
 			require.NoError(t, err)

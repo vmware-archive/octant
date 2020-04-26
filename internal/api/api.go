@@ -151,7 +151,6 @@ func (a *API) Handler(ctx context.Context) (http.Handler, error) {
 
 	manager := NewWebsocketClientManager(ctx, a.actionDispatcher)
 	go manager.Run(ctx)
-	go TerminalEventProcessor(ctx, a.dashConfig, manager)
 
 	s.Handle("/stream", websocketService(manager, a.dashConfig))
 

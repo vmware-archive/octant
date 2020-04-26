@@ -18,7 +18,6 @@ func TestTerminal_Marshal(t *testing.T) {
 	details := TerminalDetails{
 		Container: "container-id",
 		Command:   "/bin/bash",
-		UUID:      "0000-0000-0000-0000-0000",
 		Active:    false,
 	}
 	input := NewTerminal("default", "term-test", "pod-name", details)
