@@ -18,3 +18,8 @@
 .clr-vertical-nav .nav-btn {
   display: none;
 }
+
+// avoid markdown text rendering badly in table/cards
+.datagrid-cell .markdown p, .card-block .markdown p {
+  margin-top: 0;
+}
