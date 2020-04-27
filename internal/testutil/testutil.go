@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package testutil
 
 import (
+	"bytes"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -39,6 +40,17 @@ func LoadObjectFromFile(t *testing.T, objectFile string) runtime.Object {
 	}
 
 	return object
+}
+
+// LoadTestData loads a file in the testdata directory.
+func LoadTestData(t *testing.T, fileName string) []byte {
+	data, err := ioutil.ReadFile(filepath.Join("testdata", fileName))
+	require.NoError(t, err)
+
+	// strip carriage returns for Widows
+	data = bytes.Replace(data, []byte{13, 10}, []byte{10}, -1)
+
+	return data
 }
 
 // LoadUnstructuredFromFile loads an object from a file in the in `testdata` directory.

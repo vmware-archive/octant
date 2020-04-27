@@ -424,6 +424,7 @@ export interface EditorView extends View {
     value: string;
     language: string;
     readOnly: boolean;
+    metadata: { [key: string]: string };
   };
 }
 

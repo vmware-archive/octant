@@ -45,3 +45,18 @@
     </clr-alert-item>
   </clr-alert>
 </ng-container>
+
+<ng-container *ngIf="!loading && success">
+  <clr-alert
+          [clrAlertType]="'success'"
+          [clrAlertIcon]="'check-circle'"
+          [clrAlertAppLevel]="true"
+  >
+    <clr-alert-item>
+      <span class="alert-text">
+        {{ success }}
+      </span>
+    </clr-alert-item>
+  </clr-alert>
+</ng-container>
+

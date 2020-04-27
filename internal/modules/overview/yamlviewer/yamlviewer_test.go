@@ -8,9 +8,9 @@ package yamlviewer
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/vmware-tanzu/octant/internal/testutil"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 
 	corev1 "k8s.io/api/core/v1"
@@ -23,7 +23,8 @@ func Test_ToComponent(t *testing.T) {
 	require.NoError(t, err)
 
 	data := "---\nmetadata:\n  creationTimestamp: null\nspec:\n  containers: null\nstatus: {}\n"
-	expected := component.NewEditor(component.TitleFromString("YAML"), data, true)
+	expected := component.NewEditor(component.TitleFromString("YAML"), data, false)
+	require.NoError(t, expected.SetValueFromObject(object))
 
-	assert.Equal(t, expected, got)
+	testutil.AssertJSONEqual(t, expected, got)
 }
