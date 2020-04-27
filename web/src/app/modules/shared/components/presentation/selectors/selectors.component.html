@@ -1,6 +1,3 @@
 <div class="view-selectors">
-  <app-content-switcher
-    [view]="selector"
-    *ngFor="let selector of v?.config.selectors; trackBy: identifyItem"
-  ></app-content-switcher>
+  <app-overflow-selectors *ngIf="v?.config.selectors" [selectors]="v?.config.selectors"></app-overflow-selectors>
 </div>

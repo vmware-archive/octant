@@ -1,0 +1,22 @@
+<div class="selectors-wrapper" *ngIf="selectors">
+  <div class="selectors-container">
+    <ng-container *ngFor="let selector of showSelectors; trackBy: trackByIdentity">
+      <span class="label label-orange">
+        {{ selector.config.key }}:{{ selector.config.value }}
+      </span>
+    </ng-container>
+  </div>
+
+  <clr-signpost *ngIf="overflowSelectors && overflowSelectors.length > 0">
+    <span class="badge badge-orange" clrSignpostTrigger>
+      {{ overflowSelectors.length }}+
+    </span>
+    <clr-signpost-content [clrPosition]="'left-middle'" *clrIfOpen>
+      <ng-container *ngFor="let selector of overflowSelectors; trackBy: trackByIdentity">
+        <span class="label label-orange">
+          {{ selector.config.key }}:{{ selector.config.value }}
+        </span>
+      </ng-container>
+    </clr-signpost-content>
+  </clr-signpost>
+</div>

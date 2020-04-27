@@ -64,6 +64,7 @@ import { MonacoEditorModule } from 'ng-monaco-editor';
 import { FormatPathPipe } from './pipes/formatpath/formatpath.pipe';
 import { RelativePipe } from './pipes/relative/relative.pipe';
 import { OverflowLabelsComponent } from './components/presentation/overflow-labels/overflow-labels.component';
+import { OverflowSelectorsComponent } from './components/presentation/overflow-selectors/overflow-selectors.component';
 
 @NgModule({
   declarations: [
@@ -123,6 +124,7 @@ import { OverflowLabelsComponent } from './components/presentation/overflow-labe
     TitleComponent,
     YamlComponent,
     OverflowLabelsComponent,
+    OverflowSelectorsComponent,
   ],
   imports: [
     ClarityModule,
