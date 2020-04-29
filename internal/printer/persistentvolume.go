@@ -213,6 +213,10 @@ func getBoundPersistentVolumeClaim(ctx context.Context, pv *corev1.PersistentVol
 	pvc := &corev1.PersistentVolumeClaim{}
 
 	cr := pv.Spec.ClaimRef
+	if cr == nil {
+		return nil, nil
+	}
+
 	key := store.Key{
 		APIVersion: cr.APIVersion,
 		Kind:       cr.Kind,
@@ -244,6 +248,9 @@ func createBoundPersistentVolumeClaimLink(ctx context.Context, pv *corev1.Persis
 	}
 
 	cr := pv.Spec.ClaimRef
+	if cr == nil {
+		return component.NewLink("", "", ""), nil
+	}
 	claimText := fmt.Sprintf("%s/%s", cr.Namespace, cr.Name)
 	claimLink, err := options.Link.ForObject(pvc, claimText)
 	if err != nil {

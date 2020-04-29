@@ -37,6 +37,12 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 		Items: []corev1.PersistentVolume{*object},
 	}
 
+	unbound := testutil.CreatePersistentVolume("unboundPersistentVolume")
+	unbound.CreationTimestamp = metav1.Time{Time: now}
+	unboundList := &corev1.PersistentVolumeList{
+		Items: []corev1.PersistentVolume{*unbound},
+	}
+
 	cases := []struct {
 		name     string
 		list     *corev1.PersistentVolumeList
@@ -62,6 +68,24 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 				}),
 		},
 		{
+			name: "unclaimed",
+			list: unboundList,
+			expected: component.NewTableWithRows("Persistent Volumes", "We couldn't find any persistent volumes!", cols,
+				[]component.TableRow{
+					{
+						"Name":           component.NewLink("", "unboundPersistentVolume", "/unboundPersistentVolume"),
+						"Capacity":       component.NewText("0"),
+						"Access Modes":   component.NewText(""),
+						"Reclaim Policy": component.NewText(""),
+						"Status":         component.NewText("Bound"),
+						"Claim":          component.NewLink("", "", ""),
+						"Storage Class":  component.NewText(""),
+						"Reason":         component.NewText(""),
+						"Age":            component.NewTimestamp(now),
+					},
+				}),
+		},
+		{
 			name:  "list is nil",
 			list:  nil,
 			isErr: true,
@@ -79,13 +103,13 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 			ctx := context.Background()
 
 			if tc.list != nil {
-				tpo.PathForObject(&tc.list.Items[0], tc.list.Items[0].Name, "/persistentVolume")
+				tpo.PathForObject(&tc.list.Items[0], tc.list.Items[0].Name, "/"+tc.list.Items[0].Name)
 
 				pvcKey, err := store.KeyFromObject(pvcObject)
 				require.NoError(t, err)
 
 				tpo.objectStore.EXPECT().Get(ctx, pvcKey).
-					Return(testutil.ToUnstructured(t, pvcObject), nil)
+					Return(testutil.ToUnstructured(t, pvcObject), nil).AnyTimes()
 
 				tpo.PathForObject(pvcObject, pvcObject.Namespace+"/"+pvcObject.Name, "/pvc")
 			}
