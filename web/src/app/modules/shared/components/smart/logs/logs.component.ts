@@ -52,7 +52,7 @@ export class LogsComponent
   containerLogs: LogEntry[] = [];
 
   selectedContainer = '';
-  shouldDisplayTimestamp = true;
+  shouldDisplayTimestamp = false;
   shouldDisplayName = true;
   showOnlyFiltered = false;
   filterText = '';
@@ -60,6 +60,7 @@ export class LogsComponent
   currentSelection = 0;
   totalSelections = 0;
   timeFormat = 'MMM d, y h:mm:ss a z';
+  regexFlags = 'gi';
 
   private logSubscription: Subscription;
 
@@ -178,28 +179,31 @@ export class LogsComponent
   }
 
   public highlightText(text: string) {
-    let highlighted = text;
-
-    if (this.filterText) {
-      highlighted = text.replace(new RegExp(this.filterText, 'g'), match => {
-        return '<span class="highlight">' + match + '</span>';
-      });
+    if (!this.filterText) {
+      return text;
     }
-    return `${highlighted}`;
+
+    const matched = new RegExp(this.filterText, this.regexFlags).exec(text);
+    if (matched === null) {
+      return text;
+    }
+
+    const filter =
+      matched[0] && matched[0].length > 0
+        ? this.filterText
+        : this.filterText + '.*$';
+
+    return text.replace(new RegExp(filter, this.regexFlags), match => {
+      return '<span class="highlight">' + match + '</span>';
+    });
   }
 
   public filterFunction(logs: LogEntry[]): LogEntry[] {
     if (this.showOnlyFiltered) {
-      if (this.shouldDisplayTimestamp) {
-        return logs.filter(
-          log =>
-            log.message.match(new RegExp(this.filterText, 'g')) ||
-            this.filterTimestamp(log)
-        );
-      }
-      return logs.filter(log =>
-        log.message.match(new RegExp(this.filterText, 'g'))
-      );
+      return logs.filter(log => {
+        const hasFiltered = this.matchRegex(log);
+        return hasFiltered && hasFiltered.length > 0;
+      });
     }
 
     return logs;
@@ -260,27 +264,40 @@ export class LogsComponent
     return document.getElementsByClassName('highlight')[index] as HTMLElement;
   }
 
+  matchRegex(input: LogEntry) {
+    let match = input.message.match(
+      new RegExp(this.filterText, this.regexFlags)
+    );
+    if (match) {
+      return match;
+    }
+
+    if (this.shouldDisplayTimestamp && input.timestamp) {
+      const timestamp = formatDate(input.timestamp, this.timeFormat, 'en-US');
+      if (timestamp && timestamp.length > 0) {
+        match = timestamp.match(new RegExp(this.filterText, this.regexFlags));
+        if (match) {
+          return match;
+        }
+      }
+    }
+
+    if (this.shouldDisplayName) {
+      match = input.container.match(
+        new RegExp(this.filterText, this.regexFlags)
+      );
+      return match || [];
+    }
+    return [];
+  }
+
   updateSelectedCount() {
     let count = 0;
     if (this.filterText.length > 0) {
       this.containerLogs.map(log => {
-        count += (log.message.match(new RegExp(this.filterText, 'g')) || [])
-          .length;
-        if (this.shouldDisplayTimestamp) {
-          count += (this.filterTimestamp(log) || []).length;
-        }
+        count += (this.matchRegex(log) || []).length;
       });
     }
     this.totalSelections = count;
-  }
-
-  public filterTimestamp(log: LogEntry) {
-    if (!log.timestamp) {
-      return [];
-    }
-    const timestamp = formatDate(log.timestamp, this.timeFormat, 'en-US');
-    return timestamp && timestamp.length > 0
-      ? timestamp.match(new RegExp(this.filterText, 'g'))
-      : [];
   }
 }
