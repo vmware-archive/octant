@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { LabelFilterService } from '../../../services/label-filter/label-filter.service';
+import { ContentService } from '../../../services/content/content.service';
+import { Subscription } from 'rxjs';
 
 interface Labels {
   [key: string]: string;
@@ -15,7 +17,7 @@ interface Labels {
   templateUrl: './overflow-labels.component.html',
   styleUrls: ['./overflow-labels.component.scss'],
 })
-export class OverflowLabelsComponent {
+export class OverflowLabelsComponent implements OnInit, OnDestroy {
   @Input() numberShownLabels = 2;
   @Input() set labels(labels: Labels) {
     this.labelList = labels;
@@ -41,10 +43,31 @@ export class OverflowLabelsComponent {
   showLabels: Labels[];
   overflowLabels: Labels[];
   trackByIdentity = trackByIdentity;
+  scrollPosition = 0;
+  private contentSubscription: Subscription;
 
   filterLabel(key: string, value: string) {
     this.labelFilter.add({ key, value });
   }
 
-  constructor(private labelFilter: LabelFilterService) {}
+  constructor(
+    private labelFilter: LabelFilterService,
+    private contentService: ContentService
+  ) {}
+
+  ngOnInit() {
+    this.contentSubscription = this.contentService.viewScrollPos.subscribe(
+      position => {
+        this.scrollPosition = position;
+      }
+    );
+  }
+
+  ngOnDestroy() {
+    this.contentSubscription.unsubscribe();
+  }
+
+  getScrollPos() {
+    return `${-this.scrollPosition - 64}px`;
+  }
 }

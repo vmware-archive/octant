@@ -2,6 +2,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+@import '../../../../../../styles';
+
 .labels-wrapper {
   display: flex;
   align-items: center;
@@ -10,12 +12,19 @@
     display: grid;
     grid-auto-flow: column;
 
+    .tooltip-wrapper {
+      margin: 0 .3rem 0 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .label {
       display: inline-block;
       line-height: 0.9rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      width: 100%;
 
       &.clickable {
         cursor: pointer;

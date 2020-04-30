@@ -6,10 +6,14 @@
 :host-context(body) {
   --label-color: #0065ab;
   --selector-color: #00968b;
+  --selection-color: var(--clr-color-neutral-400);
+  --tooltip-text-color: black;
 }
 
 // Color variables for Dark Theme.
 :host-context(body.dark) {
   --label-color: #49afd9;
   --selector-color: #00968b;
+  --selection-color: #324f62;
+  --tooltip-text-color: #EAEDEF;
 }

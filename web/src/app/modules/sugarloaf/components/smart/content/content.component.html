@@ -1,4 +1,4 @@
-<div clrFocusOnViewInit class="content-component">
+<div clrFocusOnViewInit class="content-component" (scroll)="onScroll($event)">
   <ng-container *ngIf="hasReceivedContent">
     <ng-container
       *ngIf="hasTabs; then withTabs; else withoutTabs"
