@@ -56,7 +56,6 @@ export class OverflowSelectorsComponent implements OnInit, OnDestroy {
     this.contentSubscription = this.contentService.viewScrollPos.subscribe(
       position => {
         this.scrollPosition = position;
-        console.log('POSITION ->>', position);
       }
     );
   }

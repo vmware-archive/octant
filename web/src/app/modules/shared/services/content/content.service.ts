@@ -88,6 +88,7 @@ export class ContentService {
   }
 
   setContentPath(contentPath: string, params: Params) {
+    this.viewScrollPos.next(0);
     if (contentPath === this.previousContentPath) {
       return;
     }

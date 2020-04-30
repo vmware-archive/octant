@@ -28,6 +28,7 @@
 .tooltip-content {
   color: var(--tooltip-text-color)!important;
   background-color: var(--selection-color)!important;
+  display: block;
   z-index: 503;
   position: fixed;
   bottom: unset;
