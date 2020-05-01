@@ -9,12 +9,13 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io"
+	"sync"
+
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/pkg/store"
-	"io"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"sync"
 )
 
 type logStreamer struct {
@@ -25,7 +26,7 @@ type logStreamer struct {
 
 	ctx      context.Context
 	cancelFn context.CancelFunc
-	config config.Dash
+	config   config.Dash
 	wg       sync.WaitGroup
 }
 

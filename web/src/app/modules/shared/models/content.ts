@@ -406,7 +406,6 @@ export interface TerminalOutput {
 export interface TerminalDetail {
   container: string;
   command: string;
-  uuid: string;
   active: boolean;
 }
 

@@ -15,11 +15,12 @@ export class TerminalOutputStreamer {
     private namespace: string,
     private pod: string,
     private container: string,
-    private uuid: string,
     private wss: WebsocketService
   ) {
-    this.wss.sendMessage('action.octant.dev/sendTerminalScrollback', {
-      terminalID: this.uuid,
+    this.wss.sendMessage('action.octant.dev/setActiveTerminal', {
+      namespace: this.namespace,
+      podName: this.pod,
+      containerName: this.container,
     });
 
     this.line = new BehaviorSubject('');
@@ -38,7 +39,6 @@ export class TerminalOutputStreamer {
       `namespace/${this.namespace}`,
       `pod/${this.pod}`,
       `container/${this.container}`,
-      `${this.uuid}`,
     ].join('/');
   }
 }
@@ -49,17 +49,11 @@ export class TerminalOutputStreamer {
 export class TerminalOutputService {
   constructor(private websocketService: WebsocketService) {}
 
-  public createStream(
-    namespace,
-    pod,
-    container,
-    uuid: string
-  ): TerminalOutputStreamer {
+  public createStream(namespace, pod, container): TerminalOutputStreamer {
     const tos = new TerminalOutputStreamer(
       namespace,
       pod,
       container,
-      uuid,
       this.websocketService
     );
     return tos;

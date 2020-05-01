@@ -36,46 +36,6 @@ func (m *MockInstance) EXPECT() *MockInstanceMockRecorder {
 	return m.recorder
 }
 
-// ID mocks base method
-func (m *MockInstance) ID() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ID")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// ID indicates an expected call of ID
-func (mr *MockInstanceMockRecorder) ID() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ID", reflect.TypeOf((*MockInstance)(nil).ID))
-}
-
-// SessionID mocks base method
-func (m *MockInstance) SessionID() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SessionID")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// SessionID indicates an expected call of SessionID
-func (mr *MockInstanceMockRecorder) SessionID() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SessionID", reflect.TypeOf((*MockInstance)(nil).SessionID))
-}
-
-// SetSessionID mocks base method
-func (m *MockInstance) SetSessionID(arg0 string) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetSessionID", arg0)
-}
-
-// SetSessionID indicates an expected call of SetSessionID
-func (mr *MockInstanceMockRecorder) SetSessionID(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSessionID", reflect.TypeOf((*MockInstance)(nil).SetSessionID), arg0)
-}
-
 // Key mocks base method
 func (m *MockInstance) Key() store.Key {
 	m.ctrl.T.Helper()

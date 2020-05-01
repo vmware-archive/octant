@@ -7,19 +7,18 @@ package terminalviewer
 
 import (
 	"context"
-	"github.com/vmware-tanzu/octant/internal/terminal"
-	"github.com/vmware-tanzu/octant/pkg/log"
-	"github.com/vmware-tanzu/octant/pkg/store"
-	"github.com/vmware-tanzu/octant/pkg/view/component"
+
 	"github.com/pkg/errors"
+	"github.com/vmware-tanzu/octant/pkg/log"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // ToComponent converts an object into a terminal component.
-func ToComponent(ctx context.Context, object runtime.Object, terminalManager terminal.Manager, logger log.Logger) (*component.Terminal, error) {
-	yv, err := new(ctx, object, terminalManager, logger )
+func ToComponent(ctx context.Context, object runtime.Object, logger log.Logger) (*component.Terminal, error) {
+	yv, err := new(ctx, object, logger)
 	if err != nil {
 		return nil, errors.Wrap(err, "create Terminal viewer")
 	}
@@ -29,23 +28,21 @@ func ToComponent(ctx context.Context, object runtime.Object, terminalManager ter
 
 // Terminal Viewer is a terminal viewer for objects.
 type terminalViewer struct {
-	object runtime.Object
-	terminalManager terminal.Manager
+	object  runtime.Object
 	context context.Context
-	logger log.Logger
+	logger  log.Logger
 }
 
 // New creates an instance of TerminalViewer.
-func new(context context.Context, object runtime.Object, terminalManager terminal.Manager, logger log.Logger) (*terminalViewer, error) {
+func new(context context.Context, object runtime.Object, logger log.Logger) (*terminalViewer, error) {
 	if object == nil {
 		return nil, errors.New("can't create Terminal view for nil object")
 	}
 
 	return &terminalViewer{
 		context: context,
-		object: object,
-		terminalManager: terminalManager,
-		logger: logger.With("Terminal Viewer", context),
+		object:  object,
+		logger:  logger.With("Terminal Viewer", context),
 	}, nil
 }
 
@@ -56,30 +53,14 @@ func (tv *terminalViewer) ToComponent() (*component.Terminal, error) {
 		return nil, err
 	}
 
-	key, err:=  store.KeyFromObject(tv.object)
-	if err != nil {
-		return nil, err
-	}
-
-	container:= ""
+	container := ""
 	if len(pod.Spec.Containers) > 0 {
-		container= getFirstContainer(pod).Name
-	}
-	t, err := tv.terminalManager.Create(context.Background(), tv.logger, key, container, "/bin/sh", "")
-
-	if err != nil {
-		return nil, err
-	}
-
-	id := ""
-	if t != nil {
-		id= t.ID()
+		container = getFirstContainer(pod).Name
 	}
 
 	details := component.TerminalDetails{
 		Container: container,
 		Command:   "/bin/sh",
-		UUID:      id,
 		Active:    true,
 	}
 	term := component.NewTerminal(pod.Namespace, "Terminal", pod.Name, details)
@@ -93,7 +74,7 @@ func getFirstContainer(pod *corev1.Pod) corev1.Container {
 		var isInit = false
 		for _, d := range pod.Spec.InitContainers {
 			if d.Name == c.Name {
-				isInit= true
+				isInit = true
 				break
 			}
 		}

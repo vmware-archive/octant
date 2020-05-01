@@ -8,14 +8,20 @@ package terminal
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
+	"strings"
 	"sync"
 	"time"
+	"unicode"
 
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/store"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 )
 
@@ -23,9 +29,6 @@ import (
 
 // Instance defines the interface to a single exec instance.
 type Instance interface {
-	ID() string
-	SessionID() string
-	SetSessionID(string)
 	Key() store.Key
 	Container() string
 	Command() string
@@ -140,7 +143,9 @@ func (p *pty) ReadStdout(buf []byte) (int, error) {
 type instance struct {
 	ctx context.Context
 
-	id        uuid.UUID
+	restClient rest.Interface
+	config     *rest.Config
+
 	sessionID string
 	key       store.Key
 	createdAt time.Time
@@ -159,8 +164,14 @@ type instance struct {
 var _ Instance = (*instance)(nil)
 
 // NewTerminalInstance creates a concrete Terminal
-func NewTerminalInstance(ctx context.Context, logger log.Logger, key store.Key, container, command string, activityChan chan Instance, sessionID string) Instance {
+func NewTerminalInstance(ctx context.Context, client cluster.ClientInterface, logger log.Logger, key store.Key, container, command string, activityChan chan Instance) (Instance, error) {
 	ctx, cancelFn := context.WithCancel(ctx)
+
+	restClient, err := client.RESTClient()
+	if err != nil {
+		cancelFn()
+		return nil, errors.Wrap(err, "fetching RESTClient")
+	}
 
 	termPty := &pty{
 		ctx:       ctx,
@@ -173,22 +184,62 @@ func NewTerminalInstance(ctx context.Context, logger log.Logger, key store.Key, 
 	}
 
 	t := &instance{
-		ctx:       ctx,
-		id:        uuid.New(),
-		key:       key,
-		createdAt: time.Now(),
-		container: container,
-		command:   command,
-		pty:       termPty,
-		sessionID: sessionID,
-		logger:    logger,
+		restClient: restClient,
+		config:     client.RESTConfig(),
+		ctx:        ctx,
+		key:        key,
+		createdAt:  time.Now(),
+		container:  container,
+		command:    command,
+		pty:        termPty,
+		logger:     logger,
 	}
 
 	termPty.activityFunc = func() {
 		activityChan <- t
 	}
 
-	return t
+	return t, t.terminalStream()
+}
+
+func (t *instance) terminalStream() error {
+	request := t.restClient.Post().
+		Resource("pods").
+		Name(t.key.Name).
+		Namespace(t.key.Namespace).
+		SubResource("exec")
+
+	request.VersionedParams(&corev1.PodExecOptions{
+		Container: t.container,
+		Command:   parseCommand("/bin/sh"),
+		Stdin:     true,
+		Stdout:    true,
+		Stderr:    false,
+		TTY:       true,
+	}, scheme.ParameterCodec)
+
+	rc, err := remotecommand.NewSPDYExecutor(t.config, "POST", request.URL())
+	if err != nil {
+		fmt.Println(fmt.Sprintf("%v", err))
+		return err
+	}
+
+	pty := t.PTY()
+	opts := remotecommand.StreamOptions{
+		Stdin:             pty,
+		Stdout:            pty,
+		Stderr:            pty,
+		Tty:               true,
+		TerminalSizeQueue: pty,
+	}
+	go func() {
+		err := rc.Stream(opts)
+		if err != nil {
+			errors.Errorf("streaming: %+v", err)
+		}
+		t.Stop()
+	}()
+	return nil
 }
 
 func (t *instance) Resize(cols, rows uint16) {
@@ -281,16 +332,7 @@ func (t *instance) Key() store.Key { return t.key }
 func (t *instance) Scrollback() []byte { return t.scrollback.Bytes() }
 
 // ResetScrollback empties the scrollback buffer
-func (t *instance) ResetScrollback()  { t.scrollback.Reset() }
-
-// ID returns the ID for the terminal. This is a UUID returned as a string.
-func (t *instance) ID() string { return t.id.String() }
-
-// SessionID returns the ID for the browser session. This is a pointer to a string representation of UUID.
-func (t *instance) SessionID() string { return t.sessionID }
-
-// ID returns the ID for the terminal browsersession. This is a UUID returned as a string.
-func (t *instance) SetSessionID(id string) { t.sessionID = id }
+func (t *instance) ResetScrollback() { t.scrollback.Reset() }
 
 // Container returns the container name that the terminal is associated with.
 func (t *instance) Container() string { return t.container }
@@ -303,4 +345,24 @@ func (t *instance) CreatedAt() time.Time { return t.createdAt }
 
 func (t *instance) PTY() PTY {
 	return t.pty
+}
+
+func parseCommand(command string) []string {
+	lastQuote := rune(0)
+	f := func(c rune) bool {
+		switch {
+		case c == lastQuote:
+			lastQuote = rune(0)
+			return false
+		case lastQuote != rune(0):
+			return false
+		case unicode.In(c, unicode.Quotation_Mark):
+			lastQuote = c
+			return false
+		default:
+			return unicode.IsSpace(c)
+
+		}
+	}
+	return strings.FieldsFunc(command, f)
 }
