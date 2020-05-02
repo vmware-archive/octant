@@ -7,12 +7,12 @@ package component
 
 import (
 	"encoding/json"
-	"strings"
+	"fmt"
 
-	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	k8sJSON "k8s.io/apimachinery/pkg/runtime/serializer/json"
-	"k8s.io/client-go/tools/clientcmd/api/latest"
+
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 // Value is a component for code
@@ -23,8 +23,9 @@ type Editor struct {
 
 // CodeConfig is the contents of Value
 type EditorConfig struct {
-	Value    string `json:"value"`
-	ReadOnly bool   `json:"readOnly"`
+	Value    string            `json:"value"`
+	ReadOnly bool              `json:"readOnly"`
+	Metadata map[string]string `json:"metadata"`
 }
 
 // NewCodeBlock creates a code component
@@ -39,17 +40,24 @@ func NewEditor(title []TitleComponent, value string, readOnly bool) *Editor {
 }
 
 func (e *Editor) SetValueFromObject(object runtime.Object) error {
-	yamlSerializer := k8sJSON.NewYAMLSerializer(k8sJSON.DefaultMetaFactory, latest.Scheme, latest.Scheme)
-
-	var sb strings.Builder
-	if _, err := sb.WriteString("---\n"); err != nil {
-		return err
-	}
-	if err := yamlSerializer.Encode(object, &sb); err != nil {
-		return errors.Wrap(err, "encoding object as YAML")
+	s, err := kubernetes.SerializeToString(object)
+	if err != nil {
+		return fmt.Errorf("serialize object: %w", err)
 	}
 
-	e.Config.Value = sb.String()
+	e.Config.Value = s
+
+	key, err := store.KeyFromObject(object)
+	if err != nil {
+		return fmt.Errorf("create key from object: %w", err)
+	}
+
+	e.Config.Metadata = map[string]string{
+		"namespace":  key.Namespace,
+		"apiVersion": key.APIVersion,
+		"kind":       key.Kind,
+		"name":       key.Name,
+	}
 
 	return nil
 }

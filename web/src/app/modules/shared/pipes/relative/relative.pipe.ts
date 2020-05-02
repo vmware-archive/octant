@@ -4,12 +4,25 @@
  */
 
 import {
+  ChangeDetectorRef,
+  NgZone,
+  OnDestroy,
   Pipe,
   PipeTransform,
-  ChangeDetectorRef,
-  OnDestroy,
-  NgZone,
 } from '@angular/core';
+
+const changeDetectionFrequency = (seconds: number) => {
+  switch (true) {
+    case seconds < 60:
+      return 1;
+    case seconds < 3600:
+      return 60;
+    case seconds < 86400:
+      return 600;
+    default:
+      return 3600;
+  }
+};
 
 @Pipe({
   name: 'relative',
@@ -25,10 +38,12 @@ import {
  */
 export class RelativePipe implements PipeTransform, OnDestroy {
   private timer: number;
+
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
     private ngZone: NgZone
   ) {}
+
   transform(ts: number, base?: Date): string {
     this.removeTimer();
 
@@ -41,12 +56,16 @@ export class RelativePipe implements PipeTransform, OnDestroy {
 
     const then = now.getTime() / 1000 - ts;
 
-    const updateInterval = this.changeDetectionFrequency(then) * 1000;
+    const updateInterval = changeDetectionFrequency(then) * 1000;
 
     this.timer = this.ngZone.runOutsideAngular(() => {
       if (typeof window !== 'undefined') {
         return window.setTimeout(() => {
-          this.ngZone.run(() => this.changeDetectorRef.markForCheck());
+          this.ngZone.run(() => {
+            if (this.changeDetectorRef) {
+              this.changeDetectorRef.markForCheck();
+            }
+          });
         }, updateInterval);
       }
       return null;
@@ -71,19 +90,6 @@ export class RelativePipe implements PipeTransform, OnDestroy {
     if (this.timer) {
       window.clearTimeout(this.timer);
       this.timer = null;
-    }
-  }
-
-  private changeDetectionFrequency(seconds: number) {
-    switch (true) {
-      case seconds < 60:
-        return 1;
-      case seconds < 3600:
-        return 60;
-      case seconds < 86400:
-        return 600;
-      default:
-        return 3600;
     }
   }
 }

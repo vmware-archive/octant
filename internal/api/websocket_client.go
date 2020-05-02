@@ -34,7 +34,7 @@ const (
 	pingPeriod = (pongWait * 9) / 10
 
 	// maxMessageSize is the maximum message size allowed from peer.
-	maxMessageSize = 512
+	maxMessageSize = 2 * 1024 * 1024 // 2MiB
 )
 
 // WebsocketClient manages websocket clients.

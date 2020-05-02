@@ -33,6 +33,9 @@ const (
 
 	// AlertTypeInfo is for info alerts.
 	AlertTypeInfo AlertType = "INFO"
+
+	// AlertTypeSuccess is for success alerts.
+	AlertTypeSuccess AlertType = "SUCCESS"
 )
 
 // Alert is an alert message.
@@ -90,7 +93,7 @@ func (d Dispatchers) ToActionPaths() map[string]DispatcherFunc {
 
 // Manager manages actions.
 type Manager struct {
-	logger     log.Logger
+	logger log.Logger
 
 	// key: string, value: []DispatcherFunc
 	dispatches sync.Map

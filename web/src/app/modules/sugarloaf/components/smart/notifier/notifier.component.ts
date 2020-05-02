@@ -21,6 +21,7 @@ export class NotifierComponent implements OnInit, OnDestroy {
   error: string;
   warning: string;
   info: string;
+  success: string;
 
   constructor(private notifierService: NotifierService) {}
 
@@ -48,6 +49,13 @@ export class NotifierComponent implements OnInit, OnDestroy {
           type: NotifierSignalType.INFO,
         });
         this.info = lastInfoSignal ? (lastInfoSignal.data as string) : '';
+
+        const lastSuccessSignal = findLast(currentSignals, {
+          type: NotifierSignalType.SUCCESS,
+        });
+        this.success = lastSuccessSignal
+          ? (lastSuccessSignal.data as string)
+          : '';
       }
     );
   }

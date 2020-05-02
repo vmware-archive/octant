@@ -2,15 +2,17 @@ package api
 
 import (
 	"context"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	"github.com/vmware-tanzu/octant/internal/modules/overview/container"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/store"
-	"sync"
-	"testing"
-	"time"
 )
 
 func TestContainerLogs_NewLogEntry(t *testing.T) {
@@ -49,7 +51,7 @@ func TestContainerLogs_SendLogEventsStops(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
-		s.sendLogEvents(s.ctx, eventType, logCh)
+		s.streamEventsToClient(s.ctx, eventType, logCh)
 		wg.Done()
 	}()
 
@@ -65,7 +67,7 @@ func TestContainerLogs_SendLogEventsClientSend(t *testing.T) {
 	defer controller.Finish()
 
 	dashConfig := configFake.NewMockDash(controller)
-	client := &octantClient{}
+	client := newOctantClient()
 
 	key := store.Key{
 		Namespace: "test-ns",
@@ -73,32 +75,47 @@ func TestContainerLogs_SendLogEventsClientSend(t *testing.T) {
 	}
 
 	eventType := octant.NewLoggingEventType(key.Namespace, key.Name)
-	logCh := make(chan container.LogEntry)
+	logCh := make(chan container.LogEntry, 1)
 
 	s := NewPodLogsStateManager(dashConfig)
-	s.Start(context.Background(), nil, client)
+	ctx, cancel := context.WithCancel(context.Background())
+	s.Start(ctx, nil, client)
 
 	go func() {
-		s.sendLogEvents(s.ctx, eventType, logCh)
+		s.streamEventsToClient(ctx, eventType, logCh)
 	}()
 
 	le := container.NewLogEntry("container-a", "testing log line")
 	logCh <- le
+
+	<-client.ch
+	cancel()
 	close(logCh)
 
-	assert.NotNil(t, client.sendCalledWith)
-	assert.Equal(t, eventType, client.sendCalledWith.Type)
+	if assert.NotNil(t, client.sendCalledWith) {
+		assert.Equal(t, eventType, client.sendCalledWith.Type)
 
-	clientLe, ok := client.sendCalledWith.Data.(logEntry)
-	assert.True(t, ok)
-	assert.Equal(t, "container-a", clientLe.Container)
-	assert.Equal(t, "testing log line", clientLe.Message)
-	assert.Nil(t, clientLe.Timestamp)
+		clientLe, ok := client.sendCalledWith.Data.(logEntry)
+		assert.True(t, ok)
+		assert.Equal(t, "container-a", clientLe.Container)
+		assert.Equal(t, "testing log line", clientLe.Message)
+		assert.Nil(t, clientLe.Timestamp)
+	}
 }
 
 type octantClient struct {
 	sendCalledWith octant.Event
+	ch             chan bool
 }
 
-func (oc *octantClient) Send(event octant.Event) { oc.sendCalledWith = event }
-func (oc *octantClient) ID() string              { return "" }
+func newOctantClient() *octantClient {
+	return &octantClient{
+		ch: make(chan bool, 1),
+	}
+}
+
+func (oc *octantClient) Send(event octant.Event) {
+	oc.sendCalledWith = event
+	oc.ch <- true
+}
+func (oc *octantClient) ID() string { return "" }

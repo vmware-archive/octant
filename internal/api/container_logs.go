@@ -8,11 +8,12 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/vmware-tanzu/octant/internal/gvk"
-	"github.com/vmware-tanzu/octant/pkg/store"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/vmware-tanzu/octant/internal/gvk"
+	"github.com/vmware-tanzu/octant/pkg/store"
 
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/modules/overview/container"
@@ -24,10 +25,6 @@ type logEntry struct {
 	Timestamp *time.Time `json:"timestamp,omitempty"`
 	Container string     `json:"container,omitempty"`
 	Message   string     `json:"message,omitempty"`
-}
-
-type logResponse struct {
-	Entries []logEntry `json:"entries,omitempty"`
 }
 
 const (
@@ -67,7 +64,7 @@ func (s *podLogsStateManager) Handlers() []octant.ClientRequestHandler {
 	}
 }
 
-func (s *podLogsStateManager) StreamPodLogsSubscribe(state octant.State, payload action.Payload) error {
+func (s *podLogsStateManager) StreamPodLogsSubscribe(_ octant.State, payload action.Payload) error {
 	namespace, err := payload.String("namespace")
 	if err != nil {
 		return fmt.Errorf("getting namespace from payload: %w", err)
@@ -107,7 +104,7 @@ func (s *podLogsStateManager) StreamPodLogsSubscribe(state octant.State, payload
 	return nil
 }
 
-func (s *podLogsStateManager) StreamPodLogsUnsubscribe(state octant.State, payload action.Payload) error {
+func (s *podLogsStateManager) StreamPodLogsUnsubscribe(_ octant.State, payload action.Payload) error {
 	namespace, err := payload.String("namespace")
 	if err != nil {
 		return fmt.Errorf("getting namespace from payload: %w", err)
@@ -131,18 +128,17 @@ func (s *podLogsStateManager) StreamPodLogsUnsubscribe(state octant.State, paylo
 	return nil
 }
 
-func (s *podLogsStateManager) Start(ctx context.Context, state octant.State, client OctantClient) {
+func (s *podLogsStateManager) Start(ctx context.Context, _ octant.State, client OctantClient) {
 	s.client = client
 	s.ctx = ctx
 }
 
-func (s *podLogsStateManager) sendLogEvents(ctx context.Context, logEventType octant.EventType, logCh <-chan container.LogEntry) {
-	ctx, cancelFn := context.WithCancel(s.ctx)
-	for {
+func (s *podLogsStateManager) streamEventsToClient(ctx context.Context, logEventType octant.EventType, logCh <-chan container.LogEntry) {
+	done := false
+	for !done {
 		select {
 		case <-ctx.Done():
-			cancelFn()
-			return
+			done = true
 		case entry, ok := <-logCh:
 			if ok {
 				le := newLogEntry(entry.Line(), entry.Container())
@@ -153,8 +149,7 @@ func (s *podLogsStateManager) sendLogEvents(ctx context.Context, logEventType oc
 				}
 				s.client.Send(logEvent)
 			} else {
-				cancelFn()
-				return
+				done = true
 			}
 		}
 	}
@@ -165,7 +160,7 @@ func (s *podLogsStateManager) startStream(key store.Key, logStreamer container.L
 
 	eventType := octant.NewLoggingEventType(key.Namespace, key.Name)
 	logCh := make(chan container.LogEntry)
-	go s.sendLogEvents(ctx, eventType, logCh)
+	go s.streamEventsToClient(ctx, eventType, logCh)
 
 	logStreamer.Stream(ctx, logCh)
 

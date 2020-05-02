@@ -15,6 +15,7 @@ export enum NotifierSignalType {
   ERROR = 'ERROR',
   WARNING = 'WARNING',
   INFO = 'INFO',
+  SUCCESS = 'SUCCESS',
 }
 
 export interface NotifierSignal {
