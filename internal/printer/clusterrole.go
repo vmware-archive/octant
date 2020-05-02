@@ -115,7 +115,7 @@ func createClusterRolePolicyRulesView(clusterRole *rbacv1.ClusterRole) (*compone
 }
 
 func printPolicyRules(rules []rbacv1.PolicyRule) (*component.Table, error) {
-	breakdownRules := []rbacv1.PolicyRule{}
+	var breakdownRules []rbacv1.PolicyRule
 	for _, rule := range rules {
 		breakdownRules = append(breakdownRules, BreakdownRule(rule)...)
 	}

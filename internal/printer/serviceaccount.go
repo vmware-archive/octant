@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -49,17 +50,19 @@ func ServiceAccountListHandler(_ context.Context, list *corev1.ServiceAccountLis
 
 type serviceAccountObject interface {
 	Config(ctx context.Context, options Options) error
-	PolicyRules(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) error
+	PolicyRules(ctx context.Context, options Options) error
+	Secrets(ctx context.Context, options Options) error
 }
 
 type serviceAccountHandler struct {
 	serviceAccount  *corev1.ServiceAccount
 	configFunc      func(context.Context, *corev1.ServiceAccount, Options) (*component.Summary, error)
 	policyRulesFunc func(context.Context, *corev1.ServiceAccount, Options) (*component.Table, error)
+	secretsFunc     func(context.Context, *corev1.ServiceAccount, Options) (*component.Table, error)
 	object          *Object
 }
 
-var _serviceAccountObject = (*serviceAccountHandler)(nil)
+var _ serviceAccountObject = (*serviceAccountHandler)(nil)
 
 func newServiceAccountHandler(serviceAccount *corev1.ServiceAccount, object *Object) (*serviceAccountHandler, error) {
 	if serviceAccount == nil {
@@ -74,6 +77,7 @@ func newServiceAccountHandler(serviceAccount *corev1.ServiceAccount, object *Obj
 		serviceAccount:  serviceAccount,
 		configFunc:      defaultServiceAccountConfig,
 		policyRulesFunc: defaultServiceAccountPolicyRules,
+		secretsFunc:     ServiceAccountSecrets,
 		object:          object,
 	}
 	return s, nil
@@ -88,6 +92,80 @@ func (s *serviceAccountHandler) Config(ctx context.Context, options Options) err
 	return nil
 }
 
+func (s *serviceAccountHandler) Secrets(ctx context.Context, options Options) error {
+	table, err := s.secretsFunc(ctx, s.serviceAccount, options)
+	if err != nil {
+		return err
+	}
+
+	if table == nil {
+		return nil
+	}
+
+	s.object.RegisterItems(ItemDescriptor{
+		Func: func() (component.Component, error) {
+			return table, nil
+		},
+		Width: component.WidthFull,
+	})
+
+	return nil
+}
+
+// ServiceAccountSecretCols are columns for a service account secrets table.
+var ServiceAccountSecretCols = component.NewTableCols("Name", "Type")
+
+// ServiceAccountSecretPlaceholder is the table placeholder for service account secrets.
+const ServiceAccountSecretPlaceholder = "No secrets"
+
+// ServiceAccountSecrets generates a service account secrets table. It will return a nil
+// table if there are no secrets.
+func ServiceAccountSecrets(
+	ctx context.Context,
+	account *corev1.ServiceAccount,
+	options Options) (*component.Table, error) {
+	if account == nil {
+		return nil, fmt.Errorf("service account is nil")
+	}
+
+	if len(account.Secrets) == 0 {
+		return nil, nil
+	}
+
+	table := component.NewTable("Secrets", ServiceAccountSecretPlaceholder, ServiceAccountSecretCols)
+
+	for _, ref := range account.Secrets {
+		key := store.Key{
+			Namespace:  account.Namespace,
+			APIVersion: "v1",
+			Kind:       "Secret",
+			Name:       ref.Name,
+			Selector:   nil,
+		}
+		secret, err := options.DashConfig.ObjectStore().Get(ctx, key)
+		if err != nil {
+			return nil, fmt.Errorf("unable to get secret %s: %w", key, err)
+		}
+		secretType, _, err := unstructured.NestedString(secret.Object, "type")
+		if err != nil {
+			return nil, fmt.Errorf("get secret type: %w", err)
+		}
+
+		secretLink, err := options.Link.ForObject(secret, secret.GetName())
+		if err != nil {
+			return nil, fmt.Errorf("generate link for object ref: %w", err)
+		}
+
+		row := component.TableRow{
+			"Name": secretLink,
+			"Type": component.NewText(secretType),
+		}
+		table.Add(row)
+	}
+
+	return table, nil
+}
+
 // ServiceAccountHandler is a printFunc that prints ServiceAccounts
 func ServiceAccountHandler(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) (component.Component, error) {
 	o := NewObject(serviceAccount)
@@ -100,6 +178,14 @@ func ServiceAccountHandler(ctx context.Context, serviceAccount *corev1.ServiceAc
 
 	if err := s.Config(ctx, options); err != nil {
 		return nil, errors.Wrap(err, "print service account configuration")
+	}
+
+	if err := s.Secrets(ctx, options); err != nil {
+		return nil, fmt.Errorf("print service account secrets")
+	}
+
+	if err := s.PolicyRules(ctx, options); err != nil {
+		return nil, fmt.Errorf("print policy results")
 	}
 
 	return o.ToComponent(ctx, options)
@@ -144,19 +230,6 @@ func (s *ServiceAccountConfiguration) Create(options Options) (*component.Summar
 		}
 
 		sections.Add("Image Pull Secrets", view)
-	}
-
-	var mountSecrets []string
-	for _, s := range serviceAccount.Secrets {
-		mountSecrets = append(mountSecrets, s.Name)
-	}
-
-	if len(mountSecrets) > 0 {
-		view, err := generateServiceAccountSecretsList(serviceAccount.Namespace, mountSecrets, options)
-		if err != nil {
-			return nil, err
-		}
-		sections.Add("Mountable Secrets", view)
 	}
 
 	tokens, err := serviceAccountTokens(s.context, *serviceAccount, s.objectStore)
@@ -410,11 +483,11 @@ func defaultServiceAccountConfig(ctx context.Context, serviceAccount *corev1.Ser
 	return NewServiceAccountConfiguration(ctx, serviceAccount, options).Create(options)
 }
 
-func (s *serviceAccountHandler) PolicyRules(ctx context.Context, serviceAccount *corev1.ServiceAccount, options Options) error {
+func (s *serviceAccountHandler) PolicyRules(ctx context.Context, options Options) error {
 	s.object.RegisterItems(ItemDescriptor{
 		Width: component.WidthFull,
 		Func: func() (component.Component, error) {
-			return s.policyRulesFunc(ctx, serviceAccount, options)
+			return s.policyRulesFunc(ctx, s.serviceAccount, options)
 		},
 	})
 
