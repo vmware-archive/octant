@@ -58,6 +58,9 @@ func Test_ClusterRoleBindingListHandler(t *testing.T) {
 		"Age":       component.NewTimestamp(now),
 		"Role kind": component.NewText("Role"),
 		"Role name": component.NewLink("", "role-name", "/cluster-role-path"),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, clusterRoleBinding),
+		}),
 	})
 
 	component.AssertEqual(t, expected, observed)

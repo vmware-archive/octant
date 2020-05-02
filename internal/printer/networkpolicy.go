@@ -8,6 +8,7 @@ package printer
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -28,7 +29,7 @@ func NetworkPolicyListHandler(_ context.Context, list *networkingv1.NetworkPolic
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Age")
-	table := component.NewTable("Network Policies", "We couldn't find any network policies!", cols)
+	ot := NewObjectTable("Network Policies", "We couldn't find any network policies!", cols)
 
 	for _, networkPolicy := range list.Items {
 		row := component.TableRow{}
@@ -41,10 +42,12 @@ func NetworkPolicyListHandler(_ context.Context, list *networkingv1.NetworkPolic
 		row["Labels"] = component.NewLabels(networkPolicy.Labels)
 		row["Age"] = component.NewTimestamp(networkPolicy.CreationTimestamp.Time)
 
-		table.Add(row)
+		if err := ot.AddRowForObject(&networkPolicy, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
 
-	return table, nil
+	return ot.ToComponent()
 }
 
 // NetworkPolicyHandler is a printFunc that prints NetworkPolicies

@@ -6,7 +6,10 @@ SPDX-License-Identifier: Apache-2.0
 package printer
 
 import (
+	"testing"
+
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -74,4 +77,20 @@ func (o *testPrinterOptions) PathForGVK(namespace, apiVersion, kind, name, text,
 func (o *testPrinterOptions) PathForOwner(parent runtime.Object, ownerReference *metav1.OwnerReference, ref string) {
 	l := component.NewLink("", ownerReference.Name, ref)
 	o.link.EXPECT().ForOwner(parent, ownerReference).Return(l, nil)
+}
+
+func gridActionsFactory(actions []component.GridAction) *component.GridActions {
+	ga := component.NewGridActions()
+	for _, gridAction := range actions {
+		ga.AddGridAction(gridAction)
+	}
+
+	return ga
+}
+
+func buildObjectDeleteAction(t *testing.T, object runtime.Object) component.GridAction {
+	action, err := objectDeleteAction(object)
+	require.NoError(t, err)
+
+	return action
 }

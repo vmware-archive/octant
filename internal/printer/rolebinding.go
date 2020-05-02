@@ -22,7 +22,7 @@ func RoleBindingListHandler(ctx context.Context, roleBindingList *rbacv1.RoleBin
 	}
 
 	columns := component.NewTableCols("Name", "Age", "Role kind", "Role name")
-	table := component.NewTable("Role Bindings", "We couldn't find any role bindings!", columns)
+	ot := NewObjectTable("Role Bindings", "We couldn't find any role bindings!", columns)
 
 	for _, roleBinding := range roleBindingList.Items {
 		row := component.TableRow{}
@@ -40,10 +40,12 @@ func RoleBindingListHandler(ctx context.Context, roleBindingList *rbacv1.RoleBin
 		}
 		row["Role name"] = roleName
 
-		table.Add(row)
+		if err := ot.AddRowForObject(&roleBinding, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
 
-	return table, nil
+	return ot.ToComponent()
 }
 
 func roleLinkFromRoleBinding(ctx context.Context, roleBinding *rbacv1.RoleBinding, options Options) (*component.Link, error) {

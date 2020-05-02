@@ -25,7 +25,7 @@ func PersistentVolumeClaimListHandler(ctx context.Context, list *corev1.Persiste
 	}
 
 	cols := component.NewTableCols("Name", "Status", "Volume", "Capacity", "Access Modes", "Storage Class", "Age")
-	tbl := component.NewTable("Persistent Volume Claims",
+	ot := NewObjectTable("Persistent Volume Claims",
 		"We couldn't find any persistent volume claims!", cols)
 
 	for _, persistentVolumeClaim := range list.Items {
@@ -71,9 +71,11 @@ func PersistentVolumeClaimListHandler(ctx context.Context, list *corev1.Persiste
 		ts := persistentVolumeClaim.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
 
-		tbl.Add(row)
+		if err := ot.AddRowForObject(&persistentVolumeClaim, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
-	return tbl, nil
+	return ot.ToComponent()
 }
 
 // PersistentVolumeClaimHandler is a printFunc that prints a PersistentVolumeClaim

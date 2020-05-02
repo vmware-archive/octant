@@ -18,13 +18,14 @@ func TestGridActions_AddAction(t *testing.T) {
 	ga := NewGridActions()
 
 	payload := action.Payload{"foo": "bar"}
-	ga.AddAction("name", "/path", payload)
+	ga.AddAction("name", "/path", payload, nil, GridActionPrimary)
 
 	expected := []GridAction{
 		{
 			Name:       "name",
 			ActionPath: "/path",
 			Payload:    payload,
+			Type:       GridActionPrimary,
 		},
 	}
 	require.Equal(t, expected, ga.Config.Actions)

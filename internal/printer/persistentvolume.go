@@ -24,7 +24,7 @@ func PersistentVolumeListHandler(ctx context.Context, list *corev1.PersistentVol
 	}
 
 	cols := component.NewTableCols("Name", "Capacity", "Access Modes", "Reclaim Policy", "Status", "Claim", "Storage Class", "Reason", "Age")
-	table := component.NewTable("Persistent Volumes", "We couldn't find any persistent volumes!", cols)
+	ot := NewObjectTable("Persistent Volumes", "We couldn't find any persistent volumes!", cols)
 
 	for _, pv := range list.Items {
 		row := component.TableRow{}
@@ -53,10 +53,12 @@ func PersistentVolumeListHandler(ctx context.Context, list *corev1.PersistentVol
 		row["Reason"] = component.NewText(pv.Status.Reason)
 		row["Age"] = component.NewTimestamp(pv.CreationTimestamp.Time)
 
-		table.Add(row)
+		if err := ot.AddRowForObject(&pv, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
 
-	return table, nil
+	return ot.ToComponent()
 }
 
 // PersistentVolumeHandler is a printFunc that creates a component to display a single Persistent Volume

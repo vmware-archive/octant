@@ -26,7 +26,7 @@ func ConfigMapListHandler(_ context.Context, list *corev1.ConfigMapList, opts Op
 
 	// Data column
 	cols := component.NewTableCols("Name", "Labels", "Data", "Age")
-	tbl := component.NewTable("ConfigMaps", "We couldn't find any config maps!", cols)
+	ot := NewObjectTable("ConfigMaps", "We couldn't find any config maps!", cols)
 
 	for _, c := range list.Items {
 		row := component.TableRow{}
@@ -46,10 +46,12 @@ func ConfigMapListHandler(_ context.Context, list *corev1.ConfigMapList, opts Op
 		ts := c.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
 
-		tbl.Add(row)
+		if err := ot.AddRowForObject(&c, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
 
-	return tbl, nil
+	return ot.ToComponent()
 }
 
 // ConfigMapHandler is a printFunc that prints a ConfigMap

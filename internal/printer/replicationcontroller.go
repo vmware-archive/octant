@@ -26,7 +26,7 @@ func ReplicationControllerListHandler(ctx context.Context, list *corev1.Replicat
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
-	tbl := component.NewTable("ReplicationControllers",
+	ot := NewObjectTable("ReplicationControllers",
 		"We couldn't find any replication controllers!", cols)
 
 	for _, rc := range list.Items {
@@ -54,9 +54,12 @@ func ReplicationControllerListHandler(ctx context.Context, list *corev1.Replicat
 
 		row["Selector"] = printSelectorMap(rc.Spec.Selector)
 
-		tbl.Add(row)
+		if err := ot.AddRowForObject(&rc, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
-	return tbl, nil
+
+	return ot.ToComponent()
 }
 
 // ReplicationControllerHandler is a printFunc that prints a ReplicationController

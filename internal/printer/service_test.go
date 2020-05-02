@@ -94,6 +94,9 @@ func Test_ServiceListHandler(t *testing.T) {
 		"Ports":       component.NewText("8000/TCP, 8888/UDP"),
 		"Age":         component.NewTimestamp(now),
 		"Selector":    component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, &object.Items[0]),
+		}),
 	})
 
 	component.AssertEqual(t, expected, got)

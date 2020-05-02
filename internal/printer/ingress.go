@@ -25,7 +25,7 @@ func IngressListHandler(_ context.Context, list *extv1beta1.IngressList, options
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Hosts", "Address", "Ports", "Age")
-	table := component.NewTable("Ingresses", "We couldn't find any ingresses!", cols)
+	ot := NewObjectTable("Ingresses", "We couldn't find any ingresses!", cols)
 
 	for _, ingress := range list.Items {
 		ports := "80"
@@ -46,10 +46,12 @@ func IngressListHandler(_ context.Context, list *extv1beta1.IngressList, options
 		row["Ports"] = component.NewText(ports)
 		row["Age"] = component.NewTimestamp(ingress.CreationTimestamp.Time)
 
-		table.Add(row)
+		if err := ot.AddRowForObject(&ingress, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
 
-	return table, nil
+	return ot.ToComponent()
 }
 
 // IngressHandler is a printFunc that prints an Ingress

@@ -27,7 +27,7 @@ func ServiceAccountListHandler(_ context.Context, list *corev1.ServiceAccountLis
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Secrets", "Age")
-	table := component.NewTable("Service Accounts",
+	ot := NewObjectTable("Service Accounts",
 		"We couldn't find any service accounts!", cols)
 
 	for _, serviceAccount := range list.Items {
@@ -42,10 +42,12 @@ func ServiceAccountListHandler(_ context.Context, list *corev1.ServiceAccountLis
 		row["Secrets"] = component.NewText(fmt.Sprint(len(serviceAccount.Secrets)))
 		row["Age"] = component.NewTimestamp(serviceAccount.CreationTimestamp.Time)
 
-		table.Add(row)
+		if err := ot.AddRowForObject(&serviceAccount, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
 
-	return table, nil
+	return ot.ToComponent()
 }
 
 type serviceAccountObject interface {

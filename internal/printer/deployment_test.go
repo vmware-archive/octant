@@ -7,9 +7,10 @@ package printer
 
 import (
 	"context"
-	"github.com/vmware-tanzu/octant/internal/octant"
 	"testing"
 	"time"
+
+	"github.com/vmware-tanzu/octant/internal/octant"
 
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
@@ -105,6 +106,9 @@ func Test_DeploymentListHandler(t *testing.T) {
 		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "my_app")}),
 		"Status":     component.NewText("2/3"),
 		"Containers": containers,
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, object),
+		}),
 	})
 
 	component.AssertEqual(t, expected, got)
@@ -343,6 +347,9 @@ func Test_DeploymentPods(t *testing.T) {
 			"Restarts": component.NewText("0"),
 			"Phase":    component.NewText("Running"),
 			"Node":     component.NewText("<not scheduled>"),
+			component.GridActionKey: gridActionsFactory([]component.GridAction{
+				buildObjectDeleteAction(t, pod),
+			}),
 		},
 	})
 	addPodTableFilters(expected)

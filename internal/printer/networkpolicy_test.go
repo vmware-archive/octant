@@ -49,6 +49,9 @@ func Test_NetworkPolicyListHandler(t *testing.T) {
 						"Name":   component.NewLink("", "networkPolicy", "/networkPolicy"),
 						"Labels": component.NewLabels(labels),
 						"Age":    component.NewTimestamp(now),
+						component.GridActionKey: gridActionsFactory([]component.GridAction{
+							buildObjectDeleteAction(t, object),
+						}),
 					},
 				}),
 		},

@@ -1,9 +1,13 @@
 package octant
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 const (
@@ -25,4 +29,40 @@ func sendAlert(alerter action.Alerter, alertType action.AlertType, message strin
 	}
 
 	alerter.SendAlert(alert)
+}
+
+func DeleteObjectConfirmationButton(object runtime.Object) (component.ButtonOption, error) {
+	if object == nil {
+		return nil, fmt.Errorf("object is nil")
+	}
+	_, kind := object.GetObjectKind().GroupVersionKind().ToAPIVersionAndKind()
+
+	accessor, err := meta.Accessor(object)
+	if err != nil {
+		return nil, err
+	}
+
+	confirmationTitle := fmt.Sprintf("Delete %s", kind)
+	confirmationBody := fmt.Sprintf("Are you sure you want to delete *%s* **%s**? This action is permanent and cannot be recovered.", kind, accessor.GetName())
+	return component.WithButtonConfirmation(confirmationTitle, confirmationBody), nil
+}
+
+func DeleteObjectConfirmation(object runtime.Object) (*component.Confirmation, error) {
+	if object == nil {
+		return nil, fmt.Errorf("object is nil")
+	}
+	_, kind := object.GetObjectKind().GroupVersionKind().ToAPIVersionAndKind()
+
+	accessor, err := meta.Accessor(object)
+	if err != nil {
+		return nil, err
+	}
+
+	confirmationTitle := fmt.Sprintf("Delete %s", kind)
+	confirmationBody := fmt.Sprintf("Are you sure you want to delete *%s* **%s**? This action is permanent and cannot be recovered.", kind, accessor.GetName())
+
+	return &component.Confirmation{
+		Title: confirmationTitle,
+		Body:  confirmationBody,
+	}, nil
 }

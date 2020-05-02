@@ -26,7 +26,7 @@ func SecretListHandler(ctx context.Context, list *corev1.SecretList, options Opt
 		return nil, errors.New("list of secrets is nil")
 	}
 
-	table := component.NewTable("Secrets", "We couldn't find any secrets!", secretTableCols)
+	ot := NewObjectTable("Secrets", "We couldn't find any secrets!", secretTableCols)
 
 	for _, secret := range list.Items {
 		row := component.TableRow{}
@@ -42,10 +42,12 @@ func SecretListHandler(ctx context.Context, list *corev1.SecretList, options Opt
 		row["Data"] = component.NewText(fmt.Sprintf("%d", len(secret.Data)))
 		row["Age"] = component.NewTimestamp(secret.ObjectMeta.CreationTimestamp.Time)
 
-		table.Add(row)
+		if err := ot.AddRowForObject(&secret, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
 
-	return table, nil
+	return ot.ToComponent()
 }
 
 // SecretHandler is a printFunc for printing a secret summary.

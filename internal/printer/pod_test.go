@@ -91,6 +91,9 @@ func Test_PodListHandler(t *testing.T) {
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(now),
 		"Node":     nodeLink,
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, pod),
+		}),
 	})
 	addPodTableFilters(expected)
 
@@ -151,6 +154,9 @@ func Test_PodListHandlerNoLabel(t *testing.T) {
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(now),
 		"Node":     nodeLink,
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, pod),
+		}),
 	})
 	addPodTableFilters(expected)
 
@@ -191,6 +197,9 @@ func TestPodListHandler_sorted(t *testing.T) {
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(pod1.CreationTimestamp.Time),
 		"Node":     component.NewText("<not scheduled>"),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, pod1),
+		}),
 	})
 	expected.Add(component.TableRow{
 		"Name":     component.NewLink("", "pod2", "/pod2"),
@@ -200,6 +209,9 @@ func TestPodListHandler_sorted(t *testing.T) {
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(pod1.CreationTimestamp.Time),
 		"Node":     component.NewText("<not scheduled>"),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, pod2),
+		}),
 	})
 	addPodTableFilters(expected)
 

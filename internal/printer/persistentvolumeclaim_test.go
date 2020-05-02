@@ -60,6 +60,9 @@ func Test_PersistentVolumeClaimListHandler(t *testing.T) {
 				"Access Modes":  component.NewText("RWO"),
 				"Storage Class": component.NewText("manual"),
 				"Age":           component.NewTimestamp(now),
+				component.GridActionKey: gridActionsFactory([]component.GridAction{
+					buildObjectDeleteAction(t, object),
+				}),
 			},
 		},
 		{
@@ -72,6 +75,9 @@ func Test_PersistentVolumeClaimListHandler(t *testing.T) {
 				"Access Modes":  component.NewText(""),
 				"Storage Class": component.NewText("manual"),
 				"Age":           component.NewTimestamp(now),
+				component.GridActionKey: gridActionsFactory([]component.GridAction{
+					buildObjectDeleteAction(t, object),
+				}),
 			},
 		},
 	}
@@ -313,6 +319,9 @@ func Test_PersistentVolumeClaimMountedPodsList(t *testing.T) {
 		"Restarts": component.NewText("0"),
 		"Node":     nodeLink,
 		"Age":      component.NewTimestamp(now),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, pod),
+		}),
 	})
 	addPodTableFilters(expected)
 

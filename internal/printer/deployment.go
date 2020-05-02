@@ -8,6 +8,7 @@ package printer
 import (
 	"context"
 	"fmt"
+
 	"github.com/vmware-tanzu/octant/internal/octant"
 
 	"github.com/pkg/errors"
@@ -30,7 +31,7 @@ func DeploymentListHandler(_ context.Context, list *appsv1.DeploymentList, opts 
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
-	tbl := component.NewTable("Deployments", "We couldn't find any deployments!", cols)
+	ot := NewObjectTable("Deployments", "We couldn't find any deployments!", cols)
 
 	for _, d := range list.Items {
 		row := component.TableRow{}
@@ -56,9 +57,12 @@ func DeploymentListHandler(_ context.Context, list *appsv1.DeploymentList, opts 
 		row["Containers"] = containers
 		row["Selector"] = printSelector(d.Spec.Selector)
 
-		tbl.Add(row)
+		if err := ot.AddRowForObject(&d, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
-	return tbl, nil
+
+	return ot.ToComponent()
 }
 
 // DeploymentHandler is a printFunc that prints a Deployments.

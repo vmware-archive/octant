@@ -8,8 +8,9 @@ package printer
 import (
 	"context"
 	"fmt"
-	"github.com/vmware-tanzu/octant/internal/octant"
 	"strconv"
+
+	"github.com/vmware-tanzu/octant/internal/octant"
 
 	"github.com/pkg/errors"
 
@@ -27,7 +28,7 @@ func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opt
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Schedule", "Age", "")
-	tbl := component.NewTable("CronJobs", "We couldn't find any cron jobs!", cols)
+	ot := NewObjectTable("CronJobs", "We couldn't find any cron jobs!", cols)
 
 	for _, c := range list.Items {
 		row := component.TableRow{}
@@ -59,10 +60,12 @@ func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opt
 
 		row[""] = buttonGroup
 
-		tbl.Add(row)
+		if err := ot.AddRowForObject(&c, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
 
-	return tbl, nil
+	return ot.ToComponent()
 }
 
 // CronJobHandler is a printFunc that prints a CronJob

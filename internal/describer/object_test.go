@@ -16,7 +16,6 @@ import (
 	"github.com/vmware-tanzu/octant/internal/link"
 
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -120,22 +119,4 @@ func TestObjectDescriber(t *testing.T) {
 	}
 
 	testutil.AssertJSONEqual(t, &expected, &cResponse)
-}
-
-func Test_DeleteObjectConfirmation(t *testing.T) {
-	pod := testutil.CreatePod("pod")
-	option, err := describer.DeleteObjectConfirmation(pod)
-	require.NoError(t, err)
-
-	button := component.Button{}
-	option(&button)
-
-	expected := component.Button{
-		Confirmation: &component.Confirmation{
-			Title: "Delete Pod",
-			Body:  "Are you sure you want to delete *Pod* **pod**? This action is permanent and cannot be recovered.",
-		},
-	}
-
-	assert.Equal(t, expected, button)
 }

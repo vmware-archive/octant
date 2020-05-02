@@ -69,6 +69,9 @@ func Test_JobListHandler(t *testing.T) {
 		"Completions": component.NewText("1"),
 		"Successful":  component.NewText("1"),
 		"Age":         component.NewTimestamp(validJobCreationTime),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, validJob),
+		}),
 	})
 
 	component.AssertEqual(t, expected, got)

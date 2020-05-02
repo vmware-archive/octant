@@ -39,6 +39,17 @@ type TableCol struct {
 // TableRow is a row in table. Each key->value represents a particular column in the row.
 type TableRow map[string]Component
 
+func (t TableRow) AddAction(gridAction GridAction) {
+	ga, ok := t[GridActionKey].(*GridActions)
+	if !ok {
+		ga = NewGridActions()
+	}
+
+	ga.AddGridAction(gridAction)
+
+	t[GridActionKey] = ga
+}
+
 func (t *TableRow) UnmarshalJSON(data []byte) error {
 	*t = make(TableRow)
 

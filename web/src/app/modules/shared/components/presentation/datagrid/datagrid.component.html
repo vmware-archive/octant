@@ -19,13 +19,11 @@
   </clr-dg-column>
   <clr-dg-row *clrDgItems="let row of rowsWithMetadata; trackBy: identifyRow">
     <clr-dg-action-overflow *ngIf="row.actions.length > 0">
-      <button
-        *ngFor="let action of row.actions"
-        class="action-item"
-        (click)="runAction(action.actionPath, action.payload)"
-      >
-        {{ action.name }}
-      </button>
+      <ng-container *ngFor="let action of row.actions">
+        <button class="action-item" (click)="runAction(action)">
+          {{ action.name }}
+        </button>
+      </ng-container>
     </clr-dg-action-overflow>
     <clr-dg-cell *ngFor="let column of columns; trackBy: identifyColumn">
       <app-content-switcher [view]="row.data[column]"></app-content-switcher>
@@ -34,9 +32,9 @@
 
   <clr-dg-footer>
     <clr-dg-pagination #pagination [clrDgPageSize]="10">
-      <clr-dg-page-size [clrPageSizeOptions]="[10, 20, 50, 100]"
-        >Items per page</clr-dg-page-size
-      >
+      <clr-dg-page-size [clrPageSizeOptions]="[10, 20, 50, 100]">
+        Items per page
+      </clr-dg-page-size>
       <ng-container *ngIf="rowsWithMetadata?.length > 0">
         {{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }} of
         {{ pagination.totalItems }} items
@@ -50,3 +48,29 @@
     </ng-container>
   </clr-dg-footer>
 </clr-datagrid>
+
+<clr-modal [(clrModalOpen)]="isModalOpen">
+  <h3 class="modal-title">
+    {{ actionDialogOptions?.confirmation?.title }}
+  </h3>
+  <div class="modal-body">
+    <div
+      markdown
+      ngPreserveWhitespaces
+      [data]="actionDialogOptions?.confirmation?.body"
+    ></div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="cancelModal()">
+      Cancel
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="acceptModal()"
+      [ngClass]="['btn', 'btn-' + actionDialogOptions?.type + '-outline']"
+    >
+      {{ actionDialogOptions?.text }}
+    </button>
+  </div>
+</clr-modal>

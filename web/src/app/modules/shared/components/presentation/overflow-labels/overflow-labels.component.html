@@ -1,16 +1,21 @@
 <div class="labels-wrapper" *ngIf="labels">
   <div class="labels-container">
     <ng-container *ngFor="let label of showLabels; trackBy: trackByIdentity">
-      <ng-container *ngFor="let item of label | keyvalue; trackBy: trackByIdentity">
-        <span class="tooltip tooltip-wrapper tooltip-md"
-        >
+      <ng-container
+        *ngFor="let item of label | keyvalue; trackBy: trackByIdentity"
+      >
+        <span class="tooltip tooltip-wrapper tooltip-md">
           <span
             class="label label-light-blue clickable"
             (click)="filterLabel(item.key, item.value)"
           >
             {{ item.key }}:{{ item.value }}
           </span>
-          <span class="tooltip-content" [ngStyle]="{'margin-top': getScrollPos()}">{{ item.key }}:{{ item.value }}</span>
+          <span
+            class="tooltip-content"
+            [ngStyle]="{ 'margin-top': getScrollPos() }"
+            >{{ item.key }}:{{ item.value }}</span
+          >
         </span>
       </ng-container>
     </ng-container>

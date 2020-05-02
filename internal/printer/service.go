@@ -8,8 +8,9 @@ package printer
 import (
 	"context"
 	"fmt"
-	"github.com/vmware-tanzu/octant/internal/octant"
 	"strings"
+
+	"github.com/vmware-tanzu/octant/internal/octant"
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -27,7 +28,7 @@ func ServiceListHandler(_ context.Context, list *corev1.ServiceList, options Opt
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Type", "Cluster IP", "External IP", "Ports", "Age", "Selector")
-	tbl := component.NewTable("Services", "We couldn't find any services!", cols)
+	ot := NewObjectTable("Services", "We couldn't find any services!", cols)
 
 	for _, s := range list.Items {
 		row := component.TableRow{}
@@ -48,9 +49,11 @@ func ServiceListHandler(_ context.Context, list *corev1.ServiceList, options Opt
 
 		row["Selector"] = printSelectorMap(s.Spec.Selector)
 
-		tbl.Add(row)
+		if err := ot.AddRowForObject(&s, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
-	return tbl, nil
+	return ot.ToComponent()
 }
 
 // ServiceHandler is a printFunc that prints a Services.

@@ -4,6 +4,7 @@
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import {
+  Confirmation,
   GridAction,
   GridActionsView,
   TableFilters,
@@ -27,6 +28,7 @@ export class DatagridComponent implements OnChanges {
   @Input() set view(v: View) {
     this.v = v as TableView;
   }
+
   get view() {
     return this.v;
   }
@@ -37,6 +39,9 @@ export class DatagridComponent implements OnChanges {
   placeholder: string;
   lastUpdated: Date;
   filters: TableFilters;
+  isModalOpen = false;
+
+  actionDialogOptions: ActionDialogOptions = undefined;
 
   private previousView: SimpleChanges;
 
@@ -88,9 +93,21 @@ export class DatagridComponent implements OnChanges {
     });
   }
 
-  runAction(actionPath: string, payload: {}) {
-    const update = { ...payload, action: actionPath };
-    this.actionService.perform(update);
+  runAction(action: GridAction) {
+    if (!action.confirmation) {
+      const update = { ...action.payload, action: action.actionPath };
+      this.actionService.perform(update);
+      return;
+    }
+
+    this.actionDialogOptions = {
+      action,
+      text: action.name,
+      type: action.type,
+      confirmation: action.confirmation,
+    };
+
+    this.isModalOpen = true;
   }
 
   showTitle() {
@@ -99,9 +116,38 @@ export class DatagridComponent implements OnChanges {
     }
     return true;
   }
+
+  cancelModal() {
+    this.resetModal();
+  }
+
+  acceptModal() {
+    if (this.actionDialogOptions === undefined) {
+      return;
+    }
+
+    const action = this.actionDialogOptions.action;
+    const actionPath = this.actionDialogOptions.action.actionPath;
+    const update = { ...action.payload, action: actionPath };
+    this.actionService.perform(update);
+
+    this.resetModal();
+  }
+
+  private resetModal() {
+    this.isModalOpen = false;
+    this.actionDialogOptions = undefined;
+  }
 }
 
 interface TableRowWithMetadata {
   data: TableRow;
   actions?: GridAction[];
+}
+
+interface ActionDialogOptions {
+  action: GridAction;
+  text: string;
+  type: string;
+  confirmation?: Confirmation;
 }

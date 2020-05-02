@@ -58,6 +58,9 @@ func Test_ServiceAccountListHandler(t *testing.T) {
 		"Labels":  component.NewLabels(labels),
 		"Secrets": component.NewText("1"),
 		"Age":     component.NewTimestamp(now),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, object),
+		}),
 	})
 
 	component.AssertEqual(t, expected, got)
