@@ -282,11 +282,17 @@ func CreateExtReplicaSet(name string) *extv1beta1.ReplicaSet {
 }
 
 // CreateSecret creates a secret
-func CreateSecret(name string) *corev1.Secret {
-	return &corev1.Secret{
+func CreateSecret(name string, options ...func(*corev1.Secret)) *corev1.Secret {
+	s := &corev1.Secret{
 		TypeMeta:   genTypeMeta(gvk.Secret),
 		ObjectMeta: genObjectMeta(name, true),
 	}
+
+	for _, option := range options {
+		option(s)
+	}
+
+	return s
 }
 
 // CreateService creates a service
@@ -298,11 +304,17 @@ func CreateService(name string) *corev1.Service {
 }
 
 // CreateServiceAccount creates a service account
-func CreateServiceAccount(name string) *corev1.ServiceAccount {
-	return &corev1.ServiceAccount{
+func CreateServiceAccount(name string, options ...func(*corev1.ServiceAccount)) *corev1.ServiceAccount {
+	sa := &corev1.ServiceAccount{
 		TypeMeta:   genTypeMeta(gvk.ServiceAccount),
 		ObjectMeta: genObjectMeta(name, true),
 	}
+
+	for _, option := range options {
+		option(sa)
+	}
+
+	return sa
 }
 
 // CreateStatefulSet creates a stateful set

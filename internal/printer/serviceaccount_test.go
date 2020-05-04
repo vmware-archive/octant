@@ -1,7 +1,7 @@
 /*
-Copyright (c) 2019 the Octant contributors. All Rights Reserved.
-SPDX-License-Identifier: Apache-2.0
-*/
+ * Copyright (c) 2020 the Octant contributors. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package printer
 
@@ -15,8 +15,11 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	linkFake "github.com/vmware-tanzu/octant/internal/link/fake"
 	"github.com/vmware-tanzu/octant/internal/testutil"
 	"github.com/vmware-tanzu/octant/pkg/store"
+	storeFake "github.com/vmware-tanzu/octant/pkg/store/fake"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -79,27 +82,21 @@ func Test_ServiceAccountConfiguration(t *testing.T) {
 		Kind:       "Secret",
 	}
 
-	cases := []struct {
+	tests := []struct {
 		name           string
 		namespace      string
-		serviceaccount *corev1.ServiceAccount
+		serviceAccount *corev1.ServiceAccount
 		secret         *corev1.Secret
 		isErr          bool
 		expected       *component.Summary
 	}{
 		{
-			name:           "serviceaccount",
+			name:           "in general",
 			namespace:      serviceAccount.Namespace,
-			serviceaccount: serviceAccount,
+			serviceAccount: serviceAccount,
 			expected: component.NewSummary("Configuration", []component.SummarySection{
 				{
 					Header: "Image Pull Secrets",
-					Content: component.NewList([]component.TitleComponent{}, []component.Component{
-						component.NewLink("", "secret", "/secret"),
-					}),
-				},
-				{
-					Header: "Mountable Secrets",
 					Content: component.NewList([]component.TitleComponent{}, []component.Component{
 						component.NewLink("", "secret", "/secret"),
 					}),
@@ -113,38 +110,38 @@ func Test_ServiceAccountConfiguration(t *testing.T) {
 			}...),
 		},
 		{
-			name:           "serviceaccount is nil",
-			serviceaccount: nil,
+			name:           "service account is nil",
+			serviceAccount: nil,
 			isErr:          true,
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
 			ctx := context.Background()
 			tpo := newTestPrinterOptions(controller)
 
-			if !tc.isErr {
+			if !test.isErr {
 				tpo.objectStore.EXPECT().List(gomock.Any(), gomock.Eq(key)).
 					Return(testutil.ToUnstructuredList(t, testutil.ToUnstructured(t, secret)), false, nil)
 			}
 
 			printOptions := tpo.ToOptions()
 
-			tpo.PathForGVK(tc.namespace, "v1", "Secret", "secret", "secret", "/secret")
+			tpo.PathForGVK(test.namespace, "v1", "Secret", "secret", "secret", "/secret")
 
-			sac := NewServiceAccountConfiguration(ctx, tc.serviceaccount, printOptions)
+			sac := NewServiceAccountConfiguration(ctx, test.serviceAccount, printOptions)
 			summary, err := sac.Create(printOptions)
-			if tc.isErr {
+			if test.isErr {
 				require.Error(t, err)
 				return
 			}
 			require.NoError(t, err)
 
-			component.AssertEqual(t, tc.expected, summary)
+			component.AssertEqual(t, test.expected, summary)
 		})
 	}
 }
@@ -219,8 +216,8 @@ func Test_ServiceAccountPolicyRules(t *testing.T) {
 		Get(gomock.Any(), role2Key).
 		Return(testutil.ToUnstructured(t, role2), nil)
 
-	saph := NewServiceAccountPolicyRules(ctx, serviceAccount, printOptions)
-	got, err := saph.Create()
+	policyRules := NewServiceAccountPolicyRules(ctx, serviceAccount, printOptions)
+	got, err := policyRules.Create()
 	require.NoError(t, err)
 
 	cols := component.NewTableCols("Resources", "Non-Resource URLs", "Resource Names", "Verbs")
@@ -241,4 +238,98 @@ func Test_ServiceAccountPolicyRules(t *testing.T) {
 	}...)
 
 	component.AssertEqual(t, expected, got)
+}
+
+func TestServiceAccountSecrets(t *testing.T) {
+	tests := []struct {
+		name        string
+		account     *corev1.ServiceAccount
+		initOptions func(controller *gomock.Controller) Options
+		want        *component.Table
+		wantError   bool
+	}{
+		{
+			name:    "service account with no secrets",
+			account: testutil.CreateServiceAccount("sa"),
+			initOptions: func(controller *gomock.Controller) Options {
+				return Options{}
+			},
+			want: nil,
+		},
+		{
+			name: "service account with secret",
+			account: testutil.CreateServiceAccount("sa", func(account *corev1.ServiceAccount) {
+				account.Secrets = []corev1.ObjectReference{
+					{
+						Name: "secret",
+					},
+				}
+			}),
+			initOptions: func(ctrl *gomock.Controller) Options {
+				secret := testutil.ToUnstructured(t, testutil.CreateSecret("secret", func(secret *corev1.Secret) {
+					secret.Type = corev1.SecretTypeOpaque
+				}))
+				secretKey, err := store.KeyFromObject(secret)
+				require.NoError(t, err)
+
+				objectStore := storeFake.NewMockStore(ctrl)
+				objectStore.EXPECT().
+					Get(gomock.Any(), secretKey).
+					Return(secret, nil)
+
+				secretLink := component.NewLink("", "secret", "/secret")
+				link := linkFake.NewMockInterface(ctrl)
+				link.EXPECT().
+					ForObject(secret, secret.GetName()).
+					Return(secretLink, nil)
+
+				dashConfig := configFake.NewMockDash(ctrl)
+				dashConfig.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
+
+				options := Options{
+					DashConfig: dashConfig,
+					Link:       link,
+				}
+
+				return options
+			},
+			want: component.NewTableWithRows(
+				"Secrets",
+				ServiceAccountSecretPlaceholder,
+				ServiceAccountSecretCols,
+				[]component.TableRow{
+					{
+						"Name": component.NewLink("", "secret", "/secret"),
+						"Type": component.NewText(string(corev1.SecretTypeOpaque)),
+					},
+				}),
+		},
+		{
+			name:      "with nil service account",
+			account:   nil,
+			wantError: true,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			ctx := context.Background()
+
+			var options Options
+			if test.initOptions != nil {
+				options = test.initOptions(ctrl)
+			}
+
+			actual, err := ServiceAccountSecrets(ctx, test.account, options)
+			if test.wantError {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			testutil.AssertJSONEqual(t, test.want, actual)
+		})
+	}
 }
