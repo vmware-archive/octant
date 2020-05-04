@@ -2,8 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input } from '@angular/core';
+import {
+  AfterViewChecked,
+  Component,
+  ElementRef,
+  Input,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
+import { ContentService } from '../../../services/content/content.service';
+import { Subscription } from 'rxjs';
 
 interface Selector {
   metadata: {
@@ -20,11 +30,32 @@ interface Selector {
   templateUrl: './overflow-selectors.component.html',
   styleUrls: ['./overflow-selectors.component.scss'],
 })
-export class OverflowSelectorsComponent {
-  @Input() numberShownSelectors = 2;
+export class OverflowSelectorsComponent
+  implements OnInit, OnDestroy, AfterViewChecked {
   @Input() set selectors(selectors: Selector[]) {
     this.selectorsList = selectors;
+    this.updateSelectors();
+  }
 
+  get selectors(): Selector[] {
+    return this.selectorsList;
+  }
+
+  constructor(
+    private contentService: ContentService,
+    private rootElement: ElementRef
+  ) {}
+  @Input() numberShownSelectors = 2;
+
+  private selectorsList: Selector[];
+  showSelectors: Selector[];
+  overflowSelectors: Selector[];
+  trackByIdentity = trackByIdentity;
+  scrollPosition = 0;
+  private contentSubscription: Subscription;
+  componentWidth = 0;
+
+  private updateSelectors() {
     if (this.numberShownSelectors <= this.selectorsList.length) {
       this.showSelectors = this.selectorsList.slice(
         0,
@@ -37,12 +68,29 @@ export class OverflowSelectorsComponent {
       this.showSelectors = this.selectorsList;
     }
   }
-  get selectors(): Selector[] {
-    return this.selectorsList;
+
+  ngOnInit() {
+    this.contentSubscription = this.contentService.viewScrollPos.subscribe(
+      position => {
+        this.scrollPosition = position;
+      }
+    );
   }
 
-  private selectorsList: Selector[];
-  showSelectors: Selector[];
-  overflowSelectors: Selector[];
-  trackByIdentity = trackByIdentity;
+  ngOnDestroy() {
+    this.contentSubscription.unsubscribe();
+  }
+
+  ngAfterViewChecked(): void {
+    if (this.componentWidth !== this.rootElement.nativeElement.clientWidth) {
+      this.numberShownSelectors =
+        this.rootElement.nativeElement.clientWidth > 150 ? 2 : 1;
+      this.updateSelectors();
+      this.componentWidth = this.rootElement.nativeElement.clientWidth;
+    }
+  }
+
+  getScrollPos() {
+    return `${-this.scrollPosition - 64}px`;
+  }
 }

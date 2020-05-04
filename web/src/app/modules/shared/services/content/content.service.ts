@@ -34,6 +34,7 @@ const emptyContentResponse: ContentResponse = {
 export class ContentService {
   defaultPath = new BehaviorSubject<string>('');
   current = new BehaviorSubject<ContentResponse>(emptyContentResponse);
+  viewScrollPos = new BehaviorSubject<number>(0);
 
   private previousContentPath = '';
 
@@ -87,6 +88,7 @@ export class ContentService {
   }
 
   setContentPath(contentPath: string, params: Params) {
+    this.viewScrollPos.next(0);
     if (contentPath === this.previousContentPath) {
       return;
     }
@@ -107,5 +109,9 @@ export class ContentService {
       content,
     };
     this.current.next(contentResponse);
+  }
+
+  setScrollPos(pos: number) {
+    this.viewScrollPos.next(pos);
   }
 }
