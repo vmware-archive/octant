@@ -56,6 +56,7 @@ func (hf *HandlerFactory) Handler(ctx context.Context) (http.Handler, error) {
 	router.PathPrefix(api.PathPrefix).Handler(backendHandler)
 
 	router.PathPrefix("/").Handler(frontendHandler)
+	router.Use(noCacheRootMiddleware)
 
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
 	allowedHeaders := handlers.AllowedHeaders([]string{"Accept", "Accept-Language", "Content-Language", "Origin", "Content-Type"})
