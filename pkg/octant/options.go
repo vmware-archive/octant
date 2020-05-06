@@ -75,3 +75,13 @@ func BackendHandler(fn func(ctx context.Context) (http.Handler, error)) Option {
 func defaultFrontendHandler(ctx context.Context) (http.Handler, error) {
 	return web.Handler()
 }
+
+func noCacheRootMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.EscapedPath()
+		if path == "/" {
+			w.Header().Set("Cache-Control", "no-cache, no-store")
+		}
+		next.ServeHTTP(w, r)
+	})
+}
