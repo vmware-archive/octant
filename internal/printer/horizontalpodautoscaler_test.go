@@ -82,6 +82,9 @@ func Test_HorizontalPodAutoscalerListHandler(t *testing.T) {
 		"Maximum Pods": component.NewText("10"),
 		"Replicas":     component.NewText("2"),
 		"Age":          component.NewTimestamp(now),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, object),
+		}),
 	})
 
 	component.AssertEqual(t, expected, got)

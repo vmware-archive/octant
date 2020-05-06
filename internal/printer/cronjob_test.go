@@ -7,9 +7,10 @@ package printer
 
 import (
 	"context"
-	"github.com/vmware-tanzu/octant/internal/octant"
 	"testing"
 	"time"
+
+	"github.com/vmware-tanzu/octant/internal/octant"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -87,6 +88,9 @@ func Test_CronJobListHandler(t *testing.T) {
 		"Schedule": component.NewText("*/1 * * * *"),
 		"Age":      component.NewTimestamp(now),
 		"":         buttonGroup,
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, cronJob),
+		}),
 	})
 
 	component.AssertEqual(t, expected, got)
@@ -237,6 +241,9 @@ func Test_createJobListView(t *testing.T) {
 		"Completions": component.NewText("1"),
 		"Successful":  component.NewText("1"),
 		"Age":         component.NewTimestamp(now),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, job),
+		}),
 	})
 
 	component.AssertEqual(t, expected, got)

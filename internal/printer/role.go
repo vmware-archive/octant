@@ -7,6 +7,7 @@ package printer
 
 import (
 	"context"
+	"fmt"
 	"sort"
 
 	"github.com/pkg/errors"
@@ -22,7 +23,7 @@ func RoleListHandler(_ context.Context, roleList *rbacv1.RoleList, options Optio
 	}
 
 	columns := component.NewTableCols("Name", "Age")
-	table := component.NewTable("Roles", "We couldn't find any roles!", columns)
+	ot := NewObjectTable("Roles", "We couldn't find any roles!", columns)
 
 	for _, role := range roleList.Items {
 		row := component.TableRow{}
@@ -33,10 +34,13 @@ func RoleListHandler(_ context.Context, roleList *rbacv1.RoleList, options Optio
 
 		row["Name"] = nameLink
 		row["Age"] = component.NewTimestamp(role.CreationTimestamp.Time)
-		table.Add(row)
+
+		if err := ot.AddRowForObject(&role, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
 
-	return table, nil
+	return ot.ToComponent()
 }
 
 // RoleHandler is a printFunc that prints roles

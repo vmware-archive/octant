@@ -64,6 +64,9 @@ func Test_IngressListHandler(t *testing.T) {
 						"Hosts":   component.NewText("*"),
 						"Address": component.NewText(""),
 						"Ports":   component.NewText("80"),
+						component.GridActionKey: gridActionsFactory([]component.GridAction{
+							buildObjectDeleteAction(t, object),
+						}),
 					},
 				}),
 		},
@@ -79,6 +82,9 @@ func Test_IngressListHandler(t *testing.T) {
 						"Hosts":   component.NewText("*"),
 						"Address": component.NewText(""),
 						"Ports":   component.NewText("80, 443"),
+						component.GridActionKey: gridActionsFactory([]component.GridAction{
+							buildObjectDeleteAction(t, object),
+						}),
 					},
 				}),
 		},

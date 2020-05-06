@@ -42,12 +42,16 @@ func Test_ClusterRoleListHandler(t *testing.T) {
 
 	cols := component.NewTableCols("Name", "Age")
 	expected := component.NewTable("Cluster Roles", "We couldn't find any cluster roles!", cols)
+
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", object.Name, "/path"),
 		"Age":  component.NewTimestamp(now),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, object),
+		}),
 	})
 
-	component.AssertEqual(t, expected, got)
+	testutil.AssertJSONEqual(t, expected, got)
 }
 
 func Test_ClusterRoleConfiguration(t *testing.T) {

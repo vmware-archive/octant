@@ -1,11 +1,17 @@
 <div class="selectors-wrapper" *ngIf="selectors">
   <div class="selectors-container">
-    <ng-container *ngFor="let selector of showSelectors; trackBy: trackByIdentity">
+    <ng-container
+      *ngFor="let selector of showSelectors; trackBy: trackByIdentity"
+    >
       <span class="tooltip tooltip-wrapper tooltip-md">
         <span class="label label-orange">
           {{ selector.config.key }}:{{ selector.config.value }}
         </span>
-        <span class="tooltip-content" [ngStyle]="{'margin-top': getScrollPos()}">{{ selector.config.key }}:{{ selector.config.value }}</span>
+        <span
+          class="tooltip-content"
+          [ngStyle]="{ 'margin-top': getScrollPos() }"
+          >{{ selector.config.key }}:{{ selector.config.value }}</span
+        >
       </span>
     </ng-container>
   </div>
@@ -15,7 +21,9 @@
       {{ overflowSelectors.length }}+
     </span>
     <clr-signpost-content [clrPosition]="'left-middle'" *clrIfOpen>
-      <ng-container *ngFor="let selector of overflowSelectors; trackBy: trackByIdentity">
+      <ng-container
+        *ngFor="let selector of overflowSelectors; trackBy: trackByIdentity"
+      >
         <span class="label label-orange">
           {{ selector.config.key }}:{{ selector.config.value }}
         </span>

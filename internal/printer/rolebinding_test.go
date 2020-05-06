@@ -50,6 +50,9 @@ func Test_RoleBindingListHandler(t *testing.T) {
 		"Age":       component.NewTimestamp(now),
 		"Role kind": component.NewText("Role"),
 		"Role name": component.NewLink("", "pod-reader", "/role"),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, roleBinding),
+		}),
 	})
 
 	component.AssertEqual(t, expected, observed)

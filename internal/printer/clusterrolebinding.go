@@ -22,7 +22,7 @@ func ClusterRoleBindingListHandler(_ context.Context, clusterRoleBindingList *rb
 	}
 
 	columns := component.NewTableCols("Name", "Labels", "Age", "Role kind", "Role name")
-	table := component.NewTable("Cluster Role Bindings", "We couldn't find any cluster role bindings!", columns)
+	ot := NewObjectTable("Cluster Role Bindings", "We couldn't find any cluster role bindings!", columns)
 
 	for _, roleBinding := range clusterRoleBindingList.Items {
 		row := component.TableRow{}
@@ -45,10 +45,12 @@ func ClusterRoleBindingListHandler(_ context.Context, clusterRoleBindingList *rb
 
 		row["Role name"] = roleName
 
-		table.Add(row)
+		if err := ot.AddRowForObject(&roleBinding, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
 
-	return table, nil
+	return ot.ToComponent()
 }
 
 func roleLinkFromClusterRoleBinding(clusterRoleBinding *rbacv1.ClusterRoleBinding, options Options) (*component.Link, error) {

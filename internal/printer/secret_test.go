@@ -67,6 +67,9 @@ func Test_SecretListHandler(t *testing.T) {
 		"Type":   component.NewText("Opaque"),
 		"Data":   component.NewText("1"),
 		"Age":    component.NewTimestamp(now),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, &object.Items[0]),
+		}),
 	})
 
 	component.AssertEqual(t, expected, got)

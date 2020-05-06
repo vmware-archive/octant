@@ -99,6 +99,9 @@ func Test_ReplicaSetListHandler(t *testing.T) {
 		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
 		"Status":     component.NewText("2/3"),
 		"Containers": containers,
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, &object.Items[0]),
+		}),
 	})
 
 	component.AssertEqual(t, expected, got)
@@ -319,6 +322,9 @@ func Test_ReplicaSetPods(t *testing.T) {
 		"Restarts": component.NewText("0"),
 		"Node":     nodeLink,
 		"Age":      component.NewTimestamp(now),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, pod),
+		}),
 	})
 	addPodTableFilters(expected)
 

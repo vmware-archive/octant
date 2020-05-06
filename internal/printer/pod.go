@@ -43,12 +43,13 @@ func PodListHandler(_ context.Context, list *corev1.PodList, opts Options) (comp
 		cols = podColsWithOutLabels
 	}
 
-	table := component.NewTable("Pods", "We couldn't find any pods!", cols)
-	addPodTableFilters(table)
+	ot := NewObjectTable("Pods", "We couldn't find any pods!", cols)
+	ot.AddFilters(podTableFilters())
 
 	for i := range list.Items {
 		row := component.TableRow{}
-		nameLink, err := opts.Link.ForObject(&list.Items[i], list.Items[i].Name)
+		pod := list.Items[i]
+		nameLink, err := opts.Link.ForObject(&pod, pod.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -56,43 +57,45 @@ func PodListHandler(_ context.Context, list *corev1.PodList, opts Options) (comp
 		row["Name"] = nameLink
 
 		if !opts.DisableLabels {
-			row["Labels"] = component.NewLabels(list.Items[i].Labels)
+			row["Labels"] = component.NewLabels(pod.Labels)
 		}
 
 		readyCounter := 0
-		for _, c := range list.Items[i].Status.ContainerStatuses {
+		for _, c := range pod.Status.ContainerStatuses {
 			if c.Ready {
 				readyCounter++
 			}
 		}
-		ready := fmt.Sprintf("%d/%d", readyCounter, len(list.Items[i].Spec.Containers))
+		ready := fmt.Sprintf("%d/%d", readyCounter, len(pod.Spec.Containers))
 		row["Ready"] = component.NewText(ready)
 
-		row["Phase"] = component.NewText(string(list.Items[i].Status.Phase))
+		row["Phase"] = component.NewText(string(pod.Status.Phase))
 
 		restartCounter := 0
-		for _, c := range list.Items[i].Status.ContainerStatuses {
+		for _, c := range pod.Status.ContainerStatuses {
 			restartCounter += int(c.RestartCount)
 		}
 		restarts := fmt.Sprintf("%d", restartCounter)
 		row["Restarts"] = component.NewText(restarts)
 
-		nodeComponent, err := podNode(&list.Items[i], opts.Link)
+		nodeComponent, err := podNode(&pod, opts.Link)
 		if err != nil {
 			return nil, err
 		}
 
 		row["Node"] = nodeComponent
 
-		ts := list.Items[i].CreationTimestamp.Time
+		ts := pod.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
 
-		table.Add(row)
+		if err := ot.AddRowForObject(&pod, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
 
-	table.Sort("Name", false)
+	ot.SetSortOrder("Name", false)
 
-	return table, nil
+	return ot.ToComponent()
 }
 
 func podNode(pod *corev1.Pod, linkGenerator link.Interface) (component.Component, error) {
@@ -769,8 +772,16 @@ func (p *podHandler) Additional(options Options) error {
 }
 
 func addPodTableFilters(table *component.Table) {
-	table.AddFilter("Phase", component.TableFilter{
-		Values:   []string{"Pending", "Running", "Succeeded", "Failed", "Unknown"},
-		Selected: []string{"Pending", "Running"},
-	})
+	for k, v := range podTableFilters() {
+		table.AddFilter(k, v)
+	}
+}
+
+func podTableFilters() map[string]component.TableFilter {
+	return map[string]component.TableFilter{
+		"Phase": {
+			Values:   []string{"Pending", "Running", "Succeeded", "Failed", "Unknown"},
+			Selected: []string{"Pending", "Running"},
+		},
+	}
 }

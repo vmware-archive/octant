@@ -30,7 +30,7 @@ func HorizontalPodAutoscalerListHandler(_ context.Context, list *autoscalingv1.H
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Targets", "Minimum Pods", "Maximum Pods", "Replicas", "Age")
-	tbl := component.NewTable("Horizontal Pod Autoscalers",
+	ot := NewObjectTable("Horizontal Pod Autoscalers",
 		"We couldn't find any horizontal pod autoscalers", cols)
 
 	for _, horizontalPodAutoscaler := range list.Items {
@@ -58,9 +58,12 @@ func HorizontalPodAutoscalerListHandler(_ context.Context, list *autoscalingv1.H
 		row["Replicas"] = component.NewText(fmt.Sprintf("%d", horizontalPodAutoscaler.Status.CurrentReplicas))
 		row["Age"] = component.NewTimestamp(horizontalPodAutoscaler.CreationTimestamp.Time)
 
-		tbl.Add(row)
+		if err := ot.AddRowForObject(&horizontalPodAutoscaler, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
-	return tbl, nil
+
+	return ot.ToComponent()
 }
 
 // HorizontalPodAutoscalerHandler is a printFunc that prints a HorizontalPodAutoscaler

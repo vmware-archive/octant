@@ -130,6 +130,8 @@ export interface GridAction {
   name: string;
   actionPath: string;
   payload: {};
+  confirmation?: Confirmation;
+  type: string;
 }
 
 export interface GridActionsView extends View {

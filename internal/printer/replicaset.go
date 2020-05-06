@@ -27,7 +27,7 @@ func ReplicaSetListHandler(ctx context.Context, list *appsv1.ReplicaSetList, opt
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
-	tbl := component.NewTable("ReplicaSets", "We couldn't find any replica sets!", cols)
+	ot := NewObjectTable("ReplicaSets", "We couldn't find any replica sets!", cols)
 
 	for _, rs := range list.Items {
 		row := component.TableRow{}
@@ -52,9 +52,12 @@ func ReplicaSetListHandler(ctx context.Context, list *appsv1.ReplicaSetList, opt
 		row["Containers"] = containers
 		row["Selector"] = printSelector(rs.Spec.Selector)
 
-		tbl.Add(row)
+		if err := ot.AddRowForObject(&rs, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
-	return tbl, nil
+
+	return ot.ToComponent()
 }
 
 // ReplicaSetHandler is a printFunc that prints a ReplicaSets.

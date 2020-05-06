@@ -90,6 +90,9 @@ func Test_StatefulSetListHandler(t *testing.T) {
 		"Current":  component.NewText("1"),
 		"Age":      component.NewTimestamp(now),
 		"Selector": component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, statefulSet),
+		}),
 	})
 
 	component.AssertEqual(t, expected, got)
@@ -341,6 +344,9 @@ func Test_StatefulSetPods(t *testing.T) {
 		"Restarts": component.NewText("0"),
 		"Node":     nodeLink,
 		"Age":      component.NewTimestamp(now),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, pod),
+		}),
 	})
 	addPodTableFilters(expected)
 

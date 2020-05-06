@@ -162,7 +162,7 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 			return component.EmptyContentResponse, err
 		}
 
-		confirmation, err := DeleteObjectConfirmation(currentObject)
+		confirmation, err := octant.DeleteObjectConfirmationButton(currentObject)
 		if err != nil {
 			return component.EmptyContentResponse, err
 		}
@@ -184,23 +184,6 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 	cr.Add(tabComponents...)
 
 	return *cr, nil
-}
-
-// DeleteObjectConfirmation create a button option confirmation for deleting an object.
-func DeleteObjectConfirmation(object runtime.Object) (component.ButtonOption, error) {
-	if object == nil {
-		return nil, fmt.Errorf("object is nil")
-	}
-	_, kind := object.GetObjectKind().GroupVersionKind().ToAPIVersionAndKind()
-
-	accessor, err := meta.Accessor(object)
-	if err != nil {
-		return nil, err
-	}
-
-	confirmationTitle := fmt.Sprintf("Delete %s", kind)
-	confirmationBody := fmt.Sprintf("Are you sure you want to delete *%s* **%s**? This action is permanent and cannot be recovered.", kind, accessor.GetName())
-	return component.WithButtonConfirmation(confirmationTitle, confirmationBody), nil
 }
 
 // PathFilters returns the path filters for this object.

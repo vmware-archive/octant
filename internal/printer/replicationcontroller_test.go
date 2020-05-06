@@ -92,6 +92,9 @@ func Test_ReplicationControllerListHandler(t *testing.T) {
 		"Age":        component.NewTimestamp(validReplicationControllerCreationTime),
 		"Containers": containers,
 		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, validReplicationController),
+		}),
 	})
 
 	component.AssertEqual(t, expected, got)
@@ -292,6 +295,9 @@ func Test_ReplicationControllerPods(t *testing.T) {
 		"Restarts": component.NewText("0"),
 		"Node":     nodeLink,
 		"Age":      component.NewTimestamp(now),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, pod),
+		}),
 	})
 	addPodTableFilters(expected)
 

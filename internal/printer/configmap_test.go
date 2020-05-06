@@ -56,6 +56,9 @@ func Test_ConfigMapListHandler(t *testing.T) {
 		"Labels": component.NewLabels(labels),
 		"Data":   component.NewText("2"),
 		"Age":    component.NewTimestamp(now),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, configMap),
+		}),
 	})
 
 	component.AssertEqual(t, expected, got)

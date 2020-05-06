@@ -46,6 +46,9 @@ func Test_RoleListHandler(t *testing.T) {
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", role.Name, "/role"),
 		"Age":  component.NewTimestamp(role.CreationTimestamp.Time),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, role),
+		}),
 	})
 
 	component.AssertEqual(t, expected, observed)

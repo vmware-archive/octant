@@ -24,7 +24,7 @@ func DaemonSetListHandler(_ context.Context, list *appsv1.DaemonSetList, opts Op
 
 	cols := component.NewTableCols("Name", "Labels", "Desired", "Current", "Ready",
 		"Up-To-Date", "Age", "Node Selector")
-	table := component.NewTable("Daemon Sets", "We couldn't find any daemon sets!", cols)
+	ot := NewObjectTable("Daemon Sets", "We couldn't find any daemon sets!", cols)
 
 	for _, daemonSet := range list.Items {
 		row := component.TableRow{}
@@ -42,10 +42,12 @@ func DaemonSetListHandler(_ context.Context, list *appsv1.DaemonSetList, opts Op
 		row["Age"] = component.NewTimestamp(daemonSet.ObjectMeta.CreationTimestamp.Time)
 		row["Node Selector"] = printSelectorMap(daemonSet.Spec.Template.Spec.NodeSelector)
 
-		table.Add(row)
+		if err := ot.AddRowForObject(&daemonSet, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
 
-	return table, nil
+	return ot.ToComponent()
 }
 
 // DaemonSetHandler is a printFunc that prints a daemon set

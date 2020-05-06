@@ -61,6 +61,9 @@ func Test_DaemonSetListHandler(t *testing.T) {
 		"Ready":         component.NewText("1"),
 		"Up-To-Date":    component.NewText("1"),
 		"Node Selector": component.NewSelectors(nil),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, object),
+		}),
 	})
 
 	component.AssertEqual(t, expected, got)
@@ -223,6 +226,9 @@ func Test_DaemonSetPods(t *testing.T) {
 		"Restarts": component.NewText("0"),
 		"Node":     nodeLink,
 		"Age":      component.NewTimestamp(now),
+		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			buildObjectDeleteAction(t, pod),
+		}),
 	})
 	addPodTableFilters(expected)
 

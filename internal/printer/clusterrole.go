@@ -7,6 +7,7 @@ package printer
 
 import (
 	"context"
+	"fmt"
 	"sort"
 
 	"github.com/pkg/errors"
@@ -23,7 +24,7 @@ func ClusterRoleListHandler(_ context.Context, list *rbacv1.ClusterRoleList, opt
 	}
 
 	cols := component.NewTableCols("Name", "Age")
-	tbl := component.NewTable("Cluster Roles", "We couldn't find any cluster roles!", cols)
+	ot := NewObjectTable("Cluster Roles", "We couldn't find any cluster roles!", cols)
 
 	for _, clusterRole := range list.Items {
 		row := component.TableRow{}
@@ -36,10 +37,12 @@ func ClusterRoleListHandler(_ context.Context, list *rbacv1.ClusterRoleList, opt
 		ts := clusterRole.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
 
-		tbl.Add(row)
+		if err := ot.AddRowForObject(&clusterRole, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
 
-	return tbl, nil
+	return ot.ToComponent()
 }
 
 // ClusterRoleHandler is a printFunc that prints a cluster role

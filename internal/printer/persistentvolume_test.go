@@ -64,6 +64,9 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 						"Storage Class":  component.NewText(""),
 						"Reason":         component.NewText(""),
 						"Age":            component.NewTimestamp(now),
+						component.GridActionKey: gridActionsFactory([]component.GridAction{
+							buildObjectDeleteAction(t, object),
+						}),
 					},
 				}),
 		},
@@ -82,6 +85,9 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 						"Storage Class":  component.NewText(""),
 						"Reason":         component.NewText(""),
 						"Age":            component.NewTimestamp(now),
+						component.GridActionKey: gridActionsFactory([]component.GridAction{
+							buildObjectDeleteAction(t, unbound),
+						}),
 					},
 				}),
 		},
