@@ -53,7 +53,8 @@ func Test_DaemonSetListHandler(t *testing.T) {
 		"Up-To-Date", "Age", "Node Selector")
 	expected := component.NewTable("Daemon Sets", "We couldn't find any daemon sets!", cols)
 	expected.Add(component.TableRow{
-		"Name":          component.NewLink("", object.Name, "/path"),
+		"Name": component.NewLink("", object.Name, "/path",
+			genObjectStatus(component.TextStatusOK, []string{"Daemon Set is OK"})),
 		"Labels":        component.NewLabels(labels),
 		"Age":           component.NewTimestamp(now),
 		"Desired":       component.NewText("1"),
@@ -220,7 +221,8 @@ func Test_DaemonSetPods(t *testing.T) {
 	cols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
-		"Name":     component.NewLink("", "fluentd-elasticsearch-dvskv", "/pod"),
+		"Name": component.NewLink("", "fluentd-elasticsearch-dvskv", "/pod",
+			genObjectStatus(component.TextStatusWarning, []string{""})),
 		"Ready":    component.NewText("0/1"),
 		"Phase":    component.NewText("Pending"),
 		"Restarts": component.NewText("0"),

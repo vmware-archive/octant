@@ -17,13 +17,13 @@ import (
 )
 
 // RoleListHandler is a printFunc that prints roles
-func RoleListHandler(_ context.Context, roleList *rbacv1.RoleList, options Options) (component.Component, error) {
+func RoleListHandler(ctx context.Context, roleList *rbacv1.RoleList, options Options) (component.Component, error) {
 	if roleList == nil {
 		return nil, errors.New("role list is nil")
 	}
 
 	columns := component.NewTableCols("Name", "Age")
-	ot := NewObjectTable("Roles", "We couldn't find any roles!", columns)
+	ot := NewObjectTable("Roles", "We couldn't find any roles!", columns, options.DashConfig.ObjectStore())
 
 	for _, role := range roleList.Items {
 		row := component.TableRow{}
@@ -35,7 +35,7 @@ func RoleListHandler(_ context.Context, roleList *rbacv1.RoleList, options Optio
 		row["Name"] = nameLink
 		row["Age"] = component.NewTimestamp(role.CreationTimestamp.Time)
 
-		if err := ot.AddRowForObject(&role, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &role, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

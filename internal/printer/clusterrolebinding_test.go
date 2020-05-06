@@ -53,7 +53,10 @@ func Test_ClusterRoleBindingListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Age", "Role kind", "Role name")
 	expected := component.NewTable("Cluster Role Bindings", "We couldn't find any cluster role bindings!", cols)
 	expected.Add(component.TableRow{
-		"Name":      component.NewLink("", clusterRoleBinding.Name, "/cluster-role-binding-path"),
+		"Name": component.NewLink("", clusterRoleBinding.Name, "/cluster-role-binding-path",
+			genObjectStatus(component.TextStatusOK, []string{
+				"rbac.authorization.k8s.io/v1 ClusterRoleBinding is OK",
+			})),
 		"Labels":    component.NewLabels(labels),
 		"Age":       component.NewTimestamp(now),
 		"Role kind": component.NewText("Role"),

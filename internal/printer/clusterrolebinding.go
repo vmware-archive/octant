@@ -16,13 +16,13 @@ import (
 )
 
 // ClusterRoleBindingListHandler is a printFunc that prints ClusterRoldBindings
-func ClusterRoleBindingListHandler(_ context.Context, clusterRoleBindingList *rbacv1.ClusterRoleBindingList, options Options) (component.Component, error) {
+func ClusterRoleBindingListHandler(ctx context.Context, clusterRoleBindingList *rbacv1.ClusterRoleBindingList, options Options) (component.Component, error) {
 	if clusterRoleBindingList == nil {
 		return nil, errors.New("cluster role binding list is nil")
 	}
 
 	columns := component.NewTableCols("Name", "Labels", "Age", "Role kind", "Role name")
-	ot := NewObjectTable("Cluster Role Bindings", "We couldn't find any cluster role bindings!", columns)
+	ot := NewObjectTable("Cluster Role Bindings", "We couldn't find any cluster role bindings!", columns, options.DashConfig.ObjectStore())
 
 	for _, roleBinding := range clusterRoleBindingList.Items {
 		row := component.TableRow{}
@@ -45,7 +45,7 @@ func ClusterRoleBindingListHandler(_ context.Context, clusterRoleBindingList *rb
 
 		row["Role name"] = roleName
 
-		if err := ot.AddRowForObject(&roleBinding, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &roleBinding, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

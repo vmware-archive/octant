@@ -21,14 +21,14 @@ import (
 )
 
 // ServiceAccountListHandler is a printFunc that prints service accounts
-func ServiceAccountListHandler(_ context.Context, list *corev1.ServiceAccountList, options Options) (component.Component, error) {
+func ServiceAccountListHandler(ctx context.Context, list *corev1.ServiceAccountList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("service account list is nil")
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Secrets", "Age")
 	ot := NewObjectTable("Service Accounts",
-		"We couldn't find any service accounts!", cols)
+		"We couldn't find any service accounts!", cols, options.DashConfig.ObjectStore())
 
 	for _, serviceAccount := range list.Items {
 		row := component.TableRow{}
@@ -42,7 +42,7 @@ func ServiceAccountListHandler(_ context.Context, list *corev1.ServiceAccountLis
 		row["Secrets"] = component.NewText(fmt.Sprint(len(serviceAccount.Secrets)))
 		row["Age"] = component.NewTimestamp(serviceAccount.CreationTimestamp.Time)
 
-		if err := ot.AddRowForObject(&serviceAccount, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &serviceAccount, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

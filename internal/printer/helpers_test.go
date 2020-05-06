@@ -94,3 +94,18 @@ func buildObjectDeleteAction(t *testing.T, object runtime.Object) component.Grid
 
 	return action
 }
+
+// genObjectStatus generates object status for a link. It can be used
+// when testing list handlers. This will be needed until there is a
+// way to test that the list handlers are working without external
+// dependencies.
+func genObjectStatus(status component.TextStatus, messages []string) component.LinkOption {
+	list := component.NewList(nil, nil)
+	for _, msg := range messages {
+		list.Add(component.NewText(msg))
+	}
+
+	return func(l *component.Link) {
+		l.SetStatus(status, list)
+	}
+}

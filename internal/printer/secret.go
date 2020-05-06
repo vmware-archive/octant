@@ -26,7 +26,7 @@ func SecretListHandler(ctx context.Context, list *corev1.SecretList, options Opt
 		return nil, errors.New("list of secrets is nil")
 	}
 
-	ot := NewObjectTable("Secrets", "We couldn't find any secrets!", secretTableCols)
+	ot := NewObjectTable("Secrets", "We couldn't find any secrets!", secretTableCols, options.DashConfig.ObjectStore())
 
 	for _, secret := range list.Items {
 		row := component.TableRow{}
@@ -42,7 +42,7 @@ func SecretListHandler(ctx context.Context, list *corev1.SecretList, options Opt
 		row["Data"] = component.NewText(fmt.Sprintf("%d", len(secret.Data)))
 		row["Age"] = component.NewTimestamp(secret.ObjectMeta.CreationTimestamp.Time)
 
-		if err := ot.AddRowForObject(&secret, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &secret, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

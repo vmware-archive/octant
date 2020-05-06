@@ -1,17 +1,19 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
 import {
   IndicatorComponent,
   Status,
   statusLookup,
 } from './indicator.component';
 import { Component } from '@angular/core';
+import { View } from '../../../models/content';
 
 @Component({
-  template: '<app-indicator [status]="status"></app-indicator>',
+  template:
+    '<app-indicator [status]="status" [detail]="detail"></app-indicator>',
 })
 class WrapperComponent {
   status: number;
+  detail: View;
 }
 
 describe('IndicatorComponent', () => {
@@ -39,6 +41,11 @@ describe('IndicatorComponent', () => {
       beforeEach(() => {
         element = fixture.nativeElement;
         component.status = v;
+        component.detail = {
+          metadata: {
+            type: 'test',
+          },
+        };
         fixture.detectChanges();
       });
 

@@ -86,7 +86,10 @@ func Test_ReplicationControllerListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
 	expected := component.NewTable("ReplicationControllers", "We couldn't find any replication controllers!", cols)
 	expected.Add(component.TableRow{
-		"Name":       component.NewLink("", "rc-test", "/rc"),
+		"Name": component.NewLink("", "rc-test", "/rc",
+			genObjectStatus(component.TextStatusWarning, []string{
+				"Replication Controller pods are not ready",
+			})),
 		"Labels":     component.NewLabels(validReplicationControllerLabels),
 		"Status":     component.NewText("0/3"),
 		"Age":        component.NewTimestamp(validReplicationControllerCreationTime),
@@ -289,7 +292,8 @@ func Test_ReplicationControllerPods(t *testing.T) {
 	cols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
-		"Name":     component.NewLink("", "nginx-hv4qs", "/pod"),
+		"Name": component.NewLink("", "nginx-hv4qs", "/pod",
+			genObjectStatus(component.TextStatusWarning, []string{""})),
 		"Ready":    component.NewText("0/1"),
 		"Phase":    component.NewText("Pending"),
 		"Restarts": component.NewText("0"),

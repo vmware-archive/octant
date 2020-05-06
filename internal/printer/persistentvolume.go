@@ -24,7 +24,7 @@ func PersistentVolumeListHandler(ctx context.Context, list *corev1.PersistentVol
 	}
 
 	cols := component.NewTableCols("Name", "Capacity", "Access Modes", "Reclaim Policy", "Status", "Claim", "Storage Class", "Reason", "Age")
-	ot := NewObjectTable("Persistent Volumes", "We couldn't find any persistent volumes!", cols)
+	ot := NewObjectTable("Persistent Volumes", "We couldn't find any persistent volumes!", cols, options.DashConfig.ObjectStore())
 
 	for _, pv := range list.Items {
 		row := component.TableRow{}
@@ -53,7 +53,7 @@ func PersistentVolumeListHandler(ctx context.Context, list *corev1.PersistentVol
 		row["Reason"] = component.NewText(pv.Status.Reason)
 		row["Age"] = component.NewTimestamp(pv.CreationTimestamp.Time)
 
-		if err := ot.AddRowForObject(&pv, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &pv, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

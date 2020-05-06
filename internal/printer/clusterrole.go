@@ -18,13 +18,13 @@ import (
 )
 
 // ClusterRoleListHandler is a printFunc that prints cluster roles
-func ClusterRoleListHandler(_ context.Context, list *rbacv1.ClusterRoleList, options Options) (component.Component, error) {
+func ClusterRoleListHandler(ctx context.Context, list *rbacv1.ClusterRoleList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("cluster role list is nil")
 	}
 
 	cols := component.NewTableCols("Name", "Age")
-	ot := NewObjectTable("Cluster Roles", "We couldn't find any cluster roles!", cols)
+	ot := NewObjectTable("Cluster Roles", "We couldn't find any cluster roles!", cols, options.DashConfig.ObjectStore())
 
 	for _, clusterRole := range list.Items {
 		row := component.TableRow{}
@@ -37,7 +37,7 @@ func ClusterRoleListHandler(_ context.Context, list *rbacv1.ClusterRoleList, opt
 		ts := clusterRole.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
 
-		if err := ot.AddRowForObject(&clusterRole, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &clusterRole, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

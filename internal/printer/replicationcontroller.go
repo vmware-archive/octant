@@ -27,7 +27,7 @@ func ReplicationControllerListHandler(ctx context.Context, list *corev1.Replicat
 
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
 	ot := NewObjectTable("ReplicationControllers",
-		"We couldn't find any replication controllers!", cols)
+		"We couldn't find any replication controllers!", cols, options.DashConfig.ObjectStore())
 
 	for _, rc := range list.Items {
 		row := component.TableRow{}
@@ -54,7 +54,7 @@ func ReplicationControllerListHandler(ctx context.Context, list *corev1.Replicat
 
 		row["Selector"] = printSelectorMap(rc.Spec.Selector)
 
-		if err := ot.AddRowForObject(&rc, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &rc, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

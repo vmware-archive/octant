@@ -22,13 +22,13 @@ import (
 )
 
 // ServiceListHandler is a printFunc that lists services
-func ServiceListHandler(_ context.Context, list *corev1.ServiceList, options Options) (component.Component, error) {
+func ServiceListHandler(ctx context.Context, list *corev1.ServiceList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Type", "Cluster IP", "External IP", "Ports", "Age", "Selector")
-	ot := NewObjectTable("Services", "We couldn't find any services!", cols)
+	ot := NewObjectTable("Services", "We couldn't find any services!", cols, options.DashConfig.ObjectStore())
 
 	for _, s := range list.Items {
 		row := component.TableRow{}
@@ -49,7 +49,7 @@ func ServiceListHandler(_ context.Context, list *corev1.ServiceList, options Opt
 
 		row["Selector"] = printSelectorMap(s.Spec.Selector)
 
-		if err := ot.AddRowForObject(&s, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &s, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

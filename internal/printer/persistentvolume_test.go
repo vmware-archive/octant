@@ -55,7 +55,10 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 			expected: component.NewTableWithRows("Persistent Volumes", "We couldn't find any persistent volumes!", cols,
 				[]component.TableRow{
 					{
-						"Name":           component.NewLink("", "persistentVolume", "/persistentVolume"),
+						"Name": component.NewLink("", "persistentVolume", "/persistentVolume",
+							genObjectStatus(component.TextStatusOK, []string{
+								"v1 PersistentVolume is OK",
+							})),
 						"Capacity":       component.NewText("0"),
 						"Access Modes":   component.NewText(""),
 						"Reclaim Policy": component.NewText(""),
@@ -76,7 +79,10 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 			expected: component.NewTableWithRows("Persistent Volumes", "We couldn't find any persistent volumes!", cols,
 				[]component.TableRow{
 					{
-						"Name":           component.NewLink("", "unboundPersistentVolume", "/unboundPersistentVolume"),
+						"Name": component.NewLink("", "unboundPersistentVolume", "/unboundPersistentVolume",
+							genObjectStatus(component.TextStatusOK, []string{
+								"v1 PersistentVolume is OK",
+							})),
 						"Capacity":       component.NewText("0"),
 						"Access Modes":   component.NewText(""),
 						"Reclaim Policy": component.NewText(""),

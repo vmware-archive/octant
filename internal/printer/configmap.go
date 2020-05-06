@@ -19,14 +19,14 @@ import (
 )
 
 // ConfigMapListHandler is a printFunc that prints ConfigMaps
-func ConfigMapListHandler(_ context.Context, list *corev1.ConfigMapList, opts Options) (component.Component, error) {
+func ConfigMapListHandler(ctx context.Context, list *corev1.ConfigMapList, opts Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("list is nil")
 	}
 
 	// Data column
 	cols := component.NewTableCols("Name", "Labels", "Data", "Age")
-	ot := NewObjectTable("ConfigMaps", "We couldn't find any config maps!", cols)
+	ot := NewObjectTable("ConfigMaps", "We couldn't find any config maps!", cols, opts.DashConfig.ObjectStore())
 
 	for _, c := range list.Items {
 		row := component.TableRow{}
@@ -46,7 +46,7 @@ func ConfigMapListHandler(_ context.Context, list *corev1.ConfigMapList, opts Op
 		ts := c.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
 
-		if err := ot.AddRowForObject(&c, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &c, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

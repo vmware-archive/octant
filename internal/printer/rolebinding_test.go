@@ -46,7 +46,10 @@ func Test_RoleBindingListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Age", "Role kind", "Role name")
 	expected := component.NewTable("Role Bindings", "We couldn't find any role bindings!", cols)
 	expected.Add(component.TableRow{
-		"Name":      component.NewLink("", roleBinding.Name, "/role-binding"),
+		"Name": component.NewLink("", roleBinding.Name, "/role-binding",
+			genObjectStatus(component.TextStatusOK, []string{
+				"rbac.authorization.k8s.io/v1 RoleBinding is OK",
+			})),
 		"Age":       component.NewTimestamp(now),
 		"Role kind": component.NewText("Role"),
 		"Role name": component.NewLink("", "pod-reader", "/role"),

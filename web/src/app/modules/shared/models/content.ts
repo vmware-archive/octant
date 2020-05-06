@@ -150,6 +150,8 @@ export interface LinkView extends View {
   config: {
     ref: string;
     value: string;
+    status?: number;
+    statusDetail?: View;
   };
 }
 

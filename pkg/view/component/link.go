@@ -17,17 +17,28 @@ type Link struct {
 type LinkConfig struct {
 	Text string `json:"value"`
 	Ref  string `json:"ref"`
+	// Status sets the status of the component.
+	Status       TextStatus `json:"status,omitempty"`
+	StatusDetail Component  `json:"statusDetail,omitempty"`
 }
 
+type LinkOption func(l *Link)
+
 // NewLink creates a link component
-func NewLink(title, s, ref string) *Link {
-	return &Link{
+func NewLink(title, s, ref string, options ...LinkOption) *Link {
+	l := &Link{
 		base: newBase(typeLink, TitleFromString(title)),
 		Config: LinkConfig{
 			Text: s,
 			Ref:  ref,
 		},
 	}
+
+	for _, option := range options {
+		option(l)
+	}
+
+	return l
 }
 
 // SupportsTitle designates this is a TextComponent.
@@ -46,6 +57,12 @@ func (t *Link) Text() string {
 // Ref returns the link's ref.
 func (t *Link) Ref() string {
 	return t.Config.Ref
+}
+
+// SetStatus sets the status of the text component.
+func (t *Link) SetStatus(status TextStatus, detail Component) {
+	t.Config.Status = status
+	t.Config.StatusDetail = detail
 }
 
 type linkMarshal Link

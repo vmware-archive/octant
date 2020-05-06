@@ -1,7 +1,16 @@
 <ng-template [ngIf]="isAbsolute" [ngIfElse]="relative">
+  <ng-container *ngIf="hasStatus">
+    <app-indicator [status]="view.config.status"></app-indicator>
+  </ng-container>
   <a [routerLink]="ref">{{ value }}</a>
 </ng-template>
 
 <ng-template #relative>
+  <ng-container *ngIf="hasStatus">
+    <app-indicator
+      [status]="view.config.status"
+      [detail]="view.config.statusDetail"
+    ></app-indicator>
+  </ng-container>
   <a [routerLink]="[ref]">{{ value }}</a>
 </ng-template>

@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -84,12 +85,26 @@ func status(ctx context.Context, object runtime.Object, o store.Store, lookup st
 		return ObjectStatus{}, errors.New("object is nil")
 	}
 
+	gvk := object.GetObjectKind().GroupVersionKind()
+	apiVersion, kind := gvk.ToAPIVersionAndKind()
+
+	accessor, err := meta.Accessor(object)
+	if err != nil {
+		return ObjectStatus{}, err
+	}
+
+	if accessor.GetDeletionTimestamp() != nil {
+		return ObjectStatus{
+			nodeStatus: component.NodeStatusWarning,
+			Details: []component.Component{
+				component.NewTextf("%s is being deleted", kind),
+			},
+		}, nil
+	}
+
 	if lookup == nil {
 		return ObjectStatus{}, errors.New("status lookup is nil")
 	}
-
-	gvk := object.GetObjectKind().GroupVersionKind()
-	apiVersion, kind := gvk.ToAPIVersionAndKind()
 
 	fn, ok := lookup[statusKey{apiVersion: apiVersion, kind: kind}]
 	if !ok {

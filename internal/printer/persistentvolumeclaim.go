@@ -26,7 +26,7 @@ func PersistentVolumeClaimListHandler(ctx context.Context, list *corev1.Persiste
 
 	cols := component.NewTableCols("Name", "Status", "Volume", "Capacity", "Access Modes", "Storage Class", "Age")
 	ot := NewObjectTable("Persistent Volume Claims",
-		"We couldn't find any persistent volume claims!", cols)
+		"We couldn't find any persistent volume claims!", cols, options.DashConfig.ObjectStore())
 
 	for _, persistentVolumeClaim := range list.Items {
 		row := component.TableRow{}
@@ -71,7 +71,7 @@ func PersistentVolumeClaimListHandler(ctx context.Context, list *corev1.Persiste
 		ts := persistentVolumeClaim.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
 
-		if err := ot.AddRowForObject(&persistentVolumeClaim, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &persistentVolumeClaim, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

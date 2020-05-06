@@ -24,12 +24,12 @@ var (
 )
 
 // JobListHandler prints a job list.
-func JobListHandler(_ context.Context, list *batchv1.JobList, opts Options) (component.Component, error) {
+func JobListHandler(ctx context.Context, list *batchv1.JobList, opts Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("job list is nil")
 	}
 
-	ot := NewObjectTable("Jobs", "We couldn't find any jobs!", JobCols)
+	ot := NewObjectTable("Jobs", "We couldn't find any jobs!", JobCols, opts.DashConfig.ObjectStore())
 
 	for _, job := range list.Items {
 		row := component.TableRow{}
@@ -46,7 +46,7 @@ func JobListHandler(_ context.Context, list *batchv1.JobList, opts Options) (com
 		row["Successful"] = component.NewText(succeeded)
 		row["Age"] = component.NewTimestamp(job.CreationTimestamp.Time)
 
-		if err := ot.AddRowForObject(&job, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &job, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

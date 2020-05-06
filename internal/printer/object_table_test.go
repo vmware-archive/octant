@@ -6,14 +6,17 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/store/fake"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -27,7 +30,19 @@ func TestObjectTable(t *testing.T) {
 	}
 
 	pod1 := testutil.CreatePod("pod1")
+	pod1A := component.NewLink("", "pod1", "/pod1", func(l *component.Link) {
+		list := component.NewList(nil, []component.Component{
+			component.NewText(""),
+		})
+		l.SetStatus(component.TextStatusWarning, list)
+	})
 	pod2 := testutil.CreatePod("pod2")
+	pod2A := component.NewLink("", "pod2", "/pod2", func(l *component.Link) {
+		list := component.NewList(nil, []component.Component{
+			component.NewText(""),
+		})
+		l.SetStatus(component.TextStatusWarning, list)
+	})
 
 	tests := []struct {
 		name     string
@@ -40,14 +55,15 @@ func TestObjectTable(t *testing.T) {
 
 			},
 			wanted: func() *component.Table {
+
 				return component.NewTableWithRows("table", "placeholder", cols, []component.TableRow{
 					{
-						"A":                     component.NewText("pod1"),
+						"A":                     pod1A,
 						"B":                     component.NewText("0"),
 						component.GridActionKey: genDeleteGA(pod1),
 					},
 					{
-						"A":                     component.NewText("pod2"),
+						"A":                     pod2A,
 						"B":                     component.NewText("1"),
 						component.GridActionKey: genDeleteGA(pod2),
 					},
@@ -62,12 +78,12 @@ func TestObjectTable(t *testing.T) {
 			wanted: func() *component.Table {
 				return component.NewTableWithRows("table", "placeholder", cols, []component.TableRow{
 					{
-						"A":                     component.NewText("pod2"),
+						"A":                     pod2A,
 						"B":                     component.NewText("1"),
 						component.GridActionKey: genDeleteGA(pod2),
 					},
 					{
-						"A":                     component.NewText("pod1"),
+						"A":                     pod1A,
 						"B":                     component.NewText("0"),
 						component.GridActionKey: genDeleteGA(pod1),
 					},
@@ -87,12 +103,12 @@ func TestObjectTable(t *testing.T) {
 			wanted: func() *component.Table {
 				table := component.NewTableWithRows("table", "placeholder", cols, []component.TableRow{
 					{
-						"A":                     component.NewText("pod1"),
+						"A":                     pod1A,
 						"B":                     component.NewText("0"),
 						component.GridActionKey: genDeleteGA(pod1),
 					},
 					{
-						"A":                     component.NewText("pod2"),
+						"A":                     pod2A,
 						"B":                     component.NewText("1"),
 						component.GridActionKey: genDeleteGA(pod2),
 					},
@@ -109,11 +125,18 @@ func TestObjectTable(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			ot := NewObjectTable("table", "placeholder", cols)
+			ctx := context.Background()
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			objectStore := fake.NewMockStore(ctrl)
+
+			ot := NewObjectTable("table", "placeholder", cols, objectStore)
 
 			for i, pod := range []*corev1.Pod{pod1, pod2} {
-				err := ot.AddRowForObject(pod, component.TableRow{
-					"A": component.NewText(pod.Name),
+				err := ot.AddRowForObject(ctx, pod, component.TableRow{
+					"A": component.NewLink("", pod.Name, "/"+pod.Name),
 					"B": component.NewText(fmt.Sprintf("%d", i)),
 				})
 				require.NoError(t, err)

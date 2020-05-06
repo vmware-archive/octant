@@ -100,7 +100,9 @@ func Test_DeploymentListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
 	expected := component.NewTable("Deployments", "We couldn't find any deployments!", cols)
 	expected.Add(component.TableRow{
-		"Name":       component.NewLink("", "deployment", "/path"),
+		"Name": component.NewLink("", "deployment", "/path",
+			genObjectStatus(component.TextStatusWarning, []string{
+				"Expected 3 replicas, but 2 are available"})),
 		"Labels":     component.NewLabels(objectLabels),
 		"Age":        component.NewTimestamp(now),
 		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "my_app")}),
@@ -341,7 +343,8 @@ func Test_DeploymentPods(t *testing.T) {
 
 	expected := component.NewTableWithRows("Pods", "We couldn't find any pods!", podColsWithOutLabels, []component.TableRow{
 		{
-			"Name":     component.NewLink("", pod.Name, "/pod"),
+			"Name": component.NewLink("", pod.Name, "/pod",
+				genObjectStatus(component.TextStatusOK, []string{""})),
 			"Age":      component.NewTimestamp(now),
 			"Ready":    component.NewText("1/1"),
 			"Restarts": component.NewText("0"),

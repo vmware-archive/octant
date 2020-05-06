@@ -17,8 +17,11 @@
       ></app-content-filter>
     </clr-dg-filter>
   </clr-dg-column>
-  <clr-dg-row *clrDgItems="let row of rowsWithMetadata; trackBy: identifyRow">
-    <clr-dg-action-overflow *ngIf="row.actions.length > 0">
+  <clr-dg-row
+    *clrDgItems="let row of rowsWithMetadata; trackBy: identifyRow"
+    [ngClass]="rowClass(row)"
+  >
+    <clr-dg-action-overflow *ngIf="row.actions.length > 0 && !row.isDeleted">
       <ng-container *ngFor="let action of row.actions">
         <button class="action-item" (click)="runAction(action)">
           {{ action.name }}
@@ -29,7 +32,6 @@
       <app-content-switcher [view]="row.data[column]"></app-content-switcher>
     </clr-dg-cell>
   </clr-dg-row>
-
   <clr-dg-footer>
     <clr-dg-pagination #pagination [clrDgPageSize]="10">
       <clr-dg-page-size [clrPageSizeOptions]="[10, 20, 50, 100]">

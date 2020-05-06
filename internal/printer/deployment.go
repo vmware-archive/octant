@@ -25,13 +25,13 @@ var (
 )
 
 // DeploymentListHandler is a printFunc that lists deployments
-func DeploymentListHandler(_ context.Context, list *appsv1.DeploymentList, opts Options) (component.Component, error) {
+func DeploymentListHandler(ctx context.Context, list *appsv1.DeploymentList, opts Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
-	ot := NewObjectTable("Deployments", "We couldn't find any deployments!", cols)
+	ot := NewObjectTable("Deployments", "We couldn't find any deployments!", cols, opts.DashConfig.ObjectStore())
 
 	for _, d := range list.Items {
 		row := component.TableRow{}
@@ -57,7 +57,7 @@ func DeploymentListHandler(_ context.Context, list *appsv1.DeploymentList, opts 
 		row["Containers"] = containers
 		row["Selector"] = printSelector(d.Spec.Selector)
 
-		if err := ot.AddRowForObject(&d, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &d, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

@@ -64,7 +64,11 @@ func Test_JobListHandler(t *testing.T) {
 
 	expected := component.NewTable("Jobs", "We couldn't find any jobs!", JobCols)
 	expected.Add(component.TableRow{
-		"Name":        component.NewLink("", "job", "/job"),
+		"Name": component.NewLink("", "job", "/job",
+			genObjectStatus(component.TextStatusWarning, []string{
+				"Job has succeeded 1 time",
+				"Job is in progress",
+			})),
 		"Labels":      component.NewLabels(validJobLabels),
 		"Completions": component.NewText("1"),
 		"Successful":  component.NewText("1"),

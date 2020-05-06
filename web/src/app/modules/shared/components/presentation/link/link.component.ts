@@ -25,6 +25,7 @@ export class LinkComponent implements OnChanges {
   ref: string;
   value: string;
   isAbsolute: boolean;
+  hasStatus: boolean;
 
   constructor() {}
 
@@ -34,6 +35,10 @@ export class LinkComponent implements OnChanges {
       this.ref = view.config.ref;
       this.value = view.config.value;
       this.isAbsolute = isUrlAbsolute(this.ref);
+
+      if (view.config.status) {
+        this.hasStatus = true;
+      }
     }
   }
 }

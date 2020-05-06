@@ -28,7 +28,7 @@ func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opt
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Schedule", "Age", "")
-	ot := NewObjectTable("CronJobs", "We couldn't find any cron jobs!", cols)
+	ot := NewObjectTable("CronJobs", "We couldn't find any cron jobs!", cols, opts.DashConfig.ObjectStore())
 
 	for _, c := range list.Items {
 		row := component.TableRow{}
@@ -60,7 +60,7 @@ func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opt
 
 		row[""] = buttonGroup
 
-		if err := ot.AddRowForObject(&c, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &c, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

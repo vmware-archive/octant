@@ -84,7 +84,10 @@ func Test_StatefulSetListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Desired", "Current", "Age", "Selector")
 	expected := component.NewTable("StatefulSets", "We couldn't find any stateful sets!", cols)
 	expected.Add(component.TableRow{
-		"Name":     component.NewLink("", "web", "/path"),
+		"Name": component.NewLink("", "web", "/path",
+			genObjectStatus(component.TextStatusWarning, []string{
+				"Stateful Set pods are not ready",
+			})),
 		"Labels":   component.NewLabels(labels),
 		"Desired":  component.NewText("3"),
 		"Current":  component.NewText("1"),
@@ -338,7 +341,8 @@ func Test_StatefulSetPods(t *testing.T) {
 	cols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
-		"Name":     component.NewLink("", "web-0", "/pod"),
+		"Name": component.NewLink("", "web-0", "/pod",
+			genObjectStatus(component.TextStatusWarning, []string{""})),
 		"Ready":    component.NewText("1/1"),
 		"Phase":    component.NewText("Pending"),
 		"Restarts": component.NewText("0"),

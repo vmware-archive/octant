@@ -17,6 +17,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -46,6 +47,8 @@ func Test_IngressListHandler(t *testing.T) {
 
 	cols := component.NewTableCols("Name", "Labels", "Hosts", "Address", "Ports", "Age")
 
+	service := testutil.ToUnstructured(t, testutil.CreateService("service"))
+
 	cases := []struct {
 		name     string
 		list     *extv1beta1.IngressList
@@ -58,7 +61,10 @@ func Test_IngressListHandler(t *testing.T) {
 			expected: component.NewTableWithRows("Ingresses", "We couldn't find any ingresses!", cols,
 				[]component.TableRow{
 					{
-						"Name":    component.NewLink("", "ingress", "/ingress"),
+						"Name": component.NewLink("", "ingress", "/ingress",
+							genObjectStatus(component.TextStatusError, []string{
+								`Backend for service "app" specifies an invalid port`,
+							})),
 						"Labels":  component.NewLabels(labels),
 						"Age":     component.NewTimestamp(now),
 						"Hosts":   component.NewText("*"),
@@ -76,7 +82,11 @@ func Test_IngressListHandler(t *testing.T) {
 			expected: component.NewTableWithRows("Ingresses", "We couldn't find any ingresses!", cols,
 				[]component.TableRow{
 					{
-						"Name":    component.NewLink("", "ingress", "/ingress"),
+						"Name": component.NewLink("", "ingress", "/ingress",
+							genObjectStatus(component.TextStatusError, []string{
+								`Backend for service "app" specifies an invalid port`,
+								"TLS configuration did not define a secret name",
+							})),
 						"Labels":  component.NewLabels(labels),
 						"Age":     component.NewTimestamp(now),
 						"Hosts":   component.NewText("*"),
@@ -107,6 +117,15 @@ func Test_IngressListHandler(t *testing.T) {
 				tpo.PathForObject(&tc.list.Items[0], tc.list.Items[0].Name, "/ingress")
 
 			}
+
+			tpo.objectStore.EXPECT().
+				Get(gomock.Any(), store.Key{
+					Namespace:  "namespace",
+					APIVersion: "v1",
+					Kind:       "Service",
+					Name:       "app"}).
+				Return(service, nil).
+				AnyTimes()
 
 			ctx := context.Background()
 			got, err := IngressListHandler(ctx, tc.list, printOptions)

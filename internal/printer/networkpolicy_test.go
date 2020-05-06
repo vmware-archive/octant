@@ -46,7 +46,8 @@ func Test_NetworkPolicyListHandler(t *testing.T) {
 			expected: component.NewTableWithRows("Network Policies", "We couldn't find any network policies!", cols,
 				[]component.TableRow{
 					{
-						"Name":   component.NewLink("", "networkPolicy", "/networkPolicy"),
+						"Name": component.NewLink("", "networkPolicy", "/networkPolicy",
+							genObjectStatus(component.TextStatusOK, []string{"v1 Namespace is OK"})),
 						"Labels": component.NewLabels(labels),
 						"Age":    component.NewTimestamp(now),
 						component.GridActionKey: gridActionsFactory([]component.GridAction{
