@@ -4,18 +4,20 @@
 
 import {
   Component,
-  ElementRef,
   Input,
   OnChanges,
   OnDestroy,
   SimpleChanges,
-  ViewChild,
   ChangeDetectionStrategy,
+  OnInit,
+  ChangeDetectorRef,
 } from '@angular/core';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 import { TimestampView, View } from 'src/app/modules/shared/models/content';
+import { Subscription } from 'rxjs';
+import { ContentService } from '../../../services/content/content.service';
 
 @Component({
   selector: 'app-view-timestamp',
@@ -23,10 +25,9 @@ import { TimestampView, View } from 'src/app/modules/shared/models/content';
   styleUrls: ['./timestamp.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TimestampComponent implements OnChanges, OnDestroy {
+export class TimestampComponent implements OnInit, OnChanges, OnDestroy {
   private v: TimestampView;
 
-  @ViewChild('timestampRef', { static: true }) timestampRef: ElementRef;
   @Input() set view(v: View) {
     this.v = v as TimestampView;
   }
@@ -37,18 +38,28 @@ export class TimestampComponent implements OnChanges, OnDestroy {
   timestamp: number;
   humanReadable: string;
   age: string;
+  scrollPosition = 0;
+  private contentSubscription: Subscription;
 
-  constructor() {
+  constructor(
+    private contentService: ContentService,
+    private cd: ChangeDetectorRef
+  ) {
     dayjs.extend(utc);
     dayjs.extend(LocalizedFormat);
   }
 
-  get tooltipPosition(): string {
-    const gutterWidth = 300;
-    const { nativeElement } = this.timestampRef;
-    const timestampLeft = nativeElement.getBoundingClientRect().left;
+  ngOnInit() {
+    this.contentSubscription = this.contentService.viewScrollPos.subscribe(
+      position => {
+        this.scrollPosition = position;
+        this.cd.markForCheck();
+      }
+    );
+  }
 
-    return timestampLeft > window.outerWidth - gutterWidth ? 'left' : 'right';
+  getScrollPos() {
+    return `${-this.scrollPosition - 64}px`;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -65,5 +76,6 @@ export class TimestampComponent implements OnChanges, OnDestroy {
 
   ngOnDestroy(): void {
     this.timestamp = null;
+    this.contentSubscription.unsubscribe();
   }
 }

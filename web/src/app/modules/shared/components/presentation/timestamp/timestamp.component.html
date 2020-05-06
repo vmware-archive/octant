@@ -1,6 +1,6 @@
-<clr-tooltip>
-  <span #timestampRef clrTooltipTrigger>{{ timestamp | relative }}</span>
-  <clr-tooltip-content [clrPosition]="tooltipPosition" clrSize="md" *clrIfOpen>
-    <span>{{ humanReadable }}</span>
-  </clr-tooltip-content>
-</clr-tooltip>
+<span class="tooltip tooltip-wrapper tooltip-md">
+  <span>{{ timestamp | relative }}</span>
+     <span class="tooltip-content" [ngStyle]="{ 'margin-top': getScrollPos() }">
+       <span>{{ humanReadable }}</span>
+     </span>
+</span>
