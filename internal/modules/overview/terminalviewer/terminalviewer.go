@@ -54,8 +54,18 @@ func (tv *terminalViewer) ToComponent() (*component.Terminal, error) {
 	}
 
 	container := ""
+	containers := []string{}
 	if len(pod.Spec.Containers) > 0 {
 		container = getFirstContainer(pod).Name
+		for _, c := range pod.Spec.Containers {
+			for _, s := range pod.Status.ContainerStatuses {
+				if s.Name == c.Name {
+					if s.State.Terminated == nil {
+						containers = append(containers, c.Name)
+					}
+				}
+			}
+		}
 	}
 
 	details := component.TerminalDetails{
@@ -63,7 +73,7 @@ func (tv *terminalViewer) ToComponent() (*component.Terminal, error) {
 		Command:   "/bin/sh",
 		Active:    true,
 	}
-	term := component.NewTerminal(pod.Namespace, "Terminal", pod.Name, details)
+	term := component.NewTerminal(pod.Namespace, "Terminal", pod.Name, containers, details)
 	return term, nil
 }
 

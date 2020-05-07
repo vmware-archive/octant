@@ -95,7 +95,7 @@ func (s *terminalStateManager) SetActiveTerminal(state octant.State, payload act
 	key.Namespace = namespace
 
 	if s.instance != nil {
-		if s.instance.Key() == key && s.instance.Active() {
+		if s.instance.Key() == key && s.instance.Active() && s.instance.Container() == containerName {
 			s.existingInstance = true
 			s.chanInstance <- s.instance
 			return nil

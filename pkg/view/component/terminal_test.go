@@ -20,7 +20,7 @@ func TestTerminal_Marshal(t *testing.T) {
 		Command:   "/bin/bash",
 		Active:    false,
 	}
-	input := NewTerminal("default", "term-test", "pod-name", details)
+	input := NewTerminal("default", "term-test", "pod-name", []string{"container-id", "sidecar-container"}, details)
 	actual, err := json.Marshal(input)
 	assert.NoError(t, err)
 

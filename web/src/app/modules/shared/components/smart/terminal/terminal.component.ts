@@ -36,6 +36,7 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
     private actionService: ActionService
   ) {}
 
+  selectedContainer = '';
   private terminalStream: TerminalOutputStreamer;
   private term: Terminal;
   private fitAddon: FitAddon;
@@ -58,7 +59,7 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
   ngAfterViewInit() {
     if (this.view) {
       const logLevel = 'info';
-      const { podName, namespace, terminal } = this.view.config;
+      const { podName, namespace, terminal, containers } = this.view.config;
       const { active, command, container } = terminal;
       const disableStdin = !active;
       this.term = new Terminal({
@@ -110,15 +111,34 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
     this.term.onResize(resizeDebounce);
   }
 
+  onContainerChange(containerSelection: string): void {
+    this.terminalService.selectedContainer = containerSelection;
+    this.term.reset();
+    this.initStream();
+  }
+
   initStream() {
     const { namespace, podName, terminal } = this.view.config;
     const { active, container } = terminal;
+
     if (namespace && podName && container) {
-      this.terminalStream = this.terminalService.createStream(
-        namespace,
-        podName,
-        container
-      );
+      if (
+        this.terminalService.namespace === namespace &&
+        this.terminalService.podName === podName
+      ) {
+        this.selectedContainer = this.terminalService.selectedContainer;
+        this.terminalStream = this.terminalService.createStream(
+          namespace,
+          podName,
+          this.selectedContainer
+        );
+      } else {
+        this.terminalStream = this.terminalService.createStream(
+          namespace,
+          podName,
+          container
+        );
+      }
       this.terminalStream.scrollback.subscribe((scrollback: string) => {
         if (scrollback && scrollback.length !== 0) {
           this.term.write(atob(scrollback).replace(/\n/g, '\n\r'));
@@ -131,6 +151,8 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
           }
         });
       }
+      this.terminalService.namespace = namespace;
+      this.terminalService.podName = podName;
     }
   }
 }

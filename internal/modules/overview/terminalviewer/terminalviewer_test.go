@@ -29,7 +29,7 @@ func Test_ToComponent(t *testing.T) {
 		Command:   "/bin/sh",
 		Active:    true,
 	}
-	expected := component.NewTerminal("", "Terminal", "", details)
+	expected := component.NewTerminal("", "Terminal", "", []string{}, details)
 
 	assert.Equal(t, expected, got)
 }

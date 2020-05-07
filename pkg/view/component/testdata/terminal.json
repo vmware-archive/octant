@@ -12,6 +12,7 @@
     "name": "term-test",
     "podName": "pod-name",
     "namespace": "default",
+    "containers": ["container-id", "sidecar-container"],
     "terminal": {
       "active": false,
       "command": "/bin/bash",
