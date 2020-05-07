@@ -12,6 +12,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"contrib.go.opencensus.io/exporter/jaeger"
@@ -49,6 +50,7 @@ type Options struct {
 	KubeConfig             string
 	Namespace              string
 	FrontendURL            string
+	BrowserPath            string
 	Context                string
 	ClientQPS              float32
 	ClientBurst            int
@@ -194,7 +196,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		return fmt.Errorf("unable to start CRD watcher: %w", err)
 	}
 
-	d, err := newDash(listener, options.Namespace, options.FrontendURL, apiService, logger)
+	d, err := newDash(listener, options.Namespace, options.FrontendURL, options.BrowserPath, apiService, logger)
 	if err != nil {
 		return fmt.Errorf("failed to create dash instance: %w", err)
 	}
@@ -336,6 +338,7 @@ func buildListener() (net.Listener, error) {
 type dash struct {
 	listener        net.Listener
 	uiURL           string
+	browserPath     string
 	namespace       string
 	defaultHandler  func() (http.Handler, error)
 	apiHandler      api.Service
@@ -343,11 +346,12 @@ type dash struct {
 	logger          log.Logger
 }
 
-func newDash(listener net.Listener, namespace, uiURL string, apiHandler api.Service, logger log.Logger) (*dash, error) {
+func newDash(listener net.Listener, namespace, uiURL string, browserPath string, apiHandler api.Service, logger log.Logger) (*dash, error) {
 	return &dash{
 		listener:        listener,
 		namespace:       namespace,
 		uiURL:           uiURL,
+		browserPath:     browserPath,
 		defaultHandler:  web.Handler,
 		willOpenBrowser: true,
 		apiHandler:      apiHandler,
@@ -375,10 +379,18 @@ func (d *dash) Run(ctx context.Context) error {
 	}()
 
 	dashboardURL := fmt.Sprintf("http://%s", d.listener.Addr())
+
 	d.logger.Infof("Dashboard is available at %s\n", dashboardURL)
 
 	if d.willOpenBrowser {
-		if err = open.Run(dashboardURL); err != nil {
+		runURL := dashboardURL
+		if d.browserPath != "" {
+			if !strings.HasPrefix(d.browserPath, "/") {
+				d.browserPath = "/" + d.browserPath
+			}
+			runURL += d.browserPath
+		}
+		if err = open.Run(runURL); err != nil {
 			d.logger.Warnf("unable to open browser: %v", err)
 		}
 	}
