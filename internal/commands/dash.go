@@ -77,6 +77,7 @@ func newOctantCmd(version string) *cobra.Command {
 					KubeConfig:             viper.GetString("kubeconfig"),
 					Namespace:              viper.GetString("namespace"),
 					FrontendURL:            viper.GetString("ui-url"),
+					BrowserPath:            viper.GetString("browser-path"),
 					Context:                viper.GetString("context"),
 					ClientQPS:              float32(viper.GetFloat64("client-qps")),
 					ClientBurst:            viper.GetInt("client-burst"),
@@ -142,12 +143,14 @@ func newOctantCmd(version string) *cobra.Command {
 	octantCmd.Flags().Float32P("client-qps", "", 200, "maximum QPS for client [DEV]")
 	octantCmd.Flags().IntP("client-burst", "", 400, "maximum burst for client throttle [DEV]")
 	octantCmd.Flags().BoolP("disable-open-browser", "", false, "disable automatic launching of the browser [DEV]")
+	octantCmd.Flags().BoolP("accept-local-ip", "", false, "allows local IP addresses starting with 192.168.1.")
 	octantCmd.Flags().BoolP("enable-opencensus", "c", false, "enable open census [DEV]")
 	octantCmd.Flags().IntP("klog-verbosity", "", 0, "klog verbosity level [DEV]")
 	octantCmd.Flags().StringP("listener-addr", "", "", "listener address for the octant frontend [DEV]")
 	octantCmd.Flags().StringP("local-content", "", "", "local content path [DEV]")
 	octantCmd.Flags().StringP("proxy-frontend", "", "", "url to send frontend request to [DEV]")
 	octantCmd.Flags().String("ui-url", "", "dashboard url [DEV]")
+	octantCmd.Flags().String("browser-path", "", "the browser path to open the browser on")
 
 	return octantCmd
 }

@@ -26,8 +26,14 @@ import (
 
 const (
 	// ListenerAddrKey is the environment variable for the Octant listener address.
-	ListenerAddrKey  = "listener-addr"
+	ListenerAddrKey = "listener-addr"
+
+	// AcceptedHostsKey the list of accepted hosts to be allowed to connect over web sockets
 	AcceptedHostsKey = "accepted-hosts"
+
+	// AcceptLocalIPKey if no accepted hosts are specified this flag will add all the local IP addresses
+	//starting with `192.168.1.` to the accepted hosts
+	AcceptLocalIPKey = "accept-local-ip"
 	// PathPrefix is a string for the api path prefix.
 	PathPrefix          = "/api/v1"
 	defaultListenerAddr = "127.0.0.1:7777"
@@ -38,9 +44,16 @@ func acceptedHosts() []string {
 		"localhost",
 		"127.0.0.1",
 	}
-	if customHosts := viper.GetString(AcceptedHostsKey); customHosts != "" {
+	customHosts := viper.GetString(AcceptedHostsKey)
+	if customHosts != "" {
 		allowedHosts := strings.Split(customHosts, ",")
 		hosts = append(hosts, allowedHosts...)
+	} else {
+		if viper.GetBool(AcceptLocalIPKey) {
+			for i := 0; i < 256; i++ {
+				hosts = append(hosts, fmt.Sprintf("192.168.1.%d", i))
+			}
+		}
 	}
 
 	listenerAddr := ListenerAddr()
