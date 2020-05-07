@@ -76,6 +76,8 @@ export class TimestampComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnDestroy(): void {
     this.timestamp = null;
-    this.contentSubscription.unsubscribe();
+    if (this.contentSubscription) {
+      this.contentSubscription.unsubscribe();
+    }
   }
 }
