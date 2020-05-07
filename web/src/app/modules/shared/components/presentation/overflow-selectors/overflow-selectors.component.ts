@@ -78,7 +78,9 @@ export class OverflowSelectorsComponent
   }
 
   ngOnDestroy() {
-    this.contentSubscription.unsubscribe();
+    if (this.contentSubscription) {
+      this.contentSubscription.unsubscribe();
+    }
   }
 
   ngAfterViewChecked(): void {

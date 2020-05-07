@@ -64,7 +64,9 @@ export class OverflowLabelsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.contentSubscription.unsubscribe();
+    if (this.contentSubscription) {
+      this.contentSubscription.unsubscribe();
+    }
   }
 
   getScrollPos() {

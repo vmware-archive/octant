@@ -21,7 +21,7 @@
     </ng-container>
   </div>
 
-  <clr-signpost *ngIf="overflowLabels && overflowLabels.length > 0">
+  <clr-signpost *ngIf="overflowLabels?.length > 0">
     <span class="badge badge-light-blue" clrSignpostTrigger>
       {{ overflowLabels.length }}+
     </span>
