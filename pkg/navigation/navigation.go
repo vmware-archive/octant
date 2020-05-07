@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/vmware-tanzu/octant/pkg/icon"
 	"path"
 	"sort"
 
@@ -19,7 +20,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware-tanzu/octant/internal/log"
-	"github.com/vmware-tanzu/octant/pkg/icon"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
@@ -33,13 +33,7 @@ func SetNavigationIcon(name string) Option {
 			return nil
 		}
 
-		source, err := icon.LoadIcon(name)
-		if err != nil {
-			return err
-		}
-
 		n.IconName = fmt.Sprintf("internal:%s", name)
-		n.IconSource = source
 
 		return nil
 	}
@@ -60,7 +54,6 @@ type Navigation struct {
 	Path       string       `json:"path,omitempty"`
 	Children   []Navigation `json:"children,omitempty"`
 	IconName   string       `json:"iconName,omitempty"`
-	IconSource string       `json:"iconSource,omitempty"`
 	Loading    bool         `json:"isLoading"`
 }
 

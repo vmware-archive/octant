@@ -39,8 +39,6 @@ type ObjectConfig struct {
 	BaseTitle      string
 	ObjectType     func() interface{}
 	StoreKey       store.Key
-	IconName       string
-	IconSource     string
 	RootPath       ResourceLink
 	TabsGenerator  TabsGenerator
 	TabDescriptors []Tab
@@ -56,8 +54,6 @@ type Object struct {
 	objectStoreKey        store.Key
 	disableResourceViewer bool
 	tabFuncDescriptors    []Tab
-	iconName              string
-	iconSource            string
 	rootPath              ResourceLink
 	tabsGenerator         TabsGenerator
 }
@@ -80,8 +76,6 @@ func NewObject(c ObjectConfig) *Object {
 		base:               newBaseDescriber(),
 		objectStoreKey:     c.StoreKey,
 		objectType:         c.ObjectType,
-		iconName:           c.IconName,
-		iconSource:         c.IconSource,
 		rootPath:           c.RootPath,
 		tabsGenerator:      tg,
 		tabFuncDescriptors: td,
@@ -141,8 +135,6 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 	}
 
 	cr := component.NewContentResponse(title)
-	cr.IconSource = d.iconSource
-	cr.IconName = d.iconName
 
 	currentObject, ok := item.(runtime.Object)
 	if !ok {

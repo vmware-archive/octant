@@ -23,12 +23,7 @@ jobs:
           GOFLAGS: -mod=vendor
         run: |
           go run build.go go-install
-          go generate ./web ./pkg/icon
-      - name: Upload pkg/icon/rice-box.go
-        uses: actions/upload-artifact@v1
-        with:
-          name: rice-icon
-          path: pkg/icon/rice-box.go
+          go generate ./web
       - name: Upload web/rice-box.go
         uses: actions/upload-artifact@v1
         with:
@@ -42,10 +37,6 @@ jobs:
     container: goreleaser/goreleaser:v0.128.0-cgo
     steps:
       - uses: actions/checkout@v2
-      - name: Download pkg/icon/rice-box.go
-        uses: actions/download-artifact@v1
-        with:
-          name: rice-icon
       - name: Download web/rice-box.go
         uses: actions/download-artifact@v1
         with:
@@ -54,7 +45,6 @@ jobs:
         # Uploading artifact changes file permissions
         run: |
           chown -R $(whoami):$(whoami) .
-          mv rice-icon/rice-box.go ./pkg/icon/
           mv rice-web/rice-box.go ./web/
       - name: Run goreleaser
         run: |

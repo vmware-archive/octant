@@ -7,13 +7,11 @@ package describer
 
 import (
 	"context"
-	"fmt"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"path"
 	"reflect"
 	"strings"
 
-	"github.com/vmware-tanzu/octant/pkg/icon"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -61,7 +59,6 @@ func (r *Resource) Describe(ctx context.Context, namespace string, options Optio
 }
 
 func (r *Resource) List() *List {
-	iconName, iconSource := loadIcon(r.IconName)
 
 	return NewList(
 		ListConfig{
@@ -75,15 +72,12 @@ func (r *Resource) List() *List {
 				return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
 			},
 			IsClusterWide: r.ClusterWide,
-			IconName:      iconName,
-			IconSource:    iconSource,
 			RootPath:      r.RootPath,
 		},
 	)
 }
 
 func (r *Resource) Object() *Object {
-	iconName, iconSource := loadIcon(r.IconName)
 
 	return NewObject(
 		ObjectConfig{
@@ -93,8 +87,6 @@ func (r *Resource) Object() *Object {
 			ObjectType: func() interface{} {
 				return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
 			},
-			IconName:   iconName,
-			IconSource: iconSource,
 			RootPath:   r.RootPath,
 		},
 	)
@@ -147,15 +139,4 @@ func getCrdUrl(namespace string, crd *unstructured.Unstructured) string {
 		ref = path.Join("/cluster-overview/custom-resources", crd.GetName())
 	}
 	return ref
-}
-
-func loadIcon(name string) (string, string) {
-	source, err := icon.LoadIcon(name)
-	if err != nil {
-		return name, ""
-	}
-
-	internalName := fmt.Sprintf("internal:%s", name)
-
-	return internalName, source
 }

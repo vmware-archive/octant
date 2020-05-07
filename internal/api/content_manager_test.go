@@ -53,9 +53,7 @@ func TestContentManager_GenerateContent(t *testing.T) {
 	})
 	octantClient := fake.NewMockOctantClient(controller)
 
-	contentResponse := component.ContentResponse{
-		IconName: "fake",
-	}
+	contentResponse := component.ContentResponse{}
 	contentEvent := api.CreateContentEvent(contentResponse, "default", "/path", params)
 	octantClient.EXPECT().Send(contentEvent).AnyTimes()
 

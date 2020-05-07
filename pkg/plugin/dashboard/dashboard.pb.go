@@ -345,13 +345,6 @@ func (m *NavigationResponse_Navigation) GetIconName() string {
 	return ""
 }
 
-func (m *NavigationResponse_Navigation) GetIconSource() string {
-	if m != nil {
-		return m.IconSource
-	}
-	return ""
-}
-
 type RegisterRequest struct {
 	DashboardAPIAddress  string   `protobuf:"bytes,1,opt,name=dashboardAPIAddress,proto3" json:"dashboardAPIAddress,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`

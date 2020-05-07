@@ -17,8 +17,6 @@ type List struct {
 
 // ListConfig is the contents of a List
 type ListConfig struct {
-	IconName   string      `json:"iconName"`
-	IconSource string      `json:"iconSource"`
 	Items      []Component `json:"items"`
 }
 
@@ -50,12 +48,6 @@ func NewList(title []TitleComponent, items []Component) *List {
 			Items: items,
 		},
 	}
-}
-
-// SetIcon sets the icon for a list.
-func (t *List) SetIcon(name, source string) {
-	t.Config.IconName = name
-	t.Config.IconSource = source
 }
 
 // Add adds additional items to the tail of the list.

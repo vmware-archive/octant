@@ -52,7 +52,6 @@ func TestEntriesHelper(t *testing.T) {
 	assert.Equal(t, expected.Title, list[0].Title)
 	assert.Equal(t, expected.Path, list[0].Path)
 	assert.Equal(t, expected.IconName, list[0].IconName)
-	assert.Empty(t, list[0].IconSource)
 }
 
 func TestCRDEntries_namespace_scoped(t *testing.T) {

@@ -127,7 +127,6 @@ export class ContentComponent implements OnInit, OnDestroy {
     }
 
     this.hasReceivedContent = true;
-    this.iconName = this.iconService.load(contentResponse.content);
   };
 
   onScroll(event) {

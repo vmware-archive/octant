@@ -23,8 +23,6 @@ type ListConfig struct {
 	ListType      func() interface{}
 	ObjectType    func() interface{}
 	IsClusterWide bool
-	IconName      string
-	IconSource    string
 	RootPath      ResourceLink
 }
 
@@ -38,8 +36,6 @@ type List struct {
 	objectType     func() interface{}
 	objectStoreKey store.Key
 	isClusterWide  bool
-	iconName       string
-	iconSource     string
 	rootPath       ResourceLink
 }
 
@@ -53,8 +49,6 @@ func NewList(c ListConfig) *List {
 		listType:       c.ListType,
 		objectType:     c.ObjectType,
 		isClusterWide:  c.IsClusterWide,
-		iconName:       c.IconName,
-		iconSource:     c.IconSource,
 		rootPath:       c.RootPath,
 	}
 }
@@ -80,7 +74,6 @@ func (d *List) Describe(ctx context.Context, namespace string, options Options) 
 
 	title := getBreadcrumb(d.rootPath, d.title, "", namespace)
 	list := component.NewList(title, nil)
-	list.SetIcon(d.iconName, d.iconSource)
 
 	listType := d.listType()
 

@@ -86,8 +86,6 @@ func (h *HomeDescriber) Describe(ctx context.Context, namespace string, options 
 	cr := component.ContentResponse{
 		Title:      component.TitleFromString("Workloads"),
 		Components: []component.Component{layout},
-		IconName:   "",
-		IconSource: "",
 	}
 
 	return cr, nil

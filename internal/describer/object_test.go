@@ -86,8 +86,6 @@ func TestObjectDescriber(t *testing.T) {
 		BaseTitle:      "object",
 		StoreKey:       key,
 		ObjectType:     describer.PodObjectType,
-		IconName:       "icon-name",
-		IconSource:     "icon-source",
 		TabsGenerator:  tg,
 		TabDescriptors: tabDescriptors,
 	}
@@ -110,8 +108,6 @@ func TestObjectDescriber(t *testing.T) {
 
 	expected := component.ContentResponse{
 		Title:      component.Title(component.NewLink("", "object", "."), component.NewText("pod")),
-		IconName:   "icon-name",
-		IconSource: "icon-source",
 		Components: []component.Component{
 			summary,
 		},

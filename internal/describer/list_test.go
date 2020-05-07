@@ -67,8 +67,6 @@ func TestListDescriber(t *testing.T) {
 		ListType:      PodListType,
 		ObjectType:    PodObjectType,
 		IsClusterWide: false,
-		IconName:      "icon-name",
-		IconSource:    "icon-source",
 	}
 	d := NewList(listConfig)
 	cResponse, err := d.Describe(ctx, namespace, options)
@@ -76,12 +74,9 @@ func TestListDescriber(t *testing.T) {
 
 	list := component.NewList(append([]component.TitleComponent{}, component.NewText("list")), nil)
 	list.Add(podListTable)
-	list.SetIcon("icon-name", "icon-source")
 	expected := component.ContentResponse{
 		Components: []component.Component{list},
 	}
 
-	assert.Equal(t, expected.IconName, cResponse.IconName)
-	assert.Equal(t, expected.IconSource, cResponse.IconSource)
 	assert.Equal(t, expected.Title, cResponse.Title)
 }
