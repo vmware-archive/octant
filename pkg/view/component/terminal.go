@@ -19,10 +19,11 @@ type TerminalDetails struct {
 
 // TerminalConfig holds a terminal config.
 type TerminalConfig struct {
-	Namespace string          `json:"namespace"`
-	Name      string          `json:"name"`
-	PodName   string          `json:"podName"`
-	Details   TerminalDetails `json:"terminal"`
+	Namespace  string          `json:"namespace"`
+	Name       string          `json:"name"`
+	PodName    string          `json:"podName"`
+	Containers []string        `json:"containers"`
+	Details    TerminalDetails `json:"terminal"`
 }
 
 type Terminal struct {
@@ -31,14 +32,15 @@ type Terminal struct {
 }
 
 // NewTerminal creates a terminal component.
-func NewTerminal(namespace, name string, podName string, details TerminalDetails) *Terminal {
+func NewTerminal(namespace, name string, podName string, containers []string, details TerminalDetails) *Terminal {
 	return &Terminal{
 		base: newBase(typeTerminal, TitleFromString(name)),
 		Config: TerminalConfig{
-			Namespace: namespace,
-			Name:      name,
-			PodName:   podName,
-			Details:   details,
+			Namespace:  namespace,
+			Name:       name,
+			PodName:    podName,
+			Containers: containers,
+			Details:    details,
 		},
 	}
 }

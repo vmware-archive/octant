@@ -47,6 +47,10 @@ export class TerminalOutputStreamer {
   providedIn: 'root',
 })
 export class TerminalOutputService {
+  public selectedContainer: string;
+  public namespace: string;
+  public podName: string;
+
   constructor(private websocketService: WebsocketService) {}
 
   public createStream(namespace, pod, container): TerminalOutputStreamer {

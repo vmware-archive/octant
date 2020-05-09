@@ -417,6 +417,7 @@ export interface TerminalView extends View {
     name: string;
     podName: string;
     terminal: TerminalDetail;
+    containers: string[];
   };
 }
 
