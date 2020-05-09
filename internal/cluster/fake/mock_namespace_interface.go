@@ -60,3 +60,31 @@ func (mr *MockNamespaceInterfaceMockRecorder) InitialNamespace() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitialNamespace", reflect.TypeOf((*MockNamespaceInterface)(nil).InitialNamespace))
 }
+
+// ProvidedNamespaces mocks base method
+func (m *MockNamespaceInterface) ProvidedNamespaces() []string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProvidedNamespaces")
+	ret0, _ := ret[0].([]string)
+	return ret0
+}
+
+// ProvidedNamespaces indicates an expected call of ProvidedNamespaces
+func (mr *MockNamespaceInterfaceMockRecorder) ProvidedNamespaces() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProvidedNamespaces", reflect.TypeOf((*MockNamespaceInterface)(nil).ProvidedNamespaces))
+}
+
+// HasNamespace mocks base method
+func (m *MockNamespaceInterface) HasNamespace(namespace string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasNamespace", namespace)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// HasNamespace indicates an expected call of HasNamespace
+func (mr *MockNamespaceInterfaceMockRecorder) HasNamespace(namespace interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasNamespace", reflect.TypeOf((*MockNamespaceInterface)(nil).HasNamespace), namespace)
+}

@@ -78,12 +78,13 @@ type Cluster struct {
 
 	closeFn context.CancelFunc
 
-	defaultNamespace string
+	defaultNamespace   string
+	providedNamespaces []string
 }
 
 var _ ClientInterface = (*Cluster)(nil)
 
-func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restClient *rest.Config, defaultNamespace string) (*Cluster, error) {
+func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restClient *rest.Config, defaultNamespace string, providedNamespaces []string) (*Cluster, error) {
 	logger := internalLog.From(ctx).With("component", "cluster client")
 
 	kubernetesClient, err := kubernetes.NewForConfig(restClient)
@@ -121,14 +122,15 @@ func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restCl
 	restMapper := restmapper.NewDeferredDiscoveryRESTMapper(cachedDiscoveryClient)
 
 	c := &Cluster{
-		clientConfig:     clientConfig,
-		restConfig:       restClient,
-		kubernetesClient: kubernetesClient,
-		dynamicClient:    dynamicClient,
-		discoveryClient:  discoveryClient,
-		restMapper:       restMapper,
-		logger:           internalLog.From(ctx),
-		defaultNamespace: defaultNamespace,
+		clientConfig:       clientConfig,
+		restConfig:         restClient,
+		kubernetesClient:   kubernetesClient,
+		dynamicClient:      dynamicClient,
+		discoveryClient:    discoveryClient,
+		restMapper:         restMapper,
+		logger:             internalLog.From(ctx),
+		defaultNamespace:   defaultNamespace,
+		providedNamespaces: providedNamespaces,
 	}
 
 	ctx, cancel := context.WithCancel(ctx)
@@ -182,6 +184,11 @@ func (c *Cluster) KubernetesClient() (kubernetes.Interface, error) {
 
 // NamespaceClient returns a namespace client.
 func (c *Cluster) NamespaceClient() (NamespaceInterface, error) {
+	rc, err := c.RESTClient()
+	if err != nil {
+		return nil, err
+	}
+
 	dc, err := c.DynamicClient()
 	if err != nil {
 		return nil, err
@@ -191,7 +198,7 @@ func (c *Cluster) NamespaceClient() (NamespaceInterface, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "resolving initial namespace")
 	}
-	return newNamespaceClient(dc, ns), nil
+	return newNamespaceClient(dc, rc, ns, c.providedNamespaces), nil
 }
 
 // DynamicClient returns a dynamic client.
@@ -233,9 +240,8 @@ func (c *Cluster) Version() (string, error) {
 }
 
 // FromKubeConfig creates a Cluster from a kubeConfig chain.
-func FromKubeConfig(ctx context.Context, kubeConfigList, contextName string, initialNamespace string, options RESTConfigOptions) (*Cluster, error) {
+func FromKubeConfig(ctx context.Context, kubeConfigList, contextName string, initialNamespace string, providedNamespaces []string, options RESTConfigOptions) (*Cluster, error) {
 	chain := strings.Deduplicate(filepath.SplitList(kubeConfigList))
-
 	rules := &clientcmd.ClientConfigLoadingRules{
 		Precedence: chain,
 	}
@@ -267,7 +273,7 @@ func FromKubeConfig(ctx context.Context, kubeConfigList, contextName string, ini
 
 	config = withConfigDefaults(config, options)
 
-	return newCluster(ctx, cc, config, defaultNamespace)
+	return newCluster(ctx, cc, config, defaultNamespace, providedNamespaces)
 }
 
 // withConfigDefaults returns an extended rest.Config object with additional defaults applied
