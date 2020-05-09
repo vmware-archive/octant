@@ -77,6 +77,7 @@ func newOctantCmd(version string) *cobra.Command {
 					KubeConfig:             viper.GetString("kubeconfig"),
 					Namespace:              viper.GetString("namespace"),
 					FrontendURL:            viper.GetString("ui-url"),
+					BrowserPath:            viper.GetString("browser-path"),
 					Context:                viper.GetString("context"),
 					ClientQPS:              float32(viper.GetFloat64("client-qps")),
 					ClientBurst:            viper.GetInt("client-burst"),
@@ -148,6 +149,7 @@ func newOctantCmd(version string) *cobra.Command {
 	octantCmd.Flags().StringP("local-content", "", "", "local content path [DEV]")
 	octantCmd.Flags().StringP("proxy-frontend", "", "", "url to send frontend request to [DEV]")
 	octantCmd.Flags().String("ui-url", "", "dashboard url [DEV]")
+	octantCmd.Flags().String("browser-path", "", "the browser path to open the browser on")
 
 	return octantCmd
 }
