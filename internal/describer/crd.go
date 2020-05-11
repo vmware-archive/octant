@@ -8,10 +8,8 @@ package describer
 import (
 	"context"
 	"fmt"
-
 	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/internal/octant"
-	"github.com/vmware-tanzu/octant/pkg/icon"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -96,10 +94,7 @@ func (c *crd) Describe(ctx context.Context, namespace string, options Options) (
 	}
 	title := getCrdTitle(namespace, crd, object.GetName())
 
-	iconName, iconSource := loadIcon(icon.CustomResourceDefinition)
 	cr := component.NewContentResponse(title)
-	cr.IconName = iconName
-	cr.IconSource = iconSource
 
 	generatorConfig := TabsGeneratorConfig{
 		Object:      object,

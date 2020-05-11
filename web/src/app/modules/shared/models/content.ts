@@ -15,8 +15,6 @@ export interface Content {
   extensionComponent: ExtensionView;
   viewComponents: View[];
   title: View[];
-  iconName?: string;
-  iconSource?: string;
   buttonGroup?: ButtonGroupView;
 }
 

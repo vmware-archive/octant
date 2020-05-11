@@ -151,8 +151,6 @@ func (d *DetailDescriber) createResponse(components ...component.Component) comp
 	cr := component.ContentResponse{
 		Title:      component.TitleFromString("Workload X"),
 		Components: components,
-		IconName:   "",
-		IconSource: "",
 	}
 
 	return cr

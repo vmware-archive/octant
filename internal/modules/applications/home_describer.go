@@ -56,8 +56,6 @@ func (l *HomeDescriber) Describe(ctx context.Context, namespace string, options 
 	contentResponse := component.ContentResponse{
 		Title:      component.TitleFromString("Applications"),
 		Components: []component.Component{table},
-		IconName:   "",
-		IconSource: "",
 	}
 
 	return contentResponse, nil

@@ -62,11 +62,3 @@ func Test_List_Marshal(t *testing.T) {
 		})
 	}
 }
-
-func TestList_Add(t *testing.T) {
-	l := NewList([]TitleComponent{}, []Component{})
-	l.SetIcon("icon-name", "icon-source")
-
-	assert.Equal(t, "icon-name", l.Config.IconName)
-	assert.Equal(t, "icon-source", l.Config.IconSource)
-}

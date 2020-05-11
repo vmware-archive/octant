@@ -44,8 +44,6 @@ func Test_homeDescriber_Describe(t *testing.T) {
 	expected := component.ContentResponse{
 		Title:      component.TitleFromString("Applications"),
 		Components: []component.Component{table},
-		IconName:   "",
-		IconSource: "",
 	}
 	require.Equal(t, expected, actual)
 }

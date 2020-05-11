@@ -85,7 +85,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   itemIcon(item: NavigationChild): string {
-    return this.iconService.load(item);
+    return item.iconName;
   }
 
   formatPath(path: string): string {
