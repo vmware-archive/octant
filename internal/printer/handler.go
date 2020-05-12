@@ -27,8 +27,6 @@ func AddHandlers(p Handler) error {
 		DaemonSetHandler,
 		DeploymentHandler,
 		DeploymentListHandler,
-		HorizontalPodAutoscalerHandler,
-		HorizontalPodAutoscalerListHandler,
 		IngressListHandler,
 		IngressHandler,
 		JobListHandler,

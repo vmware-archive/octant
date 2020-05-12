@@ -29,9 +29,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/kubernetes/pkg/apis/apps"
-	"k8s.io/kubernetes/pkg/apis/batch"
-	"k8s.io/kubernetes/pkg/apis/core"
 
 	"github.com/vmware-tanzu/octant/internal/gvk"
 	dashstrings "github.com/vmware-tanzu/octant/internal/util/strings"
@@ -844,26 +841,6 @@ func (osq *ObjectStoreQueryer) getSelector(object runtime.Object) (*metav1.Label
 	case *appsv1.Deployment:
 		return t.Spec.Selector, nil
 	case *corev1.Service:
-		selector := &metav1.LabelSelector{
-			MatchLabels: t.Spec.Selector,
-		}
-		return selector, nil
-	case *apps.DaemonSet:
-		return t.Spec.Selector, nil
-	case *apps.StatefulSet:
-		return t.Spec.Selector, nil
-	case *batch.CronJob:
-		return nil, nil
-	case *core.ReplicationController:
-		selector := &metav1.LabelSelector{
-			MatchLabels: t.Spec.Selector,
-		}
-		return selector, nil
-	case *apps.ReplicaSet:
-		return t.Spec.Selector, nil
-	case *apps.Deployment:
-		return t.Spec.Selector, nil
-	case *core.Service:
 		selector := &metav1.LabelSelector{
 			MatchLabels: t.Spec.Selector,
 		}

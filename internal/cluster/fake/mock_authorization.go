@@ -5,6 +5,7 @@
 package fake
 
 import (
+	context "context"
 	gomock "github.com/golang/mock/gomock"
 	v1 "k8s.io/api/authorization/v1"
 	v10 "k8s.io/client-go/kubernetes/typed/authorization/v1"
@@ -143,6 +144,21 @@ func (mr *MockSelfSubjectAccessReviewInterfaceMockRecorder) Create(arg0 interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockSelfSubjectAccessReviewInterface)(nil).Create), arg0)
 }
 
+// CreateContext mocks base method
+func (m *MockSelfSubjectAccessReviewInterface) CreateContext(arg0 context.Context, arg1 *v1.SelfSubjectAccessReview) (*v1.SelfSubjectAccessReview, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateContext", arg0, arg1)
+	ret0, _ := ret[0].(*v1.SelfSubjectAccessReview)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateContext indicates an expected call of CreateContext
+func (mr *MockSelfSubjectAccessReviewInterfaceMockRecorder) CreateContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateContext", reflect.TypeOf((*MockSelfSubjectAccessReviewInterface)(nil).CreateContext), arg0, arg1)
+}
+
 // MockSelfSubjectAccessReviewsGetter is a mock of SelfSubjectAccessReviewsGetter interface
 type MockSelfSubjectAccessReviewsGetter struct {
 	ctrl     *gomock.Controller
@@ -216,6 +232,21 @@ func (m *MockSelfSubjectRulesReviewInterface) Create(arg0 *v1.SelfSubjectRulesRe
 func (mr *MockSelfSubjectRulesReviewInterfaceMockRecorder) Create(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockSelfSubjectRulesReviewInterface)(nil).Create), arg0)
+}
+
+// CreateContext mocks base method
+func (m *MockSelfSubjectRulesReviewInterface) CreateContext(arg0 context.Context, arg1 *v1.SelfSubjectRulesReview) (*v1.SelfSubjectRulesReview, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateContext", arg0, arg1)
+	ret0, _ := ret[0].(*v1.SelfSubjectRulesReview)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateContext indicates an expected call of CreateContext
+func (mr *MockSelfSubjectRulesReviewInterfaceMockRecorder) CreateContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateContext", reflect.TypeOf((*MockSelfSubjectRulesReviewInterface)(nil).CreateContext), arg0, arg1)
 }
 
 // MockSelfSubjectRulesReviewsGetter is a mock of SelfSubjectRulesReviewsGetter interface
