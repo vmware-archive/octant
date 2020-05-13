@@ -84,7 +84,10 @@ func Test_PodListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
-		"Name":     component.NewLink("", "pod", "/pod"),
+		"Name": component.NewLink("", "pod", "/pod",
+			genObjectStatus(component.TextStatusWarning, []string{
+				"",
+			})),
 		"Labels":   component.NewLabels(labels),
 		"Ready":    component.NewText("1/2"),
 		"Phase":    component.NewText("Pending"),
@@ -148,7 +151,8 @@ func Test_PodListHandlerNoLabel(t *testing.T) {
 	cols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
-		"Name":     component.NewLink("", "pi-7xpxr", "/pi-7xpxr"),
+		"Name": component.NewLink("", "pi-7xpxr", "/pi-7xpxr",
+			genObjectStatus(component.TextStatusWarning, []string{""})),
 		"Ready":    component.NewText("0/1"),
 		"Phase":    component.NewText("Succeeded"),
 		"Restarts": component.NewText("0"),
@@ -190,7 +194,8 @@ func TestPodListHandler_sorted(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
-		"Name":     component.NewLink("", "pod1", "/pod1"),
+		"Name": component.NewLink("", "pod1", "/pod1",
+			genObjectStatus(component.TextStatusWarning, []string{""})),
 		"Labels":   component.NewLabels(make(map[string]string)),
 		"Ready":    component.NewText("0/0"),
 		"Phase":    component.NewText(""),
@@ -202,7 +207,8 @@ func TestPodListHandler_sorted(t *testing.T) {
 		}),
 	})
 	expected.Add(component.TableRow{
-		"Name":     component.NewLink("", "pod2", "/pod2"),
+		"Name": component.NewLink("", "pod2", "/pod2",
+			genObjectStatus(component.TextStatusWarning, []string{""})),
 		"Labels":   component.NewLabels(make(map[string]string)),
 		"Ready":    component.NewText("0/0"),
 		"Phase":    component.NewText(""),

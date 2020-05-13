@@ -52,7 +52,8 @@ func Test_ConfigMapListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Data", "Age")
 	expected := component.NewTable("ConfigMaps", "We couldn't find any config maps!", cols)
 	expected.Add(component.TableRow{
-		"Name":   component.NewLink("", configMap.Name, "/configMap"),
+		"Name": component.NewLink("", configMap.Name, "/configMap",
+			genObjectStatus(component.TextStatusOK, []string{"v1 ConfigMap is OK"})),
 		"Labels": component.NewLabels(labels),
 		"Data":   component.NewText("2"),
 		"Age":    component.NewTimestamp(now),

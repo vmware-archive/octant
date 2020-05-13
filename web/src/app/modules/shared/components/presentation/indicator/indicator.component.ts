@@ -1,4 +1,5 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { View } from '../../../models/content';
 
 /**
  * Status are statuses known to indicator.
@@ -20,15 +21,24 @@ export const statusLookup = {
   templateUrl: './indicator.component.html',
   styleUrls: ['./indicator.component.scss'],
 })
-export class IndicatorComponent implements OnInit {
+export class IndicatorComponent implements OnChanges {
   @Input()
   status: number;
 
+  @Input()
+  detail: View;
+
+  currentStatus: string;
+
   constructor() {}
 
-  ngOnInit(): void {}
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.status) {
+      this.currentStatus = statusLookup[changes.status.currentValue];
+    }
+  }
 
-  name() {
+  name(): string {
     return statusLookup[this.status];
   }
 }

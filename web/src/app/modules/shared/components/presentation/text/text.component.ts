@@ -12,11 +12,11 @@ import { TextView, View } from 'src/app/modules/shared/models/content';
 export class TextComponent implements OnChanges {
   private v: TextView;
 
-  @Input() set view(v: View) {
+  @Input() set view(v: TextView) {
     this.v = v as TextView;
   }
 
-  get view() {
+  get view(): TextView {
     return this.v;
   }
 

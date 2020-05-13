@@ -62,7 +62,10 @@ func Test_SecretListHandler(t *testing.T) {
 
 	expected := component.NewTable("Secrets", "We couldn't find any secrets!", secretTableCols)
 	expected.Add(component.TableRow{
-		"Name":   component.NewLink("", "secret", "/secret"),
+		"Name": component.NewLink("", "secret", "/secret",
+			genObjectStatus(component.TextStatusOK, []string{
+				"v1 Secret is OK",
+			})),
 		"Labels": component.NewLabels(labels),
 		"Type":   component.NewText("Opaque"),
 		"Data":   component.NewText("1"),

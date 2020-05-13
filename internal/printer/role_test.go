@@ -44,8 +44,11 @@ func Test_RoleListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Age")
 	expected := component.NewTable("Roles", "We couldn't find any roles!", cols)
 	expected.Add(component.TableRow{
-		"Name": component.NewLink("", role.Name, "/role"),
-		"Age":  component.NewTimestamp(role.CreationTimestamp.Time),
+		"Name": component.NewLink("", role.Name, "/role",
+			genObjectStatus(component.TextStatusOK, []string{
+				"rbac.authorization.k8s.io/v1 Role is OK",
+			})),
+		"Age": component.NewTimestamp(role.CreationTimestamp.Time),
 		component.GridActionKey: gridActionsFactory([]component.GridAction{
 			buildObjectDeleteAction(t, role),
 		}),

@@ -6,10 +6,13 @@
 package printer
 
 import (
+	"context"
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware-tanzu/octant/internal/objectstatus"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
@@ -23,15 +26,17 @@ type ObjectTable struct {
 	rows        []component.TableRow
 	filters     map[string]component.TableFilter
 	sortOrder   *tableSetOrder
+	store       store.Store
 }
 
 // NewObjectTable creates an instance of ObjectTable.
-func NewObjectTable(title, placeholder string, cols []component.TableCol) *ObjectTable {
+func NewObjectTable(title, placeholder string, cols []component.TableCol, objectStore store.Store) *ObjectTable {
 	ol := ObjectTable{
 		cols:        cols,
 		title:       title,
 		placeholder: placeholder,
 		filters:     map[string]component.TableFilter{},
+		store:       objectStore,
 	}
 
 	return &ol
@@ -44,11 +49,37 @@ func (ol *ObjectTable) AddFilters(filters map[string]component.TableFilter) {
 	}
 }
 
+type componentStatus interface {
+	SetStatus(status component.TextStatus, detail component.Component)
+}
+
 // AddRowForObject adds a row for an object to the table.
-func (ol *ObjectTable) AddRowForObject(object runtime.Object, row component.TableRow) error {
+func (ol *ObjectTable) AddRowForObject(ctx context.Context, object runtime.Object, row component.TableRow) error {
 	gridAction, err := objectDeleteAction(object)
 	if err != nil {
 		return fmt.Errorf("create object delete action: %w", err)
+	}
+
+	accessor, err := meta.Accessor(object)
+	if err != nil {
+		return fmt.Errorf("get accessor for object: %w", err)
+	}
+
+	if accessor.GetDeletionTimestamp() != nil {
+		row["_isDeleted"] = component.NewText("deleted")
+	}
+
+	status, err := objectstatus.Status(ctx, object, ol.store)
+	if err != nil {
+		return fmt.Errorf("get status for object: %w", err)
+	}
+
+	if len(ol.cols) > 0 {
+		firstRow := row[ol.cols[0].Name]
+		if cs, ok := firstRow.(componentStatus); ok {
+			detailComponent := component.NewList(nil, status.Details)
+			cs.SetStatus(convertNodeStatusToTextStatus(status.Status()), detailComponent)
+		}
 	}
 
 	row.AddAction(gridAction)
@@ -56,6 +87,19 @@ func (ol *ObjectTable) AddRowForObject(object runtime.Object, row component.Tabl
 	ol.rows = append(ol.rows, row)
 
 	return nil
+}
+
+func convertNodeStatusToTextStatus(nodeStatus component.NodeStatus) component.TextStatus {
+	switch nodeStatus {
+	case component.NodeStatusOK:
+		return component.TextStatusOK
+	case component.NodeStatusWarning:
+		return component.TextStatusWarning
+	case component.NodeStatusError:
+		return component.TextStatusError
+	default:
+		return 0
+	}
 }
 
 func objectDeleteAction(object runtime.Object) (component.GridAction, error) {

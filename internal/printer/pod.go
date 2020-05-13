@@ -33,7 +33,7 @@ var (
 )
 
 // PodListHandler is a printFunc that prints pods
-func PodListHandler(_ context.Context, list *corev1.PodList, opts Options) (component.Component, error) {
+func PodListHandler(ctx context.Context, list *corev1.PodList, opts Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("list is nil")
 	}
@@ -43,7 +43,7 @@ func PodListHandler(_ context.Context, list *corev1.PodList, opts Options) (comp
 		cols = podColsWithOutLabels
 	}
 
-	ot := NewObjectTable("Pods", "We couldn't find any pods!", cols)
+	ot := NewObjectTable("Pods", "We couldn't find any pods!", cols, opts.DashConfig.ObjectStore())
 	ot.AddFilters(podTableFilters())
 
 	for i := range list.Items {
@@ -88,7 +88,7 @@ func PodListHandler(_ context.Context, list *corev1.PodList, opts Options) (comp
 		ts := pod.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
 
-		if err := ot.AddRowForObject(&pod, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &pod, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

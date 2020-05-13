@@ -79,16 +79,20 @@ export class DatagridComponent implements OnChanges {
     }
   }
 
-  private getRowsWithMetadata(rows: TableRow[]) {
+  private getRowsWithMetadata(rows: TableRow[]): TableRowWithMetadata[] {
     return rows.map(row => {
       let actions: GridAction[] = [];
 
       if (row.hasOwnProperty('_action')) {
         actions = (row._action as GridActionsView).config.actions;
       }
+
+      const isDeleted = !!row._isDeleted;
+
       return {
         data: row,
         actions,
+        isDeleted,
       };
     });
   }
@@ -117,6 +121,10 @@ export class DatagridComponent implements OnChanges {
     return true;
   }
 
+  rowClass(row: TableRowWithMetadata) {
+    return row.isDeleted ? ['row-deleted'] : [];
+  }
+
   cancelModal() {
     this.resetModal();
   }
@@ -143,6 +151,7 @@ export class DatagridComponent implements OnChanges {
 interface TableRowWithMetadata {
   data: TableRow;
   actions?: GridAction[];
+  isDeleted: boolean;
 }
 
 interface ActionDialogOptions {

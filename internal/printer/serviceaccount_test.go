@@ -54,7 +54,10 @@ func Test_ServiceAccountListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Secrets", "Age")
 	expected := component.NewTable("Service Accounts", "We couldn't find any service accounts!", cols)
 	expected.Add(component.TableRow{
-		"Name":    component.NewLink("", object.Name, "/path"),
+		"Name": component.NewLink("", object.Name, "/path",
+			genObjectStatus(component.TextStatusOK, []string{
+				"v1 ServiceAccount is OK",
+			})),
 		"Labels":  component.NewLabels(labels),
 		"Secrets": component.NewText("1"),
 		"Age":     component.NewTimestamp(now),

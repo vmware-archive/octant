@@ -6,7 +6,6 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TextView } from '../../../models/content';
 import { TextComponent } from './text.component';
-import { SharedModule } from '../../../shared.module';
 import { Status } from '../indicator/indicator.component';
 
 @Component({
@@ -23,8 +22,7 @@ describe('TextComponent', () => {
 
     beforeEach(async(() => {
       TestBed.configureTestingModule({
-        declarations: [TestWrapperComponent],
-        imports: [SharedModule],
+        declarations: [TestWrapperComponent, TextComponent],
       }).compileComponents();
     }));
 

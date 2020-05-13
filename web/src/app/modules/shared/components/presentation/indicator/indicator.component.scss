@@ -6,21 +6,34 @@
 $circumference: 4px;
 
 .indicator {
+  :host-context(body.dark) {
+    --ok-background-color: #60b515;
+    --warning-background-color: #f57600;
+    --error-background-color: #e12200;
+  }
+
+  :host-context(body) {
+    --ok-background-color: #60b515;
+    --warning-background-color: #f57600;
+    --error-background-color: #e12200;
+  }
+
   height: $circumference;
   width: $circumference;
   border-radius: 50%;
   display: inline-block;
   transform: translateY(-50%);
+  margin-right: 0.5em;
 
   &.ok {
-    background-color: #60b515;
+    background-color: var(--ok-background-color);
   }
 
   &.warning {
-    background-color: #f57600;
+    background-color: var(--warning-background-color);
   }
 
   &.error {
-    background-color: #e12200;
+    background-color: var(--error-background-color);
   }
 }

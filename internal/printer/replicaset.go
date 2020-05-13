@@ -27,7 +27,7 @@ func ReplicaSetListHandler(ctx context.Context, list *appsv1.ReplicaSetList, opt
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
-	ot := NewObjectTable("ReplicaSets", "We couldn't find any replica sets!", cols)
+	ot := NewObjectTable("ReplicaSets", "We couldn't find any replica sets!", cols, opts.DashConfig.ObjectStore())
 
 	for _, rs := range list.Items {
 		row := component.TableRow{}
@@ -52,7 +52,7 @@ func ReplicaSetListHandler(ctx context.Context, list *appsv1.ReplicaSetList, opt
 		row["Containers"] = containers
 		row["Selector"] = printSelector(rs.Spec.Selector)
 
-		if err := ot.AddRowForObject(&rs, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &rs, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

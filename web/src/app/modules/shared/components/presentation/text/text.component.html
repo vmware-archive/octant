@@ -1,6 +1,6 @@
 <ng-container *ngIf="!isMarkdown; else markdown">
   <ng-container *ngIf="hasStatus">
-    <app-indicator [status]="v.config.status"></app-indicator>
+    <app-indicator [status]="view.config.status"></app-indicator>
   </ng-container>
   {{ value }}
 </ng-container>

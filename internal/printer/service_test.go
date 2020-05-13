@@ -30,6 +30,16 @@ func Test_ServiceListHandler(t *testing.T) {
 	tpo := newTestPrinterOptions(controller)
 	printOptions := tpo.ToOptions()
 
+	endpoints := &unstructured.Unstructured{}
+
+	tpo.objectStore.EXPECT().
+		Get(gomock.Any(), store.Key{
+			Namespace:  "default",
+			APIVersion: "v1",
+			Kind:       "Endpoints",
+			Name:       "service",
+		}).Return(endpoints, nil).AnyTimes()
+
 	labels := map[string]string{
 		"foo": "bar",
 	}
@@ -86,7 +96,10 @@ func Test_ServiceListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Type", "Cluster IP", "External IP", "Ports", "Age", "Selector")
 	expected := component.NewTable("Services", "We couldn't find any services!", cols)
 	expected.Add(component.TableRow{
-		"Name":        component.NewLink("", "service", "/service"),
+		"Name": component.NewLink("", "service", "/service",
+			genObjectStatus(component.TextStatusWarning, []string{
+				"Service has no endpoint addresses",
+			})),
 		"Labels":      component.NewLabels(labels),
 		"Type":        component.NewText("ClusterIP"),
 		"Cluster IP":  component.NewText("1.2.3.4"),

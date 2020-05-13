@@ -5,7 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 
 package component
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // TextStatus is the status of a text component
 type TextStatus int
@@ -36,13 +39,24 @@ type TextConfig struct {
 }
 
 // NewText creates a text component
-func NewText(s string) *Text {
-	return &Text{
+func NewText(s string, options ...func(*Text)) *Text {
+	t := &Text{
 		base: newBase(typeText, nil),
 		Config: TextConfig{
 			Text: s,
 		},
 	}
+
+	for _, option := range options {
+		option(t)
+	}
+
+	return t
+}
+
+// NewTextf creates a a text component using a printf like helper.
+func NewTextf(format string, a ...interface{}) *Text {
+	return NewText(fmt.Sprintf(format, a...))
 }
 
 // NewMarkdownText creates a text component styled with markdown.

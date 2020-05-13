@@ -20,13 +20,13 @@ import (
 )
 
 // StatefulSetListHandler is a printFunc that list stateful sets
-func StatefulSetListHandler(_ context.Context, list *appsv1.StatefulSetList, options Options) (component.Component, error) {
+func StatefulSetListHandler(ctx context.Context, list *appsv1.StatefulSetList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Desired", "Current", "Age", "Selector")
-	ot := NewObjectTable("StatefulSets", "We couldn't find any stateful sets!", cols)
+	ot := NewObjectTable("StatefulSets", "We couldn't find any stateful sets!", cols, options.DashConfig.ObjectStore())
 
 	for _, statefulSet := range list.Items {
 		row := component.TableRow{}
@@ -49,7 +49,7 @@ func StatefulSetListHandler(_ context.Context, list *appsv1.StatefulSetList, opt
 
 		row["Selector"] = printSelector(statefulSet.Spec.Selector)
 
-		if err := ot.AddRowForObject(&statefulSet, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &statefulSet, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

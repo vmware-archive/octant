@@ -75,7 +75,8 @@ func Test_HorizontalPodAutoscalerListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Targets", "Minimum Pods", "Maximum Pods", "Replicas", "Age")
 	expected := component.NewTable("Horizontal Pod Autoscalers", "We couldn't find any horizontal pod autoscalers", cols)
 	expected.Add(component.TableRow{
-		"Name":         component.NewLink("", "horizontalpodautoscaler", "/path"),
+		"Name": component.NewLink("", "horizontalpodautoscaler", "/path",
+			genObjectStatus(component.TextStatusOK, []string{"autoscaling/v1 HorizontalPodAutoscaler is OK"})),
 		"Labels":       component.NewLabels(objectLabels),
 		"Targets":      component.NewText("5/50%"),
 		"Minimum Pods": component.NewText("1"),

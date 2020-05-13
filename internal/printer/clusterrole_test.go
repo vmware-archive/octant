@@ -44,8 +44,11 @@ func Test_ClusterRoleListHandler(t *testing.T) {
 	expected := component.NewTable("Cluster Roles", "We couldn't find any cluster roles!", cols)
 
 	expected.Add(component.TableRow{
-		"Name": component.NewLink("", object.Name, "/path"),
-		"Age":  component.NewTimestamp(now),
+		"Name": component.NewLink("", object.Name, "/path",
+			genObjectStatus(component.TextStatusOK, []string{
+				"rbac.authorization.k8s.io/v1 ClusterRole is OK",
+			})),
+		"Age": component.NewTimestamp(now),
 		component.GridActionKey: gridActionsFactory([]component.GridAction{
 			buildObjectDeleteAction(t, object),
 		}),
@@ -80,23 +83,25 @@ func Test_ClusterRoleConfiguration(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		controller := gomock.NewController(t)
-		defer controller.Finish()
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
 
-		tpo := newTestPrinterOptions(controller)
-		printOptions := tpo.ToOptions()
+			tpo := newTestPrinterOptions(controller)
+			printOptions := tpo.ToOptions()
 
-		cc := NewClusterRoleConfiguration(tc.clusterRole)
+			cc := NewClusterRoleConfiguration(test.clusterRole)
 
-		summary, err := cc.Create(printOptions)
-		if tc.isErr {
-			require.Error(t, err)
-			return
-		}
-		require.NoError(t, err)
+			summary, err := cc.Create(printOptions)
+			if test.isErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
 
-		component.AssertEqual(t, tc.expected, summary)
+			component.AssertEqual(t, test.expected, summary)
+		})
 	}
 }
 

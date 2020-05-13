@@ -19,13 +19,13 @@ import (
 )
 
 // IngressListHandler is a printFunc that prints ingresses
-func IngressListHandler(_ context.Context, list *extv1beta1.IngressList, options Options) (component.Component, error) {
+func IngressListHandler(ctx context.Context, list *extv1beta1.IngressList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("ingress list is nil")
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Hosts", "Address", "Ports", "Age")
-	ot := NewObjectTable("Ingresses", "We couldn't find any ingresses!", cols)
+	ot := NewObjectTable("Ingresses", "We couldn't find any ingresses!", cols, options.DashConfig.ObjectStore())
 
 	for _, ingress := range list.Items {
 		ports := "80"
@@ -46,7 +46,7 @@ func IngressListHandler(_ context.Context, list *extv1beta1.IngressList, options
 		row["Ports"] = component.NewText(ports)
 		row["Age"] = component.NewTimestamp(ingress.CreationTimestamp.Time)
 
-		if err := ot.AddRowForObject(&ingress, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &ingress, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

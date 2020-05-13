@@ -83,7 +83,13 @@ func Test_CronJobListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Schedule", "Age", "")
 	expected := component.NewTable("CronJobs", "We couldn't find any cron jobs!", cols)
 	expected.Add(component.TableRow{
-		"Name":     component.NewLink("", "cron", "/cron"),
+		"Name": component.NewLink("", "cron", "/cron", func(l *component.Link) {
+			l.SetStatus(component.TextStatusOK,
+				component.NewList(nil, []component.Component{
+					component.NewText("batch/v1beta1 CronJob is OK"),
+				},
+				))
+		}),
 		"Labels":   component.NewLabels(labels),
 		"Schedule": component.NewText("*/1 * * * *"),
 		"Age":      component.NewTimestamp(now),
@@ -236,7 +242,12 @@ func Test_createJobListView(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Completions", "Successful", "Age")
 	expected := component.NewTable("Jobs", "We couldn't find any jobs!", cols)
 	expected.Add(component.TableRow{
-		"Name":        component.NewLink("", "job", "/job"),
+		"Name": component.NewLink("", "job", "/job",
+			genObjectStatus(component.TextStatusWarning, []string{
+				"Job has succeeded 1 time",
+				"Job is in progress",
+			}),
+		),
 		"Labels":      component.NewLabels(labels),
 		"Completions": component.NewText("1"),
 		"Successful":  component.NewText("1"),

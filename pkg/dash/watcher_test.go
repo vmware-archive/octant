@@ -71,7 +71,13 @@ func TestConfigWatcher_Watch(t *testing.T) {
 	watcherConfig := fake.NewMockWatcherConfig(controller)
 
 	watcherConfig.EXPECT().ContextName().Return("name")
-	watcherConfig.EXPECT().UseContext(gomock.Any(), "name").Return(nil)
+
+	ch := make(chan bool, 1)
+	watcherConfig.EXPECT().UseContext(gomock.Any(), "name").
+		DoAndReturn(func(_ context.Context, _ string) error {
+			ch <- true
+			return nil
+		})
 
 	fileWatcher := fake.NewMockFileWatcher(controller)
 
@@ -95,5 +101,6 @@ func TestConfigWatcher_Watch(t *testing.T) {
 	}
 
 	eventCh <- event
+	<-ch
 	cancel()
 }

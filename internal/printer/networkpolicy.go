@@ -23,13 +23,13 @@ import (
 )
 
 // NetworkPolicyListHandler is a printFunc that prints network policies
-func NetworkPolicyListHandler(_ context.Context, list *networkingv1.NetworkPolicyList, options Options) (component.Component, error) {
+func NetworkPolicyListHandler(ctx context.Context, list *networkingv1.NetworkPolicyList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("network policy list is nil")
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Age")
-	ot := NewObjectTable("Network Policies", "We couldn't find any network policies!", cols)
+	ot := NewObjectTable("Network Policies", "We couldn't find any network policies!", cols, options.DashConfig.ObjectStore())
 
 	for _, networkPolicy := range list.Items {
 		row := component.TableRow{}
@@ -42,7 +42,7 @@ func NetworkPolicyListHandler(_ context.Context, list *networkingv1.NetworkPolic
 		row["Labels"] = component.NewLabels(networkPolicy.Labels)
 		row["Age"] = component.NewTimestamp(networkPolicy.CreationTimestamp.Time)
 
-		if err := ot.AddRowForObject(&networkPolicy, row); err != nil {
+		if err := ot.AddRowForObject(ctx, &networkPolicy, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
 		}
 	}

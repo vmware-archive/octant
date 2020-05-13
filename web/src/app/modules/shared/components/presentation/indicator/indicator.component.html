@@ -1,3 +1,14 @@
-<ng-container *ngIf="name(); let name">
-  <div class="indicator" [className]="name"></div>
+<ng-container *ngIf="currentStatus">
+  <ng-container *ngIf="detail !== undefined; else showStatus">
+    <clr-signpost>
+      <div [ngClass]="[currentStatus, 'indicator']" clrSignpostTrigger></div>
+      <clr-signpost-content *clrIfOpen>
+        <app-content-switcher [view]="detail"></app-content-switcher>
+      </clr-signpost-content>
+    </clr-signpost>
+  </ng-container>
 </ng-container>
+
+<ng-template #showStatus>
+  <div [ngClass]="[currentStatus, 'indicator']" clrSignpostTrigger></div>
+</ng-template>

@@ -53,7 +53,10 @@ func Test_PersistentVolumeClaimListHandler(t *testing.T) {
 			name:             "bounded",
 			persistentvolume: pv,
 			expected: component.TableRow{
-				"Name":          component.NewLink("", object.Name, "/pvc"),
+				"Name": component.NewLink("", object.Name, "/pvc",
+					genObjectStatus(component.TextStatusOK, []string{
+						"v1 PersistentVolumeClaim is OK",
+					})),
 				"Status":        component.NewText("Bound"),
 				"Volume":        component.NewLink("", pv.GetName(), fmt.Sprintf("/%s", pv.GetName())),
 				"Capacity":      component.NewText("10Gi"),
@@ -68,7 +71,10 @@ func Test_PersistentVolumeClaimListHandler(t *testing.T) {
 		{
 			name: "unbounded",
 			expected: component.TableRow{
-				"Name":          component.NewLink("", object.Name, "/pvc"),
+				"Name": component.NewLink("", object.Name, "/pvc",
+					genObjectStatus(component.TextStatusOK, []string{
+						"v1 PersistentVolumeClaim is OK",
+					})),
 				"Status":        component.NewText("Bound"),
 				"Volume":        component.NewText(""),
 				"Capacity":      component.NewText(""),
@@ -313,7 +319,9 @@ func Test_PersistentVolumeClaimMountedPodsList(t *testing.T) {
 	cols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
-		"Name":     component.NewLink("", "wordpress-mysql-67565bd57-8fzbh", "/pod"),
+		"Name": component.NewLink("", "wordpress-mysql-67565bd57-8fzbh", "/pod",
+			genObjectStatus(component.TextStatusOK, []string{""})),
+
 		"Ready":    component.NewText("1/1"),
 		"Phase":    component.NewText("Running"),
 		"Restarts": component.NewText("0"),

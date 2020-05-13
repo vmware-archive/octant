@@ -93,7 +93,10 @@ func Test_ReplicaSetListHandler(t *testing.T) {
 	cols := component.NewTableCols("Name", "Labels", "Status", "Age", "Containers", "Selector")
 	expected := component.NewTable("ReplicaSets", "We couldn't find any replica sets!", cols)
 	expected.Add(component.TableRow{
-		"Name":       component.NewLink("", "replicaset-test", "/replica-set"),
+		"Name": component.NewLink("", "replicaset-test", "/replica-set",
+			genObjectStatus(component.TextStatusWarning, []string{
+				"Expected 3 replicas, but 2 are available",
+			})),
 		"Labels":     component.NewLabels(labels),
 		"Age":        component.NewTimestamp(now),
 		"Selector":   component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "myapp")}),
@@ -316,7 +319,8 @@ func Test_ReplicaSetPods(t *testing.T) {
 	cols := component.NewTableCols("Name", "Ready", "Phase", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
-		"Name":     component.NewLink("", "nginx-deployment-59478d9757-nfqbk", "/pod"),
+		"Name": component.NewLink("", "nginx-deployment-59478d9757-nfqbk", "/pod",
+			genObjectStatus(component.TextStatusWarning, []string{""})),
 		"Ready":    component.NewText("0/1"),
 		"Phase":    component.NewText("Pending"),
 		"Restarts": component.NewText("0"),

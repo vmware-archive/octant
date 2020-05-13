@@ -1,3 +1,16 @@
 /* Copyright (c) 2019 the Octant contributors. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+
+.row-deleted {
+  :host-context(body.dark) {
+    --barberpole-color: hsl(9, 95%, 12%)
+  }
+
+  :host-context(body) {
+    --barberpole-color: hsl(9, 83%, 76%)
+  }
+
+  background-color: var(--barberpole-color);
+}
+
