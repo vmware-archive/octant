@@ -10,6 +10,7 @@ import { WebsocketService } from 'src/app/modules/shared/services/websocket/webs
 export class TerminalOutputStreamer {
   public line: BehaviorSubject<string>;
   public scrollback: BehaviorSubject<string>;
+  public exitMessage: BehaviorSubject<string>;
 
   constructor(
     private namespace: string,
@@ -25,10 +26,12 @@ export class TerminalOutputStreamer {
 
     this.line = new BehaviorSubject('');
     this.scrollback = new BehaviorSubject('');
+    this.exitMessage = new BehaviorSubject('');
     this.wss.registerHandler(this.terminalUrl(), data => {
       const update = data as TerminalOutput;
       this.line.next(update.line);
       this.scrollback.next(update.scrollback);
+      this.exitMessage.next(update.exitMessage);
     });
   }
 

@@ -13,7 +13,6 @@ import {
 } from '@angular/core';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
-import { v4 as uuidv4 } from 'uuid';
 import {
   TerminalOutputService,
   TerminalOutputStreamer,
@@ -32,8 +31,7 @@ import { ActionService } from '../../../services/action/action.service';
 export class TerminalComponent implements OnDestroy, AfterViewInit {
   constructor(
     private terminalService: TerminalOutputService,
-    private wss: WebsocketService,
-    private actionService: ActionService
+    private wss: WebsocketService
   ) {}
 
   selectedContainer = '';
@@ -52,6 +50,7 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
     if (this.terminalStream) {
       this.terminalStream.scrollback.unsubscribe();
       this.terminalStream.line.unsubscribe();
+      this.terminalStream.exitMessage.unsubscribe();
       this.terminalStream = null;
     }
   }
@@ -66,7 +65,9 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
         logLevel,
         disableStdin,
       });
-      this.initStream();
+      setTimeout(() => {
+        this.initStream();
+      });
       this.enableResize();
       this.term.onData(data => {
         if (active) {
@@ -94,13 +95,11 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
     const resizeDebounce = (e: { cols: number; rows: number }) => {
       const resize = () => {
         const { active } = this.view.config.terminal;
-        if (active) {
-          this.wss.sendMessage('action.octant.dev/sendTerminalResize', {
-            rows: e.rows,
-            cols: e.cols,
-          });
-          this.fitAddon.fit();
-        }
+        this.wss.sendMessage('action.octant.dev/sendTerminalResize', {
+          rows: e.rows,
+          cols: e.cols,
+        });
+        this.fitAddon.fit();
       };
 
       if (timeOut != null) {
@@ -113,6 +112,7 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
 
   onContainerChange(containerSelection: string): void {
     this.terminalService.selectedContainer = containerSelection;
+    this.selectedContainer = containerSelection;
     this.term.reset();
     this.initStream();
   }
@@ -120,11 +120,14 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
   initStream() {
     const { namespace, podName, terminal } = this.view.config;
     const { active, container } = terminal;
-
+    if (this.terminalService.selectedContainer) {
+      this.selectedContainer = this.terminalService.selectedContainer;
+    }
     if (namespace && podName && container) {
       if (
         this.terminalService.namespace === namespace &&
-        this.terminalService.podName === podName
+        this.terminalService.podName === podName &&
+        this.selectedContainer
       ) {
         this.selectedContainer = this.terminalService.selectedContainer;
         this.terminalStream = this.terminalService.createStream(
@@ -139,18 +142,22 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
           container
         );
       }
+      this.terminalStream.exitMessage.subscribe((exitMessage: string) => {
+        if (exitMessage && exitMessage.length !== 0) {
+          this.selectedContainer = undefined;
+          this.terminalService.selectedContainer = this.selectedContainer;
+        }
+      });
       this.terminalStream.scrollback.subscribe((scrollback: string) => {
         if (scrollback && scrollback.length !== 0) {
           this.term.write(atob(scrollback).replace(/\n/g, '\n\r'));
         }
       });
-      if (active) {
-        this.terminalStream.line.subscribe((line: string) => {
-          if (line && line.length !== 0) {
-            this.term.write(atob(line).replace(/\n/g, '\n\r'));
-          }
-        });
-      }
+      this.terminalStream.line.subscribe((line: string) => {
+        if (line && line.length !== 0) {
+          this.term.write(atob(line).replace(/\n/g, '\n\r'));
+        }
+      });
       this.terminalService.namespace = namespace;
       this.terminalService.podName = podName;
     }

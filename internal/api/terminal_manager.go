@@ -227,8 +227,10 @@ func newEvent(ctx context.Context, t terminal.Instance, sendScrollback bool) (oc
 			msg := t.ExitMessage()
 			if msg != "" {
 				data.Scrollback = append(data.Scrollback, []byte("\n"+msg)...)
+				data.ExitMessage = []byte(msg)
 			} else {
-				data.Scrollback = append(data.Scrollback, []byte("\n"+"(process exited)")...)
+				data.Scrollback = []byte("\n" + "(process exited)")
+				data.ExitMessage = data.Scrollback
 			}
 		}
 	}
