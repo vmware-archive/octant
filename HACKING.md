@@ -44,3 +44,12 @@ When you are ready to create your pull request, we recommend running `go run bui
 
 This command will run our linting tools and test suite as well as produce a release binary that you can use to do a final
 manual test of your changes.
+
+## Using Storybook
+
+Octant has [Storybook](https://storybook.js.org/) configured to aid with developing components for the frontend. To start Storybook, run
+
+```console
+$ cd web
+$ npm run storybook
+```
