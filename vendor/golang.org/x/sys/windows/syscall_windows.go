@@ -269,6 +269,7 @@ func NewCallbackCDecl(fn interface{}) uintptr {
 //sys	GenerateConsoleCtrlEvent(ctrlEvent uint32, processGroupID uint32) (err error)
 //sys	GetProcessId(process Handle) (id uint32, err error)
 //sys	OpenThread(desiredAccess uint32, inheritHandle bool, threadId uint32) (handle Handle, err error)
+//sys	SetProcessPriorityBoost(process Handle, disable bool) (err error) = kernel32.SetProcessPriorityBoost
 
 // Volume Management Functions
 //sys	DefineDosDevice(flags uint32, deviceName *uint16, targetPath *uint16) (err error) = DefineDosDeviceW
@@ -294,7 +295,9 @@ func NewCallbackCDecl(fn interface{}) uintptr {
 //sys	clsidFromString(lpsz *uint16, pclsid *GUID) (ret error) = ole32.CLSIDFromString
 //sys	stringFromGUID2(rguid *GUID, lpsz *uint16, cchMax int32) (chars int32) = ole32.StringFromGUID2
 //sys	coCreateGuid(pguid *GUID) (ret error) = ole32.CoCreateGuid
-//sys	coTaskMemFree(address unsafe.Pointer) = ole32.CoTaskMemFree
+//sys	CoTaskMemFree(address unsafe.Pointer) = ole32.CoTaskMemFree
+//sys	rtlGetVersion(info *OsVersionInfoEx) (ret error) = ntdll.RtlGetVersion
+//sys	rtlGetNtVersionNumbers(majorVersion *uint32, minorVersion *uint32, buildNumber *uint32) = ntdll.RtlGetNtVersionNumbers
 
 // syscall interface implementation for other packages
 
@@ -1301,6 +1304,27 @@ func (t Token) KnownFolderPath(folderID *KNOWNFOLDERID, flags uint32) (string, e
 	if err != nil {
 		return "", err
 	}
-	defer coTaskMemFree(unsafe.Pointer(p))
+	defer CoTaskMemFree(unsafe.Pointer(p))
 	return UTF16ToString((*[(1 << 30) - 1]uint16)(unsafe.Pointer(p))[:]), nil
+}
+
+// RtlGetVersion returns the version of the underlying operating system, ignoring
+// manifest semantics but is affected by the application compatibility layer.
+func RtlGetVersion() *OsVersionInfoEx {
+	info := &OsVersionInfoEx{}
+	info.osVersionInfoSize = uint32(unsafe.Sizeof(*info))
+	// According to documentation, this function always succeeds.
+	// The function doesn't even check the validity of the
+	// osVersionInfoSize member. Disassembling ntdll.dll indicates
+	// that the documentation is indeed correct about that.
+	_ = rtlGetVersion(info)
+	return info
+}
+
+// RtlGetNtVersionNumbers returns the version of the underlying operating system,
+// ignoring manifest semantics and the application compatibility layer.
+func RtlGetNtVersionNumbers() (majorVersion, minorVersion, buildNumber uint32) {
+	rtlGetNtVersionNumbers(&majorVersion, &minorVersion, &buildNumber)
+	buildNumber &= 0xffff
+	return
 }
