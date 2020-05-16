@@ -32,4 +32,11 @@
   <div class="quick-switcher">
     <app-quick-switcher></app-quick-switcher>
   </div>
+  <div class="preferences">
+    <app-preferences
+      [(isOpen)]="preferencesOpened"
+      [preferences]="preferences"
+      (preferencesChanged)="preferencesChanged($event)"
+    ></app-preferences>
+  </div>
 </div>

@@ -58,9 +58,16 @@ type Options struct {
 	UserAgent              string
 }
 
-// Run runs the dashboard.
-func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options Options) error {
+type Runner struct {
+	dash          *dash
+	pluginManager *plugin.Manager
+	moduleManager *module.Manager
+}
+
+func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner, error) {
 	ctx = internalLog.WithLoggerContext(ctx, logger)
+
+	r := Runner{}
 
 	if options.Context != "" {
 		logger.With("initial-context", options.Context).Infof("Setting initial context from user flags")
@@ -74,19 +81,19 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 	}
 	clusterClient, err := cluster.FromKubeConfig(ctx, options.KubeConfig, options.Context, options.Namespace, options.Namespaces, restConfigOptions)
 	if err != nil {
-		return fmt.Errorf("failed to init cluster client: %w", err)
+		return nil, fmt.Errorf("failed to init cluster client: %w", err)
 	}
 
 	if options.EnableOpenCensus {
 		if err := enableOpenCensus(); err != nil {
 			logger.Infof("Enabling OpenCensus")
-			return fmt.Errorf("enabling open census: %w", err)
+			return nil, fmt.Errorf("enabling open census: %w", err)
 		}
 	}
 
 	nsClient, err := clusterClient.NamespaceClient()
 	if err != nil {
-		return fmt.Errorf("failed to create namespace client: %w", err)
+		return nil, fmt.Errorf("failed to create namespace client: %w", err)
 	}
 
 	// If not overridden, use initial namespace from current context in KUBECONFIG
@@ -98,12 +105,12 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 
 	appObjectStore, err := initObjectStore(ctx, clusterClient)
 	if err != nil {
-		return fmt.Errorf("initializing store: %w", err)
+		return nil, fmt.Errorf("initializing store: %w", err)
 	}
 
 	errorStore, err := oerrors.NewErrorStore()
 	if err != nil {
-		return fmt.Errorf("initializing error store: %w", err)
+		return nil, fmt.Errorf("initializing error store: %w", err)
 	}
 
 	crdWatcher, err := describer.NewDefaultCRDWatcher(ctx, clusterClient, appObjectStore, errorStore)
@@ -114,13 +121,13 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 				logger.Warnf("skipping CRD watcher due to access denied error starting watcher")
 			}
 		} else {
-			return fmt.Errorf("initializing CRD watcher: %w", err)
+			return nil, fmt.Errorf("initializing CRD watcher: %w", err)
 		}
 	}
 
 	portForwarder, err := initPortForwarder(ctx, clusterClient, appObjectStore)
 	if err != nil {
-		return fmt.Errorf("initializing port forwarder: %w", err)
+		return nil, fmt.Errorf("initializing port forwarder: %w", err)
 	}
 
 	actionManger := action.NewManager(logger)
@@ -133,8 +140,10 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 	}
 	moduleManager, err := initModuleManager(mo)
 	if err != nil {
-		return fmt.Errorf("init module manager: %w", err)
+		return nil, fmt.Errorf("init module manager: %w", err)
 	}
+
+	r.moduleManager = moduleManager
 
 	frontendProxy := pluginAPI.FrontendProxy{}
 
@@ -147,8 +156,10 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 
 	pluginManager, err := initPlugin(moduleManager, actionManger, pluginDashboardService)
 	if err != nil {
-		return fmt.Errorf("initializing plugin manager: %w", err)
+		return nil, fmt.Errorf("initializing plugin manager: %w", err)
 	}
+
+	r.pluginManager = pluginManager
 
 	dashConfig := config.NewLiveConfig(
 		clusterClient,
@@ -164,28 +175,28 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		restConfigOptions)
 
 	if err := watchConfigs(ctx, dashConfig, options.KubeConfig); err != nil {
-		return fmt.Errorf("set up config watcher: %w", err)
+		return nil, fmt.Errorf("set up config watcher: %w", err)
 	}
 
 	moduleList, err := initModules(ctx, dashConfig, options.Namespace, options)
 	if err != nil {
-		return fmt.Errorf("initializing modules: %w", err)
+		return nil, fmt.Errorf("initializing modules: %w", err)
 	}
 
 	for _, mod := range moduleList {
 		if err := moduleManager.Register(mod); err != nil {
-			return fmt.Errorf("loading module %s: %w", mod.Name(), err)
+			return nil, fmt.Errorf("loading module %s: %w", mod.Name(), err)
 		}
 	}
 
 	if err := pluginManager.Start(ctx); err != nil {
-		return fmt.Errorf("start plugin manager: %w", err)
+		return nil, fmt.Errorf("start plugin manager: %w", err)
 	}
 
 	listener, err := buildListener()
 	if err != nil {
 		err = fmt.Errorf("failed to create net listener: %w", err)
-		return fmt.Errorf("use OCTANT_LISTENER_ADDR to set host:port: %w", err)
+		return nil, fmt.Errorf("use OCTANT_LISTENER_ADDR to set host:port: %w", err)
 	}
 
 	// Initialize the API
@@ -194,20 +205,28 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 
 	// Watch for CRDs after modules initialized
 	if err := crdWatcher.Watch(ctx); err != nil {
-		return fmt.Errorf("unable to start CRD watcher: %w", err)
+		return nil, fmt.Errorf("unable to start CRD watcher: %w", err)
 	}
 
 	d, err := newDash(listener, options.Namespace, options.FrontendURL, options.BrowserPath, apiService, logger)
 	if err != nil {
-		return fmt.Errorf("failed to create dash instance: %w", err)
+		return nil, fmt.Errorf("failed to create dash instance: %w", err)
 	}
 
 	if viper.GetBool("disable-open-browser") {
 		d.willOpenBrowser = false
 	}
 
+	r.dash = d
+
+	return &r, nil
+}
+
+func (r *Runner) Start(ctx context.Context, startupCh, shutdownCh chan bool) {
+	logger := internalLog.From(ctx)
+
 	go func() {
-		if err := d.Run(ctx); err != nil {
+		if err := r.dash.Run(ctx, startupCh); err != nil {
 			logger.Debugf("running dashboard service: %v", err)
 		}
 	}()
@@ -216,12 +235,10 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 
 	shutdownCtx := internalLog.WithLoggerContext(context.Background(), logger)
 
-	moduleManager.Unload()
-	pluginManager.Stop(shutdownCtx)
+	r.moduleManager.Unload()
+	r.pluginManager.Stop(shutdownCtx)
 
 	shutdownCh <- true
-
-	return nil
 }
 
 // initObjectStore initializes the cluster object store interface
@@ -345,10 +362,16 @@ type dash struct {
 	apiHandler      api.Service
 	willOpenBrowser bool
 	logger          log.Logger
+	handlerFactory  *octant.HandlerFactory
 }
 
 func newDash(listener net.Listener, namespace, uiURL string, browserPath string, apiHandler api.Service, logger log.Logger) (*dash, error) {
+	hf := octant.NewHandlerFactory(
+		octant.BackendHandler(apiHandler.Handler),
+		octant.FrontendURL(viper.GetString("proxy-frontend")))
+
 	return &dash{
+		handlerFactory:  hf,
 		listener:        listener,
 		namespace:       namespace,
 		uiURL:           uiURL,
@@ -360,12 +383,12 @@ func newDash(listener net.Listener, namespace, uiURL string, browserPath string,
 	}, nil
 }
 
-func (d *dash) Run(ctx context.Context) error {
-	hf := octant.NewHandlerFactory(
-		octant.BackendHandler(d.apiHandler.Handler),
-		octant.FrontendURL(viper.GetString("proxy-frontend")))
+func (d *dash) SetFrontendHandler(fn octant.HandlerFactoryFunc) {
+	d.handlerFactory.SetFrontend(fn)
+}
 
-	handler, err := hf.Handler(ctx)
+func (d *dash) Run(ctx context.Context, startupCh chan bool) error {
+	handler, err := d.handlerFactory.Handler(ctx)
 	if err != nil {
 		return err
 	}
@@ -382,6 +405,10 @@ func (d *dash) Run(ctx context.Context) error {
 	dashboardURL := fmt.Sprintf("http://%s", d.listener.Addr())
 
 	d.logger.Infof("Dashboard is available at %s\n", dashboardURL)
+
+	if startupCh != nil {
+		startupCh <- true
+	}
 
 	if d.willOpenBrowser {
 		runURL := dashboardURL

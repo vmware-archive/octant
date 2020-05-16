@@ -23,8 +23,19 @@ github.com/GeertJohan/go.rice/rice
 # github.com/akavel/rsrc v0.8.0
 github.com/akavel/rsrc/binutil
 github.com/akavel/rsrc/coff
+github.com/akavel/rsrc/ico
+github.com/akavel/rsrc/internal
+github.com/akavel/rsrc/rsrc
 # github.com/apache/thrift v0.12.0
 github.com/apache/thrift/lib/go/thrift
+# github.com/asticode/go-astikit v0.6.0
+github.com/asticode/go-astikit
+# github.com/asticode/go-astilectron v0.14.2
+github.com/asticode/go-astilectron
+# github.com/asticode/go-astilectron-bundler v0.5.2
+github.com/asticode/go-astilectron-bundler
+# github.com/asticode/go-bindata v1.0.0
+github.com/asticode/go-bindata
 # github.com/daaku/go.zipexe v1.0.0
 github.com/daaku/go.zipexe
 # github.com/davecgh/go-spew v1.1.1
@@ -149,6 +160,8 @@ github.com/peterbourgon/diskv
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
+# github.com/sam-kamerer/go-plister v1.2.0
+github.com/sam-kamerer/go-plister
 # github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e
 github.com/skratchdot/open-golang/open
 # github.com/spf13/afero v1.2.2

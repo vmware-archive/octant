@@ -62,13 +62,6 @@ func ListenerAddr() string {
 	return listenerAddr
 }
 
-func serveAsJSON(w http.ResponseWriter, v interface{}, logger log.Logger) {
-	w.Header().Set("Content-Type", mime.JSONContentType)
-	if err := json.NewEncoder(w).Encode(v); err != nil {
-		logger.Errorf("encoding JSON response: %v", err)
-	}
-}
-
 // Service is an API service.
 type Service interface {
 	Handler(ctx context.Context) (http.Handler, error)

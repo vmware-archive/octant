@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"sync"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -19,12 +20,16 @@ import (
 	"github.com/vmware-tanzu/octant/internal/log"
 )
 
+type HandlerFactoryFunc func(ctx context.Context) (http.Handler, error)
+
 // HandlerFactory is a factory that generate's Octant's HTTP handler. Octant has
 // a frontend and backend handler and they will both be populated in the
 // generated handler.
 type HandlerFactory struct {
-	frontendHandler func(ctx context.Context) (http.Handler, error)
-	backendHandler  func(ctx context.Context) (http.Handler, error)
+	frontendHandler HandlerFactoryFunc
+	backendHandler  HandlerFactoryFunc
+
+	mu sync.RWMutex
 }
 
 // NewHandlerFactory creates an instance of HandlerFactory.
@@ -37,6 +42,13 @@ func NewHandlerFactory(optionList ...Option) *HandlerFactory {
 	}
 
 	return &hf
+}
+
+func (hf *HandlerFactory) SetFrontend(fn HandlerFactoryFunc) {
+	hf.mu.Lock()
+	defer hf.mu.Unlock()
+
+	hf.frontendHandler = fn
 }
 
 // Handler returns an HTTP handler.
@@ -55,6 +67,13 @@ func (hf *HandlerFactory) Handler(ctx context.Context) (http.Handler, error) {
 
 	router.PathPrefix(api.PathPrefix).Handler(backendHandler)
 
+	router.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hf.mu.RLock()
+		defer hf.mu.RUnlock()
+
+		frontendHandler.ServeHTTP(w, r)
+
+	})
 	router.PathPrefix("/").Handler(frontendHandler)
 	router.Use(noCacheRootMiddleware)
 

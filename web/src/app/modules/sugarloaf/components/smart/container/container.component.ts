@@ -4,10 +4,25 @@
  *
  */
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Navigation } from '../../../models/navigation';
 import { WebsocketService } from '../../../../shared/services/websocket/websocket.service';
 import { IconService } from '../../../../shared/services/icon/icon.service';
+import { Preferences } from '../../../../shared/models/preference';
+
+// tslint:disable-next-line
+declare namespace astilectron {
+  export function onMessage(fn: (message: Message) => void);
+  export function sendMessage(
+    message: Message,
+    callback?: (message: Message) => void
+  );
+
+  export interface Message {
+    name: string;
+    payload: any;
+  }
+}
 
 @Component({
   selector: 'app-root',
@@ -17,6 +32,9 @@ import { IconService } from '../../../../shared/services/icon/icon.service';
 export class ContainerComponent implements OnInit, OnDestroy {
   navigation: Navigation;
   style: object = {};
+
+  preferencesOpened = false;
+  preferences: Preferences;
 
   constructor(
     private websocketService: WebsocketService,
@@ -29,9 +47,31 @@ export class ContainerComponent implements OnInit, OnDestroy {
     });
   }
 
+  @HostListener('document:astilectron-ready', ['$event'])
+  onMessage(_: Event) {
+    astilectron.onMessage(message => this.handleMessage(message));
+  }
+
   ngOnInit(): void {
     this.websocketService.open();
   }
 
   ngOnDestroy(): void {}
+
+  private handleMessage = (message: astilectron.Message) => {
+    switch (message.name) {
+      case 'octant.cmd.preferences':
+        this.preferencesOpened = true;
+        this.preferences = message.payload as Preferences;
+        break;
+    }
+  };
+
+  preferencesChanged(update: any) {
+    const m: astilectron.Message = {
+      name: 'octant.cmd.updatePreferences',
+      payload: update,
+    };
+    astilectron.sendMessage(m);
+  }
 }

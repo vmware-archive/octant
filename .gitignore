@@ -21,6 +21,9 @@ rice-box.go
 
 # electron bundling
 /output
+/cmd/octant-electron/output
+/cmd/octant-electron/bind*.go
+/cmd/octant-electron/windows.syso
 
 .vscode
 .idea
@@ -31,3 +34,4 @@ gomock_reflect_*
 
 # mac
 .DS_Store
+

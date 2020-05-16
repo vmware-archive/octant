@@ -1,0 +1,83 @@
+<clr-modal
+  [(clrModalOpen)]="isOpen"
+  [clrModalSize]="'lg'"
+  [clrModalStaticBackdrop]="true"
+>
+  <h4 class="modal-title">Preferences</h4>
+  <div class="modal-body">
+    <form [formGroup]="form" class="clr-form">
+      <clr-tabs clrLayout="vertical">
+        <clr-tab
+          *ngFor="let panel of preferences?.panels; trackBy: trackByIdentity"
+        >
+          <button clrTabLink>{{ panel.name }}</button>
+          <ng-template [(clrIfActive)]="activeTabs[panel.name]">
+            <clr-tab-content>
+              <section *ngFor="let section of panel.sections">
+                <h4>{{ section.name }}</h4>
+
+                <ng-container
+                  *ngFor="
+                    let element of section.elements;
+                    trackBy: trackByIdentity
+                  "
+                >
+                  <ng-container [ngSwitch]="element.type">
+                    <ng-container *ngSwitchCase="'radio'">
+                      <clr-radio-wrapper
+                        *ngFor="
+                          let r of element.config.values;
+                          trackBy: trackByIdentity
+                        "
+                      >
+                        <input
+                          type="radio"
+                          clrRadio
+                          [value]="r.value"
+                          [formControlName]="element.name"
+                        />
+                        <label>{{ r.label }}</label>
+                      </clr-radio-wrapper>
+                    </ng-container>
+                    <ng-container *ngSwitchCase="'text'">
+                      <div class="clr-form-control">
+                        <label
+                          [for]="'section.' + element.name"
+                          class="clr-control-label"
+                          >{{ element.config.label }}</label
+                        >
+                        <div class="clr-control-container">
+                          <div class="clr-input-wrapper">
+                            <input
+                              [id]="'section.' + element.name"
+                              type="text"
+                              class="clr-input"
+                              [placeholder]="element.config.placeholder"
+                              [value]="element.value"
+                              [formControlName]="element.name"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </ng-container>
+                    <div *ngSwitchDefault>
+                      <p>not sure what to do with {{ element.type }}</p>
+                    </div>
+                  </ng-container>
+                </ng-container>
+              </section>
+            </clr-tab-content>
+          </ng-template>
+        </clr-tab>
+      </clr-tabs>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" type="button" (click)="onCancel()">
+      Cancel
+    </button>
+    <button class="btn btn-primary" type="button" (click)="onSubmit()">
+      Ok
+    </button>
+  </div>
+</clr-modal>

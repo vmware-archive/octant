@@ -2,8 +2,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+@mixin electron-header {
+  -webkit-app-region: drag;
+  padding-left: var(--padding-left);
+}
+
 .main-container {
   // Navigation's color variables for Light Theme.
+
   :host-context(body) {
     --navigation-border-color: rgb(215, 215, 215);
     --navigation-background-color: #0079AD;
@@ -13,6 +19,25 @@
   :host-context(body.dark) {
     --navigation-border-color: #304250;
     --navigation-background-color: #304250;
+  }
+
+  :host-context(body.platform-darwin) {
+    --padding-left: 70px;
+  }
+
+  :host-context(body.electron) {
+    .notifier {
+      @include electron-header;
+    }
+
+    .header {
+      @include electron-header;
+
+      .branding {
+        display: none;
+      }
+    }
+
   }
 
   .header-centered {

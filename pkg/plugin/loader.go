@@ -53,8 +53,8 @@ func (c *defaultConfig) OS() string {
 // and not in a container.
 func (c *defaultConfig) PluginDirs(home string) ([]string, error) {
 	if home == "" {
-		// home could be blank if running in a container, so bail out...
-		return []string{}, errors.Errorf("running dash in a container is not yet supported: No $HOME env var")
+		// home could be blank if running in a container or in an electron app, so return an empty list
+		return []string{}, nil
 	}
 
 	defaultDir := filepath.Join(home, ".config", configDir, "plugins")

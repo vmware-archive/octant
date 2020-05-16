@@ -34,6 +34,17 @@ interface Alert {
   expiration?: string;
 }
 
+const websocketURI = (): string => {
+  const loc = window.location;
+  let newURI = 'ws:';
+  if (loc.protocol === 'https:') {
+    newURI = 'wss:';
+  }
+  newURI += '//' + loc.host;
+  newURI += loc.pathname + 'api/v1/stream';
+  return newURI;
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -121,21 +132,8 @@ export class WebsocketService implements BackendService {
     this.subject.unsubscribe();
   }
 
-  private websocketURI() {
-    const loc = window.location;
-    let newURI = '';
-    if (loc.protocol === 'https:') {
-      newURI = 'wss:';
-    } else {
-      newURI = 'ws:';
-    }
-    newURI += '//' + loc.host;
-    newURI += loc.pathname + 'api/v1/stream';
-    return newURI;
-  }
-
   private createWebSocket() {
-    const uri = this.websocketURI();
+    const uri = websocketURI();
     return new Observable(observer => {
       try {
         const subject = webSocket({
