@@ -10,7 +10,7 @@ import { TextView, View } from 'src/app/modules/shared/models/content';
   styleUrls: ['./text.component.scss'],
 })
 export class TextComponent implements OnChanges {
-  private v: TextView;
+  v: TextView;
 
   @Input() set view(v: TextView) {
     this.v = v as TextView;

@@ -12,7 +12,9 @@
     "e2e": "ng e2e",
     "prettier": "prettier --write \"src/{app,environments,assets}/**/*{.ts,.js,.json,.css,.scss}\"",
     "electron:serve": "wait-on http-get://localhost:7777 && npm run electron:serve-tsc && electron . --serve",
-    "electron:serve-tsc": "tsc -p tsconfig-serve.json"
+    "electron:serve-tsc": "tsc -p tsconfig-serve.json",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
   },
   "prettier": {
     "trailingComma": "es5",
@@ -74,6 +76,13 @@
     "@angular/cli": "^9.1.0",
     "@angular/compiler-cli": "^9.1.0",
     "@angular/language-service": "^9.1.0",
+    "@babel/core": "^7.9.6",
+    "@storybook/addon-actions": "^5.3.18",
+    "@storybook/addon-knobs": "^5.3.18",
+    "@storybook/addon-links": "^5.3.18",
+    "@storybook/addon-notes": "^5.3.18",
+    "@storybook/addons": "^5.3.18",
+    "@storybook/angular": "^5.3.18",
     "@types/d3": "~5.7.2",
     "@types/graphlib-dot": "^0.6.1",
     "@types/jasmine": "~3.5.10",
@@ -81,6 +90,7 @@
     "@types/lodash": "^4.14.149",
     "@types/node": "^12.12.31",
     "@types/ws": "^7.2.3",
+    "babel-loader": "^8.1.0",
     "codelyzer": "^5.2.2",
     "dayjs": "^1.8.23",
     "electron": "^8.2.0",
