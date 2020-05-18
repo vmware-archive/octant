@@ -22,6 +22,7 @@ import { IconService } from '../../../../shared/services/icon/icon.service';
 import { ContentService } from '../../../../shared/services/content/content.service';
 import isEqual from 'lodash/isEqual';
 import { Subscription } from 'rxjs';
+import { LoadingService } from 'src/app/modules/shared/services/loading/loading.service';
 
 @Component({
   selector: 'app-overview',
@@ -46,7 +47,8 @@ export class ContentComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private iconService: IconService,
-    private contentService: ContentService
+    private contentService: ContentService,
+    public loadingService: LoadingService
   ) {}
 
   updatePath(url: string) {
@@ -108,7 +110,6 @@ export class ContentComponent implements OnInit, OnDestroy {
     const views = contentResponse.content.viewComponents;
     if (!views || views.length === 0) {
       this.hasReceivedContent = false;
-      // TODO: show a loading screen here (#506)
       return;
     }
     this.buttonGroup = contentResponse.content.buttonGroup;

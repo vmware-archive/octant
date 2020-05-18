@@ -14,6 +14,7 @@ import {
   LabelFilterService,
 } from '../label-filter/label-filter.service';
 import { NamespaceService } from '../namespace/namespace.service';
+import { LoadingService } from '../loading/loading.service';
 
 export const ContentUpdateMessage = 'event.octant.dev/content';
 
@@ -49,7 +50,8 @@ export class ContentService {
     private router: Router,
     private websocketService: WebsocketService,
     private labelFilterService: LabelFilterService,
-    private namespaceService: NamespaceService
+    private namespaceService: NamespaceService,
+    private loadingService: LoadingService
   ) {
     websocketService.registerHandler(ContentUpdateMessage, data => {
       const response = data as ContentUpdate;
@@ -72,10 +74,15 @@ export class ContentService {
               .navigate(segments, {
                 queryParams: response.queryParams,
               })
+              .then(() => {
+                this.loadingService.loadingContent = false;
+              })
               .catch(reason =>
                 console.error(`unable to navigate`, { segments, reason })
               );
           }
+        } else {
+          this.loadingService.loadingContent = false;
         }
       }
 
