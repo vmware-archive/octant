@@ -113,7 +113,7 @@ func (c *CronJobTrigger) Trigger(name string, cronJob *batchv1beta1.CronJob) err
 		Spec: cronJob.Spec.JobTemplate.Spec,
 	}
 
-	_, err = client.BatchV1().Jobs(cronJob.Namespace).Create(jobToCreate)
+	_, err = client.BatchV1().Jobs(cronJob.Namespace).Create(context.TODO(), jobToCreate, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}

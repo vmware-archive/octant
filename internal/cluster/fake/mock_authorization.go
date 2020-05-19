@@ -8,7 +8,8 @@ import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
 	v1 "k8s.io/api/authorization/v1"
-	v10 "k8s.io/client-go/kubernetes/typed/authorization/v1"
+	v10 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v11 "k8s.io/client-go/kubernetes/typed/authorization/v1"
 	rest "k8s.io/client-go/rest"
 	reflect "reflect"
 )
@@ -37,10 +38,10 @@ func (m *MockAuthorizationV1Interface) EXPECT() *MockAuthorizationV1InterfaceMoc
 }
 
 // LocalSubjectAccessReviews mocks base method
-func (m *MockAuthorizationV1Interface) LocalSubjectAccessReviews(arg0 string) v10.LocalSubjectAccessReviewInterface {
+func (m *MockAuthorizationV1Interface) LocalSubjectAccessReviews(arg0 string) v11.LocalSubjectAccessReviewInterface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LocalSubjectAccessReviews", arg0)
-	ret0, _ := ret[0].(v10.LocalSubjectAccessReviewInterface)
+	ret0, _ := ret[0].(v11.LocalSubjectAccessReviewInterface)
 	return ret0
 }
 
@@ -65,10 +66,10 @@ func (mr *MockAuthorizationV1InterfaceMockRecorder) RESTClient() *gomock.Call {
 }
 
 // SelfSubjectAccessReviews mocks base method
-func (m *MockAuthorizationV1Interface) SelfSubjectAccessReviews() v10.SelfSubjectAccessReviewInterface {
+func (m *MockAuthorizationV1Interface) SelfSubjectAccessReviews() v11.SelfSubjectAccessReviewInterface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SelfSubjectAccessReviews")
-	ret0, _ := ret[0].(v10.SelfSubjectAccessReviewInterface)
+	ret0, _ := ret[0].(v11.SelfSubjectAccessReviewInterface)
 	return ret0
 }
 
@@ -79,10 +80,10 @@ func (mr *MockAuthorizationV1InterfaceMockRecorder) SelfSubjectAccessReviews() *
 }
 
 // SelfSubjectRulesReviews mocks base method
-func (m *MockAuthorizationV1Interface) SelfSubjectRulesReviews() v10.SelfSubjectRulesReviewInterface {
+func (m *MockAuthorizationV1Interface) SelfSubjectRulesReviews() v11.SelfSubjectRulesReviewInterface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SelfSubjectRulesReviews")
-	ret0, _ := ret[0].(v10.SelfSubjectRulesReviewInterface)
+	ret0, _ := ret[0].(v11.SelfSubjectRulesReviewInterface)
 	return ret0
 }
 
@@ -93,10 +94,10 @@ func (mr *MockAuthorizationV1InterfaceMockRecorder) SelfSubjectRulesReviews() *g
 }
 
 // SubjectAccessReviews mocks base method
-func (m *MockAuthorizationV1Interface) SubjectAccessReviews() v10.SubjectAccessReviewInterface {
+func (m *MockAuthorizationV1Interface) SubjectAccessReviews() v11.SubjectAccessReviewInterface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SubjectAccessReviews")
-	ret0, _ := ret[0].(v10.SubjectAccessReviewInterface)
+	ret0, _ := ret[0].(v11.SubjectAccessReviewInterface)
 	return ret0
 }
 
@@ -130,33 +131,18 @@ func (m *MockSelfSubjectAccessReviewInterface) EXPECT() *MockSelfSubjectAccessRe
 }
 
 // Create mocks base method
-func (m *MockSelfSubjectAccessReviewInterface) Create(arg0 *v1.SelfSubjectAccessReview) (*v1.SelfSubjectAccessReview, error) {
+func (m *MockSelfSubjectAccessReviewInterface) Create(arg0 context.Context, arg1 *v1.SelfSubjectAccessReview, arg2 v10.CreateOptions) (*v1.SelfSubjectAccessReview, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", arg0)
+	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*v1.SelfSubjectAccessReview)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create
-func (mr *MockSelfSubjectAccessReviewInterfaceMockRecorder) Create(arg0 interface{}) *gomock.Call {
+func (mr *MockSelfSubjectAccessReviewInterfaceMockRecorder) Create(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockSelfSubjectAccessReviewInterface)(nil).Create), arg0)
-}
-
-// CreateContext mocks base method
-func (m *MockSelfSubjectAccessReviewInterface) CreateContext(arg0 context.Context, arg1 *v1.SelfSubjectAccessReview) (*v1.SelfSubjectAccessReview, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateContext", arg0, arg1)
-	ret0, _ := ret[0].(*v1.SelfSubjectAccessReview)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateContext indicates an expected call of CreateContext
-func (mr *MockSelfSubjectAccessReviewInterfaceMockRecorder) CreateContext(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateContext", reflect.TypeOf((*MockSelfSubjectAccessReviewInterface)(nil).CreateContext), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockSelfSubjectAccessReviewInterface)(nil).Create), arg0, arg1, arg2)
 }
 
 // MockSelfSubjectAccessReviewsGetter is a mock of SelfSubjectAccessReviewsGetter interface
@@ -183,10 +169,10 @@ func (m *MockSelfSubjectAccessReviewsGetter) EXPECT() *MockSelfSubjectAccessRevi
 }
 
 // SelfSubjectAccessReviews mocks base method
-func (m *MockSelfSubjectAccessReviewsGetter) SelfSubjectAccessReviews() v10.SelfSubjectAccessReviewInterface {
+func (m *MockSelfSubjectAccessReviewsGetter) SelfSubjectAccessReviews() v11.SelfSubjectAccessReviewInterface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SelfSubjectAccessReviews")
-	ret0, _ := ret[0].(v10.SelfSubjectAccessReviewInterface)
+	ret0, _ := ret[0].(v11.SelfSubjectAccessReviewInterface)
 	return ret0
 }
 
@@ -220,33 +206,18 @@ func (m *MockSelfSubjectRulesReviewInterface) EXPECT() *MockSelfSubjectRulesRevi
 }
 
 // Create mocks base method
-func (m *MockSelfSubjectRulesReviewInterface) Create(arg0 *v1.SelfSubjectRulesReview) (*v1.SelfSubjectRulesReview, error) {
+func (m *MockSelfSubjectRulesReviewInterface) Create(arg0 context.Context, arg1 *v1.SelfSubjectRulesReview, arg2 v10.CreateOptions) (*v1.SelfSubjectRulesReview, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", arg0)
+	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*v1.SelfSubjectRulesReview)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create
-func (mr *MockSelfSubjectRulesReviewInterfaceMockRecorder) Create(arg0 interface{}) *gomock.Call {
+func (mr *MockSelfSubjectRulesReviewInterfaceMockRecorder) Create(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockSelfSubjectRulesReviewInterface)(nil).Create), arg0)
-}
-
-// CreateContext mocks base method
-func (m *MockSelfSubjectRulesReviewInterface) CreateContext(arg0 context.Context, arg1 *v1.SelfSubjectRulesReview) (*v1.SelfSubjectRulesReview, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateContext", arg0, arg1)
-	ret0, _ := ret[0].(*v1.SelfSubjectRulesReview)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateContext indicates an expected call of CreateContext
-func (mr *MockSelfSubjectRulesReviewInterfaceMockRecorder) CreateContext(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateContext", reflect.TypeOf((*MockSelfSubjectRulesReviewInterface)(nil).CreateContext), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockSelfSubjectRulesReviewInterface)(nil).Create), arg0, arg1, arg2)
 }
 
 // MockSelfSubjectRulesReviewsGetter is a mock of SelfSubjectRulesReviewsGetter interface
@@ -273,10 +244,10 @@ func (m *MockSelfSubjectRulesReviewsGetter) EXPECT() *MockSelfSubjectRulesReview
 }
 
 // SelfSubjectRulesReviews mocks base method
-func (m *MockSelfSubjectRulesReviewsGetter) SelfSubjectRulesReviews() v10.SelfSubjectRulesReviewInterface {
+func (m *MockSelfSubjectRulesReviewsGetter) SelfSubjectRulesReviews() v11.SelfSubjectRulesReviewInterface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SelfSubjectRulesReviews")
-	ret0, _ := ret[0].(v10.SelfSubjectRulesReviewInterface)
+	ret0, _ := ret[0].(v11.SelfSubjectRulesReviewInterface)
 	return ret0
 }
 

@@ -142,6 +142,5 @@ func (s *logStreamer) containerStream(container string) (io.ReadCloser, error) {
 		Follow:     true,
 		Timestamps: true,
 	})
-	request.Context(s.ctx)
-	return request.Stream()
+	return request.Stream(s.ctx)
 }

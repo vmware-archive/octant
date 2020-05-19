@@ -95,7 +95,7 @@ func (c *Cordon) Cordon(node *corev1.Node) error {
 		return err
 	}
 
-	currentNode, err := client.CoreV1().Nodes().Get(node.Name, metav1.GetOptions{})
+	currentNode, err := client.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 	if err != nil {
 		return errors.Wrapf(err, "unable to find node %q", node.Name)
 	}
@@ -118,9 +118,9 @@ func (c *Cordon) Cordon(node *corev1.Node) error {
 
 	patchBytes, patchErr := strategicpatch.CreateTwoWayMergePatch(originalNode, modifiedNode, node)
 	if patchErr != nil {
-		_, err = client.CoreV1().Nodes().Patch(node.Name, types.StrategicMergePatchType, patchBytes)
+		_, err = client.CoreV1().Nodes().Patch(context.TODO(), node.Name, types.StrategicMergePatchType, patchBytes, metav1.PatchOptions{})
 	} else {
-		_, err = client.CoreV1().Nodes().Update(currentNode)
+		_, err = client.CoreV1().Nodes().Update(context.TODO(), currentNode, metav1.UpdateOptions{})
 		return errors.Wrapf(err, "failed to cordon %q", node.Name)
 	}
 
@@ -198,7 +198,7 @@ func (u *Uncordon) Uncordon(node *corev1.Node) error {
 		return err
 	}
 
-	currentNode, err := client.CoreV1().Nodes().Get(node.Name, metav1.GetOptions{})
+	currentNode, err := client.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 	if err != nil {
 		return errors.Wrapf(err, "unable to find node %q", node.Name)
 	}
@@ -221,9 +221,9 @@ func (u *Uncordon) Uncordon(node *corev1.Node) error {
 
 	patchBytes, patchErr := strategicpatch.CreateTwoWayMergePatch(originalNode, modifiedNode, node)
 	if patchErr != nil {
-		_, err = client.CoreV1().Nodes().Patch(node.Name, types.StrategicMergePatchType, patchBytes)
+		_, err = client.CoreV1().Nodes().Patch(context.TODO(), node.Name, types.StrategicMergePatchType, patchBytes, metav1.PatchOptions{})
 	} else {
-		_, err = client.CoreV1().Nodes().Update(currentNode)
+		_, err = client.CoreV1().Nodes().Update(context.TODO(), currentNode, metav1.UpdateOptions{})
 		return errors.Wrapf(err, "failed to uncordon %q", node.Name)
 	}
 

@@ -8,6 +8,7 @@ package objectstore
 import (
 	"context"
 	"fmt"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sync"
 
 	"go.opencensus.io/trace"
@@ -192,7 +193,7 @@ func (r *resourceAccess) fetchAccess(key AccessKey, verb string) (bool, error) {
 		},
 	}
 
-	review, err := authClient.SelfSubjectAccessReviews().Create(sar)
+	review, err := authClient.SelfSubjectAccessReviews().Create(context.TODO(), sar, metav1.CreateOptions{})
 	if err != nil {
 		return false, fmt.Errorf("client auth: %w", err)
 	}
