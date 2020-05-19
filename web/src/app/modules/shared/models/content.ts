@@ -403,6 +403,7 @@ export interface LogResponse {
 export interface TerminalOutput {
   scrollback: string;
   line: string;
+  exitMessage: string;
 }
 
 export interface TerminalDetail {
