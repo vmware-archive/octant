@@ -6,7 +6,7 @@ package fake
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	OpenAPIv2 "github.com/googleapis/gnostic/OpenAPIv2"
+	openapiv2 "github.com/googleapis/gnostic/openapiv2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	version "k8s.io/apimachinery/pkg/version"
 	rest "k8s.io/client-go/rest"
@@ -157,10 +157,10 @@ func (mr *MockDiscoveryInterfaceMockRecorder) ServerVersion() *gomock.Call {
 }
 
 // OpenAPISchema mocks base method
-func (m *MockDiscoveryInterface) OpenAPISchema() (*OpenAPIv2.Document, error) {
+func (m *MockDiscoveryInterface) OpenAPISchema() (*openapiv2.Document, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OpenAPISchema")
-	ret0, _ := ret[0].(*OpenAPIv2.Document)
+	ret0, _ := ret[0].(*openapiv2.Document)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -315,10 +315,10 @@ func (mr *MockCachedDiscoveryInterfaceMockRecorder) ServerVersion() *gomock.Call
 }
 
 // OpenAPISchema mocks base method
-func (m *MockCachedDiscoveryInterface) OpenAPISchema() (*OpenAPIv2.Document, error) {
+func (m *MockCachedDiscoveryInterface) OpenAPISchema() (*openapiv2.Document, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OpenAPISchema")
-	ret0, _ := ret[0].(*OpenAPIv2.Document)
+	ret0, _ := ret[0].(*openapiv2.Document)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -554,10 +554,10 @@ func (m *MockOpenAPISchemaInterface) EXPECT() *MockOpenAPISchemaInterfaceMockRec
 }
 
 // OpenAPISchema mocks base method
-func (m *MockOpenAPISchemaInterface) OpenAPISchema() (*OpenAPIv2.Document, error) {
+func (m *MockOpenAPISchemaInterface) OpenAPISchema() (*openapiv2.Document, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OpenAPISchema")
-	ret0, _ := ret[0].(*OpenAPIv2.Document)
+	ret0, _ := ret[0].(*openapiv2.Document)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

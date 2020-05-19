@@ -9,6 +9,7 @@ import (
 	"context"
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testClient "k8s.io/client-go/kubernetes/fake"
 
 	"github.com/golang/mock/gomock"
@@ -91,7 +92,7 @@ func Test_Cordon(t *testing.T) {
 					assert.NotNil(t, alert.Expiration)
 				})
 
-			_, err := fakeClientset.CoreV1().Nodes().Create(node)
+			_, err := fakeClientset.CoreV1().Nodes().Create(context.TODO(), node, metav1.CreateOptions{})
 			require.NoError(t, err)
 
 			cordon := octant.NewCordon(objectStore, clusterClient)
@@ -175,7 +176,7 @@ func Test_Uncordon(t *testing.T) {
 					assert.NotNil(t, alert.Expiration)
 				})
 
-			_, err := fakeClientset.CoreV1().Nodes().Create(node)
+			_, err := fakeClientset.CoreV1().Nodes().Create(context.TODO(), node, metav1.CreateOptions{})
 			require.NoError(t, err)
 
 			uncordon := octant.NewUncordon(objectStore, clusterClient)

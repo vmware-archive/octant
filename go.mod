@@ -1,6 +1,6 @@
 module github.com/vmware-tanzu/octant
 
-go 1.12
+go 1.13
 
 require (
 	contrib.go.opencensus.io/exporter/jaeger v0.1.0
@@ -14,6 +14,7 @@ require (
 	github.com/golang/mock v1.4.3
 	github.com/golang/protobuf v1.3.3
 	github.com/google/uuid v1.1.1
+	github.com/googleapis/gnostic v0.4.1
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.6.2
 	github.com/gorilla/websocket v1.4.1
