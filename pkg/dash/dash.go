@@ -49,6 +49,7 @@ type Options struct {
 	DisableClusterOverview bool
 	KubeConfig             string
 	Namespace              string
+	Namespaces             []string
 	FrontendURL            string
 	BrowserPath            string
 	Context                string
@@ -71,7 +72,7 @@ func Run(ctx context.Context, logger log.Logger, shutdownCh chan bool, options O
 		Burst:     options.ClientBurst,
 		UserAgent: options.UserAgent,
 	}
-	clusterClient, err := cluster.FromKubeConfig(ctx, options.KubeConfig, options.Context, options.Namespace, restConfigOptions)
+	clusterClient, err := cluster.FromKubeConfig(ctx, options.KubeConfig, options.Context, options.Namespace, options.Namespaces, restConfigOptions)
 	if err != nil {
 		return fmt.Errorf("failed to init cluster client: %w", err)
 	}

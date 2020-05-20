@@ -123,12 +123,26 @@ func NamespacesGenerator(_ context.Context, config NamespaceManagerConfig) ([]st
 		return nil, errors.Wrap(err, "retrieve namespaces client")
 	}
 
+	providedNamespaces := namespaceClient.ProvidedNamespaces()
+
 	names, err := namespaceClient.Names()
 	if err != nil {
 		initialNamespace := namespaceClient.InitialNamespace()
 		names = []string{initialNamespace}
 	}
 
+	for _, namespace := range providedNamespaces {
+		found := false
+		for _, foundNamespace := range names {
+			if namespace == foundNamespace {
+				found = true
+				break
+			}
+		}
+		if !found && namespaceClient.HasNamespace(namespace) {
+			names = append(names, namespace)
+		}
+	}
 	return names, nil
 }
 

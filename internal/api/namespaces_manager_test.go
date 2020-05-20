@@ -58,6 +58,7 @@ func TestNamespacesGenerator(t *testing.T) {
 
 				namespaceClient := clusterFake.NewMockNamespaceInterface(controller)
 				namespaceClient.EXPECT().Names().Return(namespaces, nil)
+				namespaceClient.EXPECT().ProvidedNamespaces().Return([]string{})
 
 				clusterClient := clusterFake.NewMockClientInterface(controller)
 				clusterClient.EXPECT().NamespaceClient().Return(namespaceClient, nil)
