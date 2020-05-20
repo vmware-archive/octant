@@ -37,7 +37,6 @@ var (
 		{apiVersion: "v1", kind: "ReplicationController"}:      replicationController,
 		{apiVersion: "v1", kind: "Service"}:                    service,
 		{apiVersion: "extensions/v1beta1", kind: "Ingress"}:    runIngressStatus,
-		{apiVersion: "extensions/v1beta1", kind: "ReplicaSet"}: replicaSetExtV1Beta1,
 	}
 )
 

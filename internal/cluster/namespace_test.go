@@ -30,7 +30,7 @@ func Test_namespaceClient_Names(t *testing.T) {
 	got, err := nc.Names()
 	require.NoError(t, err)
 
-	expected := []string{"default", "app-1"}
+	expected := []string{"app-1", "default"}
 	assert.Equal(t, expected, got)
 }
 
