@@ -137,7 +137,7 @@ func newOctantCmd(version string) *cobra.Command {
 	octantCmd.Flags().BoolP("enable-feature-applications", "", false, "enable applications feature")
 	octantCmd.Flags().String("kubeconfig", "", "absolute path to kubeConfig file")
 	octantCmd.Flags().StringP("namespace", "n", "", "initial namespace")
-	octantCmd.Flags().StringSlice("namespace-list", []string{}, "a slice of namespaces")
+	octantCmd.Flags().StringSlice("namespace-list", []string{}, "a list of namespaces to use on start")
 	octantCmd.Flags().StringP("plugin-path", "", "", "plugin path")
 	octantCmd.Flags().BoolP("verbose", "v", false, "turn on debug logging")
 

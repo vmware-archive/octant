@@ -1,1 +1,1 @@
-Added `--namespaces` flag to accept a slice of namespaces
+Added `--namespace-list` flag to accept a slice of namespaces
