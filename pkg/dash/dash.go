@@ -56,6 +56,7 @@ type Options struct {
 	ClientQPS              float32
 	ClientBurst            int
 	UserAgent              string
+	BuildInfo              config.BuildInfo
 }
 
 type Runner struct {
@@ -161,6 +162,12 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 
 	r.pluginManager = pluginManager
 
+	buildInfo := config.BuildInfo{
+		Version: options.BuildInfo.Version,
+		Commit:  options.BuildInfo.Commit,
+		Time:    options.BuildInfo.Time,
+	}
+
 	dashConfig := config.NewLiveConfig(
 		clusterClient,
 		crdWatcher,
@@ -172,7 +179,8 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 		pluginManager,
 		portForwarder,
 		options.Context,
-		restConfigOptions)
+		restConfigOptions,
+		buildInfo)
 
 	if err := watchConfigs(ctx, dashConfig, options.KubeConfig); err != nil {
 		return nil, fmt.Errorf("set up config watcher: %w", err)

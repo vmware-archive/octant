@@ -41,6 +41,22 @@ func (m *MockDash) EXPECT() *MockDashMockRecorder {
 	return m.recorder
 }
 
+// BuildInfo mocks base method
+func (m *MockDash) BuildInfo() (string, string, string) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BuildInfo")
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(string)
+	return ret0, ret1, ret2
+}
+
+// BuildInfo indicates an expected call of BuildInfo
+func (mr *MockDashMockRecorder) BuildInfo() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildInfo", reflect.TypeOf((*MockDash)(nil).BuildInfo))
+}
+
 // CRDWatcher mocks base method
 func (m *MockDash) CRDWatcher() config.CRDWatcher {
 	m.ctrl.T.Helper()

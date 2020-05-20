@@ -1,0 +1,35 @@
+<div class="app-helper">
+  <clr-dropdown>
+    <button class="dropdown-button" clrDropdownTrigger>
+      <clr-icon shape="help"></clr-icon>
+    </button>
+    <clr-dropdown-menu clrPosition="bottom-right" *clrIfOpen>
+      <div aria-label="Dropdown header About Octant" clrDropdownItem (click)="isModalOpen = true">About Octant</div>
+    </clr-dropdown-menu>
+  </clr-dropdown>
+</div>
+
+<clr-modal [(clrModalOpen)]="isModalOpen" [clrModalStaticBackdrop]="false">
+  <h3 class="modal-title">Build Information</h3>
+  <div class="modal-body">
+    <table class="table table-vertical table-noborder">
+      <tbody>
+        <tr>
+            <th>Version</th>
+            <td>{{ version }}</td>
+        </tr>
+        <tr>
+            <th>Commit</th>
+            <td>{{ commit }}</td>
+        </tr>
+        <tr>
+            <th>Built</th>
+            <td>{{ time }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="isModalOpen = false">Close</button>
+  </div>
+</clr-modal>

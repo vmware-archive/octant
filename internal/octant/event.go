@@ -10,6 +10,9 @@ import "fmt"
 type EventType string
 
 const (
+	// EventTypeBuildInfo is a buildInfo event
+	EventTypeBuildInfo EventType = "event.octant.dev/buildInfo"
+
 	// EventTypeContent is a content event.
 	EventTypeContent EventType = "event.octant.dev/content"
 

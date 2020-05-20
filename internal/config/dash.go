@@ -40,6 +40,12 @@ type CRDWatchConfig struct {
 	IsNamespaced bool
 }
 
+type BuildInfo struct {
+	Version string
+	Commit  string
+	Time    string
+}
+
 type Context struct {
 	Name             string
 	DefaultNamespace string
@@ -98,6 +104,8 @@ type Dash interface {
 	Validate() error
 
 	ModuleManager() module.ManagerInterface
+
+	BuildInfo() (string, string, string)
 }
 
 // Live is a live version of dash config.
@@ -113,6 +121,7 @@ type Live struct {
 	kubeConfigPath     string
 	currentContextName string
 	restConfigOptions  cluster.RESTConfigOptions
+	buildInfo          BuildInfo
 }
 
 var _ Dash = (*Live)(nil)
@@ -130,6 +139,7 @@ func NewLiveConfig(
 	portForwarder portforward.PortForwarder,
 	currentContextName string,
 	restConfigOptions cluster.RESTConfigOptions,
+	buildInfo BuildInfo,
 ) *Live {
 	l := &Live{
 		clusterClient:      clusterClient,
@@ -143,6 +153,7 @@ func NewLiveConfig(
 		portForwarder:      portForwarder,
 		currentContextName: currentContextName,
 		restConfigOptions:  restConfigOptions,
+		buildInfo:          buildInfo,
 	}
 	objectStore.RegisterOnUpdate(func(store store.Store) {
 		l.objectStore = store
@@ -272,4 +283,9 @@ func (l *Live) Validate() error {
 
 func (l *Live) ModuleManager() module.ManagerInterface {
 	return l.moduleManager
+}
+
+// BuildInfo returns build ldflag strings for version, commit hash, and build time
+func (l *Live) BuildInfo() (string, string, string) {
+	return l.buildInfo.Version, l.buildInfo.Commit, l.buildInfo.Time
 }

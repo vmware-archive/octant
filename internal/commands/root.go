@@ -26,7 +26,7 @@ func Execute(version string, gitCommit string, buildTime string) {
 }
 
 func newRoot(version string, gitCommit string, buildTime string) *cobra.Command {
-	rootCmd := newOctantCmd(version)
+	rootCmd := newOctantCmd(version, gitCommit, buildTime)
 	rootCmd.AddCommand(newVersionCmd(version, gitCommit, buildTime))
 
 	return rootCmd
