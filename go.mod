@@ -1,6 +1,6 @@
 module github.com/vmware-tanzu/octant
 
-go 1.12
+go 1.13
 
 require (
 	contrib.go.opencensus.io/exporter/jaeger v0.1.0
@@ -9,12 +9,12 @@ require (
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
 	github.com/elazarl/goproxy v0.0.0-20190703090003-6125c262ffb0 // indirect
 	github.com/elazarl/goproxy/ext v0.0.0-20190703090003-6125c262ffb0 // indirect
-	github.com/fsnotify/fsnotify v1.4.7
+	github.com/fsnotify/fsnotify v1.4.9
 	github.com/gobwas/glob v0.2.3
 	github.com/golang/mock v1.4.3
-	github.com/golang/protobuf v1.3.2
+	github.com/golang/protobuf v1.3.3
 	github.com/google/uuid v1.1.1
-	github.com/googleapis/gnostic v0.2.0
+	github.com/googleapis/gnostic v0.4.1
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.6.2
 	github.com/gorilla/websocket v1.4.1
@@ -26,7 +26,7 @@ require (
 	github.com/imdario/mergo v0.3.6 // indirect
 	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
 	github.com/nkovacs/streamquote v1.0.0 // indirect
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.1
 	github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.5
@@ -34,13 +34,13 @@ require (
 	github.com/stretchr/testify v1.4.0
 	go.opencensus.io v0.22.1
 	go.uber.org/zap v1.10.0
-	golang.org/x/sync v0.0.0-20190423024810-112230192c58
+	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	google.golang.org/grpc v1.27.0
-	k8s.io/api v0.17.5
-	k8s.io/apiextensions-apiserver v0.17.5
-	k8s.io/apimachinery v0.17.5
-	k8s.io/client-go v0.17.5
+	k8s.io/api v0.19.0-alpha.3
+	k8s.io/apiextensions-apiserver v0.19.0-alpha.3
+	k8s.io/apimachinery v0.19.0-alpha.3
+	k8s.io/client-go v0.19.0-alpha.3
 	k8s.io/klog v1.0.0
-	k8s.io/metrics v0.17.5
+	k8s.io/metrics v0.19.0-alpha.3
 	k8s.io/utils v0.0.0-20200414100711-2df71ebbae66
 )

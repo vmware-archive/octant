@@ -153,3 +153,17 @@ func (mr *MockSharedIndexInformerMockRecorder) Run(arg0 interface{}) *gomock.Cal
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockSharedIndexInformer)(nil).Run), arg0)
 }
+
+// SetWatchErrorHandler mocks base method
+func (m *MockSharedIndexInformer) SetWatchErrorHandler(arg0 cache.WatchErrorHandler) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetWatchErrorHandler", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetWatchErrorHandler indicates an expected call of SetWatchErrorHandler
+func (mr *MockSharedIndexInformerMockRecorder) SetWatchErrorHandler(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWatchErrorHandler", reflect.TypeOf((*MockSharedIndexInformer)(nil).SetWatchErrorHandler), arg0)
+}

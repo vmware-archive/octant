@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package cluster
 
 import (
+	"context"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -75,7 +76,7 @@ func namespaces(dc dynamic.Interface) ([]corev1.Namespace, error) {
 
 	nri := dc.Resource(res)
 
-	list, err := nri.List(metav1.ListOptions{})
+	list, err := nri.List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "list namespaces")
 	}

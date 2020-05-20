@@ -28,9 +28,9 @@ package v1
 
 // AUTO-GENERATED FUNCTIONS START HERE. DO NOT EDIT.
 var map_IPBlock = map[string]string{
-	"":       "IPBlock describes a particular CIDR (Ex. \"192.168.1.1/24\") that is allowed to the pods matched by a NetworkPolicySpec's podSelector. The except entry describes CIDRs that should not be included within this rule.",
-	"cidr":   "CIDR is a string representing the IP Block Valid examples are \"192.168.1.1/24\"",
-	"except": "Except is a slice of CIDRs that should not be included within an IP Block Valid examples are \"192.168.1.1/24\" Except values will be rejected if they are outside the CIDR range",
+	"":       "IPBlock describes a particular CIDR (Ex. \"192.168.1.1/24\",\"2001:db9::/64\") that is allowed to the pods matched by a NetworkPolicySpec's podSelector. The except entry describes CIDRs that should not be included within this rule.",
+	"cidr":   "CIDR is a string representing the IP Block Valid examples are \"192.168.1.1/24\" or \"2001:db9::/64\"",
+	"except": "Except is a slice of CIDRs that should not be included within an IP Block Valid examples are \"192.168.1.1/24\" or \"2001:db9::/64\" Except values will be rejected if they are outside the CIDR range",
 }
 
 func (IPBlock) SwaggerDoc() map[string]string {
@@ -78,7 +78,7 @@ func (NetworkPolicyList) SwaggerDoc() map[string]string {
 }
 
 var map_NetworkPolicyPeer = map[string]string{
-	"":                  "NetworkPolicyPeer describes a peer to allow traffic from. Only certain combinations of fields are allowed",
+	"":                  "NetworkPolicyPeer describes a peer to allow traffic to/from. Only certain combinations of fields are allowed",
 	"podSelector":       "This is a label selector which selects Pods. This field follows standard label selector semantics; if present but empty, it selects all pods.\n\nIf NamespaceSelector is also set, then the NetworkPolicyPeer as a whole selects the Pods matching PodSelector in the Namespaces selected by NamespaceSelector. Otherwise it selects the Pods matching PodSelector in the policy's own Namespace.",
 	"namespaceSelector": "Selects Namespaces using cluster-scoped labels. This field follows standard label selector semantics; if present but empty, it selects all namespaces.\n\nIf PodSelector is also set, then the NetworkPolicyPeer as a whole selects the Pods matching PodSelector in the Namespaces selected by NamespaceSelector. Otherwise it selects all Pods in the Namespaces selected by NamespaceSelector.",
 	"ipBlock":           "IPBlock defines policy on a particular IPBlock. If this field is set then neither of the other fields can be.",

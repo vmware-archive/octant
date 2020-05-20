@@ -440,7 +440,7 @@ func (s *ServiceAccountPolicyRules) listClusterRoleBindings() ([]rbacv1.RoleRef,
 	var list []rbacv1.RoleRef
 
 	for _, object := range objects.Items {
-		roleBinding := &rbacv1.RoleBinding{}
+		roleBinding := &rbacv1.ClusterRoleBinding{}
 		if err := scheme.Scheme.Convert(&object, roleBinding, nil); err != nil {
 			return nil, err
 		}

@@ -8,6 +8,7 @@ package octant
 import (
 	"fmt"
 	"sync"
+	"context"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -48,7 +49,7 @@ func (c *clusterPodMetricsCRUD) Get(namespace, name string) (*unstructured.Unstr
 	}
 
 	options := metav1.GetOptions{}
-	object, err := client.Resource(PodMetricsResource).Namespace(namespace).Get(name, options)
+	object, err := client.Resource(PodMetricsResource).Namespace(namespace).Get(context.TODO(), name, options)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil, false, nil

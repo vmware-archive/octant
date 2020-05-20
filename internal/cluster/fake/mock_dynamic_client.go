@@ -5,6 +5,7 @@
 package fake
 
 import (
+	context "context"
 	gomock "github.com/golang/mock/gomock"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -76,9 +77,9 @@ func (m *MockResourceInterface) EXPECT() *MockResourceInterfaceMockRecorder {
 }
 
 // Create mocks base method
-func (m *MockResourceInterface) Create(obj *unstructured.Unstructured, options v1.CreateOptions, subresources ...string) (*unstructured.Unstructured, error) {
+func (m *MockResourceInterface) Create(ctx context.Context, obj *unstructured.Unstructured, options v1.CreateOptions, subresources ...string) (*unstructured.Unstructured, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{obj, options}
+	varargs := []interface{}{ctx, obj, options}
 	for _, a := range subresources {
 		varargs = append(varargs, a)
 	}
@@ -89,16 +90,16 @@ func (m *MockResourceInterface) Create(obj *unstructured.Unstructured, options v
 }
 
 // Create indicates an expected call of Create
-func (mr *MockResourceInterfaceMockRecorder) Create(obj, options interface{}, subresources ...interface{}) *gomock.Call {
+func (mr *MockResourceInterfaceMockRecorder) Create(ctx, obj, options interface{}, subresources ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{obj, options}, subresources...)
+	varargs := append([]interface{}{ctx, obj, options}, subresources...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockResourceInterface)(nil).Create), varargs...)
 }
 
 // Update mocks base method
-func (m *MockResourceInterface) Update(obj *unstructured.Unstructured, options v1.UpdateOptions, subresources ...string) (*unstructured.Unstructured, error) {
+func (m *MockResourceInterface) Update(ctx context.Context, obj *unstructured.Unstructured, options v1.UpdateOptions, subresources ...string) (*unstructured.Unstructured, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{obj, options}
+	varargs := []interface{}{ctx, obj, options}
 	for _, a := range subresources {
 		varargs = append(varargs, a)
 	}
@@ -109,31 +110,31 @@ func (m *MockResourceInterface) Update(obj *unstructured.Unstructured, options v
 }
 
 // Update indicates an expected call of Update
-func (mr *MockResourceInterfaceMockRecorder) Update(obj, options interface{}, subresources ...interface{}) *gomock.Call {
+func (mr *MockResourceInterfaceMockRecorder) Update(ctx, obj, options interface{}, subresources ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{obj, options}, subresources...)
+	varargs := append([]interface{}{ctx, obj, options}, subresources...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockResourceInterface)(nil).Update), varargs...)
 }
 
 // UpdateStatus mocks base method
-func (m *MockResourceInterface) UpdateStatus(obj *unstructured.Unstructured, options v1.UpdateOptions) (*unstructured.Unstructured, error) {
+func (m *MockResourceInterface) UpdateStatus(ctx context.Context, obj *unstructured.Unstructured, options v1.UpdateOptions) (*unstructured.Unstructured, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateStatus", obj, options)
+	ret := m.ctrl.Call(m, "UpdateStatus", ctx, obj, options)
 	ret0, _ := ret[0].(*unstructured.Unstructured)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateStatus indicates an expected call of UpdateStatus
-func (mr *MockResourceInterfaceMockRecorder) UpdateStatus(obj, options interface{}) *gomock.Call {
+func (mr *MockResourceInterfaceMockRecorder) UpdateStatus(ctx, obj, options interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockResourceInterface)(nil).UpdateStatus), obj, options)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockResourceInterface)(nil).UpdateStatus), ctx, obj, options)
 }
 
 // Delete mocks base method
-func (m *MockResourceInterface) Delete(name string, options *v1.DeleteOptions, subresources ...string) error {
+func (m *MockResourceInterface) Delete(ctx context.Context, name string, options v1.DeleteOptions, subresources ...string) error {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{name, options}
+	varargs := []interface{}{ctx, name, options}
 	for _, a := range subresources {
 		varargs = append(varargs, a)
 	}
@@ -143,30 +144,30 @@ func (m *MockResourceInterface) Delete(name string, options *v1.DeleteOptions, s
 }
 
 // Delete indicates an expected call of Delete
-func (mr *MockResourceInterfaceMockRecorder) Delete(name, options interface{}, subresources ...interface{}) *gomock.Call {
+func (mr *MockResourceInterfaceMockRecorder) Delete(ctx, name, options interface{}, subresources ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{name, options}, subresources...)
+	varargs := append([]interface{}{ctx, name, options}, subresources...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockResourceInterface)(nil).Delete), varargs...)
 }
 
 // DeleteCollection mocks base method
-func (m *MockResourceInterface) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (m *MockResourceInterface) DeleteCollection(ctx context.Context, options v1.DeleteOptions, listOptions v1.ListOptions) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteCollection", options, listOptions)
+	ret := m.ctrl.Call(m, "DeleteCollection", ctx, options, listOptions)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteCollection indicates an expected call of DeleteCollection
-func (mr *MockResourceInterfaceMockRecorder) DeleteCollection(options, listOptions interface{}) *gomock.Call {
+func (mr *MockResourceInterfaceMockRecorder) DeleteCollection(ctx, options, listOptions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCollection", reflect.TypeOf((*MockResourceInterface)(nil).DeleteCollection), options, listOptions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCollection", reflect.TypeOf((*MockResourceInterface)(nil).DeleteCollection), ctx, options, listOptions)
 }
 
 // Get mocks base method
-func (m *MockResourceInterface) Get(name string, options v1.GetOptions, subresources ...string) (*unstructured.Unstructured, error) {
+func (m *MockResourceInterface) Get(ctx context.Context, name string, options v1.GetOptions, subresources ...string) (*unstructured.Unstructured, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{name, options}
+	varargs := []interface{}{ctx, name, options}
 	for _, a := range subresources {
 		varargs = append(varargs, a)
 	}
@@ -177,46 +178,46 @@ func (m *MockResourceInterface) Get(name string, options v1.GetOptions, subresou
 }
 
 // Get indicates an expected call of Get
-func (mr *MockResourceInterfaceMockRecorder) Get(name, options interface{}, subresources ...interface{}) *gomock.Call {
+func (mr *MockResourceInterfaceMockRecorder) Get(ctx, name, options interface{}, subresources ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{name, options}, subresources...)
+	varargs := append([]interface{}{ctx, name, options}, subresources...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockResourceInterface)(nil).Get), varargs...)
 }
 
 // List mocks base method
-func (m *MockResourceInterface) List(opts v1.ListOptions) (*unstructured.UnstructuredList, error) {
+func (m *MockResourceInterface) List(ctx context.Context, opts v1.ListOptions) (*unstructured.UnstructuredList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", opts)
+	ret := m.ctrl.Call(m, "List", ctx, opts)
 	ret0, _ := ret[0].(*unstructured.UnstructuredList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List
-func (mr *MockResourceInterfaceMockRecorder) List(opts interface{}) *gomock.Call {
+func (mr *MockResourceInterfaceMockRecorder) List(ctx, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockResourceInterface)(nil).List), opts)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockResourceInterface)(nil).List), ctx, opts)
 }
 
 // Watch mocks base method
-func (m *MockResourceInterface) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (m *MockResourceInterface) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Watch", opts)
+	ret := m.ctrl.Call(m, "Watch", ctx, opts)
 	ret0, _ := ret[0].(watch.Interface)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Watch indicates an expected call of Watch
-func (mr *MockResourceInterfaceMockRecorder) Watch(opts interface{}) *gomock.Call {
+func (mr *MockResourceInterfaceMockRecorder) Watch(ctx, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watch", reflect.TypeOf((*MockResourceInterface)(nil).Watch), opts)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watch", reflect.TypeOf((*MockResourceInterface)(nil).Watch), ctx, opts)
 }
 
 // Patch mocks base method
-func (m *MockResourceInterface) Patch(name string, pt types.PatchType, data []byte, options v1.PatchOptions, subresources ...string) (*unstructured.Unstructured, error) {
+func (m *MockResourceInterface) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, options v1.PatchOptions, subresources ...string) (*unstructured.Unstructured, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{name, pt, data, options}
+	varargs := []interface{}{ctx, name, pt, data, options}
 	for _, a := range subresources {
 		varargs = append(varargs, a)
 	}
@@ -227,9 +228,9 @@ func (m *MockResourceInterface) Patch(name string, pt types.PatchType, data []by
 }
 
 // Patch indicates an expected call of Patch
-func (mr *MockResourceInterfaceMockRecorder) Patch(name, pt, data, options interface{}, subresources ...interface{}) *gomock.Call {
+func (mr *MockResourceInterfaceMockRecorder) Patch(ctx, name, pt, data, options interface{}, subresources ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{name, pt, data, options}, subresources...)
+	varargs := append([]interface{}{ctx, name, pt, data, options}, subresources...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Patch", reflect.TypeOf((*MockResourceInterface)(nil).Patch), varargs...)
 }
 
@@ -271,9 +272,9 @@ func (mr *MockNamespaceableResourceInterfaceMockRecorder) Namespace(arg0 interfa
 }
 
 // Create mocks base method
-func (m *MockNamespaceableResourceInterface) Create(obj *unstructured.Unstructured, options v1.CreateOptions, subresources ...string) (*unstructured.Unstructured, error) {
+func (m *MockNamespaceableResourceInterface) Create(ctx context.Context, obj *unstructured.Unstructured, options v1.CreateOptions, subresources ...string) (*unstructured.Unstructured, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{obj, options}
+	varargs := []interface{}{ctx, obj, options}
 	for _, a := range subresources {
 		varargs = append(varargs, a)
 	}
@@ -284,16 +285,16 @@ func (m *MockNamespaceableResourceInterface) Create(obj *unstructured.Unstructur
 }
 
 // Create indicates an expected call of Create
-func (mr *MockNamespaceableResourceInterfaceMockRecorder) Create(obj, options interface{}, subresources ...interface{}) *gomock.Call {
+func (mr *MockNamespaceableResourceInterfaceMockRecorder) Create(ctx, obj, options interface{}, subresources ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{obj, options}, subresources...)
+	varargs := append([]interface{}{ctx, obj, options}, subresources...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockNamespaceableResourceInterface)(nil).Create), varargs...)
 }
 
 // Update mocks base method
-func (m *MockNamespaceableResourceInterface) Update(obj *unstructured.Unstructured, options v1.UpdateOptions, subresources ...string) (*unstructured.Unstructured, error) {
+func (m *MockNamespaceableResourceInterface) Update(ctx context.Context, obj *unstructured.Unstructured, options v1.UpdateOptions, subresources ...string) (*unstructured.Unstructured, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{obj, options}
+	varargs := []interface{}{ctx, obj, options}
 	for _, a := range subresources {
 		varargs = append(varargs, a)
 	}
@@ -304,31 +305,31 @@ func (m *MockNamespaceableResourceInterface) Update(obj *unstructured.Unstructur
 }
 
 // Update indicates an expected call of Update
-func (mr *MockNamespaceableResourceInterfaceMockRecorder) Update(obj, options interface{}, subresources ...interface{}) *gomock.Call {
+func (mr *MockNamespaceableResourceInterfaceMockRecorder) Update(ctx, obj, options interface{}, subresources ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{obj, options}, subresources...)
+	varargs := append([]interface{}{ctx, obj, options}, subresources...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockNamespaceableResourceInterface)(nil).Update), varargs...)
 }
 
 // UpdateStatus mocks base method
-func (m *MockNamespaceableResourceInterface) UpdateStatus(obj *unstructured.Unstructured, options v1.UpdateOptions) (*unstructured.Unstructured, error) {
+func (m *MockNamespaceableResourceInterface) UpdateStatus(ctx context.Context, obj *unstructured.Unstructured, options v1.UpdateOptions) (*unstructured.Unstructured, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateStatus", obj, options)
+	ret := m.ctrl.Call(m, "UpdateStatus", ctx, obj, options)
 	ret0, _ := ret[0].(*unstructured.Unstructured)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateStatus indicates an expected call of UpdateStatus
-func (mr *MockNamespaceableResourceInterfaceMockRecorder) UpdateStatus(obj, options interface{}) *gomock.Call {
+func (mr *MockNamespaceableResourceInterfaceMockRecorder) UpdateStatus(ctx, obj, options interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockNamespaceableResourceInterface)(nil).UpdateStatus), obj, options)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockNamespaceableResourceInterface)(nil).UpdateStatus), ctx, obj, options)
 }
 
 // Delete mocks base method
-func (m *MockNamespaceableResourceInterface) Delete(name string, options *v1.DeleteOptions, subresources ...string) error {
+func (m *MockNamespaceableResourceInterface) Delete(ctx context.Context, name string, options v1.DeleteOptions, subresources ...string) error {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{name, options}
+	varargs := []interface{}{ctx, name, options}
 	for _, a := range subresources {
 		varargs = append(varargs, a)
 	}
@@ -338,30 +339,30 @@ func (m *MockNamespaceableResourceInterface) Delete(name string, options *v1.Del
 }
 
 // Delete indicates an expected call of Delete
-func (mr *MockNamespaceableResourceInterfaceMockRecorder) Delete(name, options interface{}, subresources ...interface{}) *gomock.Call {
+func (mr *MockNamespaceableResourceInterfaceMockRecorder) Delete(ctx, name, options interface{}, subresources ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{name, options}, subresources...)
+	varargs := append([]interface{}{ctx, name, options}, subresources...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockNamespaceableResourceInterface)(nil).Delete), varargs...)
 }
 
 // DeleteCollection mocks base method
-func (m *MockNamespaceableResourceInterface) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (m *MockNamespaceableResourceInterface) DeleteCollection(ctx context.Context, options v1.DeleteOptions, listOptions v1.ListOptions) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteCollection", options, listOptions)
+	ret := m.ctrl.Call(m, "DeleteCollection", ctx, options, listOptions)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteCollection indicates an expected call of DeleteCollection
-func (mr *MockNamespaceableResourceInterfaceMockRecorder) DeleteCollection(options, listOptions interface{}) *gomock.Call {
+func (mr *MockNamespaceableResourceInterfaceMockRecorder) DeleteCollection(ctx, options, listOptions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCollection", reflect.TypeOf((*MockNamespaceableResourceInterface)(nil).DeleteCollection), options, listOptions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCollection", reflect.TypeOf((*MockNamespaceableResourceInterface)(nil).DeleteCollection), ctx, options, listOptions)
 }
 
 // Get mocks base method
-func (m *MockNamespaceableResourceInterface) Get(name string, options v1.GetOptions, subresources ...string) (*unstructured.Unstructured, error) {
+func (m *MockNamespaceableResourceInterface) Get(ctx context.Context, name string, options v1.GetOptions, subresources ...string) (*unstructured.Unstructured, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{name, options}
+	varargs := []interface{}{ctx, name, options}
 	for _, a := range subresources {
 		varargs = append(varargs, a)
 	}
@@ -372,46 +373,46 @@ func (m *MockNamespaceableResourceInterface) Get(name string, options v1.GetOpti
 }
 
 // Get indicates an expected call of Get
-func (mr *MockNamespaceableResourceInterfaceMockRecorder) Get(name, options interface{}, subresources ...interface{}) *gomock.Call {
+func (mr *MockNamespaceableResourceInterfaceMockRecorder) Get(ctx, name, options interface{}, subresources ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{name, options}, subresources...)
+	varargs := append([]interface{}{ctx, name, options}, subresources...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockNamespaceableResourceInterface)(nil).Get), varargs...)
 }
 
 // List mocks base method
-func (m *MockNamespaceableResourceInterface) List(opts v1.ListOptions) (*unstructured.UnstructuredList, error) {
+func (m *MockNamespaceableResourceInterface) List(ctx context.Context, opts v1.ListOptions) (*unstructured.UnstructuredList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", opts)
+	ret := m.ctrl.Call(m, "List", ctx, opts)
 	ret0, _ := ret[0].(*unstructured.UnstructuredList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List
-func (mr *MockNamespaceableResourceInterfaceMockRecorder) List(opts interface{}) *gomock.Call {
+func (mr *MockNamespaceableResourceInterfaceMockRecorder) List(ctx, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockNamespaceableResourceInterface)(nil).List), opts)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockNamespaceableResourceInterface)(nil).List), ctx, opts)
 }
 
 // Watch mocks base method
-func (m *MockNamespaceableResourceInterface) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (m *MockNamespaceableResourceInterface) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Watch", opts)
+	ret := m.ctrl.Call(m, "Watch", ctx, opts)
 	ret0, _ := ret[0].(watch.Interface)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Watch indicates an expected call of Watch
-func (mr *MockNamespaceableResourceInterfaceMockRecorder) Watch(opts interface{}) *gomock.Call {
+func (mr *MockNamespaceableResourceInterfaceMockRecorder) Watch(ctx, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watch", reflect.TypeOf((*MockNamespaceableResourceInterface)(nil).Watch), opts)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watch", reflect.TypeOf((*MockNamespaceableResourceInterface)(nil).Watch), ctx, opts)
 }
 
 // Patch mocks base method
-func (m *MockNamespaceableResourceInterface) Patch(name string, pt types.PatchType, data []byte, options v1.PatchOptions, subresources ...string) (*unstructured.Unstructured, error) {
+func (m *MockNamespaceableResourceInterface) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, options v1.PatchOptions, subresources ...string) (*unstructured.Unstructured, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{name, pt, data, options}
+	varargs := []interface{}{ctx, name, pt, data, options}
 	for _, a := range subresources {
 		varargs = append(varargs, a)
 	}
@@ -422,8 +423,8 @@ func (m *MockNamespaceableResourceInterface) Patch(name string, pt types.PatchTy
 }
 
 // Patch indicates an expected call of Patch
-func (mr *MockNamespaceableResourceInterfaceMockRecorder) Patch(name, pt, data, options interface{}, subresources ...interface{}) *gomock.Call {
+func (mr *MockNamespaceableResourceInterfaceMockRecorder) Patch(ctx, name, pt, data, options interface{}, subresources ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{name, pt, data, options}, subresources...)
+	varargs := append([]interface{}{ctx, name, pt, data, options}, subresources...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Patch", reflect.TypeOf((*MockNamespaceableResourceInterface)(nil).Patch), varargs...)
 }

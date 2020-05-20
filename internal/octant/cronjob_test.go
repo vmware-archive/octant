@@ -72,7 +72,7 @@ func Test_CronJobTrigger(t *testing.T) {
 		Spec: cronjob.Spec.JobTemplate.Spec,
 	}
 
-	_, err := fakeClientset.BatchV1().Jobs(cronjob.Namespace).Create(jobToCreate)
+	_, err := fakeClientset.BatchV1().Jobs(cronjob.Namespace).Create(context.TODO(), jobToCreate, metav1.CreateOptions{})
 	require.NoError(t, err)
 
 	trigger := octant.NewCronJobTrigger(objectStore, clusterClient)

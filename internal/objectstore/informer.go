@@ -29,6 +29,7 @@ type informerFactory struct {
 
 	lock                 sync.Mutex
 	informers            map[schema.GroupVersionKind]informers.GenericInformer
+	informerErrors       map[schema.GroupVersionKind]error
 	tweakListOptions     dynamicinformer.TweakListOptionsFunc
 	stopCh               <-chan struct{}
 	informerContextCache *informerContextCache
@@ -43,7 +44,17 @@ func newInformerFactory(stopCh <-chan struct{}, client cluster.ClientInterface, 
 		defaultResync:        defaultResync,
 		namespace:            namespace,
 		informers:            make(map[schema.GroupVersionKind]informers.GenericInformer),
+		informerErrors:       make(map[schema.GroupVersionKind]error),
 		informerContextCache: initInformerContextCache(),
+	}
+}
+
+func (f *informerFactory) watchErrorHandler(gvk schema.GroupVersionKind, stopCh chan struct{}) cache.WatchErrorHandler {
+	return func(r *cache.Reflector, err error) {
+		f.lock.Lock()
+		defer f.lock.Unlock()
+		f.informerErrors[gvk] = err
+		close(stopCh)
 	}
 }
 
@@ -79,7 +90,13 @@ func (f *informerFactory) ForResource(groupVersionKind schema.GroupVersionKind) 
 		f.tweakListOptions)
 	f.informers[groupVersionKind] = genericInformer
 
+	genericInformer.Informer().SetWatchErrorHandler(f.watchErrorHandler(groupVersionKind, stopCh))
 	go genericInformer.Informer().Run(stopCh)
+
+	err, exists = f.informerErrors[groupVersionKind]
+	if exists && err != nil {
+		return genericInformer, err
+	}
 
 	return genericInformer, nil
 }

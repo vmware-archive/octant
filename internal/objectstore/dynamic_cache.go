@@ -193,17 +193,22 @@ func (dc *DynamicCache) backoff(ctx context.Context, key store.Key) time.Duratio
 	t := entry.wait()
 
 	go func() {
-		logger := log.From(ctx)
-		defer func() {
-			entry.setWaiting(false)
-			dc.backoffMap.Store(key.GroupVersionKind(), entry)
-		}()
-		unwatchErr := dc.Unwatch(ctx, key.GroupVersionKind())
-		if unwatchErr != nil {
-			logger.Errorf("unwatch: %w", unwatchErr)
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			logger := log.From(ctx)
+			defer func() {
+				entry.setWaiting(false)
+				dc.backoffMap.Store(key.GroupVersionKind(), entry)
+			}()
+			unwatchErr := dc.Unwatch(ctx, key.GroupVersionKind())
+			if unwatchErr != nil {
+				logger.Errorf("unwatch: %w", unwatchErr)
+			}
+			logger.Infof("backing off for %s (%s)", key.GroupVersionKind(), t)
+			<-time.After(t)
 		}
-		logger.Infof("backing off for %s (%s)", key.GroupVersionKind(), t)
-		<-time.After(t)
 	}()
 
 	return t
@@ -308,10 +313,10 @@ func (dc *DynamicCache) listFromDynamicClient(ctx context.Context, key store.Key
 		LabelSelector: selector.String(),
 	}
 	if key.Namespace == "" {
-		return dynamicClient.Resource(gvr).List(listOptions)
+		return dynamicClient.Resource(gvr).List(ctx, listOptions)
 	}
 
-	return dynamicClient.Resource(gvr).Namespace(key.Namespace).List(listOptions)
+	return dynamicClient.Resource(gvr).Namespace(key.Namespace).List(ctx, listOptions)
 }
 
 type getter interface {
@@ -403,9 +408,9 @@ func (dc *DynamicCache) getFromDynamicClient(ctx context.Context, key store.Key)
 	}
 
 	if key.Namespace == "" {
-		return dynamicClient.Resource(gvr).Get(key.Name, metav1.GetOptions{})
+		return dynamicClient.Resource(gvr).Get(ctx, key.Name, metav1.GetOptions{})
 	}
-	return dynamicClient.Resource(gvr).Namespace(key.Namespace).Get(key.Name, metav1.GetOptions{})
+	return dynamicClient.Resource(gvr).Namespace(key.Namespace).Get(ctx, key.Name, metav1.GetOptions{})
 }
 
 // Watch watches the cluster for an event and performs actions with the
@@ -478,15 +483,15 @@ func (dc *DynamicCache) Delete(ctx context.Context, key store.Key) error {
 	}
 
 	deletePolicy := metav1.DeletePropagationForeground
-	deleteOptions := &metav1.DeleteOptions{
+	deleteOptions := metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	}
 
 	if key.Namespace == "" {
-		return dynamicClient.Resource(gvr).Delete(key.Name, deleteOptions)
+		return dynamicClient.Resource(gvr).Delete(ctx, key.Name, deleteOptions)
 	}
 
-	return dynamicClient.Resource(gvr).Namespace(key.Namespace).Delete(key.Name, deleteOptions)
+	return dynamicClient.Resource(gvr).Namespace(key.Namespace).Delete(ctx, key.Name, deleteOptions)
 }
 
 // UpdateClusterClient updates the cluster client.
@@ -499,8 +504,7 @@ func (dc *DynamicCache) UpdateClusterClient(ctx context.Context, client cluster.
 	dc.factories.reset()
 	dc.seenGVKs.reset()
 	dc.informerSynced.reset()
-	dc.access.Reset()
-	dc.access.UpdateClient(client)
+	dc.access = NewResourceAccess(client)
 	dc.updateMu.Unlock()
 
 	for _, fn := range dc.updateFns {
@@ -563,7 +567,7 @@ func (dc *DynamicCache) Update(ctx context.Context, key store.Key, updater func(
 
 		client := dynamicClient.Resource(gvr).Namespace(object.GetNamespace())
 
-		_, err = client.Update(object, metav1.UpdateOptions{})
+		_, err = client.Update(ctx, object, metav1.UpdateOptions{})
 		return err
 	})
 
@@ -612,10 +616,10 @@ func (dc *DynamicCache) Create(ctx context.Context, object *unstructured.Unstruc
 	createOptions := metav1.CreateOptions{}
 
 	if key.Namespace == "" {
-		_, err := dynamicClient.Resource(gvr).Create(object, createOptions)
+		_, err := dynamicClient.Resource(gvr).Create(ctx, object, createOptions)
 		return err
 	}
 
-	_, err = dynamicClient.Resource(gvr).Namespace(key.Namespace).Create(object, createOptions)
+	_, err = dynamicClient.Resource(gvr).Namespace(key.Namespace).Create(ctx, object, createOptions)
 	return err
 }
