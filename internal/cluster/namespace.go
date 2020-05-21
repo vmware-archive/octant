@@ -7,6 +7,7 @@ package cluster
 
 import (
 	"context"
+
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -60,7 +61,7 @@ func (n *namespaceClient) Names() ([]string, error) {
 
 func (n *namespaceClient) HasNamespace(namespace string) bool {
 	ns := &corev1.Namespace{}
-	err := n.restClient.Get().Resource("namespaces").Name(namespace).Do().Into(ns)
+	err := n.restClient.Get().Resource("namespaces").Name(namespace).Do(context.TODO()).Into(ns)
 	if err != nil {
 		return false
 	}
