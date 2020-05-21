@@ -28,7 +28,7 @@ describe('BreadcrumbComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should create one path without link', () => {
+  it('should omit if single path', () => {
     component.path = [{ title: 'breadcrumb title', url: '' }];
     const breadcrumbElement: HTMLDivElement = fixture.debugElement.query(
       By.css('.breadcrumb')
@@ -41,11 +41,10 @@ describe('BreadcrumbComponent', () => {
     );
     const spans: DebugElement[] = fixture.debugElement.queryAll(By.css('span'));
     expect(links.length).toBe(0);
-    expect(icons.length).toBe(0);
-    expect(spans.length).toBe(1);
+    expect(spans.length).toBe(0);
 
     expect(breadcrumbElement.children.length).toEqual(2);
-    expect(breadcrumbElement.innerText).toBe('breadcrumb title');
+    expect(breadcrumbElement.innerText).toBe('');
   });
 
   it('should create two paths with single link', () => {
@@ -64,7 +63,6 @@ describe('BreadcrumbComponent', () => {
     );
     const spans: DebugElement[] = fixture.debugElement.queryAll(By.css('span'));
     expect(links.length).toBe(1);
-    expect(icons.length).toBe(1);
     expect(spans.length).toBe(1);
 
     expect(breadcrumbElement.children.length).toEqual(2);
