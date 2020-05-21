@@ -59,7 +59,6 @@ export class EditorComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes.view.currentValue) {
       const view = changes.view.currentValue as EditorView;
-      console.log(view);
 
       if (!this.isModified) {
         this.editorValue = view.config.value;
