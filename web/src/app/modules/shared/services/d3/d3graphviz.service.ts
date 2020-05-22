@@ -13,6 +13,8 @@ export class D3GraphvizService {
 
   render(parentElement: ElementRef, g) {
     const viewer = parentElement.nativeElement;
-    graphviz(viewer).renderDot(g);
+    if (viewer) {
+      graphviz(viewer, { useWorker: false }).renderDot(g);
+    }
   }
 }

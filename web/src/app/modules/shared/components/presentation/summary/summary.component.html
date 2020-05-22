@@ -64,6 +64,9 @@
               <ng-container *ngSwitchCase="'error'">
                 <app-view-error [view]="item.content"></app-view-error>
               </ng-container>
+              <ng-container *ngSwitchCase="'graphviz'">
+                <app-view-graphviz [view]="item.content"></app-view-graphviz>
+              </ng-container>
               <div class="alert alert-danger static" *ngSwitchDefault>
                 <span class="alert-icon-wrapper">
                   <clr-icon
