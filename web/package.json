@@ -49,7 +49,7 @@
     "cytoscape": "^3.14.1",
     "cytoscape-dagre": "^2.2.2",
     "cytoscape-node-html-label": "^1.2.0",
-    "d3-graphviz": "^3.0.4",
+    "d3-graphviz": "^2.6.1",
     "d3-selection": "^1.4.1",
     "d3-zoom": "^1.8.3",
     "dagre-d3": "^0.6.4",
