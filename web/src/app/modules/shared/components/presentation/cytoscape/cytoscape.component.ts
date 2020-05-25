@@ -14,7 +14,8 @@ import {
   ViewChild,
 } from '@angular/core';
 
-import cytoscape, { SingularData, Stylesheet } from 'cytoscape';
+import cytoscape, { NodeSingular, SingularData, Stylesheet } from 'cytoscape';
+import { hideChildren, positionChildren } from './octant.layout';
 import dagre from 'cytoscape-dagre';
 
 cytoscape.use(dagre);
@@ -43,6 +44,10 @@ export class CytoscapeComponent implements OnChanges {
 
   @Output() select: EventEmitter<any> = new EventEmitter<any>();
 
+  cytoscape: cytoscape.Core;
+  applied = false;
+  moveStarted = false;
+
   constructor(private renderer: Renderer2, private el: ElementRef) {
     this.layout = this.layout || {
       name: 'grid',
@@ -62,18 +67,43 @@ export class CytoscapeComponent implements OnChanges {
   public render() {
     const cyContainer = this.renderer.selectRootElement(this.cy.nativeElement);
     const localSelect = this.select;
-    const cy = cytoscape({
+    const options: cytoscape.CytoscapeOptions = {
       container: cyContainer,
       layout: this.layout,
       minZoom: this.zoom.min,
       maxZoom: this.zoom.max,
       style: this.style,
       elements: this.elements,
-    });
+    };
+    this.cytoscape = cytoscape(options);
 
-    cy.on('tap', 'node', e => {
+    this.cytoscape.on('tap', 'node', e => {
       const node: SingularData = e.target;
       localSelect.emit(node.data());
+    });
+
+    this.cytoscape.on('layoutstop', e => {
+      if (!this.applied) {
+        this.applied = true;
+        this.cytoscape
+          .nodes('[hasChildren]')
+          .forEach(node => positionChildren(this.cytoscape, node));
+        this.cytoscape.fit();
+      }
+    });
+
+    this.cytoscape.on('drag', 'node', e => {
+      const node: NodeSingular = e.target;
+      if (!this.moveStarted) {
+        this.moveStarted = true;
+        hideChildren(this.cytoscape, node);
+      }
+    });
+
+    this.cytoscape.on('dragfree', 'node', e => {
+      const node: NodeSingular = e.target;
+      positionChildren(this.cytoscape, node);
+      this.moveStarted = false;
     });
   }
 }
