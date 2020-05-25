@@ -129,7 +129,7 @@ func Test_checkSameOrigin(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			r := &http.Request{
-				Host: tc.host,
+				Host:   tc.host,
 				Header: make(http.Header, 1),
 			}
 			r.Header.Set("Origin", tc.origin)

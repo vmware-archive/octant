@@ -120,9 +120,9 @@ func TestHandlerFactory_Handler(t *testing.T) {
 			backendPath := genTestURL(t, ts.URL, "api", "v1", "foo")
 
 			resFrontend, err := http.Get(frontendPath)
+			require.NoError(t, err)
 			noCache := resFrontend.Header.Get("Cache-Control")
 			require.Equal(t, "no-cache, no-store", noCache)
-			require.NoError(t, err)
 
 			resBackend, err := http.Get(backendPath)
 			require.NoError(t, err)

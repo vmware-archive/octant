@@ -14,6 +14,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/gorilla/mux"
+
 	"github.com/vmware-tanzu/octant/internal/log"
 	dashstrings "github.com/vmware-tanzu/octant/internal/util/strings"
 )
@@ -66,12 +67,12 @@ func checkSameOrigin(r *http.Request) bool {
 
 	host, port, err := net.SplitHostPort(u.Host)
 	if err == nil {
-		return port == defaultPort && equalASCIIFold(host, r.Host)
+		return (port == defaultPort) && equalASCIIFold(host, r.Host)
 	}
 
 	host, port, err = net.SplitHostPort(r.Host)
 	if err == nil {
-		return port == defaultPort && equalASCIIFold(u.Host, host)
+		return (port == defaultPort) && equalASCIIFold(u.Host, host)
 	}
 
 	return false
@@ -111,6 +112,8 @@ func rebindHandler(ctx context.Context, acceptedHosts []string) mux.MiddlewareFu
 			}
 
 			if !checkSameOrigin(r) {
+				logger := log.From(ctx)
+				logger.Debugf("check same origin failed")
 				http.Error(w, "forbidden bad origin", http.StatusForbidden)
 				return
 			}

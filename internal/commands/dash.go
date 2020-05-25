@@ -44,11 +44,12 @@ func newOctantCmd(version string) *cobra.Command {
 				logLevel = 1
 			}
 
-			z, err := newZapLogger(logLevel)
+			z, err := log.Init(logLevel)
 			if err != nil {
-				golog.Printf("failed to initialize logger: %v", err)
+				golog.Printf("unable to initialize logger: %v", err)
 				os.Exit(1)
 			}
+
 			defer func() {
 				// this fails, but it should be safe to ignore according
 				// to https://github.com/uber-go/zap/issues/328
@@ -107,10 +108,13 @@ func newOctantCmd(version string) *cobra.Command {
 
 				_ = klogFlagSet.Parse(klogOpts)
 
-				if err := dash.Run(ctx, logger, shutdownCh, options); err != nil {
-					logger.WithErr(err).Errorf("dashboard failed")
+				runner, err := dash.NewRunner(ctx, logger, options)
+				if err != nil {
+					golog.Printf("unable to start runner: %v", err)
 					os.Exit(1)
 				}
+
+				runner.Start(ctx, nil, shutdownCh)
 
 				runCh <- true
 			}()

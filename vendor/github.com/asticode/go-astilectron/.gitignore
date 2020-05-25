@@ -1,0 +1,6 @@
+.DS_Store
+Thumbs.db
+.idea/
+cover*
+example/vendor
+testdata/tmp/*

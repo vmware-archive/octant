@@ -7,11 +7,10 @@ mode.
 ## Running
 
 Octant is still primarily a browser-based application. To run the
-Electron application, the Angular frontend and Go backend must be
-running first.
+Electron application, the Angular frontend must be running first.
 
-Three terminal sessions are required.
+`$ go run build.go build-electron-dev`
 
-* Session 1: `$ npm run start`
-* Session 2: `$ go run build.go build run-dev`
-* Session 3: `$ npm run  electron:serve`
+An application will be generated in `cmd/octant-electron/output`. Currently,
+the application is configured to proxy the frontend to a separately running
+Angular frontend (at 127.0.0.1:4200).

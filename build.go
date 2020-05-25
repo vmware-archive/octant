@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"log"
@@ -33,6 +34,8 @@ func main() {
 	flag.Parse()
 	for _, cmd := range flag.Args() {
 		switch cmd {
+		case "build-electron-dev":
+			buildElectronDev()
 		case "ci":
 			test()
 			vet()
@@ -88,9 +91,17 @@ func main() {
 
 func runCmd(command string, env map[string]string, args ...string) {
 	cmd := newCmd(command, env, args...)
-	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	log.Printf("Running: %s\n", cmd.String())
+	if err := cmd.Run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func runCmdIn(dir, command string, env map[string]string, args ...string) {
+	cmd := newCmd(command, env, args...)
+	cmd.Dir = dir
+	log.Printf("Running in %s: %s\n", dir, cmd.String())
 	if err := cmd.Run(); err != nil {
 		log.Fatal(err)
 	}
@@ -103,14 +114,32 @@ func newCmd(command string, env map[string]string, args ...string) *exec.Cmd {
 	}
 
 	cmd := exec.Command(realCommand, args...)
-	cmd.Env = os.Environ()
-	// Setting Stdout here complains about it already being set?
-	// cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+
+	cmd.Env = os.Environ()
 	for k, v := range env {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", k, v))
 	}
 	return cmd
+}
+
+func buildElectronDev() {
+	listCmd := newCmd("go", nil,
+		"list", "-m", "-f", "{{.Dir}}", "github.com/asticode/go-astilectron-bundler")
+
+	abPath, err := listCmd.Output()
+	if err != nil {
+		log.Fatalf("unable to find astilectron-bundler: %w", err)
+	}
+	abPath = bytes.TrimSpace(abPath)
+
+	runCmdIn(
+		filepath.Join("cmd", "octant-electron"),
+		"go",
+		nil,
+		"run",
+		filepath.Join(string(abPath), "astilectron-bundler"),
+	)
 }
 
 func goInstall() {
@@ -138,8 +167,8 @@ func generate() {
 }
 
 func build() {
-	newpath := filepath.Join(".", "build")
-	os.MkdirAll(newpath, 0755)
+	newPath := filepath.Join(".", "build")
+	os.MkdirAll(newPath, 0755)
 
 	artifact := "octant"
 	if runtime.GOOS == "windows" {

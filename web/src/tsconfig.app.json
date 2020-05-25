@@ -2,13 +2,17 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "outDir": "../out-tsc/app",
-    "types": []
+    "typeRoots": [
+      "./types"
+    ]
   },
   "files": [
     "main.ts",
-    "polyfills.ts"
+    "polyfills.ts",
+    "../node_modules/electron/electron.d.ts"
   ],
   "exclude": [
     "**/*.stories.ts"
   ]
 }
+
