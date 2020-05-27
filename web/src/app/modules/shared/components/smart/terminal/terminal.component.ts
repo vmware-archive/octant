@@ -20,7 +20,6 @@ import {
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { TerminalView } from 'src/app/modules/shared/models/content';
 import { WebsocketService } from '../../../services/websocket/websocket.service';
-import { ActionService } from '../../../services/action/action.service';
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -58,8 +57,8 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
   ngAfterViewInit() {
     if (this.view) {
       const logLevel = 'info';
-      const { podName, namespace, terminal, containers } = this.view.config;
-      const { active, command, container } = terminal;
+      const { terminal } = this.view.config;
+      const { active } = terminal;
       const disableStdin = !active;
       this.term = new Terminal({
         logLevel,
@@ -81,20 +80,13 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
       this.term.open(this.terminalDiv.nativeElement);
       this.term.focus();
       this.fitAddon.fit();
-      this.updateTerminalHeight();
     }
-  }
-
-  private updateTerminalHeight() {
-    const roundedModulo = this.terminalDiv.nativeElement.clientHeight % 17;
-    this.terminalDiv.nativeElement.style.height = `calc(100% - ${roundedModulo}px)`;
   }
 
   enableResize() {
     let timeOut = null;
     const resizeDebounce = (e: { cols: number; rows: number }) => {
       const resize = () => {
-        const { active } = this.view.config.terminal;
         this.wss.sendMessage('action.octant.dev/sendTerminalResize', {
           rows: e.rows,
           cols: e.cols,
@@ -119,7 +111,7 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
 
   initStream() {
     const { namespace, podName, terminal } = this.view.config;
-    const { active, container } = terminal;
+    const { container } = terminal;
     if (this.terminalService.selectedContainer) {
       this.selectedContainer = this.terminalService.selectedContainer;
     }
@@ -161,5 +153,9 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
       this.terminalService.namespace = namespace;
       this.terminalService.podName = podName;
     }
+  }
+
+  onResize() {
+    this.fitAddon.fit();
   }
 }
