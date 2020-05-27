@@ -3,10 +3,12 @@
 //
 
 import {
-  AfterViewChecked,
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   Input,
+  OnChanges,
+  SimpleChanges,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -19,8 +21,9 @@ import { D3GraphvizService } from '../../../services/d3/d3graphviz.service';
   template: ` <div class="graphviz" #viewer></div> `,
   styleUrls: ['./graphviz.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GraphvizComponent implements AfterViewChecked {
+export class GraphvizComponent implements OnChanges {
   @ViewChild('viewer', { static: true }) private viewer: ElementRef;
 
   private v: GraphvizView;
@@ -34,9 +37,10 @@ export class GraphvizComponent implements AfterViewChecked {
 
   constructor(private d3GraphvizService: D3GraphvizService) {}
 
-  ngAfterViewChecked() {
-    if (this.view) {
-      const current = this.v.config.dot;
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.view.currentValue) {
+      const view = changes.view.currentValue as GraphvizView;
+      const current = view.config.dot;
       this.d3GraphvizService.render(this.viewer, current);
     }
   }
