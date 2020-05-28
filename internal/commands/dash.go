@@ -21,11 +21,12 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog"
 
+	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/dash"
 )
 
-func newOctantCmd(version string) *cobra.Command {
+func newOctantCmd(version string, gitCommit string, buildTime string) *cobra.Command {
 	octantCmd := &cobra.Command{
 		Use:   "octant",
 		Short: "octant kubernetes dashboard",
@@ -72,6 +73,12 @@ func newOctantCmd(version string) *cobra.Command {
 			}
 
 			go func() {
+				buildInfo := config.BuildInfo{
+					Version: version,
+					Commit:  gitCommit,
+					Time:    buildTime,
+				}
+
 				options := dash.Options{
 					DisableClusterOverview: viper.GetBool("disable-cluster-overview"),
 					EnableOpenCensus:       viper.GetBool("enable-opencensus"),
@@ -84,6 +91,7 @@ func newOctantCmd(version string) *cobra.Command {
 					ClientQPS:              float32(viper.GetFloat64("client-qps")),
 					ClientBurst:            viper.GetInt("client-burst"),
 					UserAgent:              fmt.Sprintf("octant/%s", version),
+					BuildInfo:              buildInfo,
 				}
 
 				klogVerbosity := viper.GetString("klog-verbosity")

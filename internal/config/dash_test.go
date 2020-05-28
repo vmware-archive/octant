@@ -86,6 +86,7 @@ func TestLiveConfig(t *testing.T) {
 	pluginManager := pluginFake.NewMockManagerInterface(controller)
 	portForwarder := portForwardFake.NewMockPortForwarder(controller)
 	kubeConfigPath := "/path"
+	buildInfo := BuildInfo{}
 
 	objectStore.EXPECT().
 		RegisterOnUpdate(gomock.Any())
@@ -95,7 +96,7 @@ func TestLiveConfig(t *testing.T) {
 
 	config := NewLiveConfig(clusterClient, crdWatcher, kubeConfigPath, logger, moduleManager, objectStore,
 		errorStore, pluginManager, portForwarder,
-		contextName, restConfigOptions)
+		contextName, restConfigOptions, buildInfo)
 
 	assert.NoError(t, config.Validate())
 	assert.Equal(t, clusterClient, config.ClusterClient())

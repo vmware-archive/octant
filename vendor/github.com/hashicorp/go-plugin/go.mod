@@ -1,5 +1,7 @@
 module github.com/hashicorp/go-plugin
 
+go 1.14
+
 require (
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/golang/protobuf v1.2.0
@@ -15,5 +17,3 @@ require (
 	google.golang.org/genproto v0.0.0-20180817151627-c66870c02cf8 // indirect
 	google.golang.org/grpc v1.14.0
 )
-
-go 1.13

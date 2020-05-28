@@ -39,6 +39,7 @@ func defaultStateManagers(clientID string, dashConfig config.Dash) []StateManage
 
 	return []StateManager{
 		NewContentManager(dashConfig.ModuleManager(), logger),
+		NewHelperStateManager(dashConfig),
 		NewFilterManager(),
 		NewNavigationManager(dashConfig),
 		NewNamespacesManager(dashConfig),
