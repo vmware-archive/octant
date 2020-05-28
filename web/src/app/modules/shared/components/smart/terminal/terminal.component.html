@@ -1,19 +1,21 @@
-<clr-select-container class="container-select">
-  <label>Container</label>
-  <select
-    clrSelect
-    name="options"
-    [value]="selectedContainer"
-    (change)="onContainerChange($event.target.value)"
-  >
-    <option
-      *ngFor="
-        let container of view?.config.containers;
-        trackBy: trackByIdentity
-      "
-      value="{{ container }}"
-      >{{ container }}</option
+<div class="terminal-container" (window:resize)="onResize()">
+  <clr-select-container class="container-select">
+    <label>Container</label>
+    <select
+      clrSelect
+      name="options"
+      [value]="selectedContainer"
+      (change)="onContainerChange($event.target.value)"
     >
-  </select>
-</clr-select-container>
-<div class="app-terminal" #terminal></div>
+      <option
+        *ngFor="
+          let container of view?.config.containers;
+          trackBy: trackByIdentity
+        "
+        value="{{ container }}"
+        >{{ container }}</option
+      >
+    </select>
+  </clr-select-container>
+  <div class="app-terminal" #terminal></div>
+</div>

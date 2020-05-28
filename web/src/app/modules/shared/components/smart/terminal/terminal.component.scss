@@ -1,8 +1,10 @@
 @import 'xterm/css/xterm.css';
-
+.terminal-container {
+  height: calc(90% - 72px);
+}
 .app-terminal {
   height: 100%;
-  min-height: 20vh;
+  min-height: 10vh;
 
   border: 0.05rem solid #ccc;
   border-radius: 0.15rem;
