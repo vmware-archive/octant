@@ -5,7 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 
 package icon
 
-
 const (
 	// Names of Clarity icons
 	Applications              = "application"
@@ -32,23 +31,4 @@ const (
 	ConfigurationPlugin = "plugin"
 
 	CustomResourceDefinition = "crd"
-
-	OverviewConfigMap               = "cm"
-	OverviewCronJob                 = "cronjob"
-	OverviewDaemonSet               = "ds"
-	OverviewDeployment              = "deploy"
-	OverviewHorizontalPodAutoscaler = "hpa"
-	OverviewIngress                 = "ing"
-	OverviewJob                     = "job"
-	OverviewNetworkPolicy           = "netpol"
-	OverviewPersistentVolumeClaim   = "pvc"
-	OverviewPod                     = "pod"
-	OverviewReplicaSet              = "rs"
-	OverviewReplicationController   = "deploy"
-	OverviewRole                    = "role"
-	OverviewRoleBinding             = "rb"
-	OverviewSecret                  = "secret"
-	OverviewService                 = "svc"
-	OverviewServiceAccount          = "sa"
-	OverviewStatefulSet             = "sts"
 )
