@@ -4,6 +4,7 @@ import {
   NodeSingular,
 } from 'cytoscape';
 import cytoscape from 'cytoscape';
+import { isFunction } from 'rxjs/internal-compatibility';
 
 export interface OctantLayoutOptions
   extends BaseLayoutOptions,
@@ -33,28 +34,25 @@ const defaults = {
 };
 
 export function positionChildren(
-  cytoscape: cytoscape.Core,
+  cy: cytoscape.Core,
   node: cytoscape.NodeSingular
 ) {
   const offset = {
     x: node.position().x - node.data('x'),
     y: node.position().y - node.data('y'),
   };
-  moveChildren(cytoscape, node, offset);
+  moveChildren(cy, node, offset);
   moveNode(node, offset);
 
   const options: OctantLayoutOptions = { name: 'octant', fit: false };
-  cytoscape.nodes().layout(options).run();
+  cy.nodes().layout(options).run();
 }
 
-export function hideChildren(
-  cytoscape: cytoscape.Core,
-  node: cytoscape.NodeSingular
-) {
-  const children = cytoscape.nodes(`[owner = "${node.data('id')}"]`);
+export function hideChildren(cy: cytoscape.Core, node: cytoscape.NodeSingular) {
+  const children = cy.nodes(`[owner = "${node.data('id')}"]`);
 
   children.map(child => {
-    hideChildren(cytoscape, child);
+    hideChildren(cy, child);
     child.style('visibility', 'hidden');
   });
 }
@@ -63,14 +61,12 @@ function OctantLayout(options) {
   this.options = { ...defaults, ...options };
 }
 
-const isFn = obj => obj != null && typeof obj === typeof function () {};
-
 OctantLayout.prototype.run = function () {
   const options = this.options;
   const eles = options.eles;
 
   const nodes = eles.nodes();
-  const posIsFn = isFn(options.positions);
+  const posIsFn = isFunction(options.positions);
 
   function getPosition(node) {
     if (options.positions == null) {
@@ -104,16 +100,16 @@ OctantLayout.prototype.run = function () {
 };
 
 function moveChildren(
-  cytoscape: cytoscape.Core,
+  cy: cytoscape.Core,
   node: cytoscape.NodeSingular,
   offset
 ) {
-  const children = cytoscape.nodes(`[owner = "${node.data('id')}"]`);
+  const children = cy.nodes(`[owner = "${node.data('id')}"]`);
 
   children.map(child => {
     moveNode(child, offset);
     child.style('visibility', 'visible');
-    moveChildren(cytoscape, child, offset);
+    moveChildren(cy, child, offset);
   });
   return children;
 }
