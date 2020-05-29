@@ -52,6 +52,18 @@ func Test_replicaSetAppsV1(t *testing.T) {
 			},
 		},
 		{
+			name: "zero replicas",
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+				objectFile := "replicaset_zero_replicas.yaml"
+				return testutil.LoadObjectFromFile(t, objectFile)
+
+			},
+			expected: ObjectStatus{
+				nodeStatus: component.NodeStatusOK,
+				Details:    []component.Component{component.NewText("Replica Set is OK")},
+			},
+		},
+		{
 			name: "not available",
 			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
 				objectFile := "replicaset_not_available.yaml"
