@@ -32,9 +32,13 @@ func replicaSetAppsV1(_ context.Context, object runtime.Object, _ store.Store) (
 	}
 
 	status := replicaSet.Status
+	specReplicas := int32(0)
+	if r := replicaSet.Spec.Replicas; r != nil {
+		specReplicas = *r
+	}
 
 	switch {
-	case status.Replicas == 0:
+	case status.Replicas == 0 && specReplicas != 0:
 		return ObjectStatus{
 			nodeStatus: component.NodeStatusError,
 			Details:    []component.Component{component.NewText("Replica Set has no replicas available")},
