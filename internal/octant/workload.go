@@ -13,6 +13,7 @@ import (
 	"sync"
 
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -375,6 +376,9 @@ func (wl *ClusterWorkloadLoader) Load(ctx context.Context, namespace string) ([]
 
 		owner, err := objectOwner(ctx, wl.ObjectStore, object)
 		if err != nil {
+			if apierrors.IsNotFound(err) {
+				continue
+			}
 			return nil, fmt.Errorf("find owner for pod '%s': %w", object.GetName(), err)
 		}
 

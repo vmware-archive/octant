@@ -178,6 +178,9 @@ func (v *stubComponent) GetMetadata() component.Metadata {
 	}
 }
 
+func (v *stubComponent) SetMetadata(_ component.Metadata) {
+}
+
 func (v *stubComponent) IsEmpty() bool {
 	return false
 }

@@ -117,7 +117,7 @@ export class DatagridComponent implements OnChanges {
 
   showTitle() {
     if (this.view) {
-      return this.view.totalItems === undefined || this.view.totalItems > 1;
+      return this.view.totalItems === undefined || this.view.totalItems > 0;
     }
     return true;
   }

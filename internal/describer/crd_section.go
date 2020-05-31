@@ -18,21 +18,21 @@ import (
 )
 
 type CRDSection struct {
-	describers map[string]Describer
-	path       string
-	title      string
-	rootPath   ResourceLink
-	mu sync.Mutex
+	describerMap map[string]Describer
+	path         string
+	title        string
+	rootPath     ResourceLink
+	mu           sync.RWMutex
 }
 
 var _ Describer = (*CRDSection)(nil)
 
 func NewCRDSection(p, title string, rootPath ResourceLink) *CRDSection {
 	return &CRDSection{
-		describers: make(map[string]Describer),
-		path:       p,
-		title:      title,
-		rootPath:   rootPath,
+		describerMap: make(map[string]Describer),
+		path:         p,
+		title:        title,
+		rootPath:     rootPath,
 	}
 }
 
@@ -40,81 +40,42 @@ func (csd *CRDSection) Add(name string, describer Describer) {
 	csd.mu.Lock()
 	defer csd.mu.Unlock()
 
-	csd.describers[name] = describer
+	csd.describerMap[name] = describer
 }
 
 func (csd *CRDSection) Remove(name string) {
 	csd.mu.Lock()
 	defer csd.mu.Unlock()
 
-	delete(csd.describers, name)
+	delete(csd.describerMap, name)
 }
 
 func (csd *CRDSection) Describe(ctx context.Context, namespace string, options Options) (component.ContentResponse, error) {
-	csd.mu.Lock()
-	defer csd.mu.Unlock()
+	title := getBreadcrumb(csd.rootPath, csd.title, "", namespace)
+	list := component.NewList(title, nil)
 
-	var names []string
-	for name := range csd.describers {
-		names = append(names, name)
-	}
+	for _, d := range csd.describers() {
+		cr, err := d.Describe(ctx, namespace, options)
+		if err != nil {
+			return component.EmptyContentResponse, err
+		}
 
-	sort.Strings(names)
-
-	tableCols := component.NewTableCols("Name", "Labels", "Age")
-	table := component.NewTable("Custom Resources", "", tableCols)
-
-	for _, name := range names {
-		switch d := csd.describers[name].(type) {
-		case *crdList:
-			key := store.KeyFromGroupVersionKind(gvk.CustomResourceDefinition)
-			key.Name = d.name
-			crd, err := options.ObjectStore().Get(ctx, key)
-			if err != nil {
-				return component.EmptyContentResponse, err
-			}
-
-			crdObject, err := octant.NewCustomResourceDefinition(crd)
-			if err != nil {
-				return component.EmptyContentResponse, err
-			}
-
-			versions, err := crdObject.Versions()
-			if err != nil {
-				return component.EmptyContentResponse, err
-			}
-
-			count := 0
-			for _, version := range versions {
-				crGVK, err := gvk.CustomResource(crd, version)
-				if err != nil {
-					return component.EmptyContentResponse, err
+		for i := range cr.Components {
+			switch c := cr.Components[i].(type) {
+			case *component.List:
+				for _, item := range c.Config.Items {
+					if !item.IsEmpty() {
+						list.Add(item)
+					}
 				}
-				key2 := store.KeyFromGroupVersionKind(crGVK)
-				key2.Namespace = namespace
-				list, _, err := options.ObjectStore().List(ctx, key2)
-				if err != nil {
-					return component.EmptyContentResponse, err
+			default:
+				if !c.IsEmpty() {
+					list.Add(c)
 				}
-				count += len(list.Items)
 			}
-
-			if count > 0 {
-				row := component.TableRow{}
-
-				row["Name"] = component.NewLink("", crd.GetName(), getCrdUrl(namespace, crd))
-				row["Labels"] = component.NewLabels(crd.GetLabels())
-				row["Age"] = component.NewTimestamp(crd.GetCreationTimestamp().Time)
-
-				table.Add(row)
-			}
-
 		}
 	}
 
-	title := getBreadcrumb(csd.rootPath, csd.title, "", namespace)
-	list := component.NewList(title, nil)
-	list.Add(table)
 	return component.ContentResponse{
 		Components: []component.Component{list},
 	}, nil
@@ -132,11 +93,88 @@ func (csd *CRDSection) Reset(ctx context.Context) error {
 
 	logger := log.From(ctx)
 
-	for name := range csd.describers {
+	for name := range csd.describerMap {
 		logger.With("describer-name", name, "crd-section-path", csd.path).
 			Debugf("removing crd from section")
-		delete(csd.describers, name)
+		delete(csd.describerMap, name)
 	}
 
 	return nil
+}
+
+func (csd *CRDSection) describers() []Describer {
+	csd.mu.RLock()
+	defer csd.mu.RUnlock()
+
+	var names []string
+	for name := range csd.describerMap {
+		names = append(names, name)
+	}
+
+	sort.Strings(names)
+
+	var out []Describer
+
+	for _, name := range names {
+		out = append(out, csd.describerMap[name])
+	}
+
+	return out
+}
+
+func (csd *CRDSection) crdTable(ctx context.Context, namespace string, options Options) (*component.Table, error) {
+	tableCols := component.NewTableCols("Name", "Labels", "Age")
+	table := component.NewTable("Custom Resources", "", tableCols)
+
+	describers := csd.describers()
+
+	for _, describer := range describers {
+		switch d := describer.(type) {
+		case *crdList:
+			key := store.KeyFromGroupVersionKind(gvk.CustomResourceDefinition)
+			key.Name = d.name
+			crd, err := options.ObjectStore().Get(ctx, key)
+			if err != nil {
+				return nil, err
+			}
+
+			crdObject, err := octant.NewCustomResourceDefinition(crd)
+			if err != nil {
+				return nil, err
+			}
+
+			versions, err := crdObject.Versions()
+			if err != nil {
+				return nil, err
+			}
+
+			count := 0
+			for _, version := range versions {
+				crGVK, err := gvk.CustomResource(crd, version)
+				if err != nil {
+					return nil, err
+				}
+				key2 := store.KeyFromGroupVersionKind(crGVK)
+				key2.Namespace = namespace
+				list, _, err := options.ObjectStore().List(ctx, key2)
+				if err != nil {
+					return nil, err
+				}
+				count += len(list.Items)
+			}
+
+			if count > 0 {
+				row := component.TableRow{}
+
+				row["Name"] = component.NewLink("", crd.GetName(), getCrdUrl(namespace, crd))
+				row["Labels"] = component.NewLabels(crd.GetLabels())
+				row["Age"] = component.NewTimestamp(crd.GetCreationTimestamp().Time)
+
+				table.Add(row)
+			}
+
+		}
+	}
+
+	return table, nil
 }

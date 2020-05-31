@@ -7,10 +7,11 @@ package describer
 
 import (
 	"context"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"path"
 	"reflect"
 	"strings"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
@@ -87,7 +88,7 @@ func (r *Resource) Object() *Object {
 			ObjectType: func() interface{} {
 				return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
 			},
-			RootPath:   r.RootPath,
+			RootPath: r.RootPath,
 		},
 	)
 }
@@ -114,10 +115,11 @@ func getBreadcrumb(rootPath ResourceLink, objectTitle string, objectUrl string, 
 	return title
 }
 
+//
 func getCrdTitle(namespace string, crd *unstructured.Unstructured, objectName string) []component.TitleComponent {
 	var title []component.TitleComponent
 	if namespace == "" {
-		title= component.Title(component.NewLink("", "Cluster Overview", "/cluster-overview"),
+		title = component.Title(component.NewLink("", "Cluster Overview", "/cluster-overview"),
 			component.NewLink("", "Custom Resources", "/cluster-overview/custom-resources"))
 	} else {
 		title = component.Title(component.NewLink("", "Overview", "/overview/namespace/"+namespace),
@@ -125,10 +127,10 @@ func getCrdTitle(namespace string, crd *unstructured.Unstructured, objectName st
 	}
 
 	if objectName == "" {
-		title= append(title, component.NewText(crd.GetName()))
+		title = append(title, component.NewText(crd.GetName()))
 	} else {
-		title= append(title, component.NewLink("", crd.GetName(), getCrdUrl(namespace, crd)))
-		title= append(title, component.NewText(objectName))
+		title = append(title, component.NewLink("", crd.GetName(), getCrdUrl(namespace, crd)))
+		title = append(title, component.NewText(objectName))
 	}
 	return title
 }

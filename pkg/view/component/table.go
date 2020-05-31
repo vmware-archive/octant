@@ -116,7 +116,7 @@ func NewTableCols(keys ...string) []TableCol {
 
 // IsEmpty returns true if there is one or more rows.
 func (t *Table) IsEmpty() bool {
-	return len(t.Config.Rows) < 1
+	return len(t.Config.Rows) == 0
 }
 
 func (t *Table) SetPlaceholder(placeholder string) {
