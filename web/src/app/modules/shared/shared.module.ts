@@ -67,6 +67,7 @@ import { OverflowLabelsComponent } from './components/presentation/overflow-labe
 import { OverflowSelectorsComponent } from './components/presentation/overflow-selectors/overflow-selectors.component';
 import { PreferencesComponent } from './components/presentation/preferences/preferences.component';
 import { HelperComponent } from './components/smart/helper/helper.component';
+import { FilterDeletedDatagridRowPipe } from './pipes/filterDeletedDatagridRow/filter-deleted-datagrid-row.pipe';
 
 @NgModule({
   declarations: [
@@ -88,6 +89,7 @@ import { HelperComponent } from './components/smart/helper/helper.component';
     EditorComponent,
     ErrorComponent,
     ExpressionSelectorComponent,
+    FilterDeletedDatagridRowPipe,
     FiltersComponent,
     FlexlayoutComponent,
     FormComponent,
