@@ -19,7 +19,7 @@
   </clr-dg-column>
   <clr-dg-row
     *clrDgItems="let row of rowsWithMetadata; trackBy: identifyRow"
-    [ngClass]="rowClass(row)"
+    [ngClass]="row | filterDeletedDatagridRow"
   >
     <clr-dg-action-overflow *ngIf="row.actions.length > 0 && !row.isDeleted">
       <ng-container *ngFor="let action of row.actions">

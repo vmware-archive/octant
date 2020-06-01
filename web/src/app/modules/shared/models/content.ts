@@ -315,6 +315,12 @@ export interface TableRow {
   [key: string]: View;
 }
 
+export interface TableRowWithMetadata {
+  data: TableRow;
+  actions?: GridAction[];
+  isDeleted: boolean;
+}
+
 export interface TableColumn {
   name: string;
   accessor: string;

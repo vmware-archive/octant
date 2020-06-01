@@ -9,6 +9,7 @@ import {
   GridActionsView,
   TableFilters,
   TableRow,
+  TableRowWithMetadata,
   TableView,
   View,
 } from 'src/app/modules/shared/models/content';
@@ -121,10 +122,6 @@ export class DatagridComponent implements OnChanges {
     return true;
   }
 
-  rowClass(row: TableRowWithMetadata) {
-    return row.isDeleted ? ['row-deleted'] : [];
-  }
-
   cancelModal() {
     this.resetModal();
   }
@@ -146,12 +143,6 @@ export class DatagridComponent implements OnChanges {
     this.isModalOpen = false;
     this.actionDialogOptions = undefined;
   }
-}
-
-interface TableRowWithMetadata {
-  data: TableRow;
-  actions?: GridAction[];
-  isDeleted: boolean;
 }
 
 interface ActionDialogOptions {
