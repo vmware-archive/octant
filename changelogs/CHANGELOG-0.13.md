@@ -5,9 +5,10 @@
  - https://github.com/vmware-tanzu/octant/releases/tag/v0.13.0
 
 ### Highlights
-  * Added Datagrid actions
-  * Added Resource deleting indicators
-  * Added Storybook for UI prototying and exploring
+  * Added resource editing
+  * Added datagrid actions
+  * Added resource deleting indicators
+  * Added storybook for UI prototying and exploring
   * Added Electron prototype
   * Upgraded client-go and remove k8s.io/kubernetes imports
   * Upgraded to Angular 9.1.9 and Clarity 3.1.3
