@@ -382,9 +382,10 @@ func (m *Manager) start(ctx context.Context, c config) error {
 	}
 
 	for _, actionName := range metadata.Capabilities.ActionNames {
-		pluginLogger.With("action-path", actionName).Infof("registering plugin action")
-		err := m.ActionRegistrar.Register(actionName, func(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
-			return service.HandleAction(ctx, actionName, payload)
+		actionPath := actionName
+		pluginLogger.With("action-path", actionPath).Infof("registering plugin action")
+		err := m.ActionRegistrar.Register(actionPath, func(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
+			return service.HandleAction(ctx, actionPath, payload)
 		})
 
 		if err != nil {
