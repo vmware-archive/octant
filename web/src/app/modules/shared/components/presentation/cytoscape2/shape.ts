@@ -7,11 +7,11 @@ export abstract class BaseShape {
 }
 
 export class Edge extends BaseShape {
-  classes: string;
 
   constructor( id: string,
-                        public sourceId: string,
-                        public targetId: string) {
+                  public sourceId: string,
+                  public targetId: string,
+                  public classes?: string ) {
     super(id);
   }
 
@@ -54,8 +54,26 @@ export abstract class Shape extends BaseShape {
 
   abstract preferredPosition(): {x: number, y: number};
 
-  portPosition(): number {
-    return(this.preferredPosition().y);
+  ports: Shape[] = [];
+
+  nextPortPosition(shapes: BaseShape[], port: Port, prefered: number): number {
+    if(this.ports.length === 0) {
+      this.ports.push(port);
+      return prefered;
+    }
+
+    if(this.ports.includes(port)) {
+      return port.y;
+    }
+
+    const total= this.ports.filter( (shape: Port) => shape.parentId === this.id && shape.location === port.location).length;
+    this.ports.push(port);
+    return total > 0 ? prefered + this.height / 3 : prefered;
+  }
+
+
+  preferredPortPosition(shapes: BaseShape[]): number {
+    return(this.preferredPosition().y - this.height / 6);
   }
 
   getPosition(shapes: BaseShape[]): {x: number, y: number}{
@@ -65,7 +83,7 @@ export abstract class Shape extends BaseShape {
   getPortPosition(shapes: Shape[], port: Port): {x: number, y: number}{
     const textWidth= this.getTextWidth(port.label) + 10;
     const {x, y} = this.getPosition(shapes);
-    const portY= this.portPosition();
+    const portY= this.nextPortPosition(shapes, port, this.preferredPortPosition(shapes));
 
     switch (port.location) {
       default:
@@ -132,7 +150,7 @@ export class Deployment extends Shape {
     return{x: 750, y: 450}
   };
 
-  portPosition(): number {
+  preferredPortPosition(shapes: BaseShape[]): number {
     return(this.preferredPosition().y/2);
   }
 
@@ -210,6 +228,9 @@ export class Port extends Shape {
   getPosition(shapes: Shape[]): {x: number, y: number} {
     const parentNode: Shape= shapes.find( (shape: Shape) => shape.id===this.parentId);
     const portPosition = parentNode.getPortPosition(shapes, this);
+    this.x= portPosition.x;
+    this.y= portPosition.y;
+
     return portPosition;
   };
 }

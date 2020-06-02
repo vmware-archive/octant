@@ -31,9 +31,15 @@ const shapes: BaseShape[] = [
   new Port('glyph21', 'metadata.annotations', 'right', 'port', 'glyph2'),
   new Port('glyph41', 'app: demo', 'left', 'label', 'glyph30'),
   new Port('glyph42', 'app: demo', 'right', 'selector', 'glyph1'),
-  new Edge('glyph1-glyph30', 'glyph1', 'glyph30'),
-  new Edge('glyph3-glyph2', 'glyph3', 'glyph2'),
-  new Edge('glyph3-glyph30', 'glyph3', 'glyph30'),
+  new Port('glyph50', 'name', 'right', 'port', 'glyph3'),
+  new Port('glyph51', 'serviceAccount', 'left', 'port', 'glyph30'),
+  new Port('glyph52', 'secrets.name', 'left', 'port', 'glyph3'),
+  new Edge('glyph42-glyph41', 'glyph42', 'glyph41'),
+  new Edge('glyph52-glyph21', 'glyph52', 'glyph21'),
+  new Edge('glyph50-glyph51', 'glyph50', 'glyph51', 'unbundled'),
+  // new Edge('glyph1-glyph30', 'glyph1', 'glyph30'),
+  // new Edge('glyph3-glyph2', 'glyph3', 'glyph2'),
+  // new Edge('glyph3-glyph30', 'glyph3', 'glyph30'),
 ];
 const style = ELEMENTS_STYLE;
 

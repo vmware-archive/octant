@@ -50,6 +50,14 @@ export const ELEMENTS_STYLE = [
     },
   },
   {
+    selector: '.unbundled',
+    css: {
+      'curve-style': 'unbundled-bezier',
+      'source-endpoint': '90deg',
+      'target-endpoint': '270deg',
+    },
+  },
+  {
     selector: '.pod',
     css: {
       'ghost': 'yes',
