@@ -43,7 +43,7 @@ describe('ContentService', () => {
       ],
     });
 
-    service = TestBed.get(ContentService);
+    service = TestBed.inject(ContentService);
   });
 
   it('should be created', () => {
@@ -59,7 +59,7 @@ describe('ContentService', () => {
     };
 
     beforeEach(() => {
-      const backendService = TestBed.get(WebsocketService);
+      const backendService = TestBed.inject(WebsocketService);
       backendService.triggerHandler(ContentUpdateMessage, update);
     });
 
@@ -76,7 +76,7 @@ describe('ContentService', () => {
     const filters = [{ key: 'foo', value: 'bar' }];
 
     beforeEach(() => {
-      labelFilterService = TestBed.get(LabelFilterService);
+      labelFilterService = TestBed.inject(LabelFilterService);
       labelFilterService.filters.next(filters);
     });
 
@@ -90,7 +90,7 @@ describe('ContentService', () => {
     let filters: Filter[];
 
     beforeEach(() => {
-      backendService = TestBed.get(WebsocketService);
+      backendService = TestBed.inject(WebsocketService);
       spyOn(backendService, 'sendMessage');
     });
 
@@ -108,7 +108,7 @@ describe('ContentService', () => {
     describe('with filters defined', () => {
       beforeEach(() => {
         filters = [{ key: 'foo', value: 'bar' }];
-        const labelFilterService = TestBed.get(LabelFilterService);
+        const labelFilterService = TestBed.inject(LabelFilterService);
         labelFilterService.filters.next(filters);
       });
 

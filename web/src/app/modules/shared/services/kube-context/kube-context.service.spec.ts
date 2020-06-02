@@ -26,7 +26,7 @@ describe('KubeContextService', () => {
   );
 
   it('should be created', () => {
-    const service: KubeContextService = TestBed.get(KubeContextService);
+    const service: KubeContextService = TestBed.inject(KubeContextService);
     expect(service).toBeTruthy();
   });
 
@@ -39,8 +39,8 @@ describe('KubeContextService', () => {
     };
 
     beforeEach(() => {
-      service = TestBed.get(KubeContextService);
-      const backendService = TestBed.get(WebsocketService);
+      service = TestBed.inject(KubeContextService);
+      const backendService = TestBed.inject(WebsocketService);
       backendService.triggerHandler(KubeContextMessage, update);
     });
 

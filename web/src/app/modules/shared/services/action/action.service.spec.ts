@@ -18,7 +18,7 @@ describe('ActionService', () => {
       ],
     });
 
-    service = TestBed.get(ActionService);
+    service = TestBed.inject(ActionService);
   });
 
   it('should be created', () => {
@@ -29,7 +29,7 @@ describe('ActionService', () => {
     let websocketService: WebsocketService;
 
     beforeEach(() => {
-      websocketService = TestBed.get(WebsocketService);
+      websocketService = TestBed.inject(WebsocketService);
       spyOn(websocketService, 'sendMessage');
     });
 

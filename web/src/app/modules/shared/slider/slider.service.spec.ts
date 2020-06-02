@@ -9,7 +9,7 @@ describe('SliderService', () => {
   let service: SliderService;
 
   beforeEach(() => {
-    service = TestBed.get(SliderService);
+    service = TestBed.inject(SliderService);
   });
 
   it('should be created', () => {
