@@ -33,6 +33,7 @@ import { LoadingComponent } from './components/presentation/loading/loading.comp
 import { HighlightModule } from 'ngx-highlightjs';
 import { LabelSelectorComponent } from './components/presentation/label-selector/label-selector.component';
 import { CytoscapeComponent } from './components/presentation/cytoscape/cytoscape.component';
+import { Cytoscape2Component } from './components/presentation/cytoscape2/cytoscape2.component';
 import { SelectorsComponent } from './components/presentation/selectors/selectors.component';
 import { ResourceViewerComponent } from './components/presentation/resource-viewer/resource-viewer.component';
 import { SummaryComponent } from './components/presentation/summary/summary.component';
@@ -83,6 +84,7 @@ import { FilterDeletedDatagridRowPipe } from './pipes/filterDeletedDatagridRow/f
     ContentSwitcherComponent,
     ContextSelectorComponent,
     CytoscapeComponent,
+    Cytoscape2Component,
     DatagridComponent,
     DefaultPipe,
     DonutChartComponent,
@@ -161,6 +163,7 @@ import { FilterDeletedDatagridRowPipe } from './pipes/filterDeletedDatagridRow/f
     ContentSwitcherComponent,
     ContextSelectorComponent,
     CytoscapeComponent,
+    Cytoscape2Component,
     DatagridComponent,
     DefaultPipe,
     DonutChartComponent,
