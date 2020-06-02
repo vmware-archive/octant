@@ -21,6 +21,7 @@ const labelFilterStub: Partial<LabelFilterService> = {
 describe('InputFilterComponent', () => {
   let component: InputFilterComponent;
   let fixture: ComponentFixture<InputFilterComponent>;
+  let labelFilterService: LabelFilterService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -62,9 +63,7 @@ describe('InputFilterComponent', () => {
   });
 
   it('should show the user text if there are no filters', () => {
-    const labelFilterService: LabelFilterService = TestBed.inject(
-      LabelFilterService
-    );
+    labelFilterService = TestBed.inject(LabelFilterService);
     labelFilterService.filters.next([]);
     component.showTagList = true;
     fixture.whenStable().then(() => {
@@ -80,9 +79,7 @@ describe('InputFilterComponent', () => {
   });
 
   it('should show the tags if there are filters', () => {
-    const labelFilterService: LabelFilterService = TestBed.inject(
-      LabelFilterService
-    );
+    labelFilterService = TestBed.inject(LabelFilterService);
     labelFilterService.filters.next([
       { key: 'test1', value: 'filter1' },
       { key: 'test2', value: 'filter2' },
@@ -111,9 +108,7 @@ describe('InputFilterComponent', () => {
     ).nativeElement;
     expect(inputElement.placeholder).toMatch(/\bFilter by labels\b/i);
 
-    const labelFilterService: LabelFilterService = TestBed.get(
-      LabelFilterService
-    );
+    labelFilterService = TestBed.inject(LabelFilterService);
     labelFilterService.filters.next([
       { key: 'test1', value: 'filter1' },
       { key: 'test2', value: 'filter2' },
@@ -140,14 +135,14 @@ describe('InputFilterComponent', () => {
     inputNativeElement.dispatchEvent(new Event('input'));
     expect(component.inputValue).toBe('test1:filter1');
 
-    const labelFilterService = TestBed.get(LabelFilterService);
+    labelFilterService = TestBed.inject(LabelFilterService);
     labelFilterService.decodeFilter = jasmine
       .createSpy('decodeFilter')
       .and.returnValue({ key: 'test1', value: 'filter1' });
     labelFilterService.add = jasmine.createSpy('add');
     inputDebugElement.triggerEventHandler('keyup.enter', null);
-    expect(labelFilterService.decodeFilter.calls.count()).toBe(1);
-    expect(labelFilterService.add.calls.count()).toBe(1);
+    expect((labelFilterService.decodeFilter as any).calls.count()).toBe(1);
+    expect((labelFilterService as any).add.calls.count()).toBe(1);
     expect(component.showTagList).toBe(true);
     expect(component.inputValue).toBe('');
 

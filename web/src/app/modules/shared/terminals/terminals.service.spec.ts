@@ -21,7 +21,7 @@ describe('TerminalOutputService', () => {
       ],
     });
 
-    service = TestBed.get(TerminalOutputService);
+    service = TestBed.inject(TerminalOutputService);
   });
 
   it('should be created', () => {

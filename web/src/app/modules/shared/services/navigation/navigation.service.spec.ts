@@ -31,7 +31,7 @@ describe('NavigationService', () => {
   );
 
   it('should be created', () => {
-    const service: NavigationService = TestBed.get(NavigationService);
+    const service: NavigationService = TestBed.inject(NavigationService);
     expect(service).toBeTruthy();
   });
 

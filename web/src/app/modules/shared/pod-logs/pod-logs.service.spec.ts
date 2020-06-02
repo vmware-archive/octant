@@ -10,7 +10,7 @@ describe('PodLogsService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: PodLogsService = TestBed.get(PodLogsService);
+    const service: PodLogsService = TestBed.inject(PodLogsService);
     expect(service).toBeTruthy();
   });
 });

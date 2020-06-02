@@ -13,7 +13,7 @@ describe('NotifierService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: NotifierService = TestBed.get(NotifierService);
+    const service: NotifierService = TestBed.inject(NotifierService);
     expect(service).toBeTruthy();
     expect(service.globalSignalsStream.getValue()).toEqual([]);
   });

@@ -10,7 +10,7 @@ describe('DagreService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: D3GraphvizService = TestBed.get(D3GraphvizService);
+    const service: D3GraphvizService = TestBed.inject(D3GraphvizService);
     expect(service).toBeTruthy();
   });
 });
