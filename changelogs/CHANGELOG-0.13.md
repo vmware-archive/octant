@@ -1,3 +1,13 @@
+## v0.13.1
+#### 2020-06-03
+
+### Download
+ - https://github.com/vmware-tanzu/octant/releases/tag/v0.13.1
+
+### Bug Fixes
+  * Switched to TestBed.inject to fix linter warnings (#917, @mklanjsek)
+  * Fixed nil resource.Quantity causing panic (#973, @GuessWhoSamFoo)
+
 ## v0.13.0
 #### 2020-06-01
 
