@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vmware-tanzu/octant/internal/testutil"
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -57,6 +58,11 @@ func Test_HorizontalPodAutoscalerListHandler(t *testing.T) {
 			CurrentReplicas:                 2,
 			CurrentCPUUtilizationPercentage: &currentPercentCPU,
 		},
+	}
+
+	metrics := `[{"type":"Resource","resource":{"name":"memory","targetAverageUtilization":80}}]`
+	object.Annotations = map[string]string{
+		"autoscaling.alpha.kubernetes.io/metrics": metrics,
 	}
 
 	tpo.PathForObject(object, object.Name, "/path")
@@ -360,4 +366,74 @@ func Test_createHorizontalPodAutoscalerConditionsView(t *testing.T) {
 	}...)
 
 	component.AssertEqual(t, expected, got)
+}
+
+func Test_getCombinedMetrics(t *testing.T) {
+	hpa := testutil.CreateHorizontalPodAutoscaler("hpa")
+	cases := []struct {
+		name                    string
+		horizontalPodAutoscaler autoscalingv1.HorizontalPodAutoscaler
+		annotations             map[string]string
+		expected                string
+	}{
+		{
+			name: "Object Metric Value",
+			annotations: map[string]string{
+				"autoscaling.alpha.kubernetes.io/metrics":         `[{"type":"Object","object":{"metricName":"requests-per-second","targetValue":42}}]`,
+				"autoscaling.alpha.kubernetes.io/current-metrics": `[{"type":"Object","object":{"metricName":"requests-per-second","currentValue":1}}]`,
+			},
+			horizontalPodAutoscaler: *hpa,
+			expected:                "1/42",
+		},
+		{
+			name: "Pods Metric Average Value",
+			annotations: map[string]string{
+				"autoscaling.alpha.kubernetes.io/metrics":         `[{"type":"Pods","pods":{"metricName":"packets-per-second","targetAverageValue":"350"}}]`,
+				"autoscaling.alpha.kubernetes.io/current-metrics": `[{"type":"Pods","pods":{"metricName":"packets-per-second","currentAverageValue":"1000"}}]`,
+			},
+			horizontalPodAutoscaler: *hpa,
+			expected:                "1k/350",
+		},
+		{
+			name: "Resource Metric Average Value",
+			annotations: map[string]string{
+				"autoscaling.alpha.kubernetes.io/metrics":         `[{"type":"Resource","resource":{"name":"memory","targetAverageValue":9000}}]`,
+				"autoscaling.alpha.kubernetes.io/current-metrics": `[{"type":"Resource","resource":{"name":"memory","currentAverageValue":"9001"}}]`,
+			},
+			horizontalPodAutoscaler: *hpa,
+			expected:                "9001/9k",
+		},
+		{
+			name: "Resource Metric Average Utilization",
+			annotations: map[string]string{
+				"autoscaling.alpha.kubernetes.io/metrics":         `[{"type":"Resource","resource":{"name":"memory","targetAverageUtilization":9000}}]`,
+				"autoscaling.alpha.kubernetes.io/current-metrics": `[{"type":"Resource","resource":{"name":"memory","currentAverageUtilization":9001}}]`,
+			},
+			horizontalPodAutoscaler: *hpa,
+			expected:                "",
+		},
+		{
+			name: "External Metric Average Value",
+			annotations: map[string]string{
+				"autoscaling.alpha.kubernetes.io/metrics":         `[{"type":"External","external":{"metricName":"queue_messages_ready","targetAverageValue":"0"}}]`,
+				"autoscaling.alpha.kubernetes.io/current-metrics": `[{"type":"External","external":{"metricName":"queue_messages_ready","currentAverageValue":"3"}}]`,
+			},
+			horizontalPodAutoscaler: *hpa,
+			expected:                "3/0",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.horizontalPodAutoscaler.Annotations = tc.annotations
+
+			horizontalPodAutoscalerMetrics, horizontalPodAutoscalerCurrentMetrics, err := parseAnnotations(tc.horizontalPodAutoscaler)
+			require.NoError(t, err)
+
+			result, err := getCombinedMetrics(tc.horizontalPodAutoscaler, horizontalPodAutoscalerMetrics, horizontalPodAutoscalerCurrentMetrics)
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.expected, result)
+		})
+	}
 }

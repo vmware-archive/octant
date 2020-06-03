@@ -495,13 +495,13 @@ func getCombinedMetrics(horizontalPodAutoscaler autoscalingv1.HorizontalPodAutos
 		switch m.Type {
 		case autoscalingv1.ObjectMetricSourceType:
 			if m.Object != nil {
-				if m.Object.MetricName != "" {
+				if m.Object.MetricName != "" && &m.Object.TargetValue != nil {
 					targets[m.Object.MetricName] = m.Object.TargetValue.String()
 				}
 			}
 		case autoscalingv1.PodsMetricSourceType:
 			if m.Pods != nil {
-				if m.Pods.MetricName != "" {
+				if m.Pods.MetricName != "" && &m.Pods.TargetAverageValue != nil {
 					target := m.Pods.TargetAverageValue.String()
 					targets[m.Pods.MetricName] = target
 				}
@@ -509,8 +509,15 @@ func getCombinedMetrics(horizontalPodAutoscaler autoscalingv1.HorizontalPodAutos
 
 		case autoscalingv1.ResourceMetricSourceType:
 			if m.Resource != nil {
-				if m.Resource.Name != "" {
+				if m.Resource.Name != "" && m.Resource.TargetAverageValue != nil {
 					targets[string(m.Resource.Name)] = m.Resource.TargetAverageValue.String()
+				}
+			}
+
+		case autoscalingv1.ExternalMetricSourceType:
+			if m.External != nil {
+				if m.External.MetricName != "" && m.External.TargetAverageValue != nil {
+					targets[string(m.External.MetricName)] = m.External.TargetAverageValue.String()
 				}
 			}
 		}
@@ -539,6 +546,12 @@ func getCombinedMetrics(horizontalPodAutoscaler autoscalingv1.HorizontalPodAutos
 			if m.Resource != nil {
 				if m.Resource.Name != "" {
 					currents[string(m.Resource.Name)] = current
+				}
+			}
+		case autoscalingv1.ExternalMetricSourceType:
+			if m.External != nil {
+				if m.External.MetricName != "" {
+					currents[string(m.External.MetricName)] = current
 				}
 			}
 		}
@@ -574,13 +587,21 @@ func getMetricStatusValue(metricStatus *autoscalingv1.MetricStatus) (string, err
 
 	switch metricStatus.Type {
 	case autoscalingv1.ObjectMetricSourceType:
-		value = metricStatus.Object.CurrentValue.String()
+		if &metricStatus.Object.CurrentValue != nil {
+			value = metricStatus.Object.CurrentValue.String()
+		}
 	case autoscalingv1.PodsMetricSourceType:
-		value = metricStatus.Pods.CurrentAverageValue.String()
+		if &metricStatus.Pods.CurrentAverageValue != nil {
+			value = metricStatus.Pods.CurrentAverageValue.String()
+		}
 	case autoscalingv1.ResourceMetricSourceType:
-		value = metricStatus.Resource.CurrentAverageValue.String()
+		if &metricStatus.Resource.CurrentAverageValue != nil {
+			value = metricStatus.Resource.CurrentAverageValue.String()
+		}
 	case autoscalingv1.ExternalMetricSourceType:
-		value = metricStatus.External.CurrentAverageValue.String()
+		if metricStatus.External.CurrentAverageValue != nil {
+			value = metricStatus.External.CurrentAverageValue.String()
+		}
 	}
 
 	return value, nil
