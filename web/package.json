@@ -86,6 +86,7 @@
     "@storybook/addon-notes": "^5.3.18",
     "@storybook/addons": "^5.3.18",
     "@storybook/angular": "^5.3.18",
+    "@storybook/theming": "^5.3.19",
     "@types/d3": "~5.7.2",
     "@types/graphlib-dot": "^0.6.1",
     "@types/jasmine": "^3.5.11",
