@@ -1,5 +1,6 @@
 import { storiesOf } from '@storybook/angular';
 import { boolean, object } from '@storybook/addon-knobs';
+import {TextComponent} from "../app/modules/shared/components/presentation/text/text.component";
 
 storiesOf('Text', module).add('with text', () => ({
   props: {
@@ -13,13 +14,5 @@ storiesOf('Text', module).add('with text', () => ({
       },
     },
   },
-  template: `
-    <div class="main-container">
-        <div class="content-container">
-            <div class="content-area">
-                <app-view-text [view]="view"></app-view-text>
-            </div>
-        </div>
-    </div>
-    `,
+  component: TextComponent,
 }));

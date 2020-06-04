@@ -4,6 +4,8 @@ import { SharedModule } from '../src/app/modules/shared/shared.module';
 import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
 import { setConsoleOptions } from '@storybook/addon-console';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {APP_INITIALIZER} from "@angular/core";
+import {InitService} from "../src/app/modules/shared/services/init/init.service";
 
 // enable knobs
 addDecorator(withKnobs);
@@ -35,5 +37,14 @@ addDecorator(
         },
       }),
     ],
+    providers: [
+      InitService,
+      {
+        provide: APP_INITIALIZER,
+        useFactory: (initService) => () => initService.init(),
+        deps: [InitService],
+        multi: true
+      },
+    ]
   })
 );
