@@ -14,7 +14,7 @@ import (
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
-	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -53,13 +53,13 @@ func CreateConfigMap(name string) *corev1.ConfigMap {
 }
 
 // CRDOption is an option for configuring CreateCRD.
-type CRDOption func(definition *apiextv1beta1.CustomResourceDefinition)
+type CRDOption func(definition *apiextv1.CustomResourceDefinition)
 
 // WithGenericCRD creates a crd with group/kind and one version
 func WithGenericCRD() CRDOption {
-	return func(crd *apiextv1beta1.CustomResourceDefinition) {
+	return func(crd *apiextv1.CustomResourceDefinition) {
 		crd.Spec.Group = "group"
-		crd.Spec.Versions = []apiextv1beta1.CustomResourceDefinitionVersion{
+		crd.Spec.Versions = []apiextv1.CustomResourceDefinitionVersion{
 			{
 				Name:   "v1",
 				Served: true,
@@ -70,8 +70,8 @@ func WithGenericCRD() CRDOption {
 }
 
 // CreateCRD creates a CRD
-func CreateCRD(name string, options ...CRDOption) *apiextv1beta1.CustomResourceDefinition {
-	crd := &apiextv1beta1.CustomResourceDefinition{
+func CreateCRD(name string, options ...CRDOption) *apiextv1.CustomResourceDefinition {
+	crd := &apiextv1.CustomResourceDefinition{
 		TypeMeta:   genTypeMeta(gvk.CustomResourceDefinition),
 		ObjectMeta: genObjectMeta(name, true),
 	}

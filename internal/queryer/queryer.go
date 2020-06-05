@@ -20,7 +20,6 @@ import (
 	"k8s.io/api/extensions/v1beta1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
-	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kLabels "k8s.io/apimachinery/pkg/labels"
@@ -28,9 +27,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/discovery"
-	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/vmware-tanzu/octant/internal/gvk"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	dashstrings "github.com/vmware-tanzu/octant/internal/util/strings"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -339,7 +338,7 @@ func (osq *ObjectStoreQueryer) Events(ctx context.Context, object metav1.Object)
 	var events []*corev1.Event
 	for _, unstructuredEvent := range allEvents.Items {
 		event := &corev1.Event{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(unstructuredEvent.Object, event)
+		err := kubernetes.FromUnstructured(&unstructuredEvent, event)
 		if err != nil {
 			return nil, err
 		}
@@ -375,12 +374,9 @@ func (osq *ObjectStoreQueryer) IngressesForService(ctx context.Context, service 
 
 	for i := range ul.Items {
 		ingress := &v1beta1.Ingress{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(ul.Items[i].Object, ingress)
+		err := kubernetes.FromUnstructured(&ul.Items[i], ingress)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured ingress")
-		}
-		if err = copyObjectMeta(ingress, &ul.Items[i]); err != nil {
-			return nil, errors.Wrap(err, "copying object metadata")
 		}
 		backends := osq.listIngressBackends(*ingress)
 		if !containsBackend(backends, service.Name) {
@@ -502,7 +498,7 @@ func (osq *ObjectStoreQueryer) ScaleTarget(ctx context.Context, hpa *autoscaling
 		switch key.Kind {
 		case "Deployment":
 			deployment := &appsv1.Deployment{}
-			if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, deployment); err != nil {
+			if err := kubernetes.FromUnstructured(u, deployment); err != nil {
 				return nil, errors.WithMessage(err, "converting unstructured object to deployment")
 			}
 
@@ -513,7 +509,7 @@ func (osq *ObjectStoreQueryer) ScaleTarget(ctx context.Context, hpa *autoscaling
 			return object, nil
 		case "ReplicaSet":
 			replicaSet := &appsv1.ReplicaSet{}
-			if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, replicaSet); err != nil {
+			if err := kubernetes.FromUnstructured(u, replicaSet); err != nil {
 				return nil, errors.WithMessage(err, "converting unstructured object to replica set")
 			}
 
@@ -524,7 +520,7 @@ func (osq *ObjectStoreQueryer) ScaleTarget(ctx context.Context, hpa *autoscaling
 			return object, nil
 		case "ReplicationController":
 			replicationController := &corev1.ReplicationController{}
-			if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, replicationController); err != nil {
+			if err := kubernetes.FromUnstructured(u, replicationController); err != nil {
 				return nil, errors.WithMessage(err, "converting unstructured object to replication controller")
 			}
 
@@ -579,11 +575,7 @@ func (osq *ObjectStoreQueryer) loadPods(ctx context.Context, key store.Key, labe
 
 	for i := range objects.Items {
 		pod := &corev1.Pod{}
-		if err := scheme.Scheme.Convert(&objects.Items[i], pod, runtime.InternalGroupVersioner); err != nil {
-			return nil, err
-		}
-
-		if err := copyObjectMeta(pod, &objects.Items[i]); err != nil {
+		if err := kubernetes.FromUnstructured(&objects.Items[i], pod); err != nil {
 			return nil, err
 		}
 
@@ -649,12 +641,9 @@ func (osq *ObjectStoreQueryer) ServicesForPod(ctx context.Context, pod *corev1.P
 	}
 	for i := range ul.Items {
 		svc := &corev1.Service{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(ul.Items[i].Object, svc)
+		err := kubernetes.FromUnstructured(&ul.Items[i], svc)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured service")
-		}
-		if err = copyObjectMeta(svc, &ul.Items[i]); err != nil {
-			return nil, errors.Wrap(err, "copying object metadata")
 		}
 		labelSelector, err := osq.getSelector(svc)
 		if err != nil {
@@ -701,12 +690,8 @@ func (osq *ObjectStoreQueryer) ServiceAccountForPod(ctx context.Context, pod *co
 	}
 
 	serviceAccount := &corev1.ServiceAccount{}
-	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, serviceAccount); err != nil {
+	if err := kubernetes.FromUnstructured(u, serviceAccount); err != nil {
 		return nil, errors.WithMessage(err, "converting unstructured object to service account")
-	}
-
-	if err = copyObjectMeta(serviceAccount, u); err != nil {
-		return nil, errors.Wrap(err, "copying object metadata")
 	}
 
 	return serviceAccount, nil
@@ -731,12 +716,9 @@ func (osq *ObjectStoreQueryer) ConfigMapsForPod(ctx context.Context, pod *corev1
 
 	for i := range ul.Items {
 		configMap := &corev1.ConfigMap{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(ul.Items[i].Object, configMap)
+		err := kubernetes.FromUnstructured(&ul.Items[i], configMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured configmap")
-		}
-		if err = copyObjectMeta(configMap, &ul.Items[i]); err != nil {
-			return nil, errors.Wrap(err, "copying object metadata")
 		}
 
 		for ci := range pod.Spec.Containers {
@@ -782,12 +764,9 @@ func (osq *ObjectStoreQueryer) SecretsForPod(ctx context.Context, pod *corev1.Po
 
 	for i := range ul.Items {
 		secret := &corev1.Secret{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(ul.Items[i].Object, secret)
+		err := kubernetes.FromUnstructured(&ul.Items[i], secret)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured secret")
-		}
-		if err = copyObjectMeta(secret, &ul.Items[i]); err != nil {
-			return nil, errors.Wrap(err, "copying object metadata")
 		}
 
 		for vi := range pod.Spec.Volumes {
@@ -848,38 +827,6 @@ func (osq *ObjectStoreQueryer) getSelector(object runtime.Object) (*metav1.Label
 	default:
 		return nil, errors.Errorf("unable to retrieve selector for type %T", object)
 	}
-}
-
-func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
-	object, ok := to.(metav1.Object)
-	if !ok {
-		return errors.Errorf("%T is not an object", to)
-	}
-
-	t, err := meta.TypeAccessor(object)
-	if err != nil {
-		return errors.Wrapf(err, "accessing type meta")
-	}
-	t.SetAPIVersion(from.GetAPIVersion())
-	t.SetKind(from.GetObjectKind().GroupVersionKind().Kind)
-
-	object.SetNamespace(from.GetNamespace())
-	object.SetName(from.GetName())
-	object.SetGenerateName(from.GetGenerateName())
-	object.SetUID(from.GetUID())
-	object.SetResourceVersion(from.GetResourceVersion())
-	object.SetGeneration(from.GetGeneration())
-	object.SetSelfLink(from.GetSelfLink())
-	object.SetCreationTimestamp(from.GetCreationTimestamp())
-	object.SetDeletionTimestamp(from.GetDeletionTimestamp())
-	object.SetDeletionGracePeriodSeconds(from.GetDeletionGracePeriodSeconds())
-	object.SetLabels(from.GetLabels())
-	object.SetAnnotations(from.GetAnnotations())
-	object.SetOwnerReferences(from.GetOwnerReferences())
-	object.SetClusterName(from.GetClusterName())
-	object.SetFinalizers(from.GetFinalizers())
-
-	return nil
 }
 
 // extraKeys are keys that should be ignored in labels. These keys are added

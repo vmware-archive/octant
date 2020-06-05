@@ -39,7 +39,7 @@ func (s *Service) Visit(ctx context.Context, object *unstructured.Unstructured, 
 	defer span.End()
 
 	service := &corev1.Service{}
-	if err := convertToType(object, service); err != nil {
+	if err := kubernetes.FromUnstructured(object, service); err != nil {
 		return err
 	}
 

@@ -13,7 +13,6 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/link"
-	"github.com/vmware-tanzu/octant/pkg/plugin"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -30,12 +29,13 @@ type Options struct {
 	DisableLabels bool
 	DashConfig    config.Dash
 	Link          link.Interface
+	ObjectFactory ObjectFactory
 }
 
 // Printer is an interface for printing runtime objects.
 type Printer interface {
 	// Print prints a runtime object.
-	Print(ctx context.Context, object runtime.Object, pluginPrinter plugin.ManagerInterface) (component.Component, error)
+	Print(ctx context.Context, object runtime.Object) (component.Component, error)
 }
 
 // Resource prints runtime objects.
@@ -56,15 +56,16 @@ func NewResource(dashConfig config.Dash) *Resource {
 
 // Print prints a runtime object. If not handler can be found for the type,
 // it will print using `DefaultPrintFunc`.
-func (p *Resource) Print(ctx context.Context, object runtime.Object, pluginPrinter plugin.ManagerInterface) (component.Component, error) {
+func (p *Resource) Print(ctx context.Context, object runtime.Object) (component.Component, error) {
 	l, err := link.NewFromDashConfig(p.dashConfig)
 	if err != nil {
 		return nil, err
 	}
 
 	printOptions := Options{
-		DashConfig: p.dashConfig,
-		Link:       l,
+		DashConfig:    p.dashConfig,
+		Link:          l,
+		ObjectFactory: NewDefaultObjectFactory(),
 	}
 
 	t := reflect.TypeOf(object)

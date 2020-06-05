@@ -15,13 +15,12 @@ import (
 	apiEquality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/vmware-tanzu/octant/internal/link"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -291,11 +290,8 @@ func loadPods(ctx context.Context, key store.Key, o store.Store, labelSelector *
 
 	for i := range objects.Items {
 		pod := &corev1.Pod{}
-		if err := scheme.Scheme.Convert(&objects.Items[i], pod, runtime.InternalGroupVersioner); err != nil {
-			return nil, err
-		}
 
-		if err := copyObjectMeta(pod, &objects.Items[i]); err != nil {
+		if err := kubernetes.FromUnstructured(&objects.Items[i], pod); err != nil {
 			return nil, err
 		}
 
@@ -314,38 +310,6 @@ func loadPods(ctx context.Context, key store.Key, o store.Store, labelSelector *
 	}
 
 	return list, nil
-}
-
-func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
-	object, ok := to.(metav1.Object)
-	if !ok {
-		return errors.Errorf("%T is not an object", to)
-	}
-
-	t, err := meta.TypeAccessor(object)
-	if err != nil {
-		return errors.Wrapf(err, "accessing type meta")
-	}
-	t.SetAPIVersion(from.GetAPIVersion())
-	t.SetKind(from.GetObjectKind().GroupVersionKind().Kind)
-
-	object.SetNamespace(from.GetNamespace())
-	object.SetName(from.GetName())
-	object.SetGenerateName(from.GetGenerateName())
-	object.SetUID(from.GetUID())
-	object.SetResourceVersion(from.GetResourceVersion())
-	object.SetGeneration(from.GetGeneration())
-	object.SetSelfLink(from.GetSelfLink())
-	object.SetCreationTimestamp(from.GetCreationTimestamp())
-	object.SetDeletionTimestamp(from.GetDeletionTimestamp())
-	object.SetDeletionGracePeriodSeconds(from.GetDeletionGracePeriodSeconds())
-	object.SetLabels(from.GetLabels())
-	object.SetAnnotations(from.GetAnnotations())
-	object.SetOwnerReferences(from.GetOwnerReferences())
-	object.SetClusterName(from.GetClusterName())
-	object.SetFinalizers(from.GetFinalizers())
-
-	return nil
 }
 
 // extraKeys are keys that should be ignored in labels. These keys are added
@@ -415,13 +379,9 @@ func createPodListView(ctx context.Context, object runtime.Object, options Optio
 
 	for i := range list.Items {
 		pod := &corev1.Pod{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[i].Object, pod)
+		err := kubernetes.FromUnstructured(&list.Items[i], pod)
 		if err != nil {
 			return nil, err
-		}
-
-		if err := copyObjectMeta(pod, &list.Items[i]); err != nil {
-			return nil, errors.Wrap(err, "copy object metadata")
 		}
 
 		for _, ownerReference := range pod.OwnerReferences {
@@ -479,13 +439,9 @@ func createRollingPodListView(ctx context.Context, objects []runtime.Object, opt
 
 		for i := range list.Items {
 			pod := &corev1.Pod{}
-			err := runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[i].Object, pod)
+			err := kubernetes.FromUnstructured(&list.Items[i], pod)
 			if err != nil {
 				return nil, err
-			}
-
-			if err := copyObjectMeta(pod, &list.Items[i]); err != nil {
-				return nil, errors.Wrap(err, "copy object metadata")
 			}
 
 			for _, ownerReference := range pod.OwnerReferences {

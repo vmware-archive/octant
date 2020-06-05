@@ -38,7 +38,7 @@ func (s *HorizontalPodAutoscaler) Visit(ctx context.Context, object *unstructure
 	defer span.End()
 
 	hpa := &autoscalingv1.HorizontalPodAutoscaler{}
-	if err := convertToType(object, hpa); err != nil {
+	if err := kubernetes.FromUnstructured(object, hpa); err != nil {
 		return err
 	}
 

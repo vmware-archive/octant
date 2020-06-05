@@ -13,7 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -130,21 +130,19 @@ func createNavForCR(t *testing.T, name string) Navigation {
 	return *nav
 }
 
-func createCRD(name, kind string, isClusterScoped bool) *apiextv1beta1.CustomResourceDefinition {
-	scope := apiextv1beta1.ClusterScoped
+func createCRD(name, kind string, isClusterScoped bool) *apiextv1.CustomResourceDefinition {
+	scope := apiextv1.ClusterScoped
 	if !isClusterScoped {
-		scope = apiextv1beta1.NamespaceScoped
+		scope = apiextv1.NamespaceScoped
 	}
 
 	crd := testutil.CreateCRD(name)
 	crd.Spec.Scope = scope
 	crd.Spec.Group = "testing"
-	crd.Spec.Names = apiextv1beta1.CustomResourceDefinitionNames{
+	crd.Spec.Names = apiextv1.CustomResourceDefinitionNames{
 		Kind: kind,
 	}
-	// TODO fix this because Version is deprecated (GH#501)
-	crd.Spec.Version = "v1"
-	crd.Spec.Versions = []apiextv1beta1.CustomResourceDefinitionVersion{
+	crd.Spec.Versions = []apiextv1.CustomResourceDefinitionVersion{
 		{
 			Name:    "v1",
 			Served:  true,

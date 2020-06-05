@@ -9,7 +9,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
+
 	"path"
 	"sort"
 	"strings"
@@ -28,7 +31,6 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
-
 
 type containerActionFunc func(runtime.Object, *corev1.Container) (component.Action, error)
 
@@ -410,7 +412,7 @@ func describeEnvRows(ctx context.Context, namespace string, vars []corev1.EnvVar
 
 			if u != nil {
 				configMap := &corev1.ConfigMap{}
-				if err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, configMap); err != nil {
+				if err := kubernetes.FromUnstructured(u, configMap); err != nil {
 					return nil, err
 				}
 

@@ -1,0 +1,76 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: minioinstances.operator.min.io
+spec:
+  group: operator.min.io
+  scope: Namespaced
+  names:
+    kind: MinIOInstance
+    singular: minioinstance
+    plural: minioinstances
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        # openAPIV3Schema is the schema for validating custom objects.
+        # Refer https://kubernetes.io/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/#specifying-a-structural-schema
+        # for more details
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+              properties:
+                replicas:
+                  type: integer
+                  minimum: 1
+                  maximum: 32
+                image:
+                  type: string
+                serviceName:
+                  type: string
+                volumesPerServer:
+                  type: integer
+                mountPath:
+                  type: string
+                podManagementPolicy:
+                  type: string
+                  enum: [Parallel,OrderedReady]
+                  default: Parallel
+                requestAutoCert:
+                  type: boolean
+                  default: false
+                version:
+                  type: string
+                mountpath:
+                  type: string
+                subpath:
+                  type: string
+                mcs:
+                  type: object
+                  properties:
+                    image:
+                      type: string
+                    replicas:
+                      type: integer
+                      default: 2
+                    mcsSecret:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+            status:
+              type: object
+              properties:
+                currentState:
+                  type: string
+      subresources:
+        # status enables the status subresource.
+        status: {}
+      additionalPrinterColumns:
+        - name: Current State
+          type: string
+          jsonPath: ".status.currentState"

@@ -45,7 +45,7 @@ func (p *Pod) Visit(ctx context.Context, object *unstructured.Unstructured, hand
 	}
 
 	pod := &corev1.Pod{}
-	if err := convertToType(object, pod); err != nil {
+	if err := kubernetes.FromUnstructured(object, pod); err != nil {
 		return err
 	}
 

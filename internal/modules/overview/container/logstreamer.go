@@ -12,10 +12,11 @@ import (
 	"io"
 	"sync"
 
-	"github.com/vmware-tanzu/octant/internal/config"
-	"github.com/vmware-tanzu/octant/pkg/store"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/vmware-tanzu/octant/internal/config"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 type logStreamer struct {
@@ -47,7 +48,7 @@ func NewLogStreamer(ctx context.Context, dashConfig config.Dash, key store.Key, 
 		}
 
 		var pod corev1.Pod
-		err = runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, &pod)
+		err = kubernetes.FromUnstructured(object, &pod)
 
 		if err != nil {
 			cancelFn()

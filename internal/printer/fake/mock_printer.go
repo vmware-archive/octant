@@ -7,7 +7,6 @@ package fake
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	plugin "github.com/vmware-tanzu/octant/pkg/plugin"
 	component "github.com/vmware-tanzu/octant/pkg/view/component"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	reflect "reflect"
@@ -37,16 +36,16 @@ func (m *MockPrinter) EXPECT() *MockPrinterMockRecorder {
 }
 
 // Print mocks base method
-func (m *MockPrinter) Print(arg0 context.Context, arg1 runtime.Object, arg2 plugin.ManagerInterface) (component.Component, error) {
+func (m *MockPrinter) Print(arg0 context.Context, arg1 runtime.Object) (component.Component, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Print", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "Print", arg0, arg1)
 	ret0, _ := ret[0].(component.Component)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Print indicates an expected call of Print
-func (mr *MockPrinterMockRecorder) Print(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockPrinterMockRecorder) Print(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockPrinter)(nil).Print), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockPrinter)(nil).Print), arg0, arg1)
 }

@@ -45,14 +45,15 @@ func (cld *crdList) Describe(ctx context.Context, namespace string, options Opti
 	}
 
 	printOptions := printer.Options{
-		DashConfig: options.Dash,
-		Link:       options.Link,
+		DashConfig:    options.Dash,
+		Link:          options.Link,
+		ObjectFactory: printer.NewDefaultObjectFactory(),
 	}
 
 	title := getCrdTitle(namespace, crd, "")
 	contentResponse := component.NewContentResponse(title)
 
-	view, err := printer.CustomResourceDefinitionHandler(ctx, crd, namespace, printOptions)
+	view, err := printer.CustomResourceDefinitionVersionList(ctx, crd, namespace, printOptions)
 	if err != nil {
 		return component.EmptyContentResponse, err
 	}

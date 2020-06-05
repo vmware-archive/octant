@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 	corev1 "k8s.io/api/core/v1"
@@ -101,7 +102,7 @@ func getPod(tv *terminalViewer) (*corev1.Pod, error) {
 	pod := &corev1.Pod{}
 	switch t := tv.object.(type) {
 	case *unstructured.Unstructured:
-		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(t.Object, pod); err != nil {
+		if err := kubernetes.FromUnstructured(t, pod); err != nil {
 			return nil, err
 		}
 	case *corev1.Pod:

@@ -38,7 +38,7 @@ func (i *Ingress) Visit(ctx context.Context, object *unstructured.Unstructured, 
 	defer span.End()
 
 	ingress := &extv1beta1.Ingress{}
-	if err := convertToType(object, ingress); err != nil {
+	if err := kubernetes.FromUnstructured(object, ingress); err != nil {
 		return err
 	}
 

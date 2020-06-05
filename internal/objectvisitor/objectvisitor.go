@@ -189,11 +189,3 @@ func (dv *DefaultVisitor) visitObject(ctx context.Context, object runtime.Object
 
 	return dv.defaultHandler.Visit(ctx, u, handler, dv, visitDescendants)
 }
-
-func convertToType(object *unstructured.Unstructured, objectType interface{}) error {
-	if object == nil {
-		return errors.New("can't convert a nil object")
-	}
-
-	return runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, objectType)
-}

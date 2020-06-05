@@ -12,13 +12,13 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/rand"
 
 	"github.com/pkg/errors"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
@@ -64,8 +64,8 @@ func (c *CronJobTrigger) Handle(ctx context.Context, alerter action.Alerter, pay
 		return errors.New("object store cannot get cronjob")
 	}
 
-	var cronjob *batchv1beta1.CronJob
-	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, &cronjob); err != nil {
+	cronjob := &batchv1beta1.CronJob{}
+	if err := kubernetes.FromUnstructured(object, cronjob); err != nil {
 		return err
 	}
 

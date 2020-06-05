@@ -20,9 +20,9 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-// CustomResourceListHandler prints a list of custom resources as a table with
+// CreateCustomResourceList prints a list of custom resources as a table with
 // optional custom columns.
-func CustomResourceListHandler(crdObject *unstructured.Unstructured, resources *unstructured.UnstructuredList, version string, linkGenerator link.Interface) (component.Component, error) {
+func CreateCustomResourceList(crdObject *unstructured.Unstructured, resources *unstructured.UnstructuredList, version string, linkGenerator link.Interface) (component.Component, error) {
 	if crdObject == nil {
 		return nil, fmt.Errorf("custom resource definition is nil")
 	}

@@ -10,6 +10,7 @@ import (
 	"fmt"
 
 	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
@@ -435,7 +436,7 @@ func listReplicaSetsAsObjects(ctx context.Context, object runtime.Object, option
 	for i := range list.Items {
 		replicaSet := &appsv1.ReplicaSet{}
 
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[i].Object, replicaSet)
+		err := kubernetes.FromUnstructured(&list.Items[i], replicaSet)
 		if err != nil {
 			return nil, err
 		}

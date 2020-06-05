@@ -6,9 +6,9 @@ SPDX-License-Identifier: Apache-2.0
 package clusteroverview
 
 import (
+	"fmt"
 	"path"
 
-	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware-tanzu/octant/internal/gvk"
@@ -21,6 +21,7 @@ var (
 		gvk.Node,
 		gvk.PersistentVolume,
 		gvk.Namespace,
+		gvk.CustomResourceDefinition,
 	}
 )
 
@@ -44,8 +45,11 @@ func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 		p = "/storage/persistent-volumes"
 	case apiVersion == "v1" && kind == "Namespace":
 		p = "/namespaces"
+	case apiVersion == gvk.CustomResourceDefinition.GroupVersion().String() &&
+		kind == gvk.CustomResourceDefinition.Kind:
+		p = "/custom-resource-definitions"
 	default:
-		return "", errors.Errorf("unknown object %s %s", apiVersion, kind)
+		return "", fmt.Errorf("unknown object %s %s", apiVersion, kind)
 	}
 
 	return path.Join("/cluster-overview", p, name), nil

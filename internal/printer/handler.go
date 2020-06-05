@@ -23,6 +23,8 @@ func AddHandlers(p Handler) error {
 		CronJobHandler,
 		ClusterRoleListHandler,
 		ClusterRoleHandler,
+		CustomResourceDefinitionListHandler,
+		CustomResourceDefinitionHandler,
 		DaemonSetListHandler,
 		DaemonSetHandler,
 		DeploymentHandler,

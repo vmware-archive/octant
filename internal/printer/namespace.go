@@ -12,10 +12,11 @@ import (
 	"sort"
 
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 var (
@@ -185,10 +186,10 @@ func (n *NamespaceResourceQuotas) Create(ctx context.Context, options Options) (
 	if err != nil {
 		return nil, err
 	}
-	quotas := []corev1.ResourceQuota{}
+	var quotas []corev1.ResourceQuota
 	for i := range list.Items {
 		quota := corev1.ResourceQuota{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[i].Object, &quota)
+		err := kubernetes.FromUnstructured(&list.Items[i], &quota)
 		if err != nil {
 			return nil, err
 		}
@@ -311,7 +312,7 @@ func (n *NamespaceResourceLimits) Create(ctx context.Context, options Options) (
 	limits := corev1.LimitRangeList{}
 	for i := range list.Items {
 		limit := corev1.LimitRange{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[i].Object, &limit)
+		err := kubernetes.FromUnstructured(&list.Items[i], &limit)
 		if err != nil {
 			return nil, err
 		}

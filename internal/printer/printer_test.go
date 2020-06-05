@@ -19,7 +19,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/internal/testutil"
-	"github.com/vmware-tanzu/octant/pkg/plugin/fake"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -67,8 +66,6 @@ func Test_Resource_Print(t *testing.T) {
 
 			tpo := newTestPrinterOptions(controller)
 
-			pluginPrinter := fake.NewMockManagerInterface(controller)
-
 			p := NewResource(tpo.dashConfig)
 
 			if tc.printFunc != nil {
@@ -77,7 +74,7 @@ func Test_Resource_Print(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			got, err := p.Print(ctx, tc.object, pluginPrinter)
+			got, err := p.Print(ctx, tc.object)
 			if tc.isErr {
 				assert.Error(t, err)
 				return

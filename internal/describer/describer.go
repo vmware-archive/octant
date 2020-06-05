@@ -8,11 +8,8 @@ package describer
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sort"
 
-	"k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -155,38 +152,6 @@ var _ Describer = (*base)(nil)
 
 func newBaseDescriber() *base {
 	return &base{}
-}
-
-func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
-	object, ok := to.(metav1.Object)
-	if !ok {
-		return fmt.Errorf("%T is not an object", to)
-	}
-
-	t, err := meta.TypeAccessor(object)
-	if err != nil {
-		return fmt.Errorf("accessing type meta: %w", err)
-	}
-	t.SetAPIVersion(from.GetAPIVersion())
-	t.SetKind(from.GetObjectKind().GroupVersionKind().Kind)
-
-	object.SetNamespace(from.GetNamespace())
-	object.SetName(from.GetName())
-	object.SetGenerateName(from.GetGenerateName())
-	object.SetUID(from.GetUID())
-	object.SetResourceVersion(from.GetResourceVersion())
-	object.SetGeneration(from.GetGeneration())
-	object.SetSelfLink(from.GetSelfLink())
-	object.SetCreationTimestamp(from.GetCreationTimestamp())
-	object.SetDeletionTimestamp(from.GetDeletionTimestamp())
-	object.SetDeletionGracePeriodSeconds(from.GetDeletionGracePeriodSeconds())
-	object.SetLabels(from.GetLabels())
-	object.SetAnnotations(from.GetAnnotations())
-	object.SetOwnerReferences(from.GetOwnerReferences())
-	object.SetClusterName(from.GetClusterName())
-	object.SetFinalizers(from.GetFinalizers())
-
-	return nil
 }
 
 func isPod(object runtime.Object) bool {

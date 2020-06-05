@@ -44,8 +44,9 @@ func CustomResourceSummaryTab(crdName string) TabFactory {
 		}
 
 		printOptions := printer.Options{
-			DashConfig: options,
-			Link:       linkGenerator,
+			DashConfig:    options,
+			Link:          linkGenerator,
+			ObjectFactory: printer.NewDefaultObjectFactory(),
 		}
 
 		return printer.CustomResourceHandler(ctx, crd, cr, printOptions)
@@ -54,7 +55,7 @@ func CustomResourceSummaryTab(crdName string) TabFactory {
 
 // SummaryTab generates a summary tab for an object.
 func SummaryTab(ctx context.Context, object runtime.Object, options Options) (component.Component, error) {
-	vc, err := options.Printer.Print(ctx, object, options.PluginManager())
+	vc, err := options.Printer.Print(ctx, object)
 	if err != nil {
 		return nil, fmt.Errorf("print summary tab: %w", err)
 	} else if vc == nil {
