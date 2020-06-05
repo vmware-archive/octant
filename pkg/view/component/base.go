@@ -6,42 +6,40 @@ SPDX-License-Identifier: Apache-2.0
 package component
 
 const (
-	typeAnnotations         = "annotations"
-	typeButtonGroup         = "buttonGroup"
-	typeCard                = "card"
-	typeCardList            = "cardList"
-	typeCodeBlock           = "codeBlock"
-	typeContainers          = "containers"
-	typeDonutChart          = "donutChart"
-	typeEditor              = "editor"
-	typeError               = "error"
-	typeExtension           = "extension"
-	typeExpressionSelector  = "expressionSelector"
-	typeFlexLayout          = "flexlayout"
-	typeGraphviz            = "graphviz"
-	typeGridActions         = "gridActions"
-	typeIFrame              = "iframe"
-	typeLabels              = "labels"
-	typeLabelSelector       = "labelSelector"
-	typeLink                = "link"
-	typeList                = "list"
-	typeLoading             = "loading"
-	typeLogs                = "logs"
-	typePodStatus           = "podStatus"
-	typePort                = "port"
-	typePorts               = "ports"
-	typePortForward         = "portforward"
-	typeQuadrant            = "quadrant"
-	typeResourceViewer      = "resourceViewer"
-	typeSelectors           = "selectors"
-	typeSingleStat          = "singleStat"
-	typeSummary             = "summary"
-	typeTable               = "table"
-	typeTerminal            = "terminal"
-	typeText                = "text"
-	typeTimestamp           = "timestamp"
-	typeVerticalBulletChart = "verticalBulletChart"
-	typeYAML                = "yaml"
+	typeAnnotations        = "annotations"
+	typeButtonGroup        = "buttonGroup"
+	typeCard               = "card"
+	typeCardList           = "cardList"
+	typeCodeBlock          = "codeBlock"
+	typeContainers         = "containers"
+	typeDonutChart         = "donutChart"
+	typeEditor             = "editor"
+	typeError              = "error"
+	typeExtension          = "extension"
+	typeExpressionSelector = "expressionSelector"
+	typeFlexLayout         = "flexlayout"
+	typeGraphviz           = "graphviz"
+	typeGridActions        = "gridActions"
+	typeIFrame             = "iframe"
+	typeLabels             = "labels"
+	typeLabelSelector      = "labelSelector"
+	typeLink               = "link"
+	typeList               = "list"
+	typeLoading            = "loading"
+	typeLogs               = "logs"
+	typePodStatus          = "podStatus"
+	typePort               = "port"
+	typePorts              = "ports"
+	typeQuadrant           = "quadrant"
+	typeResourceViewer     = "resourceViewer"
+	typeSelectors          = "selectors"
+	typeSingleStat         = "singleStat"
+	typeSummary            = "summary"
+	typeTable              = "table"
+	typeTerminal           = "terminal"
+	typeText               = "text"
+	typeTimestamp          = "timestamp"
+	typeYAML               = "yaml"
 )
 
 // base is a base component.
@@ -63,6 +61,10 @@ func (b *base) GetMetadata() Metadata {
 	return b.Metadata
 }
 
+func (b *base) SetMetadata(metadata Metadata) {
+	b.Metadata = metadata
+}
+
 // SetAccessor sets the accessor for the object.
 func (b *base) SetAccessor(accessor string) {
 	b.Metadata.Accessor = accessor
@@ -81,6 +83,6 @@ func (b *base) String() string {
 }
 
 // LessThan returns false.
-func (b *base) LessThan(i interface{}) bool {
+func (b *base) LessThan(_ interface{}) bool {
 	return false
 }

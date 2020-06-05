@@ -23,6 +23,9 @@ func (c *emptyComponent) GetMetadata() component.Metadata {
 	}
 }
 
+func (c *emptyComponent) SetMetadata(_ component.Metadata) {
+}
+
 func (c *emptyComponent) SetAccessor(string) {
 	// no-op
 }
