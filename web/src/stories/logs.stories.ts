@@ -9,7 +9,7 @@ const view = {
     accessor: "logs"
   },
   config: {namespace: "default", name: "default-name-57466fd965-xprw9", containers: [""]}
-}
+};
 
 const containerLogs=  [
   {
