@@ -8,6 +8,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   Output,
   Renderer2,
   SimpleChanges,
@@ -34,7 +35,7 @@ cytoscape.use(dagre);
     `,
   ],
 })
-export class CytoscapeComponent implements OnChanges {
+export class CytoscapeComponent implements OnChanges, OnDestroy {
   @ViewChild('cy', { static: true }) private cy: ElementRef;
   @Input() public elements: any;
   @Input() public style: Stylesheet[];
@@ -42,6 +43,8 @@ export class CytoscapeComponent implements OnChanges {
   @Input() public zoom: any;
 
   @Output() select: EventEmitter<any> = new EventEmitter<any>();
+
+  private instance: cytoscape.Core;
 
   constructor(private renderer: Renderer2, private el: ElementRef) {
     this.layout = this.layout || {
@@ -59,10 +62,16 @@ export class CytoscapeComponent implements OnChanges {
     this.render();
   }
 
+  ngOnDestroy(): void {
+    if (!this.instance.destroyed()) {
+      this.instance.destroy();
+    }
+  }
+
   public render() {
     const cyContainer = this.renderer.selectRootElement(this.cy.nativeElement);
     const localSelect = this.select;
-    const cy = cytoscape({
+    this.instance = cytoscape({
       container: cyContainer,
       layout: this.layout,
       minZoom: this.zoom.min,
@@ -71,7 +80,7 @@ export class CytoscapeComponent implements OnChanges {
       elements: this.elements,
     });
 
-    cy.on('tap', 'node', e => {
+    this.instance.on('tap', 'node', e => {
       const node: SingularData = e.target;
       localSelect.emit(node.data());
     });
