@@ -11,10 +11,14 @@
   <clr-dg-column *ngFor="let columnName of columns; trackBy: identifyColumn">
     {{ columnName }}
     <clr-dg-filter *ngIf="filters[columnName]">
-      <app-content-filter
+      <app-content-filter *ngIf="!filters[columnName].isTextFilter"
         [column]="columnName"
         [filter]="filters[columnName]"
       ></app-content-filter>
+      <app-content-text-filter *ngIf="filters[columnName].isTextFilter"
+                          [column]="columnName"
+                          [filter]="filters[columnName]"
+      ></app-content-text-filter>
     </clr-dg-filter>
   </clr-dg-column>
   <clr-dg-row

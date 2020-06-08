@@ -16,8 +16,9 @@ import (
 
 // TableFilter describer a text filter for a table.
 type TableFilter struct {
-	Values   []string `json:"values"`
-	Selected []string `json:"selected"`
+	Values       []string `json:"values"`
+	Selected     []string `json:"selected"`
+	IsTextFilter bool     `json:"isTextFilter"`
 }
 
 // TableConfig is the contents of a Table

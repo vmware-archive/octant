@@ -783,5 +783,8 @@ func podTableFilters() map[string]component.TableFilter {
 			Values:   []string{"Pending", "Running", "Succeeded", "Failed", "Unknown"},
 			Selected: []string{"Pending", "Running"},
 		},
+		"Name": {
+			IsTextFilter: true,
+		},
 	}
 }
