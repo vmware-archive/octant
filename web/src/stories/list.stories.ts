@@ -1,6 +1,7 @@
 import {ListView, TableView, TextView} from "../app/modules/shared/models/content";
 import {storiesOf} from "@storybook/angular";
 import {ListComponent} from "../app/modules/shared/components/presentation/list/list.component";
+import {object} from "@storybook/addon-knobs";
 
 const title: TextView = {
   metadata: {
@@ -62,9 +63,9 @@ const listView: ListView = {
   },
 };
 
-storiesOf('List', module).add('List component', () => ({
+storiesOf('Components', module).add('List', () => ({
   props: {
-    view: listView
+    view: object('View', listView)
   },
   component: ListComponent,
 }));

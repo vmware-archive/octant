@@ -30,7 +30,7 @@ const view: EditorView = {
   },
 };
 
-storiesOf('Text', module).add('editor', () => ({
+storiesOf('Components', module).add('Editor', () => ({
   props: {
     view: view,
   },

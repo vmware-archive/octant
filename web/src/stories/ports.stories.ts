@@ -1,6 +1,7 @@
 import {PortsView} from "../app/modules/shared/models/content";
 import {storiesOf} from "@storybook/angular";
 import {PortsComponent} from "../app/modules/shared/components/presentation/ports/ports.component";
+import {object} from "@storybook/addon-knobs";
 
 const portsView1: PortsView = {
   config: {
@@ -44,9 +45,9 @@ const portsView1: PortsView = {
   },
 };
 
-storiesOf('Ports', module).add('Ports component', () => ({
+storiesOf('Components', module).add('Ports', () => ({
   props: {
-    view: portsView1
+    view: object('View', portsView1)
   },
   component: PortsComponent,
 }));

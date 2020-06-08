@@ -1,5 +1,6 @@
 import { storiesOf } from '@storybook/angular';
 import {LogsComponent} from "../app/modules/shared/components/smart/logs/logs.component";
+import {object} from "@storybook/addon-knobs";
 
 
 const view = {
@@ -28,10 +29,10 @@ const containerLogs=  [
       container: 'test-container',
     },
   ];
-storiesOf('Logs', module).add('with logs', () => ({
+storiesOf('Components', module).add('Logs', () => ({
   props: {
-    view: view,
-    containerLogs: containerLogs
+    view: object('View', view),
+    containerLogs: object('Log entries', containerLogs)
   },
   component: LogsComponent,
 }));

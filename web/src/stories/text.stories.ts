@@ -1,18 +1,18 @@
 import { storiesOf } from '@storybook/angular';
-import { boolean, object } from '@storybook/addon-knobs';
+import { object } from '@storybook/addon-knobs';
 import {TextComponent} from "../app/modules/shared/components/presentation/text/text.component";
 
-storiesOf('Text', module).add('with text', () => ({
+storiesOf('Components', module).add('Text', () => ({
   props: {
-    view: {
+    view: object('View',{
       metadata: {
         type: 'text',
       },
       config: {
-        value: object('value', 'hello world'),
-        isMarkdown: boolean('isMarkdown', false),
+        value: 'hello world',
+        isMarkdown: false,
       },
-    },
+    }),
   },
   component: TextComponent,
 }));

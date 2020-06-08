@@ -1,22 +1,21 @@
 import { storiesOf } from '@storybook/angular';
-import {number} from '@storybook/addon-knobs';
-import {QuadrantComponent} from "../app/modules/shared/components/presentation/quadrant/quadrant.component";
+import {object} from '@storybook/addon-knobs';
 
 
-storiesOf('Quadrant', module).add('Quadrant component', () => ({
+storiesOf('Components', module).add('Quadrant', () => ({
   props: {
-    view: {
+    view: object('View',{
       metadata: {
         type: "quadrant",
         title: [{metadata: {type: "text"}, config: {value: "Status"}}]
       },
       config: {
-        nw: {value: number('NW value', 1), label: "Running"},
-        ne: {value: number('NE value', 0), label: "Waiting"},
-        se: {value: number('SE value', 0), label: "Failed"},
-        sw: {value: number('SW value', 0), label: "Succeeded"}
+        nw: {value: 1, label: "Running"},
+        ne: {value: 0, label: "Waiting"},
+        se: {value: 0, label: "Failed"},
+        sw: {value: 0, label: "Succeeded"}
       }
-    }
+    })
   },
   template: `
       <div class="main-container">
