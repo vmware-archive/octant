@@ -11,12 +11,16 @@
   <clr-dg-column *ngFor="let columnName of columns; trackBy: identifyColumn">
     {{ columnName }}
     <clr-dg-filter *ngIf="filters[columnName]">
-      <app-content-filter
+      <app-content-filter 
         [column]="columnName"
         [filter]="filters[columnName]"
       ></app-content-filter>
     </clr-dg-filter>
-  </clr-dg-column>
+    <clr-dg-filter *ngIf="!filters[columnName]">
+      <app-content-text-filter 
+        [column]="columnName"
+      ></app-content-text-filter>
+    </clr-dg-filter>  </clr-dg-column>
   <clr-dg-row
     *clrDgItems="let row of rowsWithMetadata; trackBy: identifyRow"
     [ngClass]="row | filterDeletedDatagridRow"
