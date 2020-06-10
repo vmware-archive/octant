@@ -30,5 +30,5 @@ const (
 	Configuration       = "cog"
 	ConfigurationPlugin = "plugin"
 
-	CustomResourceDefinition = "crd"
+	CustomResourceDefinition = "dna"
 )

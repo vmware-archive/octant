@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/install"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -86,6 +87,8 @@ var _ ClientInterface = (*Cluster)(nil)
 
 func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restClient *rest.Config, defaultNamespace string, providedNamespaces []string) (*Cluster, error) {
 	logger := internalLog.From(ctx).With("component", "cluster client")
+
+	install.Install(scheme.Scheme)
 
 	kubernetesClient, err := kubernetes.NewForConfig(restClient)
 	if err != nil {

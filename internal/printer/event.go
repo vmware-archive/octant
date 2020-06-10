@@ -17,6 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 	"github.com/vmware-tanzu/octant/pkg/view/flexlayout"
@@ -265,7 +266,7 @@ func eventsForObject(ctx context.Context, object runtime.Object, o store.Store) 
 
 	for _, unstructuredEvent := range list.Items {
 		event := &corev1.Event{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(unstructuredEvent.Object, event)
+		err := kubernetes.FromUnstructured(&unstructuredEvent, event)
 		if err != nil {
 			return nil, err
 		}

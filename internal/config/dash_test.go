@@ -12,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
@@ -54,9 +54,9 @@ func TestCRDWatchConfig_CanPerform(t *testing.T) {
 
 			crd := testutil.CreateCRD("my-crd")
 			if test.isNamespaced {
-				crd.Spec.Scope = apiextv1beta1.NamespaceScoped
+				crd.Spec.Scope = apiextv1.NamespaceScoped
 			} else {
-				crd.Spec.Scope = apiextv1beta1.ClusterScoped
+				crd.Spec.Scope = apiextv1.ClusterScoped
 			}
 
 			got := config.CanPerform(testutil.ToUnstructured(t, crd))

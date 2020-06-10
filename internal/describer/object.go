@@ -12,10 +12,10 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
@@ -103,16 +103,9 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 
 	item := d.objectType()
 
-	if err := scheme.Scheme.Convert(object, item, nil); err != nil {
+	if err := kubernetes.FromUnstructured(object, item); err != nil {
 		cr := component.NewContentResponse(component.TitleFromString("Converting Dynamic Object Error"))
 		c := CreateErrorTab("Error", fmt.Errorf("converting dynamic object to a type: %w", err))
-		cr.Add(c)
-		return *cr, nil
-	}
-
-	if err := copyObjectMeta(item, object); err != nil {
-		cr := component.NewContentResponse(component.TitleFromString("Copying Object Metadata Error"))
-		c := CreateErrorTab("Error", fmt.Errorf("copying object metadata: %w", err))
 		cr.Add(c)
 		return *cr, nil
 	}

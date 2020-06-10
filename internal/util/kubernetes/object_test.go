@@ -12,8 +12,13 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/install"
+	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/vmware-tanzu/octant/internal/testutil"
 )
@@ -59,6 +64,75 @@ func TestSerializeToString(t *testing.T) {
 			}
 			require.NoError(t, err)
 			require.Equal(t, test.wanted, actual)
+		})
+	}
+}
+
+func TestFromUnstructured(t *testing.T) {
+	install.Install(scheme.Scheme)
+
+	type args struct {
+		as   runtime.Object
+		path string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		check   func(object runtime.Object)
+		wantErr bool
+	}{
+		{
+			name: "crd",
+			args: args{
+				as:   &apiextv1.CustomResourceDefinition{},
+				path: "crd.yaml",
+			},
+			check: func(object runtime.Object) {
+				crd, ok := object.(*apiextv1.CustomResourceDefinition)
+				require.True(t, ok)
+
+				assert.Equal(t, "minioinstances.operator.min.io", crd.Name)
+			},
+		},
+		{
+			name: "deployment",
+			args: args{
+				as:   &appsv1.Deployment{},
+				path: "deployment.yaml",
+			},
+			check: func(object runtime.Object) {
+				d, ok := object.(*appsv1.Deployment)
+				require.True(t, ok)
+
+				assert.Equal(t, "nginx-deployment", d.Name)
+				labels := map[string]string{
+					"app.kubernetes.io/name":     "nginx",
+					"app.kubernetes.io/instance": "sample",
+					"app.kubernetes.io/version":  "v1",
+				}
+				assert.Equal(t, labels, d.Labels)
+			},
+		},
+		{
+			name: "nil as",
+			args: args{
+				as:   nil,
+				path: "deployment.yaml",
+			},
+			wantErr: true,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			u := testutil.LoadUnstructuredFromFile(t, test.args.path)
+
+			err := FromUnstructured(u, test.args.as)
+			if test.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			test.check(test.args.as)
 		})
 	}
 }

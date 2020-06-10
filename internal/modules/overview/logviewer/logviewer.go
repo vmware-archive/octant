@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -24,7 +25,7 @@ func ToComponent(object runtime.Object) (component.Component, error) {
 
 	switch t := object.(type) {
 	case *unstructured.Unstructured:
-		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(t.Object, pod); err != nil {
+		if err := kubernetes.FromUnstructured(t, pod); err != nil {
 			return nil, err
 		}
 	case *corev1.Pod:
@@ -38,7 +39,6 @@ func ToComponent(object runtime.Object) (component.Component, error) {
 	}
 
 	containerNames := []string{""}
-
 
 	for _, c := range pod.Spec.InitContainers {
 		containerNames = append(containerNames, c.Name)

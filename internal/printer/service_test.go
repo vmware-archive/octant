@@ -30,7 +30,12 @@ func Test_ServiceListHandler(t *testing.T) {
 	tpo := newTestPrinterOptions(controller)
 	printOptions := tpo.ToOptions()
 
-	endpoints := &unstructured.Unstructured{}
+	endpoints := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "v1",
+			"kind":       "Endpoints",
+		},
+	}
 
 	tpo.objectStore.EXPECT().
 		Get(gomock.Any(), store.Key{

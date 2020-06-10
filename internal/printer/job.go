@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/internal/conversion"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -192,13 +193,9 @@ func createJobListView(ctx context.Context, object runtime.Object, options Optio
 
 	for i := range list.Items {
 		job := &batchv1.Job{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[i].Object, job)
+		err := kubernetes.FromUnstructured(&list.Items[i], job)
 		if err != nil {
 			return nil, err
-		}
-
-		if err := copyObjectMeta(job, &list.Items[i]); err != nil {
-			return nil, errors.Wrap(err, "copy object metadata")
 		}
 
 		for _, ownerReference := range job.OwnerReferences {

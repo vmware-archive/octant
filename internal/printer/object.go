@@ -22,7 +22,20 @@ import (
 
 // ObjectInterface is an interface for printing an object.
 type ObjectInterface interface {
+	// AddButton adds a button.
 	AddButton(name string, payload action.Payload, buttonOptions ...component.ButtonOption)
+	// EnableEvents enables showing events.
+	EnableEvents()
+	// EnableJobTemplate adds a job template.
+	EnableJobTemplate(templateSpec batchv1beta1.JobTemplateSpec)
+	// EnablePodTemplate adds a pod template.
+	EnablePodTemplate(templateSpec corev1.PodTemplateSpec)
+	// RegisterConfig registers a config summary component.
+	RegisterConfig(summary *component.Summary)
+	// RegisterItems registers items to be shown
+	RegisterItems(items ...ItemDescriptor)
+	// RegisterSummary registers a summary summary component.
+	RegisterSummary(summary *component.Summary)
 }
 
 func defaultPodTemplateGen(ctx context.Context, object runtime.Object, template corev1.PodTemplateSpec, fl *flexlayout.FlexLayout, options Options) error {
@@ -59,8 +72,9 @@ type ObjectPrinterLayoutFunc func(*flexlayout.FlexLayout) error
 
 // ItemDescriptor describes a func to print a view and its width.
 type ItemDescriptor struct {
-	Func  ObjectPrinterFunc
-	Width int
+	Component component.Component
+	Func      ObjectPrinterFunc
+	Width     int
 }
 
 type podTemplateOptions struct {
@@ -114,6 +128,8 @@ func NewObject(object runtime.Object, options ...ObjectOpts) *Object {
 
 	return o
 }
+
+var _ ObjectInterface = &Object{}
 
 // RegisterConfig registers the config view for an object.
 func (o *Object) RegisterConfig(summary *component.Summary) {
@@ -202,17 +218,25 @@ func (o *Object) ToComponent(ctx context.Context, options Options) (component.Co
 		section := o.flexLayout.AddSection()
 
 		for _, item := range items {
-			vc, err := item.Func()
-			if err != nil {
-				return nil, fmt.Errorf("failed to create item view: %w", err)
+			var c component.Component
+
+			if item.Component != nil {
+				c = item.Component
+			} else {
+				vc, err := item.Func()
+				if err != nil {
+					return nil, fmt.Errorf("failed to create item view: %w", err)
+				}
+
+				if vc == nil {
+					// don't print nil objects
+					continue
+				}
+
+				c = vc
 			}
 
-			if vc == nil {
-				// don't print nil objects
-				continue
-			}
-
-			if err := section.Add(vc, item.Width); err != nil {
+			if err := section.Add(c, item.Width); err != nil {
 				return nil, fmt.Errorf("unable to add item to layout section in object printer: %w", err)
 			}
 		}

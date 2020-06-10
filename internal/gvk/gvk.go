@@ -18,7 +18,7 @@ var (
 	ClusterRole              = schema.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "ClusterRole"}
 	ConfigMap                = schema.GroupVersionKind{Version: "v1", Kind: "ConfigMap"}
 	CronJob                  = schema.GroupVersionKind{Group: "batch", Version: "v1beta1", Kind: "CronJob"}
-	CustomResourceDefinition = schema.GroupVersionKind{Group: "apiextensions.k8s.io", Version: "v1beta1", Kind: "CustomResourceDefinition"}
+	CustomResourceDefinition = schema.GroupVersionKind{Group: "apiextensions.k8s.io", Version: "v1", Kind: "CustomResourceDefinition"}
 	DaemonSet                = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "DaemonSet"}
 	Deployment               = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "Deployment"}
 	ExtDeployment            = schema.GroupVersionKind{Group: "extensions", Version: "v1beta1", Kind: "Deployment"}

@@ -13,13 +13,13 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
@@ -66,8 +66,8 @@ func (c *Cordon) Handle(ctx context.Context, alerter action.Alerter, payload act
 		return errors.New("object store cannot get node")
 	}
 
-	var node *corev1.Node
-	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, &node); err != nil {
+	node := &corev1.Node{}
+	if err := kubernetes.FromUnstructured(object, node); err != nil {
 		return err
 	}
 
@@ -169,8 +169,8 @@ func (u *Uncordon) Handle(ctx context.Context, alerter action.Alerter, payload a
 		return errors.New("object store cannot get node")
 	}
 
-	var node *corev1.Node
-	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, &node); err != nil {
+	node := &corev1.Node{}
+	if err := kubernetes.FromUnstructured(object, node); err != nil {
 		return err
 	}
 

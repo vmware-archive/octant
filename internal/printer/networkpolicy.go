@@ -12,14 +12,15 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/vmware-tanzu/octant/pkg/store"
-	"github.com/vmware-tanzu/octant/pkg/view/component"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kLabels "k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
+	"github.com/vmware-tanzu/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // NetworkPolicyListHandler is a printFunc that prints network policies
@@ -428,7 +429,7 @@ func createNetworkPodListView(ctx context.Context, networkPolicy *networkingv1.N
 
 		for i := range ul.Items {
 			namespace := &corev1.Namespace{}
-			err := runtime.DefaultUnstructuredConverter.FromUnstructured(ul.Items[i].Object, namespace)
+			err := kubernetes.FromUnstructured(&ul.Items[i], namespace)
 			if err != nil {
 				return nil, err
 			}

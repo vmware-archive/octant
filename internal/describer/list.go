@@ -7,11 +7,12 @@ package describer
 
 import (
 	"context"
-	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes/scheme"
 	"reflect"
 
+	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -83,11 +84,7 @@ func (d *List) Describe(ctx context.Context, namespace string, options Options) 
 	// Convert unstructured objects to typed runtime objects
 	for i := range objectList.Items {
 		item := d.objectType()
-		if err := scheme.Scheme.Convert(&objectList.Items[i], item, nil); err != nil {
-			return component.EmptyContentResponse, err
-		}
-
-		if err := copyObjectMeta(item, &objectList.Items[i]); err != nil {
+		if err := kubernetes.FromUnstructured(&objectList.Items[i], item); err != nil {
 			return component.EmptyContentResponse, err
 		}
 
@@ -101,7 +98,7 @@ func (d *List) Describe(ctx context.Context, namespace string, options Options) 
 			listType)
 	}
 
-	viewComponent, err := options.Printer.Print(ctx, listObject, options.PluginManager())
+	viewComponent, err := options.Printer.Print(ctx, listObject)
 	if err != nil {
 		return component.EmptyContentResponse, err
 	}

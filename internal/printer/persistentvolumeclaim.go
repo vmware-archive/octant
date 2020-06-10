@@ -14,6 +14,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -263,7 +264,7 @@ func getBoundPersistentVolume(ctx context.Context, pvc *corev1.PersistentVolumeC
 	}
 
 	if pv != nil {
-		isErr := runtime.DefaultUnstructuredConverter.FromUnstructured(pv.Object, persistentVolume)
+		isErr := kubernetes.FromUnstructured(pv, persistentVolume)
 		if isErr != nil {
 			return nil, isErr
 		}

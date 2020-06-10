@@ -13,9 +13,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -280,12 +280,8 @@ func serviceAccountTokens(ctx context.Context, serviceAccount corev1.ServiceAcco
 	for i := range secretList.Items {
 		secret := &corev1.Secret{}
 
-		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(secretList.Items[i].Object, secret); err != nil {
+		if err := kubernetes.FromUnstructured(&secretList.Items[i], secret); err != nil {
 			return nil, errors.Wrap(err, "convert unstructured secret to structured")
-		}
-
-		if err := copyObjectMeta(secret, &secretList.Items[i]); err != nil {
-			return nil, errors.Wrap(err, "copy object metadata to secret")
 		}
 
 		if secret.Type == corev1.SecretTypeServiceAccountToken {

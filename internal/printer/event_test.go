@@ -329,6 +329,8 @@ func Test_eventsForObject(t *testing.T) {
 	events.Items = append(events.Items, []unstructured.Unstructured{
 		{
 			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "Event",
 				"involvedObject": map[string]interface{}{
 					"namespace":  "default",
 					"apiVersion": "v1",
@@ -340,6 +342,8 @@ func Test_eventsForObject(t *testing.T) {
 		},
 		{
 			Object: map[string]interface{}{
+				"apiVersion": "v1",
+				"kind":       "Event",
 				"involvedObject": map[string]interface{}{
 					"namespace":  "default",
 					"apiVersion": "v1",
@@ -360,6 +364,10 @@ func Test_eventsForObject(t *testing.T) {
 	expected := &corev1.EventList{
 		Items: []corev1.Event{
 			{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "Event",
+					APIVersion: "v1",
+				},
 				InvolvedObject: corev1.ObjectReference{
 					Namespace:  "default",
 					APIVersion: "v1",

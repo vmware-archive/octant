@@ -176,38 +176,42 @@ func (co *ClusterOverview) ContentPath() string {
 	return fmt.Sprintf("%s", co.Name())
 }
 
-func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, root string) ([]navigation.Navigation, error) {
+func (co *ClusterOverview) Navigation(ctx context.Context, _ string, root string) ([]navigation.Navigation, error) {
 	navigationEntries := octant.NavigationEntries{
 		Lookup: map[string]string{
-			"Namespaces":       "namespaces",
-			"Custom Resources": "custom-resources",
-			"RBAC":             "rbac",
-			"Nodes":            "nodes",
-			"Storage":          "storage",
-			"Port Forwards":    "port-forward",
+			"Namespaces":                  "namespaces",
+			"Custom Resources":            "custom-resources",
+			"Custom Resource Definitions": "custom-resource-definitions",
+			"RBAC":                        "rbac",
+			"Nodes":                       "nodes",
+			"Storage":                     "storage",
+			"Port Forwards":               "port-forward",
 		},
 		EntriesFuncs: map[string]octant.EntriesFunc{
-			"Cluster Overview": nil,
-			"Namespaces":       nil,
-			"Custom Resources": navigation.CRDEntries,
-			"RBAC":             rbacEntries,
-			"Nodes":            nil,
-			"Storage":          storageEntries,
-			"Port Forwards":    nil,
+			"Cluster Overview":            nil,
+			"Namespaces":                  nil,
+			"Custom Resources":            navigation.CRDEntries,
+			"Custom Resource Definitions": nil,
+			"RBAC":                        rbacEntries,
+			"Nodes":                       nil,
+			"Storage":                     storageEntries,
+			"Port Forwards":               nil,
 		},
 		IconMap: map[string]string{
-			"Cluster Overview": icon.Overview,
-			"Namespaces":       icon.Namespaces,
-			"Custom Resources": icon.CustomResources,
-			"RBAC":             icon.RBAC,
-			"Nodes":            icon.Nodes,
-			"Storage":          icon.ConfigAndStorage,
-			"Port Forwards":    icon.PortForwards,
+			"Cluster Overview":            icon.Overview,
+			"Namespaces":                  icon.Namespaces,
+			"Custom Resources":            icon.CustomResources,
+			"Custom Resource Definitions": icon.CustomResourceDefinition,
+			"RBAC":                        icon.RBAC,
+			"Nodes":                       icon.Nodes,
+			"Storage":                     icon.ConfigAndStorage,
+			"Port Forwards":               icon.PortForwards,
 		},
 		Order: []string{
 			"Cluster Overview",
 			"Namespaces",
 			"Custom Resources",
+			"Custom Resource Definitions",
 			"RBAC",
 			"Nodes",
 			"Storage",
@@ -227,7 +231,7 @@ func (co *ClusterOverview) Navigation(ctx context.Context, namespace string, roo
 	return entries, nil
 }
 
-func (co *ClusterOverview) SetNamespace(namespace string) error {
+func (co *ClusterOverview) SetNamespace(_ string) error {
 	return nil
 }
 
@@ -273,7 +277,7 @@ func storageEntries(ctx context.Context, prefix, namespace string, objectStore s
 	return children, false, nil
 }
 
-func (co *ClusterOverview) SetContext(ctx context.Context, contextName string) error {
+func (co *ClusterOverview) SetContext(ctx context.Context, _ string) error {
 	co.mu.Lock()
 	defer co.mu.Unlock()
 
