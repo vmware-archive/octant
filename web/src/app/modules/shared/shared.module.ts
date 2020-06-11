@@ -69,6 +69,7 @@ import { OverflowSelectorsComponent } from './components/presentation/overflow-s
 import { PreferencesComponent } from './components/presentation/preferences/preferences.component';
 import { HelperComponent } from './components/smart/helper/helper.component';
 import { FilterDeletedDatagridRowPipe } from './pipes/filterDeletedDatagridRow/filter-deleted-datagrid-row.pipe';
+import { ContentTextFilterComponent } from './components/presentation/content-text-filter/content-text-filter.component';
 
 @NgModule({
   declarations: [
@@ -133,6 +134,7 @@ import { FilterDeletedDatagridRowPipe } from './pipes/filterDeletedDatagridRow/f
     OverflowSelectorsComponent,
     PreferencesComponent,
     HelperComponent,
+    ContentTextFilterComponent,
   ],
   imports: [
     ClarityModule,
