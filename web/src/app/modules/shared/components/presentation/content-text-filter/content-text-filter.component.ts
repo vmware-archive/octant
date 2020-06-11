@@ -86,4 +86,9 @@ export class ContentTextFilterComponent
     this.text = text;
     this.changes.next(true);
   }
+
+  reset() {
+    this.onFilterChange('');
+    this.search.nativeElement.focus();
+  }
 }
