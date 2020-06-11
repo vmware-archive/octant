@@ -1,27 +1,27 @@
-import {ListView, TableView, TextView} from "../app/modules/shared/models/content";
-import {storiesOf} from "@storybook/angular";
+import { moduleMetadata } from '@storybook/angular';
+import { Meta, Story, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
 import {ListComponent} from "../app/modules/shared/components/presentation/list/list.component";
-import {object} from "@storybook/addon-knobs";
 
-const title: TextView = {
+export const title = {
   metadata: {
     type: 'text',
   },
   config: {
     value: 'Title',
   },
-};
+}
 
-const sampleText: TextView = {
+export const sampleText = {
   config: {
     value: 'sample text',
   },
   metadata: {
     type: 'text',
   },
-};
+}
 
-const tableView: TableView = {
+export const tableView = {
   metadata: {
     type: 'table',
     title: [title],
@@ -51,9 +51,9 @@ const tableView: TableView = {
     loading: false,
     filters: {},
   },
-};
+}
 
-const listView: ListView = {
+export const listView = {
   config: {
     iconName: 'test',
     items: [tableView],
@@ -61,11 +61,29 @@ const listView: ListView = {
   metadata: {
     type: 'list',
   },
-};
+}
 
-storiesOf('Components', module).add('List', () => ({
-  props: {
-    view: object('View', listView)
-  },
-  component: ListComponent,
-}));
+
+<h1>List component</h1>
+<h2>Description</h2>
+
+<p>
+    The List component is a placeholder for multiple components to be displayed.
+    It's usage is seen in the Overview page of Octant where it holds multiple Table components.
+</p>
+<h2>Example</h2>
+
+<Meta title="Octant|Components" component={ListComponent} />
+
+
+<Story name="List"  height="200px">
+{{
+    props: {
+      view: object('View', listView),
+    },
+    component: ListComponent,
+    }}
+</Story>
+
+<h2>Props</h2>
+<Props of={ListComponent} />

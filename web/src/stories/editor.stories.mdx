@@ -1,8 +1,10 @@
-import { storiesOf } from '@storybook/angular';
-import {EditorView, TextView} from "../app/modules/shared/models/content";
-import {MonacoEditorModule} from "ng-monaco-editor";
+import { moduleMetadata } from '@storybook/angular';
+import { Meta, Story, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import { MonacoEditorModule } from "ng-monaco-editor";
+import { EditorComponent } from '../app/modules/shared/components/smart/editor/editor.component';
 
-const text: TextView = {
+export const text = {
   config: {
     value: 'YAML',
   },
@@ -11,7 +13,7 @@ const text: TextView = {
   },
 };
 
-const view: EditorView = {
+export const view = {
   config: {
     value:
       '---\nmetadata:\n  creationTimestamp: null\nspec:\n  containers: null\nstatus: {}\n',
@@ -30,9 +32,20 @@ const view: EditorView = {
   },
 };
 
-storiesOf('Components', module).add('Editor', () => ({
+<h1>Editor component</h1>
+<h2>Description</h2>
+
+<p>
+    The Editor component is used to edit YAML configurations of objects.
+</p>
+<h2>Example</h2>
+
+<Meta title="Octant|Components" component={EditorComponent} />
+
+<Story name="Editor">
+{{
   props: {
-    view: view,
+    view: object('View', view),
   },
   moduleMetadata: {
     imports: [
@@ -50,4 +63,8 @@ storiesOf('Components', module).add('Editor', () => ({
         </div>
     </div>
     `,
-}));
+}}
+</Story>
+
+<h2>Props</h2>
+<Props of={EditorComponent} />
