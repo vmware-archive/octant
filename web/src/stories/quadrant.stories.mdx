@@ -1,8 +1,19 @@
-import { storiesOf } from '@storybook/angular';
-import {object} from '@storybook/addon-knobs';
+import { Meta, Story, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {QuadrantComponent} from "../app/modules/shared/components/presentation/quadrant/quadrant.component";
 
 
-storiesOf('Components', module).add('Quadrant', () => ({
+<h1>Quadrant component</h1>
+<h2>Description</h2>
+
+<p>The Quadrant component is used to display a current state of four different properties.
+In Octant, this is used to show number of pods with Waiting, Running, Failed and Succeeded status.</p>
+<h2>Example</h2>
+
+<Meta title="Octant/Components" component={QuadrantComponent} />
+
+<Story name="Quadrant">
+{{
   props: {
     view: object('View',{
       metadata: {
@@ -26,4 +37,8 @@ storiesOf('Components', module).add('Quadrant', () => ({
            </div>
        </div>
  `,
-}));
+}}
+</Story>
+
+<h2>Props</h2>
+<Props of={QuadrantComponent} />

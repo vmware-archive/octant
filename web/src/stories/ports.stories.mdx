@@ -1,9 +1,8 @@
-import {PortsView} from "../app/modules/shared/models/content";
-import {storiesOf} from "@storybook/angular";
+import { Meta, Story, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
 import {PortsComponent} from "../app/modules/shared/components/presentation/ports/ports.component";
-import {object} from "@storybook/addon-knobs";
 
-const portsView1: PortsView = {
+export const portsView = {
   config: {
     ports: [
       {
@@ -45,9 +44,25 @@ const portsView1: PortsView = {
   },
 };
 
-storiesOf('Components', module).add('Ports', () => ({
+<h1>Ports component</h1>
+<h2>Description</h2>
+<p>
+  The ports component shows relevant port info. It displays port number, protocol and port status.
+  If port has been forwarded, the destination link is also shown.
+  The port component can have multiple buttons associated with it, as illustrated in above examples.
+</p>
+<h2>Example</h2>
+
+<Meta title="Octant/Components" component={PortsComponent} />
+
+<Story name="Ports" height="150px">
+{{
   props: {
-    view: object('View', portsView1)
+    view: object('View', portsView)
   },
   component: PortsComponent,
-}));
+}}
+</Story>
+
+<h2>Props</h2>
+<Props of={PortsComponent} />

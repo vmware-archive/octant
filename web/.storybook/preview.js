@@ -1,5 +1,4 @@
-import { withKnobs } from '@storybook/addon-knobs';
-import { addDecorator, moduleMetadata } from '@storybook/angular';
+import {addDecorator, moduleMetadata} from '@storybook/angular';
 import { SharedModule } from '../src/app/modules/shared/shared.module';
 import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
 import { setConsoleOptions } from '@storybook/addon-console';
@@ -10,9 +9,11 @@ import {RouterModule} from "@angular/router";
 import {HttpClientModule} from "@angular/common/http";
 import {BrowserModule} from "@angular/platform-browser";
 import {AppRoutingModule} from "../src/app/app-routing.module";
+import { setCompodocJson } from '@storybook/addon-docs/angular';
+import docJson from '../documentation.json';
+import { themes } from '@storybook/theming';
 
-// enable knobs
-addDecorator(withKnobs);
+setCompodocJson(docJson);
 
 setConsoleOptions({
   panelExclude: [
@@ -56,3 +57,9 @@ addDecorator(
     ]
   })
 );
+
+export const parameters = {
+  docs: {
+    theme: themes.dark,
+  },
+};
