@@ -48,7 +48,7 @@ export class NavigationService {
     router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe((event: RouterEvent) => {
-        this.loadingService.loadingContent = true;
+        this.loadingService.requestComplete.next(false);
         this.activeUrl.next(event.url);
         this.updateLastSelection();
       });
@@ -92,15 +92,5 @@ export class NavigationService {
       }
     }
     return -1;
-  }
-
-  removeSuffix(url: string) {
-    const lastSlash = url.lastIndexOf('/');
-    const lastHash = url.lastIndexOf('#');
-
-    if (lastHash > 0 && lastHash > lastSlash) {
-      return url.substring(0, lastHash);
-    }
-    return url;
   }
 }

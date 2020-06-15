@@ -6,7 +6,7 @@
 
 import { Injectable } from '@angular/core';
 import { WebsocketService } from '../websocket/websocket.service';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { Content, ContentResponse } from '../../models/content';
 import { Params, Router } from '@angular/router';
 import {
@@ -15,6 +15,7 @@ import {
 } from '../label-filter/label-filter.service';
 import { NamespaceService } from '../namespace/namespace.service';
 import { LoadingService } from '../loading/loading.service';
+import { delay } from 'rxjs/operators';
 
 export const ContentUpdateMessage = 'event.octant.dev/content';
 
@@ -68,6 +69,10 @@ export class ContentService {
 
       if (response.contentPath) {
         if (this.previousContentPath.length > 0) {
+          const sameLastSegment =
+            this.lastSegment(response.contentPath) ===
+            this.lastSegment(this.previousContentPath);
+
           if (response.contentPath !== this.previousContentPath) {
             const segments = response.contentPath.split('/');
             this.router
@@ -75,14 +80,19 @@ export class ContentService {
                 queryParams: response.queryParams,
               })
               .then(() => {
-                this.loadingService.loadingContent = false;
+                if (sameLastSegment) {
+                  this.delayedComplete(true);
+                } else {
+                  this.loadingService.requestComplete.next(true);
+                }
               })
-              .catch(reason =>
-                console.error(`unable to navigate`, { segments, reason })
-              );
+              .catch(reason => {
+                this.loadingService.requestComplete.next(true);
+                console.error(`unable to navigate`, { segments, reason });
+              });
           }
         } else {
-          this.loadingService.loadingContent = false;
+          this.loadingService.requestComplete.next(true);
         }
       }
 
@@ -92,6 +102,21 @@ export class ContentService {
     labelFilterService.filters.subscribe(filters => {
       this.filters = filters;
     });
+  }
+
+  lastSegment(text: string): string {
+    return text.substr(text.lastIndexOf('/') + 1);
+  }
+
+  delayedComplete(value: boolean) {
+    const delayed = new Observable(x => {
+      x.next();
+    })
+      .pipe(delay(1000))
+      .subscribe(() => {
+        this.loadingService.requestComplete.next(value);
+        delayed.unsubscribe();
+      });
   }
 
   setContentPath(contentPath: string, params: Params) {

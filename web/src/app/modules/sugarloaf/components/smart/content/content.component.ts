@@ -20,7 +20,7 @@ import {
 } from 'src/app/modules/shared/models/content';
 import { IconService } from '../../../../shared/services/icon/icon.service';
 import { ContentService } from '../../../../shared/services/content/content.service';
-import isEqual from 'lodash/isEqual';
+import { isEqual } from 'lodash';
 import { Subscription } from 'rxjs';
 import { LoadingService } from 'src/app/modules/shared/services/loading/loading.service';
 
@@ -40,9 +40,10 @@ export class ContentComponent implements OnInit, OnDestroy {
   buttonGroup: ButtonGroupView = null;
   private contentSubscription: Subscription;
   private previousUrl = '';
-  private iconName: string;
   private defaultPath: string;
   private previousParams: Params;
+  private loadingSubscription: Subscription;
+  public showSpinner = false;
 
   constructor(
     private router: Router,
@@ -71,11 +72,18 @@ export class ContentComponent implements OnInit, OnDestroy {
         this.setContent(contentResponse);
       }
     );
+
+    this.loadingSubscription = this.loadingService.showSpinner.subscribe(
+      value => {
+        this.showSpinner = value;
+      }
+    );
   }
 
   ngOnDestroy() {
     this.resetView();
     this.contentSubscription.unsubscribe();
+    this.loadingSubscription.unsubscribe();
   }
 
   private handlePathChange(
