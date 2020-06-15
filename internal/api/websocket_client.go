@@ -16,6 +16,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/vmware-tanzu/octant/internal/config"
+	"github.com/vmware-tanzu/octant/internal/kubeconfig"
 	internalLog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/action"
@@ -87,6 +88,33 @@ func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *Webs
 	}
 
 	logger.Debugf("created websocket client")
+
+	return client
+}
+
+// NewTemporaryWebsocketClient creates an instance of WebsocketClient
+func NewTemporaryWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *WebsocketClientManager, temporaryKubeConfig kubeconfig.TemporaryKubeConfig, actionDispatcher ActionDispatcher, id uuid.UUID) *WebsocketClient {
+	ctx, cancel := context.WithCancel(ctx)
+	logger := internalLog.From(ctx)
+
+	client := &WebsocketClient{
+		ctx:      ctx,
+		cancel:   cancel,
+		conn:     conn,
+		id:       id,
+		send:     make(chan octant.Event),
+		manager:  manager,
+		logger:   logger,
+		handlers: make(map[string][]octant.ClientRequestHandler),
+	}
+
+	state := NewTemporaryWebsocketState(temporaryKubeConfig, actionDispatcher, client)
+	go state.Start(ctx)
+
+	client.state = state
+	for _, handler := range state.Handlers() {
+		client.RegisterHandler(handler)
+	}
 
 	return client
 }

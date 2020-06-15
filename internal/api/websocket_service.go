@@ -6,12 +6,14 @@
 package api
 
 import (
+	"fmt"
 	"net"
 	"net/http"
 
 	"github.com/gorilla/websocket"
 
 	"github.com/vmware-tanzu/octant/internal/config"
+	"github.com/vmware-tanzu/octant/internal/kubeconfig"
 )
 
 var (
@@ -41,6 +43,23 @@ func serveWebsocket(manager ClientManager, dashConfig config.Dash, w http.Respon
 		logger := dashConfig.Logger()
 		logger.WithErr(err).Errorf("create websocket client")
 
+	}
+
+	go client.readPump()
+	go client.writePump()
+}
+
+// Create dummy websocketService and serveWebsocket
+func loadingWebsocketService(manager ClientManager, temporaryKubeConfig kubeconfig.TemporaryKubeConfig) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		serveLoadingWebsocket(manager, temporaryKubeConfig, w, r)
+	}
+}
+
+func serveLoadingWebsocket(manager ClientManager, temporaryKubeConfig kubeconfig.TemporaryKubeConfig, w http.ResponseWriter, r *http.Request) {
+	client, err := manager.TemporaryClientFromLoadingRequest(temporaryKubeConfig, w, r)
+	if err != nil {
+		fmt.Println("create loading websocket client")
 	}
 
 	go client.readPump()

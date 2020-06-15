@@ -97,7 +97,9 @@ func TestAPI_routes(t *testing.T) {
 			actionDispatcher := apiFake.NewMockActionDispatcher(controller)
 
 			ctx := context.Background()
-			srv := api.New(ctx, "/", actionDispatcher, dashConfig)
+			wsClientManager := api.NewWebsocketClientManager(ctx, actionDispatcher)
+
+			srv := api.New(ctx, "/", actionDispatcher, wsClientManager, dashConfig)
 
 			handler, err := srv.Handler(ctx)
 			require.NoError(t, err)

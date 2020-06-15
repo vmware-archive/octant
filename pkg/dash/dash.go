@@ -19,12 +19,14 @@ import (
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/viper"
 	"go.opencensus.io/trace"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/describer"
 	oerrors "github.com/vmware-tanzu/octant/internal/errors"
+	"github.com/vmware-tanzu/octant/internal/kubeconfig"
 	internalLog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/module"
 	"github.com/vmware-tanzu/octant/internal/modules/applications"
@@ -60,21 +62,125 @@ type Options struct {
 }
 
 type Runner struct {
-	dash          *dash
-	pluginManager *plugin.Manager
-	moduleManager *module.Manager
+	dash                   *dash
+	pluginManager          *plugin.Manager
+	moduleManager          *module.Manager
+	actionManager          *action.Manager
+	websocketClientManager *api.WebsocketClientManager
+	loadingComplete        chan bool
 }
 
 func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner, error) {
 	ctx = internalLog.WithLoggerContext(ctx, logger)
 
-	r := Runner{}
+	r := Runner{
+		loadingComplete: make(chan bool, 1),
+	}
 
 	if options.Context != "" {
 		logger.With("initial-context", options.Context).Infof("Setting initial context from user flags")
 	}
 
-	logger.Debugf("Loading configuration: %v", options.KubeConfig)
+	actionManger := action.NewManager(logger)
+	r.actionManager = actionManger
+
+	websocketClientManager := api.NewWebsocketClientManager(ctx, r.actionManager)
+	r.websocketClientManager = websocketClientManager
+	go websocketClientManager.Run(ctx)
+
+	listener, err := buildListener()
+	if err != nil {
+		err = fmt.Errorf("failed to create net listener: %w", err)
+		return nil, fmt.Errorf("use OCTANT_LISTENER_ADDR to set host:port: %w", err)
+	}
+
+	// Initialize the API
+	apiService, err := r.initLoadingAPI(ctx, logger, options)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start loading api: %w", err)
+	}
+
+	d, err := newDash(listener, options.Namespace, options.FrontendURL, options.BrowserPath, apiService, logger)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create dash instance: %w", err)
+	}
+
+	if viper.GetBool("disable-open-browser") {
+		d.willOpenBrowser = false
+	}
+
+	d.kubeconfig = apiService.KubeConfig
+	r.dash = d
+
+	return &r, nil
+}
+
+func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, startupCh, shutdownCh chan bool) error {
+	go func() {
+		if err := r.dash.Run(ctx, startupCh); err != nil {
+			logger.Debugf("running dashboard service: %v", err)
+		}
+		return
+	}()
+
+	go func() {
+		if r.dash != nil {
+			select {
+			case options.KubeConfig = <-findKubeConfig(r.dash.kubeconfig):
+				if options.KubeConfig != "" {
+					logger.Debugf("Loading configuration: %v", options.KubeConfig)
+					r.loadingComplete <- true
+					return
+				}
+			}
+		}
+	}()
+
+	go func() {
+		<-r.loadingComplete
+		apiService, err := r.initAPI(ctx, logger, options)
+		if err != nil {
+			logger.Errorf("cannot create api: %v", err)
+		}
+		r.dash.apiHandler = apiService
+
+		hf := octant.NewHandlerFactory(
+			octant.BackendHandler(r.dash.apiHandler.Handler),
+			octant.FrontendURL(viper.GetString("proxy-frontend")))
+
+		r.dash.server.Handler, err = hf.Handler(ctx)
+		if err != nil {
+			logger.Errorf("cannot create handler: %v", err)
+		}
+
+		logger.Infof("using api service")
+		return
+	}()
+
+	<-ctx.Done()
+
+	shutdownCtx := internalLog.WithLoggerContext(context.Background(), logger)
+
+	r.moduleManager.Unload()
+	r.pluginManager.Stop(shutdownCtx)
+
+	shutdownCh <- true
+	return nil
+}
+
+func (r *Runner) initLoadingAPI(ctx context.Context, logger log.Logger, option Options) (*api.LoadingAPI, error) {
+	temporaryKubeConfig := kubeconfig.TemporaryKubeConfig{
+		KubeConfig: make(chan string, 1),
+		Path:       make(chan string, 1),
+	}
+	apiService := api.NewLoadingAPI(ctx, api.PathPrefix, r.actionManager, r.websocketClientManager, logger, temporaryKubeConfig)
+
+	return apiService, nil
+}
+
+func (r *Runner) initAPI(ctx context.Context, logger log.Logger, options Options) (*api.API, error) {
+	frontendProxy := pluginAPI.FrontendProxy{}
+
 	restConfigOptions := cluster.RESTConfigOptions{
 		QPS:       options.ClientQPS,
 		Burst:     options.ClientBurst,
@@ -131,13 +237,11 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 		return nil, fmt.Errorf("initializing port forwarder: %w", err)
 	}
 
-	actionManger := action.NewManager(logger)
-
 	mo := &moduleOptions{
 		clusterClient: clusterClient,
 		namespace:     options.Namespace,
 		logger:        logger,
-		actionManager: actionManger,
+		actionManager: r.actionManager,
 	}
 	moduleManager, err := initModuleManager(mo)
 	if err != nil {
@@ -146,8 +250,6 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 
 	r.moduleManager = moduleManager
 
-	frontendProxy := pluginAPI.FrontendProxy{}
-
 	pluginDashboardService := &pluginAPI.GRPCService{
 		ObjectStore:        appObjectStore,
 		PortForwarder:      portForwarder,
@@ -155,7 +257,7 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 		FrontendProxy:      frontendProxy,
 	}
 
-	pluginManager, err := initPlugin(moduleManager, actionManger, pluginDashboardService)
+	pluginManager, err := initPlugin(moduleManager, r.actionManager, pluginDashboardService)
 	if err != nil {
 		return nil, fmt.Errorf("initializing plugin manager: %w", err)
 	}
@@ -201,52 +303,17 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 		return nil, fmt.Errorf("start plugin manager: %w", err)
 	}
 
-	listener, err := buildListener()
-	if err != nil {
-		err = fmt.Errorf("failed to create net listener: %w", err)
-		return nil, fmt.Errorf("use OCTANT_LISTENER_ADDR to set host:port: %w", err)
-	}
-
-	// Initialize the API
-	apiService := api.New(ctx, api.PathPrefix, actionManger, dashConfig)
-	frontendProxy.FrontendUpdateController = apiService
-
 	// Watch for CRDs after modules initialized
 	if err := crdWatcher.Watch(ctx); err != nil {
 		return nil, fmt.Errorf("unable to start CRD watcher: %w", err)
 	}
 
-	d, err := newDash(listener, options.Namespace, options.FrontendURL, options.BrowserPath, apiService, logger)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create dash instance: %w", err)
-	}
+	apiService := api.New(ctx, api.PathPrefix, r.actionManager, r.websocketClientManager, dashConfig)
+	frontendProxy.FrontendUpdateController = apiService
 
-	if viper.GetBool("disable-open-browser") {
-		d.willOpenBrowser = false
-	}
+	r.dash.apiHandler = apiService
 
-	r.dash = d
-
-	return &r, nil
-}
-
-func (r *Runner) Start(ctx context.Context, startupCh, shutdownCh chan bool) {
-	logger := internalLog.From(ctx)
-
-	go func() {
-		if err := r.dash.Run(ctx, startupCh); err != nil {
-			logger.Debugf("running dashboard service: %v", err)
-		}
-	}()
-
-	<-ctx.Done()
-
-	shutdownCtx := internalLog.WithLoggerContext(context.Background(), logger)
-
-	r.moduleManager.Unload()
-	r.pluginManager.Stop(shutdownCtx)
-
-	shutdownCh <- true
+	return apiService, nil
 }
 
 // initObjectStore initializes the cluster object store interface
@@ -371,6 +438,8 @@ type dash struct {
 	willOpenBrowser bool
 	logger          log.Logger
 	handlerFactory  *octant.HandlerFactory
+	kubeconfig      kubeconfig.TemporaryKubeConfig
+	server          http.Server
 }
 
 func newDash(listener net.Listener, namespace, uiURL string, browserPath string, apiHandler api.Service, logger log.Logger) (*dash, error) {
@@ -401,10 +470,10 @@ func (d *dash) Run(ctx context.Context, startupCh chan bool) error {
 		return err
 	}
 
-	server := http.Server{Handler: handler}
+	d.server = http.Server{Handler: handler}
 
 	go func() {
-		if err = server.Serve(d.listener); err != nil && err != http.ErrServerClosed {
+		if err = d.server.Serve(d.listener); err != nil && err != http.ErrServerClosed {
 			d.logger.Errorf("http server: %v", err)
 			os.Exit(1) // TODO graceful shutdown for other goroutines (GH#494)
 		}
@@ -436,7 +505,7 @@ func (d *dash) Run(ctx context.Context, startupCh chan bool) error {
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer shutdownCancel()
 
-	return server.Shutdown(shutdownCtx)
+	return d.server.Shutdown(shutdownCtx)
 }
 
 func enableOpenCensus() error {
@@ -457,4 +526,25 @@ func enableOpenCensus() error {
 	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 
 	return nil
+}
+
+// findKubeConfig looks for kube config from .kube or provided by user
+func findKubeConfig(temporaryKubeConfig kubeconfig.TemporaryKubeConfig) <-chan string {
+	r := make(chan string)
+	go func() {
+		kubeconfig := clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
+		if _, err := os.Stat(kubeconfig); err == nil {
+			r <- kubeconfig
+			return
+		}
+
+		defer close(r)
+		select {
+		case path, ok := <-temporaryKubeConfig.Path:
+			if ok {
+				r <- path
+			}
+		}
+	}()
+	return r
 }

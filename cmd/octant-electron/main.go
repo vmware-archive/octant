@@ -12,7 +12,6 @@ import (
 	"os"
 
 	"github.com/spf13/viper"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/electron"
@@ -81,7 +80,6 @@ func run(ctx context.Context) error {
 	dashOptions := dash.Options{
 		DisableClusterOverview: false,
 		EnableOpenCensus:       false,
-		KubeConfig:             clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename(),
 		UserAgent:              fmt.Sprintf("octant-electron"), // TODO: create proper user agent
 	}
 	shutdownCh := make(chan bool, 1)
@@ -96,7 +94,7 @@ func run(ctx context.Context) error {
 	}
 
 	go func() {
-		runner.Start(ctx, startupCh, shutdownCh)
+		runner.Start(ctx, logger, dashOptions, startupCh, shutdownCh)
 		runCh <- true
 	}()
 

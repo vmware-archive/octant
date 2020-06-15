@@ -7,11 +7,14 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { async, inject, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
+import { ClarityModule, ClrPopoverToggleService } from '@clr/angular';
+import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ContainerComponent } from './container.component';
 import { NamespaceComponent } from '../namespace/namespace.component';
 import { PageNotFoundComponent } from '../page-not-found/page-not-found.component';
+import { PreferencesComponent } from '../../../../shared/components/presentation/preferences/preferences.component';
+import { HelperComponent } from '../../../../shared/components/smart/helper/helper.component';
 import { InputFilterComponent } from '../input-filter/input-filter.component';
 import { NotifierComponent } from '../notifier/notifier.component';
 import { NavigationComponent } from '../navigation/navigation.component';
@@ -25,6 +28,7 @@ import { ClarityIcons } from '@clr/icons';
 import { ThemeSwitchButtonComponent } from '../theme-switch/theme-switch-button.component';
 import { QuickSwitcherComponent } from '../quick-switcher/quick-switcher.component';
 import { MonacoEditorConfig, MonacoProviderService } from 'ng-monaco-editor';
+import { UploaderComponent } from '../uploader/uploader.component';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
@@ -32,20 +36,25 @@ describe('AppComponent', () => {
       providers: [
         { provide: WebsocketService, useClass: WebsocketServiceMock },
         { provide: window, useValue: ClarityIcons },
+        ClrPopoverToggleService,
         MonacoProviderService,
         MonacoEditorConfig,
       ],
       imports: [
+        BrowserModule,
         RouterTestingModule,
         ClarityModule,
         HttpClientTestingModule,
         FormsModule,
         NgSelectModule,
+        ReactiveFormsModule,
       ],
       declarations: [
         ContainerComponent,
         NamespaceComponent,
         PageNotFoundComponent,
+        HelperComponent,
+        PreferencesComponent,
         InputFilterComponent,
         NotifierComponent,
         NavigationComponent,
@@ -54,6 +63,7 @@ describe('AppComponent', () => {
         FilterTextPipe,
         ThemeSwitchButtonComponent,
         QuickSwitcherComponent,
+        UploaderComponent,
       ],
     }).compileComponents();
   }));

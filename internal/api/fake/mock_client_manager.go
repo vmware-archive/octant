@@ -9,6 +9,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	api "github.com/vmware-tanzu/octant/internal/api"
 	config "github.com/vmware-tanzu/octant/internal/config"
+	kubeconfig "github.com/vmware-tanzu/octant/internal/kubeconfig"
 	http "net/http"
 	reflect "reflect"
 )
@@ -75,4 +76,19 @@ func (m *MockClientManager) Run(arg0 context.Context) {
 func (mr *MockClientManagerMockRecorder) Run(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockClientManager)(nil).Run), arg0)
+}
+
+// TemporaryClientFromLoadingRequest mocks base method
+func (m *MockClientManager) TemporaryClientFromLoadingRequest(arg0 kubeconfig.TemporaryKubeConfig, arg1 http.ResponseWriter, arg2 *http.Request) (*api.WebsocketClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TemporaryClientFromLoadingRequest", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*api.WebsocketClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TemporaryClientFromLoadingRequest indicates an expected call of TemporaryClientFromLoadingRequest
+func (mr *MockClientManagerMockRecorder) TemporaryClientFromLoadingRequest(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TemporaryClientFromLoadingRequest", reflect.TypeOf((*MockClientManager)(nil).TemporaryClientFromLoadingRequest), arg0, arg1, arg2)
 }

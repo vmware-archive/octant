@@ -122,7 +122,7 @@ func newOctantCmd(version string, gitCommit string, buildTime string) *cobra.Com
 					os.Exit(1)
 				}
 
-				runner.Start(ctx, nil, shutdownCh)
+				runner.Start(ctx, logger, options, nil, shutdownCh)
 
 				runCh <- true
 			}()
