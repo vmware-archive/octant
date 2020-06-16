@@ -1,5 +1,5 @@
-<div clrFocusOnViewInit class="content-component" (scroll)="onScroll($event)">
-  <ng-container *ngIf="hasReceivedContent">
+<div clrFocusOnViewInit class="content-component" (scroll)="onScroll($event)" [class.loading-content]="showSpinner || !hasReceivedContent">
+  <ng-container *ngIf="hasReceivedContent && !showSpinner; else loading">
     <ng-container
       *ngIf="hasTabs; then withTabs; else withoutTabs"
     ></ng-container>
@@ -15,4 +15,10 @@
       <app-content-switcher [view]="singleView"></app-content-switcher>
     </ng-template>
   </ng-container>
+
+  <ng-template #loading>
+    <span class="spinner">
+      Loading...
+    </span>
+  </ng-template>
 </div>

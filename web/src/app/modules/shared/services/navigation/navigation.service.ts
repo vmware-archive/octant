@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 the Octant contributors. All Rights Reserved.
+ * Copyright (c) 2020 the Octant contributors. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -10,6 +10,7 @@ import { Navigation } from '../../../sugarloaf/models/navigation';
 import { ContentService } from '../content/content.service';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { LoadingService } from '../loading/loading.service';
 
 const emptyNavigation: Navigation = {
   sections: [],
@@ -31,6 +32,7 @@ export class NavigationService {
   activeUrl = new BehaviorSubject<string>('');
 
   constructor(
+    private loadingService: LoadingService,
     private websocketService: WebsocketService,
     private contentService: ContentService,
     private router: Router
@@ -46,6 +48,7 @@ export class NavigationService {
     router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe((event: RouterEvent) => {
+        this.loadingService.requestComplete.next(false);
         this.activeUrl.next(event.url);
         this.updateLastSelection();
       });
@@ -89,15 +92,5 @@ export class NavigationService {
       }
     }
     return -1;
-  }
-
-  removeSuffix(url: string) {
-    const lastSlash = url.lastIndexOf('/');
-    const lastHash = url.lastIndexOf('#');
-
-    if (lastHash > 0 && lastHash > lastSlash) {
-      return url.substring(0, lastHash);
-    }
-    return url;
   }
 }

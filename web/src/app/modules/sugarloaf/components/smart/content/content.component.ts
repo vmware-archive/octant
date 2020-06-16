@@ -20,8 +20,9 @@ import {
 } from 'src/app/modules/shared/models/content';
 import { IconService } from '../../../../shared/services/icon/icon.service';
 import { ContentService } from '../../../../shared/services/content/content.service';
-import isEqual from 'lodash/isEqual';
+import { isEqual } from 'lodash';
 import { Subscription } from 'rxjs';
+import { LoadingService } from 'src/app/modules/shared/services/loading/loading.service';
 
 @Component({
   selector: 'app-overview',
@@ -39,14 +40,16 @@ export class ContentComponent implements OnInit, OnDestroy {
   buttonGroup: ButtonGroupView = null;
   private contentSubscription: Subscription;
   private previousUrl = '';
-  private iconName: string;
   private defaultPath: string;
   private previousParams: Params;
+  private loadingSubscription: Subscription;
+  public showSpinner = false;
 
   constructor(
     private router: Router,
     private iconService: IconService,
-    private contentService: ContentService
+    private contentService: ContentService,
+    public loadingService: LoadingService
   ) {}
 
   updatePath(url: string) {
@@ -69,11 +72,18 @@ export class ContentComponent implements OnInit, OnDestroy {
         this.setContent(contentResponse);
       }
     );
+
+    this.loadingSubscription = this.loadingService.showSpinner.subscribe(
+      value => {
+        this.showSpinner = value;
+      }
+    );
   }
 
   ngOnDestroy() {
     this.resetView();
     this.contentSubscription.unsubscribe();
+    this.loadingSubscription.unsubscribe();
   }
 
   private handlePathChange(
@@ -108,7 +118,6 @@ export class ContentComponent implements OnInit, OnDestroy {
     const views = contentResponse.content.viewComponents;
     if (!views || views.length === 0) {
       this.hasReceivedContent = false;
-      // TODO: show a loading screen here (#506)
       return;
     }
     this.buttonGroup = contentResponse.content.buttonGroup;
