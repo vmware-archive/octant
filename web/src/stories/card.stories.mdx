@@ -1,0 +1,138 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {CardComponent} from "../app/modules/shared/components/presentation/card/card.component";
+import {CardListComponent} from "../app/modules/shared/components/presentation/card-list/card-list.component";
+
+export const cardDocs= { source: { code: `card := component.NewCard([]component.TitleComponent{component.NewText("Card Title")})
+  card.SetBody(component.NewText("Card text"))
+`}}
+
+export const cardListDocs= { source: { code: `cardBody := component.NewText("Card body")
+  card := component.NewCard(component.TitleFromString("Card 1"))
+  card.SetBody(cardBody)
+  cardList := component.NewCardList(name)
+  cardList.AddCard(*card)`
+}}
+
+export const textView = {
+  config: {
+    value: 'Card Title',
+  },
+  metadata: {
+    type: 'text',
+  },
+};
+
+export const textView1 = {
+  config: {
+    value: 'Card 1',
+  },
+  metadata: {
+    type: 'text',
+  },
+};
+
+export const textView2 = {
+  config: {
+    value: 'Card 2',
+  },
+  metadata: {
+    type: 'text',
+  },
+};
+
+
+export const bodyView= {
+  config: {
+    value: 'Card text',
+  },
+  metadata: {
+    type: 'text',
+  },
+};
+
+export const cardView = {
+  config: {
+    body: bodyView,
+    actions: null,
+    alert: null,
+  },
+  metadata: {
+    title: [textView],
+    type: 'card',
+  },
+};
+
+export const card2 = {
+  config: {
+    body: bodyView,
+    actions: null,
+    alert: null,
+  },
+  metadata: {
+    title: [textView2],
+    type: 'text',
+  },
+};
+
+export const card1 = {
+  config: {
+    body: bodyView,
+    actions: null,
+    alert: null,
+  },
+  metadata: {
+    title: [textView1],
+    type: 'text',
+  },
+};
+
+export const cardListView = {
+  config: {
+    cards: [card1, card2],
+  },
+  metadata: {
+    type: 'cards',
+  },
+};
+
+<h1>Card and Card List component</h1>
+<h2>Description</h2>
+
+<p>Card component consists of a title and a body containing one or more components.
+Cards can also contain a footer that performs an action.</p>
+<h2>Example</h2>
+
+<Meta title="Components/Cards" component={CardComponent} />
+
+<Preview withToolbar>
+  <Story name="Card component" parameters={{ docs: cardDocs }} height="200px" >
+  {{
+      props: {
+        view:  object('View', cardView),
+      },
+      component: CardComponent,
+      }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={CardComponent} />
+
+<p>
+Card List component contains a list of cards
+</p>
+
+<Preview withToolbar>
+  <Story name="Card List component" parameters={{ docs: cardListDocs }} height="300px" >
+  {{
+      props: {
+        view:  object('View', cardListView),
+      },
+      component: CardListComponent,
+  }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={CardListComponent} />

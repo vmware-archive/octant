@@ -1,0 +1,51 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {TerminalComponent} from "../app/modules/shared/components/smart/terminal/terminal.component";
+
+export const terminalDocs= { source: { code: `details := component.TerminalDetails{
+		Container: container,
+		Command:   "/bin/sh",
+		Active:    true,
+	}
+term := component.NewTerminal(pod.Namespace, "Terminal", pod.Name, containers, details)`
+}}
+
+<h1>Terminal component</h1>
+<h2>Description</h2>
+
+<p>The Terminal component is used to display a terminal.
+The terminal is connected to a container on specified pod.
+Once connection is established,
+user can start typing shell commands and interact with the remote terminal.</p>
+<h2>Example</h2>
+
+<Meta title="Components/Terminal" component={TerminalComponent} />
+
+<Preview withToolbar>
+<Story name="Terminal component" parameters={{ docs: terminalDocs }} height="500px" >
+  {{
+  props: {
+    view:  object('View', {
+     config: {
+       name: 'example',
+       namespace: 'default',
+       podName: 'nginx-pod',
+       containers: ['nginx', 'nginx-sidecar'],
+       terminal: {
+         container: 'nginx',
+         command: '/bin/sh',
+         active: false,
+       },
+     },
+     metadata: {
+       type: 'terminal',
+     },
+   }),
+  },
+  component: TerminalComponent,
+}}
+</Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={TerminalComponent} />

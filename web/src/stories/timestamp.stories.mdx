@@ -14,12 +14,12 @@ export const docs= { source: { code: "timestamp := component.NewTimestamp(time.U
 </p>
 <h2>Example</h2>
 
-<Meta title="Octant/Components" component={TimestampComponent} />
+<Meta title="Components/Timestamp" component={TimestampComponent} />
 
-<Source name="Timestamp" />
+<Source name="Timestamp component" />
 
 <Preview withToolbar>
-  <Story name="Timestamp" height="250px" parameters={{ docs: docs }}>
+  <Story name="Timestamp" height="75px" parameters={{ docs: docs }}>
   {{
     props: {
       view: object('View', {metadata: {type: "timestamp"}, config: {timestamp: 1588716648}}),
