@@ -19,7 +19,7 @@
     ],
     "docs:json": "compodoc -p tsconfig.compodoc.json -e json -d .",
     "storybook": "npm run docs:json && start-storybook -p 6006 -s src/assets",
-    "build-storybook": "build-storybook"
+    "build-storybook": "npm run docs:json && node --max-old-space-size=8000 ./node_modules/@storybook/angular/bin/build.js build-storybook -c .storybook"
   },
   "prettier": {
     "trailingComma": "es5",
