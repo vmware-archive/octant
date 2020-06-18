@@ -1,4 +1,3 @@
-import { withKnobs } from '@storybook/addon-knobs';
 import {addDecorator, moduleMetadata} from '@storybook/angular';
 import { SharedModule } from '../src/app/modules/shared/shared.module';
 import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
@@ -15,9 +14,6 @@ import docJson from '../documentation.json';
 import { themes } from '@storybook/theming';
 
 setCompodocJson(docJson);
-
-// enable knobs
-addDecorator(withKnobs);
 
 setConsoleOptions({
   panelExclude: [

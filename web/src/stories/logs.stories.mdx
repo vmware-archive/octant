@@ -1,10 +1,9 @@
-import { moduleMetadata } from '@storybook/angular';
 import { Meta, Story, Props } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {LogsComponent} from "../app/modules/shared/components/smart/logs/logs.component";
 
 
-export const view = {
+export const logsView = {
   metadata: {
     type: "logs",
     title: [{metadata: {type: "text"}, config: {value: "Logs"}}],
@@ -40,12 +39,12 @@ export const containerLogs =  [
 </p>
 <h2>Example</h2>
 
-<Meta title="Octant|Components" component={LogsComponent} />
+<Meta title="Octant/Components" component={LogsComponent} />
 
 <Story name="Logs">
 {{
   props: {
-    view: object('View', view),
+    view: object('View', logsView),
     containerLogs: object('Log entries', containerLogs)
   },
   component: LogsComponent,

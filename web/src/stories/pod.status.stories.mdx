@@ -1,4 +1,3 @@
-import { moduleMetadata } from '@storybook/angular';
 import { Meta, Story, Props } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {PodStatusComponent} from "../app/modules/shared/components/presentation/pod-status/pod-status.component";
@@ -12,7 +11,7 @@ export const statusText = {
   },
 };
 
-export const view = {
+export const podStatusView = {
   "metadata": {"type": "podStatus"},
   "config": {
     "pods": {
@@ -30,12 +29,12 @@ export const view = {
 </p>
 <h2>Example</h2>
 
-<Meta title="Octant|Components" component={PodStatusComponent} />
+<Meta title="Octant/Components" component={PodStatusComponent} />
 
 <Story name="Pod Status" height="150px">
 {{
   props: {
-    view: object('View', view)
+    view: object('View', podStatusView)
   },
   component: PodStatusComponent,
 }}
