@@ -1,0 +1,32 @@
+import { moduleMetadata } from '@storybook/angular';
+import { Meta, Story, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {LinkComponent} from "../app/modules/shared/components/presentation/link/link.component";
+
+<h1>Link component</h1>
+<h2>Description</h2>
+
+<p>The Link component is used to present simple links</p>
+<h2>Example</h2>
+
+<Meta title="Octant|Components" component={LinkComponent} />
+
+<Story name="Link" height="150px">
+{{
+    props: {
+      view:  object('View', {
+        metadata: {
+          type: 'link',
+        },
+        config: {
+          value: 'nginx-deployment',
+          ref: '/overview/deployments/nginx-deployment',
+        },
+      }),
+    },
+    component: LinkComponent,
+    }}
+</Story>
+
+<h2>Props</h2>
+<Props of={LinkComponent} />
