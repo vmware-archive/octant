@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download web/rice-box.go
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v2
         with:
           name: rice-web
       - name: Change permissions of rice files
