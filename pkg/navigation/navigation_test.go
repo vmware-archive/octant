@@ -101,10 +101,6 @@ func TestCRDEntries_namespace_scoped(t *testing.T) {
 	require.NoError(t, err)
 
 	namespaceExpected := []Navigation{
-		{
-			Title: "Overview",
-			Path:  "/prefix",
-		},
 		createNavForCR(t, namespaceCR.GetName()),
 	}
 
@@ -113,12 +109,7 @@ func TestCRDEntries_namespace_scoped(t *testing.T) {
 	//clusterGot, _, err := CRDEntries(ctx, "/prefix", "default", objectStore, true)
 	//require.NoError(t, err)
 	//
-	//clusterExpected := []Navigation{
-	//	{
-	//		Title: "Overview",
-	//		Path:  "/prefix",
-	//	},
-	//}
+	//clusterExpected := []Navigation{}
 
 	//assert.Equal(t, clusterExpected, clusterGot)
 }

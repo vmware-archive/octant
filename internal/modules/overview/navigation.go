@@ -28,7 +28,6 @@ var (
 func workloadEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, _ bool) ([]navigation.Navigation, bool, error) {
 	neh := navigation.EntriesHelper{}
 
-	neh.Add("Overview", "", false)
 	neh.Add("Cron Jobs", "cron-jobs",
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.CronJob), objectStore))
 	neh.Add("Daemon Sets", "daemon-sets",
@@ -57,7 +56,7 @@ func workloadEntries(ctx context.Context, prefix, namespace string, objectStore 
 
 func discoAndLBEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, _ bool) ([]navigation.Navigation, bool, error) {
 	neh := navigation.EntriesHelper{}
-	neh.Add("Overview", "", false)
+
 	neh.Add("Horizontal Pod Autoscalers", "horizontal-pod-autoscalers",
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.HorizontalPodAutoscaler), objectStore))
 	neh.Add("Ingresses", "ingresses",
@@ -78,7 +77,6 @@ func discoAndLBEntries(ctx context.Context, prefix, namespace string, objectStor
 func configAndStorageEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, _ bool) ([]navigation.Navigation, bool, error) {
 	neh := navigation.EntriesHelper{}
 
-	neh.Add("Overview", "", false)
 	neh.Add("Config Maps", "config-maps",
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.ConfigMap), objectStore))
 	neh.Add("Persistent Volume Claims", "persistent-volume-claims",
@@ -99,7 +97,6 @@ func configAndStorageEntries(ctx context.Context, prefix, namespace string, obje
 func rbacEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, _ bool) ([]navigation.Navigation, bool, error) {
 	neh := navigation.EntriesHelper{}
 
-	neh.Add("Overview", "", false)
 	neh.Add("Roles", "roles",
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.Role), objectStore))
 	neh.Add("Role Bindings", "role-bindings",

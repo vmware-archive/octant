@@ -249,7 +249,7 @@ func (co *ClusterOverview) Generators() []octant.Generator {
 
 func rbacEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, _ bool) ([]navigation.Navigation, bool, error) {
 	neh := navigation.EntriesHelper{}
-	neh.Add("Overview", "", false)
+
 	neh.Add("Cluster Roles", "cluster-roles",
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.ClusterRole), objectStore))
 	neh.Add("Cluster Role Bindings", "cluster-role-bindings",
@@ -265,7 +265,7 @@ func rbacEntries(ctx context.Context, prefix, namespace string, objectStore stor
 
 func storageEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, _ bool) ([]navigation.Navigation, bool, error) {
 	neh := navigation.EntriesHelper{}
-	neh.Add("Overview", "", false)
+
 	neh.Add("Persistent Volumes", "persistent-volumes",
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.PersistentVolume), objectStore))
 
