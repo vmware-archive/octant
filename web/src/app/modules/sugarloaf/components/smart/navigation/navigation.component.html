@@ -8,59 +8,45 @@
           <div class="nav-divider"></div>
         </ng-template>
 
-        <ng-container *ngIf="section.children?.length > 0; else noChildCollapsed">
-          <a clrVerticalNavLink
-             (click)="openPopup(i)"
-             [ngClass]= "{'item-selected' : i == this.lastSelection}"
-             [routerLinkActiveOptions]="{exact: false}"
-             [routerLink]="formatPath(section.path)"
-             routerLinkActive="active"
-             (mouseover)="flyoutIndex= i; lastSelection=i"
+        <a clrVerticalNavLink
+           (click)="openPopup(i)"
+           [ngClass]= "{'item-selected' : i == this.lastSelection}"
+           [routerLinkActiveOptions]="{exact: !section.children?.length}"
+           [routerLink]="formatPath(section.path)"
+           routerLinkActive="active"
+           (mouseover)="flyoutIndex= i; lastSelection=i"
+        >
+          <clr-icon [attr.shape]="section.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
+        </a>
+
+        <ng-container *ngIf="shouldExpand(i)">
+          <div class="flyout nav-group-children"
+               [ngClass]= "{'flyout-empty' : !section.children?.length}"
+               (mouseleave)="flyoutIndex= -1; lastSelection= -1"
+               (document:mouseleave)="flyoutIndex= -1; lastSelection= -1"
           >
-            <clr-icon [attr.shape]="section.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
-          </a>
-
-          <ng-container *ngIf="shouldExpand(i)">
-            <div class="flyout nav-group-children"
-                 (mouseleave)="flyoutIndex= -1; lastSelection= -1"
-                 (document:mouseleave)="flyoutIndex= -1; lastSelection= -1"
+            <a class="flyout-header"
+               (click)="openPopup(i)"
+               [routerLinkActiveOptions]="{exact: !section.children?.length}"
+               [routerLink]="formatPath(section.path)"
+               routerLinkActive="active"
             >
-              <span class="flyout-header">{{ section.title }}</span>
-              <clr-vertical-nav-group-children class="flyout-group">
-                <ng-container *ngFor="let category of section.children; trackBy: identifyNavigationItem">
-                  <a [routerLink]="formatPath(category.path)"
-                    [routerLinkActiveOptions]="{exact: true}"
-                    routerLinkActive="active"
-                    class="flyout-item nav-link"
-                    (click)="setNavState(false, i)"
-                  >
-                  {{ category.title }}
-                  </a>
-                </ng-container>
-              </clr-vertical-nav-group-children>
-            </div>
-          </ng-container>
-        </ng-container>
-
-        <ng-template #noChildCollapsed>
-              <span class="tooltip-override tooltip tooltip-md">
-                <a clrVerticalNavLink
-                   [ngClass]= "{'item-selected' : i == this.lastSelection}"
+              {{ section.title }}
+            </a>
+            <clr-vertical-nav-group-children class="flyout-group">
+              <ng-container *ngFor="let category of section.children; trackBy: identifyNavigationItem">
+                <a [routerLink]="formatPath(category.path)"
                    [routerLinkActiveOptions]="{exact: true}"
-                   [routerLink]="formatPath(section.path)"
                    routerLinkActive="active"
-                   (mouseover)="flyoutIndex= -1; lastSelection= i"
-                   (mouseleave)="lastSelection= -1"
-                   (click)="closePopups(i)"
+                   class="flyout-item nav-link"
+                   (click)="setNavState(false, i)"
                 >
-                    <clr-icon [attr.shape]="section.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
+                  {{ category.title }}
                 </a>
-                <span class="tooltip-content-override tooltip-content">
-                  <span>{{ section.title }}</span>
-                </span>
-              </span>
-        </ng-template>
-
+              </ng-container>
+            </clr-vertical-nav-group-children>
+          </div>
+        </ng-container>
       </ng-container>
       <!-- Expanded Navigation -->
       <ng-template #expanded>
@@ -75,8 +61,15 @@
             (clrVerticalNavGroupExpandedChange)="setNavState($event, i)"
           >
             <clr-icon [attr.shape]="section.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
-          {{ section.title }}
+            {{ section.title }}
             <clr-vertical-nav-group-children>
+              <a clrVerticalNavLink
+                 [routerLink]="formatPath(section.path)"
+                 [routerLinkActiveOptions]="{exact: true}"
+                 routerLinkActive="active"
+              >
+                Overview
+              </a>
               <ng-container *ngFor="let category of section.children; trackBy: identifyNavigationItem">
                 <a
                   clrVerticalNavLink
@@ -85,7 +78,7 @@
                   routerLinkActive="active"
                 >
                   <clr-icon *ngIf="itemIcon(category) as categoryIcon" [attr.shape]="categoryIcon" clrVerticalNavIcon></clr-icon>
-                {{ category.title }}
+                  {{ category.title }}
                 </a>
               </ng-container>
             </clr-vertical-nav-group-children>
@@ -100,7 +93,7 @@
           >
             <clr-icon [attr.shape]="section.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
             <div class="nav-item-text">
-            {{ section.title }}
+              {{ section.title }}
             </div>
           </a>
         </ng-template>

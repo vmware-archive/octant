@@ -9,7 +9,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/vmware-tanzu/octant/pkg/icon"
 	"path"
 	"sort"
 
@@ -20,6 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/pkg/icon"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
@@ -49,12 +49,12 @@ func SetLoading(isLoading bool) Option {
 
 // Navigation is a set of navigation entries.
 type Navigation struct {
-	Module     string       `json:"module,omitempty"`
-	Title      string       `json:"title,omitempty"`
-	Path       string       `json:"path,omitempty"`
-	Children   []Navigation `json:"children,omitempty"`
-	IconName   string       `json:"iconName,omitempty"`
-	Loading    bool         `json:"isLoading"`
+	Module   string       `json:"module,omitempty"`
+	Title    string       `json:"title,omitempty"`
+	Path     string       `json:"path,omitempty"`
+	Children []Navigation `json:"children,omitempty"`
+	IconName string       `json:"iconName,omitempty"`
+	Loading  bool         `json:"isLoading"`
 }
 
 // New creates a Navigation.
@@ -72,13 +72,7 @@ func New(title, navigationPath string, options ...Option) (*Navigation, error) {
 
 // CRDEntries generates navigation entries for CRDs.
 func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, wantsClusterScoped bool) ([]Navigation, bool, error) {
-	var list = []Navigation{
-		{
-			Title:   "Overview",
-			Path:    prefix,
-			Loading: false,
-		},
-	}
+	var list = []Navigation{}
 
 	loading := false
 
