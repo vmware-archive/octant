@@ -1,0 +1,27 @@
+name: dependabot-gomod
+on:
+  push:
+    branches:
+    - dependabot/go_modules/**
+
+jobs:
+  go_mod_vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.14.x
+      - uses: actions/checkout@v2
+      - name: vendor
+        run: |
+          go mod vendor
+      - name: tidy
+        run: |
+          go mod tidy
+      - name: commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4.3.0
+        with:
+          commit_message: Vendor and tidy go modules
+          commit_options: '--no-verify --signoff'
+          # use a personal access token so that the push will trigger new actions
+          token: ${{ secrets.PAT_TOKEN }}
