@@ -20,20 +20,19 @@ require (
 	github.com/googleapis/gnostic v0.4.1
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.6.2
-	github.com/gorilla/websocket v1.4.1
+	github.com/gorilla/websocket v1.4.2
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/hashicorp/go-hclog v0.8.0
 	github.com/hashicorp/go-plugin v0.0.0-20190220160451-3f118e8ee104
 	github.com/hashicorp/golang-lru v0.5.1
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
 	github.com/imdario/mergo v0.3.6 // indirect
-	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
 	github.com/nkovacs/streamquote v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.5
-	github.com/spf13/viper v1.4.0
+	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.4.0
 	go.opencensus.io v0.22.1
 	go.uber.org/zap v1.10.0
