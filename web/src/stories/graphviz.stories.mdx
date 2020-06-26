@@ -9,7 +9,7 @@ import {GraphvizComponent} from "../app/modules/shared/components/presentation/g
 <p>The Graphviz component is used to graphviz markdown to PNGs graphs.</p>
 <h2>Example</h2>
 
-<Meta title="Components/Graphviz" component={GraphvizComponent} />
+<Meta title="Components/Graphviz" decorators={[ withKnobs({escapeHTML: false})]} component={GraphvizComponent} />
 
 <Preview withToolbar>
 <Story name="Graphviz" height="150px">
