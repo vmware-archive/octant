@@ -1,7 +1,9 @@
 import { moduleMetadata } from '@storybook/angular';
-import { Meta, Story, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {GraphvizComponent} from "../app/modules/shared/components/presentation/graphviz/graphviz.component";
+
+export const graphvizDocs= { source: { code: `graph := component.NewGraphviz("digraph {a -> b}`}}
 
 <h1>Graphviz component</h1>
 <h2>Description</h2>
@@ -12,7 +14,7 @@ import {GraphvizComponent} from "../app/modules/shared/components/presentation/g
 <Meta title="Components/Graphviz" decorators={[ withKnobs({escapeHTML: false})]} component={GraphvizComponent} />
 
 <Preview withToolbar>
-<Story name="Graphviz" height="150px">
+<Story name="Graphviz" parameters={{ docs: graphvizDocs }} height="250px">
 {{
     props: {
       view:  object('View', {
