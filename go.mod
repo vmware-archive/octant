@@ -38,7 +38,7 @@ require (
 	go.uber.org/zap v1.15.0
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	google.golang.org/grpc v1.30.0
-	k8s.io/api v0.19.0-alpha.3
+	k8s.io/api v0.19.0-beta.2
 	k8s.io/apiextensions-apiserver v0.19.0-alpha.3
 	k8s.io/apimachinery v0.19.0-beta.2
 	k8s.io/client-go v0.19.0-alpha.3
