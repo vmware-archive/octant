@@ -31,17 +31,17 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e
 	github.com/spf13/afero v1.2.2
-	github.com/spf13/cobra v0.0.7
+	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.6.1
-	go.opencensus.io v0.22.1
+	go.opencensus.io v0.22.2
 	go.uber.org/zap v1.15.0
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	google.golang.org/grpc v1.30.0
-	k8s.io/api v0.19.0-alpha.3
-	k8s.io/apiextensions-apiserver v0.19.0-alpha.3
+	k8s.io/api v0.19.0-beta.2
+	k8s.io/apiextensions-apiserver v0.19.0-beta.2
 	k8s.io/apimachinery v0.19.0-beta.2
-	k8s.io/client-go v0.19.0-alpha.3
+	k8s.io/client-go v0.19.0-beta.2
 	k8s.io/klog v1.0.0
 	k8s.io/metrics v0.19.0-alpha.3
 	k8s.io/utils v0.0.0-20200414100711-2df71ebbae66
