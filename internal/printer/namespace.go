@@ -25,24 +25,26 @@ var (
 	namespaceResourceLimitsCols = component.NewTableCols("Type", "Resource", "Min", "Max", "Default Request", "Default Limit", "Limit/Request Ratio")
 )
 
-func NamespaceListHandler(_ context.Context, list *corev1.NamespaceList, options Options) (component.Component, error) {
+func NamespaceListHandler(ctx context.Context, list *corev1.NamespaceList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("namespace list is nil")
 	}
 
-	table := component.NewTable("Namespaces", "We couldn't find any namespaces!", namespaceListCols)
+	ot := NewObjectTable("Namespaces", "We couldn't find any namespaces!", namespaceListCols, options.DashConfig.ObjectStore())
 
-	for i := range list.Items {
+	for _, namespace := range list.Items {
 		row := component.TableRow{}
-		p := path.Join("/cluster-overview/namespaces", list.Items[i].Name)
-		row["Name"] = component.NewLink("", list.Items[i].Name, p)
-		row["Labels"] = component.NewLabels(list.Items[i].Labels)
-		row["Status"] = component.NewText(string(list.Items[i].Status.Phase))
-		row["Age"] = component.NewTimestamp(list.Items[i].CreationTimestamp.Time)
-		table.Add(row)
+		p := path.Join("/cluster-overview/namespaces", namespace.Name)
+		row["Name"] = component.NewLink("", namespace.Name, p)
+		row["Labels"] = component.NewLabels(namespace.Labels)
+		row["Status"] = component.NewText(string(namespace.Status.Phase))
+		row["Age"] = component.NewTimestamp(namespace.CreationTimestamp.Time)
+		if err := ot.AddRowForObject(ctx, &namespace, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
 	}
 
-	return table, nil
+	return ot.ToComponent()
 }
 
 func NamespaceHandler(ctx context.Context, namespace *corev1.Namespace, options Options) (component.Component, error) {
