@@ -44,14 +44,17 @@ func Test_NamespaceListHandler(t *testing.T) {
 
 	expected := component.NewTableWithRows("Namespaces", "We couldn't find any namespaces!", namespaceListCols, []component.TableRow{
 		{
-			"Name":   component.NewLink("", "ns-test-1", "/cluster-overview/namespaces/ns-test-1"),
+			"Name":   component.NewLink("", "ns-test-1", "/cluster-overview/namespaces/ns-test-1", genObjectStatus(component.TextStatusOK, []string{"v1 Namespace is OK"})),
 			"Labels": component.NewLabels(make(map[string]string)),
 			"Status": component.NewText("Active"),
 			"Age":    component.NewTimestamp(namespace.CreationTimestamp.Time),
+			component.GridActionKey: gridActionsFactory([]component.GridAction{
+				buildObjectDeleteAction(t, namespace),
+			}),
 		},
 	})
 
-	component.AssertEqual(t, expected, got)
+	testutil.AssertJSONEqual(t, expected, got)
 }
 
 func Test_printNamespaceResourceQuotas(t *testing.T) {
