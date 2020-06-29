@@ -1,8 +1,7 @@
 # cloud.google.com/go v0.46.3
 cloud.google.com/go/compute/metadata
-# contrib.go.opencensus.io/exporter/jaeger v0.1.0
+# contrib.go.opencensus.io/exporter/jaeger v0.2.0
 contrib.go.opencensus.io/exporter/jaeger
-contrib.go.opencensus.io/exporter/jaeger/internal/gen-go/jaeger
 # github.com/Azure/go-autorest/autorest v0.9.6
 github.com/Azure/go-autorest/autorest
 github.com/Azure/go-autorest/autorest/azure
@@ -26,8 +25,6 @@ github.com/akavel/rsrc/coff
 github.com/akavel/rsrc/ico
 github.com/akavel/rsrc/internal
 github.com/akavel/rsrc/rsrc
-# github.com/apache/thrift v0.12.0
-github.com/apache/thrift/lib/go/thrift
 # github.com/asticode/go-astikit v0.6.0
 github.com/asticode/go-astikit
 # github.com/asticode/go-astilectron v0.14.2
@@ -177,6 +174,11 @@ github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
+# github.com/uber/jaeger-client-go v2.15.0+incompatible
+github.com/uber/jaeger-client-go/thrift
+github.com/uber/jaeger-client-go/thrift-gen/agent
+github.com/uber/jaeger-client-go/thrift-gen/jaeger
+github.com/uber/jaeger-client-go/thrift-gen/zipkincore
 # github.com/valyala/bytebufferpool v1.0.0
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.0.1
