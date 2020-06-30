@@ -9,7 +9,7 @@
                     <label for="config" class="clr-control-label">Upload a kubeconfig</label>
                     <div class="clr-control-container" [ngClass]="{'clr-error': inputValue === ''}">
                         <div class="clr-textarea-wrapper">
-                            <textarea id="config" name="config" [(ngModel)]="inputValue" placeholder="Enter value here" class="clr-textarea"></textarea>
+                            <textarea id="config" name="config" [(ngModel)]="inputValue" (ngModelChange)="updateInput($event)" placeholder="Enter value here" class="clr-textarea"></textarea>
                             <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                         </div>
                         <span class="clr-subtext">This can't be empty</span>
@@ -17,7 +17,7 @@
                   </form>
             </div>
             <div class="modal-footer">
-                <button (click)="upload()" class="btn btn-primary" type="button">Upload</button>
+                <button (click)="upload()" class="btn btn-primary" type="button" [disabled]="hasInput()">Upload</button>
             </div>
         </div>
     </div>

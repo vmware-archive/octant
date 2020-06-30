@@ -6,32 +6,28 @@
 package api
 
 import (
-	"bytes"
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/vmware-tanzu/octant/internal/event"
 	"github.com/vmware-tanzu/octant/internal/kubeconfig"
-	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
 const (
 	UploadKubeConfig = "action.octant.dev/uploadKubeConfig"
+	CheckLoading     = "action.octant.dev/loading"
 )
 
 type LoadingManager struct {
 	client     OctantClient
 	kubeConfig kubeconfig.TemporaryKubeConfig
 	ctx        context.Context
-	poller     Poller
 }
 
 var _ StateManager = (*LoadingManager)(nil)
@@ -39,7 +35,6 @@ var _ StateManager = (*LoadingManager)(nil)
 func NewLoadingManager(temporaryKubeConfig kubeconfig.TemporaryKubeConfig) *LoadingManager {
 	lm := &LoadingManager{
 		kubeConfig: temporaryKubeConfig,
-		poller:     NewInterruptiblePoller("loading"),
 	}
 
 	return lm
@@ -51,39 +46,31 @@ func (l *LoadingManager) Handlers() []octant.ClientRequestHandler {
 			RequestType: UploadKubeConfig,
 			Handler:     l.UploadKubeConfig,
 		},
+		{
+			RequestType: CheckLoading,
+			Handler:     l.CheckLoading,
+		},
 	}
 }
 
 func (l *LoadingManager) Start(ctx context.Context, state octant.State, client OctantClient) {
 	l.client = client
 	l.ctx = ctx
-
-	l.poller.Run(ctx, nil, l.runUpdate(state, client), event.DefaultScheduleDelay)
 }
 
-func (l *LoadingManager) runUpdate(state octant.State, client OctantClient) PollerFunc {
-	var previous []byte
-	return func(ctx context.Context) bool {
-		logger := log.From(ctx)
-
-		if ctx.Err() == nil {
-			event := octant.Event{
-				Type: octant.EventTypeLoading,
-			}
-
-			cur, err := json.Marshal(event)
-			if err != nil {
-				logger.WithErr(err).Errorf("unable to marshal loading")
-				return false
-			}
-
-			if bytes.Compare(previous, cur) != 0 {
-				previous = cur
-				client.Send(event)
-			}
-		}
-		return false
+func (l *LoadingManager) CheckLoading(state octant.State, payload action.Payload) error {
+	loading, err := payload.Bool("loading")
+	if err != nil {
+		return fmt.Errorf("getting loading from payload: %w", err)
 	}
+
+	if loading {
+		l.client.Send(octant.Event{
+			Type: octant.EventTypeLoading,
+		})
+	}
+
+	return nil
 }
 
 func (l *LoadingManager) UploadKubeConfig(state octant.State, payload action.Payload) error {

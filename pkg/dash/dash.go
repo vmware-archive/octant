@@ -126,7 +126,7 @@ func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, 
 	go func() {
 		if r.dash != nil {
 			select {
-			case options.KubeConfig = <-findKubeConfig(r.dash.kubeconfig):
+			case options.KubeConfig = <-findKubeConfig(logger, r.dash.kubeconfig):
 				if options.KubeConfig != "" {
 					logger.Debugf("Loading configuration: %v", options.KubeConfig)
 					r.loadingComplete <- true
@@ -529,16 +529,20 @@ func enableOpenCensus() error {
 }
 
 // findKubeConfig looks for kube config from .kube or provided by user
-func findKubeConfig(temporaryKubeConfig kubeconfig.TemporaryKubeConfig) <-chan string {
+func findKubeConfig(logger log.Logger, temporaryKubeConfig kubeconfig.TemporaryKubeConfig) <-chan string {
 	r := make(chan string)
 	go func() {
+		defer close(r)
+
 		kubeconfig := clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
 		if _, err := os.Stat(kubeconfig); err == nil {
+			logger.Infof("using kube config: %v", kubeconfig)
 			r <- kubeconfig
 			return
 		}
 
-		defer close(r)
+		logger.Infof("kube config not found: %v", kubeconfig)
+
 		select {
 		case path, ok := <-temporaryKubeConfig.Path:
 			if ok {
