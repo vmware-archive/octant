@@ -25,7 +25,7 @@ github.com/akavel/rsrc/coff
 github.com/akavel/rsrc/ico
 github.com/akavel/rsrc/internal
 github.com/akavel/rsrc/rsrc
-# github.com/asticode/go-astikit v0.6.0
+# github.com/asticode/go-astikit v0.8.0
 github.com/asticode/go-astikit
 # github.com/asticode/go-astilectron v0.14.2
 github.com/asticode/go-astilectron
