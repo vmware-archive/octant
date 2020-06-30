@@ -106,7 +106,7 @@ github.com/hashicorp/go-hclog
 # github.com/hashicorp/go-plugin v0.0.0-20190220160451-3f118e8ee104
 github.com/hashicorp/go-plugin
 github.com/hashicorp/go-plugin/internal/plugin
-# github.com/hashicorp/golang-lru v0.5.1
+# github.com/hashicorp/golang-lru v0.5.4
 github.com/hashicorp/golang-lru
 github.com/hashicorp/golang-lru/simplelru
 # github.com/hashicorp/hcl v1.0.0
