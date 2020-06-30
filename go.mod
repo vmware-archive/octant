@@ -34,7 +34,7 @@ require (
 	github.com/spf13/cobra v0.0.7
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.6.1
-	go.opencensus.io v0.22.1
+	go.opencensus.io v0.22.4
 	go.uber.org/zap v1.15.0
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	google.golang.org/grpc v1.30.0
