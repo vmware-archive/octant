@@ -35,10 +35,10 @@ Define your handleAction function:
 	func handleAction(request *service.ActionRequest) error {
 		switch request.ActionName {
 			case action.RequestSetNamespace:
-				namespace, err := action.Payload.String("namespace")
+				namespace, err := request.Payload.String("namespace")
 				// err check, do work
 		}
 		return nil
 	}
 
- */
+*/

@@ -9,8 +9,6 @@ toc:
         url: /roadmap
       - page: Developer Notes
         url: /hacking
-      - page: Build with Drone
-        url: /drone
       - page: Release
         url: /release
   - title: Plugins
