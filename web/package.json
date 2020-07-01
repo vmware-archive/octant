@@ -63,7 +63,7 @@
     "monaco-editor": "^0.20.0",
     "ng-monaco-editor": "^2.2.2",
     "ngx-highlightjs": "^4.0.2",
-    "ngx-markdown": "^8.2.1",
+    "ngx-markdown": "^10.0.0",
     "rxjs": "^6.5.5",
     "serialize-javascript": "^3.0.0",
     "tslib": "^1.11.1",
