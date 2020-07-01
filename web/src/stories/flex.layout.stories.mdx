@@ -1,0 +1,143 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {FlexlayoutComponent} from "../app/modules/shared/components/presentation/flexlayout/flexlayout.component";
+
+export const flexDocs= { source: { code: `flexLayout := component.NewFlexLayout("Summary")
+flexLayout.AddSections([]component.FlexLayoutSection{
+  {
+    {
+      Width: component.WidthFull,
+      View: component.NewSummary("Metadata", component.SummarySections{
+        {
+          Header:  "Full Width",
+          Content: component.NewText("sample text"),
+        },
+      }...),
+    },
+    {
+      Width: component.WidthHalf,
+      View: component.NewSummary("Metadata", component.SummarySections{
+        {
+          Header:  "Half Width",
+          Content: component.NewText("sample text"),
+        },
+      }...),
+    },
+    {
+      Width: component.WidthQuarter,
+      View: component.NewSummary("Metadata", component.SummarySections{
+        {
+          Header:  "Quarter Width",
+          Content: component.NewText("sample text"),
+        },
+      }...),
+    },
+  },
+}...)`
+}};
+
+export const sampleText = {
+  config: {
+    value: 'sample text',
+  },
+  metadata: {
+    type: 'text',
+  },
+};
+
+export const summaryItemFull = {
+  header: 'Full Width',
+  content: sampleText,
+};
+
+export const summaryItemHalf = {
+  header: 'Half Width',
+  content: sampleText,
+};
+
+export const summaryItemQuarter = {
+  header: 'Quarter Width',
+  content: sampleText,
+};
+
+export const summaryFull = {
+  config: {
+    sections: [summaryItemFull],
+    actions: [],
+  },
+  metadata: {
+    type: 'summary',
+  },
+};
+
+export const summaryHalf = {
+  config: {
+    sections: [summaryItemHalf],
+    actions: [],
+  },
+  metadata: {
+    type: 'summary',
+  },
+};
+
+export const summaryQuarter = {
+  config: {
+    sections: [summaryItemQuarter],
+    actions: [],
+  },
+  metadata: {
+    type: 'summary',
+  },
+};
+
+export const sectionFull = {
+  width: 24,
+  height: null,
+  view: summaryFull,
+};
+
+export const sectionHalf = {
+  width: 12,
+  height: null,
+  view: summaryHalf,
+};
+
+export const sectionQuarter = {
+  width: 6,
+  height: null,
+  view: summaryQuarter,
+};
+
+export const flexView = {
+  config: {
+    sections: [[sectionFull, sectionHalf, sectionQuarter, sectionQuarter]],
+    buttonGroup: null,
+  },
+  metadata: {
+    type: 'flexlayout',
+  },
+};
+
+<h1>Flex Layout component</h1>
+<h2>Description</h2>
+
+<p>A Flex Layout component is used to provide a vertical layout for its child components.
+The layout can be divided into three possible widths: full, half, and quarter.</p>
+
+<h2>Example</h2>
+
+<Meta title="Components/Flex Layout" component={FlexlayoutComponent} />
+
+<Preview withToolbar>
+  <Story name="Flex Layout component" parameters={{ docs: flexDocs }} height="250px" >
+  {{
+      props: {
+        view: object('View', flexView),
+      },
+      component: FlexlayoutComponent,
+      }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={FlexlayoutComponent} />

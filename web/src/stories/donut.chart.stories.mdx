@@ -1,0 +1,68 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {DonutChartComponent} from "../app/modules/shared/components/presentation/donut-chart/donut-chart.component";
+
+export const donutDocs= { source: { code: `component.DonutChart{
+	Config: component.DonutChartConfig{
+		Size: component.DonutChartSizeMedium,
+		Segments: []component.DonutSegment{
+			{
+				Count: 3,
+				Status: component.NodeStatusOK,
+			},
+		},
+		Labels: component.DonutChartLabels{
+			Plural: "Pods",
+			Singular: "Pod",
+		},
+	},
+}`
+}}
+
+export const segment = {
+  count: 3,
+  status: 'ok',
+};
+
+export const label = {
+  plural: 'Pods',
+  singular: 'Pod',
+};
+
+export const donutChartView = {
+  config: {
+    segments: [segment],
+    labels: label,
+    size: 3,
+  },
+  metadata: {
+    type: 'donutChart',
+  },
+};
+
+<h1>Donut component</h1>
+<h2>Description</h2>
+
+<p>The Donut Chart component is used in Octant's application view
+to show application health and pod count.</p>
+<h2>Example</h2>
+
+<Meta title="Components/Donut" component={DonutChartComponent} />
+
+<Preview withToolbar>
+  <Story name="Donut component" parameters={{ docs: donutDocs }} height="400px" >
+  {{
+      props: {
+        view:  object('View', donutChartView),
+      },
+      template: `
+        <div class="main-container" style= "width: 90vh; height: 90vh; margin: auto;">
+          <app-view-donut-chart [view]="view"></app-view-donut-chart>
+        </div>
+     `,
+      }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={DonutChartComponent} />
