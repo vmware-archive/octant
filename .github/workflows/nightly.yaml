@@ -1,7 +1,7 @@
 name: Nightly releases
 on:
   schedule:
-    - cron:  '* * * * *'
+    - cron:  '0 0 * * *'
 jobs:
   nightly-build:
     name: Build nightly
