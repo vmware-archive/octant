@@ -1,7 +1,7 @@
 name: Nightly releases
 on:
   schedule:
-    - cron:  '0 0 * * *'
+    - cron:  '* * * * *'
 jobs:
   nightly-build:
     name: Build nightly
@@ -41,11 +41,11 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: rice-web
+          path: web
       - name: Change permissions of rice files
         # Uploading artifact changes file permissions
         run: |
           chown -R $(whoami):$(whoami) .
-          mv rice-web/rice-box.go ./web/
       - name: Run goreleaser
         run: |
           git fetch --tags
