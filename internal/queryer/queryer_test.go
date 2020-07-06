@@ -385,45 +385,79 @@ func TestCacheQueryer_IngressesForService(t *testing.T) {
 }
 
 func TestCacheQueryer_OwnerReference(t *testing.T) {
-	deployment := testutil.ToUnstructured(t, testutil.CreateDeployment("deployment"))
-	replicaSet := testutil.ToUnstructured(t, testutil.CreateAppReplicaSet("replica-set"))
-	replicaSet.SetOwnerReferences(testutil.ToOwnerReferences(t, deployment))
+	deployment1 := testutil.ToUnstructured(t, testutil.CreateDeployment("deployment1"))
+	deployment2 := testutil.ToUnstructured(t, testutil.CreateDeployment("deployment2"))
+	replicaSet1 := testutil.ToUnstructured(t, testutil.CreateAppReplicaSet("replica-set1"))
+	replicaSet2 := testutil.ToUnstructured(t, testutil.CreateAppReplicaSet("replica-set2"))
+	replicaSet1.SetOwnerReferences(testutil.ToOwnerReferences(t, deployment1))
+	replicaSet2.SetOwnerReferences(testutil.ToOwnerReferences(t, deployment1, deployment2))
 
+	type args struct {
+		object *unstructured.Unstructured
+	}
 	cases := []struct {
 		name     string
 		setup    func(t *testing.T, o *storeFake.MockStore)
-		expected func(t *testing.T) runtime.Object
+		args     args
+		expected func(t *testing.T) []*unstructured.Unstructured
 		isErr    bool
 	}{
 		{
-			name: "in general",
+			name: "single owner",
 			setup: func(t *testing.T, o *storeFake.MockStore) {
 				key := store.Key{
-					Namespace:  deployment.GetNamespace(),
+					Namespace:  deployment1.GetNamespace(),
 					APIVersion: "apps/v1",
 					Kind:       "Deployment",
 					Name:       "deployment",
 				}
+				key, err := store.KeyFromObject(deployment1)
+				require.NoError(t, err)
 				o.EXPECT().
 					Get(gomock.Any(), gomock.Eq(key)).
-					Return(deployment, nil)
+					Return(deployment1, nil).AnyTimes()
 			},
-			expected: func(t *testing.T) runtime.Object {
-				return testutil.ToUnstructured(t, deployment)
+			args: args{
+				object: replicaSet1,
+			},
+			expected: func(t *testing.T) []*unstructured.Unstructured {
+				return []*unstructured.Unstructured{
+					testutil.ToUnstructured(t, deployment1),
+				}
+			},
+		},
+		{
+			name: "multiple owner",
+			setup: func(t *testing.T, o *storeFake.MockStore) {
+				for _, object := range []*unstructured.Unstructured{deployment1, deployment2} {
+					key, err := store.KeyFromObject(object)
+					require.NoError(t, err)
+					o.EXPECT().
+						Get(gomock.Any(), gomock.Eq(key)).
+						Return(object, nil)
+				}
+			},
+			args: args{
+				object: replicaSet2,
+			},
+			expected: func(t *testing.T) []*unstructured.Unstructured {
+				return []*unstructured.Unstructured{
+					testutil.ToUnstructured(t, deployment1),
+					testutil.ToUnstructured(t, deployment2),
+				}
 			},
 		},
 		{
 			name: "object store get failure",
 			setup: func(t *testing.T, o *storeFake.MockStore) {
-				key := store.Key{
-					Namespace:  deployment.GetNamespace(),
-					APIVersion: "apps/v1",
-					Kind:       "Deployment",
-					Name:       "deployment",
-				}
+				key, err := store.KeyFromObject(deployment1)
+				require.NoError(t, err)
 				o.EXPECT().
 					Get(gomock.Any(), gomock.Eq(key)).
 					Return(nil, errors.New("failed"))
+			},
+			args: args{
+				object: replicaSet1,
 			},
 			isErr: true,
 		},
@@ -441,7 +475,7 @@ func TestCacheQueryer_OwnerReference(t *testing.T) {
 				ServerResourcesForGroupVersion("apps/v1").
 				Return(&metav1.APIResourceList{
 					APIResources: []metav1.APIResource{{Kind: "Deployment", Namespaced: true}},
-				}, nil)
+				}, nil).AnyTimes()
 
 			if tc.setup != nil {
 				tc.setup(t, o)
@@ -450,7 +484,7 @@ func TestCacheQueryer_OwnerReference(t *testing.T) {
 			oq := New(o, discovery)
 
 			ctx := context.Background()
-			found, got, err := oq.OwnerReference(ctx, replicaSet)
+			found, got, err := oq.OwnerReference(ctx, tc.args.object)
 			if tc.isErr {
 				require.Error(t, err)
 				return
