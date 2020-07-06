@@ -53,3 +53,7 @@ Thumbs.db
 
 /main.js
 /main.js.map
+
+#compodoc documentation file
+/documentation.json
+/storybook-static

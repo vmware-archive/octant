@@ -1,0 +1,75 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {PortsComponent} from "../app/modules/shared/components/presentation/ports/ports.component";
+
+export const portsDocs= { source: { code: `apiVersion, kind := gvk.ToAPIVersionAndKind()
+    pfs := component.PortForwardState{}
+    port = component.NewPort(namespace, apiVersion, kind, portName, portNumber, portProtocol, pfs)`
+}}
+
+export const portsView = {
+  config: {
+    ports: [
+      {
+        metadata: {
+          type: 'port',
+        },
+        config: {
+          port: 80,
+          protocol: 'TCP',
+          state: {
+            isForwardable: true,
+          },
+          buttonGroup: {
+            metadata: {
+              type: 'buttonGroup',
+            },
+            config: {
+              buttons: [
+                {
+                  name: 'Start port forward',
+                  payload: {
+                    action: 'overview/startPortForward',
+                    apiVersion: 'v1',
+                    kind: 'Pod',
+                    name: 'httpbin-db6d74d85-nltjq',
+                    namespace: 'default',
+                    port: 80,
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    ],
+  },
+  metadata: {
+    type: 'ports',
+  },
+};
+
+<h1>Ports component</h1>
+<h2>Description</h2>
+<p>
+  The ports component shows relevant port info. It displays port number, protocol and port status.
+  If port has been forwarded, the destination link is also shown.
+  The port component can have multiple buttons associated with it, as illustrated in above examples.
+</p>
+<h2>Example</h2>
+
+<Meta title="Components/Ports" component={PortsComponent} />
+
+<Preview withToolbar>
+  <Story name="Ports component" parameters={{ docs: portsDocs }} height="75px">
+  {{
+    props: {
+      view: object('View', portsView)
+    },
+    component: PortsComponent,
+  }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={PortsComponent} />

@@ -1,0 +1,59 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {LogsComponent} from "../app/modules/shared/components/smart/logs/logs.component";
+
+export const logsDocs= { source: { code: `component.NewLogs(pod.Namespace, pod.Name, containerNames...)`}}
+
+export const logsView = {
+  metadata: {
+    type: "logs",
+    title: [{metadata: {type: "text"}, config: {value: "Logs"}}],
+    accessor: "logs"
+  },
+  config: {namespace: "default", name: "default-name-57466fd965-xprw9", containers: [""]}
+};
+
+export const containerLogs =  [
+  {
+    timestamp: '2020-06-02T11:42:36.554540433Z',
+    message: 'Here is a sample message',
+    container: 'test-container',
+  },
+    {
+      timestamp: '2020-06-02T11:44:19.554540433Z',
+      message: 'that somehow',
+      container: 'test-container',
+    },
+    {
+      timestamp: '2020-06-02T12:59:06.554540433Z',
+      message: 'showed up in this log',
+      container: 'test-container',
+    },
+  ];
+
+<h1>Logs component</h1>
+<h2>Description</h2>
+
+<p>
+    The Logs component takes a Pod's name, namespace, and container names to stream the logs accordingly.
+    The default logging is set to all containers of a pod with the option to filter, search, or select a single container.
+</p>
+<h2>Example</h2>
+
+<Meta title="Components/Logs" component={LogsComponent} />
+
+<Preview withToolbar>
+  <Story name="Logs component" parameters={{ docs: logsDocs }} height="500px">
+  {{
+    props: {
+      view: object('View', logsView),
+      containerLogs: object('Log entries', containerLogs)
+    },
+    component: LogsComponent,
+  }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={LogsComponent} />
+

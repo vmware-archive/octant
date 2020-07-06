@@ -1,0 +1,48 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {PodStatusComponent} from "../app/modules/shared/components/presentation/pod-status/pod-status.component";
+
+export const podStatusDocs= { source: { code: `podStatus := component.NewPodStatus()`}}
+
+export const statusText = {
+  config: {
+    value: '',
+  },
+  metadata: {
+    type: 'text',
+  },
+};
+
+export const podStatusView = {
+  "metadata": {"type": "podStatus"},
+  "config": {
+    "pods": {
+      "pod-57466fd965-xprw9": {
+        "details": [statusText], "status": "ok"
+      }
+    }
+  }
+};
+
+<h1>Pod Status component</h1>
+<h2>Description</h2>
+<p>
+    It's a pod status
+</p>
+<h2>Example</h2>
+
+<Meta title="Components/Pod Status" component={PodStatusComponent} />
+
+<Preview withToolbar>
+  <Story name="Pod Status component" parameters={{ docs: podStatusDocs }} height="150px">
+  {{
+    props: {
+      view: object('View', podStatusView)
+    },
+    component: PodStatusComponent,
+  }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={PodStatusComponent} />

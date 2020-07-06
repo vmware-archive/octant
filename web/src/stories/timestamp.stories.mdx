@@ -1,0 +1,34 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {TimestampComponent} from "../app/modules/shared/components/presentation/timestamp/timestamp.component";
+
+export const docs= { source: { code: "timestamp := component.NewTimestamp(time.Unix(1586469079, 0))"}}
+
+<h1>Timestamp component</h1>
+<h2>Description</h2>
+
+<p>
+    Timestamp is used to present time.
+    Time is presented in relative form based on current time.
+    This is very useful when displaying age of objects or files.
+</p>
+<h2>Example</h2>
+
+<Meta title="Components/Timestamp" component={TimestampComponent} />
+
+<Source name="Timestamp component" />
+
+<Preview withToolbar>
+  <Story name="Timestamp" height="75px" parameters={{ docs: docs }}>
+  {{
+    props: {
+      view: object('View', {metadata: {type: "timestamp"}, config: {timestamp: 1588716648}}),
+    },
+    component: TimestampComponent,
+  }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={TimestampComponent} />
+

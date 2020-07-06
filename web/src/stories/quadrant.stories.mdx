@@ -1,0 +1,52 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {QuadrantComponent} from "../app/modules/shared/components/presentation/quadrant/quadrant.component";
+
+export const quadrantDocs= { source: { code: `quadrant := component.NewQuadrant("Status")
+    quadrant.Set(component.QuadNW, "Running", fmt.Sprintf("%d", ps.Running))
+    quadrant.Set(component.QuadNE, "Waiting", fmt.Sprintf("%d", ps.Waiting))
+    quadrant.Set(component.QuadSE, "Failed", fmt.Sprintf("%d", ps.Failed))
+    quadrant.Set(component.QuadSW, "Succeeded", fmt.Sprintf("%d", ps.Succeeded))`
+}}
+
+<h1>Quadrant component</h1>
+<h2>Description</h2>
+
+<p>The Quadrant component is used to display a current state of four different properties.
+In Octant, this is used to show number of pods with Waiting, Running, Failed and Succeeded status.</p>
+<h2>Example</h2>
+
+<Meta title="Components/Quadrant" component={QuadrantComponent} />
+
+<Preview withToolbar>
+  <Story name="Quadrant component" parameters={{ docs: quadrantDocs }} height="400px">
+  {{
+    props: {
+      view: object('View',{
+        metadata: {
+          type: "quadrant",
+          title: [{metadata: {type: "text"}, config: {value: "Status"}}]
+        },
+        config: {
+          nw: {value: 1, label: "Running"},
+          ne: {value: 0, label: "Waiting"},
+          se: {value: 0, label: "Failed"},
+          sw: {value: 0, label: "Succeeded"}
+        }
+      })
+    },
+    template: `
+        <div class="main-container">
+            <div class="content-container" style="width: 300px; height: 200px;">
+                <div class="content-area">
+                  <app-view-quadrant [view]="view"></app-view-quadrant>
+                </div>
+             </div>
+         </div>
+   `,
+  }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={QuadrantComponent} />

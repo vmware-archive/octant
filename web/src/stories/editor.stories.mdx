@@ -1,0 +1,77 @@
+import { moduleMetadata } from '@storybook/angular';
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import { MonacoEditorModule } from "ng-monaco-editor";
+import { EditorComponent } from '../app/modules/shared/components/smart/editor/editor.component';
+
+export const editorDocs= { source: { code: `data := "---\nmetadata:\n  creationTimestamp: null\nspec:\n  containers: null\nstatus: {}\n"
+       component.NewEditor(component.TitleFromString("YAML"), data, false)`
+}}
+
+export const editorText = {
+  config: {
+    value: 'YAML',
+  },
+  metadata: {
+    type: 'text',
+  },
+};
+
+export const editorView = {
+  config: {
+    value:
+      '---\nmetadata:\n  creationTimestamp: null\nspec:\n  containers: null\nstatus: {}\n',
+    language: 'yaml',
+    readOnly: false,
+    metadata: {
+      apiVersion: 'v1',
+      kind: 'Pod',
+      name: 'nginx-deployment-75c5cb5f44-7wh55',
+      namespace: 'default',
+    },
+  },
+  metadata: {
+    type: 'editor',
+    title: [editorText]
+  },
+};
+
+<h1>Editor component</h1>
+<h2>Description</h2>
+
+<p>
+    The Editor component is used to edit YAML configurations of objects.
+</p>
+<h2>Example</h2>
+
+<Meta title="Components/Editor" component={EditorComponent} />
+
+<Preview withToolbar>
+  <Story name="Editor component" parameters={{ docs: editorDocs }} height="500px">
+  {{
+    props: {
+      view: object('View', editorView),
+    },
+    moduleMetadata: {
+      imports: [
+        MonacoEditorModule.forRoot({
+          baseUrl: 'lib',
+          defaultOptions: {},
+        }),
+      ],
+    },
+    template: `
+      <div class="main-container">
+          <div class="content-container">
+              <div class="content-area">
+                  <app-view-editor [view]="view"></app-view-editor>
+              </div>
+          </div>
+      </div>
+      `,
+  }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={EditorComponent} />

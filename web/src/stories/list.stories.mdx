@@ -1,0 +1,100 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {ListComponent} from "../app/modules/shared/components/presentation/list/list.component";
+
+export const listDocs= { source: { code: `cols := component.NewTableCols("ColumnA", "ColumnB")
+    component.NewList([]component.TitleComponent{}, []component.Component{
+    	component.NewList([]component.TitleComponent{}, []component.Component{
+    		component.NewTableWithRows("Title", "There are no items!", cols, []component.TableRow{
+    			// Table data
+    		})}),
+    })`
+}}
+
+
+export const listTitle = {
+  metadata: {
+    type: 'text',
+  },
+  config: {
+    value: 'Title',
+  },
+}
+
+export const sampleText = {
+  config: {
+    value: 'sample text',
+  },
+  metadata: {
+    type: 'text',
+  },
+}
+
+export const tableView = {
+  metadata: {
+    type: 'table',
+    title: [listTitle],
+  },
+  config: {
+    columns: [
+      {
+        name: 'ColumnA',
+        accessor: 'ColumnA',
+      },
+      {
+        name: 'ColumnB',
+        accessor: 'ColumnB',
+      },
+    ],
+    rows: [
+      {
+        ColumnA: sampleText,
+        ColumnB: sampleText,
+      },
+      {
+        ColumnA: sampleText,
+        ColumnB: sampleText,
+      },
+    ],
+    emptyContent: 'There are no items!',
+    loading: false,
+    filters: {},
+  },
+}
+
+export const listView = {
+  config: {
+    iconName: 'test',
+    items: [tableView],
+  },
+  metadata: {
+    type: 'list',
+  },
+}
+
+
+<h1>List component</h1>
+<h2>Description</h2>
+
+<p>
+    The List component is a placeholder for multiple components to be displayed.
+    It's usage is seen in the Overview page of Octant where it holds multiple Table components.
+</p>
+<h2>Example</h2>
+
+<Meta title="Components/List" component={ListComponent} />
+
+
+<Preview withToolbar>
+  <Story name="List component" parameters={{ docs: listDocs }} height="250px">
+  {{
+      props: {
+        view: object('View', listView),
+      },
+      component: ListComponent,
+      }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={ListComponent} />

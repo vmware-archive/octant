@@ -1,4 +1,0 @@
-[build]
-  base = "site"
-  command = "jekyll build"
-  publish = "_site"
