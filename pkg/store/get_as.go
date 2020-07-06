@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
@@ -18,12 +19,12 @@ import (
 // return false and a nil error.
 func GetAs(ctx context.Context, o Store, key Key, as runtime.Object) (bool, error) {
 	u, err := o.Get(ctx, key)
-	if err != nil {
-		return false, errors.Wrap(err, "get object from object store")
+	if kerrors.IsNotFound(err) || u == nil {
+		return false, nil
 	}
 
-	if u == nil {
-		return false, nil
+	if err != nil {
+		return false, errors.Wrap(err, "get object from object store")
 	}
 
 	if err := kubernetes.FromUnstructured(u, as); err != nil {

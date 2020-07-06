@@ -468,6 +468,9 @@ func ChainHTTPMiddlewares(h http.Handler, ms ...HTTPMiddleware) http.Handler {
 // ChainHTTPMiddlewaresWithPrefix chains HTTP middlewares if one of prefixes is present
 func ChainHTTPMiddlewaresWithPrefix(h http.Handler, prefixes []string, ms ...HTTPMiddleware) http.Handler {
 	for _, m := range ms {
+		if m == nil {
+			continue
+		}
 		if len(prefixes) == 0 {
 			h = m(h)
 		} else {
@@ -487,18 +490,19 @@ func ChainHTTPMiddlewaresWithPrefix(h http.Handler, prefixes []string, ms ...HTT
 }
 
 func handleHTTPBasicAuth(username, password string, rw http.ResponseWriter, r *http.Request) bool {
-	if len(username) > 0 && len(password) > 0 {
-		if u, p, ok := r.BasicAuth(); !ok || u != username || p != password {
-			rw.Header().Set("WWW-Authenticate", "Basic Realm=Please enter your credentials")
-			rw.WriteHeader(http.StatusUnauthorized)
-			return true
-		}
+	if u, p, ok := r.BasicAuth(); !ok || u != username || p != password {
+		rw.Header().Set("WWW-Authenticate", "Basic Realm=Please enter your credentials")
+		rw.WriteHeader(http.StatusUnauthorized)
+		return true
 	}
 	return false
 }
 
 // HTTPMiddlewareBasicAuth adds basic HTTP auth to an HTTP handler
 func HTTPMiddlewareBasicAuth(username, password string) HTTPMiddleware {
+	if username == "" && password == "" {
+		return nil
+	}
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			// Handle basic auth

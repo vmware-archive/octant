@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
 )
 
 // MoveFile is a cancellable move of a local file to a local or remote location
@@ -124,10 +123,6 @@ func LocalCopyFileFunc(ctx context.Context, dst string, srcStat os.FileInfo, src
 
 // SignalHandler represents a func that can handle a signal
 type SignalHandler func(s os.Signal)
-
-func isTermSignal(s os.Signal) bool {
-	return s == syscall.SIGABRT || s == syscall.SIGKILL || s == syscall.SIGINT || s == syscall.SIGQUIT || s == syscall.SIGTERM
-}
 
 // TermSignalHandler returns a SignalHandler that is executed only on a term signal
 func TermSignalHandler(f func()) SignalHandler {

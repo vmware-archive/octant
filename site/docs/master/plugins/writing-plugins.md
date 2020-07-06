@@ -31,6 +31,31 @@ handlers := service.HandlerFuncs{
 }
 ```
 
+### Handling Actions
+In Octant you can create custom action handlers that you can trigger from button actions in the UI. There are also
+built-in actions which are triggered from internal Octant events, those are defined in [octant/pkg/action/action.go]((https://github.com/vmware-tanzu/octant/blob/master/pkg/action/action.go).
+
+Here is an example of setting up your plugin to know when the current namespace has changed.
+
+```go
+	capabilities := &plugin.Capabilities{
+		ActionNames:           []string{action.RequestSetNamespace},
+	}
+	// Set up the action handler.
+	options := []service.PluginOption{
+		service.WithActionHandler(handleAction),
+	}
+
+	func handleAction(request *service.ActionRequest) error {
+		switch request.ActionName {
+			case action.RequestSetNamespace:
+				namespace, err := action.Payload.String("namespace")
+				// err check, do work
+		}
+		return nil
+	}
+```
+
 ## Register and Serve
 
 Registering and serving your plugin is the final step to get your plugin communicating with Octant. This is also where you

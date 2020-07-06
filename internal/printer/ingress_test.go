@@ -158,6 +158,30 @@ func Test_IngressConfiguration(t *testing.T) {
 	ingressNoBackend.Labels = labels
 	ingressNoBackend.Spec.Backend = nil
 
+	ingressALB := testutil.CreateIngress("ingress")
+	ingressALB.Annotations = map[string]string{
+		"alb.ingress.kubernetes.io/actions.ssl-redirect": `{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}`,
+	}
+	ingressALB.Spec.Backend = nil
+	ingressALB.Spec.Rules = []extv1beta1.IngressRule{
+		{
+			Host: "",
+			IngressRuleValue: extv1beta1.IngressRuleValue{
+				HTTP: &extv1beta1.HTTPIngressRuleValue{
+					Paths: []extv1beta1.HTTPIngressPath{
+						{
+							Path: "/",
+							Backend: extv1beta1.IngressBackend{
+								ServiceName: "ssl-redirect",
+								ServicePort: intstr.FromString("use-annotation"),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
 	cases := []struct {
 		name     string
 		ingress  *extv1beta1.Ingress
@@ -184,6 +208,19 @@ func Test_IngressConfiguration(t *testing.T) {
 				},
 			}...),
 		},
+		{
+			name:    "alb ingress controller",
+			ingress: ingressALB,
+			expected: component.NewSummary("Configuration", []component.SummarySection{
+				{
+					Header:  "Default Backend",
+					Content: component.NewText("Default is not configured"),
+				},
+				{
+					Header:  "Action: ssl-redirect",
+					Content: component.NewText(`{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}`),
+				},
+			}...)},
 		{
 			name:    "nil ingress",
 			ingress: nil,

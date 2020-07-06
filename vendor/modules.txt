@@ -25,7 +25,7 @@ github.com/akavel/rsrc/coff
 github.com/akavel/rsrc/ico
 github.com/akavel/rsrc/internal
 github.com/akavel/rsrc/rsrc
-# github.com/asticode/go-astikit v0.6.0
+# github.com/asticode/go-astikit v0.8.0
 github.com/asticode/go-astikit
 # github.com/asticode/go-astilectron v0.14.2
 github.com/asticode/go-astilectron
@@ -106,7 +106,7 @@ github.com/hashicorp/go-hclog
 # github.com/hashicorp/go-plugin v0.0.0-20190220160451-3f118e8ee104
 github.com/hashicorp/go-plugin
 github.com/hashicorp/go-plugin/internal/plugin
-# github.com/hashicorp/golang-lru v0.5.1
+# github.com/hashicorp/golang-lru v0.5.4
 github.com/hashicorp/golang-lru
 github.com/hashicorp/golang-lru/simplelru
 # github.com/hashicorp/hcl v1.0.0
@@ -156,7 +156,7 @@ github.com/pmezard/go-difflib/difflib
 github.com/sam-kamerer/go-plister
 # github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e
 github.com/skratchdot/open-golang/open
-# github.com/spf13/afero v1.2.2
+# github.com/spf13/afero v1.3.1
 github.com/spf13/afero
 github.com/spf13/afero/mem
 # github.com/spf13/cast v1.3.0
@@ -183,7 +183,7 @@ github.com/uber/jaeger-client-go/thrift-gen/zipkincore
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.0.1
 github.com/valyala/fasttemplate
-# go.opencensus.io v0.22.1
+# go.opencensus.io v0.22.4
 go.opencensus.io
 go.opencensus.io/internal
 go.opencensus.io/trace

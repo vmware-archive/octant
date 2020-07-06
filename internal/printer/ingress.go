@@ -97,6 +97,20 @@ func (i *IngressConfiguration) Create(options Options) (*component.Summary, erro
 		sections.AddText("Default Backend", "Default is not configured")
 	}
 
+	for _, rule := range ingress.Spec.Rules {
+		if rule.IngressRuleValue.HTTP == nil {
+			continue
+		}
+
+		for _, path := range rule.IngressRuleValue.HTTP.Paths {
+			if path.Backend.ServicePort.String() == "use-annotation" {
+				if action, ok := ingress.Annotations["alb.ingress.kubernetes.io/actions."+path.Backend.ServiceName]; ok {
+					sections.Add("Action: "+path.Backend.ServiceName, component.NewText(action))
+				}
+			}
+		}
+	}
+
 	summary := component.NewSummary("Configuration", sections...)
 
 	return summary, nil
