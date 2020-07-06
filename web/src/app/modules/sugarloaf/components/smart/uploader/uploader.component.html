@@ -12,7 +12,7 @@
                             <textarea id="config" name="config" [(ngModel)]="inputValue" (ngModelChange)="updateInput($event)" placeholder="Enter value here" class="clr-textarea"></textarea>
                             <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                         </div>
-                        <span class="clr-subtext">This can't be empty</span>
+                        <span *ngIf="inputValue === ''" class="clr-subtext">This can't be empty</span>
                     </div>
                   </form>
             </div>

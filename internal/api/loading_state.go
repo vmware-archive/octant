@@ -11,9 +11,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
 	"k8s.io/client-go/tools/clientcmd"
 
+	"github.com/spf13/afero"
 	"github.com/vmware-tanzu/octant/internal/kubeconfig"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/action"
@@ -56,6 +58,12 @@ func (l *LoadingManager) Handlers() []octant.ClientRequestHandler {
 func (l *LoadingManager) Start(ctx context.Context, state octant.State, client OctantClient) {
 	l.client = client
 	l.ctx = ctx
+
+	fs := afero.NewOsFs()
+
+	// Watch for config and reset router if found
+	// See https://github.com/gorilla/mux/issues/82#issuecomment-121411186
+	go l.WatchConfig(l.kubeConfig.Path, client, fs)
 }
 
 func (l *LoadingManager) CheckLoading(state octant.State, payload action.Payload) error {
@@ -114,4 +122,24 @@ func (l *LoadingManager) UploadKubeConfig(state octant.State, payload action.Pay
 
 	l.kubeConfig.Path <- tempFile.Name()
 	return nil
+}
+
+func (l *LoadingManager) WatchConfig(path chan string, client OctantClient, fs afero.Fs) {
+	defer close(path)
+	kubeconfig := clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
+
+	for {
+		time.Sleep(1 * time.Second)
+		exists, err := afero.Exists(fs, kubeconfig)
+		if err != nil {
+			return
+		}
+		if exists {
+			path <- kubeconfig
+			client.Send(octant.Event{
+				Type: octant.EventTypeRefresh,
+			})
+			return
+		}
+	}
 }

@@ -67,15 +67,12 @@ type Runner struct {
 	moduleManager          *module.Manager
 	actionManager          *action.Manager
 	websocketClientManager *api.WebsocketClientManager
-	loadingComplete        chan bool
 }
 
 func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner, error) {
 	ctx = internalLog.WithLoggerContext(ctx, logger)
 
-	r := Runner{
-		loadingComplete: make(chan bool, 1),
-	}
+	r := Runner{}
 
 	if options.Context != "" {
 		logger.With("initial-context", options.Context).Infof("Setting initial context from user flags")
@@ -129,32 +126,11 @@ func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, 
 			case options.KubeConfig = <-findKubeConfig(logger, r.dash.kubeconfig):
 				if options.KubeConfig != "" {
 					logger.Debugf("Loading configuration: %v", options.KubeConfig)
-					r.loadingComplete <- true
+					go r.startAPIService(ctx, logger, options)
 					return
 				}
 			}
 		}
-	}()
-
-	go func() {
-		<-r.loadingComplete
-		apiService, err := r.initAPI(ctx, logger, options)
-		if err != nil {
-			logger.Errorf("cannot create api: %v", err)
-		}
-		r.dash.apiHandler = apiService
-
-		hf := octant.NewHandlerFactory(
-			octant.BackendHandler(r.dash.apiHandler.Handler),
-			octant.FrontendURL(viper.GetString("proxy-frontend")))
-
-		r.dash.server.Handler, err = hf.Handler(ctx)
-		if err != nil {
-			logger.Errorf("cannot create handler: %v", err)
-		}
-
-		logger.Infof("using api service")
-		return
 	}()
 
 	<-ctx.Done()
@@ -531,17 +507,17 @@ func enableOpenCensus() error {
 // findKubeConfig looks for kube config from .kube or provided by user
 func findKubeConfig(logger log.Logger, temporaryKubeConfig kubeconfig.TemporaryKubeConfig) <-chan string {
 	r := make(chan string)
+
 	go func() {
 		defer close(r)
 
 		kubeconfig := clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
+
 		if _, err := os.Stat(kubeconfig); err == nil {
 			logger.Infof("using kube config: %v", kubeconfig)
 			r <- kubeconfig
 			return
 		}
-
-		logger.Infof("kube config not found: %v", kubeconfig)
 
 		select {
 		case path, ok := <-temporaryKubeConfig.Path:
@@ -551,4 +527,24 @@ func findKubeConfig(logger log.Logger, temporaryKubeConfig kubeconfig.TemporaryK
 		}
 	}()
 	return r
+}
+
+func (r *Runner) startAPIService(ctx context.Context, logger log.Logger, options Options) {
+	apiService, err := r.initAPI(ctx, logger, options)
+	if err != nil {
+		logger.Errorf("cannot create api: %v", err)
+	}
+	r.dash.apiHandler = apiService
+
+	hf := octant.NewHandlerFactory(
+		octant.BackendHandler(r.dash.apiHandler.Handler),
+		octant.FrontendURL(viper.GetString("proxy-frontend")))
+
+	r.dash.server.Handler, err = hf.Handler(ctx)
+	if err != nil {
+		logger.Errorf("cannot create handler: %v", err)
+	}
+
+	logger.Infof("using api service")
+	return
 }
