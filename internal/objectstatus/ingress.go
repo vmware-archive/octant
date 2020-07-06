@@ -22,7 +22,8 @@ import (
 )
 
 const (
-	ingressNoBackendsDefined = "No backends defined. All traffic will be sent to the default backend configured for the ingress controller."
+	ingressNoBackendsDefined   = "No backends defined. All traffic will be sent to the default backend configured for the ingress controller."
+	ingressAlbActionAnnotation = "alb.ingress.kubernetes.io/actions."
 )
 
 func runIngressStatus(ctx context.Context, object runtime.Object, o store.Store) (ObjectStatus, error) {
@@ -74,6 +75,15 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 	}
 
 	for _, backend := range backends {
+		if backend.ServicePort.String() == "use-annotation" {
+			albAction := ingressAlbActionAnnotation + backend.ServiceName
+			if _, ok := ingress.Annotations[albAction]; !ok {
+				status.SetError()
+				status.AddDetailf("Backend refers to annotations %q which does't exist", albAction)
+			}
+			continue
+		}
+
 		key := store.Key{
 			Namespace:  ingress.Namespace,
 			APIVersion: "v1",
