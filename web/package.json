@@ -82,7 +82,7 @@
     "@angular-devkit/build-angular": "^0.901.9",
     "@angular/cli": "^9.1.9",
     "@angular/compiler-cli": "^9.1.9",
-    "@angular/language-service": "^9.1.9",
+    "@angular/language-service": "^10.0.2",
     "@babel/core": "^7.10.3",
     "@compodoc/compodoc": "^1.1.11",
     "@mdx-js/loader": "^1.6.5",
