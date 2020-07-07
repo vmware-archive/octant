@@ -4,8 +4,9 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { EditorView, View } from 'src/app/modules/shared/models/content';
+import { EditorView, View } from '../../../models/content';
 import { ThemeService } from '../../../../sugarloaf/components/smart/theme-switch/theme-switch.service';
+import { NamespaceService } from '../../../services/namespace/namespace.service';
 import { ActionService } from '../../../services/action/action.service';
 
 interface Options {
@@ -49,8 +50,12 @@ export class EditorComponent implements OnChanges {
 
   options: Options;
 
+  submitAction = 'action.octant.dev/update';
+  submitLabel = 'Update';
+
   constructor(
     private themeService: ThemeService,
+    private namespaceService: NamespaceService,
     private actionService: ActionService
   ) {
     this.options = {} as Options;
@@ -67,16 +72,22 @@ export class EditorComponent implements OnChanges {
         this.options.readOnly = view.config.readOnly;
         this.options.language = view.config.language;
       }
+
+      this.submitAction = view.config.submitAction || this.submitAction;
+      this.submitLabel = view.config.submitLabel || this.submitLabel;
+
       this.options.theme =
         this.themeService.currentType() === 'dark' ? 'vs-dark' : 'vs';
     }
   }
 
-  update() {
+  submit() {
     const payload = {
-      action: 'action.octant.dev/update',
+      action: this.submitAction,
       update: this.value,
-      ...this.metadata,
+      ...(this.metadata || {
+        namespace: this.namespaceService.activeNamespace.value,
+      }),
     };
     this.actionService.perform(payload);
   }

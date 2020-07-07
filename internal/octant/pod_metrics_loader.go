@@ -6,9 +6,9 @@
 package octant
 
 import (
+	"context"
 	"fmt"
 	"sync"
-	"context"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

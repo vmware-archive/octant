@@ -8,11 +8,11 @@ package objectstore
 import (
 	"context"
 	"fmt"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sync"
 
 	"go.opencensus.io/trace"
 	authorizationv1 "k8s.io/api/authorization/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	oerrors "github.com/vmware-tanzu/octant/internal/errors"
@@ -158,7 +158,7 @@ func (r *resourceAccess) keyToAccessKey(key store.Key, verb string) (AccessKey, 
 		return AccessKey{}, fmt.Errorf("unable to check access for key %s", key.String())
 	}
 
-	gvr, err := r.client.Resource(gvk.GroupKind())
+	gvr, _, err := r.client.Resource(gvk.GroupKind())
 	if err != nil {
 		return AccessKey{}, fmt.Errorf("unable to get resource for group kind %s: %w", gvk.GroupKind(), err)
 	}
