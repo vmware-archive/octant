@@ -315,7 +315,8 @@ func Test_ContainerConfiguration(t *testing.T) {
 
 			state := createPortForwardState("stateid", "namespace", "pod", gvk)
 
-			pf.EXPECT().Find("namespace", gomock.Eq(gvk), "pod").Return(states, nil).AnyTimes()
+			pf.EXPECT().FindPod("namespace", gomock.Eq(gvk), "pod").Return(states, nil).AnyTimes()
+			pf.EXPECT().FindTarget("namespace", gomock.Eq(gvk), "pod").Return(states, nil).AnyTimes()
 			pf.EXPECT().Get(gomock.Any()).Return(state, true).AnyTimes()
 
 			tpo.PathForGVK("namespace", "v1", "Secret", "mysecret", "mysecret:somesecretkey", "/secret")

@@ -49,7 +49,10 @@ func (p *PortForward) Handle(ctx context.Context, alerter action.Alerter, payloa
 	}
 	p.logger.Debugf("%s", request)
 
-	p.portForwarder.Create(ctx, request.gvk(), request.Name, request.Namespace, request.Port)
+	_, err = p.portForwarder.Create(ctx, request.gvk(), request.Name, request.Namespace, request.Port)
+	if err != nil {
+		return errors.Wrap(err, "create port forwarder")
+	}
 	return nil
 }
 

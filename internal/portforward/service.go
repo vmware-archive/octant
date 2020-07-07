@@ -8,6 +8,11 @@ package portforward
 import (
 	"context"
 	"fmt"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
+	appsv1 "k8s.io/api/apps/v1"
+	apiEquality "k8s.io/apimachinery/pkg/api/equality"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"sort"
 	"sync"
 	"time"
@@ -35,7 +40,8 @@ type PortForwarder interface {
 	List(ctx context.Context) []State
 	Get(id string) (State, bool)
 	Create(ctx context.Context, gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (CreateResponse, error)
-	Find(namespace string, gvk schema.GroupVersionKind, name string) ([]State, error)
+	FindTarget(namespace string, gvk schema.GroupVersionKind, name string) ([]State, error)
+	FindPod(namespace string, gvk schema.GroupVersionKind, name string) ([]State, error)
 	Stop()
 	StopForwarder(id string)
 }
@@ -162,8 +168,8 @@ func (s *Service) validateCreateRequest(r CreateRequest) error {
 		return errors.New("name field required")
 	}
 
-	if r.APIVersion != "v1" || r.Kind != "Pod" {
-		return errors.Errorf("port forwards only work with pods")
+	if r.APIVersion != "v1" || (r.Kind != "Pod" && r.Kind != "Service") {
+		return errors.Errorf("port forwards only work with pods & services")
 	}
 
 	for _, p := range r.Ports {
@@ -175,27 +181,112 @@ func (s *Service) validateCreateRequest(r CreateRequest) error {
 	return nil
 }
 
-// resolvePod attempts to resolve a port forward request into an active pod we can
+// resolvePodAndPort attempts to resolve a port forward request into an active pod we can
 // forward to. Service/deployments selectors will be resolved into pods and a random
 // one will be chosen. A pod has to be active.
 // Returns: pod name or error.
-func (s *Service) resolvePod(ctx context.Context, r CreateRequest) (string, error) {
+func (s *Service) resolvePodAndPort(ctx context.Context, r CreateRequest) (string, uint16, error) {
 	o := s.opts.ObjectStore
 	if o == nil {
-		return "", errors.New("nil objectstore")
+		return "", 0, errors.New("nil objectstore")
 	}
 
 	switch {
 	case r.APIVersion == "v1" && r.Kind == "Pod":
 		// Verify pod exists and status is running
 		if ok, err := s.verifyPod(ctx, r.Namespace, r.Name); !ok || err != nil {
-			return "", errors.Errorf("verifying pod %q: %v", r.Name, err)
+			return "", 0, errors.Errorf("verifying pod %q: %v", r.Name, err)
 		}
-		return r.Name, nil
+		return r.Name, r.Ports[0].Remote, nil
+	case r.APIVersion == "v1" && r.Kind == "Service":
+		key := store.Key{
+			APIVersion: r.APIVersion,
+			Kind:       r.Kind,
+			Namespace:  r.Namespace,
+			Name:       r.Name,
+		}
+		var service corev1.Service
+		found, err := store.GetAs(ctx, o, key, &service)
+		podPort := uint16(0)
+		for _, servicePort := range service.Spec.Ports {
+			if servicePort.Port == int32(r.Ports[0].Remote) {
+				podPort = uint16(servicePort.TargetPort.IntVal)
+			}
+		}
+
+
+		if err != nil {
+			return "", 0, err
+		}
+		if !found {
+			return "", 0, nil
+		}
+
+		lbls := labels.Set(service.Spec.Selector)
+		key = store.Key{
+			APIVersion: r.APIVersion,
+			Kind:       "Pod",
+			Namespace:  r.Namespace,
+			Selector: &lbls,
+		}
+		list, _, err := o.List(ctx, key)
+		if err != nil {
+			return "", 0, err
+		}
+
+		for i := range list.Items {
+			pod := &corev1.Pod{}
+
+			if err := kubernetes.FromUnstructured(&list.Items[i], pod); err != nil {
+				return "", 0, err
+			}
+
+			podSelector := &metav1.LabelSelector{
+				MatchLabels: pod.GetLabels(),
+			}
+
+			labelSelector := metav1.LabelSelector{
+				MatchLabels: service.Spec.Selector,
+			}
+
+			selector, err := metav1.LabelSelectorAsSelector(&labelSelector)
+			if err != nil {
+				return "", 0, err
+			}
+
+			if selector == labels.Nothing() || isEqualSelector(&labelSelector, podSelector) || selector.Matches(labels.Set(pod.Labels)) {
+				return pod.Name, podPort, nil
+			}
+		}
+
+		return "", 0, errors.New("no matching pod found for service")
 	default:
-		return "", errors.New("not implemented")
+		return "", 0, errors.New("not implemented")
 	}
 
+}
+
+var extraKeys = []string{
+	"statefulset.kubernetes.io/pod-name",
+	appsv1.DefaultDeploymentUniqueLabelKey,
+	"controller-revision-hash",
+	"pod-template-generation",
+}
+
+func isEqualSelector(s1, s2 *metav1.LabelSelector) bool {
+	if s1 == nil || s2 == nil {
+		return false
+	}
+
+	s1Copy := s1.DeepCopy()
+	s2Copy := s2.DeepCopy()
+
+	for _, key := range extraKeys {
+		delete(s1Copy.MatchLabels, key)
+		delete(s2Copy.MatchLabels, key)
+	}
+
+	return apiEquality.Semantic.DeepEqual(s1Copy, s2Copy)
 }
 
 // verifyPod returns true if the specified pod can be found and is in the running phase.
@@ -235,7 +326,7 @@ func (s *Service) verifyPod(ctx context.Context, namespace, name string) (bool, 
 // createForwarder creates a port forwarder, forwards traffic, and blocks until
 // port state information is populated.
 // Returns forwarder id.
-func (s *Service) createForwarder(r CreateRequest) (string, error) {
+func (s *Service) createForwarder(targetRequest CreateRequest, podRequest CreateRequest) (string, error) {
 	logger := s.logger.With("context", "PortForwardService.createForwarder")
 
 	if s.opts.PortForwarder == nil {
@@ -250,16 +341,23 @@ func (s *Service) createForwarder(r CreateRequest) (string, error) {
 	logger = logger.With("id", forwarderID)
 
 	var ports []string
-	for _, p := range r.Ports {
+	for _, p := range podRequest.Ports {
 		ports = append(ports, fmt.Sprintf("%d:%d", p.Local, p.Remote))
 	}
 
 	// Target coordinates to preserve in state
-	gv, err := schema.ParseGroupVersion(r.APIVersion)
+	targetGv, err := schema.ParseGroupVersion(targetRequest.APIVersion)
 	if err != nil {
 		return "", errors.Wrap(err, "parsing APIVersion")
 	}
-	gvk := gv.WithKind(r.Kind)
+	targetGvk := targetGv.WithKind(targetRequest.Kind)
+
+	// Pod coordinates to preserve in state
+	podGv, err := schema.ParseGroupVersion(podRequest.APIVersion)
+	if err != nil {
+		return "", errors.Wrap(err, "parsing APIVersion")
+	}
+	podGvk := podGv.WithKind(podRequest.Kind)
 
 	// This child context will be cancelled if our parent context is cancelled
 	ctx, cancel := context.WithCancel(s.ctx)
@@ -285,15 +383,16 @@ func (s *Service) createForwarder(r CreateRequest) (string, error) {
 		ID:        forwarderID,
 		CreatedAt: time.Now(),
 		Target: Target{
-			GVK:       gvk,
-			Namespace: r.Namespace,
-			Name:      r.Name,
+			GVK:       targetGvk,
+			Namespace: targetRequest.Namespace,
+			Name:      targetRequest.Name,
 		},
 		Pod: Target{
-			GVK:       gvk,
-			Namespace: r.Namespace,
-			Name:      r.Name,
+			GVK:       podGvk,
+			Namespace: podRequest.Namespace,
+			Name:      podRequest.Name,
 		},
+
 		cancel: cancel,
 		ctx:    ctx,
 	}
@@ -304,8 +403,8 @@ func (s *Service) createForwarder(r CreateRequest) (string, error) {
 
 	req := o.RESTClient.Post().
 		Resource("pods").
-		Namespace(r.Namespace).
-		Name(r.Name).
+		Namespace(podRequest.Namespace).
+		Name(podRequest.Name).
 		SubResource("portforward")
 
 	go func() {
@@ -449,15 +548,23 @@ func (s *Service) Create(ctx context.Context, gvk schema.GroupVersionKind, name 
 		"name", req.Name,
 		"namespace", req.Namespace,
 	).Debugf("resolving pod from object")
-	podName, err := s.resolvePod(ctx, req)
+	podName, podPort, err := s.resolvePodAndPort(ctx, req)
 	if err != nil {
 		return emptyPortForwardResponse, errors.Wrap(err, "resolving pod")
 	}
 	logger.Debugf("resolved to pod %q", podName)
 	podReq := req
 	podReq.Name = podName
+	podReq.Ports[0].Remote = podPort
+	podReq.Kind = "Pod"
 
-	id, err := s.createForwarder(req)
+	id, err := s.createForwarder(req, CreateRequest{
+		Namespace:  req.Namespace,
+		APIVersion: req.APIVersion,
+		Kind:       "Pod",
+		Name:       podName,
+		Ports:      req.Ports,
+	})
 	if err != nil {
 		return emptyPortForwardResponse, errors.Wrap(err, "creating forwarder")
 	}
@@ -501,7 +608,7 @@ func (e *notFound) NotFound() bool {
 	return true
 }
 
-func (s *Service) Find(namespace string, gvk schema.GroupVersionKind, name string) ([]State, error) {
+func (s *Service) FindTarget(namespace string, gvk schema.GroupVersionKind, name string) ([]State, error) {
 	s.state.Lock()
 	defer s.state.Unlock()
 
@@ -509,6 +616,24 @@ func (s *Service) Find(namespace string, gvk schema.GroupVersionKind, name strin
 
 	for _, state := range s.state.portForwards {
 		target := state.Target
+		if target.GVK.String() == gvk.String() &&
+			namespace == target.Namespace &&
+			name == target.Name {
+			result = append(result, state)
+		}
+	}
+
+	return result, &notFound{}
+}
+
+func (s *Service) FindPod(namespace string, gvk schema.GroupVersionKind, name string) ([]State, error) {
+	s.state.Lock()
+	defer s.state.Unlock()
+
+	result := make([]State, 0, len(s.state.portForwards))
+
+	for _, state := range s.state.portForwards {
+		target := state.Pod
 		if target.GVK.String() == gvk.String() &&
 			namespace == target.Namespace &&
 			name == target.Name {

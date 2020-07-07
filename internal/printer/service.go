@@ -127,13 +127,42 @@ func (sc *ServiceConfiguration) Create(ctx context.Context, options Options) (*c
 		Content: component.NewText(string(service.Spec.Type)),
 	})
 
-	var ports []string
-	for _, port := range service.Spec.Ports {
-		ports = append(ports, describePort(port))
+	portForwardService := options.DashConfig.PortForwarder()
+	states, err := portForwardService.FindTarget(service.Namespace, service.GroupVersionKind(), service.Name)
+	if err != nil {
+		if _, ok := err.(notFound); !ok {
+			return nil, errors.Wrap(err, "query port forward service for pod")
+		}
 	}
+
+	var ports []component.Port
+	for _, port := range service.Spec.Ports {
+		pfs := component.PortForwardState{
+			IsForwardable: port.Protocol == corev1.ProtocolTCP,
+		}
+		for _, state := range states {
+			for _, forwarded := range state.Ports {
+				if int(forwarded.Remote) == int(port.Port) {
+					pfs.ID = state.ID
+					pfs.Port = int(forwarded.Local)
+					pfs.IsForwarded = true
+				}
+			}
+		}
+		ports = append(ports, *component.NewPort(
+			service.Namespace,
+			service.APIVersion,
+			service.Kind,
+			service.Name,
+			int(port.Port),
+			string(port.Protocol),
+			pfs,
+		))
+	}
+
 	sections = append(sections, component.SummarySection{
-		Header:  "Ports",
-		Content: component.NewText(strings.Join(ports, ", ")),
+		Header: "Ports",
+		Content: component.NewPorts(ports),
 	})
 
 	sections = append(sections, component.SummarySection{

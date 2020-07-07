@@ -79,19 +79,34 @@ func (mr *MockPortForwarderMockRecorder) Create(ctx, gvk, name, namespace, remot
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockPortForwarder)(nil).Create), ctx, gvk, name, namespace, remotePort)
 }
 
-// Find mocks base method
-func (m *MockPortForwarder) Find(namespace string, gvk schema.GroupVersionKind, name string) ([]portforward.State, error) {
+// FindTarget mocks base method
+func (m *MockPortForwarder) FindTarget(namespace string, gvk schema.GroupVersionKind, name string) ([]portforward.State, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Find", namespace, gvk, name)
+	ret := m.ctrl.Call(m, "FindTarget", namespace, gvk, name)
 	ret0, _ := ret[0].([]portforward.State)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Find indicates an expected call of Find
-func (mr *MockPortForwarderMockRecorder) Find(namespace, gvk, name interface{}) *gomock.Call {
+// FindTarget indicates an expected call of FindTarget
+func (mr *MockPortForwarderMockRecorder) FindTarget(namespace, gvk, name interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockPortForwarder)(nil).Find), namespace, gvk, name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindTarget", reflect.TypeOf((*MockPortForwarder)(nil).FindTarget), namespace, gvk, name)
+}
+
+// FindPod mocks base method
+func (m *MockPortForwarder) FindPod(namespace string, gvk schema.GroupVersionKind, name string) ([]portforward.State, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindPod", namespace, gvk, name)
+	ret0, _ := ret[0].([]portforward.State)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindPod indicates an expected call of FindPod
+func (mr *MockPortForwarderMockRecorder) FindPod(namespace, gvk, name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindPod", reflect.TypeOf((*MockPortForwarder)(nil).FindPod), namespace, gvk, name)
 }
 
 // Stop mocks base method

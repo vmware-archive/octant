@@ -31,6 +31,7 @@ type testPrinterOptions struct {
 
 	objectStore   *objectStoreFake.MockStore
 	pluginManager *pluginFake.MockManagerInterface
+	portForwarder *portForwardFake.MockPortForwarder
 }
 
 func newTestPrinterOptions(controller *gomock.Controller) *testPrinterOptions {
@@ -50,6 +51,7 @@ func newTestPrinterOptions(controller *gomock.Controller) *testPrinterOptions {
 		link:          linkFake.NewMockInterface(controller),
 		objectStore:   objectStore,
 		pluginManager: pluginManager,
+		portForwarder: portForwarder,
 	}
 
 	tpo.dashConfig.EXPECT().Validate().Return(nil).AnyTimes()

@@ -7,6 +7,9 @@ package printer
 
 import (
 	"context"
+	"github.com/vmware-tanzu/octant/internal/portforward"
+	"github.com/vmware-tanzu/octant/pkg/action"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -121,13 +124,13 @@ func Test_ServiceListHandler(t *testing.T) {
 }
 
 func Test_ServiceConfiguration(t *testing.T) {
-	validService := &corev1.Service{
+	validService := corev1.Service{
 		Spec: corev1.ServiceSpec{
 			ExternalTrafficPolicy:    corev1.ServiceExternalTrafficPolicyTypeCluster,
 			HealthCheckNodePort:      31311,
 			LoadBalancerSourceRanges: []string{"range1", "range2"},
 			Ports: []corev1.ServicePort{
-				{Name: "http", Port: 8080},
+				{Name: "http", Port: 8080, Protocol: corev1.ProtocolTCP},
 			},
 			Selector:        map[string]string{"app": "app1"},
 			SessionAffinity: corev1.ServiceAffinityNone,
@@ -135,16 +138,39 @@ func Test_ServiceConfiguration(t *testing.T) {
 		},
 	}
 	validService.Namespace = "default"
+	validService.Name = "service"
+	validService.Kind = "Service"
+	validService.APIVersion = "api/v1"
 
+	startPortForwardingButtonGroup := component.NewButtonGroup()
+	startPortForwardingButtonGroup.Config = component.ButtonGroupConfig{Buttons: []component.Button{
+		component.NewButton("Start port forward", action.Payload{
+			"action":     "overview/startPortForward",
+			"apiVersion": validService.APIVersion,
+			"kind":       validService.Kind,
+			"name":       validService.Name,
+			"namespace":  validService.Namespace,
+			"port":       validService.Spec.Ports[0].Port,
+		}),
+	}}
+
+	stopPortForwardingButtonGroup := component.NewButtonGroup()
+	stopPortForwardingButtonGroup.Config = component.ButtonGroupConfig{Buttons: []component.Button{
+		component.NewButton("Stop port forward", action.Payload{
+			"action": "overview/stopPortForward",
+			"id":     "an-id",
+		}),
+	}}
 	cases := []struct {
 		name     string
 		service  *corev1.Service
 		isErr    bool
 		expected *component.Summary
+		states   []portforward.State
 	}{
 		{
-			name:    "general",
-			service: validService,
+			name:    "port-forwarding-already-running",
+			service: &validService,
 			expected: component.NewSummary("Configuration", []component.SummarySection{
 				{
 					Header:  "Selectors",
@@ -155,8 +181,22 @@ func Test_ServiceConfiguration(t *testing.T) {
 					Content: component.NewText("ClusterIP"),
 				},
 				{
-					Header:  "Ports",
-					Content: component.NewText("http 8080/TCP"),
+					Header: "Ports",
+					Content: component.NewPorts([]component.Port{
+						{
+							Config: component.PortConfig{
+								Port:   int(validService.Spec.Ports[0].Port),
+								Protocol: "TCP",
+								State: component.PortForwardState{
+									IsForwardable: true,
+									IsForwarded:   true,
+									Port:          45275,
+									ID:            "an-id",
+								},
+								Button: stopPortForwardingButtonGroup,
+							},
+						},
+					}),
 				},
 				{
 					Header:  "Session Affinity",
@@ -175,48 +215,124 @@ func Test_ServiceConfiguration(t *testing.T) {
 					Content: component.NewText("range1, range2"),
 				},
 			}...),
+			states: []portforward.State{
+				{
+					ID:        "an-id",
+					CreatedAt: testutil.Time(),
+					Ports: []portforward.ForwardedPort{
+						{
+							Local:  uint16(45275),
+							Remote: uint16(8080),
+						},
+					},
+					Pod: portforward.Target{
+						GVK:       schema.GroupVersionKind{Group: "", Version: "api/v1", Kind: "Pod"},
+						Namespace: "namespace",
+						Name:      "pod",
+					},
+					Target: portforward.Target{
+						GVK:       schema.GroupVersionKind{Group: "", Version: "api/v1", Kind: "Service"},
+						Namespace: "default",
+						Name:      "service",
+					},
+				},
+			},
+		},
+		{
+			name:    "port-forwarding-not-running",
+			service: &validService,
+			expected: component.NewSummary("Configuration", []component.SummarySection{
+				{
+					Header:  "Selectors",
+					Content: component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "app1")}),
+				},
+				{
+					Header:  "Type",
+					Content: component.NewText("ClusterIP"),
+				},
+				{
+					Header: "Ports",
+					//Content: component.NewText("http 8080/TCP"),
+					Content: component.NewPorts([]component.Port{
+						{
+							Config: component.PortConfig{
+								Protocol: "TCP",
+								State: component.PortForwardState{
+									IsForwardable: true,
+								},
+								Port:   int(validService.Spec.Ports[0].Port),
+								Button: startPortForwardingButtonGroup,
+							},
+						},
+					}),
+				},
+				{
+					Header:  "Session Affinity",
+					Content: component.NewText("None"),
+				},
+				{
+					Header:  "External Traffic Policy",
+					Content: component.NewText("Cluster"),
+				},
+				{
+					Header:  "Health Check Node Port",
+					Content: component.NewText("31311"),
+				},
+				{
+					Header:  "Load Balancer Source Ranges",
+					Content: component.NewText("range1, range2"),
+				},
+			}...),
+			states: []portforward.State{},
 		},
 		{
 			name:    "service is nil",
 			service: nil,
 			isErr:   true,
+			states:  []portforward.State{},
 		},
 	}
 	for _, tc := range cases {
-		controller := gomock.NewController(t)
-		defer controller.Finish()
+		func() {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
 
-		tpo := newTestPrinterOptions(controller)
-		printOptions := tpo.ToOptions()
+			tpo := newTestPrinterOptions(controller)
+			pf := tpo.portForwarder
+			printOptions := tpo.ToOptions()
 
-		ctx := context.Background()
+			ctx := context.Background()
 
-		podKey := store.Key{
-			Namespace:  "default",
-			APIVersion: "v1",
-			Kind:       "Pod",
-		}
+			podKey := store.Key{
+				Namespace:  "default",
+				APIVersion: "v1",
+				Kind:       "Pod",
+			}
 
-		pods := testutil.ToUnstructuredList(t, testutil.CreatePod("pod"))
+			pods := testutil.ToUnstructuredList(t, testutil.CreatePod("pod"))
 
-		tpo.objectStore.EXPECT().
-			List(gomock.Any(), podKey).
-			Return(pods, false, nil).AnyTimes()
+			tpo.objectStore.EXPECT().
+				List(gomock.Any(), podKey).
+				Return(pods, false, nil).AnyTimes()
 
-		sc := NewServiceConfiguration(tc.service)
+			pf.EXPECT().FindTarget("default", gomock.Any(), "service").
+				Return(tc.states, nil).AnyTimes()
 
-		summary, err := sc.Create(ctx, printOptions)
-		if tc.isErr {
-			require.Error(t, err)
-			return
-		}
-		require.NoError(t, err)
+			sc := NewServiceConfiguration(tc.service)
 
-		editAction, err := editServiceAction(ctx, tc.service, printOptions)
-		require.NoError(t, err)
-		tc.expected.AddAction(editAction)
+			summary, err := sc.Create(ctx, printOptions)
+			if tc.isErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
 
-		component.AssertEqual(t, tc.expected, summary)
+			editAction, err := editServiceAction(ctx, tc.service, printOptions)
+			require.NoError(t, err)
+			tc.expected.AddAction(editAction)
+
+			component.AssertEqual(t, tc.expected, summary)
+		}()
 	}
 }
 

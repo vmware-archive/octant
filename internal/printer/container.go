@@ -265,7 +265,7 @@ func describeContainerPorts(
 		}
 	}
 
-	states, err := portForwardService.Find(namespace, gvk, name)
+	states, err := portForwardService.FindPod(namespace, gvk, name)
 	if err != nil {
 		if _, ok := err.(notFound); !ok {
 			return nil, errors.Wrap(err, "query port forward service for pod")
