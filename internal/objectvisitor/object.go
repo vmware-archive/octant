@@ -48,22 +48,26 @@ func (o *Object) Visit(ctx context.Context, object *unstructured.Unstructured, h
 	object = object.DeepCopy()
 
 	g.Go(func() error {
-		found, owner, err := o.queryer.OwnerReference(ctx, object)
+		found, owners, err := o.queryer.OwnerReference(ctx, object)
 		if err != nil {
 			return errors.Wrapf(err, "unable to check owner reference for %s", kubernetes.PrintObject(object))
 		}
 
 		if found {
-			if owner == nil {
-				return errors.Errorf("unable to find owner for %s", object)
-			}
+			for _, owner := range owners {
+				if owner == nil {
+					return errors.Errorf("unable to find owner for %s", object)
+				}
 
-			if err := visitor.Visit(ctx, owner, handler, false); err != nil {
-				return errors.Wrapf(err, "visit ancestor %s for %s",
-					kubernetes.PrintObject(owner),
-					kubernetes.PrintObject(object))
+				if err := visitor.Visit(ctx, owner, handler, false); err != nil {
+					return errors.Wrapf(err, "visit ancestor %s for %s",
+						kubernetes.PrintObject(owner),
+						kubernetes.PrintObject(object))
+				}
+				if err := handler.AddEdge(ctx, object, owner); err != nil {
+					return err
+				}
 			}
-			return handler.AddEdge(ctx, object, owner)
 		}
 
 		return nil
