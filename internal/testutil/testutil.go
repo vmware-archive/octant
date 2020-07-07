@@ -96,26 +96,30 @@ func LoadTypedObjectFromFile(t *testing.T, objectFile string, into runtime.Objec
 }
 
 // ToOwnerReferences converts an object to owner references.
-func ToOwnerReferences(t *testing.T, object runtime.Object) []metav1.OwnerReference {
-	objectKind := object.GetObjectKind()
-	apiVersion, kind := objectKind.GroupVersionKind().ToAPIVersionAndKind()
+func ToOwnerReferences(t *testing.T, objects ...runtime.Object) []metav1.OwnerReference {
+	var list []metav1.OwnerReference
 
-	accessor := meta.NewAccessor()
-	name, err := accessor.Name(object)
-	require.NoError(t, err)
+	for _, object := range objects {
+		objectKind := object.GetObjectKind()
+		apiVersion, kind := objectKind.GroupVersionKind().ToAPIVersionAndKind()
 
-	uid, err := accessor.UID(object)
-	require.NoError(t, err)
+		accessor := meta.NewAccessor()
+		name, err := accessor.Name(object)
+		require.NoError(t, err)
 
-	return []metav1.OwnerReference{
-		{
+		uid, err := accessor.UID(object)
+		require.NoError(t, err)
+
+		list = append(list, metav1.OwnerReference{
 			APIVersion: apiVersion,
 			Kind:       kind,
 			Name:       name,
 			UID:        uid,
 			Controller: pointer.BoolPtr(true),
-		},
+		})
 	}
+
+	return list
 }
 
 // Time generates a test time
@@ -131,4 +135,3 @@ func RequireErrorOrNot(t *testing.T, wantErr bool, err error) {
 	}
 	require.NoError(t, err)
 }
-

@@ -43,7 +43,7 @@ type Queryer interface {
 	Children(ctx context.Context, object *unstructured.Unstructured) (*unstructured.UnstructuredList, error)
 	Events(ctx context.Context, object metav1.Object) ([]*corev1.Event, error)
 	IngressesForService(ctx context.Context, service *corev1.Service) ([]*extv1beta1.Ingress, error)
-	OwnerReference(ctx context.Context, object *unstructured.Unstructured) (bool, *unstructured.Unstructured, error)
+	OwnerReference(ctx context.Context, object *unstructured.Unstructured) (bool, []*unstructured.Unstructured, error)
 	ScaleTarget(ctx context.Context, hpa *autoscalingv1.HorizontalPodAutoscaler) (map[string]interface{}, error)
 	PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error)
 	ServicesForIngress(ctx context.Context, ingress *extv1beta1.Ingress) (*unstructured.UnstructuredList, error)
@@ -411,7 +411,7 @@ func (osq *ObjectStoreQueryer) listIngressBackends(ingress v1beta1.Ingress) []ex
 	return backends
 }
 
-func (osq *ObjectStoreQueryer) OwnerReference(ctx context.Context, object *unstructured.Unstructured) (bool, *unstructured.Unstructured, error) {
+func (osq *ObjectStoreQueryer) OwnerReference(ctx context.Context, object *unstructured.Unstructured) (bool, []*unstructured.Unstructured, error) {
 	if object == nil {
 		return false, nil, errors.New("can't find owner for nil object")
 	}
@@ -420,62 +420,81 @@ func (osq *ObjectStoreQueryer) OwnerReference(ctx context.Context, object *unstr
 	switch len(ownerReferences) {
 	case 0:
 		return false, nil, nil
-	case 1:
-		ownerReference := ownerReferences[0]
-
-		resourceList, err := osq.discoveryClient.ServerResourcesForGroupVersion(ownerReference.APIVersion)
-		if err != nil {
-			return false, nil, err
-		}
-		if resourceList == nil {
-			return false, nil, errors.Errorf("did not expect resource list for %s to be nil", ownerReference.APIVersion)
-		}
+	default:
+		var list []*unstructured.Unstructured
 
 		found := false
-		isNamespaced := false
-		for _, apiResource := range resourceList.APIResources {
-			if apiResource.Kind == ownerReference.Kind {
-				isNamespaced = apiResource.Namespaced
+
+		for _, ownerReference := range ownerReferences {
+			objectFound, object, err := osq.handle(ctx, object, ownerReference)
+			if err != nil {
+				return false, nil, err
+			}
+
+			list = append(list, object)
+			if objectFound {
 				found = true
 			}
 		}
 
-		if !found {
-			return false, nil, errors.Errorf("unable to find owner references %v", ownerReference)
-		}
-
-		namespace := ""
-		if isNamespaced {
-			namespace = object.GetNamespace()
-		}
-
-		key := store.Key{
-			Namespace:  namespace,
-			APIVersion: ownerReference.APIVersion,
-			Kind:       ownerReference.Kind,
-			Name:       ownerReference.Name,
-		}
-
-		object, ok := osq.owner.get(key)
-		if ok {
-			return true, object, nil
-		}
-
-		owner, err := osq.objectStore.Get(ctx, key)
-		if err != nil {
-			return false, nil, errors.Wrap(err, "get owner from store")
-		}
-
-		if owner == nil {
-			return false, nil, errors.Errorf("owner %s not found", key)
-		}
-
-		osq.owner.set(key, owner)
-
-		return true, owner, nil
-	default:
-		return false, nil, errors.New("unable to handle more than one owner reference")
+		return found, list, nil
 	}
+}
+
+func (osq *ObjectStoreQueryer) handle(
+	ctx context.Context,
+	object *unstructured.Unstructured,
+	ownerReference metav1.OwnerReference) (bool, *unstructured.Unstructured, error) {
+	resourceList, err := osq.discoveryClient.ServerResourcesForGroupVersion(ownerReference.APIVersion)
+	if err != nil {
+		return false, nil, err
+	}
+	if resourceList == nil {
+		return false, nil, errors.Errorf("did not expect resource list for %s to be nil", ownerReference.APIVersion)
+	}
+
+	found := false
+	isNamespaced := false
+	for _, apiResource := range resourceList.APIResources {
+		if apiResource.Kind == ownerReference.Kind {
+			isNamespaced = apiResource.Namespaced
+			found = true
+		}
+	}
+
+	if !found {
+		return false, nil, errors.Errorf("unable to find owner references %v", ownerReference)
+	}
+
+	namespace := ""
+	if isNamespaced {
+		namespace = object.GetNamespace()
+	}
+
+	key := store.Key{
+		Namespace:  namespace,
+		APIVersion: ownerReference.APIVersion,
+		Kind:       ownerReference.Kind,
+		Name:       ownerReference.Name,
+	}
+
+	object, ok := osq.owner.get(key)
+	if ok {
+		return true, object, nil
+	}
+
+	owner, err := osq.objectStore.Get(ctx, key)
+	if err != nil {
+		return false, nil, errors.Wrap(err, "get owner from store")
+	}
+
+	if owner == nil {
+		return false, nil, errors.Errorf("owner %s not found", key)
+	}
+
+	osq.owner.set(key, owner)
+
+	return true, owner, nil
 }
 
 func (osq *ObjectStoreQueryer) ScaleTarget(ctx context.Context, hpa *autoscalingv1.HorizontalPodAutoscaler) (map[string]interface{}, error) {

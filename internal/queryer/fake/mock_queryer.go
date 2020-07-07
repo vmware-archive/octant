@@ -99,11 +99,11 @@ func (mr *MockQueryerMockRecorder) IngressesForService(arg0, arg1 interface{}) *
 }
 
 // OwnerReference mocks base method
-func (m *MockQueryer) OwnerReference(arg0 context.Context, arg1 *unstructured.Unstructured) (bool, *unstructured.Unstructured, error) {
+func (m *MockQueryer) OwnerReference(arg0 context.Context, arg1 *unstructured.Unstructured) (bool, []*unstructured.Unstructured, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OwnerReference", arg0, arg1)
 	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(*unstructured.Unstructured)
+	ret1, _ := ret[1].([]*unstructured.Unstructured)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }

@@ -91,7 +91,9 @@ func main() {
 
 func runCmd(command string, env map[string]string, args ...string) {
 	cmd := newCmd(command, env, args...)
+	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
 	log.Printf("Running: %s\n", cmd.String())
 	if err := cmd.Run(); err != nil {
 		log.Fatal(err)
@@ -101,6 +103,9 @@ func runCmd(command string, env map[string]string, args ...string) {
 func runCmdIn(dir, command string, env map[string]string, args ...string) {
 	cmd := newCmd(command, env, args...)
 	cmd.Dir = dir
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
 	log.Printf("Running in %s: %s\n", dir, cmd.String())
 	if err := cmd.Run(); err != nil {
 		log.Fatal(err)
@@ -197,6 +202,8 @@ func vet() {
 func webDeps() {
 	cmd := newCmd("npm", nil, "ci")
 	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
 	cmd.Dir = "./web"
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("web-deps: %s", err)
@@ -206,6 +213,8 @@ func webDeps() {
 func webTest() {
 	cmd := newCmd("npm", nil, "run", "test:headless")
 	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
 	cmd.Dir = "./web"
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("web-test: %s", err)
@@ -215,6 +224,8 @@ func webTest() {
 func webBuild() {
 	cmd := newCmd("npm", nil, "run", "build")
 	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
 	cmd.Dir = "./web"
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("web-build: %s", err)
@@ -228,6 +239,8 @@ func serve() {
 	uiVars := map[string]string{"API_BASE": "http://localhost:7777"}
 	uiCmd := newCmd("npm", uiVars, "run", "start")
 	uiCmd.Stdout = os.Stdout
+	uiCmd.Stderr = os.Stderr
+	uiCmd.Stdin = os.Stdin
 	uiCmd.Dir = "./web"
 	if err := uiCmd.Start(); err != nil {
 		log.Fatalf("uiCmd: start: %s", err)
