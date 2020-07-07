@@ -45,7 +45,7 @@
     "@clr/core": "^3.1.4",
     "@clr/icons": "^3.1.4",
     "@clr/ui": "^3.1.4",
-    "@ng-select/ng-select": "^3.7.3",
+    "@ng-select/ng-select": "^4.0.4",
     "@types/cytoscape": "^3.14.6",
     "@webcomponents/custom-elements": "^1.4.1",
     "angular-resizable-element": "^3.3.0",
