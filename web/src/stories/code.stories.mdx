@@ -1,0 +1,37 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {CodeComponent} from "../app/modules/shared/components/presentation/code/code.component";
+
+export const codeDocs= { source: { code: `component.NewCodeBlock("package main\n\nimport "fmt"\n\nfunc main() {\n\tfmt.Println("hello world")\n}")`}}
+
+export const codeView = {
+  config: {
+    value:
+      'package main\n\nimport "fmt"\n\nfunc main() {\n\tfmt.Println("hello world")\n}',
+  },
+  metadata: {
+    type: 'codeBlock',
+  },
+};
+
+<h1>Code component</h1>
+<h2>Description</h2>
+
+<p>The Code component is used for strings that require formatting and wordwrap. It is typically used in a Table component for showing configuration files along with a copy button.</p>
+<h2>Example</h2>
+
+<Meta title="Components/Code" decorators={[ withKnobs({escapeHTML: false})]} component={CodeComponent} />
+
+<Preview withToolbar>
+  <Story name="Code component" parameters={{ docs: codeDocs }} height="250px" >
+  {{
+      props: {
+        view: object('View', codeView),
+      },
+      component: CodeComponent,
+      }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={CodeComponent} />

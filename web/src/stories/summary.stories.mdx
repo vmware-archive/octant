@@ -1,0 +1,46 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {SummaryComponent} from "../app/modules/shared/components/presentation/summary/summary.component";
+
+export const summaryDocs= { source: { code: `sections := component.SummarySections{}
+    sections.AddText("Priority", fmt.Sprintf("%d", *pod.Spec.Priority))
+    sections = append(sections, component.SummarySection{
+      Header:  "Service Account",
+      Content: contentLink,
+    })
+    sections.Add("Node", nodeLink)
+    summary := component.NewSummary("Configuration", sections...)`
+}}
+
+<h1>Summary component</h1>
+<h2>Description</h2>
+
+<p>The Summary component is used to show summary description of a specific resource.</p>
+<h2>Example</h2>
+
+<Meta title="Components/Summary" component={SummaryComponent} />
+
+<Preview withToolbar>
+  <Story name="Summary component" parameters={{ docs: summaryDocs }} height="150px">
+  {{
+    props: {
+      view: object('View',{
+        metadata: {
+          type: "summary",
+          title: [{metadata: {type: "text"}, "config": {value: "Configuration"}}]
+        },
+        config: {
+          sections: [{
+            header: "Type",
+            content: {metadata: {type: "text"}, "config": {value: "kubernetes.io/service-account-token"}}
+          }]
+        }
+      }),
+    },
+    component: SummaryComponent,
+  }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={SummaryComponent} />

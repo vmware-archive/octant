@@ -1,0 +1,44 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {ContainersComponent} from "../app/modules/shared/components/presentation/containers/containers.component";
+
+export const containersDocs= { source: { code: `containers := component.NewContainers()
+containers.Add("nginx-container", "nginx:1.17.0")`
+}}
+
+export const containerDefinition= {
+  name: 'nginx-container',
+  image: 'nginx:1.17.0',
+};
+
+export const containerView = {
+  config: {
+    containers: [containerDefinition],
+  },
+  metadata: {
+    type: 'containers',
+  },
+};
+
+<h1>Containers component</h1>
+<h2>Description</h2>
+
+<p>The Containers component is used to show info about containers.
+It displays container name and container image.</p>
+<h2>Example</h2>
+
+<Meta title="Components/Containers" component={ContainersComponent} />
+
+<Preview withToolbar>
+  <Story name="Containers component" parameters={{ docs: containersDocs }} height="75px" >
+  {{
+      props: {
+        view:  object('View', containerView),
+      },
+      component: ContainersComponent,
+      }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={ContainersComponent} />

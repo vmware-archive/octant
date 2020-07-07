@@ -1,0 +1,35 @@
+import { moduleMetadata } from '@storybook/angular';
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {GraphvizComponent} from "../app/modules/shared/components/presentation/graphviz/graphviz.component";
+
+export const graphvizDocs= { source: { code: `graph := component.NewGraphviz("digraph {a -> b}`}}
+
+<h1>Graphviz component</h1>
+<h2>Description</h2>
+
+<p>The Graphviz component is used to graphviz markdown to PNGs graphs.</p>
+<h2>Example</h2>
+
+<Meta title="Components/Graphviz" decorators={[ withKnobs({escapeHTML: false})]} component={GraphvizComponent} />
+
+<Preview withToolbar>
+<Story name="Graphviz" parameters={{ docs: graphvizDocs }} height="250px">
+{{
+    props: {
+      view:  object('View', {
+        metadata: {
+          type: 'graphviz',
+        },
+        config: {
+          dot: 'digraph {a -> b}'
+        },
+      }),
+    },
+    component: GraphvizComponent,
+    }}
+</Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={GraphvizComponent} />

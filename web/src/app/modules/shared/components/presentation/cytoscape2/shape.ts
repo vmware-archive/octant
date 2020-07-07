@@ -40,7 +40,7 @@ export abstract class Shape extends BaseShape {
   y: number;
   classes: string;
 
-  element: any;
+  textMeasureCanvas: any;
 
   constructor(id: string,
               public label: string,
@@ -99,20 +99,13 @@ export abstract class Shape extends BaseShape {
   }
 
   getTextWidth(txt){
-    const fontName= 'Metropolis';
-    const fontSize= 14;
-//    this.cytoscape.nodes('#glyph20')[0]._private.rstyle.labelWidth
-
-    if(!this.element){
-      this.element = document.createElement('span');
-      document.body.appendChild(this.element);
-    }
-    if(this.element.style.fontSize != fontSize)
-      this.element.style.fontSize = fontSize;
-    if(this.element.style.fontFamily != fontName)
-      this.element.style.fontFamily = fontName;
-    this.element.innerText = txt;
-    return this.element.offsetWidth;
+    if(!this.textMeasureCanvas) {
+      this.textMeasureCanvas = document.createElement("canvas")
+    };
+    const context = this.textMeasureCanvas.getContext("2d");
+    context.font = "14px Metropolis";
+    const metrics = context.measureText(txt);
+    return metrics.width - 2;
   }
 
   toNode(shapes: BaseShape[]) {

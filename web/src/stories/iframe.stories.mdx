@@ -1,0 +1,37 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {IFrameComponent} from "../app/modules/shared/components/presentation/iframe/iframe.component";
+
+export const iFrameDocs= { source: { code: `component.NewIFrame("https://octant.dev", "title")`}};
+
+export const iFrameView= {
+  config: {
+    url: 'https://octant.dev',
+    title: 'title',
+  },
+  metadata: {
+    type: 'iframe',
+  },
+};
+
+<h1>IFrame component</h1>
+<h2>Description</h2>
+
+<p>The IFrame components allows embedding of another webpage with a URL</p>
+<h2>Example</h2>
+
+<Meta title="Components/IFrame" component={IFrameComponent} />
+
+<Preview withToolbar>
+  <Story name="IFrame component" parameters={{ docs: iFrameDocs }} height="250px" >
+  {{
+      props: {
+        view:  object('View', iFrameView),
+      },
+      component: IFrameComponent,
+      }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={IFrameComponent} />

@@ -1,0 +1,39 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {AnnotationsComponent} from "../app/modules/shared/components/presentation/annotations/annotations.component";
+
+export const annotationsDocs= { source: { code: `annotations := map[string]string{"Label": "Sample annotation"}
+component.NewAnnotations(annotations)`
+}}
+
+<h1>Annotations component</h1>
+<h2>Description</h2>
+
+<p>The Annotations component is used to display non-identifying metadata of Kubernetes objects.
+It styles a key pair value of strings.</p>
+<h2>Example</h2>
+
+<Meta title="Components/Annotations" component={AnnotationsComponent} />
+
+<Preview withToolbar>
+  <Story name="Annotations component" parameters={{ docs: annotationsDocs }} height="75px" >
+  {{
+      props: {
+        view:  object('View', {
+         config: {
+           annotations: {
+             ['Label']: 'Sample annotation',
+           },
+         },
+         metadata: {
+           type: 'annotations',
+         },
+        }),
+      },
+      component: AnnotationsComponent,
+      }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={AnnotationsComponent} />

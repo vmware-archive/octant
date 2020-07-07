@@ -1,0 +1,111 @@
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {LabelsComponent} from "../app/modules/shared/components/presentation/labels/labels.component";
+import {SelectorsComponent} from "../app/modules/shared/components/presentation/selectors/selectors.component";
+import {ExpressionSelectorComponent} from "../app/modules/shared/components/presentation/expression-selector/expression-selector.component";
+
+export const labelsDocs= { source: { code: `labels = map[string]string{"foo": "bar"}
+component.NewLabels(labels)`
+}}
+
+export const selectorsDocs= { source: { code: `selectors:= component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "httpbin")})`}}
+
+export const expressionSelectorsDocs= { source: { code: `component.NewExpressionSelector("key", component.OperatorIn, []string{"a", "b"})`}}
+
+export const labelsView = {
+  config: {
+    labels: { ['foo']: 'bar' },
+  },
+  metadata: {
+    type: 'labels',
+  },
+};
+
+export const selectorsView = {
+  config: {
+    selectors: [
+      {
+        metadata: {
+          type: 'labelSelector',
+        },
+        config: {
+          key: 'app',
+          value: 'httpbin',
+        },
+      },
+    ],
+  },
+  metadata: {
+    type: 'selectors',
+  },
+};
+
+export const expressionSelectorView = {
+  config: {
+    key: 'key',
+    operator: 'In',
+    values: ['a', 'b'],
+  },
+  metadata: {
+    type: 'expressionSelector',
+  },
+};
+
+<h1>Labels</h1>
+
+<p>The Labels component is used to labels that have key-value pairs.</p>
+<h2>Example</h2>
+
+<Meta title="Components/Labels and Selectors" component={LabelsComponent} />
+
+<Preview withToolbar>
+  <Story name="Labels" parameters={{ docs: labelsDocs }} height="75px" >
+  {{
+      props: {
+        view:  object('View', labelsView),
+      },
+      component: LabelsComponent,
+      }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={LabelsComponent} />
+
+<h1>Selectors</h1>
+
+<p>The Selectors component is similar to a Labels component except it uses a different color to represent a selector key-value pair.</p>
+<h2>Example</h2>
+
+<Preview withToolbar>
+  <Story name="Selectors" parameters={{ docs: selectorsDocs }} height="75px" >
+  {{
+      props: {
+        view:  object('View', selectorsView),
+      },
+      component: SelectorsComponent,
+      }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={SelectorsComponent} />
+
+<h1>Expression Selectors</h1>
+
+<p>The Expression Selectors component can show more complex set operations for key-pairs.</p>
+<h2>Example</h2>
+
+<Preview withToolbar>
+  <Story name="Expression Selectors" parameters={{ docs: expressionSelectorsDocs }} height="75px" >
+  {{
+      props: {
+        view:  object('View', expressionSelectorView),
+      },
+      component: ExpressionSelectorComponent,
+      }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={ExpressionSelectorComponent} />
