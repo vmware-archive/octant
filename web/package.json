@@ -104,7 +104,7 @@
     "babel-loader": "^8.1.0",
     "codelyzer": "^5.2.2",
     "dayjs": "^1.8.28",
-    "electron": "^8.3.4",
+    "electron": "^9.1.0",
     "electron-builder": "^22.4.1",
     "jasmine-core": "~3.5.0",
     "jasmine-spec-reporter": "~5.0.1",
