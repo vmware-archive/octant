@@ -135,8 +135,6 @@ type Service struct {
 	state    States
 }
 
-var _ PortForwarder = (*Service)(nil)
-
 // New creates an instance of Service.
 func New(ctx context.Context, opts ServiceOptions) *Service {
 	ctx, cancel := context.WithCancel(ctx)
@@ -181,87 +179,103 @@ func (s *Service) validateCreateRequest(r CreateRequest) error {
 	return nil
 }
 
-// resolvePodAndPort attempts to resolve a port forward request into an active pod we can
+func (s *Service) FindPodSpecForService(ctx context.Context, apiVersion, kind, namespace, name string) (*corev1.PodSpec, error) {
+	pod, err := s.findPodForService(ctx, apiVersion, kind, namespace, name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pod.Spec, nil
+}
+
+func (s *Service) findPodForService(ctx context.Context, apiVersion, kind, namespace, name string) (*corev1.Pod, error) {
+	o := s.opts.ObjectStore
+	if o == nil {
+		return nil, errors.New("nil objectstore")
+	}
+
+	key := store.Key{
+		APIVersion: apiVersion,
+		Kind:       kind,
+		Namespace:  namespace,
+		Name:       name,
+	}
+	var service corev1.Service
+	found, err := store.GetAs(ctx, o, key, &service)
+
+	if err != nil {
+		return nil, err
+	}
+	if !found {
+		return nil, nil
+	}
+
+	lbls := labels.Set(service.Spec.Selector)
+	key = store.Key{
+		APIVersion: apiVersion,
+		Kind:       "Pod",
+		Namespace:  namespace,
+		Selector: &lbls,
+	}
+	list, _, err := o.List(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range list.Items {
+		pod := &corev1.Pod{}
+
+		if err := kubernetes.FromUnstructured(&list.Items[i], pod); err != nil {
+			return nil, err
+		}
+
+		podSelector := &metav1.LabelSelector{
+			MatchLabels: pod.GetLabels(),
+		}
+
+		labelSelector := metav1.LabelSelector{
+			MatchLabels: service.Spec.Selector,
+		}
+
+		selector, err := metav1.LabelSelectorAsSelector(&labelSelector)
+		if err != nil {
+			return nil, err
+		}
+
+		if selector == labels.Nothing() || isEqualSelector(&labelSelector, podSelector) || selector.Matches(labels.Set(pod.Labels)) {
+			return pod, nil
+		}
+	}
+
+	return nil, errors.New("no matching pod found for service")
+}
+
+// resolvePod attempts to resolve a port forward request into an active pod we can
 // forward to. Service/deployments selectors will be resolved into pods and a random
 // one will be chosen. A pod has to be active.
 // Returns: pod name or error.
-func (s *Service) resolvePodAndPort(ctx context.Context, r CreateRequest) (string, uint16, error) {
+func (s *Service) resolvePod(ctx context.Context, r CreateRequest) (string, error) {
 	o := s.opts.ObjectStore
 	if o == nil {
-		return "", 0, errors.New("nil objectstore")
+		return "", errors.New("nil objectstore")
 	}
 
 	switch {
 	case r.APIVersion == "v1" && r.Kind == "Pod":
 		// Verify pod exists and status is running
 		if ok, err := s.verifyPod(ctx, r.Namespace, r.Name); !ok || err != nil {
-			return "", 0, errors.Errorf("verifying pod %q: %v", r.Name, err)
+			return "", errors.Errorf("verifying pod %q: %v", r.Name, err)
 		}
-		return r.Name, r.Ports[0].Remote, nil
+		return r.Name, nil
 	case r.APIVersion == "v1" && r.Kind == "Service":
-		key := store.Key{
-			APIVersion: r.APIVersion,
-			Kind:       r.Kind,
-			Namespace:  r.Namespace,
-			Name:       r.Name,
-		}
-		var service corev1.Service
-		found, err := store.GetAs(ctx, o, key, &service)
-		podPort := uint16(0)
-		for _, servicePort := range service.Spec.Ports {
-			if servicePort.Port == int32(r.Ports[0].Remote) {
-				podPort = uint16(servicePort.TargetPort.IntVal)
-			}
-		}
-
-
+		pod, err := s.findPodForService(ctx, r.APIVersion, r.Kind, r.Namespace, r.Name)
 		if err != nil {
-			return "", 0, err
-		}
-		if !found {
-			return "", 0, nil
+			return "", err
 		}
 
-		lbls := labels.Set(service.Spec.Selector)
-		key = store.Key{
-			APIVersion: r.APIVersion,
-			Kind:       "Pod",
-			Namespace:  r.Namespace,
-			Selector: &lbls,
-		}
-		list, _, err := o.List(ctx, key)
-		if err != nil {
-			return "", 0, err
-		}
-
-		for i := range list.Items {
-			pod := &corev1.Pod{}
-
-			if err := kubernetes.FromUnstructured(&list.Items[i], pod); err != nil {
-				return "", 0, err
-			}
-
-			podSelector := &metav1.LabelSelector{
-				MatchLabels: pod.GetLabels(),
-			}
-
-			labelSelector := metav1.LabelSelector{
-				MatchLabels: service.Spec.Selector,
-			}
-
-			selector, err := metav1.LabelSelectorAsSelector(&labelSelector)
-			if err != nil {
-				return "", 0, err
-			}
-
-			if selector == labels.Nothing() || isEqualSelector(&labelSelector, podSelector) || selector.Matches(labels.Set(pod.Labels)) {
-				return pod.Name, podPort, nil
-			}
-		}
-
-		return "", 0, errors.New("no matching pod found for service")
+		return pod.Name, nil
 	default:
-		return "", 0, errors.New("not implemented")
+		return "", errors.New("not implemented")
 	}
 
 }
@@ -548,14 +562,13 @@ func (s *Service) Create(ctx context.Context, gvk schema.GroupVersionKind, name 
 		"name", req.Name,
 		"namespace", req.Namespace,
 	).Debugf("resolving pod from object")
-	podName, podPort, err := s.resolvePodAndPort(ctx, req)
+	podName, err := s.resolvePod(ctx, req)
 	if err != nil {
 		return emptyPortForwardResponse, errors.Wrap(err, "resolving pod")
 	}
 	logger.Debugf("resolved to pod %q", podName)
 	podReq := req
 	podReq.Name = podName
-	podReq.Ports[0].Remote = podPort
 	podReq.Kind = "Pod"
 
 	id, err := s.createForwarder(req, CreateRequest{

@@ -8,6 +8,9 @@ package printer
 import (
 	"context"
 	"fmt"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"strings"
 
 	"github.com/vmware-tanzu/octant/internal/octant"
@@ -135,27 +138,74 @@ func (sc *ServiceConfiguration) Create(ctx context.Context, options Options) (*c
 		}
 	}
 
+	o := options.DashConfig.ObjectStore()
+	if o == nil {
+		return nil, errors.New("nil objectstore")
+	}
+
+	lbls := labels.Set(service.Spec.Selector)
+	podKey := store.Key{
+		APIVersion: service.APIVersion,
+		Kind:       "Pod",
+		Namespace:  service.Namespace,
+		Selector: &lbls,
+	}
+
+	podList, _, err := o.List(ctx, podKey)
+	if err != nil {
+		return nil, err
+	}
+
+	namedPortMap := map[string]int {}
+
+	for i := range podList.Items {
+		pod := &corev1.Pod{}
+
+		if err := kubernetes.FromUnstructured(&podList.Items[i], pod); err != nil {
+			return nil, err
+		}
+
+		for _, container := range pod.Spec.Containers {
+			for _, port := range container.Ports {
+				namedPortMap[port.Name] = int(port.ContainerPort)
+			}
+		}
+	}
+
 	var ports []component.Port
 	for _, port := range service.Spec.Ports {
 		pfs := component.PortForwardState{
 			IsForwardable: port.Protocol == corev1.ProtocolTCP,
 		}
+
+		targetPortName := ""
+		var targetPort int
+
+		if port.TargetPort.Type == intstr.String {
+			targetPortName = port.TargetPort.StrVal
+			targetPort = namedPortMap[targetPortName]
+		} else {
+			targetPort = int(port.TargetPort.IntVal)
+		}
+
 		for _, state := range states {
 			for _, forwarded := range state.Ports {
-				if int(forwarded.Remote) == int(port.Port) {
+				if int(forwarded.Remote) == targetPort {
 					pfs.ID = state.ID
 					pfs.Port = int(forwarded.Local)
 					pfs.IsForwarded = true
 				}
 			}
 		}
-		ports = append(ports, *component.NewPort(
+		ports = append(ports, *component.NewServicePort(
 			service.Namespace,
 			service.APIVersion,
 			service.Kind,
 			service.Name,
 			int(port.Port),
 			string(port.Protocol),
+			targetPort,
+			targetPortName,
 			pfs,
 		))
 	}
