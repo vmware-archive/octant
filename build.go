@@ -9,7 +9,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -19,6 +18,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -31,61 +32,155 @@ var (
 )
 
 func main() {
-	flag.Parse()
-	for _, cmd := range flag.Args() {
-		switch cmd {
-		case "build-electron-dev":
-			buildElectronDev()
-		case "ci":
-			test()
-			vet()
-			webDeps()
-			webTest()
-			webBuild()
-			build()
-		case "ci-quick":
-			webDeps()
-			webBuild()
-			build()
-		case "web-deps":
-			webDeps()
-		case "web-test":
-			webDeps()
-			webTest()
-		case "web-build":
-			webDeps()
-			webBuild()
-		case "web":
-			webDeps()
-			webTest()
-			webBuild()
-		case "clean":
-			clean()
-		case "generate":
-			generate()
-		case "vet":
-			vet()
-		case "test":
-			test()
-		case "build":
-			build()
-		case "run-dev":
-			runDev()
-		case "go-install":
-			goInstall()
-		case "serve":
-			serve()
-		case "install-test-plugin":
-			installTestPlugin()
-		case "version":
-			version()
-		case "release":
-			release()
-		case "docker":
-			docker()
-		default:
-			log.Fatalf("Unknown command %q", cmd)
-		}
+	rootCmd := &cobra.Command{
+		Use:   "build.go",
+		Short: "Build tools for Octant",
+	}
+
+	rootCmd.Name()
+
+	rootCmd.AddCommand(
+		&cobra.Command{
+			Use:   "build-electron-dev",
+			Short: "electron build",
+			Run: func(cmd *cobra.Command, args []string) {
+				buildElectronDev()
+			},
+		},
+		&cobra.Command{
+			Use:   "ci",
+			Short: "full build, running tests",
+			Run: func(cmd *cobra.Command, args []string) {
+				test()
+				vet()
+				webDeps()
+				webTest()
+				webBuild()
+				build()
+			},
+		},
+		&cobra.Command{
+			Use:   "ci-quick",
+			Short: "full build, skipping tests",
+			Run: func(cmd *cobra.Command, args []string) {
+				webDeps()
+				webBuild()
+				build()
+			},
+		},
+		&cobra.Command{
+			Use:   "web-deps",
+			Short: "install client dependencies",
+			Run: func(cmd *cobra.Command, args []string) {
+				webDeps()
+			},
+		},
+		&cobra.Command{
+			Use:   "web-test",
+			Short: "run client tests",
+			Run: func(cmd *cobra.Command, args []string) {
+				webDeps()
+				webTest()
+			},
+		},
+		&cobra.Command{
+			Use:   "web-build",
+			Short: "client build, skipping tests",
+			Run: func(cmd *cobra.Command, args []string) {
+				webDeps()
+				webBuild()
+			},
+		},
+		&cobra.Command{
+			Use:   "web",
+			Short: "client build, running tests",
+			Run: func(cmd *cobra.Command, args []string) {
+				webDeps()
+				webTest()
+				webBuild()
+			},
+		},
+		&cobra.Command{
+			Use:   "generate",
+			Short: "update generated artifacts",
+			Run: func(cmd *cobra.Command, args []string) {
+				generate()
+			},
+		},
+		&cobra.Command{
+			Use:   "vet",
+			Short: "lint server code",
+			Run: func(cmd *cobra.Command, args []string) {
+				vet()
+			},
+		},
+		&cobra.Command{
+			Use:   "test",
+			Short: "run server tests",
+			Run: func(cmd *cobra.Command, args []string) {
+				test()
+			},
+		},
+		&cobra.Command{
+			Use:   "build",
+			Short: "server build, skipping tests",
+			Run: func(cmd *cobra.Command, args []string) {
+				build()
+			},
+		},
+		&cobra.Command{
+			Use:   "run-dev",
+			Short: "run ci produced build",
+			Run: func(cmd *cobra.Command, args []string) {
+				runDev()
+			},
+		},
+		&cobra.Command{
+			Use:   "go-install",
+			Short: "install build tools",
+			Run: func(cmd *cobra.Command, args []string) {
+				goInstall()
+			},
+		},
+		&cobra.Command{
+			Use:   "serve",
+			Short: "start client and server in development mode",
+			Run: func(cmd *cobra.Command, args []string) {
+				serve()
+			},
+		},
+		&cobra.Command{
+			Use:   "install-test-plugin",
+			Short: "build the sample plugin",
+			Run: func(cmd *cobra.Command, args []string) {
+				installTestPlugin()
+			},
+		},
+		&cobra.Command{
+			Use:   "version",
+			Short: "",
+			Run: func(cmd *cobra.Command, args []string) {
+				version()
+			},
+		},
+		&cobra.Command{
+			Use:   "release",
+			Short: "tag and push a release",
+			Run: func(cmd *cobra.Command, args []string) {
+				release()
+			},
+		},
+		&cobra.Command{
+			Use:   "docker",
+			Short: "build octant for use inside a linux container",
+			Run: func(cmd *cobra.Command, args []string) {
+				docker()
+			},
+		},
+	)
+
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
 	}
 }
 
@@ -157,12 +252,6 @@ func goInstall() {
 	}
 	for _, pkg := range pkgs {
 		runCmd("go", map[string]string{"GO111MODULE": "on"}, "install", pkg)
-	}
-}
-
-func clean() {
-	if err := os.Remove("pkg/icon/rice-box.go"); err != nil {
-		log.Fatalf("clean: %s", err)
 	}
 }
 
