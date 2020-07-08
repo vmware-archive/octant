@@ -17,6 +17,7 @@ import (
 
 	"contrib.go.opencensus.io/exporter/jaeger"
 	"github.com/skratchdot/open-golang/open"
+	"github.com/soheilhy/cmux"
 	"github.com/spf13/viper"
 	"go.opencensus.io/trace"
 	"k8s.io/client-go/tools/clientcmd"
@@ -142,7 +143,7 @@ func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, 
 	return nil
 }
 
-func (r *Runner) initLoadingAPI(ctx context.Context, logger log.Logger, option Options) (*api.LoadingAPI, error) {
+func (r *Runner) initLoadingAPI(ctx context.Context, logger log.Logger, _ Options) (*api.LoadingAPI, error) {
 	apiService := api.NewLoadingAPI(ctx, api.PathPrefix, r.actionManager, r.websocketClientManager, logger)
 
 	return apiService, nil
@@ -282,6 +283,7 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, options Options
 	frontendProxy.FrontendUpdateController = apiService
 
 	r.dash.apiHandler = apiService
+	r.dash.pluginService = pluginDashboardService
 
 	return apiService, nil
 }
@@ -399,6 +401,7 @@ func buildListener() (net.Listener, error) {
 }
 
 type dash struct {
+	mux             cmux.CMux
 	listener        net.Listener
 	uiURL           string
 	browserPath     string
@@ -409,6 +412,7 @@ type dash struct {
 	logger          log.Logger
 	handlerFactory  *octant.HandlerFactory
 	server          http.Server
+	pluginService   pluginAPI.Service
 }
 
 func newDash(listener net.Listener, namespace, uiURL string, browserPath string, apiHandler api.Service, logger log.Logger) (*dash, error) {
@@ -417,6 +421,7 @@ func newDash(listener net.Listener, namespace, uiURL string, browserPath string,
 		octant.FrontendURL(viper.GetString("proxy-frontend")))
 
 	return &dash{
+		mux:             cmux.New(listener),
 		handlerFactory:  hf,
 		listener:        listener,
 		namespace:       namespace,
@@ -441,10 +446,25 @@ func (d *dash) Run(ctx context.Context, startupCh chan bool) error {
 
 	d.server = http.Server{Handler: handler}
 
+	// Enable serving the plugin API on the same endpoint as the Octant streaming API.
+	// This enables remote gRPC plugins.
+	// grpcl := d.mux.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
+	// go serveGRPC(grpcl, d.pluginService)
+
+	http1 := d.mux.Match(cmux.Any())
 	go func() {
-		if err = d.server.Serve(d.listener); err != nil && err != http.ErrServerClosed {
+		if err = d.server.Serve(http1); err != nil && err != http.ErrServerClosed {
 			d.logger.Errorf("http server: %v", err)
 			os.Exit(1) // TODO graceful shutdown for other goroutines (GH#494)
+		}
+	}()
+
+	go func() {
+		if err := d.mux.Serve(); err != nil {
+			errMessage := err.Error()
+			if !strings.Contains(errMessage, "use of closed network connection") {
+				panic(err)
+			}
 		}
 	}()
 
@@ -510,11 +530,10 @@ func findKubeConfig(logger log.Logger, kubeConfigPath chan string) string {
 }
 
 func (r *Runner) startAPIService(ctx context.Context, logger log.Logger, options Options) {
-	apiService, err := r.initAPI(ctx, logger, options)
+	_, err := r.initAPI(ctx, logger, options)
 	if err != nil {
 		logger.Errorf("cannot create api: %v", err)
 	}
-	r.dash.apiHandler = apiService
 
 	hf := octant.NewHandlerFactory(
 		octant.BackendHandler(r.dash.apiHandler.Handler),

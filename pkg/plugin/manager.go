@@ -12,6 +12,7 @@ package plugin
 import (
 	"context"
 	"fmt"
+	"github.com/fsnotify/fsnotify"
 	"os/exec"
 	"path/filepath"
 	"sort"
@@ -72,6 +73,10 @@ type Client interface {
 // ManagerStore is the data store for Manager.
 type ManagerStore interface {
 	Store(name string, client Client, metadata *Metadata, cmd string) error
+	StoreJS(name string, jspc *jsPlugin) error
+	GetJS(name string) (*jsPlugin, bool)
+	RemoveJS(name string)
+	NamesJS() []string
 	GetMetadata(name string) (*Metadata, error)
 	GetService(name string) (Service, error)
 	GetCommand(name string) (string, error)
@@ -84,6 +89,8 @@ type DefaultStore struct {
 	clients  map[string]Client
 	metadata map[string]Metadata
 	commands map[string]string
+
+	jsPlugins sync.Map
 }
 
 var _ ManagerStore = (*DefaultStore)(nil)
@@ -95,6 +102,37 @@ func NewDefaultStore() *DefaultStore {
 		metadata: make(map[string]Metadata),
 		commands: make(map[string]string),
 	}
+}
+
+func (s *DefaultStore) NamesJS() []string {
+	var names []string
+	s.jsPlugins.Range(func(key interface{}, value interface{}) bool {
+		name, ok := key.(string)
+		if !ok {
+			return false
+		}
+		names = append(names, name)
+		return true
+	})
+	return names
+}
+
+func (s *DefaultStore) StoreJS(name string, plugin *jsPlugin) error {
+	s.jsPlugins.Store(name, plugin)
+	return nil
+}
+
+func (s *DefaultStore) GetJS(name string) (*jsPlugin, bool) {
+	voidStar, ok := s.jsPlugins.Load(name)
+	if !ok {
+		return nil, false
+	}
+	jspc, ok := voidStar.(*jsPlugin)
+	return jspc, ok
+}
+
+func (s *DefaultStore) RemoveJS(name string) {
+	s.jsPlugins.Delete(name)
 }
 
 // Store stores information for a plugin.
@@ -166,6 +204,8 @@ func (s *DefaultStore) ClientNames() []string {
 	for name := range s.Clients() {
 		list = append(list, name)
 	}
+	tsNames := s.NamesJS()
+	list = append(list, tsNames...)
 	return list
 }
 
@@ -273,6 +313,136 @@ func (m *Manager) Load(cmd string) error {
 	return nil
 }
 
+func (m *Manager) watchJS(ctx context.Context) {
+	logger := log.From(ctx)
+
+	dirs, err := DefaultConfig.PluginDirs(DefaultConfig.Home())
+	if err != nil {
+		logger.Errorf("unable to get plugin dirs for JavaScript plugins: %w", err)
+		return
+	}
+
+	watcher, err := fsnotify.NewWatcher()
+	defer watcher.Close()
+
+	if err != nil {
+		logger.Errorf("initializing JavaScript plugin watcher: %w", err)
+		return
+	}
+
+	for _, dir := range dirs {
+		watcher.Add(dir)
+	}
+
+	logger.Infof("watching for new JavaScript plugins in %q", dirs)
+
+	for {
+		select {
+		case <-ctx.Done():
+			logger.Infof("context cancelled shutting down JavaScript plugin watcher.")
+			return
+		case event, ok := <-watcher.Events:
+			if !ok {
+				logger.Errorf("bad event returned from JavaScript plugin watcher")
+				return
+			}
+			if IsJavaScriptPlugin(event.Name) {
+				if event.Op&fsnotify.Remove == fsnotify.Remove {
+					_, ok := m.store.GetJS(event.Name)
+					if !ok {
+						continue
+					}
+					m.store.RemoveJS(event.Name)
+					logger.Infof("removing: JavaScript plugin: %s", event.Name)
+					continue
+				}
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					jsPlugin, ok := m.store.GetJS(event.Name)
+					if !ok {
+						logger.Infof("registering: JavaScript plugin watcher: %s", event.Name)
+						if err := m.registerJSPlugin(ctx, event.Name, m.API.Addr()); err != nil {
+							logger.Errorf("registering: JavaScript plugin watcher: %w", err)
+						}
+						continue
+					}
+
+					logger.Infof("reloading: JavaScript plugin watcher: %s", event.Name)
+					if err := jsPlugin.Reload(); err != nil {
+						logger.Errorf("reloading: JavaScript plugin watcher: %w", err)
+					}
+					continue
+				}
+			}
+		case err, ok := <-watcher.Errors:
+			if !ok {
+				return
+			}
+			logger.Errorf("error:", err)
+		}
+	}
+}
+
+func (m *Manager) registerJSPlugin(ctx context.Context, pluginPath string, apiAddr string) error {
+	client, err := api.NewClient(apiAddr)
+	if err != nil {
+		client.Close()
+		return fmt.Errorf("ts plugin dashboard client: %w", err)
+	}
+
+	plugin, err := NewJSPlugin(ctx, client, pluginPath, CreateRuntime, ExtractDefaultClass, ExtractMetadata)
+	if err != nil {
+		client.Close()
+		return err
+	}
+	if err := m.store.StoreJS(pluginPath, plugin); err != nil {
+		client.Close()
+		return err
+	}
+
+	metadata := plugin.Metadata()
+
+	pluginLogger := log.From(ctx).With("plugin-name", pluginPath)
+	pluginLogger.With(
+		"cmd", pluginPath,
+		"metadata", metadata,
+	).Infof("registered plugin %q", metadata.Name)
+
+	if metadata.Capabilities.IsModule {
+		pluginLogger.Infof("plugin supports navigation")
+
+		mp, err := NewModuleProxy(metadata.Name, metadata, plugin)
+		if err != nil {
+			return fmt.Errorf("creating module proxy: %w", err)
+		}
+
+		if err := m.ModuleRegistrar.Register(mp); err != nil {
+			return fmt.Errorf("register module %s: %w", metadata.Name, err)
+		}
+	}
+
+	return nil
+}
+
+func (m *Manager) startJS(ctx context.Context, apiAddr string) error {
+	pluginList, err := AvailablePlugins(DefaultConfig)
+	if err != nil {
+		return err
+	}
+
+	for _, pluginPath := range pluginList {
+		if IsJavaScriptPlugin(pluginPath) {
+			logger := log.From(ctx)
+			logger.With("addr", apiAddr).Debugf("creating ts plugin client")
+
+			if err := m.registerJSPlugin(ctx, pluginPath, apiAddr); err != nil {
+				return fmt.Errorf("javascript plugin: %w", err)
+			}
+		}
+	}
+
+	return nil
+}
+
 // Start starts all plugins.
 func (m *Manager) Start(ctx context.Context) error {
 	if m.store == nil {
@@ -292,6 +462,9 @@ func (m *Manager) Start(ctx context.Context) error {
 
 	m.lock.Lock()
 	defer m.lock.Unlock()
+
+	m.startJS(ctx, m.API.Addr())
+	go m.watchJS(ctx)
 
 	for i := range m.configs {
 		c := m.configs[i]

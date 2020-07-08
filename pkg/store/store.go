@@ -42,10 +42,10 @@ type Store interface {
 
 // Key is a key for the object store.
 type Key struct {
-	Namespace  string
-	APIVersion string
-	Kind       string
-	Name       string
+	Namespace  string `json:"namespace"`
+	APIVersion string `json:"apiVersion"`
+	Kind       string `json:"kind"`
+	Name       string `json:"name"`
 	Selector   *labels.Set
 }
 

@@ -131,7 +131,10 @@ func AvailablePlugins(config Config) ([]string, error) {
 		for _, fi := range fis {
 			mode := fi.Mode()
 			// Windows does not have unix style executable bits.
-			if mode|64 == mode || config.OS() == "windows" {
+			if IsJavaScriptPlugin(fi.Name()) {
+				pluginPath := filepath.Join(dir, fi.Name())
+				list = append(list, pluginPath)
+			} else if mode|64 == mode || config.OS() == "windows" {
 				pluginPath := filepath.Join(dir, fi.Name())
 				list = append(list, pluginPath)
 			}

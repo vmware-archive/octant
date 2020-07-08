@@ -122,6 +122,7 @@
     "react-is": "^16.13.1",
     "ts-loader": "^7.0.5",
     "ts-node": "8.8.1",
+    "ts-protoc-gen": "^0.12.0",
     "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.3.0",
