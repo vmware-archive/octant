@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-node@v2.0.0
+        with:
+          node-version: 10.x
       - uses: actions/setup-go@v2
         with:
           go-version: '1.14'
