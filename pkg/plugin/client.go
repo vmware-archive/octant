@@ -73,7 +73,7 @@ type PrintResponse struct {
 // dashboard will use this to create an additional tab for
 // an object.
 type TabResponse struct {
-	Tab *component.Tab
+	Tab *component.Tab `json:"tab"`
 }
 
 // ObjectStatusResponse is an object status response from plugin.

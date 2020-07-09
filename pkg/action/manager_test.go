@@ -36,7 +36,7 @@ func TestManager(t *testing.T) {
 
 	actionPath := "path"
 
-	err := m.Register(actionPath, fn)
+	err := m.Register(actionPath, "internal", fn)
 	require.NoError(t, err)
 
 	payload := action.Payload{}

@@ -1,3 +1,12 @@
+<ng-container *ngIf="v?.config?.buttonGroup">
+  <div class="clr-row clr-align-items-center clr-justify-content-between">
+    <div class="clr-col-2">
+      <div class="action-buttons">
+        <app-button-group [view]="buttonGroup"></app-button-group>
+      </div>
+    </div>
+  </div>
+</ng-container>
 <ng-container *ngIf="v?.config?.sections">
   <div
     *ngFor="let section of sections; trackBy: identifySection"

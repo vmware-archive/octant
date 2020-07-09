@@ -124,8 +124,8 @@ func (fl *FlexLayout) SetButtonGroup(group *ButtonGroup) {
 
 // Tab represents a tab. A tab is a flex layout with a name.
 type Tab struct {
-	Name     string
-	Contents FlexLayout
+	Name     string     `json:"name"`
+	Contents FlexLayout `json:"contents"`
 }
 
 // NewTabWithContents creates a tab with contents.

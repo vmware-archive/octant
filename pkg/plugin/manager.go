@@ -12,13 +12,13 @@ package plugin
 import (
 	"context"
 	"fmt"
-	"github.com/fsnotify/fsnotify"
 	"os/exec"
 	"path/filepath"
 	"sort"
 	"sync"
 	"time"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/hashicorp/go-plugin"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -73,8 +73,8 @@ type Client interface {
 // ManagerStore is the data store for Manager.
 type ManagerStore interface {
 	Store(name string, client Client, metadata *Metadata, cmd string) error
-	StoreJS(name string, jspc *jsPlugin) error
-	GetJS(name string) (*jsPlugin, bool)
+	StoreJS(name string, jspc JSPlugin) error
+	GetJS(name string) (JSPlugin, bool)
 	RemoveJS(name string)
 	NamesJS() []string
 	GetMetadata(name string) (*Metadata, error)
@@ -117,17 +117,17 @@ func (s *DefaultStore) NamesJS() []string {
 	return names
 }
 
-func (s *DefaultStore) StoreJS(name string, plugin *jsPlugin) error {
+func (s *DefaultStore) StoreJS(name string, plugin JSPlugin) error {
 	s.jsPlugins.Store(name, plugin)
 	return nil
 }
 
-func (s *DefaultStore) GetJS(name string) (*jsPlugin, bool) {
+func (s *DefaultStore) GetJS(name string) (JSPlugin, bool) {
 	voidStar, ok := s.jsPlugins.Load(name)
 	if !ok {
 		return nil, false
 	}
-	jspc, ok := voidStar.(*jsPlugin)
+	jspc, ok := voidStar.(JSPlugin)
 	return jspc, ok
 }
 
@@ -233,12 +233,16 @@ type ManagerInterface interface {
 type ModuleRegistrar interface {
 	// Register registers a module.
 	Register(mod module.Module) error
+	// Unregister unregisters a module.
+	Unregister(mod module.Module)
 }
 
 // ActionRegistrar is an action registrar.
 type ActionRegistrar interface {
 	// Register registers an action.
-	Register(actionPath string, actionFunc action.DispatcherFunc) error
+	Register(actionPath string, pluginPath string, actionFunc action.DispatcherFunc) error
+	// Unregister unregisters an action.
+	Unregister(actionPath string, pluginPath string)
 }
 
 // ManagerOption is an option for configuring Manager.
@@ -336,6 +340,21 @@ func (m *Manager) watchJS(ctx context.Context) {
 
 	logger.Infof("watching for new JavaScript plugins in %q", dirs)
 
+	writeEvents := make(map[string]bool)
+	updatePlugin := func(name string) {
+		jsPlugin, ok := m.store.GetJS(name)
+		if ok {
+			if err := m.unregisterJSPlugin(ctx, jsPlugin); err != nil {
+				logger.Errorf("unregistering: %w", err)
+			}
+			m.store.RemoveJS(name)
+		}
+		logger.Infof("reloading: JavaScript plugin: %s", name)
+		if err := m.registerJSPlugin(ctx, name, m.API.Addr()); err != nil {
+			logger.Errorf("reloading: JavaScript plugin watcher: %w", err)
+		}
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -346,31 +365,21 @@ func (m *Manager) watchJS(ctx context.Context) {
 				logger.Errorf("bad event returned from JavaScript plugin watcher")
 				return
 			}
+			if event.Op&(fsnotify.Chmod|fsnotify.Write|fsnotify.Create) == fsnotify.Chmod {
+				continue
+			}
 			if IsJavaScriptPlugin(event.Name) {
 				if event.Op&fsnotify.Remove == fsnotify.Remove {
-					_, ok := m.store.GetJS(event.Name)
-					if !ok {
-						continue
-					}
-					m.store.RemoveJS(event.Name)
-					logger.Infof("removing: JavaScript plugin: %s", event.Name)
-					continue
-				}
-				if event.Op&fsnotify.Write == fsnotify.Write {
 					jsPlugin, ok := m.store.GetJS(event.Name)
-					if !ok {
-						logger.Infof("registering: JavaScript plugin watcher: %s", event.Name)
-						if err := m.registerJSPlugin(ctx, event.Name, m.API.Addr()); err != nil {
-							logger.Errorf("registering: JavaScript plugin watcher: %w", err)
+					if ok {
+						if err := m.unregisterJSPlugin(ctx, jsPlugin); err != nil {
+							logger.Errorf("unregistering: %w", err)
 						}
-						continue
+						m.store.RemoveJS(event.Name)
+						logger.Infof("removing: JavaScript plugin: %s", event.Name)
 					}
-
-					logger.Infof("reloading: JavaScript plugin watcher: %s", event.Name)
-					if err := jsPlugin.Reload(); err != nil {
-						logger.Errorf("reloading: JavaScript plugin watcher: %w", err)
-					}
-					continue
+				} else if event.Op&fsnotify.Write == fsnotify.Write {
+					writeEvents[event.Name] = true
 				}
 			}
 		case err, ok := <-watcher.Errors:
@@ -378,15 +387,41 @@ func (m *Manager) watchJS(ctx context.Context) {
 				return
 			}
 			logger.Errorf("error:", err)
+		case <-time.After(1 * time.Second):
+			for k, _ := range writeEvents {
+				updatePlugin(k)
+			}
+			writeEvents = make(map[string]bool)
+			continue
 		}
+
 	}
+}
+
+func (m *Manager) unregisterJSPlugin(ctx context.Context, p JSPlugin) error {
+	p.Close()
+
+	metadata := p.Metadata()
+	if metadata.Capabilities.IsModule {
+		mp, err := NewModuleProxy(metadata.Name, metadata, p)
+		if err != nil {
+			return fmt.Errorf("unregister: creating module proxy: %w", err)
+		}
+		m.ModuleRegistrar.Unregister(mp)
+	}
+
+	for _, actionName := range metadata.Capabilities.ActionNames {
+		actionPath := actionName
+		m.ActionRegistrar.Unregister(actionPath, p.PluginPath())
+	}
+	return nil
 }
 
 func (m *Manager) registerJSPlugin(ctx context.Context, pluginPath string, apiAddr string) error {
 	client, err := api.NewClient(apiAddr)
 	if err != nil {
 		client.Close()
-		return fmt.Errorf("ts plugin dashboard client: %w", err)
+		return fmt.Errorf("javascript plugin dashboard client: %w", err)
 	}
 
 	plugin, err := NewJSPlugin(ctx, client, pluginPath, CreateRuntime, ExtractDefaultClass, ExtractMetadata)
@@ -406,6 +441,18 @@ func (m *Manager) registerJSPlugin(ctx context.Context, pluginPath string, apiAd
 		"cmd", pluginPath,
 		"metadata", metadata,
 	).Infof("registered plugin %q", metadata.Name)
+
+	for _, actionName := range metadata.Capabilities.ActionNames {
+		actionPath := actionName
+		pluginLogger.With("action-path", actionPath).Infof("registering plugin action")
+		err := m.ActionRegistrar.Register(actionPath, pluginPath, func(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
+			return plugin.HandleAction(ctx, actionPath, payload)
+		})
+
+		if err != nil {
+			return fmt.Errorf("configuring plugin action: %w", err)
+		}
+	}
 
 	if metadata.Capabilities.IsModule {
 		pluginLogger.Infof("plugin supports navigation")
@@ -557,7 +604,7 @@ func (m *Manager) start(ctx context.Context, c config) error {
 	for _, actionName := range metadata.Capabilities.ActionNames {
 		actionPath := actionName
 		pluginLogger.With("action-path", actionPath).Infof("registering plugin action")
-		err := m.ActionRegistrar.Register(actionPath, func(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
+		err := m.ActionRegistrar.Register(actionPath, c.name, func(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
 			return service.HandleAction(ctx, actionPath, payload)
 		})
 

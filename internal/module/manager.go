@@ -8,6 +8,7 @@ package module
 import (
 	"context"
 	"strings"
+	"sync"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -26,13 +27,15 @@ type ActionReceiver interface {
 }
 
 type ActionRegistrar interface {
-	Register(actionPath string, actionFunc action.DispatcherFunc) error
+	Register(actionPath, pluginPath string, actionFunc action.DispatcherFunc) error
+	Unregister(actionPath, pluginPath string)
 }
 
 // ManagerInterface is an interface for managing module lifecycle.
 type ManagerInterface interface {
 	Modules() []Module
 	Register(mod Module) error
+	Unregister(mod Module)
 	SetNamespace(namespace string)
 	GetNamespace() string
 	UpdateContext(ctx context.Context, contextName string) error
@@ -54,6 +57,7 @@ type Manager struct {
 	registeredModules []Module
 
 	loadedModules []Module
+	mu            sync.Mutex
 }
 
 var _ ManagerInterface = (*Manager)(nil)
@@ -77,7 +81,7 @@ func (m *Manager) Register(mod Module) error {
 	if receiver, ok := mod.(ActionReceiver); ok {
 		for actionPath, actionFunc := range receiver.ActionPaths() {
 			m.logger.With("actionPath", actionPath, "module-name", mod.Name()).Infof("registering action")
-			if err := m.actionRegistrar.Register(actionPath, actionFunc); err != nil {
+			if err := m.actionRegistrar.Register(actionPath, mod.Name(), actionFunc); err != nil {
 				return err
 			}
 		}
@@ -90,6 +94,34 @@ func (m *Manager) Register(mod Module) error {
 	m.loadedModules = append(m.loadedModules, mod)
 
 	return nil
+}
+
+// Register register a module with the manager.
+func (m *Manager) Unregister(mod Module) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	var delIdx int
+	var found bool
+
+	for i := 0; i < len(m.loadedModules); i++ {
+		if m.loadedModules[i].Name() == mod.Name() {
+			delIdx = i
+			found = true
+			break
+		}
+	}
+
+	if found {
+		m.loadedModules[delIdx].Stop()
+		m.loadedModules = append(m.loadedModules[:delIdx], m.loadedModules[delIdx+1:]...)
+		for i := 0; i < len(m.registeredModules); i++ {
+			if m.registeredModules[i].Name() == mod.Name() {
+				delIdx = i
+			}
+		}
+		m.registeredModules = append(m.registeredModules[:delIdx], m.registeredModules[delIdx+1:]...)
+	}
 }
 
 // Modules returns a list of modules.

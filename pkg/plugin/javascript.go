@@ -5,22 +5,22 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"strings"
 	"sync"
+
+	"github.com/dop251/goja"
+	"github.com/dop251/goja_nodejs/require"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
-	"github.com/vmware-tanzu/octant/pkg/view/component"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
-	"github.com/dop251/goja"
-	"github.com/dop251/goja_nodejs/require"
 	"github.com/vmware-tanzu/octant/pkg/plugin/api"
 	"github.com/vmware-tanzu/octant/pkg/plugin/console"
 	"github.com/vmware-tanzu/octant/pkg/store"
-	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 func IsTypescriptPlugin(pluginName string) bool {
@@ -59,9 +59,15 @@ func (d *dashboardClient) List(c goja.FunctionCall) goja.Value {
 		return d.vm.NewGoError(err)
 	}
 
-	return d.vm.ToValue(u.Object)
+	items := make([]interface{}, len(u.Items))
+	for i := 0; i < len(u.Items); i++ {
+		items[i] = u.Items[i].Object
+	}
+
+	return d.vm.ToValue(items)
 }
 
+/*
 func (d *dashboardClient) Create(c goja.FunctionCall) goja.Value {
 	var u *unstructured.Unstructured
 	obj := c.Argument(0).ToObject(d.vm)
@@ -74,6 +80,7 @@ func (d *dashboardClient) Create(c goja.FunctionCall) goja.Value {
 
 	return goja.Undefined()
 }
+*/
 
 func (d *dashboardClient) Update(c goja.FunctionCall) goja.Value {
 	var u *unstructured.Unstructured
@@ -92,7 +99,6 @@ func createClientObject(d *dashboardClient) goja.Value {
 	obj := d.vm.NewObject()
 	obj.Set("Get", d.Get)
 	obj.Set("List", d.List)
-	obj.Set("Create", d.Create)
 	obj.Set("Update", d.Update)
 	return obj
 }
@@ -101,6 +107,38 @@ type pluginRuntimeFactory func(context.Context, string, bool) (*goja.Runtime, *T
 type pluginClassExtractor func(*goja.Runtime) (*goja.Object, error)
 type pluginMetadataExtractor func(*goja.Runtime, goja.Value) (*Metadata, error)
 
+// JSPlugin interface represents a JavaScrpit plugin.
+type JSPlugin interface {
+	Close()
+	PluginPath() string
+	Metadata() *Metadata
+
+	Navigation(ctx context.Context) (navigation.Navigation, error)
+	Register(ctx context.Context, dashboardAPIAddress string) (Metadata, error)
+	Print(ctx context.Context, object runtime.Object) (PrintResponse, error)
+	PrintTab(ctx context.Context, object runtime.Object) (TabResponse, error)
+	ObjectStatus(ctx context.Context, object runtime.Object) (ObjectStatusResponse, error)
+	HandleAction(ctx context.Context, actionName string, payload action.Payload) error
+	Content(ctx context.Context, contentPath string) (component.ContentResponse, error)
+}
+
+type jsPlugin struct {
+	vm *goja.Runtime
+
+	metadata    *Metadata
+	pluginClass *goja.Object
+	pluginPath  string
+
+	runtimeFactory    pluginRuntimeFactory
+	classExtractor    pluginClassExtractor
+	metadataExtractor pluginMetadataExtractor
+
+	client *api.Client
+	mu     sync.Mutex
+	ctx    context.Context
+}
+
+// NewJSPlugin creates a new instances of a JavaScript plugin.
 func NewJSPlugin(ctx context.Context, client *api.Client, pluginPath string, prf pluginRuntimeFactory, pce pluginClassExtractor, pme pluginMetadataExtractor) (*jsPlugin, error) {
 	vm, tsl, err := prf(ctx, pluginPath, IsTypescriptPlugin(pluginPath))
 
@@ -136,6 +174,7 @@ func NewJSPlugin(ctx context.Context, client *api.Client, pluginPath string, prf
 
 	plugin := &jsPlugin{
 		vm:                vm,
+		pluginClass:       pluginClass,
 		metadata:          metadata,
 		client:            client,
 		runtimeFactory:    prf,
@@ -148,64 +187,16 @@ func NewJSPlugin(ctx context.Context, client *api.Client, pluginPath string, prf
 	return plugin, nil
 }
 
-type jsPlugin struct {
-	vm *goja.Runtime
+var _ JSPlugin = (*jsPlugin)(nil)
 
-	metadata    *Metadata
-	pluginPath  string
-
-	runtimeFactory    pluginRuntimeFactory
-	classExtractor    pluginClassExtractor
-	metadataExtractor pluginMetadataExtractor
-
-	client  *api.Client
-	mu      sync.Mutex
-	ctx     context.Context
+// Close closes the dashboard client connection.
+func (t *jsPlugin) Close() {
+	t.client.Close()
 }
 
-func (t *jsPlugin) Reload() error {
-	fmt.Println("calling reload")
-
-	logger := log.From(t.ctx)
-	logger.Infof("reloading plugin: %s\n", t.pluginPath)
-	t.mu.Lock()
-	defer t.mu.Unlock()
-
-	vm, tsl, err := t.runtimeFactory(t.ctx, t.pluginPath, IsTypescriptPlugin(t.pluginPath))
-	if err != nil {
-		return fmt.Errorf("realod: runtime initialization: %w", err)
-	}
-
-	if tsl != nil {
-		_, err = tsl.TranspileAndRun(t.pluginPath)
-		if err != nil {
-			return fmt.Errorf("reload: transpile and execute: %w", err)
-		}
-	} else {
-		buf, err := ioutil.ReadFile(t.pluginPath)
-		if err != nil {
-			return fmt.Errorf("reload: reading script: %w", err)
-		}
-		_, err = vm.RunString(string(buf[:]))
-		if err != nil {
-			return fmt.Errorf("reload: script execution: %w", err)
-		}
-	}
-
-	pluginClass, err := t.classExtractor(vm)
-	if err != nil {
-		return err
-	}
-
-	metadata, err := t.metadataExtractor(vm, pluginClass)
-	if err != nil {
-		return err
-	}
-
-	t.vm = vm
-	t.metadata = metadata
-
-	return nil
+// PluginPath returns the pluginPath.
+func (t *jsPlugin) PluginPath() string {
+	return t.pluginPath
 }
 
 func (t *jsPlugin) Navigation(ctx context.Context) (navigation.Navigation, error) {
@@ -224,7 +215,7 @@ func (t *jsPlugin) Navigation(ctx context.Context) (navigation.Navigation, error
 		return nav, fmt.Errorf("navigationHandler is not callable")
 	}
 
-	s, err := cHandler(goja.Undefined())
+	s, err := cHandler(t.pluginClass)
 	if err != nil {
 		return nav, fmt.Errorf("calling navigationHandler: %w", err)
 	}
@@ -256,19 +247,85 @@ func (t *jsPlugin) Content(ctx context.Context, contentPath string) (component.C
 	if !ok {
 		return cr, fmt.Errorf("contentHandler is not callable")
 	}
+	gc := dashboardClient{
+		client: t.client,
+		vm:     t.vm,
+	}
 
-	s, err := cHandler(goja.Undefined(), t.vm.ToValue(contentPath))
+	obj := t.vm.NewObject()
+	obj.Set("client", createClientObject(&gc))
+	obj.Set("contentPath", t.vm.ToValue(contentPath))
+	s, err := cHandler(t.pluginClass, obj)
 	if err != nil {
 		return cr, fmt.Errorf("calling contentHandler: %w", err)
 	}
 
-	jsonCr, err := json.Marshal(s.Export())
-	if err != nil {
-		return cr, fmt.Errorf("unable to marshal content json: %w", err)
+	pluginResp := s.ToObject(t.vm)
+	if pluginResp == nil {
+		return cr, fmt.Errorf("empty contentResponse")
 	}
 
-	if err := json.Unmarshal(jsonCr, &cr); err != nil {
-		return cr, fmt.Errorf("unable to unmarshal content json: %w", err)
+	content := pluginResp.Get("content")
+	if content == goja.Undefined() {
+		return cr, fmt.Errorf("unable to get content from contentResponse")
+	}
+
+	contentObj, ok := content.Export().(map[string]interface{})
+	if !ok {
+		return cr, fmt.Errorf("unable to get content as map from contentResponse")
+	}
+
+	rawTitle, ok := contentObj["title"]
+	if ok {
+		titles, ok := rawTitle.([]interface{})
+		if !ok {
+			return cr, fmt.Errorf("unable to get title array from content")
+		}
+		for i, c := range titles {
+			realTitle, err := extractComponent(fmt.Sprintf("title[%d]", i), c)
+			if err != nil {
+				return cr, fmt.Errorf("unable to extract title: %w", err)
+			}
+
+			title, ok := realTitle.(component.TitleComponent)
+			if !ok {
+				return cr, fmt.Errorf("unable to convert component to TitleComponent")
+			}
+			cr.Title = append(cr.Title, title)
+		}
+	}
+
+	rawComponents, ok := contentObj["viewComponents"]
+	if !ok {
+		return cr, fmt.Errorf("unable to get viewComponents from content")
+	}
+
+	components, ok := rawComponents.([]interface{})
+	if !ok {
+		return cr, fmt.Errorf("unable to get viewComponents list")
+	}
+
+	for i, c := range components {
+		realComponent, err := extractComponent(fmt.Sprintf("viewComponent[%d]", i), c)
+		if err != nil {
+			return cr, fmt.Errorf("unable to extract component: %w", err)
+		}
+		cr.Add(realComponent)
+	}
+
+	rawButtonGroup, ok := contentObj["buttonGroup"]
+	if ok {
+		realButtonGroup, err := extractComponent("buttonGroup", rawButtonGroup)
+		if err != nil {
+			return cr, fmt.Errorf("unable to extract buttonGroup: %w", err)
+		}
+
+		buttonGroup, ok := realButtonGroup.(*component.ButtonGroup)
+		if !ok {
+			return cr, fmt.Errorf("unable to convert extracted component to buttonGroup")
+		}
+
+		cr.ButtonGroup = buttonGroup
 	}
 
 	return cr, nil
@@ -283,29 +340,68 @@ func (t *jsPlugin) Register(ctx context.Context, dashboardAPIAddress string) (Me
 }
 
 func (t *jsPlugin) PrintTab(ctx context.Context, object runtime.Object) (TabResponse, error) {
-	return TabResponse{}, fmt.Errorf("not implemented")
-}
-
-func (t *jsPlugin) ObjectStatus(ctx context.Context, object runtime.Object) (ObjectStatusResponse, error) {
-	return ObjectStatusResponse{}, fmt.Errorf("not implemented")
-}
-
-func (t *jsPlugin) HandleAction(ctx context.Context, actionName string, payload action.Payload) error {
-	return fmt.Errorf("not implemented")
-}
-
-func (t *jsPlugin) Print(_ context.Context, object runtime.Object) (PrintResponse, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	handler, err := t.vm.RunString("_concretePlugin.printHandler")
+	tabResponse, err := t.objectRequestCall("tabHandler", object)
 	if err != nil {
-		return PrintResponse{}, fmt.Errorf("unable to load printHandler from plugin: %w", err)
+		return TabResponse{}, err
+	}
+
+	tab := tabResponse.Get("tab")
+	if tab == goja.Undefined() {
+		return TabResponse{}, fmt.Errorf("tab property not found")
+	}
+
+	contents, ok := tab.Export().(map[string]interface{})
+	if !ok {
+		return TabResponse{}, fmt.Errorf("unable to export tab contents")
+	}
+
+	cTab := &component.Tab{}
+	if name, ok := contents["name"]; ok {
+		cTab.Contents = *component.NewFlexLayout(name.(string))
+	}
+
+	if contents, ok := contents["contents"]; ok {
+		realComponent, err := extractComponent("tab contents", contents)
+		if err != nil {
+			return TabResponse{}, fmt.Errorf("unable to extract component: %w", err)
+		}
+		realFlexLayout := *realComponent.(*component.FlexLayout)
+		cTab.Contents.Config = realFlexLayout.Config
+	}
+
+	return TabResponse{
+		Tab: cTab,
+	}, nil
+}
+
+func (t *jsPlugin) ObjectStatus(ctx context.Context, object runtime.Object) (ObjectStatusResponse, error) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	osResponse, err := t.objectRequestCall("objectStatusHandler", object)
+	if err != nil {
+		return ObjectStatusResponse{}, err
+	}
+	fmt.Println(osResponse)
+
+	return ObjectStatusResponse{}, nil
+}
+
+func (t *jsPlugin) HandleAction(ctx context.Context, actionPath string, payload action.Payload) error {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	handler, err := t.vm.RunString("_concretePlugin.actionHandler")
+	if err != nil {
+		return fmt.Errorf("unable to load actionHandler from plugin: %w", err)
 	}
 
 	cHandler, ok := goja.AssertFunction(handler)
 	if !ok {
-		return PrintResponse{}, fmt.Errorf("printHandler is not callable")
+		return fmt.Errorf("actionHandler is not callable")
 	}
 
 	gc := dashboardClient{
@@ -313,23 +409,38 @@ func (t *jsPlugin) Print(_ context.Context, object runtime.Object) (PrintRespons
 		vm:     t.vm,
 	}
 
-	key, err := store.KeyFromObject(object)
-	if err != nil {
-		return PrintResponse{}, fmt.Errorf("ts plugin generate key: %w", err)
-	}
+	var pl map[string]interface{}
+	pl = payload
 
 	obj := t.vm.NewObject()
 	obj.Set("client", createClientObject(&gc))
-	obj.Set("objectKey", t.vm.ToValue(&key))
+	obj.Set("actionName", t.vm.ToValue(actionPath))
+	obj.Set("payload", pl)
 
-	s, err := cHandler(goja.Undefined(), obj)
+	s, err := cHandler(t.pluginClass, obj)
 	if err != nil {
-		return PrintResponse{}, err
+		return fmt.Errorf("calling actionHandler: %w", err)
 	}
 
-	printResponse := s.ToObject(t.vm)
-	if printResponse == nil {
-		return PrintResponse{}, fmt.Errorf("no status found")
+	if s != goja.Undefined() {
+		if jsErr := s.ToObject(t.vm); jsErr != nil {
+			errStr := jsErr.Get("error")
+			if errStr != goja.Undefined() {
+				return fmt.Errorf("%s actionHandler: %q", t.pluginPath, jsErr.Get("error"))
+			}
+		}
+	}
+
+	return nil
+}
+
+func (t *jsPlugin) Print(_ context.Context, object runtime.Object) (PrintResponse, error) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	printResponse, err := t.objectRequestCall("printHandler", object)
+	if err != nil {
+		return PrintResponse{}, err
 	}
 
 	sections, ok := printResponse.Export().(map[string]interface{})
@@ -372,6 +483,82 @@ func (t *jsPlugin) Print(_ context.Context, object runtime.Object) (PrintRespons
 	response.Items = flexItems
 
 	return response, nil
+}
+
+func (t *jsPlugin) objectRequestCall(handlerName string, object runtime.Object) (*goja.Object, error) {
+	handler, err := t.vm.RunString(fmt.Sprintf("_concretePlugin.%s", handlerName))
+	if err != nil {
+		return nil, fmt.Errorf("unable to load %s from plugin: %w", handlerName, err)
+	}
+
+	cHandler, ok := goja.AssertFunction(handler)
+	if !ok {
+		return nil, fmt.Errorf("%s is not callable", handlerName)
+	}
+
+	gc := dashboardClient{
+		client: t.client,
+		vm:     t.vm,
+	}
+
+	obj := t.vm.NewObject()
+	obj.Set("client", createClientObject(&gc))
+	obj.Set("object", t.vm.ToValue(object))
+
+	s, err := cHandler(t.pluginClass, obj)
+	if err != nil {
+		return nil, err
+	}
+
+	response := s.ToObject(t.vm)
+	if response == nil {
+		return nil, fmt.Errorf("no status found")
+	}
+
+	return response, nil
+}
+
+func extractComponent(name string, i interface{}) (component.Component, error) {
+	rawComponent, ok := i.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unable to get %s map", name)
+	}
+
+	rawMetadata, ok := rawComponent["metadata"]
+	if !ok {
+		return nil, fmt.Errorf("unable to get metadata from %s", name)
+	}
+
+	metadataJson, err := json.Marshal(rawMetadata)
+	if err != nil {
+		return nil, fmt.Errorf("unable to marshal metadata from: %s: %w", name, err)
+	}
+
+	metadata := component.Metadata{}
+	if err := json.Unmarshal(metadataJson, &metadata); err != nil {
+		return nil, fmt.Errorf("unable to unmarhal metadata from %s: %w", name, err)
+	}
+
+	config, ok := rawComponent["config"]
+	if !ok {
+		return nil, fmt.Errorf("unable to get config from %s", name)
+	}
+
+	configJson, err := json.Marshal(config)
+	if err != nil {
+		return nil, fmt.Errorf("unable to marshal buttonGroup config: %w", err)
+	}
+
+	typedObject := component.TypedObject{
+		Config:   configJson,
+		Metadata: metadata,
+	}
+
+	c, err := typedObject.ToComponent()
+	if err != nil {
+		return nil, fmt.Errorf("unable to convert buttonGroup to component: %w", err)
+	}
+	return c, nil
 }
 
 func extractItems(name string, i interface{}) ([]component.FlexLayoutItem, error) {
@@ -445,10 +632,22 @@ func ExtractDefaultClass(vm *goja.Runtime) (*goja.Object, error) {
 	return pluginClass, nil
 }
 
+func extractActions(name string, i interface{}) ([]string, error) {
+	actions, ok := i.([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unable to parse ActionNames")
+	}
+	actionNames := make([]string, len(actions))
+	for i := 0; i < len(actions); i++ {
+		actionNames[i] = actions[i].(string)
+	}
+	return actionNames, nil
+}
+
 func extractGvk(name string, i interface{}) ([]schema.GroupVersionKind, error) {
 	gvks, ok := i.([]interface{})
 	if !ok {
-		fmt.Errorf("unable to parse GVK list for supportPrinterConfig")
+		return nil, fmt.Errorf("unable to parse GVK list for supportPrinterConfig")
 	}
 	var gvkList []schema.GroupVersionKind
 	for i, ii := range gvks {
@@ -525,6 +724,12 @@ func ExtractMetadata(vm *goja.Runtime, pluginValue goja.Value) (*Metadata, error
 					return nil, fmt.Errorf("extractGvks: %w", err)
 				}
 				metadata.Capabilities.SupportsTab = append(metadata.Capabilities.SupportsTab, gvks...)
+			case "actionNames":
+				actions, err := extractActions(k, v)
+				if err != nil {
+					return nil, fmt.Errorf("extractActions: %w", err)
+				}
+				metadata.Capabilities.ActionNames = append(metadata.Capabilities.ActionNames, actions...)
 			default:
 				fmt.Printf("unknown capabilitiy: %s\n", k)
 			}
