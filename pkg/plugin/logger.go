@@ -23,6 +23,11 @@ var _ hclog.Logger = (*zapAdapter)(nil)
 // Args are alternating key, val pairs
 // keys must be strings
 // vals can be any type, but display is implementation specific
+// Emit a message and key/value pairs at a provided log level
+func (za *zapAdapter) Log(level hclog.Level, msg string, args ...interface{}) {
+	// no-op: zap doesn't handle log
+}
+
 // Emit a message and key/value pairs at the TRACE level
 func (za *zapAdapter) Trace(msg string, args ...interface{}) {
 	// no-op: zap doesn't handle trace
@@ -74,11 +79,23 @@ func (za *zapAdapter) IsError() bool {
 	return true
 }
 
+// ImpliedArgs returns With key/value pairs
+func (za *zapAdapter) ImpliedArgs() []interface{} {
+	// no-op
+	return nil
+}
+
 // Creates a sublogger that will always have the given key/value pairs
 func (za *zapAdapter) With(args ...interface{}) hclog.Logger {
 	return &zapAdapter{
 		dashLogger: za.dashLogger.With(args...),
 	}
+}
+
+// Returns the Name of the logger
+func (za *zapAdapter) Name() string {
+	// no-op
+	return ""
 }
 
 // Create a logger that will prepend the name string on the front of all messages.
