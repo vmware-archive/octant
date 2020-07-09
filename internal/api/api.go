@@ -17,7 +17,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/vmware-tanzu/octant/internal/config"
-	"github.com/vmware-tanzu/octant/internal/kubeconfig"
 	"github.com/vmware-tanzu/octant/internal/mime"
 	"github.com/vmware-tanzu/octant/internal/module"
 	"github.com/vmware-tanzu/octant/pkg/log"
@@ -165,7 +164,6 @@ type LoadingAPI struct {
 	actionDispatcher ActionDispatcher
 	prefix           string
 	logger           log.Logger
-	KubeConfig       kubeconfig.TemporaryKubeConfig
 	wsClientManager  *WebsocketClientManager
 
 	modulePaths   map[string]module.Module
@@ -176,7 +174,7 @@ type LoadingAPI struct {
 var _ Service = (*LoadingAPI)(nil)
 
 // NewLoadingAPI creates an instance of LoadingAPI
-func NewLoadingAPI(ctx context.Context, prefix string, actionDispatcher ActionDispatcher, websocketClientManager *WebsocketClientManager, logger log.Logger, temporaryKubeConfig kubeconfig.TemporaryKubeConfig) *LoadingAPI {
+func NewLoadingAPI(ctx context.Context, prefix string, actionDispatcher ActionDispatcher, websocketClientManager *WebsocketClientManager, logger log.Logger) *LoadingAPI {
 	logger = logger.With("component", "loading api")
 	return &LoadingAPI{
 		ctx:              ctx,
@@ -185,7 +183,6 @@ func NewLoadingAPI(ctx context.Context, prefix string, actionDispatcher ActionDi
 		modulePaths:      make(map[string]module.Module),
 		logger:           logger,
 		forceUpdateCh:    make(chan bool, 1),
-		KubeConfig:       temporaryKubeConfig,
 		wsClientManager:  websocketClientManager,
 	}
 }
@@ -202,7 +199,7 @@ func (l *LoadingAPI) Handler(ctx context.Context) (http.Handler, error) {
 
 	s := router.PathPrefix(l.prefix).Subrouter()
 
-	s.Handle("/stream", loadingWebsocketService(l.wsClientManager, l.KubeConfig))
+	s.Handle("/stream", loadingWebsocketService(l.wsClientManager))
 
 	return router, nil
 }

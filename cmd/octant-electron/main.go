@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/vmware-tanzu/octant/internal/api"
+	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/internal/electron"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/dash"
@@ -87,14 +88,15 @@ func run(ctx context.Context) error {
 	runCh := make(chan bool, 1)
 
 	ctx, cancel := context.WithCancel(ctx)
+	ctxKubeConfig := ocontext.WithKubeConfigCh(ctx)
 
-	runner, err := dash.NewRunner(ctx, logger, dashOptions)
+	runner, err := dash.NewRunner(ctxKubeConfig, logger, dashOptions)
 	if err != nil {
 		return fmt.Errorf("create octant runner: %w", err)
 	}
 
 	go func() {
-		runner.Start(ctx, logger, dashOptions, startupCh, shutdownCh)
+		runner.Start(ctxKubeConfig, logger, dashOptions, startupCh, shutdownCh)
 		runCh <- true
 	}()
 

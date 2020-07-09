@@ -13,7 +13,6 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/vmware-tanzu/octant/internal/config"
-	"github.com/vmware-tanzu/octant/internal/kubeconfig"
 )
 
 var (
@@ -50,14 +49,14 @@ func serveWebsocket(manager ClientManager, dashConfig config.Dash, w http.Respon
 }
 
 // Create dummy websocketService and serveWebsocket
-func loadingWebsocketService(manager ClientManager, temporaryKubeConfig kubeconfig.TemporaryKubeConfig) http.HandlerFunc {
+func loadingWebsocketService(manager ClientManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		serveLoadingWebsocket(manager, temporaryKubeConfig, w, r)
+		serveLoadingWebsocket(manager, w, r)
 	}
 }
 
-func serveLoadingWebsocket(manager ClientManager, temporaryKubeConfig kubeconfig.TemporaryKubeConfig, w http.ResponseWriter, r *http.Request) {
-	client, err := manager.TemporaryClientFromLoadingRequest(temporaryKubeConfig, w, r)
+func serveLoadingWebsocket(manager ClientManager, w http.ResponseWriter, r *http.Request) {
+	client, err := manager.TemporaryClientFromLoadingRequest(w, r)
 	if err != nil {
 		fmt.Println("create loading websocket client")
 	}

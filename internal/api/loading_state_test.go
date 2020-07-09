@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/api/fake"
-	"github.com/vmware-tanzu/octant/internal/kubeconfig"
 	"github.com/vmware-tanzu/octant/internal/octant"
 
 	"k8s.io/client-go/tools/clientcmd"
@@ -34,15 +33,13 @@ func Test_watchConfig(t *testing.T) {
 	config := clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
 	afero.WriteFile(fs, config, []byte(""), 0755)
 
-	tkc := kubeconfig.TemporaryKubeConfig{
-		Path: make(chan string, 1),
-	}
+	kubeConfigPath := make(chan string, 1)
 
-	manager := api.NewLoadingManager(tkc)
-	manager.WatchConfig(tkc.Path, octantClient, fs)
+	manager := api.NewLoadingManager()
+	manager.WatchConfig(kubeConfigPath, octantClient, fs)
 
 	select {
-	case path := <-tkc.Path:
+	case path := <-kubeConfigPath:
 		assert.Equal(t, path, config)
 	case <-time.After(3 * time.Second):
 		t.FailNow()

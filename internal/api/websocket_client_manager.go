@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/vmware-tanzu/octant/internal/config"
-	"github.com/vmware-tanzu/octant/internal/kubeconfig"
 )
 
 //go:generate mockgen -destination=./fake/mock_client_manager.go -package=fake github.com/vmware-tanzu/octant/internal/api ClientManager
@@ -22,7 +21,7 @@ type ClientManager interface {
 	Run(ctx context.Context)
 	Clients() []*WebsocketClient
 	ClientFromRequest(dashConfig config.Dash, w http.ResponseWriter, r *http.Request) (*WebsocketClient, error)
-	TemporaryClientFromLoadingRequest(temporaryKubeConfig kubeconfig.TemporaryKubeConfig, w http.ResponseWriter, r *http.Request) (*WebsocketClient, error)
+	TemporaryClientFromLoadingRequest(w http.ResponseWriter, r *http.Request) (*WebsocketClient, error)
 }
 
 type clientMeta struct {
@@ -119,7 +118,7 @@ func (m *WebsocketClientManager) ClientFromRequest(dashConfig config.Dash, w htt
 	return client, nil
 }
 
-func (m *WebsocketClientManager) TemporaryClientFromLoadingRequest(temporaryKubeConfig kubeconfig.TemporaryKubeConfig, w http.ResponseWriter, r *http.Request) (*WebsocketClient, error) {
+func (m *WebsocketClientManager) TemporaryClientFromLoadingRequest(w http.ResponseWriter, r *http.Request) (*WebsocketClient, error) {
 	clientID, err := uuid.NewUUID()
 	if err != nil {
 		return nil, err
@@ -131,7 +130,7 @@ func (m *WebsocketClientManager) TemporaryClientFromLoadingRequest(temporaryKube
 	}
 
 	ctx, cancel := context.WithCancel(m.ctx)
-	client := NewTemporaryWebsocketClient(ctx, conn, m, temporaryKubeConfig, m.actionDispatcher, clientID)
+	client := NewTemporaryWebsocketClient(ctx, conn, m, m.actionDispatcher, clientID)
 	m.register <- &clientMeta{
 		cancelFunc: func() {
 			cancel()

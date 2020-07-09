@@ -22,12 +22,6 @@ type KubeConfig struct {
 	CurrentContext string
 }
 
-// TemporaryKubeConfig describes an uploaded kube config
-type TemporaryKubeConfig struct {
-	KubeConfig chan string
-	Path       chan string
-}
-
 // Context describes a kube config context.
 type Context struct {
 	Name string `json:"name"`

@@ -17,7 +17,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/vmware-tanzu/octant/internal/config"
-	"github.com/vmware-tanzu/octant/internal/kubeconfig"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/action"
 )
@@ -139,7 +138,7 @@ func NewWebsocketState(dashConfig config.Dash, actionDispatcher ActionDispatcher
 	return w
 }
 
-func NewTemporaryWebsocketState(temporaryKubeConfig kubeconfig.TemporaryKubeConfig, actionDispatcher ActionDispatcher, wsClient OctantClient, options ...WebsocketStateOption) *WebsocketState {
+func NewTemporaryWebsocketState(actionDispatcher ActionDispatcher, wsClient OctantClient, options ...WebsocketStateOption) *WebsocketState {
 	w := &WebsocketState{
 		wsClient:           wsClient,
 		contentPathUpdates: make(map[string]octant.ContentPathUpdateFunc),
@@ -153,7 +152,7 @@ func NewTemporaryWebsocketState(temporaryKubeConfig kubeconfig.TemporaryKubeConf
 
 	if len(w.managers) < 1 {
 		w.managers = []StateManager{
-			NewLoadingManager(temporaryKubeConfig),
+			NewLoadingManager(),
 		}
 	}
 

@@ -24,9 +24,9 @@ import (
 	"github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/config"
+	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/internal/describer"
 	oerrors "github.com/vmware-tanzu/octant/internal/errors"
-	"github.com/vmware-tanzu/octant/internal/kubeconfig"
 	internalLog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/module"
 	"github.com/vmware-tanzu/octant/internal/modules/applications"
@@ -106,13 +106,13 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 		d.willOpenBrowser = false
 	}
 
-	d.kubeconfig = apiService.KubeConfig
 	r.dash = d
 
 	return &r, nil
 }
 
 func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, startupCh, shutdownCh chan bool) error {
+	kubeConfigPath := ocontext.KubeConfigChFrom(ctx)
 	go func() {
 		if err := r.dash.Run(ctx, startupCh); err != nil {
 			logger.Debugf("running dashboard service: %v", err)
@@ -122,13 +122,11 @@ func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, 
 
 	go func() {
 		if r.dash != nil {
-			select {
-			case options.KubeConfig = <-findKubeConfig(logger, r.dash.kubeconfig):
-				if options.KubeConfig != "" {
-					logger.Debugf("Loading configuration: %v", options.KubeConfig)
-					go r.startAPIService(ctx, logger, options)
-					return
-				}
+			options.KubeConfig = findKubeConfig(logger, kubeConfigPath)
+			if options.KubeConfig != "" {
+				logger.Debugf("Loading configuration: %v", options.KubeConfig)
+				go r.startAPIService(ctx, logger, options)
+				return
 			}
 		}
 	}()
@@ -145,11 +143,7 @@ func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, 
 }
 
 func (r *Runner) initLoadingAPI(ctx context.Context, logger log.Logger, option Options) (*api.LoadingAPI, error) {
-	temporaryKubeConfig := kubeconfig.TemporaryKubeConfig{
-		KubeConfig: make(chan string, 1),
-		Path:       make(chan string, 1),
-	}
-	apiService := api.NewLoadingAPI(ctx, api.PathPrefix, r.actionManager, r.websocketClientManager, logger, temporaryKubeConfig)
+	apiService := api.NewLoadingAPI(ctx, api.PathPrefix, r.actionManager, r.websocketClientManager, logger)
 
 	return apiService, nil
 }
@@ -414,7 +408,6 @@ type dash struct {
 	willOpenBrowser bool
 	logger          log.Logger
 	handlerFactory  *octant.HandlerFactory
-	kubeconfig      kubeconfig.TemporaryKubeConfig
 	server          http.Server
 }
 
@@ -505,28 +498,15 @@ func enableOpenCensus() error {
 }
 
 // findKubeConfig looks for kube config from .kube or provided by user
-func findKubeConfig(logger log.Logger, temporaryKubeConfig kubeconfig.TemporaryKubeConfig) <-chan string {
-	r := make(chan string)
+func findKubeConfig(logger log.Logger, kubeConfigPath chan string) string {
+	kubeconfig := clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
 
-	go func() {
-		defer close(r)
+	if _, err := os.Stat(kubeconfig); err == nil {
+		logger.Infof("using kube config: %v", kubeconfig)
+		return kubeconfig
+	}
 
-		kubeconfig := clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
-
-		if _, err := os.Stat(kubeconfig); err == nil {
-			logger.Infof("using kube config: %v", kubeconfig)
-			r <- kubeconfig
-			return
-		}
-
-		select {
-		case path, ok := <-temporaryKubeConfig.Path:
-			if ok {
-				r <- path
-			}
-		}
-	}()
-	return r
+	return <-kubeConfigPath
 }
 
 func (r *Runner) startAPIService(ctx context.Context, logger log.Logger, options Options) {
