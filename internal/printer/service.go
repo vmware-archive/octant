@@ -130,89 +130,13 @@ func (sc *ServiceConfiguration) Create(ctx context.Context, options Options) (*c
 		Content: component.NewText(string(service.Spec.Type)),
 	})
 
-	portForwardService := options.DashConfig.PortForwarder()
-	states, err := portForwardService.FindTarget(service.Namespace, service.GroupVersionKind(), service.Name)
+	ports, err := sc.describePorts(ctx, options, service)
 	if err != nil {
-		if _, ok := err.(notFound); !ok {
-			return nil, errors.Wrap(err, "query port forward service for pod")
-		}
+		return nil, errors.Wrap(err, "describing ports for service")
 	}
-
-	o := options.DashConfig.ObjectStore()
-	if o == nil {
-		return nil, errors.New("nil objectstore")
-	}
-
-	lbls := labels.Set(service.Spec.Selector)
-	podKey := store.Key{
-		APIVersion: service.APIVersion,
-		Kind:       "Pod",
-		Namespace:  service.Namespace,
-		Selector: &lbls,
-	}
-
-	podList, _, err := o.List(ctx, podKey)
-	if err != nil {
-		return nil, err
-	}
-
-	namedPortMap := map[string]int {}
-
-	for i := range podList.Items {
-		pod := &corev1.Pod{}
-
-		if err := kubernetes.FromUnstructured(&podList.Items[i], pod); err != nil {
-			return nil, err
-		}
-
-		for _, container := range pod.Spec.Containers {
-			for _, port := range container.Ports {
-				namedPortMap[port.Name] = int(port.ContainerPort)
-			}
-		}
-	}
-
-	var ports []component.Port
-	for _, port := range service.Spec.Ports {
-		pfs := component.PortForwardState{
-			IsForwardable: port.Protocol == corev1.ProtocolTCP,
-		}
-
-		targetPortName := ""
-		var targetPort int
-
-		if port.TargetPort.Type == intstr.String {
-			targetPortName = port.TargetPort.StrVal
-			targetPort = namedPortMap[targetPortName]
-		} else {
-			targetPort = int(port.TargetPort.IntVal)
-		}
-
-		for _, state := range states {
-			for _, forwarded := range state.Ports {
-				if int(forwarded.Remote) == targetPort {
-					pfs.ID = state.ID
-					pfs.Port = int(forwarded.Local)
-					pfs.IsForwarded = true
-				}
-			}
-		}
-		ports = append(ports, *component.NewServicePort(
-			service.Namespace,
-			service.APIVersion,
-			service.Kind,
-			service.Name,
-			int(port.Port),
-			string(port.Protocol),
-			targetPort,
-			targetPortName,
-			pfs,
-		))
-	}
-
 	sections = append(sections, component.SummarySection{
-		Header: "Ports",
-		Content: component.NewPorts(ports),
+		Header:  "Ports",
+		Content: component.NewPorts(*ports),
 	})
 
 	sections = append(sections, component.SummarySection{
@@ -251,6 +175,99 @@ func (sc *ServiceConfiguration) Create(ctx context.Context, options Options) (*c
 	summary.AddAction(configEditor)
 
 	return summary, nil
+}
+
+func (sc *ServiceConfiguration) describePorts(ctx context.Context, options Options, service *corev1.Service) (*[]component.Port, error) {
+	portForwardService := options.DashConfig.PortForwarder()
+	states, err := portForwardService.FindTarget(service.Namespace, service.GroupVersionKind(), service.Name)
+	if err != nil {
+		if _, ok := err.(notFound); !ok {
+			return nil, errors.Wrap(err, "query port forward service for pod")
+		}
+	}
+
+	namedPodPortMap, err := sc.mapNamedPodPortsToPortValue(ctx, options, service)
+	if err != nil {
+		return nil, err
+	}
+
+	var ports []component.Port
+	for _, servicePort := range service.Spec.Ports {
+		pfs := component.PortForwardState{
+			IsForwardable: servicePort.Protocol == corev1.ProtocolTCP,
+		}
+
+		serviceTargetPortName := ""
+		var serviceTargetPort int
+
+		if servicePort.TargetPort.Type == intstr.String {
+			serviceTargetPortName = servicePort.TargetPort.StrVal
+			serviceTargetPort = (*namedPodPortMap)[serviceTargetPortName]
+		} else {
+			serviceTargetPort = int(servicePort.TargetPort.IntVal)
+		}
+
+		for _, state := range states {
+			for _, forwarded := range state.Ports {
+				if int(forwarded.Remote) == serviceTargetPort {
+					pfs.ID = state.ID
+					pfs.Port = int(forwarded.Local)
+					pfs.IsForwarded = true
+				}
+			}
+		}
+		ports = append(ports, *component.NewServicePort(
+			service.Namespace,
+			service.APIVersion,
+			service.Kind,
+			service.Name,
+			int(servicePort.Port),
+			string(servicePort.Protocol),
+			serviceTargetPort,
+			serviceTargetPortName,
+			pfs,
+		))
+	}
+
+	return &ports, nil
+}
+
+func (sc *ServiceConfiguration) mapNamedPodPortsToPortValue(ctx context.Context, options Options, service *corev1.Service) (*map[string]int, error) {
+	o := options.DashConfig.ObjectStore()
+	if o == nil {
+		return nil, errors.New("nil objectstore")
+	}
+
+	lbls := labels.Set(service.Spec.Selector)
+	podKey := store.Key{
+		APIVersion: service.APIVersion,
+		Kind:       "Pod",
+		Namespace:  service.Namespace,
+		Selector:   &lbls,
+	}
+
+	podList, _, err := o.List(ctx, podKey)
+	if err != nil {
+		return nil, err
+	}
+
+	namedPortMap := map[string]int{}
+
+	for i := range podList.Items {
+		pod := &corev1.Pod{}
+
+		if err := kubernetes.FromUnstructured(&podList.Items[i], pod); err != nil {
+			return nil, err
+		}
+
+		for _, container := range pod.Spec.Containers {
+			for _, port := range container.Ports {
+				namedPortMap[port.Name] = int(port.ContainerPort)
+			}
+		}
+	}
+
+	return &namedPortMap, nil
 }
 
 var (

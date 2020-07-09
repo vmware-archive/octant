@@ -9,6 +9,7 @@ import (
 	"context"
 	"github.com/vmware-tanzu/octant/internal/portforward"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"testing"
 
@@ -123,24 +124,71 @@ func Test_ServiceListHandler(t *testing.T) {
 	component.AssertEqual(t, expected, got)
 }
 
-func Test_ServiceConfiguration(t *testing.T) {
-	validService := corev1.Service{
+func createServiceWithPort(port corev1.ServicePort) corev1.Service {
+	return corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{Name: "service", Namespace: "default"},
+		TypeMeta:   metav1.TypeMeta{APIVersion: "api/v1", Kind: "Service"},
 		Spec: corev1.ServiceSpec{
 			ExternalTrafficPolicy:    corev1.ServiceExternalTrafficPolicyTypeCluster,
 			HealthCheckNodePort:      31311,
 			LoadBalancerSourceRanges: []string{"range1", "range2"},
 			Ports: []corev1.ServicePort{
-				{Name: "http", Port: 8080, Protocol: corev1.ProtocolTCP},
+				port,
 			},
 			Selector:        map[string]string{"app": "app1"},
 			SessionAffinity: corev1.ServiceAffinityNone,
 			Type:            corev1.ServiceTypeClusterIP,
 		},
 	}
-	validService.Namespace = "default"
-	validService.Name = "service"
-	validService.Kind = "Service"
-	validService.APIVersion = "api/v1"
+}
+
+func createExpected(targetPortName string, state component.PortForwardState, button *component.ButtonGroup) *component.Summary {
+	return component.NewSummary("Configuration", []component.SummarySection{
+		{
+			Header:  "Selectors",
+			Content: component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "app1")}),
+		},
+		{
+			Header:  "Type",
+			Content: component.NewText("ClusterIP"),
+		},
+		{
+			Header: "Ports",
+			Content: component.NewPorts([]component.Port{
+				{
+					Config: component.PortConfig{
+						Port:           8181,
+						Protocol:       "TCP",
+						TargetPort:     8080,
+						TargetPortName: targetPortName,
+						State:          state,
+						Button:         button,
+					},
+				},
+			}),
+		},
+		{
+			Header:  "Session Affinity",
+			Content: component.NewText("None"),
+		},
+		{
+			Header:  "External Traffic Policy",
+			Content: component.NewText("Cluster"),
+		},
+		{
+			Header:  "Health Check Node Port",
+			Content: component.NewText("31311"),
+		},
+		{
+			Header:  "Load Balancer Source Ranges",
+			Content: component.NewText("range1, range2"),
+		},
+	}...)
+}
+
+func Test_ServiceConfiguration(t *testing.T) {
+	validService := createServiceWithPort(corev1.ServicePort{Name: "http", Port: 8181, TargetPort: intstr.FromInt(8080), Protocol: corev1.ProtocolTCP})
+	validServiceWithNamedPort := createServiceWithPort(corev1.ServicePort{Name: "http", Port: 8181, TargetPort: intstr.FromString("pod-port"), Protocol: corev1.ProtocolTCP})
 
 	startPortForwardingButtonGroup := component.NewButtonGroup()
 	startPortForwardingButtonGroup.Config = component.ButtonGroupConfig{Buttons: []component.Button{
@@ -150,7 +198,7 @@ func Test_ServiceConfiguration(t *testing.T) {
 			"kind":       validService.Kind,
 			"name":       validService.Name,
 			"namespace":  validService.Namespace,
-			"port":       validService.Spec.Ports[0].Port,
+			"port":       validService.Spec.Ports[0].TargetPort.IntVal,
 		}),
 	}}
 
@@ -171,50 +219,12 @@ func Test_ServiceConfiguration(t *testing.T) {
 		{
 			name:    "port-forwarding-already-running",
 			service: &validService,
-			expected: component.NewSummary("Configuration", []component.SummarySection{
-				{
-					Header:  "Selectors",
-					Content: component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "app1")}),
-				},
-				{
-					Header:  "Type",
-					Content: component.NewText("ClusterIP"),
-				},
-				{
-					Header: "Ports",
-					Content: component.NewPorts([]component.Port{
-						{
-							Config: component.PortConfig{
-								Port:   int(validService.Spec.Ports[0].Port),
-								Protocol: "TCP",
-								State: component.PortForwardState{
-									IsForwardable: true,
-									IsForwarded:   true,
-									Port:          45275,
-									ID:            "an-id",
-								},
-								Button: stopPortForwardingButtonGroup,
-							},
-						},
-					}),
-				},
-				{
-					Header:  "Session Affinity",
-					Content: component.NewText("None"),
-				},
-				{
-					Header:  "External Traffic Policy",
-					Content: component.NewText("Cluster"),
-				},
-				{
-					Header:  "Health Check Node Port",
-					Content: component.NewText("31311"),
-				},
-				{
-					Header:  "Load Balancer Source Ranges",
-					Content: component.NewText("range1, range2"),
-				},
-			}...),
+			expected: createExpected("", component.PortForwardState{
+				IsForwardable: true,
+				IsForwarded:   true,
+				Port:          45275,
+				ID:            "an-id",
+			}, stopPortForwardingButtonGroup),
 			states: []portforward.State{
 				{
 					ID:        "an-id",
@@ -241,48 +251,17 @@ func Test_ServiceConfiguration(t *testing.T) {
 		{
 			name:    "port-forwarding-not-running",
 			service: &validService,
-			expected: component.NewSummary("Configuration", []component.SummarySection{
-				{
-					Header:  "Selectors",
-					Content: component.NewSelectors([]component.Selector{component.NewLabelSelector("app", "app1")}),
-				},
-				{
-					Header:  "Type",
-					Content: component.NewText("ClusterIP"),
-				},
-				{
-					Header: "Ports",
-					//Content: component.NewText("http 8080/TCP"),
-					Content: component.NewPorts([]component.Port{
-						{
-							Config: component.PortConfig{
-								Protocol: "TCP",
-								State: component.PortForwardState{
-									IsForwardable: true,
-								},
-								Port:   int(validService.Spec.Ports[0].Port),
-								Button: startPortForwardingButtonGroup,
-							},
-						},
-					}),
-				},
-				{
-					Header:  "Session Affinity",
-					Content: component.NewText("None"),
-				},
-				{
-					Header:  "External Traffic Policy",
-					Content: component.NewText("Cluster"),
-				},
-				{
-					Header:  "Health Check Node Port",
-					Content: component.NewText("31311"),
-				},
-				{
-					Header:  "Load Balancer Source Ranges",
-					Content: component.NewText("range1, range2"),
-				},
-			}...),
+			expected: createExpected("", component.PortForwardState{
+				IsForwardable: true,
+			}, startPortForwardingButtonGroup),
+			states: []portforward.State{},
+		},
+		{
+			name:    "port-forwarding-not-running-named-port",
+			service: &validServiceWithNamedPort,
+			expected: createExpected("pod-port", component.PortForwardState{
+				IsForwardable: true,
+			}, startPortForwardingButtonGroup),
 			states: []portforward.State{},
 		},
 		{
@@ -303,13 +282,36 @@ func Test_ServiceConfiguration(t *testing.T) {
 
 			ctx := context.Background()
 
+			pods := testutil.ToUnstructuredList(t, testutil.CreatePod("pod", func(pod *corev1.Pod) {
+				pod.Spec.Containers = []corev1.Container{
+					{
+						Ports: []corev1.ContainerPort{
+							{
+								Name:          "pod-port",
+								ContainerPort: 8080,
+							},
+						},
+					},
+				}
+			}))
+
+			labelSet := labels.Set(map[string]string{"app": "app1"})
+			podSelectorKey := store.Key{
+				Namespace:  "default",
+				APIVersion: "api/v1",
+				Kind:       "Pod",
+				Selector:   &labelSet,
+			}
+
+			tpo.objectStore.EXPECT().
+				List(gomock.Any(), podSelectorKey).
+				Return(pods, false, nil).AnyTimes()
+
 			podKey := store.Key{
 				Namespace:  "default",
 				APIVersion: "v1",
 				Kind:       "Pod",
 			}
-
-			pods := testutil.ToUnstructuredList(t, testutil.CreatePod("pod"))
 
 			tpo.objectStore.EXPECT().
 				List(gomock.Any(), podKey).
