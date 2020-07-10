@@ -27,7 +27,7 @@ func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opt
 		return nil, errors.New("nil list")
 	}
 
-	cols := component.NewTableCols("Name", "Labels", "Schedule", "Age", "")
+	cols := component.NewTableCols("Name", "Labels", "Schedule", "Age")
 	ot := NewObjectTable("CronJobs", "We couldn't find any cron jobs!", cols, opts.DashConfig.ObjectStore())
 
 	for _, c := range list.Items {
@@ -38,17 +38,6 @@ func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opt
 			return nil, err
 		}
 
-		buttonGroup := component.NewButtonGroup()
-		buttonGroup.AddButton(
-			component.NewButton("Trigger",
-				action.CreatePayload(octant.ActionOverviewCronjob, action.Payload{
-					"namespace":  c.Namespace,
-					"apiVersion": c.APIVersion,
-					"kind":       c.Kind,
-					"name":       c.Name,
-				}),
-			))
-
 		row["Name"] = nameLink
 
 		row["Labels"] = component.NewLabels(c.Labels)
@@ -58,7 +47,9 @@ func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opt
 		ts := c.CreationTimestamp.Time
 		row["Age"] = component.NewTimestamp(ts)
 
-		row[""] = buttonGroup
+		if err := addCronJobActions(c, row); err != nil {
+			return nil, err
+		}
 
 		if err := ot.AddRowForObject(ctx, &c, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
@@ -66,6 +57,51 @@ func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opt
 	}
 
 	return ot.ToComponent()
+}
+
+func addCronJobActions(c batchv1beta1.CronJob, row component.TableRow) error {
+	payload := action.Payload{
+		"namespace":  c.Namespace,
+		"apiVersion": c.APIVersion,
+		"kind":       c.Kind,
+		"name":       c.Name,
+	}
+
+	actions := []component.GridAction{
+		{
+			Name:         "Trigger",
+			ActionPath:   octant.ActionOverviewCronjob,
+			Payload:      payload,
+			Confirmation: nil,
+			Type:         component.GridActionDanger,
+		},
+	}
+
+	suspendAction := component.GridAction{
+		Name:         "Suspend",
+		ActionPath:   octant.ActionOverviewSuspendCronjob,
+		Payload:      payload,
+		Confirmation: nil,
+		Type:         component.GridActionDanger,
+	}
+	resumeAction := component.GridAction{
+		Name:         "Resume",
+		ActionPath:   octant.ActionOverviewResumeCronjob,
+		Payload:      payload,
+		Confirmation: nil,
+		Type:         component.GridActionDanger,
+	}
+	if c.Spec.Suspend != nil && *c.Spec.Suspend {
+		actions = append(actions, resumeAction)
+	} else {
+		actions = append(actions, suspendAction)
+	}
+
+	for _, action := range actions {
+		row.AddAction(action)
+	}
+
+	return nil
 }
 
 // CronJobHandler is a printFunc that prints a CronJob

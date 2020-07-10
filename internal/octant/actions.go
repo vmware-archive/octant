@@ -16,6 +16,8 @@ const (
 	ActionOverviewUncordon        = "action.octant.dev/uncordon"
 	ActionOverviewContainerEditor = "action.octant.dev/containerEditor"
 	ActionOverviewCronjob         = "action.octant.dev/cronJob"
+	ActionOverviewSuspendCronjob  = "action.octant.dev/suspendCronJob"
+	ActionOverviewResumeCronjob   = "action.octant.dev/resumeCronJob"
 	ActionOverviewServiceEditor   = "action.octant.dev/serviceEditor"
 	ActionDeploymentConfiguration = "action.octant.dev/deploymentConfiguration"
 	ActionUpdateObject            = "action.octant.dev/update"

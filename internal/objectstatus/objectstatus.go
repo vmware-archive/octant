@@ -28,15 +28,16 @@ type statusLookup map[statusKey]statusFunc
 
 var (
 	defaultStatusLookup = statusLookup{
-		{apiVersion: "apps/v1", kind: "DaemonSet"}:             daemonSet,
-		{apiVersion: "apps/v1", kind: "Deployment"}:            deploymentAppsV1,
-		{apiVersion: "apps/v1", kind: "ReplicaSet"}:            replicaSetAppsV1,
-		{apiVersion: "apps/v1", kind: "StatefulSet"}:           statefulSet,
-		{apiVersion: "batch/v1", kind: "Job"}:                  runJobStatus,
-		{apiVersion: "v1", kind: "Pod"}:                        pod,
-		{apiVersion: "v1", kind: "ReplicationController"}:      replicationController,
-		{apiVersion: "v1", kind: "Service"}:                    service,
-		{apiVersion: "extensions/v1beta1", kind: "Ingress"}:    runIngressStatus,
+		{apiVersion: "batch/v1beta1", kind: "CronJob"}:      cronJob,
+		{apiVersion: "apps/v1", kind: "DaemonSet"}:          daemonSet,
+		{apiVersion: "apps/v1", kind: "Deployment"}:         deploymentAppsV1,
+		{apiVersion: "apps/v1", kind: "ReplicaSet"}:         replicaSetAppsV1,
+		{apiVersion: "apps/v1", kind: "StatefulSet"}:        statefulSet,
+		{apiVersion: "batch/v1", kind: "Job"}:               runJobStatus,
+		{apiVersion: "v1", kind: "Pod"}:                     pod,
+		{apiVersion: "v1", kind: "ReplicationController"}:   replicationController,
+		{apiVersion: "v1", kind: "Service"}:                 service,
+		{apiVersion: "extensions/v1beta1", kind: "Ingress"}: runIngressStatus,
 	}
 )
 

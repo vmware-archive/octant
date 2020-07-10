@@ -8,10 +8,13 @@ package octant
 import (
 	"context"
 	"fmt"
+	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/rand"
 
 	"github.com/pkg/errors"
@@ -132,4 +135,192 @@ func createJobName(cronJobName string) string {
 	}
 
 	return newJobName
+}
+
+// CronJobSuspend pauses a cronjob
+type CronJobSuspend struct {
+	store         store.Store
+	clusterClient cluster.ClientInterface
+}
+
+var _ action.Dispatcher = (*CronJobSuspend)(nil)
+
+func NewCronJobSuspend(objectStore store.Store, clusterClient cluster.ClientInterface) *CronJobSuspend {
+	cronjob := &CronJobSuspend{
+		store:         objectStore,
+		clusterClient: clusterClient,
+	}
+	return cronjob
+}
+
+// Handle suspending cronjob
+func (c *CronJobSuspend) Handle(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
+	logger := log.From(ctx).With("actionName", c.ActionName())
+	logger.With("payload", payload).Infof("received action payload")
+
+	expiration := time.Now().Add(10 * time.Second)
+
+	key, err := store.KeyFromPayload(payload)
+	if err != nil {
+		return err
+	}
+
+	object, err := c.store.Get(ctx, key)
+	if err != nil {
+		return err
+	}
+
+	if object == nil {
+		return errors.New("object store cannot get cronjob")
+	}
+
+	cronjob := &batchv1beta1.CronJob{}
+	if err := kubernetes.FromUnstructured(object, cronjob); err != nil {
+		return err
+	}
+
+	if cronjob.Spec.Suspend != nil {
+		*cronjob.Spec.Suspend = true
+	}
+
+	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(cronjob)
+	if err != nil {
+		return nil
+	}
+
+	unstructuredCronJob := &unstructured.Unstructured{Object: m}
+
+	err = c.store.Update(ctx, key, func(u *unstructured.Unstructured) error {
+		if unstructuredCronJob.GetAPIVersion() != u.GetAPIVersion() {
+			return fmt.Errorf("object API version cannot be updated")
+		}
+		if unstructuredCronJob.GetKind() != u.GetKind() {
+			return fmt.Errorf("object kind cannot be updated")
+		}
+		if unstructuredCronJob.GetName() != u.GetName() {
+			return fmt.Errorf("object name cannot be updated")
+		}
+
+		delete(unstructuredCronJob.Object, "status")
+
+		for k := range unstructuredCronJob.Object {
+			u.Object[k] = unstructuredCronJob.Object[k]
+		}
+		return nil
+	})
+
+	if err != nil {
+		sendAlert(
+			alerter,
+			action.AlertTypeError,
+			fmt.Sprintf("update: %s", err.Error()),
+			&expiration,
+		)
+	}
+
+	successMessage := fmt.Sprintf("Suspending %s (%s) %s in %s",
+		unstructuredCronJob.GetKind(),
+		unstructuredCronJob.GetAPIVersion(),
+		unstructuredCronJob.GetName(),
+		unstructuredCronJob.GetNamespace())
+	sendAlert(alerter, action.AlertTypeInfo, successMessage, &expiration)
+	return nil
+}
+
+// ActionName returns the action name
+func (c *CronJobSuspend) ActionName() string {
+	return ActionOverviewSuspendCronjob
+}
+
+// CronJobResume resumes a cronjob
+type CronJobResume struct {
+	store         store.Store
+	clusterClient cluster.ClientInterface
+}
+
+var _ action.Dispatcher = (*CronJobResume)(nil)
+
+func NewCronJobResume(objectStore store.Store, clusterClient cluster.ClientInterface) *CronJobResume {
+	cronjob := &CronJobResume{
+		store:         objectStore,
+		clusterClient: clusterClient,
+	}
+	return cronjob
+}
+
+// Handle resuming cronjob
+func (c *CronJobResume) Handle(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
+	logger := log.From(ctx).With("actionName", c.ActionName())
+	logger.With("payload", payload).Infof("received action payload")
+
+	expiration := time.Now().Add(10 * time.Second)
+
+	key, err := store.KeyFromPayload(payload)
+	if err != nil {
+		return err
+	}
+
+	object, err := c.store.Get(ctx, key)
+	if err != nil {
+		return err
+	}
+
+	if object == nil {
+		return errors.New("object store cannot get cronjob")
+	}
+
+	cronjob := &batchv1beta1.CronJob{}
+	if err := kubernetes.FromUnstructured(object, cronjob); err != nil {
+		return err
+	}
+
+	*cronjob.Spec.Suspend = false
+
+	m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(cronjob)
+	if err != nil {
+		return nil
+	}
+
+	unstructuredCronJob := &unstructured.Unstructured{Object: m}
+
+	err = c.store.Update(ctx, key, func(u *unstructured.Unstructured) error {
+		if unstructuredCronJob.GetAPIVersion() != u.GetAPIVersion() {
+			return fmt.Errorf("object API version cannot be updated")
+		}
+		if unstructuredCronJob.GetKind() != u.GetKind() {
+			return fmt.Errorf("object kind cannot be updated")
+		}
+		if unstructuredCronJob.GetName() != u.GetName() {
+			return fmt.Errorf("object name cannot be updated")
+		}
+
+		delete(unstructuredCronJob.Object, "status")
+
+		for k := range unstructuredCronJob.Object {
+			u.Object[k] = unstructuredCronJob.Object[k]
+		}
+		return nil
+	})
+
+	if err != nil {
+		sendAlert(
+			alerter,
+			action.AlertTypeError,
+			fmt.Sprintf("update: %s", err.Error()),
+			&expiration,
+		)
+	}
+
+	successMessage := fmt.Sprintf("Resuming %s (%s) %s in %s",
+		unstructuredCronJob.GetKind(),
+		unstructuredCronJob.GetAPIVersion(),
+		unstructuredCronJob.GetName(),
+		unstructuredCronJob.GetNamespace())
+	sendAlert(alerter, action.AlertTypeInfo, successMessage, &expiration)
+	return nil
+}
+
+// ActionName returns the action name
+func (c *CronJobResume) ActionName() string {
+	return ActionOverviewResumeCronjob
 }

@@ -10,12 +10,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vmware-tanzu/octant/internal/octant"
-
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/vmware-tanzu/octant/internal/conversion"
+	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/internal/testutil"
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -69,18 +68,14 @@ func Test_CronJobListHandler(t *testing.T) {
 	got, err := CronJobListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
-	buttonGroup := component.NewButtonGroup()
-	buttonGroup.AddButton(
-		component.NewButton("Trigger",
-			action.CreatePayload(octant.ActionOverviewCronjob, action.Payload{
-				"namespace":  cronJob.Namespace,
-				"apiVersion": cronJob.APIVersion,
-				"kind":       cronJob.Kind,
-				"name":       cronJob.Name,
-			}),
-		))
+	payload := action.Payload{
+		"namespace":  cronJob.Namespace,
+		"apiVersion": cronJob.APIVersion,
+		"kind":       cronJob.Kind,
+		"name":       cronJob.Name,
+	}
 
-	cols := component.NewTableCols("Name", "Labels", "Schedule", "Age", "")
+	cols := component.NewTableCols("Name", "Labels", "Schedule", "Age")
 	expected := component.NewTable("CronJobs", "We couldn't find any cron jobs!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "cron", "/cron", func(l *component.Link) {
@@ -93,8 +88,21 @@ func Test_CronJobListHandler(t *testing.T) {
 		"Labels":   component.NewLabels(labels),
 		"Schedule": component.NewText("*/1 * * * *"),
 		"Age":      component.NewTimestamp(now),
-		"":         buttonGroup,
 		component.GridActionKey: gridActionsFactory([]component.GridAction{
+			{
+				Name:         "Trigger",
+				ActionPath:   octant.ActionOverviewCronjob,
+				Payload:      payload,
+				Confirmation: nil,
+				Type:         component.GridActionDanger,
+			},
+			{
+				Name:         "Suspend",
+				ActionPath:   octant.ActionOverviewSuspendCronjob,
+				Payload:      payload,
+				Confirmation: nil,
+				Type:         component.GridActionDanger,
+			},
 			buildObjectDeleteAction(t, cronJob),
 		}),
 	})

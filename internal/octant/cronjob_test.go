@@ -87,3 +87,63 @@ func Test_CronJobTrigger(t *testing.T) {
 
 	require.NoError(t, trigger.Handle(ctx, alerter, payload))
 }
+
+func Test_CronJobHandler(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	ctx := context.Background()
+
+	objectStore := fake.NewMockStore(controller)
+	alerter := actionFake.NewMockAlerter(controller)
+	kubernetesClient := clusterFake.NewMockKubernetesInterface(controller)
+	clusterClient := clusterFake.NewMockClientInterface(controller)
+	fakeClientset := testClient.NewSimpleClientset()
+
+	clusterClient.EXPECT().KubernetesClient().AnyTimes().Return(kubernetesClient, nil)
+	kubernetesClient.EXPECT().BatchV1().AnyTimes().Return(fakeClientset.BatchV1())
+
+	cronjob := testutil.CreateCronJob("cron")
+	key, err := store.KeyFromObject(cronjob)
+	require.NoError(t, err)
+
+	objectStore.EXPECT().
+		Get(ctx, gomock.Eq(key)).
+		Return(testutil.ToUnstructured(t, cronjob), nil).AnyTimes()
+
+	objectStore.EXPECT().
+		Update(gomock.Any(), key, gomock.Any()).Return(nil).AnyTimes()
+
+	alertType := action.AlertTypeInfo
+
+	alerter.EXPECT().
+		SendAlert(gomock.Any()).
+		DoAndReturn(func(alert action.Alert) {
+			assert.Equal(t, alertType, alert.Type)
+			assert.NotNil(t, alert.Expiration)
+		}).AnyTimes()
+
+	suspend := octant.NewCronJobSuspend(objectStore, clusterClient)
+	assert.Equal(t, octant.ActionOverviewSuspendCronjob, suspend.ActionName())
+
+	suspendPayload := action.CreatePayload(octant.ActionOverviewSuspendCronjob, map[string]interface{}{
+		"namespace":  key.Namespace,
+		"apiVersion": key.APIVersion,
+		"kind":       key.Kind,
+		"name":       key.Name,
+	})
+
+	require.NoError(t, suspend.Handle(ctx, alerter, suspendPayload))
+
+	resume := octant.NewCronJobResume(objectStore, clusterClient)
+	assert.Equal(t, octant.ActionOverviewResumeCronjob, resume.ActionName())
+
+	resumePayload := action.CreatePayload(octant.ActionOverviewSuspendCronjob, map[string]interface{}{
+		"namespace":  key.Namespace,
+		"apiVersion": key.APIVersion,
+		"kind":       key.Kind,
+		"name":       key.Name,
+	})
+
+	require.NoError(t, suspend.Handle(ctx, alerter, resumePayload))
+}
