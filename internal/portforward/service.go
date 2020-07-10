@@ -9,9 +9,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
-	appsv1 "k8s.io/api/apps/v1"
-	apiEquality "k8s.io/apimachinery/pkg/api/equality"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"sort"
 	"sync"
@@ -188,6 +185,36 @@ func (s *Service) FindPodSpecForService(ctx context.Context, apiVersion, kind, n
 	return &pod.Spec, nil
 }
 
+// resolvePod attempts to resolve a port forward request into an active pod we can
+// forward to. Service/deployments selectors will be resolved into pods and a random
+// one will be chosen. A pod has to be active.
+// Returns: pod name or error.
+func (s *Service) resolvePod(ctx context.Context, r CreateRequest) (string, error) {
+	o := s.opts.ObjectStore
+	if o == nil {
+		return "", errors.New("nil objectstore")
+	}
+
+	switch {
+	case r.APIVersion == "v1" && r.Kind == "Pod":
+		// Verify pod exists and status is running
+		if ok, err := s.verifyPod(ctx, r.Namespace, r.Name); !ok || err != nil {
+			return "", errors.Errorf("verifying pod %q: %v", r.Name, err)
+		}
+		return r.Name, nil
+	case r.APIVersion == "v1" && r.Kind == "Service":
+		pod, err := s.findPodForService(ctx, r.APIVersion, r.Kind, r.Namespace, r.Name)
+		if err != nil {
+			return "", err
+		}
+
+		return pod.Name, nil
+	default:
+		return "", errors.New("not implemented")
+	}
+
+}
+
 func (s *Service) findPodForService(ctx context.Context, apiVersion, kind, namespace, name string) (*corev1.Pod, error) {
 	o := s.opts.ObjectStore
 	if o == nil {
@@ -229,78 +256,10 @@ func (s *Service) findPodForService(ctx context.Context, apiVersion, kind, names
 			return nil, err
 		}
 
-		podSelector := &metav1.LabelSelector{
-			MatchLabels: pod.GetLabels(),
-		}
-
-		labelSelector := metav1.LabelSelector{
-			MatchLabels: service.Spec.Selector,
-		}
-
-		selector, err := metav1.LabelSelectorAsSelector(&labelSelector)
-		if err != nil {
-			return nil, err
-		}
-
-		if selector == labels.Nothing() || isEqualSelector(&labelSelector, podSelector) || selector.Matches(labels.Set(pod.Labels)) {
-			return pod, nil
-		}
+		return pod, nil
 	}
 
 	return nil, errors.New("no matching pod found for service")
-}
-
-// resolvePod attempts to resolve a port forward request into an active pod we can
-// forward to. Service/deployments selectors will be resolved into pods and a random
-// one will be chosen. A pod has to be active.
-// Returns: pod name or error.
-func (s *Service) resolvePod(ctx context.Context, r CreateRequest) (string, error) {
-	o := s.opts.ObjectStore
-	if o == nil {
-		return "", errors.New("nil objectstore")
-	}
-
-	switch {
-	case r.APIVersion == "v1" && r.Kind == "Pod":
-		// Verify pod exists and status is running
-		if ok, err := s.verifyPod(ctx, r.Namespace, r.Name); !ok || err != nil {
-			return "", errors.Errorf("verifying pod %q: %v", r.Name, err)
-		}
-		return r.Name, nil
-	case r.APIVersion == "v1" && r.Kind == "Service":
-		pod, err := s.findPodForService(ctx, r.APIVersion, r.Kind, r.Namespace, r.Name)
-		if err != nil {
-			return "", err
-		}
-
-		return pod.Name, nil
-	default:
-		return "", errors.New("not implemented")
-	}
-
-}
-
-var extraKeys = []string{
-	"statefulset.kubernetes.io/pod-name",
-	appsv1.DefaultDeploymentUniqueLabelKey,
-	"controller-revision-hash",
-	"pod-template-generation",
-}
-
-func isEqualSelector(s1, s2 *metav1.LabelSelector) bool {
-	if s1 == nil || s2 == nil {
-		return false
-	}
-
-	s1Copy := s1.DeepCopy()
-	s2Copy := s2.DeepCopy()
-
-	for _, key := range extraKeys {
-		delete(s1Copy.MatchLabels, key)
-		delete(s2Copy.MatchLabels, key)
-	}
-
-	return apiEquality.Semantic.DeepEqual(s1Copy, s2Copy)
 }
 
 // verifyPod returns true if the specified pod can be found and is in the running phase.
@@ -610,8 +569,6 @@ func (s *Service) StopForwarder(id string) {
 }
 
 type notFound struct{}
-
-var _ error = (*notFound)(nil)
 
 func (e *notFound) Error() string {
 	return "port forward not found"

@@ -17,7 +17,6 @@ import (
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -73,11 +72,11 @@ func ServiceHandler(ctx context.Context, service *corev1.Service, options Option
 		return nil, errors.Wrap(err, "print service configuration")
 	}
 
-	if err := sh.Status(options); err != nil {
+	if err := sh.Status(); err != nil {
 		return nil, errors.Wrap(err, "print service status")
 	}
 
-	if err := sh.Endpoints(ctx, service, options); err != nil {
+	if err := sh.Endpoints(ctx, options); err != nil {
 		return nil, errors.Wrap(err, "print service endpoints")
 	}
 
@@ -238,12 +237,12 @@ func (sc *ServiceConfiguration) mapNamedPodPortsToPortValue(ctx context.Context,
 		return nil, errors.New("nil objectstore")
 	}
 
-	lbls := labels.Set(service.Spec.Selector)
+	serviceSelectorLabels := labels.Set(service.Spec.Selector)
 	podKey := store.Key{
 		APIVersion: service.APIVersion,
 		Kind:       "Pod",
 		Namespace:  service.Namespace,
-		Selector:   &lbls,
+		Selector:   &serviceSelectorLabels,
 	}
 
 	podList, _, err := o.List(ctx, podKey)
@@ -511,16 +510,10 @@ func describeExternalIPs(service corev1.Service) string {
 	return strings.Join(externalIPs, ", ")
 }
 
-type serviceObject interface {
-	Config(ctx context.Context, options Options) error
-	Status(options Options) error
-	Endpoints(ctx context.Context, object runtime.Object, options Options) error
-}
-
 type serviceHandler struct {
 	service       *corev1.Service
 	configFunc    func(context.Context, *corev1.Service, Options) (*component.Summary, error)
-	statusFunc    func(*corev1.Service, Options) (*component.Summary, error)
+	statusFunc    func(*corev1.Service) (*component.Summary, error)
 	endpointsFunc func(context.Context, *corev1.Service, Options) (*component.Table, error)
 	object        *Object
 }
@@ -557,8 +550,8 @@ func defaultServiceConfig(ctx context.Context, service *corev1.Service, options 
 	return NewServiceConfiguration(service).Create(ctx, options)
 }
 
-func (s *serviceHandler) Status(options Options) error {
-	out, err := s.statusFunc(s.service, options)
+func (s *serviceHandler) Status() error {
+	out, err := s.statusFunc(s.service)
 	if err != nil {
 		return err
 	}
@@ -566,11 +559,11 @@ func (s *serviceHandler) Status(options Options) error {
 	return nil
 }
 
-func defaultServiceStatus(service *corev1.Service, options Options) (*component.Summary, error) {
+func defaultServiceStatus(service *corev1.Service) (*component.Summary, error) {
 	return createServiceSummaryStatus(service)
 }
 
-func (s *serviceHandler) Endpoints(ctx context.Context, service *corev1.Service, options Options) error {
+func (s *serviceHandler) Endpoints(ctx context.Context, options Options) error {
 	if s.service == nil {
 		return errors.New("can't display endpoints for nil service")
 	}
