@@ -54,6 +54,8 @@ jobs:
     name: Karma tests on ${{ matrix.platform }}
     steps:
       - uses: actions/setup-node@v2.0.0
+        with:
+          node-version: 10.x
       - uses: actions/checkout@v2
       - name: run_karma
         run: |
@@ -72,6 +74,8 @@ jobs:
     name: Build on ${{ matrix.platform }}
     steps:
       - uses: actions/setup-node@v2.0.0
+        with:
+          node-version: 10.x
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}

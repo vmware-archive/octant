@@ -26,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-node@v2.0.0
+        with:
+          node-version: 10.x
       - uses: actions/checkout@v2
       - name: eslint
         run: |

@@ -4,16 +4,18 @@
 
 :host-context(body) {
   --selection-color: var(--clr-color-neutral-400);
-  --tooltip-text-color: black;
   --flyout-background-color: var(--clr-color-neutral-50);
   --flyout-color: var(--clr-global-font-color);
+  --flyout-header-color: var(--clr-vertical-nav-item-color, #666666);
+  --flyout-header-active-color: var(--clr-vertical-nav-item-active-color, #666666);
 }
 
 :host-context(body.dark) {
   --selection-color: #324f62;
-  --tooltip-text-color: #EAEDEF;
   --flyout-background-color: #1b2a32;
   --flyout-color: #acbac3;
+  --flyout-header-color: #acbac3;
+  --flyout-header-active-color: #fff;
 }
 
 .nav-group.is-expanded .nav-link .nav-text {
@@ -90,6 +92,13 @@
     padding: 3px 8px !important;
     margin-left: -1px;
   }
+  a.flyout-header {
+    color: var(--flyout-header-color);
+    text-decoration: none;
+  }
+  a.flyout-header:active {
+    color: var(--flyout-header-active-color);
+  }
 
   .nav-divider {
     border-color: #575757;
@@ -123,28 +132,12 @@
     padding: 0px;
   }
 
-  .tooltip-override {
-    position: static;
-    display: block;
+  .flyout-empty {
+    border-width: 0px;
+
+    .flyout-header {
+      border-radius: 0px 3px 3px 0px;
+    }
   }
 
-  .tooltip-content-override:before {
-    border-left-color: var(--selection-color);
-    border-top-color: var(--selection-color);
-  }
-
-  .tooltip-content-override {
-    color: var(--tooltip-text-color);
-    background-color: var(--selection-color);
-    z-index: 503;
-    position: fixed;
-    bottom: unset;
-    left: unset;
-    margin: unset;
-    margin-top: -72px;
-    margin-left: 52px;
-    width: auto;
-    height: auto;
-    padding: 6px 9px;
-  }
 }
