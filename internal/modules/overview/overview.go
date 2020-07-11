@@ -276,6 +276,8 @@ func (co *Overview) ActionPaths() map[string]action.DispatcherFunc {
 		octant.NewCordon(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
 		octant.NewUncordon(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
 		octant.NewCronJobTrigger(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
+		octant.NewCronJobSuspend(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
+		octant.NewCronJobResume(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
 		octant.NewObjectUpdaterDispatcher(co.dashConfig.ObjectStore()),
 	}
 
