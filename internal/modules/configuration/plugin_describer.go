@@ -8,12 +8,12 @@ package configuration
 import (
 	"context"
 	"fmt"
-	"github.com/vmware-tanzu/octant/pkg/plugin"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware-tanzu/octant/internal/describer"
+	"github.com/vmware-tanzu/octant/pkg/plugin"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 

@@ -46,3 +46,15 @@ func (mr *MockModuleRegistrarMockRecorder) Register(arg0 interface{}) *gomock.Ca
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockModuleRegistrar)(nil).Register), arg0)
 }
+
+// Unregister mocks base method
+func (m *MockModuleRegistrar) Unregister(arg0 module.Module) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Unregister", arg0)
+}
+
+// Unregister indicates an expected call of Unregister
+func (mr *MockModuleRegistrarMockRecorder) Unregister(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unregister", reflect.TypeOf((*MockModuleRegistrar)(nil).Unregister), arg0)
+}

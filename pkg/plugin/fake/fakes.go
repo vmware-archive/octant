@@ -150,6 +150,21 @@ func (mr *MockManagerStoreMockRecorder) GetCommand(arg0 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommand", reflect.TypeOf((*MockManagerStore)(nil).GetCommand), arg0)
 }
 
+// GetJS mocks base method
+func (m *MockManagerStore) GetJS(arg0 string) (plugin.JSPlugin, bool) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetJS", arg0)
+	ret0, _ := ret[0].(plugin.JSPlugin)
+	ret1, _ := ret[1].(bool)
+	return ret0, ret1
+}
+
+// GetJS indicates an expected call of GetJS
+func (mr *MockManagerStoreMockRecorder) GetJS(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetJS", reflect.TypeOf((*MockManagerStore)(nil).GetJS), arg0)
+}
+
 // GetMetadata mocks base method
 func (m *MockManagerStore) GetMetadata(arg0 string) (*plugin.Metadata, error) {
 	m.ctrl.T.Helper()
@@ -180,6 +195,32 @@ func (mr *MockManagerStoreMockRecorder) GetService(arg0 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetService", reflect.TypeOf((*MockManagerStore)(nil).GetService), arg0)
 }
 
+// NamesJS mocks base method
+func (m *MockManagerStore) NamesJS() []string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NamesJS")
+	ret0, _ := ret[0].([]string)
+	return ret0
+}
+
+// NamesJS indicates an expected call of NamesJS
+func (mr *MockManagerStoreMockRecorder) NamesJS() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NamesJS", reflect.TypeOf((*MockManagerStore)(nil).NamesJS))
+}
+
+// RemoveJS mocks base method
+func (m *MockManagerStore) RemoveJS(arg0 string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "RemoveJS", arg0)
+}
+
+// RemoveJS indicates an expected call of RemoveJS
+func (mr *MockManagerStoreMockRecorder) RemoveJS(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveJS", reflect.TypeOf((*MockManagerStore)(nil).RemoveJS), arg0)
+}
+
 // Store mocks base method
 func (m *MockManagerStore) Store(arg0 string, arg1 plugin.Client, arg2 *plugin.Metadata, arg3 string) error {
 	m.ctrl.T.Helper()
@@ -192,6 +233,20 @@ func (m *MockManagerStore) Store(arg0 string, arg1 plugin.Client, arg2 *plugin.M
 func (mr *MockManagerStoreMockRecorder) Store(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockManagerStore)(nil).Store), arg0, arg1, arg2, arg3)
+}
+
+// StoreJS mocks base method
+func (m *MockManagerStore) StoreJS(arg0 string, arg1 plugin.JSPlugin) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StoreJS", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StoreJS indicates an expected call of StoreJS
+func (mr *MockManagerStoreMockRecorder) StoreJS(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreJS", reflect.TypeOf((*MockManagerStore)(nil).StoreJS), arg0, arg1)
 }
 
 // MockClientFactory is a mock of ClientFactory interface

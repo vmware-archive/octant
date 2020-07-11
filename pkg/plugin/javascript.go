@@ -31,78 +31,6 @@ func IsJavaScriptPlugin(pluginName string) bool {
 	return IsTypescriptPlugin(pluginName) || strings.Contains(pluginName, ".js")
 }
 
-type dashboardClient struct {
-	client *api.Client
-	vm     *goja.Runtime
-}
-
-func (d *dashboardClient) Get(c goja.FunctionCall) goja.Value {
-	var key store.Key
-	obj := c.Argument(0).ToObject(d.vm)
-	d.vm.ExportTo(obj, &key)
-
-	u, err := d.client.Get(context.TODO(), key)
-	if err != nil {
-		return d.vm.NewGoError(err)
-	}
-
-	return d.vm.ToValue(u.Object)
-}
-
-func (d *dashboardClient) List(c goja.FunctionCall) goja.Value {
-	var key store.Key
-	obj := c.Argument(0).ToObject(d.vm)
-	d.vm.ExportTo(obj, &key)
-
-	u, err := d.client.List(context.TODO(), key)
-	if err != nil {
-		return d.vm.NewGoError(err)
-	}
-
-	items := make([]interface{}, len(u.Items))
-	for i := 0; i < len(u.Items); i++ {
-		items[i] = u.Items[i].Object
-	}
-
-	return d.vm.ToValue(items)
-}
-
-/*
-func (d *dashboardClient) Create(c goja.FunctionCall) goja.Value {
-	var u *unstructured.Unstructured
-	obj := c.Argument(0).ToObject(d.vm)
-	d.vm.ExportTo(obj, &u)
-
-	err := d.client.Create(context.TODO(), u)
-	if err != nil {
-		return d.vm.NewGoError(err)
-	}
-
-	return goja.Undefined()
-}
-*/
-
-func (d *dashboardClient) Update(c goja.FunctionCall) goja.Value {
-	var u *unstructured.Unstructured
-	obj := c.Argument(0).ToObject(d.vm)
-	d.vm.ExportTo(obj, &u)
-
-	err := d.client.Update(context.TODO(), u)
-	if err != nil {
-		return d.vm.NewGoError(err)
-	}
-
-	return goja.Undefined()
-}
-
-func createClientObject(d *dashboardClient) goja.Value {
-	obj := d.vm.NewObject()
-	obj.Set("Get", d.Get)
-	obj.Set("List", d.List)
-	obj.Set("Update", d.Update)
-	return obj
-}
-
 type pluginRuntimeFactory func(context.Context, string, bool) (*goja.Runtime, *TSLoader, error)
 type pluginClassExtractor func(*goja.Runtime) (*goja.Object, error)
 type pluginMetadataExtractor func(*goja.Runtime, goja.Value) (*Metadata, error)
@@ -137,6 +65,8 @@ type jsPlugin struct {
 	mu     sync.Mutex
 	ctx    context.Context
 }
+
+var _ JSPlugin = (*jsPlugin)(nil)
 
 // NewJSPlugin creates a new instances of a JavaScript plugin.
 func NewJSPlugin(ctx context.Context, client *api.Client, pluginPath string, prf pluginRuntimeFactory, pce pluginClassExtractor, pme pluginMetadataExtractor) (*jsPlugin, error) {
@@ -186,8 +116,6 @@ func NewJSPlugin(ctx context.Context, client *api.Client, pluginPath string, prf
 
 	return plugin, nil
 }
-
-var _ JSPlugin = (*jsPlugin)(nil)
 
 // Close closes the dashboard client connection.
 func (t *jsPlugin) Close() {
@@ -250,6 +178,7 @@ func (t *jsPlugin) Content(ctx context.Context, contentPath string) (component.C
 	gc := dashboardClient{
 		client: t.client,
 		vm:     t.vm,
+		ctx:    t.ctx,
 	}
 
 	obj := t.vm.NewObject()
@@ -407,6 +336,7 @@ func (t *jsPlugin) HandleAction(ctx context.Context, actionPath string, payload 
 	gc := dashboardClient{
 		client: t.client,
 		vm:     t.vm,
+		ctx:    t.ctx,
 	}
 
 	var pl map[string]interface{}
@@ -499,6 +429,7 @@ func (t *jsPlugin) objectRequestCall(handlerName string, object runtime.Object) 
 	gc := dashboardClient{
 		client: t.client,
 		vm:     t.vm,
+		ctx:    t.ctx,
 	}
 
 	obj := t.vm.NewObject()
@@ -773,4 +704,77 @@ var exports = module.exports;
 	// This maps Caps fields to lower fields from struct to Object based on the JSON annotations.
 	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
 	return vm, tsl, nil
+}
+
+type dashboardClient struct {
+	client *api.Client
+	vm     *goja.Runtime
+	ctx    context.Context
+}
+
+func (d *dashboardClient) Get(c goja.FunctionCall) goja.Value {
+	var key store.Key
+	obj := c.Argument(0).ToObject(d.vm)
+	d.vm.ExportTo(obj, &key)
+
+	u, err := d.client.Get(d.ctx, key)
+	if err != nil {
+		return d.vm.NewGoError(err)
+	}
+
+	return d.vm.ToValue(u.Object)
+}
+
+func (d *dashboardClient) List(c goja.FunctionCall) goja.Value {
+	var key store.Key
+	obj := c.Argument(0).ToObject(d.vm)
+	d.vm.ExportTo(obj, &key)
+
+	u, err := d.client.List(d.ctx, key)
+	if err != nil {
+		return d.vm.NewGoError(err)
+	}
+
+	items := make([]interface{}, len(u.Items))
+	for i := 0; i < len(u.Items); i++ {
+		items[i] = u.Items[i].Object
+	}
+
+	return d.vm.ToValue(items)
+}
+
+/*
+func (d *dashboardClient) Create(c goja.FunctionCall) goja.Value {
+	var u *unstructured.Unstructured
+	obj := c.Argument(0).ToObject(d.vm)
+	d.vm.ExportTo(obj, &u)
+
+	err := d.client.Create(d.ctx, u)
+	if err != nil {
+		return d.vm.NewGoError(err)
+	}
+
+	return goja.Undefined()
+}
+*/
+
+func (d *dashboardClient) Update(c goja.FunctionCall) goja.Value {
+	var u *unstructured.Unstructured
+	obj := c.Argument(0).ToObject(d.vm)
+	d.vm.ExportTo(obj, &u)
+
+	err := d.client.Update(d.ctx, u)
+	if err != nil {
+		return d.vm.NewGoError(err)
+	}
+
+	return goja.Undefined()
+}
+
+func createClientObject(d *dashboardClient) goja.Value {
+	obj := d.vm.NewObject()
+	obj.Set("Get", d.Get)
+	obj.Set("List", d.List)
+	obj.Set("Update", d.Update)
+	return obj
 }
