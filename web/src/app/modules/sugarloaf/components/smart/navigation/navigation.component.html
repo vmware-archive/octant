@@ -19,34 +19,32 @@
           <clr-icon [attr.shape]="section.iconName | default:'home'" clrVerticalNavIcon></clr-icon>
         </a>
 
-        <ng-container *ngIf="shouldExpand(i)">
-          <div class="flyout nav-group-children"
-               [ngClass]= "{'flyout-empty' : !section.children?.length}"
-               (mouseleave)="flyoutIndex= -1; lastSelection= -1"
-               (document:mouseleave)="flyoutIndex= -1; lastSelection= -1"
+        <div class="flyout nav-group-children"
+              [ngClass]= "{'flyout-empty' : !section.children?.length}"
+              (mouseleave)="flyoutIndex= -1; lastSelection= -1"
+              (document:mouseleave)="flyoutIndex= -1; lastSelection= -1"
+        >
+          <a class="flyout-header"
+              (click)="openPopup(i)"
+              [routerLinkActiveOptions]="{exact: !section.children?.length}"
+              [routerLink]="formatPath(section.path)"
+              routerLinkActive="active"
           >
-            <a class="flyout-header"
-               (click)="openPopup(i)"
-               [routerLinkActiveOptions]="{exact: !section.children?.length}"
-               [routerLink]="formatPath(section.path)"
-               routerLinkActive="active"
-            >
-              {{ section.title }}
-            </a>
-            <clr-vertical-nav-group-children class="flyout-group">
-              <ng-container *ngFor="let category of section.children; trackBy: identifyNavigationItem">
-                <a [routerLink]="formatPath(category.path)"
-                   [routerLinkActiveOptions]="{exact: true}"
-                   routerLinkActive="active"
-                   class="flyout-item nav-link"
-                   (click)="setNavState(false, i)"
-                >
-                  {{ category.title }}
-                </a>
-              </ng-container>
-            </clr-vertical-nav-group-children>
-          </div>
-        </ng-container>
+            {{ section.title }}
+          </a>
+          <clr-vertical-nav-group-children class="flyout-group">
+            <ng-container *ngFor="let category of section.children; trackBy: identifyNavigationItem">
+              <a [routerLink]="formatPath(category.path)"
+                  [routerLinkActiveOptions]="{exact: true}"
+                  routerLinkActive="active"
+                  class="flyout-item nav-link"
+                  (click)="setNavState(false, i)"
+              >
+                {{ category.title }}
+              </a>
+            </ng-container>
+          </clr-vertical-nav-group-children>
+        </div>
       </ng-container>
       <!-- Expanded Navigation -->
       <ng-template #expanded>
