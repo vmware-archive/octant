@@ -327,15 +327,20 @@ func (m *Manager) watchJS(ctx context.Context) {
 	}
 
 	watcher, err := fsnotify.NewWatcher()
-	defer watcher.Close()
-
 	if err != nil {
 		logger.Errorf("initializing JavaScript plugin watcher: %w", err)
 		return
 	}
+	defer func() {
+		if err := watcher.Close(); err != nil {
+			logger.Errorf("error closing fsnotify watcher: %w", err)
+		}
+	}()
 
 	for _, dir := range dirs {
-		watcher.Add(dir)
+		if err := watcher.Add(dir); err != nil {
+			logger.Errorf("unable to add %s to JavaScript plugin watcher")
+		}
 	}
 
 	logger.Infof("watching for new JavaScript plugins in %q", dirs)
@@ -388,7 +393,7 @@ func (m *Manager) watchJS(ctx context.Context) {
 			}
 			logger.Errorf("error:", err)
 		case <-time.After(1 * time.Second):
-			for k, _ := range writeEvents {
+			for k := range writeEvents {
 				updatePlugin(k)
 			}
 			writeEvents = make(map[string]bool)
@@ -398,7 +403,7 @@ func (m *Manager) watchJS(ctx context.Context) {
 	}
 }
 
-func (m *Manager) unregisterJSPlugin(ctx context.Context, p JSPlugin) error {
+func (m *Manager) unregisterJSPlugin(_ context.Context, p JSPlugin) error {
 	p.Close()
 
 	metadata := p.Metadata()
@@ -420,21 +425,25 @@ func (m *Manager) unregisterJSPlugin(ctx context.Context, p JSPlugin) error {
 func (m *Manager) registerJSPlugin(ctx context.Context, pluginPath string, apiAddr string) error {
 	client, err := api.NewClient(apiAddr)
 	if err != nil {
-		client.Close()
+		if client != nil {
+			_ = client.Close()
+		}
 		return fmt.Errorf("javascript plugin dashboard client: %w", err)
 	}
 
-	plugin, err := NewJSPlugin(ctx, client, pluginPath, CreateRuntime, ExtractDefaultClass, ExtractMetadata)
+	jsPlugin, err := NewJSPlugin(ctx, client, pluginPath, CreateRuntime, ExtractDefaultClass, ExtractMetadata)
 	if err != nil {
-		client.Close()
+		if client != nil {
+			_ = client.Close()
+		}
 		return err
 	}
-	if err := m.store.StoreJS(pluginPath, plugin); err != nil {
-		client.Close()
+	if err := m.store.StoreJS(pluginPath, jsPlugin); err != nil {
+		_ = client.Close()
 		return err
 	}
 
-	metadata := plugin.Metadata()
+	metadata := jsPlugin.Metadata()
 
 	pluginLogger := log.From(ctx).With("plugin-name", pluginPath)
 	pluginLogger.With(
@@ -446,7 +455,7 @@ func (m *Manager) registerJSPlugin(ctx context.Context, pluginPath string, apiAd
 		actionPath := actionName
 		pluginLogger.With("action-path", actionPath).Infof("registering plugin action")
 		err := m.ActionRegistrar.Register(actionPath, pluginPath, func(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
-			return plugin.HandleAction(ctx, actionPath, payload)
+			return jsPlugin.HandleAction(ctx, actionPath, payload)
 		})
 
 		if err != nil {
@@ -457,7 +466,7 @@ func (m *Manager) registerJSPlugin(ctx context.Context, pluginPath string, apiAd
 	if metadata.Capabilities.IsModule {
 		pluginLogger.Infof("plugin supports navigation")
 
-		mp, err := NewModuleProxy(metadata.Name, metadata, plugin)
+		mp, err := NewModuleProxy(metadata.Name, metadata, jsPlugin)
 		if err != nil {
 			return fmt.Errorf("creating module proxy: %w", err)
 		}
@@ -510,7 +519,10 @@ func (m *Manager) Start(ctx context.Context) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	m.startJS(ctx, m.API.Addr())
+	if err := m.startJS(ctx, m.API.Addr()); err != nil {
+		return err
+	}
+
 	go m.watchJS(ctx)
 
 	for i := range m.configs {

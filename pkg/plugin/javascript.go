@@ -35,7 +35,7 @@ type pluginRuntimeFactory func(context.Context, string, bool) (*goja.Runtime, *T
 type pluginClassExtractor func(*goja.Runtime) (*goja.Object, error)
 type pluginMetadataExtractor func(*goja.Runtime, goja.Value) (*Metadata, error)
 
-// JSPlugin interface represents a JavaScrpit plugin.
+// JSPlugin interface represents a JavaScript plugin.
 type JSPlugin interface {
 	Close()
 	PluginPath() string
@@ -119,7 +119,7 @@ func NewJSPlugin(ctx context.Context, client *api.Client, pluginPath string, prf
 
 // Close closes the dashboard client connection.
 func (t *jsPlugin) Close() {
-	t.client.Close()
+	_ = t.client.Close()
 }
 
 // PluginPath returns the pluginPath.
@@ -127,7 +127,7 @@ func (t *jsPlugin) PluginPath() string {
 	return t.pluginPath
 }
 
-func (t *jsPlugin) Navigation(ctx context.Context) (navigation.Navigation, error) {
+func (t *jsPlugin) Navigation(_ context.Context) (navigation.Navigation, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -160,7 +160,7 @@ func (t *jsPlugin) Navigation(ctx context.Context) (navigation.Navigation, error
 	return nav, nil
 }
 
-func (t *jsPlugin) Content(ctx context.Context, contentPath string) (component.ContentResponse, error) {
+func (t *jsPlugin) Content(_ context.Context, contentPath string) (component.ContentResponse, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -182,8 +182,12 @@ func (t *jsPlugin) Content(ctx context.Context, contentPath string) (component.C
 	}
 
 	obj := t.vm.NewObject()
-	obj.Set("client", createClientObject(&gc))
-	obj.Set("contentPath", t.vm.ToValue(contentPath))
+	if err := obj.Set("client", createClientObject(&gc)); err != nil {
+		return cr, fmt.Errorf("unable to set client: %w", err)
+	}
+	if err := obj.Set("contentPath", t.vm.ToValue(contentPath)); err != nil {
+		return cr, fmt.Errorf("unable to set contentPath: %w", err)
+	}
 	s, err := cHandler(t.pluginClass, obj)
 	if err != nil {
 		return cr, fmt.Errorf("calling contentHandler: %w", err)
@@ -264,11 +268,11 @@ func (t *jsPlugin) Metadata() *Metadata {
 	return t.metadata
 }
 
-func (t *jsPlugin) Register(ctx context.Context, dashboardAPIAddress string) (Metadata, error) {
+func (t *jsPlugin) Register(_ context.Context, _ string) (Metadata, error) {
 	return Metadata{}, fmt.Errorf("not implemented")
 }
 
-func (t *jsPlugin) PrintTab(ctx context.Context, object runtime.Object) (TabResponse, error) {
+func (t *jsPlugin) PrintTab(_ context.Context, object runtime.Object) (TabResponse, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -306,7 +310,7 @@ func (t *jsPlugin) PrintTab(ctx context.Context, object runtime.Object) (TabResp
 	}, nil
 }
 
-func (t *jsPlugin) ObjectStatus(ctx context.Context, object runtime.Object) (ObjectStatusResponse, error) {
+func (t *jsPlugin) ObjectStatus(_ context.Context, object runtime.Object) (ObjectStatusResponse, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -314,12 +318,33 @@ func (t *jsPlugin) ObjectStatus(ctx context.Context, object runtime.Object) (Obj
 	if err != nil {
 		return ObjectStatusResponse{}, err
 	}
-	fmt.Println(osResponse)
 
-	return ObjectStatusResponse{}, nil
+	objStatus := osResponse.Get("objectStatus")
+	if objStatus == goja.Undefined() {
+		return ObjectStatusResponse{}, fmt.Errorf("objectStatus property not found")
+	}
+
+	mapObjStatus, ok := objStatus.Export().(map[string]interface{})
+	if !ok {
+		return ObjectStatusResponse{}, fmt.Errorf("unable to get objectStatus map")
+	}
+
+	jsonOS, err := json.Marshal(mapObjStatus)
+	if err != nil {
+		return ObjectStatusResponse{}, fmt.Errorf("unable to marshal podSummary: %w", err)
+	}
+
+	var podSummary component.PodSummary
+	if err := json.Unmarshal(jsonOS, &podSummary); err != nil {
+		return ObjectStatusResponse{}, fmt.Errorf("unable to unmarshal podSummary: %w", err)
+	}
+
+	return ObjectStatusResponse{
+		ObjectStatus: podSummary,
+	}, nil
 }
 
-func (t *jsPlugin) HandleAction(ctx context.Context, actionPath string, payload action.Payload) error {
+func (t *jsPlugin) HandleAction(_ context.Context, actionPath string, payload action.Payload) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -343,9 +368,15 @@ func (t *jsPlugin) HandleAction(ctx context.Context, actionPath string, payload 
 	pl = payload
 
 	obj := t.vm.NewObject()
-	obj.Set("client", createClientObject(&gc))
-	obj.Set("actionName", t.vm.ToValue(actionPath))
-	obj.Set("payload", pl)
+	if err := obj.Set("client", createClientObject(&gc)); err != nil {
+		return fmt.Errorf("unable to set client: %w", err)
+	}
+	if err := obj.Set("actionName", t.vm.ToValue(actionPath)); err != nil {
+		return fmt.Errorf("unable to set actionName: %w", err)
+	}
+	if err := obj.Set("payload", pl); err != nil {
+		return fmt.Errorf("unable to set payload: %w", err)
+	}
 
 	s, err := cHandler(t.pluginClass, obj)
 	if err != nil {
@@ -433,8 +464,12 @@ func (t *jsPlugin) objectRequestCall(handlerName string, object runtime.Object) 
 	}
 
 	obj := t.vm.NewObject()
-	obj.Set("client", createClientObject(&gc))
-	obj.Set("object", t.vm.ToValue(object))
+	if err := obj.Set("client", createClientObject(&gc)); err != nil {
+		return nil, fmt.Errorf("unable to set client: %w", err)
+	}
+	if err := obj.Set("object", t.vm.ToValue(object)); err != nil {
+		return nil, fmt.Errorf("unable to set object: %w", err)
+	}
 
 	s, err := cHandler(t.pluginClass, obj)
 	if err != nil {
@@ -563,7 +598,7 @@ func ExtractDefaultClass(vm *goja.Runtime) (*goja.Object, error) {
 	return pluginClass, nil
 }
 
-func extractActions(name string, i interface{}) ([]string, error) {
+func extractActions(i interface{}) ([]string, error) {
 	actions, ok := i.([]interface{})
 	if !ok {
 		return nil, fmt.Errorf("unable to parse ActionNames")
@@ -576,25 +611,25 @@ func extractActions(name string, i interface{}) ([]string, error) {
 }
 
 func extractGvk(name string, i interface{}) ([]schema.GroupVersionKind, error) {
-	gvks, ok := i.([]interface{})
+	GVKs, ok := i.([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("unable to parse GVK list for supportPrinterConfig")
+		return nil, fmt.Errorf("%s: unable to parse GVK list for supportPrinterConfig", name)
 	}
 	var gvkList []schema.GroupVersionKind
-	for i, ii := range gvks {
+	for i, ii := range GVKs {
 		mapGvk, ok := ii.(map[string]interface{})
 		if !ok {
-			return gvkList, fmt.Errorf("unable to parse GVK in position %d in supportPrinterConfig", i)
+			return gvkList, fmt.Errorf("%s: unable to parse GVK in position %d in supportPrinterConfig", name, i)
 		}
 		gvk := schema.GroupVersionKind{}
 
 		jsonGvk, err := json.Marshal(mapGvk)
 		if err != nil {
-			return gvkList, fmt.Errorf("unable to marshal json GVK in position %d in supportPrinterConfig", i)
+			return gvkList, fmt.Errorf("%s: unable to marshal json GVK in position %d in supportPrinterConfig", name, i)
 		}
 
 		if err := json.Unmarshal(jsonGvk, &gvk); err != nil {
-			return gvkList, fmt.Errorf("unablet to unmarshal json GVK in position %d in supportPrinterConfig", i)
+			return gvkList, fmt.Errorf("%s: unable to unmarshal json GVK in position %d in supportPrinterConfig", name, i)
 		}
 
 		gvkList = append(gvkList, gvk)
@@ -622,41 +657,41 @@ func ExtractMetadata(vm *goja.Runtime, pluginValue goja.Value) (*Metadata, error
 
 	metadata.Capabilities.IsModule = this.Get("isModule").ToBoolean()
 
-	if capab, ok := this.Get("capabilities").Export().(map[string]interface{}); ok {
-		for k, v := range capab {
+	if capability, ok := this.Get("capabilities").Export().(map[string]interface{}); ok {
+		for k, v := range capability {
 			switch k {
 			case "supportPrinterConfig":
-				gvks, err := extractGvk(k, v)
+				GVKs, err := extractGvk(k, v)
 				if err != nil {
 					return nil, fmt.Errorf("extractGvks: %w", err)
 				}
-				metadata.Capabilities.SupportsPrinterConfig = append(metadata.Capabilities.SupportsPrinterConfig, gvks...)
+				metadata.Capabilities.SupportsPrinterConfig = append(metadata.Capabilities.SupportsPrinterConfig, GVKs...)
 			case "supportPrinterStatus":
-				gvks, err := extractGvk(k, v)
+				GVKs, err := extractGvk(k, v)
 				if err != nil {
 					return nil, fmt.Errorf("extractGvks: %w", err)
 				}
-				metadata.Capabilities.SupportsPrinterStatus = append(metadata.Capabilities.SupportsPrinterStatus, gvks...)
+				metadata.Capabilities.SupportsPrinterStatus = append(metadata.Capabilities.SupportsPrinterStatus, GVKs...)
 			case "supportPrinterItems":
-				gvks, err := extractGvk(k, v)
+				GVKs, err := extractGvk(k, v)
 				if err != nil {
 					return nil, fmt.Errorf("extractGvks: %w", err)
 				}
-				metadata.Capabilities.SupportsPrinterItems = append(metadata.Capabilities.SupportsPrinterItems, gvks...)
+				metadata.Capabilities.SupportsPrinterItems = append(metadata.Capabilities.SupportsPrinterItems, GVKs...)
 			case "supportObjectStatus":
-				gvks, err := extractGvk(k, v)
+				GVKs, err := extractGvk(k, v)
 				if err != nil {
 					return nil, fmt.Errorf("extractGvks: %w", err)
 				}
-				metadata.Capabilities.SupportsObjectStatus = append(metadata.Capabilities.SupportsObjectStatus, gvks...)
+				metadata.Capabilities.SupportsObjectStatus = append(metadata.Capabilities.SupportsObjectStatus, GVKs...)
 			case "supportTab":
-				gvks, err := extractGvk(k, v)
+				GVKs, err := extractGvk(k, v)
 				if err != nil {
 					return nil, fmt.Errorf("extractGvks: %w", err)
 				}
-				metadata.Capabilities.SupportsTab = append(metadata.Capabilities.SupportsTab, gvks...)
+				metadata.Capabilities.SupportsTab = append(metadata.Capabilities.SupportsTab, GVKs...)
 			case "actionNames":
-				actions, err := extractActions(k, v)
+				actions, err := extractActions(v)
 				if err != nil {
 					return nil, fmt.Errorf("extractActions: %w", err)
 				}
@@ -715,7 +750,9 @@ type dashboardClient struct {
 func (d *dashboardClient) Get(c goja.FunctionCall) goja.Value {
 	var key store.Key
 	obj := c.Argument(0).ToObject(d.vm)
-	d.vm.ExportTo(obj, &key)
+	if err := d.vm.ExportTo(obj, &key); err != nil {
+		return d.vm.NewGoError(fmt.Errorf("dashboardClient.Get: %w", err))
+	}
 
 	u, err := d.client.Get(d.ctx, key)
 	if err != nil {
@@ -728,7 +765,9 @@ func (d *dashboardClient) Get(c goja.FunctionCall) goja.Value {
 func (d *dashboardClient) List(c goja.FunctionCall) goja.Value {
 	var key store.Key
 	obj := c.Argument(0).ToObject(d.vm)
-	d.vm.ExportTo(obj, &key)
+	if err := d.vm.ExportTo(obj, &key); err != nil {
+		return d.vm.NewGoError(fmt.Errorf("dashboardClient.List: %w", err))
+	}
 
 	u, err := d.client.List(d.ctx, key)
 	if err != nil {
@@ -761,7 +800,9 @@ func (d *dashboardClient) Create(c goja.FunctionCall) goja.Value {
 func (d *dashboardClient) Update(c goja.FunctionCall) goja.Value {
 	var u *unstructured.Unstructured
 	obj := c.Argument(0).ToObject(d.vm)
-	d.vm.ExportTo(obj, &u)
+	if err := d.vm.ExportTo(obj, &u); err != nil {
+		return d.vm.NewGoError(fmt.Errorf("dashboardClient.Update: %w", err))
+	}
 
 	err := d.client.Update(d.ctx, u)
 	if err != nil {
@@ -773,8 +814,14 @@ func (d *dashboardClient) Update(c goja.FunctionCall) goja.Value {
 
 func createClientObject(d *dashboardClient) goja.Value {
 	obj := d.vm.NewObject()
-	obj.Set("Get", d.Get)
-	obj.Set("List", d.List)
-	obj.Set("Update", d.Update)
+	if err := obj.Set("Get", d.Get); err != nil {
+		return d.vm.NewGoError(err)
+	}
+	if err := obj.Set("List", d.List); err != nil {
+		return d.vm.NewGoError(err)
+	}
+	if err := obj.Set("Update", d.Update); err != nil {
+		return d.vm.NewGoError(err)
+	}
 	return obj
 }

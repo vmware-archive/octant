@@ -105,16 +105,15 @@ func PrintRunner(store ManagerStore, ch chan<- PrintResponse) DefaultRunner {
 	return DefaultRunner{
 		RunFunc: func(ctx context.Context, name string, gvk schema.GroupVersionKind, object runtime.Object) error {
 			if IsJavaScriptPlugin(name) {
-				plugin, ok := store.GetJS(name)
+				jsPlugin, ok := store.GetJS(name)
 				if !ok {
 					return fmt.Errorf("plugin %s not found", name)
 				}
-				if !plugin.Metadata().Capabilities.HasPrinterSupport(gvk) {
-					fmt.Printf("ts plugin %s has no printer support for %s\n", name, gvk)
+				if !jsPlugin.Metadata().Capabilities.HasPrinterSupport(gvk) {
 					return nil
 				}
 
-				resp, err := plugin.Print(ctx, object)
+				resp, err := jsPlugin.Print(ctx, object)
 
 				if err != nil {
 					return err
@@ -166,16 +165,16 @@ func TabRunner(store ManagerStore, ch chan<- component.Tab) DefaultRunner {
 	runner := DefaultRunner{
 		RunFunc: func(ctx context.Context, name string, gvk schema.GroupVersionKind, object runtime.Object) error {
 			if IsJavaScriptPlugin(name) {
-				plugin, ok := store.GetJS(name)
+				jsPlugin, ok := store.GetJS(name)
 				if !ok {
 					return fmt.Errorf("plugin %s not found", name)
 				}
 
-				if !plugin.Metadata().Capabilities.HasTabSupport(gvk) {
+				if !jsPlugin.Metadata().Capabilities.HasTabSupport(gvk) {
 					return nil
 				}
 
-				resp, err := plugin.PrintTab(ctx, object)
+				resp, err := jsPlugin.PrintTab(ctx, object)
 				if err != nil {
 					return fmt.Errorf("printing tabResponse for plugin: %q: %w", name, err)
 				}
@@ -221,16 +220,16 @@ func ObjectStatusRunner(store ManagerStore, ch chan<- ObjectStatusResponse) Defa
 	return DefaultRunner{
 		RunFunc: func(ctx context.Context, name string, gvk schema.GroupVersionKind, object runtime.Object) error {
 			if IsJavaScriptPlugin(name) {
-				plugin, ok := store.GetJS(name)
+				jsPlugin, ok := store.GetJS(name)
 				if !ok {
 					return fmt.Errorf("plugin %s not found", name)
 				}
 
-				if !plugin.Metadata().Capabilities.HasObjectStatusSupport(gvk) {
+				if !jsPlugin.Metadata().Capabilities.HasObjectStatusSupport(gvk) {
 					return nil
 				}
 
-				resp, err := plugin.ObjectStatus(ctx, object)
+				resp, err := jsPlugin.ObjectStatus(ctx, object)
 				if err != nil {
 					return fmt.Errorf("printing objectStatus for plugin: %q: %w", name, err)
 				}
