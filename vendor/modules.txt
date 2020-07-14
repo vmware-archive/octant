@@ -162,7 +162,7 @@ github.com/pmezard/go-difflib/difflib
 github.com/sam-kamerer/go-plister
 # github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e
 github.com/skratchdot/open-golang/open
-# github.com/spf13/afero v1.3.1
+# github.com/spf13/afero v1.3.2
 github.com/spf13/afero
 github.com/spf13/afero/mem
 # github.com/spf13/cast v1.3.0
