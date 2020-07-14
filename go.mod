@@ -30,7 +30,7 @@ require (
 	github.com/nkovacs/streamquote v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e
-	github.com/spf13/afero v1.3.1
+	github.com/spf13/afero v1.3.2
 	github.com/spf13/cobra v0.0.7
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.6.1
