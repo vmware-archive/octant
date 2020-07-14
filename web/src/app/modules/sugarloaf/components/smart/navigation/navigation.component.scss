@@ -117,7 +117,7 @@
   }
 
   .flyout {
-    display: flex;
+    display: none;
     border-color: var(--navigation-border-color);
     border-style: solid;
     border-width: 0px 1px 1px 1px;
@@ -138,6 +138,14 @@
     .flyout-header {
       border-radius: 0px 3px 3px 0px;
     }
+  }
+
+  .item-selected:hover + .flyout {
+    display: flex;
+  }
+
+  .flyout:hover {
+    display: flex;
   }
 
 }
