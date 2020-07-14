@@ -132,6 +132,9 @@ type Service struct {
 	state    States
 }
 
+// Check that struct satisfies interface
+var _ PortForwarder = (*Service)(nil)
+
 // New creates an instance of Service.
 func New(ctx context.Context, opts ServiceOptions) *Service {
 	ctx, cancel := context.WithCancel(ctx)
@@ -174,15 +177,6 @@ func (s *Service) validateCreateRequest(r CreateRequest) error {
 	}
 
 	return nil
-}
-
-func (s *Service) FindPodSpecForService(ctx context.Context, apiVersion, kind, namespace, name string) (*corev1.PodSpec, error) {
-	pod, err := s.findPodForService(ctx, apiVersion, kind, namespace, name)
-	if err != nil {
-		return nil, err
-	}
-
-	return &pod.Spec, nil
 }
 
 // resolvePod attempts to resolve a port forward request into an active pod we can
@@ -242,7 +236,7 @@ func (s *Service) findPodForService(ctx context.Context, apiVersion, kind, names
 		APIVersion: apiVersion,
 		Kind:       "Pod",
 		Namespace:  namespace,
-		Selector: &lbls,
+		Selector:   &lbls,
 	}
 	list, _, err := o.List(ctx, key)
 	if err != nil {
@@ -299,7 +293,7 @@ func (s *Service) verifyPod(ctx context.Context, namespace, name string) (bool, 
 // createForwarder creates a port forwarder, forwards traffic, and blocks until
 // port state information is populated.
 // Returns forwarder id.
-func (s *Service) createForwarder(targetRequest CreateRequest, podRequest CreateRequest) (string, error) {
+func (s *Service) createForwarder(targetRequest, podRequest CreateRequest) (string, error) {
 	logger := s.logger.With("context", "PortForwardService.createForwarder")
 
 	if s.opts.PortForwarder == nil {
@@ -569,6 +563,9 @@ func (s *Service) StopForwarder(id string) {
 }
 
 type notFound struct{}
+
+// Check that struct satisfies interface
+var _ error = (*notFound)(nil)
 
 func (e *notFound) Error() string {
 	return "port forward not found"

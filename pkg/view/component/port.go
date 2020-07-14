@@ -26,12 +26,12 @@ type Port struct {
 
 // PortConfig is the contents of Port
 type PortConfig struct {
-	Port       int              `json:"port,omitempty"`
-	Protocol   string           `json:"protocol,omitempty"`
-	TargetPort int              `json:"targetPort,omitempty"`
-	TargetPortName string              `json:"targetPortName,omitempty"`
-	State      PortForwardState `json:"state,omitempty"`
-	Button     *ButtonGroup     `json:"buttonGroup,omitempty"`
+	Port           int              `json:"port,omitempty"`
+	Protocol       string           `json:"protocol,omitempty"`
+	TargetPort     int              `json:"targetPort,omitempty"`
+	TargetPortName string           `json:"targetPortName,omitempty"`
+	State          PortForwardState `json:"state,omitempty"`
+	Button         *ButtonGroup     `json:"buttonGroup,omitempty"`
 }
 
 // NewPort creates a port component
@@ -52,12 +52,12 @@ func NewServicePort(namespace, apiVersion, kind, name string, port int, protocol
 	return &Port{
 		base: newBase(typePort, nil),
 		Config: PortConfig{
-			Port:       port,
-			Protocol:   protocol,
-			TargetPort: targetPort,
+			Port:           port,
+			Protocol:       protocol,
+			TargetPort:     targetPort,
 			TargetPortName: targetPortName,
-			State:      pfs,
-			Button:     describeButton(namespace, apiVersion, kind, name, targetPort, pfs),
+			State:          pfs,
+			Button:         describeButton(namespace, apiVersion, kind, name, targetPort, pfs),
 		},
 	}
 }
