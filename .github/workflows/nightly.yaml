@@ -27,7 +27,7 @@ jobs:
           go run build.go go-install
           go generate ./web
       - name: Upload web/rice-box.go
-        uses: actions/upload-artifact@v2.0.1
+        uses: actions/upload-artifact@2.1.0
         with:
           name: rice-web
           path: web/rice-box.go
