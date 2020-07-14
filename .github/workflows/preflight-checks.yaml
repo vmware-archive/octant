@@ -99,7 +99,7 @@ jobs:
           go run build.go build
       - name: Upload web/rice-box.go
         if: matrix.platform == 'ubuntu-latest'
-        uses: actions/upload-artifact@v2.0.1
+        uses: actions/upload-artifact@2.1.0
         with:
           name: rice-web
           path: web/rice-box.go
