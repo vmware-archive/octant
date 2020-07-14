@@ -6,6 +6,7 @@
 package api
 
 import (
+	"fmt"
 	"net"
 	"net/http"
 
@@ -41,6 +42,23 @@ func serveWebsocket(manager ClientManager, dashConfig config.Dash, w http.Respon
 		logger := dashConfig.Logger()
 		logger.WithErr(err).Errorf("create websocket client")
 
+	}
+
+	go client.readPump()
+	go client.writePump()
+}
+
+// Create dummy websocketService and serveWebsocket
+func loadingWebsocketService(manager ClientManager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		serveLoadingWebsocket(manager, w, r)
+	}
+}
+
+func serveLoadingWebsocket(manager ClientManager, w http.ResponseWriter, r *http.Request) {
+	client, err := manager.TemporaryClientFromLoadingRequest(w, r)
+	if err != nil {
+		fmt.Println("create loading websocket client")
 	}
 
 	go client.readPump()

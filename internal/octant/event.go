@@ -49,6 +49,12 @@ const (
 	// EventTypeAlert is an alert event.
 	EventTypeAlert EventType = "event.octant.dev/alert"
 
+	// EventTypeRefresh is a refresh event.
+	EventTypeRefresh EventType = "event.octant.dev/refresh"
+
+	// EventTypeLoading is a loading event.
+	EventTypeLoading EventType = "event.octant.dev/loading"
+
 	// EventTypeTerminalFormat is a string with format specifiers to assist in generating
 	// a terminal event type.
 	EventTypeTerminalFormat string = "event.octant.dev/terminals/namespace/%s/pod/%s/container/%s"

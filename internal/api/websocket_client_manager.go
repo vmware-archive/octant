@@ -21,6 +21,7 @@ type ClientManager interface {
 	Run(ctx context.Context)
 	Clients() []*WebsocketClient
 	ClientFromRequest(dashConfig config.Dash, w http.ResponseWriter, r *http.Request) (*WebsocketClient, error)
+	TemporaryClientFromLoadingRequest(w http.ResponseWriter, r *http.Request) (*WebsocketClient, error)
 }
 
 type clientMeta struct {
@@ -106,6 +107,30 @@ func (m *WebsocketClientManager) ClientFromRequest(dashConfig config.Dash, w htt
 
 	ctx, cancel := context.WithCancel(m.ctx)
 	client := NewWebsocketClient(ctx, conn, m, dashConfig, m.actionDispatcher, clientID)
+	m.register <- &clientMeta{
+		cancelFunc: func() {
+			cancel()
+			m.unregister <- client
+		},
+		client: client,
+	}
+
+	return client, nil
+}
+
+func (m *WebsocketClientManager) TemporaryClientFromLoadingRequest(w http.ResponseWriter, r *http.Request) (*WebsocketClient, error) {
+	clientID, err := uuid.NewUUID()
+	if err != nil {
+		return nil, err
+	}
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, cancel := context.WithCancel(m.ctx)
+	client := NewTemporaryWebsocketClient(ctx, conn, m, m.actionDispatcher, clientID)
 	m.register <- &clientMeta{
 		cancelFunc: func() {
 			cancel()

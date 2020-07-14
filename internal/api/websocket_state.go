@@ -138,6 +138,27 @@ func NewWebsocketState(dashConfig config.Dash, actionDispatcher ActionDispatcher
 	return w
 }
 
+func NewTemporaryWebsocketState(actionDispatcher ActionDispatcher, wsClient OctantClient, options ...WebsocketStateOption) *WebsocketState {
+	w := &WebsocketState{
+		wsClient:           wsClient,
+		contentPathUpdates: make(map[string]octant.ContentPathUpdateFunc),
+		namespaceUpdates:   make(map[string]octant.NamespaceUpdateFunc),
+		actionDispatcher:   actionDispatcher,
+	}
+
+	for _, option := range options {
+		option(w)
+	}
+
+	if len(w.managers) < 1 {
+		w.managers = []StateManager{
+			NewLoadingManager(),
+		}
+	}
+
+	return w
+}
+
 // Start starts WebsocketState by starting all associated StateManagers.
 func (c *WebsocketState) Start(ctx context.Context) {
 	for i := range c.managers {

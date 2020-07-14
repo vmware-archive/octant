@@ -108,6 +108,7 @@ type API struct {
 	prefix           string
 	dashConfig       config.Dash
 	logger           log.Logger
+	wsClientManager  *WebsocketClientManager
 
 	modulePaths   map[string]module.Module
 	modules       []module.Module
@@ -117,7 +118,7 @@ type API struct {
 var _ Service = (*API)(nil)
 
 // New creates an instance of API.
-func New(ctx context.Context, prefix string, actionDispatcher ActionDispatcher, dashConfig config.Dash) *API {
+func New(ctx context.Context, prefix string, actionDispatcher ActionDispatcher, websocketClientManager *WebsocketClientManager, dashConfig config.Dash) *API {
 	logger := dashConfig.Logger().With("component", "api")
 	return &API{
 		ctx:              ctx,
@@ -127,6 +128,7 @@ func New(ctx context.Context, prefix string, actionDispatcher ActionDispatcher, 
 		dashConfig:       dashConfig,
 		logger:           logger,
 		forceUpdateCh:    make(chan bool, 1),
+		wsClientManager:  websocketClientManager,
 	}
 }
 
@@ -137,20 +139,67 @@ func (a *API) ForceUpdate() error {
 
 // Handler returns a HTTP handler for the service.
 func (a *API) Handler(ctx context.Context) (http.Handler, error) {
+	if a.dashConfig == nil {
+		return nil, fmt.Errorf("missing dashConfig")
+	}
 	router := mux.NewRouter()
 	router.Use(rebindHandler(ctx, acceptedHosts()))
 
 	s := router.PathPrefix(a.prefix).Subrouter()
 
-	manager := NewWebsocketClientManager(ctx, a.actionDispatcher)
-	go manager.Run(ctx)
-
-	s.Handle("/stream", websocketService(manager, a.dashConfig))
+	s.Handle("/stream", websocketService(a.wsClientManager, a.dashConfig))
 
 	s.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		a.logger.Errorf("api handler not found: %s", r.URL.String())
 		RespondWithError(w, http.StatusNotFound, "not found", a.logger)
 	})
+
+	return router, nil
+}
+
+// LoadingAPI is an API for startup modules to run
+type LoadingAPI struct {
+	ctx              context.Context
+	moduleManager    module.ManagerInterface
+	actionDispatcher ActionDispatcher
+	prefix           string
+	logger           log.Logger
+	wsClientManager  *WebsocketClientManager
+
+	modulePaths   map[string]module.Module
+	modules       []module.Module
+	forceUpdateCh chan bool
+}
+
+var _ Service = (*LoadingAPI)(nil)
+
+// NewLoadingAPI creates an instance of LoadingAPI
+func NewLoadingAPI(ctx context.Context, prefix string, actionDispatcher ActionDispatcher, websocketClientManager *WebsocketClientManager, logger log.Logger) *LoadingAPI {
+	logger = logger.With("component", "loading api")
+	return &LoadingAPI{
+		ctx:              ctx,
+		prefix:           prefix,
+		actionDispatcher: actionDispatcher,
+		modulePaths:      make(map[string]module.Module),
+		logger:           logger,
+		forceUpdateCh:    make(chan bool, 1),
+		wsClientManager:  websocketClientManager,
+	}
+}
+
+func (l *LoadingAPI) ForceUpdate() error {
+	l.forceUpdateCh <- true
+	return nil
+}
+
+// Handler contains a list of handlers
+func (l *LoadingAPI) Handler(ctx context.Context) (http.Handler, error) {
+	router := mux.NewRouter()
+	router.Use(rebindHandler(ctx, acceptedHosts()))
+
+	s := router.PathPrefix(l.prefix).Subrouter()
+
+	s.Handle("/stream", loadingWebsocketService(l.wsClientManager))
 
 	return router, nil
 }

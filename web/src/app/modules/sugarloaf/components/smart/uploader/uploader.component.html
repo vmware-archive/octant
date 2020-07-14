@@ -1,0 +1,25 @@
+<div *ngIf="showModal" class="modal">
+    <div class="modal-dialog modal-xl" role="dialog" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add a new kubeconfig</h3>
+            </div>
+            <div class="modal-body">
+                <form class="clr-form">
+                    <label for="config" class="clr-control-label">Upload a kubeconfig</label>
+                    <div class="clr-control-container" [ngClass]="{'clr-error': inputValue === ''}">
+                        <div class="clr-textarea-wrapper">
+                            <textarea id="config" name="config" [(ngModel)]="inputValue" (ngModelChange)="updateInput($event)" placeholder="Enter value here" class="clr-textarea"></textarea>
+                            <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                        </div>
+                        <span *ngIf="inputValue === ''" class="clr-subtext">This can't be empty</span>
+                    </div>
+                  </form>
+            </div>
+            <div class="modal-footer">
+                <button (click)="upload()" class="btn btn-primary" type="button" [disabled]="hasInput()">Upload</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div *ngIf="showModal" class="modal-backdrop" aria-hidden="true"></div>

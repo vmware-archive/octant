@@ -76,3 +76,18 @@ func (mr *MockClientManagerMockRecorder) Run(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockClientManager)(nil).Run), arg0)
 }
+
+// TemporaryClientFromLoadingRequest mocks base method
+func (m *MockClientManager) TemporaryClientFromLoadingRequest(arg0 http.ResponseWriter, arg1 *http.Request) (*api.WebsocketClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TemporaryClientFromLoadingRequest", arg0, arg1)
+	ret0, _ := ret[0].(*api.WebsocketClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TemporaryClientFromLoadingRequest indicates an expected call of TemporaryClientFromLoadingRequest
+func (mr *MockClientManagerMockRecorder) TemporaryClientFromLoadingRequest(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TemporaryClientFromLoadingRequest", reflect.TypeOf((*MockClientManager)(nil).TemporaryClientFromLoadingRequest), arg0, arg1)
+}

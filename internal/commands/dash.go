@@ -22,6 +22,7 @@ import (
 	"k8s.io/klog"
 
 	"github.com/vmware-tanzu/octant/internal/config"
+	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/dash"
 )
@@ -116,13 +117,14 @@ func newOctantCmd(version string, gitCommit string, buildTime string) *cobra.Com
 
 				_ = klogFlagSet.Parse(klogOpts)
 
-				runner, err := dash.NewRunner(ctx, logger, options)
+				ctxKubeConfig := ocontext.WithKubeConfigCh(ctx)
+				runner, err := dash.NewRunner(ctxKubeConfig, logger, options)
 				if err != nil {
 					golog.Printf("unable to start runner: %v", err)
 					os.Exit(1)
 				}
 
-				runner.Start(ctx, nil, shutdownCh)
+				runner.Start(ctxKubeConfig, logger, options, nil, shutdownCh)
 
 				runCh <- true
 			}()

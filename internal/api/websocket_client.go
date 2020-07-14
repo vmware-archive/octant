@@ -91,6 +91,33 @@ func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *Webs
 	return client
 }
 
+// NewTemporaryWebsocketClient creates an instance of WebsocketClient
+func NewTemporaryWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *WebsocketClientManager, actionDispatcher ActionDispatcher, id uuid.UUID) *WebsocketClient {
+	ctx, cancel := context.WithCancel(ctx)
+	logger := internalLog.From(ctx)
+
+	client := &WebsocketClient{
+		ctx:      ctx,
+		cancel:   cancel,
+		conn:     conn,
+		id:       id,
+		send:     make(chan octant.Event),
+		manager:  manager,
+		logger:   logger,
+		handlers: make(map[string][]octant.ClientRequestHandler),
+	}
+
+	state := NewTemporaryWebsocketState(actionDispatcher, client)
+	go state.Start(ctx)
+
+	client.state = state
+	for _, handler := range state.Handlers() {
+		client.RegisterHandler(handler)
+	}
+
+	return client
+}
+
 // ID returns the ID of the websocket client.
 func (c *WebsocketClient) ID() string {
 	return c.id.String()
