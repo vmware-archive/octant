@@ -248,8 +248,6 @@ github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+
 github.com/googleapis/gax-go/v2 v2.0.5/go.mod h1:DWXyrwAJ9X0FpwwEdw+IPEYBICEFu5mhpdKc/us6bOk=
 github.com/googleapis/gnostic v0.4.1 h1:DLJCy1n/vrD4HPjOvYcT8aYQXpPIzoRZONaYwyycI+I=
 github.com/googleapis/gnostic v0.4.1/go.mod h1:LRhVm6pbyptWbWbuZ38d1eyptfvIytN3ir6b65WBswg=
-github.com/googleapis/gnostic v0.4.2 h1:uh5EXM/5/ki6d0p/FoUxuiN8KHpo1w572UXQdB2MnTg=
-github.com/googleapis/gnostic v0.4.2/go.mod h1:P0d+GwDcJO8XvMi7aihGGl/CkivFa9JX/V/FfjyYzI0=
 github.com/googleapis/gnostic v0.5.0 h1:865n0h6VrFuooA56AIjgVoDi20TC6QFD/GXuoFAZWFM=
 github.com/googleapis/gnostic v0.5.0/go.mod h1:6U4PtQXGIEt/Z3h5MAT7FNofLnw9vXk2cUuW7uA/OeU=
 github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 h1:EGx4pi6eqNxGaHF6qqu48+N2wcFQ5qg5FXgOdqsJ5d8=
