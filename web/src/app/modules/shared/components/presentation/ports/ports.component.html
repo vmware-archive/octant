@@ -1,7 +1,9 @@
 <div class="ports">
   <div class="port" *ngFor="let port of v?.config.ports; trackBy: trackByFn">
     <div class="port-text">
-      {{ port.config.port }}/{{ port.config.protocol }}
+      <span>{{ port.config.port }}/{{ port.config.protocol }}</span>
+      <span *ngIf="port.config.targetPort > 0 && !port.config.targetPortName"> ⟹ {{port.config.targetPort}}</span>
+      <span *ngIf="port.config.targetPort > 0 && port.config.targetPortName"> ⟹ {{port.config.targetPortName}} ({{port.config.targetPort}})</span>
     </div>
     <div class="port-actions">
       <ng-container *ngIf="port.config.state?.isForwarded">

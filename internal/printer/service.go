@@ -8,13 +8,15 @@ package printer
 import (
 	"context"
 	"fmt"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"strings"
 
 	"github.com/vmware-tanzu/octant/internal/octant"
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -70,11 +72,11 @@ func ServiceHandler(ctx context.Context, service *corev1.Service, options Option
 		return nil, errors.Wrap(err, "print service configuration")
 	}
 
-	if err := sh.Status(options); err != nil {
+	if err := sh.Status(); err != nil {
 		return nil, errors.Wrap(err, "print service status")
 	}
 
-	if err := sh.Endpoints(ctx, service, options); err != nil {
+	if err := sh.Endpoints(ctx, options); err != nil {
 		return nil, errors.Wrap(err, "print service endpoints")
 	}
 
@@ -127,13 +129,13 @@ func (sc *ServiceConfiguration) Create(ctx context.Context, options Options) (*c
 		Content: component.NewText(string(service.Spec.Type)),
 	})
 
-	var ports []string
-	for _, port := range service.Spec.Ports {
-		ports = append(ports, describePort(port))
+	ports, err := sc.describePorts(ctx, options, service)
+	if err != nil {
+		return nil, errors.Wrap(err, "describing ports for service")
 	}
 	sections = append(sections, component.SummarySection{
 		Header:  "Ports",
-		Content: component.NewText(strings.Join(ports, ", ")),
+		Content: component.NewPorts(*ports),
 	})
 
 	sections = append(sections, component.SummarySection{
@@ -172,6 +174,99 @@ func (sc *ServiceConfiguration) Create(ctx context.Context, options Options) (*c
 	summary.AddAction(configEditor)
 
 	return summary, nil
+}
+
+func (sc *ServiceConfiguration) describePorts(ctx context.Context, options Options, service *corev1.Service) (*[]component.Port, error) {
+	portForwardService := options.DashConfig.PortForwarder()
+	states, err := portForwardService.FindTarget(service.Namespace, service.GroupVersionKind(), service.Name)
+	if err != nil {
+		if _, ok := err.(notFound); !ok {
+			return nil, errors.Wrap(err, "query port forward service for pod")
+		}
+	}
+
+	namedPodPortMap, err := sc.mapNamedPodPortsToPortValue(ctx, options, service)
+	if err != nil {
+		return nil, err
+	}
+
+	var ports []component.Port
+	for _, servicePort := range service.Spec.Ports {
+		pfs := component.PortForwardState{
+			IsForwardable: servicePort.Protocol == corev1.ProtocolTCP,
+		}
+
+		serviceTargetPortName := ""
+		var serviceTargetPort int
+
+		if servicePort.TargetPort.Type == intstr.String {
+			serviceTargetPortName = servicePort.TargetPort.StrVal
+			serviceTargetPort = (*namedPodPortMap)[serviceTargetPortName]
+		} else {
+			serviceTargetPort = int(servicePort.TargetPort.IntVal)
+		}
+
+		for _, state := range states {
+			for _, forwarded := range state.Ports {
+				if int(forwarded.Remote) == serviceTargetPort {
+					pfs.ID = state.ID
+					pfs.Port = int(forwarded.Local)
+					pfs.IsForwarded = true
+				}
+			}
+		}
+		ports = append(ports, *component.NewServicePort(
+			service.Namespace,
+			service.APIVersion,
+			service.Kind,
+			service.Name,
+			int(servicePort.Port),
+			string(servicePort.Protocol),
+			serviceTargetPort,
+			serviceTargetPortName,
+			pfs,
+		))
+	}
+
+	return &ports, nil
+}
+
+func (sc *ServiceConfiguration) mapNamedPodPortsToPortValue(ctx context.Context, options Options, service *corev1.Service) (*map[string]int, error) {
+	o := options.DashConfig.ObjectStore()
+	if o == nil {
+		return nil, errors.New("nil objectstore")
+	}
+
+	serviceSelectorLabels := labels.Set(service.Spec.Selector)
+	podKey := store.Key{
+		APIVersion: service.APIVersion,
+		Kind:       "Pod",
+		Namespace:  service.Namespace,
+		Selector:   &serviceSelectorLabels,
+	}
+
+	podList, _, err := o.List(ctx, podKey)
+	if err != nil {
+		return nil, err
+	}
+
+	namedPortMap := map[string]int{}
+
+	for i := range podList.Items {
+		pod := &corev1.Pod{}
+
+		if err := kubernetes.FromUnstructured(&podList.Items[i], pod); err != nil {
+			return nil, err
+		}
+
+		for _, container := range pod.Spec.Containers {
+			for _, port := range container.Ports {
+				namedPortMap[port.Name] = int(port.ContainerPort)
+			}
+		}
+	}
+
+	return &namedPortMap, nil
 }
 
 var (
@@ -415,16 +510,10 @@ func describeExternalIPs(service corev1.Service) string {
 	return strings.Join(externalIPs, ", ")
 }
 
-type serviceObject interface {
-	Config(ctx context.Context, options Options) error
-	Status(options Options) error
-	Endpoints(ctx context.Context, object runtime.Object, options Options) error
-}
-
 type serviceHandler struct {
 	service       *corev1.Service
 	configFunc    func(context.Context, *corev1.Service, Options) (*component.Summary, error)
-	statusFunc    func(*corev1.Service, Options) (*component.Summary, error)
+	statusFunc    func(*corev1.Service) (*component.Summary, error)
 	endpointsFunc func(context.Context, *corev1.Service, Options) (*component.Table, error)
 	object        *Object
 }
@@ -461,8 +550,8 @@ func defaultServiceConfig(ctx context.Context, service *corev1.Service, options 
 	return NewServiceConfiguration(service).Create(ctx, options)
 }
 
-func (s *serviceHandler) Status(options Options) error {
-	out, err := s.statusFunc(s.service, options)
+func (s *serviceHandler) Status() error {
+	out, err := s.statusFunc(s.service)
 	if err != nil {
 		return err
 	}
@@ -470,11 +559,11 @@ func (s *serviceHandler) Status(options Options) error {
 	return nil
 }
 
-func defaultServiceStatus(service *corev1.Service, options Options) (*component.Summary, error) {
+func defaultServiceStatus(service *corev1.Service) (*component.Summary, error) {
 	return createServiceSummaryStatus(service)
 }
 
-func (s *serviceHandler) Endpoints(ctx context.Context, service *corev1.Service, options Options) error {
+func (s *serviceHandler) Endpoints(ctx context.Context, options Options) error {
 	if s.service == nil {
 		return errors.New("can't display endpoints for nil service")
 	}
