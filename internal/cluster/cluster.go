@@ -15,6 +15,7 @@ import (
 
 	"github.com/pkg/errors"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/install"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -49,7 +50,7 @@ import (
 type ClientInterface interface {
 	DefaultNamespace() string
 	ResourceExists(schema.GroupVersionResource) bool
-	Resource(schema.GroupKind) (schema.GroupVersionResource, error)
+	Resource(schema.GroupKind) (schema.GroupVersionResource, bool, error)
 	ResetMapper()
 	KubernetesClient() (kubernetes.Interface, error)
 	DynamicClient() (dynamic.Interface, error)
@@ -167,13 +168,12 @@ func (c *Cluster) ResourceExists(gvr schema.GroupVersionResource) bool {
 	return err == nil
 }
 
-func (c *Cluster) Resource(gk schema.GroupKind) (schema.GroupVersionResource, error) {
+func (c *Cluster) Resource(gk schema.GroupKind) (schema.GroupVersionResource, bool, error) {
 	restMapping, err := c.restMapper.RESTMapping(gk)
 	if err != nil {
-		return schema.GroupVersionResource{}, err
+		return schema.GroupVersionResource{}, false, err
 	}
-
-	return restMapping.Resource, nil
+	return restMapping.Resource, restMapping.Scope.Name() == meta.RESTScopeNameNamespace, nil
 }
 
 func (c *Cluster) ResetMapper() {

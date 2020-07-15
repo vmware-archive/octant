@@ -279,6 +279,7 @@ func (co *Overview) ActionPaths() map[string]action.DispatcherFunc {
 		octant.NewCronJobSuspend(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
 		octant.NewCronJobResume(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
 		octant.NewObjectUpdaterDispatcher(co.dashConfig.ObjectStore()),
+		octant.NewApplyYaml(co.logger, co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
 	}
 
 	return dispatchers.ToActionPaths()

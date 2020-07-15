@@ -304,7 +304,7 @@ func (dc *DynamicCache) listFromDynamicClient(ctx context.Context, key store.Key
 		return nil, err
 	}
 
-	gvr, err := dc.client.Resource(key.GroupVersionKind().GroupKind())
+	gvr, _, err := dc.client.Resource(key.GroupVersionKind().GroupKind())
 	if err != nil {
 		return nil, err
 	}
@@ -402,7 +402,7 @@ func (dc *DynamicCache) getFromDynamicClient(ctx context.Context, key store.Key)
 		return nil, err
 	}
 
-	gvr, err := dc.client.Resource(key.GroupVersionKind().GroupKind())
+	gvr, _, err := dc.client.Resource(key.GroupVersionKind().GroupKind())
 	if err != nil {
 		return nil, err
 	}
@@ -477,7 +477,7 @@ func (dc *DynamicCache) Delete(ctx context.Context, key store.Key) error {
 		return err
 	}
 
-	gvr, err := dc.client.Resource(key.GroupVersionKind().GroupKind())
+	gvr, _, err := dc.client.Resource(key.GroupVersionKind().GroupKind())
 	if err != nil {
 		return err
 	}
@@ -551,7 +551,7 @@ func (dc *DynamicCache) Update(ctx context.Context, key store.Key, updater func(
 
 		gvk := object.GroupVersionKind()
 
-		gvr, err := dc.client.Resource(gvk.GroupKind())
+		gvr, _, err := dc.client.Resource(gvk.GroupKind())
 		if err != nil {
 			return err
 		}
@@ -608,7 +608,7 @@ func (dc *DynamicCache) Create(ctx context.Context, object *unstructured.Unstruc
 		return err
 	}
 
-	gvr, err := dc.client.Resource(key.GroupVersionKind().GroupKind())
+	gvr, _, err := dc.client.Resource(key.GroupVersionKind().GroupKind())
 	if err != nil {
 		return err
 	}

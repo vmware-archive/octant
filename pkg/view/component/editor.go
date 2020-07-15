@@ -23,9 +23,11 @@ type Editor struct {
 
 // CodeConfig is the contents of Value
 type EditorConfig struct {
-	Value    string            `json:"value"`
-	ReadOnly bool              `json:"readOnly"`
-	Metadata map[string]string `json:"metadata"`
+	Value        string            `json:"value"`
+	ReadOnly     bool              `json:"readOnly"`
+	Metadata     map[string]string `json:"metadata"`
+	SubmitAction string            `json:"submitAction"`
+	SubmitLabel  string            `json:"submitLabel"`
 }
 
 // NewCodeBlock creates a code component

@@ -8,11 +8,14 @@ package configuration
 import "github.com/vmware-tanzu/octant/internal/describer"
 
 var (
-	pluginDescriber = &PluginListDescriber{}
+	pluginDescriber = NewPluginListDescriber()
+
+	applyYamlDescriber = NewApplyYamlDescriber()
 
 	rootDescriber = describer.NewSection(
 		"/",
 		"Configuration",
 		pluginDescriber,
+		applyYamlDescriber,
 	)
 )

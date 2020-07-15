@@ -434,6 +434,8 @@ export interface EditorView extends View {
     language: string;
     readOnly: boolean;
     metadata: { [key: string]: string };
+    submitAction: string;
+    submitLabel: string;
   };
 }
 

@@ -118,7 +118,7 @@ func Test_ResourceAccess_HasAccess(t *testing.T) {
 				Version:  gvk.Version,
 				Resource: ts.resource,
 			}
-			client.EXPECT().Resource(gomock.Eq(gvk.GroupKind())).Return(podGVR, nil)
+			client.EXPECT().Resource(gomock.Eq(gvk.GroupKind())).Return(podGVR, true, nil)
 
 			if ts.expectErr {
 				require.Error(t, r.HasAccess(ctx, ts.key, "get"))

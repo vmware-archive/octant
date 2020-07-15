@@ -70,6 +70,20 @@
         width: 300px;
       }
     }
+
+    .header-actions {
+      .header-link {
+        margin: auto 0.8rem;
+        color: white;
+        line-height: 50px;
+        text-decoration: none;
+        outline: none;
+
+        clr-icon {
+          margin-right: 0.2rem;
+        }
+      }
+    }
   }
 
   .content-container {
