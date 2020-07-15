@@ -4,6 +4,7 @@
 
 :host-context(body) {
   --selection-color: var(--clr-color-neutral-400);
+  --selection-color-hover: #0072a3;
   --flyout-background-color: var(--clr-color-neutral-50);
   --flyout-color: var(--clr-global-font-color);
   --flyout-header-color: var(--clr-vertical-nav-item-color, #666666);
@@ -12,6 +13,7 @@
 
 :host-context(body.dark) {
   --selection-color: #324f62;
+  --selection-color-hover: #fff;
   --flyout-background-color: #1b2a32;
   --flyout-color: #acbac3;
   --flyout-header-color: #acbac3;
@@ -73,6 +75,10 @@
 
   .item-selected {
     background-color: var(--selection-color);
+  }
+
+  .item-selected:hover {
+    color: var(--selection-color-hover);
   }
 
   .navigation-items {
@@ -140,6 +146,9 @@
     }
   }
 
+  .nav-link.active {
+    background-color: var(--selection-color);
+  }
   .item-selected:hover + .flyout {
     display: flex;
   }
