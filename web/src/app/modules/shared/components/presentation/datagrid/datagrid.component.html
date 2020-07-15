@@ -8,7 +8,10 @@
       All content has been filtered out.
     </ng-template>
   </clr-dg-placeholder>
-  <clr-dg-column *ngFor="let columnName of columns; trackBy: identifyColumn">
+  <clr-dg-column *ngFor="let columnName of columns; trackBy: identifyColumn"
+                  [clrDgSortBy]="columnName === 'Age' ? timeStampComparator : null"
+                  [(clrDgSortOrder)]="sortOrder"
+  >
     {{ columnName }}
     <clr-dg-filter *ngIf="filters[columnName]">
       <app-content-filter 
@@ -20,7 +23,8 @@
       <app-content-text-filter 
         [column]="columnName"
       ></app-content-text-filter>
-    </clr-dg-filter>  </clr-dg-column>
+    </clr-dg-filter>
+  </clr-dg-column>
   <clr-dg-row
     *clrDgItems="let row of rowsWithMetadata; trackBy: identifyRow"
     [ngClass]="row | filterDeletedDatagridRow"

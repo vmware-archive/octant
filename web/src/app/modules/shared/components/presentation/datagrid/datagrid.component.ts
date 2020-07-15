@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import { ClrDatagridSortOrder } from '@clr/angular';
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import {
   Confirmation,
@@ -15,6 +16,7 @@ import {
 } from 'src/app/modules/shared/models/content';
 import trackByIndex from 'src/app/util/trackBy/trackByIndex';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
+import { TimestampComparator } from '../../../../../util/timestamp-comparator';
 import { ViewService } from '../../../services/view/view.service';
 import { ActionService } from '../../../services/action/action.service';
 
@@ -25,6 +27,8 @@ import { ActionService } from '../../../services/action/action.service';
 })
 export class DatagridComponent implements OnChanges {
   private v: TableView;
+  timeStampComparator = new TimestampComparator();
+  sortOrder: ClrDatagridSortOrder = ClrDatagridSortOrder.UNSORTED;
 
   @Input() set view(v: View) {
     this.v = v as TableView;
