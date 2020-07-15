@@ -115,7 +115,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: rice-web
-          path: web
+          path: web/rice-box.go
       - name: Change permissions of rice files
         # Uploading artifact changes file permissions
         run: |
