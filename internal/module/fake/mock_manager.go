@@ -133,6 +133,18 @@ func (mr *MockManagerInterfaceMockRecorder) SetNamespace(arg0 interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetNamespace", reflect.TypeOf((*MockManagerInterface)(nil).SetNamespace), arg0)
 }
 
+// Unregister mocks base method
+func (m *MockManagerInterface) Unregister(arg0 module.Module) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Unregister", arg0)
+}
+
+// Unregister indicates an expected call of Unregister
+func (mr *MockManagerInterfaceMockRecorder) Unregister(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unregister", reflect.TypeOf((*MockManagerInterface)(nil).Unregister), arg0)
+}
+
 // UpdateContext mocks base method
 func (m *MockManagerInterface) UpdateContext(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()

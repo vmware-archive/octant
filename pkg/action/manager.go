@@ -95,8 +95,13 @@ func (d Dispatchers) ToActionPaths() map[string]DispatcherFunc {
 type Manager struct {
 	logger log.Logger
 
-	// key: string, value: []DispatcherFunc
+	// key: string, value: []dispatcherEntry
 	dispatches sync.Map
+}
+
+type dispatcherEntry struct {
+	pluginName string
+	f          DispatcherFunc
 }
 
 // NewManager creates an instance of Manager.
@@ -108,24 +113,56 @@ func NewManager(logger log.Logger) *Manager {
 }
 
 // Register registers a dispatcher function to an action path.
-func (m *Manager) Register(actionPath string, actionFunc DispatcherFunc) error {
-	var af []DispatcherFunc
+func (m *Manager) Register(actionPath string, pluginName string, actionFunc DispatcherFunc) error {
+	var de []dispatcherEntry
 
 	val, ok := m.dispatches.Load(actionPath)
 	if !ok {
-		af = make([]DispatcherFunc, 1)
-		af[0] = actionFunc
+		de = make([]dispatcherEntry, 1)
+		de[0] = dispatcherEntry{pluginName, actionFunc}
 	} else {
-		af, ok = val.([]DispatcherFunc)
+		de, ok = val.([]dispatcherEntry)
 		if !ok {
 			return fmt.Errorf("failed to convert value to []DispatcherFunc")
 		}
-		af = append(af, actionFunc)
+		de = append(de, dispatcherEntry{pluginName, actionFunc})
 	}
 
-	m.dispatches.Store(actionPath, af)
-
+	m.dispatches.Store(actionPath, de)
 	return nil
+}
+
+// Unregister unregisters a dispatcher function to an action path.
+func (m *Manager) Unregister(actionPath string, pluginName string) {
+	var newEntries []dispatcherEntry
+	var saveNewEntries bool
+	m.dispatches.Range(func(k interface{}, v interface{}) bool {
+		key, ok := k.(string)
+		if !ok {
+			return false
+		}
+		if key == actionPath {
+			entries, ok := v.([]dispatcherEntry)
+			if !ok {
+				return false
+			}
+
+			for i, entry := range entries {
+				if entry.pluginName == pluginName {
+					newEntries = append(entries[:i], entries[i+1:]...)
+					saveNewEntries = true
+					return false
+				}
+			}
+
+			return false
+		}
+		return true
+	})
+
+	if saveNewEntries {
+		m.dispatches.Store(actionPath, newEntries)
+	}
 }
 
 // Dispatch dispatches a payload to a path.
@@ -133,12 +170,11 @@ func (m *Manager) Dispatch(ctx context.Context, alerter Alerter, actionPath stri
 	val, ok := m.dispatches.Load(actionPath)
 	if !ok {
 		return &NotFoundError{Path: actionPath}
-
 	}
 
-	actionFuncs := val.([]DispatcherFunc)
-	for _, f := range actionFuncs {
-		if err := f(ctx, alerter, payload); err != nil {
+	entries := val.([]dispatcherEntry)
+	for _, entry := range entries {
+		if err := entry.f(ctx, alerter, payload); err != nil {
 			m.logger.Errorf("actionFunc returned err: %s", err)
 		}
 	}

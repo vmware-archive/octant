@@ -10,10 +10,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware-tanzu/octant/internal/describer"
+	"github.com/vmware-tanzu/octant/pkg/plugin"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -33,9 +33,19 @@ func (d *PluginListDescriber) Describe(ctx context.Context, namespace string, op
 	list.Add(tbl)
 
 	for _, n := range pluginStore.ClientNames() {
-		metadata, err := pluginStore.GetMetadata(n)
-		if err != nil {
-			return component.EmptyContentResponse, errors.New("metadata is nil")
+		var metadata *plugin.Metadata
+		if plugin.IsJavaScriptPlugin(n) {
+			jsPlugin, ok := pluginStore.GetJS(n)
+			if !ok {
+				return component.EmptyContentResponse, fmt.Errorf("plugin %s not found", n)
+			}
+			metadata = jsPlugin.Metadata()
+		} else {
+			var err error
+			metadata, err = pluginStore.GetMetadata(n)
+			if err != nil {
+				return component.EmptyContentResponse, fmt.Errorf("metadata is nil")
+			}
 		}
 
 		var summaryItems []string

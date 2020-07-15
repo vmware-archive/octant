@@ -52,6 +52,12 @@ func (c Capabilities) HasTabSupport(gvk schema.GroupVersionKind) bool {
 	return includesGVK(gvk, c.SupportsTab)
 }
 
+// HasObjectStatusSupport returns true if this plugins supports creating object status for
+// the supplied GVK.
+func (c Capabilities) HasObjectStatusSupport(gvk schema.GroupVersionKind) bool {
+	return includesGVK(gvk, c.SupportsObjectStatus)
+}
+
 // PrintResponse is a printer response from the plugin. The dashboard
 // will use this to the add the plugin's output to a summary view.
 type PrintResponse struct {
@@ -67,7 +73,7 @@ type PrintResponse struct {
 // dashboard will use this to create an additional tab for
 // an object.
 type TabResponse struct {
-	Tab *component.Tab
+	Tab *component.Tab `json:"tab"`
 }
 
 // ObjectStatusResponse is an object status response from plugin.

@@ -149,6 +149,12 @@ func (s *GRPCService) ForceFrontendUpdate(ctx context.Context) error {
 	return s.FrontendProxy.ForceFrontendUpdate()
 }
 
+func NewGRPCServer(service Service) *grpcServer {
+	return &grpcServer{
+		service: service,
+	}
+}
+
 type grpcServer struct {
 	service Service
 }

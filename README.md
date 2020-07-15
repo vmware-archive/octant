@@ -21,7 +21,7 @@ Octant is a tool for developers to understand how applications run on a Kubernet
 * **Port Forward**
 
     Forward a local port to a running pod with a single button for debugging applications and even port forward multiple pods across namespaces.
- 
+
 * **Log Stream**
 
     View log streams of pod and container activity for troubleshooting or monitoring without holding multiple terminals open.

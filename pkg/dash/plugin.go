@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package dash
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
 
 	"github.com/vmware-tanzu/octant/internal/module"
 	"github.com/vmware-tanzu/octant/pkg/action"
@@ -17,19 +17,22 @@ import (
 func initPlugin(moduleManager module.ManagerInterface, actionManager *action.Manager, service api.Service) (*plugin.Manager, error) {
 	apiService, err := api.New(service)
 	if err != nil {
-		return nil, errors.Wrap(err, "create dashboard api")
+		return nil, fmt.Errorf("create dashboard api: %w", err)
 	}
 
 	m := plugin.NewManager(apiService, moduleManager, actionManager)
 
 	pluginList, err := plugin.AvailablePlugins(plugin.DefaultConfig)
 	if err != nil {
-		return nil, errors.Wrap(err, "finding available plugins")
+		return nil, fmt.Errorf("finding available plugins: %w", err)
 	}
 
 	for _, pluginPath := range pluginList {
+		if plugin.IsJavaScriptPlugin(pluginPath) {
+			continue
+		}
 		if err := m.Load(pluginPath); err != nil {
-			return nil, errors.Wrapf(err, "initialize plugin %q", pluginPath)
+			return nil, fmt.Errorf("initialize plugin %q: %w", pluginPath, err)
 		}
 
 	}
