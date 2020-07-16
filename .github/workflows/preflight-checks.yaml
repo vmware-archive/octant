@@ -103,6 +103,13 @@ jobs:
         with:
           name: rice-web
           path: web/rice-box.go
+      - name: Upload pkg/plugin/rice-box.go
+        if: matrix.platform == 'ubuntu-latest'
+        uses: actions/upload-artifact@2.1.0
+        with:
+          name: rice-plugin
+          path: pkg/plugin/rice-box.go
+
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
@@ -116,6 +123,11 @@ jobs:
         with:
           name: rice-web
           path: web/rice-box.go
+      - name: Download pkg/plugin/rice-box.go
+        uses: actions/download-artifact@v2
+        with:
+          name: rice-plugin
+          path: pkg/plugin/rice-box.go
       - name: Change permissions of rice files
         # Uploading artifact changes file permissions
         run: |
