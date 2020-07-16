@@ -26,11 +26,17 @@ jobs:
         run: |
           go run build.go go-install
           go generate ./web
+          go generate ./pkg/plugin/plugin.go
       - name: Upload web/rice-box.go
         uses: actions/upload-artifact@2.1.0
         with:
           name: rice-web
           path: web/rice-box.go
+      - name: Upload pkg/plugin/rice-box.go
+        uses: actions/upload-artifact@2.1.0
+        with:
+          name: rice-plugin
+          path: pkg/plugin/rice-box.go
 
   push:
     name: Run goreleaser
@@ -44,6 +50,11 @@ jobs:
         with:
           name: rice-web
           path: web
+      - name: Download pkg/plugin/rice-box.go
+        uses: actions/download-artifact@v2
+        with:
+          name: rice-plugin
+          path: pkg/plugin
       - name: Change permissions of rice files
         # Uploading artifact changes file permissions
         run: |

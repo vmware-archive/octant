@@ -92,6 +92,7 @@ jobs:
         run: |
           go run build.go go-install
           go generate ./web
+          go generate ./pkg/plugin/plugin.go
       - name: Build binary
         env:
           GOFLAGS: -mod=vendor
