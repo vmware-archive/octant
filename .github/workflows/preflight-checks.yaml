@@ -98,6 +98,7 @@ jobs:
           GOFLAGS: -mod=vendor
         run: |
           go run build.go build
+          ./build/octant version
       - name: Upload web/rice-box.go
         if: matrix.platform == 'ubuntu-latest'
         uses: actions/upload-artifact@2.1.0
@@ -123,12 +124,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: rice-web
-          path: web/rice-box.go
+          path: web
       - name: Download pkg/plugin/rice-box.go
         uses: actions/download-artifact@v2
         with:
           name: rice-plugin
-          path: pkg/plugin/rice-box.go
+          path: pkg/plugin
       - name: Change permissions of rice files
         # Uploading artifact changes file permissions
         run: |
