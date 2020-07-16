@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	rice "github.com/GeertJohan/go.rice"
 	"github.com/dop251/goja"
 )
 
@@ -15,7 +16,12 @@ type TSLoader struct {
 }
 
 func NewTSLoader(vm *goja.Runtime) (*TSLoader, error) {
-	if err := initTypescriptServices(vm); err != nil {
+	box, err := rice.FindBox("_files")
+	if err != nil {
+		return nil, err
+	}
+
+	if err := initTypescriptServices(box, vm); err != nil {
 		return nil, err
 	}
 	return &TSLoader{
@@ -116,7 +122,7 @@ func (t *TSLoader) TranspileAndRun(path string) (goja.Value, error) {
 	return t.vm.RunString(string(b[:]))
 }
 
-func initTypescriptServices(vm *goja.Runtime) error {
+func initTypescriptServices(box *rice.Box, vm *goja.Runtime) error {
 	f, err := box.Open("typescriptServices.js")
 	if err != nil {
 		return err

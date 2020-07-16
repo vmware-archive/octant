@@ -8,7 +8,6 @@ package plugin
 import (
 	"context"
 
-	rice "github.com/GeertJohan/go.rice"
 	"github.com/hashicorp/go-plugin"
 	"google.golang.org/grpc"
 
@@ -21,7 +20,6 @@ var (
 	pluginMap = map[string]plugin.Plugin{
 		Name: &ServicePlugin{},
 	}
-	box = rice.MustFindBox("_files")
 )
 
 // ServicePlugin is the GRPC plugin for Service.
