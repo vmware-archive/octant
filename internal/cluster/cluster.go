@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/install"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -27,6 +28,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/clientcmd"
+	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
 	internalLog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/util/strings"
@@ -90,6 +92,8 @@ func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restCl
 	logger := internalLog.From(ctx).With("component", "cluster client")
 
 	install.Install(scheme.Scheme)
+	admissionregistrationv1.AddToScheme(scheme.Scheme)
+	apiregistrationv1.AddToScheme(scheme.Scheme)
 
 	kubernetesClient, err := kubernetes.NewForConfig(restClient)
 	if err != nil {

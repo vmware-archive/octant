@@ -63,6 +63,12 @@ func AddHandlers(p Handler) error {
 		RoleBindingHandler,
 		RoleListHandler,
 		RoleHandler,
+		APIServiceHandler,
+		APIServiceListHandler,
+		MutatingWebhookConfigurationHandler,
+		MutatingWebhookConfigurationListHandler,
+		ValidatingWebhookConfigurationHandler,
+		ValidatingWebhookConfigurationListHandler,
 	}
 
 	for _, handler := range handlers {

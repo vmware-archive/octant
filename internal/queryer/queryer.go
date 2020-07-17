@@ -13,6 +13,7 @@ import (
 	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
@@ -28,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/discovery"
+	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
 	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
@@ -43,6 +45,9 @@ type Queryer interface {
 	Children(ctx context.Context, object *unstructured.Unstructured) (*unstructured.UnstructuredList, error)
 	Events(ctx context.Context, object metav1.Object) ([]*corev1.Event, error)
 	IngressesForService(ctx context.Context, service *corev1.Service) ([]*extv1beta1.Ingress, error)
+	APIServicesForService(ctx context.Context, service *corev1.Service) ([]*apiregistrationv1.APIService, error)
+	MutatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1.MutatingWebhookConfiguration, error)
+	ValidatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1.ValidatingWebhookConfiguration, error)
 	OwnerReference(ctx context.Context, object *unstructured.Unstructured) (bool, []*unstructured.Unstructured, error)
 	ScaleTarget(ctx context.Context, hpa *autoscalingv1.HorizontalPodAutoscaler) (map[string]interface{}, error)
 	PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error)
@@ -409,6 +414,99 @@ func (osq *ObjectStoreQueryer) listIngressBackends(ingress v1beta1.Ingress) []ex
 	}
 
 	return backends
+}
+
+func (osq *ObjectStoreQueryer) APIServicesForService(ctx context.Context, service *corev1.Service) ([]*apiregistrationv1.APIService, error) {
+	if service == nil {
+		return nil, errors.New("nil service")
+	}
+
+	key := store.KeyFromGroupVersionKind(gvk.APIService)
+	ul, _, err := osq.objectStore.List(ctx, key)
+	if err != nil {
+		return nil, errors.Wrap(err, "retrieving apiservices")
+	}
+
+	var results []*apiregistrationv1.APIService
+
+	for i := range ul.Items {
+		apiservice := &apiregistrationv1.APIService{}
+		err := kubernetes.FromUnstructured(&ul.Items[i], apiservice)
+		if err != nil {
+			return nil, errors.Wrap(err, "converting unstructured apiservice")
+		}
+		if apiservice.Spec.Service != nil &&
+			apiservice.Spec.Service.Namespace == service.Namespace &&
+			apiservice.Spec.Service.Name == service.Name {
+			results = append(results, apiservice)
+		}
+	}
+
+	return results, nil
+}
+
+func (osq *ObjectStoreQueryer) MutatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1.MutatingWebhookConfiguration, error) {
+	if service == nil {
+		return nil, errors.New("nil service")
+	}
+
+	key := store.KeyFromGroupVersionKind(gvk.MutatingWebhookConfiguration)
+	ul, _, err := osq.objectStore.List(ctx, key)
+	if err != nil {
+		return nil, errors.Wrap(err, "retrieving mutatingwebhookconfigurations")
+	}
+
+	var results []*admissionregistrationv1.MutatingWebhookConfiguration
+
+	for i := range ul.Items {
+		mutatingwebhookconfiguration := &admissionregistrationv1.MutatingWebhookConfiguration{}
+		err := kubernetes.FromUnstructured(&ul.Items[i], mutatingwebhookconfiguration)
+		if err != nil {
+			return nil, errors.Wrap(err, "converting unstructured mutatingwebhookconfiguration")
+		}
+		for _, mutatingwebhook := range mutatingwebhookconfiguration.Webhooks {
+			if mutatingwebhook.ClientConfig.Service != nil &&
+				mutatingwebhook.ClientConfig.Service.Namespace == service.Namespace &&
+				mutatingwebhook.ClientConfig.Service.Name == service.Name {
+				results = append(results, mutatingwebhookconfiguration)
+				break
+			}
+		}
+	}
+
+	return results, nil
+}
+
+func (osq *ObjectStoreQueryer) ValidatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1.ValidatingWebhookConfiguration, error) {
+	if service == nil {
+		return nil, errors.New("nil service")
+	}
+
+	key := store.KeyFromGroupVersionKind(gvk.ValidatingWebhookConfiguration)
+	ul, _, err := osq.objectStore.List(ctx, key)
+	if err != nil {
+		return nil, errors.Wrap(err, "retrieving validatingwebhookconfigurations")
+	}
+
+	var results []*admissionregistrationv1.ValidatingWebhookConfiguration
+
+	for i := range ul.Items {
+		validatingwebhookconfiguration := &admissionregistrationv1.ValidatingWebhookConfiguration{}
+		err := kubernetes.FromUnstructured(&ul.Items[i], validatingwebhookconfiguration)
+		if err != nil {
+			return nil, errors.Wrap(err, "converting unstructured validatingwebhookconfiguration")
+		}
+		for _, validatingwebhook := range validatingwebhookconfiguration.Webhooks {
+			if validatingwebhook.ClientConfig.Service != nil &&
+				validatingwebhook.ClientConfig.Service.Namespace == service.Namespace &&
+				validatingwebhook.ClientConfig.Service.Name == service.Name {
+				results = append(results, validatingwebhookconfiguration)
+				break
+			}
+		}
+	}
+
+	return results, nil
 }
 
 func (osq *ObjectStoreQueryer) OwnerReference(ctx context.Context, object *unstructured.Unstructured) (bool, []*unstructured.Unstructured, error) {

@@ -15,6 +15,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
@@ -24,6 +25,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes/scheme"
+	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
 	queryerFake "github.com/vmware-tanzu/octant/internal/queryer/fake"
 	"github.com/vmware-tanzu/octant/internal/testutil"
@@ -373,6 +376,295 @@ func TestCacheQueryer_IngressesForService(t *testing.T) {
 
 			ctx := context.Background()
 			got, err := oq.IngressesForService(ctx, tc.service)
+			if tc.isErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.expected, got)
+		})
+	}
+}
+
+func TestCacheQueryer_APIServicesForService(t *testing.T) {
+	service := &corev1.Service{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Service"},
+		ObjectMeta: metav1.ObjectMeta{Name: "service", Namespace: "default"},
+	}
+
+	apiService1 := &apiregistrationv1.APIService{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "apiregistration.k8s.io/v1", Kind: "APIService"},
+		ObjectMeta: metav1.ObjectMeta{Name: "v1.apps"},
+		Spec: apiregistrationv1.APIServiceSpec{
+			Service: &apiregistrationv1.ServiceReference{
+				Namespace: "default",
+				Name:      "service",
+			},
+		},
+	}
+
+	apiService2 := &apiregistrationv1.APIService{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "apiregistration.k8s.io/v1", Kind: "APIService"},
+		ObjectMeta: metav1.ObjectMeta{Name: "v3.apps"},
+	}
+
+	cases := []struct {
+		name     string
+		service  *corev1.Service
+		setup    func(t *testing.T, o *storeFake.MockStore)
+		expected []*apiregistrationv1.APIService
+		isErr    bool
+	}{
+		{
+			name:    "in general",
+			service: service,
+			setup: func(t *testing.T, o *storeFake.MockStore) {
+				apiServiceKey := store.Key{
+					APIVersion: "apiregistration.k8s.io/v1",
+					Kind:       "APIService",
+				}
+				o.EXPECT().
+					List(gomock.Any(), gomock.Eq(apiServiceKey)).
+					Return(testutil.ToUnstructuredList(t, apiService1, apiService2), false, nil)
+			},
+			expected: []*apiregistrationv1.APIService{
+				apiService1,
+			},
+		},
+		{
+			name:    "service is nil",
+			service: nil,
+			isErr:   true,
+		},
+		{
+			name:    "apiservices list failure",
+			service: service,
+			setup: func(t *testing.T, o *storeFake.MockStore) {
+				apiServiceKey := store.Key{
+					APIVersion: "apiregistration.k8s.io/v1",
+					Kind:       "APIService",
+				}
+				o.EXPECT().
+					List(gomock.Any(), gomock.Eq(apiServiceKey)).
+					Return(nil, false, errors.New("failed"))
+			},
+			isErr: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			o := storeFake.NewMockStore(controller)
+			discovery := queryerFake.NewMockDiscoveryInterface(controller)
+
+			if tc.setup != nil {
+				tc.setup(t, o)
+			}
+
+			oq := New(o, discovery)
+
+			ctx := context.Background()
+			got, err := oq.APIServicesForService(ctx, tc.service)
+			if tc.isErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.expected, got)
+		})
+	}
+}
+
+func TestCacheQueryer_MutatingWebhookConfigurationsForService(t *testing.T) {
+	service := &corev1.Service{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Service"},
+		ObjectMeta: metav1.ObjectMeta{Name: "service", Namespace: "default"},
+	}
+
+	mutatingWebhookConfiguration1 := &admissionregistrationv1.MutatingWebhookConfiguration{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "admissionregistration.k8s.io/v1", Kind: "MutatingWebhookConfiguration"},
+		ObjectMeta: metav1.ObjectMeta{Name: "mutatingWebhookConfiguration1"},
+		Webhooks: []admissionregistrationv1.MutatingWebhook{
+			{
+				ClientConfig: admissionregistrationv1.WebhookClientConfig{
+					Service: &admissionregistrationv1.ServiceReference{
+						Namespace: "default",
+						Name:      "service",
+					},
+				},
+			},
+		},
+	}
+
+	mutatingWebhookConfiguration2 := &admissionregistrationv1.MutatingWebhookConfiguration{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "admissionregistration.k8s.io/v1", Kind: "MutatingWebhookConfiguration"},
+		ObjectMeta: metav1.ObjectMeta{Name: "mutatingWebhookConfiguration2"},
+		Webhooks:   []admissionregistrationv1.MutatingWebhook{},
+	}
+
+	cases := []struct {
+		name     string
+		service  *corev1.Service
+		setup    func(t *testing.T, o *storeFake.MockStore)
+		expected []*admissionregistrationv1.MutatingWebhookConfiguration
+		isErr    bool
+	}{
+		{
+			name:    "in general",
+			service: service,
+			setup: func(t *testing.T, o *storeFake.MockStore) {
+				mutatingWebhookConfigurationKey := store.Key{
+					APIVersion: "admissionregistration.k8s.io/v1",
+					Kind:       "MutatingWebhookConfiguration",
+				}
+				o.EXPECT().
+					List(gomock.Any(), gomock.Eq(mutatingWebhookConfigurationKey)).
+					Return(testutil.ToUnstructuredList(t, mutatingWebhookConfiguration1, mutatingWebhookConfiguration2), false, nil)
+			},
+			expected: []*admissionregistrationv1.MutatingWebhookConfiguration{
+				mutatingWebhookConfiguration1,
+			},
+		},
+		{
+			name:    "service is nil",
+			service: nil,
+			isErr:   true,
+		},
+		{
+			name:    "mutatingwebhookconfigurations list failure",
+			service: service,
+			setup: func(t *testing.T, o *storeFake.MockStore) {
+				mutatingWebhookConfigurationKey := store.Key{
+					APIVersion: "admissionregistration.k8s.io/v1",
+					Kind:       "MutatingWebhookConfiguration",
+				}
+				o.EXPECT().
+					List(gomock.Any(), gomock.Eq(mutatingWebhookConfigurationKey)).
+					Return(nil, false, errors.New("failed"))
+			},
+			isErr: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			o := storeFake.NewMockStore(controller)
+			discovery := queryerFake.NewMockDiscoveryInterface(controller)
+
+			if tc.setup != nil {
+				tc.setup(t, o)
+			}
+
+			oq := New(o, discovery)
+
+			ctx := context.Background()
+			got, err := oq.MutatingWebhookConfigurationsForService(ctx, tc.service)
+			if tc.isErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.expected, got)
+		})
+	}
+}
+
+func TestCacheQueryer_ValidatingWebhookConfigurationsForService(t *testing.T) {
+	service := &corev1.Service{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Service"},
+		ObjectMeta: metav1.ObjectMeta{Name: "service", Namespace: "default"},
+	}
+
+	validatingWebhookConfiguration1 := &admissionregistrationv1.ValidatingWebhookConfiguration{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "admissionregistration.k8s.io/v1", Kind: "ValidatingWebhookConfiguration"},
+		ObjectMeta: metav1.ObjectMeta{Name: "validatingWebhookConfiguration1"},
+		Webhooks: []admissionregistrationv1.ValidatingWebhook{
+			{
+				ClientConfig: admissionregistrationv1.WebhookClientConfig{
+					Service: &admissionregistrationv1.ServiceReference{
+						Namespace: "default",
+						Name:      "service",
+					},
+				},
+			},
+		},
+	}
+
+	validatingWebhookConfiguration2 := &admissionregistrationv1.ValidatingWebhookConfiguration{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "admissionregistration.k8s.io/v1", Kind: "ValidatingWebhookConfiguration"},
+		ObjectMeta: metav1.ObjectMeta{Name: "validatingWebhookConfiguration2"},
+		Webhooks:   []admissionregistrationv1.ValidatingWebhook{},
+	}
+
+	cases := []struct {
+		name     string
+		service  *corev1.Service
+		setup    func(t *testing.T, o *storeFake.MockStore)
+		expected []*admissionregistrationv1.ValidatingWebhookConfiguration
+		isErr    bool
+	}{
+		{
+			name:    "in general",
+			service: service,
+			setup: func(t *testing.T, o *storeFake.MockStore) {
+				validatingWebhookConfigurationKey := store.Key{
+					APIVersion: "admissionregistration.k8s.io/v1",
+					Kind:       "ValidatingWebhookConfiguration",
+				}
+				o.EXPECT().
+					List(gomock.Any(), gomock.Eq(validatingWebhookConfigurationKey)).
+					Return(testutil.ToUnstructuredList(t, validatingWebhookConfiguration1, validatingWebhookConfiguration2), false, nil)
+			},
+			expected: []*admissionregistrationv1.ValidatingWebhookConfiguration{
+				validatingWebhookConfiguration1,
+			},
+		},
+		{
+			name:    "service is nil",
+			service: nil,
+			isErr:   true,
+		},
+		{
+			name:    "validatingwebhookconfigurations list failure",
+			service: service,
+			setup: func(t *testing.T, o *storeFake.MockStore) {
+				validatingWebhookConfigurationKey := store.Key{
+					APIVersion: "admissionregistration.k8s.io/v1",
+					Kind:       "ValidatingWebhookConfiguration",
+				}
+				o.EXPECT().
+					List(gomock.Any(), gomock.Eq(validatingWebhookConfigurationKey)).
+					Return(nil, false, errors.New("failed"))
+			},
+			isErr: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			o := storeFake.NewMockStore(controller)
+			discovery := queryerFake.NewMockDiscoveryInterface(controller)
+
+			if tc.setup != nil {
+				tc.setup(t, o)
+			}
+
+			oq := New(o, discovery)
+
+			ctx := context.Background()
+			got, err := oq.ValidatingWebhookConfigurationsForService(ctx, tc.service)
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -1221,4 +1513,9 @@ func genEventFor(t *testing.T, object runtime.Object, name string) *corev1.Event
 			Name:       u.GetName(),
 		},
 	}
+}
+
+func init() {
+	admissionregistrationv1.AddToScheme(scheme.Scheme)
+	apiregistrationv1.AddToScheme(scheme.Scheme)
 }

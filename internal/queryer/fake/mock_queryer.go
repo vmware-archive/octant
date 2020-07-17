@@ -9,11 +9,13 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1 "k8s.io/api/autoscaling/v1"
-	v10 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/admissionregistration/v1"
+	v10 "k8s.io/api/autoscaling/v1"
+	v11 "k8s.io/api/core/v1"
 	v1beta1 "k8s.io/api/extensions/v1beta1"
-	v11 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	v13 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 )
 
 // MockQueryer is a mock of Queryer interface
@@ -39,6 +41,21 @@ func (m *MockQueryer) EXPECT() *MockQueryerMockRecorder {
 	return m.recorder
 }
 
+// APIServicesForService mocks base method
+func (m *MockQueryer) APIServicesForService(arg0 context.Context, arg1 *v11.Service) ([]*v13.APIService, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "APIServicesForService", arg0, arg1)
+	ret0, _ := ret[0].([]*v13.APIService)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// APIServicesForService indicates an expected call of APIServicesForService
+func (mr *MockQueryerMockRecorder) APIServicesForService(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "APIServicesForService", reflect.TypeOf((*MockQueryer)(nil).APIServicesForService), arg0, arg1)
+}
+
 // Children mocks base method
 func (m *MockQueryer) Children(arg0 context.Context, arg1 *unstructured.Unstructured) (*unstructured.UnstructuredList, error) {
 	m.ctrl.T.Helper()
@@ -55,10 +72,10 @@ func (mr *MockQueryerMockRecorder) Children(arg0, arg1 interface{}) *gomock.Call
 }
 
 // ConfigMapsForPod mocks base method
-func (m *MockQueryer) ConfigMapsForPod(arg0 context.Context, arg1 *v10.Pod) ([]*v10.ConfigMap, error) {
+func (m *MockQueryer) ConfigMapsForPod(arg0 context.Context, arg1 *v11.Pod) ([]*v11.ConfigMap, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConfigMapsForPod", arg0, arg1)
-	ret0, _ := ret[0].([]*v10.ConfigMap)
+	ret0, _ := ret[0].([]*v11.ConfigMap)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -70,10 +87,10 @@ func (mr *MockQueryerMockRecorder) ConfigMapsForPod(arg0, arg1 interface{}) *gom
 }
 
 // Events mocks base method
-func (m *MockQueryer) Events(arg0 context.Context, arg1 v11.Object) ([]*v10.Event, error) {
+func (m *MockQueryer) Events(arg0 context.Context, arg1 v12.Object) ([]*v11.Event, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Events", arg0, arg1)
-	ret0, _ := ret[0].([]*v10.Event)
+	ret0, _ := ret[0].([]*v11.Event)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -85,7 +102,7 @@ func (mr *MockQueryerMockRecorder) Events(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // IngressesForService mocks base method
-func (m *MockQueryer) IngressesForService(arg0 context.Context, arg1 *v10.Service) ([]*v1beta1.Ingress, error) {
+func (m *MockQueryer) IngressesForService(arg0 context.Context, arg1 *v11.Service) ([]*v1beta1.Ingress, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IngressesForService", arg0, arg1)
 	ret0, _ := ret[0].([]*v1beta1.Ingress)
@@ -97,6 +114,21 @@ func (m *MockQueryer) IngressesForService(arg0 context.Context, arg1 *v10.Servic
 func (mr *MockQueryerMockRecorder) IngressesForService(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IngressesForService", reflect.TypeOf((*MockQueryer)(nil).IngressesForService), arg0, arg1)
+}
+
+// MutatingWebhookConfigurationsForService mocks base method
+func (m *MockQueryer) MutatingWebhookConfigurationsForService(arg0 context.Context, arg1 *v11.Service) ([]*v1.MutatingWebhookConfiguration, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MutatingWebhookConfigurationsForService", arg0, arg1)
+	ret0, _ := ret[0].([]*v1.MutatingWebhookConfiguration)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MutatingWebhookConfigurationsForService indicates an expected call of MutatingWebhookConfigurationsForService
+func (mr *MockQueryerMockRecorder) MutatingWebhookConfigurationsForService(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MutatingWebhookConfigurationsForService", reflect.TypeOf((*MockQueryer)(nil).MutatingWebhookConfigurationsForService), arg0, arg1)
 }
 
 // OwnerReference mocks base method
@@ -116,10 +148,10 @@ func (mr *MockQueryerMockRecorder) OwnerReference(arg0, arg1 interface{}) *gomoc
 }
 
 // PodsForService mocks base method
-func (m *MockQueryer) PodsForService(arg0 context.Context, arg1 *v10.Service) ([]*v10.Pod, error) {
+func (m *MockQueryer) PodsForService(arg0 context.Context, arg1 *v11.Service) ([]*v11.Pod, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PodsForService", arg0, arg1)
-	ret0, _ := ret[0].([]*v10.Pod)
+	ret0, _ := ret[0].([]*v11.Pod)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -131,7 +163,7 @@ func (mr *MockQueryerMockRecorder) PodsForService(arg0, arg1 interface{}) *gomoc
 }
 
 // ScaleTarget mocks base method
-func (m *MockQueryer) ScaleTarget(arg0 context.Context, arg1 *v1.HorizontalPodAutoscaler) (map[string]interface{}, error) {
+func (m *MockQueryer) ScaleTarget(arg0 context.Context, arg1 *v10.HorizontalPodAutoscaler) (map[string]interface{}, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScaleTarget", arg0, arg1)
 	ret0, _ := ret[0].(map[string]interface{})
@@ -146,10 +178,10 @@ func (mr *MockQueryerMockRecorder) ScaleTarget(arg0, arg1 interface{}) *gomock.C
 }
 
 // SecretsForPod mocks base method
-func (m *MockQueryer) SecretsForPod(arg0 context.Context, arg1 *v10.Pod) ([]*v10.Secret, error) {
+func (m *MockQueryer) SecretsForPod(arg0 context.Context, arg1 *v11.Pod) ([]*v11.Secret, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SecretsForPod", arg0, arg1)
-	ret0, _ := ret[0].([]*v10.Secret)
+	ret0, _ := ret[0].([]*v11.Secret)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -161,10 +193,10 @@ func (mr *MockQueryerMockRecorder) SecretsForPod(arg0, arg1 interface{}) *gomock
 }
 
 // ServiceAccountForPod mocks base method
-func (m *MockQueryer) ServiceAccountForPod(arg0 context.Context, arg1 *v10.Pod) (*v10.ServiceAccount, error) {
+func (m *MockQueryer) ServiceAccountForPod(arg0 context.Context, arg1 *v11.Pod) (*v11.ServiceAccount, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAccountForPod", arg0, arg1)
-	ret0, _ := ret[0].(*v10.ServiceAccount)
+	ret0, _ := ret[0].(*v11.ServiceAccount)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -191,10 +223,10 @@ func (mr *MockQueryerMockRecorder) ServicesForIngress(arg0, arg1 interface{}) *g
 }
 
 // ServicesForPod mocks base method
-func (m *MockQueryer) ServicesForPod(arg0 context.Context, arg1 *v10.Pod) ([]*v10.Service, error) {
+func (m *MockQueryer) ServicesForPod(arg0 context.Context, arg1 *v11.Pod) ([]*v11.Service, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServicesForPod", arg0, arg1)
-	ret0, _ := ret[0].([]*v10.Service)
+	ret0, _ := ret[0].([]*v11.Service)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -203,4 +235,19 @@ func (m *MockQueryer) ServicesForPod(arg0 context.Context, arg1 *v10.Pod) ([]*v1
 func (mr *MockQueryerMockRecorder) ServicesForPod(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServicesForPod", reflect.TypeOf((*MockQueryer)(nil).ServicesForPod), arg0, arg1)
+}
+
+// ValidatingWebhookConfigurationsForService mocks base method
+func (m *MockQueryer) ValidatingWebhookConfigurationsForService(arg0 context.Context, arg1 *v11.Service) ([]*v1.ValidatingWebhookConfiguration, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidatingWebhookConfigurationsForService", arg0, arg1)
+	ret0, _ := ret[0].([]*v1.ValidatingWebhookConfiguration)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ValidatingWebhookConfigurationsForService indicates an expected call of ValidatingWebhookConfigurationsForService
+func (mr *MockQueryerMockRecorder) ValidatingWebhookConfigurationsForService(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidatingWebhookConfigurationsForService", reflect.TypeOf((*MockQueryer)(nil).ValidatingWebhookConfigurationsForService), arg0, arg1)
 }

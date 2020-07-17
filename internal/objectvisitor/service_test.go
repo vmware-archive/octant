@@ -6,9 +6,11 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
 	"github.com/vmware-tanzu/octant/internal/objectvisitor"
 	"github.com/vmware-tanzu/octant/internal/objectvisitor/fake"
@@ -32,6 +34,18 @@ func TestService_Visit(t *testing.T) {
 	q.EXPECT().
 		PodsForService(gomock.Any(), object).
 		Return([]*corev1.Pod{pod}, nil)
+	apiService := testutil.CreateAPIService("v1", "apps")
+	q.EXPECT().
+		APIServicesForService(gomock.Any(), object).
+		Return([]*apiregistrationv1.APIService{apiService}, nil)
+	mutatingWebhookConfiguration := testutil.CreateMutatingWebhookConfiguration("mutatingWebhookConfiguration")
+	q.EXPECT().
+		MutatingWebhookConfigurationsForService(gomock.Any(), object).
+		Return([]*admissionregistrationv1.MutatingWebhookConfiguration{mutatingWebhookConfiguration}, nil)
+	validatingWebhookConfiguration := testutil.CreateValidatingWebhookConfiguration("validatingWebhookConfiguration")
+	q.EXPECT().
+		ValidatingWebhookConfigurationsForService(gomock.Any(), object).
+		Return([]*admissionregistrationv1.ValidatingWebhookConfiguration{validatingWebhookConfiguration}, nil)
 
 	handler := fake.NewMockObjectHandler(controller)
 	handler.EXPECT().
@@ -40,11 +54,20 @@ func TestService_Visit(t *testing.T) {
 	handler.EXPECT().
 		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, pod)).
 		Return(nil)
+	handler.EXPECT().
+		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, apiService)).
+		Return(nil)
+	handler.EXPECT().
+		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, mutatingWebhookConfiguration)).
+		Return(nil)
+	handler.EXPECT().
+		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, validatingWebhookConfiguration)).
+		Return(nil)
 
 	var visited []unstructured.Unstructured
 	visitor := fake.NewMockVisitor(controller)
 	visitor.EXPECT().
-		Visit(gomock.Any(), gomock.Any(), handler, true).
+		Visit(gomock.Any(), gomock.Any(), handler, gomock.Any()).
 		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool) error {
 			visited = append(visited, *object)
 			return nil
@@ -58,7 +81,7 @@ func TestService_Visit(t *testing.T) {
 	err := service.Visit(ctx, u, handler, visitor, true)
 
 	sortObjectsByName(t, visited)
-	expected := testutil.ToUnstructuredList(t, ingress, pod)
+	expected := testutil.ToUnstructuredList(t, ingress, mutatingWebhookConfiguration, pod, apiService, validatingWebhookConfiguration)
 	assert.Equal(t, expected.Items, visited)
 	assert.NoError(t, err)
 }

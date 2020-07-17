@@ -6,6 +6,9 @@ SPDX-License-Identifier: Apache-2.0
 package testutil
 
 import (
+	"fmt"
+
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -21,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 	metricsv1beta1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 
 	"github.com/vmware-tanzu/octant/internal/conversion"
@@ -435,6 +439,45 @@ func CreateRoleBinding(roleBindingName, roleName string, subjects []rbacv1.Subje
 			APIGroup: "rbac.authorization.k8s.io",
 		},
 		Subjects: subjects,
+	}
+}
+
+func CreateAPIService(version, group string) *apiregistrationv1.APIService {
+	return &apiregistrationv1.APIService{
+		TypeMeta:   genTypeMeta(gvk.APIService),
+		ObjectMeta: genObjectMeta(fmt.Sprintf("%s.%s", version, group), false),
+		Spec: apiregistrationv1.APIServiceSpec{
+			Version:              version,
+			VersionPriority:      100,
+			Group:                group,
+			GroupPriorityMinimum: 100,
+		},
+		Status: apiregistrationv1.APIServiceStatus{
+			Conditions: []apiregistrationv1.APIServiceCondition{
+				{
+					Type:    apiregistrationv1.Available,
+					Status:  apiregistrationv1.ConditionTrue,
+					Reason:  "Local",
+					Message: "Local APIServices are always available",
+				},
+			},
+		},
+	}
+}
+
+func CreateMutatingWebhookConfiguration(name string) *admissionregistrationv1.MutatingWebhookConfiguration {
+	return &admissionregistrationv1.MutatingWebhookConfiguration{
+		TypeMeta:   genTypeMeta(gvk.MutatingWebhookConfiguration),
+		ObjectMeta: genObjectMeta(name, false),
+		Webhooks:   []admissionregistrationv1.MutatingWebhook{},
+	}
+}
+
+func CreateValidatingWebhookConfiguration(name string) *admissionregistrationv1.ValidatingWebhookConfiguration {
+	return &admissionregistrationv1.ValidatingWebhookConfiguration{
+		TypeMeta:   genTypeMeta(gvk.ValidatingWebhookConfiguration),
+		ObjectMeta: genObjectMeta(name, false),
+		Webhooks:   []admissionregistrationv1.ValidatingWebhook{},
 	}
 }
 
