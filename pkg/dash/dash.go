@@ -101,7 +101,6 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 		if apiErr != nil {
 			return nil, fmt.Errorf("failed to start service api: %w", apiErr)
 		}
-		r.apiCreated = true
 	} else {
 		logger.Infof("no valid kube config found, initializing loading API")
 		// Initialize the API
@@ -183,7 +182,7 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, options Options
 	}
 	clusterClient, err := cluster.FromKubeConfig(ctx, options.KubeConfig, options.Context, options.Namespace, options.Namespaces, restConfigOptions)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to init cluster client: %w", err)
+		return nil, nil, fmt.Errorf("failed to init cluster client, does your kube config have a current-context set?: %w", err)
 	}
 
 	if options.EnableOpenCensus {
@@ -306,6 +305,7 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, options Options
 	apiService := api.New(ctx, api.PathPrefix, r.actionManager, r.websocketClientManager, dashConfig)
 	frontendProxy.FrontendUpdateController = apiService
 
+	r.apiCreated = true
 	return apiService, pluginDashboardService, nil
 }
 
@@ -558,7 +558,6 @@ func (r *Runner) startAPIService(ctx context.Context, logger log.Logger, options
 		}
 		r.dash.apiHandler = apiService
 		r.dash.pluginService = pluginService
-		r.apiCreated = true
 	}
 
 	hf := octant.NewHandlerFactory(
