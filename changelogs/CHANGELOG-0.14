@@ -1,3 +1,14 @@
+## v0.14.1
+#### 2020-07-20
+
+### Download
+ - https://github.com/vmware-tanzu/octant/releases/v0.14.1
+
+### Bug Fixes
+  * Fixed bug where `--kubeconfig` flag does not work (#1133, @wwitzel3)
+  * Fixed bug where the client would request from the loading API with a valid kubeconfig (#1133, @wwitzel3)
+  * Changed breadcrumb link color in dark mode (#1134, @mklanjsek)
+
 ## v0.14.0
 #### 2020-07-15
 
