@@ -1,2 +1,0 @@
-Fixed bug where the client would request from the loading API with a valid kubeconfig.
-Fixed bug where --kubeconfig flag would not work.
