@@ -12,11 +12,11 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/client-go/tools/clientcmd"
+
 	"github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/api/fake"
 	"github.com/vmware-tanzu/octant/internal/octant"
-
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 func Test_watchConfig(t *testing.T) {

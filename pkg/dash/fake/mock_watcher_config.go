@@ -6,8 +6,9 @@ package fake
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockWatcherConfig is a mock of WatcherConfig interface

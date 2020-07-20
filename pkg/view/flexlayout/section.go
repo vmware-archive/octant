@@ -7,6 +7,7 @@ package flexlayout
 
 import (
 	"github.com/pkg/errors"
+
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 

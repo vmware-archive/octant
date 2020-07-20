@@ -6,10 +6,12 @@ package fake
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
-	proto "github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
-	grpc "google.golang.org/grpc"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+	grpc "google.golang.org/grpc"
+
+	proto "github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
 )
 
 // MockDashboardClient is a mock of DashboardClient interface

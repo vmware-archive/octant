@@ -6,9 +6,11 @@ package fake
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
-	component "github.com/vmware-tanzu/octant/pkg/view/component"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+
+	component "github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // MockDetails is a mock of Details interface

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/internal/log"

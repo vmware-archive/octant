@@ -6,10 +6,12 @@ package fake
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
-	portforward "github.com/vmware-tanzu/octant/internal/portforward"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+	schema "k8s.io/apimachinery/pkg/runtime/schema"
+
+	portforward "github.com/vmware-tanzu/octant/internal/portforward"
 )
 
 // MockPortForwarder is a mock of PortForwarder interface

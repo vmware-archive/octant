@@ -5,9 +5,11 @@
 package fake
 
 import (
-	gomock "github.com/golang/mock/gomock"
-	kubeconfig "github.com/vmware-tanzu/octant/internal/kubeconfig"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+
+	kubeconfig "github.com/vmware-tanzu/octant/internal/kubeconfig"
 )
 
 // MockLoader is a mock of Loader interface

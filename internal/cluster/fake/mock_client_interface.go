@@ -5,14 +5,16 @@
 package fake
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
-	cluster "github.com/vmware-tanzu/octant/internal/cluster"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	discovery "k8s.io/client-go/discovery"
 	dynamic "k8s.io/client-go/dynamic"
 	kubernetes "k8s.io/client-go/kubernetes"
 	rest "k8s.io/client-go/rest"
-	reflect "reflect"
+
+	cluster "github.com/vmware-tanzu/octant/internal/cluster"
 )
 
 // MockClientInterface is a mock of ClientInterface interface

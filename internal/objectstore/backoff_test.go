@@ -1,9 +1,10 @@
 package objectstore
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
@@ -24,7 +25,7 @@ func Test_wait(t *testing.T) {
 
 	assert.True(t, d > time.Second)
 	d = entry.wait()
-	assert.True(t, d > (time.Second * 2))
+	assert.True(t, d > (time.Second*2))
 	d = entry.wait()
-	assert.True(t, d > (time.Second * 4))
+	assert.True(t, d > (time.Second*4))
 }

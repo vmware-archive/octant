@@ -6,9 +6,10 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	clusterfake "github.com/vmware-tanzu/octant/internal/cluster/fake"
 	"github.com/vmware-tanzu/octant/pkg/store"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func Test_accessCache(t *testing.T) {

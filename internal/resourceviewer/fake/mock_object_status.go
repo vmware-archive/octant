@@ -6,10 +6,12 @@ package fake
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
-	objectstatus "github.com/vmware-tanzu/octant/internal/objectstatus"
-	runtime "k8s.io/apimachinery/pkg/runtime"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+	runtime "k8s.io/apimachinery/pkg/runtime"
+
+	objectstatus "github.com/vmware-tanzu/octant/internal/objectstatus"
 )
 
 // MockObjectStatus is a mock of ObjectStatus interface

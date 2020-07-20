@@ -6,10 +6,12 @@ package fake
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
-	objectvisitor "github.com/vmware-tanzu/octant/internal/objectvisitor"
-	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
+	objectvisitor "github.com/vmware-tanzu/octant/internal/objectvisitor"
 )
 
 // MockDefaultTypedVisitor is a mock of DefaultTypedVisitor interface

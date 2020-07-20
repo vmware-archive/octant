@@ -105,6 +105,7 @@ func main() {
 			Short: "update generated artifacts",
 			Run: func(cmd *cobra.Command, args []string) {
 				generate()
+				goFmt(true)
 			},
 		},
 		&cobra.Command{
@@ -112,6 +113,13 @@ func main() {
 			Short: "lint server code",
 			Run: func(cmd *cobra.Command, args []string) {
 				vet()
+			},
+		},
+		&cobra.Command{
+			Use:   "fmt",
+			Short: "format server code",
+			Run: func(cmd *cobra.Command, args []string) {
+				goFmt(true)
 			},
 		},
 		&cobra.Command{
@@ -249,6 +257,7 @@ func goInstall() {
 		"github.com/golang/mock/gomock",
 		"github.com/golang/mock/mockgen",
 		"github.com/golang/protobuf/protoc-gen-go",
+		"golang.org/x/tools/cmd/goimports",
 	}
 	for _, pkg := range pkgs {
 		runCmd("go", map[string]string{"GO111MODULE": "on"}, "install", pkg)
@@ -286,6 +295,27 @@ func test() {
 
 func vet() {
 	runCmd("go", nil, "vet", "./internal/...", "./pkg/...")
+	goFmt(false)
+}
+
+func goFmt(update bool) {
+	if update {
+		runCmd("goimports", nil, "--local", "github.com/vmware-tanzu/octant", "-w", "cmd", "internal", "pkg")
+	} else {
+		out := bytes.NewBufferString("")
+		cmd := newCmd("goimports", nil, "--local", "github.com/vmware-tanzu/octant", "-l", "cmd", "internal", "pkg")
+		cmd.Stdout = out
+		cmd.Stderr = os.Stderr
+		cmd.Stdin = os.Stdin
+		log.Printf("Running: %s\n", cmd.String())
+		if err := cmd.Run(); err != nil {
+			log.Fatal(err)
+		}
+		if out.Len() != 0 {
+			os.Stdout.Write(out.Bytes())
+			log.Fatal("above files are not formatted correctly. please run `go run build.go fmt`")
+		}
+	}
 }
 
 func webDeps() {

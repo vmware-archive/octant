@@ -8,8 +8,6 @@ package portforward
 import (
 	"context"
 	"fmt"
-	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
-	"k8s.io/apimachinery/pkg/labels"
 	"sort"
 	"sync"
 	"time"
@@ -17,11 +15,13 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 	restclient "k8s.io/client-go/rest"
 
 	internalLog "github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )

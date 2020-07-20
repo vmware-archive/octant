@@ -5,9 +5,10 @@
 package fake
 
 import (
+	reflect "reflect"
+
 	fsnotify "github.com/fsnotify/fsnotify"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 )
 
 // MockFileWatcher is a mock of FileWatcher interface

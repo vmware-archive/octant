@@ -5,9 +5,11 @@
 package fake
 
 import (
-	gomock "github.com/golang/mock/gomock"
-	octant "github.com/vmware-tanzu/octant/internal/octant"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+
+	octant "github.com/vmware-tanzu/octant/internal/octant"
 )
 
 // MockOctantClient is a mock of OctantClient interface

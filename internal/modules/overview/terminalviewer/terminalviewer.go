@@ -9,12 +9,13 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
-	"github.com/vmware-tanzu/octant/pkg/log"
-	"github.com/vmware-tanzu/octant/pkg/view/component"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
+	"github.com/vmware-tanzu/octant/pkg/log"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // ToComponent converts an object into a terminal component.

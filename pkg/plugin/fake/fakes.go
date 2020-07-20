@@ -6,14 +6,16 @@ package fake
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
+	grpc "google.golang.org/grpc"
+	runtime "k8s.io/apimachinery/pkg/runtime"
+
 	action "github.com/vmware-tanzu/octant/pkg/action"
 	navigation "github.com/vmware-tanzu/octant/pkg/navigation"
 	plugin "github.com/vmware-tanzu/octant/pkg/plugin"
 	component "github.com/vmware-tanzu/octant/pkg/view/component"
-	grpc "google.golang.org/grpc"
-	runtime "k8s.io/apimachinery/pkg/runtime"
-	reflect "reflect"
 )
 
 // MockRunners is a mock of Runners interface

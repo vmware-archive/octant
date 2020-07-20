@@ -12,16 +12,17 @@ import (
 	"io"
 
 	"github.com/pkg/errors"
-	"github.com/vmware-tanzu/octant/internal/cluster"
-	"github.com/vmware-tanzu/octant/pkg/action"
-	"github.com/vmware-tanzu/octant/pkg/log"
-	"github.com/vmware-tanzu/octant/pkg/store"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	sigyaml "sigs.k8s.io/yaml"
+
+	"github.com/vmware-tanzu/octant/internal/cluster"
+	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/log"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 // ApplyYaml creates a yaml applier

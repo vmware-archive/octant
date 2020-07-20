@@ -6,10 +6,12 @@ package fake
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
-	dashboard "github.com/vmware-tanzu/octant/pkg/plugin/dashboard"
-	grpc "google.golang.org/grpc"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+	grpc "google.golang.org/grpc"
+
+	dashboard "github.com/vmware-tanzu/octant/pkg/plugin/dashboard"
 )
 
 // MockPluginClient is a mock of PluginClient interface

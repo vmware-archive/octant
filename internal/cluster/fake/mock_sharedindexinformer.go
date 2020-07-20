@@ -5,10 +5,11 @@
 package fake
 
 import (
-	gomock "github.com/golang/mock/gomock"
-	cache "k8s.io/client-go/tools/cache"
 	reflect "reflect"
 	time "time"
+
+	gomock "github.com/golang/mock/gomock"
+	cache "k8s.io/client-go/tools/cache"
 )
 
 // MockSharedIndexInformer is a mock of SharedIndexInformer interface

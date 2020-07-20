@@ -5,12 +5,14 @@
 package fake
 
 import (
-	gomock "github.com/golang/mock/gomock"
-	component "github.com/vmware-tanzu/octant/pkg/view/component"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	runtime "k8s.io/apimachinery/pkg/runtime"
 	url "net/url"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	runtime "k8s.io/apimachinery/pkg/runtime"
+
+	component "github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // MockInterface is a mock of Interface interface

@@ -6,14 +6,16 @@ package fake
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
+	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	schema "k8s.io/apimachinery/pkg/runtime/schema"
+
 	module "github.com/vmware-tanzu/octant/internal/module"
 	octant "github.com/vmware-tanzu/octant/internal/octant"
 	navigation "github.com/vmware-tanzu/octant/pkg/navigation"
 	component "github.com/vmware-tanzu/octant/pkg/view/component"
-	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
-	reflect "reflect"
 )
 
 // MockModule is a mock of Module interface

@@ -37,7 +37,7 @@ var _ Interface = (*Generator)(nil)
 
 // Options are additional options to pass a Generator
 type Options struct {
-	LabelSet               *kLabels.Set
+	LabelSet *kLabels.Set
 }
 
 // NewGenerator creates a Generator.

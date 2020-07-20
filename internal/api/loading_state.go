@@ -13,9 +13,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/spf13/afero"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/spf13/afero"
 	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/action"

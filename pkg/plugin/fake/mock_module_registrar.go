@@ -5,9 +5,11 @@
 package fake
 
 import (
-	gomock "github.com/golang/mock/gomock"
-	module "github.com/vmware-tanzu/octant/internal/module"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+
+	module "github.com/vmware-tanzu/octant/internal/module"
 )
 
 // MockModuleRegistrar is a mock of ModuleRegistrar interface

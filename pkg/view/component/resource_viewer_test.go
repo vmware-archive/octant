@@ -127,7 +127,6 @@ func Test_ResourceViewer_AddEdge_missing_node(t *testing.T) {
 	node := Node{}
 	rv.AddNode("nodeID", node)
 
-
 	require.Error(t, rv.AddEdge("nodeID", "childID", EdgeTypeExplicit))
 }
 

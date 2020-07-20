@@ -5,13 +5,15 @@
 package fake
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
+	v1beta1 "k8s.io/api/batch/v1beta1"
+	v1 "k8s.io/api/core/v1"
+
 	printer "github.com/vmware-tanzu/octant/internal/printer"
 	action "github.com/vmware-tanzu/octant/pkg/action"
 	component "github.com/vmware-tanzu/octant/pkg/view/component"
-	v1beta1 "k8s.io/api/batch/v1beta1"
-	v1 "k8s.io/api/core/v1"
-	reflect "reflect"
 )
 
 // MockObjectInterface is a mock of ObjectInterface interface

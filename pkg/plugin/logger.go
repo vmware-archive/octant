@@ -6,11 +6,11 @@ SPDX-License-Identifier: Apache-2.0
 package plugin
 
 import (
+	"io"
 	golog "log"
 
-	"io"
-
 	"github.com/hashicorp/go-hclog"
+
 	"github.com/vmware-tanzu/octant/pkg/log"
 )
 
