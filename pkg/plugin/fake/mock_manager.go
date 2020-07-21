@@ -12,6 +12,7 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 
 	plugin "github.com/vmware-tanzu/octant/pkg/plugin"
+	store "github.com/vmware-tanzu/octant/pkg/store"
 	component "github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -95,4 +96,16 @@ func (m *MockManagerInterface) Tabs(arg0 context.Context, arg1 runtime.Object) (
 func (mr *MockManagerInterfaceMockRecorder) Tabs(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Tabs", reflect.TypeOf((*MockManagerInterface)(nil).Tabs), arg0, arg1)
+}
+
+// UpdateObjectStore mocks base method
+func (m *MockManagerInterface) UpdateObjectStore(arg0 store.Store) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "UpdateObjectStore", arg0)
+}
+
+// UpdateObjectStore indicates an expected call of UpdateObjectStore
+func (mr *MockManagerInterfaceMockRecorder) UpdateObjectStore(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateObjectStore", reflect.TypeOf((*MockManagerInterface)(nil).UpdateObjectStore), arg0)
 }

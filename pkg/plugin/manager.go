@@ -18,6 +18,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/store"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 
@@ -238,7 +240,7 @@ type ManagerInterface interface {
 	ObjectStatus(ctx context.Context, object runtime.Object) (*ObjectStatusResponse, error)
 
 	// UpdateClusterClient sets the current cluster client.
-	UpdateClusterClient(clusterClient ClusterClient)
+	UpdateObjectStore(objectStore store.Store)
 }
 
 // ModuleRegistrar is a module registrar.
@@ -270,9 +272,9 @@ type Manager struct {
 
 	Runners Runners
 
-	clusterClient ClusterClient
-	configs       []config
-	store         ManagerStore
+	objectStore store.Store
+	configs     []config
+	store       ManagerStore
 
 	lock sync.Mutex
 }
@@ -297,10 +299,10 @@ func NewManager(apiService api.API, moduleRegistrar ModuleRegistrar, actionRegis
 	return m
 }
 
-func (m *Manager) UpdateClusterClient(clusterClient ClusterClient) {
+func (m *Manager) UpdateObjectStore(objectStore store.Store) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
-	m.clusterClient = clusterClient
+	m.objectStore = objectStore
 }
 
 // Store returns the store for the manager.
@@ -442,23 +444,11 @@ func (m *Manager) unregisterJSPlugin(_ context.Context, p JSPlugin) error {
 }
 
 func (m *Manager) registerJSPlugin(ctx context.Context, pluginPath string, apiAddr string) error {
-	client, err := api.NewClient(apiAddr)
+	jsPlugin, err := NewJSPlugin(ctx, m.objectStore, pluginPath, CreateRuntimeLoop, ExtractDefaultClass, ExtractMetadata)
 	if err != nil {
-		if client != nil {
-			_ = client.Close()
-		}
-		return fmt.Errorf("javascript plugin dashboard client: %w", err)
-	}
-
-	jsPlugin, err := NewJSPlugin(ctx, client, m.clusterClient, pluginPath, CreateRuntimeLoop, ExtractDefaultClass, ExtractMetadata)
-	if err != nil {
-		if client != nil {
-			_ = client.Close()
-		}
 		return err
 	}
 	if err := m.store.StoreJS(pluginPath, jsPlugin); err != nil {
-		_ = client.Close()
 		return err
 	}
 

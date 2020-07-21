@@ -52,6 +52,8 @@ github.com/dop251/goja/file
 github.com/dop251/goja/parser
 github.com/dop251/goja/token
 # github.com/dop251/goja_nodejs v0.0.0-20200706082813-b2775b86b9e0
+github.com/dop251/goja_nodejs/console
+github.com/dop251/goja_nodejs/eventloop
 github.com/dop251/goja_nodejs/require
 github.com/dop251/goja_nodejs/util
 # github.com/evanphx/json-patch v4.2.0+incompatible

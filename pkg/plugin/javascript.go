@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -16,21 +15,13 @@ import (
 	"github.com/dop251/goja_nodejs/console"
 	"github.com/dop251/goja_nodejs/eventloop"
 	"github.com/dop251/goja_nodejs/require"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/yaml"
-	sigyaml "sigs.k8s.io/yaml"
 
 	olog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
-	"github.com/vmware-tanzu/octant/pkg/plugin/api"
-
-	// "github.com/vmware-tanzu/octant/pkg/plugin/console"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -73,17 +64,16 @@ type jsPlugin struct {
 	classExtractor    pluginClassExtractor
 	metadataExtractor pluginMetadataExtractor
 
-	client        *api.Client
-	clusterClient ClusterClient
-	mu            sync.Mutex
-	ctx           context.Context
-	logger        log.Logger
+	objectStore store.Store
+	mu          sync.Mutex
+	ctx         context.Context
+	logger      log.Logger
 }
 
 var _ JSPlugin = (*jsPlugin)(nil)
 
 // NewJSPlugin creates a new instances of a JavaScript plugin.
-func NewJSPlugin(ctx context.Context, client *api.Client, clusterClient ClusterClient, pluginPath string, prf pluginRuntimeFactory, pce pluginClassExtractor, pme pluginMetadataExtractor) (*jsPlugin, error) {
+func NewJSPlugin(ctx context.Context, objectStore store.Store, pluginPath string, prf pluginRuntimeFactory, pce pluginClassExtractor, pme pluginMetadataExtractor) (*jsPlugin, error) {
 	loop, tsl, err := prf(ctx, pluginPath, IsTypescriptPlugin(pluginPath))
 	if err != nil {
 		return nil, fmt.Errorf("initializing runtime: %w", err)
@@ -120,10 +110,9 @@ func NewJSPlugin(ctx context.Context, client *api.Client, clusterClient ClusterC
 		vm.Set("httpClient", createHTTPClientObject(vm, pluginClass))
 
 		gc := &dashboardClient{
-			client:        client,
-			clusterClient: clusterClient,
-			vm:            vm,
-			ctx:           ctx,
+			objectStore: objectStore,
+			vm:          vm,
+			ctx:         ctx,
 		}
 		vm.Set("dashboardClient", createClientObject(gc))
 
@@ -149,8 +138,6 @@ func NewJSPlugin(ctx context.Context, client *api.Client, clusterClient ClusterC
 		loop:              loop,
 		pluginClass:       pluginClass,
 		metadata:          metadata,
-		client:            client,
-		clusterClient:     clusterClient,
 		runtimeFactory:    prf,
 		classExtractor:    pce,
 		metadataExtractor: pme,
@@ -164,7 +151,6 @@ func NewJSPlugin(ctx context.Context, client *api.Client, clusterClient ClusterC
 // Close closes the dashboard client connection.
 func (t *jsPlugin) Close() {
 	t.loop.Stop()
-	_ = t.client.Close()
 }
 
 // PluginPath returns the pluginPath.
@@ -856,10 +842,9 @@ func (l logPrinter) Error(msg string) {
 }
 
 type dashboardClient struct {
-	client        *api.Client
-	clusterClient ClusterClient
-	vm            *goja.Runtime
-	ctx           context.Context
+	objectStore store.Store
+	vm          *goja.Runtime
+	ctx         context.Context
 }
 
 func (d *dashboardClient) Delete(c goja.FunctionCall) goja.Value {
@@ -869,7 +854,7 @@ func (d *dashboardClient) Delete(c goja.FunctionCall) goja.Value {
 		return d.vm.NewTypeError(fmt.Errorf("dashboardClient.Delete: %w", err))
 	}
 
-	if err := d.deleteCallback(key); err != nil {
+	if err := d.objectStore.Delete(d.ctx, key); err != nil {
 		return d.vm.NewGoError(err)
 	}
 	return goja.Undefined()
@@ -882,7 +867,7 @@ func (d *dashboardClient) Get(c goja.FunctionCall) goja.Value {
 		return d.vm.NewGoError(fmt.Errorf("dashboardClient.Get: %w", err))
 	}
 
-	u, err := d.client.Get(d.ctx, key)
+	u, err := d.objectStore.Get(d.ctx, key)
 	if err != nil {
 		return d.vm.NewGoError(err)
 	}
@@ -897,7 +882,7 @@ func (d *dashboardClient) List(c goja.FunctionCall) goja.Value {
 		return d.vm.NewGoError(fmt.Errorf("dashboardClient.List: %w", err))
 	}
 
-	u, err := d.client.List(d.ctx, key)
+	u, _, err := d.objectStore.List(d.ctx, key)
 	if err != nil {
 		return d.vm.NewGoError(err)
 	}
@@ -910,167 +895,24 @@ func (d *dashboardClient) List(c goja.FunctionCall) goja.Value {
 	return d.vm.ToValue(items)
 }
 
-func (d *dashboardClient) deleteCallback(key store.Key) error {
-	gvr, namespaced, err := d.clusterClient.Resource(key.GroupVersionKind().GroupKind())
-	if err != nil {
-		return fmt.Errorf("unable to discover resource: %w", err)
-	}
-
-	if namespaced && key.Namespace == "" {
-		return fmt.Errorf("namespace required for delete")
-	}
-
-	if _, err := d.client.Get(d.ctx, key); err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			// already deleted
-			return nil
-		}
-		return fmt.Errorf("error getting resource: %w", err)
-	}
-
-	client, err := d.clusterClient.DynamicClient()
-	if err != nil {
-		return fmt.Errorf("unable to get dynamic client: %w", err)
-	}
-
-	deletePolicy := metav1.DeletePropagationForeground
-	deleteOptions := metav1.DeleteOptions{
-		PropagationPolicy: &deletePolicy,
-	}
-
-	if key.Namespace == "" {
-		return client.Resource(gvr).Delete(d.ctx, key.Name, deleteOptions)
-	}
-
-	return client.Resource(gvr).Namespace(key.Namespace).Delete(d.ctx, key.Name, deleteOptions)
-}
-
-func (d *dashboardClient) createCallback(namespace string, results []string, doc map[string]interface{}) error {
-	unstructuredObj := &unstructured.Unstructured{Object: doc}
-	key, err := store.KeyFromObject(unstructuredObj)
-	if err != nil {
-		return err
-	}
-
-	gvr, namespaced, err := d.clusterClient.Resource(key.GroupVersionKind().GroupKind())
-	if err != nil {
-		return fmt.Errorf("unable to discover resource: %w", err)
-	}
-	if namespaced && key.Namespace == "" {
-		unstructuredObj.SetNamespace(namespace)
-		key.Namespace = namespace
-	}
-
-	if _, err := d.client.Get(d.ctx, key); err != nil {
-		if !strings.Contains(err.Error(), "not found") {
-			// unexpected error
-			return fmt.Errorf("unable to get resource: %w", err)
-		}
-
-		// create object
-		err := d.client.Create(d.ctx, &unstructured.Unstructured{Object: doc})
-		if err != nil {
-			return fmt.Errorf("unable to create resource: %w", err)
-		}
-
-		result := fmt.Sprintf("Created %s (%s) %s", key.Kind, key.APIVersion, key.Name)
-		if namespaced {
-			result = fmt.Sprintf("%s in %s", result, key.Namespace)
-		}
-		results = append(results, result)
-
-		return nil
-	}
-
-	// update object
-	unstructuredYaml, err := sigyaml.Marshal(doc)
-	if err != nil {
-		return fmt.Errorf("unable to marshal resource as yaml: %w", err)
-	}
-	client, err := d.clusterClient.DynamicClient()
-	if err != nil {
-		return fmt.Errorf("unable to get dynamic client: %w", err)
-	}
-
-	withForce := true
-	if namespaced {
-		_, err = client.Resource(gvr).Namespace(key.Namespace).Patch(
-			d.ctx,
-			key.Name,
-			types.ApplyPatchType,
-			unstructuredYaml,
-			metav1.PatchOptions{FieldManager: "octant", Force: &withForce},
-		)
-		if err != nil {
-			return fmt.Errorf("unable to patch resource: %w", err)
-		}
-	} else {
-		_, err = client.Resource(gvr).Patch(
-			d.ctx,
-			key.Name,
-			types.ApplyPatchType,
-			unstructuredYaml,
-			metav1.PatchOptions{FieldManager: "octant", Force: &withForce},
-		)
-		if err != nil {
-			return fmt.Errorf("unable to patch resource: %w", err)
-		}
-	}
-
-	result := fmt.Sprintf("Updated %s (%s) %s", key.Kind, key.APIVersion, key.Name)
-	if namespaced {
-		result = fmt.Sprintf("%s in %s", result, key.Namespace)
-	}
-	results = append(results, result)
-
-	return nil
-}
-
 func (d *dashboardClient) Create(c goja.FunctionCall) goja.Value {
 	namespace := c.Argument(0).String()
 	update := c.Argument(1).String()
-	decoder := yaml.NewYAMLOrJSONDecoder(bytes.NewBufferString(update), 4096)
 
 	if namespace == "" {
-		return d.vm.NewTypeError(fmt.Errorf("create: invalid namespace"))
+		return d.vm.NewTypeError(fmt.Errorf("create/update: invalid namespace"))
 	}
 
 	if update == "" {
-		return d.vm.NewTypeError(fmt.Errorf("create: empty yaml"))
+		return d.vm.NewTypeError(fmt.Errorf("create/update: empty yaml"))
 	}
 
-	results := []string{}
-	for {
-		doc := map[string]interface{}{}
-		if err := decoder.Decode(&doc); err != nil {
-			if err == io.EOF {
-				return goja.Undefined()
-			}
-			return d.vm.NewTypeError(fmt.Errorf("unable to parse yaml: %w", err))
-		}
-		if len(doc) == 0 {
-			// skip empty documents
-			continue
-		}
-		if err := d.createCallback(namespace, results, doc); err != nil {
-			return d.vm.NewGoError(err)
-		}
-	}
-}
-
-func (d *dashboardClient) Update(c goja.FunctionCall) goja.Value {
-	var u *unstructured.Unstructured
-	obj := c.Argument(0).ToObject(d.vm)
-	if err := d.vm.ExportTo(obj, &u); err != nil {
-		return d.vm.NewGoError(fmt.Errorf("dashboardClient.Update: %w", err))
-	}
-
-	err := d.client.Update(d.ctx, u)
+	results, err := d.objectStore.CreateOrUpdateFromYAML(d.ctx, namespace, update)
 	if err != nil {
-		return d.vm.NewGoError(err)
+		return d.vm.NewTypeError(fmt.Errorf("create/update: %w", err))
 	}
 
-	return goja.Undefined()
+	return d.vm.ToValue(results)
 }
 
 func createClientObject(d *dashboardClient) goja.Value {
@@ -1081,10 +923,10 @@ func createClientObject(d *dashboardClient) goja.Value {
 	if err := obj.Set("List", d.List); err != nil {
 		return d.vm.NewGoError(err)
 	}
-	if err := obj.Set("Update", d.Update); err != nil {
+	if err := obj.Set("Create", d.Create); err != nil {
 		return d.vm.NewGoError(err)
 	}
-	if err := obj.Set("Create", d.Create); err != nil {
+	if err := obj.Set("Update", d.Create); err != nil {
 		return d.vm.NewGoError(err)
 	}
 	if err := obj.Set("Delete", d.Delete); err != nil {
@@ -1101,45 +943,79 @@ type httpClient struct {
 func createHTTPClientObject(vm *goja.Runtime, this *goja.Object) goja.Value {
 	client := vm.NewObject()
 	h := &httpClient{
-		vm: vm,
+		vm:   vm,
+		this: this,
 	}
-	client.Set("get", h.get)
-	client.Set("post", h.post)
+	if err := client.Set("get", h.get); err != nil {
+		return vm.NewTypeError(fmt.Errorf("httpClient.Set.get: %w", err))
+	}
+	if err := client.Set("getJSON", h.getJSON); err != nil {
+		return vm.NewTypeError(fmt.Errorf("httpClient.Set.getJSON: %w", err))
+	}
+	if err := client.Set("post", h.post); err != nil {
+		return vm.NewTypeError(fmt.Errorf("httpClient.Set.post: %w", err))
+	}
 	return client
 }
 
-func (h *httpClient) get(c goja.FunctionCall) goja.Value {
+func (h *httpClient) _get(c goja.FunctionCall) (goja.Callable, []byte, error) {
 	if len(c.Arguments) != 2 {
-		return h.vm.NewGoError(fmt.Errorf("invalid arguments"))
+		return nil, nil, fmt.Errorf("invalid arguments")
 	}
 
 	urlArg := c.Argument(0).String()
 	if urlArg == "" {
-		return h.vm.NewGoError(fmt.Errorf("empty url"))
+		return nil, nil, fmt.Errorf("empty url")
 	}
 
 	callbackArg := c.Argument(1).ToObject(h.vm)
 	callback, ok := goja.AssertFunction(callbackArg)
 	if !ok || callback == nil {
-		return h.vm.NewGoError(fmt.Errorf("bad callback function"))
+		return nil, nil, fmt.Errorf("bad callback function")
 	}
 
 	client := &http.Client{Timeout: 10 * time.Second}
 	r, err := client.Get(urlArg)
 	if err != nil {
-		return h.vm.NewGoError(fmt.Errorf("get: %w", err))
+		return nil, nil, fmt.Errorf("get: %w", err)
 	}
-	defer r.Body.Close()
-
-	var target interface{}
-	if err := json.NewDecoder(r.Body).Decode(&target); err != nil {
-		panic(h.vm.NewGoError(fmt.Errorf("decoding: %w", err)))
-	}
-
-	callback(h.this, h.vm.ToValue(target))
-	return goja.Undefined()
+	defer func() {
+		_ = r.Body.Close()
+	}()
+	response, err := ioutil.ReadAll(r.Body)
+	return callback, response, err
 }
 
-func (h *httpClient) post(c goja.FunctionCall) goja.Value {
+func (h *httpClient) get(c goja.FunctionCall) goja.Value {
+	callback, response, err := h._get(c)
+	if err != nil {
+		return h.vm.NewTypeError(fmt.Errorf("get: %w", err))
+	}
+	cr, err := callback(h.this, h.vm.ToValue(response))
+	if err != nil {
+		return h.vm.NewTypeError(fmt.Errorf("get: %w", err))
+	}
+	return cr
+}
+
+func (h *httpClient) getJSON(c goja.FunctionCall) goja.Value {
+	callback, response, err := h._get(c)
+	if err != nil {
+		return h.vm.NewTypeError(fmt.Errorf("getJSON: %w", err))
+	}
+
+	var target interface{}
+	if err := json.NewDecoder(bytes.NewReader(response)).Decode(&target); err != nil {
+		return h.vm.NewTypeError(fmt.Errorf("decoding: %w", err))
+	}
+
+	cr, err := callback(h.this, h.vm.ToValue(target))
+	if err != nil {
+		return h.vm.NewTypeError(fmt.Errorf("getJSON: %w", err))
+	}
+	return cr
+}
+
+func (h *httpClient) post(_ goja.FunctionCall) goja.Value {
 	return h.vm.NewGoError(fmt.Errorf("not implemented"))
 }

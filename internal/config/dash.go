@@ -235,7 +235,7 @@ func (l *Live) UseContext(ctx context.Context, contextName string) error {
 		}
 	}
 
-	l.pluginManager.UpdateClusterClient(client)
+	l.pluginManager.UpdateObjectStore(l.objectStore)
 
 	return nil
 }

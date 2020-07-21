@@ -255,7 +255,7 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, options Options
 	if err != nil {
 		return nil, nil, fmt.Errorf("initializing plugin manager: %w", err)
 	}
-	pluginManager.UpdateClusterClient(clusterClient)
+	pluginManager.UpdateObjectStore(appObjectStore)
 
 	r.pluginManager = pluginManager
 
