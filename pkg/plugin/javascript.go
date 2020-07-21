@@ -668,7 +668,7 @@ func ExtractDefaultClass(vm *goja.Runtime) (*goja.Object, error) {
 	instantiateClass := "var _concretePlugin = new module.exports.default; _concretePlugin"
 	// This is the library name the Octant webpack configuration uses.
 	if vm.Get("_octantPlugin") != nil {
-		instantiateClass = "var _concretePlugin = new _octantPlugin; _concretePlugin"
+		instantiateClass = "var _concretePlugin = new _octantPlugin(dashboardClient, httpClient); _concretePlugin"
 	}
 
 	v, err := vm.RunString(instantiateClass)
@@ -1039,5 +1039,59 @@ func createClientObject(d *dashboardClient) goja.Value {
 	if err := obj.Set("Update", d.Update); err != nil {
 		return d.vm.NewGoError(err)
 	}
+	if err := obj.Set("Create", d.Create); err != nil {
+		return d.vm.NewGoError(err)
+	}
 	return obj
+}
+
+type httpClient struct {
+	vm   *goja.Runtime
+	this *goja.Object
+}
+
+func createHTTPClientObject(vm *goja.Runtime, this *goja.Object) goja.Value {
+	client := vm.NewObject()
+	h := &httpClient{
+		vm: vm,
+	}
+	client.Set("get", h.get)
+	client.Set("post", h.post)
+	return client
+}
+
+func (h *httpClient) get(c goja.FunctionCall) goja.Value {
+	if len(c.Arguments) != 2 {
+		return h.vm.NewGoError(fmt.Errorf("invalid arguments"))
+	}
+
+	urlArg := c.Argument(0).String()
+	if urlArg == "" {
+		return h.vm.NewGoError(fmt.Errorf("empty url"))
+	}
+
+	callbackArg := c.Argument(1).ToObject(h.vm)
+	callback, ok := goja.AssertFunction(callbackArg)
+	if !ok || callback == nil {
+		return h.vm.NewGoError(fmt.Errorf("bad callback function"))
+	}
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	r, err := client.Get(urlArg)
+	if err != nil {
+		return h.vm.NewGoError(fmt.Errorf("get: %w", err))
+	}
+	defer r.Body.Close()
+
+	var target interface{}
+	if err := json.NewDecoder(r.Body).Decode(&target); err != nil {
+		panic(h.vm.NewGoError(fmt.Errorf("decoding: %w", err)))
+	}
+
+	callback(h.this, h.vm.ToValue(target))
+	return goja.Undefined()
+}
+
+func (h *httpClient) post(c goja.FunctionCall) goja.Value {
+	return h.vm.NewGoError(fmt.Errorf("not implemented"))
 }
