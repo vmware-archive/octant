@@ -11,6 +11,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
+	"k8s.io/client-go/kubernetes/scheme"
 	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
 	"github.com/vmware-tanzu/octant/internal/testutil"
@@ -50,7 +51,7 @@ func Test_APIServiceListHandler(t *testing.T) {
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", object.Name, "/path",
 			genObjectStatus(component.TextStatusOK, []string{
-				"apiregistration.k8s.io/v1 APIService is OK",
+				"API Service is OK",
 			})),
 		"Service": component.NewLink("", "default/service", "/service"),
 		"Age":     component.NewTimestamp(now),
@@ -90,7 +91,7 @@ func Test_APIServiceListHandler_local(t *testing.T) {
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", object.Name, "/path",
 			genObjectStatus(component.TextStatusOK, []string{
-				"apiregistration.k8s.io/v1 APIService is OK",
+				"API Service is OK",
 			})),
 		"Service": component.NewText("Local"),
 		"Age":     component.NewTimestamp(now),
@@ -236,4 +237,8 @@ func Test_APIServerStatus(t *testing.T) {
 			component.AssertEqual(t, test.expected, summary)
 		})
 	}
+}
+
+func init() {
+	apiregistrationv1.AddToScheme(scheme.Scheme)
 }

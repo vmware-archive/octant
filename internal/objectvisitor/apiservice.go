@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
@@ -65,6 +66,9 @@ func (p *APIService) Visit(ctx context.Context, object *unstructured.Unstructure
 		key.Name = apiservice.Spec.Service.Name
 		service, err := p.objectStore.Get(ctx, key)
 		if err != nil {
+			if kerrors.IsNotFound(err) {
+				return nil
+			}
 			return err
 		}
 

@@ -12,6 +12,7 @@ import (
 	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -67,6 +68,9 @@ func (p *ValidatingWebhookConfiguration) Visit(ctx context.Context, object *unst
 				key.Name = validatingwebhook.ClientConfig.Service.Name
 				service, err := p.objectStore.Get(ctx, key)
 				if err != nil {
+					if kerrors.IsNotFound(err) {
+						return nil
+					}
 					return err
 				}
 

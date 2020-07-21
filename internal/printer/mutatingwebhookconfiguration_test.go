@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/vmware-tanzu/octant/internal/testutil"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
@@ -235,4 +236,8 @@ func Test_NewMutatingWebhook(t *testing.T) {
 			component.AssertEqual(t, test.expected, summary)
 		})
 	}
+}
+
+func init() {
+	admissionregistrationv1.AddToScheme(scheme.Scheme)
 }
