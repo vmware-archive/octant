@@ -12,13 +12,14 @@ package plugin
 import (
 	"context"
 	"fmt"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/dynamic"
 	"os/exec"
 	"path/filepath"
 	"sort"
 	"sync"
 	"time"
+
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/hashicorp/go-plugin"
@@ -236,7 +237,7 @@ type ManagerInterface interface {
 	// ObjectStatus returns the object status
 	ObjectStatus(ctx context.Context, object runtime.Object) (*ObjectStatusResponse, error)
 
-	// SetClusterClient sets the current cluster client.
+	// UpdateClusterClient sets the current cluster client.
 	UpdateClusterClient(clusterClient ClusterClient)
 }
 

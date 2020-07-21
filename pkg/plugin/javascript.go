@@ -29,6 +29,7 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/plugin/api"
+
 	// "github.com/vmware-tanzu/octant/pkg/plugin/console"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
@@ -76,6 +77,7 @@ type jsPlugin struct {
 	clusterClient ClusterClient
 	mu            sync.Mutex
 	ctx           context.Context
+	logger        log.Logger
 }
 
 var _ JSPlugin = (*jsPlugin)(nil)
@@ -819,7 +821,7 @@ var exports = module.exports;
 		registry := require.NewRegistryWithLoader(tsl.SourceLoader)
 		registry.Enable(vm)
 
-		logger := olog.From(ctx).Named(logName)
+		logger := olog.From(ctx).With("plugin", logName)
 		printer := logPrinter{logger: logger}
 		registry.RegisterNativeModule("console", console.RequireWithPrinter(printer))
 		console.Enable(vm)
@@ -842,17 +844,14 @@ type logPrinter struct {
 }
 
 func (l logPrinter) Log(msg string) {
-	fmt.Println(msg)
 	l.logger.Infof(msg)
 }
 
 func (l logPrinter) Warn(msg string) {
-	fmt.Println(msg)
 	l.logger.Warnf(msg)
 }
 
 func (l logPrinter) Error(msg string) {
-	fmt.Println(msg)
 	l.logger.Errorf(msg)
 }
 
@@ -861,6 +860,19 @@ type dashboardClient struct {
 	clusterClient ClusterClient
 	vm            *goja.Runtime
 	ctx           context.Context
+}
+
+func (d *dashboardClient) Delete(c goja.FunctionCall) goja.Value {
+	var key store.Key
+	obj := c.Argument(0).ToObject(d.vm)
+	if err := d.vm.ExportTo(obj, &key); err != nil {
+		return d.vm.NewTypeError(fmt.Errorf("dashboardClient.Delete: %w", err))
+	}
+
+	if err := d.deleteCallback(key); err != nil {
+		return d.vm.NewGoError(err)
+	}
+	return goja.Undefined()
 }
 
 func (d *dashboardClient) Get(c goja.FunctionCall) goja.Value {
@@ -898,6 +910,41 @@ func (d *dashboardClient) List(c goja.FunctionCall) goja.Value {
 	return d.vm.ToValue(items)
 }
 
+func (d *dashboardClient) deleteCallback(key store.Key) error {
+	gvr, namespaced, err := d.clusterClient.Resource(key.GroupVersionKind().GroupKind())
+	if err != nil {
+		return fmt.Errorf("unable to discover resource: %w", err)
+	}
+
+	if namespaced && key.Namespace == "" {
+		return fmt.Errorf("namespace required for delete")
+	}
+
+	if _, err := d.client.Get(d.ctx, key); err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			// already deleted
+			return nil
+		}
+		return fmt.Errorf("error getting resource: %w", err)
+	}
+
+	client, err := d.clusterClient.DynamicClient()
+	if err != nil {
+		return fmt.Errorf("unable to get dynamic client: %w", err)
+	}
+
+	deletePolicy := metav1.DeletePropagationForeground
+	deleteOptions := metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	}
+
+	if key.Namespace == "" {
+		return client.Resource(gvr).Delete(d.ctx, key.Name, deleteOptions)
+	}
+
+	return client.Resource(gvr).Namespace(key.Namespace).Delete(d.ctx, key.Name, deleteOptions)
+}
+
 func (d *dashboardClient) createCallback(namespace string, results []string, doc map[string]interface{}) error {
 	unstructuredObj := &unstructured.Unstructured{Object: doc}
 	key, err := store.KeyFromObject(unstructuredObj)
@@ -920,11 +967,9 @@ func (d *dashboardClient) createCallback(namespace string, results []string, doc
 			return fmt.Errorf("unable to get resource: %w", err)
 		}
 
-		fmt.Println("creating")
 		// create object
 		err := d.client.Create(d.ctx, &unstructured.Unstructured{Object: doc})
 		if err != nil {
-			fmt.Println(err)
 			return fmt.Errorf("unable to create resource: %w", err)
 		}
 
@@ -1040,6 +1085,9 @@ func createClientObject(d *dashboardClient) goja.Value {
 		return d.vm.NewGoError(err)
 	}
 	if err := obj.Set("Create", d.Create); err != nil {
+		return d.vm.NewGoError(err)
+	}
+	if err := obj.Set("Delete", d.Delete); err != nil {
 		return d.vm.NewGoError(err)
 	}
 	return obj

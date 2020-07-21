@@ -218,8 +218,6 @@ func (l *Live) UseContext(ctx context.Context, contextName string) error {
 	l.ClusterClient().Close()
 	l.clusterClient = client
 
-	l.pluginManager.UpdateClusterClient(client)
-
 	if err := l.objectStore.UpdateClusterClient(ctx, client); err != nil {
 		return err
 	}
@@ -236,6 +234,8 @@ func (l *Live) UseContext(ctx context.Context, contextName string) error {
 			return errors.Wrapf(err, "unable to reset CRDs for module %s", m.Name())
 		}
 	}
+
+	l.pluginManager.UpdateClusterClient(client)
 
 	return nil
 }
