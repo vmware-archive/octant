@@ -12,6 +12,8 @@ package plugin
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
 	"os/exec"
 	"path/filepath"
 	"sort"
@@ -214,6 +216,12 @@ type config struct {
 	name string
 }
 
+// ClusterClient defines the cluster client plugin manager has access to.
+type ClusterClient interface {
+	Resource(gk schema.GroupKind) (schema.GroupVersionResource, bool, error)
+	DynamicClient() (dynamic.Interface, error)
+}
+
 // ManagerInterface is an interface which represent a plugin manager.
 type ManagerInterface interface {
 	// Print prints an object.
@@ -227,6 +235,9 @@ type ManagerInterface interface {
 
 	// ObjectStatus returns the object status
 	ObjectStatus(ctx context.Context, object runtime.Object) (*ObjectStatusResponse, error)
+
+	// SetClusterClient sets the current cluster client.
+	UpdateClusterClient(clusterClient ClusterClient)
 }
 
 // ModuleRegistrar is a module registrar.
@@ -258,8 +269,9 @@ type Manager struct {
 
 	Runners Runners
 
-	configs []config
-	store   ManagerStore
+	clusterClient ClusterClient
+	configs       []config
+	store         ManagerStore
 
 	lock sync.Mutex
 }
@@ -282,6 +294,12 @@ func NewManager(apiService api.API, moduleRegistrar ModuleRegistrar, actionRegis
 	}
 
 	return m
+}
+
+func (m *Manager) UpdateClusterClient(clusterClient ClusterClient) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+	m.clusterClient = clusterClient
 }
 
 // Store returns the store for the manager.
@@ -431,7 +449,7 @@ func (m *Manager) registerJSPlugin(ctx context.Context, pluginPath string, apiAd
 		return fmt.Errorf("javascript plugin dashboard client: %w", err)
 	}
 
-	jsPlugin, err := NewJSPlugin(ctx, client, pluginPath, CreateRuntime, ExtractDefaultClass, ExtractMetadata)
+	jsPlugin, err := NewJSPlugin(ctx, client, m.clusterClient, pluginPath, CreateRuntimeLoop, ExtractDefaultClass, ExtractMetadata)
 	if err != nil {
 		if client != nil {
 			_ = client.Close()

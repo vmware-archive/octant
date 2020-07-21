@@ -218,6 +218,8 @@ func (l *Live) UseContext(ctx context.Context, contextName string) error {
 	l.ClusterClient().Close()
 	l.clusterClient = client
 
+	l.pluginManager.UpdateClusterClient(client)
+
 	if err := l.objectStore.UpdateClusterClient(ctx, client); err != nil {
 		return err
 	}
