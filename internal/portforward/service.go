@@ -50,14 +50,11 @@ type PortForwardPortSpec struct {
 	Local  uint16 `json:"local,omitempty"`
 }
 
-// PortForwardSpec describes a port forward.
-// TODO Merge with PortForwardState (GH#498)
-type PortForwardSpec struct {
-	ID        string                `json:"id"`
-	Status    string                `json:"status"`
-	Message   string                `json:"message"`
-	Ports     []PortForwardPortSpec `json:"ports"`
-	CreatedAt time.Time             `json:"createdAt"`
+// CreateResponse describes a port forward.
+// TODO Merge with State (GH#498)
+type CreateResponse struct {
+	ID    string                `json:"id"`
+	Ports []PortForwardPortSpec `json:"ports"`
 }
 
 type CreateRequest struct {
@@ -67,8 +64,6 @@ type CreateRequest struct {
 	Name       string                `json:"name"`
 	Ports      []PortForwardPortSpec `json:"ports"`
 }
-
-type CreateResponse PortForwardSpec
 
 // Target references a kubernetes object
 type Target struct {
@@ -418,14 +413,12 @@ func (s *Service) responseForCreate(id string) (CreateResponse, error) {
 	}
 
 	response.ID = id
-	response.CreatedAt = state.CreatedAt
 	rp := make([]PortForwardPortSpec, len(state.Ports))
 	for i := range state.Ports {
 		rp[i].Local = state.Ports[i].Local
 		rp[i].Remote = state.Ports[i].Remote
 	}
 	response.Ports = rp
-	response.Status = "ok"
 	return response, nil
 }
 
