@@ -6,11 +6,13 @@ package fake
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
-	api "github.com/vmware-tanzu/octant/internal/api"
-	config "github.com/vmware-tanzu/octant/internal/config"
 	http "net/http"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+
+	api "github.com/vmware-tanzu/octant/internal/api"
+	config "github.com/vmware-tanzu/octant/internal/config"
 )
 
 // MockClientManager is a mock of ClientManager interface

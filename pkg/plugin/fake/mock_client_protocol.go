@@ -5,9 +5,10 @@
 package fake
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	net "net"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockServerProtocol is a mock of ServerProtocol interface

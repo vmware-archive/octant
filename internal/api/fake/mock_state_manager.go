@@ -6,10 +6,12 @@ package fake
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
+
 	api "github.com/vmware-tanzu/octant/internal/api"
 	octant "github.com/vmware-tanzu/octant/internal/octant"
-	reflect "reflect"
 )
 
 // MockStateManager is a mock of StateManager interface

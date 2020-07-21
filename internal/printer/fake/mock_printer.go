@@ -6,10 +6,12 @@ package fake
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
-	component "github.com/vmware-tanzu/octant/pkg/view/component"
-	runtime "k8s.io/apimachinery/pkg/runtime"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+	runtime "k8s.io/apimachinery/pkg/runtime"
+
+	component "github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // MockPrinter is a mock of Printer interface

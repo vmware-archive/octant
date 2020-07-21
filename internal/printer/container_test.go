@@ -8,22 +8,19 @@ package printer
 import (
 	"context"
 	"fmt"
-	"github.com/vmware-tanzu/octant/internal/octant"
 	"reflect"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-
-	"github.com/vmware-tanzu/octant/internal/portforward"
-
 	"github.com/golang/mock/gomock"
-
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/internal/portforward"
 	pffake "github.com/vmware-tanzu/octant/internal/portforward/fake"
 	"github.com/vmware-tanzu/octant/internal/testutil"
 	"github.com/vmware-tanzu/octant/pkg/store"

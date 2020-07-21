@@ -1,14 +1,14 @@
 package dash
 
 import (
+	"net"
+
 	"github.com/vmware-tanzu/octant/pkg/plugin/api"
 	"github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
-	"net"
 
 	"github.com/soheilhy/cmux"
 	"google.golang.org/grpc"
 )
-
 
 func serveGRPC(l net.Listener, service api.Service) {
 

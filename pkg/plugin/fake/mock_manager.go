@@ -6,11 +6,13 @@ package fake
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
+	runtime "k8s.io/apimachinery/pkg/runtime"
+
 	plugin "github.com/vmware-tanzu/octant/pkg/plugin"
 	component "github.com/vmware-tanzu/octant/pkg/view/component"
-	runtime "k8s.io/apimachinery/pkg/runtime"
-	reflect "reflect"
 )
 
 // MockManagerInterface is a mock of ManagerInterface interface

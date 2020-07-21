@@ -89,9 +89,9 @@ func convertToNavigation(in *dashboard.NavigationResponse_Navigation) navigation
 	}
 
 	out := navigation.Navigation{
-		Title:      in.Title,
-		Path:       in.Path,
-		IconName:   in.IconName,
+		Title:    in.Title,
+		Path:     in.Path,
+		IconName: in.IconName,
 	}
 
 	for _, child := range in.Children {
@@ -104,9 +104,9 @@ func convertToNavigation(in *dashboard.NavigationResponse_Navigation) navigation
 
 func convertFromNavigation(in navigation.Navigation) dashboard.NavigationResponse_Navigation {
 	out := dashboard.NavigationResponse_Navigation{
-		Title:      in.Title,
-		Path:       in.Path,
-		IconName:   in.IconName,
+		Title:    in.Title,
+		Path:     in.Path,
+		IconName: in.IconName,
 	}
 
 	for _, child := range in.Children {

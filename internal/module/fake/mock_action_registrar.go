@@ -5,9 +5,11 @@
 package fake
 
 import (
-	gomock "github.com/golang/mock/gomock"
-	action "github.com/vmware-tanzu/octant/pkg/action"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+
+	action "github.com/vmware-tanzu/octant/pkg/action"
 )
 
 // MockActionRegistrar is a mock of ActionRegistrar interface

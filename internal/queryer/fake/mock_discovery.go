@@ -5,12 +5,13 @@
 package fake
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	openapi_v2 "github.com/googleapis/gnostic/openapiv2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	version "k8s.io/apimachinery/pkg/version"
 	rest "k8s.io/client-go/rest"
-	reflect "reflect"
 )
 
 // MockDiscoveryInterface is a mock of DiscoveryInterface interface

@@ -6,9 +6,11 @@ package fake
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
-	action "github.com/vmware-tanzu/octant/pkg/action"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+
+	action "github.com/vmware-tanzu/octant/pkg/action"
 )
 
 // MockActionDispatcher is a mock of ActionDispatcher interface

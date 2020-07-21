@@ -10,12 +10,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
+
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
-
-	"github.com/stretchr/testify/require"
-
-	corev1 "k8s.io/api/core/v1"
 )
 
 func Test_ToComponent(t *testing.T) {

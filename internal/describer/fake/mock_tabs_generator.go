@@ -6,10 +6,12 @@ package fake
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
+
 	describer "github.com/vmware-tanzu/octant/internal/describer"
 	component "github.com/vmware-tanzu/octant/pkg/view/component"
-	reflect "reflect"
 )
 
 // MockTabsGenerator is a mock of TabsGenerator interface

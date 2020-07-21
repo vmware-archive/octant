@@ -6,9 +6,10 @@ package fake
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	reflect "reflect"
 )
 
 // MockObjectHandler is a mock of ObjectHandler interface

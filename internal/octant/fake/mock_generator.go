@@ -6,10 +6,12 @@ package fake
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
-	octant "github.com/vmware-tanzu/octant/internal/octant"
 	reflect "reflect"
 	time "time"
+
+	gomock "github.com/golang/mock/gomock"
+
+	octant "github.com/vmware-tanzu/octant/internal/octant"
 )
 
 // MockGenerator is a mock of Generator interface

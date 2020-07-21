@@ -17,7 +17,7 @@ type List struct {
 
 // ListConfig is the contents of a List
 type ListConfig struct {
-	Items      []Component `json:"items"`
+	Items []Component `json:"items"`
 }
 
 func (t *ListConfig) UnmarshalJSON(data []byte) error {

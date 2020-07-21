@@ -85,7 +85,7 @@ func (c *GRPCClient) HandleAction(ctx context.Context, actionName string, payloa
 
 		req := &dashboard.HandleActionRequest{
 			ActionName: actionName,
-			Payload: data,
+			Payload:    data,
 		}
 
 		_, err = c.client.HandleAction(ctx, req, grpc.WaitForReady(true))

@@ -5,12 +5,14 @@
 package fake
 
 import (
-	gomock "github.com/golang/mock/gomock"
-	terminal "github.com/vmware-tanzu/octant/internal/terminal"
-	store "github.com/vmware-tanzu/octant/pkg/store"
-	remotecommand "k8s.io/client-go/tools/remotecommand"
 	reflect "reflect"
 	time "time"
+
+	gomock "github.com/golang/mock/gomock"
+	remotecommand "k8s.io/client-go/tools/remotecommand"
+
+	terminal "github.com/vmware-tanzu/octant/internal/terminal"
+	store "github.com/vmware-tanzu/octant/pkg/store"
 )
 
 // MockInstance is a mock of Instance interface

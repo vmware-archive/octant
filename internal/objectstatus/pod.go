@@ -36,7 +36,7 @@ func pod(ctx context.Context, object runtime.Object, o store.Store) (ObjectStatu
 	case corev1.PodUnknown:
 		status.nodeStatus = component.NodeStatusError
 	default:
-	status.	nodeStatus = component.NodeStatusWarning
+		status.nodeStatus = component.NodeStatusWarning
 	}
 
 	status.Details = []component.Component{

@@ -8,9 +8,10 @@ package component_test
 import (
 	"testing"
 
-	"github.com/vmware-tanzu/octant/pkg/view/component"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 func TestMatchOperator(t *testing.T) {

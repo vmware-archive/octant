@@ -9,5 +9,5 @@ const (
 	// RequestSetNamespace is the action for when the current namespace in Octant changes.
 	// The ActionRequest.Payload for this action contains a single string entry `namespace` with a value
 	// of the new current namespace.
-	RequestSetNamespace   = "action.octant.dev/setNamespace"
+	RequestSetNamespace = "action.octant.dev/setNamespace"
 )

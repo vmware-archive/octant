@@ -5,6 +5,8 @@
 package fake
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	discovery "k8s.io/client-go/discovery"
 	v1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
@@ -47,7 +49,6 @@ import (
 	v110 "k8s.io/client-go/kubernetes/typed/storage/v1"
 	v1alpha16 "k8s.io/client-go/kubernetes/typed/storage/v1alpha1"
 	v1beta114 "k8s.io/client-go/kubernetes/typed/storage/v1beta1"
-	reflect "reflect"
 )
 
 // MockKubernetesInterface is a mock of Interface interface

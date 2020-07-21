@@ -6,9 +6,10 @@ package fake
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
 	http "net/http"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockService is a mock of Service interface

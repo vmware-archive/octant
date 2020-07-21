@@ -21,6 +21,7 @@ jobs:
         env:
           GOFLAGS: -mod=vendor
         run: |
+          go run build.go go-install
           go run build.go vet
   eslint:
     runs-on: ubuntu-latest

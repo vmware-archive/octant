@@ -9,11 +9,12 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/vmware-tanzu/octant/pkg/store"
-	"github.com/vmware-tanzu/octant/pkg/view/component"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
+
+	"github.com/vmware-tanzu/octant/pkg/store"
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 func cronJob(_ context.Context, object runtime.Object, _ store.Store) (ObjectStatus, error) {

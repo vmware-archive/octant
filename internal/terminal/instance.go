@@ -16,13 +16,14 @@ import (
 	"unicode"
 
 	"github.com/pkg/errors"
-	"github.com/vmware-tanzu/octant/internal/cluster"
-	"github.com/vmware-tanzu/octant/pkg/log"
-	"github.com/vmware-tanzu/octant/pkg/store"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
+
+	"github.com/vmware-tanzu/octant/internal/cluster"
+	"github.com/vmware-tanzu/octant/pkg/log"
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 //go:generate mockgen -source=instance.go -destination=./fake/mock_instance.go -package=fake github.com/vmware-tanzu/octant/internal/terminal Instance

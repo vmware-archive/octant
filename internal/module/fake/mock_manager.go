@@ -6,10 +6,12 @@ package fake
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
+
 	module "github.com/vmware-tanzu/octant/internal/module"
 	octant "github.com/vmware-tanzu/octant/internal/octant"
-	reflect "reflect"
 )
 
 // MockManagerInterface is a mock of ManagerInterface interface

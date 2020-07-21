@@ -5,9 +5,10 @@
 package fake
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	cache "k8s.io/client-go/tools/cache"
-	reflect "reflect"
 )
 
 // MockGenericInformer is a mock of GenericInformer interface

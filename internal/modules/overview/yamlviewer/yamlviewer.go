@@ -7,8 +7,9 @@ package yamlviewer
 
 import (
 	"github.com/pkg/errors"
-	"github.com/vmware-tanzu/octant/pkg/view/component"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // ToComponent converts an object into a YAML component.

@@ -5,9 +5,11 @@
 package fake
 
 import (
-	gomock "github.com/golang/mock/gomock"
-	proto "github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+
+	proto "github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
 )
 
 // MockDashboardConnection is a mock of DashboardConnection interface

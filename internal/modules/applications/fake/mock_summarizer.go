@@ -6,10 +6,12 @@ package fake
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
+
 	applications "github.com/vmware-tanzu/octant/internal/modules/applications"
 	component "github.com/vmware-tanzu/octant/pkg/view/component"
-	reflect "reflect"
 )
 
 // MockSummarizer is a mock of Summarizer interface

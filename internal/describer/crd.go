@@ -8,6 +8,7 @@ package describer
 import (
 	"context"
 	"fmt"
+
 	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/store"

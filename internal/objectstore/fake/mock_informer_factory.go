@@ -5,10 +5,11 @@
 package fake
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	informers "k8s.io/client-go/informers"
-	reflect "reflect"
 )
 
 // MockInformerFactory is a mock of InformerFactory interface

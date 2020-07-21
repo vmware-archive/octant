@@ -6,11 +6,13 @@ package fake
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
+	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	api "github.com/vmware-tanzu/octant/pkg/plugin/api"
 	store "github.com/vmware-tanzu/octant/pkg/store"
-	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	reflect "reflect"
 )
 
 // MockService is a mock of Service interface

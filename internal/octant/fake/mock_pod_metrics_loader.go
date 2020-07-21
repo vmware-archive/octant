@@ -5,9 +5,10 @@
 package fake
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	reflect "reflect"
 )
 
 // MockPodMetricsLoader is a mock of PodMetricsLoader interface
