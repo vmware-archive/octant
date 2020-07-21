@@ -6,14 +6,14 @@ SPDX-License-Identifier: Apache-2.0
 package portforward
 
 import (
+	"github.com/vmware-tanzu/octant/pkg/action"
 	"io"
-	"net/http"
-	"net/url"
-
 	"k8s.io/client-go/rest"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/portforward"
 	"k8s.io/client-go/transport/spdy"
+	"net/http"
+	"net/url"
 )
 
 // Options contains all the options for running a port-forward
@@ -30,7 +30,7 @@ type Options struct {
 }
 
 type portForwarder interface {
-	ForwardPorts(method string, url *url.URL, opts Options) error
+	ForwardPorts(alerter *action.Alerter, method string, url *url.URL, opts Options) error
 }
 
 type DefaultPortForwarder struct {
@@ -53,7 +53,7 @@ type ForwardedPort struct {
 	Remote uint16
 }
 
-func (f *DefaultPortForwarder) ForwardPorts(method string, url *url.URL, opts Options) error {
+func (f *DefaultPortForwarder) ForwardPorts(alerter *action.Alerter, method string, url *url.URL, opts Options) error {
 	transport, upgrader, err := spdy.RoundTripperFor(opts.Config)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func (f *DefaultPortForwarder) ForwardPorts(method string, url *url.URL, opts Op
 	}
 
 	// Wait for resolved ports to become available and send them on up
-	localPortsHandler(fw, opts)
+	localPortsHandler(alerter, fw, opts)
 
 	// Forward and block
 	return fw.ForwardPorts()
@@ -75,7 +75,7 @@ func (f *DefaultPortForwarder) ForwardPorts(method string, url *url.URL, opts Op
 
 // localPortsHandler manages passing up the resolved local ports from the forwarder when
 // they become available via the PortsChannel.
-func localPortsHandler(fw *portforward.PortForwarder, opts Options) {
+func localPortsHandler(alerter *action.Alerter, fw *portforward.PortForwarder, opts Options) {
 	if fw == nil {
 		return
 	}
@@ -84,21 +84,27 @@ func localPortsHandler(fw *portforward.PortForwarder, opts Options) {
 		go func() {
 			select {
 			case <-opts.ReadyChannel:
-				ports, err := fw.GetPorts()
+				forwardedPorts, err := fw.GetPorts()
 				if err != nil {
-					// TODO: alert user (GH#497)
+					(*alerter).SendAlert(action.CreateAlert(action.AlertTypeError, "Error resolving local port: "+err.Error(), action.DefaultAlertExpiration))
 					return
 				}
-				fp := make([]ForwardedPort, len(ports))
-				for i := range ports {
-					fp[i].Local = ports[i].Local
-					fp[i].Remote = ports[i].Remote
-				}
-				opts.PortsChannel <- fp
+				opts.PortsChannel <- convertForwardPortType(forwardedPorts)
 
 			case <-opts.StopChannel:
 				return
 			}
 		}()
 	}
+}
+
+func convertForwardPortType(fps []portforward.ForwardedPort) []ForwardedPort {
+	clonedFps := make([]ForwardedPort, len(fps))
+
+	for i := range fps {
+		clonedFps[i].Local = fps[i].Local
+		clonedFps[i].Remote = fps[i].Remote
+	}
+
+	return clonedFps
 }

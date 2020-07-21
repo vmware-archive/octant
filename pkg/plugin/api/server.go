@@ -109,12 +109,7 @@ func (s *GRPCService) Create(ctx context.Context, object *unstructured.Unstructu
 
 // PortForward creates a port forward.
 func (s *GRPCService) PortForward(ctx context.Context, req PortForwardRequest) (PortForwardResponse, error) {
-	pfResponse, err := s.PortForwarder.Create(
-		ctx,
-		gvk.Pod,
-		req.PodName,
-		req.Namespace,
-		req.Port)
+	pfResponse, err := s.PortForwarder.Create(ctx, nil, gvk.Pod, req.PodName, req.Namespace, req.Port)
 	if err != nil {
 		return PortForwardResponse{}, err
 	}

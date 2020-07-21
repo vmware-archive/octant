@@ -85,7 +85,7 @@ func createPortForward(ctx context.Context, body io.Reader, pfs portforward.Port
 		}
 	}
 
-	resp, err := pfs.Create(ctx, req.gvk(), req.Name, req.Namespace, req.Port)
+	resp, err := pfs.Create(ctx, nil, req.gvk(), req.Name, req.Namespace, req.Port)
 	if err != nil {
 		return &portForwardError{
 			code:     http.StatusInternalServerError,
