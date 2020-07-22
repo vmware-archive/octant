@@ -6,14 +6,16 @@ SPDX-License-Identifier: Apache-2.0
 package portforward
 
 import (
-	"github.com/vmware-tanzu/octant/pkg/action"
 	"io"
+	"net/http"
+	"net/url"
+
 	"k8s.io/client-go/rest"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/portforward"
 	"k8s.io/client-go/transport/spdy"
-	"net/http"
-	"net/url"
+
+	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
 // Options contains all the options for running a port-forward

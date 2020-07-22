@@ -8,10 +8,11 @@ package portforward
 import (
 	"context"
 	"fmt"
-	"github.com/vmware-tanzu/octant/pkg/action"
 	"sort"
 	"sync"
 	"time"
+
+	"github.com/vmware-tanzu/octant/pkg/action"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
