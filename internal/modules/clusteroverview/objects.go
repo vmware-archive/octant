@@ -6,9 +6,11 @@ SPDX-License-Identifier: Apache-2.0
 package clusteroverview
 
 import (
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
 	"github.com/vmware-tanzu/octant/internal/describer"
 	"github.com/vmware-tanzu/octant/pkg/icon"
@@ -105,10 +107,52 @@ var (
 
 	portForwardDescriber = NewPortForwardListDescriber()
 
+	apiServerDescriber = describer.NewSection(
+		"/api-server",
+		"API Server",
+		apiServerApiServices,
+		apiServerMutatingWebhooks,
+		apiServerValidatingWebhooks,
+	)
+
+	apiServerApiServices = describer.NewResource(describer.ResourceOptions{
+		Path:           "/api-server/api-services",
+		ObjectStoreKey: store.Key{APIVersion: "apiregistration.k8s.io/v1", Kind: "APIService"},
+		ListType:       &apiregistrationv1.APIServiceList{},
+		ObjectType:     &apiregistrationv1.APIService{},
+		Titles:         describer.ResourceTitle{List: "API Services", Object: "API Service"},
+		ClusterWide:    true,
+		IconName:       icon.ApiServer,
+		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
+	})
+
+	apiServerValidatingWebhooks = describer.NewResource(describer.ResourceOptions{
+		Path:           "/api-server/validating-webhooks",
+		ObjectStoreKey: store.Key{APIVersion: "admissionregistration.k8s.io/v1", Kind: "ValidatingWebhookConfiguration"},
+		ListType:       &admissionregistrationv1.ValidatingWebhookConfigurationList{},
+		ObjectType:     &admissionregistrationv1.ValidatingWebhookConfiguration{},
+		Titles:         describer.ResourceTitle{List: "Validating Webhook Configurations", Object: "Validating Webhook Configuration"},
+		ClusterWide:    true,
+		IconName:       icon.ApiServer,
+		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
+	})
+
+	apiServerMutatingWebhooks = describer.NewResource(describer.ResourceOptions{
+		Path:           "/api-server/mutating-webhooks",
+		ObjectStoreKey: store.Key{APIVersion: "admissionregistration.k8s.io/v1", Kind: "MutatingWebhookConfiguration"},
+		ListType:       &admissionregistrationv1.MutatingWebhookConfigurationList{},
+		ObjectType:     &admissionregistrationv1.MutatingWebhookConfiguration{},
+		Titles:         describer.ResourceTitle{List: "Mutating Webhook Configurations", Object: "Mutating Webhook Configuration"},
+		ClusterWide:    true,
+		IconName:       icon.ApiServer,
+		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
+	})
+
 	rootDescriber = describer.NewSection(
 		"/",
 		"Cluster Overview",
 		namespacesDescriber,
+		apiServerDescriber,
 		customResourcesDescriber,
 		crdsDescriber,
 		rbacDescriber,

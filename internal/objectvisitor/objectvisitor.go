@@ -90,6 +90,9 @@ func NewDefaultVisitor(dashConfig config.Dash, q queryer.Queryer, options ...Def
 			NewPod(q),
 			NewService(q),
 			NewHorizontalPodAutoscaler(q),
+			NewAPIService(dashConfig.ObjectStore()),
+			NewMutatingWebhookConfiguration(dashConfig.ObjectStore()),
+			NewValidatingWebhookConfiguration(dashConfig.ObjectStore()),
 		},
 		defaultHandler: NewObject(dashConfig, q),
 	}

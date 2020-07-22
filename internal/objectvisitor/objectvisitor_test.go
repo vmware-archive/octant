@@ -18,6 +18,7 @@ import (
 	ovFake "github.com/vmware-tanzu/octant/internal/objectvisitor/fake"
 	queryerFake "github.com/vmware-tanzu/octant/internal/queryer/fake"
 	"github.com/vmware-tanzu/octant/internal/testutil"
+	objectStoreFake "github.com/vmware-tanzu/octant/pkg/store/fake"
 )
 
 func TestDefaultVisitor_Visit_use_typed_visitor(t *testing.T) {
@@ -25,6 +26,9 @@ func TestDefaultVisitor_Visit_use_typed_visitor(t *testing.T) {
 	defer controller.Finish()
 
 	dashConfig := configFake.NewMockDash(controller)
+
+	objectStore := objectStoreFake.NewMockStore(controller)
+	dashConfig.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
 
 	pod := testutil.CreatePod("pod")
 	unstructuredPod := testutil.ToUnstructured(t, pod)

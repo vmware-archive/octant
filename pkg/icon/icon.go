@@ -16,6 +16,7 @@ const (
 	Events                    = "event"
 
 	Namespaces      = "namespace"
+	ApiServer       = "hard-disk"
 	CustomResources = "file-group"
 	Nodes           = "nodes"
 	PortForwards    = "router"

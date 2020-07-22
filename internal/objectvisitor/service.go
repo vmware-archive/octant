@@ -59,7 +59,7 @@ func (s *Service) Visit(ctx context.Context, object *unstructured.Unstructured, 
 					return err
 				}
 				u := &unstructured.Unstructured{Object: m}
-				if err := visitor.Visit(ctx, u, handler, true); err != nil {
+				if err := visitor.Visit(ctx, u, handler, visitDescendants); err != nil {
 					return err
 				}
 
@@ -85,13 +85,99 @@ func (s *Service) Visit(ctx context.Context, object *unstructured.Unstructured, 
 					return err
 				}
 				u := &unstructured.Unstructured{Object: m}
-				if err := visitor.Visit(ctx, u, handler, true); err != nil {
-					return errors.Wrapf(err, "service %s visit ingress %s",
-						kubernetes.PrintObject(service), kubernetes.PrintObject(ingress))
+				if visitDescendants {
+					if err := visitor.Visit(ctx, u, handler, false); err != nil {
+						return errors.Wrapf(err, "service %s visit ingress %s",
+							kubernetes.PrintObject(service), kubernetes.PrintObject(ingress))
+					}
 				}
 
 				return handler.AddEdge(ctx, object, u)
 			})
+		}
+
+		return nil
+	})
+
+	g.Go(func() error {
+		apiservices, err := s.queryer.APIServicesForService(ctx, service)
+		if err != nil {
+			return err
+		}
+
+		for i := range apiservices {
+			apiservice := apiservices[i]
+			g.Go(func() error {
+				m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(apiservice)
+				if err != nil {
+					return err
+				}
+				u := &unstructured.Unstructured{Object: m}
+				if visitDescendants {
+					if err := visitor.Visit(ctx, u, handler, false); err != nil {
+						return err
+					}
+				}
+
+				return handler.AddEdge(ctx, object, u)
+			})
+
+		}
+
+		return nil
+	})
+
+	g.Go(func() error {
+		mutatingwebhookconfigurations, err := s.queryer.MutatingWebhookConfigurationsForService(ctx, service)
+		if err != nil {
+			return err
+		}
+
+		for i := range mutatingwebhookconfigurations {
+			mutatingwebhookconfiguration := mutatingwebhookconfigurations[i]
+			g.Go(func() error {
+				m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(mutatingwebhookconfiguration)
+				if err != nil {
+					return err
+				}
+				u := &unstructured.Unstructured{Object: m}
+				if visitDescendants {
+					if err := visitor.Visit(ctx, u, handler, false); err != nil {
+						return err
+					}
+				}
+
+				return handler.AddEdge(ctx, object, u)
+			})
+
+		}
+
+		return nil
+	})
+
+	g.Go(func() error {
+		validatingwebhookconfigurations, err := s.queryer.ValidatingWebhookConfigurationsForService(ctx, service)
+		if err != nil {
+			return err
+		}
+
+		for i := range validatingwebhookconfigurations {
+			validatingwebhookconfiguration := validatingwebhookconfigurations[i]
+			g.Go(func() error {
+				m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(validatingwebhookconfiguration)
+				if err != nil {
+					return err
+				}
+				u := &unstructured.Unstructured{Object: m}
+				if visitDescendants {
+					if err := visitor.Visit(ctx, u, handler, false); err != nil {
+						return err
+					}
+				}
+
+				return handler.AddEdge(ctx, object, u)
+			})
+
 		}
 
 		return nil

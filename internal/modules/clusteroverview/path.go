@@ -22,6 +22,9 @@ var (
 		gvk.PersistentVolume,
 		gvk.Namespace,
 		gvk.CustomResourceDefinition,
+		gvk.APIService,
+		gvk.MutatingWebhookConfiguration,
+		gvk.ValidatingWebhookConfiguration,
 	}
 )
 
@@ -48,6 +51,12 @@ func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 	case apiVersion == gvk.CustomResourceDefinition.GroupVersion().String() &&
 		kind == gvk.CustomResourceDefinition.Kind:
 		p = "/custom-resource-definitions"
+	case apiVersion == "apiregistration.k8s.io/v1" && kind == "APIService":
+		p = "/api-server/api-services"
+	case apiVersion == "admissionregistration.k8s.io/v1" && kind == "MutatingWebhookConfiguration":
+		p = "/api-server/mutating-webhooks"
+	case apiVersion == "admissionregistration.k8s.io/v1" && kind == "ValidatingWebhookConfiguration":
+		p = "/api-server/validating-webhooks"
 	default:
 		return "", fmt.Errorf("unknown object %s %s", apiVersion, kind)
 	}
