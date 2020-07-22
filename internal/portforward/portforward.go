@@ -32,7 +32,7 @@ type Options struct {
 }
 
 type portForwarder interface {
-	ForwardPorts(alerter *action.Alerter, method string, url *url.URL, opts Options) error
+	ForwardPorts(alerter action.Alerter, method string, url *url.URL, opts Options) error
 }
 
 type DefaultPortForwarder struct {
@@ -55,7 +55,7 @@ type ForwardedPort struct {
 	Remote uint16
 }
 
-func (f *DefaultPortForwarder) ForwardPorts(alerter *action.Alerter, method string, url *url.URL, opts Options) error {
+func (f *DefaultPortForwarder) ForwardPorts(alerter action.Alerter, method string, url *url.URL, opts Options) error {
 	transport, upgrader, err := spdy.RoundTripperFor(opts.Config)
 	if err != nil {
 		return err
@@ -77,10 +77,12 @@ func (f *DefaultPortForwarder) ForwardPorts(alerter *action.Alerter, method stri
 
 // localPortsHandler manages passing up the resolved local ports from the forwarder when
 // they become available via the PortsChannel.
-func localPortsHandler(alerter *action.Alerter, fw *portforward.PortForwarder, opts Options) {
+func localPortsHandler(alerter action.Alerter, fw *portforward.PortForwarder, opts Options) {
 	if fw == nil {
 		return
 	}
+
+	alerter.SendAlert(action.CreateAlert(action.AlertTypeError, "Im working!!!", action.DefaultAlertExpiration))
 
 	if opts.ReadyChannel != nil && opts.PortsChannel != nil {
 		go func() {
@@ -88,7 +90,7 @@ func localPortsHandler(alerter *action.Alerter, fw *portforward.PortForwarder, o
 			case <-opts.ReadyChannel:
 				forwardedPorts, err := fw.GetPorts()
 				if err != nil {
-					(*alerter).SendAlert(action.CreateAlert(action.AlertTypeError, "Error resolving local port: "+err.Error(), action.DefaultAlertExpiration))
+					alerter.SendAlert(action.CreateAlert(action.AlertTypeError, "Error resolving local port: "+err.Error(), action.DefaultAlertExpiration))
 					return
 				}
 				opts.PortsChannel <- convertForwardPortType(forwardedPorts)

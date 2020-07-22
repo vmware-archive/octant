@@ -68,7 +68,7 @@ func (mr *MockPortForwarderMockRecorder) Get(id interface{}) *gomock.Call {
 }
 
 // Create mocks base method
-func (m *MockPortForwarder) Create(ctx context.Context, alerter *action.Alerter, gvk schema.GroupVersionKind, name, namespace string, remotePort uint16) (portforward.CreateResponse, error) {
+func (m *MockPortForwarder) Create(ctx context.Context, alerter action.Alerter, gvk schema.GroupVersionKind, name, namespace string, remotePort uint16) (portforward.CreateResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, alerter, gvk, name, namespace, remotePort)
 	ret0, _ := ret[0].(portforward.CreateResponse)

@@ -38,7 +38,7 @@ var (
 type PortForwarder interface {
 	List(ctx context.Context) []State
 	Get(id string) (State, bool)
-	Create(ctx context.Context, alerter *action.Alerter, gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (CreateResponse, error)
+	Create(ctx context.Context, alerter action.Alerter, gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (CreateResponse, error)
 	FindTarget(namespace string, gvk schema.GroupVersionKind, name string) ([]State, error)
 	FindPod(namespace string, gvk schema.GroupVersionKind, name string) ([]State, error)
 	Stop()
@@ -290,7 +290,7 @@ func (s *Service) verifyPod(ctx context.Context, namespace, name string) (bool, 
 // createForwarder creates a port forwarder, forwards traffic, and blocks until
 // port state information is populated.
 // Returns forwarder id.
-func (s *Service) createForwarder(alerter *action.Alerter, targetRequest, podRequest CreateRequest) (string, error) {
+func (s *Service) createForwarder(alerter action.Alerter, targetRequest, podRequest CreateRequest) (string, error) {
 	logger := s.logger.With("context", "PortForwardService.createForwarder")
 
 	if s.opts.PortForwarder == nil {
@@ -495,7 +495,7 @@ func (s *Service) Get(id string) (State, bool) {
 
 // Create creates a new port forward for the specified object and remote port.
 // Implements PortForwardInterface.
-func (s *Service) Create(ctx context.Context, alerter *action.Alerter, gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (CreateResponse, error) {
+func (s *Service) Create(ctx context.Context, alerter action.Alerter, gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (CreateResponse, error) {
 	logger := s.logger.With("context", "PortForwardService.Create")
 	req := newForwardRequest(gvk, name, namespace, remotePort)
 
