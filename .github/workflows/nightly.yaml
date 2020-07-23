@@ -17,7 +17,7 @@ jobs:
       - name: Build node modules
         run: |
           cd web
-          npm ci
+          npm ci --prefer-offline --no-audit
           npm run-script build
         shell: bash
       - name: Go tools
