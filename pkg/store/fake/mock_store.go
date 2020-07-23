@@ -54,6 +54,21 @@ func (mr *MockStoreMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockStore)(nil).Create), arg0, arg1)
 }
 
+// CreateOrUpdateFromYAML mocks base method
+func (m *MockStore) CreateOrUpdateFromYAML(arg0 context.Context, arg1, arg2 string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateOrUpdateFromYAML", arg0, arg1, arg2)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateOrUpdateFromYAML indicates an expected call of CreateOrUpdateFromYAML
+func (mr *MockStoreMockRecorder) CreateOrUpdateFromYAML(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdateFromYAML", reflect.TypeOf((*MockStore)(nil).CreateOrUpdateFromYAML), arg0, arg1, arg2)
+}
+
 // Delete mocks base method
 func (m *MockStore) Delete(arg0 context.Context, arg1 store.Key) error {
 	m.ctrl.T.Helper()
