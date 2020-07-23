@@ -64,6 +64,35 @@ var (
 		rbacClusterRoleBindings,
 	)
 
+	webhooksDescriber = describer.NewSection(
+		"/webhooks",
+		"Webhooks",
+		webhooksMutatingWebhooks,
+		webhooksValidatingWebhooks,
+	)
+
+	webhooksValidatingWebhooks = describer.NewResource(describer.ResourceOptions{
+		Path:           "/webhooks/validating-webhooks",
+		ObjectStoreKey: store.Key{APIVersion: "admissionregistration.k8s.io/v1beta1", Kind: "ValidatingWebhookConfiguration"},
+		ListType:       &admissionregistrationv1beta1.ValidatingWebhookConfigurationList{},
+		ObjectType:     &admissionregistrationv1beta1.ValidatingWebhookConfiguration{},
+		Titles:         describer.ResourceTitle{List: "Validating Webhook Configurations", Object: "Validating Webhook Configuration"},
+		ClusterWide:    true,
+		IconName:       icon.Webhooks,
+		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
+	})
+
+	webhooksMutatingWebhooks = describer.NewResource(describer.ResourceOptions{
+		Path:           "/webhooks/mutating-webhooks",
+		ObjectStoreKey: store.Key{APIVersion: "admissionregistration.k8s.io/v1beta1", Kind: "MutatingWebhookConfiguration"},
+		ListType:       &admissionregistrationv1beta1.MutatingWebhookConfigurationList{},
+		ObjectType:     &admissionregistrationv1beta1.MutatingWebhookConfiguration{},
+		Titles:         describer.ResourceTitle{List: "Mutating Webhook Configurations", Object: "Mutating Webhook Configuration"},
+		ClusterWide:    true,
+		IconName:       icon.Webhooks,
+		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
+	})
+
 	nodesDescriber = describer.NewResource(describer.ResourceOptions{
 		Path:                  "/nodes",
 		ObjectStoreKey:        store.Key{APIVersion: "v1", Kind: "Node"},
@@ -111,8 +140,6 @@ var (
 		"/api-server",
 		"API Server",
 		apiServerApiServices,
-		apiServerMutatingWebhooks,
-		apiServerValidatingWebhooks,
 	)
 
 	apiServerApiServices = describer.NewResource(describer.ResourceOptions{
@@ -126,38 +153,17 @@ var (
 		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	})
 
-	apiServerValidatingWebhooks = describer.NewResource(describer.ResourceOptions{
-		Path:           "/api-server/validating-webhooks",
-		ObjectStoreKey: store.Key{APIVersion: "admissionregistration.k8s.io/v1beta1", Kind: "ValidatingWebhookConfiguration"},
-		ListType:       &admissionregistrationv1beta1.ValidatingWebhookConfigurationList{},
-		ObjectType:     &admissionregistrationv1beta1.ValidatingWebhookConfiguration{},
-		Titles:         describer.ResourceTitle{List: "Validating Webhook Configurations", Object: "Validating Webhook Configuration"},
-		ClusterWide:    true,
-		IconName:       icon.ApiServer,
-		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
-	})
-
-	apiServerMutatingWebhooks = describer.NewResource(describer.ResourceOptions{
-		Path:           "/api-server/mutating-webhooks",
-		ObjectStoreKey: store.Key{APIVersion: "admissionregistration.k8s.io/v1beta1", Kind: "MutatingWebhookConfiguration"},
-		ListType:       &admissionregistrationv1beta1.MutatingWebhookConfigurationList{},
-		ObjectType:     &admissionregistrationv1beta1.MutatingWebhookConfiguration{},
-		Titles:         describer.ResourceTitle{List: "Mutating Webhook Configurations", Object: "Mutating Webhook Configuration"},
-		ClusterWide:    true,
-		IconName:       icon.ApiServer,
-		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
-	})
-
 	rootDescriber = describer.NewSection(
 		"/",
 		"Cluster Overview",
 		namespacesDescriber,
-		apiServerDescriber,
 		customResourcesDescriber,
 		crdsDescriber,
 		rbacDescriber,
+		webhooksDescriber,
 		nodesDescriber,
 		storageDescriber,
 		portForwardDescriber,
+		apiServerDescriber,
 	)
 )

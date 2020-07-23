@@ -54,9 +54,9 @@ func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 	case apiVersion == "apiregistration.k8s.io/v1" && kind == "APIService":
 		p = "/api-server/api-services"
 	case apiVersion == "admissionregistration.k8s.io/v1beta1" && kind == "MutatingWebhookConfiguration":
-		p = "/api-server/mutating-webhooks"
+		p = "/webhooks/mutating-webhooks"
 	case apiVersion == "admissionregistration.k8s.io/v1beta1" && kind == "ValidatingWebhookConfiguration":
-		p = "/api-server/validating-webhooks"
+		p = "/webhooks/validating-webhooks"
 	default:
 		return "", fmt.Errorf("unknown object %s %s", apiVersion, kind)
 	}
