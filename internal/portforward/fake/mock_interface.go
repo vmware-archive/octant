@@ -12,6 +12,7 @@ import (
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 
 	portforward "github.com/vmware-tanzu/octant/internal/portforward"
+	action "github.com/vmware-tanzu/octant/pkg/action"
 )
 
 // MockPortForwarder is a mock of PortForwarder interface
@@ -67,18 +68,18 @@ func (mr *MockPortForwarderMockRecorder) Get(id interface{}) *gomock.Call {
 }
 
 // Create mocks base method
-func (m *MockPortForwarder) Create(ctx context.Context, gvk schema.GroupVersionKind, name, namespace string, remotePort uint16) (portforward.CreateResponse, error) {
+func (m *MockPortForwarder) Create(ctx context.Context, alerter action.Alerter, gvk schema.GroupVersionKind, name, namespace string, remotePort uint16) (portforward.CreateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, gvk, name, namespace, remotePort)
+	ret := m.ctrl.Call(m, "Create", ctx, alerter, gvk, name, namespace, remotePort)
 	ret0, _ := ret[0].(portforward.CreateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create
-func (mr *MockPortForwarderMockRecorder) Create(ctx, gvk, name, namespace, remotePort interface{}) *gomock.Call {
+func (mr *MockPortForwarderMockRecorder) Create(ctx, alerter, gvk, name, namespace, remotePort interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockPortForwarder)(nil).Create), ctx, gvk, name, namespace, remotePort)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockPortForwarder)(nil).Create), ctx, alerter, gvk, name, namespace, remotePort)
 }
 
 // FindTarget mocks base method

@@ -12,6 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/action"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -36,7 +38,7 @@ var (
 type PortForwarder interface {
 	List(ctx context.Context) []State
 	Get(id string) (State, bool)
-	Create(ctx context.Context, gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (CreateResponse, error)
+	Create(ctx context.Context, alerter action.Alerter, gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (CreateResponse, error)
 	FindTarget(namespace string, gvk schema.GroupVersionKind, name string) ([]State, error)
 	FindPod(namespace string, gvk schema.GroupVersionKind, name string) ([]State, error)
 	Stop()
@@ -49,14 +51,11 @@ type PortForwardPortSpec struct {
 	Local  uint16 `json:"local,omitempty"`
 }
 
-// PortForwardSpec describes a port forward.
-// TODO Merge with PortForwardState (GH#498)
-type PortForwardSpec struct {
-	ID        string                `json:"id"`
-	Status    string                `json:"status"`
-	Message   string                `json:"message"`
-	Ports     []PortForwardPortSpec `json:"ports"`
-	CreatedAt time.Time             `json:"createdAt"`
+// CreateResponse describes a port forward.
+// TODO Merge with State (GH#498)
+type CreateResponse struct {
+	ID    string                `json:"id"`
+	Ports []PortForwardPortSpec `json:"ports"`
 }
 
 type CreateRequest struct {
@@ -66,8 +65,6 @@ type CreateRequest struct {
 	Name       string                `json:"name"`
 	Ports      []PortForwardPortSpec `json:"ports"`
 }
-
-type CreateResponse PortForwardSpec
 
 // Target references a kubernetes object
 type Target struct {
@@ -293,7 +290,7 @@ func (s *Service) verifyPod(ctx context.Context, namespace, name string) (bool, 
 // createForwarder creates a port forwarder, forwards traffic, and blocks until
 // port state information is populated.
 // Returns forwarder id.
-func (s *Service) createForwarder(targetRequest, podRequest CreateRequest) (string, error) {
+func (s *Service) createForwarder(alerter action.Alerter, targetRequest, podRequest CreateRequest) (string, error) {
 	logger := s.logger.With("context", "PortForwardService.createForwarder")
 
 	if s.opts.PortForwarder == nil {
@@ -377,7 +374,7 @@ func (s *Service) createForwarder(targetRequest, podRequest CreateRequest) (stri
 	go func() {
 		// Blocks until forwarder completes
 		logger.With("url", req.URL()).Debugf("starting port-forward")
-		err := s.opts.PortForwarder.ForwardPorts("POST", req.URL(), opts)
+		err := s.opts.PortForwarder.ForwardPorts(alerter, "POST", req.URL(), opts)
 
 		logger.Debugf("forwarding terminated: %v", err)
 
@@ -417,14 +414,12 @@ func (s *Service) responseForCreate(id string) (CreateResponse, error) {
 	}
 
 	response.ID = id
-	response.CreatedAt = state.CreatedAt
 	rp := make([]PortForwardPortSpec, len(state.Ports))
 	for i := range state.Ports {
 		rp[i].Local = state.Ports[i].Local
 		rp[i].Remote = state.Ports[i].Remote
 	}
 	response.Ports = rp
-	response.Status = "ok"
 	return response, nil
 }
 
@@ -500,7 +495,7 @@ func (s *Service) Get(id string) (State, bool) {
 
 // Create creates a new port forward for the specified object and remote port.
 // Implements PortForwardInterface.
-func (s *Service) Create(ctx context.Context, gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (CreateResponse, error) {
+func (s *Service) Create(ctx context.Context, alerter action.Alerter, gvk schema.GroupVersionKind, name string, namespace string, remotePort uint16) (CreateResponse, error) {
 	logger := s.logger.With("context", "PortForwardService.Create")
 	req := newForwardRequest(gvk, name, namespace, remotePort)
 
@@ -524,7 +519,7 @@ func (s *Service) Create(ctx context.Context, gvk schema.GroupVersionKind, name 
 	podReq.Name = podName
 	podReq.Kind = "Pod"
 
-	id, err := s.createForwarder(req, CreateRequest{
+	id, err := s.createForwarder(alerter, req, CreateRequest{
 		Namespace:  req.Namespace,
 		APIVersion: req.APIVersion,
 		Kind:       "Pod",
