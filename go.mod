@@ -36,7 +36,7 @@ require (
 	github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e
 	github.com/soheilhy/cmux v0.1.4
 	github.com/spf13/afero v1.3.2
-	github.com/spf13/cobra v0.0.7
+	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.6.1
 	go.opencensus.io v0.22.4
@@ -45,13 +45,13 @@ require (
 	golang.org/x/tools v0.0.0-20200716134326-a8f9df4c9543
 	google.golang.org/grpc v1.30.0
 	google.golang.org/grpc/examples v0.0.0-20200707005602-4258d12073b4 // indirect
-	k8s.io/api v0.19.0-alpha.3
+	k8s.io/api v0.20.0-alpha.0
 	k8s.io/apiextensions-apiserver v0.19.0-alpha.3
-	k8s.io/apimachinery v0.19.0-beta.2
-	k8s.io/client-go v0.19.0-alpha.3
+	k8s.io/apimachinery v0.20.0-alpha.0
+	k8s.io/client-go v0.20.0-alpha.0
 	k8s.io/klog v1.0.0
-	k8s.io/kube-aggregator v0.19.0-alpha.3
+	k8s.io/kube-aggregator v0.20.0-alpha.0
 	k8s.io/metrics v0.19.0-alpha.3
-	k8s.io/utils v0.0.0-20200414100711-2df71ebbae66
+	k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19
 	sigs.k8s.io/yaml v1.2.0
 )
