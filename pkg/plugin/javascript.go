@@ -1,24 +1,27 @@
 package plugin
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/dop251/goja"
+	"github.com/dop251/goja_nodejs/console"
+	"github.com/dop251/goja_nodejs/eventloop"
 	"github.com/dop251/goja_nodejs/require"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware-tanzu/octant/internal/log"
+	olog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
-	"github.com/vmware-tanzu/octant/pkg/plugin/api"
-	"github.com/vmware-tanzu/octant/pkg/plugin/console"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -31,7 +34,7 @@ func IsJavaScriptPlugin(pluginName string) bool {
 	return IsTypescriptPlugin(pluginName) || strings.Contains(pluginName, ".js")
 }
 
-type pluginRuntimeFactory func(context.Context, string, bool) (*goja.Runtime, *TSLoader, error)
+type pluginRuntimeFactory func(context.Context, string, bool) (*eventloop.EventLoop, *TSLoader, error)
 type pluginClassExtractor func(*goja.Runtime) (*goja.Object, error)
 type pluginMetadataExtractor func(*goja.Runtime, goja.Value) (*Metadata, error)
 
@@ -51,7 +54,7 @@ type JSPlugin interface {
 }
 
 type jsPlugin struct {
-	vm *goja.Runtime
+	loop *eventloop.EventLoop
 
 	metadata    *Metadata
 	pluginClass *goja.Object
@@ -61,52 +64,80 @@ type jsPlugin struct {
 	classExtractor    pluginClassExtractor
 	metadataExtractor pluginMetadataExtractor
 
-	client *api.Client
-	mu     sync.Mutex
-	ctx    context.Context
+	objectStore store.Store
+	mu          sync.Mutex
+	ctx         context.Context
+	logger      log.Logger
 }
 
 var _ JSPlugin = (*jsPlugin)(nil)
 
 // NewJSPlugin creates a new instances of a JavaScript plugin.
-func NewJSPlugin(ctx context.Context, client *api.Client, pluginPath string, prf pluginRuntimeFactory, pce pluginClassExtractor, pme pluginMetadataExtractor) (*jsPlugin, error) {
-	vm, tsl, err := prf(ctx, pluginPath, IsTypescriptPlugin(pluginPath))
-
+func NewJSPlugin(ctx context.Context, objectStore store.Store, pluginPath string, prf pluginRuntimeFactory, pce pluginClassExtractor, pme pluginMetadataExtractor) (*jsPlugin, error) {
+	loop, tsl, err := prf(ctx, pluginPath, IsTypescriptPlugin(pluginPath))
 	if err != nil {
 		return nil, fmt.Errorf("initializing runtime: %w", err)
 	}
 
-	if tsl != nil {
-		_, err = tsl.TranspileAndRun(pluginPath)
-		if err != nil {
-			return nil, fmt.Errorf("script transpile and execution: %w", err)
-		}
-	} else {
-		buf, err := ioutil.ReadFile(pluginPath)
-		if err != nil {
-			return nil, fmt.Errorf("reading script: %w", err)
-		}
-		_, err = vm.RunString(string(buf[:]))
-		if err != nil {
-			return nil, fmt.Errorf("script execution: %w", err)
-		}
-	}
+	var pluginClass *goja.Object
+	var metadata *Metadata
 
-	pluginClass, err := pce(vm)
-	if err != nil {
-		return nil, fmt.Errorf("loading pluginClass: %w", err)
-	}
+	errCh := make(chan error)
 
-	metadata, err := pme(vm, pluginClass)
+	loop.RunOnLoop(func(vm *goja.Runtime) {
+		var err error
+		if tsl != nil {
+			_, err = tsl.TranspileAndRun(pluginPath)
+			if err != nil {
+				errCh <- fmt.Errorf("script transpile and execution: %w", err)
+				return
+			}
+		} else {
+			buf, err := ioutil.ReadFile(pluginPath)
+			if err != nil {
+				errCh <- fmt.Errorf("reading script: %w", err)
+			}
+			program, err := goja.Compile(pluginPath, string(buf), false)
+			if err != nil {
+				errCh <- fmt.Errorf("compiling: %w", err)
+			}
+			_, err = vm.RunProgram(program)
+			if err != nil {
+				errCh <- fmt.Errorf("script execution: %w", err)
+			}
+		}
+
+		vm.Set("httpClient", createHTTPClientObject(vm, pluginClass))
+
+		gc := &dashboardClient{
+			objectStore: objectStore,
+			vm:          vm,
+			ctx:         ctx,
+		}
+		vm.Set("dashboardClient", createClientObject(gc))
+
+		pluginClass, err = pce(vm)
+		if err != nil {
+			errCh <- fmt.Errorf("loading pluginClass: %w", err)
+		}
+
+		metadata, err = pme(vm, pluginClass)
+		if err != nil {
+			errCh <- fmt.Errorf("loading metadata: %w", err)
+		}
+		errCh <- nil
+
+	})
+
+	err = <-errCh
 	if err != nil {
-		return nil, fmt.Errorf("loading metadata: %w", err)
+		return nil, err
 	}
 
 	plugin := &jsPlugin{
-		vm:                vm,
+		loop:              loop,
 		pluginClass:       pluginClass,
 		metadata:          metadata,
-		client:            client,
 		runtimeFactory:    prf,
 		classExtractor:    pce,
 		metadataExtractor: pme,
@@ -119,7 +150,7 @@ func NewJSPlugin(ctx context.Context, client *api.Client, pluginPath string, prf
 
 // Close closes the dashboard client connection.
 func (t *jsPlugin) Close() {
-	_ = t.client.Close()
+	t.loop.Stop()
 }
 
 // PluginPath returns the pluginPath.
@@ -132,29 +163,43 @@ func (t *jsPlugin) Navigation(_ context.Context) (navigation.Navigation, error) 
 	defer t.mu.Unlock()
 
 	nav := navigation.Navigation{}
+	errCh := make(chan error)
 
-	handler, err := t.vm.RunString("_concretePlugin.navigationHandler")
+	t.loop.RunOnLoop(func(vm *goja.Runtime) {
+		handler, err := vm.RunString("_concretePlugin.navigationHandler")
+		if err != nil {
+			errCh <- fmt.Errorf("unable to load navigationHandler from plugin: %w", err)
+			return
+		}
+
+		cHandler, ok := goja.AssertFunction(handler)
+		if !ok {
+			errCh <- fmt.Errorf("navigationHandler is not callable")
+			return
+		}
+
+		s, err := cHandler(t.pluginClass)
+		if err != nil {
+			errCh <- fmt.Errorf("calling navigationHandler: %w", err)
+			return
+		}
+
+		jsonNav, err := json.Marshal(s.Export())
+		if err != nil {
+			errCh <- fmt.Errorf("unable to marshal navigation json: %w", err)
+			return
+		}
+
+		if err := json.Unmarshal(jsonNav, &nav); err != nil {
+			errCh <- fmt.Errorf("unable to unmarshal navigation json: %w", err)
+			return
+		}
+		errCh <- nil
+	})
+
+	err := <-errCh
 	if err != nil {
-		return nav, fmt.Errorf("unable to load navigationHandler from plugin: %w", err)
-	}
-
-	cHandler, ok := goja.AssertFunction(handler)
-	if !ok {
-		return nav, fmt.Errorf("navigationHandler is not callable")
-	}
-
-	s, err := cHandler(t.pluginClass)
-	if err != nil {
-		return nav, fmt.Errorf("calling navigationHandler: %w", err)
-	}
-
-	jsonNav, err := json.Marshal(s.Export())
-	if err != nil {
-		return nav, fmt.Errorf("unable to marshal navigation json: %w", err)
-	}
-
-	if err := json.Unmarshal(jsonNav, &nav); err != nil {
-		return nav, fmt.Errorf("unable to unmarshal navigation json: %w", err)
+		return nav, err
 	}
 
 	return nav, nil
@@ -165,102 +210,115 @@ func (t *jsPlugin) Content(_ context.Context, contentPath string) (component.Con
 	defer t.mu.Unlock()
 
 	cr := component.ContentResponse{}
+	errCh := make(chan error)
 
-	handler, err := t.vm.RunString("_concretePlugin.contentHandler")
-	if err != nil {
-		return cr, fmt.Errorf("unable to load contentHandler from plugin: %w", err)
-	}
-
-	cHandler, ok := goja.AssertFunction(handler)
-	if !ok {
-		return cr, fmt.Errorf("contentHandler is not callable")
-	}
-	gc := dashboardClient{
-		client: t.client,
-		vm:     t.vm,
-		ctx:    t.ctx,
-	}
-
-	obj := t.vm.NewObject()
-	if err := obj.Set("client", createClientObject(&gc)); err != nil {
-		return cr, fmt.Errorf("unable to set client: %w", err)
-	}
-	if err := obj.Set("contentPath", t.vm.ToValue(contentPath)); err != nil {
-		return cr, fmt.Errorf("unable to set contentPath: %w", err)
-	}
-	s, err := cHandler(t.pluginClass, obj)
-	if err != nil {
-		return cr, fmt.Errorf("calling contentHandler: %w", err)
-	}
-
-	pluginResp := s.ToObject(t.vm)
-	if pluginResp == nil {
-		return cr, fmt.Errorf("empty contentResponse")
-	}
-
-	content := pluginResp.Get("content")
-	if content == goja.Undefined() {
-		return cr, fmt.Errorf("unable to get content from contentResponse")
-	}
-
-	contentObj, ok := content.Export().(map[string]interface{})
-	if !ok {
-		return cr, fmt.Errorf("unable to get content as map from contentResponse")
-	}
-
-	rawTitle, ok := contentObj["title"]
-	if ok {
-		titles, ok := rawTitle.([]interface{})
-		if !ok {
-			return cr, fmt.Errorf("unable to get title array from content")
+	t.loop.RunOnLoop(func(vm *goja.Runtime) {
+		handler, err := vm.RunString("_concretePlugin.contentHandler")
+		if err != nil {
+			errCh <- fmt.Errorf("unable to load contentHandler from plugin: %w", err)
+			return
 		}
-		for i, c := range titles {
-			realTitle, err := extractComponent(fmt.Sprintf("title[%d]", i), c)
-			if err != nil {
-				return cr, fmt.Errorf("unable to extract title: %w", err)
-			}
 
-			title, ok := realTitle.(component.TitleComponent)
+		cHandler, ok := goja.AssertFunction(handler)
+		if !ok {
+			errCh <- fmt.Errorf("contentHandler is not callable")
+			return
+		}
+		obj := vm.NewObject()
+		if err := obj.Set("contentPath", vm.ToValue(contentPath)); err != nil {
+			errCh <- fmt.Errorf("unable to set contentPath: %w", err)
+			return
+		}
+		s, err := cHandler(t.pluginClass, obj)
+		if err != nil {
+			errCh <- fmt.Errorf("calling contentHandler: %w", err)
+			return
+		}
+
+		pluginResp := s.ToObject(vm)
+		if pluginResp == nil {
+			errCh <- fmt.Errorf("empty contentResponse")
+			return
+		}
+
+		content := pluginResp.Get("content")
+		if content == goja.Undefined() {
+			errCh <- fmt.Errorf("unable to get content from contentResponse")
+			return
+		}
+
+		contentObj, ok := content.Export().(map[string]interface{})
+		if !ok {
+			errCh <- fmt.Errorf("unable to get content as map from contentResponse")
+			return
+		}
+
+		rawTitle, ok := contentObj["title"]
+		if ok {
+			titles, ok := rawTitle.([]interface{})
 			if !ok {
-				return cr, fmt.Errorf("unable to convert component to TitleComponent")
+				errCh <- fmt.Errorf("unable to get title array from content")
+				return
 			}
-			cr.Title = append(cr.Title, title)
-		}
-	}
+			for i, c := range titles {
+				realTitle, err := extractComponent(fmt.Sprintf("title[%d]", i), c)
+				if err != nil {
+					errCh <- fmt.Errorf("unable to extract title: %w", err)
+					return
+				}
 
-	rawComponents, ok := contentObj["viewComponents"]
-	if !ok {
-		return cr, fmt.Errorf("unable to get viewComponents from content")
-	}
-
-	components, ok := rawComponents.([]interface{})
-	if !ok {
-		return cr, fmt.Errorf("unable to get viewComponents list")
-	}
-
-	for i, c := range components {
-		realComponent, err := extractComponent(fmt.Sprintf("viewComponent[%d]", i), c)
-		if err != nil {
-			return cr, fmt.Errorf("unable to extract component: %w", err)
-		}
-		cr.Add(realComponent)
-	}
-
-	rawButtonGroup, ok := contentObj["buttonGroup"]
-	if ok {
-		realButtonGroup, err := extractComponent("buttonGroup", rawButtonGroup)
-		if err != nil {
-			return cr, fmt.Errorf("unable to extract buttonGroup: %w", err)
+				title, ok := realTitle.(component.TitleComponent)
+				if !ok {
+					errCh <- fmt.Errorf("unable to convert component to TitleComponent")
+					return
+				}
+				cr.Title = append(cr.Title, title)
+			}
 		}
 
-		buttonGroup, ok := realButtonGroup.(*component.ButtonGroup)
+		rawComponents, ok := contentObj["viewComponents"]
 		if !ok {
-			return cr, fmt.Errorf("unable to convert extracted component to buttonGroup")
+			errCh <- fmt.Errorf("unable to get viewComponents from content")
+			return
 		}
 
-		cr.ButtonGroup = buttonGroup
-	}
+		components, ok := rawComponents.([]interface{})
+		if !ok {
+			errCh <- fmt.Errorf("unable to get viewComponents list")
+			return
+		}
 
+		for i, c := range components {
+			realComponent, err := extractComponent(fmt.Sprintf("viewComponent[%d]", i), c)
+			if err != nil {
+				errCh <- fmt.Errorf("unable to extract component: %w", err)
+				return
+			}
+			cr.Add(realComponent)
+		}
+
+		rawButtonGroup, ok := contentObj["buttonGroup"]
+		if ok {
+			realButtonGroup, err := extractComponent("buttonGroup", rawButtonGroup)
+			if err != nil {
+				errCh <- fmt.Errorf("unable to extract buttonGroup: %w", err)
+				return
+			}
+
+			buttonGroup, ok := realButtonGroup.(*component.ButtonGroup)
+			if !ok {
+				errCh <- fmt.Errorf("unable to convert extracted component to buttonGroup")
+				return
+			}
+
+			cr.ButtonGroup = buttonGroup
+		}
+		errCh <- nil
+	})
+
+	if err := <-errCh; err != nil {
+		return cr, err
+	}
 	return cr, nil
 }
 
@@ -348,48 +406,54 @@ func (t *jsPlugin) HandleAction(_ context.Context, actionPath string, payload ac
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	handler, err := t.vm.RunString("_concretePlugin.actionHandler")
-	if err != nil {
-		return fmt.Errorf("unable to load actionHandler from plugin: %w", err)
-	}
+	errCh := make(chan error)
 
-	cHandler, ok := goja.AssertFunction(handler)
-	if !ok {
-		return fmt.Errorf("actionHandler is not callable")
-	}
+	t.loop.RunOnLoop(func(vm *goja.Runtime) {
+		handler, err := vm.RunString("_concretePlugin.actionHandler")
+		if err != nil {
+			errCh <- fmt.Errorf("unable to load actionHandler from plugin: %w", err)
+			return
+		}
 
-	gc := dashboardClient{
-		client: t.client,
-		vm:     t.vm,
-		ctx:    t.ctx,
-	}
+		cHandler, ok := goja.AssertFunction(handler)
+		if !ok {
+			errCh <- fmt.Errorf("actionHandler is not callable")
+			return
+		}
 
-	var pl map[string]interface{}
-	pl = payload
+		var pl map[string]interface{}
+		pl = payload
 
-	obj := t.vm.NewObject()
-	if err := obj.Set("client", createClientObject(&gc)); err != nil {
-		return fmt.Errorf("unable to set client: %w", err)
-	}
-	if err := obj.Set("actionName", t.vm.ToValue(actionPath)); err != nil {
-		return fmt.Errorf("unable to set actionName: %w", err)
-	}
-	if err := obj.Set("payload", pl); err != nil {
-		return fmt.Errorf("unable to set payload: %w", err)
-	}
+		obj := vm.NewObject()
+		if err := obj.Set("actionName", vm.ToValue(actionPath)); err != nil {
+			errCh <- fmt.Errorf("unable to set actionName: %w", err)
+			return
+		}
+		if err := obj.Set("payload", pl); err != nil {
+			errCh <- fmt.Errorf("unable to set payload: %w", err)
+			return
+		}
 
-	s, err := cHandler(t.pluginClass, obj)
-	if err != nil {
-		return fmt.Errorf("calling actionHandler: %w", err)
-	}
+		s, err := cHandler(t.pluginClass, obj)
+		if err != nil {
+			errCh <- fmt.Errorf("calling actionHandler: %w", err)
+			return
+		}
 
-	if s != goja.Undefined() {
-		if jsErr := s.ToObject(t.vm); jsErr != nil {
-			errStr := jsErr.Get("error")
-			if errStr != goja.Undefined() {
-				return fmt.Errorf("%s actionHandler: %q", t.pluginPath, jsErr.Get("error"))
+		if s != goja.Undefined() {
+			if jsErr := s.ToObject(vm); jsErr != nil {
+				errStr := jsErr.Get("error")
+				if errStr != goja.Undefined() {
+					errCh <- fmt.Errorf("%s actionHandler: %q", t.pluginPath, jsErr.Get("error"))
+					return
+				}
 			}
 		}
+		errCh <- nil
+	})
+
+	if err := <-errCh; err != nil {
+		return err
 	}
 
 	return nil
@@ -447,38 +511,43 @@ func (t *jsPlugin) Print(_ context.Context, object runtime.Object) (PrintRespons
 }
 
 func (t *jsPlugin) objectRequestCall(handlerName string, object runtime.Object) (*goja.Object, error) {
-	handler, err := t.vm.RunString(fmt.Sprintf("_concretePlugin.%s", handlerName))
-	if err != nil {
-		return nil, fmt.Errorf("unable to load %s from plugin: %w", handlerName, err)
-	}
+	errCh := make(chan error)
+	var response *goja.Object
 
-	cHandler, ok := goja.AssertFunction(handler)
-	if !ok {
-		return nil, fmt.Errorf("%s is not callable", handlerName)
-	}
+	t.loop.RunOnLoop(func(vm *goja.Runtime) {
+		handler, err := vm.RunString(fmt.Sprintf("_concretePlugin.%s", handlerName))
+		if err != nil {
+			errCh <- fmt.Errorf("unable to load %s from plugin: %w", handlerName, err)
+			return
+		}
 
-	gc := dashboardClient{
-		client: t.client,
-		vm:     t.vm,
-		ctx:    t.ctx,
-	}
+		cHandler, ok := goja.AssertFunction(handler)
+		if !ok {
+			errCh <- fmt.Errorf("%s is not callable", handlerName)
+			return
+		}
 
-	obj := t.vm.NewObject()
-	if err := obj.Set("client", createClientObject(&gc)); err != nil {
-		return nil, fmt.Errorf("unable to set client: %w", err)
-	}
-	if err := obj.Set("object", t.vm.ToValue(object)); err != nil {
-		return nil, fmt.Errorf("unable to set object: %w", err)
-	}
+		obj := vm.NewObject()
+		if err := obj.Set("object", vm.ToValue(object)); err != nil {
+			errCh <- fmt.Errorf("unable to set object: %w", err)
+			return
+		}
+		s, err := cHandler(t.pluginClass, obj)
+		if err != nil {
+			errCh <- err
+			return
+		}
 
-	s, err := cHandler(t.pluginClass, obj)
-	if err != nil {
+		response = s.ToObject(vm)
+		if response == nil {
+			errCh <- fmt.Errorf("no status found")
+			return
+		}
+		errCh <- nil
+	})
+
+	if err := <-errCh; err != nil {
 		return nil, err
-	}
-
-	response := s.ToObject(t.vm)
-	if response == nil {
-		return nil, fmt.Errorf("no status found")
 	}
 
 	return response, nil
@@ -587,7 +656,7 @@ func ExtractDefaultClass(vm *goja.Runtime) (*goja.Object, error) {
 	instantiateClass := "var _concretePlugin = new module.exports.default; _concretePlugin"
 	// This is the library name the Octant webpack configuration uses.
 	if vm.Get("_octantPlugin") != nil {
-		instantiateClass = "var _concretePlugin = new _octantPlugin; _concretePlugin"
+		instantiateClass = "var _concretePlugin = new _octantPlugin(dashboardClient, httpClient); _concretePlugin"
 	}
 
 	v, err := vm.RunString(instantiateClass)
@@ -707,44 +776,88 @@ func ExtractMetadata(vm *goja.Runtime, pluginValue goja.Value) (*Metadata, error
 	return metadata, nil
 }
 
-func CreateRuntime(ctx context.Context, logName string, typescript bool) (*goja.Runtime, *TSLoader, error) {
-	vm := goja.New()
+func CreateRuntimeLoop(ctx context.Context, logName string, typescript bool) (*eventloop.EventLoop, *TSLoader, error) {
+	loop := eventloop.NewEventLoop()
+	loop.Start()
 
-	vm.Set("global", vm.GlobalObject())
-	vm.Set("self", vm.GlobalObject())
+	var tsl *TSLoader
+	errCh := make(chan error)
 
-	_, err := vm.RunString(`
+	loop.RunOnLoop(func(vm *goja.Runtime) {
+		vm.Set("global", vm.GlobalObject())
+		vm.Set("self", vm.GlobalObject())
+
+		_, err := vm.RunString(`
 var module = { exports: {} };
 var exports = module.exports;
 `)
-	if err != nil {
-		return nil, nil, fmt.Errorf("runtime global values: %w", err)
-	}
-
-	var tsl *TSLoader
-	if typescript {
-		tsl, err = NewTSLoader(vm)
 		if err != nil {
-			return nil, nil, err
+			errCh <- fmt.Errorf("runtime global values: %w", err)
+			return
 		}
+
+		if typescript {
+			tsl, err = NewTSLoader(vm)
+			if err != nil {
+				errCh <- fmt.Errorf("tsloader: %w", err)
+				return
+			}
+		}
+
+		registry := require.NewRegistryWithLoader(tsl.SourceLoader)
+		registry.Enable(vm)
+
+		logger := olog.From(ctx).With("plugin", logName)
+		printer := logPrinter{logger: logger}
+		registry.RegisterNativeModule("console", console.RequireWithPrinter(printer))
+		console.Enable(vm)
+
+		// This maps Caps fields to lower fields from struct to Object based on the JSON annotations.
+		vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
+		errCh <- nil
+	})
+
+	err := <-errCh
+	if err != nil {
+		return nil, nil, err
 	}
 
-	registry := require.NewRegistryWithLoader(tsl.SourceLoader)
-	registry.Enable(vm)
+	return loop, tsl, nil
+}
 
-	logger := log.From(ctx).Named(logName)
-	console.CustomInit(logger)
-	console.Enable(vm)
+type logPrinter struct {
+	logger log.Logger
+}
 
-	// This maps Caps fields to lower fields from struct to Object based on the JSON annotations.
-	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
-	return vm, tsl, nil
+func (l logPrinter) Log(msg string) {
+	l.logger.Infof(msg)
+}
+
+func (l logPrinter) Warn(msg string) {
+	l.logger.Warnf(msg)
+}
+
+func (l logPrinter) Error(msg string) {
+	l.logger.Errorf(msg)
 }
 
 type dashboardClient struct {
-	client *api.Client
-	vm     *goja.Runtime
-	ctx    context.Context
+	objectStore store.Store
+	vm          *goja.Runtime
+	ctx         context.Context
+}
+
+func (d *dashboardClient) Delete(c goja.FunctionCall) goja.Value {
+	var key store.Key
+	obj := c.Argument(0).ToObject(d.vm)
+	if err := d.vm.ExportTo(obj, &key); err != nil {
+		return d.vm.NewTypeError(fmt.Errorf("dashboardClient.Delete: %w", err))
+	}
+
+	if err := d.objectStore.Delete(d.ctx, key); err != nil {
+		return d.vm.NewGoError(err)
+	}
+	return goja.Undefined()
 }
 
 func (d *dashboardClient) Get(c goja.FunctionCall) goja.Value {
@@ -754,7 +867,7 @@ func (d *dashboardClient) Get(c goja.FunctionCall) goja.Value {
 		return d.vm.NewGoError(fmt.Errorf("dashboardClient.Get: %w", err))
 	}
 
-	u, err := d.client.Get(d.ctx, key)
+	u, err := d.objectStore.Get(d.ctx, key)
 	if err != nil {
 		return d.vm.NewGoError(err)
 	}
@@ -769,7 +882,7 @@ func (d *dashboardClient) List(c goja.FunctionCall) goja.Value {
 		return d.vm.NewGoError(fmt.Errorf("dashboardClient.List: %w", err))
 	}
 
-	u, err := d.client.List(d.ctx, key)
+	u, _, err := d.objectStore.List(d.ctx, key)
 	if err != nil {
 		return d.vm.NewGoError(err)
 	}
@@ -782,34 +895,24 @@ func (d *dashboardClient) List(c goja.FunctionCall) goja.Value {
 	return d.vm.ToValue(items)
 }
 
-/*
 func (d *dashboardClient) Create(c goja.FunctionCall) goja.Value {
-	var u *unstructured.Unstructured
-	obj := c.Argument(0).ToObject(d.vm)
-	d.vm.ExportTo(obj, &u)
+	namespace := c.Argument(0).String()
+	update := c.Argument(1).String()
 
-	err := d.client.Create(d.ctx, u)
+	if namespace == "" {
+		return d.vm.NewTypeError(fmt.Errorf("create/update: invalid namespace"))
+	}
+
+	if update == "" {
+		return d.vm.NewTypeError(fmt.Errorf("create/update: empty yaml"))
+	}
+
+	results, err := d.objectStore.CreateOrUpdateFromYAML(d.ctx, namespace, update)
 	if err != nil {
-		return d.vm.NewGoError(err)
+		return d.vm.NewTypeError(fmt.Errorf("create/update: %w", err))
 	}
 
-	return goja.Undefined()
-}
-*/
-
-func (d *dashboardClient) Update(c goja.FunctionCall) goja.Value {
-	var u *unstructured.Unstructured
-	obj := c.Argument(0).ToObject(d.vm)
-	if err := d.vm.ExportTo(obj, &u); err != nil {
-		return d.vm.NewGoError(fmt.Errorf("dashboardClient.Update: %w", err))
-	}
-
-	err := d.client.Update(d.ctx, u)
-	if err != nil {
-		return d.vm.NewGoError(err)
-	}
-
-	return goja.Undefined()
+	return d.vm.ToValue(results)
 }
 
 func createClientObject(d *dashboardClient) goja.Value {
@@ -820,8 +923,99 @@ func createClientObject(d *dashboardClient) goja.Value {
 	if err := obj.Set("List", d.List); err != nil {
 		return d.vm.NewGoError(err)
 	}
-	if err := obj.Set("Update", d.Update); err != nil {
+	if err := obj.Set("Create", d.Create); err != nil {
+		return d.vm.NewGoError(err)
+	}
+	if err := obj.Set("Update", d.Create); err != nil {
+		return d.vm.NewGoError(err)
+	}
+	if err := obj.Set("Delete", d.Delete); err != nil {
 		return d.vm.NewGoError(err)
 	}
 	return obj
+}
+
+type httpClient struct {
+	vm   *goja.Runtime
+	this *goja.Object
+}
+
+func createHTTPClientObject(vm *goja.Runtime, this *goja.Object) goja.Value {
+	client := vm.NewObject()
+	h := &httpClient{
+		vm:   vm,
+		this: this,
+	}
+	if err := client.Set("get", h.get); err != nil {
+		return vm.NewTypeError(fmt.Errorf("httpClient.Set.get: %w", err))
+	}
+	if err := client.Set("getJSON", h.getJSON); err != nil {
+		return vm.NewTypeError(fmt.Errorf("httpClient.Set.getJSON: %w", err))
+	}
+	if err := client.Set("post", h.post); err != nil {
+		return vm.NewTypeError(fmt.Errorf("httpClient.Set.post: %w", err))
+	}
+	return client
+}
+
+func (h *httpClient) _get(c goja.FunctionCall) (goja.Callable, []byte, error) {
+	if len(c.Arguments) != 2 {
+		return nil, nil, fmt.Errorf("invalid arguments")
+	}
+
+	urlArg := c.Argument(0).String()
+	if urlArg == "" {
+		return nil, nil, fmt.Errorf("empty url")
+	}
+
+	callbackArg := c.Argument(1).ToObject(h.vm)
+	callback, ok := goja.AssertFunction(callbackArg)
+	if !ok || callback == nil {
+		return nil, nil, fmt.Errorf("bad callback function")
+	}
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	r, err := client.Get(urlArg)
+	if err != nil {
+		return nil, nil, fmt.Errorf("get: %w", err)
+	}
+	defer func() {
+		_ = r.Body.Close()
+	}()
+	response, err := ioutil.ReadAll(r.Body)
+	return callback, response, err
+}
+
+func (h *httpClient) get(c goja.FunctionCall) goja.Value {
+	callback, response, err := h._get(c)
+	if err != nil {
+		return h.vm.NewTypeError(fmt.Errorf("get: %w", err))
+	}
+	cr, err := callback(h.this, h.vm.ToValue(response))
+	if err != nil {
+		return h.vm.NewTypeError(fmt.Errorf("get: %w", err))
+	}
+	return cr
+}
+
+func (h *httpClient) getJSON(c goja.FunctionCall) goja.Value {
+	callback, response, err := h._get(c)
+	if err != nil {
+		return h.vm.NewTypeError(fmt.Errorf("getJSON: %w", err))
+	}
+
+	var target interface{}
+	if err := json.NewDecoder(bytes.NewReader(response)).Decode(&target); err != nil {
+		return h.vm.NewTypeError(fmt.Errorf("decoding: %w", err))
+	}
+
+	cr, err := callback(h.this, h.vm.ToValue(target))
+	if err != nil {
+		return h.vm.NewTypeError(fmt.Errorf("getJSON: %w", err))
+	}
+	return cr
+}
+
+func (h *httpClient) post(_ goja.FunctionCall) goja.Value {
+	return h.vm.NewGoError(fmt.Errorf("not implemented"))
 }
