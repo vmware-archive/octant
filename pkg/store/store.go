@@ -38,6 +38,7 @@ type Store interface {
 	Update(ctx context.Context, key Key, updater func(*unstructured.Unstructured) error) error
 	IsLoading(ctx context.Context, key Key) bool
 	Create(ctx context.Context, object *unstructured.Unstructured) error
+	CreateOrUpdateFromYAML(ctx context.Context, namespace, input string) ([]string, error)
 }
 
 // Key is a key for the object store.

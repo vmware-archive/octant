@@ -6,11 +6,16 @@ SPDX-License-Identifier: Apache-2.0
 package objectstore
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"sync"
 	"time"
+
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/yaml"
 
 	"go.opencensus.io/trace"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
@@ -23,6 +28,7 @@ import (
 	"k8s.io/client-go/informers"
 	kcache "k8s.io/client-go/tools/cache"
 	kretry "k8s.io/client-go/util/retry"
+	sigyaml "sigs.k8s.io/yaml"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/log"
@@ -622,4 +628,124 @@ func (dc *DynamicCache) Create(ctx context.Context, object *unstructured.Unstruc
 
 	_, err = dynamicClient.Resource(gvr).Namespace(key.Namespace).Create(ctx, object, createOptions)
 	return err
+}
+
+func CreateOrUpdateFromHandler(
+	ctx context.Context, namespace, input string,
+	get func(context.Context, store.Key) (*unstructured.Unstructured, error),
+	create func(context.Context, *unstructured.Unstructured) error,
+	clusterClient cluster.ClientInterface,
+) ([]string, error) {
+	withDoc := func(cb func(doc map[string]interface{}) error) error {
+		d := yaml.NewYAMLOrJSONDecoder(bytes.NewBufferString(input), 4096)
+		for {
+			doc := map[string]interface{}{}
+			if err := d.Decode(&doc); err != nil {
+				if err == io.EOF {
+					return nil
+				}
+				return fmt.Errorf("unable to parse yaml: %w", err)
+			}
+			if len(doc) == 0 {
+				// skip empty documents
+				continue
+			}
+			if err := cb(doc); err != nil {
+				return err
+			}
+		}
+	}
+
+	logger := log.From(ctx)
+	results := []string{}
+	err := withDoc(func(doc map[string]interface{}) error {
+		logger.Debugf("apply resource %#v", doc)
+
+		unstructuredObj := &unstructured.Unstructured{Object: doc}
+		key, err := store.KeyFromObject(unstructuredObj)
+		if err != nil {
+			return err
+		}
+		gvr, namespaced, err := clusterClient.Resource(key.GroupVersionKind().GroupKind())
+		if err != nil {
+			return fmt.Errorf("unable to discover resource: %w", err)
+		}
+		if namespaced && key.Namespace == "" {
+			unstructuredObj.SetNamespace(namespace)
+			key.Namespace = namespace
+		}
+
+		if _, err := get(ctx, key); err != nil {
+			if !kerrors.IsNotFound(err) {
+				// unexpected error
+				return fmt.Errorf("unable to get resource: %w", err)
+			}
+
+			// create object
+			err := create(ctx, &unstructured.Unstructured{Object: doc})
+			if err != nil {
+				return fmt.Errorf("unable to create resource: %w", err)
+			}
+
+			result := fmt.Sprintf("Created %s (%s) %s", key.Kind, key.APIVersion, key.Name)
+			if namespaced {
+				result = fmt.Sprintf("%s in %s", result, key.Namespace)
+			}
+			results = append(results, result)
+
+			return nil
+		}
+
+		// update object
+		unstructuredYaml, err := sigyaml.Marshal(doc)
+		if err != nil {
+			return fmt.Errorf("unable to marshal resource as yaml: %w", err)
+		}
+		client, err := clusterClient.DynamicClient()
+		if err != nil {
+			return fmt.Errorf("unable to get dynamic client: %w", err)
+		}
+
+		withForce := true
+		if namespaced {
+			_, err = client.Resource(gvr).Namespace(key.Namespace).Patch(
+				ctx,
+				key.Name,
+				types.ApplyPatchType,
+				unstructuredYaml,
+				metav1.PatchOptions{FieldManager: "octant", Force: &withForce},
+			)
+			if err != nil {
+				return fmt.Errorf("unable to patch resource: %w", err)
+			}
+		} else {
+			_, err = client.Resource(gvr).Patch(
+				ctx,
+				key.Name,
+				types.ApplyPatchType,
+				unstructuredYaml,
+				metav1.PatchOptions{FieldManager: "octant", Force: &withForce},
+			)
+			if err != nil {
+				return fmt.Errorf("unable to patch resource: %w", err)
+			}
+		}
+
+		result := fmt.Sprintf("Updated %s (%s) %s", key.Kind, key.APIVersion, key.Name)
+		if namespaced {
+			result = fmt.Sprintf("%s in %s", result, key.Namespace)
+		}
+		results = append(results, result)
+
+		return nil
+	})
+	return results, err
+}
+
+// CreateOrUpdateFromYAML creates resources in the cluster from YAML input.
+// Resources are created in the order they are present in the YAML.
+// An error creating a resource halts resource creation.
+// A list of created resources is returned. You may have created resources AND a non-nil error.
+func (dc *DynamicCache) CreateOrUpdateFromYAML(ctx context.Context, namespace, input string) ([]string, error) {
+	return CreateOrUpdateFromHandler(ctx, namespace, input, dc.Get, dc.Create, dc.client)
 }

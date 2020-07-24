@@ -7,17 +7,19 @@ package octant
 
 import (
 	"context"
+	"fmt"
 	"testing"
+
+	"k8s.io/apimachinery/pkg/types"
+
+	"github.com/vmware-tanzu/octant/internal/objectstore"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
-	sigyaml "sigs.k8s.io/yaml"
 
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
 	"github.com/vmware-tanzu/octant/internal/log"
@@ -32,17 +34,14 @@ func TestNewApplyYaml_NamespacedCreate(t *testing.T) {
 	defer controller.Finish()
 
 	logger := log.NopLogger()
-	objectStore := fake.NewMockStore(controller)
 	clusterClient := clusterFake.NewMockClientInterface(controller)
+	dynamicCache := fake.NewMockStore(controller)
 	alerter := actionFake.NewMockAlerter(controller)
 
 	gvr := schema.GroupVersionResource{
 		Version:  "v1",
 		Resource: "configmaps",
 	}
-	clusterClient.EXPECT().
-		Resource(schema.GroupKind{Kind: "ConfigMap"}).
-		Return(gvr, true, nil)
 
 	key := store.Key{
 		Namespace:  "default",
@@ -50,10 +49,15 @@ func TestNewApplyYaml_NamespacedCreate(t *testing.T) {
 		Kind:       "ConfigMap",
 		Name:       "greeting",
 	}
-	objectStore.EXPECT().
-		Get(gomock.Any(), key).
-		Return(nil, kerrors.NewNotFound(gvr.GroupResource(), "greeting"))
-
+	update := `
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: greeting
+data:
+  hello: world
+`
 	uGreeting := &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": "v1",
@@ -67,9 +71,20 @@ func TestNewApplyYaml_NamespacedCreate(t *testing.T) {
 			},
 		},
 	}
-	objectStore.EXPECT().
-		Create(gomock.Any(), uGreeting).
-		Return(nil)
+
+	notFound := kerrors.NewNotFound(schema.GroupResource{}, "greeting-system")
+	clusterClient.EXPECT().Resource(schema.GroupKind{Kind: "ConfigMap"}).Return(gvr, true, nil)
+	dynamicCache.EXPECT().Get(context.TODO(), key).Return(nil, notFound)
+	dynamicCache.EXPECT().Create(context.TODO(), uGreeting)
+
+	output, err := objectstore.CreateOrUpdateFromHandler(
+		context.TODO(),
+		key.Namespace,
+		update,
+		dynamicCache.Get,
+		dynamicCache.Create,
+		clusterClient)
+	dynamicCache.EXPECT().CreateOrUpdateFromYAML(gomock.Any(), key.Namespace, update).Return(output, err)
 
 	alerter.EXPECT().
 		SendAlert(gomock.Any()).
@@ -79,20 +94,12 @@ func TestNewApplyYaml_NamespacedCreate(t *testing.T) {
 			assert.NotNil(t, alert.Expiration)
 		})
 
-	applyYaml := NewApplyYaml(logger, objectStore, clusterClient)
+	applyYaml := NewApplyYaml(logger, dynamicCache)
 
 	ctx := context.Background()
 
 	payload := action.CreatePayload(ActionApplyYaml, map[string]interface{}{
-		"update": `
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: greeting
-data:
-  hello: world
-`,
+		"update":    update,
 		"namespace": "default",
 	})
 
@@ -104,64 +111,46 @@ func TestNewApplyYaml_NamespacedUpdate(t *testing.T) {
 	defer controller.Finish()
 
 	logger := log.NopLogger()
-	objectStore := fake.NewMockStore(controller)
 	clusterClient := clusterFake.NewMockClientInterface(controller)
 	dynamicClient := clusterFake.NewMockDynamicInterface(controller)
-	dynamicNamespaceableResourceClient := clusterFake.NewMockNamespaceableResourceInterface(controller)
-	dynamicResourceClient := clusterFake.NewMockResourceInterface(controller)
+	nsResourceClient := clusterFake.NewMockNamespaceableResourceInterface(controller)
+	dynamicCache := fake.NewMockStore(controller)
 	alerter := actionFake.NewMockAlerter(controller)
 
 	gvr := schema.GroupVersionResource{
 		Version:  "v1",
 		Resource: "configmaps",
 	}
-	clusterClient.EXPECT().
-		Resource(schema.GroupKind{Kind: "ConfigMap"}).
-		Return(gvr, true, nil)
-
 	key := store.Key{
-		Namespace:  "default",
-		APIVersion: "v1",
 		Kind:       "ConfigMap",
+		APIVersion: "v1",
 		Name:       "greeting",
+		Namespace:  "default",
 	}
-	objectStore.EXPECT().
-		Get(gomock.Any(), key).
-		// should return the ConfigMap, but we don't actually care
-		Return(nil, nil)
+	update := `
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: greeting
+data:
+  hello: world
+`
+	clusterClient.EXPECT().Resource(gomock.Any()).Return(gvr, true, nil).AnyTimes()
+	clusterClient.EXPECT().DynamicClient().Return(dynamicClient, nil)
+	dynamicClient.EXPECT().Resource(gvr).Return(nsResourceClient)
+	nsResourceClient.EXPECT().Namespace("default").Return(nsResourceClient)
+	nsResourceClient.EXPECT().Patch(context.TODO(), key.Name, types.ApplyPatchType, gomock.Any(), gomock.Any(), gomock.Any())
+	dynamicCache.EXPECT().Get(context.TODO(), key)
 
-	clusterClient.EXPECT().
-		DynamicClient().
-		Return(dynamicClient, nil)
-	dynamicClient.EXPECT().
-		Resource(gvr).
-		Return(dynamicNamespaceableResourceClient)
-	dynamicNamespaceableResourceClient.EXPECT().
-		Namespace("default").
-		Return(dynamicResourceClient)
-
-	unstructuredYaml, _ := sigyaml.Marshal(map[string]interface{}{
-		"apiVersion": "v1",
-		"kind":       "ConfigMap",
-		"metadata": map[string]interface{}{
-			"name":      "greeting",
-			"namespace": "default",
-		},
-		"data": map[string]interface{}{
-			"hello": "world",
-		},
-	})
-	withForce := true
-	dynamicResourceClient.EXPECT().
-		Patch(
-			gomock.Any(),
-			"greeting",
-			types.ApplyPatchType,
-			unstructuredYaml,
-			metav1.PatchOptions{FieldManager: "octant", Force: &withForce},
-		).
-		// should return the ConfigMap, but we don't actually care
-		Return(nil, nil)
+	output, err := objectstore.CreateOrUpdateFromHandler(
+		context.TODO(),
+		"default",
+		update,
+		dynamicCache.Get,
+		dynamicCache.Create,
+		clusterClient)
+	dynamicCache.EXPECT().CreateOrUpdateFromYAML(gomock.Any(), "default", update).Return(output, err)
 
 	alerter.EXPECT().
 		SendAlert(gomock.Any()).
@@ -171,20 +160,12 @@ func TestNewApplyYaml_NamespacedUpdate(t *testing.T) {
 			assert.NotNil(t, alert.Expiration)
 		})
 
-	applyYaml := NewApplyYaml(logger, objectStore, clusterClient)
+	applyYaml := NewApplyYaml(logger, dynamicCache)
 
 	ctx := context.Background()
 
 	payload := action.CreatePayload(ActionApplyYaml, map[string]interface{}{
-		"update": `
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: greeting
-data:
-  hello: world
-`,
+		"update":    update,
 		"namespace": "default",
 	})
 
@@ -196,28 +177,23 @@ func TestNewApplyYaml_ClusterCreate(t *testing.T) {
 	defer controller.Finish()
 
 	logger := log.NopLogger()
-	objectStore := fake.NewMockStore(controller)
 	clusterClient := clusterFake.NewMockClientInterface(controller)
+	dynamicCache := fake.NewMockStore(controller)
 	alerter := actionFake.NewMockAlerter(controller)
-
-	gvr := schema.GroupVersionResource{
-		Version:  "v1",
-		Resource: "namespaces",
-	}
-	clusterClient.EXPECT().
-		Resource(schema.GroupKind{Kind: "Namespace"}).
-		Return(gvr, false, nil)
 
 	key := store.Key{
 		APIVersion: "v1",
 		Kind:       "Namespace",
 		Name:       "greeting-system",
 	}
-	objectStore.EXPECT().
-		Get(gomock.Any(), key).
-		Return(nil, kerrors.NewNotFound(gvr.GroupResource(), "greeting-system"))
-
-	uGreeting := &unstructured.Unstructured{
+	update := `
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greeting-system
+`
+	uNamespace := &unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": "v1",
 			"kind":       "Namespace",
@@ -226,9 +202,19 @@ func TestNewApplyYaml_ClusterCreate(t *testing.T) {
 			},
 		},
 	}
-	objectStore.EXPECT().
-		Create(gomock.Any(), uGreeting).
-		Return(nil)
+	notFound := kerrors.NewNotFound(schema.GroupResource{}, "greeting-system")
+	clusterClient.EXPECT().Resource(gomock.Any()).Return(schema.GroupVersionResource{}, false, nil).AnyTimes()
+	dynamicCache.EXPECT().Get(context.TODO(), key).Return(nil, notFound)
+	dynamicCache.EXPECT().Create(context.TODO(), uNamespace)
+
+	output, err := objectstore.CreateOrUpdateFromHandler(
+		context.TODO(),
+		"",
+		update,
+		dynamicCache.Get,
+		dynamicCache.Create,
+		clusterClient)
+	dynamicCache.EXPECT().CreateOrUpdateFromYAML(gomock.Any(), "default", update).Return(output, err)
 
 	alerter.EXPECT().
 		SendAlert(gomock.Any()).
@@ -238,18 +224,12 @@ func TestNewApplyYaml_ClusterCreate(t *testing.T) {
 			assert.NotNil(t, alert.Expiration)
 		})
 
-	applyYaml := NewApplyYaml(logger, objectStore, clusterClient)
+	applyYaml := NewApplyYaml(logger, dynamicCache)
 
 	ctx := context.Background()
 
 	payload := action.CreatePayload(ActionApplyYaml, map[string]interface{}{
-		"update": `
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: greeting-system
-`,
+		"update":    update,
 		"namespace": "default",
 	})
 
@@ -261,55 +241,38 @@ func TestNewApplyYaml_ClusterUpdate(t *testing.T) {
 	defer controller.Finish()
 
 	logger := log.NopLogger()
-	objectStore := fake.NewMockStore(controller)
 	clusterClient := clusterFake.NewMockClientInterface(controller)
 	dynamicClient := clusterFake.NewMockDynamicInterface(controller)
-	dynamicResourceClient := clusterFake.NewMockNamespaceableResourceInterface(controller)
+	nsResourceClient := clusterFake.NewMockNamespaceableResourceInterface(controller)
+	dynamicCache := fake.NewMockStore(controller)
 	alerter := actionFake.NewMockAlerter(controller)
-
-	gvr := schema.GroupVersionResource{
-		Version:  "v1",
-		Resource: "namespaces",
-	}
-	clusterClient.EXPECT().
-		Resource(schema.GroupKind{Kind: "Namespace"}).
-		Return(gvr, false, nil)
 
 	key := store.Key{
 		APIVersion: "v1",
 		Kind:       "Namespace",
 		Name:       "greeting-system",
 	}
-	objectStore.EXPECT().
-		Get(gomock.Any(), key).
-		// should return the ConfigMap, but we don't actually care
-		Return(nil, nil)
+	update := `
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greeting-system
+`
+	clusterClient.EXPECT().Resource(gomock.Any()).Return(schema.GroupVersionResource{}, false, nil).AnyTimes()
+	clusterClient.EXPECT().DynamicClient().Return(dynamicClient, nil)
+	dynamicClient.EXPECT().Resource(gomock.Any()).Return(nsResourceClient)
+	nsResourceClient.EXPECT().Patch(context.TODO(), key.Name, types.ApplyPatchType, gomock.Any(), gomock.Any(), gomock.Any())
+	dynamicCache.EXPECT().Get(context.TODO(), key)
 
-	clusterClient.EXPECT().
-		DynamicClient().
-		Return(dynamicClient, nil)
-	dynamicClient.EXPECT().
-		Resource(gvr).
-		Return(dynamicResourceClient)
-
-	unstructuredYaml, _ := sigyaml.Marshal(map[string]interface{}{
-		"apiVersion": "v1",
-		"kind":       "Namespace",
-		"metadata": map[string]interface{}{
-			"name": "greeting-system",
-		},
-	})
-	withForce := true
-	dynamicResourceClient.EXPECT().
-		Patch(
-			gomock.Any(),
-			"greeting-system",
-			types.ApplyPatchType,
-			unstructuredYaml,
-			metav1.PatchOptions{FieldManager: "octant", Force: &withForce},
-		).
-		// should return the ConfigMap, but we don't actually care
-		Return(nil, nil)
+	output, err := objectstore.CreateOrUpdateFromHandler(
+		context.TODO(),
+		"",
+		update,
+		dynamicCache.Get,
+		dynamicCache.Create,
+		clusterClient)
+	dynamicCache.EXPECT().CreateOrUpdateFromYAML(gomock.Any(), "default", update).Return(output, err)
 
 	alerter.EXPECT().
 		SendAlert(gomock.Any()).
@@ -319,18 +282,12 @@ func TestNewApplyYaml_ClusterUpdate(t *testing.T) {
 			assert.NotNil(t, alert.Expiration)
 		})
 
-	applyYaml := NewApplyYaml(logger, objectStore, clusterClient)
+	applyYaml := NewApplyYaml(logger, dynamicCache)
 
 	ctx := context.Background()
 
 	payload := action.CreatePayload(ActionApplyYaml, map[string]interface{}{
-		"update": `
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: greeting-system
-`,
+		"update":    update,
 		"namespace": "default",
 	})
 
@@ -343,8 +300,19 @@ func TestNewApplyYaml_Error(t *testing.T) {
 
 	logger := log.NopLogger()
 	objectStore := fake.NewMockStore(controller)
-	clusterClient := clusterFake.NewMockClientInterface(controller)
 	alerter := actionFake.NewMockAlerter(controller)
+
+	update := `
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: greeting
+data: {
+`
+	objectStore.EXPECT().
+		CreateOrUpdateFromYAML(gomock.Any(), "default", update).
+		Return(nil, fmt.Errorf("Unable to apply yaml:"))
 
 	alerter.EXPECT().
 		SendAlert(gomock.Any()).
@@ -354,19 +322,12 @@ func TestNewApplyYaml_Error(t *testing.T) {
 			assert.NotNil(t, alert.Expiration)
 		})
 
-	applyYaml := NewApplyYaml(logger, objectStore, clusterClient)
+	applyYaml := NewApplyYaml(logger, objectStore)
 
 	ctx := context.Background()
 
 	payload := action.CreatePayload(ActionApplyYaml, map[string]interface{}{
-		"update": `
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: greeting
-data: {
-`,
+		"update":    update,
 		"namespace": "default",
 	})
 
