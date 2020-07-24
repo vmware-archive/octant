@@ -24,14 +24,18 @@ jobs:
           path: ${{ steps.npm-cache.outputs.dir }}
           key: ${{ runner.os }}-node-push-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
+            ${{ runner.os }}-node-push-${{ hashFiles('**/package-lock.json') }}
             ${{ runner.os }}-node-push-
       - uses: actions/cache@v2
         if: github.event_name == 'pull_request'
         with:
           path: ${{ steps.npm-cache.outputs.dir }}
-          key: ${{ runner.os }}-node-pr-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-pr-${{ github.event.number }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-pr-
+            ${{ runner.os }}-node-pr-${{ github.event.number }}-${{ hashFiles('**/package-lock.json') }}
+            ${{ runner.os }}-node-pr-${{ github.event.number }}-
+            ${{ runner.os }}-node-push-${{ hashFiles('**/package-lock.json') }}
+            ${{ runner.os }}-node-push-
       - name: Build node modules
         run: |
           cd web
