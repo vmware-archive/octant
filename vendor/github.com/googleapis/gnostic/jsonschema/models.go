@@ -1,4 +1,4 @@
-// Copyright 2017 Google Inc. All Rights Reserved.
+// Copyright 2017 Google LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 // Package jsonschema supports the reading, writing, and manipulation
 // of JSON Schemas.
 package jsonschema
+
+import "gopkg.in/yaml.v3"
 
 // The Schema struct models a JSON Schema and, because schemas are
 // defined hierarchically, contains many references to itself.
@@ -66,7 +68,7 @@ type Schema struct {
 	// 6.  Metadata keywords
 	Title       *string
 	Description *string
-	Default     *interface{}
+	Default     *yaml.Node
 
 	// 7.  Semantic validation with "format"
 	Format *string

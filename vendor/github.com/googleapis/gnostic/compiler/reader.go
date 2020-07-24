@@ -1,4 +1,4 @@
-// Copyright 2017 Google Inc. All Rights Reserved.
+// Copyright 2017 Google LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,13 +24,13 @@ import (
 	"strings"
 	"sync"
 
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 )
 
 var verboseReader = false
 
 var fileCache map[string][]byte
-var infoCache map[string]interface{}
+var infoCache map[string]*yaml.Node
 
 var fileCacheEnable = true
 var infoCacheEnable = true
@@ -54,7 +54,7 @@ func initializeFileCache() {
 
 func initializeInfoCache() {
 	if infoCache == nil {
-		infoCache = make(map[string]interface{}, 0)
+		infoCache = make(map[string]*yaml.Node, 0)
 	}
 }
 
@@ -109,7 +109,7 @@ func RemoveFromInfoCache(filename string) {
 }
 
 // GetInfoCache returns the info cache map.
-func GetInfoCache() map[string]interface{} {
+func GetInfoCache() map[string]*yaml.Node {
 	infoCacheMutex.Lock()
 	defer infoCacheMutex.Unlock()
 	if infoCache == nil {
@@ -129,7 +129,7 @@ func ClearFileCache() {
 func ClearInfoCache() {
 	infoCacheMutex.Lock()
 	defer infoCacheMutex.Unlock()
-	infoCache = make(map[string]interface{})
+	infoCache = make(map[string]*yaml.Node)
 }
 
 // ClearCaches clears all caches.
@@ -201,14 +201,14 @@ func readBytesForFile(filename string) ([]byte, error) {
 	return bytes, nil
 }
 
-// ReadInfoFromBytes unmarshals a file as a yaml.MapSlice.
-func ReadInfoFromBytes(filename string, bytes []byte) (interface{}, error) {
+// ReadInfoFromBytes unmarshals a file as a *yaml.Node.
+func ReadInfoFromBytes(filename string, bytes []byte) (*yaml.Node, error) {
 	infoCacheMutex.Lock()
 	defer infoCacheMutex.Unlock()
 	return readInfoFromBytes(filename, bytes)
 }
 
-func readInfoFromBytes(filename string, bytes []byte) (interface{}, error) {
+func readInfoFromBytes(filename string, bytes []byte) (*yaml.Node, error) {
 	initializeInfoCache()
 	if infoCacheEnable {
 		cachedInfo, ok := infoCache[filename]
@@ -222,19 +222,19 @@ func readInfoFromBytes(filename string, bytes []byte) (interface{}, error) {
 			log.Printf("Reading info for file %s", filename)
 		}
 	}
-	var info yaml.MapSlice
+	var info yaml.Node
 	err := yaml.Unmarshal(bytes, &info)
 	if err != nil {
 		return nil, err
 	}
 	if infoCacheEnable && len(filename) > 0 {
-		infoCache[filename] = info
+		infoCache[filename] = &info
 	}
-	return info, nil
+	return &info, nil
 }
 
 // ReadInfoForRef reads a file and return the fragment needed to resolve a $ref.
-func ReadInfoForRef(basefile string, ref string) (interface{}, error) {
+func ReadInfoForRef(basefile string, ref string) (*yaml.Node, error) {
 	fileCacheMutex.Lock()
 	defer fileCacheMutex.Unlock()
 	infoCacheMutex.Lock()
@@ -269,19 +269,25 @@ func ReadInfoForRef(basefile string, ref string) (interface{}, error) {
 		return nil, err
 	}
 	info, err := readInfoFromBytes(filename, bytes)
+	if info != nil && info.Kind == yaml.DocumentNode {
+		info = info.Content[0]
+	}
 	if err != nil {
 		log.Printf("File error: %v\n", err)
 	} else {
+		if info == nil {
+			return nil, NewError(nil, fmt.Sprintf("could not resolve %s", ref))
+		}
 		if len(parts) > 1 {
 			path := strings.Split(parts[1], "/")
 			for i, key := range path {
 				if i > 0 {
-					m, ok := info.(yaml.MapSlice)
-					if ok {
+					m := info
+					if true {
 						found := false
-						for _, section := range m {
-							if section.Key == key {
-								info = section.Value
+						for i := 0; i < len(m.Content); i += 2 {
+							if m.Content[i].Value == key {
+								info = m.Content[i+1]
 								found = true
 							}
 						}
