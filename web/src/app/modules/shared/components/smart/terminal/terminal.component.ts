@@ -40,10 +40,6 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
   trackByIdentity = trackByIdentity;
   @Input() view: TerminalView;
   @ViewChild('terminal', { static: true }) terminalDiv: ElementRef;
-  @HostListener('click') onClick() {
-    this.term.focus();
-    this.fitAddon.fit();
-  }
 
   ngOnDestroy(): void {
     if (this.terminalStream) {
@@ -107,6 +103,8 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
     this.selectedContainer = containerSelection;
     this.term.reset();
     this.initStream();
+    this.term.focus();
+    this.fitAddon.fit();
   }
 
   initStream() {
