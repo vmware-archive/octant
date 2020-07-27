@@ -81,9 +81,6 @@ func localPortsHandler(alerter action.Alerter, fw *portforward.PortForwarder, op
 	if fw == nil {
 		return
 	}
-
-	alerter.SendAlert(action.CreateAlert(action.AlertTypeError, "Im working!!!", action.DefaultAlertExpiration))
-
 	if opts.ReadyChannel != nil && opts.PortsChannel != nil {
 		go func() {
 			select {
