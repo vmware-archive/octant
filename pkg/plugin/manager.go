@@ -360,7 +360,7 @@ func (m *Manager) watchJS(ctx context.Context) {
 
 	for _, dir := range dirs {
 		if err := watcher.Add(dir); err != nil {
-			logger.Errorf("unable to add %s to JavaScript plugin watcher")
+			logger.Warnf("unable to add %s to JavaScript plugin watcher", dir)
 		}
 	}
 
