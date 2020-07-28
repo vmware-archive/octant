@@ -15,9 +15,9 @@ jobs:
           go-version: '1.14'
       - uses: actions/checkout@v2
       - name: Get npm cache directory
-          id: npm-cache
-          run: |
-            echo "::set-output name=dir::$(npm config get cache)"
+        id: npm-cache
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
       - uses: actions/cache@v2
         if: github.event_name == 'push'
         with:
