@@ -12,6 +12,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -544,8 +545,19 @@ func enableOpenCensus() error {
 
 // findKubeConfig looks for kube config from .kube or provided by user
 func findKubeConfig(logger log.Logger, kubeConfig string) error {
-	if _, err := os.Stat(kubeConfig); err == nil {
-		logger.Infof("using kube config: %v", kubeConfig)
+	found := false
+	paths := filepath.SplitList(kubeConfig)
+
+	for _, path := range paths {
+		if _, err := os.Stat(path); err == nil {
+			logger.Infof("found kube config: %v", path)
+			found = true
+			continue
+		}
+		logger.Infof("cannot find kube config: %v", path)
+	}
+
+	if found {
 		return nil
 	}
 	return fmt.Errorf("no kubeconfig found")
