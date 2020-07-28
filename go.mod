@@ -3,7 +3,7 @@ module github.com/vmware-tanzu/octant
 go 1.13
 
 require (
-	contrib.go.opencensus.io/exporter/jaeger v0.2.0
+	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	github.com/GeertJohan/go.rice v1.0.0
 	github.com/asticode/go-astikit v0.8.0
 	github.com/asticode/go-astilectron v0.14.2
