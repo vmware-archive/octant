@@ -11,7 +11,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
+	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -31,11 +31,11 @@ func TestMutatingWebhookConfiguration_Visit(t *testing.T) {
 	service := testutil.CreateService("service")
 
 	object := testutil.CreateMutatingWebhookConfiguration("mutatingWebhookConfiguration")
-	object.Webhooks = []admissionregistrationv1.MutatingWebhook{
+	object.Webhooks = []admissionregistrationv1beta1.MutatingWebhook{
 		{
 			Name: "mutatingWebhook",
-			ClientConfig: admissionregistrationv1.WebhookClientConfig{
-				Service: &admissionregistrationv1.ServiceReference{
+			ClientConfig: admissionregistrationv1beta1.WebhookClientConfig{
+				Service: &admissionregistrationv1beta1.ServiceReference{
 					Namespace: service.Namespace,
 					Name:      service.Name,
 				},
@@ -89,11 +89,11 @@ func TestMutatingWebhookConfiguration_Visit_notfound(t *testing.T) {
 	service := testutil.CreateService("service")
 
 	object := testutil.CreateMutatingWebhookConfiguration("mutatingWebhookConfiguration")
-	object.Webhooks = []admissionregistrationv1.MutatingWebhook{
+	object.Webhooks = []admissionregistrationv1beta1.MutatingWebhook{
 		{
 			Name: "mutatingWebhook",
-			ClientConfig: admissionregistrationv1.WebhookClientConfig{
-				Service: &admissionregistrationv1.ServiceReference{
+			ClientConfig: admissionregistrationv1beta1.WebhookClientConfig{
+				Service: &admissionregistrationv1beta1.ServiceReference{
 					Namespace: service.Namespace,
 					Name:      service.Name,
 				},
@@ -143,10 +143,10 @@ func TestMutatingWebhookConfiguration_Visit_url(t *testing.T) {
 
 	object := testutil.CreateMutatingWebhookConfiguration("mutatingWebhookConfiguration")
 	webhookUrl := "https://example.com"
-	object.Webhooks = []admissionregistrationv1.MutatingWebhook{
+	object.Webhooks = []admissionregistrationv1beta1.MutatingWebhook{
 		{
 			Name: "mutatingWebhook",
-			ClientConfig: admissionregistrationv1.WebhookClientConfig{
+			ClientConfig: admissionregistrationv1beta1.WebhookClientConfig{
 				URL: &webhookUrl,
 			},
 		},
@@ -179,5 +179,5 @@ func TestMutatingWebhookConfiguration_Visit_url(t *testing.T) {
 }
 
 func init() {
-	admissionregistrationv1.AddToScheme(scheme.Scheme)
+	admissionregistrationv1beta1.AddToScheme(scheme.Scheme)
 }

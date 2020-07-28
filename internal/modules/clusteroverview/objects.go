@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package clusteroverview
 
 import (
-	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
+	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -128,9 +128,9 @@ var (
 
 	apiServerValidatingWebhooks = describer.NewResource(describer.ResourceOptions{
 		Path:           "/api-server/validating-webhooks",
-		ObjectStoreKey: store.Key{APIVersion: "admissionregistration.k8s.io/v1", Kind: "ValidatingWebhookConfiguration"},
-		ListType:       &admissionregistrationv1.ValidatingWebhookConfigurationList{},
-		ObjectType:     &admissionregistrationv1.ValidatingWebhookConfiguration{},
+		ObjectStoreKey: store.Key{APIVersion: "admissionregistration.k8s.io/v1beta1", Kind: "ValidatingWebhookConfiguration"},
+		ListType:       &admissionregistrationv1beta1.ValidatingWebhookConfigurationList{},
+		ObjectType:     &admissionregistrationv1beta1.ValidatingWebhookConfiguration{},
 		Titles:         describer.ResourceTitle{List: "Validating Webhook Configurations", Object: "Validating Webhook Configuration"},
 		ClusterWide:    true,
 		IconName:       icon.ApiServer,
@@ -139,9 +139,9 @@ var (
 
 	apiServerMutatingWebhooks = describer.NewResource(describer.ResourceOptions{
 		Path:           "/api-server/mutating-webhooks",
-		ObjectStoreKey: store.Key{APIVersion: "admissionregistration.k8s.io/v1", Kind: "MutatingWebhookConfiguration"},
-		ListType:       &admissionregistrationv1.MutatingWebhookConfigurationList{},
-		ObjectType:     &admissionregistrationv1.MutatingWebhookConfiguration{},
+		ObjectStoreKey: store.Key{APIVersion: "admissionregistration.k8s.io/v1beta1", Kind: "MutatingWebhookConfiguration"},
+		ListType:       &admissionregistrationv1beta1.MutatingWebhookConfigurationList{},
+		ObjectType:     &admissionregistrationv1beta1.MutatingWebhookConfiguration{},
 		Titles:         describer.ResourceTitle{List: "Mutating Webhook Configurations", Object: "Mutating Webhook Configuration"},
 		ClusterWide:    true,
 		IconName:       icon.ApiServer,

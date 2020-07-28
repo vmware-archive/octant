@@ -8,7 +8,7 @@ package testutil
 import (
 	"fmt"
 
-	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
+	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -465,19 +465,19 @@ func CreateAPIService(version, group string) *apiregistrationv1.APIService {
 	}
 }
 
-func CreateMutatingWebhookConfiguration(name string) *admissionregistrationv1.MutatingWebhookConfiguration {
-	return &admissionregistrationv1.MutatingWebhookConfiguration{
+func CreateMutatingWebhookConfiguration(name string) *admissionregistrationv1beta1.MutatingWebhookConfiguration {
+	return &admissionregistrationv1beta1.MutatingWebhookConfiguration{
 		TypeMeta:   genTypeMeta(gvk.MutatingWebhookConfiguration),
 		ObjectMeta: genObjectMeta(name, false),
-		Webhooks:   []admissionregistrationv1.MutatingWebhook{},
+		Webhooks:   []admissionregistrationv1beta1.MutatingWebhook{},
 	}
 }
 
-func CreateValidatingWebhookConfiguration(name string) *admissionregistrationv1.ValidatingWebhookConfiguration {
-	return &admissionregistrationv1.ValidatingWebhookConfiguration{
+func CreateValidatingWebhookConfiguration(name string) *admissionregistrationv1beta1.ValidatingWebhookConfiguration {
+	return &admissionregistrationv1beta1.ValidatingWebhookConfiguration{
 		TypeMeta:   genTypeMeta(gvk.ValidatingWebhookConfiguration),
 		ObjectMeta: genObjectMeta(name, false),
-		Webhooks:   []admissionregistrationv1.ValidatingWebhook{},
+		Webhooks:   []admissionregistrationv1beta1.ValidatingWebhook{},
 	}
 }
 
