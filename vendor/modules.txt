@@ -1,6 +1,6 @@
-# cloud.google.com/go v0.46.3
+# cloud.google.com/go v0.56.0
 cloud.google.com/go/compute/metadata
-# contrib.go.opencensus.io/exporter/jaeger v0.2.0
+# contrib.go.opencensus.io/exporter/jaeger v0.2.1
 contrib.go.opencensus.io/exporter/jaeger
 # github.com/Azure/go-autorest/autorest v0.9.6
 github.com/Azure/go-autorest/autorest
@@ -79,7 +79,7 @@ github.com/gobwas/glob/util/strings
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
-# github.com/golang/groupcache v0.0.0-20191227052852-215e87163ea7
+# github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
 # github.com/golang/mock v1.4.3
 github.com/golang/mock/gomock
@@ -199,7 +199,7 @@ github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
-# github.com/uber/jaeger-client-go v2.15.0+incompatible
+# github.com/uber/jaeger-client-go v2.25.0+incompatible
 github.com/uber/jaeger-client-go/thrift
 github.com/uber/jaeger-client-go/thrift-gen/agent
 github.com/uber/jaeger-client-go/thrift-gen/jaeger
@@ -239,7 +239,7 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+# golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 golang.org/x/oauth2
 golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
@@ -286,9 +286,9 @@ golang.org/x/tools/internal/typesinternal
 # golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
-# google.golang.org/api v0.13.0
+# google.golang.org/api v0.29.0
 google.golang.org/api/support/bundler
-# google.golang.org/appengine v1.6.1
+# google.golang.org/appengine v1.6.5
 google.golang.org/appengine
 google.golang.org/appengine/internal
 google.golang.org/appengine/internal/app_identity
