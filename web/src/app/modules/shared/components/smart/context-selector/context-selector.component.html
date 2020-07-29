@@ -5,7 +5,7 @@
   <clr-dropdown class= "dropdown-top" [clrCloseMenuOnItemClick]="true">
     <button class="dropdown-button" type="button" clrDropdownTrigger>
       <clr-icon shape="cluster"></clr-icon>
-      {{ selected }}
+      {{ selected | truncate }}
       <clr-icon shape="caret down"></clr-icon>
     </button>
     <clr-dropdown-menu class="dropdown-top" *clrIfOpen [clrPosition]="'bottom-right'">
@@ -18,8 +18,9 @@
           [ngClass]="contextClass(context)"
           clrDropdownItem
           (click)="selectContext(context)"
+          title="{{ context.name }}"
         >
-          {{ context.name }}
+          {{ context.name | truncate }}
         </button>
       </ng-container>
     </clr-dropdown-menu>

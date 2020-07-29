@@ -8,6 +8,7 @@ import { ContextSelectorComponent } from './context-selector.component';
 import { KubeContextService } from '../../../services/kube-context/kube-context.service';
 import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
+import { TruncatePipe } from '../../../pipes/truncate/truncate.pipe';
 
 const contexts = [
   {
@@ -34,7 +35,7 @@ describe('ContextSelectorComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ContextSelectorComponent],
+      declarations: [ContextSelectorComponent, TruncatePipe],
       providers: [
         { provide: KubeContextService, useClass: MockKubeContextService },
       ],
@@ -88,10 +89,13 @@ describe('ContextSelectorComponent', () => {
   });
 
   it('shows the currently active context name', () => {
+    const pipe = new TruncatePipe();
     const dropDownToggle: HTMLButtonElement = fixture.debugElement.query(
       By.css('button.dropdown-toggle')
     ).nativeElement;
 
-    expect(dropDownToggle.textContent.trim()).toBe(contexts[0].name);
+    expect(dropDownToggle.textContent.trim()).toBe(
+      pipe.transform(contexts[0].name)
+    );
   });
 });
