@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
+	"path"
 	"sync"
 	"time"
 
@@ -26,15 +26,11 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-func IsTypescriptPlugin(pluginName string) bool {
-	return strings.Contains(pluginName, ".ts")
-}
-
 func IsJavaScriptPlugin(pluginName string) bool {
-	return IsTypescriptPlugin(pluginName) || strings.Contains(pluginName, ".js")
+	return path.Ext(pluginName) == ".js"
 }
 
-type pluginRuntimeFactory func(context.Context, string, bool) (*eventloop.EventLoop, *TSLoader, error)
+type pluginRuntimeFactory func(context.Context, string) (*eventloop.EventLoop, error)
 type pluginClassExtractor func(*goja.Runtime) (*goja.Object, error)
 type pluginMetadataExtractor func(*goja.Runtime, goja.Value) (*Metadata, error)
 
@@ -74,7 +70,7 @@ var _ JSPlugin = (*jsPlugin)(nil)
 
 // NewJSPlugin creates a new instances of a JavaScript plugin.
 func NewJSPlugin(ctx context.Context, objectStore store.Store, pluginPath string, prf pluginRuntimeFactory, pce pluginClassExtractor, pme pluginMetadataExtractor) (*jsPlugin, error) {
-	loop, tsl, err := prf(ctx, pluginPath, IsTypescriptPlugin(pluginPath))
+	loop, err := prf(ctx, pluginPath)
 	if err != nil {
 		return nil, fmt.Errorf("initializing runtime: %w", err)
 	}
@@ -86,25 +82,18 @@ func NewJSPlugin(ctx context.Context, objectStore store.Store, pluginPath string
 
 	loop.RunOnLoop(func(vm *goja.Runtime) {
 		var err error
-		if tsl != nil {
-			_, err = tsl.TranspileAndRun(pluginPath)
-			if err != nil {
-				errCh <- fmt.Errorf("script transpile and execution: %w", err)
-				return
-			}
-		} else {
-			buf, err := ioutil.ReadFile(pluginPath)
-			if err != nil {
-				errCh <- fmt.Errorf("reading script: %w", err)
-			}
-			program, err := goja.Compile(pluginPath, string(buf), false)
-			if err != nil {
-				errCh <- fmt.Errorf("compiling: %w", err)
-			}
-			_, err = vm.RunProgram(program)
-			if err != nil {
-				errCh <- fmt.Errorf("script execution: %w", err)
-			}
+
+		buf, err := ioutil.ReadFile(pluginPath)
+		if err != nil {
+			errCh <- fmt.Errorf("reading script: %w", err)
+		}
+		program, err := goja.Compile(pluginPath, string(buf), false)
+		if err != nil {
+			errCh <- fmt.Errorf("compiling: %w", err)
+		}
+		_, err = vm.RunProgram(program)
+		if err != nil {
+			errCh <- fmt.Errorf("script execution: %w", err)
 		}
 
 		vm.Set("httpClient", createHTTPClientObject(vm, pluginClass))
@@ -776,11 +765,10 @@ func ExtractMetadata(vm *goja.Runtime, pluginValue goja.Value) (*Metadata, error
 	return metadata, nil
 }
 
-func CreateRuntimeLoop(ctx context.Context, logName string, typescript bool) (*eventloop.EventLoop, *TSLoader, error) {
+func CreateRuntimeLoop(ctx context.Context, logName string) (*eventloop.EventLoop, error) {
 	loop := eventloop.NewEventLoop()
 	loop.Start()
 
-	var tsl *TSLoader
 	errCh := make(chan error)
 
 	loop.RunOnLoop(func(vm *goja.Runtime) {
@@ -796,15 +784,7 @@ var exports = module.exports;
 			return
 		}
 
-		if typescript {
-			tsl, err = NewTSLoader(vm)
-			if err != nil {
-				errCh <- fmt.Errorf("tsloader: %w", err)
-				return
-			}
-		}
-
-		registry := require.NewRegistryWithLoader(tsl.SourceLoader)
+		registry := new(require.Registry)
 		registry.Enable(vm)
 
 		logger := olog.From(ctx).With("plugin", logName)
@@ -819,10 +799,10 @@ var exports = module.exports;
 
 	err := <-errCh
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return loop, tsl, nil
+	return loop, nil
 }
 
 type logPrinter struct {
