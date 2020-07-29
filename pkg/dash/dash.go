@@ -97,7 +97,7 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 	var apiService api.Service
 	var apiErr error
 
-	if err := findKubeConfig(logger, options.KubeConfig); err == nil {
+	if options.KubeConfig, err = validateKubeConfig(logger, options.KubeConfig); err == nil {
 		apiService, pluginService, apiErr = r.initAPI(ctx, logger, options)
 		if apiErr != nil {
 			return nil, fmt.Errorf("failed to start service api: %w", apiErr)
@@ -137,7 +137,8 @@ func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, 
 	if !r.apiCreated {
 		go func() {
 			if r.dash != nil {
-				if err := findKubeConfig(logger, options.KubeConfig); err != nil {
+				var err error
+				if options.KubeConfig, err = validateKubeConfig(logger, options.KubeConfig); err != nil {
 					logger.Infof("waiting for kube config ...")
 					options.KubeConfig = <-kubeConfigPath
 				}
@@ -543,24 +544,23 @@ func enableOpenCensus() error {
 	return nil
 }
 
-// findKubeConfig looks for kube config from .kube or provided by user
-func findKubeConfig(logger log.Logger, kubeConfig string) error {
-	found := false
+// validateKubeConfig returns a valid file list of kube config(s)
+func validateKubeConfig(logger log.Logger, kubeConfig string) (string, error) {
+	fileList := []string{}
 	paths := filepath.SplitList(kubeConfig)
 
 	for _, path := range paths {
 		if _, err := os.Stat(path); err == nil {
-			logger.Infof("found kube config: %v", path)
-			found = true
+			fileList = append(fileList, path)
 			continue
 		}
 		logger.Infof("cannot find kube config: %v", path)
 	}
 
-	if found {
-		return nil
+	if len(fileList) > 0 {
+		return strings.Join(fileList, ":"), nil
 	}
-	return fmt.Errorf("no kubeconfig found")
+	return "", fmt.Errorf("no kubeconfig found")
 }
 
 func (r *Runner) startAPIService(ctx context.Context, logger log.Logger, options Options) {
