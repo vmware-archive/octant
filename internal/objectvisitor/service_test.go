@@ -6,7 +6,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
+	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -41,11 +41,11 @@ func TestService_Visit(t *testing.T) {
 	mutatingWebhookConfiguration := testutil.CreateMutatingWebhookConfiguration("mutatingWebhookConfiguration")
 	q.EXPECT().
 		MutatingWebhookConfigurationsForService(gomock.Any(), object).
-		Return([]*admissionregistrationv1.MutatingWebhookConfiguration{mutatingWebhookConfiguration}, nil)
+		Return([]*admissionregistrationv1beta1.MutatingWebhookConfiguration{mutatingWebhookConfiguration}, nil)
 	validatingWebhookConfiguration := testutil.CreateValidatingWebhookConfiguration("validatingWebhookConfiguration")
 	q.EXPECT().
 		ValidatingWebhookConfigurationsForService(gomock.Any(), object).
-		Return([]*admissionregistrationv1.ValidatingWebhookConfiguration{validatingWebhookConfiguration}, nil)
+		Return([]*admissionregistrationv1beta1.ValidatingWebhookConfiguration{validatingWebhookConfiguration}, nil)
 
 	handler := fake.NewMockObjectHandler(controller)
 	handler.EXPECT().

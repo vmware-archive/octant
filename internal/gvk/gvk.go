@@ -28,7 +28,7 @@ var (
 	HorizontalPodAutoscaler        = schema.GroupVersionKind{Group: "autoscaling", Version: "v1", Kind: "HorizontalPodAutoscaler"}
 	Ingress                        = schema.GroupVersionKind{Group: "extensions", Version: "v1beta1", Kind: "Ingress"}
 	Job                            = schema.GroupVersionKind{Group: "batch", Version: "v1", Kind: "Job"}
-	MutatingWebhookConfiguration   = schema.GroupVersionKind{Group: "admissionregistration.k8s.io", Version: "v1", Kind: "MutatingWebhookConfiguration"}
+	MutatingWebhookConfiguration   = schema.GroupVersionKind{Group: "admissionregistration.k8s.io", Version: "v1beta1", Kind: "MutatingWebhookConfiguration"}
 	Node                           = schema.GroupVersionKind{Version: "v1", Kind: "Node"}
 	Namespace                      = schema.GroupVersionKind{Version: "v1", Kind: "Namespace"}
 	NetworkPolicy                  = schema.GroupVersionKind{Group: "networking.k8s.io", Version: "v1", Kind: "NetworkPolicy"}
@@ -43,7 +43,7 @@ var (
 	StatefulSet                    = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "StatefulSet"}
 	RoleBinding                    = schema.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "RoleBinding"}
 	Role                           = schema.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "Role"}
-	ValidatingWebhookConfiguration = schema.GroupVersionKind{Group: "admissionregistration.k8s.io", Version: "v1", Kind: "ValidatingWebhookConfiguration"}
+	ValidatingWebhookConfiguration = schema.GroupVersionKind{Group: "admissionregistration.k8s.io", Version: "v1beta1", Kind: "ValidatingWebhookConfiguration"}
 )
 
 // CustomResource generates a `schema.GroupVersionKind` for a custom resource given a version.

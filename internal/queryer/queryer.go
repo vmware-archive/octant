@@ -13,7 +13,7 @@ import (
 	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
-	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
+	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
@@ -46,8 +46,8 @@ type Queryer interface {
 	Events(ctx context.Context, object metav1.Object) ([]*corev1.Event, error)
 	IngressesForService(ctx context.Context, service *corev1.Service) ([]*extv1beta1.Ingress, error)
 	APIServicesForService(ctx context.Context, service *corev1.Service) ([]*apiregistrationv1.APIService, error)
-	MutatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1.MutatingWebhookConfiguration, error)
-	ValidatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1.ValidatingWebhookConfiguration, error)
+	MutatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1beta1.MutatingWebhookConfiguration, error)
+	ValidatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1beta1.ValidatingWebhookConfiguration, error)
 	OwnerReference(ctx context.Context, object *unstructured.Unstructured) (bool, []*unstructured.Unstructured, error)
 	ScaleTarget(ctx context.Context, hpa *autoscalingv1.HorizontalPodAutoscaler) (map[string]interface{}, error)
 	PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error)
@@ -445,7 +445,7 @@ func (osq *ObjectStoreQueryer) APIServicesForService(ctx context.Context, servic
 	return results, nil
 }
 
-func (osq *ObjectStoreQueryer) MutatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1.MutatingWebhookConfiguration, error) {
+func (osq *ObjectStoreQueryer) MutatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1beta1.MutatingWebhookConfiguration, error) {
 	if service == nil {
 		return nil, errors.New("nil service")
 	}
@@ -456,10 +456,10 @@ func (osq *ObjectStoreQueryer) MutatingWebhookConfigurationsForService(ctx conte
 		return nil, errors.Wrap(err, "retrieving mutatingwebhookconfigurations")
 	}
 
-	var results []*admissionregistrationv1.MutatingWebhookConfiguration
+	var results []*admissionregistrationv1beta1.MutatingWebhookConfiguration
 
 	for i := range ul.Items {
-		mutatingwebhookconfiguration := &admissionregistrationv1.MutatingWebhookConfiguration{}
+		mutatingwebhookconfiguration := &admissionregistrationv1beta1.MutatingWebhookConfiguration{}
 		err := kubernetes.FromUnstructured(&ul.Items[i], mutatingwebhookconfiguration)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured mutatingwebhookconfiguration")
@@ -477,7 +477,7 @@ func (osq *ObjectStoreQueryer) MutatingWebhookConfigurationsForService(ctx conte
 	return results, nil
 }
 
-func (osq *ObjectStoreQueryer) ValidatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1.ValidatingWebhookConfiguration, error) {
+func (osq *ObjectStoreQueryer) ValidatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1beta1.ValidatingWebhookConfiguration, error) {
 	if service == nil {
 		return nil, errors.New("nil service")
 	}
@@ -488,10 +488,10 @@ func (osq *ObjectStoreQueryer) ValidatingWebhookConfigurationsForService(ctx con
 		return nil, errors.Wrap(err, "retrieving validatingwebhookconfigurations")
 	}
 
-	var results []*admissionregistrationv1.ValidatingWebhookConfiguration
+	var results []*admissionregistrationv1beta1.ValidatingWebhookConfiguration
 
 	for i := range ul.Items {
-		validatingwebhookconfiguration := &admissionregistrationv1.ValidatingWebhookConfiguration{}
+		validatingwebhookconfiguration := &admissionregistrationv1beta1.ValidatingWebhookConfiguration{}
 		err := kubernetes.FromUnstructured(&ul.Items[i], validatingwebhookconfiguration)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured validatingwebhookconfiguration")

@@ -71,6 +71,7 @@ func (f *informerFactory) ForResource(groupVersionKind schema.GroupVersionKind) 
 	stopCh := f.informerContextCache.addChild(groupVersionKind)
 
 	gvr, _, err := f.client.Resource(groupVersionKind.GroupKind())
+	gvr.Version = groupVersionKind.Version
 	if err != nil {
 		return nil, fmt.Errorf("unable to find group version resource for group kind %s: %w",
 			groupVersionKind.GroupKind(), err)

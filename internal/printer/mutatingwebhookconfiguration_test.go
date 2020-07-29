@@ -11,7 +11,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
-	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
+	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -23,8 +23,8 @@ func Test_MutatingWebhookConfigurationListHandler(t *testing.T) {
 	object := testutil.CreateMutatingWebhookConfiguration("mutatingWebhookConfiguration")
 	object.CreationTimestamp = *testutil.CreateTimestamp()
 
-	list := &admissionregistrationv1.MutatingWebhookConfigurationList{
-		Items: []admissionregistrationv1.MutatingWebhookConfiguration{*object},
+	list := &admissionregistrationv1beta1.MutatingWebhookConfigurationList{
+		Items: []admissionregistrationv1beta1.MutatingWebhookConfiguration{*object},
 	}
 
 	controller := gomock.NewController(t)
@@ -47,7 +47,7 @@ func Test_MutatingWebhookConfigurationListHandler(t *testing.T) {
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", object.Name, "/path",
 			genObjectStatus(component.TextStatusOK, []string{
-				"admissionregistration.k8s.io/v1 MutatingWebhookConfiguration is OK",
+				"admissionregistration.k8s.io/v1beta1 MutatingWebhookConfiguration is OK",
 			})),
 		"Age": component.NewTimestamp(now),
 		component.GridActionKey: gridActionsFactory([]component.GridAction{
@@ -59,39 +59,39 @@ func Test_MutatingWebhookConfigurationListHandler(t *testing.T) {
 }
 
 func Test_NewMutatingWebhook(t *testing.T) {
-	namespacedScope := admissionregistrationv1.NamespacedScope
-	ifNeededReinvocationPolicy := admissionregistrationv1.IfNeededReinvocationPolicy
-	ignore := admissionregistrationv1.Ignore
-	exact := admissionregistrationv1.Exact
-	sideEffectClassNone := admissionregistrationv1.SideEffectClassNone
+	namespacedScope := admissionregistrationv1beta1.NamespacedScope
+	ifNeededReinvocationPolicy := admissionregistrationv1beta1.IfNeededReinvocationPolicy
+	ignore := admissionregistrationv1beta1.Ignore
+	exact := admissionregistrationv1beta1.Exact
+	sideEffectClassNone := admissionregistrationv1beta1.SideEffectClassNone
 
 	cases := []struct {
 		name            string
-		mutatingWebhook *admissionregistrationv1.MutatingWebhook
+		mutatingWebhook *admissionregistrationv1beta1.MutatingWebhook
 		isErr           bool
 		expected        *component.Summary
 	}{
 		{
 			name: "normal",
-			mutatingWebhook: &admissionregistrationv1.MutatingWebhook{
+			mutatingWebhook: &admissionregistrationv1beta1.MutatingWebhook{
 				Name: "test-webhook",
-				ClientConfig: admissionregistrationv1.WebhookClientConfig{
-					Service: &admissionregistrationv1.ServiceReference{
+				ClientConfig: admissionregistrationv1beta1.WebhookClientConfig{
+					Service: &admissionregistrationv1beta1.ServiceReference{
 						Namespace: "default",
 						Name:      "service",
 					},
 				},
-				Rules: []admissionregistrationv1.RuleWithOperations{
+				Rules: []admissionregistrationv1beta1.RuleWithOperations{
 					{
-						Rule: admissionregistrationv1.Rule{
+						Rule: admissionregistrationv1beta1.Rule{
 							APIGroups:   []string{"apps"},
 							APIVersions: []string{"v1"},
 							Resources:   []string{"*"},
 							Scope:       &namespacedScope,
 						},
-						Operations: []admissionregistrationv1.OperationType{
-							admissionregistrationv1.Create,
-							admissionregistrationv1.Update,
+						Operations: []admissionregistrationv1beta1.OperationType{
+							admissionregistrationv1beta1.Create,
+							admissionregistrationv1beta1.Update,
 						},
 					},
 				},
@@ -158,7 +158,7 @@ func Test_NewMutatingWebhook(t *testing.T) {
 		},
 		{
 			name: "default",
-			mutatingWebhook: &admissionregistrationv1.MutatingWebhook{
+			mutatingWebhook: &admissionregistrationv1beta1.MutatingWebhook{
 				Name: "test-webhook",
 			},
 			expected: component.NewSummary("test-webhook", []component.SummarySection{
@@ -239,5 +239,5 @@ func Test_NewMutatingWebhook(t *testing.T) {
 }
 
 func init() {
-	admissionregistrationv1.AddToScheme(scheme.Scheme)
+	admissionregistrationv1beta1.AddToScheme(scheme.Scheme)
 }
