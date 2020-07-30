@@ -2,12 +2,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 .dropdown-top {
-  max-width: 10rem;
+  max-width: 12rem;
 }
 
 .dropdown-button {
-  max-width: 9rem;
-  text-overflow: ellipsis;
+  max-width: 12rem;
+  text-overflow: clip;
   overflow: hidden;
   padding: 0.15rem 0.4rem 0.15rem 1rem;
 }

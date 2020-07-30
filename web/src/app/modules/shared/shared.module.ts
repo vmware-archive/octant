@@ -70,6 +70,7 @@ import { PreferencesComponent } from './components/presentation/preferences/pref
 import { HelperComponent } from './components/smart/helper/helper.component';
 import { FilterDeletedDatagridRowPipe } from './pipes/filterDeletedDatagridRow/filter-deleted-datagrid-row.pipe';
 import { ContentTextFilterComponent } from './components/presentation/content-text-filter/content-text-filter.component';
+import { TruncatePipe } from './pipes/truncate/truncate.pipe';
 
 @NgModule({
   declarations: [
@@ -119,6 +120,7 @@ import { ContentTextFilterComponent } from './components/presentation/content-te
     AnsiPipe,
     FormatPathPipe,
     RelativePipe,
+    TruncatePipe,
     SelectorsComponent,
     SingleStatComponent,
     SliderViewComponent,
@@ -203,6 +205,7 @@ import { ContentTextFilterComponent } from './components/presentation/content-te
     TextComponent,
     TimestampComponent,
     TitleComponent,
+    TruncatePipe,
     YamlComponent,
     OverflowLabelsComponent,
     PreferencesComponent,
