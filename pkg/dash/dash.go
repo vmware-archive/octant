@@ -19,6 +19,7 @@ import (
 	"contrib.go.opencensus.io/exporter/jaeger"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/soheilhy/cmux"
+	"github.com/spf13/afero"
 	"github.com/spf13/viper"
 	"go.opencensus.io/trace"
 
@@ -69,6 +70,7 @@ type Runner struct {
 	actionManager          *action.Manager
 	websocketClientManager *api.WebsocketClientManager
 	apiCreated             bool
+	fs                     afero.Fs
 }
 
 func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner, error) {
@@ -97,7 +99,9 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 	var apiService api.Service
 	var apiErr error
 
-	if options.KubeConfig, err = validateKubeConfig(logger, options.KubeConfig); err == nil {
+	r.fs = afero.NewOsFs()
+
+	if options.KubeConfig, err = ValidateKubeConfig(logger, options.KubeConfig, r.fs); err == nil {
 		apiService, pluginService, apiErr = r.initAPI(ctx, logger, options)
 		if apiErr != nil {
 			return nil, fmt.Errorf("failed to start service api: %w", apiErr)
@@ -138,7 +142,7 @@ func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, 
 		go func() {
 			if r.dash != nil {
 				var err error
-				if options.KubeConfig, err = validateKubeConfig(logger, options.KubeConfig); err != nil {
+				if options.KubeConfig, err = ValidateKubeConfig(logger, options.KubeConfig, r.fs); err != nil {
 					logger.Infof("waiting for kube config ...")
 					options.KubeConfig = <-kubeConfigPath
 				}
@@ -544,13 +548,18 @@ func enableOpenCensus() error {
 	return nil
 }
 
-// validateKubeConfig returns a valid file list of kube config(s)
-func validateKubeConfig(logger log.Logger, kubeConfig string) (string, error) {
+// ValidateKubeConfig returns a valid file list of kube config(s)
+func ValidateKubeConfig(logger log.Logger, kubeConfig string, fs afero.Fs) (string, error) {
 	fileList := []string{}
 	paths := filepath.SplitList(kubeConfig)
 
 	for _, path := range paths {
-		if _, err := os.Stat(path); err == nil {
+		exists, err := afero.Exists(fs, path)
+		if err != nil {
+			logger.Errorf("check path exists: %v", err)
+		}
+
+		if exists {
 			fileList = append(fileList, path)
 			continue
 		}
@@ -558,7 +567,7 @@ func validateKubeConfig(logger log.Logger, kubeConfig string) (string, error) {
 	}
 
 	if len(fileList) > 0 {
-		return strings.Join(fileList, ":"), nil
+		return strings.Join(fileList, string(filepath.ListSeparator)), nil
 	}
 	return "", fmt.Errorf("no kubeconfig found")
 }
