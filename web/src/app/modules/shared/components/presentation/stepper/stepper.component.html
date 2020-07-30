@@ -1,5 +1,6 @@
 <form
   clrStepper
+  (ngSubmit)="onFormSubmit()"
   [formGroup]="formGroup"
 >
   <div
@@ -100,13 +101,14 @@
               </ng-container>
         </div>
         <button
+          class="submit"
           *ngIf="v.config.steps.length - 1 === i; else elseBlock"
           clrStepButton="submit"
         >
           submit
         </button>
         <ng-template #elseBlock
-          ><button clrStepButton="next">next</button></ng-template
+          ><button class="next" clrStepButton="next">next</button></ng-template
         >
       </clr-step-content>
     </clr-stepper-panel>

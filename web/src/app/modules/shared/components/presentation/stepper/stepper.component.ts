@@ -40,6 +40,7 @@ export class StepperComponent implements OnInit {
   @Input() set view(v: View) {
     this.v = v as StepperView;
   }
+
   get view() {
     return this.v;
   }
@@ -66,23 +67,37 @@ export class StepperComponent implements OnInit {
       this.action = this.v.config.action;
       this.steps = this.v.config.steps;
 
-      const stepGroups: { [name: string]: any } = {};
-      this.steps?.forEach(step => {
-        const controls: { [name: string]: any } = {};
-        step.form?.fields?.forEach(field => {
-          controls[field.name] = [
-            field.value,
-            this.getValidators(field.validators),
-          ];
-        });
-        stepGroups[step.name] = this.formBuilder.group(controls);
-      });
+      const stepGroups = this.createStepGroups(this.steps);
       this.formGroup = this.formBuilder.group(stepGroups);
     }
   }
 
+  createStepGroups(steps: StepItem[]): { [name: string]: any } {
+    const stepGroups: { [name: string]: any } = {};
+
+    steps?.forEach(step => {
+      const controls = this.createControlGroups(step);
+      stepGroups[step.name] = this.formBuilder.group(controls);
+    });
+
+    return stepGroups;
+  }
+
+  createControlGroups(step: StepItem): { [name: string]: any } {
+    const controls: { [name: string]: any } = {};
+
+    step.form?.fields?.forEach(field => {
+      controls[field.name] = [
+        field.value,
+        this.getValidators(field.validators),
+      ];
+    });
+
+    return controls;
+  }
+
   onFormSubmit() {
-    const form = JSON.stringify(this.formGroup);
+    const form = JSON.stringify(this.formGroup.value);
     this.websocketService.sendMessage(this.action, form);
     if (isDevMode()) {
       console.log('stepper form: ' + form);
