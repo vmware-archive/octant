@@ -1,0 +1,93 @@
+import { moduleMetadata } from '@storybook/angular';
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import { StepperComponent } from '../app/modules/shared/components/presentation/stepper/stepper.component';
+
+export const stepperDocs = {
+  source: { code: `title = "Example Stepper" component.NewStepper()` },
+};
+
+export const stepperView = {
+  metadata: {
+    type: 'stepper',
+  },
+  config: {
+    action: 'octant.dev/test-action',
+    steps: [
+      {
+        title: 'Contact Information',
+        description: 'Personal contact information.',
+        name: 'name',
+        items: [
+          {
+            placeholder: 'First name',
+            label: 'First Name',
+            name: 'firstName',
+            type: 'text',
+            value: '',
+            error: 'First name is required.',
+            validators: ['required'],
+          },
+          {
+            label: 'Last Name',
+            name: 'lastName',
+            type: 'text',
+            value: '',
+          },
+        ],
+      },
+      {
+        title: 'More Information',
+        description: 'Extended information.',
+        name: 'extended',
+        items: [
+          {
+            label: 'City',
+            name: 'city',
+            type: 'text',
+            value: '',
+          },
+          {
+            label: 'State',
+            name: 'state',
+            type: 'select',
+            error: 'State is required.',
+            validators: ['required'],
+            configuration: {
+              choices: [
+                { label: '', value: '' },
+                { label: 'North Carolina', value: 'NC' },
+              ],
+            },
+          },
+        ],
+      },
+    ],
+  },
+};
+
+<h1>Stepper component</h1>
+<h2>Description</h2>
+
+<p>The Stepper component provides guided steps to a user</p>
+<h2>Example</h2>
+
+<Meta title="Components/Stepper" component={StepperComponent} />
+
+<Preview withToolbar>
+  <Story
+    name="Stepper component"
+    parameters={{ docs: stepperDocs }}
+    height="450px"
+  >
+    {{
+      props: {
+        view: object('View', stepperView),
+      },
+      component: StepperComponent,
+    }}
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={StepperComponent} />

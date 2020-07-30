@@ -71,6 +71,7 @@ import { HelperComponent } from './components/smart/helper/helper.component';
 import { FilterDeletedDatagridRowPipe } from './pipes/filterDeletedDatagridRow/filter-deleted-datagrid-row.pipe';
 import { ContentTextFilterComponent } from './components/presentation/content-text-filter/content-text-filter.component';
 import { TruncatePipe } from './pipes/truncate/truncate.pipe';
+import { StepperComponent } from './components/presentation/stepper/stepper.component';
 
 @NgModule({
   declarations: [
@@ -137,6 +138,7 @@ import { TruncatePipe } from './pipes/truncate/truncate.pipe';
     PreferencesComponent,
     HelperComponent,
     ContentTextFilterComponent,
+    StepperComponent,
   ],
   imports: [
     ClarityModule,
@@ -210,6 +212,7 @@ import { TruncatePipe } from './pipes/truncate/truncate.pipe';
     OverflowLabelsComponent,
     PreferencesComponent,
     HelperComponent,
+    StepperComponent,
   ],
 })
 export class SharedModule {}

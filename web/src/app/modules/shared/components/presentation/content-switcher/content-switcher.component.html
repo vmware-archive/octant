@@ -98,6 +98,9 @@
     <ng-container *ngSwitchCase="'terminal'">
       <app-terminal [view]="view"></app-terminal>
     </ng-container>
+    <ng-container *ngSwitchCase="'stepper'">
+      <app-stepper [view]="view"></app-stepper>
+    </ng-container>
     <div class="alert alert-danger static" *ngSwitchDefault>
       <span class="alert-icon-wrapper">
         <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>

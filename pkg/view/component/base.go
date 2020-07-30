@@ -40,6 +40,7 @@ const (
 	typeText               = "text"
 	typeTimestamp          = "timestamp"
 	typeYAML               = "yaml"
+	typeStepper            = "stepper"
 )
 
 // base is a base component.
