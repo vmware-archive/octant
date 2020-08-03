@@ -37,7 +37,7 @@ require (
 	github.com/soheilhy/cmux v0.1.4
 	github.com/spf13/afero v1.3.3
 	github.com/spf13/cobra v0.0.7
-	github.com/spf13/viper v1.7.0
+	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
 	go.opencensus.io v0.22.4
 	go.uber.org/zap v1.15.0
