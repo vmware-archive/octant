@@ -181,7 +181,7 @@ github.com/sam-kamerer/go-plister
 github.com/skratchdot/open-golang/open
 # github.com/soheilhy/cmux v0.1.4
 github.com/soheilhy/cmux
-# github.com/spf13/afero v1.3.2
+# github.com/spf13/afero v1.3.3
 github.com/spf13/afero
 github.com/spf13/afero/mem
 # github.com/spf13/cast v1.3.0
