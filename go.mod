@@ -35,7 +35,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e
 	github.com/soheilhy/cmux v0.1.4
-	github.com/spf13/afero v1.3.2
+	github.com/spf13/afero v1.3.3
 	github.com/spf13/cobra v0.0.7
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.6.1
@@ -45,7 +45,6 @@ require (
 	golang.org/x/tools v0.0.0-20200716134326-a8f9df4c9543
 	google.golang.org/grpc v1.31.0
 	google.golang.org/grpc/examples v0.0.0-20200707005602-4258d12073b4 // indirect
-	gotest.tools v2.2.0+incompatible // indirect
 	k8s.io/api v0.19.0-alpha.3
 	k8s.io/apiextensions-apiserver v0.19.0-alpha.3
 	k8s.io/apimachinery v0.19.0-beta.2
