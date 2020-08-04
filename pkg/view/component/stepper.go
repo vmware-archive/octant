@@ -18,31 +18,33 @@ type stepperMarshal Stepper
 func (t *Stepper) MarshalJSON() ([]byte, error) {
 	m := stepperMarshal(*t)
 	m.Metadata.Type = typeStepper
-
 	return json.Marshal(&m)
 }
 
 type StepperConfig struct {
-	Steps []StepConfig `json:"steps"`
+	Action string       `json:"action"`
+	Steps  []StepConfig `json:"steps"`
 }
 
 func (t *StepperConfig) UnmarshalJSON(data []byte) error {
 	x := struct {
-		Steps []StepConfig
+		Action string
+		Steps  []StepConfig
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
 		return err
 	}
 
+	t.Action = x.Action
 	t.Steps = x.Steps
 
 	return nil
 }
 
 type StepConfig struct {
-	Name        string      `json:"name"`
-	Items       []FormField `json:"items"`
-	Title       string      `json:"title"`
-	Description string      `json:"description"`
+	Name        string `json:"name"`
+	Form        Form   `json:"form"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }

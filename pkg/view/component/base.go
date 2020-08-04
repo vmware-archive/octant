@@ -34,13 +34,13 @@ const (
 	typeResourceViewer     = "resourceViewer"
 	typeSelectors          = "selectors"
 	typeSingleStat         = "singleStat"
+	typeStepper            = "stepper"
 	typeSummary            = "summary"
 	typeTable              = "table"
 	typeTerminal           = "terminal"
 	typeText               = "text"
 	typeTimestamp          = "timestamp"
 	typeYAML               = "yaml"
-	typeStepper            = "stepper"
 )
 
 // base is a base component.

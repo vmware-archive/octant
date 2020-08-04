@@ -11,6 +11,9 @@ import (
 )
 
 func Test_stepper_Marshal(t *testing.T) {
+	form := Form{}
+	form.Fields = append(form.Fields, NewFormFieldText("test", "test", "test"))
+
 	tests := []struct {
 		name         string
 		input        Component
@@ -20,20 +23,21 @@ func Test_stepper_Marshal(t *testing.T) {
 		{
 			name: "general",
 			input: &Stepper{
-				base: newBase(typeList, TitleFromString("my stepper")),
+				base: newBase(typeStepper, TitleFromString("my stepper")),
 				Config: StepperConfig{
+					Action: "action.octant.dev/stepperTest",
 					Steps: []StepConfig{
 						{
 							Name:        "Step 1",
 							Title:       "First Step",
 							Description: "Setup step",
-							Items:       []FormField{},
+							Form:        form,
 						},
 						{
 							Name:        "Step 2",
 							Title:       "Second Step",
 							Description: "Confirmation step",
-							Items:       []FormField{},
+							Form:        form,
 						},
 					},
 				},

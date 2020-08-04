@@ -17,8 +17,8 @@ export const stepperView = {
       {
         title: 'Contact Information',
         description: 'Personal contact information.',
-        name: 'name',
-        items: [
+        name: 'contact',
+        form: { fields: [
           {
             placeholder: 'First name',
             label: 'First Name',
@@ -35,12 +35,13 @@ export const stepperView = {
             value: '',
           },
         ],
+        },
       },
       {
         title: 'More Information',
         description: 'Extended information.',
         name: 'extended',
-        items: [
+        form: {fields: [
           {
             label: 'City',
             name: 'city',
@@ -61,6 +62,7 @@ export const stepperView = {
             },
           },
         ],
+        },
       },
     ],
   },

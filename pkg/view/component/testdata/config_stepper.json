@@ -1,14 +1,4 @@
 {
-  "metadata": {
-    "type": "stepper",
-    "title": [
-      {
-        "config": { "value": "my stepper" },
-        "metadata": { "type": "text" }
-      }
-    ]
-  },
-  "config": {
     "action": "action.octant.dev/stepperTest",
     "steps": [
       {
@@ -31,18 +21,7 @@
         "name": "Step 2",
         "title": "Second Step",
         "description": "Confirmation step",
-        "form": {
-          "fields": [
-            {
-              "type": "text",
-              "label": "test",
-              "name": "test",
-              "value": "test",
-              "configuration": {}
-            }
-          ]
-        }
+        "form": {}
       }
     ]
   }
-}

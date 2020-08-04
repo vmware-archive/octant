@@ -9,7 +9,12 @@ import {
   OnDestroy,
   isDevMode,
 } from '@angular/core';
-import { StepperView, View, ActionField } from '../../../models/content';
+import {
+  StepperView,
+  View,
+  ActionField,
+  StepItem,
+} from '../../../models/content';
 import {
   FormGroup,
   FormBuilder,
@@ -29,7 +34,7 @@ interface Choice {
   templateUrl: './stepper.component.html',
   styleUrls: ['./stepper.component.sass'],
 })
-export class StepperComponent implements OnChanges, OnDestroy, OnInit {
+export class StepperComponent implements OnInit {
   private v: StepperView;
 
   @Input() set view(v: View) {
@@ -47,23 +52,24 @@ export class StepperComponent implements OnChanges, OnDestroy, OnInit {
 
   formGroup: FormGroup;
   action: string;
+  steps: StepItem[];
 
   constructor(
     private formBuilder: FormBuilder,
     private websocketService: WebsocketService
-  ) {}
-
-  ngOnChanges(changes: SimpleChanges): void {}
+  ) {
+    this.steps = [] as StepItem[];
+  }
 
   ngOnInit() {
     if (this.v) {
-      if (this.v.config.action) {
-        this.action = this.v.config.action;
-      }
+      this.action = this.v.config.action;
+      this.steps = this.v.config.steps;
+
       const stepGroups: { [name: string]: any } = {};
-      this.v.config.steps?.forEach(step => {
+      this.steps?.forEach(step => {
         const controls: { [name: string]: any } = {};
-        step.items?.forEach(field => {
+        step.form?.fields?.forEach(field => {
           controls[field.name] = [
             field.value,
             this.getValidators(field.validators),
@@ -74,8 +80,6 @@ export class StepperComponent implements OnChanges, OnDestroy, OnInit {
       this.formGroup = this.formBuilder.group(stepGroups);
     }
   }
-
-  ngOnDestroy() {}
 
   onFormSubmit() {
     const form = JSON.stringify(this.formGroup);

@@ -500,7 +500,7 @@ export interface CodeView extends View {
 
 export interface StepItem {
   name: string;
-  items: ActionField[];
+  form: ActionForm;
   title: string;
   description: string;
 }

@@ -4,13 +4,13 @@
 >
   <div
     class="step-item"
-    *ngFor="let step of v?.config.steps; index as i; trackBy: trackByFn"
+    *ngFor="let step of steps; index as i; trackBy: trackByFn"
   >
     <clr-stepper-panel [formGroupName]="step.name">
       <clr-step-title>{{ step.title }}</clr-step-title>
       <clr-step-description>{{ step.description }}</clr-step-description>
       <clr-step-content>
-        <div *ngFor="let field of step.items; trackBy: trackByFn">
+        <div *ngFor="let field of step.form?.fields; trackBy: trackByFn">
             <ng-container [ngSwitch]="field.type">
                 <ng-container *ngSwitchCase="'checkbox'">
                   <clr-checkbox-container>
