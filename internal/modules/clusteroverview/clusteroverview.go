@@ -180,10 +180,10 @@ func (co *ClusterOverview) Navigation(ctx context.Context, _ string, root string
 	navigationEntries := octant.NavigationEntries{
 		Lookup: map[string]string{
 			"Namespaces":                  "namespaces",
-			"API Server":                  "api-server",
 			"Custom Resources":            "custom-resources",
 			"Custom Resource Definitions": "custom-resource-definitions",
 			"RBAC":                        "rbac",
+			"Webhooks":                    "webhooks",
 			"Nodes":                       "nodes",
 			"Storage":                     "storage",
 			"Port Forwards":               "port-forward",
@@ -191,10 +191,10 @@ func (co *ClusterOverview) Navigation(ctx context.Context, _ string, root string
 		EntriesFuncs: map[string]octant.EntriesFunc{
 			"Cluster Overview":            nil,
 			"Namespaces":                  nil,
-			"API Server":                  apiServerEntries,
 			"Custom Resources":            navigation.CRDEntries,
 			"Custom Resource Definitions": nil,
 			"RBAC":                        rbacEntries,
+			"Webhooks":                    webhookEntries,
 			"Nodes":                       nil,
 			"Storage":                     storageEntries,
 			"Port Forwards":               nil,
@@ -202,10 +202,10 @@ func (co *ClusterOverview) Navigation(ctx context.Context, _ string, root string
 		IconMap: map[string]string{
 			"Cluster Overview":            icon.Overview,
 			"Namespaces":                  icon.Namespaces,
-			"API Server":                  icon.ApiServer,
 			"Custom Resources":            icon.CustomResources,
 			"Custom Resource Definitions": icon.CustomResourceDefinition,
 			"RBAC":                        icon.RBAC,
+			"Webhooks":                    icon.Webhooks,
 			"Nodes":                       icon.Nodes,
 			"Storage":                     icon.ConfigAndStorage,
 			"Port Forwards":               icon.PortForwards,
@@ -213,10 +213,10 @@ func (co *ClusterOverview) Navigation(ctx context.Context, _ string, root string
 		Order: []string{
 			"Cluster Overview",
 			"Namespaces",
-			"API Server",
 			"Custom Resources",
 			"Custom Resource Definitions",
 			"RBAC",
+			"Webhooks",
 			"Nodes",
 			"Storage",
 			"Port Forwards",
@@ -251,15 +251,13 @@ func (co *ClusterOverview) Generators() []octant.Generator {
 	return []octant.Generator{}
 }
 
-func apiServerEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, _ bool) ([]navigation.Navigation, bool, error) {
+func rbacEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, _ bool) ([]navigation.Navigation, bool, error) {
 	neh := navigation.EntriesHelper{}
 
-	neh.Add("API Services", "api-services",
-		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.APIService), objectStore))
-	neh.Add("Mutating Webhooks", "mutating-webhooks",
-		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.MutatingWebhookConfiguration), objectStore))
-	neh.Add("Validating Webhooks", "validating-webhooks",
-		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.ValidatingWebhookConfiguration), objectStore))
+	neh.Add("Cluster Roles", "cluster-roles",
+		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.ClusterRole), objectStore))
+	neh.Add("Cluster Role Bindings", "cluster-role-bindings",
+		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.ClusterRoleBinding), objectStore))
 
 	children, err := neh.Generate(prefix, namespace, "")
 	if err != nil {
@@ -269,13 +267,13 @@ func apiServerEntries(ctx context.Context, prefix, namespace string, objectStore
 	return children, false, nil
 }
 
-func rbacEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, _ bool) ([]navigation.Navigation, bool, error) {
+func webhookEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, _ bool) ([]navigation.Navigation, bool, error) {
 	neh := navigation.EntriesHelper{}
 
-	neh.Add("Cluster Roles", "cluster-roles",
-		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.ClusterRole), objectStore))
-	neh.Add("Cluster Role Bindings", "cluster-role-bindings",
-		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.ClusterRoleBinding), objectStore))
+	neh.Add("Mutating Webhooks", "mutating-webhooks",
+		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.MutatingWebhookConfiguration), objectStore))
+	neh.Add("Validating Webhooks", "validating-webhooks",
+		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.ValidatingWebhookConfiguration), objectStore))
 
 	children, err := neh.Generate(prefix, namespace, "")
 	if err != nil {

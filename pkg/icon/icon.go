@@ -18,6 +18,7 @@ const (
 	Namespaces      = "namespace"
 	ApiServer       = "hard-disk"
 	CustomResources = "file-group"
+	Webhooks        = "animation"
 	Nodes           = "nodes"
 	PortForwards    = "router"
 
