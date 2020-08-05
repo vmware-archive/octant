@@ -1,4 +1,4 @@
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {CardComponent} from "../app/modules/shared/components/presentation/card/card.component";
 import {CardListComponent} from "../app/modules/shared/components/presentation/card-list/card-list.component";
@@ -105,7 +105,7 @@ Cards can also contain a footer that performs an action.</p>
 
 <Meta title="Components/Cards" component={CardComponent} />
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="Card component" parameters={{ docs: cardDocs }} height="200px" >
   {{
       props: {
@@ -114,16 +114,16 @@ Cards can also contain a footer that performs an action.</p>
       component: CardComponent,
       }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={CardComponent} />
+<ArgsTable of={CardComponent} />
 
 <p>
 Card List component contains a list of cards
 </p>
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="Card List component" parameters={{ docs: cardListDocs }} height="300px" >
   {{
       props: {
@@ -132,7 +132,7 @@ Card List component contains a list of cards
       component: CardListComponent,
   }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={CardListComponent} />
+<ArgsTable of={CardListComponent} />

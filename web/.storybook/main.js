@@ -15,4 +15,5 @@ module.exports = {
     // also valid 'react-docgen-typescript' | false
     reactDocgen: 'react-docgen',
   },
+  // logLevel: 'debug',
 };

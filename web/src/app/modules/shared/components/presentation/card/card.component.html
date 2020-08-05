@@ -29,7 +29,7 @@
         <app-view-title [views]="title"></app-view-title>
       </h4>
 
-      <div [ngSwitch]="body.metadata.type" class="card-text">
+      <div [ngSwitch]="body?.metadata.type" class="card-text">
         <app-content-switcher [view]="body"></app-content-switcher>
       </div>
     </div>

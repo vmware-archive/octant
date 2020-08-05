@@ -25,7 +25,7 @@
         <tbody>
           <tr *ngFor="let item of v?.config.sections; trackBy: identifyItem">
             <td class="left">{{ item.header }}</td>
-            <td class="left" [ngSwitch]="item.content.metadata.type">
+            <td class="left" [ngSwitch]="item?.content?.metadata?.type">
               <ng-container *ngSwitchCase="'annotations'">
                 <app-view-annotations
                   [view]="item.content"
@@ -75,7 +75,7 @@
                   ></clr-icon>
                 </span>
                 <span class="alert-text">
-                  {{ item.content.metadata.type }} not implemented
+                  {{ item?.content?.metadata?.type }} not implemented
                 </span>
               </div>
             </td>

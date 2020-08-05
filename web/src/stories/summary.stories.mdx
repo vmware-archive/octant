@@ -1,4 +1,4 @@
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {SummaryComponent} from "../app/modules/shared/components/presentation/summary/summary.component";
 
@@ -20,7 +20,7 @@ export const summaryDocs= { source: { code: `sections := component.SummarySectio
 
 <Meta title="Components/Summary" component={SummaryComponent} />
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="Summary component" parameters={{ docs: summaryDocs }} height="150px">
   {{
     props: {
@@ -40,7 +40,7 @@ export const summaryDocs= { source: { code: `sections := component.SummarySectio
     component: SummaryComponent,
   }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={SummaryComponent} />
+<ArgsTable of={SummaryComponent} />

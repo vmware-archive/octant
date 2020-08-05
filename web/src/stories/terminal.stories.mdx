@@ -1,4 +1,4 @@
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {TerminalComponent} from "../app/modules/shared/components/smart/terminal/terminal.component";
 
@@ -21,7 +21,7 @@ user can start typing shell commands and interact with the remote terminal.</p>
 
 <Meta title="Components/Terminal" component={TerminalComponent} />
 
-<Preview withToolbar>
+<Canvas withToolbar>
 <Story name="Terminal component" parameters={{ docs: terminalDocs }} height="500px" >
   {{
   props: {
@@ -45,7 +45,7 @@ user can start typing shell commands and interact with the remote terminal.</p>
   component: TerminalComponent,
 }}
 </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={TerminalComponent} />
+<ArgsTable of={TerminalComponent} />

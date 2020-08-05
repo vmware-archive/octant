@@ -1,5 +1,5 @@
 import { moduleMetadata } from '@storybook/angular';
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {LinkComponent} from "../app/modules/shared/components/presentation/link/link.component";
 
@@ -17,7 +17,7 @@ export const linkDocs= { source: { code: `title = "Example Link"
 
 <Meta title="Components/Link" component={LinkComponent} />
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="Link component" parameters={{ docs: linkDocs }} height="75px">
   {{
       props: {
@@ -34,7 +34,7 @@ export const linkDocs= { source: { code: `title = "Example Link"
       component: LinkComponent,
       }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={LinkComponent} />
+<ArgsTable of={LinkComponent} />

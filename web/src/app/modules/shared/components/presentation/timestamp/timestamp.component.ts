@@ -63,7 +63,7 @@ export class TimestampComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view.currentValue) {
+    if (changes.view && changes.view.currentValue) {
       const view = changes.view.currentValue as TimestampView;
 
       this.timestamp = view.config.timestamp;

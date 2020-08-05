@@ -58,7 +58,7 @@ export class DonutChartComponent implements OnInit {
     if (!this.v) {
       return 0;
     }
-    return this.v.config.segments.reduce<number>(
+    return this?.v?.config?.segments?.reduce<number>(
       (a: number, s: DonutSegment) => a + s.count,
       0
     );
@@ -70,14 +70,14 @@ export class DonutChartComponent implements OnInit {
     }
 
     return this.itemCount() > 1
-      ? this.v.config.labels.plural
-      : this.v.config.labels.singular;
+      ? this?.v?.config?.labels?.plural
+      : this?.v?.config?.labels?.singular;
   }
 
   descriptors(): SegmentDescriptor[] {
     let offset = 0;
 
-    if (!this.v) {
+    if (!this.v || !this.v.config || !this.v.config.segments) {
       return [];
     }
 

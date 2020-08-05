@@ -64,9 +64,7 @@ export const parameters = {
   },
   options: {
     storySort: (a, b) => { // Show component stories on top
-      const first= a[1].kind.substring(0, a[1].kind.indexOf('/'));
-      const second= b[1].kind.substring(0, b[1].kind.indexOf('/'));
-      return first === second ? a[1].id.localeCompare(b[1].id, { numeric: true }) : a[1].kind.localeCompare(b[1].kind, { numeric: true });
+      return a[1].id.localeCompare(b[1].id, { numeric: true, ignorePunctuation: true });
     }
   },
 };

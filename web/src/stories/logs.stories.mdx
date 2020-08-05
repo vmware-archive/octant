@@ -1,4 +1,4 @@
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {LogsComponent} from "../app/modules/shared/components/smart/logs/logs.component";
 
@@ -42,7 +42,7 @@ export const containerLogs =  [
 
 <Meta title="Components/Logs" component={LogsComponent} />
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="Logs component" parameters={{ docs: logsDocs }} height="500px">
   {{
     props: {
@@ -52,8 +52,8 @@ export const containerLogs =  [
     component: LogsComponent,
   }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={LogsComponent} />
+<ArgsTable of={LogsComponent} />
 

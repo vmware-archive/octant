@@ -1,4 +1,4 @@
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {DonutChartComponent} from "../app/modules/shared/components/presentation/donut-chart/donut-chart.component";
 
@@ -49,7 +49,7 @@ to show application health and pod count.</p>
 
 <Meta title="Components/Donut" component={DonutChartComponent} />
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="Donut component" parameters={{ docs: donutDocs }} height="400px" >
   {{
       props: {
@@ -62,7 +62,7 @@ to show application health and pod count.</p>
      `,
       }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={DonutChartComponent} />
+<ArgsTable of={DonutChartComponent} />

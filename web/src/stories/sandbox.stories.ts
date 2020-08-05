@@ -2,7 +2,7 @@ import {storiesOf} from '@storybook/angular';
 import {object} from "@storybook/addon-knobs";
 import {big_data} from "./overview.data";
 
-storiesOf('Sandbox', module).add('Component Sandbox', () => {
+storiesOf('Other/Sandbox', module).add('Component Sandbox', () => {
   const view = object('JSON', big_data);
 
   return {

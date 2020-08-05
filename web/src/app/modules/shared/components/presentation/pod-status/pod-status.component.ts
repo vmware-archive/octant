@@ -41,15 +41,17 @@ export class PodStatusComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     const pods = changes.view.currentValue.config.pods;
 
-    this.podStatuses = Object.keys(pods)
-      .sort()
-      .map(
-        (podName: string): PodStatus => {
-          return {
-            name: podName,
-            status: pods[podName].status,
-          };
-        }
-      );
+    if (pods) {
+      this.podStatuses = Object.keys(pods)
+        .sort()
+        .map(
+          (podName: string): PodStatus => {
+            return {
+              name: podName,
+              status: pods[podName].status,
+            };
+          }
+        );
+    }
   }
 }

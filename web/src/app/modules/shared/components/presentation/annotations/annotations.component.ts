@@ -32,7 +32,9 @@ export class AnnotationsComponent implements OnChanges {
     if (changes.view.currentValue) {
       const view = changes.view.currentValue as AnnotationsView;
       this.annotations = view.config.annotations;
-      this.annotationKeys = Object.keys(this.annotations);
+      this.annotationKeys = this.annotations
+        ? Object.keys(this.annotations)
+        : [];
     }
   }
 }

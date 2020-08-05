@@ -1,4 +1,4 @@
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {ButtonGroupComponent} from "../app/modules/shared/components/presentation/button-group/button-group.component";
 
@@ -23,7 +23,7 @@ Buttons requiring confirmation are red.</p>
 
 <Meta title="Components/Button Group" component={ButtonGroupComponent} />
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="ButtonGroup component" parameters={{ docs: buttonDocs }} height="150px" >
   {{
       props: {
@@ -48,7 +48,7 @@ Buttons requiring confirmation are red.</p>
       component: ButtonGroupComponent,
       }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={ButtonGroupComponent} />
+<ArgsTable of={ButtonGroupComponent} />

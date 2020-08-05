@@ -1,5 +1,5 @@
 import { moduleMetadata } from '@storybook/angular';
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import { MonacoEditorModule } from "ng-monaco-editor";
 import { EditorComponent } from '../app/modules/shared/components/smart/editor/editor.component';
@@ -46,7 +46,7 @@ export const editorView = {
 
 <Meta title="Components/Editor" component={EditorComponent} />
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="Editor component" parameters={{ docs: editorDocs }} height="500px">
   {{
     props: {
@@ -71,7 +71,7 @@ export const editorView = {
       `,
   }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={EditorComponent} />
+<ArgsTable of={EditorComponent} />
