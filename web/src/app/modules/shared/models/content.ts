@@ -272,6 +272,9 @@ export interface ActionField {
   name: string;
   type: string;
   value: any;
+  placeholder: string;
+  error: string;
+  validators: string[];
 }
 
 export interface ActionForm {
@@ -492,5 +495,19 @@ export interface ExtensionView extends View {
 export interface CodeView extends View {
   config: {
     value: string;
+  };
+}
+
+export interface StepItem {
+  name: string;
+  form: ActionForm;
+  title: string;
+  description: string;
+}
+
+export interface StepperView extends View {
+  config: {
+    action: string;
+    steps: StepItem[];
   };
 }

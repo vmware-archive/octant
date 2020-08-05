@@ -178,6 +178,8 @@
     "src//app/modules/shared/components/presentation/summary/summary.component.spec.ts",
     "src//app/modules/shared/components/presentation/selectors/selectors.component.spec.ts",
     "src//app/modules/shared/components/presentation/selectors/selectors.component.ts",
+    "src//app/modules/shared/components/presentation/stepper/stepper.component.spec.ts",
+    "src//app/modules/shared/components/presentation/stepper/stepper.component.ts",
     "src//app/modules/shared/components/presentation/button-group/button-group.component.spec.ts",
     "src//app/modules/shared/components/presentation/button-group/button-group.component.ts",
     "src//app/modules/shared/components/presentation/donut-chart/donut-chart.component.spec.ts",

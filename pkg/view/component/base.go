@@ -34,6 +34,7 @@ const (
 	typeResourceViewer     = "resourceViewer"
 	typeSelectors          = "selectors"
 	typeSingleStat         = "singleStat"
+	typeStepper            = "stepper"
 	typeSummary            = "summary"
 	typeTable              = "table"
 	typeTerminal           = "terminal"

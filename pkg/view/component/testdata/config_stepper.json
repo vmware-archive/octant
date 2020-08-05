@@ -1,0 +1,27 @@
+{
+    "action": "action.octant.dev/stepperTest",
+    "steps": [
+      {
+        "name": "Step 1",
+        "title": "First Step",
+        "description": "Setup step",
+        "form": {
+          "fields": [
+            {
+              "type": "text",
+              "label": "test",
+              "name": "test",
+              "value": "test",
+              "configuration": {}
+            }
+          ]
+        }
+      },
+      {
+        "name": "Step 2",
+        "title": "Second Step",
+        "description": "Confirmation step",
+        "form": {}
+      }
+    ]
+  }

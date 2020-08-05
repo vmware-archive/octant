@@ -354,6 +354,28 @@ func Test_unmarshal(t *testing.T) {
 			},
 		},
 		{
+			name:       "stepper",
+			configFile: "config_stepper.json",
+			objectType: "stepper",
+			expected: &Stepper{
+				Config: StepperConfig{
+					Action: "action.octant.dev/stepperTest",
+					Steps: []StepConfig{{
+						Name:        "Step 1",
+						Title:       "First Step",
+						Description: "Setup step",
+						Form:        Form{Fields: []FormField{NewFormFieldText("test", "test", "test")}},
+					}, {
+						Name:        "Step 2",
+						Title:       "Second Step",
+						Description: "Confirmation step",
+						Form:        Form{},
+					}},
+				},
+				base: newBase(typeStepper, nil),
+			},
+		},
+		{
 			name:       "summary",
 			configFile: "config_summary.json",
 			objectType: "summary",
