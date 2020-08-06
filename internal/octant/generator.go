@@ -7,6 +7,7 @@ package octant
 
 import (
 	"context"
+	"github.com/vmware-tanzu/octant/pkg/event"
 	"time"
 )
 
@@ -15,7 +16,7 @@ import (
 // Generator generates events.
 type Generator interface {
 	// Event generates events using the returned channel.
-	Event(ctx context.Context) (Event, error)
+	Event(ctx context.Context) (event.Event, error)
 
 	// ScheduleDelay is how long to wait before scheduling this generator again.
 	ScheduleDelay() time.Duration

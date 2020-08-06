@@ -18,7 +18,7 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
 )
 
-// API controlls the dashboard API service.
+// API controls the dashboard API service.
 type API interface {
 	// Addr is the address of the API service.
 	Addr() string

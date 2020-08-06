@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/plugin"
 	"github.com/vmware-tanzu/octant/pkg/plugin/service"
@@ -70,8 +71,7 @@ func handleTab(request *service.PrintRequest) (plugin.TabResponse, error) {
 	// start a new row.
 	layout := flexlayout.New()
 	section := layout.AddSection()
-
-	// Octant contain's a library of components that can be used to display content.
+	// Octant contains a library of components that can be used to display content.
 	// This example uses markdown text.
 	contents := component.NewMarkdownText("content from a *plugin*")
 
@@ -93,6 +93,8 @@ func handlePrint(request *service.PrintRequest) (plugin.PrintResponse, error) {
 		return plugin.PrintResponse{}, errors.Errorf("object is nil")
 	}
 
+	alert := action.CreateAlert(action.AlertTypeInfo, "test", action.DefaultAlertExpiration)
+	request.DashboardClient.SendAlert(request.Context(), alert)
 	// load an object from the cluster and use that object to create a response.
 
 	// Octant has a helper function to generate a key from an object. The key
@@ -113,7 +115,7 @@ func handlePrint(request *service.PrintRequest) (plugin.PrintResponse, error) {
 
 	// Octant has a component library that can be used to build content for a plugin.
 	// In this case, the plugin is creating a card.
-	podCard := component.NewCard(component.TitleFromString(fmt.Sprintf("Extra Output for %s", u.GetName())))
+	podCard := component.NewCard(component.TitleFromString(fmt.Sprintf("Extra Output for %s", string(request.ClientID))))
 	podCard.SetBody(component.NewMarkdownText("This output was generated from _octant-sample-plugin_"))
 
 	msg := fmt.Sprintf("update from plugin at %s", time.Now().Format(time.RFC3339))

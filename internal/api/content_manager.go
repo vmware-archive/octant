@@ -9,6 +9,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	ocontext "github.com/vmware-tanzu/octant/internal/context"
+	oevent "github.com/vmware-tanzu/octant/pkg/event"
 	"strings"
 	"time"
 
@@ -31,7 +33,7 @@ type ContentManagerOption func(manager *ContentManager)
 
 // ContentGenerateFunc is a function that generates content. It returns `rerun=true`
 // if the action should be be immediately rerun.
-type ContentGenerateFunc func(ctx context.Context, state octant.State) (Content, bool, error)
+type ContentGenerateFunc func(ctx context.Context, state octant.State, s OctantClient) (Content, bool, error)
 
 type Content struct {
 	Response component.ContentResponse
@@ -113,7 +115,7 @@ func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFu
 			return false
 		}
 
-		content, _, err := cm.contentGenerateFunc(ctx, state)
+		content, _, err := cm.contentGenerateFunc(ctx, state, s)
 		if err != nil {
 			var ae *oerrors.AccessError
 			if errors.As(err, &ae) {
@@ -142,7 +144,7 @@ func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFu
 	}
 }
 
-func (cm *ContentManager) generateContent(ctx context.Context, state octant.State) (Content, bool, error) {
+func (cm *ContentManager) generateContent(ctx context.Context, state octant.State, s OctantClient) (Content, bool, error) {
 	contentPath := state.GetContentPath()
 	logger := cm.logger.With("contentPath", contentPath)
 
@@ -159,6 +161,9 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 	options := module.ContentOptions{
 		LabelSet: FiltersToLabelSet(state.GetFilters()),
 	}
+
+	ctx = ocontext.WithWebsocketClientID(ctx, s.ID())
+
 	contentResponse, err := m.Content(ctx, modulePath, options)
 	if err != nil {
 		if nfe, ok := err.(notFound); ok && nfe.NotFound() {
@@ -249,8 +254,8 @@ type notFound interface {
 }
 
 // CreateContentEvent creates a content event.
-func CreateContentEvent(contentResponse component.ContentResponse, namespace, contentPath string, queryParams map[string][]string) octant.Event {
-	return octant.Event{
+func CreateContentEvent(contentResponse component.ContentResponse, namespace, contentPath string, queryParams map[string][]string) oevent.Event {
+	return oevent.Event{
 		Type: octant.EventTypeContent,
 		Data: map[string]interface{}{
 			"content":     contentResponse,

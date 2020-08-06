@@ -8,6 +8,7 @@ package plugin
 import (
 	"context"
 	"encoding/json"
+	ocontext "github.com/vmware-tanzu/octant/internal/context"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
@@ -168,7 +169,7 @@ func (c *GRPCClient) ObjectStatus(ctx context.Context, object runtime.Object) (O
 	var osr ObjectStatusResponse
 
 	err := c.run(func() error {
-		in, err := createObjectRequest(object)
+		in, err := createObjectRequest(object, "ObjectStatus")
 		if err != nil {
 			return err
 		}
@@ -202,7 +203,7 @@ func (c *GRPCClient) Print(ctx context.Context, object runtime.Object) (PrintRes
 	var pr PrintResponse
 
 	err := c.run(func() error {
-		in, err := createObjectRequest(object)
+		in, err := createObjectRequest(object, ocontext.WebsocketClientIDFrom(ctx))
 		if err != nil {
 			return err
 		}
@@ -245,7 +246,7 @@ func (c *GRPCClient) Print(ctx context.Context, object runtime.Object) (PrintRes
 	return pr, nil
 }
 
-func createObjectRequest(object runtime.Object) (*dashboard.ObjectRequest, error) {
+func createObjectRequest(object runtime.Object, clientID string) (*dashboard.ObjectRequest, error) {
 	data, err := json.Marshal(object)
 	if err != nil {
 		return nil, err
@@ -253,6 +254,7 @@ func createObjectRequest(object runtime.Object) (*dashboard.ObjectRequest, error
 
 	or := &dashboard.ObjectRequest{
 		Object: data,
+		ClientID: clientID,
 	}
 
 	return or, err
@@ -263,7 +265,7 @@ func (c *GRPCClient) PrintTab(ctx context.Context, object runtime.Object) (TabRe
 	var tab component.Tab
 
 	err := c.run(func() error {
-		in, err := createObjectRequest(object)
+		in, err := createObjectRequest(object, "PrintTab")
 		if err != nil {
 			return err
 		}

@@ -68,6 +68,21 @@ type Alerter interface {
 	SendAlert(alert Alert)
 }
 
+type alerter struct {
+	actionManager Manager
+}
+
+var _ Alerter = (*alerter)(nil)
+
+// NewAlerter creates a new alerter
+func NewAlerter() Alerter {
+	return &alerter{}
+}
+
+func (a *alerter) SendAlert(alert Alert) {
+	// Needs websocketclient?
+}
+
 // DispatcherFunc is a function that will be dispatched to handle a payload.
 type DispatcherFunc func(ctx context.Context, alerter Alerter, payload Payload) error
 

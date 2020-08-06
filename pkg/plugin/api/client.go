@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
@@ -211,5 +212,18 @@ func (c *Client) ForceFrontendUpdate(ctx context.Context) error {
 	client := c.DashboardConnection.Client()
 
 	_, err := client.ForceFrontendUpdate(ctx, &proto.Empty{})
+	return err
+}
+
+// SendAlert sends an alert
+func (c *Client) SendAlert(ctx context.Context, alert action.Alert) error {
+	client := c.DashboardConnection.Client()
+
+	alertRequest, err := convertFromAlert(alert)
+	if err != nil {
+		return err
+	}
+
+	_, err = client.SendAlert(ctx, alertRequest)
 	return err
 }

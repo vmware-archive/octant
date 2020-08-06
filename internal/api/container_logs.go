@@ -8,6 +8,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"github.com/vmware-tanzu/octant/pkg/event"
 	"strings"
 	"sync"
 	"time"
@@ -133,7 +134,7 @@ func (s *podLogsStateManager) Start(ctx context.Context, _ octant.State, client 
 	s.ctx = ctx
 }
 
-func (s *podLogsStateManager) streamEventsToClient(ctx context.Context, logEventType octant.EventType, logCh <-chan container.LogEntry) {
+func (s *podLogsStateManager) streamEventsToClient(ctx context.Context, logEventType event.EventType, logCh <-chan container.LogEntry) {
 	done := false
 	for !done {
 		select {
@@ -142,7 +143,7 @@ func (s *podLogsStateManager) streamEventsToClient(ctx context.Context, logEvent
 		case entry, ok := <-logCh:
 			if ok {
 				le := newLogEntry(entry.Line(), entry.Container())
-				logEvent := octant.Event{
+				logEvent := event.Event{
 					Type: logEventType,
 					Data: le,
 					Err:  nil,

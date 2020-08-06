@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/vmware-tanzu/octant/pkg/event"
 	"time"
 
 	"github.com/google/uuid"
@@ -40,7 +41,7 @@ const (
 // WebsocketClient manages websocket clients.
 type WebsocketClient struct {
 	conn       *websocket.Conn
-	send       chan octant.Event
+	send       chan event.Event
 	dashConfig config.Dash
 	logger     log.Logger
 	ctx        context.Context
@@ -67,7 +68,7 @@ func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *Webs
 		cancel:     cancel,
 		conn:       conn,
 		id:         id,
-		send:       make(chan octant.Event),
+		send:       make(chan event.Event),
 		manager:    manager,
 		dashConfig: dashConfig,
 		logger:     logger,
@@ -101,7 +102,7 @@ func NewTemporaryWebsocketClient(ctx context.Context, conn *websocket.Conn, mana
 		cancel:   cancel,
 		conn:     conn,
 		id:       id,
-		send:     make(chan octant.Event),
+		send:     make(chan event.Event),
 		manager:  manager,
 		logger:   logger,
 		handlers: make(map[string][]octant.ClientRequestHandler),
@@ -263,7 +264,7 @@ func (c *WebsocketClient) writePump() {
 	}
 }
 
-func (c *WebsocketClient) Send(ev octant.Event) {
+func (c *WebsocketClient) Send(ev event.Event) {
 	if c.isOpen {
 		c.send <- ev
 	}
@@ -278,8 +279,9 @@ type websocketRequest struct {
 	Payload action.Payload `json:"payload"`
 }
 
-func CreateEvent(eventType octant.EventType, fields action.Payload) octant.Event {
-	return octant.Event{
+// TODO: Move to pkg/event.go
+func CreateEvent(eventType event.EventType, fields action.Payload) event.Event {
+	return event.Event{
 		Type: eventType,
 		Data: fields,
 	}

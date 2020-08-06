@@ -8,6 +8,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"github.com/vmware-tanzu/octant/pkg/event"
 	"sync"
 	"time"
 
@@ -186,7 +187,7 @@ func (s *terminalStateManager) Start(ctx context.Context, state octant.State, cl
 	s.ctx = ctx
 }
 
-func (s *terminalStateManager) sendTerminalEvents(ctx context.Context, terminalEventType octant.EventType, instance terminal.Instance, terminalCh <-chan terminal.Instance) {
+func (s *terminalStateManager) sendTerminalEvents(ctx context.Context, terminalEventType event.EventType, instance terminal.Instance, terminalCh <-chan terminal.Instance) {
 	ctx, cancelFn := context.WithCancel(s.ctx)
 	for {
 		select {
@@ -206,16 +207,16 @@ func (s *terminalStateManager) sendTerminalEvents(ctx context.Context, terminalE
 	}
 }
 
-func newEvent(ctx context.Context, t terminal.Instance, sendScrollback bool) (octant.Event, error) {
+func newEvent(ctx context.Context, t terminal.Instance, sendScrollback bool) (event.Event, error) {
 	line, err := t.Read(readBufferSize)
 	if err != nil {
 		t.SetExitMessage(fmt.Sprintf("%v\n", err))
 		t.Stop()
-		return octant.Event{}, errors.Wrap(err, "read error")
+		return event.Event{}, errors.Wrap(err, "read error")
 	}
 
 	if line == nil && !sendScrollback {
-		return octant.Event{}, errors.New("no scrollback or line")
+		return event.Event{}, errors.New("no scrollback or line")
 	}
 
 	key := t.Key()
@@ -236,7 +237,7 @@ func newEvent(ctx context.Context, t terminal.Instance, sendScrollback bool) (oc
 		}
 	}
 
-	return octant.Event{
+	return event.Event{
 		Type: eventType,
 		Data: data,
 		Err:  nil,

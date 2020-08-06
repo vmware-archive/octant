@@ -8,6 +8,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"github.com/vmware-tanzu/octant/pkg/event"
 	"path"
 	"regexp"
 	"sort"
@@ -52,7 +53,7 @@ func defaultStateManagers(clientID string, dashConfig config.Dash) []StateManage
 
 // OctantClient is an OctantClient.
 type OctantClient interface {
-	Send(event octant.Event)
+	Send(event event.Event)
 	ID() string
 }
 
@@ -396,7 +397,7 @@ func updateContentPathNamespace(in, namespace string) string {
 }
 
 // CreateFiltersUpdate creates a filters update event.
-func CreateFiltersUpdate(filters []octant.Filter) octant.Event {
+func CreateFiltersUpdate(filters []octant.Filter) event.Event {
 	if filters == nil {
 		filters = make([]octant.Filter, 0)
 	}
@@ -406,7 +407,7 @@ func CreateFiltersUpdate(filters []octant.Filter) octant.Event {
 }
 
 // CreateAlertUpdate creates an alert update event.
-func CreateAlertUpdate(alert action.Alert) octant.Event {
+func CreateAlertUpdate(alert action.Alert) event.Event {
 	return CreateEvent(octant.EventTypeAlert, action.Payload{
 		"type":       alert.Type,
 		"message":    alert.Message,

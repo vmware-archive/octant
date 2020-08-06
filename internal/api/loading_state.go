@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/vmware-tanzu/octant/pkg/event"
 	"io/ioutil"
 	"os"
 	"time"
@@ -72,7 +73,7 @@ func (l *LoadingManager) CheckLoading(state octant.State, payload action.Payload
 	}
 
 	if loading {
-		l.client.Send(octant.Event{
+		l.client.Send(event.Event{
 			Type: octant.EventTypeLoading,
 		})
 	}
@@ -113,7 +114,7 @@ func (l *LoadingManager) UploadKubeConfig(state octant.State, payload action.Pay
 		return err
 	}
 
-	l.client.Send(octant.Event{
+	l.client.Send(event.Event{
 		Type: octant.EventTypeRefresh,
 	})
 
@@ -132,7 +133,7 @@ func (l *LoadingManager) WatchConfig(path chan string, client OctantClient, fs a
 		}
 		if exists {
 			path <- kubeconfig
-			client.Send(octant.Event{
+			client.Send(event.Event{
 				Type: octant.EventTypeRefresh,
 			})
 			return

@@ -10,6 +10,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	oevent "github.com/vmware-tanzu/octant/pkg/event"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -164,8 +165,8 @@ func NavigationGenerator(ctx context.Context, state octant.State, config Navigat
 }
 
 // CreateNavigationEvent creates a namespaces event.
-func CreateNavigationEvent(sections []navigation.Navigation, defaultPath string) octant.Event {
-	return octant.Event{
+func CreateNavigationEvent(sections []navigation.Navigation, defaultPath string) oevent.Event {
+	return oevent.Event{
 		Type: octant.EventTypeNavigation,
 		Data: map[string]interface{}{
 			"sections":    sections,

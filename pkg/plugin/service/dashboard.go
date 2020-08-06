@@ -5,6 +5,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
+	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/plugin/api"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
@@ -21,6 +22,7 @@ type Dashboard interface {
 	CancelPortForward(ctx context.Context, id string)
 	ListNamespaces(ctx context.Context) (api.NamespacesResponse, error)
 	ForceFrontendUpdate(ctx context.Context) error
+	SendAlert(ctx context.Context, alert action.Alert) error
 }
 
 // NewDashboardClient creates a dashboard client.
