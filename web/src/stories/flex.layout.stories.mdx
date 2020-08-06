@@ -1,4 +1,4 @@
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {FlexlayoutComponent} from "../app/modules/shared/components/presentation/flexlayout/flexlayout.component";
 
@@ -128,7 +128,7 @@ The layout can be divided into three possible widths: full, half, and quarter.</
 
 <Meta title="Components/Flex Layout" component={FlexlayoutComponent} />
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="Flex Layout component" parameters={{ docs: flexDocs }} height="250px" >
   {{
       props: {
@@ -137,7 +137,7 @@ The layout can be divided into three possible widths: full, half, and quarter.</
       component: FlexlayoutComponent,
       }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={FlexlayoutComponent} />
+<ArgsTable of={FlexlayoutComponent} />

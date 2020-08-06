@@ -1,4 +1,4 @@
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {PodStatusComponent} from "../app/modules/shared/components/presentation/pod-status/pod-status.component";
 
@@ -33,7 +33,7 @@ export const podStatusView = {
 
 <Meta title="Components/Pod Status" component={PodStatusComponent} />
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="Pod Status component" parameters={{ docs: podStatusDocs }} height="150px">
   {{
     props: {
@@ -42,7 +42,7 @@ export const podStatusView = {
     component: PodStatusComponent,
   }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={PodStatusComponent} />
+<ArgsTable of={PodStatusComponent} />

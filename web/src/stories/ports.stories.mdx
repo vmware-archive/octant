@@ -1,4 +1,4 @@
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {PortsComponent} from "../app/modules/shared/components/presentation/ports/ports.component";
 
@@ -60,7 +60,7 @@ export const portsView = {
 
 <Meta title="Components/Ports" component={PortsComponent} />
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="Ports component" parameters={{ docs: portsDocs }} height="75px">
   {{
     props: {
@@ -69,7 +69,7 @@ export const portsView = {
     component: PortsComponent,
   }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={PortsComponent} />
+<ArgsTable of={PortsComponent} />

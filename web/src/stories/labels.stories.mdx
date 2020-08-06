@@ -1,4 +1,4 @@
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {LabelsComponent} from "../app/modules/shared/components/presentation/labels/labels.component";
 import {SelectorsComponent} from "../app/modules/shared/components/presentation/selectors/selectors.component";
@@ -58,7 +58,7 @@ export const expressionSelectorView = {
 
 <Meta title="Components/Labels and Selectors" component={LabelsComponent} />
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="Labels" parameters={{ docs: labelsDocs }} height="75px" >
   {{
       props: {
@@ -67,17 +67,17 @@ export const expressionSelectorView = {
       component: LabelsComponent,
       }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={LabelsComponent} />
+<ArgsTable of={LabelsComponent} />
 
 <h1>Selectors</h1>
 
 <p>The Selectors component is similar to a Labels component except it uses a different color to represent a selector key-value pair.</p>
 <h2>Example</h2>
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="Selectors" parameters={{ docs: selectorsDocs }} height="75px" >
   {{
       props: {
@@ -86,17 +86,17 @@ export const expressionSelectorView = {
       component: SelectorsComponent,
       }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={SelectorsComponent} />
+<ArgsTable of={SelectorsComponent} />
 
 <h1>Expression Selectors</h1>
 
 <p>The Expression Selectors component can show more complex set operations for key-pairs.</p>
 <h2>Example</h2>
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="Expression Selectors" parameters={{ docs: expressionSelectorsDocs }} height="75px" >
   {{
       props: {
@@ -105,7 +105,7 @@ export const expressionSelectorView = {
       component: ExpressionSelectorComponent,
       }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={ExpressionSelectorComponent} />
+<ArgsTable of={ExpressionSelectorComponent} />

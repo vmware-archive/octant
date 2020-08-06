@@ -5,7 +5,7 @@ import {
   Preferences,
 } from '../app/modules/shared/models/preference';
 
-storiesOf('Preferences', module).add('in general', () => ({
+storiesOf('Other/Preferences', module).add('in general', () => ({
   props: {
     isOpen: false,
     preferences: object('preferences', {

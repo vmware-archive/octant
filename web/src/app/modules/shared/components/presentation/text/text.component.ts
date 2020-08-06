@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { TextView, View } from 'src/app/modules/shared/models/content';
+import { TextView } from 'src/app/modules/shared/models/content';
 
 @Component({
   selector: 'app-view-text',
@@ -29,7 +29,7 @@ export class TextComponent implements OnChanges {
   constructor() {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view.currentValue) {
+    if (changes.view && changes.view.currentValue) {
       const view = changes.view.currentValue as TextView;
       this.value = view.config.value;
       this.isMarkdown = view.config.isMarkdown;

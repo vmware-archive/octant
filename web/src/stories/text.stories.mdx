@@ -1,4 +1,4 @@
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {TextComponent} from "../app/modules/shared/components/presentation/text/text.component";
 
@@ -12,7 +12,7 @@ export const textDocs= { source: { code: `text := component.NewText("sampleText"
 
 <Meta title="Components/Text" component={TextComponent} />
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="Text component" parameters={{ docs: textDocs }} height="75px" >
   {{
       props: {
@@ -29,7 +29,7 @@ export const textDocs= { source: { code: `text := component.NewText("sampleText"
       component: TextComponent,
       }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={TextComponent} />
+<ArgsTable of={TextComponent} />

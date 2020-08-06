@@ -34,7 +34,7 @@ export class ExpressionSelectorComponent implements OnChanges {
       const view = changes.view.currentValue as ExpressionSelectorView;
       this.key = view.config.key;
       this.operator = view.config.operator;
-      this.values = view.config.values.join(',');
+      this.values = view.config.values?.join(',');
     }
   }
 }

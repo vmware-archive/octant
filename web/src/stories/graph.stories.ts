@@ -43,7 +43,7 @@ const shapes: BaseShape[] = [
 ];
 const style = ELEMENTS_STYLE;
 
-storiesOf('Resources', module).add('Resource View', () => {
+storiesOf('Other/Resources', module).add('Resource View', () => {
   const eles = object('elements', shapes.map(shape => shape.toNode(shapes)));
 
   return {

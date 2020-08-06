@@ -1,4 +1,4 @@
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {TimestampComponent} from "../app/modules/shared/components/presentation/timestamp/timestamp.component";
 
@@ -18,7 +18,7 @@ export const docs= { source: { code: "timestamp := component.NewTimestamp(time.U
 
 <Source name="Timestamp component" />
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="Timestamp" height="75px" parameters={{ docs: docs }}>
   {{
     props: {
@@ -27,8 +27,8 @@ export const docs= { source: { code: "timestamp := component.NewTimestamp(time.U
     component: TimestampComponent,
   }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={TimestampComponent} />
+<ArgsTable of={TimestampComponent} />
 

@@ -41,7 +41,9 @@ export class GraphvizComponent implements OnChanges {
     if (changes.view.currentValue) {
       const view = changes.view.currentValue as GraphvizView;
       const current = view.config.dot;
-      this.d3GraphvizService.render(this.viewer, current);
+      if (current) {
+        this.d3GraphvizService.render(this.viewer, current);
+      }
     }
   }
 }

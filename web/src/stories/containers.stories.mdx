@@ -1,4 +1,4 @@
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
 import {ContainersComponent} from "../app/modules/shared/components/presentation/containers/containers.component";
 
@@ -29,7 +29,7 @@ It displays container name and container image.</p>
 
 <Meta title="Components/Containers" component={ContainersComponent} />
 
-<Preview withToolbar>
+<Canvas withToolbar>
   <Story name="Containers component" parameters={{ docs: containersDocs }} height="75px" >
   {{
       props: {
@@ -38,7 +38,7 @@ It displays container name and container image.</p>
       component: ContainersComponent,
       }}
   </Story>
-</Preview>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={ContainersComponent} />
+<ArgsTable of={ContainersComponent} />
