@@ -30,8 +30,9 @@ type DonutChartConfig struct {
 	Size     DonutChartSize   `json:"size"`
 }
 
+// +octant:component
 type DonutChart struct {
-	base
+	Base
 	Config DonutChartConfig `json:"config"`
 }
 
@@ -39,7 +40,7 @@ var _ Component = (*DonutChart)(nil)
 
 func NewDonutChart() *DonutChart {
 	dc := &DonutChart{
-		base: newBase(typeDonutChart, nil),
+		Base: newBase(TypeDonutChart, nil),
 	}
 
 	return dc
@@ -64,6 +65,6 @@ func (dc *DonutChart) SetSize(size DonutChartSize) {
 
 func (dc *DonutChart) MarshalJSON() ([]byte, error) {
 	m := donutChartMarshal(*dc)
-	m.Metadata.Type = typeDonutChart
+	m.Metadata.Type = TypeDonutChart
 	return json.Marshal(&m)
 }

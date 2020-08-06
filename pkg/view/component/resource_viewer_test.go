@@ -73,7 +73,7 @@ func Test_ResourceViewer_Marshal(t *testing.T) {
 						},
 					},
 				},
-				base: newBase(typeResourceViewer, TitleFromString("Resource Viewer")),
+				Base: newBase(TypeResourceViewer, TitleFromString("Resource Viewer")),
 			},
 			expectedPath: "resource_viewer.json",
 		},

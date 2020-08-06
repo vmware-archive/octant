@@ -8,8 +8,10 @@ package component
 import "encoding/json"
 
 // Value is a component for code
+//
+// +octant:component
 type Code struct {
-	base
+	Base
 	Config CodeConfig `json:"config"`
 }
 
@@ -21,7 +23,7 @@ type CodeConfig struct {
 // NewCodeBlock creates a code component
 func NewCodeBlock(s string) *Code {
 	return &Code{
-		base: newBase(typeCodeBlock, nil),
+		Base: newBase(TypeCode, nil),
 		Config: CodeConfig{
 			Code: s,
 		},
@@ -33,6 +35,6 @@ type codeMarshal Code
 // MarshalJSON implements json.Marshaler
 func (c *Code) MarshalJSON() ([]byte, error) {
 	m := codeMarshal(*c)
-	m.Metadata.Type = typeCodeBlock
+	m.Metadata.Type = TypeCode
 	return json.Marshal(&m)
 }

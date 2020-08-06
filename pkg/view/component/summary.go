@@ -13,9 +13,9 @@ import (
 
 // SummaryConfig is the contents of a Summary
 type SummaryConfig struct {
-	Sections []SummarySection `json:"sections"`
-	Actions  []Action         `json:"actions,omitempty"`
-	Alert    *Alert           `json:"alert,omitempty"`
+	Sections SummarySections `json:"sections"`
+	Actions  []Action        `json:"actions,omitempty"`
+	Alert    *Alert          `json:"alert,omitempty"`
 }
 
 // SummarySection is a section within a summary
@@ -63,8 +63,10 @@ func (t *SummarySection) UnmarshalJSON(data []byte) error {
 }
 
 // Summary contains other Components
+//
+// +octant:component
 type Summary struct {
-	base
+	Base
 	Config SummaryConfig `json:"config"`
 }
 
@@ -72,7 +74,7 @@ type Summary struct {
 func NewSummary(title string, sections ...SummarySection) *Summary {
 	s := append([]SummarySection(nil), sections...) // Make a copy
 	return &Summary{
-		base: newBase(typeSummary, TitleFromString(title)),
+		Base: newBase(TypeSummary, TitleFromString(title)),
 		Config: SummaryConfig{
 			Sections: s,
 		},
@@ -131,6 +133,6 @@ type summaryMarshal Summary
 // MarshalJSON implements json.Marshaler
 func (t *Summary) MarshalJSON() ([]byte, error) {
 	m := summaryMarshal(*t)
-	m.Metadata.Type = typeSummary
+	m.Metadata.Type = TypeSummary
 	return json.Marshal(&m)
 }

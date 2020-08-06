@@ -8,8 +8,10 @@ package component
 import "encoding/json"
 
 // Stepper component implements json.Marshaler
+//
+// +octant:component
 type Stepper struct {
-	base
+	Base
 	Config StepperConfig `json:"config"`
 }
 
@@ -17,7 +19,7 @@ type stepperMarshal Stepper
 
 func (t *Stepper) MarshalJSON() ([]byte, error) {
 	m := stepperMarshal(*t)
-	m.Metadata.Type = typeStepper
+	m.Metadata.Type = TypeStepper
 	return json.Marshal(&m)
 }
 

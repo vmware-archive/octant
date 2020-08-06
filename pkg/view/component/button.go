@@ -53,15 +53,17 @@ type ButtonGroupConfig struct {
 }
 
 // ButtonGroup is a group of buttons.
+//
+// +octant:component
 type ButtonGroup struct {
-	base
+	Base
 	Config ButtonGroupConfig `json:"config"`
 }
 
 // NewButtonGroup creates an instance of ButtonGroup.
 func NewButtonGroup() *ButtonGroup {
 	return &ButtonGroup{
-		base: newBase(typeButtonGroup, nil),
+		Base: newBase(TypeButtonGroup, nil),
 	}
 }
 
@@ -75,6 +77,6 @@ type buttonGroupMarshal ButtonGroup
 // MarshalJSON marshals a button group.
 func (bg *ButtonGroup) MarshalJSON() ([]byte, error) {
 	m := buttonGroupMarshal(*bg)
-	m.Metadata.Type = typeButtonGroup
+	m.Metadata.Type = TypeButtonGroup
 	return json.Marshal(&m)
 }

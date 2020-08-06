@@ -6,50 +6,85 @@ SPDX-License-Identifier: Apache-2.0
 package component
 
 const (
-	typeAnnotations        = "annotations"
-	typeButtonGroup        = "buttonGroup"
-	typeCard               = "card"
-	typeCardList           = "cardList"
-	typeCodeBlock          = "codeBlock"
-	typeContainers         = "containers"
-	typeDonutChart         = "donutChart"
-	typeEditor             = "editor"
-	typeError              = "error"
-	typeExtension          = "extension"
-	typeExpressionSelector = "expressionSelector"
-	typeFlexLayout         = "flexlayout"
-	typeGraphviz           = "graphviz"
-	typeGridActions        = "gridActions"
-	typeIFrame             = "iframe"
-	typeLabels             = "labels"
-	typeLabelSelector      = "labelSelector"
-	typeLink               = "link"
-	typeList               = "list"
-	typeLoading            = "loading"
-	typeLogs               = "logs"
-	typePodStatus          = "podStatus"
-	typePort               = "port"
-	typePorts              = "ports"
-	typeQuadrant           = "quadrant"
-	typeResourceViewer     = "resourceViewer"
-	typeSelectors          = "selectors"
-	typeSingleStat         = "singleStat"
-	typeStepper            = "stepper"
-	typeSummary            = "summary"
-	typeTable              = "table"
-	typeTerminal           = "terminal"
-	typeText               = "text"
-	typeTimestamp          = "timestamp"
-	typeYAML               = "yaml"
+	// TypeAnnotations is an annotations component.
+	TypeAnnotations = "annotations"
+	// ButtonGroup is a button group component.
+	TypeButtonGroup = "buttonGroup"
+	// TypeCard is a card component.
+	TypeCard = "card"
+	// TypeCardList is a card list component.
+	TypeCardList = "cardList"
+	// TypeCode is a code block component.
+	TypeCode = "codeBlock"
+	// TypeContainers is a container component.
+	TypeContainers = "containers"
+	// TypeDonutChart is a donut chart component.
+	TypeDonutChart = "donutChart"
+	// TypeEditor is an editor component.
+	TypeEditor = "editor"
+	// TypeError is an error component.
+	TypeError = "error"
+	// TypeExtension is an extension component.
+	TypeExtension = "extension"
+	// TypeExpressionSelector is an expression selector component.
+	TypeExpressionSelector = "expressionSelector"
+	// TypeFlexLayout is a flex layout component.
+	TypeFlexLayout = "flexlayout"
+	// TypeGraphviz is a graphviz component.
+	TypeGraphviz = "graphviz"
+	// TypeGridActions is a grid actions component.
+	TypeGridActions = "gridActions"
+	// TypeIFrame is an iframe component.
+	TypeIFrame = "iframe"
+	// TypeLabels is a labels component.
+	TypeLabels = "labels"
+	// TypeLabelSelector is a label selector component.
+	TypeLabelSelector = "labelSelector"
+	// TypeLink is a link component.
+	TypeLink = "link"
+	// TypeList is a list component.
+	TypeList = "list"
+	// TypeLoading is a loading component.
+	TypeLoading = "loading"
+	// TypeLogs is a logs component.
+	TypeLogs = "logs"
+	// TypePodStatus is a pod status component.
+	TypePodStatus = "podStatus"
+	// TypePort is a port component.
+	TypePort = "port"
+	// TypePorts is a ports component.
+	TypePorts = "ports"
+	// TypeQuadrant is a quadrant component.
+	TypeQuadrant = "quadrant"
+	// TypeResourceViewer is a resource viewer component.
+	TypeResourceViewer = "resourceViewer"
+	// TypeSelectors is a selectors component.
+	TypeSelectors = "selectors"
+	// TypeSingleStat is a single stat component.
+	TypeSingleStat = "singleStat"
+	// TypeStepper is a stepper component.
+	TypeStepper = "stepper"
+	// TypeSummary is a summary component.
+	TypeSummary = "summary"
+	// TypeTable is a table component.
+	TypeTable = "table"
+	// TypeTerminal is a terminal component.
+	TypeTerminal = "terminal"
+	// TypeText is a text component.
+	TypeText = "text"
+	// TypeTimestamp is a timestamp component.
+	TypeTimestamp = "timestamp"
+	// TypeYAML is a YAML component.
+	TypeYAML = "yaml"
 )
 
-// base is a base component.
-type base struct {
+// Base is an abstract base for components..
+type Base struct {
 	Metadata `json:"metadata"`
 }
 
-func newBase(componentType string, title []TitleComponent) base {
-	return base{
+func newBase(componentType string, title []TitleComponent) Base {
+	return Base{
 		Metadata: Metadata{
 			Type:  componentType,
 			Title: title,
@@ -58,32 +93,32 @@ func newBase(componentType string, title []TitleComponent) base {
 }
 
 // GetMetadata returns the component's metadata.
-func (b *base) GetMetadata() Metadata {
+func (b *Base) GetMetadata() Metadata {
 	return b.Metadata
 }
 
-func (b *base) SetMetadata(metadata Metadata) {
+func (b *Base) SetMetadata(metadata Metadata) {
 	b.Metadata = metadata
 }
 
 // SetAccessor sets the accessor for the object.
-func (b *base) SetAccessor(accessor string) {
+func (b *Base) SetAccessor(accessor string) {
 	b.Metadata.Accessor = accessor
 }
 
-// IsEmpty returns false by default. Let the components that wrap base
+// IsEmpty returns false by default. Let the components that wrap Base
 // determine if they are empty or not if they wish.
-func (b *base) IsEmpty() bool {
+func (b *Base) IsEmpty() bool {
 	return false
 }
 
 // String returns an empty string. If a component wants to provide a value
 // it can override this function.
-func (b *base) String() string {
+func (b *Base) String() string {
 	return ""
 }
 
 // LessThan returns false.
-func (b *base) LessThan(_ interface{}) bool {
+func (b *Base) LessThan(_ interface{}) bool {
 	return false
 }

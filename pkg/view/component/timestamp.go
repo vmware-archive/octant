@@ -11,12 +11,14 @@ import (
 )
 
 // Timestamp is a component representing a point in time
+//
+// +octant:component
 type Timestamp struct {
-	base
+	Base
 	Config TimestampConfig `json:"config"`
 }
 
-var _ (Component) = (*Timestamp)(nil)
+var _ Component = (*Timestamp)(nil)
 
 // TimestampConfig is the contents of Timestamp
 type TimestampConfig struct {
@@ -26,7 +28,7 @@ type TimestampConfig struct {
 // NewTimestamp creates a timestamp component
 func NewTimestamp(t time.Time) *Timestamp {
 	return &Timestamp{
-		base: newBase(typeTimestamp, nil),
+		Base: newBase(TypeTimestamp, nil),
 		Config: TimestampConfig{
 			Timestamp: t.Unix(),
 		},
@@ -38,7 +40,7 @@ type timestampMarshal Timestamp
 // MarshalJSON implements json.Marshaler
 func (t *Timestamp) MarshalJSON() ([]byte, error) {
 	m := timestampMarshal(*t)
-	m.Metadata.Type = typeTimestamp
+	m.Metadata.Type = TypeTimestamp
 	return json.Marshal(&m)
 }
 

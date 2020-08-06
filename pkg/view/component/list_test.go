@@ -25,7 +25,7 @@ func Test_List_Marshal(t *testing.T) {
 		{
 			name: "general",
 			input: &List{
-				base: newBase(typeList, TitleFromString("mylist")),
+				Base: newBase(TypeList, TitleFromString("mylist")),
 				Config: ListConfig{
 					Items: []Component{
 						&Link{

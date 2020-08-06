@@ -10,8 +10,10 @@ import (
 )
 
 // List contains other Components
+//
+// +octant:component
 type List struct {
-	base
+	Base
 	Config ListConfig `json:"config"`
 }
 
@@ -43,7 +45,7 @@ func (t *ListConfig) UnmarshalJSON(data []byte) error {
 // NewList creates a list component
 func NewList(title []TitleComponent, items []Component) *List {
 	return &List{
-		base: newBase(typeList, title),
+		Base: newBase(TypeList, title),
 		Config: ListConfig{
 			Items: items,
 		},
@@ -60,6 +62,6 @@ type listMarshal List
 // MarshalJSON implements json.Marshaler
 func (t *List) MarshalJSON() ([]byte, error) {
 	m := listMarshal(*t)
-	m.Metadata.Type = typeList
+	m.Metadata.Type = TypeList
 	return json.Marshal(&m)
 }

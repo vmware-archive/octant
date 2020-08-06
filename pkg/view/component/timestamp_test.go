@@ -45,7 +45,7 @@ func Test_Timestamp_Marshal(t *testing.T) {
 		{
 			name: "with title",
 			input: &Timestamp{
-				base: newBase(typeTimestamp, TitleFromString("LandedOn")),
+				Base: newBase(TypeTimestamp, TitleFromString("LandedOn")),
 				Config: TimestampConfig{
 					Timestamp: ts.Unix(),
 				},

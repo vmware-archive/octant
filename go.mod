@@ -30,6 +30,7 @@ require (
 	github.com/hashicorp/go-plugin v0.0.0-20190220160451-3f118e8ee104
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
+	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/imdario/mergo v0.3.6 // indirect
 	github.com/nkovacs/streamquote v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1
@@ -38,6 +39,7 @@ require (
 	github.com/spf13/afero v1.3.3
 	github.com/spf13/cobra v0.0.7
 	github.com/spf13/viper v1.7.1
+	github.com/stoewer/go-strcase v1.2.0
 	github.com/stretchr/testify v1.6.1
 	go.opencensus.io v0.22.4
 	go.uber.org/zap v1.15.0

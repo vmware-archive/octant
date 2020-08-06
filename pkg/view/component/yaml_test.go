@@ -29,7 +29,7 @@ func Test_YAML_Marshal(t *testing.T) {
 				Config: YAMLConfig{
 					Data: "---\nfoo: bar",
 				},
-				base: newBase(typeYAML, nil),
+				Base: newBase(TypeYAML, nil),
 			},
 			expectedPath: "yaml1.json",
 		},

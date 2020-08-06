@@ -25,7 +25,7 @@ func Test_Logs_Marshal(t *testing.T) {
 		{
 			name: "in general",
 			input: &Logs{
-				base: newBase(typeLogs, TitleFromString("Logs")),
+				Base: newBase(TypeLogs, TitleFromString("Logs")),
 				Config: LogsConfig{
 					Containers: []string{"one", "two"},
 				},

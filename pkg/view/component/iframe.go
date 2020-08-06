@@ -8,8 +8,10 @@ package component
 import "encoding/json"
 
 // IFrame is a component for displaying content in an iframe
+//
+// +octant:component
 type IFrame struct {
-	base
+	Base
 	Config IFrameConfig `json:"config"`
 }
 
@@ -22,7 +24,7 @@ type IFrameConfig struct {
 // NewIFrame creates an iframe component
 func NewIFrame(url string, title string) *IFrame {
 	return &IFrame{
-		base: newBase(typeText, nil),
+		Base: newBase(TypeText, nil),
 		Config: IFrameConfig{
 			Url:   url,
 			Title: title,
@@ -35,7 +37,7 @@ type IFrameMarshal IFrame
 // MarshalJSON implements json.Marshaler
 func (t *IFrame) MarshalJSON() ([]byte, error) {
 	m := IFrameMarshal(*t)
-	m.Metadata.Type = typeIFrame
+	m.Metadata.Type = TypeIFrame
 	return json.Marshal(&m)
 }
 

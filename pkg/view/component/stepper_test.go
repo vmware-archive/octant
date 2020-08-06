@@ -23,7 +23,7 @@ func Test_stepper_Marshal(t *testing.T) {
 		{
 			name: "general",
 			input: &Stepper{
-				base: newBase(typeStepper, TitleFromString("my stepper")),
+				Base: newBase(TypeStepper, TitleFromString("my stepper")),
 				Config: StepperConfig{
 					Action: "action.octant.dev/stepperTest",
 					Steps: []StepConfig{

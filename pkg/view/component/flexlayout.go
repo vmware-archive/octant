@@ -87,15 +87,17 @@ func (f *FlexLayoutConfig) UnmarshalJSON(data []byte) error {
 }
 
 // FlexLayout is a flex layout view.
+//
+// +octant:component
 type FlexLayout struct {
-	base
+	Base
 	Config FlexLayoutConfig `json:"config,omitempty"`
 }
 
 // NewFlexLayout creates an instance of FlexLayout.
 func NewFlexLayout(title string) *FlexLayout {
 	return &FlexLayout{
-		base: newBase(typeFlexLayout, TitleFromString(title)),
+		Base: newBase(TypeFlexLayout, TitleFromString(title)),
 		Config: FlexLayoutConfig{
 			ButtonGroup: NewButtonGroup(),
 		},
@@ -114,7 +116,7 @@ type flexLayoutMarshal FlexLayout
 // MarshalJSON marshals the flex layout to JSON.
 func (fl *FlexLayout) MarshalJSON() ([]byte, error) {
 	x := flexLayoutMarshal(*fl)
-	x.Metadata.Type = typeFlexLayout
+	x.Metadata.Type = TypeFlexLayout
 	return json.Marshal(&x)
 }
 

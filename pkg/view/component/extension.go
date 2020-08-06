@@ -36,15 +36,16 @@ type ExtensionConfig struct {
 	Tabs []ExtensionTab `json:"tabs"`
 }
 
+// +octant:component
 type Extension struct {
-	base
+	Base
 
 	Config ExtensionConfig `json:"config"`
 }
 
 func NewExtension() *Extension {
 	return &Extension{
-		base: newBase(typeExtension, TitleFromString("Extension")),
+		Base: newBase(TypeExtension, TitleFromString("Extension")),
 	}
 }
 
@@ -56,7 +57,7 @@ type extensionMarshal Extension
 
 func (e *Extension) MarshalJSON() ([]byte, error) {
 	m := extensionMarshal(*e)
-	m.Metadata.Type = typeExtension
+	m.Metadata.Type = TypeExtension
 	return json.Marshal(&m)
 }
 
