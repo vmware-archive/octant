@@ -6,11 +6,39 @@ import {
   BrowserAnimationsModule,
   NoopAnimationsModule,
 } from '@angular/platform-browser/animations';
+import { WebsocketService } from '../../../services/websocket/websocket.service';
+import { anything, instance, mock, verify } from 'ts-mockito';
 
 describe('StepperComponent', () => {
   let component: StepperComponent;
   let fixture: ComponentFixture<StepperComponent>;
   const formBuilder: FormBuilder = new FormBuilder();
+
+  const mockWebsocketService: WebsocketService = mock(WebsocketService);
+
+  const action = 'action.octant.dev/test';
+  const view: StepperView = {
+    metadata: {
+      type: 'stepper',
+    },
+    config: {
+      action,
+      steps: [
+        {
+          name: 'step 1',
+          form: { fields: [] },
+          title: 'step title',
+          description: 'step description',
+        },
+        {
+          name: 'confirmation step',
+          form: { fields: [] },
+          title: 'step title',
+          description: 'confirmation description',
+        },
+      ],
+    },
+  };
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -19,7 +47,10 @@ describe('StepperComponent', () => {
         BrowserAnimationsModule,
         NoopAnimationsModule,
       ],
-      providers: [{ provide: FormBuilder, useValue: formBuilder }],
+      providers: [
+        { provide: FormBuilder, useValue: formBuilder },
+        { provide: WebsocketService, useValue: instance(mockWebsocketService) },
+      ],
     }).compileComponents();
   }));
 
@@ -27,28 +58,20 @@ describe('StepperComponent', () => {
     fixture = TestBed.createComponent(StepperComponent);
     component = fixture.componentInstance;
 
-    const view: StepperView = {
-      metadata: {
-        type: 'stepper',
-      },
-      config: {
-        action: 'action.octant.dev/test',
-        steps: [
-          {
-            name: 'step name',
-            form: { fields: [] },
-            title: 'step title',
-            description: 'step description',
-          },
-        ],
-      },
-    };
     component.view = view;
 
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('should submit form after completing each step', () => {
+    let nextButton = fixture.debugElement.nativeElement.querySelector('.next');
+    nextButton.click();
+    fixture.detectChanges();
+
+    nextButton = fixture.debugElement.nativeElement.querySelector('.submit');
+    nextButton.click();
+    fixture.detectChanges();
+
+    verify(mockWebsocketService.sendMessage(action, anything())).once();
   });
 });
