@@ -1,7 +1,13 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { Inject, Injectable, Renderer2 } from '@angular/core';
+import {
+  Inject,
+  Injectable,
+  Renderer2,
+  RendererFactory2,
+  OnDestroy,
+} from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { MonacoProviderService } from 'ng-monaco-editor';
 
@@ -33,11 +39,32 @@ export const defaultTheme = lightTheme;
 @Injectable({
   providedIn: 'root',
 })
-export class ThemeService {
+export class ThemeService implements OnDestroy {
   private themeType: ThemeType;
-  private currentTheme: Theme;
+  private renderer: Renderer2;
+  private storageEventHandler: (e: StorageEvent) => void;
 
-  constructor(@Inject(DOCUMENT) private document: Document) {}
+  constructor(
+    @Inject(DOCUMENT) private document: Document,
+    private monacoService: MonacoProviderService,
+    rendererFactory: RendererFactory2
+  ) {
+    const themeType = localStorage.getItem('theme') as ThemeType;
+    this.themeType = themeType || defaultTheme.type;
+    this.renderer = rendererFactory.createRenderer(null, null);
+
+    this.storageEventHandler = (e: StorageEvent): void => {
+      if (e.key === 'theme' && e.newValue !== this.themeType) {
+        // another window switched the theme
+        this.switchTheme();
+      }
+    };
+    addEventListener('storage', this.storageEventHandler);
+  }
+
+  ngOnDestroy(): void {
+    removeEventListener('storage', this.storageEventHandler);
+  }
 
   loadCSS(route: string) {
     const head = this.document.getElementsByTagName('head')[0];
@@ -57,42 +84,32 @@ export class ThemeService {
     }
   }
 
-  loadTheme(monacoService: MonacoProviderService, renderer: Renderer2): void {
-    this.currentTheme = this.isLightThemeEnabled() ? lightTheme : darkTheme;
-    this.loadCSS(this.currentTheme.assetPath);
+  loadTheme(): Promise<any> {
+    const currentTheme = this.isLightThemeEnabled() ? lightTheme : darkTheme;
+    this.loadCSS(currentTheme.assetPath);
 
     [darkTheme, lightTheme].forEach(t =>
-      renderer.removeClass(document.body, t.type)
+      this.renderer.removeClass(this.document.body, t.type)
     );
-    renderer.addClass(document.body, this.currentTheme.type);
-    if (this.isLightThemeEnabled()) {
-      monacoService.changeTheme('vs');
-    } else {
-      monacoService.changeTheme('vs-dark');
-    }
+    this.renderer.addClass(this.document.body, currentTheme.type);
+
+    return this.monacoService.initMonaco().then(() => {
+      // make sure the theme is loaded after monaco is initialized,
+      // calls to monacoService.changeTheme before now are silently ignored
+      this.monacoService.changeTheme(
+        this.isLightThemeEnabled() ? 'vs' : 'vs-dark'
+      );
+    });
   }
 
-  switchTheme(monacoService: MonacoProviderService, renderer: Renderer2): void {
-    if (this.isLightThemeEnabled()) {
-      this.themeType = 'dark';
-      localStorage.setItem('theme', 'dark');
-      monacoService.changeTheme('vs-dark');
-    } else {
-      this.themeType = 'light';
-      localStorage.setItem('theme', 'light');
-      monacoService.changeTheme('vs');
-    }
+  switchTheme(): void {
+    this.themeType = this.isLightThemeEnabled() ? 'dark' : 'light';
+    localStorage.setItem('theme', this.themeType);
 
-    this.loadTheme(monacoService, renderer);
-  }
-
-  currentType(): ThemeType {
-    this.themeType = localStorage.getItem('theme') as ThemeType;
-    return this.themeType || defaultTheme.type;
+    this.loadTheme();
   }
 
   isLightThemeEnabled(): boolean {
-    this.themeType = localStorage.getItem('theme') as ThemeType;
     return this.themeType === lightTheme.type;
   }
 }

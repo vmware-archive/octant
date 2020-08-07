@@ -5,14 +5,12 @@ SPDX-License-Identifier: Apache-2.0
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { EditorView, View } from '../../../models/content';
-import { ThemeService } from '../../../../sugarloaf/components/smart/theme-switch/theme-switch.service';
 import { NamespaceService } from '../../../services/namespace/namespace.service';
 import { ActionService } from '../../../services/action/action.service';
 
 interface Options {
   readOnly: boolean;
   language: string;
-  theme: string;
 }
 
 @Component({
@@ -54,7 +52,6 @@ export class EditorComponent implements OnChanges {
   submitLabel = 'Update';
 
   constructor(
-    private themeService: ThemeService,
     private namespaceService: NamespaceService,
     private actionService: ActionService
   ) {
@@ -75,9 +72,6 @@ export class EditorComponent implements OnChanges {
 
       this.submitAction = view.config.submitAction || this.submitAction;
       this.submitLabel = view.config.submitLabel || this.submitLabel;
-
-      this.options.theme =
-        this.themeService.currentType() === 'dark' ? 'vs-dark' : 'vs';
     }
   }
 

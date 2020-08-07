@@ -1,35 +1,28 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { Component, Input, OnInit, Renderer2 } from '@angular/core';
-import { ThemeService, ThemeType } from './theme-switch.service';
-import { MonacoProviderService } from 'ng-monaco-editor';
+import { Component, Input, OnInit } from '@angular/core';
+import { ThemeService } from './theme-switch.service';
 
 @Component({
   selector: 'app-theme-switch-button',
   templateUrl: './theme-switch-button.component.html',
   styleUrls: ['./theme-switch-button.component.scss'],
-  providers: [ThemeService, MonacoProviderService],
+  providers: [ThemeService],
 })
 export class ThemeSwitchButtonComponent implements OnInit {
-  themeType: ThemeType;
   @Input() public collapsed: boolean;
 
   lightThemeEnabled: boolean;
 
-  constructor(
-    private themeService: ThemeService,
-    private monacoService: MonacoProviderService,
-    private renderer: Renderer2
-  ) {}
+  constructor(private themeService: ThemeService) {}
 
   ngOnInit() {
-    this.themeType = this.themeService.currentType();
     this.lightThemeEnabled = this.themeService.isLightThemeEnabled();
   }
 
   switchTheme() {
-    this.lightThemeEnabled = !this.lightThemeEnabled;
-    this.themeService.switchTheme(this.monacoService, this.renderer);
+    this.themeService.switchTheme();
+    this.lightThemeEnabled = this.themeService.isLightThemeEnabled();
   }
 }

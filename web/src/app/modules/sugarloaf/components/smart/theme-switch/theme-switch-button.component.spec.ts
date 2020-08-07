@@ -32,26 +32,16 @@ describe('ThemeSwitchButtonComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should indicate if the light theme is active or not', () => {
-    component.lightThemeEnabled = true;
-    expect(component.lightThemeEnabled).toBe(true);
-
-    component.lightThemeEnabled = false;
-    expect(component.lightThemeEnabled).toBe(false);
-  });
-
   it('should switch theme', () => {
-    component.lightThemeEnabled = false;
-    localStorage.setItem('theme', 'dark');
-    component.switchTheme();
-
-    expect(localStorage.getItem('theme')).toBe('light');
-    expect(component.lightThemeEnabled).toBe(true);
-
     component.switchTheme();
 
     expect(localStorage.getItem('theme')).toBe('dark');
     expect(component.lightThemeEnabled).toBe(false);
+
+    component.switchTheme();
+
+    expect(localStorage.getItem('theme')).toBe('light');
+    expect(component.lightThemeEnabled).toBe(true);
   });
 
   it('should render the right button', () => {
@@ -60,6 +50,6 @@ describe('ThemeSwitchButtonComponent', () => {
     const switchButton = fixture.debugElement.query(By.css('#switchButton'))
       .nativeElement;
 
-    expect(switchButton.innerHTML).toContain('light');
+    expect(switchButton.innerHTML).toContain('dark');
   });
 });
