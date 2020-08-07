@@ -155,7 +155,7 @@ type PrintRequest struct {
 
 	DashboardClient Dashboard
 	Object          runtime.Object
-	ClientID		string
+	ClientID        string
 }
 
 // ActionRequest is a request for actions.
@@ -165,7 +165,7 @@ type ActionRequest struct {
 	DashboardClient Dashboard
 	ActionName      string
 	Payload         action.Payload
-	ClientID		string
+	ClientID        string
 }
 
 // NavigationRequest is a request for navigation.
@@ -173,7 +173,7 @@ type NavigationRequest struct {
 	baseRequest
 
 	DashboardClient Dashboard
-	ClientID 		string
+	ClientID        string
 }
 
 type HandlerPrinterFunc func(request *PrintRequest) (plugin.PrintResponse, error)

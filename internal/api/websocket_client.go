@@ -9,8 +9,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/vmware-tanzu/octant/pkg/event"
 	"time"
+
+	"github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"

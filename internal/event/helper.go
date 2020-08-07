@@ -7,8 +7,9 @@ package event
 
 import (
 	"context"
-	"github.com/vmware-tanzu/octant/pkg/event"
 	"time"
+
+	"github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/octant"

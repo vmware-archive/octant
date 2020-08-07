@@ -10,8 +10,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	oevent "github.com/vmware-tanzu/octant/pkg/event"
 	"sync"
+
+	oevent "github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"

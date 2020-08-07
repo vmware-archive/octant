@@ -7,8 +7,9 @@ package octant
 
 import (
 	"context"
-	"github.com/vmware-tanzu/octant/pkg/event"
 	"time"
+
+	"github.com/vmware-tanzu/octant/pkg/event"
 )
 
 //go:generate mockgen -destination=./fake/mock_generator.go -package=fake github.com/vmware-tanzu/octant/internal/octant Generator

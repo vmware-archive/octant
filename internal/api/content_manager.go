@@ -9,10 +9,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	ocontext "github.com/vmware-tanzu/octant/internal/context"
-	oevent "github.com/vmware-tanzu/octant/pkg/event"
 	"strings"
 	"time"
+
+	ocontext "github.com/vmware-tanzu/octant/internal/context"
+	oevent "github.com/vmware-tanzu/octant/pkg/event"
 
 	oerrors "github.com/vmware-tanzu/octant/internal/errors"
 	"github.com/vmware-tanzu/octant/internal/event"

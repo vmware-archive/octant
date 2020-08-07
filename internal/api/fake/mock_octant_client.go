@@ -9,7 +9,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 
-	octant "github.com/vmware-tanzu/octant/internal/octant"
+	event "github.com/vmware-tanzu/octant/pkg/event"
 )
 
 // MockOctantClient is a mock of OctantClient interface
@@ -50,7 +50,7 @@ func (mr *MockOctantClientMockRecorder) ID() *gomock.Call {
 }
 
 // Send mocks base method
-func (m *MockOctantClient) Send(arg0 octant.Event) {
+func (m *MockOctantClient) Send(arg0 event.Event) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Send", arg0)
 }

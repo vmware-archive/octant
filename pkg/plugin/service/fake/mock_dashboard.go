@@ -11,6 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
+	action "github.com/vmware-tanzu/octant/pkg/action"
 	api "github.com/vmware-tanzu/octant/pkg/plugin/api"
 	store "github.com/vmware-tanzu/octant/pkg/store"
 )
@@ -136,6 +137,20 @@ func (m *MockDashboard) PortForward(arg0 context.Context, arg1 api.PortForwardRe
 func (mr *MockDashboardMockRecorder) PortForward(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PortForward", reflect.TypeOf((*MockDashboard)(nil).PortForward), arg0, arg1)
+}
+
+// SendAlert mocks base method
+func (m *MockDashboard) SendAlert(arg0 context.Context, arg1 action.Alert) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendAlert", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SendAlert indicates an expected call of SendAlert
+func (mr *MockDashboardMockRecorder) SendAlert(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendAlert", reflect.TypeOf((*MockDashboard)(nil).SendAlert), arg0, arg1)
 }
 
 // Update mocks base method

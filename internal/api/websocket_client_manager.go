@@ -7,8 +7,9 @@ package api
 
 import (
 	"context"
-	"github.com/vmware-tanzu/octant/pkg/plugin/api"
 	"net/http"
+
+	"github.com/vmware-tanzu/octant/pkg/plugin/api"
 
 	"github.com/google/uuid"
 

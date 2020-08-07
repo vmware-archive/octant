@@ -7,6 +7,7 @@ package octant
 
 import (
 	"fmt"
+
 	"github.com/vmware-tanzu/octant/pkg/event"
 )
 

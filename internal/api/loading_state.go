@@ -9,10 +9,11 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"github.com/vmware-tanzu/octant/pkg/event"
 	"io/ioutil"
 	"os"
 	"time"
+
+	"github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/spf13/afero"
 	"k8s.io/client-go/tools/clientcmd"

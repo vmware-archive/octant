@@ -8,12 +8,13 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/vmware-tanzu/octant/pkg/event"
 	"path"
 	"regexp"
 	"sort"
 	"strings"
 	"sync"
+
+	"github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/google/uuid"
 

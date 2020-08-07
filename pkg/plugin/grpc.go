@@ -8,10 +8,9 @@ package plugin
 import (
 	"context"
 	"encoding/json"
-	ocontext "github.com/vmware-tanzu/octant/internal/context"
-
 	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
+	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -202,12 +201,14 @@ func (c *GRPCClient) ObjectStatus(ctx context.Context, object runtime.Object) (O
 func (c *GRPCClient) Print(ctx context.Context, object runtime.Object) (PrintResponse, error) {
 	var pr PrintResponse
 
+	clientID := ocontext.WebsocketClientIDFrom(ctx)
+
 	err := c.run(func() error {
-		in, err := createObjectRequest(object, ocontext.WebsocketClientIDFrom(ctx))
+		in, err := createObjectRequest(object, clientID)
 		if err != nil {
 			return err
 		}
-
+		
 		resp, err := c.client.Print(ctx, in, grpc.WaitForReady(true))
 		if err != nil {
 			return errors.Wrap(err, "grpc client print")
@@ -253,7 +254,7 @@ func createObjectRequest(object runtime.Object, clientID string) (*dashboard.Obj
 	}
 
 	or := &dashboard.ObjectRequest{
-		Object: data,
+		Object:   data,
 		ClientID: clientID,
 	}
 
@@ -319,6 +320,7 @@ func (s *GRPCServer) Content(ctx context.Context, req *dashboard.ContentRequest)
 		return nil, errors.Errorf("plugin is not a module, it's a %T", s.Impl)
 	}
 
+	ctx = ocontext.WithWebsocketClientID(ctx, req.ClientID)
 	contentResponse, err := service.Content(ctx, req.Path)
 	if err != nil {
 		return nil, err
@@ -341,6 +343,7 @@ func (s *GRPCServer) HandleAction(ctx context.Context, handleActionRequest *dash
 		return nil, err
 	}
 
+	ctx = ocontext.WithWebsocketClientID(ctx, handleActionRequest.ClientID)
 	if err := s.Impl.HandleAction(ctx, handleActionRequest.ActionName, payload); err != nil {
 		return nil, err
 	}
@@ -355,6 +358,7 @@ func (s *GRPCServer) Navigation(ctx context.Context, req *dashboard.NavigationRe
 		return nil, errors.Errorf("plugin is not a module, it's a %T", s.Impl)
 	}
 
+	ctx = ocontext.WithWebsocketClientID(ctx, req.ClientID)
 	entry, err := service.Navigation(ctx)
 	if err != nil {
 		return nil, err
@@ -391,6 +395,7 @@ func (s *GRPCServer) Print(ctx context.Context, objectRequest *dashboard.ObjectR
 		return nil, err
 	}
 
+	ctx = ocontext.WithWebsocketClientID(ctx, objectRequest.ClientID)
 	pr, err := s.Impl.Print(ctx, u)
 	if err != nil {
 		return nil, errors.Wrap(err, "grpc server print")
@@ -427,6 +432,7 @@ func (s *GRPCServer) ObjectStatus(ctx context.Context, objectRequest *dashboard.
 		return nil, err
 	}
 
+	ctx = ocontext.WithWebsocketClientID(ctx, objectRequest.ClientID)
 	osr, err := s.Impl.ObjectStatus(ctx, u)
 	if err != nil {
 		return nil, errors.Wrap(err, "grpc server object status")
@@ -463,6 +469,7 @@ func (s *GRPCServer) PrintTab(ctx context.Context, objectRequest *dashboard.Obje
 		return nil, err
 	}
 
+	ctx = ocontext.WithWebsocketClientID(ctx, objectRequest.ClientID)
 	tabResponse, err := s.Impl.PrintTab(ctx, u)
 	if err != nil {
 		return nil, errors.Wrap(err, "grpc server print tab")

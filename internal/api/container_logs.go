@@ -8,10 +8,11 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/vmware-tanzu/octant/pkg/event"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/pkg/store"

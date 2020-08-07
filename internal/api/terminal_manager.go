@@ -8,9 +8,10 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/vmware-tanzu/octant/pkg/event"
 	"sync"
 	"time"
+
+	"github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/pkg/errors"
 

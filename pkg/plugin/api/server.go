@@ -8,9 +8,11 @@ package api
 import (
 	"context"
 	"fmt"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/pkg/event"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/gvk"
@@ -82,11 +84,11 @@ type GRPCService struct {
 
 var _ Service = (*GRPCService)(nil)
 
-type WSClientGetter interface{
+type WSClientGetter interface {
 	Get(id string) WSEventSender
 }
 
-type WSEventSender interface{
+type WSEventSender interface {
 	Send(event event.Event)
 }
 
@@ -161,8 +163,8 @@ func (s *GRPCService) SendAlert(ctx context.Context, alert action.Alert) error {
 	event := event.Event{
 		Type: "event.octant.dev/alert",
 		Data: action.Payload{
-			"type": alert.Type,
-			"message": alert.Message,
+			"type":       alert.Type,
+			"message":    alert.Message,
 			"expiration": alert.Expiration,
 		},
 	}

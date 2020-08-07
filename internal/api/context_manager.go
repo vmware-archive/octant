@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+
 	oevent "github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/pkg/errors"
