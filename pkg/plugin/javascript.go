@@ -1,24 +1,24 @@
+/*
+Copyright (c) 2020 the Octant contributors. All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package plugin
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"path"
 	"sync"
-	"time"
 
 	"github.com/dop251/goja"
-	"github.com/dop251/goja_nodejs/console"
 	"github.com/dop251/goja_nodejs/eventloop"
-	"github.com/dop251/goja_nodejs/require"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	olog "github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/pkg/plugin/javascript"
+
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
@@ -30,9 +30,29 @@ func IsJavaScriptPlugin(pluginName string) bool {
 	return path.Ext(pluginName) == ".js"
 }
 
-type pluginRuntimeFactory func(context.Context, string) (*eventloop.EventLoop, error)
-type pluginClassExtractor func(*goja.Runtime) (*goja.Object, error)
-type pluginMetadataExtractor func(*goja.Runtime, goja.Value) (*Metadata, error)
+type JSRuntimeFactory func(context.Context, string) (*eventloop.EventLoop, error)
+type JSClassExtractor func(*goja.Runtime) (*goja.Object, error)
+type JSMetadataExtractor func(*goja.Runtime, goja.Value) (*Metadata, error)
+
+func WithRuntimeFactory(prf JSRuntimeFactory) func(*jsPlugin) {
+	return func(js *jsPlugin) {
+		js.runtimeFactory = prf
+	}
+}
+
+func WithClassExtractor(pce JSClassExtractor) func(*jsPlugin) {
+	return func(js *jsPlugin) {
+		js.classExtractor = pce
+	}
+}
+
+func WithMetadataExtractor(pme JSMetadataExtractor) func(*jsPlugin) {
+	return func(js *jsPlugin) {
+		js.metadataExtractor = pme
+	}
+}
+
+type JSOption func(*jsPlugin)
 
 // JSPlugin interface represents a JavaScript plugin.
 type JSPlugin interface {
@@ -56,9 +76,9 @@ type jsPlugin struct {
 	pluginClass *goja.Object
 	pluginPath  string
 
-	runtimeFactory    pluginRuntimeFactory
-	classExtractor    pluginClassExtractor
-	metadataExtractor pluginMetadataExtractor
+	runtimeFactory    JSRuntimeFactory
+	classExtractor    JSClassExtractor
+	metadataExtractor JSMetadataExtractor
 
 	objectStore store.Store
 	mu          sync.Mutex
@@ -69,8 +89,21 @@ type jsPlugin struct {
 var _ JSPlugin = (*jsPlugin)(nil)
 
 // NewJSPlugin creates a new instances of a JavaScript plugin.
-func NewJSPlugin(ctx context.Context, objectStore store.Store, pluginPath string, prf pluginRuntimeFactory, pce pluginClassExtractor, pme pluginMetadataExtractor) (*jsPlugin, error) {
-	loop, err := prf(ctx, pluginPath)
+func NewJSPlugin(ctx context.Context, objectStore store.Store, pluginPath string, options ...JSOption) (*jsPlugin, error) {
+	plugin := &jsPlugin{
+		ctx:               ctx,
+		pluginPath:        pluginPath,
+		runtimeFactory:    javascript.CreateRuntimeLoop,
+		classExtractor:    javascript.ExtractDefaultClass,
+		metadataExtractor: extractMetadata,
+	}
+
+	for _, o := range options {
+		o(plugin)
+	}
+
+	loop, err := plugin.runtimeFactory(ctx, pluginPath)
+
 	if err != nil {
 		return nil, fmt.Errorf("initializing runtime: %w", err)
 	}
@@ -96,24 +129,20 @@ func NewJSPlugin(ctx context.Context, objectStore store.Store, pluginPath string
 			errCh <- fmt.Errorf("script execution: %w", err)
 		}
 
-		vm.Set("httpClient", createHTTPClientObject(vm, pluginClass))
-
-		gc := &dashboardClient{
-			objectStore: objectStore,
-			vm:          vm,
-			ctx:         ctx,
-		}
-		vm.Set("dashboardClient", createClientObject(gc))
-
-		pluginClass, err = pce(vm)
+		pluginClass, err = plugin.classExtractor(vm)
 		if err != nil {
 			errCh <- fmt.Errorf("loading pluginClass: %w", err)
 		}
 
-		metadata, err = pme(vm, pluginClass)
+		metadata, err = plugin.metadataExtractor(vm, pluginClass)
 		if err != nil {
 			errCh <- fmt.Errorf("loading metadata: %w", err)
 		}
+
+		// Convert these to use require.RegisterNativeModule
+		vm.Set("httpClient", javascript.CreateHTTPClientObject(vm, pluginClass))
+		vm.Set("dashboardClient", javascript.CreateDashClientObject(ctx, objectStore, vm))
+
 		errCh <- nil
 
 	})
@@ -123,16 +152,9 @@ func NewJSPlugin(ctx context.Context, objectStore store.Store, pluginPath string
 		return nil, err
 	}
 
-	plugin := &jsPlugin{
-		loop:              loop,
-		pluginClass:       pluginClass,
-		metadata:          metadata,
-		runtimeFactory:    prf,
-		classExtractor:    pce,
-		metadataExtractor: pme,
-		pluginPath:        pluginPath,
-		ctx:               ctx,
-	}
+	plugin.loop = loop
+	plugin.pluginClass = pluginClass
+	plugin.metadata = metadata
 
 	return plugin, nil
 }
@@ -250,7 +272,7 @@ func (t *jsPlugin) Content(_ context.Context, contentPath string) (component.Con
 				return
 			}
 			for i, c := range titles {
-				realTitle, err := extractComponent(fmt.Sprintf("title[%d]", i), c)
+				realTitle, err := javascript.ConvertToComponent(fmt.Sprintf("title[%d]", i), c)
 				if err != nil {
 					errCh <- fmt.Errorf("unable to extract title: %w", err)
 					return
@@ -278,7 +300,7 @@ func (t *jsPlugin) Content(_ context.Context, contentPath string) (component.Con
 		}
 
 		for i, c := range components {
-			realComponent, err := extractComponent(fmt.Sprintf("viewComponent[%d]", i), c)
+			realComponent, err := javascript.ConvertToComponent(fmt.Sprintf("viewComponent[%d]", i), c)
 			if err != nil {
 				errCh <- fmt.Errorf("unable to extract component: %w", err)
 				return
@@ -288,7 +310,7 @@ func (t *jsPlugin) Content(_ context.Context, contentPath string) (component.Con
 
 		rawButtonGroup, ok := contentObj["buttonGroup"]
 		if ok {
-			realButtonGroup, err := extractComponent("buttonGroup", rawButtonGroup)
+			realButtonGroup, err := javascript.ConvertToComponent("buttonGroup", rawButtonGroup)
 			if err != nil {
 				errCh <- fmt.Errorf("unable to extract buttonGroup: %w", err)
 				return
@@ -344,7 +366,7 @@ func (t *jsPlugin) PrintTab(_ context.Context, object runtime.Object) (TabRespon
 	}
 
 	if contents, ok := contents["contents"]; ok {
-		realComponent, err := extractComponent("tab contents", contents)
+		realComponent, err := javascript.ConvertToComponent("tab contents", contents)
 		if err != nil {
 			return TabResponse{}, fmt.Errorf("unable to extract component: %w", err)
 		}
@@ -469,19 +491,19 @@ func (t *jsPlugin) Print(_ context.Context, object runtime.Object) (PrintRespons
 	for k, v := range sections {
 		switch k {
 		case "config":
-			ss, err := extractSections(k, v)
+			ss, err := javascript.ConvertToSections(k, v)
 			if err != nil {
 				return PrintResponse{}, fmt.Errorf("error extracting sections: %w", err)
 			}
 			configSections = append(configSections, ss...)
 		case "status":
-			ss, err := extractSections(k, v)
+			ss, err := javascript.ConvertToSections(k, v)
 			if err != nil {
 				return PrintResponse{}, fmt.Errorf("error extracting sections: %w", err)
 			}
 			statusSections = append(statusSections, ss...)
 		case "items":
-			ss, err := extractItems(k, v)
+			ss, err := javascript.ConvertToItems(k, v)
 			if err != nil {
 				return PrintResponse{}, fmt.Errorf("error extracting items: %w", err)
 			}
@@ -542,160 +564,7 @@ func (t *jsPlugin) objectRequestCall(handlerName string, object runtime.Object) 
 	return response, nil
 }
 
-func extractComponent(name string, i interface{}) (component.Component, error) {
-	rawComponent, ok := i.(map[string]interface{})
-	if !ok {
-		return nil, fmt.Errorf("unable to get %s map", name)
-	}
-
-	rawMetadata, ok := rawComponent["metadata"]
-	if !ok {
-		return nil, fmt.Errorf("unable to get metadata from %s", name)
-	}
-
-	metadataJson, err := json.Marshal(rawMetadata)
-	if err != nil {
-		return nil, fmt.Errorf("unable to marshal metadata from: %s: %w", name, err)
-	}
-
-	metadata := component.Metadata{}
-	if err := json.Unmarshal(metadataJson, &metadata); err != nil {
-		return nil, fmt.Errorf("unable to unmarhal metadata from %s: %w", name, err)
-	}
-
-	config, ok := rawComponent["config"]
-	if !ok {
-		return nil, fmt.Errorf("unable to get config from %s", name)
-	}
-
-	configJson, err := json.Marshal(config)
-	if err != nil {
-		return nil, fmt.Errorf("unable to marshal buttonGroup config: %w", err)
-	}
-
-	typedObject := component.TypedObject{
-		Config:   configJson,
-		Metadata: metadata,
-	}
-
-	c, err := typedObject.ToComponent()
-	if err != nil {
-		return nil, fmt.Errorf("unable to convert buttonGroup to component: %w", err)
-	}
-	return c, nil
-}
-
-func extractItems(name string, i interface{}) ([]component.FlexLayoutItem, error) {
-	var items []component.FlexLayoutItem
-
-	v, ok := i.([]interface{})
-	if !ok {
-		return items, fmt.Errorf("unable to parse printHandler %s summary items", name)
-	}
-
-	for idx, ii := range v {
-		mapItem, ok := ii.(map[string]interface{})
-		if !ok {
-			return items, fmt.Errorf("unable to parse %s summary items", name)
-		}
-		flexLayoutItem := component.FlexLayoutItem{}
-		jsonSS, err := json.Marshal(mapItem)
-		if err != nil {
-			return items, fmt.Errorf("unable to marshal json in position %d in %s", idx, name)
-		}
-		if err := json.Unmarshal(jsonSS, &flexLayoutItem); err != nil {
-			return items, fmt.Errorf("unable to unmarshal json in position %d in %s", idx, name)
-		}
-		items = append(items, flexLayoutItem)
-	}
-
-	return items, nil
-}
-
-func extractSections(name string, i interface{}) ([]component.SummarySection, error) {
-	var sections []component.SummarySection
-
-	v, ok := i.([]interface{})
-	if !ok {
-		return sections, fmt.Errorf("unable to parse printHandler %s summary sections", name)
-	}
-
-	for idx, ii := range v {
-		mapSummarySection, ok := ii.(map[string]interface{})
-		if !ok {
-			return sections, fmt.Errorf("unable to parse %s summary section", name)
-		}
-		ss := component.SummarySection{}
-		jsonSS, err := json.Marshal(mapSummarySection)
-		if err != nil {
-			return sections, fmt.Errorf("unable to marshal json GVK in position %d in %s", idx, name)
-		}
-		if err := json.Unmarshal(jsonSS, &ss); err != nil {
-			return sections, fmt.Errorf("unable to unmarshal json GVK in position %d in %s", idx, name)
-		}
-		sections = append(sections, ss)
-	}
-
-	return sections, nil
-}
-
-func ExtractDefaultClass(vm *goja.Runtime) (*goja.Object, error) {
-	// This is the location of a export default class that implements the Octant
-	// TypeScript module definition.
-	instantiateClass := "var _concretePlugin = new module.exports.default; _concretePlugin"
-	// This is the library name the Octant webpack configuration uses.
-	if vm.Get("_octantPlugin") != nil {
-		instantiateClass = "var _concretePlugin = new _octantPlugin(dashboardClient, httpClient); _concretePlugin"
-	}
-
-	v, err := vm.RunString(instantiateClass)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create new plugin: %w", err)
-	}
-	pluginClass := v.ToObject(vm)
-	return pluginClass, nil
-}
-
-func extractActions(i interface{}) ([]string, error) {
-	actions, ok := i.([]interface{})
-	if !ok {
-		return nil, fmt.Errorf("unable to parse ActionNames")
-	}
-	actionNames := make([]string, len(actions))
-	for i := 0; i < len(actions); i++ {
-		actionNames[i] = actions[i].(string)
-	}
-	return actionNames, nil
-}
-
-func extractGvk(name string, i interface{}) ([]schema.GroupVersionKind, error) {
-	GVKs, ok := i.([]interface{})
-	if !ok {
-		return nil, fmt.Errorf("%s: unable to parse GVK list for supportPrinterConfig", name)
-	}
-	var gvkList []schema.GroupVersionKind
-	for i, ii := range GVKs {
-		mapGvk, ok := ii.(map[string]interface{})
-		if !ok {
-			return gvkList, fmt.Errorf("%s: unable to parse GVK in position %d in supportPrinterConfig", name, i)
-		}
-		gvk := schema.GroupVersionKind{}
-
-		jsonGvk, err := json.Marshal(mapGvk)
-		if err != nil {
-			return gvkList, fmt.Errorf("%s: unable to marshal json GVK in position %d in supportPrinterConfig", name, i)
-		}
-
-		if err := json.Unmarshal(jsonGvk, &gvk); err != nil {
-			return gvkList, fmt.Errorf("%s: unable to unmarshal json GVK in position %d in supportPrinterConfig", name, i)
-		}
-
-		gvkList = append(gvkList, gvk)
-	}
-	return gvkList, nil
-}
-
-func ExtractMetadata(vm *goja.Runtime, pluginValue goja.Value) (*Metadata, error) {
+func extractMetadata(vm *goja.Runtime, pluginValue goja.Value) (*Metadata, error) {
 	metadata := new(Metadata)
 
 	this := pluginValue.ToObject(vm)
@@ -719,37 +588,37 @@ func ExtractMetadata(vm *goja.Runtime, pluginValue goja.Value) (*Metadata, error
 		for k, v := range capability {
 			switch k {
 			case "supportPrinterConfig":
-				GVKs, err := extractGvk(k, v)
+				GVKs, err := javascript.ConvertToGVKs(k, v)
 				if err != nil {
 					return nil, fmt.Errorf("extractGvks: %w", err)
 				}
 				metadata.Capabilities.SupportsPrinterConfig = append(metadata.Capabilities.SupportsPrinterConfig, GVKs...)
 			case "supportPrinterStatus":
-				GVKs, err := extractGvk(k, v)
+				GVKs, err := javascript.ConvertToGVKs(k, v)
 				if err != nil {
 					return nil, fmt.Errorf("extractGvks: %w", err)
 				}
 				metadata.Capabilities.SupportsPrinterStatus = append(metadata.Capabilities.SupportsPrinterStatus, GVKs...)
 			case "supportPrinterItems":
-				GVKs, err := extractGvk(k, v)
+				GVKs, err := javascript.ConvertToGVKs(k, v)
 				if err != nil {
 					return nil, fmt.Errorf("extractGvks: %w", err)
 				}
 				metadata.Capabilities.SupportsPrinterItems = append(metadata.Capabilities.SupportsPrinterItems, GVKs...)
 			case "supportObjectStatus":
-				GVKs, err := extractGvk(k, v)
+				GVKs, err := javascript.ConvertToGVKs(k, v)
 				if err != nil {
 					return nil, fmt.Errorf("extractGvks: %w", err)
 				}
 				metadata.Capabilities.SupportsObjectStatus = append(metadata.Capabilities.SupportsObjectStatus, GVKs...)
 			case "supportTab":
-				GVKs, err := extractGvk(k, v)
+				GVKs, err := javascript.ConvertToGVKs(k, v)
 				if err != nil {
 					return nil, fmt.Errorf("extractGvks: %w", err)
 				}
 				metadata.Capabilities.SupportsTab = append(metadata.Capabilities.SupportsTab, GVKs...)
 			case "actionNames":
-				actions, err := extractActions(v)
+				actions, err := javascript.ConvertToActions(v)
 				if err != nil {
 					return nil, fmt.Errorf("extractActions: %w", err)
 				}
@@ -763,239 +632,4 @@ func ExtractMetadata(vm *goja.Runtime, pluginValue goja.Value) (*Metadata, error
 	}
 
 	return metadata, nil
-}
-
-func CreateRuntimeLoop(ctx context.Context, logName string) (*eventloop.EventLoop, error) {
-	loop := eventloop.NewEventLoop()
-	loop.Start()
-
-	errCh := make(chan error)
-
-	loop.RunOnLoop(func(vm *goja.Runtime) {
-		vm.Set("global", vm.GlobalObject())
-		vm.Set("self", vm.GlobalObject())
-
-		_, err := vm.RunString(`
-var module = { exports: {} };
-var exports = module.exports;
-`)
-		if err != nil {
-			errCh <- fmt.Errorf("runtime global values: %w", err)
-			return
-		}
-
-		registry := new(require.Registry)
-		registry.Enable(vm)
-
-		logger := olog.From(ctx).With("plugin", logName)
-		printer := logPrinter{logger: logger}
-		registry.RegisterNativeModule("console", console.RequireWithPrinter(printer))
-		console.Enable(vm)
-
-		// This maps Caps fields to lower fields from struct to Object based on the JSON annotations.
-		vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
-		errCh <- nil
-	})
-
-	err := <-errCh
-	if err != nil {
-		return nil, err
-	}
-
-	return loop, nil
-}
-
-type logPrinter struct {
-	logger log.Logger
-}
-
-func (l logPrinter) Log(msg string) {
-	l.logger.Infof(msg)
-}
-
-func (l logPrinter) Warn(msg string) {
-	l.logger.Warnf(msg)
-}
-
-func (l logPrinter) Error(msg string) {
-	l.logger.Errorf(msg)
-}
-
-type dashboardClient struct {
-	objectStore store.Store
-	vm          *goja.Runtime
-	ctx         context.Context
-}
-
-func (d *dashboardClient) Delete(c goja.FunctionCall) goja.Value {
-	var key store.Key
-	obj := c.Argument(0).ToObject(d.vm)
-	if err := d.vm.ExportTo(obj, &key); err != nil {
-		return d.vm.NewTypeError(fmt.Errorf("dashboardClient.Delete: %w", err))
-	}
-
-	if err := d.objectStore.Delete(d.ctx, key); err != nil {
-		return d.vm.NewGoError(err)
-	}
-	return goja.Undefined()
-}
-
-func (d *dashboardClient) Get(c goja.FunctionCall) goja.Value {
-	var key store.Key
-	obj := c.Argument(0).ToObject(d.vm)
-	if err := d.vm.ExportTo(obj, &key); err != nil {
-		return d.vm.NewGoError(fmt.Errorf("dashboardClient.Get: %w", err))
-	}
-
-	u, err := d.objectStore.Get(d.ctx, key)
-	if err != nil {
-		return d.vm.NewGoError(err)
-	}
-
-	return d.vm.ToValue(u.Object)
-}
-
-func (d *dashboardClient) List(c goja.FunctionCall) goja.Value {
-	var key store.Key
-	obj := c.Argument(0).ToObject(d.vm)
-	if err := d.vm.ExportTo(obj, &key); err != nil {
-		return d.vm.NewGoError(fmt.Errorf("dashboardClient.List: %w", err))
-	}
-
-	u, _, err := d.objectStore.List(d.ctx, key)
-	if err != nil {
-		return d.vm.NewGoError(err)
-	}
-
-	items := make([]interface{}, len(u.Items))
-	for i := 0; i < len(u.Items); i++ {
-		items[i] = u.Items[i].Object
-	}
-
-	return d.vm.ToValue(items)
-}
-
-func (d *dashboardClient) Create(c goja.FunctionCall) goja.Value {
-	namespace := c.Argument(0).String()
-	update := c.Argument(1).String()
-
-	if namespace == "" {
-		return d.vm.NewTypeError(fmt.Errorf("create/update: invalid namespace"))
-	}
-
-	if update == "" {
-		return d.vm.NewTypeError(fmt.Errorf("create/update: empty yaml"))
-	}
-
-	results, err := d.objectStore.CreateOrUpdateFromYAML(d.ctx, namespace, update)
-	if err != nil {
-		return d.vm.NewTypeError(fmt.Errorf("create/update: %w", err))
-	}
-
-	return d.vm.ToValue(results)
-}
-
-func createClientObject(d *dashboardClient) goja.Value {
-	obj := d.vm.NewObject()
-	if err := obj.Set("Get", d.Get); err != nil {
-		return d.vm.NewGoError(err)
-	}
-	if err := obj.Set("List", d.List); err != nil {
-		return d.vm.NewGoError(err)
-	}
-	if err := obj.Set("Create", d.Create); err != nil {
-		return d.vm.NewGoError(err)
-	}
-	if err := obj.Set("Update", d.Create); err != nil {
-		return d.vm.NewGoError(err)
-	}
-	if err := obj.Set("Delete", d.Delete); err != nil {
-		return d.vm.NewGoError(err)
-	}
-	return obj
-}
-
-type httpClient struct {
-	vm   *goja.Runtime
-	this *goja.Object
-}
-
-func createHTTPClientObject(vm *goja.Runtime, this *goja.Object) goja.Value {
-	client := vm.NewObject()
-	h := &httpClient{
-		vm:   vm,
-		this: this,
-	}
-	if err := client.Set("get", h.get); err != nil {
-		return vm.NewTypeError(fmt.Errorf("httpClient.Set.get: %w", err))
-	}
-	if err := client.Set("getJSON", h.getJSON); err != nil {
-		return vm.NewTypeError(fmt.Errorf("httpClient.Set.getJSON: %w", err))
-	}
-	if err := client.Set("post", h.post); err != nil {
-		return vm.NewTypeError(fmt.Errorf("httpClient.Set.post: %w", err))
-	}
-	return client
-}
-
-func (h *httpClient) _get(c goja.FunctionCall) (goja.Callable, []byte, error) {
-	if len(c.Arguments) != 2 {
-		return nil, nil, fmt.Errorf("invalid arguments")
-	}
-
-	urlArg := c.Argument(0).String()
-	if urlArg == "" {
-		return nil, nil, fmt.Errorf("empty url")
-	}
-
-	callbackArg := c.Argument(1).ToObject(h.vm)
-	callback, ok := goja.AssertFunction(callbackArg)
-	if !ok || callback == nil {
-		return nil, nil, fmt.Errorf("bad callback function")
-	}
-
-	client := &http.Client{Timeout: 10 * time.Second}
-	r, err := client.Get(urlArg)
-	if err != nil {
-		return nil, nil, fmt.Errorf("get: %w", err)
-	}
-	defer func() {
-		_ = r.Body.Close()
-	}()
-	response, err := ioutil.ReadAll(r.Body)
-	return callback, response, err
-}
-
-func (h *httpClient) get(c goja.FunctionCall) goja.Value {
-	callback, response, err := h._get(c)
-	if err != nil {
-		return h.vm.NewTypeError(fmt.Errorf("get: %w", err))
-	}
-	cr, err := callback(h.this, h.vm.ToValue(response))
-	if err != nil {
-		return h.vm.NewTypeError(fmt.Errorf("get: %w", err))
-	}
-	return cr
-}
-
-func (h *httpClient) getJSON(c goja.FunctionCall) goja.Value {
-	callback, response, err := h._get(c)
-	if err != nil {
-		return h.vm.NewTypeError(fmt.Errorf("getJSON: %w", err))
-	}
-
-	var target interface{}
-	if err := json.NewDecoder(bytes.NewReader(response)).Decode(&target); err != nil {
-		return h.vm.NewTypeError(fmt.Errorf("decoding: %w", err))
-	}
-
-	cr, err := callback(h.this, h.vm.ToValue(target))
-	if err != nil {
-		return h.vm.NewTypeError(fmt.Errorf("getJSON: %w", err))
-	}
-	return cr
-}
-
-func (h *httpClient) post(_ goja.FunctionCall) goja.Value {
-	return h.vm.NewGoError(fmt.Errorf("not implemented"))
 }
