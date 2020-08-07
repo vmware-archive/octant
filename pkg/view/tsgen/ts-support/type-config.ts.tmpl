@@ -1,0 +1,67 @@
+/*
+ * Copyright (c) 2020 the Octant contributors. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+// GENERATED: do not edit!
+
+import { ComponentFactory, FactoryMetadata } from './component-factory';
+import { Component } from './component';
+
+{{range .Refs}}import { {{.Name}}Config } from './{{.ImportName}}';
+{{end}}
+
+export interface {{.Name}}Config {
+{{range .Fields}}  {{template "configItem" .}}
+{{end}}}
+
+{{ if .HasOptionalFields }}
+export interface {{.Name}}Options {
+{{range .OptionalFields}}  {{template "optionItem" .}}
+{{end}}}
+{{end}}
+
+interface {{.Name}}Parameters {
+{{range .RequiredFields}}{{.Name}}: {{.TSType}};
+{{end}}{{if .HasOptionalFields}}options?: {{.Name}}Options;
+{{end}}factoryMetadata?: FactoryMetadata;
+}
+
+
+export class {{.Name}}Factory implements ComponentFactory<{{.Name}}Config> {
+{{range .RequiredFields}}  {{template "requiredProperty" .}}
+{{end -}}
+{{range .OptionalFields}}  {{template "optionalProperty" .}}
+{{end -}}
+  private readonly factoryMetadata: FactoryMetadata | undefined;
+
+  constructor({ {{template "ctorArgs" .}} }:{{.Name}}Parameters) {
+{{range .RequiredFields}}this.{{.Name}} = {{.Name}};
+{{end}} this.factoryMetadata = factoryMetadata;
+
+{{if .HasOptionalFields}}if (options) {
+{{range .OptionalFields}}      this.{{.Name}} = options.{{.Name}};
+{{end }}}{{end}}
+  }
+
+  toComponent(): Component<{{.Name}}Config> {
+    return {
+      metadata: {
+        type: '{{.Type}}',
+        ...(this.factoryMetadata && { metadata: this.factoryMetadata}),
+      },
+      config: {
+{{range .RequiredFields}}        {{.Name}}: this.{{.Name}},
+{{end}}
+{{range .OptionalFields}}        ...(this.{{.Name}} && { {{.Name}}: this.{{.TSNameToComponent}} }),
+{{end}}      },
+    };
+  }
+}
+
+{{- define "configItem"}}{{.Name}}{{if .Optional}}?{{end}}: {{.TSType}};{{end -}}
+{{- define "optionItem"}}{{.Name}}?: {{.TSFactoryType}};{{end -}}
+{{- define "requiredProperty"}}private readonly {{.Name}}: {{.TSFactoryType}};{{end -}}
+{{- define "optionalProperty"}}private readonly {{.Name}}: {{.TSFactoryType}} | undefined;{{end -}}
+{{- define "ctorProp"}}private {{.Name}}: {{.TSType}},{{end -}}
+{{- define "ctorArgs"}}{{range .RequiredFields}}{{.Name}},{{end}}{{if .HasOptionalFields}}options,{{end}}factoryMetadata,{{end}}

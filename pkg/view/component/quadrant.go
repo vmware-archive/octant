@@ -37,15 +37,18 @@ type QuadrantConfig struct {
 	SW QuadrantValue `json:"sw,omitempty"`
 }
 
+// Quadrant displays information in a quadrant.
+//
+// +octant:component
 type Quadrant struct {
-	base
+	Base
 	Config QuadrantConfig `json:"config"`
 }
 
 // NewQuadrant creates a quadrant component
 func NewQuadrant(title string) *Quadrant {
 	return &Quadrant{
-		base:   newBase(typeQuadrant, TitleFromString(title)),
+		Base:   newBase(TypeQuadrant, TitleFromString(title)),
 		Config: QuadrantConfig{},
 	}
 }
@@ -78,6 +81,6 @@ type quadrantMarshal Quadrant
 // MarshalJSON implements json.Marshaler
 func (t *Quadrant) MarshalJSON() ([]byte, error) {
 	m := quadrantMarshal(*t)
-	m.Metadata.Type = typeQuadrant
+	m.Metadata.Type = TypeQuadrant
 	return json.Marshal(&m)
 }

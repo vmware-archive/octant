@@ -19,8 +19,10 @@ type PortForwardState struct {
 }
 
 // Port is a component for a port
+//
+// +octant:component
 type Port struct {
-	base
+	Base
 	Config PortConfig `json:"config"`
 }
 
@@ -37,7 +39,7 @@ type PortConfig struct {
 // NewPort creates a port component
 func NewPort(namespace, apiVersion, kind, name string, port int, protocol string, pfs PortForwardState) *Port {
 	return &Port{
-		base: newBase(typePort, nil),
+		Base: newBase(TypePort, nil),
 		Config: PortConfig{
 			Port:     port,
 			Protocol: protocol,
@@ -50,7 +52,7 @@ func NewPort(namespace, apiVersion, kind, name string, port int, protocol string
 // NewPort creates a port component
 func NewServicePort(namespace, apiVersion, kind, name string, port int, protocol string, targetPort int, targetPortName string, pfs PortForwardState) *Port {
 	return &Port{
-		base: newBase(typePort, nil),
+		Base: newBase(TypePort, nil),
 		Config: PortConfig{
 			Port:           port,
 			Protocol:       protocol,
@@ -72,7 +74,7 @@ type portMarshal Port
 // MarshalJSON implements json.Marshaler
 func (t *Port) MarshalJSON() ([]byte, error) {
 	m := portMarshal(*t)
-	m.Metadata.Type = typePort
+	m.Metadata.Type = TypePort
 	return json.Marshal(&m)
 }
 
@@ -80,14 +82,17 @@ type PortsConfig struct {
 	Ports []Port `json:"ports,omitempty"`
 }
 
+// Ports is a group of ports.
+//
+// +octant:component
 type Ports struct {
-	base
+	Base
 	Config PortsConfig `json:"config,omitempty"`
 }
 
 func NewPorts(ports []Port) *Ports {
 	return &Ports{
-		base: newBase(typePorts, nil),
+		Base: newBase(TypePorts, nil),
 		Config: PortsConfig{
 			Ports: ports,
 		},
@@ -102,7 +107,7 @@ type portsMarshal Ports
 
 func (t *Ports) MarshalJSON() ([]byte, error) {
 	m := portsMarshal(*t)
-	m.Metadata.Type = typePorts
+	m.Metadata.Type = TypePorts
 	return json.Marshal(&m)
 }
 

@@ -11,7 +11,7 @@ type CardConfig struct {
 	// Body is the body of the card.
 	Body Component `json:"body"`
 	// Actions are actions for the card.
-	Actions []Action `json:"actions"`
+	Actions []Action `json:"actions,omitempty"`
 	// Alert is the alert to show for the card.
 	Alert *Alert `json:"alert,omitempty"`
 }
@@ -41,8 +41,10 @@ func (c *CardConfig) UnmarshalJSON(data []byte) error {
 }
 
 // Card is a card component.
+//
+// +octant:component
 type Card struct {
-	base
+	Base
 
 	Config CardConfig `json:"config"`
 }
@@ -50,7 +52,7 @@ type Card struct {
 // NewCard creates a card component.
 func NewCard(title []TitleComponent) *Card {
 	return &Card{
-		base: newBase(typeCard, title),
+		Base: newBase(TypeCard, title),
 	}
 }
 
@@ -74,7 +76,7 @@ type cardMarshal Card
 // MarshalJSON marshals a card to JSON.
 func (c *Card) MarshalJSON() ([]byte, error) {
 	m := cardMarshal(*c)
-	m.Metadata.Type = typeCard
+	m.Metadata.Type = TypeCard
 	return json.Marshal(&m)
 }
 
@@ -112,15 +114,17 @@ func (c *CardListConfig) UnmarshalJSON(data []byte) error {
 }
 
 // CardList is a component which comprises of a list of cards.
+//
+// +octant:component
 type CardList struct {
-	base
+	Base
 	Config CardListConfig `json:"config"`
 }
 
 // NewCardList creates a card list component.
 func NewCardList(title string) *CardList {
 	return &CardList{
-		base: newBase(typeCardList, TitleFromString(title)),
+		Base: newBase(TypeCardList, TitleFromString(title)),
 	}
 }
 
@@ -136,6 +140,6 @@ type cardListMarshal CardList
 // MarshalJSON marshals a card list to JSON.
 func (c *CardList) MarshalJSON() ([]byte, error) {
 	m := cardListMarshal(*c)
-	m.Metadata.Type = typeCardList
+	m.Metadata.Type = TypeCardList
 	return json.Marshal(&m)
 }

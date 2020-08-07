@@ -12,22 +12,25 @@ type SingleStatValue struct {
 	Color string `json:"color"`
 }
 
-type SingleStateConfig struct {
+type SingleStatConfig struct {
 	Title string          `json:"title"`
 	Value SingleStatValue `json:"value"`
 }
 
+// Single stat shows a single statistic.
+//
+// +octant:component
 type SingleStat struct {
-	base
-	Config SingleStateConfig `json:"config"`
+	Base
+	Config SingleStatConfig `json:"config"`
 }
 
 var _ Component = (*SingleStat)(nil)
 
 func NewSingleStat(title, valueText, color string) *SingleStat {
 	return &SingleStat{
-		base: newBase(typeSingleStat, nil),
-		Config: SingleStateConfig{
+		Base: newBase(TypeSingleStat, nil),
+		Config: SingleStatConfig{
 			Title: title,
 			Value: SingleStatValue{
 				Text:  valueText,
@@ -41,6 +44,6 @@ type singleStatMarshal SingleStat
 
 func (ss *SingleStat) MarshalJSON() ([]byte, error) {
 	m := singleStatMarshal(*ss)
-	m.Metadata.Type = typeSingleStat
+	m.Metadata.Type = TypeSingleStat
 	return json.Marshal(&m)
 }

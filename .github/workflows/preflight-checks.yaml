@@ -21,10 +21,16 @@ jobs:
     runs-on: ${{ matrix.platform }}
     name: Golang tests on ${{ matrix.platform }}
     steps:
+      - uses: actions/setup-node@v2.1.1
+          with:
+            node-version: 10.x
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
       - uses: actions/checkout@v2
+      - name: install_prettier
+        run: |
+          npm i -g prettier
       - name: run_go_tests
         env:
           GOFLAGS: -mod=vendor

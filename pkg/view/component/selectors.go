@@ -45,15 +45,17 @@ func (t *SelectorsConfig) UnmarshalJSON(data []byte) error {
 }
 
 // Selectors contains other Components
+//
+// +octant:component
 type Selectors struct {
-	base
+	Base
 	Config SelectorsConfig `json:"config"`
 }
 
 // NewSelectors creates a selectors component
 func NewSelectors(selectors []Selector) *Selectors {
 	return &Selectors{
-		base: newBase(typeSelectors, nil),
+		Base: newBase(TypeSelectors, nil),
 		Config: SelectorsConfig{
 			Selectors: selectors,
 		},
@@ -81,7 +83,7 @@ func (t *Selectors) MarshalJSON() ([]byte, error) {
 		}
 	}
 
-	filtered.Metadata.Type = typeSelectors
+	filtered.Metadata.Type = TypeSelectors
 	filtered.Metadata.Title = t.Metadata.Title
 
 	m := selectorsMarshal(*filtered)

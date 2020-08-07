@@ -19,8 +19,10 @@ type PodStatusConfig struct {
 }
 
 // PodStatus represents the status for a group of pods.
+//
+// +octant:component
 type PodStatus struct {
-	base
+	Base
 	Config PodStatusConfig `json:"config"`
 }
 
@@ -29,7 +31,7 @@ var _ Component = (*PodStatus)(nil)
 // NewPodStatus creates a PodStatus.
 func NewPodStatus() *PodStatus {
 	return &PodStatus{
-		base: newBase(typePodStatus, nil),
+		Base: newBase(TypePodStatus, nil),
 		Config: PodStatusConfig{
 			Pods: make(map[string]PodSummary),
 		},
@@ -41,7 +43,7 @@ type podStatusMarshal PodStatus
 // MarshalJSON implements json.Marshaler.
 func (ps *PodStatus) MarshalJSON() ([]byte, error) {
 	m := podStatusMarshal(*ps)
-	m.Metadata.Type = typePodStatus
+	m.Metadata.Type = TypePodStatus
 	return json.Marshal(&m)
 }
 

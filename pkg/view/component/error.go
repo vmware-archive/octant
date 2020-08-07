@@ -11,8 +11,10 @@ import (
 )
 
 // Error is a component for freetext
+//
+// +octant:component
 type Error struct {
-	base
+	Base
 	Config ErrorConfig `json:"config"`
 }
 
@@ -24,7 +26,7 @@ type ErrorConfig struct {
 // NewError creates a text component
 func NewError(title []TitleComponent, err error) *Error {
 	return &Error{
-		base: newBase(typeError, title),
+		Base: newBase(TypeError, title),
 		Config: ErrorConfig{
 			Data: fmt.Sprintf("%+v", err),
 		},
@@ -39,7 +41,7 @@ type errorMarshal Error
 // MarshalJSON implements json.Marshaler
 func (t *Error) MarshalJSON() ([]byte, error) {
 	m := errorMarshal(*t)
-	m.Metadata.Type = typeError
+	m.Metadata.Type = TypeError
 	return json.Marshal(&m)
 }
 

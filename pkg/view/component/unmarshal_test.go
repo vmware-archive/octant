@@ -26,9 +26,9 @@ func Test_unmarshal(t *testing.T) {
 		{
 			name:       "annotations",
 			configFile: "config_annotations.json",
-			objectType: typeAnnotations,
+			objectType: TypeAnnotations,
 			expected: &Annotations{
-				base: newBase(typeAnnotations, nil),
+				Base: newBase(TypeAnnotations, nil),
 				Config: AnnotationsConfig{
 					map[string]string{
 						"foo": "bar",
@@ -39,12 +39,12 @@ func Test_unmarshal(t *testing.T) {
 		{
 			name:       "cardList",
 			configFile: "config_card_list.json",
-			objectType: typeCardList,
+			objectType: TypeCardList,
 			expected: &CardList{
 				Config: CardListConfig{
 					Cards: []Card{
 						{
-							base: newBase(typeCard, TitleFromString("card title")),
+							Base: newBase(TypeCard, TitleFromString("card title")),
 							Config: CardConfig{
 								Body: NewText("text value"),
 								Actions: []Action{
@@ -76,7 +76,7 @@ func Test_unmarshal(t *testing.T) {
 				Config: CodeConfig{
 					Code: "echo HELLO_WORLD",
 				},
-				base: newBase(typeCodeBlock, nil),
+				Base: newBase(TypeCode, nil),
 			},
 		},
 		{
@@ -90,7 +90,7 @@ func Test_unmarshal(t *testing.T) {
 						{Name: "kuard", Image: "gcr.io/kuar-demo/kuard-amd64:1"},
 					},
 				},
-				base: newBase(typeContainers, nil),
+				Base: newBase(TypeContainers, nil),
 			},
 		},
 		{
@@ -111,7 +111,7 @@ func Test_unmarshal(t *testing.T) {
 					},
 					Size: DonutChartSizeSmall,
 				},
-				base: newBase(typeDonutChart, nil),
+				Base: newBase(TypeDonutChart, nil),
 			},
 		},
 		{
@@ -123,7 +123,7 @@ func Test_unmarshal(t *testing.T) {
 					Value:    "code",
 					ReadOnly: true,
 				},
-				base: newBase(typeEditor, nil),
+				Base: newBase(TypeEditor, nil),
 			},
 		},
 		{
@@ -134,7 +134,7 @@ func Test_unmarshal(t *testing.T) {
 				Config: ErrorConfig{
 					Data: "error test",
 				},
-				base: newBase(typeError, nil),
+				Base: newBase(TypeError, nil),
 			},
 		},
 		{
@@ -152,7 +152,7 @@ func Test_unmarshal(t *testing.T) {
 						},
 					},
 					ButtonGroup: &ButtonGroup{
-						base: base{},
+						Base: Base{},
 						Config: ButtonGroupConfig{
 							Buttons: []Button{{
 								Name: "test",
@@ -160,13 +160,13 @@ func Test_unmarshal(t *testing.T) {
 						},
 					},
 				},
-				base: newBase(typeFlexLayout, nil),
+				Base: newBase(TypeFlexLayout, nil),
 			},
 		},
 		{
 			name:       "grid actions",
 			configFile: "config_grid_actions.json",
-			objectType: typeGridActions,
+			objectType: TypeGridActions,
 			expected: &GridActions{
 				Config: GridActionsConfig{
 					Actions: []GridAction{
@@ -187,7 +187,7 @@ func Test_unmarshal(t *testing.T) {
 				Config: LabelsConfig{Labels: map[string]string{
 					"foo": "bar",
 				}},
-				base: newBase(typeLabels, nil),
+				Base: newBase(TypeLabels, nil),
 			},
 		},
 		{
@@ -199,7 +199,7 @@ func Test_unmarshal(t *testing.T) {
 					Text: "text",
 					Ref:  "ref",
 				},
-				base: newBase(typeLink, nil),
+				Base: newBase(TypeLink, nil),
 			},
 		},
 		{
@@ -214,7 +214,7 @@ func Test_unmarshal(t *testing.T) {
 								Text: "nginx-deployment",
 								Ref:  "/overview/deployments/nginx-deployment",
 							},
-							base: newBase(typeLink, nil),
+							Base: newBase(TypeLink, nil),
 						},
 						&Labels{
 							Config: LabelsConfig{
@@ -222,17 +222,17 @@ func Test_unmarshal(t *testing.T) {
 									"app": "nginx",
 								},
 							},
-							base: newBase(typeLabels, nil),
+							Base: newBase(TypeLabels, nil),
 						},
 					},
 				},
-				base: newBase(typeList, nil),
+				Base: newBase(TypeList, nil),
 			},
 		},
 		{
 			name:       "logs",
 			configFile: "config_logs.json",
-			objectType: typeLogs,
+			objectType: TypeLogs,
 			expected: &Logs{
 				Config: LogsConfig{
 					Namespace:  "test",
@@ -252,7 +252,7 @@ func Test_unmarshal(t *testing.T) {
 					SW: QuadrantValue{Label: "sw", Value: "1"},
 					SE: QuadrantValue{Label: "se", Value: "1"},
 				},
-				base: newBase(typeQuadrant, nil),
+				Base: newBase(TypeQuadrant, nil),
 			},
 		},
 		{
@@ -308,7 +308,7 @@ func Test_unmarshal(t *testing.T) {
 						},
 					},
 				},
-				base: newBase(typeResourceViewer, nil),
+				Base: newBase(TypeResourceViewer, nil),
 			},
 		},
 		{
@@ -323,7 +323,7 @@ func Test_unmarshal(t *testing.T) {
 								Key:   "app",
 								Value: "nginx",
 							},
-							base: newBase(typeLabelSelector, nil),
+							Base: newBase(TypeLabelSelector, nil),
 						},
 						&ExpressionSelector{
 							Config: ExpressionSelectorConfig{
@@ -331,11 +331,11 @@ func Test_unmarshal(t *testing.T) {
 								Operator: "In",
 								Values:   []string{"production", "qa"},
 							},
-							base: newBase(typeExpressionSelector, nil),
+							Base: newBase(TypeExpressionSelector, nil),
 						},
 					},
 				},
-				base: newBase(typeSelectors, nil),
+				Base: newBase(TypeSelectors, nil),
 			},
 		},
 		{
@@ -343,14 +343,14 @@ func Test_unmarshal(t *testing.T) {
 			configFile: "config_single_stat.json",
 			objectType: "singleStat",
 			expected: &SingleStat{
-				Config: SingleStateConfig{
+				Config: SingleStatConfig{
 					Title: "testing",
 					Value: SingleStatValue{
 						Text:  "30m",
 						Color: "#60b515",
 					},
 				},
-				base: newBase(typeSingleStat, nil),
+				Base: newBase(TypeSingleStat, nil),
 			},
 		},
 		{
@@ -372,7 +372,7 @@ func Test_unmarshal(t *testing.T) {
 						Form:        Form{},
 					}},
 				},
-				base: newBase(typeStepper, nil),
+				Base: newBase(TypeStepper, nil),
 			},
 		},
 		{
@@ -391,17 +391,17 @@ func Test_unmarshal(t *testing.T) {
 											Config: TextConfig{
 												Text: "nginx:latest",
 											},
-											base: newBase(typeText, TitleFromString("Image")),
+											Base: newBase(TypeText, TitleFromString("Image")),
 										},
 										&Text{
 											Config: TextConfig{
 												Text: "80/TCP",
 											},
-											base: newBase(typeText, TitleFromString("Port")),
+											Base: newBase(TypeText, TitleFromString("Port")),
 										},
 									},
 								},
-								base: newBase(typeList, TitleFromString("nginx")),
+								Base: newBase(TypeList, TitleFromString("nginx")),
 							},
 						},
 						{
@@ -410,12 +410,12 @@ func Test_unmarshal(t *testing.T) {
 								Config: TextConfig{
 									Text: "Nothing to see here",
 								},
-								base: newBase(typeText, nil),
+								Base: newBase(TypeText, nil),
 							},
 						},
 					},
 				},
-				base: newBase(typeSummary, nil),
+				Base: newBase(TypeSummary, nil),
 			},
 		},
 		{
@@ -431,13 +431,13 @@ func Test_unmarshal(t *testing.T) {
 								Config: TextConfig{
 									Text: "The first row",
 								},
-								base: newBase(typeText, nil),
+								Base: newBase(TypeText, nil),
 							},
 							"Name": &Text{
 								Config: TextConfig{
 									Text: "First",
 								},
-								base: newBase(typeText, nil),
+								Base: newBase(TypeText, nil),
 							},
 						},
 						{
@@ -445,18 +445,18 @@ func Test_unmarshal(t *testing.T) {
 								Config: TextConfig{
 									Text: "The last row",
 								},
-								base: newBase(typeText, nil),
+								Base: newBase(TypeText, nil),
 							},
 							"Name": &Text{
 								Config: TextConfig{
 									Text: "Last",
 								},
-								base: newBase(typeText, nil),
+								Base: newBase(TypeText, nil),
 							},
 						},
 					},
 				},
-				base: newBase(typeTable, nil),
+				Base: newBase(TypeTable, nil),
 			},
 		},
 		{
@@ -465,7 +465,7 @@ func Test_unmarshal(t *testing.T) {
 			objectType: "text",
 			expected: &Text{
 				Config: TextConfig{Text: "text"},
-				base:   newBase(typeText, nil),
+				Base:   newBase(TypeText, nil),
 			},
 		},
 		{
@@ -474,7 +474,7 @@ func Test_unmarshal(t *testing.T) {
 			objectType: "timestamp",
 			expected: &Timestamp{
 				Config: TimestampConfig{Timestamp: 1548198349},
-				base:   newBase(typeTimestamp, nil),
+				Base:   newBase(TypeTimestamp, nil),
 			},
 		},
 	}

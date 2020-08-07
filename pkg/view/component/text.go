@@ -23,8 +23,9 @@ const (
 )
 
 // Text is a component for text
+// +octant:component
 type Text struct {
-	base
+	Base
 	Config TextConfig `json:"config"`
 }
 
@@ -41,7 +42,7 @@ type TextConfig struct {
 // NewText creates a text component
 func NewText(s string, options ...func(*Text)) *Text {
 	t := &Text{
-		base: newBase(typeText, nil),
+		Base: newBase(TypeText, nil),
 		Config: TextConfig{
 			Text: s,
 		},
@@ -95,7 +96,7 @@ type textMarshal Text
 // MarshalJSON implements json.Marshaler
 func (t *Text) MarshalJSON() ([]byte, error) {
 	m := textMarshal(*t)
-	m.Metadata.Type = typeText
+	m.Metadata.Type = TypeText
 	return json.Marshal(&m)
 }
 

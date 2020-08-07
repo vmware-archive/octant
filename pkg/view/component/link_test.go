@@ -42,7 +42,7 @@ func Test_Link_Marshal(t *testing.T) {
 		{
 			name: "with title",
 			input: &Link{
-				base: newBase(typeLink, TitleFromString("Name")),
+				Base: newBase(TypeLink, TitleFromString("Name")),
 				Config: LinkConfig{
 					Text: "nginx-deployment",
 					Ref:  "/overview/deployments/nginx-deployment",

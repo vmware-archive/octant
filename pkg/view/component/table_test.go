@@ -53,7 +53,7 @@ func Test_Table_Marshal(t *testing.T) {
 		{
 			name: "general",
 			input: &Table{
-				base: newBase(typeTable, TitleFromString("my table")),
+				Base: newBase(TypeTable, TitleFromString("my table")),
 				Config: TableConfig{
 					Filters: map[string]TableFilter{},
 					Columns: []TableCol{

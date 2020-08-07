@@ -38,15 +38,17 @@ type GridAction struct {
 	Payload action.Payload `json:"payload"`
 	// Confirmation is a confirmation that will be show to the user before the
 	// action is invoked. It is optional.
-	Confirmation *Confirmation `json:"confirmation"`
+	Confirmation *Confirmation `json:"confirmation,omitempty"`
 	// Type is the type of button that will be created.
 	Type GridActionType `json:"type"`
 }
 
 // GridActions add the ability to have specific actions for rows. This will allow for dynamic injection of actions
 // that could be dependent on the content of a grid row.
+//
+// +octant:component
 type GridActions struct {
-	base
+	Base
 
 	Config GridActionsConfig `json:"config"`
 }
@@ -56,7 +58,7 @@ var _ Component = &GridActions{}
 // NewGridActions creates an instance of GridActions.
 func NewGridActions() *GridActions {
 	a := GridActions{
-		base: newBase(typeGridActions, nil),
+		Base: newBase(TypeGridActions, nil),
 	}
 
 	return &a
@@ -93,11 +95,11 @@ type gridActionsMarshal GridActions
 // MarshalJSON converts the GridActions to a JSON.
 func (a GridActions) MarshalJSON() ([]byte, error) {
 	m := gridActionsMarshal{
-		base:   a.base,
+		Base:   a.Base,
 		Config: a.Config,
 	}
 
-	m.Metadata.Type = typeGridActions
+	m.Metadata.Type = TypeGridActions
 	return json.Marshal(&m)
 }
 

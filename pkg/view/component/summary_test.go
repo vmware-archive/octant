@@ -87,7 +87,7 @@ func Test_Summary_Marshal(t *testing.T) {
 		{
 			name: "general",
 			input: &Summary{
-				base: newBase(typeSummary, TitleFromString("my summary")),
+				Base: newBase(TypeSummary, TitleFromString("my summary")),
 				Config: SummaryConfig{
 					Alert: &Alert{
 						Type:    AlertTypeInfo,
@@ -97,17 +97,17 @@ func Test_Summary_Marshal(t *testing.T) {
 						{
 							Header: "Containers",
 							Content: &List{
-								base: newBase(typeList, TitleFromString("nginx")),
+								Base: newBase(TypeList, TitleFromString("nginx")),
 								Config: ListConfig{
 									Items: []Component{
 										&Text{
-											base: newBase(typeText, TitleFromString("Image")),
+											Base: newBase(TypeText, TitleFromString("Image")),
 											Config: TextConfig{
 												Text: "nginx:latest",
 											},
 										},
 										&Text{
-											base: newBase(typeText, TitleFromString("Port")),
+											Base: newBase(TypeText, TitleFromString("Port")),
 											Config: TextConfig{
 												Text: "80/TCP",
 											},

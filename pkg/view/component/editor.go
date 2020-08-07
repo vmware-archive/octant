@@ -15,13 +15,15 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
-// Value is a component for code
+// Editor is an editor component.
+//
+// +octant:component
 type Editor struct {
-	base
+	Base
 	Config EditorConfig `json:"config"`
 }
 
-// CodeConfig is the contents of Value
+// EditorConfig is configuration for Editor.
 type EditorConfig struct {
 	Value        string            `json:"value"`
 	ReadOnly     bool              `json:"readOnly"`
@@ -30,10 +32,10 @@ type EditorConfig struct {
 	SubmitLabel  string            `json:"submitLabel"`
 }
 
-// NewCodeBlock creates a code component
+// NewEditor creates an instance of an editor component.
 func NewEditor(title []TitleComponent, value string, readOnly bool) *Editor {
 	return &Editor{
-		base: newBase(typeEditor, title),
+		Base: newBase(TypeEditor, title),
 		Config: EditorConfig{
 			Value:    value,
 			ReadOnly: readOnly,
@@ -74,6 +76,6 @@ type editorMarshal Editor
 // MarshalJSON implements json.Marshaler
 func (e *Editor) MarshalJSON() ([]byte, error) {
 	m := editorMarshal(*e)
-	m.Metadata.Type = typeEditor
+	m.Metadata.Type = TypeEditor
 	return json.Marshal(&m)
 }

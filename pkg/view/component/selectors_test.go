@@ -25,7 +25,7 @@ func Test_Selectors_Marshal(t *testing.T) {
 		{
 			name: "general",
 			input: &Selectors{
-				base: newBase(typeSelectors, TitleFromString("my summary")),
+				Base: newBase(TypeSelectors, TitleFromString("my summary")),
 				Config: SelectorsConfig{
 					Selectors: []Selector{
 						&LabelSelector{

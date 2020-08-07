@@ -26,15 +26,18 @@ type TerminalConfig struct {
 	Details    TerminalDetails `json:"terminal"`
 }
 
+// Terminal is a terminal component.
+//
+// +octant:component
 type Terminal struct {
-	base
+	Base
 	Config TerminalConfig `json:"config"`
 }
 
-// NewTerminal creates a terminal component.
+// NewTerminal creates a Terminal component.
 func NewTerminal(namespace, name string, podName string, containers []string, details TerminalDetails) *Terminal {
 	return &Terminal{
-		base: newBase(typeTerminal, TitleFromString(name)),
+		Base: newBase(TypeTerminal, TitleFromString(name)),
 		Config: TerminalConfig{
 			Namespace:  namespace,
 			Name:       name,
@@ -54,7 +57,7 @@ type terminalMarshal Terminal
 
 func (t *Terminal) MarshalJSON() ([]byte, error) {
 	m := terminalMarshal(*t)
-	m.Metadata.Type = typeTerminal
+	m.Metadata.Type = TypeTerminal
 
 	return json.Marshal(&m)
 }

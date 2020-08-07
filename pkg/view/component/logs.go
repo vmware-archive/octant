@@ -15,8 +15,11 @@ type LogsConfig struct {
 	Containers []string `json:"containers,omitempty"`
 }
 
+// Logs is a logs component.
+//
+// +octant:component
 type Logs struct {
-	base
+	Base
 	Config LogsConfig `json:"config,omitempty"`
 }
 
@@ -27,7 +30,7 @@ func NewLogs(namespace, name string, containers ...string) *Logs {
 			Name:       name,
 			Containers: containers,
 		},
-		base: newBase(typeLogs, TitleFromString("Logs")),
+		Base: newBase(TypeLogs, TitleFromString("Logs")),
 	}
 }
 
@@ -40,7 +43,7 @@ type logsMarshal Logs
 
 func (l *Logs) MarshalJSON() ([]byte, error) {
 	m := logsMarshal(*l)
-	m.Metadata.Type = typeLogs
+	m.Metadata.Type = TypeLogs
 
 	return json.Marshal(&m)
 }

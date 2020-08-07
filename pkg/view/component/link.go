@@ -8,17 +8,21 @@ package component
 import "encoding/json"
 
 // Link is a text component that contains a link.
+//
+// +octant:component
 type Link struct {
-	base
 	Config LinkConfig `json:"config"`
+	Base
 }
+
+var _ Component = &Link{}
 
 // LinkConfig is the contents of Link
 type LinkConfig struct {
 	Text string `json:"value"`
 	Ref  string `json:"ref"`
 	// Status sets the status of the component.
-	Status       TextStatus `json:"status,omitempty"`
+	Status       TextStatus `json:"status,omitempty" tsType:"number"`
 	StatusDetail Component  `json:"statusDetail,omitempty"`
 }
 
@@ -27,7 +31,7 @@ type LinkOption func(l *Link)
 // NewLink creates a link component
 func NewLink(title, s, ref string, options ...LinkOption) *Link {
 	l := &Link{
-		base: newBase(typeLink, TitleFromString(title)),
+		Base: newBase(TypeLink, TitleFromString(title)),
 		Config: LinkConfig{
 			Text: s,
 			Ref:  ref,
@@ -70,7 +74,7 @@ type linkMarshal Link
 // MarshalJSON implements json.Marshaler
 func (t *Link) MarshalJSON() ([]byte, error) {
 	m := linkMarshal(*t)
-	m.Metadata.Type = typeLink
+	m.Metadata.Type = TypeLink
 	return json.Marshal(&m)
 }
 

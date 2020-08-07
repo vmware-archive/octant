@@ -72,8 +72,10 @@ func (t *TableRow) UnmarshalJSON(data []byte) error {
 }
 
 // Table contains other Components
+//
+// +octant:component
 type Table struct {
-	base
+	Base
 	Config TableConfig `json:"config"`
 
 	mu sync.Mutex
@@ -82,7 +84,7 @@ type Table struct {
 // NewTable creates a table component
 func NewTable(title, placeholder string, cols []TableCol) *Table {
 	return &Table{
-		base: newBase(typeTable, TitleFromString(title)),
+		Base: newBase(TypeTable, TitleFromString(title)),
 		Config: TableConfig{
 			Columns:      cols,
 			EmptyContent: placeholder,
@@ -195,11 +197,11 @@ func (t *Table) MarshalJSON() ([]byte, error) {
 	defer t.mu.Unlock()
 
 	m := tableMarshal{
-		base:   t.base,
+		Base:   t.Base,
 		Config: t.Config,
 	}
 
-	m.Metadata.Type = typeTable
+	m.Metadata.Type = TypeTable
 	return json.Marshal(&m)
 }
 
