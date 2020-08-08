@@ -80,7 +80,7 @@ func New(ctx context.Context, options Options) (*ClusterOverview, error) {
 				if object == nil {
 					return
 				}
-				describer.AddCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
+				describer.AddCRD(ctx, object, pathMatcher, customResourcesDescriber, co, options.DashConfig.ObjectStore())
 				co.watchedCRDs = append(co.watchedCRDs, object)
 			}
 		}(pathMatcher, customResourcesDescriber),

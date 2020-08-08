@@ -141,7 +141,7 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 				if object == nil {
 					return
 				}
-				describer.AddCRD(ctx, object, pathMatcher, customResourcesDescriber, co)
+				describer.AddCRD(ctx, object, pathMatcher, customResourcesDescriber, co, co.dashConfig.ObjectStore())
 				co.watchedCRDs = append(co.watchedCRDs, object)
 			}
 		}(pathMatcher, customResourcesDescriber),
