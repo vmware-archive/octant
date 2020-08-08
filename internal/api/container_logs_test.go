@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
@@ -104,7 +106,7 @@ func TestContainerLogs_SendLogEventsClientSend(t *testing.T) {
 }
 
 type octantClient struct {
-	sendCalledWith octant.Event
+	sendCalledWith event.Event
 	ch             chan bool
 }
 
@@ -114,7 +116,7 @@ func newOctantClient() *octantClient {
 	}
 }
 
-func (oc *octantClient) Send(event octant.Event) {
+func (oc *octantClient) Send(event event.Event) {
 	oc.sendCalledWith = event
 	oc.ch <- true
 }

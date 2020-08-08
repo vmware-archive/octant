@@ -8,13 +8,15 @@ package plugin
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
-	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	ocontext "github.com/vmware-tanzu/octant/internal/context"
 
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
@@ -111,7 +113,10 @@ func (c *GRPCClient) Navigation(ctx context.Context) (navigation.Navigation, err
 	}
 
 	err := c.run(func() error {
-		req := &dashboard.NavigationRequest{}
+		clientID := ocontext.WebsocketClientIDFrom(ctx)
+		req := &dashboard.NavigationRequest{
+			ClientID: clientID,
+		}
 
 		resp, err := c.client.Navigation(ctx, req, grpc.WaitForReady(true))
 		if err != nil {
@@ -167,8 +172,10 @@ func (c *GRPCClient) Register(ctx context.Context, dashboardAPIAddress string) (
 func (c *GRPCClient) ObjectStatus(ctx context.Context, object runtime.Object) (ObjectStatusResponse, error) {
 	var osr ObjectStatusResponse
 
+	clientID := ocontext.WebsocketClientIDFrom(ctx)
+
 	err := c.run(func() error {
-		in, err := createObjectRequest(object, "ObjectStatus")
+		in, err := createObjectRequest(object, clientID)
 		if err != nil {
 			return err
 		}
@@ -208,7 +215,7 @@ func (c *GRPCClient) Print(ctx context.Context, object runtime.Object) (PrintRes
 		if err != nil {
 			return err
 		}
-		
+
 		resp, err := c.client.Print(ctx, in, grpc.WaitForReady(true))
 		if err != nil {
 			return errors.Wrap(err, "grpc client print")
@@ -265,8 +272,10 @@ func createObjectRequest(object runtime.Object, clientID string) (*dashboard.Obj
 func (c *GRPCClient) PrintTab(ctx context.Context, object runtime.Object) (TabResponse, error) {
 	var tab component.Tab
 
+	clientID := ocontext.WebsocketClientIDFrom(ctx)
+
 	err := c.run(func() error {
-		in, err := createObjectRequest(object, "PrintTab")
+		in, err := createObjectRequest(object, clientID)
 		if err != nil {
 			return err
 		}

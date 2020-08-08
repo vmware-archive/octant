@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/golang/mock/gomock"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
@@ -25,7 +27,7 @@ func Test_watchConfig(t *testing.T) {
 
 	octantClient := fake.NewMockOctantClient(controller)
 
-	octantClient.EXPECT().Send(octant.Event{
+	octantClient.EXPECT().Send(event.Event{
 		Type: octant.EventTypeRefresh,
 	})
 

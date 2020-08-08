@@ -51,7 +51,7 @@ type Service interface {
 	Update(ctx context.Context, object *unstructured.Unstructured) error
 	Create(ctx context.Context, object *unstructured.Unstructured) error
 	ForceFrontendUpdate(ctx context.Context) error
-	SendAlert(ctx context.Context, alert action.Alert) error
+	SendAlert(ctx context.Context, clientID string, alert action.Alert) error
 }
 
 // FrontendUpdateController can control the frontend. ie. the web gui
@@ -158,7 +158,7 @@ func (s *GRPCService) ForceFrontendUpdate(ctx context.Context) error {
 }
 
 // SendAlert sends an alert
-func (s *GRPCService) SendAlert(ctx context.Context, alert action.Alert) error {
+func (s *GRPCService) SendAlert(ctx context.Context, clientID string, alert action.Alert) error {
 	// TODO: Use pkg/event.go
 	event := event.Event{
 		Type: "event.octant.dev/alert",
@@ -172,11 +172,11 @@ func (s *GRPCService) SendAlert(ctx context.Context, alert action.Alert) error {
 		return fmt.Errorf("websocket client manager is nil")
 	}
 
-	if id := ocontext.WebsocketClientIDFrom(ctx); id == "" {
+	if clientID == "" {
 		return fmt.Errorf("no websocket client id")
 	}
 
-	sender := s.WebsocketClientManager.Get(ocontext.WebsocketClientIDFrom(ctx))
+	sender := s.WebsocketClientManager.Get(clientID)
 	if sender == nil {
 		return fmt.Errorf("unable to find ws client %s", ocontext.WebsocketClientIDFrom(ctx))
 	}
@@ -346,6 +346,6 @@ func (c *grpcServer) SendAlert(ctx context.Context, in *proto.AlertRequest) (*pr
 		return nil, err
 	}
 
-	c.service.SendAlert(ctx, alert)
+	c.service.SendAlert(ctx, in.ClientID, alert)
 	return &proto.Empty{}, nil
 }

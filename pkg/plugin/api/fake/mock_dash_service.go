@@ -140,17 +140,17 @@ func (mr *MockServiceMockRecorder) PortForward(arg0, arg1 interface{}) *gomock.C
 }
 
 // SendAlert mocks base method
-func (m *MockService) SendAlert(arg0 context.Context, arg1 action.Alert) error {
+func (m *MockService) SendAlert(arg0 context.Context, arg1 string, arg2 action.Alert) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendAlert", arg0, arg1)
+	ret := m.ctrl.Call(m, "SendAlert", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SendAlert indicates an expected call of SendAlert
-func (mr *MockServiceMockRecorder) SendAlert(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockServiceMockRecorder) SendAlert(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendAlert", reflect.TypeOf((*MockService)(nil).SendAlert), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendAlert", reflect.TypeOf((*MockService)(nil).SendAlert), arg0, arg1, arg2)
 }
 
 // Update mocks base method

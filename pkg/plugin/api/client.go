@@ -216,13 +216,15 @@ func (c *Client) ForceFrontendUpdate(ctx context.Context) error {
 }
 
 // SendAlert sends an alert
-func (c *Client) SendAlert(ctx context.Context, alert action.Alert) error {
+func (c *Client) SendAlert(ctx context.Context, clientID string, alert action.Alert) error {
 	client := c.DashboardConnection.Client()
 
 	alertRequest, err := convertFromAlert(alert)
 	if err != nil {
 		return err
 	}
+
+	alertRequest.ClientID = clientID
 
 	_, err = client.SendAlert(ctx, alertRequest)
 	return err

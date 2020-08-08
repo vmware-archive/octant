@@ -93,8 +93,11 @@ func handlePrint(request *service.PrintRequest) (plugin.PrintResponse, error) {
 		return plugin.PrintResponse{}, errors.Errorf("object is nil")
 	}
 
-	alert := action.CreateAlert(action.AlertTypeInfo, "test", action.DefaultAlertExpiration)
-	request.DashboardClient.SendAlert(request.Context(), alert)
+	// Sending an alert needs a clientID from the request context
+	if n := time.Now(); n.Second() == 0 {
+		alert := action.CreateAlert(action.AlertTypeInfo, fmt.Sprintf("The time is %s", time.Now().String()), action.DefaultAlertExpiration)
+		request.DashboardClient.SendAlert(request.Context(), request.ClientID, alert)
+	}
 	// load an object from the cluster and use that object to create a response.
 
 	// Octant has a helper function to generate a key from an object. The key
@@ -115,7 +118,7 @@ func handlePrint(request *service.PrintRequest) (plugin.PrintResponse, error) {
 
 	// Octant has a component library that can be used to build content for a plugin.
 	// In this case, the plugin is creating a card.
-	podCard := component.NewCard(component.TitleFromString(fmt.Sprintf("Extra Output for %s", string(request.ClientID))))
+	podCard := component.NewCard(component.TitleFromString(fmt.Sprintf("Extra Output for %s", u.GetName())))
 	podCard.SetBody(component.NewMarkdownText("This output was generated from _octant-sample-plugin_"))
 
 	msg := fmt.Sprintf("update from plugin at %s", time.Now().Format(time.RFC3339))
