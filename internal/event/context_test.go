@@ -9,6 +9,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,7 +18,6 @@ import (
 	dashConfigFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	"github.com/vmware-tanzu/octant/internal/kubeconfig"
 	"github.com/vmware-tanzu/octant/internal/kubeconfig/fake"
-	"github.com/vmware-tanzu/octant/internal/octant"
 )
 
 func Test_kubeContextGenerator(t *testing.T) {
@@ -48,7 +49,7 @@ func Test_kubeContextGenerator(t *testing.T) {
 	e, err := kgc.Event(ctx)
 	require.NoError(t, err)
 
-	assert.Equal(t, octant.EventTypeKubeConfig, e.Type)
+	assert.Equal(t, event.EventTypeKubeConfig, e.Type)
 
 	resp := kubeContextsResponse{
 		CurrentContext: kc.CurrentContext,

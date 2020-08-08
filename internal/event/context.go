@@ -71,7 +71,7 @@ func (g *ContextsGenerator) Event(ctx context.Context) (event.Event, error) {
 	})
 
 	e := event.Event{
-		Type: octant.EventTypeKubeConfig,
+		Type: event.EventTypeKubeConfig,
 		Data: resp,
 	}
 

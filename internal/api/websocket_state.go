@@ -402,14 +402,14 @@ func CreateFiltersUpdate(filters []octant.Filter) event.Event {
 	if filters == nil {
 		filters = make([]octant.Filter, 0)
 	}
-	return CreateEvent("event.octant.dev/filters", action.Payload{
+	return event.CreateEvent(event.EventTypeFilters, action.Payload{
 		"filters": filters,
 	})
 }
 
 // CreateAlertUpdate creates an alert update event.
 func CreateAlertUpdate(alert action.Alert) event.Event {
-	return CreateEvent(octant.EventTypeAlert, action.Payload{
+	return event.CreateEvent(event.EventTypeAlert, action.Payload{
 		"type":       alert.Type,
 		"message":    alert.Message,
 		"expiration": alert.Expiration,

@@ -257,7 +257,7 @@ type notFound interface {
 // CreateContentEvent creates a content event.
 func CreateContentEvent(contentResponse component.ContentResponse, namespace, contentPath string, queryParams map[string][]string) oevent.Event {
 	return oevent.Event{
-		Type: octant.EventTypeContent,
+		Type: oevent.EventTypeContent,
 		Data: map[string]interface{}{
 			"content":     contentResponse,
 			"namespace":   namespace,

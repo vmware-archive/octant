@@ -150,7 +150,7 @@ func NamespacesGenerator(_ context.Context, config NamespaceManagerConfig) ([]st
 // CreateNamespacesEvent creates a namespaces event.
 func CreateNamespacesEvent(namespaces []string) oevent.Event {
 	return oevent.Event{
-		Type: octant.EventTypeNamespaces,
+		Type: oevent.EventTypeNamespaces,
 		Data: map[string]interface{}{
 			"namespaces": namespaces,
 		},

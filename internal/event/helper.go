@@ -51,7 +51,7 @@ func (h *HelperGenerator) Event(ctx context.Context) (event.Event, error) {
 	}
 
 	e := event.Event{
-		Type: octant.EventTypeBuildInfo,
+		Type: event.EventTypeBuildInfo,
 		Data: resp,
 	}
 

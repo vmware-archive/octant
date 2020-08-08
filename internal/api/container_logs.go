@@ -81,7 +81,7 @@ func (s *podLogsStateManager) StreamPodLogsSubscribe(_ octant.State, payload act
 		return fmt.Errorf("getting containerName from payload: %w", err)
 	}
 
-	eventType := octant.NewLoggingEventType(namespace, podName)
+	eventType := event.NewLoggingEventType(namespace, podName)
 	val, ok := s.podLogSubscriptions.Load(eventType)
 	if ok {
 		cancelFn, ok := val.(context.CancelFunc)
@@ -117,7 +117,7 @@ func (s *podLogsStateManager) StreamPodLogsUnsubscribe(_ octant.State, payload a
 		return fmt.Errorf("getting podName from payload: %w", err)
 	}
 
-	eventType := octant.NewLoggingEventType(namespace, podName)
+	eventType := event.NewLoggingEventType(namespace, podName)
 	val, ok := s.podLogSubscriptions.Load(eventType)
 	if ok {
 		cancelFn, ok := val.(context.CancelFunc)
@@ -160,7 +160,7 @@ func (s *podLogsStateManager) streamEventsToClient(ctx context.Context, logEvent
 func (s *podLogsStateManager) startStream(key store.Key, logStreamer container.LogStreamer) context.CancelFunc {
 	ctx, cancelFn := context.WithCancel(s.ctx)
 
-	eventType := octant.NewLoggingEventType(key.Namespace, key.Name)
+	eventType := event.NewLoggingEventType(key.Namespace, key.Name)
 	logCh := make(chan container.LogEntry)
 	go s.streamEventsToClient(ctx, eventType, logCh)
 

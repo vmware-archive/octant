@@ -168,7 +168,7 @@ func NavigationGenerator(ctx context.Context, state octant.State, config Navigat
 // CreateNavigationEvent creates a namespaces event.
 func CreateNavigationEvent(sections []navigation.Navigation, defaultPath string) oevent.Event {
 	return oevent.Event{
-		Type: octant.EventTypeNavigation,
+		Type: oevent.EventTypeNavigation,
 		Data: map[string]interface{}{
 			"sections":    sections,
 			"defaultPath": defaultPath,

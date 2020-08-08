@@ -92,7 +92,7 @@ func (s *terminalStateManager) SetActiveTerminal(state octant.State, payload act
 		return fmt.Errorf("getting containerName from payload: %w", err)
 	}
 
-	eventType := octant.NewTerminalEventType(namespace, podName, containerName)
+	eventType := event.NewTerminalEventType(namespace, podName, containerName)
 	key := store.KeyFromGroupVersionKind(gvk.Pod)
 	key.Name = podName
 	key.Namespace = namespace
@@ -104,7 +104,7 @@ func (s *terminalStateManager) SetActiveTerminal(state octant.State, payload act
 			return nil
 		}
 		// Remove old terminal instance
-		prevEventType := octant.NewTerminalEventType(s.instance.Key().Namespace, s.instance.Key().Name, s.instance.Container())
+		prevEventType := event.NewTerminalEventType(s.instance.Key().Namespace, s.instance.Key().Name, s.instance.Container())
 		val, ok := s.terminalSubscriptions.Load(eventType)
 		if ok {
 			cancelFn, ok := val.(context.CancelFunc)
@@ -134,7 +134,7 @@ func (s *terminalStateManager) startStream(key store.Key, container string) cont
 	ctx, cancelFn := context.WithCancel(s.ctx)
 	logger := log.From(s.ctx).With("startStream", container)
 
-	eventType := octant.NewTerminalEventType(key.Namespace, key.Name, container)
+	eventType := event.NewTerminalEventType(key.Namespace, key.Name, container)
 
 	instance, err := terminal.NewTerminalInstance(ctx, s.config.ClusterClient(), logger, key, container, "/bin/sh", s.chanInstance)
 	if err != nil {
@@ -221,7 +221,7 @@ func newEvent(ctx context.Context, t terminal.Instance, sendScrollback bool) (ev
 	}
 
 	key := t.Key()
-	eventType := octant.NewTerminalEventType(key.Namespace, key.Name, t.Container())
+	eventType := event.NewTerminalEventType(key.Namespace, key.Name, t.Container())
 	data := terminalOutput{Line: line}
 
 	if sendScrollback {

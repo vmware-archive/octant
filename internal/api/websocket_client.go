@@ -186,7 +186,7 @@ func (c *WebsocketClient) handle(message []byte) error {
 	}
 
 	if err := g.Wait(); err != nil {
-		c.Send(CreateEvent("handlerError", action.Payload{
+		c.Send(event.CreateEvent("handlerError", action.Payload{
 			"requestType": request.Type,
 			"error":       err.Error(),
 		}))
@@ -206,7 +206,7 @@ func (c *WebsocketClient) handleUnknownRequest(request websocketRequest) error {
 		"message": message,
 		"payload": request.Payload,
 	}
-	c.Send(CreateEvent(octant.EventTypeUnknown, m))
+	c.Send(event.CreateEvent(event.EventTypeUnknown, m))
 	return nil
 }
 
@@ -278,12 +278,4 @@ func (c *WebsocketClient) RegisterHandler(handler octant.ClientRequestHandler) {
 type websocketRequest struct {
 	Type    string         `json:"type"`
 	Payload action.Payload `json:"payload"`
-}
-
-// TODO: Move to pkg/event.go
-func CreateEvent(eventType event.EventType, fields action.Payload) event.Event {
-	return event.Event{
-		Type: eventType,
-		Data: fields,
-	}
 }

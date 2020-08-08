@@ -75,7 +75,7 @@ func (l *LoadingManager) CheckLoading(state octant.State, payload action.Payload
 
 	if loading {
 		l.client.Send(event.Event{
-			Type: octant.EventTypeLoading,
+			Type: event.EventTypeLoading,
 		})
 	}
 
@@ -116,7 +116,7 @@ func (l *LoadingManager) UploadKubeConfig(state octant.State, payload action.Pay
 	}
 
 	l.client.Send(event.Event{
-		Type: octant.EventTypeRefresh,
+		Type: event.EventTypeRefresh,
 	})
 
 	l.kubeConfigPath <- tempFile.Name()
@@ -135,7 +135,7 @@ func (l *LoadingManager) WatchConfig(path chan string, client OctantClient, fs a
 		if exists {
 			path <- kubeconfig
 			client.Send(event.Event{
-				Type: octant.EventTypeRefresh,
+				Type: event.EventTypeRefresh,
 			})
 			return
 		}

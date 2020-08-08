@@ -376,7 +376,7 @@ func (s *GRPCServer) Navigation(ctx context.Context, req *dashboard.NavigationRe
 	converted := convertFromNavigation(entry)
 
 	return &dashboard.NavigationResponse{
-		Navigation: &converted,
+		Navigation: converted,
 	}, nil
 
 }
@@ -393,7 +393,7 @@ func (s *GRPCServer) Register(ctx context.Context, registerRequest *dashboard.Re
 	return &dashboard.RegisterResponse{
 		PluginName:   m.Name,
 		Description:  m.Description,
-		Capabilities: &capabilities,
+		Capabilities: capabilities,
 	}, nil
 }
 

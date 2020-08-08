@@ -13,7 +13,6 @@ import (
 
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	"github.com/vmware-tanzu/octant/internal/modules/overview/container"
-	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
@@ -44,7 +43,7 @@ func TestContainerLogs_SendLogEventsStops(t *testing.T) {
 		Name:      "test-pod",
 	}
 
-	eventType := octant.NewLoggingEventType(key.Namespace, key.Name)
+	eventType := event.NewLoggingEventType(key.Namespace, key.Name)
 	logCh := make(chan container.LogEntry)
 
 	s := NewPodLogsStateManager(dashConfig)
@@ -76,7 +75,7 @@ func TestContainerLogs_SendLogEventsClientSend(t *testing.T) {
 		Name:      "test-pod",
 	}
 
-	eventType := octant.NewLoggingEventType(key.Namespace, key.Name)
+	eventType := event.NewLoggingEventType(key.Namespace, key.Name)
 	logCh := make(chan container.LogEntry, 1)
 
 	s := NewPodLogsStateManager(dashConfig)

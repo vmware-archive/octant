@@ -159,15 +159,11 @@ func (s *GRPCService) ForceFrontendUpdate(ctx context.Context) error {
 
 // SendAlert sends an alert
 func (s *GRPCService) SendAlert(ctx context.Context, clientID string, alert action.Alert) error {
-	// TODO: Use pkg/event.go
-	event := event.Event{
-		Type: "event.octant.dev/alert",
-		Data: action.Payload{
-			"type":       alert.Type,
-			"message":    alert.Message,
-			"expiration": alert.Expiration,
-		},
-	}
+	event := event.CreateEvent(event.EventTypeAlert, action.Payload{
+		"type":       alert.Type,
+		"message":    alert.Message,
+		"expiration": alert.Expiration,
+	})
 	if s.WebsocketClientManager == nil {
 		return fmt.Errorf("websocket client manager is nil")
 	}
