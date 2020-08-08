@@ -21,6 +21,8 @@ type httpClient struct {
 	this *goja.Object
 }
 
+// CreateHTTPClientObject creates an object that wraps HTTP client calls and exposes
+// them as methods to be used in the JavaScript runtime.
 func CreateHTTPClientObject(vm *goja.Runtime, this *goja.Object) goja.Value {
 	client := vm.NewObject()
 	h := &httpClient{

@@ -13,6 +13,9 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/log"
 )
 
+// CreateRuntimeLoop creates and starts a new EventLoop. An EventLoop contains a JavaScript runtime.
+// The runtime for an EventLoop should never be accessed from outside the the loop.
+// You can safely nest RunOnLoop calls.
 func CreateRuntimeLoop(ctx context.Context, logName string) (*eventloop.EventLoop, error) {
 	loop := eventloop.NewEventLoop()
 	loop.Start()
@@ -53,6 +56,9 @@ var exports = module.exports;
 	return loop, nil
 }
 
+// ExtractDefaultClass extracts the `default` class from the JavaScript runtime.
+// By convention Octant plugins export a class that satisfies the JavaScript plugin interface as `default`.
+// More information: https://www.typescriptlang.org/docs/handbook/modules.html#default-exports
 func ExtractDefaultClass(vm *goja.Runtime) (*goja.Object, error) {
 	// This is the location of a export default class that implements the Octant
 	// TypeScript module definition.

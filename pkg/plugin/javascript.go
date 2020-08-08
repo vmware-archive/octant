@@ -30,28 +30,37 @@ func IsJavaScriptPlugin(pluginName string) bool {
 	return path.Ext(pluginName) == ".js"
 }
 
+// JSRuntimeFactory functions creates a JavaScript runtime for a JavaScript plugin.
 type JSRuntimeFactory func(context.Context, string) (*eventloop.EventLoop, error)
+
+// JSClassExtractor functions extract the default class from a runtime.
 type JSClassExtractor func(*goja.Runtime) (*goja.Object, error)
+
+// JSMetadataExtractor functions extract JavaScript plugin metadata from a runtime.
 type JSMetadataExtractor func(*goja.Runtime, goja.Value) (*Metadata, error)
 
+// WithRuntimeFactory option replaces the default JSRuntimeFactory function of a JSPlugin.
 func WithRuntimeFactory(prf JSRuntimeFactory) func(*jsPlugin) {
 	return func(js *jsPlugin) {
 		js.runtimeFactory = prf
 	}
 }
 
+// WithClassExtractor option replaces the default JSClassExtractor function of a JSPlugin.
 func WithClassExtractor(pce JSClassExtractor) func(*jsPlugin) {
 	return func(js *jsPlugin) {
 		js.classExtractor = pce
 	}
 }
 
+// WithMetadataExtractor option replaces the default JSMetadataExtractor function of a JSPlugin.
 func WithMetadataExtractor(pme JSMetadataExtractor) func(*jsPlugin) {
 	return func(js *jsPlugin) {
 		js.metadataExtractor = pme
 	}
 }
 
+// JSOption is an option that overrides a default value of a JSPlugin.
 type JSOption func(*jsPlugin)
 
 // JSPlugin interface represents a JavaScript plugin.
@@ -169,6 +178,7 @@ func (t *jsPlugin) PluginPath() string {
 	return t.pluginPath
 }
 
+// Navigation returns the navigation for a JavaScript plugin.
 func (t *jsPlugin) Navigation(_ context.Context) (navigation.Navigation, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -216,6 +226,7 @@ func (t *jsPlugin) Navigation(_ context.Context) (navigation.Navigation, error) 
 	return nav, nil
 }
 
+// Content returns the content response for a JavaScript plugin acting as a module.
 func (t *jsPlugin) Content(_ context.Context, contentPath string) (component.ContentResponse, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -333,14 +344,17 @@ func (t *jsPlugin) Content(_ context.Context, contentPath string) (component.Con
 	return cr, nil
 }
 
+// Metadata returns the JavaScript plugins metadata.
 func (t *jsPlugin) Metadata() *Metadata {
 	return t.metadata
 }
 
+// Register is not implemented for JavaScript plugins.
 func (t *jsPlugin) Register(_ context.Context, _ string) (Metadata, error) {
 	return Metadata{}, fmt.Errorf("not implemented")
 }
 
+// PrintTab returns the tab response from a JavaScript plugins tab handler.
 func (t *jsPlugin) PrintTab(_ context.Context, object runtime.Object) (TabResponse, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -379,6 +393,7 @@ func (t *jsPlugin) PrintTab(_ context.Context, object runtime.Object) (TabRespon
 	}, nil
 }
 
+// ObjectStats returns the object status from a JavaScript plugins object status handler.
 func (t *jsPlugin) ObjectStatus(_ context.Context, object runtime.Object) (ObjectStatusResponse, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -413,6 +428,7 @@ func (t *jsPlugin) ObjectStatus(_ context.Context, object runtime.Object) (Objec
 	}, nil
 }
 
+// HandleAction calls the JavaScript plugins action handler.
 func (t *jsPlugin) HandleAction(_ context.Context, actionPath string, payload action.Payload) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -470,6 +486,7 @@ func (t *jsPlugin) HandleAction(_ context.Context, actionPath string, payload ac
 	return nil
 }
 
+// Print returns the print response from the JavaScript plugins print handler.
 func (t *jsPlugin) Print(_ context.Context, object runtime.Object) (PrintResponse, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()

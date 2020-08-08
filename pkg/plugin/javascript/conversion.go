@@ -14,6 +14,7 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
+// ConvertToComponent attempts to convert interface i to a Component.
 func ConvertToComponent(name string, i interface{}) (component.Component, error) {
 	rawComponent, ok := i.(map[string]interface{})
 	if !ok {
@@ -57,6 +58,7 @@ func ConvertToComponent(name string, i interface{}) (component.Component, error)
 	return c, nil
 }
 
+// ConvertToItems attempts to convert interface i to a list of FlexLayoutItem.
 func ConvertToItems(name string, i interface{}) ([]component.FlexLayoutItem, error) {
 	var items []component.FlexLayoutItem
 
@@ -84,6 +86,7 @@ func ConvertToItems(name string, i interface{}) ([]component.FlexLayoutItem, err
 	return items, nil
 }
 
+// ConvertToSection attempts to convert interface i to a list of SummarySection.
 func ConvertToSections(name string, i interface{}) ([]component.SummarySection, error) {
 	var sections []component.SummarySection
 
@@ -111,6 +114,7 @@ func ConvertToSections(name string, i interface{}) ([]component.SummarySection, 
 	return sections, nil
 }
 
+// ConvertToActions attempts to convert interface i to a list of action names.
 func ConvertToActions(i interface{}) ([]string, error) {
 	actions, ok := i.([]interface{})
 	if !ok {
@@ -123,6 +127,7 @@ func ConvertToActions(i interface{}) ([]string, error) {
 	return actionNames, nil
 }
 
+// ConvertToGVKs attempts to convert interface i to a list of GroupVersionKind.
 func ConvertToGVKs(name string, i interface{}) ([]schema.GroupVersionKind, error) {
 	GVKs, ok := i.([]interface{})
 	if !ok {

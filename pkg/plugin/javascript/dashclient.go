@@ -20,6 +20,8 @@ type dashboardClient struct {
 	ctx         context.Context
 }
 
+// CreateDashClientObject creates an object that wraps the Octant object store
+// and exposes them as methods to be used in the JavaScript runtime.
 func CreateDashClientObject(ctx context.Context, objStore store.Store, vm *goja.Runtime) goja.Value {
 	d := dashboardClient{
 		ctx:         ctx,
@@ -46,6 +48,7 @@ func CreateDashClientObject(ctx context.Context, objStore store.Store, vm *goja.
 	return obj
 }
 
+// Delete deletes an object.
 func (d *dashboardClient) Delete(c goja.FunctionCall) goja.Value {
 	var key store.Key
 	obj := c.Argument(0).ToObject(d.vm)
@@ -59,6 +62,7 @@ func (d *dashboardClient) Delete(c goja.FunctionCall) goja.Value {
 	return goja.Undefined()
 }
 
+// Get retrieves a single object.
 func (d *dashboardClient) Get(c goja.FunctionCall) goja.Value {
 	var key store.Key
 	obj := c.Argument(0).ToObject(d.vm)
@@ -74,6 +78,7 @@ func (d *dashboardClient) Get(c goja.FunctionCall) goja.Value {
 	return d.vm.ToValue(u.Object)
 }
 
+// List returns a list of objects.
 func (d *dashboardClient) List(c goja.FunctionCall) goja.Value {
 	var key store.Key
 	obj := c.Argument(0).ToObject(d.vm)
@@ -94,6 +99,7 @@ func (d *dashboardClient) List(c goja.FunctionCall) goja.Value {
 	return d.vm.ToValue(items)
 }
 
+// Create creates a new object.
 func (d *dashboardClient) Create(c goja.FunctionCall) goja.Value {
 	namespace := c.Argument(0).String()
 	update := c.Argument(1).String()
