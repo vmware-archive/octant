@@ -444,7 +444,7 @@ func (m *Manager) unregisterJSPlugin(_ context.Context, p JSPlugin) error {
 }
 
 func (m *Manager) registerJSPlugin(ctx context.Context, pluginPath string, apiAddr string) error {
-	jsPlugin, err := NewJSPlugin(ctx, m.objectStore, pluginPath, CreateRuntimeLoop, ExtractDefaultClass, ExtractMetadata)
+	jsPlugin, err := NewJSPlugin(ctx, m.objectStore, pluginPath)
 	if err != nil {
 		return err
 	}
