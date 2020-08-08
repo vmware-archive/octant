@@ -41,15 +41,11 @@ describe('HomeComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should use themeService', () => {
-    expect(themeService.currentType()).toBe('light');
-  });
-
   it('should load light theme when component mounts', () => {
     spyOn(themeService, 'loadTheme');
     component.ngOnInit();
 
-    expect(themeService.currentType()).toBe('light');
+    expect(themeService.isLightThemeEnabled()).toBeTruthy();
     expect(themeService.loadTheme).toHaveBeenCalled();
   });
 });
