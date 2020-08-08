@@ -30,7 +30,7 @@ func CustomResourceDefinition(ctx context.Context, name string, o store.Store) (
 	return crd, nil
 }
 
-func AddCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatcher, crdSection *CRDSection, m module.Module) {
+func AddCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatcher, crdSection *CRDSection, m module.Module, s store.Store) {
 	name := crd.GetName()
 
 	logger := log.From(ctx).With("crd-name", name, "module", m.Name())
@@ -45,8 +45,6 @@ func AddCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatcher
 		pm.Register(ctx, pf)
 	}
 
-	// TODO: there could be multiple paths here, so iterate through crd.spec.versions['name']
-
 	versions, err := crdVersions(crd)
 	if err != nil {
 		logger.WithErr(err).Errorf("get crd versions: %w", err)
@@ -54,7 +52,7 @@ func AddCRD(ctx context.Context, crd *unstructured.Unstructured, pm *PathMatcher
 	}
 
 	for _, version := range versions {
-		cd := newCRD(name, crdObjectPath(crd, version))
+		cd := newCRD(name, crdObjectPath(crd, version), version, s)
 		for _, pf := range cd.PathFilters() {
 			pm.Register(ctx, pf)
 		}

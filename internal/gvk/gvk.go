@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package gvk
 
 import (
+	"errors"
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -64,9 +65,17 @@ func CustomResource(crd *unstructured.Unstructured, version string) (schema.Grou
 		return schema.GroupVersionKind{}, fmt.Errorf("get crd group: %w", err)
 	}
 
+	if group == "" {
+		return schema.GroupVersionKind{}, errors.New("group is blank")
+	}
+
 	kind, _, err := unstructured.NestedString(crd.Object, "spec", "names", "kind")
 	if err != nil {
 		return schema.GroupVersionKind{}, fmt.Errorf("get crd kind: %w", err)
+	}
+
+	if kind == "" {
+		return schema.GroupVersionKind{}, errors.New("kind is blank")
 	}
 
 	return schema.GroupVersionKind{

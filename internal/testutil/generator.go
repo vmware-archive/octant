@@ -77,7 +77,7 @@ func WithGenericCRD() CRDOption {
 func CreateCRD(name string, options ...CRDOption) *apiextv1.CustomResourceDefinition {
 	crd := &apiextv1.CustomResourceDefinition{
 		TypeMeta:   genTypeMeta(gvk.CustomResourceDefinition),
-		ObjectMeta: genObjectMeta(name, true),
+		ObjectMeta: genObjectMeta(name, false),
 	}
 
 	for _, option := range options {
@@ -87,8 +87,11 @@ func CreateCRD(name string, options ...CRDOption) *apiextv1.CustomResourceDefini
 	return crd
 }
 
+// CustomResourceOption is an option for configuring CreateCustomResource.
+type CustomResourceOption func(u *unstructured.Unstructured)
+
 // CreateCustomResource creates a custom resource.
-func CreateCustomResource(name string) *unstructured.Unstructured {
+func CreateCustomResource(name string, options ...CustomResourceOption) *unstructured.Unstructured {
 	m := map[string]interface{}{
 		"apiVersion": "stable.example.com/v1",
 		"kind":       "CronTab",
@@ -103,6 +106,10 @@ func CreateCustomResource(name string) *unstructured.Unstructured {
 
 	u := &unstructured.Unstructured{Object: m}
 	u.SetNamespace(DefaultNamespace)
+
+	for _, option := range options {
+		option(u)
+	}
 
 	return u
 }

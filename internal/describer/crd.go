@@ -9,8 +9,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vmware-tanzu/octant/internal/gvk"
-	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -31,18 +29,22 @@ type crd struct {
 
 	path               string
 	name               string
+	version            string
 	tabsGenerator      TabsGenerator
 	tabFuncDescriptors []Tab
+	resourceLoader     ResourceLoader
 }
 
 var _ Describer = (*crd)(nil)
 
-func newCRD(name, path string, options ...crdOption) *crd {
+func newCRD(name, path, version string, s store.Store, options ...crdOption) *crd {
 	d := &crd{
 		path:               path,
 		name:               name,
+		version:            version,
 		tabsGenerator:      NewObjectTabsGenerator(),
 		tabFuncDescriptors: defaultCustomResourceTabs(name),
+		resourceLoader:     NewStoreResourceLoader(s),
 	}
 
 	for _, option := range options {
@@ -53,46 +55,20 @@ func newCRD(name, path string, options ...crdOption) *crd {
 }
 
 func (c *crd) Describe(ctx context.Context, namespace string, options Options) (component.ContentResponse, error) {
-	objectStore := options.ObjectStore()
-	crd, err := CustomResourceDefinition(ctx, c.name, objectStore)
+	d := ResourceDescriptor{
+		CustomResourceDefinitionName: c.name,
+		Namespace:                    namespace,
+		CustomResourceVersion:        c.version,
+		CustomResourceName:           options.Fields["name"],
+	}
+	resp, err := c.resourceLoader.Load(ctx, d)
 	if err != nil {
-		return component.EmptyContentResponse, err
+		return component.EmptyContentResponse, fmt.Errorf("load custom resource: %w", err)
 	}
 
-	octantCRD, err := octant.NewCustomResourceDefinition(crd)
-	if err != nil {
-		return component.EmptyContentResponse, err
-	}
+	crd := resp.CustomResourceDefinition
+	object := resp.CustomResource
 
-	crdVersions, err := octantCRD.Versions()
-	if err != nil {
-		return component.EmptyContentResponse, fmt.Errorf("get versions for crd %s: %w", crd.GetName(), err)
-	} else if len(crdVersions) == 0 {
-		return component.EmptyContentResponse, fmt.Errorf("crd %s has no no versions", crd.GetName())
-	}
-
-	crGVK, err := gvk.CustomResource(crd, crdVersions[0])
-	if err != nil {
-		return component.EmptyContentResponse, fmt.Errorf("get gvk for custom resource")
-	}
-
-	apiVersion, kind := crGVK.ToAPIVersionAndKind()
-
-	key := store.Key{
-		Namespace:  namespace,
-		APIVersion: apiVersion,
-		Kind:       kind,
-		Name:       options.Fields["name"],
-	}
-
-	object, err := objectStore.Get(ctx, key)
-	if err != nil {
-		return component.EmptyContentResponse, err
-	}
-
-	if object == nil {
-		return component.EmptyContentResponse, err
-	}
 	title := getCrdTitle(namespace, crd, object.GetName())
 
 	cr := component.NewContentResponse(title)

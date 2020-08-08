@@ -58,7 +58,8 @@ func (f *informerFactory) watchErrorHandler(gvk schema.GroupVersionKind, stopCh 
 	}
 }
 
-// ForResource creates an informer and starts it given a group/version/resource.
+// ForResource creates an informer and starts it given a group/version/resource. Informers
+// are cached and will not be re-created if they already exist.
 func (f *informerFactory) ForResource(groupVersionKind schema.GroupVersionKind) (informers.GenericInformer, error) {
 	f.lock.Lock()
 	defer f.lock.Unlock()
@@ -71,11 +72,12 @@ func (f *informerFactory) ForResource(groupVersionKind schema.GroupVersionKind) 
 	stopCh := f.informerContextCache.addChild(groupVersionKind)
 
 	gvr, _, err := f.client.Resource(groupVersionKind.GroupKind())
-	gvr.Version = groupVersionKind.Version
 	if err != nil {
 		return nil, fmt.Errorf("unable to find group version resource for group kind %s: %w",
 			groupVersionKind.GroupKind(), err)
 	}
+
+	gvr.Version = groupVersionKind.Version
 
 	dynamicClient, err := f.client.DynamicClient()
 	if err != nil {
