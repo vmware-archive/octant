@@ -18,10 +18,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vmware-tanzu/octant/pkg/store"
-
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
+
+	"github.com/vmware-tanzu/octant/pkg/plugin/javascript"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/hashicorp/go-plugin"
@@ -239,8 +239,8 @@ type ManagerInterface interface {
 	// ObjectStatus returns the object status
 	ObjectStatus(ctx context.Context, object runtime.Object) (*ObjectStatusResponse, error)
 
-	// UpdateClusterClient sets the current cluster client.
-	UpdateObjectStore(objectStore store.Store)
+	// SetOctantClient sets the the Octant client.
+	SetOctantClient(octantClient javascript.OctantClient)
 }
 
 // ModuleRegistrar is a module registrar.
@@ -272,9 +272,9 @@ type Manager struct {
 
 	Runners Runners
 
-	objectStore store.Store
-	configs     []config
-	store       ManagerStore
+	octantClient javascript.OctantClient
+	configs      []config
+	store        ManagerStore
 
 	lock sync.Mutex
 }
@@ -299,10 +299,11 @@ func NewManager(apiService api.API, moduleRegistrar ModuleRegistrar, actionRegis
 	return m
 }
 
-func (m *Manager) UpdateObjectStore(objectStore store.Store) {
+func (m *Manager) SetOctantClient(client javascript.OctantClient) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
-	m.objectStore = objectStore
+
+	m.octantClient = client
 }
 
 // Store returns the store for the manager.
@@ -376,7 +377,7 @@ func (m *Manager) watchJS(ctx context.Context) {
 			m.store.RemoveJS(name)
 		}
 		logger.Infof("reloading: JavaScript plugin: %s", name)
-		if err := m.registerJSPlugin(ctx, name, m.API.Addr()); err != nil {
+		if err := m.registerJSPlugin(ctx, name); err != nil {
 			logger.Errorf("reloading: JavaScript plugin watcher: %w", err)
 		}
 	}
@@ -443,8 +444,10 @@ func (m *Manager) unregisterJSPlugin(_ context.Context, p JSPlugin) error {
 	return nil
 }
 
-func (m *Manager) registerJSPlugin(ctx context.Context, pluginPath string, apiAddr string) error {
-	jsPlugin, err := NewJSPlugin(ctx, m.objectStore, pluginPath)
+func (m *Manager) registerJSPlugin(ctx context.Context, pluginPath string) error {
+	dashboardClientFactory := javascript.NewModularDashboardClientFactory(javascript.DefaultFunctions(m.octantClient))
+
+	jsPlugin, err := NewJSPlugin(ctx, pluginPath, dashboardClientFactory)
 	if err != nil {
 		return err
 	}
@@ -488,7 +491,7 @@ func (m *Manager) registerJSPlugin(ctx context.Context, pluginPath string, apiAd
 	return nil
 }
 
-func (m *Manager) startJS(ctx context.Context, apiAddr string) error {
+func (m *Manager) startJS(ctx context.Context) error {
 	pluginList, err := AvailablePlugins(DefaultConfig)
 	if err != nil {
 		return err
@@ -497,9 +500,9 @@ func (m *Manager) startJS(ctx context.Context, apiAddr string) error {
 	for _, pluginPath := range pluginList {
 		if IsJavaScriptPlugin(pluginPath) {
 			logger := log.From(ctx)
-			logger.With("addr", apiAddr).Debugf("creating ts plugin client")
+			logger.Debugf("creating ts plugin client")
 
-			if err := m.registerJSPlugin(ctx, pluginPath, apiAddr); err != nil {
+			if err := m.registerJSPlugin(ctx, pluginPath); err != nil {
 				return fmt.Errorf("javascript plugin: %w", err)
 			}
 		}
@@ -528,7 +531,7 @@ func (m *Manager) Start(ctx context.Context) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	if err := m.startJS(ctx, m.API.Addr()); err != nil {
+	if err := m.startJS(ctx); err != nil {
 		return err
 	}
 

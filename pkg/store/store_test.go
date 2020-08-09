@@ -45,6 +45,55 @@ func TestKey_GroupVersionKind(t *testing.T) {
 	assert.Equal(t, gvk.Pod, got)
 }
 
+func TestKey_Validate(t *testing.T) {
+	tests := []struct {
+		name    string
+		key     Key
+		wantErr bool
+	}{
+		{
+			name: "valid with namespace",
+			key: Key{
+				Namespace:  "test",
+				APIVersion: "apiVersion",
+				Kind:       "kind",
+				Name:       "name",
+			},
+		},
+		{
+			name: "valid without namespace",
+			key: Key{
+				APIVersion: "apiVersion",
+				Kind:       "kind",
+				Name:       "name",
+			},
+		},
+		{
+			name: "missing api version",
+			key: Key{
+				Kind: "kind",
+				Name: "name",
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing kind",
+			key: Key{
+				APIVersion: "apiVersion",
+				Name:       "name",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.key.Validate()
+			testutil.RequireErrorOrNot(t, tt.wantErr, err)
+		})
+	}
+}
+
 func TestKeyFromObject(t *testing.T) {
 	pod := testutil.CreatePod("pod")
 

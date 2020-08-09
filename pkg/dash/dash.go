@@ -261,7 +261,6 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, options Options
 	if err != nil {
 		return nil, nil, fmt.Errorf("initializing plugin manager: %w", err)
 	}
-	pluginManager.UpdateObjectStore(appObjectStore)
 
 	r.pluginManager = pluginManager
 
@@ -284,6 +283,8 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, options Options
 		options.Context,
 		restConfigOptions,
 		buildInfo)
+
+	pluginManager.SetOctantClient(dashConfig)
 
 	if err := watchConfigs(ctx, dashConfig, options.KubeConfig); err != nil {
 		return nil, nil, fmt.Errorf("set up config watcher: %w", err)

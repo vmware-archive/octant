@@ -7,9 +7,11 @@ package store
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/go-multierror"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -38,6 +40,10 @@ type Store interface {
 	Update(ctx context.Context, key Key, updater func(*unstructured.Unstructured) error) error
 	IsLoading(ctx context.Context, key Key) bool
 	Create(ctx context.Context, object *unstructured.Unstructured) error
+	// CreateOrUpdateFromYAML creates resources in the cluster from YAML input.
+	// Resources are created in the order they are present in the YAML.
+	// An error creating a resource halts resource creation.
+	// A list of created resources is returned. You may have created resources AND a non-nil error.
 	CreateOrUpdateFromYAML(ctx context.Context, namespace, input string) ([]string, error)
 }
 
@@ -48,6 +54,21 @@ type Key struct {
 	Kind       string      `json:"kind"`
 	Name       string      `json:"name"`
 	Selector   *labels.Set `json:"selector"`
+}
+
+// Validate validates the key.
+func (k Key) Validate() error {
+	var err error
+
+	if k.APIVersion == "" {
+		err = multierror.Append(err, errors.New("apiVersion is blank"))
+	}
+
+	if k.Kind == "" {
+		err = multierror.Append(err, errors.New("kind is blank"))
+	}
+
+	return err
 }
 
 func (k Key) String() string {
