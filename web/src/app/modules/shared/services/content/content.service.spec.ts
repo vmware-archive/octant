@@ -65,7 +65,10 @@ describe('ContentService', () => {
 
     it('triggers a content change', () => {
       service.current.subscribe(current =>
-        expect(current).toEqual({ content: update.content })
+        expect(current).toEqual({
+          content: update.content,
+          currentPath: '/path',
+        })
       );
     });
   });

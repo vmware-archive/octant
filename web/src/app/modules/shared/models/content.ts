@@ -4,6 +4,7 @@
 
 export interface ContentResponse {
   content: Content;
+  currentPath: string;
 }
 
 export interface PathItem {
