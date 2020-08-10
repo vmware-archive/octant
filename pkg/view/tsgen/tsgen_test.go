@@ -96,7 +96,9 @@ func TestTSGen_ComponentConfig(t *testing.T) {
 }
 
 func clean(b []byte) string {
-	return strings.TrimSpace(string(b))
+	// normalize Windows line endings
+	str := strings.ReplaceAll(string(b), "\r\n", "\n")
+	return strings.TrimSpace(str)
 }
 
 func assertTemplate(t *testing.T, wantFile string, got []byte) {
