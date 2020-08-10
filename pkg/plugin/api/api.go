@@ -9,6 +9,8 @@ import (
 	"context"
 	"net"
 
+	"github.com/spf13/viper"
+
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 
@@ -53,7 +55,10 @@ func (a *grpcAPI) Start(ctx context.Context) error {
 		service: a.Service,
 	}
 
-	s := grpc.NewServer()
+	s := grpc.NewServer(
+		grpc.MaxRecvMsgSize(viper.GetInt("client-max-recv-msg-size")),
+	)
+
 	proto.RegisterDashboardServer(s, dashboardServer)
 
 	logger.Debugf("dashboard plugin api is starting")
