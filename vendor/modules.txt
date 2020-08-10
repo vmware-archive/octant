@@ -183,7 +183,7 @@ github.com/sam-kamerer/go-plister
 github.com/skratchdot/open-golang/open
 # github.com/soheilhy/cmux v0.1.4
 github.com/soheilhy/cmux
-# github.com/spf13/afero v1.3.3
+# github.com/spf13/afero v1.3.4
 github.com/spf13/afero
 github.com/spf13/afero/mem
 # github.com/spf13/cast v1.3.0
@@ -255,7 +255,7 @@ golang.org/x/sync/semaphore
 # golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.3.2
+# golang.org/x/text v0.3.3
 golang.org/x/text/cases
 golang.org/x/text/collate
 golang.org/x/text/internal
