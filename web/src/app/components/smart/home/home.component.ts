@@ -15,7 +15,9 @@ export class HomeComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.themeService.loadTheme();
+    this.themeService.loadTheme().catch(e => {
+      console.error('Unable to load theme:', e);
+    });
 
     if (this.electronService.isElectron()) {
       this.renderer.addClass(document.body, 'electron');
