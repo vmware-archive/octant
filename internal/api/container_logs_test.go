@@ -38,12 +38,7 @@ func TestContainerLogs_SendLogEventsStops(t *testing.T) {
 
 	dashConfig := configFake.NewMockDash(controller)
 
-	key := store.Key{
-		Namespace: "test-ns",
-		Name:      "test-pod",
-	}
-
-	eventType := event.NewLoggingEventType(key.Namespace, key.Name)
+	eventType := event.NewLoggingEventType("test-ns", "test-pod")
 	logCh := make(chan container.LogEntry)
 
 	s := NewPodLogsStateManager(dashConfig)
@@ -69,6 +64,7 @@ func TestContainerLogs_SendLogEventsClientSend(t *testing.T) {
 
 	dashConfig := configFake.NewMockDash(controller)
 	client := newOctantClient()
+	defer client.Close()
 
 	key := store.Key{
 		Namespace: "test-ns",
@@ -107,11 +103,15 @@ func TestContainerLogs_SendLogEventsClientSend(t *testing.T) {
 type octantClient struct {
 	sendCalledWith event.Event
 	ch             chan bool
+	stopCh         chan struct{}
 }
+
+var _ OctantClient = &octantClient{}
 
 func newOctantClient() *octantClient {
 	return &octantClient{
-		ch: make(chan bool, 1),
+		ch:     make(chan bool, 1),
+		stopCh: make(chan struct{}, 1),
 	}
 }
 
@@ -120,3 +120,12 @@ func (oc *octantClient) Send(event event.Event) {
 	oc.ch <- true
 }
 func (oc *octantClient) ID() string { return "" }
+
+func (oc *octantClient) StopCh() <-chan struct{} {
+	return oc.stopCh
+}
+
+func (oc *octantClient) Close() {
+	close(oc.ch)
+	close(oc.stopCh)
+}
