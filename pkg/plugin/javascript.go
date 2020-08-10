@@ -17,12 +17,12 @@ import (
 	"github.com/dop251/goja_nodejs/eventloop"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/plugin/javascript"
 
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
-	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -89,16 +89,15 @@ type jsPlugin struct {
 	classExtractor    JSClassExtractor
 	metadataExtractor JSMetadataExtractor
 
-	objectStore store.Store
-	mu          sync.Mutex
-	ctx         context.Context
-	logger      log.Logger
+	mu     sync.Mutex
+	ctx    context.Context
+	logger log.Logger
 }
 
 var _ JSPlugin = (*jsPlugin)(nil)
 
 // NewJSPlugin creates a new instances of a JavaScript plugin.
-func NewJSPlugin(ctx context.Context, objectStore store.Store, pluginPath string, options ...JSOption) (*jsPlugin, error) {
+func NewJSPlugin(ctx context.Context, pluginPath string, dashboardClientFactory octant.DashboardClientFactory, options ...JSOption) (*jsPlugin, error) {
 	plugin := &jsPlugin{
 		ctx:               ctx,
 		pluginPath:        pluginPath,
@@ -138,6 +137,10 @@ func NewJSPlugin(ctx context.Context, objectStore store.Store, pluginPath string
 			errCh <- fmt.Errorf("script execution: %w", err)
 		}
 
+		// Convert these to use require.RegisterNativeModule
+		vm.Set("httpClient", javascript.CreateHTTPClientObject(vm, pluginClass))
+		vm.Set("dashboardClient", dashboardClientFactory.Create(ctx, vm))
+
 		pluginClass, err = plugin.classExtractor(vm)
 		if err != nil {
 			errCh <- fmt.Errorf("loading pluginClass: %w", err)
@@ -148,17 +151,13 @@ func NewJSPlugin(ctx context.Context, objectStore store.Store, pluginPath string
 			errCh <- fmt.Errorf("loading metadata: %w", err)
 		}
 
-		// Convert these to use require.RegisterNativeModule
-		vm.Set("httpClient", javascript.CreateHTTPClientObject(vm, pluginClass))
-		vm.Set("dashboardClient", javascript.CreateDashClientObject(ctx, objectStore, vm))
-
 		errCh <- nil
 
 	})
 
 	err = <-errCh
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("javascript loop: %w", err)
 	}
 
 	plugin.loop = loop

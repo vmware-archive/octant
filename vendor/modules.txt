@@ -120,8 +120,12 @@ github.com/gorilla/websocket
 # github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79
 github.com/gregjones/httpcache
 github.com/gregjones/httpcache/diskcache
+# github.com/hashicorp/errwrap v1.0.0
+github.com/hashicorp/errwrap
 # github.com/hashicorp/go-hclog v0.14.1
 github.com/hashicorp/go-hclog
+# github.com/hashicorp/go-multierror v1.0.0
+github.com/hashicorp/go-multierror
 # github.com/hashicorp/go-plugin v0.0.0-20190220160451-3f118e8ee104
 github.com/hashicorp/go-plugin
 github.com/hashicorp/go-plugin/internal/plugin

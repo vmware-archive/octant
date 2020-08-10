@@ -12,7 +12,7 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 
 	plugin "github.com/vmware-tanzu/octant/pkg/plugin"
-	store "github.com/vmware-tanzu/octant/pkg/store"
+	javascript "github.com/vmware-tanzu/octant/pkg/plugin/javascript"
 	component "github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -69,6 +69,18 @@ func (mr *MockManagerInterfaceMockRecorder) Print(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Print", reflect.TypeOf((*MockManagerInterface)(nil).Print), arg0, arg1)
 }
 
+// SetOctantClient mocks base method
+func (m *MockManagerInterface) SetOctantClient(arg0 javascript.OctantClient) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetOctantClient", arg0)
+}
+
+// SetOctantClient indicates an expected call of SetOctantClient
+func (mr *MockManagerInterfaceMockRecorder) SetOctantClient(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetOctantClient", reflect.TypeOf((*MockManagerInterface)(nil).SetOctantClient), arg0)
+}
+
 // Store mocks base method
 func (m *MockManagerInterface) Store() plugin.ManagerStore {
 	m.ctrl.T.Helper()
@@ -96,16 +108,4 @@ func (m *MockManagerInterface) Tabs(arg0 context.Context, arg1 runtime.Object) (
 func (mr *MockManagerInterfaceMockRecorder) Tabs(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Tabs", reflect.TypeOf((*MockManagerInterface)(nil).Tabs), arg0, arg1)
-}
-
-// UpdateObjectStore mocks base method
-func (m *MockManagerInterface) UpdateObjectStore(arg0 store.Store) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "UpdateObjectStore", arg0)
-}
-
-// UpdateObjectStore indicates an expected call of UpdateObjectStore
-func (mr *MockManagerInterfaceMockRecorder) UpdateObjectStore(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateObjectStore", reflect.TypeOf((*MockManagerInterface)(nil).UpdateObjectStore), arg0)
 }

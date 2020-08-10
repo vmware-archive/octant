@@ -8,6 +8,7 @@ package config
 import (
 	"context"
 
+	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/store"
 
 	"github.com/pkg/errors"
@@ -77,13 +78,12 @@ func (c *CRDWatchConfig) CanPerform(u *unstructured.Unstructured) bool {
 // Config is configuration for dash. It has knowledge of the all the major sections of
 // dash.
 type Dash interface {
-	ObjectPath(namespace, apiVersion, kind, name string) (string, error)
+	octant.LinkGenerator
+	octant.Storage
 
 	ClusterClient() cluster.ClientInterface
 
 	CRDWatcher() CRDWatcher
-
-	ObjectStore() store.Store
 
 	ErrorStore() internalErr.ErrorStore
 
@@ -235,7 +235,7 @@ func (l *Live) UseContext(ctx context.Context, contextName string) error {
 		}
 	}
 
-	l.pluginManager.UpdateObjectStore(l.objectStore)
+	l.pluginManager.SetOctantClient(l)
 
 	return nil
 }

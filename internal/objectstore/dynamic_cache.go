@@ -657,7 +657,7 @@ func CreateOrUpdateFromHandler(
 	}
 
 	logger := log.From(ctx)
-	results := []string{}
+	var results []string
 	err := withDoc(func(doc map[string]interface{}) error {
 		logger.Debugf("apply resource %#v", doc)
 

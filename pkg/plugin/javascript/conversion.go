@@ -26,13 +26,13 @@ func ConvertToComponent(name string, i interface{}) (component.Component, error)
 		return nil, fmt.Errorf("unable to get metadata from %s", name)
 	}
 
-	metadataJson, err := json.Marshal(rawMetadata)
+	metadataJSON, err := json.Marshal(rawMetadata)
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal metadata from: %s: %w", name, err)
 	}
 
 	metadata := component.Metadata{}
-	if err := json.Unmarshal(metadataJson, &metadata); err != nil {
+	if err := json.Unmarshal(metadataJSON, &metadata); err != nil {
 		return nil, fmt.Errorf("unable to unmarhal metadata from %s: %w", name, err)
 	}
 
@@ -41,13 +41,13 @@ func ConvertToComponent(name string, i interface{}) (component.Component, error)
 		return nil, fmt.Errorf("unable to get config from %s", name)
 	}
 
-	configJson, err := json.Marshal(config)
+	configJSON, err := json.Marshal(config)
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal buttonGroup config: %w", err)
 	}
 
 	typedObject := component.TypedObject{
-		Config:   configJson,
+		Config:   configJSON,
 		Metadata: metadata,
 	}
 
@@ -86,7 +86,7 @@ func ConvertToItems(name string, i interface{}) ([]component.FlexLayoutItem, err
 	return items, nil
 }
 
-// ConvertToSection attempts to convert interface i to a list of SummarySection.
+// ConvertToSections attempts to convert interface i to a list of SummarySection.
 func ConvertToSections(name string, i interface{}) ([]component.SummarySection, error) {
 	var sections []component.SummarySection
 
