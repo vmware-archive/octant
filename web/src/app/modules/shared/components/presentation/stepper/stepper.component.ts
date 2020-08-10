@@ -97,10 +97,12 @@ export class StepperComponent implements OnInit {
   }
 
   onFormSubmit() {
-    const form = JSON.stringify(this.formGroup.value);
-    this.websocketService.sendMessage(this.action, form);
+    this.websocketService.sendMessage('action.octant.dev/performAction', {
+      action: this.action,
+      formGroup: this.formGroup.value,
+    });
     if (isDevMode()) {
-      console.log('stepper form: ' + form);
+      console.log('stepper form: ' + this.formGroup.value);
     }
   }
 
