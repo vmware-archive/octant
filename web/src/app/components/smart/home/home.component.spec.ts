@@ -42,7 +42,7 @@ describe('HomeComponent', () => {
   });
 
   it('should load light theme when component mounts', () => {
-    spyOn(themeService, 'loadTheme');
+    spyOn(themeService, 'loadTheme').and.returnValue(Promise.resolve());
     component.ngOnInit();
 
     expect(themeService.isLightThemeEnabled()).toBeTruthy();

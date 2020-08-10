@@ -21,8 +21,14 @@ export class ThemeSwitchButtonComponent implements OnInit {
     this.lightThemeEnabled = this.themeService.isLightThemeEnabled();
   }
 
-  switchTheme() {
-    this.themeService.switchTheme();
-    this.lightThemeEnabled = this.themeService.isLightThemeEnabled();
+  switchTheme(): Promise<any> {
+    return this.themeService
+      .switchTheme()
+      .then(() => {
+        this.lightThemeEnabled = this.themeService.isLightThemeEnabled();
+      })
+      .catch(e => {
+        console.error('Unable to switch theme:', e);
+      });
   }
 }

@@ -5,7 +5,9 @@ import { ThemeService } from '../../../sugarloaf/components/smart/theme-switch/t
 export class InitService {
   constructor(private themeService: ThemeService) {}
 
-  init(): Promise<any> {
-    return this.themeService.loadTheme();
+  init(): void {
+    this.themeService.loadTheme().catch(e => {
+      console.error('Unable to load theme:', e);
+    });
   }
 }

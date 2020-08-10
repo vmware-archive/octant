@@ -56,7 +56,9 @@ export class ThemeService implements OnDestroy {
     this.storageEventHandler = (e: StorageEvent): void => {
       if (e.key === 'theme' && e.newValue !== this.themeType) {
         // another window switched the theme
-        this.switchTheme();
+        this.switchTheme().catch(err => {
+          console.error('Unable to switch theme:', err);
+        });
       }
     };
     addEventListener('storage', this.storageEventHandler);
@@ -102,11 +104,11 @@ export class ThemeService implements OnDestroy {
     });
   }
 
-  switchTheme(): void {
+  switchTheme(): Promise<any> {
     this.themeType = this.isLightThemeEnabled() ? 'dark' : 'light';
     localStorage.setItem('theme', this.themeType);
 
-    this.loadTheme();
+    return this.loadTheme();
   }
 
   isLightThemeEnabled(): boolean {

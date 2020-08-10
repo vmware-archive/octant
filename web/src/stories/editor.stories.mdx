@@ -1,7 +1,6 @@
 import { moduleMetadata } from '@storybook/angular';
 import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
-import { MonacoEditorModule } from "ng-monaco-editor";
 import { EditorComponent } from '../app/modules/shared/components/smart/editor/editor.component';
 
 export const editorDocs= { source: { code: `data := "---\nmetadata:\n  creationTimestamp: null\nspec:\n  containers: null\nstatus: {}\n"
@@ -51,14 +50,6 @@ export const editorView = {
   {{
     props: {
       view: object('View', editorView),
-    },
-    moduleMetadata: {
-      imports: [
-        MonacoEditorModule.forRoot({
-          baseUrl: 'lib',
-          defaultOptions: {},
-        }),
-      ],
     },
     template: `
       <div class="main-container">

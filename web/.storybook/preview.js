@@ -1,17 +1,18 @@
-import {addDecorator, moduleMetadata} from '@storybook/angular';
+import { addDecorator, moduleMetadata } from '@storybook/angular';
 import { SharedModule } from '../src/app/modules/shared/shared.module';
 import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
 import { setConsoleOptions } from '@storybook/addon-console';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import {APP_INITIALIZER} from "@angular/core";
-import {InitService} from "../src/app/modules/shared/services/init/init.service";
-import {RouterModule} from "@angular/router";
-import {HttpClientModule} from "@angular/common/http";
-import {BrowserModule} from "@angular/platform-browser";
-import {AppRoutingModule} from "../src/app/app-routing.module";
+import { APP_INITIALIZER } from "@angular/core";
+import { InitService } from "../src/app/modules/shared/services/init/init.service";
+import { RouterModule } from "@angular/router";
+import { HttpClientModule } from "@angular/common/http";
+import { BrowserModule } from "@angular/platform-browser";
+import { AppRoutingModule } from "../src/app/app-routing.module";
 import { setCompodocJson } from '@storybook/addon-docs/angular';
 import docJson from '../documentation.json';
 import { themes } from '@storybook/theming';
+import { MonacoEditorModule } from 'ng-monaco-editor';
 
 setCompodocJson(docJson);
 
@@ -42,6 +43,10 @@ addDecorator(
             smartypants: false,
           },
         },
+      }),
+      MonacoEditorModule.forRoot({
+        baseUrl: 'lib',
+        defaultOptions: {},
       }),
       RouterModule,
       SharedModule,

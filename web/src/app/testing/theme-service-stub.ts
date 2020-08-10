@@ -5,6 +5,6 @@ import { ThemeService } from '../modules/sugarloaf/components/smart/theme-switch
 
 export const themeServiceStub: Partial<ThemeService> = {
   loadCSS: () => void 0,
-  loadTheme: () => void 0,
+  loadTheme: () => Promise.resolve(),
   isLightThemeEnabled: () => true,
 };

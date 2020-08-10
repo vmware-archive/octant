@@ -11,6 +11,7 @@ import { MonacoEditorConfig, MonacoProviderService } from 'ng-monaco-editor';
 describe('ThemeSwitchButtonComponent', () => {
   let component: ThemeSwitchButtonComponent;
   let fixture: ComponentFixture<ThemeSwitchButtonComponent>;
+  let monacoService: MonacoProviderService;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -24,6 +25,8 @@ describe('ThemeSwitchButtonComponent', () => {
   }));
 
   beforeEach(() => {
+    monacoService = TestBed.inject(MonacoProviderService);
+
     fixture = TestBed.createComponent(ThemeSwitchButtonComponent);
     component = fixture.componentInstance;
   });
@@ -32,13 +35,15 @@ describe('ThemeSwitchButtonComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should switch theme', () => {
-    component.switchTheme();
+  it('should switch theme', async () => {
+    spyOn(monacoService, 'initMonaco').and.returnValue(Promise.resolve());
+
+    await component.switchTheme();
 
     expect(localStorage.getItem('theme')).toBe('dark');
     expect(component.lightThemeEnabled).toBe(false);
 
-    component.switchTheme();
+    await component.switchTheme();
 
     expect(localStorage.getItem('theme')).toBe('light');
     expect(component.lightThemeEnabled).toBe(true);
