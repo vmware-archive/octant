@@ -34,14 +34,4 @@ export class FlexlayoutComponent {
   sections: FlexLayoutItem[][];
 
   identifySection = trackByIndex;
-
-  sectionStyle(item: FlexLayoutItem) {
-    return ['height', 'margin'].reduce((previousValue, currentValue) => {
-      if (!item[currentValue]) {
-        return previousValue;
-      }
-
-      return { ...previousValue, [currentValue]: item[currentValue] };
-    }, {});
-  }
 }
