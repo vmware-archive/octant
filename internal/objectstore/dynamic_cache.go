@@ -8,6 +8,7 @@ package objectstore
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"sync"
@@ -28,8 +29,6 @@ import (
 	kcache "k8s.io/client-go/tools/cache"
 	kretry "k8s.io/client-go/util/retry"
 	sigyaml "sigs.k8s.io/yaml"
-
-	"github.com/pkg/errors"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/log"
@@ -279,21 +278,17 @@ func (dc *DynamicCache) listFromInformer(ctx context.Context, key store.Key) (*u
 		l = informer.Lister().ByNamespace(key.Namespace)
 	}
 
-	if key.Selector != nil && key.RequirementsSelector != nil {
-		return nil, false, fmt.Errorf("must provide only one of Key.Selector and Key.RequirementsSelector")
+	if key.Selector != nil && key.LabelSelector != nil {
+		return nil, false, fmt.Errorf("must provide only one of Key.Selector and Key.LabelSelector")
 	}
 
 	var selector = kLabels.Everything()
 	if key.Selector != nil {
 		selector = key.Selector.AsSelector()
-	} else if key.RequirementsSelector != nil {
-		selector = kLabels.NewSelector()
-		for _, r := range *key.RequirementsSelector {
-			requirement, err := kLabels.NewRequirement(r.Key, r.Operator, r.StrValues)
-			if err != nil {
-				return nil, false, errors.Wrap(err, "unable to convert requirement to k8s requirement")
-			}
-			selector = selector.Add(*requirement)
+	} else if key.LabelSelector != nil {
+		selector, err = metav1.LabelSelectorAsSelector(key.LabelSelector)
+		if err != nil {
+			return nil, false, err
 		}
 	}
 
@@ -317,6 +312,12 @@ func (dc *DynamicCache) listFromDynamicClient(ctx context.Context, key store.Key
 	var selector = kLabels.Everything()
 	if key.Selector != nil {
 		selector = key.Selector.AsSelector()
+	} else if key.LabelSelector != nil {
+		var err error
+		selector, err = metav1.LabelSelectorAsSelector(key.LabelSelector)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	dynamicClient, err := dc.client.DynamicClient()

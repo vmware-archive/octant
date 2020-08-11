@@ -3,6 +3,8 @@ package store
 import (
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -81,6 +83,62 @@ func TestKey_Validate(t *testing.T) {
 			key: Key{
 				APIVersion: "apiVersion",
 				Name:       "name",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Exists operator with values",
+			key: Key{
+				APIVersion: "apiVersion",
+				Name:       "name",
+				Kind:       "kind",
+				LabelSelector: &metav1.LabelSelector{
+					MatchExpressions: []metav1.LabelSelectorRequirement{
+						{Key: "foo", Operator: metav1.LabelSelectorOpExists, Values: []string{"foo1"}},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "DoesNotExist operator with values",
+			key: Key{
+				APIVersion: "apiVersion",
+				Name:       "name",
+				Kind:       "kind",
+				LabelSelector: &metav1.LabelSelector{
+					MatchExpressions: []metav1.LabelSelectorRequirement{
+						{Key: "foo", Operator: metav1.LabelSelectorOpDoesNotExist, Values: []string{"foo1"}},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "In operator without values",
+			key: Key{
+				APIVersion: "apiVersion",
+				Name:       "name",
+				Kind:       "kind",
+				LabelSelector: &metav1.LabelSelector{
+					MatchExpressions: []metav1.LabelSelectorRequirement{
+						{Key: "foo", Operator: metav1.LabelSelectorOpIn},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "NotIn operator without values",
+			key: Key{
+				APIVersion: "apiVersion",
+				Name:       "name",
+				Kind:       "kind",
+				LabelSelector: &metav1.LabelSelector{
+					MatchExpressions: []metav1.LabelSelectorRequirement{
+						{Key: "foo", Operator: metav1.LabelSelectorOpNotIn},
+					},
+				},
 			},
 			wantErr: true,
 		},

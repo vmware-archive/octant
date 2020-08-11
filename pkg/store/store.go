@@ -11,10 +11,9 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/apimachinery/pkg/selection"
-
 	"github.com/hashicorp/go-multierror"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -51,19 +50,12 @@ type Store interface {
 
 // Key is a key for the object store.
 type Key struct {
-	Namespace            string         `json:"namespace"`
-	APIVersion           string         `json:"apiVersion"`
-	Kind                 string         `json:"kind"`
-	Name                 string         `json:"name"`
-	Selector             *labels.Set    `json:"selector"`
-	RequirementsSelector *[]Requirement `json:"requirementsSelector"`
-}
-
-// See vendor/k8s.io/apimachinery/pkg/labels/selector.go:120
-type Requirement struct {
-	Key       string             `json:"key"`
-	Operator  selection.Operator `json:"operator"`
-	StrValues []string           `json:"strValues"`
+	Namespace     string                `json:"namespace"`
+	APIVersion    string                `json:"apiVersion"`
+	Kind          string                `json:"kind"`
+	Name          string                `json:"name"`
+	Selector      *labels.Set           `json:"selector"`
+	LabelSelector *metav1.LabelSelector `json:"labelSelector"`
 }
 
 // Validate validates the key.
@@ -76,6 +68,16 @@ func (k Key) Validate() error {
 
 	if k.Kind == "" {
 		err = multierror.Append(err, errors.New("kind is blank"))
+	}
+
+	if k.LabelSelector != nil && len(k.LabelSelector.MatchExpressions) > 0 {
+		for _, v := range k.LabelSelector.MatchExpressions {
+			if (v.Operator == metav1.LabelSelectorOpIn || v.Operator == metav1.LabelSelectorOpNotIn) && len(v.Values) == 0 {
+				err = multierror.Append(err, errors.New("operator In/NotIn must not have empty values array"))
+			} else if (v.Operator == metav1.LabelSelectorOpExists || v.Operator == metav1.LabelSelectorOpDoesNotExist) && len(v.Values) > 0 {
+				err = multierror.Append(err, errors.New("operator Exists/DoesNotExist must have empty values array"))
+			}
+		}
 	}
 
 	return err
@@ -99,9 +101,39 @@ func (k Key) String() string {
 		sb.WriteString(fmt.Sprintf(", Selector='%s'", k.Selector.String()))
 	}
 
+	if k.LabelSelector != nil {
+		sb.WriteString(", LabelSelector='")
+		k.labelSelectorString(sb)
+		sb.WriteString("'")
+	}
+
 	sb.WriteString("]")
 
 	return sb.String()
+}
+
+func (k Key) labelSelectorString(sb strings.Builder) {
+	if k.LabelSelector.MatchLabels != nil {
+		sb.WriteString("MatchLabels=")
+		data := make([]string, len(k.LabelSelector.MatchLabels))
+		for k, v := range k.LabelSelector.MatchLabels {
+			data = append(data, fmt.Sprintf("%s=%s", k, v))
+		}
+		sb.WriteString(strings.Join(data, ","))
+	}
+
+	if k.LabelSelector.MatchLabels != nil && k.LabelSelector.MatchExpressions != nil {
+		sb.WriteString(",")
+	}
+
+	if k.LabelSelector.MatchExpressions != nil {
+		sb.WriteString("MatchExpressions=")
+		data := make([]string, len(k.LabelSelector.MatchLabels))
+		for _, me := range k.LabelSelector.MatchExpressions {
+			data = append(data, fmt.Sprintf("%s %s (%s)", me.Key, me.Operator, strings.Join(me.Values, ",")))
+		}
+		sb.WriteString(strings.Join(data, ","))
+	}
 }
 
 // GroupVersionKind converts the Key to a GroupVersionKind.
