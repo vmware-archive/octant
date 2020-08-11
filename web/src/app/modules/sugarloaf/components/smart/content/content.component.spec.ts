@@ -17,6 +17,7 @@ import { SugarloafModule } from '../../../sugarloaf.module';
 class ContentServiceMock {
   current = new BehaviorSubject<ContentResponse>({
     content: { extensionComponent: null, viewComponents: [], title: [] },
+    currentPath: '',
   });
   defaultPath = new BehaviorSubject<string>('/path');
   setContentPath = (contentPath: string, params: Params) => {};

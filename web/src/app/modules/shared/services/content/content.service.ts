@@ -28,6 +28,7 @@ export interface ContentUpdate {
 
 const emptyContentResponse: ContentResponse = {
   content: { extensionComponent: null, viewComponents: [], title: [] },
+  currentPath: '',
 };
 
 @Injectable({
@@ -64,23 +65,19 @@ export class ContentService {
 
       this.lastReceived = s;
 
-      this.setContent(response.content);
+      this.setContent(response);
       namespaceService.setNamespace(response.namespace);
 
       if (response.contentPath) {
         if (this.previousContentPath.length > 0) {
-          const sameLastSegment =
-            this.lastSegment(response.contentPath) ===
-            this.lastSegment(this.previousContentPath);
-
           if (response.contentPath !== this.previousContentPath) {
             const segments = response.contentPath.split('/');
             this.router
               .navigate(segments, {
                 queryParams: response.queryParams,
               })
-              .then(() => {
-                if (sameLastSegment) {
+              .then(result => {
+                if (result) {
                   this.delayedComplete(true);
                 } else {
                   this.loadingService.requestComplete.next(true);
@@ -104,15 +101,11 @@ export class ContentService {
     });
   }
 
-  lastSegment(text: string): string {
-    return text.substr(text.lastIndexOf('/') + 1);
-  }
-
   delayedComplete(value: boolean) {
     const delayed = new Observable(x => {
       x.next();
     })
-      .pipe(delay(1000))
+      .pipe(delay(700))
       .subscribe(() => {
         this.loadingService.requestComplete.next(value);
         delayed.unsubscribe();
@@ -136,9 +129,10 @@ export class ContentService {
     );
   }
 
-  private setContent(content: Content) {
+  private setContent(contentUpdate: ContentUpdate) {
     const contentResponse: ContentResponse = {
-      content,
+      content: contentUpdate.content,
+      currentPath: contentUpdate.contentPath,
     };
     this.current.next(contentResponse);
   }

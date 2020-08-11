@@ -44,6 +44,7 @@ export class ContentComponent implements OnInit, OnDestroy {
   private previousParams: Params;
   private loadingSubscription: Subscription;
   public showSpinner = false;
+  currentPath = '';
 
   constructor(
     private router: Router,
@@ -92,6 +93,7 @@ export class ContentComponent implements OnInit, OnDestroy {
     force: boolean
   ) {
     const urlPath = segments.map(u => u.path).join('/');
+    this.currentPath = urlPath;
     const currentPath = urlPath || this.defaultPath;
     if (
       force ||
@@ -115,6 +117,13 @@ export class ContentComponent implements OnInit, OnDestroy {
   }
 
   private setContent = (contentResponse: ContentResponse) => {
+    if (
+      this.currentPath.length > 0 &&
+      contentResponse.currentPath !== this.currentPath
+    ) {
+      return; // ignore premature updates
+    }
+
     const views = contentResponse.content.viewComponents;
     if (!views || views.length === 0) {
       this.hasReceivedContent = false;
