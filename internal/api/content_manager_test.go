@@ -34,6 +34,7 @@ func TestContentManager_Handlers(t *testing.T) {
 	AssertHandlers(t, manager, []string{
 		api.RequestSetContentPath,
 		action.RequestSetNamespace,
+		api.CheckLoading,
 	})
 }
 

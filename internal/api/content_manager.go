@@ -188,6 +188,10 @@ func (cm *ContentManager) Handlers() []octant.ClientRequestHandler {
 			RequestType: action.RequestSetNamespace,
 			Handler:     cm.SetNamespace,
 		},
+		{
+			RequestType: CheckLoading,
+			Handler:     cm.Loaded,
+		},
 	}
 }
 
@@ -231,6 +235,11 @@ func (cm *ContentManager) SetContentPath(state octant.State, payload action.Payl
 	cm.logger.With("content-path", contentPath).Debugf("setting content path")
 
 	state.SetContentPath(contentPath)
+	return nil
+}
+
+// Loaded is no-op once content is serving
+func (cm *ContentManager) Loaded(state octant.State, payload action.Payload) error {
 	return nil
 }
 
