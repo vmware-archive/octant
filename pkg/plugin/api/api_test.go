@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -187,6 +188,8 @@ func TestAPI(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			controller := gomock.NewController(t)
 			defer controller.Finish()
+
+			viper.SetDefault("client-max-recv-msg-size", 1024*1024*16)
 
 			appObjectStore := storeFake.NewMockStore(controller)
 			pf := portForwardFake.NewMockPortForwarder(controller)
