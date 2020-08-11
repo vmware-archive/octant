@@ -97,7 +97,6 @@ export interface GraphvizView extends View {
 
 export interface FlexLayoutItem {
   width: number;
-  height: number;
   view: View;
 }
 

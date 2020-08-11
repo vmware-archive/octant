@@ -14,7 +14,6 @@
   >
     <div
       *ngFor="let item of section; trackBy: identifySection"
-      [ngStyle]="sectionStyle(item)"
       class="clr-col-md-{{ item.width / 2 }} content-card-parent"
     >
       <app-content-switcher [view]="item.view"></app-content-switcher>

@@ -19,6 +19,7 @@ export interface SegmentDescriptor {
 })
 export class DonutChartComponent implements OnInit {
   v: DonutChartView;
+  scale: string;
 
   @Input() set view(v: View) {
     this.v = v as DonutChartView;
@@ -32,7 +33,11 @@ export class DonutChartComponent implements OnInit {
 
   constructor() {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    if (this.v?.config?.size) {
+      this.scale = String(this.v.config.size) + '%';
+    }
+  }
 
   trackByDescriptor(index: number, item: SegmentDescriptor) {
     if (!item) {

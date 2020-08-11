@@ -10,8 +10,8 @@ import "encoding/json"
 type DonutChartSize int
 
 const (
-	DonutChartSizeSmall  DonutChartSize = 21
-	DonutChartSizeMedium DonutChartSize = 42
+	DonutChartSizeSmall  DonutChartSize = 50
+	DonutChartSizeMedium DonutChartSize = 100
 )
 
 type DonutChartLabels struct {

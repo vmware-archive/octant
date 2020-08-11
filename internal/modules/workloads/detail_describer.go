@@ -99,10 +99,8 @@ _%s_
 			View:  component.NewMarkdownText(workloadName),
 		},
 		{
-			Width:  component.WidthQuarter,
-			Height: "6em",
-			Margin: "0 0 2em 0",
-			View:   summary.Summary,
+			Width: component.WidthQuarter,
+			View:  summary.Summary,
 		},
 	}
 
