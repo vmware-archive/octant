@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/selection"
+
 	"github.com/hashicorp/go-multierror"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -49,11 +51,19 @@ type Store interface {
 
 // Key is a key for the object store.
 type Key struct {
-	Namespace  string      `json:"namespace"`
-	APIVersion string      `json:"apiVersion"`
-	Kind       string      `json:"kind"`
-	Name       string      `json:"name"`
-	Selector   *labels.Set `json:"selector"`
+	Namespace            string         `json:"namespace"`
+	APIVersion           string         `json:"apiVersion"`
+	Kind                 string         `json:"kind"`
+	Name                 string         `json:"name"`
+	Selector             *labels.Set    `json:"selector"`
+	RequirementsSelector *[]Requirement `json:"requirementsSelector"`
+}
+
+// See vendor/k8s.io/apimachinery/pkg/labels/selector.go:120
+type Requirement struct {
+	Key       string             `json:"key"`
+	Operator  selection.Operator `json:"operator"`
+	StrValues []string           `json:"strValues"`
 }
 
 // Validate validates the key.
