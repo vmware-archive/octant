@@ -1,42 +1,33 @@
 // Copyright (c) 2019 the Octant contributors. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component } from '@angular/core';
 import { TextView } from 'src/app/modules/shared/models/content';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-view-text',
   templateUrl: './text.component.html',
   styleUrls: ['./text.component.scss'],
 })
-export class TextComponent implements OnChanges {
-  v: TextView;
-
-  @Input() set view(v: TextView) {
-    this.v = v as TextView;
-  }
-
-  get view(): TextView {
-    return this.v;
-  }
-
+export class TextComponent extends AbstractViewComponent<TextView> {
   value: string;
 
   isMarkdown: boolean;
 
   hasStatus = false;
 
-  constructor() {}
+  constructor() {
+    super();
+  }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view && changes.view.currentValue) {
-      const view = changes.view.currentValue as TextView;
-      this.value = view.config.value;
-      this.isMarkdown = view.config.isMarkdown;
+  update() {
+    const view = this.v;
+    this.value = view.config.value;
+    this.isMarkdown = view.config.isMarkdown;
 
-      if (view.config.status) {
-        this.hasStatus = true;
-      }
+    if (view.config.status) {
+      this.hasStatus = true;
     }
   }
 }

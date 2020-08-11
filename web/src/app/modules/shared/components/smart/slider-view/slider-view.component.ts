@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnChanges, SimpleChanges } from '@angular/core';
 import { ExtensionView, View } from 'src/app/modules/shared/models/content';
 import { SlideInOutAnimation } from './slide-in-out.animation';
 import { ResizeEvent } from 'angular-resizable-element';
 import { SliderService } from 'src/app/modules/shared/slider/slider.service';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-slider-view',
@@ -15,9 +16,8 @@ import { SliderService } from 'src/app/modules/shared/slider/slider.service';
   styleUrls: ['./slider-view.component.scss'],
   animations: [SlideInOutAnimation],
 })
-export class SliderViewComponent implements OnChanges {
-  @Input() view: ExtensionView;
-
+export class SliderViewComponent extends AbstractViewComponent<ExtensionView>
+  implements OnChanges {
   style: object = {};
   contentStyle: object = {};
   animationState = 'out';
@@ -26,33 +26,43 @@ export class SliderViewComponent implements OnChanges {
   tabs: View[] = [];
   payloads: { [key: string]: string }[] = [];
 
-  constructor(private sliderService: SliderService) {}
+  constructor(private sliderService: SliderService) {
+    super();
+  }
+
+  update() {
+    const extView = this.v;
+    if (extView && extView.config.tabs) {
+      this.tabs = [];
+      this.payloads = [];
+      extView.config.tabs.forEach(tab => {
+        this.tabs.push(tab.tab);
+        this.payloads.push(tab.payload);
+      });
+    } else {
+      this.animationState = 'out';
+      this.sliderService.resetDefault();
+    }
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.view.currentValue) {
-      const extView = changes.view.currentValue as ExtensionView;
-      if (extView.config.tabs) {
-        this.tabs = [];
-        this.payloads = [];
-        extView.config.tabs.forEach(tab => {
-          this.tabs.push(tab.tab);
-          this.payloads.push(tab.payload);
-        });
-
-        if (!changes.view.isFirstChange() && this.animationState === 'out') {
-          const prevExtView = changes.view.previousValue as ExtensionView;
-          if (prevExtView.config.tabs === null && extView.config.tabs.length) {
-            this.slide();
-            return;
-          }
-          if (extView.config.tabs.length > prevExtView.config.tabs.length) {
-            this.slide();
-            return;
-          }
+      if (!changes.view.isFirstChange() && this.animationState === 'out') {
+        const prevExtView = changes.view.previousValue as ExtensionView;
+        if (
+          prevExtView.config.tabs === null &&
+          changes.view.currentValue.config.tabs.length
+        ) {
+          this.slide();
+          return;
         }
-      } else {
-        this.animationState = 'out';
-        this.sliderService.resetDefault();
+        if (
+          changes.view.currentValue.config.tabs.length >
+          prevExtView.config.tabs.length
+        ) {
+          this.slide();
+          return;
+        }
       }
     }
   }

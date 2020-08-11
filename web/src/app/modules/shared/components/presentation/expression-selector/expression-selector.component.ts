@@ -2,39 +2,30 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import {
-  ExpressionSelectorView,
-  View,
-} from 'src/app/modules/shared/models/content';
+import { Component } from '@angular/core';
+import { ExpressionSelectorView } from 'src/app/modules/shared/models/content';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-view-expression-selector',
   templateUrl: './expression-selector.component.html',
   styleUrls: ['./expression-selector.component.scss'],
 })
-export class ExpressionSelectorComponent implements OnChanges {
-  private v: ExpressionSelectorView;
-
-  @Input() set view(v: View) {
-    this.v = v as ExpressionSelectorView;
-  }
-  get view() {
-    return this.v;
-  }
-
+export class ExpressionSelectorComponent extends AbstractViewComponent<
+  ExpressionSelectorView
+> {
   key: string;
   operator: string;
   values: string;
 
-  constructor() {}
+  constructor() {
+    super();
+  }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view.currentValue) {
-      const view = changes.view.currentValue as ExpressionSelectorView;
-      this.key = view.config.key;
-      this.operator = view.config.operator;
-      this.values = view.config.values?.join(',');
-    }
+  update() {
+    const view = this.v;
+    this.key = view.config.key;
+    this.operator = view.config.operator;
+    this.values = view.config.values?.join(',');
   }
 }

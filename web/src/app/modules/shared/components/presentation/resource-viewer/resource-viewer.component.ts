@@ -6,17 +6,15 @@ import {
   AfterViewInit,
   Component,
   Input,
-  OnChanges,
-  SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
-import isEqual from 'lodash/isEqual';
 import {
   Node,
   ResourceViewerView,
   View,
 } from 'src/app/modules/shared/models/content';
 import { ElementsDefinition, Stylesheet } from 'cytoscape';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 const statusColorCodes = {
   ok: '#60b515',
@@ -32,17 +30,9 @@ const edgeColorCode = '#003d79';
   styleUrls: ['./resource-viewer.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class ResourceViewerComponent implements OnChanges, AfterViewInit {
-  private v: ResourceViewerView;
-
-  @Input() set view(v: View) {
-    this.v = v as ResourceViewerView;
-  }
-  get view() {
-    return this.v;
-  }
-
-  currentView: ResourceViewerView;
+export class ResourceViewerComponent
+  extends AbstractViewComponent<ResourceViewerView>
+  implements AfterViewInit {
   selected: string;
   selectedNode: Node;
 
@@ -109,26 +99,21 @@ export class ResourceViewerComponent implements OnChanges, AfterViewInit {
 
   private afterFirstChange: boolean;
 
-  constructor() {}
+  constructor() {
+    super();
+  }
 
   ngAfterViewInit(): void {
     if (this.afterFirstChange) {
       this.graphData = this.generateGraphData();
     }
+    super.ngAfterViewInit();
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    const isEquals = isEqual(
-      changes.view.currentValue,
-      changes.view.previousValue
-    );
-
-    if (changes.view.isFirstChange() || !isEquals) {
-      this.currentView = changes.view.currentValue as ResourceViewerView;
-      this.select(this.currentView.config.selected);
-      this.graphData = this.generateGraphData();
-      this.afterFirstChange = true;
-    }
+  update() {
+    this.select(this.v.config.selected);
+    this.graphData = this.generateGraphData();
+    this.afterFirstChange = true;
   }
 
   nodeChange(event) {
@@ -143,48 +128,44 @@ export class ResourceViewerComponent implements OnChanges, AfterViewInit {
   }
 
   private nodes() {
-    if (!this.currentView || !this.currentView.config.nodes) {
+    if (!this.v.config.nodes) {
       return [];
     }
 
-    const nodes = Object.entries(this.currentView.config.nodes).map(
-      ([name, details]) => {
-        const colorCode =
-          statusColorCodes[details.status] || statusColorCodes.error;
+    const nodes = Object.entries(this.v.config.nodes).map(([name, details]) => {
+      const colorCode =
+        statusColorCodes[details.status] || statusColorCodes.error;
 
-        return {
-          data: {
-            id: name,
-            name: `${details.name}\n${details.apiVersion} ${details.kind}`,
-            weight: 100,
-            colorCode,
-          },
-        };
-      }
-    );
+      return {
+        data: {
+          id: name,
+          name: `${details.name}\n${details.apiVersion} ${details.kind}`,
+          weight: 100,
+          colorCode,
+        },
+      };
+    });
 
     return Array.prototype.concat(...nodes);
   }
 
   private edges() {
-    if (!this.currentView || !this.currentView.config.edges) {
+    if (!this.v.config.edges) {
       return [];
     }
 
-    const edges = Object.entries(this.currentView.config.edges).map(
-      ([parent, maps]) => {
-        return maps.map(edge => {
-          return {
-            data: {
-              source: parent,
-              target: edge.node,
-              colorCode: edgeColorCode,
-              strength: 10,
-            },
-          };
-        });
-      }
-    );
+    const edges = Object.entries(this.v.config.edges).map(([parent, maps]) => {
+      return maps.map(edge => {
+        return {
+          data: {
+            source: parent,
+            target: edge.node,
+            colorCode: edgeColorCode,
+            strength: 10,
+          },
+        };
+      });
+    });
 
     return Array.prototype.concat(...edges);
   }
@@ -192,7 +173,7 @@ export class ResourceViewerComponent implements OnChanges, AfterViewInit {
   private select(id: string) {
     this.selected = id;
 
-    const nodes = this.currentView.config.nodes;
+    const nodes = this.v.config.nodes;
 
     if (nodes && nodes[id]) {
       this.selectedNode = nodes[id];

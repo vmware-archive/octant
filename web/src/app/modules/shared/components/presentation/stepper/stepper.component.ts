@@ -1,27 +1,13 @@
+import { Component, EventEmitter, isDevMode, Output } from '@angular/core';
+import { ActionField, StepItem, StepperView } from '../../../models/content';
 import {
-  Component,
-  OnInit,
-  Input,
-  SimpleChanges,
-  EventEmitter,
-  Output,
-  OnChanges,
-  OnDestroy,
-  isDevMode,
-} from '@angular/core';
-import {
-  StepperView,
-  View,
-  ActionField,
-  StepItem,
-} from '../../../models/content';
-import {
-  FormGroup,
   FormBuilder,
-  Validators,
+  FormGroup,
   ValidatorFn,
+  Validators,
 } from '@angular/forms';
 import { WebsocketService } from '../../../services/websocket/websocket.service';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 interface Choice {
   label: string;
@@ -34,17 +20,7 @@ interface Choice {
   templateUrl: './stepper.component.html',
   styleUrls: ['./stepper.component.sass'],
 })
-export class StepperComponent implements OnInit {
-  private v: StepperView;
-
-  @Input() set view(v: View) {
-    this.v = v as StepperView;
-  }
-
-  get view() {
-    return this.v;
-  }
-
+export class StepperComponent extends AbstractViewComponent<StepperView> {
   @Output()
   submit: EventEmitter<FormGroup> = new EventEmitter(true);
 
@@ -53,23 +29,21 @@ export class StepperComponent implements OnInit {
 
   formGroup: FormGroup;
   action: string;
-  steps: StepItem[];
+  steps: StepItem[] = [];
 
   constructor(
     private formBuilder: FormBuilder,
     private websocketService: WebsocketService
   ) {
-    this.steps = [] as StepItem[];
+    super();
   }
 
-  ngOnInit() {
-    if (this.v) {
-      this.action = this.v.config.action;
-      this.steps = this.v.config.steps;
+  update() {
+    this.action = this.v.config.action;
+    this.steps = this.v.config.steps;
 
-      const stepGroups = this.createStepGroups(this.steps);
-      this.formGroup = this.formBuilder.group(stepGroups);
-    }
+    const stepGroups = this.createStepGroups(this.steps);
+    this.formGroup = this.formBuilder.group(stepGroups);
   }
 
   createStepGroups(steps: StepItem[]): { [name: string]: any } {
@@ -110,7 +84,7 @@ export class StepperComponent implements OnInit {
     this.cancel.emit(true);
   }
 
-  trackByFn(index, item) {
+  trackByFn(index, _) {
     return index;
   }
 

@@ -6,15 +6,15 @@
     <div class="card-block">
       <div class="card-title">
         <span *ngIf="node && !node.path">{{ node.name }}</span>
-        <app-content-switcher
+        <app-view-container
           *ngIf="node && node.path"
           [view]="node.path"
-        ></app-content-switcher>
+        ></app-view-container>
       </div>
       <div *ngIf="node" class="card-text">
         <ul class="node-status">
           <li *ngFor="let detail of node.details; trackBy: detailsTrackBy">
-            <app-content-switcher [view]="detail"></app-content-switcher>
+            <app-view-container [view]="detail"></app-view-container>
           </li>
         </ul>
       </div>

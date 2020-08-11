@@ -1,4 +1,9 @@
-<div clrFocusOnViewInit class="content-component" (scroll)="onScroll($event)" [class.loading-content]="showSpinner || !hasReceivedContent">
+<div
+  clrFocusOnViewInit
+  class="content-component"
+  (scroll)="onScroll($event)"
+  [class.loading-content]="!hasReceivedContent"
+>
   <ng-container *ngIf="hasReceivedContent && !showSpinner; else loading">
     <ng-container
       *ngIf="hasTabs; then withTabs; else withoutTabs"
@@ -6,13 +11,12 @@
     <ng-template #withTabs>
       <app-object-tabs
         [buttonGroup]="buttonGroup"
-        [iconName]="iconName"
         [title]="title"
         [views]="views"
       ></app-object-tabs>
     </ng-template>
     <ng-template #withoutTabs>
-      <app-content-switcher [view]="singleView"></app-content-switcher>
+      <app-view-container [view]="singleView"></app-view-container>
     </ng-template>
   </ng-container>
 

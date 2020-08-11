@@ -6,18 +6,16 @@
 
 import { HIGHLIGHT_OPTIONS } from 'ngx-highlightjs';
 
-export function hljsLanguages() {
+const languages = () => {
   return {
     json: () => import('highlight.js/lib/languages/json'),
     yaml: () => import('highlight.js/lib/languages/yaml'),
   };
-}
+};
 
-export function highlightProvider() {
-  return {
-    provide: HIGHLIGHT_OPTIONS,
-    useValue: {
-      languages: hljsLanguages(),
-    },
-  };
-}
+export const highlightProvider = () => ({
+  provide: HIGHLIGHT_OPTIONS,
+  useValue: {
+    languages: languages(),
+  },
+});

@@ -1,22 +1,16 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { SingleStatView, View } from '../../../models/content';
+import { Component } from '@angular/core';
+import { SingleStatView } from '../../../models/content';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-single-stat',
   templateUrl: './single-stat.component.html',
   styleUrls: ['./single-stat.component.scss'],
 })
-export class SingleStatComponent implements OnInit {
-  v: SingleStatView;
-
-  @Input() set view(v: View) {
-    this.v = v as SingleStatView;
-  }
-  get view() {
-    return this.v;
+export class SingleStatComponent extends AbstractViewComponent<SingleStatView> {
+  constructor() {
+    super();
   }
 
-  constructor() {}
-
-  ngOnInit() {}
+  update() {}
 }

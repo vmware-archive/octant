@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { LinkView, View } from 'src/app/modules/shared/models/content';
+import { Component } from '@angular/core';
+import { LinkView } from 'src/app/modules/shared/models/content';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 const isUrlAbsolute = url =>
   url?.indexOf('://') > 0 || url?.indexOf('//') === 0;
@@ -13,33 +14,24 @@ const isUrlAbsolute = url =>
   templateUrl: './link.component.html',
   styleUrls: ['./link.component.scss'],
 })
-export class LinkComponent implements OnChanges {
-  private v: LinkView;
-
-  @Input() set view(v: View) {
-    this.v = v as LinkView;
-  }
-  get view() {
-    return this.v;
-  }
-
+export class LinkComponent extends AbstractViewComponent<LinkView> {
   ref: string;
   value: string;
   isAbsolute: boolean;
   hasStatus: boolean;
 
-  constructor() {}
+  constructor() {
+    super();
+  }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view.currentValue) {
-      const view = changes.view.currentValue as LinkView;
-      this.ref = view.config.ref;
-      this.value = view.config.value;
-      this.isAbsolute = isUrlAbsolute(this.ref);
+  update() {
+    const view = this.v;
+    this.ref = view.config.ref;
+    this.value = view.config.value;
+    this.isAbsolute = isUrlAbsolute(this.ref);
 
-      if (view.config.status) {
-        this.hasStatus = true;
-      }
+    if (view.config.status) {
+      this.hasStatus = true;
     }
   }
 }

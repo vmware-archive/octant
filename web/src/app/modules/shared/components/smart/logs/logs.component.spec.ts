@@ -4,7 +4,7 @@
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { LogsComponent } from './logs.component';
-import { LogEntry } from 'src/app/modules/shared/models/content';
+import { LogEntry, LogsView } from 'src/app/modules/shared/models/content';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 import { AnsiPipe } from '../../../pipes/ansiPipe/ansi.pipe';
@@ -40,6 +40,19 @@ describe('LogsComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(LogsComponent);
     component = fixture.componentInstance;
+    component.view = {
+      metadata: {
+        type: 'logs',
+        title: [],
+        accessor: 'logs',
+      },
+      config: {
+        namespace: 'default',
+        name: 'cartpod',
+        containers: [],
+      },
+    } as LogsView;
+
     fixture.detectChanges();
   });
 

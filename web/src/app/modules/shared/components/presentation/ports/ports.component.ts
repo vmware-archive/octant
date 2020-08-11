@@ -5,14 +5,12 @@
 import {
   Component,
   EventEmitter,
-  Input,
-  OnChanges,
   OnDestroy,
   Output,
-  SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
-import { PortsView, View } from 'src/app/modules/shared/models/content';
+import { PortsView } from 'src/app/modules/shared/models/content';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-view-ports',
@@ -20,37 +18,29 @@ import { PortsView, View } from 'src/app/modules/shared/models/content';
   styleUrls: ['./ports.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class PortsComponent implements OnChanges, OnDestroy {
-  v: PortsView;
-
-  @Input() set view(v: View) {
-    this.v = v as PortsView;
-  }
-  get view() {
-    return this.v;
-  }
+export class PortsComponent extends AbstractViewComponent<PortsView>
+  implements OnDestroy {
+  private previousView: PortsView;
 
   @Output() portLoad: EventEmitter<boolean> = new EventEmitter(true);
 
-  constructor() {}
+  constructor() {
+    super();
+  }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view.currentValue && !changes.view.isFirstChange()) {
-      const currentView = changes.view.currentValue as PortsView;
-      const prevView = changes.view.previousValue as PortsView;
-      if (JSON.stringify(currentView) !== JSON.stringify(prevView)) {
-        this.portLoad.emit(false);
-      }
+  update() {
+    if (JSON.stringify(this.v) !== JSON.stringify(this.previousView)) {
+      this.portLoad.emit(false);
     }
   }
 
   ngOnDestroy() {}
 
-  load(e: Event) {
+  load(_: Event) {
     this.portLoad.emit(true);
   }
 
-  trackByFn(index, item) {
+  trackByFn(index, _) {
     return index;
   }
 }

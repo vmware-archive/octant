@@ -8,7 +8,10 @@
   --flyout-background-color: var(--clr-color-neutral-50);
   --flyout-color: var(--clr-global-font-color);
   --flyout-header-color: var(--clr-vertical-nav-item-color, #666666);
-  --flyout-header-active-color: var(--clr-vertical-nav-item-active-color, #666666);
+  --flyout-header-active-color: var(
+    --clr-vertical-nav-item-active-color,
+    #666666
+  );
 }
 
 :host-context(body.dark) {
@@ -156,5 +159,4 @@
   .flyout:hover {
     display: flex;
   }
-
 }

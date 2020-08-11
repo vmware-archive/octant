@@ -2,21 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input } from '@angular/core';
-import { PortForwardView, View } from 'src/app/modules/shared/models/content';
+import { Component } from '@angular/core';
+import { PortForwardView } from 'src/app/modules/shared/models/content';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-view-port-forward',
   templateUrl: './port-forward.component.html',
   styleUrls: ['./port-forward.component.scss'],
 })
-export class PortForwardComponent {
-  private v: PortForwardView;
+export class PortForwardComponent extends AbstractViewComponent<
+  PortForwardView
+> {
+  constructor() {
+    super();
+  }
 
-  @Input() set view(v: View) {
-    this.v = v as PortForwardView;
-  }
-  get view() {
-    return this.v;
-  }
+  update() {}
 }

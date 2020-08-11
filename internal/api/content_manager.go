@@ -132,24 +132,10 @@ func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFu
 	previousChecksum := ""
 
 	return func(ctx context.Context) bool {
-
-		logger := internalLog.From(ctx)
-
 		contentPath := state.GetContentPath()
 		if contentPath == "" {
 			return false
 		}
-
-		runCtx, cancel := context.WithCancel(ctx)
-		defer cancel()
-
-		defer func() {
-			select {
-			case <-time.After(1500 * time.Millisecond):
-				logger.With("content-path", contentPath).Infof("slow content generation detected")
-			case <-runCtx.Done():
-			}
-		}()
 
 		content, _, err := cm.contentGenerateFunc(ctx, state)
 		if err != nil {
@@ -192,7 +178,7 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 
 	now := time.Now()
 	defer func() {
-		logger.With("elapsed", time.Since(now)).Infof("generating content")
+		logger.With("elapsed", time.Since(now)).Debugf("generating content")
 	}()
 
 	m, ok := cm.moduleManager.ModuleForContentPath(contentPath)
@@ -276,8 +262,6 @@ func (cm *ContentManager) SetContentPath(state octant.State, payload action.Payl
 	if err := cm.SetQueryParams(state, payload); err != nil {
 		return fmt.Errorf("extract query params from payload: %w", err)
 	}
-
-	fmt.Printf("setting content path: %s\n", contentPath)
 
 	state.SetContentPath(contentPath)
 	return nil

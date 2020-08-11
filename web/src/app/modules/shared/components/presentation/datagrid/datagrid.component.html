@@ -1,28 +1,27 @@
 <h4 *ngIf="showTitle()">{{ title }}</h4>
-<clr-datagrid>
+<clr-datagrid [clrDgLoading]="loading$ | async">
   <clr-dg-placeholder>
     <ng-container *ngIf="placeholder?.length > 0; else emptyPlaceholder">
       {{ placeholder }}
     </ng-container>
     <ng-template #emptyPlaceholder>
-      All content has been filtered out.
+      <!--      All content has been filtered out.-->
     </ng-template>
   </clr-dg-placeholder>
-  <clr-dg-column *ngFor="let columnName of columns; trackBy: identifyColumn"
-                  [clrDgSortBy]="columnName === 'Age' ? timeStampComparator : null"
-                  [(clrDgSortOrder)]="sortOrder"
+  <clr-dg-column
+    *ngFor="let columnName of columns; trackBy: identifyColumn"
+    [clrDgSortBy]="columnName === 'Age' ? timeStampComparator : null"
+    [(clrDgSortOrder)]="sortOrder"
   >
     {{ columnName }}
     <clr-dg-filter *ngIf="filters[columnName]">
-      <app-content-filter 
+      <app-content-filter
         [column]="columnName"
         [filter]="filters[columnName]"
       ></app-content-filter>
     </clr-dg-filter>
     <clr-dg-filter *ngIf="!filters[columnName]">
-      <app-content-text-filter 
-        [column]="columnName"
-      ></app-content-text-filter>
+      <app-content-text-filter [column]="columnName"></app-content-text-filter>
     </clr-dg-filter>
   </clr-dg-column>
   <clr-dg-row
@@ -30,14 +29,14 @@
     [ngClass]="row | filterDeletedDatagridRow"
   >
     <clr-dg-action-overflow *ngIf="row.actions.length > 0 && !row.isDeleted">
-      <ng-container *ngFor="let action of row.actions">
+      <ng-container *ngFor="let action of row.actions; trackBy: identifyAction">
         <button class="action-item" (click)="runAction(action)">
           {{ action.name }}
         </button>
       </ng-container>
     </clr-dg-action-overflow>
     <clr-dg-cell *ngFor="let column of columns; trackBy: identifyColumn">
-      <app-content-switcher [view]="row.data[column]"></app-content-switcher>
+      <app-view-container [view]="row.data[column]"></app-view-container>
     </clr-dg-cell>
   </clr-dg-row>
   <clr-dg-footer>
@@ -50,12 +49,6 @@
         {{ pagination.totalItems }} items
       </ng-container>
     </clr-dg-pagination>
-
-    <ng-container *ngIf="loading">
-      <span class="spinner spinner-inline" style="margin-right: 10px;">
-        Loading...
-      </span>
-    </ng-container>
   </clr-dg-footer>
 </clr-datagrid>
 

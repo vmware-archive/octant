@@ -5,14 +5,12 @@
 import {
   Component,
   ElementRef,
-  Input,
-  OnChanges,
-  SimpleChanges,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { PodStatusView, View } from '../../../models/content';
+import { PodStatusView } from '../../../models/content';
 import { PodStatus } from '../../../models/pod-status';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-pod-status',
@@ -20,26 +18,19 @@ import { PodStatus } from '../../../models/pod-status';
   styleUrls: ['./pod-status.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class PodStatusComponent implements OnChanges {
+export class PodStatusComponent extends AbstractViewComponent<PodStatusView> {
   @ViewChild('container') private container: ElementRef;
-
-  private v: PodStatusView;
-
-  @Input() set view(v: View) {
-    this.v = v as PodStatusView;
-  }
-  get view() {
-    return this.v;
-  }
 
   edgeLength = 7;
 
   podStatuses: PodStatus[] = [];
 
-  constructor() {}
+  constructor() {
+    super();
+  }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    const pods = changes.view.currentValue.config.pods;
+  update() {
+    const pods = this.v.config.pods;
 
     if (pods) {
       this.podStatuses = Object.keys(pods)

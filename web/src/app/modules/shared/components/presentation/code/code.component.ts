@@ -3,34 +3,24 @@ Copyright (c) 2020 the Octant contributors. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { CodeView, View } from 'src/app/modules/shared/models/content';
+import { Component } from '@angular/core';
+import { CodeView } from 'src/app/modules/shared/models/content';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-view-code',
   templateUrl: './code.component.html',
   styleUrls: ['./code.component.scss'],
 })
-export class CodeComponent implements OnChanges {
-  private v: CodeView;
-
-  @Input() set view(v: View) {
-    this.v = v as CodeView;
-  }
-
-  get view() {
-    return this.v;
-  }
-
+export class CodeComponent extends AbstractViewComponent<CodeView> {
   value: string;
 
-  constructor() {}
+  constructor() {
+    super();
+  }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.view.currentValue) {
-      const view = changes.view.currentValue as CodeView;
-      this.value = view.config.value;
-    }
+  update() {
+    this.value = this.v.config.value;
   }
 
   copyToClipboard(text) {

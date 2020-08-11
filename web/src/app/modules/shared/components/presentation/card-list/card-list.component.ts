@@ -1,23 +1,19 @@
-import { Component, Input } from '@angular/core';
-import { CardListView, CardView, View } from '../../../models/content';
+import { Component } from '@angular/core';
+import { CardListView, CardView } from '../../../models/content';
 import { ViewService } from '../../../services/view/view.service';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-view-card-list',
   templateUrl: './card-list.component.html',
   styleUrls: ['./card-list.component.scss'],
 })
-export class CardListComponent {
-  v: CardListView;
-
-  @Input() set view(v: View) {
-    this.v = v as CardListView;
-  }
-  get view() {
-    return this.v;
+export class CardListComponent extends AbstractViewComponent<CardListView> {
+  constructor(private viewService: ViewService) {
+    super();
   }
 
-  constructor(private viewService: ViewService) {}
+  update() {}
 
   identifyCard = (index: number, item: CardView): string => {
     return [index, this.viewService.viewTitleAsText(item)].join(',');

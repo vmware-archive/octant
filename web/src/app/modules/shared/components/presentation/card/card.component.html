@@ -16,11 +16,11 @@
 <ng-template #content>
   <div class="card">
     <div class="card-block">
-      <ng-container *ngIf="view.config.alert">
-        <div class="alert alert-{{ view.config.alert.type }} alert-sm">
+      <ng-container *ngIf="v.config.alert">
+        <div class="alert alert-{{ v.config.alert.type }} alert-sm">
           <div class="alert-item static">
             <span class="alert-text">
-              {{ view.config.alert.message }}
+              {{ v.config.alert.message }}
             </span>
           </div>
         </div>
@@ -29,15 +29,13 @@
         <app-view-title [views]="title"></app-view-title>
       </h4>
 
-      <div [ngSwitch]="body?.metadata.type" class="card-text">
-        <app-content-switcher [view]="body"></app-content-switcher>
+      <div class="card-text">
+        <app-view-container [view]="body"></app-view-container>
       </div>
     </div>
 
-    <div class="card-footer" *ngIf="view.config.actions?.length > 0">
-      <ng-container
-        *ngFor="let action of view.config.actions; trackBy: trackByFn"
-      >
+    <div class="card-footer" *ngIf="v.config.actions?.length > 0">
+      <ng-container *ngFor="let action of v.config.actions; trackBy: trackByFn">
         <button class="btn btn-sm btn-link" (click)="setAction(action)">
           {{ action.name }}
         </button>

@@ -74,35 +74,15 @@ describe('LogsComponent <-> PodsLogsService', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(LogsComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
     service = TestBed.inject(PodLogsService);
     httpClient = TestBed.inject(HttpClient);
     httpTestingController = TestBed.inject(HttpTestingController);
-  });
-
-  it('should render list of containers to choose from', () => {
-    expect(component.selectedContainer).toBe('');
 
     component.view = createTestLogsView([
       'containerA',
       'containerB',
       'containerC',
     ]);
-    fixture.detectChanges();
-
-    const selectOptionsDebugElements: DebugElement[] = fixture.debugElement.queryAll(
-      By.css('.container-select select > option')
-    );
-    expect(selectOptionsDebugElements.length).toBe(3);
-    expect(selectOptionsDebugElements[0].nativeElement.value).toBe(
-      'containerA'
-    );
-    expect(selectOptionsDebugElements[1].nativeElement.value).toBe(
-      'containerB'
-    );
-    expect(selectOptionsDebugElements[2].nativeElement.value).toBe(
-      'containerC'
-    );
   });
 
   it('should allow user to toggle displaying timestamps', () => {
@@ -142,7 +122,7 @@ describe('LogsComponent <-> PodsLogsService', () => {
     );
   });
 
-  it('should continously scroll to new logs if user has already scrolled to the bottom', () => {
+  it('should continuously scroll to new logs if user has already scrolled to the bottom', () => {
     const numberOfEntriesRequiredToScroll = 200;
     component.containerLogs = map(
       range(numberOfEntriesRequiredToScroll),
@@ -223,7 +203,13 @@ describe('LogsComponent <-> PodsLogsService', () => {
     expect(logWrapperNativeElement.scrollTop).toBe(halfwayScrollMark);
   });
 
-  it('should filer messages based on search string', () => {
+  it('should filter messages based on search string', () => {
+    component.view = createTestLogsView([
+      'containerA',
+      'containerB',
+      'containerC',
+    ]);
+
     component.shouldDisplayTimestamp = true;
     component.containerLogs = defaultTestLogs;
     component.filterText = 'message';

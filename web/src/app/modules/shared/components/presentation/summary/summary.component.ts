@@ -2,32 +2,23 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component } from '@angular/core';
 import {
   Action,
   SummaryItem,
   SummaryView,
-  View,
 } from 'src/app/modules/shared/models/content';
 import { FormGroup } from '@angular/forms';
 import { ActionService } from '../../../services/action/action.service';
 import { ViewService } from '../../../services/view/view.service';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-view-summary',
   templateUrl: './summary.component.html',
   styleUrls: ['./summary.component.scss'],
 })
-export class SummaryComponent implements OnChanges {
-  private v: SummaryView;
-
-  @Input() set view(v: View) {
-    this.v = v as SummaryView;
-  }
-  get view() {
-    return this.v;
-  }
-
+export class SummaryComponent extends AbstractViewComponent<SummaryView> {
   title: string;
   isLoading = false;
 
@@ -36,13 +27,13 @@ export class SummaryComponent implements OnChanges {
   constructor(
     private actionService: ActionService,
     private viewService: ViewService
-  ) {}
+  ) {
+    super();
+  }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view.currentValue) {
-      const view: SummaryView = changes.view.currentValue;
-      this.title = this.viewService.viewTitleAsText(view);
-    }
+  update() {
+    const view = this.v;
+    this.title = this.viewService.viewTitleAsText(view);
   }
 
   identifyItem(index: number, item: SummaryItem): string {

@@ -3,7 +3,7 @@
     <clr-signpost>
       <div [ngClass]="[currentStatus, 'indicator']" clrSignpostTrigger></div>
       <clr-signpost-content *clrIfOpen>
-        <app-content-switcher [view]="detail"></app-content-switcher>
+        <app-view-container [view]="detail"></app-view-container>
       </clr-signpost-content>
     </clr-signpost>
   </ng-container>

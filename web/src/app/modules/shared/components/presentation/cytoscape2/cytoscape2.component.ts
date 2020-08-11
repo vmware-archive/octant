@@ -50,7 +50,7 @@ export class Cytoscape2Component implements OnChanges {
   applied = false;
   moveStarted = false;
 
-  constructor(private renderer: Renderer2, private el: ElementRef) {
+  constructor(private renderer: Renderer2) {
     this.layout = this.layout || {
       name: 'grid',
       directed: true,
@@ -90,7 +90,7 @@ export class Cytoscape2Component implements OnChanges {
       localSelect.emit(node.data());
     });
 
-    this.cytoscape.on('layoutstop', e => {
+    this.cytoscape.on('layoutstop', _ => {
       if (!this.applied) {
         this.applied = true;
         this.cytoscape

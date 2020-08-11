@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component } from '@angular/core';
 import {
   QuadrantValue,
   QuadrantView,
-  View,
 } from 'src/app/modules/shared/models/content';
 import { ViewService } from '../../../services/view/view.service';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 const emptyQuadrantValue = { value: '', label: '' };
 
@@ -17,32 +17,23 @@ const emptyQuadrantValue = { value: '', label: '' };
   templateUrl: './quadrant.component.html',
   styleUrls: ['./quadrant.component.scss'],
 })
-export class QuadrantComponent implements OnChanges {
-  private v: QuadrantView;
-
-  @Input() set view(v: View) {
-    this.v = v as QuadrantView;
-  }
-  get view() {
-    return this.v;
-  }
-
+export class QuadrantComponent extends AbstractViewComponent<QuadrantView> {
   title: string;
   nw: QuadrantValue = emptyQuadrantValue;
   ne: QuadrantValue = emptyQuadrantValue;
   sw: QuadrantValue = emptyQuadrantValue;
   se: QuadrantValue = emptyQuadrantValue;
 
-  constructor(private viewService: ViewService) {}
+  constructor(private viewService: ViewService) {
+    super();
+  }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view.currentValue) {
-      const view = changes.view.currentValue as QuadrantView;
-      this.title = this.viewService.viewTitleAsText(view);
-      this.nw = view.config.nw;
-      this.ne = view.config.ne;
-      this.sw = view.config.sw;
-      this.se = view.config.se;
-    }
+  update() {
+    const view = this.v;
+    this.title = this.viewService.viewTitleAsText(view);
+    this.nw = view.config.nw;
+    this.ne = view.config.ne;
+    this.sw = view.config.sw;
+    this.se = view.config.se;
   }
 }

@@ -16,13 +16,11 @@ SPDX-License-Identifier: Apache-2.0 -->
     <clr-icon shape="angle" [class]="animationState"></clr-icon>
   </a>
   <div class="status-view--content" [ngStyle]="contentStyle">
-    <ng-container *ngIf="view?.config.tabs">
-      <app-object-tabs
-        [views]="tabs"
-        [payloads]="payloads"
-        [closable]="true"
-        [extView]="true"
-      ></app-object-tabs>
-    </ng-container>
+    <app-object-tabs
+      [views]="tabs"
+      [payloads]="payloads"
+      [closable]="true"
+      [extView]="true"
+    ></app-object-tabs>
   </div>
 </div>

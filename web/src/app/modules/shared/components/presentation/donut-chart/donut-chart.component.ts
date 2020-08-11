@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Component, Input, OnInit } from '@angular/core';
-import { DonutChartView, DonutSegment, View } from '../../../models/content';
+import { Component, Input } from '@angular/core';
+import { DonutChartView, DonutSegment } from '../../../models/content';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 export interface SegmentDescriptor {
   array: string;
@@ -17,23 +18,16 @@ export interface SegmentDescriptor {
   templateUrl: './donut-chart.component.html',
   styleUrls: ['./donut-chart.component.scss'],
 })
-export class DonutChartComponent implements OnInit {
-  v: DonutChartView;
-  scale: string;
-
-  @Input() set view(v: View) {
-    this.v = v as DonutChartView;
-  }
-  get view() {
-    return this.v;
-  }
-
+export class DonutChartComponent extends AbstractViewComponent<DonutChartView> {
   @Input() circumference = 100;
   height = 42;
+  scale: string;
 
-  constructor() {}
+  constructor() {
+    super();
+  }
 
-  ngOnInit() {
+  update() {
     if (this.v?.config?.size) {
       this.scale = String(this.v.config.size) + '%';
     }

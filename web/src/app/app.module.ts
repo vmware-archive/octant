@@ -1,7 +1,7 @@
 // Copyright (c) 2019 the Octant contributors. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { Location } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { Injectable, NgModule } from '@angular/core';
 import { RouteReuseStrategy, RouterModule } from '@angular/router';
@@ -10,7 +10,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { highlightProvider } from './modules/shared/highlight';
-import { MonacoEditorModule, MonacoProviderService } from 'ng-monaco-editor';
+import { MonacoEditorModule } from 'ng-monaco-editor';
 import { ComponentReuseStrategy } from './modules/shared/component-reuse.strategy';
 
 @Injectable()
@@ -23,6 +23,7 @@ export class UnstripTrailingSlashLocation extends Location {
 @NgModule({
   declarations: [HomeComponent],
   imports: [
+    CommonModule,
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
