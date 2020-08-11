@@ -7,7 +7,7 @@ import {
   NoopAnimationsModule,
 } from '@angular/platform-browser/animations';
 import { WebsocketService } from '../../../services/websocket/websocket.service';
-import { anything, instance, mock, verify } from 'ts-mockito';
+import { anything, deepEqual, instance, mock, verify } from 'ts-mockito';
 
 describe('StepperComponent', () => {
   let component: StepperComponent;
@@ -72,6 +72,14 @@ describe('StepperComponent', () => {
     nextButton.click();
     fixture.detectChanges();
 
-    verify(mockWebsocketService.sendMessage(action, anything())).once();
+    verify(
+      mockWebsocketService.sendMessage(
+        'action.octant.dev/performAction',
+        deepEqual({
+          action,
+          formGroup: anything(),
+        })
+      )
+    ).once();
   });
 });
