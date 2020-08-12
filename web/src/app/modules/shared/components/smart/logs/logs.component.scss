@@ -3,7 +3,8 @@
  */
 
 .app-logs {
-  height: calc(100% - 140px);
+  display: flex;
+  flex-direction: column;
 
   .log-actions {
     display: flex;
@@ -67,7 +68,7 @@
     }
   }
   .container-logs {
-    height: 100%;
+    flex-grow: 1;
     border: 1px solid #ccc;
     border-radius: 4px;
 
