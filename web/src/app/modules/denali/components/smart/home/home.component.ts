@@ -2,7 +2,7 @@ import { Component, OnInit, Renderer2 } from '@angular/core';
 import {
   darkTheme,
   ThemeService,
-} from '../../../../sugarloaf/components/smart/theme-switch/theme-switch.service';
+} from '../../../../shared/services/theme/theme.service';
 import { MonacoProviderService } from 'ng-monaco-editor';
 
 @Component({

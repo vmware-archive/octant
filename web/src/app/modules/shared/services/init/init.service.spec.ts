@@ -1,6 +1,6 @@
 import { inject, TestBed } from '@angular/core/testing';
 import { InitService } from './init.service';
-import { ThemeService } from '../../../sugarloaf/components/smart/theme-switch/theme-switch.service';
+import { ThemeService } from '../theme/theme.service';
 import { MonacoEditorConfig, MonacoProviderService } from 'ng-monaco-editor';
 
 describe('InitService', () => {

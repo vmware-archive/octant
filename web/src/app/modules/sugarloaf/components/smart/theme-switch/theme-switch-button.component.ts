@@ -1,34 +1,38 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { Component, Input, OnInit } from '@angular/core';
-import { ThemeService } from './theme-switch.service';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { ThemeService } from '../../../../shared/services/theme/theme.service';
 
 @Component({
   selector: 'app-theme-switch-button',
   templateUrl: './theme-switch-button.component.html',
   styleUrls: ['./theme-switch-button.component.scss'],
-  providers: [ThemeService],
 })
-export class ThemeSwitchButtonComponent implements OnInit {
+export class ThemeSwitchButtonComponent implements OnInit, OnDestroy {
   @Input() public collapsed: boolean;
 
   lightThemeEnabled: boolean;
 
-  constructor(private themeService: ThemeService) {}
+  private onThemeChange: () => void;
 
-  ngOnInit() {
-    this.lightThemeEnabled = this.themeService.isLightThemeEnabled();
+  constructor(private themeService: ThemeService) {
+    // we want a new instance of the handler for each component instance
+    this.onThemeChange = () => {
+      this.lightThemeEnabled = this.themeService.isLightThemeEnabled();
+    };
+    this.onThemeChange();
   }
 
-  switchTheme(): Promise<any> {
-    return this.themeService
-      .switchTheme()
-      .then(() => {
-        this.lightThemeEnabled = this.themeService.isLightThemeEnabled();
-      })
-      .catch(e => {
-        console.error('Unable to switch theme:', e);
-      });
+  ngOnInit() {
+    this.themeService.onChange(this.onThemeChange);
+  }
+
+  ngOnDestroy() {
+    this.themeService.offChange(this.onThemeChange);
+  }
+
+  switchTheme(): void {
+    this.themeService.switchTheme();
   }
 }
