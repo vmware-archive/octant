@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import { inject, TestBed } from '@angular/core/testing';
-import { ThemeService } from './theme-switch.service';
+import { ThemeService } from './theme.service';
 import { DOCUMENT } from '@angular/common';
 import { MonacoEditorConfig, MonacoProviderService } from 'ng-monaco-editor';
 

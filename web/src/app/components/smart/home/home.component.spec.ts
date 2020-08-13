@@ -1,36 +1,28 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HomeComponent } from './home.component';
-import {
-  MonacoEditorComponent,
-  MonacoProviderService,
-  MonacoEditorConfig,
-} from 'ng-monaco-editor';
-import { themeServiceStub } from 'src/app/testing/theme-service-stub';
-import { ThemeService } from 'src/app/modules/sugarloaf/components/smart/theme-switch/theme-switch.service';
+import { initServiceStub } from 'src/app/testing/init-service-stub';
+import { InitService } from 'src/app/modules/shared/services/init/init.service';
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
-  let themeService: ThemeService;
+  let initService: InitService;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       providers: [
         {
-          provide: ThemeService,
-          useValue: themeServiceStub,
+          provide: InitService,
+          useValue: initServiceStub,
         },
-        MonacoProviderService,
-        MonacoEditorComponent,
-        MonacoEditorConfig,
       ],
       declarations: [HomeComponent],
     }).compileComponents();
   }));
 
   beforeEach(() => {
-    themeService = TestBed.inject(ThemeService);
+    initService = TestBed.inject(InitService);
 
     fixture = TestBed.createComponent(HomeComponent);
     component = fixture.componentInstance;
@@ -41,11 +33,10 @@ describe('HomeComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load light theme when component mounts', () => {
-    spyOn(themeService, 'loadTheme').and.returnValue(Promise.resolve());
+  it('should initialize when component mounts', () => {
+    spyOn(initService, 'init');
     component.ngOnInit();
 
-    expect(themeService.isLightThemeEnabled()).toBeTruthy();
-    expect(themeService.loadTheme).toHaveBeenCalled();
+    expect(initService.init).toHaveBeenCalled();
   });
 });

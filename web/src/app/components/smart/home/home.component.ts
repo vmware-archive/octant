@@ -1,5 +1,5 @@
 import { Component, OnInit, Renderer2 } from '@angular/core';
-import { ThemeService } from 'src/app/modules/sugarloaf/components/smart/theme-switch/theme-switch.service';
+import { InitService } from '../../../modules/shared/services/init/init.service';
 import { ElectronService } from '../../../modules/shared/services/electron/electron.service';
 
 @Component({
@@ -10,14 +10,12 @@ import { ElectronService } from '../../../modules/shared/services/electron/elect
 export class HomeComponent implements OnInit {
   constructor(
     private renderer: Renderer2,
-    private themeService: ThemeService,
+    private initService: InitService,
     private electronService: ElectronService
   ) {}
 
   ngOnInit() {
-    this.themeService.loadTheme().catch(e => {
-      console.error('Unable to load theme:', e);
-    });
+    this.initService.init();
 
     if (this.electronService.isElectron()) {
       this.renderer.addClass(document.body, 'electron');

@@ -3,29 +3,24 @@
 //
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ThemeSwitchButtonComponent } from './theme-switch-button.component';
-import { ThemeService } from './theme-switch.service';
+import { ThemeService } from '../../../../shared/services/theme/theme.service';
 import { themeServiceStub } from 'src/app/testing/theme-service-stub';
 import { By } from '@angular/platform-browser';
-import { MonacoEditorConfig, MonacoProviderService } from 'ng-monaco-editor';
 
 describe('ThemeSwitchButtonComponent', () => {
   let component: ThemeSwitchButtonComponent;
   let fixture: ComponentFixture<ThemeSwitchButtonComponent>;
-  let monacoService: MonacoProviderService;
+  let themeService: ThemeService;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ThemeSwitchButtonComponent],
-      providers: [
-        { provide: ThemeService, useValue: themeServiceStub },
-        MonacoEditorConfig,
-        MonacoProviderService,
-      ],
+      providers: [{ provide: ThemeService, useValue: themeServiceStub }],
     }).compileComponents();
   }));
 
   beforeEach(() => {
-    monacoService = TestBed.inject(MonacoProviderService);
+    themeService = TestBed.inject(ThemeService);
 
     fixture = TestBed.createComponent(ThemeSwitchButtonComponent);
     component = fixture.componentInstance;
@@ -35,18 +30,12 @@ describe('ThemeSwitchButtonComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should switch theme', async () => {
-    spyOn(monacoService, 'initMonaco').and.returnValue(Promise.resolve());
+  it('should switch theme', () => {
+    spyOn(themeService, 'switchTheme');
 
-    await component.switchTheme();
+    component.switchTheme();
 
-    expect(localStorage.getItem('theme')).toBe('dark');
-    expect(component.lightThemeEnabled).toBe(false);
-
-    await component.switchTheme();
-
-    expect(localStorage.getItem('theme')).toBe('light');
-    expect(component.lightThemeEnabled).toBe(true);
+    expect(themeService.switchTheme).toHaveBeenCalled();
   });
 
   it('should render the right button', () => {

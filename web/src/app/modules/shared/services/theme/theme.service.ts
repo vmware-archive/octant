@@ -9,7 +9,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { MonacoProviderService } from 'ng-monaco-editor';
+import { EventEmitter } from 'events';
 
 export type ThemeType = 'light' | 'dark';
 
@@ -40,15 +40,17 @@ export const defaultTheme = lightTheme;
   providedIn: 'root',
 })
 export class ThemeService implements OnDestroy {
+  private emitter: EventEmitter;
   private themeType: ThemeType;
   private renderer: Renderer2;
   private storageEventHandler: (e: StorageEvent) => void;
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
-    private monacoService: MonacoProviderService,
     rendererFactory: RendererFactory2
   ) {
+    this.emitter = new EventEmitter();
+
     const themeType = localStorage.getItem('theme') as ThemeType;
     this.themeType = themeType || defaultTheme.type;
     this.renderer = rendererFactory.createRenderer(null, null);
@@ -56,9 +58,7 @@ export class ThemeService implements OnDestroy {
     this.storageEventHandler = (e: StorageEvent): void => {
       if (e.key === 'theme' && e.newValue !== this.themeType) {
         // another window switched the theme
-        this.switchTheme().catch(err => {
-          console.error('Unable to switch theme:', err);
-        });
+        this.switchTheme();
       }
     };
     addEventListener('storage', this.storageEventHandler);
@@ -86,7 +86,7 @@ export class ThemeService implements OnDestroy {
     }
   }
 
-  loadTheme(): Promise<any> {
+  loadTheme(): void {
     const currentTheme = this.isLightThemeEnabled() ? lightTheme : darkTheme;
     this.loadCSS(currentTheme.assetPath);
 
@@ -94,24 +94,25 @@ export class ThemeService implements OnDestroy {
       this.renderer.removeClass(this.document.body, t.type)
     );
     this.renderer.addClass(this.document.body, currentTheme.type);
-
-    return this.monacoService.initMonaco().then(() => {
-      // make sure the theme is loaded after monaco is initialized,
-      // calls to monacoService.changeTheme before now are silently ignored
-      this.monacoService.changeTheme(
-        this.isLightThemeEnabled() ? 'vs' : 'vs-dark'
-      );
-    });
   }
 
-  switchTheme(): Promise<any> {
+  switchTheme(): void {
     this.themeType = this.isLightThemeEnabled() ? 'dark' : 'light';
     localStorage.setItem('theme', this.themeType);
+    this.loadTheme();
 
-    return this.loadTheme();
+    this.emitter.emit('change');
   }
 
   isLightThemeEnabled(): boolean {
     return this.themeType === lightTheme.type;
+  }
+
+  onChange(listener: () => void): void {
+    this.emitter.on('change', listener);
+  }
+
+  offChange(listener: () => void): void {
+    this.emitter.off('change', listener);
   }
 }
