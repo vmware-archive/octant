@@ -34,7 +34,7 @@ type ContentManagerOption func(manager *ContentManager)
 
 // ContentGenerateFunc is a function that generates content. It returns `rerun=true`
 // if the action should be be immediately rerun.
-type ContentGenerateFunc func(ctx context.Context, state octant.State, s OctantClient) (Content, bool, error)
+type ContentGenerateFunc func(ctx context.Context, state octant.State) (Content, bool, error)
 
 type Content struct {
 	Response component.ContentResponse
@@ -116,7 +116,7 @@ func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFu
 			return false
 		}
 
-		content, _, err := cm.contentGenerateFunc(ctx, state, s)
+		content, _, err := cm.contentGenerateFunc(ctx, state)
 		if err != nil {
 			var ae *oerrors.AccessError
 			if errors.As(err, &ae) {
@@ -145,7 +145,7 @@ func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFu
 	}
 }
 
-func (cm *ContentManager) generateContent(ctx context.Context, state octant.State, s OctantClient) (Content, bool, error) {
+func (cm *ContentManager) generateContent(ctx context.Context, state octant.State) (Content, bool, error) {
 	contentPath := state.GetContentPath()
 	logger := cm.logger.With("contentPath", contentPath)
 
@@ -163,7 +163,7 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 		LabelSet: FiltersToLabelSet(state.GetFilters()),
 	}
 
-	ctx = ocontext.WithWebsocketClientID(ctx, s.ID())
+	ctx = ocontext.WithWebsocketClientID(ctx, state.GetClientID())
 
 	contentResponse, err := m.Content(ctx, modulePath, options)
 	if err != nil {

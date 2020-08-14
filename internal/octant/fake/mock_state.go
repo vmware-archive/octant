@@ -63,6 +63,20 @@ func (mr *MockStateMockRecorder) Dispatch(arg0, arg1, arg2 interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Dispatch", reflect.TypeOf((*MockState)(nil).Dispatch), arg0, arg1, arg2)
 }
 
+// GetClientID mocks base method
+func (m *MockState) GetClientID() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetClientID")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetClientID indicates an expected call of GetClientID
+func (mr *MockStateMockRecorder) GetClientID() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClientID", reflect.TypeOf((*MockState)(nil).GetClientID))
+}
+
 // GetContentPath mocks base method
 func (m *MockState) GetContentPath() string {
 	m.ctrl.T.Helper()

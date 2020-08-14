@@ -384,6 +384,13 @@ func (c *WebsocketState) SendAlert(alert action.Alert) {
 	c.wsClient.Send(CreateAlertUpdate(alert))
 }
 
+func (c *WebsocketState) GetClientID() string {
+	if c.wsClient == nil {
+		return ""
+	}
+	return c.wsClient.ID()
+}
+
 func updateContentPathNamespace(in, namespace string) string {
 	parts := strings.Split(in, "/")
 	if in == "" {
