@@ -2,6 +2,7 @@ syntax = "proto3";
 package proto;
 
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
 
 message Empty {}
 
@@ -57,6 +58,13 @@ message NamespacesResponse {
     repeated string namespaces = 1;
 }
 
+message AlertRequest {
+    string type = 1;
+    string message = 2;
+    google.protobuf.Timestamp expiration = 3;
+    string clientID = 4;
+}
+
 service Dashboard {
     rpc List(KeyRequest) returns (ListResponse);
     rpc Get(KeyRequest) returns (GetResponse);
@@ -66,4 +74,5 @@ service Dashboard {
     rpc CancelPortForward(CancelPortForwardRequest) returns (Empty);
     rpc ListNamespaces(Empty) returns (NamespacesResponse);
     rpc ForceFrontendUpdate(Empty) returns(Empty);
+    rpc SendAlert(AlertRequest) returns(Empty);
 }

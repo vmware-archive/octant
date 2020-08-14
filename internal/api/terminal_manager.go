@@ -11,6 +11,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/pkg/errors"
 
 	"github.com/vmware-tanzu/octant/internal/config"
@@ -90,7 +92,7 @@ func (s *terminalStateManager) SetActiveTerminal(state octant.State, payload act
 		return fmt.Errorf("getting containerName from payload: %w", err)
 	}
 
-	eventType := octant.NewTerminalEventType(namespace, podName, containerName)
+	eventType := event.NewTerminalEventType(namespace, podName, containerName)
 	key := store.KeyFromGroupVersionKind(gvk.Pod)
 	key.Name = podName
 	key.Namespace = namespace
@@ -102,7 +104,7 @@ func (s *terminalStateManager) SetActiveTerminal(state octant.State, payload act
 			return nil
 		}
 		// Remove old terminal instance
-		prevEventType := octant.NewTerminalEventType(s.instance.Key().Namespace, s.instance.Key().Name, s.instance.Container())
+		prevEventType := event.NewTerminalEventType(s.instance.Key().Namespace, s.instance.Key().Name, s.instance.Container())
 		val, ok := s.terminalSubscriptions.Load(eventType)
 		if ok {
 			cancelFn, ok := val.(context.CancelFunc)
@@ -132,7 +134,7 @@ func (s *terminalStateManager) startStream(key store.Key, container string) cont
 	ctx, cancelFn := context.WithCancel(s.ctx)
 	logger := log.From(s.ctx).With("startStream", container)
 
-	eventType := octant.NewTerminalEventType(key.Namespace, key.Name, container)
+	eventType := event.NewTerminalEventType(key.Namespace, key.Name, container)
 
 	instance, err := terminal.NewTerminalInstance(ctx, s.config.ClusterClient(), logger, key, container, "/bin/sh", s.chanInstance)
 	if err != nil {
@@ -186,7 +188,7 @@ func (s *terminalStateManager) Start(ctx context.Context, state octant.State, cl
 	s.ctx = ctx
 }
 
-func (s *terminalStateManager) sendTerminalEvents(ctx context.Context, terminalEventType octant.EventType, instance terminal.Instance, terminalCh <-chan terminal.Instance) {
+func (s *terminalStateManager) sendTerminalEvents(ctx context.Context, terminalEventType event.EventType, instance terminal.Instance, terminalCh <-chan terminal.Instance) {
 	ctx, cancelFn := context.WithCancel(s.ctx)
 	for {
 		select {
@@ -206,20 +208,20 @@ func (s *terminalStateManager) sendTerminalEvents(ctx context.Context, terminalE
 	}
 }
 
-func newEvent(ctx context.Context, t terminal.Instance, sendScrollback bool) (octant.Event, error) {
+func newEvent(ctx context.Context, t terminal.Instance, sendScrollback bool) (event.Event, error) {
 	line, err := t.Read(readBufferSize)
 	if err != nil {
 		t.SetExitMessage(fmt.Sprintf("%v\n", err))
 		t.Stop()
-		return octant.Event{}, errors.Wrap(err, "read error")
+		return event.Event{}, errors.Wrap(err, "read error")
 	}
 
 	if line == nil && !sendScrollback {
-		return octant.Event{}, errors.New("no scrollback or line")
+		return event.Event{}, errors.New("no scrollback or line")
 	}
 
 	key := t.Key()
-	eventType := octant.NewTerminalEventType(key.Namespace, key.Name, t.Container())
+	eventType := event.NewTerminalEventType(key.Namespace, key.Name, t.Container())
 	data := terminalOutput{Line: line}
 
 	if sendScrollback {
@@ -236,7 +238,7 @@ func newEvent(ctx context.Context, t terminal.Instance, sendScrollback bool) (oc
 		}
 	}
 
-	return octant.Event{
+	return event.Event{
 		Type: eventType,
 		Data: data,
 		Err:  nil,

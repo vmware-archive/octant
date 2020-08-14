@@ -9,6 +9,8 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/vmware-tanzu/octant/pkg/plugin/api"
+
 	"github.com/google/uuid"
 
 	"github.com/vmware-tanzu/octant/internal/config"
@@ -22,6 +24,7 @@ type ClientManager interface {
 	Clients() []*WebsocketClient
 	ClientFromRequest(dashConfig config.Dash, w http.ResponseWriter, r *http.Request) (*WebsocketClient, error)
 	TemporaryClientFromLoadingRequest(w http.ResponseWriter, r *http.Request) (*WebsocketClient, error)
+	Get(id string) api.WSEventSender
 }
 
 type clientMeta struct {
@@ -140,4 +143,13 @@ func (m *WebsocketClientManager) TemporaryClientFromLoadingRequest(w http.Respon
 	}
 
 	return client, nil
+}
+
+func (m *WebsocketClientManager) Get(id string) api.WSEventSender {
+	for _, client := range m.Clients() {
+		if id == client.ID() {
+			return client
+		}
+	}
+	return nil
 }

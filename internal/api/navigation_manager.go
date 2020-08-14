@@ -12,6 +12,8 @@ import (
 	"fmt"
 	"sync"
 
+	oevent "github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 
@@ -164,9 +166,9 @@ func NavigationGenerator(ctx context.Context, state octant.State, config Navigat
 }
 
 // CreateNavigationEvent creates a namespaces event.
-func CreateNavigationEvent(sections []navigation.Navigation, defaultPath string) octant.Event {
-	return octant.Event{
-		Type: octant.EventTypeNavigation,
+func CreateNavigationEvent(sections []navigation.Navigation, defaultPath string) oevent.Event {
+	return oevent.Event{
+		Type: oevent.EventTypeNavigation,
 		Data: map[string]interface{}{
 			"sections":    sections,
 			"defaultPath": defaultPath,

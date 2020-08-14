@@ -12,6 +12,9 @@ import (
 	"strings"
 	"time"
 
+	ocontext "github.com/vmware-tanzu/octant/internal/context"
+	oevent "github.com/vmware-tanzu/octant/pkg/event"
+
 	oerrors "github.com/vmware-tanzu/octant/internal/errors"
 	"github.com/vmware-tanzu/octant/internal/event"
 	internalLog "github.com/vmware-tanzu/octant/internal/log"
@@ -159,6 +162,9 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 	options := module.ContentOptions{
 		LabelSet: FiltersToLabelSet(state.GetFilters()),
 	}
+
+	ctx = ocontext.WithWebsocketClientID(ctx, state.GetClientID())
+
 	contentResponse, err := m.Content(ctx, modulePath, options)
 	if err != nil {
 		if nfe, ok := err.(notFound); ok && nfe.NotFound() {
@@ -249,9 +255,9 @@ type notFound interface {
 }
 
 // CreateContentEvent creates a content event.
-func CreateContentEvent(contentResponse component.ContentResponse, namespace, contentPath string, queryParams map[string][]string) octant.Event {
-	return octant.Event{
-		Type: octant.EventTypeContent,
+func CreateContentEvent(contentResponse component.ContentResponse, namespace, contentPath string, queryParams map[string][]string) oevent.Event {
+	return oevent.Event{
+		Type: oevent.EventTypeContent,
 		Data: map[string]interface{}{
 			"content":     contentResponse,
 			"namespace":   namespace,

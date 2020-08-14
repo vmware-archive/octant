@@ -10,6 +10,8 @@ import (
 	"context"
 	"encoding/json"
 
+	oevent "github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/event"
 	"github.com/vmware-tanzu/octant/internal/log"
@@ -20,7 +22,7 @@ import (
 type HelperStateManagerOption func(manager *HelperStateManager)
 
 // HelperGenerateFunc is a function which generates a helper event
-type HelperGenerateFunc func(ctx context.Context, state octant.State) (octant.Event, error)
+type HelperGenerateFunc func(ctx context.Context, state octant.State) (oevent.Event, error)
 
 // WithHelperGenerator sets the helper generator
 func WithHelperGenerator(fn HelperGenerateFunc) HelperStateManagerOption {
@@ -100,10 +102,10 @@ func (h *HelperStateManager) runUpdate(state octant.State, client OctantClient) 
 	}
 }
 
-func (h *HelperStateManager) generateContexts(ctx context.Context, state octant.State) (octant.Event, error) {
+func (h *HelperStateManager) generateContexts(ctx context.Context, state octant.State) (oevent.Event, error) {
 	generator, err := h.initGenerator(state)
 	if err != nil {
-		return octant.Event{}, err
+		return oevent.Event{}, err
 	}
 	return generator.Event(ctx)
 }

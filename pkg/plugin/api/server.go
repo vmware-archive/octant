@@ -9,12 +9,15 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
+	ocontext "github.com/vmware-tanzu/octant/internal/context"
+	"github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/internal/portforward"
+	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
@@ -48,6 +51,7 @@ type Service interface {
 	Update(ctx context.Context, object *unstructured.Unstructured) error
 	Create(ctx context.Context, object *unstructured.Unstructured) error
 	ForceFrontendUpdate(ctx context.Context) error
+	SendAlert(ctx context.Context, clientID string, alert action.Alert) error
 }
 
 // FrontendUpdateController can control the frontend. ie. the web gui
@@ -71,13 +75,22 @@ func (proxy *FrontendProxy) ForceFrontendUpdate() error {
 
 // GRPCService is an implementation of the dashboard service based on GRPC.
 type GRPCService struct {
-	ObjectStore        store.Store
-	PortForwarder      portforward.PortForwarder
-	FrontendProxy      FrontendProxy
-	NamespaceInterface cluster.NamespaceInterface
+	ObjectStore            store.Store
+	PortForwarder          portforward.PortForwarder
+	FrontendProxy          FrontendProxy
+	NamespaceInterface     cluster.NamespaceInterface
+	WebsocketClientManager WSClientGetter
 }
 
 var _ Service = (*GRPCService)(nil)
+
+type WSClientGetter interface {
+	Get(id string) WSEventSender
+}
+
+type WSEventSender interface {
+	Send(event event.Event)
+}
 
 // List lists objects.
 func (s *GRPCService) List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error) {
@@ -142,6 +155,30 @@ func (s *GRPCService) ListNamespaces(ctx context.Context) (NamespacesResponse, e
 
 func (s *GRPCService) ForceFrontendUpdate(ctx context.Context) error {
 	return s.FrontendProxy.ForceFrontendUpdate()
+}
+
+// SendAlert sends an alert
+func (s *GRPCService) SendAlert(ctx context.Context, clientID string, alert action.Alert) error {
+	event := event.CreateEvent(event.EventTypeAlert, action.Payload{
+		"type":       alert.Type,
+		"message":    alert.Message,
+		"expiration": alert.Expiration,
+	})
+	if s.WebsocketClientManager == nil {
+		return fmt.Errorf("websocket client manager is nil")
+	}
+
+	if clientID == "" {
+		return fmt.Errorf("no websocket client id")
+	}
+
+	sender := s.WebsocketClientManager.Get(clientID)
+	if sender == nil {
+		return fmt.Errorf("unable to find ws client %s", ocontext.WebsocketClientIDFrom(ctx))
+	}
+
+	sender.Send(event)
+	return nil
 }
 
 func NewGRPCServer(service Service) *grpcServer {
@@ -218,7 +255,7 @@ func (c *grpcServer) Update(ctx context.Context, in *proto.UpdateRequest) (*prot
 	}
 
 	if object == nil {
-		return &proto.UpdateResponse{}, errors.Errorf("can't update an object that doesn't exist")
+		return &proto.UpdateResponse{}, fmt.Errorf("can't update an object that doesn't exist")
 	}
 
 	if err := c.service.Update(ctx, object); err != nil {
@@ -269,7 +306,7 @@ func (c *grpcServer) PortForward(ctx context.Context, in *proto.PortForwardReque
 // CancelPortForward cancels a port forward.
 func (c *grpcServer) CancelPortForward(ctx context.Context, in *proto.CancelPortForwardRequest) (*proto.Empty, error) {
 	if in == nil {
-		return nil, errors.New("request is nil")
+		return nil, fmt.Errorf("request is nil")
 	}
 
 	c.service.CancelPortForward(ctx, in.PortForwardID)
@@ -295,5 +332,16 @@ func (c *grpcServer) ForceFrontendUpdate(ctx context.Context, _ *proto.Empty) (*
 		return nil, err
 	}
 
+	return &proto.Empty{}, nil
+}
+
+// SendAlert sends an alert
+func (c *grpcServer) SendAlert(ctx context.Context, in *proto.AlertRequest) (*proto.Empty, error) {
+	alert, err := convertToAlert(in)
+	if err != nil {
+		return nil, err
+	}
+
+	c.service.SendAlert(ctx, in.ClientID, alert)
 	return &proto.Empty{}, nil
 }

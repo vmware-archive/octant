@@ -6,12 +6,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	"github.com/vmware-tanzu/octant/internal/modules/overview/container"
-	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
@@ -42,7 +43,7 @@ func TestContainerLogs_SendLogEventsStops(t *testing.T) {
 		Name:      "test-pod",
 	}
 
-	eventType := octant.NewLoggingEventType(key.Namespace, key.Name)
+	eventType := event.NewLoggingEventType(key.Namespace, key.Name)
 	logCh := make(chan container.LogEntry)
 
 	s := NewPodLogsStateManager(dashConfig)
@@ -74,7 +75,7 @@ func TestContainerLogs_SendLogEventsClientSend(t *testing.T) {
 		Name:      "test-pod",
 	}
 
-	eventType := octant.NewLoggingEventType(key.Namespace, key.Name)
+	eventType := event.NewLoggingEventType(key.Namespace, key.Name)
 	logCh := make(chan container.LogEntry, 1)
 
 	s := NewPodLogsStateManager(dashConfig)
@@ -104,7 +105,7 @@ func TestContainerLogs_SendLogEventsClientSend(t *testing.T) {
 }
 
 type octantClient struct {
-	sendCalledWith octant.Event
+	sendCalledWith event.Event
 	ch             chan bool
 }
 
@@ -114,7 +115,7 @@ func newOctantClient() *octantClient {
 	}
 }
 
-func (oc *octantClient) Send(event octant.Event) {
+func (oc *octantClient) Send(event event.Event) {
 	oc.sendCalledWith = event
 	oc.ch <- true
 }

@@ -10,6 +10,8 @@ import (
 	"context"
 	"encoding/json"
 
+	oevent "github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/pkg/errors"
 
 	"github.com/vmware-tanzu/octant/internal/config"
@@ -26,7 +28,7 @@ const (
 type ContextManagerOption func(manager *ContextManager)
 
 // ContextGenerateFunc is a function which generates a context event.
-type ContextGenerateFunc func(ctx context.Context, state octant.State) (octant.Event, error)
+type ContextGenerateFunc func(ctx context.Context, state octant.State) (oevent.Event, error)
 
 // WithContextGenerator sets the context generator.
 func WithContextGenerator(fn ContextGenerateFunc) ContextManagerOption {
@@ -119,10 +121,10 @@ func (c *ContextManager) runUpdate(state octant.State, s OctantClient) PollerFun
 	}
 }
 
-func (c *ContextManager) generateContexts(ctx context.Context, state octant.State) (octant.Event, error) {
+func (c *ContextManager) generateContexts(ctx context.Context, state octant.State) (oevent.Event, error) {
 	generator, err := c.initGenerator(state)
 	if err != nil {
-		return octant.Event{}, err
+		return oevent.Event{}, err
 	}
 	return generator.Event(ctx)
 }

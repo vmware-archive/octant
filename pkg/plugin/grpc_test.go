@@ -233,7 +233,8 @@ func Test_GRPCClient_PrintTab(t *testing.T) {
 		objectData, err := json.Marshal(object)
 		require.NoError(t, err)
 		objectRequest := &dashboard.ObjectRequest{
-			Object: objectData,
+			Object:   objectData,
+			ClientID: "",
 		}
 
 		layout := flexlayout.New()

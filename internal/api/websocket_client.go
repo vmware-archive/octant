@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"golang.org/x/sync/errgroup"
@@ -40,7 +42,7 @@ const (
 // WebsocketClient manages websocket clients.
 type WebsocketClient struct {
 	conn       *websocket.Conn
-	send       chan octant.Event
+	send       chan event.Event
 	dashConfig config.Dash
 	logger     log.Logger
 	ctx        context.Context
@@ -67,7 +69,7 @@ func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *Webs
 		cancel:     cancel,
 		conn:       conn,
 		id:         id,
-		send:       make(chan octant.Event),
+		send:       make(chan event.Event),
 		manager:    manager,
 		dashConfig: dashConfig,
 		logger:     logger,
@@ -101,7 +103,7 @@ func NewTemporaryWebsocketClient(ctx context.Context, conn *websocket.Conn, mana
 		cancel:   cancel,
 		conn:     conn,
 		id:       id,
-		send:     make(chan octant.Event),
+		send:     make(chan event.Event),
 		manager:  manager,
 		logger:   logger,
 		handlers: make(map[string][]octant.ClientRequestHandler),
@@ -184,7 +186,7 @@ func (c *WebsocketClient) handle(message []byte) error {
 	}
 
 	if err := g.Wait(); err != nil {
-		c.Send(CreateEvent("handlerError", action.Payload{
+		c.Send(event.CreateEvent("handlerError", action.Payload{
 			"requestType": request.Type,
 			"error":       err.Error(),
 		}))
@@ -204,7 +206,7 @@ func (c *WebsocketClient) handleUnknownRequest(request websocketRequest) error {
 		"message": message,
 		"payload": request.Payload,
 	}
-	c.Send(CreateEvent(octant.EventTypeUnknown, m))
+	c.Send(event.CreateEvent(event.EventTypeUnknown, m))
 	return nil
 }
 
@@ -263,7 +265,7 @@ func (c *WebsocketClient) writePump() {
 	}
 }
 
-func (c *WebsocketClient) Send(ev octant.Event) {
+func (c *WebsocketClient) Send(ev event.Event) {
 	if c.isOpen {
 		c.send <- ev
 	}
@@ -276,11 +278,4 @@ func (c *WebsocketClient) RegisterHandler(handler octant.ClientRequestHandler) {
 type websocketRequest struct {
 	Type    string         `json:"type"`
 	Payload action.Payload `json:"payload"`
-}
-
-func CreateEvent(eventType octant.EventType, fields action.Payload) octant.Event {
-	return octant.Event{
-		Type: eventType,
-		Data: fields,
-	}
 }

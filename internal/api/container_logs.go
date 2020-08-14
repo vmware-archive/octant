@@ -12,6 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/pkg/store"
 
@@ -79,7 +81,7 @@ func (s *podLogsStateManager) StreamPodLogsSubscribe(_ octant.State, payload act
 		return fmt.Errorf("getting containerName from payload: %w", err)
 	}
 
-	eventType := octant.NewLoggingEventType(namespace, podName)
+	eventType := event.NewLoggingEventType(namespace, podName)
 	val, ok := s.podLogSubscriptions.Load(eventType)
 	if ok {
 		cancelFn, ok := val.(context.CancelFunc)
@@ -115,7 +117,7 @@ func (s *podLogsStateManager) StreamPodLogsUnsubscribe(_ octant.State, payload a
 		return fmt.Errorf("getting podName from payload: %w", err)
 	}
 
-	eventType := octant.NewLoggingEventType(namespace, podName)
+	eventType := event.NewLoggingEventType(namespace, podName)
 	val, ok := s.podLogSubscriptions.Load(eventType)
 	if ok {
 		cancelFn, ok := val.(context.CancelFunc)
@@ -133,7 +135,7 @@ func (s *podLogsStateManager) Start(ctx context.Context, _ octant.State, client 
 	s.ctx = ctx
 }
 
-func (s *podLogsStateManager) streamEventsToClient(ctx context.Context, logEventType octant.EventType, logCh <-chan container.LogEntry) {
+func (s *podLogsStateManager) streamEventsToClient(ctx context.Context, logEventType event.EventType, logCh <-chan container.LogEntry) {
 	done := false
 	for !done {
 		select {
@@ -142,7 +144,7 @@ func (s *podLogsStateManager) streamEventsToClient(ctx context.Context, logEvent
 		case entry, ok := <-logCh:
 			if ok {
 				le := newLogEntry(entry.Line(), entry.Container())
-				logEvent := octant.Event{
+				logEvent := event.Event{
 					Type: logEventType,
 					Data: le,
 					Err:  nil,
@@ -158,7 +160,7 @@ func (s *podLogsStateManager) streamEventsToClient(ctx context.Context, logEvent
 func (s *podLogsStateManager) startStream(key store.Key, logStreamer container.LogStreamer) context.CancelFunc {
 	ctx, cancelFn := context.WithCancel(s.ctx)
 
-	eventType := octant.NewLoggingEventType(key.Namespace, key.Name)
+	eventType := event.NewLoggingEventType(key.Namespace, key.Name)
 	logCh := make(chan container.LogEntry)
 	go s.streamEventsToClient(ctx, eventType, logCh)
 

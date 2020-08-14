@@ -8,12 +8,14 @@ package api
 import (
 	"encoding/json"
 
+	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 
+	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
@@ -60,6 +62,40 @@ func convertToKey(in *proto.KeyRequest) (store.Key, error) {
 	}
 
 	return key, nil
+}
+
+func convertFromAlert(alert action.Alert) (*proto.AlertRequest, error) {
+	expiration, err := ptypes.TimestampProto(*alert.Expiration)
+	if err != nil {
+		return &proto.AlertRequest{}, err
+	}
+
+	alertRequest := proto.AlertRequest{
+		Type:       string(alert.Type),
+		Message:    alert.Message,
+		Expiration: expiration,
+	}
+
+	return &alertRequest, nil
+}
+
+func convertToAlert(in *proto.AlertRequest) (action.Alert, error) {
+	if in == nil {
+		return action.Alert{}, errors.New("alert request is nil")
+	}
+
+	expiration, err := ptypes.Timestamp(in.Expiration)
+	if err != nil {
+		return action.Alert{}, err
+	}
+
+	alert := action.Alert{
+		Type:       action.AlertType(in.Type),
+		Message:    in.Message,
+		Expiration: &expiration,
+	}
+
+	return alert, nil
 }
 
 func convertFromObjects(in *unstructured.UnstructuredList) ([][]byte, error) {

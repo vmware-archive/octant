@@ -13,6 +13,7 @@ import (
 
 	api "github.com/vmware-tanzu/octant/internal/api"
 	config "github.com/vmware-tanzu/octant/internal/config"
+	api0 "github.com/vmware-tanzu/octant/pkg/plugin/api"
 )
 
 // MockClientManager is a mock of ClientManager interface
@@ -65,6 +66,20 @@ func (m *MockClientManager) Clients() []*api.WebsocketClient {
 func (mr *MockClientManagerMockRecorder) Clients() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clients", reflect.TypeOf((*MockClientManager)(nil).Clients))
+}
+
+// Get mocks base method
+func (m *MockClientManager) Get(arg0 string) api0.WSEventSender {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", arg0)
+	ret0, _ := ret[0].(api0.WSEventSender)
+	return ret0
+}
+
+// Get indicates an expected call of Get
+func (mr *MockClientManagerMockRecorder) Get(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockClientManager)(nil).Get), arg0)
 }
 
 // Run mocks base method

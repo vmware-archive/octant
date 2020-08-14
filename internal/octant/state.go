@@ -49,6 +49,8 @@ type State interface {
 	Dispatch(ctx context.Context, actionName string, payload action.Payload) error
 	// SendAlert sends an alert.
 	SendAlert(alert action.Alert)
+	// ClientID returns the websocket client ID.
+	GetClientID() string
 }
 
 // ContentPathUpdateFunc is a function that is called when content path is updated.

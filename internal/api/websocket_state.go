@@ -14,6 +14,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/google/uuid"
 
 	"github.com/vmware-tanzu/octant/internal/config"
@@ -52,7 +54,7 @@ func defaultStateManagers(clientID string, dashConfig config.Dash) []StateManage
 
 // OctantClient is an OctantClient.
 type OctantClient interface {
-	Send(event octant.Event)
+	Send(event event.Event)
 	ID() string
 }
 
@@ -382,6 +384,13 @@ func (c *WebsocketState) SendAlert(alert action.Alert) {
 	c.wsClient.Send(CreateAlertUpdate(alert))
 }
 
+func (c *WebsocketState) GetClientID() string {
+	if c.wsClient == nil {
+		return ""
+	}
+	return c.wsClient.ID()
+}
+
 func updateContentPathNamespace(in, namespace string) string {
 	parts := strings.Split(in, "/")
 	if in == "" {
@@ -396,18 +405,18 @@ func updateContentPathNamespace(in, namespace string) string {
 }
 
 // CreateFiltersUpdate creates a filters update event.
-func CreateFiltersUpdate(filters []octant.Filter) octant.Event {
+func CreateFiltersUpdate(filters []octant.Filter) event.Event {
 	if filters == nil {
 		filters = make([]octant.Filter, 0)
 	}
-	return CreateEvent("event.octant.dev/filters", action.Payload{
+	return event.CreateEvent(event.EventTypeFilters, action.Payload{
 		"filters": filters,
 	})
 }
 
 // CreateAlertUpdate creates an alert update event.
-func CreateAlertUpdate(alert action.Alert) octant.Event {
-	return CreateEvent(octant.EventTypeAlert, action.Payload{
+func CreateAlertUpdate(alert action.Alert) event.Event {
+	return event.CreateEvent(event.EventTypeAlert, action.Payload{
 		"type":       alert.Type,
 		"message":    alert.Message,
 		"expiration": alert.Expiration,

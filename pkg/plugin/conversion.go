@@ -33,7 +33,7 @@ func convertToCapabilities(in *dashboard.RegisterResponse_Capabilities) Capabili
 	return c
 }
 
-func convertFromCapabilities(in Capabilities) dashboard.RegisterResponse_Capabilities {
+func convertFromCapabilities(in Capabilities) *dashboard.RegisterResponse_Capabilities {
 	c := dashboard.RegisterResponse_Capabilities{
 		SupportsPrinterStatus: convertFromGroupVersionKindList(in.SupportsObjectStatus),
 		SupportsPrinterConfig: convertFromGroupVersionKindList(in.SupportsPrinterConfig),
@@ -44,14 +44,14 @@ func convertFromCapabilities(in Capabilities) dashboard.RegisterResponse_Capabil
 		ActionNames:           in.ActionNames,
 	}
 
-	return c
+	return &c
 }
 
 func convertToGroupVersionKindList(in []*dashboard.RegisterResponse_GroupVersionKind) []schema.GroupVersionKind {
 	var list []schema.GroupVersionKind
 
 	for i := range in {
-		list = append(list, convertToGroupVersionKind(*in[i]))
+		list = append(list, convertToGroupVersionKind(in[i]))
 	}
 
 	return list
@@ -67,7 +67,7 @@ func convertFromGroupVersionKindList(in []schema.GroupVersionKind) []*dashboard.
 	return list
 }
 
-func convertToGroupVersionKind(in dashboard.RegisterResponse_GroupVersionKind) schema.GroupVersionKind {
+func convertToGroupVersionKind(in *dashboard.RegisterResponse_GroupVersionKind) schema.GroupVersionKind {
 	return schema.GroupVersionKind{
 		Group:   in.Group,
 		Version: in.Version,
@@ -102,7 +102,7 @@ func convertToNavigation(in *dashboard.NavigationResponse_Navigation) navigation
 	return out
 }
 
-func convertFromNavigation(in navigation.Navigation) dashboard.NavigationResponse_Navigation {
+func convertFromNavigation(in navigation.Navigation) *dashboard.NavigationResponse_Navigation {
 	out := dashboard.NavigationResponse_Navigation{
 		Title:    in.Title,
 		Path:     in.Path,
@@ -111,17 +111,17 @@ func convertFromNavigation(in navigation.Navigation) dashboard.NavigationRespons
 
 	for _, child := range in.Children {
 		converted := convertFromNavigation(child)
-		out.Children = append(out.Children, &converted)
+		out.Children = append(out.Children, converted)
 	}
 
-	return out
+	return &out
 }
 
 func convertToSummarySections(in []*dashboard.PrintResponse_SummaryItem) ([]component.SummarySection, error) {
 	var list []component.SummarySection
 
 	for _, item := range in {
-		converted, err := convertToSummarySection(*item)
+		converted, err := convertToSummarySection(item)
 		if err != nil {
 			return nil, err
 		}
@@ -145,7 +145,7 @@ func convertFromSummarySections(in []component.SummarySection) ([]*dashboard.Pri
 	return list, nil
 }
 
-func convertToSummarySection(in dashboard.PrintResponse_SummaryItem) (component.SummarySection, error) {
+func convertToSummarySection(in *dashboard.PrintResponse_SummaryItem) (component.SummarySection, error) {
 	var typedObject component.TypedObject
 	err := json.Unmarshal(in.Component, &typedObject)
 	if err != nil {

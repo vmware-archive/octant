@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/golang/mock/gomock"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +18,6 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/api/fake"
-	"github.com/vmware-tanzu/octant/internal/octant"
 )
 
 func Test_watchConfig(t *testing.T) {
@@ -25,8 +26,8 @@ func Test_watchConfig(t *testing.T) {
 
 	octantClient := fake.NewMockOctantClient(controller)
 
-	octantClient.EXPECT().Send(octant.Event{
-		Type: octant.EventTypeRefresh,
+	octantClient.EXPECT().Send(event.Event{
+		Type: event.EventTypeRefresh,
 	})
 
 	fs := afero.NewMemMapFs()

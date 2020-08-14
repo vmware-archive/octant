@@ -10,6 +10,8 @@ import (
 	"sort"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/pkg/errors"
 
 	"github.com/vmware-tanzu/octant/internal/config"
@@ -46,12 +48,12 @@ func NewContextsGenerator(dashConfig config.Dash, options ...ContextGeneratorOpt
 	return kcg
 }
 
-func (g *ContextsGenerator) Event(ctx context.Context) (octant.Event, error) {
+func (g *ContextsGenerator) Event(ctx context.Context) (event.Event, error) {
 	configPath := g.DashConfig.KubeConfigPath()
 
 	kubeConfig, err := g.ConfigLoader.Load(configPath)
 	if err != nil {
-		return octant.Event{}, errors.Wrap(err, "unable to load kube config")
+		return event.Event{}, errors.Wrap(err, "unable to load kube config")
 	}
 
 	currentContext := g.DashConfig.ContextName()
@@ -68,8 +70,8 @@ func (g *ContextsGenerator) Event(ctx context.Context) (octant.Event, error) {
 		return resp.Contexts[i].Name < resp.Contexts[j].Name
 	})
 
-	e := octant.Event{
-		Type: octant.EventTypeKubeConfig,
+	e := event.Event{
+		Type: event.EventTypeKubeConfig,
 		Data: resp,
 	}
 

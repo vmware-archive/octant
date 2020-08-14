@@ -9,6 +9,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/golang/mock/gomock"
 
 	"github.com/vmware-tanzu/octant/internal/api"
@@ -36,7 +38,7 @@ func TestContext_GenerateContexts(t *testing.T) {
 	state := octantFake.NewMockState(controller)
 	octantClient := fake.NewMockOctantClient(controller)
 
-	ev := octant.Event{
+	ev := event.Event{
 		Type: "event.octant.dev/eventType",
 	}
 	octantClient.EXPECT().Send(ev)
@@ -47,7 +49,7 @@ func TestContext_GenerateContexts(t *testing.T) {
 	dashConfig.EXPECT().Logger().Return(logger).AnyTimes()
 
 	poller := api.NewSingleRunPoller()
-	generatorFunc := func(ctx context.Context, state octant.State) (octant.Event, error) {
+	generatorFunc := func(ctx context.Context, state octant.State) (event.Event, error) {
 		return ev, nil
 	}
 	manager := api.NewContextManager(dashConfig,

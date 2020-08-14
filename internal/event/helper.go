@@ -9,6 +9,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/octant"
 )
@@ -39,7 +41,7 @@ func NewHelperGenerator(dashConfig config.Dash, options ...HelperGeneratorOption
 	return hg
 }
 
-func (h *HelperGenerator) Event(ctx context.Context) (octant.Event, error) {
+func (h *HelperGenerator) Event(ctx context.Context) (event.Event, error) {
 	version, commit, time := h.DashConfig.BuildInfo()
 
 	resp := buildInfoResponse{
@@ -48,8 +50,8 @@ func (h *HelperGenerator) Event(ctx context.Context) (octant.Event, error) {
 		Time:    time,
 	}
 
-	e := octant.Event{
-		Type: octant.EventTypeBuildInfo,
+	e := event.Event{
+		Type: event.EventTypeBuildInfo,
 		Data: resp,
 	}
 

@@ -16,6 +16,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/event"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/octant"
+	oevent "github.com/vmware-tanzu/octant/pkg/event"
 )
 
 // NamespaceManagerConfig is configuration for NamespacesManager.
@@ -147,9 +148,9 @@ func NamespacesGenerator(_ context.Context, config NamespaceManagerConfig) ([]st
 }
 
 // CreateNamespacesEvent creates a namespaces event.
-func CreateNamespacesEvent(namespaces []string) octant.Event {
-	return octant.Event{
-		Type: octant.EventTypeNamespaces,
+func CreateNamespacesEvent(namespaces []string) oevent.Event {
+	return oevent.Event{
+		Type: oevent.EventTypeNamespaces,
 		Data: map[string]interface{}{
 			"namespaces": namespaces,
 		},

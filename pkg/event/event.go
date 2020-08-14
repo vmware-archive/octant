@@ -1,13 +1,15 @@
 /*
-Copyright (c) 2019 the Octant contributors. All Rights Reserved.
+Copyright (c) 2020 the Octant contributors. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package octant
+package event
 
-import "fmt"
+import (
+	"fmt"
 
-type EventType string
+	"github.com/vmware-tanzu/octant/pkg/action"
+)
 
 const (
 	// EventTypeBuildInfo is a buildInfo event
@@ -76,6 +78,8 @@ func NewLoggingEventType(namespace, pod string) EventType {
 	return EventType(fmt.Sprintf(EventTypeLoggingFormat, namespace, pod))
 }
 
+type EventType string
+
 // Event is an event for the dash frontend.
 type Event struct {
 	Type EventType   `json:"type"`
@@ -83,4 +87,9 @@ type Event struct {
 	Err  error
 }
 
-const ()
+func CreateEvent(eventType EventType, fields action.Payload) Event {
+	return Event{
+		Type: eventType,
+		Data: fields,
+	}
+}

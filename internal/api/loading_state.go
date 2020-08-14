@@ -13,6 +13,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/spf13/afero"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -72,8 +74,8 @@ func (l *LoadingManager) CheckLoading(state octant.State, payload action.Payload
 	}
 
 	if loading {
-		l.client.Send(octant.Event{
-			Type: octant.EventTypeLoading,
+		l.client.Send(event.Event{
+			Type: event.EventTypeLoading,
 		})
 	}
 
@@ -113,8 +115,8 @@ func (l *LoadingManager) UploadKubeConfig(state octant.State, payload action.Pay
 		return err
 	}
 
-	l.client.Send(octant.Event{
-		Type: octant.EventTypeRefresh,
+	l.client.Send(event.Event{
+		Type: event.EventTypeRefresh,
 	})
 
 	l.kubeConfigPath <- tempFile.Name()
@@ -132,8 +134,8 @@ func (l *LoadingManager) WatchConfig(path chan string, client OctantClient, fs a
 		}
 		if exists {
 			path <- kubeconfig
-			client.Send(octant.Event{
-				Type: octant.EventTypeRefresh,
+			client.Send(event.Event{
+				Type: event.EventTypeRefresh,
 			})
 			return
 		}

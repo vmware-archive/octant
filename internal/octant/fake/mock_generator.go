@@ -11,7 +11,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 
-	octant "github.com/vmware-tanzu/octant/internal/octant"
+	event "github.com/vmware-tanzu/octant/pkg/event"
 )
 
 // MockGenerator is a mock of Generator interface
@@ -38,10 +38,10 @@ func (m *MockGenerator) EXPECT() *MockGeneratorMockRecorder {
 }
 
 // Event mocks base method
-func (m *MockGenerator) Event(arg0 context.Context) (octant.Event, error) {
+func (m *MockGenerator) Event(arg0 context.Context) (event.Event, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Event", arg0)
-	ret0, _ := ret[0].(octant.Event)
+	ret0, _ := ret[0].(event.Event)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
