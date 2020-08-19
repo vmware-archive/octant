@@ -2,7 +2,7 @@
 
 ## Requirements
 
-* [Go 1.13 or above](https://golang.org/dl/)
+* [Go 1.15 or above](https://golang.org/dl/)
 * [node 10.15.0 or above](https://nodejs.org/en/)
 * [npm 6.4.1 or above](https://www.npmjs.com/get-npm)
 * [rice](https://github.com/GeertJohan/go.rice) - packaging web assets into a binary

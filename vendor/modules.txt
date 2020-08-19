@@ -1,6 +1,7 @@
 # cloud.google.com/go v0.56.0
 cloud.google.com/go/compute/metadata
 # contrib.go.opencensus.io/exporter/jaeger v0.2.1
+## explicit
 contrib.go.opencensus.io/exporter/jaeger
 # github.com/Azure/go-autorest/autorest v0.9.6
 github.com/Azure/go-autorest/autorest
@@ -16,6 +17,7 @@ github.com/Azure/go-autorest/tracing
 # github.com/GeertJohan/go.incremental v1.0.0
 github.com/GeertJohan/go.incremental
 # github.com/GeertJohan/go.rice v1.0.0
+## explicit
 github.com/GeertJohan/go.rice
 github.com/GeertJohan/go.rice/embedded
 github.com/GeertJohan/go.rice/rice
@@ -26,48 +28,63 @@ github.com/akavel/rsrc/ico
 github.com/akavel/rsrc/internal
 github.com/akavel/rsrc/rsrc
 # github.com/asticode/go-astikit v0.8.0
+## explicit
 github.com/asticode/go-astikit
 # github.com/asticode/go-astilectron v0.14.2
+## explicit
 github.com/asticode/go-astilectron
 # github.com/asticode/go-astilectron-bundler v0.5.2
+## explicit
 github.com/asticode/go-astilectron-bundler
 # github.com/asticode/go-bindata v1.0.0
 github.com/asticode/go-bindata
 # github.com/daaku/go.zipexe v1.0.0
 github.com/daaku/go.zipexe
 # github.com/davecgh/go-spew v1.1.1
+## explicit
 github.com/davecgh/go-spew/spew
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 github.com/dgrijalva/jwt-go
 # github.com/dlclark/regexp2 v1.2.0
+## explicit
 github.com/dlclark/regexp2
 github.com/dlclark/regexp2/syntax
 # github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c
+## explicit
 github.com/docker/spdystream
 github.com/docker/spdystream/spdy
 # github.com/dop251/goja v0.0.0-20200629185240-bfd59704b500
+## explicit
 github.com/dop251/goja
 github.com/dop251/goja/ast
 github.com/dop251/goja/file
 github.com/dop251/goja/parser
 github.com/dop251/goja/token
 # github.com/dop251/goja_nodejs v0.0.0-20200706082813-b2775b86b9e0
+## explicit
 github.com/dop251/goja_nodejs/console
 github.com/dop251/goja_nodejs/eventloop
 github.com/dop251/goja_nodejs/require
 github.com/dop251/goja_nodejs/util
+# github.com/elazarl/goproxy v0.0.0-20190703090003-6125c262ffb0
+## explicit
+# github.com/elazarl/goproxy/ext v0.0.0-20190703090003-6125c262ffb0
+## explicit
 # github.com/evanphx/json-patch v4.2.0+incompatible
 github.com/evanphx/json-patch
 # github.com/fatih/color v1.7.0
 github.com/fatih/color
 # github.com/fsnotify/fsnotify v1.4.9
+## explicit
 github.com/fsnotify/fsnotify
 # github.com/go-logr/logr v0.1.0
 github.com/go-logr/logr
 # github.com/go-sourcemap/sourcemap v2.1.3+incompatible
+## explicit
 github.com/go-sourcemap/sourcemap
 github.com/go-sourcemap/sourcemap/internal/base64vlq
 # github.com/gobwas/glob v0.2.3
+## explicit
 github.com/gobwas/glob
 github.com/gobwas/glob/compiler
 github.com/gobwas/glob/match
@@ -82,10 +99,12 @@ github.com/gogo/protobuf/sortkeys
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
 # github.com/golang/mock v1.4.4
+## explicit
 github.com/golang/mock/gomock
 github.com/golang/mock/mockgen
 github.com/golang/mock/mockgen/model
 # github.com/golang/protobuf v1.4.2
+## explicit
 github.com/golang/protobuf/internal/gengogrpc
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go
@@ -105,31 +124,41 @@ github.com/google/go-cmp/cmp/internal/value
 # github.com/google/gofuzz v1.1.0
 github.com/google/gofuzz
 # github.com/google/uuid v1.1.1
+## explicit
 github.com/google/uuid
 # github.com/googleapis/gnostic v0.5.1
+## explicit
 github.com/googleapis/gnostic/compiler
 github.com/googleapis/gnostic/extensions
 github.com/googleapis/gnostic/jsonschema
 github.com/googleapis/gnostic/openapiv2
 # github.com/gorilla/handlers v1.4.2
+## explicit
 github.com/gorilla/handlers
 # github.com/gorilla/mux v1.7.4
+## explicit
 github.com/gorilla/mux
 # github.com/gorilla/websocket v1.4.2
+## explicit
 github.com/gorilla/websocket
 # github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79
+## explicit
 github.com/gregjones/httpcache
 github.com/gregjones/httpcache/diskcache
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-hclog v0.14.1
+## explicit
 github.com/hashicorp/go-hclog
 # github.com/hashicorp/go-multierror v1.1.0
+## explicit
 github.com/hashicorp/go-multierror
 # github.com/hashicorp/go-plugin v0.0.0-20190220160451-3f118e8ee104
+## explicit
 github.com/hashicorp/go-plugin
 github.com/hashicorp/go-plugin/internal/plugin
 # github.com/hashicorp/golang-lru v0.5.4
+## explicit
 github.com/hashicorp/golang-lru
 github.com/hashicorp/golang-lru/simplelru
 # github.com/hashicorp/hcl v1.0.0
@@ -144,10 +173,13 @@ github.com/hashicorp/hcl/json/parser
 github.com/hashicorp/hcl/json/scanner
 github.com/hashicorp/hcl/json/token
 # github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d
+## explicit
 github.com/hashicorp/yamux
 # github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
+## explicit
 github.com/iancoleman/strcase
 # github.com/imdario/mergo v0.3.6
+## explicit
 github.com/imdario/mergo
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
@@ -170,6 +202,7 @@ github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
 github.com/modern-go/reflect2
 # github.com/nkovacs/streamquote v1.0.0
+## explicit
 github.com/nkovacs/streamquote
 # github.com/oklog/run v1.0.0
 github.com/oklog/run
@@ -178,31 +211,39 @@ github.com/pelletier/go-toml
 # github.com/peterbourgon/diskv v2.0.1+incompatible
 github.com/peterbourgon/diskv
 # github.com/pkg/errors v0.9.1
+## explicit
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
 # github.com/sam-kamerer/go-plister v1.2.0
 github.com/sam-kamerer/go-plister
 # github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e
+## explicit
 github.com/skratchdot/open-golang/open
 # github.com/soheilhy/cmux v0.1.4
+## explicit
 github.com/soheilhy/cmux
 # github.com/spf13/afero v1.3.4
+## explicit
 github.com/spf13/afero
 github.com/spf13/afero/mem
 # github.com/spf13/cast v1.3.0
 github.com/spf13/cast
 # github.com/spf13/cobra v0.0.7
+## explicit
 github.com/spf13/cobra
 # github.com/spf13/jwalterweatherman v1.0.0
 github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
 # github.com/spf13/viper v1.7.1
+## explicit
 github.com/spf13/viper
 # github.com/stoewer/go-strcase v1.2.0
+## explicit
 github.com/stoewer/go-strcase
 # github.com/stretchr/testify v1.6.1
+## explicit
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/subosito/gotenv v1.2.0
@@ -217,6 +258,7 @@ github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.0.1
 github.com/valyala/fasttemplate
 # go.opencensus.io v0.22.4
+## explicit
 go.opencensus.io
 go.opencensus.io/internal
 go.opencensus.io/trace
@@ -227,6 +269,7 @@ go.uber.org/atomic
 # go.uber.org/multierr v1.5.0
 go.uber.org/multierr
 # go.uber.org/zap v1.15.0
+## explicit
 go.uber.org/zap
 go.uber.org/zap/buffer
 go.uber.org/zap/internal/bufferpool
@@ -254,6 +297,7 @@ golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
+## explicit
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
 # golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f
@@ -275,6 +319,7 @@ golang.org/x/text/unicode/norm
 # golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 golang.org/x/time/rate
 # golang.org/x/tools v0.0.0-20200716134326-a8f9df4c9543
+## explicit
 golang.org/x/tools/cmd/goimports
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata
@@ -310,6 +355,7 @@ google.golang.org/appengine/urlfetch
 # google.golang.org/genproto v0.0.0-20200624020401-64a14ca9d1ad
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.31.0
+## explicit
 google.golang.org/grpc
 google.golang.org/grpc/attributes
 google.golang.org/grpc/backoff
@@ -353,7 +399,10 @@ google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
+# google.golang.org/grpc/examples v0.0.0-20200707005602-4258d12073b4
+## explicit
 # google.golang.org/protobuf v1.25.0
+## explicit
 google.golang.org/protobuf/cmd/protoc-gen-go/internal_gengo
 google.golang.org/protobuf/compiler/protogen
 google.golang.org/protobuf/encoding/prototext
@@ -398,6 +447,7 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 gopkg.in/yaml.v3
 # k8s.io/api v0.19.0-alpha.3
+## explicit
 k8s.io/api/admissionregistration/v1
 k8s.io/api/admissionregistration/v1beta1
 k8s.io/api/apps/v1
@@ -439,11 +489,13 @@ k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
 # k8s.io/apiextensions-apiserver v0.19.0-alpha.3
+## explicit
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/install
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1
 # k8s.io/apimachinery v0.19.0-beta.2
+## explicit
 k8s.io/apimachinery/pkg/api/equality
 k8s.io/apimachinery/pkg/api/errors
 k8s.io/apimachinery/pkg/api/meta
@@ -494,6 +546,7 @@ k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/netutil
 k8s.io/apimachinery/third_party/forked/golang/reflect
 # k8s.io/client-go v0.19.0-alpha.3
+## explicit
 k8s.io/client-go/discovery
 k8s.io/client-go/discovery/cached/disk
 k8s.io/client-go/discovery/fake
@@ -713,18 +766,22 @@ k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
 # k8s.io/klog v1.0.0
+## explicit
 k8s.io/klog
 # k8s.io/klog/v2 v2.1.0
 k8s.io/klog/v2
 # k8s.io/kube-aggregator v0.19.0-alpha.3
+## explicit
 k8s.io/kube-aggregator/pkg/apis/apiregistration
 k8s.io/kube-aggregator/pkg/apis/apiregistration/v1
 # k8s.io/kube-openapi v0.0.0-20200427153329-656914f816f9
 k8s.io/kube-openapi/pkg/util/proto
 # k8s.io/metrics v0.19.0-alpha.3
+## explicit
 k8s.io/metrics/pkg/apis/metrics
 k8s.io/metrics/pkg/apis/metrics/v1beta1
 # k8s.io/utils v0.0.0-20200414100711-2df71ebbae66
+## explicit
 k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/pointer
@@ -732,4 +789,5 @@ k8s.io/utils/trace
 # sigs.k8s.io/structured-merge-diff/v3 v3.0.0
 sigs.k8s.io/structured-merge-diff/v3/value
 # sigs.k8s.io/yaml v1.2.0
+## explicit
 sigs.k8s.io/yaml
