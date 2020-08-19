@@ -103,7 +103,7 @@ func (k Key) String() string {
 
 	if k.LabelSelector != nil {
 		sb.WriteString(", LabelSelector='")
-		k.labelSelectorString(sb)
+		k.labelSelectorString(&sb)
 		sb.WriteString("'")
 	}
 
@@ -112,7 +112,7 @@ func (k Key) String() string {
 	return sb.String()
 }
 
-func (k Key) labelSelectorString(sb strings.Builder) {
+func (k Key) labelSelectorString(sb *strings.Builder) {
 	if k.LabelSelector.MatchLabels != nil {
 		sb.WriteString("MatchLabels=")
 		data := make([]string, len(k.LabelSelector.MatchLabels))
