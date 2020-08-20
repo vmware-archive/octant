@@ -278,9 +278,18 @@ func (dc *DynamicCache) listFromInformer(ctx context.Context, key store.Key) (*u
 		l = informer.Lister().ByNamespace(key.Namespace)
 	}
 
+	if key.Selector != nil && key.LabelSelector != nil {
+		return nil, false, fmt.Errorf("must provide only one of Key.Selector and Key.LabelSelector")
+	}
+
 	var selector = kLabels.Everything()
 	if key.Selector != nil {
 		selector = key.Selector.AsSelector()
+	} else if key.LabelSelector != nil {
+		selector, err = metav1.LabelSelectorAsSelector(key.LabelSelector)
+		if err != nil {
+			return nil, false, err
+		}
 	}
 
 	objects, err := l.List(selector)
@@ -303,6 +312,12 @@ func (dc *DynamicCache) listFromDynamicClient(ctx context.Context, key store.Key
 	var selector = kLabels.Everything()
 	if key.Selector != nil {
 		selector = key.Selector.AsSelector()
+	} else if key.LabelSelector != nil {
+		var err error
+		selector, err = metav1.LabelSelectorAsSelector(key.LabelSelector)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	dynamicClient, err := dc.client.DynamicClient()
