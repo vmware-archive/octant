@@ -36,6 +36,7 @@ github.com/asticode/go-astilectron
 # github.com/asticode/go-astilectron-bundler v0.5.2
 ## explicit
 github.com/asticode/go-astilectron-bundler
+github.com/asticode/go-astilectron-bundler/astilectron-bundler
 # github.com/asticode/go-bindata v1.0.0
 github.com/asticode/go-bindata
 # github.com/daaku/go.zipexe v1.0.0
