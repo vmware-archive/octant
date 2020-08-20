@@ -232,21 +232,13 @@ func newCmd(command string, env map[string]string, args ...string) *exec.Cmd {
 }
 
 func buildElectronDev() {
-	listCmd := newCmd("go", nil,
-		"list", "-m", "-f", "{{.Dir}}", "github.com/asticode/go-astilectron-bundler")
-
-	abPath, err := listCmd.Output()
-	if err != nil {
-		log.Fatalf("unable to find astilectron-bundler: %w", err)
-	}
-	abPath = bytes.TrimSpace(abPath)
-
 	runCmdIn(
 		filepath.Join("cmd", "octant-electron"),
 		"go",
 		nil,
 		"run",
-		filepath.Join(string(abPath), "astilectron-bundler"),
+		"github.com/asticode/go-astilectron-bundler/astilectron-bundler",
+		"-o", filepath.Join("..", "..", "build"),
 	)
 }
 
