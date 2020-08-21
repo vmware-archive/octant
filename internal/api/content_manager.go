@@ -9,6 +9,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"strings"
 	"time"
 
@@ -168,9 +169,8 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 	contentResponse, err := m.Content(ctx, modulePath, options)
 	if err != nil {
 		if nfe, ok := err.(notFound); ok && nfe.NotFound() {
-			logger.Debugf("path not found, redirecting to parent")
-			state.SetContentPath(notFoundRedirectPath(contentPath))
-			return emptyContent, true, nil
+			logger.Debugf("path not found")
+			contentResponse = notFoundPage(contentPath)
 		} else {
 			return emptyContent, false, fmt.Errorf("generate content: %w", err)
 		}
@@ -265,4 +265,44 @@ func CreateContentEvent(contentResponse component.ContentResponse, namespace, co
 			"queryParams": queryParams,
 		},
 	}
+}
+
+func notFoundPage(contentPath string) component.ContentResponse {
+	title := component.TitleFromString("Not Found")
+	cr := component.NewContentResponse(title)
+
+	// TODO change periodically with something fun
+	wiki := moduloIndex(contentPath, [][]string{
+		{"https://en.wikipedia.org/wiki/Octant_(plane_geometry)", "Octant (plane geometry) via Wikipedia"},
+		{"https://en.wikipedia.org/wiki/Octant_(solid_geometry)", "Octant (solid geometry) via Wikipedia"},
+		{"https://en.wikipedia.org/wiki/Octant_(circle)", "Octant (circle) via Wikipedia"},
+		{"https://en.wikipedia.org/wiki/Octant_(instrument)", "Octant (instrument) via Wikipedia"},
+		{"https://en.wikipedia.org/wiki/Octans", "Octant (constellation) via Wikipedia"},
+		{"https://en.wikipedia.org/wiki/Octant_(band)", "Octant (band) via Wikipedia"},
+	})
+
+	text := component.NewMarkdownText(fmt.Sprintf(`
+		The requested page was not found. The resource may have been deleted.
+
+		You can:
+		- Wait for the resource to be created
+		- Use the navigation links to go to a new page
+		- Go [up one level](#/%s)
+		- Use the [back button](javascript:window.history.back()) to return to the previous page
+		- Learn more about [%s](%s)
+	`, notFoundRedirectPath(contentPath), wiki[1], wiki[0]))
+
+	body := &component.List{}
+	body.Title = title
+	body.Add(text)
+	cr.Add(body)
+
+	return *cr
+}
+
+func moduloIndex(key string, options [][]string) []string {
+	h := fnv.New32a()
+	h.Write([]byte(key))
+	i := int(h.Sum32()) % len(options)
+	return options[i]
 }
