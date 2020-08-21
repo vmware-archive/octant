@@ -13,10 +13,12 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -382,6 +384,21 @@ func serve() {
 		if err := serverCmd.Wait(); err != nil {
 			log.Fatalf("serve: go run: %s", err)
 		}
+	}()
+
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		<-sigc
+		uiCmd.Process.Signal(syscall.SIGQUIT)
+		serverCmd.Process.Signal(syscall.SIGQUIT)
 	}()
 
 	wg.Wait()
