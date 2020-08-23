@@ -49,7 +49,7 @@ export class LinkFactory implements ComponentFactory<LinkConfig> {
     return {
       metadata: {
         type: 'link',
-        ...(this.factoryMetadata && { metadata: this.factoryMetadata }),
+        ...this.factoryMetadata,
       },
       config: {
         value: this.value,

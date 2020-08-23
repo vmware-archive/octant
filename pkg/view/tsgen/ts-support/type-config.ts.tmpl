@@ -48,7 +48,7 @@ export class {{.Name}}Factory implements ComponentFactory<{{.Name}}Config> {
     return {
       metadata: {
         type: '{{.Type}}',
-        ...(this.factoryMetadata && { metadata: this.factoryMetadata}),
+        ...this.factoryMetadata,
       },
       config: {
 {{range .RequiredFields}}        {{.Name}}: this.{{.Name}},
