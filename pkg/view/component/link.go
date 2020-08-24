@@ -26,6 +26,32 @@ type LinkConfig struct {
 	StatusDetail Component  `json:"statusDetail,omitempty"`
 }
 
+func (lc *LinkConfig) UnmarshalJSON(data []byte) error {
+	x := struct {
+		Text         string       `json:"value,omitempty"`
+		Ref          string       `json:"ref,omitempty"`
+		Status       TextStatus   `json:"status,omitempty"`
+		StatusDetail *TypedObject `json:"statusDetail,omitempty"`
+	}{}
+
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+
+	lc.Text = x.Text
+	lc.Ref = x.Ref
+	lc.Status = x.Status
+	if x.StatusDetail != nil {
+		sd, err := x.StatusDetail.ToComponent()
+		if err != nil {
+			return err
+		}
+		lc.StatusDetail = sd
+	}
+
+	return nil
+}
+
 type LinkOption func(l *Link)
 
 // NewLink creates a link component

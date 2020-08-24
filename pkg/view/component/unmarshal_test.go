@@ -203,6 +203,25 @@ func Test_unmarshal(t *testing.T) {
 			},
 		},
 		{
+			name:       "link with status",
+			configFile: "config_link_status.json",
+			objectType: "link",
+			expected: &Link{
+				Config: LinkConfig{
+					Text:   "text",
+					Ref:    "ref",
+					Status: TextStatusOK,
+					StatusDetail: &Text{
+						Config: TextConfig{
+							Text: "Ready",
+						},
+						Base: newBase(TypeText, nil),
+					},
+				},
+				Base: newBase(TypeLink, nil),
+			},
+		},
+		{
 			name:       "list",
 			configFile: "config_list.json",
 			objectType: "list",
