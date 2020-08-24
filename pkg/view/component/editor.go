@@ -28,8 +28,8 @@ type EditorConfig struct {
 	Value        string            `json:"value"`
 	ReadOnly     bool              `json:"readOnly"`
 	Metadata     map[string]string `json:"metadata"`
-	SubmitAction string            `json:"submitAction"`
-	SubmitLabel  string            `json:"submitLabel"`
+	SubmitAction string            `json:"submitAction,omitempty"`
+	SubmitLabel  string            `json:"submitLabel,omitempty"`
 }
 
 // NewEditor creates an instance of an editor component.
