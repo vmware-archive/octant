@@ -75,6 +75,8 @@ github.com/dop251/goja_nodejs/util
 github.com/evanphx/json-patch
 # github.com/fatih/color v1.7.0
 github.com/fatih/color
+# github.com/felixge/httpsnoop v1.0.1
+github.com/felixge/httpsnoop
 # github.com/fsnotify/fsnotify v1.4.9
 ## explicit
 github.com/fsnotify/fsnotify
@@ -133,7 +135,7 @@ github.com/googleapis/gnostic/compiler
 github.com/googleapis/gnostic/extensions
 github.com/googleapis/gnostic/jsonschema
 github.com/googleapis/gnostic/openapiv2
-# github.com/gorilla/handlers v1.4.2
+# github.com/gorilla/handlers v1.5.0
 ## explicit
 github.com/gorilla/handlers
 # github.com/gorilla/mux v1.8.0
