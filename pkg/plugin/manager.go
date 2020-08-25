@@ -18,6 +18,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 
@@ -269,6 +271,7 @@ type Manager struct {
 	ClientFactory   ClientFactory
 	ModuleRegistrar ModuleRegistrar
 	ActionRegistrar ActionRegistrar
+	WSClient        event.WSClientGetter
 
 	Runners Runners
 
@@ -282,7 +285,7 @@ type Manager struct {
 var _ ManagerInterface = (*Manager)(nil)
 
 // NewManager creates an instance of Manager.
-func NewManager(apiService api.API, moduleRegistrar ModuleRegistrar, actionRegistrar ActionRegistrar, options ...ManagerOption) *Manager {
+func NewManager(apiService api.API, moduleRegistrar ModuleRegistrar, actionRegistrar ActionRegistrar, ws event.WSClientGetter, options ...ManagerOption) *Manager {
 	m := &Manager{
 		store:           NewDefaultStore(),
 		ClientFactory:   NewDefaultClientFactory(),
@@ -290,6 +293,7 @@ func NewManager(apiService api.API, moduleRegistrar ModuleRegistrar, actionRegis
 		API:             apiService,
 		ModuleRegistrar: moduleRegistrar,
 		ActionRegistrar: actionRegistrar,
+		WSClient:        ws,
 	}
 
 	for _, option := range options {
@@ -445,7 +449,7 @@ func (m *Manager) unregisterJSPlugin(_ context.Context, p JSPlugin) error {
 }
 
 func (m *Manager) registerJSPlugin(ctx context.Context, pluginPath string) error {
-	dashboardClientFactory := javascript.NewModularDashboardClientFactory(javascript.DefaultFunctions(m.octantClient))
+	dashboardClientFactory := javascript.NewModularDashboardClientFactory(javascript.DefaultFunctions(m.octantClient, m.WSClient))
 
 	jsPlugin, err := NewJSPlugin(ctx, pluginPath, dashboardClientFactory)
 	if err != nil {

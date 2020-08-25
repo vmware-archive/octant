@@ -13,6 +13,8 @@ import (
 	"path"
 	"sync"
 
+	ocontext "github.com/vmware-tanzu/octant/internal/context"
+
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/eventloop"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -226,7 +228,7 @@ func (t *jsPlugin) Navigation(_ context.Context) (navigation.Navigation, error) 
 }
 
 // Content returns the content response for a JavaScript plugin acting as a module.
-func (t *jsPlugin) Content(_ context.Context, contentPath string) (component.ContentResponse, error) {
+func (t *jsPlugin) Content(ctx context.Context, contentPath string) (component.ContentResponse, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -234,6 +236,8 @@ func (t *jsPlugin) Content(_ context.Context, contentPath string) (component.Con
 	errCh := make(chan error)
 
 	t.loop.RunOnLoop(func(vm *goja.Runtime) {
+		clientID := ocontext.WebsocketClientIDFrom(ctx)
+
 		handler, err := vm.RunString("_concretePlugin.contentHandler")
 		if err != nil {
 			errCh <- fmt.Errorf("unable to load contentHandler from plugin: %w", err)
@@ -249,6 +253,9 @@ func (t *jsPlugin) Content(_ context.Context, contentPath string) (component.Con
 		if err := obj.Set("contentPath", vm.ToValue(contentPath)); err != nil {
 			errCh <- fmt.Errorf("unable to set contentPath: %w", err)
 			return
+		}
+		if err := obj.Set("clientID", vm.ToValue(clientID)); err != nil {
+			errCh <- fmt.Errorf("unable to set clientID: %w", err)
 		}
 		s, err := cHandler(t.pluginClass, obj)
 		if err != nil {
@@ -354,11 +361,11 @@ func (t *jsPlugin) Register(_ context.Context, _ string) (Metadata, error) {
 }
 
 // PrintTab returns the tab response from a JavaScript plugins tab handler.
-func (t *jsPlugin) PrintTab(_ context.Context, object runtime.Object) (TabResponse, error) {
+func (t *jsPlugin) PrintTab(ctx context.Context, object runtime.Object) (TabResponse, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	tabResponse, err := t.objectRequestCall("tabHandler", object)
+	tabResponse, err := t.objectRequestCall(ctx, "tabHandler", object)
 	if err != nil {
 		return TabResponse{}, err
 	}
@@ -393,11 +400,11 @@ func (t *jsPlugin) PrintTab(_ context.Context, object runtime.Object) (TabRespon
 }
 
 // ObjectStats returns the object status from a JavaScript plugins object status handler.
-func (t *jsPlugin) ObjectStatus(_ context.Context, object runtime.Object) (ObjectStatusResponse, error) {
+func (t *jsPlugin) ObjectStatus(ctx context.Context, object runtime.Object) (ObjectStatusResponse, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	osResponse, err := t.objectRequestCall("objectStatusHandler", object)
+	osResponse, err := t.objectRequestCall(ctx, "objectStatusHandler", object)
 	if err != nil {
 		return ObjectStatusResponse{}, err
 	}
@@ -428,13 +435,15 @@ func (t *jsPlugin) ObjectStatus(_ context.Context, object runtime.Object) (Objec
 }
 
 // HandleAction calls the JavaScript plugins action handler.
-func (t *jsPlugin) HandleAction(_ context.Context, actionPath string, payload action.Payload) error {
+func (t *jsPlugin) HandleAction(ctx context.Context, actionPath string, payload action.Payload) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
 	errCh := make(chan error)
 
 	t.loop.RunOnLoop(func(vm *goja.Runtime) {
+		clientID := ocontext.WebsocketClientIDFrom(ctx)
+
 		handler, err := vm.RunString("_concretePlugin.actionHandler")
 		if err != nil {
 			errCh <- fmt.Errorf("unable to load actionHandler from plugin: %w", err)
@@ -457,6 +466,10 @@ func (t *jsPlugin) HandleAction(_ context.Context, actionPath string, payload ac
 		}
 		if err := obj.Set("payload", pl); err != nil {
 			errCh <- fmt.Errorf("unable to set payload: %w", err)
+			return
+		}
+		if err := obj.Set("clientID", clientID); err != nil {
+			errCh <- fmt.Errorf("unable to set clientID: %w", err)
 			return
 		}
 
@@ -486,11 +499,11 @@ func (t *jsPlugin) HandleAction(_ context.Context, actionPath string, payload ac
 }
 
 // Print returns the print response from the JavaScript plugins print handler.
-func (t *jsPlugin) Print(_ context.Context, object runtime.Object) (PrintResponse, error) {
+func (t *jsPlugin) Print(ctx context.Context, object runtime.Object) (PrintResponse, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	printResponse, err := t.objectRequestCall("printHandler", object)
+	printResponse, err := t.objectRequestCall(ctx, "printHandler", object)
 	if err != nil {
 		return PrintResponse{}, err
 	}
@@ -537,11 +550,13 @@ func (t *jsPlugin) Print(_ context.Context, object runtime.Object) (PrintRespons
 	return response, nil
 }
 
-func (t *jsPlugin) objectRequestCall(handlerName string, object runtime.Object) (*goja.Object, error) {
+func (t *jsPlugin) objectRequestCall(ctx context.Context, handlerName string, object runtime.Object) (*goja.Object, error) {
 	errCh := make(chan error)
 	var response *goja.Object
 
 	t.loop.RunOnLoop(func(vm *goja.Runtime) {
+		clientID := ocontext.WebsocketClientIDFrom(ctx)
+
 		handler, err := vm.RunString(fmt.Sprintf("_concretePlugin.%s", handlerName))
 		if err != nil {
 			errCh <- fmt.Errorf("unable to load %s from plugin: %w", handlerName, err)
@@ -557,6 +572,10 @@ func (t *jsPlugin) objectRequestCall(handlerName string, object runtime.Object) 
 		obj := vm.NewObject()
 		if err := obj.Set("object", vm.ToValue(object)); err != nil {
 			errCh <- fmt.Errorf("unable to set object: %w", err)
+			return
+		}
+		if err := obj.Set("clientID", vm.ToValue(clientID)); err != nil {
+			errCh <- fmt.Errorf("unable to set clientID: %w", err)
 			return
 		}
 		s, err := cHandler(t.pluginClass, obj)

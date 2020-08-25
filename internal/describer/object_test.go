@@ -9,6 +9,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/vmware-tanzu/octant/pkg/event/fake"
+
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/internal/describer"
@@ -45,8 +47,9 @@ func TestObjectDescriber(t *testing.T) {
 	dashConfig := configFake.NewMockDash(controller)
 	moduleRegistrar := pluginFake.NewMockModuleRegistrar(controller)
 	actionRegistrar := pluginFake.NewMockActionRegistrar(controller)
+	wsClient := fake.NewMockWSClientGetter(controller)
 
-	pluginManager := plugin.NewManager(nil, moduleRegistrar, actionRegistrar)
+	pluginManager := plugin.NewManager(nil, moduleRegistrar, actionRegistrar, wsClient)
 	dashConfig.EXPECT().PluginManager().Return(pluginManager).AnyTimes()
 
 	podSummary := component.NewText("summary")

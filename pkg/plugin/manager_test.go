@@ -9,6 +9,8 @@ import (
 	"context"
 	"testing"
 
+	fake2 "github.com/vmware-tanzu/octant/pkg/event/fake"
+
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/go-plugin"
 	"github.com/stretchr/testify/assert"
@@ -59,6 +61,7 @@ func TestManager(t *testing.T) {
 	clientFactory := fake.NewMockClientFactory(controller)
 	moduleRegistrar := fake.NewMockModuleRegistrar(controller)
 	actionRegistrar := fake.NewMockActionRegistrar(controller)
+	wsClient := fake2.NewMockWSClientGetter(controller)
 
 	name := "plugin1"
 
@@ -76,7 +79,7 @@ func TestManager(t *testing.T) {
 	})
 
 	apiService := &stubAPIService{}
-	manager := dashPlugin.NewManager(apiService, moduleRegistrar, actionRegistrar, options...)
+	manager := dashPlugin.NewManager(apiService, moduleRegistrar, actionRegistrar, wsClient, options...)
 
 	manager.SetStore(store)
 
@@ -101,6 +104,7 @@ func TestManager_Print(t *testing.T) {
 	store := fake.NewMockManagerStore(controller)
 	moduleRegistrar := fake.NewMockModuleRegistrar(controller)
 	actionRegistrar := fake.NewMockActionRegistrar(controller)
+	wsClient := fake2.NewMockWSClientGetter(controller)
 
 	store.EXPECT().ClientNames().Return([]string{"plugin1", "plugin2"})
 
@@ -131,7 +135,7 @@ func TestManager_Print(t *testing.T) {
 	})
 
 	apiService := &stubAPIService{}
-	manager := dashPlugin.NewManager(apiService, moduleRegistrar, actionRegistrar, options...)
+	manager := dashPlugin.NewManager(apiService, moduleRegistrar, actionRegistrar, wsClient, options...)
 	manager.SetStore(store)
 
 	ctx := context.Background()
@@ -158,6 +162,7 @@ func TestManager_Tabs(t *testing.T) {
 	store := fake.NewMockManagerStore(controller)
 	moduleRegistrar := fake.NewMockModuleRegistrar(controller)
 	actionRegistrar := fake.NewMockActionRegistrar(controller)
+	wsClient := fake2.NewMockWSClientGetter(controller)
 
 	store.EXPECT().ClientNames().Return([]string{"plugin1", "plugin2"})
 
@@ -179,7 +184,7 @@ func TestManager_Tabs(t *testing.T) {
 	})
 
 	apiService := &stubAPIService{}
-	manager := dashPlugin.NewManager(apiService, moduleRegistrar, actionRegistrar, options...)
+	manager := dashPlugin.NewManager(apiService, moduleRegistrar, actionRegistrar, wsClient, options...)
 	manager.SetStore(store)
 
 	ctx := context.Background()

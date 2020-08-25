@@ -13,7 +13,7 @@ import (
 
 	api "github.com/vmware-tanzu/octant/internal/api"
 	config "github.com/vmware-tanzu/octant/internal/config"
-	api0 "github.com/vmware-tanzu/octant/pkg/plugin/api"
+	event "github.com/vmware-tanzu/octant/pkg/event"
 )
 
 // MockClientManager is a mock of ClientManager interface
@@ -69,10 +69,10 @@ func (mr *MockClientManagerMockRecorder) Clients() *gomock.Call {
 }
 
 // Get mocks base method
-func (m *MockClientManager) Get(arg0 string) api0.WSEventSender {
+func (m *MockClientManager) Get(arg0 string) event.WSEventSender {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0)
-	ret0, _ := ret[0].(api0.WSEventSender)
+	ret0, _ := ret[0].(event.WSEventSender)
 	return ret0
 }
 
