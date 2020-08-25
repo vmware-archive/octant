@@ -1,22 +1,16 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { ButtonGroupView, Confirmation } from '../../../models/content';
 import { ActionService } from '../../../services/action/action.service';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-button-group',
   templateUrl: './button-group.component.html',
   styleUrls: ['./button-group.component.scss'],
 })
-export class ButtonGroupComponent implements OnInit {
-  v: ButtonGroupView;
-
-  @Input() set view(v: ButtonGroupView) {
-    this.v = v as ButtonGroupView;
-  }
-  get view() {
-    return this.v;
-  }
-
+export class ButtonGroupComponent extends AbstractViewComponent<
+  ButtonGroupView
+> {
   @Output() buttonLoad: EventEmitter<boolean> = new EventEmitter(true);
 
   isModalOpen = false;
@@ -25,11 +19,13 @@ export class ButtonGroupComponent implements OnInit {
   payload = {};
   class = '';
 
-  constructor(private actionService: ActionService) {}
+  constructor(private actionService: ActionService) {
+    super();
+  }
 
-  ngOnInit() {
-    if (this.view && this.view.config.buttons) {
-      this.view.config.buttons.forEach(button => {
+  update() {
+    if (this.v.config.buttons) {
+      this.v.config.buttons.forEach(button => {
         if (button.confirmation) {
           this.class = 'btn-danger-outline btn-sm';
         } else {

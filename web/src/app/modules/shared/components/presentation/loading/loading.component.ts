@@ -2,32 +2,23 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { LoadingView, View } from 'src/app/modules/shared/models/content';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-view-loading',
   templateUrl: './loading.component.html',
   styleUrls: ['./loading.component.scss'],
 })
-export class LoadingComponent implements OnChanges {
-  private v: LoadingView;
-
-  @Input() set view(v: View) {
-    this.v = v as LoadingView;
-  }
-  get view() {
-    return this.v;
-  }
-
+export class LoadingComponent extends AbstractViewComponent<LoadingView> {
   value: string;
 
-  constructor() {}
+  constructor() {
+    super();
+  }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view.currentValue) {
-      const view = changes.view.currentValue as LoadingView;
-      this.value = view.config.value;
-    }
+  update() {
+    this.value = this.v.config.value;
   }
 }

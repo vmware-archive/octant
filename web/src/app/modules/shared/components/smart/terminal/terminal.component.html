@@ -8,10 +8,7 @@
       (change)="onContainerChange($event.target.value)"
     >
       <option
-        *ngFor="
-          let container of view?.config.containers;
-          trackBy: trackByIdentity
-        "
+        *ngFor="let container of containers; trackBy: trackByIdentity"
         value="{{ container }}"
         >{{ container }}</option
       >

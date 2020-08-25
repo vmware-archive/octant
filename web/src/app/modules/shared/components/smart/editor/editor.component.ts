@@ -3,10 +3,11 @@ Copyright (c) 2020 the Octant contributors. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { EditorView, View } from '../../../models/content';
+import { Component } from '@angular/core';
+import { EditorView } from '../../../models/content';
 import { NamespaceService } from '../../../services/namespace/namespace.service';
 import { ActionService } from '../../../services/action/action.service';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 interface Options {
   readOnly: boolean;
@@ -18,17 +19,7 @@ interface Options {
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss'],
 })
-export class EditorComponent implements OnChanges {
-  private v: EditorView;
-
-  @Input() set view(v: View) {
-    this.v = v as EditorView;
-  }
-
-  get view() {
-    return this.v;
-  }
-
+export class EditorComponent extends AbstractViewComponent<EditorView> {
   set value(v: string) {
     if (v !== this.editorValue) {
       this.isModified = true;
@@ -46,7 +37,7 @@ export class EditorComponent implements OnChanges {
 
   isModified = false;
 
-  options: Options;
+  options: Options = { language: 'yaml', readOnly: false };
 
   submitAction = 'action.octant.dev/update';
   submitLabel = 'Update';
@@ -55,24 +46,22 @@ export class EditorComponent implements OnChanges {
     private namespaceService: NamespaceService,
     private actionService: ActionService
   ) {
-    this.options = {} as Options;
+    super();
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.view.currentValue) {
-      const view = changes.view.currentValue as EditorView;
+  update() {
+    const view = this.v;
 
-      if (!this.isModified) {
-        this.editorValue = view.config.value;
-        this.metadata = view.config.metadata;
-        this.pristineValue = view.config.value;
-        this.options.readOnly = view.config.readOnly;
-        this.options.language = view.config.language;
-      }
-
-      this.submitAction = view.config.submitAction || this.submitAction;
-      this.submitLabel = view.config.submitLabel || this.submitLabel;
+    if (!this.isModified) {
+      this.editorValue = view.config.value;
+      this.metadata = view.config.metadata;
+      this.pristineValue = view.config.value;
+      this.options.readOnly = view.config.readOnly;
+      this.options.language = view.config.language;
     }
+
+    this.submitAction = view.config.submitAction || this.submitAction;
+    this.submitLabel = view.config.submitLabel || this.submitLabel;
   }
 
   submit() {

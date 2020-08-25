@@ -11,7 +11,8 @@
         <option
           *ngFor="let container of v?.config.containers"
           value="{{ container }}"
-        > {{ container === '' ? '[all containers]' : container }}</option
+        >
+          {{ container === '' ? '[all containers]' : container }}</option
         >
       </select>
     </clr-select-container>

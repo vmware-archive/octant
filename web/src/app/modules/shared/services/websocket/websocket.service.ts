@@ -4,7 +4,12 @@
  */
 
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import {
+  BehaviorSubject,
+  ObjectUnsubscribedError,
+  Observable,
+  Subject,
+} from 'rxjs';
 import {
   NotifierService,
   NotifierSession,
@@ -183,7 +188,9 @@ export class WebsocketService implements BackendService {
         );
       }
     } catch (err) {
-      console.error('parse websocket', err, data);
+      if (!(err instanceof ObjectUnsubscribedError)) {
+        console.error('parse websocket', err, data);
+      }
     }
   }
 }

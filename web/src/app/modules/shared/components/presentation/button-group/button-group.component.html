@@ -1,6 +1,6 @@
-<clr-button-group *ngIf="view?.config.buttons" class="btn-primary">
+<clr-button-group *ngIf="v.config.buttons" class="btn-primary">
   <clr-button
-    *ngFor="let button of view.config.buttons; trackBy: trackByFn"
+    *ngFor="let button of v.config.buttons; trackBy: trackByFn"
     class="{{ class }}"
     (click)="onClick(button.payload, button.confirmation)"
   >

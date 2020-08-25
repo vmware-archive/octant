@@ -3,6 +3,7 @@
 //
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TerminalComponent } from './terminal.component';
+import { TerminalView } from '../../../models/content';
 
 describe('TerminalComponent', () => {
   let component: TerminalComponent;
@@ -17,6 +18,20 @@ describe('TerminalComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(TerminalComponent);
     component = fixture.componentInstance;
+    component.view = {
+      metadata: {
+        type: '',
+      },
+      config: {
+        containers: [],
+        name: 'name',
+        namespace: 'namespace',
+        podName: 'pod-name',
+        terminal: {
+          active: false,
+        },
+      },
+    } as TerminalView;
     fixture.detectChanges();
   });
 

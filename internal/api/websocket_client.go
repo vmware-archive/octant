@@ -53,6 +53,7 @@ type WebsocketClient struct {
 	state    octant.State
 	handlers map[string][]octant.ClientRequestHandler
 	id       uuid.UUID
+	stopCh   chan struct{}
 }
 
 var _ OctantClient = (*WebsocketClient)(nil)
@@ -74,6 +75,7 @@ func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *Webs
 		dashConfig: dashConfig,
 		logger:     logger,
 		handlers:   make(map[string][]octant.ClientRequestHandler),
+		stopCh:     make(chan struct{}, 1),
 	}
 
 	state := NewWebsocketState(dashConfig, actionDispatcher, client)
@@ -107,6 +109,7 @@ func NewTemporaryWebsocketClient(ctx context.Context, conn *websocket.Conn, mana
 		manager:  manager,
 		logger:   logger,
 		handlers: make(map[string][]octant.ClientRequestHandler),
+		stopCh:   make(chan struct{}, 1),
 	}
 
 	state := NewTemporaryWebsocketState(actionDispatcher, client)
@@ -164,6 +167,8 @@ func (c *WebsocketClient) readPump() {
 			c.logger.WithErr(err).Errorf("Handle websocket message")
 		}
 	}
+
+	close(c.stopCh)
 }
 
 func (c *WebsocketClient) handle(message []byte) error {
@@ -269,6 +274,11 @@ func (c *WebsocketClient) Send(ev event.Event) {
 	if c.isOpen {
 		c.send <- ev
 	}
+}
+
+// StopCh returns the client's stop channel. It will be closed when the WebsocketClient is closed.
+func (c *WebsocketClient) StopCh() <-chan struct{} {
+	return c.stopCh
 }
 
 func (c *WebsocketClient) RegisterHandler(handler octant.ClientRequestHandler) {

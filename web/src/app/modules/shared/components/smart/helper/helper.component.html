@@ -4,7 +4,13 @@
       <clr-icon shape="help"></clr-icon>
     </button>
     <clr-dropdown-menu clrPosition="bottom-right" *clrIfOpen>
-      <div aria-label="Dropdown header About Octant" clrDropdownItem (click)="isModalOpen = true">About Octant</div>
+      <div
+        aria-label="Dropdown header About Octant"
+        clrDropdownItem
+        (click)="isModalOpen = true"
+      >
+        About Octant
+      </div>
     </clr-dropdown-menu>
   </clr-dropdown>
 </div>
@@ -15,21 +21,23 @@
     <table class="table table-vertical table-noborder">
       <tbody>
         <tr>
-            <th>Version</th>
-            <td>{{ version }}</td>
+          <th>Version</th>
+          <td>{{ version }}</td>
         </tr>
         <tr>
-            <th>Commit</th>
-            <td>{{ commit }}</td>
+          <th>Commit</th>
+          <td>{{ commit }}</td>
         </tr>
         <tr>
-            <th>Built</th>
-            <td>{{ time }}</td>
+          <th>Built</th>
+          <td>{{ time }}</td>
         </tr>
       </tbody>
     </table>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-primary" (click)="isModalOpen = false">Close</button>
+    <button type="button" class="btn btn-primary" (click)="isModalOpen = false">
+      Close
+    </button>
   </div>
 </clr-modal>

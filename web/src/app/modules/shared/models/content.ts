@@ -243,7 +243,7 @@ export interface Node {
   apiVersion: string;
   kind: string;
   status: string;
-  details: View;
+  details: View[];
   path: LinkView;
 }
 

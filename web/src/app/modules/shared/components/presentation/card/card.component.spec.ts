@@ -8,8 +8,7 @@ import {
 
 import { CardComponent } from './card.component';
 import { Action, CardView, TextView } from '../../../models/content';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { SimpleChange } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { ViewService } from '../../../services/view/view.service';
 import { viewServiceStub } from 'src/app/testing/view-service.stub';
 import { SharedModule } from '../../../shared.module';
@@ -52,15 +51,16 @@ describe('CardComponent', () => {
       },
     };
 
-    const cardView: CardView = {
+    component.view = {
       config: {
         actions: [],
         body: textView,
       },
-      metadata: undefined,
-    };
-
-    component.view = cardView;
+      metadata: {
+        type: 'card',
+        title: [textView],
+      },
+    } as CardView;
     component.currentAction = action;
   });
 
@@ -110,10 +110,6 @@ describe('CardComponent', () => {
     };
 
     component.view = view;
-
-    component.ngOnChanges({
-      view: new SimpleChange(null, component.view, false),
-    });
     fixture.detectChanges();
 
     expect(component.body).toBe(view.config.body);

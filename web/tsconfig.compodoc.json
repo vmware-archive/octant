@@ -156,8 +156,6 @@
     "src//app/modules/shared/components/presentation/quadrant/quadrant.component.spec.ts",
     "src//app/modules/shared/components/presentation/yaml/yaml.component.ts",
     "src//app/modules/shared/components/presentation/yaml/yaml.component.spec.ts",
-    "src//app/modules/shared/components/presentation/content-switcher/content-switcher.component.ts",
-    "src//app/modules/shared/components/presentation/content-switcher/content-switcher.component.spec.ts",
     "src//app/modules/shared/components/presentation/containers/containers.component.spec.ts",
     "src//app/modules/shared/components/presentation/containers/containers.component.ts",
     "src//app/modules/shared/components/presentation/text/text.component.spec.ts",
@@ -222,6 +220,6 @@
     "src//stories/graph.stories.ts",
     "src//stories/graph.data.ts",
     "src//stories/preferences.stories.ts",
-    "src//polyfills.ts",
-  ],
+    "src//polyfills.ts"
+  ]
 }

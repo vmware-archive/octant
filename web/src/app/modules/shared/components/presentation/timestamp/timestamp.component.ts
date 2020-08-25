@@ -2,39 +2,22 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import {
-  Component,
-  Input,
-  OnChanges,
-  OnDestroy,
-  SimpleChanges,
-  ChangeDetectionStrategy,
-  OnInit,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
-import { TimestampView, View } from 'src/app/modules/shared/models/content';
+import { TimestampView } from 'src/app/modules/shared/models/content';
 import { Subscription } from 'rxjs';
 import { ContentService } from '../../../services/content/content.service';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-view-timestamp',
   templateUrl: './timestamp.component.html',
   styleUrls: ['./timestamp.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TimestampComponent implements OnInit, OnChanges, OnDestroy {
-  private v: TimestampView;
-
-  @Input() set view(v: View) {
-    this.v = v as TimestampView;
-  }
-  get view() {
-    return this.v;
-  }
-
+export class TimestampComponent extends AbstractViewComponent<TimestampView>
+  implements OnInit, OnDestroy {
   timestamp: number;
   humanReadable: string;
   age: string;
@@ -45,6 +28,7 @@ export class TimestampComponent implements OnInit, OnChanges, OnDestroy {
     private contentService: ContentService,
     private cd: ChangeDetectorRef
   ) {
+    super();
     dayjs.extend(utc);
     dayjs.extend(LocalizedFormat);
   }
@@ -62,16 +46,12 @@ export class TimestampComponent implements OnInit, OnChanges, OnDestroy {
     return `${-this.scrollPosition - 64}px`;
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view && changes.view.currentValue) {
-      const view = changes.view.currentValue as TimestampView;
-
-      this.timestamp = view.config.timestamp;
-      this.humanReadable =
-        dayjs(this.timestamp * 1000)
-          .utc()
-          .format('llll') + ' UTC';
-    }
+  update() {
+    this.timestamp = this.v.config.timestamp;
+    this.humanReadable =
+      dayjs(this.timestamp * 1000)
+        .utc()
+        .format('llll') + ' UTC';
   }
 
   ngOnDestroy(): void {

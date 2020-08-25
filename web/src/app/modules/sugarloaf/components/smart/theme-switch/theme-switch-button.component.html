@@ -1,13 +1,21 @@
 <div class="switch-button-container">
   <ng-container *ngIf="collapsed; else expanded">
-    <button id="switchButton" class="btn btn-link btn-inverse btn-collapsed" (click)="switchTheme()">
+    <button
+      id="switchButton"
+      class="btn btn-link btn-inverse btn-collapsed"
+      (click)="switchTheme()"
+    >
       <clr-icon [attr.shape]="lightThemeEnabled ? 'moon' : 'sun'"></clr-icon>
     </button>
   </ng-container>
-<ng-template #expanded>
-<button id="switchButton" class="btn btn-link btn-inverse" (click)="switchTheme()">
-  <clr-icon [attr.shape]="lightThemeEnabled ? 'moon' : 'sun'"></clr-icon>
-{{ lightThemeEnabled ? 'dark' : 'light' }}
-</button>
-</ng-template>
+  <ng-template #expanded>
+    <button
+      id="switchButton"
+      class="btn btn-link btn-inverse"
+      (click)="switchTheme()"
+    >
+      <clr-icon [attr.shape]="lightThemeEnabled ? 'moon' : 'sun'"></clr-icon>
+      {{ lightThemeEnabled ? 'dark' : 'light' }}
+    </button>
+  </ng-template>
 </div>

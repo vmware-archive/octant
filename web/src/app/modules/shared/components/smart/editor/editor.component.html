@@ -1,15 +1,22 @@
 <div class="editor-container">
-    <div class="editor">
-        <ng-monaco-editor
-                [(ngModel)]="value"
-                [options]="options"
-                modelUri="file:text.yaml"
-        ></ng-monaco-editor>
-    </div>
+  <div class="editor">
+    <ng-monaco-editor
+      [(ngModel)]="value"
+      [options]="options"
+      modelUri="file:text.yaml"
+    ></ng-monaco-editor>
+  </div>
 
-    <div class="controls">
-        <button (click)="reset()" [disabled]="isUpdateEnabled()" class="btn">Reset</button>
-        <button (click)="submit()" [disabled]="isUpdateEnabled()" class="btn btn-primary">{{ submitLabel }}</button>
-    </div>
-
+  <div class="controls">
+    <button (click)="reset()" [disabled]="isUpdateEnabled()" class="btn">
+      Reset
+    </button>
+    <button
+      (click)="submit()"
+      [disabled]="isUpdateEnabled()"
+      class="btn btn-primary"
+    >
+      {{ submitLabel }}
+    </button>
+  </div>
 </div>

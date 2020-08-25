@@ -3,10 +3,9 @@
 //
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
-  HostListener,
-  Input,
   OnDestroy,
   ViewChild,
   ViewEncapsulation,
@@ -20,26 +19,40 @@ import {
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { TerminalView } from 'src/app/modules/shared/models/content';
 import { WebsocketService } from '../../../services/websocket/websocket.service';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   encapsulation: ViewEncapsulation.None,
   selector: 'app-terminal',
   styleUrls: ['./terminal.component.scss'],
   templateUrl: './terminal.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TerminalComponent implements OnDestroy, AfterViewInit {
-  constructor(
-    private terminalService: TerminalOutputService,
-    private wss: WebsocketService
-  ) {}
+export class TerminalComponent extends AbstractViewComponent<TerminalView>
+  implements OnDestroy, AfterViewInit {
+  @ViewChild('terminal', { static: true }) terminalDiv: ElementRef;
 
   selectedContainer = '';
+  containers: string[] = [];
+
   private terminalStream: TerminalOutputStreamer;
   private term: Terminal;
   private fitAddon: FitAddon;
+
   trackByIdentity = trackByIdentity;
-  @Input() view: TerminalView;
-  @ViewChild('terminal', { static: true }) terminalDiv: ElementRef;
+
+  constructor(
+    private terminalService: TerminalOutputService,
+    private wss: WebsocketService
+  ) {
+    super();
+  }
+
+  update() {
+    if (this.v) {
+      this.containers = this.v.config.containers;
+    }
+  }
 
   ngOnDestroy(): void {
     if (this.terminalStream) {
@@ -51,32 +64,32 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    if (this.view) {
-      const logLevel = 'info';
-      const { terminal } = this.view.config;
-      const { active } = terminal;
-      const disableStdin = !active;
-      this.term = new Terminal({
-        logLevel,
-        disableStdin,
-      });
-      setTimeout(() => {
-        this.initStream();
-      });
-      this.enableResize();
-      this.term.onData(data => {
-        if (active) {
-          this.wss.sendMessage('action.octant.dev/sendTerminalCommand', {
-            key: data,
-          });
-        }
-      });
-      this.fitAddon = new FitAddon();
-      this.term.loadAddon(this.fitAddon);
-      this.term.open(this.terminalDiv.nativeElement);
-      this.term.focus();
-      this.fitAddon.fit();
-    }
+    const logLevel = 'info';
+    const { terminal } = this.v.config;
+    const { active } = terminal;
+    const disableStdin = !active;
+    this.term = new Terminal({
+      logLevel,
+      disableStdin,
+    });
+    setTimeout(() => {
+      this.initStream();
+    });
+    this.enableResize();
+    this.term.onData(data => {
+      if (active) {
+        this.wss.sendMessage('action.octant.dev/sendTerminalCommand', {
+          key: data,
+        });
+      }
+    });
+    this.fitAddon = new FitAddon();
+    this.term.loadAddon(this.fitAddon);
+    this.term.open(this.terminalDiv.nativeElement);
+    this.term.focus();
+    this.fitAddon.fit();
+
+    super.ngAfterViewInit();
   }
 
   enableResize() {
@@ -108,7 +121,7 @@ export class TerminalComponent implements OnDestroy, AfterViewInit {
   }
 
   initStream() {
-    const { namespace, podName, terminal } = this.view.config;
+    const { namespace, podName, terminal } = this.v.config;
     const { container } = terminal;
     if (this.terminalService.selectedContainer) {
       this.selectedContainer = this.terminalService.selectedContainer;

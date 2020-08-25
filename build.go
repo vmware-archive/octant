@@ -264,7 +264,7 @@ func build() {
 	if runtime.GOOS == "windows" {
 		artifact = "octant.exe"
 	}
-	runCmd("go", nil, "build", "-o", "build/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
+	runCmd("go", nil, "build", "-mod=vendor", "-o", "build/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
 }
 
 func runDev() {

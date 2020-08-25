@@ -2,28 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input } from '@angular/core';
+import { Component } from '@angular/core';
 import {
   ExpressionSelectorView,
   LabelSelectorView,
   SelectorsView,
-  View,
 } from 'src/app/modules/shared/models/content';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-view-selectors',
   templateUrl: './selectors.component.html',
   styleUrls: ['./selectors.component.scss'],
 })
-export class SelectorsComponent {
-  v: SelectorsView;
+export class SelectorsComponent extends AbstractViewComponent<SelectorsView> {
+  constructor() {
+    super();
+  }
 
-  @Input() set view(v: View) {
-    this.v = v as SelectorsView;
-  }
-  get view() {
-    return this.v;
-  }
+  update() {}
 
   identifyItem(
     index: number,

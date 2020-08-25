@@ -2,32 +2,23 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { ErrorView, View } from 'src/app/modules/shared/models/content';
+import { Component } from '@angular/core';
+import { ErrorView } from 'src/app/modules/shared/models/content';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-view-error',
   templateUrl: './error.component.html',
   styleUrls: ['./error.component.scss'],
 })
-export class ErrorComponent implements OnChanges {
-  private v: ErrorView;
-
-  @Input() set view(v: View) {
-    this.v = v as ErrorView;
-  }
-  get view() {
-    return this.v;
-  }
-
+export class ErrorComponent extends AbstractViewComponent<ErrorView> {
   source: string;
 
-  constructor() {}
+  constructor() {
+    super();
+  }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view.currentValue) {
-      const view = changes.view.currentValue as ErrorView;
-      this.source = view.config.data;
-    }
+  update() {
+    this.source = this.v.config.data;
   }
 }

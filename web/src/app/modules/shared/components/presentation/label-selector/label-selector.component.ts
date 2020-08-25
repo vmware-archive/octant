@@ -2,41 +2,27 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { LabelSelectorView, View } from 'src/app/modules/shared/models/content';
+import { Component } from '@angular/core';
+import { LabelSelectorView } from 'src/app/modules/shared/models/content';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-view-label-selector',
   templateUrl: './label-selector.component.html',
   styleUrls: ['./label-selector.component.scss'],
 })
-export class LabelSelectorComponent implements OnChanges {
-  private v: LabelSelectorView;
-  private previousView: SimpleChanges;
-
-  @Input() set view(v: View) {
-    this.v = v as LabelSelectorView;
-  }
-  get view() {
-    return this.v;
-  }
+export class LabelSelectorComponent extends AbstractViewComponent<
+  LabelSelectorView
+> {
   key: string;
   value: string;
 
-  constructor() {}
+  constructor() {
+    super();
+  }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view.currentValue) {
-      if (
-        JSON.stringify(this.previousView) !==
-        JSON.stringify(changes.view.currentValue)
-      ) {
-        const view = changes.view.currentValue as LabelSelectorView;
-        this.key = view.config.key;
-        this.value = view.config.value;
-
-        this.previousView = changes.view.currentValue;
-      }
-    }
+  update() {
+    this.key = this.v.config.key;
+    this.value = this.v.config.value;
   }
 }

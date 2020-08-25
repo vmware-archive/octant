@@ -7,6 +7,8 @@ package api
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"hash/fnv"
@@ -37,9 +39,18 @@ type ContentManagerOption func(manager *ContentManager)
 // if the action should be be immediately rerun.
 type ContentGenerateFunc func(ctx context.Context, state octant.State) (Content, bool, error)
 
+// Content is a content to be sent to clients.
 type Content struct {
+	// Response is a content response.
 	Response component.ContentResponse
-	Path     string
+	// Path is the path of the content.
+	Path string
+}
+
+// Checksum return's the content's checksum.
+func (c *Content) Checksum() string {
+	b, _ := json.MarshalIndent(c, "", "  ")
+	return fmt.Sprintf("%s", sha256.Sum256(b))
 }
 
 var (
@@ -102,15 +113,24 @@ func (cm *ContentManager) Start(ctx context.Context, state octant.State, s Octan
 		close(cm.updateContentCh)
 	}()
 
+	ctx, cancel := context.WithCancel(ctx)
+
 	updateCancel := state.OnContentPathUpdate(func(contentPath string) {
 		cm.updateContentCh <- struct{}{}
 	})
-	defer updateCancel()
+
+	go func() {
+		<-s.StopCh()
+		updateCancel()
+		cancel()
+	}()
 
 	cm.poller.Run(ctx, cm.updateContentCh, cm.runUpdate(state, s), event.DefaultScheduleDelay)
 }
 
 func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFunc {
+	previousChecksum := ""
+
 	return func(ctx context.Context) bool {
 		contentPath := state.GetContentPath()
 		if contentPath == "" {
@@ -134,6 +154,12 @@ func (cm *ContentManager) runUpdate(state octant.State, s OctantClient) PollerFu
 				Errorf("generate content")
 			return false
 		}
+
+		checksum := content.Checksum()
+		if checksum == previousChecksum {
+			return false
+		}
+		previousChecksum = checksum
 
 		if ctx.Err() == nil {
 			if content.Path == state.GetContentPath() {
@@ -224,8 +250,7 @@ func (cm *ContentManager) SetNamespace(state octant.State, payload action.Payloa
 		return fmt.Errorf("extract namespace from payload: %w", err)
 	}
 	state.SetNamespace(namespace)
-	state.Dispatch(cm.ctx, action.RequestSetNamespace, payload)
-	return nil
+	return state.Dispatch(cm.ctx, action.RequestSetNamespace, payload)
 }
 
 // SetContentPath sets the current content path.
@@ -237,8 +262,6 @@ func (cm *ContentManager) SetContentPath(state octant.State, payload action.Payl
 	if err := cm.SetQueryParams(state, payload); err != nil {
 		return fmt.Errorf("extract query params from payload: %w", err)
 	}
-
-	cm.logger.With("content-path", contentPath).Debugf("setting content path")
 
 	state.SetContentPath(contentPath)
 	return nil

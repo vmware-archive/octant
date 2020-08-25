@@ -1,31 +1,16 @@
-import {
-  Component,
-  Input,
-  OnChanges,
-  SimpleChanges,
-  ViewChild,
-} from '@angular/core';
+import { Component, Input, ViewChild } from '@angular/core';
 import { Action, CardView, TitleView, View } from '../../../models/content';
 import { FormGroup } from '@angular/forms';
 import { ActionService } from '../../../services/action/action.service';
 import { FormComponent } from '../form/form.component';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-view-card',
   templateUrl: './card.component.html',
   styleUrls: ['./card.component.scss'],
 })
-export class CardComponent implements OnChanges {
-  private v: CardView;
-
-  @Input() set view(v: View) {
-    this.v = v as CardView;
-  }
-
-  get view() {
-    return this.v;
-  }
-
+export class CardComponent extends AbstractViewComponent<CardView> {
   @ViewChild('appForm') appForm: FormComponent;
 
   title: TitleView[];
@@ -34,16 +19,13 @@ export class CardComponent implements OnChanges {
 
   currentAction: Action;
 
-  constructor(private actionService: ActionService) {}
+  constructor(private actionService: ActionService) {
+    super();
+  }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view.currentValue) {
-      const view: CardView = changes.view.currentValue;
-      if (view) {
-        this.title = view.metadata.title as TitleView[];
-        this.body = view.config.body;
-      }
-    }
+  update() {
+    this.title = this.v.metadata.title as TitleView[];
+    this.body = this.v.config.body;
   }
 
   onActionSubmit(formGroup: FormGroup) {

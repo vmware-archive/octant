@@ -1,31 +1,22 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { IFrameView, View } from 'src/app/modules/shared/models/content';
+import { Component } from '@angular/core';
+import { IFrameView } from 'src/app/modules/shared/models/content';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-iframe',
   templateUrl: './iframe.component.html',
   styleUrls: ['./iframe.component.scss'],
 })
-export class IFrameComponent implements OnChanges {
-  private v: IFrameView;
-
-  @Input() set view(v: View) {
-    this.v = v as IFrameView;
-  }
-  get view() {
-    return this.v;
-  }
-
+export class IFrameComponent extends AbstractViewComponent<IFrameView> {
   url: string;
   title: string;
 
-  constructor() {}
+  constructor() {
+    super();
+  }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view.currentValue) {
-      const view = changes.view.currentValue as IFrameView;
-      this.url = view.config.url;
-      this.title = view.config.title;
-    }
+  update() {
+    this.url = this.v.config.url;
+    this.title = this.v.config.title;
   }
 }

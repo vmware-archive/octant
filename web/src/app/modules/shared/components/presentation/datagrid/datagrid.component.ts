@@ -3,7 +3,11 @@
 //
 
 import { ClrDatagridSortOrder } from '@clr/angular';
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+} from '@angular/core';
 import {
   Confirmation,
   GridAction,
@@ -12,31 +16,25 @@ import {
   TableRow,
   TableRowWithMetadata,
   TableView,
-  View,
 } from 'src/app/modules/shared/models/content';
 import trackByIndex from 'src/app/util/trackBy/trackByIndex';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { TimestampComparator } from '../../../../../util/timestamp-comparator';
 import { ViewService } from '../../../services/view/view.service';
 import { ActionService } from '../../../services/action/action.service';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
+import { BehaviorSubject, merge, Observable, timer } from 'rxjs';
+import { LoadingService } from '../../../services/loading/loading.service';
 
 @Component({
   selector: 'app-view-datagrid',
   templateUrl: './datagrid.component.html',
   styleUrls: ['./datagrid.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DatagridComponent implements OnChanges {
-  private v: TableView;
+export class DatagridComponent extends AbstractViewComponent<TableView> {
   timeStampComparator = new TimestampComparator();
   sortOrder: ClrDatagridSortOrder = ClrDatagridSortOrder.UNSORTED;
-
-  @Input() set view(v: View) {
-    this.v = v as TableView;
-  }
-
-  get view() {
-    return this.v;
-  }
 
   columns: string[];
   rowsWithMetadata: TableRowWithMetadata[];
@@ -48,43 +46,48 @@ export class DatagridComponent implements OnChanges {
 
   actionDialogOptions: ActionDialogOptions = undefined;
 
-  private previousView: SimpleChanges;
-
   identifyRow = trackByIndex;
   identifyColumn = trackByIdentity;
+  identifyAction = trackByIdentity;
+
   loading: boolean;
+  loading$: Observable<boolean>;
 
   constructor(
     private viewService: ViewService,
-    private actionService: ActionService
-  ) {}
+    private actionService: ActionService,
+    private loadingService: LoadingService,
+    private cdr: ChangeDetectorRef
+  ) {
+    super();
+  }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view) {
-      if (
-        JSON.stringify(this.previousView) !==
-        JSON.stringify(changes.view.currentValue)
-      ) {
-        this.title = this.viewService.viewTitleAsText(this.view);
+  update() {
+    this.title = this.viewService.viewTitleAsText(this.view);
 
-        const current = changes.view.currentValue as TableView;
-        this.columns = current.config.columns.map(column => column.name);
+    this.loading = true;
 
-        if (current.config.rows) {
-          this.rowsWithMetadata = this.getRowsWithMetadata(current.config.rows);
-        }
+    const done = new BehaviorSubject(false);
+    this.loading$ = this.loadingService.withDelay(done, 250, 1000);
 
-        this.placeholder = current.config.emptyContent;
-        this.lastUpdated = new Date();
-        this.loading = current.config.loading;
-        this.filters = current.config.filters;
-
-        this.previousView = changes.view.currentValue;
-      }
-    }
+    setTimeout(() => {
+      this.rowsWithMetadata = this.getRowsWithMetadata(this.v.config.rows);
+      this.placeholder = this.v.config.emptyContent;
+      this.lastUpdated = new Date();
+      this.loading = this.v.config.loading;
+      done.next(true);
+      done.complete();
+      this.cdr.markForCheck();
+    });
+    this.columns = this.v.config.columns.map(column => column.name);
+    this.filters = this.v.config.filters;
   }
 
   private getRowsWithMetadata(rows: TableRow[]): TableRowWithMetadata[] {
+    if (!rows) {
+      return [];
+    }
+
     return rows.map(row => {
       let actions: GridAction[] = [];
 

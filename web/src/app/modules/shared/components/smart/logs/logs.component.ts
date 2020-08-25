@@ -5,9 +5,10 @@
 import {
   AfterContentChecked,
   AfterViewChecked,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
-  Input,
   IterableDiffer,
   IterableDiffers,
   OnDestroy,
@@ -15,35 +16,24 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import {
-  LogEntry,
-  LogsView,
-  View,
-} from 'src/app/modules/shared/models/content';
+import { LogEntry, LogsView } from 'src/app/modules/shared/models/content';
 import {
   PodLogsService,
   PodLogsStreamer,
 } from 'src/app/modules/shared/pod-logs/pod-logs.service';
 import { formatDate } from '@angular/common';
 import { Subscription } from 'rxjs';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-logs',
   templateUrl: './logs.component.html',
   styleUrls: ['./logs.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Default,
 })
-export class LogsComponent
+export class LogsComponent extends AbstractViewComponent<LogsView>
   implements OnInit, OnDestroy, AfterContentChecked, AfterViewChecked {
-  v: LogsView;
-
-  @Input() set view(v: View) {
-    this.v = v as LogsView;
-  }
-  get view() {
-    return this.v;
-  }
-
   private logStream: PodLogsStreamer;
   scrollToBottom = true;
 
@@ -66,18 +56,22 @@ export class LogsComponent
 
   constructor(
     private podLogsService: PodLogsService,
-    private iterableDiffers: IterableDiffers
-  ) {}
+    private iterableDiffers: IterableDiffers,
+    private cdr: ChangeDetectorRef
+  ) {
+    super();
+  }
 
   ngOnInit() {
     this.containerLogsDiffer = this.iterableDiffers
       .find(this.containerLogs)
       .create();
-    if (this.v) {
-      if (this.v.config.containers && this.v.config.containers.length > 0) {
-        this.selectedContainer = this.v.config.containers[0];
-      }
-      this.startStream();
+    this.startStream();
+  }
+
+  protected update() {
+    if (this.v.config.containers && this.v.config.containers.length > 0) {
+      this.selectedContainer = this.v.config.containers[0];
     }
   }
 
@@ -125,6 +119,7 @@ export class LogsComponent
           }
           this.containerLogs.push(entry);
           this.updateSelectedCount();
+          this.cdr.markForCheck();
         }
       );
     }

@@ -4,6 +4,10 @@
   (ngModelChange)="onFilterChange($event)"
   [(ngModel)]="text"
 />
-<button  class="btn btn-sm btn-danger-outline reset-filter" [disabled]="!isActive()" (click)="reset()">
+<button
+  class="btn btn-sm btn-danger-outline reset-filter"
+  [disabled]="!isActive()"
+  (click)="reset()"
+>
   Reset
 </button>

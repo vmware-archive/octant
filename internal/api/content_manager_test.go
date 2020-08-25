@@ -54,9 +54,12 @@ func TestContentManager_GenerateContent(t *testing.T) {
 	})
 	octantClient := fake.NewMockOctantClient(controller)
 
+	stopCh := make(chan struct{}, 1)
+
 	contentResponse := component.ContentResponse{}
 	contentEvent := api.CreateContentEvent(contentResponse, "default", "/path", params)
 	octantClient.EXPECT().Send(contentEvent).AnyTimes()
+	octantClient.EXPECT().StopCh().Return(stopCh).AnyTimes()
 
 	logger := log.NopLogger()
 

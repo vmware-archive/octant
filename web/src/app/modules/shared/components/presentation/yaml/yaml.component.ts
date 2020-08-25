@@ -2,32 +2,23 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { View, YAMLView } from 'src/app/modules/shared/models/content';
+import { Component } from '@angular/core';
+import { YAMLView } from 'src/app/modules/shared/models/content';
+import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
   selector: 'app-view-yaml',
   templateUrl: './yaml.component.html',
   styleUrls: ['./yaml.component.scss'],
 })
-export class YamlComponent implements OnChanges {
-  private v: YAMLView;
-
-  @Input() set view(v: View) {
-    this.v = v as YAMLView;
-  }
-  get view() {
-    return this.v;
-  }
-
+export class YamlComponent extends AbstractViewComponent<YAMLView> {
   source: string;
 
-  constructor() {}
+  constructor() {
+    super();
+  }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.view.currentValue) {
-      const view = changes.view.currentValue as YAMLView;
-      this.source = view.config.data;
-    }
+  update() {
+    this.source = this.v.config.data;
   }
 }

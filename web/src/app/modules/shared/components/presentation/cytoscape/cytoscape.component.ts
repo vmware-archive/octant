@@ -46,7 +46,7 @@ export class CytoscapeComponent implements OnChanges, OnDestroy {
 
   private instance: cytoscape.Core;
 
-  constructor(private renderer: Renderer2, private el: ElementRef) {
+  constructor(private renderer: Renderer2) {
     this.layout = this.layout || {
       name: 'grid',
       directed: true,
@@ -63,7 +63,7 @@ export class CytoscapeComponent implements OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (!this.instance.destroyed()) {
+    if (this.instance && !this.instance.destroyed()) {
       this.instance.destroy();
     }
   }

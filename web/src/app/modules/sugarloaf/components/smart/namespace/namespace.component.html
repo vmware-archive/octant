@@ -3,19 +3,26 @@
     <clr-dropdown class="dropdown-top" [clrCloseMenuOnItemClick]="true">
       <button type="button" class="dropdown-button" clrDropdownTrigger>
         <clr-icon shape="namespace"></clr-icon>
-      {{ currentNamespace }}
+        {{ currentNamespace }}
         <clr-icon shape="caret down"></clr-icon>
       </button>
-      <clr-dropdown-menu class="dropdown-top" *clrIfOpen [clrPosition]="'bottom-right'">
+      <clr-dropdown-menu
+        class="dropdown-top"
+        *clrIfOpen
+        [clrPosition]="'bottom-right'"
+      >
         <label class="dropdown-header">Namespaces</label>
-        <ng-container *ngFor="let namespace of namespaces;trackBy: trackByIdentity">
+        <ng-container
+          *ngFor="let namespace of namespaces; trackBy: trackByIdentity"
+        >
           <button
             type="button"
             class="dropdown-button"
             [ngClass]="namespaceClass(namespace)"
             clrDropdownItem
-            (click)="selectNamespace(namespace)">
-          {{ namespace }}
+            (click)="selectNamespace(namespace)"
+          >
+            {{ namespace }}
           </button>
         </ng-container>
       </clr-dropdown-menu>

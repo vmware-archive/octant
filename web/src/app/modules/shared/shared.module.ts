@@ -43,7 +43,6 @@ import { ContentFilterComponent } from './components/presentation/content-filter
 import { HeptagonGridComponent } from './components/presentation/heptagon-grid/heptagon-grid.component';
 import { HeptagonGridRowComponent } from './components/presentation/heptagon-grid-row/heptagon-grid-row.component';
 import { HeptagonLabelComponent } from './components/presentation/heptagon-label/heptagon-label.component';
-import { ContentSwitcherComponent } from './components/presentation/content-switcher/content-switcher.component';
 import { ObjectStatusComponent } from './components/presentation/object-status/object-status.component';
 import { PodStatusComponent } from './components/presentation/pod-status/pod-status.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -72,6 +71,10 @@ import { FilterDeletedDatagridRowPipe } from './pipes/filterDeletedDatagridRow/f
 import { ContentTextFilterComponent } from './components/presentation/content-text-filter/content-text-filter.component';
 import { TruncatePipe } from './pipes/truncate/truncate.pipe';
 import { StepperComponent } from './components/presentation/stepper/stepper.component';
+import { ViewHostDirective } from './directives/view-host/view-host.directive';
+import { dynamicComponents } from './dynamic-components';
+import { ViewContainerComponent } from './components/view/view-container.component';
+import { MissingComponentComponent } from './components/missing-component/missing-component.component';
 
 @NgModule({
   declarations: [
@@ -84,7 +87,6 @@ import { StepperComponent } from './components/presentation/stepper/stepper.comp
     CodeComponent,
     ContainersComponent,
     ContentFilterComponent,
-    ContentSwitcherComponent,
     ContextSelectorComponent,
     CytoscapeComponent,
     Cytoscape2Component,
@@ -139,6 +141,9 @@ import { StepperComponent } from './components/presentation/stepper/stepper.comp
     HelperComponent,
     ContentTextFilterComponent,
     StepperComponent,
+    ViewHostDirective,
+    ViewContainerComponent,
+    MissingComponentComponent,
   ],
   imports: [
     ClarityModule,
@@ -154,7 +159,7 @@ import { StepperComponent } from './components/presentation/stepper/stepper.comp
     ResizableModule,
     RouterModule,
   ],
-  providers: [highlightProvider()],
+  providers: [highlightProvider(), dynamicComponents()],
   exports: [
     FormatPathPipe,
     AlertComponent,
@@ -166,7 +171,6 @@ import { StepperComponent } from './components/presentation/stepper/stepper.comp
     CodeComponent,
     ContainersComponent,
     ContentFilterComponent,
-    ContentSwitcherComponent,
     ContextSelectorComponent,
     CytoscapeComponent,
     Cytoscape2Component,
@@ -213,6 +217,8 @@ import { StepperComponent } from './components/presentation/stepper/stepper.comp
     PreferencesComponent,
     HelperComponent,
     StepperComponent,
+    ViewHostDirective,
+    ViewContainerComponent,
   ],
 })
 export class SharedModule {}

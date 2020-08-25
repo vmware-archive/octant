@@ -50,8 +50,34 @@ export class ContentComponent implements OnInit, OnDestroy {
     private router: Router,
     private iconService: IconService,
     private contentService: ContentService,
-    public loadingService: LoadingService
+    private loadingService: LoadingService
   ) {}
+
+  ngOnInit() {
+    this.updatePath(this.router.routerState.snapshot.url);
+
+    this.contentSubscription = this.contentService.current.subscribe(
+      contentResponse => {
+        this.setContent(contentResponse);
+      }
+    );
+
+    this.loadingService
+      .withDelay(this.loadingService.requestComplete, 650, 1000)
+      .subscribe(v => {
+        this.showSpinner = v;
+      });
+  }
+
+  ngOnDestroy() {
+    this.resetView();
+    if (this.contentSubscription) {
+      this.contentSubscription.unsubscribe();
+    }
+    if (this.loadingSubscription) {
+      this.loadingSubscription.unsubscribe();
+    }
+  }
 
   updatePath(url: string) {
     const tree = this.router.parseUrl(url);
@@ -63,28 +89,6 @@ export class ContentComponent implements OnInit, OnDestroy {
     }
 
     this.handlePathChange(segments, tree.queryParams, false);
-  }
-
-  ngOnInit() {
-    this.updatePath(this.router.routerState.snapshot.url);
-
-    this.contentSubscription = this.contentService.current.subscribe(
-      contentResponse => {
-        this.setContent(contentResponse);
-      }
-    );
-
-    this.loadingSubscription = this.loadingService.showSpinner.subscribe(
-      value => {
-        this.showSpinner = value;
-      }
-    );
-  }
-
-  ngOnDestroy() {
-    this.resetView();
-    this.contentSubscription.unsubscribe();
-    this.loadingSubscription.unsubscribe();
   }
 
   private handlePathChange(
@@ -129,6 +133,7 @@ export class ContentComponent implements OnInit, OnDestroy {
       this.hasReceivedContent = false;
       return;
     }
+
     this.buttonGroup = contentResponse.content.buttonGroup;
 
     this.extView = contentResponse.content.extensionComponent;

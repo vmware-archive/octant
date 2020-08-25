@@ -56,6 +56,7 @@ func defaultStateManagers(clientID string, dashConfig config.Dash) []StateManage
 type OctantClient interface {
 	Send(event event.Event)
 	ID() string
+	StopCh() <-chan struct{}
 }
 
 type atomicString struct {

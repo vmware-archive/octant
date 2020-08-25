@@ -60,3 +60,17 @@ func (mr *MockOctantClientMockRecorder) Send(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockOctantClient)(nil).Send), arg0)
 }
+
+// StopCh mocks base method
+func (m *MockOctantClient) StopCh() <-chan struct{} {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StopCh")
+	ret0, _ := ret[0].(<-chan struct{})
+	return ret0
+}
+
+// StopCh indicates an expected call of StopCh
+func (mr *MockOctantClientMockRecorder) StopCh() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StopCh", reflect.TypeOf((*MockOctantClient)(nil).StopCh))
+}

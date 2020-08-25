@@ -9,7 +9,7 @@
   <tbody>
     <tr *ngFor="let row of rows; trackBy: trackByIndex">
       <td class="left" *ngFor="let column of columns; trackBy: trackByIdentity">
-        <app-content-switcher [view]="row[column]"></app-content-switcher>
+        <app-view-container [view]="row[column]"></app-view-container>
       </td>
     </tr>
   </tbody>
