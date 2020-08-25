@@ -57,6 +57,7 @@ func DefaultFunctions(octantClient OctantClient) []octant.DashboardClientFunctio
 		NewDashboardUpdate(octantClient),
 		NewDashboardDelete(octantClient),
 		NewDashboardRefPath(octantClient),
+		NewDashboardCreateOrUpdateFromYAML(octantClient),
 	}
 }
 
