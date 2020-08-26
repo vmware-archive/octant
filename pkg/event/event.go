@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 
 package event
 
+//go:generate mockgen -destination=./fake/mock_event.go -package=fake github.com/vmware-tanzu/octant/pkg/event WSClientGetter,WSEventSender
+
 import (
 	"fmt"
 
@@ -92,4 +94,12 @@ func CreateEvent(eventType EventType, fields action.Payload) Event {
 		Type: eventType,
 		Data: fields,
 	}
+}
+
+type WSClientGetter interface {
+	Get(id string) WSEventSender
+}
+
+type WSEventSender interface {
+	Send(event Event)
 }

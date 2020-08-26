@@ -257,7 +257,7 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, options Options
 		WebsocketClientManager: r.websocketClientManager,
 	}
 
-	pluginManager, err := initPlugin(moduleManager, r.actionManager, pluginDashboardService)
+	pluginManager, err := initPlugin(moduleManager, r.actionManager, r.websocketClientManager, pluginDashboardService)
 	if err != nil {
 		return nil, nil, fmt.Errorf("initializing plugin manager: %w", err)
 	}

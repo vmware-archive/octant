@@ -9,6 +9,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
+
 	"github.com/dop251/goja"
 
 	"github.com/vmware-tanzu/octant/internal/octant"
@@ -50,13 +52,14 @@ type OctantClient interface {
 }
 
 // DefaultFunctions are the default functions for the ModularDashboardClientFactory.
-func DefaultFunctions(octantClient OctantClient) []octant.DashboardClientFunction {
+func DefaultFunctions(octantClient OctantClient, wsClient event.WSClientGetter) []octant.DashboardClientFunction {
 	return []octant.DashboardClientFunction{
 		NewDashboardGet(octantClient),
 		NewDashboardList(octantClient),
 		NewDashboardUpdate(octantClient),
 		NewDashboardDelete(octantClient),
 		NewDashboardRefPath(octantClient),
+		NewDashboardSendEvent(wsClient),
 	}
 }
 

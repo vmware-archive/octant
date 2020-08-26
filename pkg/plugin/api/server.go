@@ -79,18 +79,10 @@ type GRPCService struct {
 	PortForwarder          portforward.PortForwarder
 	FrontendProxy          FrontendProxy
 	NamespaceInterface     cluster.NamespaceInterface
-	WebsocketClientManager WSClientGetter
+	WebsocketClientManager event.WSClientGetter
 }
 
 var _ Service = (*GRPCService)(nil)
-
-type WSClientGetter interface {
-	Get(id string) WSEventSender
-}
-
-type WSEventSender interface {
-	Send(event event.Event)
-}
 
 // List lists objects.
 func (s *GRPCService) List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error) {
