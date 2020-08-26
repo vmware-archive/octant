@@ -6,7 +6,7 @@ import { Component } from '@angular/core';
 import { LinkView } from 'src/app/modules/shared/models/content';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
-const isUrlAbsolute = url =>
+const isUrlExternal = url =>
   url?.indexOf('://') > 0 || url?.indexOf('//') === 0;
 
 @Component({
@@ -17,7 +17,7 @@ const isUrlAbsolute = url =>
 export class LinkComponent extends AbstractViewComponent<LinkView> {
   ref: string;
   value: string;
-  isAbsolute: boolean;
+  isExternal: boolean;
   hasStatus: boolean;
 
   constructor() {
@@ -28,7 +28,7 @@ export class LinkComponent extends AbstractViewComponent<LinkView> {
     const view = this.v;
     this.ref = view.config.ref;
     this.value = view.config.value;
-    this.isAbsolute = isUrlAbsolute(this.ref);
+    this.isExternal = isUrlExternal(this.ref);
 
     if (view.config.status) {
       this.hasStatus = true;
