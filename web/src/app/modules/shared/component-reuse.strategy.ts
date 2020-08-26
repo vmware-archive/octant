@@ -9,11 +9,13 @@ import {
   DetachedRouteHandle,
   RouteReuseStrategy,
 } from '@angular/router';
+import { Injectable } from '@angular/core';
 
 const genKey = (r: ActivatedRouteSnapshot) => {
   return `${r.url.join('/')}`;
 };
 
+@Injectable()
 export class ComponentReuseStrategy implements RouteReuseStrategy {
   store(route: ActivatedRouteSnapshot, handle: DetachedRouteHandle): void {}
 

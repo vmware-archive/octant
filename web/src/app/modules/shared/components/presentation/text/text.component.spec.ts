@@ -118,7 +118,7 @@ describe('TextComponent', () => {
 
       element = fixture.nativeElement;
       expect(element.querySelector('app-view-text div').innerHTML).toEqual(
-        '<h1 id="header">header</h1>\n'
+        '<h1>header</h1>\n'
       );
     });
   });
