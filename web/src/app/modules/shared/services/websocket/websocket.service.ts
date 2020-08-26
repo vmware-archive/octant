@@ -4,6 +4,7 @@
  */
 
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import {
   BehaviorSubject,
   ObjectUnsubscribedError,
@@ -62,8 +63,11 @@ export class WebsocketService implements BackendService {
   private connectSignalID = new BehaviorSubject<string>('');
   private opened = false;
 
-  constructor(notifierService: NotifierService) {
+  private router: Router;
+
+  constructor(notifierService: NotifierService, router: Router) {
     this.notifierSession = notifierService.createSession();
+    this.router = router;
 
     this.registerHandler('event.octant.dev/alert', data => {
       const alert = data as Alert;
@@ -75,6 +79,14 @@ export class WebsocketService implements BackendService {
         setTimeout(() => {
           this.notifierSession.removeSignal(id);
         }, diff);
+      }
+    });
+
+    this.registerHandler('event.octant.dev/contentPath', data => {
+      const payload = data as { contentPath: string };
+      const contentPath = payload.contentPath || '/';
+      if (this.router.url !== contentPath) {
+        this.router.navigateByUrl(contentPath);
       }
     });
   }
