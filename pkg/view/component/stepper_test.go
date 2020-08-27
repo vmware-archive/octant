@@ -11,8 +11,10 @@ import (
 )
 
 func Test_stepper_Marshal(t *testing.T) {
+	fft := NewFormFieldText("test", "test", "test")
+	fft.AddValidator("placeholder", "error message", []string{"required"})
 	form := Form{}
-	form.Fields = append(form.Fields, NewFormFieldText("test", "test", "test"))
+	form.Fields = append(form.Fields, fft)
 
 	tests := []struct {
 		name         string

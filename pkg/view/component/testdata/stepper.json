@@ -18,6 +18,11 @@
         "form": {
           "fields": [
             {
+              "error": "error message",
+              "placeholder": "placeholder",
+              "validators": [
+                "required"
+              ],
               "type": "text",
               "label": "test",
               "name": "test",
@@ -34,6 +39,11 @@
         "form": {
           "fields": [
             {
+              "error": "error message",
+              "placeholder": "placeholder",
+              "validators": [
+                "required"
+              ],
               "type": "text",
               "label": "test",
               "name": "test",
