@@ -25,6 +25,7 @@ import { ActionService } from '../../../services/action/action.service';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import { BehaviorSubject, merge, Observable, timer } from 'rxjs';
 import { LoadingService } from '../../../services/loading/loading.service';
+import { ButtonGroupView } from '../../../models/content';
 
 @Component({
   selector: 'app-view-datagrid',
@@ -42,6 +43,7 @@ export class DatagridComponent extends AbstractViewComponent<TableView> {
   placeholder: string;
   lastUpdated: Date;
   filters: TableFilters;
+  buttonGroup?: ButtonGroupView;
   isModalOpen = false;
 
   actionDialogOptions: ActionDialogOptions = undefined;
@@ -81,6 +83,7 @@ export class DatagridComponent extends AbstractViewComponent<TableView> {
     });
     this.columns = this.v.config.columns.map(column => column.name);
     this.filters = this.v.config.filters;
+    this.buttonGroup = this.v.config.buttonGroup;
   }
 
   private getRowsWithMetadata(rows: TableRow[]): TableRowWithMetadata[] {

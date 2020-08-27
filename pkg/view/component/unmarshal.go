@@ -7,7 +7,6 @@ package component
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/pkg/errors"
 )
@@ -139,9 +138,8 @@ func unmarshal(to TypedObject) (Component, error) {
 		o = t
 	case TypeStepper:
 		t := &Stepper{Base: Base{Metadata: to.Metadata}}
-		if uErr := json.Unmarshal(to.Config, &t.Config); uErr != nil {
-			err = fmt.Errorf("unmarshal stepper config: %w", uErr)
-		}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal stepper config")
 		o = t
 	case TypeSummary:
 		t := &Summary{Base: Base{Metadata: to.Metadata}}

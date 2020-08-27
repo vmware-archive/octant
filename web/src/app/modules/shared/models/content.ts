@@ -302,6 +302,7 @@ export interface TableView extends View {
     emptyContent: string;
     loading: boolean;
     filters: TableFilters;
+    buttonGroup?: ButtonGroupView;
   };
 }
 

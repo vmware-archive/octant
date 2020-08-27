@@ -479,6 +479,60 @@ func Test_unmarshal(t *testing.T) {
 			},
 		},
 		{
+			name:       "table with button group",
+			configFile: "config_table_buttongroup.json",
+			objectType: "table",
+			expected: &Table{
+				Config: TableConfig{
+					Columns: NewTableCols("Name", "Description"),
+					Rows: []TableRow{
+						{
+							"Description": &Text{
+								Config: TextConfig{
+									Text: "The first row",
+								},
+								Base: newBase(TypeText, nil),
+							},
+							"Name": &Text{
+								Config: TextConfig{
+									Text: "First",
+								},
+								Base: newBase(TypeText, nil),
+							},
+						},
+						{
+							"Description": &Text{
+								Config: TextConfig{
+									Text: "The last row",
+								},
+								Base: newBase(TypeText, nil),
+							},
+							"Name": &Text{
+								Config: TextConfig{
+									Text: "Last",
+								},
+								Base: newBase(TypeText, nil),
+							},
+						},
+					},
+					ButtonGroup: &ButtonGroup{
+						Config: ButtonGroupConfig{
+							Buttons: []Button{
+								{
+									Name: "Create",
+									Payload: action.Payload{
+										"action": "action.local/create",
+										"prop":   "value",
+									},
+								},
+							},
+						},
+					},
+				},
+				Base: newBase(TypeTable, nil),
+			},
+		},
+		{
 			name:       "text",
 			configFile: "config_text.json",
 			objectType: "text",
