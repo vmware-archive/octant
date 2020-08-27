@@ -1,0 +1,66 @@
+{
+  "columns": [
+    {
+      "name": "Name",
+      "accessor": "Name"
+    },
+    {
+      "name": "Description",
+      "accessor": "Description"
+    }
+  ],
+  "rows": [
+    {
+      "Description": {
+        "metadata": {
+          "type": "text"
+        },
+        "config": {
+          "value": "The first row"
+        }
+      },
+      "Name": {
+        "metadata": {
+          "type": "text"
+        },
+        "config": {
+          "value": "First"
+        }
+      }
+    },
+    {
+      "Description": {
+        "metadata": {
+          "type": "text"
+        },
+        "config": {
+          "value": "The last row"
+        }
+      },
+      "Name": {
+        "metadata": {
+          "type": "text"
+        },
+        "config": {
+          "value": "Last"
+        }
+      }
+    }
+  ],
+  "buttonGroup": {
+    "metadata": {
+      "type": "buttonGroup"
+    },
+    "config": {
+      "buttons": [
+        {
+          "name": "Create",
+          "payload": {
+            "action": "action.local/create",
+            "prop": "value"
+          }
+        }
+      ]
+    }
+  }
+}

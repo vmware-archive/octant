@@ -7,7 +7,6 @@ package javascript
 
 import (
 	"context"
-	"errors"
 
 	"github.com/dop251/goja"
 
@@ -44,7 +43,7 @@ func (d *DashboardUpdate) Call(ctx context.Context, vm *goja.Runtime) func(c goj
 
 		results, err := d.storage.ObjectStore().CreateOrUpdateFromYAML(ctx, namespace, update)
 		if err != nil {
-			panic(panicMessage(vm, errors.New("no YAML was supplied"), ""))
+			panic(panicMessage(vm, err, ""))
 		}
 
 		return vm.ToValue(results)

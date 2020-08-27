@@ -12,6 +12,9 @@ import (
 	"sync"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/pkg/errors"
+
+	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
 // TableFilter describer a text filter for a table.
@@ -27,6 +30,43 @@ type TableConfig struct {
 	EmptyContent string                 `json:"emptyContent"`
 	Loading      bool                   `json:"loading"`
 	Filters      map[string]TableFilter `json:"filters"`
+	ButtonGroup  *ButtonGroup           `json:"buttonGroup,omitempty"`
+}
+
+func (t *TableConfig) UnmarshalJSON(data []byte) error {
+	x := struct {
+		Columns      []TableCol             `json:"columns"`
+		Rows         []TableRow             `json:"rows"`
+		EmptyContent string                 `json:"emptyContent"`
+		Loading      bool                   `json:"loading"`
+		Filters      map[string]TableFilter `json:"filters"`
+		ButtonGroup  *TypedObject           `json:"buttonGroup,omitempty"`
+	}{}
+
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+
+	if x.ButtonGroup != nil {
+		component, err := x.ButtonGroup.ToComponent()
+		if err != nil {
+			return err
+		}
+
+		buttonGroup, ok := component.(*ButtonGroup)
+		if !ok {
+			return errors.New("item was not a buttonGroup")
+		}
+		t.ButtonGroup = buttonGroup
+	}
+
+	t.Columns = x.Columns
+	t.Rows = x.Rows
+	t.EmptyContent = x.EmptyContent
+	t.Loading = x.Loading
+	t.Filters = x.Filters
+
+	return nil
 }
 
 // TableCol describes a column from a table. Accessor is the key this
@@ -177,6 +217,15 @@ func (t *Table) AddFilter(columnName string, filter TableFilter) {
 	defer t.mu.Unlock()
 
 	t.Config.Filters[columnName] = filter
+}
+
+// AddButton adds a button the button group for a table.
+func (t *Table) AddButton(name string, payload action.Payload, buttonOptions ...ButtonOption) {
+	if t.Config.ButtonGroup == nil {
+		t.Config.ButtonGroup = NewButtonGroup()
+	}
+	button := NewButton(name, payload, buttonOptions...)
+	t.Config.ButtonGroup.AddButton(button)
 }
 
 // Columns returns the table columns.
