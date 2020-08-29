@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -169,25 +170,103 @@ func TestKeyFromObject(t *testing.T) {
 }
 
 func TestKeyFromPayload(t *testing.T) {
-	pod := testutil.CreatePod("pod")
-
-	payload := action.Payload{
-		"namespace":  pod.Namespace,
-		"apiVersion": pod.APIVersion,
-		"kind":       pod.Kind,
-		"name":       pod.Name,
+	type args struct {
+		m map[string]interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		want    Key
+	}{
+		{
+			name: "in general",
+			args: args{map[string]interface{}{
+				"namespace":  "namespace",
+				"apiVersion": "apiVersion",
+				"kind":       "kind",
+				"name":       "name",
+			}},
+			want: Key{
+				Namespace:  "namespace",
+				APIVersion: "apiVersion",
+				Kind:       "kind",
+				Name:       "name",
+			},
+		},
+		{
+			name: "with label selector",
+			args: args{map[string]interface{}{
+				"namespace":  "namespace",
+				"apiVersion": "apiVersion",
+				"kind":       "kind",
+				"labelSelector": map[string]interface{}{
+					"matchLabels": map[string]string{
+						"foo": "bar",
+					},
+				},
+			}},
+			want: Key{
+				Namespace:  "namespace",
+				APIVersion: "apiVersion",
+				Kind:       "kind",
+				LabelSelector: &metav1.LabelSelector{
+					MatchLabels: map[string]string{
+						"foo": "bar",
+					},
+				},
+			},
+		},
+		{
+			name: "with label set",
+			args: args{map[string]interface{}{
+				"namespace":  "namespace",
+				"apiVersion": "apiVersion",
+				"kind":       "kind",
+				"selector": map[string]string{
+					"foo": "bar",
+				},
+			}},
+			want: Key{
+				Namespace:  "namespace",
+				APIVersion: "apiVersion",
+				Kind:       "kind",
+				Selector: &labels.Set{
+					"foo": "bar",
+				},
+			},
+		},
+		{
+			name: "missing required field",
+			args: args{map[string]interface{}{
+				// apiVersion is required
+				"namespace": "namespace",
+				"kind":      "kind",
+				"name":      "name",
+			}},
+			wantErr: true,
+		},
+		{
+			name: "invalid type for field",
+			args: args{map[string]interface{}{
+				// namespace should be a string.
+				"namespace":  1,
+				"apiVersion": "apiVersion",
+				"kind":       "kind",
+				"name":       "name",
+			}},
+			wantErr: true,
+		},
 	}
 
-	got, err := KeyFromPayload(payload)
-	require.NoError(t, err)
-
-	expected := Key{
-		Namespace:  pod.Namespace,
-		APIVersion: pod.APIVersion,
-		Kind:       pod.Kind,
-		Name:       pod.Name,
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := KeyFromPayload(tt.args.m)
+			testutil.RequireErrorOrNot(t, tt.wantErr, err, func() {
+				require.Equal(t, tt.want, got)
+			})
+		})
 	}
-	assert.Equal(t, expected, got)
 }
 
 func TestKeyFromGroupVersionKind(t *testing.T) {

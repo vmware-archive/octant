@@ -7,6 +7,7 @@ package javascript
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/dop251/goja"
 
@@ -38,11 +39,18 @@ func (d *DashboardList) Name() string {
 // list is unsuccessful, it will throw a javascript exception.
 func (d *DashboardList) Call(ctx context.Context, vm *goja.Runtime) func(c goja.FunctionCall) goja.Value {
 	return func(c goja.FunctionCall) goja.Value {
+		m := map[string]interface{}{}
+
 		var key store.Key
 		obj := c.Argument(0).ToObject(vm)
 
-		// This will never error since &key is a pointer to a type.
-		_ = vm.ExportTo(obj, &key)
+		// This will never error since &m is a pointer to a type.
+		_ = vm.ExportTo(obj, &m)
+
+		key, err := store.KeyFromPayload(m)
+		if err != nil {
+			panicMessage(vm, fmt.Errorf("key is invalid: %w", err), "")
+		}
 
 		u, _, err := d.storage.ObjectStore().List(ctx, key)
 		if err != nil {

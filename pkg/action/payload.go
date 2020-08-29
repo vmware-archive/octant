@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 package action
 
 import (
+	"encoding/json"
+	"fmt"
 	"math"
 	"strconv"
 
@@ -149,4 +151,14 @@ func (p Payload) Float64(key string) (float64, error) {
 	default:
 		return 0, errors.Errorf("unable to handle type %T for %q; got %#v", p[key], key, v)
 	}
+}
+
+// Raw returns a key as bytes.
+func (p Payload) Raw(key string) ([]byte, error) {
+	v, ok := p[key]
+	if !ok {
+		return nil, fmt.Errorf("payload does not contain %q", key)
+	}
+
+	return json.Marshal(v)
 }

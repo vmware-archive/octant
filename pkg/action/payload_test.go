@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/vmware-tanzu/octant/internal/testutil"
 )
 
 func TestCreatePayload(t *testing.T) {
@@ -232,6 +234,47 @@ func TestPayload_Uint16(t *testing.T) {
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expected, got)
+		})
+	}
+}
+
+func TestPayload_Raw(t *testing.T) {
+	type args struct {
+		key string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		payload Payload
+		wantErr bool
+		want    []byte
+	}{
+		{
+			name: "key exists",
+			args: args{
+				key: "key",
+			},
+			payload: Payload{
+				"key": "value",
+			},
+			want: []byte(`"value"`),
+		},
+		{
+			name: "key does not exist",
+			args: args{
+				key: "key",
+			},
+			payload: Payload{},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.payload.Raw(tt.args.key)
+			testutil.RequireErrorOrNot(t, tt.wantErr, err, func() {
+				require.Equal(t, tt.want, got)
+			})
 		})
 	}
 }
