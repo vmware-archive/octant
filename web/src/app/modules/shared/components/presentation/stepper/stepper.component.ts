@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import { WebsocketService } from '../../../services/websocket/websocket.service';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
+import { ModalService } from '../../../services/modal/modal.service';
 
 interface Choice {
   label: string;
@@ -18,7 +19,7 @@ interface Choice {
 @Component({
   selector: 'app-stepper',
   templateUrl: './stepper.component.html',
-  styleUrls: ['./stepper.component.sass'],
+  styleUrls: ['./stepper.component.scss'],
 })
 export class StepperComponent extends AbstractViewComponent<StepperView> {
   @Output()
@@ -33,6 +34,7 @@ export class StepperComponent extends AbstractViewComponent<StepperView> {
 
   constructor(
     private formBuilder: FormBuilder,
+    private modalService: ModalService,
     private websocketService: WebsocketService
   ) {
     super();

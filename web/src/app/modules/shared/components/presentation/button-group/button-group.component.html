@@ -2,12 +2,13 @@
   <clr-button
     *ngFor="let button of v.config.buttons; trackBy: trackByFn"
     class="{{ class }}"
-    (click)="onClick(button.payload, button.confirmation)"
+    (click)="onClick(button.payload, button.confirmation, button.modal)"
   >
     {{ button.name }}
   </clr-button>
 </clr-button-group>
 
+<app-view-modal *ngIf="modalView" [view]="modalView"></app-view-modal>
 <clr-modal [(clrModalOpen)]="isModalOpen">
   <h3 class="modal-title">{{ modalTitle }}</h3>
   <div class="modal-body">

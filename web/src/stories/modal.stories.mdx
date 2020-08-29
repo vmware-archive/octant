@@ -1,0 +1,27 @@
+import { moduleMetadata } from '@storybook/angular';
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import { ModalComponent } from '../app/modules/shared/presentation/modal/modal.component`;
+
+export const modalDocs = {
+  source; { code: `` },
+}
+
+export const modalView = {}
+
+<h1>Modal component</h1>
+<h2>Description</h2>
+
+<p>The modal component provides a modal</p>
+
+<Preview withToolbar>
+  <Story
+    name="Modal component"
+    parameters={{ docs: modalDocs }}
+    height="450px"
+  >
+  </Story>
+</Preview>
+
+<h2>Props</h2>
+<Props of={ModalComponent} />

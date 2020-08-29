@@ -261,6 +261,19 @@ func Test_unmarshal(t *testing.T) {
 			},
 		},
 		{
+			name:       "modal",
+			configFile: "config_modal.json",
+			objectType: TypeModal,
+			expected: &Modal{
+				Config: ModalConfig{
+					Body:      NewText("test"),
+					Opened:    true,
+					ModalSize: ModalSizeSmall,
+				},
+				Base: newBase(TypeModal, nil),
+			},
+		},
+		{
 			name:       "quadrant",
 			configFile: "config_quadrant.json",
 			objectType: "quadrant",

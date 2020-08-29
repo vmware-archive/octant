@@ -1,0 +1,13 @@
+<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="false" [clrModalClosable]="true" [clrModalSize]="size">
+  <h3 class="modal-title">
+    <app-view-title [views]="title"></app-view-title>
+  </h3>
+  <div class="modal-body">
+    <app-view-container [view]="body"></app-view-container>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="opened = false">
+      Close
+    </button>
+  </div>
+</clr-modal>

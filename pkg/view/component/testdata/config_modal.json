@@ -1,0 +1,12 @@
+{
+  "body":{
+    "metadata":{
+      "type":"text"
+    },
+    "config":{
+      "value":"test"
+    }
+  },
+  "opened":true,
+  "size":"sm"
+}
