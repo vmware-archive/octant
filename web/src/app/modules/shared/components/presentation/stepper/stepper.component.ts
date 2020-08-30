@@ -34,7 +34,6 @@ export class StepperComponent extends AbstractViewComponent<StepperView> {
 
   constructor(
     private formBuilder: FormBuilder,
-    private modalService: ModalService,
     private websocketService: WebsocketService
   ) {
     super();

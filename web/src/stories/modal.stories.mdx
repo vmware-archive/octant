@@ -1,27 +1,121 @@
-import { moduleMetadata } from '@storybook/angular';
-import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
 import { object, withKnobs } from '@storybook/addon-knobs';
-import { ModalComponent } from '../app/modules/shared/presentation/modal/modal.component`;
+import { ModalComponent } from '../app/modules/shared/components/presentation/modal/modal.component';
 
-export const modalDocs = {
-  source; { code: `` },
-}
+export const modalDocs = { source: { code: `modal := component.NewModal(component.TitleFromString("Modal Title"))
+  modal.SetBody(component.NewText("Modal Body"))
+  modal.SetSize(component.ModalSizeLarge)
+  modal.Open()`
+}}
 
-export const modalView = {}
+export const modalFormDocs = { source: { code: `modal := component.NewModal(component.TitleFromString("Modal Title"))
+  modal.SetBody(component.NewText("Modal Body"))
+  fft := component.NewFormFieldText("textFormLabel", "textFormName", "")
+	fft.AddValidator("placeholder", "this is an error", []string{"required"})
+  form := component.Form{
+    Fields: []component.FormField{
+      fft,
+    },
+  }
+  modal.AddForm(form)
+  modal.SetSize(component.ModalSizeLarge)
+  modal.Open()`
+}}
+
+export const textView = {
+  config: {
+    value: 'Modal Title',
+  },
+  metadata: {
+    type: 'text',
+  },
+};
+
+export const bodyView = {
+  config: {
+    value: 'Modal body',
+  },
+  metadata: {
+    type: 'text',
+  },
+};
+
+export const modalView = {
+  metadata: {
+    type: 'modal',
+    title: [textView],
+  },
+  config: {
+    body: bodyView,
+    opened: true,
+    size: 'lg',
+  },
+};
+
+export const formFields = {
+  fields: [
+    {
+      configuration: {},
+      error: 'this is an error',
+      label: 'textFormLabel',
+      name: 'textFormName',
+      placeholder: 'placeholder',
+      type: 'text',
+      validators: ["required"],
+      value: '',
+    },
+  ],
+};
+
+export const modalFormView = {
+  metadata: {
+    type: 'modal',
+    title: [textView],
+  },
+  config: {
+    body: bodyView,
+    form: formFields,
+    opened: true,
+    size: 'lg',
+  },
+};
 
 <h1>Modal component</h1>
 <h2>Description</h2>
 
 <p>The modal component provides a modal</p>
+<h2>Example</h2>
 
-<Preview withToolbar>
-  <Story
-    name="Modal component"
-    parameters={{ docs: modalDocs }}
-    height="450px"
-  >
-  </Story>
-</Preview>
+<Meta title="Components/Modal" component={ModalComponent} />
+
+<Canvas withToolbar>
+<Story name="Modal component" parameters={{ docs: modalDocs }} height="500px" >
+  {{
+    props: {
+      view: object('View', modalView),
+    },
+    component: ModalComponent,
+  }}
+</Story>
+</Canvas>
 
 <h2>Props</h2>
-<Props of={ModalComponent} />
+<ArgsTable of={ModalComponent} />
+
+<p>
+Modal Component with a form
+</p>
+
+<Canvas withToolbar>
+  <Story name="Modal component with form" parameters={{ docs: modalFormDocs }} height="500px" >
+  {{
+      props: {
+        view: object('View', modalFormView),
+      },
+      component: ModalComponent,
+  }}
+  </Story>
+</Canvas>
+
+<h2>Props</h2>
+<ArgsTable of={ModalComponent} />

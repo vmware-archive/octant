@@ -188,9 +188,10 @@ export interface SingleStatView extends View {
 
 export interface ModalView extends View {
   config: {
-    body: View;
+    body?: View;
     opened: boolean;
-    size: string;
+    size?: string;
+    form?: ActionForm;
   };
 }
 
@@ -288,6 +289,7 @@ export interface ActionField {
 
 export interface ActionForm {
   fields: ActionField[];
+  action?: string;
 }
 
 export interface Action {

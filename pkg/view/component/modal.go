@@ -17,8 +17,8 @@ const (
 
 // ModalConfig is a configuration for the modal component.
 type ModalConfig struct {
-	Body      Component `json:"body"`
-	//Form      Form      `json:"form,omitempty"`
+	Body      Component `json:"body,omitempty"`
+	Form      *Form     `json:"form,omitempty"`
 	Opened    bool      `json:"opened"`
 	ModalSize ModalSize `json:"size,omitempty"`
 }
@@ -26,23 +26,25 @@ type ModalConfig struct {
 // UnmarshalJSON unmarshals a modal config from JSON.
 func (m *ModalConfig) UnmarshalJSON(data []byte) error {
 	x := struct {
-		Body      TypedObject `json:"body"`
-		//Form      Form        `json:"form,omitempty"`
-		Opened    bool        `json:"opened"`
-		ModalSize ModalSize   `json:"size,omitempty"`
+		Body      *TypedObject `json:"body,omitempty"`
+		Form      *Form        `json:"form,omitempty"`
+		Opened    bool         `json:"opened"`
+		ModalSize ModalSize    `json:"size,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
 		return err
 	}
 
-	var err error
-	m.Body, err = x.Body.ToComponent()
-	if err != nil {
-		return err
+	if x.Body != nil {
+		var err error
+		m.Body, err = x.Body.ToComponent()
+		if err != nil {
+			return err
+		}
 	}
 
-	//m.Form = x.Form
+	m.Form = x.Form
 	m.Opened = x.Opened
 	m.ModalSize = x.ModalSize
 	return nil
@@ -57,10 +59,9 @@ type Modal struct {
 }
 
 // NewModal creates a new modal.
-func NewModal(title []TitleComponent, body Component) *Modal {
+func NewModal(title []TitleComponent) *Modal {
 	return &Modal{
 		Base: newBase(TypeModal, title),
-		Config: ModalConfig{Body: body},
 	}
 }
 
@@ -72,9 +73,9 @@ func (m *Modal) SetBody(body Component) {
 }
 
 // AddForm adds a form to a modal. It is added after the body.
-//func (m *Modal) AddForm(form Form) {
-//	m.Config.Form = form
-//}
+func (m *Modal) AddForm(form Form) {
+	m.Config.Form = &form
+}
 
 // SetSize sets the size of a modal. Size is medium by default.
 func (m *Modal) SetSize(size ModalSize) {

@@ -16,33 +16,39 @@ func TestModal_SetBody(t *testing.T) {
 }
 
 func TestModal_SetSize(t *testing.T) {
-	tests := []struct{
-		name string
-		size ModalSize
+	tests := []struct {
+		name     string
+		size     ModalSize
 		expected *Modal
 	}{
 		{
 			name: "small",
 			size: ModalSizeSmall,
 			expected: &Modal{
-				Base:   newBase(TypeModal, TitleFromString("modal")),
-				Config: ModalConfig{ModalSize: ModalSizeSmall},
+				Base: newBase(TypeModal, TitleFromString("modal")),
+				Config: ModalConfig{
+					ModalSize: ModalSizeSmall,
+				},
 			},
 		},
 		{
 			name: "large",
 			size: ModalSizeLarge,
 			expected: &Modal{
-				Base:   newBase(TypeModal, TitleFromString("modal")),
-				Config: ModalConfig{ModalSize: ModalSizeLarge},
+				Base: newBase(TypeModal, TitleFromString("modal")),
+				Config: ModalConfig{
+					ModalSize: ModalSizeLarge,
+				},
 			},
 		},
 		{
 			name: "extra large",
 			size: ModalSizeExtraLarge,
 			expected: &Modal{
-				Base:   newBase(TypeModal, TitleFromString("modal")),
-				Config: ModalConfig{ModalSize: ModalSizeExtraLarge},
+				Base: newBase(TypeModal, TitleFromString("modal")),
+				Config: ModalConfig{
+					ModalSize: ModalSizeExtraLarge,
+				},
 			},
 		},
 	}

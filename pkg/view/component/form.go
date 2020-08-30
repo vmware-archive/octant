@@ -614,6 +614,7 @@ func (ff *FormFieldHidden) UnmarshalJSON(data []byte) error {
 
 type Form struct {
 	Fields []FormField `json:"fields"`
+	Action string      `json:"action,omitempty"`
 }
 
 func (f *Form) MarshalJSON() ([]byte, error) {
@@ -651,6 +652,7 @@ func (f *Form) UnmarshalJSON(data []byte) error {
 			Error         string                 `json:"error"`
 			Validators    []string               `json:"validators"`
 		} `json:"fields"`
+		Action string `json:"action,omitempty"`
 	}{}
 
 	err := json.Unmarshal(data, &x)
@@ -694,6 +696,7 @@ func (f *Form) UnmarshalJSON(data []byte) error {
 
 		f.Fields = append(f.Fields, ff)
 	}
+	f.Action = x.Action
 
 	return nil
 }
