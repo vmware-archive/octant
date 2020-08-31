@@ -4,10 +4,12 @@ import {
   Input,
   OnInit,
   Output,
+  Directive,
 } from '@angular/core';
 import { View } from '../../models/content';
 
-export abstract class AbstractViewComponent<T>
+@Directive()
+export abstract class AbstractViewComponent<T> // tslint:disable-line
   implements OnInit, AfterViewInit {
   v: T;
 

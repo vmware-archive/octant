@@ -1,5 +1,5 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "./tsconfig.base.json",
   "files": [
     "src//types/index.d.ts",
     "src//app/app-routing.module.ts",
