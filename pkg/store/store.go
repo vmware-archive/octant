@@ -7,6 +7,7 @@ package store
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -165,7 +166,7 @@ func KeyFromPayload(payload action.Payload) (Key, error) {
 	if err != nil {
 		return Key{}, err
 	}
-	name, err := payload.String("name")
+	name, err := payload.OptionalString("name")
 	if err != nil {
 		return Key{}, err
 	}
@@ -175,6 +176,26 @@ func KeyFromPayload(payload action.Payload) (Key, error) {
 		APIVersion: apiVersion,
 		Kind:       kind,
 		Name:       name,
+	}
+
+	labelSelectorBytes, err := payload.Raw("labelSelector")
+	if err == nil {
+		labelSelector := metav1.LabelSelector{}
+		if err := json.Unmarshal(labelSelectorBytes, &labelSelector); err != nil {
+			return Key{}, fmt.Errorf("label selector contents are invalid: %w", err)
+		}
+
+		key.LabelSelector = &labelSelector
+	}
+
+	labelSetBytes, err := payload.Raw("selector")
+	if err == nil {
+		set := labels.Set{}
+		if err := json.Unmarshal(labelSetBytes, &set); err != nil {
+			return Key{}, fmt.Errorf("selector contents are invalid: %w", err)
+		}
+
+		key.Selector = &set
 	}
 
 	return key, nil

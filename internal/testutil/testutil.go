@@ -127,11 +127,16 @@ func Time() time.Time {
 	return time.Unix(1547211430, 0)
 }
 
-// RequireErrorOrNot or not is a helper that requires an error or not.
-func RequireErrorOrNot(t *testing.T, wantErr bool, err error) {
+// RequireErrorOrNot or not is a helper that requires an error or not. If functions are
+// present, execute them if there was no error.
+func RequireErrorOrNot(t *testing.T, wantErr bool, err error, fns ...func()) {
 	if wantErr {
 		require.Error(t, err)
 		return
 	}
 	require.NoError(t, err)
+
+	for _, fn := range fns {
+		fn()
+	}
 }
