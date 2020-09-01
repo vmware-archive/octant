@@ -18,7 +18,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   styleUrls: ['./ports.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class PortsComponent extends AbstractViewComponent<PortsView>
+export class PortsComponent
+  extends AbstractViewComponent<PortsView>
   implements OnDestroy {
   private previousView: PortsView;
 

@@ -28,7 +28,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   templateUrl: './terminal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TerminalComponent extends AbstractViewComponent<TerminalView>
+export class TerminalComponent
+  extends AbstractViewComponent<TerminalView>
   implements OnDestroy, AfterViewInit {
   @ViewChild('terminal', { static: true }) terminalDiv: ElementRef;
 
