@@ -16,7 +16,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   templateUrl: './timestamp.component.html',
   styleUrls: ['./timestamp.component.scss'],
 })
-export class TimestampComponent extends AbstractViewComponent<TimestampView>
+export class TimestampComponent
+  extends AbstractViewComponent<TimestampView>
   implements OnInit, OnDestroy {
   timestamp: number;
   humanReadable: string;

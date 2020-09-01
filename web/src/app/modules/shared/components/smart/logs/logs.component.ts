@@ -32,7 +32,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.Default,
 })
-export class LogsComponent extends AbstractViewComponent<LogsView>
+export class LogsComponent
+  extends AbstractViewComponent<LogsView>
   implements OnInit, OnDestroy, AfterContentChecked, AfterViewChecked {
   private logStream: PodLogsStreamer;
   scrollToBottom = true;

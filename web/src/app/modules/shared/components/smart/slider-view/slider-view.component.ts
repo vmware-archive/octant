@@ -16,7 +16,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   styleUrls: ['./slider-view.component.scss'],
   animations: [SlideInOutAnimation],
 })
-export class SliderViewComponent extends AbstractViewComponent<ExtensionView>
+export class SliderViewComponent
+  extends AbstractViewComponent<ExtensionView>
   implements OnChanges {
   style: object = {};
   contentStyle: object = {};
