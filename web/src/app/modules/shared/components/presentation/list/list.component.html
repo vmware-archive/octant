@@ -1,5 +1,5 @@
 <app-breadcrumb [path]="title"> </app-breadcrumb>
-<ng-container *ngFor="let item of v?.config.items; trackBy: identifyItem">
+<ng-container *ngFor="let item of items; trackBy: identifyItem">
   <app-view-container
     [view]="item"
     (viewInit)="initDone()"
