@@ -1,10 +1,13 @@
-<div class="clr-row clr-align-items-center clr-justify-content-between" *ngIf="showTitle() || buttonGroup">
+<div
+  class="clr-row clr-align-items-center clr-justify-content-between"
+  *ngIf="showTitle() || buttonGroup"
+>
   <h4 class="clr-col-10" *ngIf="showTitle()">{{ title }}</h4>
-    <clr-dg-action-bar class="clr-col-2" *ngIf="buttonGroup">
-      <app-button-group class="btn-sm" [view]="buttonGroup"></app-button-group>
-    </clr-dg-action-bar>
+  <clr-dg-action-bar class="clr-col-2" *ngIf="buttonGroup">
+    <app-button-group class="btn-sm" [view]="buttonGroup"></app-button-group>
+  </clr-dg-action-bar>
 </div>
-<clr-datagrid [clrDgLoading]="loading$ | async">
+<clr-datagrid [clrDgLoading]="false">
   <clr-dg-placeholder>
     <ng-container *ngIf="placeholder?.length > 0; else emptyPlaceholder">
       {{ placeholder }}

@@ -1,7 +1,11 @@
 // Copyright (c) 2019 the Octant contributors. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+} from '@angular/core';
 import {
   LinkView,
   ListView,
@@ -23,9 +27,14 @@ export class ListComponent extends AbstractViewComponent<ListView> {
 
   iconName: string;
 
+  items: View[];
+
+  private previous: string;
+
   constructor(
     private iconService: IconService,
-    private viewService: ViewService
+    private viewService: ViewService,
+    private cdr: ChangeDetectorRef
   ) {
     super();
   }
@@ -43,11 +52,15 @@ export class ListComponent extends AbstractViewComponent<ListView> {
         }))
       : [];
 
-    if (this.v.config.items) {
-      this.initialChildCount = this.v.config.items.length;
-      this.v.config.items.forEach(item => {
-        item.totalItems = this.v.config.items.length;
+    const cur = JSON.stringify(current);
+    if (current.config.items && cur !== this.previous) {
+      this.items = this.v.config.items;
+      this.initialChildCount = this.items.length;
+      this.items.forEach(item => {
+        item.totalItems = current.config.items.length;
       });
+      this.previous = cur;
+      this.cdr.markForCheck();
     }
   }
 }

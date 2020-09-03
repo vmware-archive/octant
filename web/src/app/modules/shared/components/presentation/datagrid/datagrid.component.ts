@@ -23,7 +23,7 @@ import { TimestampComparator } from '../../../../../util/timestamp-comparator';
 import { ViewService } from '../../../services/view/view.service';
 import { ActionService } from '../../../services/action/action.service';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
-import { BehaviorSubject, merge, Observable, timer } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { LoadingService } from '../../../services/loading/loading.service';
 import { ButtonGroupView } from '../../../models/content';
 

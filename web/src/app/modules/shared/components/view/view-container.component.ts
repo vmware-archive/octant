@@ -8,13 +8,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   ComponentFactoryResolver,
+  ComponentRef,
   EventEmitter,
   Inject,
   Input,
-  OnChanges,
   OnInit,
   Output,
-  SimpleChanges,
   Type,
   ViewChild,
 } from '@angular/core';
@@ -37,14 +36,23 @@ interface Viewer {
   template: `<ng-container appView></ng-container>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ViewContainerComponent
-  implements OnInit, OnChanges, AfterViewInit {
+export class ViewContainerComponent implements OnInit, AfterViewInit {
   @ViewChild(ViewHostDirective, { static: true }) appView: ViewHostDirective;
-  @Input() view: View;
+  @Input() set view(v: View) {
+    if (v && v.metadata) {
+      const cur = JSON.stringify(v);
+      if (this.previous !== cur) {
+        this.previous = cur;
+        this.loadView(v);
+      }
+    }
+  }
   @Input() enableDebug = false;
   @Output() viewInit: EventEmitter<void> = new EventEmitter<void>();
 
   private start: number;
+  private componentRef: ComponentRef<Viewer>;
+  private previous: string;
 
   constructor(
     private componentFactoryResolver: ComponentFactoryResolver,
@@ -53,8 +61,6 @@ export class ViewContainerComponent
   ) {}
 
   ngOnInit(): void {
-    this.loadView();
-
     if (this.enableDebug) {
       this.start = new Date().getTime();
     }
@@ -72,39 +78,25 @@ export class ViewContainerComponent
     }
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.view.currentValue) {
-      // TODO: send a checksum so this doesn't need to be calculated here.
-      const prev = JSON.stringify(changes.view.previousValue);
-      const cur = JSON.stringify(changes.view.currentValue);
-
-      if (cur !== prev) {
-        this.loadView();
+  loadView(view: View) {
+    if (!this.componentRef) {
+      const viewType = view.metadata.type;
+      let component: Type<any> = this.componentMappings[viewType];
+      if (!component) {
+        component = MissingComponentComponent;
       }
+
+      const componentFactory = this.componentFactoryResolver.resolveComponentFactory(
+        component
+      );
+      const viewContainerRef = this.appView.viewContainerRef;
+      viewContainerRef.clear();
+
+      this.componentRef = viewContainerRef.createComponent<Viewer>(
+        componentFactory
+      );
     }
-  }
-
-  loadView() {
-    if (!this.view || !this.view.metadata) {
-      return;
-    }
-
-    const viewType = this.view.metadata.type;
-    let component: Type<any> = this.componentMappings[viewType];
-    if (!component) {
-      component = MissingComponentComponent;
-    }
-
-    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(
-      component
-    );
-    const viewContainerRef = this.appView.viewContainerRef;
-    viewContainerRef.clear();
-
-    const componentRef = viewContainerRef.createComponent<Viewer>(
-      componentFactory
-    );
-    componentRef.instance.view = this.view;
-    componentRef.instance.viewInit.subscribe(_ => this.viewInit.emit());
+    this.componentRef.instance.view = view;
+    this.componentRef.instance.viewInit.subscribe(_ => this.viewInit.emit());
   }
 }
