@@ -17,6 +17,21 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "allowedCommonJsDependencies": [
+              "ansi_up",
+              "css-element-queries",
+              "cytoscape",
+              "cytoscape-cose-bilkent",
+              "cytoscape-dagre",
+              "d3-graphviz",
+              "lodash",
+              "lodash/chunk",
+              "lodash/findIndex",
+              "lodash/forEach",
+              "lodash/pullAt",
+              "lodash/remove",
+              "lodash/uniqueId"
+            ],
             "aot": true,
             "outputPath": "dist/dash-frontend",
             "index": "src/index.html",
