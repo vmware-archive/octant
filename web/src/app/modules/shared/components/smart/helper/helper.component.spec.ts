@@ -6,6 +6,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HelperComponent } from './helper.component';
 import { HelperService } from '../../../services/helper/helper.service';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('HelperComponent', () => {
   let component: HelperComponent;
@@ -15,6 +16,7 @@ describe('HelperComponent', () => {
     TestBed.configureTestingModule({
       declarations: [HelperComponent],
       providers: [{ provide: HelperService }],
+      imports: [BrowserAnimationsModule],
     }).compileComponents();
   }));
 

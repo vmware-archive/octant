@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { HelperService } from '../../../../shared/services/helper/helper.service';
 
@@ -11,7 +11,8 @@ export class HelperComponent implements OnInit, OnDestroy {
   version = '';
   commit = '';
   time = '';
-  isModalOpen = false;
+  isBuildModalOpen = false;
+  isShortcutModalOpen = false;
   private buildInfoSubscription: Subscription;
 
   constructor(private helperService: HelperService) {}
@@ -30,5 +31,15 @@ export class HelperComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.buildInfoSubscription.unsubscribe();
+  }
+
+  @HostListener('window:keyup', ['$event'])
+  keyEvent(event: KeyboardEvent) {
+    if (this.isShortcutModalOpen) {
+      return;
+    }
+    if (event.ctrlKey && event.key === '/') {
+      this.isShortcutModalOpen = true;
+    }
   }
 }

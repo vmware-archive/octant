@@ -29,6 +29,7 @@ import { ThemeSwitchButtonComponent } from '../theme-switch/theme-switch-button.
 import { QuickSwitcherComponent } from '../quick-switcher/quick-switcher.component';
 import { MonacoEditorConfig, MonacoProviderService } from 'ng-monaco-editor';
 import { UploaderComponent } from '../uploader/uploader.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
@@ -48,6 +49,7 @@ describe('AppComponent', () => {
         FormsModule,
         NgSelectModule,
         ReactiveFormsModule,
+        BrowserAnimationsModule,
       ],
       declarations: [
         ContainerComponent,

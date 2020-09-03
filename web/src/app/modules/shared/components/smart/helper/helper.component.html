@@ -7,15 +7,26 @@
       <div
         aria-label="Dropdown header About Octant"
         clrDropdownItem
-        (click)="isModalOpen = true"
+        (click)="isBuildModalOpen = true"
       >
         About Octant
+      </div>
+      <div
+        aria-label="Dropdown header About Octant"
+        clrDropdownItem
+        (click)="isShortcutModalOpen = true"
+      >
+        Keyboard Shortcuts
+        <span class="label">
+          Ctrl
+          <span class="badge">/</span>
+        </span>
       </div>
     </clr-dropdown-menu>
   </clr-dropdown>
 </div>
 
-<clr-modal [(clrModalOpen)]="isModalOpen" [clrModalStaticBackdrop]="false">
+<clr-modal [(clrModalOpen)]="isBuildModalOpen" [clrModalStaticBackdrop]="false">
   <h3 class="modal-title">Build Information</h3>
   <div class="modal-body">
     <table class="table table-vertical table-noborder">
@@ -36,7 +47,79 @@
     </table>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-primary" (click)="isModalOpen = false">
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="isBuildModalOpen = false"
+    >
+      Close
+    </button>
+  </div>
+</clr-modal>
+
+<clr-modal
+  [(clrModalOpen)]="isShortcutModalOpen"
+  [clrModalStaticBackdrop]="false"
+>
+  <h3 class="modal-title">Keyboard Shortcuts</h3>
+  <div class="modal-body">
+    <clr-stack-view>
+      <clr-stack-block
+        [clrSbExpandable]="false"
+        [clrSbExpanded]="true"
+        [clrStackViewLevel]="1"
+        [clrStackViewSetsize]="2"
+        [clrStackViewPosinset]="1"
+      >
+        <clr-stack-label>Global</clr-stack-label>
+        <clr-stack-block
+          [clrStackViewLevel]="2"
+          [clrStackViewSetsize]="0"
+          [clrStackViewPosinset]="1"
+        >
+          <clr-stack-label>Keyboard shortcut list</clr-stack-label>
+          <clr-stack-content>
+            <span class="label">Ctrl<span class="badge">/</span></span>
+          </clr-stack-content>
+        </clr-stack-block>
+        <clr-stack-block
+          [clrStackViewLevel]="2"
+          [clrStackViewSetsize]="0"
+          [clrStackViewPosinset]="1"
+        >
+          <clr-stack-label>Quick switcher menu</clr-stack-label>
+          <clr-stack-content>
+            <span class="label">Ctrl<span class="badge">Enter</span></span>
+          </clr-stack-content>
+        </clr-stack-block>
+      </clr-stack-block>
+      <clr-stack-block
+        [clrSbExpandable]="false"
+        [clrSbExpanded]="true"
+        [clrStackViewLevel]="1"
+        [clrStackViewSetsize]="2"
+        [clrStackViewPosinset]="1"
+      >
+        <clr-stack-label>YAML</clr-stack-label>
+        <clr-stack-block
+          [clrStackViewLevel]="2"
+          [clrStackViewSetsize]="0"
+          [clrStackViewPosinset]="1"
+        >
+          <clr-stack-label>Command pallete</clr-stack-label>
+          <clr-stack-content>
+            <span class="label">F1</span>
+          </clr-stack-content>
+        </clr-stack-block>
+      </clr-stack-block>
+    </clr-stack-view>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="isShortcutModalOpen = false"
+    >
       Close
     </button>
   </div>
