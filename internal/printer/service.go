@@ -8,6 +8,7 @@ package printer
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -334,6 +335,10 @@ func editServiceAction(ctx context.Context, service *corev1.Service, options Opt
 			seenSelectors[value] = true
 		}
 	}
+
+	sort.Slice(choices, func(i, j int) bool {
+		return choices[i].Value < choices[j].Value
+	})
 
 	form, err := component.CreateFormForObject(octant.ActionOverviewServiceEditor, service,
 		component.NewFormFieldSelect("Selectors", "selectors", choices, true))
