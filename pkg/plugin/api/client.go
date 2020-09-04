@@ -8,6 +8,8 @@ package api
 import (
 	"context"
 
+	"github.com/spf13/viper"
+
 	"google.golang.org/grpc"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -59,7 +61,10 @@ func NewClient(address string, options ...ClientOption) (*Client, error) {
 
 	if client.DashboardConnection == nil {
 		// NOTE: is it possible to make this secure? Is it even important?
-		conn, err := grpc.Dial(address, grpc.WithInsecure())
+		conn, err := grpc.Dial(address,
+			grpc.WithInsecure(),
+			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(viper.GetInt("client-max-recv-msg-size"))),
+		)
 		if err != nil {
 			return nil, err
 
