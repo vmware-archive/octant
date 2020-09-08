@@ -1,0 +1,6 @@
+<span class="tooltip tooltip-wrapper tooltip-md">
+  <ng-content></ng-content>
+  <span class="tooltip-content" [ngStyle]="{ 'margin-top': getScrollPos() }">
+    <span>{{ tooltipText }}</span>
+  </span>
+</span>

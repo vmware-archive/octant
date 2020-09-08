@@ -2,13 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 import { TimestampView } from 'src/app/modules/shared/models/content';
-import { Subscription } from 'rxjs';
-import { ContentService } from '../../../services/content/content.service';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({
@@ -18,33 +16,14 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
 })
 export class TimestampComponent
   extends AbstractViewComponent<TimestampView>
-  implements OnInit, OnDestroy {
+  implements OnDestroy {
   timestamp: number;
   humanReadable: string;
-  age: string;
-  scrollPosition = 0;
-  private contentSubscription: Subscription;
 
-  constructor(
-    private contentService: ContentService,
-    private cd: ChangeDetectorRef
-  ) {
+  constructor() {
     super();
     dayjs.extend(utc);
     dayjs.extend(LocalizedFormat);
-  }
-
-  ngOnInit() {
-    this.contentSubscription = this.contentService.viewScrollPos.subscribe(
-      position => {
-        this.scrollPosition = position;
-        this.cd.markForCheck();
-      }
-    );
-  }
-
-  getScrollPos() {
-    return `${-this.scrollPosition - 64}px`;
   }
 
   update() {
@@ -57,8 +36,5 @@ export class TimestampComponent
 
   ngOnDestroy(): void {
     this.timestamp = null;
-    if (this.contentSubscription) {
-      this.contentSubscription.unsubscribe();
-    }
   }
 }

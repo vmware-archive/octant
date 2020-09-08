@@ -2,18 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import {
-  AfterViewChecked,
-  Component,
-  ElementRef,
-  Input,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, Input } from '@angular/core';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
-import { ContentService } from '../../../services/content/content.service';
-import { Subscription } from 'rxjs';
 
 interface Selector {
   metadata: {
@@ -30,8 +20,7 @@ interface Selector {
   templateUrl: './overflow-selectors.component.html',
   styleUrls: ['./overflow-selectors.component.scss'],
 })
-export class OverflowSelectorsComponent
-  implements OnInit, OnDestroy, AfterViewChecked {
+export class OverflowSelectorsComponent implements AfterViewChecked {
   @Input() set selectors(selectors: Selector[]) {
     this.selectorsList = selectors;
     this.updateSelectors();
@@ -41,18 +30,13 @@ export class OverflowSelectorsComponent
     return this.selectorsList;
   }
 
-  constructor(
-    private contentService: ContentService,
-    private rootElement: ElementRef
-  ) {}
+  constructor(private rootElement: ElementRef) {}
   @Input() numberShownSelectors = 2;
 
   private selectorsList: Selector[];
   showSelectors: Selector[];
   overflowSelectors: Selector[];
   trackByIdentity = trackByIdentity;
-  scrollPosition = 0;
-  private contentSubscription: Subscription;
   componentWidth = 0;
 
   private updateSelectors() {
@@ -69,20 +53,6 @@ export class OverflowSelectorsComponent
     }
   }
 
-  ngOnInit() {
-    this.contentSubscription = this.contentService.viewScrollPos.subscribe(
-      position => {
-        this.scrollPosition = position;
-      }
-    );
-  }
-
-  ngOnDestroy() {
-    if (this.contentSubscription) {
-      this.contentSubscription.unsubscribe();
-    }
-  }
-
   ngAfterViewChecked(): void {
     if (this.componentWidth !== this.rootElement.nativeElement.clientWidth) {
       this.numberShownSelectors =
@@ -90,9 +60,5 @@ export class OverflowSelectorsComponent
       this.updateSelectors();
       this.componentWidth = this.rootElement.nativeElement.clientWidth;
     }
-  }
-
-  getScrollPos() {
-    return `${-this.scrollPosition - 64}px`;
   }
 }
