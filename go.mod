@@ -46,7 +46,7 @@ require (
 	go.uber.org/zap v1.16.0
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
 	golang.org/x/tools v0.0.0-20200716134326-a8f9df4c9543
-	google.golang.org/grpc v1.31.1
+	google.golang.org/grpc v1.32.0
 	google.golang.org/grpc/examples v0.0.0-20200707005602-4258d12073b4 // indirect
 	google.golang.org/protobuf v1.25.0
 	k8s.io/api v0.19.0-alpha.3
