@@ -21,6 +21,7 @@ type ModalConfig struct {
 	Form      *Form     `json:"form,omitempty"`
 	Opened    bool      `json:"opened"`
 	ModalSize ModalSize `json:"size,omitempty"`
+	Buttons   []Button  `json:"buttons,omitempty"`
 }
 
 // UnmarshalJSON unmarshals a modal config from JSON.
@@ -30,6 +31,7 @@ func (m *ModalConfig) UnmarshalJSON(data []byte) error {
 		Form      *Form        `json:"form,omitempty"`
 		Opened    bool         `json:"opened"`
 		ModalSize ModalSize    `json:"size,omitempty"`
+		Buttons   []Button     `json:"buttons,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
@@ -47,6 +49,7 @@ func (m *ModalConfig) UnmarshalJSON(data []byte) error {
 	m.Form = x.Form
 	m.Opened = x.Opened
 	m.ModalSize = x.ModalSize
+	m.Buttons = x.Buttons
 	return nil
 }
 
@@ -80,6 +83,11 @@ func (m *Modal) AddForm(form Form) {
 // SetSize sets the size of a modal. Size is medium by default.
 func (m *Modal) SetSize(size ModalSize) {
 	m.Config.ModalSize = size
+}
+
+// AddButton is a helper to add a custom button
+func (m *Modal) AddButton(button Button) {
+	m.Config.Buttons = append(m.Config.Buttons, button)
 }
 
 // Open opens a modal. A modal is closed by default.

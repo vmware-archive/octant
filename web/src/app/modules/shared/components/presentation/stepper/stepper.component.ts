@@ -8,7 +8,6 @@ import {
 } from '@angular/forms';
 import { WebsocketService } from '../../../services/websocket/websocket.service';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
-import { ModalService } from '../../../services/modal/modal.service';
 
 interface Choice {
   label: string;

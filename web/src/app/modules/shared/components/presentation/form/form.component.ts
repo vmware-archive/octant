@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, Input, OnInit, Output } from '@angular/core';
 import { ActionField, ActionForm } from '../../../models/content';
 import {
-  AbstractControl,
   FormBuilder,
-  FormControl,
   FormGroup,
+  ValidatorFn,
+  Validators,
 } from '@angular/forms';
 
 interface Choice {
@@ -26,44 +26,40 @@ export class FormComponent implements OnInit {
   @Input()
   form: ActionForm;
 
-  @Input()
-  title: string;
-
-  @Output()
-  submit: EventEmitter<FormGroup> = new EventEmitter(true);
-
-  @Output()
-  cancel: EventEmitter<boolean> = new EventEmitter(true);
-
   formGroup: FormGroup;
 
   constructor(private formBuilder: FormBuilder) {}
 
   ngOnInit() {
     if (this.form) {
-      const controls: { [name: string]: AbstractControl } = {};
+      const controls: { [name: string]: any } = {};
       this.form.fields.forEach(field => {
-        const value = field.value;
-        controls[field.name] = new FormControl(value);
+        controls[field.name] = [
+          field.value,
+          this.getValidators(field.validators),
+        ];
       });
 
       this.formGroup = this.formBuilder.group(controls);
     }
   }
 
-  onFormSubmit() {
-    this.submit.emit(this.formGroup);
-  }
-
-  onFormCancel() {
-    this.cancel.emit(true);
+  getValidators(validators: string[]): ValidatorFn[] {
+    if (validators) {
+      const vFn: ValidatorFn[] = [];
+      validators.forEach(v => {
+        vFn.push(Validators[v]);
+      });
+      return vFn;
+    }
+    return [];
   }
 
   fieldChoices(field: ActionField) {
     return field.configuration.choices as Choice[];
   }
 
-  trackByFn(index, item) {
+  trackByFn(index, _) {
     return index;
   }
 }

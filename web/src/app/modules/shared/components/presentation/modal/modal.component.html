@@ -4,119 +4,24 @@
   </h3>
   <div class="modal-body">
     <app-view-container [view]="body"></app-view-container>
-    <form clrForm *ngIf="form" (ngSubmit)="onFormSubmit()" [formGroup]="formGroup">
-      <div *ngFor="let field of form.fields; trackBy: trackByFn">
-        <ng-container [ngSwitch]="field.type">
-          <ng-container *ngSwitchCase="'checkbox'">
-            <clr-checkbox-container>
-              <label [for]="field.name">{{ field.label }}</label>
-              <clr-checkbox-wrapper
-                *ngFor="let opt of fieldChoices(field); trackBy: trackByFn"
-              >
-                <input
-                  type="checkbox"
-                  clrCheckbox
-                  [formControlName]="field.name"
-                  [value]="opt.value"
-                  [checked]="opt.checked"
-                />
-                <label>{{ opt.label }}</label>
-              </clr-checkbox-wrapper>
-              <clr-control-error>{{ field.error }}</clr-control-error>
-            </clr-checkbox-container>
-          </ng-container>
-          <ng-container *ngSwitchCase="'radio'">
-            <clr-radio-container>
-              <label [for]="field.name">{{ field.label }}</label>
-              <clr-radio-wrapper
-                *ngFor="let opt of fieldChoices(field); trackBy: trackByFn"
-              >
-                <input
-                  type="radio"
-                  clrRadio
-                  [formControlName]="field.name"
-                  [value]="opt.value"
-                />
-                <label>{{ opt.label }}</label>
-              </clr-radio-wrapper>
-              <clr-control-error>{{ field.error }}</clr-control-error>
-            </clr-radio-container>
-          </ng-container>
-          <ng-container *ngSwitchCase="'text'">
-            <clr-input-container>
-              <label [for]="field.name">{{ field.label }}</label>
-              <input
-                clrInput
-                type="text"
-                [name]="field.name"
-                [formControlName]="field.name"
-                [placeholder]="field.placeholder"
-              />
-              <clr-control-error>{{ field.error }}</clr-control-error>
-            </clr-input-container>
-          </ng-container>
-          <ng-container *ngSwitchCase="'number'">
-            <clr-input-container>
-              <label [for]="field.name">{{ field.label }}</label>
-              <input clrInput type="number" [formControlName]="field.name" />
-              <clr-control-error>{{ field.error }}</clr-control-error>
-            </clr-input-container>
-          </ng-container>
-          <ng-container *ngSwitchCase="'password'">
-            <clr-input-container>
-              <label [for]="field.name">{{ field.label }}</label>
-              <input
-                clrInput
-                type="password"
-                [formControlName]="field.name"
-              />
-              <clr-control-error>{{ field.error }}</clr-control-error>
-            </clr-input-container>
-          </ng-container>
-          <ng-container *ngSwitchCase="'select'">
-            <clr-select-container>
-              <label [for]="field.name">{{ field.label }}</label>
-              <select
-                clrSelect
-                [formControlName]="field.name"
-                [multiple]="field.configuration.multiple"
-              >
-                <option
-                  *ngFor="let opt of fieldChoices(field); trackBy: trackByFn"
-                  [value]="opt.value"
-                >
-                  {{ opt.label }}
-                </option>
-              </select>
-              <clr-control-error>{{ field.error }}</clr-control-error>
-            </clr-select-container>
-          </ng-container>
-          <ng-container *ngSwitchCase="'textarea'">
-            <clr-textarea-container>
-              <label [for]="field.name">{{ field.label }}</label>
-              <textarea clrTextarea [formControlName]="field.name"></textarea>
-              <clr-control-error>{{ field.error }}</clr-control-error>
-            </clr-textarea-container>
-          </ng-container>
-          <ng-container *ngSwitchCase="'hidden'"> </ng-container>
-          <ng-container *ngSwitchDefault>
-            Unable to display form field type {{ field.type }}
-          </ng-container>
-        </ng-container>
-        <br>
-      </div>
-    </form>
+    <app-form *ngIf="form?.fields" #modalAppForm [form]="form"></app-form>
   </div>
   <div class="modal-footer">
-    <ng-container *ngIf="form else closeButton">
+    <ng-container *ngIf="buttons">
+      <ng-container *ngFor="let button of buttons; trackBy: trackByFn; last as isLast">
+        <button type="button" class="btn" [ngClass]="(isLast)?'btn-primary':'btn-outline'" (click)="onClick(button.payload)">
+          {{ button.name }}
+        </button>
+      </ng-container>
+    </ng-container>
+    <ng-container *ngIf="form?.fields">
       <button type="button" class="btn btn-outline" (click)="opened = false">Cancel</button>
       <button type="button" class="btn btn-primary submit" (click)="onFormSubmit()">Submit</button>
     </ng-container>
+    <ng-container *ngIf="!buttons && !form?.fields">
+      <button type="button" class="btn btn-primary" (click)="opened = false">
+        Close
+      </button>
+    </ng-container>
   </div>
 </clr-modal>
-
-<ng-template #closeButton>
-  <button type="button" class="btn btn-primary" (click)="opened = false">
-    Close
-  </button>
-</ng-template>

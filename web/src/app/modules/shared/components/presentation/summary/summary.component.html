@@ -1,45 +1,58 @@
-<ng-container *ngTemplateOutlet="currentAction ? action : content">
-</ng-container>
+<div class="card">
+  <div class="progress loop" *ngIf="isLoading">
+    <progress></progress>
+  </div>
+  <div class="card-block">
+    <ng-container *ngTemplateOutlet="currentAction ? action : content">
+    </ng-container>
+  </div>
+  <ng-container *ngTemplateOutlet="currentAction ? formFooter :  contentFooter"></ng-container>
+</div>
 
 <ng-template #action>
   <app-form
+    #appForm
     [form]="currentAction.form"
-    [title]="currentAction.title"
-    (submit)="onActionSubmit($event)"
-    (cancel)="onActionCancel()"
   >
   </app-form>
 </ng-template>
 
 <ng-template #content>
-  <div class="card">
-    <div class="progress loop" *ngIf="isLoading">
-      <progress></progress>
-    </div>
-    <div class="card-block">
-      <h3 class="card-title">{{ title }}</h3>
+  <div class="card-block">
+    <h3 class="card-title">{{ title }}</h3>
 
-      <app-alert *ngIf="v?.config.alert" [alert]="v.config.alert"></app-alert>
+    <app-alert *ngIf="v?.config.alert" [alert]="v.config.alert"></app-alert>
 
-      <table class="table-noborder">
-        <tbody>
-          <tr *ngFor="let item of v?.config.sections; trackBy: identifyItem">
-            <td class="left">{{ item.header }}</td>
-            <td class="left">
-              <app-view-container [view]="item.content"></app-view-container>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="card-footer" *ngIf="shouldShowFooter()">
-      <ng-container
-        *ngFor="let action of v.config.actions; trackBy: identifyItem"
-      >
-        <button class="btn btn-sm btn-link" (click)="setAction(action)">
-          {{ action.name }}
-        </button>
-      </ng-container>
-    </div>
+    <table class="table-noborder">
+      <tbody>
+        <tr *ngFor="let item of v?.config.sections; trackBy: identifyItem">
+          <td class="left">{{ item.header }}</td>
+          <td class="left">
+            <app-view-container [view]="item.content"></app-view-container>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</ng-template>
+
+<ng-template #contentFooter>
+  <div class="card-footer" *ngIf="shouldShowFooter()">
+    <ng-container
+      *ngFor="let action of v.config.actions; trackBy: identifyItem"
+    >
+      <button class="btn btn-sm btn-link" (click)="setAction(action)">
+        {{ action.name }}
+      </button>
+    </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #formFooter>
+  <div class="card-footer">
+    <button class="btn btn-primary btn-sm" type="submit" (click)="onActionSubmit()">Submit</button>
+    <button class="btn btn-sm" type="button" (click)="onActionCancel()">
+      Cancel
+    </button>
   </div>
 </ng-template>

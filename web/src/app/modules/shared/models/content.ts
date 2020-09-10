@@ -192,6 +192,7 @@ export interface ModalView extends View {
     opened: boolean;
     size?: string;
     form?: ActionForm;
+    buttons?: Button[];
   };
 }
 

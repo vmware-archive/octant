@@ -1,22 +1,17 @@
 import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import {
-  ActionField,
   TitleView,
   ModalView,
   View,
   ActionForm,
+  Button,
 } from '../../../models/content';
+import { FormComponent } from '../form/form.component';
 import { ModalService } from '../../../services/modal/modal.service';
 import { Subscription } from 'rxjs';
-import {
-  FormBuilder,
-  FormGroup,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
-import { ClrForm } from '@clr/angular';
 import { WebsocketService } from '../../../services/websocket/websocket.service';
+import { ActionService } from '../../../services/action/action.service';
 
 interface Choice {
   label: string;
@@ -32,20 +27,20 @@ interface Choice {
 export class ModalComponent
   extends AbstractViewComponent<ModalView>
   implements OnInit, OnDestroy {
-  @ViewChild(ClrForm) clrForm: ClrForm;
+  @ViewChild('modalAppForm') modalAppForm: FormComponent;
 
   title: TitleView[];
   body: View;
   form: ActionForm;
   opened = false;
   size: string;
-  formGroup: FormGroup;
   action: string;
+  buttons: Button[];
 
   private modalSubscription: Subscription;
 
   constructor(
-    private formBuilder: FormBuilder,
+    private actionService: ActionService,
     private modalService: ModalService,
     private websocketService: WebsocketService
   ) {
@@ -71,47 +66,22 @@ export class ModalComponent
     this.form = this.v.config.form;
     this.opened = this.v.config.opened;
     this.modalService.setState(this.opened);
-
-    if (this.form) {
-      const controls: { [name: string]: any } = {};
-      this.form.fields.forEach(field => {
-        controls[field.name] = [
-          field.value,
-          this.getValidators(field.validators),
-        ];
-      });
-      this.action = this.form.action;
-      this.formGroup = this.formBuilder.group(controls);
-    }
-  }
-
-  getValidators(validators: string[]): ValidatorFn[] {
-    if (validators) {
-      const vFn: ValidatorFn[] = [];
-      validators.forEach(v => {
-        vFn.push(Validators[v]);
-      });
-      return vFn;
-    }
-    return [];
-  }
-
-  trackByFn(index, _) {
-    return index;
-  }
-
-  fieldChoices(field: ActionField) {
-    return field.configuration.choices as Choice[];
+    this.action = this.form?.action;
+    this.buttons = this.v.config.buttons;
   }
 
   onFormSubmit() {
-    if (this.formGroup.invalid) {
-      this.clrForm.markAsTouched();
-    } else {
+    if (this.modalAppForm && this.modalAppForm.formGroup.valid) {
       this.websocketService.sendMessage('action.octant.dev/performAction', {
         action: this.action,
-        formGroup: this.formGroup.value,
+        formGroup: this.modalAppForm.formGroup.value,
       });
+      this.opened = false;
     }
+  }
+
+  onClick(payload: {}) {
+    this.actionService.perform(payload);
+    this.opened = false;
   }
 }

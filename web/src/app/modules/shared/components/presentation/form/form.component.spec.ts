@@ -25,8 +25,6 @@ describe('FormComponent', () => {
     component.form = {
       fields: [],
     };
-    component.title = 'Title';
-
     fixture.detectChanges();
   });
 

@@ -1,6 +1,5 @@
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { Action, CardView, TitleView, View } from '../../../models/content';
-import { FormGroup } from '@angular/forms';
 import { ActionService } from '../../../services/action/action.service';
 import { FormComponent } from '../form/form.component';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
@@ -28,9 +27,9 @@ export class CardComponent extends AbstractViewComponent<CardView> {
     this.body = this.v.config.body;
   }
 
-  onActionSubmit(formGroup: FormGroup) {
-    if (formGroup && formGroup.value) {
-      this.actionService.perform(formGroup.value);
+  onActionSubmit() {
+    if (this.appForm?.formGroup && this.appForm?.formGroup.value) {
+      this.actionService.perform(this.appForm.formGroup.value);
       this.currentAction = undefined;
     }
   }

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import {
   Action,
   SummaryItem,
@@ -10,6 +10,7 @@ import {
 } from 'src/app/modules/shared/models/content';
 import { FormGroup } from '@angular/forms';
 import { ActionService } from '../../../services/action/action.service';
+import { FormComponent } from '../form/form.component';
 import { ViewService } from '../../../services/view/view.service';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
@@ -19,6 +20,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   styleUrls: ['./summary.component.scss'],
 })
 export class SummaryComponent extends AbstractViewComponent<SummaryView> {
+  @ViewChild('appForm') appForm: FormComponent;
+
   title: string;
   isLoading = false;
 
@@ -48,9 +51,9 @@ export class SummaryComponent extends AbstractViewComponent<SummaryView> {
     this.currentAction = action;
   }
 
-  onActionSubmit(formGroup: FormGroup) {
-    if (formGroup && formGroup.value) {
-      this.actionService.perform(formGroup.value);
+  onActionSubmit() {
+    if (this.appForm?.formGroup && this.appForm?.formGroup.value) {
+      this.actionService.perform(this.appForm.formGroup.value);
       this.currentAction = undefined;
     }
   }

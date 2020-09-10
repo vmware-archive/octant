@@ -3,15 +3,9 @@
   *ngIf="showTitle() || buttonGroup"
 >
   <h4 class="clr-col-10" *ngIf="showTitle()">{{ title }}</h4>
-<<<<<<< HEAD
-  <clr-dg-action-bar class="clr-col-2" *ngIf="buttonGroup">
-    <app-button-group class="btn-sm" [view]="buttonGroup"></app-button-group>
-  </clr-dg-action-bar>
-=======
     <clr-dg-action-bar class="clr-col-2" *ngIf="buttonGroup">
       <app-button-group [view]="buttonGroup"></app-button-group>
     </clr-dg-action-bar>
->>>>>>> Add modal component
 </div>
 <clr-datagrid [clrDgLoading]="false">
   <clr-dg-placeholder>
