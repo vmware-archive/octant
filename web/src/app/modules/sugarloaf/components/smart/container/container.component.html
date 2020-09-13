@@ -1,54 +1,57 @@
-<div class="main-container">
-  <div class="notifier">
-    <app-notifier></app-notifier>
-  </div>
-  <div class="uploader">
-    <app-uploader></app-uploader>
-  </div>
-  <header class="header header-6">
-    <div class="branding">
-      <a [routerLink]="['/']">
-        <clr-icon shape="octant-logo"></clr-icon>
-        <span class="title">Octant</span>
-      </a>
+<div class="octant-container">
+  <div class="main-container">
+    <div class="notifier">
+      <app-notifier></app-notifier>
     </div>
-    <div class="header-nav">
-      <div class="input-filter">
-        <app-input-filter></app-input-filter>
+    <div class="uploader">
+      <app-uploader></app-uploader>
+    </div>
+    <header class="header header-6">
+      <div class="branding">
+        <a [routerLink]="['/']">
+          <clr-icon shape="octant-logo"></clr-icon>
+          <span class="title">Octant</span>
+        </a>
+      </div>
+      <div class="header-nav">
+        <div class="input-filter">
+          <app-input-filter></app-input-filter>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a
+          [routerLink]="['/configuration/apply']"
+          class="header-link"
+          title="Create or update resources"
+        >
+          <clr-icon shape="upload"></clr-icon>
+          <span>Apply YAML</span>
+        </a>
+        <div class="namespace-switcher header-centered">
+          <app-namespace></app-namespace>
+        </div>
+        <app-context-selector class="header-centered"></app-context-selector>
+        <app-helper class="header-centered"></app-helper>
+      </div>
+    </header>
+    <div class="content-container">
+      <div class="navigation">
+        <app-navigation></app-navigation>
+      </div>
+      <div class="content-area">
+        <router-outlet></router-outlet>
       </div>
     </div>
-    <div class="header-actions">
-      <a
-        [routerLink]="['/configuration/apply']"
-        class="header-link"
-        title="Create or update resources"
-      >
-        <clr-icon shape="upload"></clr-icon>
-        <span>Apply YAML</span>
-      </a>
-      <div class="namespace-switcher header-centered">
-        <app-namespace></app-namespace>
-      </div>
-      <app-context-selector class="header-centered"></app-context-selector>
-      <app-helper class="header-centered"></app-helper>
-    </div>
-  </header>
-  <div class="content-container">
-    <div class="navigation">
-      <app-navigation></app-navigation>
-    </div>
-    <div class="content-area">
-      <router-outlet></router-outlet>
-    </div>
   </div>
-  <div class="quick-switcher">
-    <app-quick-switcher></app-quick-switcher>
-  </div>
-  <div class="preferences">
-    <app-preferences
-      [(isOpen)]="preferencesOpened"
-      [preferences]="preferences"
-      (preferencesChanged)="preferencesChanged($event)"
-    ></app-preferences>
-  </div>
+  <app-bottom-panel *ngIf="isBottomPanelEnabled"></app-bottom-panel>
+</div>
+<div class="quick-switcher">
+  <app-quick-switcher></app-quick-switcher>
+</div>
+<div class="preferences">
+  <app-preferences
+    [(isOpen)]="preferencesOpened"
+    [preferences]="preferences"
+    (preferencesChanged)="preferencesChanged($event)"
+  ></app-preferences>
 </div>
