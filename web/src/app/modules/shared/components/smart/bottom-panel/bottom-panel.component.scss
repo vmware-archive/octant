@@ -1,0 +1,65 @@
+:host-context(body) {
+  --gutter-background-color: #eee;
+  --gutter-background-hover-color: #0079b8;
+  --app-background: #d4d4d4;
+}
+
+:host-context(body.dark) {
+  --gutter-background-color: #25333d;
+  --gutter-background-hover-color: #495a67;
+  --app-background: #121d22;
+}
+
+:host {
+  --slider-height: 1rem;
+
+  z-index: 777;
+  flex: 0 0 auto;
+  height: var(--slider-height);
+  overflow-y: scroll;
+
+  display: flex;
+  flex-direction: column;
+}
+
+mwlResizable {
+  box-sizing: border-box;
+}
+
+.slider-container {
+  flex: 1 1 auto;
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
+
+  &--trigger {
+    position: absolute;
+    right: 1rem;
+    margin: 0.125rem 0;
+    padding: 0 1px;
+
+    transition: all 0.5s ease-out;
+
+    &:hover {
+      background: var(--app-background);
+      border-radius: 30%;
+    }
+
+    &:visited, &:link {
+      color: #4aaed9;
+    }
+  }
+}
+
+
+.gutter {
+  width: 100%;
+  flex: 0 0 0.125rem;
+  background: var(--gutter-background-color);
+
+  &.open:hover {
+    background: var(--gutter-background-hover-color);
+    cursor: ns-resize;
+  }
+}
+

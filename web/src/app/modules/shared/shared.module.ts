@@ -76,6 +76,7 @@ import { dynamicComponents } from './dynamic-components';
 import { ViewContainerComponent } from './components/view/view-container.component';
 import { MissingComponentComponent } from './components/missing-component/missing-component.component';
 import { OctantTooltipComponent } from './components/presentation/octant-tooltip/octant-tooltip';
+import { BottomPanelComponent } from './components/smart/bottom-panel/bottom-panel.component';
 
 @NgModule({
   declarations: [
@@ -146,6 +147,7 @@ import { OctantTooltipComponent } from './components/presentation/octant-tooltip
     ViewContainerComponent,
     MissingComponentComponent,
     OctantTooltipComponent,
+    BottomPanelComponent,
   ],
   entryComponents: [
     AlertComponent,
@@ -282,6 +284,7 @@ import { OctantTooltipComponent } from './components/presentation/octant-tooltip
     ViewHostDirective,
     ViewContainerComponent,
     OctantTooltipComponent,
+    BottomPanelComponent,
   ],
 })
 export class SharedModule {}
