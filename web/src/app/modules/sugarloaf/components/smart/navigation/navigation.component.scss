@@ -91,7 +91,7 @@
 
   .navigation-items-collapsed {
     flex-grow: 1;
-    overflow-y: hidden;
+    overflow-y: scroll;
   }
 
   .flyout-header {
@@ -160,3 +160,4 @@
     display: flex;
   }
 }
+
