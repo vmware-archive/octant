@@ -36,6 +36,10 @@ func (cw *compressResponseWriter) Write(b []byte) (int, error) {
 	return cw.compressor.Write(b)
 }
 
+func (cw *compressResponseWriter) ReadFrom(r io.Reader) (int64, error) {
+	return io.Copy(cw.compressor, r)
+}
+
 type flusher interface {
 	Flush() error
 }
@@ -128,6 +132,9 @@ func CompressHandlerLevel(h http.Handler, level int) http.Handler {
 			},
 			Flush: func(httpsnoop.FlushFunc) httpsnoop.FlushFunc {
 				return cw.Flush
+			},
+			ReadFrom: func(rff httpsnoop.ReadFromFunc) httpsnoop.ReadFromFunc {
+				return cw.ReadFrom
 			},
 		})
 
