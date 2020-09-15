@@ -30,7 +30,7 @@ export class OctantTooltipComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.contentSubscription = this.contentService.viewScrollPos.subscribe(
+    this.contentSubscription = this.contentService.debouncedScrollPos.subscribe(
       position => {
         this.scrollPosition = position;
         this.cd.markForCheck();
