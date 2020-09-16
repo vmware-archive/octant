@@ -3,16 +3,11 @@
     <ng-container
       *ngFor="let selector of showSelectors; trackBy: trackByIdentity"
     >
-      <span class="tooltip tooltip-wrapper tooltip-md">
+      <app-octant-tooltip tooltipText="{{ selector.config.key }}:{{ selector.config.value }}">
         <span class="label label-orange">
           {{ selector.config.key }}:{{ selector.config.value }}
         </span>
-        <span
-          class="tooltip-content"
-          [ngStyle]="{ 'margin-top': getScrollPos() }"
-          >{{ selector.config.key }}:{{ selector.config.value }}</span
-        >
-      </span>
+      </app-octant-tooltip>
     </ng-container>
   </div>
 

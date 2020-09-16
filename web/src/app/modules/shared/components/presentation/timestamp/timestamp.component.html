@@ -1,6 +1,3 @@
-<span class="tooltip tooltip-wrapper tooltip-md">
+<app-octant-tooltip [tooltipText] ="humanReadable" class="timestamp-tooltip-wrapper">
   <span>{{ timestamp | relative }}</span>
-  <span class="tooltip-content" [ngStyle]="{ 'margin-top': getScrollPos() }">
-    <span>{{ humanReadable }}</span>
-  </span>
-</span>
+</app-octant-tooltip>

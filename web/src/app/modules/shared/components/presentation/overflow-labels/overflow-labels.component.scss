@@ -4,7 +4,7 @@
 
 @import '../../../../../../styles';
 
-.labels-wrapper {
+:host ::ng-deep .labels-wrapper {
   display: flex;
   align-items: center;
 
@@ -12,22 +12,28 @@
     display: grid;
     grid-auto-flow: column;
 
-    .tooltip-wrapper {
-      margin: 0 0.3rem 0 0;
+    .octant-tooltip {
       overflow: hidden;
       text-overflow: ellipsis;
-    }
+      display: contents;
 
-    .label {
-      display: inline-block;
-      line-height: 0.9rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      width: 100%;
+      .tooltip-wrapper {
+        margin: 0 0.3rem 0 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
 
-      &.clickable {
-        cursor: pointer;
+      .label {
+        display: inline-block;
+        line-height: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+
+        &.clickable {
+          cursor: pointer;
+        }
       }
     }
   }

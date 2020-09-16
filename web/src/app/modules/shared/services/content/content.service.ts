@@ -15,7 +15,7 @@ import {
 } from '../label-filter/label-filter.service';
 import { NamespaceService } from '../namespace/namespace.service';
 import { LoadingService } from '../loading/loading.service';
-import { delay } from 'rxjs/operators';
+import { debounceTime, delay, distinctUntilChanged } from 'rxjs/operators';
 
 export const ContentUpdateMessage = 'event.octant.dev/content';
 
@@ -38,6 +38,7 @@ export class ContentService {
   defaultPath = new BehaviorSubject<string>('');
   current = new BehaviorSubject<ContentResponse>(emptyContentResponse);
   viewScrollPos = new BehaviorSubject<number>(0);
+  debouncedScrollPos = new BehaviorSubject<number>(0);
 
   private previousContentPath = '';
 
@@ -99,6 +100,10 @@ export class ContentService {
     labelFilterService.filters.subscribe(filters => {
       this.filters = filters;
     });
+
+    this.viewScrollPos
+      .pipe(debounceTime(100), distinctUntilChanged())
+      .subscribe(pos => this.debouncedScrollPos.next(pos));
   }
 
   delayedComplete(value: boolean) {

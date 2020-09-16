@@ -4,19 +4,14 @@
       <ng-container
         *ngFor="let item of label | keyvalue; trackBy: trackByIdentity"
       >
-        <span class="tooltip tooltip-wrapper tooltip-md">
+        <app-octant-tooltip tooltipText="{{ item.key }}:{{ item.value }}" class="octant-tooltip">
           <span
             class="label label-light-blue clickable"
             (click)="filterLabel(item.key, item.value)"
           >
             {{ item.key }}:{{ item.value }}
           </span>
-          <span
-            class="tooltip-content"
-            [ngStyle]="{ 'margin-top': getScrollPos() }"
-            >{{ item.key }}:{{ item.value }}</span
-          >
-        </span>
+        </app-octant-tooltip>
       </ng-container>
     </ng-container>
   </div>

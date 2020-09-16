@@ -75,6 +75,7 @@ import { ViewHostDirective } from './directives/view-host/view-host.directive';
 import { dynamicComponents } from './dynamic-components';
 import { ViewContainerComponent } from './components/view/view-container.component';
 import { MissingComponentComponent } from './components/missing-component/missing-component.component';
+import { OctantTooltipComponent } from './components/presentation/octant-tooltip/octant-tooltip';
 
 @NgModule({
   declarations: [
@@ -144,6 +145,7 @@ import { MissingComponentComponent } from './components/missing-component/missin
     ViewHostDirective,
     ViewContainerComponent,
     MissingComponentComponent,
+    OctantTooltipComponent,
   ],
   entryComponents: [
     AlertComponent,
@@ -279,6 +281,7 @@ import { MissingComponentComponent } from './components/missing-component/missin
     StepperComponent,
     ViewHostDirective,
     ViewContainerComponent,
+    OctantTooltipComponent,
   ],
 })
 export class SharedModule {}
