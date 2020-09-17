@@ -9,6 +9,7 @@
       ]
     },
     "config": {
-        "containers": ["one", "two"]
+        "containers": ["one", "two"],
+        "durations": [{"label": "5 minutes", "seconds":  300}]
     }
 }

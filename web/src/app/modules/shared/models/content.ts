@@ -392,11 +392,17 @@ export interface YAMLView extends View {
   };
 }
 
+export interface Since {
+  label: string;
+  seconds: number;
+}
+
 export interface LogsView extends View {
   config: {
     namespace: string;
     name: string;
     containers: string[];
+    durations: Since[];
   };
 }
 

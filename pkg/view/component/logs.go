@@ -9,10 +9,26 @@ import (
 	"encoding/json"
 )
 
+var defaultDurations = []Since{
+	{"5 minutes", 300},
+	{"10 minutes", 600},
+	{"30 minutes", 1800},
+	{"1 hour", 3600},
+	{"3 hours", 10800},
+	{"5 hours", 18000},
+	{"Creation", 1<<63 - 1},
+}
+
+type Since struct {
+	Label   string `json:"label,omitempty"`
+	Seconds int64  `json:"seconds,omitempty"`
+}
+
 type LogsConfig struct {
 	Namespace  string   `json:"namespace,omitempty"`
 	Name       string   `json:"name,omitempty"`
 	Containers []string `json:"containers,omitempty"`
+	Durations  []Since  `json:"durations,omitempty"`
 }
 
 // Logs is a logs component.
@@ -29,6 +45,7 @@ func NewLogs(namespace, name string, containers ...string) *Logs {
 			Namespace:  namespace,
 			Name:       name,
 			Containers: containers,
+			Durations:  defaultDurations,
 		},
 		Base: newBase(TypeLogs, TitleFromString("Logs")),
 	}

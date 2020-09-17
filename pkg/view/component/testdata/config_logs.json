@@ -1,7 +1,8 @@
-{ 
+{
     "namespace":"test",
     "name":"nginx-deployment-7cb4fc6c56-29pbw",
-    "containers":[ 
+    "containers":[
        "nginx"
-    ]
+    ],
+    "durations": [{"label": "5 minutes", "seconds":  300}]
  }

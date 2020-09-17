@@ -257,6 +257,7 @@ func Test_unmarshal(t *testing.T) {
 					Namespace:  "test",
 					Name:       "nginx-deployment-7cb4fc6c56-29pbw",
 					Containers: []string{"nginx"},
+					Durations:  []Since{{Label: "5 minutes", Seconds: 300}},
 				},
 			},
 		},

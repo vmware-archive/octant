@@ -43,6 +43,7 @@ export class LogsComponent
   containerLogs: LogEntry[] = [];
 
   selectedContainer = '';
+  selectedSince = 0;
   shouldDisplayTimestamp = false;
   shouldDisplayName = true;
   showOnlyFiltered = false;
@@ -76,13 +77,21 @@ export class LogsComponent
     }
   }
 
-  onContainerChange(containerSelection: string): void {
-    this.selectedContainer = containerSelection;
+  onSinceChange(sinceSelection: number): void {
+    this.selectedSince = sinceSelection;
+    this.stopStreamIfStarted();
+    this.startStream();
+  }
+  stopStreamIfStarted(): void {
     if (this.logStream) {
       this.containerLogs = [];
       this.logStream.close();
       this.logStream = null;
     }
+  }
+  onContainerChange(containerSelection: string): void {
+    this.selectedContainer = containerSelection;
+    this.stopStreamIfStarted();
     if (this.selectedContainer === '') {
       this.shouldDisplayName = true;
     } else {
@@ -107,11 +116,13 @@ export class LogsComponent
     const namespace = this.v.config.namespace;
     const pod = this.v.config.name;
     const container = this.selectedContainer;
+    const since = this.selectedSince;
     if (namespace && pod) {
       this.logStream = this.podLogsService.createStream(
         namespace,
         pod,
-        container
+        container,
+        since
       );
       this.logSubscription = this.logStream.logEntry.subscribe(
         (entry: LogEntry) => {

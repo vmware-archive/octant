@@ -81,6 +81,17 @@ func (s *podLogsStateManager) StreamPodLogsSubscribe(_ octant.State, payload act
 		return fmt.Errorf("getting containerName from payload: %w", err)
 	}
 
+	since, err := payload.Float64("sinceSeconds")
+	if err != nil {
+		return fmt.Errorf("getting since from payload: %w", err)
+	}
+
+	// Default to 5 minutes
+	sinceDuration := time.Second * 300
+	if since != 0 {
+		sinceDuration = time.Second * time.Duration(since)
+	}
+
 	eventType := event.NewLoggingEventType(namespace, podName)
 	val, ok := s.podLogSubscriptions.Load(eventType)
 	if ok {
@@ -95,7 +106,7 @@ func (s *podLogsStateManager) StreamPodLogsSubscribe(_ octant.State, payload act
 	key.Name = podName
 	key.Namespace = namespace
 
-	logStreamer, err := container.NewLogStreamer(s.ctx, s.config, key, containerName)
+	logStreamer, err := container.NewLogStreamer(s.ctx, s.config, key, sinceDuration, containerName)
 	if err != nil {
 		return fmt.Errorf("creating log streamer: %w", err)
 	}
