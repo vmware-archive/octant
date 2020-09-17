@@ -36,6 +36,10 @@ export class ContainerComponent implements OnInit, OnDestroy {
   preferencesOpened = false;
   preferences: Preferences;
 
+  // This is a feature flag for the app-wide bottom panel. It can be removed
+  // once the bottom panel is integrated.
+  isBottomPanelEnabled = false;
+
   constructor(
     private websocketService: WebsocketService,
     private iconService: IconService

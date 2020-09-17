@@ -1,0 +1,20 @@
+<div
+  class="slider-container"
+  mwlResizable
+  [resizeCursors]="resizeCursors()"
+  [allowNegativeResizes]="true"
+  (resizing)="updateSliderPosition($event)"
+>
+  <div
+    class="gutter"
+    mwlResizeHandle
+    [resizeEdges]="resizeEdges"
+    [ngClass]="gutterClass()"
+  ></div>
+
+  <a class="slider-container--trigger" (click)="toggle()">
+    <clr-icon shape="angle-double" [@toggleState]="toggleState"></clr-icon>
+  </a>
+
+  <ng-content></ng-content>
+</div>

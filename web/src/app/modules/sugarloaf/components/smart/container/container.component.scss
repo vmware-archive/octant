@@ -2,12 +2,32 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+
 @mixin electron-header {
   -webkit-app-region: drag;
   padding-left: var(--padding-left);
 }
 
+:host-context(body) {
+  --background-color: #fafafa;
+}
+
+:host-context(body.dark) {
+  --background-color: #1b2a32;
+}
+
+.octant-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: 100vh;
+  background-color: var(--background-color);
+}
+
 .main-container {
+  flex: 1 1 auto;
+  overflow-y: scroll;
+
   // Navigation's color variables for Light Theme.
 
   :host-context(body) {
@@ -98,3 +118,11 @@
     }
   }
 }
+
+.main-container {
+  .content-container {
+    flex: 1;
+    overflow-y: scroll;
+  }
+}
+
