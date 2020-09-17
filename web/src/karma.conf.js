@@ -5,12 +5,12 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     basePath: '',
     frameworks: ['jasmine', '@angular-devkit/build-angular'],
     proxies: {
-      '/vs/': 'vs/lib/'
+      '/vs/': 'vs/lib/',
     },
     plugins: [
       require('karma-jasmine'),
@@ -28,15 +28,15 @@ module.exports = function(config) {
       reports: ['html', 'lcovonly', 'text-summary'],
       fixWebpackSourcePaths: true,
     },
-    reporters: ['spec'],
+    reporters: ['spec', 'progress', 'kjhtml'],
     specReporter: {
       maxLogLines: 5,
       suppressErrorSummary: true,
       suppressFailed: false,
       suppressPassed: false,
-      suppressedSkipped: true,
-      showSpectiming: false,
-      failFast: true,
+      suppressedSkipped: false,
+      showSpectiming: true,
+      failFast: false,
     },
     port: 9876,
     colors: true,
@@ -48,7 +48,11 @@ module.exports = function(config) {
     customLaunchers: {
       ChromeDebug: {
         base: 'Chrome',
-        flags: ['--remote-debugging-port=9333', '--no-sandbox', '--disable-extensions'],
+        flags: [
+          '--remote-debugging-port=9333',
+          '--no-sandbox',
+          '--disable-extensions',
+        ],
       },
     },
   });
