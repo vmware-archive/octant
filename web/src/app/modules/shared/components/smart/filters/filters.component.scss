@@ -2,7 +2,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-@import '../../../../../../styles';
+@import '../../../../../../sass/mixins';
+@import '../../../../../../sass/variables';
 
 .filters {
   display: flex;
