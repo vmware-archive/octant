@@ -1,7 +1,11 @@
 <ng-container *ngIf="currentStatus">
   <ng-container *ngIf="detail !== undefined; else showStatus">
     <clr-signpost>
-      <div [ngClass]="[currentStatus, 'indicator']" clrSignpostTrigger></div>
+
+      <clr-icon *ngIf="currentStatus === 'error'" shape="exclamation-circle" class="is-error is-solid" size="16" clrSignpostTrigger></clr-icon>
+      <clr-icon *ngIf="currentStatus === 'warning'" shape="info-circle" class="is-warning is-solid" size="16" clrSignpostTrigger></clr-icon>
+      <clr-icon *ngIf="currentStatus === 'success'" shape="check-circle" class="is-success is-solid" size="16" clrSignpostTrigger></clr-icon>
+      <span style="margin-right: 4px;"></span>
       <clr-signpost-content *clrIfOpen>
         <app-view-container [view]="detail"></app-view-container>
       </clr-signpost-content>
@@ -10,5 +14,5 @@
 </ng-container>
 
 <ng-template #showStatus>
-  <div [ngClass]="[currentStatus, 'indicator']" clrSignpostTrigger></div>
+  <div clrSignpostTrigger></div>
 </ng-template>

@@ -11,7 +11,7 @@ export const Status = {
 };
 
 export const statusLookup = {
-  [Status.Ok]: 'ok',
+  [Status.Ok]: 'success',
   [Status.Warning]: 'warning',
   [Status.Error]: 'error',
 };
@@ -19,7 +19,6 @@ export const statusLookup = {
 @Component({
   selector: 'app-indicator',
   templateUrl: './indicator.component.html',
-  styleUrls: ['./indicator.component.scss'],
 })
 export class IndicatorComponent implements OnChanges {
   @Input()
