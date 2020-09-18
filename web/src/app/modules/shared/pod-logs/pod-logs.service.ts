@@ -18,6 +18,7 @@ export class PodLogsStreamer {
     private namespace: string,
     private pod: string,
     private container: string,
+    private since: number,
     private wss: WebsocketService
   ) {}
 
@@ -26,6 +27,7 @@ export class PodLogsStreamer {
       timestamp: null,
       message: null,
       container: null,
+      sinceSeconds: null,
     } as LogEntry;
 
     this.logEntry = new BehaviorSubject(emptyEntry);
@@ -34,6 +36,7 @@ export class PodLogsStreamer {
       namespace: this.namespace,
       podName: this.pod,
       containerName: this.container,
+      sinceSeconds: this.since,
     });
 
     this.wss.registerHandler(this.streamUrl(), data => {
@@ -66,8 +69,13 @@ export class PodLogsStreamer {
 export class PodLogsService {
   constructor(private wss: WebsocketService) {}
 
-  public createStream(namespace, pod, container: string): PodLogsStreamer {
-    const pls = new PodLogsStreamer(namespace, pod, container, this.wss);
+  public createStream(
+    namespace,
+    pod,
+    container: string,
+    since?: number
+  ): PodLogsStreamer {
+    const pls = new PodLogsStreamer(namespace, pod, container, since, this.wss);
     pls.start();
     return pls;
   }

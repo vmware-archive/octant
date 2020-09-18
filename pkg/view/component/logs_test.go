@@ -28,6 +28,7 @@ func Test_Logs_Marshal(t *testing.T) {
 				Base: newBase(TypeLogs, TitleFromString("Logs")),
 				Config: LogsConfig{
 					Containers: []string{"one", "two"},
+					Durations:  []Since{{Label: "5 minutes", Seconds: 300}},
 				},
 			},
 			expectedPath: "logs.json",

@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"sync"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 
@@ -20,10 +21,11 @@ import (
 )
 
 type logStreamer struct {
-	namespace  string
-	pod        string
-	containers []string
-	stream     chan LogEntry
+	namespace    string
+	pod          string
+	containers   []string
+	sinceSeconds *int64
+	stream       chan LogEntry
 
 	ctx      context.Context
 	cancelFn context.CancelFunc
@@ -34,7 +36,7 @@ type logStreamer struct {
 var _ LogStreamer = (*logStreamer)(nil)
 
 // NewLogStreamer returns an instance of a logStream configured to stream logs for the given namespace/pod/container(s).
-func NewLogStreamer(ctx context.Context, dashConfig config.Dash, key store.Key, containerNames ...string) (*logStreamer, error) {
+func NewLogStreamer(ctx context.Context, dashConfig config.Dash, key store.Key, sinceDuration time.Duration, containerNames ...string) (*logStreamer, error) {
 	ctx, cancelFn := context.WithCancel(ctx)
 
 	if shouldFetchContainerNames(containerNames) {
@@ -60,13 +62,16 @@ func NewLogStreamer(ctx context.Context, dashConfig config.Dash, key store.Key, 
 		}
 	}
 
+	sinceSeconds := int64(sinceDuration.Seconds())
+
 	return &logStreamer{
-		namespace:  key.Namespace,
-		pod:        key.Name,
-		containers: containerNames,
-		config:     dashConfig,
-		ctx:        ctx,
-		cancelFn:   cancelFn,
+		namespace:    key.Namespace,
+		pod:          key.Name,
+		containers:   containerNames,
+		sinceSeconds: &sinceSeconds,
+		config:       dashConfig,
+		ctx:          ctx,
+		cancelFn:     cancelFn,
 	}, nil
 }
 
@@ -139,9 +144,10 @@ func (s *logStreamer) containerStream(container string) (io.ReadCloser, error) {
 		return nil, err
 	}
 	request := client.CoreV1().Pods(s.namespace).GetLogs(s.pod, &corev1.PodLogOptions{
-		Container:  container,
-		Follow:     true,
-		Timestamps: true,
+		Container:    container,
+		Follow:       true,
+		Timestamps:   true,
+		SinceSeconds: s.sinceSeconds,
 	})
 	return request.Stream(s.ctx)
 }

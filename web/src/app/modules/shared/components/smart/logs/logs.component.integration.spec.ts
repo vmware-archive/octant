@@ -9,7 +9,11 @@ import { By } from '@angular/platform-browser';
 import map from 'lodash/map';
 import range from 'lodash/range';
 import uniqueId from 'lodash/uniqueId';
-import { LogEntry, LogsView } from 'src/app/modules/shared/models/content';
+import {
+  LogEntry,
+  LogsView,
+  Since,
+} from 'src/app/modules/shared/models/content';
 import getAPIBase from 'src/app/modules/shared/services/common/getAPIBase';
 import { PodLogsService } from 'src/app/modules/shared/pod-logs/pod-logs.service';
 import { LogsComponent } from './logs.component';
@@ -17,7 +21,10 @@ import { AnsiPipe } from '../../../pipes/ansiPipe/ansi.pipe';
 
 const API_BASE = getAPIBase();
 
-function createTestLogsView(containers: string[]): LogsView {
+function createTestLogsView(
+  durations: Since[],
+  containers: string[]
+): LogsView {
   return {
     metadata: {
       type: 'logs',
@@ -28,6 +35,7 @@ function createTestLogsView(containers: string[]): LogsView {
       namespace: 'default',
       name: 'cartpod',
       containers,
+      durations,
     },
   };
 }
@@ -78,11 +86,10 @@ describe('LogsComponent <-> PodsLogsService', () => {
     httpClient = TestBed.inject(HttpClient);
     httpTestingController = TestBed.inject(HttpTestingController);
 
-    component.view = createTestLogsView([
-      'containerA',
-      'containerB',
-      'containerC',
-    ]);
+    component.view = createTestLogsView(
+      [{ label: '5 minutes', seconds: 300 }],
+      ['containerA', 'containerB', 'containerC']
+    );
   });
 
   it('should allow user to toggle displaying timestamps', () => {
@@ -204,11 +211,10 @@ describe('LogsComponent <-> PodsLogsService', () => {
   });
 
   it('should filter messages based on search string', () => {
-    component.view = createTestLogsView([
-      'containerA',
-      'containerB',
-      'containerC',
-    ]);
+    component.view = createTestLogsView(
+      [{ label: '5 minutes', seconds: 300 }],
+      ['containerA', 'containerB', 'containerC']
+    );
 
     component.shouldDisplayTimestamp = true;
     component.containerLogs = defaultTestLogs;

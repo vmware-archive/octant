@@ -50,6 +50,7 @@ describe('LogsComponent', () => {
         namespace: 'default',
         name: 'cartpod',
         containers: [],
+        durations: [],
       },
     } as LogsView;
 
