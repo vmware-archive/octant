@@ -51,9 +51,7 @@ describe('IndicatorComponent', () => {
 
       it(`shows ${name} indicator`, () => {
         expect(
-          element
-            .querySelector(`app-indicator div.${name}`)
-            .classList.contains(name)
+          element.querySelector(`app-indicator clr-icon.is-${name}`)
         ).toBeTruthy();
       });
     });
