@@ -2,8 +2,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-@import '../../../../../../sass/mixins';
-@import '../../../../../../sass/variables';
+@import '_mixins';
+@import '_variables';
 
 .selector--expression {
   @include pill(var(--selector-color));
