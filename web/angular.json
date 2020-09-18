@@ -63,6 +63,11 @@
               "node_modules/@clr/ui/clr-ui-dark.min.css",
               "src/styles.scss"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/sass/"
+              ]
+            },
             "scripts": [
               "node_modules/@webcomponents/custom-elements/custom-elements.min.js",
               "node_modules/@clr/icons/clr-icons.min.js"
@@ -103,7 +108,12 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "browserTarget": "dash-frontend:build",
-            "disableHostCheck": true
+            "disableHostCheck": true,
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/sass/"
+              ]
+            }
           },
           "configurations": {
             "production": {
@@ -136,7 +146,12 @@
             "codeCoverageExclude": [
               "src/app/models/**/*",
               "src/environments/**/*"
-            ]
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/sass/"
+              ]
+            }
           }
         },
         "lint": {
