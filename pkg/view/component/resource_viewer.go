@@ -67,6 +67,40 @@ type Node struct {
 	Path       *Link       `json:"path,omitempty"`
 }
 
+func (n *Node) UnmarshalJSON(data []byte) error {
+	x := struct {
+		Name       string         `json:"name,omitempty"`
+		APIVersion string         `json:"apiVersion,omitempty"`
+		Kind       string         `json:"kind,omitempty"`
+		Status     NodeStatus     `json:"status,omitempty"`
+		Details    []*TypedObject `json:"details,omitempty"`
+		Path       *Link          `json:"path,omitempty"`
+	}{}
+
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+
+	n.Name = x.Name
+	n.APIVersion = x.APIVersion
+	n.Kind = x.Kind
+	n.Status = x.Status
+	n.Path = x.Path
+
+	if x.Details != nil {
+		n.Details = make([]Component, len(x.Details))
+	}
+	for i, detail := range x.Details {
+		dc, err := detail.ToComponent()
+		if err != nil {
+			return errors.Wrap(err, "unmarshal-ing detail")
+		}
+		n.Details[i] = dc
+	}
+
+	return nil
+}
+
 // ResourceViewerConfig is configuration for a resource viewer.
 type ResourceViewerConfig struct {
 	Edges    AdjList `json:"edges,omitempty"`

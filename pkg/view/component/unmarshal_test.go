@@ -307,6 +307,9 @@ func Test_unmarshal(t *testing.T) {
 							APIVersion: "v1",
 							Kind:       "Service",
 							Status:     "ok",
+							Details: []Component{
+								NewText("my-nginx"),
+							},
 						},
 						"71c2b4eb-2949-11e9-b356-42010a8000e5": Node{
 							Name:       "nginx-deployment",
