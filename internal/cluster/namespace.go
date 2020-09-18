@@ -91,10 +91,16 @@ func namespaces(dc dynamic.Interface) ([]corev1.Namespace, error) {
 	return nsList.Items, nil
 }
 
+// InitialNamespace returns the initial namespace for Octant
 func (n *namespaceClient) InitialNamespace() string {
 	return n.initialNamespace
 }
 
+// ProvidedNamespaces returns the list of namespaces provided.
+// If no namespaces  are provided, it will default to returning the InitialNamespace
 func (n *namespaceClient) ProvidedNamespaces() []string {
+	if len(n.providedNamespaces) == 0 {
+		n.providedNamespaces = []string{n.initialNamespace}
+	}
 	return n.providedNamespaces
 }
