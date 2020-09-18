@@ -12,8 +12,6 @@ import (
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
-	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -210,51 +208,13 @@ func (pvs *PersistentVolumeStatus) Create(ctx context.Context, options Options) 
 	return summary, nil
 }
 
-func getBoundPersistentVolumeClaim(ctx context.Context, pv *corev1.PersistentVolume, options Options) (*corev1.PersistentVolumeClaim, error) {
-	objectStore := options.DashConfig.ObjectStore()
-	pvc := &corev1.PersistentVolumeClaim{}
-
-	cr := pv.Spec.ClaimRef
-	if cr == nil {
-		return nil, nil
-	}
-
-	key := store.Key{
-		APIVersion: cr.APIVersion,
-		Kind:       cr.Kind,
-		Name:       cr.Name,
-		Namespace:  cr.Namespace,
-	}
-
-	o, err := objectStore.Get(ctx, key)
-	if err != nil {
-		return nil, errors.Wrapf(err, "get persistent volume claim for key %+v", key)
-	}
-
-	if o != nil {
-		err := kubernetes.FromUnstructured(o, pvc)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		return nil, errors.New("Persistent Volume Claim not found")
-	}
-
-	return pvc, nil
-}
-
 func createBoundPersistentVolumeClaimLink(ctx context.Context, pv *corev1.PersistentVolume, options Options) (*component.Link, error) {
-	pvc, err := getBoundPersistentVolumeClaim(ctx, pv, options)
-	if err != nil {
-		return nil, err
-	}
-
 	cr := pv.Spec.ClaimRef
 	if cr == nil {
 		return component.NewLink("", "", ""), nil
 	}
 	claimText := fmt.Sprintf("%s/%s", cr.Namespace, cr.Name)
-	claimLink, err := options.Link.ForObject(pvc, claimText)
+	claimLink, err := options.Link.ForGVK(cr.Namespace, cr.APIVersion, cr.Kind, cr.Name, claimText)
 	if err != nil {
 		return nil, err
 	}

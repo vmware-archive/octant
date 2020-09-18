@@ -7,6 +7,7 @@ package printer
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -118,13 +119,15 @@ func Test_PersistentVolumeListHandler(t *testing.T) {
 			if tc.list != nil {
 				tpo.PathForObject(&tc.list.Items[0], tc.list.Items[0].Name, "/"+tc.list.Items[0].Name)
 
-				pvcKey, err := store.KeyFromObject(pvcObject)
-				require.NoError(t, err)
+				tpo.objectStore.EXPECT().Get(ctx, store.Key{
+					Namespace:  pvcObject.Namespace,
+					APIVersion: pvcObject.APIVersion,
+					Kind:       pvcObject.Kind,
+					Name:       pvcObject.Name,
+				}).Return(testutil.ToUnstructured(t, pvcObject), nil).AnyTimes()
 
-				tpo.objectStore.EXPECT().Get(ctx, pvcKey).
-					Return(testutil.ToUnstructured(t, pvcObject), nil).AnyTimes()
-
-				tpo.PathForObject(pvcObject, pvcObject.Namespace+"/"+pvcObject.Name, "/pvc")
+				claimText := fmt.Sprintf("%s/%s", pvcObject.Namespace, pvcObject.Name)
+				tpo.PathForGVK(pvcObject.Namespace, pvcObject.APIVersion, pvcObject.Kind, pvcObject.Name, claimText, "/pvc")
 			}
 			got, err := PersistentVolumeListHandler(ctx, tc.list, printOptions)
 			if tc.isErr {
