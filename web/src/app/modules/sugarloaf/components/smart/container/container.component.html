@@ -19,14 +19,7 @@
         </div>
       </div>
       <div class="header-actions">
-        <a
-          [routerLink]="['/configuration/apply']"
-          class="header-link"
-          title="Create or update resources"
-        >
-          <clr-icon shape="upload"></clr-icon>
-          <span>Apply YAML</span>
-        </a>
+        <app-apply-yaml class="header-centered"></app-apply-yaml>
         <div class="namespace-switcher header-centered">
           <app-namespace></app-namespace>
         </div>

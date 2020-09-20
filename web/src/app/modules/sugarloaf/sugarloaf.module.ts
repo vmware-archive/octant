@@ -7,6 +7,7 @@ import { InputFilterComponent } from './components/smart/input-filter/input-filt
 import { NotifierComponent } from './components/smart/notifier/notifier.component';
 import { NavigationComponent } from './components/smart/navigation/navigation.component';
 import { QuickSwitcherComponent } from './components/smart/quick-switcher/quick-switcher.component';
+import { ApplyYAMLComponent } from './components/smart/apply-yaml/apply-yaml.component';
 import { ThemeSwitchButtonComponent } from './components/smart/theme-switch/theme-switch-button.component';
 import { UploaderComponent } from './components/smart/uploader/uploader.component';
 import { ClarityModule } from '@clr/angular';
@@ -36,6 +37,7 @@ export class UnstripTrailingSlashLocation extends Location {
 
 @NgModule({
   declarations: [
+    ApplyYAMLComponent,
     ContainerComponent,
     NamespaceComponent,
     PageNotFoundComponent,

@@ -33,6 +33,7 @@ export class EditorComponent extends AbstractViewComponent<EditorView> {
 
   private editorValue: string;
   private pristineValue: string;
+  uri: string;
   private metadata: { [p: string]: string };
 
   isModified = false;
@@ -58,6 +59,8 @@ export class EditorComponent extends AbstractViewComponent<EditorView> {
       this.pristineValue = view.config.value;
       this.options.readOnly = view.config.readOnly;
       this.options.language = view.config.language;
+      this.uri =
+        'file:text-' + Math.random().toString(36).substring(2, 15) + '.yaml';
     }
 
     this.submitAction = view.config.submitAction || this.submitAction;
