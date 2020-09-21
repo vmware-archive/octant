@@ -25,9 +25,6 @@
 }
 
 .main-container {
-  flex: 1 1 auto;
-  overflow-y: scroll;
-
   // Navigation's color variables for Light Theme.
 
   :host-context(body) {
@@ -102,13 +99,6 @@
       padding: 0;
       overflow: hidden;
     }
-  }
-}
-
-.main-container {
-  .content-container {
-    flex: 1;
-    overflow-y: scroll;
   }
 }
 
