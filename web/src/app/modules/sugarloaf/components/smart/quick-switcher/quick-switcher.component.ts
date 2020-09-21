@@ -13,6 +13,7 @@ import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { Navigation, NavigationChild } from '../../../models/navigation';
 import { NavigationService } from '../../../../shared/services/navigation/navigation.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { NamespaceService } from 'src/app/modules/shared/services/namespace/namespace.service';
 
 const emptyNavigation: Navigation = {
   sections: [],
@@ -21,6 +22,7 @@ const emptyNavigation: Navigation = {
 
 interface Destination {
   title: string;
+  type: string;
   path: string;
   keywords: string[];
 }
@@ -36,10 +38,14 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
   navigation: Navigation = emptyNavigation;
 
   opened = false;
+  searchingNamespace = false;
 
   destinations: Destination[];
+  namespaceDestinations: Destination[];
   filteredDestinations: Destination[];
   currentDestination = '';
+
+  helperText = `Search namespaces by starting with `;
 
   input = '';
   inputChanged: Subject<string> = new Subject<string>();
@@ -47,9 +53,11 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
   activeIndex = 0;
 
   private navigationSubscription: Subscription;
+  private namespaceSubscription: Subscription;
 
   constructor(
     private navigationService: NavigationService,
+    private namespaceService: NamespaceService,
     private router: Router,
     private el: ElementRef
   ) {
@@ -60,6 +68,13 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.namespaceSubscription = this.namespaceService.availableNamespaces.subscribe(
+      namespaces => {
+        this.namespaceDestinations = this.buildNamespaceDestinations(
+          namespaces
+        );
+      }
+    );
     this.navigationSubscription = this.navigationService.current.subscribe(
       navigation => {
         this.navigation = navigation;
@@ -70,6 +85,7 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.navigationSubscription.unsubscribe();
+    this.namespaceSubscription.unsubscribe();
   }
 
   identifyNavigationItem(index: number, item: NavigationChild): string {
@@ -101,20 +117,39 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
     );
   }
 
+  private buildNamespaceDestinations(namespaces: string[]): Destination[] {
+    const nsDestinations = [];
+    namespaces.forEach(namespace => {
+      nsDestinations.push({
+        title: namespace,
+        path: 'overview/namespace/' + namespace,
+        keywords: [namespace],
+      });
+    });
+    return nsDestinations;
+  }
+
   private recBuildDestinations(titleAcc: string, keywordAcc, item) {
-    let title = item.title;
     if (titleAcc !== '') {
-      title = titleAcc + ' -> ' + item.title;
+      item.type = titleAcc;
     }
     if (!item.children) {
       let k = keywordAcc.slice(0);
       k.push(item.title);
       k = k.flatMap(i => i.split(' '));
-      return [{ title, path: item.path, keywords: k, active: false }];
+      return [
+        {
+          title: item.title,
+          type: item.type,
+          path: item.path,
+          keywords: k,
+          active: false,
+        },
+      ];
     }
     keywordAcc.push(item.title);
     return item.children.flatMap(child =>
-      this.recBuildDestinations(title, keywordAcc, child)
+      this.recBuildDestinations(item.title, keywordAcc, child)
     );
   }
 
@@ -161,11 +196,25 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
     this.activeIndex = 0;
     if (filter === '') {
       this.filteredDestinations = this.destinations;
+      this.searchingNamespace = false;
       return;
     }
+
+    if (this.input.startsWith('!')) {
+      this.searchingNamespace = true;
+      filter = filter.substring(1);
+      this.filteredDestinations = this.namespaceDestinations.filter(d => {
+        return (
+          d.title !== this.namespaceService.activeNamespace.value &&
+          d.title.toLowerCase().includes(filter.toLowerCase())
+        );
+      });
+      return;
+    }
+    this.searchingNamespace = false;
     this.filteredDestinations = this.destinations.filter(d => {
       const lk = d.keywords.map(k => k.toLowerCase());
-      return lk.findIndex(k => k.includes(filter)) !== -1;
+      return lk.findIndex(k => k.includes(filter.toLowerCase())) !== -1;
     });
   }
 
@@ -173,5 +222,6 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
     this.input = '';
     this.filteredDestinations = this.destinations;
     this.activeIndex = 0;
+    this.searchingNamespace = false;
   }
 }
