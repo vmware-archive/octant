@@ -24,7 +24,13 @@
       "name": "my-nginx",
       "apiVersion": "v1",
       "kind": "Service",
-      "status": "ok"
+      "status": "ok",
+      "details": [
+        {
+          "metadata": { "type": "text" },
+          "config": { "value": "my-nginx" }
+        }
+      ]
     },
     "71c2b4eb-2949-11e9-b356-42010a8000e5": {
       "name": "nginx-deployment",
