@@ -406,21 +406,16 @@ func describeEnvRows(ctx context.Context, namespace string, vars []corev1.EnvVar
 			}
 
 			u, err := objectStore.Get(ctx, key)
-			if err != nil {
-				return nil, err
-			}
-
-			if u != nil {
+			if u == nil || err != nil {
+				row["Value"] = component.NewText("<none>")
+				row["Source"] = component.NewText(fmt.Sprintf("%s:%s", ref.Name, ref.Key))
+			} else {
 				configMap := &corev1.ConfigMap{}
 				if err := kubernetes.FromUnstructured(u, configMap); err != nil {
 					return nil, err
 				}
-
 				row["Value"] = component.NewText(configMap.Data[ref.Key])
 				row["Source"] = source
-			} else {
-				row["Value"] = component.NewText("<none>")
-				row["Source"] = component.NewText(fmt.Sprintf("%s:%s", ref.Name, ref.Key))
 			}
 		}
 	}
