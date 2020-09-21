@@ -17,6 +17,11 @@
       (ngModelChange)="onInputChange($event)"
     />
     <table class="table table-noborder destinations">
+      <thead *ngIf="searchingNamespace">
+        <tr>
+          <th>Searching Namespaces</th>
+        </tr>
+      </thead>
       <tbody>
         <tr
           *ngFor="
@@ -27,10 +32,15 @@
           (mouseover)="activeIndex = index"
           (click)="onEnter($event)"
           [class.destination-active]="index == activeIndex"
+          [attr.aria-label]="destination.title"
         >
           <td>{{ destination.title }}</td>
+          <td>{{ destination.type }}</td>
         </tr>
       </tbody>
     </table>
+  </div>
+  <div class="modal-footer">
+    <pre>{{ helperText}}<code>!</code></pre>
   </div>
 </clr-modal>

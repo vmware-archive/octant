@@ -17,14 +17,37 @@
 
   .filter-input {
     padding: 1rem 0.5rem;
+    font-size: 22px;
   }
 
-  td {
-    padding-left: 11px !important;
-  }
-
-  .destinations td {
+  th {
     text-align: left;
+    font-size: 10px;
+    border: 0;
+    text-transform: uppercase;
+  }
+
+  tbody {
+    display: block;
+    overflow: auto;
+    max-height: 60vh;
+    cursor: pointer;
+  }
+
+  tr {
+    padding-left: 11px !important;
+    display: table;
+    width: 100%;
+  }
+
+  .destinations td:first-child {
+    text-align: left;
+    font-weight: 500;
+  }
+
+  .destinations td:last-child {
+    text-align: right;
+    opacity: 0.6;
   }
 
   ::ng-deep .clr-input,
@@ -41,17 +64,25 @@
     display: none;
   }
 
-  ::ng-deep .modal-body,
-  ::ng-deep .modal-content {
-    padding: 0;
-  }
-
   .destination-active {
     background-color: var(--destinationActive-bg-color);
     color: var(--destinationActive-color);
   }
 
-  .destination-active:hover {
-    cursor: pointer;
+  .modal-footer {
+    padding-top: 10px;
+    justify-content: flex-start;
+    font-size: x-small;
+
+    pre {
+      border: none;
+      margin: 0;
+    }
+
+    code {
+      background-color: var(--destinationActive-bg-color);
+      padding: 2px;
+      block-size: auto;
+    }
   }
 }
