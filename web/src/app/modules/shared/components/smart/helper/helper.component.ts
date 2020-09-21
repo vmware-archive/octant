@@ -33,12 +33,14 @@ export class HelperComponent implements OnInit, OnDestroy {
     this.buildInfoSubscription.unsubscribe();
   }
 
-  @HostListener('window:keyup', ['$event'])
+  @HostListener('window:keydown', ['$event'])
   keyEvent(event: KeyboardEvent) {
     if (this.isShortcutModalOpen) {
       return;
     }
     if (event.ctrlKey && event.key === '/') {
+      event.preventDefault();
+      event.cancelBubble = true;
       this.isShortcutModalOpen = true;
     }
   }

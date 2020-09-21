@@ -1,0 +1,23 @@
+/* Copyright (c) 2020 the Octant contributors. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+.modal-body {
+  ::ng-deep ng-monaco-editor {
+    height: calc(60vh - 100px);
+  }
+}
+
+.header-upload {
+  margin: auto 0.8rem;
+  color: white;
+  line-height: 50px;
+  text-decoration: none;
+  outline: none;
+
+  cursor: pointer;
+
+  clr-icon {
+    margin-right: 0.2rem;
+  }
+}
