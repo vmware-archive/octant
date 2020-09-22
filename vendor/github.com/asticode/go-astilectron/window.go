@@ -12,46 +12,48 @@ import (
 
 // Window event names
 const (
-	EventNameWebContentsEventLogin             = "web.contents.event.login"
-	EventNameWebContentsEventLoginCallback     = "web.contents.event.login.callback"
-	EventNameWindowCmdBlur                     = "window.cmd.blur"
-	EventNameWindowCmdCenter                   = "window.cmd.center"
-	EventNameWindowCmdClose                    = "window.cmd.close"
-	EventNameWindowCmdCreate                   = "window.cmd.create"
-	EventNameWindowCmdDestroy                  = "window.cmd.destroy"
-	EventNameWindowCmdFocus                    = "window.cmd.focus"
-	EventNameWindowCmdHide                     = "window.cmd.hide"
-	EventNameWindowCmdLog                      = "window.cmd.log"
-	EventNameWindowCmdMaximize                 = "window.cmd.maximize"
-	eventNameWindowCmdMessage                  = "window.cmd.message"
-	eventNameWindowCmdMessageCallback          = "window.cmd.message.callback"
-	EventNameWindowCmdMinimize                 = "window.cmd.minimize"
-	EventNameWindowCmdMove                     = "window.cmd.move"
-	EventNameWindowCmdResize                   = "window.cmd.resize"
-	EventNameWindowCmdSetBounds                = "window.cmd.set.bounds"
-	EventNameWindowCmdRestore                  = "window.cmd.restore"
-	EventNameWindowCmdShow                     = "window.cmd.show"
-	EventNameWindowCmdUnmaximize               = "window.cmd.unmaximize"
-	EventNameWindowCmdWebContentsCloseDevTools = "window.cmd.web.contents.close.dev.tools"
-	EventNameWindowCmdWebContentsOpenDevTools  = "window.cmd.web.contents.open.dev.tools"
-	EventNameWindowEventBlur                   = "window.event.blur"
-	EventNameWindowEventClosed                 = "window.event.closed"
-	EventNameWindowEventDidFinishLoad          = "window.event.did.finish.load"
-	EventNameWindowEventFocus                  = "window.event.focus"
-	EventNameWindowEventHide                   = "window.event.hide"
-	EventNameWindowEventMaximize               = "window.event.maximize"
-	eventNameWindowEventMessage                = "window.event.message"
-	eventNameWindowEventMessageCallback        = "window.event.message.callback"
-	EventNameWindowEventMinimize               = "window.event.minimize"
-	EventNameWindowEventMove                   = "window.event.move"
-	EventNameWindowEventReadyToShow            = "window.event.ready.to.show"
-	EventNameWindowEventResize                 = "window.event.resize"
-	EventNameWindowEventRestore                = "window.event.restore"
-	EventNameWindowEventShow                   = "window.event.show"
-	EventNameWindowEventUnmaximize             = "window.event.unmaximize"
-	EventNameWindowEventUnresponsive           = "window.event.unresponsive"
-	EventNameWindowEventDidGetRedirectRequest  = "window.event.did.get.redirect.request"
-	EventNameWindowEventWillNavigate           = "window.event.will.navigate"
+	EventNameWebContentsEventLogin                    = "web.contents.event.login"
+	EventNameWebContentsEventLoginCallback            = "web.contents.event.login.callback"
+	EventNameWindowCmdBlur                            = "window.cmd.blur"
+	EventNameWindowCmdCenter                          = "window.cmd.center"
+	EventNameWindowCmdClose                           = "window.cmd.close"
+	EventNameWindowCmdCreate                          = "window.cmd.create"
+	EventNameWindowCmdDestroy                         = "window.cmd.destroy"
+	EventNameWindowCmdFocus                           = "window.cmd.focus"
+	EventNameWindowCmdHide                            = "window.cmd.hide"
+	EventNameWindowCmdLog                             = "window.cmd.log"
+	EventNameWindowCmdMaximize                        = "window.cmd.maximize"
+	eventNameWindowCmdMessage                         = "window.cmd.message"
+	eventNameWindowCmdMessageCallback                 = "window.cmd.message.callback"
+	EventNameWindowCmdMinimize                        = "window.cmd.minimize"
+	EventNameWindowCmdMove                            = "window.cmd.move"
+	EventNameWindowCmdResize                          = "window.cmd.resize"
+	EventNameWindowCmdSetBounds                       = "window.cmd.set.bounds"
+	EventNameWindowCmdRestore                         = "window.cmd.restore"
+	EventNameWindowCmdShow                            = "window.cmd.show"
+	EventNameWindowCmdUnmaximize                      = "window.cmd.unmaximize"
+	EventNameWindowCmdWebContentsCloseDevTools        = "window.cmd.web.contents.close.dev.tools"
+	EventNameWindowCmdWebContentsOpenDevTools         = "window.cmd.web.contents.open.dev.tools"
+	EventNameWindowCmdWebContentsExecuteJavaScript    = "window.cmd.web.contents.execute.javascript"
+	EventNameWindowEventBlur                          = "window.event.blur"
+	EventNameWindowEventClosed                        = "window.event.closed"
+	EventNameWindowEventDidFinishLoad                 = "window.event.did.finish.load"
+	EventNameWindowEventFocus                         = "window.event.focus"
+	EventNameWindowEventHide                          = "window.event.hide"
+	EventNameWindowEventMaximize                      = "window.event.maximize"
+	eventNameWindowEventMessage                       = "window.event.message"
+	eventNameWindowEventMessageCallback               = "window.event.message.callback"
+	EventNameWindowEventMinimize                      = "window.event.minimize"
+	EventNameWindowEventMove                          = "window.event.move"
+	EventNameWindowEventReadyToShow                   = "window.event.ready.to.show"
+	EventNameWindowEventResize                        = "window.event.resize"
+	EventNameWindowEventRestore                       = "window.event.restore"
+	EventNameWindowEventShow                          = "window.event.show"
+	EventNameWindowEventUnmaximize                    = "window.event.unmaximize"
+	EventNameWindowEventUnresponsive                  = "window.event.unresponsive"
+	EventNameWindowEventDidGetRedirectRequest         = "window.event.did.get.redirect.request"
+	EventNameWindowEventWebContentsExecutedJavaScript = "window.event.web.contents.executed.javascript"
+	EventNameWindowEventWillNavigate                  = "window.event.will.navigate"
 )
 
 // Title bar styles
@@ -311,6 +313,15 @@ func (w *Window) Destroy() (err error) {
 		return
 	}
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdDestroy, TargetID: w.id}, EventNameWindowEventClosed)
+	return
+}
+
+// ExecuteJavaScript executes some js
+func (w *Window) ExecuteJavaScript(code string) (err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdWebContentsExecuteJavaScript, TargetID: w.id, Code: code}, EventNameWindowEventWebContentsExecutedJavaScript)
 	return
 }
 

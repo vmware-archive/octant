@@ -52,8 +52,15 @@ type Configuration struct {
 	// Defaults to the current directory
 	InputPath string `json:"input_path"`
 
+	// Build flags to pass into go build
+	BuildFlags map[string]string `json:"build_flags"`
+
 	// LDFlags to pass through to go build
 	LDFlags LDFlags `json:"ldflags"`
+
+	// The path used for the LD Flags
+	// Defaults to the `Bind.Package` value
+	LDFlagsPackage string `json:"ldflags_package"`
 
 	// The path to application manifest file (WINDOWS ONLY)
 	ManifestPath string `json:"manifest_path"`
@@ -120,6 +127,7 @@ type ConfigurationResourcesAdapter struct {
 type Bundler struct {
 	appName              string
 	bindPackage          string
+	buildFlags           map[string]string
 	cancel               context.CancelFunc
 	ctx                  context.Context
 	d                    *astikit.HTTPDownloader
@@ -128,6 +136,7 @@ type Bundler struct {
 	infoPlist            map[string]interface{}
 	l                    astikit.SeverityLogger
 	ldflags              LDFlags
+	ldflagsPackage       string
 	pathAstilectron      string
 	pathBindInput        string
 	pathBindOutput       string
@@ -181,6 +190,7 @@ func New(c *Configuration, l astikit.StdLogger) (b *Bundler, err error) {
 		resourcesAdapters:  c.ResourcesAdapters,
 		l:                  astikit.AdaptStdLogger(l),
 		ldflags:            c.LDFlags,
+		ldflagsPackage:     c.LDFlagsPackage,
 		infoPlist:          c.InfoPlist,
 		showWindowsConsole: c.ShowWindowsConsole,
 		versionAstilectron: astilectron.DefaultVersionAstilectron,
@@ -197,6 +207,10 @@ func New(c *Configuration, l astikit.StdLogger) (b *Bundler, err error) {
 	}
 	if c.VersionElectron != "" {
 		b.versionElectron = c.VersionElectron
+	}
+
+	if len(c.BuildFlags) > 0 {
+		b.buildFlags = c.BuildFlags
 	}
 
 	// Add context
@@ -302,6 +316,12 @@ func New(c *Configuration, l astikit.StdLogger) (b *Bundler, err error) {
 	if len(b.bindPackage) == 0 {
 		b.bindPackage = "main"
 	}
+
+	// Ldflags package
+	if len(b.ldflagsPackage) == 0 {
+		b.ldflagsPackage = b.bindPackage
+	}
+
 	return
 }
 
@@ -379,10 +399,10 @@ func (b *Bundler) bundle(e ConfigurationEnvironment) (err error) {
 
 	std := LDFlags{
 		"X": []string{
-			b.bindPackage + `.AppName=` + b.appName,
-			b.bindPackage + `.BuiltAt=` + time.Now().String(),
-			b.bindPackage + `.VersionAstilectron=` + b.versionAstilectron,
-			b.bindPackage + `.VersionElectron=` + b.versionElectron,
+			b.ldflagsPackage + `.AppName=` + b.appName,
+			b.ldflagsPackage + `.BuiltAt=` + time.Now().String(),
+			b.ldflagsPackage + `.VersionAstilectron=` + b.versionAstilectron,
+			b.ldflagsPackage + `.VersionElectron=` + b.versionElectron,
 		},
 	}
 	if e.OS == "windows" && !b.showWindowsConsole {
@@ -396,10 +416,27 @@ func (b *Bundler) bundle(e ConfigurationEnvironment) (err error) {
 		gp = build.Default.GOPATH
 	}
 
+	args := []string{"build", "-ldflags", std.String()}
+	var flag string
+	for k, v := range b.buildFlags {
+		if hasDash := strings.HasPrefix(k, "-"); hasDash {
+			flag = k
+		} else {
+			flag = "-" + k
+		}
+		if v != "" {
+			args = append(args, flag, v)
+		} else {
+			args = append(args, flag)
+		}
+	}
+
+	var binaryPath = filepath.Join(environmentPath, "binary")
+	args = append(args, "-o", binaryPath, b.pathBuild)
+
 	// Build cmd
 	b.l.Debugf("Building for os %s and arch %s astilectron: %s electron: %s", e.OS, e.Arch, b.versionAstilectron, b.versionElectron)
-	var binaryPath = filepath.Join(environmentPath, "binary")
-	var cmd = exec.Command(b.pathGoBinary, "build", "-ldflags", std.String(), "-o", binaryPath, b.pathBuild)
+	var cmd = exec.Command(b.pathGoBinary, args...)
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env,
 		"GOARCH="+e.Arch,
