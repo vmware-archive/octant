@@ -52,7 +52,7 @@ To import `go-astilectron` run:
 
 ```go
 // Initialize astilectron
-var a, _ = astilectron.New(log.New(os.StdErr, "", 0), astilectron.Options{
+var a, _ = astilectron.New(log.New(os.Stderr, "", 0), astilectron.Options{
     AppName: "<your app name>",
     AppIconDefaultPath: "<your .png icon>", // If path is relative, it must be relative to the data directory
     AppIconDarwinPath:  "<your .icns icon>", // Same here
@@ -77,7 +77,7 @@ Beware when trying to add your own app icon as you'll need 2 icons : one compati
 
 If no BaseDirectoryPath is provided, it defaults to the executable's directory path.
 
-The majority of methods are synchrone which means that when executing them `go-astilectron` will block until it receives a specific Electron event or until the overall context is cancelled. This is the case of `.Start()` which will block until it receives the `app.event.ready` `astilectron` event or until the overall context is cancelled.
+The majority of methods are asynchronous which means that when executing them `go-astilectron` will block until it receives a specific Electron event or until the overall context is cancelled. This is the case of `.Start()` which will block until it receives the `app.event.ready` `astilectron` event or until the overall context is cancelled.
 
 ## Create a window
 
