@@ -18,7 +18,7 @@ interface Choice {
 @Component({
   selector: 'app-stepper',
   templateUrl: './stepper.component.html',
-  styleUrls: ['./stepper.component.sass'],
+  styleUrls: ['./stepper.component.scss'],
 })
 export class StepperComponent extends AbstractViewComponent<StepperView> {
   @Output()

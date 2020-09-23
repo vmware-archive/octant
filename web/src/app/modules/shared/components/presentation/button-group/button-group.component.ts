@@ -1,7 +1,13 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { ButtonGroupView, Confirmation } from '../../../models/content';
+import {
+  ButtonGroupView,
+  Confirmation,
+  View,
+  ModalView,
+} from '../../../models/content';
 import { ActionService } from '../../../services/action/action.service';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
+import { ModalService } from '../../../services/modal/modal.service';
 
 @Component({
   selector: 'app-button-group',
@@ -19,7 +25,12 @@ export class ButtonGroupComponent extends AbstractViewComponent<
   payload = {};
   class = '';
 
-  constructor(private actionService: ActionService) {
+  modalView: View;
+
+  constructor(
+    private actionService: ActionService,
+    private modalService: ModalService
+  ) {
     super();
   }
 
@@ -31,11 +42,19 @@ export class ButtonGroupComponent extends AbstractViewComponent<
         } else {
           this.class = 'btn-outline btn-sm';
         }
+        if (button.modal) {
+          this.modalView = button.modal;
+          const modal = this.modalView as ModalView;
+          this.modalService.setState(modal.config.opened);
+        }
       });
     }
   }
 
-  onClick(payload: {}, confirmation?: Confirmation) {
+  onClick(payload: {}, confirmation?: Confirmation, modal?: View) {
+    if (modal) {
+      this.modalService.openModal();
+    }
     if (confirmation) {
       this.activateModal(payload, confirmation);
     } else {

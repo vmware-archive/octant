@@ -48,6 +48,8 @@ const (
 	TypeLoading = "loading"
 	// TypeLogs is a logs component.
 	TypeLogs = "logs"
+	// TypeModal is a modal component.
+	TypeModal = "modal"
 	// TypePodStatus is a pod status component.
 	TypePodStatus = "podStatus"
 	// TypePort is a port component.

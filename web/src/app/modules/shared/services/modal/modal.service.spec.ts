@@ -4,17 +4,17 @@
  */
 
 import { TestBed } from '@angular/core/testing';
-import { LoadingService } from './loading.service';
+import { ModalService } from './modal.service';
 
-describe('LoadingService', () => {
+describe('ModalService', () => {
   beforeEach(() =>
     TestBed.configureTestingModule({
-      providers: [LoadingService],
+      providers: [ModalService],
     })
   );
 
   it('should be created', () => {
-    const service: LoadingService = TestBed.inject(LoadingService);
+    const service: ModalService = TestBed.inject(ModalService);
     expect(service).toBeTruthy();
   });
 });

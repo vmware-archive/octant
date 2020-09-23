@@ -37,6 +37,7 @@ import { SummaryComponent } from './components/presentation/summary/summary.comp
 import { StepperComponent } from './components/presentation/stepper/stepper.component';
 import { TimestampComponent } from './components/presentation/timestamp/timestamp.component';
 import { ContainersComponent } from './components/presentation/containers/containers.component';
+import { ModalComponent } from './components/presentation/modal/modal.component';
 
 export interface ComponentMapping {
   [key: string]: Type<any>;
@@ -62,6 +63,7 @@ const DynamicComponentMapping: ComponentMapping = {
   link: LinkComponent,
   list: ListComponent,
   logs: LogsComponent,
+  modal: ModalComponent,
   podStatus: PodStatusComponent,
   portforward: PortForwardComponent,
   ports: PortsComponent,

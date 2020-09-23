@@ -160,6 +160,8 @@
     "src//app/modules/shared/components/presentation/containers/containers.component.ts",
     "src//app/modules/shared/components/presentation/text/text.component.spec.ts",
     "src//app/modules/shared/components/presentation/text/text.component.ts",
+    "src//app/modules/shared/components/presentation/modal/modal.component.spec.ts",
+    "src//app/modules/shared/components/presentation/modal/modal.component.ts",
     "src//app/modules/shared/components/presentation/breadcrumb/breadcrumb.component.spec.ts",
     "src//app/modules/shared/components/presentation/breadcrumb/breadcrumb.component.ts",
     "src//app/modules/shared/components/presentation/timestamp/timestamp.component.spec.ts",

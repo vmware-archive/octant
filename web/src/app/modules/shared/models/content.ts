@@ -109,6 +109,7 @@ export interface Button {
   payload: {};
   name: string;
   confirmation?: Confirmation;
+  modal?: ModalView;
 }
 
 export interface ButtonGroupView extends View {
@@ -182,6 +183,16 @@ export interface SingleStatView extends View {
       text: string;
       color: string;
     };
+  };
+}
+
+export interface ModalView extends View {
+  config: {
+    body?: View;
+    opened: boolean;
+    size?: string;
+    form?: ActionForm;
+    buttons?: Button[];
   };
 }
 
@@ -279,6 +290,7 @@ export interface ActionField {
 
 export interface ActionForm {
   fields: ActionField[];
+  action?: string;
 }
 
 export interface Action {

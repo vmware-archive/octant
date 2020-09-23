@@ -12,10 +12,13 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { ViewService } from '../../../services/view/view.service';
 import { viewServiceStub } from 'src/app/testing/view-service.stub';
 import { SharedModule } from '../../../shared.module';
+import { FormComponent } from '../form/form.component';
 
 describe('CardComponent', () => {
   let component: CardComponent;
   let fixture: ComponentFixture<CardComponent>;
+  let formComponent: FormComponent;
+  let formFixture: ComponentFixture<FormComponent>;
   const formBuilder: FormBuilder = new FormBuilder();
 
   const action: Action = {
@@ -83,12 +86,17 @@ describe('CardComponent', () => {
       formGroupExample: 'justForTest',
     });
 
-    component.onActionSubmit(formGroup);
+    formFixture = TestBed.createComponent(FormComponent);
+    formComponent = formFixture.componentInstance;
+    formComponent.formGroup = formGroup;
+    component.appForm = formComponent;
+
+    component.onActionSubmit();
     expect(component.currentAction).toBeUndefined();
   });
 
   it('should not submit action', () => {
-    component.onActionSubmit({} as FormGroup);
+    component.onActionSubmit();
     expect(component.currentAction).toBeDefined();
   });
 
@@ -117,10 +125,7 @@ describe('CardComponent', () => {
 
   it('should call "onActionCancel" method when cancelling the form', fakeAsync(() => {
     spyOn(component, 'onActionCancel');
-    fixture.detectChanges();
-    component.appForm.onFormCancel();
-    tick();
-    fixture.detectChanges();
+    component.onActionCancel();
     expect(component.onActionCancel).toHaveBeenCalled();
   }));
 });

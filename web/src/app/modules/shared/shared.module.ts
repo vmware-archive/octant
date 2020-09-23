@@ -32,6 +32,7 @@ import { TimestampComponent } from './components/presentation/timestamp/timestam
 import { LoadingComponent } from './components/presentation/loading/loading.component';
 import { HighlightModule } from 'ngx-highlightjs';
 import { LabelSelectorComponent } from './components/presentation/label-selector/label-selector.component';
+import { ModalComponent } from './components/presentation/modal/modal.component';
 import { CytoscapeComponent } from './components/presentation/cytoscape/cytoscape.component';
 import { Cytoscape2Component } from './components/presentation/cytoscape2/cytoscape2.component';
 import { SelectorsComponent } from './components/presentation/selectors/selectors.component';
@@ -115,6 +116,7 @@ import { BottomPanelComponent } from './components/smart/bottom-panel/bottom-pan
     ListComponent,
     LoadingComponent,
     LogsComponent,
+    ModalComponent,
     ObjectStatusComponent,
     PodStatusComponent,
     PortForwardComponent,
@@ -183,6 +185,7 @@ import { BottomPanelComponent } from './components/smart/bottom-panel/bottom-pan
     ListComponent,
     LoadingComponent,
     LogsComponent,
+    ModalComponent,
     ObjectStatusComponent,
     PodStatusComponent,
     PortForwardComponent,
@@ -259,6 +262,7 @@ import { BottomPanelComponent } from './components/smart/bottom-panel/bottom-pan
     ListComponent,
     LoadingComponent,
     LogsComponent,
+    ModalComponent,
     ObjectStatusComponent,
     PodStatusComponent,
     PortForwardComponent,

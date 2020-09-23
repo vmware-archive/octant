@@ -116,6 +116,11 @@ func unmarshal(to TypedObject) (Component, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal logs config")
 		o = t
+	case TypeModal:
+		t := &Modal{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal modal config")
+		o = t
 	case TypeQuadrant:
 		t := &Quadrant{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),

@@ -3,6 +3,8 @@ package component
 import (
 	"encoding/json"
 
+	"github.com/pkg/errors"
+
 	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
@@ -25,11 +27,51 @@ func WithButtonConfirmation(title, body string) ButtonOption {
 	}
 }
 
+// WithModal configures a button to open a modal
+func WithModal(modal *Modal) ButtonOption {
+	return func(button *Button) {
+		button.Modal = modal
+	}
+}
+
+func (b *Button) UnmarshalJSON(data []byte) error {
+	x := struct {
+		Name         string         `json:"name"`
+		Payload      action.Payload `json:"payload"`
+		Confirmation *Confirmation  `json:"confirmation,omitempty"`
+		Modal        *TypedObject   `json:"modal,omitempty"`
+	}{}
+
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+
+	if x.Modal != nil {
+		component, err := x.Modal.ToComponent()
+		if err != nil {
+			return err
+		}
+
+		modal, ok := component.(*Modal)
+		if !ok {
+			return errors.New("item was not a modal")
+		}
+		b.Modal = modal
+	}
+
+	b.Name = x.Name
+	b.Payload = x.Payload
+	b.Confirmation = x.Confirmation
+
+	return nil
+}
+
 // Button is a button in a group.
 type Button struct {
 	Name         string         `json:"name"`
 	Payload      action.Payload `json:"payload"`
 	Confirmation *Confirmation  `json:"confirmation,omitempty"`
+	Modal        Component      `json:"modal,omitempty"`
 }
 
 // NewButton creates an instance of Button.
