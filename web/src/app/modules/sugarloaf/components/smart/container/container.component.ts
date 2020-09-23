@@ -9,6 +9,7 @@ import { Navigation } from '../../../models/navigation';
 import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
 import { IconService } from '../../../../shared/services/icon/icon.service';
 import { Preferences } from '../../../../shared/models/preference';
+import { NavigationService } from '../../../../shared/services/navigation/navigation.service';
 
 // tslint:disable-next-line
 declare namespace astilectron {
@@ -42,6 +43,7 @@ export class ContainerComponent implements OnInit, OnDestroy {
 
   constructor(
     private websocketService: WebsocketService,
+    private navigationService: NavigationService,
     private iconService: IconService
   ) {
     iconService.load({

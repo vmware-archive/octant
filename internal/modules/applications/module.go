@@ -59,6 +59,11 @@ func (m Module) Name() string {
 	return "applications"
 }
 
+// Description is the description of the module.
+func (m Module) Description() string {
+	return "Applications module description comes here"
+}
+
 // ClientRequestHandlers are client handlers for the module.
 func (m Module) ClientRequestHandlers() []octant.ClientRequestHandler {
 	return nil

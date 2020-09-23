@@ -71,6 +71,11 @@ func (m *Module) Name() string {
 	return "workloads"
 }
 
+// Description returns the module description.
+func (m *Module) Description() string {
+	return "Application module displays all known applications and their status"
+}
+
 // ClientRequestHandlers returns nil.
 func (m *Module) ClientRequestHandlers() []octant.ClientRequestHandler {
 	return nil

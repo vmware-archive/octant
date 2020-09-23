@@ -63,6 +63,7 @@ func TestNavigationGenerator(t *testing.T) {
 				m := moduleFake.NewMockModule(controller)
 				m.EXPECT().ContentPath().Return("/module")
 				m.EXPECT().Name().Return("module").AnyTimes()
+				m.EXPECT().Description().Return("description").AnyTimes()
 				m.EXPECT().
 					Navigation(gomock.Any(), "default", "/module").
 					Return([]navigation.Navigation{
@@ -81,7 +82,7 @@ func TestNavigationGenerator(t *testing.T) {
 				return dashConfig, state
 			},
 			expected: []navigation.Navigation{
-				{Title: "module"},
+				{Title: "module", Module: "module", Description: "description"},
 			},
 		},
 	}

@@ -98,6 +98,20 @@ func (mr *MockModuleMockRecorder) ContentPath() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContentPath", reflect.TypeOf((*MockModule)(nil).ContentPath))
 }
 
+// Description mocks base method
+func (m *MockModule) Description() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Description")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Description indicates an expected call of Description
+func (mr *MockModuleMockRecorder) Description() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Description", reflect.TypeOf((*MockModule)(nil).Description))
+}
+
 // Generators mocks base method
 func (m *MockModule) Generators() []octant.Generator {
 	m.ctrl.T.Helper()

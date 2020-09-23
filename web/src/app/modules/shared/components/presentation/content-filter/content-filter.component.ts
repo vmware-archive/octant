@@ -26,8 +26,10 @@ export class ContentFilterComponent
   }
 
   ngOnInit(): void {
-    this.filter.selected.forEach(value => (this.checkboxes[value] = true));
-    this.cd.detectChanges();
+    if (this.filter.selected) {
+      this.filter.selected.forEach(value => (this.checkboxes[value] = true));
+      this.cd.detectChanges();
+    }
   }
 
   accepts(row: TableRow): boolean {

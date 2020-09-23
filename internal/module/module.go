@@ -28,6 +28,8 @@ type ContentOptions struct {
 type Module interface {
 	// Name is the name of the module.
 	Name() string
+	// Description
+	Description() string
 	// ClientRequestHandlers are handlers for handling client requests.
 	ClientRequestHandlers() []octant.ClientRequestHandler
 	// Content generates content for a path.

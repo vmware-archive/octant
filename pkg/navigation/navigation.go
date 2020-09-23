@@ -50,6 +50,7 @@ func SetLoading(isLoading bool) Option {
 // Navigation is a set of navigation entries.
 type Navigation struct {
 	Module   string       `json:"module,omitempty"`
+	Description string     `json:"description,omitempty"`
 	Title    string       `json:"title,omitempty"`
 	Path     string       `json:"path,omitempty"`
 	Children []Navigation `json:"children,omitempty"`
