@@ -11,6 +11,7 @@ import { ContentService } from '../content/content.service';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { LoadingService } from '../loading/loading.service';
+import { NamespaceService } from '../namespace/namespace.service';
 
 const emptyNavigation: Navigation = {
   sections: [],
@@ -40,8 +41,6 @@ export class NavigationService {
     websocketService.registerHandler('event.octant.dev/navigation', data => {
       const update = data as Navigation;
       this.current.next(update);
-
-      contentService.defaultPath.next(update.defaultPath);
       this.updateLastSelection();
     });
 

@@ -1,5 +1,5 @@
 <div class="app-namespace-selector">
-  <ng-template [ngIf]="showDropdown()" [ngIfElse]="hideDropdown">
+  <ng-template [ngIf]="showDropdown" [ngIfElse]="hideDropdown">
     <clr-dropdown class="dropdown-top" [clrCloseMenuOnItemClick]="true">
       <button type="button" class="dropdown-button" clrDropdownTrigger>
         <clr-icon shape="namespace"></clr-icon>
@@ -21,6 +21,7 @@
             [ngClass]="namespaceClass(namespace)"
             clrDropdownItem
             (click)="selectNamespace(namespace)"
+            [routerLink]="'/overview/namespace/' + namespace"
           >
             {{ namespace }}
           </button>

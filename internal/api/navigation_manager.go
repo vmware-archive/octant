@@ -165,7 +165,7 @@ func NavigationGenerator(ctx context.Context, state octant.State, config Navigat
 	return sections, nil
 }
 
-// CreateNavigationEvent creates a namespaces event.
+// CreateNavigationEvent creates a navigation event.
 func CreateNavigationEvent(sections []navigation.Navigation, defaultPath string) oevent.Event {
 	return oevent.Event{
 		Type: oevent.EventTypeNavigation,
