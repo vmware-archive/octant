@@ -48,6 +48,9 @@ export class EditorComponent extends AbstractViewComponent<EditorView> {
     private actionService: ActionService
   ) {
     super();
+
+    this.uri =
+      'file:text-' + Math.random().toString(36).substring(2, 15) + '.yaml';
   }
 
   update() {
@@ -59,8 +62,6 @@ export class EditorComponent extends AbstractViewComponent<EditorView> {
       this.pristineValue = view.config.value;
       this.options.readOnly = view.config.readOnly;
       this.options.language = view.config.language;
-      this.uri =
-        'file:text-' + Math.random().toString(36).substring(2, 15) + '.yaml';
     }
 
     this.submitAction = view.config.submitAction || this.submitAction;

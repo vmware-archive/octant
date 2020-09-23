@@ -3,7 +3,13 @@
   <span>Apply YAML</span>
 </div>
 
-<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'xl'" [clrModalClosable]="true" [clrModalStaticBackdrop]="false">
+<clr-modal
+  [(clrModalOpen)]="isOpen"
+  [clrModalSize]="'xl'"
+  [clrModalClosable]="true"
+  [clrModalStaticBackdrop]="false"
+  [clrModalSkipAnimation]="true"
+>
   <h3 class="modal-title">Apply YAML</h3>
   <div class="modal-body">
       <app-view-editor [view]="editorView"></app-view-editor>

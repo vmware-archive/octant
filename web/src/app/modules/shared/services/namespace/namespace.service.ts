@@ -41,9 +41,11 @@ export class NamespaceService {
     });
 
     this.activeNamespace.subscribe(namespace => {
-      websocketService.sendMessage('action.octant.dev/setNamespace', {
-        namespace,
-      });
+      if (namespace.length > 0) {
+        websocketService.sendMessage('action.octant.dev/setNamespace', {
+          namespace,
+        });
+      }
     });
 
     this.notifierSession = this.notifierService.createSession();

@@ -35,7 +35,6 @@ const emptyContentResponse: ContentResponse = {
   providedIn: 'root',
 })
 export class ContentService {
-  defaultPath = new BehaviorSubject<string>('');
   current = new BehaviorSubject<ContentResponse>(emptyContentResponse);
   viewScrollPos = new BehaviorSubject<number>(0);
   debouncedScrollPos = new BehaviorSubject<number>(0);
