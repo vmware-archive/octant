@@ -11,9 +11,9 @@ import (
 	"fmt"
 	"io"
 	"sync"
-	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
@@ -25,6 +25,7 @@ type logStreamer struct {
 	pod          string
 	containers   []string
 	sinceSeconds *int64
+	creationTime *v1.Time
 	stream       chan LogEntry
 
 	ctx      context.Context
@@ -36,7 +37,7 @@ type logStreamer struct {
 var _ LogStreamer = (*logStreamer)(nil)
 
 // NewLogStreamer returns an instance of a logStream configured to stream logs for the given namespace/pod/container(s).
-func NewLogStreamer(ctx context.Context, dashConfig config.Dash, key store.Key, sinceDuration time.Duration, containerNames ...string) (*logStreamer, error) {
+func NewLogStreamer(ctx context.Context, dashConfig config.Dash, key store.Key, sinceSeconds int64, containerNames ...string) (*logStreamer, error) {
 	ctx, cancelFn := context.WithCancel(ctx)
 
 	if shouldFetchContainerNames(containerNames) {
@@ -62,13 +63,31 @@ func NewLogStreamer(ctx context.Context, dashConfig config.Dash, key store.Key, 
 		}
 	}
 
-	sinceSeconds := int64(sinceDuration.Seconds())
+	var creationTime *v1.Time
+	if sinceSeconds < 0 {
+		object, err := dashConfig.ObjectStore().Get(ctx, key)
+		if err != nil {
+			cancelFn()
+			return nil, fmt.Errorf("getting pod from objectstore: %w", err)
+		}
+
+		var pod corev1.Pod
+		err = kubernetes.FromUnstructured(object, &pod)
+
+		if err != nil {
+			cancelFn()
+			return nil, fmt.Errorf("converting unstructured: %w", err)
+		}
+
+		creationTime = &v1.Time{Time: pod.CreationTimestamp.Time}
+	}
 
 	return &logStreamer{
 		namespace:    key.Namespace,
 		pod:          key.Name,
 		containers:   containerNames,
 		sinceSeconds: &sinceSeconds,
+		creationTime: creationTime,
 		config:       dashConfig,
 		ctx:          ctx,
 		cancelFn:     cancelFn,
@@ -143,11 +162,18 @@ func (s *logStreamer) containerStream(container string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	request := client.CoreV1().Pods(s.namespace).GetLogs(s.pod, &corev1.PodLogOptions{
-		Container:    container,
-		Follow:       true,
-		Timestamps:   true,
-		SinceSeconds: s.sinceSeconds,
-	})
+
+	options := &corev1.PodLogOptions{
+		Container:  container,
+		Follow:     true,
+		Timestamps: true,
+	}
+	if s.creationTime != nil {
+		options.SinceTime = s.creationTime
+	} else {
+		options.SinceSeconds = s.sinceSeconds
+	}
+
+	request := client.CoreV1().Pods(s.namespace).GetLogs(s.pod, options)
 	return request.Stream(s.ctx)
 }

@@ -74,6 +74,24 @@ func (p Payload) Uint16(key string) (uint16, error) {
 	return uint16(i), nil
 }
 
+// Int64 returns a int64 from the payload.
+func (p Payload) Int64(key string) (int64, error) {
+	i, found, err := unstructured.NestedFloat64(p, key)
+	if err != nil {
+		return 0, err
+	}
+
+	if !found {
+		return 0, errors.Errorf("payload does not contain %q", key)
+	}
+
+	if i > math.MaxInt64 || i < math.MinInt64 {
+		return 0, errors.Errorf("value %v is not a valid int64", i)
+	}
+
+	return int64(i), nil
+}
+
 // String returns a string from the payload.
 func (p Payload) String(key string) (string, error) {
 	s, ok := p[key].(string)

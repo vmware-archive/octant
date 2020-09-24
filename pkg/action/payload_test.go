@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package action
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -229,6 +230,61 @@ func TestPayload_Uint16(t *testing.T) {
 			got, err := test.payload.Uint16(test.key)
 			if test.isErr {
 				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			assert.Equal(t, test.expected, got)
+		})
+	}
+}
+
+func TestPayload_Int64(t *testing.T) {
+	tests := []struct {
+		name     string
+		payload  Payload
+		key      string
+		isErr    bool
+		expected int64
+	}{
+		{
+			name:     "source is int",
+			payload:  Payload{"int64": float64(7)},
+			key:      "int64",
+			expected: int64(7),
+		},
+		{
+			name:    "source overflows",
+			payload: Payload{"int64": float64(1 << 64)},
+			key:     "int64",
+			isErr:   true,
+		},
+		{
+			name:    "source overflows",
+			payload: Payload{"int64": float64(-1 << 64)},
+			key:     "int64",
+			isErr:   true,
+		},
+		{
+			name:    "value is not int",
+			payload: Payload{"int64": true},
+			key:     "int64",
+			isErr:   true,
+		},
+		{
+			name:    "key does not exist",
+			payload: Payload{},
+			key:     "invalid",
+			isErr:   true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := test.payload.Int64(test.key)
+			if test.isErr {
+				require.Error(t, err)
+				fmt.Println(got, err)
 				return
 			}
 			require.NoError(t, err)

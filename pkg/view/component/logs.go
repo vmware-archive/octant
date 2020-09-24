@@ -16,7 +16,7 @@ var defaultDurations = []Since{
 	{"1 hour", 3600},
 	{"3 hours", 10800},
 	{"5 hours", 18000},
-	{"Creation", 1<<63 - 1},
+	{"Creation", -1},
 }
 
 type Since struct {
