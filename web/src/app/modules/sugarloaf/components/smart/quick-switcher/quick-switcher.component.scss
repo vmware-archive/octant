@@ -69,6 +69,10 @@
     color: var(--destinationActive-color);
   }
 
+  .modal-body {
+    overflow-y: hidden;
+  }
+
   .modal-footer {
     padding-top: 10px;
     justify-content: flex-start;

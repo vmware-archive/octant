@@ -26,7 +26,11 @@
   </clr-dropdown>
 </div>
 
-<clr-modal [(clrModalOpen)]="isBuildModalOpen" [clrModalStaticBackdrop]="false">
+<clr-modal
+  [(clrModalOpen)]="isBuildModalOpen"
+  [clrModalStaticBackdrop]="false"
+  [clrModalSkipAnimation]="true"
+>
   <h3 class="modal-title">Build Information</h3>
   <div class="modal-body">
     <table class="table table-vertical table-noborder">
@@ -60,6 +64,7 @@
 <clr-modal
   [(clrModalOpen)]="isShortcutModalOpen"
   [clrModalStaticBackdrop]="false"
+  [clrModalSkipAnimation]="true"
 >
   <h3 class="modal-title">Keyboard Shortcuts</h3>
   <div class="modal-body">
