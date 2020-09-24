@@ -3,6 +3,8 @@
  */
 
 .modal-body {
+  overflow-y: hidden;
+
   ::ng-deep ng-monaco-editor {
     height: calc(60vh - 100px);
   }

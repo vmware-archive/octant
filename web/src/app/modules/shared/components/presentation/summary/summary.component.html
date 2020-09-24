@@ -28,7 +28,12 @@
         <tr *ngFor="let item of v?.config.sections; trackBy: identifyItem">
           <td class="left">{{ item.header }}</td>
           <td class="left">
-            <app-view-container [view]="item.content"></app-view-container>
+            <app-view-table *ngIf="item.content?.metadata?.type === 'table'; else dynamic"
+              [view]="item.content"
+            ></app-view-table>
+            <ng-template #dynamic>
+              <app-view-container [view]="item.content"></app-view-container>
+            </ng-template>
           </td>
         </tr>
       </tbody>
