@@ -12,25 +12,25 @@
           *ngFor="let container of v?.config.containers"
           value="{{ container }}"
         >
-          {{ container === '' ? '[all containers]' : container }}</option
-        >
+          {{ container === '' ? '[all containers]' : container }}
+        </option>
       </select>
     </clr-select-container>
     <clr-select-container class="container-select">
       <label>Since</label>
       <select
-              clrSelect
-              name="options"
-              [value]="selectedSince"
-              (change)="onSinceChange($event.target.value)"
+        clrSelect
+        name="options"
+        [value]="selectedSince"
+        (change)="onSinceChange($event.target.value)"
       >
         <option
-                *ngFor="let duration of v?.config.durations"
-                label="{{ duration.label }}"
-                value="{{ duration.seconds }}"
+          *ngFor="let duration of v?.config.durations"
+          label="{{ duration.label }}"
+          value="{{ duration.seconds }}"
         >
-          {{ container === '' ? '[all containers]' : container }}</option
-        >
+          {{ container === '' ? '[all containers]' : container }}
+        </option>
       </select>
     </clr-select-container>
     <div class="clr-filter">
@@ -93,9 +93,7 @@
   </div>
   <div class="container-logs">
     <div class="container-logs-bg" #scrollTarget (scroll)="onScroll($event)">
-      <ng-container *ngIf="containerLogs?.length < 1">
-        No logs
-      </ng-container>
+      <ng-container *ngIf="containerLogs?.length < 1"> No logs </ng-container>
       <div
         class="container-log code language-bash"
         *ngFor="let log of filterFunction(containerLogs); trackBy: identifyLog"

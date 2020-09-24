@@ -77,8 +77,8 @@ export class LogsComponent
     }
   }
 
-  onSinceChange(sinceSelection: number): void {
-    this.selectedSince = sinceSelection;
+  onSinceChange(selectedSince: string): void {
+    this.selectedSince = +selectedSince;
     this.stopStreamIfStarted();
     this.startStream();
   }

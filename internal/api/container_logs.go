@@ -32,6 +32,7 @@ type logEntry struct {
 const (
 	RequestPodLogsSubscribe   = "action.octant.dev/podLogs/subscribe"
 	RequestPodLogsUnsubscribe = "action.octant.dev/podLogs/unsubscribe"
+	DefaultSinceSeconds       = 300
 )
 
 type podLogsStateManager struct {
@@ -71,6 +72,7 @@ func (s *podLogsStateManager) StreamPodLogsSubscribe(_ octant.State, payload act
 	if err != nil {
 		return fmt.Errorf("getting namespace from payload: %w", err)
 	}
+
 	podName, err := payload.String("podName")
 	if err != nil {
 		return fmt.Errorf("getting podName from payload: %w", err)
@@ -81,23 +83,25 @@ func (s *podLogsStateManager) StreamPodLogsSubscribe(_ octant.State, payload act
 		return fmt.Errorf("getting containerName from payload: %w", err)
 	}
 
-	since, err := payload.Float64("sinceSeconds")
+	since, err := payload.Int64("sinceSeconds")
 	if err != nil {
 		return fmt.Errorf("getting since from payload: %w", err)
 	}
 
 	// Default to 5 minutes
-	sinceDuration := time.Second * 300
+	sinceSeconds := int64(DefaultSinceSeconds)
+	// Allow negative since, negative since means since creation.
 	if since != 0 {
-		sinceDuration = time.Second * time.Duration(since)
+		sinceSeconds = since
 	}
 
 	eventType := event.NewLoggingEventType(namespace, podName)
+
 	val, ok := s.podLogSubscriptions.Load(eventType)
 	if ok {
 		cancelFn, ok := val.(context.CancelFunc)
 		if !ok {
-			return fmt.Errorf("bad cancelFn conversion for %s", eventType)
+			return fmt.Errorf("bad cancelFn conversion for: %s", eventType)
 		}
 		cancelFn()
 	}
@@ -106,7 +110,7 @@ func (s *podLogsStateManager) StreamPodLogsSubscribe(_ octant.State, payload act
 	key.Name = podName
 	key.Namespace = namespace
 
-	logStreamer, err := container.NewLogStreamer(s.ctx, s.config, key, sinceDuration, containerName)
+	logStreamer, err := container.NewLogStreamer(s.ctx, s.config, key, sinceSeconds, containerName)
 	if err != nil {
 		return fmt.Errorf("creating log streamer: %w", err)
 	}
