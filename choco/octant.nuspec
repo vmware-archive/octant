@@ -3,7 +3,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>octant</id>
-    <version>0.15.0</version>
+    <version>0.16.0</version>
     <owners>VMware</owners>
     <title>Octant</title>
     <authors>VMware Tanzu</authors>
