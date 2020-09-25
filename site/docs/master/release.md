@@ -1,6 +1,6 @@
 ## Release Process
 
-Drone Cloud is used along with goreleaser for releases. This document is used to track the manual processes that occur during a release process.
+Github Actions is used along with goreleaser for releases. This document is used to track the manual processes that occur during a release process.
 
 ### Update version
 
