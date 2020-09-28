@@ -25,6 +25,7 @@ type StatsHandleFunc func(stats []Stat)
 type StatMetadata struct {
 	Description string
 	Label       string
+	Name        string
 	Unit        string
 }
 

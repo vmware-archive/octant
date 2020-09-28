@@ -11,6 +11,11 @@ import (
 	"time"
 )
 
+// Stat names
+const (
+	StatNameWaitRatio = "astikit.wait.ratio"
+)
+
 // Chan constants
 const (
 	ChanAddStrategyBlockWhenStarted = "block.when.started"
@@ -207,6 +212,7 @@ func (c *Chan) AddStats(s *Stater) {
 	s.AddStat(StatMetadata{
 		Description: "Percentage of time spent listening and waiting for new object",
 		Label:       "Wait ratio",
+		Name:        StatNameWaitRatio,
 		Unit:        "%",
 	}, c.statWait)
 }
