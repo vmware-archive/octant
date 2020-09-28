@@ -5,7 +5,7 @@ go 1.15
 require (
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	github.com/GeertJohan/go.rice v1.0.0
-	github.com/asticode/go-astikit v0.8.0
+	github.com/asticode/go-astikit v0.9.1
 	github.com/asticode/go-astilectron v0.14.2
 	github.com/asticode/go-astilectron-bundler v0.5.2
 	github.com/davecgh/go-spew v1.1.1
