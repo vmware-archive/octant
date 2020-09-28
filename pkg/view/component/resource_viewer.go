@@ -7,6 +7,7 @@ package component
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -74,7 +75,7 @@ func (n *Node) UnmarshalJSON(data []byte) error {
 		Kind       string         `json:"kind,omitempty"`
 		Status     NodeStatus     `json:"status,omitempty"`
 		Details    []*TypedObject `json:"details,omitempty"`
-		Path       *Link          `json:"path,omitempty"`
+		Path       *TypedObject   `json:"path,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &x); err != nil {
@@ -85,7 +86,6 @@ func (n *Node) UnmarshalJSON(data []byte) error {
 	n.APIVersion = x.APIVersion
 	n.Kind = x.Kind
 	n.Status = x.Status
-	n.Path = x.Path
 
 	if x.Details != nil {
 		n.Details = make([]Component, len(x.Details))
@@ -96,6 +96,18 @@ func (n *Node) UnmarshalJSON(data []byte) error {
 			return errors.Wrap(err, "unmarshal-ing detail")
 		}
 		n.Details[i] = dc
+	}
+
+	if x.Path != nil {
+		p, err := x.Path.ToComponent()
+		if err != nil {
+			return errors.Wrap(err, "unmarshal-ing detail")
+		}
+		l, ok := p.(*Link)
+		if !ok {
+			return fmt.Errorf("path must be a link, found %q", x.Path.Metadata.Type)
+		}
+		n.Path = l
 	}
 
 	return nil
