@@ -6,7 +6,6 @@
 package log
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -18,16 +17,20 @@ import (
 
 // Message is an Octant log message.
 type Message struct {
+	// ID is the identifier for this log message.
+	ID string
 	// Date is the seconds since epoch.
-	Date int64
+	Date int64 `json:"date"`
 	// LogLevel is the log level.
-	LogLevel string
+	LogLevel string `json:"logLevel"`
 	// Location is the source location.
-	Location string
+	Location string `json:"location"`
 	// Text is the actual message.
-	Text string
+	Text string `json:"text"`
 	// JSON is the JSON payload.
-	JSON string
+	JSON string `json:"json"`
+	// StackTrace is an optional stack trace.
+	StackTrace string `json:"stackTrace"`
 }
 
 // ListenCancelFunc is a function for canceling a sink listener.
@@ -40,7 +43,7 @@ type OctantSinkOption func(o *OctantSink)
 // allows multiple loggers to listen to message.
 type OctantSink struct {
 	listeners map[string]chan Message
-	converter func(b []byte) (Message, error)
+	converter func(b []byte, options ...Option) (Message, error)
 
 	mu sync.RWMutex
 }
@@ -121,12 +124,15 @@ func (o *OctantSink) Listen() (<-chan Message, ListenCancelFunc) {
 }
 
 // ConvertBytesToMessage converts a zap message string to a Message instance.
-func ConvertBytesToMessage(b []byte) (Message, error) {
-	parts := strings.Split(strings.TrimSpace(string(b)), "\t")
+func ConvertBytesToMessage(b []byte, options ...Option) (Message, error) {
+	opts := makeDefaultOptions(options...)
+
+	lines := strings.SplitN(strings.TrimSpace(string(b)), "\n", 2)
+	parts := strings.SplitN(strings.TrimSpace(lines[0]), "\t", 5)
 	pLen := len(parts)
 
 	if pLen < 4 || pLen > 5 {
-		return Message{}, errors.New("unknown log message format")
+		return Message{}, fmt.Errorf("unknown log message format: %q", string(b))
 	}
 
 	t, err := time.Parse("2006-01-02T15:04:05.000Z0700", parts[0])
@@ -135,10 +141,15 @@ func ConvertBytesToMessage(b []byte) (Message, error) {
 	}
 
 	m := Message{
-		Date:     t.Unix(),
+		ID:       opts.messageIDGenerator.Generate(),
+		Date:     t.UnixNano(),
 		LogLevel: parts[1],
 		Location: parts[2],
 		Text:     parts[3],
+	}
+
+	if len(lines) > 1 {
+		m.StackTrace = strings.Join(lines[1:], "\n")
 	}
 
 	if pLen > 4 {

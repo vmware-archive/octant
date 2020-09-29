@@ -9,8 +9,6 @@ package event
 
 import (
 	"fmt"
-
-	"github.com/vmware-tanzu/octant/pkg/action"
 )
 
 const (
@@ -59,6 +57,9 @@ const (
 	// EventTypeLoading is a loading event.
 	EventTypeLoading EventType = "event.octant.dev/loading"
 
+	// EventTypeAppLogs is an app logs event.
+	EventTypeAppLogs EventType = "event.octant.dev/app-logs"
+
 	// EventTypeTerminalFormat is a string with format specifiers to assist in generating
 	// a terminal event type.
 	EventTypeTerminalFormat string = "event.octant.dev/terminals/namespace/%s/pod/%s/container/%s"
@@ -89,7 +90,7 @@ type Event struct {
 	Err  error
 }
 
-func CreateEvent(eventType EventType, fields action.Payload) Event {
+func CreateEvent(eventType EventType, fields map[string]interface{}) Event {
 	return Event{
 		Type: eventType,
 		Data: fields,
