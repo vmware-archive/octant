@@ -6,8 +6,8 @@ require (
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	github.com/GeertJohan/go.rice v1.0.0
 	github.com/asticode/go-astikit v0.8.0
-	github.com/asticode/go-astilectron v0.14.2
-	github.com/asticode/go-astilectron-bundler v0.5.2
+	github.com/asticode/go-astilectron v0.18.0
+	github.com/asticode/go-astilectron-bundler v0.7.2
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dlclark/regexp2 v1.2.0 // indirect
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
