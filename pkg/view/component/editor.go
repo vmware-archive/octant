@@ -26,6 +26,7 @@ type Editor struct {
 // EditorConfig is configuration for Editor.
 type EditorConfig struct {
 	Value        string            `json:"value"`
+	Language     string            `json:"language"`
 	ReadOnly     bool              `json:"readOnly"`
 	Metadata     map[string]string `json:"metadata"`
 	SubmitAction string            `json:"submitAction,omitempty"`

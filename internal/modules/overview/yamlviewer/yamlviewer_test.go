@@ -24,6 +24,7 @@ func Test_ToComponent(t *testing.T) {
 
 	data := "---\nmetadata:\n  creationTimestamp: null\nspec:\n  containers: null\nstatus: {}\n"
 	expected := component.NewEditor(component.TitleFromString("YAML"), data, false)
+	expected.Config.Language = "yaml"
 	require.NoError(t, expected.SetValueFromObject(object))
 
 	testutil.AssertJSONEqual(t, expected, got)
