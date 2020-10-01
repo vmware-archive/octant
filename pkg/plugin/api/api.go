@@ -32,11 +32,13 @@ type grpcAPI struct {
 	listener net.Listener
 }
 
+const dashServiceAddress = "127.0.0.1:0"
+
 var _ API = (*grpcAPI)(nil)
 
 // New creates a new API instance for DashService.
 func New(service Service) (API, error) {
-	listener, err := net.Listen("tcp", "localhost:0")
+	listener, err := net.Listen("tcp", dashServiceAddress)
 	if err != nil {
 		return nil, errors.Wrap(err, "create listener")
 	}
