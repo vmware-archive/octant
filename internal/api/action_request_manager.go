@@ -8,6 +8,7 @@ package api
 import (
 	"context"
 
+	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/action"
 )
@@ -43,7 +44,7 @@ func (a *ActionRequestManager) Handlers() []octant.ClientRequestHandler {
 
 // PerformAction is a handler than runs an action.
 func (a *ActionRequestManager) PerformAction(state octant.State, payload action.Payload) error {
-	ctx := context.TODO()
+	ctx := ocontext.WithWebsocketClientID(context.TODO(), state.GetClientID())
 
 	actionName, err := payload.String("action")
 	if err != nil {

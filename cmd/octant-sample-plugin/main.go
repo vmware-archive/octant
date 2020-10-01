@@ -24,6 +24,8 @@ import (
 
 var pluginName = "plugin-name"
 
+const pluginActionName = "action.octant.dev/example"
+
 // This is a sample plugin showing the features of Octant's plugin API.
 func main() {
 	// Remove the prefix from the go logger since Octant will print logs with timestamps.
@@ -36,6 +38,7 @@ func main() {
 	capabilities := &plugin.Capabilities{
 		SupportsPrinterConfig: []schema.GroupVersionKind{podGVK},
 		SupportsTab:           []schema.GroupVersionKind{podGVK},
+		ActionNames:           []string{pluginActionName},
 		IsModule:              true,
 	}
 
@@ -44,6 +47,7 @@ func main() {
 		service.WithPrinter(handlePrint),
 		service.WithTabPrinter(handleTab),
 		service.WithNavigation(handleNavigation, initRoutes),
+		service.WithActionHandler(handleAction),
 	}
 
 	// Use the plugin service helper to register this plugin.
@@ -91,12 +95,6 @@ func handleTab(request *service.PrintRequest) (plugin.TabResponse, error) {
 func handlePrint(request *service.PrintRequest) (plugin.PrintResponse, error) {
 	if request.Object == nil {
 		return plugin.PrintResponse{}, errors.Errorf("object is nil")
-	}
-
-	// Sending an alert needs a clientID from the request context
-	if n := time.Now(); n.Second() == 0 {
-		alert := action.CreateAlert(action.AlertTypeInfo, fmt.Sprintf("The time is %s", time.Now().String()), action.DefaultAlertExpiration)
-		request.DashboardClient.SendAlert(request.Context(), request.ClientID, alert)
 	}
 	// load an object from the cluster and use that object to create a response.
 
@@ -146,7 +144,7 @@ func handlePrint(request *service.PrintRequest) (plugin.PrintResponse, error) {
 	}, nil
 }
 
-// handlePrint creates a navigation tree for this plugin. Navigation is dynamic and will
+// handleNavigation creates a navigation tree for this plugin. Navigation is dynamic and will
 // be called frequently from Octant. Navigation is a tree of `Navigation` structs.
 // The plugin can use whatever paths it likes since these paths can be namespaced to the
 // the plugin.
@@ -172,6 +170,23 @@ func handleNavigation(request *service.NavigationRequest) (navigation.Navigation
 	}, nil
 }
 
+// handleAction creates an action handler for this plugin. Actions send
+// a payload which are used to execute some task
+func handleAction(request *service.ActionRequest) error {
+	actionValue, err := request.Payload.String("action")
+	if err != nil {
+		return err
+	}
+
+	if actionValue == pluginActionName {
+		// Sending an alert needs a clientID from the request context
+		alert := action.CreateAlert(action.AlertTypeInfo, fmt.Sprintf("My client ID is: %s", request.ClientID), action.DefaultAlertExpiration)
+		request.DashboardClient.SendAlert(request.Context(), request.ClientID, alert)
+	}
+
+	return nil
+}
+
 // initRoutes routes for this plugin. In this example, there is a global catch all route
 // that will return the content for every single path.
 func initRoutes(router *service.Router) {
@@ -179,6 +194,16 @@ func initRoutes(router *service.Router) {
 		cardBody := component.NewText(fmt.Sprintf("hello from plugin: path %s", requestPath))
 		card := component.NewCard(component.TitleFromString(fmt.Sprintf("My Card - %s", name)))
 		card.SetBody(cardBody)
+
+		form := component.Form{Fields: []component.FormField{
+			component.NewFormFieldHidden("action", pluginActionName),
+		}}
+		testButton := component.Action{
+			Name:  "Test Button",
+			Title: "Test Button",
+			Form:  form,
+		}
+		card.AddAction(testButton)
 		cardList := component.NewCardList(name)
 		cardList.AddCard(*card)
 		cardList.SetAccessor(accessor)
