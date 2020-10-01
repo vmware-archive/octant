@@ -8,10 +8,12 @@ package log
 import (
 	"context"
 	"fmt"
+	"net/url"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
+	"github.com/vmware-tanzu/octant/pkg/event"
 	"github.com/vmware-tanzu/octant/pkg/log"
 )
 
@@ -19,28 +21,64 @@ type key string
 
 var contextKey = key("com.heptio.logger")
 
+type sugaredLogWrapperOption func(wrapper *sugaredLogWrapper)
+
+func sugaredLogStreamer(s EventStreamer) sugaredLogWrapperOption {
+	return func(wrapper *sugaredLogWrapper) {
+		wrapper.streamer = s
+	}
+}
+
 // sugaredLogWrapper adapts a zap.SugaredLogger to the Logger interface
 type sugaredLogWrapper struct {
 	*zap.SugaredLogger
+
+	streamer EventStreamer
+}
+
+var _ log.LoggerCloser = &sugaredLogWrapper{}
+
+func newSugaredLogWrapper(sl *zap.SugaredLogger, options ...sugaredLogWrapperOption) *sugaredLogWrapper {
+	slw := &sugaredLogWrapper{
+		SugaredLogger: sl,
+	}
+
+	for _, option := range options {
+		option(slw)
+	}
+
+	return slw
+}
+
+func (s *sugaredLogWrapper) fork(sl *zap.SugaredLogger, options ...sugaredLogWrapperOption) *sugaredLogWrapper {
+	return newSugaredLogWrapper(sl, append([]sugaredLogWrapperOption{sugaredLogStreamer(s.streamer)}, options...)...)
 }
 
 func (s *sugaredLogWrapper) WithErr(err error) log.Logger {
-	return &sugaredLogWrapper{s.SugaredLogger.With("err", err.Error())}
+	return s.fork(s.SugaredLogger.With("err", err.Error()))
 }
 
 func (s *sugaredLogWrapper) With(args ...interface{}) log.Logger {
-	return &sugaredLogWrapper{s.SugaredLogger.With(args...)}
+	return s.fork(s.SugaredLogger.With(args...))
 }
 
 func (s *sugaredLogWrapper) Named(name string) log.Logger {
-	return &sugaredLogWrapper{s.SugaredLogger.Named(name)}
+	return s.fork(s.SugaredLogger.Named(name))
 }
 
-var _ log.Logger = (*sugaredLogWrapper)(nil)
+func (s *sugaredLogWrapper) Close() {
+	// this fails, but it should be safe to ignore according
+	// to https://github.com/uber-go/zap/issues/328
+	_ = s.SugaredLogger.Sync()
+}
+
+func (s *sugaredLogWrapper) Stream(readyCh <-chan struct{}) (<-chan event.Event, func()) {
+	return s.streamer.Stream(readyCh)
+}
 
 // Wrap zap.SugaredLogger as Logger interface
-func Wrap(z *zap.SugaredLogger) log.Logger {
-	return &sugaredLogWrapper{z}
+func Wrap(z *zap.SugaredLogger) log.LoggerCloser {
+	return newSugaredLogWrapper(z)
 }
 
 // NopLogger constructs a nop logger
@@ -70,13 +108,26 @@ func From(ctx context.Context) log.Logger {
 type InitOption func(config zap.Config) zap.Config
 
 // Init initializes a logger with options.
-func Init(logLevel int, options ...InitOption) (*zap.Logger, error) {
+func Init(logLevel int, options ...InitOption) (log.LoggerCloser, error) {
+	octantSink := NewOctantSink()
+
+	err := zap.RegisterSink("octant-stream", func(url *url.URL) (zap.Sink, error) {
+		return octantSink, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("register octant log sink: %w", err)
+	}
+
 	z, err := newZapLogger(logLevel, options...)
 	if err != nil {
 		return nil, fmt.Errorf("create zap logger: %w", err)
 	}
 
-	return z, nil
+	logger := newSugaredLogWrapper(z.Sugar(), func(wrapper *sugaredLogWrapper) {
+		wrapper.streamer = NewStreamer(octantSink)
+	})
+
+	return logger, nil
 
 }
 
@@ -95,8 +146,8 @@ func newZapLogger(verboseLevel int, options ...InitOption) (*zap.Logger, error) 
 		Development:      true,
 		Encoding:         "console",
 		EncoderConfig:    zap.NewDevelopmentEncoderConfig(),
-		OutputPaths:      []string{"stderr"},
-		ErrorOutputPaths: []string{"stderr"},
+		OutputPaths:      []string{"stderr", "octant-stream://output"},
+		ErrorOutputPaths: []string{"stderr", "octant-stream://output"},
 	}
 
 	for _, option := range options {

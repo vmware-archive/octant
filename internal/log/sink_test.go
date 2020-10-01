@@ -16,11 +16,11 @@ import (
 )
 
 func TestOctantSink(t *testing.T) {
-	validConvert := func(b []byte) (Message, error) {
+	validConvert := func(b []byte, options ...Option) (Message, error) {
 		return Message{}, nil
 	}
 
-	invalidConvert := func(b []byte) (Message, error) {
+	invalidConvert := func(b []byte, options ...Option) (Message, error) {
 		return Message{}, errors.New("invalid")
 	}
 
@@ -85,6 +85,25 @@ func TestOctantSink(t *testing.T) {
 	}
 }
 
+func TestOctantSink_Close(t *testing.T) {
+	s := NewOctantSink()
+	ch, _ := s.Listen()
+
+	done := make(chan struct{}, 1)
+
+	closed := false
+	go func() {
+		<-ch
+		closed = true
+		done <- struct{}{}
+	}()
+
+	require.NoError(t, s.Close())
+
+	<-done
+	require.True(t, closed)
+}
+
 func TestConvertBytesToMessage(t *testing.T) {
 	type args struct {
 		bytes []byte
@@ -96,7 +115,7 @@ func TestConvertBytesToMessage(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "in general with JSON",
+			name: "info message with JSON",
 			args: args{
 				bytes: []byte(strings.Join([]string{
 					"2020-09-03T14:39:51.115-0400",
@@ -107,7 +126,8 @@ func TestConvertBytesToMessage(t *testing.T) {
 				}, "\t") + "\n"),
 			},
 			want: Message{
-				Date:     1599158391,
+				ID:       "12345",
+				Date:     1599158391115000000,
 				LogLevel: "INFO",
 				Location: "file.go:50",
 				Text:     "message",
@@ -115,7 +135,7 @@ func TestConvertBytesToMessage(t *testing.T) {
 			},
 		},
 		{
-			name: "in general without JSON",
+			name: "info message without JSON",
 			args: args{
 				bytes: []byte(strings.Join([]string{
 					"2020-09-03T14:39:51.115-0400",
@@ -125,10 +145,33 @@ func TestConvertBytesToMessage(t *testing.T) {
 				}, "\t") + "\n"),
 			},
 			want: Message{
-				Date:     1599158391,
+				ID:       "12345",
+				Date:     1599158391115000000,
 				LogLevel: "INFO",
 				Location: "file.go:50",
 				Text:     "message",
+			},
+		},
+		{
+			name: "error message with JSON",
+			args: args{
+				bytes: []byte("2020-09-23T09:10:52.181-0400\tERROR\tapi/content_manager.go:154\tgenerate content\t{\"client-id\": \"2c3d1670-fd9e-11ea-b34c-e450ebbc2e8c\", \"err\": \"generate content: calling contentHandler: check access to list CacheKey[Namespace='default', APIVersion='cluster.x-k8s.io/v1alpha3', Kind='Cluster']: unable to get resource for group kind Cluster.cluster.x-k8s.io: no matches for kind \\\"Cluster\\\" in group \\\"cluster.x-k8s.io\\\"\", \"content-path\": \"octant-clusterapi-plugin\"}\ngithub.com/vmware-tanzu/octant/internal/api.(*ContentManager).runUpdate.func1\n\t/Users/bryan/Development/projects/octant/internal/api/content_manager.go:154\ngithub.com/vmware-tanzu/octant/internal/api.(*InterruptiblePoller).Run.func1\n\t/Users/bryan/Development/projects/octant/internal/api/poller.go:86\ngithub.com/vmware-tanzu/octant/internal/api.(*InterruptiblePoller).Run\n\t/Users/bryan/Development/projects/octant/internal/api/poller.go:95\ngithub.com/vmware-tanzu/octant/internal/api.(*ContentManager).Start\n\t/Users/bryan/Development/projects/octant/internal/api/content_manager.go:128\n"),
+			},
+			want: Message{
+				ID:       "12345",
+				Date:     1600866652181000000,
+				LogLevel: "ERROR",
+				Location: "api/content_manager.go:154",
+				Text:     "generate content",
+				JSON:     "{\"client-id\": \"2c3d1670-fd9e-11ea-b34c-e450ebbc2e8c\", \"err\": \"generate content: calling contentHandler: check access to list CacheKey[Namespace='default', APIVersion='cluster.x-k8s.io/v1alpha3', Kind='Cluster']: unable to get resource for group kind Cluster.cluster.x-k8s.io: no matches for kind \\\"Cluster\\\" in group \\\"cluster.x-k8s.io\\\"\", \"content-path\": \"octant-clusterapi-plugin\"}",
+				StackTrace: "github.com/vmware-tanzu/octant/internal/api.(*ContentManager).runUpdate.func1\n" +
+					"\t/Users/bryan/Development/projects/octant/internal/api/content_manager.go:154\n" +
+					"github.com/vmware-tanzu/octant/internal/api.(*InterruptiblePoller).Run.func1\n" +
+					"\t/Users/bryan/Development/projects/octant/internal/api/poller.go:86\n" +
+					"github.com/vmware-tanzu/octant/internal/api.(*InterruptiblePoller).Run\n" +
+					"\t/Users/bryan/Development/projects/octant/internal/api/poller.go:95\n" +
+					"github.com/vmware-tanzu/octant/internal/api.(*ContentManager).Start\n" +
+					"\t/Users/bryan/Development/projects/octant/internal/api/content_manager.go:128",
 			},
 		},
 		{
@@ -169,10 +212,24 @@ func TestConvertBytesToMessage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ConvertBytesToMessage(tt.args.bytes)
+			got, err := ConvertBytesToMessage(tt.args.bytes, WithIDGenerator(newTestIDGen("12345")))
 			testutil.RequireErrorOrNot(t, tt.wantErr, err, func() {
 				require.Equal(t, tt.want, got)
 			})
 		})
 	}
+}
+
+type testIDGen struct {
+	id string
+}
+
+var _ MessageIDGenerator = &testIDGen{}
+
+func newTestIDGen(id string) *testIDGen {
+	return &testIDGen{id: id}
+}
+
+func (i testIDGen) Generate() string {
+	return i.id
 }

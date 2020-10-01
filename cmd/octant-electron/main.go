@@ -33,17 +33,13 @@ var (
 )
 
 func main() {
-	z, err := log.Init(0)
+	logger, err := log.Init(0)
 	if err != nil {
 		golog.Printf("unable to initialize logger: %v", err)
 		os.Exit(1)
 	}
 
-	defer func() {
-		_ = z.Sync()
-	}()
-
-	logger := log.Wrap(z.Sugar())
+	defer logger.Close()
 	ctx := log.WithLoggerContext(context.Background(), logger)
 
 	if err := run(ctx); err != nil {

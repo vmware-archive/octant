@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 
 package log
 
+import "github.com/vmware-tanzu/octant/pkg/event"
+
 // Logger is an interface for logging
 type Logger interface {
 	// Debugf uses fmt.Sprintf to log a templated message.
@@ -24,4 +26,14 @@ type Logger interface {
 	WithErr(err error) Logger
 
 	Named(name string) Logger
+
+	Stream(readyCh <-chan struct{}) (<-chan event.Event, func())
+}
+
+// LoggerCloser is an interface that wraps a Logger and a close function.
+type LoggerCloser interface {
+	Logger
+
+	// Close closes the logger.
+	Close()
 }
