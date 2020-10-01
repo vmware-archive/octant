@@ -34,25 +34,85 @@
         "name": "my-nginx",
         "apiVersion": "v1",
         "kind": "Service",
-        "status": "ok"
+        "status": "ok",
+        "path": {
+          "config": {
+            "value": "my-nginx",
+            "ref": "/overview/namespace/default/discovery-and-load-balancing/services/my-nginx"
+          },
+          "metadata": {
+            "type": "link",
+            "title": [
+              {
+                "metadata": { "type": "text" },
+                "config": { "value": "" }
+              }
+            ]
+          }
+        }
       },
       "71c2b4eb-2949-11e9-b356-42010a8000e5": {
         "name": "nginx-deployment",
         "apiVersion": "apps/v1",
         "kind": "Deployment",
-        "status": "ok"
+        "status": "ok",
+        "path": {
+          "config": {
+            "value": "nginx-deployment",
+            "ref": "/overview/namespace/default/workloads/deployments/nginx-deployment"
+          },
+          "metadata": {
+            "type": "link",
+            "title": [
+              {
+                "metadata": { "type": "text" },
+                "config": { "value": "" }
+              }
+            ]
+          }
+        }
       },
       "8682460a-29b5-11e9-b356-42010a8000e5": {
         "name": "nginx-deployment-56c74bb7cd",
         "apiVersion": "extensions/v1beta1",
         "kind": "ReplicaSet",
-        "status": "ok"
+        "status": "ok",
+        "path": {
+          "config": {
+            "value": "nginx-deployment-56c74bb7cd",
+            "ref": "/overview/namespace/default/workloads/replica-sets/nginx-deployment-56c74bb7cd"
+          },
+          "metadata": {
+            "type": "link",
+            "title": [
+              {
+                "metadata": { "type": "text" },
+                "config": { "value": "" }
+              }
+            ]
+          }
+        }
       },
       "bf4800b5b6602c4c78ba3b654af02b3b": {
         "name": "nginx-deployment-56c74bb7cd pods",
         "apiVersion": "v1",
         "kind": "Pod",
-        "status": "ok"
+        "status": "ok",
+        "path": {
+          "config": {
+            "value": "nginx-deployment-56c74bb7cd pods",
+            "ref": "/overview/namespace/default/workloads/pods/nginx-deployment-56c74bb7cd pods"
+          },
+          "metadata": {
+            "type": "link",
+            "title": [
+              {
+                "metadata": { "type": "text" },
+                "config": { "value": "" }
+              }
+            ]
+          }
+        }
       }
     }
   }
