@@ -21,7 +21,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     name: Golang tests on ${{ matrix.platform }}
     steps:
-      - uses: actions/setup-node@v2.1.1
+      - uses: actions/setup-node@v2.1.2
         with:
           node-version: 10.x
       - uses: actions/setup-go@v2
@@ -59,7 +59,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     name: Karma tests on ${{ matrix.platform }}
     steps:
-      - uses: actions/setup-node@v2.1.1
+      - uses: actions/setup-node@v2.1.2
         with:
           node-version: 10.x
       - uses: actions/checkout@v2
@@ -101,7 +101,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     name: Build on ${{ matrix.platform }}
     steps:
-      - uses: actions/setup-node@v2.1.1
+      - uses: actions/setup-node@v2.1.2
         with:
           node-version: 10.x
       - uses: actions/setup-go@v2
