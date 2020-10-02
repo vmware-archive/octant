@@ -50,7 +50,7 @@ jobs:
           go generate ./web
           go generate ./pkg/plugin/plugin.go
       - name: Upload web/rice-box.go
-        uses: actions/upload-artifact@v2.1.4
+        uses: actions/upload-artifact@v2.2.0
         with:
           name: rice-web
           path: web/rice-box.go
