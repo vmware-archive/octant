@@ -45,12 +45,6 @@ export class ListComponent extends AbstractViewComponent<ListView> {
 
   update() {
     const current = this.v;
-    this.title = current.metadata.title
-      ? current.metadata.title.map((item: LinkView) => ({
-          title: item.config.value,
-          url: item.config.ref,
-        }))
-      : [];
 
     const cur = JSON.stringify(current);
     if (current.config.items && cur !== this.previous) {

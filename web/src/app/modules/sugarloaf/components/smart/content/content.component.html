@@ -5,19 +5,11 @@
   [class.loading-content]="!hasReceivedContent"
 >
   <ng-container *ngIf="hasReceivedContent && !showSpinner; else loading">
-    <ng-container
-      *ngIf="hasTabs; then withTabs; else withoutTabs"
-    ></ng-container>
-    <ng-template #withTabs>
       <app-object-tabs
         [buttonGroup]="buttonGroup"
         [title]="title"
         [views]="views"
       ></app-object-tabs>
-    </ng-template>
-    <ng-template #withoutTabs>
-      <app-view-container [view]="singleView"></app-view-container>
-    </ng-template>
   </ng-container>
 
   <ng-template #loading>

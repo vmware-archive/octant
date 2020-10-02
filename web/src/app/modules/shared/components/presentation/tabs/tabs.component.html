@@ -8,7 +8,7 @@
     </div>
   </div>
 </div>
-<clr-tabs *ngIf="tabs.length > 0">
+<clr-tabs *ngIf="tabs.length > 1; else noTabs">
   <clr-tab *ngFor="let tab of tabs; trackBy: identifyTab">
     <div clrTabLink class="tab-button">
       <button clrTabLink class="tab-button" (click)="clickTab(tab.accessor)">
@@ -27,3 +27,6 @@
     </ng-template>
   </clr-tab>
 </clr-tabs>
+<ng-template #noTabs>
+  <app-view-container [view]="view"></app-view-container>
+</ng-template>

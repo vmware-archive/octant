@@ -116,7 +116,6 @@ export class ContentComponent implements OnInit, OnDestroy {
 
   private resetView() {
     this.title = null;
-    this.singleView = null;
     this.views = null;
   }
 
@@ -137,17 +136,11 @@ export class ContentComponent implements OnInit, OnDestroy {
     this.buttonGroup = contentResponse.content.buttonGroup;
 
     this.extView = contentResponse.content.extensionComponent;
-    this.hasTabs = views.length > 1;
-    if (this.hasTabs) {
-      this.views = views;
-      this.title = contentResponse.content.title.map((item: LinkView) => ({
-        title: item.config.value,
-        url: item.config.ref,
-      }));
-    } else if (views.length === 1) {
-      this.views = null;
-      this.singleView = views[0];
-    }
+    this.views = views;
+    this.title = contentResponse.content.title?.map((item: LinkView) => ({
+      title: item.config.value,
+      url: item.config.ref,
+    }));
 
     this.hasReceivedContent = true;
   };
