@@ -80,6 +80,7 @@ func (c *GRPCClient) Content(ctx context.Context, contentPath string) (component
 // HandleAction runs an action on a plugin.
 func (c *GRPCClient) HandleAction(ctx context.Context, actionName string, payload action.Payload) error {
 	err := c.run(func() error {
+		clientID := ocontext.WebsocketClientIDFrom(ctx)
 		data, err := json.Marshal(&payload)
 		if err != nil {
 			return err
@@ -88,6 +89,7 @@ func (c *GRPCClient) HandleAction(ctx context.Context, actionName string, payloa
 		req := &dashboard.HandleActionRequest{
 			ActionName: actionName,
 			Payload:    data,
+			ClientID:   clientID,
 		}
 
 		_, err = c.client.HandleAction(ctx, req, grpc.WaitForReady(true))

@@ -8,13 +8,14 @@ package api
 import (
 	"context"
 
-	"github.com/spf13/viper"
-
 	"google.golang.org/grpc"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
+	"github.com/spf13/viper"
+
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/config"
 	"github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
@@ -54,6 +55,7 @@ var _ Service = (*Client)(nil)
 // address of the API.
 func NewClient(address string, options ...ClientOption) (*Client, error) {
 	client := &Client{}
+	viper.SetDefault("client-max-recv-msg-size", config.MaxMessageSize)
 
 	for _, option := range options {
 		option(client)

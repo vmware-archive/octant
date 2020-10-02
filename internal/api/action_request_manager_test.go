@@ -36,6 +36,7 @@ func TestActionRequestManager_PerformAction(t *testing.T) {
 	state.EXPECT().
 		Dispatch(gomock.Any(), api.RequestPerformAction, payload).
 		Return(nil)
+	state.EXPECT().GetClientID()
 
 	require.NoError(t, manager.PerformAction(state, payload))
 }
