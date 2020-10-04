@@ -383,6 +383,7 @@ func (t *jsPlugin) PrintTab(ctx context.Context, object runtime.Object) (TabResp
 	cTab := &component.Tab{}
 	if name, ok := contents["name"]; ok {
 		cTab.Contents = *component.NewFlexLayout(name.(string))
+		cTab.Name = name.(string)
 	}
 
 	if contents, ok := contents["contents"]; ok {
