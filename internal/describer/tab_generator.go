@@ -181,6 +181,7 @@ func pluginTabsFactory(
 	}
 
 	for _, tab := range tabs {
+		tab := tab
 		list = append(list, Tab{
 			Name: tab.Name,
 			Factory: func(ctx context.Context, object runtime.Object, options Options) (component.Component, error) {
