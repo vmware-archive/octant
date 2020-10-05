@@ -11,6 +11,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   ButtonGroupView,
+  LinkView,
   PathItem,
   View,
 } from 'src/app/modules/shared/models/content';
@@ -43,6 +44,7 @@ export class TabsComponent implements OnChanges, OnInit {
   activeTab: string;
   activeTabIndex: number;
   closingTab: boolean;
+  view: View;
 
   constructor(
     private router: Router,
@@ -72,6 +74,18 @@ export class TabsComponent implements OnChanges, OnInit {
           accessor: view.metadata.accessor,
         };
       });
+
+      if (views.length === 1) {
+        this.view = views[0];
+        if (this.title == null) {
+          this.title = this.view.metadata.title
+            ? this.view.metadata.title.map((item: LinkView) => ({
+                title: item.config.value,
+                url: item.config.ref,
+              }))
+            : [];
+        }
+      }
 
       if (this.extView && this.tabs.length > 0) {
         this.sliderService.activeTab.subscribe(index => {
