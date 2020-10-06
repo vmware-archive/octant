@@ -6,6 +6,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HeptagonComponent } from './heptagon.component';
 import { Point } from '../../../models/point';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('HeptagonComponent', () => {
   let component: HeptagonComponent;
@@ -14,6 +15,7 @@ describe('HeptagonComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [HeptagonComponent],
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
     }).compileComponents();
   }));
 

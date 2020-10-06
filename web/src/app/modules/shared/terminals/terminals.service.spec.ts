@@ -4,8 +4,8 @@
 
 import { TestBed } from '@angular/core/testing';
 import { TerminalOutputService } from './terminals.service';
-import { WebsocketService } from 'src/app/modules/shared/services/websocket/websocket.service';
-import { WebsocketServiceMock } from 'src/app/modules/shared/services/websocket/mock';
+import { WebsocketService } from 'src/app/data/services/websocket/websocket.service';
+import { WebsocketServiceMock } from 'src/app/data/services/websocket/mock';
 
 describe('TerminalOutputService', () => {
   let service: TerminalOutputService;

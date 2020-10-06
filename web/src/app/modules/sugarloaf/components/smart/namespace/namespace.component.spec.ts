@@ -5,6 +5,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { NamespaceComponent } from './namespace.component';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('NamespaceComponent', () => {
   let component: NamespaceComponent;
@@ -14,6 +15,7 @@ describe('NamespaceComponent', () => {
     TestBed.configureTestingModule({
       imports: [NgSelectModule],
       declarations: [NamespaceComponent],
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
     }).compileComponents();
   }));
 

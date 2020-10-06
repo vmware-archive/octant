@@ -5,6 +5,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TabsComponent } from './tabs.component';
 import { SharedModule } from '../../../shared.module';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('TabsComponent', () => {
   let component: TabsComponent;
@@ -13,6 +14,7 @@ describe('TabsComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [SharedModule],
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
     }).compileComponents();
   }));
 

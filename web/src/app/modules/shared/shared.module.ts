@@ -78,6 +78,7 @@ import { ViewContainerComponent } from './components/view/view-container.compone
 import { MissingComponentComponent } from './components/missing-component/missing-component.component';
 import { OctantTooltipComponent } from './components/presentation/octant-tooltip/octant-tooltip';
 import { BottomPanelComponent } from './components/smart/bottom-panel/bottom-panel.component';
+import { DataModule } from '../../data/data.module';
 
 @NgModule({
   declarations: [
@@ -215,6 +216,7 @@ import { BottomPanelComponent } from './components/smart/bottom-panel/bottom-pan
   imports: [
     ClarityModule,
     CommonModule,
+    DataModule,
     FormsModule,
     HighlightModule,
     MonacoEditorModule.forRoot({

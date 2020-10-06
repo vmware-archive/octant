@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SliderViewComponent } from './slider-view.component';
 import { SharedModule } from '../../../shared.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('SliderViewComponent', () => {
   let component: SliderViewComponent;
@@ -17,6 +17,7 @@ describe('SliderViewComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [SharedModule, BrowserAnimationsModule],
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
     }).compileComponents();
   }));
 

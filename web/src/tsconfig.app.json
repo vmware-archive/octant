@@ -4,7 +4,8 @@
     "outDir": "../out-tsc/app",
     "typeRoots": [
       "./types"
-    ]
+    ],
+    "lib": ["es5", "es6", "dom"]
   },
   "files": [
     "main.ts",

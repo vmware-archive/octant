@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { WebsocketService } from '../../../../shared/services/websocket/websocket.service';
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
 import { Subscription } from 'rxjs';
+import { WindowToken } from '../../../../../window';
 
 @Component({
   selector: 'app-uploader',
@@ -17,14 +18,17 @@ export class UploaderComponent implements OnInit, OnDestroy {
 
   private contentSubscription: Subscription;
 
-  constructor(private websocketService: WebsocketService) {}
+  constructor(
+    private websocketService: WebsocketService,
+    @Inject(WindowToken) private window: Window
+  ) {}
 
   ngOnInit(): void {
     this.websocketService.registerHandler('event.octant.dev/loading', () => {
       this.showModal = true;
     });
     this.websocketService.registerHandler('event.octant.dev/refresh', () => {
-      setTimeout(window.location.reload.bind(window.location), 1000);
+      setTimeout(this.window.location.reload.bind(this.window.location), 1000);
     });
 
     this.websocketService.sendMessage('action.octant.dev/loading', {

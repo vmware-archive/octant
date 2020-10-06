@@ -1,16 +1,16 @@
-import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import {
-  TitleView,
-  ModalView,
-  View,
   ActionForm,
   Button,
+  ModalView,
+  TitleView,
+  View,
 } from '../../../models/content';
 import { FormComponent } from '../form/form.component';
 import { ModalService } from '../../../services/modal/modal.service';
 import { Subscription } from 'rxjs';
-import { WebsocketService } from '../../../services/websocket/websocket.service';
+import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
 import { ActionService } from '../../../services/action/action.service';
 
 interface Choice {

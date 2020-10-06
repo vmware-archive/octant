@@ -12,6 +12,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { highlightProvider } from './modules/shared/highlight';
 import { MonacoEditorModule } from 'ng-monaco-editor';
 import { ComponentReuseStrategy } from './modules/shared/component-reuse.strategy';
+import { windowProvider, WindowToken } from './window';
 
 @Injectable()
 export class UnstripTrailingSlashLocation extends Location {
@@ -44,6 +45,7 @@ export class UnstripTrailingSlashLocation extends Location {
     },
     highlightProvider(),
     { provide: RouteReuseStrategy, useClass: ComponentReuseStrategy },
+    { provide: WindowToken, useFactory: windowProvider },
   ],
   bootstrap: [HomeComponent],
 })

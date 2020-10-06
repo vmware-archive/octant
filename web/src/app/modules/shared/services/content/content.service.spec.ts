@@ -10,11 +10,11 @@ import {
   ContentUpdate,
   ContentUpdateMessage,
 } from './content.service';
-import { WebsocketServiceMock } from '../websocket/mock';
+import { WebsocketServiceMock } from '../../../../data/services/websocket/mock';
 import {
   BackendService,
   WebsocketService,
-} from '../websocket/websocket.service';
+} from '../../../../data/services/websocket/websocket.service';
 import { Router } from '@angular/router';
 import {
   Filter,

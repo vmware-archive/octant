@@ -7,8 +7,8 @@ import { NamespaceService } from './namespace.service';
 import {
   BackendService,
   WebsocketService,
-} from '../websocket/websocket.service';
-import { WebsocketServiceMock } from '../websocket/mock';
+} from '../../../../data/services/websocket/websocket.service';
+import { WebsocketServiceMock } from '../../../../data/services/websocket/mock';
 
 describe('NamespaceService', () => {
   beforeEach(() => {

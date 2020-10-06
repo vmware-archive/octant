@@ -9,8 +9,8 @@ import { NavigationService } from './navigation.service';
 import {
   BackendService,
   WebsocketService,
-} from '../websocket/websocket.service';
-import { WebsocketServiceMock } from '../websocket/mock';
+} from '../../../../data/services/websocket/websocket.service';
+import { WebsocketServiceMock } from '../../../../data/services/websocket/mock';
 import { Navigation } from '../../../sugarloaf/models/navigation';
 import { ContentService } from '../content/content.service';
 import { NAVIGATION_MOCK_DATA } from './navigation.test.data';

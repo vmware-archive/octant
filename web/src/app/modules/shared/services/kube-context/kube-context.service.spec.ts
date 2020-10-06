@@ -9,8 +9,8 @@ import {
   KubeContextResponse,
   KubeContextService,
 } from './kube-context.service';
-import { WebsocketServiceMock } from '../websocket/mock';
-import { WebsocketService } from '../websocket/websocket.service';
+import { WebsocketServiceMock } from '../../../../data/services/websocket/mock';
+import { WebsocketService } from '../../../../data/services/websocket/websocket.service';
 
 describe('KubeContextService', () => {
   beforeEach(() =>

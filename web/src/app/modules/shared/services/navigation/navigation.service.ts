@@ -4,7 +4,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { WebsocketService } from '../websocket/websocket.service';
+import { WebsocketService } from '../../../../data/services/websocket/websocket.service';
 import { BehaviorSubject } from 'rxjs';
 import { Navigation } from '../../../sugarloaf/models/navigation';
 import { ContentService } from '../content/content.service';
