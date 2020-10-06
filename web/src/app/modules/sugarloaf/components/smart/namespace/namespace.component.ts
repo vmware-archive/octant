@@ -123,4 +123,8 @@ export class NamespaceComponent implements OnInit, OnDestroy {
 
     return false;
   }
+
+  private routerLinkPath(namespace: string): string {
+    return this.navigationService.redirect(namespace);
+  }
 }
