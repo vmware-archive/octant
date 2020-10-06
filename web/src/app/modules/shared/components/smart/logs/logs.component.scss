@@ -79,6 +79,10 @@
       background: #0079b8;
       color: #e9ecef;
     }
+    .container-content {
+      display: flex;
+      flex-direction: column-reverse;
+    }
 
     &-bg {
       padding: 4px 8px;

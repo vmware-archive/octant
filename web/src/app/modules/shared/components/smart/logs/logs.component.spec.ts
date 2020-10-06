@@ -63,7 +63,6 @@ describe('LogsComponent', () => {
 
   it('should stay at the bottom of the container when new logs arrive', () => {
     const { nativeElement } = component.scrollTarget;
-    component.scrollToBottom = true;
 
     component.containerLogs = addLogsToList([]);
     fixture.detectChanges();
