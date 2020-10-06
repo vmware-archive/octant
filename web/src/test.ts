@@ -14,6 +14,7 @@ import { ClarityModule } from '@clr/angular';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
+import { SecurityContext } from '@angular/core';
 
 declare const require: any;
 
@@ -33,11 +34,11 @@ getTestBed().initTestEnvironment(
           tables: true,
           breaks: true,
           pedantic: false,
-          sanitize: false,
           smartLists: true,
           smartypants: false,
         },
       },
+      sanitize: SecurityContext.HTML,
     }) as any,
   ],
   platformBrowserDynamicTesting()

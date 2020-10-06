@@ -84,6 +84,24 @@ describe('TextComponent', () => {
       });
     });
 
+    it('should show clarity elements with markdown', () => {
+      const element: HTMLDivElement = fixture.nativeElement;
+      component.view = {
+        config: {
+          value:
+            '<clr-icon shape="check-circle" class="is-solid is-success" title="Succeeded"></clr-icon>',
+          isMarkdown: true,
+        },
+        metadata: { type: 'text', title: [], accessor: 'accessor' },
+      };
+      fixture.detectChanges();
+
+      expect(element.querySelector('app-view-text markdown')).toBeDefined();
+      expect(element.querySelector('app-view-text').innerHTML).toContain(
+        'ng-reflect-data="<clr-icon'
+      );
+    });
+
     it('should show markdown text', () => {
       const element: HTMLDivElement = fixture.nativeElement;
       component.view = {

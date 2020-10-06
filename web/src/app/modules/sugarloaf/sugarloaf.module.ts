@@ -1,4 +1,4 @@
-import { Injectable, NgModule } from '@angular/core';
+import { Injectable, NgModule, SecurityContext } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { ContainerComponent } from './components/smart/container/container.component';
 import { NamespaceComponent } from './components/smart/namespace/namespace.component';
@@ -64,11 +64,11 @@ export class UnstripTrailingSlashLocation extends Location {
           tables: true,
           breaks: true,
           pedantic: false,
-          sanitize: false,
           smartLists: true,
           smartypants: false,
         },
       },
+      sanitize: SecurityContext.HTML,
     }),
     SharedModule,
 

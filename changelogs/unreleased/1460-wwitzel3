@@ -1,0 +1,1 @@
+Fix markdown being sanitized after upgrade to ngx-markdown 10
