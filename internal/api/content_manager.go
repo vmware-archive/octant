@@ -305,15 +305,16 @@ func notFoundPage(contentPath string) component.ContentResponse {
 	})
 
 	text := component.NewMarkdownText(fmt.Sprintf(`
-		The requested page was not found. The resource may have been deleted.
+The requested page was not found. The resource may have been deleted.
 
-		You can:
-		- Wait for the resource to be created
-		- Use the navigation links to go to a new page
-		- Go [up one level](#/%s)
-		- Use the [back button](javascript:window.history.back()) to return to the previous page
-		- Learn more about [%s](%s)
-	`, notFoundRedirectPath(contentPath), wiki[1], wiki[0]))
+You can:
+  * Wait for the resource to be created
+  * Use the navigation links to go to a new page
+  * Go [up one level](#/%s)
+  * Use the [back button](javascript:window.history.back()) to return to the previous page
+  * Learn more about [%s](%s)
+`, notFoundRedirectPath(contentPath), wiki[1], wiki[0]))
+	text.EnableTrustedContent()
 
 	body := &component.List{}
 	body.Title = title

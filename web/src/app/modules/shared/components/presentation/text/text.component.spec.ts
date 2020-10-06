@@ -84,6 +84,43 @@ describe('TextComponent', () => {
       });
     });
 
+    it('should strip clarity elements with untrusted markdown', () => {
+      const element: HTMLDivElement = fixture.nativeElement;
+      component.view = {
+        config: {
+          value:
+            '<clr-icon shape="check-circle" class="is-solid is-success" title="Succeeded"></clr-icon> *text*',
+          isMarkdown: true,
+        },
+        metadata: { type: 'text', title: [], accessor: 'accessor' },
+      };
+      fixture.detectChanges();
+
+      expect(element.querySelector('app-view-text markdown')).toBeDefined();
+      expect(element.querySelector('app-view-text').innerHTML).toContain(
+        '<p> <em>text</em></p>'
+      );
+    });
+
+    it('should show clarity elements with trusted markdown', () => {
+      const element: HTMLDivElement = fixture.nativeElement;
+      component.view = {
+        config: {
+          value:
+            '<clr-icon shape="check-circle" class="is-solid is-success" title="Succeeded"></clr-icon> *text*',
+          isMarkdown: true,
+          trustedContent: true,
+        },
+        metadata: { type: 'text', title: [], accessor: 'accessor' },
+      };
+      fixture.detectChanges();
+
+      expect(element.querySelector('app-view-text markdown')).toBeDefined();
+      expect(element.querySelector('app-view-text').innerHTML).toContain(
+        '</clr-icon> <em>text</em>'
+      );
+    });
+
     it('should show markdown text', () => {
       const element: HTMLDivElement = fixture.nativeElement;
       component.view = {
@@ -94,7 +131,7 @@ describe('TextComponent', () => {
 
       expect(element.querySelector('app-view-text markdown')).toBeDefined();
       expect(element.querySelector('app-view-text').innerHTML).toContain(
-        '*text*'
+        '<p><em>text</em></p>'
       );
     });
 

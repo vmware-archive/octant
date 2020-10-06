@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TextComponent } from './components/presentation/text/text.component';
-import { MarkdownModule } from 'ngx-markdown';
 import { ClarityModule } from '@clr/angular';
 import { TitleComponent } from './components/presentation/title/title.component';
 import { AlertComponent } from './components/presentation/alert/alert.component';
@@ -221,7 +220,6 @@ import { BottomPanelComponent } from './components/smart/bottom-panel/bottom-pan
       baseUrl: '',
       defaultOptions: {},
     }),
-    MarkdownModule.forChild(),
     ReactiveFormsModule,
     ResizableModule,
     RouterModule,

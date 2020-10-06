@@ -346,6 +346,7 @@ export interface TextView extends View {
   config: {
     value: string;
     isMarkdown?: boolean;
+    trustedContent?: boolean;
     status?: number;
   };
 }

@@ -15,7 +15,6 @@ import { HttpClientModule } from '@angular/common/http';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
 import { SharedModule } from '../shared/shared.module';
 import { ContentComponent } from './components/smart/content/content.component';
 import { FilterTextPipe } from './pipes/filtertext/filtertext.pipe';
@@ -56,20 +55,6 @@ export class UnstripTrailingSlashLocation extends Location {
     HttpClientModule,
     FormsModule,
     NgSelectModule,
-    MarkdownModule.forRoot({
-      markedOptions: {
-        provide: MarkedOptions,
-        useValue: {
-          gfm: true,
-          tables: true,
-          breaks: true,
-          pedantic: false,
-          sanitize: false,
-          smartLists: true,
-          smartypants: false,
-        },
-      },
-    }),
     SharedModule,
 
     // routing must come last
