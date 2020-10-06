@@ -36,7 +36,6 @@ export class LogsComponent
   extends AbstractViewComponent<LogsView>
   implements OnInit, OnDestroy, AfterContentChecked, AfterViewChecked {
   private logStream: PodLogsStreamer;
-  scrollToBottom = true;
 
   private containerLogsDiffer: IterableDiffer<LogEntry>;
   @ViewChild('scrollTarget', { static: true }) scrollTarget: ElementRef;
@@ -81,6 +80,7 @@ export class LogsComponent
     this.selectedSince = +selectedSince;
     this.stopStreamIfStarted();
     this.startStream();
+    this.updateSelectedCount();
   }
   stopStreamIfStarted(): void {
     if (this.logStream) {
@@ -141,21 +141,6 @@ export class LogsComponent
     return `${item.timestamp}-${item.message}`;
   }
 
-  onScroll(evt: { target: HTMLDivElement }) {
-    const { target } = evt;
-    const { clientHeight, scrollHeight, scrollTop, offsetHeight } = target;
-    this.scrollToBottom = false;
-    if (scrollHeight <= clientHeight) {
-      // Not scrollable
-      return;
-    }
-    if (scrollTop < scrollHeight - offsetHeight) {
-      // Not at the bottom
-      return;
-    }
-    this.scrollToBottom = true;
-  }
-
   ngAfterContentChecked() {
     if (this.filterText !== this.oldFilterText) {
       this.updateSelectedCount();
@@ -164,10 +149,6 @@ export class LogsComponent
 
   ngAfterViewChecked() {
     const change = this.containerLogsDiffer.diff(this.containerLogs);
-    if (change && this.scrollToBottom) {
-      const { nativeElement } = this.scrollTarget;
-      nativeElement.scrollTop = nativeElement.scrollHeight;
-    }
     if (this.filterText !== this.oldFilterText) {
       this.oldFilterText = this.filterText;
       this.scrollToHighlight(0, 0);

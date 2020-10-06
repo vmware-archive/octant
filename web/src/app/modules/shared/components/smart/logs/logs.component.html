@@ -92,39 +92,41 @@
     </div>
   </div>
   <div class="container-logs">
-    <div class="container-logs-bg" #scrollTarget (scroll)="onScroll($event)">
-      <ng-container *ngIf="containerLogs?.length < 1"> No logs </ng-container>
-      <div
-        class="container-log code language-bash"
-        *ngFor="let log of filterFunction(containerLogs); trackBy: identifyLog"
-      >
+    <div class="container-logs-bg" [class.container-content]="containerLogs?.length >= 1" #scrollTarget>
+      <div class="log-container">
+        <ng-container *ngIf="containerLogs?.length < 1"> No logs </ng-container>
         <div
-          class="container-log-name"
-          *ngIf="shouldDisplayName && log.container != null"
-          [innerHTML]="highlightText(log.container) | ansipipe"
-        ></div>
-        <div
-          class="container-log-name"
-          *ngIf="shouldDisplayName && log.container == null"
-          [innerHTML]="'[container unavailable]'"
-        ></div>
-        <div
-          class="container-log-timestamp"
-          *ngIf="shouldDisplayTimestamp && log.timestamp != null"
-          [innerHTML]="
-            '[' + highlightText(log.timestamp | date: timeFormat) + ']'
-              | ansipipe
-          "
-        ></div>
-        <div
-          class="container-log-timestamp"
-          *ngIf="shouldDisplayTimestamp && log.timestamp == null"
-          [innerHTML]="'[timestamp unavailable]'"
-        ></div>
-        <div
-          class="container-log-message"
-          [innerHTML]="highlightText(log.message) | ansipipe"
-        ></div>
+          class="container-log code language-bash"
+          *ngFor="let log of filterFunction(containerLogs); trackBy: identifyLog"
+        >
+          <div
+            class="container-log-name"
+            *ngIf="shouldDisplayName && log.container != null"
+            [innerHTML]="highlightText(log.container) | ansipipe"
+          ></div>
+          <div
+            class="container-log-name"
+            *ngIf="shouldDisplayName && log.container == null"
+            [innerHTML]="'[container unavailable]'"
+          ></div>
+          <div
+            class="container-log-timestamp"
+            *ngIf="shouldDisplayTimestamp && log.timestamp != null"
+            [innerHTML]="
+              '[' + highlightText(log.timestamp | date: timeFormat) + ']'
+                | ansipipe
+            "
+          ></div>
+          <div
+            class="container-log-timestamp"
+            *ngIf="shouldDisplayTimestamp && log.timestamp == null"
+            [innerHTML]="'[timestamp unavailable]'"
+          ></div>
+          <div
+            class="container-log-message"
+            [innerHTML]="highlightText(log.message) | ansipipe"
+          ></div>
+        </div>
       </div>
     </div>
   </div>
