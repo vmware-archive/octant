@@ -17,12 +17,19 @@ func TestText_Markdown(t *testing.T) {
 	text := NewMarkdownText("**bold**")
 	require.True(t, text.IsMarkdown())
 	require.True(t, text.Config.IsMarkdown)
+	require.False(t, text.Config.TrustedContent)
 
 	text.DisableMarkdown()
 	require.False(t, text.IsMarkdown())
 
 	text.EnableMarkdown()
 	require.True(t, text.IsMarkdown())
+
+	text.EnableTrustedContent()
+	require.True(t, text.TrustedContent())
+
+	text.DisableTrustedContent()
+	require.False(t, text.TrustedContent())
 }
 
 func Test_Text_Marshal(t *testing.T) {

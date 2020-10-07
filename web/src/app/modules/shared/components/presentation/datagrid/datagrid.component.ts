@@ -7,6 +7,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  SecurityContext,
 } from '@angular/core';
 import {
   Confirmation,
@@ -26,6 +27,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
 import { BehaviorSubject, Observable } from 'rxjs';
 import { LoadingService } from '../../../services/loading/loading.service';
 import { ButtonGroupView } from '../../../models/content';
+import { DomSanitizer } from '@angular/platform-browser';
+import { parse } from 'marked';
 
 @Component({
   selector: 'app-view-datagrid',
@@ -59,7 +62,8 @@ export class DatagridComponent extends AbstractViewComponent<TableView> {
     private viewService: ViewService,
     private actionService: ActionService,
     private loadingService: LoadingService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private readonly sanitizer: DomSanitizer
   ) {
     super();
   }
@@ -113,6 +117,13 @@ export class DatagridComponent extends AbstractViewComponent<TableView> {
       const update = { ...action.payload, action: action.actionPath };
       this.actionService.perform(update);
       return;
+    }
+
+    if (action.confirmation.body) {
+      action.confirmation.body = this.sanitizer.sanitize(
+        SecurityContext.HTML,
+        parse(action.confirmation.body)
+      );
     }
 
     this.actionDialogOptions = {

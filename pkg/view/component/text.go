@@ -35,6 +35,11 @@ type TextConfig struct {
 	Text string `json:"value"`
 	// IsMarkdown sets if the component has markdown text.
 	IsMarkdown bool `json:"isMarkdown,omitempty"`
+	// TrustedContent sets if the content of the markdown text can be trusted.
+	// Use this when you want to use the markdown area to render custom HTML and links.
+	// Setting this to true for content you do not control, like Kubernetes Resources, can result
+	// in your plugin exposing XSS vulnerablities.
+	TrustedContent bool `json:"trustedContent,omitempty"`
 	// Status sets the status of the component.
 	Status TextStatus `json:"status,omitempty"`
 }
@@ -73,9 +78,24 @@ func (t *Text) IsMarkdown() bool {
 	return t.Config.IsMarkdown
 }
 
+// TrustedContent returns if this component markdown has trusted content.
+func (t *Text) TrustedContent() bool {
+	return t.Config.TrustedContent
+}
+
 // EnableMarkdown enables markdown for this text component.
 func (t *Text) EnableMarkdown() {
 	t.Config.IsMarkdown = true
+}
+
+// EnableTrustedContent enables trusted content for markdown of this text component.
+func (t *Text) EnableTrustedContent() {
+	t.Config.TrustedContent = true
+}
+
+// DisableTrustedContent enables trusted content for markdown of this text component.
+func (t *Text) DisableTrustedContent() {
+	t.Config.TrustedContent = false
 }
 
 // DisableMarkdown disables markdown for this text component.

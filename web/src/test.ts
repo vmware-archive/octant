@@ -13,7 +13,6 @@ import { FormsModule } from '@angular/forms';
 import { ClarityModule } from '@clr/angular';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
 
 declare const require: any;
 
@@ -25,20 +24,6 @@ getTestBed().initTestEnvironment(
     FormsModule,
     ClarityModule,
     HttpClientTestingModule,
-    MarkdownModule.forRoot({
-      markedOptions: {
-        provide: MarkedOptions,
-        useValue: {
-          gfm: true,
-          tables: true,
-          breaks: true,
-          pedantic: false,
-          sanitize: false,
-          smartLists: true,
-          smartypants: false,
-        },
-      },
-    }) as any,
   ],
   platformBrowserDynamicTesting()
 );
