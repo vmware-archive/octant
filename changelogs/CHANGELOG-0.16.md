@@ -1,3 +1,21 @@
+## v0.16.1
+#### 2020-10-07
+
+### Download
+ - https://github.com/vmware-tanzu/octant/releases/v0.16.1
+
+### All Changes
+  * Fixed resource viewer unmarshal bug (#1424, @scothis)
+  * Added a streamer interface for logger (#1425, @bryanl)
+  * Fixed syntax highlighting in YAML tab (#1436, @GuessWhoSamFoo)
+  * Changed default internal DashService API to 127.0.0.1 rather than localhost (#1438, @joshrosso)
+  * Fixed clientID not added to ActionRequest (#1441, @GuessWhoSamFoo)
+  * Moved breadcrumb/title generation to tab component (#1445, @GuessWhoSamFoo)
+  * Fixed regression with  multiple plugin tabs overwriting (#1446, @GuessWhoSamFoo)
+  * Added `trustedContent` flag for Markdown (#1460, @wwitzel3)
+  * Changed redirect path when switching namespaces to be more intuitive (#1461, @GuessWhoSamFoo)
+  * Fixed logs not scrolling to bottom when selecting container or time (#1464, @GuessWhoSamFoo)
+
 ## v0.16.0
 #### 2020-09-24
 
