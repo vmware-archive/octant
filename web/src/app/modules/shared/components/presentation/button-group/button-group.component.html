@@ -12,7 +12,7 @@
 <clr-modal [(clrModalOpen)]="isModalOpen">
   <h3 class="modal-title">{{ modalTitle }}</h3>
   <div class="modal-body">
-    <div markdown ngPreserveWhitespaces [data]="modalBody"></div>
+    <div [innerHTML]="modalBody" ngPreserveWhitespaces></div>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="cancelModal()">

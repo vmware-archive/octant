@@ -1,4 +1,9 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Output,
+  SecurityContext,
+} from '@angular/core';
 import {
   ButtonGroupView,
   Confirmation,
@@ -8,6 +13,8 @@ import {
 import { ActionService } from '../../../services/action/action.service';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import { ModalService } from '../../../services/modal/modal.service';
+import { DomSanitizer } from '@angular/platform-browser';
+import { parse } from 'marked';
 
 @Component({
   selector: 'app-button-group',
@@ -29,7 +36,8 @@ export class ButtonGroupComponent extends AbstractViewComponent<
 
   constructor(
     private actionService: ActionService,
-    private modalService: ModalService
+    private modalService: ModalService,
+    private sanitize: DomSanitizer
   ) {
     super();
   }
@@ -83,7 +91,10 @@ export class ButtonGroupComponent extends AbstractViewComponent<
 
   private activateModal(payload: {}, confirmation: Confirmation) {
     this.modalTitle = confirmation.title;
-    this.modalBody = confirmation.body;
+    this.modalBody = this.sanitize.sanitize(
+      SecurityContext.HTML,
+      parse(confirmation.body)
+    );
     this.isModalOpen = true;
 
     this.payload = payload;
