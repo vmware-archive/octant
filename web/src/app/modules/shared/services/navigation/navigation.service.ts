@@ -11,7 +11,6 @@ import { ContentService } from '../content/content.service';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { LoadingService } from '../loading/loading.service';
-import { NamespaceService } from '../namespace/namespace.service';
 
 const emptyNavigation: Navigation = {
   sections: [],
@@ -91,5 +90,31 @@ export class NavigationService {
       }
     }
     return -1;
+  }
+
+  redirect(namespace: string): string {
+    let routerLink = '';
+    const paths = this.activeUrl.value.split('/');
+    const module = paths[1];
+
+    switch (module) {
+      case 'workloads': {
+        routerLink = '/workloads/namespace/' + namespace;
+        break;
+      }
+      case 'overview': {
+        if (paths.length > 6) {
+          routerLink = '/overview/namespace/' + namespace;
+        } else {
+          paths[3] = namespace;
+          routerLink = paths.join('/');
+        }
+        break;
+      }
+      default: {
+        routerLink = this.activeUrl.value;
+      }
+    }
+    return routerLink;
   }
 }

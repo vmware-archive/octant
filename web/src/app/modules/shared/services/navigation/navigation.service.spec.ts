@@ -14,6 +14,7 @@ import { WebsocketServiceMock } from '../websocket/mock';
 import { Navigation } from '../../../sugarloaf/models/navigation';
 import { ContentService } from '../content/content.service';
 import { NAVIGATION_MOCK_DATA } from './navigation.test.data';
+import { BehaviorSubject } from 'rxjs';
 import { take } from 'rxjs/operators';
 
 describe('NavigationService', () => {
@@ -101,5 +102,47 @@ describe('NavigationService', () => {
           .toEqual('/' + path)
       );
     }
+
+    const routerLinkCases = [
+      { url: '/', namespace: 'test', result: '/' },
+      {
+        url: '/workloads/namespace/default',
+        namespace: 'test',
+        result: '/workloads/namespace/test',
+      },
+      {
+        url: '/cluster-overview',
+        namespace: 'test',
+        result: '/cluster-overview',
+      },
+      { url: '/plugin/path', namespace: 'test', result: '/plugin/path' },
+      {
+        url: '/overview/namespace/default',
+        namespace: 'test',
+        result: '/overview/namespace/test',
+      },
+      {
+        url: '/overview/namespace/default/workloads/deployments',
+        namespace: 'test',
+        result: '/overview/namespace/test/workloads/deployments',
+      },
+      {
+        url:
+          '/overview/namespace/default/workloads/deployments/nginx-deployment',
+        namespace: 'test',
+        result: '/overview/namespace/test',
+      },
+    ];
+
+    routerLinkCases.forEach((test, index) => {
+      it(`generates correct routerLink based on url ${test.url}`, inject(
+        [NavigationService],
+        (svc: NavigationService) => {
+          svc.activeUrl = new BehaviorSubject<string>(test.url);
+          const result = svc.redirect(test.namespace);
+          expect(test.result).toEqual(result);
+        }
+      ));
+    });
   });
 });

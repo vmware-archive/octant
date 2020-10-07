@@ -21,7 +21,7 @@
             [ngClass]="namespaceClass(namespace)"
             clrDropdownItem
             (click)="selectNamespace(namespace)"
-            [routerLink]="'/overview/namespace/' + namespace"
+            [routerLink]="routerLinkPath(namespace)"
           >
             {{ namespace }}
           </button>
