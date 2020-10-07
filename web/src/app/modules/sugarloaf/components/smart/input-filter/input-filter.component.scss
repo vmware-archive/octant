@@ -38,6 +38,10 @@
       & .clr-control-container {
         width: 100%;
 
+        .clr-input-wrapper {
+          max-width: initial;
+        }
+
         .clr-input-wrapper .clr-input {
           border-bottom-color: var(--input-border-color);
           color: white;

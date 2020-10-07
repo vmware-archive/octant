@@ -15,6 +15,10 @@
     --destinationActive-bg-color: #324f62;
   }
 
+  ::ng-deep .clr-input-wrapper {
+    max-width: initial;
+  }
+
   .filter-input {
     padding: 1rem 0.5rem;
     font-size: 22px;
