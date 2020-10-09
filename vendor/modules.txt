@@ -260,7 +260,7 @@ github.com/uber/jaeger-client-go/thrift-gen/zipkincore
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.0.1
 github.com/valyala/fasttemplate
-# go.opencensus.io v0.22.4
+# go.opencensus.io v0.22.5
 ## explicit
 go.opencensus.io
 go.opencensus.io/internal
