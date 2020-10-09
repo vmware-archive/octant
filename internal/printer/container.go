@@ -90,6 +90,11 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 	}
 	c := cc.container
 
+	title := "Container"
+	if cc.isInit {
+		title = "Init Container"
+	}
+
 	var containerStatus *corev1.ContainerStatus
 	if pod, ok := cc.parent.(*corev1.Pod); ok {
 		var err error
@@ -100,6 +105,11 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 			// no op
 			default:
 				return nil, errors.Wrapf(err, "get container status for %q", cc.container.Name)
+			}
+		}
+		for _, status := range pod.Status.EphemeralContainerStatuses {
+			if c.Name == status.Name {
+				title = "Ephemeral Container"
 			}
 		}
 	}
@@ -159,11 +169,6 @@ func (cc *ContainerConfiguration) Create() (*component.Summary, error) {
 		sections.Add("Volume Mounts", describeVolumeMounts(c))
 	}
 
-	title := "Container"
-	if cc.isInit {
-		title = "Init Container"
-	}
-
 	summary := component.NewSummary(fmt.Sprintf("%s %s", title, c.Name), sections...)
 
 	for _, actionFunc := range cc.actionGenerators {
@@ -221,6 +226,10 @@ func findContainerStatus(pod *corev1.Pod, name string, isInit bool) (*corev1.Con
 	statuses := pod.Status.ContainerStatuses
 	if isInit {
 		statuses = pod.Status.InitContainerStatuses
+	}
+
+	if len(pod.Status.EphemeralContainerStatuses) > 0 {
+		statuses = pod.Status.EphemeralContainerStatuses
 	}
 
 	for _, status := range statuses {

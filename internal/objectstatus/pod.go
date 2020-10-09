@@ -43,5 +43,10 @@ func pod(ctx context.Context, object runtime.Object, o store.Store) (ObjectStatu
 		component.NewText(pod.Status.Message),
 	}
 
+	if len(pod.Spec.EphemeralContainers) > 0 {
+		status.nodeStatus = component.NodeStatusWarning
+		status.Details = append(status.Details, component.NewText("Ephemeral container is running"))
+	}
+
 	return status, nil
 }

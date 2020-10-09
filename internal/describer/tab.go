@@ -130,7 +130,7 @@ func TerminalTab(ctx context.Context, object runtime.Object, options Options) (c
 	if isPod(object) {
 		logger := log.From(ctx)
 
-		terminalComponent, err := terminalviewer.ToComponent(ctx, object, logger)
+		terminalComponent, err := terminalviewer.ToComponent(ctx, object, logger, options.Dash)
 		if err != nil {
 			return nil, fmt.Errorf("create terminal viewer: %w", err)
 		}

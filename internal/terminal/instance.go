@@ -17,6 +17,7 @@ import (
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
@@ -44,9 +45,11 @@ type Instance interface {
 	Active() bool
 	SetExitMessage(string)
 	ExitMessage() string
+	StreamError() error
 	CreatedAt() time.Time
 
 	PTY() PTY
+	DiscoveryClient() discovery.DiscoveryInterface
 }
 
 type PTY interface {
@@ -144,8 +147,9 @@ func (p *pty) ReadStdout(buf []byte) (int, error) {
 type instance struct {
 	ctx context.Context
 
-	restClient rest.Interface
-	config     *rest.Config
+	restClient      rest.Interface
+	discoveryClient discovery.DiscoveryInterface
+	config          *rest.Config
 
 	sessionID string
 	key       store.Key
@@ -154,6 +158,7 @@ type instance struct {
 	container   string
 	command     string
 	exitMessage string
+	streamError error
 
 	scrollback bytes.Buffer
 
@@ -174,6 +179,12 @@ func NewTerminalInstance(ctx context.Context, client cluster.ClientInterface, lo
 		return nil, errors.Wrap(err, "fetching RESTClient")
 	}
 
+	discoveryClient, err := client.DiscoveryClient()
+	if err != nil {
+		cancelFn()
+		return nil, errors.Wrap(err, "fetching DiscoveryClient")
+	}
+
 	termPty := &pty{
 		ctx:       ctx,
 		cancelFn:  cancelFn,
@@ -185,15 +196,16 @@ func NewTerminalInstance(ctx context.Context, client cluster.ClientInterface, lo
 	}
 
 	t := &instance{
-		restClient: restClient,
-		config:     client.RESTConfig(),
-		ctx:        ctx,
-		key:        key,
-		createdAt:  time.Now(),
-		container:  container,
-		command:    command,
-		pty:        termPty,
-		logger:     logger,
+		restClient:      restClient,
+		discoveryClient: discoveryClient,
+		config:          client.RESTConfig(),
+		ctx:             ctx,
+		key:             key,
+		createdAt:       time.Now(),
+		container:       container,
+		command:         command,
+		pty:             termPty,
+		logger:          logger,
 	}
 
 	termPty.activityFunc = func() {
@@ -212,7 +224,7 @@ func (t *instance) terminalStream() error {
 
 	request.VersionedParams(&corev1.PodExecOptions{
 		Container: t.container,
-		Command:   parseCommand("/bin/sh"),
+		Command:   []string{t.command},
 		Stdin:     true,
 		Stdout:    true,
 		Stderr:    false,
@@ -233,14 +245,22 @@ func (t *instance) terminalStream() error {
 		Tty:               true,
 		TerminalSizeQueue: pty,
 	}
+
+	ch := make(chan error, 1)
 	go func() {
 		err := rc.Stream(opts)
 		if err != nil {
-			errors.Errorf("streaming: %+v", err)
+			ch <- err
 		}
 		t.Stop()
 	}()
-	return nil
+
+	select {
+	case <-time.After(200 * time.Millisecond):
+		return nil
+	case err := <-ch:
+		return err
+	}
 }
 
 func (t *instance) Resize(cols, rows uint16) {
@@ -309,6 +329,9 @@ func (t *instance) SetExitMessage(m string) { t.exitMessage = m }
 // ExitMessage returns the exit message for the terminal instance.
 func (t *instance) ExitMessage() string { return t.exitMessage }
 
+// StreamError returns an error if SPDYExecutor cannot start a stream.
+func (t *instance) StreamError() error { return t.streamError }
+
 // Active returns if the terminal is currently active.
 func (t *instance) Active() bool {
 	select {
@@ -334,6 +357,9 @@ func (t *instance) Scrollback() []byte { return t.scrollback.Bytes() }
 
 // ResetScrollback empties the scrollback buffer
 func (t *instance) ResetScrollback() { t.scrollback.Reset() }
+
+// DiscoveryClient returns the discovery client
+func (t *instance) DiscoveryClient() discovery.DiscoveryInterface { return t.discoveryClient }
 
 // Container returns the container name that the terminal is associated with.
 func (t *instance) Container() string { return t.container }
