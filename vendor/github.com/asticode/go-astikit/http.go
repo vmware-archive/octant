@@ -74,7 +74,7 @@ type HTTPSender struct {
 }
 
 // HTTPSenderRetryFunc is a function that decides whether to retry an HTTP request
-type HTTPSenderRetryFunc func(name string, resp *http.Response) bool
+type HTTPSenderRetryFunc func(resp *http.Response) error
 
 // HTTPSenderOptions represents HTTPSender options
 type HTTPSenderOptions struct {
@@ -105,12 +105,11 @@ func NewHTTPSender(o HTTPSenderOptions) (s *HTTPSender) {
 	return
 }
 
-func (s *HTTPSender) defaultHTTPRetryFunc(name string, resp *http.Response) bool {
+func (s *HTTPSender) defaultHTTPRetryFunc(resp *http.Response) error {
 	if resp.StatusCode >= http.StatusInternalServerError {
-		s.l.Debugf("astikit: invalid status code %d when sending %s", resp.StatusCode, name)
-		return true
+		return fmt.Errorf("astikit: invalid status code %d", resp.StatusCode)
 	}
-	return false
+	return nil
 }
 
 // Send sends a new *http.Request
@@ -148,13 +147,12 @@ func (s *HTTPSender) SendWithTimeout(req *http.Request, timeout time.Duration) (
 		tries++
 
 		// Send request
-		var retry bool
 		s.l.Debugf("astikit: sending %s", nr)
-		if resp, err = s.client.Do(req); err != nil {
+		var errDo error
+		if resp, errDo = s.client.Do(req); errDo != nil {
 			// If error is temporary, retry
-			if netError, ok := err.(net.Error); ok && netError.Temporary() {
-				s.l.Debugf("astikit: temporary error when sending %s", nr)
-				retry = true
+			if netError, ok := errDo.(net.Error); ok && netError.Temporary() {
+				err = errDo
 			} else {
 				err = fmt.Errorf("astikit: sending %s failed: %w", nr, err)
 				return
@@ -162,12 +160,14 @@ func (s *HTTPSender) SendWithTimeout(req *http.Request, timeout time.Duration) (
 		} else if err = req.Context().Err(); err != nil {
 			err = fmt.Errorf("astikit: request context failed: %w", err)
 			return
+		} else {
+			err = s.retryFunc(resp)
 		}
 
 		// Retry
-		if retry || s.retryFunc(nr, resp) {
+		if err != nil {
 			if retriesLeft > 1 {
-				s.l.Debugf("astikit: sleeping %s and retrying... (%d retries left)", s.retrySleep, retriesLeft-1)
+				s.l.Errorf("astikit: sending %s failed, sleeping %s and retrying... (%d retries left): %w", nr, s.retrySleep, retriesLeft-1, err)
 				time.Sleep(s.retrySleep)
 			}
 			continue
