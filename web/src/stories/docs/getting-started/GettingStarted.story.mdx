@@ -1,0 +1,81 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta
+  title="Docs/Getting Started/Installation"
+  parameters={{
+    viewMode: 'docs',
+    previewTabs: { canvas: { hidden: true } },
+    canvas: { disable: true },
+  }}
+/>
+
+# Getting Started
+
+## Installation
+
+### Package (Linux only)
+
+1. Download the `.deb` or `.rpm` from the [releases page](https://github.com/vmware-tanzu/octant/releases).
+
+2. Install with either `dpkg -i` or `rpm -i` respectively.
+
+###  Windows
+
+#### Chocolatey
+
+1. Install using chocolatey with the following one-liner:
+
+   ```sh
+   choco install octant --confirm
+   ```
+
+#### Scoop
+
+1. Add the [extras](https://github.com/lukesampson/scoop-extras) bucket.
+
+   ```sh
+   scoop bucket add extras
+   ```
+
+2. Install using scoop.
+
+   ```sh
+   scoop install octant
+   ```
+
+### macOS
+
+#### Homebrew
+
+1. Install using Homebrew with the following one-liner:
+
+   ```sh
+   brew install octant
+   ```
+
+### Download a Pre-built Binary (Linux, macOS, Windows)
+
+1. Open the [releases page](https://github.com/vmware-tanzu/octant/releases) from a browser and download the latest tarball or zip file.
+
+2. Extract the tarball or zip where `X.Y` is the release version:
+
+    ```sh
+    $ tar -xzvf ~/Downloads/octant_0.X.Y_Linux-64bit.tar.gz
+    octant_0.X.Y_Linux-64bit/README.md
+    octant_0.X.Y_Linux-64bit/octant
+    ```
+
+3. Verify it runs:
+
+    ```sh
+    $ ./octant_0.X.Y_Linux-64bit/octant version
+    ```
+
+## Nightly Builds
+
+Nightly builds of Octant are available for download.
+
+Please note that nightly builds maybe less stable than our tagged releases and are intended to allow early access to
+preview upcoming features and for plugin authors who want access to the latest plugin APIs.
+
+[Browse nightly builds](https://console.cloud.google.com/storage/browser/octant-nightlies)

@@ -10,8 +10,10 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from '../src/app/app-routing.module';
 import { setCompodocJson } from '@storybook/addon-docs/angular';
 import docJson from '../documentation.json';
-import { themes } from '@storybook/theming';
 import { MonacoEditorModule } from 'ng-monaco-editor';
+import { windowProvider, WindowToken } from '../src/app/window';
+
+import theme from './theme';
 
 setCompodocJson(docJson);
 
@@ -38,6 +40,7 @@ addDecorator(
     ],
     providers: [
       InitService,
+      { provide: WindowToken, useFactory: windowProvider },
       {
         provide: APP_INITIALIZER,
         useFactory: initService => () => initService.init(),
@@ -50,12 +53,29 @@ addDecorator(
 
 export const parameters = {
   docs: {
-    theme: themes.light,
+    theme: theme,
   },
   options: {
     storySort: (a, b) => {
       // Show component stories on top
-      return a[1].id.localeCompare(b[1].id, {
+      let leftId = a[1].id;
+      let rightId = b[1].id;
+
+      if (leftId.startsWith('docs')) {
+        leftId = '1' + leftId;
+        if (leftId.includes('intro')) {
+          leftId = '0' + leftId;
+        }
+      }
+
+      if (rightId.startsWith('docs')) {
+        rightId = '1' + rightId;
+        if (rightId.includes('intro')) {
+          rightId = '0' + rightId;
+        }
+      }
+
+      return leftId.localeCompare(rightId, {
         numeric: true,
         ignorePunctuation: true,
       });
