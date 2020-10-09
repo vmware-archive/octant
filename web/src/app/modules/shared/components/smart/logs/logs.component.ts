@@ -82,6 +82,7 @@ export class LogsComponent
     this.startStream();
     this.updateSelectedCount();
   }
+
   stopStreamIfStarted(): void {
     if (this.logStream) {
       this.containerLogs = [];
@@ -89,6 +90,7 @@ export class LogsComponent
       this.logStream = null;
     }
   }
+
   onContainerChange(containerSelection: string): void {
     this.selectedContainer = containerSelection;
     this.stopStreamIfStarted();

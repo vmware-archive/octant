@@ -4,7 +4,7 @@
 
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { WebsocketService } from '../websocket/websocket.service';
+import { WebsocketService } from '../../../../data/services/websocket/websocket.service';
 import { take } from 'rxjs/operators';
 
 export const KubeContextMessage = 'event.octant.dev/kubeConfig';

@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { LogEntry } from 'src/app/modules/shared/models/content';
 import getAPIBase from '../services/common/getAPIBase';
-import { WebsocketService } from '../services/websocket/websocket.service';
+import { WebsocketService } from '../../../data/services/websocket/websocket.service';
 
 const API_BASE = getAPIBase();
 

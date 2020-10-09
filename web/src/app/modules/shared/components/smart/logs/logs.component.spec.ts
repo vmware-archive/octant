@@ -8,6 +8,9 @@ import { LogEntry, LogsView } from 'src/app/modules/shared/models/content';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 import { AnsiPipe } from '../../../pipes/ansiPipe/ansi.pipe';
+import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
+import { WebsocketServiceMock } from '../../../../../data/services/websocket/mock';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 /**
  * Adds 15 logs to the provided list.
@@ -34,6 +37,7 @@ describe('LogsComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [LogsComponent, AnsiPipe],
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
     }).compileComponents();
   }));
 

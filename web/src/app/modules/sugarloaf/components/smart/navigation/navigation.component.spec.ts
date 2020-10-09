@@ -8,6 +8,7 @@ import { NamespaceComponent } from '../namespace/namespace.component';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ThemeSwitchButtonComponent } from '../theme-switch/theme-switch-button.component';
 import { MonacoEditorConfig, MonacoProviderService } from 'ng-monaco-editor';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('NavigationComponent', () => {
   let component: NavigationComponent;
@@ -15,7 +16,11 @@ describe('NavigationComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      providers: [MonacoProviderService, MonacoEditorConfig],
+      providers: [
+        MonacoProviderService,
+        MonacoEditorConfig,
+        { provide: WindowToken, useFactory: windowProvider },
+      ],
       imports: [NgSelectModule],
       declarations: [
         NavigationComponent,

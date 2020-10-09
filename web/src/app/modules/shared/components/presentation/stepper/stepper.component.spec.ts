@@ -6,7 +6,7 @@ import {
   BrowserAnimationsModule,
   NoopAnimationsModule,
 } from '@angular/platform-browser/animations';
-import { WebsocketService } from '../../../services/websocket/websocket.service';
+import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
 import { anything, deepEqual, instance, mock, verify } from 'ts-mockito';
 
 describe('StepperComponent', () => {

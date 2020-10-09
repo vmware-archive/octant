@@ -4,7 +4,7 @@ export const ELEMENTS_STYLE = [
   {
     selector: 'node',
     css: {
-      shape: (node) => nodeShape(node),
+      shape: node => nodeShape(node),
       width: 'data(width)',
       height: 'data(height)',
       content: 'data(label)',
@@ -13,13 +13,13 @@ export const ELEMENTS_STYLE = [
       'border-color': 'black',
       'border-width': '2px',
       'border-style': 'solid',
-      "fontSize": 16,
-      'ghost': 'no',
+      fontSize: 16,
+      ghost: 'no',
       'text-wrap': 'wrap',
       'text-valign': 'top',
       'text-halign': 'center',
       'text-margin-y': 20,
-      'padding': '10px',
+      padding: '10px',
     },
   },
 
@@ -60,7 +60,7 @@ export const ELEMENTS_STYLE = [
   {
     selector: '.pod',
     css: {
-      'ghost': 'yes',
+      ghost: 'yes',
       'ghost-opacity': 1,
       'ghost-offset-x': 10,
       'ghost-offset-y': 10,
@@ -115,11 +115,11 @@ export const ELEMENTS_STYLE = [
   {
     selector: '[owner]',
     css: {
-      "visibility": "hidden",
+      visibility: 'hidden',
     },
   },
 ];
 
-function nodeShape(node):NodeShape {
-  return(node.data('shape'))
+function nodeShape(node): NodeShape {
+  return node.data('shape');
 }

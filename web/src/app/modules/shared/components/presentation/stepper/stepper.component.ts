@@ -6,7 +6,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { WebsocketService } from '../../../services/websocket/websocket.service';
+import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 interface Choice {

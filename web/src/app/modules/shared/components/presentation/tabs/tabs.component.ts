@@ -17,7 +17,7 @@ import {
 } from 'src/app/modules/shared/models/content';
 import { SliderService } from 'src/app/modules/shared/slider/slider.service';
 import { ViewService } from '../../../services/view/view.service';
-import { WebsocketService } from '../../../services/websocket/websocket.service';
+import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
 
 interface Tab {
   name: string;

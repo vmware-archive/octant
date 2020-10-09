@@ -9,6 +9,7 @@ import {
   HoverStatus,
 } from './heptagon-grid-row.component';
 import { HeptagonComponent } from '../../smart/heptagon/heptagon.component';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('HeptagonGridRowComponent', () => {
   let component: HeptagonGridRowComponent;
@@ -17,6 +18,7 @@ describe('HeptagonGridRowComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [HeptagonGridRowComponent, HeptagonComponent],
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
     }).compileComponents();
   }));
 

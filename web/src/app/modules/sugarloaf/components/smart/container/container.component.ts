@@ -6,7 +6,7 @@
 
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Navigation } from '../../../models/navigation';
-import { WebsocketService } from '../../../../shared/services/websocket/websocket.service';
+import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
 import { IconService } from '../../../../shared/services/icon/icon.service';
 import { Preferences } from '../../../../shared/models/preference';
 

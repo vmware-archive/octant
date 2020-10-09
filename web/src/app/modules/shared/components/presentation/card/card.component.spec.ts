@@ -13,6 +13,9 @@ import { ViewService } from '../../../services/view/view.service';
 import { viewServiceStub } from 'src/app/testing/view-service.stub';
 import { SharedModule } from '../../../shared.module';
 import { FormComponent } from '../form/form.component';
+import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
+import { WebsocketServiceMock } from '../../../../../data/services/websocket/mock';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('CardComponent', () => {
   let component: CardComponent;
@@ -35,6 +38,7 @@ describe('CardComponent', () => {
       providers: [
         { provide: FormBuilder, useValue: formBuilder },
         { provide: ViewService, useValue: viewServiceStub },
+        { provide: WindowToken, useFactory: windowProvider },
       ],
     }).compileComponents();
   }));

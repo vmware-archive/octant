@@ -5,7 +5,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { WebsocketService } from '../websocket/websocket.service';
+import { WebsocketService } from '../../../../data/services/websocket/websocket.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Content, ContentResponse } from '../../models/content';
 import { Params, Router } from '@angular/router';

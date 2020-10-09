@@ -6,6 +6,9 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { OverflowLabelsComponent } from './overflow-labels.component';
 import { By } from '@angular/platform-browser';
 import { LabelFilterService } from '../../../services/label-filter/label-filter.service';
+import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
+import { WebsocketServiceMock } from '../../../../../data/services/websocket/mock';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('OverflowLabelsComponent', () => {
   let component: OverflowLabelsComponent;
@@ -14,7 +17,10 @@ describe('OverflowLabelsComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [OverflowLabelsComponent],
-      providers: [LabelFilterService],
+      providers: [
+        LabelFilterService,
+        { provide: WindowToken, useFactory: windowProvider },
+      ],
     }).compileComponents();
   }));
 

@@ -9,7 +9,8 @@ import {
 import { View } from '../../models/content';
 
 @Directive()
-export abstract class AbstractViewComponent<T> // tslint:disable-line
+// tslint:disable-next-line:directive-class-suffix
+export abstract class AbstractViewComponent<T>
   implements OnInit, AfterViewInit {
   v: T;
 

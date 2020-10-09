@@ -6,6 +6,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ModalComponent } from './modal.component';
 import { SharedModule } from '../../../shared.module';
 import { ModalService } from '../../../services/modal/modal.service';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('ModalComponent', () => {
   let component: ModalComponent;
@@ -15,7 +16,10 @@ describe('ModalComponent', () => {
     TestBed.configureTestingModule({
       imports: [SharedModule],
       declarations: [ModalComponent],
-      providers: [{ provide: ModalService }],
+      providers: [
+        { provide: ModalService },
+        { provide: WindowToken, useFactory: windowProvider },
+      ],
     }).compileComponents();
   }));
 
