@@ -59,6 +59,10 @@
 .module-tabs-labels {
   width: 76px;
   margin-right: 0px;
+
+  ::ng-deep ul {
+    padding-top: 0.4rem;
+  }
 }
 
 .button-tool.active,
@@ -189,7 +193,7 @@
     flex-direction: column;
     flex-grow: 1;
     overflow-y: hidden;
-    padding-top: 0.6rem;
+    padding-top: 0.4rem;
     border-left: 1px solid rgba(173, 187, 196, 0.3);
   }
 

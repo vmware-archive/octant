@@ -34,13 +34,16 @@ const emptyNavigation: Navigation = {
 export class NavigationComponent implements OnInit, OnDestroy {
   collapsed = false;
   showLabels = true;
-  navExpandedState: any;
   selectedItem: Selection = { module: 0, index: -1 };
   flyoutIndex = -1;
   navigation = emptyNavigation;
   modules: Module[] = [];
+  currentModule: Module;
 
-  private navigationSubscription: Subscription;
+  private subscriptionModules: Subscription;
+  private subscriptionSelectedItem: Subscription;
+  private subscriptionCollapsed: Subscription;
+  private subscriptionShowLabels: Subscription;
 
   constructor(
     private iconService: IconService,
@@ -51,35 +54,28 @@ export class NavigationComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.navigationSubscription = this.navigationService.modules.subscribe(
+    this.subscriptionModules = this.navigationService.modules.subscribe(
       modules => {
         this.modules = modules;
+        this.currentModule = this.modules[this.selectedItem.module];
         this.cd.markForCheck();
       }
     );
 
-    this.navigationSubscription = this.navigationService.selectedItem.subscribe(
+    this.subscriptionSelectedItem = this.navigationService.selectedItem.subscribe(
       selection => {
         if (
           this.selectedItem.index !== selection.index ||
           this.selectedItem.module !== selection.module
         ) {
           this.selectedItem = selection;
+          this.currentModule = this.modules[this.selectedItem.module];
           this.cd.markForCheck();
         }
       }
     );
 
-    this.navigationSubscription = this.navigationService.expandedState.subscribe(
-      state => {
-        if (this.navExpandedState !== state) {
-          this.navExpandedState = state;
-          this.cd.markForCheck();
-        }
-      }
-    );
-
-    this.navigationSubscription = this.navigationService.collapsed.subscribe(
+    this.subscriptionCollapsed = this.navigationService.collapsed.subscribe(
       col => {
         if (this.collapsed !== col) {
           this.collapsed = col;
@@ -88,7 +84,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
       }
     );
 
-    this.navigationSubscription = this.navigationService.showLabels.subscribe(
+    this.subscriptionShowLabels = this.navigationService.showLabels.subscribe(
       col => {
         if (this.showLabels !== col) {
           this.showLabels = col;
@@ -101,10 +97,16 @@ export class NavigationComponent implements OnInit, OnDestroy {
   @HostListener('window:keyup', ['$event'])
   keyEvent(event: KeyboardEvent) {
     if (event.key === 'T' && event.ctrlKey) {
+      event.preventDefault();
+      event.cancelBubble = true;
       this.themeService.switchTheme();
     } else if (event.key === 'N' && event.ctrlKey) {
+      event.preventDefault();
+      event.cancelBubble = true;
       this.updateNavCollapsed(!this.collapsed);
     } else if (event.key === 'L' && event.ctrlKey) {
+      event.preventDefault();
+      event.cancelBubble = true;
       this.navigationService.showLabels.next(!this.showLabels);
     }
   }
@@ -115,25 +117,11 @@ export class NavigationComponent implements OnInit, OnDestroy {
       : index.toString();
   }
 
-  getSelectedSections() {
-    const currentModule = this.modules[this.selectedItem.module];
-    return currentModule ? currentModule.children : [];
-  }
-
-  getModuleTitle() {
-    const currentModule = this.modules[this.selectedItem.module];
-    return currentModule ? currentModule.title + ' Module' : '';
-  }
-
-  getModuleDescription() {
-    const currentModule = this.modules[this.selectedItem.module];
-    return currentModule ? currentModule.description : '';
-  }
-
   ngOnDestroy(): void {
-    if (this.navigationSubscription) {
-      this.navigationSubscription.unsubscribe();
-    }
+    this.subscriptionModules.unsubscribe();
+    this.subscriptionSelectedItem.unsubscribe();
+    this.subscriptionCollapsed.unsubscribe();
+    this.subscriptionShowLabels.unsubscribe();
   }
 
   identifyNavigationItem(index: number, item: NavigationChild): string {
@@ -153,71 +141,41 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   openPopup(index: number) {
-    this.clearExpandedState();
     this.setNavState(true, index);
     this.setLastSelection(index);
   }
 
   closePopups(index) {
-    this.clearExpandedState();
     this.flyoutIndex = -1;
     this.setLastSelection(index);
   }
 
-  setExpandedState(index, state) {
-    this.navExpandedState[index] = state;
-    this.navigationService.expandedState.next(this.navExpandedState);
-  }
-
-  clearExpandedState() {
-    this.navExpandedState = {};
-    this.navigationService.expandedState.next(this.navExpandedState);
-  }
-
   setNavState($event, state: number) {
-    if (this.collapsed) {
+    if ($event) {
       this.setLastSelection(state);
-    } else {
-      this.setExpandedState(state, $event);
-      if ($event && this.selectedItem.index !== state) {
-        // collapse previously selected group
-        if (this.selectedItem) {
-          this.setExpandedState(this.selectedItem.index, false);
-        }
-        this.setLastSelection(state);
-      }
     }
   }
 
   shouldExpand(index: number) {
     if (this.collapsed) {
       return index === this.flyoutIndex;
-    } else if (index.toString() in this.navExpandedState) {
-      return this.navExpandedState[index];
-    }
-    return false;
+    } else return index === this.selectedItem.index;
   }
 
   updateNavCollapsed(value: boolean): void {
-    this.collapsed = value;
     this.navigationService.collapsed.next(value);
-    this.setExpandedState(this.selectedItem.index, false);
   }
 
   setLastSelection(index) {
-    this.selectedItem.index = index;
-    this.navigationService.selectedItem.next({
-      module: this.selectedItem.module,
-      index,
-    });
+    if (this.selectedItem.index !== index) {
+      this.navigationService.selectedItem.next({
+        module: this.selectedItem.module,
+        index,
+      });
+    }
   }
 
   setModule(module: number): void {
-    if (this.selectedItem) {
-      this.setExpandedState(this.selectedItem.index, false);
-    }
-
-    this.selectedItem.module = module;
     this.navigationService.selectedItem.next({
       module,
       index: this.selectedItem.index,

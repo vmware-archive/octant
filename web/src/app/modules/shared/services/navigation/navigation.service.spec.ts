@@ -76,6 +76,11 @@ describe('NavigationService', () => {
           if (section.children) {
             section.children.map(child => {
               verifySelection(child.path, svc, index, 'child');
+              if (child.children) {
+                child.children.map(grandchild => {
+                  verifySelection(grandchild.path, svc, index, 'grandchild');
+                });
+              }
             });
           }
         });

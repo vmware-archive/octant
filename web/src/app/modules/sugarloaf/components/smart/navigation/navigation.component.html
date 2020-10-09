@@ -46,7 +46,7 @@
     }">
     <ng-container
       *ngFor="
-        let section of getSelectedSections();
+        let section of currentModule?.children;
         let i = index;
         trackBy: identifyNavigationItem
       "
@@ -92,7 +92,7 @@
             >
               <a
                 [routerLink]="formatPath(category.path)"
-                [routerLinkActiveOptions]="{ exact: true }"
+                [routerLinkActiveOptions]="{ exact: false }"
                 routerLinkActive="active"
                 class="flyout-item nav-link"
                 (click)="setNavState(false, i)"
@@ -136,7 +136,7 @@
                 <a
                   clrVerticalNavLink
                   [routerLink]="formatPath(category.path)"
-                  [routerLinkActiveOptions]="{ exact: true }"
+                  [routerLinkActiveOptions]="{ exact: false }"
                   routerLinkActive="active"
                 >
                   <clr-icon
@@ -155,7 +155,7 @@
             clrVerticalNavLink
             (click)="closePopups(i)"
             [routerLink]="formatPath(section.path)"
-            [routerLinkActiveOptions]="{ exact: true }"
+            [routerLinkActiveOptions]="{ exact: i==0 }"
             routerLinkActive="active"
           >
             <clr-icon *ngIf="section.iconName"
@@ -177,11 +177,11 @@
           <div class="clr-col-12">
             <div class="card">
               <div class="card-header">
-                {{ getModuleTitle() }}
+                {{ currentModule?.title }}
               </div>
               <div class="card-block">
                 <div class="card-text">
-                {{ getModuleDescription() }}
+                {{ currentModule?.description }}
                 </div>
               </div>
             </div>

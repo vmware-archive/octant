@@ -40,7 +40,6 @@ export class NavigationService {
   current = new BehaviorSubject<Navigation>(emptyNavigation);
   modules = new BehaviorSubject<Module[]>([]);
   selectedItem = new BehaviorSubject<Selection>({ module: 0, index: -1 });
-  public expandedState: BehaviorSubject<any> = new BehaviorSubject<any>({});
   public collapsed: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
     false
   );
@@ -84,17 +83,19 @@ export class NavigationService {
       );
     }
 
-    if (
-      (suggested.index >= 0 &&
-        suggested.module !== this.selectedItem.value.module) ||
-      suggested.index !== this.selectedItem.value.index
-    ) {
-      this.selectedItem.next(suggested);
+    if (suggested.index < 0) {
+      suggested.index = 0;
     }
+
+    this.selectedItem.next(suggested);
   }
 
   indexFromUrl(url: string): Selection {
     const strippedUrl = this.stripUrl(url);
+    if (strippedUrl.length === 0) {
+      return { module: 1, index: 0 };
+    }
+
     for (const [moduleIndex, module] of this.modules.value.entries()) {
       const modulePath = this.stripUrl(module.path);
 
@@ -107,9 +108,7 @@ export class NavigationService {
           }
           if (child.children) {
             for (const grandchild of child.children) {
-              if (strippedUrl === grandchild.path) {
-                this.expandedState[childIndex] = true;
-                this.expandedState.next(this.expandedState);
+              if (this.comparePaths(strippedUrl, grandchild.path)) {
                 return { module: moduleIndex, index: childIndex };
               }
             }
@@ -120,12 +119,21 @@ export class NavigationService {
     return { module: 0, index: -1 };
   }
 
+  comparePaths(url: string, path: string): boolean {
+    if (path.indexOf('custom-resources') > 0) {
+      // custom resources can have version added to URL
+      return url.startsWith(path);
+    }
+    return url === path;
+  }
+
   stripUrl(url: string): string {
     return url.startsWith('/') ? url.substring(1) : url;
   }
 
   createModules(sections: any[]) {
     const modules: Module[] = [];
+    let pluginsIndex = 3;
 
     sections.forEach((section, index) => {
       if (section.module && section.module.length > 0) {
@@ -139,12 +147,16 @@ export class NavigationService {
         });
       }
     });
+
     modules.forEach((module, index) => {
       module.children = [];
       module.endIndex =
         index === modules.length - 1
           ? sections.length - 1
           : modules[index + 1].startIndex;
+      if (module.name === 'configuration') {
+        pluginsIndex = index;
+      }
       if (sections[module.startIndex].children) {
         if (module.path !== sections[module.startIndex].children[0].path) {
           const first = {
@@ -166,6 +178,9 @@ export class NavigationService {
         }
       }
     });
+    if (modules.length > 0) {
+      modules.push(modules.splice(pluginsIndex, 1)[0]);
+    }
     this.modules.next(modules);
   }
 

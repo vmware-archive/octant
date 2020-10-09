@@ -202,6 +202,24 @@ export const NAVIGATION_MOCK_DATA: NavigationChild[] = [
         isLoading: false,
       },
       {
+        title: 'resource1',
+        path: 'cluster-overview/custom-resources/resource1',
+        children: [
+          {
+            title: 'First',
+            path: 'cluster-overview/custom-resources/resource1/v1alpha',
+            isLoading: false,
+          },
+          {
+            title: 'Second',
+            path: 'cluster-overview/custom-resources/resource1/v1/more/info',
+            isLoading: false,
+          },
+        ],
+        iconName: 'crd',
+        isLoading: false,
+      },
+      {
         title:
           'antreacontrollerinfos.clusterinformation.antrea.tanzu.vmware.com',
         path:
@@ -368,6 +386,15 @@ export const expectedSelection = {
   'cluster-overview': { module: 2, index: 0 },
   'cluster-overview/namespaces': { module: 2, index: 1 },
   'cluster-overview/custom-resources': { module: 2, index: 2 },
+  'cluster-overview/custom-resources/resource1': { module: 2, index: 2 },
+  'cluster-overview/custom-resources/resource1/v1alpha': {
+    module: 2,
+    index: 2,
+  },
+  'cluster-overview/custom-resources/resource1/v1/more/info': {
+    module: 2,
+    index: 2,
+  },
   'cluster-overview/custom-resources/antreacontrollerinfos.clusterinformation.antrea.tanzu.vmware.com': {
     module: 2,
     index: 2,
@@ -379,9 +406,10 @@ export const expectedSelection = {
   'cluster-overview/storage': { module: 2, index: 5 },
   'cluster-overview/storage/persistent-volumes': { module: 2, index: 5 },
   'cluster-overview/port-forward': { module: 2, index: 6 },
-  'configuration/plugins': { module: 3, index: 0 },
-  'argo-ui': { module: 4, index: 0 },
-  'plugin-name': { module: 5, index: 0 },
-  'plugin-name/nested-once': { module: 5, index: 1 },
-  openstack: { module: 6, index: 0 },
+  'configuration/plugins': { module: 6, index: 0 },
+  'argo-ui': { module: 3, index: 0 },
+  'plugin-name': { module: 4, index: 0 },
+  'plugin-name/nested-once': { module: 4, index: 1 },
+  'plugin-name/nested-once/nested-twice': { module: 4, index: 1 },
+  openstack: { module: 5, index: 0 },
 };

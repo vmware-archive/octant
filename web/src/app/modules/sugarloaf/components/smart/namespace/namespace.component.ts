@@ -56,20 +56,16 @@ export class NamespaceComponent implements OnInit, OnDestroy {
       }
     );
 
-    this.navigationService.modules.subscribe(
-      modules => {
-        this.modules = modules;
-        this.cdr.detectChanges();
-      }
-    );
+    this.navigationService.modules.subscribe(modules => {
+      this.modules = modules;
+      this.cdr.detectChanges();
+    });
 
-    this.navigationService.selectedItem.subscribe(
-      selection => {
-        this.selectedItem = selection;
-        this.showDropdown = this.hasDropdown();
-        this.cdr.detectChanges();
-      }
-    );
+    this.navigationService.selectedItem.subscribe(selection => {
+      this.selectedItem = selection;
+      this.showDropdown = this.hasDropdown();
+      this.cdr.detectChanges();
+    });
     this.navigationService.activeUrl.subscribe(url => {
       this.activeUrl = url;
       this.cdr.detectChanges();
