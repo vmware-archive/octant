@@ -9,6 +9,7 @@ import {
   MonacoEditorModule,
   MonacoProviderService,
 } from 'ng-monaco-editor';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('EditorComponent', () => {
   let component: EditorComponent;
@@ -16,7 +17,11 @@ describe('EditorComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      providers: [MonacoProviderService, MonacoEditorConfig],
+      providers: [
+        MonacoProviderService,
+        MonacoEditorConfig,
+        { provide: WindowToken, useFactory: windowProvider },
+      ],
       imports: [
         MonacoEditorModule.forRoot({
           baseUrl: '',

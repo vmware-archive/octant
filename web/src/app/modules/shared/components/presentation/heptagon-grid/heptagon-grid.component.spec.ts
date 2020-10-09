@@ -10,6 +10,7 @@ import {
 } from '../heptagon-grid-row/heptagon-grid-row.component';
 import { HeptagonLabelComponent } from '../heptagon-label/heptagon-label.component';
 import { HeptagonComponent } from '../../smart/heptagon/heptagon.component';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('HeptagonGridComponent', () => {
   let component: HeptagonGridComponent;
@@ -23,6 +24,7 @@ describe('HeptagonGridComponent', () => {
         HeptagonLabelComponent,
         HeptagonComponent,
       ],
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
     }).compileComponents();
   }));
 

@@ -5,6 +5,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TimestampComponent } from './timestamp.component';
 import { SharedModule } from '../../../shared.module';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('TimestampComponent', () => {
   let component: TimestampComponent;
@@ -13,6 +14,7 @@ describe('TimestampComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [SharedModule],
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
     }).compileComponents();
   }));
 

@@ -11,7 +11,7 @@ import {
   NotifierSession,
   NotifierSignalType,
 } from '../../notifier/notifier.service';
-import { WebsocketService } from '../websocket/websocket.service';
+import { WebsocketService } from '../../../../data/services/websocket/websocket.service';
 import { take } from 'rxjs/operators';
 
 export interface UpdateNamespacesMessage {

@@ -18,7 +18,7 @@ import {
 } from 'src/app/modules/shared/terminals/terminals.service';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { TerminalView } from 'src/app/modules/shared/models/content';
-import { WebsocketService } from '../../../services/websocket/websocket.service';
+import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
 @Component({

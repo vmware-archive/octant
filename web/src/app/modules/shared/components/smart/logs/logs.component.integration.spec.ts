@@ -18,6 +18,7 @@ import getAPIBase from 'src/app/modules/shared/services/common/getAPIBase';
 import { PodLogsService } from 'src/app/modules/shared/pod-logs/pod-logs.service';
 import { LogsComponent } from './logs.component';
 import { AnsiPipe } from '../../../pipes/ansiPipe/ansi.pipe';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 const API_BASE = getAPIBase();
 
@@ -75,7 +76,10 @@ describe('LogsComponent <-> PodsLogsService', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [LogsComponent, AnsiPipe],
-      providers: [PodLogsService],
+      providers: [
+        PodLogsService,
+        { provide: WindowToken, useFactory: windowProvider },
+      ],
     }).compileComponents();
   }));
 

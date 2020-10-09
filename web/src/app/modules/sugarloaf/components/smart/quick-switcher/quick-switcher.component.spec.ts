@@ -5,6 +5,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DefaultPipe } from '../../../../shared/pipes/default/default.pipe';
 import { QuickSwitcherComponent } from './quick-switcher.component';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('QuickSwitcherComponent', () => {
   let component: QuickSwitcherComponent;
@@ -13,6 +14,7 @@ describe('QuickSwitcherComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [QuickSwitcherComponent, DefaultPipe],
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
     }).compileComponents();
   }));
 

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   BehaviorSubject,
@@ -15,9 +15,10 @@ import {
   NotifierService,
   NotifierSession,
   NotifierSignalType,
-} from '../../notifier/notifier.service';
+} from '../../../modules/shared/notifier/notifier.service';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { delay, retryWhen, take, tap } from 'rxjs/operators';
+import { WindowToken } from '../../../window';
 
 interface WebsocketPayload {
   type: string;
@@ -40,17 +41,6 @@ interface Alert {
   expiration?: string;
 }
 
-const websocketURI = (): string => {
-  const loc = window.location;
-  let newURI = 'ws:';
-  if (loc.protocol === 'https:') {
-    newURI = 'wss:';
-  }
-  newURI += '//' + loc.host;
-  newURI += loc.pathname + 'api/v1/stream';
-  return newURI;
-};
-
 @Injectable({
   providedIn: 'root',
 })
@@ -65,7 +55,11 @@ export class WebsocketService implements BackendService {
 
   private router: Router;
 
-  constructor(notifierService: NotifierService, router: Router) {
+  constructor(
+    notifierService: NotifierService,
+    router: Router,
+    @Inject(WindowToken) private window: Window
+  ) {
     this.notifierSession = notifierService.createSession();
     this.router = router;
 
@@ -150,7 +144,7 @@ export class WebsocketService implements BackendService {
   }
 
   private createWebSocket() {
-    const uri = websocketURI();
+    const uri = this.websocketURI();
     return new Observable(observer => {
       try {
         const subject = webSocket({
@@ -204,5 +198,16 @@ export class WebsocketService implements BackendService {
         console.error('parse websocket', err, data);
       }
     }
+  }
+
+  websocketURI(): string {
+    const loc = this.window.location;
+    let newURI = 'ws:';
+    if (loc.protocol === 'https:') {
+      newURI = 'wss:';
+    }
+    newURI += '//' + loc.host;
+    newURI += loc.pathname + 'api/v1/stream';
+    return newURI;
   }
 }

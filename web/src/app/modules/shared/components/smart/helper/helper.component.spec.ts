@@ -7,6 +7,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HelperComponent } from './helper.component';
 import { HelperService } from '../../../services/helper/helper.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('HelperComponent', () => {
   let component: HelperComponent;
@@ -15,7 +16,10 @@ describe('HelperComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [HelperComponent],
-      providers: [{ provide: HelperService }],
+      providers: [
+        { provide: HelperService },
+        { provide: WindowToken, useFactory: windowProvider },
+      ],
       imports: [BrowserAnimationsModule],
     }).compileComponents();
   }));

@@ -22,20 +22,22 @@ import { ContextSelectorComponent } from '../../../../shared/components/smart/co
 import { DefaultPipe } from '../../../../shared/pipes/default/default.pipe';
 import { FilterTextPipe } from '../../../pipes/filtertext/filtertext.pipe';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { WebsocketService } from '../../../../shared/services/websocket/websocket.service';
-import { WebsocketServiceMock } from '../../../../shared/services/websocket/mock';
+import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
+import { WebsocketServiceMock } from '../../../../../data/services/websocket/mock';
 import { ClarityIcons } from '@clr/icons';
 import { ThemeSwitchButtonComponent } from '../theme-switch/theme-switch-button.component';
 import { QuickSwitcherComponent } from '../quick-switcher/quick-switcher.component';
 import { MonacoEditorConfig, MonacoProviderService } from 'ng-monaco-editor';
 import { UploaderComponent } from '../uploader/uploader.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       providers: [
         { provide: WebsocketService, useClass: WebsocketServiceMock },
+        { provide: WindowToken, useFactory: windowProvider },
         { provide: window, useValue: ClarityIcons },
         ClrPopoverToggleService,
         MonacoProviderService,

@@ -5,7 +5,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Router } from '@angular/router';
-import { WebsocketService } from '../websocket/websocket.service';
+import { WebsocketService } from '../../../../data/services/websocket/websocket.service';
 
 export interface BuildInfoMessage {
   version: string;

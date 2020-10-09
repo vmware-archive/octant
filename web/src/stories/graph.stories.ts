@@ -1,6 +1,6 @@
-import {storiesOf} from '@storybook/angular';
-import {ELEMENTS_STYLE} from "./graph.data";
-import {object} from "@storybook/addon-knobs";
+import { storiesOf } from '@storybook/angular';
+import { ELEMENTS_STYLE } from './graph.data';
+import { object } from '@storybook/addon-knobs';
 import {
   BaseShape,
   Deployment,
@@ -11,9 +11,14 @@ import {
   Secret,
   Service,
   ServiceAccount,
-} from "../app/modules/shared/components/presentation/cytoscape2/shape";
+} from '../app/modules/shared/components/presentation/cytoscape2/shape';
 
-const layout = {name: 'cose-bilkent', padding: 30, fit: false, animateFilter: () => false};
+const layout = {
+  name: 'cose-bilkent',
+  padding: 30,
+  fit: false,
+  animateFilter: () => false,
+};
 
 const zoom = {
   min: 0.1,
@@ -44,7 +49,10 @@ const shapes: BaseShape[] = [
 const style = ELEMENTS_STYLE;
 
 storiesOf('Other/Resources', module).add('Resource View', () => {
-  const eles = object('elements', shapes.map(shape => shape.toNode(shapes)));
+  const eles = object(
+    'elements',
+    shapes.map(shape => shape.toNode(shapes))
+  );
 
   return {
     props: {
@@ -67,5 +75,5 @@ storiesOf('Other/Resources', module).add('Resource View', () => {
           </div>
       </div>
       `,
-  }
+  };
 });
