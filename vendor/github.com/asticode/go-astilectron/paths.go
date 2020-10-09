@@ -136,6 +136,8 @@ func ElectronDownloadSrc(os, arch, versionElectron string) string {
 		a = "x64"
 	} else if strings.ToLower(arch) == "arm" && o == "linux" {
 		a = "armv7l"
+	} else if strings.ToLower(arch) == "arm64" && o == "linux" {
+		a = "arm64"
 	}
 
 	// Return url
