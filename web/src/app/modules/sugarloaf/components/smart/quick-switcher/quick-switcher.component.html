@@ -22,22 +22,24 @@
           <th>Searching Namespaces</th>
         </tr>
       </thead>
-      <tbody>
-        <tr
-          *ngFor="
-            let destination of filteredDestinations;
-            trackBy: identifyDestinationItem;
-            index as index
-          "
-          (mouseover)="activeIndex = index"
-          (click)="onEnter($event)"
-          [class.destination-active]="index == activeIndex"
-          [attr.aria-label]="destination.title"
-        >
-          <td>{{ destination.title }}</td>
-          <td>{{ destination.type }}</td>
-        </tr>
-      </tbody>
+      <overlay-scrollbars>
+        <tbody>
+          <tr
+            *ngFor="
+              let destination of filteredDestinations;
+              trackBy: identifyDestinationItem;
+              index as index
+            "
+            (mouseover)="activeIndex = index"
+            (click)="onEnter($event)"
+            [class.destination-active]="index == activeIndex"
+            [attr.aria-label]="destination.title"
+          >
+            <td>{{ destination.title }}</td>
+            <td>{{ destination.type }}</td>
+          </tr>
+        </tbody>
+      </overlay-scrollbars>
     </table>
   </div>
   <div class="modal-footer">

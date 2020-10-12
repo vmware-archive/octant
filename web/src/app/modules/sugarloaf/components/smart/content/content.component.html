@@ -1,20 +1,21 @@
-<div
-  clrFocusOnViewInit
-  class="content-component"
-  (scroll)="onScroll($event)"
-  [class.loading-content]="!hasReceivedContent"
->
-  <ng-container *ngIf="hasReceivedContent && !showSpinner; else loading">
-      <app-object-tabs
-        [buttonGroup]="buttonGroup"
-        [title]="title"
-        [views]="views"
-      ></app-object-tabs>
-  </ng-container>
+<overlay-scrollbars #contentScrollbar [options]="options" class="scrollbar">
+  <div
+    clrFocusOnViewInit
+    class="content-component"
+    [class.loading-content]="!hasReceivedContent"
+  >
+    <ng-container *ngIf="hasReceivedContent && !showSpinner; else loading">
+        <app-object-tabs
+          [buttonGroup]="buttonGroup"
+          [title]="title"
+          [views]="views"
+        ></app-object-tabs>
+    </ng-container>
 
-  <ng-template #loading>
-    <span class="spinner">
-      Loading...
-    </span>
-  </ng-template>
-</div>
+    <ng-template #loading>
+      <span class="spinner">
+        Loading...
+      </span>
+    </ng-template>
+  </div>
+</overlay-scrollbars>
