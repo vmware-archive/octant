@@ -5,6 +5,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ResourceViewerComponent } from './resource-viewer.component';
 import { SharedModule } from '../../../shared.module';
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-ngx';
 
 describe('ResourceViewerComponent', () => {
   let component: ResourceViewerComponent;
@@ -12,6 +13,7 @@ describe('ResourceViewerComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
+      declarations: [OverlayScrollbarsComponent],
       imports: [SharedModule],
     }).compileComponents();
   }));

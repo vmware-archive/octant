@@ -6,10 +6,12 @@ import { TestBed } from '@angular/core/testing';
 
 import { PodLogsService } from './pod-logs.service';
 import { windowProvider, WindowToken } from '../../../window';
+import { EditorComponent } from '../components/smart/editor/editor.component';
 
 describe('PodLogsService', () => {
   beforeEach(() =>
     TestBed.configureTestingModule({
+      declarations: [EditorComponent],
       providers: [{ provide: WindowToken, useFactory: windowProvider }],
     })
   );

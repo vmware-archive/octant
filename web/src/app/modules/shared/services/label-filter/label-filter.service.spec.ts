@@ -6,10 +6,12 @@ import { inject, TestBed } from '@angular/core/testing';
 import { LabelFilterService } from './label-filter.service';
 import { WebsocketService } from '../../../../data/services/websocket/websocket.service';
 import { WebsocketServiceMock } from '../../../../data/services/websocket/mock';
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-ngx';
 
 describe('LabelFilterService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
+      declarations: [OverlayScrollbarsComponent],
       providers: [
         LabelFilterService,
         {

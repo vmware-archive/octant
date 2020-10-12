@@ -30,7 +30,8 @@
               "lodash/forEach",
               "lodash/pullAt",
               "lodash/remove",
-              "lodash/uniqueId"
+              "lodash/uniqueId",
+              "overlayscrollbars"
             ],
             "aot": true,
             "outputPath": "dist/dash-frontend",

@@ -6,6 +6,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TabsComponent } from './tabs.component';
 import { SharedModule } from '../../../shared.module';
 import { windowProvider, WindowToken } from '../../../../../window';
+import { OctantTooltipComponent } from '../octant-tooltip/octant-tooltip';
 
 describe('TabsComponent', () => {
   let component: TabsComponent;
@@ -13,6 +14,7 @@ describe('TabsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
+      declarations: [OctantTooltipComponent],
       imports: [SharedModule],
       providers: [{ provide: WindowToken, useFactory: windowProvider }],
     }).compileComponents();
