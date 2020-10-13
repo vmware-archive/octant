@@ -14,3 +14,26 @@
     background: transparent;
   }
 }
+
+.right-aligned {
+  float: right;
+}
+
+clr-dropdown-menu .with-shortcut {
+  padding-right: 12px;
+}
+
+clr-dropdown-menu div {
+  padding-right: 48px;
+}
+
+.release-info {
+  height: 30rem;
+}
+
+.loading-spinner {
+  height: 30rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
