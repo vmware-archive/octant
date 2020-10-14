@@ -12,15 +12,37 @@
         About Octant
       </div>
       <div
-        aria-label="Dropdown header About Octant"
+        aria-label="Dropdown header Show Releases"
+        clrDropdownItem
+        (click)="showReleases()"
+      >
+        Release Information
+      </div>
+      <div
+        class="with-shortcut"
+        aria-label="Dropdown header Keyboard Shortcuts"
         clrDropdownItem
         (click)="isShortcutModalOpen = true"
       >
         Keyboard Shortcuts
-        <span class="label">
+        <span class="label right-aligned">
           Ctrl
           <span class="badge">/</span>
         </span>
+      </div>
+      <div
+        aria-label="Dropdown header Open Issue"
+        clrDropdownItem
+        (click)="openIssue()"
+      >
+        Open an issue/Provide feedback
+      </div>
+      <div
+        aria-label="Dropdown header Show Documentation"
+        clrDropdownItem
+        (click)="showDocs()"
+      >
+        Octant Documentation
       </div>
     </clr-dropdown-menu>
   </clr-dropdown>
@@ -60,6 +82,39 @@
     </button>
   </div>
 </clr-modal>
+
+<clr-modal
+  [(clrModalOpen)]="isReleaseModalOpen"
+  [clrModalSize]= "'xl'"
+  [clrModalStaticBackdrop]="false"
+  [clrModalSkipAnimation]="true"
+>
+  <h3 class="modal-title">Octant Release Information</h3>
+  <div class="modal-body">
+    <ng-container *ngIf="releaseInfo.config.value; else loading">
+      <p class="release-info">
+        <app-view-text [view]="releaseInfo"></app-view-text>
+      </p>
+    </ng-container>
+    <ng-template #loading>
+      <div class="loading-spinner">
+        <span class="spinner">
+          Loading...
+        </span>
+      </div>
+    </ng-template>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="isReleaseModalOpen = false"
+    >
+      Close
+    </button>
+  </div>
+</clr-modal>
+
 
 <clr-modal
   [(clrModalOpen)]="isShortcutModalOpen"
