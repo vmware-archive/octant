@@ -63,28 +63,6 @@ jobs:
         with:
           node-version: 10.x
       - uses: actions/checkout@v2
-      - name: Get npm cache directory
-        id: npm-cache
-        run: |
-          echo "::set-output name=dir::$(npm config get cache)"
-      - uses: actions/cache@v2
-        if: github.event_name == 'push'
-        with:
-          path: ${{ steps.npm-cache.outputs.dir }}
-          key: ${{ runner.os }}-node-push-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-push-${{ hashFiles('**/package-lock.json') }}
-            ${{ runner.os }}-node-push-
-      - uses: actions/cache@v2
-        if: github.event_name == 'pull_request'
-        with:
-          path: ${{ steps.npm-cache.outputs.dir }}
-          key: ${{ runner.os }}-node-pr-${{ github.event.number }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-pr-${{ github.event.number }}-${{ hashFiles('**/package-lock.json') }}
-            ${{ runner.os }}-node-pr-${{ github.event.number }}-
-            ${{ runner.os }}-node-push-${{ hashFiles('**/package-lock.json') }}
-            ${{ runner.os }}-node-push-
       - name: run_karma
         run: |
           cd web
