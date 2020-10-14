@@ -7,11 +7,13 @@ import { TestBed } from '@angular/core/testing';
 import { PodLogsService } from './pod-logs.service';
 import { windowProvider, WindowToken } from '../../../window';
 import { EditorComponent } from '../components/smart/editor/editor.component';
+import { SharedModule } from '../shared.module';
 
 describe('PodLogsService', () => {
   beforeEach(() =>
     TestBed.configureTestingModule({
       declarations: [EditorComponent],
+      imports: [SharedModule],
       providers: [{ provide: WindowToken, useFactory: windowProvider }],
     })
   );

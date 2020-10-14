@@ -2,27 +2,30 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { OverflowLabelsComponent } from './overflow-labels.component';
 import { By } from '@angular/platform-browser';
 import { LabelFilterService } from '../../../services/label-filter/label-filter.service';
-import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
-import { WebsocketServiceMock } from '../../../../../data/services/websocket/mock';
 import { windowProvider, WindowToken } from '../../../../../window';
+import { SharedModule } from '../../../shared.module';
+import { OctantTooltipComponent } from '../octant-tooltip/octant-tooltip';
 
 describe('OverflowLabelsComponent', () => {
   let component: OverflowLabelsComponent;
   let fixture: ComponentFixture<OverflowLabelsComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [OverflowLabelsComponent],
-      providers: [
-        LabelFilterService,
-        { provide: WindowToken, useFactory: windowProvider },
-      ],
-    }).compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [OverflowLabelsComponent, OctantTooltipComponent],
+        providers: [
+          SharedModule,
+          LabelFilterService,
+          { provide: WindowToken, useFactory: windowProvider },
+        ],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(OverflowLabelsComponent);

@@ -11,10 +11,12 @@ import {
 } from './kube-context.service';
 import { WebsocketServiceMock } from '../../../../data/services/websocket/mock';
 import { WebsocketService } from '../../../../data/services/websocket/websocket.service';
+import { SharedModule } from '../../shared.module';
 
 describe('KubeContextService', () => {
   beforeEach(() =>
     TestBed.configureTestingModule({
+      imports: [SharedModule],
       providers: [
         KubeContextService,
         {

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { HeptagonComponent } from './heptagon.component';
 import { Point } from '../../../models/point';
@@ -14,16 +14,18 @@ describe('HeptagonComponent', () => {
   let component: HeptagonComponent;
   let fixture: ComponentFixture<HeptagonComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [
-        HeptagonComponent,
-        OctantTooltipComponent,
-        OverlayScrollbarsComponent,
-      ],
-      providers: [{ provide: WindowToken, useFactory: windowProvider }],
-    }).compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [
+          HeptagonComponent,
+          OctantTooltipComponent,
+          OverlayScrollbarsComponent,
+        ],
+        providers: [{ provide: WindowToken, useFactory: windowProvider }],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(HeptagonComponent);

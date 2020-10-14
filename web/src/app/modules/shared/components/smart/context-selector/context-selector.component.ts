@@ -32,7 +32,9 @@ export class ContextSelectorComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.kubeContextSubscription.unsubscribe();
+    if (this.kubeContextSubscription) {
+      this.kubeContextSubscription.unsubscribe();
+    }
   }
 
   contextClass(context: ContextDescription) {

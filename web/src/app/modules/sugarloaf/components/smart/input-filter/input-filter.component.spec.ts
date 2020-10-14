@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  waitForAsync,
+} from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { InputFilterComponent } from './input-filter.component';
 import {
@@ -23,13 +28,15 @@ describe('InputFilterComponent', () => {
   let fixture: ComponentFixture<InputFilterComponent>;
   let labelFilterService: LabelFilterService;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [FormsModule],
-      declarations: [InputFilterComponent, FilterTextPipe],
-      providers: [{ provide: LabelFilterService, useValue: labelFilterStub }],
-    }).compileComponents();
-  });
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        imports: [FormsModule],
+        declarations: [InputFilterComponent, FilterTextPipe],
+        providers: [{ provide: LabelFilterService, useValue: labelFilterStub }],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(InputFilterComponent);
@@ -62,7 +69,7 @@ describe('InputFilterComponent', () => {
     expect(tagListElement).not.toBeNull();
   });
 
-  it('should show the user text if there are no filters', () => {
+  it('should show the user text if there are no filters', fakeAsync(() => {
     labelFilterService = TestBed.inject(LabelFilterService);
     labelFilterService.filters.next([]);
     component.showTagList = true;
@@ -76,7 +83,7 @@ describe('InputFilterComponent', () => {
         userTextDebugElement.nativeElement;
       expect(userTextNativeElement.textContent).toMatch(/No current filters/i);
     });
-  });
+  }));
 
   it('should show the tags if there are filters', () => {
     labelFilterService = TestBed.inject(LabelFilterService);
