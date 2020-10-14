@@ -78,6 +78,7 @@ import { MissingComponentComponent } from './components/missing-component/missin
 import { OctantTooltipComponent } from './components/presentation/octant-tooltip/octant-tooltip';
 import { BottomPanelComponent } from './components/smart/bottom-panel/bottom-panel.component';
 import { DataModule } from '../../data/data.module';
+import { OverlayscrollbarsModule } from 'overlayscrollbars-ngx';
 
 @NgModule({
   declarations: [
@@ -222,6 +223,7 @@ import { DataModule } from '../../data/data.module';
       baseUrl: '',
       defaultOptions: {},
     }),
+    OverlayscrollbarsModule,
     ReactiveFormsModule,
     ResizableModule,
     RouterModule,

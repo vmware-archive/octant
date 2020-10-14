@@ -6,6 +6,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TimestampComponent } from './timestamp.component';
 import { SharedModule } from '../../../shared.module';
 import { windowProvider, WindowToken } from '../../../../../window';
+import { EditorComponent } from '../../smart/editor/editor.component';
 
 describe('TimestampComponent', () => {
   let component: TimestampComponent;
@@ -14,6 +15,7 @@ describe('TimestampComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [SharedModule],
+      declarations: [EditorComponent],
       providers: [{ provide: WindowToken, useFactory: windowProvider }],
     }).compileComponents();
   }));

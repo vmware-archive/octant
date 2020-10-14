@@ -16,6 +16,7 @@ import { FormComponent } from '../form/form.component';
 import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
 import { WebsocketServiceMock } from '../../../../../data/services/websocket/mock';
 import { windowProvider, WindowToken } from '../../../../../window';
+import { EditorComponent } from '../../smart/editor/editor.component';
 
 describe('CardComponent', () => {
   let component: CardComponent;
@@ -34,6 +35,7 @@ describe('CardComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
+      declarations: [EditorComponent],
       imports: [SharedModule],
       providers: [
         { provide: FormBuilder, useValue: formBuilder },

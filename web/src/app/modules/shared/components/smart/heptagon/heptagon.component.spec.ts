@@ -7,6 +7,8 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HeptagonComponent } from './heptagon.component';
 import { Point } from '../../../models/point';
 import { windowProvider, WindowToken } from '../../../../../window';
+import { OctantTooltipComponent } from '../../presentation/octant-tooltip/octant-tooltip';
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-ngx';
 
 describe('HeptagonComponent', () => {
   let component: HeptagonComponent;
@@ -14,7 +16,11 @@ describe('HeptagonComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [HeptagonComponent],
+      declarations: [
+        HeptagonComponent,
+        OctantTooltipComponent,
+        OverlayScrollbarsComponent,
+      ],
       providers: [{ provide: WindowToken, useFactory: windowProvider }],
     }).compileComponents();
   }));

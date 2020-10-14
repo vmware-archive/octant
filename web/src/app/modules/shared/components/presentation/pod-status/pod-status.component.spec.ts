@@ -7,6 +7,7 @@ import { HeptagonGridComponent } from '../heptagon-grid/heptagon-grid.component'
 import { PodStatusComponent } from './pod-status.component';
 import { Component, Input } from '@angular/core';
 import { PodStatus } from '../../../models/pod-status';
+import { HighlightModule, HIGHLIGHT_OPTIONS } from 'ngx-highlightjs';
 
 @Component({
   selector: 'app-heptagon-grid',
@@ -26,9 +27,19 @@ describe('PodStatusComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
+      imports: [HighlightModule],
       declarations: [PodStatusComponent, TestGridComponent],
       providers: [
         { provide: HeptagonGridComponent, useClass: TestGridComponent },
+        {
+          provide: HIGHLIGHT_OPTIONS,
+          useValue: {
+            languages: {
+              json: () => import('highlight.js/lib/languages/json'),
+              yaml: () => import('highlight.js/lib/languages/yaml'),
+            },
+          },
+        },
       ],
     }).compileComponents();
   }));

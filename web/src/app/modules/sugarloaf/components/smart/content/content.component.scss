@@ -4,7 +4,6 @@
 
 .content-component {
   height: 100%;
-  overflow-y: scroll;
   padding: 1rem;
 
   &.loading-content {
@@ -16,4 +15,8 @@
   ::ng-deep :first-child > h2:first-child {
     margin-top: 0;
   }
+}
+
+.scrollbar {
+  height: 100%;
 }

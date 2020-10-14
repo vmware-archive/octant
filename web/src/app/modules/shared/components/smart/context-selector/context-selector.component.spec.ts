@@ -9,6 +9,7 @@ import { KubeContextService } from '../../../services/kube-context/kube-context.
 import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { TruncatePipe } from '../../../pipes/truncate/truncate.pipe';
+import { OctantTooltipComponent } from '../../presentation/octant-tooltip/octant-tooltip';
 
 const contexts = [
   {
@@ -35,7 +36,11 @@ describe('ContextSelectorComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ContextSelectorComponent, TruncatePipe],
+      declarations: [
+        ContextSelectorComponent,
+        OctantTooltipComponent,
+        TruncatePipe,
+      ],
       providers: [
         { provide: KubeContextService, useClass: MockKubeContextService },
       ],

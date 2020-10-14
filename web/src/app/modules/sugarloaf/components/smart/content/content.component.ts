@@ -8,6 +8,7 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  ViewChild,
 } from '@angular/core';
 import { Params, Router, UrlSegment } from '@angular/router';
 import {
@@ -23,6 +24,8 @@ import { ContentService } from '../../../../shared/services/content/content.serv
 import { isEqual } from 'lodash';
 import { Subscription } from 'rxjs';
 import { LoadingService } from 'src/app/modules/shared/services/loading/loading.service';
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-ngx';
+import OverlayScrollbars from 'overlayscrollbars';
 
 @Component({
   selector: 'app-overview',
@@ -31,6 +34,9 @@ import { LoadingService } from 'src/app/modules/shared/services/loading/loading.
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class ContentComponent implements OnInit, OnDestroy {
+  @ViewChild('contentScrollbar', { read: OverlayScrollbarsComponent })
+  contentScrollbar: OverlayScrollbarsComponent;
+
   hasTabs = false;
   hasReceivedContent = false;
   title: PathItem[] = null;
@@ -45,6 +51,16 @@ export class ContentComponent implements OnInit, OnDestroy {
   private loadingSubscription: Subscription;
   public showSpinner = false;
   currentPath = '';
+  // https://github.com/KingSora/OverlayScrollbars/issues/257
+  options: OverlayScrollbars.Options = {
+    callbacks: {
+      onScroll: () => {
+        this.contentService.setScrollPos(
+          this.contentScrollbar.osInstance().scroll().position.y
+        );
+      },
+    },
+  };
 
   constructor(
     private router: Router,
