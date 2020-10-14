@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ModalComponent } from './modal.component';
 import { SharedModule } from '../../../shared.module';
 import { ModalService } from '../../../services/modal/modal.service';
@@ -12,16 +12,18 @@ describe('ModalComponent', () => {
   let component: ModalComponent;
   let fixture: ComponentFixture<ModalComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      imports: [SharedModule],
-      declarations: [ModalComponent],
-      providers: [
-        { provide: ModalService },
-        { provide: WindowToken, useFactory: windowProvider },
-      ],
-    }).compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        imports: [SharedModule],
+        declarations: [ModalComponent, OctantTooltipComponent],
+        providers: [
+          { provide: ModalService },
+          { provide: WindowToken, useFactory: windowProvider },
+        ],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ModalComponent);

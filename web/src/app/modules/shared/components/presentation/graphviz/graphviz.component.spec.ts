@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { GraphvizComponent } from './graphviz.component';
 import { Component } from '@angular/core';
@@ -19,11 +19,13 @@ describe('GraphvizComponent', () => {
   let component: TestWrapperComponent;
   let fixture: ComponentFixture<TestWrapperComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [TestWrapperComponent, GraphvizComponent],
-    }).compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [TestWrapperComponent, GraphvizComponent],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TestWrapperComponent);

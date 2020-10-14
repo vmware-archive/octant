@@ -2,21 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { SharedModule } from '../../../shared.module';
 import { BreadcrumbComponent } from './breadcrumb.component';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-ngx';
 
 describe('BreadcrumbComponent', () => {
   let component: BreadcrumbComponent;
   let fixture: ComponentFixture<BreadcrumbComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      imports: [SharedModule],
-    }).compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [OverlayScrollbarsComponent],
+        imports: [SharedModule],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(BreadcrumbComponent);

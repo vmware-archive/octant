@@ -73,7 +73,9 @@ export class NamespaceComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.namespaceSubscription.unsubscribe();
+    if (this.namespaceSubscription) {
+      this.namespaceSubscription.unsubscribe();
+    }
   }
 
   namespaceClass(namespace: string) {

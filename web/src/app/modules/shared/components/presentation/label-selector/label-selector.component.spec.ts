@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import {
+  OverlayScrollbarsComponent,
+  OverlayscrollbarsModule,
+} from 'overlayscrollbars-ngx';
+import { EditorComponent } from '../../smart/editor/editor.component';
 
 import { LabelSelectorComponent } from './label-selector.component';
 
@@ -10,11 +15,18 @@ describe('LabelSelectorComponent', () => {
   let component: LabelSelectorComponent;
   let fixture: ComponentFixture<LabelSelectorComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [LabelSelectorComponent],
-    }).compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [
+          LabelSelectorComponent,
+          EditorComponent,
+          OverlayScrollbarsComponent,
+        ],
+        imports: [OverlayscrollbarsModule],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(LabelSelectorComponent);

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ContextSelectorComponent } from './context-selector.component';
 import { KubeContextService } from '../../../services/kube-context/kube-context.service';
@@ -33,14 +33,20 @@ describe('ContextSelectorComponent', () => {
   let component: ContextSelectorComponent;
   let fixture: ComponentFixture<ContextSelectorComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ContextSelectorComponent, TruncatePipe],
-      providers: [
-        { provide: KubeContextService, useClass: MockKubeContextService },
-      ],
-    }).compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [
+          ContextSelectorComponent,
+          OctantTooltipComponent,
+          TruncatePipe,
+        ],
+        providers: [
+          { provide: KubeContextService, useClass: MockKubeContextService },
+        ],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ContextSelectorComponent);

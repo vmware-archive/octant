@@ -41,7 +41,9 @@ export class InputFilterComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.labelFilterSubscription.unsubscribe();
+    if (this.labelFilterSubscription) {
+      this.labelFilterSubscription.unsubscribe();
+    }
   }
 
   @HostListener('document:click', ['$event'])

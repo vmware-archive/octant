@@ -2,18 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { SharedModule } from '../../../shared.module';
+import { OctantTooltipComponent } from '../octant-tooltip/octant-tooltip';
 import { OverflowSelectorsComponent } from './overflow-selectors.component';
+import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('OverflowSelectorsComponent', () => {
   let component: OverflowSelectorsComponent;
   let fixture: ComponentFixture<OverflowSelectorsComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [OverflowSelectorsComponent],
-    }).compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [OverflowSelectorsComponent, OctantTooltipComponent],
+        imports: [SharedModule],
+        providers: [{ provide: WindowToken, useFactory: windowProvider }],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(OverflowSelectorsComponent);

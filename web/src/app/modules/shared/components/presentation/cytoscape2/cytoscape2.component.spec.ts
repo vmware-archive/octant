@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { Cytoscape2Component } from './cytoscape2.component';
 
@@ -10,11 +10,13 @@ describe('Cytoscape2Component', () => {
   let component: Cytoscape2Component;
   let fixture: ComponentFixture<Cytoscape2Component>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [Cytoscape2Component],
-    }).compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [Cytoscape2Component],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(Cytoscape2Component);

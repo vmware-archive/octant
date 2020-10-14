@@ -5,7 +5,12 @@
  */
 
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { async, inject, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  inject,
+  TestBed,
+  waitForAsync,
+} from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ClarityModule, ClrPopoverToggleService } from '@clr/angular';
 import { BrowserModule } from '@angular/platform-browser';
@@ -27,65 +32,85 @@ import { WebsocketServiceMock } from '../../../../../data/services/websocket/moc
 import { ClarityIcons } from '@clr/icons';
 import { ThemeSwitchButtonComponent } from '../theme-switch/theme-switch-button.component';
 import { QuickSwitcherComponent } from '../quick-switcher/quick-switcher.component';
-import { MonacoEditorConfig, MonacoProviderService } from 'ng-monaco-editor';
+import {
+  MonacoEditorConfig,
+  MonacoEditorModule,
+  MonacoProviderService,
+} from 'ng-monaco-editor';
 import { UploaderComponent } from '../uploader/uploader.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { windowProvider, WindowToken } from '../../../../../window';
+import { SharedModule } from 'src/app/modules/shared/shared.module';
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-ngx';
+import { ApplyYAMLComponent } from '../apply-yaml/apply-yaml.component';
+import { EditorComponent } from 'src/app/modules/shared/components/smart/editor/editor.component';
 
 describe('AppComponent', () => {
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      providers: [
-        { provide: WebsocketService, useClass: WebsocketServiceMock },
-        { provide: WindowToken, useFactory: windowProvider },
-        { provide: window, useValue: ClarityIcons },
-        ClrPopoverToggleService,
-        MonacoProviderService,
-        MonacoEditorConfig,
-      ],
-      imports: [
-        BrowserModule,
-        RouterTestingModule,
-        ClarityModule,
-        HttpClientTestingModule,
-        FormsModule,
-        NgSelectModule,
-        ReactiveFormsModule,
-        BrowserAnimationsModule,
-      ],
-      declarations: [
-        ContainerComponent,
-        NamespaceComponent,
-        PageNotFoundComponent,
-        HelperComponent,
-        PreferencesComponent,
-        InputFilterComponent,
-        NotifierComponent,
-        NavigationComponent,
-        ContextSelectorComponent,
-        DefaultPipe,
-        FilterTextPipe,
-        ThemeSwitchButtonComponent,
-        QuickSwitcherComponent,
-        UploaderComponent,
-      ],
-    }).compileComponents();
-  }));
+  let component: ContainerComponent;
+  let fixture: ComponentFixture<ContainerComponent>;
+
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: WebsocketService, useClass: WebsocketServiceMock },
+          { provide: WindowToken, useFactory: windowProvider },
+          { provide: window, useValue: ClarityIcons },
+          ClrPopoverToggleService,
+          MonacoProviderService,
+          MonacoEditorConfig,
+        ],
+        imports: [
+          BrowserModule,
+          RouterTestingModule,
+          ClarityModule,
+          HttpClientTestingModule,
+          FormsModule,
+          NgSelectModule,
+          ReactiveFormsModule,
+          BrowserAnimationsModule,
+          SharedModule,
+        ],
+        declarations: [
+          ApplyYAMLComponent,
+          ContainerComponent,
+          NamespaceComponent,
+          PageNotFoundComponent,
+          HelperComponent,
+          PreferencesComponent,
+          InputFilterComponent,
+          NotifierComponent,
+          NavigationComponent,
+          ContextSelectorComponent,
+          DefaultPipe,
+          FilterTextPipe,
+          ThemeSwitchButtonComponent,
+          QuickSwitcherComponent,
+          UploaderComponent,
+          OverlayScrollbarsComponent,
+        ],
+      }).compileComponents();
+    })
+  );
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(ContainerComponent);
+    component = fixture.componentInstance;
+  });
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
+  });
 
   it('should create the home', () => {
-    const fixture = TestBed.createComponent(ContainerComponent);
-    const app = fixture.debugElement.componentInstance;
-    fixture.detectChanges();
-    expect(app).toBeTruthy();
+    expect(component).toBeTruthy();
   });
 
   describe('at startup', () => {
     it('opens a websocket connection', inject(
       [WebsocketService],
       (websocketService: WebsocketServiceMock) => {
-        const fixture = TestBed.createComponent(ContainerComponent);
         fixture.detectChanges();
-
         expect(websocketService.isOpen).toBeTruthy();
       }
     ));

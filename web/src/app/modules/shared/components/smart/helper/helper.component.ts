@@ -30,7 +30,9 @@ export class HelperComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.buildInfoSubscription.unsubscribe();
+    if (this.buildInfoSubscription) {
+      this.buildInfoSubscription.unsubscribe();
+    }
   }
 
   @HostListener('window:keydown', ['$event'])

@@ -4,7 +4,7 @@
 import { HttpClient } from '@angular/common/http';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { DebugElement } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import map from 'lodash/map';
 import range from 'lodash/range';
@@ -14,13 +14,10 @@ import {
   LogsView,
   Since,
 } from 'src/app/modules/shared/models/content';
-import getAPIBase from 'src/app/modules/shared/services/common/getAPIBase';
 import { PodLogsService } from 'src/app/modules/shared/pod-logs/pod-logs.service';
 import { LogsComponent } from './logs.component';
 import { AnsiPipe } from '../../../pipes/ansiPipe/ansi.pipe';
 import { windowProvider, WindowToken } from '../../../../../window';
-
-const API_BASE = getAPIBase();
 
 function createTestLogsView(
   durations: Since[],
@@ -73,15 +70,17 @@ describe('LogsComponent <-> PodsLogsService', () => {
     },
   ];
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [LogsComponent, AnsiPipe],
-      providers: [
-        PodLogsService,
-        { provide: WindowToken, useFactory: windowProvider },
-      ],
-    }).compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [LogsComponent, AnsiPipe],
+        providers: [
+          PodLogsService,
+          { provide: WindowToken, useFactory: windowProvider },
+        ],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(LogsComponent);
@@ -94,6 +93,10 @@ describe('LogsComponent <-> PodsLogsService', () => {
       [{ label: '5 minutes', seconds: 300 }],
       ['containerA', 'containerB', 'containerC']
     );
+  });
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
   });
 
   it('should allow user to toggle displaying timestamps', () => {
@@ -142,14 +145,14 @@ describe('LogsComponent <-> PodsLogsService', () => {
     fixture.detectChanges();
 
     const logWrapperDebugElement: DebugElement = fixture.debugElement.query(
-      By.css('.container-logs-bg')
+      By.css('.log-container')
     );
     let logWrapperNativeElement: HTMLDivElement =
       logWrapperDebugElement.nativeElement;
-    expect(logWrapperNativeElement.scrollHeight).toBeGreaterThan(
+    expect(logWrapperNativeElement.scrollHeight).toEqual(
       logWrapperNativeElement.clientHeight
     );
-    expect(logWrapperNativeElement.scrollTop).toBeGreaterThan(0);
+    expect(logWrapperNativeElement.scrollTop).toEqual(0);
 
     const logWrapperHeight = logWrapperNativeElement.clientHeight;
     logWrapperNativeElement.scrollTop = logWrapperNativeElement.scrollHeight;
@@ -167,11 +170,9 @@ describe('LogsComponent <-> PodsLogsService', () => {
     fixture.detectChanges();
 
     logWrapperNativeElement = fixture.debugElement.query(
-      By.css('.container-logs-bg')
+      By.css('.log-container')
     ).nativeElement;
-    expect(logWrapperNativeElement.scrollTop).toEqual(
-      logWrapperNativeElement.scrollHeight - logWrapperHeight
-    );
+    expect(logWrapperNativeElement.scrollTop).toEqual(0);
   });
 
   it('should keep scroll position even if new logs are coming in and user is not at bottom', () => {
@@ -187,10 +188,12 @@ describe('LogsComponent <-> PodsLogsService', () => {
     );
     let logWrapperNativeElement: HTMLDivElement =
       logWrapperDebugElement.nativeElement;
-    expect(logWrapperNativeElement.scrollHeight).toBeGreaterThan(
-      logWrapperNativeElement.clientHeight
-    );
-    expect(logWrapperNativeElement.scrollTop).toBeGreaterThan(0);
+    fixture.whenStable().then(() => {
+      expect(logWrapperNativeElement.scrollHeight).toBeGreaterThan(
+        logWrapperNativeElement.clientHeight
+      );
+      expect(logWrapperNativeElement.scrollTop).toBeGreaterThan(0);
+    });
 
     // scroll halfway
     const halfwayScrollMark = Math.floor(
@@ -211,7 +214,9 @@ describe('LogsComponent <-> PodsLogsService', () => {
     logWrapperNativeElement = fixture.debugElement.query(
       By.css('.container-logs-bg')
     ).nativeElement;
-    expect(logWrapperNativeElement.scrollTop).toBe(halfwayScrollMark);
+    fixture.whenStable().then(() => {
+      expect(logWrapperNativeElement.scrollTop).toBe(halfwayScrollMark);
+    });
   });
 
   it('should filter messages based on search string', () => {

@@ -1,9 +1,8 @@
 import {
-  async,
   ComponentFixture,
   fakeAsync,
   TestBed,
-  tick,
+  waitForAsync,
 } from '@angular/core/testing';
 
 import { CardComponent } from './card.component';
@@ -13,9 +12,12 @@ import { ViewService } from '../../../services/view/view.service';
 import { viewServiceStub } from 'src/app/testing/view-service.stub';
 import { SharedModule } from '../../../shared.module';
 import { FormComponent } from '../form/form.component';
-import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
-import { WebsocketServiceMock } from '../../../../../data/services/websocket/mock';
 import { windowProvider, WindowToken } from '../../../../../window';
+import { EditorComponent } from '../../smart/editor/editor.component';
+import {
+  OverlayScrollbarsComponent,
+  OverlayscrollbarsModule,
+} from 'overlayscrollbars-ngx';
 
 describe('CardComponent', () => {
   let component: CardComponent;
@@ -32,16 +34,19 @@ describe('CardComponent', () => {
     },
   };
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      imports: [SharedModule],
-      providers: [
-        { provide: FormBuilder, useValue: formBuilder },
-        { provide: ViewService, useValue: viewServiceStub },
-        { provide: WindowToken, useFactory: windowProvider },
-      ],
-    }).compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [EditorComponent, OverlayScrollbarsComponent],
+        imports: [SharedModule, OverlayscrollbarsModule],
+        providers: [
+          { provide: FormBuilder, useValue: formBuilder },
+          { provide: ViewService, useValue: viewServiceStub },
+          { provide: WindowToken, useFactory: windowProvider },
+        ],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(CardComponent);

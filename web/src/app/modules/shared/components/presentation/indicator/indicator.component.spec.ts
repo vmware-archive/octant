@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {
   IndicatorComponent,
   Status,
@@ -22,11 +22,13 @@ describe('IndicatorComponent', () => {
 
   let element: HTMLDivElement;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [WrapperComponent, IndicatorComponent],
-    }).compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [WrapperComponent, IndicatorComponent],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(WrapperComponent);

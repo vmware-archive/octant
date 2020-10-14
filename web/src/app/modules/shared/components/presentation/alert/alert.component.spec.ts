@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AlertComponent } from './alert.component';
 import { By } from '@angular/platform-browser';
@@ -8,11 +8,13 @@ describe('AlertComponent', () => {
   let component: AlertComponent;
   let fixture: ComponentFixture<AlertComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [AlertComponent],
-    }).compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [AlertComponent, OctantTooltipComponent],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(AlertComponent);
