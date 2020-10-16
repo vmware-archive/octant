@@ -14,6 +14,7 @@ import {
 import uniqueId from 'lodash/uniqueId';
 import { BehaviorSubject } from 'rxjs';
 import { WindowToken } from '../../../window';
+import { OverlayscrollbarsModule } from 'overlayscrollbars-ngx';
 
 class NotifierServiceMock {
   private signalsStream: BehaviorSubject<NotifierSignal[]>;
@@ -39,6 +40,7 @@ describe('WebsocketService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [OverlayscrollbarsModule],
       providers: [
         WebsocketService,
         {

@@ -84,8 +84,12 @@ export class QuickSwitcherComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.navigationSubscription.unsubscribe();
-    this.namespaceSubscription.unsubscribe();
+    if (this.navigationSubscription) {
+      this.navigationSubscription.unsubscribe();
+    }
+    if (this.namespaceSubscription) {
+      this.namespaceSubscription.unsubscribe();
+    }
   }
 
   identifyNavigationItem(index: number, item: NavigationChild): string {

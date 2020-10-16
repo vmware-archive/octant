@@ -1,4 +1,9 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  async,
+  ComponentFixture,
+  TestBed,
+  waitForAsync,
+} from '@angular/core/testing';
 import { StepperComponent } from './stepper.component';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { StepperView } from '../../../models/content';
@@ -40,19 +45,24 @@ describe('StepperComponent', () => {
     },
   };
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      imports: [
-        ReactiveFormsModule,
-        BrowserAnimationsModule,
-        NoopAnimationsModule,
-      ],
-      providers: [
-        { provide: FormBuilder, useValue: formBuilder },
-        { provide: WebsocketService, useValue: instance(mockWebsocketService) },
-      ],
-    }).compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        imports: [
+          ReactiveFormsModule,
+          BrowserAnimationsModule,
+          NoopAnimationsModule,
+        ],
+        providers: [
+          { provide: FormBuilder, useValue: formBuilder },
+          {
+            provide: WebsocketService,
+            useValue: instance(mockWebsocketService),
+          },
+        ],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(StepperComponent);
@@ -63,23 +73,32 @@ describe('StepperComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should submit form after completing each step', () => {
-    let nextButton = fixture.debugElement.nativeElement.querySelector('.next');
-    nextButton.click();
-    fixture.detectChanges();
+  it(
+    'should submit form after completing each step',
+    waitForAsync(() => {
+      fixture.whenStable().then(() => {
+        let nextButton = fixture.debugElement.nativeElement.querySelector(
+          '.next'
+        );
+        nextButton.click();
+        fixture.detectChanges();
 
-    nextButton = fixture.debugElement.nativeElement.querySelector('.submit');
-    nextButton.click();
-    fixture.detectChanges();
+        nextButton = fixture.debugElement.nativeElement.querySelector(
+          '.submit'
+        );
+        nextButton.click();
+        fixture.detectChanges();
 
-    verify(
-      mockWebsocketService.sendMessage(
-        'action.octant.dev/performAction',
-        deepEqual({
-          action,
-          formGroup: anything(),
-        })
-      )
-    ).once();
-  });
+        verify(
+          mockWebsocketService.sendMessage(
+            'action.octant.dev/performAction',
+            deepEqual({
+              action,
+              formGroup: anything(),
+            })
+          )
+        ).once();
+      });
+    })
+  );
 });

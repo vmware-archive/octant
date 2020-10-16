@@ -3,20 +3,28 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { DonutChartComponent } from './donut-chart.component';
 import { DonutChartView } from '../../../models/content';
+import { SharedModule } from '../../../shared.module';
+import {
+  OverlayScrollbarsComponent,
+  OverlayscrollbarsModule,
+} from 'overlayscrollbars-ngx';
 
 describe('DonutChartComponent', () => {
   let component: DonutChartComponent;
   let fixture: ComponentFixture<DonutChartComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [DonutChartComponent],
-    }).compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [DonutChartComponent, OverlayScrollbarsComponent],
+        imports: [SharedModule, OverlayscrollbarsModule],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(DonutChartComponent);

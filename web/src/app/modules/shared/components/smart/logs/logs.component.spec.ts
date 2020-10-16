@@ -2,24 +2,26 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { LogsComponent } from './logs.component';
 import { LogEntry, LogsView } from 'src/app/modules/shared/models/content';
 import { By } from '@angular/platform-browser';
-import { DebugElement } from '@angular/core';
+import { DebugElement, ElementRef } from '@angular/core';
 import { AnsiPipe } from '../../../pipes/ansiPipe/ansi.pipe';
-import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
-import { WebsocketServiceMock } from '../../../../../data/services/websocket/mock';
 import { windowProvider, WindowToken } from '../../../../../window';
 
 /**
- * Adds 15 logs to the provided list.
+ * Adds lines of logs to LogsComponent
  * @param currentLogList Current list of logs when this function is called.
+ * @param lines Number of log lines to add
  * @returns New list of logs.
  */
-const addLogsToList = (currentLogList: LogEntry[]): LogEntry[] => {
+const addLogsToList = (
+  currentLogList: LogEntry[],
+  lines: number
+): LogEntry[] => {
   const logList = [...currentLogList];
-  for (let i = 1; i <= 15; i++) {
+  for (let i = 1; i <= lines; i++) {
     logList.push({
       timestamp: '2019-08-19T12:07:00.1222053Z',
       message: 'Just for test',
@@ -34,12 +36,14 @@ describe('LogsComponent', () => {
   let component: LogsComponent;
   let fixture: ComponentFixture<LogsComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [LogsComponent, AnsiPipe],
-      providers: [{ provide: WindowToken, useFactory: windowProvider }],
-    }).compileComponents();
-  }));
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [LogsComponent, AnsiPipe],
+        providers: [{ provide: WindowToken, useFactory: windowProvider }],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(LogsComponent);
@@ -66,46 +70,38 @@ describe('LogsComponent', () => {
   });
 
   it('should stay at the bottom of the container when new logs arrive', () => {
-    const { nativeElement } = component.scrollTarget;
-
-    component.containerLogs = addLogsToList([]);
+    const scrolltarget: ElementRef = component.scrollTarget;
+    component.containerLogs = addLogsToList([], 15);
     fixture.detectChanges();
     expect(component.containerLogs.length).toBe(15);
-    expect(nativeElement.scrollTop).toEqual(
-      nativeElement.scrollHeight - nativeElement.offsetHeight
-    );
 
-    component.containerLogs = addLogsToList(component.containerLogs);
-    fixture.detectChanges();
-    expect(component.containerLogs.length).toBe(30);
-    expect(nativeElement.scrollTop).toEqual(
-      nativeElement.scrollHeight - nativeElement.offsetHeight
-    );
+    // This is done via CSS but scrollTop is unreliable so checking the class is enabled
+    expect(scrolltarget.nativeElement.classList).toContain('container-content');
   });
 
   it('should filter messages based on regex expression', () => {
     component.filterText = '([A-Z])\\w+';
     component.shouldDisplayTimestamp = false;
-    component.containerLogs = addLogsToList([]);
+    component.containerLogs = addLogsToList([], 30);
     fixture.detectChanges();
 
     const selectHighlights: DebugElement[] = fixture.debugElement.queryAll(
       By.css('.highlight')
     );
-    expect(selectHighlights.length).toEqual(75);
+    expect(selectHighlights.length).toEqual(150);
     expect(selectHighlights[0].nativeElement.innerText).toEqual('test');
   });
 
   it('should filter for positive lookahead regex', () => {
     component.filterText = '(?=Just)';
     component.shouldDisplayTimestamp = false;
-    component.containerLogs = addLogsToList([]);
+    component.containerLogs = addLogsToList([], 30);
     fixture.detectChanges();
 
     const selectHighlights: DebugElement[] = fixture.debugElement.queryAll(
       By.css('.highlight')
     );
-    expect(selectHighlights.length).toEqual(15);
+    expect(selectHighlights.length).toEqual(30);
     expect(selectHighlights[0].nativeElement.innerText).toEqual(
       'Just for test'
     );
@@ -114,13 +110,13 @@ describe('LogsComponent', () => {
   it('should filter case insensitive', () => {
     component.filterText = 'JUST';
     component.shouldDisplayTimestamp = false;
-    component.containerLogs = addLogsToList([]);
+    component.containerLogs = addLogsToList([], 30);
     fixture.detectChanges();
 
     const selectHighlights: DebugElement[] = fixture.debugElement.queryAll(
       By.css('.highlight')
     );
-    expect(selectHighlights.length).toEqual(15);
+    expect(selectHighlights.length).toEqual(30);
     expect(selectHighlights[0].nativeElement.innerText).toEqual('Just');
   });
 

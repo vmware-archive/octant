@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ViewContainerComponent } from './view-container.component';
 import { DYNAMIC_COMPONENTS_MAPPING } from '../../dynamic-components';
@@ -13,19 +13,21 @@ describe('ViewContainerComponent', () => {
   let component: ViewContainerComponent;
   let fixture: ComponentFixture<ViewContainerComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ViewContainerComponent],
-      providers: [
-        {
-          provide: DYNAMIC_COMPONENTS_MAPPING,
-          useValue: {
-            text: TextComponent,
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [ViewContainerComponent],
+        providers: [
+          {
+            provide: DYNAMIC_COMPONENTS_MAPPING,
+            useValue: {
+              text: TextComponent,
+            },
           },
-        },
-      ],
-    }).compileComponents();
-  }));
+        ],
+      }).compileComponents();
+    })
+  );
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ViewContainerComponent);

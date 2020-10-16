@@ -3,12 +3,14 @@ import { TestBed } from '@angular/core/testing';
 import { ActionService } from './action.service';
 import { WebsocketService } from '../../../../data/services/websocket/websocket.service';
 import { WebsocketServiceMock } from '../../../../data/services/websocket/mock';
+import { EditorComponent } from '../../components/smart/editor/editor.component';
 
 describe('ActionService', () => {
   let service: ActionService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+      declarations: [EditorComponent],
       providers: [
         ActionService,
         {
