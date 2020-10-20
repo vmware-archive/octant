@@ -27,12 +27,21 @@ type TimestampConfig struct {
 
 // NewTimestamp creates a timestamp component
 func NewTimestamp(t time.Time) *Timestamp {
-	return &Timestamp{
-		Base: newBase(TypeTimestamp, nil),
-		Config: TimestampConfig{
-			Timestamp: t.Unix(),
-		},
+
+	actualTime, err := time.Parse(time.RFC1123 ,t.String())
+    
+	if err != nil {
+		return &Timestamp{
+			Base: newBase(TypeTimestamp, nil),
+			Config: TimestampConfig{
+				Timestamp: t.Unix(),
+			},
+		}
+	} else {
+		
+		// Need to return something if it is not of proper format
 	}
+	
 }
 
 type timestampMarshal Timestamp

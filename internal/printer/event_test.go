@@ -176,6 +176,24 @@ func Test_ReplicaSetEvents(t *testing.T) {
 				FirstTimestamp: metav1.Time{Time: time.Unix(1548424410, 0)},
 				LastTimestamp:  metav1.Time{Time: time.Unix(1548424410, 0)},
 			},
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "frontend",
+					CreationTimestamp: metav1.Time{
+						Time: now,
+					},
+					ResourceVersion: "3",
+				},
+				Count:  1,
+				Type:   corev1.EventTypeNormal,
+				Reason: "SuccessfulCreate",
+				Source: corev1.EventSource{
+					Component: "replicaset-controller",
+				},
+				Message:        "Created pod: frontend-b7fxg",
+				FirstTimestamp: metav1.Time{Time: time.Time{}},
+				LastTimestamp:  metav1.Time{Time: time.Time{}},
+			},
 		},
 	}
 
@@ -210,6 +228,16 @@ func Test_ReplicaSetEvents(t *testing.T) {
 		"Type":       component.NewText("Normal"),
 		"First Seen": component.NewTimestamp(time.Unix(1548424410, 0)),
 		"Last Seen":  component.NewTimestamp(time.Unix(1548424410, 0)),
+		"From":       component.NewText("replicaset-controller"),
+		"Count":      component.NewText("1"),
+	})
+
+	expected.Add(component.TableRow{
+		"Message":    component.NewText("Created pod: frontend-b7fxg"),
+		"Reason":     component.NewText("SuccessfulCreate"),
+		"Type":       component.NewText("Normal"),
+		"First Seen": component.NewText("Nil"),
+		"Last Seen":  component.NewText("Nil"),
 		"From":       component.NewText("replicaset-controller"),
 		"Count":      component.NewText("1"),
 	})
