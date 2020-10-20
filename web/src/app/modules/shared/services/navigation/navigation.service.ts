@@ -59,7 +59,12 @@ export class NavigationService {
       this.current.next(update);
       this.createModules(update.sections);
       if (update.defaultPath) {
-        this.activeUrl.next(update.defaultPath);
+        const newUrl = update.defaultPath.startsWith('/')
+          ? update.defaultPath
+          : '/' + update.defaultPath;
+        if (newUrl !== this.activeUrl.value) {
+          this.activeUrl.next(newUrl);
+        }
       }
       this.updateLastSelection();
     });

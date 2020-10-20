@@ -100,7 +100,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
       event.preventDefault();
       event.cancelBubble = true;
       this.themeService.switchTheme();
-    } else if (event.key === 'N' && event.ctrlKey) {
+    } else if (event.key === 'b' && event.ctrlKey) {
       event.preventDefault();
       event.cancelBubble = true;
       this.updateNavCollapsed(!this.collapsed);
