@@ -14,6 +14,7 @@ const (
 	ConfigAndStorage          = "storage"
 	RBAC                      = "assign-user"
 	Events                    = "event"
+	Cluster                   = "cluster"
 
 	Namespaces      = "namespace"
 	ApiServer       = "hard-disk"

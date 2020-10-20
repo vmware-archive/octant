@@ -45,6 +45,10 @@ func (l *LocalContent) Name() string {
 	return "local"
 }
 
+func (l *LocalContent) Description() string {
+	return "This is the local module description"
+}
+
 func (l *LocalContent) ClientRequestHandlers() []octant.ClientRequestHandler {
 	return nil
 }

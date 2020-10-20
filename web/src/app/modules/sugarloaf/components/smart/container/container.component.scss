@@ -24,6 +24,13 @@
   background-color: var(--background-color);
 }
 
+:host ::ng-deep .navigation-top {
+  height: 100%;
+  clr-vertical-nav {
+    padding-top: 0px;
+  }
+}
+
 .main-container {
   // Navigation's color variables for Light Theme.
 
@@ -101,4 +108,5 @@
     }
   }
 }
+
 

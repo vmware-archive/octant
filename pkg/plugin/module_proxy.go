@@ -41,6 +41,11 @@ func (m *ModuleProxy) Name() string {
 	return m.Metadata.Name
 }
 
+// Description returns the module's description.
+func (m *ModuleProxy) Description() string {
+	return m.Metadata.Description
+}
+
 func (m *ModuleProxy) ClientRequestHandlers() []octant.ClientRequestHandler {
 	return nil
 }

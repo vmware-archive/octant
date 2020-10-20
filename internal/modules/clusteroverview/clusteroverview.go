@@ -117,6 +117,10 @@ func (co *ClusterOverview) Name() string {
 	return "cluster-overview"
 }
 
+func (co *ClusterOverview) Description() string {
+	return "Cluster module is used to display all cluster related resources"
+}
+
 func (co *ClusterOverview) ClientRequestHandlers() []octant.ClientRequestHandler {
 	return nil
 }
@@ -200,7 +204,7 @@ func (co *ClusterOverview) Navigation(ctx context.Context, _ string, root string
 			"Port Forwards":               nil,
 		},
 		IconMap: map[string]string{
-			"Cluster Overview":            icon.Overview,
+			"Cluster Overview":            icon.Cluster,
 			"Namespaces":                  icon.Namespaces,
 			"Custom Resources":            icon.CustomResources,
 			"Custom Resource Definitions": icon.CustomResourceDefinition,

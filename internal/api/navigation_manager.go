@@ -146,6 +146,8 @@ func NavigationGenerator(ctx context.Context, state octant.State, config Navigat
 			if err != nil {
 				return fmt.Errorf("unable to generate navigation for module %s: %v", m.Name(), err)
 			}
+			navList[0].Module = m.Name()
+			navList[0].Description = m.Description()
 
 			mu.Lock()
 			defer mu.Unlock()

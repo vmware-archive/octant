@@ -12,7 +12,11 @@ import {
 import { NamespaceService } from 'src/app/modules/shared/services/namespace/namespace.service';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { Subscription } from 'rxjs';
-import { NavigationService } from '../../../../shared/services/navigation/navigation.service';
+import {
+  Module,
+  NavigationService,
+  Selection,
+} from '../../../../shared/services/navigation/navigation.service';
 
 @Component({
   selector: 'app-namespace',
@@ -24,11 +28,8 @@ export class NamespaceComponent implements OnInit, OnDestroy {
   namespaces: string[];
   currentNamespace = '';
   trackByIdentity = trackByIdentity;
-  navigation = {
-    sections: [],
-    defaultPath: '',
-  };
-  lastSelection: number;
+  modules: Module[] = [];
+  selectedItem: Selection;
   activeUrl: string;
   showDropdown: boolean;
 
@@ -55,19 +56,18 @@ export class NamespaceComponent implements OnInit, OnDestroy {
       }
     );
 
-    this.navigationService.current.subscribe(navigation => {
-      this.navigation = navigation;
+    this.navigationService.modules.subscribe(modules => {
+      this.modules = modules;
       this.cdr.detectChanges();
     });
 
+    this.navigationService.selectedItem.subscribe(selection => {
+      this.selectedItem = selection;
+      this.showDropdown = this.hasDropdown();
+      this.cdr.detectChanges();
+    });
     this.navigationService.activeUrl.subscribe(url => {
       this.activeUrl = url;
-      this.cdr.detectChanges();
-    });
-
-    this.navigationService.lastSelection.subscribe(selection => {
-      this.lastSelection = selection;
-      this.showDropdown = this.hasDropdown();
       this.cdr.detectChanges();
     });
   }
@@ -87,43 +87,11 @@ export class NamespaceComponent implements OnInit, OnDestroy {
     this.namespaceService.setNamespace(namespace);
   }
 
-  hasDropdown(): boolean {
-    if (this.lastSelection && this.navigation.sections[this.lastSelection]) {
-      const url = this.navigation.sections[this.lastSelection].path;
-      return !this.isClusterSpecific(url);
+  hasDropdown() {
+    if (this.selectedItem && this.modules[this.selectedItem.module]) {
+      return this.modules[this.selectedItem.module].name !== 'cluster-overview';
     }
     return true;
-  }
-
-  private namespaceFromUrl(url: string): string {
-    if (url) {
-      const paths = url.split('/');
-      const len = paths.length;
-      if (len > 1 && paths[len - 2] === 'namespaces') {
-        const hashIndex = paths[len - 1].indexOf('#');
-        return hashIndex > 0
-          ? paths[len - 1].substring(0, hashIndex)
-          : paths[len - 1];
-      }
-    }
-    return '';
-  }
-
-  private isClusterSpecific(url: string) {
-    const ns = this.namespaceFromUrl(url);
-    if (ns.length > 0) {
-      this.selectNamespace(ns);
-      return false;
-    }
-
-    if (url.includes('cluster-overview')) {
-      return (
-        this.currentNamespace.length === 0 ||
-        !url.endsWith(this.currentNamespace)
-      );
-    }
-
-    return false;
   }
 
   private routerLinkPath(namespace: string): string {

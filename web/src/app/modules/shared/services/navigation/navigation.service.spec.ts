@@ -13,7 +13,10 @@ import {
 import { WebsocketServiceMock } from '../../../../data/services/websocket/mock';
 import { Navigation } from '../../../sugarloaf/models/navigation';
 import { ContentService } from '../content/content.service';
-import { NAVIGATION_MOCK_DATA } from './navigation.test.data';
+import {
+  expectedSelection,
+  NAVIGATION_MOCK_DATA,
+} from './navigation.test.data';
 import { BehaviorSubject } from 'rxjs';
 import { take } from 'rxjs/operators';
 
@@ -73,11 +76,16 @@ describe('NavigationService', () => {
           if (section.children) {
             section.children.map(child => {
               verifySelection(child.path, svc, index, 'child');
+              if (child.children) {
+                child.children.map(grandchild => {
+                  verifySelection(grandchild.path, svc, index, 'grandchild');
+                });
+              }
             });
           }
         });
         svc.activeUrl.unsubscribe();
-        svc.lastSelection.unsubscribe();
+        svc.selectedItem.unsubscribe();
       }
     ));
 
@@ -90,10 +98,19 @@ describe('NavigationService', () => {
       svc.activeUrl.next('/' + path);
       svc.updateLastSelection();
 
-      svc.lastSelection.pipe(take(1)).subscribe(selection => {
-        expect(selection)
-          .withContext(`navigation selected ${descriptor} index ${index}`)
-          .toEqual(index);
+      svc.selectedItem.pipe(take(1)).subscribe(selection => {
+        const expected = expectedSelection[path];
+
+        expect(selection.index)
+          .withContext(
+            `navigation selected ${descriptor} index ${index} ${path}`
+          )
+          .toEqual(expected.index);
+        expect(selection.module)
+          .withContext(
+            `navigation selected ${descriptor} module ${index} ${path}`
+          )
+          .toEqual(expected.module);
       });
 
       svc.activeUrl.pipe(take(1)).subscribe(url =>

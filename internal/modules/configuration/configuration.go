@@ -57,6 +57,11 @@ func (Configuration) Name() string {
 	return "configuration"
 }
 
+func (Configuration) Description() string {
+	return `Plugins module displays all registered plugins and their properties.
+		To find list of known plugins go to https://github.com/topics/octant-plugin`
+}
+
 func (c Configuration) ClientRequestHandlers() []octant.ClientRequestHandler {
 	return nil
 }
@@ -96,7 +101,7 @@ func (c *Configuration) Navigation(ctx context.Context, namespace, root string) 
 	return []navigation.Navigation{
 		{
 			Module:   "Configuration",
-			Title:    "Plugin",
+			Title:    "Plugins",
 			Path:     path.Join(c.ContentPath(), "plugins"),
 			IconName: icon.ConfigurationPlugin,
 		},

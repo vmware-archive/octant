@@ -7,11 +7,18 @@ import {
   ChangeDetectorRef,
   OnDestroy,
   OnInit,
+  HostListener,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Navigation, NavigationChild } from '../../../models/navigation';
 import { IconService } from '../../../../shared/services/icon/icon.service';
-import { NavigationService } from '../../../../shared/services/navigation/navigation.service';
+import {
+  Module,
+  NavigationService,
+  Selection,
+} from '../../../../shared/services/navigation/navigation.service';
+import { Router } from '@angular/router';
+import { ThemeService } from '../../../../shared/services/theme/theme.service';
 
 const emptyNavigation: Navigation = {
   sections: [],
@@ -26,47 +33,49 @@ const emptyNavigation: Navigation = {
 })
 export class NavigationComponent implements OnInit, OnDestroy {
   collapsed = false;
-  navExpandedState: any;
-  lastSelection: number;
+  showLabels = true;
+  selectedItem: Selection = { module: 0, index: -1 };
   flyoutIndex = -1;
   navigation = emptyNavigation;
+  modules: Module[] = [];
+  currentModule: Module;
 
-  private navigationSubscription: Subscription;
+  private subscriptionModules: Subscription;
+  private subscriptionSelectedItem: Subscription;
+  private subscriptionCollapsed: Subscription;
+  private subscriptionShowLabels: Subscription;
 
   constructor(
     private iconService: IconService,
     private navigationService: NavigationService,
+    private router: Router,
+    private themeService: ThemeService,
     private cd: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
-    this.navigationSubscription = this.navigationService.current.subscribe(
-      navigation => {
-        if (this.navigation !== navigation) {
-          this.navigation = navigation;
-          this.cd.markForCheck();
-        }
+    this.subscriptionModules = this.navigationService.modules.subscribe(
+      modules => {
+        this.modules = modules;
+        this.currentModule = this.modules[this.selectedItem.module];
+        this.cd.markForCheck();
       }
     );
-    this.navigationSubscription = this.navigationService.lastSelection.subscribe(
+
+    this.subscriptionSelectedItem = this.navigationService.selectedItem.subscribe(
       selection => {
-        if (this.lastSelection !== selection) {
-          this.lastSelection = selection;
+        if (
+          this.selectedItem.index !== selection.index ||
+          this.selectedItem.module !== selection.module
+        ) {
+          this.selectedItem = selection;
+          this.currentModule = this.modules[this.selectedItem.module];
           this.cd.markForCheck();
         }
       }
     );
 
-    this.navigationSubscription = this.navigationService.expandedState.subscribe(
-      state => {
-        if (this.navExpandedState !== state) {
-          this.navExpandedState = state;
-          this.cd.markForCheck();
-        }
-      }
-    );
-
-    this.navigationSubscription = this.navigationService.collapsed.subscribe(
+    this.subscriptionCollapsed = this.navigationService.collapsed.subscribe(
       col => {
         if (this.collapsed !== col) {
           this.collapsed = col;
@@ -74,12 +83,45 @@ export class NavigationComponent implements OnInit, OnDestroy {
         }
       }
     );
+
+    this.subscriptionShowLabels = this.navigationService.showLabels.subscribe(
+      col => {
+        if (this.showLabels !== col) {
+          this.showLabels = col;
+          this.cd.markForCheck();
+        }
+      }
+    );
+  }
+
+  @HostListener('window:keyup', ['$event'])
+  keyEvent(event: KeyboardEvent) {
+    if (event.key === 'T' && event.ctrlKey) {
+      event.preventDefault();
+      event.cancelBubble = true;
+      this.themeService.switchTheme();
+    } else if (event.key === 'b' && event.ctrlKey) {
+      event.preventDefault();
+      event.cancelBubble = true;
+      this.updateNavCollapsed(!this.collapsed);
+    } else if (event.key === 'L' && event.ctrlKey) {
+      event.preventDefault();
+      event.cancelBubble = true;
+      this.navigationService.showLabels.next(!this.showLabels);
+    }
+  }
+
+  identifyTab(index: number): string {
+    return this.modules && this.modules.length > index
+      ? this.modules[index].name
+      : index.toString();
   }
 
   ngOnDestroy(): void {
-    if (this.navigationSubscription) {
-      this.navigationSubscription.unsubscribe();
-    }
+    this.subscriptionModules.unsubscribe();
+    this.subscriptionSelectedItem.unsubscribe();
+    this.subscriptionCollapsed.unsubscribe();
+    this.subscriptionShowLabels.unsubscribe();
   }
 
   identifyNavigationItem(index: number, item: NavigationChild): string {
@@ -91,7 +133,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   formatPath(path: string): string {
-    if (!path.startsWith('/')) {
+    if (path && !path.startsWith('/')) {
       return '/' + path;
     }
 
@@ -99,59 +141,47 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   openPopup(index: number) {
-    this.clearExpandedState();
     this.setNavState(true, index);
     this.setLastSelection(index);
   }
 
   closePopups(index) {
-    this.clearExpandedState();
     this.flyoutIndex = -1;
     this.setLastSelection(index);
   }
 
-  setLastSelection(index) {
-    this.lastSelection = index;
-    this.navigationService.lastSelection.next(index);
-  }
-
-  setExpandedState(index, state) {
-    this.navExpandedState[index] = state;
-    this.navigationService.expandedState.next(this.navExpandedState);
-  }
-
-  clearExpandedState() {
-    this.navExpandedState = {};
-    this.navigationService.expandedState.next(this.navExpandedState);
-  }
-
   setNavState($event, state: number) {
-    if (this.collapsed) {
+    if ($event) {
       this.setLastSelection(state);
-    } else {
-      this.setExpandedState(state, $event);
-      if ($event && this.lastSelection !== state) {
-        // collapse previously selected group
-        if (this.lastSelection) {
-          this.setExpandedState(this.lastSelection, false);
-        }
-        this.setLastSelection(state);
-      }
     }
   }
 
   shouldExpand(index: number) {
     if (this.collapsed) {
       return index === this.flyoutIndex;
-    } else if (index.toString() in this.navExpandedState) {
-      return this.navExpandedState[index];
-    }
-    return false;
+    } else return index === this.selectedItem.index;
   }
 
   updateNavCollapsed(value: boolean): void {
-    this.collapsed = value;
     this.navigationService.collapsed.next(value);
-    this.setExpandedState(this.lastSelection, false);
+  }
+
+  setLastSelection(index) {
+    if (this.selectedItem.index !== index) {
+      this.navigationService.selectedItem.next({
+        module: this.selectedItem.module,
+        index,
+      });
+    }
+  }
+
+  setModule(module: number): void {
+    this.navigationService.selectedItem.next({
+      module,
+      index: this.selectedItem.index,
+    });
+    if (this.modules[module].path) {
+      this.router.navigateByUrl(this.modules[module].path);
+    }
   }
 }

@@ -181,6 +181,11 @@ func (co *Overview) Name() string {
 	return "overview"
 }
 
+// Description returns module description.
+func (co *Overview) Description() string {
+	return "Namespace module shows all resources related to currently selected namespace\nUse dropdown at the top to change the selected namespace"
+}
+
 func (co *Overview) ClientRequestHandlers() []octant.ClientRequestHandler {
 	return nil
 }

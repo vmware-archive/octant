@@ -1,39 +1,69 @@
-<clr-vertical-nav
-  [clrVerticalNavCollapsible]="true"
+<div class="navigation-top"
+  [ngClass]="{
+      'navigation-top-collapsed': collapsed,
+      'navigation-top-collapsed-labels': collapsed&&showLabels
+    }">
+  <clr-vertical-nav
+  [clrVerticalNavCollapsible]="false"
   [(clrVerticalNavCollapsed)]="collapsed"
   (clrVerticalNavCollapsedChange)="updateNavCollapsed($event)"
 >
-  <!-- Navigation items -->
+  <div class="navigation-main">
+    <clr-tabs clrLayout="vertical"
+      [ngClass]="{
+        'module-tabs': !showLabels,
+        'module-tabs-labels': showLabels
+      }">
+    >
+      <clr-tab *ngFor="let tab of modules; let i = index; trackBy: identifyTab">
+        <div clrTabLink (click)="setModule(i)" class="btn-icon"
+          [ngClass]="{
+            'button-tool': !showLabels,
+            'button-tool-labels': showLabels
+          }">
+            <div *ngIf="showLabels" class="button-wrapper">
+              <clr-icon class="icon-nav" [attr.shape]="tab.icon"></clr-icon>
+              <div class="button-text-wrapper">
+                <div class="button-text">{{tab.title}}</div>
+              </div>
+            </div>
+          <app-octant-tooltip *ngIf="!showLabels" [tooltipText]="tab.title">
+            <clr-icon class="icon-nav" [attr.shape]="tab.icon"></clr-icon>
+          </app-octant-tooltip>
+        </div>
+        <ng-template *clrIfActive="i === this.selectedItem.module">
+          <clr-tab-content>
+            <div></div>
+          </clr-tab-content>
+        </ng-template>
+      </clr-tab>
+      </clr-tabs>
+    <!-- Navigation items -->
   <div
     [ngClass]="{
       'navigation-items-collapsed': collapsed,
       'navigation-items': !collapsed
-    }"
-  >
+    }">
     <ng-container
       *ngFor="
-        let section of navigation.sections;
+        let section of currentModule?.children;
         let i = index;
         trackBy: identifyNavigationItem
       "
     >
       <!-- Collapsed Navigation -->
       <ng-container *ngIf="collapsed; else expanded">
-        <ng-template [ngIf]="section.module">
-          <div class="nav-divider"></div>
-        </ng-template>
-
         <a
           clrVerticalNavLink
           (click)="openPopup(i)"
-          [ngClass]="{ 'item-selected': i == this.lastSelection }"
+          [ngClass]="{ 'item-selected': i == this.selectedItem.index }"
           [routerLinkActiveOptions]="{ exact: !section.children?.length }"
           [routerLink]="formatPath(section.path)"
           routerLinkActive="active"
-          (mouseover)="flyoutIndex = i; lastSelection = i"
+          (mouseover)="flyoutIndex = i; selectedItem.index = i"
         >
           <clr-icon
-            [attr.shape]="section.iconName | default: 'home'"
+            [attr.shape]="section.iconName | default: 'play'"
             clrVerticalNavIcon
           ></clr-icon>
         </a>
@@ -41,8 +71,8 @@
         <div
           class="flyout nav-group-children"
           [ngClass]="{ 'flyout-empty': !section.children?.length }"
-          (mouseleave)="flyoutIndex = -1; lastSelection = -1"
-          (document:mouseleave)="flyoutIndex = -1; lastSelection = -1"
+          (mouseleave)="flyoutIndex = -1; selectedItem.index = -1"
+          (document:mouseleave)="flyoutIndex = -1; selectedItem.index = -1"
         >
           <a
             class="flyout-header"
@@ -62,7 +92,7 @@
             >
               <a
                 [routerLink]="formatPath(category.path)"
-                [routerLinkActiveOptions]="{ exact: true }"
+                [routerLinkActiveOptions]="{ exact: false }"
                 routerLinkActive="active"
                 class="flyout-item nav-link"
                 (click)="setNavState(false, i)"
@@ -75,10 +105,6 @@
       </ng-container>
       <!-- Expanded Navigation -->
       <ng-template #expanded>
-        <ng-template [ngIf]="section.module">
-          <div class="nav-divider"></div>
-          <span class="title">{{ section.module }}</span>
-        </ng-template>
         <ng-container
           *ngIf="section.children?.length > 0; else noChildExpanded"
         >
@@ -88,7 +114,7 @@
             (clrVerticalNavGroupExpandedChange)="setNavState($event, i)"
           >
             <clr-icon
-              [attr.shape]="section.iconName | default: 'home'"
+              [attr.shape]="section.iconName | default: 'exclamation-circle'"
               clrVerticalNavIcon
             ></clr-icon>
             {{ section.title }}
@@ -110,7 +136,7 @@
                 <a
                   clrVerticalNavLink
                   [routerLink]="formatPath(category.path)"
-                  [routerLinkActiveOptions]="{ exact: true }"
+                  [routerLinkActiveOptions]="{ exact: false }"
                   routerLinkActive="active"
                 >
                   <clr-icon
@@ -129,24 +155,41 @@
             clrVerticalNavLink
             (click)="closePopups(i)"
             [routerLink]="formatPath(section.path)"
-            [routerLinkActiveOptions]="{ exact: true }"
+            [routerLinkActiveOptions]="{ exact: i==0 }"
             routerLinkActive="active"
           >
-            <clr-icon
-              [attr.shape]="section.iconName | default: 'home'"
+            <clr-icon *ngIf="section.iconName"
+              [attr.shape]="section.iconName"
               clrVerticalNavIcon
             ></clr-icon>
-            <div class="nav-item-text">
+            <div class="nav-item-text"
+                 [ngClass]="{ 'nav-item-padded': !section.iconName }"
+            >
               {{ section.title }}
             </div>
           </a>
         </ng-template>
       </ng-template>
     </ng-container>
+    <div *ngIf="!collapsed" class="nav-description">
+      <div class="nav-description-inner">
+        <div class="clr-row">
+          <div class="clr-col-12">
+            <div class="card">
+              <div class="card-header">
+                {{ currentModule?.title }}
+              </div>
+              <div class="card-block">
+                <div class="card-text">
+                {{ currentModule?.description }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <!-- Theme switcher -->
-  <div class="theme-switcher">
-    <app-theme-switch-button [collapsed]="collapsed"></app-theme-switch-button>
-  </div>
+</div>
 </clr-vertical-nav>
+</div>

@@ -6,12 +6,14 @@ import { NavigationChild } from '../../../sugarloaf/models/navigation';
 
 export const NAVIGATION_MOCK_DATA: NavigationChild[] = [
   {
+    module: 'workloads',
     title: 'Applications',
     path: 'workloads/namespace/default',
     iconName: 'application',
     isLoading: false,
   },
   {
+    module: 'overview',
     title: 'Namespace Overview',
     path: 'overview/namespace/default',
     iconName: 'dashboard',
@@ -200,6 +202,24 @@ export const NAVIGATION_MOCK_DATA: NavigationChild[] = [
         isLoading: false,
       },
       {
+        title: 'resource1',
+        path: 'cluster-overview/custom-resources/resource1',
+        children: [
+          {
+            title: 'First',
+            path: 'cluster-overview/custom-resources/resource1/v1alpha',
+            isLoading: false,
+          },
+          {
+            title: 'Second',
+            path: 'cluster-overview/custom-resources/resource1/v1/more/info',
+            isLoading: false,
+          },
+        ],
+        iconName: 'crd',
+        isLoading: false,
+      },
+      {
         title:
           'antreacontrollerinfos.clusterinformation.antrea.tanzu.vmware.com',
         path:
@@ -272,12 +292,14 @@ export const NAVIGATION_MOCK_DATA: NavigationChild[] = [
     isLoading: false,
   },
   {
+    module: 'argo-ui',
     title: 'Argo UI',
     path: 'argo-ui',
     iconName: 'cloud',
     isLoading: false,
   },
   {
+    module: 'sample-plugin',
     title: 'Sample Plugin',
     path: 'plugin-name',
     children: [
@@ -300,9 +322,94 @@ export const NAVIGATION_MOCK_DATA: NavigationChild[] = [
     isLoading: false,
   },
   {
+    module: 'open-stack',
     title: 'OpenStack',
     path: 'openstack',
     iconName: 'cloud',
     isLoading: false,
   },
 ];
+
+export const expectedSelection = {
+  'workloads/namespace/default': { module: 0, index: 0 },
+  'overview/namespace/default': { module: 1, index: 0 },
+  'overview/namespace/default/workloads': { module: 1, index: 1 },
+  'overview/namespace/default/workloads/cron-jobs': { module: 1, index: 1 },
+  'overview/namespace/default/workloads/daemon-sets': { module: 1, index: 1 },
+  'overview/namespace/default/workloads/deployments': { module: 1, index: 1 },
+  'overview/namespace/default/workloads/jobs': { module: 1, index: 1 },
+  'overview/namespace/default/workloads/pods': { module: 1, index: 1 },
+  'overview/namespace/default/workloads/replica-sets': { module: 1, index: 1 },
+  'overview/namespace/default/workloads/replication-controllers': {
+    module: 1,
+    index: 1,
+  },
+  'overview/namespace/default/workloads/stateful-sets': { module: 1, index: 1 },
+  'overview/namespace/default/discovery-and-load-balancing': {
+    module: 1,
+    index: 2,
+  },
+  'overview/namespace/default/discovery-and-load-balancing/horizontal-pod-autoscalers': {
+    module: 1,
+    index: 2,
+  },
+  'overview/namespace/default/discovery-and-load-balancing/ingresses': {
+    module: 1,
+    index: 2,
+  },
+  'overview/namespace/default/discovery-and-load-balancing/services': {
+    module: 1,
+    index: 2,
+  },
+  'overview/namespace/default/config-and-storage': { module: 1, index: 3 },
+  'overview/namespace/default/config-and-storage/config-maps': {
+    module: 1,
+    index: 3,
+  },
+  'overview/namespace/default/config-and-storage/persistent-volume-claims': {
+    module: 1,
+    index: 3,
+  },
+  'overview/namespace/default/config-and-storage/secrets': {
+    module: 1,
+    index: 3,
+  },
+  'overview/namespace/default/config-and-storage/service-accounts': {
+    module: 1,
+    index: 3,
+  },
+  'overview/namespace/default/custom-resources': { module: 1, index: 4 },
+  'overview/namespace/default/rbac': { module: 1, index: 5 },
+  'overview/namespace/default/rbac/roles': { module: 1, index: 5 },
+  'overview/namespace/default/rbac/role-bindings': { module: 1, index: 5 },
+  'overview/namespace/default/events': { module: 1, index: 6 },
+  'cluster-overview': { module: 2, index: 0 },
+  'cluster-overview/namespaces': { module: 2, index: 1 },
+  'cluster-overview/custom-resources': { module: 2, index: 2 },
+  'cluster-overview/custom-resources/resource1': { module: 2, index: 2 },
+  'cluster-overview/custom-resources/resource1/v1alpha': {
+    module: 2,
+    index: 2,
+  },
+  'cluster-overview/custom-resources/resource1/v1/more/info': {
+    module: 2,
+    index: 2,
+  },
+  'cluster-overview/custom-resources/antreacontrollerinfos.clusterinformation.antrea.tanzu.vmware.com': {
+    module: 2,
+    index: 2,
+  },
+  'cluster-overview/rbac': { module: 2, index: 3 },
+  'cluster-overview/rbac/cluster-roles': { module: 2, index: 3 },
+  'cluster-overview/rbac/cluster-role-bindings': { module: 2, index: 3 },
+  'cluster-overview/nodes': { module: 2, index: 4 },
+  'cluster-overview/storage': { module: 2, index: 5 },
+  'cluster-overview/storage/persistent-volumes': { module: 2, index: 5 },
+  'cluster-overview/port-forward': { module: 2, index: 6 },
+  'configuration/plugins': { module: 6, index: 0 },
+  'argo-ui': { module: 3, index: 0 },
+  'plugin-name': { module: 4, index: 0 },
+  'plugin-name/nested-once': { module: 4, index: 1 },
+  'plugin-name/nested-once/nested-twice': { module: 4, index: 1 },
+  openstack: { module: 5, index: 0 },
+};
