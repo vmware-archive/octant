@@ -30,6 +30,7 @@ export interface RadioElement extends Element {
 export interface TextElement extends Element {
   type: 'text';
   config: {
+    label: string;
     placeholder: string;
   };
 }

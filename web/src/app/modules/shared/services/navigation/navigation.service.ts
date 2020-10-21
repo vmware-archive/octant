@@ -42,9 +42,6 @@ export class NavigationService {
   current = new BehaviorSubject<Navigation>(emptyNavigation);
   modules = new BehaviorSubject<Module[]>([]);
   selectedItem = new BehaviorSubject<Selection>({ module: 0, index: -1 });
-  public collapsed: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
-    false
-  );
   public showLabels: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
     true
   );
