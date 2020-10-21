@@ -95,7 +95,8 @@ describe('NavigationService', () => {
       index: number,
       descriptor: string
     ) {
-      svc.activeUrl.next('/' + path);
+      const prefixedPath = path.startsWith('/') ? path : '/' + path;
+      svc.activeUrl.next(prefixedPath);
       svc.updateLastSelection();
 
       svc.selectedItem.pipe(take(1)).subscribe(selection => {
@@ -113,11 +114,13 @@ describe('NavigationService', () => {
           .toEqual(expected.module);
       });
 
-      svc.activeUrl.pipe(take(1)).subscribe(url =>
-        expect(url)
-          .withContext(`url path for ${descriptor} index ${index}`)
-          .toEqual('/' + path)
-      );
+      svc.activeUrl
+        .pipe(take(1))
+        .subscribe(url =>
+          expect(url)
+            .withContext(`url path for ${descriptor} index ${index}`)
+            .toEqual(prefixedPath)
+        );
     }
 
     const routerLinkCases = [
