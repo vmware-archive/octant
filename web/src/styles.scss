@@ -22,5 +22,10 @@
 
 // avoid markdown text rendering badly in table/cards
 .datagrid-cell .markdown p, .card-block .markdown p {
-  margin-top: 0;
+  line-height: 0.7rem;
+  font-size: 0.65rem;
+
+  &:first-child {
+    margin-top: 0;
+  }
 }
