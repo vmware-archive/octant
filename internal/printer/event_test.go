@@ -191,8 +191,6 @@ func Test_ReplicaSetEvents(t *testing.T) {
 					Component: "replicaset-controller",
 				},
 				Message:        "Created pod: frontend-b7fxg",
-				FirstTimestamp: metav1.Time{Time: time.Time{}},
-				LastTimestamp:  metav1.Time{Time: time.Time{}},
 			},
 		},
 	}
@@ -236,8 +234,8 @@ func Test_ReplicaSetEvents(t *testing.T) {
 		"Message":    component.NewText("Created pod: frontend-b7fxg"),
 		"Reason":     component.NewText("SuccessfulCreate"),
 		"Type":       component.NewText("Normal"),
-		"First Seen": component.NewText("Nil"),
-		"Last Seen":  component.NewText("Nil"),
+		"First Seen": component.NewText("<unknown>"),
+		"Last Seen":  component.NewText("<unknown>"),
 		"From":       component.NewText("replicaset-controller"),
 		"Count":      component.NewText("1"),
 	})

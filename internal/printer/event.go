@@ -62,8 +62,19 @@ func EventListHandler(ctx context.Context, list *corev1.EventList, opts Options)
 		row["Message"] = messageLink
 		row["Reason"] = component.NewText(event.Reason)
 		row["Type"] = component.NewText(event.Type)
-		row["First Seen"] = component.NewTimestamp(event.FirstTimestamp.Time)
-		row["Last Seen"] = component.NewTimestamp(event.LastTimestamp.Time)
+
+		if component.NewTimestamp(event.FirstTimestamp.Time) != nil {
+			row["First Seen"] = component.NewTimestamp(event.FirstTimestamp.Time)	
+		} else {
+			row["First Seen"] = component.NewText("<unknown>")
+		}
+
+		if component.NewTimestamp(event.FirstTimestamp.Time) != nil {
+			row["Last Seen"] = component.NewTimestamp(event.LastTimestamp.Time)
+		} else {
+			row["Last Seen"] = component.NewText("<unknown>")
+		}
+
 
 		table.Add(row)
 	}
@@ -183,8 +194,17 @@ func PrintEvents(list *corev1.EventList, opts Options) (component.Component, err
 		row["Reason"] = component.NewText(event.Reason)
 		row["Type"] = component.NewText(event.Type)
 
-		row["First Seen"] = component.NewTimestamp(event.FirstTimestamp.Time)
-		row["Last Seen"] = component.NewTimestamp(event.LastTimestamp.Time)
+		if component.NewTimestamp(event.FirstTimestamp.Time) != nil {
+			row["First Seen"] = component.NewTimestamp(event.FirstTimestamp.Time)	
+		} else {
+			row["First Seen"] = component.NewText("<unknown>")
+		}
+
+		if component.NewTimestamp(event.FirstTimestamp.Time) != nil {
+			row["Last Seen"] = component.NewTimestamp(event.LastTimestamp.Time)
+		} else {
+			row["Last Seen"] = component.NewText("<unknown>")
+		}
 
 		row["From"] = component.NewText(formatEventSource(event.Source))
 
