@@ -108,12 +108,14 @@ export class NavigationService {
         return { module: moduleIndex, index: 0 };
       } else {
         for (const [childIndex, child] of module.children.entries()) {
-          if (strippedUrl === child.path) {
+          if (strippedUrl === this.stripUrl(child.path)) {
             return { module: moduleIndex, index: childIndex };
           }
           if (child.children) {
             for (const grandchild of child.children) {
-              if (this.comparePaths(strippedUrl, grandchild.path)) {
+              if (
+                this.comparePaths(strippedUrl, this.stripUrl(grandchild.path))
+              ) {
                 return { module: moduleIndex, index: childIndex };
               }
             }
