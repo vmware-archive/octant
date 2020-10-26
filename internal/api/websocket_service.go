@@ -39,9 +39,11 @@ func websocketService(manager ClientManager, dashConfig config.Dash) http.Handle
 func serveWebsocket(manager ClientManager, dashConfig config.Dash, w http.ResponseWriter, r *http.Request) {
 	client, err := manager.ClientFromRequest(dashConfig, w, r)
 	if err != nil {
-		logger := dashConfig.Logger()
-		logger.WithErr(err).Errorf("create websocket client")
-
+		if dashConfig != nil {
+			logger := dashConfig.Logger()
+			logger.WithErr(err).Errorf("create websocket client")
+		}
+		return
 	}
 
 	go client.readPump()
