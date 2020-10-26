@@ -263,6 +263,11 @@ func getBoundPersistentVolume(ctx context.Context, pvc *corev1.PersistentVolumeC
 		return nil, errors.Wrapf(err, "get volume for key %+v", key)
 	}
 
+	// Check for the case when we can list PVCs but not the bound PVs so Get returns a non-nil, but empty value.
+	if pv != nil && pv.Object == nil {
+		return nil, nil
+	}
+
 	if pv != nil {
 		isErr := kubernetes.FromUnstructured(pv, persistentVolume)
 		if isErr != nil {
