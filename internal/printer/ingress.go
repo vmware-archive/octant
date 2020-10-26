@@ -8,6 +8,7 @@ package printer
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -41,7 +42,7 @@ func IngressListHandler(ctx context.Context, list *extv1beta1.IngressList, optio
 
 		row["Name"] = nameLink
 		row["Labels"] = component.NewLabels(ingress.Labels)
-		row["Hosts"] = component.NewText(formatIngressHosts(ingress.Spec.Rules))
+		row["Hosts"] = getHostComponent(formatIngressHosts(ingress.Spec.Rules))
 		row["Address"] = component.NewText(loadBalancerStatusStringer(ingress.Status.LoadBalancer))
 		row["Ports"] = component.NewText(ports)
 		row["Age"] = component.NewTimestamp(ingress.CreationTimestamp.Time)
@@ -52,6 +53,15 @@ func IngressListHandler(ctx context.Context, list *extv1beta1.IngressList, optio
 	}
 
 	return ot.ToComponent()
+}
+
+func getHostComponent(link string) component.Component {
+	_, err := url.Parse(link)
+	if strings.Contains(link, ".") && err == nil {
+		return component.NewLink("", link, "http://"+link)
+	} else {
+		return component.NewText(link)
+	}
 }
 
 // IngressHandler is a printFunc that prints an Ingress
