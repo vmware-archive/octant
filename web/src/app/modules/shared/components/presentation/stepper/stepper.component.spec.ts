@@ -13,13 +13,14 @@ import {
 } from '@angular/platform-browser/animations';
 import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
 import { anything, deepEqual, instance, mock, verify } from 'ts-mockito';
+import { ActionService } from '../../../services/action/action.service';
 
 describe('StepperComponent', () => {
   let component: StepperComponent;
   let fixture: ComponentFixture<StepperComponent>;
   const formBuilder: FormBuilder = new FormBuilder();
 
-  const mockWebsocketService: WebsocketService = mock(WebsocketService);
+  const mockActionService: ActionService = mock(ActionService);
 
   const action = 'action.octant.dev/test';
   const view: StepperView = {
@@ -56,8 +57,8 @@ describe('StepperComponent', () => {
         providers: [
           { provide: FormBuilder, useValue: formBuilder },
           {
-            provide: WebsocketService,
-            useValue: instance(mockWebsocketService),
+            provide: ActionService,
+            useValue: instance(mockActionService),
           },
         ],
       }).compileComponents();
@@ -90,12 +91,8 @@ describe('StepperComponent', () => {
         fixture.detectChanges();
 
         verify(
-          mockWebsocketService.sendMessage(
-            'action.octant.dev/performAction',
-            deepEqual({
-              action,
-              formGroup: anything(),
-            })
+          mockActionService.perform(
+            deepEqual({ action, 'step 1': {}, 'confirmation step': {} })
           )
         ).once();
       });

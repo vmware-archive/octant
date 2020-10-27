@@ -620,6 +620,7 @@ type Form struct {
 func (f *Form) MarshalJSON() ([]byte, error) {
 	t := struct {
 		Fields []map[string]interface{} `json:"fields"`
+		Action string                   `json:"action,omitempty"`
 	}{}
 
 	for _, field := range f.Fields {
@@ -636,6 +637,7 @@ func (f *Form) MarshalJSON() ([]byte, error) {
 
 		t.Fields = append(t.Fields, m)
 	}
+	t.Action = f.Action
 
 	return json.Marshal(t)
 }

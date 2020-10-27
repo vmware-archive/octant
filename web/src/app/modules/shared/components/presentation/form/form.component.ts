@@ -5,7 +5,9 @@
 import { Component, Input, OnInit, Output } from '@angular/core';
 import { ActionField, ActionForm } from '../../../models/content';
 import {
+  FormArray,
   FormBuilder,
+  FormControl,
   FormGroup,
   ValidatorFn,
   Validators,
@@ -27,6 +29,7 @@ export class FormComponent implements OnInit {
   form: ActionForm;
 
   formGroup: FormGroup;
+  formArray: FormArray;
 
   constructor(private formBuilder: FormBuilder) {}
 
@@ -38,9 +41,30 @@ export class FormComponent implements OnInit {
           field.value,
           this.getValidators(field.validators),
         ];
+        if (field.configuration?.choices && field.type === 'checkbox') {
+          const choices: Choice[] = field.configuration.choices;
+          controls[field.name] = new FormArray([]);
+          choices.forEach((choice: Choice) => {
+            if (choice.checked) {
+              controls[field.name].push(new FormControl(choice.value));
+            }
+          });
+        }
       });
-
       this.formGroup = this.formBuilder.group(controls);
+    }
+  }
+
+  onCheck(event, field: string) {
+    this.formArray = this.formGroup.get(field) as FormArray;
+    if (event.target.checked) {
+      this.formArray.push(new FormControl(event.target.value));
+    } else {
+      this.formArray.controls.forEach((fc: FormControl, index: number) => {
+        if (fc.value === event.target.value) {
+          this.formArray.removeAt(index);
+        }
+      });
     }
   }
 
