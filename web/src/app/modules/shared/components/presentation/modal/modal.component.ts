@@ -10,7 +10,6 @@ import {
 import { FormComponent } from '../form/form.component';
 import { ModalService } from '../../../services/modal/modal.service';
 import { Subscription } from 'rxjs';
-import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
 import { ActionService } from '../../../services/action/action.service';
 
 interface Choice {
@@ -41,8 +40,7 @@ export class ModalComponent
 
   constructor(
     private actionService: ActionService,
-    private modalService: ModalService,
-    private websocketService: WebsocketService
+    private modalService: ModalService
   ) {
     super();
   }
@@ -72,9 +70,9 @@ export class ModalComponent
 
   onFormSubmit() {
     if (this.modalAppForm && this.modalAppForm.formGroup.valid) {
-      this.websocketService.sendMessage('action.octant.dev/performAction', {
+      this.actionService.perform({
         action: this.action,
-        formGroup: this.modalAppForm.formGroup.value,
+        ...this.modalAppForm.formGroup.value,
       });
       this.opened = false;
     }

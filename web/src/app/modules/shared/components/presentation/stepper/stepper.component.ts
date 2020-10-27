@@ -6,8 +6,8 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
+import { ActionService } from '../../../services/action/action.service';
 
 interface Choice {
   label: string;
@@ -33,7 +33,7 @@ export class StepperComponent extends AbstractViewComponent<StepperView> {
 
   constructor(
     private formBuilder: FormBuilder,
-    private websocketService: WebsocketService
+    private actionService: ActionService
   ) {
     super();
   }
@@ -71,13 +71,10 @@ export class StepperComponent extends AbstractViewComponent<StepperView> {
   }
 
   onFormSubmit() {
-    this.websocketService.sendMessage('action.octant.dev/performAction', {
+    this.actionService.perform({
       action: this.action,
-      formGroup: this.formGroup.value,
+      ...this.formGroup.value,
     });
-    if (isDevMode()) {
-      console.log('stepper form: ' + this.formGroup.value);
-    }
   }
 
   onFormCancel() {

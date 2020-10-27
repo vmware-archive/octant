@@ -10,9 +10,10 @@
             <input
               type="checkbox"
               clrCheckbox
-              [formControlName]="field.name"
+              [formArraylName]="field.name"
               [value]="opt.value"
               [checked]="opt.checked"
+              (change)="onCheck($event, field.name)"
             />
             <label>{{ opt.label }}</label>
           </clr-checkbox-wrapper>
