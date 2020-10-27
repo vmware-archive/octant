@@ -1,3 +1,14 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta
+  title="Docs/About/2. Roadmap"
+  parameters={{
+    viewMode: 'docs',
+    previewTabs: { canvas: { hidden: true } },
+    canvas: { disable: true },
+  }}
+/>
+
 # Octant Roadmap
 
 The Octant team is focused on improving and stabilizing Octant with the goal of reaching 1.0 stability.
@@ -12,7 +23,7 @@ Octant currently can visualize many Kubernetes types. In order to round out the 
 
 ### Upgrading the "kubectl" experience
 
-Octant aims to be a companion to `kubectl` rather than a replacement. There are powerful capabilities buried inside of `kubectl` that can not simply be replaced with a graphical view. With this in mind, Octant will attempt to embed the `kubectl` command line experience inside of Octant. 
+Octant aims to be a companion to `kubectl` rather than a replacement. There are powerful capabilities buried inside of `kubectl` that can not simply be replaced with a graphical view. With this in mind, Octant will attempt to embed the `kubectl` command line experience inside of Octant.
 
 ### Providing additional information about objects
 
@@ -48,17 +59,17 @@ Currently, Octant contains a library of components used to build out the detaile
 
 There are multiple ways to describe an application or workload. Octant aims to automatically group objects together that define a workload. This view will help users understand the scope of their workloads and quickly identify components that are causing issues. The project will use [common labels](https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/) as a starting point.
 
-Octant should also know about prevalent Kubernetes applications, such as Helm, and use their metadata to help group objects into a workload. 
+Octant should also know about prevalent Kubernetes applications, such as Helm, and use their metadata to help group objects into a workload.
 
 ## Being a better ecosystem participant
 
 ### Speeding up Octant
 
-Collating the data that makes up Octant views is a complex task since the Kubernetes API is not specifically tailored to applications which want to query large amounts of specific data. Instead, Octant relies on Kubernetes' informers to provide real time data updates. Populating the caches the informers utilize can be further optimized which will in part speed up operations in Octant, like switching namespaces and viewing resource graphs. 
+Collating the data that makes up Octant views is a complex task since the Kubernetes API is not specifically tailored to applications which want to query large amounts of specific data. Instead, Octant relies on Kubernetes' informers to provide real time data updates. Populating the caches the informers utilize can be further optimized which will in part speed up operations in Octant, like switching namespaces and viewing resource graphs.
 
 ### Graduating to an application
 
-Octant is a local web application that connects to Kubernetes clusters to provide detailed views about Kubernetes objects. If Octant could be free of of the browser, it could take advantage of items like system alerts, task and status bars provided by Linux, macOS and Windows. 
+Octant is a local web application that connects to Kubernetes clusters to provide detailed views about Kubernetes objects. If Octant could be free of of the browser, it could take advantage of items like system alerts, task and status bars provided by Linux, macOS and Windows.
 
 ### Managing local clusters
 

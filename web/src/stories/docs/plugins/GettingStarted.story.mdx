@@ -1,3 +1,14 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta
+  title="Docs/Plugins/1. Getting Started"
+  parameters={{
+    viewMode: 'docs',
+    previewTabs: { canvas: { hidden: true } },
+    canvas: { disable: true },
+  }}
+/>
+
 # Introduction to Plugins
 
 Plugins are binaries that run alongside developer dashboard to provide additional functionality. Plugins are built using [go-plugin](https://github.com/hashicorp/go-plugin) in order to communicate with the dashboard over gRPC.
@@ -21,4 +32,5 @@ By using the components available in `/pkg/view/components`, plugins can display
 
 ## Next Steps
 
-Reach out to us for feedback/troubleshooting, check the [Community page](/community) for Slack, mailing list, and more.
+Take a look at how to get started with [Go Plugins](/?path=/docs/docs-plugins-2-go-plugins--page)
+Reach out to us for feedback/troubleshooting, check the [Community page](https://octant.dev/community) for Slack, mailing list, and more.

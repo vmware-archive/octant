@@ -4,6 +4,6 @@ import OctantLogo from './assets/octant-logo.png';
 export default create({
   base: 'light',
   brandTitle: 'Octant',
-  brandUrl: 'https://github.com/vmware-taznu/octant',
+  brandUrl: 'https://github.com/vmware-tanzu/octant',
   brandImage: OctantLogo
 });
