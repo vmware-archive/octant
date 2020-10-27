@@ -404,6 +404,22 @@ func Test_createIngressRules(t *testing.T) {
 				},
 			},
 		},
+		{
+			Host: "",
+			IngressRuleValue: extv1beta1.IngressRuleValue{
+				HTTP: &extv1beta1.HTTPIngressRuleValue{
+					Paths: []extv1beta1.HTTPIngressPath{
+						{
+							Path: "/aws",
+							Backend: extv1beta1.IngressBackend{
+								ServiceName: "ssl-redirect",
+								ServicePort: intstr.FromString("use-annotation"),
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	cols := component.NewTableCols("Host", "Path", "Backends")
@@ -433,6 +449,11 @@ func Test_createIngressRules(t *testing.T) {
 					"Backends": component.NewLink("", "service", "/service"),
 					"Host":     component.NewText("*"),
 					"Path":     component.NewText("/"),
+				},
+				{
+					"Backends": component.NewMarkdownText("*defined via use-annotation*"),
+					"Host":     component.NewText("*"),
+					"Path":     component.NewText("/aws"),
 				},
 			}),
 		},

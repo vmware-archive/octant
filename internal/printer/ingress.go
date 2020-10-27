@@ -163,10 +163,16 @@ func createIngressRulesView(ingress *extv1beta1.Ingress, options Options) (*comp
 		}
 
 		for _, path := range rule.HTTP.Paths {
-			servicePath, err := options.Link.ForGVK(ingress.Namespace, "v1", "Service",
-				path.Backend.ServiceName, backendStringer(&path.Backend))
-			if err != nil {
-				return nil, err
+			var servicePath component.Component
+			if path.Backend.ServicePort.String() == "use-annotation" {
+				servicePath = component.NewMarkdownText("*defined via use-annotation*")
+			} else {
+				var err error
+				servicePath, err = options.Link.ForGVK(ingress.Namespace, "v1", "Service",
+					path.Backend.ServiceName, backendStringer(&path.Backend))
+				if err != nil {
+					return nil, err
+				}
 			}
 
 			table.Add(component.TableRow{
