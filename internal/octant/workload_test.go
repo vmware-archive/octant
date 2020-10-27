@@ -37,7 +37,7 @@ func podMetricsLoader(controller *gomock.Controller, pm *unstructured.Unstructur
 		err = fmt.Errorf("failed")
 	}
 
-	pml.EXPECT().SupportsMetrics().Return(supportsMetrics, err).AnyTimes()
+	pml.EXPECT().SupportsMetrics(context.TODO()).Return(supportsMetrics, err).AnyTimes()
 
 	if pm != nil {
 		pml.EXPECT().

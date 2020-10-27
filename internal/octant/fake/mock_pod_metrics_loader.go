@@ -5,6 +5,7 @@
 package fake
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -51,16 +52,16 @@ func (mr *MockPodMetricsLoaderMockRecorder) Load(arg0, arg1 interface{}) *gomock
 }
 
 // SupportsMetrics mocks base method
-func (m *MockPodMetricsLoader) SupportsMetrics() (bool, error) {
+func (m *MockPodMetricsLoader) SupportsMetrics(arg0 context.Context) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SupportsMetrics")
+	ret := m.ctrl.Call(m, "SupportsMetrics", arg0)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SupportsMetrics indicates an expected call of SupportsMetrics
-func (mr *MockPodMetricsLoaderMockRecorder) SupportsMetrics() *gomock.Call {
+func (mr *MockPodMetricsLoaderMockRecorder) SupportsMetrics(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SupportsMetrics", reflect.TypeOf((*MockPodMetricsLoader)(nil).SupportsMetrics))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SupportsMetrics", reflect.TypeOf((*MockPodMetricsLoader)(nil).SupportsMetrics), arg0)
 }

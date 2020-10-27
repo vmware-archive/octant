@@ -6,12 +6,16 @@
 package octant_test
 
 import (
+	"context"
+	"errors"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/discovery"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
@@ -140,13 +144,18 @@ func TestClusterPodMetricsLoader_SupportsMetrics(t *testing.T) {
 			clusterClient: initClusterClientWithoutPodMetrics(controller),
 			want:          false,
 		},
+		{
+			name:          "cluster supports pod metrics but currently unavailable",
+			clusterClient: initClusterClientWithFailingExternalMetrics(controller),
+			want:          false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			pml, err := octant.NewClusterPodMetricsLoader(tt.clusterClient)
 			require.NoError(t, err)
 
-			got, err := pml.SupportsMetrics()
+			got, err := pml.SupportsMetrics(context.TODO())
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -184,6 +193,33 @@ func initClusterClientWithoutPodMetrics(controller *gomock.Controller) *clusterF
 
 	discoveryClient := clusterFake.NewMockDiscoveryInterface(controller)
 	discoveryClient.EXPECT().ServerPreferredNamespacedResources().Return(apiResourceLists, nil)
+
+	clusterClient := clusterFake.NewMockClientInterface(controller)
+	clusterClient.EXPECT().DiscoveryClient().Return(discoveryClient, nil)
+
+	return clusterClient
+}
+
+func initClusterClientWithFailingExternalMetrics(controller *gomock.Controller) *clusterFake.MockClientInterface {
+	apiResourceLists := []*metav1.APIResourceList{
+		{
+			GroupVersion: gvk.PodMetrics.GroupVersion().String(),
+			APIResources: []metav1.APIResource{
+				{
+					Kind: gvk.PodMetrics.Kind,
+				},
+			},
+		},
+	}
+
+	errGroup := &discovery.ErrGroupDiscoveryFailed{
+		Groups: map[schema.GroupVersion]error{
+			gvk.PodMetrics.GroupVersion(): errors.New("server currently unavailable"),
+		},
+	}
+
+	discoveryClient := clusterFake.NewMockDiscoveryInterface(controller)
+	discoveryClient.EXPECT().ServerPreferredNamespacedResources().Return(apiResourceLists, errGroup)
 
 	clusterClient := clusterFake.NewMockClientInterface(controller)
 	clusterClient.EXPECT().DiscoveryClient().Return(discoveryClient, nil)
