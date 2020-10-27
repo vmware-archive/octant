@@ -14,9 +14,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/discovery"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/gvk"
+	"github.com/vmware-tanzu/octant/internal/log"
 )
 
 //go:generate mockgen -destination=./fake/mock_pod_metrics_loader.go -package=fake github.com/vmware-tanzu/octant/internal/octant PodMetricsLoader
@@ -91,7 +93,7 @@ type PodMetricsLoader interface {
 	// object is not found.
 	Load(namespace, name string) (object *unstructured.Unstructured, isFound bool, err error)
 	// SupportsMetrics returns true if the cluster has metrics support.
-	SupportsMetrics() (bool, error)
+	SupportsMetrics(ctx context.Context) (bool, error)
 }
 
 // ClusterPodMetricsLoaderOption is an option for configuring ClusterPodMetricsLoader.
@@ -145,17 +147,22 @@ func (ml *ClusterPodMetricsLoader) Load(namespace, name string) (*unstructured.U
 	return ml.PodMetricsCRUD.Get(namespace, name)
 }
 
-func (ml *ClusterPodMetricsLoader) SupportsMetrics() (bool, error) {
+func (ml *ClusterPodMetricsLoader) SupportsMetrics(ctx context.Context) (bool, error) {
 	var sErr error
 	ml.supportsOnce.Do(func() {
-		discovery, err := ml.clusterClient.DiscoveryClient()
+		discoveryClient, err := ml.clusterClient.DiscoveryClient()
 		if err != nil {
 			sErr = fmt.Errorf("get discovery cluster: %w", err)
 			return
 		}
 
-		lists, err := discovery.ServerPreferredNamespacedResources()
+		lists, err := discoveryClient.ServerPreferredNamespacedResources()
 		if err != nil {
+			if discovery.IsGroupDiscoveryFailedError(err) {
+				logger := log.From(ctx)
+				logger.Warnf("metrics failed error: %w", err)
+				return
+			}
 			sErr = fmt.Errorf("get preferred namespaced resources: %w", err)
 			return
 		}

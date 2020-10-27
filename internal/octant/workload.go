@@ -391,12 +391,11 @@ func (wl *ClusterWorkloadLoader) Load(ctx context.Context, namespace string) ([]
 		workload := workloadTracker[uid]
 		workload.Owner = owner
 
-		resourceList, err := wl.podMetrics(object)
+		resourceList, err := wl.podMetrics(ctx, object)
 		if err != nil {
 			if IsPodMetricsNotSupported(err) {
 				workload.SetPodMetricsDisabled()
 				workload.AddPodStatus(status.Status(), object, corev1.ResourceList{})
-
 				continue
 			} else {
 				return nil, fmt.Errorf("get metrics for pod '%s': %w", object.GetName(), err)
@@ -416,12 +415,12 @@ func (wl *ClusterWorkloadLoader) Load(ctx context.Context, namespace string) ([]
 	return workloads, nil
 }
 
-func (wl *ClusterWorkloadLoader) podMetrics(pod *unstructured.Unstructured) (*corev1.ResourceList, error) {
+func (wl *ClusterWorkloadLoader) podMetrics(ctx context.Context, pod *unstructured.Unstructured) (*corev1.ResourceList, error) {
 	if pod == nil {
 		return nil, fmt.Errorf("pod is nil")
 	}
 
-	supportsPodMetrics, err := wl.PodMetricsLoader.SupportsMetrics()
+	supportsPodMetrics, err := wl.PodMetricsLoader.SupportsMetrics(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("check for pod metrics support: %w", err)
 	}
