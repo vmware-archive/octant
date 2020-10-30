@@ -17,7 +17,7 @@ import {
 } from 'src/app/modules/shared/models/content';
 import { SliderService } from 'src/app/modules/shared/slider/slider.service';
 import { ViewService } from '../../../services/view/view.service';
-import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
+import { ActionService } from '../../../services/action/action.service';
 
 interface Tab {
   name: string;
@@ -51,7 +51,7 @@ export class TabsComponent implements OnChanges, OnInit {
     private activatedRoute: ActivatedRoute,
     private viewService: ViewService,
     private sliderService: SliderService,
-    private wss: WebsocketService
+    private actionService: ActionService
   ) {}
 
   ngOnInit() {
@@ -133,7 +133,7 @@ export class TabsComponent implements OnChanges, OnInit {
     if (tabIndex > -1) {
       if (this.payloads[tabIndex]) {
         const payload = this.payloads[tabIndex];
-        this.wss.sendMessage('action.octant.dev/performAction', payload);
+        this.actionService.perform(payload);
       }
 
       this.tabs = [
