@@ -143,5 +143,25 @@ func (p *Pod) Visit(ctx context.Context, object *unstructured.Unstructured, hand
 		return nil
 	})
 
+	g.Go(func() error {
+		pvcs, err := p.queryer.PersistentVolumeClaimsForPod(ctx, pod)
+		if err != nil {
+			return err
+		}
+		for i := range pvcs {
+			pvc := pvcs[i]
+			g.Go(func() error {
+				m, err := runtime.DefaultUnstructuredConverter.ToUnstructured(pvc)
+				if err != nil {
+					return err
+				}
+				u := &unstructured.Unstructured{Object: m}
+				return handler.AddEdge(ctx, object, u)
+			})
+		}
+
+		return nil
+	})
+
 	return g.Wait()
 }

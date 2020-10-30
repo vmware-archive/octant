@@ -147,6 +147,21 @@ func (mr *MockQueryerMockRecorder) OwnerReference(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OwnerReference", reflect.TypeOf((*MockQueryer)(nil).OwnerReference), arg0, arg1)
 }
 
+// PersistentVolumeClaimsForPod mocks base method
+func (m *MockQueryer) PersistentVolumeClaimsForPod(arg0 context.Context, arg1 *v10.Pod) ([]*v10.PersistentVolumeClaim, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PersistentVolumeClaimsForPod", arg0, arg1)
+	ret0, _ := ret[0].([]*v10.PersistentVolumeClaim)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PersistentVolumeClaimsForPod indicates an expected call of PersistentVolumeClaimsForPod
+func (mr *MockQueryerMockRecorder) PersistentVolumeClaimsForPod(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PersistentVolumeClaimsForPod", reflect.TypeOf((*MockQueryer)(nil).PersistentVolumeClaimsForPod), arg0, arg1)
+}
+
 // PodsForService mocks base method
 func (m *MockQueryer) PodsForService(arg0 context.Context, arg1 *v10.Service) ([]*v10.Pod, error) {
 	m.ctrl.T.Helper()
