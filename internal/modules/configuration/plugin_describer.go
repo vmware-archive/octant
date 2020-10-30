@@ -92,7 +92,7 @@ func (d *PluginListDescriber) Describe(ctx context.Context, namespace string, op
 		tbl.Add(row)
 	}
 
-	tbl.Sort("Name", false)
+	tbl.Sort(false, "Name")
 
 	return component.ContentResponse{
 		Components: []component.Component{list},

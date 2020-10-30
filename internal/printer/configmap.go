@@ -122,7 +122,7 @@ func describeConfigMapData(cm *corev1.ConfigMap) (*component.Table, error) {
 		table.Add(row)
 	}
 
-	table.Sort("Key", false)
+	table.Sort(false, "Key")
 
 	return table, nil
 }

@@ -117,5 +117,4 @@ func (t *Link) LessThan(i interface{}) bool {
 	}
 
 	return t.Config.Text < v.Config.Text
-
 }

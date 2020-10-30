@@ -240,7 +240,7 @@ func createHorizontalPodAutoscalerConditionsView(horizontalPodAutoscaler *autosc
 		table.Add(row)
 	}
 
-	table.Sort("Type", false)
+	table.Sort(false, "Type")
 
 	return table, nil
 }

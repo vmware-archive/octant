@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/davecgh/go-spew/spew"
+
 	"github.com/pkg/errors"
 
 	"github.com/vmware-tanzu/octant/pkg/action"
@@ -161,33 +162,82 @@ func (t *Table) IsEmpty() bool {
 	return len(t.Config.Rows) == 0
 }
 
+// SetPlaceholder adds placeholder text to an empty table.
 func (t *Table) SetPlaceholder(placeholder string) {
 	t.Config.EmptyContent = placeholder
 }
 
-func (t *Table) Sort(name string, reverse bool) {
+// Sort sorts a table by one or more keys with booleans for reverse and object status.
+func (t *Table) Sort(reverse bool, keys ...string) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	sort.SliceStable(t.Rows(), func(i, j int) bool {
-		a, ok := t.Config.Rows[i][name]
-		if !ok {
-			spew.Dump(fmt.Sprintf("%s:%d/%d", name, i, j), t.Config.Rows)
+	var sortFuncs []lessFunc
+
+	for _, key := range keys {
+		nameFunc := func(i, j TableRow) bool {
+			a, ok := i[key]
+			if !ok {
+				spew.Dump(fmt.Sprintf("%s:%v/%v", key, i, j), t.Config.Rows)
+				return false
+			}
+
+			b, ok := j[key]
+			if !ok {
+				spew.Dump(fmt.Sprintf("%s:%v/%v", key, i, j), t.Config.Rows)
+				return false
+			}
+
+			if reverse {
+				return !a.LessThan(b)
+			}
+			return a.LessThan(b)
+		}
+		sortFuncs = append(sortFuncs, nameFunc)
+	}
+
+	OrderedBy(sortFuncs).Sort(t.Rows())
+}
+
+type lessFunc func(p1, p2 TableRow) bool
+
+type multiSorter struct {
+	rows []TableRow
+	less []lessFunc
+}
+
+func (ms *multiSorter) Sort(tableRow []TableRow) {
+	ms.rows = tableRow
+	sort.Sort(ms)
+}
+
+func OrderedBy(less []lessFunc) *multiSorter {
+	return &multiSorter{
+		less: less,
+	}
+}
+
+func (ms *multiSorter) Len() int {
+	return len(ms.rows)
+}
+
+func (ms *multiSorter) Swap(i, j int) {
+	ms.rows[i], ms.rows[j] = ms.rows[j], ms.rows[i]
+}
+
+func (ms *multiSorter) Less(i, j int) bool {
+	p, q := &ms.rows[i], &ms.rows[j]
+	var k int
+	for k = 0; k < len(ms.less)-1; k++ {
+		less := ms.less[k]
+		switch {
+		case less(*p, *q):
+			return true
+		case less(*q, *p):
 			return false
 		}
-
-		b, ok := t.Config.Rows[j][name]
-		if !ok {
-			spew.Dump(fmt.Sprintf("%s:%d/%d", name, i, j), t.Config.Rows)
-			return false
-		}
-
-		if reverse {
-			return !a.LessThan(b)
-		}
-
-		return a.LessThan(b)
-	})
+	}
+	return ms.less[k](*p, *q)
 }
 
 // Add adds additional items to the tail of the table. Use this function to

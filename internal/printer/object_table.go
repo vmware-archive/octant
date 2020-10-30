@@ -147,7 +147,7 @@ func (ol *ObjectTable) ToComponent() (component.Component, error) {
 	}
 
 	if so := ol.sortOrder; so != nil {
-		table.Sort(so.name, so.reverse)
+		table.Sort(so.reverse, so.name)
 	}
 
 	return table, nil
