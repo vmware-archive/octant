@@ -840,6 +840,12 @@ func (osq *ObjectStoreQueryer) ConfigMapsForPod(ctx context.Context, pod *corev1
 			return nil, errors.Wrap(err, "converting unstructured configmap")
 		}
 
+		for _, v := range pod.Spec.Volumes {
+			if v.ConfigMap != nil && v.ConfigMap.Name == configMap.Name {
+				configMaps = append(configMaps, configMap)
+			}
+		}
+
 		for ci := range pod.Spec.Containers {
 			c := &pod.Spec.Containers[ci]
 			for _, e := range c.Env {
