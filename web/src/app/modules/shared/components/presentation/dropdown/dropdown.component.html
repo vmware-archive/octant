@@ -1,0 +1,30 @@
+<div class="dropdown">
+  <clr-dropdown>
+    <button *ngIf="type == 'button'" class="btn btn-outline-primary" clrDropdownTrigger>
+      {{title}}
+      <clr-icon shape="caret down"></clr-icon>
+    </button>
+    <div *ngIf="type == 'link'">
+      <a [routerLink]="[url]" class="dropdown-link">
+        {{ title }}
+      </a>
+      <clr-icon shape="caret down" class="dropdown-link-icon" clrDropdownTrigger></clr-icon>
+    </div>
+    <div *ngIf="type == 'icon'" clrDropdownTrigger>
+      <clr-icon [attr.shape]="title"></clr-icon>
+      <clr-icon shape="caret down"></clr-icon>
+    </div>
+    <div *ngIf="type == 'label'" clrDropdownTrigger>
+      {{title}}
+      <clr-icon shape="caret down"></clr-icon>
+    </div>
+    <clr-dropdown-menu [clrPosition]="position" *clrIfOpen>
+      <ng-container *ngFor="let item of items; let i = index; trackBy: identifyItem" >
+        <label *ngIf="item.type == 'header'" class="dropdown-header" aria-hidden="true">{{item.label}}</label>
+        <div *ngIf="item.type == 'text'" (click)="openLink(i)" [ngClass]="{ 'active': item.name == selectedItem }" aria-label="item.label" clrDropdownItem>{{item.label}}</div>
+        <div *ngIf="item.type == 'link'" (click)="openLink(i)" [ngClass]="{ 'active': item.name == selectedItem }" aria-label="item.label" clrDropdownItem>{{item.label}}</div>
+        <div *ngIf="item.type == 'separator'" class="dropdown-divider" role="separator" aria-hidden="true"></div>
+      </ng-container>
+    </clr-dropdown-menu>
+  </clr-dropdown>
+</div>

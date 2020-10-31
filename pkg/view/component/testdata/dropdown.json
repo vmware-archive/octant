@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "title": [{"metadata": {"type": "text"}, "config": {"value": "dropdown"}}],
+    "type": "dropdown"
+  },
+  "config": {
+    "position": "top-left",
+    "type": "button",
+    "action": "action.octant.dev/dropdownTest",
+    "useSelection": false,
+    "items": [
+      {
+        "name": "first",
+        "type": "text",
+        "label": "First Item",
+        "description": "This is the first item"
+      },
+      {
+        "name": "second",
+        "type": "link",
+        "label": "Second Item",
+        "url": "/items/second",
+        "description": "This is the second item"
+      }
+    ]
+  }}

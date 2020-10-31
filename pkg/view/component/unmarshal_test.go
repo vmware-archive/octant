@@ -115,6 +115,32 @@ func Test_unmarshal(t *testing.T) {
 			},
 		},
 		{
+			name:       "dropdown",
+			configFile: "config_dropdown.json",
+			objectType: "dropdown",
+			expected: &Dropdown{
+				Config: DropdownConfig{
+					DropdownType:     DropdownButton,
+					DropdownPosition: BottomLeft,
+					Action:           "action.octant.dev/dropdownTest",
+					UseSelection:     true,
+					Items: []DropdownItemConfig{{
+						Name:  "first",
+						Type:  "text",
+						Label: "First Item",
+					},
+						{
+							Name:  "second",
+							Type:  "link",
+							Label: "Second Item",
+							Url:   "/items/second",
+						},
+					},
+				},
+				Base: newBase(TypeDropdown, nil),
+			},
+		},
+		{
 			name:       "editor",
 			configFile: "config_editor.json",
 			objectType: "editor",

@@ -1,0 +1,35 @@
+
+:host-context(body) {
+  --link-color: #0079b8;
+}
+
+:host-context(body.dark) {
+  --link-color: #49afd9;
+}
+
+.dropdown {
+  margin: 0.4rem;
+}
+
+.dropdown-link {
+  color: var(--link-color)!important;
+}
+
+.dropdown-link-icon {
+  margin-left: 0.2rem;
+  padding: 0rem!important;
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+clr-dropdown div {
+  padding-right: 0.8rem!important;
+}
+
+clr-dropdown button {
+  padding-right: 1.4rem!important;
+}
+
+clr-dropdown-menu {
+  margin-top: 0rem;
+}

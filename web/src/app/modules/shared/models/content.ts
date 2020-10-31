@@ -81,6 +81,24 @@ export interface DonutChartLabels {
   singular: string;
 }
 
+export interface DropdownItem {
+  name: string;
+  type: 'header' | 'text' | 'link' | 'separator';
+  label?: string;
+  url?: string;
+  description?: string;
+}
+
+export interface DropdownView extends View {
+  config: {
+    position: string;
+    type: 'button' | 'link' | 'label' | 'icon';
+    action: string;
+    useSelection: boolean;
+    items: DropdownItem[];
+  };
+}
+
 export interface DonutChartView extends View {
   config: {
     segments: DonutSegment[];
