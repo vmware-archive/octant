@@ -12,8 +12,14 @@ module.exports = {
     },
   ],
   typescript: {
+    check: false,
+    checkOptions: {},
     // also valid 'react-docgen-typescript' | false
     reactDocgen: 'react-docgen',
+    reactDocgenTypescriptOptions: {
+      shouldExtractLiteralValuesFromEnum: true,
+      propFilter: (prop) => (prop.parent ? !/node_modules/.test(prop.parent.fileName) : true),
+    },
   },
   // logLevel: 'debug',
 };
