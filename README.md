@@ -40,7 +40,7 @@ Octant is a tool for developers to understand how applications run on a Kubernet
 
 ## Usage
 
-![Octant demo](site/docs/master/octant-demo.gif)
+![Octant demo](web/src/assets/octant-demo.gif)
 
 ## Installation
 
@@ -156,4 +156,4 @@ See our [roadmap](ROADMAP.md) for tentative features in a 1.0 release.
 
 Octant is available under the [Apache License, Version 2.0](LICENSE)
 
-[octant-logo]: /site/docs/master/octant-logo.png
+[octant-logo]: /web/src/assets/octant-logo.png
