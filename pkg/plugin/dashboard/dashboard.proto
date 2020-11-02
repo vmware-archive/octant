@@ -1,6 +1,8 @@
 syntax = "proto3";
 package dashboard;
 
+option go_package = ".;dashboard";
+
 message Empty {}
 
 message ContentRequest {

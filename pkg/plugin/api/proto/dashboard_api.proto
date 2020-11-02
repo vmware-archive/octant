@@ -4,6 +4,8 @@ package proto;
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 
+option go_package = ".;proto";
+
 message Empty {}
 
 message KeyRequest {
