@@ -89,6 +89,38 @@ describe('NavigationService', () => {
       }
     ));
 
+    it('verify nav selection reverse lookup is correct', inject(
+      [NavigationService, WebsocketService, ContentService],
+      (svc: NavigationService, backendService: BackendService) => {
+        const currentNavigation: Navigation = {
+          sections: NAVIGATION_MOCK_DATA,
+          defaultPath: '',
+        };
+
+        backendService.triggerHandler(
+          'event.octant.dev/navigation',
+          currentNavigation
+        );
+
+        for (const path in expectedSelection) {
+          const prefixedPath = path.startsWith('/') ? path : '/' + path;
+          svc.activeUrl.next(prefixedPath);
+          svc.updateLastSelection();
+
+          svc.selectedItem.pipe(take(1)).subscribe(selection => {
+            expect(selection.index)
+              .withContext(`reverse lookup index navigation for ${path}`)
+              .toEqual(expectedSelection[path].index);
+            expect(selection.module)
+              .withContext(`reverse lookup module navigation for ${path}`)
+              .toEqual(expectedSelection[path].module);
+          });
+        }
+
+        svc.selectedItem.unsubscribe();
+      }
+    ));
+
     function verifySelection(
       path: string,
       svc: NavigationService,

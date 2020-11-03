@@ -429,6 +429,10 @@ export const expectedSelection = {
   'argo-ui': { module: 3, index: 0 },
   '/knative': { module: 4, index: 0 },
   '/knative/serving/services': { module: 4, index: 1 },
+  '/knative/serving/services/event-display/revisions/event-display-dqtpl': {
+    module: 4,
+    index: 1,
+  },
   '/knative/serving/configurations': { module: 4, index: 2 },
   'plugin-name': { module: 5, index: 0 },
   'plugin-name/nested-once': { module: 5, index: 1 },
