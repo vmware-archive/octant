@@ -182,7 +182,7 @@ func Test_ReplicaSetEvents(t *testing.T) {
 					CreationTimestamp: metav1.Time{
 						Time: now,
 					},
-					ResourceVersion: "3",
+					ResourceVersion: "1",
 				},
 				Count:  1,
 				Type:   corev1.EventTypeNormal,
@@ -190,7 +190,7 @@ func Test_ReplicaSetEvents(t *testing.T) {
 				Source: corev1.EventSource{
 					Component: "replicaset-controller",
 				},
-				Message:        "Created pod: frontend-b7fxg",
+				Message: "Created pod: frontend-b7fxg",
 			},
 		},
 	}
