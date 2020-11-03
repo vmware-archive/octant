@@ -118,10 +118,10 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subscriptionModules.unsubscribe();
-    this.subscriptionSelectedItem.unsubscribe();
-    this.subscriptionCollapsed.unsubscribe();
-    this.subscriptionShowLabels.unsubscribe();
+    this.subscriptionModules?.unsubscribe();
+    this.subscriptionSelectedItem?.unsubscribe();
+    this.subscriptionCollapsed?.unsubscribe();
+    this.subscriptionShowLabels?.unsubscribe();
   }
 
   identifyNavigationItem(index: number, item: NavigationChild): string {

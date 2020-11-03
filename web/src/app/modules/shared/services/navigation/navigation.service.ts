@@ -33,6 +33,8 @@ const emptyNavigation: Navigation = {
   defaultPath: '',
 };
 
+const MAX_RANK = 99;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -80,23 +82,16 @@ export class NavigationService {
 
   updateLastSelection() {
     const targetUrl = this.activeUrl.value;
-    let suggested = this.indexFromUrl(targetUrl);
-
-    if (suggested.index === -1) {
-      suggested = this.indexFromUrl(
-        targetUrl.substring(0, targetUrl.lastIndexOf('/'))
-      );
-    }
-
-    if (suggested.index < 0) {
-      suggested.index = 0;
-    }
-
+    const suggested = this.indexFromUrl(targetUrl);
     this.selectedItem.next(suggested);
   }
 
   indexFromUrl(url: string): Selection {
     const strippedUrl = this.stripUrl(url);
+    let highestSelection = { module: 0, index: 0 };
+    let rank,
+      highestRank = -1;
+
     if (strippedUrl.length === 0) {
       return { module: 1, index: 0 };
     }
@@ -104,34 +99,60 @@ export class NavigationService {
     for (const [moduleIndex, module] of this.modules.value.entries()) {
       const modulePath = this.stripUrl(module.path);
 
-      if (strippedUrl === modulePath) {
+      rank = this.compareSubPaths(strippedUrl, modulePath);
+      if (this.isExactMatch(rank)) {
         return { module: moduleIndex, index: 0 };
-      } else {
-        for (const [childIndex, child] of module.children.entries()) {
-          if (strippedUrl === this.stripUrl(child.path)) {
-            return { module: moduleIndex, index: childIndex };
-          }
-          if (child.children) {
-            for (const grandchild of child.children) {
-              if (
-                this.comparePaths(strippedUrl, this.stripUrl(grandchild.path))
-              ) {
-                return { module: moduleIndex, index: childIndex };
-              }
+      } else if (rank > highestRank) {
+        highestRank = rank;
+        highestSelection = { module: moduleIndex, index: 0 };
+      }
+
+      for (const [childIndex, child] of module.children.entries()) {
+        rank = this.compareSubPaths(strippedUrl, this.stripUrl(child.path));
+        if (this.isExactMatch(rank)) {
+          return { module: moduleIndex, index: childIndex };
+        } else if (rank > highestRank) {
+          highestRank = rank;
+          highestSelection = { module: moduleIndex, index: childIndex };
+        }
+        if (child.children) {
+          for (const grandchild of child.children) {
+            rank = this.compareSubPaths(
+              strippedUrl,
+              this.stripUrl(grandchild.path)
+            );
+            if (this.isExactMatch(rank)) {
+              return { module: moduleIndex, index: childIndex };
+            } else if (rank > highestRank) {
+              highestRank = rank;
+              highestSelection = { module: moduleIndex, index: childIndex };
             }
           }
         }
       }
     }
-    return { module: 0, index: -1 };
+    return highestSelection;
   }
 
-  comparePaths(url: string, path: string): boolean {
-    if (path.indexOf('custom-resources') > 0) {
-      // custom resources can have version added to URL
-      return url.startsWith(path);
+  compareSubPaths(url: string, path: string): number {
+    if (url === path) {
+      // exact match
+      return MAX_RANK;
     }
-    return url === path;
+
+    let match = -1;
+    const paths = path.split('/');
+    const urls = url.split('/');
+
+    do {
+      match++;
+    } while (paths[match] === urls[match]);
+
+    return match;
+  }
+
+  isExactMatch(rank: number): boolean {
+    return rank === MAX_RANK;
   }
 
   stripUrl(url: string): string {
