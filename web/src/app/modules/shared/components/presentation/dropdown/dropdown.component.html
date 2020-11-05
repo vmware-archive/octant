@@ -22,7 +22,7 @@
       <ng-container *ngFor="let item of items; let i = index; trackBy: identifyItem" >
         <label *ngIf="item.type == 'header'" class="dropdown-header" aria-hidden="true">{{item.label}}</label>
         <div *ngIf="item.type == 'text'" (click)="openLink(i)" [ngClass]="{ 'active': item.name == selectedItem }" aria-label="item.label" clrDropdownItem>{{item.label}}</div>
-        <div *ngIf="item.type == 'link'" (click)="openLink(i)" [ngClass]="{ 'active': item.name == selectedItem }" aria-label="item.label" clrDropdownItem>{{item.label}}</div>
+        <a class="dropdown-link" *ngIf="item.type == 'link'" (click)="openLink(i)" [ngClass]="{ 'active': item.name == selectedItem }" aria-label="item.label" clrDropdownItem>{{item.label}}</a>
         <div *ngIf="item.type == 'separator'" class="dropdown-divider" role="separator" aria-hidden="true"></div>
       </ng-container>
     </clr-dropdown-menu>

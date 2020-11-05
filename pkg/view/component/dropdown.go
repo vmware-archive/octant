@@ -9,9 +9,8 @@ import (
 	"encoding/json"
 )
 
-// DropdownType defines the dropdown type
-// basically what component is used as dropdown source
-// visible when dropdown is closed
+// DropdownType defines what the dropdown source is (UI component that's visible when dropdown is closed)
+//
 type DropdownType string
 
 const (
@@ -71,16 +70,14 @@ type Dropdown struct {
 }
 
 // NewDropdown creates a new dropdown component
-func NewDropdown(title string, position DropdownPosition, dropdownType DropdownType, action string, useSelection bool, items ...DropdownItemConfig) *Dropdown {
+func NewDropdown(title string, dropdownType DropdownType, action string, items ...DropdownItemConfig) *Dropdown {
 	dropdownItems := append([]DropdownItemConfig(nil), items...)
 	return &Dropdown{
 		Base: newBase(TypeDropdown, TitleFromString(title)),
 		Config: DropdownConfig{
-			DropdownPosition: position,
-			DropdownType:     dropdownType,
-			Action:           action,
-			UseSelection:     useSelection,
-			Items:            dropdownItems,
+			DropdownType: dropdownType,
+			Action:       action,
+			Items:        dropdownItems,
 		},
 	}
 }
@@ -95,6 +92,16 @@ func (t *Dropdown) AddDropdownItem(name string, itemType ItemType, label string,
 		Description: description,
 	}
 	t.Config.Items = append(t.Config.Items, item)
+}
+
+// SetDropdownPosition sets the position of context menu relative to dropdown source.
+func (t *Dropdown) SetDropdownPosition(position DropdownPosition) {
+	t.Config.DropdownPosition = position
+}
+
+// SetDropdownUseSelection defines if dropdown title is updated on selection change
+func (t *Dropdown) SetDropdownUseSelection(sel bool) {
+	t.Config.UseSelection = sel
 }
 
 // GetMetadata accesses the components metadata

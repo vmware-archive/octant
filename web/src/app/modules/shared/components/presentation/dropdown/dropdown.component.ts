@@ -61,12 +61,14 @@ export class DropdownComponent extends AbstractViewComponent<DropdownView> {
       this.title = item.label;
     }
 
-    this.websocketService.sendMessage('action.octant.dev/performAction', {
-      action: this.action,
-      selection: this.selectedItem,
-    });
+    if (this.action) {
+      this.websocketService.sendMessage('action.octant.dev/performAction', {
+        action: this.action,
+        selection: this.selectedItem,
+      });
+    }
 
-    if (item.url) {
+    if (item.url && this.type === 'link') {
       this.router.navigateByUrl(item.url);
     }
 
