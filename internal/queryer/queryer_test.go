@@ -1222,8 +1222,12 @@ func TestObjectStoreQueryer_ServiceAccountForPod(t *testing.T) {
 func TestObjectStoreQueryer_ConfigMapsForPod(t *testing.T) {
 	configMapKeyRef := testutil.CreateConfigMap("configmap1")
 	configMapEnv := testutil.CreateConfigMap("configmap2")
+	configMapVolume := testutil.CreateConfigMap("configmap3")
+	configMapVolume2 := testutil.CreateConfigMap("configmap4")
+	unusedConfigMap := testutil.CreateConfigMap("unused")
 
 	pod := testutil.CreatePod("pod")
+
 	pod.Spec.Containers = []corev1.Container{
 		{
 			EnvFrom: []corev1.EnvFromSource{
@@ -1237,8 +1241,8 @@ func TestObjectStoreQueryer_ConfigMapsForPod(t *testing.T) {
 			},
 			Env: []corev1.EnvVar{
 				{
-					Name:  "configmap3",
-					Value: "configmap3_value",
+					Name:  "env_var_name",
+					Value: "env_var_value",
 				},
 				{
 					ValueFrom: &corev1.EnvVarSource{
@@ -1247,6 +1251,30 @@ func TestObjectStoreQueryer_ConfigMapsForPod(t *testing.T) {
 								Name: "configmap1",
 							},
 						},
+					},
+				},
+			},
+		},
+	}
+
+	// ConfigMap consumed via Volume
+	pod.Spec.Volumes = []corev1.Volume{
+		{
+			Name: "configmap-volume",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: "configmap3",
+					},
+				},
+			},
+		},
+		{
+			Name: "another-configmap-volume",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: "configmap4",
 					},
 				},
 			},
@@ -1271,7 +1299,7 @@ func TestObjectStoreQueryer_ConfigMapsForPod(t *testing.T) {
 
 	o.EXPECT().
 		List(gomock.Any(), gomock.Eq(key)).
-		Return(testutil.ToUnstructuredList(t, configMapKeyRef, configMapEnv), false, nil)
+		Return(testutil.ToUnstructuredList(t, configMapKeyRef, configMapEnv, configMapVolume, configMapVolume2, unusedConfigMap), false, nil)
 	configMaps, err := q.ConfigMapsForPod(ctx, pod)
 	require.NoError(t, err)
 
@@ -1281,7 +1309,7 @@ func TestObjectStoreQueryer_ConfigMapsForPod(t *testing.T) {
 	}
 	sort.Strings(got)
 
-	assert.Equal(t, []string([]string{configMapKeyRef.Name, configMapEnv.Name}), got)
+	assert.Equal(t, []string([]string{configMapKeyRef.Name, configMapEnv.Name, configMapVolume.Name, configMapVolume2.Name}), got)
 }
 
 func TestObjectStoreQueryer_SecretsForPod(t *testing.T) {
@@ -1371,6 +1399,61 @@ func TestObjectStoreQueryer_SecretsForPod(t *testing.T) {
 	sort.Strings(got)
 
 	assert.Equal(t, []string([]string{secretInVolume.Name, secretEnv.Name, secretEnvFrom.Name}), got)
+}
+
+func TestObjectStoreQueryer_PersistentVolumeClaimsForPod(t *testing.T) {
+	unusedPVC := testutil.CreatePersistentVolumeClaim("unused")
+	pvc1 := testutil.CreatePersistentVolumeClaim("pvc1")
+	pvc2 := testutil.CreatePersistentVolumeClaim("pvc2")
+
+	pod := testutil.CreatePod("pod")
+	pod.Spec.Volumes = []corev1.Volume{
+		{
+			Name: "vol1",
+			VolumeSource: corev1.VolumeSource{
+				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+					ClaimName: "pvc1",
+				},
+			},
+		},
+		{
+			Name: "vol2",
+			VolumeSource: corev1.VolumeSource{
+				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+					ClaimName: "pvc2",
+				},
+			},
+		},
+	}
+
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	o := storeFake.NewMockStore(controller)
+	key := store.Key{
+		Namespace:  "namespace",
+		APIVersion: "v1",
+		Kind:       "PersistentVolumeClaim",
+	}
+
+	discovery := queryerFake.NewMockDiscoveryInterface(controller)
+	q := New(o, discovery)
+	ctx := context.Background()
+
+	o.EXPECT().
+		List(gomock.Any(), gomock.Eq(key)).
+		Return(testutil.ToUnstructuredList(t, pvc1, pvc2, unusedPVC), false, nil)
+
+	pvcs, err := q.PersistentVolumeClaimsForPod(ctx, pod)
+	require.NoError(t, err)
+
+	var got []string
+	for _, pvc := range pvcs {
+		got = append(got, pvc.Name)
+	}
+	sort.Strings(got)
+
+	assert.Equal(t, []string{pvc1.Name, pvc2.Name}, got)
 }
 
 func TestObjectStoreQueryer_ScaleTarget(t *testing.T) {

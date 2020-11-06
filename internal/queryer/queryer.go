@@ -56,6 +56,7 @@ type Queryer interface {
 	ServiceAccountForPod(ctx context.Context, pod *corev1.Pod) (*corev1.ServiceAccount, error)
 	ConfigMapsForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.ConfigMap, error)
 	SecretsForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Secret, error)
+	PersistentVolumeClaimsForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.PersistentVolumeClaim, error)
 }
 
 type childrenCache struct {
@@ -839,6 +840,12 @@ func (osq *ObjectStoreQueryer) ConfigMapsForPod(ctx context.Context, pod *corev1
 			return nil, errors.Wrap(err, "converting unstructured configmap")
 		}
 
+		for _, v := range pod.Spec.Volumes {
+			if v.ConfigMap != nil && v.ConfigMap.Name == configMap.Name {
+				configMaps = append(configMaps, configMap)
+			}
+		}
+
 		for ci := range pod.Spec.Containers {
 			c := &pod.Spec.Containers[ci]
 			for _, e := range c.Env {
@@ -916,6 +923,39 @@ func (osq *ObjectStoreQueryer) SecretsForPod(ctx context.Context, pod *corev1.Po
 	}
 
 	return secrets, nil
+}
+
+func (osq *ObjectStoreQueryer) PersistentVolumeClaimsForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.PersistentVolumeClaim, error) {
+	if pod == nil {
+		return nil, errors.New("pod is nil")
+	}
+
+	var persistentVolumeClaims []*corev1.PersistentVolumeClaim
+	key := store.Key{
+		Namespace:  pod.Namespace,
+		APIVersion: "v1",
+		Kind:       "PersistentVolumeClaim",
+	}
+	ul, _, err := osq.objectStore.List(ctx, key)
+	if err != nil {
+		return nil, errors.Wrap(err, "retrieving persistentVolumeClaims")
+	}
+
+	for i := range ul.Items {
+		pvc := &corev1.PersistentVolumeClaim{}
+		err := kubernetes.FromUnstructured(&ul.Items[i], pvc)
+		if err != nil {
+			return nil, errors.Wrap(err, "converting unstructured persistentVolumeClaim")
+		}
+
+		for _, v := range pod.Spec.Volumes {
+			if v.PersistentVolumeClaim != nil && v.PersistentVolumeClaim.ClaimName == pvc.Name {
+				persistentVolumeClaims = append(persistentVolumeClaims, pvc)
+			}
+		}
+	}
+
+	return persistentVolumeClaims, nil
 }
 
 func (osq *ObjectStoreQueryer) getSelector(object runtime.Object) (*metav1.LabelSelector, error) {

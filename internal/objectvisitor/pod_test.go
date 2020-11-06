@@ -22,6 +22,7 @@ func TestPod_Visit(t *testing.T) {
 	serviceAccount := testutil.CreateServiceAccount("service-account")
 	configMap := testutil.CreateConfigMap("configmap")
 	secret := testutil.CreateSecret("secret")
+	pvc := testutil.CreatePersistentVolumeClaim("pvc")
 
 	object := testutil.CreatePod("pod")
 	object.Spec.ServiceAccountName = serviceAccount.Name
@@ -41,6 +42,9 @@ func TestPod_Visit(t *testing.T) {
 	q.EXPECT().
 		SecretsForPod(gomock.Any(), object).
 		Return([]*corev1.Secret{secret}, nil)
+	q.EXPECT().
+		PersistentVolumeClaimsForPod(gomock.Any(), object).
+		Return([]*corev1.PersistentVolumeClaim{pvc}, nil)
 
 	handler := fake.NewMockObjectHandler(controller)
 	handler.EXPECT().
@@ -53,6 +57,8 @@ func TestPod_Visit(t *testing.T) {
 		AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, configMap)).
 		Return(nil)
 	handler.EXPECT().AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, secret)).
+		Return(nil)
+	handler.EXPECT().AddEdge(gomock.Any(), u, testutil.ToUnstructured(t, pvc)).
 		Return(nil)
 
 	var visited []unstructured.Unstructured
