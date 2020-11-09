@@ -8,6 +8,7 @@ package printer
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -39,9 +40,10 @@ func IngressListHandler(ctx context.Context, list *extv1beta1.IngressList, optio
 			return nil, err
 		}
 
+		isTLS := len(ingress.Spec.TLS) > 0
 		row["Name"] = nameLink
 		row["Labels"] = component.NewLabels(ingress.Labels)
-		row["Hosts"] = component.NewText(formatIngressHosts(ingress.Spec.Rules))
+		row["Hosts"] = getHostComponent(formatIngressHosts(ingress.Spec.Rules), isTLS)
 		row["Address"] = component.NewText(loadBalancerStatusStringer(ingress.Status.LoadBalancer))
 		row["Ports"] = component.NewText(ports)
 		row["Age"] = component.NewTimestamp(ingress.CreationTimestamp.Time)
@@ -52,6 +54,30 @@ func IngressListHandler(ctx context.Context, list *extv1beta1.IngressList, optio
 	}
 
 	return ot.ToComponent()
+}
+
+func getHostComponent(link string, isTLS bool) component.Component {
+	_, err := url.Parse(link)
+	if strings.Contains(link, ".") && err == nil {
+		prefix := "http://"
+		if isTLS {
+			prefix = "https://"
+		}
+
+		links := strings.Split(link, ",")
+		if len(links) == 1 {
+			return component.NewLink("", link, prefix+link)
+		}
+
+		// multiple urls, use Markdown instead
+		urls := make([]string, len(links))
+		for i := range urls {
+			urls[i] = fmt.Sprintf("[%s](%s)", links[i], prefix+links[i])
+		}
+		return component.NewMarkdownText(strings.Join(urls, ", "))
+	} else {
+		return component.NewText(link)
+	}
 }
 
 // IngressHandler is a printFunc that prints an Ingress

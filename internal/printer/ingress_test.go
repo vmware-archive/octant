@@ -41,13 +41,88 @@ func Test_IngressListHandler(t *testing.T) {
 	tlsObject.Labels = labels
 	tlsObject.Spec.TLS = []extv1beta1.IngressTLS{{}}
 
+	hostTest1 := testutil.CreateIngress("ingress")
+	hostTest1.CreationTimestamp = metav1.Time{Time: now}
+	hostTest1.Labels = labels
+	hostTest1.Spec.TLS = []extv1beta1.IngressTLS{}
+	hostTest1.Spec.Rules = []extv1beta1.IngressRule{
+		{
+			Host: "hello-world.info",
+			IngressRuleValue: extv1beta1.IngressRuleValue{
+				HTTP: &extv1beta1.HTTPIngressRuleValue{
+					Paths: []extv1beta1.HTTPIngressPath{
+						{
+							Path: "/v2",
+							Backend: extv1beta1.IngressBackend{
+								ServiceName: "app",
+								ServicePort: intstr.FromInt(80),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	hostTest2 := testutil.CreateIngress("ingress")
+	hostTest2.CreationTimestamp = metav1.Time{Time: now}
+	hostTest2.Labels = labels
+	hostTest2.Spec.TLS = []extv1beta1.IngressTLS{
+		{
+			SecretName: "secret",
+			Hosts:      []string{"echo1.example.com", "echo2.example.com"},
+		},
+	}
+	hostTest2.Spec.Rules = []extv1beta1.IngressRule{
+		{
+			Host: "echo1.example.com",
+			IngressRuleValue: extv1beta1.IngressRuleValue{
+				HTTP: &extv1beta1.HTTPIngressRuleValue{
+					Paths: []extv1beta1.HTTPIngressPath{
+						{
+							Path: "path1/example.com",
+							Backend: extv1beta1.IngressBackend{
+								ServiceName: "app",
+								ServicePort: intstr.FromInt(8080),
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			Host: "echo2.example.com",
+			IngressRuleValue: extv1beta1.IngressRuleValue{
+				HTTP: &extv1beta1.HTTPIngressRuleValue{
+					Paths: []extv1beta1.HTTPIngressPath{
+						{
+							Path: "path2/example.com",
+							Backend: extv1beta1.IngressBackend{
+								ServiceName: "app",
+								ServicePort: intstr.FromInt(8080),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
 	tlsList := &extv1beta1.IngressList{
 		Items: []extv1beta1.Ingress{*tlsObject},
+	}
+
+	hostTest1List := &extv1beta1.IngressList{
+		Items: []extv1beta1.Ingress{*hostTest1},
+	}
+
+	hostTest2List := &extv1beta1.IngressList{
+		Items: []extv1beta1.Ingress{*hostTest2},
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Hosts", "Address", "Ports", "Age")
 
 	service := testutil.ToUnstructured(t, testutil.CreateService("service"))
+	secret := testutil.ToUnstructured(t, testutil.CreateSecret("secret"))
 
 	cases := []struct {
 		name     string
@@ -99,6 +174,51 @@ func Test_IngressListHandler(t *testing.T) {
 				}),
 		},
 		{
+			name: "host URL",
+			list: hostTest1List,
+			expected: component.NewTableWithRows("Ingresses", "We couldn't find any ingresses!", cols,
+				[]component.TableRow{
+					{
+						"Name": component.NewLink("", "ingress", "/ingress",
+							genObjectStatus(component.TextStatusError, []string{
+								`Backend for service "app" specifies an invalid port`,
+								`Backend for service "app" specifies an invalid port`,
+							})),
+						"Labels":  component.NewLabels(labels),
+						"Age":     component.NewTimestamp(now),
+						"Hosts":   component.NewLink("", "hello-world.info", "http://hello-world.info"),
+						"Address": component.NewText(""),
+						"Ports":   component.NewText("80"),
+						component.GridActionKey: gridActionsFactory([]component.GridAction{
+							buildObjectDeleteAction(t, object),
+						}),
+					},
+				}),
+		},
+		{
+			name: "multiple host TLS URLs",
+			list: hostTest2List,
+			expected: component.NewTableWithRows("Ingresses", "We couldn't find any ingresses!", cols,
+				[]component.TableRow{
+					{
+						"Name": component.NewLink("", "ingress", "/ingress",
+							genObjectStatus(component.TextStatusError, []string{
+								`Backend for service "app" specifies an invalid port`,
+								`Backend for service "app" specifies an invalid port`,
+								`Backend for service "app" specifies an invalid port`,
+							})),
+						"Labels":  component.NewLabels(labels),
+						"Age":     component.NewTimestamp(now),
+						"Hosts":   component.NewMarkdownText("[echo1.example.com](https://echo1.example.com), [echo2.example.com](https://echo2.example.com)"),
+						"Address": component.NewText(""),
+						"Ports":   component.NewText("80, 443"),
+						component.GridActionKey: gridActionsFactory([]component.GridAction{
+							buildObjectDeleteAction(t, object),
+						}),
+					},
+				}),
+		},
+		{
 			name:  "list is nil",
 			list:  nil,
 			isErr: true,
@@ -125,6 +245,14 @@ func Test_IngressListHandler(t *testing.T) {
 					Kind:       "Service",
 					Name:       "app"}).
 				Return(service, nil).
+				AnyTimes()
+			tpo.objectStore.EXPECT().
+				Get(gomock.Any(), store.Key{
+					Namespace:  "namespace",
+					APIVersion: "v1",
+					Kind:       "Secret",
+					Name:       "secret"}).
+				Return(secret, nil).
 				AnyTimes()
 
 			ctx := context.Background()
