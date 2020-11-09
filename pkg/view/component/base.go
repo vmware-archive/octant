@@ -20,6 +20,8 @@ const (
 	TypeContainers = "containers"
 	// TypeDonutChart is a donut chart component.
 	TypeDonutChart = "donutChart"
+	// TypeDropdown is a dropdown component.
+	TypeDropdown = "dropdown"
 	// TypeEditor is an editor component.
 	TypeEditor = "editor"
 	// TypeError is an error component.

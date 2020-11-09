@@ -1,0 +1,19 @@
+{
+  "position": "bottom-left",
+  "type": "button",
+  "action": "action.octant.dev/dropdownTest",
+  "useSelection": true,
+  "items": [
+    {
+      "name": "first",
+      "type": "text",
+      "label": "First Item"
+    },
+    {
+      "name": "second",
+      "type": "link",
+      "label": "Second Item",
+      "url": "/items/second"
+    }
+  ]
+}

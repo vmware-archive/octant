@@ -38,6 +38,7 @@ import { StepperComponent } from './components/presentation/stepper/stepper.comp
 import { TimestampComponent } from './components/presentation/timestamp/timestamp.component';
 import { ContainersComponent } from './components/presentation/containers/containers.component';
 import { ModalComponent } from './components/presentation/modal/modal.component';
+import { DropdownComponent } from './components/presentation/dropdown/dropdown.component';
 
 export interface ComponentMapping {
   [key: string]: Type<any>;
@@ -51,6 +52,7 @@ const DynamicComponentMapping: ComponentMapping = {
   codeBlock: CodeComponent,
   containers: ContainersComponent,
   donutChart: DonutChartComponent,
+  dropdown: DropdownComponent,
   editor: EditorComponent,
   expressionSelector: ExpressionSelectorComponent,
   graphviz: GraphvizComponent,
