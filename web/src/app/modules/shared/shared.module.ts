@@ -9,6 +9,7 @@ import { BreadcrumbComponent } from './components/presentation/breadcrumb/breadc
 import { CardComponent } from './components/presentation/card/card.component';
 import { CardListComponent } from './components/presentation/card-list/card-list.component';
 import { CodeComponent } from './components/presentation/code/code.component';
+import { DropdownComponent } from './components/presentation/dropdown/dropdown.component';
 import { LabelsComponent } from './components/presentation/labels/labels.component';
 import { LinkComponent } from './components/presentation/link/link.component';
 import { ListComponent } from './components/presentation/list/list.component';
@@ -78,6 +79,7 @@ import { MissingComponentComponent } from './components/missing-component/missin
 import { OctantTooltipComponent } from './components/presentation/octant-tooltip/octant-tooltip';
 import { BottomPanelComponent } from './components/smart/bottom-panel/bottom-panel.component';
 import { DataModule } from '../../data/data.module';
+import { StringEscapePipe } from './pipes/stringEscape/string.escape.pipe';
 
 @NgModule({
   declarations: [
@@ -125,6 +127,7 @@ import { DataModule } from '../../data/data.module';
     ResourceViewerComponent,
     SafePipe,
     AnsiPipe,
+    StringEscapePipe,
     FormatPathPipe,
     RelativePipe,
     TruncatePipe,
@@ -289,6 +292,7 @@ import { DataModule } from '../../data/data.module';
     ViewContainerComponent,
     OctantTooltipComponent,
     BottomPanelComponent,
+    StringEscapePipe,
   ],
 })
 export class SharedModule {}
