@@ -89,8 +89,8 @@ export class NavigationService {
   indexFromUrl(url: string): Selection {
     const strippedUrl = this.stripUrl(url);
     let highestSelection = { module: 0, index: 0 };
-    let rank,
-      highestRank = -1;
+    let rank = -1;
+    let highestRank = -1;
 
     if (strippedUrl.length === 0) {
       return { module: 1, index: 0 };

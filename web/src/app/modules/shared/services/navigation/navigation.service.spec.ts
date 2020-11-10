@@ -102,7 +102,7 @@ describe('NavigationService', () => {
           currentNavigation
         );
 
-        for (const path in expectedSelection) {
+        for (const path of Object.keys(expectedSelection)) {
           const prefixedPath = path.startsWith('/') ? path : '/' + path;
           svc.activeUrl.next(prefixedPath);
           svc.updateLastSelection();
