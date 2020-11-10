@@ -18,6 +18,7 @@ import { PodLogsService } from 'src/app/modules/shared/pod-logs/pod-logs.service
 import { LogsComponent } from './logs.component';
 import { AnsiPipe } from '../../../pipes/ansiPipe/ansi.pipe';
 import { windowProvider, WindowToken } from '../../../../../window';
+import { StringEscapePipe } from '../../../pipes/stringEscape/string.escape.pipe';
 
 function createTestLogsView(
   durations: Since[],
@@ -73,7 +74,7 @@ describe('LogsComponent <-> PodsLogsService', () => {
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
-        declarations: [LogsComponent, AnsiPipe],
+        declarations: [LogsComponent, AnsiPipe, StringEscapePipe],
         providers: [
           PodLogsService,
           { provide: WindowToken, useFactory: windowProvider },

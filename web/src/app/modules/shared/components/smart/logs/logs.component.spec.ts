@@ -9,6 +9,7 @@ import { By } from '@angular/platform-browser';
 import { DebugElement, ElementRef } from '@angular/core';
 import { AnsiPipe } from '../../../pipes/ansiPipe/ansi.pipe';
 import { windowProvider, WindowToken } from '../../../../../window';
+import { StringEscapePipe } from '../../../pipes/stringEscape/string.escape.pipe';
 
 /**
  * Adds lines of logs to LogsComponent
@@ -39,7 +40,7 @@ describe('LogsComponent', () => {
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
-        declarations: [LogsComponent, AnsiPipe],
+        declarations: [LogsComponent, AnsiPipe, StringEscapePipe],
         providers: [{ provide: WindowToken, useFactory: windowProvider }],
       }).compileComponents();
     })
@@ -105,6 +106,26 @@ describe('LogsComponent', () => {
     expect(selectHighlights[0].nativeElement.innerText).toEqual(
       'Just for test'
     );
+  });
+
+  it('should handle text that has to be escaped (#1582)', () => {
+    const expectedLogEntry = `2020-11-01T11:56:45.910889701Z {"@timestamp":"2020-11-01T11:56:45.909Z","level":"INFO","class":"rs.jms.message.received.from.mq","message":"GenericMessage [payload=<?xml version="1.0" encoding="UTF-8"?><ns:Message\\n xmlns:ns="http://otpbank.ru/Message"\\n><MessageHeader\\n><MessageDate\\n>2020-11-01T14:56:45</MessageDate\\n><ProcessID\\n>Broker</ProcessID\\n><MessageType\\n>CreateOpty</MessageType\\n><MessageID\\n>100B2F2E5E64EDB65E6E0533CA0A8C03EDD</MessageID\\n><IntegrationID\\n>4c020f7acfd84c2d8af05dfbd1404e1c</IntegrationID\\n><InitiatorSystem\\n>SIEBEL</InitiatorSystem\\n><SourceSystem\\n>SIEBEL</SourceSystem\\n><TargetSystemList\\n><TargetSystem\\n>mcs-posbroker-api</TargetSystem\\n></TargetSystemList\\n><Version\\n>1.0</Version\\n><ResultInfo\\n><Code\\n>0</Code\\n><Description\\n></Description\\n><Exception\\n></Exception\\n></ResultInfo\\n></MessageHeader\\n><MessageBody\\n><CreateOptyResponse\\n><Opty_Id\\n>2-1OGXGXFW</Opty_Id\\n><Error_Code\\n>0</Error_Code\\n><Error_Message\\n></Error_Message\\n></CreateOptyResponse\\n></MessageBody\\n></ns:Message\\n>, headers={JMS_IBM_Character_Set=UTF-8, errorChannel=org.springframework.messaging.core.GenericMessagingTemplate$TemporaryReplyChannel@b8364f77, JMS_IBM_MsgType=8, jms_destination=queue://WMB02PQM/POS_CBCREATEOPTY_SIEBEL_RES, JMSXUserID=siebel , JMS_IBM_Encoding=273, priority=4, jms_timestamp=1604231805837, JMSXAppID=WebSphere MQ Client for Java, JMS_IBM_PutApplType=28, JMS_IBM_Format=MQSTR , replyChannel=org.springframework.messaging.core.GenericMessagingTemplate$TemporaryReplyChannel@b8364f77, jms_redelivered=false, JMS_IBM_PutDate=20201101, JMSXDeliveryCount=1, jms_correlationId=784b0c72-8937-4615-b911-54b656e82460, ws_soapAction="document/http://siebel.com/CustomUI:CreateOpty_spcv2", JMS_IBM_PutTime=11564589, jms_type=SiebelJMSMessage, id=fa092de7-e6c7-a00e-3647-d3c6a8eae2fe, jms_messageId=ID:414d5120574d42303250514d20202020667e9e5f298f3623, timestamp=1604231805909}]","trace":"","span":"","parent":"","thread":"http-nio-8080-exec-9"}`;
+    const logList = [];
+    logList.push({
+      timestamp: '2020-11-01T11:56:45.910889701Z',
+      message: `2020-11-01T11:56:45.910889701Z {"@timestamp":"2020-11-01T11:56:45.909Z","level":"INFO","class":"rs.jms.message.received.from.mq","message":"GenericMessage [payload=<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns:Message\n xmlns:ns=\"http://otpbank.ru/Message\"\n><MessageHeader\n><MessageDate\n>2020-11-01T14:56:45</MessageDate\n><ProcessID\n>Broker</ProcessID\n><MessageType\n>CreateOpty</MessageType\n><MessageID\n>100B2F2E5E64EDB65E6E0533CA0A8C03EDD</MessageID\n><IntegrationID\n>4c020f7acfd84c2d8af05dfbd1404e1c</IntegrationID\n><InitiatorSystem\n>SIEBEL</InitiatorSystem\n><SourceSystem\n>SIEBEL</SourceSystem\n><TargetSystemList\n><TargetSystem\n>mcs-posbroker-api</TargetSystem\n></TargetSystemList\n><Version\n>1.0</Version\n><ResultInfo\n><Code\n>0</Code\n><Description\n></Description\n><Exception\n></Exception\n></ResultInfo\n></MessageHeader\n><MessageBody\n><CreateOptyResponse\n><Opty_Id\n>2-1OGXGXFW</Opty_Id\n><Error_Code\n>0</Error_Code\n><Error_Message\n></Error_Message\n></CreateOptyResponse\n></MessageBody\n></ns:Message\n>, headers={JMS_IBM_Character_Set=UTF-8, errorChannel=org.springframework.messaging.core.GenericMessagingTemplate$TemporaryReplyChannel@b8364f77, JMS_IBM_MsgType=8, jms_destination=queue://WMB02PQM/POS_CBCREATEOPTY_SIEBEL_RES, JMSXUserID=siebel , JMS_IBM_Encoding=273, priority=4, jms_timestamp=1604231805837, JMSXAppID=WebSphere MQ Client for Java, JMS_IBM_PutApplType=28, JMS_IBM_Format=MQSTR , replyChannel=org.springframework.messaging.core.GenericMessagingTemplate$TemporaryReplyChannel@b8364f77, jms_redelivered=false, JMS_IBM_PutDate=20201101, JMSXDeliveryCount=1, jms_correlationId=784b0c72-8937-4615-b911-54b656e82460, ws_soapAction=\"document/http://siebel.com/CustomUI:CreateOpty_spcv2\", JMS_IBM_PutTime=11564589, jms_type=SiebelJMSMessage, id=fa092de7-e6c7-a00e-3647-d3c6a8eae2fe, jms_messageId=ID:414d5120574d42303250514d20202020667e9e5f298f3623, timestamp=1604231805909}]","trace":"","span":"","parent":"","thread":"http-nio-8080-exec-9"}`,
+      container: 'test-container',
+    });
+
+    component.shouldDisplayTimestamp = false;
+    component.containerLogs = logList;
+    fixture.detectChanges();
+
+    const logLines: DebugElement[] = fixture.debugElement.queryAll(
+      By.css('.container-log-message')
+    );
+    expect(logLines.length).toEqual(1);
+    expect(logLines[0].nativeElement.innerText).toEqual(expectedLogEntry);
   });
 
   it('should filter case insensitive', () => {

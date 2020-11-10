@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform, SecurityContext } from '@angular/core';
+import { Pipe, PipeTransform } from '@angular/core';
 import {
   DomSanitizer,
   SafeHtml,

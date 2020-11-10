@@ -124,7 +124,7 @@
           ></div>
           <div
             class="container-log-message"
-            [innerHTML]="highlightText(log.message) | ansipipe"
+            [innerHTML]="highlightText(log.message | escapepipe | ansipipe)"
           ></div>
         </div>
       </div>

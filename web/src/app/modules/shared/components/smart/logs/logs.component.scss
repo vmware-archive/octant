@@ -8,18 +8,19 @@
 
   .log-actions {
     display: flex;
+    flex-wrap: wrap;
     margin-top: 16px;
     margin-bottom: 6px;
   }
   .clr-control-container {
     input {
-      width: 240px;
+      width: 180px;
     }
   }
   .container-select {
-    margin-right: 24px;
+    margin-right: 16px;
     select {
-      width: 194px;
+      width: 180px;
     }
   }
   .clr-select-wrapper {
@@ -39,6 +40,7 @@
     &-buttons {
       margin-top: 14px;
       margin-left: 6px;
+      min-width: 64px;
     }
     &-btn {
       padding-left: 6px;
@@ -65,6 +67,9 @@
     }
     .toggle-timestamp {
       margin-right: 0px;
+    }
+    label {
+      min-width: 120px;
     }
   }
   .container-logs {
