@@ -15,6 +15,7 @@
   * Fixed the first/last seen to display null instead of a pointer (#1386 @sladyn98)
   * Switched resolved address to pubic npm registry (#1571 @scothis)
   * Moved websocket service to new module (#1459 @bryanl)
+  * Implemented Help menu additional items (#875 @mklanjsek)
 
 ### Download
  - https://github.com/vmware-tanzu/octant/releases/v0.16.1
