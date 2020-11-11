@@ -6,10 +6,10 @@
 
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import {
+  async,
   ComponentFixture,
   inject,
   TestBed,
-  waitForAsync,
 } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ClarityModule, ClrPopoverToggleService } from '@clr/angular';
@@ -41,7 +41,6 @@ import { UploaderComponent } from '../uploader/uploader.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { windowProvider, WindowToken } from '../../../../../window';
 import { SharedModule } from 'src/app/modules/shared/shared.module';
-import { OverlayScrollbarsComponent } from 'overlayscrollbars-ngx';
 import { ApplyYAMLComponent } from '../apply-yaml/apply-yaml.component';
 import { EditorComponent } from 'src/app/modules/shared/components/smart/editor/editor.component';
 
@@ -49,49 +48,46 @@ describe('AppComponent', () => {
   let component: ContainerComponent;
   let fixture: ComponentFixture<ContainerComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        providers: [
-          { provide: WebsocketService, useClass: WebsocketServiceMock },
-          { provide: WindowToken, useFactory: windowProvider },
-          { provide: window, useValue: ClarityIcons },
-          ClrPopoverToggleService,
-          MonacoProviderService,
-          MonacoEditorConfig,
-        ],
-        imports: [
-          BrowserModule,
-          RouterTestingModule,
-          ClarityModule,
-          HttpClientTestingModule,
-          FormsModule,
-          NgSelectModule,
-          ReactiveFormsModule,
-          BrowserAnimationsModule,
-          SharedModule,
-        ],
-        declarations: [
-          ApplyYAMLComponent,
-          ContainerComponent,
-          NamespaceComponent,
-          PageNotFoundComponent,
-          HelperComponent,
-          PreferencesComponent,
-          InputFilterComponent,
-          NotifierComponent,
-          NavigationComponent,
-          ContextSelectorComponent,
-          DefaultPipe,
-          FilterTextPipe,
-          ThemeSwitchButtonComponent,
-          QuickSwitcherComponent,
-          UploaderComponent,
-          OverlayScrollbarsComponent,
-        ],
-      }).compileComponents();
-    })
-  );
+  beforeEach(async(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: WebsocketService, useClass: WebsocketServiceMock },
+        { provide: WindowToken, useFactory: windowProvider },
+        { provide: window, useValue: ClarityIcons },
+        ClrPopoverToggleService,
+        MonacoProviderService,
+        MonacoEditorConfig,
+      ],
+      imports: [
+        BrowserModule,
+        RouterTestingModule,
+        ClarityModule,
+        HttpClientTestingModule,
+        FormsModule,
+        NgSelectModule,
+        ReactiveFormsModule,
+        BrowserAnimationsModule,
+        SharedModule,
+      ],
+      declarations: [
+        ApplyYAMLComponent,
+        ContainerComponent,
+        NamespaceComponent,
+        PageNotFoundComponent,
+        HelperComponent,
+        PreferencesComponent,
+        InputFilterComponent,
+        NotifierComponent,
+        NavigationComponent,
+        ContextSelectorComponent,
+        DefaultPipe,
+        FilterTextPipe,
+        ThemeSwitchButtonComponent,
+        QuickSwitcherComponent,
+        UploaderComponent,
+      ],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ContainerComponent);

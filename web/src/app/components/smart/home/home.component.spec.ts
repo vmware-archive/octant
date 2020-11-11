@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HomeComponent } from './home.component';
 import { initServiceStub } from 'src/app/testing/init-service-stub';
@@ -10,20 +10,18 @@ describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;
   let initService: InitService;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        providers: [
-          {
-            provide: InitService,
-            useValue: initServiceStub,
-          },
-          SharedModule,
-        ],
-        declarations: [HomeComponent],
-      }).compileComponents();
-    })
-  );
+  beforeEach(async(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: InitService,
+          useValue: initServiceStub,
+        },
+        SharedModule,
+      ],
+      declarations: [HomeComponent],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     initService = TestBed.inject(InitService);

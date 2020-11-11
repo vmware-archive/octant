@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HeptagonGridComponent } from '../heptagon-grid/heptagon-grid.component';
 import { PodStatusComponent } from './pod-status.component';
 import { Component, Input } from '@angular/core';
@@ -24,26 +24,15 @@ describe('PodStatusComponent', () => {
   let component: PodStatusComponent;
   let fixture: ComponentFixture<PodStatusComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        imports: [HighlightModule],
-        declarations: [PodStatusComponent, TestGridComponent],
-        providers: [
-          { provide: HeptagonGridComponent, useClass: TestGridComponent },
-          {
-            provide: HIGHLIGHT_OPTIONS,
-            useValue: {
-              languages: {
-                json: () => import('highlight.js/lib/languages/json'),
-                yaml: () => import('highlight.js/lib/languages/yaml'),
-              },
-            },
-          },
-        ],
-      }).compileComponents();
-    })
-  );
+  beforeEach(async(() => {
+    TestBed.configureTestingModule({
+      imports: [],
+      declarations: [PodStatusComponent, TestGridComponent],
+      providers: [
+        { provide: HeptagonGridComponent, useClass: TestGridComponent },
+      ],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(PodStatusComponent);

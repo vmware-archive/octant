@@ -1,7 +1,7 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ThemeSwitchButtonComponent } from './theme-switch-button.component';
 import { ThemeService } from '../../../../shared/services/theme/theme.service';
 import { themeServiceStub } from 'src/app/testing/theme-service-stub';
@@ -12,14 +12,12 @@ describe('ThemeSwitchButtonComponent', () => {
   let fixture: ComponentFixture<ThemeSwitchButtonComponent>;
   let themeService: ThemeService;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [ThemeSwitchButtonComponent],
-        providers: [{ provide: ThemeService, useValue: themeServiceStub }],
-      }).compileComponents();
-    })
-  );
+  beforeEach(async(() => {
+    TestBed.configureTestingModule({
+      declarations: [ThemeSwitchButtonComponent],
+      providers: [{ provide: ThemeService, useValue: themeServiceStub }],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     themeService = TestBed.inject(ThemeService);
