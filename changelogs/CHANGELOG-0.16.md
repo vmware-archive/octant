@@ -1,5 +1,20 @@
-## v0.16.1
-#### 2020-10-07
+## v0.16.2
+#### 2020-11-11
+
+### Download
+ - https://github.com/vmware-tanzu/octant/releases/v0.16.2
+ 
+### All Changes
+  * Log warning when external metrics unavailable (#1023, @wwitzel3)
+  * Inform user that the backend uses an annotation when AWS ALB use-annotation is set (#1060, @wwitzel3)
+  * Fixed panic when websocket ClientFromRequest returns an error (#1340, @wwitzel3)
+  * Use link when displaying Ingress host (#1431, @mklanjsek)
+  * Removed formGroup from payload actions and updated to return values for multiple checkboxes (#1563, @GuessWhoSamFoo)
+  * Prevent angular sanitizer from removing log content (#1582, @mklanjsek)
+  * Show ConfigMaps and PersistentVolumeClaims in Pod's resource viewer (#1541 @alexbrand)
+  * Fixed the first/last seen to display null instead of a pointer (#1386 @sladyn98)
+  * Switched resolved address to pubic npm registry (#1571 @scothis)
+  * Moved websocket service to new module (#1459 @bryanl)
 
 ### Download
  - https://github.com/vmware-tanzu/octant/releases/v0.16.1

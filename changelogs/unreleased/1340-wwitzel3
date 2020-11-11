@@ -1,1 +1,0 @@
-Fix panic when WebsocketClientManager.ClientFromRequest returns an error
