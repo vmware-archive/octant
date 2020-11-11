@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import {
@@ -25,23 +25,21 @@ describe('FiltersComponent', () => {
   let fixture: ComponentFixture<FiltersComponent>;
   let routerSpy: any;
 
-  beforeEach(
-    waitForAsync(() => {
-      const mockRouter = {
-        navigate: jasmine.createSpy('navigate'),
-      };
+  beforeEach(async(() => {
+    const mockRouter = {
+      navigate: jasmine.createSpy('navigate'),
+    };
 
-      TestBed.configureTestingModule({
-        declarations: [ApplyYAMLComponent, OverlayScrollbarsComponent],
-        imports: [SharedModule],
-        providers: [
-          { provide: Router, useValue: mockRouter },
-          { provide: ActivatedRoute, useValue: activatedRouteStub },
-          { provide: LabelFilterService, useValue: labelFilterService },
-        ],
-      }).compileComponents();
-    })
-  );
+    TestBed.configureTestingModule({
+      declarations: [],
+      imports: [SharedModule],
+      providers: [
+        { provide: Router, useValue: mockRouter },
+        { provide: ActivatedRoute, useValue: activatedRouteStub },
+        { provide: LabelFilterService, useValue: labelFilterService },
+      ],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     routerSpy = TestBed.inject(Router);
@@ -50,12 +48,9 @@ describe('FiltersComponent', () => {
     fixture.detectChanges();
   });
 
-  it(
-    'should create',
-    waitForAsync(() => {
-      fixture.whenStable().then(() => {
-        expect(component).toBeTruthy();
-      });
-    })
-  );
+  it('should create', async(() => {
+    fixture.whenStable().then(() => {
+      expect(component).toBeTruthy();
+    });
+  }));
 });

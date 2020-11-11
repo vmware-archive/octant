@@ -3,10 +3,10 @@
 //
 
 import {
+  async,
   ComponentFixture,
   fakeAsync,
   TestBed,
-  waitForAsync,
 } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { InputFilterComponent } from './input-filter.component';
@@ -28,15 +28,13 @@ describe('InputFilterComponent', () => {
   let fixture: ComponentFixture<InputFilterComponent>;
   let labelFilterService: LabelFilterService;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        imports: [FormsModule],
-        declarations: [InputFilterComponent, FilterTextPipe],
-        providers: [{ provide: LabelFilterService, useValue: labelFilterStub }],
-      }).compileComponents();
-    })
-  );
+  beforeEach(async(() => {
+    TestBed.configureTestingModule({
+      imports: [FormsModule],
+      declarations: [InputFilterComponent, FilterTextPipe],
+      providers: [{ provide: LabelFilterService, useValue: labelFilterStub }],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(InputFilterComponent);

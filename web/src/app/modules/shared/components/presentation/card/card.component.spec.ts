@@ -1,8 +1,8 @@
 import {
+  async,
   ComponentFixture,
   fakeAsync,
   TestBed,
-  waitForAsync,
 } from '@angular/core/testing';
 
 import { CardComponent } from './card.component';
@@ -14,10 +14,6 @@ import { SharedModule } from '../../../shared.module';
 import { FormComponent } from '../form/form.component';
 import { windowProvider, WindowToken } from '../../../../../window';
 import { EditorComponent } from '../../smart/editor/editor.component';
-import {
-  OverlayScrollbarsComponent,
-  OverlayscrollbarsModule,
-} from 'overlayscrollbars-ngx';
 
 describe('CardComponent', () => {
   let component: CardComponent;
@@ -34,19 +30,17 @@ describe('CardComponent', () => {
     },
   };
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [EditorComponent, OverlayScrollbarsComponent],
-        imports: [SharedModule, OverlayscrollbarsModule],
-        providers: [
-          { provide: FormBuilder, useValue: formBuilder },
-          { provide: ViewService, useValue: viewServiceStub },
-          { provide: WindowToken, useFactory: windowProvider },
-        ],
-      }).compileComponents();
-    })
-  );
+  beforeEach(async(() => {
+    TestBed.configureTestingModule({
+      declarations: [EditorComponent],
+      imports: [SharedModule],
+      providers: [
+        { provide: FormBuilder, useValue: formBuilder },
+        { provide: ViewService, useValue: viewServiceStub },
+        { provide: WindowToken, useFactory: windowProvider },
+      ],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(CardComponent);

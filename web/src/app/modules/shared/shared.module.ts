@@ -9,7 +9,6 @@ import { BreadcrumbComponent } from './components/presentation/breadcrumb/breadc
 import { CardComponent } from './components/presentation/card/card.component';
 import { CardListComponent } from './components/presentation/card-list/card-list.component';
 import { CodeComponent } from './components/presentation/code/code.component';
-import { DropdownComponent } from './components/presentation/dropdown/dropdown.component';
 import { LabelsComponent } from './components/presentation/labels/labels.component';
 import { LinkComponent } from './components/presentation/link/link.component';
 import { ListComponent } from './components/presentation/list/list.component';

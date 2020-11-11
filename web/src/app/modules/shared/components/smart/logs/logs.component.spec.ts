@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { LogsComponent } from './logs.component';
 import { LogEntry, LogsView } from 'src/app/modules/shared/models/content';
 import { By } from '@angular/platform-browser';
@@ -37,14 +37,12 @@ describe('LogsComponent', () => {
   let component: LogsComponent;
   let fixture: ComponentFixture<LogsComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [LogsComponent, AnsiPipe, StringEscapePipe],
-        providers: [{ provide: WindowToken, useFactory: windowProvider }],
-      }).compileComponents();
-    })
-  );
+  beforeEach(async(() => {
+    TestBed.configureTestingModule({
+      declarations: [LogsComponent, AnsiPipe, StringEscapePipe],
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(LogsComponent);

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { OverflowLabelsComponent } from './overflow-labels.component';
 import { By } from '@angular/platform-browser';
 import { LabelFilterService } from '../../../services/label-filter/label-filter.service';
@@ -14,18 +14,16 @@ describe('OverflowLabelsComponent', () => {
   let component: OverflowLabelsComponent;
   let fixture: ComponentFixture<OverflowLabelsComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [OverflowLabelsComponent, OctantTooltipComponent],
-        providers: [
-          SharedModule,
-          LabelFilterService,
-          { provide: WindowToken, useFactory: windowProvider },
-        ],
-      }).compileComponents();
-    })
-  );
+  beforeEach(async(() => {
+    TestBed.configureTestingModule({
+      declarations: [OverflowLabelsComponent, OctantTooltipComponent],
+      providers: [
+        SharedModule,
+        LabelFilterService,
+        { provide: WindowToken, useFactory: windowProvider },
+      ],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(OverflowLabelsComponent);
