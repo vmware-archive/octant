@@ -12,7 +12,6 @@ const API_BASE = getAPIBase();
 
 export class PodLogsStreamer {
   public logEntry: BehaviorSubject<LogEntry>;
-  private intervalID: number;
 
   constructor(
     private namespace: string,

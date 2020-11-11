@@ -80,6 +80,7 @@ import { OctantTooltipComponent } from './components/presentation/octant-tooltip
 import { BottomPanelComponent } from './components/smart/bottom-panel/bottom-panel.component';
 import { DataModule } from '../../data/data.module';
 import { OverlayscrollbarsModule } from 'overlayscrollbars-ngx';
+import { StringEscapePipe } from './pipes/stringEscape/string.escape.pipe';
 
 @NgModule({
   declarations: [
@@ -128,6 +129,7 @@ import { OverlayscrollbarsModule } from 'overlayscrollbars-ngx';
     ResourceViewerComponent,
     SafePipe,
     AnsiPipe,
+    StringEscapePipe,
     FormatPathPipe,
     RelativePipe,
     TruncatePipe,
@@ -295,6 +297,7 @@ import { OverlayscrollbarsModule } from 'overlayscrollbars-ngx';
     ViewContainerComponent,
     OctantTooltipComponent,
     BottomPanelComponent,
+    StringEscapePipe,
   ],
 })
 export class SharedModule {}
