@@ -78,7 +78,8 @@ func EventListHandler(ctx context.Context, list *corev1.EventList, opts Options)
 		table.Add(row)
 	}
 
-	table.Sort(true, "Last Seen")
+	table.Sort("Last Seen")
+	table.Reverse()
 
 	return table, nil
 }

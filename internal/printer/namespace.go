@@ -218,7 +218,7 @@ func printNamespaceResourceQuotas(quotas []corev1.ResourceQuota) map[string]comp
 			row["Limit"] = component.NewText(q["hard"][resource])
 			table.Add(row)
 		}
-		table.Sort(false, "Resource")
+		table.Sort("Resource")
 		items[quotas[i].Name] = component.FlexLayoutItem{Width: component.WidthHalf, View: table}
 	}
 	return items

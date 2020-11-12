@@ -195,15 +195,33 @@ func Test_Table_Sort(t *testing.T) {
 				{"a": NewText("1"), "b": NewText("3")},
 			},
 		},
+		{
+			name:     "multiple keys reversed",
+			reverse:  true,
+			multiple: true,
+			rows: []TableRow{
+				{"a": NewText("1"), "b": NewText("2")},
+				{"a": NewText("1"), "b": NewText("1")},
+				{"a": NewText("1"), "b": NewText("3")},
+			},
+			expected: []TableRow{
+				{"a": NewText("1"), "b": NewText("3")},
+				{"a": NewText("1"), "b": NewText("2")},
+				{"a": NewText("1"), "b": NewText("1")},
+			},
+		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			table := NewTableWithRows("table", "placeholder", NewTableCols("a"), tc.rows)
 			if tc.multiple {
-				table.Sort(tc.reverse, "a", "b")
+				table.Sort("a", "b")
 			} else {
-				table.Sort(tc.reverse, "a")
+				table.Sort("a")
+			}
+			if tc.reverse {
+				table.Reverse()
 			}
 			expected := NewTableWithRows("table", "placeholder", NewTableCols("a"), tc.expected)
 

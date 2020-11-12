@@ -168,11 +168,15 @@ func (t *Table) SetPlaceholder(placeholder string) {
 }
 
 // Sort sorts a table by one or more keys with booleans for reverse and object status.
-func (t *Table) Sort(reverse bool, keys ...string) {
+func (t *Table) Sort(keys ...string) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
 	var sortFuncs []lessFunc
+
+	if len(keys) == 0 {
+		return
+	}
 
 	for _, key := range keys {
 		nameFunc := func(i, j TableRow) bool {
@@ -188,15 +192,22 @@ func (t *Table) Sort(reverse bool, keys ...string) {
 				return false
 			}
 
-			if reverse {
-				return !a.LessThan(b)
-			}
 			return a.LessThan(b)
 		}
 		sortFuncs = append(sortFuncs, nameFunc)
 	}
 
 	OrderedBy(sortFuncs).Sort(t.Rows())
+}
+
+func (t *Table) Reverse() {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	rows := t.Rows()
+	for i, j := 0, len(rows)-1; i < j; i, j = i+1, j-1 {
+		rows[i], rows[j] = rows[j], rows[i]
+	}
 }
 
 type lessFunc func(p1, p2 TableRow) bool

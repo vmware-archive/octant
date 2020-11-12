@@ -320,7 +320,7 @@ func createNodeConditionsView(node *corev1.Node) (*component.Table, error) {
 		table.Add(row)
 	}
 
-	table.Sort(false, "Type")
+	table.Sort("Type")
 
 	return table, nil
 }
@@ -345,7 +345,7 @@ func createNodeImagesView(node *corev1.Node) (*component.Table, error) {
 		table.Add(row)
 	}
 
-	table.Sort(false, "Names")
+	table.Sort("Names")
 
 	return table, nil
 }

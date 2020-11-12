@@ -95,7 +95,7 @@ func CreateCustomResourceList(crdObject *unstructured.Unstructured, resources *u
 		table.Add(row)
 	}
 
-	table.Sort(false, "Name")
+	table.Sort("Name")
 
 	return table, nil
 }
