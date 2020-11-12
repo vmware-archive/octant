@@ -17,6 +17,9 @@
   * Moved websocket service to new module (#1459 @bryanl)
   * Implemented Help menu additional items (#875 @mklanjsek)
 
+## v0.16.1
+#### 2020-10-07
+
 ### Download
  - https://github.com/vmware-tanzu/octant/releases/v0.16.1
 
