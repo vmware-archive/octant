@@ -5,6 +5,7 @@
 package fake
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -35,9 +36,9 @@ func (m *MockPodMetricsCRUD) EXPECT() *MockPodMetricsCRUDMockRecorder {
 }
 
 // Get mocks base method
-func (m *MockPodMetricsCRUD) Get(arg0, arg1 string) (*unstructured.Unstructured, bool, error) {
+func (m *MockPodMetricsCRUD) Get(arg0 context.Context, arg1, arg2 string) (*unstructured.Unstructured, bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", arg0, arg1)
+	ret := m.ctrl.Call(m, "Get", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*unstructured.Unstructured)
 	ret1, _ := ret[1].(bool)
 	ret2, _ := ret[2].(error)
@@ -45,7 +46,7 @@ func (m *MockPodMetricsCRUD) Get(arg0, arg1 string) (*unstructured.Unstructured,
 }
 
 // Get indicates an expected call of Get
-func (mr *MockPodMetricsCRUDMockRecorder) Get(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPodMetricsCRUDMockRecorder) Get(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockPodMetricsCRUD)(nil).Get), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockPodMetricsCRUD)(nil).Get), arg0, arg1, arg2)
 }

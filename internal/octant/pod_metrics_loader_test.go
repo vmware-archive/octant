@@ -62,6 +62,7 @@ func TestClusterPodMetricsLoader_Load(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
+	ctx := context.Background()
 	clusterClient := clusterFake.NewMockClientInterface(controller)
 
 	m := testutil.ToUnstructured(t, testutil.CreatePodMetrics("pod"))
@@ -80,7 +81,7 @@ func TestClusterPodMetricsLoader_Load(t *testing.T) {
 				func(loader *octant.ClusterPodMetricsLoader) {
 					crud := octantFake.NewMockPodMetricsCRUD(controller)
 					crud.EXPECT().
-						Get("test", "pod").
+						Get(ctx, "test", "pod").
 						Return(m, true, nil)
 					loader.PodMetricsCRUD = crud
 				},
@@ -95,7 +96,7 @@ func TestClusterPodMetricsLoader_Load(t *testing.T) {
 				func(loader *octant.ClusterPodMetricsLoader) {
 					crud := octantFake.NewMockPodMetricsCRUD(controller)
 					crud.EXPECT().
-						Get("test", "pod").
+						Get(ctx, "test", "pod").
 						Return(m, false, nil)
 					loader.PodMetricsCRUD = crud
 				},
@@ -110,7 +111,7 @@ func TestClusterPodMetricsLoader_Load(t *testing.T) {
 			pml, err := octant.NewClusterPodMetricsLoader(tt.clusterClient, tt.options...)
 			require.NoError(t, err)
 
-			got, gotFound, err := pml.Load("test", "pod")
+			got, gotFound, err := pml.Load(ctx, "test", "pod")
 
 			if tt.wantErr {
 				require.Error(t, err)
