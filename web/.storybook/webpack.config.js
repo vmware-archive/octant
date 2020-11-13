@@ -1,5 +1,5 @@
 const DisableWarnings = require('./disable-warnings.js');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 
 const maxAssetSize = 1024 * 1024;
 
