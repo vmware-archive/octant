@@ -36,9 +36,9 @@ func (m *MockPodMetricsLoader) EXPECT() *MockPodMetricsLoaderMockRecorder {
 }
 
 // Load mocks base method
-func (m *MockPodMetricsLoader) Load(arg0, arg1 string) (*unstructured.Unstructured, bool, error) {
+func (m *MockPodMetricsLoader) Load(arg0 context.Context, arg1, arg2 string) (*unstructured.Unstructured, bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Load", arg0, arg1)
+	ret := m.ctrl.Call(m, "Load", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*unstructured.Unstructured)
 	ret1, _ := ret[1].(bool)
 	ret2, _ := ret[2].(error)
@@ -46,9 +46,9 @@ func (m *MockPodMetricsLoader) Load(arg0, arg1 string) (*unstructured.Unstructur
 }
 
 // Load indicates an expected call of Load
-func (mr *MockPodMetricsLoaderMockRecorder) Load(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockPodMetricsLoaderMockRecorder) Load(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Load", reflect.TypeOf((*MockPodMetricsLoader)(nil).Load), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Load", reflect.TypeOf((*MockPodMetricsLoader)(nil).Load), arg0, arg1, arg2)
 }
 
 // SupportsMetrics mocks base method

@@ -31,6 +31,7 @@ import (
 
 func podMetricsLoader(controller *gomock.Controller, pm *unstructured.Unstructured, supportsMetrics bool, supportFails bool) *octantFake.MockPodMetricsLoader {
 	pml := octantFake.NewMockPodMetricsLoader(controller)
+	ctx := context.Background()
 
 	var err error
 	if supportFails {
@@ -41,7 +42,7 @@ func podMetricsLoader(controller *gomock.Controller, pm *unstructured.Unstructur
 
 	if pm != nil {
 		pml.EXPECT().
-			Load("namespace", gomock.Any()).
+			Load(ctx, "namespace", gomock.Any()).
 			Return(pm, true, nil).
 			AnyTimes()
 	}

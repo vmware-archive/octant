@@ -27,7 +27,7 @@ import (
 // PodMetricsCRUD contains CRUD methods for accessing pod metrics.
 type PodMetricsCRUD interface {
 	// Get returns pod metrics for a pod. If pod is not found, isFound will be false.
-	Get(namespace, name string) (pod *unstructured.Unstructured, isFound bool, err error)
+	Get(ctx context.Context, namespace, name string) (pod *unstructured.Unstructured, isFound bool, err error)
 }
 
 type clusterPodMetricsCRUD struct {
@@ -44,7 +44,7 @@ func newClusterPodMetricsCRUD(clusterClient cluster.ClientInterface) (*clusterPo
 	return &clusterPodMetricsCRUD{clusterClient: clusterClient}, nil
 }
 
-func (c *clusterPodMetricsCRUD) Get(namespace, name string) (*unstructured.Unstructured, bool, error) {
+func (c *clusterPodMetricsCRUD) Get(ctx context.Context, namespace, name string) (*unstructured.Unstructured, bool, error) {
 	client, err := c.clusterClient.DynamicClient()
 	if err != nil {
 		return nil, false, fmt.Errorf("get dynamic client: %w", err)
@@ -54,6 +54,11 @@ func (c *clusterPodMetricsCRUD) Get(namespace, name string) (*unstructured.Unstr
 	object, err := client.Resource(PodMetricsResource).Namespace(namespace).Get(context.TODO(), name, options)
 	if err != nil {
 		if errors.IsNotFound(err) {
+			return nil, false, nil
+		}
+		if errors.IsServiceUnavailable(err) {
+			logger := log.From(ctx)
+			logger.Warnf("service unavailable : %w", err)
 			return nil, false, nil
 		}
 
@@ -91,7 +96,7 @@ func IsPodMetricsNotSupported(err error) bool {
 type PodMetricsLoader interface {
 	// Load loads metrics for a pod given namespace and a name. It returns false if the
 	// object is not found.
-	Load(namespace, name string) (object *unstructured.Unstructured, isFound bool, err error)
+	Load(ctx context.Context, namespace, name string) (object *unstructured.Unstructured, isFound bool, err error)
 	// SupportsMetrics returns true if the cluster has metrics support.
 	SupportsMetrics(ctx context.Context) (bool, error)
 }
@@ -143,8 +148,8 @@ var (
 )
 
 // Load loads metrics for a pod given namespace and a name.
-func (ml *ClusterPodMetricsLoader) Load(namespace, name string) (*unstructured.Unstructured, bool, error) {
-	return ml.PodMetricsCRUD.Get(namespace, name)
+func (ml *ClusterPodMetricsLoader) Load(ctx context.Context, namespace, name string) (*unstructured.Unstructured, bool, error) {
+	return ml.PodMetricsCRUD.Get(ctx, namespace, name)
 }
 
 func (ml *ClusterPodMetricsLoader) SupportsMetrics(ctx context.Context) (bool, error) {

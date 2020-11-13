@@ -432,7 +432,7 @@ func (wl *ClusterWorkloadLoader) podMetrics(ctx context.Context, pod *unstructur
 	namespace := pod.GetNamespace()
 	name := pod.GetName()
 
-	object, found, err := wl.PodMetricsLoader.Load(namespace, name)
+	object, found, err := wl.PodMetricsLoader.Load(ctx, namespace, name)
 	if err != nil {
 		return nil, fmt.Errorf("get pod metrics: %w", err)
 	}
