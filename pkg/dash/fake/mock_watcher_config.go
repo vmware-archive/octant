@@ -34,18 +34,18 @@ func (m *MockWatcherConfig) EXPECT() *MockWatcherConfigMockRecorder {
 	return m.recorder
 }
 
-// ContextName mocks base method
-func (m *MockWatcherConfig) ContextName() string {
+// CurrentContext mocks base method
+func (m *MockWatcherConfig) CurrentContext() string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContextName")
+	ret := m.ctrl.Call(m, "CurrentContext")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// ContextName indicates an expected call of ContextName
-func (mr *MockWatcherConfigMockRecorder) ContextName() *gomock.Call {
+// CurrentContext indicates an expected call of CurrentContext
+func (mr *MockWatcherConfigMockRecorder) CurrentContext() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContextName", reflect.TypeOf((*MockWatcherConfig)(nil).ContextName))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CurrentContext", reflect.TypeOf((*MockWatcherConfig)(nil).CurrentContext))
 }
 
 // UseContext mocks base method

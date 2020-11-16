@@ -12,9 +12,6 @@ import (
 
 	"github.com/vmware-tanzu/octant/pkg/event"
 
-	"github.com/pkg/errors"
-
-	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/kubeconfig"
 	"github.com/vmware-tanzu/octant/internal/octant"
 )
@@ -27,18 +24,21 @@ type kubeContextsResponse struct {
 
 type ContextGeneratorOption func(generator *ContextsGenerator)
 
+type KubeContextStore interface {
+	CurrentContext() string
+	Contexts() []kubeconfig.Context
+}
+
 // ContextsGenerator generates kube contexts for the front end.
 type ContextsGenerator struct {
-	ConfigLoader kubeconfig.Loader
-	DashConfig   config.Dash
+	KubeContextStore KubeContextStore
 }
 
 var _ octant.Generator = (*ContextsGenerator)(nil)
 
-func NewContextsGenerator(dashConfig config.Dash, options ...ContextGeneratorOption) *ContextsGenerator {
+func NewContextsGenerator(kubeContextStore KubeContextStore, options ...ContextGeneratorOption) *ContextsGenerator {
 	kcg := &ContextsGenerator{
-		ConfigLoader: kubeconfig.NewFSLoader(),
-		DashConfig:   dashConfig,
+		KubeContextStore: kubeContextStore,
 	}
 
 	for _, option := range options {
@@ -49,21 +49,9 @@ func NewContextsGenerator(dashConfig config.Dash, options ...ContextGeneratorOpt
 }
 
 func (g *ContextsGenerator) Event(ctx context.Context) (event.Event, error) {
-	configPath := g.DashConfig.KubeConfigPath()
-
-	kubeConfig, err := g.ConfigLoader.Load(configPath)
-	if err != nil {
-		return event.Event{}, errors.Wrap(err, "unable to load kube config")
-	}
-
-	currentContext := g.DashConfig.ContextName()
-	if currentContext == "" {
-		currentContext = kubeConfig.CurrentContext
-	}
-
 	resp := kubeContextsResponse{
-		CurrentContext: currentContext,
-		Contexts:       kubeConfig.Contexts,
+		CurrentContext: g.KubeContextStore.CurrentContext(),
+		Contexts:       g.KubeContextStore.Contexts(),
 	}
 
 	sort.Slice(resp.Contexts, func(i, j int) bool {

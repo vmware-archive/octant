@@ -29,6 +29,7 @@ import (
 	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/internal/describer"
 	oerrors "github.com/vmware-tanzu/octant/internal/errors"
+	"github.com/vmware-tanzu/octant/internal/kubeconfig"
 	internalLog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/module"
 	"github.com/vmware-tanzu/octant/internal/modules/applications"
@@ -62,6 +63,129 @@ type Options struct {
 	UserAgent              string
 	BuildInfo              config.BuildInfo
 	Listener               net.Listener
+	clusterClient          cluster.ClientInterface
+}
+
+type RunnerOption struct {
+	kubeConfigOption kubeconfig.KubeConfigOption
+	nonClusterOption func(*Options)
+}
+
+func WithOpenCensus() RunnerOption {
+	return RunnerOption{
+		nonClusterOption: func(o *Options) {
+			o.EnableOpenCensus = true
+		},
+	}
+}
+
+func WithoutClusterOverview() RunnerOption {
+	return RunnerOption{
+		nonClusterOption: func(o *Options) {
+			o.DisableClusterOverview = true
+		},
+	}
+}
+
+func WithKubeConfig(kubeConfig string) RunnerOption {
+	return RunnerOption{
+		kubeConfigOption: kubeconfig.WithKubeConfigList(kubeConfig),
+		nonClusterOption: func(o *Options) {
+			o.KubeConfig = kubeConfig
+		},
+	}
+}
+
+func WithNamespace(namespace string) RunnerOption {
+	return RunnerOption{
+		kubeConfigOption: kubeconfig.FromClusterOption(cluster.WithInitialNamespace(namespace)),
+		nonClusterOption: func(o *Options) {
+			o.Namespace = namespace
+		},
+	}
+}
+
+func WithNamespaces(namespaces []string) RunnerOption {
+	return RunnerOption{
+		kubeConfigOption: kubeconfig.FromClusterOption(cluster.WithProvidedNamespaces(namespaces)),
+		nonClusterOption: func(o *Options) {
+			o.Namespaces = namespaces
+		},
+	}
+}
+
+func WithFrontendURL(frontendURL string) RunnerOption {
+	return RunnerOption{
+		kubeConfigOption: kubeconfig.Noop(),
+		nonClusterOption: func(o *Options) {
+			o.FrontendURL = frontendURL
+		},
+	}
+}
+
+func WithBrowserPath(browserPath string) RunnerOption {
+	return RunnerOption{
+		kubeConfigOption: kubeconfig.Noop(),
+		nonClusterOption: func(o *Options) {
+			o.BrowserPath = browserPath
+		},
+	}
+}
+
+func WithContext(context string) RunnerOption {
+	return RunnerOption{
+		kubeConfigOption: kubeconfig.WithContextName(context),
+		nonClusterOption: func(o *Options) {
+			o.Context = context
+		},
+	}
+}
+
+func WithClientQPS(qps float32) RunnerOption {
+	return RunnerOption{
+		kubeConfigOption: kubeconfig.FromClusterOption(cluster.WithClientQPS(qps)),
+		nonClusterOption: func(o *Options) {},
+	}
+}
+
+func WithClientBurst(burst int) RunnerOption {
+	return RunnerOption{
+		kubeConfigOption: kubeconfig.FromClusterOption(cluster.WithClientBurst(burst)),
+		nonClusterOption: func(o *Options) {},
+	}
+}
+
+func WithClientUserAgent(userAgent string) RunnerOption {
+	return RunnerOption{
+		kubeConfigOption: kubeconfig.FromClusterOption(cluster.WithClientUserAgent(userAgent)),
+		nonClusterOption: func(o *Options) {},
+	}
+}
+
+func WithBuildInfo(buildInfo config.BuildInfo) RunnerOption {
+	return RunnerOption{
+		kubeConfigOption: kubeconfig.Noop(),
+		nonClusterOption: func(o *Options) {
+			o.BuildInfo = buildInfo
+		},
+	}
+}
+
+func WithListener(listener net.Listener) RunnerOption {
+	return RunnerOption{
+		kubeConfigOption: kubeconfig.Noop(),
+		nonClusterOption: func(o *Options) {
+			o.Listener = listener
+		},
+	}
+}
+
+func WithClusterClient(client cluster.ClientInterface) RunnerOption {
+	return RunnerOption{
+		nonClusterOption: func(o *Options) {
+			o.clusterClient = client
+		},
+	}
 }
 
 type Runner struct {
@@ -75,7 +199,12 @@ type Runner struct {
 	fs                     afero.Fs
 }
 
-func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner, error) {
+func NewRunner(ctx context.Context, logger log.Logger, opts ...RunnerOption) (*Runner, error) {
+	options := Options{}
+	for _, opt := range opts {
+		opt.nonClusterOption(&options)
+	}
+
 	r := Runner{}
 	ctx = internalLog.WithLoggerContext(ctx, logger)
 	ctx = ocontext.WithKubeConfigCh(ctx)
@@ -100,15 +229,13 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 
 	r.fs = afero.NewOsFs()
 
-	if options.KubeConfig, err = ValidateKubeConfig(logger, options.KubeConfig, r.fs); err == nil {
-		apiService, pluginService, apiErr = r.initAPI(ctx, logger, options)
-		if apiErr != nil {
-			return nil, fmt.Errorf("failed to start service api: %w", apiErr)
-		}
+	if options.clusterClient != nil {
+		apiService, pluginService, apiErr = r.initAPI(ctx, logger, opts...)
 	} else {
-		logger.Infof("no valid kube config found, initializing loading API")
-		// Initialize the API
-		apiService = api.NewLoadingAPI(ctx, api.PathPrefix, r.actionManager, r.websocketClientManager, logger)
+		apiService, pluginService, apiErr = r.apiFromKubeConfig(options.KubeConfig, opts...)
+	}
+	if apiErr != nil {
+		return nil, fmt.Errorf("failed to start service api: %w", apiErr)
 	}
 
 	d, err := newDash(options.Listener, options.Namespace, options.FrontendURL, options.BrowserPath, apiService, pluginService, logger)
@@ -125,7 +252,24 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 	return &r, nil
 }
 
-func (r *Runner) Start(options Options, startupCh, shutdownCh chan bool) error {
+func (r *Runner) apiFromKubeConfig(kubeConfig string, opts ...RunnerOption) (api.Service, *pluginAPI.GRPCService, error) {
+	logger := internalLog.From(r.ctx)
+	validKubeConfig, err := ValidateKubeConfig(logger, kubeConfig, r.fs)
+	if err == nil {
+		opts = append(opts, WithKubeConfig(validKubeConfig))
+		return r.initAPI(r.ctx, logger, opts...)
+	} else {
+		logger.Infof("no valid kube config found, initializing loading API")
+		return api.NewLoadingAPI(r.ctx, api.PathPrefix, r.actionManager, r.websocketClientManager, logger), nil, nil
+	}
+}
+
+func (r *Runner) Start(startupCh, shutdownCh chan bool, opts ...RunnerOption) error {
+	options := Options{}
+	for _, opt := range opts {
+		opt.nonClusterOption(&options)
+	}
+
 	logger := internalLog.From(r.ctx)
 	go func() {
 		if err := r.dash.Run(r.ctx, startupCh); err != nil {
@@ -137,13 +281,14 @@ func (r *Runner) Start(options Options, startupCh, shutdownCh chan bool) error {
 		go func() {
 			logger.Infof("waiting for kube config ...")
 			options.KubeConfig = <-ocontext.KubeConfigChFrom(r.ctx)
+			opts = append(opts, WithKubeConfig(options.KubeConfig))
 
 			if options.KubeConfig == "" {
 				logger.Errorf("unexpected empty kube config")
 				return
 			}
 			logger.Debugf("Loading configuration: %v", options.KubeConfig)
-			apiService, pluginService, err := r.initAPI(r.ctx, logger, options)
+			apiService, pluginService, err := r.initAPI(r.ctx, logger, opts...)
 			if err != nil {
 				logger.Errorf("cannot create api: %v", err)
 			}
@@ -175,18 +320,26 @@ func (r *Runner) Start(options Options, startupCh, shutdownCh chan bool) error {
 	return nil
 }
 
-func (r *Runner) initAPI(ctx context.Context, logger log.Logger, options Options) (*api.API, *pluginAPI.GRPCService, error) {
+func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerOption) (*api.API, *pluginAPI.GRPCService, error) {
+	kubeConfigOptions := []kubeconfig.KubeConfigOption{}
+	options := Options{}
+	for _, opt := range opts {
+		kubeConfigOptions = append(kubeConfigOptions, opt.kubeConfigOption)
+		opt.nonClusterOption(&options)
+	}
 	frontendProxy := pluginAPI.FrontendProxy{}
 
-	restConfigOptions := cluster.RESTConfigOptions{
-		QPS:       options.ClientQPS,
-		Burst:     options.ClientBurst,
-		UserAgent: options.UserAgent,
+	var kubeContextDecorator config.KubeContextDecorator
+	if options.clusterClient != nil {
+		kubeContextDecorator = config.StaticClusterClient(options.clusterClient)
+	} else {
+		var err error
+		kubeContextDecorator, err = kubeconfig.NewKubeConfigContextManager(ctx, kubeConfigOptions...)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to init cluster client, does your kube config have a current-context set?: %w", err)
+		}
 	}
-	clusterClient, err := cluster.FromKubeConfig(ctx, options.KubeConfig, options.Context, options.Namespace, options.Namespaces, restConfigOptions)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to init cluster client, does your kube config have a current-context set?: %w", err)
-	}
+	clusterClient := kubeContextDecorator.ClusterClient()
 
 	if options.EnableOpenCensus {
 		if err := enableOpenCensus(); err != nil {
@@ -267,17 +420,20 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, options Options
 		Time:    options.BuildInfo.Time,
 	}
 
+	restConfigOptions := cluster.RESTConfigOptions{
+		QPS:       options.ClientQPS,
+		Burst:     options.ClientBurst,
+		UserAgent: options.UserAgent,
+	}
 	dashConfig := config.NewLiveConfig(
-		clusterClient,
+		kubeContextDecorator,
 		crdWatcher,
-		options.KubeConfig,
 		logger,
 		moduleManager,
 		appObjectStore,
 		errorStore,
 		pluginManager,
 		portForwarder,
-		options.Context,
 		restConfigOptions,
 		buildInfo)
 
@@ -335,7 +491,7 @@ func initPortForwarder(ctx context.Context, client cluster.ClientInterface, appO
 }
 
 type moduleOptions struct {
-	clusterClient  *cluster.Cluster
+	clusterClient  cluster.ClientInterface
 	crdWatcher     config.CRDWatcher
 	namespace      string
 	logger         log.Logger
@@ -390,8 +546,7 @@ func initModules(ctx context.Context, dashConfig config.Dash, namespace string, 
 	}
 
 	configurationOptions := configuration.Options{
-		DashConfig:     dashConfig,
-		KubeConfigPath: dashConfig.KubeConfigPath(),
+		DashConfig: dashConfig,
 	}
 	configurationModule := configuration.New(ctx, configurationOptions)
 

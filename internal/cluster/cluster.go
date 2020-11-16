@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/pkg/errors"
@@ -31,7 +30,6 @@ import (
 	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
 	internalLog "github.com/vmware-tanzu/octant/internal/log"
-	"github.com/vmware-tanzu/octant/internal/util/strings"
 	"github.com/vmware-tanzu/octant/pkg/log"
 
 	// auth plugins
@@ -241,41 +239,85 @@ func (c *Cluster) Version() (string, error) {
 	return fmt.Sprint(serverVersion), nil
 }
 
-// FromKubeConfig creates a Cluster from a kubeConfig chain.
-func FromKubeConfig(ctx context.Context, kubeConfigList, contextName string, initialNamespace string, providedNamespaces []string, options RESTConfigOptions) (*Cluster, error) {
-	chain := strings.Deduplicate(filepath.SplitList(kubeConfigList))
-	rules := &clientcmd.ClientConfigLoadingRules{
-		Precedence: chain,
-	}
+type clusterOptions struct {
+	InitialNamespace   string
+	ProvidedNamespaces []string
+	RESTConfigOptions  RESTConfigOptions
+}
 
-	overrides := &clientcmd.ConfigOverrides{}
-	if contextName != "" {
-		overrides.CurrentContext = contextName
+type ClusterOption func(*clusterOptions)
+
+func WithInitialNamespace(initialNamespace string) ClusterOption {
+	return func(clusterOptions *clusterOptions) {
+		clusterOptions.InitialNamespace = initialNamespace
 	}
-	cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides)
-	config, err := cc.ClientConfig()
+}
+
+func WithProvidedNamespaces(providedNamespaces []string) ClusterOption {
+	return func(clusterOptions *clusterOptions) {
+		clusterOptions.ProvidedNamespaces = providedNamespaces
+	}
+}
+
+func WithClientQPS(qps float32) ClusterOption {
+	return func(clusterOptions *clusterOptions) {
+		clusterOptions.RESTConfigOptions.QPS = qps
+	}
+}
+
+func WithClientBurst(burst int) ClusterOption {
+	return func(clusterOptions *clusterOptions) {
+		clusterOptions.RESTConfigOptions.Burst = burst
+	}
+}
+
+func WithClientUserAgent(userAgent string) ClusterOption {
+	return func(clusterOptions *clusterOptions) {
+		clusterOptions.RESTConfigOptions.UserAgent = userAgent
+	}
+}
+
+func WithRESTConfigOptions(restConfigOptions RESTConfigOptions) ClusterOption {
+	return func(clusterOptions *clusterOptions) {
+		clusterOptions.RESTConfigOptions = restConfigOptions
+	}
+}
+
+// FromClientConfig creates a Cluster from a k8s.io/client-go ClientConfig
+func FromClientConfig(
+	ctx context.Context,
+	clientConfig clientcmd.ClientConfig,
+	opts ...ClusterOption,
+) (*Cluster, error) {
+	options := clusterOptions{}
+	for _, opt := range opts {
+		if opt != nil {
+			opt(&options)
+		}
+	}
+	restConfig, err := clientConfig.ClientConfig()
 	if err != nil {
 		return nil, err
 	}
 
 	var defaultNamespace string
 
-	if initialNamespace == "" {
-		defaultNamespace, _, err = cc.Namespace()
+	if options.InitialNamespace == "" {
+		defaultNamespace, _, err = clientConfig.Namespace()
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		defaultNamespace = initialNamespace
+		defaultNamespace = options.InitialNamespace
 	}
 
 	logger := internalLog.From(ctx)
-	logger.With("client-qps", options.QPS, "client-burst", options.Burst).
+	logger.With("client-qps", options.RESTConfigOptions.QPS, "client-burst", options.RESTConfigOptions.Burst).
 		Debugf("initializing REST client configuration")
 
-	config = withConfigDefaults(config, options)
+	restConfig = withConfigDefaults(restConfig, options.RESTConfigOptions)
 
-	return newCluster(ctx, cc, config, defaultNamespace, providedNamespaces)
+	return newCluster(ctx, clientConfig, restConfig, defaultNamespace, options.ProvidedNamespaces)
 }
 
 // withConfigDefaults returns an extended rest.Config object with additional defaults applied
