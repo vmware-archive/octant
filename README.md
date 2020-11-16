@@ -12,7 +12,7 @@ Octant is a tool for developers to understand how applications run on a Kubernet
 
 * **Resource Viewer**
 
-    Graphically visualizate relationships between objects in a Kubernetes cluster. The status of individual objects are represented by color to show workload performance.
+    Graphically visualize relationships between objects in a Kubernetes cluster. The status of individual objects are represented by color to show workload performance.
 
 * **Summary View**
 
