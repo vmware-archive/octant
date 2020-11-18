@@ -25,9 +25,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes/scheme"
 	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
+	"github.com/vmware-tanzu/octant/internal/gvk"
 	queryerFake "github.com/vmware-tanzu/octant/internal/queryer/fake"
 	"github.com/vmware-tanzu/octant/internal/testutil"
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -88,6 +91,12 @@ func TestCacheQueryer_Children(t *testing.T) {
 	require.NoError(t, err)
 	deploymentKey.Name = ""
 
+	errGroup := &discovery.ErrGroupDiscoveryFailed{
+		Groups: map[schema.GroupVersion]error{
+			gvk.PodMetrics.GroupVersion(): errors.New("server currently unavailable"),
+		},
+	}
+
 	cases := []struct {
 		name     string
 		owner    *unstructured.Unstructured
@@ -110,6 +119,27 @@ func TestCacheQueryer_Children(t *testing.T) {
 				disco.EXPECT().
 					ServerPreferredResources().
 					Return(resourceLists, nil)
+
+			},
+			expected: func(t *testing.T) *unstructured.UnstructuredList {
+				return testutil.ToUnstructuredList(t, rs)
+			},
+		},
+		{
+			name:  "metrics server fails",
+			owner: deployment,
+			setup: func(t *testing.T, o *storeFake.MockStore, disco *queryerFake.MockDiscoveryInterface) {
+				o.EXPECT().
+					List(gomock.Any(), gomock.Eq(deploymentKey)).
+					Return(testutil.ToUnstructuredList(t, deployment), false, nil)
+
+				o.EXPECT().
+					List(gomock.Any(), gomock.Eq(rsKey)).
+					Return(testutil.ToUnstructuredList(t, rs), false, nil)
+
+				disco.EXPECT().
+					ServerPreferredResources().
+					Return(resourceLists, errGroup)
 
 			},
 			expected: func(t *testing.T) *unstructured.UnstructuredList {
