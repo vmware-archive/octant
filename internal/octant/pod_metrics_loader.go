@@ -8,6 +8,7 @@ package octant
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -163,9 +164,10 @@ func (ml *ClusterPodMetricsLoader) SupportsMetrics(ctx context.Context) (bool, e
 
 		lists, err := discoveryClient.ServerPreferredNamespacedResources()
 		if err != nil {
-			if discovery.IsGroupDiscoveryFailedError(err) {
+			if discovery.IsGroupDiscoveryFailedError(err) && strings.Contains(err.Error(), "metrics") {
 				logger := log.From(ctx)
-				logger.Warnf("metrics failed error: %w", err)
+				logger.Debugf("metrics discovery failed: %w", err)
+				ml.hasPodMetricsSupport = false
 				return
 			}
 			sErr = fmt.Errorf("get preferred namespaced resources: %w", err)
