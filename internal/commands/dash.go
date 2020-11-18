@@ -19,6 +19,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog"
 
+	"github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/config"
 	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/internal/log"
@@ -66,6 +67,13 @@ func newOctantCmd(version string, gitCommit string, buildTime string) *cobra.Com
 				viper.Set("kubeconfig", clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename())
 			}
 
+			listener, err := api.Listener()
+			if err != nil {
+				err = fmt.Errorf("failed to create net listener: %w", err)
+				golog.Printf("use OCTANT_LISTENER_ADDR to set host:port: %s", err)
+				os.Exit(1)
+			}
+
 			go func() {
 				buildInfo := config.BuildInfo{
 					Version: version,
@@ -86,6 +94,7 @@ func newOctantCmd(version string, gitCommit string, buildTime string) *cobra.Com
 					ClientBurst:            viper.GetInt("client-burst"),
 					UserAgent:              fmt.Sprintf("octant/%s", version),
 					BuildInfo:              buildInfo,
+					Listener:               listener,
 				}
 
 				klogVerbosity := viper.GetString("klog-verbosity")

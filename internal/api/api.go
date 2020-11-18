@@ -12,6 +12,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
@@ -43,7 +44,7 @@ func acceptedHosts() []string {
 		hosts = append(hosts, allowedHosts...)
 	}
 
-	listenerAddr := ListenerAddr()
+	listenerAddr := getListenerAddr()
 	host, _, err := net.SplitHostPort(listenerAddr)
 	if err != nil {
 		panic(fmt.Sprintf("Unable to parse OCTANT_LISTENER_ADDR: %s", listenerAddr))
@@ -53,8 +54,18 @@ func acceptedHosts() []string {
 	return hosts
 }
 
-// ListenerAddr returns the default listener address if OCTANT_LISTENER_ADDR is not set.
-func ListenerAddr() string {
+// Listener returns the default listener if OCTANT_LISTENER_ADDR is not set.
+func Listener() (net.Listener, error) {
+	listenerAddr := getListenerAddr()
+	conn, err := net.DialTimeout("tcp", listenerAddr, time.Millisecond*500)
+	if err != nil {
+		return net.Listen("tcp", listenerAddr)
+	}
+	_ = conn.Close()
+	return nil, fmt.Errorf("tcp %s: dial: already in use", listenerAddr)
+}
+
+func getListenerAddr() string {
 	listenerAddr := defaultListenerAddr
 	if customListenerAddr := viper.GetString(ListenerAddrKey); customListenerAddr != "" {
 		listenerAddr = customListenerAddr

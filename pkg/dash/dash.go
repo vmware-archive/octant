@@ -61,6 +61,7 @@ type Options struct {
 	ClientBurst            int
 	UserAgent              string
 	BuildInfo              config.BuildInfo
+	Listener               net.Listener
 }
 
 type Runner struct {
@@ -89,11 +90,7 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 	r.websocketClientManager = websocketClientManager
 	go websocketClientManager.Run(ctx)
 
-	listener, err := buildListener()
-	if err != nil {
-		err = fmt.Errorf("failed to create net listener: %w", err)
-		return nil, fmt.Errorf("use OCTANT_LISTENER_ADDR to set host:port: %w", err)
-	}
+	var err error
 
 	var pluginService *pluginAPI.GRPCService
 	var apiService api.Service
@@ -115,7 +112,7 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 		}
 	}
 
-	d, err := newDash(listener, options.Namespace, options.FrontendURL, options.BrowserPath, apiService, pluginService, logger)
+	d, err := newDash(options.Listener, options.Namespace, options.FrontendURL, options.BrowserPath, apiService, pluginService, logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create dash instance: %w", err)
 	}
@@ -165,8 +162,10 @@ func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, 
 
 	shutdownCtx := internalLog.WithLoggerContext(context.Background(), logger)
 
-	r.moduleManager.Unload()
-	r.pluginManager.Stop(shutdownCtx)
+	if r.apiCreated {
+		r.moduleManager.Unload()
+		r.pluginManager.Stop(shutdownCtx)
+	}
 
 	shutdownCh <- true
 	return nil
@@ -419,16 +418,6 @@ func initModuleManager(options *moduleOptions) (*module.Manager, error) {
 	return moduleManager, nil
 }
 
-func buildListener() (net.Listener, error) {
-	listenerAddr := api.ListenerAddr()
-	conn, err := net.DialTimeout("tcp", listenerAddr, time.Millisecond*500)
-	if err != nil {
-		return net.Listen("tcp", listenerAddr)
-	}
-	_ = conn.Close()
-	return nil, fmt.Errorf("tcp %s: dial: already in use", listenerAddr)
-}
-
 type dash struct {
 	mux             cmux.CMux
 	listener        net.Listener
@@ -462,6 +451,16 @@ func newDash(listener net.Listener, namespace, uiURL string, browserPath string,
 		pluginService:   pluginHandler,
 		logger:          logger,
 	}, nil
+}
+
+func (d *dash) SetAPIService(ctx context.Context, apiService api.Service) error {
+	d.apiHandler = apiService
+	hf := octant.NewHandlerFactory(
+		octant.BackendHandler(d.apiHandler.Handler),
+		octant.FrontendURL(viper.GetString("proxy-frontend")))
+	var err error
+	d.server.Handler, err = hf.Handler(ctx)
+	return err
 }
 
 func (d *dash) SetFrontendHandler(fn octant.HandlerFactoryFunc) {
