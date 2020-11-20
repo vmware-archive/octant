@@ -1,14 +1,14 @@
 ---
 title: "Octant 2020 Community Survey Results"
-image: /img/posts/2020/10/19/community-survey-banner.png
-excerpt: Summary of the community survey results
+image: /img/posts/2020/11/19/survey-results-banner.png
+excerpt: After launching our first Octant community survey, we want to share some of the insights we’ve gathered from your responses
 author_name: Isha Bagha
 author_avatar: /img/contributors/isha-bagha.jpg
 categories: ['kubernetes']
 tags: ['survey']
 ---
 
-Not too long ago, we set out to learn more about the Octant community. To do so, we shared the first [Octant Community survey](/octant-community-survey) and received 13 responses. It’s not a vast number of data points, but we were able to find patterns on how Octant is used and how it could be improved. Here, we want to share our findings.
+Not too long ago, we set out to learn more about the Octant community. To do so, we shared the first [Octant Community survey](/octant-community-survey) and received 13 responses. It’s not a vast sample size, but we were able to find patterns on how Octant is used and how it could be improved. Here, we want to share our findings.
 
 #### Methodology
 
@@ -20,7 +20,7 @@ The survey mentioned above collected a mix of qualitative and quantitative infor
 
 #### User Profiles
 
-Most respondents work at organizations that have 1-50 developers, though we’ve interacted with many users who work at large corporations (1000+ developers). Almost all survey respondents have apps in production in Kubernetes, which tells us about your organizational maturity and level of Kuberenetes knowledge.
+Most respondents work at organizations that have 1-50 developers, though we’ve interacted with many users who work at larger organizations (1000+ developers). Almost all survey respondents have deployed in production with Kubernetes, which tells us about their organizational maturity and level of Kuberenetes knowledge.
 
 ![](/img/posts/2020/11/19/org-size.png)
 
@@ -28,7 +28,7 @@ Most respondents work at organizations that have 1-50 developers, though we’ve
 
 ### Infrastructure
 
-Operating systems are a mix of Windows, Mac, and Linux, with most of you skewing towards Linux. We found that there aren’t many users running Octant on the private cloud.
+Operating systems are a mix of Windows, Mac, and Linux, with most skewing towards Linux. We found that there aren’t many users running Octant on the private cloud.
 
 ![](/img/posts/2020/11/19/infrastructure.png)
 
@@ -74,7 +74,7 @@ Octant’s superpower lies in its extensibility via plugins. Users can extend an
 
 ### Improve Messaging Around Octant’s Extensibility
 
-From a plugin author and stakeholder perspective, there’s potential for stronger messaging around how powerful this functionality is, and to make it more accessible to users how they can use and build plugins.
+From a plugin author and stakeholder perspective, there’s potential for stronger messaging around how powerful this functionality is, and to make building and using plugins more accessible.
 
 ### Plugin Author Experience
 
