@@ -42,22 +42,19 @@ secondary_ctas:
 #reference:
 #  title: Getting Sonobuoy
 #  content: Lorem ipsum dolor sit amet....
-#  links: 
+#  links:
 #    ISO: http://www.example.com
 #    OVA: http://www.example.com
 #    Amazon Machine Image: http://www.example.com
 #    Google Compute Engine Image: http://www.example.com
 #    Azure VHD: http://www.example.com
 ---
-<div class="alert alert-custom alert-info text-center">
-Help improve Octant by filling out our <a href="https://forms.gle/LLmSGkHu91DJNR3P8">community survey</a>!
-</div>
 <div class="home-hero bg-color-{{ site.hero.background-color }}" style="background-image: url('{{ page.hero.banner }}')">
   <div class="section">
     <div class="section-content">
       <div class="hero-content">
         <h1 class="mb-3">{{ page.hero.headline }}</h1>
-        <p>{{ page.hero.content }}</p>        
+        <p>{{ page.hero.content }}</p>
       </div>
       <div class="hero-cta mt-4">
         <a href="{{ page.hero.cta_link1.url }}" class="btn btn-primary mb-3 mb-sm-0">{{ page.hero.cta_link1.text }}</a>
@@ -143,7 +140,7 @@ Help improve Octant by filling out our <a href="https://forms.gle/LLmSGkHu91DJNR
         <div class="col">
           <h2 class="text-center">{{ page.reference.title }}</h2>
           <p>{{ page.reference.content }}</p>
-  
+
           <ul>
             {% for link in page.reference.links %}
             <li><a href="{{ link[1] }}">{{ link[0] }}</a></li>
@@ -153,14 +150,14 @@ Help improve Octant by filling out our <a href="https://forms.gle/LLmSGkHu91DJNR
       </div>
     </div>
   </div>
---> 
+-->
 
 <div class="section">
   <div class="section-content">
     <div class="row">
       <div class="col">
         <h2>Features</h2>
-      </div>          
+      </div>
     </div>
     {% assign limit = 3 %}
     {% include case-studies-alternating.html %}
@@ -171,7 +168,7 @@ Help improve Octant by filling out our <a href="https://forms.gle/LLmSGkHu91DJNR
   <div class="section-content">
     <div class="row">
       <div class="col">
-        <h2>Blog Highlights</h2>        
+        <h2>Blog Highlights</h2>
       </div>
     </div>
     {% assign limit = 3 %}
