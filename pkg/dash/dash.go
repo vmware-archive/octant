@@ -146,7 +146,16 @@ func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, 
 			}
 			r.dash.apiHandler = apiService
 			r.dash.pluginService = pluginService
-			r.startAPIService(ctx, logger)
+			hf := octant.NewHandlerFactory(
+				octant.BackendHandler(r.dash.apiHandler.Handler),
+				octant.FrontendURL(viper.GetString("proxy-frontend")))
+
+			r.dash.server.Handler, err = hf.Handler(ctx)
+			if err != nil {
+				logger.Errorf("cannot create handler: %v", err)
+			}
+
+			logger.Infof("using api service")
 		}()
 	}
 
@@ -556,18 +565,4 @@ func ValidateKubeConfig(logger log.Logger, kubeConfig string, fs afero.Fs) (stri
 		return strings.Join(fileList, string(filepath.ListSeparator)), nil
 	}
 	return "", fmt.Errorf("no kubeconfig found")
-}
-
-func (r *Runner) startAPIService(ctx context.Context, logger log.Logger) {
-	hf := octant.NewHandlerFactory(
-		octant.BackendHandler(r.dash.apiHandler.Handler),
-		octant.FrontendURL(viper.GetString("proxy-frontend")))
-
-	var err error
-	r.dash.server.Handler, err = hf.Handler(ctx)
-	if err != nil {
-		logger.Errorf("cannot create handler: %v", err)
-	}
-
-	logger.Infof("using api service")
 }
