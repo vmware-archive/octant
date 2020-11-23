@@ -106,10 +106,7 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 	} else {
 		logger.Infof("no valid kube config found, initializing loading API")
 		// Initialize the API
-		apiService, apiErr = r.initLoadingAPI(ctx, logger, options)
-		if apiErr != nil {
-			return nil, fmt.Errorf("failed to start loading api: %w", err)
-		}
+		apiService = api.NewLoadingAPI(ctx, api.PathPrefix, r.actionManager, r.websocketClientManager, logger)
 	}
 
 	d, err := newDash(options.Listener, options.Namespace, options.FrontendURL, options.BrowserPath, apiService, pluginService, logger)
@@ -169,12 +166,6 @@ func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, 
 
 	shutdownCh <- true
 	return nil
-}
-
-func (r *Runner) initLoadingAPI(ctx context.Context, logger log.Logger, _ Options) (*api.LoadingAPI, error) {
-	apiService := api.NewLoadingAPI(ctx, api.PathPrefix, r.actionManager, r.websocketClientManager, logger)
-
-	return apiService, nil
 }
 
 func (r *Runner) initAPI(ctx context.Context, logger log.Logger, options Options) (*api.API, *pluginAPI.GRPCService, error) {
