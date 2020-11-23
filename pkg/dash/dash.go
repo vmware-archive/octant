@@ -124,35 +124,30 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 }
 
 func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, startupCh, shutdownCh chan bool) error {
-	kubeConfigPath := ocontext.KubeConfigChFrom(ctx)
 	go func() {
 		if err := r.dash.Run(ctx, startupCh); err != nil {
 			logger.Debugf("running dashboard service: %v", err)
 		}
-		return
 	}()
 
 	if !r.apiCreated {
 		go func() {
-			if r.dash != nil {
-				var err error
-				if options.KubeConfig, err = ValidateKubeConfig(logger, options.KubeConfig, r.fs); err != nil {
-					logger.Infof("waiting for kube config ...")
-					options.KubeConfig = <-kubeConfigPath
-				}
+			logger.Infof("waiting for kube config ...")
+			options.KubeConfig = <-ocontext.KubeConfigChFrom(ctx)
 
-				if options.KubeConfig != "" {
-					logger.Debugf("Loading configuration: %v", options.KubeConfig)
-					r.startAPIService(ctx, logger, options)
-					return
-				} else {
-					logger.Errorf("unexpected empty kube config")
-					return
-				}
+			if options.KubeConfig == "" {
+				logger.Errorf("unexpected empty kube config")
+				return
 			}
+			logger.Debugf("Loading configuration: %v", options.KubeConfig)
+			apiService, pluginService, err := r.initAPI(ctx, logger, options)
+			if err != nil {
+				logger.Errorf("cannot create api: %v", err)
+			}
+			r.dash.apiHandler = apiService
+			r.dash.pluginService = pluginService
+			r.startAPIService(ctx, logger)
 		}()
-	} else {
-		r.startAPIService(ctx, logger, options)
 	}
 
 	<-ctx.Done()
@@ -563,16 +558,7 @@ func ValidateKubeConfig(logger log.Logger, kubeConfig string, fs afero.Fs) (stri
 	return "", fmt.Errorf("no kubeconfig found")
 }
 
-func (r *Runner) startAPIService(ctx context.Context, logger log.Logger, options Options) {
-	if r.apiCreated == false {
-		apiService, pluginService, err := r.initAPI(ctx, logger, options)
-		if err != nil {
-			logger.Errorf("cannot create api: %v", err)
-		}
-		r.dash.apiHandler = apiService
-		r.dash.pluginService = pluginService
-	}
-
+func (r *Runner) startAPIService(ctx context.Context, logger log.Logger) {
 	hf := octant.NewHandlerFactory(
 		octant.BackendHandler(r.dash.apiHandler.Handler),
 		octant.FrontendURL(viper.GetString("proxy-frontend")))
