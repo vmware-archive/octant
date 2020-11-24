@@ -1,0 +1,135 @@
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import {DatagridComponent} from "../app/modules/shared/components/presentation/datagrid/datagrid.component";
+import {TableComponent} from "../app/modules/shared/components/presentation/table/table.component";
+
+export const tableDocs= {source: {code: `cols := component.NewTableCols("A", "B")
+table := component.NewTable("Table Title", "Empty text", cols)
+table.Add(component.TableRow{
+	"A": component.NewText("1"),
+})
+table.Sort("A")
+table.Reverse()`}}
+
+export const textView = {
+  config: {
+    value: 'Table Title',
+  },
+  metadata: {
+    type: 'text',
+  },
+};
+
+<h1>Table Component</h1>
+<h2>Description</h2>
+
+<p>A table component is used to show tabular data with support for filtering, pagination, and sorting.</p>
+
+<p>When used in a Summary component, the table is intended to show simpler data as pagination, title, and filtering are removed.</p>
+<h2>Example</h2>
+
+<Meta title="Components/Table" component={DatagridComponent} />
+
+<Canvas withToolbar>
+  <Story name="Table component" parameters={{ docs: tableDocs }} height="800px" >
+  {{
+    props: {
+      view: object('View', {
+        metadata: {
+          type: 'table',
+          title: [textView],
+        },
+        config: {
+          columns: [
+            {
+              name: 'A',
+              accessor: 'A',
+            },
+            {
+              name: 'B',
+              accessor: 'B',
+            },
+          ],
+          rows: [
+            {
+              A: {
+                config: {
+                  value: '1',
+                },
+                metadata: {
+                  type: 'text'
+                },
+              },
+              B: {
+                config: {
+                  value: '2',
+                },
+                metadata: {
+                  type: 'text',
+                },
+              },
+            },
+          ],
+          emptyContent: 'Empty text',
+          loading: false,
+          filters: {},
+        },
+      }),
+    },
+    component: DatagridComponent,
+  }}
+  </Story>
+</Canvas>
+
+<h2>Props</h2>
+<ArgsTable of={DatagridComponent} />
+
+<Canvas withToolbar>
+  <Story name="Table used with summary" parameters={{ docs: tableDocs }} height="" >
+  {{
+    props: {
+      view: object('View', {
+        metadata: {
+          type: 'table',
+        },
+        config: {
+          columns: [
+            {
+              name: 'A',
+              accessor: 'A',
+            },
+            {
+              name: 'B',
+              accessor: 'B',
+            },
+          ],
+          rows: [
+            {
+              A: {
+                config: {
+                  value: '1',
+                },
+                metadata: {
+                  type: 'text'
+                },
+              },
+              B: {
+                config: {
+                  value: '2',
+                },
+                metadata: {
+                  type: 'text',
+                },
+              },
+            },
+          ],
+        },
+      }),
+    },
+    component: TableComponent,
+  }}
+  </Story>
+</Canvas>
+
+<h2>Props</h2>
+<ArgsTable of={TableComponent} />
