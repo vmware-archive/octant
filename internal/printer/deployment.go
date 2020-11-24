@@ -145,7 +145,7 @@ func createDeploymentConditionsView(deployment *appsv1.Deployment) (*component.T
 		table.Add(row)
 	}
 
-	table.Sort("Type", false)
+	table.Sort("Type")
 
 	return table, nil
 }
