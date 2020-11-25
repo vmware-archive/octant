@@ -65,6 +65,7 @@ type Options struct {
 }
 
 type Runner struct {
+	ctx                    context.Context
 	dash                   *dash
 	pluginManager          *plugin.Manager
 	moduleManager          *module.Manager
@@ -75,9 +76,10 @@ type Runner struct {
 }
 
 func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner, error) {
-	ctx = internalLog.WithLoggerContext(ctx, logger)
-
 	r := Runner{}
+	ctx = internalLog.WithLoggerContext(ctx, logger)
+	ctx = ocontext.WithKubeConfigCh(ctx)
+	r.ctx = ctx
 
 	if options.Context != "" {
 		logger.With("initial-context", options.Context).Infof("Setting initial context from user flags")
@@ -123,9 +125,10 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 	return &r, nil
 }
 
-func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, startupCh, shutdownCh chan bool) error {
+func (r *Runner) Start(options Options, startupCh, shutdownCh chan bool) error {
+	logger := internalLog.From(r.ctx)
 	go func() {
-		if err := r.dash.Run(ctx, startupCh); err != nil {
+		if err := r.dash.Run(r.ctx, startupCh); err != nil {
 			logger.Debugf("running dashboard service: %v", err)
 		}
 	}()
@@ -133,14 +136,14 @@ func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, 
 	if !r.apiCreated {
 		go func() {
 			logger.Infof("waiting for kube config ...")
-			options.KubeConfig = <-ocontext.KubeConfigChFrom(ctx)
+			options.KubeConfig = <-ocontext.KubeConfigChFrom(r.ctx)
 
 			if options.KubeConfig == "" {
 				logger.Errorf("unexpected empty kube config")
 				return
 			}
 			logger.Debugf("Loading configuration: %v", options.KubeConfig)
-			apiService, pluginService, err := r.initAPI(ctx, logger, options)
+			apiService, pluginService, err := r.initAPI(r.ctx, logger, options)
 			if err != nil {
 				logger.Errorf("cannot create api: %v", err)
 			}
@@ -150,7 +153,7 @@ func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, 
 				octant.BackendHandler(r.dash.apiHandler.Handler),
 				octant.FrontendURL(viper.GetString("proxy-frontend")))
 
-			r.dash.server.Handler, err = hf.Handler(ctx)
+			r.dash.server.Handler, err = hf.Handler(r.ctx)
 			if err != nil {
 				logger.Errorf("cannot create handler: %v", err)
 			}
@@ -159,7 +162,7 @@ func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, 
 		}()
 	}
 
-	<-ctx.Done()
+	<-r.ctx.Done()
 
 	shutdownCtx := internalLog.WithLoggerContext(context.Background(), logger)
 

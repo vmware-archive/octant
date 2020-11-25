@@ -27,7 +27,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/event"
 
@@ -205,11 +204,10 @@ func TestNewRunnerShutsDownPluginsWhenStoppedBeforeReceivingKubeConfig(t *testin
 	}
 	logger := log.NopLogger()
 	ctx, cancel := context.WithCancel(context.Background())
-	ctx = ocontext.WithKubeConfigCh(ctx)
 	runner, err := NewRunner(ctx, logger, options)
 	require.NoError(t, err)
 
-	go runner.Start(ctx, logger, options, make(chan bool), shutdownCh)
+	go runner.Start(options, make(chan bool), shutdownCh)
 	cancel()
 
 	select {
@@ -304,12 +302,11 @@ func tempFile(contents []byte) *os.File {
 
 func makeRunner(options Options, logger pkglog.Logger) (context.CancelFunc, error) {
 	ctx, cancel := context.WithCancel(context.Background())
-	ctx = ocontext.WithKubeConfigCh(ctx)
 	runner, err := NewRunner(ctx, logger, options)
 	if err != nil {
 		return cancel, err
 	}
-	go runner.Start(ctx, logger, options, make(chan bool), make(chan bool))
+	go runner.Start(options, make(chan bool), make(chan bool))
 	return cancel, nil
 }
 
