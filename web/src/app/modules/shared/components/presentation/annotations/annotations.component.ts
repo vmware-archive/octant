@@ -12,9 +12,7 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   templateUrl: './annotations.component.html',
   styleUrls: ['./annotations.component.scss'],
 })
-export class AnnotationsComponent extends AbstractViewComponent<
-  AnnotationsView
-> {
+export class AnnotationsComponent extends AbstractViewComponent<AnnotationsView> {
   annotations: { [key: string]: string };
   annotationKeys: string[];
   trackByIdentity = trackByIdentity;
