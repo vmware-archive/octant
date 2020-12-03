@@ -11,9 +11,7 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   templateUrl: './label-selector.component.html',
   styleUrls: ['./label-selector.component.scss'],
 })
-export class LabelSelectorComponent extends AbstractViewComponent<
-  LabelSelectorView
-> {
+export class LabelSelectorComponent extends AbstractViewComponent<LabelSelectorView> {
   key: string;
   value: string;
 

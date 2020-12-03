@@ -117,7 +117,7 @@ export class TabsComponent implements OnChanges, OnInit {
   }
 
   clickTab(tabAccessor: string) {
-    if (this.activeTab === name) {
+    if (this.activeTab === tabAccessor) {
       return;
     }
     this.activeTab = tabAccessor;

@@ -11,9 +11,7 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   templateUrl: './port-forward.component.html',
   styleUrls: ['./port-forward.component.scss'],
 })
-export class PortForwardComponent extends AbstractViewComponent<
-  PortForwardView
-> {
+export class PortForwardComponent extends AbstractViewComponent<PortForwardView> {
   constructor() {
     super();
   }

@@ -21,9 +21,7 @@ import { parse } from 'marked';
   templateUrl: './button-group.component.html',
   styleUrls: ['./button-group.component.scss'],
 })
-export class ButtonGroupComponent extends AbstractViewComponent<
-  ButtonGroupView
-> {
+export class ButtonGroupComponent extends AbstractViewComponent<ButtonGroupView> {
   @Output() buttonLoad: EventEmitter<boolean> = new EventEmitter(true);
 
   isModalOpen = false;

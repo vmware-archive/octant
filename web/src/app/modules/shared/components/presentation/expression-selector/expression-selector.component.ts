@@ -11,9 +11,7 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   templateUrl: './expression-selector.component.html',
   styleUrls: ['./expression-selector.component.scss'],
 })
-export class ExpressionSelectorComponent extends AbstractViewComponent<
-  ExpressionSelectorView
-> {
+export class ExpressionSelectorComponent extends AbstractViewComponent<ExpressionSelectorView> {
   key: string;
   operator: string;
   values: string;
