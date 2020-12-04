@@ -14,7 +14,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/vmware-tanzu/octant/internal/api"
-	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/internal/electron"
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/dash"
@@ -73,26 +72,30 @@ func run(ctx context.Context) error {
 
 	// TODO: this port should be random.
 	viper.Set(api.ListenerAddrKey, "127.0.0.1:7778")
+	listener, err := api.Listener()
+	if err != nil {
+		return fmt.Errorf("failed to create net listener: %w", err)
+	}
 
 	dashOptions := dash.Options{
 		DisableClusterOverview: false,
 		EnableOpenCensus:       false,
 		UserAgent:              fmt.Sprintf("octant-electron"), // TODO: create proper user agent
+		Listener:               listener,
 	}
 	shutdownCh := make(chan bool, 1)
 	startupCh := make(chan bool, 1)
 	runCh := make(chan bool, 1)
 
 	ctx, cancel := context.WithCancel(ctx)
-	ctxKubeConfig := ocontext.WithKubeConfigCh(ctx)
 
-	runner, err := dash.NewRunner(ctxKubeConfig, logger, dashOptions)
+	runner, err := dash.NewRunner(ctx, logger, dashOptions)
 	if err != nil {
 		return fmt.Errorf("create octant runner: %w", err)
 	}
 
 	go func() {
-		runner.Start(ctxKubeConfig, logger, dashOptions, startupCh, shutdownCh)
+		runner.Start(dashOptions, startupCh, shutdownCh)
 		runCh <- true
 	}()
 

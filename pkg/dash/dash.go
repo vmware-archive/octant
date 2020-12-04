@@ -61,9 +61,11 @@ type Options struct {
 	ClientBurst            int
 	UserAgent              string
 	BuildInfo              config.BuildInfo
+	Listener               net.Listener
 }
 
 type Runner struct {
+	ctx                    context.Context
 	dash                   *dash
 	pluginManager          *plugin.Manager
 	moduleManager          *module.Manager
@@ -74,9 +76,10 @@ type Runner struct {
 }
 
 func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner, error) {
-	ctx = internalLog.WithLoggerContext(ctx, logger)
-
 	r := Runner{}
+	ctx = internalLog.WithLoggerContext(ctx, logger)
+	ctx = ocontext.WithKubeConfigCh(ctx)
+	r.ctx = ctx
 
 	if options.Context != "" {
 		logger.With("initial-context", options.Context).Infof("Setting initial context from user flags")
@@ -89,11 +92,7 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 	r.websocketClientManager = websocketClientManager
 	go websocketClientManager.Run(ctx)
 
-	listener, err := buildListener()
-	if err != nil {
-		err = fmt.Errorf("failed to create net listener: %w", err)
-		return nil, fmt.Errorf("use OCTANT_LISTENER_ADDR to set host:port: %w", err)
-	}
+	var err error
 
 	var pluginService *pluginAPI.GRPCService
 	var apiService api.Service
@@ -109,13 +108,10 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 	} else {
 		logger.Infof("no valid kube config found, initializing loading API")
 		// Initialize the API
-		apiService, apiErr = r.initLoadingAPI(ctx, logger, options)
-		if apiErr != nil {
-			return nil, fmt.Errorf("failed to start loading api: %w", err)
-		}
+		apiService = api.NewLoadingAPI(ctx, api.PathPrefix, r.actionManager, r.websocketClientManager, logger)
 	}
 
-	d, err := newDash(listener, options.Namespace, options.FrontendURL, options.BrowserPath, apiService, pluginService, logger)
+	d, err := newDash(options.Listener, options.Namespace, options.FrontendURL, options.BrowserPath, apiService, pluginService, logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create dash instance: %w", err)
 	}
@@ -129,53 +125,54 @@ func NewRunner(ctx context.Context, logger log.Logger, options Options) (*Runner
 	return &r, nil
 }
 
-func (r *Runner) Start(ctx context.Context, logger log.Logger, options Options, startupCh, shutdownCh chan bool) error {
-	kubeConfigPath := ocontext.KubeConfigChFrom(ctx)
+func (r *Runner) Start(options Options, startupCh, shutdownCh chan bool) error {
+	logger := internalLog.From(r.ctx)
 	go func() {
-		if err := r.dash.Run(ctx, startupCh); err != nil {
+		if err := r.dash.Run(r.ctx, startupCh); err != nil {
 			logger.Debugf("running dashboard service: %v", err)
 		}
-		return
 	}()
 
 	if !r.apiCreated {
 		go func() {
-			if r.dash != nil {
-				var err error
-				if options.KubeConfig, err = ValidateKubeConfig(logger, options.KubeConfig, r.fs); err != nil {
-					logger.Infof("waiting for kube config ...")
-					options.KubeConfig = <-kubeConfigPath
-				}
+			logger.Infof("waiting for kube config ...")
+			options.KubeConfig = <-ocontext.KubeConfigChFrom(r.ctx)
 
-				if options.KubeConfig != "" {
-					logger.Debugf("Loading configuration: %v", options.KubeConfig)
-					r.startAPIService(ctx, logger, options)
-					return
-				} else {
-					logger.Errorf("unexpected empty kube config")
-					return
-				}
+			if options.KubeConfig == "" {
+				logger.Errorf("unexpected empty kube config")
+				return
 			}
+			logger.Debugf("Loading configuration: %v", options.KubeConfig)
+			apiService, pluginService, err := r.initAPI(r.ctx, logger, options)
+			if err != nil {
+				logger.Errorf("cannot create api: %v", err)
+			}
+			r.dash.apiHandler = apiService
+			r.dash.pluginService = pluginService
+			hf := octant.NewHandlerFactory(
+				octant.BackendHandler(r.dash.apiHandler.Handler),
+				octant.FrontendURL(viper.GetString("proxy-frontend")))
+
+			r.dash.server.Handler, err = hf.Handler(r.ctx)
+			if err != nil {
+				logger.Errorf("cannot create handler: %v", err)
+			}
+
+			logger.Infof("using api service")
 		}()
-	} else {
-		r.startAPIService(ctx, logger, options)
 	}
 
-	<-ctx.Done()
+	<-r.ctx.Done()
 
 	shutdownCtx := internalLog.WithLoggerContext(context.Background(), logger)
 
-	r.moduleManager.Unload()
-	r.pluginManager.Stop(shutdownCtx)
+	if r.apiCreated {
+		r.moduleManager.Unload()
+		r.pluginManager.Stop(shutdownCtx)
+	}
 
 	shutdownCh <- true
 	return nil
-}
-
-func (r *Runner) initLoadingAPI(ctx context.Context, logger log.Logger, _ Options) (*api.LoadingAPI, error) {
-	apiService := api.NewLoadingAPI(ctx, api.PathPrefix, r.actionManager, r.websocketClientManager, logger)
-
-	return apiService, nil
 }
 
 func (r *Runner) initAPI(ctx context.Context, logger log.Logger, options Options) (*api.API, *pluginAPI.GRPCService, error) {
@@ -419,16 +416,6 @@ func initModuleManager(options *moduleOptions) (*module.Manager, error) {
 	return moduleManager, nil
 }
 
-func buildListener() (net.Listener, error) {
-	listenerAddr := api.ListenerAddr()
-	conn, err := net.DialTimeout("tcp", listenerAddr, time.Millisecond*500)
-	if err != nil {
-		return net.Listen("tcp", listenerAddr)
-	}
-	_ = conn.Close()
-	return nil, fmt.Errorf("tcp %s: dial: already in use", listenerAddr)
-}
-
 type dash struct {
 	mux             cmux.CMux
 	listener        net.Listener
@@ -462,6 +449,16 @@ func newDash(listener net.Listener, namespace, uiURL string, browserPath string,
 		pluginService:   pluginHandler,
 		logger:          logger,
 	}, nil
+}
+
+func (d *dash) SetAPIService(ctx context.Context, apiService api.Service) error {
+	d.apiHandler = apiService
+	hf := octant.NewHandlerFactory(
+		octant.BackendHandler(d.apiHandler.Handler),
+		octant.FrontendURL(viper.GetString("proxy-frontend")))
+	var err error
+	d.server.Handler, err = hf.Handler(ctx)
+	return err
 }
 
 func (d *dash) SetFrontendHandler(fn octant.HandlerFactoryFunc) {
@@ -571,27 +568,4 @@ func ValidateKubeConfig(logger log.Logger, kubeConfig string, fs afero.Fs) (stri
 		return strings.Join(fileList, string(filepath.ListSeparator)), nil
 	}
 	return "", fmt.Errorf("no kubeconfig found")
-}
-
-func (r *Runner) startAPIService(ctx context.Context, logger log.Logger, options Options) {
-	if r.apiCreated == false {
-		apiService, pluginService, err := r.initAPI(ctx, logger, options)
-		if err != nil {
-			logger.Errorf("cannot create api: %v", err)
-		}
-		r.dash.apiHandler = apiService
-		r.dash.pluginService = pluginService
-	}
-
-	hf := octant.NewHandlerFactory(
-		octant.BackendHandler(r.dash.apiHandler.Handler),
-		octant.FrontendURL(viper.GetString("proxy-frontend")))
-
-	var err error
-	r.dash.server.Handler, err = hf.Handler(ctx)
-	if err != nil {
-		logger.Errorf("cannot create handler: %v", err)
-	}
-
-	logger.Infof("using api service")
 }
