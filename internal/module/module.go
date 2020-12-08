@@ -66,4 +66,6 @@ type Module interface {
 
 	// ResetCRDs removes all CRDs this module is responsible for.
 	ResetCRDs(ctx context.Context) error
+
+	GvkFromPath(contentPath, namespace string) (schema.GroupVersionKind, error)
 }

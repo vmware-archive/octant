@@ -57,6 +57,7 @@ type DropdownConfig struct {
 	DropdownPosition DropdownPosition     `json:"position,omitempty"`
 	DropdownType     DropdownType         `json:"type"`
 	Action           string               `json:"action,omitempty"`
+	Selection        string               `json:"selection,omitempty"`
 	UseSelection     bool                 `json:"useSelection"`
 	Items            []DropdownItemConfig `json:"items"`
 }
@@ -82,8 +83,8 @@ func NewDropdown(title string, dropdownType DropdownType, action string, items .
 	}
 }
 
-// AddDropdownItem adds an item to the dropdown
-func (t *Dropdown) AddDropdownItem(name string, itemType ItemType, label string, url string, description string) {
+// NewDropdownItem  creates a new dropdown item
+func NewDropdownItem(name string, itemType ItemType, label string, url string, description string) DropdownItemConfig {
 	item := DropdownItemConfig{
 		Name:        name,
 		Type:        itemType,
@@ -91,6 +92,12 @@ func (t *Dropdown) AddDropdownItem(name string, itemType ItemType, label string,
 		Url:         url,
 		Description: description,
 	}
+	return item
+}
+
+// AddDropdownItem adds an item to the dropdown
+func (t *Dropdown) AddDropdownItem(name string, itemType ItemType, label string, url string, description string) {
+	item := NewDropdownItem(name, itemType, label, url, description)
 	t.Config.Items = append(t.Config.Items, item)
 }
 
@@ -99,10 +106,18 @@ func (t *Dropdown) SetDropdownPosition(position DropdownPosition) {
 	t.Config.DropdownPosition = position
 }
 
+// SetSelection specifies the dropdown selected item.
+func (t *Dropdown) SetSelection(selection string) {
+	t.Config.Selection = selection
+}
+
 // SetDropdownUseSelection defines if dropdown title is updated on selection change
 func (t *Dropdown) SetDropdownUseSelection(sel bool) {
 	t.Config.UseSelection = sel
 }
+
+// SupportsTitle designates this is a TextComponent.
+func (t *Dropdown) SupportsTitle() {}
 
 // GetMetadata accesses the components metadata
 func (t *Dropdown) GetMetadata() Metadata {
@@ -123,6 +138,7 @@ func (t *DropdownConfig) UnmarshalJSON(data []byte) error {
 		DropdownPosition DropdownPosition     `json:"position,omitempty"`
 		DropdownType     DropdownType         `json:"type,omitempty"`
 		Action           string               `json:"action,omitempty"`
+		Selection        string               `json:"selection,omitempty"`
 		UseSelection     bool                 `json:"useSelection,omitempty"`
 		Items            []DropdownItemConfig `json:"items"`
 	}{}
@@ -134,6 +150,7 @@ func (t *DropdownConfig) UnmarshalJSON(data []byte) error {
 	t.DropdownPosition = x.DropdownPosition
 	t.DropdownType = x.DropdownType
 	t.Action = x.Action
+	t.Selection = x.Selection
 	t.UseSelection = x.UseSelection
 	t.Items = x.Items
 	return nil

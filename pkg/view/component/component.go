@@ -7,7 +7,6 @@ package component
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -67,12 +66,17 @@ func (c *ContentResponse) UnmarshalJSON(data []byte) error {
 	}
 
 	for _, t := range stage.Title {
-		title, err := getTitleByUnmarshalInterface(t.Config)
+		title, err := t.ToComponent()
 		if err != nil {
 			return err
 		}
 
-		c.Title = Title(NewText(title))
+		titleComponent, ok := title.(TitleComponent)
+		if !ok {
+			return errors.New("component in title isn't a title view component")
+		}
+
+		c.Title = append(c.Title, titleComponent)
 	}
 
 	for _, to := range stage.Components {
@@ -85,19 +89,6 @@ func (c *ContentResponse) UnmarshalJSON(data []byte) error {
 	}
 
 	return nil
-}
-
-func getTitleByUnmarshalInterface(config json.RawMessage) (string, error) {
-	var objmap map[string]interface{}
-	if err := json.Unmarshal(config, &objmap); err != nil {
-		return "", err
-	}
-
-	if value, ok := objmap["value"].(string); ok {
-		return value, nil
-	}
-
-	return "", fmt.Errorf("title does not have a value")
 }
 
 type TypedObject struct {
@@ -135,6 +126,11 @@ func (m *Metadata) SetTitleText(parts ...string) {
 		titleComponents = append(titleComponents, NewText(part))
 	}
 
+	m.Title = titleComponents
+}
+
+// SetTitle sets the title using the provided components
+func (m *Metadata) SetTitle(titleComponents []TitleComponent) {
 	m.Title = titleComponents
 }
 

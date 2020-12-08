@@ -14,6 +14,7 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/api"
 	"github.com/vmware-tanzu/octant/internal/api/fake"
+	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
 	"github.com/vmware-tanzu/octant/internal/log"
 	moduleFake "github.com/vmware-tanzu/octant/internal/module/fake"
 	"github.com/vmware-tanzu/octant/internal/octant"
@@ -26,11 +27,12 @@ func TestContentManager_Handlers(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
+	dashConfig := configFake.NewMockDash(controller)
 	moduleManager := moduleFake.NewMockManagerInterface(controller)
 
 	logger := log.NopLogger()
 
-	manager := api.NewContentManager(moduleManager, logger)
+	manager := api.NewContentManager(moduleManager, dashConfig, logger)
 	AssertHandlers(t, manager, []string{
 		api.RequestSetContentPath,
 		action.RequestSetNamespace,
@@ -44,6 +46,7 @@ func TestContentManager_GenerateContent(t *testing.T) {
 
 	params := map[string][]string{}
 
+	dashConfig := configFake.NewMockDash(controller)
 	moduleManager := moduleFake.NewMockManagerInterface(controller)
 	state := octantFake.NewMockState(controller)
 
@@ -68,7 +71,7 @@ func TestContentManager_GenerateContent(t *testing.T) {
 	contentGenerator := func(ctx context.Context, state octant.State) (api.Content, bool, error) {
 		return api.Content{Response: contentResponse}, false, nil
 	}
-	manager := api.NewContentManager(moduleManager, logger,
+	manager := api.NewContentManager(moduleManager, dashConfig, logger,
 		api.WithContentGenerator(contentGenerator),
 		api.WithContentGeneratorPoller(poller))
 
@@ -84,13 +87,14 @@ func TestContentManager_SetContentPath(t *testing.T) {
 	m.EXPECT().Name().Return("name").AnyTimes()
 
 	moduleManager := moduleFake.NewMockManagerInterface(controller)
+	dashConfig := configFake.NewMockDash(controller)
 
 	state := octantFake.NewMockState(controller)
 	state.EXPECT().SetContentPath("/path")
 
 	logger := log.NopLogger()
 
-	manager := api.NewContentManager(moduleManager, logger,
+	manager := api.NewContentManager(moduleManager, dashConfig, logger,
 		api.WithContentGeneratorPoller(api.NewSingleRunPoller()))
 
 	payload := action.Payload{
@@ -108,12 +112,13 @@ func TestContentManager_SetNamespace(t *testing.T) {
 	m.EXPECT().Name().Return("name").AnyTimes()
 
 	moduleManager := moduleFake.NewMockManagerInterface(controller)
+	dashConfig := configFake.NewMockDash(controller)
 
 	state := octantFake.NewMockState(controller)
 	state.EXPECT().SetNamespace("kube-system")
 	logger := log.NopLogger()
 
-	manager := api.NewContentManager(moduleManager, logger,
+	manager := api.NewContentManager(moduleManager, dashConfig, logger,
 		api.WithContentGeneratorPoller(api.NewSingleRunPoller()))
 
 	payload := action.Payload{
@@ -170,6 +175,7 @@ func TestContentManager_SetQueryParams(t *testing.T) {
 			m.EXPECT().Name().Return("name").AnyTimes()
 
 			moduleManager := moduleFake.NewMockManagerInterface(controller)
+			dashConfig := configFake.NewMockDash(controller)
 
 			state := octantFake.NewMockState(controller)
 			require.NotNil(t, test.setup)
@@ -177,7 +183,7 @@ func TestContentManager_SetQueryParams(t *testing.T) {
 
 			logger := log.NopLogger()
 
-			manager := api.NewContentManager(moduleManager, logger,
+			manager := api.NewContentManager(moduleManager, dashConfig, logger,
 				api.WithContentGeneratorPoller(api.NewSingleRunPoller()))
 			require.NoError(t, manager.SetQueryParams(state, test.payload))
 		})

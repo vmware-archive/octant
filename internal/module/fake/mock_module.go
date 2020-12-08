@@ -141,6 +141,21 @@ func (mr *MockModuleMockRecorder) GroupVersionKindPath(arg0, arg1, arg2, arg3 in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupVersionKindPath", reflect.TypeOf((*MockModule)(nil).GroupVersionKindPath), arg0, arg1, arg2, arg3)
 }
 
+// GvkFromPath mocks base method
+func (m *MockModule) GvkFromPath(arg0, arg1 string) (schema.GroupVersionKind, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GvkFromPath", arg0, arg1)
+	ret0, _ := ret[0].(schema.GroupVersionKind)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GvkFromPath indicates an expected call of GvkFromPath
+func (mr *MockModuleMockRecorder) GvkFromPath(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GvkFromPath", reflect.TypeOf((*MockModule)(nil).GvkFromPath), arg0, arg1)
+}
+
 // Name mocks base method
 func (m *MockModule) Name() string {
 	m.ctrl.T.Helper()

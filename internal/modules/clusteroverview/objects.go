@@ -21,7 +21,6 @@ var (
 	customResourcesDescriber = describer.NewCRDSection(
 		"/custom-resources",
 		"Custom Resources",
-		describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	)
 
 	crdsDescriber = describer.NewResource(describer.ResourceOptions{
@@ -29,10 +28,9 @@ var (
 		ObjectStoreKey: store.Key{APIVersion: "apiextensions.k8s.io/v1", Kind: "CustomResourceDefinition"},
 		ListType:       &apiextv1.CustomResourceDefinitionList{},
 		ObjectType:     &apiextv1.CustomResourceDefinition{},
-		Titles:         describer.ResourceTitle{List: "Custom Resource Definitions", Object: "Custom Resource Definition"},
+		Titles:         describer.ResourceTitle{List: "Custom Resource Definitions", Object: "Custom Resource Definitions"},
 		ClusterWide:    true,
 		IconName:       icon.CustomResourceDefinition,
-		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	})
 
 	rbacClusterRoles = describer.NewResource(describer.ResourceOptions{
@@ -43,7 +41,6 @@ var (
 		Titles:         describer.ResourceTitle{List: "Cluster Roles", Object: "Cluster Roles"},
 		ClusterWide:    true,
 		IconName:       icon.ClusterOverviewClusterRole,
-		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	})
 
 	rbacClusterRoleBindings = describer.NewResource(describer.ResourceOptions{
@@ -54,7 +51,6 @@ var (
 		Titles:         describer.ResourceTitle{List: "Cluster Role Bindings", Object: "Cluster Role Bindings"},
 		ClusterWide:    true,
 		IconName:       icon.ClusterOverviewClusterRoleBinding,
-		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	})
 
 	rbacDescriber = describer.NewSection(
@@ -76,10 +72,9 @@ var (
 		ObjectStoreKey: store.Key{APIVersion: "admissionregistration.k8s.io/v1beta1", Kind: "ValidatingWebhookConfiguration"},
 		ListType:       &admissionregistrationv1beta1.ValidatingWebhookConfigurationList{},
 		ObjectType:     &admissionregistrationv1beta1.ValidatingWebhookConfiguration{},
-		Titles:         describer.ResourceTitle{List: "Validating Webhook Configurations", Object: "Validating Webhook Configuration"},
+		Titles:         describer.ResourceTitle{List: "Validating Webhooks", Object: "Validating Webhook Configuration"},
 		ClusterWide:    true,
 		IconName:       icon.Webhooks,
-		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	})
 
 	webhooksMutatingWebhooks = describer.NewResource(describer.ResourceOptions{
@@ -87,10 +82,9 @@ var (
 		ObjectStoreKey: store.Key{APIVersion: "admissionregistration.k8s.io/v1beta1", Kind: "MutatingWebhookConfiguration"},
 		ListType:       &admissionregistrationv1beta1.MutatingWebhookConfigurationList{},
 		ObjectType:     &admissionregistrationv1beta1.MutatingWebhookConfiguration{},
-		Titles:         describer.ResourceTitle{List: "Mutating Webhook Configurations", Object: "Mutating Webhook Configuration"},
+		Titles:         describer.ResourceTitle{List: "Mutating Webhooks", Object: "Mutating Webhook Configuration"},
 		ClusterWide:    true,
 		IconName:       icon.Webhooks,
-		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	})
 
 	nodesDescriber = describer.NewResource(describer.ResourceOptions{
@@ -102,7 +96,6 @@ var (
 		DisableResourceViewer: true,
 		ClusterWide:           true,
 		IconName:              icon.ClusterOverviewNode,
-		RootPath:              describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	})
 
 	storagePersistentVolumeDescriber = describer.NewResource(describer.ResourceOptions{
@@ -113,7 +106,6 @@ var (
 		Titles:         describer.ResourceTitle{List: "Persistent Volumes", Object: "Persistent Volumes"},
 		ClusterWide:    true,
 		IconName:       icon.ClusterOverviewPersistentVolume,
-		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	})
 
 	storageDescriber = describer.NewSection(
@@ -131,7 +123,6 @@ var (
 		DisableResourceViewer: true,
 		ClusterWide:           true,
 		IconName:              icon.ClusterOverviewNamespace,
-		RootPath:              describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	})
 
 	portForwardDescriber = NewPortForwardListDescriber()
@@ -147,10 +138,9 @@ var (
 		ObjectStoreKey: store.Key{APIVersion: "apiregistration.k8s.io/v1", Kind: "APIService"},
 		ListType:       &apiregistrationv1.APIServiceList{},
 		ObjectType:     &apiregistrationv1.APIService{},
-		Titles:         describer.ResourceTitle{List: "API Services", Object: "API Service"},
+		Titles:         describer.ResourceTitle{List: "API Services", Object: "API Services"},
 		ClusterWide:    true,
 		IconName:       icon.ApiServer,
-		RootPath:       describer.ResourceLink{Title: "Cluster Overview", Url: "/cluster-overview"},
 	})
 
 	rootDescriber = describer.NewSection(

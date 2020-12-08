@@ -216,7 +216,19 @@ func initRoutes(router *service.Router) {
 		component1 := gen("Tab 1", "tab1", request.Path())
 		component2 := gen("Tab 2", "tab2", request.Path())
 
-		contentResponse := component.NewContentResponse(component.TitleFromString("Example"))
+		// Illustrate using dropdowns and links for breadcrumbs
+		items := make([]component.DropdownItemConfig, 0)
+		dropdown := component.NewDropdown("test", component.DropdownLink, "action", items...)
+		dropdown.AddDropdownItem("first", component.Url, "Nested Once", "nested-once", "")
+		dropdown.AddDropdownItem("second", component.Url, "Nested Twice", "nested-once/nested-twice", "")
+		dropdown.SetTitle(append([]component.TitleComponent{}, component.NewLink("", "Dropdown", "/url")))
+
+		var title []component.TitleComponent
+		title = component.Title(dropdown)
+		title = append(title, component.NewLink("", "Example Link", "link"))
+		title = append(title, component.NewText("Example"))
+
+		contentResponse := component.NewContentResponse(title)
 		contentResponse.Add(component1, component2)
 
 		return *contentResponse, nil

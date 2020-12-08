@@ -110,7 +110,7 @@ func TestObjectDescriber(t *testing.T) {
 			)))
 
 	expected := component.ContentResponse{
-		Title: component.Title(component.NewLink("", "object", "."), component.NewText("pod")),
+		Title: component.Title(component.NewText("pod")),
 		Components: []component.Component{
 			summary,
 		},

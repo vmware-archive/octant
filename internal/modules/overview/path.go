@@ -7,6 +7,7 @@ package overview
 
 import (
 	"path"
+	"strings"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -102,4 +103,51 @@ func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 	}
 
 	return path.Join("/overview/namespace", namespace, p, name), nil
+}
+
+func gvkReversePath(contentPath, namespace string) (schema.GroupVersionKind, error) {
+	reducedPath := strings.Replace(contentPath, path.Join("overview/namespace", namespace), "", 1)
+
+	switch {
+	case reducedPath == "/workloads/daemon-sets":
+		return gvk.DaemonSet, nil
+	case reducedPath == "/workloads/replica-sets":
+		return gvk.AppReplicaSet, nil
+	case reducedPath == "/workloads/stateful-sets":
+		return gvk.StatefulSet, nil
+	case reducedPath == "/workloads/deployments":
+		return gvk.Deployment, nil
+	case reducedPath == "/workloads/cron-jobs":
+		return gvk.CronJob, nil
+	case reducedPath == "/workloads/jobs":
+		return gvk.Job, nil
+	case reducedPath == "/workloads/replication-controllers":
+		return gvk.ReplicationController, nil
+	case reducedPath == "/config-and-storage/secrets":
+		return gvk.Secret, nil
+	case reducedPath == "/config-and-storage/config-maps":
+		return gvk.ConfigMap, nil
+	case reducedPath == "/config-and-storage/persistent-volume-claims":
+		return gvk.PersistentVolumeClaim, nil
+	case reducedPath == "/config-and-storage/service-accounts":
+		return gvk.ServiceAccount, nil
+	case reducedPath == "/discovery-and-load-balancing/horizontal-pod-autoscalers":
+		return gvk.HorizontalPodAutoscaler, nil
+	case reducedPath == "/discovery-and-load-balancing/ingresses":
+		return gvk.Ingress, nil
+	case reducedPath == "/discovery-and-load-balancing/services":
+		return gvk.Service, nil
+	case reducedPath == "/discovery-and-load-balancing/network-policies":
+		return gvk.NetworkPolicy, nil
+	case reducedPath == "/rbac/roles":
+		return gvk.Role, nil
+	case reducedPath == "/rbac/role-bindings":
+		return gvk.RoleBinding, nil
+	case reducedPath == "/events":
+		return gvk.Event, nil
+	case reducedPath == "/workloads/pods":
+		return gvk.Pod, nil
+	default:
+		return schema.GroupVersionKind{}, errors.Errorf("unknown gvk %s", contentPath)
+	}
 }

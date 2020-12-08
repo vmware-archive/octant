@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, isDevMode } from '@angular/core';
+import { Component, Input, isDevMode } from '@angular/core';
 import {
   DropdownItem,
   DropdownView,
@@ -19,14 +19,20 @@ import { WebsocketService } from '../../../../../data/services/websocket/websock
   styleUrls: ['./dropdown.component.scss'],
 })
 export class DropdownComponent extends AbstractViewComponent<DropdownView> {
+  readonly defaultItemLimit = 10;
   useSelection = false;
   selectedItem = '';
-  title: string;
   url: string;
   position: string;
-  type: string;
   action: string;
-  items: DropdownItem[];
+  itemLimit = this.defaultItemLimit;
+  isOpen = false;
+
+  @Input() public title: string;
+
+  @Input() public type: string;
+
+  @Input() public items: DropdownItem[];
 
   constructor(
     private viewService: ViewService,
@@ -44,6 +50,12 @@ export class DropdownComponent extends AbstractViewComponent<DropdownView> {
     this.action = view.config.action;
     this.items = view.config.items;
 
+    this.items.forEach(item => {
+      if (item.name === view.config.selection) {
+        this.selectedItem = item.name;
+      }
+    });
+
     this.useSelection = view.config.useSelection;
     if (this.type === 'link') {
       this.url = (view.metadata.title[0] as LinkView).config.ref;
@@ -52,6 +64,13 @@ export class DropdownComponent extends AbstractViewComponent<DropdownView> {
 
   identifyItem(index: number, item: DropdownItem): string {
     return item.name;
+  }
+
+  toggleShowMore(): void {
+    this.itemLimit =
+      this.itemLimit === this.items.length
+        ? this.defaultItemLimit
+        : this.items.length;
   }
 
   openLink(index): void {
@@ -69,8 +88,11 @@ export class DropdownComponent extends AbstractViewComponent<DropdownView> {
     }
 
     if (item.url && this.type === 'link') {
-      this.router.navigateByUrl(item.url);
+      setTimeout(() => {
+        this.router.navigateByUrl(item.url);
+      }, 0);
     }
+    this.isOpen = false;
 
     if (isDevMode()) {
       console.log('Selected', item.name);

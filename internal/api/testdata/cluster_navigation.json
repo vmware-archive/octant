@@ -1,0 +1,133 @@
+[
+  {
+    "module": "cluster-overview",
+    "description": "Cluster module is used to display all cluster related resources",
+    "title": "Cluster Overview",
+    "path": "cluster-overview",
+    "iconName": "cluster",
+    "isLoading": false
+  },
+  {
+    "title": "Namespaces",
+    "path": "cluster-overview/namespaces",
+    "iconName": "namespace",
+    "isLoading": false
+  },
+  {
+    "title": "Custom Resources",
+    "path": "cluster-overview/custom-resources",
+    "children": [
+      {
+        "title": "clusterissuers.cert-manager.io",
+        "path": "cluster-overview/custom-resources/clusterissuers.cert-manager.io",
+        "iconName": "internal:dna",
+        "isLoading": false
+      },
+      {
+        "title": "clusterpolicies.intents.tmc.cloud.vmware.com",
+        "path": "cluster-overview/custom-resources/clusterpolicies.intents.tmc.cloud.vmware.com",
+        "iconName": "internal:dna",
+        "isLoading": false
+      },
+      {
+        "title": "dataprotections.intents.tmc.cloud.vmware.com",
+        "path": "cluster-overview/custom-resources/dataprotections.intents.tmc.cloud.vmware.com",
+        "iconName": "internal:dna",
+        "isLoading": false
+      },
+      {
+        "title": "extensionresourceowners.clusters.tmc.cloud.vmware.com",
+        "path": "cluster-overview/custom-resources/extensionresourceowners.clusters.tmc.cloud.vmware.com",
+        "iconName": "internal:dna",
+        "isLoading": false
+      },
+      {
+        "title": "managednamespaces.intents.tmc.cloud.vmware.com",
+        "path": "cluster-overview/custom-resources/managednamespaces.intents.tmc.cloud.vmware.com",
+        "iconName": "internal:dna",
+        "isLoading": false
+      },
+      {
+        "title": "storagestates.migration.k8s.io",
+        "path": "cluster-overview/custom-resources/storagestates.migration.k8s.io",
+        "iconName": "internal:dna",
+        "isLoading": false
+      },
+      {
+        "title": "storageversionmigrations.migration.k8s.io",
+        "path": "cluster-overview/custom-resources/storageversionmigrations.migration.k8s.io",
+        "iconName": "internal:dna",
+        "isLoading": false
+      }
+    ],
+    "iconName": "file-group",
+    "isLoading": false
+  },
+  {
+    "title": "Custom Resource Definitions",
+    "path": "cluster-overview/custom-resource-definitions",
+    "iconName": "dna",
+    "isLoading": false
+  },
+  {
+    "title": "RBAC",
+    "path": "cluster-overview/rbac",
+    "children": [
+      {
+        "title": "Cluster Roles",
+        "path": "cluster-overview/rbac/cluster-roles",
+        "isLoading": false
+      },
+      {
+        "title": "Cluster Role Bindings",
+        "path": "cluster-overview/rbac/cluster-role-bindings",
+        "isLoading": false
+      }
+    ],
+    "iconName": "assign-user",
+    "isLoading": false
+  },
+  {
+    "title": "Webhooks",
+    "path": "cluster-overview/webhooks",
+    "children": [
+      {
+        "title": "Mutating Webhooks",
+        "path": "cluster-overview/webhooks/mutating-webhooks",
+        "isLoading": false
+      },
+      {
+        "title": "Validating Webhooks",
+        "path": "cluster-overview/webhooks/validating-webhooks",
+        "isLoading": false
+      }
+    ],
+    "iconName": "animation",
+    "isLoading": false
+  },
+  {
+    "title": "Nodes",
+    "path": "cluster-overview/nodes",
+    "iconName": "nodes",
+    "isLoading": false
+  },
+  {
+    "title": "Storage",
+    "path": "cluster-overview/storage",
+    "children": [
+      {
+        "title": "Persistent Volumes",
+        "path": "cluster-overview/storage/persistent-volumes",
+        "isLoading": false
+      }
+    ],
+    "iconName": "storage",
+    "isLoading": false
+  },
+  {
+    "title": "Port Forwards",
+    "path": "cluster-overview/port-forward",
+    "iconName": "router",
+    "isLoading": false
+  }
+]

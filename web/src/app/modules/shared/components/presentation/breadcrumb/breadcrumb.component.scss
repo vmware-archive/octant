@@ -10,6 +10,20 @@
   --creadcrumb-link-color: #49afd9;
 }
 
+:host ::ng-deep .breadcrumb .dropdown {
+  margin: 0px;
+
+  .source {
+    padding-right: 0.4rem;
+  }
+
+  .ng-star-inserted {
+    .dropdown-link-icon {
+      margin-left: 0px;
+    }
+  }
+}
+
 .breadcrumb {
   &-body {
     display: flex;

@@ -150,7 +150,7 @@ describe('DropdownComponent', () => {
       '.dropdown clr-dropdown'
     );
     const dropDownToggle = fixture.debugElement.query(
-      By.css('button.dropdown-toggle')
+      By.css('.dropdown .dropdown-toggle')
     ).nativeElement;
 
     expect(dropDownToggle).not.toBeNull();
@@ -159,7 +159,7 @@ describe('DropdownComponent', () => {
 
     expect(dropdown.classList.contains('open')).toBeTruthy();
     fixture.debugElement
-      .query(By.css('clr-dropdown-menu :first-child'))
+      .query(By.css('clr-dropdown-menu .dropdown-list :first-child'))
       .nativeElement.click();
 
     fixture.detectChanges();
@@ -171,7 +171,7 @@ describe('DropdownComponent', () => {
     fixture.detectChanges();
 
     fixture.debugElement
-      .query(By.css('clr-dropdown-menu :first-child'))
+      .query(By.css('clr-dropdown-menu .dropdown-list :first-child'))
       .nativeElement.click();
     fixture.detectChanges();
     expect(dropDownToggle.innerHTML).toContain('First Item');

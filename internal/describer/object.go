@@ -8,7 +8,6 @@ package describer
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -39,7 +38,6 @@ type ObjectConfig struct {
 	BaseTitle      string
 	ObjectType     func() interface{}
 	StoreKey       store.Key
-	RootPath       ResourceLink
 	TabsGenerator  TabsGenerator
 	TabDescriptors []Tab
 }
@@ -54,7 +52,6 @@ type Object struct {
 	objectStoreKey        store.Key
 	disableResourceViewer bool
 	tabFuncDescriptors    []Tab
-	rootPath              ResourceLink
 	tabsGenerator         TabsGenerator
 }
 
@@ -76,7 +73,6 @@ func NewObject(c ObjectConfig) *Object {
 		base:               newBaseDescriber(),
 		objectStoreKey:     c.StoreKey,
 		objectType:         c.ObjectType,
-		rootPath:           c.RootPath,
 		tabsGenerator:      tg,
 		tabFuncDescriptors: td,
 	}
@@ -113,20 +109,7 @@ func (d *Object) Describe(ctx context.Context, namespace string, options Options
 	accessor := meta.NewAccessor()
 	objectName, _ := accessor.Name(object)
 
-	kind, _ := accessor.Kind(object)
-
-	nameLink, err := options.Link.ForObject(object, kind)
-
-	if err != nil {
-		return component.EmptyContentResponse, err
-	}
-
-	title := getBreadcrumb(d.rootPath, d.baseTitle, filepath.Dir(nameLink.Ref()), namespace)
-
-	if objectName != "" {
-		title = append(title, component.NewText(objectName))
-	}
-
+	title := component.Title(component.NewText(objectName))
 	cr := component.NewContentResponse(title)
 
 	currentObject, ok := item.(runtime.Object)

@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"path"
 
+	"github.com/pkg/errors"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware-tanzu/octant/internal/gvk"
@@ -62,4 +64,30 @@ func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 	}
 
 	return path.Join("/cluster-overview", p, name), nil
+}
+
+func gvkReversePath(contentPath, _ string) (schema.GroupVersionKind, error) {
+
+	switch {
+	case contentPath == "cluster-overview/rbac/cluster-roles":
+		return gvk.ClusterRole, nil
+	case contentPath == "cluster-overview/rbac/cluster-role-bindings":
+		return gvk.ClusterRoleBinding, nil
+	case contentPath == "cluster-overview/nodes":
+		return gvk.Node, nil
+	case contentPath == "cluster-overview/storage/persistent-volumes":
+		return gvk.PersistentVolume, nil
+	case contentPath == "cluster-overview/namespaces":
+		return gvk.Namespace, nil
+	case contentPath == "cluster-overview/custom-resource-definitions":
+		return gvk.CustomResourceDefinition, nil
+	case contentPath == "cluster-overview/api-server/api-services":
+		return gvk.APIService, nil
+	case contentPath == "cluster-overview/webhooks/mutating-webhooks":
+		return gvk.MutatingWebhookConfiguration, nil
+	case contentPath == "cluster-overview/webhooks/validating-webhooks":
+		return gvk.ValidatingWebhookConfiguration, nil
+	default:
+		return schema.GroupVersionKind{}, errors.Errorf("unknown gvk %s", contentPath)
+	}
 }

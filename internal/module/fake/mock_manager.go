@@ -9,9 +9,11 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	schema "k8s.io/apimachinery/pkg/runtime/schema"
 
 	module "github.com/vmware-tanzu/octant/internal/module"
 	octant "github.com/vmware-tanzu/octant/internal/octant"
+	navigation "github.com/vmware-tanzu/octant/pkg/navigation"
 )
 
 // MockManagerInterface is a mock of ManagerInterface interface
@@ -65,6 +67,21 @@ func (mr *MockManagerInterfaceMockRecorder) GetNamespace() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNamespace", reflect.TypeOf((*MockManagerInterface)(nil).GetNamespace))
 }
 
+// GvkFromPath mocks base method
+func (m *MockManagerInterface) GvkFromPath(arg0, arg1 string) (schema.GroupVersionKind, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GvkFromPath", arg0, arg1)
+	ret0, _ := ret[0].(schema.GroupVersionKind)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GvkFromPath indicates an expected call of GvkFromPath
+func (mr *MockManagerInterfaceMockRecorder) GvkFromPath(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GvkFromPath", reflect.TypeOf((*MockManagerInterface)(nil).GvkFromPath), arg0, arg1)
+}
+
 // ModuleForContentPath mocks base method
 func (m *MockManagerInterface) ModuleForContentPath(arg0 string) (module.Module, bool) {
 	m.ctrl.T.Helper()
@@ -92,6 +109,21 @@ func (m *MockManagerInterface) Modules() []module.Module {
 func (mr *MockManagerInterfaceMockRecorder) Modules() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Modules", reflect.TypeOf((*MockManagerInterface)(nil).Modules))
+}
+
+// Navigation mocks base method
+func (m *MockManagerInterface) Navigation(arg0 context.Context, arg1, arg2 string) ([]navigation.Navigation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Navigation", arg0, arg1, arg2)
+	ret0, _ := ret[0].([]navigation.Navigation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Navigation indicates an expected call of Navigation
+func (mr *MockManagerInterfaceMockRecorder) Navigation(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Navigation", reflect.TypeOf((*MockManagerInterface)(nil).Navigation), arg0, arg1, arg2)
 }
 
 // ObjectPath mocks base method

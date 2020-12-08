@@ -8,6 +8,7 @@ import { BreadcrumbComponent } from './breadcrumb.component';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-ngx';
+import { LinkView, TextView } from '../../../models/content';
 
 describe('BreadcrumbComponent', () => {
   let component: BreadcrumbComponent;
@@ -33,7 +34,11 @@ describe('BreadcrumbComponent', () => {
   });
 
   it('should omit if single path', () => {
-    component.path = [{ title: 'breadcrumb title', url: '' }];
+    const text: TextView = {
+      config: { value: 'breadcrumb title' },
+      metadata: { type: 'text' },
+    };
+    component.path = [text];
     const breadcrumbElement: HTMLDivElement = fixture.debugElement.query(
       By.css('.breadcrumb')
     ).nativeElement;
@@ -46,16 +51,22 @@ describe('BreadcrumbComponent', () => {
     const spans: DebugElement[] = fixture.debugElement.queryAll(By.css('span'));
     expect(links.length).toBe(0);
     expect(spans.length).toBe(0);
+    expect(icons.length).toBe(0);
 
     expect(breadcrumbElement.children.length).toEqual(2);
     expect(breadcrumbElement.innerText).toBe('');
   });
 
   it('should create two paths with single link', () => {
-    component.path = [
-      { title: 'breadcrumb title', url: 'some-url' },
-      { title: '2nd title', url: '' },
-    ];
+    const link: LinkView = {
+      config: { value: 'breadcrumb title', ref: 'some-url' },
+      metadata: { type: 'link' },
+    };
+    const text: TextView = {
+      config: { value: '2nd title' },
+      metadata: { type: 'text' },
+    };
+    component.path = [link, text];
     const breadcrumbElement: HTMLDivElement = fixture.debugElement.query(
       By.css('.breadcrumb')
     ).nativeElement;
@@ -65,11 +76,15 @@ describe('BreadcrumbComponent', () => {
     const icons: DebugElement[] = fixture.debugElement.queryAll(
       By.css('.separator')
     );
-    const spans: DebugElement[] = fixture.debugElement.queryAll(By.css('span'));
+    const spans: DebugElement[] = fixture.debugElement.queryAll(
+      By.css('app-view-text')
+    );
     expect(links.length).toBe(1);
     expect(spans.length).toBe(1);
+    expect(icons.length).toBe(1);
 
     expect(breadcrumbElement.children.length).toEqual(2);
-    expect(breadcrumbElement.innerText).toBe('breadcrumb title \n2nd title');
+    expect(breadcrumbElement.innerText).toContain('breadcrumb title');
+    expect(breadcrumbElement.innerText).toContain('2nd title');
   });
 });

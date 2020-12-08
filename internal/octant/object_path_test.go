@@ -18,17 +18,21 @@ import (
 
 func TestObjectPathConfig_Validate(t *testing.T) {
 	tests := []struct {
-		name           string
-		moduleName     string
-		pathLookupFunc PathLookupFunc
-		crdPathGenFunc CRDPathGenFunc
-		isErr          bool
+		name                  string
+		moduleName            string
+		pathLookupFunc        PathLookupFunc
+		crdPathGenFunc        CRDPathGenFunc
+		reversePathLookupFunc ReversePathLookupFunc
+		isErr                 bool
 	}{
 		{
 			name:       "in general",
 			moduleName: "module",
 			pathLookupFunc: func(string, string, string, string) (string, error) {
 				return "/path", nil
+			},
+			reversePathLookupFunc: func(string, string) (schema.GroupVersionKind, error) {
+				return schema.GroupVersionKind{Group: "group", Version: "v1", Kind: "kind"}, nil
 			},
 			crdPathGenFunc: func(string, string, string, string) (string, error) {
 				return "/path", nil
@@ -39,9 +43,10 @@ func TestObjectPathConfig_Validate(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			config := ObjectPathConfig{
-				ModuleName:     test.moduleName,
-				PathLookupFunc: test.pathLookupFunc,
-				CRDPathGenFunc: test.crdPathGenFunc,
+				ModuleName:            test.moduleName,
+				PathLookupFunc:        test.pathLookupFunc,
+				CRDPathGenFunc:        test.crdPathGenFunc,
+				ReversePathLookupFunc: test.reversePathLookupFunc,
 			}
 
 			err := config.Validate()
@@ -61,6 +66,9 @@ func TestObjectPath(t *testing.T) {
 		ModuleName: "module",
 		PathLookupFunc: func(string, string, string, string) (string, error) {
 			return "/path", nil
+		},
+		ReversePathLookupFunc: func(string, string) (schema.GroupVersionKind, error) {
+			return schema.GroupVersionKind{Group: "group", Version: "v1", Kind: "kind"}, nil
 		},
 		CRDPathGenFunc: func(string, string, string, string) (string, error) {
 			return "/crd-path", nil

@@ -7,11 +7,6 @@ export interface ContentResponse {
   currentPath: string;
 }
 
-export interface PathItem {
-  title: string;
-  url?: string;
-}
-
 export interface Content {
   extensionComponent: ExtensionView;
   viewComponents: View[];
@@ -94,6 +89,7 @@ export interface DropdownView extends View {
     position: string;
     type: 'button' | 'link' | 'label' | 'icon';
     action: string;
+    selection?: string;
     useSelection: boolean;
     items: DropdownItem[];
   };

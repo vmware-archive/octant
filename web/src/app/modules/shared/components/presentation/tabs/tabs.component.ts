@@ -9,12 +9,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  ButtonGroupView,
-  LinkView,
-  PathItem,
-  View,
-} from 'src/app/modules/shared/models/content';
+import { ButtonGroupView, View } from 'src/app/modules/shared/models/content';
 import { SliderService } from 'src/app/modules/shared/slider/slider.service';
 import { ViewService } from '../../../services/view/view.service';
 import { ActionService } from '../../../services/action/action.service';
@@ -32,7 +27,7 @@ interface Tab {
   styleUrls: ['./tabs.component.scss'],
 })
 export class TabsComponent implements OnChanges, OnInit {
-  @Input() title: PathItem[];
+  @Input() title: View[];
   @Input() views: View[];
   @Input() payloads: [{ [key: string]: string }];
   @Input() iconName: string;
@@ -78,12 +73,7 @@ export class TabsComponent implements OnChanges, OnInit {
       if (views.length === 1) {
         this.view = views[0];
         if (this.title == null) {
-          this.title = this.view.metadata.title
-            ? this.view.metadata.title.map((item: LinkView) => ({
-                title: item.config.value,
-                url: item.config.ref,
-              }))
-            : [];
+          this.title = this.view.metadata.title;
         }
       }
 

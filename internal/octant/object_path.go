@@ -26,12 +26,16 @@ type CRDPathGenFunc func(namespace, crdName, version, name string) (string, erro
 // PathLookupFunc looks up paths for an object.
 type PathLookupFunc func(namespace, apiVersion, kind, name string) (string, error)
 
+// ReversePathLookupFunc looks up paths for an object.
+type ReversePathLookupFunc func(path, namespace string) (schema.GroupVersionKind, error)
+
 // ObjectPathConfig is configuration for ObjectPath.
 type ObjectPathConfig struct {
-	ModuleName     string
-	SupportedGVKs  []schema.GroupVersionKind
-	PathLookupFunc PathLookupFunc
-	CRDPathGenFunc CRDPathGenFunc
+	ModuleName            string
+	SupportedGVKs         []schema.GroupVersionKind
+	PathLookupFunc        PathLookupFunc
+	CRDPathGenFunc        CRDPathGenFunc
+	ReversePathLookupFunc ReversePathLookupFunc
 }
 
 // Validate returns an error if the configuration is invalid.
@@ -44,6 +48,10 @@ func (opc *ObjectPathConfig) Validate() error {
 
 	if opc.PathLookupFunc == nil {
 		errorStrings = append(errorStrings, "object path lookup func is nil")
+	}
+
+	if opc.ReversePathLookupFunc == nil {
+		errorStrings = append(errorStrings, "reverse path lookup func is nil")
 	}
 
 	if opc.CRDPathGenFunc == nil {
@@ -60,11 +68,12 @@ func (opc *ObjectPathConfig) Validate() error {
 // ObjectPath contains functions for generating paths for an object. Typically this is a
 // helper which can be embedded in modules.
 type ObjectPath struct {
-	crds           map[string]*unstructured.Unstructured
-	moduleName     string
-	supportedGVKs  []schema.GroupVersionKind
-	lookupFunc     PathLookupFunc
-	crdPathGenFunc CRDPathGenFunc
+	crds              map[string]*unstructured.Unstructured
+	moduleName        string
+	supportedGVKs     []schema.GroupVersionKind
+	lookupFunc        PathLookupFunc
+	reverseLookupFunc ReversePathLookupFunc
+	crdPathGenFunc    CRDPathGenFunc
 
 	mu sync.Mutex
 }
@@ -76,10 +85,11 @@ func NewObjectPath(config ObjectPathConfig) (*ObjectPath, error) {
 	}
 
 	return &ObjectPath{
-		moduleName:     config.ModuleName,
-		supportedGVKs:  config.SupportedGVKs,
-		lookupFunc:     config.PathLookupFunc,
-		crdPathGenFunc: config.CRDPathGenFunc,
+		moduleName:        config.ModuleName,
+		supportedGVKs:     config.SupportedGVKs,
+		lookupFunc:        config.PathLookupFunc,
+		reverseLookupFunc: config.ReversePathLookupFunc,
+		crdPathGenFunc:    config.CRDPathGenFunc,
 	}, nil
 }
 
@@ -153,6 +163,10 @@ func (op *ObjectPath) SupportedGroupVersionKind() []schema.GroupVersionKind {
 	}
 
 	return list
+}
+
+func (op *ObjectPath) GvkFromPath(contentPath, namespace string) (schema.GroupVersionKind, error) {
+	return op.reverseLookupFunc(contentPath, namespace)
 }
 
 // GroupVersionKind returns a path for an object.

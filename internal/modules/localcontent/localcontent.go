@@ -238,3 +238,7 @@ func (l *LocalContent) Generators() []octant.Generator {
 func (l *LocalContent) SetContext(ctx context.Context, contextName string) error {
 	return nil
 }
+
+func (l *LocalContent) GvkFromPath(contentPath, namespace string) (schema.GroupVersionKind, error) {
+	return schema.GroupVersionKind{}, errors.Errorf("not supported")
+}

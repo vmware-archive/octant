@@ -1,0 +1,158 @@
+[
+  {
+    "module": "overview",
+    "description": "Namespace module shows all resources related to currently selected namespace\nUse dropdown at the top to change the selected namespace",
+    "title": "Namespace Overview",
+    "path": "overview/namespace/milan",
+    "iconName": "dashboard",
+    "isLoading": false
+  },
+  {
+    "title": "Workloads",
+    "path": "overview/namespace/milan/workloads",
+    "children": [
+      {
+        "title": "Cron Jobs",
+        "path": "overview/namespace/milan/workloads/cron-jobs",
+        "isLoading": false
+      },
+      {
+        "title": "Daemon Sets",
+        "path": "overview/namespace/milan/workloads/daemon-sets",
+        "isLoading": false
+      },
+      {
+        "title": "Deployments",
+        "path": "overview/namespace/milan/workloads/deployments",
+        "isLoading": false
+      },
+      {
+        "title": "Jobs",
+        "path": "overview/namespace/milan/workloads/jobs",
+        "isLoading": false
+      },
+      {
+        "title": "Pods",
+        "path": "overview/namespace/milan/workloads/pods",
+        "isLoading": false
+      },
+      {
+        "title": "Replica Sets",
+        "path": "overview/namespace/milan/workloads/replica-sets",
+        "isLoading": false
+      },
+      {
+        "title": "Replication Controllers",
+        "path": "overview/namespace/milan/workloads/replication-controllers",
+        "isLoading": false
+      },
+      {
+        "title": "Stateful Sets",
+        "path": "overview/namespace/milan/workloads/stateful-sets",
+        "isLoading": false
+      }
+    ],
+    "iconName": "applications",
+    "isLoading": false
+  },
+  {
+    "title": "Discovery and Load Balancing",
+    "path": "overview/namespace/milan/discovery-and-load-balancing",
+    "children": [
+      {
+        "title": "Horizontal Pod Autoscalers",
+        "path": "overview/namespace/milan/discovery-and-load-balancing/horizontal-pod-autoscalers",
+        "isLoading": false
+      },
+      {
+        "title": "Ingresses",
+        "path": "overview/namespace/milan/discovery-and-load-balancing/ingresses",
+        "isLoading": false
+      },
+      {
+        "title": "Services",
+        "path": "overview/namespace/milan/discovery-and-load-balancing/services",
+        "isLoading": false
+      },
+      {
+        "title": "Network Policies",
+        "path": "overview/namespace/milan/discovery-and-load-balancing/network-policies",
+        "isLoading": false
+      }
+    ],
+    "iconName": "network-globe",
+    "isLoading": false
+  },
+  {
+    "title": "Config and Storage",
+    "path": "overview/namespace/milan/config-and-storage",
+    "children": [
+      {
+        "title": "Config Maps",
+        "path": "overview/namespace/milan/config-and-storage/config-maps",
+        "isLoading": false
+      },
+      {
+        "title": "Persistent Volume Claims",
+        "path": "overview/namespace/milan/config-and-storage/persistent-volume-claims",
+        "isLoading": false
+      },
+      {
+        "title": "Secrets",
+        "path": "overview/namespace/milan/config-and-storage/secrets",
+        "isLoading": false
+      },
+      {
+        "title": "Service Accounts",
+        "path": "overview/namespace/milan/config-and-storage/service-accounts",
+        "isLoading": false
+      }
+    ],
+    "iconName": "storage",
+    "isLoading": false
+  },
+  {
+    "title": "Custom Resources",
+    "path": "overview/namespace/milan/custom-resources",
+    "children": [
+      {
+        "title": "brokers.eventing.knative.dev",
+        "path": "overview/namespace/milan/custom-resources/brokers.eventing.knative.dev",
+        "iconName": "internal:dna",
+        "isLoading": false
+      },
+      {
+        "title": "inmemorychannels.messaging.knative.dev",
+        "path": "overview/namespace/milan/custom-resources/inmemorychannels.messaging.knative.dev",
+        "iconName": "internal:dna",
+        "isLoading": false
+      }
+    ],
+    "iconName": "file-group",
+    "isLoading": false
+  },
+  {
+    "title": "RBAC",
+    "path": "overview/namespace/milan/rbac",
+    "children": [
+      {
+        "title": "Roles",
+        "path": "overview/namespace/milan/rbac/roles",
+        "isLoading": false
+      },
+      {
+        "title": "Role Bindings",
+        "path": "overview/namespace/milan/rbac/role-bindings",
+        "isLoading": false
+      }
+    ],
+    "iconName": "assign-user",
+    "isLoading": false
+  },
+  {
+    "title": "Events",
+    "path": "overview/namespace/milan/events",
+    "iconName": "event",
+    "isLoading": false
+  }
+]

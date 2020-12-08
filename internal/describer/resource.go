@@ -9,7 +9,6 @@ import (
 	"context"
 	"path"
 	"reflect"
-	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -26,11 +25,6 @@ type ResourceTitle struct {
 	Object string
 }
 
-type ResourceLink struct {
-	Title string
-	Url   string
-}
-
 type ResourceOptions struct {
 	Path                  string
 	ObjectStoreKey        store.Key
@@ -40,7 +34,6 @@ type ResourceOptions struct {
 	DisableResourceViewer bool
 	ClusterWide           bool
 	IconName              string
-	RootPath              ResourceLink
 }
 
 type Resource struct {
@@ -73,7 +66,6 @@ func (r *Resource) List() *List {
 				return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
 			},
 			IsClusterWide: r.ClusterWide,
-			RootPath:      r.RootPath,
 		},
 	)
 }
@@ -88,7 +80,6 @@ func (r *Resource) Object() *Object {
 			ObjectType: func() interface{} {
 				return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
 			},
-			RootPath: r.RootPath,
 		},
 	)
 }
@@ -100,39 +91,6 @@ func (r *Resource) PathFilters() []PathFilter {
 	}
 
 	return filters
-}
-
-func getBreadcrumb(rootPath ResourceLink, objectTitle string, objectUrl string, namespace string) []component.TitleComponent {
-	var rootUrl = rootPath.Url
-	if strings.Contains(rootPath.Url, "($NAMESPACE)") {
-		rootUrl = strings.Replace(rootPath.Url, "($NAMESPACE)", namespace, 1)
-	}
-	var title []component.TitleComponent
-	if len(rootUrl) > 0 {
-		title = append(title, component.NewLink("", rootPath.Title, rootUrl))
-	}
-	title = append(title, component.NewLink("", objectTitle, objectUrl))
-	return title
-}
-
-//
-func getCrdTitle(namespace string, crd *unstructured.Unstructured, objectName string) []component.TitleComponent {
-	var title []component.TitleComponent
-	if namespace == "" {
-		title = component.Title(component.NewLink("", "Cluster Overview", "/cluster-overview"),
-			component.NewLink("", "Custom Resources", "/cluster-overview/custom-resources"))
-	} else {
-		title = component.Title(component.NewLink("", "Overview", "/overview/namespace/"+namespace),
-			component.NewLink("", "Custom Resources", "/overview/namespace/"+namespace+"/custom-resources"))
-	}
-
-	if objectName == "" {
-		title = append(title, component.NewText(crd.GetName()))
-	} else {
-		title = append(title, component.NewLink("", crd.GetName(), getCrdUrl(namespace, crd)))
-		title = append(title, component.NewText(objectName))
-	}
-	return title
 }
 
 func getCrdUrl(namespace string, crd *unstructured.Unstructured) string {

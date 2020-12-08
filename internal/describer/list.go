@@ -24,7 +24,6 @@ type ListConfig struct {
 	ListType      func() interface{}
 	ObjectType    func() interface{}
 	IsClusterWide bool
-	RootPath      ResourceLink
 }
 
 // List describes a list of objects.
@@ -37,7 +36,6 @@ type List struct {
 	objectType     func() interface{}
 	objectStoreKey store.Key
 	isClusterWide  bool
-	rootPath       ResourceLink
 }
 
 // NewList creates an instance of List.
@@ -50,7 +48,6 @@ func NewList(c ListConfig) *List {
 		listType:       c.ListType,
 		objectType:     c.ObjectType,
 		isClusterWide:  c.IsClusterWide,
-		rootPath:       c.RootPath,
 	}
 }
 
@@ -73,7 +70,7 @@ func (d *List) Describe(ctx context.Context, namespace string, options Options) 
 		return component.EmptyContentResponse, err
 	}
 
-	title := getBreadcrumb(d.rootPath, d.title, "", namespace)
+	title := component.Title(component.NewText(d.title))
 	list := component.NewList(title, nil)
 
 	listType := d.listType()
