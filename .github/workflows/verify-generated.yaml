@@ -21,4 +21,6 @@ jobs:
         uses: actions/checkout@v2
       - name: Verify generated code
         run: ci/check-generated-mocks.sh
+      - name: Verify npm registry
+        run: go run build.go verify
 
