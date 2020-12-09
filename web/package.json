@@ -1,18 +1,31 @@
 {
   "name": "dash-frontend",
+  "description": "Octant is an extensible platform that provides modules that help developers better understand their Kuberenetes resources.",
+  "author": "The Octant Team",
   "version": "0.0.0",
+  "homepage": "https://octant.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vmware-tanzu/octant.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vmware-tanzu/octant/issues"
+  },
   "main": "main.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "node --max-old-space-size=8000 ./node_modules/@angular/cli/bin/ng build --prod --output-hashing=all",
+    "build-electron": "tsc main.ts && npm run build -- --base-href ./",
     "test": "ng test --browsers=ChromeDebug",
     "test:headless": "ng test --watch=false --browsers=ChromeHeadless --source-map=false",
     "lint": "prettier -c 'src/**/*.ts'",
     "e2e": "ng e2e",
     "prettier": "prettier --write \"src/{app,environments,assets}/**/*{.ts,.js,.json,.css,.scss}\"",
     "electron:serve": "wait-on http-get://localhost:7777 && npm run electron:serve-tsc && electron . --serve",
-    "electron:serve-tsc": "tsc -p tsconfig-serve.json",
+    "electron:serve-tsc": "npx tsc -p tsconfig-serve.json",
+    "electron:local": "npx tsc main.ts && npx ng build --base-href ./ && npx electron --local .",
+    "electron:build": "npm run build-electron && npx electron-builder -p never",
     "//": [
       "switch to tsconfig.json below once compodoc angular 9 bug is fixed (https://github.com/compodoc/compodoc/issues/951)",
       "see also https://github.com/compodoc/compodoc/issues/927#issuecomment-597624654"
@@ -27,9 +40,6 @@
     "semi": true,
     "arrowParens": "avoid",
     "singleQuote": true
-  },
-  "build": {
-    "appId": "com.vmware.tanzu.octant"
   },
   "private": true,
   "dependencies": {

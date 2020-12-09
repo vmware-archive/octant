@@ -1,0 +1,37 @@
+{
+  "appId": "com.vmware.tanzu.octant",
+  "productName": "octant",
+  "directories": {
+    "output": "release/"
+  },
+  "extraResources": ["**/extraResources/**", "!dist/"],
+  "files": [
+    "**/*",
+    "!**/*.ts",
+    "!*.code-workspace",
+    "!LICENSE.md",
+    "!package.json",
+    "!package-lock.json",
+    "!src/",
+    "!e2e/",
+    "!hooks/",
+    "!angular.json",
+    "!_config.yml",
+    "!karma.conf.js",
+    "!tsconfig.json",
+    "!tslint.json"
+  ],
+  "win": {
+    "icon": "dist/dash-frontend/assets/icons/icon.ico",
+    "target": ["nsis"]
+  },
+  "mac": {
+    "icon": "dist/dash-frontend/assets/icons/icon.icns",
+    "target": ["dmg"]
+  },
+  "linux": {
+    "icon": "dist/dash-frontend/assets/icons/icon.png",
+    "category": "development",
+    "target": ["AppImage"]
+  }
+}
