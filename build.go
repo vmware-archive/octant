@@ -81,6 +81,7 @@ func main() {
 			Use:   "web-test",
 			Short: "run client tests",
 			Run: func(cmd *cobra.Command, args []string) {
+				verifyRegistry()
 				webDeps()
 				webTest()
 			},
@@ -89,6 +90,7 @@ func main() {
 			Use:   "web-build",
 			Short: "client build, skipping tests",
 			Run: func(cmd *cobra.Command, args []string) {
+				verifyRegistry()
 				webDeps()
 				webBuild()
 			},
@@ -129,6 +131,13 @@ func main() {
 			Short: "run server tests",
 			Run: func(cmd *cobra.Command, args []string) {
 				test()
+			},
+		},
+		&cobra.Command{
+			Use:   "verify",
+			Short: "verify resolving correct registry",
+			Run: func(cmd *cobra.Command, args []string) {
+				verifyRegistry()
 			},
 		},
 		&cobra.Command{
@@ -461,5 +470,16 @@ func pluginDir() string {
 		return filepath.Join(os.Getenv("LOCALAPPDATA"), "octant", "plugins")
 	} else {
 		return filepath.Join(os.Getenv("HOME"), ".config", "octant", "plugins")
+	}
+}
+
+func verifyRegistry() {
+	cmd := newCmd("grep", nil, "-R", "build-artifactory.eng.vmware.com", "web")
+	out, err := cmd.Output()
+	if err != nil {
+		log.Fatalf("grep: %s", err)
+	}
+	if len(out) > 0 {
+		log.Fatalf("found registry: %s", string(out))
 	}
 }
