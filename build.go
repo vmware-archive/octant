@@ -476,8 +476,10 @@ func pluginDir() string {
 func verifyRegistry() {
 	cmd := newCmd("grep", nil, "-R", "build-artifactory.eng.vmware.com", "web")
 	out, err := cmd.Output()
-	if err != nil {
-		log.Fatalf("grep: %s", err)
+	if exitError, ok := err.(*exec.ExitError); ok {
+		if exitError.ExitCode() > 1 {
+			log.Fatalf("grep: %s", err)
+		}
 	}
 	if len(out) > 0 {
 		log.Fatalf("found registry: %s", string(out))
