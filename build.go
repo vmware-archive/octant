@@ -25,7 +25,7 @@ import (
 )
 
 var (
-	VERSION    = "v0.16.2"
+	VERSION    = "v0.16.3"
 	GOPATH     = os.Getenv("GOPATH")
 	GIT_COMMIT = gitCommit()
 	BUILD_TIME = time.Now().UTC().Format(time.RFC3339)
@@ -476,8 +476,10 @@ func pluginDir() string {
 func verifyRegistry() {
 	cmd := newCmd("grep", nil, "-R", "build-artifactory.eng.vmware.com", "web")
 	out, err := cmd.Output()
-	if err != nil {
-		log.Fatalf("grep: %s", err)
+	if exitError, ok := err.(*exec.ExitError); ok {
+		if exitError.ExitCode() > 1 {
+			log.Fatalf("grep: %s", err)
+		}
 	}
 	if len(out) > 0 {
 		log.Fatalf("found registry: %s", string(out))
