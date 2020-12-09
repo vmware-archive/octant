@@ -1,3 +1,12 @@
+## v0.16.3
+#### 2020-12-9
+
+### Download
+ - https://github.com/vmware-tanzu/octant/releases/v0.16.3
+
+### All Changes
+  * Added verification for npm registry (#1718, @GuessWhoSamFoo)
+
 ## v0.16.2
 #### 2020-11-11
 
