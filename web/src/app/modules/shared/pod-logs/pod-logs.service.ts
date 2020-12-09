@@ -40,6 +40,7 @@ export class PodLogsStreamer {
 
     this.wss.registerHandler(this.streamUrl(), data => {
       const update = data as LogEntry;
+      update.message = update.message.replace(/\t/, '&nbsp;'.repeat(4));
       this.logEntry.next(update);
     });
   }
