@@ -45,12 +45,12 @@ mwlResizable {
       border-radius: 30%;
     }
 
-    &:visited, &:link {
+    &:visited,
+    &:link {
       color: #4aaed9;
     }
   }
 }
-
 
 .gutter {
   width: 100%;
@@ -62,4 +62,3 @@ mwlResizable {
     cursor: ns-resize;
   }
 }
-

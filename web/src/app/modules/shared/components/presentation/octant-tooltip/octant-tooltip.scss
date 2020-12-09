@@ -6,8 +6,8 @@
 
 // work around clarity tooltip limitations
 .tooltip-content {
-  color: var(--tooltip-text-color)!important;
-  background-color: var(--selection-color)!important;
+  color: var(--tooltip-text-color) !important;
+  background-color: var(--selection-color) !important;
   display: block;
   z-index: 503;
   position: fixed;
@@ -17,13 +17,13 @@
   top: unset;
   margin-top: -64px;
   margin-left: 32px;
-  width: auto!important;
+  width: auto !important;
   height: auto;
   transition: opacity 0.5s 0.25s ease-in;
   padding: 6px 9px;
 }
 
 .tooltip-content:before {
-  border-left-color: var(--selection-color)!important;
-  border-top-color: var(--selection-color)!important;
+  border-left-color: var(--selection-color) !important;
+  border-top-color: var(--selection-color) !important;
 }

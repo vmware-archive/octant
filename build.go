@@ -148,6 +148,13 @@ func main() {
 			},
 		},
 		&cobra.Command{
+			Use:   "build-electron",
+			Short: "server build to extraResources, skipping tests",
+			Run: func(cmd *cobra.Command, args []string) {
+				buildElectron()
+			},
+		},
+		&cobra.Command{
 			Use:   "run-dev",
 			Short: "run ci produced build",
 			Run: func(cmd *cobra.Command, args []string) {
@@ -274,6 +281,17 @@ func build() {
 		artifact = "octant.exe"
 	}
 	runCmd("go", nil, "build", "-mod=vendor", "-o", "build/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
+}
+
+func buildElectron() {
+	newPath := filepath.Join(".", "build")
+	os.MkdirAll(newPath, 0755)
+
+	artifact := "octant"
+	if runtime.GOOS == "windows" {
+		artifact = "octant.exe"
+	}
+	runCmd("go", nil, "build", "-mod=vendor", "-o", "web/extraResources/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
 }
 
 func runDev() {

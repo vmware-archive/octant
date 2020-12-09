@@ -1,0 +1,52 @@
+name: electron
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/setup-node@v2.1.2
+        with:
+          node-version: '14'
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.15.x
+      - uses: actions/checkout@v2
+      - name: Build node modules
+        run: |
+          cd web
+          npm ci --prefer-offline --no-audit
+          npm run-script build
+        shell: bash
+      - name: Go tools
+        env:
+          GOFLAGS: -mod=vendor
+        run: |
+          go run build.go go-install
+          go generate ./web
+          go generate ./pkg/plugin/plugin.go
+      - name: Build binary
+        env:
+          GOFLAGS: -mod=vendor
+        run: |
+          go run build.go build-electron
+      - name: Build electron
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          package_root: 'web'
+          build_script_name: 'build-electron'
+      - if: matrix.os == 'windows-latest'
+        name: List releases
+        run: |
+          dir web/release
+      - uses: actions/upload-artifact@v2
+        with:
+          name: electron-artifacts
+          path: web/release/octant*

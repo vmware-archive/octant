@@ -4,13 +4,18 @@
  *
  */
 
-import { app, BrowserWindow, screen } from 'electron';
+import { app, BrowserWindow, screen, session } from 'electron';
 import * as path from 'path';
-import * as url from 'url';
+import * as child_process from 'child_process';
+import * as process from 'process';
+import * as os from 'os';
+import * as fs from 'fs';
 
 let win: BrowserWindow = null;
+let serverPid: any = null;
+
 const args = process.argv.slice(1);
-const serve = args.some(val => val === '--serve');
+const local = args.some((val) => val === '--local');
 
 function createWindow(): BrowserWindow {
   const electronScreen = screen;
@@ -18,33 +23,29 @@ function createWindow(): BrowserWindow {
 
   // Create the browser window.
   win = new BrowserWindow({
-    width: 900,
-    height: 600,
+    width: size.width,
+    height: size.height,
     title: '',
     webPreferences: {
       nodeIntegration: true,
-      allowRunningInsecureContent: serve,
+      webSecurity: false,
+      allowRunningInsecureContent: true,
+      contextIsolation: false, // false if you want to run 2e2 test with Spectron
+      enableRemoteModule: true, // true if you want to run 2e2 test  with Spectron or use remote module in renderer context (ie. Angular)
+      // preload: path.join(__dirname, 'preload.js'),
     },
   });
 
-  if (serve) {
-    require('electron-reload')(__dirname, {
-      electron: require(`${__dirname}/node_modules/electron`),
-    });
-    win.loadURL('http://localhost:7777/#/denali');
-  } else {
-    win.loadURL(
-      url.format({
-        pathname: path.join(__dirname, 'dist/index.html'),
-        protocol: 'file:',
-        slashes: true,
-      })
-    );
-  }
+  win.setIcon(path.join(__dirname, 'dist/dash-frontend/assets/icons/icon.png'));
 
-  if (serve) {
-    // win.webContents.openDevTools();
+  if (local) {
+    win.webContents.openDevTools();
   }
+  win.loadFile(path.join(__dirname, 'dist/dash-frontend/index.html'));
+
+  win.webContents.on('did-fail-load', () => {
+    win.loadFile(path.join(__dirname, 'dist/dash-frontend/index.html'));
+  });
 
   // Emitted when the window is closed.
   win.on('closed', () => {
@@ -57,11 +58,51 @@ function createWindow(): BrowserWindow {
   return win;
 }
 
+const startBinary = () => {
+  const tmpPath = path.join(os.tmpdir(), 'octant');
+  fs.mkdir(path.join(tmpPath), { recursive: true }, (err) => {
+    if (err) {
+      throw err;
+    }
+  });
+
+  const out = fs.openSync(path.join(tmpPath, 'api.out.log'), 'a');
+  const err = fs.openSync(path.join(tmpPath, 'api.err.log'), 'a');
+
+  let serverBinary: string;
+  if (local) {
+    serverBinary = path.join(__dirname, 'extraResources', 'octant');
+  } else {
+    serverBinary = path.join(process.resourcesPath, 'extraResources', 'octant');
+  }
+
+  const server = child_process.spawn(serverBinary, [], {
+    env: { NODE_ENV: 'production', PATH: process.env.PATH },
+    detached: true,
+    stdio: ['ignore', out, err],
+  });
+
+  serverPid = server.pid;
+  server.unref();
+};
+
 try {
+  app.on('before-quit', () => {
+    process.kill(serverPid, 'SIGHUP');
+  });
   // This method will be called when Electron has finished
   // initialization and is ready to create browser windows.
   // Some APIs can only be used after this event occurs.
-  app.on('ready', createWindow);
+  // Added 400 ms to fix the black background issue while using transparent window.
+  // More detais at https://github.com/electron/electron/issues/15947
+  app.on('ready', () => {
+    startBinary();
+    setTimeout(createWindow, 400);
+    session.defaultSession.webRequest.onBeforeSendHeaders({ urls: ['ws://localhost:7777/api/v1/stream'] }, (details, callback) => {
+      details.requestHeaders['Origin'] = null;
+      callback({ cancel: false, requestHeaders: details.requestHeaders });
+    });
+  });
 
   // Quit when all windows are closed.
   app.on('window-all-closed', () => {

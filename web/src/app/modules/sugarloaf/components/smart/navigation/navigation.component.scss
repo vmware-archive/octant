@@ -67,14 +67,14 @@
 
 .button-tool.active,
 .button-tool-labels.active {
-  background-color: var(--selection-color)!important;
+  background-color: var(--selection-color) !important;
 }
 
 .button-tool {
-  width: 48px!important;
-  height: 48px!important;
-  padding: 4px 10px 10px 10px!important;
-  background-color: transparent!important;
+  width: 48px !important;
+  height: 48px !important;
+  padding: 4px 10px 10px 10px !important;
+  background-color: transparent !important;
   outline: none;
 
   .icon-nav {
@@ -85,10 +85,10 @@
 }
 
 .button-tool-labels {
-  width: 68px!important;
-  height: 64px!important;
-  padding: 0px 0px 0px 0px!important;
-  background-color: transparent!important;
+  width: 68px !important;
+  height: 64px !important;
+  padding: 0px 0px 0px 0px !important;
+  background-color: transparent !important;
   outline: none;
 
   .icon-nav {
@@ -115,7 +115,7 @@
   width: 64px;
   padding-left: 6px;
   font-size: 10px;
-  line-height:  12px;
+  line-height: 12px;
   text-align: center;
   white-space: normal;
 }
@@ -219,14 +219,14 @@
     border-left: 1px solid rgba(173, 187, 196, 0.3);
   }
 
-  .nav-description{
+  .nav-description {
     display: flex;
     flex: auto;
     justify-content: flex-end;
     flex-direction: column;
   }
 
-  .nav-description-inner{
+  .nav-description-inner {
     padding: 0.6rem;
 
     .card {
@@ -241,11 +241,11 @@
 
     .card-header {
       font-size: 0.7rem;
-      padding: .6rem .6rem;
+      padding: 0.6rem 0.6rem;
     }
 
     .card-block {
-      padding: .6rem .6rem;
+      padding: 0.6rem 0.6rem;
     }
   }
 
@@ -315,4 +315,3 @@
     display: flex;
   }
 }
-

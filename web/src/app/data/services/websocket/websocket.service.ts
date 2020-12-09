@@ -19,6 +19,7 @@ import {
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { delay, retryWhen, take, tap } from 'rxjs/operators';
 import { WindowToken } from '../../../window';
+import { ElectronService } from 'src/app/modules/shared/services/electron/electron.service';
 
 interface WebsocketPayload {
   type: string;
@@ -56,6 +57,7 @@ export class WebsocketService implements BackendService {
   private router: Router;
 
   constructor(
+    private electronService: ElectronService,
     notifierService: NotifierService,
     router: Router,
     @Inject(WindowToken) private window: Window
@@ -201,6 +203,11 @@ export class WebsocketService implements BackendService {
   }
 
   websocketURI(): string {
+    // TODO: https://github.com/vmware-tanzu/octant/issues/944
+    if (this.electronService.isElectron()) {
+      return 'ws://localhost:7777/api/v1/stream';
+    }
+
     const loc = this.window.location;
     let newURI = 'ws:';
     if (loc.protocol === 'https:') {
