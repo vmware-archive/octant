@@ -25,6 +25,7 @@ export const appRoutes: Routes = [
   imports: [
     // routing must come last
     RouterModule.forRoot(appRoutes, {
+      relativeLinkResolution: 'legacy',
       useHash: true,
       enableTracing: false,
     }),
