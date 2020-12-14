@@ -138,12 +138,12 @@ func (csd *CRDSection) crdTable(ctx context.Context, namespace string, options O
 				return nil, err
 			}
 
-			crdObject, err := octant.NewCustomResourceDefinition(crd)
+			crdTool, err := octant.NewCustomResourceDefinitionTool(crd)
 			if err != nil {
 				return nil, err
 			}
 
-			versions, err := crdObject.Versions()
+			versions, err := crdTool.Versions()
 			if err != nil {
 				return nil, err
 			}

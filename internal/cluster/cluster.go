@@ -92,8 +92,8 @@ func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restCl
 	logger := internalLog.From(ctx).With("component", "cluster client")
 
 	install.Install(scheme.Scheme)
-	admissionregistrationv1beta1.AddToScheme(scheme.Scheme)
-	apiregistrationv1.AddToScheme(scheme.Scheme)
+	_ = admissionregistrationv1beta1.AddToScheme(scheme.Scheme)
+	_ = apiregistrationv1.AddToScheme(scheme.Scheme)
 
 	kubernetesClient, err := kubernetes.NewForConfig(restClient)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 const (
@@ -28,23 +29,44 @@ type CustomResourceDefinitionVersion struct {
 	PrinterColumns []CustomResourceDefinitionPrinterColumn
 }
 
-type CustomResourceDefinition struct {
+// CustomResourceDefinitionTool is a tool for extracting information from a CRD.
+type CustomResourceDefinitionTool struct {
 	object *unstructured.Unstructured
 }
 
-func NewCustomResourceDefinition(object *unstructured.Unstructured) (*CustomResourceDefinition, error) {
+// NewCustomResourceDefinitionTool creates an instance of CustomResourceDefinitionTool.
+func NewCustomResourceDefinitionTool(object *unstructured.Unstructured) (*CustomResourceDefinitionTool, error) {
 	if object == nil {
 		return nil, fmt.Errorf("object is nil")
 	}
 
-	crd := &CustomResourceDefinition{
+	crd := &CustomResourceDefinitionTool{
 		object: object,
 	}
 
 	return crd, nil
 }
 
-func (crd *CustomResourceDefinition) Versions() ([]string, error) {
+// GroupKind returns a group/kind for the CRD.
+func (crd *CustomResourceDefinitionTool) GroupKind() (schema.GroupKind, error) {
+	group, _, err := unstructured.NestedString(crd.object.Object, "spec", "group")
+	if err != nil {
+		return schema.GroupKind{}, err
+	}
+
+	kind, _, err := unstructured.NestedString(crd.object.Object, "spec", "names", "kind")
+	if err != nil {
+		return schema.GroupKind{}, err
+	}
+
+	return schema.GroupKind{
+		Group: group,
+		Kind:  kind,
+	}, nil
+}
+
+// Versions returns the defined versions in a CRD.
+func (crd *CustomResourceDefinitionTool) Versions() ([]string, error) {
 	switch apiVersion := crd.object.GetAPIVersion(); apiVersion {
 	case crdAPIVersionV1:
 		return crd.versionNames()
@@ -65,7 +87,8 @@ func (crd *CustomResourceDefinition) Versions() ([]string, error) {
 	}
 }
 
-func (crd *CustomResourceDefinition) Version(version string) (CustomResourceDefinitionVersion, error) {
+// Version returns a version descriptor for a specified version.
+func (crd *CustomResourceDefinitionTool) Version(version string) (CustomResourceDefinitionVersion, error) {
 	switch crd.object.GetAPIVersion() {
 	case crdAPIVersionV1:
 		return crd.v1Version(version)
@@ -77,7 +100,7 @@ func (crd *CustomResourceDefinition) Version(version string) (CustomResourceDefi
 
 }
 
-func (crd *CustomResourceDefinition) v1Version(version string) (CustomResourceDefinitionVersion, error) {
+func (crd *CustomResourceDefinitionTool) v1Version(version string) (CustomResourceDefinitionVersion, error) {
 	versions, err := crd.versions()
 	if err != nil {
 		return CustomResourceDefinitionVersion{}, err
@@ -107,7 +130,7 @@ func (crd *CustomResourceDefinition) v1Version(version string) (CustomResourceDe
 	return CustomResourceDefinitionVersion{}, fmt.Errorf("unable to find version '%s'", version)
 }
 
-func (crd *CustomResourceDefinition) v1beta1Version(version string) (CustomResourceDefinitionVersion, error) {
+func (crd *CustomResourceDefinitionTool) v1beta1Version(version string) (CustomResourceDefinitionVersion, error) {
 	raw, _, err := unstructured.NestedSlice(crd.object.Object, "spec", "additionalPrinterColumns")
 	if err != nil {
 		return CustomResourceDefinitionVersion{}, fmt.Errorf("unable to read crd .spec.additionalPrinterColumns: %w", err)
@@ -126,7 +149,7 @@ func (crd *CustomResourceDefinition) v1beta1Version(version string) (CustomResou
 
 }
 
-func (crd *CustomResourceDefinition) versionNames() ([]string, error) {
+func (crd *CustomResourceDefinitionTool) versionNames() ([]string, error) {
 	objects, err := crd.versions()
 	if err != nil {
 		return nil, err
@@ -139,7 +162,7 @@ func (crd *CustomResourceDefinition) versionNames() ([]string, error) {
 	return versions, nil
 }
 
-func (crd *CustomResourceDefinition) versions() ([]map[string]interface{}, error) {
+func (crd *CustomResourceDefinitionTool) versions() ([]map[string]interface{}, error) {
 	versionsRaw, found, err := unstructured.NestedSlice(crd.object.Object, "spec", "versions")
 	if err != nil {
 		return nil, fmt.Errorf("unable to read crd .spec.versions: %w", err)

@@ -69,7 +69,8 @@ func (c *crd) Describe(ctx context.Context, namespace string, options Options) (
 	crd := resp.CustomResourceDefinition
 	object := resp.CustomResource
 
-	title := getCrdTitle(namespace, crd, object.GetName())
+	name := fmt.Sprintf("%s (%s)", object.GetName(), object.GroupVersionKind().Version)
+	title := getCrdTitle(namespace, crd, name)
 
 	cr := component.NewContentResponse(title)
 

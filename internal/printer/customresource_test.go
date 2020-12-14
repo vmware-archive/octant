@@ -11,87 +11,113 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
+	"github.com/vmware-tanzu/octant/internal/link"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/internal/testutil"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-func Test_CustomResourceListHandler(t *testing.T) {
-	controller := gomock.NewController(t)
-	defer controller.Finish()
-
-	tpo := newTestPrinterOptions(controller)
-
-	crd := testutil.LoadUnstructuredFromFile(t, "crd.yaml")
-	resource := testutil.LoadUnstructuredFromFile(t, "crd-resource.yaml")
-
+func TestCustomResourceLister_List(t *testing.T) {
 	now := time.Now()
-	resource.SetCreationTimestamp(metav1.Time{Time: now})
-
-	tpo.PathForObject(resource, resource.GetName(), "/my-crontab")
-
 	labels := map[string]string{"foo": "bar"}
-	resource.SetLabels(labels)
 
-	list := testutil.ToUnstructuredList(t, resource)
-	got, err := CreateCustomResourceList(crd, list, "v1", tpo.link)
-	require.NoError(t, err)
+	type args struct {
+		crd     *unstructured.Unstructured
+		list    *unstructured.UnstructuredList
+		version string
+		link    link.Interface
+	}
 
-	expected := component.NewTableWithRows(
-		"crontabs.stable.example.com/v1", "We could not find any crontabs.stable.example.com/v1!",
-		component.NewTableCols("Name", "Labels", "Age"),
-		[]component.TableRow{
-			{
-				"Name":   component.NewLink("", resource.GetName(), "/my-crontab"),
-				"Age":    component.NewTimestamp(now),
-				"Labels": component.NewLabels(labels),
+	tests := []struct {
+		name string
+		args func(t *testing.T, ctrl *gomock.Controller) args
+
+		wantErr bool
+		want    component.Component
+	}{
+		{
+			name: "in general",
+			args: func(t *testing.T, ctrl *gomock.Controller) args {
+				tpo := newTestPrinterOptions(ctrl)
+				crd := testutil.LoadUnstructuredFromFile(t, "crd.yaml")
+				resource := testutil.LoadUnstructuredFromFile(t, "crd-resource.yaml")
+				resource.SetCreationTimestamp(metav1.Time{Time: now})
+				tpo.PathForObject(resource, resource.GetName(), "/my-crontab")
+				resource.SetLabels(labels)
+				list := testutil.ToUnstructuredList(t, resource)
+				return args{
+					crd:     crd,
+					list:    list,
+					version: "v1",
+					link:    tpo.link,
+				}
 			},
-		})
 
-	component.AssertEqual(t, expected, got)
-}
-
-func Test_CustomResourceListHandler_custom_columns(t *testing.T) {
-	controller := gomock.NewController(t)
-	defer controller.Finish()
-
-	tpo := newTestPrinterOptions(controller)
-
-	crd := testutil.LoadUnstructuredFromFile(t, "crd-additional-columns.yaml")
-	resource := testutil.LoadUnstructuredFromFile(t, "crd-resource.yaml")
-
-	now := time.Now()
-	resource.SetCreationTimestamp(metav1.Time{Time: now})
-
-	tpo.PathForObject(resource, resource.GetName(), "/my-crontab")
-
-	labels := map[string]string{"foo": "bar"}
-	resource.SetLabels(labels)
-
-	list := testutil.ToUnstructuredList(t, resource)
-
-	got, err := CreateCustomResourceList(crd, list, "v1", tpo.link)
-	require.NoError(t, err)
-
-	expected := component.NewTableWithRows(
-		"crontabs.stable.example.com/v1", "We could not find any crontabs.stable.example.com/v1!",
-		component.NewTableCols("Name", "Labels", "Spec", "Replicas", "Errors", "Resource Age", "Age"),
-		[]component.TableRow{
-			{
-				"Name":         component.NewLink("", resource.GetName(), "/my-crontab"),
-				"Age":          component.NewTimestamp(now),
-				"Labels":       component.NewLabels(labels),
-				"Replicas":     component.NewText("1"),
-				"Spec":         component.NewText("* * * * */5"),
-				"Errors":       component.NewText("1"),
-				"Resource Age": component.NewText(resource.GetCreationTimestamp().UTC().Format(time.RFC3339)),
+			wantErr: false,
+			want: component.NewTableWithRows(
+				"crontabs.stable.example.com/v1", "We could not find any crontabs.stable.example.com/v1!",
+				component.NewTableCols("Name", "Labels", "Age"),
+				[]component.TableRow{
+					{
+						"Name":   component.NewLink("", "my-crontab", "/my-crontab"),
+						"Age":    component.NewTimestamp(now),
+						"Labels": component.NewLabels(labels),
+					},
+				}),
+		},
+		{
+			name: "custom columns",
+			args: func(t *testing.T, ctrl *gomock.Controller) args {
+				tpo := newTestPrinterOptions(ctrl)
+				crd := testutil.LoadUnstructuredFromFile(t, "crd-additional-columns.yaml")
+				resource := testutil.LoadUnstructuredFromFile(t, "crd-resource.yaml")
+				resource.SetCreationTimestamp(metav1.Time{Time: now})
+				tpo.PathForObject(resource, resource.GetName(), "/my-crontab")
+				resource.SetLabels(labels)
+				list := testutil.ToUnstructuredList(t, resource)
+				return args{
+					crd:     crd,
+					list:    list,
+					version: "v1",
+					link:    tpo.link,
+				}
 			},
-		})
 
-	component.AssertEqual(t, expected, got)
+			wantErr: false,
+			want: component.NewTableWithRows(
+				"crontabs.stable.example.com/v1", "We could not find any crontabs.stable.example.com/v1!",
+				component.NewTableCols("Name", "Labels", "Spec", "Replicas", "Errors", "Resource Age", "Age"),
+				[]component.TableRow{
+					{
+						"Name":         component.NewLink("", "my-crontab", "/my-crontab"),
+						"Age":          component.NewTimestamp(now),
+						"Labels":       component.NewLabels(labels),
+						"Replicas":     component.NewText("1"),
+						"Spec":         component.NewText("* * * * */5"),
+						"Errors":       component.NewText("1"),
+						"Resource Age": component.NewText(now.UTC().Format(time.RFC3339)),
+					},
+				}),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			lister := NewCustomResourceLister()
+			a := test.args(t, ctrl)
+			got, err := lister.List(a.crd, a.list, a.version, a.link)
+
+			testutil.RequireErrorOrNot(t, test.wantErr, err, func() {
+				component.AssertEqual(t, test.want, got)
+			})
+		})
+	}
 }
 
 func TestCustomResourceHandler(t *testing.T) {
