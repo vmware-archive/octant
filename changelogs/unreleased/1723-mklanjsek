@@ -1,0 +1,1 @@
+Fixed issue with broken links created from plugin (caused by angular 11 breaking change)
