@@ -437,7 +437,7 @@ func removeFakes() {
 				return nil
 			}
 			if info.Name() == "fake" {
-				fakePaths = append(fakePaths, filepath.Join(path, info.Name()))
+				fakePaths = append(fakePaths, path)
 			}
 			return nil
 		})
