@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -97,45 +98,63 @@ func CustomResourceDefinitionVersionList(
 	crd *unstructured.Unstructured,
 	namespace string,
 	options Options) (component.Component, error) {
-	octantCRD, err := octant.NewCustomResourceDefinition(crd)
+	crdTool, err := octant.NewCustomResourceDefinitionTool(crd)
 	if err != nil {
 		return nil, err
 	}
 
+	discoveryClient, err := options.DashConfig.ClusterClient().DiscoveryClient()
+	if err != nil {
+		return nil, fmt.Errorf("discovery client: %w", err)
+	}
+
+	resourceLists, err := discoveryClient.ServerPreferredResources()
+	if err != nil {
+		return nil, fmt.Errorf("preferred resources: %w", err)
+	}
+
+	groupKind, err := crdTool.GroupKind()
+	if err != nil {
+		return nil, fmt.Errorf("crd group kind: %w", err)
+	}
+
+	dri := cluster.NewDiscoveryResourceInfo(resourceLists)
+	resourceVersion, err := dri.PreferredVersion(groupKind)
+	if err != nil {
+		return nil, fmt.Errorf("preferred version for %s: %w", groupKind, err)
+	}
+
+	view, err := genViewForCRDVersion(ctx, crd, resourceVersion, namespace, options)
+	if err != nil {
+		return nil, fmt.Errorf("generate view for CRD %q version %q: %w", crd.GetName(), resourceVersion, err)
+	}
+
+	list := component.NewList(nil, []component.Component{view})
+	return list, nil
+}
+
+func genViewForCRDVersion(
+	ctx context.Context,
+	crd *unstructured.Unstructured,
+	version, namespace string,
+	options Options) (component.Component, error) {
 	objectStore := options.DashConfig.ObjectStore()
 
-	versions, err := octantCRD.Versions()
+	crGVK, err := gvk.CustomResource(crd, version)
 	if err != nil {
 		return nil, err
 	}
 
-	list := component.NewList(nil, nil)
+	key := store.KeyFromGroupVersionKind(crGVK)
+	key.Namespace = namespace
 
-	for i := range versions {
-		version := versions[i]
-
-		crGVK, err := gvk.CustomResource(crd, version)
-		if err != nil {
-			return nil, err
-		}
-
-		key := store.KeyFromGroupVersionKind(crGVK)
-		key.Namespace = namespace
-
-		customResources, _, err := objectStore.List(ctx, key)
-		if err != nil {
-			return nil, err
-		}
-
-		view, err := CreateCustomResourceList(crd, customResources, version, options.Link)
-		if err != nil {
-			return nil, err
-		}
-
-		list.Add(view)
+	customResources, _, err := objectStore.List(ctx, key)
+	if err != nil {
+		return nil, err
 	}
 
-	return list, nil
+	lister := NewCustomResourceLister()
+	return lister.List(crd, customResources, version, options.Link)
 }
 
 type CRDSummaryFunc func(*apiextv1.CustomResourceDefinition, Options) (component.Component, error)

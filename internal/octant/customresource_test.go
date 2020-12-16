@@ -10,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/internal/testutil"
@@ -33,8 +34,79 @@ func TestNewCustomResourceDefinition(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := octant.NewCustomResourceDefinition(tt.object)
+			_, err := octant.NewCustomResourceDefinitionTool(tt.object)
 			testutil.RequireErrorOrNot(t, tt.wantErr, err)
+		})
+	}
+}
+
+func TestCustomResourceDefinition_GroupKind(t *testing.T) {
+	type ctorArgs struct {
+		object *unstructured.Unstructured
+	}
+	tests := []struct {
+		name     string
+		ctorArgs ctorArgs
+		wantErr  bool
+		want     schema.GroupKind
+	}{
+		{
+			name: "in general",
+			ctorArgs: ctorArgs{
+				object: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"spec": map[string]interface{}{
+							"group": "group",
+							"names": map[string]interface{}{
+								"kind": "Kind",
+							},
+						},
+					},
+				},
+			},
+			want: schema.GroupKind{Group: "group", Kind: "Kind"},
+		},
+		{
+			ctorArgs: ctorArgs{
+				object: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"spec": map[string]interface{}{
+							"group": 7,
+							"names": map[string]interface{}{
+								"kind": "Kind",
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "in general",
+			ctorArgs: ctorArgs{
+				object: &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"spec": map[string]interface{}{
+							"group": "group",
+							"names": map[string]interface{}{
+								"kind": 7,
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			crdTool, err := octant.NewCustomResourceDefinitionTool(test.ctorArgs.object)
+			require.NoError(t, err)
+
+			got, err := crdTool.GroupKind()
+			testutil.RequireErrorOrNot(t, test.wantErr, err, func() {
+				require.Equal(t, test.want, got)
+			})
 		})
 	}
 }
@@ -65,10 +137,10 @@ func TestCustomResourceDefinition_Versions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			crd, err := octant.NewCustomResourceDefinition(tt.object)
+			crdTool, err := octant.NewCustomResourceDefinitionTool(tt.object)
 			require.NoError(t, err)
 
-			got, err := crd.Versions()
+			got, err := crdTool.Versions()
 			testutil.RequireErrorOrNot(t, tt.wantErr, err)
 			require.Equal(t, tt.want, got)
 		})
@@ -147,10 +219,10 @@ func TestCustomResourceDefinition_Version(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			crd, err := octant.NewCustomResourceDefinition(tt.object)
+			crdTool, err := octant.NewCustomResourceDefinitionTool(tt.object)
 			require.NoError(t, err)
 
-			got, err := crd.Version("v1")
+			got, err := crdTool.Version("v1")
 			testutil.RequireErrorOrNot(t, tt.wantErr, err)
 			require.Equal(t, tt.want, got)
 		})

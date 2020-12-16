@@ -9,9 +9,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/util/jsonpath"
 
 	"github.com/vmware-tanzu/octant/internal/link"
@@ -20,9 +23,33 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-// CreateCustomResourceList prints a list of custom resources as a table with
-// optional custom columns.
-func CreateCustomResourceList(crdObject *unstructured.Unstructured, resources *unstructured.UnstructuredList, version string, linkGenerator link.Interface) (component.Component, error) {
+type CustomResourceListerOption func(lister *CustomResourceLister)
+
+// CustomResourceListAllVersions set if all versions will be listed.
+func CustomResourceListAllVersions(tf bool) CustomResourceListerOption {
+	return func(lister *CustomResourceLister) {
+		lister.showAllVersions = tf
+	}
+}
+
+// CustomResourceLister lists custom resources.
+type CustomResourceLister struct {
+	showAllVersions bool
+}
+
+// NewCustomResourceLister creates a CustomResourceLister instance.
+func NewCustomResourceLister(options ...CustomResourceListerOption) *CustomResourceLister {
+	crl := &CustomResourceLister{}
+
+	for _, option := range options {
+		option(crl)
+	}
+
+	return crl
+}
+
+// List prints a list of custom resources as a table with optional custom columns.
+func (crl *CustomResourceLister) List(crdObject *unstructured.Unstructured, resources *unstructured.UnstructuredList, version string, linkGenerator link.Interface) (component.Component, error) {
 	if crdObject == nil {
 		return nil, fmt.Errorf("custom resource definition is nil")
 	}
@@ -31,19 +58,19 @@ func CreateCustomResourceList(crdObject *unstructured.Unstructured, resources *u
 	placeholder := fmt.Sprintf("We could not find any %s!", tableName)
 	table := component.NewTable(tableName, placeholder, component.NewTableCols("Name", "Labels"))
 
-	crd, err := octant.NewCustomResourceDefinition(crdObject)
+	crd, err := octant.NewCustomResourceDefinitionTool(crdObject)
 	if err != nil {
 		return nil, fmt.Errorf("create custom resource definition parse tool: %w", err)
 	}
 
 	if len(resources.Items) > 0 {
 		versionName := resources.Items[0].GroupVersionKind().Version
-		version, err := crd.Version(versionName)
+		v, err := crd.Version(versionName)
 		if err != nil {
 			return nil, fmt.Errorf("get version '%s' from crd %s: %w", versionName, crdObject.GetName(), err)
 		}
 
-		for _, column := range version.PrinterColumns {
+		for _, column := range v.PrinterColumns {
 			name := column.Name
 			if octantStrings.Contains(column.Name, []string{"Name", "Labels", "Age"}) {
 				name = fmt.Sprintf("Resource %s", column.Name)
@@ -98,6 +125,7 @@ func CreateCustomResourceList(crdObject *unstructured.Unstructured, resources *u
 	table.Sort("Name")
 
 	return table, nil
+
 }
 
 func printCustomColumn(m interface{}, column octant.CustomResourceDefinitionPrinterColumn) (string, error) {
@@ -140,12 +168,74 @@ func CustomResourceHandler(ctx context.Context, crd, cr *unstructured.Unstructur
 		return nil, fmt.Errorf("print custom resource status: %w", err)
 	}
 
+	crdTool, err := octant.NewCustomResourceDefinitionTool(crd)
+	if err != nil {
+		return nil, fmt.Errorf("create octant CRD parser: %w", err)
+	}
+
+	versions, err := crdTool.Versions()
+	if err != nil {
+		return nil, fmt.Errorf("get versions for CRD: %w", err)
+	}
+
+	if len(versions) > 1 {
+		vt, err := versionsTable(versions, cr, options)
+		if err != nil {
+			return nil, fmt.Errorf("create CRD versions table: %w", err)
+		}
+
+		d := ItemDescriptor{
+			Func: func() (component.Component, error) {
+				return vt, nil
+			},
+			Width: component.WidthHalf,
+		}
+		object.RegisterItems(d)
+
+	}
+
 	view, err := object.ToComponent(ctx, options)
 	if err != nil {
 		return nil, fmt.Errorf("print custom resource: %w", err)
 	}
 
 	return view, nil
+}
+
+func versionsTable(versions []string, cr *unstructured.Unstructured, options Options) (component.Component, error) {
+	tableCols := component.NewTableCols("Version")
+	table := component.NewTable("Versions", "", tableCols)
+
+	sort.Slice(versions, func(i, j int) bool {
+		return version.CompareKubeAwareVersionStrings(versions[i], versions[j]) > 0
+	})
+
+	for i := range versions {
+		v := versions[i]
+
+		gv := schema.GroupVersion{
+			Group:   cr.GroupVersionKind().Group,
+			Version: v,
+		}
+
+		var c component.Component = component.NewMarkdownText(fmt.Sprintf("**%s**", v))
+
+		if gv.String() != cr.GetAPIVersion() {
+			l, err := options.Link.ForGVK(cr.GetNamespace(), gv.String(), cr.GetKind(), cr.GetName(), v)
+			if err != nil {
+				return nil, err
+			}
+
+			c = l
+		}
+
+		row := component.TableRow{
+			"Version": c,
+		}
+		table.Add(row)
+	}
+
+	return table, nil
 }
 
 type customResourceObject interface {
@@ -250,12 +340,12 @@ func crdVersion(crd, cr *unstructured.Unstructured) (octant.CustomResourceDefini
 		return octant.CustomResourceDefinitionVersion{}, fmt.Errorf("custom resource is nil")
 	}
 
-	octantCRD, err := octant.NewCustomResourceDefinition(crd)
+	crdTool, err := octant.NewCustomResourceDefinitionTool(crd)
 	if err != nil {
 		return octant.CustomResourceDefinitionVersion{}, fmt.Errorf("create octant CRD: %w", err)
 	}
 
-	crdVersion, err := octantCRD.Version(cr.GroupVersionKind().Version)
+	crdVersion, err := crdTool.Version(cr.GroupVersionKind().Version)
 	if err != nil {
 		return octant.CustomResourceDefinitionVersion{}, fmt.Errorf("get version for custom resource: %w", err)
 	}
