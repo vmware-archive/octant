@@ -22,7 +22,7 @@ jobs:
         run: |
           go mod tidy
       - name: commit changes
-        uses: stefanzweifel/git-auto-commit-action@v4.7.2
+        uses: stefanzweifel/git-auto-commit-action@v4.8.0
         with:
           commit_message: Vendor and tidy go modules
           commit_options: '--no-verify --signoff'
