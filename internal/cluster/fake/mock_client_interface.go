@@ -14,7 +14,7 @@ import (
 	kubernetes "k8s.io/client-go/kubernetes"
 	rest "k8s.io/client-go/rest"
 
-	cluster "github.com/vmware-tanzu/octant/internal/cluster"
+	cluster "github.com/vmware-tanzu/octant/pkg/cluster"
 )
 
 // MockClientInterface is a mock of ClientInterface interface

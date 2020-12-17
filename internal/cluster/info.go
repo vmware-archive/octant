@@ -5,17 +5,13 @@ SPDX-License-Identifier: Apache-2.0
 
 package cluster
 
-import "k8s.io/client-go/tools/clientcmd"
+import (
+	"k8s.io/client-go/tools/clientcmd"
 
-//go:generate mockgen -source=info.go -destination=./fake/mock_info_interface.go -package=fake github.com/vmware-tanzu/octant/internal/cluster InfoInterface
+	clusterTypes "github.com/vmware-tanzu/octant/pkg/cluster"
+)
 
-// InfoInterface provides connection details for a cluster
-type InfoInterface interface {
-	Context() string
-	Cluster() string
-	Server() string
-	User() string
-}
+var _ clusterTypes.InfoInterface = (*clusterInfo)(nil)
 
 type clusterInfo struct {
 	clientConfig clientcmd.ClientConfig
