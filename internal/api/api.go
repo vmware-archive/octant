@@ -9,8 +9,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -57,11 +59,26 @@ func acceptedHosts() []string {
 // Listener returns the default listener if OCTANT_LISTENER_ADDR is not set.
 func Listener() (net.Listener, error) {
 	listenerAddr := getListenerAddr()
-	conn, err := net.DialTimeout("tcp", listenerAddr, time.Millisecond*500)
+	host, port, err := net.SplitHostPort(listenerAddr)
 	if err != nil {
-		return net.Listen("tcp", listenerAddr)
+		panic(fmt.Sprintf("Unable to parse OCTANT_LISTENER_ADDR: %s", listenerAddr))
 	}
-	_ = conn.Close()
+	portNumber, err := strconv.Atoi(port)
+	if err != nil {
+		panic(fmt.Sprintf("Unable to convert port: %s", port))
+	}
+	for i := 0; ; i++ {
+		port := portNumber + i
+		listenerAddr = net.JoinHostPort(host, fmt.Sprintf("%d", port))
+		conn, err := net.DialTimeout("tcp", listenerAddr, time.Millisecond*500)
+		if err != nil {
+			return net.Listen("tcp", listenerAddr)
+		}
+		_ = conn.Close()
+		if i >= (math.MaxUint16 - port - 1) {
+			break
+		}
+	}
 	return nil, fmt.Errorf("tcp %s: dial: already in use", listenerAddr)
 }
 
