@@ -11,6 +11,10 @@ import (
 	"sync"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
+
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
+
 	"github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/pkg/errors"
@@ -125,27 +129,52 @@ func (s *terminalStateManager) SetActiveTerminal(state octant.State, payload act
 		cancelFn()
 	}
 
-	cancelFn := s.startStream(key, containerName)
+	objectStore := s.config.ObjectStore()
+	po := &corev1.Pod{}
+	pod, err := objectStore.Get(s.ctx, key)
+	if err != nil {
+		return err
+	}
+	if pod != nil {
+		err := kubernetes.FromUnstructured(pod, po)
+		if err != nil {
+			return err
+		}
+	}
+
+	cancelFn := s.startStream(po, key, containerName)
 	s.terminalSubscriptions.Store(eventType, cancelFn)
 	return nil
 }
 
-func (s *terminalStateManager) startStream(key store.Key, container string) context.CancelFunc {
+func (s *terminalStateManager) startStream(pod *corev1.Pod, key store.Key, container string) context.CancelFunc {
 	ctx, cancelFn := context.WithCancel(s.ctx)
 	logger := log.From(s.ctx).With("startStream", container)
 
-	eventType := event.NewTerminalEventType(key.Namespace, key.Name, container)
+	eventType := event.NewTerminalEventType(pod.Namespace, pod.Name, container)
 
-	instance, err := terminal.NewTerminalInstance(ctx, s.config.ClusterClient(), logger, key, container, "/bin/sh", s.chanInstance)
-	if err != nil {
-		cancelFn()
-		return cancelFn
+	commands := []string{"bash", "sh"}
+	if IsWindowsContainer(pod) {
+		commands = []string{"powershell", "cmd"}
 	}
 
-	s.instance = instance
+	for _, command := range commands {
+		validInstance, err := terminal.NewTerminalInstance(ctx, s.config.ClusterClient(), logger, key, container, command, s.chanInstance)
+		if err != nil {
+			logger.Debugf("streaming: %+v", err)
+			continue
+		}
 
-	go s.sendTerminalEvents(ctx, eventType, instance, s.chanInstance)
+		if validInstance != nil {
+			s.instance = validInstance
+			go s.sendTerminalEvents(ctx, eventType, s.instance, s.chanInstance)
+			break
+		}
+	}
 
+	if s.instance == nil {
+		cancelFn()
+	}
 	return cancelFn
 }
 
@@ -235,6 +264,7 @@ func newEvent(ctx context.Context, t terminal.Instance, sendScrollback bool) (ev
 				data.Scrollback = []byte("\n" + "(process exited)")
 				data.ExitMessage = data.Scrollback
 			}
+			t.Stop()
 		}
 	}
 
@@ -243,4 +273,25 @@ func newEvent(ctx context.Context, t terminal.Instance, sendScrollback bool) (ev
 		Data: data,
 		Err:  nil,
 	}, nil
+}
+
+func IsWindowsContainer(pod *corev1.Pod) bool {
+	var hasNodeSelector, hasToleration bool
+	windowsToleration := corev1.Toleration{
+		Key:      "os",
+		Operator: corev1.TolerationOpEqual,
+		Value:    "windows",
+		Effect:   corev1.TaintEffectNoSchedule,
+	}
+	for k, v := range pod.Spec.NodeSelector {
+		if k == "kubernetes.io/os" && v == "windows" {
+			hasNodeSelector = true
+		}
+	}
+	for _, toleration := range pod.Spec.Tolerations {
+		if toleration == windowsToleration {
+			hasToleration = true
+		}
+	}
+	return hasNodeSelector && hasToleration
 }
