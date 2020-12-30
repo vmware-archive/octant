@@ -8,6 +8,7 @@ package printer
 import (
 	"context"
 	"fmt"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -81,6 +82,9 @@ func NodeHandler(ctx context.Context, node *corev1.Node, options Options) (compo
 	}
 	if err := nh.Images(options); err != nil {
 		return nil, errors.Wrap(err, "print node images")
+	}
+	if err := nh.Pods(options); err != nil {
+		return nil, errors.Wrap(err, "print node pods")
 	}
 	return o.ToComponent(ctx, options)
 }
@@ -325,8 +329,10 @@ func createNodeConditionsView(node *corev1.Node) (*component.Table, error) {
 	return table, nil
 }
 
+const GB = float64(1073741824)
+
 var (
-	nodeImagesColumns = component.NewTableCols("Names", "Size")
+	nodeImagesColumns = component.NewTableCols("Names", "Size (GB)")
 )
 
 func createNodeImagesView(node *corev1.Node) (*component.Table, error) {
@@ -337,15 +343,54 @@ func createNodeImagesView(node *corev1.Node) (*component.Table, error) {
 	table := component.NewTable("Images", "There are no images!", nodeImagesColumns)
 
 	for _, containerImage := range node.Status.Images {
+		imgSize := float64(containerImage.SizeBytes) / GB
 		row := component.TableRow{
-			"Names": component.NewMarkdownText(strings.Join(containerImage.Names, "\n")),
-			"Size":  component.NewText(fmt.Sprintf("%d", containerImage.SizeBytes)),
+			"Names":     component.NewMarkdownText(strings.Join(containerImage.Names, "\n")),
+			"Size (GB)": component.NewText(fmt.Sprintf("%0.3f", imgSize)),
 		}
 
 		table.Add(row)
 	}
 
 	table.Sort("Names")
+
+	return table, nil
+}
+
+var (
+	nodePodsColumns = component.NewTableCols("Name", "Namespace")
+)
+
+func createNodePodsView(node *corev1.Node, options *Options) (*component.Table, error) {
+	if options == nil {
+		return nil, errors.New("cannot generate images for nil node")
+	}
+
+	table := component.NewTable("Pods", "There are no pods!", nodePodsColumns)
+
+	clusterClient, err := options.DashConfig.ClusterClient().KubernetesClient()
+	if err != nil {
+		return nil, err
+	}
+
+	podList, err := clusterClient.CoreV1().Pods("").List(context.Background(), v1.ListOptions{
+		FieldSelector: fmt.Sprintf("spec.nodeName=%s", node.Name),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, pod := range podList.Items {
+
+		row := component.TableRow{
+			"Name":     component.NewText(pod.Name),
+			"Namespace": component.NewText(pod.Namespace),
+		}
+
+		table.Add(row)
+	}
+
+	table.Sort("Name")
 
 	return table, nil
 }
@@ -365,6 +410,7 @@ type nodeHandler struct {
 	resourcesFunc  func(*corev1.Node, Options) (*component.Table, error)
 	conditionsFunc func(*corev1.Node, Options) (*component.Table, error)
 	imagesFunc     func(*corev1.Node, Options) (*component.Table, error)
+	podsFunc       func(*corev1.Node, Options) (*component.Table, error)
 	object         *Object
 }
 
@@ -386,6 +432,7 @@ func newNodeHandler(node *corev1.Node, object *Object) (*nodeHandler, error) {
 		resourcesFunc:  defaultNodeResources,
 		conditionsFunc: defaultNodeConditions,
 		imagesFunc:     defaultNodeImages,
+		podsFunc:       defaultNodePods,
 		object:         object,
 	}
 	return nh, nil
@@ -472,6 +519,24 @@ func (n *nodeHandler) Images(options Options) error {
 	return nil
 }
 
+func (n *nodeHandler) Pods(options Options) error {
+	if n.node == nil {
+		return errors.New("can't display resources for nil node")
+	}
+
+	n.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return n.podsFunc(n.node, options)
+		},
+	})
+	return nil
+}
+
 func defaultNodeImages(node *corev1.Node, options Options) (*component.Table, error) {
 	return createNodeImagesView(node)
+}
+
+func defaultNodePods(node *corev1.Node, options Options) (*component.Table, error) {
+	return createNodePodsView(node, &options)
 }
