@@ -8,8 +8,9 @@ package printer
 import (
 	"context"
 	"fmt"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
+
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -383,7 +384,7 @@ func createNodePodsView(node *corev1.Node, options *Options) (*component.Table, 
 	for _, pod := range podList.Items {
 
 		row := component.TableRow{
-			"Name":     component.NewText(pod.Name),
+			"Name":      component.NewText(pod.Name),
 			"Namespace": component.NewText(pod.Namespace),
 		}
 
