@@ -277,12 +277,12 @@ func Test_createNodeImagesView(t *testing.T) {
 
 	expected := component.NewTableWithRows("Images", "There are no images!", nodeImagesColumns, []component.TableRow{
 		{
-			"Names": component.NewMarkdownText("a"),
-			"Size (GB)":  component.NewText("0.001"),
+			"Names":     component.NewMarkdownText("a"),
+			"Size (GB)": component.NewText("0.001"),
 		},
 		{
-			"Names": component.NewMarkdownText("b-1\nb-2"),
-			"Size (GB)":  component.NewText("0.001"),
+			"Names":     component.NewMarkdownText("b-1\nb-2"),
+			"Size (GB)": component.NewText("0.001"),
 		},
 	})
 
