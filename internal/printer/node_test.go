@@ -264,11 +264,11 @@ func Test_createNodeImagesView(t *testing.T) {
 	node.Status.Images = []corev1.ContainerImage{
 		{
 			Names:     []string{"a"},
-			SizeBytes: 10,
+			SizeBytes: 1000000,
 		},
 		{
 			Names:     []string{"b-1", "b-2"},
-			SizeBytes: 10,
+			SizeBytes: 1000000,
 		},
 	}
 
@@ -278,11 +278,11 @@ func Test_createNodeImagesView(t *testing.T) {
 	expected := component.NewTableWithRows("Images", "There are no images!", nodeImagesColumns, []component.TableRow{
 		{
 			"Names": component.NewMarkdownText("a"),
-			"Size":  component.NewText("10"),
+			"Size (GB)":  component.NewText("0.001"),
 		},
 		{
 			"Names": component.NewMarkdownText("b-1\nb-2"),
-			"Size":  component.NewText("10"),
+			"Size (GB)":  component.NewText("0.001"),
 		},
 	})
 
