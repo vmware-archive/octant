@@ -132,7 +132,7 @@ func (cw *ConfigWatcher) Watch(ctx context.Context) {
 			done = true
 			logger.Infof("shutting down config watcher")
 		case _ = <-cw.FileWatcher.Events():
-			if err := cw.watcherConfig.UseContext(ctx, cw.watcherConfig.CurrentContext()); err != nil {
+			if err := cw.watcherConfig.UseContext(ctx, ""); err != nil {
 				logger.WithErr(err).Errorf("reload config")
 			}
 		case err := <-cw.FileWatcher.Errors():

@@ -136,11 +136,21 @@ func (k *KubeConfigContextManager) SwitchContext(ctx context.Context, contextNam
 		k.configLoadingRules,
 		&clientcmd.ConfigOverrides{CurrentContext: contextName},
 	)
+
 	var err error
 	k.clusterClient, err = cluster.FromClientConfig(ctx, clientConfig, k.clusterOptions...)
 	if err != nil {
 		return errors.Wrap(err, "unable to create cluster client")
 	}
+
+	if contextName == "" {
+		rawConfig, err := clientConfig.RawConfig()
+		if err != nil {
+			return errors.Wrap(err, "unable to infer context name from kube config")
+		}
+		contextName = rawConfig.CurrentContext
+	}
+
 	k.currentContext = contextName
 	return nil
 }
