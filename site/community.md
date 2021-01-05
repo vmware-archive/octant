@@ -8,7 +8,7 @@ Do you want to help build Octant?
 
 If you’re a newcomer, check out the “[Good first issue](https://github.com/vmware-tanzu/octant/labels/good%20first%20issue)” label in the Octant repository.
 
-You can follow the work we do, see our milestones, and examine our backlog on our [ZenHub board](https://app.zenhub.com/workspaces/octant-5ba2bc534b5806bc2be8fa8d/board).
+You can follow the work we do, see our milestones, and examine our backlog on our [Github Projects](https://github.com/vmware-tanzu/octant/projects).
 
 * Follow us on Twitter at [@projectoctant](https://twitter.com/projectoctant)
 * Join our Kubernetes Slack channel and talk to us and other community members: [#octant](https://kubernetes.slack.com/app_redirect?channel=CM37M9FCG)

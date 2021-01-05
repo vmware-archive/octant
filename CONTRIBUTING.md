@@ -20,26 +20,23 @@ who are interested in contributing to Octant to attend these meetings. More deta
 
 The Octant project uses GitHub issues and pull requests as the primary method for communicating about what work needs
 to be done, what work is currently being done, who work is assigned to, and the current state of that work.
-With GitHub issues we use the ZenHub tool. ZenHub gives us another layer of metadata on top of GitHub issues that
-allow for visualizing work as being in various states and displaying columns for each state. We highly recommend that
-folks who intend to work on Octant familiarize themselves with ZenHub and GitHub issues.
+Issues are classified under Projects as part of a larger scoped feature or a release milestone. The Backlog tracks new
+issues as they are added and the current triage status.
 
-A very helpful browser extension that will create a ZenHub tab on GitHub for you.
-* [ZenHub Browser Extension](https://zenhub.com/extension)
+### Github Projects
 
-### ZenHub Lanes
+A project for a given feature or milestone contain the following lanes:
 
-We use the different lanes in ZenHub to help organize our work. Below is some details about what each lane means.
+- To do: issues queued in order of priority
+- In progress: issues with work in progress
+- Review in progress: issues pending review or follow up to feedback
+- Reviewer approved: issues pending merge
+- Done: completed work
 
-- New issues: new issues that are not triaged yet.
-- Unsorted: unsorted issues have been looked at, given labels, de-duped, and assigned to Epics.
-- Backlog: these issues are sorted and are next up to work on after the Sprint Backlog. (limit 20)
-- Sprint Backlog: issues here are the current items you can pull from to work on. (limit 20)
-- In Progress: issues here are being actively worked on.
-- Review/QA: issues here usually have a PR associated with them and are ready to be reviewed.
-- Done: (unused/skipped)
-- Epics: stores all of the current Epics to keep them from cluttering up the work lanes.
-- Closed: all issues that have been closed.
+### Github Discussions
+
+We use Github Discussions to archive old community meeting nodes and track longer conversations that are not suitable
+for Slack. A discussion can be tagged with a category to increase visibility and searchability.
 
 ## CHANGELOG
 
@@ -55,7 +52,7 @@ changelog.
 
 If you wish to add a larger feature or make a major refactor to Octant we encourage folks to write up a proposal document.
 Though our process is not formal, the convention is to create a PR against Octant with your proposal as markdown in the
-proposals folder. Proposal reviews and feedback will happen on the the PR with the proposal.
+proposals folder. Proposal reviews and feedback will happen on the PR with the proposal.
 
     octant/proposals       <- folder
         YYYYMMDD-title.md  <- file
@@ -65,6 +62,20 @@ In your proposal it is good to consider and include some of the following:
 * Non-Goals
 * Does this break any public APIs?
 * Does this fix/solve any outstanding issues?
+
+## Review Process
+
+Pull requests are generally in one of the following states:
+
+- Pending review: changes that have not been reviewed by one or more Octant maintainers
+- CI failure: some combination of failing tests, style linting, merge conflicts, or unsigned DCO
+- Pending changes from a feedback cycle: additional changes are required for merging
+- Blocked: changes are dependent on another pull request
+- Stale: changes require further discussion or abandoned by author
+- Ready to merge: changes are approved
+
+Reviews for a new pull request are targeted within one business day in order to avoid going stale. Large
+changes are encouraged to be broken into smaller commits or multiple pull requests to facilitate a fast review cycle.
 
 ## DCO Sign off
 
