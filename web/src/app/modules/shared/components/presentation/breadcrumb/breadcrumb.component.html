@@ -2,23 +2,11 @@
   <div class="breadcrumb-body">
     <ng-container *ngIf="path?.length > 1">
       <div
-        *ngFor="let breadcrumb of path; trackBy: identifyPath"
+        *ngFor="let segment of path; let i = index; trackBy: identifyPath"
         class="breadcrumb-item"
       >
-        <ng-container
-          *ngIf="breadcrumb.url; then withLink; else withoutLink"
-        ></ng-container>
-        <ng-template #withLink>
-          <a [routerLink]="[breadcrumb.url]">
-            {{ breadcrumb.title }}
-          </a>
-          <clr-icon shape="angle" class="separator"></clr-icon>
-        </ng-template>
-        <ng-template #withoutLink>
-          <span class="breadcrumb-span">
-            {{ breadcrumb.title }}
-          </span>
-        </ng-template>
+        <clr-icon *ngIf ="i !== 0" shape="angle" class="separator"></clr-icon>
+        <app-view-container [view]="segment"></app-view-container>
       </div>
     </ng-container>
   </div>

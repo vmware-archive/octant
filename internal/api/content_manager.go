@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vmware-tanzu/octant/internal/config"
 	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	oevent "github.com/vmware-tanzu/octant/pkg/event"
 
@@ -76,6 +77,7 @@ func WithContentGeneratorPoller(poller Poller) ContentManagerOption {
 // ContentManager manages content for websockets.
 type ContentManager struct {
 	ctx                 context.Context
+	dashConfig          config.Dash
 	moduleManager       module.ManagerInterface
 	logger              log.Logger
 	contentGenerateFunc ContentGenerateFunc
@@ -84,9 +86,10 @@ type ContentManager struct {
 }
 
 // NewContentManager creates an instance of ContentManager.
-func NewContentManager(moduleManager module.ManagerInterface, logger log.Logger, options ...ContentManagerOption) *ContentManager {
+func NewContentManager(moduleManager module.ManagerInterface, dashConfig config.Dash, logger log.Logger, options ...ContentManagerOption) *ContentManager {
 	cm := &ContentManager{
 		moduleManager:   moduleManager,
+		dashConfig:      dashConfig,
 		logger:          logger,
 		poller:          NewInterruptiblePoller("content"),
 		updateContentCh: make(chan struct{}, 1),
@@ -200,6 +203,11 @@ func (cm *ContentManager) generateContent(ctx context.Context, state octant.Stat
 		} else {
 			return emptyContent, false, fmt.Errorf("generate content: %w", err)
 		}
+	}
+
+	title := GenerateBreadcrumb(cm, contentPath, state, m, options)
+	if len(title) > 0 {
+		contentResponse.Title = title
 	}
 
 	content := Content{

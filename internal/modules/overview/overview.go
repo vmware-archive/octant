@@ -115,10 +115,11 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 	}
 
 	objectPathConfig := octant.ObjectPathConfig{
-		ModuleName:     "overview",
-		SupportedGVKs:  supportedGVKs,
-		PathLookupFunc: gvkPath,
-		CRDPathGenFunc: crdPath,
+		ModuleName:            "overview",
+		SupportedGVKs:         supportedGVKs,
+		PathLookupFunc:        gvkPath,
+		ReversePathLookupFunc: gvkReversePath,
+		CRDPathGenFunc:        crdPath,
 	}
 	objectPath, err := octant.NewObjectPath(objectPathConfig)
 	if err != nil {

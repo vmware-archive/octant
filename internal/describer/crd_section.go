@@ -21,18 +21,16 @@ type CRDSection struct {
 	describerMap map[string]Describer
 	path         string
 	title        string
-	rootPath     ResourceLink
 	mu           sync.RWMutex
 }
 
 var _ Describer = (*CRDSection)(nil)
 
-func NewCRDSection(p, title string, rootPath ResourceLink) *CRDSection {
+func NewCRDSection(p, title string) *CRDSection {
 	return &CRDSection{
 		describerMap: make(map[string]Describer),
 		path:         p,
 		title:        title,
-		rootPath:     rootPath,
 	}
 }
 
@@ -51,7 +49,7 @@ func (csd *CRDSection) Remove(name string) {
 }
 
 func (csd *CRDSection) Describe(ctx context.Context, namespace string, options Options) (component.ContentResponse, error) {
-	title := getBreadcrumb(csd.rootPath, csd.title, "", namespace)
+	title := component.Title(component.NewText(csd.title))
 	list := component.NewList(title, nil)
 
 	for _, d := range csd.describers() {

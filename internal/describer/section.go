@@ -47,7 +47,7 @@ func (d *Section) Describe(ctx context.Context, namespace string, options Option
 }
 
 func (d *Section) Component(ctx context.Context, namespace string, options Options) (*component.List, error) {
-	title := append([]component.TitleComponent{}, component.NewText(d.title))
+	title := component.Title(component.NewText(d.title))
 	list := component.NewList(title, nil)
 
 	for describerIndex := range d.describers {

@@ -50,7 +50,7 @@ func (cld *crdList) Describe(ctx context.Context, namespace string, options Opti
 		ObjectFactory: printer.NewDefaultObjectFactory(),
 	}
 
-	title := getCrdTitle(namespace, crd, "")
+	title := component.Title(component.NewText(""))
 	contentResponse := component.NewContentResponse(title)
 
 	view, err := printer.CustomResourceDefinitionVersionList(ctx, crd, namespace, printOptions)
@@ -59,7 +59,7 @@ func (cld *crdList) Describe(ctx context.Context, namespace string, options Opti
 	}
 
 	m := view.GetMetadata()
-	m.Title = getCrdTitle(namespace, crd, "")
+	m.Title = title
 	view.SetMetadata(m)
 
 	contentResponse.Add(view)

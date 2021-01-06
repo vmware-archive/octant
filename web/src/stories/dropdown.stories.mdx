@@ -13,7 +13,10 @@ export const dropdownDocs= { source: { code: `dropdown := component.NewDropdown(
 <h2>Description</h2>
 
 <p>The Dropdown component allows the user to choose an option or action from a contextual list.
-The source of the dropdown is usually a button but it could also be a link, icon or label.</p>
+The source of the dropdown is usually a button but it could also be a link, icon or label.
+When source contains text (e.g. for all dropdown types except for the icon), that text is specified by setting the component <code>title</code> property.</p>
+
+<p>The initial dropdown selection is specified by setting the <code>selection</code> property, see <code>Dropdown with link</code> example below.</p>
 
 <p>Each item inside the dropdown can be declared as either header, link, separator or just a plain text.</p>
 
@@ -145,7 +148,8 @@ Additionally, if dropdown has property <code>useSelection</code> set, the dropdo
         config: {
           position: "bottom-left",
           type: "link",
-          useSelection: true,
+          "selection": "second",
+          useSelection: false,
           items: [
             {
               "name": "item-header",

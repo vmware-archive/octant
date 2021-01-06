@@ -10,6 +10,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/vmware-tanzu/octant/pkg/navigation"
+
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -38,6 +40,7 @@ type ManagerInterface interface {
 	Unregister(mod Module)
 	SetNamespace(namespace string)
 	GetNamespace() string
+	Navigation(ctx context.Context, namespace, contextName string) ([]navigation.Navigation, error)
 	UpdateContext(ctx context.Context, contextName string) error
 
 	ModuleForContentPath(contentPath string) (Module, bool)
@@ -45,6 +48,7 @@ type ManagerInterface interface {
 	ClientRequestHandlers() []octant.ClientRequestHandler
 
 	ObjectPath(namespace, apiVersion, kind, name string) (string, error)
+	GvkFromPath(contentPath, namespace string) (schema.GroupVersionKind, error)
 }
 
 // Manager manages module lifecycle.
@@ -152,6 +156,15 @@ func (m *Manager) GetNamespace() string {
 	return m.namespace
 }
 
+func (m *Manager) Navigation(ctx context.Context, namespace, contextName string) ([]navigation.Navigation, error) {
+	for _, module := range m.loadedModules {
+		if module.Name() == contextName {
+			return module.Navigation(ctx, namespace, contextName)
+		}
+	}
+	return nil, errors.New("module not found")
+}
+
 func (m *Manager) UpdateContext(ctx context.Context, contextName string) error {
 	for _, module := range m.loadedModules {
 		if err := module.SetContext(ctx, contextName); err != nil {
@@ -197,6 +210,16 @@ func (m *Manager) ModuleForContentPath(contentPath string) (Module, bool) {
 	}
 
 	return nil, false
+}
+
+func (m *Manager) GvkFromPath(contentPath, namespace string) (schema.GroupVersionKind, error) {
+	for _, m := range m.Modules() {
+		if strings.HasPrefix(contentPath, m.ContentPath()) {
+			return m.GvkFromPath(contentPath, namespace)
+		}
+	}
+
+	return schema.GroupVersionKind{}, errors.Errorf("can't get GVK from path %s", contentPath)
 }
 
 // ClientRequestHandlers returns client request handlers for all modules.

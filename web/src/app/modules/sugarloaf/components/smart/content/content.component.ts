@@ -15,8 +15,6 @@ import {
   ButtonGroupView,
   ContentResponse,
   ExtensionView,
-  LinkView,
-  PathItem,
   View,
 } from 'src/app/modules/shared/models/content';
 import { IconService } from '../../../../shared/services/icon/icon.service';
@@ -39,7 +37,7 @@ export class ContentComponent implements OnInit, OnDestroy {
 
   hasTabs = false;
   hasReceivedContent = false;
-  title: PathItem[] = null;
+  title: View[] = null;
   views: View[] = null;
   extView: ExtensionView = null;
   singleView: View = null;
@@ -153,10 +151,7 @@ export class ContentComponent implements OnInit, OnDestroy {
 
     this.extView = contentResponse.content.extensionComponent;
     this.views = views;
-    this.title = contentResponse.content.title?.map((item: LinkView) => ({
-      title: item.config.value,
-      url: item.config.ref,
-    }));
+    this.title = contentResponse.content.title;
 
     this.hasReceivedContent = true;
   };

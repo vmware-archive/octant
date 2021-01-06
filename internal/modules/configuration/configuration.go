@@ -153,3 +153,7 @@ func (c *Configuration) ActionPaths() map[string]action.DispatcherFunc {
 		objectDeleter.ActionName(): objectDeleter.Handle,
 	}
 }
+
+func (c *Configuration) GvkFromPath(contentPath, namespace string) (schema.GroupVersionKind, error) {
+	return schema.GroupVersionKind{}, errors.Errorf("not supported")
+}

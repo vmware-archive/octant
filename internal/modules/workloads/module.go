@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"path"
 
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -156,4 +157,8 @@ func (m Module) RemoveCRD(ctx context.Context, crd *unstructured.Unstructured) e
 // ResetCRDs is a no-op.
 func (m Module) ResetCRDs(ctx context.Context) error {
 	return nil
+}
+
+func (m Module) GvkFromPath(contentPath, namespace string) (schema.GroupVersionKind, error) {
+	return schema.GroupVersionKind{}, errors.Errorf("not supported")
 }

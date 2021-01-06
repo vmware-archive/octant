@@ -54,10 +54,11 @@ func New(ctx context.Context, options Options) (*ClusterOverview, error) {
 	}
 
 	objectPathConfig := octant.ObjectPathConfig{
-		ModuleName:     "cluster-overview",
-		SupportedGVKs:  supportedGVKs,
-		PathLookupFunc: gvkPath,
-		CRDPathGenFunc: crdPath,
+		ModuleName:            "cluster-overview",
+		SupportedGVKs:         supportedGVKs,
+		PathLookupFunc:        gvkPath,
+		ReversePathLookupFunc: gvkReversePath,
+		CRDPathGenFunc:        crdPath,
 	}
 	objectPath, err := octant.NewObjectPath(objectPathConfig)
 	if err != nil {

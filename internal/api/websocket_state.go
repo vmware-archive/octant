@@ -40,7 +40,7 @@ func defaultStateManagers(clientID string, dashConfig config.Dash) []StateManage
 	logger := dashConfig.Logger().With("client-id", clientID)
 
 	return []StateManager{
-		NewContentManager(dashConfig.ModuleManager(), logger),
+		NewContentManager(dashConfig.ModuleManager(), dashConfig, logger),
 		NewHelperStateManager(dashConfig),
 		NewFilterManager(),
 		NewNavigationManager(dashConfig),

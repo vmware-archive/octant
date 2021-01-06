@@ -119,3 +119,7 @@ func (ModuleProxy) RemoveCRD(ctx context.Context, crd *unstructured.Unstructured
 func (ModuleProxy) ResetCRDs(ctx context.Context) error {
 	return nil
 }
+
+func (ModuleProxy) GvkFromPath(contentPath, namespace string) (schema.GroupVersionKind, error) {
+	return schema.GroupVersionKind{}, nil
+}

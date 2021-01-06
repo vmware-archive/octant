@@ -3,7 +3,7 @@
 //
 
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { PathItem } from '../../../models/content';
+import { LinkView, View } from '../../../models/content';
 
 @Component({
   selector: 'app-breadcrumb',
@@ -11,20 +11,21 @@ import { PathItem } from '../../../models/content';
   styleUrls: ['./breadcrumb.component.scss'],
 })
 export class BreadcrumbComponent implements OnChanges {
-  @Input() path: PathItem[];
+  @Input() path: View[];
   header: string;
 
   constructor() {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.path.currentValue) {
-      const currentPath = changes.path.currentValue as PathItem[];
-      this.header =
-        currentPath.length > 0 ? currentPath[currentPath.length - 1].title : '';
+      const currentPath = changes.path.currentValue as View[];
+      const last: LinkView = currentPath[currentPath.length - 1] as LinkView;
+
+      this.header = currentPath.length > 0 ? last.config.value : '';
     }
   }
 
-  identifyPath(index: number, item: PathItem) {
-    return `${item.title}-${index}`;
+  identifyPath(index: number, item: View) {
+    return `${item.metadata.title}-${index}`;
   }
 }

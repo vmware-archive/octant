@@ -184,6 +184,8 @@
     "src//app/modules/shared/components/presentation/button-group/button-group.component.ts",
     "src//app/modules/shared/components/presentation/donut-chart/donut-chart.component.spec.ts",
     "src//app/modules/shared/components/presentation/donut-chart/donut-chart.component.ts",
+    "src//app/modules/shared/components/presentation/dropdown/dropdown.component.ts",
+    "src//app/modules/shared/components/presentation/dropdown/dropdown.component.spec.ts",
     "src//app/modules/shared/shared.module.ts",
     "src//app/modules/shared/pod-logs/pod-logs.service.ts",
     "src//app/modules/shared/pod-logs/pod-logs.service.spec.ts",

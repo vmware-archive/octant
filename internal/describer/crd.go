@@ -66,12 +66,10 @@ func (c *crd) Describe(ctx context.Context, namespace string, options Options) (
 		return component.EmptyContentResponse, fmt.Errorf("load custom resource: %w", err)
 	}
 
-	crd := resp.CustomResourceDefinition
 	object := resp.CustomResource
-
 	name := fmt.Sprintf("%s (%s)", object.GetName(), object.GroupVersionKind().Version)
-	title := getCrdTitle(namespace, crd, name)
 
+	title := component.Title(component.NewText(name))
 	cr := component.NewContentResponse(title)
 
 	generatorConfig := TabsGeneratorConfig{

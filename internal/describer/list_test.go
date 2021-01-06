@@ -16,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
+	moduleFake "github.com/vmware-tanzu/octant/internal/module/fake"
 	printerFake "github.com/vmware-tanzu/octant/internal/printer/fake"
 	"github.com/vmware-tanzu/octant/internal/testutil"
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -37,7 +38,11 @@ func TestListDescriber(t *testing.T) {
 	ctx := context.Background()
 	namespace := "default"
 
+	moduleManager := moduleFake.NewMockManagerInterface(controller)
+	moduleManager.EXPECT().ModuleForContentPath(gomock.Any()).AnyTimes()
+
 	dashConfig := configFake.NewMockDash(controller)
+	dashConfig.EXPECT().ModuleManager().Return(moduleManager).AnyTimes()
 
 	podListTable := createPodTable(*pod)
 
