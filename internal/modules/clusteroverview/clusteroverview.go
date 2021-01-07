@@ -135,15 +135,14 @@ func (co *ClusterOverview) Content(ctx context.Context, contentPath string, opts
 		return component.EmptyContentResponse, err
 	}
 
-	clusterClient := co.DashConfig.ClusterClient()
 	objectStore := co.DashConfig.ObjectStore()
 
-	discoveryInterface, err := clusterClient.DiscoveryClient()
+	discoveryClient, err := co.DashConfig.ClusterClient().DiscoveryClient()
 	if err != nil {
 		return component.EmptyContentResponse, err
-	}
 
-	q := queryer.New(objectStore, discoveryInterface)
+	}
+	q := queryer.New(objectStore, discoveryClient)
 
 	p := printer.NewResource(co.DashConfig)
 	if err := printer.AddHandlers(p); err != nil {

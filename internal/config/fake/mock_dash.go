@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	cluster "github.com/vmware-tanzu/octant/internal/cluster"
 	config "github.com/vmware-tanzu/octant/internal/config"
@@ -226,6 +227,21 @@ func (m *MockDash) PortForwarder() portforward.PortForwarder {
 func (mr *MockDashMockRecorder) PortForwarder() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PortForwarder", reflect.TypeOf((*MockDash)(nil).PortForwarder))
+}
+
+// ServerPreferredResources mocks base method
+func (m *MockDash) ServerPreferredResources() ([]*v1.APIResourceList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServerPreferredResources")
+	ret0, _ := ret[0].([]*v1.APIResourceList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServerPreferredResources indicates an expected call of ServerPreferredResources
+func (mr *MockDashMockRecorder) ServerPreferredResources() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServerPreferredResources", reflect.TypeOf((*MockDash)(nil).ServerPreferredResources))
 }
 
 // UseContext mocks base method

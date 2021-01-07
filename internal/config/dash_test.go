@@ -7,16 +7,22 @@ package config
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/discovery"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
 	internalErr "github.com/vmware-tanzu/octant/internal/errors"
+	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/internal/log"
 	moduleFake "github.com/vmware-tanzu/octant/internal/module/fake"
 	portForwardFake "github.com/vmware-tanzu/octant/internal/portforward/fake"
@@ -109,6 +115,63 @@ func TestLiveConfig(t *testing.T) {
 	objectPath, err := config.ObjectPath("", "", "", "")
 	require.NoError(t, err)
 	assert.Equal(t, "/pod", objectPath)
+}
+
+func TestServerPreferredResources(t *testing.T) {
+	tests := []struct {
+		name         string
+		resourceList []*metav1.APIResourceList
+		errGroup     error
+		returnErr    bool
+	}{
+		{
+			name: "all groups discovered, no error is returned",
+			resourceList: []*metav1.APIResourceList{
+				{GroupVersion: "groupB/v1"},
+				{GroupVersion: "apps/v1beta1"},
+				{GroupVersion: "extensions/v1beta1"},
+			},
+		},
+		{
+			name: "failed to discover some groups, no error is returned",
+			resourceList: []*metav1.APIResourceList{
+				{GroupVersion: "groupB/v1"},
+				{GroupVersion: "apps/v1beta1"},
+				{GroupVersion: "extensions/v1beta1"},
+			},
+			errGroup: &discovery.ErrGroupDiscoveryFailed{
+				Groups: map[schema.GroupVersion]error{
+					gvk.PodMetrics.GroupVersion(): errors.New("server currently unavailable"),
+				},
+			},
+		},
+		{
+			name:      "non ErrGroupDiscoveryFailed error, returns error",
+			errGroup:  fmt.Errorf("Generic error"),
+			returnErr: true,
+		},
+	}
+
+	logger := log.NopLogger()
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			controller := gomock.NewController(t)
+			defer controller.Finish()
+
+			discoveryClient := clusterFake.NewMockDiscoveryInterface(controller)
+			discoveryClient.EXPECT().ServerPreferredResources().Return(test.resourceList, test.errGroup)
+
+			resources, err := ServerPreferredResources(discoveryClient, logger)
+			if test.returnErr {
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+			}
+
+			assert.Equal(t, test.resourceList, resources)
+		})
+	}
 }
 
 type stubCRDWatcher struct{}

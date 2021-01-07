@@ -117,12 +117,7 @@ func loadAppObjects(ctx context.Context, dashConfig config.Dash, namespace, name
 		childrenProcessed <- true
 	}()
 
-	discoveryClient, err := dashConfig.ClusterClient().DiscoveryClient()
-	if err != nil {
-		return nil, err
-	}
-
-	resourceLists, err := discoveryClient.ServerPreferredResources()
+	resourceLists, err := dashConfig.ServerPreferredResources()
 	if err != nil {
 		return nil, err
 	}

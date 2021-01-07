@@ -33,7 +33,9 @@ import (
 	"k8s.io/client-go/discovery"
 	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
+	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/gvk"
+	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	dashstrings "github.com/vmware-tanzu/octant/internal/util/strings"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
@@ -211,8 +213,9 @@ func (osq *ObjectStoreQueryer) Children(ctx context.Context, owner *unstructured
 		}
 	}
 
-	resourceLists, err := osq.discoveryClient.ServerPreferredResources()
-	if err != nil && !osq.IsMetricsDiscoveryErr(err) {
+	logger := log.From(ctx)
+	resourceLists, err := config.ServerPreferredResources(osq.discoveryClient, logger)
+	if err != nil {
 		return nil, fmt.Errorf("objectStoreQueryer children: %w", err)
 	}
 

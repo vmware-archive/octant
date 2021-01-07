@@ -103,12 +103,7 @@ func CustomResourceDefinitionVersionList(
 		return nil, err
 	}
 
-	discoveryClient, err := options.DashConfig.ClusterClient().DiscoveryClient()
-	if err != nil {
-		return nil, fmt.Errorf("discovery client: %w", err)
-	}
-
-	resourceLists, err := discoveryClient.ServerPreferredResources()
+	resourceLists, err := options.DashConfig.ServerPreferredResources()
 	if err != nil {
 		return nil, fmt.Errorf("preferred resources: %w", err)
 	}

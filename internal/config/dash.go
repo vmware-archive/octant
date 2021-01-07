@@ -13,7 +13,9 @@ import (
 
 	"github.com/pkg/errors"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/discovery"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	internalErr "github.com/vmware-tanzu/octant/internal/errors"
@@ -82,6 +84,8 @@ type Dash interface {
 	octant.Storage
 
 	ClusterClient() cluster.ClientInterface
+
+	ServerPreferredResources() ([]*metav1.APIResourceList, error)
 
 	CRDWatcher() CRDWatcher
 
@@ -205,6 +209,29 @@ func (l *Live) PluginManager() plugin.ManagerInterface {
 // PortForwarder returns a port forwarder.
 func (l *Live) PortForwarder() portforward.PortForwarder {
 	return l.portForwarder
+}
+
+// ServerPreferredResources returns an array APIResourceList and logs warnings for ErrGroupDiscoveryFailed
+func (l *Live) ServerPreferredResources() ([]*metav1.APIResourceList, error) {
+	discoveryClient, err := l.clusterClient.DiscoveryClient()
+	if err != nil {
+		return nil, err
+	}
+	return ServerPreferredResources(discoveryClient, l.Logger())
+}
+
+// ServerPreferredResources returns an array APIResourceList and logs warnings for ErrGroupDiscoveryFailed
+func ServerPreferredResources(discoveryClient discovery.DiscoveryInterface, logger log.Logger) ([]*metav1.APIResourceList, error) {
+	preferredResources, err := discoveryClient.ServerPreferredResources()
+	if err != nil {
+		if discoveryErr, ok := err.(*discovery.ErrGroupDiscoveryFailed); ok {
+			for groupVersion, err := range discoveryErr.Groups {
+				logger.Debugf("Failed to discover group: %v: %w", groupVersion, err)
+			}
+			return preferredResources, nil
+		}
+	}
+	return preferredResources, err
 }
 
 // UseContext switches context name. This process should have synchronously.
