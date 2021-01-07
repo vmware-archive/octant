@@ -36,6 +36,12 @@ func TestStreamer_Stream(t *testing.T) {
 				ID: "1",
 			}
 
+			want := event.Event{
+				Type: event.EventTypeAppLogs,
+				Data: []Message{message},
+				Err:  nil,
+			}
+
 			f := newStubMessageListenerFactory()
 			s := NewStreamer(f)
 
@@ -45,20 +51,16 @@ func TestStreamer_Stream(t *testing.T) {
 			ch, cancel := s.Stream(readyCh)
 
 			done := make(chan struct{}, 1)
+			var e event.Event
 			go func() {
-				e := <-ch
-				want := event.Event{
-					Type: event.EventTypeAppLogs,
-					Data: []Message{message},
-					Err:  nil,
-				}
-				require.Equal(t, want, e)
-				close(done)
+				defer close(done)
+				e = <-ch
 			}()
 
 			f.ch <- message
 
 			<-done
+			require.Equal(t, want, e)
 			cancel()
 
 		})
