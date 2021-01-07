@@ -8,7 +8,6 @@ package applications
 import (
 	"context"
 	"path"
-	"path/filepath"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -86,7 +85,7 @@ func (m *Module) ContentPath() string {
 
 // Navigation generates navigation entries for the module.
 func (m *Module) Navigation(ctx context.Context, namespace, root string) ([]navigation.Navigation, error) {
-	rootPath := filepath.Join(m.ContentPath(), "namespace", namespace)
+	rootPath := path.Join(m.ContentPath(), "namespace", namespace)
 
 	applications, err := listApplications(ctx, m.DashConfig.ObjectStore(), namespace)
 	if err != nil {
