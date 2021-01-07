@@ -122,7 +122,6 @@ func (lm *Streamer) Stream(readyCh <-chan struct{}) (<-chan event.Event, func())
 		}
 
 		<-readyCh
-		ch <- lm.createEvent()
 	}()
 
 	lm.listeners[id] = ch
