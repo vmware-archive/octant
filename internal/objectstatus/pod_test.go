@@ -80,6 +80,20 @@ func Test_pod(t *testing.T) {
 			},
 			isErr: true,
 		},
+		{
+			name: "pod has ephemeral containers",
+			init: func(t *testing.T) runtime.Object {
+				objectFile := "pod_ephemeral_container.yaml"
+				return testutil.LoadObjectFromFile(t, objectFile)
+			},
+			expected: ObjectStatus{
+				nodeStatus: component.NodeStatusWarning,
+				Details: []component.Component{
+					component.NewText(""),
+					component.NewText("Ephemeral container is running"),
+				},
+			},
+		},
 	}
 
 	for _, tc := range cases {

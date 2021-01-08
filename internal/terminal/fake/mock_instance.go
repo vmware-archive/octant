@@ -9,6 +9,7 @@ import (
 	time "time"
 
 	gomock "github.com/golang/mock/gomock"
+	discovery "k8s.io/client-go/discovery"
 	remotecommand "k8s.io/client-go/tools/remotecommand"
 
 	terminal "github.com/vmware-tanzu/octant/internal/terminal"
@@ -199,6 +200,20 @@ func (mr *MockInstanceMockRecorder) ExitMessage() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExitMessage", reflect.TypeOf((*MockInstance)(nil).ExitMessage))
 }
 
+// StreamError mocks base method
+func (m *MockInstance) StreamError() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StreamError")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StreamError indicates an expected call of StreamError
+func (mr *MockInstanceMockRecorder) StreamError() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamError", reflect.TypeOf((*MockInstance)(nil).StreamError))
+}
+
 // CreatedAt mocks base method
 func (m *MockInstance) CreatedAt() time.Time {
 	m.ctrl.T.Helper()
@@ -225,6 +240,20 @@ func (m *MockInstance) PTY() terminal.PTY {
 func (mr *MockInstanceMockRecorder) PTY() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PTY", reflect.TypeOf((*MockInstance)(nil).PTY))
+}
+
+// DiscoveryClient mocks base method
+func (m *MockInstance) DiscoveryClient() discovery.DiscoveryInterface {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DiscoveryClient")
+	ret0, _ := ret[0].(discovery.DiscoveryInterface)
+	return ret0
+}
+
+// DiscoveryClient indicates an expected call of DiscoveryClient
+func (mr *MockInstanceMockRecorder) DiscoveryClient() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoveryClient", reflect.TypeOf((*MockInstance)(nil).DiscoveryClient))
 }
 
 // MockPTY is a mock of PTY interface

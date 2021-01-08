@@ -1,0 +1,207 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2020-12-03T01:00:15Z"
+  generateName: nginx-deployment-7b6f485b69-
+  labels:
+    app: nginx
+    pod-template-hash: 7b6f485b69
+  managedFields:
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:generateName: {}
+          f:labels:
+            .: {}
+            f:app: {}
+            f:pod-template-hash: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"b09b6eca-5e74-4c6b-a624-8d34ae26e5f5"}:
+              .: {}
+              f:apiVersion: {}
+              f:blockOwnerDeletion: {}
+              f:controller: {}
+              f:kind: {}
+              f:name: {}
+              f:uid: {}
+        f:spec:
+          f:containers:
+            k:{"name":"nginx"}:
+              .: {}
+              f:image: {}
+              f:imagePullPolicy: {}
+              f:name: {}
+              f:ports:
+                .: {}
+                k:{"containerPort":80,"protocol":"TCP"}:
+                  .: {}
+                  f:containerPort: {}
+                  f:protocol: {}
+                k:{"containerPort":443,"protocol":"TCP"}:
+                  .: {}
+                  f:containerPort: {}
+                  f:protocol: {}
+              f:resources: {}
+              f:terminationMessagePath: {}
+              f:terminationMessagePolicy: {}
+          f:dnsPolicy: {}
+          f:enableServiceLinks: {}
+          f:restartPolicy: {}
+          f:schedulerName: {}
+          f:securityContext: {}
+          f:shareProcessNamespace: {}
+          f:terminationGracePeriodSeconds: {}
+      manager: kube-controller-manager
+      operation: Update
+      time: "2020-12-03T01:00:15Z"
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:status:
+          f:conditions:
+            k:{"type":"ContainersReady"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:status: {}
+              f:type: {}
+            k:{"type":"Initialized"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:status: {}
+              f:type: {}
+            k:{"type":"Ready"}:
+              .: {}
+              f:lastProbeTime: {}
+              f:lastTransitionTime: {}
+              f:status: {}
+              f:type: {}
+          f:containerStatuses: {}
+          f:ephemeralContainerStatuses: {}
+          f:hostIP: {}
+          f:phase: {}
+          f:podIP: {}
+          f:podIPs:
+            .: {}
+            k:{"ip":"10.244.0.20"}:
+              .: {}
+              f:ip: {}
+          f:startTime: {}
+      manager: kubelet
+      operation: Update
+      time: "2020-12-03T01:02:55Z"
+  name: nginx-deployment-7b6f485b69-d9xh7
+  namespace: default
+  ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: nginx-deployment-7b6f485b69
+      uid: b09b6eca-5e74-4c6b-a624-8d34ae26e5f5
+  resourceVersion: "202237"
+  selfLink: /api/v1/namespaces/default/pods/nginx-deployment-7b6f485b69-d9xh7
+  uid: c3385bdc-adcb-435b-99c7-2fb992787e04
+spec:
+  containers:
+    - image: sfoo/nginx-distroless:latest
+      imagePullPolicy: Always
+      name: nginx
+      ports:
+        - containerPort: 80
+          protocol: TCP
+        - containerPort: 443
+          protocol: TCP
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+        - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+          name: default-token-9kxxb
+          readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  ephemeralContainers:
+    - image: debian
+      imagePullPolicy: IfNotPresent
+      name: debug-nginx
+      resources: {}
+      stdin: true
+      targetContainerName: nginx
+      terminationMessagePolicy: File
+      tty: true
+  nodeName: test-control-plane
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  shareProcessNamespace: true
+  terminationGracePeriodSeconds: 30
+  tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+  volumes:
+    - name: default-token-9kxxb
+      secret:
+        defaultMode: 420
+        secretName: default-token-9kxxb
+status:
+  conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2020-12-03T01:00:15Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2020-12-03T01:00:18Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2020-12-03T01:00:18Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2020-12-03T01:00:15Z"
+      status: "True"
+      type: PodScheduled
+  containerStatuses:
+    - containerID: containerd://4cf4cc092374dd03c539979304bafa376feda1d30f5bfb4a13da6743a11f954a
+      image: docker.io/sfoo/nginx-distroless:latest
+      imageID: docker.io/sfoo/nginx-distroless@sha256:06659964d3ac9730d3bdd853f434dfaf5ec351ec8a12a4c35823198014b2853d
+      lastState: {}
+      name: nginx
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2020-12-03T01:00:18Z"
+  ephemeralContainerStatuses:
+    - containerID: containerd://44924c6906dd951ed8f3c4035c62900aade7d0f3e003fe1008d610038b995dda
+      image: docker.io/library/debian:latest
+      imageID: docker.io/library/debian@sha256:e2cc6fb403be437ef8af68bdc3a89fd58e80b4e390c58f14c77c466002391193
+      lastState: {}
+      name: debug-nginx
+      ready: false
+      restartCount: 0
+      state:
+        running:
+          startedAt: "2020-12-03T01:02:54Z"
+  hostIP: 172.18.0.2
+  phase: Running
+  podIP: 10.244.0.20
+  podIPs:
+    - ip: 10.244.0.20
+  qosClass: BestEffort
+  startTime: "2020-12-03T01:00:15Z"

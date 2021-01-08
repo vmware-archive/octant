@@ -7,25 +7,38 @@ package terminalviewer
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/log"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // ToComponent converts an object into a terminal component.
-func ToComponent(ctx context.Context, object runtime.Object, logger log.Logger) (*component.Terminal, error) {
-	yv, err := new(ctx, object, logger)
+func ToComponent(ctx context.Context, object runtime.Object, logger log.Logger, dashConfig config.Dash) (*component.Terminal, error) {
+	ecg, err := NewEphemeralContainerGenerator(ctx, dashConfig, logger, object)
+	if err != nil {
+		return nil, fmt.Errorf("ephemeral container: %w", err)
+	}
+
+	if ecg.FeatureEnabled() {
+		if err := ecg.UpdateObject(ctx, object); err != nil {
+			return nil, err
+		}
+	}
+
+	tv, err := new(ctx, object, logger)
 	if err != nil {
 		return nil, errors.Wrap(err, "create Terminal viewer")
 	}
 
-	return yv.ToComponent()
+	return tv.ToComponent()
 }
 
 // Terminal Viewer is a terminal viewer for objects.
@@ -56,9 +69,25 @@ func (tv *terminalViewer) ToComponent() (*component.Terminal, error) {
 	}
 
 	container := ""
-	containers := []string{}
+
+	var containers []string
+	if len(pod.Spec.EphemeralContainers) > 0 {
+		for _, ec := range pod.Spec.EphemeralContainers {
+			for _, s := range pod.Status.EphemeralContainerStatuses {
+				if s.Name == ec.Name {
+					if s.State.Terminated == nil {
+						containers = append(containers, ec.Name)
+					}
+				}
+			}
+		}
+		container = pod.Spec.EphemeralContainers[0].Name
+	}
+
 	if len(pod.Spec.Containers) > 0 {
-		container = getFirstContainer(pod).Name
+		if container == "" {
+			container = getFirstContainer(pod).Name
+		}
 		for _, c := range pod.Spec.Containers {
 			for _, s := range pod.Status.ContainerStatuses {
 				if s.Name == c.Name {

@@ -130,6 +130,9 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, options Options) (componen
 	if err := ph.Containers(ctx, options); err != nil {
 		return nil, errors.Wrap(err, "print pod containers")
 	}
+	if err := ph.EphemeralContainers(ctx, options); err != nil {
+		return nil, errors.Wrap(err, "print pod ephemeral containers")
+	}
 	if err := ph.Additional(options); err != nil {
 		return nil, errors.Wrap(err, "print pod additional items")
 	}
@@ -681,6 +684,14 @@ func defaultPodConditions(pod *corev1.Pod, options Options) (*component.Table, e
 
 func (p *podHandler) InitContainers(ctx context.Context, options Options) error {
 	return p.containers(ctx, p.pod.Spec.InitContainers, true, options)
+}
+
+func (p *podHandler) EphemeralContainers(ctx context.Context, options Options) error {
+	var containers []corev1.Container
+	for _, container := range p.pod.Spec.EphemeralContainers {
+		containers = append(containers, corev1.Container(container.EphemeralContainerCommon))
+	}
+	return p.containers(ctx, containers, false, options)
 }
 
 func (p *podHandler) containers(ctx context.Context, containers []corev1.Container, isInit bool, options Options) error {
