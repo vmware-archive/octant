@@ -18,6 +18,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/generator"
 	"github.com/vmware-tanzu/octant/internal/module"
 	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/internal/util/path_util"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -85,7 +86,7 @@ func (m *Module) ContentPath() string {
 
 // Navigation generates navigation entries for the module.
 func (m *Module) Navigation(ctx context.Context, namespace, root string) ([]navigation.Navigation, error) {
-	rootPath := path.Join(m.ContentPath(), "namespace", namespace)
+	rootPath := path_util.NamespacedPath(m.ContentPath(), namespace)
 
 	applications, err := listApplications(ctx, m.DashConfig.ObjectStore(), namespace)
 	if err != nil {

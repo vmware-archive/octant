@@ -11,6 +11,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/vmware-tanzu/octant/internal/util/path_util"
+
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 
@@ -41,7 +43,7 @@ type NavigationFactory struct {
 func NewNavigationFactory(namespace string, root string, objectStore store.Store, entries NavigationEntries) *NavigationFactory {
 	var rootPath = root
 	if namespace != "" {
-		rootPath = path.Join(root, "namespace", namespace, "")
+		rootPath = path_util.NamespacedPath(root, namespace, "")
 	}
 	if !strings.HasSuffix(rootPath, "/") {
 		rootPath = rootPath + "/"

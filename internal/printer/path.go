@@ -8,6 +8,8 @@ package printer
 import (
 	"path"
 
+	"github.com/vmware-tanzu/octant/internal/util/path_util"
+
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -53,7 +55,7 @@ func ObjectReferencePath(or corev1.ObjectReference) (string, error) {
 
 	var objectPath string
 	if or.Namespace != "" {
-		objectPath = path.Join("/overview/namespace", or.Namespace, section, or.Name)
+		objectPath = path_util.NamespacedPath("/overview", or.Namespace, section, or.Name)
 	} else {
 		objectPath = path.Join("/overview", section, or.Name)
 	}

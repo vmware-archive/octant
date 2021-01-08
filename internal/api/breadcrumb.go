@@ -14,6 +14,7 @@ import (
 
 	"github.com/vmware-tanzu/octant/internal/module"
 	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/internal/util/path_util"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 
@@ -44,7 +45,7 @@ func GenerateBreadcrumb(cm *ContentManager, contentPath string, state octant.Sta
 		if path.Base(contentPath) == parent.Title || path.Base(parent.Url) == crPath {
 			title = append(title, component.NewText(parent.Title))
 		} else {
-			title = append(title, component.NewLink("", parent.Title, parent.Url), component.NewText(path.Base(contentPath)))
+			title = append(title, component.NewLink("", parent.Title, path_util.PrefixedPath(parent.Url)), component.NewText(path.Base(contentPath)))
 		}
 	} else {
 		gvk, err := cm.moduleManager.GvkFromPath(path.Dir(contentPath), state.GetNamespace())

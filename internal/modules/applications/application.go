@@ -8,8 +8,9 @@ package applications
 import (
 	"context"
 	"fmt"
-	"path"
 	"sort"
+
+	"github.com/vmware-tanzu/octant/internal/util/path_util"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -71,7 +72,7 @@ func (a *application) Title() string {
 }
 
 func (a *application) Path(prefix, namespace string) string {
-	return path.Join("/", prefix, "namespace", namespace, a.Name, a.Instance, a.Version)
+	return path_util.NamespacedPath(path_util.PrefixedPath(prefix), namespace, a.Name, a.Instance, a.Version)
 }
 
 func listApplications(ctx context.Context, objectStore store.Store, namespace string) ([]application, error) {

@@ -3,8 +3,9 @@ package resourceviewer
 import (
 	"context"
 	"fmt"
-	"path"
 	"testing"
+
+	"github.com/vmware-tanzu/octant/internal/util/path_util"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -159,7 +160,7 @@ func TestHandler(t *testing.T) {
 		accessor, err := meta.Accessor(object)
 		require.NoError(t, err)
 		name := accessor.GetName()
-		return component.NewLink("", name, path.Join("/", name))
+		return component.NewLink("", name, path_util.PrefixedPath(name))
 	}
 
 	podStatus1 := component.NewPodStatus()
@@ -344,7 +345,7 @@ func mockLinkPath(t *testing.T, dashConfig *configFake.MockDash, object runtime.
 
 	apiVersion, kind := object.GetObjectKind().GroupVersionKind().ToAPIVersionAndKind()
 
-	label := path.Join("/", accessor.GetName())
+	label := path_util.PrefixedPath(accessor.GetName())
 
 	dashConfig.EXPECT().
 		ObjectPath(accessor.GetNamespace(), apiVersion, kind, accessor.GetName()).
