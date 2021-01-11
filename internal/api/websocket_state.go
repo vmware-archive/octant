@@ -14,6 +14,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/vmware-tanzu/octant/internal/util/path_util"
+
 	"github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/google/uuid"
@@ -188,6 +190,7 @@ func (c *WebsocketState) Dispatch(ctx context.Context, actionName string, payloa
 // SetContentPath sets the content path.
 func (c *WebsocketState) SetContentPath(contentPath string) {
 	if contentPath == "" {
+		contentPath = path_util.NamespacedPath("overview", c.namespace.get())
 		contentPath = path.Join("overview", "namespace", c.namespace.get())
 	} else if c.contentPath.get() == contentPath {
 		return

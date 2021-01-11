@@ -16,6 +16,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vmware-tanzu/octant/internal/util/path_util"
+
 	"contrib.go.opencensus.io/exporter/jaeger"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/soheilhy/cmux"
@@ -508,10 +510,7 @@ func (d *dash) Run(ctx context.Context, startupCh chan bool) error {
 	if d.willOpenBrowser {
 		runURL := dashboardURL
 		if d.browserPath != "" {
-			if !strings.HasPrefix(d.browserPath, "/") {
-				d.browserPath = "/" + d.browserPath
-			}
-			runURL += d.browserPath
+			runURL += path_util.PrefixedPath(d.browserPath)
 		}
 		if err = open.Run(runURL); err != nil {
 			d.logger.Warnf("unable to open browser: %v", err)

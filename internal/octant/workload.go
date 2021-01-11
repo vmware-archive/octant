@@ -8,9 +8,10 @@ package octant
 import (
 	"context"
 	"fmt"
-	"path"
 	"sort"
 	"sync"
+
+	"github.com/vmware-tanzu/octant/internal/util/path_util"
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -301,7 +302,7 @@ func CreateCard(workload *Workload, namespace string) (*component.Card, bool, er
 		supportsMetrics = false
 	}
 
-	cardPath := path.Join("/workloads/namespace", namespace, "detail", workload.Name)
+	cardPath := path_util.NamespacedPath("/workloads", namespace, "detail", workload.Name)
 	cardTitle := component.NewLink("", workload.Name, cardPath)
 
 	card := component.NewCard([]component.TitleComponent{cardTitle})

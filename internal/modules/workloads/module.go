@@ -8,7 +8,8 @@ package workloads
 import (
 	"context"
 	"fmt"
-	"path"
+
+	"github.com/vmware-tanzu/octant/internal/util/path_util"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -99,7 +100,7 @@ func (m *Module) ContentPath() string {
 
 // Navigation returns navigation entries for the module.
 func (m *Module) Navigation(ctx context.Context, namespace, root string) ([]navigation.Navigation, error) {
-	rootPath := path.Join(m.ContentPath(), "namespace", namespace)
+	rootPath := path_util.NamespacedPath(m.ContentPath(), namespace)
 
 	rootNav := navigation.Navigation{
 		Title:    "Applications",
