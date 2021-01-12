@@ -2,7 +2,7 @@
   "name": "dash-frontend",
   "description": "Octant is an extensible platform that provides modules that help developers better understand their Kuberenetes resources.",
   "author": "The Octant Team",
-  "version": "0.0.0",
+  "version": "0.16.3",
   "homepage": "https://octant.dev",
   "repository": {
     "type": "git",

@@ -21,6 +21,12 @@
     "!tsconfig.json",
     "!tslint.json"
   ],
+  "nsis": {
+    "differentialPackage": false
+  },
+  "dmg": {
+    "writeUpdateInfo": false
+  },
   "win": {
     "icon": "dist/dash-frontend/assets/icons/icon.ico",
     "target": ["nsis"]
