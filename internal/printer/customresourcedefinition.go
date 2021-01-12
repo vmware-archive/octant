@@ -13,9 +13,11 @@ import (
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/discovery"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/gvk"
+	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
@@ -110,7 +112,13 @@ func CustomResourceDefinitionVersionList(
 
 	resourceLists, err := discoveryClient.ServerPreferredResources()
 	if err != nil {
-		return nil, fmt.Errorf("preferred resources: %w", err)
+		//TODO: determine the best way to handle these types of errors for all resources, not just metrics.
+		if discovery.IsGroupDiscoveryFailedError(err) && strings.Contains(err.Error(), "metrics") {
+			logger := log.From(ctx)
+			logger.Debugf("preferred resources: %w", err)
+		} else {
+			return nil, fmt.Errorf("preferred resources: %w", err)
+		}
 	}
 
 	groupKind, err := crdTool.GroupKind()
