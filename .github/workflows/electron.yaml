@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/setup-node@v2.1.2
+      - uses: actions/setup-node@v2.1.4
         with:
           node-version: '14'
       - uses: actions/setup-go@v2
@@ -42,12 +42,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           package_root: 'web'
           build_script_name: 'build-electron'
-          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
-      - if: matrix.os == 'windows-latest'
-        name: List releases
-        run: |
-          dir web/release
-      - uses: actions/upload-artifact@v2
-        with:
-          name: electron-artifacts
-          path: web/release/octant*

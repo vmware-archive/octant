@@ -129,14 +129,31 @@ jobs:
           ./build/octant version
       - name: Upload web/rice-box.go
         if: matrix.platform == 'ubuntu-latest'
-        uses: actions/upload-artifact@v2.2.2
+        uses: actions/upload-artifact@v2
         with:
           name: rice-web
           path: web/rice-box.go
+      - if: startsWith(github.ref, 'refs/tags/v')
+        name: Build electron binary
+        env:
+          GOFLAGS: -mod=vendor
+        run: |
+          go run build.go build-electron
+      - if: startsWith(github.ref, 'refs/tags/v')
+        name: Build electron
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          package_root: 'web'
+          build_script_name: 'build-electron'
+      - uses: actions/upload-artifact@v2
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          name: electron-artifacts
+          path: web/release/octant*
 
-
-  release:
-    if: startsWith(github.ref, 'refs/tags/')
+  goreleaser:
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: [bundle_assets, verify_tag]
     runs-on: ubuntu-latest
     container: goreleaser/goreleaser:v0.128.0-cgo
@@ -153,6 +170,41 @@ jobs:
           chown -R $(whoami):$(whoami) .
       - name: Run GoReleaser
         run: |
-          goreleaser --rm-dist
+          goreleaser --skip-publish
+      - uses: actions/upload-artifact@v2
+        with:
+          name: binary-artifacts
+          path: dist
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [goreleaser, bundle_assets]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: binary-artifacts
+          path: dist
+      - uses: actions/download-artifact@v2
+        with:
+          name: electron-artifacts
+          path: web/release
+      - name: Create release
+        # actions/upload-release-asset@v1 does not support glob
+        run: |
+          set -x
+          assets=()
+          for asset in ./dist/*; do
+            if [[ $asset == *.txt ]] || [[ $asset == *.tar.gz ]] || [[ $asset == *.rpm ]] || [[ $asset == *.deb ]] || [[ $asset == *.zip ]]
+              then
+                assets+=("-a" "$asset")
+            fi
+          done
+          for asset in ./web/release/octant*; do
+            shasum -a 256 "$asset" | awk '{sub(/.*\//," ",$2)} 1' >> ./dist/checksums.txt
+            assets+=("-a" "$asset")
+          done
+          hub release create "${assets[@]}" -m "${GITHUB_REF:10}" "${GITHUB_REF:10}" --draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

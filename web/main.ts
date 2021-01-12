@@ -76,8 +76,8 @@ const startBinary = () => {
     serverBinary = path.join(process.resourcesPath, 'extraResources', 'octant');
   }
 
-  const server = child_process.spawn(serverBinary, [], {
-    env: { NODE_ENV: 'production', PATH: process.env.PATH },
+  const server = child_process.spawn(serverBinary, ['--disable-open-browser'], {
+    env: { ...process.env, NODE_ENV: 'production' },
     detached: true,
     stdio: ['ignore', out, err],
   });

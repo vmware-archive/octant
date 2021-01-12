@@ -23,7 +23,7 @@
     "e2e": "ng e2e",
     "prettier": "prettier --write \"src/{app,environments,assets}/**/*{.ts,.js,.json,.css,.scss}\"",
     "electron:serve": "wait-on http-get://localhost:7777 && npm run electron:serve-tsc && electron . --serve",
-    "electron:serve-tsc": "npx tsc -p tsconfig-serve.json",
+    "electron:serve-tsc": "npx tsc -p tsconfig.serve.json",
     "electron:local": "npx tsc main.ts && npx ng build --base-href ./ && npx electron --local .",
     "electron:build": "npm run build-electron && npx electron-builder -p never",
     "//": [
