@@ -3,6 +3,7 @@
 [![Build Status](https://github.com/vmware-tanzu/octant/workflows/preflight-checks/badge.svg)](https://github.com/vmware-tanzu/octant/workflows/preflight-checks/badge.svg)
 ![GitHub release](https://img.shields.io/github/release/vmware-tanzu/octant.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/4142/badge)](https://bestpractices.coreinfrastructure.org/projects/4142)
 
 > A highly extensible platform for developers to better understand the complexity of Kubernetes clusters.
 
