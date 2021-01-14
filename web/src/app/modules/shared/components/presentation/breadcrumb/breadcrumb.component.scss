@@ -19,7 +19,13 @@
 
   .ng-star-inserted {
     .dropdown-link-icon {
+      width: 0.8rem;
+      height: 0.8rem;
       margin-left: 0px;
+    }
+
+    .dropdown-link-icon:hover {
+      color: var(--link-color);
     }
   }
 }
