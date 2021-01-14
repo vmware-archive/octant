@@ -317,6 +317,7 @@ var allowed = []schema.GroupVersionKind{
 }
 
 func (osq *ObjectStoreQueryer) IsMetricsDiscoveryErr(err error) bool {
+	//TODO: determine the best way to handle these types of errors for all resources, not just metrics.
 	return discovery.IsGroupDiscoveryFailedError(err) && strings.Contains(err.Error(), "metrics")
 }
 

@@ -3,6 +3,7 @@ package applications
 import (
 	"context"
 	"sort"
+	"strings"
 
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
@@ -10,10 +11,12 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/discovery"
 
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/describer"
 	"github.com/vmware-tanzu/octant/internal/gvk"
+	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/printer"
 	"github.com/vmware-tanzu/octant/internal/queryer"
 	"github.com/vmware-tanzu/octant/internal/resourceviewer"
@@ -124,7 +127,13 @@ func loadAppObjects(ctx context.Context, dashConfig config.Dash, namespace, name
 
 	resourceLists, err := discoveryClient.ServerPreferredResources()
 	if err != nil {
-		return nil, err
+		//TODO: determine the best way to handle these types of errors for all resources, not just metrics.
+		if discovery.IsGroupDiscoveryFailedError(err) && strings.Contains(err.Error(), "metrics") {
+			logger := log.From(ctx)
+			logger.Debugf("preferred resources: %w", err)
+		} else {
+			return nil, err
+		}
 	}
 
 	var g errgroup.Group
