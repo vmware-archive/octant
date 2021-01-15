@@ -136,7 +136,7 @@ func createLinkDropdown(title LinkDefinition, selection string, items []componen
 	}
 
 	dropdown := component.NewDropdown(title.Title, component.DropdownLink, "", items...)
-	dropdown.SetTitle(append([]component.TitleComponent{}, component.NewLink("", title.Title, title.Url)))
+	dropdown.SetTitle(append([]component.TitleComponent{}, component.NewLink("", title.Title, path_util.PrefixedPath(title.Url))))
 	dropdown.SetSelection(selection)
 	return dropdown
 }
