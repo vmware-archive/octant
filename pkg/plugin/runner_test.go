@@ -7,6 +7,7 @@ package plugin_test
 
 import (
 	"context"
+	"sync"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -25,9 +26,11 @@ import (
 
 func TestDefaultRunner(t *testing.T) {
 	counter := 0
-
+	var m sync.Mutex
 	pr := plugin.DefaultRunner{
 		RunFunc: func(ctx context.Context, name string, gvk schema.GroupVersionKind, object runtime.Object) error {
+			m.Lock()
+			defer m.Unlock()
 			counter++
 			return nil
 		},
