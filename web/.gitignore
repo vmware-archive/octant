@@ -5,6 +5,8 @@
 /tmp
 /out-tsc
 /build
+/release
+/extraResources
 # Only exists if Bazel was run
 /bazel-out
 

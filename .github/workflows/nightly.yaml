@@ -50,10 +50,26 @@ jobs:
           go generate ./web
           go generate ./pkg/plugin/plugin.go
       - name: Upload web/rice-box.go
-        uses: actions/upload-artifact@v2.2.2
+        uses: actions/upload-artifact@v2
         with:
           name: rice-web
           path: web/rice-box.go
+      - name: Build electron binary
+        env:
+          GOFLAGS: -mod=vendor
+        run: |
+          go run build.go build-electron
+      - name: Build electron
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          package_root: 'web'
+          build_script_name: 'build-electron'
+      - uses: google-github-actions/upload-cloud-storage@main
+        with:
+          credentials: ${{ secrets.GOOGLE_APP_JSON }}
+          path: web/release
+          destination: octant-nightlies/electron
 
   push:
     name: Run goreleaser
