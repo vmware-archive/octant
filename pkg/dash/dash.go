@@ -435,7 +435,9 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerO
 		pluginManager,
 		portForwarder,
 		restConfigOptions,
-		buildInfo)
+		buildInfo,
+		false,
+	)
 
 	pluginManager.SetOctantClient(dashConfig)
 

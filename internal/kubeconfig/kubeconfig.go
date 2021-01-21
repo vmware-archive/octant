@@ -83,25 +83,27 @@ func NewKubeConfigContextManager(ctx context.Context, opts ...KubeConfigOption) 
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to load kube config")
 	}
-	var list []Context
+	var contextList []Context
 
 	for name := range config.Contexts {
-		list = append(list, Context{Name: name})
+		contextList = append(contextList, Context{Name: name})
 	}
 
-	sort.Slice(list, func(i, j int) bool {
-		return list[i].Name < list[j].Name
+	sort.Slice(contextList, func(i, j int) bool {
+		return contextList[i].Name < contextList[j].Name
 	})
+
+	contextName := options.ContextName
+	if contextName == "" {
+		contextName = config.CurrentContext
+	}
 
 	return &KubeConfigContextManager{
 		configLoadingRules: &clientcmd.ClientConfigLoadingRules{
 			Precedence: chain,
 		},
-		currentContext: options.ContextName,
-		kubeConfig: &KubeConfig{
-			Contexts:       list,
-			CurrentContext: config.CurrentContext,
-		},
+		currentContext: contextName,
+		contexts:       contextList,
 		clusterClient:  clusterClient,
 		clusterOptions: clusterOptions,
 	}, nil
@@ -110,21 +112,25 @@ func NewKubeConfigContextManager(ctx context.Context, opts ...KubeConfigOption) 
 type KubeConfigContextManager struct {
 	configLoadingRules *clientcmd.ClientConfigLoadingRules
 	currentContext     string
-	kubeConfig         *KubeConfig
+	contexts           []Context
 	clusterClient      cluster.ClientInterface
 	clusterOptions     []cluster.ClusterOption
 }
 
+// Context describes a kube config context.
+type Context struct {
+	Name string `json:"name"`
+}
+
+// UseFSContext is used to indicate a context switch to the file system Kubeconfig context
+const UseFSContext = ""
+
 func (k *KubeConfigContextManager) CurrentContext() string {
-	currentContext := k.currentContext
-	if currentContext == "" {
-		currentContext = k.kubeConfig.CurrentContext
-	}
-	return currentContext
+	return k.currentContext
 }
 
 func (k *KubeConfigContextManager) Contexts() []Context {
-	return k.kubeConfig.Contexts
+	return k.contexts
 }
 
 func (k *KubeConfigContextManager) SwitchContext(ctx context.Context, contextName string) error {
@@ -143,7 +149,7 @@ func (k *KubeConfigContextManager) SwitchContext(ctx context.Context, contextNam
 		return errors.Wrap(err, "unable to create cluster client")
 	}
 
-	if contextName == "" {
+	if contextName == UseFSContext {
 		rawConfig, err := clientConfig.RawConfig()
 		if err != nil {
 			return errors.Wrap(err, "unable to infer context name from kube config")
@@ -157,15 +163,4 @@ func (k *KubeConfigContextManager) SwitchContext(ctx context.Context, contextNam
 
 func (k *KubeConfigContextManager) ClusterClient() cluster.ClientInterface {
 	return k.clusterClient
-}
-
-// KubeConfig describes a kube config for dash.
-type KubeConfig struct {
-	Contexts       []Context
-	CurrentContext string
-}
-
-// Context describes a kube config context.
-type Context struct {
-	Name string `json:"name"`
 }

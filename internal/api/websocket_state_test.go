@@ -252,6 +252,20 @@ func TestWebsocketState_AddFilter(t *testing.T) {
 	assert.Equal(t, expected, got)
 }
 
+func TestWebSocketState_SetContext(t *testing.T) {
+	mocks := newWebsocketStateMocks(t, "default")
+	defer mocks.finish()
+
+	contextName := "fakeContext"
+	mocks.dashConfig.EXPECT().SetContextChosenInUI(gomock.Eq(true))
+	mocks.dashConfig.EXPECT().UseContext(context.TODO(), contextName)
+	mocks.dashConfig.EXPECT().DefaultNamespace().Return("defaultNamespace")
+	mocks.wsClient.EXPECT().Send(gomock.Any()).AnyTimes()
+
+	s := mocks.factory()
+	s.SetContext(contextName)
+}
+
 type websocketStateMocks struct {
 	controller       *gomock.Controller
 	module           *moduleFake.MockModule

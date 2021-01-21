@@ -43,6 +43,18 @@ func Test_SwitchContextUpdatesCurrentContext(t *testing.T) {
 	require.Equal(t, "other-context", kubeConfigs.CurrentContext())
 }
 
+func Test_SwitchContextToEmptyUpdatesCurrentContextFromFileSystem(t *testing.T) {
+	kubeConfigs, err := NewKubeConfigContextManager(
+		context.TODO(),
+		WithKubeConfigList(filepath.Join("testdata", "kubeconfig.yaml")),
+	)
+	require.NoError(t, err)
+
+	kubeConfigs.SwitchContext(context.TODO(), "")
+
+	require.Equal(t, "my-cluster", kubeConfigs.CurrentContext())
+}
+
 func Test_SwitchContextUpdatesClientNamespace(t *testing.T) {
 	kubeConfigs, err := NewKubeConfigContextManager(
 		context.TODO(),

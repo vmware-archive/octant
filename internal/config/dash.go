@@ -25,6 +25,7 @@ import (
 )
 
 //go:generate mockgen -destination=./fake/mock_dash.go -package=fake github.com/vmware-tanzu/octant/internal/config Dash
+//go:generate mockgen -destination=./fake/mock_kubecontextdecorator.go -package=fake github.com/vmware-tanzu/octant/internal/config KubeContextDecorator
 
 // CRDWatcher watches for CRDs.
 type CRDWatcher interface {
@@ -126,6 +127,10 @@ type Dash interface {
 
 	PortForwarder() portforward.PortForwarder
 
+	SetContextChosenInUI(contextChosen bool)
+
+	UseFSContext(ctx context.Context) error
+
 	UseContext(ctx context.Context, contextName string) error
 
 	CurrentContext() string
@@ -141,6 +146,9 @@ type Dash interface {
 	BuildInfo() (string, string, string)
 }
 
+// UseFSContext is used to indicate a context switch to the file system Kubeconfig context
+const UseFSContext = ""
+
 // Live is a live version of dash config.
 type Live struct {
 	kubeContextDecorator KubeContextDecorator
@@ -153,6 +161,7 @@ type Live struct {
 	portForwarder        portforward.PortForwarder
 	restConfigOptions    cluster.RESTConfigOptions
 	buildInfo            BuildInfo
+	contextChosenInUI    bool
 }
 
 var _ Dash = (*Live)(nil)
@@ -169,6 +178,7 @@ func NewLiveConfig(
 	portForwarder portforward.PortForwarder,
 	restConfigOptions cluster.RESTConfigOptions,
 	buildInfo BuildInfo,
+	contextChosenInUI bool,
 ) *Live {
 	l := &Live{
 		kubeContextDecorator: kubeContextDecorator,
@@ -181,6 +191,7 @@ func NewLiveConfig(
 		portForwarder:        portForwarder,
 		restConfigOptions:    restConfigOptions,
 		buildInfo:            buildInfo,
+		contextChosenInUI:    contextChosenInUI,
 	}
 	objectStore.RegisterOnUpdate(func(store store.Store) {
 		l.objectStore = store
@@ -229,8 +240,20 @@ func (l *Live) PortForwarder() portforward.PortForwarder {
 	return l.portForwarder
 }
 
+func (l *Live) SetContextChosenInUI(contextChosen bool) {
+	l.contextChosenInUI = contextChosen
+}
+
+func (l *Live) UseFSContext(ctx context.Context) error {
+	return l.UseContext(ctx, UseFSContext)
+}
+
 // UseContext switches context name. This process should have synchronously.
 func (l *Live) UseContext(ctx context.Context, contextName string) error {
+	if l.contextChosenInUI && contextName == UseFSContext {
+		contextName = l.CurrentContext()
+	}
+
 	err := l.kubeContextDecorator.SwitchContext(ctx, contextName)
 	if err != nil {
 		return err

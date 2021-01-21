@@ -345,6 +345,8 @@ func (c *WebsocketState) SetFilters(filters []octant.Filter) {
 
 // SetContext sets the Kubernetes context.
 func (c *WebsocketState) SetContext(requestedContext string) {
+	c.dashConfig.SetContextChosenInUI(true)
+
 	if err := c.dashConfig.UseContext(context.TODO(), requestedContext); err != nil {
 		c.dashConfig.Logger().WithErr(err).Errorf("update context")
 	}

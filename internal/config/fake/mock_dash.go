@@ -229,6 +229,18 @@ func (mr *MockDashMockRecorder) PortForwarder() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PortForwarder", reflect.TypeOf((*MockDash)(nil).PortForwarder))
 }
 
+// SetContextChosenInUI mocks base method
+func (m *MockDash) SetContextChosenInUI(arg0 bool) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetContextChosenInUI", arg0)
+}
+
+// SetContextChosenInUI indicates an expected call of SetContextChosenInUI
+func (mr *MockDashMockRecorder) SetContextChosenInUI(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetContextChosenInUI", reflect.TypeOf((*MockDash)(nil).SetContextChosenInUI), arg0)
+}
+
 // UseContext mocks base method
 func (m *MockDash) UseContext(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
@@ -241,6 +253,20 @@ func (m *MockDash) UseContext(arg0 context.Context, arg1 string) error {
 func (mr *MockDashMockRecorder) UseContext(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UseContext", reflect.TypeOf((*MockDash)(nil).UseContext), arg0, arg1)
+}
+
+// UseFSContext mocks base method
+func (m *MockDash) UseFSContext(arg0 context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UseFSContext", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UseFSContext indicates an expected call of UseFSContext
+func (mr *MockDashMockRecorder) UseFSContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UseFSContext", reflect.TypeOf((*MockDash)(nil).UseFSContext), arg0)
 }
 
 // Validate mocks base method

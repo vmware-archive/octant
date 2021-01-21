@@ -70,11 +70,9 @@ func TestConfigWatcher_Watch(t *testing.T) {
 
 	watcherConfig := fake.NewMockWatcherConfig(controller)
 
-	watcherConfig.EXPECT().CurrentContext().Return("name")
-
 	ch := make(chan bool, 1)
-	watcherConfig.EXPECT().UseContext(gomock.Any(), "name").
-		DoAndReturn(func(_ context.Context, _ string) error {
+	watcherConfig.EXPECT().UseFSContext(gomock.Any()).
+		DoAndReturn(func(_ context.Context) error {
 			ch <- true
 			return nil
 		})
