@@ -58,7 +58,7 @@ function createWindow(): BrowserWindow {
   return win;
 }
 
-const startBinary = () => {
+const startBinary = (port: number) => {
   const tmpPath = path.join(os.tmpdir(), 'octant');
   fs.mkdir(path.join(tmpPath), { recursive: true }, (err) => {
     if (err) {
@@ -77,7 +77,7 @@ const startBinary = () => {
   }
 
   const server = child_process.spawn(serverBinary, ['--disable-open-browser'], {
-    env: { ...process.env, NODE_ENV: 'production' },
+    env: { ...process.env, NODE_ENV: 'production', OCTANT_LISTENER_ADDR: 'localhost:' + port },
     detached: true,
     stdio: ['ignore', out, err],
   });
@@ -90,15 +90,19 @@ try {
   app.on('before-quit', () => {
     process.kill(serverPid, 'SIGHUP');
   });
-  // This method will be called when Electron has finished
-  // initialization and is ready to create browser windows.
-  // Some APIs can only be used after this event occurs.
-  // Added 400 ms to fix the black background issue while using transparent window.
-  // More detais at https://github.com/electron/electron/issues/15947
-  app.on('ready', () => {
-    startBinary();
-    setTimeout(createWindow, 400);
-    session.defaultSession.webRequest.onBeforeSendHeaders({ urls: ['ws://localhost:7777/api/v1/stream'] }, (details, callback) => {
+
+  app.on('ready', async () => {
+    const getPort = require('get-port');
+    const port = await getPort();
+    startBinary(port);
+    const w = createWindow();
+    w.webContents.on('dom-ready', () => {
+      w.webContents.send('port-message', port);
+    });
+
+    // In event of a black background issue: https://github.com/electron/electron/issues/15947
+    //setTimeout(createWindow, 400);
+    session.defaultSession.webRequest.onBeforeSendHeaders({ urls: ['ws://localhost:' + port + '/api/v1/stream'] }, (details, callback) => {
       details.requestHeaders['Origin'] = null;
       callback({ cancel: false, requestHeaders: details.requestHeaders });
     });

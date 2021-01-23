@@ -203,9 +203,9 @@ export class WebsocketService implements BackendService {
   }
 
   websocketURI(): string {
-    // TODO: https://github.com/vmware-tanzu/octant/issues/944
     if (this.electronService.isElectron()) {
-      return 'ws://localhost:7777/api/v1/stream';
+      const port = this.electronService.port();
+      return 'ws://localhost:' + port + '/api/v1/stream';
     }
 
     const loc = this.window.location;
