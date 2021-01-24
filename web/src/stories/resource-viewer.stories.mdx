@@ -1,0 +1,113 @@
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs/blocks';
+import { object, withKnobs } from '@storybook/addon-knobs';
+import { ResourceViewerComponent } from "../app/modules/shared/components/presentation/resource-viewer/resource-viewer.component";
+
+export const resourceViewerDocs = {}
+export const resourceViewerView = {
+  config: {
+    edges: {
+      a: [
+        {
+          node: 'b',
+          edge: 'implicit',
+        },
+        {
+          node: 'c',
+          edge: 'explicit',
+        },
+      ],
+      c: [
+        {
+          node: 'd',
+          edge: 'explicit',
+        },
+      ],
+    },
+    nodes: {
+      a: {
+        name: '1',
+        apiVersion: 'v1',
+        kind: 'Pod',
+        status: 'ok',
+        details: [
+          {
+            metadata: {
+              type: 'text',
+            },
+            config: {
+              value: '**hello** in markdown',
+              isMarkdown: true,
+            },
+          },
+        ],
+        path: {
+          config: {
+            value: 'a',
+            ref: '/a',
+          },
+          metadata: {
+            type: 'link',
+            title: [
+              {
+                metadata: { type: 'text' },
+                config: { value: '' },
+              },
+            ],
+          },
+        },
+      },
+      b: {
+        name: '2',
+        apiVersion: 'v1',
+        kind: 'ServiceAccount',
+        status: 'warning',
+        details: [
+          {
+            metadata: {
+              type: 'text',
+            },
+            config: {
+              value: 'hello world',
+            },
+          },
+        ],
+      },
+      c: {
+        name: '3',
+        apiVersion: 'apps/v1',
+        kind: 'ReplicaSet',
+        status: 'error',
+      },
+      d: {
+        name: '4',
+        apiVersion: 'apps/v1',
+        kind: 'Deployment',
+        status: 'ok',
+      },
+    },
+  },
+  metadata: {
+    type: 'resourceViewer',
+  },
+}
+
+<h1>Resource viewer</h1>
+<h2>Description</h2>
+
+<p></p>
+
+<Meta title="Components/Resource Viewer" component={ResourceViewerComponent} />
+
+<Canvas withToolbar>
+  <Story name="Resource Viewer component" parameters={{ docs: resourceViewerDocs }}>
+  {{
+    props: {
+      view: object('View', resourceViewerView)
+    },
+    component: ResourceViewerComponent,
+  }}
+  </Story>
+</Canvas>
+
+<h2>Props</h2>
+<ArgsTable of={ResourceViewerComponent} />
