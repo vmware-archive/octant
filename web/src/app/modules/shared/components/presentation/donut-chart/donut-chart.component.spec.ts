@@ -34,7 +34,16 @@ describe('DonutChartComponent', () => {
         type: 'donutChart',
       },
       config: {
-        segments: [],
+        segments: [
+          {
+            count: 3,
+            status: 'ok',
+          },
+          {
+            count: 1,
+            status: 'error',
+          },
+        ],
         labels: {
           plural: 'items',
           singular: 'item',
@@ -48,5 +57,22 @@ describe('DonutChartComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should have correct segment colors', () => {
+    const root: HTMLElement = fixture.nativeElement;
+    const paths: NodeList = root.querySelectorAll('path');
+
+    expect(component).toBeTruthy();
+    expect(paths.length).toEqual(2);
+    const el1: Element = paths[0] as Element;
+    expect(el1.id).toEqual('path0');
+    expect(el1.attributes.length).toEqual(5);
+    expect(el1.getAttribute('fill')).toEqual('#e12200');
+
+    const el2: Element = paths[1] as Element;
+    expect(el2.id).toEqual('path1');
+    expect(el2.attributes.length).toEqual(5);
+    expect(el2.getAttribute('fill')).toEqual('#60b515');
   });
 });

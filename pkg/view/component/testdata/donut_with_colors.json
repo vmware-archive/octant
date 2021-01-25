@@ -1,0 +1,38 @@
+{
+  "config": {
+    "segments": [
+      {
+        "count": 1,
+        "status": "critical",
+        "color": "purple",
+        "description": "Critical vulnerability issue"
+      },
+      {
+        "count": 3,
+        "status": "high",
+        "color": "red",
+        "description": "High vulnerability issue"
+      },
+      {
+        "count": 7,
+        "status": "medium",
+        "color": "orange",
+        "description": "Medium vulnerability issue"
+      },
+      {
+        "count": 11,
+        "status": "low",
+        "color": "green",
+        "description": "Low vulnerability issue"
+      }
+    ],
+    "labels": {
+      "plural": "Vulnerabilities",
+      "singular": "Vulnerability"
+    },
+    "size": 100
+  },
+  "metadata": {
+    "type": "donutChart"
+  }
+}

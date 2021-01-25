@@ -1,33 +1,26 @@
-<svg
-  [attr.viewBox]="viewBox()"
-  class="donut"
-  [attr.height]="scale"
-  [attr.width]="scale"
->
-  <circle
-    [attr.cx]="center()"
-    [attr.cy]="center()"
-    [attr.r]="radius()"
-    class="donut-ring"
-    fill="transparent"
-  />
-
-  <ng-container
-    *ngFor="let descriptor of descriptors(); trackBy: trackByDescriptor"
-  >
-    <circle
-      [attr.cx]="center()"
-      [attr.cy]="center()"
-      [attr.r]="radius()"
-      [attr.stroke-dasharray]="descriptor.array"
-      [attr.stroke-dashoffset]="descriptor.offset"
-      [ngClass]="descriptor.className"
-      fill="transparent"
-    />
-  </ng-container>
-
-  <g class="chart-text">
-    <text x="50%" y="50%" class="chart-number">{{ itemCount() }}</text>
-    <text x="50%" y="50%" class="chart-label">{{ itemLabel() }}</text>
-  </g>
-</svg>
+<div class="svg">
+  <svg version="1.1" [attr.width]="scale" [attr.height]="scale" [attr.viewBox]="viewBox()" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="darker-filter">
+        <feColorMatrix
+          color-interpolation-filters="sRGB"
+          type="matrix"
+          values="0.75 0 0 0 0
+                  0 0.75 0 0 0
+                  0 0 0.75 0 0
+                  0 0 0 1 0 "/>
+      </filter>
+    </defs>
+    <g pointer-events="fill">
+      <path *ngFor="let segment of segments;let i = index;trackBy: trackByDescriptor" (mouseenter)="mouseEnterEvent($event,i)" (mouseleave)="mouseLeaveEvent()"
+            [attr.id]="segment?.id"
+            [attr.fill]="segment?.fillColor"  [attr.data-order]="i" [attr.d]="segment?.path"
+      ></path>
+    </g>
+    <g class="donut-text">
+      <text x="50%" y="50%" class="chart-number">{{ this.itemCount() }}</text>
+      <text x="50%" y="50%" class="chart-label">{{ this.itemLabel() }}</text>
+    </g>
+  </svg>
+  <div class="donut-tooltip" *ngIf="selectedSegment >= 0" [ngStyle]="{ 'margin-top': tooltipY, 'margin-left': tooltipX }">{{tooltipText}}</div>
+</div>

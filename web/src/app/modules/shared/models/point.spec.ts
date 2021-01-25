@@ -26,5 +26,18 @@ describe('Point', () => {
       expect(got.x).toBeCloseTo(expected.x);
       expect(got.y).toBeCloseTo(expected.y);
     });
+
+    it('projects a new point given a vector and radian angle', () => {
+      const point = new Point(10, 10);
+      const vector: Vector = {
+        magnitude: (10 * 2) / Math.sqrt(2),
+        angle: (Math.PI / 180) * 45,
+      };
+
+      const expected = new Point(20, 20);
+      const got = point.projectRadian(vector);
+      expect(got.x).toBeCloseTo(expected.x);
+      expect(got.y).toBeCloseTo(expected.y);
+    });
   });
 });

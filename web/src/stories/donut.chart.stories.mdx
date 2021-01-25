@@ -19,10 +19,22 @@ export const donutDocs= { source: { code: `component.DonutChart{
 }`
 }}
 
-export const segment = {
-  count: 3,
-  status: 'ok',
-};
+export const donutWithCustomSegmentsDocs= { source: { code: `component.DonutChart{
+	Config: component.DonutChartConfig{
+		Size: component.DonutChartSizeMedium,
+		Segments: []component.DonutSegment{
+			{
+				Count: 3,
+				Status: component.NodeStatusOK,
+			},
+		},
+		Labels: component.DonutChartLabels{
+			Plural: "Pods",
+			Singular: "Pod",
+		},
+	},
+}`
+}}
 
 export const label = {
   plural: 'Pods',
@@ -31,7 +43,19 @@ export const label = {
 
 export const donutChartView = {
   config: {
-    segments: [segment],
+    segments: [
+    {
+      count: 3,
+      status: 'ok',
+    },
+    {
+      count: 2,
+      status: 'warning',
+    },
+    {
+      count: 1,
+      status: 'error',
+    }],
     labels: label,
     size: 100,
   },
@@ -40,29 +64,151 @@ export const donutChartView = {
   },
 };
 
-<h1>Donut component</h1>
+export const donutChartView2 = {
+  config: {
+    segments: [
+      {
+        count: 1,
+        status: 'critical',
+        color: 'purple',
+        description: 'Critical risk problems'
+      },
+      {
+        count: 3,
+        status: 'high',
+        color: 'red',
+        description: 'High risk problems'
+      },
+      {
+        count: 7,
+        status: 'medium',
+        color: 'orange',
+        description: 'Medium risk problems'
+      },
+      {
+        count: 11,
+        status: 'low',
+        color: 'green',
+        description: 'Low risk problems'
+      },
+     ],
+    labels: {
+      plural: 'Risks',
+      singular: 'Risk',
+    },
+    size: 100,
+    thickness: 20,
+    },
+  metadata: {
+    type: 'donutChart',
+  },
+};
+
+export const donutChartView3 = {
+  config: {
+    segments: [
+      {
+        count: 8,
+        thickness: 30,
+        color: '#A435CB',
+        description: 'Networking errors'
+      },
+      {
+        count: 18,
+        thickness: 20,
+        color: '#1FAECD',
+        description: 'Errors on client side'
+      },
+      {
+        count: 6,
+        thickness: 10,
+        color: ' #EBE54D',
+        description: 'Server side errors'
+      },
+     ],
+    labels: {
+      plural: 'Errors',
+      singular: 'Error',
+    },
+    size: 100,
+    thickness: 20,
+    },
+  metadata: {
+    type: 'donutChart',
+  },
+};
+
+<h1>Donut chart component</h1>
 <h2>Description</h2>
 
-<p>The Donut Chart component is used in Octant's application view
+<p>The Donut chart component is used in Octant's application view
 to show application health and pod count.</p>
-<h2>Example</h2>
+<h2>Standard Donut chart</h2>
 
 <Meta title="Components/Donut" component={DonutChartComponent} />
 
+Donut chart displays data provided as array of segments inside a circular graph.
+Originally Donut chart was used only to visualize the application health,
+so segments with <code>error</code> or <code>warning</code> status have by default padded thickness.
+The chart is using the <code>description</code> field for tooltip if that's provided,
+otherwise it constructs the tooltip based on segment data like in example below.
+
 <Canvas withToolbar>
-  <Story name="Donut component" parameters={{ docs: donutDocs }} height="400px" >
+  <Story name="Donut chart" parameters={{ docs: donutDocs }} height="400px" >
   {{
       props: {
         view:  object('View', donutChartView),
       },
       template: `
-        <div class="main-container" style= "width: 90vh; height: 90vh; margin: auto;">
+        <div class="main-container" style= "width: 90vh; height: 90vh; background-color: '#fafafa'; margin: auto;">
           <app-view-donut-chart [view]="view"></app-view-donut-chart>
         </div>
      `,
       }}
   </Story>
 </Canvas>
+
+<h2>Using custom colors</h2>
+
+By default, segment color is determined based on value of segment status field,
+for example segments with <code>error</code> status are displayed with red background.
+However, that behavior can be overridden if color info is provided for on a segment level.
+
+<Canvas withToolbar>
+  <Story name="Donut chart with custom colors" parameters={{ docs: donutWithCustomSegmentsDocs }} height="400px" >
+  {{
+      props: {
+        view:  object('View', donutChartView2),
+      },
+      template: `
+        <div class="main-container" style= "width: 90vh; height: 90vh; background-color: '#fafafa'; margin: auto;">
+          <app-view-donut-chart [view]="view"></app-view-donut-chart>
+        </div>
+     `,
+      }}
+  </Story>
+</Canvas>
+
+
+<h2>Using variable segment thickness</h2>
+It is also possible to change the thickness,
+both globally for all segments or individually for each segment like in this example:
+
+<Canvas withToolbar>
+  <Story name="Donut chart with custom thickness" parameters={{ docs: donutWithCustomSegmentsDocs }} height="400px" >
+  {{
+      props: {
+        view:  object('View', donutChartView3),
+      },
+      template: `
+        <div class="main-container" style= "width: 90vh; height: 90vh; background-color: '#fafafa'; margin: auto;">
+          <app-view-donut-chart [view]="view"></app-view-donut-chart>
+        </div>
+     `,
+      }}
+  </Story>
+</Canvas>
+
 
 <h2>Props</h2>
 <ArgsTable of={DonutChartComponent} />

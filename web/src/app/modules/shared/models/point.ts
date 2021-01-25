@@ -18,4 +18,11 @@ export class Point {
 
     return new Point(newX, newY);
   }
+
+  projectRadian(vector: Vector): Point {
+    const newX = this.x + Math.cos(vector.angle) * vector.magnitude;
+    const newY = this.y + Math.sin(vector.angle) * vector.magnitude;
+
+    return new Point(newX, newY);
+  }
 }
