@@ -2,6 +2,7 @@ package objectvisitor_test
 
 import (
 	"context"
+	"sync"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -65,10 +66,13 @@ func TestService_Visit(t *testing.T) {
 		Return(nil)
 
 	var visited []unstructured.Unstructured
+	var m sync.Mutex
 	visitor := fake.NewMockVisitor(controller)
 	visitor.EXPECT().
 		Visit(gomock.Any(), gomock.Any(), handler, gomock.Any()).
 		DoAndReturn(func(ctx context.Context, object *unstructured.Unstructured, handler objectvisitor.ObjectHandler, _ bool) error {
+			m.Lock()
+			defer m.Unlock()
 			visited = append(visited, *object)
 			return nil
 		}).
