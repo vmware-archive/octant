@@ -4,7 +4,7 @@
  *
  */
 
-import { app, BrowserWindow, screen, session } from 'electron';
+import { app, BrowserWindow, Menu, screen, session, shell } from 'electron';
 import * as path from 'path';
 import * as child_process from 'child_process';
 import * as process from 'process';
@@ -16,6 +16,42 @@ let serverPid: any = null;
 
 const args = process.argv.slice(1);
 const local = args.some((val) => val === '--local');
+
+const template: Electron.MenuItemConstructorOptions[] = [
+  {
+    label: 'Edit',
+    submenu: [
+      { role: 'undo' },
+      { role: 'redo' },
+      { role: 'cut' },
+      { role: 'copy' },
+      { role: 'paste' },
+    ],
+  },
+  {
+    label: 'View',
+    submenu: [
+      { role: 'resetZoom'},
+      { role: 'zoomIn', accelerator: 'CommandOrControl+='},
+      { role: 'zoomOut'},
+      { type: 'separator' },
+      { role: 'togglefullscreen' },
+      { role: 'toggleDevTools' },
+    ],
+  },
+  {
+    label: 'Help',
+    submenu: [
+      {
+        label: 'octant.dev',
+        click() { shell.openExternal('https://octant.dev/'); },
+      },
+    ],
+  },
+];
+
+const menu = Menu.buildFromTemplate(template);
+Menu.setApplicationMenu(menu)
 
 function createWindow(): BrowserWindow {
   const electronScreen = screen;
