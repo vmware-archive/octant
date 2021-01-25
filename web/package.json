@@ -70,6 +70,7 @@
     "d3-graphviz": "^2.6.1",
     "d3-zoom": "^2.0.0",
     "dagre-d3": "^0.6.4",
+    "get-port": "^5.1.1",
     "highlight.js": "^10.2.1",
     "lodash": "^4.17.20",
     "lodash-es": "^4.17.15",
