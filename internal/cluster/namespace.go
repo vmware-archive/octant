@@ -15,17 +15,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
+
+	clusterTypes "github.com/vmware-tanzu/octant/pkg/cluster"
 )
-
-//go:generate mockgen -source=namespace.go -destination=./fake/mock_namespace_interface.go -package=fake github.com/vmware-tanzu/octant/internal/cluster NamespaceInterface
-
-// NamespaceInterface is an interface for querying namespace details.
-type NamespaceInterface interface {
-	Names() ([]string, error)
-	InitialNamespace() string
-	ProvidedNamespaces() []string
-	HasNamespace(namespace string) bool
-}
 
 type namespaceClient struct {
 	restClient         rest.Interface
@@ -34,7 +26,7 @@ type namespaceClient struct {
 	providedNamespaces []string
 }
 
-var _ NamespaceInterface = (*namespaceClient)(nil)
+var _ clusterTypes.NamespaceInterface = (*namespaceClient)(nil)
 
 func newNamespaceClient(dynamicClient dynamic.Interface, restClient rest.Interface, initialNamespace string, providedNamespaces []string) *namespaceClient {
 	return &namespaceClient{

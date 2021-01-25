@@ -14,10 +14,10 @@ import (
 	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	"github.com/vmware-tanzu/octant/pkg/event"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/internal/portforward"
 	"github.com/vmware-tanzu/octant/pkg/action"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
 	"github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )

@@ -30,6 +30,7 @@ import (
 	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
 	internalLog "github.com/vmware-tanzu/octant/internal/log"
+	clusterTypes "github.com/vmware-tanzu/octant/pkg/cluster"
 	"github.com/vmware-tanzu/octant/pkg/log"
 
 	// auth plugins
@@ -39,6 +40,8 @@ import (
 )
 
 //go:generate mockgen -source=cluster.go -destination=./fake/mock_client_interface.go -package=fake github.com/vmware-tanzu/octant/internal/cluster ClientInterface
+//go:generate mockgen -source=../../pkg/cluster/namespace.go -destination=./fake/mock_namespace_interface.go -package=fake github.com/vmware-tanzu/octant/pkg/cluster NamespaceInterface
+//go:generate mockgen -source=../../pkg/cluster/info.go -destination=./fake/mock_info_interface.go -package=fake github.com/vmware-tanzu/octant/pkg/cluster InfoInterface
 //go:generate mockgen -source=../../vendor/k8s.io/client-go/informers/generic.go -destination=./fake/mock_genericinformer.go -package=fake k8s.io/client-go/informers GenericInformer
 //go:generate mockgen -source=../../vendor/k8s.io/client-go/discovery/discovery_client.go -imports=openapi_v2=github.com/googleapis/gnostic/openapiv2 -destination=./fake/mock_discoveryinterface.go -package=fake k8s.io/client-go/discovery DiscoveryInterface
 //go:generate mockgen -source=../../vendor/k8s.io/client-go/kubernetes/clientset.go -destination=./fake/mock_kubernetes_client.go -package=fake -mock_names=Interface=MockKubernetesInterface k8s.io/client-go/kubernetes Interface
@@ -55,8 +58,8 @@ type ClientInterface interface {
 	KubernetesClient() (kubernetes.Interface, error)
 	DynamicClient() (dynamic.Interface, error)
 	DiscoveryClient() (discovery.DiscoveryInterface, error)
-	NamespaceClient() (NamespaceInterface, error)
-	InfoClient() (InfoInterface, error)
+	NamespaceClient() (clusterTypes.NamespaceInterface, error)
+	InfoClient() (clusterTypes.InfoInterface, error)
 	Close()
 	RESTInterface
 }
@@ -183,7 +186,7 @@ func (c *Cluster) KubernetesClient() (kubernetes.Interface, error) {
 }
 
 // NamespaceClient returns a namespace client.
-func (c *Cluster) NamespaceClient() (NamespaceInterface, error) {
+func (c *Cluster) NamespaceClient() (clusterTypes.NamespaceInterface, error) {
 	rc, err := c.RESTClient()
 	if err != nil {
 		return nil, err
@@ -212,7 +215,7 @@ func (c *Cluster) DiscoveryClient() (discovery.DiscoveryInterface, error) {
 }
 
 // InfoClient returns an InfoClient for the cluster.
-func (c *Cluster) InfoClient() (InfoInterface, error) {
+func (c *Cluster) InfoClient() (clusterTypes.InfoInterface, error) {
 	return newClusterInfo(c.clientConfig), nil
 }
 
