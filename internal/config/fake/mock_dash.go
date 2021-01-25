@@ -13,6 +13,7 @@ import (
 	cluster "github.com/vmware-tanzu/octant/internal/cluster"
 	config "github.com/vmware-tanzu/octant/internal/config"
 	errors "github.com/vmware-tanzu/octant/internal/errors"
+	kubeconfig "github.com/vmware-tanzu/octant/internal/kubeconfig"
 	module "github.com/vmware-tanzu/octant/internal/module"
 	portforward "github.com/vmware-tanzu/octant/internal/portforward"
 	log "github.com/vmware-tanzu/octant/pkg/log"
@@ -87,18 +88,32 @@ func (mr *MockDashMockRecorder) ClusterClient() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterClient", reflect.TypeOf((*MockDash)(nil).ClusterClient))
 }
 
-// ContextName mocks base method
-func (m *MockDash) ContextName() string {
+// Contexts mocks base method
+func (m *MockDash) Contexts() []kubeconfig.Context {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContextName")
+	ret := m.ctrl.Call(m, "Contexts")
+	ret0, _ := ret[0].([]kubeconfig.Context)
+	return ret0
+}
+
+// Contexts indicates an expected call of Contexts
+func (mr *MockDashMockRecorder) Contexts() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Contexts", reflect.TypeOf((*MockDash)(nil).Contexts))
+}
+
+// CurrentContext mocks base method
+func (m *MockDash) CurrentContext() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CurrentContext")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// ContextName indicates an expected call of ContextName
-func (mr *MockDashMockRecorder) ContextName() *gomock.Call {
+// CurrentContext indicates an expected call of CurrentContext
+func (mr *MockDashMockRecorder) CurrentContext() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContextName", reflect.TypeOf((*MockDash)(nil).ContextName))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CurrentContext", reflect.TypeOf((*MockDash)(nil).CurrentContext))
 }
 
 // DefaultNamespace mocks base method
@@ -127,20 +142,6 @@ func (m *MockDash) ErrorStore() errors.ErrorStore {
 func (mr *MockDashMockRecorder) ErrorStore() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ErrorStore", reflect.TypeOf((*MockDash)(nil).ErrorStore))
-}
-
-// KubeConfigPath mocks base method
-func (m *MockDash) KubeConfigPath() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "KubeConfigPath")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// KubeConfigPath indicates an expected call of KubeConfigPath
-func (mr *MockDashMockRecorder) KubeConfigPath() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KubeConfigPath", reflect.TypeOf((*MockDash)(nil).KubeConfigPath))
 }
 
 // Logger mocks base method
@@ -228,6 +229,18 @@ func (mr *MockDashMockRecorder) PortForwarder() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PortForwarder", reflect.TypeOf((*MockDash)(nil).PortForwarder))
 }
 
+// SetContextChosenInUI mocks base method
+func (m *MockDash) SetContextChosenInUI(arg0 bool) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetContextChosenInUI", arg0)
+}
+
+// SetContextChosenInUI indicates an expected call of SetContextChosenInUI
+func (mr *MockDashMockRecorder) SetContextChosenInUI(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetContextChosenInUI", reflect.TypeOf((*MockDash)(nil).SetContextChosenInUI), arg0)
+}
+
 // UseContext mocks base method
 func (m *MockDash) UseContext(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
@@ -240,6 +253,20 @@ func (m *MockDash) UseContext(arg0 context.Context, arg1 string) error {
 func (mr *MockDashMockRecorder) UseContext(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UseContext", reflect.TypeOf((*MockDash)(nil).UseContext), arg0, arg1)
+}
+
+// UseFSContext mocks base method
+func (m *MockDash) UseFSContext(arg0 context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UseFSContext", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UseFSContext indicates an expected call of UseFSContext
+func (mr *MockDashMockRecorder) UseFSContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UseFSContext", reflect.TypeOf((*MockDash)(nil).UseFSContext), arg0)
 }
 
 // Validate mocks base method

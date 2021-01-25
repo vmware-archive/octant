@@ -22,15 +22,21 @@ import (
 	"testing"
 	"time"
 
+	v1 "k8s.io/api/authorization/v1"
+
+	"github.com/golang/mock/gomock"
 	"github.com/gorilla/websocket"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/cluster"
+	internalLog "github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/pkg/event"
 
-	pkglog "github.com/vmware-tanzu/octant/pkg/log"
+	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
+	"github.com/vmware-tanzu/octant/pkg/log"
 )
 
 func TestRunner_ValidateKubeconfig(t *testing.T) {
@@ -86,7 +92,7 @@ func TestRunner_ValidateKubeconfig(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			logger := log.NopLogger()
+			logger := internalLog.NopLogger()
 			path, err := ValidateKubeConfig(logger, test.fileList, fs)
 			if test.isErr {
 				require.Error(t, err)
@@ -147,25 +153,69 @@ func TestNewRunnerLoadsValidKubeConfigFilteringNonexistent(t *testing.T) {
 	stubRiceBox("dist/dash-frontend")
 	kubeConfig := tempFile(makeKubeConfig("test-context", srv.URL))
 	defer os.Remove(kubeConfig.Name())
-
 	listener := NewInMemoryListener()
-	cancel, _ := makeRunner(
-		Options{
-			KubeConfig: strings.Join(
-				[]string{
-					"/non/existent/kubeconfig",
-					kubeConfig.Name(),
-				},
-				string(filepath.ListSeparator),
-			),
-			Listener: listener,
-		},
-		log.NopLogger(),
-	)
-	defer cancel()
-	kubeConfigEvent := waitForKubeConfigEvent(listener)
 
-	require.Equal(t, "test-context", kubeConfigEvent.Data.CurrentContext)
+	cancel, err := makeRunner(
+		internalLog.NopLogger(),
+		WithKubeConfig(strings.Join(
+			[]string{
+				"/non/existent/kubeconfig",
+				kubeConfig.Name(),
+			},
+			string(filepath.ListSeparator),
+		)),
+		WithListener(listener),
+	)
+	require.NoError(t, err)
+	defer cancel()
+	kubeConfigEvent, err := waitForEventOfType(listener, event.EventTypeKubeConfig)
+	require.NoError(t, err)
+
+	require.Equal(t, "test-context", kubeConfigEvent.Data["currentContext"].(string))
+}
+
+func TestNewRunnerUsesClusterClient(t *testing.T) {
+	namespace := "foobar-banana"
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+	clusterClient := mockClusterClientReturningNamespace(controller, namespace)
+	listener := NewInMemoryListener()
+
+	logger := internalLog.NopLogger()
+	cancel, err := makeRunner(
+		logger,
+		WithClusterClient(clusterClient),
+		WithListener(listener),
+	)
+	require.NoError(t, err)
+	defer cancel()
+	namespacesEvent, err := waitForEventOfType(listener, event.EventTypeNamespaces)
+	require.NoError(t, err)
+
+	require.Equal(t, []interface{}{namespace}, namespacesEvent.Data["namespaces"].([]interface{}))
+}
+
+func mockClusterClientReturningNamespace(controller *gomock.Controller, namespace string) cluster.ClientInterface {
+	nsClient := clusterFake.NewMockNamespaceInterface(controller)
+	nsClient.EXPECT().InitialNamespace().Return(namespace)
+	nsClient.EXPECT().Names().Return([]string{namespace}, nil)
+	nsClient.EXPECT().ProvidedNamespaces().Return([]string{namespace})
+	ssar := clusterFake.NewMockSelfSubjectAccessReviewInterface(controller)
+	ssar.EXPECT().Create(gomock.Any(), gomock.Any(), gomock.Any()).Return(&v1.SelfSubjectAccessReview{}, nil)
+	authClient := clusterFake.NewMockAuthorizationV1Interface(controller)
+	authClient.EXPECT().SelfSubjectAccessReviews().Return(ssar).MinTimes(1)
+	k8sClient := clusterFake.NewMockKubernetesInterface(controller)
+	k8sClient.EXPECT().AuthorizationV1().Return(authClient).MinTimes(1)
+	clusterClient := clusterFake.NewMockClientInterface(controller)
+	clusterClient.EXPECT().NamespaceClient().Return(nsClient, nil).MinTimes(1)
+	clusterClient.EXPECT().RESTClient().Return(nil, nil)
+	clusterClient.EXPECT().RESTConfig().Return(nil)
+	clusterClient.EXPECT().Resource(gomock.Any()).
+		Return(schema.GroupVersionResource{}, false, nil).
+		MinTimes(1)
+	clusterClient.EXPECT().KubernetesClient().Return(k8sClient, nil).MinTimes(1)
+	clusterClient.EXPECT().DefaultNamespace().Return(namespace)
+	return clusterClient
 }
 
 func TestNewRunnerRunsLoadingAPIWhenStartedWithoutKubeConfig(t *testing.T) {
@@ -174,7 +224,8 @@ func TestNewRunnerRunsLoadingAPIWhenStartedWithoutKubeConfig(t *testing.T) {
 	stubRiceBox("dist/dash-frontend")
 
 	listener := NewInMemoryListener()
-	cancel, _ := makeRunner(Options{Listener: listener}, log.NopLogger())
+	cancel, err := makeRunner(internalLog.NopLogger(), WithListener(listener))
+	require.NoError(t, err)
 	defer cancel()
 	kubeConfig := makeKubeConfig("test-context", srv.URL)
 	websocketWrite(
@@ -190,24 +241,21 @@ func TestNewRunnerRunsLoadingAPIWhenStartedWithoutKubeConfig(t *testing.T) {
 			break
 		}
 	}
-	kubeConfigEvent := waitForKubeConfigEvent(listener)
+	kubeConfigEvent, err := waitForEventOfType(listener, event.EventTypeKubeConfig)
+	require.NoError(t, err)
 
-	require.Equal(t, "test-context", kubeConfigEvent.Data.CurrentContext)
+	require.Equal(t, "test-context", kubeConfigEvent.Data["currentContext"].(string))
 }
 
 func TestNewRunnerShutsDownPluginsWhenStoppedBeforeReceivingKubeConfig(t *testing.T) {
 	stubRiceBox("dist/dash-frontend")
 	listener := NewInMemoryListener()
 	shutdownCh := make(chan bool)
-	options := Options{
-		Listener: listener,
-	}
-	logger := log.NopLogger()
 	ctx, cancel := context.WithCancel(context.Background())
-	runner, err := NewRunner(ctx, logger, options)
+	runner, err := NewRunner(ctx, internalLog.NopLogger(), WithListener(listener))
 	require.NoError(t, err)
 
-	go runner.Start(options, make(chan bool), shutdownCh)
+	go runner.Start(make(chan bool), shutdownCh)
 	cancel()
 
 	select {
@@ -266,31 +314,34 @@ current-context: %s
 `, currentContext, serverAddr, currentContext))
 }
 
-func waitForKubeConfigEvent(listener *inMemoryListener) kubeConfigEvent {
-	var message kubeConfigEvent
+func waitForEventOfType(listener *inMemoryListener, eventType event.EventType) (streamingEvent, error) {
+	var message streamingEvent
 	dialer := websocket.DefaultDialer
 	dialer.NetDial = listener.Dial
-	wsConn, resp, err := dialer.Dial("ws://127.0.0.1:7777/api/v1/stream", nil)
+	wsConn, _, err := dialer.Dial("ws://127.0.0.1:7777/api/v1/stream", nil)
 	if err != nil {
-		fmt.Println(resp)
-		panic(err)
+		return message, err
 	}
 	defer wsConn.Close()
 	for {
-		msgBytes, _ := readNextMessage(wsConn)
-		json.Unmarshal(msgBytes, &message)
-		if message.Type == event.EventTypeKubeConfig {
+		msgBytes, err := readNextMessage(wsConn)
+		if err != nil {
+			return message, err
+		}
+		err = json.Unmarshal(msgBytes, &message)
+		if err != nil {
+			return message, err
+		}
+		if message.Type == eventType {
 			break
 		}
 	}
-	return message
+	return message, nil
 }
 
-type kubeConfigEvent struct {
-	Type event.EventType `json:"type"`
-	Data struct {
-		CurrentContext string `json:"currentContext"`
-	} `json:"data"`
+type streamingEvent struct {
+	Type event.EventType        `json:"type"`
+	Data map[string]interface{} `json:"data"`
 }
 
 func tempFile(contents []byte) *os.File {
@@ -300,13 +351,13 @@ func tempFile(contents []byte) *os.File {
 	return tmpFile
 }
 
-func makeRunner(options Options, logger pkglog.Logger) (context.CancelFunc, error) {
+func makeRunner(logger log.Logger, opts ...RunnerOption) (context.CancelFunc, error) {
 	ctx, cancel := context.WithCancel(context.Background())
-	runner, err := NewRunner(ctx, logger, options)
+	runner, err := NewRunner(ctx, logger, opts...)
 	if err != nil {
 		return cancel, err
 	}
-	go runner.Start(options, make(chan bool), make(chan bool))
+	go runner.Start(make(chan bool), make(chan bool), opts...)
 	return cancel, nil
 }
 

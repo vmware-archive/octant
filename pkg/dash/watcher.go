@@ -77,7 +77,8 @@ func ConfigWatcherFileWatcher(fw FileWatcher) ConfigWatcherOption {
 
 // WatcherConfig is an interface with configuration for ConfigWatcher.
 type WatcherConfig interface {
-	ContextName() string
+	CurrentContext() string
+	UseFSContext(ctx context.Context) error
 	UseContext(ctx context.Context, name string) error
 }
 
@@ -132,7 +133,7 @@ func (cw *ConfigWatcher) Watch(ctx context.Context) {
 			done = true
 			logger.Infof("shutting down config watcher")
 		case _ = <-cw.FileWatcher.Events():
-			if err := cw.watcherConfig.UseContext(ctx, cw.watcherConfig.ContextName()); err != nil {
+			if err := cw.watcherConfig.UseFSContext(ctx); err != nil {
 				logger.WithErr(err).Errorf("reload config")
 			}
 		case err := <-cw.FileWatcher.Errors():

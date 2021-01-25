@@ -80,20 +80,24 @@ func newOctantCmd(version string, gitCommit string, buildTime string) *cobra.Com
 					Time:    buildTime,
 				}
 
-				options := dash.Options{
-					DisableClusterOverview: viper.GetBool("disable-cluster-overview"),
-					EnableOpenCensus:       viper.GetBool("enable-opencensus"),
-					KubeConfig:             viper.GetString("kubeconfig"),
-					Namespace:              viper.GetString("namespace"),
-					Namespaces:             viper.GetStringSlice("namespace-list"),
-					FrontendURL:            viper.GetString("ui-url"),
-					BrowserPath:            viper.GetString("browser-path"),
-					Context:                viper.GetString("context"),
-					ClientQPS:              float32(viper.GetFloat64("client-qps")),
-					ClientBurst:            viper.GetInt("client-burst"),
-					UserAgent:              fmt.Sprintf("octant/%s", version),
-					BuildInfo:              buildInfo,
-					Listener:               listener,
+				options := []dash.RunnerOption{
+					dash.WithKubeConfig(viper.GetString("kubeconfig")),
+					dash.WithNamespace(viper.GetString("namespace")),
+					dash.WithNamespaces(viper.GetStringSlice("namespace-list")),
+					dash.WithFrontendURL(viper.GetString("ui-url")),
+					dash.WithBrowserPath(viper.GetString("browser-path")),
+					dash.WithContext(viper.GetString("context")),
+					dash.WithClientQPS(float32(viper.GetFloat64("client-qps"))),
+					dash.WithClientBurst(viper.GetInt("client-burst")),
+					dash.WithClientUserAgent(fmt.Sprintf("octant/%s", version)),
+					dash.WithBuildInfo(buildInfo),
+					dash.WithListener(listener),
+				}
+				if viper.GetBool("disable-cluster-overview") {
+					options = append(options, dash.WithoutClusterOverview())
+				}
+				if viper.GetBool("enable-opencensus") {
+					options = append(options, dash.WithOpenCensus())
 				}
 
 				klogVerbosity := viper.GetString("klog-verbosity")
@@ -118,13 +122,13 @@ func newOctantCmd(version string, gitCommit string, buildTime string) *cobra.Com
 
 				_ = klogFlagSet.Parse(klogOpts)
 
-				runner, err := dash.NewRunner(ctx, logger, options)
+				runner, err := dash.NewRunner(ctx, logger, options...)
 				if err != nil {
 					golog.Printf("unable to start runner: %v", err)
 					os.Exit(1)
 				}
 
-				runner.Start(options, nil, shutdownCh)
+				runner.Start(nil, shutdownCh, options...)
 
 				runCh <- true
 			}()

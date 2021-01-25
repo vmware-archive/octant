@@ -77,11 +77,9 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("failed to create net listener: %w", err)
 	}
 
-	dashOptions := dash.Options{
-		DisableClusterOverview: false,
-		EnableOpenCensus:       false,
-		UserAgent:              fmt.Sprintf("octant-electron"), // TODO: create proper user agent
-		Listener:               listener,
+	dashOptions := []dash.RunnerOption{
+		dash.WithClientUserAgent("octant-electron"), // TODO: create proper user agent
+		dash.WithListener(listener),
 	}
 	shutdownCh := make(chan bool, 1)
 	startupCh := make(chan bool, 1)
@@ -89,13 +87,13 @@ func run(ctx context.Context) error {
 
 	ctx, cancel := context.WithCancel(ctx)
 
-	runner, err := dash.NewRunner(ctx, logger, dashOptions)
+	runner, err := dash.NewRunner(ctx, logger, dashOptions...)
 	if err != nil {
 		return fmt.Errorf("create octant runner: %w", err)
 	}
 
 	go func() {
-		runner.Start(dashOptions, startupCh, shutdownCh)
+		runner.Start(startupCh, shutdownCh, dashOptions...)
 		runCh <- true
 	}()
 

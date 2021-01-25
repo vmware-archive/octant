@@ -8,6 +8,7 @@ package config
 import (
 	"context"
 
+	"github.com/vmware-tanzu/octant/internal/kubeconfig"
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/pkg/store"
 
@@ -24,11 +25,44 @@ import (
 )
 
 //go:generate mockgen -destination=./fake/mock_dash.go -package=fake github.com/vmware-tanzu/octant/internal/config Dash
+//go:generate mockgen -destination=./fake/mock_kubecontextdecorator.go -package=fake github.com/vmware-tanzu/octant/internal/config KubeContextDecorator
 
 // CRDWatcher watches for CRDs.
 type CRDWatcher interface {
 	Watch(ctx context.Context) error
 	AddConfig(config *CRDWatchConfig) error
+}
+
+// KubeContextDecorator handles context changes
+type KubeContextDecorator interface {
+	SwitchContext(context.Context, string) error
+	ClusterClient() cluster.ClientInterface
+	CurrentContext() string
+	Contexts() []kubeconfig.Context
+}
+
+func StaticClusterClient(client cluster.ClientInterface) *staticClusterClient {
+	return &staticClusterClient{client}
+}
+
+type staticClusterClient struct {
+	cluster.ClientInterface
+}
+
+func (scc *staticClusterClient) SwitchContext(
+	ctx context.Context,
+	contextName string,
+) error {
+	return nil
+}
+func (scc *staticClusterClient) ClusterClient() cluster.ClientInterface {
+	return scc.ClientInterface
+}
+func (scc *staticClusterClient) CurrentContext() string {
+	return ""
+}
+func (scc *staticClusterClient) Contexts() []kubeconfig.Context {
+	return nil
 }
 
 // ObjectHandler is a function that is run when a new object is available.
@@ -93,11 +127,15 @@ type Dash interface {
 
 	PortForwarder() portforward.PortForwarder
 
-	KubeConfigPath() string
+	SetContextChosenInUI(contextChosen bool)
+
+	UseFSContext(ctx context.Context) error
 
 	UseContext(ctx context.Context, contextName string) error
 
-	ContextName() string
+	CurrentContext() string
+
+	Contexts() []kubeconfig.Context
 
 	DefaultNamespace() string
 
@@ -108,52 +146,52 @@ type Dash interface {
 	BuildInfo() (string, string, string)
 }
 
+// UseFSContext is used to indicate a context switch to the file system Kubeconfig context
+const UseFSContext = ""
+
 // Live is a live version of dash config.
 type Live struct {
-	clusterClient      cluster.ClientInterface
-	crdWatcher         CRDWatcher
-	logger             log.Logger
-	moduleManager      module.ManagerInterface
-	objectStore        store.Store
-	errorStore         internalErr.ErrorStore
-	pluginManager      plugin.ManagerInterface
-	portForwarder      portforward.PortForwarder
-	kubeConfigPath     string
-	currentContextName string
-	restConfigOptions  cluster.RESTConfigOptions
-	buildInfo          BuildInfo
+	kubeContextDecorator KubeContextDecorator
+	crdWatcher           CRDWatcher
+	logger               log.Logger
+	moduleManager        module.ManagerInterface
+	objectStore          store.Store
+	errorStore           internalErr.ErrorStore
+	pluginManager        plugin.ManagerInterface
+	portForwarder        portforward.PortForwarder
+	restConfigOptions    cluster.RESTConfigOptions
+	buildInfo            BuildInfo
+	contextChosenInUI    bool
 }
 
 var _ Dash = (*Live)(nil)
 
 // NewLiveConfig creates an instance of Live.
 func NewLiveConfig(
-	clusterClient cluster.ClientInterface,
+	kubeContextDecorator KubeContextDecorator,
 	crdWatcher CRDWatcher,
-	kubeConfigPath string,
 	logger log.Logger,
 	moduleManager module.ManagerInterface,
 	objectStore store.Store,
 	errorStore internalErr.ErrorStore,
 	pluginManager plugin.ManagerInterface,
 	portForwarder portforward.PortForwarder,
-	currentContextName string,
 	restConfigOptions cluster.RESTConfigOptions,
 	buildInfo BuildInfo,
+	contextChosenInUI bool,
 ) *Live {
 	l := &Live{
-		clusterClient:      clusterClient,
-		crdWatcher:         crdWatcher,
-		kubeConfigPath:     kubeConfigPath,
-		logger:             logger,
-		moduleManager:      moduleManager,
-		objectStore:        objectStore,
-		errorStore:         errorStore,
-		pluginManager:      pluginManager,
-		portForwarder:      portForwarder,
-		currentContextName: currentContextName,
-		restConfigOptions:  restConfigOptions,
-		buildInfo:          buildInfo,
+		kubeContextDecorator: kubeContextDecorator,
+		crdWatcher:           crdWatcher,
+		logger:               logger,
+		moduleManager:        moduleManager,
+		objectStore:          objectStore,
+		errorStore:           errorStore,
+		pluginManager:        pluginManager,
+		portForwarder:        portForwarder,
+		restConfigOptions:    restConfigOptions,
+		buildInfo:            buildInfo,
+		contextChosenInUI:    contextChosenInUI,
 	}
 	objectStore.RegisterOnUpdate(func(store store.Store) {
 		l.objectStore = store
@@ -169,7 +207,7 @@ func (l *Live) ObjectPath(namespace, apiVersion, kind, name string) (string, err
 
 // ClusterClient returns a cluster client.
 func (l *Live) ClusterClient() cluster.ClientInterface {
-	return l.clusterClient
+	return l.kubeContextDecorator.ClusterClient()
 }
 
 // CRDWatcher returns a CRD watcher.
@@ -187,11 +225,6 @@ func (l *Live) ErrorStore() internalErr.ErrorStore {
 	return l.errorStore
 }
 
-// KubeConfigPath returns the kube config path.
-func (l *Live) KubeConfigPath() string {
-	return l.kubeConfigPath
-}
-
 // Logger returns a logger.
 func (l *Live) Logger() log.Logger {
 	return l.logger
@@ -207,17 +240,26 @@ func (l *Live) PortForwarder() portforward.PortForwarder {
 	return l.portForwarder
 }
 
+func (l *Live) SetContextChosenInUI(contextChosen bool) {
+	l.contextChosenInUI = contextChosen
+}
+
+func (l *Live) UseFSContext(ctx context.Context) error {
+	return l.UseContext(ctx, UseFSContext)
+}
+
 // UseContext switches context name. This process should have synchronously.
 func (l *Live) UseContext(ctx context.Context, contextName string) error {
-	// TODO: (GuessWhoSamFoo) FromKubeConfig needs a refactor. Initial ns is not needed when changing contexts (GH#362)
-	client, err := cluster.FromKubeConfig(ctx, l.kubeConfigPath, contextName, "", []string{}, l.restConfigOptions)
+	if l.contextChosenInUI && contextName == UseFSContext {
+		contextName = l.CurrentContext()
+	}
+
+	err := l.kubeContextDecorator.SwitchContext(ctx, contextName)
 	if err != nil {
 		return err
 	}
 
-	l.ClusterClient().Close()
-	l.clusterClient = client
-
+	client := l.kubeContextDecorator.ClusterClient()
 	if err := l.objectStore.UpdateClusterClient(ctx, client); err != nil {
 		return err
 	}
@@ -226,7 +268,6 @@ func (l *Live) UseContext(ctx context.Context, contextName string) error {
 		return err
 	}
 
-	l.currentContextName = contextName
 	l.Logger().With("new-kube-context", contextName).Infof("updated kube config context")
 
 	for _, m := range l.moduleManager.Modules() {
@@ -240,9 +281,14 @@ func (l *Live) UseContext(ctx context.Context, contextName string) error {
 	return nil
 }
 
-// ContextName returns the current context name
-func (l *Live) ContextName() string {
-	return l.currentContextName
+// CurrentContext returns the current context name
+func (l *Live) CurrentContext() string {
+	return l.kubeContextDecorator.CurrentContext()
+}
+
+// Contexts returns the set of all contexts
+func (l *Live) Contexts() []kubeconfig.Context {
+	return l.kubeContextDecorator.Contexts()
 }
 
 // DefaultNamespace returns the default namespace for the current cluster..
@@ -252,7 +298,7 @@ func (l *Live) DefaultNamespace() string {
 
 // Validate validates the configuration and returns an error if there is an issue.
 func (l *Live) Validate() error {
-	if l.clusterClient == nil {
+	if l.ClusterClient() == nil {
 		return errors.New("cluster client is nil")
 	}
 

@@ -16,32 +16,17 @@ import (
 	"github.com/stretchr/testify/require"
 
 	dashConfigFake "github.com/vmware-tanzu/octant/internal/config/fake"
-	"github.com/vmware-tanzu/octant/internal/kubeconfig"
-	"github.com/vmware-tanzu/octant/internal/kubeconfig/fake"
 )
 
 func Test_kubeContextGenerator(t *testing.T) {
+	currentContext := "current-context"
 	controller := gomock.NewController(t)
 	defer controller.Finish()
-
-	kc := &kubeconfig.KubeConfig{
-		CurrentContext: "current-context",
-	}
-
-	loader := fake.NewMockLoader(controller)
-	loader.EXPECT().
-		Load("/path").
-		Return(kc, nil)
-
-	configLoaderFuncOpt := func(x *ContextsGenerator) {
-		x.ConfigLoader = loader
-	}
-
 	dashConfig := dashConfigFake.NewMockDash(controller)
-	dashConfig.EXPECT().KubeConfigPath().Return("/path")
-	dashConfig.EXPECT().ContextName().Return("")
+	dashConfig.EXPECT().CurrentContext().Return(currentContext)
+	dashConfig.EXPECT().Contexts().Return(nil)
 
-	kgc := NewContextsGenerator(dashConfig, configLoaderFuncOpt)
+	kgc := NewContextsGenerator(dashConfig)
 
 	assert.Equal(t, "kubeConfig", kgc.Name())
 
@@ -52,7 +37,7 @@ func Test_kubeContextGenerator(t *testing.T) {
 	assert.Equal(t, event.EventTypeKubeConfig, e.Type)
 
 	resp := kubeContextsResponse{
-		CurrentContext: kc.CurrentContext,
+		CurrentContext: currentContext,
 	}
 
 	assert.Equal(t, resp, e.Data)
