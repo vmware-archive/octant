@@ -111,11 +111,20 @@ const startBinary = (port: number) => {
   const out = fs.openSync(path.join(tmpPath, 'api.out.log'), 'a');
   const err = fs.openSync(path.join(tmpPath, 'api.err.log'), 'a');
 
+  let octantFilename = 'octant';
+  if (os.platform() === 'win32') {
+    octantFilename = 'octant.exe';
+  }
+
   let serverBinary: string;
   if (local) {
-    serverBinary = path.join(__dirname, 'extraResources', 'octant');
+    serverBinary = path.join(__dirname, 'extraResources', octantFilename);
   } else {
-    serverBinary = path.join(process.resourcesPath, 'extraResources', 'octant');
+    serverBinary = path.join(
+      process.resourcesPath,
+      'extraResources',
+      octantFilename
+    );
   }
 
   const server = child_process.spawn(serverBinary, ['--disable-open-browser'], {
