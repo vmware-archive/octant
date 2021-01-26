@@ -15,9 +15,13 @@ let win: BrowserWindow = null;
 let serverPid: any = null;
 
 const args = process.argv.slice(1);
-const local = args.some((val) => val === '--local');
+const local = args.some(val => val === '--local');
 
 const template: Electron.MenuItemConstructorOptions[] = [
+  {
+    label: 'File',
+    submenu: [{ label: 'Quit Octant', role: 'close' }],
+  },
   {
     label: 'Edit',
     submenu: [
@@ -31,9 +35,9 @@ const template: Electron.MenuItemConstructorOptions[] = [
   {
     label: 'View',
     submenu: [
-      { role: 'resetZoom'},
-      { role: 'zoomIn', accelerator: 'CommandOrControl+='},
-      { role: 'zoomOut'},
+      { role: 'resetZoom' },
+      { role: 'zoomIn', accelerator: 'CommandOrControl+=' },
+      { role: 'zoomOut' },
       { type: 'separator' },
       { role: 'togglefullscreen' },
       { role: 'toggleDevTools' },
@@ -44,14 +48,16 @@ const template: Electron.MenuItemConstructorOptions[] = [
     submenu: [
       {
         label: 'octant.dev',
-        click() { shell.openExternal('https://octant.dev/'); },
+        click() {
+          shell.openExternal('https://octant.dev/');
+        },
       },
     ],
   },
 ];
 
 const menu = Menu.buildFromTemplate(template);
-Menu.setApplicationMenu(menu)
+Menu.setApplicationMenu(menu);
 
 function createWindow(): BrowserWindow {
   const electronScreen = screen;
@@ -96,7 +102,7 @@ function createWindow(): BrowserWindow {
 
 const startBinary = (port: number) => {
   const tmpPath = path.join(os.tmpdir(), 'octant');
-  fs.mkdir(path.join(tmpPath), { recursive: true }, (err) => {
+  fs.mkdir(path.join(tmpPath), { recursive: true }, err => {
     if (err) {
       throw err;
     }
@@ -113,7 +119,11 @@ const startBinary = (port: number) => {
   }
 
   const server = child_process.spawn(serverBinary, ['--disable-open-browser'], {
-    env: { ...process.env, NODE_ENV: 'production', OCTANT_LISTENER_ADDR: 'localhost:' + port },
+    env: {
+      ...process.env,
+      NODE_ENV: 'production',
+      OCTANT_LISTENER_ADDR: 'localhost:' + port,
+    },
     detached: true,
     stdio: ['ignore', out, err],
   });
@@ -138,10 +148,13 @@ try {
 
     // In event of a black background issue: https://github.com/electron/electron/issues/15947
     //setTimeout(createWindow, 400);
-    session.defaultSession.webRequest.onBeforeSendHeaders({ urls: ['ws://localhost:' + port + '/api/v1/stream'] }, (details, callback) => {
-      details.requestHeaders['Origin'] = null;
-      callback({ cancel: false, requestHeaders: details.requestHeaders });
-    });
+    session.defaultSession.webRequest.onBeforeSendHeaders(
+      { urls: ['ws://localhost:' + port + '/api/v1/stream'] },
+      (details, callback) => {
+        details.requestHeaders['Origin'] = null;
+        callback({ cancel: false, requestHeaders: details.requestHeaders });
+      }
+    );
   });
 
   // Quit when all windows are closed.
