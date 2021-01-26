@@ -64,7 +64,7 @@ func NewDefaultCRDWatcher(ctx context.Context, clusterClient cluster.ClientInter
 
 var (
 	crdKey = store.Key{
-		APIVersion: "apiextensions.k8s.io/v1beta1",
+		APIVersion: "apiextensions.k8s.io/v1",
 		Kind:       "CustomResourceDefinition",
 	}
 )

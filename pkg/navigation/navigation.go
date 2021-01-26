@@ -13,7 +13,7 @@ import (
 	"sort"
 
 	"github.com/pkg/errors"
-	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -87,9 +87,9 @@ func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store
 	})
 
 	for i := range crds {
-		if wantsClusterScoped && crds[i].Spec.Scope != apiextv1beta1.ClusterScoped {
+		if wantsClusterScoped && crds[i].Spec.Scope != apiextv1.ClusterScoped {
 			continue
-		} else if !wantsClusterScoped && crds[i].Spec.Scope != apiextv1beta1.NamespaceScoped {
+		} else if !wantsClusterScoped && crds[i].Spec.Scope != apiextv1.NamespaceScoped {
 			continue
 		}
 
@@ -117,9 +117,9 @@ func CRDEntries(ctx context.Context, prefix, namespace string, objectStore store
 	return list, loading, nil
 }
 
-func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1beta1.CustomResourceDefinition, bool, error) {
+func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1.CustomResourceDefinition, bool, error) {
 	key := store.Key{
-		APIVersion: "apiextensions.k8s.io/v1beta1",
+		APIVersion: "apiextensions.k8s.io/v1",
 		Kind:       "CustomResourceDefinition",
 	}
 
@@ -131,9 +131,9 @@ func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1b
 		rawList = &unstructured.UnstructuredList{}
 	}
 
-	var list []*apiextv1beta1.CustomResourceDefinition
+	var list []*apiextv1.CustomResourceDefinition
 	for i := range rawList.Items {
-		crd := &apiextv1beta1.CustomResourceDefinition{}
+		crd := &apiextv1.CustomResourceDefinition{}
 
 		// vendored converter can't convert from int64 to float64
 		// See https://github.com/kubernetes/kubernetes/issues/87675
@@ -156,7 +156,7 @@ func CustomResourceDefinitions(ctx context.Context, o store.Store) ([]*apiextv1b
 // ListCustomResources lists all custom resources given a CRD.
 func ListCustomResources(
 	ctx context.Context,
-	crd *apiextv1beta1.CustomResourceDefinition,
+	crd *apiextv1.CustomResourceDefinition,
 	namespace string,
 	o store.Store,
 	selector *labels.Set) (*unstructured.UnstructuredList, bool, error) {
@@ -185,7 +185,7 @@ func ListCustomResources(
 			Selector:   selector,
 		}
 
-		if crd.Spec.Scope == apiextv1beta1.NamespaceScoped {
+		if crd.Spec.Scope == apiextv1.NamespaceScoped {
 			key.Namespace = namespace
 		}
 

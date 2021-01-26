@@ -191,7 +191,7 @@ func TestCacheQueryer_Children(t *testing.T) {
 			discovery := queryerFake.NewMockDiscoveryInterface(controller)
 
 			crdKey := store.Key{
-				APIVersion: "apiextensions.k8s.io/v1beta1",
+				APIVersion: "apiextensions.k8s.io/v1",
 				Kind:       "CustomResourceDefinition",
 			}
 			o.EXPECT().List(gomock.Any(), crdKey).Return(&unstructured.UnstructuredList{}, false, nil).AnyTimes()
