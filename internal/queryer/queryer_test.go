@@ -15,7 +15,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
@@ -516,13 +516,13 @@ func TestCacheQueryer_MutatingWebhookConfigurationsForService(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{Name: "service", Namespace: "default"},
 	}
 
-	mutatingWebhookConfiguration1 := &admissionregistrationv1beta1.MutatingWebhookConfiguration{
-		TypeMeta:   metav1.TypeMeta{APIVersion: "admissionregistration.k8s.io/v1beta1", Kind: "MutatingWebhookConfiguration"},
+	mutatingWebhookConfiguration1 := &admissionregistrationv1.MutatingWebhookConfiguration{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "admissionregistration.k8s.io/v1", Kind: "MutatingWebhookConfiguration"},
 		ObjectMeta: metav1.ObjectMeta{Name: "mutatingWebhookConfiguration1"},
-		Webhooks: []admissionregistrationv1beta1.MutatingWebhook{
+		Webhooks: []admissionregistrationv1.MutatingWebhook{
 			{
-				ClientConfig: admissionregistrationv1beta1.WebhookClientConfig{
-					Service: &admissionregistrationv1beta1.ServiceReference{
+				ClientConfig: admissionregistrationv1.WebhookClientConfig{
+					Service: &admissionregistrationv1.ServiceReference{
 						Namespace: "default",
 						Name:      "service",
 					},
@@ -531,17 +531,17 @@ func TestCacheQueryer_MutatingWebhookConfigurationsForService(t *testing.T) {
 		},
 	}
 
-	mutatingWebhookConfiguration2 := &admissionregistrationv1beta1.MutatingWebhookConfiguration{
-		TypeMeta:   metav1.TypeMeta{APIVersion: "admissionregistration.k8s.io/v1beta1", Kind: "MutatingWebhookConfiguration"},
+	mutatingWebhookConfiguration2 := &admissionregistrationv1.MutatingWebhookConfiguration{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "admissionregistration.k8s.io/v1", Kind: "MutatingWebhookConfiguration"},
 		ObjectMeta: metav1.ObjectMeta{Name: "mutatingWebhookConfiguration2"},
-		Webhooks:   []admissionregistrationv1beta1.MutatingWebhook{},
+		Webhooks:   []admissionregistrationv1.MutatingWebhook{},
 	}
 
 	cases := []struct {
 		name     string
 		service  *corev1.Service
 		setup    func(t *testing.T, o *storeFake.MockStore)
-		expected []*admissionregistrationv1beta1.MutatingWebhookConfiguration
+		expected []*admissionregistrationv1.MutatingWebhookConfiguration
 		isErr    bool
 	}{
 		{
@@ -549,14 +549,14 @@ func TestCacheQueryer_MutatingWebhookConfigurationsForService(t *testing.T) {
 			service: service,
 			setup: func(t *testing.T, o *storeFake.MockStore) {
 				mutatingWebhookConfigurationKey := store.Key{
-					APIVersion: "admissionregistration.k8s.io/v1beta1",
+					APIVersion: "admissionregistration.k8s.io/v1",
 					Kind:       "MutatingWebhookConfiguration",
 				}
 				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(mutatingWebhookConfigurationKey)).
 					Return(testutil.ToUnstructuredList(t, mutatingWebhookConfiguration1, mutatingWebhookConfiguration2), false, nil)
 			},
-			expected: []*admissionregistrationv1beta1.MutatingWebhookConfiguration{
+			expected: []*admissionregistrationv1.MutatingWebhookConfiguration{
 				mutatingWebhookConfiguration1,
 			},
 		},
@@ -570,7 +570,7 @@ func TestCacheQueryer_MutatingWebhookConfigurationsForService(t *testing.T) {
 			service: service,
 			setup: func(t *testing.T, o *storeFake.MockStore) {
 				mutatingWebhookConfigurationKey := store.Key{
-					APIVersion: "admissionregistration.k8s.io/v1beta1",
+					APIVersion: "admissionregistration.k8s.io/v1",
 					Kind:       "MutatingWebhookConfiguration",
 				}
 				o.EXPECT().
@@ -614,13 +614,13 @@ func TestCacheQueryer_ValidatingWebhookConfigurationsForService(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{Name: "service", Namespace: "default"},
 	}
 
-	validatingWebhookConfiguration1 := &admissionregistrationv1beta1.ValidatingWebhookConfiguration{
-		TypeMeta:   metav1.TypeMeta{APIVersion: "admissionregistration.k8s.io/v1beta1", Kind: "ValidatingWebhookConfiguration"},
+	validatingWebhookConfiguration1 := &admissionregistrationv1.ValidatingWebhookConfiguration{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "admissionregistration.k8s.io/v1", Kind: "ValidatingWebhookConfiguration"},
 		ObjectMeta: metav1.ObjectMeta{Name: "validatingWebhookConfiguration1"},
-		Webhooks: []admissionregistrationv1beta1.ValidatingWebhook{
+		Webhooks: []admissionregistrationv1.ValidatingWebhook{
 			{
-				ClientConfig: admissionregistrationv1beta1.WebhookClientConfig{
-					Service: &admissionregistrationv1beta1.ServiceReference{
+				ClientConfig: admissionregistrationv1.WebhookClientConfig{
+					Service: &admissionregistrationv1.ServiceReference{
 						Namespace: "default",
 						Name:      "service",
 					},
@@ -629,17 +629,17 @@ func TestCacheQueryer_ValidatingWebhookConfigurationsForService(t *testing.T) {
 		},
 	}
 
-	validatingWebhookConfiguration2 := &admissionregistrationv1beta1.ValidatingWebhookConfiguration{
-		TypeMeta:   metav1.TypeMeta{APIVersion: "admissionregistration.k8s.io/v1beta1", Kind: "ValidatingWebhookConfiguration"},
+	validatingWebhookConfiguration2 := &admissionregistrationv1.ValidatingWebhookConfiguration{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "admissionregistration.k8s.io/v1", Kind: "ValidatingWebhookConfiguration"},
 		ObjectMeta: metav1.ObjectMeta{Name: "validatingWebhookConfiguration2"},
-		Webhooks:   []admissionregistrationv1beta1.ValidatingWebhook{},
+		Webhooks:   []admissionregistrationv1.ValidatingWebhook{},
 	}
 
 	cases := []struct {
 		name     string
 		service  *corev1.Service
 		setup    func(t *testing.T, o *storeFake.MockStore)
-		expected []*admissionregistrationv1beta1.ValidatingWebhookConfiguration
+		expected []*admissionregistrationv1.ValidatingWebhookConfiguration
 		isErr    bool
 	}{
 		{
@@ -647,14 +647,14 @@ func TestCacheQueryer_ValidatingWebhookConfigurationsForService(t *testing.T) {
 			service: service,
 			setup: func(t *testing.T, o *storeFake.MockStore) {
 				validatingWebhookConfigurationKey := store.Key{
-					APIVersion: "admissionregistration.k8s.io/v1beta1",
+					APIVersion: "admissionregistration.k8s.io/v1",
 					Kind:       "ValidatingWebhookConfiguration",
 				}
 				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(validatingWebhookConfigurationKey)).
 					Return(testutil.ToUnstructuredList(t, validatingWebhookConfiguration1, validatingWebhookConfiguration2), false, nil)
 			},
-			expected: []*admissionregistrationv1beta1.ValidatingWebhookConfiguration{
+			expected: []*admissionregistrationv1.ValidatingWebhookConfiguration{
 				validatingWebhookConfiguration1,
 			},
 		},
@@ -668,7 +668,7 @@ func TestCacheQueryer_ValidatingWebhookConfigurationsForService(t *testing.T) {
 			service: service,
 			setup: func(t *testing.T, o *storeFake.MockStore) {
 				validatingWebhookConfigurationKey := store.Key{
-					APIVersion: "admissionregistration.k8s.io/v1beta1",
+					APIVersion: "admissionregistration.k8s.io/v1",
 					Kind:       "ValidatingWebhookConfiguration",
 				}
 				o.EXPECT().
@@ -1629,6 +1629,6 @@ func genEventFor(t *testing.T, object runtime.Object, name string) *corev1.Event
 }
 
 func init() {
-	admissionregistrationv1beta1.AddToScheme(scheme.Scheme)
+	admissionregistrationv1.AddToScheme(scheme.Scheme)
 	apiregistrationv1.AddToScheme(scheme.Scheme)
 }

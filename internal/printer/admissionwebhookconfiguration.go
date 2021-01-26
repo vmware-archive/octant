@@ -8,7 +8,8 @@ package printer
 import (
 	"fmt"
 
-	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
@@ -25,7 +26,7 @@ func printYaml(obj interface{}) string {
 	return string(b)
 }
 
-func admissionWebhookRules(rules []admissionregistrationv1beta1.RuleWithOperations, options Options) (component.Component, error) {
+func admissionWebhookRules(rules []admissionregistrationv1.RuleWithOperations, options Options) (component.Component, error) {
 	columns := component.NewTableCols("API Groups", "API Versions", "Resources", "Operations", "Scope")
 	table := component.NewTable("Rules", "There are no webhook rules!", columns)
 
@@ -53,7 +54,7 @@ func admissionWebhookRules(rules []admissionregistrationv1beta1.RuleWithOperatio
 			row["Operations"] = component.NewMarkdownText(printYaml(rule.Operations))
 		}
 		if rule.Scope == nil {
-			row["Scope"] = component.NewText(string(admissionregistrationv1beta1.AllScopes))
+			row["Scope"] = component.NewText(string(admissionregistrationv1.AllScopes))
 		} else {
 			row["Scope"] = component.NewText(string(*rule.Scope))
 		}
@@ -71,7 +72,7 @@ func admissionWebhookTimeout(timeoutSeconds *int32) component.Component {
 	return component.NewTextf("%ds", *timeoutSeconds)
 }
 
-func admissionWebhookClientConfig(clientConfig admissionregistrationv1beta1.WebhookClientConfig, options Options) (component.Component, error) {
+func admissionWebhookClientConfig(clientConfig admissionregistrationv1.WebhookClientConfig, options Options) (component.Component, error) {
 	if clientConfig.Service != nil {
 		return options.Link.ForGVK(
 			clientConfig.Service.Namespace,
@@ -86,23 +87,23 @@ func admissionWebhookClientConfig(clientConfig admissionregistrationv1beta1.Webh
 	return component.NewText("unknown"), nil
 }
 
-func admissionWebhookFailurePolicy(failurePolicy *admissionregistrationv1beta1.FailurePolicyType) component.Component {
+func admissionWebhookFailurePolicy(failurePolicy *admissionregistrationv1.FailurePolicyType) component.Component {
 	if failurePolicy == nil {
-		return component.NewTextf("%s", admissionregistrationv1beta1.Fail)
+		return component.NewTextf("%s", admissionregistrationv1.Fail)
 	}
 	return component.NewTextf("%s", *failurePolicy)
 }
 
-func admissionWebhookMatchPolicy(matchPolicy *admissionregistrationv1beta1.MatchPolicyType) component.Component {
+func admissionWebhookMatchPolicy(matchPolicy *admissionregistrationv1.MatchPolicyType) component.Component {
 	if matchPolicy == nil {
-		return component.NewTextf("%s", admissionregistrationv1beta1.Equivalent)
+		return component.NewTextf("%s", admissionregistrationv1.Equivalent)
 	}
 	return component.NewTextf("%s", *matchPolicy)
 }
 
-func admissionWebhookSideEffects(sideEffects *admissionregistrationv1beta1.SideEffectClass) component.Component {
+func admissionWebhookSideEffects(sideEffects *admissionregistrationv1.SideEffectClass) component.Component {
 	if sideEffects == nil {
-		return component.NewTextf("%s", admissionregistrationv1beta1.SideEffectClassUnknown)
+		return component.NewTextf("%s", admissionregistrationv1.SideEffectClassUnknown)
 	}
 	return component.NewTextf("%s", *sideEffects)
 }
@@ -129,9 +130,9 @@ func admissionWebhookAdmissionReviewVersions(admissionReviewVersions []string) c
 	return component.NewMarkdownText(printYaml(admissionReviewVersions))
 }
 
-func admissionWebhookReinvocationPolicy(reinvocationPolicy *admissionregistrationv1beta1.ReinvocationPolicyType) component.Component {
+func admissionWebhookReinvocationPolicy(reinvocationPolicy *admissionregistrationv1.ReinvocationPolicyType) component.Component {
 	if reinvocationPolicy == nil {
-		return component.NewTextf("%s", admissionregistrationv1beta1.NeverReinvocationPolicy)
+		return component.NewTextf("%s", admissionregistrationv1.NeverReinvocationPolicy)
 	}
 	return component.NewTextf("%s", *reinvocationPolicy)
 }

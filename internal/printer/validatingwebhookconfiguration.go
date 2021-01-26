@@ -13,11 +13,11 @@ import (
 
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 
-	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 )
 
 // ValidatingWebhookConfigurationListHandler is a printFunc that prints validating webhook configurations
-func ValidatingWebhookConfigurationListHandler(ctx context.Context, list *admissionregistrationv1beta1.ValidatingWebhookConfigurationList, options Options) (component.Component, error) {
+func ValidatingWebhookConfigurationListHandler(ctx context.Context, list *admissionregistrationv1.ValidatingWebhookConfigurationList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("validating webhook configuration list is nil")
 	}
@@ -45,7 +45,7 @@ func ValidatingWebhookConfigurationListHandler(ctx context.Context, list *admiss
 }
 
 // ValidatingWebhookConfigurationHandler is a printFunc that prints a validating webhook configurations
-func ValidatingWebhookConfigurationHandler(ctx context.Context, validatingWebhookConfiguration *admissionregistrationv1beta1.ValidatingWebhookConfiguration, options Options) (component.Component, error) {
+func ValidatingWebhookConfigurationHandler(ctx context.Context, validatingWebhookConfiguration *admissionregistrationv1.ValidatingWebhookConfiguration, options Options) (component.Component, error) {
 	o := NewObject(validatingWebhookConfiguration)
 
 	ch, err := newValidatingWebhookConfigurationHandler(validatingWebhookConfiguration, o)
@@ -65,14 +65,14 @@ type validatingWebhookConfigurationObject interface {
 }
 
 type validatingWebhookConfigurationHandler struct {
-	validatingWebhookConfiguration *admissionregistrationv1beta1.ValidatingWebhookConfiguration
-	webhookFunc                    func(*admissionregistrationv1beta1.ValidatingWebhook, Options) (*component.Summary, error)
+	validatingWebhookConfiguration *admissionregistrationv1.ValidatingWebhookConfiguration
+	webhookFunc                    func(*admissionregistrationv1.ValidatingWebhook, Options) (*component.Summary, error)
 	object                         *Object
 }
 
 var _ validatingWebhookConfigurationObject = (*validatingWebhookConfigurationHandler)(nil)
 
-func newValidatingWebhookConfigurationHandler(validatingWebhookConfiguration *admissionregistrationv1beta1.ValidatingWebhookConfiguration, object *Object) (*validatingWebhookConfigurationHandler, error) {
+func newValidatingWebhookConfigurationHandler(validatingWebhookConfiguration *admissionregistrationv1.ValidatingWebhookConfiguration, object *Object) (*validatingWebhookConfigurationHandler, error) {
 	if validatingWebhookConfiguration == nil {
 		return nil, errors.New("can't print a nil validatingwebhookconfiguration")
 	}
@@ -104,17 +104,17 @@ func (c *validatingWebhookConfigurationHandler) Webhooks(options Options) error 
 	return nil
 }
 
-func defaultValidatingWebhook(validatingWebhook *admissionregistrationv1beta1.ValidatingWebhook, options Options) (*component.Summary, error) {
+func defaultValidatingWebhook(validatingWebhook *admissionregistrationv1.ValidatingWebhook, options Options) (*component.Summary, error) {
 	return NewValidatingWebhook(validatingWebhook).Create(options)
 }
 
 // ValidatingWebhook generates a validating webhook
 type ValidatingWebhook struct {
-	validatingWebhook *admissionregistrationv1beta1.ValidatingWebhook
+	validatingWebhook *admissionregistrationv1.ValidatingWebhook
 }
 
 // NewValidatingWebhook creates an instance of ValidatingWebhook
-func NewValidatingWebhook(validatingWebhook *admissionregistrationv1beta1.ValidatingWebhook) *ValidatingWebhook {
+func NewValidatingWebhook(validatingWebhook *admissionregistrationv1.ValidatingWebhook) *ValidatingWebhook {
 	return &ValidatingWebhook{
 		validatingWebhook: validatingWebhook,
 	}

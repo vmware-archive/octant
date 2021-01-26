@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/install"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -93,7 +93,7 @@ func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restCl
 	logger := internalLog.From(ctx).With("component", "cluster client")
 
 	install.Install(scheme.Scheme)
-	_ = admissionregistrationv1beta1.AddToScheme(scheme.Scheme)
+	_ = admissionregistrationv1.AddToScheme(scheme.Scheme)
 	_ = apiregistrationv1.AddToScheme(scheme.Scheme)
 
 	kubernetesClient, err := kubernetes.NewForConfig(restClient)

@@ -13,11 +13,11 @@ import (
 
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 
-	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 )
 
 // MutatingWebhookConfigurationListHandler is a printFunc that prints mutating webhook configurations
-func MutatingWebhookConfigurationListHandler(ctx context.Context, list *admissionregistrationv1beta1.MutatingWebhookConfigurationList, options Options) (component.Component, error) {
+func MutatingWebhookConfigurationListHandler(ctx context.Context, list *admissionregistrationv1.MutatingWebhookConfigurationList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("mutating webhook configuration list is nil")
 	}
@@ -45,7 +45,7 @@ func MutatingWebhookConfigurationListHandler(ctx context.Context, list *admissio
 }
 
 // MutatingWebhookConfigurationHandler is a printFunc that prints a mutating webhook configurations
-func MutatingWebhookConfigurationHandler(ctx context.Context, mutatingWebhookConfiguration *admissionregistrationv1beta1.MutatingWebhookConfiguration, options Options) (component.Component, error) {
+func MutatingWebhookConfigurationHandler(ctx context.Context, mutatingWebhookConfiguration *admissionregistrationv1.MutatingWebhookConfiguration, options Options) (component.Component, error) {
 	o := NewObject(mutatingWebhookConfiguration)
 
 	ch, err := newMutatingWebhookConfigurationHandler(mutatingWebhookConfiguration, o)
@@ -65,14 +65,14 @@ type mutatingWebhookConfigurationObject interface {
 }
 
 type mutatingWebhookConfigurationHandler struct {
-	mutatingWebhookConfiguration *admissionregistrationv1beta1.MutatingWebhookConfiguration
-	webhookFunc                  func(*admissionregistrationv1beta1.MutatingWebhook, Options) (*component.Summary, error)
+	mutatingWebhookConfiguration *admissionregistrationv1.MutatingWebhookConfiguration
+	webhookFunc                  func(*admissionregistrationv1.MutatingWebhook, Options) (*component.Summary, error)
 	object                       *Object
 }
 
 var _ mutatingWebhookConfigurationObject = (*mutatingWebhookConfigurationHandler)(nil)
 
-func newMutatingWebhookConfigurationHandler(mutatingWebhookConfiguration *admissionregistrationv1beta1.MutatingWebhookConfiguration, object *Object) (*mutatingWebhookConfigurationHandler, error) {
+func newMutatingWebhookConfigurationHandler(mutatingWebhookConfiguration *admissionregistrationv1.MutatingWebhookConfiguration, object *Object) (*mutatingWebhookConfigurationHandler, error) {
 	if mutatingWebhookConfiguration == nil {
 		return nil, errors.New("can't print a nil mutatingwebhookconfiguration")
 	}
@@ -104,17 +104,17 @@ func (c *mutatingWebhookConfigurationHandler) Webhooks(options Options) error {
 	return nil
 }
 
-func defaultMutatingWebhook(mutatingWebhook *admissionregistrationv1beta1.MutatingWebhook, options Options) (*component.Summary, error) {
+func defaultMutatingWebhook(mutatingWebhook *admissionregistrationv1.MutatingWebhook, options Options) (*component.Summary, error) {
 	return NewMutatingWebhook(mutatingWebhook).Create(options)
 }
 
 // MutatingWebhook generates a mutating webhook
 type MutatingWebhook struct {
-	mutatingWebhook *admissionregistrationv1beta1.MutatingWebhook
+	mutatingWebhook *admissionregistrationv1.MutatingWebhook
 }
 
 // NewMutatingWebhook creates an instance of MutatingWebhook
-func NewMutatingWebhook(mutatingWebhook *admissionregistrationv1beta1.MutatingWebhook) *MutatingWebhook {
+func NewMutatingWebhook(mutatingWebhook *admissionregistrationv1.MutatingWebhook) *MutatingWebhook {
 	return &MutatingWebhook{
 		mutatingWebhook: mutatingWebhook,
 	}
