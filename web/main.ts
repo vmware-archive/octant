@@ -128,7 +128,7 @@ const startBinary = (port: number) => {
     stdio: ['ignore', out, err],
   });
 
-  serverPid = server.pid;
+  serverPid = -server.pid;
   server.unref();
 };
 
