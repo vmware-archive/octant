@@ -41,7 +41,10 @@ export class DonutChartComponent extends AbstractViewComponent<DonutChartView> {
     if (this.v?.config?.size) {
       this.scale = String(this.v.config.size) + '%';
       if (this.v.config.thickness) {
-        this.donutThickness = this?.v?.config?.thickness / 100;
+        this.donutThickness = Math.min(
+          1,
+          Math.max(0.02, this?.v?.config?.thickness / 100)
+        );
       }
       this.createSegments();
     }
@@ -93,8 +96,11 @@ export class DonutChartComponent extends AbstractViewComponent<DonutChartView> {
       .forEach((segment, index) => {
         const segmentTotal = this.itemCount();
         const center = this.svgSize / 2;
-        const cutoutRadius = segment.thickness
-          ? donutRadius * (1 - segment.thickness / 100)
+        const segmentThickness = segment.thickness
+          ? Math.min(1, Math.max(0.02, segment.thickness / 100))
+          : undefined;
+        const cutoutRadius = segmentThickness
+          ? donutRadius * (1 - segmentThickness)
           : this.hasCriticalSegments()
           ? Math.max(0, donutRadius * (1 - (3 * this.donutThickness) / 2))
           : donutRadius * (1 - this.donutThickness);
@@ -160,7 +166,9 @@ export class DonutChartComponent extends AbstractViewComponent<DonutChartView> {
         }px`;
         this.tooltipText = segment.description
           ? segment.description
-          : `${segment.count} ${label} with status ${segment.status}`;
+          : segment.status
+          ? `${segment.count} ${label} with status ${segment.status}`
+          : `${segment.count} ${label}`;
       }
     }
   }

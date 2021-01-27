@@ -67,6 +67,8 @@ func (dc *DonutChart) SetSize(size DonutChartSize) {
 	dc.Config.Size = size
 }
 
+// Set donut chart thickness - trimmed to be inside [2-100] interval
+// where 2 is barely visible and 100 turns it to a pie chart
 func (dc *DonutChart) SetThickness(thickness int) {
 	dc.Config.Thickness = thickness
 }

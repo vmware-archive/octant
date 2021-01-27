@@ -192,7 +192,9 @@ However, that behavior can be overridden if color info is provided for on a segm
 
 <h2>Using variable segment thickness</h2>
 It is also possible to change the thickness,
-both globally for all segments or individually for each segment like in this example:
+both globally for all segments or individually for each segment like in following example.
+Thickness value is trimmed to be inside [2-100] interval,
+where 2 is barely visible and 100 turns it to a pie chart.
 
 <Canvas withToolbar>
   <Story name="Donut chart with custom thickness" parameters={{ docs: donutWithCustomSegmentsDocs }} height="400px" >
