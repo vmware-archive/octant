@@ -100,6 +100,7 @@ export interface DonutChartView extends View {
     segments: DonutSegment[];
     labels: DonutChartLabels;
     size: number;
+    thickness?: number;
   };
 }
 
@@ -374,6 +375,9 @@ export interface TimestampView extends View {
 export interface DonutSegment {
   count: number;
   status: string;
+  color?: string;
+  description?: string;
+  thickness?: number;
 }
 
 export interface Series {

@@ -1,0 +1,22 @@
+{
+  "config": {
+    "segments": [
+      {
+        "count": 3,
+        "status": "ok"
+      },
+      {
+        "count": 1,
+        "status": "error"
+      }
+    ],
+    "labels": {
+      "plural": "pods",
+      "singular": "pod"
+    },
+    "size": 100
+  },
+  "metadata": {
+    "type": "donutChart"
+  }
+}

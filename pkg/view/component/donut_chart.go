@@ -20,14 +20,18 @@ type DonutChartLabels struct {
 }
 
 type DonutSegment struct {
-	Count  int        `json:"count"`
-	Status NodeStatus `json:"status"`
+	Count       int        `json:"count"`
+	Status      NodeStatus `json:"status"`
+	Color       string     `json:"color,omitempty"`
+	Description string     `json:"description,omitempty"`
+	Thickness   int        `json:"thickness,omitempty"`
 }
 
 type DonutChartConfig struct {
-	Segments []DonutSegment   `json:"segments"`
-	Labels   DonutChartLabels `json:"labels"`
-	Size     DonutChartSize   `json:"size"`
+	Segments  []DonutSegment   `json:"segments"`
+	Labels    DonutChartLabels `json:"labels"`
+	Size      DonutChartSize   `json:"size"`
+	Thickness int              `json:"thickness,omitempty"`
 }
 
 // +octant:component
@@ -61,6 +65,12 @@ func (dc *DonutChart) SetLabels(plural string, singular string) {
 
 func (dc *DonutChart) SetSize(size DonutChartSize) {
 	dc.Config.Size = size
+}
+
+// Set donut chart thickness - trimmed to be inside [2-100] interval
+// where 2 is barely visible and 100 turns it to a pie chart
+func (dc *DonutChart) SetThickness(thickness int) {
+	dc.Config.Thickness = thickness
 }
 
 func (dc *DonutChart) MarshalJSON() ([]byte, error) {

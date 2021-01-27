@@ -2,28 +2,27 @@
  * Copyright (c) 2019 VMware, Inc. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+@import '_variables';
 
-$base-stroke-width: 1px;
-$thick-stroke-width: $base-stroke-width * 2.5;
-
-.donut-ring {
-  stroke: #d2d3d4;
-  stroke-width: $base-stroke-width;
+:host-context(body) {
+  --background-color: #fafafa;
+  --text-color: #575757;
 }
 
-.donut-segment {
-  stroke-width: $base-stroke-width;
+:host-context(body.dark) {
+  --background-color: #1b2a32;
+  --text-color: #acbac3;
+}
 
-  &.ok {
-    stroke: #60b515;
+.svg {
+  path {
+    stroke: var(--background-color);
+    stroke-width: 1;
   }
-  &.warning {
-    stroke: #f57600;
-    stroke-width: $thick-stroke-width;
-  }
-  &.error {
-    stroke: #e12200;
-    stroke-width: $thick-stroke-width;
+
+  path:hover {
+    filter: url(#darker-filter);
+    stroke-width: 0;
   }
 }
 
@@ -34,13 +33,6 @@ $thick-stroke-width: $base-stroke-width * 2.5;
   -ms-transform: translateY(0.25em);
   -webkit-transform: translateY(0.25em);
   transform: translateY(0.25em);
-
-  :host-context(body) {
-    --text-color: #575757;
-  }
-  :host-context(body.dark) {
-    --text-color: #acbac3;
-  }
 
   .chart-number {
     font-size: 0.6em;
@@ -63,4 +55,51 @@ $thick-stroke-width: $base-stroke-width * 2.5;
     -webkit-transform: translateY(0.7em);
     transform: translateY(0.7em);
   }
+}
+
+.donut-text {
+  :host-context(body) {
+    --text-color: #575757;
+  }
+  :host-context(body.dark) {
+    --text-color: #acbac3;
+  }
+
+  .chart-number {
+    font-size: 3rem;
+    fill: var(--text-color);
+    line-height: 1;
+    text-anchor: middle;
+    -moz-transform: translateY(0.5rem);
+    -ms-transform: translateY(0.5rem);
+    -webkit-transform: translateY(0.5rem);
+    transform: translateY(0.5rem);
+  }
+
+  .chart-label {
+    font-size: 1rem;
+    fill: var(--text-color);
+    text-transform: uppercase;
+    text-anchor: middle;
+    -moz-transform: translateY(1.9em);
+    -ms-transform: translateY(1.9em);
+    -webkit-transform: translateY(1.9em);
+    transform: translateY(1.9rem);
+  }
+}
+
+.donut-tooltip {
+  color: var(--tooltip-text-color);
+  background-color: var(--selection-color);
+  display: block;
+  z-index: 900;
+  position: fixed;
+  bottom: unset;
+  left: unset;
+  right: unset;
+  top: unset;
+  width: auto;
+  height: auto;
+  padding: 6px 9px;
+  pointer-events: none;
 }
