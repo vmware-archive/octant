@@ -19,6 +19,10 @@ let statePath: string = null;
 const args = process.argv.slice(1);
 const local = args.some(val => val === '--local');
 
+const tmpPath = path.join(os.tmpdir(), 'octant');
+const apiLogPath = path.join(tmpPath, 'api.out.log');
+const errLogPath = path.join(tmpPath, 'api.err.log');
+
 const template: Electron.MenuItemConstructorOptions[] = [
   {
     label: 'File',
@@ -43,6 +47,13 @@ const template: Electron.MenuItemConstructorOptions[] = [
       { type: 'separator' },
       { role: 'togglefullscreen' },
       { role: 'toggleDevTools' },
+      { type: 'separator' },
+      {
+        label: 'View Logs',
+        click() {
+          shell.showItemInFolder(errLogPath);
+        },
+      },
     ],
   },
   {
@@ -149,15 +160,14 @@ function createWindow(): BrowserWindow {
 }
 
 const startBinary = (port: number) => {
-  const tmpPath = path.join(os.tmpdir(), 'octant');
   fs.mkdir(path.join(tmpPath), { recursive: true }, err => {
     if (err) {
       throw err;
     }
   });
 
-  const out = fs.openSync(path.join(tmpPath, 'api.out.log'), 'a');
-  const err = fs.openSync(path.join(tmpPath, 'api.err.log'), 'a');
+  const out = fs.openSync(apiLogPath, 'a');
+  const err = fs.openSync(errLogPath, 'a');
 
   let octantFilename = 'octant';
   if (os.platform() === 'win32') {
