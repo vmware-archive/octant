@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync/atomic"
 	"time"
 
 	"github.com/vmware-tanzu/octant/pkg/event"
@@ -49,7 +50,7 @@ type WebsocketClient struct {
 	cancel     context.CancelFunc
 	manager    *WebsocketClientManager
 
-	isOpen   bool
+	isOpen   atomic.Value
 	state    octant.State
 	handlers map[string][]octant.ClientRequestHandler
 	id       uuid.UUID
@@ -130,7 +131,7 @@ func (c *WebsocketClient) ID() string {
 
 func (c *WebsocketClient) readPump() {
 	defer func() {
-		c.isOpen = false
+		c.isOpen.Store(false)
 		c.logger.Debugf("closing read pump")
 	}()
 
@@ -142,7 +143,7 @@ func (c *WebsocketClient) readPump() {
 
 	}()
 
-	c.isOpen = true
+	c.isOpen.Store(true)
 
 	c.conn.SetReadLimit(maxMessageSize)
 	if err := c.conn.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
@@ -271,7 +272,8 @@ func (c *WebsocketClient) writePump() {
 }
 
 func (c *WebsocketClient) Send(ev event.Event) {
-	if c.isOpen {
+	isOpen := c.isOpen.Load().(bool)
+	if isOpen {
 		c.send <- ev
 	}
 }

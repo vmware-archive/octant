@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sync/atomic"
 	"time"
 
 	"github.com/vmware-tanzu/octant/pkg/event"
@@ -29,7 +30,7 @@ const (
 )
 
 type LoadingManager struct {
-	client         OctantClient
+	client         atomic.Value
 	kubeConfigPath chan string
 	ctx            context.Context
 }
@@ -56,7 +57,7 @@ func (l *LoadingManager) Handlers() []octant.ClientRequestHandler {
 }
 
 func (l *LoadingManager) Start(ctx context.Context, state octant.State, client OctantClient) {
-	l.client = client
+	l.client.Store(client)
 	l.ctx = ctx
 	l.kubeConfigPath = ocontext.KubeConfigChFrom(ctx)
 
@@ -74,7 +75,8 @@ func (l *LoadingManager) CheckLoading(state octant.State, payload action.Payload
 	}
 
 	if loading {
-		l.client.Send(event.Event{
+		client := l.client.Load().(OctantClient)
+		client.Send(event.Event{
 			Type: event.EventTypeLoading,
 		})
 	}
@@ -115,7 +117,8 @@ func (l *LoadingManager) UploadKubeConfig(state octant.State, payload action.Pay
 		return err
 	}
 
-	l.client.Send(event.Event{
+	client := l.client.Load().(OctantClient)
+	client.Send(event.Event{
 		Type: event.EventTypeRefresh,
 	})
 
