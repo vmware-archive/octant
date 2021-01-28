@@ -9,6 +9,7 @@ import (
 	"context"
 	"path/filepath"
 	"sort"
+	"sync/atomic"
 
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -98,22 +99,23 @@ func NewKubeConfigContextManager(ctx context.Context, opts ...KubeConfigOption) 
 		contextName = config.CurrentContext
 	}
 
-	return &KubeConfigContextManager{
+	kubeConfigCtxMgr := &KubeConfigContextManager{
 		configLoadingRules: &clientcmd.ClientConfigLoadingRules{
 			Precedence: chain,
 		},
 		currentContext: contextName,
 		contexts:       contextList,
-		clusterClient:  clusterClient,
 		clusterOptions: clusterOptions,
-	}, nil
+	}
+	kubeConfigCtxMgr.clusterClient.Store(clusterClient)
+	return kubeConfigCtxMgr, nil
 }
 
 type KubeConfigContextManager struct {
 	configLoadingRules *clientcmd.ClientConfigLoadingRules
 	currentContext     string
 	contexts           []Context
-	clusterClient      cluster.ClientInterface
+	clusterClient      atomic.Value // cluster.ClientInterface
 	clusterOptions     []cluster.ClusterOption
 }
 
@@ -134,8 +136,10 @@ func (k *KubeConfigContextManager) Contexts() []Context {
 }
 
 func (k *KubeConfigContextManager) SwitchContext(ctx context.Context, contextName string) error {
-	if k.clusterClient != nil {
-		k.clusterClient.Close()
+	v := k.clusterClient.Load()
+	if v != nil {
+		clusterClient := v.(cluster.ClientInterface)
+		clusterClient.Close()
 	}
 
 	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -144,10 +148,11 @@ func (k *KubeConfigContextManager) SwitchContext(ctx context.Context, contextNam
 	)
 
 	var err error
-	k.clusterClient, err = cluster.FromClientConfig(ctx, clientConfig, k.clusterOptions...)
+	clusterClient, err := cluster.FromClientConfig(ctx, clientConfig, k.clusterOptions...)
 	if err != nil {
 		return errors.Wrap(err, "unable to create cluster client")
 	}
+	k.clusterClient.Store(clusterClient)
 
 	if contextName == UseFSContext {
 		rawConfig, err := clientConfig.RawConfig()
@@ -162,5 +167,9 @@ func (k *KubeConfigContextManager) SwitchContext(ctx context.Context, contextNam
 }
 
 func (k *KubeConfigContextManager) ClusterClient() cluster.ClientInterface {
-	return k.clusterClient
+	v := k.clusterClient.Load()
+	if v == nil {
+		return nil
+	}
+	return v.(cluster.ClientInterface)
 }

@@ -272,8 +272,8 @@ func (c *WebsocketClient) writePump() {
 }
 
 func (c *WebsocketClient) Send(ev event.Event) {
-	isOpen := c.isOpen.Load().(bool)
-	if isOpen {
+	v := c.isOpen.Load()
+	if v != nil && v.(bool) {
 		c.send <- ev
 	}
 }
