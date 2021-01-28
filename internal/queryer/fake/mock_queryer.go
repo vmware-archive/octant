@@ -12,10 +12,10 @@ import (
 	v1 "k8s.io/api/admissionregistration/v1"
 	v10 "k8s.io/api/autoscaling/v1"
 	v11 "k8s.io/api/core/v1"
-	v1beta1 "k8s.io/api/extensions/v1beta1"
-	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v12 "k8s.io/api/networking/v1"
+	v13 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	v13 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
+	v14 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 )
 
 // MockQueryer is a mock of Queryer interface
@@ -42,10 +42,10 @@ func (m *MockQueryer) EXPECT() *MockQueryerMockRecorder {
 }
 
 // APIServicesForService mocks base method
-func (m *MockQueryer) APIServicesForService(arg0 context.Context, arg1 *v11.Service) ([]*v13.APIService, error) {
+func (m *MockQueryer) APIServicesForService(arg0 context.Context, arg1 *v11.Service) ([]*v14.APIService, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "APIServicesForService", arg0, arg1)
-	ret0, _ := ret[0].([]*v13.APIService)
+	ret0, _ := ret[0].([]*v14.APIService)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -87,7 +87,7 @@ func (mr *MockQueryerMockRecorder) ConfigMapsForPod(arg0, arg1 interface{}) *gom
 }
 
 // Events mocks base method
-func (m *MockQueryer) Events(arg0 context.Context, arg1 v12.Object) ([]*v11.Event, error) {
+func (m *MockQueryer) Events(arg0 context.Context, arg1 v13.Object) ([]*v11.Event, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Events", arg0, arg1)
 	ret0, _ := ret[0].([]*v11.Event)
@@ -102,10 +102,10 @@ func (mr *MockQueryerMockRecorder) Events(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // IngressesForService mocks base method
-func (m *MockQueryer) IngressesForService(arg0 context.Context, arg1 *v11.Service) ([]*v1beta1.Ingress, error) {
+func (m *MockQueryer) IngressesForService(arg0 context.Context, arg1 *v11.Service) ([]*v12.Ingress, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IngressesForService", arg0, arg1)
-	ret0, _ := ret[0].([]*v1beta1.Ingress)
+	ret0, _ := ret[0].([]*v12.Ingress)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -223,7 +223,7 @@ func (mr *MockQueryerMockRecorder) ServiceAccountForPod(arg0, arg1 interface{}) 
 }
 
 // ServicesForIngress mocks base method
-func (m *MockQueryer) ServicesForIngress(arg0 context.Context, arg1 *v1beta1.Ingress) (*unstructured.UnstructuredList, error) {
+func (m *MockQueryer) ServicesForIngress(arg0 context.Context, arg1 *v12.Ingress) (*unstructured.UnstructuredList, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServicesForIngress", arg0, arg1)
 	ret0, _ := ret[0].(*unstructured.UnstructuredList)

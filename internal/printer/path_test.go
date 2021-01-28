@@ -105,7 +105,7 @@ func TestObjectReferencePath(t *testing.T) {
 		{
 			name: "ingress",
 			objectReference: corev1.ObjectReference{
-				APIVersion: "extensions/v1beta1",
+				APIVersion: "networking.k8s.io/v1",
 				Kind:       "Ingress",
 				Name:       "i1",
 			},

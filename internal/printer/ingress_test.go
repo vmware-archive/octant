@@ -9,11 +9,9 @@ import (
 	"context"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/util/intstr"
-
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
-	extv1beta1 "k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/vmware-tanzu/octant/internal/testutil"
@@ -32,30 +30,34 @@ func Test_IngressListHandler(t *testing.T) {
 	object.CreationTimestamp = metav1.Time{Time: now}
 	object.Labels = labels
 
-	list := &extv1beta1.IngressList{
-		Items: []extv1beta1.Ingress{*object},
+	list := &networkingv1.IngressList{
+		Items: []networkingv1.Ingress{*object},
 	}
 
 	tlsObject := testutil.CreateIngress("ingress")
 	tlsObject.CreationTimestamp = metav1.Time{Time: now}
 	tlsObject.Labels = labels
-	tlsObject.Spec.TLS = []extv1beta1.IngressTLS{{}}
+	tlsObject.Spec.TLS = []networkingv1.IngressTLS{{}}
 
 	hostTest1 := testutil.CreateIngress("ingress")
 	hostTest1.CreationTimestamp = metav1.Time{Time: now}
 	hostTest1.Labels = labels
-	hostTest1.Spec.TLS = []extv1beta1.IngressTLS{}
-	hostTest1.Spec.Rules = []extv1beta1.IngressRule{
+	hostTest1.Spec.TLS = []networkingv1.IngressTLS{}
+	hostTest1.Spec.Rules = []networkingv1.IngressRule{
 		{
 			Host: "hello-world.info",
-			IngressRuleValue: extv1beta1.IngressRuleValue{
-				HTTP: &extv1beta1.HTTPIngressRuleValue{
-					Paths: []extv1beta1.HTTPIngressPath{
+			IngressRuleValue: networkingv1.IngressRuleValue{
+				HTTP: &networkingv1.HTTPIngressRuleValue{
+					Paths: []networkingv1.HTTPIngressPath{
 						{
 							Path: "/v2",
-							Backend: extv1beta1.IngressBackend{
-								ServiceName: "app",
-								ServicePort: intstr.FromInt(80),
+							Backend: networkingv1.IngressBackend{
+								Service: &networkingv1.IngressServiceBackend{
+									Name: "app",
+									Port: networkingv1.ServiceBackendPort{
+										Number: 80,
+									},
+								},
 							},
 						},
 					},
@@ -66,23 +68,27 @@ func Test_IngressListHandler(t *testing.T) {
 	hostTest2 := testutil.CreateIngress("ingress")
 	hostTest2.CreationTimestamp = metav1.Time{Time: now}
 	hostTest2.Labels = labels
-	hostTest2.Spec.TLS = []extv1beta1.IngressTLS{
+	hostTest2.Spec.TLS = []networkingv1.IngressTLS{
 		{
 			SecretName: "secret",
 			Hosts:      []string{"echo1.example.com", "echo2.example.com"},
 		},
 	}
-	hostTest2.Spec.Rules = []extv1beta1.IngressRule{
+	hostTest2.Spec.Rules = []networkingv1.IngressRule{
 		{
 			Host: "echo1.example.com",
-			IngressRuleValue: extv1beta1.IngressRuleValue{
-				HTTP: &extv1beta1.HTTPIngressRuleValue{
-					Paths: []extv1beta1.HTTPIngressPath{
+			IngressRuleValue: networkingv1.IngressRuleValue{
+				HTTP: &networkingv1.HTTPIngressRuleValue{
+					Paths: []networkingv1.HTTPIngressPath{
 						{
 							Path: "path1/example.com",
-							Backend: extv1beta1.IngressBackend{
-								ServiceName: "app",
-								ServicePort: intstr.FromInt(8080),
+							Backend: networkingv1.IngressBackend{
+								Service: &networkingv1.IngressServiceBackend{
+									Name: "app",
+									Port: networkingv1.ServiceBackendPort{
+										Number: 8080,
+									},
+								},
 							},
 						},
 					},
@@ -91,14 +97,18 @@ func Test_IngressListHandler(t *testing.T) {
 		},
 		{
 			Host: "echo2.example.com",
-			IngressRuleValue: extv1beta1.IngressRuleValue{
-				HTTP: &extv1beta1.HTTPIngressRuleValue{
-					Paths: []extv1beta1.HTTPIngressPath{
+			IngressRuleValue: networkingv1.IngressRuleValue{
+				HTTP: &networkingv1.HTTPIngressRuleValue{
+					Paths: []networkingv1.HTTPIngressPath{
 						{
 							Path: "path2/example.com",
-							Backend: extv1beta1.IngressBackend{
-								ServiceName: "app",
-								ServicePort: intstr.FromInt(8080),
+							Backend: networkingv1.IngressBackend{
+								Service: &networkingv1.IngressServiceBackend{
+									Name: "app",
+									Port: networkingv1.ServiceBackendPort{
+										Number: 8080,
+									},
+								},
 							},
 						},
 					},
@@ -107,16 +117,16 @@ func Test_IngressListHandler(t *testing.T) {
 		},
 	}
 
-	tlsList := &extv1beta1.IngressList{
-		Items: []extv1beta1.Ingress{*tlsObject},
+	tlsList := &networkingv1.IngressList{
+		Items: []networkingv1.Ingress{*tlsObject},
 	}
 
-	hostTest1List := &extv1beta1.IngressList{
-		Items: []extv1beta1.Ingress{*hostTest1},
+	hostTest1List := &networkingv1.IngressList{
+		Items: []networkingv1.Ingress{*hostTest1},
 	}
 
-	hostTest2List := &extv1beta1.IngressList{
-		Items: []extv1beta1.Ingress{*hostTest2},
+	hostTest2List := &networkingv1.IngressList{
+		Items: []networkingv1.Ingress{*hostTest2},
 	}
 
 	cols := component.NewTableCols("Name", "Labels", "Hosts", "Address", "Ports", "Age")
@@ -126,7 +136,7 @@ func Test_IngressListHandler(t *testing.T) {
 
 	cases := []struct {
 		name     string
-		list     *extv1beta1.IngressList
+		list     *networkingv1.IngressList
 		expected *component.Table
 		isErr    bool
 	}{
@@ -284,24 +294,28 @@ func Test_IngressConfiguration(t *testing.T) {
 	ingressNoBackend := testutil.CreateIngress("ingress")
 	ingressNoBackend.CreationTimestamp = metav1.Time{Time: now}
 	ingressNoBackend.Labels = labels
-	ingressNoBackend.Spec.Backend = nil
+	ingressNoBackend.Spec.DefaultBackend = nil
 
 	ingressALB := testutil.CreateIngress("ingress")
 	ingressALB.Annotations = map[string]string{
 		"alb.ingress.kubernetes.io/actions.ssl-redirect": `{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}`,
 	}
-	ingressALB.Spec.Backend = nil
-	ingressALB.Spec.Rules = []extv1beta1.IngressRule{
+	ingressALB.Spec.DefaultBackend = nil
+	ingressALB.Spec.Rules = []networkingv1.IngressRule{
 		{
 			Host: "",
-			IngressRuleValue: extv1beta1.IngressRuleValue{
-				HTTP: &extv1beta1.HTTPIngressRuleValue{
-					Paths: []extv1beta1.HTTPIngressPath{
+			IngressRuleValue: networkingv1.IngressRuleValue{
+				HTTP: &networkingv1.HTTPIngressRuleValue{
+					Paths: []networkingv1.HTTPIngressPath{
 						{
 							Path: "/",
-							Backend: extv1beta1.IngressBackend{
-								ServiceName: "ssl-redirect",
-								ServicePort: intstr.FromString("use-annotation"),
+							Backend: networkingv1.IngressBackend{
+								Service: &networkingv1.IngressServiceBackend{
+									Name: "ssl-redirect",
+									Port: networkingv1.ServiceBackendPort{
+										Name: "use-annotation",
+									},
+								},
 							},
 						},
 					},
@@ -312,7 +326,7 @@ func Test_IngressConfiguration(t *testing.T) {
 
 	cases := []struct {
 		name     string
-		ingress  *extv1beta1.Ingress
+		ingress  *networkingv1.Ingress
 		expected component.Component
 		isErr    bool
 	}{
@@ -386,18 +400,22 @@ func Test_createIngressRules(t *testing.T) {
 	ingress := testutil.CreateIngress("ingress")
 
 	ingressWithRules := testutil.CreateIngress("ingress")
-	ingressWithRules.Spec.Rules = []extv1beta1.IngressRule{
+	ingressWithRules.Spec.Rules = []networkingv1.IngressRule{
 		{
 
 			Host: "",
-			IngressRuleValue: extv1beta1.IngressRuleValue{
-				HTTP: &extv1beta1.HTTPIngressRuleValue{
-					Paths: []extv1beta1.HTTPIngressPath{
+			IngressRuleValue: networkingv1.IngressRuleValue{
+				HTTP: &networkingv1.HTTPIngressRuleValue{
+					Paths: []networkingv1.HTTPIngressPath{
 						{
 							Path: "/",
-							Backend: extv1beta1.IngressBackend{
-								ServiceName: "b1",
-								ServicePort: intstr.FromInt(80),
+							Backend: networkingv1.IngressBackend{
+								Service: &networkingv1.IngressServiceBackend{
+									Name: "b1",
+									Port: networkingv1.ServiceBackendPort{
+										Number: 80,
+									},
+								},
 							},
 						},
 					},
@@ -406,14 +424,18 @@ func Test_createIngressRules(t *testing.T) {
 		},
 		{
 			Host: "",
-			IngressRuleValue: extv1beta1.IngressRuleValue{
-				HTTP: &extv1beta1.HTTPIngressRuleValue{
-					Paths: []extv1beta1.HTTPIngressPath{
+			IngressRuleValue: networkingv1.IngressRuleValue{
+				HTTP: &networkingv1.HTTPIngressRuleValue{
+					Paths: []networkingv1.HTTPIngressPath{
 						{
 							Path: "/aws",
-							Backend: extv1beta1.IngressBackend{
-								ServiceName: "ssl-redirect",
-								ServicePort: intstr.FromString("use-annotation"),
+							Backend: networkingv1.IngressBackend{
+								Service: &networkingv1.IngressServiceBackend{
+									Name: "ssl-redirect",
+									Port: networkingv1.ServiceBackendPort{
+										Name: "use-annotation",
+									},
+								},
 							},
 						},
 					},
@@ -426,7 +448,7 @@ func Test_createIngressRules(t *testing.T) {
 
 	cases := []struct {
 		name     string
-		ingress  *extv1beta1.Ingress
+		ingress  *networkingv1.Ingress
 		expected *component.Table
 		isErr    bool
 	}{

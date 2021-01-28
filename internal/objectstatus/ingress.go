@@ -8,14 +8,12 @@ package objectstatus
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/gobwas/glob"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
-	extv1beta1 "k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/vmware-tanzu/octant/pkg/store"
@@ -31,8 +29,7 @@ func runIngressStatus(ctx context.Context, object runtime.Object, o store.Store)
 		return ObjectStatus{}, errors.Errorf("ingress is nil")
 	}
 
-	ingress := &extv1beta1.Ingress{}
-
+	ingress := &networkingv1.Ingress{}
 	if err := scheme.Scheme.Convert(object, ingress, 0); err != nil {
 		return ObjectStatus{}, errors.Wrap(err, "convert object to ingress")
 	}
@@ -54,7 +51,7 @@ func runIngressStatus(ctx context.Context, object runtime.Object, o store.Store)
 }
 
 type ingressStatus struct {
-	ingress     extv1beta1.Ingress
+	ingress     networkingv1.Ingress
 	objectStore store.Store
 }
 
@@ -75,11 +72,11 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 	}
 
 	for _, backend := range backends {
-		if backend.ServicePort.String() == "use-annotation" {
-			albAction := ingressAlbActionAnnotation + backend.ServiceName
+		if backend.Service.Port.String() == "use-annotation" {
+			albAction := ingressAlbActionAnnotation + backend.Service.Name
 			if _, ok := ingress.Annotations[albAction]; !ok {
 				status.SetError()
-				status.AddDetailf("Backend refers to annotations %q which does't exist", albAction)
+				status.AddDetailf("Backend refers to annotations %q which doesn't exist", albAction)
 			}
 			continue
 		}
@@ -88,7 +85,7 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 			Namespace:  ingress.Namespace,
 			APIVersion: "v1",
 			Kind:       "Service",
-			Name:       backend.ServiceName,
+			Name:       backend.Service.Name,
 		}
 
 		service := &corev1.Service{}
@@ -107,14 +104,14 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 		if service.Name == "" {
 			status.SetError()
 			status.AddDetailf("Backend refers to service %q which doesn't exist",
-				backend.ServiceName)
+				backend.Service.Name)
 			continue
 		}
 
 		if !matchBackendPort(backend, service.Spec.Ports) {
 			status.SetError()
 			status.AddDetailf("Backend for service %q specifies an invalid port",
-				backend.ServiceName)
+				backend.Service.Name)
 			continue
 		}
 	}
@@ -169,13 +166,12 @@ func (is *ingressStatus) run(ctx context.Context) (ObjectStatus, error) {
 	return status, nil
 }
 
-func (is *ingressStatus) backends() []extv1beta1.IngressBackend {
-	var list []extv1beta1.IngressBackend
+func (is *ingressStatus) backends() []networkingv1.IngressBackend {
+	var list []networkingv1.IngressBackend
 
 	ingress := is.ingress
-
-	if ingress.Spec.Backend != nil && ingress.Spec.Backend.ServiceName != "" {
-		list = append(list, *ingress.Spec.Backend)
+	if ingress.Spec.DefaultBackend != nil && ingress.Spec.DefaultBackend.Service.Name != "" {
+		list = append(list, *ingress.Spec.DefaultBackend)
 	}
 
 	for _, rule := range ingress.Spec.Rules {
@@ -184,7 +180,7 @@ func (is *ingressStatus) backends() []extv1beta1.IngressBackend {
 		}
 
 		for _, p := range rule.IngressRuleValue.HTTP.Paths {
-			if p.Backend.ServiceName == "" {
+			if p.Backend.Service.Name == "" {
 				continue
 			}
 
@@ -246,28 +242,21 @@ func (hm hostMatcher) Match(s string) bool {
 	return false
 }
 
-// matchBackendPort returns true if a matching port is founded for the provided backend
+// matchBackendPort returns true if a matching port is found for the provided backend
 // in the slice of service ports.
-func matchBackendPort(b extv1beta1.IngressBackend, ports []corev1.ServicePort) bool {
+func matchBackendPort(b networkingv1.IngressBackend, ports []corev1.ServicePort) bool {
+	if len(ports) == 0 && b.Service.Port.Number > 0 {
+		return false
+	}
 	for _, p := range ports {
-		switch b.ServicePort.Type {
-		case intstr.String:
-			if i, err := strconv.Atoi(b.ServicePort.StrVal); err == nil {
-				if int32(i) == p.Port {
-					return true
-				}
-			}
-			if b.ServicePort.StrVal == p.Name {
-				return true
-			}
-		case intstr.Int:
-			if b.ServicePort.IntVal == p.Port {
-				return true
-			}
-		default:
-			continue
+		if b.Service.Port.Number != 0 && b.Service.Port.Number != p.Port {
+			return false
+		}
+
+		if b.Service.Port.Name != "" && b.Service.Port.Name != p.Name {
+			return false
 		}
 	}
 
-	return false
+	return true
 }

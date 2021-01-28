@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
-	extv1beta1 "k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
@@ -30,7 +30,7 @@ func TestService_Visit(t *testing.T) {
 	ingress := testutil.CreateIngress("ingress")
 	q.EXPECT().
 		IngressesForService(gomock.Any(), object).
-		Return([]*extv1beta1.Ingress{ingress}, nil)
+		Return([]*networkingv1.Ingress{ingress}, nil)
 	pod := testutil.CreatePod("pod")
 	q.EXPECT().
 		PodsForService(gomock.Any(), object).

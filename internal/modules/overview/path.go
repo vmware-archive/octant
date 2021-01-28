@@ -86,7 +86,7 @@ func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 		p = "/config-and-storage/service-accounts"
 	case (apiVersion == "autoscaling/v1" || apiVersion == "autoscaling/v2beta2") && kind == "HorizontalPodAutoscaler":
 		p = "/discovery-and-load-balancing/horizontal-pod-autoscalers"
-	case apiVersion == "extensions/v1beta1" && kind == "Ingress":
+	case apiVersion == "networking.k8s.io/v1" && kind == "Ingress":
 		p = "/discovery-and-load-balancing/ingresses"
 	case apiVersion == "v1" && kind == "Service":
 		p = "/discovery-and-load-balancing/services"

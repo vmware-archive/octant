@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
-	extv1beta1 "k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -37,7 +37,7 @@ func (i *Ingress) Visit(ctx context.Context, object *unstructured.Unstructured, 
 	ctx, span := trace.StartSpan(ctx, "visitIngress")
 	defer span.End()
 
-	ingress := &extv1beta1.Ingress{}
+	ingress := &networkingv1.Ingress{}
 	if err := kubernetes.FromUnstructured(object, ingress); err != nil {
 		return err
 	}

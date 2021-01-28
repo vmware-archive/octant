@@ -8,13 +8,14 @@ package testutil
 import (
 	"fmt"
 
+	extv1beta1 "k8s.io/api/extensions/v1beta1"
+
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
-	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -191,14 +192,18 @@ func CreateHorizontalPodAutoscaler(name string) *autoscalingv1.HorizontalPodAuto
 }
 
 // CreateIngress creates an ingress
-func CreateIngress(name string) *extv1beta1.Ingress {
-	return &extv1beta1.Ingress{
+func CreateIngress(name string) *networkingv1.Ingress {
+	return &networkingv1.Ingress{
 		TypeMeta:   genTypeMeta(gvk.Ingress),
 		ObjectMeta: genObjectMeta(name, true),
-		Spec: extv1beta1.IngressSpec{
-			Backend: &extv1beta1.IngressBackend{
-				ServiceName: "app",
-				ServicePort: intstr.FromInt(80),
+		Spec: networkingv1.IngressSpec{
+			DefaultBackend: &networkingv1.IngressBackend{
+				Service: &networkingv1.IngressServiceBackend{
+					Name: "app",
+					Port: networkingv1.ServiceBackendPort{
+						Number: 80,
+					},
+				},
 			},
 		},
 	}

@@ -11,6 +11,8 @@ import (
 	"sort"
 	"testing"
 
+	networkingv1 "k8s.io/api/networking/v1"
+
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +22,6 @@ import (
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
-	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -299,33 +300,39 @@ func TestCacheQueryer_IngressesForService(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{Name: "service", Namespace: "default"},
 	}
 
-	ingress1 := &extv1beta1.Ingress{
-		TypeMeta:   metav1.TypeMeta{APIVersion: "extensions/v1beta1", Kind: "Ingress"},
+	ingress1 := &networkingv1.Ingress{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "networking.k8s.io/v1", Kind: "Ingress"},
 		ObjectMeta: metav1.ObjectMeta{Name: "ingress1", Namespace: "default"},
-		Spec: extv1beta1.IngressSpec{
-			Backend: &extv1beta1.IngressBackend{
-				ServiceName: "service",
+		Spec: networkingv1.IngressSpec{
+			DefaultBackend: &networkingv1.IngressBackend{
+				Service: &networkingv1.IngressServiceBackend{
+					Name: "service",
+				},
 			},
 		},
 	}
 
-	ingress2 := &extv1beta1.Ingress{
-		TypeMeta:   metav1.TypeMeta{APIVersion: "extensions/v1beta1", Kind: "Ingress"},
+	ingress2 := &networkingv1.Ingress{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "networking.k8s.io/v1", Kind: "Ingress"},
 		ObjectMeta: metav1.ObjectMeta{Name: "ingress2", Namespace: "default"},
-		Spec: extv1beta1.IngressSpec{
-			Rules: []extv1beta1.IngressRule{
+		Spec: networkingv1.IngressSpec{
+			Rules: []networkingv1.IngressRule{
 				{
-					IngressRuleValue: extv1beta1.IngressRuleValue{
-						HTTP: &extv1beta1.HTTPIngressRuleValue{
-							Paths: []extv1beta1.HTTPIngressPath{
+					IngressRuleValue: networkingv1.IngressRuleValue{
+						HTTP: &networkingv1.HTTPIngressRuleValue{
+							Paths: []networkingv1.HTTPIngressPath{
 								{
-									Backend: extv1beta1.IngressBackend{
-										ServiceName: "service",
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: "service",
+										},
 									},
 								},
 								{
-									Backend: extv1beta1.IngressBackend{
-										ServiceName: "",
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: "",
+										},
 									},
 								},
 							},
@@ -333,14 +340,14 @@ func TestCacheQueryer_IngressesForService(t *testing.T) {
 					},
 				},
 				{
-					IngressRuleValue: extv1beta1.IngressRuleValue{},
+					IngressRuleValue: networkingv1.IngressRuleValue{},
 				},
 			},
 		},
 	}
 
-	ingress3 := &extv1beta1.Ingress{
-		TypeMeta:   metav1.TypeMeta{APIVersion: "extensions/v1beta1", Kind: "Ingress"},
+	ingress3 := &networkingv1.Ingress{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "networking.k8s.io/v1", Kind: "Ingress"},
 		ObjectMeta: metav1.ObjectMeta{Name: "ingress2", Namespace: "default"},
 	}
 
@@ -348,7 +355,7 @@ func TestCacheQueryer_IngressesForService(t *testing.T) {
 		name     string
 		service  *corev1.Service
 		setup    func(t *testing.T, o *storeFake.MockStore)
-		expected []*extv1beta1.Ingress
+		expected []*networkingv1.Ingress
 		isErr    bool
 	}{
 		{
@@ -357,14 +364,14 @@ func TestCacheQueryer_IngressesForService(t *testing.T) {
 			setup: func(t *testing.T, o *storeFake.MockStore) {
 				ingressesKey := store.Key{
 					Namespace:  "default",
-					APIVersion: "extensions/v1beta1",
+					APIVersion: "networking.k8s.io/v1",
 					Kind:       "Ingress",
 				}
 				o.EXPECT().
 					List(gomock.Any(), gomock.Eq(ingressesKey)).
 					Return(testutil.ToUnstructuredList(t, ingress1, ingress2, ingress3), false, nil)
 			},
-			expected: []*extv1beta1.Ingress{
+			expected: []*networkingv1.Ingress{
 				ingress1, ingress2,
 			},
 		},
@@ -379,7 +386,7 @@ func TestCacheQueryer_IngressesForService(t *testing.T) {
 			setup: func(t *testing.T, o *storeFake.MockStore) {
 				ingressesKey := store.Key{
 					Namespace:  "default",
-					APIVersion: "extensions/v1beta1",
+					APIVersion: "networking.k8s.io/v1",
 					Kind:       "Ingress",
 				}
 				o.EXPECT().
@@ -925,8 +932,10 @@ func TestCacheQueryer_PodsForService(t *testing.T) {
 
 func TestCacheQueryer_ServicesForIngress_service_not_found(t *testing.T) {
 	ingress := testutil.CreateIngress("ingress")
-	ingress.Spec.Backend = &extv1beta1.IngressBackend{
-		ServiceName: "not-found",
+	ingress.Spec.DefaultBackend = &networkingv1.IngressBackend{
+		Service: &networkingv1.IngressServiceBackend{
+			Name: "not-found",
+		},
 	}
 
 	controller := gomock.NewController(t)
@@ -948,33 +957,39 @@ func TestCacheQueryer_ServicesForIngress_service_not_found(t *testing.T) {
 }
 
 func TestCacheQueryer_ServicesForIngress(t *testing.T) {
-	ingress1 := &extv1beta1.Ingress{
-		TypeMeta:   metav1.TypeMeta{APIVersion: "extensions/v1beta1", Kind: "Ingress"},
+	ingress1 := &networkingv1.Ingress{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "networking.k8s.io/v1", Kind: "Ingress"},
 		ObjectMeta: metav1.ObjectMeta{Name: "ingress1", Namespace: "default"},
-		Spec: extv1beta1.IngressSpec{
-			Backend: &extv1beta1.IngressBackend{
-				ServiceName: "service1",
+		Spec: networkingv1.IngressSpec{
+			DefaultBackend: &networkingv1.IngressBackend{
+				Service: &networkingv1.IngressServiceBackend{
+					Name: "service1",
+				},
 			},
 		},
 	}
 
-	ingress2 := &extv1beta1.Ingress{
-		TypeMeta:   metav1.TypeMeta{APIVersion: "extensions/v1beta1", Kind: "Ingress"},
+	ingress2 := &networkingv1.Ingress{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "networking.k8s.io/v1", Kind: "Ingress"},
 		ObjectMeta: metav1.ObjectMeta{Name: "ingress2", Namespace: "default"},
-		Spec: extv1beta1.IngressSpec{
-			Rules: []extv1beta1.IngressRule{
+		Spec: networkingv1.IngressSpec{
+			Rules: []networkingv1.IngressRule{
 				{
-					IngressRuleValue: extv1beta1.IngressRuleValue{
-						HTTP: &extv1beta1.HTTPIngressRuleValue{
-							Paths: []extv1beta1.HTTPIngressPath{
+					IngressRuleValue: networkingv1.IngressRuleValue{
+						HTTP: &networkingv1.HTTPIngressRuleValue{
+							Paths: []networkingv1.HTTPIngressPath{
 								{
-									Backend: extv1beta1.IngressBackend{
-										ServiceName: "service2",
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: "service2",
+										},
 									},
 								},
 								{
-									Backend: extv1beta1.IngressBackend{
-										ServiceName: "service1",
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: "service1",
+										},
 									},
 								},
 							},
@@ -1007,7 +1022,7 @@ func TestCacheQueryer_ServicesForIngress(t *testing.T) {
 
 	cases := []struct {
 		name     string
-		ingress  *extv1beta1.Ingress
+		ingress  *networkingv1.Ingress
 		setup    func(t *testing.T, o *storeFake.MockStore)
 		expected []string
 		isErr    bool

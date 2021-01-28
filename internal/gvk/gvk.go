@@ -27,7 +27,7 @@ var (
 	ExtReplicaSet                  = schema.GroupVersionKind{Group: "extensions", Version: "v1beta1", Kind: "ReplicaSet"}
 	Event                          = schema.GroupVersionKind{Version: "v1", Kind: "Event"}
 	HorizontalPodAutoscaler        = schema.GroupVersionKind{Group: "autoscaling", Version: "v1", Kind: "HorizontalPodAutoscaler"}
-	Ingress                        = schema.GroupVersionKind{Group: "extensions", Version: "v1beta1", Kind: "Ingress"}
+	Ingress                        = schema.GroupVersionKind{Group: "networking.k8s.io", Version: "v1", Kind: "Ingress"}
 	Job                            = schema.GroupVersionKind{Group: "batch", Version: "v1", Kind: "Job"}
 	MutatingWebhookConfiguration   = schema.GroupVersionKind{Group: "admissionregistration.k8s.io", Version: "v1", Kind: "MutatingWebhookConfiguration"}
 	Node                           = schema.GroupVersionKind{Version: "v1", Kind: "Node"}
