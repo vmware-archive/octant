@@ -135,15 +135,15 @@ function createWindow(): BrowserWindow {
   // Create the browser window.
   win = new BrowserWindow(options);
 
-  win.setIcon(path.join(__dirname, 'dist/dash-frontend/assets/icons/icon.png'));
+  win.setIcon(path.join(__dirname, 'dist/octant/assets/icons/icon.png'));
 
   if (local) {
     win.webContents.openDevTools();
   }
-  win.loadFile(path.join(__dirname, 'dist/dash-frontend/index.html'));
+  win.loadFile(path.join(__dirname, 'dist/octant/index.html'));
 
   win.webContents.on('did-fail-load', () => {
-    win.loadFile(path.join(__dirname, 'dist/dash-frontend/index.html'));
+    win.loadFile(path.join(__dirname, 'dist/octant/index.html'));
   });
 
   // Emitted when the window is closed.

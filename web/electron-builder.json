@@ -28,15 +28,15 @@
     "writeUpdateInfo": false
   },
   "win": {
-    "icon": "dist/dash-frontend/assets/icons/icon.ico",
+    "icon": "dist/octant/assets/icons/icon.ico",
     "target": ["nsis"]
   },
   "mac": {
-    "icon": "dist/dash-frontend/assets/icons/icon.icns",
+    "icon": "dist/octant/assets/icons/icon.icns",
     "target": ["dmg"]
   },
   "linux": {
-    "icon": "dist/dash-frontend/assets/icons/icon.png",
+    "icon": "dist/octant/assets/icons/icon.png",
     "category": "development",
     "target": ["AppImage"]
   }

@@ -150,7 +150,7 @@ func (localhostAddr) String() string {
 func TestNewRunnerLoadsValidKubeConfigFilteringNonexistent(t *testing.T) {
 	srv := fakeK8sAPIThatForbidsWatchingCRDs()
 	defer srv.Close()
-	stubRiceBox("dist/dash-frontend")
+	stubRiceBox("dist/octant")
 	kubeConfig := tempFile(makeKubeConfig("test-context", srv.URL))
 	defer os.Remove(kubeConfig.Name())
 	listener := NewInMemoryListener()
@@ -221,7 +221,7 @@ func mockClusterClientReturningNamespace(controller *gomock.Controller, namespac
 func TestNewRunnerRunsLoadingAPIWhenStartedWithoutKubeConfig(t *testing.T) {
 	srv := fakeK8sAPIThatForbidsWatchingCRDs()
 	defer srv.Close()
-	stubRiceBox("dist/dash-frontend")
+	stubRiceBox("dist/octant")
 
 	listener := NewInMemoryListener()
 	cancel, err := makeRunner(internalLog.NopLogger(), WithListener(listener))
@@ -248,7 +248,7 @@ func TestNewRunnerRunsLoadingAPIWhenStartedWithoutKubeConfig(t *testing.T) {
 }
 
 func TestNewRunnerShutsDownPluginsWhenStoppedBeforeReceivingKubeConfig(t *testing.T) {
-	stubRiceBox("dist/dash-frontend")
+	stubRiceBox("dist/octant")
 	listener := NewInMemoryListener()
 	shutdownCh := make(chan bool)
 	ctx, cancel := context.WithCancel(context.Background())

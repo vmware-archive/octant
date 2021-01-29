@@ -11,7 +11,7 @@ import (
 
 // Handler create a http handler for the web content.
 func Handler() (http.Handler, error) {
-	box, err := rice.FindBox("dist/dash-frontend")
+	box, err := rice.FindBox("dist/octant")
 	if err != nil {
 		return nil, err
 	}
