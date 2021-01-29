@@ -27,7 +27,14 @@ const errLogPath = path.join(tmpPath, 'api.err-' + date + '.log');
 const template: Electron.MenuItemConstructorOptions[] = [
   {
     label: 'File',
-    submenu: [{ label: 'Quit Octant', role: 'close' }],
+    submenu: [
+      { label: 'Preferences',
+        click(){
+          win.webContents.send('openPreferences');
+        } },
+      { type: 'separator' },
+      { label: 'Quit Octant', role: 'close' }
+      ],
   },
   {
     label: 'Edit',

@@ -56,7 +56,7 @@ export class ThemeService implements OnDestroy {
 
     const themeType = localStorage.getItem('theme') as ThemeType;
     this.themeType = themeType || defaultTheme.type;
-    
+
     this.renderer = rendererFactory.createRenderer(null, null);
 
     this.storageEventHandler = (e: StorageEvent): void => {

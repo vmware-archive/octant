@@ -18,4 +18,17 @@ describe('PreferencesService', () => {
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
+
+  it('collapsed set properly', () => {
+    const defaultPrefs = service.getPreferences();
+    const defaultElement = defaultPrefs.panels[0].sections[1].elements[0];
+    expect(defaultElement.name).toEqual('general.navigation');
+    expect(defaultElement.value).toEqual('expanded');
+
+    service.navCollapsed.next(true);
+    const newPrefs = service.getPreferences();
+    const newElement = newPrefs.panels[0].sections[1].elements[0];
+    expect(newElement.name).toEqual('general.navigation');
+    expect(newElement.value).toEqual('collapsed');
+  });
 });

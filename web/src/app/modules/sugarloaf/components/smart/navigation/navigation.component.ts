@@ -86,7 +86,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
       }
     );
 
-    this.subscriptionShowLabels = this.navigationService.showLabels.subscribe(
+    this.subscriptionShowLabels = this.preferencesService.showLabels.subscribe(
       col => {
         if (this.showLabels !== col) {
           this.showLabels = col;
@@ -109,7 +109,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
     } else if (event.key === 'L' && event.ctrlKey) {
       event.preventDefault();
       event.cancelBubble = true;
-      this.navigationService.showLabels.next(!this.showLabels);
+      this.preferencesService.showLabels.next(!this.showLabels);
     }
   }
 

@@ -12,19 +12,28 @@ import { ThemeService } from '../theme/theme.service';
   providedIn: 'root',
 })
 export class PreferencesService {
-  public preferencesOpened: BehaviorSubject<boolean> = new BehaviorSubject<
-    boolean
-  >(false);
+  public preferencesOpened: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
+    false
+  );
 
   public navCollapsed: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
     false
   );
 
+  public showLabels: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
+    true
+  );
+
   constructor(private themeService: ThemeService) {}
 
-  public preferencesChanged(update: any) {
+  public preferencesChanged(update: Preferences) {
     const collapsed = update['general.navigation'] === 'collapsed';
+    const showLabels = update['general.labels'] === 'show';
     const isLightTheme = update['general.theme'] === 'light';
+
+    if (this.showLabels.value !== showLabels) {
+      this.showLabels.next(showLabels);
+    }
 
     if (this.navCollapsed.value !== collapsed) {
       this.navCollapsed.next(collapsed);
@@ -83,6 +92,28 @@ export class PreferencesService {
                       {
                         label: 'Collapsed',
                         value: 'collapsed',
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+            {
+              name: 'Navigation labels',
+              elements: [
+                {
+                  name: 'general.labels',
+                  type: 'radio',
+                  value: this.showLabels.value ? 'show' : 'hide',
+                  config: {
+                    values: [
+                      {
+                        label: 'Show Labels',
+                        value: 'show',
+                      },
+                      {
+                        label: 'Hide Labels',
+                        value: 'hide',
                       },
                     ],
                   },

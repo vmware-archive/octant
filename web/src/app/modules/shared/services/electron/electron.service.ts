@@ -7,6 +7,7 @@ import { Injectable } from '@angular/core';
 import { ipcRenderer, webFrame } from 'electron';
 import * as childProcess from 'child_process';
 import * as fs from 'fs';
+import { PreferencesService } from '../preferences/preferences.service';
 
 @Injectable({
   providedIn: 'root',
@@ -18,7 +19,7 @@ export class ElectronService {
   fs: typeof fs;
 
   public portNumber: number;
-  constructor() {
+  constructor(private preferencesService: PreferencesService) {
     if (this.isElectron()) {
       this.ipcRenderer = window.require('electron').ipcRenderer;
       this.webFrame = window.require('electron').webFrame;
@@ -27,6 +28,12 @@ export class ElectronService {
 
       this.ipcRenderer.once('port-message', (event, message) => {
         this.portNumber = message;
+      });
+
+      this.ipcRenderer.on('openPreferences', () => {
+        if (!this.preferencesService.preferencesOpened.value) {
+          this.preferencesService.preferencesOpened.next(true);
+        }
       });
     }
   }
