@@ -14,7 +14,9 @@
         </a>
       </div>
         <!-- Navigation items -->
-        <div class="header-nav">
+      <div class="header-nav">
+        <clr-icon *ngIf="isElectron" class="header-centered" (click)="back()" shape="caret left" size="24"></clr-icon>
+        <clr-icon *ngIf="isElectron" class="header-centered" (click)="forward()" shape="caret right" size="24"></clr-icon>
         <div class="input-filter">
           <app-input-filter></app-input-filter>
         </div>

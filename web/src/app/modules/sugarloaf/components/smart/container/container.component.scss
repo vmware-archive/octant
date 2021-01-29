@@ -56,10 +56,24 @@
 
     .header {
       @include electron-header;
+    }
 
-      .branding {
-        display: none;
+    .header-nav {
+      padding-left: 7.5rem !important;
+
+      clr-icon + clr-icon {
+        margin-left: 0.5rem;
       }
+    }
+
+    .header-centered {
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    .input-filter {
+      margin-left: 3.5rem;
     }
   }
 
