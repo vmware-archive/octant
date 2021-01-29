@@ -9,48 +9,37 @@ import (
 )
 
 type informerSynced struct {
-	status map[string]bool
-
-	mu sync.RWMutex
+	status sync.Map
 }
 
 func initInformerSynced() *informerSynced {
 	return &informerSynced{
-		status: make(map[string]bool),
+		status: sync.Map{},
 	}
 }
 
 func (c *informerSynced) setSynced(key store.Key, value bool) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	c.status[key.String()] = value
+	c.status.Store(key.String(), value)
 }
 
 func (c *informerSynced) hasSynced(key store.Key) bool {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
-	v, ok := c.status[key.String()]
+	v, ok := c.status.Load(key.String())
 	if !ok {
 		return true
 	}
-
-	return v
+	return v.(bool)
 }
 
 func (c *informerSynced) hasSeen(key store.Key) bool {
-	_, ok := c.status[key.String()]
+	_, ok := c.status.Load(key.String())
 	return ok
 }
 
 func (c *informerSynced) reset() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	for key := range c.status {
-		delete(c.status, key)
-	}
+	c.status.Range(func(k, v interface{}) bool {
+		c.status.Delete(k)
+		return true
+	})
 }
 
 type factoriesCache struct {
