@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "dash-frontend": {
+    "octant": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -34,7 +34,7 @@
               "overlayscrollbars"
             ],
             "aot": true,
-            "outputPath": "dist/dash-frontend",
+            "outputPath": "dist/octant",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -107,19 +107,19 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "dash-frontend:build",
+            "browserTarget": "octant:build",
             "disableHostCheck": true
           },
           "configurations": {
             "production": {
-              "browserTarget": "dash-frontend:build:production"
+              "browserTarget": "octant:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "dash-frontend:build"
+            "browserTarget": "octant:build"
           }
         },
         "test": {
@@ -163,7 +163,7 @@
         }
       }
     },
-    "dash-frontend-e2e": {
+    "octant-e2e": {
       "root": "e2e/",
       "projectType": "application",
       "prefix": "",
@@ -172,11 +172,11 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "dash-frontend:serve"
+            "devServerTarget": "octant:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "dash-frontend:serve:production"
+              "devServerTarget": "octant:serve:production"
             }
           }
         },
@@ -192,5 +192,5 @@
       }
     }
   },
-  "defaultProject": "dash-frontend"
+  "defaultProject": "octant"
 }
