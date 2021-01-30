@@ -4,7 +4,10 @@
  *
  */
 
-import { app, BrowserWindow, Menu, screen, session, shell } from 'electron';
+import { app, BrowserWindow, Menu, screen, session } from 'electron';
+import { ApplicationMenu } from './electron/application-menu';
+import { TrayMenu } from './electron/tray-menu';
+import { apiLogPath, errLogPath, tmpPath, iconPath } from './electron/paths';
 import * as path from 'path';
 import * as child_process from 'child_process';
 import * as process from 'process';
@@ -15,11 +18,13 @@ let win: BrowserWindow = null;
 let serverPid: any = null;
 let state: any = {};
 let statePath: string = null;
-let date: string = new Date().toISOString();
+let closing = false;
+let tray = null;
 
 const args = process.argv.slice(1);
 const local = args.some(val => val === '--local');
 
+<<<<<<< HEAD
 const tmpPath = path.join(os.tmpdir(), 'octant');
 const apiLogPath = path.join(tmpPath, 'api.out-' + date + '.log');
 const errLogPath = path.join(tmpPath, 'api.err-' + date + '.log');
@@ -79,6 +84,10 @@ const template: Electron.MenuItemConstructorOptions[] = [
 
 const menu = Menu.buildFromTemplate(template);
 Menu.setApplicationMenu(menu);
+=======
+const applicationMenu = new ApplicationMenu();
+Menu.setApplicationMenu(applicationMenu.menu);
+>>>>>>> Add system menu tray and minimize/hide logic
 
 let saveBoundsCookie;
 
@@ -142,8 +151,7 @@ function createWindow(): BrowserWindow {
 
   // Create the browser window.
   win = new BrowserWindow(options);
-
-  win.setIcon(path.join(__dirname, 'dist/octant/assets/icons/icon.png'));
+  win.setIcon(iconPath);
 
   if (local) {
     win.webContents.openDevTools();
@@ -154,13 +162,22 @@ function createWindow(): BrowserWindow {
     win.loadFile(path.join(__dirname, 'dist/octant/index.html'));
   });
 
-  // Emitted when the window is closed.
-  win.on('closed', () => {
-    // Dereference the window object, usually you would store window
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    win = null;
+  win.on('close', (event) => {
+    if (closing) {
+      win = null;
+    } else {
+      event.preventDefault();
+      win.hide();
+    }
   });
+
+  // Emitted when the window is closed.
+  // win.on('closed', () => {
+  //   // Dereference the window object, usually you would store window
+  //   // in an array if your app supports multi windows, this is the time
+  //   // when you should delete the corresponding element.
+  //   win = null;
+  // });
   win.on('resize', saveBoundsSoon);
   win.on('move', saveBoundsSoon);
 
@@ -224,6 +241,8 @@ try {
       w.webContents.send('port-message', port);
     });
 
+    tray = new TrayMenu(win);
+
     // In event of a black background issue: https://github.com/electron/electron/issues/15947
     //setTimeout(createWindow, 400);
     session.defaultSession.webRequest.onBeforeSendHeaders(
@@ -235,13 +254,13 @@ try {
     );
   });
 
+  app.on('before-quit', () => {
+    closing = true;
+  })
+
   // Quit when all windows are closed.
   app.on('window-all-closed', () => {
-    // On OS X it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
-    if (process.platform !== 'darwin') {
-      app.quit();
-    }
+    app.quit();
   });
 
   app.on('activate', () => {
@@ -249,6 +268,8 @@ try {
     // dock icon is clicked and there are no other windows open.
     if (win === null) {
       createWindow();
+    } else {
+      win.show();
     }
   });
 } catch (e) {

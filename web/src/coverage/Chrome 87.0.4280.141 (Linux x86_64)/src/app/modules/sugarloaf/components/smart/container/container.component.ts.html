@@ -1,0 +1,374 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/app/modules/sugarloaf/components/smart/container/container.component.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../../../../../prettify.css" />
+    <link rel="stylesheet" href="../../../../../../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../../../../../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../../../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../../../../../../index.html">All files</a> / <a href="index.html">src/app/modules/sugarloaf/components/smart/container</a> container.component.ts</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">60% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>15/25</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/1</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">33.33% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>3/9</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">60.87% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>14/23</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+    </div>
+    <div class='status-line medium'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/*
+ * Copyright (c) 2020 the Octant contributors. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ */
+&nbsp;
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Location } from '@angular/common';
+import { Navigation } from '../../../models/navigation';
+import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
+import { IconService } from '../../../../shared/services/icon/icon.service';
+import { Preferences } from '../../../../shared/models/preference';
+import { NavigationService } from '../../../../shared/services/navigation/navigation.service';
+import { ElectronService } from '../../../../shared/services/electron/electron.service';
+&nbsp;
+// tslint:disable-next-line
+declare namespace astilectron {
+  export function onMessage(fn: (message: Message) =&gt; void);
+  export function sendMessage(
+    message: Message,
+    callback?: (message: Message) =&gt; void
+  );
+&nbsp;
+  export interface Message {
+    name: string;
+    payload: any;
+  }
+}
+&nbsp;
+@Component({
+  selector: 'app-root',
+  templateUrl: './container.component.html',
+  styleUrls: ['./container.component.scss'],
+})
+export class ContainerComponent implements OnInit, OnDestroy {
+  navigation: Navigation;
+  style: object = {};
+&nbsp;
+  preferencesOpened = false;
+  preferences: Preferences;
+&nbsp;
+  isElectron = false;
+&nbsp;
+  // This is a feature flag for the app-wide bottom panel. It can be removed
+  // once the bottom panel is integrated.
+  isBottomPanelEnabled = false;
+&nbsp;
+  constructor(
+    private location: Location,
+    private websocketService: WebsocketService,
+    private navigationService: NavigationService,
+    private electronService: ElectronService,
+    private iconService: IconService
+  ) {
+    iconService.load({
+      iconName: 'octant-logo',
+      // tslint:disable-next-line:max-line-length
+      iconSource: `&lt;svg width="106px" height="126px" viewBox="0 0 106 126" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"&gt; &lt;g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"&gt; &lt;g id="288026-vmw-os-lgo-octant-final" fill-rule="nonzero"&gt; &lt;g id="Group"&gt; &lt;circle id="Oval" fill="#FFFFFF" cx="53.4" cy="67.1" r="52.5"&gt;&lt;/circle&gt; &lt;path d="M58.6,112.7 L58.6,112.7 C58.6,115.5 56.4,117.7 53.6,117.7 L53.6,117.7 C50.8,117.7 48.6,115.5 48.6,112.7 L48.6,112.7 C48.6,110 50.8,107.7 53.6,107.7 L53.6,107.7 C56.4,107.7 58.6,110 58.6,112.7 Z" id="Path" fill="#62BB46"&gt;&lt;/path&gt; &lt;path d="M53.4,14.6 C24.4,14.6 0.9,38.1 0.9,67.1 C0.9,81 6.3,93.7 15.2,103 C16.6,104.5 18.1,105.8 19.6,107.1 L23.2,97.3 C21.5,95.6 19.9,93.7 18.5,91.7 C13.6,84.7 10.6,76.2 10.6,67 C10.6,43.3 29.8,24.2 53.4,24.2 C77,24.2 96.2,43.4 96.2,67 C96.2,76 93.4,84.3 88.7,91.2 C87.2,93.3 85.6,95.3 83.8,97.1 L87.4,106.9 C89,105.5 90.6,104.1 92,102.5 C100.6,93.2 105.8,80.7 105.8,67 C105.9,38.1 82.4,14.6 53.4,14.6 Z" id="Path" fill="#727175"&gt;&lt;/path&gt; &lt;path d="M83.8,97.2 L60.5,33.5 L57.2,34.7 L56.6,31.9 L55.4,32.1 L70.2,106.4 C65.9,108.3 61.2,109.4 56.2,109.8 C55.2,109.9 54.3,109.9 53.3,109.9 C52.5,109.9 51.7,109.9 50.9,109.8 C45.8,109.5 41,108.3 36.5,106.4 L51.3,32.1 L50.1,31.9 L49.5,34.7 L46.3,33.5 L22.9,97.3 L19.3,107.1 C19.7,107.5 20.2,107.9 20.6,108.2 L20.6,108.1 L20.6,108.1 L20.6,108.2 C20.6,108.2 20.6,108.2 20.6,108.2 L20.6,108.2 C21.3,108.8 22.1,109.3 22.9,109.9 C24.1,110.7 25.3,111.5 26.6,112.3 L26.6,112.3 C34.4,116.9 43.5,119.6 53.2,119.6 C63.1,119.6 72.4,116.8 80.3,112.1 L80.3,112.1 C81.5,111.4 82.6,110.6 83.7,109.8 C84.6,109.2 85.4,108.6 86.2,107.9 C86.6,107.6 86.9,107.3 87.3,107 L83.8,97.2 Z M29.9,102.9 C28.8,102.1 27.7,101.3 26.6,100.5 L48.6,40.6 L35.5,106 C33.5,105.1 31.7,104.1 29.9,102.9 L29.9,102.9 Z M77.3,102.6 L77.3,102.6 C75.4,103.9 73.5,105 71.4,105.9 L58.3,40 L80.4,100.4 C79.4,101.1 78.4,101.9 77.3,102.6 Z" id="Shape" fill="#00438C"&gt;&lt;/path&gt; &lt;g transform="translate(43.000000, 8.000000)" id="Path"&gt; &lt;polygon fill="#FFFFFF" points="10.6 0.7 2.3 4.9 0.1 13.9 5.9 21.2 15.1 21.2 21 13.8 18.9 4.9"&gt;&lt;/polygon&gt; &lt;path d="M15.5,11.3 L15.5,11.3 C15.5,14.1 13.3,16.3 10.5,16.3 L10.5,16.3 C7.7,16.3 5.5,14.1 5.5,11.3 L5.5,11.3 C5.5,8.6 7.7,6.3 10.5,6.3 L10.5,6.3 C13.3,6.3 15.5,8.5 15.5,11.3 Z" fill="#62BB46"&gt;&lt;/path&gt; &lt;/g&gt; &lt;path d="M71.6,23.5 L68,8.1 L53.6,0.9 L39.3,8 L35.5,23.5 L45.6,36.2 L49.9,36.2 L49.9,105.4 L56.9,105.4 L56.9,36.2 L61.5,36.2 L71.6,23.5 Z M48.9,29.2 L43.1,21.9 L45.3,12.9 L53.6,8.8 L61.9,12.9 L64,21.9 L58.1,29.2 L48.9,29.2 Z" id="Shape" fill="#009CDC"&gt;&lt;/path&gt; &lt;g transform="translate(42.000000, 103.000000)"&gt; &lt;path d="M10.6,6.2 C7.9,6.6 6,9.1 6.4,11.9 C6.8,14.6 9.3,16.5 12.1,16.1 C14.8,15.7 16.7,13.2 16.3,10.4 C15.9,7.6 13.3,5.8 10.6,6.2 Z" id="Path" fill="#FFFFFF"&gt;&lt;/path&gt; &lt;path d="M22.2,9.5 C21.3,3.5 15.7,-0.7 9.7,0.2 L9.7,0.2 C3.7,1.1 -0.5,6.7 0.4,12.7 C1.2,18.2 5.9,22.1 11.3,22.1 C11.8,22.1 12.4,22.1 12.9,22 C18.9,21.1 23.1,15.5 22.2,9.5 Z M12.1,16 C9.4,16.4 6.8,14.5 6.4,11.8 C6,9.1 7.9,6.5 10.6,6.1 C13.3,5.7 15.9,7.6 16.3,10.3 C16.7,13.1 14.8,15.6 12.1,16 Z" id="Shape" fill="#62BB46"&gt;&lt;/path&gt; &lt;/g&gt; &lt;/g&gt; &lt;/g&gt; &lt;/g&gt; &lt;/svg&gt;`,
+    });
+    this.isElectron = this.electronService.isElectron();
+  }
+&nbsp;
+  @HostListener('document:astilectron-ready', ['$event'])
+<span class="fstat-no" title="function not covered" >  onMessage(</span>_: Event) {
+<span class="cstat-no" title="statement not covered" >    astilectron.onMessage(<span class="fstat-no" title="function not covered" >message </span>=&gt; <span class="cstat-no" title="statement not covered" >this.handleMessage(message))</span>;</span>
+  }
+&nbsp;
+  ngOnInit(): void {
+    this.websocketService.open();
+  }
+&nbsp;
+  ngOnDestroy(): void {}
+&nbsp;
+  private handleMessage = <span class="fstat-no" title="function not covered" >(m</span>essage: astilectron.Message) =&gt; {
+<span class="cstat-no" title="statement not covered" >    switch (message.name) {</span>
+<span class="branch-0 cbranch-no" title="branch not covered" >      case 'octant.cmd.preferences':</span>
+<span class="cstat-no" title="statement not covered" >        this.preferencesOpened = true;</span>
+<span class="cstat-no" title="statement not covered" >        this.preferences = message.payload as Preferences;</span>
+<span class="cstat-no" title="statement not covered" >        break;</span>
+    }
+  };
+&nbsp;
+<span class="fstat-no" title="function not covered" >  preferencesChanged(</span>update: any) {
+    const m: astilectron.Message = <span class="cstat-no" title="statement not covered" >{</span>
+      name: 'octant.cmd.updatePreferences',
+      payload: update,
+    };
+<span class="cstat-no" title="statement not covered" >    astilectron.sendMessage(m);</span>
+  }
+&nbsp;
+<span class="fstat-no" title="function not covered" >  forward(</span>) {
+<span class="cstat-no" title="statement not covered" >    this.location.forward();</span>
+  }
+&nbsp;
+<span class="fstat-no" title="function not covered" >  back(</span>) {
+<span class="cstat-no" title="statement not covered" >    this.location.back();</span>
+  }
+}
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank">istanbul</a>
+                at Wed Feb 03 2021 11:51:04 GMT-0800 (Pacific Standard Time)
+            </div>
+        </div>
+        <script src="../../../../../../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../../../../../../sorter.js"></script>
+        <script src="../../../../../../../block-navigation.js"></script>
+    </body>
+</html>
+    
