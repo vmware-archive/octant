@@ -15,13 +15,14 @@ let win: BrowserWindow = null;
 let serverPid: any = null;
 let state: any = {};
 let statePath: string = null;
+let date: string = new Date().toISOString();
 
 const args = process.argv.slice(1);
 const local = args.some(val => val === '--local');
 
 const tmpPath = path.join(os.tmpdir(), 'octant');
-const apiLogPath = path.join(tmpPath, 'api.out.log');
-const errLogPath = path.join(tmpPath, 'api.err.log');
+const apiLogPath = path.join(tmpPath, 'api.out-' + date + '.log');
+const errLogPath = path.join(tmpPath, 'api.err-' + date + '.log');
 
 const template: Electron.MenuItemConstructorOptions[] = [
   {
