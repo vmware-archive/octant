@@ -4,10 +4,19 @@
  *
  */
 
-import { app, BrowserWindow, Menu, screen, session } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  Menu,
+  MessageBoxOptions,
+  screen,
+  session,
+} from 'electron';
 import { ApplicationMenu } from './electron/application-menu';
 import { TrayMenu } from './electron/tray-menu';
 import { apiLogPath, errLogPath, tmpPath, iconPath } from './electron/paths';
+import { electronStore } from './electron/store';
 import * as path from 'path';
 import * as child_process from 'child_process';
 import * as process from 'process';
@@ -114,7 +123,7 @@ function createWindow(): BrowserWindow {
   const electronScreen = screen;
   const size = electronScreen.getPrimaryDisplay().workAreaSize;
 
-  var options = {
+  const options = {
     x: null,
     y: null,
     width: size.width,
@@ -162,22 +171,45 @@ function createWindow(): BrowserWindow {
     win.loadFile(path.join(__dirname, 'dist/octant/index.html'));
   });
 
-  win.on('close', (event) => {
-    if (closing) {
-      win = null;
+  win.on('close', event => {
+    const openDialog: boolean = electronStore.get('showDialogue');
+    if (openDialog) {
+      const messageOptions: MessageBoxOptions = {
+        type: 'question',
+        buttons: ['Cancel', 'Yes', 'No'],
+        defaultId: 2,
+        message: 'Do you want to minimize to tray?',
+        detail: 'Octant will continue running in the background',
+      };
+
+      const result = dialog.showMessageBoxSync(win, messageOptions);
+      switch (result) {
+        case 0:
+          event.preventDefault();
+          break;
+        case 1:
+          event.preventDefault();
+          electronStore.set('showDialogue', false);
+          win.hide();
+          break;
+        case 2:
+          electronStore.set('showDialogue', false);
+          electronStore.set('minimizeToTray', false);
+          break;
+      }
     } else {
-      event.preventDefault();
-      win.hide();
+      // @ts-ignore
+      const shouldMinimize: boolean = electronStore.get('minimizeToTray');
+
+      if (closing) {
+        win = null;
+      } else if (shouldMinimize) {
+        event.preventDefault();
+        win.hide();
+      }
     }
   });
 
-  // Emitted when the window is closed.
-  // win.on('closed', () => {
-  //   // Dereference the window object, usually you would store window
-  //   // in an array if your app supports multi windows, this is the time
-  //   // when you should delete the corresponding element.
-  //   win = null;
-  // });
   win.on('resize', saveBoundsSoon);
   win.on('move', saveBoundsSoon);
 
@@ -185,9 +217,9 @@ function createWindow(): BrowserWindow {
 }
 
 const startBinary = (port: number) => {
-  fs.mkdir(path.join(tmpPath), { recursive: true }, err => {
-    if (err) {
-      throw err;
+  fs.mkdir(path.join(tmpPath), { recursive: true }, error => {
+    if (error) {
+      throw error;
     }
   });
 
@@ -244,7 +276,7 @@ try {
     tray = new TrayMenu(win);
 
     // In event of a black background issue: https://github.com/electron/electron/issues/15947
-    //setTimeout(createWindow, 400);
+    // setTimeout(createWindow, 400);
     session.defaultSession.webRequest.onBeforeSendHeaders(
       { urls: ['ws://localhost:' + port + '/api/v1/stream'] },
       (details, callback) => {
@@ -256,7 +288,7 @@ try {
 
   app.on('before-quit', () => {
     closing = true;
-  })
+  });
 
   // Quit when all windows are closed.
   app.on('window-all-closed', () => {
