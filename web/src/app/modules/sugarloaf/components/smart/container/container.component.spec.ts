@@ -32,18 +32,13 @@ import { WebsocketServiceMock } from '../../../../../data/services/websocket/moc
 import { ClarityIcons } from '@clr/icons';
 import { ThemeSwitchButtonComponent } from '../theme-switch/theme-switch-button.component';
 import { QuickSwitcherComponent } from '../quick-switcher/quick-switcher.component';
-import {
-  MonacoEditorConfig,
-  MonacoEditorModule,
-  MonacoProviderService,
-} from 'ng-monaco-editor';
+
 import { UploaderComponent } from '../uploader/uploader.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { windowProvider, WindowToken } from '../../../../../window';
 import { SharedModule } from 'src/app/modules/shared/shared.module';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-ngx';
 import { ApplyYAMLComponent } from '../apply-yaml/apply-yaml.component';
-import { EditorComponent } from 'src/app/modules/shared/components/smart/editor/editor.component';
 
 describe('AppComponent', () => {
   let component: ContainerComponent;
@@ -57,8 +52,6 @@ describe('AppComponent', () => {
           { provide: WindowToken, useFactory: windowProvider },
           { provide: window, useValue: ClarityIcons },
           ClrPopoverToggleService,
-          MonacoProviderService,
-          MonacoEditorConfig,
         ],
         imports: [
           BrowserModule,

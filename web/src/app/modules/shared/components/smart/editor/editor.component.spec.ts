@@ -4,11 +4,7 @@
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { EditorComponent } from './editor.component';
-import {
-  MonacoEditorConfig,
-  MonacoEditorModule,
-  MonacoProviderService,
-} from 'ng-monaco-editor';
+import { MonacoEditorModule } from '@materia-ui/ngx-monaco-editor';
 import { windowProvider, WindowToken } from '../../../../../window';
 
 describe('EditorComponent', () => {
@@ -18,17 +14,8 @@ describe('EditorComponent', () => {
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
-        providers: [
-          MonacoProviderService,
-          MonacoEditorConfig,
-          { provide: WindowToken, useFactory: windowProvider },
-        ],
-        imports: [
-          MonacoEditorModule.forRoot({
-            baseUrl: '',
-            defaultOptions: {},
-          }),
-        ],
+        providers: [{ provide: WindowToken, useFactory: windowProvider }],
+        imports: [MonacoEditorModule],
         declarations: [EditorComponent],
       }).compileComponents();
     })
@@ -41,5 +28,14 @@ describe('EditorComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should display the editor', () => {
+    const root: HTMLElement = fixture.nativeElement;
+    const editorElement: SVGPathElement = root.querySelector(
+      '.editor-container .editor'
+    );
+    expect(editorElement).not.toBeNull();
+    expect(editorElement.classList.contains('editor')).toBeTruthy();
   });
 });

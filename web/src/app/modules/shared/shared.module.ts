@@ -61,7 +61,7 @@ import { RouterModule } from '@angular/router';
 import { ResizableModule } from 'angular-resizable-element';
 import { highlightProvider } from './highlight';
 import { IndicatorComponent } from './components/presentation/indicator/indicator.component';
-import { MonacoEditorModule } from 'ng-monaco-editor';
+import { MonacoEditorModule } from '@materia-ui/ngx-monaco-editor';
 import { FormatPathPipe } from './pipes/formatpath/formatpath.pipe';
 import { RelativePipe } from './pipes/relative/relative.pipe';
 import { OverflowLabelsComponent } from './components/presentation/overflow-labels/overflow-labels.component';
@@ -224,10 +224,7 @@ import { StringEscapePipe } from './pipes/stringEscape/string.escape.pipe';
     DataModule,
     FormsModule,
     HighlightModule,
-    MonacoEditorModule.forRoot({
-      baseUrl: '',
-      defaultOptions: {},
-    }),
+    MonacoEditorModule,
     OverlayscrollbarsModule,
     ReactiveFormsModule,
     ResizableModule,

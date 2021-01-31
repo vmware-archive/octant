@@ -4,7 +4,6 @@
 import { inject, TestBed } from '@angular/core/testing';
 import { ThemeService } from './theme.service';
 import { DOCUMENT } from '@angular/common';
-import { MonacoEditorConfig, MonacoProviderService } from 'ng-monaco-editor';
 import {
   OverlayScrollbarsComponent,
   OverlayscrollbarsModule,
@@ -12,27 +11,18 @@ import {
 
 describe('ThemeService', () => {
   let service: ThemeService;
-  let monaco: MonacoProviderService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [OverlayScrollbarsComponent],
-      providers: [
-        ThemeService,
-        MonacoProviderService,
-        MonacoEditorConfig,
-        OverlayscrollbarsModule,
-        Document,
-      ],
+      providers: [ThemeService, OverlayscrollbarsModule, Document],
     });
 
     service = TestBed.inject(ThemeService);
-    monaco = TestBed.inject(MonacoProviderService);
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
-    expect(monaco).toBeTruthy();
   });
 
   it('should load light theme file correctly', inject(
