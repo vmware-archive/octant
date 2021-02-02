@@ -236,7 +236,7 @@ github.com/skratchdot/open-golang/open
 # github.com/soheilhy/cmux v0.1.4
 ## explicit
 github.com/soheilhy/cmux
-# github.com/spf13/afero v1.4.1
+# github.com/spf13/afero v1.5.1
 ## explicit
 github.com/spf13/afero
 github.com/spf13/afero/mem
@@ -569,8 +569,6 @@ k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/netutil
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/apiserver v0.19.3
-## explicit
 # k8s.io/client-go v0.19.3
 ## explicit
 k8s.io/client-go/discovery
@@ -795,8 +793,6 @@ k8s.io/client-go/util/jsonpath
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
-# k8s.io/component-base v0.19.3
-## explicit
 # k8s.io/klog v1.0.0
 ## explicit
 k8s.io/klog

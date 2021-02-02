@@ -44,7 +44,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e
 	github.com/soheilhy/cmux v0.1.4
-	github.com/spf13/afero v1.4.1
+	github.com/spf13/afero v1.5.1
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
 	github.com/stoewer/go-strcase v1.2.0
@@ -68,9 +68,7 @@ require (
 	k8s.io/api v0.19.3
 	k8s.io/apiextensions-apiserver v0.19.3
 	k8s.io/apimachinery v0.19.3
-	k8s.io/apiserver v0.19.3 // indirect
 	k8s.io/client-go v0.19.3
-	k8s.io/component-base v0.19.3 // indirect
 	k8s.io/klog v1.0.0
 	k8s.io/klog/v2 v2.3.0 // indirect
 	k8s.io/kube-aggregator v0.19.3
