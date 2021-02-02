@@ -21,7 +21,6 @@ require (
 	github.com/gobwas/glob v0.2.3
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.3
-	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.1.2
 	github.com/googleapis/gnostic v0.5.3
@@ -53,10 +52,8 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
-	golang.org/x/net v0.0.0-20201024042810-be3efd7ff127 // indirect
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43 // indirect
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
-	golang.org/x/sys v0.0.0-20201024232916-9f70ab9862d5 // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
 	golang.org/x/tools v0.0.0-20200825202427-b303f430e36d
 	google.golang.org/appengine v1.6.7 // indirect
@@ -67,14 +64,10 @@ require (
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	k8s.io/api v0.19.3
 	k8s.io/apiextensions-apiserver v0.19.3
-	k8s.io/apimachinery v0.19.3
-	k8s.io/apiserver v0.19.3 // indirect
+	k8s.io/apimachinery v0.20.2
 	k8s.io/client-go v0.19.3
-	k8s.io/component-base v0.19.3 // indirect
 	k8s.io/klog v1.0.0
-	k8s.io/klog/v2 v2.3.0 // indirect
 	k8s.io/kube-aggregator v0.19.3
-	k8s.io/kube-openapi v0.0.0-20200923155610-8b5066479488 // indirect
 	k8s.io/metrics v0.19.3
 	k8s.io/utils v0.0.0-20201015054608-420da100c033
 	sigs.k8s.io/yaml v1.2.0
