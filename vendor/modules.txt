@@ -27,10 +27,10 @@ github.com/akavel/rsrc/coff
 github.com/akavel/rsrc/ico
 github.com/akavel/rsrc/internal
 github.com/akavel/rsrc/rsrc
-# github.com/asticode/go-astikit v0.9.1
+# github.com/asticode/go-astikit v0.15.0
 ## explicit
 github.com/asticode/go-astikit
-# github.com/asticode/go-astilectron v0.18.0
+# github.com/asticode/go-astilectron v0.22.3
 ## explicit
 github.com/asticode/go-astilectron
 # github.com/asticode/go-astilectron-bundler v0.7.2
@@ -569,8 +569,6 @@ k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/netutil
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/apiserver v0.19.3
-## explicit
 # k8s.io/client-go v0.19.3
 ## explicit
 k8s.io/client-go/discovery
@@ -795,8 +793,6 @@ k8s.io/client-go/util/jsonpath
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
-# k8s.io/component-base v0.19.3
-## explicit
 # k8s.io/klog v1.0.0
 ## explicit
 k8s.io/klog

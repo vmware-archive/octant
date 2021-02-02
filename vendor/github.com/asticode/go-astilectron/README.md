@@ -79,6 +79,12 @@ If no BaseDirectoryPath is provided, it defaults to the executable's directory p
 
 The majority of methods are asynchronous which means that when executing them `go-astilectron` will block until it receives a specific Electron event or until the overall context is cancelled. This is the case of `.Start()` which will block until it receives the `app.event.ready` `astilectron` event or until the overall context is cancelled.
 
+### HTML paths
+NB! All paths in HTML (and Javascript) must be relative, otherwise the files will not be found.
+To make this happen in React for example, just set the homepage property of your package.json to "./".
+
+``` { "homepage": "./" }```
+
 ## Create a window
 
 ```go

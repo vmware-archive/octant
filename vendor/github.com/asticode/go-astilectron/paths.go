@@ -132,11 +132,11 @@ func ElectronDownloadSrc(os, arch, versionElectron string) string {
 
 	// Get arch name
 	var a = "ia32"
-	if strings.ToLower(arch) == "amd64" || o == "darwin" {
+	if strings.ToLower(arch) == "amd64" {
 		a = "x64"
 	} else if strings.ToLower(arch) == "arm" && o == "linux" {
 		a = "armv7l"
-	} else if strings.ToLower(arch) == "arm64" && o == "linux" {
+	} else if strings.ToLower(arch) == "arm64" {
 		a = "arm64"
 	}
 

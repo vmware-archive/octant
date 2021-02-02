@@ -41,6 +41,7 @@ type Event struct {
 	Password            string               `json:"password,omitempty"`
 	Reply               string               `json:"reply,omitempty"`
 	Request             *EventRequest        `json:"request,omitempty"`
+	SecondInstance      *EventSecondInstance `json:"secondInstance,omitempty"`
 	SessionID           string               `json:"sessionId,omitempty"`
 	Supported           *Supported           `json:"supported,omitempty"`
 	TrayOptions         *TrayOptions         `json:"trayOptions,omitempty"`
@@ -114,6 +115,12 @@ type EventRequest struct {
 	Method   string `json:"method,omitempty"`
 	Referrer string `json:"referrer,omitempty"`
 	URL      string `json:"url,omitempty"`
+}
+
+// EventSecondInstance represents data related to a second instance of the app being started
+type EventSecondInstance struct {
+	CommandLine      []string `json:"commandLine,omitempty"`
+	WorkingDirectory string   `json:"workingDirectory,omitempty"`
 }
 
 // EventSubMenu represents a sub menu event

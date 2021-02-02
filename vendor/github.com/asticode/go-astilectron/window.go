@@ -32,6 +32,7 @@ const (
 	EventNameWindowCmdRestore                         = "window.cmd.restore"
 	EventNameWindowCmdShow                            = "window.cmd.show"
 	EventNameWindowCmdUnmaximize                      = "window.cmd.unmaximize"
+	EventNameWindowCmdUpdateCustomOptions             = "window.cmd.update.custom.options"
 	EventNameWindowCmdWebContentsCloseDevTools        = "window.cmd.web.contents.close.dev.tools"
 	EventNameWindowCmdWebContentsOpenDevTools         = "window.cmd.web.contents.open.dev.tools"
 	EventNameWindowCmdWebContentsExecuteJavaScript    = "window.cmd.web.contents.execute.javascript"
@@ -54,6 +55,7 @@ const (
 	EventNameWindowEventDidGetRedirectRequest         = "window.event.did.get.redirect.request"
 	EventNameWindowEventWebContentsExecutedJavaScript = "window.event.web.contents.executed.javascript"
 	EventNameWindowEventWillNavigate                  = "window.event.will.navigate"
+	EventNameWindowEventUpdatedCustomOptions          = "window.event.updated.custom.options"
 )
 
 // Title bar styles
@@ -174,6 +176,7 @@ type WebPreferences struct {
 	DefaultMonospaceFontSize    *int                   `json:"defaultMonospaceFontSize,omitempty"`
 	DevTools                    *bool                  `json:"devTools,omitempty"`
 	DisableBlinkFeatures        *string                `json:"disableBlinkFeatures,omitempty"`
+	EnableRemoteModule          *bool                  `json:"enableRemoteModule,omitempty"`
 	ExperimentalCanvasFeatures  *bool                  `json:"experimentalCanvasFeatures,omitempty"`
 	ExperimentalFeatures        *bool                  `json:"experimentalFeatures,omitempty"`
 	Images                      *bool                  `json:"images,omitempty"`
@@ -528,5 +531,17 @@ func (w *Window) Unmaximize() (err error) {
 		return
 	}
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdUnmaximize, TargetID: w.id}, EventNameWindowEventUnmaximize)
+	return
+}
+
+// UpdateCustomOptions updates the window custom options
+func (w *Window) UpdateCustomOptions(o WindowCustomOptions) (err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	w.m.Lock()
+	w.o.Custom = &o
+	w.m.Unlock()
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{WindowOptions: w.o, Name: EventNameWindowCmdUpdateCustomOptions, TargetID: w.id}, EventNameWindowEventUpdatedCustomOptions)
 	return
 }
