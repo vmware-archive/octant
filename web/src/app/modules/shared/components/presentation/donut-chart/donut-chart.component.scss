@@ -14,6 +14,10 @@
   --text-color: #acbac3;
 }
 
+path#single-path {
+  stroke-width: 0;
+}
+
 .svg {
   path {
     stroke: var(--background-color);

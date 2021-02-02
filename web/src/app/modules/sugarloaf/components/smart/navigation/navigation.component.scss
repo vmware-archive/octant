@@ -12,6 +12,7 @@
     --clr-vertical-nav-item-active-color,
     #666666
   );
+  --nav-selection-color: #4f4f4f;
 }
 
 :host-context(body.dark) {
@@ -21,6 +22,7 @@
   --flyout-color: #acbac3;
   --flyout-header-color: #acbac3;
   --flyout-header-active-color: #fff;
+  --nav-selection-color: #acbac3;
 }
 
 .nav-group.is-expanded .nav-link .nav-text {
@@ -36,10 +38,17 @@
 }
 
 :host ::ng-deep .clr-vertical-nav .nav-group-text {
+  height: 1.5rem;
+  line-height: 1.5rem;
   padding-right: 0px;
 }
 
+:host ::ng-deep .clr-vertical-nav .nav-group-trigger {
+  height: 1.5rem;
+}
+
 :host ::ng-deep .nav-group-content .nav-group-trigger-icon {
+  height: 1.5rem;
   margin-left: 6px;
 }
 
@@ -306,6 +315,9 @@
 
   .nav-link.active {
     background-color: var(--selection-color);
+    .button-text {
+      color: var(--nav-selection-color);
+    }
   }
   .item-selected:hover + .flyout {
     display: flex;

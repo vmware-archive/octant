@@ -46,7 +46,7 @@
   }
 
   :host-context(body.platform-darwin) {
-    --padding-left: 70px;
+    --padding-left: 0px;
   }
 
   :host-context(body.electron) {
@@ -59,10 +59,10 @@
     }
 
     .header-nav {
-      padding-left: 7.5rem !important;
+      padding-left: 7rem !important;
 
       clr-icon + clr-icon {
-        margin-left: 0.5rem;
+        margin-left: 0rem;
       }
     }
 
@@ -73,7 +73,8 @@
     }
 
     .input-filter {
-      margin-left: 3.5rem;
+      margin-left: 0.8rem;
+      width: 10rem!important;
     }
   }
 
@@ -86,6 +87,16 @@
     flex-wrap: wrap;
     height: auto;
     flex-basis: auto;
+
+    .branding {
+      padding-left: 0.6rem;
+
+      clr-icon {
+        width: 2.3rem;
+        height: 2.3rem;
+        margin-right: 0.9rem;
+      }
+    }
 
     .header-nav {
       padding-left: 1rem;

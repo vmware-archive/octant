@@ -27,6 +27,7 @@ export class DropdownComponent extends AbstractViewComponent<DropdownView> {
   action: string;
   itemLimit = this.defaultItemLimit;
   isOpen = false;
+  dropdownMenuStyle: object = {};
 
   @Input() public title: string;
 
@@ -60,6 +61,9 @@ export class DropdownComponent extends AbstractViewComponent<DropdownView> {
     if (this.type === 'link') {
       this.url = (view.metadata.title[0] as LinkView).config.ref;
     }
+
+    this.dropdownMenuStyle =
+      this.items.length > this.defaultItemLimit ? { 'padding-bottom': 0 } : {};
   }
 
   identifyItem(index: number, item: DropdownItem): string {

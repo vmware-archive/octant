@@ -53,7 +53,7 @@ describe('BreadcrumbComponent', () => {
     expect(spans.length).toBe(0);
     expect(icons.length).toBe(0);
 
-    expect(breadcrumbElement.children.length).toEqual(2);
+    expect(breadcrumbElement.children.length).toEqual(1);
     expect(breadcrumbElement.innerText).toBe('');
   });
 
