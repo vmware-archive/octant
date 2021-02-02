@@ -38,7 +38,7 @@ var (
 		{apiVersion: "v1", kind: "ReplicationController"}:             replicationController,
 		{apiVersion: "v1", kind: "Service"}:                           service,
 		{apiVersion: "v1", kind: "PersistentVolume"}:                  persistentVolume,
-		{apiVersion: "extensions/v1beta1", kind: "Ingress"}:           runIngressStatus,
+		{apiVersion: "networking.k8s.io/v1", kind: "Ingress"}:         runIngressStatus,
 		{apiVersion: "apiregistration.k8s.io/v1", kind: "APIService"}: apiService,
 	}
 )

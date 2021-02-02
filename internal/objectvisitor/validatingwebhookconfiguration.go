@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
-	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -49,7 +49,7 @@ func (p *ValidatingWebhookConfiguration) Visit(ctx context.Context, object *unst
 		return errors.New("objectStore is nil")
 	}
 
-	validatingwebhookconfiguration := &admissionregistrationv1beta1.ValidatingWebhookConfiguration{}
+	validatingwebhookconfiguration := &admissionregistrationv1.ValidatingWebhookConfiguration{}
 	if err := kubernetes.FromUnstructured(object, validatingwebhookconfiguration); err != nil {
 		return err
 	}

@@ -13,7 +13,7 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/store"
 
 	"github.com/pkg/errors"
-	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
@@ -98,11 +98,11 @@ func (c *CRDWatchConfig) CanPerform(u *unstructured.Unstructured) bool {
 		return false
 	}
 
-	if c.IsNamespaced && scope != string(apiextv1beta1.NamespaceScoped) {
+	if c.IsNamespaced && scope != string(apiextv1.NamespaceScoped) {
 		return false
 	}
 
-	if !c.IsNamespaced && scope != string(apiextv1beta1.ClusterScoped) {
+	if !c.IsNamespaced && scope != string(apiextv1.ClusterScoped) {
 		return false
 	}
 

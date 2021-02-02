@@ -1,9 +1,11 @@
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
     name: single-service-ingress
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
-  backend:
-    serviceName: single-service
-    servicePort: 80
+  defaultBackend:
+    service:
+      name: single-service
+      port:
+        number: 80

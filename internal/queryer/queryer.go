@@ -15,13 +15,13 @@ import (
 	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
-	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
-	extv1beta1 "k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -46,14 +46,14 @@ import (
 type Queryer interface {
 	Children(ctx context.Context, object *unstructured.Unstructured) (*unstructured.UnstructuredList, error)
 	Events(ctx context.Context, object metav1.Object) ([]*corev1.Event, error)
-	IngressesForService(ctx context.Context, service *corev1.Service) ([]*extv1beta1.Ingress, error)
+	IngressesForService(ctx context.Context, service *corev1.Service) ([]*networkingv1.Ingress, error)
 	APIServicesForService(ctx context.Context, service *corev1.Service) ([]*apiregistrationv1.APIService, error)
-	MutatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1beta1.MutatingWebhookConfiguration, error)
-	ValidatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1beta1.ValidatingWebhookConfiguration, error)
+	MutatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1.MutatingWebhookConfiguration, error)
+	ValidatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1.ValidatingWebhookConfiguration, error)
 	OwnerReference(ctx context.Context, object *unstructured.Unstructured) (bool, []*unstructured.Unstructured, error)
 	ScaleTarget(ctx context.Context, hpa *autoscalingv1.HorizontalPodAutoscaler) (map[string]interface{}, error)
 	PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error)
-	ServicesForIngress(ctx context.Context, ingress *extv1beta1.Ingress) (*unstructured.UnstructuredList, error)
+	ServicesForIngress(ctx context.Context, ingress *networkingv1.Ingress) (*unstructured.UnstructuredList, error)
 	ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Service, error)
 	ServiceAccountForPod(ctx context.Context, pod *corev1.Pod) (*corev1.ServiceAccount, error)
 	ConfigMapsForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.ConfigMap, error)
@@ -369,14 +369,14 @@ func (osq *ObjectStoreQueryer) Events(ctx context.Context, object metav1.Object)
 	return events, nil
 }
 
-func (osq *ObjectStoreQueryer) IngressesForService(ctx context.Context, service *corev1.Service) ([]*v1beta1.Ingress, error) {
+func (osq *ObjectStoreQueryer) IngressesForService(ctx context.Context, service *corev1.Service) ([]*networkingv1.Ingress, error) {
 	if service == nil {
 		return nil, errors.New("nil service")
 	}
 
 	key := store.Key{
 		Namespace:  service.Namespace,
-		APIVersion: "extensions/v1beta1",
+		APIVersion: "networking.k8s.io/v1",
 		Kind:       "Ingress",
 	}
 	ul, _, err := osq.objectStore.List(ctx, key)
@@ -384,10 +384,10 @@ func (osq *ObjectStoreQueryer) IngressesForService(ctx context.Context, service 
 		return nil, errors.Wrap(err, "retrieving ingresses")
 	}
 
-	var results []*v1beta1.Ingress
+	var results []*networkingv1.Ingress
 
 	for i := range ul.Items {
-		ingress := &v1beta1.Ingress{}
+		ingress := &networkingv1.Ingress{}
 		err := kubernetes.FromUnstructured(&ul.Items[i], ingress)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured ingress")
@@ -402,11 +402,11 @@ func (osq *ObjectStoreQueryer) IngressesForService(ctx context.Context, service 
 	return results, nil
 }
 
-func (osq *ObjectStoreQueryer) listIngressBackends(ingress v1beta1.Ingress) []extv1beta1.IngressBackend {
-	var backends []v1beta1.IngressBackend
+func (osq *ObjectStoreQueryer) listIngressBackends(ingress networkingv1.Ingress) []networkingv1.IngressBackend {
+	var backends []networkingv1.IngressBackend
 
-	if ingress.Spec.Backend != nil && ingress.Spec.Backend.ServiceName != "" {
-		backends = append(backends, *ingress.Spec.Backend)
+	if ingress.Spec.DefaultBackend != nil && ingress.Spec.DefaultBackend.Service.Name != "" {
+		backends = append(backends, *ingress.Spec.DefaultBackend)
 	}
 
 	for _, rule := range ingress.Spec.Rules {
@@ -414,7 +414,7 @@ func (osq *ObjectStoreQueryer) listIngressBackends(ingress v1beta1.Ingress) []ex
 			continue
 		}
 		for _, p := range rule.IngressRuleValue.HTTP.Paths {
-			if p.Backend.ServiceName == "" {
+			if p.Backend.Service.Name == "" {
 				continue
 			}
 			backends = append(backends, p.Backend)
@@ -453,7 +453,7 @@ func (osq *ObjectStoreQueryer) APIServicesForService(ctx context.Context, servic
 	return results, nil
 }
 
-func (osq *ObjectStoreQueryer) MutatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1beta1.MutatingWebhookConfiguration, error) {
+func (osq *ObjectStoreQueryer) MutatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1.MutatingWebhookConfiguration, error) {
 	if service == nil {
 		return nil, errors.New("nil service")
 	}
@@ -464,10 +464,10 @@ func (osq *ObjectStoreQueryer) MutatingWebhookConfigurationsForService(ctx conte
 		return nil, errors.Wrap(err, "retrieving mutatingwebhookconfigurations")
 	}
 
-	var results []*admissionregistrationv1beta1.MutatingWebhookConfiguration
+	var results []*admissionregistrationv1.MutatingWebhookConfiguration
 
 	for i := range ul.Items {
-		mutatingwebhookconfiguration := &admissionregistrationv1beta1.MutatingWebhookConfiguration{}
+		mutatingwebhookconfiguration := &admissionregistrationv1.MutatingWebhookConfiguration{}
 		err := kubernetes.FromUnstructured(&ul.Items[i], mutatingwebhookconfiguration)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured mutatingwebhookconfiguration")
@@ -485,7 +485,7 @@ func (osq *ObjectStoreQueryer) MutatingWebhookConfigurationsForService(ctx conte
 	return results, nil
 }
 
-func (osq *ObjectStoreQueryer) ValidatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1beta1.ValidatingWebhookConfiguration, error) {
+func (osq *ObjectStoreQueryer) ValidatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1.ValidatingWebhookConfiguration, error) {
 	if service == nil {
 		return nil, errors.New("nil service")
 	}
@@ -496,10 +496,10 @@ func (osq *ObjectStoreQueryer) ValidatingWebhookConfigurationsForService(ctx con
 		return nil, errors.Wrap(err, "retrieving validatingwebhookconfigurations")
 	}
 
-	var results []*admissionregistrationv1beta1.ValidatingWebhookConfiguration
+	var results []*admissionregistrationv1.ValidatingWebhookConfiguration
 
 	for i := range ul.Items {
-		validatingwebhookconfiguration := &admissionregistrationv1beta1.ValidatingWebhookConfiguration{}
+		validatingwebhookconfiguration := &admissionregistrationv1.ValidatingWebhookConfiguration{}
 		err := kubernetes.FromUnstructured(&ul.Items[i], validatingwebhookconfiguration)
 		if err != nil {
 			return nil, errors.Wrap(err, "converting unstructured validatingwebhookconfiguration")
@@ -722,7 +722,7 @@ func (osq *ObjectStoreQueryer) loadPods(ctx context.Context, key store.Key, labe
 	return list, nil
 }
 
-func (osq *ObjectStoreQueryer) ServicesForIngress(ctx context.Context, ingress *extv1beta1.Ingress) (*unstructured.UnstructuredList, error) {
+func (osq *ObjectStoreQueryer) ServicesForIngress(ctx context.Context, ingress *networkingv1.Ingress) (*unstructured.UnstructuredList, error) {
 	if ingress == nil {
 		return nil, errors.New("ingress is nil")
 	}
@@ -734,7 +734,7 @@ func (osq *ObjectStoreQueryer) ServicesForIngress(ctx context.Context, ingress *
 			Namespace:  ingress.Namespace,
 			APIVersion: "v1",
 			Kind:       "Service",
-			Name:       backend.ServiceName,
+			Name:       backend.Service.Name,
 		}
 		u, err := osq.objectStore.Get(ctx, key)
 		if err != nil && !kerrors.IsNotFound(err) {
@@ -1015,9 +1015,9 @@ func isEqualSelector(s1, s2 *metav1.LabelSelector) bool {
 	return apiequality.Semantic.DeepEqual(s1Copy, s2Copy)
 }
 
-func containsBackend(lst []v1beta1.IngressBackend, s string) bool {
+func containsBackend(lst []networkingv1.IngressBackend, s string) bool {
 	for _, item := range lst {
-		if item.ServiceName == s {
+		if item.Service.Name == s {
 			return true
 		}
 	}

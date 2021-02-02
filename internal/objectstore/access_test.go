@@ -74,7 +74,7 @@ func Test_ResourceAccess_HasAccess(t *testing.T) {
 			name:     "crds",
 			resource: "customresourcedefinitions",
 			key: store.Key{
-				APIVersion: "apiextensions.k8s.io/v1beta1",
+				APIVersion: "apiextensions.k8s.io/v1",
 				Kind:       "CustomResourceDefinition",
 			},
 			setupAccess: func() {
@@ -92,7 +92,7 @@ func Test_ResourceAccess_HasAccess(t *testing.T) {
 			name:     "no access crds",
 			resource: "customresourcedefinitions",
 			key: store.Key{
-				APIVersion: "apiextensions.k8s.io/v1beta1",
+				APIVersion: "apiextensions.k8s.io/v1",
 				Kind:       "CustomResourceDefinition",
 			},
 			setupAccess: func() {

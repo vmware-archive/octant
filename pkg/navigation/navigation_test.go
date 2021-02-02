@@ -64,7 +64,7 @@ func TestCRDEntries_namespace_scoped(t *testing.T) {
 
 	crds := testutil.ToUnstructuredList(t, clusterScopedCRD, namespaceScopedCRD)
 	crdKey := store.Key{
-		APIVersion: "apiextensions.k8s.io/v1beta1",
+		APIVersion: "apiextensions.k8s.io/v1",
 		Kind:       "CustomResourceDefinition",
 	}
 	objectStore.EXPECT().

@@ -126,6 +126,22 @@ Octant uses the default web browser on the system to act as the UI client. In th
 
 For setting extra configuration such as what kubeconfig or context to use at startup, refer to the [documentation](https://octant.dev/docs/master).
 
+## Supported Versions
+
+Octant versions follow (Semantic Versioning)[https://semver.org/] where a given version number represents `MAJOR.MINOR.PATCH`.
+
+Patch releases address bug fixes, regressions, and small enhancements.
+
+Minor releases contain security fixes, API changes, and significant enhancements such as UI changes or new components.
+
+Major releases contain breaking changes that are not guaranteed to be backwards compatible. Octant versions before 1.0 should not be considered stable and API may change between minor releases.
+
+### Supported Version Skew
+
+Version of Octant are compiled against a version of client-go.
+
+Octant follows an `n±1` policy for versions of Kubernetes similar to kubectl. For example, Octant `0.16.0` uses the Kubernetes 1.19 client. So version `0.16.0` can be used with Kubernetes 1.18, 1.19, and 1.20.
+
 ## Plugins
 
 Plugins are a core part of Octant in the Kubernetes ecosystem. A plugin can read objects and allows users to add components to Octant's views.

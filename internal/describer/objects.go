@@ -13,7 +13,6 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/api/extensions/v1beta1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 
@@ -139,9 +138,9 @@ func initNamespacedOverview() *Section {
 
 	dlbIngresses := NewResource(ResourceOptions{
 		Path:           "/discovery-and-load-balancing/ingresses",
-		ObjectStoreKey: store.Key{APIVersion: "extensions/v1beta1", Kind: "Ingress"},
-		ListType:       &v1beta1.IngressList{},
-		ObjectType:     &v1beta1.Ingress{},
+		ObjectStoreKey: store.Key{APIVersion: "networking.k8s.io/v1", Kind: "Ingress"},
+		ListType:       &networkingv1.IngressList{},
+		ObjectType:     &networkingv1.Ingress{},
 		Titles:         ResourceTitle{List: "Ingresses", Object: "Ingresses"},
 	})
 

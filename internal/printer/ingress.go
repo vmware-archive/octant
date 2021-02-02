@@ -13,14 +13,14 @@ import (
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
-	extv1beta1 "k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
 // IngressListHandler is a printFunc that prints ingresses
-func IngressListHandler(ctx context.Context, list *extv1beta1.IngressList, options Options) (component.Component, error) {
+func IngressListHandler(ctx context.Context, list *networkingv1.IngressList, options Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("ingress list is nil")
 	}
@@ -81,7 +81,7 @@ func getHostComponent(link string, isTLS bool) component.Component {
 }
 
 // IngressHandler is a printFunc that prints an Ingress
-func IngressHandler(ctx context.Context, ingress *extv1beta1.Ingress, options Options) (component.Component, error) {
+func IngressHandler(ctx context.Context, ingress *networkingv1.Ingress, options Options) (component.Component, error) {
 	o := NewObject(ingress)
 	o.EnableEvents()
 
@@ -111,9 +111,9 @@ func (i *IngressConfiguration) Create(options Options) (*component.Summary, erro
 
 	sections := component.SummarySections{}
 
-	if backend := ingress.Spec.Backend; backend != nil {
+	if backend := ingress.Spec.DefaultBackend; backend != nil {
 		backendPath, err := options.Link.ForGVK(ingress.Namespace, "v1", "Service",
-			backend.ServiceName, backendStringer(backend))
+			backend.Service.Name, backendStringer(backend))
 		if err != nil {
 			return nil, err
 		}
@@ -129,9 +129,9 @@ func (i *IngressConfiguration) Create(options Options) (*component.Summary, erro
 		}
 
 		for _, path := range rule.IngressRuleValue.HTTP.Paths {
-			if path.Backend.ServicePort.String() == "use-annotation" {
-				if action, ok := ingress.Annotations["alb.ingress.kubernetes.io/actions."+path.Backend.ServiceName]; ok {
-					sections.Add("Action: "+path.Backend.ServiceName, component.NewText(action))
+			if path.Backend.Service.Port.Name == "use-annotation" {
+				if action, ok := ingress.Annotations["alb.ingress.kubernetes.io/actions."+path.Backend.Service.Name]; ok {
+					sections.Add("Action: "+path.Backend.Service.Name, component.NewText(action))
 				}
 			}
 		}
@@ -142,7 +142,7 @@ func (i *IngressConfiguration) Create(options Options) (*component.Summary, erro
 	return summary, nil
 }
 
-func createIngressRulesView(ingress *extv1beta1.Ingress, options Options) (*component.Table, error) {
+func createIngressRulesView(ingress *networkingv1.Ingress, options Options) (*component.Table, error) {
 	if ingress == nil {
 		return nil, errors.New("ingress is nil")
 	}
@@ -164,12 +164,12 @@ func createIngressRulesView(ingress *extv1beta1.Ingress, options Options) (*comp
 
 		for _, path := range rule.HTTP.Paths {
 			var servicePath component.Component
-			if path.Backend.ServicePort.String() == "use-annotation" {
+			if path.Backend.Service.Port.Name == "use-annotation" {
 				servicePath = component.NewMarkdownText("*defined via use-annotation*")
 			} else {
 				var err error
 				servicePath, err = options.Link.ForGVK(ingress.Namespace, "v1", "Service",
-					path.Backend.ServiceName, backendStringer(&path.Backend))
+					path.Backend.Service.Name, backendStringer(&path.Backend))
 				if err != nil {
 					return nil, err
 				}
@@ -183,9 +183,9 @@ func createIngressRulesView(ingress *extv1beta1.Ingress, options Options) (*comp
 		}
 	}
 
-	if backend := ingress.Spec.Backend; ruleCount == 0 && backend != nil {
+	if backend := ingress.Spec.DefaultBackend; ruleCount == 0 && backend != nil {
 		servicePath, err := options.Link.ForGVK(ingress.Namespace, "v1", "Service",
-			backend.ServiceName, backendStringer(backend))
+			backend.Service.Name, backendStringer(backend))
 		if err != nil {
 			return nil, err
 		}
@@ -202,14 +202,14 @@ func createIngressRulesView(ingress *extv1beta1.Ingress, options Options) (*comp
 }
 
 // backendStringer behaves just like a string interface and converts the given backend to a string.
-func backendStringer(backend *extv1beta1.IngressBackend) string {
+func backendStringer(backend *networkingv1.IngressBackend) string {
 	if backend == nil {
 		return ""
 	}
-	return fmt.Sprintf("%v:%v", backend.ServiceName, backend.ServicePort.String())
+	return fmt.Sprintf("%v:%v", backend.Service.Name, backend.Service.Port.Name)
 }
 
-func formatIngressHosts(rules []extv1beta1.IngressRule) string {
+func formatIngressHosts(rules []networkingv1.IngressRule) string {
 	var list []string
 	max := 3
 	more := false
@@ -250,11 +250,11 @@ func loadBalancerStatusStringer(s corev1.LoadBalancerStatus) string {
 
 // IngressConfiguration generates an ingress configuration
 type IngressConfiguration struct {
-	ingress *extv1beta1.Ingress
+	ingress *networkingv1.Ingress
 }
 
 // NewIngressConfiguration creates an instance of Ingressconfiguration
-func NewIngressConfiguration(ingress *extv1beta1.Ingress) *IngressConfiguration {
+func NewIngressConfiguration(ingress *networkingv1.Ingress) *IngressConfiguration {
 	return &IngressConfiguration{
 		ingress: ingress,
 	}
@@ -265,15 +265,15 @@ type ingressObject interface {
 	Rules(options Options) error
 }
 type ingressHandler struct {
-	ingress    *extv1beta1.Ingress
-	configFunc func(*extv1beta1.Ingress, Options) (*component.Summary, error)
-	rulesFunc  func(*extv1beta1.Ingress, Options) (*component.Table, error)
+	ingress    *networkingv1.Ingress
+	configFunc func(*networkingv1.Ingress, Options) (*component.Summary, error)
+	rulesFunc  func(*networkingv1.Ingress, Options) (*component.Table, error)
 	object     *Object
 }
 
 var _ ingressObject = (*ingressHandler)(nil)
 
-func newIngressHandler(ingress *extv1beta1.Ingress, object *Object) (*ingressHandler, error) {
+func newIngressHandler(ingress *networkingv1.Ingress, object *Object) (*ingressHandler, error) {
 	if ingress == nil {
 		return nil, errors.New("can't print a nil ingress")
 	}
@@ -301,7 +301,7 @@ func (i *ingressHandler) Config(options Options) error {
 	return nil
 }
 
-func defaultIngressConfig(ingress *extv1beta1.Ingress, options Options) (*component.Summary, error) {
+func defaultIngressConfig(ingress *networkingv1.Ingress, options Options) (*component.Summary, error) {
 	return NewIngressConfiguration(ingress).Create(options)
 }
 
@@ -320,6 +320,6 @@ func (i *ingressHandler) Rules(options Options) error {
 	return nil
 }
 
-func defaultIngressRules(ingress *extv1beta1.Ingress, options Options) (*component.Table, error) {
+func defaultIngressRules(ingress *networkingv1.Ingress, options Options) (*component.Table, error) {
 	return createIngressRulesView(ingress, options)
 }
