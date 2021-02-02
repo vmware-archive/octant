@@ -126,6 +126,10 @@ func (t *Task) Do(f func()) {
 
 		// Custom
 		f()
+
+		// Wait for first level subtasks to be done
+		// Wait() can also be called in f() if something needs to be executed just after Wait()
+		t.Wait()
 	}()
 }
 
@@ -136,7 +140,7 @@ func (t *Task) Done() {
 	})
 }
 
-// Wait waits for the task to be finished
+// Wait waits for first level subtasks to be finished
 func (t *Task) Wait() {
 	t.ow.Do(func() {
 		t.wg.Wait()

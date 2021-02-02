@@ -3,9 +3,7 @@ package astikit
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"io"
-	"math"
 )
 
 // BitsWriter represents an object that can write individual bits into a writer
@@ -13,9 +11,11 @@ import (
 // This is particularly helpful when you want to build a slice of bytes based
 // on individual bits for testing purposes.
 type BitsWriter struct {
-	bo binary.ByteOrder
-	rs []rune
-	w  io.Writer
+	bo       binary.ByteOrder
+	cache    byte
+	cacheLen byte
+	bsCache  []byte
+	w        io.Writer
 }
 
 // BitsWriterOptions represents BitsWriter options
@@ -27,8 +27,9 @@ type BitsWriterOptions struct {
 // NewBitsWriter creates a new BitsWriter
 func NewBitsWriter(o BitsWriterOptions) (w *BitsWriter) {
 	w = &BitsWriter{
-		bo: o.ByteOrder,
-		w:  o.Writer,
+		bo:      o.ByteOrder,
+		w:       o.Writer,
+		bsCache: make([]byte, 1),
 	}
 	if w.bo == nil {
 		w.bo = binary.BigEndian
@@ -44,80 +45,123 @@ func NewBitsWriter(o BitsWriterOptions) (w *BitsWriter) {
 //   - []byte: processed as n bytes, n being the length of the input
 //   - bool: processed as one bit
 //   - uint8/uint16/uint32/uint64: processed as n bits, if type is uintn
-func (w *BitsWriter) Write(i interface{}) (err error) {
+func (w *BitsWriter) Write(i interface{}) error {
 	// Transform input into "10010" format
-	var s string
+
 	switch a := i.(type) {
 	case string:
-		s = a
+		for _, r := range a {
+			var err error
+			if r == '1' {
+				err = w.writeBit(1)
+			} else {
+				err = w.writeBit(0)
+			}
+			if err != nil {
+				return err
+			}
+		}
 	case []byte:
 		for _, b := range a {
-			s += fmt.Sprintf("%.8b", b)
+			if err := w.writeFullByte(b); err != nil {
+				return err
+			}
 		}
 	case bool:
 		if a {
-			s = "1"
+			return w.writeBit(1)
 		} else {
-			s = "0"
+			return w.writeBit(0)
 		}
 	case uint8:
-		s = fmt.Sprintf("%.8b", i)
+		return w.writeFullByte(a)
 	case uint16:
-		s = fmt.Sprintf("%.16b", i)
+		return w.writeFullInt(uint64(a), 2)
 	case uint32:
-		s = fmt.Sprintf("%.32b", i)
+		return w.writeFullInt(uint64(a), 4)
 	case uint64:
-		s = fmt.Sprintf("%.64b", i)
+		return w.writeFullInt(a, 8)
 	default:
-		err = errors.New("astikit: invalid type")
-		return
+		return errors.New("astikit: invalid type")
 	}
 
-	// Loop through runes
-	for _, r := range s {
-		// Append rune
-		if w.bo == binary.LittleEndian {
-			w.rs = append([]rune{r}, w.rs...)
-		} else {
-			w.rs = append(w.rs, r)
+	return nil
+}
+
+func (w *BitsWriter) writeFullInt(in uint64, len int) error {
+	if w.bo == binary.BigEndian {
+		for i := len - 1; i >= 0; i-- {
+			err := w.writeFullByte(byte((in >> (i * 8)) & 0xff))
+			if err != nil {
+				return err
+			}
 		}
-
-		// There are enough bits to form a byte
-		if len(w.rs) == 8 {
-			// Get value
-			v := w.val()
-
-			// Remove runes
-			w.rs = w.rs[8:]
-
-			// Write
-			if err = binary.Write(w.w, w.bo, v); err != nil {
-				return
+	} else {
+		for i := 0; i < len; i++ {
+			err := w.writeFullByte(byte((in >> (i * 8)) & 0xff))
+			if err != nil {
+				return err
 			}
 		}
 	}
-	return
+
+	return nil
 }
 
-func (w *BitsWriter) val() (v uint8) {
-	var power float64
-	for idx := len(w.rs) - 1; idx >= 0; idx-- {
-		if w.rs[idx] == '1' {
-			v = v + uint8(math.Pow(2, power))
-		}
-		power++
+func (w *BitsWriter) writeFullByte(b byte) error {
+	if w.cacheLen == 0 {
+		w.bsCache[0] = b
+		_, err := w.w.Write(w.bsCache)
+		return err
 	}
-	return
+
+	w.bsCache[0] = w.cache | (b >> w.cacheLen)
+	if _, err := w.w.Write(w.bsCache); err != nil {
+		return err
+	}
+
+	w.cache = b << (8 - w.cacheLen)
+	return nil
+}
+
+func (w *BitsWriter) writeBit(bit byte) error {
+	w.cache = w.cache | (bit)<<(7-w.cacheLen)
+	w.cacheLen++
+	if w.cacheLen == 8 {
+		w.bsCache[0] = w.cache
+		_, err := w.w.Write(w.bsCache)
+		if err != nil {
+			return err
+		}
+		w.cacheLen = 0
+		w.cache = 0
+	}
+	return nil
 }
 
 // WriteN writes the input into n bits
 func (w *BitsWriter) WriteN(i interface{}, n int) error {
-	switch i.(type) {
-	case uint8, uint16, uint32, uint64:
-		return w.Write(fmt.Sprintf(fmt.Sprintf("%%.%db", n), i))
+	var toWrite uint64
+	switch a := i.(type) {
+	case uint8:
+		toWrite = uint64(a)
+	case uint16:
+		toWrite = uint64(a)
+	case uint32:
+		toWrite = uint64(a)
+	case uint64:
+		toWrite = a
 	default:
 		return errors.New("astikit: invalid type")
 	}
+
+	for i := n - 1; i >= 0; i-- {
+		err := w.writeBit(byte(toWrite>>i) & 0x1)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 var byteHamming84Tab = [256]uint8{
