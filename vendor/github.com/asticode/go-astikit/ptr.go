@@ -32,6 +32,11 @@ func Int64Ptr(i int64) *int64 {
 	return &i
 }
 
+// StrSlicePtr transforms a []string into a *[]string
+func StrSlicePtr(i []string) *[]string {
+	return &i
+}
+
 // StrPtr transforms a string into a *string
 func StrPtr(i string) *string {
 	return &i

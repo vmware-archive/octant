@@ -5,9 +5,9 @@ go 1.15
 require (
 	contrib.go.opencensus.io/exporter/jaeger v0.2.1
 	github.com/GeertJohan/go.rice v1.0.0
-	github.com/asticode/go-astikit v0.9.1
-	github.com/asticode/go-astilectron v0.18.0
-	github.com/asticode/go-astilectron-bundler v0.7.2
+	github.com/asticode/go-astikit v0.15.0
+	github.com/asticode/go-astilectron v0.22.3
+	github.com/asticode/go-astilectron-bundler v0.7.8
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dlclark/regexp2 v1.2.0 // indirect
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
@@ -68,9 +68,7 @@ require (
 	k8s.io/api v0.19.3
 	k8s.io/apiextensions-apiserver v0.19.3
 	k8s.io/apimachinery v0.19.3
-	k8s.io/apiserver v0.19.3 // indirect
 	k8s.io/client-go v0.19.3
-	k8s.io/component-base v0.19.3 // indirect
 	k8s.io/klog v1.0.0
 	k8s.io/klog/v2 v2.3.0 // indirect
 	k8s.io/kube-aggregator v0.19.3

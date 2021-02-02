@@ -164,12 +164,18 @@ func (t *Translator) Translate(language, key string) string {
 	defer t.m.RUnlock()
 
 	// Get translation
-	k := t.key(t.language(language), key)
-	v, ok := t.p[k]
-	if !ok {
-		return k
+	k1 := t.key(t.language(language), key)
+	v, ok := t.p[k1]
+	if ok {
+		return v
 	}
-	return v
+
+	// Default translation
+	k2 := t.key(t.o.DefaultLanguage, key)
+	if v, ok = t.p[k2]; ok {
+		return v
+	}
+	return k1
 }
 
 // TranslateCtx translates a key using the language specified in the context

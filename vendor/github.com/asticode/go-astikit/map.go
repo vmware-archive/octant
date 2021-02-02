@@ -1,6 +1,7 @@
 package astikit
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -32,6 +33,24 @@ func (m *BiMap) Get(k interface{}) (interface{}, bool) { return m.get(k, m.forwa
 
 // GetInverse gets the value in the inverse map based on the provided key
 func (m *BiMap) GetInverse(k interface{}) (interface{}, bool) { return m.get(k, m.inverse) }
+
+// MustGet gets the value in the forward map based on the provided key and panics if key is not found
+func (m *BiMap) MustGet(k interface{}) interface{} {
+	v, ok := m.get(k, m.forward)
+	if !ok {
+		panic(fmt.Sprintf("astikit: key %+v not found in foward map", k))
+	}
+	return v
+}
+
+// MustGetInverse gets the value in the inverse map based on the provided key and panics if key is not found
+func (m *BiMap) MustGetInverse(k interface{}) interface{} {
+	v, ok := m.get(k, m.inverse)
+	if !ok {
+		panic(fmt.Sprintf("astikit: key %+v not found in inverse map", k))
+	}
+	return v
+}
 
 func (m *BiMap) set(k, v interface{}, f, i map[interface{}]interface{}) *BiMap {
 	m.m.Lock()
