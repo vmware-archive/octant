@@ -154,7 +154,7 @@ github.com/gregjones/httpcache
 github.com/gregjones/httpcache/diskcache
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
-# github.com/hashicorp/go-hclog v0.14.1
+# github.com/hashicorp/go-hclog v0.15.0
 ## explicit
 github.com/hashicorp/go-hclog
 # github.com/hashicorp/go-multierror v1.1.0
@@ -569,8 +569,6 @@ k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/netutil
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/apiserver v0.19.3
-## explicit
 # k8s.io/client-go v0.19.3
 ## explicit
 k8s.io/client-go/discovery
@@ -795,8 +793,6 @@ k8s.io/client-go/util/jsonpath
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
-# k8s.io/component-base v0.19.3
-## explicit
 # k8s.io/klog v1.0.0
 ## explicit
 k8s.io/klog
