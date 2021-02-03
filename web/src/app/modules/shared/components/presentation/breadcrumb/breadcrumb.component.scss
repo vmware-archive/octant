@@ -34,11 +34,12 @@
   &-body {
     display: flex;
     flex-wrap: wrap;
+    margin-bottom: 0.6rem;
   }
 
   &-header {
-    margin-top: 0.2rem;
-    line-height: 1.8rem;
+    margin-top: 0rem;
+    line-height: 1.4rem;
   }
 
   &-span {

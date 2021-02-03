@@ -1,14 +1,12 @@
 <div class="breadcrumb">
-  <div class="breadcrumb-body">
-    <ng-container *ngIf="path?.length > 1">
-      <div
-        *ngFor="let segment of path; let i = index; trackBy: identifyPath"
-        class="breadcrumb-item"
-      >
-        <clr-icon *ngIf ="i !== 0" shape="angle" class="separator"></clr-icon>
-        <app-view-container [view]="segment"></app-view-container>
-      </div>
-    </ng-container>
+  <div *ngIf="path?.length > 1" class="breadcrumb-body">
+    <div
+      *ngFor="let segment of path; let i = index; trackBy: identifyPath"
+      class="breadcrumb-item"
+    >
+      <clr-icon *ngIf ="i !== 0" shape="angle" class="separator"></clr-icon>
+      <app-view-container [view]="segment"></app-view-container>
+    </div>
   </div>
   <h2 class="breadcrumb-header">
     {{ header }}

@@ -131,7 +131,10 @@ export class DonutChartComponent extends AbstractViewComponent<DonutChartView> {
         const path = `M ${start1.x} ${start1.y} A ${endRadius} ${endRadius} 0 ${largeArc} 1 ${start2.x} ${start2.y} L ${end2.x} ${end2.y} A ${startRadius}, ${startRadius} 0 ${largeArc} 0 ${end1.x} ${end1.y} Z`;
         this.segments.push({
           path,
-          id: `path${index}`,
+          id:
+            this.v.config.segments.length === 1
+              ? 'single-path'
+              : `path${index}`,
           fillColor: this.getSegmentColor(segment),
         });
         startAngle += segmentAngle;

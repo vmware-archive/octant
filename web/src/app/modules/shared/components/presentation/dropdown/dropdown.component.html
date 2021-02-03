@@ -19,7 +19,7 @@
       <clr-icon shape="caret down"></clr-icon>
     </div>
     <ng-template [(clrIfOpen)]="isOpen">
-      <clr-dropdown-menu class="dropdown-wrapper" [clrPosition]="position">
+      <clr-dropdown-menu class="dropdown-wrapper"  [ngStyle]="dropdownMenuStyle" [clrPosition]="position">
       <div class="dropdown-list">
         <ng-container *ngFor="let item of items | slice : 0 : itemLimit; let i = index; trackBy: identifyItem" >
         <label *ngIf="item.type == 'header'" class="dropdown-header" aria-hidden="true">{{item.label}}</label>
