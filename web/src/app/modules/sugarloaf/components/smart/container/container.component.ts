@@ -12,6 +12,8 @@ import { IconService } from '../../../../shared/services/icon/icon.service';
 import { Preferences } from '../../../../shared/models/preference';
 import { NavigationService } from '../../../../shared/services/navigation/navigation.service';
 import { ElectronService } from '../../../../shared/services/electron/electron.service';
+import { Subscription } from 'rxjs';
+import { PreferencesService } from '../../../../shared/services/preferences/preferences.service';
 
 // tslint:disable-next-line
 declare namespace astilectron {
@@ -39,6 +41,8 @@ export class ContainerComponent implements OnInit, OnDestroy {
   preferencesOpened = false;
   preferences: Preferences;
 
+  private subscriptionPreferencesOpened: Subscription;
+
   isElectron = false;
 
   // This is a feature flag for the app-wide bottom panel. It can be removed
@@ -49,6 +53,7 @@ export class ContainerComponent implements OnInit, OnDestroy {
     private location: Location,
     private websocketService: WebsocketService,
     private navigationService: NavigationService,
+    private preferencesService: PreferencesService,
     private electronService: ElectronService,
     private iconService: IconService
   ) {
@@ -66,10 +71,19 @@ export class ContainerComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.subscriptionPreferencesOpened = this.preferencesService.preferencesOpened.subscribe(
+      opened => {
+        this.preferences = this.preferencesService.getPreferences(); // TODO: merge with server side prefs (currently broken)
+        this.preferencesOpened = opened;
+      }
+    );
+
     this.websocketService.open();
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.subscriptionPreferencesOpened.unsubscribe();
+  }
 
   private handleMessage = (message: astilectron.Message) => {
     switch (message.name) {
@@ -85,6 +99,7 @@ export class ContainerComponent implements OnInit, OnDestroy {
       name: 'octant.cmd.updatePreferences',
       payload: update,
     };
+    this.preferencesService.preferencesChanged(update);
     astilectron.sendMessage(m);
   }
 
@@ -94,5 +109,9 @@ export class ContainerComponent implements OnInit, OnDestroy {
 
   back() {
     this.location.back();
+  }
+
+  preferencesOpenChanged(opened: boolean) {
+    this.preferencesService.preferencesOpened.next(opened);
   }
 }

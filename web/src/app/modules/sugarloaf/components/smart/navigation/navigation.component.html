@@ -9,6 +9,7 @@
   (clrVerticalNavCollapsedChange)="updateNavCollapsed($event)"
 >
   <div class="navigation-main">
+  <div class="module-nav">
     <clr-tabs clrLayout="vertical"
       [ngClass]="{
         'module-tabs': !showLabels,
@@ -38,7 +39,25 @@
         </ng-template>
       </clr-tab>
       </clr-tabs>
-    <!-- Navigation items -->
+    <div class="prefs-button">
+      <div (click)="showPrefs()" class="btn-icon btn-link nav-link"
+           [ngClass]="{
+            'button-tool': !showLabels,
+            'button-tool-labels': showLabels
+          }">
+        <div *ngIf="showLabels" class="button-wrapper">
+          <clr-icon class="icon-nav" shape="cog"></clr-icon>
+          <div class="button-text-wrapper">
+            <div class="button-text">Preferences</div>
+          </div>
+        </div>
+        <app-octant-tooltip *ngIf="!showLabels" tooltipText="Preferences">
+          <clr-icon class="icon-nav" shape="cog"></clr-icon>
+        </app-octant-tooltip>
+      </div>
+    </div>
+  </div>
+  <!-- Navigation items -->
   <div
     [ngClass]="{
       'navigation-items-collapsed': collapsed,

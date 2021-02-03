@@ -34,7 +34,10 @@ export const lightTheme: Theme = {
   assetPath: 'assets/css/clr-ui.min.css',
 };
 
-export const defaultTheme = lightTheme;
+export const defaultTheme = window.matchMedia('(prefers-color-scheme:dark)')
+  .matches
+  ? darkTheme
+  : lightTheme;
 
 @Injectable({
   providedIn: 'root',
@@ -53,6 +56,7 @@ export class ThemeService implements OnDestroy {
 
     const themeType = localStorage.getItem('theme') as ThemeType;
     this.themeType = themeType || defaultTheme.type;
+
     this.renderer = rendererFactory.createRenderer(null, null);
 
     this.storageEventHandler = (e: StorageEvent): void => {

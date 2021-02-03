@@ -19,6 +19,7 @@ import {
 } from '../../../../shared/services/navigation/navigation.service';
 import { Router } from '@angular/router';
 import { ThemeService } from '../../../../shared/services/theme/theme.service';
+import { PreferencesService } from '../../../../shared/services/preferences/preferences.service';
 
 const emptyNavigation: Navigation = {
   sections: [],
@@ -50,6 +51,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
     private navigationService: NavigationService,
     private router: Router,
     private themeService: ThemeService,
+    private preferencesService: PreferencesService,
     private cd: ChangeDetectorRef
   ) {}
 
@@ -75,7 +77,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
       }
     );
 
-    this.subscriptionCollapsed = this.navigationService.collapsed.subscribe(
+    this.subscriptionCollapsed = this.preferencesService.navCollapsed.subscribe(
       col => {
         if (this.collapsed !== col) {
           this.collapsed = col;
@@ -84,7 +86,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
       }
     );
 
-    this.subscriptionShowLabels = this.navigationService.showLabels.subscribe(
+    this.subscriptionShowLabels = this.preferencesService.showLabels.subscribe(
       col => {
         if (this.showLabels !== col) {
           this.showLabels = col;
@@ -107,7 +109,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
     } else if (event.key === 'L' && event.ctrlKey) {
       event.preventDefault();
       event.cancelBubble = true;
-      this.navigationService.showLabels.next(!this.showLabels);
+      this.preferencesService.showLabels.next(!this.showLabels);
     }
   }
 
@@ -140,6 +142,10 @@ export class NavigationComponent implements OnInit, OnDestroy {
     return path;
   }
 
+  showPrefs() {
+    this.preferencesService.preferencesOpened.next(true);
+  }
+
   openPopup(index: number) {
     this.setNavState(true, index);
     this.setLastSelection(index);
@@ -163,7 +169,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   updateNavCollapsed(value: boolean): void {
-    this.navigationService.collapsed.next(value);
+    this.preferencesService.navCollapsed.next(value);
   }
 
   setLastSelection(index) {
