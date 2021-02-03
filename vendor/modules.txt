@@ -16,7 +16,7 @@ github.com/Azure/go-autorest/logger
 github.com/Azure/go-autorest/tracing
 # github.com/GeertJohan/go.incremental v1.0.0
 github.com/GeertJohan/go.incremental
-# github.com/GeertJohan/go.rice v1.0.0
+# github.com/GeertJohan/go.rice v1.0.2
 ## explicit
 github.com/GeertJohan/go.rice
 github.com/GeertJohan/go.rice/embedded
@@ -213,7 +213,6 @@ github.com/modern-go/reflect2
 # github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e
 ## explicit
 # github.com/nkovacs/streamquote v1.0.0
-## explicit
 github.com/nkovacs/streamquote
 # github.com/oklog/run v1.0.0
 github.com/oklog/run
