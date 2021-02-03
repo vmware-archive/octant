@@ -18,6 +18,7 @@ export class TrayMenu {
   createNativeImage(): Electron.NativeImage {
     const image = nativeImage.createFromPath(iconPath);
     image.setTemplateImage(true);
+    image.resize({ width: 16, height: 16 });
     return image;
   }
 
