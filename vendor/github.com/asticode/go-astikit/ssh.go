@@ -70,7 +70,7 @@ func SSHCopyFileFunc(fn SSHSessionFunc) CopyFileFunc {
 			defer stdin.Close()
 
 			// Use "scp" command
-			if err = s.Start("scp -qt " + filepath.Dir(dst)); err != nil {
+			if err = s.Start("scp -qt \"" + filepath.Dir(dst) + "\""); err != nil {
 				err = fmt.Errorf("astikit: scp to %s failed: %w", dst, err)
 				return
 			}
