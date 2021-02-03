@@ -4,7 +4,20 @@
  *
  */
 
-import { app, BrowserWindow, Menu, screen, session, shell } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  Menu,
+  MessageBoxOptions,
+  screen,
+  session,
+  shell,
+} from 'electron';
+import { ApplicationMenu } from './electron/application-menu';
+import { TrayMenu } from './electron/tray-menu';
+import { apiLogPath, errLogPath, tmpPath, iconPath } from './electron/paths';
+import { electronStore } from './electron/store';
 import * as path from 'path';
 import * as child_process from 'child_process';
 import * as process from 'process';
@@ -15,70 +28,14 @@ let win: BrowserWindow = null;
 let serverPid: any = null;
 let state: any = {};
 let statePath: string = null;
-let date: string = new Date().toISOString();
+let closing = false;
+let tray = null;
 
 const args = process.argv.slice(1);
 const local = args.some(val => val === '--local');
 
-const tmpPath = path.join(os.tmpdir(), 'octant');
-const apiLogPath = path.join(tmpPath, 'api.out-' + date + '.log');
-const errLogPath = path.join(tmpPath, 'api.err-' + date + '.log');
-
-const template: Electron.MenuItemConstructorOptions[] = [
-  {
-    label: 'File',
-    submenu: [
-      { label: 'Preferences',
-        click(){
-          win.webContents.send('openPreferences');
-        } },
-      { type: 'separator' },
-      { label: 'Quit Octant', role: 'close' }
-      ],
-  },
-  {
-    label: 'Edit',
-    submenu: [
-      { role: 'undo' },
-      { role: 'redo' },
-      { role: 'cut' },
-      { role: 'copy' },
-      { role: 'paste' },
-    ],
-  },
-  {
-    label: 'View',
-    submenu: [
-      { role: 'resetZoom' },
-      { role: 'zoomIn', accelerator: 'CommandOrControl+=' },
-      { role: 'zoomOut' },
-      { type: 'separator' },
-      { role: 'togglefullscreen' },
-      { role: 'toggleDevTools' },
-      { type: 'separator' },
-      {
-        label: 'View Logs',
-        click() {
-          shell.showItemInFolder(errLogPath);
-        },
-      },
-    ],
-  },
-  {
-    label: 'Help',
-    submenu: [
-      {
-        label: 'octant.dev',
-        click() {
-          shell.openExternal('https://octant.dev/');
-        },
-      },
-    ],
-  },
-];
-
-const menu = Menu.buildFromTemplate(template);
-Menu.setApplicationMenu(menu);
+const applicationMenu = new ApplicationMenu();
+Menu.setApplicationMenu(applicationMenu.menu);
 
 let saveBoundsCookie;
 
@@ -105,7 +62,7 @@ function createWindow(): BrowserWindow {
   const electronScreen = screen;
   const size = electronScreen.getPrimaryDisplay().workAreaSize;
 
-  var options = {
+  const options = {
     x: null,
     y: null,
     width: size.width,
@@ -142,8 +99,7 @@ function createWindow(): BrowserWindow {
 
   // Create the browser window.
   win = new BrowserWindow(options);
-
-  win.setIcon(path.join(__dirname, 'dist/octant/assets/icons/icon.png'));
+  win.setIcon(iconPath);
 
   if (local) {
     win.webContents.openDevTools();
@@ -154,13 +110,50 @@ function createWindow(): BrowserWindow {
     win.loadFile(path.join(__dirname, 'dist/octant/index.html'));
   });
 
-  // Emitted when the window is closed.
-  win.on('closed', () => {
-    // Dereference the window object, usually you would store window
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    win = null;
+  win.webContents.on('new-window', (event, url: string) => {
+    event.preventDefault();
+    shell.openExternal(url);
   });
+
+  win.on('close', event => {
+    const openDialog: boolean = electronStore.get('showDialogue');
+    if (openDialog) {
+      const messageOptions: MessageBoxOptions = {
+        type: 'question',
+        buttons: ['Cancel', 'Yes', 'No'],
+        defaultId: 2,
+        message: 'Do you want to minimize to tray?',
+        detail: 'Octant will continue running in the background',
+      };
+
+      const result = dialog.showMessageBoxSync(win, messageOptions);
+      switch (result) {
+        case 0:
+          event.preventDefault();
+          break;
+        case 1:
+          event.preventDefault();
+          electronStore.set('showDialogue', false);
+          win.hide();
+          break;
+        case 2:
+          electronStore.set('showDialogue', false);
+          electronStore.set('minimizeToTray', false);
+          break;
+      }
+    } else {
+      // @ts-ignore
+      const shouldMinimize: boolean = electronStore.get('minimizeToTray');
+
+      if (closing) {
+        win = null;
+      } else if (shouldMinimize) {
+        event.preventDefault();
+        win.hide();
+      }
+    }
+  });
+
   win.on('resize', saveBoundsSoon);
   win.on('move', saveBoundsSoon);
 
@@ -168,9 +161,9 @@ function createWindow(): BrowserWindow {
 }
 
 const startBinary = (port: number) => {
-  fs.mkdir(path.join(tmpPath), { recursive: true }, err => {
-    if (err) {
-      throw err;
+  fs.mkdir(path.join(tmpPath), { recursive: true }, error => {
+    if (error) {
+      throw error;
     }
   });
 
@@ -224,8 +217,10 @@ try {
       w.webContents.send('port-message', port);
     });
 
+    tray = new TrayMenu(win);
+
     // In event of a black background issue: https://github.com/electron/electron/issues/15947
-    //setTimeout(createWindow, 400);
+    // setTimeout(createWindow, 400);
     session.defaultSession.webRequest.onBeforeSendHeaders(
       { urls: ['ws://localhost:' + port + '/api/v1/stream'] },
       (details, callback) => {
@@ -235,13 +230,13 @@ try {
     );
   });
 
+  app.on('before-quit', () => {
+    closing = true;
+  });
+
   // Quit when all windows are closed.
   app.on('window-all-closed', () => {
-    // On OS X it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
-    if (process.platform !== 'darwin') {
-      app.quit();
-    }
+    app.quit();
   });
 
   app.on('activate', () => {
@@ -249,6 +244,8 @@ try {
     // dock icon is clicked and there are no other windows open.
     if (win === null) {
       createWindow();
+    } else {
+      win.show();
     }
   });
 } catch (e) {
