@@ -12,6 +12,7 @@ import {
   MessageBoxOptions,
   screen,
   session,
+  shell,
 } from 'electron';
 import { ApplicationMenu } from './electron/application-menu';
 import { TrayMenu } from './electron/tray-menu';
@@ -33,70 +34,8 @@ let tray = null;
 const args = process.argv.slice(1);
 const local = args.some(val => val === '--local');
 
-<<<<<<< HEAD
-const tmpPath = path.join(os.tmpdir(), 'octant');
-const apiLogPath = path.join(tmpPath, 'api.out-' + date + '.log');
-const errLogPath = path.join(tmpPath, 'api.err-' + date + '.log');
-
-const template: Electron.MenuItemConstructorOptions[] = [
-  {
-    label: 'File',
-    submenu: [
-      { label: 'Preferences',
-        click(){
-          win.webContents.send('openPreferences');
-        } },
-      { type: 'separator' },
-      { label: 'Quit Octant', role: 'close' }
-      ],
-  },
-  {
-    label: 'Edit',
-    submenu: [
-      { role: 'undo' },
-      { role: 'redo' },
-      { role: 'cut' },
-      { role: 'copy' },
-      { role: 'paste' },
-    ],
-  },
-  {
-    label: 'View',
-    submenu: [
-      { role: 'resetZoom' },
-      { role: 'zoomIn', accelerator: 'CommandOrControl+=' },
-      { role: 'zoomOut' },
-      { type: 'separator' },
-      { role: 'togglefullscreen' },
-      { role: 'toggleDevTools' },
-      { type: 'separator' },
-      {
-        label: 'View Logs',
-        click() {
-          shell.showItemInFolder(errLogPath);
-        },
-      },
-    ],
-  },
-  {
-    label: 'Help',
-    submenu: [
-      {
-        label: 'octant.dev',
-        click() {
-          shell.openExternal('https://octant.dev/');
-        },
-      },
-    ],
-  },
-];
-
-const menu = Menu.buildFromTemplate(template);
-Menu.setApplicationMenu(menu);
-=======
 const applicationMenu = new ApplicationMenu();
 Menu.setApplicationMenu(applicationMenu.menu);
->>>>>>> Add system menu tray and minimize/hide logic
 
 let saveBoundsCookie;
 
@@ -169,6 +108,11 @@ function createWindow(): BrowserWindow {
 
   win.webContents.on('did-fail-load', () => {
     win.loadFile(path.join(__dirname, 'dist/octant/index.html'));
+  });
+
+  win.webContents.on('new-window', (event, url: string) => {
+    event.preventDefault();
+    shell.openExternal(url);
   });
 
   win.on('close', event => {
