@@ -3,14 +3,14 @@ import { SharedModule } from '../src/app/modules/shared/shared.module';
 import { setConsoleOptions } from '@storybook/addon-console';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { APP_INITIALIZER } from '@angular/core';
-import { InitService } from '../src/app/modules/shared/services/init/init.service';
+import { ThemeService } from '../src/app/modules/shared/services/theme/theme.service';
 import { RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from '../src/app/app-routing.module';
 import { setCompodocJson } from '@storybook/addon-docs/angular';
 import docJson from '../documentation.json';
-import { MonacoEditorModule } from 'ng-monaco-editor';
+import { MonacoEditorModule } from '@materia-ui/ngx-monaco-editor';
 import { windowProvider, WindowToken } from '../src/app/window';
 
 import theme from './theme';
@@ -31,20 +31,17 @@ addDecorator(
       BrowserAnimationsModule,
       BrowserModule,
       HttpClientModule,
-      MonacoEditorModule.forRoot({
-        baseUrl: 'lib',
-        defaultOptions: {},
-      }),
+      MonacoEditorModule,
       RouterModule,
       SharedModule,
     ],
     providers: [
-      InitService,
+      ThemeService,
       { provide: WindowToken, useFactory: windowProvider },
       {
         provide: APP_INITIALIZER,
-        useFactory: initService => () => initService.init(),
-        deps: [InitService],
+        useFactory: themeService => () => themeService.loadTheme(),
+        deps: [ThemeService],
         multi: true,
       },
     ],

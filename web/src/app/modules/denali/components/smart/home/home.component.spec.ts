@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { HomeComponent } from './home.component';
-import { MonacoEditorConfig, MonacoProviderService } from 'ng-monaco-editor';
 
 describe('AppComponent', () => {
   let component: HomeComponent;
@@ -10,7 +9,6 @@ describe('AppComponent', () => {
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
-        providers: [MonacoProviderService, MonacoEditorConfig],
         declarations: [HomeComponent],
       }).compileComponents();
     })

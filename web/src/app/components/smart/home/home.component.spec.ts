@@ -1,22 +1,22 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { HomeComponent } from './home.component';
-import { initServiceStub } from 'src/app/testing/init-service-stub';
-import { InitService } from 'src/app/modules/shared/services/init/init.service';
+import { themeServiceStub } from 'src/app/testing/theme-service-stub';
+import { ThemeService } from 'src/app/modules/shared/services/theme/theme.service';
 import { SharedModule } from 'src/app/modules/shared/shared.module';
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
-  let initService: InitService;
+  let themeService: ThemeService;
 
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
         providers: [
           {
-            provide: InitService,
-            useValue: initServiceStub,
+            provide: ThemeService,
+            useValue: themeServiceStub,
           },
           SharedModule,
         ],
@@ -26,7 +26,7 @@ describe('HomeComponent', () => {
   );
 
   beforeEach(() => {
-    initService = TestBed.inject(InitService);
+    themeService = TestBed.inject(ThemeService);
 
     fixture = TestBed.createComponent(HomeComponent);
     component = fixture.componentInstance;
@@ -38,9 +38,9 @@ describe('HomeComponent', () => {
   });
 
   it('should initialize when component mounts', () => {
-    spyOn(initService, 'init');
+    spyOn(themeService, 'loadTheme');
     component.ngOnInit();
 
-    expect(initService.init).toHaveBeenCalled();
+    expect(themeService.loadTheme).toHaveBeenCalled();
   });
 });
