@@ -10,7 +10,8 @@ import (
 	"fmt"
 	"strings"
 
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
+	"github.com/vmware-tanzu/octant/pkg/store"
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -84,7 +85,7 @@ func NodeHandler(ctx context.Context, node *corev1.Node, options Options) (compo
 	if err := nh.Images(options); err != nil {
 		return nil, errors.Wrap(err, "print node images")
 	}
-	if err := nh.Pods(options); err != nil {
+	if err := nh.Pods(ctx, options); err != nil {
 		return nil, errors.Wrap(err, "print node pods")
 	}
 	return o.ToComponent(ctx, options)
@@ -362,23 +363,32 @@ var (
 	nodePodsColumns = component.NewTableCols("Name", "Namespace")
 )
 
-func createNodePodsView(node *corev1.Node, options *Options) (*component.Table, error) {
-	if options == nil {
-		return nil, errors.New("cannot generate images for nil node")
-	}
-
+func createNodePodsView(ctx context.Context, node *corev1.Node, options Options) (*component.Table, error) {
 	table := component.NewTable("Pods", "There are no pods!", nodePodsColumns)
 
-	clusterClient, err := options.DashConfig.ClusterClient().KubernetesClient()
+	podList := &corev1.PodList{}
+	objectStore := options.DashConfig.ObjectStore()
+
+	key := store.Key{
+		APIVersion: "v1",
+		Kind:       "Pod",
+	}
+
+	list, _, err := objectStore.List(ctx, key)
 	if err != nil {
 		return nil, err
 	}
 
-	podList, err := clusterClient.CoreV1().Pods("").List(context.Background(), v1.ListOptions{
-		FieldSelector: fmt.Sprintf("spec.nodeName=%s", node.Name),
-	})
-	if err != nil {
-		return nil, err
+	for i := range list.Items {
+		pod := &corev1.Pod{}
+		err := kubernetes.FromUnstructured(&list.Items[i], pod)
+		if err != nil {
+			return nil, err
+		}
+
+		if pod.Spec.NodeName == node.Name {
+			podList.Items = append(podList.Items, *pod)
+		}
 	}
 
 	for _, pod := range podList.Items {
@@ -411,7 +421,7 @@ type nodeHandler struct {
 	resourcesFunc  func(*corev1.Node, Options) (*component.Table, error)
 	conditionsFunc func(*corev1.Node, Options) (*component.Table, error)
 	imagesFunc     func(*corev1.Node, Options) (*component.Table, error)
-	podsFunc       func(*corev1.Node, Options) (*component.Table, error)
+	podsFunc       func(context.Context, *corev1.Node, Options) (*component.Table, error)
 	object         *Object
 }
 
@@ -520,7 +530,7 @@ func (n *nodeHandler) Images(options Options) error {
 	return nil
 }
 
-func (n *nodeHandler) Pods(options Options) error {
+func (n *nodeHandler) Pods(ctx context.Context, options Options) error {
 	if n.node == nil {
 		return errors.New("can't display resources for nil node")
 	}
@@ -528,7 +538,7 @@ func (n *nodeHandler) Pods(options Options) error {
 	n.object.RegisterItems(ItemDescriptor{
 		Width: component.WidthFull,
 		Func: func() (component.Component, error) {
-			return n.podsFunc(n.node, options)
+			return n.podsFunc(ctx, n.node, options)
 		},
 	})
 	return nil
@@ -538,6 +548,6 @@ func defaultNodeImages(node *corev1.Node, options Options) (*component.Table, er
 	return createNodeImagesView(node)
 }
 
-func defaultNodePods(node *corev1.Node, options Options) (*component.Table, error) {
-	return createNodePodsView(node, &options)
+func defaultNodePods(ctx context.Context, node *corev1.Node, options Options) (*component.Table, error) {
+	return createNodePodsView(ctx, node, options)
 }

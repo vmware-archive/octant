@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/vmware-tanzu/octant/pkg/store"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -147,6 +149,50 @@ func Test_NodeConfiguration(t *testing.T) {
 			component.AssertEqual(t, tc.expected, summary)
 		})
 	}
+}
+
+func Test_createNodePodsView(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	tpo := newTestPrinterOptions(controller)
+	printOptions := tpo.ToOptions()
+
+	ctx := context.Background()
+
+	node := testutil.CreateNode("node-1")
+	pod := testutil.CreatePod("pod")
+	pod.Spec.NodeName = "node-1"
+
+	podSame := testutil.CreatePod("pod-same-node")
+	podSame.Spec.NodeName = "node-1"
+
+	podDifferent := testutil.CreatePod("pod-different-node")
+	podDifferent.Spec.NodeName = "node-2"
+
+	podKey := store.Key{
+		APIVersion: "v1",
+		Kind:       "Pod",
+	}
+
+	tpo.objectStore.EXPECT().List(gomock.Any(), podKey).
+		Return(testutil.ToUnstructuredList(t, pod, podSame, podDifferent), false, nil)
+
+	got, err := createNodePodsView(ctx, node, printOptions)
+	require.NoError(t, err)
+
+	nodePodsColumns := component.NewTableCols("Name", "Namespace")
+	expected := component.NewTableWithRows("Pods", "There are no pods!", nodePodsColumns, []component.TableRow{
+		{
+			"Name":      component.NewText("pod"),
+			"Namespace": component.NewText("namespace"),
+		},
+		{
+			"Name":      component.NewText("pod-same-node"),
+			"Namespace": component.NewText("namespace"),
+		},
+	})
+	component.AssertEqual(t, expected, got)
 }
 
 func Test_createAddressesView(t *testing.T) {
