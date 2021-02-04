@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"sync/atomic"
 	"time"
 
@@ -104,7 +105,12 @@ func (l *LoadingManager) UploadKubeConfig(state octant.State, payload action.Pay
 		return err
 	}
 
-	tempFile, err := ioutil.TempFile(os.TempDir(), "kubeconfig")
+	tempDir := path.Join(os.TempDir(), "octant")
+	if err := os.MkdirAll(tempDir, 0755); err != nil {
+		return err
+	}
+
+	tempFile, err := ioutil.TempFile(tempDir, "kubeconfig")
 	if err != nil {
 		return err
 	}
