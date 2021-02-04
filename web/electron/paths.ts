@@ -8,7 +8,7 @@ import { app } from 'electron';
 import * as path from 'path';
 import * as os from 'os';
 
-let date: string = new Date().toISOString();
+let date: string = new Date().toISOString().split(':').join('_');
 
 export const tmpPath = path.join(os.tmpdir(), 'octant');
 export const apiLogPath = path.join(tmpPath, 'api.out-' + date + '.log');
