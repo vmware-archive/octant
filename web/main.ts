@@ -196,13 +196,17 @@ const startBinary = (port: number) => {
     stdio: ['ignore', out, err],
   });
 
-  serverPid = -server.pid;
+  serverPid = server.pid;
   server.unref();
 };
 
 try {
   app.on('before-quit', () => {
-    process.kill(serverPid, 'SIGHUP');
+    if (os.platform() == 'win32') {
+      child_process.execSync('taskkill /PID ' + serverPid + ' /F');
+    } else {
+      process.kill(-serverPid, 'SIGHUP');
+    }
   });
 
   app.on('ready', async () => {
