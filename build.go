@@ -151,6 +151,7 @@ func main() {
 			Use:   "build-electron",
 			Short: "server build to extraResources, skipping tests",
 			Run: func(cmd *cobra.Command, args []string) {
+				webBuildElectron()
 				buildElectron()
 			},
 		},
@@ -363,6 +364,28 @@ func webBuild() {
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("web-build: %s", err)
 	}
+	runCmd("go", nil, "generate", "./web")
+}
+
+func webBuildElectron() {
+	dirCmd := newCmd("mkdir", nil, "-p", "dist/octant/")
+	dirCmd.Stdout = os.Stdout
+	dirCmd.Stderr = os.Stderr
+	dirCmd.Stdin = os.Stdin
+	dirCmd.Dir = "./web"
+	if err := dirCmd.Run(); err != nil {
+		log.Fatalf("web-build-electron: create dist/octant/ : %s", err)
+	}
+
+	cleanCmd := newCmd("npm", nil, "run", "clean")
+	cleanCmd.Stdout = os.Stdout
+	cleanCmd.Stderr = os.Stderr
+	cleanCmd.Stdin = os.Stdin
+	cleanCmd.Dir = "./web"
+	if err := cleanCmd.Run(); err != nil {
+		log.Fatalf("web-build-electron: create dist/octant/ : %s", err)
+	}
+
 	runCmd("go", nil, "generate", "./web")
 }
 
