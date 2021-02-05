@@ -1,6 +1,0 @@
-{
-  "app_name": "Octant",
-  "icon_path_darwin": "resources/icon.icns",
-  "icon_path_linux": "resources/icon.png",
-  "icon_path_windows": "resources/icon.ico"
-}
