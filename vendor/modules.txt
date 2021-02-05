@@ -236,7 +236,7 @@ github.com/spf13/viper
 # github.com/stoewer/go-strcase v1.2.0
 ## explicit
 github.com/stoewer/go-strcase
-# github.com/stretchr/testify v1.6.1
+# github.com/stretchr/testify v1.7.0
 ## explicit
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
