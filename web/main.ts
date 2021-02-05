@@ -65,6 +65,8 @@ function createWindow(): BrowserWindow {
   const options = {
     x: null,
     y: null,
+    minWidth: 400,
+    minHeight: 400,
     width: size.width,
     height: size.height,
     title: '',
