@@ -4,7 +4,7 @@
  *
  */
 
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { Navigation } from '../../../models/navigation';
 import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
@@ -14,20 +14,6 @@ import { NavigationService } from '../../../../shared/services/navigation/naviga
 import { ElectronService } from '../../../../shared/services/electron/electron.service';
 import { Subscription } from 'rxjs';
 import { PreferencesService } from '../../../../shared/services/preferences/preferences.service';
-
-// tslint:disable-next-line
-declare namespace astilectron {
-  export function onMessage(fn: (message: Message) => void);
-  export function sendMessage(
-    message: Message,
-    callback?: (message: Message) => void
-  );
-
-  export interface Message {
-    name: string;
-    payload: any;
-  }
-}
 
 @Component({
   selector: 'app-root',
@@ -65,11 +51,6 @@ export class ContainerComponent implements OnInit, OnDestroy {
     this.isElectron = this.electronService.isElectron();
   }
 
-  @HostListener('document:astilectron-ready', ['$event'])
-  onMessage(_: Event) {
-    astilectron.onMessage(message => this.handleMessage(message));
-  }
-
   ngOnInit(): void {
     this.subscriptionPreferencesOpened = this.preferencesService.preferencesOpened.subscribe(
       opened => {
@@ -85,22 +66,8 @@ export class ContainerComponent implements OnInit, OnDestroy {
     this.subscriptionPreferencesOpened.unsubscribe();
   }
 
-  private handleMessage = (message: astilectron.Message) => {
-    switch (message.name) {
-      case 'octant.cmd.preferences':
-        this.preferencesOpened = true;
-        this.preferences = message.payload as Preferences;
-        break;
-    }
-  };
-
   preferencesChanged(update: any) {
-    const m: astilectron.Message = {
-      name: 'octant.cmd.updatePreferences',
-      payload: update,
-    };
     this.preferencesService.preferencesChanged(update);
-    astilectron.sendMessage(m);
   }
 
   forward() {

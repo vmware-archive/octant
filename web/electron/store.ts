@@ -9,21 +9,25 @@ import ElectronStore = require('electron-store');
 interface OctantStore {
   minimizeToTray: boolean;
   showDialogue: boolean;
+  theme: string;
+  navigation: {
+    collapsed: boolean;
+    labels: boolean;
+  }
+  windowBounds: Electron.Rectangle
 }
 
 
 export const electronStore = new ElectronStore<OctantStore>({
   defaults: {
     minimizeToTray: true,
-    showDialogue: true
+    showDialogue: true,
+    theme: 'light',
+    windowBounds: undefined,
+    navigation: {
+      collapsed: false,
+      labels: true,
+    },
   }
 });
 
-//
-// export class OctantConfig {
-//   constructor() {
-//   }
-//
-//   set() {}
-//   get() {}
-// }
