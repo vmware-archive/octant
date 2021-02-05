@@ -43,13 +43,6 @@ func main() {
 
 	rootCmd.AddCommand(
 		&cobra.Command{
-			Use:   "build-electron-dev",
-			Short: "electron build",
-			Run: func(cmd *cobra.Command, args []string) {
-				buildElectronDev()
-			},
-		},
-		&cobra.Command{
 			Use:   "ci",
 			Short: "full build, running tests",
 			Run: func(cmd *cobra.Command, args []string) {
@@ -241,17 +234,6 @@ func newCmd(command string, env map[string]string, args ...string) *exec.Cmd {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", k, v))
 	}
 	return cmd
-}
-
-func buildElectronDev() {
-	runCmdIn(
-		filepath.Join("cmd", "octant-electron"),
-		"go",
-		nil,
-		"run",
-		"github.com/asticode/go-astilectron-bundler/astilectron-bundler",
-		"-o", filepath.Join("..", "..", "build"),
-	)
 }
 
 func goInstall() {
