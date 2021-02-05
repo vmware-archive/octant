@@ -19,6 +19,12 @@
 
   cursor: pointer;
 
+  @media (max-width: 700px) {
+    span {
+      display: none;
+    }
+  }
+
   clr-icon {
     margin-right: 0.2rem;
   }

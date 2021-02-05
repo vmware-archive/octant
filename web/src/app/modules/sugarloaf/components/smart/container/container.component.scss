@@ -66,6 +66,12 @@
       }
     }
 
+    @media (max-width: 1100px) {
+      .header-nav {
+        padding-left: 0.5rem !important;
+      }
+    }
+
     .header-centered {
       &:hover {
         cursor: pointer;
@@ -74,7 +80,6 @@
 
     .input-filter {
       margin-left: 0.8rem;
-      width: 10rem!important;
     }
   }
 
@@ -98,6 +103,12 @@
       }
     }
 
+    @media (max-width: 1000px) {
+      .branding {
+        display: none;
+      }
+    }
+
     .header-nav {
       padding-left: 1rem;
 
@@ -116,7 +127,7 @@
 
       .input-filter {
         z-index: 999; // clarity's data-grid beats this
-        width: 300px;
+        width: calc(150px + (300 - 150) * ((100vw - 500px) / (1920 - 500)));
       }
     }
   }
