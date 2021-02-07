@@ -53,11 +53,13 @@
 }
 
 .navigation-top-collapsed {
-  width: 97px;
+  width: 89px;
+  overflow: hidden;
 }
 
 .navigation-top-collapsed-labels {
   width: 117px;
+  overflow: hidden;
 }
 
 .module-tabs {
@@ -230,20 +232,6 @@
     padding-top: 0.6rem;
     height: 100%;
     overflow-y: hidden;
-    border-left: 1px solid rgba(173, 187, 196, 0.3);
-  }
-
-  .top-level {
-    flex-grow: 1;
-    overflow-y: auto;
-  }
-
-  .top-level-collapsed {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    overflow-y: hidden;
-    padding-top: 16px;
     border-left: 1px solid rgba(173, 187, 196, 0.3);
   }
 
