@@ -90,7 +90,7 @@ jobs:
         id: npm-cache
         run: |
           echo "::set-output name=dir::$(npm config get cache)"
-      - uses: actions/cache@v2
+      - uses: actions/cache@v2.1.4
         if: github.event_name == 'push'
         with:
           path: ${{ steps.npm-cache.outputs.dir }}
@@ -98,7 +98,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-push-${{ hashFiles('**/package-lock.json') }}
             ${{ runner.os }}-node-push-
-      - uses: actions/cache@v2
+      - uses: actions/cache@v2.1.4
         if: github.event_name == 'pull_request'
         with:
           path: ${{ steps.npm-cache.outputs.dir }}
