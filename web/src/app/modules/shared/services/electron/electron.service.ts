@@ -42,12 +42,7 @@ export class ElectronService {
    * Returns true if electron is detected
    */
   isElectron(): boolean {
-    if (typeof process === 'undefined') {
-      return false;
-    }
-    return (
-      process && process.versions && process.versions.electron !== undefined
-    );
+    return this.preferencesService.isElectron();
   }
 
   /**

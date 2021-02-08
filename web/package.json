@@ -63,7 +63,6 @@
     "@webcomponents/custom-elements": "^1.4.2",
     "angular-resizable-element": "^3.3.3",
     "ansi_up": "^4.0.4",
-    "astilectron": "^0.33.0",
     "core-js": "^3.6.5",
     "cytoscape": "^3.16.2",
     "cytoscape-cose-bilkent": "^4.1.0",

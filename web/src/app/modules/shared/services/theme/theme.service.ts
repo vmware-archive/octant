@@ -1,15 +1,9 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import {
-  Inject,
-  Injectable,
-  Renderer2,
-  RendererFactory2,
-  OnDestroy,
-} from '@angular/core';
+import { Inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { EventEmitter } from 'events';
+import { BehaviorSubject } from 'rxjs';
 
 export type ThemeType = 'light' | 'dark';
 
@@ -42,34 +36,18 @@ export const defaultTheme = window.matchMedia('(prefers-color-scheme:dark)')
 @Injectable({
   providedIn: 'root',
 })
-export class ThemeService implements OnDestroy {
-  private emitter: EventEmitter;
-  private themeType: ThemeType;
+export class ThemeService {
+  public themeType: BehaviorSubject<ThemeType> = new BehaviorSubject<ThemeType>(
+    defaultTheme.type
+  );
+
   private renderer: Renderer2;
-  private storageEventHandler: (e: StorageEvent) => void;
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
     rendererFactory: RendererFactory2
   ) {
-    this.emitter = new EventEmitter();
-
-    const themeType = localStorage.getItem('theme') as ThemeType;
-    this.themeType = themeType || defaultTheme.type;
-
     this.renderer = rendererFactory.createRenderer(null, null);
-
-    this.storageEventHandler = (e: StorageEvent): void => {
-      if (e.key === 'theme' && e.newValue !== this.themeType) {
-        // another window switched the theme
-        this.switchTheme();
-      }
-    };
-    addEventListener('storage', this.storageEventHandler);
-  }
-
-  ngOnDestroy(): void {
-    removeEventListener('storage', this.storageEventHandler);
   }
 
   loadCSS(route: string) {
@@ -101,22 +79,12 @@ export class ThemeService implements OnDestroy {
   }
 
   switchTheme(): void {
-    this.themeType = this.isLightThemeEnabled() ? 'dark' : 'light';
-    localStorage.setItem('theme', this.themeType);
+    const theme = this.isLightThemeEnabled() ? 'dark' : 'light';
+    this.themeType.next(theme);
     this.loadTheme();
-
-    this.emitter.emit('change');
   }
 
   isLightThemeEnabled(): boolean {
-    return this.themeType === lightTheme.type;
-  }
-
-  onChange(listener: () => void): void {
-    this.emitter.on('change', listener);
-  }
-
-  offChange(listener: () => void): void {
-    this.emitter.off('change', listener);
+    return this.themeType.value === lightTheme.type;
   }
 }

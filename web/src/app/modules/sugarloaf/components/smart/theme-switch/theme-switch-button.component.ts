@@ -3,6 +3,7 @@
 //
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { ThemeService } from '../../../../shared/services/theme/theme.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-theme-switch-button',
@@ -12,6 +13,7 @@ import { ThemeService } from '../../../../shared/services/theme/theme.service';
 export class ThemeSwitchButtonComponent implements OnInit, OnDestroy {
   @Input() public collapsed: boolean;
 
+  private subscriptionTheme: Subscription;
   lightThemeEnabled: boolean;
 
   private onThemeChange: () => void;
@@ -25,11 +27,13 @@ export class ThemeSwitchButtonComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.themeService.onChange(this.onThemeChange);
+    this.subscriptionTheme = this.themeService.themeType.subscribe(() =>
+      this.onThemeChange()
+    );
   }
 
   ngOnDestroy() {
-    this.themeService.offChange(this.onThemeChange);
+    this.subscriptionTheme.unsubscribe();
   }
 
   switchTheme(): void {

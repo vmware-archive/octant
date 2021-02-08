@@ -1,6 +1,6 @@
 {
   "appId": "com.vmware.tanzu.octant",
-  "productName": "octant",
+  "productName": "Octant",
   "directories": {
     "output": "release/"
   },

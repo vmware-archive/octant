@@ -26,8 +26,6 @@ import * as fs from 'fs';
 
 let win: BrowserWindow = null;
 let serverPid: any = null;
-let state: any = {};
-let statePath: string = null;
 let closing = false;
 let tray = null;
 
@@ -39,22 +37,11 @@ Menu.setApplicationMenu(applicationMenu.menu);
 
 let saveBoundsCookie;
 
-function saveCurrentState() {
-  fs.writeFileSync(statePath, JSON.stringify(state, null, 2));
-}
-
-function loadSavedState() {
-  try {
-    state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-  } catch (e) {}
-}
-
 function saveBoundsSoon() {
   if (saveBoundsCookie) clearTimeout(saveBoundsCookie);
   saveBoundsCookie = setTimeout(() => {
     saveBoundsCookie = undefined;
-    state.bounds = win.getBounds();
-    saveCurrentState();
+    electronStore.set('windowBounds', win.getBounds());
   }, 1000);
 }
 
@@ -76,12 +63,11 @@ function createWindow(): BrowserWindow {
       allowRunningInsecureContent: true,
       contextIsolation: false, // false if you want to run 2e2 test with Spectron
       enableRemoteModule: true, // true if you want to run 2e2 test  with Spectron or use remote module in renderer context (ie. Angular)
-      // preload: path.join(__dirname, 'preload.js'),
     },
   };
 
-  if (state?.bounds) {
-    const bounds = state.bounds;
+  const bounds = electronStore.get('windowBounds');
+  if (bounds) {
     const area = electronScreen.getDisplayMatching(bounds).workArea;
     if (
       bounds.x >= area.x &&
@@ -212,9 +198,6 @@ try {
   });
 
   app.on('ready', async () => {
-    statePath = path.join(app.getPath('userData'), 'state.json');
-    loadSavedState();
-
     const getPort = require('get-port');
     const port = await getPort();
     startBinary(port);

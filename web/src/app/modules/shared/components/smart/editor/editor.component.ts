@@ -3,12 +3,13 @@ Copyright (c) 2020 the Octant contributors. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { EditorView } from '../../../models/content';
 import { NamespaceService } from '../../../services/namespace/namespace.service';
 import { ActionService } from '../../../services/action/action.service';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import { ThemeService } from '../../../services/theme/theme.service';
+import { Subscription } from 'rxjs';
 
 interface Options {
   readOnly: boolean;
@@ -21,7 +22,9 @@ interface Options {
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss'],
 })
-export class EditorComponent extends AbstractViewComponent<EditorView> {
+export class EditorComponent
+  extends AbstractViewComponent<EditorView>
+  implements OnInit, OnDestroy {
   set value(v: string) {
     if (v !== this.editorValue) {
       this.isModified = true;
@@ -33,6 +36,7 @@ export class EditorComponent extends AbstractViewComponent<EditorView> {
     return this.editorValue;
   }
 
+  private subscriptionTheme: Subscription;
   private syncMonacoTheme: () => void;
   private editorValue: string;
   private pristineValue: string;
@@ -61,8 +65,13 @@ export class EditorComponent extends AbstractViewComponent<EditorView> {
       this.options = { ...this.options, theme };
     };
 
-    this.themeService.onChange(this.syncMonacoTheme);
     this.syncMonacoTheme();
+  }
+
+  ngOnInit() {
+    this.subscriptionTheme = this.themeService.themeType.subscribe(() =>
+      this.syncMonacoTheme()
+    );
   }
 
   update() {
@@ -97,5 +106,9 @@ export class EditorComponent extends AbstractViewComponent<EditorView> {
 
   reset() {
     this.value = this.pristineValue;
+  }
+
+  ngOnDestroy() {
+    this.subscriptionTheme.unsubscribe();
   }
 }
