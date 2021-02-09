@@ -57,6 +57,7 @@ jobs:
         with:
           name: rice-web
           path: web/rice-box.go
+          retention-days: 2
       - name: Build electron binary
         env:
           GOFLAGS: -mod=vendor
