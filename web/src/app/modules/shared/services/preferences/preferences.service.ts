@@ -129,7 +129,7 @@ export class PreferencesService implements OnDestroy {
     const showLabels = update['general.labels'] === 'show';
     const isLightTheme = update['general.theme'] === 'light';
     const frontendUrl = update['development.frontendUrl'];
-    const verbose = update['development.verbose'] === 'high';
+    const verbose = update['development.verbose'] === 'debug';
     const embedded = update['development.embedded'] === 'embedded';
     let notificationRequired = false;
 
@@ -224,16 +224,16 @@ export class PreferencesService implements OnDestroy {
             {
               name: 'development.verbose',
               type: 'radio',
-              value: this.verbose.value ? 'high' : 'low',
+              value: this.verbose.value ? 'debug' : 'normal',
               config: {
                 values: [
                   {
-                    label: 'High',
-                    value: 'high',
+                    label: 'Debug',
+                    value: 'debug',
                   },
                   {
-                    label: 'Low',
-                    value: 'low',
+                    label: 'Normal',
+                    value: 'normal',
                   },
                 ],
               },

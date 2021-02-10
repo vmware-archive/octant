@@ -32,8 +32,6 @@ let tray = null;
 
 const args = process.argv.slice(1);
 const local = args.some(val => val === '--local');
-const defaultRetries = 5;
-let numberRetries= defaultRetries;
 
 const applicationMenu = new ApplicationMenu();
 Menu.setApplicationMenu(applicationMenu.menu);
@@ -48,18 +46,8 @@ function saveBoundsSoon() {
   }, 1000);
 }
 
-function loadFrontend() {
-  numberRetries--;
-  if (electronStore.get('development').embedded || numberRetries < 0) {
-    if(numberRetries < 0) {
-      const alertOptions: MessageBoxOptions = {
-        type: 'warning',
-        buttons: ['OK'],
-        message: `Reverted to Embedded Frontend because the Frontend proxy Url is not reachable.`,
-        detail: 'Make sure the front end service is running on Frontend proxy Url.',
-      };
-      dialog.showMessageBoxSync(win, alertOptions);
-    }
+function loadFrontend(embedded:boolean) {
+  if (embedded) {
     win.loadFile(path.join(__dirname, 'dist/octant/index.html'));
   } else {
     win.loadURL(electronStore.get('development').frontendUrl);
@@ -114,12 +102,26 @@ function createWindow(): BrowserWindow {
     win.webContents.openDevTools();
   }
 
-  numberRetries= defaultRetries;
-  loadFrontend();
+  loadFrontend(electronStore.get('development').embedded);
 
   win.webContents.on('did-fail-load', () => {
-    loadFrontend();
-  });
+    const alertOptions: MessageBoxOptions = {
+      type: 'warning',
+      buttons: ['Retry','Cancel'],
+      message: `Reverted to Embedded Frontend because the Frontend proxy URL is unreachable.`,
+      detail: `Please ensure the frontend service is running at ${electronStore.store.development.frontendUrl}.`,
+    };
+    const result = dialog.showMessageBoxSync(win, alertOptions);
+    switch (result) {
+      case 0:
+        loadFrontend(false);
+        break;
+      case 1:
+        loadFrontend(true);
+        break;
+    }
+  }
+);
 
   win.webContents.on('new-window', (event, url: string) => {
     event.preventDefault();
@@ -267,8 +269,7 @@ try {
 
   ipcMain.on('preferences', (event, args) => {
     if(args === 'changed') {
-      numberRetries= defaultRetries;
-      loadFrontend();
+      loadFrontend(electronStore.get('development').embedded);
     }
   });
 } catch (e) {
