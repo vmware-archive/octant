@@ -8,6 +8,7 @@ import {
   app,
   BrowserWindow,
   dialog,
+  ipcMain,
   Menu,
   MessageBoxOptions,
   screen,
@@ -43,6 +44,14 @@ function saveBoundsSoon() {
     saveBoundsCookie = undefined;
     electronStore.set('windowBounds', win.getBounds());
   }, 1000);
+}
+
+function loadFrontend(embedded:boolean) {
+  if (embedded) {
+    win.loadFile(path.join(__dirname, 'dist/octant/index.html'));
+  } else {
+    win.loadURL(electronStore.get('development').frontendUrl);
+  }
 }
 
 function createWindow(): BrowserWindow {
@@ -92,11 +101,27 @@ function createWindow(): BrowserWindow {
   if (local) {
     win.webContents.openDevTools();
   }
-  win.loadFile(path.join(__dirname, 'dist/octant/index.html'));
+
+  loadFrontend(electronStore.get('development').embedded);
 
   win.webContents.on('did-fail-load', () => {
-    win.loadFile(path.join(__dirname, 'dist/octant/index.html'));
-  });
+    const alertOptions: MessageBoxOptions = {
+      type: 'warning',
+      buttons: ['Retry','Cancel'],
+      message: `Reverted to Embedded Frontend because the Frontend proxy URL is unreachable.`,
+      detail: `Please ensure the frontend service is running at ${electronStore.store.development.frontendUrl}.`,
+    };
+    const result = dialog.showMessageBoxSync(win, alertOptions);
+    switch (result) {
+      case 0:
+        loadFrontend(false);
+        break;
+      case 1:
+        loadFrontend(true);
+        break;
+    }
+  }
+);
 
   win.webContents.on('new-window', (event, url: string) => {
     event.preventDefault();
@@ -174,7 +199,11 @@ const startBinary = (port: number) => {
     );
   }
 
-  const server = child_process.spawn(serverBinary, ['--disable-open-browser'], {
+  const args= ['--disable-open-browser'];
+  if(electronStore.get('development').verbose) {
+    args.push('--verbose');
+  }
+  const server = child_process.spawn(serverBinary, args, {
     env: {
       ...process.env,
       NODE_ENV: 'production',
@@ -235,6 +264,12 @@ try {
       createWindow();
     } else {
       win.show();
+    }
+  });
+
+  ipcMain.on('preferences', (event, args) => {
+    if(args === 'changed') {
+      loadFrontend(electronStore.get('development').embedded);
     }
   });
 } catch (e) {

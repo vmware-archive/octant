@@ -5,7 +5,11 @@
 
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Preferences } from '../../models/preference';
+import {
+  Operation,
+  PreferencePanel,
+  Preferences,
+} from '../../models/preference';
 import { ThemeService } from '../theme/theme.service';
 import { skip } from 'rxjs/operators';
 
@@ -16,6 +20,9 @@ export class PreferencesService implements OnDestroy {
   private subscriptionCollapsed: Subscription;
   private subscriptionLabels: Subscription;
   private subscriptionTheme: Subscription;
+  private subscriptionFrontendUrl: Subscription;
+  private subscriptionVerbose: Subscription;
+  private subscriptionEmbedded: Subscription;
   private electronStore: any;
 
   public preferencesOpened: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
@@ -24,6 +31,9 @@ export class PreferencesService implements OnDestroy {
 
   public navCollapsed: BehaviorSubject<boolean>;
   public showLabels: BehaviorSubject<boolean>;
+  public frontendUrl: BehaviorSubject<string>;
+  public verbose: BehaviorSubject<boolean>;
+  public embedded: BehaviorSubject<boolean>;
 
   constructor(private themeService: ThemeService) {
     if (this.isElectron()) {
@@ -37,6 +47,17 @@ export class PreferencesService implements OnDestroy {
     this.showLabels = new BehaviorSubject<boolean>(
       JSON.parse(this.getStoredValue('navigation.labels', true))
     );
+    this.frontendUrl = new BehaviorSubject<string>(
+      this.getStoredValue('development.frontendUrl', 'http://localhost:4200')
+    );
+
+    this.verbose = new BehaviorSubject<boolean>(
+      this.getStoredValue('development.verbose', false)
+    );
+
+    this.embedded = new BehaviorSubject<boolean>(
+      this.getStoredValue('development.embedded', true)
+    );
 
     this.subscriptionCollapsed = this.navCollapsed.subscribe(col => {
       this.setStoredValue('navigation.collapsed', col);
@@ -44,6 +65,18 @@ export class PreferencesService implements OnDestroy {
 
     this.subscriptionLabels = this.showLabels.subscribe(labels => {
       this.setStoredValue('navigation.labels', labels);
+    });
+
+    this.subscriptionFrontendUrl = this.frontendUrl.subscribe(url => {
+      this.setStoredValue('development.frontendUrl', url);
+    });
+
+    this.subscriptionVerbose = this.verbose.subscribe(verbose => {
+      this.setStoredValue('development.verbose', verbose);
+    });
+
+    this.subscriptionEmbedded = this.embedded.subscribe(embedded => {
+      this.setStoredValue('development.embedded', embedded);
     });
 
     this.subscriptionTheme = this.themeService.themeType
@@ -61,6 +94,9 @@ export class PreferencesService implements OnDestroy {
     this.subscriptionCollapsed?.unsubscribe();
     this.subscriptionLabels?.unsubscribe();
     this.subscriptionTheme?.unsubscribe();
+    this.subscriptionFrontendUrl?.unsubscribe();
+    this.subscriptionVerbose?.unsubscribe();
+    this.subscriptionEmbedded?.unsubscribe();
   }
 
   setStoredValue(key: string, value: any) {
@@ -92,6 +128,10 @@ export class PreferencesService implements OnDestroy {
     const collapsed = update['general.navigation'] === 'collapsed';
     const showLabels = update['general.labels'] === 'show';
     const isLightTheme = update['general.theme'] === 'light';
+    const frontendUrl = update['development.frontendUrl'];
+    const verbose = update['development.verbose'] === 'debug';
+    const embedded = update['development.embedded'] === 'embedded';
+    let notificationRequired = false;
 
     if (this.showLabels.value !== showLabels) {
       this.showLabels.next(showLabels);
@@ -104,83 +144,173 @@ export class PreferencesService implements OnDestroy {
     if (this.themeService.isLightThemeEnabled() !== isLightTheme) {
       this.themeService.switchTheme();
     }
+
+    if (this.frontendUrl.value !== frontendUrl) {
+      notificationRequired = true;
+      this.frontendUrl.next(frontendUrl);
+    }
+
+    if (this.embedded.value !== embedded) {
+      notificationRequired = true;
+      this.embedded.next(embedded);
+    }
+
+    if (this.verbose.value !== verbose) {
+      this.verbose.next(verbose);
+    }
+
+    if (this.isElectron() && notificationRequired) {
+      const ipcRenderer = window.require('electron').ipcRenderer;
+      ipcRenderer.send('preferences', 'changed');
+    }
   }
 
-  // TODO move to better place and merge with server side prefs.
   public getPreferences(): Preferences {
+    const panels: PreferencePanel[] = this.isElectron()
+      ? [this.getGeneralPanels(), this.getDeveloperPanels()]
+      : [this.getGeneralPanels()];
+
     return {
       updateName: 'generalPreferences',
-      panels: [
+      panels,
+    };
+  }
+
+  private getDeveloperPanels(): PreferencePanel {
+    return {
+      name: 'Development',
+      sections: [
         {
-          name: 'General',
-          sections: [
+          name: 'Frontend Source',
+          elements: [
             {
-              name: 'Color Theme',
-              elements: [
-                {
-                  name: 'general.theme',
-                  type: 'radio',
-                  value: this.themeService.isLightThemeEnabled()
-                    ? 'light'
-                    : 'dark',
-                  config: {
-                    values: [
-                      {
-                        label: 'Dark',
-                        value: 'dark',
-                      },
-                      {
-                        label: 'Light',
-                        value: 'light',
-                      },
-                    ],
+              name: 'development.embedded',
+              type: 'radio',
+              value: this.embedded.value ? 'embedded' : 'proxied',
+              config: {
+                values: [
+                  {
+                    label: 'Embedded',
+                    value: 'embedded',
                   },
-                },
-              ],
+                  {
+                    label: 'Proxied',
+                    value: 'proxied',
+                  },
+                ],
+              },
             },
             {
-              name: 'Navigation',
-              elements: [
+              name: 'development.frontendUrl',
+              type: 'text',
+              value: this.frontendUrl.value,
+              disableConditions: [
                 {
-                  name: 'general.navigation',
-                  type: 'radio',
-                  value: this.navCollapsed.value ? 'collapsed' : 'expanded',
-                  config: {
-                    values: [
-                      {
-                        label: 'Expanded',
-                        value: 'expanded',
-                      },
-                      {
-                        label: 'Collapsed',
-                        value: 'collapsed',
-                      },
-                    ],
-                  },
+                  lhs: 'development.embedded',
+                  op: Operation.Equal,
+                  rhs: 'proxied',
                 },
               ],
+              config: {
+                label: 'Frontend Proxy Url',
+                placeholder: 'http://example.com',
+              },
             },
+          ],
+        },
+        {
+          name: 'Logging verbosity (requires restart)',
+          elements: [
             {
-              name: 'Navigation labels',
-              elements: [
-                {
-                  name: 'general.labels',
-                  type: 'radio',
-                  value: this.showLabels.value ? 'show' : 'hide',
-                  config: {
-                    values: [
-                      {
-                        label: 'Show Labels',
-                        value: 'show',
-                      },
-                      {
-                        label: 'Hide Labels',
-                        value: 'hide',
-                      },
-                    ],
+              name: 'development.verbose',
+              type: 'radio',
+              value: this.verbose.value ? 'debug' : 'normal',
+              config: {
+                values: [
+                  {
+                    label: 'Debug',
+                    value: 'debug',
                   },
-                },
-              ],
+                  {
+                    label: 'Normal',
+                    value: 'normal',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    };
+  }
+
+  private getGeneralPanels(): PreferencePanel {
+    return {
+      name: 'General',
+      sections: [
+        {
+          name: 'Color Theme',
+          elements: [
+            {
+              name: 'general.theme',
+              type: 'radio',
+              value: this.themeService.isLightThemeEnabled() ? 'light' : 'dark',
+              config: {
+                values: [
+                  {
+                    label: 'Dark',
+                    value: 'dark',
+                  },
+                  {
+                    label: 'Light',
+                    value: 'light',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        {
+          name: 'Navigation',
+          elements: [
+            {
+              name: 'general.navigation',
+              type: 'radio',
+              value: this.navCollapsed.value ? 'collapsed' : 'expanded',
+              config: {
+                values: [
+                  {
+                    label: 'Expanded',
+                    value: 'expanded',
+                  },
+                  {
+                    label: 'Collapsed',
+                    value: 'collapsed',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        {
+          name: 'Navigation labels',
+          elements: [
+            {
+              name: 'general.labels',
+              type: 'radio',
+              value: this.showLabels.value ? 'show' : 'hide',
+              config: {
+                values: [
+                  {
+                    label: 'Show Labels',
+                    value: 'show',
+                  },
+                  {
+                    label: 'Hide Labels',
+                    value: 'hide',
+                  },
+                ],
+              },
             },
           ],
         },

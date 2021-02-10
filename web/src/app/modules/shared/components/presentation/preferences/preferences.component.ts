@@ -14,6 +14,7 @@ import {
   Preferences,
 } from '../../../models/preference';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
+import { startWith } from 'rxjs/operators';
 
 interface StringDict {
   [key: string]: string;
@@ -113,9 +114,11 @@ export class PreferencesComponent implements OnChanges {
 
     this.form = this.fb.group(this.controls);
 
-    this.form.valueChanges.subscribe((update: StringDict) => {
-      this.onValueChanged(update);
-    });
+    this.form.valueChanges
+      .pipe(startWith(this.form.getRawValue()))
+      .subscribe((update: StringDict) => {
+        this.onValueChanged(update);
+      });
   }
 
   onCancel() {

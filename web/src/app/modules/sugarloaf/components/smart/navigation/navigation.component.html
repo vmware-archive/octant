@@ -40,7 +40,7 @@
       </clr-tab>
       </clr-tabs>
     <div class="prefs-button">
-      <div (click)="showPrefs()" class="btn-icon btn-link nav-link"
+      <div (click)="showPrefs()" class="btn-icon btn btn-link nav-link"
            [ngClass]="{
             'button-tool': !showLabels,
             'button-tool-labels': showLabels
@@ -51,7 +51,7 @@
             <div class="button-text">Preferences</div>
           </div>
         </div>
-        <app-octant-tooltip *ngIf="!showLabels" tooltipText="Preferences">
+        <app-octant-tooltip class= "prefs-tooltip" *ngIf="!showLabels" tooltipText="Preferences">
           <clr-icon class="icon-nav" shape="cog"></clr-icon>
         </app-octant-tooltip>
       </div>
