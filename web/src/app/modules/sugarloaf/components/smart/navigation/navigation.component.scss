@@ -135,8 +135,11 @@
   width: 64px;
   padding-left: 0px;
   font-size: 10px;
+  font-weight: 400;
   line-height:  12px;
+  letter-spacing: normal;
   text-align: center;
+  text-transform: none;
   white-space: normal;
 }
 
@@ -167,6 +170,10 @@
 
   .nav-item-text {
     line-height: 1.5rem;
+  }
+
+  .prefs-tooltip {
+    text-transform: none;
   }
 
   .nav-item-padded {

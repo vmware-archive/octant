@@ -8,6 +8,7 @@ import {
   app,
   BrowserWindow,
   dialog,
+  ipcMain,
   Menu,
   MessageBoxOptions,
   screen,
@@ -31,6 +32,8 @@ let tray = null;
 
 const args = process.argv.slice(1);
 const local = args.some(val => val === '--local');
+const defaultRetries = 5;
+let numberRetries= defaultRetries;
 
 const applicationMenu = new ApplicationMenu();
 Menu.setApplicationMenu(applicationMenu.menu);
@@ -43,6 +46,24 @@ function saveBoundsSoon() {
     saveBoundsCookie = undefined;
     electronStore.set('windowBounds', win.getBounds());
   }, 1000);
+}
+
+function loadFrontend() {
+  numberRetries--;
+  if (electronStore.get('development').embedded || numberRetries < 0) {
+    if(numberRetries < 0) {
+      const alertOptions: MessageBoxOptions = {
+        type: 'warning',
+        buttons: ['OK'],
+        message: `Reverted to Embedded Frontend because the Frontend proxy Url is not reachable.`,
+        detail: 'Make sure the front end service is running on Frontend proxy Url.',
+      };
+      dialog.showMessageBoxSync(win, alertOptions);
+    }
+    win.loadFile(path.join(__dirname, 'dist/octant/index.html'));
+  } else {
+    win.loadURL(electronStore.get('development').frontendUrl);
+  }
 }
 
 function createWindow(): BrowserWindow {
@@ -92,10 +113,12 @@ function createWindow(): BrowserWindow {
   if (local) {
     win.webContents.openDevTools();
   }
-  win.loadFile(path.join(__dirname, 'dist/octant/index.html'));
+
+  numberRetries= defaultRetries;
+  loadFrontend();
 
   win.webContents.on('did-fail-load', () => {
-    win.loadFile(path.join(__dirname, 'dist/octant/index.html'));
+    loadFrontend();
   });
 
   win.webContents.on('new-window', (event, url: string) => {
@@ -174,7 +197,11 @@ const startBinary = (port: number) => {
     );
   }
 
-  const server = child_process.spawn(serverBinary, ['--disable-open-browser'], {
+  const args= ['--disable-open-browser'];
+  if(electronStore.get('development').verbose) {
+    args.push('--verbose');
+  }
+  const server = child_process.spawn(serverBinary, args, {
     env: {
       ...process.env,
       NODE_ENV: 'production',
@@ -235,6 +262,13 @@ try {
       createWindow();
     } else {
       win.show();
+    }
+  });
+
+  ipcMain.on('preferences', (event, args) => {
+    if(args === 'changed') {
+      numberRetries= defaultRetries;
+      loadFrontend();
     }
   });
 } catch (e) {

@@ -14,6 +14,11 @@ interface OctantStore {
     collapsed: boolean;
     labels: boolean;
   }
+  development: {
+    embedded: boolean;
+    frontendUrl: string;
+    verbose: boolean;
+  }
   windowBounds: Electron.Rectangle
 }
 
@@ -28,6 +33,11 @@ export const electronStore = new ElectronStore<OctantStore>({
       collapsed: false,
       labels: true,
     },
+    development: {
+      embedded: true,
+      frontendUrl: 'http://localhost:4200',
+      verbose: false,
+    }
   }
 });
 
