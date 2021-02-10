@@ -151,7 +151,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           name: electron-artifacts
-          path: web/release/octant*
+          path: web/release/Octant*
 
   goreleaser:
     if: startsWith(github.ref, 'refs/tags/v')
