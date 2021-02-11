@@ -130,7 +130,9 @@ export class PreferencesService implements OnDestroy {
     const isLightTheme = update['general.theme'] === 'light';
     const frontendUrl = update['development.frontendUrl'];
     const verbose = update['development.verbose'] === 'debug';
-    const embedded = update['development.embedded'] === 'embedded';
+    const embedded = update['development.embedded']
+      ? update['development.embedded'] === 'embedded'
+      : true;
     let notificationRequired = false;
 
     if (this.showLabels.value !== showLabels) {
@@ -145,7 +147,7 @@ export class PreferencesService implements OnDestroy {
       this.themeService.switchTheme();
     }
 
-    if (this.frontendUrl.value !== frontendUrl) {
+    if (frontendUrl && this.frontendUrl.value !== frontendUrl) {
       notificationRequired = true;
       this.frontendUrl.next(frontendUrl);
     }
