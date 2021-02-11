@@ -202,7 +202,7 @@ jobs:
                 assets+=("-a" "$asset")
             fi
           done
-          for asset in ./web/release/octant*; do
+          for asset in ./web/release/Octant*; do
             shasum -a 256 "$asset" | awk '{sub(/.*\//," ",$2)} 1' >> ./dist/checksums.txt
             assets+=("-a" "$asset")
           done
