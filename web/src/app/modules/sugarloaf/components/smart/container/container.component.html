@@ -50,5 +50,6 @@
     [preferences]="preferences"
     (preferencesChanged)="preferencesChanged($event)"
     (isOpenChange)="preferencesOpenChanged($event)"
-  ></app-preferences>
+    (reset)="onReset()"
+></app-preferences>
 </div>

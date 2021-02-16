@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input, isDevMode } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  isDevMode,
+  Output,
+} from '@angular/core';
 import {
   DropdownItem,
   DropdownView,
@@ -34,6 +40,8 @@ export class DropdownComponent extends AbstractViewComponent<DropdownView> {
   @Input() public type: string;
 
   @Input() public items: DropdownItem[];
+
+  @Output() public selectedValue = new EventEmitter<string>();
 
   constructor(
     private viewService: ViewService,
@@ -80,6 +88,7 @@ export class DropdownComponent extends AbstractViewComponent<DropdownView> {
   openLink(index): void {
     const item = this.items[index];
     this.selectedItem = item.name;
+    this.selectedValue.emit(item.name);
     if (this.useSelection && this.type !== 'icon') {
       this.title = item.label;
     }

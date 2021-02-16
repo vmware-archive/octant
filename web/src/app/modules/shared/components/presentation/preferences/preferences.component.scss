@@ -5,6 +5,21 @@
   overflow-y: auto;
 }
 
+.modal-footer {
+  justify-content: flex-start;
+
+  .btn-cancel {
+    margin-left: auto;
+  }
+}
+
+:host ::ng-deep section app-view-dropdown .dropdown {
+  margin-top: 0px;
+
+  clr-dropdown {
+    margin-top: 4px;
+  }
+}
 section {
   margin-block-end: 1.33em;
   width: 100%;

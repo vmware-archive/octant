@@ -80,6 +80,9 @@ export class PreferencesComponent implements OnChanges {
   @Output()
   isOpenChange = new EventEmitter<boolean>();
 
+  @Output()
+  reset = new EventEmitter<void>();
+
   form: FormGroup = new FormGroup({});
 
   controls: { [key: string]: AbstractControl } = {};
@@ -125,11 +128,20 @@ export class PreferencesComponent implements OnChanges {
     this.isOpen = false;
   }
 
+  onDropDownValueChange(event, name) {
+    this.form.value[name] = event;
+  }
+
   onSubmit(): void {
     if (this.form.valid) {
       this.preferencesChanged.emit(this.form.value);
       this.isOpen = false;
     }
+  }
+
+  onReset(): void {
+    this.reset.emit();
+    this.isOpen = false;
   }
 
   private onValueChanged(update: StringDict) {

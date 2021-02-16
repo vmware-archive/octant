@@ -23,6 +23,7 @@ export class PreferencesService implements OnDestroy {
   private subscriptionFrontendUrl: Subscription;
   private subscriptionVerbose: Subscription;
   private subscriptionEmbedded: Subscription;
+  private subscriptionPageSize: Subscription;
   private electronStore: any;
 
   public preferencesOpened: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
@@ -34,6 +35,7 @@ export class PreferencesService implements OnDestroy {
   public frontendUrl: BehaviorSubject<string>;
   public verbose: BehaviorSubject<boolean>;
   public embedded: BehaviorSubject<boolean>;
+  public pageSize: BehaviorSubject<number>;
 
   constructor(private themeService: ThemeService) {
     if (this.isElectron()) {
@@ -59,6 +61,10 @@ export class PreferencesService implements OnDestroy {
       this.getStoredValue('development.embedded', true)
     );
 
+    this.pageSize = new BehaviorSubject<number>(
+      this.getStoredValue('development.pageSize', 10)
+    );
+
     this.subscriptionCollapsed = this.navCollapsed.subscribe(col => {
       this.setStoredValue('navigation.collapsed', col);
     });
@@ -79,6 +85,10 @@ export class PreferencesService implements OnDestroy {
       this.setStoredValue('development.embedded', embedded);
     });
 
+    this.subscriptionPageSize = this.pageSize.subscribe(pageSize => {
+      this.setStoredValue('development.pageSize', pageSize);
+    });
+
     this.subscriptionTheme = this.themeService.themeType
       .pipe(skip(1))
       .subscribe(theme => {
@@ -97,6 +107,7 @@ export class PreferencesService implements OnDestroy {
     this.subscriptionFrontendUrl?.unsubscribe();
     this.subscriptionVerbose?.unsubscribe();
     this.subscriptionEmbedded?.unsubscribe();
+    this.subscriptionPageSize?.unsubscribe();
   }
 
   setStoredValue(key: string, value: any) {
@@ -128,12 +139,17 @@ export class PreferencesService implements OnDestroy {
     const collapsed = update['general.navigation'] === 'collapsed';
     const showLabels = update['general.labels'] === 'show';
     const isLightTheme = update['general.theme'] === 'light';
+    const pageSize = update['general.pageSize'];
+
     const frontendUrl = update['development.frontendUrl'];
     const verbose = update['development.verbose'] === 'debug';
-    const embedded = update['development.embedded']
-      ? update['development.embedded'] === 'embedded'
-      : true;
+    const embedded = update['development.embedded'] === 'embedded';
+
     let notificationRequired = false;
+
+    if (this.pageSize.value !== pageSize) {
+      this.pageSize.next(pageSize);
+    }
 
     if (this.showLabels.value !== showLabels) {
       this.showLabels.next(showLabels);
@@ -147,7 +163,7 @@ export class PreferencesService implements OnDestroy {
       this.themeService.switchTheme();
     }
 
-    if (frontendUrl && this.frontendUrl.value !== frontendUrl) {
+    if (this.frontendUrl.value !== frontendUrl) {
       notificationRequired = true;
       this.frontendUrl.next(frontendUrl);
     }
@@ -169,13 +185,28 @@ export class PreferencesService implements OnDestroy {
 
   public getPreferences(): Preferences {
     const panels: PreferencePanel[] = this.isElectron()
-      ? [this.getGeneralPanels(), this.getDeveloperPanels()]
-      : [this.getGeneralPanels()];
+      ? [
+          this.getGeneralPanels(),
+          this.getNavigationPanels(),
+          this.getDeveloperPanels(),
+        ]
+      : [this.getGeneralPanels(), this.getNavigationPanels()];
 
     return {
       updateName: 'generalPreferences',
       panels,
     };
+  }
+
+  reset() {
+    this.navCollapsed.next(false);
+    this.showLabels.next(true);
+    this.frontendUrl.next('http://localhost:4200');
+    this.verbose.next(false);
+    this.embedded.next(true);
+    this.pageSize.next(10);
+    this.themeService.themeType.next('light');
+    this.themeService.loadTheme();
   }
 
   private getDeveloperPanels(): PreferencePanel {
@@ -272,6 +303,65 @@ export class PreferencesService implements OnDestroy {
             },
           ],
         },
+        {
+          name: 'Table Pagination',
+          elements: [
+            {
+              name: 'general.pageSize',
+              value: this.pageSize.value.toString(),
+              label: 'Page size:',
+              type: 'dropdown',
+              metadata: {
+                type: 'dropdown',
+                title: [
+                  {
+                    metadata: {
+                      type: 'text',
+                    },
+                    config: {
+                      value: this.pageSize.value.toString(),
+                    },
+                  },
+                ],
+              },
+              config: {
+                type: 'label',
+                selection: this.pageSize.value.toString(),
+                useSelection: true,
+                items: [
+                  {
+                    name: '10',
+                    type: 'text',
+                    label: '10',
+                  },
+                  {
+                    name: '20',
+                    type: 'text',
+                    label: '20',
+                  },
+                  {
+                    name: '50',
+                    type: 'text',
+                    label: '50',
+                  },
+                  {
+                    name: '100',
+                    type: 'text',
+                    label: '100',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    };
+  }
+
+  private getNavigationPanels(): PreferencePanel {
+    return {
+      name: 'Navigation',
+      sections: [
         {
           name: 'Navigation',
           elements: [

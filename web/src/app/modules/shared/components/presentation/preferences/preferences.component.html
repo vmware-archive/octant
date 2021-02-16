@@ -60,6 +60,11 @@
                         </div>
                       </div>
                     </ng-container>
+                    <ng-container *ngSwitchCase="'dropdown'">
+                      <label>{{ element.label }}</label>
+                      <app-view-dropdown [view]="element" (selectedValue)="onDropDownValueChange($event, element.name)">
+                      </app-view-dropdown>
+                    </ng-container>
                     <div *ngSwitchDefault>
                       <p>not sure what to do with {{ element.type }}</p>
                     </div>
@@ -73,7 +78,10 @@
     </form>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-outline" type="button" (click)="onCancel()">
+    <button class="btn btn-outline" type="button" (click)="onReset()">
+      Reset
+    </button>
+    <button class="btn btn-outline btn-cancel" type="button" (click)="onCancel()">
       Cancel
     </button>
     <button class="btn btn-primary" type="button" (click)="onSubmit()">

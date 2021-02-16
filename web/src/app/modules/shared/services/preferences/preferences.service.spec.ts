@@ -33,16 +33,34 @@ describe('PreferencesService', () => {
     expect(newElement.value).toEqual('collapsed');
   });
 
+  it('table pagination set properly', () => {
+    service.pageSize.next(50);
+    const defaultPrefs = service.getPreferences();
+    const defaultElement = defaultPrefs.panels[0].sections[3].elements[0];
+    expect(defaultElement.name).toEqual('general.pageSize');
+    expect(defaultElement.value).toEqual('50');
+
+    service.pageSize.next(100);
+    const newPrefs = service.getPreferences();
+    const newElement = newPrefs.panels[0].sections[3].elements[0];
+    expect(newElement.name).toEqual('general.pageSize');
+    expect(newElement.value).toEqual('100');
+  });
+
   it('properties are persisted', () => {
     // default values
     service.navCollapsed.next(true);
     service.showLabels.next(true);
+    service.pageSize.next(50);
     expect(
       JSON.parse(service.getStoredValue('navigation.labels', true))
     ).toEqual(true);
     expect(
       JSON.parse(service.getStoredValue('navigation.collapsed', true))
     ).toEqual(true);
+    expect(
+      JSON.parse(service.getStoredValue('development.pageSize', 10))
+    ).toEqual(50);
 
     // change through exposed variables
     service.navCollapsed.next(false);
@@ -55,6 +73,11 @@ describe('PreferencesService', () => {
       JSON.parse(service.getStoredValue('navigation.labels', true))
     ).toEqual(false);
 
+    service.pageSize.next(20);
+    expect(
+      JSON.parse(service.getStoredValue('development.pageSize', 10))
+    ).toEqual(20);
+
     // change by modifying stored values
     service.setStoredValue('navigation.collapsed', true);
     expect(
@@ -65,5 +88,10 @@ describe('PreferencesService', () => {
     expect(
       JSON.parse(service.getStoredValue('navigation.labels', false))
     ).toEqual(true);
+
+    service.setStoredValue('development.pageSize', 100);
+    expect(
+      JSON.parse(service.getStoredValue('development.pageSize', 10))
+    ).toEqual(100);
   });
 });
