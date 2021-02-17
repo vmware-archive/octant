@@ -316,7 +316,7 @@ func goFmt(update bool) {
 }
 
 func webDeps() {
-	cmd := newCmd("npm", nil, "ci")
+	cmd := newCmd("yarn", nil,"install", "--frozen-lockfile")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
@@ -327,7 +327,7 @@ func webDeps() {
 }
 
 func webTest() {
-	cmd := newCmd("npm", nil, "run", "test:headless")
+	cmd := newCmd("yarn", nil, "run", "test:headless")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
@@ -338,7 +338,7 @@ func webTest() {
 }
 
 func webBuild() {
-	cmd := newCmd("npm", nil, "run", "build")
+	cmd := newCmd("yarn", nil, "run", "build")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
@@ -359,7 +359,7 @@ func webBuildElectron() {
 		log.Fatalf("web-build-electron: create dist/octant/ : %s", err)
 	}
 
-	cleanCmd := newCmd("npm", nil, "run", "clean")
+	cleanCmd := newCmd("yarn", nil, "run", "clean")
 	cleanCmd.Stdout = os.Stdout
 	cleanCmd.Stderr = os.Stderr
 	cleanCmd.Stdin = os.Stdin
@@ -375,7 +375,7 @@ func serve() {
 	var wg sync.WaitGroup
 
 	uiVars := map[string]string{"API_BASE": "http://localhost:7777"}
-	uiCmd := newCmd("npm", uiVars, "run", "start")
+	uiCmd := newCmd("yarn", uiVars, "run", "start")
 	uiCmd.Stdout = os.Stdout
 	uiCmd.Stderr = os.Stderr
 	uiCmd.Stdin = os.Stdin
@@ -388,7 +388,7 @@ func serve() {
 	go func() {
 		defer wg.Done()
 		if err := uiCmd.Wait(); err != nil {
-			log.Fatalf("serve: npm run: %s", err)
+			log.Fatalf("serve: yarn run: %s", err)
 		}
 	}()
 

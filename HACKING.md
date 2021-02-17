@@ -4,7 +4,7 @@
 
 * [Go 1.15 or above](https://golang.org/dl/)
 * [node 10.15.0 or above](https://nodejs.org/en/)
-* [npm 6.4.1 or above](https://www.npmjs.com/get-npm)
+* [yarn 1.22.10 or above](https://www.npmjs.com/package/yarn)
 * [rice](https://github.com/GeertJohan/go.rice) - packaging web assets into a binary
 * [mockgen](https://github.com/golang/mock) - generating go files used for testing
 * [protoc](https://github.com/golang/protobuf) - generate go code compatible with gRPC
@@ -33,7 +33,7 @@ using:
 
     go run build.go serve
 
-The `serve` command starts two processes. The first is an alias for `npm run start` and will listen for changes and rebuild the UI.
+The `serve` command starts two processes. The first is an alias for `yarn run start` and will listen for changes and rebuild the UI.
 The UI server will launch on `http://localhost:4200`.
 
 The second, is an alias for `go run ./cmd/octant/main.go` but with useful environment variables already set, `OCTANT_PROXY_FRONTEND` which will reverse proxy to the Angular service and `OCTANT_DISABLE_OPEN_BROWSER` which prevents Octant from attempting to start the default system browser. The Octant server will launch on `http://localhost:7777`.
@@ -51,5 +51,5 @@ Octant has [Storybook](https://storybook.js.org/) configured to aid with develop
 
 ```console
 $ cd web
-$ npm run storybook
+$ yarn run storybook
 ```
