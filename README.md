@@ -124,11 +124,11 @@ Octant should immediately launch your default web browser on `127.0.0.1:7777`.
 
 Octant uses the default web browser on the system to act as the UI client. In the future Octant will ship with a UI.
 
-For setting extra configuration such as what kubeconfig or context to use at startup, refer to the [documentation](https://octant.dev/docs/master).
+For setting extra configuration such as what kubeconfig or context to use at startup, refer to the [documentation](https://reference.octant.dev/).
 
 ## Supported Versions
 
-Octant versions follow (Semantic Versioning)[https://semver.org/] where a given version number represents `MAJOR.MINOR.PATCH`.
+Octant versions follow [Semantic Versioning](https://semver.org/) where a given version number represents `MAJOR.MINOR.PATCH`.
 
 Patch releases address bug fixes, regressions, and small enhancements.
 
@@ -150,7 +150,7 @@ An example plugin can be found in [`cmd/octant-sample-plugin`](cmd/octant-sample
 
 Some plugins can be found on GitHub in the [`#octant-plugin`](https://github.com/topics/octant-plugin) topic (tag).
 
-Documentation for plugin components can be found in the [Plugins section](https://octant.dev/docs/master/plugins/) of the documentation.
+Documentation for plugin components can be found in the [Plugins section](https://reference.octant.dev/?path=/docs/docs-plugins-1-getting-started--page) of the documentation.
 
 ## Discussion
 
