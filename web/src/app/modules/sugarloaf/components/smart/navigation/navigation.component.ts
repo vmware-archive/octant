@@ -77,23 +77,23 @@ export class NavigationComponent implements OnInit, OnDestroy {
       }
     );
 
-    this.subscriptionCollapsed = this.preferencesService.navCollapsed.subscribe(
-      col => {
+    this.subscriptionCollapsed = this.preferencesService.preferences
+      .get('navigation.collapsed')
+      .subject.subscribe(col => {
         if (this.collapsed !== col) {
           this.collapsed = col;
           this.cd.markForCheck();
         }
-      }
-    );
+      });
 
-    this.subscriptionShowLabels = this.preferencesService.showLabels.subscribe(
-      col => {
+    this.subscriptionShowLabels = this.preferencesService.preferences
+      .get('navigation.labels')
+      .subject.subscribe(col => {
         if (this.showLabels !== col) {
           this.showLabels = col;
           this.cd.markForCheck();
         }
-      }
-    );
+      });
   }
 
   @HostListener('window:keyup', ['$event'])
@@ -109,7 +109,9 @@ export class NavigationComponent implements OnInit, OnDestroy {
     } else if (event.key === 'L' && event.ctrlKey) {
       event.preventDefault();
       event.cancelBubble = true;
-      this.preferencesService.showLabels.next(!this.showLabels);
+      this.preferencesService.preferences
+        .get('navigation.labels')
+        .subject.next(!this.showLabels);
     }
   }
 
@@ -169,7 +171,9 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   updateNavCollapsed(value: boolean): void {
-    this.preferencesService.navCollapsed.next(value);
+    this.preferencesService.preferences
+      .get('navigation.collapsed')
+      .subject.next(value);
   }
 
   setLastSelection(index) {

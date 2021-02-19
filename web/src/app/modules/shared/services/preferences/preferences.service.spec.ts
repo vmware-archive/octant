@@ -13,6 +13,7 @@ describe('PreferencesService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(PreferencesService);
+    service.reset();
   });
 
   it('should be created', () => {
@@ -20,63 +21,63 @@ describe('PreferencesService', () => {
   });
 
   it('collapsed set properly', () => {
-    service.navCollapsed.next(false);
+    service.preferences.get('navigation.collapsed').subject.next(false);
     const defaultPrefs = service.getPreferences();
-    const defaultElement = defaultPrefs.panels[0].sections[1].elements[0];
-    expect(defaultElement.name).toEqual('general.navigation');
+    const defaultElement = defaultPrefs.panels[1].sections[0].elements[0];
+    expect(defaultElement.name).toEqual('navigation.collapsed');
     expect(defaultElement.value).toEqual('expanded');
 
-    service.navCollapsed.next(true);
+    service.preferences.get('navigation.collapsed').subject.next(true);
     const newPrefs = service.getPreferences();
-    const newElement = newPrefs.panels[0].sections[1].elements[0];
-    expect(newElement.name).toEqual('general.navigation');
+    const newElement = newPrefs.panels[1].sections[0].elements[0];
+    expect(newElement.name).toEqual('navigation.collapsed');
     expect(newElement.value).toEqual('collapsed');
   });
 
   it('table pagination set properly', () => {
-    service.pageSize.next(50);
+    service.preferences.get('general.pageSize').subject.next(50);
     const defaultPrefs = service.getPreferences();
-    const defaultElement = defaultPrefs.panels[0].sections[3].elements[0];
+    const defaultElement = defaultPrefs.panels[0].sections[1].elements[0];
     expect(defaultElement.name).toEqual('general.pageSize');
-    expect(defaultElement.value).toEqual('50');
+    expect(defaultElement.value.toString()).toEqual('50');
 
-    service.pageSize.next(100);
+    service.preferences.get('general.pageSize').subject.next(100);
     const newPrefs = service.getPreferences();
-    const newElement = newPrefs.panels[0].sections[3].elements[0];
+    const newElement = newPrefs.panels[0].sections[1].elements[0];
     expect(newElement.name).toEqual('general.pageSize');
-    expect(newElement.value).toEqual('100');
+    expect(newElement.value.toString()).toEqual('100');
   });
 
   it('properties are persisted', () => {
     // default values
-    service.navCollapsed.next(true);
-    service.showLabels.next(true);
-    service.pageSize.next(50);
+    service.preferences.get('navigation.collapsed').subject.next(true);
+    service.preferences.get('navigation.labels').subject.next(true);
+    service.preferences.get('general.pageSize').subject.next(10);
     expect(
       JSON.parse(service.getStoredValue('navigation.labels', true))
     ).toEqual(true);
     expect(
       JSON.parse(service.getStoredValue('navigation.collapsed', true))
     ).toEqual(true);
-    expect(
-      JSON.parse(service.getStoredValue('development.pageSize', 10))
-    ).toEqual(50);
+    expect(JSON.parse(service.getStoredValue('general.pageSize', 10))).toEqual(
+      10
+    );
 
     // change through exposed variables
-    service.navCollapsed.next(false);
+    service.preferences.get('navigation.collapsed').subject.next(false);
     expect(
       JSON.parse(service.getStoredValue('navigation.collapsed', true))
     ).toEqual(false);
 
-    service.showLabels.next(false);
+    service.preferences.get('navigation.labels').subject.next(false);
     expect(
       JSON.parse(service.getStoredValue('navigation.labels', true))
     ).toEqual(false);
 
-    service.pageSize.next(20);
-    expect(
-      JSON.parse(service.getStoredValue('development.pageSize', 10))
-    ).toEqual(20);
+    service.preferences.get('general.pageSize').subject.next(20);
+    expect(JSON.parse(service.getStoredValue('general.pageSize', 10))).toEqual(
+      20
+    );
 
     // change by modifying stored values
     service.setStoredValue('navigation.collapsed', true);
@@ -89,9 +90,9 @@ describe('PreferencesService', () => {
       JSON.parse(service.getStoredValue('navigation.labels', false))
     ).toEqual(true);
 
-    service.setStoredValue('development.pageSize', 100);
-    expect(
-      JSON.parse(service.getStoredValue('development.pageSize', 10))
-    ).toEqual(100);
+    service.setStoredValue('general.pageSize', 100);
+    expect(JSON.parse(service.getStoredValue('general.pageSize', 10))).toEqual(
+      100
+    );
   });
 });

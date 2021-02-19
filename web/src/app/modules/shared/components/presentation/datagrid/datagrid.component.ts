@@ -74,10 +74,12 @@ export class DatagridComponent
     private readonly sanitizer: DomSanitizer
   ) {
     super();
-    this.sub = this.preferencesService.pageSize.asObservable().subscribe(e => {
-      this.defaultPageSize = +e;
-      this.cdr.markForCheck();
-    });
+    this.sub = this.preferencesService.preferences
+      .get('general.pageSize')
+      .subject.subscribe(e => {
+        this.defaultPageSize = +e;
+        this.cdr.markForCheck();
+      });
   }
 
   update() {
