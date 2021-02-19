@@ -6,10 +6,6 @@ function install_mockgen() {
     go install github.com/golang/mock/mockgen
 }
 
-function install_rice() {
-    go get github.com/GeertJohan/go.rice/rice
-}
-
 function install_npm() {
    curl -sL https://deb.nodesource.com/setup_10.x | bash
    apt install nodejs

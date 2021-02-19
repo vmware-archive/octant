@@ -238,8 +238,6 @@ func newCmd(command string, env map[string]string, args ...string) *exec.Cmd {
 
 func goInstall() {
 	pkgs := []string{
-		"github.com/GeertJohan/go.rice",
-		"github.com/GeertJohan/go.rice/rice",
 		"github.com/golang/mock/gomock",
 		"github.com/golang/mock/mockgen",
 		"github.com/golang/protobuf/protoc-gen-go",
@@ -346,11 +344,10 @@ func webBuild() {
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("web-build: %s", err)
 	}
-	runCmd("go", nil, "generate", "./web")
 }
 
 func webBuildElectron() {
-	dirCmd := newCmd("mkdir", nil, "-p", "dist/octant/")
+	dirCmd := newCmd("mkdir", nil, "-p", "dist/octant")
 	dirCmd.Stdout = os.Stdout
 	dirCmd.Stderr = os.Stderr
 	dirCmd.Stdin = os.Stdin
@@ -368,7 +365,18 @@ func webBuildElectron() {
 		log.Fatalf("web-build-electron: create dist/octant/ : %s", err)
 	}
 
-	runCmd("go", nil, "generate", "./web")
+	// This is a workaround as embed directive fails when
+	// the embedded directory is empty.
+	// Directive in question is located at:
+	// https://github.com/vmware-tanzu/octant/blob/master/web/web.go#L10
+	newFileCmd := newCmd("touch", nil, "dist/octant/empty.txt")
+	newFileCmd.Stdout = os.Stdout
+	newFileCmd.Stderr = os.Stderr
+	newFileCmd.Stdin = os.Stdin
+	newFileCmd.Dir = "./web"
+	if err := newFileCmd.Run(); err != nil {
+		log.Fatalf("web-build-electron: create dist/octant/empty.txt : %s", err)
+	}
 }
 
 func serve() {

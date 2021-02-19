@@ -14,18 +14,6 @@ github.com/Azure/go-autorest/autorest/date
 github.com/Azure/go-autorest/logger
 # github.com/Azure/go-autorest/tracing v0.5.0
 github.com/Azure/go-autorest/tracing
-# github.com/GeertJohan/go.incremental v1.0.0
-github.com/GeertJohan/go.incremental
-# github.com/GeertJohan/go.rice v1.0.2
-## explicit
-github.com/GeertJohan/go.rice
-github.com/GeertJohan/go.rice/embedded
-github.com/GeertJohan/go.rice/rice
-# github.com/akavel/rsrc v0.8.0
-github.com/akavel/rsrc/binutil
-github.com/akavel/rsrc/coff
-# github.com/daaku/go.zipexe v1.0.0
-github.com/daaku/go.zipexe
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
@@ -174,8 +162,6 @@ github.com/iancoleman/strcase
 github.com/imdario/mergo
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
-# github.com/jessevdk/go-flags v1.4.0
-github.com/jessevdk/go-flags
 # github.com/json-iterator/go v1.1.10
 github.com/json-iterator/go
 # github.com/kr/text v0.2.0
@@ -197,8 +183,6 @@ github.com/modern-go/concurrent
 github.com/modern-go/reflect2
 # github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e
 ## explicit
-# github.com/nkovacs/streamquote v1.0.0
-github.com/nkovacs/streamquote
 # github.com/oklog/run v1.0.0
 github.com/oklog/run
 # github.com/pelletier/go-toml v1.7.0
@@ -247,10 +231,6 @@ github.com/uber/jaeger-client-go/thrift
 github.com/uber/jaeger-client-go/thrift-gen/agent
 github.com/uber/jaeger-client-go/thrift-gen/jaeger
 github.com/uber/jaeger-client-go/thrift-gen/zipkincore
-# github.com/valyala/bytebufferpool v1.0.0
-github.com/valyala/bytebufferpool
-# github.com/valyala/fasttemplate v1.0.1
-github.com/valyala/fasttemplate
 # go.opencensus.io v0.22.6
 ## explicit
 go.opencensus.io

@@ -15,7 +15,7 @@ jobs:
           node-version: '14'
       - uses: actions/setup-go@v2
         with:
-          go-version: 1.15.x
+          go-version: 1.16.x
       - uses: actions/checkout@v2
       - name: Get npm cache directory
         id: npm-cache
@@ -45,19 +45,6 @@ jobs:
           npm ci --prefer-offline --no-audit
           npm run-script build
         shell: bash
-      - name: Go tools
-        env:
-          GOFLAGS: -mod=vendor
-        run: |
-          go run build.go go-install
-          go generate ./web
-          go generate ./pkg/plugin/plugin.go
-      - name: Upload web/rice-box.go
-        uses: actions/upload-artifact@v2
-        with:
-          name: rice-web
-          path: web/rice-box.go
-          retention-days: 2
       - name: Build electron binary
         env:
           GOFLAGS: -mod=vendor
@@ -82,15 +69,6 @@ jobs:
     container: goreleaser/goreleaser:v0.128.0-cgo
     steps:
       - uses: actions/checkout@v2
-      - name: Download web/rice-box.go
-        uses: actions/download-artifact@v2
-        with:
-          name: rice-web
-          path: web
-      - name: Change permissions of rice files
-        # Uploading artifact changes file permissions
-        run: |
-          chown -R $(whoami):$(whoami) .
       - name: Run goreleaser
         run: |
           git fetch --tags

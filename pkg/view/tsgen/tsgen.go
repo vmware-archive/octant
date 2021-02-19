@@ -7,6 +7,7 @@ package tsgen
 
 import (
 	"bytes"
+	"embed"
 	"encoding/gob"
 	"fmt"
 	"go/ast"
@@ -23,13 +24,16 @@ import (
 	"regexp"
 	"text/template"
 
-	rice "github.com/GeertJohan/go.rice"
 	"github.com/iancoleman/strcase"
 )
 
+//go:embed ts-support
+var tsSupportFiles embed.FS
+
+var tsSupportDir string = "ts-support"
+
 // TSGen generates typescript for components.
 type TSGen struct {
-	box           *rice.Box
 	disableFormat bool
 }
 
@@ -37,13 +41,7 @@ type TSGen struct {
 func NewTSGen(options ...Option) (*TSGen, error) {
 	opts := makeDefaultOptions(options...)
 
-	box, err := rice.FindBox("ts-support")
-	if err != nil {
-		return nil, fmt.Errorf("find store for typescript support files: %w", err)
-	}
-
 	t := &TSGen{
-		box:           box,
 		disableFormat: opts.disableFormat,
 	}
 	return t, nil
@@ -133,12 +131,12 @@ func (tg *TSGen) Reflect(names []string) (*Model, error) {
 
 // ReflectTemplate generates a reflect template.
 func (tg *TSGen) ReflectTemplate(names []string) ([]byte, error) {
-	text, err := tg.box.String("reflect.go.tmpl")
+	b, err := tsSupportFiles.ReadFile(filepath.Join(tsSupportDir, "reflect.go.tmpl"))
 	if err != nil {
 		return nil, fmt.Errorf("load reflect template: %w", err)
 	}
 
-	t, err := template.New("reflect").Parse(text)
+	t, err := template.New("reflect").Parse(string(b))
 	if err != nil {
 		return nil, fmt.Errorf("parse reflect template: %w", err)
 	}
@@ -199,7 +197,7 @@ func (tg *TSGen) Stage(dest string, model *Model) error {
 
 // Component generates the typescript component interface.
 func (tg *TSGen) Component() ([]byte, error) {
-	b, err := tg.box.Bytes("component.ts")
+	b, err := tsSupportFiles.ReadFile(filepath.Join(tsSupportDir, "component.ts"))
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +207,7 @@ func (tg *TSGen) Component() ([]byte, error) {
 
 // ComponentFactory generates the typescript component factory interface.
 func (tg *TSGen) ComponentFactory() ([]byte, error) {
-	b, err := tg.box.Bytes("component-factory.ts")
+	b, err := tsSupportFiles.ReadFile(filepath.Join(tsSupportDir, "component-factory.ts"))
 	if err != nil {
 		return nil, err
 	}
@@ -219,12 +217,12 @@ func (tg *TSGen) ComponentFactory() ([]byte, error) {
 
 // ComponentConfig generates a config interface and factory for a model component.
 func (tg *TSGen) ComponentConfig(c Component) ([]byte, error) {
-	text, err := tg.box.String("type-config.ts.tmpl")
+	b, err := tsSupportFiles.ReadFile(filepath.Join(tsSupportDir, "type-config.ts.tmpl"))
 	if err != nil {
 		return nil, fmt.Errorf("load type-config template: %w", err)
 	}
 
-	t, err := template.New("component").Parse(text)
+	t, err := template.New("component").Parse(string(b))
 	if err != nil {
 		return nil, fmt.Errorf("parse type-config template: %w", err)
 	}
