@@ -293,6 +293,8 @@ func storageEntries(ctx context.Context, prefix, namespace string, objectStore s
 
 	neh.Add("Persistent Volumes", "persistent-volumes",
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.PersistentVolume), objectStore))
+	neh.Add("Storage Classes", "storage-classes",
+		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.StorageClass), objectStore))
 
 	children, err := neh.Generate(prefix, namespace, "")
 	if err != nil {

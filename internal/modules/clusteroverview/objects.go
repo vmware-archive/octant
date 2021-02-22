@@ -9,6 +9,7 @@ import (
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiregistrationv1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
@@ -108,10 +109,21 @@ var (
 		IconName:       icon.ClusterOverviewPersistentVolume,
 	})
 
+	storageStorageClassDescriber = describer.NewResource(describer.ResourceOptions{
+		Path:           "/storage/storage-classes",
+		ObjectStoreKey: store.Key{APIVersion: "storage.k8s.io/v1", Kind: "StorageClass"},
+		ListType:       &storagev1.StorageClassList{},
+		ObjectType:     &storagev1.StorageClass{},
+		Titles:         describer.ResourceTitle{List: "Storage Classes", Object: "Storage Classes"},
+		ClusterWide:    true,
+		IconName:       icon.ClusterOverviewStorageClass,
+	})
+
 	storageDescriber = describer.NewSection(
 		"/storage",
 		"Storage",
 		storagePersistentVolumeDescriber,
+		storageStorageClassDescriber,
 	)
 
 	namespacesDescriber = describer.NewResource(describer.ResourceOptions{

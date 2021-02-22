@@ -18,6 +18,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -490,6 +491,15 @@ func CreateValidatingWebhookConfiguration(name string) *admissionregistrationv1.
 		TypeMeta:   genTypeMeta(gvk.ValidatingWebhookConfiguration),
 		ObjectMeta: genObjectMeta(name, false),
 		Webhooks:   []admissionregistrationv1.ValidatingWebhook{},
+	}
+}
+
+// CreateStorageClass creates a storage class
+func CreateStorageClass(name string) *storagev1.StorageClass {
+	return &storagev1.StorageClass{
+		TypeMeta:    genTypeMeta(gvk.StorageClass),
+		ObjectMeta:  genObjectMeta(name, true),
+		Provisioner: "manual",
 	}
 }
 

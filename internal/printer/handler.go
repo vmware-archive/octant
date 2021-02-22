@@ -59,6 +59,8 @@ func AddHandlers(p Handler) error {
 		SecretListHandler,
 		StatefulSetHandler,
 		StatefulSetListHandler,
+		StorageClassHandler,
+		StorageClassListHandler,
 		RoleBindingListHandler,
 		RoleBindingHandler,
 		RoleListHandler,
