@@ -17,14 +17,14 @@ jobs:
         with:
           go-version: 1.15.x
       - uses: actions/checkout@v2
-      - name: Get npm cache directory
-        id: npm-cache
+      - name: Get yarn cache directory
+        id: yarn-cache
         run: |
-          echo "::set-output name=dir::$(npm config get cache)"
+          echo "::set-output name=dir::$(yarn cache dir)"
       - uses: actions/cache@v2
         if: github.event_name == 'push'
         with:
-          path: ${{ steps.npm-cache.outputs.dir }}
+          path: ${{ steps.yarn-cache.outputs.dir }}
           key: ${{ runner.os }}-node-push-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-push-${{ hashFiles('**/package-lock.json') }}
@@ -32,7 +32,7 @@ jobs:
       - uses: actions/cache@v2
         if: github.event_name == 'pull_request'
         with:
-          path: ${{ steps.npm-cache.outputs.dir }}
+          path: ${{ steps.yarn-cache.outputs.dir }}
           key: ${{ runner.os }}-node-pr-${{ github.event.number }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-pr-${{ github.event.number }}-${{ hashFiles('**/package-lock.json') }}
@@ -42,8 +42,8 @@ jobs:
       - name: Build node modules
         run: |
           cd web
-          npm ci --prefer-offline --no-audit
-          npm run-script build
+          yarn install --frozen-lockfile
+          yarn run build
         shell: bash
       - name: Go tools
         env:
