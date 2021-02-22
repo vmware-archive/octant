@@ -71,8 +71,14 @@ func (crl *CustomResourceLister) List(crdObject *unstructured.Unstructured, reso
 		}
 
 		for _, column := range v.PrinterColumns {
+			// Base on this issue https://github.com/vmware-tanzu/octant/issues/1462
+			// Resource Age is not necessary since it has the same info as Age
+			if column.Name == "Age" {
+				continue
+			}
+
 			name := column.Name
-			if octantStrings.Contains(column.Name, []string{"Name", "Labels", "Age"}) {
+			if octantStrings.Contains(column.Name, []string{"Name", "Labels"}) {
 				name = fmt.Sprintf("Resource %s", column.Name)
 			}
 			table.AddColumn(name)
@@ -104,6 +110,10 @@ func (crl *CustomResourceLister) List(crdObject *unstructured.Unstructured, reso
 		row["Age"] = component.NewTimestamp(cr.GetCreationTimestamp().Time)
 
 		for _, column := range version.PrinterColumns {
+			if column.Name == "Age" {
+				continue
+			}
+
 			s, err := printCustomColumn(cr.Object, column)
 			if err != nil {
 				return nil, fmt.Errorf("print custom column %q in CRD %q: %w",

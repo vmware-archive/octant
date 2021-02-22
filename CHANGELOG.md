@@ -33,4 +33,4 @@
 [14]: https://github.com/vmware-tanzu/octant/blob/master/changelogs/CHANGELOG-0.14.md
 [15]: https://github.com/vmware-tanzu/octant/blob/master/changelogs/CHANGELOG-0.15.md
 [16]: https://github.com/vmware-tanzu/octant/blob/master/changelogs/CHANGELOG-0.16.md
-[17]: https://github.com/vmware-tanzu/octant/blod/master/changelogs/CHANGELOG-0.17.md
+[17]: https://github.com/vmware-tanzu/octant/blob/master/changelogs/CHANGELOG-0.17.md
