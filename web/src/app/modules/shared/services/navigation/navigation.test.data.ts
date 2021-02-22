@@ -279,7 +279,7 @@ export const NAVIGATION_MOCK_DATA: NavigationChild[] = [
         path: 'cluster-overview/storage/storage-classes',
         isLoading: false,
       },
-     ],
+    ],
     iconName: 'storage',
     isLoading: false,
   },
