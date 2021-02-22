@@ -29,3 +29,7 @@ spec:
       type: string
       description: A custom timestamp
       JSONPath: .metadata.creationTimestamp
+    - name: Name
+      type: string
+      description: A custom name
+      JSONPath: .metadata.name
