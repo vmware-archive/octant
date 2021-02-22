@@ -30,7 +30,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: install_prettier
         run: |
-          npm i -g prettier
+          yarn global add prettier
+          echo "$(yarn global bin)" >> $GITHUB_PATH
       - name: run_go_tests
         env:
           GOFLAGS: -mod=vendor
@@ -66,8 +67,8 @@ jobs:
       - name: run_karma
         run: |
           cd web
-          npm ci --prefer-offline --no-audit
-          npm run test:headless
+          yarn install --frozen-lockfile
+          yarn run test:headless
 
   bundle_assets:
     needs: [go_unit_tests, node_unit_tests]
@@ -89,8 +90,8 @@ jobs:
       - name: Build node modules
         run: |
           cd web
-          npm ci --prefer-offline --no-audit
-          npm run-script build
+          yarn install --frozen-lockfile
+          yarn run build
         shell: bash
       - name: Go tools
         env:

@@ -8,7 +8,7 @@ This document describes how to setup your development environment to contribute 
 
 ### Dependencies
 
-Our web UI is built on Node.js 10+ and npm 6+. It was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.3 so you'll want to install & get familiar with that tool to understand how we some of our npm scripts work. Here are some of the major libraries we use:
+Our web UI is built on Node.js 10+ and yarn 1.x. It was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.3 so you'll want to install & get familiar with that tool to understand how we some of our yarn scripts work. Here are some of the major libraries we use:
 
 - [Angular v7.2+](http://angular.io)
 - [TypeScript v3+](https://www.typescriptlang.org/)
@@ -19,9 +19,9 @@ There are different ways to installing these dependencies:
 
 The most thorough way that verifies that you have the needed dependencies to build/develop both the Octant's UI and go server component is run `go run build.go ci` from the root directory. This is the command used to build a final distributable.
 
-To install just the UI dependencies from the root directory, we have the command `go run build.go web-deps` for just npm installation.
+To install just the UI dependencies from the root directory, we have the command `go run build.go web-deps` for just yarn installation.
 
-You can also run `npm install` yourself, but this will only work if you are within the `web/` directory.
+You can also run `yarn` yourself, but this will only work if you are within the `web/` directory.
 
 Additionally, run `go run build.go web-build` to generate web assets.
 
@@ -53,12 +53,12 @@ For testing we use [Karma's Test Runner](https://karma-runner.github.io/latest/i
 
 There are 3 commands that can help keep PRs tested and linted properly:
 
-- `npm test` uses Karma's Chrome launcher to open up an instance of Chrome and run our test suite against that environment. This is primarily the tool our team uses.
-- `npm run test:headless` helps run our test suite against a headless version of Chrome
-- `npm run lint` runs our static analysis tools against our TypeScript code
+- `yarn test` uses Karma's Chrome launcher to open up an instance of Chrome and run our test suite against that environment. This is primarily the tool our team uses.
+- `yarn run test:headless` helps run our test suite against a headless version of Chrome
+- `yarn run lint` runs our static analysis tools against our TypeScript code
 
 ## Building production
 
-To build a production version of the UI, you can run `npm run build` yourself which will build the productionized assets to `dist/`.
+To build a production version of the UI, you can run `yarn run build` yourself which will build the productionized assets to `dist/`.
 
 To build a full production binary (including the backend server), you can run `go run build.go ci` from the root directory.
