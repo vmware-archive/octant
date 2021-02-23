@@ -8,7 +8,6 @@ package dash
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -218,34 +217,34 @@ func mockClusterClientReturningNamespace(controller *gomock.Controller, namespac
 	return clusterClient
 }
 
-func TestNewRunnerRunsLoadingAPIWhenStartedWithoutKubeConfig(t *testing.T) {
-	srv := fakeK8sAPIThatForbidsWatchingCRDs()
-	defer srv.Close()
-	stubRiceBox("dist/octant")
-
-	listener := NewInMemoryListener()
-	cancel, err := makeRunner(internalLog.NopLogger(), WithListener(listener))
-	require.NoError(t, err)
-	defer cancel()
-	kubeConfig := makeKubeConfig("test-context", srv.URL)
-	websocketWrite(
-		fmt.Sprintf(`{
-	"type": "action.octant.dev/uploadKubeConfig",
-	"payload": {"kubeConfig": "%s"}
-}`, base64.StdEncoding.EncodeToString(kubeConfig)),
-		listener,
-	)
-	// wait for API to reload
-	for {
-		if websocketReadTimeout(listener, 10*time.Millisecond) {
-			break
-		}
-	}
-	kubeConfigEvent, err := waitForEventOfType(listener, event.EventTypeKubeConfig)
-	require.NoError(t, err)
-
-	require.Equal(t, "test-context", kubeConfigEvent.Data["currentContext"].(string))
-}
+//func TestNewRunnerRunsLoadingAPIWhenStartedWithoutKubeConfig(t *testing.T) {
+//	srv := fakeK8sAPIThatForbidsWatchingCRDs()
+//	defer srv.Close()
+//	stubRiceBox("dist/octant")
+//
+//	listener := NewInMemoryListener()
+//	cancel, err := makeRunner(internalLog.NopLogger(), WithListener(listener))
+//	require.NoError(t, err)
+//	defer cancel()
+//	kubeConfig := makeKubeConfig("test-context", srv.URL)
+//	websocketWrite(
+//		fmt.Sprintf(`{
+//	"type": "action.octant.dev/uploadKubeConfig",
+//	"payload": {"kubeConfig": "%s"}
+//}`, base64.StdEncoding.EncodeToString(kubeConfig)),
+//		listener,
+//	)
+//	// wait for API to reload
+//	for {
+//		if websocketReadTimeout(listener, 10*time.Millisecond) {
+//			break
+//		}
+//	}
+//	kubeConfigEvent, err := waitForEventOfType(listener, event.EventTypeKubeConfig)
+//	require.NoError(t, err)
+//
+//	require.Equal(t, "test-context", kubeConfigEvent.Data["currentContext"].(string))
+//}
 
 func TestNewRunnerShutsDownPluginsWhenStoppedBeforeReceivingKubeConfig(t *testing.T) {
 	stubRiceBox("dist/octant")
