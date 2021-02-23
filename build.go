@@ -261,7 +261,7 @@ func build() {
 	if runtime.GOOS == "windows" {
 		artifact = "octant.exe"
 	}
-	runCmd("go", nil, "build", "-mod=vendor", "-o", "build/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
+	runCmd("go", nil, "build", "-tags", "embedded", "-mod=vendor", "-o", "build/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
 }
 
 func buildElectron() {
@@ -363,19 +363,6 @@ func webBuildElectron() {
 	cleanCmd.Dir = "./web"
 	if err := cleanCmd.Run(); err != nil {
 		log.Fatalf("web-build-electron: create dist/octant/ : %s", err)
-	}
-
-	// This is a workaround as embed directive fails when
-	// the embedded directory is empty.
-	// Directive in question is located at:
-	// https://github.com/vmware-tanzu/octant/blob/master/web/web.go#L10
-	newFileCmd := newCmd("touch", nil, "dist/octant/empty.txt")
-	newFileCmd.Stdout = os.Stdout
-	newFileCmd.Stderr = os.Stderr
-	newFileCmd.Stdin = os.Stdin
-	newFileCmd.Dir = "./web"
-	if err := newFileCmd.Run(); err != nil {
-		log.Fatalf("web-build-electron: create dist/octant/empty.txt : %s", err)
 	}
 }
 

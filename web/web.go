@@ -1,3 +1,5 @@
+// +build embedded
+
 package web
 
 import (
@@ -5,6 +7,8 @@ import (
 	"io/fs"
 	"mime"
 	"net/http"
+
+	"github.com/vmware-tanzu/octant/pkg/octant"
 )
 
 //go:embed dist/octant
@@ -24,4 +28,8 @@ func Handler() (http.Handler, error) {
 	}
 
 	return http.FileServer(http.FS(fsys)), nil
+}
+
+func init() {
+	octant.SetFrontendHandler(Handler)
 }
