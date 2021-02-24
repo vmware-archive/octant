@@ -48,7 +48,7 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/plugin"
 	pluginAPI "github.com/vmware-tanzu/octant/pkg/plugin/api"
 	"github.com/vmware-tanzu/octant/pkg/store"
-	"github.com/vmware-tanzu/octant/web"
+	_ "github.com/vmware-tanzu/octant/web"
 )
 
 type Options struct {
@@ -602,7 +602,7 @@ func newDash(listener net.Listener, namespace, uiURL string, browserPath string,
 		namespace:       namespace,
 		uiURL:           uiURL,
 		browserPath:     browserPath,
-		defaultHandler:  web.Handler,
+		defaultHandler:  octant.GetFrontendHandler,
 		willOpenBrowser: true,
 		apiHandler:      apiHandler,
 		pluginService:   pluginHandler,

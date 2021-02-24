@@ -238,8 +238,6 @@ func newCmd(command string, env map[string]string, args ...string) *exec.Cmd {
 
 func goInstall() {
 	pkgs := []string{
-		"github.com/GeertJohan/go.rice",
-		"github.com/GeertJohan/go.rice/rice",
 		"github.com/golang/mock/gomock",
 		"github.com/golang/mock/mockgen",
 		"github.com/golang/protobuf/protoc-gen-go",
@@ -263,7 +261,7 @@ func build() {
 	if runtime.GOOS == "windows" {
 		artifact = "octant.exe"
 	}
-	runCmd("go", nil, "build", "-mod=vendor", "-o", "build/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
+	runCmd("go", nil, "build", "-tags", "embedded", "-mod=vendor", "-o", "build/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
 }
 
 func buildElectron() {
@@ -346,11 +344,10 @@ func webBuild() {
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("web-build: %s", err)
 	}
-	runCmd("go", nil, "generate", "./web")
 }
 
 func webBuildElectron() {
-	dirCmd := newCmd("mkdir", nil, "-p", "dist/octant/")
+	dirCmd := newCmd("mkdir", nil, "-p", "dist/octant")
 	dirCmd.Stdout = os.Stdout
 	dirCmd.Stderr = os.Stderr
 	dirCmd.Stdin = os.Stdin
@@ -367,8 +364,6 @@ func webBuildElectron() {
 	if err := cleanCmd.Run(); err != nil {
 		log.Fatalf("web-build-electron: create dist/octant/ : %s", err)
 	}
-
-	runCmd("go", nil, "generate", "./web")
 }
 
 func serve() {
