@@ -140,3 +140,29 @@ func Test_StorageClassConfiguration(t *testing.T) {
 		})
 	}
 }
+
+func Test_createStorageClassParametersView(t *testing.T) {
+	now := testutil.Time()
+
+	parameters := map[string]string{
+		"Key": "Value",
+	}
+
+	sc := testutil.CreateStorageClass("storageClass")
+	sc.CreationTimestamp = metav1.Time{Time: now}
+	sc.Parameters = parameters
+
+	observed, err := createStorageClassParameterView(sc)
+	require.NoError(t, err)
+
+	columns := component.NewTableCols("Key", "Value")
+	expected := component.NewTable("Parameters", "There are no parameters!", columns)
+
+	row := component.TableRow{}
+	row["Key"] = component.NewText("Key")
+	row["Value"] = component.NewText("Value")
+
+	expected.Add(row)
+
+	component.AssertEqual(t, expected, observed)
+}

@@ -8,6 +8,7 @@ package printer
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -58,12 +59,16 @@ func StorageClassHandler(ctx context.Context, sc *storagev1.StorageClass, option
 		return nil, errors.Wrap(err, "print storage class configuration")
 	}
 
+	if err := sch.Param(options); err != nil {
+		return nil, errors.Wrap(err, "print storage class parameters")
+	}
+
 	return obj.ToComponent(ctx, options)
 }
 
 type storageClassHandler struct {
 	configFunc   func(*storagev1.StorageClass, Options) (*component.Summary, error)
-	dataFunc     func(*storagev1.StorageClass, Options) (*component.Summary, error)
+	paramFunc    func(*storagev1.StorageClass, Options) (component.Component, error)
 	storageClass *storagev1.StorageClass
 	object       *Object
 }
@@ -78,6 +83,7 @@ func newStorageClassHandler(sc *storagev1.StorageClass, object *Object) (*storag
 
 	sch := &storageClassHandler{
 		configFunc:   defaultStorageClassConfig,
+		paramFunc:    defaultStorageClassParameter,
 		storageClass: sc,
 		object:       object,
 	}
@@ -94,17 +100,25 @@ func (sch *storageClassHandler) Config(options Options) error {
 	return nil
 }
 
-func (sch *storageClassHandler) Data(ctx context.Context, options Options) error {
-	out, err := sch.dataFunc(sch.storageClass, options)
-	if err != nil {
-		return err
+func (sch *storageClassHandler) Param(options Options) error {
+	if sch.storageClass == nil {
+		return errors.New("can't display parameters for nil storageclass")
 	}
-	sch.object.RegisterSummary(out)
+	sch.object.RegisterItems(ItemDescriptor{
+		Width: component.WidthFull,
+		Func: func() (component.Component, error) {
+			return sch.paramFunc(sch.storageClass, options)
+		},
+	})
 	return nil
 }
 
 func defaultStorageClassConfig(sc *storagev1.StorageClass, options Options) (*component.Summary, error) {
 	return NewStorageClassConfiguration(sc).Create(options)
+}
+
+func defaultStorageClassParameter(sc *storagev1.StorageClass, options Options) (component.Component, error) {
+	return createStorageClassParameterView(sc)
 }
 
 // StorageClassConfiguration is used to create the Storage Class' configuration component
@@ -131,8 +145,17 @@ func (scc *StorageClassConfiguration) Create(options Options) (*component.Summar
 
 	sections := component.SummarySections{}
 	sections.AddText("Provisioner", provisioner)
+
 	if reclaimPolicy := sc.ReclaimPolicy; reclaimPolicy != nil {
 		sections.AddText("Reclaim Policy", string(*reclaimPolicy))
+	}
+
+	if allowVolumeExpansion := sc.AllowVolumeExpansion; allowVolumeExpansion != nil {
+		sections.AddText("Allow Volume Expansion", fmt.Sprintf("%v", *allowVolumeExpansion))
+	}
+
+	if mountOptions := sc.MountOptions; mountOptions != nil {
+		sections.AddText("Mount Options", strings.Join(mountOptions, " "))
 	}
 
 	if volumeBindingMode := sc.VolumeBindingMode; volumeBindingMode != nil {
@@ -141,4 +164,23 @@ func (scc *StorageClassConfiguration) Create(options Options) (*component.Summar
 
 	summary := component.NewSummary("Configuration", sections...)
 	return summary, nil
+}
+
+func createStorageClassParameterView(sc *storagev1.StorageClass) (component.Component, error) {
+	if sc == nil {
+		return nil, errors.New("Storage Class is nil")
+	}
+
+	columns := component.NewTableCols("Key", "Value")
+	table := component.NewTable("Parameters", "There are no parameters!", columns)
+
+	for key, value := range sc.Parameters {
+		row := component.TableRow{}
+		row["Key"] = component.NewText(key)
+		row["Value"] = component.NewText(value)
+
+		table.Add(row)
+	}
+
+	return table, nil
 }
