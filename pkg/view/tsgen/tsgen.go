@@ -20,6 +20,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
 	"text/template"
@@ -131,7 +132,7 @@ func (tg *TSGen) Reflect(names []string) (*Model, error) {
 
 // ReflectTemplate generates a reflect template.
 func (tg *TSGen) ReflectTemplate(names []string) ([]byte, error) {
-	b, err := tsSupportFiles.ReadFile(filepath.Join(tsSupportDir, "reflect.go.tmpl"))
+	b, err := tsSupportFiles.ReadFile(path.Join(tsSupportDir, "reflect.go.tmpl"))
 	if err != nil {
 		return nil, fmt.Errorf("load reflect template: %w", err)
 	}
@@ -197,7 +198,7 @@ func (tg *TSGen) Stage(dest string, model *Model) error {
 
 // Component generates the typescript component interface.
 func (tg *TSGen) Component() ([]byte, error) {
-	b, err := tsSupportFiles.ReadFile(filepath.Join(tsSupportDir, "component.ts"))
+	b, err := tsSupportFiles.ReadFile(path.Join(tsSupportDir, "component.ts"))
 	if err != nil {
 		return nil, err
 	}
@@ -207,7 +208,7 @@ func (tg *TSGen) Component() ([]byte, error) {
 
 // ComponentFactory generates the typescript component factory interface.
 func (tg *TSGen) ComponentFactory() ([]byte, error) {
-	b, err := tsSupportFiles.ReadFile(filepath.Join(tsSupportDir, "component-factory.ts"))
+	b, err := tsSupportFiles.ReadFile(path.Join(tsSupportDir, "component-factory.ts"))
 	if err != nil {
 		return nil, err
 	}
@@ -217,7 +218,7 @@ func (tg *TSGen) ComponentFactory() ([]byte, error) {
 
 // ComponentConfig generates a config interface and factory for a model component.
 func (tg *TSGen) ComponentConfig(c Component) ([]byte, error) {
-	b, err := tsSupportFiles.ReadFile(filepath.Join(tsSupportDir, "type-config.ts.tmpl"))
+	b, err := tsSupportFiles.ReadFile(path.Join(tsSupportDir, "type-config.ts.tmpl"))
 	if err != nil {
 		return nil, fmt.Errorf("load type-config template: %w", err)
 	}
