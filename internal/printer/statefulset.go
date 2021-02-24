@@ -62,7 +62,7 @@ func StatefulSetHandler(ctx context.Context, statefulSet *appsv1.StatefulSet, op
 	o := NewObject(statefulSet)
 	o.EnableEvents()
 
-	sh, err := newStatufulSetHandler(statefulSet, o)
+	sh, err := newStatefulSetHandler(statefulSet, o)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +214,7 @@ type statefulSetHandler struct {
 
 var _ statefulSetObject = (*statefulSetHandler)(nil)
 
-func newStatufulSetHandler(statefulSet *appsv1.StatefulSet, object *Object) (*statefulSetHandler, error) {
+func newStatefulSetHandler(statefulSet *appsv1.StatefulSet, object *Object) (*statefulSetHandler, error) {
 	if statefulSet == nil {
 		return nil, errors.New("can't print a nil statefulset")
 	}
