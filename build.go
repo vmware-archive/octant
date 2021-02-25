@@ -347,15 +347,6 @@ func webBuild() {
 }
 
 func webBuildElectron() {
-	dirCmd := newCmd("mkdir", nil, "-p", "dist/octant")
-	dirCmd.Stdout = os.Stdout
-	dirCmd.Stderr = os.Stderr
-	dirCmd.Stdin = os.Stdin
-	dirCmd.Dir = "./web"
-	if err := dirCmd.Run(); err != nil {
-		log.Fatalf("web-build-electron: create dist/octant/ : %s", err)
-	}
-
 	cleanCmd := newCmd("npm", nil, "run", "clean")
 	cleanCmd.Stdout = os.Stdout
 	cleanCmd.Stderr = os.Stderr
