@@ -43,9 +43,14 @@
     padding: 0 0.2rem;
   }
 
+  ::ng-deep &-content {
+    max-width: min-content;
+  }
+
   // To avoid horizontal scroll-bar inside of the signpost content body.
   ::ng-deep .signpost-wrap .signpost-content-body {
     padding: 1rem;
+    max-height: 12.2rem;
 
     .label:not(:last-child) {
       margin-bottom: 0.2rem;
