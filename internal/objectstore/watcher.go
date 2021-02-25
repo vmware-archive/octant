@@ -4,11 +4,12 @@ import (
 	"context"
 	"sync"
 
-	"github.com/vmware-tanzu/octant/internal/cluster"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
+
+	"github.com/vmware-tanzu/octant/internal/cluster"
 )
 
 type Watcher struct {

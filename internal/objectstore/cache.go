@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/vmware-tanzu/octant/pkg/store"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/vmware-tanzu/octant/pkg/store"
 )
 
 // ResourceCacheKey creates a key of Namespace and Resource
