@@ -182,5 +182,7 @@ func createStorageClassParameterView(sc *storagev1.StorageClass) (component.Comp
 		table.Add(row)
 	}
 
+	table.Sort("Key")
+
 	return table, nil
 }
