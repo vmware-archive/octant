@@ -30,6 +30,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: install_prettier
         run: |
+          yarn config set prefix ~/.yarn
           yarn global add prettier
       - name: run_go_tests
         env:
