@@ -45,6 +45,7 @@ var (
 	RoleBinding                    = schema.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "RoleBinding"}
 	Role                           = schema.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "Role"}
 	ValidatingWebhookConfiguration = schema.GroupVersionKind{Group: "admissionregistration.k8s.io", Version: "v1", Kind: "ValidatingWebhookConfiguration"}
+	StorageClass                   = schema.GroupVersionKind{Group: "storage.k8s.io", Version: "v1", Kind: "StorageClass"}
 )
 
 // CustomResource generates a `schema.GroupVersionKind` for a custom resource given a version.

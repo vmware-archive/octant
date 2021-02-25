@@ -29,6 +29,7 @@ const (
 	ClusterOverviewNamespace          = "ns"
 	ClusterOverviewNode               = "node"
 	ClusterOverviewPersistentVolume   = "pv"
+	ClusterOverviewStorageClass       = "sc"
 
 	Configuration       = "cog"
 	ConfigurationPlugin = "plugin"

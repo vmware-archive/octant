@@ -119,6 +119,11 @@
         "title": "Persistent Volumes",
         "path": "cluster-overview/storage/persistent-volumes",
         "isLoading": false
+      },
+      {
+        "title": "Storage Classes",
+        "path": "cluster-overview/storage/storage-classes",
+        "isLoading": false
       }
     ],
     "iconName": "storage",

@@ -10,8 +10,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-
-	"github.com/vmware-tanzu/octant/web"
 )
 
 // options is an internal set of options that can be used to configure Octant. These are
@@ -28,7 +26,9 @@ type options struct {
 // buildOptions builds an options struct from a list of functional options.
 func buildOptions(list ...Option) options {
 	opts := options{
-		frontendHandler: defaultFrontendHandler,
+		frontendHandler: func(_ context.Context) (http.Handler, error) {
+			return GetFrontendHandler()
+		},
 		backendHandler: func(ctx context.Context) (handler http.Handler, err error) {
 			return nil, fmt.Errorf("backend handler is not configured")
 		},
@@ -48,7 +48,9 @@ type Option func(o *options)
 func FrontendURL(proxyURL string) Option {
 	return func(o *options) {
 		if proxyURL == "" {
-			o.frontendHandler = defaultFrontendHandler
+			o.frontendHandler = func(_ context.Context) (http.Handler, error) {
+				return GetFrontendHandler()
+			}
 			return
 		}
 
@@ -63,6 +65,19 @@ func FrontendURL(proxyURL string) Option {
 	}
 }
 
+var frontendHandlerFn func() (http.Handler, error)
+
+func SetFrontendHandler(handlerFn func() (http.Handler, error)) {
+	frontendHandlerFn = handlerFn
+}
+
+func GetFrontendHandler() (http.Handler, error) {
+	if frontendHandlerFn != nil {
+		return frontendHandlerFn()
+	}
+	return defaultFrontendHandler()
+}
+
 // BackendHandler sets the handler for Octant's backend.
 func BackendHandler(fn func(ctx context.Context) (http.Handler, error)) Option {
 	return func(o *options) {
@@ -72,8 +87,8 @@ func BackendHandler(fn func(ctx context.Context) (http.Handler, error)) Option {
 
 // defaultFrontendHandler is the default factory for creating a frontend handler.
 // TODO: this namespace should not know about the web namespace.
-func defaultFrontendHandler(ctx context.Context) (http.Handler, error) {
-	return web.Handler()
+func defaultFrontendHandler() (http.Handler, error) {
+	return http.NotFoundHandler(), nil
 }
 
 func noCacheRootMiddleware(next http.Handler) http.Handler {
