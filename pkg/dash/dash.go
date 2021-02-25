@@ -464,10 +464,10 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerO
 		return nil, nil, fmt.Errorf("start plugin manager: %w", err)
 	}
 
-	// Watch for CRDs after modules initialized
-	if err := crdWatcher.Watch(ctx); err != nil {
-		return nil, nil, fmt.Errorf("unable to start CRD watcher: %w", err)
-	}
+	// // Watch for CRDs after modules initialized
+	// if err := crdWatcher.Watch(ctx); err != nil {
+	// 	return nil, nil, fmt.Errorf("unable to start CRD watcher: %w", err)
+	// }
 
 	apiService := api.New(ctx, api.PathPrefix, r.actionManager, r.websocketClientManager, dashConfig)
 	frontendProxy.FrontendUpdateController = apiService
@@ -482,8 +482,7 @@ func initObjectStore(ctx context.Context, client cluster.ClientInterface) (store
 		return nil, fmt.Errorf("nil cluster client")
 	}
 
-	resourceAccess := objectstore.NewResourceAccess(client)
-	appObjectStore, err := objectstore.NewDynamicCache(ctx, client, objectstore.Access(resourceAccess))
+	appObjectStore, err := objectstore.NewMemoryStore(ctx, client)
 
 	if err != nil {
 		return nil, fmt.Errorf("creating object store for app: %w", err)
