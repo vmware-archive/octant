@@ -97,3 +97,15 @@ func TestFSLoader_Load(t *testing.T) {
 		{Name: "exp-scratch"},
 	}, kc.Contexts())
 }
+
+func Test_NewKubeConfigNoCluster(t *testing.T) {
+	noClusterOptions := KubeConfigOption{nil, nil}
+
+	_, err := NewKubeConfigContextManager(
+		context.TODO(),
+		WithKubeConfigList(filepath.Join("testdata", "kubeconfig.yaml")),
+		FromClusterOption(cluster.WithRESTConfigOptions(cluster.RESTConfigOptions{})),
+		noClusterOptions,
+	)
+	require.NoError(t, err)
+}

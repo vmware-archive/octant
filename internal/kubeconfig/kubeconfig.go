@@ -62,8 +62,10 @@ func NewKubeConfigContextManager(ctx context.Context, opts ...KubeConfigOption) 
 	options := kubeConfigOptions{}
 	clusterOptions := []cluster.ClusterOption{}
 	for _, opt := range opts {
-		opt.kubeConfigOption(&options)
-		clusterOptions = append(clusterOptions, opt.clusterOption)
+		if opt.kubeConfigOption != nil {
+			opt.kubeConfigOption(&options)
+			clusterOptions = append(clusterOptions, opt.clusterOption)
+		}
 	}
 	chain := strings.Deduplicate(filepath.SplitList(options.KubeConfigList))
 	rules := &clientcmd.ClientConfigLoadingRules{
