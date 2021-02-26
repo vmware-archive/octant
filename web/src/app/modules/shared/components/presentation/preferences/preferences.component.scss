@@ -13,18 +13,21 @@
   }
 }
 
-:host ::ng-deep section app-view-dropdown .dropdown {
-  margin-top: 0px;
-
-  clr-dropdown {
-    margin-top: 4px;
-  }
-}
 section {
   margin-block-end: 1.33em;
   width: 100%;
 
   h4 {
     margin: 0 0 0.33em 0;
+  }
+}
+
+clr-select-container {
+  display: flex;
+  flex-direction: row;
+
+  ::ng-deep .clr-control-container {
+    margin-left: 1.0em;
+    margin-top: -0.5em;
   }
 }

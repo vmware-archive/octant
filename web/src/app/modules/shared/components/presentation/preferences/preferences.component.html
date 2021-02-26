@@ -61,9 +61,16 @@
                       </div>
                     </ng-container>
                     <ng-container *ngSwitchCase="'dropdown'">
-                      <label>{{ element.label }}</label>
-                      <app-view-dropdown [view]="element" (selectedValue)="onDropDownValueChange($event, element.name)">
-                      </app-view-dropdown>
+                      <clr-select-container>
+                        <label>{{ element.label }}</label>
+                        <select clrSelect name="options"
+                          [formControlName]="element.name">
+                          <option 
+                            *ngFor="let r of element.config.items; 
+                              trackBy: trackByIdentity" [value]="r.name"
+                            >{{ r.label }}</option>
+                        </select>
+                      </clr-select-container>
                     </ng-container>
                     <div *ngSwitchDefault>
                       <p>not sure what to do with {{ element.type }}</p>
