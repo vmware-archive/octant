@@ -30,8 +30,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: install_prettier
         run: |
-          yarn config set prefix ~/.yarn
           yarn global add prettier
+          echo "$(yarn global bin)" >> $GITHUB_PATH
       - name: run_go_tests
         env:
           GOFLAGS: -mod=vendor

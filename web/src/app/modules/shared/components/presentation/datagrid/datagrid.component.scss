@@ -17,3 +17,7 @@
 app-button-group {
   float: right;
 }
+
+::ng-deep .datagrid-table {
+  position: static;
+}
