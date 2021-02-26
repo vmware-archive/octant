@@ -75,6 +75,7 @@ type RunnerOption struct {
 
 func WithOpenCensus() RunnerOption {
 	return RunnerOption{
+		kubeConfigOption: kubeconfig.Noop(),
 		nonClusterOption: func(o *Options) {
 			o.EnableOpenCensus = true
 		},
@@ -83,6 +84,7 @@ func WithOpenCensus() RunnerOption {
 
 func WithoutClusterOverview() RunnerOption {
 	return RunnerOption{
+		kubeConfigOption: kubeconfig.Noop(),
 		nonClusterOption: func(o *Options) {
 			o.DisableClusterOverview = true
 		},
