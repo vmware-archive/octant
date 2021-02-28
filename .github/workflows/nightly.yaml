@@ -20,8 +20,8 @@ jobs:
       - name: Build node modules
         run: |
           cd web
-          npm ci --prefer-offline --no-audit
-          npm run-script build
+          yarn install --frozen-lockfile
+          yarn run build
         shell: bash
       - name: Build electron binary
         env:

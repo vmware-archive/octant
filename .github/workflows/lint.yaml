@@ -33,5 +33,5 @@ jobs:
       - name: eslint
         run: |
           cd web
-          npm ci
-          npm run lint
+          yarn install --frozen-lockfile
+          yarn run lint

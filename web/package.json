@@ -16,24 +16,24 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "node --max-old-space-size=8000 ./node_modules/@angular/cli/bin/ng build --prod --output-hashing=all",
-    "build-electron": "tsc main.ts && npm run build -- --base-href ./",
+    "build-electron": "tsc main.ts && yarn run build -- --base-href ./",
     "test": "ng test --watch=false --browsers=ElectronDebug",
     "test:headless": "ng test --watch=false --browsers=ChromeHeadless --source-map=false",
     "lint": "prettier -c 'src/**/*.ts'",
     "clean": "rimraf ./dist/octant/*",
     "e2e": "ng e2e",
     "prettier": "prettier --write \"src/{app,environments,assets}/**/*{.ts,.js,.json,.css,.scss}\"",
-    "electron:serve": "wait-on http-get://localhost:7777 && npm run electron:serve-tsc && electron . --serve",
+    "electron:serve": "wait-on http-get://localhost:7777 && yarn run electron:serve-tsc && electron . --serve",
     "electron:serve-tsc": "npx tsc -p tsconfig.serve.json",
     "electron:local": "npx tsc main.ts && npx ng build --base-href ./ && npx electron --local .",
-    "electron:build": "npm run build-electron && npx electron-builder -p never",
+    "electron:build": "yarn run build-electron && npx electron-builder -p never",
     "//": [
       "switch to tsconfig.json below once compodoc angular 9 bug is fixed (https://github.com/compodoc/compodoc/issues/951)",
       "see also https://github.com/compodoc/compodoc/issues/927#issuecomment-597624654"
     ],
     "docs:json": "compodoc -p tsconfig.compodoc.json -e json -d .",
-    "storybook": "npm run docs:json && start-storybook -p 6006 -s src/assets",
-    "build-storybook": "npm run docs:json && node --max-old-space-size=8000 ./node_modules/@storybook/angular/bin/build.js build-storybook -c .storybook"
+    "storybook": "yarn run docs:json && start-storybook -p 6006 -s src/assets",
+    "build-storybook": "yarn run docs:json && node --max-old-space-size=8000 ./node_modules/@storybook/angular/bin/build.js build-storybook -c .storybook"
   },
   "prettier": {
     "trailingComma": "es5",
@@ -78,7 +78,7 @@
     "karma-electron-launcher": "^0.3.0",
     "lodash": "^4.17.20",
     "lodash-es": "^4.17.15",
-    "marked": "^1.2.0",
+    "marked": "^2.0.0",
     "monaco-editor": "^0.21.2",
     "ngx-highlightjs": "^4.1.2",
     "overlayscrollbars-ngx": "^0.2.2",
@@ -89,6 +89,9 @@
     "xterm": "^4.9.0",
     "xterm-addon-fit": "^0.4.0",
     "zone.js": "^0.11.1"
+  },
+  "resolutions": {
+    "marked": "^2.0.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^0.1100.6",
