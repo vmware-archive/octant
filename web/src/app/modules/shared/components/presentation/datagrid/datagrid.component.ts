@@ -7,6 +7,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  OnDestroy,
   SecurityContext,
 } from '@angular/core';
 import {
@@ -29,6 +30,8 @@ import { LoadingService } from '../../../services/loading/loading.service';
 import { ButtonGroupView } from '../../../models/content';
 import { DomSanitizer } from '@angular/platform-browser';
 import { parse } from 'marked';
+import { PreferencesService } from '../../../services/preferences/preferences.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-view-datagrid',
@@ -36,7 +39,9 @@ import { parse } from 'marked';
   styleUrls: ['./datagrid.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DatagridComponent extends AbstractViewComponent<TableView> {
+export class DatagridComponent
+  extends AbstractViewComponent<TableView>
+  implements OnDestroy {
   timeStampComparator = new TimestampComparator();
   sortOrder: ClrDatagridSortOrder = ClrDatagridSortOrder.UNSORTED;
 
@@ -48,6 +53,7 @@ export class DatagridComponent extends AbstractViewComponent<TableView> {
   filters: TableFilters;
   buttonGroup?: ButtonGroupView;
   isModalOpen = false;
+  defaultPageSize: number;
 
   actionDialogOptions: ActionDialogOptions = undefined;
 
@@ -57,15 +63,23 @@ export class DatagridComponent extends AbstractViewComponent<TableView> {
 
   loading: boolean;
   loading$: Observable<boolean>;
+  sub: Subscription;
 
   constructor(
     private viewService: ViewService,
     private actionService: ActionService,
     private loadingService: LoadingService,
+    private preferencesService: PreferencesService,
     private cdr: ChangeDetectorRef,
     private readonly sanitizer: DomSanitizer
   ) {
     super();
+    this.sub = this.preferencesService.preferences
+      .get('general.pageSize')
+      .subject.subscribe(e => {
+        this.defaultPageSize = +e;
+        this.cdr.markForCheck();
+      });
   }
 
   update() {
@@ -163,6 +177,10 @@ export class DatagridComponent extends AbstractViewComponent<TableView> {
   private resetModal() {
     this.isModalOpen = false;
     this.actionDialogOptions = undefined;
+  }
+
+  ngOnDestroy() {
+    this.sub.unsubscribe();
   }
 }
 

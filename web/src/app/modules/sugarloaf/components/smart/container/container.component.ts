@@ -78,6 +78,10 @@ export class ContainerComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 
+  onReset() {
+    this.preferencesService.reset();
+  }
+
   preferencesOpenChanged(opened: boolean) {
     this.preferencesService.preferencesOpened.next(opened);
   }
