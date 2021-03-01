@@ -8,6 +8,7 @@ package dash
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -154,7 +155,7 @@ func TestNewRunnerLoadsValidKubeConfigFilteringNonexistent(t *testing.T) {
 	defer os.Remove(kubeConfig.Name())
 	listener := NewInMemoryListener()
 
-	cancel, err := makeRunner(
+	cancel, _, err := makeRunner(
 		internalLog.NopLogger(),
 		WithKubeConfig(strings.Join(
 			[]string{
@@ -181,7 +182,7 @@ func TestNewRunnerUsesClusterClient(t *testing.T) {
 	listener := NewInMemoryListener()
 
 	logger := internalLog.NopLogger()
-	cancel, err := makeRunner(
+	cancel, _, err := makeRunner(
 		logger,
 		WithClusterClient(clusterClient),
 		WithListener(listener),
@@ -217,34 +218,52 @@ func mockClusterClientReturningNamespace(controller *gomock.Controller, namespac
 	return clusterClient
 }
 
-//func TestNewRunnerRunsLoadingAPIWhenStartedWithoutKubeConfig(t *testing.T) {
-//	srv := fakeK8sAPIThatForbidsWatchingCRDs()
-//	defer srv.Close()
-//	stubRiceBox("dist/octant")
-//
-//	listener := NewInMemoryListener()
-//	cancel, err := makeRunner(internalLog.NopLogger(), WithListener(listener))
-//	require.NoError(t, err)
-//	defer cancel()
-//	kubeConfig := makeKubeConfig("test-context", srv.URL)
-//	websocketWrite(
-//		fmt.Sprintf(`{
-//	"type": "action.octant.dev/uploadKubeConfig",
-//	"payload": {"kubeConfig": "%s"}
-//}`, base64.StdEncoding.EncodeToString(kubeConfig)),
-//		listener,
-//	)
-//	// wait for API to reload
-//	for {
-//		if websocketReadTimeout(listener, 10*time.Millisecond) {
-//			break
-//		}
-//	}
-//	kubeConfigEvent, err := waitForEventOfType(listener, event.EventTypeKubeConfig)
-//	require.NoError(t, err)
-//
-//	require.Equal(t, "test-context", kubeConfigEvent.Data["currentContext"].(string))
-//}
+func TestNewRunnerRunsLoadingAPIWhenStartedWithoutKubeConfig(t *testing.T) {
+	srv := fakeK8sAPIThatForbidsWatchingCRDs()
+	defer srv.Close()
+	stubRiceBox("dist/octant")
+
+	listener := NewInMemoryListener()
+	cancel, runner, err := makeRunner(internalLog.NopLogger(), WithListener(listener))
+	require.NoError(t, err)
+	defer cancel()
+	kubeConfig := makeKubeConfig("test-context", srv.URL)
+
+	message := fmt.Sprintf(`{
+		"type": "action.octant.dev/uploadKubeConfig",
+		"payload": {"kubeConfig": "%s"}
+	}`, base64.StdEncoding.EncodeToString(kubeConfig))
+
+	dialer := websocket.DefaultDialer
+	dialer.NetDial = listener.Dial
+	wsConn, _, err := dialer.Dial("ws://127.0.0.1:7777/api/v1/stream", nil)
+	require.NoError(t, err)
+
+	err = wsConn.SetWriteDeadline(time.Now().Add(time.Second))
+	require.NoError(t, err)
+	err = wsConn.WriteMessage(websocket.TextMessage, []byte(message))
+	require.NoError(t, err)
+	err = wsConn.SetReadDeadline(time.Now().Add(time.Second * 3))
+	require.NoError(t, err)
+	_, q, err := wsConn.ReadMessage()
+	require.NoError(t, err)
+
+	require.Equal(t, string(q), "{\"type\":\"event.octant.dev/refresh\",\"data\":null,\"Err\":null}")
+	wsConn.Close()
+
+	for start := time.Now(); ; {
+		if runner.apiCreated {
+			break
+		}
+		if time.Since(start) > time.Millisecond * 500 {
+			t.Fatalf("timed out waiting for api to restart: runner.apiCreated %v", runner.apiCreated)
+		}
+	}
+	kubeConfigEvent, err := waitForEventOfType(listener, event.EventTypeKubeConfig)
+	require.NoError(t, err)
+
+	require.Equal(t, "test-context", kubeConfigEvent.Data["currentContext"].(string))
+}
 
 func TestNewRunnerShutsDownPluginsWhenStoppedBeforeReceivingKubeConfig(t *testing.T) {
 	stubRiceBox("dist/octant")
@@ -350,14 +369,14 @@ func tempFile(contents []byte) *os.File {
 	return tmpFile
 }
 
-func makeRunner(logger log.Logger, opts ...RunnerOption) (context.CancelFunc, error) {
+func makeRunner(logger log.Logger, opts ...RunnerOption) (context.CancelFunc, *Runner, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	runner, err := NewRunner(ctx, logger, opts...)
 	if err != nil {
-		return cancel, err
+		return cancel, nil, err
 	}
 	go runner.Start(make(chan bool), make(chan bool), opts...)
-	return cancel, nil
+	return cancel, runner, nil
 }
 
 func fakeK8sAPIThatForbidsWatchingCRDs() *httptest.Server {
@@ -469,6 +488,7 @@ func stubRiceBox(name string) {
 }
 
 func readNextMessage(conn *websocket.Conn) ([]byte, error) {
+	conn.SetReadDeadline(time.Now().Add(time.Second * 5))
 	_, reader, err := conn.NextReader()
 	if err != nil {
 		return nil, err
