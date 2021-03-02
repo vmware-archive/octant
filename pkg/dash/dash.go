@@ -465,9 +465,9 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerO
 	}
 
 	// // Watch for CRDs after modules initialized
-	// if err := crdWatcher.Watch(ctx); err != nil {
-	// 	return nil, nil, fmt.Errorf("unable to start CRD watcher: %w", err)
-	// }
+	if err := crdWatcher.Watch(ctx); err != nil {
+		return nil, nil, fmt.Errorf("unable to start CRD watcher: %w", err)
+	}
 
 	apiService := api.New(ctx, api.PathPrefix, r.actionManager, r.websocketClientManager, dashConfig)
 	frontendProxy.FrontendUpdateController = apiService
