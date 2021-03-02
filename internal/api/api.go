@@ -121,7 +121,7 @@ type API struct {
 	prefix           string
 	dashConfig       config.Dash
 	logger           log.Logger
-	wsClientManager  *WebsocketClientManager
+	scManager        *StreamingConnectionManager
 
 	modulePaths   map[string]module.Module
 	modules       []module.Module
@@ -131,7 +131,7 @@ type API struct {
 var _ Service = (*API)(nil)
 
 // New creates an instance of API.
-func New(ctx context.Context, prefix string, actionDispatcher ActionDispatcher, websocketClientManager *WebsocketClientManager, dashConfig config.Dash) *API {
+func New(ctx context.Context, prefix string, actionDispatcher ActionDispatcher, streamingConnectionManager *StreamingConnectionManager, dashConfig config.Dash) *API {
 	logger := dashConfig.Logger().With("component", "api")
 	return &API{
 		ctx:              ctx,
@@ -141,7 +141,7 @@ func New(ctx context.Context, prefix string, actionDispatcher ActionDispatcher, 
 		dashConfig:       dashConfig,
 		logger:           logger,
 		forceUpdateCh:    make(chan bool, 1),
-		wsClientManager:  websocketClientManager,
+		scManager:        streamingConnectionManager,
 	}
 }
 
@@ -160,7 +160,7 @@ func (a *API) Handler(ctx context.Context) (http.Handler, error) {
 
 	s := router.PathPrefix(a.prefix).Subrouter()
 
-	s.Handle("/stream", websocketService(a.wsClientManager, a.dashConfig))
+	s.Handle("/stream", streamService(a.scManager, a.dashConfig))
 
 	s.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		a.logger.Errorf("api handler not found: %s", r.URL.String())
@@ -177,7 +177,7 @@ type LoadingAPI struct {
 	actionDispatcher ActionDispatcher
 	prefix           string
 	logger           log.Logger
-	wsClientManager  *WebsocketClientManager
+	scManager        *StreamingConnectionManager
 
 	modulePaths   map[string]module.Module
 	modules       []module.Module
@@ -187,7 +187,7 @@ type LoadingAPI struct {
 var _ Service = (*LoadingAPI)(nil)
 
 // NewLoadingAPI creates an instance of LoadingAPI
-func NewLoadingAPI(ctx context.Context, prefix string, actionDispatcher ActionDispatcher, websocketClientManager *WebsocketClientManager, logger log.Logger) *LoadingAPI {
+func NewLoadingAPI(ctx context.Context, prefix string, actionDispatcher ActionDispatcher, websocketClientManager *StreamingConnectionManager, logger log.Logger) *LoadingAPI {
 	logger = logger.With("component", "loading api")
 	return &LoadingAPI{
 		ctx:              ctx,
@@ -196,7 +196,7 @@ func NewLoadingAPI(ctx context.Context, prefix string, actionDispatcher ActionDi
 		modulePaths:      make(map[string]module.Module),
 		logger:           logger,
 		forceUpdateCh:    make(chan bool, 1),
-		wsClientManager:  websocketClientManager,
+		scManager:        websocketClientManager,
 	}
 }
 
@@ -212,7 +212,7 @@ func (l *LoadingAPI) Handler(ctx context.Context) (http.Handler, error) {
 
 	s := router.PathPrefix(l.prefix).Subrouter()
 
-	s.Handle("/stream", loadingWebsocketService(l.wsClientManager))
+	s.Handle("/stream", loadingStreamService(l.scManager))
 
 	return router, nil
 }
