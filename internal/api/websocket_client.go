@@ -39,6 +39,11 @@ const (
 	maxMessageSize = 2 * 1024 * 1024 // 2MiB
 )
 
+type StreamRequest struct {
+	Type    string         `json:"type"`
+	Payload action.Payload `json:"payload"`
+}
+
 // WebsocketClient manages websocket clients.
 type WebsocketClient struct {
 	conn       *websocket.Conn
@@ -47,7 +52,7 @@ type WebsocketClient struct {
 	logger     log.Logger
 	ctx        context.Context
 	cancel     context.CancelFunc
-	manager    *WebsocketClientManager
+	manager    *StreamingConnectionManager
 
 	isOpen   bool
 	state    octant.State
@@ -57,9 +62,10 @@ type WebsocketClient struct {
 }
 
 var _ OctantClient = (*WebsocketClient)(nil)
+var _ StreamingClient = (*WebsocketClient)(nil)
 
 // NewWebsocketClient creates an instance of WebsocketClient.
-func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *WebsocketClientManager, dashConfig config.Dash, actionDispatcher ActionDispatcher, id uuid.UUID) *WebsocketClient {
+func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *StreamingConnectionManager, dashConfig config.Dash, actionDispatcher ActionDispatcher, id uuid.UUID) *WebsocketClient {
 	logger := dashConfig.Logger().With("component", "websocket-client", "client-id", id.String())
 	ctx = internalLog.WithLoggerContext(ctx, logger)
 
@@ -96,7 +102,7 @@ func NewWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *Webs
 }
 
 // NewTemporaryWebsocketClient creates an instance of WebsocketClient
-func NewTemporaryWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *WebsocketClientManager, actionDispatcher ActionDispatcher, id uuid.UUID) *WebsocketClient {
+func NewTemporaryWebsocketClient(ctx context.Context, conn *websocket.Conn, manager *StreamingConnectionManager, actionDispatcher ActionDispatcher, id uuid.UUID) *WebsocketClient {
 	ctx, cancel := context.WithCancel(ctx)
 	logger := internalLog.From(ctx)
 
@@ -128,6 +134,10 @@ func (c *WebsocketClient) ID() string {
 	return c.id.String()
 }
 
+func (c *WebsocketClient) Handlers() map[string][]octant.ClientRequestHandler {
+	return c.handlers
+}
+
 func (c *WebsocketClient) readPump() {
 	defer func() {
 		c.isOpen = false
@@ -154,16 +164,13 @@ func (c *WebsocketClient) readPump() {
 	})
 
 	for {
-		_, message, err := c.conn.ReadMessage()
+		request, err := c.Receive()
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure, websocket.CloseNoStatusReceived) {
-				c.logger.WithErr(err).Errorf("Unhandled websocket error")
-			}
-			c.cancel()
+			c.logger.WithErr(err).Errorf("Unhandled websocket error")
 			break
 		}
 
-		if err := c.handle(message); err != nil {
+		if err := HandleStreamingMessage(c, request); err != nil {
 			c.logger.WithErr(err).Errorf("Handle websocket message")
 		}
 	}
@@ -171,27 +178,22 @@ func (c *WebsocketClient) readPump() {
 	close(c.stopCh)
 }
 
-func (c *WebsocketClient) handle(message []byte) error {
-	var request websocketRequest
-	if err := json.Unmarshal(message, &request); err != nil {
-		return err
-	}
-
-	handlers, ok := c.handlers[request.Type]
+func HandleStreamingMessage(client StreamingClient, request StreamRequest) error {
+	handlers, ok := client.Handlers()[request.Type]
 	if !ok {
-		return c.handleUnknownRequest(request)
+		return handleUnknownRequest(client, request)
 	}
 
 	var g errgroup.Group
 
 	for _, handler := range handlers {
 		g.Go(func() error {
-			return handler.Handler(c.state, request.Payload)
+			return handler.Handler(client.State(), request.Payload)
 		})
 	}
 
 	if err := g.Wait(); err != nil {
-		c.Send(event.CreateEvent("handlerError", action.Payload{
+		client.Send(event.CreateEvent("handlerError", action.Payload{
 			"requestType": request.Type,
 			"error":       err.Error(),
 		}))
@@ -201,7 +203,7 @@ func (c *WebsocketClient) handle(message []byte) error {
 	return nil
 }
 
-func (c *WebsocketClient) handleUnknownRequest(request websocketRequest) error {
+func handleUnknownRequest(client OctantClient, request StreamRequest) error {
 	message := "unknown request"
 	if request.Type != "" {
 		message = fmt.Sprintf("unknown request %s", request.Type)
@@ -211,7 +213,7 @@ func (c *WebsocketClient) handleUnknownRequest(request websocketRequest) error {
 		"message": message,
 		"payload": request.Payload,
 	}
-	c.Send(event.CreateEvent(event.EventTypeUnknown, m))
+	client.Send(event.CreateEvent(event.EventTypeUnknown, m))
 	return nil
 }
 
@@ -276,6 +278,28 @@ func (c *WebsocketClient) Send(ev event.Event) {
 	}
 }
 
+func (c *WebsocketClient) Receive() (StreamRequest, error) {
+	_, message, err := c.conn.ReadMessage()
+	if err != nil {
+		if websocket.IsUnexpectedCloseError(
+			err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure, websocket.CloseNoStatusReceived,
+		) {
+		}
+		c.cancel()
+	}
+
+	var request StreamRequest
+	if err := json.Unmarshal(message, &request); err != nil {
+		c.logger.WithErr(err).Errorf("Handle websocket message")
+	}
+
+	return request, nil
+}
+
+func (c *WebsocketClient) State() octant.State {
+	return c.state
+}
+
 // StopCh returns the client's stop channel. It will be closed when the WebsocketClient is closed.
 func (c *WebsocketClient) StopCh() <-chan struct{} {
 	return c.stopCh
@@ -283,9 +307,4 @@ func (c *WebsocketClient) StopCh() <-chan struct{} {
 
 func (c *WebsocketClient) RegisterHandler(handler octant.ClientRequestHandler) {
 	c.handlers[handler.RequestType] = append(c.handlers[handler.RequestType], handler)
-}
-
-type websocketRequest struct {
-	Type    string         `json:"type"`
-	Payload action.Payload `json:"payload"`
 }

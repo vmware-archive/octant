@@ -54,9 +54,10 @@ func defaultStateManagers(clientID string, dashConfig config.Dash) []StateManage
 	}
 }
 
-// OctantClient is an OctantClient.
+// OctantClient is the interface responsible for sending streaming data to a
+// users session, usually in a browser.
 type OctantClient interface {
-	Send(event event.Event)
+	Send(event.Event)
 	ID() string
 	StopCh() <-chan struct{}
 }

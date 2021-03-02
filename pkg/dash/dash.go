@@ -66,6 +66,7 @@ type Options struct {
 	BuildInfo              config.BuildInfo
 	Listener               net.Listener
 	clusterClient          cluster.ClientInterface
+	streamingClientFactory api.StreamingClientFactory
 }
 
 type RunnerOption struct {
@@ -190,15 +191,23 @@ func WithClusterClient(client cluster.ClientInterface) RunnerOption {
 	}
 }
 
+func WithStreamingClientFactory(factory api.StreamingClientFactory) RunnerOption {
+	return RunnerOption{
+		nonClusterOption: func(o *Options) {
+			o.streamingClientFactory = factory
+		},
+	}
+}
+
 type Runner struct {
-	ctx                    context.Context
-	dash                   *dash
-	pluginManager          *plugin.Manager
-	moduleManager          *module.Manager
-	actionManager          *action.Manager
-	websocketClientManager *api.WebsocketClientManager
-	apiCreated             bool
-	fs                     afero.Fs
+	ctx                        context.Context
+	dash                       *dash
+	pluginManager              *plugin.Manager
+	moduleManager              *module.Manager
+	actionManager              *action.Manager
+	streamingConnectionManager *api.StreamingConnectionManager
+	apiCreated                 bool
+	fs                         afero.Fs
 }
 
 func NewRunner(ctx context.Context, logger log.Logger, opts ...RunnerOption) (*Runner, error) {
@@ -219,9 +228,14 @@ func NewRunner(ctx context.Context, logger log.Logger, opts ...RunnerOption) (*R
 	actionManger := action.NewManager(logger)
 	r.actionManager = actionManger
 
-	websocketClientManager := api.NewWebsocketClientManager(ctx, r.actionManager)
-	r.websocketClientManager = websocketClientManager
-	go websocketClientManager.Run(ctx)
+	var streamingConnectionManager *api.StreamingConnectionManager
+	if options.streamingClientFactory != nil {
+		streamingConnectionManager = api.NewStreamingConnectionManager(ctx, r.actionManager, options.streamingClientFactory)
+	} else {
+		streamingConnectionManager = api.NewStreamingConnectionManager(ctx, r.actionManager, api.NewWebsocketConnectionFactory())
+	}
+	r.streamingConnectionManager = streamingConnectionManager
+	go streamingConnectionManager.Run(ctx)
 
 	var err error
 
@@ -262,7 +276,7 @@ func (r *Runner) apiFromKubeConfig(kubeConfig string, opts ...RunnerOption) (api
 		return r.initAPI(r.ctx, logger, opts...)
 	} else {
 		logger.Infof("no valid kube config found, initializing loading API")
-		return api.NewLoadingAPI(r.ctx, api.PathPrefix, r.actionManager, r.websocketClientManager, logger), nil, nil
+		return api.NewLoadingAPI(r.ctx, api.PathPrefix, r.actionManager, r.streamingConnectionManager, logger), nil, nil
 	}
 }
 
@@ -406,10 +420,10 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerO
 		PortForwarder:          portForwarder,
 		NamespaceInterface:     nsClient,
 		FrontendProxy:          frontendProxy,
-		WebsocketClientManager: r.websocketClientManager,
+		WebsocketClientManager: r.streamingConnectionManager,
 	}
 
-	pluginManager, err := initPlugin(moduleManager, r.actionManager, r.websocketClientManager, pluginDashboardService)
+	pluginManager, err := initPlugin(moduleManager, r.actionManager, r.streamingConnectionManager, pluginDashboardService)
 	if err != nil {
 		return nil, nil, fmt.Errorf("initializing plugin manager: %w", err)
 	}
@@ -467,7 +481,7 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerO
 		return nil, nil, fmt.Errorf("unable to start CRD watcher: %w", err)
 	}
 
-	apiService := api.New(ctx, api.PathPrefix, r.actionManager, r.websocketClientManager, dashConfig)
+	apiService := api.New(ctx, api.PathPrefix, r.actionManager, r.streamingConnectionManager, dashConfig)
 	frontendProxy.FrontendUpdateController = apiService
 
 	r.apiCreated = true
