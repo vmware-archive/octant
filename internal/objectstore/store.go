@@ -73,7 +73,7 @@ func (m *MemoryStore) List(ctx context.Context, key store.Key) (list *unstructur
 	}
 
 	if m.cache.HasResource(cacheKey) {
-		return m.cache.List(ctx, cacheKey)
+		return m.cache.List(cacheKey)
 	}
 
 	m.cache.Initialize(cacheKey)
@@ -116,7 +116,7 @@ func (m *MemoryStore) Get(ctx context.Context, key store.Key) (object *unstructu
 	}
 
 	if m.cache.HasResource(cacheKey) {
-		return m.cache.Get(ctx, cacheKey, key)
+		return m.cache.Get(cacheKey, key)
 	}
 
 	m.cache.Initialize(cacheKey)
@@ -178,11 +178,24 @@ func (m *MemoryStore) Delete(ctx context.Context, key store.Key) error {
 
 // Watch watches a resource.
 func (m *MemoryStore) Watch(ctx context.Context, key store.Key, handler kcache.ResourceEventHandler) error {
+	cacheKey, err := m.cacheKeyFromKey(key)
+	if err != nil {
+		return err
+	}
+	m.watcher.AddCallback(cacheKey, handler)
 	return nil
 }
 
 // Unwatch unwatches a resource.
 func (m *MemoryStore) Unwatch(ctx context.Context, groupVersionKinds ...schema.GroupVersionKind) error {
+	for _, gvk := range groupVersionKinds {
+		key := store.KeyFromGroupVersionKind(gvk)
+		cacheKey, err := m.cacheKeyFromKey(key)
+		if err != nil {
+			return err
+		}
+		m.watcher.DeleteCallback(cacheKey)
+	}
 	return nil
 }
 

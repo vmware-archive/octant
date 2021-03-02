@@ -35,7 +35,7 @@ func NewResourceCache(ctx context.Context) *ResourceCache {
 }
 
 // List returns all of the items for a given GroupVersionKind
-func (r *ResourceCache) List(ctx context.Context, key ResourceCacheKey) (list *unstructured.UnstructuredList, loading bool, err error) {
+func (r *ResourceCache) List(key ResourceCacheKey) (list *unstructured.UnstructuredList, loading bool, err error) {
 	if !r.HasResource(key) {
 		return nil, false, fmt.Errorf("cannot List from cache for uninitialized resource")
 	}
@@ -57,7 +57,7 @@ func (r *ResourceCache) List(ctx context.Context, key ResourceCacheKey) (list *u
 }
 
 // Get gets a single resource from the cache.
-func (r *ResourceCache) Get(ctx context.Context, key ResourceCacheKey, getKey store.Key) (*unstructured.Unstructured, error) {
+func (r *ResourceCache) Get(key ResourceCacheKey, getKey store.Key) (*unstructured.Unstructured, error) {
 	if !r.HasResource(key) {
 		return nil, fmt.Errorf("cannot Get from cache for uninitialized resource")
 	}
@@ -122,6 +122,35 @@ func (r *ResourceCache) AddMany(key ResourceCacheKey, items ...unstructured.Unst
 		itemMap.Store(key, item)
 	}
 	return nil
+}
+
+// Update updates a single item to the cache for a GroupVersionResource. Update returns the old value.
+func (r *ResourceCache) Update(key ResourceCacheKey, item unstructured.Unstructured) (unstructured.Unstructured, error) {
+	if !r.HasResource(key) {
+		return unstructured.Unstructured{}, fmt.Errorf("can not add item for unintialized resource, must call Initialize first")
+	}
+
+	itemKey := store.Key{
+		APIVersion: item.GetAPIVersion(),
+		Kind:       item.GetKind(),
+		Name:       item.GetName(),
+	}
+
+	v, _ := r.data.Load(key)
+	itemMap, ok := v.(*sync.Map)
+	if !ok {
+		return unstructured.Unstructured{}, fmt.Errorf("unable to get itemMap from resourceMap")
+	}
+
+	var old unstructured.Unstructured
+	if u, err := r.Get(key, itemKey); err != nil {
+		old = *u
+	} else {
+		old = item
+	}
+
+	itemMap.Store(itemKey, item)
+	return old, nil
 }
 
 // Add adds a single item to the cache for a GroupVersionResource.
