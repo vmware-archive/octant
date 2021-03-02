@@ -1,3 +1,8 @@
+/*
+Copyright (c) 2021 the Octant contributors. All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package component
 
 import (
@@ -19,7 +24,7 @@ func Test_Timeline_Marshal(t *testing.T) {
 		{
 			name: "in general",
 			input: &Timeline{
-				Base: newBase(TypeTimeline, TitleFromString("my timeline")),
+				Base: newBase(TypeTimeline, nil),
 				Config: TimelineConfig{
 					Steps: []TimelineStep{
 						{
@@ -71,5 +76,20 @@ func Test_Timeline_Marshal(t *testing.T) {
 			assert.JSONEq(t, string(expected), string(actual))
 		})
 	}
+}
 
+func Test_Timeline_Add(t *testing.T) {
+	step := TimelineStep{
+		State:       TimelineStepCurrent,
+		Title:       "Title",
+		Header:      "Header",
+		Description: "Description",
+	}
+	timeline := NewTimeline([]TimelineStep{}, true)
+	timeline.Add(step)
+
+	expected := []TimelineStep{
+		step,
+	}
+	assert.Equal(t, expected, timeline.Config.Steps)
 }

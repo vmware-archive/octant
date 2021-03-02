@@ -1,3 +1,8 @@
+/*
+Copyright (c) 2021 the Octant contributors. All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package component
 
 import (
@@ -5,6 +10,8 @@ import (
 	"sync"
 )
 
+// Timeline is a component for timeline
+// +octant:component
 type Timeline struct {
 	Base
 	Config TimelineConfig `json:"config"`
@@ -12,11 +19,13 @@ type Timeline struct {
 	mu sync.Mutex
 }
 
+// TimelineConfig is the contents of Timeline
 type TimelineConfig struct {
 	Steps    []TimelineStep `json:"steps"`
 	Vertical bool           `json:"vertical"`
 }
 
+// TimelineStep is the data for each timeline step
 type TimelineStep struct {
 	State       TimelineState `json:"state"`
 	Header      string        `json:"header"`
@@ -24,6 +33,7 @@ type TimelineStep struct {
 	Description string        `json:"description"`
 }
 
+// TimelineState is the state of a timeline step
 type TimelineState string
 
 const (
@@ -34,9 +44,10 @@ const (
 	TimelineStepError      TimelineState = "error"
 )
 
-func NewTimeline(title string, steps []TimelineStep, vertical bool) *Timeline {
+// NewTimeline creates a timeline component
+func NewTimeline(steps []TimelineStep, vertical bool) *Timeline {
 	return &Timeline{
-		Base: newBase(TypeTimeline, TitleFromString(title)),
+		Base: newBase(TypeTimeline, nil),
 		Config: TimelineConfig{
 			Steps:    steps,
 			Vertical: vertical,
@@ -44,6 +55,7 @@ func NewTimeline(title string, steps []TimelineStep, vertical bool) *Timeline {
 	}
 }
 
+// Add adds an additional step to the timeline
 func (t *Timeline) Add(steps ...TimelineStep) {
 	t.mu.Lock()
 	defer t.mu.Unlock()

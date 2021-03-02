@@ -1,16 +1,6 @@
 {
   "metadata": {
-    "type": "timeline",
-    "title": [
-      {
-        "metadata": {
-          "type": "text"
-        },
-        "config": {
-          "value": "my timeline"
-        }
-      }
-    ]
+    "type": "timeline"
   },
   "config": {
     "steps": [

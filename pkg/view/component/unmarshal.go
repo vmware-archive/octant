@@ -164,6 +164,11 @@ func unmarshal(to TypedObject) (Component, error) {
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
 			"unmarshal text config")
 		o = t
+	case TypeTimeline:
+		t := &Timeline{Base: Base{Metadata: to.Metadata}}
+		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),
+			"unmarshal timeline config")
+		o = t
 	case TypeTimestamp:
 		t := &Timestamp{Base: Base{Metadata: to.Metadata}}
 		err = errors.Wrapf(json.Unmarshal(to.Config, &t.Config),

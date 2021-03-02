@@ -366,6 +366,20 @@ export interface TextView extends View {
   };
 }
 
+export interface TimelineView extends View {
+  config: {
+    steps: TimelineStep[];
+    vertical: boolean;
+  };
+}
+
+export interface TimelineStep {
+  state: string;
+  header: string;
+  title: string;
+  description: string;
+}
+
 export interface TimestampView extends View {
   config: {
     timestamp: number;
