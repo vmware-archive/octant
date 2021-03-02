@@ -95,11 +95,12 @@ func TestAPI_routes(t *testing.T) {
 				AnyTimes()
 
 			actionDispatcher := apiFake.NewMockActionDispatcher(controller)
+			streamingClientFactory := apiFake.NewMockStreamingClientFactory(controller)
 
 			ctx := context.Background()
-			wsClientManager := api.NewWebsocketClientManager(ctx, actionDispatcher)
+			scManager := api.NewStreamingConnectionManager(ctx, actionDispatcher, streamingClientFactory)
 
-			srv := api.New(ctx, "/", actionDispatcher, wsClientManager, dashConfig)
+			srv := api.New(ctx, "/", actionDispatcher, scManager, dashConfig)
 
 			handler, err := srv.Handler(ctx)
 			require.NoError(t, err)

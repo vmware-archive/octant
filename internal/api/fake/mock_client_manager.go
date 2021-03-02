@@ -40,10 +40,10 @@ func (m *MockClientManager) EXPECT() *MockClientManagerMockRecorder {
 }
 
 // ClientFromRequest mocks base method
-func (m *MockClientManager) ClientFromRequest(arg0 config.Dash, arg1 http.ResponseWriter, arg2 *http.Request) (*api.WebsocketClient, error) {
+func (m *MockClientManager) ClientFromRequest(arg0 config.Dash, arg1 http.ResponseWriter, arg2 *http.Request) (api.StreamingClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ClientFromRequest", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*api.WebsocketClient)
+	ret0, _ := ret[0].(api.StreamingClient)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -55,10 +55,10 @@ func (mr *MockClientManagerMockRecorder) ClientFromRequest(arg0, arg1, arg2 inte
 }
 
 // Clients mocks base method
-func (m *MockClientManager) Clients() []*api.WebsocketClient {
+func (m *MockClientManager) Clients() []api.StreamingClient {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Clients")
-	ret0, _ := ret[0].([]*api.WebsocketClient)
+	ret0, _ := ret[0].([]api.StreamingClient)
 	return ret0
 }
 
@@ -95,10 +95,10 @@ func (mr *MockClientManagerMockRecorder) Run(arg0 interface{}) *gomock.Call {
 }
 
 // TemporaryClientFromLoadingRequest mocks base method
-func (m *MockClientManager) TemporaryClientFromLoadingRequest(arg0 http.ResponseWriter, arg1 *http.Request) (*api.WebsocketClient, error) {
+func (m *MockClientManager) TemporaryClientFromLoadingRequest(arg0 http.ResponseWriter, arg1 *http.Request) (api.StreamingClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TemporaryClientFromLoadingRequest", arg0, arg1)
-	ret0, _ := ret[0].(*api.WebsocketClient)
+	ret0, _ := ret[0].(api.StreamingClient)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

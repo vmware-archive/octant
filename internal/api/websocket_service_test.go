@@ -9,14 +9,14 @@ import (
 )
 
 type fakeWebsocketClientManager struct {
-	WebsocketClientManager
+	StreamingConnectionManager
 }
 
-func (c *fakeWebsocketClientManager) ClientFromRequest(dashConfig config.Dash, w http.ResponseWriter, r *http.Request) (*WebsocketClient, error) {
+func (c *fakeWebsocketClientManager) ClientFromRequest(dashConfig config.Dash, w http.ResponseWriter, r *http.Request) (StreamingClient, error) {
 	return nil, fmt.Errorf("test: error")
 }
 
 func TestWebsocketService_serveWebsocket(t *testing.T) {
 	f := &fakeWebsocketClientManager{}
-	serveWebsocket(f, nil, nil, nil)
+	serveStreamingApi(f, nil, nil, nil)
 }
