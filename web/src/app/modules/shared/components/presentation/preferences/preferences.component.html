@@ -60,6 +60,18 @@
                         </div>
                       </div>
                     </ng-container>
+                    <ng-container *ngSwitchCase="'dropdown'">
+                      <clr-select-container>
+                        <label>{{ element.label }}</label>
+                        <select clrSelect name="options"
+                          [formControlName]="element.name">
+                          <option 
+                            *ngFor="let r of element.config.items; 
+                              trackBy: trackByIdentity" [value]="r.name"
+                            >{{ r.label }}</option>
+                        </select>
+                      </clr-select-container>
+                    </ng-container>
                     <div *ngSwitchDefault>
                       <p>not sure what to do with {{ element.type }}</p>
                     </div>
@@ -73,7 +85,10 @@
     </form>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-outline" type="button" (click)="onCancel()">
+    <button class="btn btn-outline" type="button" (click)="onReset()">
+      Reset
+    </button>
+    <button class="btn btn-outline btn-cancel" type="button" (click)="onCancel()">
       Cancel
     </button>
     <button class="btn btn-primary" type="button" (click)="onSubmit()">
