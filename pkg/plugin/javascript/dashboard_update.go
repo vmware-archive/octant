@@ -38,6 +38,7 @@ func (d *DashboardUpdate) Name() string {
 // rejects the YAML, it will throw a javascript exception.
 func (d *DashboardUpdate) Call(ctx context.Context, vm *goja.Runtime) func(c goja.FunctionCall) goja.Value {
 	return func(c goja.FunctionCall) goja.Value {
+		var newCtx context.Context = context.WithValue(ctx, CloneKey, nil)
 		namespace := c.Argument(0).String()
 		update := c.Argument(1).String()
 
@@ -46,12 +47,12 @@ func (d *DashboardUpdate) Call(ctx context.Context, vm *goja.Runtime) func(c goj
 			metadataObj := c.Argument(2).ToObject(vm)
 
 			_ = vm.ExportTo(metadataObj, &metadata)
-			for key, val := range metadata {
-				ctx = context.WithValue(ctx, key, val)
+			for k, val := range metadata {
+				newCtx = context.WithValue(newCtx, DashboardMetadataKey(k), val)
 			}
 		}
 
-		results, err := d.storage.ObjectStore().CreateOrUpdateFromYAML(ctx, namespace, update)
+		results, err := d.storage.ObjectStore().CreateOrUpdateFromYAML(newCtx, namespace, update)
 		if err != nil {
 			panic(panicMessage(vm, err, ""))
 		}

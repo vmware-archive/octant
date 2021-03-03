@@ -38,6 +38,7 @@ func (d *DashboardGet) Name() string {
 // get is unsuccessful, it will throw a javascript exception.
 func (d *DashboardGet) Call(ctx context.Context, vm *goja.Runtime) func(c goja.FunctionCall) goja.Value {
 	return func(c goja.FunctionCall) goja.Value {
+		var newCtx context.Context = context.WithValue(ctx, CloneKey, nil)
 		var key store.Key
 		obj := c.Argument(0).ToObject(vm)
 
@@ -49,12 +50,12 @@ func (d *DashboardGet) Call(ctx context.Context, vm *goja.Runtime) func(c goja.F
 			metadataObj := c.Argument(1).ToObject(vm)
 
 			_ = vm.ExportTo(metadataObj, &metadata)
-			for key, val := range metadata {
-				ctx = context.WithValue(ctx, key, val)
+			for k, val := range metadata {
+				newCtx = context.WithValue(newCtx, DashboardMetadataKey(k), val)
 			}
 		}
 
-		u, err := d.storage.ObjectStore().Get(ctx, key)
+		u, err := d.storage.ObjectStore().Get(newCtx, key)
 		if err != nil {
 			panic(panicMessage(vm, err, ""))
 		}

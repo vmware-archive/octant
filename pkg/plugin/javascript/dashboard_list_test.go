@@ -47,30 +47,40 @@ func TestDashboardList_Call(t *testing.T) {
 			name: "in general",
 			ctorArgs: ctorArgs{
 				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
-					ctx = context.WithValue(ctx, "accessToken", "secret")
 					objectStore := fake2.NewMockStore(ctrl)
+					ctx = context.WithValue(ctx, DashboardMetadataKey("foo"), "baz")
+					ctx = context.WithValue(ctx, DashboardMetadataKey("foo"), "bar")
+					ctx = context.WithValue(ctx, DashboardMetadataKey("qux"), "quuux")
+					ctx = context.WithValue(ctx, DashboardMetadataKey("qux"), "quux")
+
 					objectStore.EXPECT().
-						List(ctx, store.Key{
+						List(ContextType, store.Key{
 							Namespace:  "test",
 							APIVersion: "v1",
 							Kind:       "Pod",
 						}).
-						Return(testutil.ToUnstructuredList(t, testutil.CreatePod("pod")), false, nil)
+						Return(testutil.ToUnstructuredList(t, testutil.CreatePod("pod")), false, nil).
+						Do(func(c context.Context, _ store.Key) {
+							require.Equal(t, "bar", c.Value(DashboardMetadataKey("foo")))
+							require.Equal(t, "quux", c.Value(DashboardMetadataKey("qux")))
+						})
+
 					storage := fake.NewMockStorage(ctrl)
 					storage.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
 
 					return storage
 				},
 			},
-			call: `dashClient.List({namespace:'test', apiVersion: 'v1', kind:'Pod'},{"accessToken": "secret"})`,
+			call: `dashClient.List({namespace:'test', apiVersion: 'v1', kind:'Pod'},{"foo": "bar", "qux": "quux"})`,
 		},
 		{
 			name: "list fails",
 			ctorArgs: ctorArgs{
 				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
 					objectStore := fake2.NewMockStore(ctrl)
+
 					objectStore.EXPECT().
-						List(ctx, store.Key{
+						List(ContextType, store.Key{
 							Namespace:  "test",
 							APIVersion: "v1",
 							Kind:       "ReplicaSet",

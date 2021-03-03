@@ -46,16 +46,23 @@ func TestDashboardDelete_Call(t *testing.T) {
 			name: "in general",
 			ctorArgs: ctorArgs{
 				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
-					ctx = context.WithValue(ctx, "accessToken", "secret")
 					objectStore := fake2.NewMockStore(ctrl)
+					ctx = context.WithValue(ctx, DashboardMetadataKey("foo"), "baz")
+					ctx = context.WithValue(ctx, DashboardMetadataKey("foo"), "bar")
+					ctx = context.WithValue(ctx, DashboardMetadataKey("qux"), "quuux")
+					ctx = context.WithValue(ctx, DashboardMetadataKey("qux"), "quux")
 
 					objectStore.EXPECT().
-						Delete(ctx, store.Key{
+						Delete(ContextType, store.Key{
 							Namespace:  "test",
 							APIVersion: "v1",
 							Kind:       "ReplicaSet",
 							Name:       "my-replica-set"}).
-						Return(nil)
+						Return(nil).
+						Do(func(c context.Context, _ store.Key) {
+							require.Equal(t, "bar", c.Value(DashboardMetadataKey("foo")))
+							require.Equal(t, "quux", c.Value(DashboardMetadataKey("qux")))
+						})
 
 					storage := fake.NewMockStorage(ctrl)
 					storage.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
@@ -63,7 +70,7 @@ func TestDashboardDelete_Call(t *testing.T) {
 					return storage
 				},
 			},
-			call: `dashClient.Delete({namespace:'test', apiVersion: 'v1', kind:'ReplicaSet', name: 'my-replica-set'},{"accessToken": "secret"})`,
+			call: `dashClient.Delete({namespace:'test', apiVersion: 'v1', kind:'ReplicaSet', name: 'my-replica-set'},{"foo": "bar", "qux": "quux"})`,
 		},
 		{
 			name: "delete fails",
@@ -71,7 +78,7 @@ func TestDashboardDelete_Call(t *testing.T) {
 				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
 					objectStore := fake2.NewMockStore(ctrl)
 					objectStore.EXPECT().
-						Delete(ctx, store.Key{
+						Delete(ContextType, store.Key{
 							Namespace:  "test",
 							APIVersion: "v1",
 							Kind:       "ReplicaSet",

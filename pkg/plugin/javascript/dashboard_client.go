@@ -16,6 +16,15 @@ import (
 	"github.com/vmware-tanzu/octant/internal/octant"
 )
 
+// DashboardMetadataKey is a type used for metadata keys passed by plugins
+type DashboardMetadataKey string
+
+//DashboardMetadataSentinel is a type for CloneKey
+type DashboardMetadataSentinel string
+
+//CloneKey is a dummy key used to clone context.Context
+var CloneKey DashboardMetadataSentinel = ""
+
 // ModularDashboardClientFactory is a modular octant.DashboardClientFactory. It configures
 // itself based on functions passed when it is initialized.
 type ModularDashboardClientFactory struct {

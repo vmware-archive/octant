@@ -47,15 +47,23 @@ func TestDashboardGet_Call(t *testing.T) {
 			name: "in general",
 			ctorArgs: ctorArgs{
 				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
-					ctx = context.WithValue(ctx, "accessToken", "secret")
 					objectStore := fake2.NewMockStore(ctrl)
+					ctx = context.WithValue(ctx, DashboardMetadataKey("foo"), "baz")
+					ctx = context.WithValue(ctx, DashboardMetadataKey("foo"), "bar")
+					ctx = context.WithValue(ctx, DashboardMetadataKey("qux"), "quuux")
+					ctx = context.WithValue(ctx, DashboardMetadataKey("qux"), "quux")
+
 					objectStore.EXPECT().
-						Get(ctx, store.Key{
+						Get(ContextType, store.Key{
 							Namespace:  "test",
 							APIVersion: "v1",
 							Kind:       "Pod",
 							Name:       "pod"}).
-						Return(testutil.ToUnstructured(t, testutil.CreatePod("pod")), nil)
+						Return(testutil.ToUnstructured(t, testutil.CreatePod("pod")), nil).
+						Do(func(c context.Context, _ store.Key) {
+							require.Equal(t, "bar", c.Value(DashboardMetadataKey("foo")))
+							require.Equal(t, "quux", c.Value(DashboardMetadataKey("qux")))
+						})
 
 					storage := fake.NewMockStorage(ctrl)
 					storage.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
@@ -63,7 +71,7 @@ func TestDashboardGet_Call(t *testing.T) {
 					return storage
 				},
 			},
-			call: `dashClient.Get({namespace:'test', apiVersion: 'v1', kind:'Pod', name: 'pod'},{"accessToken": "secret"})`,
+			call: `dashClient.Get({namespace:'test', apiVersion: 'v1', kind:'Pod', name: 'pod'},{"foo": "bar", "qux": "quux"})`,
 		},
 		{
 			name: "delete fails",
@@ -71,7 +79,7 @@ func TestDashboardGet_Call(t *testing.T) {
 				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
 					objectStore := fake2.NewMockStore(ctrl)
 					objectStore.EXPECT().
-						Get(ctx, store.Key{
+						Get(ContextType, store.Key{
 							Namespace:  "test",
 							APIVersion: "v1",
 							Kind:       "Pod",

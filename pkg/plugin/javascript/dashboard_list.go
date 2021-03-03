@@ -39,6 +39,7 @@ func (d *DashboardList) Name() string {
 // list is unsuccessful, it will throw a javascript exception.
 func (d *DashboardList) Call(ctx context.Context, vm *goja.Runtime) func(c goja.FunctionCall) goja.Value {
 	return func(c goja.FunctionCall) goja.Value {
+		var newCtx context.Context = context.WithValue(ctx, CloneKey, nil)
 		m := map[string]interface{}{}
 
 		var key store.Key
@@ -57,12 +58,12 @@ func (d *DashboardList) Call(ctx context.Context, vm *goja.Runtime) func(c goja.
 			metadataObj := c.Argument(1).ToObject(vm)
 
 			_ = vm.ExportTo(metadataObj, &metadata)
-			for key, val := range metadata {
-				ctx = context.WithValue(ctx, key, val)
+			for k, val := range metadata {
+				newCtx = context.WithValue(newCtx, DashboardMetadataKey(k), val)
 			}
 		}
 
-		u, _, err := d.storage.ObjectStore().List(ctx, key)
+		u, _, err := d.storage.ObjectStore().List(newCtx, key)
 		if err != nil {
 			panic(panicMessage(vm, err, ""))
 		}
