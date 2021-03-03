@@ -52,6 +52,16 @@ func (d *DashboardList) Call(ctx context.Context, vm *goja.Runtime) func(c goja.
 			panicMessage(vm, fmt.Errorf("key is invalid: %w", err), "")
 		}
 
+		if len(c.Arguments) > 1 {
+			var metadata map[string]interface{}
+			metadataObj := c.Argument(1).ToObject(vm)
+
+			_ = vm.ExportTo(metadataObj, &metadata)
+			for key, val := range metadata {
+				ctx = context.WithValue(ctx, key, val)
+			}
+		}
+
 		u, _, err := d.storage.ObjectStore().List(ctx, key)
 		if err != nil {
 			panic(panicMessage(vm, err, ""))

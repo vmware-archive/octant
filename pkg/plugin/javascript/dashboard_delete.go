@@ -44,6 +44,16 @@ func (d *DashboardDelete) Call(ctx context.Context, vm *goja.Runtime) func(c goj
 		// This will never error since &key is a pointer to a type.
 		_ = vm.ExportTo(obj, &key)
 
+		if len(c.Arguments) > 1 {
+			var metadata map[string]interface{}
+			metadataObj := c.Argument(1).ToObject(vm)
+
+			_ = vm.ExportTo(metadataObj, &metadata)
+			for key, val := range metadata {
+				ctx = context.WithValue(ctx, key, val)
+			}
+		}
+
 		if err := d.storage.ObjectStore().Delete(ctx, key); err != nil {
 			panic(panicMessage(vm, err, ""))
 		}

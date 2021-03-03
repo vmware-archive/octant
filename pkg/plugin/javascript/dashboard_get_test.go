@@ -47,6 +47,7 @@ func TestDashboardGet_Call(t *testing.T) {
 			name: "in general",
 			ctorArgs: ctorArgs{
 				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
+					ctx = context.WithValue(ctx, "accessToken", "secret")
 					objectStore := fake2.NewMockStore(ctrl)
 					objectStore.EXPECT().
 						Get(ctx, store.Key{
@@ -62,7 +63,7 @@ func TestDashboardGet_Call(t *testing.T) {
 					return storage
 				},
 			},
-			call: `dashClient.Get({namespace:'test', apiVersion: 'v1', kind:'Pod', name: 'pod'})`,
+			call: `dashClient.Get({namespace:'test', apiVersion: 'v1', kind:'Pod', name: 'pod'},{"accessToken": "secret"})`,
 		},
 		{
 			name: "delete fails",

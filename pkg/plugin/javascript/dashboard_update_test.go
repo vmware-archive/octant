@@ -45,6 +45,7 @@ func TestDashboardUpdate_Call(t *testing.T) {
 			name: "in general",
 			ctorArgs: ctorArgs{
 				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
+					ctx = context.WithValue(ctx, "accessToken", "secret")
 					objectStore := fake2.NewMockStore(ctrl)
 					objectStore.EXPECT().
 						CreateOrUpdateFromYAML(ctx, "test", "create-yaml").
@@ -55,7 +56,7 @@ func TestDashboardUpdate_Call(t *testing.T) {
 					return storage
 				},
 			},
-			call: `dashClient.Update('test', 'create-yaml')`,
+			call: `dashClient.Update('test', 'create-yaml',{"accessToken": "secret"})`,
 		},
 		{
 			name: "create fails",

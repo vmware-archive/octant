@@ -47,6 +47,7 @@ func TestDashboardList_Call(t *testing.T) {
 			name: "in general",
 			ctorArgs: ctorArgs{
 				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
+					ctx = context.WithValue(ctx, "accessToken", "secret")
 					objectStore := fake2.NewMockStore(ctrl)
 					objectStore.EXPECT().
 						List(ctx, store.Key{
@@ -61,7 +62,7 @@ func TestDashboardList_Call(t *testing.T) {
 					return storage
 				},
 			},
-			call: `dashClient.List({namespace:'test', apiVersion: 'v1', kind:'Pod'})`,
+			call: `dashClient.List({namespace:'test', apiVersion: 'v1', kind:'Pod'},{"accessToken": "secret"})`,
 		},
 		{
 			name: "list fails",

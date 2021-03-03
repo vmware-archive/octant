@@ -46,7 +46,9 @@ func TestDashboardDelete_Call(t *testing.T) {
 			name: "in general",
 			ctorArgs: ctorArgs{
 				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
+					ctx = context.WithValue(ctx, "accessToken", "secret")
 					objectStore := fake2.NewMockStore(ctrl)
+
 					objectStore.EXPECT().
 						Delete(ctx, store.Key{
 							Namespace:  "test",
@@ -61,7 +63,7 @@ func TestDashboardDelete_Call(t *testing.T) {
 					return storage
 				},
 			},
-			call: `dashClient.Delete({namespace:'test', apiVersion: 'v1', kind:'ReplicaSet', name: 'my-replica-set'})`,
+			call: `dashClient.Delete({namespace:'test', apiVersion: 'v1', kind:'ReplicaSet', name: 'my-replica-set'},{"accessToken": "secret"})`,
 		},
 		{
 			name: "delete fails",

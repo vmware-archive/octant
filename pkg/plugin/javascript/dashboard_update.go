@@ -41,6 +41,16 @@ func (d *DashboardUpdate) Call(ctx context.Context, vm *goja.Runtime) func(c goj
 		namespace := c.Argument(0).String()
 		update := c.Argument(1).String()
 
+		if len(c.Arguments) > 2 {
+			var metadata map[string]interface{}
+			metadataObj := c.Argument(2).ToObject(vm)
+
+			_ = vm.ExportTo(metadataObj, &metadata)
+			for key, val := range metadata {
+				ctx = context.WithValue(ctx, key, val)
+			}
+		}
+
 		results, err := d.storage.ObjectStore().CreateOrUpdateFromYAML(ctx, namespace, update)
 		if err != nil {
 			panic(panicMessage(vm, err, ""))
