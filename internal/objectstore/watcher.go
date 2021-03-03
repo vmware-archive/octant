@@ -32,13 +32,13 @@ func NewWatcher(ctx context.Context, client cluster.ClientInterface, cache *Reso
 	}
 	go func() {
 		<-w.ctx.Done()
-		w.StopAll()
+		w.StopAll(ctx)
 		return
 	}()
 	return w
 }
 
-func (w *Watcher) StopAll() {
+func (w *Watcher) StopAll(ctx context.Context) {
 	w.watches.Range(func(k interface{}, v interface{}) bool {
 		watch, _ := v.(watch.Interface)
 		watch.Stop()
@@ -46,7 +46,7 @@ func (w *Watcher) StopAll() {
 	})
 }
 
-func (w *Watcher) Stop(cacheKey ResourceCacheKey) {
+func (w *Watcher) Stop(ctx context.Context, cacheKey ResourceCacheKey) {
 	v, ok := w.watches.Load(cacheKey)
 	if ok {
 		resWatch, _ := v.(watch.Interface)
@@ -54,7 +54,7 @@ func (w *Watcher) Stop(cacheKey ResourceCacheKey) {
 	}
 }
 
-func (w *Watcher) Watch(cacheKey ResourceCacheKey) (bool, error) {
+func (w *Watcher) Watch(ctx context.Context, cacheKey ResourceCacheKey) (bool, error) {
 	if _, ok := w.watches.Load(cacheKey); ok {
 		return true, nil
 	}
@@ -80,7 +80,7 @@ func (w *Watcher) Watch(cacheKey ResourceCacheKey) (bool, error) {
 	}
 
 	w.watches.Store(cacheKey, resWatch)
-	go w.handleWatch(cacheKey, resWatch)
+	go w.handleWatch(ctx, cacheKey, resWatch)
 
 	return true, nil
 }
@@ -93,12 +93,12 @@ func (w *Watcher) DeleteCallback(cacheKey ResourceCacheKey) {
 	w.callbacks.Delete(cacheKey)
 }
 
-func (w *Watcher) handleWatch(cacheKey ResourceCacheKey, resWatch watch.Interface) {
+func (w *Watcher) handleWatch(ctx context.Context, cacheKey ResourceCacheKey, resWatch watch.Interface) {
 	for event := range resWatch.ResultChan() {
 		switch event.Type {
 		case watch.Added:
 			u, _ := ToUnstructured(event.Object)
-			w.cache.Add(cacheKey, u)
+			w.cache.Add(ctx, cacheKey, u)
 			v, ok := w.callbacks.Load(cacheKey)
 			if ok {
 				callback := v.(kcache.ResourceEventHandler)
@@ -106,7 +106,7 @@ func (w *Watcher) handleWatch(cacheKey ResourceCacheKey, resWatch watch.Interfac
 			}
 		case watch.Modified:
 			u, _ := ToUnstructured(event.Object)
-			old, _ := w.cache.Update(cacheKey, u)
+			old, _ := w.cache.Update(ctx, cacheKey, u)
 			v, ok := w.callbacks.Load(cacheKey)
 			if ok {
 				callback := v.(kcache.ResourceEventHandler)
@@ -114,7 +114,7 @@ func (w *Watcher) handleWatch(cacheKey ResourceCacheKey, resWatch watch.Interfac
 			}
 		case watch.Deleted:
 			u, _ := ToUnstructured(event.Object)
-			w.cache.Delete(cacheKey, u)
+			w.cache.Delete(ctx, cacheKey, u)
 			v, ok := w.callbacks.Load(cacheKey)
 			if ok {
 				callback := v.(kcache.ResourceEventHandler)

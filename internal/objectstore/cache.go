@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"go.opencensus.io/trace"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -27,6 +28,9 @@ type ResourceCache struct {
 
 // NewResourceCache creates a new uninitialized ResourceCache
 func NewResourceCache(ctx context.Context) *ResourceCache {
+	ctx, span := trace.StartSpan(ctx, "resCache:NewResourceCache")
+	defer span.End()
+
 	rc := &ResourceCache{
 		ctx:  ctx,
 		data: &sync.Map{},
@@ -35,8 +39,11 @@ func NewResourceCache(ctx context.Context) *ResourceCache {
 }
 
 // List returns all of the items for a given GroupVersionKind
-func (r *ResourceCache) List(key ResourceCacheKey) (list *unstructured.UnstructuredList, loading bool, err error) {
-	if !r.HasResource(key) {
+func (r *ResourceCache) List(ctx context.Context, key ResourceCacheKey) (list *unstructured.UnstructuredList, loading bool, err error) {
+	ctx, span := trace.StartSpan(ctx, "resCache:List")
+	defer span.End()
+
+	if !r.HasResource(ctx, key) {
 		return nil, false, fmt.Errorf("cannot List from cache for uninitialized resource")
 	}
 
@@ -57,8 +64,11 @@ func (r *ResourceCache) List(key ResourceCacheKey) (list *unstructured.Unstructu
 }
 
 // Get gets a single resource from the cache.
-func (r *ResourceCache) Get(key ResourceCacheKey, getKey store.Key) (*unstructured.Unstructured, error) {
-	if !r.HasResource(key) {
+func (r *ResourceCache) Get(ctx context.Context, key ResourceCacheKey, getKey store.Key) (*unstructured.Unstructured, error) {
+	ctx, span := trace.StartSpan(ctx, "resCache:Get")
+	defer span.End()
+
+	if !r.HasResource(ctx, key) {
 		return nil, fmt.Errorf("cannot Get from cache for uninitialized resource")
 	}
 
@@ -85,8 +95,11 @@ func (r *ResourceCache) Get(key ResourceCacheKey, getKey store.Key) (*unstructur
 }
 
 // Initialize prepares the cache for a GroupVersionKind and sets the synced resource flag.
-func (r *ResourceCache) Initialize(key ResourceCacheKey) error {
-	if r.HasResource(key) {
+func (r *ResourceCache) Initialize(ctx context.Context, key ResourceCacheKey) error {
+	ctx, span := trace.StartSpan(ctx, "resCache:Initialize")
+	defer span.End()
+
+	if r.HasResource(ctx, key) {
 		return fmt.Errorf("resource is already initalized")
 	}
 
@@ -96,14 +109,20 @@ func (r *ResourceCache) Initialize(key ResourceCacheKey) error {
 }
 
 // HasResource checks if the cache has been intialzied for a GroupVersionKind
-func (r *ResourceCache) HasResource(key ResourceCacheKey) bool {
+func (r *ResourceCache) HasResource(ctx context.Context, key ResourceCacheKey) bool {
+	_, span := trace.StartSpan(ctx, "resCache:HasResource")
+	defer span.End()
+
 	_, ok := r.data.Load(key)
 	return ok
 }
 
 // AddMany adds many items to the cache for the GroupVersionResource.
-func (r *ResourceCache) AddMany(key ResourceCacheKey, items ...unstructured.Unstructured) error {
-	if !r.HasResource(key) {
+func (r *ResourceCache) AddMany(ctx context.Context, key ResourceCacheKey, items ...unstructured.Unstructured) error {
+	ctx, span := trace.StartSpan(ctx, "resCache:AddMany")
+	defer span.End()
+
+	if !r.HasResource(ctx, key) {
 		return fmt.Errorf("can not add item for unintialized resource, must call Initialize first")
 	}
 
@@ -125,8 +144,11 @@ func (r *ResourceCache) AddMany(key ResourceCacheKey, items ...unstructured.Unst
 }
 
 // Update updates a single item to the cache for a GroupVersionResource. Update returns the old value.
-func (r *ResourceCache) Update(key ResourceCacheKey, item unstructured.Unstructured) (unstructured.Unstructured, error) {
-	if !r.HasResource(key) {
+func (r *ResourceCache) Update(ctx context.Context, key ResourceCacheKey, item unstructured.Unstructured) (unstructured.Unstructured, error) {
+	ctx, span := trace.StartSpan(ctx, "resCache:Update")
+	defer span.End()
+
+	if !r.HasResource(ctx, key) {
 		return unstructured.Unstructured{}, fmt.Errorf("can not add item for unintialized resource, must call Initialize first")
 	}
 
@@ -143,7 +165,7 @@ func (r *ResourceCache) Update(key ResourceCacheKey, item unstructured.Unstructu
 	}
 
 	var old unstructured.Unstructured
-	if u, err := r.Get(key, itemKey); err != nil {
+	if u, err := r.Get(ctx, key, itemKey); err != nil {
 		old = *u
 	} else {
 		old = item
@@ -154,8 +176,11 @@ func (r *ResourceCache) Update(key ResourceCacheKey, item unstructured.Unstructu
 }
 
 // Add adds a single item to the cache for a GroupVersionResource.
-func (r *ResourceCache) Add(key ResourceCacheKey, item unstructured.Unstructured) error {
-	if !r.HasResource(key) {
+func (r *ResourceCache) Add(ctx context.Context, key ResourceCacheKey, item unstructured.Unstructured) error {
+	ctx, span := trace.StartSpan(ctx, "resCache:Add")
+	defer span.End()
+
+	if !r.HasResource(ctx, key) {
 		return fmt.Errorf("can not add item for unintialized resource, must call Initialize first")
 	}
 
@@ -175,8 +200,11 @@ func (r *ResourceCache) Add(key ResourceCacheKey, item unstructured.Unstructured
 }
 
 // Delete removes a single resource from the cache for a GroupVersionResource
-func (r *ResourceCache) Delete(key ResourceCacheKey, item unstructured.Unstructured) error {
-	if !r.HasResource(key) {
+func (r *ResourceCache) Delete(ctx context.Context, key ResourceCacheKey, item unstructured.Unstructured) error {
+	ctx, span := trace.StartSpan(r.ctx, "resCache:Delete")
+	defer span.End()
+
+	if !r.HasResource(ctx, key) {
 		return fmt.Errorf("can not add item for unintialized resource, must call Initialize first")
 	}
 
@@ -196,7 +224,10 @@ func (r *ResourceCache) Delete(key ResourceCacheKey, item unstructured.Unstructu
 }
 
 // Reset clears the resource cache
-func (r *ResourceCache) Reset() {
+func (r *ResourceCache) Reset(ctx context.Context) {
+	_, span := trace.StartSpan(r.ctx, "resCache:Reset")
+	defer span.End()
+
 	r.reset.Lock()
 	defer r.reset.Unlock()
 	r.data = &sync.Map{}

@@ -7,6 +7,7 @@ import (
 	"io"
 	"sync"
 
+	"go.opencensus.io/trace"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -27,11 +28,11 @@ type MemoryStore struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	client         cluster.ClientInterface
-	resourceLookup *sync.Map
+	client cluster.ClientInterface
 
-	watcher *Watcher
-	cache   *ResourceCache
+	watcher   *Watcher
+	cache     *ResourceCache
+	cacheKeys *sync.Map
 
 	updateFns []store.UpdateFn
 	update    sync.Mutex
@@ -41,42 +42,63 @@ var _ store.Store = &MemoryStore{}
 
 // NewMemoryStore implements the store interface in memory.
 func NewMemoryStore(ctx context.Context, client cluster.ClientInterface) (*MemoryStore, error) {
+	ctx, span := trace.StartSpan(ctx, "memStore:NewMemoryStore")
+	defer span.End()
+
 	c, cf := context.WithCancel(ctx)
 	ms := &MemoryStore{
-		ctx:            c,
-		cancel:         cf,
-		client:         client,
-		cache:          NewResourceCache(ctx),
-		resourceLookup: &sync.Map{},
+		ctx:       c,
+		cancel:    cf,
+		client:    client,
+		cache:     NewResourceCache(ctx),
+		cacheKeys: &sync.Map{},
 	}
 	ms.watcher = NewWatcher(ctx, ms.client, ms.cache)
 	return ms, nil
 }
 
-func (m *MemoryStore) cacheKeyFromKey(key store.Key) (ResourceCacheKey, error) {
-	res, _, err := m.client.Resource(key.GroupVersionKind().GroupKind())
-	if err != nil {
-		return ResourceCacheKey{}, err
+func (m *MemoryStore) cacheKeyFromKey(ctx context.Context, key store.Key) (ResourceCacheKey, error) {
+	_, span := trace.StartSpan(ctx, "memStore:cacheKeyFromKey")
+	defer span.End()
+
+	gk := key.GroupVersionKind().GroupKind()
+	var cacheKey ResourceCacheKey
+
+	v, ok := m.cacheKeys.Load(gk)
+	if !ok {
+		span.AddAttributes(trace.StringAttribute("live", fmt.Sprintf("%v", gk)))
+		res, _, err := m.client.Resource(gk)
+		if err != nil {
+			return ResourceCacheKey{}, err
+		}
+		cacheKey = ResourceCacheKey{
+			Namespace: key.Namespace,
+			Resource:  res,
+		}
+		m.cacheKeys.Store(gk, cacheKey)
+	} else {
+		span.AddAttributes(trace.StringAttribute("cache", fmt.Sprintf("%v", gk)))
+		cacheKey, _ = v.(ResourceCacheKey)
 	}
-	cacheKey := ResourceCacheKey{
-		Namespace: key.Namespace,
-		Resource:  res,
-	}
+
 	return cacheKey, nil
 }
 
 // List lists all the resources.
 func (m *MemoryStore) List(ctx context.Context, key store.Key) (list *unstructured.UnstructuredList, loading bool, err error) {
-	cacheKey, err := m.cacheKeyFromKey(key)
+	ctx, span := trace.StartSpan(ctx, "memStore:List")
+	defer span.End()
+
+	cacheKey, err := m.cacheKeyFromKey(ctx, key)
 	if err != nil {
 		return nil, false, err
 	}
 
-	if m.cache.HasResource(cacheKey) {
-		return m.cache.List(cacheKey)
+	if ul, loading, err := m.cache.List(ctx, cacheKey); err == nil {
+		return ul, loading, err
 	}
 
-	m.cache.Initialize(cacheKey)
+	m.cache.Initialize(ctx, cacheKey)
 
 	dc, err := m.client.DynamicClient()
 	if err != nil {
@@ -100,26 +122,29 @@ func (m *MemoryStore) List(ctx context.Context, key store.Key) (list *unstructur
 
 	go func() {
 		items := listing.DeepCopy().Items
-		m.cache.AddMany(cacheKey, items...)
+		m.cache.AddMany(ctx, cacheKey, items...)
 	}()
 
-	m.watcher.Watch(cacheKey)
+	m.watcher.Watch(ctx, cacheKey)
 
 	return listing, false, err
 }
 
 // Get returns a single resource
 func (m *MemoryStore) Get(ctx context.Context, key store.Key) (object *unstructured.Unstructured, err error) {
-	cacheKey, err := m.cacheKeyFromKey(key)
+	ctx, span := trace.StartSpan(ctx, "memStore:Get")
+	defer span.End()
+
+	cacheKey, err := m.cacheKeyFromKey(ctx, key)
 	if err != nil {
 		return nil, err
 	}
 
-	if m.cache.HasResource(cacheKey) {
-		return m.cache.Get(cacheKey, key)
+	if u, err := m.cache.Get(ctx, cacheKey, key); err == nil {
+		return u, err
 	}
 
-	m.cache.Initialize(cacheKey)
+	m.cache.Initialize(ctx, cacheKey)
 
 	dc, err := m.client.DynamicClient()
 	if err != nil {
@@ -142,7 +167,7 @@ func (m *MemoryStore) Get(ctx context.Context, key store.Key) (object *unstructu
 
 	go func() {
 		i := *item.DeepCopy()
-		m.cache.Add(cacheKey, i)
+		m.cache.Add(ctx, cacheKey, i)
 	}()
 
 	return item, err
@@ -151,7 +176,10 @@ func (m *MemoryStore) Get(ctx context.Context, key store.Key) (object *unstructu
 
 // Delete deletes a single resource.
 func (m *MemoryStore) Delete(ctx context.Context, key store.Key) error {
-	cacheKey, err := m.cacheKeyFromKey(key)
+	ctx, span := trace.StartSpan(ctx, "memStore:Delete")
+	defer span.End()
+
+	cacheKey, err := m.cacheKeyFromKey(ctx, key)
 	if err != nil {
 		return err
 	}
@@ -178,7 +206,10 @@ func (m *MemoryStore) Delete(ctx context.Context, key store.Key) error {
 
 // Watch watches a resource.
 func (m *MemoryStore) Watch(ctx context.Context, key store.Key, handler kcache.ResourceEventHandler) error {
-	cacheKey, err := m.cacheKeyFromKey(key)
+	ctx, span := trace.StartSpan(ctx, "memStore:Watch")
+	defer span.End()
+
+	cacheKey, err := m.cacheKeyFromKey(ctx, key)
 	if err != nil {
 		return err
 	}
@@ -188,9 +219,12 @@ func (m *MemoryStore) Watch(ctx context.Context, key store.Key, handler kcache.R
 
 // Unwatch unwatches a resource.
 func (m *MemoryStore) Unwatch(ctx context.Context, groupVersionKinds ...schema.GroupVersionKind) error {
+	ctx, span := trace.StartSpan(ctx, "memStore:Unwatch")
+	defer span.End()
+
 	for _, gvk := range groupVersionKinds {
 		key := store.KeyFromGroupVersionKind(gvk)
-		cacheKey, err := m.cacheKeyFromKey(key)
+		cacheKey, err := m.cacheKeyFromKey(ctx, key)
 		if err != nil {
 			return err
 		}
@@ -201,15 +235,18 @@ func (m *MemoryStore) Unwatch(ctx context.Context, groupVersionKinds ...schema.G
 
 // UpdateClusterClient resets the store and updates the internal ClusterClient
 func (m *MemoryStore) UpdateClusterClient(ctx context.Context, client cluster.ClientInterface) error {
+	ctx, span := trace.StartSpan(ctx, "memStore:UpdateClusterClient")
+	defer span.End()
+
 	m.update.Lock()
 	defer m.update.Unlock()
 
 	m.client = client
-	m.resourceLookup = &sync.Map{}
-	m.cache.Reset()
+	m.cacheKeys = &sync.Map{}
+	m.cache.Reset(ctx)
 
-	m.watcher.StopAll()
-	m.watcher = NewWatcher(m.ctx, m.client, m.cache)
+	m.watcher.StopAll(ctx)
+	m.watcher = NewWatcher(ctx, m.client, m.cache)
 
 	for _, u := range m.updateFns {
 		u(m)
@@ -220,13 +257,19 @@ func (m *MemoryStore) UpdateClusterClient(ctx context.Context, client cluster.Cl
 
 // RegisterOnUpdate registers callback functions that should be callend when UpdateClusterClient is invoked.
 func (m *MemoryStore) RegisterOnUpdate(fn store.UpdateFn) {
+	_, span := trace.StartSpan(m.ctx, "memStore:RegisterOnUpdate")
+	defer span.End()
+
 	m.update.Lock()
 	defer m.update.Unlock()
 	m.updateFns = append(m.updateFns, fn)
 }
 
-// Update updates a resourec.
+// Update updates a resource.
 func (m *MemoryStore) Update(ctx context.Context, key store.Key, updater func(*unstructured.Unstructured) error) error {
+	ctx, span := trace.StartSpan(ctx, "memStore:Update")
+	defer span.End()
+
 	if updater == nil {
 		return fmt.Errorf("can't update object")
 	}
@@ -241,7 +284,7 @@ func (m *MemoryStore) Update(ctx context.Context, key store.Key, updater func(*u
 			return fmt.Errorf("object not found")
 		}
 
-		cacheKey, err := m.cacheKeyFromKey(key)
+		cacheKey, err := m.cacheKeyFromKey(ctx, key)
 		if err != nil {
 			return err
 		}
@@ -281,7 +324,7 @@ func (m *MemoryStore) Create(ctx context.Context, object *unstructured.Unstructu
 		return err
 	}
 
-	cacheKey, err := m.cacheKeyFromKey(key)
+	cacheKey, err := m.cacheKeyFromKey(ctx, key)
 	if err != nil {
 		return err
 	}
