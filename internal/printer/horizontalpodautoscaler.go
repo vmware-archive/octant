@@ -7,7 +7,6 @@ package printer
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"

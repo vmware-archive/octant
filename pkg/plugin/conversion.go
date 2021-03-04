@@ -6,8 +6,6 @@ SPDX-License-Identifier: Apache-2.0
 package plugin
 
 import (
-	"encoding/json"
-
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware-tanzu/octant/pkg/navigation"

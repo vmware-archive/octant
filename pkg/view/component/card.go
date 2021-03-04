@@ -1,8 +1,6 @@
 package component
 
 import (
-	"encoding/json"
-
 	"github.com/pkg/errors"
 )
 

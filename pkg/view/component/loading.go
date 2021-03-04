@@ -5,8 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 
 package component
 
-import "encoding/json"
-
 // Loading is a component for a spinner
 //
 // +octant:component

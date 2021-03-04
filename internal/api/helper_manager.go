@@ -8,7 +8,6 @@ package api
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 
 	oevent "github.com/vmware-tanzu/octant/pkg/event"
 

@@ -6,7 +6,6 @@ SPDX-License-Identifier: Apache-2.0
 package action
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 	"strconv"

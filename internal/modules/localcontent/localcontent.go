@@ -7,7 +7,6 @@ package localcontent
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -15,6 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -24,6 +24,8 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
+
+var json = jsoniter.ConfigFastest
 
 type LocalContent struct {
 	root string

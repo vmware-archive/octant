@@ -1,5 +1,5 @@
 package strcase
 
-var uppercaseAcronym = map[string]bool{
-	"ID": true,
+var uppercaseAcronym = map[string]string{
+	"ID": "id",
 }

@@ -6,16 +6,18 @@ SPDX-License-Identifier: Apache-2.0
 package component_test
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
+
+var json = jsoniter.ConfigFastest
 
 func Test_Annotations_Marshal(t *testing.T) {
 	cases := []struct {

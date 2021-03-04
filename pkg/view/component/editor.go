@@ -6,7 +6,6 @@ SPDX-License-Identifier: Apache-2.0
 package component
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/runtime"

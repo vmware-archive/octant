@@ -2,7 +2,6 @@ package api_test
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
 
 	"github.com/golang/mock/gomock"

@@ -7,7 +7,6 @@ package plugin
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path"

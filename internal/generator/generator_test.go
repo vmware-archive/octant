@@ -7,10 +7,10 @@ package generator
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/stretchr/testify/require"
 
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
@@ -19,6 +19,8 @@ import (
 	objectStoreFake "github.com/vmware-tanzu/octant/pkg/store/fake"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
+
+var json = jsoniter.ConfigFastest
 
 func Test_realGenerator_Generate(t *testing.T) {
 	textOther := component.NewText("other")
@@ -133,4 +135,10 @@ func (c emptyComponent) MarshalJSON() ([]byte, error) {
 	m := make(map[string]interface{})
 
 	return json.Marshal(m)
+}
+
+func (c emptyComponent) UnmarshalJSON(b []byte) error {
+	var m interface{}
+
+	return json.Unmarshal(b, m)
 }

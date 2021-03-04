@@ -1,9 +1,5 @@
 package component
 
-import (
-	"encoding/json"
-)
-
 type ModalSize string
 
 const (

@@ -8,7 +8,6 @@ package dash
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -25,6 +24,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/websocket"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,6 +37,8 @@ import (
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
 	"github.com/vmware-tanzu/octant/pkg/log"
 )
+
+var json = jsoniter.ConfigFastest
 
 func TestRunner_ValidateKubeconfig(t *testing.T) {
 	fs := afero.NewMemMapFs()

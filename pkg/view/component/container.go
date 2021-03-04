@@ -5,8 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 
 package component
 
-import "encoding/json"
-
 // Containers is a component wrapping multiple docker container definitions
 //
 // +octant:component

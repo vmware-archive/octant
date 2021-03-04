@@ -5,8 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 
 package component
 
-import "encoding/json"
-
 // GraphvizConfig is the contents of Graphviz.
 type GraphvizConfig struct {
 	DOT string `json:"dot,omitempty"`

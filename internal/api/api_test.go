@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -30,6 +31,8 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/navigation"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
+
+var json = jsoniter.ConfigFastest
 
 func TestAPI_routes(t *testing.T) {
 	cases := []struct {

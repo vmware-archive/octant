@@ -6,7 +6,6 @@ SPDX-License-Identifier: Apache-2.0
 package component_test
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
 	"testing"

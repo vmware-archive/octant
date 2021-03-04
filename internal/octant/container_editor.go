@@ -7,7 +7,6 @@ package octant
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/pkg/errors"
