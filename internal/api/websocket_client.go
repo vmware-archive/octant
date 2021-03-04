@@ -168,8 +168,12 @@ func (c *WebsocketClient) readPump() {
 	for {
 		request, err := c.Receive()
 		if err != nil {
-			c.logger.WithErr(err).Errorf("Unhandled websocket error")
-			break
+			if IsFatalStreamError(err) {
+				c.cancel()
+				break
+			}
+
+			continue
 		}
 
 		if err := HandleStreamingMessage(c, request); err != nil {
@@ -287,13 +291,15 @@ func (c *WebsocketClient) Receive() (StreamRequest, error) {
 		if websocket.IsUnexpectedCloseError(
 			err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure, websocket.CloseNoStatusReceived,
 		) {
+			c.logger.WithErr(err).Errorf("Unhandled websocket error")
 		}
-		c.cancel()
+		return StreamRequest{}, FatalStreamError(err)
 	}
 
 	var request StreamRequest
 	if err := json.Unmarshal(message, &request); err != nil {
-		c.logger.WithErr(err).Errorf("Handle websocket message")
+		c.logger.WithErr(err).Errorf("Unmarshaling websocket message")
+		return StreamRequest{}, err
 	}
 
 	return request, nil
