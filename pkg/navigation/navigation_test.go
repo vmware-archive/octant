@@ -10,15 +10,13 @@ import (
 	"path"
 	"testing"
 
+	"github.com/vmware-tanzu/octant/pkg/icon"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/vmware-tanzu/octant/internal/testutil"
-	"github.com/vmware-tanzu/octant/pkg/icon"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/store/fake"
 )
@@ -59,8 +57,8 @@ func TestCRDEntries_namespace_scoped(t *testing.T) {
 	defer controller.Finish()
 
 	objectStore := fake.NewMockStore(controller)
-	clusterScopedCRD := createCRD("cluster-scoped", "ClusterScoped", true)
-	namespaceScopedCRD := createCRD("namespace-scoped", "NamespaceScoped", false)
+	clusterScopedCRD := testutil.CreateCRDWithKind("cluster-scoped", "ClusterScoped", true)
+	namespaceScopedCRD := testutil.CreateCRDWithKind("namespace-scoped", "NamespaceScoped", false)
 
 	crds := testutil.ToUnstructuredList(t, clusterScopedCRD, namespaceScopedCRD)
 	crdKey := store.Key{
@@ -72,9 +70,9 @@ func TestCRDEntries_namespace_scoped(t *testing.T) {
 		Return(crds, false, nil).
 		AnyTimes()
 
-	clusterCR := createCR("testing", "v1", "ClusterScoped", "cluster-scoped")
+	clusterCR := testutil.CreateCR("testing", "v1", "ClusterScoped", "cluster-scoped")
 	clusterCRs := testutil.ToUnstructuredList(t, clusterCR)
-	namespaceCR := createCR("testing", "v1", "NamespaceScoped", "namespace-scoped")
+	namespaceCR := testutil.CreateCR("testing", "v1", "NamespaceScoped", "namespace-scoped")
 	namespaceCRs := testutil.ToUnstructuredList(t, namespaceCR)
 
 	crNamespaceKey := store.Key{
@@ -106,12 +104,14 @@ func TestCRDEntries_namespace_scoped(t *testing.T) {
 
 	assert.Equal(t, namespaceExpected, namespaceGot)
 
-	//clusterGot, _, err := CRDEntries(ctx, "/prefix", "default", objectStore, true)
-	//require.NoError(t, err)
-	//
-	//clusterExpected := []Navigation{}
+	clusterGot, _, err := CRDEntries(ctx, "/prefix", "default", objectStore, true)
+	require.NoError(t, err)
 
-	//assert.Equal(t, clusterExpected, clusterGot)
+	clusterExpected := []Navigation{
+		createNavForCR(t, clusterCR.GetName()),
+	}
+
+	assert.Equal(t, clusterExpected, clusterGot)
 }
 
 func createNavForCR(t *testing.T, name string) Navigation {
@@ -119,41 +119,4 @@ func createNavForCR(t *testing.T, name string) Navigation {
 	require.NoError(t, err)
 
 	return *nav
-}
-
-func createCRD(name, kind string, isClusterScoped bool) *apiextv1.CustomResourceDefinition {
-	scope := apiextv1.ClusterScoped
-	if !isClusterScoped {
-		scope = apiextv1.NamespaceScoped
-	}
-
-	crd := testutil.CreateCRD(name)
-	crd.Spec.Scope = scope
-	crd.Spec.Group = "testing"
-	crd.Spec.Names = apiextv1.CustomResourceDefinitionNames{
-		Kind: kind,
-	}
-	crd.Spec.Versions = []apiextv1.CustomResourceDefinitionVersion{
-		{
-			Name:    "v1",
-			Served:  true,
-			Storage: true,
-		},
-	}
-
-	return crd
-}
-
-func createCR(group, version, kind, name string) *unstructured.Unstructured {
-	m := make(map[string]interface{})
-	u := &unstructured.Unstructured{Object: m}
-
-	u.SetName(name)
-	u.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   group,
-		Version: version,
-		Kind:    kind,
-	})
-
-	return u
 }

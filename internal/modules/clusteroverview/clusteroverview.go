@@ -42,7 +42,26 @@ type ClusterOverview struct {
 	pathMatcher *describer.PathMatcher
 	watchedCRDs []*unstructured.Unstructured
 
+	navigationCrdCache []navigation.Navigation
+	navigationCrdLock  sync.Mutex
+
 	mu sync.Mutex
+}
+
+func (co *ClusterOverview) CRDEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, wantsClusterScoped bool) ([]navigation.Navigation, bool, error) {
+	if co.navigationCrdCache != nil {
+		return co.navigationCrdCache, false, nil
+	}
+
+	co.navigationCrdLock.Lock()
+	defer co.navigationCrdLock.Unlock()
+
+	entries, loading, err := navigation.CRDEntries(ctx, prefix, namespace, objectStore, wantsClusterScoped)
+	if len(entries) > 0 {
+		co.navigationCrdCache = entries
+		return co.navigationCrdCache, loading, err
+	}
+	return []navigation.Navigation{}, false, nil
 }
 
 var _ module.Module = (*ClusterOverview)(nil)
@@ -83,6 +102,7 @@ func New(ctx context.Context, options Options) (*ClusterOverview, error) {
 				}
 				describer.AddCRD(ctx, object, pathMatcher, customResourcesDescriber, co, options.DashConfig.ObjectStore())
 				co.watchedCRDs = append(co.watchedCRDs, object)
+				co.navigationCrdCache = nil
 			}
 		}(pathMatcher, customResourcesDescriber),
 		Delete: func(_ *describer.PathMatcher, csd *describer.CRDSection) config.ObjectHandler {
@@ -102,6 +122,7 @@ func New(ctx context.Context, options Options) (*ClusterOverview, error) {
 					list = append(list, co.watchedCRDs[i])
 				}
 				co.watchedCRDs = list
+				co.navigationCrdCache = nil
 			}
 		}(pathMatcher, customResourcesDescriber),
 		IsNamespaced: false,
@@ -196,7 +217,7 @@ func (co *ClusterOverview) Navigation(ctx context.Context, _ string, root string
 		EntriesFuncs: map[string]octant.EntriesFunc{
 			"Cluster Overview":            nil,
 			"Namespaces":                  nil,
-			"Custom Resources":            navigation.CRDEntries,
+			"Custom Resources":            co.CRDEntries,
 			"Custom Resource Definitions": nil,
 			"RBAC":                        rbacEntries,
 			"Webhooks":                    webhookEntries,
@@ -313,5 +334,6 @@ func (co *ClusterOverview) SetContext(ctx context.Context, _ string) error {
 	}
 
 	co.watchedCRDs = []*unstructured.Unstructured{}
+	co.navigationCrdCache = nil
 	return nil
 }

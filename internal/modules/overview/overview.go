@@ -43,7 +43,29 @@ type Overview struct {
 
 	watchedCRDs []*unstructured.Unstructured
 
+	navigationCrdCache map[string][]navigation.Navigation
+	navigationCrdLock  sync.Mutex
+
 	mu sync.Mutex
+}
+
+func (co *Overview) CRDEntries(ctx context.Context, prefix, namespace string, objectStore store.Store, wantsClusterScoped bool) ([]navigation.Navigation, bool, error) {
+	if _, ok := co.navigationCrdCache[namespace]; ok {
+		return co.navigationCrdCache[namespace], false, nil
+	}
+
+	co.navigationCrdLock.Lock()
+	defer co.navigationCrdLock.Unlock()
+
+	entries, loading, err := navigation.CRDEntries(ctx, prefix, namespace, objectStore, wantsClusterScoped)
+	if len(entries) > 0 {
+		if co.navigationCrdCache == nil {
+			co.navigationCrdCache = make(map[string][]navigation.Navigation)
+		}
+		co.navigationCrdCache[namespace] = entries
+		return co.navigationCrdCache[namespace], loading, err
+	}
+	return []navigation.Navigation{}, false, nil
 }
 
 var _ module.Module = (*Overview)(nil)
@@ -94,6 +116,7 @@ func (co *Overview) SetContext(ctx context.Context, contextName string) error {
 	crdWatcher := co.dashConfig.CRDWatcher()
 	crdWatcher.Watch(ctx)
 
+	co.navigationCrdCache = nil
 	return nil
 }
 
@@ -144,6 +167,7 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 				}
 				describer.AddCRD(ctx, object, pathMatcher, customResourcesDescriber, co, co.dashConfig.ObjectStore())
 				co.watchedCRDs = append(co.watchedCRDs, object)
+				delete(co.navigationCrdCache, object.GetNamespace())
 			}
 		}(pathMatcher, customResourcesDescriber),
 		Delete: func(pathMatcher *describer.PathMatcher, csd *describer.CRDSection) config.ObjectHandler {
@@ -163,6 +187,7 @@ func (co *Overview) bootstrap(ctx context.Context) error {
 					list = append(list, co.watchedCRDs[i])
 				}
 				co.watchedCRDs = list
+				delete(co.navigationCrdCache, object.GetNamespace())
 			}
 		}(pathMatcher, customResourcesDescriber),
 		IsNamespaced: true,
@@ -205,7 +230,7 @@ func (co *Overview) Navigation(ctx context.Context, namespace, root string) ([]n
 			"Workloads":                    workloadEntries,
 			"Discovery and Load Balancing": discoAndLBEntries,
 			"Config and Storage":           configAndStorageEntries,
-			"Custom Resources":             navigation.CRDEntries,
+			"Custom Resources":             co.CRDEntries,
 			"RBAC":                         rbacEntries,
 			"Events":                       nil,
 		},
