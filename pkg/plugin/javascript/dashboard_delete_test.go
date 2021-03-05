@@ -47,6 +47,28 @@ func TestDashboardDelete_Call(t *testing.T) {
 			ctorArgs: ctorArgs{
 				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
 					objectStore := fake2.NewMockStore(ctrl)
+
+					objectStore.EXPECT().
+						Delete(ContextType, store.Key{
+							Namespace:  "test",
+							APIVersion: "v1",
+							Kind:       "ReplicaSet",
+							Name:       "my-replica-set"}).
+						Return(nil)
+
+					storage := fake.NewMockStorage(ctrl)
+					storage.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
+
+					return storage
+				},
+			},
+			call: `dashClient.Delete({namespace:'test', apiVersion: 'v1', kind:'ReplicaSet', name: 'my-replica-set'})`,
+		},
+		{
+			name: "with arbitrary metadata",
+			ctorArgs: ctorArgs{
+				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
+					objectStore := fake2.NewMockStore(ctrl)
 					ctx = context.WithValue(ctx, DashboardMetadataKey("foo"), "baz")
 					ctx = context.WithValue(ctx, DashboardMetadataKey("foo"), "bar")
 					ctx = context.WithValue(ctx, DashboardMetadataKey("qux"), "quuux")

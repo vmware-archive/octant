@@ -48,6 +48,28 @@ func TestDashboardList_Call(t *testing.T) {
 			ctorArgs: ctorArgs{
 				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
 					objectStore := fake2.NewMockStore(ctrl)
+
+					objectStore.EXPECT().
+						List(ContextType, store.Key{
+							Namespace:  "test",
+							APIVersion: "v1",
+							Kind:       "Pod",
+						}).
+						Return(testutil.ToUnstructuredList(t, testutil.CreatePod("pod")), false, nil)
+
+					storage := fake.NewMockStorage(ctrl)
+					storage.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
+
+					return storage
+				},
+			},
+			call: `dashClient.List({namespace:'test', apiVersion: 'v1', kind:'Pod'})`,
+		},
+		{
+			name: "with arbitrary metadata",
+			ctorArgs: ctorArgs{
+				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
+					objectStore := fake2.NewMockStore(ctrl)
 					ctx = context.WithValue(ctx, DashboardMetadataKey("foo"), "baz")
 					ctx = context.WithValue(ctx, DashboardMetadataKey("foo"), "bar")
 					ctx = context.WithValue(ctx, DashboardMetadataKey("qux"), "quuux")

@@ -38,14 +38,19 @@ func (d *DashboardUpdate) Name() string {
 // rejects the YAML, it will throw a javascript exception.
 func (d *DashboardUpdate) Call(ctx context.Context, vm *goja.Runtime) func(c goja.FunctionCall) goja.Value {
 	return func(c goja.FunctionCall) goja.Value {
-		var newCtx context.Context = context.WithValue(ctx, CloneKey, nil)
+		newCtx, cancel := context.WithCancel(ctx)
+		defer cancel()
+
 		namespace := c.Argument(0).String()
 		update := c.Argument(1).String()
 
-		if len(c.Arguments) > 2 {
-			var metadata map[string]interface{}
-			metadataObj := c.Argument(2).ToObject(vm)
+		metadataArg := c.Argument(2)
+		if !goja.IsUndefined(metadataArg) {
+			var metadata map[string]string
+			metadataObj := metadataArg.ToObject(vm)
 
+			// This will not error as js plugins restrict this type
+			// and we handle both cases
 			_ = vm.ExportTo(metadataObj, &metadata)
 			for k, val := range metadata {
 				newCtx = context.WithValue(newCtx, DashboardMetadataKey(k), val)

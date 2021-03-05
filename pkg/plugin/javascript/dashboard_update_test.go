@@ -46,6 +46,23 @@ func TestDashboardUpdate_Call(t *testing.T) {
 			ctorArgs: ctorArgs{
 				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
 					objectStore := fake2.NewMockStore(ctrl)
+
+					objectStore.EXPECT().
+						CreateOrUpdateFromYAML(ContextType, "test", "create-yaml").
+						Return([]string{"test"}, nil)
+
+					storage := fake.NewMockStorage(ctrl)
+					storage.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
+					return storage
+				},
+			},
+			call: `dashClient.Update('test', 'create-yaml')`,
+		},
+		{
+			name: "with arbitrary metadata",
+			ctorArgs: ctorArgs{
+				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
+					objectStore := fake2.NewMockStore(ctrl)
 					ctx = context.WithValue(ctx, DashboardMetadataKey("foo"), "baz")
 					ctx = context.WithValue(ctx, DashboardMetadataKey("foo"), "bar")
 					ctx = context.WithValue(ctx, DashboardMetadataKey("qux"), "quuux")

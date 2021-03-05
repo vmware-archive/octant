@@ -39,7 +39,9 @@ func (d *DashboardList) Name() string {
 // list is unsuccessful, it will throw a javascript exception.
 func (d *DashboardList) Call(ctx context.Context, vm *goja.Runtime) func(c goja.FunctionCall) goja.Value {
 	return func(c goja.FunctionCall) goja.Value {
-		var newCtx context.Context = context.WithValue(ctx, CloneKey, nil)
+		newCtx, cancel := context.WithCancel(ctx)
+		defer cancel()
+
 		m := map[string]interface{}{}
 
 		var key store.Key
@@ -53,10 +55,13 @@ func (d *DashboardList) Call(ctx context.Context, vm *goja.Runtime) func(c goja.
 			panicMessage(vm, fmt.Errorf("key is invalid: %w", err), "")
 		}
 
-		if len(c.Arguments) > 1 {
-			var metadata map[string]interface{}
-			metadataObj := c.Argument(1).ToObject(vm)
+		metadataArg := c.Argument(1)
+		if !goja.IsUndefined(metadataArg) {
+			var metadata map[string]string
+			metadataObj := metadataArg.ToObject(vm)
 
+			// This will not error as js plugins restrict this type
+			// and we handle both cases
 			_ = vm.ExportTo(metadataObj, &metadata)
 			for k, val := range metadata {
 				newCtx = context.WithValue(newCtx, DashboardMetadataKey(k), val)

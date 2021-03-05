@@ -38,17 +38,22 @@ func (d *DashboardGet) Name() string {
 // get is unsuccessful, it will throw a javascript exception.
 func (d *DashboardGet) Call(ctx context.Context, vm *goja.Runtime) func(c goja.FunctionCall) goja.Value {
 	return func(c goja.FunctionCall) goja.Value {
-		var newCtx context.Context = context.WithValue(ctx, CloneKey, nil)
+		newCtx, cancel := context.WithCancel(ctx)
+		defer cancel()
+
 		var key store.Key
 		obj := c.Argument(0).ToObject(vm)
 
 		// This will never error since &key is a pointer to a type.
 		_ = vm.ExportTo(obj, &key)
 
-		if len(c.Arguments) > 1 {
-			var metadata map[string]interface{}
-			metadataObj := c.Argument(1).ToObject(vm)
+		metadataArg := c.Argument(1)
+		if !goja.IsUndefined(metadataArg) && !goja.IsNull(metadataArg) {
+			var metadata map[string]string
+			metadataObj := metadataArg.ToObject(vm)
 
+			// This will not error as js plugins restrict this type
+			// and we handle both cases
 			_ = vm.ExportTo(metadataObj, &metadata)
 			for k, val := range metadata {
 				newCtx = context.WithValue(newCtx, DashboardMetadataKey(k), val)
