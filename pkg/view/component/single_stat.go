@@ -5,8 +5,6 @@
 
 package component
 
-import "encoding/json"
-
 type SingleStatValue struct {
 	Text  string `json:"text"`
 	Color string `json:"color"`

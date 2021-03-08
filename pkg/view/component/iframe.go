@@ -5,8 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 
 package component
 
-import "encoding/json"
-
 // IFrame is a component for displaying content in an iframe
 //
 // +octant:component

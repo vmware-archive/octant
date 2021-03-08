@@ -5,8 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 
 package component
 
-import "encoding/json"
-
 // Annotations is a component representing key/value based annotations
 //
 // +octant:component

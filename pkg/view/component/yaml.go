@@ -6,7 +6,6 @@ SPDX-License-Identifier: Apache-2.0
 package component
 
 import (
-	"encoding/json"
 	"strings"
 
 	"github.com/pkg/errors"

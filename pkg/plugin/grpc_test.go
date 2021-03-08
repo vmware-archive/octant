@@ -7,11 +7,11 @@ package plugin_test
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
@@ -27,6 +27,8 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 	"github.com/vmware-tanzu/octant/pkg/view/flexlayout"
 )
+
+var json = jsoniter.ConfigFastest
 
 type grpcClientMocks struct {
 	broker      *fake.MockBroker

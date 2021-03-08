@@ -6,8 +6,6 @@ SPDX-License-Identifier: Apache-2.0
 package component
 
 import (
-	"encoding/json"
-
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -83,8 +81,8 @@ type FormField interface {
 	Error() string
 	Validators() []string
 
-	json.Unmarshaler
-	json.Marshaler
+	MarshalJSON() ([]byte, error)
+	UnmarshalJSON([]byte) error
 }
 
 // marshalFormField marshals a form field to JSON.

@@ -7,8 +7,6 @@
 package component
 
 import (
-	"encoding/json"
-
 	"github.com/vmware-tanzu/octant/pkg/action"
 )
 

@@ -6,12 +6,14 @@ SPDX-License-Identifier: Apache-2.0
 package describer
 
 import (
-	"encoding/json"
-
 	corev1 "k8s.io/api/core/v1"
+
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
+
+var json = jsoniter.ConfigFastest
 
 type emptyComponent struct{}
 
@@ -21,6 +23,12 @@ func (c *emptyComponent) GetMetadata() component.Metadata {
 	return component.Metadata{
 		Type: "empty",
 	}
+}
+
+func (c *emptyComponent) UnmarshalJSON(b []byte) error {
+	var m interface{}
+
+	return json.Unmarshal(b, m)
 }
 
 func (c *emptyComponent) SetMetadata(_ component.Metadata) {

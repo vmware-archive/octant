@@ -5,10 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 
 package component
 
-import (
-	"encoding/json"
-)
-
 var defaultDurations = []Since{
 	{"5 minutes", 300},
 	{"10 minutes", 600},

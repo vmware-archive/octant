@@ -7,7 +7,6 @@ package plugin
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"

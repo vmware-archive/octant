@@ -31,51 +31,50 @@ import (
 
 // Converts a string to CamelCase
 func toCamelInitCase(s string, initCase bool) string {
-	s = addWordBoundariesToNumbers(s)
-	s = strings.Trim(s, " ")
-	n := ""
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return s
+	}
+	if a, ok := uppercaseAcronym[s]; ok {
+		s = a
+	}
+
+	n := strings.Builder{}
+	n.Grow(len(s))
 	capNext := initCase
-	for _, v := range s {
-		if v >= 'A' && v <= 'Z' {
-			n += string(v)
-		}
-		if v >= '0' && v <= '9' {
-			n += string(v)
-		}
-		if v >= 'a' && v <= 'z' {
-			if capNext {
-				n += strings.ToUpper(string(v))
-			} else {
-				n += string(v)
+	for i, v := range []byte(s) {
+		vIsCap := v >= 'A' && v <= 'Z'
+		vIsLow := v >= 'a' && v <= 'z'
+		if capNext {
+			if vIsLow {
+				v += 'A'
+				v -= 'a'
+			}
+		} else if i == 0 {
+			if vIsCap {
+				v += 'a'
+				v -= 'A'
 			}
 		}
-		if v == '_' || v == ' ' || v == '-' || v == '.' {
+		if vIsCap || vIsLow {
+			n.WriteByte(v)
+			capNext = false
+		} else if vIsNum := v >= '0' && v <= '9'; vIsNum {
+			n.WriteByte(v)
 			capNext = true
 		} else {
-			capNext = false
+			capNext = v == '_' || v == ' ' || v == '-' || v == '.'
 		}
 	}
-	return n
+	return n.String()
 }
 
 // ToCamel converts a string to CamelCase
 func ToCamel(s string) string {
-	if uppercaseAcronym[s] {
-		s = strings.ToLower(s)
-	}
 	return toCamelInitCase(s, true)
 }
 
 // ToLowerCamel converts a string to lowerCamelCase
 func ToLowerCamel(s string) string {
-	if s == "" {
-		return s
-	}
-	if uppercaseAcronym[s] {
-		s = strings.ToLower(s)
-	}
-	if r := rune(s[0]); r >= 'A' && r <= 'Z' {
-		s = strings.ToLower(string(r)) + s[1:]
-	}
 	return toCamelInitCase(s, false)
 }

@@ -7,12 +7,13 @@ package overview
 
 import (
 	"context"
-	"encoding/json"
 	"io"
 	"net/http"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/vmware-tanzu/octant/internal/api"
 	internalLog "github.com/vmware-tanzu/octant/internal/log"
@@ -20,6 +21,8 @@ import (
 	"github.com/vmware-tanzu/octant/internal/portforward"
 	"github.com/vmware-tanzu/octant/pkg/log"
 )
+
+var json = jsoniter.ConfigFastest
 
 type portForwardCreateRequest struct {
 	APIVersion string `json:"apiVersion,omitempty"`

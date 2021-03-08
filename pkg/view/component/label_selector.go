@@ -5,8 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 
 package component
 
-import "encoding/json"
-
 // LabelSelectorConfig is the contents of LabelSelector
 type LabelSelectorConfig struct {
 	Key   string `json:"key"`

@@ -6,12 +6,13 @@ SPDX-License-Identifier: Apache-2.0
 package component
 
 import (
-	"encoding/json"
-
+	jsoniter "github.com/json-iterator/go"
 	"github.com/pkg/errors"
 
 	"github.com/vmware-tanzu/octant/pkg/action"
 )
+
+var json = jsoniter.ConfigFastest
 
 // EmptyContentResponse is an empty content response.
 var EmptyContentResponse = ContentResponse{}
@@ -92,8 +93,8 @@ func (c *ContentResponse) UnmarshalJSON(data []byte) error {
 }
 
 type TypedObject struct {
-	Config   json.RawMessage `json:"config,omitempty"`
-	Metadata Metadata        `json:"metadata,omitempty"`
+	Config   jsoniter.RawMessage `json:"config,omitempty"`
+	Metadata Metadata            `json:"metadata,omitempty"`
 }
 
 func (to *TypedObject) ToComponent() (Component, error) {
@@ -168,7 +169,8 @@ func (m *Metadata) UnmarshalJSON(data []byte) error {
 // Component is a common interface for the data representation
 // of visual components as rendered by the UI.
 type Component interface {
-	json.Marshaler
+	MarshalJSON() ([]byte, error)
+	UnmarshalJSON([]byte) error
 
 	// GetMetadata returns metadata for the component.
 	GetMetadata() Metadata

@@ -6,11 +6,11 @@ SPDX-License-Identifier: Apache-2.0
 package component
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/stretchr/testify/require"
 
 	"github.com/vmware-tanzu/octant/pkg/action"
@@ -605,7 +605,7 @@ func Test_unmarshal(t *testing.T) {
 			require.NoError(t, err)
 
 			to := TypedObject{
-				Config:   json.RawMessage(configData),
+				Config:   jsoniter.RawMessage(configData),
 				Metadata: Metadata{Type: tc.objectType},
 			}
 

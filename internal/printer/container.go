@@ -7,7 +7,6 @@ package printer
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/vmware-tanzu/octant/internal/log"

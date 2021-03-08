@@ -5,10 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 
 package component
 
-import (
-	"encoding/json"
-)
-
 // DropdownType defines what the dropdown source is (UI component that's visible when dropdown is closed)
 //
 type DropdownType string

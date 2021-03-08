@@ -7,7 +7,6 @@ package printer
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -194,6 +193,12 @@ func (v stubComponent) MarshalJSON() ([]byte, error) {
 	m := make(map[string]interface{})
 
 	return json.Marshal(m)
+}
+
+func (v stubComponent) UnmarshalJSON(b []byte) error {
+	var m interface{}
+
+	return json.Unmarshal(b, m)
 }
 
 func Test_DefaultPrinter(t *testing.T) {

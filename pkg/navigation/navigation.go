@@ -7,10 +7,11 @@ package navigation
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"path"
 	"sort"
+
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/pkg/errors"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -22,6 +23,8 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/icon"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
+
+var json = jsoniter.ConfigFastest
 
 // Option is an option for configuring navigation.
 type Option func(*Navigation) error

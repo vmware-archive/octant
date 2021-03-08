@@ -6,13 +6,16 @@ SPDX-License-Identifier: Apache-2.0
 package javascript
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	jsoniter "github.com/json-iterator/go"
+
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
+
+var json = jsoniter.ConfigFastest
 
 // ConvertToComponent attempts to convert interface i to a Component.
 func ConvertToComponent(name string, i interface{}) (component.Component, error) {

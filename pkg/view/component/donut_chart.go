@@ -5,8 +5,6 @@
 
 package component
 
-import "encoding/json"
-
 type DonutChartSize int
 
 const (

@@ -14,7 +14,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/json"
+	kjson "k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
@@ -100,7 +100,7 @@ func (c *Cordon) Cordon(node *corev1.Node) error {
 		return errors.Wrapf(err, "unable to find node %q", node.Name)
 	}
 
-	originalNode, err := json.Marshal(currentNode)
+	originalNode, err := kjson.Marshal(currentNode)
 	if err != nil {
 		return err
 	}
@@ -111,7 +111,7 @@ func (c *Cordon) Cordon(node *corev1.Node) error {
 	}
 	currentNode.Spec.Unschedulable = true
 
-	modifiedNode, err := json.Marshal(currentNode)
+	modifiedNode, err := kjson.Marshal(currentNode)
 	if err != nil {
 		return err
 	}
