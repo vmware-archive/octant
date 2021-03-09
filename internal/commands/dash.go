@@ -99,6 +99,9 @@ func newOctantCmd(version string, gitCommit string, buildTime string) *cobra.Com
 				if viper.GetBool("enable-opencensus") {
 					options = append(options, dash.WithOpenCensus())
 				}
+				if file := viper.GetString("memstats"); file != "" {
+					options = append(options, dash.WithMemStats())
+				}
 
 				klogVerbosity := viper.GetString("klog-verbosity")
 				var klogOpts []string
@@ -171,6 +174,8 @@ func newOctantCmd(version string, gitCommit string, buildTime string) *cobra.Com
 	octantCmd.Flags().StringP("proxy-frontend", "", "", "url to send frontend request to [DEV]")
 	octantCmd.Flags().String("ui-url", "", "dashboard url [DEV]")
 	octantCmd.Flags().String("browser-path", "", "the browser path to open the browser on")
+	octantCmd.Flags().String("memstats", "", "log memory usage to this file")
+	octantCmd.Flags().String("meminterval", "100ms", "interval to poll memory usage (requires --memstats), valid time units are \"ns\", \"us\" (or \"µs\"), \"ms\", \"s\", \"m\", \"h\".")
 
 	return octantCmd
 }

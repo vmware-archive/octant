@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -53,6 +54,7 @@ import (
 
 type Options struct {
 	EnableOpenCensus       bool
+	EnableMemStats         bool
 	DisableClusterOverview bool
 	KubeConfig             string
 	Namespace              string
@@ -78,6 +80,15 @@ func WithOpenCensus() RunnerOption {
 		kubeConfigOption: kubeconfig.Noop(),
 		nonClusterOption: func(o *Options) {
 			o.EnableOpenCensus = true
+		},
+	}
+}
+
+func WithMemStats() RunnerOption {
+	return RunnerOption{
+		kubeConfigOption: kubeconfig.Noop(),
+		nonClusterOption: func(o *Options) {
+			o.EnableMemStats = true
 		},
 	}
 }
@@ -349,6 +360,14 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerO
 		if err := enableOpenCensus(); err != nil {
 			logger.Infof("Enabling OpenCensus")
 			return nil, nil, fmt.Errorf("enabling open census: %w", err)
+		}
+	}
+
+	fmt.Println(options.EnableMemStats)
+	if options.EnableMemStats {
+		if err := memStats(); err != nil {
+			logger.Infof("Enable MemStat")
+			return nil, nil, fmt.Errorf("enabling memstat: %w", err)
 		}
 	}
 
@@ -701,6 +720,38 @@ func enableOpenCensus() error {
 	trace.RegisterExporter(je)
 	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 
+	return nil
+}
+
+func memStats() error {
+	memstats := viper.GetString("memstats")
+	if memstats != "" {
+		interval, err := time.ParseDuration(viper.GetString("meminterval"))
+		if err != nil {
+			interval, _ = time.ParseDuration("100ms")
+		}
+
+		fileMemStats, err := os.Create(memstats)
+		if err != nil {
+			return err
+		}
+
+		fileMemStats.WriteString("# Time\tHeapSys\tHeapAlloc\tHeapIdle\tHeapReleased\n")
+		go func() {
+			var stats runtime.MemStats
+			start := time.Now().UnixNano()
+			for {
+				runtime.ReadMemStats(&stats)
+				if fileMemStats != nil {
+					fileMemStats.WriteString(fmt.Sprintf("%d\t%d\t%d\t%d\t%d\n",
+						(time.Now().UnixNano()-start)/1000000, stats.HeapSys, stats.HeapAlloc, stats.HeapIdle, stats.HeapReleased))
+					time.Sleep(interval)
+				} else {
+					break
+				}
+			}
+		}()
+	}
 	return nil
 }
 
