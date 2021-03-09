@@ -33,7 +33,8 @@
     ],
     "docs:json": "compodoc -p tsconfig.compodoc.json -e json -d .",
     "storybook": "npm run docs:json && start-storybook -p 6006 -s src/assets",
-    "build-storybook": "npm run docs:json && node --max-old-space-size=8000 ./node_modules/@storybook/angular/bin/build.js build-storybook -c .storybook"
+    "build-storybook": "npm run docs:json && node --max-old-space-size=8000 ./node_modules/@storybook/angular/bin/build.js build-storybook -c .storybook",
+    "preinstall": "npx npm-force-resolutions"
   },
   "prettier": {
     "trailingComma": "es5",
@@ -78,7 +79,6 @@
     "karma-electron-launcher": "^0.3.0",
     "lodash": "^4.17.20",
     "lodash-es": "^4.17.15",
-    "marked": "^1.2.0",
     "monaco-editor": "^0.21.2",
     "ngx-highlightjs": "^4.1.2",
     "overlayscrollbars-ngx": "^0.2.2",
@@ -126,6 +126,7 @@
     "karma-jasmine": "^4.0.1",
     "karma-jasmine-html-reporter": "^1.5.4",
     "karma-spec-reporter": "0.0.32",
+    "marked": "^2.0.1",
     "prettier": "^2.2.1",
     "prettier-tslint": "^0.4.2",
     "protractor": "~7.0.0",
@@ -142,5 +143,8 @@
     "tslint-plugin-prettier": "^2.3.0",
     "typescript": "~4.1.5",
     "wait-on": "^5.2.0"
+  },
+  "resolutions": {
+    "marked": "2.0.1"
   }
 }
