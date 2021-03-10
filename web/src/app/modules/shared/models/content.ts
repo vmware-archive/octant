@@ -378,6 +378,7 @@ export interface TimelineStep {
   header: string;
   title: string;
   description: string;
+  buttonGroup?: ButtonGroupView;
 }
 
 export interface TimestampView extends View {

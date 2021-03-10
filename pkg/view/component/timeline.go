@@ -6,8 +6,9 @@ SPDX-License-Identifier: Apache-2.0
 package component
 
 import (
-	"encoding/json"
 	"sync"
+
+	"github.com/pkg/errors"
 )
 
 // Timeline is a component for timeline
@@ -31,6 +32,37 @@ type TimelineStep struct {
 	Header      string        `json:"header"`
 	Title       string        `json:"title"`
 	Description string        `json:"description"`
+	ButtonGroup *ButtonGroup  `json:"buttonGroup,omitempty"`
+}
+
+func (t *TimelineStep) UnmarshalJSON(data []byte) error {
+	x := struct {
+		State       TimelineState `json:"state"`
+		Header      string        `json:"header"`
+		Title       string        `json:"title"`
+		Description string        `json:"description"`
+		ButtonGroup *TypedObject  `json:"buttonGroup,omitempty"`
+	}{}
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+	if x.ButtonGroup != nil {
+		component, err := x.ButtonGroup.ToComponent()
+		if err != nil {
+			return err
+		}
+		buttonGroup, ok := component.(*ButtonGroup)
+		if !ok {
+			return errors.New("item was not a buttonGroup")
+		}
+		t.ButtonGroup = buttonGroup
+	}
+	t.State = x.State
+	t.Title = x.Title
+	t.Header = x.Header
+	t.Description = x.Description
+
+	return nil
 }
 
 // TimelineState is the state of a timeline step

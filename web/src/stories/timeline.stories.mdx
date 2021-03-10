@@ -10,7 +10,7 @@ export const timelineDocs= {source: {code: `steps := []component.TimelineStep{
     Description: "Title description",
   },
 }
-timeline := component.NewTimeline("title", steps, true)
+timeline := component.NewTimeline(steps, true)
 timeline.Add(component.TimelineStep{
   State:       component.TimelineStepCurrent,
   Header:      "current test",
@@ -22,6 +22,24 @@ timeline.Add(component.TimelineStep{
   Title:       "loading title",
   Description: "loading description",
 })`}}
+
+export const buttonGroupView = {
+  config: {
+    buttons: [
+      {
+        name: 'Testing',
+        payload: {},
+        confirmation: {
+          title: 'Confirm action',
+          body: 'Are you sure?',
+        },
+      },
+    ],
+  },
+  metadata: {
+    type: 'buttonGroup'
+  }
+}
 
 <h1>Timeline Component</h1>
 <h2>Description</h2>
@@ -46,7 +64,8 @@ timeline.Add(component.TimelineStep{
                 state: "current",
                 header: "current header",
                 title: 'Step 1',
-                description: 'this is a current step'
+                description: 'this is a current step',
+                buttonGroup: buttonGroupView,
               },
               {
                 state: "processing",

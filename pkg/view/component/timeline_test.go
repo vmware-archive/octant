@@ -6,12 +6,12 @@ SPDX-License-Identifier: Apache-2.0
 package component
 
 import (
-	"encoding/json"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"path"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_Timeline_Marshal(t *testing.T) {
