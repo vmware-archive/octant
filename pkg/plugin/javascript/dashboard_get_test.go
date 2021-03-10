@@ -16,6 +16,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/internal/octant/fake"
 	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/pkg/plugin/api"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	fake2 "github.com/vmware-tanzu/octant/pkg/store/fake"
 )
@@ -70,10 +71,10 @@ func TestDashboardGet_Call(t *testing.T) {
 			ctorArgs: ctorArgs{
 				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
 					objectStore := fake2.NewMockStore(ctrl)
-					ctx = context.WithValue(ctx, DashboardMetadataKey("foo"), "baz")
-					ctx = context.WithValue(ctx, DashboardMetadataKey("foo"), "bar")
-					ctx = context.WithValue(ctx, DashboardMetadataKey("qux"), "quuux")
-					ctx = context.WithValue(ctx, DashboardMetadataKey("qux"), "quux")
+					ctx = context.WithValue(ctx, api.DashboardMetadataKey("foo"), "baz")
+					ctx = context.WithValue(ctx, api.DashboardMetadataKey("foo"), "bar")
+					ctx = context.WithValue(ctx, api.DashboardMetadataKey("qux"), "quuux")
+					ctx = context.WithValue(ctx, api.DashboardMetadataKey("qux"), "quux")
 
 					objectStore.EXPECT().
 						Get(ContextType, store.Key{
@@ -83,8 +84,8 @@ func TestDashboardGet_Call(t *testing.T) {
 							Name:       "pod"}).
 						Return(testutil.ToUnstructured(t, testutil.CreatePod("pod")), nil).
 						Do(func(c context.Context, _ store.Key) {
-							require.Equal(t, "bar", c.Value(DashboardMetadataKey("foo")))
-							require.Equal(t, "quux", c.Value(DashboardMetadataKey("qux")))
+							require.Equal(t, "bar", c.Value(api.DashboardMetadataKey("foo")))
+							require.Equal(t, "quux", c.Value(api.DashboardMetadataKey("qux")))
 						})
 
 					storage := fake.NewMockStorage(ctrl)
