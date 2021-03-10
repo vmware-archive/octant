@@ -88,12 +88,23 @@ func waitForSync(ctx context.Context, key store.Key, dc *DynamicCache, informer 
 	now := time.Now()
 	logger := log.From(ctx).With("key", key)
 	msg := "informer cache has synced"
-	kcache.WaitForCacheSync(ctx.Done(), informer.Informer().HasSynced)
-	<-time.After(100 * time.Millisecond)
-	logger.With("elapsed", time.Since(now)).
-		Debugf(msg)
-	dc.informerSynced.setSynced(key, true)
-	done <- true
+
+	// This infinite for loops is going to keep trying to sync until it success or
+	// the done channel return something
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(100 * time.Millisecond):
+			if isSynced := kcache.WaitForCacheSync(ctx.Done(), informer.Informer().HasSynced); isSynced == true {
+				logger.With("elapsed", time.Since(now)).
+					Debugf(msg)
+				dc.informerSynced.setSynced(key, true)
+				done <- true
+				return
+			}
+		}
+	}
 }
 
 var _ store.Store = (*DynamicCache)(nil)
