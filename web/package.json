@@ -8,6 +8,9 @@
     "type": "git",
     "url": "git+https://github.com/vmware-tanzu/octant.git"
   },
+  "engines": {
+    "node": "14.16.x"
+  },
   "bugs": {
     "url": "https://github.com/vmware-tanzu/octant/issues"
   },
