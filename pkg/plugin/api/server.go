@@ -8,7 +8,9 @@ package api
 import (
 	"context"
 	"fmt"
+	"strings"
 
+	"google.golang.org/grpc/metadata"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	ocontext "github.com/vmware-tanzu/octant/internal/context"
@@ -21,6 +23,9 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
+
+// DashboardMetadataKey is a type used for metadata keys passed by plugins
+type DashboardMetadataKey string
 
 // PortForwardRequest describes a port forward request.
 type PortForwardRequest struct {
@@ -87,12 +92,14 @@ var _ Service = (*GRPCService)(nil)
 // List lists objects.
 func (s *GRPCService) List(ctx context.Context, key store.Key) (*unstructured.UnstructuredList, error) {
 	// TODO: support hasSynced
+	ctx = extractObjectStoreMetadata(ctx)
 	list, _, err := s.ObjectStore.List(ctx, key)
 	return list, err
 }
 
 // Get retrieves an object.
 func (s *GRPCService) Get(ctx context.Context, key store.Key) (*unstructured.Unstructured, error) {
+	ctx = extractObjectStoreMetadata(ctx)
 	return s.ObjectStore.Get(ctx, key)
 }
 
@@ -102,6 +109,7 @@ func (s *GRPCService) Update(ctx context.Context, object *unstructured.Unstructu
 		return err
 	}
 
+	ctx = extractObjectStoreMetadata(ctx)
 	return s.ObjectStore.Update(ctx, key, func(u *unstructured.Unstructured) error {
 		u.Object = object.Object
 		return nil
@@ -109,6 +117,7 @@ func (s *GRPCService) Update(ctx context.Context, object *unstructured.Unstructu
 }
 
 func (s *GRPCService) Create(ctx context.Context, object *unstructured.Unstructured) error {
+	ctx = extractObjectStoreMetadata(ctx)
 	return s.ObjectStore.Create(ctx, object)
 }
 
@@ -336,4 +345,17 @@ func (c *grpcServer) SendAlert(ctx context.Context, in *proto.AlertRequest) (*pr
 
 	c.service.SendAlert(ctx, in.ClientID, alert)
 	return &proto.Empty{}, nil
+}
+
+func extractObjectStoreMetadata(ctx context.Context) context.Context {
+	// Second value is ignored as metadata is always set by grpc.
+	md, _ := metadata.FromIncomingContext(ctx)
+	for k, v := range md {
+		if strings.HasPrefix(k, "x-octant-") {
+			ctxKey := strings.Replace(k, "x-octant-", "", 1)
+			ctx = context.WithValue(ctx, DashboardMetadataKey(ctxKey), v[0])
+		}
+	}
+
+	return ctx
 }

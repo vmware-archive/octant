@@ -8,6 +8,7 @@ package api_test
 import (
 	"context"
 	"net"
+	"reflect"
 	"testing"
 	"time"
 
@@ -15,6 +16,8 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc/metadata"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/vmware-tanzu/octant/internal/gvk"
 	"github.com/vmware-tanzu/octant/internal/portforward"
@@ -24,6 +27,12 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/store"
 	storeFake "github.com/vmware-tanzu/octant/pkg/store/fake"
 )
+
+// matches arguments of type context.Context
+var contextType gomock.Matcher = gomock.AssignableToTypeOf(reflect.TypeOf((*context.Context)(nil)).Elem())
+
+// matches arguments of type store.Key
+var storeKeyType gomock.Matcher = gomock.AssignableToTypeOf(reflect.TypeOf((*store.Key)(nil)).Elem())
 
 type apiMocks struct {
 	objectStore *storeFake.MockStore
@@ -69,12 +78,17 @@ func TestAPI(t *testing.T) {
 			name: "list",
 			initFunc: func(t *testing.T, mocks *apiMocks) {
 				mocks.objectStore.EXPECT().
-					List(gomock.Any(), gomock.Eq(listKey)).Return(objects, false, nil)
+					List(contextType, gomock.Eq(listKey)).
+					Return(objects, false, nil).
+					Do(func(ctx context.Context, _ store.Key) {
+						require.Equal(t, "bar", ctx.Value(api.DashboardMetadataKey("foo")))
+					})
 			},
 			doFunc: func(t *testing.T, client *api.Client) {
 				clientCtx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 				defer cancel()
 
+				clientCtx = metadata.AppendToOutgoingContext(clientCtx, "x-octant-foo", "bar")
 				got, err := client.List(clientCtx, listKey)
 				require.NoError(t, err)
 
@@ -84,15 +98,39 @@ func TestAPI(t *testing.T) {
 			},
 		},
 		{
-			name: "create",
+			name: "update",
 			initFunc: func(t *testing.T, mocks *apiMocks) {
 				mocks.objectStore.EXPECT().
-					Create(gomock.Any(), gomock.Eq(object)).Return(nil)
+					Update(contextType, storeKeyType, gomock.Any()).
+					Return(nil).
+					Do(func(ctx context.Context, _ store.Key, _ func(*unstructured.Unstructured) error) {
+						require.Equal(t, "bar", ctx.Value(api.DashboardMetadataKey("foo")))
+					})
 			},
 			doFunc: func(t *testing.T, client *api.Client) {
 				clientCtx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 				defer cancel()
 
+				clientCtx = metadata.AppendToOutgoingContext(clientCtx, "x-octant-foo", "bar")
+				err := client.Update(clientCtx, object)
+				require.NoError(t, err)
+			},
+		},
+		{
+			name: "create",
+			initFunc: func(t *testing.T, mocks *apiMocks) {
+				mocks.objectStore.EXPECT().
+					Create(contextType, gomock.Eq(object)).
+					Return(nil).
+					Do(func(ctx context.Context, _ *unstructured.Unstructured) {
+						require.Equal(t, "bar", ctx.Value(api.DashboardMetadataKey("foo")))
+					})
+			},
+			doFunc: func(t *testing.T, client *api.Client) {
+				clientCtx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+				defer cancel()
+
+				clientCtx = metadata.AppendToOutgoingContext(clientCtx, "x-octant-foo", "bar")
 				err := client.Create(clientCtx, object)
 				require.NoError(t, err)
 			},
@@ -101,12 +139,17 @@ func TestAPI(t *testing.T) {
 			name: "get",
 			initFunc: func(t *testing.T, mocks *apiMocks) {
 				mocks.objectStore.EXPECT().
-					Get(gomock.Any(), gomock.Eq(getKey)).Return(object, nil)
+					Get(contextType, gomock.Eq(getKey)).
+					Return(object, nil).
+					Do(func(ctx context.Context, _ store.Key) {
+						require.Equal(t, "bar", ctx.Value(api.DashboardMetadataKey("foo")))
+					})
 			},
 			doFunc: func(t *testing.T, client *api.Client) {
 				clientCtx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 				defer cancel()
 
+				clientCtx = metadata.AppendToOutgoingContext(clientCtx, "x-octant-foo", "bar")
 				got, err := client.Get(clientCtx, getKey)
 				require.NoError(t, err)
 

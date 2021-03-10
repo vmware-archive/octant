@@ -20,6 +20,9 @@ var (
 	}
 )
 
+// DashboardMetadataKey is a type used for metadata keys passed by plugins
+type DashboardMetadataKey string
+
 // ServicePlugin is the GRPC plugin for Service.
 type ServicePlugin struct {
 	plugin.NetRPCUnsupportedPlugin
