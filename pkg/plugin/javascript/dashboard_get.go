@@ -48,16 +48,8 @@ func (d *DashboardGet) Call(ctx context.Context, vm *goja.Runtime) func(c goja.F
 		_ = vm.ExportTo(obj, &key)
 
 		metadataArg := c.Argument(1)
-		if !goja.IsUndefined(metadataArg) && !goja.IsNull(metadataArg) {
-			var metadata map[string]string
-			metadataObj := metadataArg.ToObject(vm)
-
-			// This will not error as js plugins restrict this type
-			// and we handle both cases
-			_ = vm.ExportTo(metadataObj, &metadata)
-			for k, val := range metadata {
-				newCtx = context.WithValue(newCtx, DashboardMetadataKey(k), val)
-			}
+		if !goja.IsUndefined(metadataArg) {
+			newCtx = setObjectStoreContext(newCtx, metadataArg, vm)
 		}
 
 		u, err := d.storage.ObjectStore().Get(newCtx, key)
