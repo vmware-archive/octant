@@ -63,6 +63,8 @@ jobs:
         with:
           node-version: '14'
       - uses: actions/checkout@v2
+      - name: Clear tool cache
+        run: rm -rf $RUNNER_TOOL_CACHE/*
       - name: run_karma
         run: |
           cd web
