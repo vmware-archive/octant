@@ -38,13 +38,21 @@ func (d *DashboardDelete) Name() string {
 // delete is unsuccessful, it will throw a javascript exception.
 func (d *DashboardDelete) Call(ctx context.Context, vm *goja.Runtime) func(c goja.FunctionCall) goja.Value {
 	return func(c goja.FunctionCall) goja.Value {
+		newCtx, cancel := context.WithCancel(ctx)
+		defer cancel()
+
 		var key store.Key
 		obj := c.Argument(0).ToObject(vm)
 
 		// This will never error since &key is a pointer to a type.
 		_ = vm.ExportTo(obj, &key)
 
-		if err := d.storage.ObjectStore().Delete(ctx, key); err != nil {
+		metadataArg := c.Argument(1)
+		if !goja.IsUndefined(metadataArg) {
+			newCtx = setObjectStoreContext(newCtx, metadataArg, vm)
+		}
+
+		if err := d.storage.ObjectStore().Delete(newCtx, key); err != nil {
 			panic(panicMessage(vm, err, ""))
 		}
 		return goja.Undefined()

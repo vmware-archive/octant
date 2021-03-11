@@ -38,13 +38,21 @@ func (d *DashboardGet) Name() string {
 // get is unsuccessful, it will throw a javascript exception.
 func (d *DashboardGet) Call(ctx context.Context, vm *goja.Runtime) func(c goja.FunctionCall) goja.Value {
 	return func(c goja.FunctionCall) goja.Value {
+		newCtx, cancel := context.WithCancel(ctx)
+		defer cancel()
+
 		var key store.Key
 		obj := c.Argument(0).ToObject(vm)
 
 		// This will never error since &key is a pointer to a type.
 		_ = vm.ExportTo(obj, &key)
 
-		u, err := d.storage.ObjectStore().Get(ctx, key)
+		metadataArg := c.Argument(1)
+		if !goja.IsUndefined(metadataArg) {
+			newCtx = setObjectStoreContext(newCtx, metadataArg, vm)
+		}
+
+		u, err := d.storage.ObjectStore().Get(newCtx, key)
 		if err != nil {
 			panic(panicMessage(vm, err, ""))
 		}

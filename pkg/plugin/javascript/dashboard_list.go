@@ -39,6 +39,9 @@ func (d *DashboardList) Name() string {
 // list is unsuccessful, it will throw a javascript exception.
 func (d *DashboardList) Call(ctx context.Context, vm *goja.Runtime) func(c goja.FunctionCall) goja.Value {
 	return func(c goja.FunctionCall) goja.Value {
+		newCtx, cancel := context.WithCancel(ctx)
+		defer cancel()
+
 		m := map[string]interface{}{}
 
 		var key store.Key
@@ -52,7 +55,12 @@ func (d *DashboardList) Call(ctx context.Context, vm *goja.Runtime) func(c goja.
 			panicMessage(vm, fmt.Errorf("key is invalid: %w", err), "")
 		}
 
-		u, _, err := d.storage.ObjectStore().List(ctx, key)
+		metadataArg := c.Argument(1)
+		if !goja.IsUndefined(metadataArg) {
+			newCtx = setObjectStoreContext(newCtx, metadataArg, vm)
+		}
+
+		u, _, err := d.storage.ObjectStore().List(newCtx, key)
 		if err != nil {
 			panic(panicMessage(vm, err, ""))
 		}

@@ -48,8 +48,9 @@ func TestDashboardGet_Call(t *testing.T) {
 			ctorArgs: ctorArgs{
 				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
 					objectStore := fake2.NewMockStore(ctrl)
+
 					objectStore.EXPECT().
-						Get(ctx, store.Key{
+						Get(ContextType, store.Key{
 							Namespace:  "test",
 							APIVersion: "v1",
 							Kind:       "Pod",
@@ -65,12 +66,42 @@ func TestDashboardGet_Call(t *testing.T) {
 			call: `dashClient.Get({namespace:'test', apiVersion: 'v1', kind:'Pod', name: 'pod'})`,
 		},
 		{
+			name: "with arbitrary metadata",
+			ctorArgs: ctorArgs{
+				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
+					objectStore := fake2.NewMockStore(ctrl)
+					ctx = context.WithValue(ctx, DashboardMetadataKey("foo"), "baz")
+					ctx = context.WithValue(ctx, DashboardMetadataKey("foo"), "bar")
+					ctx = context.WithValue(ctx, DashboardMetadataKey("qux"), "quuux")
+					ctx = context.WithValue(ctx, DashboardMetadataKey("qux"), "quux")
+
+					objectStore.EXPECT().
+						Get(ContextType, store.Key{
+							Namespace:  "test",
+							APIVersion: "v1",
+							Kind:       "Pod",
+							Name:       "pod"}).
+						Return(testutil.ToUnstructured(t, testutil.CreatePod("pod")), nil).
+						Do(func(c context.Context, _ store.Key) {
+							require.Equal(t, "bar", c.Value(DashboardMetadataKey("foo")))
+							require.Equal(t, "quux", c.Value(DashboardMetadataKey("qux")))
+						})
+
+					storage := fake.NewMockStorage(ctrl)
+					storage.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
+
+					return storage
+				},
+			},
+			call: `dashClient.Get({namespace:'test', apiVersion: 'v1', kind:'Pod', name: 'pod'},{"foo": "bar", "qux": "quux"})`,
+		},
+		{
 			name: "delete fails",
 			ctorArgs: ctorArgs{
 				storage: func(ctx context.Context, ctrl *gomock.Controller) octant.Storage {
 					objectStore := fake2.NewMockStore(ctrl)
 					objectStore.EXPECT().
-						Get(ctx, store.Key{
+						Get(ContextType, store.Key{
 							Namespace:  "test",
 							APIVersion: "v1",
 							Kind:       "Pod",

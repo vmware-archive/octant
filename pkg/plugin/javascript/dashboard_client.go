@@ -16,6 +16,9 @@ import (
 	"github.com/vmware-tanzu/octant/internal/octant"
 )
 
+// DashboardMetadataKey is a type used for metadata keys passed by plugins
+type DashboardMetadataKey string
+
 // ModularDashboardClientFactory is a modular octant.DashboardClientFactory. It configures
 // itself based on functions passed when it is initialized.
 type ModularDashboardClientFactory struct {
@@ -71,4 +74,19 @@ func panicMessage(vm *goja.Runtime, err error, reason string) goja.Value {
 	}
 
 	return vm.ToValue(fmt.Sprintf("%s: %s", reason, err.Error()))
+}
+
+// extract out the key/values sent by the plugin to add context for object store requests.
+func setObjectStoreContext(ctx context.Context, jsObj goja.Value, vm *goja.Runtime) context.Context {
+	var metadata map[string]string
+	metadataObj := jsObj.ToObject(vm)
+
+	// This will not error as js plugins restrict this type
+	// and we handle the case of having undefined value
+	_ = vm.ExportTo(metadataObj, &metadata)
+	for k, val := range metadata {
+		ctx = context.WithValue(ctx, DashboardMetadataKey(k), val)
+	}
+
+	return ctx
 }

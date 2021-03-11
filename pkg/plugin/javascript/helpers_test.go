@@ -7,6 +7,7 @@ package javascript
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
@@ -17,6 +18,8 @@ import (
 	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/internal/octant/fake"
 )
+
+var ContextType gomock.Matcher = gomock.AssignableToTypeOf(reflect.TypeOf((*context.Context)(nil)).Elem())
 
 type functionRunner struct {
 	wantErr bool
