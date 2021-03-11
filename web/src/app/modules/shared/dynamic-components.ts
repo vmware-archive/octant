@@ -35,6 +35,7 @@ import { LinkComponent } from './components/presentation/link/link.component';
 import { SingleStatComponent } from './components/presentation/single-stat/single-stat.component';
 import { SummaryComponent } from './components/presentation/summary/summary.component';
 import { StepperComponent } from './components/presentation/stepper/stepper.component';
+import { TimelineComponent } from './components/presentation/timeline/timeline.component';
 import { TimestampComponent } from './components/presentation/timestamp/timestamp.component';
 import { ContainersComponent } from './components/presentation/containers/containers.component';
 import { ModalComponent } from './components/presentation/modal/modal.component';
@@ -78,6 +79,7 @@ const DynamicComponentMapping: ComponentMapping = {
   table: DatagridComponent,
   terminal: TerminalComponent,
   text: TextComponent,
+  timeline: TimelineComponent,
   timestamp: TimestampComponent,
   yaml: YamlComponent,
 };

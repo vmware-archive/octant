@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "type": "timeline"
+  },
+  "config": {
+    "steps": [
+      {
+        "state": "success",
+        "header": "success header",
+        "title": "Step 1",
+        "description": "this is a success"
+      },
+      {
+        "state": "error",
+        "header": "error header",
+        "title": "Step 2",
+        "description": "this is an error"
+      },
+      {
+        "state": "current",
+        "header": "current header",
+        "title": "Step 3",
+        "description": "this is a current step"
+      },
+      {
+        "state": "processing",
+        "header": "processing header",
+        "title": "Step 4",
+        "description": "this is processing"
+      },
+      {
+        "state": "not-started",
+        "header": "not started header",
+        "title": "Step 5",
+        "description": "this has not started"
+      }
+    ],
+    "vertical": false
+  }
+}

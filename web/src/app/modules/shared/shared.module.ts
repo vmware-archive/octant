@@ -28,6 +28,7 @@ import { GraphvizComponent } from './components/presentation/graphviz/graphviz.c
 import { ButtonGroupComponent } from './components/presentation/button-group/button-group.component';
 import { YamlComponent } from './components/presentation/yaml/yaml.component';
 import { TableComponent } from './components/presentation/table/table.component';
+import { TimelineComponent } from './components/presentation/timeline/timeline.component';
 import { TimestampComponent } from './components/presentation/timestamp/timestamp.component';
 import { LoadingComponent } from './components/presentation/loading/loading.component';
 import { HighlightModule } from 'ngx-highlightjs';
@@ -141,6 +142,7 @@ import { StringEscapePipe } from './pipes/stringEscape/string.escape.pipe';
     TabsComponent,
     TerminalComponent,
     TextComponent,
+    TimelineComponent,
     TimestampComponent,
     TitleComponent,
     YamlComponent,
@@ -206,6 +208,7 @@ import { StringEscapePipe } from './pipes/stringEscape/string.escape.pipe';
     TabsComponent,
     TerminalComponent,
     TextComponent,
+    TimelineComponent,
     TimestampComponent,
     TitleComponent,
     YamlComponent,

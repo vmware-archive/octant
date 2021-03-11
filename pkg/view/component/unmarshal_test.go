@@ -597,6 +597,25 @@ func Test_unmarshal(t *testing.T) {
 				Base:   newBase(TypeTimestamp, nil),
 			},
 		},
+		{
+			name:       "timeline",
+			configFile: "config_timeline.json",
+			objectType: "timeline",
+			expected: &Timeline{
+				Config: TimelineConfig{
+					Steps: []TimelineStep{
+						{
+							State:       TimelineStepCurrent,
+							Header:      "Header",
+							Title:       "Title",
+							Description: "Description",
+						},
+					},
+					Vertical: true,
+				},
+				Base: newBase(TypeTimeline, nil),
+			},
+		},
 	}
 
 	for _, tc := range cases {

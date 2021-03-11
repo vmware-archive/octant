@@ -1,0 +1,15 @@
+<clr-timeline [clrLayout]="vertical ? 'vertical':'horizontal'">
+  <ng-container *ngFor="let step of steps; trackBy: trackByFn">
+    <clr-timeline-step [clrState]="step.state">
+      <clr-timeline-step-header>{{ step.header }}</clr-timeline-step-header>
+      <clr-timeline-step-title>{{ step.title }}</clr-timeline-step-title>
+      <clr-timeline-step-description>
+        {{ step.description }}
+        <ng-container *ngIf="step.buttonGroup">
+          <br>
+          <app-button-group [view]="step.buttonGroup"></app-button-group>
+        </ng-container>
+      </clr-timeline-step-description>
+    </clr-timeline-step>
+  </ng-container>
+</clr-timeline>

@@ -1,0 +1,11 @@
+{
+  "steps": [
+    {
+      "state": "current",
+      "header": "Header",
+      "title": "Title",
+      "description": "Description"
+    }
+  ],
+  "vertical": true
+}

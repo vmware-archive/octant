@@ -76,6 +76,8 @@ const (
 	TypeTerminal = "terminal"
 	// TypeText is a text component.
 	TypeText = "text"
+	// TypeTimeline is a timeline component.
+	TypeTimeline = "timeline"
 	// TypeTimestamp is a timestamp component.
 	TypeTimestamp = "timestamp"
 	// TypeYAML is a YAML component.
