@@ -12,6 +12,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/vmware-tanzu/octant/internal/util/json"
 )
 
 func Test_Timeline_Marshal(t *testing.T) {

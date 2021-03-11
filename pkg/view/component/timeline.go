@@ -9,6 +9,8 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
+
+	"github.com/vmware-tanzu/octant/internal/util/json"
 )
 
 // Timeline is a component for timeline
