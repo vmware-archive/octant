@@ -11,6 +11,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	"github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/google/uuid"

@@ -9,6 +9,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"

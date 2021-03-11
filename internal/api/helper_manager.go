@@ -9,6 +9,8 @@ import (
 	"bytes"
 	"context"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	oevent "github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/vmware-tanzu/octant/internal/config"

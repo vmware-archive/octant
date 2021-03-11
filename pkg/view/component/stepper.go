@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 
 package component
 
+import "github.com/vmware-tanzu/octant/internal/util/json"
+
 // Stepper component implements json.Marshaler
 //
 // +octant:component

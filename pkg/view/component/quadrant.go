@@ -7,6 +7,8 @@ package component
 
 import (
 	"fmt"
+
+	"github.com/vmware-tanzu/octant/internal/util/json"
 )
 
 // QuadrantPosition denotes a position within a quadrant

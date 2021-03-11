@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 package component
 
 import (
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"

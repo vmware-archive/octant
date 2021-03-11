@@ -10,14 +10,13 @@ import (
 	"path/filepath"
 	"testing"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
-
-var json = jsoniter.ConfigFastest
 
 func Test_Annotations_Marshal(t *testing.T) {
 	cases := []struct {

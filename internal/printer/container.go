@@ -9,6 +9,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	"github.com/vmware-tanzu/octant/internal/log"
 	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 

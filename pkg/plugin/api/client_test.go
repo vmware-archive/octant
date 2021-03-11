@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/vmware-tanzu/octant/internal/testutil"
+	"github.com/vmware-tanzu/octant/internal/util/json"
 	"github.com/vmware-tanzu/octant/pkg/plugin/api"
 	"github.com/vmware-tanzu/octant/pkg/plugin/api/fake"
 	"github.com/vmware-tanzu/octant/pkg/plugin/api/proto"

@@ -7,6 +7,8 @@ package component
 
 import (
 	"fmt"
+
+	"github.com/vmware-tanzu/octant/internal/util/json"
 )
 
 // Error is a component for freetext

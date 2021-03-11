@@ -7,6 +7,8 @@ package component
 
 import (
 	"errors"
+
+	"github.com/vmware-tanzu/octant/internal/util/json"
 )
 
 const (

@@ -8,6 +8,8 @@ package component
 import (
 	"strings"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	"github.com/pkg/errors"
 	"k8s.io/client-go/tools/clientcmd/api/latest"
 

@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	"github.com/dop251/goja"
 )
 

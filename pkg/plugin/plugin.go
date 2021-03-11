@@ -9,13 +9,10 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-plugin"
-	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/grpc"
 
 	"github.com/vmware-tanzu/octant/pkg/plugin/dashboard"
 )
-
-var json = jsoniter.ConfigFastest
 
 var (
 	pluginMap = map[string]plugin.Plugin{

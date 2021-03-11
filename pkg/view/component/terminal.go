@@ -7,6 +7,8 @@ package component
 
 import (
 	"time"
+
+	"github.com/vmware-tanzu/octant/internal/util/json"
 )
 
 type TerminalDetails struct {

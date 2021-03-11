@@ -8,6 +8,8 @@ package plugin
 import (
 	"context"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"

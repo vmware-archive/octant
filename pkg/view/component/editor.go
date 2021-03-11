@@ -8,6 +8,8 @@ package component
 import (
 	"fmt"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/internal/util/kubernetes"

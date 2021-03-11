@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-multierror"
-	jsoniter "github.com/json-iterator/go"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -21,11 +20,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/cache"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	"github.com/vmware-tanzu/octant/pkg/action"
 )
-
-var json = jsoniter.ConfigFastest
 
 //go:generate mockgen  -destination=./fake/mock_store.go -package=fake github.com/vmware-tanzu/octant/pkg/store Store
 

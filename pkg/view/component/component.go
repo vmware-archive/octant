@@ -9,10 +9,10 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/pkg/errors"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	"github.com/vmware-tanzu/octant/pkg/action"
 )
-
-var json = jsoniter.ConfigFastest
 
 // EmptyContentResponse is an empty content response.
 var EmptyContentResponse = ContentResponse{}
