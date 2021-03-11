@@ -24,11 +24,12 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/websocket"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/vmware-tanzu/octant/internal/util/json"
 
 	"github.com/vmware-tanzu/octant/internal/cluster"
 	internalLog "github.com/vmware-tanzu/octant/internal/log"
@@ -37,8 +38,6 @@ import (
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
 	"github.com/vmware-tanzu/octant/pkg/log"
 )
-
-var json = jsoniter.ConfigFastest
 
 func TestRunner_ValidateKubeconfig(t *testing.T) {
 	fs := afero.NewMemMapFs()

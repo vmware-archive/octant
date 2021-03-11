@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

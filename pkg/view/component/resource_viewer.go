@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	"github.com/pkg/errors"
 )
 

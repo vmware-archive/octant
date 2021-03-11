@@ -10,8 +10,9 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/stretchr/testify/require"
+
+	"github.com/vmware-tanzu/octant/internal/util/json"
 
 	clusterFake "github.com/vmware-tanzu/octant/internal/cluster/fake"
 	configFake "github.com/vmware-tanzu/octant/internal/config/fake"
@@ -19,8 +20,6 @@ import (
 	objectStoreFake "github.com/vmware-tanzu/octant/pkg/store/fake"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
-
-var json = jsoniter.ConfigFastest
 
 func Test_realGenerator_Generate(t *testing.T) {
 	textOther := component.NewText("other")

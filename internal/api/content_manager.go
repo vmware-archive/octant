@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	"github.com/vmware-tanzu/octant/internal/config"
 	ocontext "github.com/vmware-tanzu/octant/internal/context"
 	oevent "github.com/vmware-tanzu/octant/pkg/event"

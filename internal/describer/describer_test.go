@@ -8,12 +8,10 @@ package describer
 import (
 	corev1 "k8s.io/api/core/v1"
 
-	jsoniter "github.com/json-iterator/go"
+	"github.com/vmware-tanzu/octant/internal/util/json"
 
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
-
-var json = jsoniter.ConfigFastest
 
 type emptyComponent struct{}
 

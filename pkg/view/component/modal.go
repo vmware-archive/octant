@@ -1,5 +1,7 @@
 package component
 
+import "github.com/vmware-tanzu/octant/internal/util/json"
+
 type ModalSize string
 
 const (

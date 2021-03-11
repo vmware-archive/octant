@@ -7,6 +7,8 @@ package component
 
 import (
 	"sort"
+
+	"github.com/vmware-tanzu/octant/internal/util/json"
 )
 
 // Selector identifies a Component as being a selector flavor.

@@ -12,6 +12,8 @@ import (
 	"path"
 	"sync"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	ocontext "github.com/vmware-tanzu/octant/internal/context"
 
 	"github.com/dop251/goja"

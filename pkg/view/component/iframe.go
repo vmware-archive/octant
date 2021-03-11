@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 
 package component
 
+import "github.com/vmware-tanzu/octant/internal/util/json"
+
 // IFrame is a component for displaying content in an iframe
 //
 // +octant:component

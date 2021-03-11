@@ -13,8 +13,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	"github.com/gorilla/mux"
-	jsoniter "github.com/json-iterator/go"
+
 	"github.com/spf13/viper"
 
 	"github.com/vmware-tanzu/octant/internal/config"
@@ -24,8 +26,6 @@ import (
 )
 
 //go:generate mockgen -destination=./fake/mock_service.go -package=fake github.com/vmware-tanzu/octant/internal/api Service
-
-var json = jsoniter.ConfigFastest
 
 const (
 	// ListenerAddrKey is the environment variable for the Octant listener address.

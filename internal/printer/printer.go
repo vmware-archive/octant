@@ -11,8 +11,6 @@ import (
 	"reflect"
 	"strings"
 
-	jsoniter "github.com/json-iterator/go"
-
 	"github.com/vmware-tanzu/octant/internal/config"
 	"github.com/vmware-tanzu/octant/internal/link"
 
@@ -23,8 +21,6 @@ import (
 
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
-
-var json = jsoniter.ConfigFastest
 
 //go:generate mockgen -destination=./fake/mock_printer.go -package=fake github.com/vmware-tanzu/octant/internal/printer Printer
 

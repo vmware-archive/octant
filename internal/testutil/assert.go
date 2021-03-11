@@ -3,12 +3,11 @@ package testutil
 import (
 	"testing"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-)
 
-var json = jsoniter.ConfigFastest
+	"github.com/vmware-tanzu/octant/internal/util/json"
+)
 
 // AssertJSONEqual asserts two object's generated JSON is equal.
 func AssertJSONEqual(t *testing.T, expected, actual interface{}) {

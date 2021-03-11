@@ -11,13 +11,14 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/vmware-tanzu/octant/internal/util/json"
 
 	"github.com/vmware-tanzu/octant/internal/testutil"
 	"github.com/vmware-tanzu/octant/pkg/navigation"
@@ -27,8 +28,6 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 	"github.com/vmware-tanzu/octant/pkg/view/flexlayout"
 )
-
-var json = jsoniter.ConfigFastest
 
 type grpcClientMocks struct {
 	broker      *fake.MockBroker

@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,8 +24,6 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/store"
 	storeFake "github.com/vmware-tanzu/octant/pkg/store/fake"
 )
-
-var json = jsoniter.ConfigFastest
 
 type apiMocks struct {
 	objectStore *storeFake.MockStore

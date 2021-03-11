@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 package printer
 
 import (
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/vmware-tanzu/octant/pkg/view/component"

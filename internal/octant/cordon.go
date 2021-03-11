@@ -9,6 +9,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	"github.com/pkg/errors"
 
 	corev1 "k8s.io/api/core/v1"

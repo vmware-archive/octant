@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/vmware-tanzu/octant/internal/util/json"
+
 	oevent "github.com/vmware-tanzu/octant/pkg/event"
 
 	"github.com/pkg/errors"

@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package api
 
 import (
-	jsoniter "github.com/json-iterator/go"
+	"github.com/vmware-tanzu/octant/internal/util/json"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/wrappers"
@@ -19,8 +19,6 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/plugin/api/proto"
 	"github.com/vmware-tanzu/octant/pkg/store"
 )
-
-var json = jsoniter.ConfigFastest
 
 func convertFromKey(in store.Key) (*proto.KeyRequest, error) {
 	keyRequest := proto.KeyRequest{

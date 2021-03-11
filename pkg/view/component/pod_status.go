@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 
 package component
 
+import "github.com/vmware-tanzu/octant/internal/util/json"
+
 // PodSummary is a status summary for a pod.
 type PodSummary struct {
 	Details []Component `json:"details,omitempty"`
