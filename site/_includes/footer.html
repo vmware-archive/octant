@@ -7,7 +7,11 @@
             </div>
             <div class="col-xs-12 col-sm-6 col-lg-3 offset-lg-1">
                 <p><strong>{{ site.footer.cta_title }}</strong></p>
+                {% if page.url == "/docs/" %}
+                <a href="{{ site.footer.cta_reference_url }}" class="btn btn-sm btn-primary btn-no-border">{{ site.footer.cta_text }}</a>
+                {% else %}
                 <a href="{{ site.footer.cta_url }}" class="btn btn-sm btn-primary btn-no-border">{{ site.footer.cta_text }}</a>
+                {% endif %}
             </div>
         </div>
     </div>
