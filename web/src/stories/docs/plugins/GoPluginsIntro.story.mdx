@@ -283,3 +283,22 @@ This pod has both a Configuration and Status.
 ### Items
 
 A plugin with support for `PrinterItems` allow adding a `FlexLayoutItem` consisting of a width and a view component.
+
+## Custom Runtime
+
+### Custom object store
+
+For runtimes with custom object store implementations, Go plugins can pass arbitrary key/values when issuing calls to the object store.
+A plugin can set a grpc header with prefix `x-octant-` which will be consumed by the grpc server to set up random properties for the object store context.
+For example: To set a property named `foo` on the object store context, a plugin can set a grpc header named `x-octant-foo`.
+
+```go
+func handlePrint(request *service.PrintRequest) (plugin.PrintResponse, error) {
+  ...
+  key, err := store.KeyFromObject(request.Object)
+	if err != nil {
+		return plugin.PrintResponse{}, err
+	}
+  ctx = metadata.AppendToOutgoingContext(request.Context(), "x-octant-foo", "bar")
+  u, err := request.DashboardClient.Get(ctx, key)
+```
