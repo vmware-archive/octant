@@ -300,7 +300,7 @@ export interface ActionField {
   value: any;
   placeholder: string;
   error: string;
-  validators: string[];
+  validators: { string: any };
 }
 
 export interface ActionForm {

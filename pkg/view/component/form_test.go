@@ -19,7 +19,7 @@ func TestFormFieldCheckBox_UnmarshalJSON(t *testing.T) {
 	}
 
 	expected := NewFormFieldCheckBox("label", "name", choices)
-	expected.AddValidator("error", []string{})
+	expected.AddValidator("error", map[FormValidator]interface{}{})
 
 	data, err := json.Marshal(&expected)
 	require.NoError(t, err)
@@ -39,7 +39,7 @@ func TestFormFieldRadio_UnmarshalJSON(t *testing.T) {
 	}
 
 	expected := NewFormFieldRadio("label", "name", choices)
-	expected.AddValidator("error", []string{})
+	expected.AddValidator("error", map[FormValidator]interface{}{})
 
 	data, err := json.Marshal(&expected)
 	require.NoError(t, err)
@@ -53,7 +53,7 @@ func TestFormFieldRadio_UnmarshalJSON(t *testing.T) {
 
 func TestFormFieldText_UnmarshalJSON(t *testing.T) {
 	expected := NewFormFieldText("label", "name", "text")
-	expected.AddValidator("placeholder", "error", []string{})
+	expected.AddValidator("placeholder", "error", map[FormValidator]interface{}{})
 
 	data, err := json.Marshal(&expected)
 	require.NoError(t, err)
@@ -67,7 +67,7 @@ func TestFormFieldText_UnmarshalJSON(t *testing.T) {
 
 func TestFormFieldPassword_UnmarshalJSON(t *testing.T) {
 	expected := NewFormFieldPassword("label", "name", "text")
-	expected.AddValidator("placeholder", "error", []string{})
+	expected.AddValidator("placeholder", "error", map[FormValidator]interface{}{})
 
 	data, err := json.Marshal(&expected)
 	require.NoError(t, err)
@@ -81,7 +81,7 @@ func TestFormFieldPassword_UnmarshalJSON(t *testing.T) {
 
 func TestFormFieldNumber_UnmarshalJSON(t *testing.T) {
 	expected := NewFormFieldNumber("label", "name", "999")
-	expected.AddValidator("error", []string{})
+	expected.AddValidator("error", map[FormValidator]interface{}{})
 
 	data, err := json.Marshal(&expected)
 	require.NoError(t, err)
@@ -101,7 +101,7 @@ func TestFormFieldSelect_UnmarshalJSON(t *testing.T) {
 	}
 
 	expected := NewFormFieldSelect("label", "name", choices, true)
-	expected.AddValidator("error", []string{})
+	expected.AddValidator("error", map[FormValidator]interface{}{})
 
 	data, err := json.Marshal(&expected)
 	require.NoError(t, err)
@@ -115,7 +115,7 @@ func TestFormFieldSelect_UnmarshalJSON(t *testing.T) {
 
 func TestFormFieldTextarea_UnmarshalJSON(t *testing.T) {
 	expected := NewFormFieldTextarea("label", "name", "999")
-	expected.AddValidator("placeholder", "error", []string{})
+	expected.AddValidator("placeholder", "error", map[FormValidator]interface{}{})
 
 	data, err := json.Marshal(&expected)
 	require.NoError(t, err)
@@ -129,7 +129,7 @@ func TestFormFieldTextarea_UnmarshalJSON(t *testing.T) {
 
 func TestFormFieldHidden_UnmarshalJSON(t *testing.T) {
 	expected := NewFormFieldHidden("label", "name")
-	expected.AddValidator("placeholder", "error", []string{})
+	expected.AddValidator("placeholder", "error", map[FormValidator]interface{}{})
 
 	data, err := json.Marshal(&expected)
 	require.NoError(t, err)

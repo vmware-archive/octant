@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input, OnInit, Output } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ActionField, ActionForm } from '../../../models/content';
 import {
   FormArray,
@@ -30,7 +30,17 @@ export class FormComponent implements OnInit {
 
   formGroup: FormGroup;
   formArray: FormArray;
-
+  needParams = {
+    min: true,
+    max: true,
+    minLength: true,
+    maxLength: true,
+    pattern: true,
+    require: false,
+    requireTrue: false,
+    email: false,
+    nullValidator: false,
+  };
   constructor(private formBuilder: FormBuilder) {}
 
   ngOnInit() {
@@ -68,15 +78,31 @@ export class FormComponent implements OnInit {
     }
   }
 
-  getValidators(validators: string[]): ValidatorFn[] {
-    if (validators) {
-      const vFn: ValidatorFn[] = [];
-      validators.forEach(v => {
-        vFn.push(Validators[v]);
-      });
-      return vFn;
+  getValidators(validators: { string: any }): ValidatorFn[] {
+    if (!validators) {
+      return [];
     }
-    return [];
+
+    const vFn: ValidatorFn[] = [];
+    const keys = Object.keys(validators);
+    for (const key of keys) {
+      const value = validators[key];
+
+      // Check if function is expected
+      if (this.needParams[key] === undefined) {
+        console.error('Unknown validation for form');
+        continue;
+      }
+
+      // Verify how many params needs
+      if (this.needParams[key]) {
+        vFn.push(Validators[key](value));
+      } else {
+        vFn.push(Validators[key]);
+      }
+    }
+
+    return vFn;
   }
 
   fieldChoices(field: ActionField) {
