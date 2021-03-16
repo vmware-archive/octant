@@ -227,7 +227,7 @@ func Test_GRPCClient_Print(t *testing.T) {
 	})
 }
 
-func Test_GRPCClient_PrintTab(t *testing.T) {
+func Test_GRPCClient_PrintTabs(t *testing.T) {
 	testWithGRPCClient(t, func(mocks *grpcClientMocks) {
 		object := testutil.CreateDeployment("deployment")
 
@@ -244,17 +244,21 @@ func Test_GRPCClient_PrintTab(t *testing.T) {
 		require.NoError(t, err)
 
 		tabResponse := &dashboard.PrintTabResponse{
-			Name:   "tab name",
-			Layout: encodeComponent(t, layout.ToComponent("component title")),
+			Tabs: []*dashboard.PrintTab{
+				{
+					Name:   "tab name",
+					Layout: encodeComponent(t, layout.ToComponent("component title")),
+				},
+			},
 		}
 
 		mocks.protoClient.EXPECT().
-			PrintTab(gomock.Any(), gomock.Eq(objectRequest), grpc.WaitForReady(true)).
+			PrintTabs(gomock.Any(), gomock.Eq(objectRequest), grpc.WaitForReady(true)).
 			Return(tabResponse, nil)
 
 		client := mocks.genClient()
 		ctx := context.Background()
-		got, err := client.PrintTab(ctx, object)
+		got, err := client.PrintTabs(ctx, object)
 		require.NoError(t, err)
 
 		expectedLayout := component.NewFlexLayout("component title")
@@ -265,10 +269,12 @@ func Test_GRPCClient_PrintTab(t *testing.T) {
 					View:  component.NewText("text")},
 			},
 		)
-		expected := plugin.TabResponse{
-			Tab: &component.Tab{
-				Name:     "tab name",
-				Contents: *expectedLayout,
+		expected := []plugin.TabResponse{
+			{
+				Tab: &component.Tab{
+					Name:     "tab name",
+					Contents: *expectedLayout,
+				},
 			},
 		}
 

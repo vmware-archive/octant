@@ -162,15 +162,25 @@ func Test_TabRunner(t *testing.T) {
 	store.EXPECT().
 		GetService(gomock.Eq("plugin1")).Return(service, nil)
 
-	tabResponse := plugin.TabResponse{
-		Tab: &component.Tab{},
+	tabResponse := []plugin.TabResponse{
+		{
+			Tab: &component.Tab{},
+		},
 	}
-	tab := component.Tab{}
+	tabs := []component.Tab{
+		{
+			Name: "",
+			Contents: component.FlexLayout{
+				Base:   component.Base{},
+				Config: component.FlexLayoutConfig{},
+			},
+		},
+	}
 
 	service.EXPECT().
-		PrintTab(gomock.Any(), gomock.Eq(object)).Return(tabResponse, nil)
+		PrintTabs(gomock.Any(), gomock.Eq(object)).Return(tabResponse, nil)
 
-	ch := make(chan component.Tab)
+	ch := make(chan []component.Tab)
 	defer close(ch)
 
 	runner := plugin.TabRunner(store, ch)
@@ -178,7 +188,7 @@ func Test_TabRunner(t *testing.T) {
 	done := make(chan bool)
 	go func() {
 		resp := <-ch
-		assert.Equal(t, tab, resp)
+		assert.Equal(t, tabs, resp)
 		done <- true
 	}()
 

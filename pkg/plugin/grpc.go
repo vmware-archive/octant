@@ -271,10 +271,9 @@ func createObjectRequest(object runtime.Object, clientID string) (*dashboard.Obj
 	return or, err
 }
 
-// PrintTab creates a tab for an object.
-func (c *GRPCClient) PrintTab(ctx context.Context, object runtime.Object) (TabResponse, error) {
-	var tab component.Tab
-
+// PrintTabs creates one or more tabs for an object.
+func (c *GRPCClient) PrintTabs(ctx context.Context, object runtime.Object) ([]TabResponse, error) {
+	var responses []TabResponse
 	clientID := ocontext.WebsocketClientIDFrom(ctx)
 
 	err := c.run(func() error {
@@ -283,37 +282,40 @@ func (c *GRPCClient) PrintTab(ctx context.Context, object runtime.Object) (TabRe
 			return err
 		}
 
-		resp, err := c.client.PrintTab(ctx, in, grpc.WaitForReady(true))
+		resp, err := c.client.PrintTabs(ctx, in, grpc.WaitForReady(true))
 		if err != nil {
 			return errors.Wrap(err, "grpc client print tab")
 		}
 
-		var to component.TypedObject
-		if err := json.Unmarshal(resp.Layout, &to); err != nil {
-			return err
+		for _, t := range resp.Tabs {
+			var tab component.Tab
+			var to component.TypedObject
+			if err := json.Unmarshal(t.Layout, &to); err != nil {
+				return err
+			}
+
+			c, err := to.ToComponent()
+			if err != nil {
+				return err
+			}
+
+			layout, ok := c.(*component.FlexLayout)
+			if !ok {
+				return errors.Errorf("expected to be flex layout was: %T", c)
+			}
+
+			tab.Name = t.Name
+			tab.Contents = *layout
+			responses = append(responses, TabResponse{&tab})
 		}
-
-		c, err := to.ToComponent()
-		if err != nil {
-			return err
-		}
-
-		layout, ok := c.(*component.FlexLayout)
-		if !ok {
-			return errors.Errorf("expected to be flex layout was: %T", c)
-		}
-
-		tab.Name = resp.Name
-		tab.Contents = *layout
-
 		return nil
 	})
 
 	if err != nil {
-		return TabResponse{}, err
+		return []TabResponse{}, err
 	}
 
-	return TabResponse{Tab: &tab}, nil
+	return responses, nil
 }
 
 // GRPCServer is the grpc server the dashboard will use to communicate with the
@@ -474,34 +476,40 @@ func decodeObjectRequest(req *dashboard.ObjectRequest) (*unstructured.Unstructur
 	return u, nil
 }
 
-// PrintTab prints a tab for an object.
-func (s *GRPCServer) PrintTab(ctx context.Context, objectRequest *dashboard.ObjectRequest) (*dashboard.PrintTabResponse, error) {
+// PrintTabs prints one or more tabs for an object.
+func (s *GRPCServer) PrintTabs(ctx context.Context, objectRequest *dashboard.ObjectRequest) (*dashboard.PrintTabResponse, error) {
 	u, err := decodeObjectRequest(objectRequest)
 	if err != nil {
 		return nil, err
 	}
 
 	ctx = ocontext.WithWebsocketClientID(ctx, objectRequest.ClientID)
-	tabResponse, err := s.Impl.PrintTab(ctx, u)
+	tabResponses, err := s.Impl.PrintTabs(ctx, u)
 	if err != nil {
 		return nil, errors.Wrap(err, "grpc server print tab")
 	}
 
-	if tabResponse.Tab == nil {
-		return nil, errors.New("tab is nil")
+	out := dashboard.PrintTabResponse{
+		Tabs: []*dashboard.PrintTab{},
+	}
+	for _, tabResponse := range tabResponses {
+		if tabResponse.Tab == nil {
+			return nil, errors.New("tab is nil")
+		}
+
+		layoutBytes, err := json.Marshal(tabResponse.Tab.Contents)
+		if err != nil {
+			return nil, err
+		}
+
+		tab := &dashboard.PrintTab{
+			Name:   tabResponse.Tab.Name,
+			Layout: layoutBytes,
+		}
+		out.Tabs = append(out.Tabs, tab)
 	}
 
-	layoutBytes, err := json.Marshal(tabResponse.Tab.Contents)
-	if err != nil {
-		return nil, err
-	}
-
-	out := &dashboard.PrintTabResponse{
-		Name:   tabResponse.Tab.Name,
-		Layout: layoutBytes,
-	}
-
-	return out, nil
+	return &out, nil
 }
 
 // WatchAdd is called when a watched GVK has a new object added.

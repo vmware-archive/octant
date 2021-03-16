@@ -157,24 +157,24 @@ func (mr *MockPluginClientMockRecorder) ObjectStatus(ctx, in interface{}, opts .
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ObjectStatus", reflect.TypeOf((*MockPluginClient)(nil).ObjectStatus), varargs...)
 }
 
-// PrintTab mocks base method
-func (m *MockPluginClient) PrintTab(ctx context.Context, in *dashboard.ObjectRequest, opts ...grpc.CallOption) (*dashboard.PrintTabResponse, error) {
+// PrintTabs mocks base method
+func (m *MockPluginClient) PrintTabs(ctx context.Context, in *dashboard.ObjectRequest, opts ...grpc.CallOption) (*dashboard.PrintTabResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PrintTab", varargs...)
+	ret := m.ctrl.Call(m, "PrintTabs", varargs...)
 	ret0, _ := ret[0].(*dashboard.PrintTabResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// PrintTab indicates an expected call of PrintTab
-func (mr *MockPluginClientMockRecorder) PrintTab(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+// PrintTabs indicates an expected call of PrintTabs
+func (mr *MockPluginClientMockRecorder) PrintTabs(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrintTab", reflect.TypeOf((*MockPluginClient)(nil).PrintTab), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrintTabs", reflect.TypeOf((*MockPluginClient)(nil).PrintTabs), varargs...)
 }
 
 // WatchAdd mocks base method
@@ -350,19 +350,19 @@ func (mr *MockPluginServerMockRecorder) ObjectStatus(arg0, arg1 interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ObjectStatus", reflect.TypeOf((*MockPluginServer)(nil).ObjectStatus), arg0, arg1)
 }
 
-// PrintTab mocks base method
-func (m *MockPluginServer) PrintTab(arg0 context.Context, arg1 *dashboard.ObjectRequest) (*dashboard.PrintTabResponse, error) {
+// PrintTabs mocks base method
+func (m *MockPluginServer) PrintTabs(arg0 context.Context, arg1 *dashboard.ObjectRequest) (*dashboard.PrintTabResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PrintTab", arg0, arg1)
+	ret := m.ctrl.Call(m, "PrintTabs", arg0, arg1)
 	ret0, _ := ret[0].(*dashboard.PrintTabResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// PrintTab indicates an expected call of PrintTab
-func (mr *MockPluginServerMockRecorder) PrintTab(arg0, arg1 interface{}) *gomock.Call {
+// PrintTabs indicates an expected call of PrintTabs
+func (mr *MockPluginServerMockRecorder) PrintTabs(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrintTab", reflect.TypeOf((*MockPluginServer)(nil).PrintTab), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrintTabs", reflect.TypeOf((*MockPluginServer)(nil).PrintTabs), arg0, arg1)
 }
 
 // WatchAdd mocks base method

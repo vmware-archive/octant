@@ -80,6 +80,10 @@ message PrintResponse {
 }
 
 message PrintTabResponse {
+    repeated PrintTab tabs = 1;
+}
+
+message PrintTab {
     string name = 1;
     bytes layout = 2;
 }
@@ -100,7 +104,7 @@ service Plugin {
     rpc Register(RegisterRequest) returns (RegisterResponse);
     rpc Print(ObjectRequest) returns (PrintResponse);
     rpc ObjectStatus(ObjectRequest) returns (ObjectStatusResponse);
-    rpc PrintTab(ObjectRequest) returns (PrintTabResponse);
+    rpc PrintTabs(ObjectRequest) returns (PrintTabResponse);
     rpc WatchAdd(WatchRequest) returns (Empty);
     rpc WatchUpdate(WatchRequest) returns (Empty);
     rpc WatchDelete(WatchRequest) returns (Empty);

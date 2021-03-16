@@ -33,9 +33,9 @@ func WithPrinter(fn HandlerPrinterFunc) PluginOption {
 }
 
 // WithTabPrinter configures the plugin to have a tab printer.
-func WithTabPrinter(fn HandlerTabPrintFunc) PluginOption {
+func WithTabPrinter(funcs ...HandlerTabPrintFunc) PluginOption {
 	return func(p *Plugin) {
-		p.pluginHandler.HandlerFuncs.PrintTab = fn
+		p.pluginHandler.HandlerFuncs.PrintTabs = funcs
 	}
 }
 
@@ -186,7 +186,7 @@ type HandlerInitRoutesFunc func(router *Router)
 // HandlerFuncs are functions for configuring a plugin.
 type HandlerFuncs struct {
 	Print        HandlerPrinterFunc
-	PrintTab     HandlerTabPrintFunc
+	PrintTabs    []HandlerTabPrintFunc
 	ObjectStatus HandlerObjectStatusFunc
 	HandleAction HandlerActionFunc
 	Navigation   HandlerNavigationFunc

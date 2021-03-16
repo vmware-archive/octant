@@ -363,7 +363,6 @@ func (r *Runner) initAPI(ctx context.Context, logger log.Logger, opts ...RunnerO
 		}
 	}
 
-	fmt.Println(options.EnableMemStats)
 	if options.EnableMemStats {
 		if err := memStats(); err != nil {
 			logger.Infof("Enable MemStat")
