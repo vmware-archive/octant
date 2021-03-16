@@ -18,6 +18,7 @@ footer:
   content: To help you get started, see the documentation.
   cta_title:
   cta_url: /docs
+  cta_reference_url: https://reference.octant.dev/
   cta_text: Documentation
   vm-link: http://vmware.github.io/
 
