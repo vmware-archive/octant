@@ -15,25 +15,17 @@ import {
   ViewChild,
 } from '@angular/core';
 
-import cytoscape, { SingularData, Stylesheet } from 'cytoscape';
+import cytoscape, { NodeCollection, SingularData, Stylesheet } from 'cytoscape';
 import dagre from 'cytoscape-dagre';
+import nodeHtmlLabel from 'cytoscape-node-html-label';
 
 cytoscape.use(dagre);
+nodeHtmlLabel(cytoscape);
 
 @Component({
   selector: 'app-cytoscape',
   template: '<div #cy class="cy"></div>',
-  styles: [
-    `
-      .cy {
-        height: 100%;
-        width: 100%;
-        position: relative;
-        left: 0;
-        top: 0;
-      }
-    `,
-  ],
+  styleUrls: ['./cytoscape.component.scss'],
 })
 export class CytoscapeComponent implements OnChanges, OnDestroy {
   @ViewChild('cy', { static: true }) private cy: ElementRef;
@@ -43,8 +35,11 @@ export class CytoscapeComponent implements OnChanges, OnDestroy {
   @Input() public zoom: any;
 
   @Output() select: EventEmitter<any> = new EventEmitter<any>();
+  @Output() doubleClick: EventEmitter<any> = new EventEmitter<any>();
 
   private instance: cytoscape.Core;
+  private doubleClickDelay = 400;
+  private previousTapStamp;
 
   constructor(private renderer: Renderer2) {
     this.layout = this.layout || {
@@ -71,6 +66,8 @@ export class CytoscapeComponent implements OnChanges, OnDestroy {
   public render() {
     const cyContainer = this.renderer.selectRootElement(this.cy.nativeElement);
     const localSelect = this.select;
+    const localDoubleClick = this.doubleClick;
+
     this.instance = cytoscape({
       container: cyContainer,
       layout: this.layout,
@@ -81,8 +78,44 @@ export class CytoscapeComponent implements OnChanges, OnDestroy {
     });
 
     this.instance.on('tap', 'node', e => {
+      const currentTapStamp = e.timeStamp;
+      const msFromLastTap = currentTapStamp - this.previousTapStamp;
       const node: SingularData = e.target;
-      localSelect.emit(node.data());
+
+      if (msFromLastTap < this.doubleClickDelay) {
+        localDoubleClick.emit(node.data());
+      } else {
+        localSelect.emit(node.data());
+      }
+      this.previousTapStamp = currentTapStamp;
     });
+
+    this.instance.one('render', _ => {
+      const firstNode = this.instance.nodes().first();
+      this.instance.nodes().unselect();
+      firstNode.select();
+    });
+
+    // @ts-ignore
+    this.instance.nodeHtmlLabel([
+      {
+        query: 'node',
+        valign: 'top',
+        halign: 'left',
+        valignBox: 'bottom',
+        halignBox: 'right',
+        tpl: data =>
+          '<div><p class="label1">' +
+          data.label1 +
+          '</p>' +
+          '<p class="label2">' +
+          data.label2 +
+          '</p></div>',
+      },
+    ]);
+  }
+
+  public nodes(): NodeCollection {
+    return this.instance.nodes();
   }
 }
