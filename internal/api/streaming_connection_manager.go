@@ -96,11 +96,10 @@ func (m *StreamingConnectionManager) Clients() []StreamingClient {
 
 // Run runs the manager. It manages multiple websocket clients.
 func (m *StreamingConnectionManager) Run(ctx context.Context) {
-	done := false
-	for !done {
+	for {
 		select {
 		case <-ctx.Done():
-			done = true
+			return
 		case meta := <-m.register:
 			m.clients[meta.client] = meta.cancelFunc
 		case client := <-m.unregister:
