@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "type": "icon"
+  },
+  "config": {
+    "shape": "user",
+    "size": "16",
+    "direction": "down",
+    "flip": "horizontal",
+    "solid": true,
+    "status": "danger",
+    "inverse": false,
+    "badge": "danger",
+    "color": "#add8e6"
+  }
+}

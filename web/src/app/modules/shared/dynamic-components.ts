@@ -41,6 +41,7 @@ import { TimestampComponent } from './components/presentation/timestamp/timestam
 import { ContainersComponent } from './components/presentation/containers/containers.component';
 import { ModalComponent } from './components/presentation/modal/modal.component';
 import { DropdownComponent } from './components/presentation/dropdown/dropdown.component';
+import { IconComponent } from './components/presentation/icon/icon.component';
 
 export interface ComponentMapping {
   [key: string]: Type<any>;
@@ -84,6 +85,7 @@ const DynamicComponentMapping: ComponentMapping = {
   timeline: TimelineComponent,
   timestamp: TimestampComponent,
   yaml: YamlComponent,
+  icon: IconComponent,
 };
 
 export const DYNAMIC_COMPONENTS_MAPPING = new InjectionToken<ComponentMapping>(

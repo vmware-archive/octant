@@ -585,3 +585,17 @@ export interface StepperView extends View {
     steps: StepItem[];
   };
 }
+
+export interface IconView extends View {
+  config: {
+    shape: string;
+    size: string;
+    direction: string;
+    flip: string;
+    solid: boolean;
+    status: string;
+    inverse: boolean;
+    badge: string;
+    color: string;
+  };
+}
