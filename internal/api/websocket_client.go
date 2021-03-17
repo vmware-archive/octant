@@ -174,7 +174,7 @@ func (c *WebsocketClient) readPump() {
 			continue
 		}
 
-		if err := HandleStreamingMessage(c, request); err != nil {
+		if err := handleStreamingMessage(c, request); err != nil {
 			c.logger.WithErr(err).Errorf("Handle websocket message")
 		}
 	}
@@ -182,7 +182,7 @@ func (c *WebsocketClient) readPump() {
 	close(c.stopCh)
 }
 
-func HandleStreamingMessage(client StreamingClient, request StreamRequest) error {
+func handleStreamingMessage(client StreamingClient, request StreamRequest) error {
 	handlers, ok := client.Handlers()[request.Type]
 	if !ok {
 		return handleUnknownRequest(client, request)
