@@ -45,7 +45,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/stoewer/go-strcase v1.2.0
 	github.com/stretchr/testify v1.7.0
-	go.opencensus.io v0.22.6
+	go.opencensus.io v0.23.0
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
