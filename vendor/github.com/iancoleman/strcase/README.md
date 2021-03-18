@@ -31,3 +31,29 @@ s := "AnyKind of_string"
 ```bash
 go get -u github.com/iancoleman/strcase
 ```
+
+## Custom Acronyms for ToCamel && ToLowerCamel
+
+Often times text can contain specific acronyms which you need to be handled a certain way.
+Out of the box `strcase` treats the string "ID" as "Id" or "id" but there is no way to cater
+for every case in the wild.
+
+To configure your custom acronym globally you can use the following before running any conversion
+
+```go
+import (
+    "github.com/iancoleman/strcase"
+)
+
+func init() {
+    // results in "Api" using ToCamel("API")
+    // results in "api" using ToLowerCamel("API")
+    strcase.ConfigureAcronym("API", "api")
+    
+    // results in "PostgreSQL" using ToCamel("PostgreSQL")
+    // results in "postgreSQL" using ToLowerCamel("PostgreSQL")
+    strcase.ConfigureAcronym("PostgreSQL", "PostgreSQL")
+
+}
+
+```
