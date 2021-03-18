@@ -29,7 +29,7 @@ require (
 	github.com/hashicorp/go-plugin v0.0.0-20190220160451-3f118e8ee104
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
-	github.com/iancoleman/strcase v0.1.2
+	github.com/iancoleman/strcase v0.1.3
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/json-iterator/go v1.1.10
 	github.com/kr/text v0.2.0 // indirect
